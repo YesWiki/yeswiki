@@ -1,0 +1,40 @@
+<div class="filters-col col-sm-{{ params.filtercolsize }}">
+  {{ include("@bazar/entries/index-dynamic/_search_input.twig") }}
+
+  <div class="filters no-dblclick {{ params.filterposition }}" v-if="Object.keys(filters).length">
+    <div class="results-info text-info">
+      <span class="nb-results">{{"{{ filteredEntriesCount }}"}}</span>
+      <span class="result-label">
+        <template v-if="entriesToDisplay.length > 1">{{ _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') }}</template>
+        <template v-else>{{ _t('BAZ_FICHE_CORRESPONDANT_FILTRES') }}</template>
+      </span>
+
+      <template v-if="params.resetfiltersbutton">
+        <span class="btn btn-xs btn-info reset-filters pull-right" @click="resetFilters()"
+              :class="{'btn-block': params.filtercolsize < 4}">
+          {{ _t('BAZ_RESET_FILTERS') }}
+        </span>
+        <div class="clearfix"></div>
+      </template>
+    </div>
+
+    <div class="results-container">
+      <Panel class="filter-box" v-for="filter, key in filters" :collapsed.sync="filter.collapsed" :key="key">
+        <template #header>
+          <i v-html="filter.icon"></i>{{"{{ filter.title }}"}}
+        </template>
+        <template #body>
+          <div class="checkbox" v-for="filterOption, id in filter.list" :key="id" v-show="filterOption.nb > 0">
+            <label>
+              <input class="filter-checkbox" type="checkbox" v-model="filterOption.checked" :value="filterOption.value">
+              <span>
+                <span v-html="filterOption.label"></span>
+                <span class="nb" v-if="filterOption.nb">({{"{{ filterOption.nb }}"}})</span>
+              </span>
+            </label>
+          </div>
+        </template>
+      </Panel>
+    </div>
+  </div>
+</div>

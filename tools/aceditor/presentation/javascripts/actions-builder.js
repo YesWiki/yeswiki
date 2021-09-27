@@ -27,6 +27,7 @@ console.log("actionsBuilderData", actionsBuilderData) // data variable has been 
 
 // Declare this one globally because we use it everywhere
 Vue.component('input-hint', InputHint)
+Vue.component('v-select', VueSelect.VueSelect);
 
 // Handle oldbrowser not supporting ES6
 if (!('noModule' in HTMLScriptElement.prototype)) {
@@ -74,6 +75,12 @@ window.myapp = new Vue({
         if (actionName.startsWith('common')) result.push({params: this.actions[actionName]})
       }
       return result
+    },
+    isSomeAdvancedParams() {
+      return this.configPanels.some(panel => {
+        let props = Object.values(panel.params.properties)
+        return props.some(prop => prop.advanced)
+      })
     },
     // Are we editing an action or creating a new one?
     isEditingExistingAction() {

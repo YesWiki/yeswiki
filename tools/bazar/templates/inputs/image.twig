@@ -2,33 +2,35 @@
 
 {% block input %}
     {% if value %}
-        <div class="col-xs-3">
-            <label class="btn btn-block btn-default">
-                <i class="fa fa-pencil-alt"></i>
-                {{ _t('BAZ_MODIFIER_IMAGE') }}
-                <input
-                    type="file"
-                    style="display: none;"
-                    class="yw-image-upload"
-                    id="{{ field.propertyName }}"
-                    name="{{ field.propertyName }}"
-                    accept=".jpeg, .jpg, .gif, .png"
-                >
-            </label>
-            {% if isAllowedToDeleteFile %}
-                <a class="btn btn-sm btn-block btn-danger" href="{{ deleteUrl }}" onclick="javascript:return confirm('{{ _t('BAZ_CONFIRMATION_SUPPRESSION_IMAGE') }}');">
-                    <i class="fa fa-trash"></i>
-                    {{ _t('BAZ_SUPPRIMER_IMAGE') }}
-                </a>
-            {% else %}            
-                <button class="btn btn-sm btn-block btn-danger" disabled="disabled"
-                    data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_DROIT_INSUFFISANT') }}">
-                    <i class="fa fa-trash"></i>
-                    {{ _t('BAZ_SUPPRIMER_IMAGE') }}
-                </button>
-            {% endif %}
+        <div class="bazar-entry-edit-image">
+            <output id="img-{{ field.propertyName }}">{{ image|raw }}</output>
+            <div class="image-actions">
+                <label class="btn btn-sm btn-default">
+                    <i class="fa fa-pencil-alt"></i>
+                    {{ _t('BAZ_MODIFIER_IMAGE') }}
+                    <input
+                        type="file"
+                        style="display: none;"
+                        class="yw-image-upload"
+                        id="{{ field.propertyName }}"
+                        name="{{ field.propertyName }}"
+                        accept=".jpeg, .jpg, .gif, .png"
+                    >
+                </label>
+                {% if isAllowedToDeleteFile %}
+                    <a class="btn btn-sm btn-danger" href="{{ deleteUrl }}" onclick="javascript:return confirm('{{ _t('BAZ_CONFIRMATION_SUPPRESSION_IMAGE') }}');">
+                        <i class="fa fa-trash"></i>
+                        {{ _t('BAZ_SUPPRIMER_IMAGE') }}
+                    </a>
+                {% else %}            
+                    <button class="btn btn-sm btn-danger" disabled="disabled"
+                        data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_DROIT_INSUFFISANT') }}">
+                        <i class="fa fa-trash"></i>
+                        {{ _t('BAZ_SUPPRIMER_IMAGE') }}
+                    </button>
+                {% endif %}
+            </div>            
         </div>
-        <output id="img-{{ field.propertyName }}" class="col-xs-9">{{ image|raw }}</output>
         <input type="hidden" id="oldimage_{{ field.propertyName }}" name="oldimage_{{ field.propertyName }}" value="{{ value }}" />
     {% else %}
         <input

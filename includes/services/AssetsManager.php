@@ -10,8 +10,10 @@ class AssetsManager
     // tools/templates (and which have been moved elsewhere), we handle it
     protected const BACKWARD_PATH_MAPPING = [
         'tools/templates/libs/vendor/vue/vue.js' => 'javascripts/vendor/vue/vue.js',
-        'tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.js' => 'javascripts/vendor/spectrum-colorpicker2/spectrum.min.js',
-        'tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.css' => 'styles/vendor/spectrum-colorpicker2/spectrum.min.css',
+        'tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.js' => 'javascripts/vendor/spectrum-colorpicker2/spectrum.js',
+        'tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.css' => 'styles/vendor/spectrum-colorpicker2/spectrum.css',
+        'tools/bazar/libs/vendor/leaflet/leaflet.js' => 'javascripts/vendor/leaflet/leaflet.js',
+        'tools/bazar/libs/vendor/leaflet/leaflet.css' => 'styles/vendor/leaflet/leaflet.css',
     ];
 
     protected const PRODUCTION_PATH_MAPPING = [

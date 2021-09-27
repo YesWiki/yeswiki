@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Controller;
 
+use Exception;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -9,7 +10,9 @@ use Symfony\Component\Routing\Annotation\Route;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
+use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Core\ApiResponse;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiController;
 
@@ -87,7 +90,51 @@ class ApiController extends YesWikiController
      */
     public function getAllEntries($output = null, $selectedEntries = null)
     {
+        // fast access for one entry
+        if ($this->isEntryViewFastAccess($output, $selectedEntries, $_GET)) {
+            $entryId = explode(',', $selectedEntries)[0];
+            if ($this->getService(AclService::class)->hasAccess('read', $entryId)) {
+                $html = $this->getService(EntryController::class)->view($entryId, '', 1);
+            } else {
+                $html = $this->render('@templates/alert-message.twig', [
+                    'type' => 'info',
+                    'message' => _t('ERROR_NO_ACCESS')
+                ]);
+            }
+            return new ApiResponse(empty($html) ? null : [$entryId => ['html_output' => $html]]);
+        }
         return $this->getAllFormEntries([], $output, $selectedEntries);
+    }
+
+    /**
+     * helper to check if EntryView fast access
+     * @param null|string $output
+     * @param null|string $selectedEntries
+     * @param null|array $get
+     * @param bool
+     */
+    private function isEntryViewFastAccess($output, $selectedEntries, $get): bool
+    {
+        return ($output == 'html'
+            && !empty($selectedEntries) && is_string($selectedEntries) && count(explode(',', $selectedEntries)) == 1
+            && !empty($get['fields']) && $get['fields'] == 'html_output');
+    }
+    
+    /**
+     * helper to check if EntryView fast access for Bazar/Service/Guard
+     * @param bool
+     */
+    public function isEntryViewFastAccessHelper(): bool
+    {
+        $route = array_keys($_GET)[0];
+        if (substr($route, strlen('api/entries/html'), 1) == '/') {
+            $output = substr($route, strlen('api/entries/'), strlen('html'));
+            $selectedEntries = substr($route, strlen('api/entries/html/'));
+        } else {
+            $output = '';
+            $selectedEntries = '';
+        }
+        return $this->isEntryViewFastAccess($output, $selectedEntries, $_GET);
     }
 
     public function getAllSemanticEntries($formId, $entries)
@@ -171,6 +218,79 @@ class ApiController extends YesWikiController
             'Link: <http://www.w3.org/ns/ldp#Resource>; rel="type"',
             'Location: ' . $this->wiki->Href('', $entry['id_fiche'])
         ]);
+    }
+
+    /**
+     * @Route("/api/entries/bazarlist", methods={"GET"}, options={"acl":{"public"}},priority=2)
+     */
+    public function getBazarListData()
+    {
+        try {
+            ob_start(); // to catch error messages
+            $bazatListService = $this->getService(BazarListService::class);
+            $forms = $bazatListService->getForms([]);
+            $entries = $bazatListService->getEntries(
+                [
+                    'user' => null,
+                    'dateMin' =>  null,
+                    'random' => false,
+                    'ordre' => 'asc',
+                    'champ' => 'bf_titre',
+                    'nb' =>  null,
+                    'colorfield ' => null,
+                    'iconfield ' => null,
+                ] + $_GET,
+                $forms
+            );
+            $filters = $bazatListService->formatFilters($_GET, $entries, $forms);
+            
+            // Basic fields
+            $fieldList = ['id_fiche', 'bf_titre'];
+            // If no id, we need idtypeannonce (== formId) to filter
+            if (!isset($_GET['id'])) {
+                $fieldList[] = 'id_typeannonce';
+            }
+            // fields for colo / icon
+            $fieldList = array_merge($fieldList, [ $_GET['colorfield'] ?? null, $_GET['iconfield'] ?? null]);
+            // Fields for filters
+            foreach ($filters as $field => $config) {
+                $fieldList[] = $field;
+            }
+            // Fields used to search
+            foreach ($_GET['searchfields'] ?? [] as $field) {
+                $fieldList[] = $field;
+            }
+            // Fields used by template
+            foreach ($_GET['displayfields'] ?? [] as $field) {
+                $fieldList[] = $field;
+            }
+            // extra fields required by template
+            $fieldList = array_merge($fieldList, $_GET['necessary_fields'] ?? []);
+            $fieldList = array_values(array_unique(array_filter($fieldList))); // array_values to have incremental keys
+            
+            // Reduce the size of the data sent by transforming entries object into array
+            // we use the $fieldMapping to transform back the data when receiving data in the front end
+            $entries = array_map(function ($entry) use ($fieldList) {
+                $result = [];
+                foreach ($fieldList as $field) {
+                    $result[] = $entry[$field] ?? null;
+                }
+                return $result;
+            }, $entries);
+            $errormsg = ob_get_contents();
+            ob_end_clean();
+        } catch (\Exception $e) {
+            return new ApiResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return new ApiResponse(
+            [
+                'entries' => $entries,
+                'fieldMapping' => $fieldList,
+                'filters' => $filters
+            ] + (empty($errormsg) ? [] : ['errorMessage' => $errormsg]),
+            Response::HTTP_OK
+        );
     }
 
     /**
@@ -270,6 +390,12 @@ class ApiController extends YesWikiController
         <p>
         <b><code>GET ' . $this->wiki->href('', 'api/entries/html') . '</code></b><br />
         Obtenir la liste de toutes les fiches au format json, avec la représentation html de la fiche dans le champ <code>html_output</code><br />
+        </p>';
+
+        $output .= '
+        <p>
+        <b><code>GET ' . $this->wiki->href('', 'api/entries/bazarlist') . '</code></b><br />
+        Obtenir les données nécessaires à bazarliste dynamic au format json<br />
         </p>';
 
         $output .= '

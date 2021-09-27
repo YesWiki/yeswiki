@@ -8,11 +8,28 @@ actions:
   # -------------------------------------
   commons:
     title: Affichage
-    width: 30%
+    width: 33%
     properties:
       search:
         label: _t(AB_bazar_commons_search_label)
         type: checkbox
+      searchfields:
+        label: _t(AB_bazar_commons_search_fields_label)
+        type: form-field
+        advanced: true
+        showif: dynamic
+        multiple: true
+        default: bf_titre
+        showOnlyFor:
+          - bazarliste
+          - bazarcarto
+      dynamic:
+        label: Rendu dynamique (version beta)
+        showOnlyFor:
+          - bazarliste
+          - bazarcarto
+        type: checkbox
+        advanced: true
       pagination:
         label: Nombre de fiches par page
         hint: Laisser vide pour ne pas utiliser la pagination
@@ -22,6 +39,7 @@ actions:
           - bazartimeline
           - bazarcarousel
           - bazarcalendar
+      
       colorfield:
         label: Champ pour la couleur
         type: form-field
@@ -87,8 +105,45 @@ actions:
   # -------------------------------------
   commons2:
     title: Filtres / Facettes
-    width: 40%
+    width: 33%
     properties:
+      facettes:
+        type: facette
+        btn-label-add: Ajouter Une Facette
+        subproperties:
+          field:
+            label: Champ
+            type: form-field
+            only: lists # ce champ doit être de type checkboxListe, listeListe ...
+          title:
+            label: Titre
+            type: text
+          icon:
+            label: Icone
+            type: icon
+      groupsexpanded:
+        label: Affichage initial des facettes
+        type: list
+        advanced: true
+        options:
+          'false': _t(AB_bazar_facettes_groupsexpanded_false)
+          'true': _t(AB_bazar_facettes_groupsexpanded_true)
+        showif: facettes
+      filterposition:
+        label: Position des facettes
+        type: list
+        advanced: true
+        options:
+          right: Droite
+          left: Gauche
+        showif: facettes
+      filtercolsize:
+        label: Largeur des facettes
+        advanced: true
+        type: range
+        min: 1
+        max: 12
+        showif: facettes
       filteruserasowner:
         label: _t(AB_bazar_commons2_filter_user_as_owner)
         type: checkbox
@@ -127,51 +182,6 @@ actions:
 #        advanced: true
 #        label: "Requête SQL (avancé)"
 #        type: text
-      facettes:
-        type: facette
-        btn-label-add: Ajouter Une Facette
-        subproperties:
-          field:
-            label: Champ
-            type: form-field
-            only: lists # ce champ doit être de type checkboxListe, listeListe ...
-          title:
-            label: Titre
-            type: text
-          icon:
-            label: Icone
-            type: icon
-      groupsexpanded:
-        label: Affichage initial des facettes
-        type: list
-        advanced: true
-        options:
-          'false': _t(AB_bazar_facettes_groupsexpanded_false)
-          'true': _t(AB_bazar_facettes_groupsexpanded_true)
-        showif: facettes
-      filterposition:
-        label: Position des facettes
-        type: list
-        advanced: true
-        options:
-          right: Droite
-          left: Gauche
-        showif: facettes
-      filtercolsize:
-        label: Largeur des facettes
-        advanced: true
-        type: range
-        min: 1
-        max: 12
-        showif: facettes
-      resetfiltersbutton:
-        label: _t(AB_bazar_commons2_resetfiltersbutton_label)
-        advanced: true
-        type: checkbox
-        default: 0
-        checkedvalue: 1
-        uncheckedvalue: 0
-        showif: facettes
       datefilter:
         label: _t(AB_bazar_commons2_filter_on_date)
         type: list
@@ -184,6 +194,14 @@ actions:
           '>-1M': _t(AB_bazar_commons2_filter_on_date_for_one_month)
           '>-2Y': _t(AB_bazar_commons2_filter_on_date_for_two_years)
           '>-7D&<+7D': _t(AB_bazar_commons2_filter_on_date_one_week_more_and_less)
+      resetfiltersbutton:
+        label: _t(AB_bazar_commons2_resetfiltersbutton_label)
+        advanced: true
+        type: checkbox
+        default: 0
+        checkedvalue: 1
+        uncheckedvalue: 0
+        showif: facettes
 
   # -----------------
   # Liste des Actions
@@ -192,6 +210,7 @@ actions:
     label: Cartographie
     description: Les fiches seront sous forme de marqueur.
     hint: Le champ géolocalisation doit être présent dans votre formulaire
+    width: 35%
     properties:
       template:
         value: map
@@ -199,7 +218,7 @@ actions:
         label: Fond de carte
         required: true
         type: list
-        default: OpenStreetMap.Mapnik
+        default: OpenStreetMap.Mapnik # TODO change to Stadia.OSMBright if community agrees?
         options:
           - OpenStreetMap.Mapnik
           - OpenStreetMap.BlackAndWhite
@@ -207,6 +226,9 @@ actions:
           - OpenStreetMap.France
           - OpenStreetMap.HOT
           - OpenTopoMap
+          - Stadia.AlidadeSmooth
+          - Stadia.AlidadeSmoothDark
+          - Stadia.OSMBright
           - Stamen.Toner
           - Stamen.TonerBackground
           - Stamen.TonerLite
@@ -238,6 +260,10 @@ actions:
       coordinates:
         label: Vue initiale
         type: geo
+      cluster:
+        label: Regroupe les points par zone (clusters)
+        type: checkbox
+        default: false
       width:
         advanced: true
         label: Largeur de la carte
@@ -249,6 +275,24 @@ actions:
         label: Hauteur de la carte
         type: text
         default: 600px
+      entrydisplay:
+        label: Lors du click, afficher la fiche
+        type: list
+        default: sidebar
+        advanced: true
+        showif: dynamic
+        options:
+          sidebar: Dans une barre latérale
+          modal: Dans une popup    
+      displayfields:
+        type: correspondance
+        showif: dynamic
+        advanced: true
+        subproperties:
+          markerhover:
+            type: form-field
+            label: Champ à afficher au survol du marker
+            default: bf_titre      
       smallmarker:
         advanced: true
         label: Petit marqueurs
@@ -256,26 +300,22 @@ actions:
         default: 0
         checkedvalue: 1
         uncheckedvalue: 0
-      spider:
-        advanced: true
-        label: Mode spider
-        hint: Éclate un groupe de point lors du click
-        type: checkbox
-        default: false
-      cluster:
-        label: Regroupe les points par zone (clusters)
-        type: checkbox
-        default: false
-#      barregestion:
-#        advanced: true
-#        label: Barre de gestion des fiches
-#        type: checkbox
-#        default: false
-      navigation:
-        advanced: true
-        label: Boutons de contrôle du zoom
-        type: checkbox
-        default: true
+      # spider:
+      #   advanced: true
+      #   label: Mode spider
+      #   hint: Éclate un groupe de point lors du click
+      #   type: checkbox
+      #   default: false
+      # barregestion:
+      #   advanced: true
+      #   label: Barre de gestion des fiches
+      #   type: checkbox
+      #   default: false
+      # navigation:
+      #   advanced: true
+      #   label: Boutons de contrôle du zoom
+      #   type: checkbox
+      #   default: true
       zoommolette:
         advanced: true
         label: Pouvoir zoomer avec la molette de la souris
@@ -320,6 +360,24 @@ actions:
     properties:
       template:
         value: 'liste_accordeon'
+      displayfields:
+        type: correspondance
+        showIf: dynamic
+        subproperties:
+          title:
+            type: form-field
+            label: Champ pour la zone de titre
+            default: bf_titre
+          subtitle:
+            type: form-field
+            label: Champ pour la zone de sous titre
+            default: bf_description
+          floating:
+            type: form-field
+            label: Champ pour la zone flottante
+          visual:
+            type: form-field
+            label: Champ pour la zone visuelle
 
   bazartrombi:
     label: Trombinoscope

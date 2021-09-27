@@ -22,25 +22,29 @@ export default {
       }
     },
     parseNewValues(newValues) {
-      if (newValues.correspondance) {
-        const mappings = newValues.correspondance.split(',') // ["bf_image=my_image", "bf_other=my_other"]
+      if (newValues[this.name]) {
+        const mappings = newValues[this.name].split(',') // ["bf_image=my_image", "bf_other=my_other"]
         const propList = Object.keys(this.config.subproperties) // ["bf_image", "bf_baseline"]
         for(let mapping of mappings) {
-          let popName = mapping.split('=')[0]
-          if (propList.includes(propName)) {
-            this.mappingValues[popName] = mapping.split('=')[1]
+          let propName = mapping.split('=')[0]
+          if (propName && propList.includes(propName)) {
+            this.mappingValues[propName] = mapping.split('=')[1]
           }
         }
       }
     },
     getValues() {
       let result = []
-      for(let key in this.mappingValues) {
-        if (key && this.mappingValues[key] && Object.keys(this.config.subproperties).includes(key)) {
-          result.push(`${key}=${this.mappingValues[key]}`)
+      for(let propName in this.mappingValues) {
+        let value = this.mappingValues[propName]
+        if (propName && value != this.config.subproperties[propName].default && value != ','
+            && Object.keys(this.config.subproperties).includes(propName)) {
+          result.push(`${propName}=${value}`)
         }
       }
-      return { correspondance: result.join(',') }
+      let obj = {}
+      obj[this.name] = result.join(',')
+      return obj
     },
     updateValue(propName, value) {
       this.mappingValues[propName] = value

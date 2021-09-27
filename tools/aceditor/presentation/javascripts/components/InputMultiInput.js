@@ -59,7 +59,7 @@ export default {
           </component>
         </template>
         <!-- Remove Button -->
-        <div class="form-group">
+        <div class="form-group btn-close-container">
           <button class="btn btn-default btn-icon" @click="removeElement(element)">
             <i class="btn-remove-group fa fa-times"></i>
           </button>

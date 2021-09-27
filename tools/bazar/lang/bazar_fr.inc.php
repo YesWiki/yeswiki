@@ -222,6 +222,7 @@ $GLOBALS['translations'] = array_merge(
         'BAZ_TELECHARGER_FICHIER_IMPORT_CSV' => 'T&eacute;l&eacute;charger un exemple de fichier csv &agrave; importer',
         'BAZ_MOT_DE_PASSE' => 'Mot de passe',
         'BAZ_VERIFICATION' => 'v&eacute;rification',
+        'BAZ_NO_RESULT' => "Aucun résultat",
         'BAZ_ACCEPTE_CONDITIONS' => 'J\'accepte les conditions de saisie',
         'BAZ_ACCEPTE_CONDITIONS_REQUIS' => 'Il faut accepter les conditions de saisie',
         'URL_LIEN_REQUIS' => 'L\'adresse URL est requise',

@@ -259,9 +259,9 @@ class MapField extends BazarField
         }
         $geoCodingScript .= '});';
 
-        $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/leaflet.css');
-        $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
-        $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet-providers.js');
+        $GLOBALS['wiki']->AddCSSFile('styles/vendor/leaflet/leaflet.css');
+        $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet/leaflet.js');
+        $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet-providers/leaflet-providers.js');
         $GLOBALS['wiki']->AddJavascript($initMapScript.$geoCodingScript);
 
         return $this->render("@bazar/inputs/map.twig", [

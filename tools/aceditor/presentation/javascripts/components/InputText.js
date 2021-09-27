@@ -1,6 +1,9 @@
 // ext/Number/Color/slider
 export default {
   props: [ 'value', 'config' ],
+  mounted() {
+    if (!this.value && this.config.value) this.$emit('input', this.config.value)
+  },
   template: `
     <div class="form-group" :class="config.type" :title="config.hint" >
       <label v-if="config.label" class="control-label">{{ config.label }}</label>
