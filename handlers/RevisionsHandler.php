@@ -3,6 +3,8 @@
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 use \Tamtamchik\SimpleFlash\Flash;
+use YesWiki\Bazar\Service\EntryManager;
+
 class RevisionsHandler extends YesWikiHandler
 {
     function run()
@@ -18,9 +20,11 @@ class RevisionsHandler extends YesWikiHandler
             $revisionsCount = $pageManager->countRevisions($this->wiki->GetPageTag());
             // Limit to 30 revisions otherwise the UI is too crowded
             $revisions = $pageManager->getRevisions($this->wiki->GetPageTag(), 30);
+            $entryManager = $this->getService(EntryManager::class);
             return $this->renderInSquelette('@core/handlers/revisions.twig', [
                 'revisions' => $revisions,
-                'revisionsCount' => $revisionsCount
+                'revisionsCount' => $revisionsCount,
+                'isEntry' => $entryManager->isEntry($this->wiki->GetPageTag())
             ]);
         }
     }

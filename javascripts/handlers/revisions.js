@@ -2,11 +2,13 @@ Vue.prototype.window = window
 new Vue({
   el: '.revisions-container',
   data: {
+    isEntry: false,
     revisions: [],
     selectedRevision: null,
     viewTypes: {
       'current': "Aperçu de cette version",
-      'diff': "Modifs apportées par cette version"
+      'commit_diff': "Modifs apportées par cette version",
+      'diff': "Comparaison avec version actuelle"
     },
     displayWikiCode: false,
     selectedViewType: 'current',
@@ -17,7 +19,7 @@ new Vue({
     restoreUrl() { return `${document.location.search}&restoreRevisionId=${this.selectedRevision.id}` }
   },
   mounted() {
-    let revisionsCount = parseInt(this.$el.dataset.revisionsCount)
+    this.isEntry = this.$el.dataset.isEntry == "1"
     this.revisions = JSON.parse(this.$el.dataset.revisions).map(rev => {
       rev.id = parseInt(rev.id)
       rev.time = new Date(rev.time)
@@ -28,6 +30,7 @@ new Vue({
       })
       // initial prop so it gets reactive
       rev.current_code = ''; rev.current_html = ''; 
+      rev.commit_diff_html = ''; rev.commit_diff_code = '';
       rev.diff_html = ''; rev.diff_code = '';
       rev.fullyRetrieved = false
       return rev
@@ -38,12 +41,12 @@ new Vue({
   watch: {
     selectedRevision() {
       if (this.selectedRevision && !this.selectedRevision.fullyRetrieved) {
-        let url = `?api/pages/${this.selectedRevision.id}&includeRender=true`
-        let prevRevision = this.revisions.filter(rev => rev.id < this.selectedRevision.id)[0]
-        if (prevRevision) url += `&includeDiffFromId=${prevRevision.id}`
+        let url = `?api/pages/${this.selectedRevision.id}&includeDiff=true`
         $.getJSON(url, (data) => {
-          this.selectedRevision.current_code = data.body
           this.selectedRevision.current_html = data.html
+          this.selectedRevision.current_code = data.body
+          this.selectedRevision.commit_diff_html = data.commit_diff_html
+          this.selectedRevision.commit_diff_code = data.commit_diff_code
           this.selectedRevision.diff_html = data.diff_html
           this.selectedRevision.diff_code = data.diff_code
           this.selectedRevision.fullyRetrieved = true

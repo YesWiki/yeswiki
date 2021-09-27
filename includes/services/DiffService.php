@@ -20,22 +20,22 @@ class DiffService
         $this->entryController = $entryController;
     }
 
-    function getPageDiff($idA, $idB, $compareRender = false)
+    function getPageDiff($pageA, $pageB, $compareRender = false)
     {
-        $pageA = $this->pageManager->getById($idA);
-        $pageB = $this->pageManager->getById($idB);
-
         $tag = $pageA['tag'];
         $isEntry = !empty($tag) && $this->entryManager->isEntry($tag);
         if ($isEntry) {
-            // extract text from bodies
-            $textA = '""'.$this->entryController->view($tag, $pageA['time'], false).'""';
-            $textB = '""'.$this->entryController->view($tag, $pageB['time'], false).'""';
-        } else {
-            // extract text from bodies
             if ($compareRender) {
-                $textA = $this->wiki->Format($pageA["body"], 'wakka', $pageA['tag']);
-                $textB = $this->wiki->Format($pageB["body"], 'wakka', $pageB['tag']);
+                $textA = $this->entryController->view($tag, $pageA['time'], false);
+                $textB = $this->entryController->view($tag, $pageB['time'], false);
+            } else {
+                $textA = $pageA['body'];
+                $textB = $pageB['body'];
+            }
+        } else {
+            if ($compareRender) {
+                $textA = $pageA["html"] ?? $this->wiki->Format($pageA["body"], 'wakka', $pageA['tag']);
+                $textB = $pageB["html"] ?? $this->wiki->Format($pageB["body"], 'wakka', $pageB['tag']);
             } else {
                 $textA = _convert($pageA["body"], "ISO-8859-15");
                 $textB = _convert($pageB["body"], "ISO-8859-15");
