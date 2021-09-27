@@ -7,8 +7,15 @@
      data-revisions-count="{{ revisionsCount }}">
   <template v-if="selectedRevision">
     
-    <h1 class="text-center text-default">Historique de la page</h1>
+    {# Title #}
+    <div class="revision-page-title">
+      <a class="btn btn-sm btn-default" href="{{ url({}) }}">
+        <i class="fas fa-arrow-left"></i>{{  _t('GO_BACK') }}
+      </a>
+      <h1 class="text-center text-default"> Historique de la page</h1>
+    </div>
 
+    {# Timeline #}
     <div class="timeline-container">
       <template v-for="revision in revisions">
         <div class="timeline-item" :key="revision.id"
@@ -24,6 +31,7 @@
       <div class="timeline-bar"></div>
     </div>
 
+    {# Selected Revision Title with buttons #}
     <div class="revision-title-container">
       <i class="fa fa-chevron-left fa-4x" @click="moveRevision(true)" :disabled="selectedRevision == firstRevision"></i>
       <div class="text-center revision-title">
@@ -39,6 +47,7 @@
       <i class="fa fa-chevron-right fa-4x" @click="moveRevision(false)" :disabled="selectedRevision == lastRevision"></i>
     </div>
     
+    {# View Types Selector #}
     <ul class="view-types-selector nav nav-tabs">
       <li v-for="label, type in viewTypes" role="presentation"
           :class="{active: selectedViewType == type}"
