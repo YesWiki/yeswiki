@@ -3,7 +3,7 @@
 	<ul class="login-actions">
 	  <?php echo $PageMenuUser; ?>
 	  <li><a href="<?php echo $profileurl; ?>" title="<?php echo _t('LOGIN_MODIFY_USER'); ?>"><?php echo _t('LOGIN_MODIFY_USER'); ?></a></li>
-	  <li><a href="<?php echo $incomingurl; ?>&amp;action=logout" class="login-signout-link" title="<?php echo _t('LOGIN_LOGOUT'); ?>"><?php echo _t('LOGIN_LOGOUT'); ?></a></li>
+	  <li><a href="<?php echo $incomingurl.(strpos($incomingurl,'?') === false ? '?' : '&amp;'); ?>action=logout" class="login-signout-link" title="<?php echo _t('LOGIN_LOGOUT'); ?>"><?php echo _t('LOGIN_LOGOUT'); ?></a></li>
 	</ul>
 <?php else : ?>
 	<?php if ($error) : ?>
