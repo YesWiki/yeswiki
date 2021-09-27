@@ -14,7 +14,7 @@
         <i class="fas fa-arrow-left"></i>{{  _t('GO_BACK') }}
       </a>
       <h1 class="text-center text-default">
-        Historique de la {{ isEntry ? 'fiche' : 'page' }}
+        {{ isEntry ? _t('TITLE_ENTRY_HISTORY') : _t('TITLE_PAGE_HISTORY') }}
       </h1>
     </div>
 
@@ -38,12 +38,13 @@
       <i class="fa fa-chevron-left fa-4x" @click="moveRevision(true)" :disabled="selectedRevision == firstRevision"></i>
       <div class="text-center revision-title">
         <h3 class="text-secondary-1">
-          Version N°{{"{{selectedRevision.number }}"}} du {{"{{selectedRevision.displayTime }}"}}
-          par {{"{{ selectedRevision.user }}"}}
+          {{ _t('REVISION_VERSION') ~ "{{selectedRevision.number }}" }}
+          {{ _t('REVISION_ON') ~ " {{selectedRevision.displayTime }}" }}
+          {{ _t('REVISION_BY') ~ " {{ selectedRevision.user }}" }}
         </h3>        
          <a :href="restoreUrl" class="btn btn-success btn-restore"
             :disabled="selectedRevision == lastRevision"
-            v-text="selectedRevision == lastRevision ? 'Version actuelle' : 'Restaurer cette version'">
+            v-text="selectedRevision == lastRevision ? '{{ _t('CURRENT_VERSION') }}' : '{{ _t('RESTORE_REVISION') }}'">
         </a>
       </div>
       <i class="fa fa-chevron-right fa-4x" @click="moveRevision(false)" :disabled="selectedRevision == lastRevision"></i>
@@ -59,7 +60,7 @@
       </li>
       <label class="code-or-preview" v-if="!isEntry"> 
         <input type="checkbox" v-model="displayWikiCode" />
-        <span>Afficher le Code Wiki</span>
+        <span>{{ _t('DISPLAY_WIKI_CODE') }}</span>
       </span>
     </ul>
 
