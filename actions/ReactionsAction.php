@@ -13,7 +13,7 @@ class ReactionsAction extends YesWikiAction
     public function formatReactionItems($idreaction)
     {
         $reactionItems = [];
-        $allReaction = $this->wiki->services->get(ReactionManager::class)->getAllReactions($this->wiki->getPageTag(), [$idreaction]);
+        $allReaction = $this->wiki->services->get(ReactionManager::class)->getReactions($this->wiki->getPageTag(), [$idreaction]);
         foreach ($this->labels as $k => $label) {
             $id = URLify::slug($label);
             if (empty($this->images[$k])) {
@@ -36,8 +36,9 @@ class ReactionsAction extends YesWikiAction
                 }
             }
             $type_count = 0;
-            if (!empty($allReaction[$idreaction])) {
-                foreach ($allReaction[$idreaction] as $r) {
+            $uniqueId = $idreaction.'|'.$this->wiki->getPageTag();
+            if (!empty($allReaction[$uniqueId])) {
+                foreach ($allReaction[$uniqueId]['reactions'] as $r) {
                     if (array_search($id, $r)) {
                         $type_count++;
                     }
@@ -83,19 +84,22 @@ class ReactionsAction extends YesWikiAction
 
         $userReactions = null;
         if ($user = $this->wiki->getUser()) {
-            $userReactions = $this->wiki->services->get(ReactionManager::class)->getUserReactions(
-                $user['name'],
+            $userReactions = $this->wiki->services->get(ReactionManager::class)->getReactions(
                 $this->wiki->GetPageTag(),
-                $idreaction
+                [$idreaction],
+                $user['name'],
             );
-            $userReactions = array_column($userReactions, 'id');
+            $uniqueId = $idreaction.'|'.$this->wiki->getPageTag();
+            if (isset($userReactions[$uniqueId]['reactions'])) {
+                $userReactions = array_column($userReactions[$uniqueId]['reactions'], 'id');
+            }
         }
         $output = '';
 
         $items = $this->formatReactionItems($idreaction);
 
         // TODO : twig for core templates?????
-        $output .= $this->render("@templates/reactions.twig", [
+        $output .= $this->render("templates/reactions.twig", [
             'reactionId' => $idreaction,
             'title' => empty($title) ? _t('REACTION_SHARE_YOUR_REACTION') : $title,
             'connected' => $user,
