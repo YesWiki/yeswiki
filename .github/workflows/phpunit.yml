@@ -2,15 +2,17 @@ name: PHP Composer
 
 on:
   push:
-    branches: [ doryphore ]
+    branches: [ doryphore, ectoplasme ]
     paths:
     - 'composer.lock'
     - '*.php'
+    - '.github/workflows/*.yml'
   pull_request:
-    branches: [ doryphore ]
+    branches: [ doryphore, ectoplasme ]
     paths:
     - 'composer.lock'
     - '*.php'
+    - '.github/workflows/*.yml'
 
 env:
   DB_NAME: yeswiki_test
