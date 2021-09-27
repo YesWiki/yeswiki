@@ -25,7 +25,7 @@ class TextareaField extends BazarField
     {
         parent::__construct($values, $services);
 
-        $this->numRows = $values[self::FIELD_NUM_ROWS] ?? 3;
+        $this->numRows = empty($values[self::FIELD_NUM_ROWS]) ? 3 : $values[self::FIELD_NUM_ROWS];
         $this->syntax = $values[self::FIELD_SYNTAX] ?? self::SYNTAX_WIKI;
 
         // For this field, max chars are defined in the 6th column, instead of the already-used 4th
