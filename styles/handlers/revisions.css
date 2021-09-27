@@ -124,13 +124,14 @@
   border: none;
   background: none;
 }
-
-ins, ins * {
-  color: white !important;
-  background-color: #4ea952 !important;
+ins {
   text-decoration: none !important;
 }
-del, del * {
+ins:not(.mod) {
+  color: white !important;
+  background-color: #4ea952 !important;
+}
+del {
   color: white !important;
   background-color: red !important;
   text-decoration: line-through !important;
