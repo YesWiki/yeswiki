@@ -22,6 +22,7 @@ new Vue({
     this.isEntry = this.$el.dataset.isEntry == "1"
     this.revisions = JSON.parse(this.$el.dataset.revisions).map(rev => {
       rev.id = parseInt(rev.id)
+      rev.phpTime = rev.time
       rev.time = new Date(rev.time)
       rev.timestamp = rev.time.getTime()
       rev.displayTime = rev.time.toLocaleDateString(window.locale, { 
@@ -41,7 +42,7 @@ new Vue({
   watch: {
     selectedRevision() {
       if (this.selectedRevision && !this.selectedRevision.fullyRetrieved) {
-        let url = `?api/pages/${this.selectedRevision.id}&includeDiff=true`
+        let url = `?api/pages/${this.selectedRevision.tag}&time=${this.selectedRevision.phpTime}&includeDiff=true`
         $.getJSON(url, (data) => {
           this.selectedRevision.current_html = data.html
           this.selectedRevision.current_code = data.body

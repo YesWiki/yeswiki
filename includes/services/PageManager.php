@@ -50,12 +50,15 @@ class PageManager
                 $this->cache($cachedPage, $tag);
             }
             $page = $cachedPage;
-        } else { // load page
+        } else { 
+            // load page
+            $timeQuery = $time ? "time = '{$this->dbService->escape($time)}'" : "latest = 'Y'";
+            $page = $this->dbService->loadSingle("
+                SELECT * FROM {$this->dbService->prefixTable('pages')} 
+                WHERE tag = '{$this->dbService->escape($tag)}' AND {$timeQuery}
+                LIMIT 1
+            ");
 
-            $sql = 'SELECT * FROM' . $this->dbService->prefixTable('pages') . "WHERE tag = '" . $this->dbService->escape($tag) . "' AND " . ($time ? "time = '" . $this->dbService->escape($time) . "'" : "latest = 'Y'") . " LIMIT 1";
-            $page = $this->dbService->loadSingle($sql);
-
-            // si la page existe, on charge les meta-donnees
             if ($page) {
                 $page["metadatas"] = $this->getMetadata($tag);
             }
@@ -115,7 +118,7 @@ class PageManager
     public function getRevisions($pageTag, $limit = 10000)
     {
         return $this->dbService->loadAll("
-            SELECT id, time, user FROM {$this->dbService->prefixTable('pages')} 
+            SELECT id, time, user, tag FROM {$this->dbService->prefixTable('pages')} 
             WHERE tag = '{$this->dbService->escape($pageTag)}' 
             ORDER BY time DESC
             LIMIT {$limit}
