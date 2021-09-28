@@ -45,7 +45,7 @@ ob_start();
 <head>
   <meta charset="<?php echo $charset; ?>">
   <title><?php echo _t('INSTALLATION_OF_YESWIKI'); ?></title>
-  <link href="<?php echo computeBaseUrl(true); ?>styles/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="<?php echo computeBaseUrl(true); ?>styles/vendor/bootstrap/css/bootstrap.css" rel="stylesheet">
   <link href="<?php echo computeBaseUrl(true); ?>themes/margot/styles/margot.css" rel="stylesheet">
 </head>
 
