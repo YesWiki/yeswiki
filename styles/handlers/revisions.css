@@ -110,9 +110,13 @@
   opacity: .5;
 }
 
-.preview-container {
-  background-color: #9e9e9e21;
+body, #yw-header, #yw-main, #yw-footer {
+  background-color: #4e505608;
+}
+
+.preview-container .preview-content {
   padding: 2rem;
+  background-color: var(--neutral-light-color);
   min-height: 800px;
 }
 

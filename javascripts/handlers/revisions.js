@@ -1,6 +1,10 @@
+import SpinnerLoader from '/tools/bazar/presentation/javascripts/components/SpinnerLoader.js'
+
 Vue.prototype.window = window
+
 new Vue({
   el: '.revisions-container',
+  components: { SpinnerLoader },
   data: {
     isEntry: false,
     revisions: [],

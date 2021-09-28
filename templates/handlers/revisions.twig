@@ -1,5 +1,5 @@
 {{ include_javascript('javascripts/vendor/vue/vue.js') }}
-{{ include_javascript('javascripts/handlers/revisions.js') }}
+{{ include_javascript('javascripts/handlers/revisions.js', false, true) }}
 {{ include_css('styles/handlers/revisions.css') }}
 
 <div class="revisions-container" 
@@ -66,15 +66,16 @@
 
     <div class="preview-container">
       {# Loader #}
-      <div class="text-center text-soft spinner-loader" v-if="!selectedRevision.fullyRetrieved">
-        <i class="fas fa-circle-notch fa-spin fa-4x"></i>
-      </div>
+      <spinner-loader v-if="!selectedRevision.fullyRetrieved"></spinner-loader>
 
       {# View Types display #}
       <template v-else v-for="label, type in viewTypes">
         <template v-if="selectedViewType == type">
-          <pre v-if="displayWikiCode" v-html="selectedRevision[`${type}_code`]"></pre>
-          <div v-else v-html="selectedRevision[`${type}_html`]"></div>
+          <pre v-if="displayWikiCode" class="preview-content" v-html="selectedRevision[`${type}_code`]"></pre>
+          <template v-else>
+            <iframe v-if="type == 'current'" :src="`/?${selectedRevision.tag}/render&time=${selectedRevision.phpTime}`" width="100%" height="800px" frameborder="0"></iframe>
+            <div v-else class="preview-content" v-html="selectedRevision[`${type}_html`]"></div>
+          </template>          
         </template>
       </template>      
     </div>

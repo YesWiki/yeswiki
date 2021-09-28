@@ -192,8 +192,7 @@ class Performer
                         $output .= $performable->run();
                     } catch (HttpException $exception) {
                         return $this->renderError($exception->getMessage(), $objectType);
-                    }
-                    
+                    }                    
                 } else {
                     $vars['plugin_output_new'] = &$output;
                     // need to run them from YesWiki Class so the variable $this (used in all the plain PHP object) refers to YesWiki, not to Performer service
