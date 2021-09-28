@@ -1160,6 +1160,8 @@ class Wiki
             $this->SetUser($user, $_COOKIE['remember']);
         }
 
+        $this->request = Request::createFromGlobals();
+        
         // Is this a special page ?
         if ($tag === 'api') {
             // We must manually parse the body data for the PUT or PATCH methods

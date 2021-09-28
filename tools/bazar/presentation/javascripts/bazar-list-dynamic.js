@@ -178,7 +178,11 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       getEntryRender(entry) {
         if (entry.html_render) return
         let fieldsToExclude = this.params.displayfields ? Object.values(this.params.displayfields) : []
-        $.getJSON(wiki.baseUrl+(wiki.baseUrl.includes('?')?``:`?`)+`api/entries/html/${entry.id_fiche}&fields=html_output&excludeFields=${fieldsToExclude}`, function(data) {
+        let url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
+          fields: 'html_output', 
+          excludeFields: fieldsToExclude
+        })
+        $.getJSON(url, function(data) {
           Vue.set(entry, 'html_render', (data[entry.id_fiche] && data[entry.id_fiche].html_output) ? data[entry.id_fiche].html_output : 'error')
         })
       },
@@ -204,7 +208,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       this.pagination = parseInt(this.params.pagination)
       this.mounted = true
       // Retrieve data asynchronoulsy
-      $.getJSON(wiki.baseUrl+(wiki.baseUrl.includes('?')?'':'?')+'api/entries/bazarlist', this.params, (data) => {
+      $.getJSON(wiki.url('?api/entries/bazarlist'), this.params, (data) => {
         // First display filters cause entries can be a bit long to load
         this.filters = this.initFiltersFromHash(data.filters || [], savedHash)      
 
