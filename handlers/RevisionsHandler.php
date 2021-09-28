@@ -16,8 +16,8 @@ class RevisionsHandler extends YesWikiHandler
             return $this->wiki->Redirect($this->wiki->Href());
         } else {
             $revisionsCount = $pageManager->countRevisions($this->wiki->GetPageTag());
-            // Limit to 60 revisions otherwise the UI is too crowded
-            $revisions = $pageManager->getRevisions($this->wiki->GetPageTag(), 60);
+            // Limit to 30 revisions otherwise the UI is too crowded
+            $revisions = $pageManager->getRevisions($this->wiki->GetPageTag(), 30);
             return $this->renderInSquelette('@core/handlers/revisions.twig', [
                 'revisions' => $revisions,
                 'revisionsCount' => $revisionsCount
