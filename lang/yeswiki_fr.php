@@ -44,6 +44,12 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'MY_YESWIKI_SITE' => 'Mon site YesWiki',
 'FILE_WRITE_PROTECTED' => 'le fichier de configuration est protégé en écriture',
 
+// ACLs
+'DENY_READ' => "Vous n'êtes pas autorisé à lire cette page",
+'DENY_WRITE' => "Vous n'êtes pas autorisé à écrire sur cette page",
+'DENY_COMMENT' => "Vous n'êtes pas autorisé à commenter cette page",
+'DENY_DELETE' => "Vous n'êtes pas autorisé à supprimer cette page",
+
 // tools.php
 'YESWIKI_TOOLS_CONFIG' => 'Configuration extension(s) de YesWiki',
 'DISCONNECT' => 'D&eacute;connexion',
