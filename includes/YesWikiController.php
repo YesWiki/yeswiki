@@ -2,6 +2,7 @@
 
 namespace YesWiki\Core;
 
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Wiki;
@@ -9,6 +10,12 @@ use YesWiki\Wiki;
 abstract class YesWikiController
 {
     protected $wiki;
+    public $request;
+
+    public function __construct()
+    {
+        $this->request = Request::createFromGlobals();
+    }
 
     /**
      * Setter for the wiki property
