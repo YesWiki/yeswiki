@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 use YesWiki\Wiki;
 
@@ -167,6 +168,7 @@ class Performer
         }
         $objectName = strtolower($objectName);
 
+        // Check if user is allowed to use this particular action or handler (see EditHandlersAclsAction EditActionsAclsAction)
         if (!$this->wiki->CheckModuleACL($objectName, $objectType)) {
             return '<div class="alert alert-danger">' . ucfirst($objectType) . " $objectName : " . _t('ERROR_NO_ACCESS') . '</div>' . "\n";
         }
@@ -186,7 +188,12 @@ class Performer
             try {
                 if ($file['isDefinedAsClass']) {
                     $performable = $this->createPerformable($file, $vars, $output);
-                    $output .= $performable->run();
+                    try {
+                        $output .= $performable->run();
+                    } catch (HttpException $exception) {
+                        return $this->renderError($exception->getMessage(), $objectType);
+                    }
+                    
                 } else {
                     $vars['plugin_output_new'] = &$output;
                     // need to run them from YesWiki Class so the variable $this (used in all the plain PHP object) refers to YesWiki, not to Performer service
@@ -196,22 +203,27 @@ class Performer
                 }
             } catch (Throwable $t) {
                 // catch all errors and exceptions thrown by the execution of the performable
-                $message = [
-                    'type' => 'danger',
-                    // display a generic message with the detailled error
-                    'message' => _t('PERFORMABLE_ERROR') . "<br/>" . $t->getMessage() . ' in <i>' . $t->getFile()
-                        . '</i> on line <i>' . $t->getLine() . '</i>'
-                ];
-                if ($objectType == 'handler') {
-                    // display it with a header and a footer
-                    return $this->twig->renderInSquelette('@templates/alert-message-with-back.twig', $message);
-                } else {
-                    // display it inline
-                    return $this->twig->render('@templates/alert-message.twig', $message);
-                }
+                $message = _t('PERFORMABLE_ERROR');
+                $message .= "<br/>{$t->getMessage()} in <i>{$t->getFile()}</i> on line <i>{$t->getLine()}</i>";
+                return $this->renderError($message, $objectType);
             }
         }
         return $output;
+    }
+
+    private function renderError($message, $objectType)
+    {
+        $data = [
+            'type' => 'danger',
+            'message' => $message
+        ];
+        if ($objectType == 'handler') {
+            // display it with a header and a footer
+            return $this->twig->renderInSquelette('@templates/alert-message-with-back.twig', $data);
+        } else {
+            // display it inline
+            return $this->twig->render('@templates/alert-message.twig', $data);
+        }
     }
 
     /**
