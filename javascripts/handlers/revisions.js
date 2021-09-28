@@ -32,17 +32,7 @@ new Vue({
       rev.fullyRetrieved = false
       return rev
     })    
-    let timelineLength = this.lastRevision.timestamp - this.firstRevision.timestamp
-    let prevRevision
-    this.revisions.forEach((rev, index) => {
-      rev.number = revisionsCount - index
-      rev.placeInTimeLine = (rev.timestamp - this.firstRevision.timestamp)/timelineLength * 100
-      if (prevRevision) {
-        // At least 1% gap betwwen each, otherwise we don't see anything in the UI
-        rev.placeInTimeLine = Math.min(rev.placeInTimeLine, prevRevision.placeInTimeLine - 1.5)
-      }
-      prevRevision = rev
-    })
+    this.calculateRevisionsPlaceInTimeLine()
     this.selectedRevision = this.lastRevision
   },
   watch: {
@@ -76,6 +66,39 @@ new Vue({
       let newNumber = this.selectedRevision.number + (forward ? -1 : 1)
       let newRevision = this.revisions.find(rev => rev.number == newNumber)
       if (newRevision) this.selectedRevision = newRevision
-    }
+    },
+    calculateRevisionsPlaceInTimeLine() {
+      let revisionsCount = parseInt(this.$el.dataset.revisionsCount)
+      let timelineLength = this.lastRevision.timestamp - this.firstRevision.timestamp
+      let prevRevision
+      this.revisions.forEach((rev, index) => {
+        rev.number = revisionsCount - index
+        rev.placeInTimeLine = (rev.timestamp - this.firstRevision.timestamp) / timelineLength * 100
+        if (prevRevision) {
+          // At least 1% gap between each, otherwise we don't see anything in the UI
+          let minGap = this.minGapBetween(rev, prevRevision)
+          rev.placeInTimeLine = Math.min(rev.placeInTimeLine, prevRevision.placeInTimeLine - minGap)
+        }
+        prevRevision = rev
+      })
+
+      // due to the 1% gap, it can occurs that the first revision ends up with negative position
+      // so we recover that gap on the first revisions
+      if (this.firstRevision.placeInTimeLine < 0) {
+        this.firstRevision.placeInTimeLine = 0
+        prevRevision = null
+        this.revisions.slice().reverse().forEach((rev, index) => {
+          if (prevRevision) {
+            let minGap = this.minGapBetween(rev, prevRevision)
+            rev.placeInTimeLine = Math.max(rev.placeInTimeLine, prevRevision.placeInTimeLine + minGap)
+          }
+          prevRevision = rev
+        }) 
+      }
+    },
+    minGapBetween(rev1, rev2) {
+      // Bigger gap if different day
+      return rev1.time.setHours(0,0,0,0) == rev2.time.setHours(0,0,0,0) ? 1.3 : 3
+    },
   }
 })
