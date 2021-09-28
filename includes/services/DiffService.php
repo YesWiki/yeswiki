@@ -34,8 +34,8 @@ class DiffService
             }
         } else {
             if ($compareRender) {
-                $textA = $pageA["html"] ?? $this->wiki->Format($pageA["body"], 'wakka', $pageA['tag']);
-                $textB = $pageB["html"] ?? $this->wiki->Format($pageB["body"], 'wakka', $pageB['tag']);
+                $textA = $this->formatPageWithOnlySimpleActions($pageA);
+                $textB = $this->formatPageWithOnlySimpleActions($pageB);
             } else {
                 $textA = _convert($pageA["body"], "ISO-8859-15");
                 $textB = _convert($pageB["body"], "ISO-8859-15");
@@ -47,5 +47,20 @@ class DiffService
         $config->setIsolatedDiffTags([]);
         $firstHtmlDiff = HtmlDiff::create($textA, $textB, $config);
         return $firstHtmlDiff->build();
+    }
+
+    private function formatPageWithOnlySimpleActions($page)
+    {
+        $actionsToKeep = [
+            "grid", "section", "col", "button", "configuration", "end", "label", "nav", "panel", 
+            "progressbar", "accordion", "currentpage", "titrepage", "valeur", "lang", "tocjs"
+        ];
+        $regexpr = "/(\{\{";
+        foreach($actionsToKeep as $action) $regexpr .= "(?!$action)";
+        $regexpr .= ".*?\}\})/s";
+        // move all complex actions (bazarliste etc...) into pre html so they are not fomatted
+        $code = preg_replace($regexpr, '""<pre class="ignored-action">$1</pre>""', $page["body"]);
+        
+        return $this->wiki->Format($code, 'wakka', $page['tag']);
     }
 }
