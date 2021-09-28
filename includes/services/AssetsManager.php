@@ -13,7 +13,12 @@ class AssetsManager
         'tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.js' => 'javascripts/vendor/spectrum-colorpicker2/spectrum.js',
         'tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.css' => 'styles/vendor/spectrum-colorpicker2/spectrum.css',
         'tools/bazar/libs/vendor/leaflet/leaflet.js' => 'javascripts/vendor/leaflet/leaflet.js',
+        'tools/bazar/libs/vendor/leaflet/leaflet-providers.js' => 'javascripts/vendor/leaflet-providers/leaflet-providers.js',
         'tools/bazar/libs/vendor/leaflet/leaflet.css' => 'styles/vendor/leaflet/leaflet.css',
+        'tools/bazar/libs/vendor/leaflet/markercluster/MarkerCluster.css' => 'styles/vendor/leaflet-markercluster/leaflet.markercluster.css',
+        'tools/bazar/libs/vendor/leaflet/markercluster/leaflet.markercluster.js' => 'javascripts/vendor/leaflet-markercluster/leaflet-markercluster.js',
+        'tools/bazar/libs/vendor/leaflet/fullscreen/Control.FullScreen.css' => 'styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css',
+        'tools/bazar/libs/vendor/leaflet/fullscreen/Control.FullScreen.js' => 'javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js',
     ];
 
     protected const PRODUCTION_PATH_MAPPING = [
@@ -38,7 +43,9 @@ class AssetsManager
 
     public function AddCSSFile($file, $conditionstart = '', $conditionend = '')
     {
-        if (!isset($GLOBALS['css'])) $GLOBALS['css'] = '';
+        if (!isset($GLOBALS['css'])) {
+            $GLOBALS['css'] = '';
+        }
 
         $file = $this->mapFilePath($file);
 
@@ -71,7 +78,9 @@ class AssetsManager
 
     public function AddJavascriptFile($file, $first = false, $module = false)
     {
-        if (!isset($GLOBALS['js'])) $GLOBALS['js'] = '';
+        if (!isset($GLOBALS['js'])) {
+            $GLOBALS['js'] = '';
+        }
 
         $revision = $this->wiki->GetConfigValue('yeswiki_release', null);
         $initChar =  (strpos($file, '?') !== false) ? '&' : '?';
@@ -83,8 +92,12 @@ class AssetsManager
             // include local files
             $code = "<script src='{$this->wiki->getBaseUrl()}/$file$rev'";
             if (!str_contains($GLOBALS['js'], $code) || $first) {
-                if (!$first) $code .= " defer";
-                if ($module) $code .= " type='module'";
+                if (!$first) {
+                    $code .= " defer";
+                }
+                if ($module) {
+                    $code .= " type='module'";
+                }
                 $code .= '></script>'."\n";
                 if ($first) {
                     $GLOBALS['js'] = $code . $GLOBALS['js'];
@@ -105,11 +118,15 @@ class AssetsManager
     private function mapFilePath($file)
     {
         // Handle backwar compatibility
-        if (array_key_exists($file, self::BACKWARD_PATH_MAPPING)) $file = self::BACKWARD_PATH_MAPPING[$file];
+        if (array_key_exists($file, self::BACKWARD_PATH_MAPPING)) {
+            $file = self::BACKWARD_PATH_MAPPING[$file];
+        }
 
         // Handle production environement
-        if ($this->wiki->GetConfigValue('debug') != 'yes') {            
-            if (array_key_exists($file, self::PRODUCTION_PATH_MAPPING)) $file = self::PRODUCTION_PATH_MAPPING[$file];
+        if ($this->wiki->GetConfigValue('debug') != 'yes') {
+            if (array_key_exists($file, self::PRODUCTION_PATH_MAPPING)) {
+                $file = self::PRODUCTION_PATH_MAPPING[$file];
+            }
         }
         
         return $file;
