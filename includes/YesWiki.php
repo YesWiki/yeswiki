@@ -61,6 +61,7 @@ class Wiki
     public $page;
     public $tag;
     public $parameter = array();
+    public $request;
     // current output used for actions/handlers/formatters
     public $output;
     public $interWiki = array();
@@ -1161,7 +1162,7 @@ class Wiki
         }
 
         $this->request = Request::createFromGlobals();
-        
+
         // Is this a special page ?
         if ($tag === 'api') {
             $this->RunAPI();
@@ -1195,8 +1196,7 @@ class Wiki
         }
 
         $context = new RequestContext();
-        $request = Request::createFromGlobals();
-        $context->fromRequest($request);
+        $context->fromRequest($this->request);
         
         // Use query string as the path (part before '&')
         $extract = explode('&', $context->getQueryString());
@@ -1217,10 +1217,10 @@ class Wiki
             // TODO put this elsewhere ?
             $attributes = $matcher->match($context->getPathInfo());
             if ($this->services->get(ApiService::class)->isAuthorized($attributes, $this->routes)) {
-                $request->attributes->add($attributes);
+                $this->request->attributes->add($attributes);
 
-                $controller = $controllerResolver->getController($request);
-                $arguments = $argumentResolver->getArguments($request, $controller);
+                $controller = $controllerResolver->getController($this->request);
+                $arguments = $argumentResolver->getArguments($this->request, $controller);
 
                 $response = call_user_func_array($controller, $arguments);
             } else {
