@@ -60,9 +60,6 @@ array_walk_recursive($data['action_groups'], 'test_print');
 // add label to catch for actionBuilderTextareaName
 $data['actionBuilderTextareaName'] = $GLOBALS['wiki']->config['actionbuilder_textarea_name'] ?? '';
 
-// baseURL
-$data['baseUrl'] = $GLOBALS['wiki']->config['base_url'];
-
 // ---------------
 // Render Template
 // ---------------

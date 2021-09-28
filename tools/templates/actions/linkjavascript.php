@@ -78,6 +78,12 @@ $yeswiki_javascripts .= isset($GLOBALS['js']) ? $GLOBALS['js'] : '';
 // on vide la variable globale pour le javascript
 $GLOBALS['js'] = '';
 
+// Globale wiki variable
+echo "<script>var wiki = {
+    locale: '{$this->config['default_language']}',
+    baseUrl: '{$this->config['base_url']}',
+    pageTag: '{$this->getPageTag()}',
+};</script>";
 
 // TODO: CSS a ajouter ailleurs?
 if (isset($GLOBALS['css']) && !empty($GLOBALS['css'])) {

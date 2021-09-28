@@ -44,8 +44,7 @@ $lang = array(
   'ACTION_BUILDER_UPDATE_CODE'   => _t('ACTION_BUILDER_UPDATE_CODE'),
   'ACTION_BUILDER_INSERT_CODE'   => _t('ACTION_BUILDER_INSERT_CODE'),
 );
-$js = 'var aceditorlang = '.json_encode($lang);
-$js .= ';var aceditorBaseUrl = '.json_encode($this->config['base_url']).';';
+$js = 'if (typeof wiki === \'undefined\'){var wiki = {lang:'.json_encode($lang).'};}else {wiki.lang = '.json_encode($lang).';}';
 
 $this->AddJavascript($js);
 $this->AddJavascriptFile('tools/aceditor/presentation/javascripts/ace-lib.js');

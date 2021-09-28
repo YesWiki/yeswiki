@@ -57,7 +57,7 @@ window.myapp = new Vue({
     editor: null,
     displayAdvancedParams: false,
     //
-    baseUrl: actionsBuilderData.baseUrl
+    baseUrl: wiki.baseUrl
   },
   computed: {
     actionGroup() { return this.currentGroupId ? this.actionGroups[this.currentGroupId] : {} },

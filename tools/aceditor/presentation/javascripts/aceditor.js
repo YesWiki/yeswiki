@@ -95,8 +95,8 @@ var SYNTAX = {
   // The actual plugin constructor
   function Plugin( element, options ) {
     this.element = element;
-    this.lang = aceditorlang;
-    this.baseUrl = aceditorBaseUrl;
+    this.lang = wiki.lang;
+    this.baseUrl = wiki.baseUrl;
 
     this.options = $.extend( {}, defaults, options) ;
 
@@ -313,29 +313,29 @@ var SYNTAX = {
     <form id="form-link">
       <div class="control-group form-group">
         <label class="radio-inline">
-          <input type="radio" name="linkType" id="linkint" value="internal" checked><span></span> `+aceditorlang['ACEDITOR_LINK_ADD_INTERNAL']+`
+          <input type="radio" name="linkType" id="linkint" value="internal" checked><span></span> `+wiki.lang['ACEDITOR_LINK_ADD_INTERNAL']+`
         </label>
         <label class="radio-inline">
-          <input type="radio" name="linkType" id="linkext" value="external"><span></span> `+aceditorlang['ACEDITOR_LINK_ADD_EXTERNAL']+`
+          <input type="radio" name="linkType" id="linkext" value="external"><span></span> `+wiki.lang['ACEDITOR_LINK_ADD_EXTERNAL']+`
         </label>
       </div>
       <div class="control-group form-group internal-link">
-        <label class="control-label">`+aceditorlang['ACEDITOR_LINK_PAGE_NAME']+`</label>
+        <label class="control-label">`+wiki.lang['ACEDITOR_LINK_PAGE_NAME']+`</label>
         <div class="controls">
           <input id="wikiurl-page-list-input" class="form-control" type="text" autocomplete="off" name="wikiurl" data-provide="typeahead" data-items="5" data-source='` +
                 JSON.stringify(pagelist) +
                 `' value="">
-          <span class="text-info">`+aceditorlang['ACEDITOR_LINK_HINT_NEW_PAGE_NAME']+`</span>
+          <span class="text-info">`+wiki.lang['ACEDITOR_LINK_HINT_NEW_PAGE_NAME']+`</span>
         </div>
       </div>
       <div class="control-group form-group external-link hide">
-        <label class="control-label">`+aceditorlang['ACEDITOR_LINK_EXTERNAL']+`</label>
+        <label class="control-label">`+wiki.lang['ACEDITOR_LINK_EXTERNAL']+`</label>
         <div class="controls">
           <input class="form-control" type="url" name="url" value="">
         </div>
       </div>
       <div class="control-group form-group">
-        <label class="control-label">`+aceditorlang['ACEDITOR_LINK_TEXT']+`</label>
+        <label class="control-label">`+wiki.lang['ACEDITOR_LINK_TEXT']+`</label>
         <div class="controls">
           <input class="form-control" type="text" name="text-url" value="` + aceditor.getSelectedText() + `">
         </div>
@@ -343,26 +343,26 @@ var SYNTAX = {
       <div class="radio">
         <label>
           <input type="radio" name="linkOptions" id="linkOptions1" value="int" checked><span></span>
-          `+aceditorlang['ACEDITOR_LINK_OPEN_IN_CURRENT_TAB']+` 
+          `+wiki.lang['ACEDITOR_LINK_OPEN_IN_CURRENT_TAB']+` 
         </label>
       </div>
       <div class="radio">
         <label>
           <input type="radio" name="linkOptions" id="linkOptions2" value="ext"><span></span>
-          `+aceditorlang['ACEDITOR_LINK_OPEN_IN_NEW_TAB']+`
+          `+wiki.lang['ACEDITOR_LINK_OPEN_IN_NEW_TAB']+`
         </label>
       </div>
       <div class="radio">
         <label>
           <input type="radio" name="linkOptions" id="linkOptions3" value="modal"><span></span>
-          `+aceditorlang['ACEDITOR_LINK_OPEN_IN_MODAL']+`
+          `+wiki.lang['ACEDITOR_LINK_OPEN_IN_MODAL']+`
         </label>
       </div>
       </form>
     </div>
     <div class="modal-footer">
-      <a href="#" class="btn btn-default" data-dismiss="modal">`+aceditorlang['ACEDITOR_LINK_CANCEL']+`</a>
-      <a href="#" class="btn btn-primary btn-insert"  data-dismiss="modal">`+aceditorlang['ACEDITOR_LINK_INSERT']+`</a>
+      <a href="#" class="btn btn-default" data-dismiss="modal">`+wiki.lang['ACEDITOR_LINK_CANCEL']+`</a>
+      <a href="#" class="btn btn-primary btn-insert"  data-dismiss="modal">`+wiki.lang['ACEDITOR_LINK_INSERT']+`</a>
     </div>
   </div>
 </div>
