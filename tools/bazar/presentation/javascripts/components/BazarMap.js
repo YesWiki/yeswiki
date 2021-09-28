@@ -62,27 +62,32 @@ Vue.component('BazarMap', {
     },
     createMarker(entry) {
       if (entry.marker) return entry.marker
-      entry.marker = L.marker([entry.bf_latitude, entry.bf_longitude], { riseOnHover: true });
-      entry.marker.setIcon(
-        L.divIcon({
-          className: `bazar-marker ${this.params.smallmarker}`,
-          iconSize: JSON.parse(this.params.iconSize),
-          iconAnchor: JSON.parse(this.params.iconAnchor),
-          html: `
-            <div class="entry-name">
-              <span style="background-color: ${entry.color}">
-                ${this.$root.field(entry, 'markerhover', 'bf_titre')}
-              </span>
-            </div>
-            <div class="bazar-entry" style="color: ${entry.color}">
-              <i class="${entry.icon || 'fa fa-bullseye'}"></i>
-            </div>`,
-        })
-      );
-      entry.marker.on('click', (ev) => {
-        this.selectedEntry = entry
-      });
-      return entry.marker
+      try {
+        entry.marker = L.marker([entry.bf_latitude, entry.bf_longitude], { riseOnHover: true });
+        entry.marker.setIcon(
+          L.divIcon({
+            className: `bazar-marker ${this.params.smallmarker}`,
+            iconSize: JSON.parse(this.params.iconSize),
+            iconAnchor: JSON.parse(this.params.iconAnchor),
+            html: `
+              <div class="entry-name">
+                <span style="background-color: ${entry.color}">
+                  ${this.$root.field(entry, 'markerhover', 'bf_titre')}
+                </span>
+              </div>
+              <div class="bazar-entry" style="color: ${entry.color}">
+                <i class="${entry.icon || 'fa fa-bullseye'}"></i>
+              </div>`,
+          })
+        );
+        entry.marker.on('click', (ev) => {
+          this.selectedEntry = entry
+        });
+        return entry.marker
+      } catch(e) {
+        entry.marker = null
+        console.error(`Entry ${entry.id_fiche} has invalid geolocation`, entry, e)
+      }
     }
   },
   watch: {
@@ -107,12 +112,13 @@ Vue.component('BazarMap', {
       let oldIds = oldVal.map(e => e.id_fiche)
       if (!this.arraysEqual(newIds, oldIds)) {
         this.$nextTick(function() {
-          let markers = this.entries.map(entry => this.createMarker(entry))
+          this.entries.forEach(entry => this.createMarker(entry))
+          let entries = this.entries.filter(entry => entry.marker) // remove entries without marker (prob error creating it)
           if (this.params.cluster) {
-            this.$refs.cluster.addLayers(markers)
+            this.$refs.cluster.addLayers(entries.map(entry => entry.marker))
           } else {
             oldVal.filter(entry => entry.marker).forEach(entry => entry.marker.remove())
-            this.entries.forEach(entry => {
+            entries.forEach(entry => {
               try { entry.marker.addTo(this.map) }
               catch(error) { console.error(`Entry ${entry.id_fiche} has invalid geolocation`, error) }
             })
