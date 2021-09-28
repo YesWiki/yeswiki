@@ -2,6 +2,7 @@
 
 namespace YesWiki\Core\Controller;
 
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use YesWiki\Bazar\Controller\EntryController;
@@ -125,13 +126,15 @@ class ApiController extends YesWikiController
     /**
      * @Route("/api/pages/{tag}",options={"acl":{"public"}})
      */
-    public function getPage($tag)
+    public function getPage(Request $request, $tag)
     {
+        $this->denyAccessUnlessGranted('read', $tag);
+        
         $pageManager = $this->getService(PageManager::class);
         $diffService = $this->getService(DiffService::class);
         $entryManager = $this->getService(EntryManager::class);
         $entryController = $this->getService(EntryController::class);
-        $page = $pageManager->getOne($tag, $this->request->get('time'));
+        $page = $pageManager->getOne($tag, $request->get('time'));
         if (!$page) return new ApiResponse(null, Response::HTTP_NOT_FOUND);
 
         $isEntry = $entryManager->isEntry($page['tag']);
@@ -140,7 +143,7 @@ class ApiController extends YesWikiController
         else
             $page['html'] = $this->wiki->Format($page["body"], 'wakka', $page['tag']);
         
-        if (!empty($_GET['includeDiff'])) {
+        if ($request->get('includeDiff')) {
             $prevVersion = $pageManager->getPreviousRevision($page);
             $page['commit_diff_html'] = $diffService->getPageDiff($prevVersion, $page, true);
             if (!$isEntry) $page['commit_diff_code'] = $diffService->getPageDiff($prevVersion, $page, false);

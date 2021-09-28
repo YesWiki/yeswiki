@@ -6,15 +6,9 @@ class HelloHandler extends YesWikiHandler
 {
     public function run()
     {
-        // check access to not give access to protected pages
-        if ($this->wiki->HasAccess("read")) {
-            $pageBody = $this->wiki->page['body'];
-            return $this->renderInSquelette('@helloworld/hello.twig', ['body' => $pageBody]);
-        } else {
-            return $this->renderInSquelette('@templates/alert-message-with-back.twig', [
-                'type' => 'info',
-                'message' => _t('HELLOWORLD_PAGE_NOT_ACCESSIBLE'),
-            ]);
-        }
+        $this->denyAccessUnlessGranted('read');
+        
+        $pageBody = $this->wiki->page['body'];
+        return $this->renderInSquelette('@helloworld/hello.twig', ['body' => $pageBody]);
     }
 }
