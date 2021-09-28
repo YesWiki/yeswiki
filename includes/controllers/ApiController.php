@@ -132,6 +132,8 @@ class ApiController extends YesWikiController
         $entryManager = $this->getService(EntryManager::class);
         $entryController = $this->getService(EntryController::class);
         $page = $pageManager->getById($id);
+        if (!$page) return new ApiResponse(null, 404);
+
         $isEntry = $entryManager->isEntry($page['tag']);
         if ($isEntry)
             $page['html'] = $entryController->view($page['tag'], $page['time'], false);
