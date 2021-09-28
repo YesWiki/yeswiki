@@ -6,10 +6,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
-      "test": "phpunit tests",
-      "post-install-cmd": [
-        "rm -f vendor/caxy/php-htmldiff/demo/*"
-      ]
+      "test": "phpunit tests"
     },
     "require": {
         "php": "^7.3",
@@ -28,7 +25,7 @@
         "symfony/http-foundation": "^5.1",
         "symfony/http-kernel": "^5.1",
         "tamtamchik/simple-flash": "^2.0",
-        "caxy/php-htmldiff": "^0.1.12"
+        "caxy/php-htmldiff": "^0.1.13"
     },
     "extra": {
         "installer-types": ["yeswiki-extension", "yeswiki-theme"],
