@@ -6,7 +6,10 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
-      "test": "phpunit tests"
+      "test": "phpunit tests",
+      "post-install-cmd": [
+        "rm -f vendor/caxy/php-htmldiff/demo/*"
+      ]
     },
     "require": {
         "php": "^7.3",
