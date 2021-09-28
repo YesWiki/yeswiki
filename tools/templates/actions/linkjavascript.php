@@ -82,6 +82,18 @@ $GLOBALS['js'] = '';
 echo "<script>var wiki = {
     locale: '{$this->config['default_language']}',
     baseUrl: '{$this->config['base_url']}',
+    url: function(url, params = {}) {
+        let result = wiki.baseUrl + url
+        result = result.replace('??', '?')
+        stringParams = []
+        for(let key in params) {
+            stringParams.push(key + '=' + encodeURIComponent(params[key]))
+        }
+        if (stringParams.length) {
+            result += '&' + stringParams.join('&')
+        }
+        return result;
+    },
     pageTag: '{$this->getPageTag()}',
 };</script>";
 

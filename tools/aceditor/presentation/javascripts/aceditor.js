@@ -96,7 +96,7 @@ var SYNTAX = {
   function Plugin( element, options ) {
     this.element = element;
     this.lang = wiki.lang;
-    this.baseUrl = wiki.baseUrl;
+    this.wiki = wiki;
 
     this.options = $.extend( {}, defaults, options) ;
 
@@ -237,7 +237,6 @@ var SYNTAX = {
 
 
       // ---- BUTTONS BINDING --------
-      var baseUrl = this.baseUrl;
       toolbar.find('a.aceditor-btn').each(function() {
         $(this).on('click', function(e){
           e.preventDefault();
@@ -279,7 +278,7 @@ var SYNTAX = {
             if(!pagelist){
               var pagelist = [];
               $.ajax({
-                url: baseUrl+"root/json&demand=pages",
+                url: wiki.url("?root/json", {demand: "pages"}),
                 async:true,
                 type: 'GET',
                 cache: true,

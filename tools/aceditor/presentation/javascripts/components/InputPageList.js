@@ -2,9 +2,8 @@ export default {
   props: [ 'value', 'config' ],
   computed: {
     pageList() {
-      var baseUrl = wiki.baseUrl;
       $.ajax({
-        url: baseUrl + `root/json`+(baseUrl.includes('?') ? '&' : '?')+`demand=pages`,
+        url: wiki.url('?root/json', {demand: 'pages'}),
         async: true,
         dataType: "json",
         type: 'GET',

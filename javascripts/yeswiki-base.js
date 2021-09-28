@@ -56,7 +56,6 @@ var DATATABLE_OPTIONS = {
   ]
 }
 
-
 function toastMessage(message, duration = 3000, toastClass = 'alert alert-secondary-1') {
   var $toast = $('<div class="toast-message"><div class="' + toastClass + '">' + message + '</div></div>');
   $('body').after($toast);
