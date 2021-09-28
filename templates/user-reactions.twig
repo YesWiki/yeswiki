@@ -1,0 +1,13 @@
+<h2>{{ _t('REACTION_YOUR_REACTIONS') }}</h2>
+{% if userReactions %}
+<ul class="timeline">
+{% for k, reactions in userReactions %}
+    {% for key, userReaction in reactions.reactions %}
+    <li>
+        <h4>{{ userReaction.date }}</h4>
+        <p>{{_t('REACTION_YOU_VOTED')}} <span class="mini-react">{{ reactions.parameters.images[userReaction.id]|raw }} {{ reactions.parameters.labels[userReaction.id] }}</span> {{_t('REACTION_FOR_POLL')}} <strong>{{ reactions.parameters.title }}</strong> {{_t('REACTION_FROM_PAGE')}} <a href="{{ url({ tag: userReaction.pageTag}) }}">{{ userReaction.pageTag }}</a></p>
+    </li>
+    {% endfor %}
+{% endfor %}
+</ul>
+{% endif %}
