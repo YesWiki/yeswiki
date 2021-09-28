@@ -124,6 +124,13 @@
   border: none;
   background: none;
 }
+.preview-container pre.ignored-action {
+  font-size: .9em;
+  background-color: var(--neutral-color);
+  color: var(--neutral-light-color);
+  padding: 1rem;
+  margin: 0;
+}
 ins {
   text-decoration: none !important;
 }
