@@ -1,46 +1,20 @@
 <?php
 /*
 */
+
+use YesWiki\Security\Controller\SecurityController;
 if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
 if ($this->HasAccess('write') && $this->HasAccess('read')) {
-    if (isset($this->config['password_for_editing'])
-        and !empty($this->config['password_for_editing'])
-        and !$this->GetUser()
-    ) {
-        if (!isset($_POST['password_for_editing'])
-            or $_POST['password_for_editing'] != $this->config['password_for_editing']
-        ) {
-            echo $this->Header();
-            if (isset($_POST['password_for_editing'])
-                and $_POST['password_for_editing'] != $this->config['password_for_editing']) {
-                echo '<div class="alert alert-danger">Mauvais mot de passe.</div>';
-            }
-            if (isset($this->config['password_for_editing_message']) and !empty($this->config['password_for_editing_message'])) {
-                echo '<p class="password_for_editing_message">'.$this->config['password_for_editing_message'].'</p>'."\n";
-            }
-            echo '<form method="post" action="'.$this->href(testUrlInIframe() ? 'editiframe' : 'edit', $this->GetPageTag()).'" class="form-inline">
-      <div>
-        <label for="password_for_editing">'._t('HASHCASH_GENERAL_PASSWORD').'</label>
-        <input type="password" class="form-control" id="password_for_editing" name="password_for_editing">';
-            // pour l'edition d'une page de l'historique
-            if (isset($_REQUEST['time'])) {
-                echo '<input type="hidden" name="time" value="'
-                  .htmlspecialchars($_REQUEST['time']).'">';
-            }
-            if (isset($_REQUEST['previous'])) {
-                echo '<input type="hidden" name="previous" value="'
-                  .htmlspecialchars($_REQUEST['previous']).'" />'."\n";
-            }
-
-            echo '
-      <button type="submit" class="btn btn-primary">'._t('HASHCASH_SEND').'</button></div>
-    </form>';
-            echo $this->Footer();
-            exit;
-        }
+    $securityController = $this->services->get(SecurityController::class);
+    list($state,$message) = $securityController->isGrantedPasswordForEditing();
+    if (!$state){
+        echo $this->Header().
+            $message.
+            $this->Footer();
+        exit;
     }
   
     if ($this->config['use_hashcash']) {
