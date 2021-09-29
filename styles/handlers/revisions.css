@@ -72,6 +72,7 @@
   /* Display the nav in black */
   --primary-color: var(--neutral-color);
   --link-color: var(--neutral-color);
+  cursor: pointer;
 }
 .view-types-selector .code-or-preview {
   flex: 1 auto;
@@ -121,7 +122,7 @@ body, #yw-header, #yw-main, #yw-footer {
 }
 
 .preview-container pre {
-  white-space: pre-wrap; /* breaks line so we don't need to horizontally scroll */
+  white-space: normal; /* breaks line so we don't need to horizontally scroll */
   font-family: monospace;
   font-size: 1rem;
   padding: 0;
@@ -137,13 +138,37 @@ body, #yw-header, #yw-main, #yw-footer {
 }
 ins {
   text-decoration: none !important;
+  display: inline-block;
+}
+pre ins {
+  display: inline;
 }
 ins:not(.mod) {
   color: white !important;
   background-color: #4ea952 !important;
 }
+ins:not(.mod) a {
+  color: white !important;
+}
 del {
+  display: inline-block;
   color: white !important;
   background-color: red !important;
   text-decoration: line-through !important;
+}
+ins img, del img {
+  margin: 5px;
+}
+
+.preview-container table.entry-code td {
+  vertical-align: top;
+}
+.preview-container table.entry-code td.key {
+  font-weight: bold;
+}
+.preview-container table.entry-code td.key pre {
+  white-space: pre;
+}
+.preview-container table.entry-code td + td {
+  padding-left: 1rem;
 }

@@ -136,22 +136,26 @@ class ApiController extends YesWikiController
         $entryController = $this->getService(EntryController::class);
         $page = $pageManager->getOne($tag, $request->get('time'));
         if (!$page) return new ApiResponse(null, Response::HTTP_NOT_FOUND);
-
-        $isEntry = $entryManager->isEntry($page['tag']);
-        if ($isEntry)
-            $page['html'] = $entryController->view($page['tag'], $page['time'], false);
-        else
-            $page['html'] = $this->wiki->Format($page["body"], 'wakka', $page['tag']);
         
+        if ($entryManager->isEntry($page['tag'])) {
+            $page['html'] = $entryController->view($page['tag'], $page['time'], false);
+            $page['code'] = $diffService->formatJsonCodeIntoHtmlTable($page);
+        } else {
+            $page['html'] = $this->wiki->Format($page["body"], 'wakka', $page['tag']);
+            $page['code'] = $page['body'];
+        }
+
         if ($request->get('includeDiff')) {
             $prevVersion = $pageManager->getPreviousRevision($page);
+            if (!$prevVersion) $prevVersion = ["tag" => $tag, "body" => "", "time" => null];
             $page['commit_diff_html'] = $diffService->getPageDiff($prevVersion, $page, true);
-            if (!$isEntry) $page['commit_diff_code'] = $diffService->getPageDiff($prevVersion, $page, false);
+            $page['commit_diff_code'] = $diffService->getPageDiff($prevVersion, $page, false);
 
             $lastVersion = $pageManager->getOne($page['tag']);       
-            $page['diff_html'] = $diffService->getPageDiff($page, $lastVersion, true);
-            if (!$isEntry) $page['diff_code'] = $diffService->getPageDiff($page, $lastVersion, false);
+            $page['diff_html'] = $diffService->getPageDiff($lastVersion, $page, true);
+            $page['diff_code'] = $diffService->getPageDiff($lastVersion, $page, false);
         }
+
         return new ApiResponse($page);
     }
 }

@@ -52,7 +52,7 @@ new Vue({
         })
         $.getJSON(url, (data) => {
           this.selectedRevision.current_html = data.html
-          this.selectedRevision.current_code = data.body
+          this.selectedRevision.current_code = data.code
           this.selectedRevision.commit_diff_html = data.commit_diff_html
           this.selectedRevision.commit_diff_code = data.commit_diff_code
           this.selectedRevision.diff_html = data.diff_html

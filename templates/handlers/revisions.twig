@@ -56,9 +56,9 @@
           :class="{active: selectedViewType == type}"
           @click="selectedViewType = type"
           v-show="type != 'diff' || selectedRevision != lastRevision">
-          <a href="#" v-text="label"></a>
+          <a v-text="label"></a>
       </li>
-      <label class="code-or-preview" v-if="!isEntry"> 
+      <label class="code-or-preview"> 
         <input type="checkbox" v-model="displayWikiCode" />
         <span>{{ _t('DISPLAY_WIKI_CODE') }}</span>
       </span>
@@ -69,14 +69,15 @@
       <spinner-loader v-if="!selectedRevision.fullyRetrieved"></spinner-loader>
 
       {# View Types display #}
-      <template v-else v-for="label, type in viewTypes">
-        <template v-if="selectedViewType == type">
-          <pre v-if="displayWikiCode" class="preview-content" v-html="selectedRevision[`${type}_code`]"></pre>
-          <template v-else>
-            <iframe v-if="type == 'current'" :src="`/?${selectedRevision.tag}/render&time=${selectedRevision.phpTime}`" width="100%" height="800px" frameborder="0"></iframe>
-            <div v-else class="preview-content" v-html="selectedRevision[`${type}_html`]"></div>
-          </template>          
+      <template v-else>
+        <template v-if="displayWikiCode">
+          <div v-if="isEntry" class="preview-content" v-html="selectedRevision[`${selectedViewType}_code`]"></div>
+          <pre v-else class="preview-content" v-html="selectedRevision[`${selectedViewType}_code`]"></pre>
         </template>
+        <template v-else>
+          <iframe v-if="selectedViewType == 'current' && !isEntry" :src="`/?${selectedRevision.tag}/render&time=${selectedRevision.phpTime}`" width="100%" height="800px" frameborder="0"></iframe>
+          <div v-else class="preview-content" v-html="selectedRevision[`${selectedViewType}_html`]"></div>
+        </template>   
       </template>      
     </div>
   </template>

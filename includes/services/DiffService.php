@@ -26,11 +26,11 @@ class DiffService
         $isEntry = !empty($tag) && $this->entryManager->isEntry($tag);
         if ($isEntry) {
             if ($compareRender) {
-                $textA = $this->entryController->view($tag, $pageA['time'], false);
-                $textB = $this->entryController->view($tag, $pageB['time'], false);
+                $textA = $pageA['time'] ? $this->entryController->view($tag, $pageA['time'], false) : "";
+                $textB = $pageB['time'] ? $this->entryController->view($tag, $pageB['time'], false) : "";
             } else {
-                $textA = $pageA['body'];
-                $textB = $pageB['body'];
+                $textA = $this->formatJsonCodeIntoHtmlTable($pageA);
+                $textB = $this->formatJsonCodeIntoHtmlTable($pageB);
             }
         } else {
             if ($compareRender) {
@@ -44,7 +44,7 @@ class DiffService
 
         $config = new HtmlDiffConfig();
         $config->setKeepNewLines(true);
-        $config->setIsolatedDiffTags([]);
+        if (!$isEntry) $config->setIsolatedDiffTags([]);
         $firstHtmlDiff = HtmlDiff::create($textA, $textB, $config);
         return $firstHtmlDiff->build();
     }
@@ -62,5 +62,17 @@ class DiffService
         $code = preg_replace($regexpr, '""<pre class="ignored-action">$1</pre>""', $page["body"]);
         
         return $this->wiki->Format($code, 'wakka', $page['tag']);
+    }
+
+    public function formatJsonCodeIntoHtmlTable($page)
+    {
+        $result = json_decode($page['body'], true) ?? [];
+        ksort($result);
+        $html = "<table class='entry-code'><tbody>";
+        foreach($result as $key => $value) {
+            $html .= "<tr><td class='key'><pre>$key</pre></td><td><pre>$value</pre></td></tr>";
+        }
+        $html .= "</tbody></table>";
+        return $html;
     }
 }
