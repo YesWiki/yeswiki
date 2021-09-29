@@ -178,3 +178,24 @@
   right: 0;
   z-index: 1000;
 }
+
+.leaflet-container {
+  font: inherit !important;
+}
+.leaflet-control-container .leaflet-bar.leaflet-control {
+  border:none;
+  margin-top: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.leaflet-control-container .leaflet-bar.leaflet-control a {
+  font-size: 18px !important;
+  font-weight: normal;
+  text-indent: 0;
+}
+.leaflet-control-container .leaflet-control-zoom-fullscreen.fullscreen-icon {
+  background-image: none;
+}
+.leaflet-control-container .leaflet-control-zoom-fullscreen.fullscreen-icon:before {
+  content: "⇱";
+  font-weight: 600;
+}
