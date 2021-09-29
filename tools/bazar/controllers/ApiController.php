@@ -229,6 +229,9 @@ class ApiController extends YesWikiController
             ob_start(); // to catch error messages
             $bazatListService = $this->getService(BazarListService::class);
             $forms = $bazatListService->getForms([]);
+            $formattedGet = array_map(function ($value){
+                return ($value === 'true') ? true : (($value === 'false') ? false : $value);
+            },$_GET);
             $entries = $bazatListService->getEntries(
                 [
                     'user' => null,
@@ -239,10 +242,10 @@ class ApiController extends YesWikiController
                     'nb' =>  null,
                     'colorfield ' => null,
                     'iconfield ' => null,
-                ] + $_GET,
+                ] + $formattedGet,
                 $forms
             );
-            $filters = $bazatListService->formatFilters($_GET, $entries, $forms);
+            $filters = $bazatListService->formatFilters($formattedGet, $entries, $forms);
             
             // Basic fields
             $fieldList = ['id_fiche', 'bf_titre'];

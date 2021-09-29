@@ -183,7 +183,7 @@ class BazarListService
                 (isset($options['titles'][$i]) && !empty($options['titles'][$i])) ?
                     $options['titles'][$i] : $list['titre_liste'];
 
-            $filters[$idkey]['collapsed'] = ($i != 0) && !($options['groupsexpanded'] === true || $options['groupsexpanded'] === 'true');
+            $filters[$idkey]['collapsed'] = ($i != 0) && !$options['groupsexpanded'];
 
             $filters[$idkey]['index'] = $i;
 
