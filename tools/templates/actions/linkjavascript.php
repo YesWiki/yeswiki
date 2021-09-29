@@ -90,7 +90,8 @@ echo "<script>var wiki = {
             stringParams.push(key + '=' + encodeURIComponent(params[key]))
         }
         if (stringParams.length) {
-            result += '&' + stringParams.join('&')
+            result += result.includes('?') ? '&' : '?';
+            result += stringParams.join('&')
         }
         return result;
     },
