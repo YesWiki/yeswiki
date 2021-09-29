@@ -166,7 +166,8 @@ class EntryController extends YesWikiController
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FORM_AVEC_CET_ID') . ' : \'' . $formId . '\'</div>';
         }
 
-        if (isset($_POST['bf_titre'])) {
+        list($state,$error) = $this->securityController->checkCaptchaBeforeSave('entry');
+        if ($state && isset($_POST['bf_titre'])) {
             $entry = $this->entryManager->create($formId, $_POST);
             if (empty($redirectUrl)) {
                 $redirectUrl = $this->wiki->Href(
@@ -187,7 +188,9 @@ class EntryController extends YesWikiController
             'form' => $form,
             'renderedInputs' => $this->getRenderedInputs($form),
             'showConditions' => $form['bn_condition'] !== '' && !isset($_POST['accept_condition']),
-            'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && isset($_POST['password_for_editing']) ? $_POST['password_for_editing'] : ''
+            'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && isset($_POST['password_for_editing']) ? $_POST['password_for_editing'] : '',
+            'error' => $error,
+            'captchaField' => $this->securityController->renderCaptchaField(),
         ]);
     }
 
