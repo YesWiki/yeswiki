@@ -11,16 +11,19 @@ use Caxy\HtmlDiff\HtmlDiffConfig;
 
 class DiffService
 {
-    public function __construct(Wiki $wiki, PageManager $pageManager, EntryManager $entryManager, 
-                                EntryController $entryController)
-    {
+    public function __construct(
+        Wiki $wiki,
+        PageManager $pageManager,
+        EntryManager $entryManager,
+        EntryController $entryController
+    ) {
         $this->wiki = $wiki;
         $this->pageManager = $pageManager;
         $this->entryManager = $entryManager;
         $this->entryController = $entryController;
     }
 
-    function getPageDiff($pageA, $pageB, $compareRender = false)
+    public function getPageDiff($pageA, $pageB, $compareRender = false)
     {
         $tag = $pageA['tag'];
         $isEntry = !empty($tag) && $this->entryManager->isEntry($tag);
@@ -44,7 +47,9 @@ class DiffService
 
         $config = new HtmlDiffConfig();
         $config->setKeepNewLines(true);
-        if (!$isEntry) $config->setIsolatedDiffTags([]);
+        if (!$isEntry) {
+            $config->setIsolatedDiffTags([]);
+        }
         $firstHtmlDiff = HtmlDiff::create($textA, $textB, $config);
         return $firstHtmlDiff->build();
     }
@@ -52,11 +57,13 @@ class DiffService
     private function formatPageWithOnlySimpleActions($page)
     {
         $actionsToKeep = [
-            "grid", "section", "col", "button", "configuration", "end", "label", "nav", "panel", 
+            "grid", "section", "col", "button", "configuration", "end", "label", "nav", "panel",
             "progressbar", "accordion", "currentpage", "titrepage", "valeur", "lang", "tocjs"
         ];
         $regexpr = "/(\{\{";
-        foreach($actionsToKeep as $action) $regexpr .= "(?!$action)";
+        foreach ($actionsToKeep as $action) {
+            $regexpr .= "(?!$action)";
+        }
         $regexpr .= ".*?\}\})/s";
         // move all complex actions (bazarliste etc...) into pre html so they are not fomatted
         $code = preg_replace($regexpr, '""<pre class="ignored-action">$1</pre>""', $page["body"]);
@@ -69,8 +76,8 @@ class DiffService
         $result = json_decode($page['body'], true) ?? [];
         ksort($result);
         $html = "<table class='entry-code'><tbody>";
-        foreach($result as $key => $value) {
-            $html .= "<tr><td class='key'><pre>$key</pre></td><td><pre>$value</pre></td></tr>";
+        foreach ($result as $key => $value) {
+            $html .= "<tr><td class='key'><pre>$key</pre></td><td><pre>".(is_scalar($value) ? $value : json_encode($value))."</pre></td></tr>";
         }
         $html .= "</tbody></table>";
         return $html;

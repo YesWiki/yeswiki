@@ -128,6 +128,7 @@ class ApiController extends YesWikiController
      */
     public function getPage(Request $request, $tag)
     {
+        ob_start(); // to catch error messages
         $this->denyAccessUnlessGranted('read', $tag);
         
         $pageManager = $this->getService(PageManager::class);
@@ -135,7 +136,9 @@ class ApiController extends YesWikiController
         $entryManager = $this->getService(EntryManager::class);
         $entryController = $this->getService(EntryController::class);
         $page = $pageManager->getOne($tag, $request->get('time'));
-        if (!$page) return new ApiResponse(null, Response::HTTP_NOT_FOUND);
+        if (!$page) {
+            return new ApiResponse(null, Response::HTTP_NOT_FOUND);
+        }
         
         if ($entryManager->isEntry($page['tag'])) {
             $page['html'] = $entryController->view($page['tag'], $page['time'], false);
@@ -147,15 +150,19 @@ class ApiController extends YesWikiController
 
         if ($request->get('includeDiff')) {
             $prevVersion = $pageManager->getPreviousRevision($page);
-            if (!$prevVersion) $prevVersion = ["tag" => $tag, "body" => "", "time" => null];
+            if (!$prevVersion) {
+                $prevVersion = ["tag" => $tag, "body" => "", "time" => null];
+            }
             $page['commit_diff_html'] = $diffService->getPageDiff($prevVersion, $page, true);
             $page['commit_diff_code'] = $diffService->getPageDiff($prevVersion, $page, false);
 
-            $lastVersion = $pageManager->getOne($page['tag']);       
+            $lastVersion = $pageManager->getOne($page['tag']);
             $page['diff_html'] = $diffService->getPageDiff($lastVersion, $page, true);
             $page['diff_code'] = $diffService->getPageDiff($lastVersion, $page, false);
         }
 
-        return new ApiResponse($page);
+        $errors = ob_get_contents();
+        ob_end_clean();
+        return new ApiResponse((empty($errors) ? [] : ['errors' => $errors])+$page);
     }
 }
