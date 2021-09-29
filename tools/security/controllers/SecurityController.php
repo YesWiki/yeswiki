@@ -96,12 +96,14 @@ class SecurityController extends YesWikiController
 
     /**
      * check captcha before save edit
+     * @param string $mode 'page' or 'entry'
      * @return array [bool $state,string $error]
      */
-    public function checkCaptchaBeforeSave():array
+    public function checkCaptchaBeforeSave(string $mode = 'page'):array
     {
         if ($this->params->get('use_captcha')) {
-            if (isset($_POST['submit']) && $_POST['submit'] == 'Sauver') {
+            if (($mode != 'entry' && isset($_POST['submit']) && $_POST['submit'] == 'Sauver')
+                || ($mode == 'entry' && !empty($_POST['bf_titre']))) {
                 if (!defined("CAPTCHA_INCLUDE")){
                     define("CAPTCHA_INCLUDE", true);
                 }
@@ -112,25 +114,46 @@ class SecurityController extends YesWikiController
                 if (empty($_POST['captcha'])) {
                     $error = '<div class="alert alert-danger"><a href="#" data-dismiss="alert" class="close">&times;</a>'._t('CAPTCHA_ERROR_PAGE_UNSAVED').'</div>';
                     $_POST['submit'] = '';
+                    if ($mode == 'entry') unset($_POST['bf_titre']);
                 } elseif (!empty($_POST['captcha'])) {
                     $wdcrypt = cryptWord($_POST['captcha']);
                     if ($wdcrypt != $_POST['captcha_hash']) {
                         $error = '<div class="alert alert-danger"><a href="#" data-dismiss="alert" class="close">&times;</a>'._t('CAPTCHA_ERROR_WRONG_WORD').'</div>';
                         $_POST['submit'] = '';
+                        if ($mode == 'entry') unset($_POST['bf_titre']);
                     }
                 }
+                unset($_POST['captcha']);
+                unset($_POST['captcha_hash']);
             }
         }
 
         return [empty($error), $error ?? null];
     }
-
+    
     /**
      * render captcha if needed
      * @param string &$output
      */
     public function renderCaptcha(string &$output)
     {
+        if ($this->params->get('use_captcha')) {
+            $champsCaptcha = $this->renderCaptchaField();
+            $output = preg_replace(
+                '/\<div class="form-actions">.*<button type=\"submit\" name=\"submit\"/Uis',
+                $champsCaptcha.'<div class="form-actions">'."\n".'<button type="submit" name="submit"',
+                $output
+            );
+        }
+    }
+
+    /**
+     * render captcha field if needed
+     * @return string
+     */
+    public function renderCaptchaField(): string
+    {
+        $champsCaptcha = '';
         if ($this->params->get('use_captcha')) {
             if (!defined("CAPTCHA_INCLUDE")){
                 define("CAPTCHA_INCLUDE", true);
@@ -147,11 +170,7 @@ class SecurityController extends YesWikiController
                     'baseUrl' => $this->wiki->getBaseUrl(),
                     'crypt' => $crypt,
                 ]);
-            $output = preg_replace(
-                '/\<div class="form-actions">.*<button type=\"submit\" name=\"submit\"/Uis',
-                $champsCaptcha.'<div class="form-actions">'."\n".'<button type="submit" name="submit"',
-                $output
-            );
         }
+        return $champsCaptcha;
     }
 }

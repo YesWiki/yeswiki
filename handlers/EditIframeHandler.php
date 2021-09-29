@@ -17,6 +17,9 @@ class EditIframeHandler extends YesWikiHandler
         if ($this->wiki->HasAccess('write') && $this->wiki->HasAccess('read')) {
                     
             $securityController = $this->getService(SecurityController::class);
+            if ($this->isWikiHibernated()){
+                $buffer = $this->getMessageWhenHibernated();
+            } else {
             list($state,$message) = $securityController->isGrantedPasswordForEditing();
             if (!$state){
                 $buffer = $message;
@@ -31,6 +34,7 @@ class EditIframeHandler extends YesWikiHandler
                     $buffer = $this->getService(Performer::class)->run('edit', 'handler', []);
                     $buffer = ob_get_contents().$buffer;
                     ob_end_clean();
+                    }
                 }
             }
 

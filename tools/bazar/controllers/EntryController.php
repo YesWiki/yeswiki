@@ -196,7 +196,8 @@ class EntryController extends YesWikiController
         $entry = $this->entryManager->getOne($entryId);
         $form = $this->formManager->getOne($entry['id_typeannonce']);
 
-        if (isset($_POST['bf_titre'])) {
+        list($state,$error) = $this->securityController->checkCaptchaBeforeSave('entry');
+        if ($state && isset($_POST['bf_titre'])) {
             $entry = $this->entryManager->update($entryId, $_POST);
             if (empty($redirectUrl)) {
                 $redirectUrl = $this->wiki->Href(testUrlInIframe(), '', [
@@ -215,7 +216,9 @@ class EntryController extends YesWikiController
             'entryId' => $entryId,
             'renderedInputs' => $this->getRenderedInputs($form, $entry),
             'showConditions' => false,
-            'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && isset($_POST['password_for_editing']) ? $_POST['password_for_editing'] : ''
+            'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && isset($_POST['password_for_editing']) ? $_POST['password_for_editing'] : '',
+            'error' => $error,
+            'captchaField' => $this->securityController->renderCaptchaField(),
         ]);
     }
 
