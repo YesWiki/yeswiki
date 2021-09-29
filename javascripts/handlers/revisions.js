@@ -1,4 +1,4 @@
-import SpinnerLoader from '/tools/bazar/presentation/javascripts/components/SpinnerLoader.js'
+import SpinnerLoader from '../../tools/bazar/presentation/javascripts/components/SpinnerLoader.js'
 
 Vue.prototype.window = window
 
