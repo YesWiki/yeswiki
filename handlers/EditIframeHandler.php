@@ -2,7 +2,9 @@
 
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\Service\Performer;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Security\Controller\SecurityController;
 
 class EditIframeHandler extends YesWikiHandler
 {
@@ -12,17 +14,24 @@ class EditIframeHandler extends YesWikiHandler
         $header = explode('<body', $this->wiki->Header());
         $output = $header[0];
 
-        if ($this->wiki->HasAccess('write')) {
-            $entryManager = $this->getService(EntryManager::class);
-            $entryController = $this->getService(EntryController::class);
-
-            if ($entryManager->isEntry($this->wiki->GetPageTag())) {
-                $buffer = $entryController->update($this->wiki->GetPageTag());
+        if ($this->wiki->HasAccess('write') && $this->wiki->HasAccess('read')) {
+                    
+            $securityController = $this->getService(SecurityController::class);
+            list($state,$message) = $securityController->isGrantedPasswordForEditing();
+            if (!$state){
+                $buffer = $message;
             } else {
-                ob_start();
-                echo $this->wiki->Run($this->wiki->getPageTag(), 'edit');
-                $buffer = ob_get_contents();
-                ob_end_clean();
+                $entryManager = $this->getService(EntryManager::class);
+                $entryController = $this->getService(EntryController::class);
+
+                if ($entryManager->isEntry($this->wiki->GetPageTag())) {
+                    $buffer = $entryController->update($this->wiki->GetPageTag());
+                } else {
+                    ob_start();
+                    $buffer = $this->getService(Performer::class)->run('edit', 'handler', []);
+                    $buffer = ob_get_contents().$buffer;
+                    ob_end_clean();
+                }
             }
 
             $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
