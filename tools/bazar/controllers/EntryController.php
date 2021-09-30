@@ -93,8 +93,9 @@ class EntryController extends YesWikiController
                 foreach ($form['prepared'] as $field) {
                     if ($field instanceof BazarField) {
                         // TODO handle html_outside_app mode for images
-                        if (!in_array($field->getPropertyName(), $this->fieldsToExclude()))
+                        if (!in_array($field->getPropertyName(), $this->fieldsToExclude())) {
                             $renderedEntry .= $field->renderStaticIfPermitted($entry);
+                        }
                     }
                 }
             } else {
@@ -114,7 +115,9 @@ class EntryController extends YesWikiController
         // Format owner
         $owner = $this->wiki->GetPageOwner($entryId);
         $isOwnerIpAddress = preg_replace('/([0-9]|\.)/', '', $owner) == '';
-        if ($isOwnerIpAddress || !$owner) $owner = "Utilisateur Inconu";
+        if ($isOwnerIpAddress || !$owner) {
+            $owner = "Utilisateur Inconu";
+        }
         if (!empty($this->config['sso_config']) && isset($this->config['sso_config']['bazar_user_entry_id']) && $this->pageManager->getOne($owner)) {
             $owner = $this->wiki->Format('[[' . $this->wiki->GetPageOwner($entryId) . ' ' . $this->wiki->GetPageOwner($entryId) . ']]');
         }
@@ -135,7 +138,8 @@ class EntryController extends YesWikiController
         ]);
     }
 
-    private function fieldsToExclude() {
+    private function fieldsToExclude()
+    {
         return isset($_GET['excludeFields']) ? explode(',', $_GET['excludeFields']) : [];
     }
 
