@@ -7,8 +7,7 @@ $output .= $header[0] . '<body class="yeswiki-iframe-body">'."\n"
     .'<div class="container">'."\n"
     .'<div class="yeswiki-page-widget page-widget page" '.$this->Format('{{doubleclic iframe="1"}}').'>'."\n";
 
-if (!empty($_GET['content'])) $this->page['body'] = $_GET['content']; // fake Page for actions and handlers
-elseif (!empty($_GET['time'])) $this->page = $this->LoadPage($this->tag, $_GET['time']);
+$this->page['body'] = $_GET['content']; // fake Page for actions and handlers
 
 $output .= $this->Format($this->page['body']);
 $output .= '</div><!-- end .page-widget -->'."\n";
