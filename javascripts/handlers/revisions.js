@@ -20,8 +20,8 @@ new Vue({
   computed: {
     firstRevision() { return this.revisions[this.revisions.length - 1] },
     lastRevision() { return this.revisions[0] },
-    restoreUrl() { return wiki.url(`${this.selectedRevision.tag}/revisions`, { restoreRevisionId: this.selectedRevision.id }) },
-    previewUrl() { return wiki.url(`${this.selectedRevision.tag}/iframe`, { time: this.selectedRevision.phpTime }) }
+    restoreUrl() { return wiki.url(`${wiki.pageTag}/revisions`, { restoreRevisionId: this.selectedRevision.id }) },
+    previewUrl() { return wiki.url(`${wiki.pageTag}/iframe`, { time: this.selectedRevision.phpTime }) }
   },
   mounted() {
     this.isEntry = this.$el.dataset.isEntry == "1"
@@ -47,7 +47,7 @@ new Vue({
   watch: {
     selectedRevision() {
       if (this.selectedRevision && !this.selectedRevision.fullyRetrieved) {
-        let url = wiki.url(`?api/pages/${this.selectedRevision.tag}`, {
+        let url = wiki.url(`?api/pages/${wiki.pageTag}`, {
           time: this.selectedRevision.phpTime, 
           includeDiff: true
         })
