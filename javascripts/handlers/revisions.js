@@ -21,7 +21,7 @@ new Vue({
     firstRevision() { return this.revisions[this.revisions.length - 1] },
     lastRevision() { return this.revisions[0] },
     restoreUrl() { return wiki.url(`${wiki.pageTag}/revisions`, { restoreRevisionId: this.selectedRevision.id }) },
-    previewUrl() { return wiki.url(`${wiki.pageTag}/iframe`, { time: this.selectedRevision.phpTime }) }
+    previewUrl() { return wiki.url(`${wiki.pageTag}/iframe`, { time: this.selectedRevision.phpTime, iframelinks: 0 }) }
   },
   mounted() {
     this.isEntry = this.$el.dataset.isEntry == "1"
