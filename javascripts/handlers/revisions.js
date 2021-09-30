@@ -20,7 +20,8 @@ new Vue({
   computed: {
     firstRevision() { return this.revisions[this.revisions.length - 1] },
     lastRevision() { return this.revisions[0] },
-    restoreUrl() { return `${document.location.search}&restoreRevisionId=${this.selectedRevision.id}` }
+    restoreUrl() { return wiki.url(`${this.selectedRevision.tag}/revisions`, { restoreRevisionId: this.selectedRevision.id }) },
+    previewUrl() { return wiki.url(`${this.selectedRevision.tag}/iframe`, { time: this.selectedRevision.phpTime }) }
   },
   mounted() {
     this.isEntry = this.$el.dataset.isEntry == "1"
