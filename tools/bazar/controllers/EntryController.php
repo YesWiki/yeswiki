@@ -467,7 +467,7 @@ class EntryController extends YesWikiController
             'P'
                 .(!empty($nbYears) ? $nbYears . 'Y' : '')
                 .(!empty($nbMonth) ? $nbMonth . 'M' : '')
-                .(!empty($nbDays) ? $nbDays . 'D' : '')
+                .(!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays)? '0D' :''))
         );
         $dateInterval->invert = ($sign == "-") ? 1 : 0;
 
