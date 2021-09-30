@@ -4,5 +4,7 @@
     }
 
     $oldpage = $this->GetPageTag();
+    $this->CachePage($this->page);
     $this->tag = trim($this->GetParameter('page'));
-    $this->setPage($this->LoadPage($this->tag));
+    $includedPage = $this->GetCachedPage($this->tag);
+    $this->setPage(!empty($includedPage) ? $includedPage : $this->LoadPage($this->tag));
