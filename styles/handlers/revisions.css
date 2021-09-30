@@ -122,7 +122,7 @@ body, #yw-header, #yw-main, #yw-footer {
 }
 
 .preview-container pre {
-  white-space: normal; /* breaks line so we don't need to horizontally scroll */
+  white-space: pre-line; /* breaks line so we don't need to horizontally scroll */
   font-family: monospace;
   font-size: 1rem;
   padding: 0;
