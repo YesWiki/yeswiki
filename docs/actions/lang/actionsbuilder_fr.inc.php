@@ -14,6 +14,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'AB_bazar_commons2_filter_on_date_past' => "passé",
     'AB_bazar_commons2_filter_on_date_today' => "aujourd'hui",
     'AB_bazar_commons2_filter_on_date_for_one_month' => "depuis un mois",
+    'AB_bazar_commons2_filter_on_date_on_current_month' => "dans le mois qui arrive",
     'AB_bazar_commons2_filter_on_date_for_two_years' => "depuis deux ans",
     'AB_bazar_commons2_filter_on_date_one_week_more_and_less' => "+/- une semaine",
     'AB_bazar_commons2_filter_index' => "'bf_date_debut_evenement' doit être défini.",

@@ -192,6 +192,7 @@ actions:
           past: _t(AB_bazar_commons2_filter_on_date_past)
           today: _t(AB_bazar_commons2_filter_on_date_today)
           '>-1M': _t(AB_bazar_commons2_filter_on_date_for_one_month)
+          '>-0D&<+1M': _t(AB_bazar_commons2_filter_on_date_on_current_month)
           '>-2Y': _t(AB_bazar_commons2_filter_on_date_for_two_years)
           '>-7D&<+7D': _t(AB_bazar_commons2_filter_on_date_one_week_more_and_less)
       resetfiltersbutton:
