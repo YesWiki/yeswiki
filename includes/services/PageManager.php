@@ -62,7 +62,7 @@ class PageManager
 
             if (!$bypassAcls) {
                 $page['tag'] = $tag;
-                $page = $this->checkEntriesACL([$page])[0];
+                $page = $this->checkEntriesACL([$page], $tag)[0];
             }
 
             // cache result
@@ -109,14 +109,14 @@ class PageManager
     public function getById($id): ?array
     {
         $page = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('pages') . "where id = '" . $this->dbService->escape($id) . "' limit 1");
-        $page = $this->checkEntriesACL([$page])[0];
+        $page = $this->checkEntriesACL([$page], $page['tag'])[0];
         return $page;
     }
 
     public function getRevisions($page)
     {
         $revisions = $this->dbService->loadAll('select * from' . $this->dbService->prefixTable('pages') . "where tag = '" . $this->dbService->escape($page) . "' order by time desc");
-        $revisions = $this->checkEntriesACL($revisions);
+        $revisions = $this->checkEntriesACL($revisions, $page);
         return $revisions ;
     }
 
@@ -335,9 +335,10 @@ class PageManager
     /**
      * use Guard to checkACL for entries
      * @param array $pages
+     * @param null|string $tag
      * @return array $pages
      */
-    private function checkEntriesACL(array $pages): array
+    private function checkEntriesACL(array $pages, ?string $tag = null): array
     {
         if ($this->wiki->UserIsAdmin()) {
             // do not check following tests to be faster because admins can see anything
@@ -346,9 +347,16 @@ class PageManager
         // not possible to init the EntryManager or Guard in the constructor because of circular reference problem
         $entryManager = $this->wiki->services->get(EntryManager::class);
         $guard = $this->wiki->services->get(Guard::class);
-        $pages = array_map(function ($page) use ($entryManager, $guard) {
-            return (!$entryManager->isEntry($page['tag'] ?? null)) ? $page
-                : $guard->checkAcls($page, $page['tag'] ?? null);
+        $allEntriesTags = empty($tag) ? $entryManager->getAllEntriesTags()
+            : ($entryManager->isEntry($tag) ? [$tag] : null);
+        if (empty($allEntriesTags)) {
+            return $pages;
+        }
+        $pages = array_map(function ($page) use ($entryManager, $guard, $allEntriesTags) {
+            return (isset($page['tag']) &&
+                    in_array($page['tag'], $allEntriesTags)
+                    ) ? $guard->checkAcls($page, $page['tag'])
+                    :$page;
         }, $pages);
         return $pages;
     }

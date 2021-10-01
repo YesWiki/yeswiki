@@ -70,6 +70,25 @@ class EntryManager
     }
 
     /**
+     * return array with list of page's tag for all entries
+     * @return array
+     */
+    public function getAllEntriesTags(): array
+    {
+        $result = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_ENTRY_ID);
+        if (is_array($result)) {
+            $result = array_filter(array_map(function ($item) {
+                return $item['resource'] ?? null;
+            }, $result), function ($item) {
+                return !empty($item);
+            });
+        } else {
+            $result = [];
+        }
+        return $result;
+    }
+
+    /**
      * Get one specified fiche
      * @param $tag
      * @param bool $semantic
