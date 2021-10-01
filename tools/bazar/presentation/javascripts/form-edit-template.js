@@ -347,8 +347,8 @@ var typeUserAttrs = {
   },
   labelhtml: {
     label: { value: "Custom HTML" },
-    content_saisie: { label: "Contenu lors la saisie" },
-    content_display: { label: "Contenu lors de l'affichage d'une fiche" },
+    content_saisie: { label: "Contenu lors de la saisie", type: "textarea", rows: "4" },
+    content_display: { label: "Contenu lors de l'affichage d'une fiche", type: "textarea", rows: "4"  },
   },
   utilisateur_wikini: {
     name_field: { label: "Champ pour le nom d'utilisateur", value: "bf_titre" },
@@ -663,7 +663,18 @@ function initializeFormbuilder(formAndListIds) {
     existingFieldsNames = []
     $(".fld-name").each(function() { existingFieldsNames.push($(this).val()) })
     
-    
+    // Transform input[textarea] in real textarea
+    $('input[type="textarea"]').replaceWith(function() {
+      const textarea = document.createElement('textarea')
+      textarea.id = this.id
+      textarea.name = this.name
+      textarea.value = this.value
+      textarea.classList = this.classList
+      textarea.title = this.title
+      textarea.rows = $(this).attr('rows')
+      return textarea
+    })
+
     // Slugiy field names
     $(".fld-name").each(function () {
       var newValue = $(this)
