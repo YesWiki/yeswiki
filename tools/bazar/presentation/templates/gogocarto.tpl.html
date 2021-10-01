@@ -28,9 +28,7 @@
 -->
 
 
-<?php
-  $GLOBALS['wiki']->AddCSSFile('styles/vendor/gogocarto/gogocarto.css', true);
-?>
+<?php $GLOBALS['wiki']->AddCSSFile('styles/vendor/gogocarto/gogocarto.css'); ?>
 
 <div id="gogo-map<?php echo $param['nbbazarliste']; ?>"
          class="no-dblclick"
@@ -113,6 +111,12 @@
     map: {
       defaultTileLayer: 'wikimedia',
     },
+    colors: {
+      primary: "#d8604c",
+      secondary: "#1a89a0",
+      textDark: "#4e5056",
+      textLight: "#ffffff",
+    },
     data: {
       taxonomy: gogoTaxo,
       elements: data
@@ -162,7 +166,10 @@
 <style>
   /* hide facettes cuase we are using GoGoCarto facette equivalent*/
   .facette-container .filters-col { display: none; }
-  .facette-container .results-col { width: 100%; padding: 0 15px; }
+  .facette-container .results-col { width: 100%; }
+  @media (min-width: 800px) {
+    .facette-container .results-col { padding: 0 15px; }
+  }
   /* Fixs some style conflict */
   .gogo-load-css .gogo-theme-transiscope .iconInsideMarker-wrapper {
     background-color: transparent !important;
@@ -188,4 +195,11 @@
     vertical-align: inherit;
     border-radius: inherit;
   }
+  .gogo-load-css h1.element-title {
+    color: inherit;
+  }
+  .dropdown-menu-right {
+    right: 0;
+    left: auto !important;
+  } 
 </style>
