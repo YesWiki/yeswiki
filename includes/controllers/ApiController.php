@@ -395,7 +395,7 @@ class ApiController extends YesWikiController
                 if ($_POST['reactionid']) {
                     if ($_POST['pagetag']) { // save the reaction
                         //get reactions from user for this page
-                        $userReactions = $this->getService(ReactionManager::class)->getUserReactions($user['name'], $_POST['pagetag'], [$_POST['reactionid']]);
+                        $userReactions = $this->getService(ReactionManager::class)->getReactions($_POST['pagetag'], [$_POST['reactionid']], $user['name']);
                         $params = $this->getService(ReactionManager::class)->getActionParametersFromPage($_POST['pagetag']);
 
                         if (empty($params[$_POST['reactionid']])) {
