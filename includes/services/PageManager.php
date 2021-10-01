@@ -60,10 +60,9 @@ class PageManager
                 $page["metadatas"] = $this->getMetadata($tag);
             }
 
-            // not possible to init the EntryManager in the constructor because of circular reference problem
-            if ($this->wiki->services->get(EntryManager::class)->isEntry($tag) && !$bypassAcls) {
-                // not possible to init the Guard in the constructor because of circular reference problem
-                $page = $this->wiki->services->get(Guard::class)->checkAcls($page, $tag);
+            if (!$bypassAcls) {
+                $page['tag'] = $tag;
+                $page = $this->checkEntriesACL([$page], $tag)[0];
             }
 
             // cache result
@@ -110,19 +109,15 @@ class PageManager
     public function getById($id): ?array
     {
         $page = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('pages') . "where id = '" . $this->dbService->escape($id) . "' limit 1");
-        $tag = $page['tag'] ?? null;
-        // not possible to init the EntryManager in the constructor because of circular reference problem
-        if (!empty($tag) && $this->wiki->services->get(EntryManager::class)->isEntry($tag)) {
-            // not possible to init the Guard in the constructor because of circular reference problem
-            $page = $this->wiki->services->get(Guard::class)->checkAcls($page, $tag);
-        }
-
+        $page = $this->checkEntriesACL([$page], $page['tag'])[0];
         return $page;
     }
 
     public function getRevisions($page)
     {
-        return $this->dbService->loadAll('select * from' . $this->dbService->prefixTable('pages') . "where tag = '" . $this->dbService->escape($page) . "' order by time desc");
+        $revisions = $this->dbService->loadAll('select * from' . $this->dbService->prefixTable('pages') . "where tag = '" . $this->dbService->escape($page) . "' order by time desc");
+        $revisions = $this->checkEntriesACL($revisions, $page);
+        return $revisions ;
     }
 
     public function getLinkingTo($tag)
@@ -153,7 +148,9 @@ class PageManager
 
     public function getAll(): array
     {
-        return $this->dbService->loadAll('select * from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' order by tag");
+        $pages = $this->dbService->loadAll('select * from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' order by tag");
+        $pages = $this->checkEntriesACL($pages);
+        return $pages ;
     }
 
     public function getCreateTime($pageTag)
@@ -333,5 +330,34 @@ class PageManager
         }
 
         return $this->tripleStore->create($tag, 'http://outils-reseaux.org/_vocabulary/metadata', $metadata, '', '');
+    }
+
+    /**
+     * use Guard to checkACL for entries
+     * @param array $pages
+     * @param null|string $tag
+     * @return array $pages
+     */
+    private function checkEntriesACL(array $pages, ?string $tag = null): array
+    {
+        if ($this->wiki->UserIsAdmin()) {
+            // do not check following tests to be faster because admins can see anything
+            return $pages;
+        }
+        // not possible to init the EntryManager or Guard in the constructor because of circular reference problem
+        $entryManager = $this->wiki->services->get(EntryManager::class);
+        $guard = $this->wiki->services->get(Guard::class);
+        $allEntriesTags = empty($tag) ? $entryManager->getAllEntriesTags()
+            : ($entryManager->isEntry($tag) ? [$tag] : null);
+        if (empty($allEntriesTags)) {
+            return $pages;
+        }
+        $pages = array_map(function ($page) use ($entryManager, $guard, $allEntriesTags) {
+            return (isset($page['tag']) &&
+                    in_array($page['tag'], $allEntriesTags)
+                    ) ? $guard->checkAcls($page, $page['tag'])
+                    :$page;
+        }, $pages);
+        return $pages;
     }
 }
