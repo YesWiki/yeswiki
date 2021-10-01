@@ -663,7 +663,18 @@ function initializeFormbuilder(formAndListIds) {
     existingFieldsNames = []
     $(".fld-name").each(function() { existingFieldsNames.push($(this).val()) })
     
-    
+    // Transform input[textarea] in real textarea
+    $('input[type="textarea"]').replaceWith(function() {
+      const textarea = document.createElement('textarea')
+      textarea.id = this.id
+      textarea.name = this.name
+      textarea.value = this.value
+      textarea.classList = this.classList
+      textarea.title = this.title
+      textarea.rows = $(this).attr('rows')
+      return textarea
+    })
+
     // Slugiy field names
     $(".fld-name").each(function () {
       var newValue = $(this)
