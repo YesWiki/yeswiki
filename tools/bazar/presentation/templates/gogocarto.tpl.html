@@ -29,7 +29,7 @@
 
 
 <?php
-  $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/gogocarto.min.css', true);
+  $GLOBALS['wiki']->AddCSSFile('styles/vendor/gogocarto/gogocarto.css', true);
 ?>
 
 <div id="gogo-map<?php echo $param['nbbazarliste']; ?>"
@@ -135,7 +135,7 @@
     // Load gogocartoJs now (after jquery and bootstrap are already loaded) so there is no conflict
     var jsElm = document.createElement("script");
     jsElm.type = "application/javascript";
-    jsElm.src = window.location.origin + window.location.pathname + "/tools/bazar/presentation/javascripts/gogocarto.min.js";
+    jsElm.src = window.location.origin + window.location.pathname + "javascripts/vendor/gogocarto/gogocarto.js";
     document.body.appendChild(jsElm);
 
     // When everything is ready, starts gogocarto
@@ -149,8 +149,6 @@
 </script>
 
 <style>
-  /* increase root font-size because gogocarto use rem, so it's based on root font-size */
-  html { font-size: 14px; }
   /* hide facettes cuase we are using GoGoCarto facette equivalent*/
   .facette-container .filters-col { display: none; }
   .facette-container .results-col { width: 100%; padding: 0 15px; }
@@ -160,5 +158,23 @@
   }
   .gogo-load-css .subcategory-item.expanded .name-wrapper .arrow-after {
     border-color: transparent transparent #494745 transparent !important;
+  }
+  .gogo-load-css .subcategory-item:not(.expanded) .name-wrapper .arrow-after {
+    border-color: #494745 transparent transparent transparent !important;
+  }
+  .gogo-load-css .gogocarto-container .subcategorie-option-item .icon:not(.fa) {
+    line-height: 1.5;
+  }
+  .gogo-load-css .gogocarto-container .search-bar-autocomplete-results-container .label {
+    display: inherit;
+    padding: inherit;
+    font-size: inherit ;
+    font-weight: inherit;
+    line-height: inherit;
+    color: inherit;
+    text-align: inherit;
+    white-space: inherit;
+    vertical-align: inherit;
+    border-radius: inherit;
   }
 </style>

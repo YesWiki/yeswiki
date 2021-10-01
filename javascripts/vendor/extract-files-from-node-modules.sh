@@ -35,6 +35,12 @@ mkdir -p javascripts/vendor/leaflet-providers && cp -f node_modules/leaflet-prov
 mkdir -p javascripts/vendor/leaflet-fullscreen && cp -f node_modules/leaflet.fullscreen/Control.FullScreen.js javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js
 mkdir -p styles/vendor/leaflet-fullscreen && cp -f node_modules/leaflet.fullscreen/Control.FullScreen.css styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css
 
+# GoGoCartoJs
+mkdir -p javascripts/vendor/gogocarto && cp -f node_modules/gogocarto-js/dist/gogocarto.min.js javascripts/vendor/gogocarto/gogocarto.js
+mkdir -p styles/vendor/gogocarto && cp -f node_modules/gogocarto-js/dist/gogocarto.min.css styles/vendor/gogocarto/gogocarto.css
+cp -f -r node_modules/gogocarto-js/dist/images styles/vendor/gogocarto
+cp -f -r node_modules/gogocarto-js/dist/fonts styles/vendor/gogocarto
+
 # Spectrum Color Picker
 mkdir -p javascripts/vendor/spectrum-colorpicker2 && cp -f node_modules/spectrum-colorpicker2/dist/spectrum.min.js javascripts/vendor/spectrum-colorpicker2/spectrum.js
 mkdir -p styles/vendor/spectrum-colorpicker2 && cp -f node_modules/spectrum-colorpicker2/dist/spectrum.min.css styles/vendor/spectrum-colorpicker2/spectrum.css
