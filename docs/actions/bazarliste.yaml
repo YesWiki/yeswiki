@@ -142,6 +142,8 @@ actions:
           right: Droite
           left: Gauche
         showif: facettes
+        showExceptFor:
+          - bazargogocarto
       filtercolsize:
         label: Largeur des facettes
         advanced: true
@@ -210,6 +212,8 @@ actions:
         checkedvalue: 1
         uncheckedvalue: 0
         showif: facettes
+        showExceptFor:
+          - bazargogocarto
 
   # -----------------
   # Liste des Actions
@@ -601,8 +605,7 @@ actions:
     description: Les fiches seront sous forme de marqueur.
     hint: >-
       Le champ géolocalisation doit être présent dans votre formulaire.
-      GoGoCarto ne fonctione qu'avec des facettes. Pensez aussi à choisir un champ pour 
-      l'icone et la couleur des marqueurs
+      Pensez aussi à choisir un champ pour l'icone et la couleur des marqueurs
     width: 35%
     properties:
       template:

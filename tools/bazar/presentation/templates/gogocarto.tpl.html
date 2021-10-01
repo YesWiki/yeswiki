@@ -27,12 +27,15 @@
   handle other params already used in map template : provider, latitude, longitude, zoom etc...
 -->
 
-
 <?php $GLOBALS['wiki']->AddCSSFile('styles/vendor/gogocarto/gogocarto.css'); ?>
 
-<div id="gogo-map<?php echo $param['nbbazarliste']; ?>"
-         class="no-dblclick"
-         style="<?php echo 'width:'.$param['width'].'; height:'.$param['height']; ?>"></div>
+<?php if (!empty($filters)) { ?>
+  <div id="gogo-map<?php echo $param['nbbazarliste']; ?>"
+          class="no-dblclick"
+          style="<?php echo 'width:'.$param['width'].'; height:'.$param['height']; ?>"></div>
+<?php } else { ?>
+  <div class="alert alert-danger"><?php echo _t('BAZ_GOGO_NEED_GROUPS') ?></div>
+<?php } ?>
 
 <script src="//cdn.jsdelivr.net/npm/velocity-animate@2.0/velocity.min.js"></script>
 
@@ -121,17 +124,22 @@
       taxonomy: gogoTaxo,
       elements: data
     },
-    fonts: {
-      mainFont: 'Nunito'
-    },
-    features: {
-      layers: {},
-      mapdefaultview: {},
-      searchCategories: {},
-      searchElements: {},
-      searchGeolocate: {},
-      searchPlace: {}
+      fonts: {
+        mainFont: 'Nunito'
+      },
+      menu: {
+        width: 300 + (parseInt(param['filtercolsize']) - 3) * 30
+      },
+      features: {
+        layers: {},
+        mapdefaultview: {}      
     }
+  }
+  if (param['search'] == 'true' || param['search'] === true) {
+      gogoConf.features.searchCategories = {};
+      gogoConf.features.searchElements = {};
+      gogoConf.features.searchGeolocate = {};
+      gogoConf.features.searchPlace = {};
   }
   if (param['jsonconfurl']) {
     $.get(param['jsonconfurl'], function(distantConf) {
@@ -143,10 +151,6 @@
   }
 
   document.addEventListener("DOMContentLoaded",function() {
-    // fix conflict bootstrap and materialize sue same function name
-    $.fn.tooltip = function (options) { }
-    $.fn.velocity = function (options) { }
-
     // Load gogocartoJs now (after jquery and bootstrap are already loaded) so there is no conflict
     var jsElm = document.createElement("script");
     jsElm.type = "application/javascript";
@@ -165,8 +169,9 @@
 
 <style>
   /* hide facettes cuase we are using GoGoCarto facette equivalent*/
-  .facette-container .filters-col { display: none; }
+  .facette-container .filters-col, #search-form { display: none; }
   .facette-container .results-col { width: 100%; }
+
   @media (min-width: 800px) {
     .facette-container .results-col { padding: 0 15px; }
   }
@@ -202,4 +207,9 @@
     right: 0;
     left: auto !important;
   } 
+  <?php if (isset($param['search']) && ($param['search'] == 'false' || $param['search'] === false)) { ?>
+    .directory-menu-header .btn-close-menu { 
+      display: none !important; 
+    }
+ <?php }?>
 </style>
