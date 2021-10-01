@@ -11,8 +11,5 @@
     </li>
 {% endfor %}
 </ul>
-{% if updateAlreadyForced %}
-  {# message to alert user that it is normal that the update starts a second time #}
-  <div class="alert alert-info">{{ _t('AU_UPDATED_TWICE') }}</div>
-{% endif %}
-<a href='{{ url({handler:'update',params:(updateAlreadyForced ? {updateAlreadyForced:1} : {})}) }}'>Finaliser la mise à jour (lancer les actions de post-installation)</a>
+
+<a href='{{ baseUrl }}/update'>Finaliser la mise à jour (lancer les actions de post-installation)</a>

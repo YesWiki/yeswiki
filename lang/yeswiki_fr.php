@@ -473,10 +473,5 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'UPDATE_ADMIN_PAGES_CONFIRM' => 'Confirmer la mise à jour des pages : ',
 'UPDATE_ADMIN_PAGES_HINT' => 'Mets à jour les pages de gestion avec les dernières fonctionnalités. Ceci est réversible.',
 'UPDATE_ADMIN_PAGES_ERROR' => 'Il n\'a pas été possible de mettre à jour toutes les pages de gestion !',
-'UPDATE_ADMIN_PAGES_TIP' => 'Suite à la mise à jour des pages de gestion, il peut manquer des images. Celles-ci seront alors importées en forçant une nouvelle mise à jour du wiki.',
-'UPDATE_TEMPLATES_FOLDER_NOT_UP_TO_DATE' => 'Le dossier \'templates\' ne semble pas à jour. '.
-    'Ceci peut conduire à un dysfonctionnement de certaines actions comme {{editconfig}} ! '.
-    'Il est possible de résoudre ceci en relançant une mise à jour. '.
-    'En effet, ce dossier nécessite une mise à jour en deux fois. ',
 'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => 'la page "{{page}}" n\'a pas été trouvée dans default-content.sql',
 ));

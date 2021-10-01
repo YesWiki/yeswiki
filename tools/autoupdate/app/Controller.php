@@ -45,10 +45,6 @@ class Controller
             and $this->autoUpdate->isAdmin()
             and !$this->securityController->isWikiHibernated()
             ) {
-            $updateAlreadyForced = (
-                $get['upgrade'] == 'yeswiki' &&
-                isset($get['updateAlreadyForced']) && 
-                $get['updateAlreadyForced'] == 1);
             $this->upgrade($get['upgrade']);
             if ($get['upgrade'] == 'yeswiki') {
                 // reload wiki to prevent missing files' error due to upgrade.
@@ -65,16 +61,13 @@ class Controller
                 
                 // call the same href to reload wiki in new doryphore version
                 // give $data by $_SESSION['updateMessage']
-                $newAdress = $this->wiki->Href(null,null,(
-                        ($updateAlreadyForced) ? ['updateAlreadyForced' => 1] : []
-                    ),false);
+                $newAdress = $this->wiki->Href();
                 header("Location: ".$newAdress);
                 exit();
             } else {
                 return $this->wiki->render("@autoupdate/update.twig", [
                     'messages' => $this->messages,
                     'baseUrl' => $this->autoUpdate->baseUrl(),
-                    'updateAlreadyForced' => ($updateAlreadyForced) ? true : false,
                 ]);
             }
         }
@@ -87,7 +80,6 @@ class Controller
             return $this->wiki->render("@autoupdate/update.twig", [
                 'messages' => $this->messages,
                 'baseUrl' => $this->autoUpdate->baseUrl(),
-                'updateAlreadyForced' => (isset($get['updateAlreadyForced']) && $get['updateAlreadyForced'] == 1) ? true : false,
             ]);
         }
 

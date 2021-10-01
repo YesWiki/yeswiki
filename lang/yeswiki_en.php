@@ -435,8 +435,4 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'UPDATE_ADMIN_PAGES_CONFIRM' => 'Confirm pages\' update : ',
 'UPDATE_ADMIN_PAGES_HINT' => 'Update admin pages with latest features. This is reversible.',
 'UPDATE_ADMIN_PAGES_ERROR' => 'Not possible to update all admin pages !',
-'UPDATE_TEMPLATES_FOLDER_NOT_UP_TO_DATE' => 'The folder \'templates\' seems not to be up to date. '.
-    'This could lead to a bad behaviour of actions like {{editconfig}} ! '.
-    'It is possible to solve it by updating a new time the wiki. '.
-    'Indeed, this folder needs to updates. ',
 ));

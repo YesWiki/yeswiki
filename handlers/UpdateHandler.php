@@ -8,13 +8,6 @@ use YesWiki\Core\YesWikiHandler;
 
 class UpdateHandler extends YesWikiHandler
 {
-    public function formatArguments($args)
-    {
-        return [
-            'updateAlreadyForced' => $this->formatBoolean($_GET, false, 'updateAlreadyForced'),
-        ];
-    }
-
     public function run()
     {
         if ($this->getService(SecurityController::class)->isWikiHibernated()) {
@@ -80,26 +73,6 @@ class UpdateHandler extends YesWikiHandler
 
             // propose to update content of admin's pages
             $output .= $this->frontUpdateAdminPages();
-
-            // test if templates directory is up to date
-            if (!file_exists('templates/edit-config.twig')) {
-                // redirect to force once update
-                if (($this->wiki->tag == "GererMisesAJour") && !$this->arguments['updateAlreadyForced'] && !is_dir('.git')) {
-                    // check if folder .git exists to prevent autoupate in dev environement
-                    $this->wiki->redirect($this->wiki->Href(
-                        null,
-                        null,
-                        [
-                            'upgrade' => 'yeswiki',
-                            'updateAlreadyForced' => 1
-                        ],
-                        false
-                    ));
-                    exit();
-                } else {
-                    $output .= '<div class="alert alert-warning">ℹ️ '._t('UPDATE_TEMPLATES_FOLDER_NOT_UP_TO_DATE').'</div>';
-                }
-            }
         } else {
             $output .= '<div class="alert alert-danger">'._t('ACLS_RESERVED_FOR_ADMINS').'</div>';
         }
@@ -133,7 +106,7 @@ class UpdateHandler extends YesWikiHandler
         if ($_GET['updateAdminPages'] ?? false) {
             list($updatePagesState, $message) = $this->updateAdminPages($adminPagesToUpdate);
             if ($updatePagesState) {
-                $output .= '✅ Done ! <span class="label label-info">! '._t('UPDATE_ADMIN_PAGES_TIP').'</span><br />';
+                $output .= '✅ Done !<br />';
             } else {
                 $output .= '<span class="label label-warning">! '._t('UPDATE_ADMIN_PAGES_ERROR').'</span>'.'<br />'.$message;
             }
