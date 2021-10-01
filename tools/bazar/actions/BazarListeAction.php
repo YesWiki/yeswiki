@@ -8,7 +8,7 @@ use YesWiki\Core\Service\TemplateNotFound;
 
 class BazarListeAction extends YesWikiAction
 {
-    protected const BAZARCARTO_TEMPLATES = ["map","gogomap"] ; // liste des templates sans .twig ni .tpl.html
+    protected const BAZARCARTO_TEMPLATES = ["map", "gogomap", "gogocarto"] ; // liste des templates sans .twig ni .tpl.html
     protected const CALENDRIER_TEMPLATES = ["calendar"] ; // liste des templates sans .twig ni .tpl.html
 
     protected $debug;
@@ -222,7 +222,7 @@ class BazarListeAction extends YesWikiAction
             return $this->render('@bazar/entries/index.twig', [
                 'listId' => $GLOBALS['_BAZAR_']['nbbazarliste'],
                 'filters' => $filters,
-                'renderedEntries' => $this->renderEntries($entries),
+                'renderedEntries' => $this->renderEntries($entries, $filters),
                 'numEntries' => count($entries),
                 'params' => $this->arguments,
                 // Search form parameters
@@ -235,7 +235,7 @@ class BazarListeAction extends YesWikiAction
         }      
     }
 
-    private function renderEntries($entries): string
+    private function renderEntries($entries, $filters = []): string
     {
         $showNumEntries = count($entries) === 0 || $this->arguments['shownumentries'];
         $templateName = $this->arguments['template'];
@@ -248,6 +248,7 @@ class BazarListeAction extends YesWikiAction
         $data['info_res'] = $showNumEntries ? '<div class="alert alert-info">'._t('BAZ_IL_Y_A').' '.count($data['fiches']).' '.(count($data['fiches']) <= 1 ? _t('BAZ_FICHE') : _t('BAZ_FICHES')).'</div>' : '';
         $data['param'] = $this->arguments;
         $data['pager_links'] = '';
+        $data['filters'] = $filters; // in case some template need it, like gogocarto
 
         if (!empty($this->arguments['pagination']) && $this->arguments['pagination'] > 0) {
             require_once 'tools/bazar/libs/vendor/Pager/Pager.php';

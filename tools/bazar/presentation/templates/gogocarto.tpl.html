@@ -1,8 +1,9 @@
 <!--
   This Template use the GoGoCartoJs Library : https://gitlab.adullact.net/pixelhumain/GoGoCartoJs
   Documentation cna be found here https://pixelhumain.github.io/GoGoCartoJs/docs/configuration.html
+  
   If you want to change something in the configuration, let's say the menu width, add a new parameter to bazarlist :
-  {{ bazarliste id="2" template="gogomap.tpl.html" menuwidth="500"}}
+  {{ bazarliste id="2" template="gogocarto.tpl.html" menuwidth="500"}}
   Then you may to format or set defaults this new menuwidth parameter in BazarCarto::formatArguments
   So it will be available in this template with the code param['menuwidth']
 
@@ -12,14 +13,14 @@
   }
   So edit, at the bottom of this file, the configuration given to GoGoCarto
 
-  carto = goGoCarto('#osmmap1', {
+  carto = goGoCarto('#gogo-map', {
     ....
     menu: { width: param['menuwidth'] }
     ...
   });
 
   Alternatively, for developers, they could provide a json configuration object url inside the "jsonconfurl" attribute, for example
-  {{ bazarliste id="2" template="gogomap.tpl.html" jsonconf="http://mysite/myCartoConf.json" }}
+  {{ bazarliste id="2" template="gogocarto.tpl.html" jsonconf="http://mysite/myCartoConf.json" }}
   This jsonconf will be merged with the template configuration (providing data, taxonomy etc...)
 
   TODO
@@ -42,30 +43,26 @@
   var data = <?php echo json_encode($fiches) ?>;
   // All param attached in bazarlist action
   var param = <?php echo json_encode($param) ?>;
-  // Url to get the wiki categories
-  var categoriesUrl = "<?php echo $GLOBALS['wiki']->href('json', 'BazaR', 'demand=lists', false) ?>";
+  // facettes filters
+  var filters = <?php echo json_encode($filters) ?>;
 
-  var gogoConf = {};
-  var confReady = false; // sometime we need to download distant configuration
-
-  // re format wiki data to better fit gogocarto ontology.
+  // ----------------------------------------------------
+  // Transform wiki data to better fit gogocarto ontology.
+  // ----------------------------------------------------
   data = data.map(function(el) {
     el.taxonomy = []
-    for(var i = 0; i < param['groups'].length; i++)
-    {
+    for(var i = 0; i < param['groups'].length; i++) {
       var value = el[param['groups'][i]];
-      if (value) el.taxonomy.push(value);
+      if (value) el.taxonomy = el.taxonomy.concat(value.split(','))
     }
 
     el.name = el.bf_titre;
     el.bf_titre = null;
     var result = {}
-    for (var key in el)
-    {
+    for (var key in el) {
       var value = el[key]
       // remove attribute with empty value
-      if (value)
-      {
+      if (value) {
         // remove bf_ prefix
         if (key.indexOf('bf_') > -1) {
           var newkey = key.replace('bf_', '');
@@ -78,15 +75,59 @@
     return result
   });
 
-  var wikiCategoryNameMapping = {}
-  for(var i = 0; i < param['groups'].length; i++)
-  {
-    let catId = param['groups'][i].replace('checkbox', '')
-    wikiCategoryNameMapping[catId] = param['titles'][i];
+  // -------------------------------------
+  // Transform wikiTaxo into gogocartoTaxo
+  // -------------------------------------
+  var gogoTaxo = [];
+  for (var categoryId in filters) {
+    var wikiCat = filters[categoryId];
+    let useIconForMarker = categoryId == param['iconfield']
+    let useColorForMarker = categoryId == param['colorfield']
+    var gogoCat = {
+      name:  wikiCat.title,
+      isMandatory: false,
+      showExpanded: !wikiCat.collapsed,
+      useIconForMarker: useIconForMarker,
+      useColorForMarker: useColorForMarker,
+      options: wikiCat.list.map(wikiOption => {
+        let gogoOption = {
+          name: wikiOption.label,
+          id: wikiOption.value
+        }
+        if (useIconForMarker) gogoOption.icon = param['iconprefix'] + param['icon'][gogoOption.id]
+        if (useColorForMarker) gogoOption.color = param['color'][gogoOption.id]
+        return gogoOption;
+      })
+    }
+    gogoTaxo.push(gogoCat);
+  }
+
+  // -------------------
+  // Loads Configuration
+  // -------------------
+  var confReady = false; // sometime we need to download distant configuration
+  gogoConf = {
+    general: { activateHistoryStateAndRouting: false },
+    language: 'fr',
+    theme: 'default',
+    map: {
+      defaultTileLayer: 'wikimedia',
+    },
+    data: {
+      taxonomy: gogoTaxo,
+      elements: data
+    }
+  }
+  if (param['jsonconfurl']) {
+    $.get(param['jsonconfurl'], function(distantConf) {
+      gogoConf = { ...distantConf, ...gogoConf }
+      confReady = true;
+    });
+  } else {
+    confReady = true;
   }
 
   document.addEventListener("DOMContentLoaded",function() {
-
     // fix conflict bootstrap and materialize sue same function name
     $.fn.tooltip = function (options) { }
     $.fn.velocity = function (options) { }
@@ -97,75 +138,22 @@
     jsElm.src = window.location.origin + window.location.pathname + "/tools/bazar/presentation/javascripts/gogocarto.min.js";
     document.body.appendChild(jsElm);
 
+    // When everything is ready, starts gogocarto
     interval = setInterval(function() {
       if (goGoCarto != undefined && confReady) {
-        initializeGoGoCarto();
+        carto = goGoCarto('#gogo-map<?php echo $param['nbbazarliste']; ?>', gogoConf)
         clearInterval(interval);
       }
     },100)
-
-    $.get(categoriesUrl, function(wikiTaxo) {
-      // Transform wikiTaxo into gogocartoTaxo
-      var gogoTaxo = [];
-      for(var categoryId in wikiTaxo)
-      {
-        var wikiCat = wikiTaxo[categoryId];
-        var gogoCat = {
-          "name":  wikiCategoryNameMapping[categoryId] || wikiCat.titre_liste,
-          "options":[]
-        }
-        for(var wikiOptionId in wikiCat.label)
-        {
-          var gogoOption = {
-            id: wikiOptionId,
-            name: wikiCat.label[wikiOptionId]
-          }
-          if (('checkbox' + categoryId) == param['iconfield']) gogoOption.icon = param['iconprefix'] + param['icon'][wikiOptionId]
-          if (('checkbox' + categoryId) == param['colorfield']) gogoOption.color = param['color'][wikiOptionId]
-          gogoCat.options.push(gogoOption);
-        }
-        gogoTaxo.push(gogoCat);
-      }
-
-      gogoConf = {
-        general: { activateHistoryStateAndRouting: false },
-        language: 'fr',
-        theme: 'default',
-        map: {
-          defaultTileLayer: 'wikimedia',
-        },
-        data: {
-          taxonomy: gogoTaxo,
-          elements: data
-        }
-      }
-
-      if (param['jsonconfurl']) {
-        $.get(param['jsonconfurl'], function(distantConf) {
-          gogoConf = { ...distantConf, ...gogoConf }
-          confReady = true;
-        });
-      } else {
-        confReady = true;
-      }
-    })
-  });
-
-  function initializeGoGoCarto()
-  {
-    // clear facette container because gogocarto manage facette itself
-    $('#gogo-map1').closest('.results-col').removeClass('col-sm-9')
-    carto = goGoCarto('#gogo-map1', gogoConf)
-  }
-
+  })
 </script>
 
 <style>
   /* increase root font-size because gogocarto use rem, so it's based on root font-size */
   html { font-size: 14px; }
   /* hide facettes cuase we are using GoGoCarto facette equivalent*/
-  .facette-container .filters { display: none; }
-  .facette-container > .col-xs-9 { width: 100%; }
+  .facette-container .filters-col { display: none; }
+  .facette-container .results-col { width: 100%; padding: 0 15px; }
   /* Fixs some style conflict */
   .gogo-load-css .gogo-theme-transiscope .iconInsideMarker-wrapper {
     background-color: transparent !important;
