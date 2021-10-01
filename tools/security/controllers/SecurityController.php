@@ -83,15 +83,17 @@ class SecurityController extends YesWikiController
      */
     private function renderNotGrantedPasswordForEditing(): string
     {
-        return $this->templateEngine->render('@security/wrong-password-for-editing.twig',
+        return $this->templateEngine->render(
+            '@security/wrong-password-for-editing.twig',
             [
                 'wrongPassword' => isset($_POST['password_for_editing']),
-                'passwordForEditingMessage' => ($this->params->has('password_for_editing_message') && 
+                'passwordForEditingMessage' => ($this->params->has('password_for_editing_message') &&
                     !empty($this->params->get('password_for_editing_message')))
                     ? $this->params->get('password_for_editing_message') : null,
                 'time' => $_REQUEST['time'] ?? null,
                 'handler' => testUrlInIframe() ? 'editiframe' : 'edit',
-            ]);
+            ]
+        );
     }
 
     /**
@@ -101,26 +103,30 @@ class SecurityController extends YesWikiController
      */
     public function checkCaptchaBeforeSave(string $mode = 'page'):array
     {
-        if ($this->params->get('use_captcha')) {
+        if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
             if (($mode != 'entry' && isset($_POST['submit']) && $_POST['submit'] == 'Sauver')
                 || ($mode == 'entry' && !empty($_POST['bf_titre']))) {
-                if (!defined("CAPTCHA_INCLUDE")){
+                if (!defined("CAPTCHA_INCLUDE")) {
                     define("CAPTCHA_INCLUDE", true);
                 }
                 include_once 'tools/security/captcha.php';
-                if (isset($textes)){
+                if (isset($textes)) {
                     $this->textes = $textes;
                 }
                 if (empty($_POST['captcha'])) {
                     $error = '<div class="alert alert-danger"><a href="#" data-dismiss="alert" class="close">&times;</a>'._t('CAPTCHA_ERROR_PAGE_UNSAVED').'</div>';
                     $_POST['submit'] = '';
-                    if ($mode == 'entry') unset($_POST['bf_titre']);
+                    if ($mode == 'entry') {
+                        unset($_POST['bf_titre']);
+                    }
                 } elseif (!empty($_POST['captcha'])) {
                     $wdcrypt = cryptWord($_POST['captcha']);
                     if ($wdcrypt != $_POST['captcha_hash']) {
                         $error = '<div class="alert alert-danger"><a href="#" data-dismiss="alert" class="close">&times;</a>'._t('CAPTCHA_ERROR_WRONG_WORD').'</div>';
                         $_POST['submit'] = '';
-                        if ($mode == 'entry') unset($_POST['bf_titre']);
+                        if ($mode == 'entry') {
+                            unset($_POST['bf_titre']);
+                        }
                     }
                 }
                 unset($_POST['captcha']);
@@ -137,7 +143,7 @@ class SecurityController extends YesWikiController
      */
     public function renderCaptcha(string &$output)
     {
-        if ($this->params->get('use_captcha')) {
+        if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
             $champsCaptcha = $this->renderCaptchaField();
             $output = preg_replace(
                 '/\<div class="form-actions">.*<button type=\"submit\" name=\"submit\"/Uis',
@@ -154,22 +160,24 @@ class SecurityController extends YesWikiController
     public function renderCaptchaField(): string
     {
         $champsCaptcha = '';
-        if ($this->params->get('use_captcha')) {
-            if (!defined("CAPTCHA_INCLUDE")){
+        if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
+            if (!defined("CAPTCHA_INCLUDE")) {
                 define("CAPTCHA_INCLUDE", true);
             }
             include_once 'tools/security/captcha.php';
-            if (isset($textes)){
+            if (isset($textes)) {
                 $this->textes = $textes;
             }
             $crypt = cryptWord($this->textes[array_rand($this->textes)]);
 
             // afficher les champs de formulaire et de l'image
-            $champsCaptcha = $this->templateEngine->render('@security/captcha-field.twig',
+            $champsCaptcha = $this->templateEngine->render(
+                '@security/captcha-field.twig',
                 [
                     'baseUrl' => $this->wiki->getBaseUrl(),
                     'crypt' => $crypt,
-                ]);
+                ]
+            );
         }
         return $champsCaptcha;
     }
