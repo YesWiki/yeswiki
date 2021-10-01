@@ -61,7 +61,6 @@ class PageManager
             }
 
             if (!$bypassAcls) {
-                $page['tag'] = $tag;
                 $page = $this->checkEntriesACL([$page], $tag)[0];
             }
 
