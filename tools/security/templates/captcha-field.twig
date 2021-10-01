@@ -1,0 +1,10 @@
+<div class="media">
+  <div class="media-left">
+    <img src="{{ baseUrl }}/tools/security/captcha.php?{{ crypt }}" alt="captcha">
+  </div>
+  <div class="media-body">
+    <strong>{{ _t('CAPTCHA_VERIFICATION') }}</strong>
+    <input type="hidden" name="captcha_hash" value="{{ crypt }}" />
+    <input class="form-control" type="text" name="captcha" placeholder="{{ _t('CAPTCHA_WRITE') }}" value="" required>
+  </div>
+</div>

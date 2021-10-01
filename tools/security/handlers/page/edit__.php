@@ -1,6 +1,7 @@
 <?php
 /*
 */
+use YesWiki\Security\Controller\SecurityController;
 if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
@@ -34,28 +35,6 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
                 $plugin_output_new
             );
         }
-        if ($this->config['use_captcha']) {
-            define("CAPTCHA_INCLUDE", true);
-            include_once 'tools/security/captcha.php';
-            $crypt = cryptWord($textes[array_rand($textes)]);
-
-            // afficher les champs de formulaire et de l'image
-            $ChampsCaptcha = '
-              <div class="media">
-                <div class="media-left">
-                  <img src="'.$this->getBaseUrl().'/tools/security/captcha.php?'. $crypt .'" alt="captcha">
-                </div>
-                <div class="media-body">
-                  <strong>'._t('CAPTCHA_VERIFICATION').'</strong>
-                  <input type="hidden" name="captcha_hash" value="'. $crypt .'" />
-                  <input class="form-control" type="text" name="captcha" placeholder="'._t('CAPTCHA_WRITE').'" value="" required>
-                </div>
-              </div>'."\n";
-            $plugin_output_new = preg_replace(
-                '/\<div class="form-actions">.*<button type=\"submit\" name=\"submit\"/Uis',
-                $ChampsCaptcha.'<div class="form-actions">'."\n".'<button type="submit" name="submit"',
-                $plugin_output_new
-            );
-        }
+        $this->services->get(SecurityController::class)->renderCaptcha($plugin_output_new);
     }
 }

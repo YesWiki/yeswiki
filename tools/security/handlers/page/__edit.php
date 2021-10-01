@@ -27,21 +27,10 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
         }
     }
 
-    if ($this->config['use_captcha']) {
-        if (isset($_POST['submit']) && $_POST['submit'] == 'Sauver') {
-            define("CAPTCHA_INCLUDE", true);
-            include_once 'tools/security/captcha.php';
-            if (empty($_POST['captcha'])) {
-                $error = '<div class="alert alert-danger"><a href="#" data-dismiss="alert" class="close">&times;</a>'._t('CAPTCHA_ERROR_PAGE_UNSAVED').'</div>';
-                $_POST['submit'] = '';
-            } elseif (!empty($_POST['captcha'])) {
-                $wdcrypt = cryptWord($_POST['captcha']);
-                if ($wdcrypt != $_POST['captcha_hash']) {
-                    $error = '<div class="alert alert-danger"><a href="#" data-dismiss="alert" class="close">&times;</a>'._t('CAPTCHA_ERROR_WRONG_WORD').'</div>';
-                    $_POST['submit'] = '';
-                }
-            }
-        }
+    list($state,$error) = $securityController->checkCaptchaBeforeSave();
+    if ($state){
+        // error used in edit.php
+        unset($error);
     }
 
     if ($this->config['use_alerte']) {

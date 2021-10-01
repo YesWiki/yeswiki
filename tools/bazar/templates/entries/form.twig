@@ -1,5 +1,5 @@
 {{ include_javascript('tools/bazar/libs/bazar.js') }}
-
+{{ error|raw }}
 <h3 class="titre_type_fiche">{{ _t('BAZ_TITRE_SAISIE_FICHE') }}&nbsp;{{ form.bn_label_nature }}</h3>
 <form action="" method="post" name="formulaire" id="formulaire" enctype="multipart/form-data" class="form-horizontal" {% if not showConditions %}novalidate{% endif %}>
   {% if showConditions %}
@@ -15,6 +15,7 @@
       {{ renderedInput|raw }}
     {% endfor %}
   {% endif %}
+  {{ captchaField|raw }}
   <div class="form-actions form-group">
     <div class="col-sm-9 col-sm-offset-3">
       <button type="submit" class="btn btn-primary">{{ _t('BAZ_VALIDER') }}</button>
