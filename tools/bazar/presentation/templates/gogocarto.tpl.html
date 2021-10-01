@@ -109,13 +109,24 @@
   gogoConf = {
     general: { activateHistoryStateAndRouting: false },
     language: 'fr',
-    theme: 'default',
+    theme: 'flat',
     map: {
       defaultTileLayer: 'wikimedia',
     },
     data: {
       taxonomy: gogoTaxo,
       elements: data
+    },
+    fonts: {
+      mainFont: 'Nunito'
+    },
+    features: {
+      layers: {},
+      mapdefaultview: {},
+      searchCategories: {},
+      searchElements: {},
+      searchGeolocate: {},
+      searchPlace: {}
     }
   }
   if (param['jsonconfurl']) {
