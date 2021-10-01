@@ -106,6 +106,8 @@
     // Transform wikiTaxo into gogocartoTaxo
     // -------------------------------------
     var gogoTaxo = [];
+    
+    let firstGroup = true
     for (var categoryId in filters) {
       var wikiCat = filters[categoryId];
       let useIconForMarker = categoryId == param['iconfield']
@@ -121,11 +123,20 @@
             name: wikiOption.label,
             id: wikiOption.value
           }
-          if (useIconForMarker) gogoOption.icon = param['iconprefix'] + param['icon'][gogoOption.id]
-          if (useColorForMarker) gogoOption.color = param['color'][gogoOption.id]
+          // Icon
+          if (!param['iconfield'] && firstGroup)
+            gogoOption.icon = "fa fa-bullseye"            
+          else if (useIconForMarker) 
+            gogoOption.icon = param['iconprefix'] + param['icon'][gogoOption.id]
+          // Color
+          if (!param['colorfield'] && firstGroup) 
+            gogoOption.color = "#4e5056"
+          else if (useColorForMarker) 
+            gogoOption.color = param['color'][gogoOption.id]
           return gogoOption;
         })
       }
+      firstGroup = false
       gogoTaxo.push(gogoCat);
     }
 
@@ -232,8 +243,8 @@
   .dropdown-menu-right {
     right: 0;
     left: auto !important;
-  } 
-  <?php if (isset($param['search']) && ($param['search'] == 'false' || $param['search'] === false)) { ?>
+  }
+  <?php if (isset($param['search']) && ($param['search'] === "false" || $param['search'] === false)) { ?>
     .directory-menu-header .btn-close-menu { 
       display: none !important; 
     }
