@@ -712,7 +712,7 @@ function getImageFromBody($page, $width, $height)
     // on cherche les actions attach avec image, puis les images bazar
     preg_match_all("/\{\{attach.*file=\".*\.(?i)(jpe?g|png).*\}\}/U", $page['body'], $images);
     if (is_array($images[0]) && !empty($images[0][0])) {
-        preg_match_all("/.*file=\"(.*\.(?i)(jpe?g|pngif))\".*desc=\"(.*)\".*\}\}/U", $images[0][0], $img);
+        preg_match_all("/.*file=\"(.*\.(?i)(jpe?g|png))\".*desc=\"(.*)\".*\}\}/U", $images[0][0], $img);
 
         $oldpage = $GLOBALS['wiki']->GetPageTag();
         $GLOBALS['wiki']->tag = $page['tag'];
