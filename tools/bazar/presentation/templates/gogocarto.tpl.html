@@ -47,83 +47,109 @@
   // facettes filters
   var filters = <?php echo json_encode($filters) ?>;
 
-  // ----------------------------------------------------
-  // Transform wiki data to better fit gogocarto ontology.
-  // ----------------------------------------------------
-  data = data.map(function(el) {
-    el.taxonomy = []
-    for(var i = 0; i < param['groups'].length; i++) {
-      var value = el[param['groups'][i]];
-      if (value) el.taxonomy = el.taxonomy.concat(value.split(','))
-    }
-
-    el.name = el.bf_titre;
-    el.bf_titre = null;
-    var result = {}
-    for (var key in el) {
-      var value = el[key]
-      // remove attribute with empty value
-      if (value) {
-        // remove bf_ prefix
-        if (key.indexOf('bf_') > -1) {
-          var newkey = key.replace('bf_', '');
-          result[newkey] = value;
-        } else {
-          result[key] = value;
+  document.addEventListener("DOMContentLoaded",function() {
+    // ----------------------------------------------------
+    // Transform wiki data to better fit gogocarto ontology.
+    // ----------------------------------------------------
+    data = data.map(function(el) {
+      el.taxonomy = []
+      for(var field in filters) {
+        if (el[field]) {
+          el.taxonomy = el.taxonomy.concat(el[field].split(','))
+          el[field] = null
         }
       }
-    }
-    return result
-  });
+      el.name = el.bf_titre;
+      el.bf_titre = null;
+      el.geo = {
+        latitude: el.bf_latitude,
+        longitude: el.bf_longitude
+      }
+      el.bf_latitude = null
+      el.bf_longitude = null
+      el.geolocation = null; 
+      el.html_data = null; 
+      el.id_typeannonce = null;
+      el.id = el.id_fiche
+      el.id_fiche = null;
+      el.statut_fiche = null
 
-  // -------------------------------------
-  // Transform wikiTaxo into gogocartoTaxo
-  // -------------------------------------
-  var gogoTaxo = [];
-  for (var categoryId in filters) {
-    var wikiCat = filters[categoryId];
-    let useIconForMarker = categoryId == param['iconfield']
-    let useColorForMarker = categoryId == param['colorfield']
-    var gogoCat = {
-      name:  wikiCat.title,
-      isMandatory: false,
-      showExpanded: !wikiCat.collapsed,
-      useIconForMarker: useIconForMarker,
-      useColorForMarker: useColorForMarker,
-      options: wikiCat.list.map(wikiOption => {
-        let gogoOption = {
-          name: wikiOption.label,
-          id: wikiOption.value
+      // TODO display those one nicely in gogocarto
+      el.owner = null
+      el.url = null
+      el.statut_fiche = null
+      el.date_creation_fiche = null
+      el.date_maj_fiche = null
+
+      var result = { images: [] }
+      for (var key in el) {
+        var value = el[key]
+        // remove attribute with empty value
+        if (value) {
+          // remove bf_ prefix
+          if (key.indexOf('bf_') == 0) {
+            var newkey = key.replace('bf_', '');
+            result[newkey] = value;
+          } else {
+            result[key] = value;
+          }
+          if (key.indexOf('image') == 0 && key != 'images' && typeof(value) == 'string') {
+            result.images.push(wiki.baseUrl.replace(/\?$/, '') + 'cache/image_' + value.toLowerCase());
+            result[key] = null;
+          }
         }
-        if (useIconForMarker) gogoOption.icon = param['iconprefix'] + param['icon'][gogoOption.id]
-        if (useColorForMarker) gogoOption.color = param['color'][gogoOption.id]
-        return gogoOption;
-      })
-    }
-    gogoTaxo.push(gogoCat);
-  }
+      }
+      return result
+    });
 
-  // -------------------
-  // Loads Configuration
-  // -------------------
-  var confReady = false; // sometime we need to download distant configuration
-  gogoConf = {
-    general: { activateHistoryStateAndRouting: false },
-    language: 'fr',
-    theme: 'flat',
-    map: {
-      defaultTileLayer: 'wikimedia',
-    },
-    colors: {
-      primary: "#d8604c",
-      secondary: "#1a89a0",
-      textDark: "#4e5056",
-      textLight: "#ffffff",
-    },
-    data: {
-      taxonomy: gogoTaxo,
-      elements: data
-    },
+    // -------------------------------------
+    // Transform wikiTaxo into gogocartoTaxo
+    // -------------------------------------
+    var gogoTaxo = [];
+    for (var categoryId in filters) {
+      var wikiCat = filters[categoryId];
+      let useIconForMarker = categoryId == param['iconfield']
+      let useColorForMarker = categoryId == param['colorfield']
+      var gogoCat = {
+        name:  wikiCat.title,
+        isMandatory: false,
+        showExpanded: !wikiCat.collapsed,
+        useIconForMarker: useIconForMarker,
+        useColorForMarker: useColorForMarker,
+        options: wikiCat.list.map(wikiOption => {
+          let gogoOption = {
+            name: wikiOption.label,
+            id: wikiOption.value
+          }
+          if (useIconForMarker) gogoOption.icon = param['iconprefix'] + param['icon'][gogoOption.id]
+          if (useColorForMarker) gogoOption.color = param['color'][gogoOption.id]
+          return gogoOption;
+        })
+      }
+      gogoTaxo.push(gogoCat);
+    }
+
+    // -------------------
+    // Loads Configuration
+    // -------------------
+    var confReady = false; // sometime we need to download distant configuration
+    gogoConf = {
+      general: { activateHistoryStateAndRouting: false },
+      language: 'fr',
+      theme: 'flat',
+      map: {
+        defaultTileLayer: 'wikimedia',
+      },
+      colors: {
+        primary: "#d8604c",
+        secondary: "#1a89a0",
+        textDark: "#4e5056",
+        textLight: "#ffffff",
+      },
+      data: {
+        taxonomy: gogoTaxo,
+        elements: data
+      },
       fonts: {
         mainFont: 'Nunito'
       },
@@ -133,24 +159,24 @@
       features: {
         layers: {},
         mapdefaultview: {}      
+      }
     }
-  }
-  if (param['search'] == 'true' || param['search'] === true) {
-      gogoConf.features.searchCategories = {};
-      gogoConf.features.searchElements = {};
-      gogoConf.features.searchGeolocate = {};
-      gogoConf.features.searchPlace = {};
-  }
-  if (param['jsonconfurl']) {
-    $.get(param['jsonconfurl'], function(distantConf) {
-      gogoConf = { ...distantConf, ...gogoConf }
+    if (param['search'] == 'true' || param['search'] === true) {
+        gogoConf.features.searchCategories = {};
+        gogoConf.features.searchElements = {};
+        gogoConf.features.searchGeolocate = {};
+        gogoConf.features.searchPlace = {};
+    }
+    if (param['jsonconfurl']) {
+      $.get(param['jsonconfurl'], function(distantConf) {
+        gogoConf = { ...distantConf, ...gogoConf }
+        confReady = true;
+      });
+    } else {
       confReady = true;
-    });
-  } else {
-    confReady = true;
-  }
+    }
 
-  document.addEventListener("DOMContentLoaded",function() {
+  
     // Load gogocartoJs now (after jquery and bootstrap are already loaded) so there is no conflict
     var jsElm = document.createElement("script");
     jsElm.type = "application/javascript";
@@ -159,7 +185,7 @@
 
     // When everything is ready, starts gogocarto
     interval = setInterval(function() {
-      if (goGoCarto != undefined && confReady) {
+      if (goGoCarto != undefined && confReady && $.fn.velocity) {
         carto = goGoCarto('#gogo-map<?php echo $param['nbbazarliste']; ?>', gogoConf)
         clearInterval(interval);
       }
