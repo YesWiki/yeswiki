@@ -612,6 +612,7 @@ var yesWikiTypes = {
 var defaultFieldsName = {
   textarea: "bf_description",
   image: "bf_image",
+  champs_mail: "bf_mail",
 }
 
 function initializeFormbuilder(formAndListIds) {
