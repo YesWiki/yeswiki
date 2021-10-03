@@ -249,7 +249,8 @@ $GLOBALS['translations'] = array_merge(
         'BAZ_CHANGE_PWD' => 'Changer de mot de passe',
         'BAZ_PROTECTION_ANTISPAM' => 'Protection antispam',
         'BAZ_CONTACT_BY_MAIL' => 'Contacter par mail',
-
+        'BAZ_GOGO_NEED_GROUPS' => 'Pour utiliser ce template vous devez activer au moins une facette',
+        
         //================ Calendrier Bazar =======================================
         'BAZ_AFFICHE_TITRES_COMPLETS' => 'Afficher les titres complets des événements',
         'BAZ_TRONQUER_TITRES' => 'Tronquer les titres des événements',

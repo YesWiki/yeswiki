@@ -3,7 +3,7 @@
 {% endif %}
 
 {% if filters %}
-  <div class="facette-container row" data-filter-align="{{ params.filterposition }}">
+  <div class="facette-container row" data-filter-align="{{ params.filterposition }}" data-template="{{ params.template }}">
     {% set resultsColSize = params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format %}
     <div class="results-col col-sm-{{ resultsColSize }}">
       {{ include("@bazar/entries/index/_entries.twig") }}

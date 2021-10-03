@@ -24,7 +24,6 @@ class BazarCartoAction extends YesWikiAction
         $markerSize = $_GET['markersize'] ?? $arg['markersize'] ?? null;
         $smallMarker = $_GET['smallmarker'] ?? $arg['smallmarker'] ?? $markerSize === 'small' ? '1' : $this->params->get('baz_small_marker');
 
-
         // backward compatibility for custom map.tpl.html
         // TO remove this part when dynamic is robust AND user of custom templates are really aware of this
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
@@ -40,6 +39,7 @@ class BazarCartoAction extends YesWikiAction
         $template = (!$dynamic) ?
             ($arg['template'] ?? 'map.tpl.html') :
             ($arg['template'] ?? 'map');
+        if (strpos($template, 'gogomap') !== false) $template = 'gogocarto';
         $spider = (!$dynamic) ?
             ($arg['spider'] ?? 'false') :
             $this->formatBoolean($arg, false, 'spider');

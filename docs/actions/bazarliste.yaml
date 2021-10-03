@@ -36,6 +36,7 @@ actions:
         type: number
         showExceptFor:
           - bazarcarto
+          - bazargogocarto
           - bazartimeline
           - bazarcarousel
           - bazarcalendar
@@ -46,12 +47,14 @@ actions:
         only: lists # ce champ doit être de type checkboxListe, listeListe ...
         showOnlyFor:
           - bazarcarto
+          - bazargogocarto
           - bazarliste
       colormapping:
         type: color-mapping
         showif: colorfield
         showOnlyFor:
           - bazarcarto
+          - bazargogocarto
           - bazarliste
         subproperties:
           id:
@@ -67,12 +70,14 @@ actions:
         only: lists # ce champ doit être de type checkboxListe, listeListe ...
         showOnlyFor:
           - bazarcarto
+          - bazargogocarto
           - bazarliste
       iconmapping:
         type: icon-mapping
         showif: iconfield
         showOnlyFor:
           - bazarcarto
+          - bazargogocarto
           - bazarliste
         subproperties:
           id:
@@ -137,6 +142,8 @@ actions:
           right: Droite
           left: Gauche
         showif: facettes
+        showExceptFor:
+          - bazargogocarto
       filtercolsize:
         label: Largeur des facettes
         advanced: true
@@ -157,6 +164,7 @@ actions:
         advanced: true
         showExceptFor:
           - bazarcarto
+          - bazargogocarto
           - bazartimeline
           - bazarannuaire
           - bazarcalendar
@@ -170,6 +178,7 @@ actions:
           desc: Décroissant
         showExceptFor:
           - bazarcarto
+          - bazargogocarto
           - bazartimeline
           - bazarannuaire
           - bazarcalendar
@@ -203,6 +212,8 @@ actions:
         checkedvalue: 1
         uncheckedvalue: 0
         showif: facettes
+        showExceptFor:
+          - bazargogocarto
 
   # -----------------
   # Liste des Actions
@@ -588,3 +599,24 @@ actions:
           date_creation_fiche:
             type: form-field
             label: Champ pour la date de publication
+
+  bazargogocarto:
+    label: Cartographie 2 - GoGocarto
+    description: Les fiches seront sous forme de marqueur.
+    hint: >-
+      Le champ géolocalisation doit être présent dans votre formulaire.
+      Pensez aussi à choisir un champ pour l'icone et la couleur des marqueurs
+    width: 35%
+    properties:
+      template:
+        value: gogocarto
+      height:
+        label: Hauteur de la carte
+        type: text
+        default: 600px
+      width:
+        advanced: true
+        label: Largeur de la carte
+        hint: 500px, 100%...
+        type: text
+        default: 100%

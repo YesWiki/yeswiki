@@ -12,6 +12,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
     "bootstrap": "^3",
+    "gogocarto-js": "^1.7.11",
     "jquery": "^3.5.1",
     "leaflet": "^1.7.1",
     "leaflet-providers": "^1.12.0",
