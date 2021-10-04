@@ -2,9 +2,8 @@ export default {
   props: [ 'value', 'config' ],
   computed: {
     pageList() {
-      var baseUrl = wiki.baseUrl;
       $.ajax({
-        url: baseUrl + `root/json`+(baseUrl.includes('?') ? '&' : '?')+`demand=pages`,
+        url: wiki.url('?root/json', {demand: 'pages'}),  // keep ? because standart http rewrite waits for CamelCase and 'root' is not
         async: true,
         dataType: "json",
         type: 'GET',

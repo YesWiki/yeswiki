@@ -61,6 +61,7 @@ class Wiki
     public $page;
     public $tag;
     public $parameter = array();
+    public $request;
     // current output used for actions/handlers/formatters
     public $output;
     public $interWiki = array();
@@ -1160,60 +1161,11 @@ class Wiki
             $this->SetUser($user, $_COOKIE['remember']);
         }
 
+        $this->request = Request::createFromGlobals();
+
         // Is this a special page ?
         if ($tag === 'api') {
-            // We must manually parse the body data for the PUT or PATCH methods
-            // See https://www.php.net/manual/fr/features.file-upload.put-method.php
-            // TODO properly use the Symfony HttpFoundation component to avoid this
-            if (($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
-                if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
-                    $response = new Response(_t('WIKI_IN_HIBERNATION'), Response::HTTP_UNAUTHORIZED);
-                    $response->send();
-                    exit();
-                }
-                if (empty($_POST)) {
-                    $_POST = json_decode(file_get_contents('php://input'), true) ?? [];
-                }
-            }
-
-            $context = new RequestContext();
-            $request = Request::createFromGlobals();
-            $context->fromRequest($request);
-
-            // Use query string as the path (part before '&')
-            $extract = explode('&', $context->getQueryString());
-            $path = $extract[0];
-            if (count($extract) > 1) {
-                array_unshift($extract);
-                $newQuerytring = implode('&', $extract);
-            }
-            $context->setPathInfo('/' . $path);
-            $context->setQueryString($newQuerytring ?? '');
-
-            $matcher = new UrlMatcher($this->routes, $context);
-
-            $controllerResolver = new YesWikiControllerResolver($this);
-            $argumentResolver = new ArgumentResolver();
-
-            try {
-                // TODO put this elsewhere ?
-                $attributes = $matcher->match($context->getPathInfo());
-                if ($this->services->get(ApiService::class)->isAuthorized($attributes, $this->routes)) {
-                    $request->attributes->add($attributes);
-
-                    $controller = $controllerResolver->getController($request);
-                    $arguments = $argumentResolver->getArguments($request, $controller);
-
-                    $response = call_user_func_array($controller, $arguments);
-                } else {
-                    $response = new Response('', Response::HTTP_UNAUTHORIZED);
-                }
-            } catch (ResourceNotFoundException $exception) {
-                $response = new Response('', Response::HTTP_NOT_FOUND);
-            } catch (HttpException $exception) {
-                $response = new Response($exception->getMessage(), $exception->getStatusCode(), $exception->getHeaders());
-            }
-            $response->send();
+            $this->RunAPI();
         } else {
             $this->SetPage($this->LoadPage($tag, (isset($_REQUEST['time']) ? $_REQUEST['time'] : '')));
             $this->LogReferrer();
@@ -1225,6 +1177,61 @@ class Wiki
                 unset($_SESSION['redirects']);
             }
         }
+    }
+
+    private function RunAPI()
+    {
+        // We must manually parse the body data for the PUT or PATCH methods
+        // See https://www.php.net/manual/fr/features.file-upload.put-method.php
+        // TODO properly use the Symfony HttpFoundation component to avoid this
+        if (($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
+            if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
+                $response = new Response(_t('WIKI_IN_HIBERNATION'), Response::HTTP_UNAUTHORIZED);
+                $response->send();
+                exit();
+            }
+            if (empty($_POST)) {
+                $_POST = json_decode(file_get_contents('php://input'), true) ?? [];
+            }
+        }
+
+        $context = new RequestContext();
+        $context->fromRequest($this->request);
+        
+        // Use query string as the path (part before '&')
+        $extract = explode('&', $context->getQueryString());
+        $path = $extract[0];
+        if (count($extract) > 1) {
+            array_unshift($extract);
+            $newQuerytring = implode('&', $extract);
+        }
+        $context->setPathInfo('/' . $path);
+        $context->setQueryString($newQuerytring ?? '');
+
+        $matcher = new UrlMatcher($this->routes, $context);
+
+        $controllerResolver = new YesWikiControllerResolver($this);
+        $argumentResolver = new ArgumentResolver();
+
+        try {
+            // TODO put this elsewhere ?
+            $attributes = $matcher->match($context->getPathInfo());
+            if ($this->services->get(ApiService::class)->isAuthorized($attributes, $this->routes)) {
+                $this->request->attributes->add($attributes);
+
+                $controller = $controllerResolver->getController($this->request);
+                $arguments = $argumentResolver->getArguments($this->request, $controller);
+
+                $response = call_user_func_array($controller, $arguments);
+            } else {
+                $response = new Response('', Response::HTTP_UNAUTHORIZED);
+            }
+        } catch (ResourceNotFoundException $exception) {
+            $response = new Response('', Response::HTTP_NOT_FOUND);
+        } catch (HttpException $exception) {
+            $response = new Response($exception->getMessage(), $exception->getStatusCode(), $exception->getHeaders());
+        }
+        $response->send();
     }
 
     /**
@@ -1465,14 +1472,6 @@ class Wiki
     public function LoadPageById($id)
     {
         return $this->services->get(PageManager::class)->getById($id);
-    }
-
-    /**
-     * @deprecated Use PageManager::getRevisions instead
-     */
-    public function LoadRevisions($page)
-    {
-        return $this->services->get(PageManager::class)->getRevisions($page);
     }
 
     /**

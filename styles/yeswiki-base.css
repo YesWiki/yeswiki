@@ -30,16 +30,6 @@ ul.fake-ul {
 .deletions {
   color: #880000;
 }
-.add {
-  font-weight: bold;
-  color: #c00;
-  text-decoration: underline;
-}
-.del, .ace-body .ace_stroke {
-  font-style: italic;
-  color: #c00;
-  text-decoration: line-through;
-}
 
 /* Navigation par table des matieres */
 .trail_table {

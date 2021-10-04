@@ -125,4 +125,9 @@ class DbService
         }
         return $data;
     }
+
+    public function count($query): int
+    {
+        return mysqli_num_rows($this->query($query));
+    }
 }

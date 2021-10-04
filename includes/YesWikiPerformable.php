@@ -2,6 +2,7 @@
 namespace YesWiki\Core;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
@@ -98,6 +99,11 @@ abstract class YesWikiPerformable
         // This additional argument helps to prevent infinite loops
         $arguments['calledBy'] = get_class($this);
         return $this->wiki->Action($action, 0, $arguments);
+    }
+
+    protected function getRequest() : Request
+    {
+        return $this->wiki->request;
     }
 
     // Can be extended to format the arguments

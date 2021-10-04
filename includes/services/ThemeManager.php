@@ -260,6 +260,8 @@ class ThemeManager
         // On recupere la partie haut du template et on execute les actions wikini
         $templateCut = explode("{WIKINI_PAGE}", $fileContent);
         $this->templateHeader = $templateCut[0] ?? '';
+        // ADD flash message just before page content
+        $this->templateHeader .= flash()->display();
         $this->templateFooter = (count($templateCut) > 0) ? $templateCut[1] : '';
 
         return true;

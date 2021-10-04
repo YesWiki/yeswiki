@@ -56,8 +56,6 @@ window.myapp = new Vue({
     // Aceditor
     editor: null,
     displayAdvancedParams: false,
-    //
-    baseUrl: wiki.baseUrl
   },
   computed: {
     actionGroup() { return this.currentGroupId ? this.actionGroups[this.currentGroupId] : {} },
@@ -177,8 +175,8 @@ window.myapp = new Vue({
         }
       }
       else {
-        let firstSeparator = (this.baseUrl.substr(-1) === "?") ? "&" : "?";
-        $.getJSON(this.baseUrl + `root/json`+firstSeparator+`demand=forms&id=${this.selectedFormId}`, data => {
+        $.getJSON(wiki.url('?root/json', {demand: 'forms', id: this.selectedFormId}), data => {
+            // keep ? because standart http rewrite waits for CamelCase and 'root' is not
           this.loadedForms[this.selectedFormId] = data[0]
           // On first form loaded, we load again the values so the special components are rendered and we can parse values on each special component
           if (!this.selectedForm && this.isEditingExistingAction) setTimeout(() => this.initValues(), 0)

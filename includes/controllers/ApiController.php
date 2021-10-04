@@ -2,11 +2,16 @@
 
 namespace YesWiki\Core\Controller;
 
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\DiffService;
+use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
 
@@ -116,5 +121,48 @@ class ApiController extends YesWikiController
             $pagesWithTag[$page['tag']] = $page;
         }
         return new ApiResponse(empty($pagesWithTag) ? null : $pagesWithTag);
+    }
+
+    /**
+     * @Route("/api/pages/{tag}",options={"acl":{"public"}})
+     */
+    public function getPage(Request $request, $tag)
+    {
+        ob_start(); // to catch error messages
+        $this->denyAccessUnlessGranted('read', $tag);
+        
+        $pageManager = $this->getService(PageManager::class);
+        $diffService = $this->getService(DiffService::class);
+        $entryManager = $this->getService(EntryManager::class);
+        $entryController = $this->getService(EntryController::class);
+        $page = $pageManager->getOne($tag, $request->get('time'));
+        if (!$page) {
+            return new ApiResponse(null, Response::HTTP_NOT_FOUND);
+        }
+        
+        if ($entryManager->isEntry($page['tag'])) {
+            $page['html'] = $entryController->view($page['tag'], $page['time'], false);
+            $page['code'] = $diffService->formatJsonCodeIntoHtmlTable($page);
+        } else {
+            $page['html'] = $this->wiki->Format($page["body"], 'wakka', $page['tag']);
+            $page['code'] = $page['body'];
+        }
+
+        if ($request->get('includeDiff')) {
+            $prevVersion = $pageManager->getPreviousRevision($page);
+            if (!$prevVersion) {
+                $prevVersion = ["tag" => $tag, "body" => "", "time" => null];
+            }
+            $page['commit_diff_html'] = $diffService->getPageDiff($prevVersion, $page, true);
+            $page['commit_diff_code'] = $diffService->getPageDiff($prevVersion, $page, false);
+
+            $lastVersion = $pageManager->getOne($page['tag']);
+            $page['diff_html'] = $diffService->getPageDiff($lastVersion, $page, true);
+            $page['diff_code'] = $diffService->getPageDiff($lastVersion, $page, false);
+        }
+
+        $errors = ob_get_contents();
+        ob_end_clean();
+        return new ApiResponse((empty($errors) ? [] : ['errors' => $errors])+$page);
     }
 }
