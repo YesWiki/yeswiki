@@ -29,6 +29,13 @@ if ($endUpdate) {
     if (isset($data['fromCercopitheque']) && $data['fromCercopitheque']) {
         unset($data['fromCercopitheque']);
         $fromCercopitheque = true;
+        $newMessages = [];
+        $newMessages[0]['text'] = _t('AU_YESWIKI_DORYPHORE_POSTINSTALL');
+        $newMessages[0]['status'] = _t('AU_OK');
+        foreach($data['messages'] as $message){
+            $newMessages[] = $message;
+        }
+        $data['messages'] = $newMessages;
 
         // check presence of theme margot
         $themeManager = $this->services->get(ThemeManager::class) ;
@@ -102,10 +109,6 @@ if ($endUpdate) {
             $autoUpdate = new AutoUpdate($this);
             $get['upgrade'] = 'yeswiki';
             $messages = new Messages();
-            // add title if existing
-            if ($fromCercopitheque ?? false){
-                $messages->add(_t('AU_YESWIKI_DORYPHORE_POSTINSTALL'), _t('AU_OK'));
-            }
             // udate message with previous one
             foreach ($data['messages'] as $message) {
                 $messages->add($message['text'], $message['status']);
