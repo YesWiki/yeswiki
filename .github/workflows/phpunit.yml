@@ -75,6 +75,7 @@ jobs:
           -F "config[mysql_user]=root" \
           -F "config[mysql_password]=root" \
           -F "config[table_prefix]=yeswiki_" \
+          -F "config[allow_raw_html]=1" \
           -F "admin_name=ActionTest" \
           -F "admin_password=ActionTestPassword" \
           -F "admin_password_conf=ActionTestPassword" \
