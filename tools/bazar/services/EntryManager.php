@@ -185,9 +185,9 @@ class EntryManager
         // On limite au type de fiche
         if (!empty($params['formsIds'])) {
             if (is_array($params['formsIds'])) {
-                $requete .= ' AND ' . join(' OR ', array_map(function ($formId) {
+                $requete .= ' AND (' . join(' OR ', array_map(function ($formId) {
                     return 'body LIKE \'%"id_typeannonce":"' . $formId . '"%\'';
-                }, $params['formsIds']));
+                }, $params['formsIds'])).') ';
             } else {
                 // on a une chaine de caractere pour l'id plutot qu'un tableau
                 $requete .= ' AND body LIKE \'%"id_typeannonce":"' . $params['formsIds'] . '"%\'';
