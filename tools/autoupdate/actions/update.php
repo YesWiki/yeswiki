@@ -27,6 +27,7 @@ if ($endUpdate) {
     
     // specific message when updating from cercopitheque
     if (isset($data['fromCercopitheque']) && $data['fromCercopitheque']) {
+        unset($data['fromCercopitheque']);
         $output = '<h1>'._t('AU_YESWIKI_DORYPHORE_POSTINSTALL').'</h1>'."\n";
 
         // check presence of theme margot
@@ -102,32 +103,14 @@ if ($endUpdate) {
             $autoUpdate = new AutoUpdate($this);
             $get['upgrade'] = 'yeswiki';
             $messages = new Messages();
-            $controller = new Controller($autoUpdate, $messages, $this);
-            $upgradeYWMessages = $controller->run($get);
-            if (!empty($upgradeYWMessages)) {
-                $data['messages'][] = [
-                    'status'=>'ok',
-                    'text'=> '=== '._t('AU_YESWIKI_SECOND_TIME_UPDATE').' ===',
-                ];
-                // extract messages
-                $matches = [];
-                if (preg_match_all(
-                    '/<li class="list-group-item">\s*<span class="pull-right label [^"]*">([^<]*)<\/span>\s([^<]*)/',
-                    $upgradeYWMessages,
-                    $matches
-                )) {
-                    foreach ($matches[0] as $index => $match) {
-                        $data['messages'][] = [
-                            'status'=>$matches[1][$index],
-                            'text'=> str_replace("&#039;", "'", $matches[2][$index])
-                        ];
-                    }
-                }
-                $_SESSION['updateMessage'] = json_encode($data);
-                $newAdress = $data['baseURL'];
-                header("Location: ".$newAdress);
-                exit();
+            // udate message with previous one
+            foreach ($data['messages'] as $message) {
+                $messages->add($message['text'], $message['status']);
             }
+            // add message for second update
+            $messages->add('=== '._t('AU_YESWIKI_SECOND_TIME_UPDATE').' ===', 'ok');
+            $controller = new Controller($autoUpdate, $messages, $this);
+            $controller->run($get);
         } else {
             $data['messages'][] = [
                 'status'=>'not ok',
