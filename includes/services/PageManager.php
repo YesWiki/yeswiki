@@ -50,7 +50,7 @@ class PageManager
                 $this->cache($cachedPage, $tag);
             }
             $page = $cachedPage;
-        } else { 
+        } else {
             // load page
             $timeQuery = $time ? "time = '{$this->dbService->escape($time)}'" : "latest = 'Y'";
             $page = $this->dbService->loadSingle("
@@ -117,22 +117,22 @@ class PageManager
 
     public function getRevisions($pageTag, $limit = 10000)
     {
-        return $this->dbService->loadAll("
+        return $this->checkEntriesACL($this->dbService->loadAll("
             SELECT id, time, user FROM {$this->dbService->prefixTable('pages')} 
             WHERE tag = '{$this->dbService->escape($pageTag)}' 
             ORDER BY time DESC
             LIMIT {$limit}
-        ");
+        "), $pageTag);
     }
 
     public function getPreviousRevision($page)
     {
-        return $this->dbService->loadSingle("
+        return $this->checkEntriesACL([$this->dbService->loadSingle("
             SELECT * FROM {$this->dbService->prefixTable('pages')} 
             WHERE tag = '{$this->dbService->escape($page['tag'])}' AND time < '{$page['time']}'
             ORDER BY time DESC
             LIMIT 1
-        ");
+        ")], $page['tag'])[0];
     }
 
     public function countRevisions($page)
