@@ -45,11 +45,21 @@ class Controller
             and $this->autoUpdate->isAdmin()
             and !$this->securityController->isWikiHibernated()
             ) {
+            $previousMessages = [];
+            foreach($this->messages as $message){
+                $previousMessages[] = $message;
+            }
             $this->upgrade($get['upgrade']);
             if ($get['upgrade'] == 'yeswiki') {
                 // reload wiki to prevent missing files' error due to upgrade.
                 // prepare data
                 $data = [];
+                foreach ($previousMessages as $message) {
+                    $data_message = [];
+                    $data_message['status'] = $message['status'];
+                    $data_message['text'] = $message['text'];
+                    $data['messages'][] = $data_message;
+                }
                 foreach ($this->messages as $message) {
                     $data_message = [];
                     $data_message['status'] = $message['status'];

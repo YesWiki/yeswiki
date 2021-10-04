@@ -28,7 +28,7 @@ if ($endUpdate) {
     // specific message when updating from cercopitheque
     if (isset($data['fromCercopitheque']) && $data['fromCercopitheque']) {
         unset($data['fromCercopitheque']);
-        $output = '<h1>'._t('AU_YESWIKI_DORYPHORE_POSTINSTALL').'</h1>'."\n";
+        $fromCercopitheque = true;
 
         // check presence of theme margot
         $themeManager = $this->services->get(ThemeManager::class) ;
@@ -83,8 +83,6 @@ if ($endUpdate) {
                 exit();
             }
         }
-    } else {
-        $output = '' ;
     }
     // check presence of specific files
     $filesToCheck = ['templates/edit-config.twig']; // only present if templates folder is updated
@@ -104,6 +102,10 @@ if ($endUpdate) {
             $autoUpdate = new AutoUpdate($this);
             $get['upgrade'] = 'yeswiki';
             $messages = new Messages();
+            // add title if existing
+            if ($fromCercopitheque ?? false){
+                $messages->add(_t('AU_YESWIKI_DORYPHORE_POSTINSTALL'), _t('AU_OK'));
+            }
             // udate message with previous one
             foreach ($data['messages'] as $message) {
                 $messages->add($message['text'], $message['status']);
@@ -127,6 +129,18 @@ if ($endUpdate) {
             ];
         }
     }
+
+    if ($data['messages'][0]['text'] == _t('AU_YESWIKI_DORYPHORE_POSTINSTALL')){
+        $fromCercopitheque = true;
+        $newMessages = [];
+        for ($i=1; $i < count($data['messages']); $i++) { 
+            $newMessages[] = $data['messages'][$i];
+        }
+        $data['messages'] = $newMessages;
+    }
+    $output = ($fromCercopitheque ?? false)
+        ? '<h1>'._t('AU_YESWIKI_DORYPHORE_POSTINSTALL').'</h1>'."\n"
+        : '';
 
     // finished rendering of autoupdate
     $output .= $this->render("@autoupdate/update.twig", [
