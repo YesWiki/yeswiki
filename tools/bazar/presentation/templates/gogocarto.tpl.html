@@ -37,8 +37,6 @@
   <div class="alert alert-danger"><?php echo _t('BAZ_GOGO_NEED_GROUPS') ?></div>
 <?php } ?>
 
-<script src="//cdn.jsdelivr.net/npm/velocity-animate@2.0/velocity.min.js"></script>
-
 <script>
   // wiki data to display
   var data = <?php echo json_encode($fiches) ?>;
@@ -187,20 +185,21 @@
       confReady = true;
     }
 
-  
-    // Load gogocartoJs now (after jquery and bootstrap are already loaded) so there is no conflict
-    var jsElm = document.createElement("script");
-    jsElm.type = "application/javascript";
-    jsElm.src = window.location.origin + window.location.pathname + "javascripts/vendor/gogocarto/gogocarto.js";
-    document.body.appendChild(jsElm);
+    // Adds a timeout so me let jquery ending start, so when we load gogocarto there is no conflict
+    setTimeout(() => {
+      var jsElm = document.createElement("script");
+      jsElm.type = "application/javascript";
+      jsElm.src = window.location.origin + window.location.pathname + "javascripts/vendor/gogocarto/gogocarto.js";
+      document.body.appendChild(jsElm);
 
-    // When everything is ready, starts gogocarto
-    interval = setInterval(function() {
-      if (goGoCarto != undefined && confReady && $.fn.velocity) {
-        carto = goGoCarto('#gogo-map<?php echo $param['nbbazarliste']; ?>', gogoConf)
-        clearInterval(interval);
-      }
-    },100)
+      // When everything is ready, starts gogocarto
+      interval = setInterval(function() {
+        if (goGoCarto != undefined && confReady) {
+          carto = goGoCarto('#gogo-map<?php echo $param['nbbazarliste']; ?>', gogoConf)
+          clearInterval(interval);
+        }
+      },100)
+    }, 0)
   })
 </script>
 
