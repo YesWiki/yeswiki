@@ -60,7 +60,7 @@ if ($endUpdate) {
 
                 // title
                 $data['messages'][] = [
-                    'status'=>'ok',
+                    'status'=>_t('AU_OK'),
                     'text'=> '=== yeswikicerco theme update ==='
                 ];
                 // extract messages
@@ -92,13 +92,14 @@ if ($endUpdate) {
     $notExistingFiles = array_filter($filesToCheck, function ($file) {
         return !file_exists($file);
     });
-    if (!empty($notExistingFiles) && !isset($data['updateAlreadyForced'])) {
+    if (!empty($notExistingFiles) && !($_SESSION['updateAlreadyForced'] ?? false)) {
         // check if previous update is ok
-        $allok = empty(array_filter($data['messages'], function ($message) {
-            return !isset($message['status']) || ($message['status'] !== 'ok');
+        $okText = _t('AU_OK');
+        $allok = empty(array_filter($data['messages'], function ($message) use ($okText) {
+            return !isset($message['status']) || ($message['status'] !== $okText);
         }));
         if ($allok) {
-            $data['updateAlreadyForced'] = true;
+            $_SESSION['updateAlreadyForced'] = true;
             // redo update
             $autoUpdate = new AutoUpdate($this);
             $get['upgrade'] = 'yeswiki';
@@ -108,20 +109,20 @@ if ($endUpdate) {
                 $messages->add($message['text'], $message['status']);
             }
             // add message for second update
-            $messages->add('=== '._t('AU_YESWIKI_SECOND_TIME_UPDATE').' ===', 'ok');
+            $messages->add('=== '._t('AU_YESWIKI_SECOND_TIME_UPDATE').' ===', _t('AU_OK'));
             $controller = new Controller($autoUpdate, $messages, $this);
             $controller->run($get);
         } else {
             $data['messages'][] = [
-                'status'=>'not ok',
+                'status'=>_t('AU_ERROR'),
                 'text'=> _t('AU_SECOND_UPDATE_NOT_POSSIBLE')
             ];
         }
     } else {
-        unset($data['updateAlreadyForced']);
+        unset($_SESSION['updateAlreadyForced']);
         foreach ($notExistingFiles as $file) {
             $data['messages'][] = [
-                'status'=>'not ok',
+                'status'=>_t('AU_ERROR'),
                 'text'=> str_replace('{{file}}', $file, _t('AU_FILE_NOT_POSSIBLE_TO_UPDATE')),
             ];
         }
