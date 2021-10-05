@@ -40,6 +40,7 @@ Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utili
   }
 </script>
 <?php
+use YesWiki\Core\Service\DbService;
 use YesWiki\Security\Controller\SecurityController;
 
 //action réservée aux admins
@@ -93,6 +94,8 @@ if (! $this->UserIsAdmin()) {
     // récupération des filtres
     $filter = $_GET['filter'] ?? null;
     if (!empty($filter)) {
+        $dbService = $this->services->get(DbService::class);
+        $filter = strval($filter);
         if ($filter == "pages") {
             $search = ' AND tag NOT IN ('.
           'SELECT DISTINCT resource FROM '.$table.'triples ' .
@@ -102,13 +105,13 @@ if (! $this->UserIsAdmin()) {
             $search = ' AND tag IN ("BazaR","GererSite","GererDroits","GererThemes","GererMisesAJour","GererUtilisateurs","TableauDeBord"'.
               ',"PageTitre","PageMenuHaut","PageRapideHaut","PageHeader","PageFooter","PageCSS","PageMenu"'.
               ',"PageColonneDroite","MotDePassePerdu","ParametresUtilisateur","GererConfig","ActuYeswiki","LookWiki") ';
-        } elseif ($filter == intval($filter)) {
+        } elseif ($filter === strval(intval($filter))) {
             $requete_pages_wiki_bazar_fiches =
           'SELECT DISTINCT resource FROM '.$table.'triples ' .
           'WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type" ' .
           'ORDER BY resource ASC';
 
-            $search = ' AND body LIKE \'%"id_typeannonce":"' . $filter . '"%\'';
+            $search = ' AND body LIKE \'%"id_typeannonce":"' . $dbService->escape($filter) . '"%\'';
             $search .= ' AND tag IN (' . $requete_pages_wiki_bazar_fiches . ')';
             $search .= ' ';
         } else {
