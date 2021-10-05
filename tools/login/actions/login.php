@@ -59,7 +59,8 @@ if (empty($userpage)) {
     $userpage = $incomingurl;
     // si l'url de sortie contient le passage de parametres de déconnexion, on l'efface
     if (isset($_REQUEST["action"]) && $_REQUEST["action"] == "logout") {
-        $userpage = str_replace('&action=logout', '', $userpage);
+        $userpage = preg_replace('/(&|\\\?)action=logout(&)?/', '$1', $userpage);
+        $userpage = preg_replace('/(&|\\\?)$/m', '', $userpage);
     }
 } else {
     if ($this->IsWikiName($userpage, WN_CAMEL_CASE_EVOLVED)) {
@@ -109,7 +110,7 @@ if (!isset($_REQUEST["action"])) {
 if ($_REQUEST["action"] == "logout") {
     $this->LogoutUser();
     $this->SetMessage(_t('LOGIN_YOU_ARE_NOW_DISCONNECTED'));
-    $this->Redirect(str_replace('&action=logout', '', $incomingurl));
+    $this->Redirect(preg_replace('/(&|\\\?)$/m', '', preg_replace('/(&|\\\?)action=logout(&)?/', '$1', $incomingurl)));
     exit;
 }
 
