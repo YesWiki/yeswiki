@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-The 2 last major versions of YesWiki are
+The two last major versions of YesWiki are
 currently being supported with security updates.
 
 | Version             | Supported          |
