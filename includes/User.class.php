@@ -1,6 +1,7 @@
 <?php
 namespace YesWiki;
 
+use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Security\Controller\SecurityController;
 
@@ -33,6 +34,7 @@ class User
     protected $keyVocabulary = 'http://outils-reseaux.org/_vocabulary/key';
 
     protected $securityController;
+    protected $dbService;
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~ END OF PROPERTIES ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 
@@ -41,6 +43,7 @@ class User
         $this->wiki = $wiki;
         $this->initUsersTable();
         $this->initLimitations();
+        $this->dbService = $this->wiki->services->get(DbService::class);
         $this->securityController = $this->wiki->services->get(SecurityController::class);
     }
 
@@ -237,6 +240,8 @@ class User
             $this->error = _t('USER_YOU_MUST_SPECIFY_A_NAME').'.';
         } elseif (strlen($newName) > $this->nameMaxLength) {
             $this->error = _t('USER_NAME_S_MAXIMUM_LENGTH_IS').' '.$this->nameMaxLength.'.';
+        } elseif (preg_match('/[!#@<>\\\\\/][^<>\\\\\/]{2,}/',$newName)) {
+            $this->error = _t('USER_THIS_IS_NOT_A_VALID_NAME').'.';
         } else {
             $result = true;
         }
@@ -404,7 +409,7 @@ class User
     {
         $correct = true;
         if (isset($confPassword) && (trim($confPassword) !='')) {
-            if ($confPassword != $pwd) {
+            if ($confPassword !== $pwd) {
                 $this->error = _t('USER_PASSWORDS_NOT_IDENTICAL').'.';
                 $correct = false;
             }
@@ -542,7 +547,7 @@ class User
             // Update user's password
             $sql	= 'UPDATE '.$this->usersTable;
             $sql .= ' SET password = "'.MD5($password).'" ';
-            $sql .= 'WHERE name = "'.$this->properties['name'].'" LIMIT 1;';
+            $sql .= 'WHERE name = "'.$this->dbService->escape($this->properties['name']).'" LIMIT 1;';
             $OK = $this->wiki->query($sql); // true or false depending on the query execution
             if ($OK) {
                 $this->properties['password'] = md5($password);
@@ -913,9 +918,9 @@ class User
             if ($OK) {
                 // Delete user in every group
                 $triplesTable = $this->wiki->config['table_prefix'].'triples';
-                $searched_value = '%' . $this->properties['name'] . '%';
-                $seek_value_bf = '' . $this->properties['name'] . '\n'; // username to delete can be followed by another username
-                $seek_value_af = '\n' . $this->properties['name']; // username to delete can follow another username
+                $searched_value = '%' . $this->dbService->escape($this->properties['name']) . '%';
+                $seek_value_bf = '' . $this->dbService->escape($this->properties['name']) . '\n'; // username to delete can be followed by another username
+                $seek_value_af = '\n' . $this->dbService->escape($this->properties['name']); // username to delete can follow another username
                 // get rid of this username everytime it's followed by another
                 $sql  = 'UPDATE '.$triplesTable.'';
                 $sql .= ' SET value = REPLACE(value, "'.$seek_value_bf.'", "")';
@@ -940,7 +945,7 @@ class User
                     $sql = 'UPDATE `'.$pagesTable.'`';
                     // $sql .= ' SET `owner` = NULL';
                     $sql .= ' SET `owner` = "" ';
-                    $sql .= ' WHERE `owner` = "'.$this->properties['name'].'";';
+                    $sql .= ' WHERE `owner` = "'.$this->dbService->escape($this->properties['name']).'";';
                     $OK = $this->wiki->query($sql);
                     if (!$OK) {
                         $this->error = _t('USER_DELETE_QUERY_FAILED').'.';
@@ -949,7 +954,7 @@ class User
                 // Delete the user row from the user table
                 if ($OK) {
                     $sql = 'DELETE FROM `'.$this->usersTable.'`';
-                    $sql .= ' WHERE `name` = "'.$this->properties['name'].'";';
+                    $sql .= ' WHERE `name` = "'.$this->dbService->escape($this->properties['name']).'";';
                     $OK = $this->wiki->query($sql);
                     if (!$OK) {
                         $this->error = _t('USER_DELETE_QUERY_FAILED').'.';
@@ -1024,7 +1029,7 @@ class User
         $sql  = 'SELECT resource FROM '.$triplesTable;
         $sql .= ' WHERE resource LIKE "'.GROUP_PREFIX.'%"';
         $sql .= ' AND property LIKE "'.WIKINI_VOC_ACLS_URI.'"';
-        $sql .= ' AND value LIKE "%'.$this->properties['name'].'%";';
+        $sql .= ' AND value LIKE "%'.$this->dbService->escape($this->properties['name']).'%";';
         /* Execute query */
         $results = array();
         if ($groups = $this->wiki->loadAll($sql)) {

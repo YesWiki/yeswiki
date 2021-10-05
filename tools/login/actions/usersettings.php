@@ -184,6 +184,10 @@ if ($userLoggedIn) { // The one who runs the session is acting
     echo $this->FormClose();
 } // End of the one who runs the session is acting
 } else { // Neither logged in user nor admin trying to do something
+    // sanitize $_POST['name']
+    if (isset($_POST['name'])){
+        $_POST['name'] = htmlspecialchars($_POST['name']);
+    }
     if ($action == 'signup') { // user is trying to register
         if (!$this->user->passwordIsCorrect($_POST['password'], $_POST['confpassword'])) {
             $error = $this->user->error;

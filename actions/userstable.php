@@ -103,7 +103,7 @@ foreach ($last_users as $user) {
     if ($isAdmin && !$userIsTheOneConnected) { // admin and not the current user, then can be deleted
         echo '<td>';
         echo '<form action="'.$this->href('', $this->tag).'" method="post">';
-        echo '<input type="hidden" name="userstable_action" value="delete_'.$user['name'].'" />';
+        echo '<input type="hidden" name="userstable_action" value="delete_'.htmlspecialchars($user['name']).'" />';
         echo '<input class="btn btn-sm btn-danger" type="submit" onclick="return confirm(\''._t('USER_CONFIRM_DELETE').'\');" value="'._t('USER_DELETE').'" />';
         echo $this->FormClose();
         echo '</td>';
