@@ -3,12 +3,11 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Wiki;
 
 /**
  * @Field({"radiofiche"})
  */
-class RadioEntryField extends EnumField
+class RadioEntryField extends RadioField
 {
     public $isDistantJson;
     protected $baseUrl ;
@@ -29,14 +28,6 @@ class RadioEntryField extends EnumField
         }
     }
 
-    protected function renderInput($entry)
-    {
-        return $this->render('@bazar/inputs/radio.twig', [
-            'options' => $this->getOptions(),
-            'value' => $this->getValue($entry)
-        ]);
-    }
-
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry) ;
@@ -51,7 +42,7 @@ class RadioEntryField extends EnumField
                 $entryUrl = $this->baseUrl . $value;
             }
         } else {
-            $entryUrl = $this->services->get(Wiki::class)->href('', $value);
+            $entryUrl = $this->wiki->href('', $value);
         }
 
         return $this->render('@bazar/fields/select_entry.twig', [
