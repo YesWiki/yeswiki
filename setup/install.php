@@ -100,7 +100,7 @@ if (!$version || empty($_POST['admin_login'])) {
     );
     test(
         _t('CHECKING_THE_ADMIN_PASSWORD_CONFIRMATION').' ...',
-        $admin_password == $admin_password_conf,
+        $admin_password === $admin_password_conf,
         _t('ADMIN_PASSWORD_ARE_DIFFERENT'),
         1
     );

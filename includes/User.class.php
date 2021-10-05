@@ -375,7 +375,7 @@ class User
      */
     public function checkPassword($pwd, $newUser = '')
     {
-        if (empty($newUser) && $this->properties['password'] != md5($pwd)) {
+        if (empty($newUser) && $this->properties['password'] !== md5($pwd)) {
             $this->error = _t('USER_WRONG_PASSWORD').' !';
             return false;
         } else {

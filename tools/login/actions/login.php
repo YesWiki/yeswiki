@@ -118,7 +118,7 @@ if ($_REQUEST["action"] == "login") {
     // si l'utilisateur existe, on vérifie son mot de passe
     if (isset($_POST["name"]) && $_POST["name"] != '' && $existingUser = $this->LoadUser($_POST["name"])) {
         // si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
-        if ($existingUser["password"] == md5($_POST["password"])) {
+        if ($existingUser["password"] === md5($_POST["password"])) {
             $this->SetUser($existingUser, $_POST["remember"]);
 
             // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
