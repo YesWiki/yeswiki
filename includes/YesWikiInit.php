@@ -339,6 +339,7 @@ class Init
         if (!isset($_SESSION)) {
             $cookiesParam = session_get_cookie_params();
             $cookiesParam['path'] = $CookiePath;
+            $cookiesParam['httponly'] = true;
             session_set_cookie_params($cookiesParam);
             session_name($sessionName);
             session_start();
