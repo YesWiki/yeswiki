@@ -51,7 +51,7 @@ class IcalFormatter extends YesWikiController
         if (!empty($formId) && is_array($formId)) {
             $formId = $formId[array_key_first($formId)];
         }
-        if (intval($formId) != $formId) {
+        if (strval(intval($formId)) !== strval($formId)) {
             $formId = null;
         }
         if (empty($filename)) {
