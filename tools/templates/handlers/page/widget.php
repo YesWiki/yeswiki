@@ -5,8 +5,12 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-$width = (isset($_GET['width'])) ? $_GET['width'] : '100%';
-$height = (isset($_GET['height'])) ? $_GET['height'] : 700;
+$width = $_GET['width'] ?? '100%';
+$height = $_GET['height'] ?? 700;
+
+// sanitize 
+$width = (preg_match('/^[0-9]+(%|[a-z]{2})?$/m',$width)) ? $width : '100%';
+$height = (preg_match('/^[0-9]+(%|[a-z]{2})?$/m',$height)) ? $height : 700;
 
 echo $this->Header();
 echo "<h2>"._t('TEMPLATE_WIDGET_TITLE')."</h2>";
