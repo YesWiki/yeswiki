@@ -18,6 +18,6 @@ $searchelements['iconclass'] = ($this->GetParameter('iconclass') ? ' '.$this->Ge
 $searchelements['url'] = ($this->GetParameter('url') ? $this->GetParameter('url') : $this->href("show", "RechercheTexte"));
 
 // si une recherche a été effectuée, on garde les mots clés
-$searchelements['phrase'] = (isset($_REQUEST['phrase']) ? $_REQUEST['phrase'] : "");
+$searchelements['phrase'] = htmlspecialchars((isset($_REQUEST['phrase']) ? $_REQUEST['phrase'] : ""));
 
 echo $this->render("@templates/$template", $searchelements);

@@ -97,6 +97,9 @@ class SearchManager
      */
     private function prepareNeedleForRegexp(string $needle): string
     {
+        // be careful to ( and )
+        $needle = str_replace(['(',')','/'], ['\\(','\\)','\\/'], $needle);
+
         // remove accents
         $needle = str_replace(
             ['à','á','â','ã','ä','ç','è','è','é','ê','ë','ì','í','î','ï','ñ','ò','ó','ô','õ','ö','ù','ú','û','ü','ý','ÿ','À','Á','Â','Ã','Ä','Ç','È','É','Ê','Ë','Ì','Í','Î','Ï','Ñ','Ò','Ó','Ô','Õ','Ö','Ù','Ú','Û','Ü','Ý'],

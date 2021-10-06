@@ -45,10 +45,10 @@ $separator = $this->GetParameter('separator', false);
 // -- ou du CGI http://example.org/wakka.php?wiki=RechercheTexte&phrase=Test
 //
 // récupérer le paramétre de l'action
-$paramPhrase = $phrase;
+$paramPhrase = htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET);
 // ou, le cas échéant, récupérer le paramétre du CGI
 if (!$phrase && isset($_GET['phrase'])) {
-    $phrase = $_GET['phrase'];
+    $phrase = htmlspecialchars($_GET['phrase'], ENT_COMPAT, YW_CHARSET);
 }
 
 // s'il y a un paramétre d'action "phrase", on affiche uniquement le résultat
@@ -57,7 +57,7 @@ if (!$paramPhrase) {
     echo $this->FormOpen('', '', 'get');
     echo '<div class="input-prepend input-append input-group input-group-lg">
 			<span class="add-on input-group-addon"><i class="fa fa-search icon-search"></i></span>
-      <input name="phrase" type="text" class="form-control" placeholder="'.(($label) ? $label : '').'" size="', $size, '" value="', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '" >
+      <input name="phrase" type="text" class="form-control" placeholder="'.(($label) ? $label : '').'" size="', $size, '" value="', $phrase, '" >
       <span class="input-group-btn">
         <input type="submit" class="btn btn-primary btn-lg" value="', $button, '" />
       </span>
