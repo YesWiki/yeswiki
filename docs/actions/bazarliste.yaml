@@ -160,7 +160,7 @@ actions:
         hint: Il est possible d'effectuer des requètes avancées, pour en savoir plus
         doclink: https://yeswiki.net/?DocQuery
         type: form-field
-        default: bf_titre
+        default:
         advanced: true
         showExceptFor:
           - bazarcarto
@@ -304,7 +304,7 @@ actions:
           markerhover:
             type: form-field
             label: Champ à afficher au survol du marker
-            default: bf_titre      
+            default: bf_titre
       smallmarker:
         advanced: true
         label: Petit marqueurs
@@ -374,7 +374,7 @@ actions:
         value: 'liste_accordeon'
       displayfields:
         type: correspondance
-        showIf: dynamic
+        showif: dynamic
         subproperties:
           title:
             type: form-field
@@ -383,7 +383,7 @@ actions:
           subtitle:
             type: form-field
             label: Champ pour la zone de sous titre
-            default: bf_description
+            default: ""
           floating:
             type: form-field
             label: Champ pour la zone flottante
