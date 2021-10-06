@@ -63,7 +63,7 @@ class SelectEntryField extends EnumField
                 $entryUrl = $baseUrl . $value;
             }
         } else {
-            $entryUrl = $GLOBALS['wiki']->href('', $value);
+            $entryUrl = $entry['url'];
         }
 
         return $this->render('@bazar/fields/select_entry.twig', [

@@ -42,7 +42,7 @@ class RadioEntryField extends RadioField
                 $entryUrl = $this->baseUrl . $value;
             }
         } else {
-            $entryUrl = $this->wiki->href('', $value);
+            $entryUrl = $entry['url'];
         }
 
         return $this->render('@bazar/fields/select_entry.twig', [
