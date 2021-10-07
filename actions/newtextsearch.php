@@ -35,9 +35,11 @@ $user = $this->GetUser();
 // -- ou du CGI http://example.org/wakka.php?wiki=RechercheTexte&phrase=Test
 //
 // récupérer le paramétre de l'action
-$paramPhrase = $phrase;
+$paramPhrase = htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET);
 // ou, le cas échéant, récupérer le paramétre du CGI
-if (!$phrase && isset($_GET['phrase'])) $phrase = $_GET['phrase'];
+if (!$phrase && isset($_GET['phrase'])) {
+    $phrase = htmlspecialchars($_GET['phrase'], ENT_COMPAT, YW_CHARSET);
+}
 
 // s'il y a un paramétre d'action "phrase", on affiche uniquement le résultat
 // dans le cas contraire, présenter une zone de saisie
@@ -45,7 +47,7 @@ if (!$paramPhrase) {
     echo $this->FormOpen('', '', 'get');
     echo '<div class="input-prepend input-append input-group input-group-lg">
           <span class="add-on input-group-addon"><i class="glyphicon glyphicon-search icon-search"></i></span>
-          <input name="phrase" type="text" class="form-control" placeholder="'.(($label) ? $label : '').'" size="', $size, '" value="', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '" >
+          <input name="phrase" type="text" class="form-control" placeholder="'.(($label) ? $label : '').'" size="', $size, '" value="', $phrase, '" >
           <span class="input-group-btn">
           <input type="submit" class="btn btn-primary btn-lg" value="', $button, '" />
           </span>
@@ -108,7 +110,7 @@ if ($phrase) {
         // affichage des résultats en liste
         if (empty($separator)) {
             echo $this->Format('---- --- **Résultats de la recherche [""'.$phrase.'""] :---**');
-            echo ('<ol>');
+            echo('<ol>');
             foreach ($resultat as $i => $page) {
                 if ($this->HasAccess("read", $page["tag"])) {
                     $lien = $this->ComposeLinkToPage($page["tag"]);
@@ -117,12 +119,12 @@ if ($phrase) {
                     echo "</li>\n";
                 }
             }
-            echo ('</ol>');
+            echo('</ol>');
 
-            // affichage des résultats en ligne
+        // affichage des résultats en ligne
         } else {
             foreach ($resultat as $line) {
-                echo ($this->ComposeLinkToPage($line['tag']).' ');
+                echo($this->ComposeLinkToPage($line['tag']).' ');
             }
         }
         $GLOBALS['js'] = $js;
