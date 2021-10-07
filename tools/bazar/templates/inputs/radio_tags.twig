@@ -4,7 +4,6 @@
   {{ include_javascript('tools/tags/libs/vendor/bootstrap-tagsinput.min.js') }}
   {{ include_javascript('tools/bazar/presentation/javascripts/bazar-tagsinput.js') }}
     <input type="text" name="{{ field.propertyName }}" class="yeswiki-input-entries yeswiki-input-entries{{ field.propertyName }}">
-    <input type="hidden" value="''" name="{{ field.propertyName  ~ field.fromFormId }}">
     <script>
       if (typeof bazarlistTagsInputsData === "undefined"){
         var bazarlistTagsInputsData = new Object();

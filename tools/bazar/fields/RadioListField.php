@@ -13,8 +13,6 @@ class RadioListField extends RadioField
     {
         parent::__construct($values, $services);
 
-        $this->type = 'radio';
-
         $this->loadOptionsFromList();
     }
 

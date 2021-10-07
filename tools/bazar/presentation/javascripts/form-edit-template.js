@@ -300,7 +300,18 @@ var typeUserAttrs = {
       },
     },
   },
-  "radio-group": selectConf,
+  "radio-group":  {
+    ...selectConf,
+    ...{
+      fillingMode: {
+        label: "Mode de saisie",
+        options: {
+          " ": "Normal",
+          tags: "En Tags",
+        },
+      },
+    },
+  },
   textarea: {
     syntax: {
       label: "Format d'écriture",
@@ -538,7 +549,7 @@ var yesWikiMapping = {
   },
   select: lists,
   "checkbox-group": { ...lists, ...{ 7: "fillingMode" } },
-  "radio-group": lists,
+  "radio-group": { ...lists, ...{ 7: "fillingMode" } },
   textarea: { ...defaultMapping, ...{ 4: "rows", 7: "syntax" } },
   file: { ...defaultMapping, ...{ 3: "maxsize" } },
   tags: defaultMapping,

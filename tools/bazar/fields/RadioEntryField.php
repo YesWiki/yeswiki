@@ -15,8 +15,6 @@ class RadioEntryField extends RadioField
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
-
-        $this->type = 'radiofiche';
         
         $this->isDistantJson = filter_var($this->name, FILTER_VALIDATE_URL);
 
