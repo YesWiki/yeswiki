@@ -18,6 +18,7 @@ class ImportService
     
     /**
      * extract baseUrl and rootPage for external url
+     * TODO check if this function should be in UrlService after refactor
      * @param string $inputUrl
      * @return array [$baseUrl,$rootPage,$rewriteModeEnabled]
      */
@@ -40,6 +41,7 @@ class ImportService
 
     /**
      * extract baseUrl, rewriteModeEnabled and tag
+     * TODO check if this function should be in UrlService after refactor
      * @param string $inputUrl
      * @return array [$baseUrl, $rewriteModeEnabled, $tag]
      */
@@ -79,6 +81,7 @@ class ImportService
 
     /**
      * retrieve url after redirection
+     * TODO check if this function should be in UrlService after refactor
      * @param string $inputUrl
      * @return string $outputUrl
      */
