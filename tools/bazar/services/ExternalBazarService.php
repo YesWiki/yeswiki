@@ -341,7 +341,7 @@ class ExternalBazarService
      */
     public function cacheUrl(string $url, int $cache_life = 60, string $dir = 'cache')
     {
-        $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.self::CACHE_FILENAME_DETAILS_PREFIX.$this->sanitizeFileName($url);
+        $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.$this->sanitizeFileName($url);
 
         $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
         if (!$filemtime or (time() - $filemtime >= $cache_life)) {
@@ -484,7 +484,7 @@ class ExternalBazarService
     private function getUrlDetails(string $url, int $cache_life = 60, string $dir = 'cache'): array
     {
         if (!isset($this->urlCache[$url])) {
-            $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.$this->sanitizeFileName($url);
+            $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.self::CACHE_FILENAME_DETAILS_PREFIX.$this->sanitizeFileName($url);
             $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
 
             if (!$filemtime or (time() - $filemtime >= $cache_life)) {
