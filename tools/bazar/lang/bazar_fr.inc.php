@@ -313,6 +313,7 @@ $GLOBALS['translations'] = array_merge(
 
         // ==== ExternalBazarService ====
         'BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_FORM' => 'contenu du formulaire reçu mal formaté.',
+        'BAZ_EXTERNAL_SERVICE_BAD_URL' => 'url non accessible.',
         'BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_ENTRIES' => 'contenu des fiches reçues mal formaté.',
         'BAZ_EXTERNAL_SERVICE_QUERIES_NOT_AVAILABLE' => 'Vous utilisez la paramètre \'query\' pour des fiches externes. Il n\'est pas encore fonctionnel.',
 
