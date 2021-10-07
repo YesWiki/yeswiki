@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Wiki;
 
 /**
  * @Field({"listefiche"})
@@ -63,7 +64,7 @@ class SelectEntryField extends EnumField
                 $entryUrl = $baseUrl . $value;
             }
         } else {
-            $entryUrl = $entry['url'];
+            $entryUrl = $this->services->get(Wiki::class)->Href('', $value);
         }
 
         return $this->render('@bazar/fields/select_entry.twig', [
@@ -75,14 +76,6 @@ class SelectEntryField extends EnumField
 
     public function getOptions()
     {
-        // load options only when needed but not at construct to prevent infinite loops
-        if (is_null($this->options)) {
-            if ($this->isDistantJson) {
-                $this->loadOptionsFromJson();
-            } else {
-                $this->loadOptionsFromEntries();
-            }
-        }
-        return  $this->options;
+        return  $this->getEntriesOptions();
     }
 }

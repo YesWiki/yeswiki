@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Wiki;
 
 /**
  * @Field({"radiofiche"})
@@ -40,7 +41,7 @@ class RadioEntryField extends RadioField
                 $entryUrl = $this->baseUrl . $value;
             }
         } else {
-            $entryUrl = $entry['url'];
+            $entryUrl = $this->services->get(Wiki::class)->Href('', $value);
         }
 
         return $this->render('@bazar/fields/select_entry.twig', [
@@ -52,14 +53,6 @@ class RadioEntryField extends RadioField
     
     public function getOptions()
     {
-        // load options only when needed but not at construct to prevent infinite loops
-        if (is_null($this->options)) {
-            if ($this->isDistantJson) {
-                $this->loadOptionsFromJson();
-            } else {
-                $this->loadOptionsFromEntries();
-            }
-        }
-        return  $this->options;
+        return  $this->getEntriesOptions();
     }
 }

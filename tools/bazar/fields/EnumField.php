@@ -142,6 +142,19 @@ abstract class EnumField extends BazarField
         return  $this->options;
     }
 
+    protected function getEntriesOptions()
+    {
+        // load options only when needed but not at construct to prevent infinite loops
+        if (is_null($this->options)) {
+            if ($this->isDistantJson) {
+                $this->loadOptionsFromJson();
+            } else {
+                $this->loadOptionsFromEntries();
+            }
+        }
+        return  $this->options;
+    }
+
     public function getName()
     {
         return $this->listLabel;

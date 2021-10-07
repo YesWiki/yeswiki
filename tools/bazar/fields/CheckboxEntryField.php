@@ -4,12 +4,16 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Wiki;
 
 /**
  * @Field({"checkboxfiche"})
  */
 class CheckboxEntryField extends CheckboxField
 {
+    public $isDistantJson;
+    protected $baseUrl ;
+
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -28,7 +32,16 @@ class CheckboxEntryField extends CheckboxField
         )) ? $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'] :
             self::CHECKBOX_DISPLAY_MODE_LIST ;
         $this->dragAndDropDisplayMode='@bazar/inputs/checkbox_drag_and_drop_entry.twig' ;
-        $this->options = null;
+
+                
+        $this->isDistantJson = filter_var($this->name, FILTER_VALIDATE_URL);
+
+        if ($this->isDistantJson) {
+            $this->prepareJSONEntryField();
+        } else {
+            $this->options = null ;
+            $this->baseUrl = null;
+        }
     }
     
     protected function renderStatic($entry)
@@ -38,7 +51,15 @@ class CheckboxEntryField extends CheckboxField
         foreach ($keys as $key) {
             if (in_array($key, array_keys($this->getOptions()))) {
                 $values[$key]['value'] = $this->options[$key] ;
-                $values[$key]['href'] = $GLOBALS['wiki']->href('', $key) ;
+                if ($this->isDistantJson) {
+                    if (!empty($this->optionsUrls[$key])) {
+                        $values[$key]['href'] = $this->optionsUrls[$key];
+                    } else {
+                        $values[$key]['href'] = $this->baseUrl . $key;
+                    }
+                } else {
+                    $values[$key]['href'] = $this->services->get(Wiki::class)->Href('', $key);
+                }
             }
         }
 
@@ -61,10 +82,6 @@ class CheckboxEntryField extends CheckboxField
 
     public function getOptions()
     {
-        // load options only when needed but not at construct to prevent infinite loops
-        if (is_null($this->options)) {
-            $this->loadOptionsFromEntries();
-        }
-        return  $this->options;
+        return  $this->getEntriesOptions();
     }
 }
