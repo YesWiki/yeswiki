@@ -282,7 +282,15 @@ var typeUserAttrs = {
     write: writeconf,
     semantic: semanticConf,
   },
-  select: selectConf,
+  select: {
+    ...selectConf,
+    ...{
+      queries: {
+        label: "Critères de filtre",
+        placeholder: "ex. : checkboxfiche6=PageTag ; cf. https://yeswiki.net/?LierFormulairesEntreEux",
+      },
+    },
+  },
   "checkbox-group": {
     ...selectConf,
     ...{
@@ -309,6 +317,10 @@ var typeUserAttrs = {
           " ": "Normal",
           tags: "En Tags",
         },
+      },
+      queries: {
+        label: "Critères de filtre",
+        placeholder: "ex. : checkboxfiche6=PageTag ; cf. https://yeswiki.net/?LierFormulairesEntreEux",
       },
     },
   },
