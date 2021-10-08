@@ -97,6 +97,9 @@
 .bazar-map-container .bazar-marker.xl .bazar-entry i {
   left: 9.5px;
 }
+.bazar-map-container .bazar-marker .bazar-entry i {
+  left: 3.5px;
+}
 .bazar-map-container .bazar-marker .entry-name {
   position: absolute;
   top: -46px;
