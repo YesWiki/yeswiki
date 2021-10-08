@@ -16,8 +16,9 @@ actions:
       searchfields:
         label: _t(AB_bazar_commons_search_fields_label)
         type: form-field
-        advanced: true
-        showif: dynamic
+        showif:
+          dynamic: [true,"true"]
+          search: [true,"true"]
         multiple: true
         default: bf_titre
         showOnlyFor:

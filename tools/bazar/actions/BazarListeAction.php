@@ -77,12 +77,18 @@ class BazarListeAction extends YesWikiAction
             $displayFields = $arg['displayfields'];
         } else {
             $displayFields = [];
-            foreach(explode(',', $arg['displayfields'] ?? '') as $field) {
+            foreach (explode(',', $arg['displayfields'] ?? '') as $field) {
                 $values = explode('=', $field);
-                if (count($values) == 2) $displayFields[$values[0]] = $values[1];
+                if (count($values) == 2) {
+                    $displayFields[$values[0]] = $values[1];
+                }
             }
         }
-        if ($dynamic && $template == 'liste_accordeon') $template = 'list';
+        if ($dynamic && $template == 'liste_accordeon') {
+            $template = 'list';
+        }
+        $searchfields = $this->formatArray($arg['searchfields'] ?? null);
+        $searchfields = empty($searchfields) ? ['bf_titre'] : $searchfields;
         // End dynamic
 
         $agendaMode = (!empty($arg['agenda']) || !empty($arg['datefilter']) || substr($template, 0, strlen('agenda')) == 'agenda') ;
@@ -146,7 +152,7 @@ class BazarListeAction extends YesWikiAction
             'showexportbuttons' => $this->formatBoolean($arg, false, 'showexportbuttons'),
             // Affiche le formulaire de recherche en haut
             'search' => $this->formatBoolean($arg, false, 'search'),
-            'searchfields'=> $this->formatArray($arg['searchfields'] ?? null),
+            'searchfields'=> $searchfields,
             // Affiche le nombre de fiche en haut
             'shownumentries' => $this->formatBoolean($arg, false, 'shownumentries'),
             // Iframe ?
@@ -205,8 +211,8 @@ class BazarListeAction extends YesWikiAction
                 'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
             ]);
         } else {
-            $entries = $bazarListService->getEntries($this->arguments, $forms);     
-            $filters = $bazarListService->formatFilters($this->arguments, $entries, $forms);  
+            $entries = $bazarListService->getEntries($this->arguments, $forms);
+            $filters = $bazarListService->formatFilters($this->arguments, $entries, $forms);
 
             // To handle multiple bazarlist in a same page, we need a specific ID per bazarlist
             // We use a global variable to count the number of bazarliste action run on this page
@@ -232,7 +238,7 @@ class BazarListeAction extends YesWikiAction
                 'formId' => $this->arguments['idtypeannonce'][0] ?? null,
                 'facette' => $_GET['facette'] ?? null,
             ]);
-        }      
+        }
     }
 
     private function renderEntries($entries, $filters = []): string

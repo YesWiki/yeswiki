@@ -229,9 +229,22 @@ class ApiController extends YesWikiController
             ob_start(); // to catch error messages
             $bazatListService = $this->getService(BazarListService::class);
             $forms = $bazatListService->getForms([]);
-            $formattedGet = array_map(function ($value){
+            
+            $formattedGet = array_map(function ($value) {
                 return ($value === 'true') ? true : (($value === 'false') ? false : $value);
-            },$_GET);
+            }, $_GET);
+
+            // format search field
+            $searchfields = $_GET['searchfields'] ?? [];
+            $searchfields = (empty($searchfields) || !is_string($searchfields) || !is_array($searchfields))
+                ? ['bf_titre']
+                : (
+                    is_string($searchfields)
+                    ? explode(',', $searchfields)
+                    : $searchfields
+                );
+            $formattedGet['searchfields'] = $searchfields;
+            
             $entries = $bazatListService->getEntries(
                 [
                     'user' => null,
@@ -260,7 +273,7 @@ class ApiController extends YesWikiController
                 $fieldList[] = $field;
             }
             // Fields used to search
-            foreach ($_GET['searchfields'] ?? [] as $field) {
+            foreach ($searchfields as $field) {
                 $fieldList[] = $field;
             }
             // Fields used by template
