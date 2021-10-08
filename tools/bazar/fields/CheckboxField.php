@@ -38,9 +38,9 @@ abstract class CheckboxField extends EnumField
     {
         switch ($this->displayMethod) {
             case "tags":
-                $htmlReturn = $this->render('@bazar/inputs/checkbox_tags.twig') ;
-                $script = $this->generateTagsScript($entry) ;
-                $GLOBALS['wiki']->AddJavascript($script);
+                $htmlReturn = $this->render('@bazar/inputs/checkbox_tags.twig', [
+                    'bazarlistTagsInputsData' => json_encode($this->generateTagsData($entry)),
+                ]) ;
                 return $htmlReturn ;
                 break ;
             case "dragndrop":
@@ -108,42 +108,25 @@ abstract class CheckboxField extends EnumField
                 $this->propertyName
                 ]];
     }
-    
-    private function generateTagsScript($entry)
+
+    private function generateTagsData($entry)
     {
         // list of choices available from options
-        $choices = [] ;
+        $existingTags = [] ;
         foreach ($this->getOptions() as $key => $label) {
-            $choices[$key] = '{"id":"' . $key . '", "title":"' . str_replace('\'', '&#39;', str_replace('"', '\"', strip_tags($label))) . '"}';
+            $existingTags[$key] = [
+                "id" => $key,
+                "title" => $label
+            ];
         }
-
-        $script = '$(function(){
-            var tagsexistants = [' . implode(',', $choices) . '];
-            var bazartag = [];
-            bazartag["'.$this->propertyName.'"] = $(\'#formulaire .yeswiki-input-entries'.$this->propertyName.'\');
-            bazartag["'.$this->propertyName.'"].tagsinput({
-                itemValue: \'id\',
-                itemText: \'title\',
-                typeahead: {
-                    afterSelect: function(val) { bazartag["'.$this->propertyName.'"].tagsinput(\'input\').val(""); },
-                    source: tagsexistants,
-                    autoSelect: false,
-                },
-                freeInput: false,
-                confirmKeys: [13, 186, 188]
-            });'."\n";
         
         $selectedOptions = $this->getValues($entry) ;
-        if (is_array($selectedOptions) && count($selectedOptions)>0 && !empty($selectedOptions[0])) {
-            foreach ($selectedOptions as $selectedOption) {
-                if (isset($choices[$selectedOption])) {
-                    $script .= 'bazartag["'.$this->propertyName.'"].tagsinput(\'add\', '.$choices[$selectedOption].');'."\n";
-                }
-            }
-        }
-        $script .= '});' . "\n";
+        $selectedOptions = empty($selectedOptions) ? [] : $selectedOptions;
         
-        return $script ;
+        return [
+            'existingTags' => $existingTags,
+            'selectedOptions' => $selectedOptions
+        ] ;
     }
 
     public function getFromFormId(): string

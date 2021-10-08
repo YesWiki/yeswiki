@@ -282,7 +282,15 @@ var typeUserAttrs = {
     write: writeconf,
     semantic: semanticConf,
   },
-  select: selectConf,
+  select: {
+    ...selectConf,
+    ...{
+      queries: {
+        label: "Critères de filtre",
+        placeholder: "ex. : checkboxfiche6=PageTag ; cf. https://yeswiki.net/?LierFormulairesEntreEux",
+      },
+    },
+  },
   "checkbox-group": {
     ...selectConf,
     ...{
@@ -300,7 +308,22 @@ var typeUserAttrs = {
       },
     },
   },
-  "radio-group": selectConf,
+  "radio-group":  {
+    ...selectConf,
+    ...{
+      fillingMode: {
+        label: "Mode de saisie",
+        options: {
+          " ": "Normal",
+          tags: "En Tags",
+        },
+      },
+      queries: {
+        label: "Critères de filtre",
+        placeholder: "ex. : checkboxfiche6=PageTag ; cf. https://yeswiki.net/?LierFormulairesEntreEux",
+      },
+    },
+  },
   textarea: {
     syntax: {
       label: "Format d'écriture",
@@ -538,7 +561,7 @@ var yesWikiMapping = {
   },
   select: lists,
   "checkbox-group": { ...lists, ...{ 7: "fillingMode" } },
-  "radio-group": lists,
+  "radio-group": { ...lists, ...{ 7: "fillingMode" } },
   textarea: { ...defaultMapping, ...{ 4: "rows", 7: "syntax" } },
   file: { ...defaultMapping, ...{ 3: "maxsize" } },
   tags: defaultMapping,

@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\ExternalBazarService;
 use YesWiki\Bazar\Service\ListManager;
+use YesWiki\Wiki;
 
 abstract class EnumField extends BazarField
 {
@@ -51,6 +52,9 @@ abstract class EnumField extends BazarField
         $refreshCacheDuration = ($params->has('baz_enum_field_time_cache_for_json'))
             ? $params->get('baz_enum_field_time_cache_for_json')
             : 7200 ; // 2 hours by default
+        if ((($_GET['refresh'] ?? false) === 'true') && $this->getService(Wiki::class)->GetUser()) {
+            $refreshCacheDuration = 0;
+        }
         $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent($this->getLinkedObjectName(), $refreshCacheDuration);
         $entries = json_decode($json, true);
         $options = [];
@@ -117,8 +121,41 @@ abstract class EnumField extends BazarField
         }
     }
 
+    /**
+     * prepareJSON for RadioEntriField or SelectEntryField
+     */
+    protected function prepareJSONEntryField()
+    {
+        $this->propertyName = $this->type . removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $this->name))) . $this->listLabel;
+        $this->loadOptionsFromJson();
+        if (preg_match('/^(.*\/\??)'// catch baseUrl
+                .'(?:' // followed by
+                .'\w*\/json&(?:.*)demand=entries(?:&.*)?' // json handler with demand = entries
+                .'|api\/forms\/[0-9]*\/entries' // or api forms/{id}/entries
+                .'|api\/entries\/[0-9]*' // or api entries/{id}
+                .')/', $this->name, $matches)) {
+            $this->baseUrl = $matches[1];
+        } else {
+            $this->baseUrl = $this->name ;
+        }
+        $this->options = null ;
+    }
+
     public function getOptions()
     {
+        return  $this->options;
+    }
+
+    protected function getEntriesOptions()
+    {
+        // load options only when needed but not at construct to prevent infinite loops
+        if (is_null($this->options)) {
+            if ($this->isDistantJson) {
+                $this->loadOptionsFromJson();
+            } else {
+                $this->loadOptionsFromEntries();
+            }
+        }
         return  $this->options;
     }
 

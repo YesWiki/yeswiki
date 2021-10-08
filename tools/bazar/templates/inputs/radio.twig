@@ -1,14 +1,29 @@
 {% extends "@bazar/layouts/input.twig" %}
 
 {% block input %}
-    <div class="bazar-radio{{ field.required ? ' radio_required' : ''}}">
-        {% for key, option in options %}
-        <div class="radio">
+  {% set display_filter = (displayFilterLimit and options|length > displayFilterLimit) %}
+  {% if display_filter %}
+	<input type="text" class="pull-left filter-entries" value='' placeholder="{{ _t('BAZAR_FILTER') }}">
+  <div class="clearfix"></div>
+  {% endif %}
+  <div class="bazar-radio-rows bazar-radio{{ field.required ? ' radio_required' : ''}}"
+    {% if display_filter %}style="overflow:auto;max-height:{{ displayFilterLimit * 30 }}px;"{% endif %}>
+    {% for key, option in options %}
+      {% if value == key %}
+        {% block radioInput %}
+          <div class="radio">
             <label for="{{ field.propertyName ~ key }}">
-                <input type="radio" id="{{ field.propertyName ~ key }}" value="{{ key }}" name="{{ field.propertyName }}" {% if value == key %}checked{% endif %} />
+              <input type="radio" id="{{ field.propertyName ~ key }}" value="{{ key }}" name="{{ field.propertyName }}" {% if value == key %}checked{% endif %} />
                 <span>{{ option|raw }}</span>
             </label>
-        </div>
-        {% endfor %}
-    </div>
+          </div>
+        {% endblock %}
+      {% endif %}
+    {% endfor %}
+    {% for key, option in options %}
+      {% if value != key %}
+        {{ block('radioInput') }}
+      {% endif %}
+    {% endfor %}
+  </div>
 {% endblock %}

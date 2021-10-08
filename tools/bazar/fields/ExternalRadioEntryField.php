@@ -6,9 +6,9 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\ExternalBazarService;
 
 /**
- * @Field({"externalselectentryfield"})
+ * @Field({"externalradioentryfield"})
  */
-class ExternalSelectEntryField extends SelectEntryField
+class ExternalRadioEntryField extends RadioEntryField
 {
     protected $JSONFormAddress ;
 

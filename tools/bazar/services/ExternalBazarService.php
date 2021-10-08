@@ -55,6 +55,7 @@ class ExternalBazarService
     protected $newFormId;
     protected $tmpForm ;
     private $urlCache;
+    private $alreadyRefreshedURL;
 
     public function __construct(
         Wiki $wiki,
@@ -78,6 +79,7 @@ class ExternalBazarService
         $this->newFormId = null;
         $this->tmpForm = null;
         $this->urlCache = null;
+        $this->alreadyRefreshedURL = [];
     }
 
     /**
@@ -315,6 +317,13 @@ class ExternalBazarService
      */
     public function getJSONCachedUrlContent(string $url, int $cache_life = 60)
     {
+        if ($cache_life === 0) {
+            if (in_array($url, $this->alreadyRefreshedURL)) {
+                $cache_life = 60;
+            } else {
+                $this->alreadyRefreshedURL[] = $url;
+            }
+        }
         $json = $this->getCachedUrlContent($url, $cache_life);
 
         // remove string before '{' because the aimed website's api can give warning messages
@@ -335,7 +344,7 @@ class ExternalBazarService
      * put in cache result of url
      *
      * @param string $url : url to get with  cache
-     * @param int $cache_life : duration of the cahe in second
+     * @param int $cache_life : duration of the cache in second
      * @param string $dir : base dirname where save the cache
      * @return string location of cached file
      */

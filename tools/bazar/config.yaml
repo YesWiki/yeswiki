@@ -65,6 +65,8 @@ parameters:
   BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE: 'list'
   # Le nombre maximum de fiches affichées par checkbox sans que le champ 'Filter' ne soit affiché ; false pas de filtre
   BAZ_MAX_CHECKBOXLIST_WITHOUT_FILTER: false
+  # Le nombre maximum d'éléments affichées par radio sans que le champ 'Filter' ne soit affiché ; false pas de filtre
+  BAZ_MAX_RADIO_WITHOUT_FILTER: 6
   # Le nombre maximum de fiches affichées par checkbox sans que le champ 'selectall' ne soit affiché ; false : récupère le paramètre BAZ_MAX_CHECKBOXLIST_WITHOUT_FILTER
   BAZ_MAX_CHECKBOXLIST_WITHOUT_SELECTALL: false
   # type d'affichage par défaut pour checkbox en mode normal
