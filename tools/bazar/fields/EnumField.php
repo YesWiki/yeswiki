@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\ExternalBazarService;
 use YesWiki\Bazar\Service\ListManager;
+use YesWiki\Wiki;
 
 abstract class EnumField extends BazarField
 {
@@ -51,6 +52,9 @@ abstract class EnumField extends BazarField
         $refreshCacheDuration = ($params->has('baz_enum_field_time_cache_for_json'))
             ? $params->get('baz_enum_field_time_cache_for_json')
             : 7200 ; // 2 hours by default
+        if ((($_GET['refresh'] ?? false) === 'true') && $this->getService(Wiki::class)->GetUser()) {
+            $refreshCacheDuration = 0;
+        }
         $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent($this->getLinkedObjectName(), $refreshCacheDuration);
         $entries = json_decode($json, true);
         $options = [];
