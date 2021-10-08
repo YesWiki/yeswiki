@@ -240,7 +240,7 @@ class User
             $this->error = _t('USER_YOU_MUST_SPECIFY_A_NAME').'.';
         } elseif (strlen($newName) > $this->nameMaxLength) {
             $this->error = _t('USER_NAME_S_MAXIMUM_LENGTH_IS').' '.$this->nameMaxLength.'.';
-        } elseif (preg_match('/[!#@<>\\\\\/][^<>\\\\\/]{2,}/',$newName)) {
+        } elseif (preg_match('/[!#@<>\\\\\/][^<>\\\\\/]{2,}/', $newName)) {
             $this->error = _t('USER_THIS_IS_NOT_A_VALID_NAME').'.';
         } else {
             $result = true;
@@ -448,7 +448,7 @@ class User
         $res = $this->wiki->services->get(TripleStore::class)->create($this->properties['name'], $this->keyVocabulary, $key, '', '');
 
         // Generate the recovery email
-        $passwordLink = $this->wiki->Href() . '&a=recover&email=' . $key . '&u=' . urlencode(base64_encode($this->properties['name']));
+        $passwordLink = $this->wiki->Href() . (($this->wiki->config['rewrite_mode'] ?? false) ? '?' : '&').'a=recover&email=' . $key . '&u=' . urlencode(base64_encode($this->properties['name']));
         $pieces = parse_url($this->wiki->GetConfigValue('base_url'));
         $domain = isset($pieces['host']) ? $pieces['host'] : '';
 
