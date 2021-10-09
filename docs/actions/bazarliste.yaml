@@ -350,6 +350,11 @@ actions:
           bf_date_fin_evenement:
             type: form-field
             label: Champ pour la date de fin
+      nbcol:
+        label: Nombre de colonnes
+        type: number
+        default:
+        advanced: true
 
   bazarcalendar:
     label: Calendrier
