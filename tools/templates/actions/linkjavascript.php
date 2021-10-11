@@ -95,7 +95,7 @@ echo "<script>var wiki = {
         }
         return result;
     },
-    pageTag: '{$this->getPageTag()}',
+    pageTag: '{$this->getPageTag()}'
 };</script>";
 
 // TODO: CSS a ajouter ailleurs?
