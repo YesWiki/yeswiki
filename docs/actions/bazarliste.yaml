@@ -355,6 +355,13 @@ actions:
         type: number
         default:
         advanced: true
+      modal:
+        label: Affichage d'une fenêtre modale lors du clic
+        type: checkbox
+        default:
+        advanced: true
+        checkedvalue: 1
+        uncheckedvalue:
 
   bazarcalendar:
     label: Calendrier
