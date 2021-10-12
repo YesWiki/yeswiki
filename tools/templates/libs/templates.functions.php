@@ -160,18 +160,28 @@ function replace_missingpage_links($output)
     ) . '(.*)\/edit">\?<\/a>/U';
     preg_match_all($pattern, $output, $matches, PREG_SET_ORDER);
 
+    $wiki = $GLOBALS['wiki'];
+    $config = $wiki->config;
+    $tag = $wiki->GetPageTag();
+    $pageMetadatas = empty($tag) ? [] : $wiki->GetMetaDatas($tag);
+
     foreach ($matches as $values) {
         // on passe en parametres GET les valeurs du template de la page de provenance,
         // pour avoir le meme graphisme dans la page creee
-        $query_string = (!empty($GLOBALS['wiki']->config['favorite_theme']) ?
-                'theme=' . urlencode($GLOBALS['wiki']->config['favorite_theme']) : '')
-            . (!empty($GLOBALS['wiki']->config['favorite_squelette']) ?
-                '&amp;squelette=' . urlencode($GLOBALS['wiki']->config['favorite_squelette']) : '')
-            . (!empty($GLOBALS['wiki']->config['favorite_style']) ?
-                '&amp;style=' . urlencode($GLOBALS['wiki']->config['favorite_style']) : '')
-            . (!empty($GLOBALS['wiki']->config['favorite_background_image']) ?
-                '&amp;bgimg=' . urlencode($GLOBALS['wiki']->config['favorite_background_image']) : '')
-            . (($values[2] != $values[3]) ?
+        $query_string = (!empty($config['favorite_theme']) ?
+                'theme=' . urlencode($config['favorite_theme']) : '')
+            . (!empty($config['favorite_squelette']) ?
+                '&amp;squelette=' . urlencode($config['favorite_squelette']) : '')
+            . (!empty($config['favorite_style']) ?
+                '&amp;style=' . urlencode($config['favorite_style']) : '')
+            . (!empty($config['favorite_background_image']) ?
+                '&amp;bgimg=' . urlencode($config['favorite_background_image']) : '');
+        foreach (\YesWiki\Core\Service\ThemeManager::SPECIAL_METADATA as $metadata) {
+            if (!empty($pageMetadatas[$metadata])) {
+                $query_string .= '&amp;'.$metadata.'=' . urlencode($pageMetadatas[$metadata]);
+            }
+        }
+        $query_string .= (($values[2] != $values[3]) ?
                 '&amp;body=' . urlencode($values[2]) : '') . '&amp;newpage=1';
         $replacement = '<a class="yeswiki-editable" title="' . _t('TEMPLATE_EDIT_THIS_PAGE') . '" href="'
             . $GLOBALS['wiki']->href("edit", $values[3], $query_string)

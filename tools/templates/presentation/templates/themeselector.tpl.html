@@ -45,40 +45,63 @@
   </div>
 
   <?php if (!empty($themes[$favoriteTheme]['presets'])) : ?>
-    <div class="preset-settings-container">
-      <h4><?php echo _t('TEMPLATE_PRESETS'); ?></h4>
-      <ul class="css-preset-list list-inline">
-      <?php foreach ($themes[$favoriteTheme]['presets'] as $key => $value) : ?>
-        <li>
-          <a class="css-preset<?php echo ($key == $selectedPresetName) ? ' active' :'' ;?>" href="themes/<?php echo $favoriteTheme.'/presets/'.$key; ?>"
-            data-key="<?php echo $key ;?>"
-            <?php echo $dataHtmlForPresets[$key] ;?>>
-          <?php echo str_replace('.css', '', $key); ?>
-          </a>
-        </li>
-      <?php endforeach; ?>
-      <?php foreach ($customCSSPresets as $key => $value) : ?>
-        <li>
-          <a class="css-preset custom<?php echo ($key == $selectedCustomPresetName) ? ' active' :'' ;?>" href="<?php echo YesWiki\Core\Service\ThemeManager::CUSTOM_CSS_PRESETS_PATH.'/'.$key; ?>"
-            data-key="<?php echo $key ;?>"
-            <?php echo $dataHtmlForCustomCSSPresets[$key] ;?>>
-          <?php echo str_replace('.css', '', $key); ?>
-          </a>
-          <?php if ($showAdminActions) :?>
-            <button class="btn btn-default btn-xs"
+    <?php if ($mode == 'edit') : ?>
+      <div class="control-group form-group">
+        <label class="control-label"><?php echo _t('TEMPLATE_PRESET'); ?></label>
+        <div class="controls">
+          <select class="form-control" id="changestyle" name="favorite_preset">
+            <option value="" <?php echo empty($wiki->page["metadatas"]['favorite_preset']) ? ' selected="selected"' :''; ?>>
+              <?php echo _t('TEMPLATE_DEFAULT_PRESET') . (empty($wiki->page["metadatas"]['favorite_preset']) ? ' ('.str_replace('.css', '', $selectedPresetName.$selectedCustomPresetName).')':''); ?>
+            </option>
+            <?php foreach ($themes[$favoriteTheme]['presets'] as $key => $value) : ?>
+              <option value="<?php echo $key; ?>" <?php echo ($key == $selectedPresetName && !empty($wiki->page["metadatas"]['favorite_preset'])) ? ' selected="selected"' :'' ; ?>>
+                <?php echo str_replace('.css', '', $key); ?>
+              </option>
+            <?php endforeach; ?>
+            <?php foreach ($customCSSPresets as $key => $value) : ?>
+              <option value="<?php echo YesWiki\Core\Service\ThemeManager::CUSTOM_CSS_PRESETS_PREFIX . $key; ?>" <?php echo ($key == $selectedCustomPresetName  && !empty($wiki->page["metadatas"]['favorite_preset'])) ? ' selected="selected"' :'' ; ?>>
+                <?php echo str_replace('.css', '', $key); ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+      </div>
+    <?php else : ?>
+      <div class="preset-settings-container">
+        <h4><?php echo _t('TEMPLATE_PRESETS'); ?></h4>
+        <ul class="css-preset-list list-inline">
+        <?php foreach ($themes[$favoriteTheme]['presets'] as $key => $value) : ?>
+          <li>
+            <a class="css-preset<?php echo ($key == $selectedPresetName) ? ' active' :'' ;?>" href="themes/<?php echo $favoriteTheme.'/presets/'.$key; ?>"
               data-key="<?php echo $key ;?>"
-              onclick="javascript:deleteCSSPreset(this,'<?php echo _t('TEMPLATE_DELETE_CSS_PRESET').' '.$key.' ?' ;?>',
-                '<?php echo $wiki->Href('templates/custom-presets/'.$key,($wiki->config['rewrite_mode'] ? '?':'').'api');?>');">
-              <i class="fas fa-trash"></i>
-            </button>
-          <?php endif; ?>  
-        </li>
-      <?php endforeach; ?>
-      </ul>
-      <a class="btn btn-xs btn-primary btn-block btn-new-preset" href="javascript:void(0)" onclick="openNav()">
-        </i><?php echo _t('TEMPLATE_CREATE_PRESET'); ?>
-      </a>
-    </div>
+              <?php echo $dataHtmlForPresets[$key] ;?>>
+            <?php echo str_replace('.css', '', $key); ?>
+            </a>
+          </li>
+        <?php endforeach; ?>
+        <?php foreach ($customCSSPresets as $key => $value) : ?>
+          <li>
+            <a class="css-preset custom<?php echo ($key == $selectedCustomPresetName) ? ' active' :'' ;?>" href="<?php echo YesWiki\Core\Service\ThemeManager::CUSTOM_CSS_PRESETS_PATH.'/'.$key; ?>"
+              data-key="<?php echo $key ;?>"
+              <?php echo $dataHtmlForCustomCSSPresets[$key] ;?>>
+            <?php echo str_replace('.css', '', $key); ?>
+            </a>
+            <?php if ($showAdminActions) :?>
+              <button class="btn btn-default btn-xs"
+                data-key="<?php echo $key ;?>"
+                onclick="javascript:deleteCSSPreset(this,'<?php echo _t('TEMPLATE_DELETE_CSS_PRESET').' '.$key.' ?' ;?>',
+                  '<?php echo $wiki->Href('templates/custom-presets/'.$key,($wiki->config['rewrite_mode'] ? '?':'').'api');?>');">
+                <i class="fas fa-trash"></i>
+              </button>
+            <?php endif; ?>  
+          </li>
+        <?php endforeach; ?>
+        </ul>
+        <a class="btn btn-xs btn-primary btn-block btn-new-preset" href="javascript:void(0)" onclick="openNav()">
+          </i><?php echo _t('TEMPLATE_CREATE_PRESET'); ?>
+        </a>
+      </div>
+    <?php endif; ?>
   <?php endif; ?>
   <?php if ($mode != 'edit' && $showAdminActions) : ?>
     <button class="btn btn-success btn-block " type="button" onclick="saveTheme('<?php echo $wiki->Href('');?>')">

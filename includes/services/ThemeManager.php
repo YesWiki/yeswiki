@@ -11,6 +11,15 @@ class ThemeManager
 {
     public const CUSTOM_CSS_PRESETS_PATH = 'custom/css-presets';
     public const CUSTOM_CSS_PRESETS_PREFIX = 'custom/';
+    public const SPECIAL_METADATA = [
+        'PageFooter',
+        'PageHeader',
+        'PageTitre',
+        'PageRapideHaut',
+        'PageMenuHaut',
+        'PageMenu',
+        'favorite_preset'
+    ];
 
     private const POST_DATA_KEYS = [
         'primary-color',
@@ -116,7 +125,7 @@ class ThemeManager
                     $this->config['favorite_theme'] = $metadata['theme'];
                     $this->config['favorite_style'] = $metadata['style'];
                     $this->config['favorite_squelette'] = $metadata['squelette'];
-                    if (isset($metadata['favorite_preset'])) {
+                    if (!empty($metadata['favorite_preset'])) {
                         $this->config['favorite_preset'] = $metadata['favorite_preset'];
                     }
                     if (isset($metadata['bgimg'])) {
