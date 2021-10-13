@@ -72,6 +72,9 @@ class EntryController extends YesWikiController
         $this->wiki->tag = $entryId;
 
         $renderedEntry = null;
+        $message = $_GET['message'] ?? '';
+        // unset $_GET['message'] to prevent infinite loop when rendering entry with textarea and {{bazarliste}}
+        unset($_GET['message']);
 
         // use a custom template if exists (fiche-FORM_ID.tpl.html or fiche-FORM_ID.twig)
         $customTemplatePath = $this->getCustomTemplatePath($entry);
@@ -127,7 +130,7 @@ class EntryController extends YesWikiController
             "entry" => $entry,
             "entryId" => $entryId,
             "owner" => $owner,
-            "message" => $_GET['message'] ?? '',
+            "message" => $message,
             "showFooter" => $showFooter,
             "canShow" => $this->wiki->GetPageTag() != $entry['id_fiche'], // hide if we are already in the show page
             "canEdit" =>  !$this->securityController->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId),
@@ -166,7 +169,7 @@ class EntryController extends YesWikiController
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FORM_AVEC_CET_ID') . ' : \'' . $formId . '\'</div>';
         }
 
-        list($state,$error) = $this->securityController->checkCaptchaBeforeSave('entry');
+        list($state, $error) = $this->securityController->checkCaptchaBeforeSave('entry');
         if ($state && isset($_POST['bf_titre'])) {
             $entry = $this->entryManager->create($formId, $_POST);
             if (empty($redirectUrl)) {
@@ -199,7 +202,7 @@ class EntryController extends YesWikiController
         $entry = $this->entryManager->getOne($entryId);
         $form = $this->formManager->getOne($entry['id_typeannonce']);
 
-        list($state,$error) = $this->securityController->checkCaptchaBeforeSave('entry');
+        list($state, $error) = $this->securityController->checkCaptchaBeforeSave('entry');
         if ($state && isset($_POST['bf_titre'])) {
             $entry = $this->entryManager->update($entryId, $_POST);
             if (empty($redirectUrl)) {
