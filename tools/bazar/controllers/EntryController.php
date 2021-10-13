@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Controller;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ImageField;
+use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
@@ -25,6 +26,8 @@ class EntryController extends YesWikiController
     protected $config;
     protected $securityController;
 
+    private $parentsEntries ;
+
     public function __construct(
         EntryManager $entryManager,
         FormManager $formManager,
@@ -41,6 +44,7 @@ class EntryController extends YesWikiController
         $this->pageManager = $pageManager;
         $this->config = $config->all();
         $this->securityController = $securityController;
+        $this->parentsEntries = [];
     }
 
     public function selectForm()
@@ -70,6 +74,8 @@ class EntryController extends YesWikiController
         // fake ->tag for the attached images
         $oldPageTag = $this->wiki->GetPageTag();
         $this->wiki->tag = $entryId;
+        // unshift stack to check if this entry is included into a bazarliste into TextareaField
+        array_unshift($this->parentsEntries, $oldPageTag);
 
         $renderedEntry = null;
         $message = $_GET['message'] ?? '';
@@ -96,7 +102,13 @@ class EntryController extends YesWikiController
                 foreach ($form['prepared'] as $field) {
                     if ($field instanceof BazarField) {
                         // TODO handle html_outside_app mode for images
-                        if (!in_array($field->getPropertyName(), $this->fieldsToExclude())) {
+                        if (!in_array($field->getPropertyName(), $this->fieldsToExclude())
+                                && !(
+                                    // prevent infinite loop of rendering entries
+                                    $field instanceof TextareaField
+                                    && count($this->parentsEntries) > 1 // to allow rendering at first level
+                                    && in_array($entryId, $this->parentsEntries)
+                                )) {
                             $renderedEntry .= $field->renderStaticIfPermitted($entry);
                         }
                     }
@@ -114,6 +126,8 @@ class EntryController extends YesWikiController
 
         // fake ->tag for the attached images
         $this->wiki->tag = $oldPageTag;
+        // shift stack
+        array_shift($this->parentsEntries);
 
         // Format owner
         $owner = $this->wiki->GetPageOwner($entryId);
