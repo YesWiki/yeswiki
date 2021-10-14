@@ -5,7 +5,6 @@ namespace YesWiki\Bazar\Controller;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ImageField;
-use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
@@ -74,53 +73,51 @@ class EntryController extends YesWikiController
         // fake ->tag for the attached images
         $oldPageTag = $this->wiki->GetPageTag();
         $this->wiki->tag = $entryId;
-        // unshift stack to check if this entry is included into a bazarliste into TextareaField
-        array_unshift($this->parentsEntries, $oldPageTag);
-
         $renderedEntry = null;
         $message = $_GET['message'] ?? '';
         // unset $_GET['message'] to prevent infinite loop when rendering entry with textarea and {{bazarliste}}
         unset($_GET['message']);
+        // unshift stack to check if this entry is included into a bazarliste into a Field
+        array_unshift($this->parentsEntries, $entryId);
+        if (count(array_filter($this->parentsEntries, function ($value) use ($entryId) {
+            return $value === $entryId;
+        })) < 3 // max 3 levels
+            ) {
 
-        // use a custom template if exists (fiche-FORM_ID.tpl.html or fiche-FORM_ID.twig)
-        $customTemplatePath = $this->getCustomTemplatePath($entry);
-        if ($customTemplatePath) {
-            $customTemplateValues = $this->getValuesForCustomTemplate($entry, $form);
-            $renderedEntry = $this->render($customTemplatePath, $customTemplateValues);
-        }
-
-        // use a custom semantic template if exists
-        if (is_null($renderedEntry) && !empty($customTemplateValues['html']['semantic'])) {
-            $customTemplatePath = $this->getCustomSemanticTemplatePath($customTemplateValues['html']['semantic']);
+            // use a custom template if exists (fiche-FORM_ID.tpl.html or fiche-FORM_ID.twig)
+            $customTemplatePath = $this->getCustomTemplatePath($entry);
             if ($customTemplatePath) {
-                $renderedEntry = $this->render("@bazar/$customTemplatePath", $customTemplateValues);
+                $customTemplateValues = $this->getValuesForCustomTemplate($entry, $form);
+                $renderedEntry = $this->render($customTemplatePath, $customTemplateValues);
             }
-        }
-        // if not found, use default template
-        if (is_null($renderedEntry)) {
-            if (!empty($form)) {
-                foreach ($form['prepared'] as $field) {
-                    if ($field instanceof BazarField) {
-                        // TODO handle html_outside_app mode for images
-                        if (!in_array($field->getPropertyName(), $this->fieldsToExclude())
-                                && !(
-                                    // prevent infinite loop of rendering entries
-                                    $field instanceof TextareaField
-                                    && count($this->parentsEntries) > 1 // to allow rendering at first level
-                                    && in_array($entryId, $this->parentsEntries)
-                                )) {
-                            $renderedEntry .= $field->renderStaticIfPermitted($entry);
+
+            // use a custom semantic template if exists
+            if (is_null($renderedEntry) && !empty($customTemplateValues['html']['semantic'])) {
+                $customTemplatePath = $this->getCustomSemanticTemplatePath($customTemplateValues['html']['semantic']);
+                if ($customTemplatePath) {
+                    $renderedEntry = $this->render("@bazar/$customTemplatePath", $customTemplateValues);
+                }
+            }
+            // if not found, use default template
+            if (is_null($renderedEntry)) {
+                if (!empty($form)) {
+                    foreach ($form['prepared'] as $field) {
+                        if ($field instanceof BazarField) {
+                            // TODO handle html_outside_app mode for images
+                            if (!in_array($field->getPropertyName(), $this->fieldsToExclude())) {
+                                $renderedEntry .= $field->renderStaticIfPermitted($entry);
+                            }
                         }
                     }
+                } else {
+                    $renderedEntry = $this->render(
+                        "@templates/alert-message.twig",
+                        [
+                            'type' => 'info',
+                            'message' => str_replace('{{nb}}', $entry['id_typeannonce'], _t('BAZ_PAS_DE_FORM_AVEC_ID_DE_CETTE_FICHE')),
+                        ]
+                    );
                 }
-            } else {
-                $renderedEntry = $this->render(
-                    "@templates/alert-message.twig",
-                    [
-                        'type' => 'info',
-                        'message' => str_replace('{{nb}}', $entry['id_typeannonce'], _t('BAZ_PAS_DE_FORM_AVEC_ID_DE_CETTE_FICHE')),
-                    ]
-                );
             }
         }
 
