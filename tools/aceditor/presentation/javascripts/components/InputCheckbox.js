@@ -7,7 +7,8 @@ export default {
         if (this.config.checkedvalue) {
           result = this.value == this.config.checkedvalue
         }
-        return this.value
+        if (result == "false") result = false
+        return result
       },
       set(newValue) {
         if (this.config.checkedvalue) {
