@@ -18,9 +18,9 @@ export default {
         }
         // Check every condition is respected
         for(const field in showIfConf) {
-          const value = this.values[field]
-          const expectedValue = showIfConf[field]
-          if (expectedValue == 'notNull') showIfResult = showIfResult && !!value
+          const value = (this.values[field] || false).toString()          
+          const expectedValue = showIfConf[field].toString()
+          if (expectedValue == 'notNull') showIfResult = showIfResult && !["", "false"].includes(value)
           else if (Array.isArray(expectedValue)) showIfResult = showIfResult && expectedValue.includes(value)
           else if (value) showIfResult = showIfResult && new RegExp(expectedValue, 'i').exec(value) != null
         }

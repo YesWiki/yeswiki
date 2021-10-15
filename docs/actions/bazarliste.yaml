@@ -18,13 +18,11 @@ actions:
           'false': _t(AB_attach_no)
           dynamic: 
             label: _t(AB_bazar_commons_search_label_dynamic)
-            showif: 
-              dynamic: [true,"true"]
+            showif: dynamic
       searchfields:
         label: _t(AB_bazar_commons_search_fields_label)
         type: form-field
         showif:
-          dynamic: [true,"true"]
           search: dynamic
         multiple: true
         default: bf_titre
