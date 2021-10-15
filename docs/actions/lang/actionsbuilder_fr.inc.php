@@ -4,6 +4,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     // BAZAR
     'AB_bazar_label' => "Afficher les données d'un formulaire",
     'AB_bazar_commons_search_label' => 'Barre de recherche',
+    'AB_bazar_commons_search_label_dynamic' => 'Recherche dynamique',
     'AB_bazar_commons_search_fields_label' => 'Champs pour la recherche',
     'AB_bazar_commons_minical' => "Afficher le contenu sous forme d'un mini calendrier",
     'AB_bazar_commons2_filter_user_as_owner' => "N'afficher que les fiches de l'utilisateur courant",

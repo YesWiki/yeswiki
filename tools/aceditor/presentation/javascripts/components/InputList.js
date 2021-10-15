@@ -1,5 +1,8 @@
+import InputHelper from './InputHelper.js'
+
 export default {
   props: [ 'name', 'value', 'config', 'selectedForm', 'values' ],
+  mixins: [ InputHelper ],
   computed: {
     optionsList() {
       // Get the data from a specific form field
@@ -13,9 +16,16 @@ export default {
         if (Array.isArray(this.config.options)) {
           return this.config.options.reduce((result,option)=> (result[option] = option, result), {});
         }
-        return this.config.options;
+        let result = {}
+        for(let key in this.config.options) {
+          let option = this.config.options[key]
+          if (typeof option !== "object" || !option.showif || this.checkConfigDisplay(option)) {
+            result[key] = typeof option === "object" ? option.label : option
+          }
+        }
+        return result;
       }
-    }
+    }    
   },
   template: `
     <div class="form-group" :class="config.type" :title="config.hint" >
@@ -23,7 +33,9 @@ export default {
       <select :value="value" v-on:input="$emit('input', $event.target.value)"
               :required="config.required" class="form-control">
         <option value=""></option>
-        <option v-for="(optLabel, optValue) in optionsList" :value="optValue" :selected="value == optValue">{{ optLabel }}</option>
+        <option v-for="(optLabel, optValue) in optionsList" :value="optValue" :selected="value == optValue">
+          {{ optLabel }}
+        </option>
       </select>
       <input-hint :config="config"></input-hint>
     </div>

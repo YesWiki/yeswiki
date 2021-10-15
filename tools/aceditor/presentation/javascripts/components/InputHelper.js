@@ -6,7 +6,7 @@ export default {
       return `input-${['text', 'number', 'range', 'url', 'email'].includes(config.type) ? 'text' : (config.type || 'hidden')}`
     },
     // Whether or not display this field (and include it's key/value in the action params)
-    display(config) {
+    checkConfigDisplay(config) {
       if (!config) return false
       let showIfResult = true
       // condition with showif attribute
@@ -32,7 +32,7 @@ export default {
       return !hideIf
     },
     checkVisibility(config) {
-      return this.display(config) && (!config.advanced || this.$root.displayAdvancedParams)
+      return this.checkConfigDisplay(config) && (!config.advanced || this.$root.displayAdvancedParams)
     },
     refFrom(config) {
       return config.subproperties || config.type == "geo" ? 'specialInput' : ''
