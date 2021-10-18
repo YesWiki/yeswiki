@@ -103,8 +103,8 @@ class ExternalBazarService
             return null;
         }
 
-        // to prevent DDOS attack refresh only for connected
-        if (!$this->wiki->GetUser()) {
+        // to prevent DDOS attack refresh only for admins
+        if (!$this->wiki->UserIsAdmin()) {
             $refresh = false;
         }
 
@@ -189,8 +189,8 @@ class ExternalBazarService
             $params
         );
 
-        // to prevent DDOS attack refresh only for connected
-        if (!$this->wiki->GetUser()) {
+        // to prevent DDOS attack refresh only for admins
+        if (!$this->wiki->UserIsAdmin()) {
             $params['refresh'] = false;
         }
 
