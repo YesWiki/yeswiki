@@ -136,6 +136,11 @@ class EntryController extends YesWikiController
             $owner = $this->wiki->Format('[[' . $this->wiki->GetPageOwner($entryId) . ' ' . $this->wiki->GetPageOwner($entryId) . ']]');
         }
 
+        // remake $_GET['message'] for BazarAction__ like in webhooks extension
+        if (!empty($message)) {
+            $_GET['message'] = $message;
+        }
+
         return $this->render('@bazar/entries/view.twig', [
             "form" => $form,
             "entry" => $entry,
