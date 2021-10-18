@@ -51,6 +51,7 @@ class ApiController extends YesWikiController
             'formsIds' => $formId,
             'queries' => $this->getService(EntryController::class)
                 ->formatQuery(!empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [], $_GET),
+            'minDate' => $_GET['dateMin'] ?? '',
         ], true, true);
 
         if ($output == 'json-ld' || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false)) {

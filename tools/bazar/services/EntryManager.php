@@ -196,7 +196,7 @@ class EntryManager
 
         // periode de modification
         if (!empty($params['minDate'])) {
-            $requete .= ' AND time >= "' . $params['minDate'] . '"';
+            $requete .= ' AND time >= "' . mysqli_real_escape_string($this->wiki->dblink, $params['minDate']) . '"';
         }
 
         // si une personne a ete precisee, on limite la recherche sur elle
