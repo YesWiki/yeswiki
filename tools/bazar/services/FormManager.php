@@ -46,7 +46,7 @@ class FormManager
             return $this->cachedForms[$formId];
         }
 
-        $form = $this->dbService->loadSingle('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=\'' . $formId . '\'');
+        $form = $this->dbService->loadSingle('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=\'' . $this->dbService->escape($formId) . '\'');
 
         if (!$form) {
             return null;
@@ -105,13 +105,13 @@ class FormManager
         return $this->dbService->query('INSERT INTO ' . $this->dbService->prefixTable('nature')
             . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_context` ,`bn_sem_type` ,`bn_sem_use_template` ,`bn_condition`)'
             . ' VALUES (' . $data['bn_id_nature'] . ', "fr-FR", "'
-            . addslashes(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '","'
-            . addslashes(_convert($data['bn_template'], YW_CHARSET, true)) . '", "'
-            . addslashes(_convert($data['bn_description'], YW_CHARSET, true)) . '", "'
-            . addslashes(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '", "'
-            . addslashes(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '", '
+            . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '","'
+            . $this->dbService->escape(_convert($data['bn_template'], YW_CHARSET, true)) . '", "'
+            . $this->dbService->escape(_convert($data['bn_description'], YW_CHARSET, true)) . '", "'
+            . $this->dbService->escape(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '", "'
+            . $this->dbService->escape(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '", '
             . (isset($data['bn_sem_use_template']) ? '1' : '0') . ', "'
-            . addslashes(_convert($data['bn_condition'], YW_CHARSET, true)) . '")');
+            . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '")');
     }
 
     public function update($data)
@@ -120,14 +120,14 @@ class FormManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         return $this->dbService->query('UPDATE' . $this->dbService->prefixTable('nature') . 'SET '
-            . '`bn_label_nature`="' . addslashes(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '" ,'
-            . '`bn_template`="' . addslashes(_convert($data['bn_template'], YW_CHARSET, true)) . '" ,'
-            . '`bn_description`="' . addslashes(_convert($data['bn_description'], YW_CHARSET, true)) . '" ,'
-            . '`bn_sem_context`="' . addslashes(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '" ,'
-            . '`bn_sem_type`="' . addslashes(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '" ,'
+            . '`bn_label_nature`="' . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '" ,'
+            . '`bn_template`="' . $this->dbService->escape(_convert($data['bn_template'], YW_CHARSET, true)) . '" ,'
+            . '`bn_description`="' . $this->dbService->escape(_convert($data['bn_description'], YW_CHARSET, true)) . '" ,'
+            . '`bn_sem_context`="' . $this->dbService->escape(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '" ,'
+            . '`bn_sem_type`="' . $this->dbService->escape(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '" ,'
             . '`bn_sem_use_template`=' . (isset($data['bn_sem_use_template']) ? '1' : '0') . ' ,'
-            . '`bn_condition`="' . addslashes(_convert($data['bn_condition'], YW_CHARSET, true)) . '"'
-            . ' WHERE `bn_id_nature`=' . $data['bn_id_nature']);
+            . '`bn_condition`="' . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '"'
+            . ' WHERE `bn_id_nature`=' . $this->dbService->escape($data['bn_id_nature']));
     }
 
     public function clone($id)
@@ -155,7 +155,7 @@ class FormManager
         }
 
         $this->clear($id);
-        return $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $id);
+        return $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $this->dbService->escape($id));
     }
 
     public function clear($id)
@@ -167,14 +167,14 @@ class FormManager
             'DELETE FROM' . $this->dbService->prefixTable('acls') .
             'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
             'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
-            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $id . '"%\' );'
+            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\' );'
         );
 
         // TODO use PageManager
         $this->dbService->query(
             'DELETE FROM' . $this->dbService->prefixTable('pages') .
             'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
-            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $id . '"%\';'
+            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\';'
         );
 
         // TODO use TripleStore

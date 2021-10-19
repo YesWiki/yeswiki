@@ -148,7 +148,7 @@ if ($phrase) {
     
     // Modification de caractère spéciaux
     $phraseFormatted= str_replace(array('*', '?'), array('%', '_'), $phrase);
-    $phraseFormatted = addslashes($phraseFormatted);
+    $phraseFormatted = $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($phraseFormatted);
 
     // Blablabla SQL
     $requestfull = 'SELECT body, tag FROM '.$prefixe.'pages

@@ -62,7 +62,7 @@ if ($this->UserIsAdmin()) {
               "select *
               from ".$this->config["table_prefix"]."pages
               where
-              time > date_sub(now(), interval " . addslashes($_POST['from']) . " hour)
+              time > date_sub(now(), interval " . $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($_POST['from']) . " hour)
               and latest = 'Y'
               order by `time` desc";
             $title =

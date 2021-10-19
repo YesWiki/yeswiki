@@ -1000,7 +1000,7 @@ class User
     {
         /* Build sql query*/
         $sql  = 'SELECT * FROM '.$this->usersTable;
-        $sql .= ' WHERE email = "'.$email.'";';
+        $sql .= ' WHERE email = "'.mysqli_real_escape_string($this->wiki->dblink,$email).'";';
         /* Execute query */
         $results = $this->wiki->loadAll($sql);
         return $results; // If the password does not already exist in DB, $result is an empty table => false
