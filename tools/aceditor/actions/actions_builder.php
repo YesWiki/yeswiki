@@ -8,7 +8,7 @@ use Symfony\Component\Yaml\Yaml;
 $data = baz_forms_and_lists_ids();
 // Bazar actions documentation, read from Yaml file
 $docFiles = glob('docs/actions/*.yaml');
-$extensionDocFiles = glob('tools/**/actions/documentation.yaml', GLOB_BRACE);
+$extensionDocFiles = glob('tools/*/actions/documentation.yaml');
 $customDocFiles = glob('custom/actions/documentation.yaml');
 $docFiles = array_merge($docFiles, $extensionDocFiles);
 $docFiles = array_merge($docFiles, $customDocFiles);
