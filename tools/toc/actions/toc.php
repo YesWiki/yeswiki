@@ -107,7 +107,7 @@ $script = "$(document).ready(function(){
         var diff = divLocation.top - initialoffset;
 
         // A la fin du chargement de la page, on positionne la table a la bonne position
-        $(window).load(function () { 
+        $(window).on('load',function () { 
             if ($(document).scrollTop() > divLocation.top) {
                 offset = ($(document).scrollTop() - initialoffset + 20 ) + 'px';
                 toc.animate({top:offset}, {duration:500,queue:false});
