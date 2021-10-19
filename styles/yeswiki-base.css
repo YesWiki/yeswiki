@@ -201,6 +201,11 @@ li.toc5 {
   overflow: auto;
 }
 
+.toc-menu ul.unstyled {
+  list-style-type: none;
+  padding-left: 0px;
+}
+
 /* barres de progression */
 .progressbar {
   margin: -5px 5px 0 0;

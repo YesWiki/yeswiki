@@ -40,6 +40,7 @@ if (!function_exists("translate2toc")) {
         $l3=0;
         $l4=0;
         $l5=0;
+        $output = '';
 
         while ($cur_text) {
             if (! preg_match("/(={2,6})(.*)/ms", $cur_text, $matches)) {
@@ -80,17 +81,18 @@ if (!function_exists("translate2toc")) {
                 $l5++;
                 $endmatch="/(.*)==(.*?)/msU";
             } else {
-                echo "????\n";
+                $output .= "????\n";
             }
 
             if (! preg_match($endmatch, $cur_text, $matches)) {
                 break;
             }
 
-            echo "<li class=\"$class\"><a href=\"#$toc\">"
+            $output .= "<li class=\"$class\"><a href=\"#$toc\">"
                 .trim($matches[1])."</a></li>\n";
             $cur_text = $matches[2];
         }
+        return $output;
     }
 }
 
