@@ -27,7 +27,7 @@
   handle other params already used in map template : provider, latitude, longitude, zoom etc...
 -->
 
-<?php $GLOBALS['wiki']->AddCSSFile('styles/vendor/gogocarto/gogocarto.css'); ?>
+<?php $GLOBALS['wiki']->AddCSSFile('styles/vendor/gogocarto/gogocarto.min.css'); ?>
 
 <?php if (!empty($filters)) { ?>
   <div id="gogo-map<?php echo $param['nbbazarliste']; ?>"
@@ -189,7 +189,7 @@
     setTimeout(() => {
       var jsElm = document.createElement("script");
       jsElm.type = "application/javascript";
-      jsElm.src = window.location.origin + window.location.pathname + "javascripts/vendor/gogocarto/gogocarto.js";
+      jsElm.src = window.location.origin + window.location.pathname + "javascripts/vendor/gogocarto/gogocarto.min.js";
       document.body.appendChild(jsElm);
 
       // When everything is ready, starts gogocarto

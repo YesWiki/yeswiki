@@ -8,7 +8,7 @@ $yeswiki_javascripts = "\n" . '  <!-- javascripts -->' . "\n";
 if (isset($this->config['use_jquery_cdn']) && $this->config['use_jquery_cdn'] == "1") {
     $this->addJavascriptFile('https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js', true);
 } else {
-    $this->addJavascriptFile('javascripts/vendor/jquery/jquery.js', true);
+    $this->addJavascriptFile('javascripts/vendor/jquery/jquery.min.js', true);
 }
 
 // on récupère le bon chemin pour le theme
@@ -46,7 +46,7 @@ if (is_dir($repertoire)) {
 
 // s'il n'y a pas le javascript de bootstrap dans le theme, on le rajoute
 if (!$bootstrapjs) {
-    $this->addJavascriptFile('javascripts/vendor/bootstrap/bootstrap.js');
+    $this->addJavascriptFile('javascripts/vendor/bootstrap/bootstrap.min.js');
     $this->addJavascriptFile('tools/templates/libs/vendor/bootstrap3-typeahead.min.js');
 }
 

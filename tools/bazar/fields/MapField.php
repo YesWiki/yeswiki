@@ -260,7 +260,7 @@ class MapField extends BazarField
         $geoCodingScript .= '});';
 
         $GLOBALS['wiki']->AddCSSFile('styles/vendor/leaflet/leaflet.css');
-        $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet/leaflet.js');
+        $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet/leaflet.min.js');
         $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet-providers/leaflet-providers.js');
         $GLOBALS['wiki']->AddJavascript($initMapScript.$geoCodingScript);
 

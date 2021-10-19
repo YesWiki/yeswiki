@@ -16,7 +16,7 @@ if (!strstr($this->config['favorite_style'], 'yw.')) {
 
 // si pas le mot bootstrap. ou bs. dans les css, on charge les styles bootstrap par defaut
 if (!strstr($this->config['favorite_style'], 'bootstrap.') && !strstr($this->config['favorite_style'], 'bs.')) {
-    $styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/styles/vendor/bootstrap/css/bootstrap.css" />'."\n";
+    $styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/styles/vendor/bootstrap/css/bootstrap.min.css" />'."\n";
 }
 
 // presets activated and path ?
