@@ -165,7 +165,7 @@ var readConf = { label: "Peut être lu par", options: {...visibilityOptions,...f
 var writeconf = { label: "Peut être saisi par", options: {...visibilityOptions,...formattedGroupList} };
 var searchableConf = {
   label: "Présence dans le moteur de recherche",
-  options: { "": "Non", 1: "Oui" },
+  options: { "": wiki.lang['BAZ_FORM_EDIT_NO'], 1: wiki.lang['BAZ_FORM_EDIT_YES'] },
 };
 var semanticConf = {
   label: "Type sémantique du champ",
@@ -242,11 +242,11 @@ var typeUserAttrs = {
     separator: { label: "" }, // separate important attrs from others
     replace_email_by_button: {
       label: "Remplacer l'email par un bouton contact",
-      options: { "": "Non", form: "Oui" },
+      options: { "": wiki.lang['BAZ_FORM_EDIT_NO'], form: wiki.lang['BAZ_FORM_EDIT_YES'] },
     },
     send_form_content_to_this_email: {
       label: "Envoyer le contenu de la fiche à cet email",
-      options: { 0: "Non", 1: "Oui" },
+      options: { 0: wiki.lang['BAZ_FORM_EDIT_NO'], 1: wiki.lang['BAZ_FORM_EDIT_YES'] },
     },
     // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
     read: readConf,
@@ -259,8 +259,7 @@ var typeUserAttrs = {
   },
   date: {
     today_button: {
-      label: "Initialiser à Aujourd'hui",
-      options: { " ": "Non", today: "Oui" },
+      options: { " ": wiki.lang['BAZ_FORM_EDIT_NO'], today: wiki.lang['BAZ_FORM_EDIT_YES'] },
     },
     hint: { label: "Texte d'aide" },
     read: readConf,
@@ -645,12 +644,42 @@ var defaultFieldsName = {
   champs_mail: "bf_mail",
 }
 
+var I18nOption = {
+  ar: 'ar-SA',
+  ca: 'ca-ES',
+  cs: 'cs-CZ',
+  da: 'da-DK',
+  de: 'de-DE',
+  el: 'el-GR',
+  en: 'en-US',
+  es: 'es-ES',
+  fa: 'fa-IR',
+  fi: 'fi-FI',
+  fr: 'fr-FR',
+  he: 'he-IL',
+  hu: 'hu-HU',
+  it: 'it-IT',
+  ja: 'ja-JP',
+  my: 'my-MM',
+  nb: 'nb-NO',
+  pl: 'pl-PL',
+  pt: 'pt-BR',
+  qz: 'qz-MM',
+  ro: 'ro-RO',
+  ru: 'ru-RU',
+  sj: 'sl-SL',
+  th: 'th-TH',
+  uk: 'uk-UA',
+  vi: 'vi-VN',
+  zh: 'zh-CN',
+};
+
 function initializeFormbuilder(formAndListIds) {
   // FormBuilder conf
   formBuilder = $formBuilderContainer.formBuilder({
     showActionButtons: false,
     fields: fields,
-    i18n: { locale: 'fr-FR' },
+    i18n: { locale: I18nOption[wiki.locale] ?? 'fr-FR'},
     templates: templates,
     disableFields: [
       "number",

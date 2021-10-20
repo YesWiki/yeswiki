@@ -78,9 +78,19 @@ $yeswiki_javascripts .= isset($GLOBALS['js']) ? $GLOBALS['js'] : '';
 // on vide la variable globale pour le javascript
 $GLOBALS['js'] = '';
 
+// HACK TO force reload $GLOBALS['prefered_language']
+$savedPreferedLanguage = $GLOBALS['prefered_language'];
+loadpreferredI18n('');
+$preferedLanguage = $GLOBALS['prefered_language'];
+$GLOBALS['prefered_language'] = $savedPreferedLanguage;
+unset($savedPreferedLanguage);
+
 // Globale wiki variable
-echo "<script>var wiki = {
-    locale: '{$this->config['default_language']}',
+echo "<script>
+    var wiki = {
+        ...((typeof wiki !== 'undefined') ? wiki : null),
+        ...{
+    locale: '{$preferedLanguage}',
     baseUrl: '{$this->config['base_url']}',
     url: function(url, params = {}) {
         let result = wiki.baseUrl + url
@@ -96,7 +106,9 @@ echo "<script>var wiki = {
         return result;
     },
     pageTag: '{$this->getPageTag()}'
-};</script>";
+}};
+</script>";
+unset($preferedLanguage);
 
 // TODO: CSS a ajouter ailleurs?
 if (isset($GLOBALS['css']) && !empty($GLOBALS['css'])) {
