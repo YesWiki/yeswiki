@@ -24,7 +24,7 @@ class PackageCore extends Package
         'files/UnNouveauThemePourYeswiki_capture-décran-2020-02-12-à-13.16.33.png',
         'files/YeswikidaY_yeswiki-logo.png',
         'files/GererSite_modele_19880101000000_23001231235959.jpg',
-        'files/PageHeader_bandeau1_19880101000000_23001231235959.png',
+        'files/PageHeader_bandeau_19880101000000_23001231235959.png',
         'themes/README.md',
         'templates/README.md',
         'cache/README.md',

@@ -23,8 +23,8 @@ En plus d\'être un logiciel de création de wikis, \"\"YesWiki\"\" est aujourd\
 
 Pour nous rejoindre ou avoir une vision sur les chantiers actuellement en cours, voici notre [[https://yeswiki.net/?LaGareCentrale espace central]].
 
-Si vous souhaitez simplement être tenu·e informé·e des nouveautés de l\'outil et de ses améliorations, **abonnez-vous à notre newsletter** 
-\"\"<script type=\"text/javascript\" src=\"//mautic.coop.tools/form/generate.js?id=1\"></script>\"\"
+Si vous souhaitez simplement être tenu·e informé·e des nouveautés de l\'outil et de ses améliorations, **{{button class=\"new-window\" link=\"https://landing.mailerlite.com/webforms/landing/c0j7n7\" nobtn=\"1\" text=\"💌 abonnez-vous à notre newsletter\" title=\"abonnez-vous à notre newsletter\"}}** 
+
 
 Yeswiki repose sur le bénévolat et le don. **[[https://www.helloasso.com/associations/yeswiki/formulaires/1 En contribuant (même juste un peu)]]** vous permettez de maintenir les serveurs et de développer de nouvelles fonctionnalités. Merci
 
@@ -42,37 +42,42 @@ Yeswiki repose sur le bénévolat et le don. **[[https://www.helloasso.com/assoc
 {{bazarliste id=\"1\" template=\"annuaire_alphabetique\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('BacASable',  now(), '=====Bac à sable=====
 ===Premiers défis à réaliser===
- 1) premier défi => **écrire dans cette page**
+1) premier défi => **écrire dans cette page**
   - cliquez sur \"éditez la page\" (en bas) ou double cliquez dans la page,
-  - l\'aspect de la page va légèrement changer car vous êtes en mode édition
-  - écrivez ce que vous voulez ici : super
+  - l\'aspect de la page va légèrement changer car vous êtes en __mode édition__
+  - écrivez ce que vous voulez ici => 
   - puis cliquez sur le bouton \"sauver\" (en haut à gauche) et observez votre travail
- 2) deuxième défi => **insérer un bouton**
+
+2) deuxième défi => **insérer un bouton**
   - cliquez sur \"éditez la page\" ou double cliquez dans la page,
-  - cliquez sur composants / boutons et laissez vous guider,
+  - Positionnez votre curseur ici => 
+  - cliquez sur __composants__ / boutons et laissez vous guider,
   - cliquez sur \"insérer dans la page\",
   - sauvez
    - vous pourrez ensuite explorer les autres composants
- 4) troisième défi => **modifier votre bouton**
+
+3) troisième défi => **modifier votre bouton**
   - Passez la page en mode édition,
   - cliquez sur le code du bouton => un petit crayon apparaît dans la marge,
-  - cliquez sur le petit crayon et changez les paramètres,
+  - cliquez sur __le petit crayon__ et changez les paramètres,
   - cliquez sur \"mettre à jour le code\",
   - sauvez
    - Cela fonctionnera pour tous les codes des composants
- 3) Et enfin => **revenir en arrière**, restaurer une version précédente de la page
-  - cliquez, en bas de la page, sur modifiée le...
-  - cliquez sur une des versions précédentes,
-  - cliquez sur \"ré-éditer cette version archivée\",
-  - sauvez et le tour est joué.
 
-Une aide simple est aisément accessible en cliquant sur le bouton \"?\" en mode édition de la page.', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+4) Et enfin => **revenir en arrière**, restaurer une version précédente de la page
+  - cliquez, en bas de la page, sur Dernière édition :
+  - choisissez une des versions précédentes,
+  - cliquez sur \"Restaurer cette version\",
+  - le tour est joué.
+
+Une aide simple est aisément accessible en cliquant sur \"aide mémoire ?\" lorsque vous êtes en mode édition.', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('BazaR',  now(), '{{bazar showexportbuttons=\"1\"}}
 ', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('CartoAnnuaire',  now(), '{{nav links=\"TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire\" titles=\"Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S\'inscrire dans l\'annuaire\"}}
 
 {{bazarliste id=\"1\" template=\"map\" markersize=\"small\" height=\"800px\" zoom=\"6\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('CommentFairePour',  now(), '{{nav links=\"DocuMentation, Aide, CommentFairePour, ExempleFormulaire, ActuYeswiki\" titles=\"Documentation Yeswiki, Aide mémoire, Comment faire pour, Exemples, Actualité\"}}
+
 \"\"<iframe class=\"auto-resize\" width=\"100%\" scroll=\"no\" frameborder=\"0\" src=\"https://yeswiki.net/?CommentFairePour/iframe\"></iframe>\"\"', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('CoursUtilisationYesWiki',  now(), '======Cours sur l\'utilisation de YesWiki======
 ====Le principe \"Wiki\"====
@@ -331,10 +336,10 @@ Vous trouverez un formulaire permettant
  - [[ReglesDeFormatage/edit Éditer le mémo de formatage]]', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('GererThemes',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Mots clefs, Fichier de conf, Mises à jour / extensions\"}}
 
-{{button class=\"btn-secondary-1 btn-block\" link=\"LookWiki\" text=\"Personnaliser le thème de ce wiki (couleurs, police...)\" }}
+{{button class=\"btn-info btn-block\" link=\"LookWiki\" text=\"Personnaliser le thème de ce wiki (couleurs, police...)\" }}
 {{button class=\"btn-default btn-block\" link=\"PageCss\" text=\"Ajouter du code CSS (zone sensible)\" title=\"Cette page ne peut contenir QUE du Css / voir la doc sur https://yeswiki.net/?DocumentationThemeMargot\" }}
 
-
+------
 
 ===Gérer les thèmes des pages===
 {{gererthemes}}
@@ -523,16 +528,16 @@ Pour en savoir plus, voyez la documentation sur https://yeswiki.net/?Documentati
 ('PageFooter',  now(), '{{section class=\"text-center\"}}
 {{yeswikiversion}}
 {{end elem=\"section\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageHeader',  now(), '{{section bgcolor=\"var(--neutral-color)\" class=\"white text-center cover\" file=\"bandeau1.png\" height=\"250\" }}
+('PageHeader',  now(), '{{section bgcolor=\"var(--neutral-color)\" class=\"white text-center cover\" file=\"bandeau.png\" height=\"250\" }}
 ======Description de mon wiki======
 Rendez-vous dans la roue crantée / gestion du site pour modifier ce bandeau
 
 {{end elem=\"section\"}}
 {#INFO CACHÉE pour vous aider : 
-Pour changer l\'image du bandeau : renommer bandeau.jpg par le nom de votre nouvelle image. Sauver, puis charger votre image préalablement préparée
+Pour changer l\'image du bandeau : renommer bandeau.png par le nom de votre nouvelle image (png, jpg). Sauver, puis charger votre image préalablement préparée
 (cette image devra avoir comme taille 1920 X 300 et 90 dpi de résolution)
 
-Aplat de couleur : supprimer file=\"bandeau.jpg\", cliquez sur section, cliquez sur le petit crayon dans la marge et laissez vous guider. vous pourrez 
+Aplat de couleur : supprimer file=\"bandeau.png\", cliquez sur section, cliquez sur le petit crayon dans la marge et laissez vous guider. vous pourrez 
  - changer la tonalité du texte
  - le caler à droite, le centrer
  - faire varier la hauteur du bandeau...#}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
@@ -754,11 +759,10 @@ texte***bf_fonction***Mon métier, ma fonction***60***255*** *** ***text***0*** 
 textelong***bf_projet***Ma présentation***5***5*** *** ***html***0*** *** *** * *** * *** *** *** ***
 champs_mail***bf_mail***Email (n\'apparaitra pas sur le web)*** *** *** ***form*** ***1***0*** *** * *** * *** *** *** ***
 texte***bf_structure***Nom de la structure***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***
-lien_internet***bf_site_internet***Site Internet***40***255*** *** ***url***0*** *** *** * *** * *** *** *** ***
+lien_internet***bf_site_internet***Site Internet*** *** *** *** *** ***0*** *** *** * *** * *** *** *** ***
 texte***bf_adresse***Adresse***50***50*** *** ***text***0*** *** *** * *** * *** *** *** ***
 texte***bf_code_postal***Code postal***8***8*** *** ***text***0*** *** *** * *** * *** *** *** ***
 texte***bf_ville***Ville***50***80*** *** ***text***0*** *** *** * *** * *** *** *** ***
-labelhtml***<span style=\"color:#cc3333;\">Il faut maintenant cliquer sur le bouton pour placer votre point sur la carte </span><br>*** *** ***
 map***bf_latitude***bf_longitude*** *** ***
 labelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***
 ', 'fr-FR'),
@@ -766,13 +770,12 @@ labelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***
 textelong***bf_description***Description***40***5*** *** ***wiki***0*** *** *** * *** * *** *** *** ***
 listedatedeb***bf_date_debut_evenement***Début de l\'événement*** *** ***today*** *** ***1*** *** *** * *** * *** *** *** ***
 listedatefin***bf_date_fin_evenement***Fin de l\'événement*** *** ***today*** *** ***1*** *** *** * *** * *** *** *** ***
-lien_internet***bf_site_internet***Adresse url***40***255*** *** ***url***0*** *** *** * *** * *** *** *** ***
+lien_internet***bf_site_internet***Adresse url*** *** *** *** *** ***0*** *** *** * *** * *** *** *** ***
 image***bf_image***Image (facultatif)***140***140***600***600***right***0*** ***Votre image doit être au format .jpg ou .gif ou .png*** * *** * *** *** *** ***
 fichier***fichier***Documents***20000000*** *** *** ***file***0*** *** *** * *** * *** *** *** ***
 texte***bf_adresse***Adresse***50***50*** *** ***text***0*** *** *** * *** * *** *** *** ***
 texte***bf_code_postal***Code postal***8***8*** *** ***text***0*** *** *** * *** * *** *** *** ***
 texte***bf_ville***Ville***50***80*** *** ***text***0*** *** *** * *** * *** *** *** ***
-labelhtml***<span style=\"color:#cc3333;\">Il faut maintenant cliquer sur le bouton pour placer votre point sur la carte </span><br>*** *** ***
 map***bf_latitude***bf_longitude*** *** ***
 labelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***
 ', 'fr-FR');
