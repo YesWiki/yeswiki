@@ -227,18 +227,25 @@ class EntryController extends YesWikiController
         $form = $this->formManager->getOne($entry['id_typeannonce']);
 
         list($state, $error) = $this->securityController->checkCaptchaBeforeSave('entry');
-        if ($state && isset($_POST['bf_titre'])) {
-            $entry = $this->entryManager->update($entryId, $_POST);
-            if (empty($redirectUrl)) {
-                $redirectUrl = $this->wiki->Href(testUrlInIframe(), '', [
-                    'vue' => 'consulter',
-                    'action' => 'voir_fiche',
-                    'id_fiche' => $entry['id_fiche'],
-                    'message' => 'modif_ok'
-                ], false);
+        try {
+            if ($state && isset($_POST['bf_titre'])) {
+                $entry = $this->entryManager->update($entryId, $_POST);
+                if (empty($redirectUrl)) {
+                    $redirectUrl = $this->wiki->Href(testUrlInIframe(), '', [
+                        'vue' => 'consulter',
+                        'action' => 'voir_fiche',
+                        'id_fiche' => $entry['id_fiche'],
+                        'message' => 'modif_ok'
+                    ], false);
+                }
+                header('Location: ' . $redirectUrl);
+                exit;
             }
-            header('Location: ' . $redirectUrl);
-            exit;
+        } catch (UserFieldException $e) {
+            $error .= $this->render('@templates/alert-message.twig', [
+                'type' => 'warning',
+                'message' => $e->getMessage()
+            ]);
         }
 
         return $this->render("@bazar/entries/form.twig", [
