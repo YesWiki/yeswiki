@@ -87,7 +87,7 @@ if ($this->UserIsAdmin()) {
               $page["tag"]. " ".
               "(". $page["time"]. ") ".
                 " par ". $page['user'] . " ".
-                "<a href=\"".$this->Href('show', $page["tag"], ['time'=>urlencode($page["time"])])."\" ".
+                "<a href=\"".$this->Href('iframe', $page["tag"], ['time'=>urlencode($page["time"])])."\" ".
                 "title=\"Voir la fiche {$page["tag"]} ({$page["time"]})\" ".
                 "class=\"btn btn-xs btn-default modalbox\" ".
                 "data-size=\"modal-lg\" ".
@@ -99,7 +99,7 @@ if ($this->UserIsAdmin()) {
             echo "<td>\n";
             echo "<p>";
             echo "_____________________________________________________________________________________________________";
-            echo "<p>";
+            echo "</p><table>";
 
 
 
@@ -110,17 +110,18 @@ if ($this->UserIsAdmin()) {
                     $revision1 = "";
                     continue;
                 }
-                echo "<input name=  \"rev[]\" value=\"" . $revision["id"] . "\" type=\"checkbox\" /> ";
+                echo "<tr><td><input name=  \"rev[]\" value=\"" . $revision["id"] . "\" type=\"checkbox\" /></td><td>";
                 echo "Restaurer depuis la version du ".
                    " ".$revision["time"]." ".
                   " par ". $revision['user'] . " ".
-                  "<a href=\"".$this->Href('show', $page["tag"], ['time'=>urlencode($revision["time"])])."\" ".
+                  "<a href=\"".$this->Href('iframe', $page["tag"], ['time'=>urlencode($revision["time"])])."\" ".
                     "title=\"Voir la fiche {$page["tag"]} ({$revision["time"]})\" ".
                     "class=\"btn btn-xs btn-default modalbox\" ".
                     "data-size=\"modal-lg\" ".
                     "data-iframe=\"1\"><i class=\"fas fa-eye\"></i></a>".
-                  "<br />\n";
+                  "</td></tr>\n";
             }
+            echo "</table>\n";
             unset($revision1);
             echo //" . . . . ",$this->Format($page["user"]),"</p>\n",
               "</td>\n",
