@@ -365,7 +365,6 @@ var typeUserAttrs = {
     },
     mailing_list_tool: {
       label: "Type de service de diffusion",
-      options: { "": "", ezmlm: "Ezmlm", sympa: "Sympa" },
     },
   },
   labelhtml: {
@@ -378,6 +377,13 @@ var typeUserAttrs = {
     email_field: {
       label: "Champ pour l'email de l'utilisateur",
       value: "bf_mail",
+    },
+    // mailing_list: {
+    //   label: "Inscrite à une liste de diffusion"
+    // },
+    autoupdate_email: {
+      label: "Auto. Sychro. e-mail",
+      options: { "": "Non", 1: "Oui" },
     },
   },
   acls: {
@@ -573,7 +579,7 @@ var yesWikiMapping = {
     4: "mailing_list_tool",
   },
   labelhtml: { 0: "type", 1: "content_saisie", 2: "", 3: "content_display" },
-  utilisateur_wikini: { 0: "type", 1: "name_field", 2: "email_field" },
+  utilisateur_wikini: { 0: "type", 1: "name_field", 2: "email_field",/*5:"mailing_list",*/9:"autoupdate_email" },
   titre: { 0: "type", 1: "value", 2: "label" },
   acls: { 0: "type", 1: "read", 2: "write", 3: "comment" },
   metadatas: { 0: "type", 1: "theme", 2: "squelette", 3: "style", 4: "image" },

@@ -329,5 +329,9 @@ $GLOBALS['translations'] = array_merge(
         'EDIT_CONFIG_HINT_BAZARIGNOREACLS' => 'Permettre la création de fiches même si le wiki est fermé en écriture (true ou false)',
         'EDIT_CONFIG_GROUP_BAZAR' => 'Base de données',
 
+        // USER FIELD
+        'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => "L'identifiant \"{currentName}\" existe déjà !\nCochez la case pour confirmer son remplacement par \"{proposedName}\" ou sinon modifiez votre identifiant dans le formulaire ci-dessous.",
+        'BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL' => "L'e-mail fourni est déjà associé à un compte YesWiki ! Veuillez entrer une autre adresse e-mail ou vous connecter à ce compte.",'USER_PASSWORDS_NOT_IDENTICAL' => "Le mot de passe saisi pour vérification n'est pas identique au premier !",
+
     )
 );

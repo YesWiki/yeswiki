@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Controller;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ImageField;
+use YesWiki\Bazar\Field\UserFieldException;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
@@ -186,21 +187,28 @@ class EntryController extends YesWikiController
         }
 
         list($state, $error) = $this->securityController->checkCaptchaBeforeSave('entry');
-        if ($state && isset($_POST['bf_titre'])) {
-            $entry = $this->entryManager->create($formId, $_POST);
-            if (empty($redirectUrl)) {
-                $redirectUrl = $this->wiki->Href(
-                    testUrlInIframe(),
-                    '',
-                    [  'vue' => 'consulter',
-                       'action' => 'voir_fiche',
-                       'id_fiche' => $entry['id_fiche'],
-                       'message' => 'ajout_ok'],
-                    false
-                );
+        try {
+            if ($state && isset($_POST['bf_titre'])) {
+                $entry = $this->entryManager->create($formId, $_POST);
+                if (empty($redirectUrl)) {
+                    $redirectUrl = $this->wiki->Href(
+                        testUrlInIframe(),
+                        '',
+                        [  'vue' => 'consulter',
+                        'action' => 'voir_fiche',
+                        'id_fiche' => $entry['id_fiche'],
+                        'message' => 'ajout_ok'],
+                        false
+                    );
+                }
+                header('Location: ' . $redirectUrl);
+                exit;
             }
-            header('Location: ' . $redirectUrl);
-            exit;
+        } catch (UserFieldException $e) {
+            $error .= $this->render('@templates/alert-message.twig', [
+                'type' => 'warning',
+                'message' => $e->getMessage()
+            ]);
         }
 
         return $this->render("@bazar/entries/form.twig", [
