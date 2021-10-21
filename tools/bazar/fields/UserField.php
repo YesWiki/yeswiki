@@ -47,8 +47,31 @@ class UserField extends BazarField
 
     protected function renderInput($entry)
     {
+        $value = $this->getValue($entry);
+        
+        $userManager = $this->getService(UserManager::class);
+        $loggedUser = $userManager->getLoggedUser();
+        if (!empty($loggedUser)) {
+            $associatedUser = $userManager->getOneByName($loggedUser['name']);
+            if (!empty($associatedUser['name'])) {
+                if (empty($value)) {
+                    $value = $associatedUser['name'];
+                    $message = str_replace(
+                        ['{wikiname}','{email}'],
+                        [$value,$associatedUser['email']],
+                        _t('BAZ_USER_FIELD_ALREADY_CONNECTED')
+                    );
+                }
+                $message = ($message ? $message."\n" : '').($this->autoUpdateMail ? str_replace(
+                    '{email}',
+                    $associatedUser['email'],
+                    _t('BAZ_USER_FIELD_ALREADY_CONNECTED_AUTOUPDATE')
+                ): '');
+            }
+        }
         return $this->render("@bazar/inputs/user.twig", [
-            'value' => $this->getValue($entry)
+            'value' => $value,
+            'message' => $message ?? null
         ]);
     }
 
@@ -60,7 +83,7 @@ class UserField extends BazarField
         $value = $this->getValue($entry);
         $isImport = isset($GLOBALS['_BAZAR_']['provenance']) && $GLOBALS['_BAZAR_']['provenance'] === 'import';
 
-        if ($value) {
+        if ($value && $this->isUserByName($value)) {
             $wikiName = $value;
             $this->updateEmailIfNeeded($wikiName, $entry[$this->emailField] ?? null);
         } else {
