@@ -53,8 +53,9 @@ abstract class YesWikiPerformable
      */
     public function setArguments(array &$arguments): void
     {
+        $this->arguments = &$arguments; // passed by ref to be able to change arguments in pre and post actions
         $formattedArguments = $this->formatArguments($arguments);
-        $this->arguments = array_merge($arguments, $formattedArguments);
+        $this->arguments = array_merge($arguments, $formattedArguments); // not array_merge return a copy not ref
     }
 
     /**
