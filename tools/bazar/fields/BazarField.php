@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Wiki;
 
 abstract class BazarField implements \JsonSerializable
 {
@@ -234,5 +235,14 @@ abstract class BazarField implements \JsonSerializable
             'write_acl' => $this->getWriteAccess(),
             'sem_type' => $this->getSemanticPredicate(),
             ];
+    }
+
+    /**
+     * return wiki from service but do not instanciate it at construct to prevent infinite loop
+     * @return Wiki $wiki
+     */
+    protected function getWiki(): Wiki
+    {
+        return $this->getService(Wiki::class);
     }
 }
