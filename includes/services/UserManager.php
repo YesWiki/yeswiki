@@ -90,4 +90,21 @@ class UserManager
             "password = md5('" . $this->dbService->escape($password) . "')"
         );
     }
+
+    public function updateEmail($wikiName, $email)
+    {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+        $user = $this->getOneByName($wikiName);
+        if (!empty($user)) {
+            $query =
+                'UPDATE ' . $this->dbService->prefixTable('users') . 'SET ' .
+                'email = "' . $this->dbService->escape($email) . '"'.
+                ' WHERE name = "'.$this->dbService->escape($user['name']).'" '.
+                'AND email= "'.$this->dbService->escape($user['email']).'" '.
+                'AND password= "'.$this->dbService->escape($user['password']).'";';
+            $this->dbService->query($query);
+        }
+    }
 }

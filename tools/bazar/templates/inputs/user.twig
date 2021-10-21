@@ -1,3 +1,9 @@
+{% if message %}
+    {{ include('@templates/alert-message.twig',{
+        type:'info',
+        message:message|nl2br()
+    })}}
+{% endif %}
 {% if value %}
     <input type="hidden" name="nomwiki" value="{{ value }}" />
 {% else %}
