@@ -1,7 +1,7 @@
 
 /* CUSTOM FORM */
 .form-group, #actions-builder-app .form-group:first-child {
-  margin-top: 1.2rem;
+  margin-top: 1.2rem !important;
 }
 .form-group.range {
   margin-top: 25px;
@@ -125,7 +125,7 @@ input[type=range] {
 }
 .inline-form {
   display: flex;
-  align-items: baseline;
+  /* align-items: baseline; */
 }
 .inline-form .form-group {
   padding: 0 !important;
