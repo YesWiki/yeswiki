@@ -87,6 +87,11 @@ if ($this->UserIsAdmin()) {
               $page["tag"]. " ".
               "(". $page["time"]. ") ".
                 " par ". $page['user'] . " ".
+                "<a href=\"".$this->Href('show', $page["tag"], ['time'=>urlencode($page["time"])])."\" ".
+                "title=\"Voir la fiche {$page["tag"]} ({$page["time"]})\" ".
+                "class=\"btn btn-xs btn-default modalbox\" ".
+                "data-size=\"modal-lg\" ".
+                "data-iframe=\"1\"><i class=\"fas fa-eye\"></i></a>".
               "</td>\n";
             echo "<td>".
               "<input name=\"suppr[]\" value=\"" . $page["tag"] . "\" type=\"checkbox\" /> [Suppr.!]".
@@ -109,6 +114,11 @@ if ($this->UserIsAdmin()) {
                 echo "Restaurer depuis la version du ".
                    " ".$revision["time"]." ".
                   " par ". $revision['user'] . " ".
+                  "<a href=\"".$this->Href('show', $page["tag"], ['time'=>urlencode($revision["time"])])."\" ".
+                    "title=\"Voir la fiche {$page["tag"]} ({$revision["time"]})\" ".
+                    "class=\"btn btn-xs btn-default modalbox\" ".
+                    "data-size=\"modal-lg\" ".
+                    "data-iframe=\"1\"><i class=\"fas fa-eye\"></i></a>".
                   "<br />\n";
             }
             unset($revision1);
