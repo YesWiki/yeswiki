@@ -210,6 +210,9 @@ class UserField extends BazarField
                 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     throw new UserFieldException(_t('USER_THIS_IS_NOT_A_VALID_EMAIL'));
                 }
+                if ($this->isUserByEmail($email)) {
+                    throw new UserFieldException(_t('BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL'));
+                }
                 $userManager->updateEmail($user['name'], $email);
             }
         }
