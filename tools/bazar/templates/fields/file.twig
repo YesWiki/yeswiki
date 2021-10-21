@@ -1,9 +1,9 @@
 {% extends "@bazar/layouts/field.twig" %}
 
-{% block label %}{{ _t('BAZ_DOWNLOAD_FILE') }}{% endblock %}
+{% block label %}{{ _t('UPLOAD_A_FILE_SHORT')  ~ ' : ' ~ value }}{% endblock %}
 
 {% block value %}
-    <a href="{{ fileUrl }}">
-        {{ value }}
+    <a class="btn btn-primary" href="{{ fileUrl }}" title="{{ _t('BAZ_DOWNLOAD_FILE') ~ ' ' ~ value}}" data-toggle="tooltip" data-placement="right">
+        {{ _t('TAGS_DOWNLOAD') }}
     </a>
 {% endblock %}
