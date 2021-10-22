@@ -383,7 +383,7 @@ var typeUserAttrs = {
     // },
     autoupdate_email: {
       label: "Auto. Sychro. e-mail",
-      options: { "": "Non", 1: "Oui" },
+      options: { 0: "Non", 1: "Oui" },
     },
   },
   acls: {
