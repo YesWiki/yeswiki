@@ -61,6 +61,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       search() { 
         clearTimeout(this.searchTimer)
         this.searchTimer = setTimeout(() => this.calculateBaseEntries(), 350)
+        this.saveFiltersIntoHash()
       },
       searchFormId() { this.calculateBaseEntries() },
       computedFilters() { 
@@ -139,6 +140,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         for(const filterId in this.computedFilters) {
           hashes.push(`${filterId}=${this.computedFilters[filterId].join(',')}`)
         }
+        if (this.search) hashes.push(`q=${this.search}`)
         document.location.hash = hashes.join('&')
       },
       initFiltersFromHash(filters, hash) {
@@ -146,7 +148,10 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         for(let combinaison of hash.split('&')) {          
           let filterId = combinaison.split('=')[0]
           let filterValues = combinaison.split('=')[1]
-          if (filterId && filterValues && filters[filterId]) {
+          if (filterId == "q") {
+            this.search = filterValues
+          }
+          else if (filterId && filterValues && filters[filterId]) {
             filterValues = filterValues.split(',')
             for(let filter of filters[filterId].list) {
               if (filterValues.includes(filter.value)) filter.checked = true
