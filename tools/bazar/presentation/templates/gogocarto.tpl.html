@@ -243,7 +243,7 @@
     right: 0;
     left: auto !important;
   }
-  <?php if (isset($param['search']) && ($param['search'] === "false" || $param['search'] === false)) { ?>
+  <?php if (!isset($param['search']) || !$param['search']) { ?>
     .directory-menu-header .btn-close-menu { 
       display: none !important; 
     }
