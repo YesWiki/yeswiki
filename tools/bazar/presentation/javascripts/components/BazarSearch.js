@@ -2,6 +2,9 @@
 var wordsToExcludeFromSearch = ['le', 'la', 'les', 'du', 'en', 'un', 'une']
 
 export default {
+  data: {
+    isLoading: false
+  },
   methods: {
     searchEntries(entries, search) {
       switch (this.params.search) {
@@ -15,11 +18,13 @@ export default {
     },
     // Search throught API
     distantSearch(entries, search) {
+      this.isLoading = true
       let params = { ...this.params, ...{ q: search } }
       $.getJSON(wiki.url('?api/entries/bazarlist'), params, (data) => {
         let searchedIds = data.entries.map(entry => entry[0])
         this.searchedEntries = entries.filter(entry => searchedIds.includes(entry.id_fiche))
         this.filterEntries()
+        this.isLoading = false
       })
       return entries
     },
