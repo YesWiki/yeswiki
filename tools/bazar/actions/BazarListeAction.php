@@ -105,6 +105,10 @@ class BazarListeAction extends YesWikiAction
             return $externalId['id'];
         }, $externalIds));
 
+        // Only keep "true" and "dynamic" value, so we can still do if params.search in twig
+        $search = $arg['search'] ?? null;
+        if ($search == "false") $search = null;
+
         return([
             // SELECTION DES FICHES
             // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
@@ -151,7 +155,7 @@ class BazarListeAction extends YesWikiAction
             // ajout des options pour exporter les fiches
             'showexportbuttons' => $this->formatBoolean($arg, false, 'showexportbuttons'),
             // Affiche le formulaire de recherche en haut
-            'search' => $this->formatBoolean($arg, false, 'search'),
+            'search' => $search,
             'searchfields'=> $searchfields,
             // Affiche le nombre de fiche en haut
             'shownumentries' => $this->formatBoolean($arg, false, 'shownumentries'),

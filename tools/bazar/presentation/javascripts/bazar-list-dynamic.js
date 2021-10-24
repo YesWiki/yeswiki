@@ -1,12 +1,13 @@
 import Panel from './components/Panel.js'
 import SpinnerLoader from './components/SpinnerLoader.js'
 import ModalEntry from './components/ModalEntry.js'
+import BazarSearch from './components/BazarSearch.js'
 
-var wordsToExcludeFromSearch = ['le', 'la', 'les', 'du', 'en', 'un', 'une']
 document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>{
   new Vue({
     el: domElement,
     components: { Panel, ModalEntry, SpinnerLoader },
+    mixins: [ BazarSearch ],
     data: {
       mounted: false, // when vue get initialized
       ready: false, // when ajax data have been retrieved
@@ -60,6 +61,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       search() { 
         clearTimeout(this.searchTimer)
         this.searchTimer = setTimeout(() => this.calculateBaseEntries(), 350)
+        this.saveFiltersIntoHash()
       },
       searchFormId() { this.calculateBaseEntries() },
       computedFilters() { 
@@ -72,31 +74,14 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
     methods: {
       calculateBaseEntries() {
         let result = this.entries
-        let needSearch = this.search && this.search.length > 2
-        if (needSearch || this.searchFormId) {
+        if (this.searchFormId) {
           result = result.filter(entry => {
             // filter based on formId, when no form id is specified
-            if (this.searchFormId && entry.id_typeannonce != this.searchFormId) return false
-            if (needSearch) {
-              entry.searchScore = 0
-              let words = this.search.split(' ')
-                                     .map(word => this.removeDiatrics(word))
-                                     .filter(word => word.length > 1 && !wordsToExcludeFromSearch.includes(word))
-              words.forEach(word => {
-                this.params.searchfields.forEach(field => {
-                  let fieldValue = entry[field] ? entry[field] : ""
-                  if (Array.isArray(fieldValue)) fieldValue = fieldValue.join(' ')
-                  fieldValue = this.removeDiatrics(fieldValue)
-                  if (fieldValue && fieldValue.includes(word)) {
-                    entry.searchScore += field == 'bf_titre' ? 2 * word.length : word.length
-                  }
-                })
-              })
-              return entry.searchScore > 0
-            }
-            return true
-          })
-          if (needSearch) result = result.sort((a, b) => (a.searchScore > b.searchScore) ? -1 : 1)
+            return entry.id_typeannonce == this.searchFormId
+          })          
+        }
+        if (this.search && this.search.length > 2) {
+          result = this.searchEntries(result, this.search)
         }
         this.searchedEntries = result
         this.filterEntries()
@@ -155,6 +140,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         for(const filterId in this.computedFilters) {
           hashes.push(`${filterId}=${this.computedFilters[filterId].join(',')}`)
         }
+        if (this.search) hashes.push(`q=${this.search}`)
         document.location.hash = hashes.join('&')
       },
       initFiltersFromHash(filters, hash) {
@@ -162,7 +148,10 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         for(let combinaison of hash.split('&')) {          
           let filterId = combinaison.split('=')[0]
           let filterValues = combinaison.split('=')[1]
-          if (filterId && filterValues && filters[filterId]) {
+          if (filterId == "q") {
+            this.search = filterValues
+          }
+          else if (filterId && filterValues && filters[filterId]) {
             filterValues = filterValues.split(',')
             for(let filter of filters[filterId].list) {
               if (filterValues.includes(filter.value)) filter.checked = true
@@ -197,10 +186,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         // TODO BazarListDynamic check with users if this is expected behaviour
         if (this.computedFilters[field]) values = values.filter(val => this.computedFilters[field].includes(val))
         return mapping[values[0]]
-      },
-      removeDiatrics(str) {
-        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
-      }
+      }      
     },
     mounted() {
       let savedHash = document.location.hash // don't know how, but the hash get cleared after 

@@ -127,7 +127,7 @@ window.myapp = new Vue({
         // use a fake dom to parse wiki code attributes
         let fakeDom = $(`<${this.editor.currentSelectedAction}/>`)[0]
 
-        for(let attribute of fakeDom.attributes) this.values[attribute.name] = attribute.value
+        for(let attribute of fakeDom.attributes) Vue.set(this.values, attribute.name, attribute.value)
 
         let newActionId = fakeDom.tagName.toLowerCase()
         // backward compatibilty
@@ -195,9 +195,9 @@ window.myapp = new Vue({
     initValuesOnActionSelected() {
       if (!this.selectedAction) return;
       // Populate the values field from the config
-      for(var propName in this.selectedAction.properties) {
+      for(var propName in this.selectedAction.properties) {        
         var configValue = this.selectedAction.properties[propName].value || this.selectedAction.properties[propName].default
-        if (configValue && !this.values[propName]) this.values[propName] = configValue
+        if (configValue && !this.values[propName]) Vue.set(this.values, propName, configValue)
       }
       if (this.selectedAction.properties && this.selectedAction.properties.template) this.values.template = this.selectedAction.properties.template.value
       setTimeout(() => this.updateActionParams(), 0);
@@ -211,7 +211,7 @@ window.myapp = new Vue({
         let config = this.selectedActionAllConfigs[key]
         let value = this.values[key]
         if (result.hasOwnProperty(key) || value === undefined 
-            || typeof value == "object" || config && !this.display(config) ) 
+            || typeof value == "object" || config && !this.checkConfigDisplay(config) ) 
           continue
         result[key] = value
       }

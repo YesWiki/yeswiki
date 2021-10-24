@@ -24,7 +24,7 @@
           <i v-html="filter.icon"></i>{{"{{ filter.title }}"}}
         </template>
         <template #body>
-          <div class="checkbox" v-for="filterOption, id in filter.list" :key="id" v-if="filterOption.nb > 0">
+          <div class="checkbox" v-for="filterOption, id in filter.list" :key="id">
             <label>
               <input class="filter-checkbox" type="checkbox" v-model="filterOption.checked" :value="filterOption.value">
               <span>

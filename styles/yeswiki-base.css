@@ -645,3 +645,15 @@ body {
   justify-content: center;
   opacity: .1;
 }
+.spinner-loader.overlay {
+  height: auto !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: auto;
+  background-color: #ececec;
+  border-radius: .5rem;
+  opacity: .3;
+}
