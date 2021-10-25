@@ -70,7 +70,15 @@ $(document).ready(function () {
     $('div[id^=\'' + id + '\'], div[id^=\'' + id.replace('liste', '') + '\']')
       .not('div[id=\'' + id + '_' + $(this).val() + '\'], div[id=\'' + id.replace('liste', '') + '_' + $(this).val() + '\']').hide()
      .find(':input').val('').removeProp('checked');
-    $('div[id=\'' + id + '_' + $(this).val() + '\'], div[id=\'' + id.replace('liste', '') + '_' + $(this).val() + '\']').show();
+    $('div[id=\'' + id + '_' + $(this).val() + '\'], div[id=\'' + id.replace('liste', '') + '_' + $(this).val() + '\']').show()
+  }
+  function handleConditionnalRadioChoice() {
+    var id = $(this).attr('id');
+    let shortId = id.substr(0,id.length-$(this).val().toString().length-1)
+    $('div[id^=\'' + shortId+ '\']')
+      .not('div[id=\'' + id + '\']').hide()
+     .find(':input').val('').removeProp('checked');
+    $('div[id=\'' + id + '\']').show();
   }
   function handleConditionnalCheckboxChoice() {
     var id = $(this).attr('id');
@@ -96,6 +104,7 @@ $(document).ready(function () {
   }
 
   $('select[id^=\'liste\']').each(handleConditionnalListChoice).change(handleConditionnalListChoice);
+  $('input.element_radio').each(handleConditionnalRadioChoice).change(handleConditionnalRadioChoice);
   $('.element_checkbox[id^=\'checkboxListe\']').each(handleConditionnalCheckboxChoice).change(handleConditionnalCheckboxChoice);
 
   //choix de l'heure pour une date

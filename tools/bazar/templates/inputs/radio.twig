@@ -12,8 +12,8 @@
       {% if value == key %}
         {% block radioInput %}
           <div class="radio">
-            <label for="{{ field.propertyName ~ key }}">
-              <input type="radio" id="{{ field.propertyName ~ key }}" value="{{ key }}" name="{{ field.propertyName }}" {% if value == key %}checked{% endif %} />
+            <label for="{{ field.propertyName ~ '_' ~ key }}">
+              <input class="element_radio" type="radio" id="{{ field.propertyName ~ '_' ~ key }}" value="{{ key }}" name="{{ field.propertyName }}" {% if value == key %}checked{% endif %} />
                 <span>{{ option|raw }}</span>
             </label>
           </div>
