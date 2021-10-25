@@ -435,4 +435,15 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'UPDATE_ADMIN_PAGES_CONFIRM' => 'Confirm pages\' update : ',
 'UPDATE_ADMIN_PAGES_HINT' => 'Update admin pages with latest features. This is reversible.',
 'UPDATE_ADMIN_PAGES_ERROR' => 'Not possible to update all admin pages !',
+
+// handlers/revisions
+'SUCCESS_RESTORE_REVISION' => "The version was restored",
+'TITLE_PAGE_HISTORY' => 'Page history',
+'TITLE_ENTRY_HISTORY' => 'Entry history',
+'REVISION_VERSION' => 'Revision N°',
+'REVISION_ON' => 'on',
+'REVISION_BY' => 'by',
+'CURRENT_VERSION' => 'Current revision',
+'RESTORE_REVISION' => 'Restore this revision',
+'DISPLAY_WIKI_CODE' => 'Display Wiki code',
 ));
