@@ -26,6 +26,7 @@ class UserField extends BazarField
     protected const FIELD_AUTO_UPDATE_MAIL = 9;
 
     private const CONFIRM_NAME_SUFFIX = '_confirmNewName';
+    private const FORCE_LABEL = '_force_label';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -62,16 +63,25 @@ class UserField extends BazarField
                         _t('BAZ_USER_FIELD_ALREADY_CONNECTED')
                     );
                 }
-                $message = ($message ? $message."\n" : '').($this->autoUpdateMail ? str_replace(
-                    '{email}',
-                    $associatedUser['email'],
-                    _t('BAZ_USER_FIELD_ALREADY_CONNECTED_AUTOUPDATE')
-                ): '');
+                if ($value !== $loggedUser['name'] && $this->getWiki()->UserIsAdmin()) {
+                    $associatedUser = $userManager->getOneByName($value);
+                }
+                if ($value === $loggedUser['name'] || ($this->getWiki()->UserIsAdmin() && !empty($associatedUser['email']))) {
+                    $message = (!empty($message) ? $message."\n" : '').($this->autoUpdateMail ? str_replace(
+                        '{email}',
+                        $associatedUser['email'],
+                        _t('BAZ_USER_FIELD_ALREADY_CONNECTED_AUTOUPDATE')
+                    ): '');
+                }
             }
         }
         return $this->render("@bazar/inputs/user.twig", [
             'value' => $value,
-            'message' => $message ?? null
+            'message' => $message ?? null,
+            'userIsAdmin' =>  $this->getWiki()->UserIsAdmin(),
+            'userName' =>  $loggedUser['name'] ?? null,
+            'forceLabel' => $this->propertyName.self::FORCE_LABEL,
+            'forceLabelChecked' => $_POST[$this->propertyName.self::FORCE_LABEL] ?? false,
         ]);
     }
 
@@ -83,13 +93,26 @@ class UserField extends BazarField
         $value = $this->getValue($entry);
         $isImport = isset($GLOBALS['_BAZAR_']['provenance']) && $GLOBALS['_BAZAR_']['provenance'] === 'import';
 
+        $wiki = $this->getWiki();
+
+        if ($this->getWiki()->UserIsAdmin()
+                && in_array($_POST[$this->propertyName.self::FORCE_LABEL] ?? false, [true,"true",1,"1"], true)) {
+            // force entry creation but do not create user if existing for this email
+            $userManager = $this->getService(UserManager::class);
+            $existingUser = $userManager->getOneByEmail($entry[$this->emailField]);
+            if (!empty($existingUser)) {
+                $value = $existingUser['name'];
+            } else {
+                $value = null;
+            }
+        }
+
         if ($value && $this->isUserByName($value)) {
             $wikiName = $value;
             $this->updateEmailIfNeeded($wikiName, $entry[$this->emailField] ?? null);
         } else {
             $wikiName = $entry[$this->nameField];
 
-            $wiki = $this->getWiki();
             if (!$wiki->IsWikiName($wikiName)) {
                 $wikiName = genere_nom_wiki($wikiName, 0);
             }
@@ -100,14 +123,14 @@ class UserField extends BazarField
                     $wikiName = genere_nom_wiki($wikiName);
                 }
                 if (!$isImport
-                        && !in_array($_POST[$this->propertyName.self::CONFIRM_NAME_SUFFIX] ?? false, [true,1,"1"], true)
-                        ) {
+                    && !in_array($_POST[$this->propertyName.self::CONFIRM_NAME_SUFFIX] ?? false, [true,1,"1"], true)
+                    ) {
                     throw new UserFieldException(
                         $this->render("@bazar/inputs/user-confirm.twig", [
-                            'confirmName' => $this->propertyName.self::CONFIRM_NAME_SUFFIX,
-                            'wikiName' => $currentWikiName,
-                            'newWikiName' => $wikiName,
-                        ])
+                        'confirmName' => $this->propertyName.self::CONFIRM_NAME_SUFFIX,
+                        'wikiName' => $currentWikiName,
+                        'newWikiName' => $wikiName,
+                    ])
                     );
                 }
             }
@@ -118,7 +141,7 @@ class UserField extends BazarField
                 throw new UserFieldException(_t('USER_THIS_IS_NOT_A_VALID_EMAIL'));
             }
             if (!$isImport
-                    && $entry['mot_de_passe_wikini'] !== $entry['mot_de_passe_repete_wikini']) {
+                && $entry['mot_de_passe_wikini'] !== $entry['mot_de_passe_repete_wikini']) {
                 throw new UserFieldException(_t('USER_PASSWORDS_NOT_IDENTICAL'));
             }
 
@@ -145,7 +168,8 @@ class UserField extends BazarField
             'fields-to-remove' => [
                 'mot_de_passe_wikini',
                 'mot_de_passe_repete_wikini',
-                $this->propertyName.self::CONFIRM_NAME_SUFFIX
+                $this->propertyName.self::CONFIRM_NAME_SUFFIX,
+                $this->propertyName.self::FORCE_LABEL,
                 ]
         ];
     }

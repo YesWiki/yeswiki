@@ -84,10 +84,13 @@ $(document).ready(function () {
     }
     if (m) {
       if ($(this).prop('checked') == true) {
-        $('div[id=\'' + m[1] + '_' + m[2] + '\']').show();
+        $('div[id=\'' + m[1] + '_' + m[2] + '\']:not(.conditional_inversed_checkbox)').show();
+        $('div[id=\'' + m[1] + '_' + m[2] + '\'].conditional_inversed_checkbox').hide()
+          .find(':input').val('').removeProp('checked');;
       } else {
-        $('div[id=\'' + m[1] + '_' + m[2] + '\']').hide()
+        $('div[id=\'' + m[1] + '_' + m[2] + '\']:not(.conditional_inversed_checkbox)').hide()
         .find(':input').val('').removeProp('checked');
+        $('div[id=\'' + m[1] + '_' + m[2] + '\'].conditional_inversed_checkbox').show();
       }
     }
   }

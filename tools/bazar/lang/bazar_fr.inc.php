@@ -333,7 +333,8 @@ $GLOBALS['translations'] = array_merge(
         'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => "L'identifiant \"{currentName}\" existe déjà !\nCochez la case pour confirmer son remplacement par \"{proposedName}\" ou sinon modifiez votre identifiant dans le formulaire ci-dessous.",
         'BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL' => "L'e-mail fourni est déjà associé à un compte YesWiki ! Veuillez entrer une autre adresse e-mail ou vous connecter à ce compte.",'USER_PASSWORDS_NOT_IDENTICAL' => "Le mot de passe saisi pour vérification n'est pas identique au premier !",
         'BAZ_USER_FIELD_ALREADY_CONNECTED' => "Vous êtes déjà connecté avec l'identifiant \"{wikiname}\" et l'e-mail \"{email}\".\nLa fiche créée sera automatiquement liée à votre compte. Veuillez vous déconnecter pour créer un nouveau compte !",
-        'BAZ_USER_FIELD_ALREADY_CONNECTED_AUTOUPDATE' => "Pour changer l'adresse e-mail associée à votre compte, tapez-en une différente de \"{email}\".",
+        'BAZ_USER_FIELD_ALREADY_CONNECTED_AUTOUPDATE' => "Pour changer l'adresse e-mail associée à ce compte, tapez-en une différente de \"{email}\".",
+        'BAZ_USER_FIELD_FORCE_SAVE_ENTRY' => "En tant qu'admin, forcer la création de la fiche pour l'e-mail donné (et ne créer un compte que s'il n'existe pas déjà)",
 
     )
 );

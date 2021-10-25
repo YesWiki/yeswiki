@@ -1,13 +1,40 @@
 {% if message %}
+  {% if userIsAdmin %}
+    <div id="checkboxListe{{forceLabel}}_fake_value_checked" class="conditional_inversed_checkbox">
+  {% endif %}
     {{ include('@templates/alert-message.twig',{
         type:'info',
         message:message|nl2br()
     })}}
+  {% if userIsAdmin %}
+    </div>
+  {% endif %}
 {% endif %}
 {% if value %}
     <input type="hidden" name="nomwiki" value="{{ value }}" />
-{% else %}
-    <div class="control-group form-group">
+{% endif %}
+{% if userIsAdmin and value == userName %}
+    <div class="input-group">
+        <label for="checkboxListe{{ forceLabel }}[fake_value_checked]">
+            <input 
+            class="element_checkbox" 
+            type="checkbox" 
+            id="checkboxListe{{ forceLabel }}[fake_value_checked]" 
+            value="1" 
+            name="{{ forceLabel }}"
+            {{- forceLabelChecked ? "checked=checked" : "" -}}
+            />
+            <span></span>
+        </label>
+        <div class="input-group-append">
+            <span class="input-group-text">
+                {{ _t('BAZ_USER_FIELD_FORCE_SAVE_ENTRY') }}
+            </span>
+        </div>
+    </div>
+{% endif %}
+{% if not value or ( userIsAdmin and value == userName ) %}
+    <div class="control-group form-group"{{ userIsAdmin ? " id=checkboxListe" ~ forceLabel ~ "_fake_value_checked" : '' }}>
         <label class="control-label col-sm-3">
             <span class="symbole_obligatoire"></span>
             {% if field.hint %}
@@ -21,7 +48,7 @@
             </div>
         </div>
     </div>
-    <div class="control-group form-group">
+    <div class="control-group form-group"{{ userIsAdmin ? " id=checkboxListe" ~ forceLabel ~"_fake_value_checked": '' }}>
         <label class="control-label col-sm-3">
             <span class="symbole_obligatoire"></span>
             {% if field.hint %}
