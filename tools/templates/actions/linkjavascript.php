@@ -63,6 +63,9 @@ if (!$yeswikijs) {
     $this->addJavascriptFile('javascripts/yeswiki-base.js');
 }
 
+// ajoute la méthode pour les traductions js
+$this->addJavascriptFile('javascripts/yeswiki-base-no-defer.js', true);
+
 // add javascript files which are included in the custom javascript directory
 $customJsPath = 'custom/javascripts';
 $customJsDir = is_dir($customJsPath) ? opendir($customJsPath) : false;
@@ -104,6 +107,10 @@ echo "<script>
             result += stringParams.join('&')
         }
         return result;
+    },
+    lang: {
+        ...((typeof wiki !== 'undefined') ? (wiki.lang ?? null) : null),
+        ...".json_encode($GLOBALS['translations_js'] ?? null)."
     },
     pageTag: '{$this->getPageTag()}'
 }};

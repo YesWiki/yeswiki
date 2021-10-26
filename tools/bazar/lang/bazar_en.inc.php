@@ -234,7 +234,4 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST' => 'Empty list',
 'BAZ_DRAG_n_DROP_CHECKBOX_FILTER_TEXT' => 'Number of elements : ',
 
-// form-edit-template.js
-'BAZ_FORM_EDIT_YES' => 'Yes',
-'BAZ_FORM_EDIT_NO' => 'No',
 ));

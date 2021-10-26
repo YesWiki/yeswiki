@@ -181,9 +181,4 @@
   document.addEventListener("DOMContentLoaded", function() {
     initializeFormbuilder(formAndListIds);
   });
-  if (typeof wiki === 'undefined'){
-    var wiki = {lang:{{ lang|json_encode()|raw }}};
-  } else {
-    wiki.lang = {...(wiki.lang ?? []),...{{ lang|json_encode()|raw }}};
-  }
 </script>

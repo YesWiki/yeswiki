@@ -139,7 +139,7 @@ var visibilityOptions = {
   " * ": "Tout le monde",
   " + ": "Utilisateurs identifiés",
   " % ": "Propriétaire de la fiche et admins",
-  "@admins": "Membre du groupe admin",
+  "@admins": _t('MEMBER_OF_GROUP',{groupName:'admin'}),
 };
 // create list of groups
 var formattedGroupList = [];
@@ -147,7 +147,7 @@ if (groupsList && groupsList.length > 0){
   let groupsListLen = groupsList.length;
   for(i=0;i<groupsListLen;++i){
     if (groupsList[i] !== "admins"){
-      formattedGroupList["@"+groupsList[i]] = "Membre du groupe "+groupsList[i];
+      formattedGroupList["@"+groupsList[i]] = _t('MEMBER_OF_GROUP',{groupName:groupsList[i]});
       formattedGroupList["%,@"+groupsList[i]] = "Propriétaire de la fiche,admins et membre du groupe "+groupsList[i];
     }
   }
@@ -165,7 +165,7 @@ var readConf = { label: "Peut être lu par", options: {...visibilityOptions,...f
 var writeconf = { label: "Peut être saisi par", options: {...visibilityOptions,...formattedGroupList} };
 var searchableConf = {
   label: "Présence dans le moteur de recherche",
-  options: { "": wiki.lang['BAZ_FORM_EDIT_NO'], 1: wiki.lang['BAZ_FORM_EDIT_YES'] },
+  options: { "": _t('NO'), 1: _t('YES') },
 };
 var semanticConf = {
   label: "Type sémantique du champ",
@@ -242,11 +242,11 @@ var typeUserAttrs = {
     separator: { label: "" }, // separate important attrs from others
     replace_email_by_button: {
       label: "Remplacer l'email par un bouton contact",
-      options: { "": wiki.lang['BAZ_FORM_EDIT_NO'], form: wiki.lang['BAZ_FORM_EDIT_YES'] },
+      options: { "": _t('NO'), form: _t('YES') },
     },
     send_form_content_to_this_email: {
       label: "Envoyer le contenu de la fiche à cet email",
-      options: { 0: wiki.lang['BAZ_FORM_EDIT_NO'], 1: wiki.lang['BAZ_FORM_EDIT_YES'] },
+      options: { 0: _t('NO'), 1: _t('YES') },
     },
     // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
     read: readConf,
@@ -259,7 +259,7 @@ var typeUserAttrs = {
   },
   date: {
     today_button: {
-      options: { " ": wiki.lang['BAZ_FORM_EDIT_NO'], today: wiki.lang['BAZ_FORM_EDIT_YES'] },
+      options: { " ": _t('NO'), today: _t('YES') },
     },
     hint: { label: "Texte d'aide" },
     read: readConf,

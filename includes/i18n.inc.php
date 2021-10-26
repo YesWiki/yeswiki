@@ -241,7 +241,12 @@ function initI18n()
     require_once 'lang/languages_list.php';
 
     // we initialise with french language, because it is the most beautiful ;) or maybe just the most updated because we are a french dev team
-    require_once 'lang/yeswiki_fr.php';
+    $returnedArray = require_once 'lang/yeswiki_fr.php';
+    load_translations($returnedArray);
+    if (file_exists('lang/yeswikijs_fr.php')) {
+        $returnedArray = require_once 'lang/yeswikijs_fr.php';
+        load_translations($returnedArray, true);
+    }
 
     $GLOBALS['available_languages'] = detectAvailableLanguages();
     $wiki = isset($GLOBALS['wiki']) ? $GLOBALS['wiki'] : '';
@@ -249,7 +254,12 @@ function initI18n()
 
     if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswiki_'.$GLOBALS['prefered_language'].'.php')) {
         // this will overwrite the values of $GLOBALS['translations'] in the selected language
-        require_once 'lang/yeswiki_'.$GLOBALS['prefered_language'].'.php';
+        $returnedArray = require_once 'lang/yeswiki_'.$GLOBALS['prefered_language'].'.php';
+        load_translations($returnedArray);
+    }
+    if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswikijs_'.$GLOBALS['prefered_language'].'.php')) {
+        $returnedArray = require_once 'lang/yeswikijs_'.$GLOBALS['prefered_language'].'.php';
+        load_translations($returnedArray, true);
     }
     return;
 }
@@ -266,9 +276,22 @@ function loadpreferredI18n($wiki, $page = '')
 
     if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswiki_'.$GLOBALS['prefered_language'].'.php')) {
         // this will overwrite the values of $GLOBALS['translations'] in the selected language
-        include_once 'lang/yeswiki_'.$GLOBALS['prefered_language'].'.php';
+        $returnedArray = include_once 'lang/yeswiki_'.$GLOBALS['prefered_language'].'.php';
+        load_translations($returnedArray);
+    }
+    if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswikijs_'.$GLOBALS['prefered_language'].'.php')) {
+        $returnedArray = include_once 'lang/yeswikijs_'.$GLOBALS['prefered_language'].'.php';
+        load_translations($returnedArray, true);
     }
     return;
+}
+
+function load_translations($returnedArray, bool $jsmode = false)
+{
+    $translationName = $jsmode ? 'translations_js' : 'translations';
+    if (is_array($returnedArray)) {
+        $GLOBALS[$translationName] = array_merge(($GLOBALS[$translationName] ?? []), $returnedArray);
+    }
 }
 
 // default init

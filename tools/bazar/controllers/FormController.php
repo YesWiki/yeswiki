@@ -13,11 +13,6 @@ class FormController extends YesWikiController
     protected $formManager;
     protected $securityController;
 
-    private const LANG = [
-            'BAZ_FORM_EDIT_YES',
-            'BAZ_FORM_EDIT_NO',
-        ];
-
     public function __construct(FormManager $formManager, SecurityController $securityController)
     {
         $this->formManager = $formManager;
@@ -81,8 +76,7 @@ class FormController extends YesWikiController
 
             return $this->render("@bazar/forms/forms_form.twig", [
                 'formAndListIds' => baz_forms_and_lists_ids(),
-                'groupsList' => $this->getGroupsListIfEnabled(),
-                'lang' => $this->getLang()
+                'groupsList' => $this->getGroupsListIfEnabled()
             ]);
         } else {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
@@ -101,8 +95,7 @@ class FormController extends YesWikiController
             return $this->render("@bazar/forms/forms_form.twig", [
                 'form' => $this->formManager->getOne($id),
                 'formAndListIds' => baz_forms_and_lists_ids(),
-                'groupsList' => $this->getGroupsListIfEnabled(),
-                'lang' => $this->getLang()
+                'groupsList' => $this->getGroupsListIfEnabled()
             ]);
         } else {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
@@ -148,14 +141,5 @@ class FormController extends YesWikiController
         return $this->wiki->UserIsAdmin()
             ? $this->wiki->GetGroupsList()
             : null;
-    }
-
-    private function getLang(): array
-    {
-        $lang = [];
-        foreach (self::LANG as $name) {
-            $lang[$name] = _t($name);
-        }
-        return $lang;
     }
 }
