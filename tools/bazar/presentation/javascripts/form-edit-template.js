@@ -38,62 +38,62 @@ var fields = [
   //   icon: '<i class="far fa-calendar-alt"></i>',
   // },
   {
-    label: "Texte court",
+    label: _t('BAZ_FORM_EDIT_TEXT_LABEL'),
     name: "text",
     attrs: { type: "text" },
     icon:
       '<svg height="512pt" viewBox="0 -90 512 512" width="512pt" xmlns="http://www.w3.org/2000/svg"><path d="m452 0h-392c-33.085938 0-60 26.914062-60 60v212c0 33.085938 26.914062 60 60 60h392c33.085938 0 60-26.914062 60-60v-212c0-33.085938-26.914062-60-60-60zm20 272c0 11.027344-8.972656 20-20 20h-392c-11.027344 0-20-8.972656-20-20v-212c0-11.027344 8.972656-20 20-20h392c11.027344 0 20 8.972656 20 20zm-295-151v131h-40v-131h-57v-40h152v40zm40 91h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zm0 0"/></svg>',
   },
   {
-    label: "Url",
+    label: _t('BAZ_FORM_EDIT_URL_LABEL'),
     name: "url",
     attrs: { type: "url" },
     icon: '<i class="fas fa-link"></i>',
   },
   {
-    label: "Géolocalisation de l'adresse",
+    label: _t('BAZ_FORM_EDIT_GEO_LABEL'),
     name: "map",
     attrs: { type: "map" },
     icon: '<i class="fas fa-map-marked-alt"></i>',
   },
   {
-    label: "Image",
+    label: _t('BAZ_FORM_EDIT_IMAGE_LABEL'),
     name: "image",
     attrs: { type: "image" },
     icon: '<i class="fas fa-image"></i>',
   },
   {
-    label: "Email",
+    label: _t('BAZ_FORM_EDIT_EMAIL_LABEL'),
     name: "champs_mail",
     attrs: { type: "champs_mail" },
     icon: '<i class="fas fa-envelope"></i>',
   },
   {
-    label: "Mots clés",
+    label: _t('BAZ_FORM_EDIT_TAGS_LABEL'),
     name: "tags",
     attrs: { type: "tags" },
     icon: '<i class="fas fa-tags"></i>',
   },
   {
-    label: "Inscription Liste Diffusion",
+    label: _t('BAZ_FORM_EDIT_SUBSCRIBE_LIST_LABEL'),
     name: "inscriptionliste",
     attrs: { type: "inscriptionliste" },
     icon: '<i class="fas fa-mail-bulk"></i>',
   },
   {
-    label: "Custom HTML",
+    label: _t('BAZ_FORM_EDIT_CUSTOM_HTML_LABEL'),
     name: "labelhtml",
     attrs: { type: "labelhtml" },
     icon: '<i class="fas fa-code"></i>',
   },
   {
-    label: "Config Droits d'accès",
+    label: _t('BAZ_FORM_EDIT_ACL_LABEL'),
     name: "acls",
     attrs: { type: "acls" },
     icon: '<i class="fas fa-user-lock"></i>',
   },
   {
-    label: "Config Thème de la fiche",
+    label: _t('BAZ_FORM_EDIT_METADATA_LABEL'),
     name: "metadatas",
     attrs: { type: "metadatas" },
     icon: '<i class="fas fa-palette"></i>',
@@ -105,13 +105,13 @@ var fields = [
     icon: '<i class="fas fa-bookmark"></i>',
   },
   {
-    label: "Liste des fiches liées",
+    label: _t('BAZ_FORM_EDIT_LINKEDENTRIES_LABEL'),
     name: "listefichesliees",
     attrs: { type: "listefichesliees" },
     icon: '<i class="fas fa-th-list"></i>',
   },
   {
-    label: "Créer un utilisateur lorsque la fiche est validée",
+    label: _t('BAZ_FORM_EDIT_USERS_WIKINI_LABEL'),
     name: "utilisateur_wikini",
     attrs: { type: "utilisateur_wikini" },
     icon: '<i class="fas fa-user"></i>',
@@ -121,13 +121,13 @@ var fields = [
     attrs: { type: "collaborative_doc" },
   },
   {
-    label: "Titre Automatique",
+    label: _t('BAZ_FORM_EDIT_TITLE_LABEL'),
     name: "titre",
     attrs: { type: "titre" },
     icon: '<i class="fas fa-heading"></i>',
   },
   {
-    label: "Custom",
+    label: _t('BAZ_FORM_EDIT_CUSTOM_LABEL'),
     name: "custom",
     attrs: { type: "custom" },
     icon: '<i class="fas fa-question-circle"></i>',
@@ -136,9 +136,9 @@ var fields = [
 
 // Some attributes configuration used in multiple fields
 var visibilityOptions = {
-  " * ": "Tout le monde",
-  " + ": "Utilisateurs identifiés",
-  " % ": "Propriétaire de la fiche et admins",
+  " * ": _t('EVERYONE'),
+  " + ": _t('IDENTIFIED_USERS'),
+  " % ": _t('BAZ_FORM_EDIT_OWNER_AND_ADMINS'),
   "@admins": _t('MEMBER_OF_GROUP',{groupName:'admin'}),
 };
 // create list of groups
@@ -148,7 +148,7 @@ if (groupsList && groupsList.length > 0){
   for(i=0;i<groupsListLen;++i){
     if (groupsList[i] !== "admins"){
       formattedGroupList["@"+groupsList[i]] = _t('MEMBER_OF_GROUP',{groupName:groupsList[i]});
-      formattedGroupList["%,@"+groupsList[i]] = "Propriétaire de la fiche,admins et membre du groupe "+groupsList[i];
+      formattedGroupList["%,@"+groupsList[i]] = _t('BAZ_FORM_EDIT_OWNER_AND_MEMBER_OF_GROUP',{groupName:groupsList[i]});
     }
   }
 }
@@ -157,30 +157,30 @@ var aclsOptions = {
   ...visibilityOptions,
   ...{
     user:
-      "Utilisateur (lorsqu'on créé un utilisateur en même temps que la fiche)",
+    _t('BAZ_FORM_EDIT_USER'),
   },
   ...formattedGroupList,
 };
-var readConf = { label: "Peut être lu par", options: {...visibilityOptions,...formattedGroupList} };
-var writeconf = { label: "Peut être saisi par", options: {...visibilityOptions,...formattedGroupList} };
+var readConf = { label: _t('BAZ_FORM_EDIT_CAN_BE_READ_BY'), options: {...visibilityOptions,...formattedGroupList} };
+var writeconf = { label: _t('BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY'), options: {...visibilityOptions,...formattedGroupList} };
 var searchableConf = {
   label: "Présence dans le moteur de recherche",
   options: { "": _t('NO'), 1: _t('YES') },
 };
 var semanticConf = {
-  label: "Type sémantique du champ",
+  label: _t('BAZ_FORM_EDIT_SEMANTIC_LABEL'),
   placeholder: "Ex: https://schema.org/name",
 };
 var selectConf = {
   subtype2: {
-    label: "Origine des données",
+    label: _t('BAZ_FORM_EDIT_SELECT_SUBTYPE2_LABEL'),
     options: {
-      list: "Une liste",
-      form: "Un Formulaire Bazar",
+      list: _t('BAZ_FORM_EDIT_SELECT_SUBTYPE2_LIST'),
+      form: _t('BAZ_FORM_EDIT_SELECT_SUBTYPE2_FORM'),
     },
   },
   listeOrFormId: {
-    label: "Choix de la liste/du formulaire",
+    label: _t('BAZ_FORM_EDIT_SELECT_LIST_FORM_ID'),
     options: {
       ...{ "": "" },
       ...formAndListIds.lists,
@@ -197,9 +197,9 @@ var selectConf = {
     options: { ...formAndListIds.forms, ...listAndFormUserValues },
   },
   defaultValue: {
-    label: "Valeur par défaut",
+    label: _t('BAZ_FORM_EDIT_SELECT_DEFAULT'),
   },
-  hint: { label: "Texte d'aide" },
+  hint: { label: _t('BAZ_FORM_EDIT_HELP') },
   read: readConf,
   write: writeconf,
   semantic: semanticConf,
@@ -209,26 +209,26 @@ var selectConf = {
 // Attributes to be configured for each field
 var typeUserAttrs = {
   text: {
-    size: { label: "Nb caractères visibles" },
-    maxlength: { label: "Longueur max" },
-    hint: { label: "Texte d'aide" },
+    size: { label: _t('BAZ_FORM_EDIT_TEXT_SIZE') },
+    maxlength: { label: _t('BAZ_FORM_EDIT_TEXT_MAX_LENGTH') },
+    hint: { label: _t('BAZ_FORM_EDIT_HELP') },
     separator: { label: "" }, // separate important attrs from others
     subtype: {
-      label: "Type",
+      label: _t('BAZ_FORM_EDIT_TEXT_TYPE_LABEL'),
       options: {
-        text: "Texte",
-        number: "Nombre",
-        range: "Slider",
-        url: "Adresse url",
-        password: "Mot de passe",
-        color: "Couleur",
+        text: _t('BAZ_FORM_EDIT_TEXT_TYPE_TEXT'),
+        number: _t('BAZ_FORM_EDIT_TEXT_TYPE_NUMBER'),
+        range: _t('BAZ_FORM_EDIT_TEXT_TYPE_RANGE'),
+        url: _t('BAZ_FORM_EDIT_TEXT_TYPE_URL'),
+        password: _t('BAZ_FORM_EDIT_TEXT_TYPE_PASSWORD'),
+        color: _t('BAZ_FORM_EDIT_TEXT_TYPE_COLOR'),
       },
     },
     read: readConf,
     write: writeconf,
     semantic: semanticConf,
     pattern: {
-      label: "Motif",
+      label: _t('BAZ_FORM_EDIT_TEXT_PATTERN'),
       placeholder: "Mode avancé. Ex: [0-9]+ ou [A-Za-z]{3}, ...",
     }
   },
@@ -238,7 +238,7 @@ var typeUserAttrs = {
     semantic: semanticConf
   },
   champs_mail: {
-    hint: { label: "Texte d'aide" },
+    hint: { label: _t('BAZ_FORM_EDIT_HELP') },
     separator: { label: "" }, // separate important attrs from others
     replace_email_by_button: {
       label: "Remplacer l'email par un bouton contact",
@@ -254,28 +254,28 @@ var typeUserAttrs = {
     semantic: semanticConf,
   },
   map: {
-    name_latitude: { label: "Nom champ latitude", value: "bf_latitude" },
-    name_longitude: { label: "Nom champ longitude", value: "bf_longitude" },
+    name_latitude: { label: _t('BAZ_FORM_EDIT_MAP_LATITUDE'), value: "bf_latitude" },
+    name_longitude: { label: _t('BAZ_FORM_EDIT_MAP_LONGITUDE'), value: "bf_longitude" },
   },
   date: {
     today_button: {
       options: { " ": _t('NO'), today: _t('YES') },
     },
-    hint: { label: "Texte d'aide" },
+    hint: { label: _t('BAZ_FORM_EDIT_HELP') },
     read: readConf,
     write: writeconf,
     semantic: semanticConf,
   },
   image: {
-    hint: { label: "Texte d'aide" },
-    thumb_height: { label: "Hauteur Vignette", value: "140" },
-    thumb_width: { label: "Largeur Vignette", value: "140" },
-    resize_height: { label: "Hauteur redimension", value: "600" },
-    resize_width: { label: "Largeur redimension", value: "600" },
+    hint: { label: _t('BAZ_FORM_EDIT_HELP') },
+    thumb_height: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH'), value: "140" },
+    thumb_width: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH'), value: "140" },
+    resize_height: { label: _t('BAZ_FORM_EDIT_IMAGE_HEIGHT_RESIZE'), value: "600" },
+    resize_width: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH_RESIZE'), value: "600" },
     align: {
-      label: "Alignement",
+      label: _t('BAZ_FORM_EDIT_IMAGE_ALIGN_LABEL'),
       value: "right",
-      options: { left: "Gauche", right: "Droite" },
+      options: { left: _t('LEFT'), right: _t('RIGHT') },
     },
     read: readConf,
     write: writeconf,
@@ -285,7 +285,7 @@ var typeUserAttrs = {
     ...selectConf,
     ...{
       queries: {
-        label: "Critères de filtre",
+        label: _t('BAZ_FORM_EDIT_QUERIES_LABEL'),
         placeholder: "ex. : checkboxfiche6=PageTag ; cf. https://yeswiki.net/?LierFormulairesEntreEux",
       },
     },
@@ -302,7 +302,7 @@ var typeUserAttrs = {
         },
       },
       queries: {
-        label: "Critères de filtre",
+        label: _t('BAZ_FORM_EDIT_QUERIES_LABEL'),
         placeholder: "ex. : checkboxfiche6=PageTag ; cf. https://yeswiki.net/?LierFormulairesEntreEux",
       },
     },
@@ -318,7 +318,7 @@ var typeUserAttrs = {
         },
       },
       queries: {
-        label: "Critères de filtre",
+        label: _t('BAZ_FORM_EDIT_QUERIES_LABEL'),
         placeholder: "ex. : checkboxfiche6=PageTag ; cf. https://yeswiki.net/?LierFormulairesEntreEux",
       },
     },
@@ -332,7 +332,7 @@ var typeUserAttrs = {
         nohtml: "Texte non interprété",
       },
     },
-    hint: { label: "Texte d'aide" },
+    hint: { label: _t('BAZ_FORM_EDIT_HELP') },
     size: { label: "Largeur champ de saisie" },
     rows: {
       label: "Nombre de lignes",
@@ -345,13 +345,13 @@ var typeUserAttrs = {
   },
   file: {
     maxsize: { label: "Taille max" },
-    hint: { label: "Texte d'aide" },
+    hint: { label: _t('BAZ_FORM_EDIT_HELP') },
     read: readConf,
     write: writeconf,
     semantic: semanticConf,
   },
   tags: {
-    hint: { label: "Texte d'aide" },
+    hint: { label: _t('BAZ_FORM_EDIT_HELP') },
     read: readConf,
     write: writeconf,
     semantic: semanticConf,
@@ -372,9 +372,9 @@ var typeUserAttrs = {
     content_display: { label: "Contenu lors de l'affichage d'une fiche", type: "textarea", rows: "4"  },
   },
   utilisateur_wikini: {
-    name_field: { label: "Champ pour le nom d'utilisateur", value: "bf_titre" },
+    name_field: { label: _t('BAZ_FORM_EDIT_USERS_WIKINI_NAME_FIELD_LABEL'), value: "bf_titre" },
     email_field: {
-      label: "Champ pour l'email de l'utilisateur",
+      label: _t('BAZ_FORM_EDIT_USERS_WIKINI_EMAIL_FIELD_LABEL'),
       value: "bf_mail",
     },
     // mailing_list: {
@@ -386,19 +386,19 @@ var typeUserAttrs = {
     },
   },
   acls: {
-    read: { label: "Peut voir la fiche", options: aclsOptions },
-    write: { label: "Peut éditer la fiche", options: aclsOptions },
-    comment: { label: "Peut commenter la fiche", options: aclsOptions },
+    read: { label: _t('BAZ_FORM_EDIT_ACL_READ_LABEL'), options: aclsOptions },
+    write: { label: _t('BAZ_FORM_EDIT_ACL_WRITE_LABEL'), options: aclsOptions },
+    comment: { label: _t('BAZ_FORM_EDIT_ACL_COMMENT_LABEL'), options: aclsOptions },
   },
   metadatas: {
     theme: {
-      label: "Nom du thème",
+      label: _t('BAZ_FORM_EDIT_METADATA_THEME_LABEL'),
       placeholder: "margot, interface, colibris",
     },
-    squelette: { label: "Squelette", value: "1col.tpl.html" },
-    style: { label: "Style", placeholder: "bootstrap.css..." },
+    squelette: { label: _t('BAZ_FORM_EDIT_METADATA_SQUELETON_LABEL'), value: "1col.tpl.html" },
+    style: { label: _t('BAZ_FORM_EDIT_METADATA_STYLE_LABEL'), placeholder: "bootstrap.css..." },
     preset: { label: "Preset", placeholder: "blue.css (thème margot uniquement)" },
-    image: { label: "Image de fond", placeholder: "foret.jpg..." },
+    image: { label: _t('BAZ_FORM_EDIT_METADATA_BACKGROUND_IMAGE_LABEL'), placeholder: "foret.jpg..." },
   },
   bookmarklet: {},
   collaborative_doc: {},
@@ -457,7 +457,7 @@ var templates = {
   },
   map: function (fieldDate) {
     return {
-      field: "Geolocation à partir d'un champ bf_adresse et/ou bf_ville et/ou bf_code_postal et/ou bf_pays",
+      field: _t('BAZ_FORM_EDIT_MAP_FIELD'),
     };
   },
   image: function (fieldDate) {
@@ -505,7 +505,7 @@ var templates = {
     return { field: "" };
   },
   collaborative_doc: function (field) {
-    return { field: "Document collaboratif" };
+    return { field: _t('BAZ_FORM_EDIT_COLLABORATIVE_DOC_FIELD') };
   },
   titre: function (field) {
     return { field: field.value };
@@ -819,11 +819,11 @@ function initializeFormbuilder(formAndListIds) {
         $(this).addClass("initialized");
         $parent = $(this).closest(".form-field");
         if ($(this).val() == "range" || $(this).val() == "number") {
-          $parent.find(".maxlength-wrap label").text("Valeur max");
-          $parent.find(".size-wrap label").text("Valeur min");
+          $parent.find(".maxlength-wrap label").text(_t('BAZ_FORM_EDIT_MAX_VAL'));
+          $parent.find(".size-wrap label").text(_t('BAZ_FORM_EDIT_MIN_VAL'));
         } else {
-          $parent.find(".maxlength-wrap label").text("Longueur Max.");
-          $parent.find(".size-wrap label").text("Nbre Caractères Visibles");
+          $parent.find(".maxlength-wrap label").text(_t('BAZ_FORM_EDIT_MAX_LENGTH'));
+          $parent.find(".size-wrap label").text(_t('BAZ_FORM_EDIT_NB_CHARS'));
         }
         if ($(this).val() == "color") {
           $parent.find(".maxlength-wrap, .size-wrap").hide();
@@ -847,8 +847,8 @@ function initializeFormbuilder(formAndListIds) {
     $("a[type=remove].icon-cancel")
       .removeClass("icon-cancel")
       .html('<i class="fa fa-trash"></i>')
-    $("a[type=copy].icon-copy").attr("title", "Dupliquer");
-    $("a[type=edit].icon-pencil").attr("title", "Editer/Masquer");
+    $("a[type=copy].icon-copy").attr("title", _t('DUPLICATE'));
+    $("a[type=edit].icon-pencil").attr("title", _t('BAZ_FORM_EDIT_HIDE'));
   }, 300);
 
   $("#formbuilder-link").click(initializeBuilderFromTextInput);
