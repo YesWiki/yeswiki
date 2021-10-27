@@ -81,19 +81,14 @@ $yeswiki_javascripts .= isset($GLOBALS['js']) ? $GLOBALS['js'] : '';
 // on vide la variable globale pour le javascript
 $GLOBALS['js'] = '';
 
-// HACK TO force reload $GLOBALS['prefered_language']
-$savedPreferedLanguage = $GLOBALS['prefered_language'];
-loadpreferredI18n('');
-$preferedLanguage = $GLOBALS['prefered_language'];
-$GLOBALS['prefered_language'] = $savedPreferedLanguage;
-unset($savedPreferedLanguage);
+// do not use $GLOBALS['prefered_language'] because can be update for current page language
 
 // Globale wiki variable
 echo "<script>
     var wiki = {
         ...((typeof wiki !== 'undefined') ? wiki : null),
         ...{
-    locale: '{$preferedLanguage}',
+    locale: '".detectPreferedLanguage($this, $GLOBALS['available_languages'], 'auto', '')."',
     baseUrl: '{$this->config['base_url']}',
     url: function(url, params = {}) {
         let result = wiki.baseUrl + url
