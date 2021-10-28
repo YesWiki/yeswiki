@@ -104,21 +104,29 @@ class Mailer
 
     public function notifyNewUser($wikiName, $email)
     {
+        include_once 'includes/email.inc.php';
         $lien = str_replace("/wakka.php?wiki=", "", $this->params->get('base_url'));
         $objetmail = '['.str_replace("http://", "", $lien).'] Vos nouveaux identifiants sur le site '.$this->params->get('wakka_name');
         $messagemail = "Bonjour!\n\nVotre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\nVotre identifiant NomWiki : ".$wikiName."\n\nVotre email : ".$email."\n\nVotre mot de passe : (le mot de passe que vous avez choisi)\n\n\n\nA tres bientot ! \n\n";
 
-        // TODO use send_mail() instead of mail()
-        $headers =   'From: '.$this->params->get('BAZ_ADRESSE_MAIL_ADMIN') . "\r\n" .
-            'Reply-To: '.$this->params->get('BAZ_ADRESSE_MAIL_ADMIN') . "\r\n" .
-            'X-Mailer: PHP/' . phpversion();
-        mail($email, removeAccents($objetmail), $messagemail, $headers);
+        send_mail(
+            $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
+            $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
+            $email,
+            removeAccents($objetmail),
+            $messagemail
+        );
     }
 
     public function subscribeToMailingList($email, $mailingList)
     {
-        // TODO use send_mail() instead of mail()
-        $headers = 'From: ' . $email . "\r\n" . 'Reply-To: ' . $email . "\r\n" . 'X-Mailer: PHP/' . phpversion();
-        mail($mailingList, 'inscription a la liste de discussion', 'inscription', $headers);
+        include_once 'includes/email.inc.php';
+        send_mail(
+            $email,
+            $email,
+            $mailingList,
+            'inscription a la liste de discussion',
+            'inscription'
+        );
     }
 }
