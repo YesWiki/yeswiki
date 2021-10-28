@@ -120,6 +120,7 @@
       <label class="control-label"><?php echo _t('PAGE_LANGUAGE'); ?></label>
       <div class="controls">
         <select class="form-control" name="lang">
+          <option value=""></option>
           <?php foreach ($GLOBALS['available_languages'] as $value) : ?>
             <option value="<?php echo $value; ?>"<?php echo ($value == $GLOBALS['prefered_language'] ? ' selected="selected"' : ''); ?>>
             <?php echo ucfirst(
