@@ -34,7 +34,7 @@ function _t($textkey, $params = [])
 {
     if (isset($GLOBALS['translations'][$textkey])) {
         $result = $GLOBALS['translations'][$textkey];
-        foreach($params as $transKey => $value) {
+        foreach ($params as $transKey => $value) {
             $result = str_replace('%{' . $transKey . '}', $value, $result);
         }
         return $result;
@@ -165,8 +165,12 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
         if (isset($wiki->metadatas['lang']) && in_array($wiki->metadatas['lang'], $available_languages)) {
             return $wiki->metadatas['lang'];
         }
+        if ($http_accept_language == "auto") {
+            // if $http_accept_language was left out, read it from the HTTP-Header of the browser
+            $http_accept_language = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
+        }
         // default language from config file
-        if (isset($wiki->config['default_language']) && in_array($wiki->config['default_language'], $available_languages)) {
+        if ((empty($http_accept_language) || $http_accept_language == "auto") && isset($wiki->config['default_language']) && in_array($wiki->config['default_language'], $available_languages)) {
             return $wiki->config['default_language'];
         }
     } elseif ($http_accept_language == "auto") {
