@@ -24,11 +24,12 @@
             {{- value -}}
         </textarea>
     </div>
-    {% if entryId and field.syntax == 'wiki-textarea' %}
+    {% if field.syntax == 'wiki-textarea' %}
         {# do not display button before moving in aceditor bar#}
         <div style="display:none;">{{ include('@attach/attach-file-uploader-button.twig',
             {fileUploaderAnchor:'#' ~ field.name ~ 'Container .aceditor-toolbar',
-            fileUploaderTextarea:'#' ~ field.name }) }}</div>
+            fileUploaderTextarea:'#' ~ field.name ,
+            disableUploadButton: (entryId) ? false : true}) }}</div>
         {{ include_javascript('tools/attach/libs/fileuploader.js') }}
         <!-- include_javascript('tools/attach/libs/fileuploader.js') -->
     {% endif %}

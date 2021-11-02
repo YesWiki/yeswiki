@@ -1,11 +1,14 @@
 <div class="btn-group attach-file-uploader"
     {% if fileUploaderAnchor %} data-anchor="{{ fileUploaderAnchor }}"{% endif %}
-    {% if fileUploaderTextarea %} data-textarea="{{ fileUploaderTextarea }}"{% endif %}>
+    {% if fileUploaderTextarea %} data-textarea="{{ fileUploaderTextarea }}"{% endif %}
+    {% if disableUploadButton %} data-disabledUploadButton="true"{% endif %}>
   <noscript>
     <span class="alert alert-danger alert-error">{{ _t('ACTIVATE_JS_TO_UPLOAD_FILES') }}.</span>
   </noscript>
   <div class="qq-uploader">
-    <div class="qq-upload-button btn btn-default" title="{{ _t('UPLOAD_A_FILE') }}">
+    <div class="qq-upload-button btn btn-default" {% if not disableUploadButton %}title="{{ _t('UPLOAD_A_FILE') }}"
+        {%- else -%}title="{{ _t('SAVE_ENTRY_THEN_MODIFY_TO_UPLOAD_FILE') }}" disabled="disabled" data-toggle="tooltip" data-placement="bottom"
+        {% endif %}>
       <i class="fa fa-upload icon-upload"></i>&nbsp;{{ _t('UPLOAD_A_FILE_SHORT') }}
     </div>
     <ul class="qq-upload-list"></ul>

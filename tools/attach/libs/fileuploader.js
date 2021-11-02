@@ -1450,7 +1450,11 @@ $(document).ready(function () {
   // Initialize the button for upload in Aceditor
   $('.attach-file-uploader').each(function(){
     let anchorId = $(this).data('anchor');
+    let disabledUploadButton = $(this).data('disabledUploadButton') === true;
     anchorId = (anchorId && $(anchorId).length > 0) ? anchorId : '#ACEditor .aceditor-toolbar' ;
-    $(this).appendTo($(anchorId)).uploadbutton();
+    $(this).appendTo($(anchorId));
+    if (!disabledUploadButton) {
+      $(this).uploadbutton();
+    }
   });
 });
