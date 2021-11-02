@@ -10,6 +10,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'ATTACH_UPLOAD_FORM_FOR_FILE' => 'Upload form for file',
 'ATTACH_BACK_TO_PAGE' => 'Back to the page',
 'NO_RIGHT_TO_WRITE_IN_THIS_PAGE' => 'No rights to write in this page',
+'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Add a link to only display the full image",
 
 
 // actions/filemanager.php

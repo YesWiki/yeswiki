@@ -130,6 +130,23 @@
               </div>
             </div>
             <div class="form-group">
+              <label class="control-label col-sm-3">{{ _t('ATTACH_ACTION_FULLIMAGELINK_TEXT') }}</label>
+              <div class="controls col-sm-9">
+                <div class="radio inline-container">
+                  <label>
+                    <input type="radio" name="attach_nofullimagelink" value="0" checked="checked">
+                    <span></span>
+                    {{ _t('YES') }}
+                  </label>
+                  <label>
+                    <input type="radio" name="attach_nofullimagelink" value="1">
+                    <span></span>
+                    {{ _t('NO') }}
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
               <label class="control-label col-sm-3" title="{{ _t('ALT_INFOS') }}">{{ _t('ALTERNATIVE_TEXT') }}</label>
               <div class="controls col-sm-9">
                 <input type="text" name="attach_alt" value="" class="attach_alt form-control">

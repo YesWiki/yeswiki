@@ -268,6 +268,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'ALL_ADMIN_TASKS_ARE_DESCRIBED_IN_THE_PAGE' => 'All admin tasks are described in the page "AdministrationDeYesWiki" accessible from the homepage',
 'USE_AN_EXISTING_ACCOUNT' => 'Use an existing account',
 'NO' => 'No',
+'YES' => 'Yes',
 'OR_CREATE_NEW_ACCOUNT' => 'Or create a new one',
 'ADMIN' => 'Administrator',
 'MUST_BE_WIKINAME' => 'must be a WikiName',

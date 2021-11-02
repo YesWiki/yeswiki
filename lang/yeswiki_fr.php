@@ -278,6 +278,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'ALL_ADMIN_TASKS_ARE_DESCRIBED_IN_THE_PAGE' => 'Toutes les t&acirc;ches d\'administration sont accessibles depuis le bouton avec la roue crant&eacute;e',
 'USE_AN_EXISTING_ACCOUNT' => 'Utiliser un compte existant',
 'NO' => 'Non',
+'YES' => 'Oui',
 'OR_CREATE_NEW_ACCOUNT' => 'Ou cr&eacute;er un nouveau compte',
 'ADMIN' => 'Administrateur',
 'MUST_BE_WIKINAME' => 'doit &ecirc;tre un NomWiki',

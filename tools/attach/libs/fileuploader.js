@@ -1375,6 +1375,11 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
         actionattach += ' caption="' + imagecaption + '"';
       }
 
+      var nofullimagelink = getParameterByName(formvals, 'attach_nofullimagelink');
+      if (typeof nofullimagelink != 'undefined' && nofullimagelink == '1') {
+        actionattach += ' nofullimagelink="1"';
+      }
+
       actionattach += '}}';
 
       setTimeout(function() {
