@@ -31,3 +31,4 @@
     <input name="password_for_editing" value="{{ passwordForEditing }}" type="hidden">
   {% endif %}
 </form>
+{% if containUpload %}{{ include('@attach/attach-file-upload-modal.twig') }}{% endif %}

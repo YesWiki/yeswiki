@@ -10,16 +10,26 @@
 {% endblock %}
 
 {% block input %}
-    <textarea
-        id="{{ field.name }}"
-        name="{{ field.name }}"
-        class="form-control {% if field.syntax == 'html' %}summernote{% else %}{{ field.syntax }}{% endif %}"
-        rows="{{ field.numRows }}"
-        {% if field.size %}cols="{{ field.size }}"{% endif %}
-        {% if field.maxChars %}maxlength="{{ field.maxChars }}"{% endif %}
-        placeholder="{{ field.label|raw('html')|striptags }}"
-        {% if field.required %}required{% endif %}
-    >
-        {{- value -}}
-    </textarea>
+    <div id="{{ field.name ~ 'Container' }}">
+        <textarea
+            id="{{ field.name }}"
+            name="{{ field.name }}"
+            class="form-control {% if field.syntax == 'html' %}summernote{% else %}{{ field.syntax }}{% endif %}"
+            rows="{{ field.numRows }}"
+            {% if field.size %}cols="{{ field.size }}"{% endif %}
+            {% if field.maxChars %}maxlength="{{ field.maxChars }}"{% endif %}
+            placeholder="{{ field.label|raw('html')|striptags }}"
+            {% if field.required %}required{% endif %}
+        >
+            {{- value -}}
+        </textarea>
+    </div>
+    {% if entryId and field.syntax == 'wiki-textarea' %}
+        {# do not display button before moving in aceditor bar#}
+        <div style="display:none;">{{ include('@attach/attach-file-uploader-button.twig',
+            {fileUploaderAnchor:'#' ~ field.name ~ 'Container .aceditor-toolbar',
+            fileUploaderTextarea:'#' ~ field.name }) }}</div>
+        {{ include_javascript('tools/attach/libs/fileuploader.js') }}
+        <!-- include_javascript('tools/attach/libs/fileuploader.js') -->
+    {% endif %}
 {% endblock %}

@@ -1289,9 +1289,10 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
     // code goes here
     var $this = $(this.element);
     var position;
-    var body = $('#body');
-    var uploadurl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + '/ajaxupload';
-    var downloadlist = $('.qq-upload-list');
+    let textAreaId = $(this.element).data('textarea');
+    var body = (textAreaId && textAreaId.length > 0) ? $(textAreaId) : $('#body');
+    var uploadurl = wiki.url(wiki.pageTag+'/ajaxupload');
+    var downloadlist = $this.find('.qq-upload-list');
     var UploadModal = $('#UploadModal');
     var UploadModalForm = $('#form-modal-upload');
     var filedownloadtext = UploadModal.find('.file-option .attach_link_text');
@@ -1335,6 +1336,9 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
 
     // Handle of the modal insert button
     UploadModal.find('.btn-insert-upload').on('click', function(e) {
+      if ($this.data('textarea') !== $(this).data('textarea')) {
+        return false;
+      }
       var formvals = UploadModalForm.find(':input').serialize();
       var desctxt = getParameterByName(formvals, 'attach_alt');
       if (typeof desctxt == 'undefined' || desctxt == '') {
@@ -1395,6 +1399,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
         fileinput.hide();
         pdfinput.hide();
         imageinput.hide();
+        UploadModal.find('.btn-insert-upload').data('textarea',$(this.element).data('textarea')); // to set which textarea is asking a new file
         UploadModal.modal('show');
       },
 
@@ -1443,5 +1448,9 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
 
 $(document).ready(function () {
   // Initialize the button for upload in Aceditor
-  $('#attach-file-uploader').appendTo('#ACEditor .aceditor-toolbar').uploadbutton();
+  $('.attach-file-uploader').each(function(){
+    let anchorId = $(this).data('anchor');
+    anchorId = (anchorId && $(anchorId).length > 0) ? anchorId : '#ACEditor .aceditor-toolbar' ;
+    $(this).appendTo($(anchorId)).uploadbutton();
+  });
 });

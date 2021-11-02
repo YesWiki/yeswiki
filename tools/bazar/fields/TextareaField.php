@@ -39,15 +39,16 @@ class TextareaField extends BazarField
 
     protected function renderInput($entry)
     {
+        $wiki = $this->getWiki();
         // If HTML syntax, load editor's JS and CSS
         if ($this->syntax === self::SYNTAX_HTML) {
-            $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/summernote/summernote.min.js');
-            $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/summernote/summernote.css');
+            $wiki->AddJavascriptFile('tools/bazar/libs/vendor/summernote/summernote.min.js');
+            $wiki->AddCSSFile('tools/bazar/libs/vendor/summernote/summernote.css');
 
             $langKey = strtolower($GLOBALS['prefered_language']).'-'.strtoupper($GLOBALS['prefered_language']);
             $langFile = 'tools/bazar/libs/vendor/summernote/lang/summernote-'.$langKey.'.js';
             if (file_exists($langFile)) {
-                $GLOBALS['wiki']->AddJavascriptFile($langFile);
+                $wiki->AddJavascriptFile($langFile);
                 $langOptions = 'lang: "'.$langKey.'",';
             } else {
                 $langOptions = '';
@@ -85,16 +86,17 @@ class TextareaField extends BazarField
               });
             });';
 
-            $GLOBALS['wiki']->AddJavascript($script);
+            $wiki->AddJavascript($script);
         } elseif ($this->syntax === self::SYNTAX_WIKI &&
-            !empty($GLOBALS['wiki']->config['actionbuilder_textarea_name'])
-            && $this->getName() == $GLOBALS['wiki']->config['actionbuilder_textarea_name']) {
+            !empty($wiki->config['actionbuilder_textarea_name'])
+            && $this->getName() == $wiki->config['actionbuilder_textarea_name']) {
             // load action builder
             include_once 'tools/aceditor/actions/actions_builder.php';
         }
 
         return $this->render("@bazar/inputs/textarea.twig", [
-            'value' => $this->getValue($entry)
+            'value' => $this->getValue($entry),
+            'entryId' => $entry['id_fiche'] ?? null
         ]);
     }
 

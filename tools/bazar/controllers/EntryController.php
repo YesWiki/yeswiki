@@ -211,13 +211,21 @@ class EntryController extends YesWikiController
             ]);
         }
 
+        $renderedInputs = $this->getRenderedInputs($form);
         return $this->render("@bazar/entries/form.twig", [
             'form' => $form,
-            'renderedInputs' => $this->getRenderedInputs($form),
+            'renderedInputs' => $renderedInputs,
             'showConditions' => $form['bn_condition'] !== '' && !isset($_POST['accept_condition']),
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && isset($_POST['password_for_editing']) ? $_POST['password_for_editing'] : '',
             'error' => $error,
             'captchaField' => $this->securityController->renderCaptchaField(),
+            'containUpload' => $this->inputsAreContainingUpload($renderedInputs),
+            'imageSmallWidth' => $this->config['image-small-width'],
+            'imageSmallHeight' => $this->config['image-small-height'],
+            'imageMediumWidth' => $this->config['image-medium-width'],
+            'imageMediumHeight' => $this->config['image-medium-height'],
+            'imageBigWidth' => $this->config['image-big-width'],
+            'imageBigHeight' => $this->config['image-big-height'],
         ]);
     }
 
@@ -248,15 +256,31 @@ class EntryController extends YesWikiController
             ]);
         }
 
+        $renderedInputs = $this->getRenderedInputs($form, $entry);
         return $this->render("@bazar/entries/form.twig", [
             'form' => $form,
             'entryId' => $entryId,
-            'renderedInputs' => $this->getRenderedInputs($form, $entry),
+            'renderedInputs' => $renderedInputs,
             'showConditions' => false,
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && isset($_POST['password_for_editing']) ? $_POST['password_for_editing'] : '',
             'error' => $error,
             'captchaField' => $this->securityController->renderCaptchaField(),
+            'containUpload' => $this->inputsAreContainingUpload($renderedInputs),
+            'imageSmallWidth' => $this->config['image-small-width'],
+            'imageSmallHeight' => $this->config['image-small-height'],
+            'imageMediumWidth' => $this->config['image-medium-width'],
+            'imageMediumHeight' => $this->config['image-medium-height'],
+            'imageBigWidth' => $this->config['image-big-width'],
+            'imageBigHeight' => $this->config['image-big-height'],
+            
         ]);
+    }
+
+    private function inputsAreContainingUpload(array $renderedInputs): bool
+    {
+        return !empty(array_filter($renderedInputs, function ($renderedInput) {
+            return strpos($renderedInput, "<!-- include_javascript('tools/attach/libs/fileuploader.js') -->") !== false;
+        }));
     }
 
     public function delete($entryId)

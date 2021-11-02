@@ -1,4 +1,6 @@
-<div id="attach-file-uploader" class="btn-group">
+<div class="btn-group attach-file-uploader"
+    {% if fileUploaderAnchor %} data-anchor="{{ fileUploaderAnchor }}"{% endif %}
+    {% if fileUploaderTextarea %} data-textarea="{{ fileUploaderTextarea }}"{% endif %}>
   <noscript>
     <span class="alert alert-danger alert-error">{{ _t('ACTIVATE_JS_TO_UPLOAD_FILES') }}.</span>
   </noscript>
