@@ -13,7 +13,18 @@ export default {
   computed: {
     fieldOptions() {
       if (this.config.only == 'lists')
-        return this.selectedForm.prepared.filter(a => (typeof a.options == 'object' && a.options !== null))
+        if (typeof this.selectedForm.prepared == 'object'){
+          let fields = [];
+          for (let key in this.selectedForm.prepared) {
+            if (typeof this.selectedForm.prepared[key].options == 'object' 
+                && this.selectedForm.prepared[key].options !== null){
+              fields.push(this.selectedForm.prepared[key])
+            }
+          }
+          return fields ;
+        } else {
+          return this.selectedForm.prepared.filter(a => (typeof a.options == 'object' && a.options !== null))
+        }
       else
         return this.selectedForm.prepared
     }
