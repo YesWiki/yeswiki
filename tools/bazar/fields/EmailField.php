@@ -22,7 +22,7 @@ class EmailField extends BazarField
 
         $this->type = 'email';
         $this->sendMail = $values[self::FIELD_SEND_EMAIL] == 1;
-        $this->showContactForm = $values[self::FIELD_SHOW_CONTACT_FORM] == 'form';
+        $this->showContactForm = $values[self::FIELD_SHOW_CONTACT_FORM] === 'form';
         $this->maxChars = $this->maxChars ?? 255;
     }
 
@@ -58,8 +58,11 @@ class EmailField extends BazarField
         return $this->render('@bazar/fields/email.twig', [
             'value' => $value,
             'showContactForm' => $this->showContactForm,
-            'contactFormUrl' => $this->showContactForm ? $GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(),
-                'field=' . $this->propertyName) : null
+            'contactFormUrl' => $this->showContactForm ? $GLOBALS['wiki']->href(
+                'mail',
+                $GLOBALS['wiki']->GetPageTag(),
+                'field=' . $this->propertyName
+            ) : null
         ]);
     }
 

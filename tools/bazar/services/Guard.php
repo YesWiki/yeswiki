@@ -83,12 +83,12 @@ class Guard
                     foreach ($form['prepared'] as $field) {
                         // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw
                         if ($field instanceof EmailField
-                                && $field->getShowContactForm() == 'form'
+                                && $field->getShowContactForm()
                                 && (
                                     (
-                                        !$this->wiki->GetPageTag() == 'api'
+                                        $this->wiki->GetPageTag() !== 'api'
                                         &&
-                                        !in_array($this->wiki->getMethod(), ['show','edit','editiframe'])
+                                        !in_array($this->wiki->getMethod(), ['show','edit','editiframe','mail'])
                                     )
                                     ||
                                     (
