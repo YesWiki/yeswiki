@@ -60,7 +60,7 @@ class Guard
     // Si utilisateur connecte est  proprietaire ou adminstrateur : acces a tous les champs
     // Sinon ne sont retournes que les champs dont les droits d'acces sont compatibles.
     // Introduction du droit % : seul le proprietaire peut acceder
-    public function checkAcls($page, $tag)
+    public function checkAcls($page, $tag, ?string $userNameForCheckingACL = null)
     {
         // TODO :
         // loadpagebyid
@@ -68,7 +68,7 @@ class Guard
         // champ mot de passe ?
         //
 
-        if ($this->wiki->UserIsAdmin() || $this->isPageOwner($page)) {
+        if ($this->wiki->UserIsAdmin($userNameForCheckingACL) || $this->isPageOwner($page, $userNameForCheckingACL)) {
             // Pas de controle si proprietaire ou administrateur
             return $page;
         }
@@ -102,7 +102,7 @@ class Guard
                             $fieldname[] = $field->getPropertyName();
                         }
                         if ($field instanceof BazarField
-                                && !$field->canRead(['id_fiche' => $tag])
+                                && !$field->canRead(['id_fiche' => $tag], $userNameForCheckingACL)
                                 ) {
                             $fieldname[] = $field->getPropertyName() ;
                         }
@@ -122,8 +122,12 @@ class Guard
         return $page;
     }
 
-    protected function isPageOwner($page) : bool
+    protected function isPageOwner($page, ?string $userName = null) : bool
     {
+        if (!empty($userName)) {
+            // check if userName is owner
+            return ($page['owner'] === $userName);
+        }
         // check if user is logged in
         if (!$this->userManager->getLoggedUser()) {
             return false;

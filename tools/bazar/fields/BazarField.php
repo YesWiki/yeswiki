@@ -66,10 +66,10 @@ abstract class BazarField implements \JsonSerializable
     }
 
     // Render the edit view of the field. Check ACLS first
-    public function renderStaticIfPermitted($entry)
+    public function renderStaticIfPermitted($entry, ?string $userNameForRendering = null)
     {
         // Safety checks, must be run before every renderStatic
-        if (!$this->canRead($entry)) {
+        if (!$this->canRead($entry, $userNameForRendering)) {
             return '';
         }
 
@@ -128,11 +128,11 @@ abstract class BazarField implements \JsonSerializable
     // HELPERS
 
     /* Return true if we are if reading is allowed for the field */
-    public function canRead($entry)
+    public function canRead($entry, ?string $userNameForRendering = null)
     {
         $readAcl = empty($this->readAccess) ? '' : $this->readAccess;
         $isCreation = !$entry;
-        return empty($readAcl) || $this->getService(AclService::class)->check($readAcl, null, true, $isCreation ? '' : $entry['id_fiche']);
+        return empty($readAcl) || $this->getService(AclService::class)->check($readAcl, $userNameForRendering, true, $isCreation ? '' : $entry['id_fiche']);
     }
 
     /* Return true if we are if editing is allowed for the field */

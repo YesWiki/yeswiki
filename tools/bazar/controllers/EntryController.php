@@ -54,14 +54,14 @@ class EntryController extends YesWikiController
         return $this->render("@bazar/entries/select_form.twig", ['forms' => $forms]);
     }
 
-    public function view($entryId, $time = '', $showFooter = true)
+    public function view($entryId, $time = '', $showFooter = true, ?string $userNameForRendering = null)
     {
         if (is_array($entryId)) {
             // If entry ID is the full entry with all the values
             $entry = $entryId;
             $entryId = $entry['id_fiche'];
         } elseif ($entryId) {
-            $entry = $this->entryManager->getOne($entryId, false, $time);
+            $entry = $this->entryManager->getOne($entryId, false, $time, empty($userNameForRendering), false, $userNameForRendering);
             if (!$entry) {
                 return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FICHE_AVEC_CET_ID') . ' : ' . $entryId . '</div>';
             }
@@ -93,7 +93,7 @@ class EntryController extends YesWikiController
             // use a custom template if exists (fiche-FORM_ID.tpl.html or fiche-FORM_ID.twig)
             $customTemplatePath = $this->getCustomTemplatePath($entry);
             if ($customTemplatePath) {
-                $customTemplateValues = $this->getValuesForCustomTemplate($entry, $form);
+                $customTemplateValues = $this->getValuesForCustomTemplate($entry, $form, $userNameForRendering);
                 $renderedEntry = $this->render($customTemplatePath, $customTemplateValues);
             }
 
@@ -111,7 +111,7 @@ class EntryController extends YesWikiController
                         if ($field instanceof BazarField) {
                             // TODO handle html_outside_app mode for images
                             if (!in_array($field->getPropertyName(), $this->fieldsToExclude())) {
-                                $renderedEntry .= $field->renderStaticIfPermitted($entry);
+                                $renderedEntry .= $field->renderStaticIfPermitted($entry, $userNameForRendering);
                             }
                         }
                     }
@@ -159,8 +159,8 @@ class EntryController extends YesWikiController
             "showFooter" => $showFooter,
             "canShow" => $this->wiki->GetPageTag() != $entry['id_fiche'], // hide if we are already in the show page
             "canEdit" =>  !$this->securityController->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId),
-            "canDelete" => !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin() or $this->wiki->UserIsOwner()),
-            "isAdmin" => $this->wiki->UserIsAdmin(),
+            "canDelete" => !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin($userNameForRendering) or $this->wiki->UserIsOwner()),
+            "isAdmin" => $this->wiki->UserIsAdmin($userNameForRendering),
             "renderedEntry" => $renderedEntry,
             "incomingUrl" => $_GET['incomingurl'] ?? getAbsoluteUrl()
         ]);
@@ -363,14 +363,14 @@ class EntryController extends YesWikiController
         return null;
     }
 
-    private function getValuesForCustomTemplate($entry, $form)
+    private function getValuesForCustomTemplate($entry, $form, ?string $userNameForRendering = null)
     {
         $html = [];
         foreach ($form['prepared'] as $field) {
             if ($field instanceof BazarField) {
                 $id = $field->getPropertyName();
                 if (!empty($id) && !in_array($id, $this->fieldsToExclude())) {
-                    $html[$id] = $field->renderStaticIfPermitted($entry);
+                    $html[$id] = $field->renderStaticIfPermitted($entry, $userNameForRendering);
                     if ($id == 'bf_titre') {
                         preg_match('/<h1 class="BAZ_fiche_titre">\s*(.*)\s*<\/h1>.*$/is', $html[$id], $matches);
                     } else {

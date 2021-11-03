@@ -95,16 +95,17 @@ class EntryManager
      * @param string $time pour consulter une fiche dans l'historique
      * @param bool $cache if false, don't use the page cache
      * @param bool $bypassAcls if true, all fields are loaded regardless of acls
+     * @param null|string $userNameForCheckingACL userName used to get entry
      * @return mixed|null
      * @throws Exception
      */
-    public function getOne($tag, $semantic = false, $time = null, $cache = true, $bypassAcls = false): ?array
+    public function getOne($tag, $semantic = false, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null): ?array
     {
         if (!$this->isEntry($tag)) {
             return null;
         }
 
-        $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls);
+        $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL);
         $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
         $data = $this->getDataFromPage($page, $semantic, $debug);
 
