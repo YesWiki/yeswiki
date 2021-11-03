@@ -19,6 +19,7 @@ $GLOBALS['translations'] = array_merge(
         'ERROR_PARTIAL_UPLOAD' => 'Le fichier n\'a &eacute;t&eacute; que partiellement t&eacute;l&eacute;charg&eacute;.',
         'ERROR_NO_FILE_UPLOADED' => 'Aucun fichier n\'a &eacute;t&eacute; t&eacute;l&eacute;charg&eacute;.',
         'ERROR_NOT_AUTHORIZED_EXTENSION' => 'Le fichier n\'a pas une extension autorisée, voici celles que la configuration autorise : ',
+        'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Ajouter un lien pour afficher l'image seule en entier",
 
 
         // actions/filemanager.php
@@ -59,6 +60,7 @@ $GLOBALS['translations'] = array_merge(
         // handler edit
         'ACTIVATE_JS_TO_UPLOAD_FILES' => 'Activer JavaScript pour joindre des fichiers',
         'UPLOAD_A_FILE' => 'Joindre / Ins&eacute;rer un fichier',
+        'SAVE_ENTRY_THEN_MODIFY_TO_UPLOAD_FILE' => 'Enregistrer la fiche puis la modifier pour joindre un fichier',
         'UPLOAD_A_FILE_SHORT' => 'Fichier',
         'UPLOAD_FILE' => 'T&eacute;l&eacute;charger le fichier',
         'CANCEL_THIS_UPLOAD' => 'Annuler cet envoi',
