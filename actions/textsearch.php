@@ -67,14 +67,21 @@ if (!$paramPhrase) {
 
 if ($phrase) {
     $results = $this->FullTextSearch($phrase);
+    $aclService = $this->services->get(\YesWiki\Core\Service\AclService::class);
+    $results = array_filter($results, function ($page) use ($aclService) {
+        return $aclService->hasAccess('read', $page['tag']);
+    });
     if ($results) {
         if ($separator) {
             $separator = htmlspecialchars($separator, ENT_COMPAT, YW_CHARSET);
             if (!$paramPhrase) {
                 echo '<p>'._t('SEARCH_RESULT_OF').' "', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '"&nbsp;: ';
             }
+            $first = true;
             foreach ($results as $i => $page) {
-                if ($i > 0) {
+                if ($first) {
+                    $first = false;
+                } else {
                     echo $separator;
                 }
                 echo $this->ComposeLinkToPage($page['tag']);

@@ -250,51 +250,54 @@ if ($tree) {
             if ($tree) {
                 $indentStr = str_repeat("\t", $indent);
                 $retour =  "$indentStr<ul>\n";
+                $aclService = $wiki->services->get(\YesWiki\Core\Service\AclService::class);
                 foreach ($tree as $pageName => $pageData) {
-                    $retour .= "$indentStr\t<li>";
-                    if ($pageData['page_exists']) {
-                        $retour .= $wiki->ComposeLinkToPage($pageName, false, false, false);
-                        switch ($show) {
-                            case 'owner':
-                                $retour .= ' . . . . '._t('BELONGING_TO').' : ';
-                                if ($pageData['owner']) {
-                                    if ($pageData['owner_has_ownpage']) {
-                                        $retour .= $wiki->ComposeLinkToPage($pageData['owner'], false, false, false);
+                    if ($aclService->hasAccess('read', $pageName)) {
+                        $retour .= "$indentStr\t<li>";
+                        if ($pageData['page_exists']) {
+                            $retour .= $wiki->ComposeLinkToPage($pageName, false, false, false);
+                            switch ($show) {
+                                case 'owner':
+                                    $retour .= ' . . . . '._t('BELONGING_TO').' : ';
+                                    if ($pageData['owner']) {
+                                        if ($pageData['owner_has_ownpage']) {
+                                            $retour .= $wiki->ComposeLinkToPage($pageData['owner'], false, false, false);
+                                        } else {
+                                            $retour .= '<span class="forced-link missingpage">' . $pageData['owner'] . '</span>';
+                                            $retour .= $wiki->ComposeLinkToPage($pageData['owner'], 'edit', '?', false);
+                                        }
                                     } else {
-                                        $retour .= '<span class="forced-link missingpage">' . $pageData['owner'] . '</span>';
-                                        $retour .= $wiki->ComposeLinkToPage($pageData['owner'], 'edit', '?', false);
+                                        $retour .= _t('UNKNOWN');
                                     }
-                                } else {
-                                    $retour .= _t('UNKNOWN');
-                                }
-                                break;
-                            case 'user':
-                                $retour .= ' . . . . '._t('LAST_CHANGE_BY').' : ';
-                                if ($pageData['user_is_registered']) {
-                                    if ($pageData['user_has_ownpage']) {
-                                        $retour .= $wiki->ComposeLinkToPage($pageData['user'], false, false, false);
+                                    break;
+                                case 'user':
+                                    $retour .= ' . . . . '._t('LAST_CHANGE_BY').' : ';
+                                    if ($pageData['user_is_registered']) {
+                                        if ($pageData['user_has_ownpage']) {
+                                            $retour .= $wiki->ComposeLinkToPage($pageData['user'], false, false, false);
+                                        } else {
+                                            $retour .= '<span class="forced-link missingpage">' . $pageData['user'] . '</span>';
+                                            $retour .= $wiki->ComposeLinkToPage($pageData['user'], 'edit', '?', false);
+                                        }
                                     } else {
-                                        $retour .= '<span class="forced-link missingpage">' . $pageData['user'] . '</span>';
-                                        $retour .= $wiki->ComposeLinkToPage($pageData['user'], 'edit', '?', false);
+                                        $retour .= $pageData['user'];
                                     }
-                                } else {
-                                    $retour .= $pageData['user'];
-                                }
-                                break;
-                            case 'time':
-                                $retour .= ' . . . . '._t('LAST_CHANGE').' : ' . $pageData['time'];
-                                break;
-                        } // switch
-                        if ($pageData['haslinksto']) {
-                            $retour .= "\n";
-                            $retour .= ShowPageTree($pageData['haslinksto'], $wiki, $show, $indent + 2);
-                            $retour .= $indentStr . "\t"; // just put tabs before the </li>
+                                    break;
+                                case 'time':
+                                    $retour .= ' . . . . '._t('LAST_CHANGE').' : ' . $pageData['time'];
+                                    break;
+                            } // switch
+                            if ($pageData['haslinksto']) {
+                                $retour .= "\n";
+                                $retour .= ShowPageTree($pageData['haslinksto'], $wiki, $show, $indent + 2);
+                                $retour .= $indentStr . "\t"; // just put tabs before the </li>
+                            }
+                        } else {
+                            $retour .= '<span class="forced-link missingpage">' . $pageName . '</span>'
+                                . $wiki->ComposeLinkToPage($pageName, 'edit', '?', false);
                         }
-                    } else {
-                        $retour .= '<span class="forced-link missingpage">' . $pageName . '</span>'
-                            . $wiki->ComposeLinkToPage($pageName, 'edit', '?', false);
+                        $retour .= "</li>\n";
                     }
-                    $retour .= "</li>\n";
                 }
                 return "$retour$indentStr</ul>\n";
             }
@@ -401,41 +404,44 @@ if ($tree) {
     
     // Display the list itself
     echo "<ul>\n";
+    $aclService = $this->services->get(\YesWiki\Core\Service\AclService::class);
     foreach ($pages as $page) {
-        echo "\t<li>" . $this->ComposeLinkToPage($page['tag'], false, false, false);
-        if (!$owner) {
-            echo ' . . . . ';
-            if ($page['owner']) {
-                if ($page['owner_has_ownpage']) {
-                    echo $this->ComposeLinkToPage($page['owner'], false, false, false);
-                } else {
-                    echo '<span class="forced-link missingpage">' . $page['owner'] . '</span>';
-                    echo $this->ComposeLinkToPage($page['owner'], 'edit', '?', false);
-                }
-            } else {
-                echo _t('UNKNOWN');
-            }
-        }
-        if ($sort == 'user' || $sort == 'time') {
-            echo '  . . . . <strong>'._t('LAST_CHANGE').'</strong>';
-            if ($sort == 'time') {
-                echo ': ' . $page['time'];
-            }
-            if ($sort == 'user' || ($user && $sort == 'time')) {
-                echo ' <strong>'._t('BY').'</strong> ';
-                if ($page['user_is_registered']) {
-                    if ($page['user_has_ownpage']) {
-                        echo $this->ComposeLinkToPage($page['user'], false, false, false);
+        if ($aclService->hasAccess('read', $page['tag'])) {
+            echo "\t<li>" . $this->ComposeLinkToPage($page['tag'], false, false, false);
+            if (!$owner) {
+                echo ' . . . . ';
+                if ($page['owner']) {
+                    if ($page['owner_has_ownpage']) {
+                        echo $this->ComposeLinkToPage($page['owner'], false, false, false);
                     } else {
-                        echo '<span class="forced-link missingpage">' . $page['user'] . '</span>';
-                        echo $this->ComposeLinkToPage($page['user'], 'edit', '?', false);
+                        echo '<span class="forced-link missingpage">' . $page['owner'] . '</span>';
+                        echo $this->ComposeLinkToPage($page['owner'], 'edit', '?', false);
                     }
                 } else {
-                    echo htmlspecialchars($page['user'], ENT_COMPAT, YW_CHARSET);
+                    echo _t('UNKNOWN');
                 }
             }
+            if ($sort == 'user' || $sort == 'time') {
+                echo '  . . . . <strong>'._t('LAST_CHANGE').'</strong>';
+                if ($sort == 'time') {
+                    echo ': ' . $page['time'];
+                }
+                if ($sort == 'user' || ($user && $sort == 'time')) {
+                    echo ' <strong>'._t('BY').'</strong> ';
+                    if ($page['user_is_registered']) {
+                        if ($page['user_has_ownpage']) {
+                            echo $this->ComposeLinkToPage($page['user'], false, false, false);
+                        } else {
+                            echo '<span class="forced-link missingpage">' . $page['user'] . '</span>';
+                            echo $this->ComposeLinkToPage($page['user'], 'edit', '?', false);
+                        }
+                    } else {
+                        echo htmlspecialchars($page['user'], ENT_COMPAT, YW_CHARSET);
+                    }
+                }
+            }
+            echo "</li>\n";
         }
-        echo "</li>\n";
     }
     echo "</ul>\n";
 }
