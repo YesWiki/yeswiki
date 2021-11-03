@@ -41,7 +41,7 @@ class Mailer
                 'baseUrl' => $baseUrl,
             ]
         );
-        $html = $this->templateEngine->render(
+        $html = $this->sanitizeLinksIfNeeded($this->templateEngine->render(
             '@contact/notify-admins-email-html.twig',
             [
                 'style' => file_get_contents('tools/bazar/presentation/styles/bazar.css'),
@@ -49,7 +49,7 @@ class Mailer
                 'entryHTML' => $this->wiki->services->get(EntryController::class)->view($data['id_fiche']),
                 'baseUrl' => $baseUrl,
             ]
-        );
+        ));
 
         // on va chercher les admins
         $requeteadmins = 'SELECT value FROM ' . $this->dbService->prefixTable('triples')
@@ -81,7 +81,7 @@ class Mailer
                 'userName' => $this->wiki->GetUserName(),
             ]
         );
-        $html = $this->templateEngine->render(
+        $html = $this->sanitizeLinksIfNeeded($this->templateEngine->render(
             '@contact/notify-admins-list-deleted-email-html.twig',
             [
                 'style' => file_get_contents('tools/bazar/presentation/styles/bazar.css'),
@@ -89,7 +89,7 @@ class Mailer
                 'userName' => $this->wiki->GetUserName(),
                 'baseUrl' => $baseUrl,
             ]
-        );
+        ));
 
         //on va chercher les admins
         $requeteadmins = 'SELECT value FROM '.$GLOBALS['wiki']
@@ -122,7 +122,7 @@ class Mailer
                 'baseUrl' => $baseUrl,
             ]
         );
-        $html = $this->templateEngine->render(
+        $html = $this->sanitizeLinksIfNeeded($this->templateEngine->render(
             '@contact/notify-email-html.twig',
             [
                 'style' => file_get_contents('tools/bazar/presentation/styles/bazar.css'),
@@ -131,7 +131,7 @@ class Mailer
                 'baseUrl' => $baseUrl,
                 'mailCustomMessage' => $this->params->has('mail_custom_message') ? $this->params->get('mail_custom_message') : null,
             ]
-        );
+        ));
 
         send_mail($this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $email, $sujet, $text, $html);
     }
@@ -180,5 +180,22 @@ class Mailer
     private function getBaseUrl(): string
     {
         return preg_replace('/(\\/wakka\\.php\\?wiki=|\\/\\?wiki=|\\/\\?|\\/)$/m', '', $this->params->get('base_url')) ;
+    }
+
+    /**
+     * add $_GET['wiki'] in url if smtp use a relay that put a new parameter as the beginning of url's query
+     * @param string $text
+     * @return string $text
+     */
+    private function sanitizeLinksIfNeeded(string $text):string
+    {
+        if ($this->params->get('contact_mail_func') === 'smtp'
+            && $this->params->has('contact_use_long_wiki_urls_in_emails')
+            && $this->params->get('contact_use_long_wiki_urls_in_emails')
+            ) {
+            $baseUrl = $this->getBaseUrl();
+            $text = str_replace("href=\"{$baseUrl}/?", "href=\"{$baseUrl}/?wiki=", $text);
+        }
+        return $text;
     }
 }
