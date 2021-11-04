@@ -152,13 +152,13 @@ if ($phrase) {
 
     // Blablabla SQL
     $requestfull = 'SELECT body, tag FROM '.$prefixe.'pages
-                  LEFT JOIN '.$prefixe.'acls ON tag = page_tag AND privilege = "read"
                   WHERE latest = "Y"
+                  AND EXISTS( SELECT * FROM '.$prefixe.'acls WHERE tag = page_tag AND privilege = "read"
                   AND ( list IS NULL OR list ="*" '.
                   ($user ? 'OR owner = "'.$user['name'].'" OR list = "+" OR (list NOT LIKE "%!'.$user['name'].'%" AND list LIKE "%'.$user['name'].'")':'').')'.
                   // TODO retrouver la facon d'afficher les commentaires (AFFICHER_COMMENTAIRES ? '':'AND tag NOT LIKE "comment%"').
-                  ' AND body LIKE "%' . $phraseFormatted . '%"'.$requeteSQLForList.'
-                  GROUP BY tag ORDER BY tag LIMIT 100';
+                  ') AND body LIKE "%' . $phraseFormatted . '%"'.$requeteSQLForList.'
+                  ORDER BY tag LIMIT 100';
 
     // exécution de la requete
     if ($resultat = $this->LoadAll($requestfull)) {
