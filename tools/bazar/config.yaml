@@ -112,6 +112,8 @@ parameters:
   baz_enum_field_time_cache_for_json: 7200 # seconds = 2 hours
   # option only for configs with 500 errors when not admin connected
   baz_check_owner_acl_only_for_field_can_edit: false
+  # tag used to upload file at entry creation
+  temp_tag_for_entry_creation: 'unknown_entry_id'
   # for edit config action
   bazar_editable_config_params:
     - 'baz_map_center_lat'
