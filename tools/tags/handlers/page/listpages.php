@@ -109,7 +109,9 @@ if ($nb_total > 1) {
 } else {
     $output .= 'Aucune page trouv&eacute;e';
 }
-$output .= (!empty($tags) ? ' avec le mot cl&eacute; <span class="tag-label label label-info">'.$tags.'</span>' : '').'.';
+$output .= (!empty($tab_selected_tags) ? ' avec le mot cl&eacute; '.implode(' et ', array_map(function ($tagName) {
+    return '<span class="tag-label label label-info">'.$tagName.'</span>';
+}, $tab_selected_tags)) : '').'.';
 $output .= $this->Format('{{rss tags="'.$tags.'" class="pull-right"}}')."\n";
 $output .= '</div>'."\n".$text;
 

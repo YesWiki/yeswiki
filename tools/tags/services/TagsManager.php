@@ -95,20 +95,16 @@ class TagsManager
     public function getPagesByTags($tags = '', $type = '', $nb = '', $tri = '')
     {
         if (!empty($tags)) {
-            $req_from = ', '.$this->dbService->prefixTable('triples') . 'tags';
+            $req = ' AND EXISTS (select resource FROM '.$this->dbService->prefixTable('triples') . ' WHERE resource=tag';
             $tags = trim($tags);
             $tab_tags = explode(',', $tags);
             $nbdetags = count($tab_tags);
             $tags = implode(',', $tab_tags);
             $tags = '"'.str_replace(',', '","', _convert($this->dbService->escape(addslashes($tags)), YW_CHARSET, true)).'"';
-            $req = ' AND tags.value IN ('.$tags.') ';
-            $req .= ' AND tags.property="http://outils-reseaux.org/_vocabulary/tag" AND tags.resource=tag ';
-            $req_having = ' HAVING COUNT(tag)='.$nbdetags.' ';
-
-            $req .= ' GROUP BY tag ';
-            if ($req_having != '') {
-                $req .= $req_having;
-            }
+            $req .= ' AND value IN ('.$tags.') ';
+            $req .= ' AND property="http://outils-reseaux.org/_vocabulary/tag"';
+            $req .= ' GROUP BY resource ';
+            $req .= ' HAVING COUNT(resource)='.$nbdetags.') ';
 
             //gestion du tri de l'affichage
             if ($tri == 'alpha') {
@@ -117,14 +113,14 @@ class TagsManager
                 $req .= ' ORDER BY time DESC ';
             }
 
-            $requete = 'SELECT * FROM '.$this->dbService->prefixTable('pages').$req_from." WHERE latest = 'Y' and comment_on = '' ".$req;
+            $requete = 'SELECT * FROM '.$this->dbService->prefixTable('pages')." WHERE latest = 'Y' and comment_on = '' ".$req;
 
             return $this->dbService->loadAll($requete);
         } else {
             // recuperation des pages wikis
             $sql = 'SELECT * FROM '.$this->dbService->prefixTable('pages');
             if (!empty($taglist)) {
-                $sql .= ', '.$this->dbService->prefixTable('triples').$this->dbService->prefixTable('tags');
+                $sql .= ' INNER JOIN '.$this->dbService->prefixTable('triples').' as tags ON tag=tags.resource';
             }
             $sql .= ' WHERE latest="Y" AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%" ';
 
