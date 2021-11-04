@@ -131,6 +131,10 @@ class Init
                         $this->method = $args[1];
                     }
                 }
+            } elseif (preg_match('`^api/('.WN_CHAR2.'+(?:' . WN_CHAR2 . '|/| )*)$`u', $wiki, $matches)) {
+                // for api split into api/end of route, checking wiki name & method name (XSS proof)
+                $this->page = 'api';
+                list(, $this->method) = $matches;
             } else {
                 // invalid WikiPageName
                 echo '<p>', _t('INCORRECT_PAGENAME'), '</p>';

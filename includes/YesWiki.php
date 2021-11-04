@@ -1201,8 +1201,21 @@ class Wiki
         // Use query string as the path (part before '&')
         $extract = explode('&', $context->getQueryString());
         $path = $extract[0];
-        if (count($extract) > 1) {
-            array_unshift($extract);
+        if (strpos($path, "=") !== false) {
+            if (!empty($this->method)) {
+                if ($this->method === 'show' && $path === 'wiki=api') {
+                    $path = 'api';
+                } else {
+                    $path = $this->tag.'/'.$this->method;
+                    $newQuerytring = implode('&', $extract);
+                }
+            } else {
+                $response = new Response(_t('ROUTE_BAD_CONFIGURED'), Response::HTTP_BAD_REQUEST);
+                $response->send();
+                exit();
+            }
+        } elseif (count($extract) > 1) {
+            array_shift($extract);
             $newQuerytring = implode('&', $extract);
         }
         $context->setPathInfo('/' . $path);
