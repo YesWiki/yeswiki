@@ -5,24 +5,28 @@ use YesWiki\Core\YesWikiHandler;
 use \Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\LinkTracker;
 
 class RevisionsHandler extends YesWikiHandler
 {
-    function run()
+    public function run()
     {
         $this->denyAccessUnlessGranted('read');
         
         $pageManager = $this->getService(PageManager::class);
         $aclService = $this->getService(AclService::class);
+        $linkTracker = $this->getService(LinkTracker::class);
 
         if ($this->getRequest()->get('restoreRevisionId')) {
             if ($aclService->hasAccess('write')) {
                 $page = $pageManager->getById($this->getRequest()->get('restoreRevisionId'));
                 $pageManager->save($page['tag'], $page['body']);
+                // save links
+                $linkTracker->registerLinks($pageManager->getOne($page['tag']));
                 Flash::success(_t('SUCCESS_RESTORE_REVISION'));
             } else {
                 Flash::error(_t('DENY_WRITE'));
-            }            
+            }
             return $this->wiki->Redirect($this->wiki->Href());
         } else {
             $revisionsCount = $pageManager->countRevisions($this->wiki->GetPageTag());

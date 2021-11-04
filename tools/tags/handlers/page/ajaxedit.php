@@ -1,4 +1,7 @@
 <?php
+
+use YesWiki\Core\Service\LinkTracker;
+
 /*
 $Id: ajaxedit.php,v 1.3 2010-01-27 15:19:41 mrflos Exp $
 Copyright (c) 2002, Hendrik Mans <hendrik@mans.de>
@@ -78,21 +81,7 @@ if (isset($_GET['jsonp_callback'])) {
                         $this->SavePage($this->tag, $body);
         
                         // now we render it internally so we can write the updated link table.
-                        $this->ClearLinkTable();
-                        $this->StartLinkTracking();
-                        $temp = $this->SetInclusions(); // a priori, ca ne sert à rien, mais on ne sait jamais...
-                        $this->RegisterInclusion($this->GetPageTag()); // on simule totalement un affichage normal
-                        $this->Format($body);
-                        $this->SetInclusions($temp);
-                        if ($user = $this->GetUser()) {
-                            $this->TrackLinkTo($user['name']);
-                        }
-                        if ($owner = $this->GetPageOwner()) {
-                            $this->TrackLinkTo($owner);
-                        }
-                        $this->StopLinkTracking();
-                        $this->WriteLinkTable();
-                        $this->ClearLinkTable();
+                        $this->services->get(LinkTracker::class)->registerLinks($this->page, false, false);
         
                         // on recupere le commentzire bien formatte
                         $comment = $this->LoadPage($this->tag);

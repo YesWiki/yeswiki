@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Security\Controller\SecurityController;
 
 /*
@@ -109,21 +110,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
                     $this->SavePage($this->tag, $body);
 
                     // now we render it internally so we can write the updated link table.
-                    $this->ClearLinkTable();
-                    $this->StartLinkTracking();
-                    $temp = $this->SetInclusions(); // a priori, éa ne sert é rien, mais on ne sait jamais...
-                    $this->RegisterInclusion($this->GetPageTag()); // on simule totalement un affichage normal
-                    $this->Format($body);
-                    $this->SetInclusions($temp);
-                    if ($user = $this->GetUser()) {
-                        $this->TrackLinkTo($user['name']);
-                    }
-                    if ($owner = $this->GetPageOwner()) {
-                        $this->TrackLinkTo($owner);
-                    }
-                    $this->StopLinkTracking();
-                    $this->WriteLinkTable();
-                    $this->ClearLinkTable();
+                    $this->services->get(LinkTracker::class)->registerLinks($this->page, false, false);
 
                     // forward
                     if ($this->page['comment_on']) {

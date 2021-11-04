@@ -2,6 +2,7 @@
 
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Core\YesWikiHandler;
@@ -161,6 +162,7 @@ class UpdateHandler extends YesWikiHandler
             }
         }
         $output = '';
+        $linkTracker = $this->getService(LinkTracker::class);
         foreach ($adminPagesToUpdate as $page) {
             if (isset($defaultSQLSplitted[$page])) {
                 if (preg_match('/'.$page.'\',\s*(?:now\(\))?\s*,\s*\'([\S\s]*)\',\s*\'\'\s*,\s*\'{{WikiName}}\',\s*\'{{WikiName}}\', \'(?:Y|N)\', \'page\', \'\'/U', $defaultSQLSplitted[$page], $matches)) {
@@ -170,6 +172,9 @@ class UpdateHandler extends YesWikiHandler
                     $pageContent = str_replace('{{url}}', $this->params->get('base_url'), $pageContent);
                     if ($this->getService(PageManager::class)->save($page, $pageContent) !== 0) {
                         $output .= (!empty($output) ? ', ':'')._t('NO_RIGHT_TO_WRITE_IN_THIS_PAGE').$page;
+                    } else {
+                        // save links
+                        $linkTracker->registerLinks($this->getService(PageManager::class)->getOne($page));
                     }
                 }
             } else {
