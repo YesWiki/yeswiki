@@ -37,6 +37,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
@@ -1243,6 +1244,8 @@ class Wiki
             $response = new Response('', Response::HTTP_NOT_FOUND);
         } catch (HttpException $exception) {
             $response = new Response($exception->getMessage(), $exception->getStatusCode(), $exception->getHeaders());
+        } catch (MethodNotAllowedException $exception) {
+            $response = new Response('', Response::HTTP_METHOD_NOT_ALLOWED);
         }
         $response->send();
     }
