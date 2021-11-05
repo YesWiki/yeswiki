@@ -1,5 +1,7 @@
 <?php
 
+use YesWiki\Core\Service\LinkTracker;
+use YesWiki\Core\Service\PageManager;
 use YesWiki\Security\Controller\SecurityController;
 
 /*
@@ -98,7 +100,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
             } else { // store
                 $body = str_replace("\r", '', $body);
                 // teste si la nouvelle page est differente de la précédente
-                if (rtrim($body) == rtrim($this->page['body'])) {
+                if (isset($this->page['body']) && rtrim($body) == rtrim($this->page['body'])) {
                     $this->SetMessage('Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car elle n\'a subi aucune modification.');
                     $this->Redirect($this->href(testUrlInIframe()));
                 } else {
@@ -109,21 +111,8 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
                     $this->SavePage($this->tag, $body);
 
                     // now we render it internally so we can write the updated link table.
-                    $this->ClearLinkTable();
-                    $this->StartLinkTracking();
-                    $temp = $this->SetInclusions(); // a priori, éa ne sert é rien, mais on ne sait jamais...
-                    $this->RegisterInclusion($this->GetPageTag()); // on simule totalement un affichage normal
-                    $this->Format($body);
-                    $this->SetInclusions($temp);
-                    if ($user = $this->GetUser()) {
-                        $this->TrackLinkTo($user['name']);
-                    }
-                    if ($owner = $this->GetPageOwner()) {
-                        $this->TrackLinkTo($owner);
-                    }
-                    $this->StopLinkTracking();
-                    $this->WriteLinkTable();
-                    $this->ClearLinkTable();
+                    $page = $this->services->get(PageManager::class)->getOne($this->tag);
+                    $this->services->get(LinkTracker::class)->registerLinks($page,false,false);
 
                     // forward
                     if ($this->page['comment_on']) {
