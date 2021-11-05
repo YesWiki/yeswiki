@@ -91,7 +91,7 @@ services:
     autowire: true
     public: true
 
-  YesWiki\Bazar\Service\:
+  YesWiki\Custom\Service\:
     resource: 'services/*'
 ```
 
@@ -108,7 +108,7 @@ services:
     public: true
 
   # Allows to use controllers as services
-  YesWiki\Bazar\Controller\:
+  YesWiki\Custom\Controller\:
     resource: 'controllers/*'
 ```
 
