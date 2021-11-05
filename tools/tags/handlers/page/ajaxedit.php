@@ -1,6 +1,7 @@
 <?php
 
 use YesWiki\Core\Service\LinkTracker;
+use YesWiki\Core\Service\PageManager;
 
 /*
 $Id: ajaxedit.php,v 1.3 2010-01-27 15:19:41 mrflos Exp $
@@ -81,7 +82,8 @@ if (isset($_GET['jsonp_callback'])) {
                         $this->SavePage($this->tag, $body);
         
                         // now we render it internally so we can write the updated link table.
-                        $this->services->get(LinkTracker::class)->registerLinks($this->page, false, false);
+                        $page = $this->services->get(PageManager::class)->getOne($this->tag);
+                        $this->services->get(LinkTracker::class)->registerLinks($page,false,false);
         
                         // on recupere le commentzire bien formatte
                         $comment = $this->LoadPage($this->tag);

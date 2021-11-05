@@ -147,8 +147,10 @@ class LinkTracker
         $this->clear();
 
         if ($refreshPreviousTag) {
-            $this->wiki->tag = $previousTag;
-            $this->wiki->setPage($previousPage);
+            if (!empty($previousTag) && !empty($previousPage)){
+                $this->wiki->tag = $previousTag;
+                $this->wiki->setPage($previousPage);
+            }
             $this->wiki->SetInclusions($previousInclusions);
         }
 
@@ -157,11 +159,13 @@ class LinkTracker
 
     private function preventTrackingActions(string $body): string
     {
-        if (preg_match('/{{(?:include\s*page="|redirect\s*page="|listpages\s*tree=")([^"]*)"\\s*}}/i', $body, $matches)) {
-            $body = str_replace($matches[0], '', $body);
-            $page = $this->pageManager->getOne($matches[1]);
-            if (!empty($page)) {
-                $this->add($page["tag"]);
+        if (preg_match_all('/{{(?:include\\s*page="|redirect\\s*page="|listpages\\s*tree="|bazar [^}]*redirecturl="(?<!http:\\/\\/|https:\\/\\/))([^"]*)"\\s*[^}]*}}/i', $body, $matches)) {
+            foreach ($matches[0] as $key => $value) {
+                $body = str_replace($matches[0][$key], '', $body);
+                $page = $this->pageManager->getOne($matches[1][$key]);
+                if (!empty($page)) {
+                    $this->add($page["tag"]);
+                }
             }
         }
         return $body;
@@ -169,8 +173,10 @@ class LinkTracker
 
     private function preventNotTrackingActions(string $body): string
     {
-        if (preg_match('/{{(?:gerertheme|setwikidefaulttheme|admintag|editgroups|userstable|editconfig|gererdroits|update\\s*(?:version="[^"]*")?|listpages(?:[^}]|\\s)*))\\s*}}/i', $body, $matches)) {
-            $body = str_replace($matches[0], '', $body);
+        if (preg_match_all('/{{(?:gerertheme|setwikidefaulttheme|admintag|editgroups|userstable|editconfig|gererdroits|update\\s*(?:version="[^"]*")?|listpages(?:[^}]|\\s)*|bazarliste(?:[^}]|\\s)*|bazarcarto(?:[^}]|\\s)*|bazar(?:[^}]|\\s)*)\\s*}}/i', $body, $matches)) {
+            foreach ($matches[0] as $key => $value) {
+                $body = str_replace($matches[0][$key], '', $body);
+            }
         }
         return $body;
     }
