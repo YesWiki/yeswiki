@@ -256,8 +256,6 @@ class Wiki
      */
     public function AppendContentToPage($content, $page, $bypass_acls = false)
     {
-        $linkTracker = $this->services->get(LinkTracker::class);
-
         // Si un contenu est specifie
         if (isset($content)) {
             // -- Determine quelle est la page :
@@ -276,7 +274,8 @@ class Wiki
             $this->SavePage($page, $body, '', $bypass_acls);
 
             // now we render it internally so we can write the updated link table.
-            $linkTracker->registerLinks(['tag'=>$page,'body'=>$body], false, false);
+            $page = $this->services->get(PageManager::class)->getOne($this->tag);
+            $this->services->get(LinkTracker::class)->registerLinks($page,false,false);
 
             // Retourne 0 seulement si tout c'est bien passe
             return 0;
