@@ -311,7 +311,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * Display Auth api documentation
+     * Display Bazar api documentation
      *
      * @return string
      */
