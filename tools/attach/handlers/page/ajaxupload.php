@@ -3,7 +3,10 @@ if (!WIKINI_VERSION) {
     die('acc&egrave;s direct interdit');
 }
 
-if ($this->HasAccess('write') || ($this->HasAccess('read') && isset($_GET['tempTag']) && substr($_GET['tempTag'], 0, strlen($this->config['temp_tag_for_entry_creation'])) === $this->config['temp_tag_for_entry_creation'])) {
+$hasTempTag = (isset($_GET['tempTag'])
+    && preg_match("/^{$this->config['temp_tag_for_entry_creation']}_[A-Fa-f0-9]+$/m", $_GET['tempTag']));
+
+if ($this->HasAccess('write') || ($this->HasAccess('read') && $hasTempTag)) {
     /**
      * Handle file uploads via XMLHttpRequest
      */
@@ -167,7 +170,7 @@ if ($this->HasAccess('write') || ($this->HasAccess('read') && isset($_GET['tempT
             $replace = array('e','a','i','u','o','c','_','');
             $filename = preg_replace($search, $replace, utf8_decode($filename));
 
-            if (!empty($_GET['tempTag'])) {
+            if ($hasTempTag) {
                 $previousTag = $GLOBALS['wiki']->tag;
                 $previousPage = $GLOBALS['wiki']->page;
                 $GLOBALS['wiki']->tag = $_GET['tempTag'];
@@ -185,7 +188,7 @@ if ($this->HasAccess('write') || ($this->HasAccess('read') && isset($_GET['tempT
             $GLOBALS['wiki']->setParameter("file", $filename . '.' . $ext);
 
             // dans le cas d'une nouvelle page, on donne une valeur a la date de création
-            if (!empty($_GET['tempTag']) || $GLOBALS['wiki']->page['time'] == '') {
+            if ($hasTempTag || $GLOBALS['wiki']->page['time'] == '') {
                 $GLOBALS['wiki']->page['time'] = date('YmdHis');
             }
 
@@ -193,7 +196,7 @@ if ($this->HasAccess('write') || ($this->HasAccess('read') && isset($_GET['tempT
             ob_start();
             $attach->doAttach();
             $fullfilename = $attach->GetFullFilename(true);
-            if (!empty($_GET['tempTag'])) {
+            if ($hasTempTag) {
                 $GLOBALS['wiki']->tag = $previousTag;
                 $GLOBALS['wiki']->page = $previousPage;
             }
