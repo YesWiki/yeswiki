@@ -78,6 +78,11 @@ class EntryController extends YesWikiController
         $message = $_GET['message'] ?? '';
         // unset $_GET['message'] to prevent infinite loop when rendering entry with textarea and {{bazarliste}}
         unset($_GET['message']);
+        // to synchronize with const in BazarAction (but do not include it here otherwise include shunts Performer job)
+        $isUpdatingEntry = (isset($_GET['vue']) && $_GET['vue'] === 'consulter');
+        if ($isUpdatingEntry) {
+            unset($_GET['vue']);
+        }
         // unshift stack to check if this entry is included into a bazarliste into a Field
         array_unshift($this->parentsEntries, $entryId);
         if (count(array_filter($this->parentsEntries, function ($value) use ($entryId) {
@@ -140,6 +145,9 @@ class EntryController extends YesWikiController
         // remake $_GET['message'] for BazarAction__ like in webhooks extension
         if (!empty($message)) {
             $_GET['message'] = $message;
+        }
+        if ($isUpdatingEntry) {
+            $_GET['vue'] = 'consulter';
         }
 
         return $this->render('@bazar/entries/view.twig', [
