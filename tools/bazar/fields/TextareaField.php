@@ -94,10 +94,14 @@ class TextareaField extends BazarField
             include_once 'tools/aceditor/actions/actions_builder.php';
         }
 
+        $tempTag = !isset($entry['id_fiche']) ? ($wiki->config['temp_tag_for_entry_creation'] ?? null) : null;
+        if ($tempTag) {
+            $tempTag .= '_' . bin2hex(random_bytes(10));
+        }
         return $this->render("@bazar/inputs/textarea.twig", [
             'value' => $this->getValue($entry),
             'entryId' => $entry['id_fiche'] ?? null,
-            'tempTag' => !isset($entry['id_fiche']) ? ($wiki->config['temp_tag_for_entry_creation'] ?? null) : null,
+            'tempTag' => $tempTag,
         ]);
     }
 
@@ -174,7 +178,7 @@ class TextareaField extends BazarField
         $wiki = $this->getWiki();
         $temp_tag_for_entry_creation = $wiki->config['temp_tag_for_entry_creation'];
 
-        if (preg_match_all("/({{attach[^}]*file=\")($temp_tag_for_entry_creation\/([^\"]*))(\"[^}]*}})/m", $text, $matches)) {
+        if (preg_match_all("/({{attach[^}]*file=\")(({$temp_tag_for_entry_creation}_[A-Fa-f0-9]+)\/([^\"]*))(\"[^}]*}})/m", $text, $matches)) {
             if (!class_exists('attach')) {
                 include('tools/attach/libs/attach.lib.php');
             }
@@ -183,7 +187,7 @@ class TextareaField extends BazarField
                 $attach->file = $matches[2][$key];
                 $previousTag = $wiki->tag;
                 $previousPage = $wiki->page;
-                $wiki->tag = $temp_tag_for_entry_creation;
+                $wiki->tag = $matches[3][$key];
                 $wiki->page = [
                     'tag' => $wiki->tag,
                     'body' => '{##}',
@@ -192,7 +196,7 @@ class TextareaField extends BazarField
                     'user' => '',
                 ];
                 $previousFileName = $attach->GetFullFilename();
-                $attach->file = $matches[3][$key];
+                $attach->file = $matches[4][$key];
                 $wiki->tag = $entry['id_fiche'];
                 $wiki->page = [
                     'tag' => $entry['id_fiche'],
@@ -203,7 +207,7 @@ class TextareaField extends BazarField
                 ];
                 $newFileName = $attach->GetFullFilename(true);
                 rename($previousFileName, $newFileName);
-                $text =  str_replace($matches[0][$key], $matches[1][$key].$matches[3][$key].$matches[4][$key], $text);
+                $text =  str_replace($matches[0][$key], $matches[1][$key].$matches[4][$key].$matches[5][$key], $text);
                 unset($attach);
                 $wiki->tag = $previousTag;
                 $wiki->page = $previousPage;

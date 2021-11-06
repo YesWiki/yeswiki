@@ -3,7 +3,7 @@ if (!WIKINI_VERSION) {
     die('acc&egrave;s direct interdit');
 }
 
-if ($this->HasAccess('write') || ($this->HasAccess('read') && ($_GET['tempTag'] ?? null) === $this->config['temp_tag_for_entry_creation'])) {
+if ($this->HasAccess('write') || ($this->HasAccess('read') && isset($_GET['tempTag']) && substr($_GET['tempTag'], 0, strlen($this->config['temp_tag_for_entry_creation'])) === $this->config['temp_tag_for_entry_creation'])) {
     /**
      * Handle file uploads via XMLHttpRequest
      */
@@ -170,7 +170,7 @@ if ($this->HasAccess('write') || ($this->HasAccess('read') && ($_GET['tempTag'] 
             if (!empty($_GET['tempTag'])) {
                 $previousTag = $GLOBALS['wiki']->tag;
                 $previousPage = $GLOBALS['wiki']->page;
-                $GLOBALS['wiki']->tag = $GLOBALS['wiki']->config['temp_tag_for_entry_creation'];
+                $GLOBALS['wiki']->tag = $_GET['tempTag'];
                 $GLOBALS['wiki']->page = [
                     'tag' => $GLOBALS['wiki']->tag,
                     'body' => '{##}',
