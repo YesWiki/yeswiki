@@ -28,7 +28,7 @@
         {# do not display button before moving in aceditor bar#}
         <div style="display:none;">{{ include('@attach/attach-file-uploader-button.twig',
             {fileUploaderAnchor:'#' ~ field.name ~ 'Container .aceditor-toolbar',
-            fileUploaderTextarea:'#' ~ field.name }) }}</div>
+            fileUploaderSelector:'#' ~ field.name }) }}</div>
         {{ include_javascript('tools/attach/libs/fileuploader.js') }}
         <!-- include_javascript('tools/attach/libs/fileuploader.js') -->
     {% endif %}
