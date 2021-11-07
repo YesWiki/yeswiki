@@ -94,9 +94,14 @@ class TextareaField extends BazarField
             include_once 'tools/aceditor/actions/actions_builder.php';
         }
 
+        $tempTag = !isset($entry['id_fiche']) ? ($wiki->config['temp_tag_for_entry_creation'] ?? null) : null;
+        if ($tempTag) {
+            $tempTag .= '_' . bin2hex(random_bytes(10));
+        }
         return $this->render("@bazar/inputs/textarea.twig", [
             'value' => $this->getValue($entry),
-            'entryId' => $entry['id_fiche'] ?? null
+            'entryId' => $entry['id_fiche'] ?? null,
+            'tempTag' => $tempTag,
         ]);
     }
 
@@ -104,8 +109,10 @@ class TextareaField extends BazarField
     {
         $value = $this->getValue($entry);
 
-        if ($this->syntax == self::SYNTAX_HTML) {
+        if ($this->syntax === self::SYNTAX_HTML) {
             $value = strip_tags($value, self::ACCEPTED_TAGS);
+        } elseif ($this->syntax === self::SYNTAX_WIKI) {
+            $value = $this->sanitizeAttach($value, $entry);
         }
 
         return [$this->propertyName => $value];
@@ -164,5 +171,50 @@ class TextareaField extends BazarField
     public function getSyntax()
     {
         return $this->syntax;
+    }
+
+    private function sanitizeAttach(string $text, array $entry): string
+    {
+        $wiki = $this->getWiki();
+        $temp_tag_for_entry_creation = $wiki->config['temp_tag_for_entry_creation'];
+
+        if (preg_match_all("/({{attach[^}]*file=\")(({$temp_tag_for_entry_creation}_[A-Fa-f0-9]+)\/([^\"]*))(\"[^}]*}})/m", $text, $matches)) {
+            if (!class_exists('attach')) {
+                include('tools/attach/libs/attach.lib.php');
+            }
+            foreach ($matches[0] as $key => $value) {
+                $attach = new \Attach($wiki);
+                $attach->file = $matches[2][$key];
+                $previousTag = $wiki->tag;
+                $previousPage = $wiki->page;
+                $wiki->tag = $matches[3][$key];
+                $wiki->page = [
+                    'tag' => $wiki->tag,
+                    'body' => '{##}',
+                    'time' => date('YmdHis'),
+                    'owner' => '',
+                    'user' => '',
+                ];
+                $previousFileName = $attach->GetFullFilename();
+                $attach->file = $matches[4][$key];
+                $wiki->tag = $entry['id_fiche'];
+                $wiki->page = [
+                    'tag' => $entry['id_fiche'],
+                    'page' => json_encode($entry),
+                    'time' => $entry['date_creation_fiche'],
+                    'owner' => '',
+                    'user' => '',
+                ];
+                $newFileName = $attach->GetFullFilename(true);
+                rename($previousFileName, $newFileName);
+                $text =  str_replace($matches[0][$key], $matches[1][$key].$matches[4][$key].$matches[5][$key], $text);
+                unset($attach);
+                $wiki->tag = $previousTag;
+                $wiki->page = $previousPage;
+            }
+        }
+
+        
+        return $text;
     }
 }

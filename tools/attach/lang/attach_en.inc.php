@@ -44,7 +44,6 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 // handler edit
 'ACTIVATE_JS_TO_UPLOAD_FILES' => 'Activate JavaScript to upload files',
 'UPLOAD_A_FILE' => 'Upload a file',
-'SAVE_ENTRY_THEN_MODIFY_TO_UPLOAD_FILE' => 'Save entry then modify it to upload a file',
 'UPLOAD_A_FILE_SHORT' => 'File',
 'UPLOAD_FILE' => 'Upload file',
 'CANCEL_THIS_UPLOAD' => 'Cancel this upload',

@@ -1291,6 +1291,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
     var position;
     let textAreaId = $(this.element).data('textarea');
     var body = (textAreaId && textAreaId.length > 0) ? $(textAreaId) : $('#body');
+    var tempTag = $(this.element).data('temptag');
     var uploadurl = wiki.url(wiki.pageTag+'/ajaxupload');
     var downloadlist = $this.find('.qq-upload-list');
     var UploadModal = $('#UploadModal');
@@ -1344,7 +1345,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
       if (typeof desctxt == 'undefined' || desctxt == '') {
         desctxt = getParameterByName(formvals, 'attach_link_text');
       }
-      var actionattach = '{{attach file="' + getParameterByName(formvals, 'filename') + '" desc="' + desctxt + '"';
+      var actionattach = '{{attach file="' + (tempTag ? tempTag+'/': '') + getParameterByName(formvals, 'filename') + '" desc="' + desctxt + '"';
 
       var displaypdf = getParameterByName(formvals, 'attach_action_display_pdf');
       if (typeof displaypdf != 'undefined' && displaypdf == '1') {
@@ -1398,6 +1399,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
       element: this.element,
       action: uploadurl,
       debug: false,
+      params: {...{},...(tempTag ? {tempTag:tempTag}:{})},
 
       onSubmit: function(id, fileName) {
         // upload modal is cleaned and showed
