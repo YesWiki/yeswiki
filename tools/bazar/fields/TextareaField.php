@@ -2,7 +2,10 @@
 
 namespace YesWiki\Bazar\Field;
 
+use DateTime;
+use DateTimeZone;
 use Psr\Container\ContainerInterface;
+use YesWiki\Core\Service\DbService;
 
 /**
  * @Field({"textelong"})
@@ -182,6 +185,15 @@ class TextareaField extends BazarField
             if (!class_exists('attach')) {
                 include('tools/attach/libs/attach.lib.php');
             }
+            $dbTz = $this->getService(DbService::class)->getDbTimeZone();
+            $sqlTimeFormat = 'Y-m-d H:i:s';
+            $entryCreationTime = !empty($entry['date_maj_fiche'])
+                ? $entry['date_creation_fiche']
+                : (
+                    !empty($dbTz)
+                    ? (new DateTime())->setTimezone(new DateTimeZone($dbTz))->format($sqlTimeFormat)
+                    : date($sqlTimeFormat)
+                );
             foreach ($matches[0] as $key => $value) {
                 $attach = new \Attach($wiki);
                 $attach->file = $matches[2][$key];
@@ -201,7 +213,7 @@ class TextareaField extends BazarField
                 $wiki->page = [
                     'tag' => $entry['id_fiche'],
                     'page' => json_encode($entry),
-                    'time' => $entry['date_creation_fiche'],
+                    'time' => $entryCreationTime,
                     'owner' => '',
                     'user' => '',
                 ];

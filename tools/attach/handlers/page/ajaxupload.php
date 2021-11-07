@@ -3,6 +3,8 @@ if (!WIKINI_VERSION) {
     die('acc&egrave;s direct interdit');
 }
 
+use YesWiki\Core\Service\DbService;
+
 $hasTempTag = (isset($_GET['tempTag'])
     && preg_match("/^{$this->config['temp_tag_for_entry_creation']}_[A-Fa-f0-9]+$/m", $_GET['tempTag']));
 
@@ -189,9 +191,11 @@ if ($this->HasAccess('write') || ($this->HasAccess('read') && $hasTempTag)) {
             $GLOBALS['wiki']->setParameter("desc", $filename);
             $GLOBALS['wiki']->setParameter("file", $filename . '.' . $ext);
 
-            // dans le cas d'une nouvelle page, on donne une valeur a la date de création
+            // dans le cas d'une nouvelle page, on donne une valeur a la date de création dans le fuseau horaire du serveur (heure SQL)
             if ($this->hasTempTag || $GLOBALS['wiki']->page['time'] == '') {
-                $GLOBALS['wiki']->page['time'] = date('YmdHis');
+                $dbTz = $GLOBALS['wiki']->services->get(DbService::class)->getDbTimeZone();
+                $sqlTimeFormat = 'Y-m-d H:i:s';
+                $GLOBALS['wiki']->page['time'] = !empty($dbTz) ? (new DateTime())->setTimezone(new DateTimeZone($dbTz))->format($sqlTimeFormat) : date($sqlTimeFormat);
             }
 
             // on envoi l'attachement en retenant l'affichage du résultat dans un buffer
