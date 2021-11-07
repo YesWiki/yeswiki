@@ -79,8 +79,9 @@ if ($this->HasAccess('write') || ($this->HasAccess('read') && $hasTempTag)) {
         private $allowedExtensions = array();
         private $sizeLimit = '10000';
         private $file;
+        private $hasTempTag;
 
-        public function __construct(array $allowedExtensions = array(), $sizeLimit = '10000')
+        public function __construct(array $allowedExtensions = array(), $sizeLimit = '10000', $hasTempTag = false)
         {
             $allowedExtensions = array_map("strtolower", $allowedExtensions);
 
@@ -96,6 +97,7 @@ if ($this->HasAccess('write') || ($this->HasAccess('read') && $hasTempTag)) {
             } else {
                 $this->file = false;
             }
+            $this->hasTempTag = $hasTempTag;
         }
 
         private function checkServerSettings()
@@ -170,7 +172,7 @@ if ($this->HasAccess('write') || ($this->HasAccess('read') && $hasTempTag)) {
             $replace = array('e','a','i','u','o','c','_','');
             $filename = preg_replace($search, $replace, utf8_decode($filename));
 
-            if ($hasTempTag) {
+            if ($this->hasTempTag) {
                 $previousTag = $GLOBALS['wiki']->tag;
                 $previousPage = $GLOBALS['wiki']->page;
                 $GLOBALS['wiki']->tag = $_GET['tempTag'];
@@ -188,7 +190,7 @@ if ($this->HasAccess('write') || ($this->HasAccess('read') && $hasTempTag)) {
             $GLOBALS['wiki']->setParameter("file", $filename . '.' . $ext);
 
             // dans le cas d'une nouvelle page, on donne une valeur a la date de création
-            if ($hasTempTag || $GLOBALS['wiki']->page['time'] == '') {
+            if ($this->hasTempTag || $GLOBALS['wiki']->page['time'] == '') {
                 $GLOBALS['wiki']->page['time'] = date('YmdHis');
             }
 
@@ -196,7 +198,7 @@ if ($this->HasAccess('write') || ($this->HasAccess('read') && $hasTempTag)) {
             ob_start();
             $attach->doAttach();
             $fullfilename = $attach->GetFullFilename(true);
-            if ($hasTempTag) {
+            if ($this->hasTempTag) {
                 $GLOBALS['wiki']->tag = $previousTag;
                 $GLOBALS['wiki']->page = $previousPage;
             }
@@ -227,7 +229,7 @@ if ($this->HasAccess('write') || ($this->HasAccess('read') && $hasTempTag)) {
     // max file size in bytes
     $sizeLimit = $att->attachConfig['max_file_size'];
 
-    $uploader = new qqFileUploader($allowedExtensions, $sizeLimit);
+    $uploader = new qqFileUploader($allowedExtensions, $sizeLimit, $hasTempTag);
     $result = $uploader->handleUpload($att->attachConfig['upload_path']);
 
 
