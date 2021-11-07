@@ -95,7 +95,7 @@ class EntryManager
      * @param string $time pour consulter une fiche dans l'historique
      * @param bool $cache if false, don't use the page cache
      * @param bool $bypassAcls if true, all fields are loaded regardless of acls
-     * @param null|string $userNameForCheckingACL userName used to get entry
+     * @param null|string $userNameForCheckingACL userName used to get entry, if empty uses the connected user
      * @return mixed|null
      * @throws Exception
      */

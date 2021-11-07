@@ -56,18 +56,18 @@ class Guard
         }
     }
 
-    // Teste les droits d'acces champ par champ du contenu d'un fiche bazar
-    // Si utilisateur connecte est  proprietaire ou adminstrateur : acces a tous les champs
-    // Sinon ne sont retournes que les champs dont les droits d'acces sont compatibles.
-    // Introduction du droit % : seul le proprietaire peut acceder
+    /**
+     * Teste les droits d'acces champ par champ du contenu d'un fiche bazar
+     * Si utilisateur connecte est  proprietaire ou adminstrateur : acces a tous les champs
+     * Sinon ne sont retournes que les champs dont les droits d'acces sont compatibles.
+     * Introduction du droit % : seul le proprietaire peut acceder
+     * @param array $page
+     * @param string $tag
+     * @param string|null $userNameForCheckingACL username used to check ACL, if empty, uses en the connectd user
+     * @return array $page
+     */
     public function checkAcls($page, $tag, ?string $userNameForCheckingACL = null)
     {
-        // TODO :
-        // loadpagebyid
-        // bazarliste ...
-        // champ mot de passe ?
-        //
-
         if ($this->wiki->UserIsAdmin($userNameForCheckingACL) || $this->isPageOwner($page, $userNameForCheckingACL)) {
             // Pas de controle si proprietaire ou administrateur
             return $page;

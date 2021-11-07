@@ -54,6 +54,12 @@ class EntryController extends YesWikiController
         return $this->render("@bazar/entries/select_form.twig", ['forms' => $forms]);
     }
 
+    /**
+     * @param string $entryId
+     * @param string|null $time choose only the entry's revision corresponding to time, null = latest revision
+     * @param bool $showFooter
+     * @param string|null $userNameForRendering userName used to render the entry, if empty uses the connected user
+     */
     public function view($entryId, $time = '', $showFooter = true, ?string $userNameForRendering = null)
     {
         if (is_array($entryId)) {
@@ -363,6 +369,11 @@ class EntryController extends YesWikiController
         return null;
     }
 
+    /**
+     * @param array $entry
+     * @param array|null $form
+     * @param string|null $userNameForRendering userName used to render the entry, if empty uses the connected user
+     */
     private function getValuesForCustomTemplate($entry, $form, ?string $userNameForRendering = null)
     {
         $html = [];

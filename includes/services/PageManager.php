@@ -40,6 +40,13 @@ class PageManager
         $this->pageCache = [];
     }
 
+    /**
+     * @param string $tag name of the page
+     * @param string|null $time choose only the page's revision corresponding to time, null = latest revision
+     * @param bool $cache : use cache ?
+     * @param bool $bypassAcls : do not check acl
+     * @param string|null $userNameForCheckingACL userName used to check ACL, if empty uses the connected user
+     */
     public function getOne($tag, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null): ?array
     {
         // retrieve from cache
@@ -360,7 +367,7 @@ class PageManager
      * use Guard to checkACL for entries
      * @param array $pages
      * @param null|string $tag
-     * @param null|string $userNameForCheckingACL
+     * @param null|string $userNameForCheckingACL if empty uses the connected user
      * @return array $pages
      */
     private function checkEntriesACL(array $pages, ?string $tag = null, ?string $userNameForCheckingACL = null): array

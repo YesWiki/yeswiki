@@ -65,7 +65,12 @@ abstract class BazarField implements \JsonSerializable
         $this->propertyName = $values[self::FIELD_NAME];
     }
 
-    // Render the edit view of the field. Check ACLS first
+    /**
+     * Render the edit view of the field. Check ACLS first
+     * @param array|null $entry
+     * @param string|null $userNameForRendering username to render the field, if empty uses connected user
+     * @return string|null $html
+     */
     public function renderStaticIfPermitted($entry, ?string $userNameForRendering = null)
     {
         // Safety checks, must be run before every renderStatic
@@ -126,8 +131,12 @@ abstract class BazarField implements \JsonSerializable
     }
 
     // HELPERS
-
-    /* Return true if we are if reading is allowed for the field */
+    /**
+     * Return true if we are if reading is allowed for the field
+     * @param array|null $entry
+     * @param string|null $userNameForRendering username to render the field, if empty uses connected user
+     * @return bool
+     */
     public function canRead($entry, ?string $userNameForRendering = null)
     {
         $readAcl = empty($this->readAccess) ? '' : $this->readAccess;
