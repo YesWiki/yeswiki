@@ -130,4 +130,20 @@ class DbService
     {
         return mysqli_num_rows($this->query($query));
     }
+
+    public function getDbTimeZone(): ?string
+    {
+        $query = 'SELECT @@SESSION.time_zone as timezone;';
+        $result = $this->loadSingle($query);
+        $tz = (!empty($result['timezone']))
+            ? $result['timezone']
+            : null;
+        if ($tz === 'SYSTEM') {
+            $tz = ini_get('date.timezone') ?? null ;
+            if (empty($tz)) {
+                $tz = 'UTC';
+            }
+        }
+        return $tz;
+    }
 }
