@@ -2,6 +2,7 @@
 
 namespace YesWiki\Core\Service;
 
+use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class DbService
@@ -77,8 +78,7 @@ class DbService
         }
 
         if (!$result = mysqli_query($this->link, $query)) {
-            ob_end_clean();
-            die('Query failed: ' . $query . ' (' . mysqli_error($this->link) . ')');
+            throw new Exception('Query failed: ' . $query . ' (' . mysqli_error($this->link) . ')');
         }
 
         if ($this->params->get('debug')) {
