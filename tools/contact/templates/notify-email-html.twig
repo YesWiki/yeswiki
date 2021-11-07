@@ -10,7 +10,7 @@
             title="{{ _t('BAZ_SEE_ENTRY') }}">
             {{ _t('BAZ_SEE_ENTRY_ONLINE') }}
         </a>
-        {{ mailCustomMessage|nl2br }}
+        {{ mailCustomMessage|raw }}
         {{- entryHTML|replace({'src="tools':'src="' ~ baseUrl ~ '/tools'})|raw }}
     </body>
 </html>
