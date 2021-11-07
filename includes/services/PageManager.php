@@ -40,10 +40,17 @@ class PageManager
         $this->pageCache = [];
     }
 
-    public function getOne($tag, $time = null, $cache = true, $bypassAcls = false): ?array
+    /**
+     * @param string $tag name of the page
+     * @param string|null $time choose only the page's revision corresponding to time, null = latest revision
+     * @param bool $cache : use cache ?
+     * @param bool $bypassAcls : do not check acl
+     * @param string|null $userNameForCheckingACL userName used to check ACL, if empty uses the connected user
+     */
+    public function getOne($tag, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null): ?array
     {
         // retrieve from cache
-        if (!$bypassAcls && !$time && $cache && (($cachedPage = $this->getCached($tag)) !== false)) {
+        if (!$bypassAcls && !$time && $cache && empty($userNameForCheckingACL) && (($cachedPage = $this->getCached($tag)) !== false)) {
             if ($cachedPage and !isset($cachedPage["metadatas"])) {
                 $cachedPage["metadatas"] = $this->getMetadata($tag);
                 // save page with metadatas
@@ -64,7 +71,7 @@ class PageManager
             }
 
             if (!$bypassAcls) {
-                $page = $this->checkEntriesACL([$page], $tag)[0];
+                $page = $this->checkEntriesACL([$page], $tag, $userNameForCheckingACL)[0];
             }
 
             // cache result
@@ -360,11 +367,12 @@ class PageManager
      * use Guard to checkACL for entries
      * @param array $pages
      * @param null|string $tag
+     * @param null|string $userNameForCheckingACL if empty uses the connected user
      * @return array $pages
      */
-    private function checkEntriesACL(array $pages, ?string $tag = null): array
+    private function checkEntriesACL(array $pages, ?string $tag = null, ?string $userNameForCheckingACL = null): array
     {
-        if ($this->wiki->UserIsAdmin()) {
+        if ($this->wiki->UserIsAdmin($userNameForCheckingACL)) {
             // do not check following tests to be faster because admins can see anything
             return $pages;
         }
@@ -376,10 +384,10 @@ class PageManager
         if (empty($allEntriesTags)) {
             return $pages;
         }
-        $pages = array_map(function ($page) use ($entryManager, $guard, $allEntriesTags) {
+        $pages = array_map(function ($page) use ($entryManager, $guard, $allEntriesTags, $userNameForCheckingACL) {
             return (isset($page['tag']) &&
                     in_array($page['tag'], $allEntriesTags)
-                    ) ? $guard->checkAcls($page, $page['tag'])
+                    ) ? $guard->checkAcls($page, $page['tag'], $userNameForCheckingACL)
                     :$page;
         }, $pages);
         return $pages;

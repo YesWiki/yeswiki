@@ -126,4 +126,9 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'AB_mailinglist_action_label' => "Inscrire massivement des mails à une newsletter",
 'AB_mailinglist_action_description' => "Action permettant d'inscrire ou désinscrire massivement des mails à une newsletter",
 
+
+// for edit config
+'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => "Ajouter 'wiki=' aux liens vers ce wiki dans les e-mails",
+'EDIT_CONFIG_GROUP_CONTACT' => 'Envoi des e-mails',
+
 ));
