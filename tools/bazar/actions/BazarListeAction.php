@@ -106,8 +106,17 @@ class BazarListeAction extends YesWikiAction
         }, $externalIds));
 
         // Only keep "true" and "dynamic" value, so we can still do if params.search in twig
-        $search = $arg['search'] ?? null;
-        if ($search == "false") $search = null;
+        $search = !isset($arg['search'])
+            ? null
+            : (
+                $arg['search'] === "dynamic"
+                ? $arg['search']
+                : (
+                    in_array($arg['search'], ["true",true,"1",1], true)
+                    ? "true"
+                    : null
+                )
+            );
 
         return([
             // SELECTION DES FICHES
@@ -210,6 +219,9 @@ class BazarListeAction extends YesWikiAction
         $forms = $bazarListService->getForms($this->arguments);
 
         if ($this->arguments['dynamic']) {
+            if (isset($this->arguments['zoom'])) {
+                $this->arguments['zoom'] = intval($this->arguments['zoom']) ;
+            }
             return $this->render("@bazar/entries/index-dynamic-templates/{$this->arguments['template']}.twig", [
                 'params' => $this->arguments,
                 'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
