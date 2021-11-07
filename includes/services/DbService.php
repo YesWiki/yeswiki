@@ -2,6 +2,8 @@
 
 namespace YesWiki\Core\Service;
 
+use DateTime;
+use DateInterval;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
@@ -140,8 +142,25 @@ class DbService
             : null;
         if ($tz === 'SYSTEM') {
             $tz = ini_get('date.timezone') ?? null ;
-            if (empty($tz)) {
-                $tz = 'UTC';
+        }
+        if (empty($tz)) {
+            $queryBis = 'SELECT NOW() as time;';
+            $result = $this->loadSingle($queryBis);
+            if (empty($result['time'])) {
+                $tz = null;
+            } else {
+                $diff = (new DateTime())->diff(new DateTime($result['time']));
+                // TODO use Carbon
+                $diffInMinutes = ($diff->invert ? -1 : 1)*($diff->i+60*$diff->h);
+                // convert to UTC
+                $diffInMinutes += intval(floor((new DateTime())->getOffset() / 60));
+                // convert in DateInterval
+                $diff = new DateInterval("PT0S");
+                $diff->invert = ($diffInMinutes >= 0) ? 0 : 1;
+                $diff->i = abs($diffInMinutes) % 60;
+                $diff->h = (abs($diffInMinutes) - $diff->i)/60;
+
+                $tz = $diff->format("%R%H:%I");
             }
         }
         return $tz;
