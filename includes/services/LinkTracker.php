@@ -63,7 +63,7 @@ class LinkTracker
 
     public function add($tag)
     {
-        if ($this->track()) {
+        if ($this->track() && $this->wiki->tag !== $tag) {
             $this->links[] = $tag;
         }
     }
@@ -147,7 +147,7 @@ class LinkTracker
         $this->clear();
 
         if ($refreshPreviousTag) {
-            if (!empty($previousTag) && !empty($previousPage)){
+            if (!empty($previousTag) && !empty($previousPage)) {
                 $this->wiki->tag = $previousTag;
                 $this->wiki->setPage($previousPage);
             }
