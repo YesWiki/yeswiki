@@ -3,7 +3,7 @@
 {% block input %}
     <div class="input-group">
         {% if value %}
-            <a href="{{ fileUrl }}" target="_blank">{{ value }}</a>
+            <a href="{{ fileUrl }}" target="_blank" download="{{ shortFileName }}">{{ shortFileName }}</a>
             &nbsp;-&nbsp;            
             {% if isAllowedToDeleteFile %}
                 <a href="{{ deleteUrl }}" 

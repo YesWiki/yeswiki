@@ -36,6 +36,7 @@ class FileField extends BazarField
             if (file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
                 return ($alertMessage ?? '') .$this->render('@bazar/inputs/file.twig', [
                     'value' => $value,
+                    'shortFileName' => $this->getShortFileName($value, $entry),
                     'fileUrl' => BAZ_CHEMIN_UPLOAD . $value,
                     'deleteUrl' => $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag(), 'delete_file=' . $value, false),
                     'isAllowedToDeleteFile' => $this->isAllowedToDeleteFile($entry)
@@ -84,7 +85,8 @@ class FileField extends BazarField
         if (isset($value) && $value != '') {
             return $this->render('@bazar/fields/file.twig', [
                 'value' => $value,
-                'fileUrl' => BAZ_CHEMIN_UPLOAD . $value
+                'fileUrl' => BAZ_CHEMIN_UPLOAD . $value,
+                'shortFileName' => $this->getShortFileName($value, $entry),
             ]);
         }
 
@@ -99,5 +101,21 @@ class FileField extends BazarField
     protected function isAllowedToDeleteFile(array $entry):bool
     {
         return !$this->getService(SecurityController::class)->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('supp_fiche', $entry['owner'] ?? '');
+    }
+
+    /**
+     * method to get the filename from the value
+     * @param string $longFileName
+     * @param null|array $entry
+     * @return string $shortFileName
+     */
+    private function getShortFileName(string $longFileName, ?array $entry): string
+    {
+        $shortFileName =  (!empty($entry['id_fiche'])
+            && preg_match("/^{$entry['id_fiche']}_{$this->name}_(.*)$/m", $longFileName, $match)
+            && !empty($match[1]))
+            ? $match[1]
+            : $longFileName ;
+        return $shortFileName;
     }
 }
