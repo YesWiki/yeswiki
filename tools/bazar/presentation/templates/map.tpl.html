@@ -179,6 +179,13 @@ if (count($fiches)>0) :
 
 						$styleJs = '' ;
 						if( $layerOptions!=null ){
+							// extract 'visiblebydefault'
+							if (preg_match_all("/visiblebydefault\\s*;?/i",$layerOptions,$matches)){
+                                $isVisibleByDefault = true;
+                                foreach ($matches[0] as $key => $value) {
+                                    $layerOptions = str_replace($value,'',$layerOptions);
+                                }
+							}
 							$layerOptions = str_replace(';',',',$layerOptions);
 							$styleJs.='
 							style: function (feature, latlng) {
@@ -245,6 +252,10 @@ if (count($fiches)>0) :
 								layer.bindPopup( str );
 							}
 						} );' ;
+						if ($isVisibleByDefault){
+								// add layer to the map
+								$js.= 'layers["'.$layerLabel.'"].addTo(map'.$param['nbbazarliste'].');' ;
+						}
 						break;
 				}
 			}
