@@ -271,6 +271,9 @@ class EntryManager
 
         foreach ($params['queries'] as $nom => $val) {
             if (!empty($nom)) {
+                $nom = $this->convertToRawJSONStringForREGEXP($nom);
+                // sanitize $nom to prevent REGEXP SQL errors
+                $nom = preg_replace("/(?<=^|\?|\*|\+)(\?|\*|\+)/m", "\\\\\\\\$1", $nom);
                 if (!empty($val)) {
                     $valcrit = explode(',', $val);
                     if (is_array($valcrit) && count($valcrit) > 1) {
