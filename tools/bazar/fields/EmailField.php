@@ -10,7 +10,7 @@ use Psr\Container\ContainerInterface;
 class EmailField extends BazarField
 {
     protected $sendMail;
-    protected $showContactForm;
+    public $showContactForm;
 
     // Field-specific
     protected const FIELD_SHOW_CONTACT_FORM = 6;
@@ -57,12 +57,6 @@ class EmailField extends BazarField
 
         return $this->render('@bazar/fields/email.twig', [
             'value' => $value,
-            'showContactForm' => $this->showContactForm,
-            'contactFormUrl' => $this->showContactForm ? $GLOBALS['wiki']->href(
-                'mail',
-                $GLOBALS['wiki']->GetPageTag(),
-                'field=' . $this->propertyName
-            ) : null
         ]);
     }
 
