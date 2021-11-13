@@ -236,7 +236,8 @@ class ExternalBazarService
                 } else {
                     $json = $this->getJSONCachedUrlContent(
                         $urlDetails[0].'?api/forms/'.$distantFormId.'/entries'.$querystring,
-                        $params['refresh']  ? 0 : $this->timeCacheForEntries
+                        $params['refresh']  ? 0 : $this->timeCacheForEntries,
+                        'entries'
                     );
                     $batchEntries = json_decode($json, true);
                     if (empty($batchEntries)) {
@@ -301,11 +302,14 @@ class ExternalBazarService
      *
      * @param string $url : url to get with  cache
      * @param int $cache_life : duration of the cahe in second
+     * @param string $mode 'standard' or 'entries'
      * @return string file content from cache
      */
-    private function getCachedUrlContent(string $url, int $cache_life = 60)
+    private function getCachedUrlContent(string $url, int $cache_life = 60, string $mode = 'standard')
     {
-        $cache_file = $this->cacheUrl($url, min($cache_life, self::MAX_CACHE_TIME));
+        $cache_file = ($mode === 'entries')
+            ? $this->cacheUrlForEntries($url, min($cache_life, self::MAX_CACHE_TIME))
+            : $this->cacheUrl($url, min($cache_life, self::MAX_CACHE_TIME));
         return file_get_contents($cache_file);
     }
 
@@ -314,18 +318,17 @@ class ExternalBazarService
      *
      * @param string $url : url to get with  cache
      * @param int $cache_life : duration of the cahe in second
+     * @param string $mode 'standard' or 'entries'
      * @return string file content from cache
      */
-    public function getJSONCachedUrlContent(string $url, int $cache_life = 60)
+    public function getJSONCachedUrlContent(string $url, int $cache_life = 60, string $mode = 'standard')
     {
-        if ($cache_life === 0) {
-            if (in_array($url, $this->alreadyRefreshedURL)) {
-                $cache_life = 60;
-            } else {
-                $this->alreadyRefreshedURL[] = $url;
-            }
+        if (in_array($url, $this->alreadyRefreshedURL)) {
+            $cache_life = ($mode === 'entries') ? -1 : 60;
+        } else {
+            $this->alreadyRefreshedURL[] = $url;
         }
-        $json = $this->getCachedUrlContent($url, $cache_life);
+        $json = $this->getCachedUrlContent($url, $cache_life, $mode);
 
         // remove string before '{' because the aimed website's api can give warning messages
         // TODO catch error warning in api before sending data
@@ -358,6 +361,85 @@ class ExternalBazarService
             file_put_contents($cache_file, file_get_contents($url));
         }
         return $cache_file;
+    }
+
+    /**
+     * refrech cache with only most recent entries
+     *
+     * @param string $url : url to get with  cache
+     * @param int $cache_life : duration of the cache in second
+     * @param string $dir : base dirname where save the cache
+     * @return string location of cached file
+     */
+    private function cacheUrlForEntries(string $url, int $cache_life = 60, string $dir = 'cache')
+    {
+        $url = $this->sanitizeUrlForEntries($url);
+        $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.$this->sanitizeFileName($url);
+
+        $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
+        if ($cache_life > -1) {
+            if (!file_exists($cache_file) || (time() - $filemtime >= $cache_life)) {
+                file_put_contents($cache_file, file_get_contents($url));
+            } else {
+                $json = file_get_contents($cache_file);
+                $entries = json_decode($json, true);
+                if (empty($entries) || !is_array($entries)) {
+                    file_put_contents($cache_file, file_get_contents($url));
+                } else {
+                    $maxUpdatedDate = null;
+                    foreach ($entries as $entry) {
+                        if (!empty($entry['date_maj_fiche'])
+                            && (
+                                is_null($maxUpdatedDate) ||
+                                ($entry['date_maj_fiche'] > $maxUpdatedDate)
+                            )
+                        ) {
+                            $maxUpdatedDate = $entry['date_maj_fiche'];
+                        }
+                    }
+                    if (empty($maxUpdatedDate)) {
+                        file_put_contents($cache_file, file_get_contents($url));
+                    } else {
+                        $newDate = (new \DateTime($maxUpdatedDate))->add(new \DateInterval('PT1S'))->format('Y-m-d H:i:s');
+                        $newEntries = json_decode(file_get_contents($url.(strpos($url, '?') === false ? '?' : '&').'dateMin='.urlencode($newDate)), true);
+                        if (!empty($newEntries) && is_array($newEntries)) {
+                            foreach ($newEntries as $key => $entry) {
+                                $entries[$entry['id_fiche'] ?? $key] = $entry;
+                            }
+                            file_put_contents($cache_file, json_encode($entries));
+                        }
+                    }
+                }
+            }
+        }
+        return $cache_file;
+    }
+
+    /**
+     * check existence of &fields=date_maj_fiche in url for entries refresh
+     * @param string $url
+     * @return string $url
+     */
+    private function sanitizeUrlForEntries(string $url): string
+    {
+        // sanitize url
+        $query = parse_url($url, PHP_URL_QUERY);
+        if (!empty($query)) {
+            $queries = explode('&', $query);
+            foreach ($queries as $key => $elem) {
+                $extraction = explode('=', $elem, 2);
+                if ($extraction[0] === 'fields') {
+                    $fields = explode(',', $extraction[1]);
+                    if (!in_array('date_maj_fiche', $fields)) {
+                        $fields[] = 'date_maj_fiche';
+                        $queries[$key] = 'fields=' . implode(',', $fields);
+                    }
+                }
+            }
+            $newQuery = implode('&', $queries);
+            $url = str_replace($query, $newQuery, $url);
+        }
+        return $url;
     }
 
     /**
