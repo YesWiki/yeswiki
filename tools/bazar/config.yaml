@@ -107,9 +107,8 @@ parameters:
   baz_marker_image_file: 'tools/bazar/presentation/images/marker.png'
   # ------
   # ExternalBazarService
-  baz_external_service_time_cache_for_entries: 60 # seconds
-  baz_external_service_time_cache_for_forms: 120 # seconds
-  baz_enum_field_time_cache_for_json: 86400 # seconds = 1 day
+  baz_external_service_time_cache_to_check_changes: 60 # seconds
+  baz_external_service_time_cache_to_check_deletion: 86400 # seconds
   # option only for configs with 500 errors when not admin connected
   baz_check_owner_acl_only_for_field_can_edit: false
   # tag used to upload file at entry creation
@@ -122,7 +121,8 @@ parameters:
     - 'baz_map_height'
     - 'BAZ_ADRESSE_MAIL_ADMIN'
     - 'BAZ_ENVOI_MAIL_ADMIN'
-    - 'baz_enum_field_time_cache_for_json'
+    - 'baz_external_service_time_cache_to_check_changes'
+    - 'baz_external_service_time_cache_to_check_deletion'
     - 'baz_check_owner_acl_only_for_field_can_edit'
     - 'bazarIgnoreAcls'
 

@@ -44,8 +44,8 @@ class ExternalBazarService
     ];
 
     protected $debug;
-    protected $timeCacheForEntries ;
-    protected $timeCacheForForms ;
+    protected $timeCacheToCheckChanges ;
+    protected $timeCacheToCheckDeletion ;
     protected $formManager ;
     protected $entryManager ;
     protected $importService ;
@@ -70,10 +70,10 @@ class ExternalBazarService
         $this->importService = $importService;
         $this->entryManager = $entryManager;
         $this->debug = ($this->params->has('debug') && $this->params->get('debug') =='yes');
-        $this->timeCacheForEntries = $this->params->has('baz_external_service_time_cache_for_entries')
-            ? (int) $this->params->get('baz_external_service_time_cache_for_entries') : 60 ; // seconds
-        $this->timeCacheForForms = $this->params->has('baz_external_service_time_cache_for_forms')
-            ? (int) $this->params->get('baz_external_service_time_cache_for_forms') : 1200 ; // seconds
+        $this->timeCacheToCheckChanges = $this->params->has('baz_external_service_time_cache_to_check_changes')
+            ? (int) $this->params->get('baz_external_service_time_cache_to_check_changes') : 60 ; // seconds
+        $this->timeCacheToCheckDeletion = $this->params->has('baz_external_service_time_cache_to_check_deletion')
+            ? (int) $this->params->get('baz_external_service_time_cache_to_check_deletion') : 1200 ; // seconds
 
         
         $this->newFormId = null;
@@ -95,7 +95,7 @@ class ExternalBazarService
         if ($checkUrl) {
             $url= $this->formatUrl($url);
         }
-        $urlDetails = $this->getUrlDetails($url, $refresh  ? 0 : $this->timeCacheForForms);
+        $urlDetails = $this->getUrlDetails($url, $refresh  ? 0 : $this->timeCacheToCheckChanges);
         if (empty($urlDetails)) {
             if ($this->debug) {
                 trigger_error(get_class($this)."::getForm: "._t('BAZ_EXTERNAL_SERVICE_BAD_URL'));
@@ -115,7 +115,7 @@ class ExternalBazarService
                     [$urlDetails[1],($urlDetails[2] ? '?' : '&'),$formId],
                     self::JSON_FORM_BASE_URL
                 ),
-            $refresh  ? 0 : $this->timeCacheForForms
+            $refresh  ? 0 : $this->timeCacheToCheckChanges
         );
         $forms = json_decode($json, true);
 
@@ -236,7 +236,7 @@ class ExternalBazarService
             } else {
                 $distantFormId = $form['external_bn_id_nature'];
                 
-                $urlDetails = $this->getUrlDetails($url, $this->timeCacheForEntries);
+                $urlDetails = $this->getUrlDetails($url, $this->timeCacheToCheckChanges);
                 if (empty($urlDetails)) {
                     if ($this->debug) {
                         trigger_error(get_class($this)."::getEntries: "._t('BAZ_EXTERNAL_SERVICE_BAD_URL'));
@@ -244,7 +244,7 @@ class ExternalBazarService
                 } else {
                     $json = $this->getJSONCachedUrlContent(
                         $urlDetails[0].'?api/forms/'.$distantFormId.'/entries'.$querystring,
-                        $params['refresh']  ? 0 : $this->timeCacheForEntries,
+                        $params['refresh']  ? 0 : $this->timeCacheToCheckChanges,
                         'entries'
                     );
                     $batchEntries = json_decode($json, true);
@@ -257,7 +257,7 @@ class ExternalBazarService
                                     [$urlDetails[1],($urlDetails[2] ? '?' : '&'),$distantFormId],
                                     self::JSON_ENTRIES_OLD_BASE_URL
                                 ).$querystring,
-                            $params['refresh']  ? 0 : $this->timeCacheForEntries
+                            $params['refresh']  ? 0 : $this->timeCacheToCheckChanges
                         );
                         $batchEntries = json_decode($json, true);
                         if (is_array($batchEntries)) {

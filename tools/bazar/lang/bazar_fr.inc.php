@@ -328,7 +328,8 @@ $GLOBALS['translations'] = array_merge(
         'EDIT_CONFIG_HINT_BAZ_ADRESSE_MAIL_ADMIN' => 'Adresse mail de l\'expéditeur des modifications des fiches bazar',
         'EDIT_CONFIG_HINT_BAZ_ENVOI_MAIL_ADMIN' => 'Envoyer un mail aux admininistrateurs à chaque modification de fiche (1 ou 0)',
         'EDIT_CONFIG_HINT_BAZ_CHECK_OWNER_ACL_ONLY_FOR_FIELD_CAN_EDIT' => 'Tester les droits de lecture de type \'%\' uniquement pour l\'écriture des champs bazar (false par défaut)',
-        'EDIT_CONFIG_HINT_BAZ_ENUM_FIELD_TIME_CACHE_FOR_JSON' => 'Temps (s) entre deux rafraîchissements du cache pour les requêtes JSON pour listefiche',
+        'EDIT_CONFIG_HINT_BAZ_EXTERNAL_SERVICE_TIME_CACHE_TO_CHECK_CHANGES' => 'Temps (s) entre deux rafraîchissements du cache pour vérifier les ajouts et modifications dans les requêtes JSON',
+        'EDIT_CONFIG_HINT_BAZ_EXTERNAL_SERVICE_TIME_CACHE_TO_CHECK_DELETION' => 'Temps (s) entre deux rafraîchissements du cache pour vérifier les suppresions dans les requêtes JSON',
         'EDIT_CONFIG_HINT_BAZARIGNOREACLS' => 'Permettre la création de fiches même si le wiki est fermé en écriture (true ou false)',
         'EDIT_CONFIG_GROUP_BAZAR' => 'Base de données',
 
