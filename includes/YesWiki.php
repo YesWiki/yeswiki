@@ -1374,17 +1374,14 @@ class Wiki
             }
         }
 
+        // merge the config between the wakka.config.php and the config.yaml of each tool
+        // the priority is given for the wakka.config.php settings for scalar values and indexed arrays
+        // but it's different for associative arrays, the result array is the merge between the array of the two settings
+        $config = array_replace_recursive($this->services->getParameterBag()->all(), $this->config);
+        $this->replaceRecursivelyIndexedArrays($config, $this->config);
         // set all wakka configs as container's parameters
-        // overwrite the parameters if they were already defined in the extensions's config (for arrays, recursively
-        // merge them)
-        foreach ($this->config as $key => $value) {
-            if (is_array($value) && $this->services->hasParameter($key) && is_array($this->services->getParameter($key))) {
-                // merge recursively the arrays to let overwrite only some values
-                $mergedArray = array_replace_recursive($this->services->getParameter($key), $value);
-                $this->services->setParameter($key, $mergedArray);
-            } else {
-                $this->services->setParameter($key, $value);
-            }
+        foreach ($config as $key => $value) {
+            $this->services->setParameter($key, $value);
         }
 
         // Now we have loaded all the services, compile them
@@ -1394,7 +1391,6 @@ class Wiki
         // set to wakka config the same parameters than the merged service's parameter bag
         // need to be executed after $this->services->compile() because the %paramName% are resolved there
         $this->config = $this->services->getParameterBag()->all();
-
         $this->dblink = $this->services->get(DbService::class)->getLink();
 
         // This must be done after service initialization, as it uses services
@@ -1411,6 +1407,39 @@ class Wiki
         // TODO Don't put templates in configs
         // TODO avoid modifying the $wakkaConfig array
         $this->config['templates'] = $this->services->get(ThemeManager::class)->loadTemplates($metadata);
+    }
+
+    /**
+     * Replace recursively all the indexed arrays of $array1 with the corresponding indexed array of $array2
+     * @param $array1 the first array that is merged
+     * @param $array2 the second array that give the value for indexed array
+     */
+    public function replaceRecursivelyIndexedArrays(&$array1, &$array2) {
+        foreach ($array2 as $key => $val) {
+            if (is_array($val)) {
+                if(!$this->isAssocArray($val)) {
+                    if($array1[$key] != $val) {
+                        $array1[$key] = $val;
+                    }
+                } else {
+                    $subarray1 = &$array1[$key];
+                    $subarray2 = &$array2[$key];
+                    $this->replaceRecursivelyIndexedArrays($subarray1, $subarray2);
+                }
+            }
+        }
+    }
+
+    /**
+     * Test if an array is an associative array and not an indexed on*
+     * From php8.1, @see https://www.php.net/manual/fr/function.array-is-list.php instead
+     * @param $arr the array
+     * @return bool true is it's an associative array, otherwise false
+     *
+     */
+    public function isAssocArray($arr)
+    {
+        return array_keys($arr) !== range(0, count($arr) - 1);
     }
 
     /**
