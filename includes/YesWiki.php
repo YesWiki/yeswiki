@@ -31,6 +31,7 @@ require_once 'includes/objects/YesWikiAction.php';
 require_once 'includes/objects/YesWikiHandler.php';
 require_once 'includes/objects/YesWikiFormatter.php';
 
+use Throwable;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpFoundation\Request;
@@ -275,7 +276,7 @@ class Wiki
 
             // now we render it internally so we can write the updated link table.
             $page = $this->services->get(PageManager::class)->getOne($this->tag);
-            $this->services->get(LinkTracker::class)->registerLinks($page,false,false);
+            $this->services->get(LinkTracker::class)->registerLinks($page, false, false);
 
             // Retourne 0 seulement si tout c'est bien passe
             return 0;
@@ -763,18 +764,28 @@ class Wiki
         $this->output = &$plugin_output_new;
 
         ob_start();
-        include($___file);
+        try {
+            include($___file);
+        } catch (Throwable $throwableToThrow) {
+            // $throwableToThrow is thrown at the of the method because ob_end_clean() and get_defined_vars()
+            // could change the way to catch Throwable at higher levels
+            // for pre actions
+        }
         $plugin_output_new .= ob_get_contents();
         ob_end_clean();
 
         // save the context variables into $updatedVars
         $updatedVars = get_defined_vars();
         unset($updatedVars['___file']);
+        unset($updatedVars['throwableToThrow']);
         // add new variables added to $this->parameter in $updatedVars (already existing vars share the same ref)
         if (isset($this->parameter)) {
             $updatedVars = array_merge($updatedVars, $this->parameter);
         }
         unset($this->parameter);
+        if (isset($throwableToThrow)) {
+            throw $throwableToThrow;
+        }
         return $updatedVars;
     }
 
