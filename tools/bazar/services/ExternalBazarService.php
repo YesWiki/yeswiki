@@ -13,8 +13,8 @@ class ExternalBazarService
     public const FIELD_ORIGINAL_TYPE = 4 ;// FIELD_MAX_CHARS = 4;
 
     private const MAX_CACHE_TIME = 864000 ; // 10 days ot to keep external data in local
-    private const JSON_FORM_BASE_URL = 'BazaR/json&demand=forms&id=';
-    private const JSON_ENTRIES_OLD_BASE_URL = 'BazaR/json&demand=entries&id=';
+    private const JSON_FORM_BASE_URL = '{pageTag}/json{firstSeparator}demand=forms&id={formId}';
+    private const JSON_ENTRIES_OLD_BASE_URL = '{pageTag}/json{firstSeparator}demand=entries&id={formId}';
     private const CACHE_FILENAME_PREFIX = 'ExternalBazarServiceCache_';
     private const CACHE_FILENAME_DETAILS_PREFIX = 'Details_';
     private const CONVERT_FIELD_NAMES = [
@@ -108,7 +108,15 @@ class ExternalBazarService
             $refresh = false;
         }
 
-        $json = $this->getJSONCachedUrlContent($urlDetails[0].'/'.($urlDetails[2] ? '' : '?').self::JSON_FORM_BASE_URL.$formId, $refresh  ? 0 : $this->timeCacheForForms);
+        $json = $this->getJSONCachedUrlContent(
+            $urlDetails[0].'/'.($urlDetails[2] ? '' : '?').
+                str_replace(
+                    ['{pageTag}','{firstSeparator}','{formId}'],
+                    [$urlDetails[1],($urlDetails[2] ? '?' : '&'),$formId],
+                    self::JSON_FORM_BASE_URL
+                ),
+            $refresh  ? 0 : $this->timeCacheForForms
+        );
         $forms = json_decode($json, true);
 
         if ($forms) {
@@ -243,7 +251,12 @@ class ExternalBazarService
                     if (empty($batchEntries)) {
                         // check if old route is working
                         $json = $this->getJSONCachedUrlContent(
-                            $urlDetails[0].'/'.($urlDetails[2] ? '' : '?').self::JSON_ENTRIES_OLD_BASE_URL.$distantFormId.$querystring,
+                            $urlDetails[0].'/'.($urlDetails[2] ? '' : '?').$urlDetails[1].
+                                str_replace(
+                                    ['{pageTag}','{firstSeparator}','{formId}'],
+                                    [$urlDetails[1],($urlDetails[2] ? '?' : '&'),$distantFormId],
+                                    self::JSON_ENTRIES_OLD_BASE_URL
+                                ).$querystring,
                             $params['refresh']  ? 0 : $this->timeCacheForEntries
                         );
                         $batchEntries = json_decode($json, true);
@@ -279,17 +292,10 @@ class ExternalBazarService
         return [];
     }
 
-    // TODO detect if external url has short url without '?'
-    // by testing the base Url and checking the presence of '?'
     public function formatUrl($url)
     {
-        $matches = [];
-        // cath part before wakka.php or first /? and add / else take all $url
-        if (preg_match('/([^\?]*)(?:(?:\/wakka\.php|\/\?)[^\?]*)/', $url, $matches)) {
-            $newUrl = $matches[1] . '/';
-        } else {
-            $newUrl = $url;
-        }
+        $urlDetails = $this->getUrlDetails($url);
+        $newUrl = empty($urlDetails) ? $url : $urlDetails[0];
         // add / at end if needed
         if (substr($newUrl, -1) !== '/') {
             $newUrl = $newUrl . '/';
@@ -524,6 +530,7 @@ class ExternalBazarService
         // update FormId
         $form['external_bn_id_nature'] = $form['bn_id_nature'];
         $form['external_url'] = $url;
+        $urlDetails = $this->getUrlDetails($url, 999999); // no reset of cache because just done before
         $form['bn_id_nature'] = $localFormId;
 
         // change fields type before prepareData
@@ -531,10 +538,20 @@ class ExternalBazarService
             if (isset(self::CONVERT_FIELD_NAMES[$fieldTemplate[0]])) {
                 $form['template'][$index][self::FIELD_ORIGINAL_TYPE] = $fieldTemplate[0];
                 $form['template'][$index][0] = self::CONVERT_FIELD_NAMES[$fieldTemplate[0]];
-                $form['template'][$index][self::FIELD_JSON_FORM_ADDR] = $url.self::JSON_FORM_BASE_URL.$form['external_bn_id_nature'];
+                $form['template'][$index][self::FIELD_JSON_FORM_ADDR] = $url.($urlDetails[2] ? '' : '?').
+                    str_replace(
+                        ['{pageTag}','{firstSeparator}','{formId}'],
+                        [$urlDetails[1],($urlDetails[2] ? '?' : '&'),$form['external_bn_id_nature']],
+                        self::JSON_FORM_BASE_URL
+                    );
             } elseif (isset(self::CONVERT_FIELD_NAMES_FOR_IMAGES[$fieldTemplate[0]])) {
                 $form['template'][$index][0] = self::CONVERT_FIELD_NAMES_FOR_IMAGES[$fieldTemplate[0]];
-                $form['template'][$index][ExternalImageField::FIELD_JSON_FORM_ADDR] = $url.self::JSON_FORM_BASE_URL.$form['external_bn_id_nature'];
+                $form['template'][$index][ExternalImageField::FIELD_JSON_FORM_ADDR] = $url.($urlDetails[2] ? '' : '?').
+                    str_replace(
+                        ['{pageTag}','{firstSeparator}','{formId}'],
+                        [$urlDetails[1],($urlDetails[2] ? '?' : '&'),$form['external_bn_id_nature']],
+                        self::JSON_FORM_BASE_URL
+                    );
             }
             // add missing indexes
             if (count($form['template'][$index]) < 15) {
@@ -569,11 +586,11 @@ class ExternalBazarService
     /**
      * get rewrite mode, base url for this external url
      * @param string $url
-     * @param int $cache_life : duration of the cahe in second
+     * @param int $cache_life : duration of the cache in second
      * @param string $dir : base dirname where save the cache
      * @return array [$baseUrl,$rootPage,$rewriteModeEnabled]
      */
-    private function getUrlDetails(string $url, int $cache_life = 60, string $dir = 'cache'): array
+    private function getUrlDetails(string $url, int $cache_life = 120, string $dir = 'cache'): array
     {
         if (!isset($this->urlCache[$url])) {
             $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.self::CACHE_FILENAME_DETAILS_PREFIX.$this->sanitizeFileName($url);
