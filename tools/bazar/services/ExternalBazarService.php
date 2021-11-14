@@ -215,7 +215,7 @@ class ExternalBazarService
                 }
                 $querystring .= $key.'='.$value.'|';
             }
-            $querystring = !empty($querystring) ? '&query='.htmlspecialchars(substr($querystring, 0, -1)) : '';
+            $querystring = !empty($querystring) ? 'query='.htmlspecialchars(substr($querystring, 0, -1)) : '';
         }
 
         $entries = [];
@@ -243,7 +243,8 @@ class ExternalBazarService
                     }
                 } else {
                     $json = $this->getJSONCachedUrlContent(
-                        $urlDetails[0].'?api/forms/'.$distantFormId.'/entries'.$querystring,
+                        $urlDetails[0].'/'.($urlDetails[2] ? '' : '?').'api/forms/'.$distantFormId.'/entries'.
+                        ($urlDetails[2] ? '?' : '&').$querystring,
                         $params['refresh']  ? 0 : $this->timeCacheToCheckChanges,
                         'entries'
                     );
@@ -256,7 +257,8 @@ class ExternalBazarService
                                     ['{pageTag}','{firstSeparator}','{formId}'],
                                     [$urlDetails[1],($urlDetails[2] ? '?' : '&'),$distantFormId],
                                     self::JSON_ENTRIES_OLD_BASE_URL
-                                ).$querystring,
+                                ).
+                                ($urlDetails[2] ? '?' : '&').$querystring,
                             $params['refresh']  ? 0 : $this->timeCacheToCheckChanges
                         );
                         $batchEntries = json_decode($json, true);
