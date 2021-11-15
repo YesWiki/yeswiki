@@ -57,6 +57,7 @@ class ExternalBazarService
     protected $tmpForm ;
     private $urlCache;
     private $alreadyRefreshedURL;
+    private $alreadyCheckingDeletionsURL;
 
     public function __construct(
         Wiki $wiki,
@@ -80,6 +81,7 @@ class ExternalBazarService
         $this->tmpForm = null;
         $this->urlCache = null;
         $this->alreadyRefreshedURL = [];
+        $this->alreadyCheckingDeletionsURL = [];
     }
 
     /**
@@ -425,6 +427,7 @@ class ExternalBazarService
                 $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
                 if (time() - $filemtime >= $this->timeCacheToCheckDeletion) {
                     $this->checkForDeletion($url, $cache_file);
+                    $this->checkOnlyEntriesChanges($url, $cache_file);
                 } elseif (time() - $filemtime >= $cache_life) {
                     // only check for changes
                     $this->checkOnlyEntriesChanges($url, $cache_file);
@@ -533,7 +536,45 @@ class ExternalBazarService
      */
     public function checkForDeletion(string $url, string $cache_file)
     {
+        if ($this->debug && $this->timeDebug) {
+            $diffTime = -hrtime(true);
+        }
+
         $urlToCheckDeletion = $this->sanitizeUrlForEntries($url, true);
+        if (in_array($urlToCheckDeletion, $this->alreadyCheckingDeletionsURL)) {
+            return null;
+        } else {
+            $this->alreadyCheckingDeletionsURL[] = $urlToCheckDeletion;
+        }
+        $json = file_get_contents($cache_file);
+        $entries = json_decode($json, true);
+        if (empty($entries) || !is_array($entries)) {
+            file_put_contents($cache_file, file_get_contents($url));
+            if ($this->debug && $this->timeDebug) {
+                $diffTime+=hrtime(true);
+                trigger_error('checking deletions (refreshing) :'.$diffTime/1E+6.' ms ; url : '.$url);
+            }
+        } else {
+            $entriesList = json_decode(file_get_contents($urlToCheckDeletion), true);
+            if ($this->debug && $this->timeDebug) {
+                $diffTime+=hrtime(true);
+                trigger_error('checking deletions (only list) :'.$diffTime/1E+6.' ms ; url : '.$urlToCheckDeletion);
+                $diffTime = -hrtime(true);
+            }
+            foreach ($entries as $key => $entry) {
+                if (!isset($entriesList[$entry['id_fiche']])) {
+                    if ($this->debug) {
+                        trigger_error('Deleting '.$entry['id_fiche'].' from '.$cache_file);
+                    }
+                    unset($entries[$key]);
+                }
+            }
+            file_put_contents($cache_file, json_encode($entries));
+            if ($this->debug && $this->timeDebug) {
+                $diffTime+=hrtime(true);
+                trigger_error('Updatin deletions :'.$diffTime/1E+6.' ms ; url : '.$url);
+            }
+        }
     }
 
     /**
