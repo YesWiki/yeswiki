@@ -43,6 +43,8 @@ class ExternalBazarService
         'imagefield' => 'externalimagefield',
     ];
 
+    private const UPDATING_SUFFIX = '_updating';
+
     protected $debug;
     protected $timeCacheToCheckChanges ;
     protected $timeCacheToRefreshForms ;
@@ -416,7 +418,7 @@ class ExternalBazarService
 
         $filemtime = @filemtime($cache_file); // returns FALSE if file does not exist
         if ($forceRefresh || !$filemtime || ($testFileModificationDate && (time() - $filemtime >= $cache_life))) {
-            file_put_contents($cache_file, file_get_contents($url));
+            $this->secureFilePutContents($url, '', $cache_file, $forceRefresh);
             if ($this->debug && $this->timeDebug) {
                 $diffTime+=hrtime(true);
                 trigger_error('Caching file :'.$diffTime/1E+6.' ms ; url : '.$url);
@@ -449,8 +451,7 @@ class ExternalBazarService
         $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.$this->sanitizeFileName($url);
         
         if (!file_exists($cache_file) || $forceRefresh) {
-            // start and only for refresh (for admins)
-            file_put_contents($cache_file, file_get_contents($url));
+            $this->secureFilePutContents($url, '', $cache_file, $forceRefresh);
             if ($this->debug && $this->timeDebug) {
                 $diffTime+=hrtime(true);
                 trigger_error('Caching entries :'.$diffTime/1E+6.' ms ; url : '.$url);
@@ -459,14 +460,14 @@ class ExternalBazarService
             $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
             if (time() - $filemtime >= $this->timeCacheToCheckDeletion) {
                 $this->checkForDeletion($url, $cache_file);
-                $this->checkOnlyEntriesChanges($url, $cache_file);
+                $this->checkOnlyEntriesChanges($url, $cache_file, $forceRefresh);
                 if ($this->debug && $this->timeDebug) {
                     $diffTime+=hrtime(true);
                     trigger_error('Caching entries with deletion :'.$diffTime/1E+6.' ms ; url : '.$url);
                 }
             } elseif (time() - $filemtime >= $cache_life) {
                 // only check for changes
-                $this->checkOnlyEntriesChanges($url, $cache_file);
+                $this->checkOnlyEntriesChanges($url, $cache_file, $forceRefresh);
                 if ($this->debug && $this->timeDebug) {
                     $diffTime+=hrtime(true);
                     trigger_error('Caching entries :'.$diffTime/1E+6.' ms ; url : '.$url);
@@ -543,15 +544,16 @@ class ExternalBazarService
      * only check changes on external data and update cache file
      * @param string $url
      * @param string $cache_file
+     * @param bool $forceRefresh
      */
-    private function checkOnlyEntriesChanges(string $url, string $cache_file)
+    private function checkOnlyEntriesChanges(string $url, string $cache_file, bool $forceRefresh)
     {
         $lastModificationDate = $this->getLastModificationDateFromFile($cache_file);
         if (empty($lastModificationDate)) {
             if ($this->debug) {
                 trigger_error($cache_file." should contain 'date_maj_fiche' !", E_USER_WARNING);
             }
-            file_put_contents($cache_file, file_get_contents($url));
+            $this->secureFilePutContents($url, '', $cache_file, $forceRefresh);
         } else {
             list($lastModificationDate, $entries) = $lastModificationDate;
             $newEntries = $this->getNewEntries($url, $lastModificationDate);
@@ -559,7 +561,7 @@ class ExternalBazarService
                 foreach ($newEntries as $key => $entry) {
                     $entries[$entry['id_fiche'] ?? $key] = $entry;
                 }
-                file_put_contents($cache_file, json_encode($entries));
+                $this->secureFilePutContents('', json_encode($entries), $cache_file, $forceRefresh);
             }
         }
     }
@@ -584,7 +586,7 @@ class ExternalBazarService
         $json = file_get_contents($cache_file);
         $entries = json_decode($json, true);
         if (empty($entries) || !is_array($entries)) {
-            file_put_contents($cache_file, file_get_contents($url));
+            $this->secureFilePutContents($url, '', $cache_file, false);
             if ($this->debug && $this->timeDebug) {
                 $diffTime+=hrtime(true);
                 trigger_error('checking deletions (refreshing) :'.$diffTime/1E+6.' ms ; url : '.$url);
@@ -604,7 +606,7 @@ class ExternalBazarService
                     unset($entries[$key]);
                 }
             }
-            file_put_contents($cache_file, json_encode($entries));
+            $this->secureFilePutContents('', json_encode($entries), $cache_file, false);
             if ($this->debug && $this->timeDebug) {
                 $diffTime+=hrtime(true);
                 trigger_error('Updating deletions :'.$diffTime/1E+6.' ms ; url : '.$url);
@@ -809,5 +811,25 @@ class ExternalBazarService
             $this->urlCache[$url] = $details;
         }
         return $this->urlCache[$url];
+    }
+
+    /**
+     * secure saving content in file
+     * create a temp file to indicate to other php session that the file is updating
+     * @param string $url
+     * @param string $content used if url if empty
+     * @param string $cache_file
+     * @param bool $forceRefresh
+     */
+    private function secureFilePutContents(string $url, string $content, string $cache_file, bool $forceRefresh = false)
+    {
+        $tmpFilemtime = @filemtime($cache_file.self::UPDATING_SUFFIX); // false if no file
+        if (!$tmpFilemtime || $forceRefresh || (time() - $tmpFilemtime >= 60)) { // after 60 seconds force creation
+            file_put_contents($cache_file.self::UPDATING_SUFFIX, date('Y-m-d H:i:s'));
+            file_put_contents($cache_file, empty($url) ? $content : file_get_contents($url));
+            if (file_exists($cache_file.self::UPDATING_SUFFIX)) {
+                unlink($cache_file.self::UPDATING_SUFFIX);
+            }
+        }
     }
 }
