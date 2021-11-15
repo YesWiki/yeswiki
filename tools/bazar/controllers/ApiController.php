@@ -8,6 +8,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\ExternalBazarService;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Bazar\Service\BazarListService;
@@ -322,6 +323,42 @@ class ApiController extends YesWikiController
     }
 
     /**
+     * @Route("/api/bazar/external-data", methods={"POST"}, options={"acl":{"public","@ExternalBazarUsers"}})
+     */
+    public function syncYesWikiData()
+    {
+        try {
+            ob_start(); // to catch error messages
+            $data = [];
+            $data['action'] = in_array($_POST['action'], ['add','edit','delete'], true) ? $_POST['action'] : null;
+            $data['base_url'] = is_string($_POST['base_url']) ? $_POST['base_url'] : '';
+            $data['data'] = (is_array($_POST['data'])
+                && isset($_POST['data']['id_fiche'])
+                && isset($_POST['data']['id_typeannonce'])
+                && isset($_POST['data']['bf_titre']))
+                ? [
+                    'id_fiche' => is_string($_POST['data']['id_fiche']) ? $_POST['data']['id_fiche'] : '',
+                    'bf_titre' => is_string($_POST['data']['bf_titre']) ? $_POST['data']['bf_titre'] : '',
+                    'id_typeannonce' => (int) $_POST['data']['id_typeannonce'],
+                ]
+                : [];
+            $externalBazarService = $this->getService(ExternalBazarService::class);
+            $externalBazarService->synchYesWikiData($data);
+            $errormsg = ob_get_contents();
+            ob_end_clean();
+        } catch (\Exception $e) {
+            return new ApiResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+
+
+        return new ApiResponse(
+            (empty($errormsg) ? [] : ['errorMessage' => $errormsg]),
+            Response::HTTP_OK
+        );
+    }
+
+    /**
      * Display Bazar api documentation
      *
      * @return string
@@ -455,6 +492,24 @@ class ApiController extends YesWikiController
         <b><code>GET ' . $this->wiki->href('', 'api/entry/url/{sourceUrl}') . '</code></b><br />
         Retourne l\'URL de la page Wiki synchronisée avec <code>sourceUrl</code><br />
         </p>';
+
+        $output .= '
+        <p>
+        <b><code>POST ' . $this->wiki->href('', '/api/bazar/external-data') . '</code></b><br />
+        Permet de synchroniser les données externes entre les sites<br />
+        <ol>
+          <li>Installer l\'extension webhooks sur le yeswiki distant.</li>
+          <li>Aller dans bazar et choisir le format \'YesWiki\' pour le formulaire donnée et indiquer l\'adresse ci-dessus suivie de <code>&bearer=cle</code>.<br/>
+          Remplacer le <code>&</code> par <code>?</code> si l\'url ne contien pas de <code>?</code>.<br></li>
+          <li>Créer dans le fichier <code>wakka.config.php</code> du présent YesWiki le paramètre <code>\'api_allowed_keys\' => [ \'NomUser\' => \'cle\']</code> la clé devant être similaire à celle entrée ci-dessus.</li>
+          <li>Mettre l\'utilisateur <code>NomUser</code> dans le groupe à créer <code>ExternalBazarUsers</code></li>
+          <li>Optimiser les paramètres en mettant dans le fichier <code>wakka.config.php</code> : '.
+          "\n<code>'baz_external_service' => [\n".
+          "  'cache_time_to_check_changes' => 432000,\n".
+          "  'cache_time_to_check_deletion' => 432000,\n".
+          "],</code> ce qui est équivalent à 5 jours.</li>
+        </ol>
+        </p>";
 
         return $output;
     }

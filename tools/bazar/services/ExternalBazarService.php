@@ -115,12 +115,7 @@ class ExternalBazarService
         }
 
         $json = $this->getJSONCachedUrlContent(
-            $urlDetails[0].'/'.($urlDetails[2] ? '' : '?').
-                str_replace(
-                    ['{pageTag}','{firstSeparator}','{formId}'],
-                    [$urlDetails[1],($urlDetails[2] ? '?' : '&'),$formId],
-                    self::JSON_FORM_BASE_URL
-                ),
+            $this->getFormUrl($urlDetails, $formId),
             $this->timeCacheToRefreshForms,
             $refresh
         );
@@ -268,8 +263,7 @@ class ExternalBazarService
                     }
                 } else {
                     $json = $this->getJSONCachedUrlContent(
-                        $urlDetails[0].'/'.($urlDetails[2] ? '' : '?').'api/forms/'.$distantFormId.'/entries'.
-                        (empty($querystring) ? '' : ($urlDetails[2] ? '?' : '&').$querystring),
+                        $this->getEntriesViaApiUrl($urlDetails, $distantFormId, $querystring),
                         $this->timeCacheToCheckChanges,
                         $params['refresh'],
                         'entries'
@@ -278,13 +272,7 @@ class ExternalBazarService
                     if (empty($batchEntries)) {
                         // check if old route is working
                         $json = $this->getJSONCachedUrlContent(
-                            $urlDetails[0].'/'.($urlDetails[2] ? '' : '?').$urlDetails[1].
-                                str_replace(
-                                    ['{pageTag}','{firstSeparator}','{formId}'],
-                                    [$urlDetails[1],($urlDetails[2] ? '?' : '&'),$distantFormId],
-                                    self::JSON_ENTRIES_OLD_BASE_URL
-                                ).
-                                (empty($querystring) ? '' : ($urlDetails[2] ? '?' : '&').$querystring),
+                            $this->getEntriesViaJsonHandlerUrl($urlDetails, $distantFormId, $querystring),
                             $this->timeCacheToCheckChanges,
                             $params['refresh'],
                         );
@@ -831,5 +819,108 @@ class ExternalBazarService
                 unlink($cache_file.self::UPDATING_SUFFIX);
             }
         }
+    }
+
+    /**
+     * synchronize data in cache from api
+     * only working for cache folder
+     * @param array $data
+     */
+    public function synchYesWikiData(array $data)
+    {
+        $data = array_merge([
+            'action' => '',
+            'base_url' => '',
+            'data' => [],
+        ], $data);
+
+        if (empty($data['action']) || empty($data['base_url']) || empty($data['data']['id_fiche']) || empty($data['data']['id_typeannonce'])) {
+            return null;
+        }
+        $urlDetails = $this->getUrlDetails($data['base_url']);
+        if (empty($urlDetails)) {
+            return null;
+        }
+        // scaned urls
+        $urlstoScan = [
+                'EntriesViaApiUrl' => [
+                    'url' => $this->getEntriesViaApiUrl($urlDetails, $data['data']['id_typeannonce'], ''),
+                    'withQuery' => false,
+                ],
+                'EntriesViaApiUrlWithQuery' => [
+                    'url' => $this->getEntriesViaApiUrl($urlDetails, $data['data']['id_typeannonce'], 'fields=id_fiche,bf_titre,url,date_maj_fiche'),
+                    'withQuery' => true,
+                ],
+                'EntriesViaJsonHandlerUrl' => [
+                    'url' => $this->getEntriesViaJsonHandlerUrl($urlDetails, $data['data']['id_typeannonce'], ''),
+                    'withQuery' => false,
+                ],
+                'EntriesViaJsonHandlerUrlWithQuery' => [
+                    'url' => $this->getEntriesViaJsonHandlerUrl($urlDetails, $data['data']['id_typeannonce'], 'fields=id_fiche,bf_titre,url,date_maj_fiche'),
+                    'withQuery' => true,
+                ],
+            ];
+        $paths = array_map(function ($urlData) {
+            return 'cache/'.self::CACHE_FILENAME_PREFIX.$this->sanitizeFileName($urlData['url']);
+        }, $urlstoScan);
+        
+        foreach ($paths as $key => $path) {
+            if (file_exists($path)) {
+                switch ($data['action']) {
+                    case 'edit':
+                        $editAction = "&querydate=" . date('Y-m-d_H-i-s'); // use a date query to prevent url cache system
+                        // no break
+                    case 'add':
+                        // get data
+                        $urlForEntry = $urlstoScan[$key]['url'] . (strpos($urlstoScan[$key]['url'], '?') === false ? '?' : '&')
+                            . 'query=id_fiche=' . $data['data']['id_fiche'].($editAction ?? '');
+                        $newEntry = json_decode(file_get_contents($urlForEntry), true);
+                        if (!empty($newEntry) && is_array($newEntry)) {
+                            $fileContentJson = json_decode(file_get_contents($path), true);
+                            if (is_array($fileContentJson)) {
+                                $fileContentJson[$data['data']['id_fiche']] = $newEntry;
+                                file_put_contents($path, json_encode($fileContentJson));
+                            }
+                        }
+                        break;
+                    
+                    case 'delete':
+                        $fileContentJson = json_decode(file_get_contents($path), true);
+                        if (is_array($fileContentJson)) {
+                            unset($fileContentJson[$data['data']['id_fiche']]);
+                            file_put_contents($path, json_encode($fileContentJson));
+                        }
+                        break;
+                    
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    private function getFormUrl(array $urlDetails, $formId):string
+    {
+        return $urlDetails[0].'/'.($urlDetails[2] ? '' : '?').
+            str_replace(
+                ['{pageTag}','{firstSeparator}','{formId}'],
+                [$urlDetails[1],($urlDetails[2] ? '?' : '&'),$formId],
+                self::JSON_FORM_BASE_URL
+            );
+    }
+    private function getEntriesViaApiUrl(array $urlDetails, $distantFormId, $querystring):string
+    {
+        return $urlDetails[0].'/'.($urlDetails[2] ? '' : '?').'api/forms/'.$distantFormId.'/entries'.
+            (empty($querystring) ? '' : ($urlDetails[2] ? '?' : '&').$querystring);
+    }
+    private function getEntriesViaJsonHandlerUrl(array $urlDetails, $distantFormId, $querystring):string
+    {
+        return $urlDetails[0].'/'.($urlDetails[2] ? '' : '?').$urlDetails[1].
+            str_replace(
+                ['{pageTag}','{firstSeparator}','{formId}'],
+                [$urlDetails[1],($urlDetails[2] ? '?' : '&'),$distantFormId],
+                self::JSON_ENTRIES_OLD_BASE_URL
+            ).
+            (empty($querystring) ? '' : ($urlDetails[2] ? '?' : '&').$querystring);
     }
 }
