@@ -167,16 +167,30 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       getEntryRender(entry) {
         if (entry.html_render) return
         let fieldsToExclude = this.params.displayfields ? Object.values(this.params.displayfields) : []
-        let url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
-          fields: 'html_output', 
-          excludeFields: fieldsToExclude
-        })
-        $.getJSON(url, function(data) {
-          Vue.set(entry, 'html_render', (data[entry.id_fiche] && data[entry.id_fiche].html_output) ? data[entry.id_fiche].html_output : 'error')
-        })
+        if (this.isExternalUrl(entry)){
+          this.getExternalEntry(entry)
+        } else {
+          let url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
+            fields: 'html_output',
+            excludeFields: fieldsToExclude
+          })
+          $.getJSON(url, function(data) {
+            Vue.set(entry, 'html_render', (data[entry.id_fiche] && data[entry.id_fiche].html_output) ? data[entry.id_fiche].html_output : 'error')
+          })
+        }
       },
       openEntryModal(entry) {
         this.$refs.modal.displayEntry(entry)
+      },
+      isExternalUrl(entry){
+        if (!entry.url){
+          return false;
+        }
+        return entry.url !== wiki.url(entry.id_fiche);
+      },
+      getExternalEntry(entry){
+        let url = entry.url+'/iframe';
+        Vue.set(entry, 'html_render', `<iframe src="${url}" width="500px" height="600px" style="border:none;"></ifarame>`)
       },
       colorIconValueFor(entry, field, mapping) {
         if (!entry[field]) return null

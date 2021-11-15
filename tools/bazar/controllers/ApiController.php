@@ -229,7 +229,13 @@ class ApiController extends YesWikiController
         try {
             ob_start(); // to catch error messages
             $bazatListService = $this->getService(BazarListService::class);
-            $forms = $bazatListService->getForms([]);
+            $externalIds = $_GET['externalIds'] ?? null;
+            $externalModeActivated = (is_array($externalIds) && isset($_GET['externalModeActivated'])) ? in_array($_GET['externalModeActivated'], [1,true,'1','true'], true): false;
+            $forms = $bazatListService->getForms([
+                'externalModeActivated' => $externalModeActivated,
+                'externalIds' => $externalIds,
+                'refresh' => isset($_GET['refresh']) ? in_array($_GET['refresh'], [1,true,'1','true'], true): false,
+            ]);
             
             $formattedGet = array_map(function ($value) {
                 return ($value === 'true') ? true : (($value === 'false') ? false : $value);
@@ -245,6 +251,7 @@ class ApiController extends YesWikiController
                     : $searchfields
                 );
             $formattedGet['searchfields'] = $searchfields;
+            $formattedGet['externalModeActivated'] = $externalModeActivated;
             
             $entries = $bazatListService->getEntries(
                 [
@@ -280,6 +287,10 @@ class ApiController extends YesWikiController
             // Fields used by template
             foreach ($_GET['displayfields'] ?? [] as $field) {
                 $fieldList[] = $field;
+            }
+            // Fields for external urls
+            if ($formattedGet['externalModeActivated']) {
+                $fieldList[] = 'url';
             }
             // extra fields required by template
             $fieldList = array_merge($fieldList, $_GET['necessary_fields'] ?? []);
