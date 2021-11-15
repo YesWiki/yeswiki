@@ -135,8 +135,18 @@ class ExternalBazarService
      */
     public function getFormsForBazarListe(array $externalIds, bool $refresh = false) : ?array
     {
+        if ($this->debug && $this->timeDebug) {
+            $diffTime = -hrtime(true);
+        }
         $this->cleanOldCacheFiles();
+        if ($this->debug && $this->timeDebug) {
+            $diffTime+=hrtime(true);
+            trigger_error('Cleaning old cache files :'.$diffTime/1E+6.' ms');
+        }
 
+        if ($this->debug && $this->timeDebug) {
+            $diffTime = -hrtime(true);
+        }
         if (!$this->checkexternalIdsFormat($externalIds)) {
             // error
             return null;
@@ -177,6 +187,10 @@ class ExternalBazarService
                 }
             }
         }
+        if ($this->debug && $this->timeDebug) {
+            $diffTime+=hrtime(true);
+            trigger_error('Getting forms :'.$diffTime/1E+6.' ms');
+        }
         return $forms;
     }
 
@@ -196,6 +210,10 @@ class ExternalBazarService
             ],
             $params
         );
+        
+        if ($this->debug && $this->timeDebug) {
+            $diffTime = -hrtime(true);
+        }
 
         // to prevent DDOS attack refresh only for admins
         if (!$this->wiki->UserIsAdmin()) {
@@ -285,6 +303,11 @@ class ExternalBazarService
             }
         }
 
+        if ($this->debug && $this->timeDebug) {
+            $diffTime+=hrtime(true);
+            trigger_error('Getting entries total time :'.$diffTime/1E+6.' ms');
+        }
+
         if (!empty($entries)) {
             return $entries;
         } elseif ($this->debug) {
@@ -339,7 +362,6 @@ class ExternalBazarService
         $json = $this->getCachedUrlContent($url, $cache_life, $mode);
 
         // remove string before '{' because the aimed website's api can give warning messages
-        // TODO catch error warning in api before sending data
         $beginning = strpos($json, '{');
         if ($beginning > 1) {
             $noticeMessage = substr($json, 0, $beginning);
@@ -362,11 +384,18 @@ class ExternalBazarService
      */
     public function cacheUrl(string $url, int $cache_life = 90, string $dir = 'cache')
     {
+        if ($this->debug && $this->timeDebug) {
+            $diffTime = -hrtime(true);
+        }
         $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.$this->sanitizeFileName($url);
 
         $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
         if (!$filemtime or (time() - $filemtime >= $cache_life)) {
             file_put_contents($cache_file, file_get_contents($url));
+            if ($this->debug && $this->timeDebug) {
+                $diffTime+=hrtime(true);
+                trigger_error('Caching file :'.$diffTime/1E+6.' ms ; url : '.$url);
+            }
         }
         return $cache_file;
     }
@@ -381,6 +410,9 @@ class ExternalBazarService
      */
     private function cacheUrlForEntries(string $url, int $cache_life = 90, string $dir = 'cache')
     {
+        if ($this->debug && $this->timeDebug) {
+            $diffTime = -hrtime(true);
+        }
         $url = $this->sanitizeUrlForEntries($url);
         $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.$this->sanitizeFileName($url);
 
