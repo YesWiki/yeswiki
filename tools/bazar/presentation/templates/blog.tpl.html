@@ -1,5 +1,5 @@
 <?php
-if (!empty($GLOBALS['wiki']->getParameter('header'))) {
+if (!in_array($GLOBALS['wiki']->getParameter('header','true'),['true',true,1,'1'],true)) {
 	$premier = false;
 } else {
 	$premier = true;
