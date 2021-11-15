@@ -355,7 +355,7 @@ class ExternalBazarService
     public function getJSONCachedUrlContent(string $url, int $cache_life = 90, string $mode = 'standard')
     {
         if (in_array($url, $this->alreadyRefreshedURL)) {
-            $cache_life = ($mode === 'entries') ? -1 : 90;
+            $cache_life = ($mode === 'entries' || $cache_life == 0) ? -1 : min(90, $cache_life); // 90 seconds to prevent refresh during session
         } else {
             $this->alreadyRefreshedURL[] = $url;
         }
@@ -416,40 +416,23 @@ class ExternalBazarService
         $url = $this->sanitizeUrlForEntries($url);
         $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.$this->sanitizeFileName($url);
 
-        $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
+        // do nothing if $cache_life <= 1
         if ($cache_life > -1) {
-            if (!file_exists($cache_file) || (time() - $filemtime >= $cache_life)) {
+            if (!file_exists($cache_file) || $cache_life == 0) {
+                // start and only for refresh (for admins)
                 file_put_contents($cache_file, file_get_contents($url));
             } else {
-                $json = file_get_contents($cache_file);
-                $entries = json_decode($json, true);
-                if (empty($entries) || !is_array($entries)) {
-                    file_put_contents($cache_file, file_get_contents($url));
-                } else {
-                    $maxUpdatedDate = null;
-                    foreach ($entries as $entry) {
-                        if (!empty($entry['date_maj_fiche'])
-                            && (
-                                is_null($maxUpdatedDate) ||
-                                ($entry['date_maj_fiche'] > $maxUpdatedDate)
-                            )
-                        ) {
-                            $maxUpdatedDate = $entry['date_maj_fiche'];
-                        }
-                    }
-                    if (empty($maxUpdatedDate)) {
-                        file_put_contents($cache_file, file_get_contents($url));
-                    } else {
-                        $newDate = (new \DateTime($maxUpdatedDate))->add(new \DateInterval('PT1S'))->format('Y-m-d H:i:s');
-                        $newEntries = json_decode(file_get_contents($url.(strpos($url, '?') === false ? '?' : '&').'dateMin='.urlencode($newDate)), true);
-                        if (!empty($newEntries) && is_array($newEntries)) {
-                            foreach ($newEntries as $key => $entry) {
-                                $entries[$entry['id_fiche'] ?? $key] = $entry;
-                            }
-                            file_put_contents($cache_file, json_encode($entries));
-                        }
-                    }
+                $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
+                if (time() - $filemtime >= $this->timeCacheToCheckDeletion) {
+                    $this->checkForDeletion($url, $cache_file);
+                } elseif (time() - $filemtime >= $cache_life) {
+                    // only check for changes
+                    $this->checkOnlyEntriesChanges($url, $cache_file);
                 }
+            }
+            if ($this->debug && $this->timeDebug) {
+                $diffTime+=hrtime(true);
+                trigger_error('Caching entries :'.$diffTime/1E+6.' ms ; url : '.$url);
             }
         }
         return $cache_file;
@@ -458,24 +441,50 @@ class ExternalBazarService
     /**
      * check existence of &fields=date_maj_fiche in url for entries refresh
      * @param string $url
+     * @param bool $addFields add fields=id_fiche,bf_titre,url
      * @return string $url
      */
-    private function sanitizeUrlForEntries(string $url): string
+    private function sanitizeUrlForEntries(string $url, bool $addFields = false): string
     {
         // sanitize url
         $query = parse_url($url, PHP_URL_QUERY);
         if (!empty($query)) {
-            $queries = explode('&', $query);
-            foreach ($queries as $key => $elem) {
-                $extraction = explode('=', $elem, 2);
-                if ($extraction[0] === 'fields') {
-                    $fields = explode(',', $extraction[1]);
-                    if (!in_array('date_maj_fiche', $fields)) {
-                        $fields[] = 'date_maj_fiche';
-                        $queries[$key] = 'fields=' . implode(',', $fields);
+            parse_str($query, $queries);
+            foreach ($queries as $key => $value) {
+                if ($key === 'fields') {
+                    $fields = empty($value) ? [] : (
+                        !is_array($value)
+                        ? (
+                            is_scalar($value)
+                            ? explode(',', $value)
+                            : []
+                        )
+                        : $value
+                    );
+                    foreach (($addFields ? ['id_fiche','bf_titre','url','date_maj_fiche']:['date_maj_fiche']) as $fieldName) {
+                        if (!in_array($fieldName, $fields)) {
+                            $fields[] = $fieldName;
+                        }
+                    }
+                    if (empty($fields)) {
+                        unset($queries[$key]);
+                    } else {
+                        $queries[$key] = implode(',', $fields);
                     }
                 }
             }
+            if ($addFields && empty($fields)) {
+                $queries['fields'] = 'id_fiche,bf_titre,url,date_maj_fiche' ;
+            }
+            array_walk($queries, function (&$item, $key) {
+                $item = empty($item)
+                    ? $key
+                    : (
+                        is_array($item)
+                        ? $key.'='.implode(',', $item)
+                        : $key.'='.$item
+                    );
+            });
             $newQuery = implode('&', $queries);
             $url = str_replace($query, $newQuery, $url);
         }
@@ -490,6 +499,83 @@ class ExternalBazarService
     private function sanitizeFileName(string $inputString):string
     {
         return removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $inputString)));
+    }
+
+    /**
+     * only check changes on external data and update cache file
+     * @param string $url
+     * @param string $cache_file
+     */
+    private function checkOnlyEntriesChanges(string $url, string $cache_file)
+    {
+        $lastModificationDate = $this->getLastModificationDateFromFile($cache_file);
+        if (empty($lastModificationDate)) {
+            if ($this->debug) {
+                trigger_error($cache_file." should contain 'date_maj_fiche' !", E_USER_WARNING);
+            }
+            file_put_contents($cache_file, file_get_contents($url));
+        } else {
+            list($lastModificationDate, $entries) = $lastModificationDate;
+            $newEntries = $this->getNewEntries($url, $lastModificationDate);
+            if (!empty($newEntries) && is_array($newEntries)) {
+                foreach ($newEntries as $key => $entry) {
+                    $entries[$entry['id_fiche'] ?? $key] = $entry;
+                }
+                file_put_contents($cache_file, json_encode($entries));
+            }
+        }
+    }
+
+    /**
+     * check for deletions
+     * @param string $url
+     * @param string $cache_file
+     */
+    public function checkForDeletion(string $url, string $cache_file)
+    {
+        $urlToCheckDeletion = $this->sanitizeUrlForEntries($url, true);
+    }
+
+    /**
+     * get last modification date from file
+     * @param string $cache_file
+     * @return null|array [$lastModificationDate,$entries]
+     */
+    private function getLastModificationDateFromFile(string $cache_file): ?array
+    {
+        $json = file_get_contents($cache_file);
+        $entries = json_decode($json, true);
+        
+        if (!empty($entries) && is_array($entries)) {
+            $maxUpdatedDate = null;
+            foreach ($entries as $entry) {
+                if (!empty($entry['date_maj_fiche'])
+                    && (
+                        is_null($maxUpdatedDate) ||
+                        ($entry['date_maj_fiche'] > $maxUpdatedDate)
+                    )
+                ) {
+                    $maxUpdatedDate = $entry['date_maj_fiche'];
+                }
+            }
+            if (!empty($maxUpdatedDate)) {
+                return [(new \DateTime($maxUpdatedDate))->add(new \DateInterval('PT1S'))->format('Y-m-d H:i:s'),$entries];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * get only new entries
+     * @param string $url
+     * @param string $dateMin
+     * @return null|array $entries
+     */
+    private function getNewEntries(string $url, string $dateMin): ?array
+    {
+        $sanitizedUrl = $url.(strpos($url, '?') === false ? '?' : '&').'dateMin='.urlencode($dateMin);
+        $newEntries = json_decode(file_get_contents($sanitizedUrl), true);
+        return (empty($newEntries) || !is_array($newEntries)) ? null : $newEntries;
     }
 
     /**
