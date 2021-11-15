@@ -46,6 +46,7 @@ class ExternalBazarService
     protected $debug;
     protected $timeCacheToCheckChanges ;
     protected $timeCacheToCheckDeletion ;
+    protected $timeDebug ;
     protected $formManager ;
     protected $entryManager ;
     protected $importService ;
@@ -70,11 +71,10 @@ class ExternalBazarService
         $this->importService = $importService;
         $this->entryManager = $entryManager;
         $this->debug = ($this->params->has('debug') && $this->params->get('debug') =='yes');
-        $this->timeCacheToCheckChanges = $this->params->has('baz_external_service_time_cache_to_check_changes')
-            ? (int) $this->params->get('baz_external_service_time_cache_to_check_changes') : 60 ; // seconds
-        $this->timeCacheToCheckDeletion = $this->params->has('baz_external_service_time_cache_to_check_deletion')
-            ? (int) $this->params->get('baz_external_service_time_cache_to_check_deletion') : 1200 ; // seconds
-
+        $externalBazarServiceParameters = $this->params->get('baz_external_service');
+        $this->timeCacheToCheckChanges = (int) ($externalBazarServiceParameters['cache_time_to_check_changes'] ?? 90) ; // seconds
+        $this->timeCacheToCheckDeletion = (int) ($externalBazarServiceParameters['cache_time_to_check_deletion'] ?? 1200) ; // seconds
+        $this->timeDebug = (bool) ($externalBazarServiceParameters['time_debug'] ?? false) ;
         
         $this->newFormId = null;
         $this->tmpForm = null;
@@ -313,7 +313,7 @@ class ExternalBazarService
      * @param string $mode 'standard' or 'entries'
      * @return string file content from cache
      */
-    private function getCachedUrlContent(string $url, int $cache_life = 60, string $mode = 'standard')
+    private function getCachedUrlContent(string $url, int $cache_life = 90, string $mode = 'standard')
     {
         $cache_file = ($mode === 'entries')
             ? $this->cacheUrlForEntries($url, min($cache_life, self::MAX_CACHE_TIME))
@@ -329,10 +329,10 @@ class ExternalBazarService
      * @param string $mode 'standard' or 'entries'
      * @return string file content from cache
      */
-    public function getJSONCachedUrlContent(string $url, int $cache_life = 60, string $mode = 'standard')
+    public function getJSONCachedUrlContent(string $url, int $cache_life = 90, string $mode = 'standard')
     {
         if (in_array($url, $this->alreadyRefreshedURL)) {
-            $cache_life = ($mode === 'entries') ? -1 : 60;
+            $cache_life = ($mode === 'entries') ? -1 : 90;
         } else {
             $this->alreadyRefreshedURL[] = $url;
         }
@@ -360,7 +360,7 @@ class ExternalBazarService
      * @param string $dir : base dirname where save the cache
      * @return string location of cached file
      */
-    public function cacheUrl(string $url, int $cache_life = 60, string $dir = 'cache')
+    public function cacheUrl(string $url, int $cache_life = 90, string $dir = 'cache')
     {
         $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.$this->sanitizeFileName($url);
 
@@ -379,7 +379,7 @@ class ExternalBazarService
      * @param string $dir : base dirname where save the cache
      * @return string location of cached file
      */
-    private function cacheUrlForEntries(string $url, int $cache_life = 60, string $dir = 'cache')
+    private function cacheUrlForEntries(string $url, int $cache_life = 90, string $dir = 'cache')
     {
         $url = $this->sanitizeUrlForEntries($url);
         $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.$this->sanitizeFileName($url);
