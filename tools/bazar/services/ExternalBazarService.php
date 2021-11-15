@@ -731,20 +731,10 @@ class ExternalBazarService
             if (isset(self::CONVERT_FIELD_NAMES[$fieldTemplate[0]])) {
                 $form['template'][$index][self::FIELD_ORIGINAL_TYPE] = $fieldTemplate[0];
                 $form['template'][$index][0] = self::CONVERT_FIELD_NAMES[$fieldTemplate[0]];
-                $form['template'][$index][self::FIELD_JSON_FORM_ADDR] = $url.($urlDetails[2] ? '' : '?').
-                    str_replace(
-                        ['{pageTag}','{firstSeparator}','{formId}'],
-                        [$urlDetails[1],($urlDetails[2] ? '?' : '&'),$form['external_bn_id_nature']],
-                        self::JSON_FORM_BASE_URL
-                    );
+                $form['template'][$index][self::FIELD_JSON_FORM_ADDR] = $this->getFormUrl($urlDetails, $form['external_bn_id_nature']);
             } elseif (isset(self::CONVERT_FIELD_NAMES_FOR_IMAGES[$fieldTemplate[0]])) {
                 $form['template'][$index][0] = self::CONVERT_FIELD_NAMES_FOR_IMAGES[$fieldTemplate[0]];
-                $form['template'][$index][ExternalImageField::FIELD_JSON_FORM_ADDR] = $url.($urlDetails[2] ? '' : '?').
-                    str_replace(
-                        ['{pageTag}','{firstSeparator}','{formId}'],
-                        [$urlDetails[1],($urlDetails[2] ? '?' : '&'),$form['external_bn_id_nature']],
-                        self::JSON_FORM_BASE_URL
-                    );
+                $form['template'][$index][ExternalImageField::FIELD_JSON_FORM_ADDR] =$this->getFormUrl($urlDetails, $form['external_bn_id_nature']);
             }
             // add missing indexes
             if (count($form['template'][$index]) < 15) {
