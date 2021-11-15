@@ -45,6 +45,7 @@ class ExternalBazarService
 
     protected $debug;
     protected $timeCacheToCheckChanges ;
+    protected $timeCacheToRefreshForms ;
     protected $timeCacheToCheckDeletion ;
     protected $timeDebug ;
     protected $formManager ;
@@ -74,7 +75,8 @@ class ExternalBazarService
         $this->debug = ($this->params->has('debug') && $this->params->get('debug') =='yes');
         $externalBazarServiceParameters = $this->params->get('baz_external_service');
         $this->timeCacheToCheckChanges = (int) ($externalBazarServiceParameters['cache_time_to_check_changes'] ?? 90) ; // seconds
-        $this->timeCacheToCheckDeletion = (int) ($externalBazarServiceParameters['cache_time_to_check_deletion'] ?? 1200) ; // seconds
+        $this->timeCacheToCheckDeletion = (int) ($externalBazarServiceParameters['cache_time_to_check_deletion'] ?? 86400) ; // seconds
+        $this->timeCacheToRefreshForms = (int) ($externalBazarServiceParameters['cache_time_to_refresh_forms'] ?? 7200) ; // seconds
         $this->timeDebug = (bool) ($externalBazarServiceParameters['time_debug'] ?? false) ;
         
         $this->newFormId = null;
@@ -97,7 +99,7 @@ class ExternalBazarService
         if ($checkUrl) {
             $url= $this->formatUrl($url);
         }
-        $urlDetails = $this->getUrlDetails($url, $refresh  ? 0 : $this->timeCacheToCheckChanges);
+        $urlDetails = $this->getUrlDetails($url, $refresh  ? 0 : $this->timeCacheToRefreshForms);
         if (empty($urlDetails)) {
             if ($this->debug) {
                 trigger_error(get_class($this)."::getForm: "._t('BAZ_EXTERNAL_SERVICE_BAD_URL'));
@@ -117,7 +119,8 @@ class ExternalBazarService
                     [$urlDetails[1],($urlDetails[2] ? '?' : '&'),$formId],
                     self::JSON_FORM_BASE_URL
                 ),
-            $refresh  ? 0 : $this->timeCacheToCheckChanges
+            $this->timeCacheToRefreshForms,
+            $refresh
         );
         $forms = json_decode($json, true);
 
@@ -264,8 +267,9 @@ class ExternalBazarService
                 } else {
                     $json = $this->getJSONCachedUrlContent(
                         $urlDetails[0].'/'.($urlDetails[2] ? '' : '?').'api/forms/'.$distantFormId.'/entries'.
-                        ($urlDetails[2] ? '?' : '&').$querystring,
-                        $params['refresh']  ? 0 : $this->timeCacheToCheckChanges,
+                        (empty($querystring) ? '' : ($urlDetails[2] ? '?' : '&').$querystring),
+                        $this->timeCacheToCheckChanges,
+                        $params['refresh'],
                         'entries'
                     );
                     $batchEntries = json_decode($json, true);
@@ -278,8 +282,9 @@ class ExternalBazarService
                                     [$urlDetails[1],($urlDetails[2] ? '?' : '&'),$distantFormId],
                                     self::JSON_ENTRIES_OLD_BASE_URL
                                 ).
-                                ($urlDetails[2] ? '?' : '&').$querystring,
-                            $params['refresh']  ? 0 : $this->timeCacheToCheckChanges
+                                (empty($querystring) ? '' : ($urlDetails[2] ? '?' : '&').$querystring),
+                            $this->timeCacheToCheckChanges,
+                            $params['refresh'],
                         );
                         $batchEntries = json_decode($json, true);
                         if (is_array($batchEntries)) {
@@ -334,15 +339,23 @@ class ExternalBazarService
      * Get content from url from cache
      *
      * @param string $url : url to get with  cache
-     * @param int $cache_life : duration of the cahe in second
+     * @param bool $testFileModificationDate
+     * @param int $cache_life : duration of the cache in second
+     * @param bool $forceRefresh
      * @param string $mode 'standard' or 'entries'
      * @return string file content from cache
      */
-    private function getCachedUrlContent(string $url, int $cache_life = 90, string $mode = 'standard')
-    {
+    private function getCachedUrlContent(
+        string $url,
+        bool $testFileModificationDate,
+        int $cache_life = 90,
+        bool $forceRefresh,
+        string $mode = 'standard'
+    ) {
+        $cache_life = min($cache_life, self::MAX_CACHE_TIME);
         $cache_file = ($mode === 'entries')
-            ? $this->cacheUrlForEntries($url, min($cache_life, self::MAX_CACHE_TIME))
-            : $this->cacheUrl($url, min($cache_life, self::MAX_CACHE_TIME));
+            ? $this->cacheUrlForEntries($url, $testFileModificationDate, $cache_life, $forceRefresh)
+            : $this->cacheUrl($url, $testFileModificationDate, $cache_life, $forceRefresh);
         return file_get_contents($cache_file);
     }
 
@@ -350,18 +363,21 @@ class ExternalBazarService
      * Get content from url from cache in JSON removing notice message
      *
      * @param string $url : url to get with  cache
-     * @param int $cache_life : duration of the cahe in second
+     * @param int $cache_life : duration of the cache in second
+     * @param bool $forceRefresh
      * @param string $mode 'standard' or 'entries'
      * @return string file content from cache
      */
-    public function getJSONCachedUrlContent(string $url, int $cache_life = 90, string $mode = 'standard')
+    public function getJSONCachedUrlContent(string $url, int $cache_life = 90, bool $forceRefresh = false, $mode = 'standard')
     {
         if (in_array($url, $this->alreadyRefreshedURL)) {
-            $cache_life = ($mode === 'entries' || $cache_life == 0) ? -1 : min(90, $cache_life); // 90 seconds to prevent refresh during session
+            $testFileModificationDate = false;
+            $forceRefresh = false; // to prevent too many refreshes
         } else {
             $this->alreadyRefreshedURL[] = $url;
+            $testFileModificationDate = true;
         }
-        $json = $this->getCachedUrlContent($url, $cache_life, $mode);
+        $json = $this->getCachedUrlContent($url, $testFileModificationDate, $cache_life, $forceRefresh, $mode);
 
         // remove string before '{' because the aimed website's api can give warning messages
         $beginning = strpos($json, '{');
@@ -380,19 +396,26 @@ class ExternalBazarService
      * put in cache result of url
      *
      * @param string $url : url to get with  cache
+     * @param bool $testFileModificationDate
      * @param int $cache_life : duration of the cache in second
+     * @param bool $forceRefresh
      * @param string $dir : base dirname where save the cache
      * @return string location of cached file
      */
-    public function cacheUrl(string $url, int $cache_life = 90, string $dir = 'cache')
-    {
+    public function cacheUrl(
+        string $url,
+        bool $testFileModificationDate,
+        int $cache_life = 90,
+        bool $forceRefresh,
+        string $dir = 'cache'
+    ) {
         if ($this->debug && $this->timeDebug) {
             $diffTime = -hrtime(true);
         }
         $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.$this->sanitizeFileName($url);
 
-        $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
-        if (!$filemtime or (time() - $filemtime >= $cache_life)) {
+        $filemtime = @filemtime($cache_file); // returns FALSE if file does not exist
+        if ($forceRefresh || !$filemtime || ($testFileModificationDate && (time() - $filemtime >= $cache_life))) {
             file_put_contents($cache_file, file_get_contents($url));
             if ($this->debug && $this->timeDebug) {
                 $diffTime+=hrtime(true);
@@ -406,36 +429,48 @@ class ExternalBazarService
      * refrech cache with only most recent entries
      *
      * @param string $url : url to get with  cache
+     * @param bool $testFileModificationDate
      * @param int $cache_life : duration of the cache in second
+     * @param bool $forceRefresh
      * @param string $dir : base dirname where save the cache
      * @return string location of cached file
      */
-    private function cacheUrlForEntries(string $url, int $cache_life = 90, string $dir = 'cache')
-    {
+    private function cacheUrlForEntries(
+        string $url,
+        bool $testFileModificationDate,
+        int $cache_life = 90,
+        bool $forceRefresh,
+        string $dir = 'cache'
+    ) {
         if ($this->debug && $this->timeDebug) {
             $diffTime = -hrtime(true);
         }
         $url = $this->sanitizeUrlForEntries($url);
         $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.$this->sanitizeFileName($url);
-
-        // do nothing if $cache_life <= 1
-        if ($cache_life > -1) {
-            if (!file_exists($cache_file) || $cache_life == 0) {
-                // start and only for refresh (for admins)
-                file_put_contents($cache_file, file_get_contents($url));
-            } else {
-                $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
-                if (time() - $filemtime >= $this->timeCacheToCheckDeletion) {
-                    $this->checkForDeletion($url, $cache_file);
-                    $this->checkOnlyEntriesChanges($url, $cache_file);
-                } elseif (time() - $filemtime >= $cache_life) {
-                    // only check for changes
-                    $this->checkOnlyEntriesChanges($url, $cache_file);
-                }
-            }
+        
+        if (!file_exists($cache_file) || $forceRefresh) {
+            // start and only for refresh (for admins)
+            file_put_contents($cache_file, file_get_contents($url));
             if ($this->debug && $this->timeDebug) {
                 $diffTime+=hrtime(true);
                 trigger_error('Caching entries :'.$diffTime/1E+6.' ms ; url : '.$url);
+            }
+        } elseif ($testFileModificationDate) {
+            $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
+            if (time() - $filemtime >= $this->timeCacheToCheckDeletion) {
+                $this->checkForDeletion($url, $cache_file);
+                $this->checkOnlyEntriesChanges($url, $cache_file);
+                if ($this->debug && $this->timeDebug) {
+                    $diffTime+=hrtime(true);
+                    trigger_error('Caching entries with deletion :'.$diffTime/1E+6.' ms ; url : '.$url);
+                }
+            } elseif (time() - $filemtime >= $cache_life) {
+                // only check for changes
+                $this->checkOnlyEntriesChanges($url, $cache_file);
+                if ($this->debug && $this->timeDebug) {
+                    $diffTime+=hrtime(true);
+                    trigger_error('Caching entries :'.$diffTime/1E+6.' ms ; url : '.$url);
+                }
             }
         }
         return $cache_file;
@@ -572,7 +607,7 @@ class ExternalBazarService
             file_put_contents($cache_file, json_encode($entries));
             if ($this->debug && $this->timeDebug) {
                 $diffTime+=hrtime(true);
-                trigger_error('Updatin deletions :'.$diffTime/1E+6.' ms ; url : '.$url);
+                trigger_error('Updating deletions :'.$diffTime/1E+6.' ms ; url : '.$url);
             }
         }
     }
@@ -614,8 +649,15 @@ class ExternalBazarService
      */
     private function getNewEntries(string $url, string $dateMin): ?array
     {
+        if ($this->debug && $this->timeDebug) {
+            $diffTime = -hrtime(true);
+        }
         $sanitizedUrl = $url.(strpos($url, '?') === false ? '?' : '&').'dateMin='.urlencode($dateMin);
         $newEntries = json_decode(file_get_contents($sanitizedUrl), true);
+        if ($this->debug && $this->timeDebug) {
+            $diffTime+=hrtime(true);
+            trigger_error('Getting new entries :'.$diffTime/1E+6.' ms ; url : '.$url.' ; sanitizedUrl : '.$sanitizedUrl);
+        }
         return (empty($newEntries) || !is_array($newEntries)) ? null : $newEntries;
     }
 

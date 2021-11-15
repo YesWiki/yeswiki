@@ -52,12 +52,10 @@ abstract class EnumField extends BazarField
         $refreshCacheDuration = ($params->has('baz_external_service_time_cache_to_check_changes'))
             ? $params->get('baz_external_service_time_cache_to_check_changes')
             : 7200 ; // 2 hours by default
-        if ((($_GET['refresh'] ?? false) === 'true') && $this->getService(Wiki::class)->UserIsAdmin()) {
-            $refreshCacheDuration = 0;
-        }
         $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent(
             $this->sanitizeUrlForEntries($this->getLinkedObjectName()),
             $refreshCacheDuration,
+            isset($_GET['refresh']) && ($_GET['refresh'] === 'true') && $this->getService(Wiki::class)->UserIsAdmin(),
             'entries'
         );
         $entries = json_decode($json, true);
