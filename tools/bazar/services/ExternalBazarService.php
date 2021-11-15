@@ -865,10 +865,10 @@ class ExternalBazarService
                         $urlForEntry = $urlstoScan[$key]['url'] . (strpos($urlstoScan[$key]['url'], '?') === false ? '?' : '&')
                             . 'query=id_fiche=' . $data['data']['id_fiche'].($editAction ?? '');
                         $newEntry = json_decode(file_get_contents($urlForEntry), true);
-                        if (!empty($newEntry) && is_array($newEntry)) {
+                        if (!empty($newEntry) && isset($newEntry[$data['data']['id_fiche']])) {
                             $fileContentJson = json_decode(file_get_contents($path), true);
                             if (is_array($fileContentJson)) {
-                                $fileContentJson[$data['data']['id_fiche']] = $newEntry;
+                                $fileContentJson[$data['data']['id_fiche']] = $newEntry[$data['data']['id_fiche']];
                                 file_put_contents($path, json_encode($fileContentJson));
                             }
                         }
