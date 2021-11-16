@@ -36,8 +36,6 @@ if (isset($_GET['jsonp_callback'])) {
     if ($this->UserIsOwner() || $this->UserIsAdmin()) {
         $tag = $this->GetPageTag();
         $this->DeleteOrphanedPage($tag);
-        // on supprime les mots cles associes a la page
-        $tagsManager->deleteAll($tag);
         $this->LogAdministrativeAction($this->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
         echo $_GET['jsonp_callback']."(".json_encode(array("reponse"=>utf8_encode("succes"))).")";
     } else {

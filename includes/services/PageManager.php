@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Tags\Service\TagsManager;
 use YesWiki\Wiki;
 
 class PageManager
@@ -16,6 +17,7 @@ class PageManager
     protected $securityController;
     protected $tripleStore;
     protected $userManager;
+    protected $tagsManager;
     protected $params;
 
     protected $pageCache;
@@ -27,7 +29,8 @@ class PageManager
         TripleStore $tripleStore,
         UserManager $userManager,
         ParameterBagInterface $params,
-        SecurityController $securityController
+        SecurityController $securityController,
+        TagsManager $tagsManager
     ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
@@ -36,6 +39,7 @@ class PageManager
         $this->userManager = $userManager;
         $this->params = $params;
         $this->securityController = $securityController;
+        $this->tagsManager = $tagsManager;
 
         $this->pageCache = [];
     }
@@ -227,6 +231,7 @@ class PageManager
         $this->dbService->query("DELETE FROM " . $this->dbService->prefixTable('links') . "WHERE from_tag='" . $this->dbService->escape($tag) . "' ");
         $this->dbService->query("DELETE FROM " . $this->dbService->prefixTable('acls') . "WHERE page_tag='" . $this->dbService->escape($tag) . "' ");
         $this->dbService->query("DELETE FROM " . $this->dbService->prefixTable('referrers') . "WHERE page_tag='" . $this->dbService->escape($tag) . "' ");
+        $this->tagsManager->deleteAll($tag);
     }
 
     /**
