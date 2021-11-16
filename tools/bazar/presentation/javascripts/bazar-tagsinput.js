@@ -43,6 +43,79 @@ $(document).ready(function () {
     };
   }
 
+  var BazarTagsInputRefresh = {
+    bazarTagsInputService: {},
+    bazarlistTagsInputsData: {},
+    getFormId: function(){
+      let input = $('input[name=id_typeannonce]').first();
+      return input ? input.val() : null;
+    },
+    refresh: function (element){
+      let parent = this;
+      let propertyName = $(element).data('property-name');
+      let formId = this.getFormId();
+      let concernedInput = $(`input[name=${propertyName}]`);
+      if (propertyName && formId && concernedInput) {
+        $.get(
+          wiki.url('api/forms/'+formId),
+          function (data){
+            if (data.prepared) {
+              let fields = (typeof data.prepared == 'object') 
+                ? Object.values(data.prepared) 
+                : data.prepared;
+              fields.forEach(field => {
+                if (field.propertyname && field.propertyname == propertyName){
+                  let options = field.options;
+                  if (options){
+                    // get current
+                    let currentOption = concernedInput.tagsinput('items');
+                    // reset tagsinput
+                    concernedInput.tagsinput('destroy');
+                    let existingTags = new Object();
+                    for (let key in options) {
+                      existingTags[key] = {
+                        id: key,
+                        title: options[key],
+                      }
+                    }
+                    let previousbazarlistTagsInputsData = {};
+                    for (let key in parent.bazarlistTagsInputsData) {
+                      previousbazarlistTagsInputsData[key] = parent.bazarlistTagsInputsData[key]
+                      delete parent.bazarlistTagsInputsData[key];
+                    }
+                    parent.bazarlistTagsInputsData[propertyName] = {
+                      existingTags: existingTags,
+                      limit: 1,
+                      selectedOptions: currentOption[0] ? ( currentOption[0].id ? [currentOption[0].id] : []) : [],
+                    };
+                    // add tagsinput
+                    parent.bazarTagsInputService.init();
+                    // reset bazarlistTagsInputsData
+                    for (let key in previousbazarlistTagsInputsData) {
+                      parent.bazarlistTagsInputsData[key] = previousbazarlistTagsInputsData[key] ;
+                    }
+                  }
+                }
+              });
+            }
+          }
+        )
+      }
+    },
+    init: function(bazarTagsInputService,bazarlistTagsInputsData){
+      let parent = this;
+      this.bazarTagsInputService = bazarTagsInputService;
+      this.bazarlistTagsInputsData = bazarlistTagsInputsData;
+      $('.tagsinput-refresh').each(function (){
+        $(this).click(function(){
+          parent.refresh(this);
+        });
+      });
+    },
+  }
+
   var bazarTagsInputService = new BazarTagsInputService();
   bazarTagsInputService.init();
+
+  BazarTagsInputRefresh.init(bazarTagsInputService,bazarlistTagsInputsData ?? {});
 });
