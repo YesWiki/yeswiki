@@ -31,7 +31,7 @@ class ApiService
         // remove public
         $acl = array_diff($acl, ["public"]);
         // check ACL if not empty after removing public
-        if (!empty(implode(' ', $acl)) && !$this->aclService->check(implode(' ', $acl))) {
+        if (!empty(implode(' ', $acl)) && !$this->aclService->check(implode("\n", $acl))) {
             // acl defined but not allowed
             return false;
         }
