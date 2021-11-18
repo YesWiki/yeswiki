@@ -1414,11 +1414,12 @@ class Wiki
      * @param $array1 the first array that is merged
      * @param $array2 the second array that give the value for indexed array
      */
-    public function replaceRecursivelyIndexedArrays(&$array1, &$array2) {
+    public function replaceRecursivelyIndexedArrays(&$array1, &$array2)
+    {
         foreach ($array2 as $key => $val) {
             if (is_array($val)) {
-                if(!$this->isAssocArray($val)) {
-                    if($array1[$key] != $val) {
+                if (!$this->isAssocArray($val)) {
+                    if(!isset($array1[$key]) || $array1[$key] != $val) {
                         $array1[$key] = $val;
                     }
                 } else {
