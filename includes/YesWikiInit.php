@@ -82,6 +82,7 @@ class Init
     {
         $this->getRoute();
         $this->config = $this->getConfig($config);
+        $this->setIframeHeaders();
 
         /* @todo : compare versions, start installer for update if necessary */
         if (!file_exists($this->configFile)) {
@@ -174,6 +175,27 @@ class Init
     }
 
     /**
+     * set headers for iframes
+     */
+    private function setIframeHeaders()
+    {
+        // set header for Content-Security-Policy
+        $allowedMethods = $this->config['allowed_methods_in_iframe'] ?? 'all';
+
+        if ($allowedMethods === 'all' || (
+            is_array($allowedMethods) && in_array($this->method, $allowedMethods, true)
+        )) {
+            // allow local ('self') and everyone (*)
+            header("Content-Security-Policy: frame-ancestors 'self' *;");
+        } else {
+            // for old browsers
+            header("X-frame-Options: deny");
+            // disallow (CSP takes advantage on x-frame-options)
+            header("Content-Security-Policy: frame-ancestors 'none';");
+        }
+    }
+
+    /**
      * Check in the config file exists and provide default configuration
      *
      * @param array $wakkaConfig initial config array (empty by default)
@@ -210,6 +232,7 @@ class Init
             'preview_before_save' => 0,
             'allow_raw_html' => true,
             'disable_wiki_links' => false,
+            'allowed_methods_in_iframe' => ['iframe','editiframe','render'],
             'timezone'=>'GMT' // Only used if not set in wakka.config.php nor in php.ini
         );
         unset($_rewrite_mode);
