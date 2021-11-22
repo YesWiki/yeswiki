@@ -397,7 +397,7 @@ var typeUserAttrs = {
     },
     squelette: { label: _t('BAZ_FORM_EDIT_METADATA_SQUELETON_LABEL'), value: "1col.tpl.html" },
     style: { label: _t('BAZ_FORM_EDIT_METADATA_STYLE_LABEL'), placeholder: "bootstrap.css..." },
-    preset: { label: "Preset", placeholder: "blue.css (thème margot uniquement)" },
+    preset: { label: _t("BAZ_FORM_EDIT_METADATA_PRESET_LABEL"), placeholder: "blue.css (" + _t("BAZ_FORM_EDIT_METADATA_PRESET_PLACEHOLDER") + ")" },
     image: { label: _t('BAZ_FORM_EDIT_METADATA_BACKGROUND_IMAGE_LABEL'), placeholder: "foret.jpg..." },
   },
   bookmarklet: {},

@@ -53,6 +53,8 @@ return [
     'BAZ_FORM_EDIT_METADATA_THEME_LABEL' => "Nom du thème",
     'BAZ_FORM_EDIT_METADATA_SQUELETON_LABEL' => "Squelette",
     'BAZ_FORM_EDIT_METADATA_STYLE_LABEL' => "Style",
+    'BAZ_FORM_EDIT_METADATA_PRESET_LABEL' => "Preset",
+    'BAZ_FORM_EDIT_METADATA_PRESET_PLACEHOLDER' => "thème margot uniquement",
     'BAZ_FORM_EDIT_METADATA_BACKGROUND_IMAGE_LABEL' => "Image de fond",
     'BAZ_FORM_EDIT_TEXT_MAX_LENGTH' => "Longueur max",
     'BAZ_FORM_EDIT_TEXT_SIZE' => "Nb caractères visibles",
