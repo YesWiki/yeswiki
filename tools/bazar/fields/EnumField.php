@@ -59,12 +59,14 @@ abstract class EnumField extends BazarField
         $entries = json_decode($json, true);
         $options = [];
         $this->optionsUrls = [];
-        foreach ($entries as $id => $entry) {
-            if (!empty($entry['bf_titre'])) {
-                $options[$id] = $entry['bf_titre'];
-            }
-            if (!empty($entry['url'])) {
-                $this->optionsUrls[$id] = $entry['url'];
+        if (is_array($entries)) {
+            foreach ($entries as $id => $entry) {
+                if (!empty($entry['bf_titre'])) {
+                    $options[$id] = $entry['bf_titre'];
+                }
+                if (!empty($entry['url'])) {
+                    $this->optionsUrls[$id] = $entry['url'];
+                }
             }
         }
         asort($options);
