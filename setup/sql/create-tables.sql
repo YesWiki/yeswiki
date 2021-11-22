@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}acls` (
   `privilege` varchar(20) NOT NULL,
   `list` text NOT NULL,
   PRIMARY KEY (`page_tag`,`privilege`)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `{{prefix}}links` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}links` (
   `to_tag` char(191) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `from_tag` (`from_tag`,`to_tag`)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `{{prefix}}nature` (
   `bn_id_nature` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}nature` (
   `bn_template` text NOT NULL,
   `bn_ce_i18n` varchar(5) NOT NULL,
   PRIMARY KEY (`bn_id_nature`)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `{{prefix}}pages` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}pages` (
   KEY `idx_latest` (`latest`),
   KEY `idx_comment_on` (`comment_on`),
   FULLTEXT KEY `tag` (`tag`,`body`)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `{{prefix}}referrers` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}referrers` (
   PRIMARY KEY (`id`),
   KEY `idx_page_tag` (`page_tag`),
   KEY `idx_time` (`time`)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `{{prefix}}triples` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}triples` (
   PRIMARY KEY (`id`),
   KEY `resource` (`resource`),
   KEY `property` (`property`)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `{{prefix}}users` (
   `name` varchar(80) NOT NULL,
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}users` (
   PRIMARY KEY (`name`),
   KEY `idx_name` (`name`),
   KEY `idx_signuptime` (`signuptime`)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB;
 
 # Creation of admins group and admin user
 INSERT INTO `{{prefix}}triples` (`id`, `resource`, `property`, `value`) VALUES
