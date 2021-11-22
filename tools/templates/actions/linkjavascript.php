@@ -90,19 +90,6 @@ echo "<script>
         ...{
     locale: '".detectPreferedLanguage($this, $GLOBALS['available_languages'], 'auto', '')."',
     baseUrl: '{$this->config['base_url']}',
-    url: function(url, params = {}) {
-        let result = wiki.baseUrl + url
-        result = result.replace('??', '?')
-        stringParams = []
-        for(let key in params) {
-            stringParams.push(key + '=' + encodeURIComponent(params[key]))
-        }
-        if (stringParams.length) {
-            result += result.includes('?') ? '&' : '?';
-            result += stringParams.join('&')
-        }
-        return result;
-    },
     lang: {
         ...((typeof wiki !== 'undefined') ? (wiki.lang ?? null) : null),
         ...".json_encode($GLOBALS['translations_js'] ?? null)."

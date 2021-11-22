@@ -12,4 +12,23 @@ function _t(message,replacements = {}){
     }
     return translation;
   }
+
+var wiki = {
+    ...((typeof wiki !== 'undefined') ? wiki : null),
+    ...{
+        url: function(url, params = {}) {
+            let result = wiki.baseUrl + url
+            result = result.replace('??', '?')
+            stringParams = []
+            for(let key in params) {
+                stringParams.push(key + '=' + encodeURIComponent(params[key]))
+            }
+            if (stringParams.length) {
+                result += result.includes('?') ? '&' : '?';
+                result += stringParams.join('&')
+            }
+            return result;
+        },
+    }
+};
   
