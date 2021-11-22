@@ -114,6 +114,7 @@ class TextareaField extends BazarField
 
         if ($this->syntax === self::SYNTAX_HTML) {
             $value = strip_tags($value, self::ACCEPTED_TAGS);
+            $value = $this->sanitizeBase64Img($value, $entry);
         } elseif ($this->syntax === self::SYNTAX_WIKI) {
             $value = $this->sanitizeAttach($value, $entry);
         }
@@ -185,15 +186,7 @@ class TextareaField extends BazarField
             if (!class_exists('attach')) {
                 include('tools/attach/libs/attach.lib.php');
             }
-            $dbTz = $this->getService(DbService::class)->getDbTimeZone();
-            $sqlTimeFormat = 'Y-m-d H:i:s';
-            $entryCreationTime = !empty($entry['date_maj_fiche'])
-                ? $entry['date_creation_fiche']
-                : (
-                    !empty($dbTz)
-                    ? (new DateTime())->setTimezone(new DateTimeZone($dbTz))->format($sqlTimeFormat)
-                    : date($sqlTimeFormat)
-                );
+            $entryCreationTime = $this->getEntryCreationTime($entry);
             foreach ($matches[0] as $key => $value) {
                 $attach = new \Attach($wiki);
                 $attach->file = $matches[2][$key];
@@ -212,7 +205,7 @@ class TextareaField extends BazarField
                 $wiki->tag = $entry['id_fiche'];
                 $wiki->page = [
                     'tag' => $entry['id_fiche'],
-                    'page' => json_encode($entry),
+                    'body' => json_encode($entry),
                     'time' => $entryCreationTime,
                     'owner' => '',
                     'user' => '',
@@ -228,5 +221,92 @@ class TextareaField extends BazarField
 
         
         return $text;
+    }
+
+    private function sanitizeBase64Img(string $text, array $entry): string
+    {
+        $wiki = $this->getWiki();
+        $regExpSearch = '(<img\s*'; // image
+        $regExpSearch .= 'style="[^"]*"\s*)'; // with style
+        $imageExtensions = '(gif|jpeg|png|jpg|svg|webp)';
+        $imageContent = '([^"]*)';
+        $regExpSearch .= "src=\"data:image\/$imageExtensions;base64,$imageContent\"\\s*"; // src base 64
+        $regExpSearch .= '[^>]*((?<=data-filename=")[^"]*)(?=")'; // containing eventually a filename
+        $regExpSearch .= '[^>]*>'; // end of img tag
+        if (preg_match_all("/$regExpSearch/", $text, $matches)) {
+            if (!class_exists('attach')) {
+                include('tools/attach/libs/attach.lib.php');
+            }
+            $entryCreationTime = $this->getEntryCreationTime($entry);
+            $previousTag = $wiki->tag;
+            $previousPage = $wiki->page;
+            foreach ($matches[0] as $index => $textToReplace) {
+                $imageType = $matches[2][$index];
+                $imageContent = base64_decode($matches[3][$index]);
+                $fileName = $matches[4][$index];
+                if (empty(trim($fileName))) {
+                    $fileName = bin2hex(random_bytes(10)).$imageType;
+                }
+                if (preg_match('/^(.*)(\.[A-Za-z0-9]+)$/m', $fileName, $matchesForFile)) {
+                    $fileNameWithoutExtension = $matchesForFile[1];
+                    $fileExtension = $matchesForFile[2];
+                    $fileName = $this->sanitizeFileName($fileNameWithoutExtension).$fileExtension;
+                } else {
+                    $fileName = $this->sanitizeFileName($fileName);
+                }
+                
+                $attach = new \Attach($wiki);
+                $attach->file = $fileName;
+
+                // fake page
+                $wiki->tag = $entry['id_fiche'];
+                $wiki->page = [
+                    'tag' => $entry['id_fiche'],
+                    'page' => json_encode($entry),
+                    'time' => $entryCreationTime,
+                    'owner' => '',
+                    'user' => '',
+                ];
+                $newFilePath = $attach->GetFullFilename(true);
+
+                if (!empty($newFilePath)) {
+                    // save file
+                    file_put_contents($newFilePath, $imageContent);
+    
+                    $newText = $matches[1][$index];
+                    $newText .= "src=\"$newFilePath\">";
+    
+                    $text = str_replace($textToReplace, $newText, $text);
+                }
+                unset($attach);
+            }
+            $wiki->tag = $previousTag;
+            $wiki->page = $previousPage;
+        }
+        return $text;
+    }
+
+    private function getEntryCreationTime(?array $entry): string
+    {
+        $dbTz = $this->getService(DbService::class)->getDbTimeZone();
+        $sqlTimeFormat = 'Y-m-d H:i:s';
+        $entryCreationTime = !empty($entry['date_maj_fiche'])
+            ? $entry['date_creation_fiche']
+            : (
+                !empty($dbTz)
+                ? (new DateTime())->setTimezone(new DateTimeZone($dbTz))->format($sqlTimeFormat)
+                : date($sqlTimeFormat)
+            );
+        return $entryCreationTime;
+    }
+        
+    /**
+     * sanitize file name
+     * @param string $inputString
+     * @return string $outputString
+     */
+    private function sanitizeFileName(string $inputString):string
+    {
+        return removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $inputString)));
     }
 }
