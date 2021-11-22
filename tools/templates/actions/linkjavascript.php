@@ -63,6 +63,9 @@ if (!$yeswikijs) {
     $this->addJavascriptFile('javascripts/yeswiki-base.js');
 }
 
+// ajoute la méthode pour les traductions js
+$this->addJavascriptFile('javascripts/yeswiki-base-no-defer.js', true);
+
 // add javascript files which are included in the custom javascript directory
 $customJsPath = 'custom/javascripts';
 $customJsDir = is_dir($customJsPath) ? opendir($customJsPath) : false;
@@ -78,9 +81,14 @@ $yeswiki_javascripts .= isset($GLOBALS['js']) ? $GLOBALS['js'] : '';
 // on vide la variable globale pour le javascript
 $GLOBALS['js'] = '';
 
+// do not use $GLOBALS['prefered_language'] because can be update for current page language
+
 // Globale wiki variable
-echo "<script>var wiki = {
-    locale: '{$this->config['default_language']}',
+echo "<script>
+    var wiki = {
+        ...((typeof wiki !== 'undefined') ? wiki : null),
+        ...{
+    locale: '".detectPreferedLanguage($this, $GLOBALS['available_languages'], 'auto', '')."',
     baseUrl: '{$this->config['base_url']}',
     url: function(url, params = {}) {
         let result = wiki.baseUrl + url
@@ -95,8 +103,14 @@ echo "<script>var wiki = {
         }
         return result;
     },
-    pageTag: '{$this->getPageTag()}'
-};</script>";
+    lang: {
+        ...((typeof wiki !== 'undefined') ? (wiki.lang ?? null) : null),
+        ...".json_encode($GLOBALS['translations_js'] ?? null)."
+    },
+    pageTag: '{$this->getPageTag()}',
+    isDebugEnabled: ".($this->GetConfigValue('debug') =='yes' ? 'true' : 'false')."
+}};
+</script>";
 
 // TODO: CSS a ajouter ailleurs?
 if (isset($GLOBALS['css']) && !empty($GLOBALS['css'])) {

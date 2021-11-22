@@ -1362,10 +1362,20 @@ class Wiki
 
             // language files : first default language, then preferred language
             if (file_exists($pluginBase . 'lang/' . $k . '_fr.inc.php')) {
-                include $pluginBase . 'lang/' . $k . '_fr.inc.php';
+                $returnedArray = include $pluginBase . 'lang/' . $k . '_fr.inc.php';
+                load_translations($returnedArray);
+            }
+            if (file_exists($pluginBase . 'lang/' . $k . 'js_fr.inc.php')) {
+                $returnedArray = include $pluginBase . 'lang/' . $k . 'js_fr.inc.php';
+                load_translations($returnedArray, true);
             }
             if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php')) {
-                include $pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php';
+                $returnedArray = include $pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php';
+                load_translations($returnedArray);
+            }
+            if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . 'js_' . $GLOBALS['prefered_language'] . '.inc.php')) {
+                $returnedArray = include $pluginBase . 'lang/' . $k . 'js_' . $GLOBALS['prefered_language'] . '.inc.php';
+                load_translations($returnedArray, true);
             }
 
             // api functions
