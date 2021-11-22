@@ -114,6 +114,13 @@ if (! $this->UserIsAdmin()) {
             $search = ' AND body LIKE \'%"id_typeannonce":"' . $dbService->escape($filter) . '"%\'';
             $search .= ' AND tag IN (' . $requete_pages_wiki_bazar_fiches . ')';
             $search .= ' ';
+        } elseif ($filter == "lists") {
+            $requete_pages_wiki_listes =
+              'SELECT DISTINCT resource FROM '.$table.'triples ' .
+              'WHERE value = "liste" AND property = "http://outils-reseaux.org/_vocabulary/type" ' .
+              'ORDER BY resource ASC';
+            $search = ' AND tag IN (' . $requete_pages_wiki_listes . ')';
+            $search .= ' ';
         } else {
             $filter = null;
         }
@@ -154,6 +161,7 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
     <option value="" <?php echo (empty($filter)) ? 'selected="selected"' : ''; ?>></option>
     <option value="pages" <?php echo ("pages" == $filter) ? 'selected="selected"' : ''; ?>><?php echo _t('ACLS_SELECT_PAGES_FILTER_ON_PAGES'); ?></option>
     <option value="specialpages" <?php echo ("specialpages" == $filter) ? 'selected="selected"' : ''; ?>><?php echo _t('ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES'); ?></option>
+    <option value="lists" <?php echo ("lists" == $filter) ? 'selected="selected"' : ''; ?>><?php echo _t('ACLS_SELECT_PAGES_FILTER_ON_LISTS'); ?></option>
     <?php foreach ($forms as $id => $form): ?>
       <option value="<?php echo $id;?>" <?php echo ($id == $filter) ? 'selected="selected"' : '';
         ?>><?php echo str_replace('{name}', $form['bn_label_nature'], str_replace('{id}', $id, _t('ACLS_SELECT_PAGES_FILTER_FORM')));?>

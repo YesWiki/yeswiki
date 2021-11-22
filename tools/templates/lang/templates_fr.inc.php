@@ -226,6 +226,7 @@ $GLOBALS['translations'] = array_merge(
     'ACLS_SELECT_PAGES_FILTER' => 'Filtrer :',
     'ACLS_SELECT_PAGES_FILTER_ON_PAGES' => 'les pages uniquement',
     'ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES' => 'les pages spéciales uniquement',
+    'ACLS_SELECT_PAGES_FILTER_ON_LISTS' => 'les listes uniquement',
     'ACLS_SELECT_PAGES_FILTER_FORM' => 'les fiches du formulaire : {name} ({id})',
 
     // for edit config
