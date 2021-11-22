@@ -397,13 +397,8 @@ class ApiController extends YesWikiController
                         //get reactions from user for this page
                         $userReactions = $this->getService(ReactionManager::class)->getReactions($_POST['pagetag'], [$_POST['reactionid']], $user['name']);
                         $params = $this->getService(ReactionManager::class)->getActionParametersFromPage($_POST['pagetag']);
+                        if (!empty($params[$_POST['reactionid']])) {
 
-                        if (empty($params[$_POST['reactionid']])) {
-                            return new ApiResponse(
-                                ['error' => 'Réaction '.$_POST['reactionid'].' non trouvée dans la page '.$_POST['pagetag']],
-                                Response::HTTP_BAD_REQUEST
-                            );
-                        } else {
                             // un choix de vote est fait
                             if ($_POST['id']) {
                                 // test if limits wherer put

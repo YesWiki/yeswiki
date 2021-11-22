@@ -16,7 +16,7 @@ class AdminReactionsAction extends YesWikiAction
                     return strnatcasecmp($a['user'], $b['user']);
                 });
             }
-            return $this->render('templates/admin-reactions-table.twig', [
+            return $this->render('@templates/admin-reactions-table.twig', [
                 'reactions' => $allReactions
             ]);
         } else {

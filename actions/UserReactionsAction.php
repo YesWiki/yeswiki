@@ -11,7 +11,7 @@ class UserReactionsAction extends YesWikiAction
     {
         if ($user = $this->wiki->GetUser()) {
             $userReactions = $this->wiki->services->get(ReactionManager::class)->getReactions('', [], $user['name']);
-            return $this->render('templates/user-reactions.twig', [
+            return $this->render('@templates/user-reactions.twig', [
                 'userReactions'=> $userReactions,
             ]);
         } else {
