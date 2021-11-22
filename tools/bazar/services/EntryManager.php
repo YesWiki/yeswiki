@@ -231,7 +231,7 @@ class EntryManager
                     foreach ($results as $result) {
                         $requeteSQL .= ' OR ';
                         if (!$result['isCheckBox']) {
-                            $requeteSQL .= ' body LIKE \'%"'.str_replace('_', '\\_', $result['propertyName']).'":"'.$result['key'].'"%\'';
+                            $requeteSQL .= ' body LIKE \'%"'.str_replace('_', '\\_', $result['propertyName']).'":"'.str_replace("'", "\\'", $result['key']).'"%\'';
                         } else {
                             $requeteSQL .= ' body REGEXP \'"'.str_replace('_', '\\_', $result['propertyName']).'":(' .
                                 '"'.$result['key'] . '"'.
@@ -442,7 +442,7 @@ class EntryManager
     private function convertToRawJSONStringForREGEXP(string $rawValue): string
     {
         $valueJSON = substr(json_encode($rawValue), 1, strlen(json_encode($rawValue))-2);
-        $formattedValue = str_replace('\\', '\\\\', $valueJSON);
+        $formattedValue = str_replace(['\\','\''], ['\\\\','\\\''], $valueJSON);
         return $this->dbService->escape($formattedValue);
     }
 
