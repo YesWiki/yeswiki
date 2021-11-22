@@ -320,6 +320,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'DATABASE_INSTALLATION' => 'Installation de la base de donn&eacute;es',
 'CREATION_OF_TABLES' => 'Cr&eacute;ation des tables, de l\'administrateur et du groupe admins',
 'SQL_FILE_NOT_FOUND' => 'Fichier SQL non trouv&eacute;',
+'NOT_POSSIBLE_TO_CREATE_SQL_TABLES' => 'Impossible de créer les tables SQL.',
 'ALREADY_CREATED' => 'D&eacute;j&agrave; cr&eacute;&eacute;e',
 'ADMIN_ACCOUNT_CREATION' => 'Cr&eacute;ation du compte Administrateur',
 'INSERTION_OF_PAGES' => 'Insertion des pages par d&eacute;faut',

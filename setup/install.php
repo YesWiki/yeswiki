@@ -135,8 +135,8 @@ echo '<br /><b>'._t('DATABASE_INSTALLATION')."</b><br>\n";
 test(
     _t('CREATION_OF_TABLES').' ...',
     @querySqlFile($dblink, 'setup/sql/create-tables.sql', $replacements),
-    _t('ALREADY_CREATED').' ?',
-    0
+    _t('NOT_POSSIBLE_TO_CREATE_SQL_TABLES').' ?',
+    1
 );
 
 // Default pages content
