@@ -25,7 +25,7 @@ class DateField extends BazarField
                 $result = explode('T', $value);
                 list($hour, $minute) = array_map('intval', explode(':', $result[1]));
             }
-        } elseif ($this->default && $this->default != '' && $this->default != 0) {
+        } elseif (!empty($this->default)) {
             // Default value when new entry
             // 0 and 1 are present to manage olf format of this field
             if (in_array($this->default, ['today','1'])) {
