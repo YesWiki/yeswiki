@@ -13,8 +13,8 @@
         <th>{{ _t('REACTION_VOTE') }}</th>
         <th>{{ _t('REACTION_DATE') }}</th>
         <th>
-          <a href="#"
-            class="btn btn-danger btn-xs"
+          <a href="{{ url({params:'delete=all'}) }}"
+            class="btn-delete-all btn btn-danger btn-xs"
             title="{{  _t('REACTION_DELETE_ALL') }}" 
             onclick="javascript:return confirm('{{ _t('REACTION_CONFIRM_DELETE_ALL') }}');">
             <i class="fa fa-trash"></i> {{  _t('REACTION_DELETE_ALL') }}
@@ -29,8 +29,8 @@
             <td><span class="mini-react">{{ reaction.parameters.images[react.id]|raw }} {{ reaction.parameters.labels[react.id] }}</span></td>
             <td>{{ react.date }}</td>
             <td>
-              <a href="#"
-                class="btn btn-danger btn-xs"
+              <a href="{{ url({params:'delete=' ~ react.idTriple}) }}"
+                class="btn-delete-reaction btn btn-danger btn-xs"
                 title="{{  _t('REACTION_DELETE') }}" 
                 onclick="javascript:return confirm('{{ _t('REACTION_CONFIRM_DELETE') }}');">
                 <i class="fa fa-trash"></i>

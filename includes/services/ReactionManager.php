@@ -28,6 +28,7 @@ class ReactionManager
         $val = $this->tripleStore->getAll($pageTag, self::TYPE_URI, '', '');
         foreach ($val as $v) {
             $v['value'] = json_decode($v['value'], true);
+            $v['value']['idTriple'] = $v['id'];
             if (!empty($user) && $user != $v['value']['user']) {
                 continue;
             }
@@ -98,7 +99,8 @@ class ReactionManager
             if ($idReaction != null && isset($params[$idReaction])) {
                 return [$idReaction => $params[$idReaction]];
             } else {
-                return ksort($params);
+                ksort($params);
+                return $params;
             }
         }
     }
