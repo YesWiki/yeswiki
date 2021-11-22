@@ -33,6 +33,8 @@
 .image-container {
   position: relative;
   background-color: #eee;
+  display: flex;
+  align-items: center;
 }
 
 .icon-placeholder {
@@ -54,4 +56,73 @@
 }
 .trombi-content .title {
   font-weight: bold;
+}
+
+.trombi-container .bazar-entry i.icon-placeholder {
+  top: initial;
+  left: initial; 
+  font-size: 166px;
+ }
+@media (max-width: 1200px) {
+  .trombi-container .bazar-entry i.icon-placeholder { font-size: 15vw; }
+}
+@media (max-width: 900px) {
+  .trombi-container .bazar-entry i.icon-placeholder { font-size: 20vw; }
+}
+@media (max-width: 700px) {
+  .trombi-container .bazar-entry i.icon-placeholder { font-size: 30vw; }
+}
+@media (min-width:768px) {
+  .col-sm-12 .trombi-container .bazar-entry i.icon-placeholder { font-size: 15vw; }
+  .col-sm-11 .trombi-container .bazar-entry i.icon-placeholder { font-size: 14vw; }
+  .col-sm-10 .trombi-container .bazar-entry i.icon-placeholder { font-size: 13vw; }
+  .col-sm-9 .trombi-container .bazar-entry i.icon-placeholder { font-size: 11vw; }
+  .col-sm-8 .trombi-container .bazar-entry i.icon-placeholder { font-size: 10vw; }
+  .col-sm-7 .trombi-container .bazar-entry i.icon-placeholder { font-size: 9vw; }
+  .col-sm-6 .trombi-container .bazar-entry i.icon-placeholder { font-size: 7.5vw; }
+  .col-sm-5 .trombi-container .bazar-entry i.icon-placeholder { font-size: 6.3vw; }
+  .col-sm-4 .trombi-container .bazar-entry i.icon-placeholder { font-size: 5vw; }
+  .col-sm-3 .trombi-container .bazar-entry i.icon-placeholder { font-size: 3vw; }
+  .col-sm-2 .trombi-container .bazar-entry i.icon-placeholder { font-size: 2.6vw; }
+  .col-sm-1 .trombi-container .bazar-entry i.icon-placeholder { font-size: 1.5vw; }
+}
+@media (min-width:992px) {
+  .col-md-12 .trombi-container .bazar-entry i.icon-placeholder { font-size: 15vw; }
+  .col-md-11 .trombi-container .bazar-entry i.icon-placeholder { font-size: 14vw; }
+  .col-md-10 .trombi-container .bazar-entry i.icon-placeholder { font-size: 13vw; }
+  .col-md-9 .trombi-container .bazar-entry i.icon-placeholder { font-size: 11vw; }
+  .col-md-8 .trombi-container .bazar-entry i.icon-placeholder { font-size: 10vw; }
+  .col-md-7 .trombi-container .bazar-entry i.icon-placeholder { font-size: 9vw; }
+  .col-md-6 .trombi-container .bazar-entry i.icon-placeholder { font-size: 7.5vw; }
+  .col-md-5 .trombi-container .bazar-entry i.icon-placeholder { font-size: 6.3vw; }
+  .col-md-4 .trombi-container .bazar-entry i.icon-placeholder { font-size: 5vw; }
+  .col-md-3 .trombi-container .bazar-entry i.icon-placeholder { font-size: 3vw; }
+  .col-md-2 .trombi-container .bazar-entry i.icon-placeholder { font-size: 2.6vw; }
+  .col-md-1 .trombi-container .bazar-entry i.icon-placeholder { font-size: 1.5vw; }
+}
+@media (min-width:1200px) {
+  .col-sm-12 .trombi-container .bazar-entry i.icon-placeholder,
+  .col-md-12 .trombi-container .bazar-entry i.icon-placeholder { font-size: 166px; }
+  .col-sm-11 .trombi-container .bazar-entry i.icon-placeholder,
+  .col-md-11 .trombi-container .bazar-entry i.icon-placeholder { font-size: 153px; }
+  .col-sm-10 .trombi-container .bazar-entry i.icon-placeholder,
+  .col-md-10 .trombi-container .bazar-entry i.icon-placeholder { font-size: 139px; }
+  .col-sm-9 .trombi-container .bazar-entry i.icon-placeholder,
+  .col-md-9 .trombi-container .bazar-entry i.icon-placeholder { font-size: 125px; }
+  .col-sm-8 .trombi-container .bazar-entry i.icon-placeholder,
+  .col-md-8 .trombi-container .bazar-entry i.icon-placeholder { font-size: 110px; }
+  .col-sm-7 .trombi-container .bazar-entry i.icon-placeholder,
+  .col-md-7 .trombi-container .bazar-entry i.icon-placeholder { font-size: 97px; }
+  .col-sm-6 .trombi-container .bazar-entry i.icon-placeholder,
+  .col-md-6 .trombi-container .bazar-entry i.icon-placeholder { font-size: 83px; }
+  .col-sm-5 .trombi-container .bazar-entry i.icon-placeholder,
+  .col-md-5 .trombi-container .bazar-entry i.icon-placeholder { font-size: 69px; }
+  .col-sm-4 .trombi-container .bazar-entry i.icon-placeholder,
+  .col-md-4 .trombi-container .bazar-entry i.icon-placeholder { font-size: 56px; }
+  .col-sm-3 .trombi-container .bazar-entry i.icon-placeholder,
+  .col-md-3 .trombi-container .bazar-entry i.icon-placeholder { font-size: 42px; }
+  .col-sm-2 .trombi-container .bazar-entry i.icon-placeholder,
+  .col-md-2 .trombi-container .bazar-entry i.icon-placeholder { font-size: 28px; }
+  .col-sm-1 .trombi-container .bazar-entry i.icon-placeholder,
+  .col-md-1 .trombi-container .bazar-entry i.icon-placeholder { font-size: 14px; }
 }

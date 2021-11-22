@@ -1,0 +1,32 @@
+{{ include_css('tools/bazar/presentation/styles/trombinoscope.css') }}
+{% if fiches|length > 0 %}
+  <div class="trombi-container">
+    {% for fiche in fiches %}
+       <a class="bazar-entry modalbox" data-size="modal-lg" {{ fiche.html_data|raw }}
+          href="{{ fiche.url ~ (fiche['external-data']  ? "/iframe" : "") }}"{{ fiche['external-data']  ? " data-iframe=\"1\"" : ''  }}
+            {# add /iframe only for external YesWiki entries #}
+          title="{{ fiche.bf_titre|raw|e('html_attr') }}">
+          <div class="image-container">
+            {% if fiche.imagebf_image is not empty %}
+              <img class="trombi-image" alt="{{ fiche.bf_titre|raw|e('html_attr') }}"
+                   src="{{ fiche['external-data'] 
+                        ? fiche['external-data']['baseUrl'] ~ 'cache/image_300_300_' ~ fiche.imagebf_image
+                        : resizedImages[fiche.id_fiche] }}"
+                   {{ fiche['external-data']
+                    ? 'onerror=this.src=\'' ~ fiche['external-data'].baseUrl ~ 'files/' ~ fiche.imagebf_image ~ "\'"
+                    : '' }} > {# TODO refactor redimensionner_image to use url and local cache ; idea  http://image.intervention.io/  ? #}
+            {% else %}
+              <img class="trombi-image img-placeholder"
+                   src="tools/bazar/libs/vendor/placeholder.php?size=300x300&amp;bg=efefef&amp;text=">
+              <i class="trombi-image icon-placeholder fa fa-user-circle"></i>
+            {% endif %}
+          </div>
+
+          <div class="caption trombi-content">
+            <span class="title">{{ fiche.bf_titre }}</span>
+         </div>
+       </a> <!-- / bazar-entry -->
+    {% endfor %}
+  </div> <!-- / trombi-container -->
+{% endif %}
+{{ pager_links }}
