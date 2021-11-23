@@ -132,6 +132,18 @@ var fields = [
     attrs: { type: "custom" },
     icon: '<i class="fas fa-question-circle"></i>',
   },
+  {
+      label: _t('BAZ_FORM_EDIT_TABS'),
+      name: "tabs",
+      attrs: { type: "tabs" },
+      icon: '<i class="fas fa-layer-group"></i>',
+  },
+  {
+    label: _t('BAZ_FORM_EDIT_TABCHANGE'),
+    name: "tabchange",
+    attrs: { type: "tabchange" },
+    icon: '<i class="fas fa-stop"></i>',
+  }
 ];
 
 // Some attributes configuration used in multiple fields
@@ -204,6 +216,47 @@ var selectConf = {
   write: writeconf,
   semantic: semanticConf,
   // searchable: searchableConf -> 10/19 Florian say that this conf is not working for now
+};
+var TabsConf = {
+  formTitles:{
+      label: _t('BAZ_FORM_EDIT_TABS_FORMTITLES_LABEL'),
+      value:_t('BAZ_FORM_EDIT_TABS_FORMTITLES_VALUE'),
+      placeholder: _t('BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION'),
+      description: _t('BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION')
+  },
+  viewTitles:{
+      label: _t('BAZ_FORM_EDIT_TABS_VIEWTITLES_LABEL'),
+      value: "",
+      placeholder: _t('BAZ_FORM_EDIT_TABS_VIEWTITLES_DESCRIPTION'),
+      description: _t('BAZ_FORM_EDIT_TABS_VIEWTITLES_DESCRIPTION')
+  },
+  moveSubmitButtonToLastTab: {
+      label: _t('BAZ_FORM_EDIT_TABS_MOVESUBMITBUTTONTOLASTTAB_LABEL'),
+      options: { "": _t('NO'),"moveSubmit": _t('YES') },
+      description: _t('BAZ_FORM_EDIT_TABS_MOVESUBMITBUTTONTOLASTTAB_DESCRIPTION')
+    },
+  navClass: {
+      label: _t('BAZ_FORM_EDIT_TABS_NAVCLASS_LABEL'),
+      options: { "nav-tabs": _t('BAZ_FORM_EDIT_TABS_NAVCLASS_OPTION_NAVTABS'),"nav-pills": _t('BAZ_FORM_EDIT_TABS_NAVCLASS_OPTION_NAVPILLS') },
+    },
+  btnColor: {
+        label: _t('BAZ_FORM_EDIT_TABS_BTNCOLOR_LABEL'),
+        options: { "btn-primary": _t('PRIMARY'),"btn-secondary-1": _t('SECONDARY') + " 1","btn-secondary-2": _t('SECONDARY') + " 2" },
+      },
+  btnSize: {
+          label: _t('BAZ_FORM_EDIT_TABS_BTNSIZE_LABEL'),
+          options: { "": _t('NORMAL_F'),"btn-xs": _t('SMALL_F') },
+      },
+};
+var TabChangeConf = {
+  formChange: {
+      label: _t('BAZ_FORM_EDIT_TABCHANGE_FORMCHANGE_LABEL'),
+      options: { "formChange": _t('YES'), "noformchange":_t('NO') },
+    },
+  viewChange: {
+      label:  _t('BAZ_FORM_EDIT_TABCHANGE_VIEWCHANGE_LABEL'),
+      options: { "": _t('NO'), "viewChange": _t('YES') },
+    },
 };
 
 // Attributes to be configured for each field
@@ -446,6 +499,8 @@ var typeUserAttrs = {
     param14: { label: "Param14" },
     param15: { label: "Param15" },
   },
+  tabs: TabsConf,
+  tabchange: TabChangeConf,
 };
 
 // How a field is represented in the formBuilder view
@@ -512,6 +567,12 @@ var templates = {
   },
   custom: function (field) {
     return { field: "" };
+  },
+  tabs: function (field) {
+      return { field: "" };
+  },
+  tabchange: function (field) {
+      return { field: "" };
   },
 };
 
@@ -612,6 +673,24 @@ var yesWikiMapping = {
     13: "param13",
     14: "param14",
     15: "param15",
+  },
+  tabs: {
+      ...defaultMapping,
+      ...{
+          1:'formTitles',
+          3: 'viewTitles',
+          5: 'moveSubmitButtonToLastTab',
+          6: 'navClass',
+          7: 'btnColor',
+          9: 'btnSize'
+      }
+  },
+  tabchange: {
+      ...defaultMapping,
+      ...{
+          1:'formChange',
+          3:'viewChange'
+      }
   },
 };
 // Mapping betwwen yeswiki field type and standard field implemented by form builder
