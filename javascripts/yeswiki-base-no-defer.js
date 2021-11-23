@@ -8,7 +8,9 @@ function _t(message,replacements = {}){
         }
     }
     for (var key in replacements) {
-        translation = translation.replace('{'+key+'}',replacements[key]);
+        while (translation.includes(`{${key}}`)){
+            translation = translation.replace(`{${key}}`,replacements[key])
+        }
     }
     return translation;
   }
