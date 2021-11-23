@@ -71,7 +71,7 @@ return [
     'BAZ_FORM_EDIT_MAP_FIELD' => "Geolocation à partir d'un champ bf_adresse et/ou bf_ville et/ou bf_code_postal et/ou bf_pays",
     'BAZ_FORM_EDIT_COLLABORATIVE_DOC_FIELD' => "Document collaboratif",
     'BAZ_FORM_EDIT_TABS' => "Navigation par onglets",
-    'BAZ_FORM_EDIT_TABCHANGE' => "Fin d'onglet",
+    'BAZ_FORM_EDIT_TABCHANGE' => "Passage à l'onglet suivant",
     'BAZ_FORM_EDIT_TABS_FORMTITLES_LABEL' => "Titres pour le formulaire",
     'BAZ_FORM_EDIT_TABS_FORMTITLES_VALUE' => "Onglet 1|Onglet 2|Onglet 3",
     'BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION' => "Séparés par '|'. Laisser vide pour ne pas avoir d'onglets dans le formulaire",
@@ -84,10 +84,13 @@ return [
     'BAZ_FORM_EDIT_TABS_NAVCLASS_OPTION_NAVPILLS' => "Bords arrondis",
     'BAZ_FORM_EDIT_TABS_BTNCOLOR_LABEL' => "Couleur des boutons",
     'BAZ_FORM_EDIT_TABS_BTNSIZE_LABEL' => "Taille des boutons",
-    'BAZ_FORM_EDIT_TABCHANGE_FORMCHANGE_LABEL' => "Fin d'onglet dans le formulaire",
-    'BAZ_FORM_EDIT_TABCHANGE_VIEWCHANGE_LABEL' => "Fin d'onglet dans la fiche",
+    'BAZ_FORM_EDIT_TABCHANGE_FORMCHANGE_LABEL' => "Changement d'onglet dans le formulaire",
+    'BAZ_FORM_EDIT_TABCHANGE_VIEWCHANGE_LABEL' => "Changement d'onglet dans la fiche",
     'NORMAL_F' => "Normale",
     'SMALL_F' => "Petite",
     'PRIMARY' => "Primaire",
     'SECONDARY' => "Secondaire",
+    "BAZ_FORM_TABS_HINT" => "Pour utiliser les onglets, il vous faut deux champs : {\\n}".
+        " - le champs \"{tabs-field-label}\" dans lequel spécifier le nom des onglets séparés par des \"|\" {\\n}".
+        " - le champs \"{tabchange-field-label}\" à intégrer à la fin de chaque onglet ainsi qu'à la fin de votre formulaire",
 ];

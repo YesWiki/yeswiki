@@ -71,7 +71,7 @@ return [
     'BAZ_FORM_EDIT_MAP_FIELD' => "Geolocalization from bf_adresse and/or bf_ville and/or bf_code_postal and/or bf_pays field",
     'BAZ_FORM_EDIT_COLLABORATIVE_DOC_FIELD' => "Collaborative document",
     'BAZ_FORM_EDIT_TABS' => "Tabs nav.",
-    'BAZ_FORM_EDIT_TABCHANGE' => "Tab's end",
+    'BAZ_FORM_EDIT_TABCHANGE' => "Change to next tab",
     'BAZ_FORM_EDIT_TABS_FORMTITLES_LABEL' => "Titles into form",
     'BAZ_FORM_EDIT_TABS_FORMTITLES_VALUE' => "Tab 1|Tab 2|Tab 3",
     'BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION' => "Separated by '|'. Keep empty to not have tabs into form.",
@@ -84,10 +84,13 @@ return [
     'BAZ_FORM_EDIT_TABS_NAVCLASS_OPTION_NAVPILLS' => "Drills",
     'BAZ_FORM_EDIT_TABS_BTNCOLOR_LABEL' => "Buttons' color",
     'BAZ_FORM_EDIT_TABS_BTNSIZE_LABEL' => "Buttons' size",
-    'BAZ_FORM_EDIT_TABCHANGE_FORMCHANGE_LABEL' => "Tab's end into form",
-    'BAZ_FORM_EDIT_TABCHANGE_VIEWCHANGE_LABEL' => "Tab's end into entry",
+    'BAZ_FORM_EDIT_TABCHANGE_FORMCHANGE_LABEL' => "Tab's change into form",
+    'BAZ_FORM_EDIT_TABCHANGE_VIEWCHANGE_LABEL' => "Tab's change into entry",
     'NORMAL_F' => "Standard",
     'SMALL_F' => "Small",
     'PRIMARY' => "Primary",
     'SECONDARY' => "Secondary",
+    "BAZ_FORM_TABS_HINT" => "To use tabs, it needs two fields : {\\n}".
+        " - the field \"{tabs-field-label}\" in which tabs' titles should be defined separated by \"|\" {\\n}".
+        " - the field \"{tabchange-field-label}\" to pu at the end of each tab either at the end of the form",
 ];

@@ -503,6 +503,30 @@ var typeUserAttrs = {
   tabchange: TabChangeConf,
 };
 
+// function to render help for tabs and tabchange
+function prependHint(field,message,removeStandardProperties){
+  let helpMsg = $('<div/>')
+    .addClass('custom-int well')
+    .append(message);
+  $(`.field-${field.id}`).closest("li.form-field")
+    .each(function(){
+      let id = $(this).attr('id');
+      let anchor = $(`#${id}-holder`);
+      if (typeof anchor === "undefined" 
+          || anchor.length == 0
+          || anchor.data('hint-already-defined') !== "1"){
+        anchor.prepend(helpMsg);
+        anchor.data('hint-already-defined',"1");
+        if (removeStandardProperties) {
+          $(`#required-${id}`).closest('.form-group').hide();
+          $(`#label-${id}`).closest('.form-group').hide();
+          $(`#value-${id}`).closest('.form-group').hide();
+          $(`#name-${id}`).closest('.form-group').hide();
+        }
+      }
+    });
+}
+
 // How a field is represented in the formBuilder view
 var templates = {
   champs_mail: function (fieldData) {
@@ -569,10 +593,28 @@ var templates = {
     return { field: "" };
   },
   tabs: function (field) {
-      return { field: "" };
+      return { 
+        field: "" ,
+        onRender: function(){
+          prependHint(field,_t('BAZ_FORM_TABS_HINT',{
+            '\\n':'<BR>',
+            'tabs-field-label': _t('BAZ_FORM_EDIT_TABS'),
+            'tabchange-field-label': _t('BAZ_FORM_EDIT_TABCHANGE')
+          }),true);
+        },
+      };
   },
   tabchange: function (field) {
-      return { field: "" };
+      return { 
+        field: "" ,
+        onRender: function(){
+          prependHint(field,_t('BAZ_FORM_TABS_HINT',{
+            '\\n':'<BR>',
+            'tabs-field-label': _t('BAZ_FORM_EDIT_TABS'),
+            'tabchange-field-label': _t('BAZ_FORM_EDIT_TABCHANGE')
+          }),true);
+        },
+      };
   },
 };
 
@@ -678,6 +720,7 @@ var yesWikiMapping = {
       ...defaultMapping,
       ...{
           1:'formTitles',
+          2: "",
           3: 'viewTitles',
           5: 'moveSubmitButtonToLastTab',
           6: 'navClass',
@@ -689,6 +732,7 @@ var yesWikiMapping = {
       ...defaultMapping,
       ...{
           1:'formChange',
+          2: "",
           3:'viewChange'
       }
   },
