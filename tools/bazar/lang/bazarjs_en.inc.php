@@ -93,4 +93,6 @@ return [
     "BAZ_FORM_TABS_HINT" => "To use tabs, it needs two fields : {\\n}".
         " - the field \"{tabs-field-label}\" in which tabs' titles should be defined separated by \"|\" {\\n}".
         " - the field \"{tabchange-field-label}\" to pu at the end of each tab either at the end of the form",
+    'BAZ_FORM_EDIT_ADD_TO_GROUP_LABEL' => "Groups where to add the user",
+    'BAZ_FORM_EDIT_ADD_TO_GROUP_DESCRIPTION' => "Groups where to add the user, separated by ',', can be a filed name. Ex: @groupName,bf_name,@groupName2",
 ];
