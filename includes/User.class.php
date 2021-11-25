@@ -1024,23 +1024,12 @@ class User
     */
     public function listGroupMemberships()
     {
-        /* Build sql query*/
-        $triplesTable = $this->wiki->config['table_prefix'].'triples';
-        $sql  = 'SELECT resource FROM '.$triplesTable;
-        $sql .= ' WHERE resource LIKE "'.GROUP_PREFIX.'%"';
-        $sql .= ' AND property LIKE "'.WIKINI_VOC_ACLS_URI.'"';
-        $sql .= ' AND value LIKE "%'.$this->dbService->escape($this->properties['name']).'%";';
-        /* Execute query */
-        $results = array();
-        if ($groups = $this->wiki->loadAll($sql)) {
-            foreach ($variable as $key => $groupName) {
-                $results[] = ltrim($groupName, "@ \t\n\r\0\xOB");
-            }
-            return $results;
-        } else {
-            $error = _t('USER_LISTGROUPMEMBERSHIPS_QUERY_FAILED').'.';
-            return $error;
-        }
+        $groups = $this->wiki->GetGroupsList();
+        $groups = array_filter($groups,function($group) {
+            return $this->wiki->UserIsInGroup($group,$this->properties['name']);
+        });
+
+        return $groups;
     }
     /* ~~~~~~~~~~~~~~~~~~~~~~~ END OF INFO METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~ */
 } //end User class
