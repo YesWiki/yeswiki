@@ -72,11 +72,12 @@ return [
     'BAZ_FORM_EDIT_COLLABORATIVE_DOC_FIELD' => "Document collaboratif",
     'BAZ_FORM_EDIT_TABS' => "Navigation par onglets",
     'BAZ_FORM_EDIT_TABCHANGE' => "Passage à l'onglet suivant",
-    'BAZ_FORM_EDIT_TABS_FORMTITLES_LABEL' => "Titres pour le formulaire",
+    'BAZ_FORM_EDIT_TABS_TITLES_LABEL' => "Titres des onglets",
+    'BAZ_FORM_EDIT_TABS_FOR_FORM' => "pour le formulaire",
+    'BAZ_FORM_EDIT_TABS_FOR_ENTRY' => "pour la fiche",
     'BAZ_FORM_EDIT_TABS_FORMTITLES_VALUE' => "Onglet 1|Onglet 2|Onglet 3",
-    'BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION' => "Séparés par '|'. Laisser vide pour ne pas avoir d'onglets dans le formulaire",
-    'BAZ_FORM_EDIT_TABS_VIEWTITLES_LABEL' => "Titres pour la fiche",
-    'BAZ_FORM_EDIT_TABS_VIEWTITLES_DESCRIPTION' => "Séparés par '|'. Laisser vide pour ne pas avoir d'onglets dans la fiche",
+    'BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION' => "Séparer chaque titre par '|'. Laisser vide pour ne pas avoir d'onglets dans le formulaire",
+    'BAZ_FORM_EDIT_TABS_VIEWTITLES_DESCRIPTION' => "Séparer chaque titre par '|'. Laisser vide pour ne pas avoir d'onglets dans la fiche",
     'BAZ_FORM_EDIT_TABS_MOVESUBMITBUTTONTOLASTTAB_LABEL' => "Déplacer le bouton 'Valider'",
     'BAZ_FORM_EDIT_TABS_MOVESUBMITBUTTONTOLASTTAB_DESCRIPTION' => "Déplacer le bouton 'Valider' dans le dernier onglet",
     'BAZ_FORM_EDIT_TABS_NAVCLASS_LABEL' => "Forme des onglets",
@@ -84,13 +85,12 @@ return [
     'BAZ_FORM_EDIT_TABS_NAVCLASS_OPTION_NAVPILLS' => "Bords arrondis",
     'BAZ_FORM_EDIT_TABS_BTNCOLOR_LABEL' => "Couleur des boutons",
     'BAZ_FORM_EDIT_TABS_BTNSIZE_LABEL' => "Taille des boutons",
-    'BAZ_FORM_EDIT_TABCHANGE_FORMCHANGE_LABEL' => "Changement d'onglet dans le formulaire",
-    'BAZ_FORM_EDIT_TABCHANGE_VIEWCHANGE_LABEL' => "Changement d'onglet dans la fiche",
+    'BAZ_FORM_EDIT_TABCHANGE_CHANGE_LABEL' => "Changement d'onglet",
     'NORMAL_F' => "Normale",
     'SMALL_F' => "Petite",
     'PRIMARY' => "Primaire",
     'SECONDARY' => "Secondaire",
     "BAZ_FORM_TABS_HINT" => "Pour utiliser les onglets, il vous faut deux champs : {\\n}".
-        " - le champs \"{tabs-field-label}\" dans lequel spécifier le nom des onglets séparés par des \"|\" {\\n}".
-        " - le champs \"{tabchange-field-label}\" à intégrer à la fin de chaque onglet ainsi qu'à la fin de votre formulaire",
+        " - le champ \"{tabs-field-label}\" dans lequel spécifier le nom des onglets séparés par des \"|\" {\\n}".
+        " - le champ \"{tabchange-field-label}\" à intégrer à la fin de chaque onglet ainsi qu'à la fin de votre formulaire",
 ];

@@ -219,13 +219,13 @@ var selectConf = {
 };
 var TabsConf = {
   formTitles:{
-      label: _t('BAZ_FORM_EDIT_TABS_FORMTITLES_LABEL'),
+      label: _t('BAZ_FORM_EDIT_TABS_FOR_FORM'),
       value:_t('BAZ_FORM_EDIT_TABS_FORMTITLES_VALUE'),
       placeholder: _t('BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION'),
       description: _t('BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION')
   },
   viewTitles:{
-      label: _t('BAZ_FORM_EDIT_TABS_VIEWTITLES_LABEL'),
+      label: _t('BAZ_FORM_EDIT_TABS_FOR_ENTRY'),
       value: "",
       placeholder: _t('BAZ_FORM_EDIT_TABS_VIEWTITLES_DESCRIPTION'),
       description: _t('BAZ_FORM_EDIT_TABS_VIEWTITLES_DESCRIPTION')
@@ -250,12 +250,14 @@ var TabsConf = {
 };
 var TabChangeConf = {
   formChange: {
-      label: _t('BAZ_FORM_EDIT_TABCHANGE_FORMCHANGE_LABEL'),
+      label: _t('BAZ_FORM_EDIT_TABS_FOR_FORM'),
       options: { "formChange": _t('YES'), "noformchange":_t('NO') },
+      description: _t('BAZ_FORM_EDIT_TABCHANGE_CHANGE_LABEL') + ' ' + _t('BAZ_FORM_EDIT_TABS_FOR_FORM')
     },
   viewChange: {
-      label:  _t('BAZ_FORM_EDIT_TABCHANGE_VIEWCHANGE_LABEL'),
+      label:  _t('BAZ_FORM_EDIT_TABS_FOR_ENTRY'),
       options: { "": _t('NO'), "viewChange": _t('YES') },
+      description: _t('BAZ_FORM_EDIT_TABCHANGE_CHANGE_LABEL') + ' ' + _t('BAZ_FORM_EDIT_TABS_FOR_ENTRY')
     },
 };
 
@@ -504,28 +506,111 @@ var typeUserAttrs = {
 };
 
 // function to render help for tabs and tabchange
-function prependHint(field,message,removeStandardProperties){
-  let helpMsg = $('<div/>')
-    .addClass('custom-int well')
-    .append(message);
-  $(`.field-${field.id}`).closest("li.form-field")
-    .each(function(){
-      let id = $(this).attr('id');
-      let anchor = $(`#${id}-holder`);
-      if (typeof anchor === "undefined" 
-          || anchor.length == 0
-          || anchor.data('hint-already-defined') !== "1"){
-        anchor.prepend(helpMsg);
-        anchor.data('hint-already-defined',"1");
-        if (removeStandardProperties) {
-          $(`#required-${id}`).closest('.form-group').hide();
-          $(`#label-${id}`).closest('.form-group').hide();
-          $(`#value-${id}`).closest('.form-group').hide();
-          $(`#name-${id}`).closest('.form-group').hide();
+const templateHelper = {
+  cache: {},
+  holders:{},
+  ids:{},
+  formFields:{},
+  getFormField: function (fieldId) {
+    if (!this.formFields.hasOwnProperty(fieldId)){
+      let formField = $(`.field-${fieldId}`).closest("li.form-field")
+      var newFormField = {};
+      newFormField[fieldId] = (formField.length == 0) ? false : formField;
+      this.formFields = {...this.formFields,...newFormField};
+    }
+    return this.formFields[fieldId];
+  },
+  getHolder: function (field) {
+    let fieldId = field.id;
+    if (!this.holders.hasOwnProperty(fieldId)){
+      let formField = this.getFormField(fieldId);
+      var newHolder = {};
+      var newId = {};
+      let id = false;
+      if (formField){
+        id = $(formField).attr('id');
+        let anchor = $(`#${id}-holder`);
+        if (typeof anchor === "undefined" 
+            || anchor.length == 0) {
+              newHolder[fieldId] = false;
+              newId[fieldId] = false;
+        } else {
+          newHolder[fieldId] = anchor.first();
+          newId[fieldId] = id;
+        }
+      } else {
+        newHolder[fieldId] = false;
+        newId[fieldId] = false;
+      }
+      this.holders = {...this.holders,...newHolder};
+      this.ids = {...this.ids,...newId};
+    }
+    return this.holders[fieldId];
+  },
+  getId: function (field) {
+    let fieldId = field.id;
+    if (!this.ids.hasOwnProperty(fieldId)){
+      this.getHolder(field);
+    }
+    return this.ids[fieldId];
+  },
+  prependHint: function (field,message){
+    let holder = this.getHolder(field);
+    if (holder){
+      if (holder.data('hint-already-defined') !== "1"){
+        let formElements = holder.find('.form-elements').first();
+        let helpMsg = $('<div/>')
+          .addClass('custom-hint')
+          .append(message);
+          formElements.prepend(helpMsg);
+        holder.data('hint-already-defined',"1");
+      }
+    }
+  },
+  prependHTMLBeforeGroup: function (field,formGroupName,html){
+    let holder = this.getHolder(field);
+    if (holder){
+      let formGroup = holder.find('.'+formGroupName+'-wrap');
+      if (typeof formGroup !== undefined && formGroup.length > 0){
+        if (formGroup.data('prepended-html-already-defined') !== "1") {
+          formGroup.before(html);
+          formGroup.data('prepended-html-already-defined',"1");
         }
       }
-    });
-}
+    }
+  },
+  defineLabelHintForGroup: function (field,formGroupName,message){
+    let holder = this.getHolder(field);
+    if (holder){
+      let formGroup = holder.find('.'+formGroupName+'-wrap');
+      if (typeof formGroup !== undefined && formGroup.length > 0){
+        let label = formGroup.find('label').first();
+          if (label.data('label-hint-already-defined') !== "1") {
+          label.append(' ');
+          label.append($('<i/>')
+            .addClass('fa fa-question-circle')
+            .attr("title",message)
+            .tooltip()
+          );
+          label.data('label-hint-already-defined',"1");
+        }
+      }
+    }
+  },
+  removeStandardProperties: function (field){
+    let holder = this.getHolder(field);
+    let id = this.getId(field);
+    if (holder){
+      if (holder.data('properties-already-removed') !== "1"){
+        holder.data('properties-already-removed',"1");
+        $(`#required-${id}`).closest('.form-group').hide();
+        $(`#label-${id}`).closest('.form-group').hide();
+        $(`#value-${id}`).closest('.form-group').hide();
+        $(`#name-${id}`).closest('.form-group').hide();
+      }
+    }
+  },
+};
 
 // How a field is represented in the formBuilder view
 var templates = {
@@ -596,11 +681,16 @@ var templates = {
       return { 
         field: "" ,
         onRender: function(){
-          prependHint(field,_t('BAZ_FORM_TABS_HINT',{
+          templateHelper.prependHint(field,_t('BAZ_FORM_TABS_HINT',{
             '\\n':'<BR>',
             'tabs-field-label': _t('BAZ_FORM_EDIT_TABS'),
             'tabchange-field-label': _t('BAZ_FORM_EDIT_TABCHANGE')
-          }),true);
+          }));
+          templateHelper.removeStandardProperties(field);
+          templateHelper.prependHTMLBeforeGroup(field,'formTitles',$('<div/>').addClass('form-group').append($('<b/>').append(_t('BAZ_FORM_EDIT_TABS_TITLES_LABEL'))));
+          templateHelper.defineLabelHintForGroup(field,'formTitles',_t('BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION'));
+          templateHelper.defineLabelHintForGroup(field,'viewTitles',_t('BAZ_FORM_EDIT_TABS_VIEWTITLES_DESCRIPTION'));
+          templateHelper.prependHTMLBeforeGroup(field,'moveSubmitButtonToLastTab',$('<hr/>').addClass('form-group'));
         },
       };
   },
@@ -608,11 +698,13 @@ var templates = {
       return { 
         field: "" ,
         onRender: function(){
-          prependHint(field,_t('BAZ_FORM_TABS_HINT',{
+          templateHelper.prependHint(field,_t('BAZ_FORM_TABS_HINT',{
             '\\n':'<BR>',
             'tabs-field-label': _t('BAZ_FORM_EDIT_TABS'),
             'tabchange-field-label': _t('BAZ_FORM_EDIT_TABCHANGE')
-          }),true);
+          }));
+          templateHelper.removeStandardProperties(field);
+          templateHelper.prependHTMLBeforeGroup(field,'formChange',$('<div/>').addClass('form-group').append($('<b/>').append(_t('BAZ_FORM_EDIT_TABCHANGE_CHANGE_LABEL'))));
         },
       };
   },
