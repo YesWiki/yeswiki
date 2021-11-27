@@ -90,6 +90,13 @@ class PackageCore extends Package
                 $this->copy($this->extractionPath . '/' . $file, $desPath . '/' . $file);
             }
         }
+
+        // check if cache and files directories are present
+        foreach (['cache','files'] as $dirName) {
+            if (!is_dir($desPath . '/'.$dirName)) {
+                mkdir($desPath . '/'.$dirName);
+            }
+        }
         return true;
     }
 
