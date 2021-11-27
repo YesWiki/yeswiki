@@ -3,6 +3,8 @@ parameters:
     - BazaR
     - GererSite
     - GererDroits
+    - GererDroitsActions
+    - GererDroitsHandlers
     - GererMisesAJour
     - GererThemes
     - GererConfig

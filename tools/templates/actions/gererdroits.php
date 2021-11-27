@@ -102,7 +102,8 @@ if (! $this->UserIsAdmin()) {
           'WHERE value = "fiche_bazar"'.
           ') ';
         } elseif ($filter == "specialpages") {
-            $search = ' AND tag IN ("BazaR","GererSite","GererDroits","GererThemes","GererMisesAJour","GererUtilisateurs","TableauDeBord"'.
+            $search = ' AND tag IN ("BazaR","GererSite","GererDroits","GererThemes","GererMisesAJour","GererUtilisateurs",'.
+              '"GererDroitsActions","GererDroitsHandlers","TableauDeBord"'.
               ',"PageTitre","PageMenuHaut","PageRapideHaut","PageHeader","PageFooter","PageCSS","PageMenu"'.
               ',"PageColonneDroite","MotDePassePerdu","ParametresUtilisateur","GererConfig","ActuYeswiki","LookWiki") ';
         } elseif ($filter === strval(intval($filter))) {

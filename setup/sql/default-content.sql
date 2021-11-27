@@ -312,8 +312,20 @@ Vous trouverez un formulaire permettant
 {{editconfig}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('GererDroits',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Mots clefs, Fichier de conf, Mises à jour / extensions\"}}
 
-===Gérer les droits des pages===
+{{button class=\"btn-primary btn-xs pull-right\" hideifnoaccess=\"true\" icon=\"fas fa-arrow-right\" link=\"GererDroitsActions\" text=\"Droits des actions/handlers\" }}===Gérer les droits des pages===
 {{gererdroits}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('GererDroitsActions',  now(), '//Droits d\'accès//
+{{nav class=\"nav nav-tabs\" hideifnoaccess=\"true\" links=\"GererDroitsActions, GererDroitsHandlers, GererDroits\" titles=\"Actions, Handlers, Pages\" }}
+
+===Droits d\'accès aux actions===
+
+{{editactionsacls}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('GererDroitsHandlers',  now(), '//Droits d\'accès//
+{{nav class=\"nav nav-tabs\" hideifnoaccess=\"true\" links=\"GererDroitsActions, GererDroitsHandlers, GererDroits\" titles=\"Actions, Handlers, Pages\" }}
+
+===Droits d\'accès aux handlers===
+
+{{edithandlersacls}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('GererMisesAJour',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Mots clefs, Fichier de conf, Mises à jour / extensions\"}}
 
 ===Mises à jour / extensions===
