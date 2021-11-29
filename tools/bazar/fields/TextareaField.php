@@ -42,6 +42,7 @@ class TextareaField extends BazarField
 
     protected function renderInput($entry)
     {
+        $output = "";
         $wiki = $this->getWiki();
         // If HTML syntax, load editor's JS and CSS
         if ($this->syntax === self::SYNTAX_HTML) {
@@ -93,15 +94,18 @@ class TextareaField extends BazarField
         } elseif ($this->syntax === self::SYNTAX_WIKI &&
             !empty($wiki->config['actionbuilder_textarea_name'])
             && $this->getName() == $wiki->config['actionbuilder_textarea_name']) {
-            // load action builder
+            // load action builder but be carefull to output
+            ob_start();
             include_once 'tools/aceditor/actions/actions_builder.php';
+            $output = ob_get_contents();
+            ob_end_clean();
         }
 
         $tempTag = !isset($entry['id_fiche']) ? ($wiki->config['temp_tag_for_entry_creation'] ?? null) : null;
         if ($tempTag) {
             $tempTag .= '_' . bin2hex(random_bytes(10));
         }
-        return $this->render("@bazar/inputs/textarea.twig", [
+        return $output . $this->render("@bazar/inputs/textarea.twig", [
             'value' => $this->getValue($entry),
             'entryId' => $entry['id_fiche'] ?? null,
             'tempTag' => $tempTag,
