@@ -109,11 +109,15 @@ abstract class EnumField extends BazarField
             $tabquery = '';
         }
 
-        $fiches = $entryManager->search([
-            'queries' => $tabquery,
-            'formsIds' => $this->getLinkedObjectName(),
-            'keywords' => (!empty($this->keywords)) ? $this->keywords : ''
-        ]);
+        $fiches = $entryManager->search(
+            [
+                'queries' => $tabquery,
+                'formsIds' => $this->getLinkedObjectName(),
+                'keywords' => (!empty($this->keywords)) ? $this->keywords : ''
+            ],
+            true, // filter on read ACL
+            true  // use Guard
+        );
 
         foreach ($fiches as $fiche) {
             $this->options[$fiche['id_fiche']] = $fiche['bf_titre'];

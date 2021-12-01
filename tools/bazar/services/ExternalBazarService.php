@@ -221,7 +221,8 @@ class ExternalBazarService
                         'queries' => $params['queries'],
                         'formsIds' => [$localFormId]
                     ],
-                    true // filter on read ACL
+                    true, // filter on read ACL
+                    true  // use Guard
                 ));
                 array_push($entries, ...$localEntries);
             } else {
