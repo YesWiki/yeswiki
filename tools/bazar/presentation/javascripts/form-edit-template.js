@@ -132,6 +132,18 @@ var fields = [
     attrs: { type: "custom" },
     icon: '<i class="fas fa-question-circle"></i>',
   },
+  {
+      label: _t('BAZ_FORM_EDIT_TABS'),
+      name: "tabs",
+      attrs: { type: "tabs" },
+      icon: '<i class="fas fa-layer-group"></i>',
+  },
+  {
+    label: _t('BAZ_FORM_EDIT_TABCHANGE'),
+    name: "tabchange",
+    attrs: { type: "tabchange" },
+    icon: '<i class="fas fa-stop"></i>',
+  }
 ];
 
 // Some attributes configuration used in multiple fields
@@ -204,6 +216,49 @@ var selectConf = {
   write: writeconf,
   semantic: semanticConf,
   // searchable: searchableConf -> 10/19 Florian say that this conf is not working for now
+};
+var TabsConf = {
+  formTitles:{
+      label: _t('BAZ_FORM_EDIT_TABS_FOR_FORM'),
+      value:_t('BAZ_FORM_EDIT_TABS_FORMTITLES_VALUE'),
+      placeholder: _t('BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION'),
+      description: _t('BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION')
+  },
+  viewTitles:{
+      label: _t('BAZ_FORM_EDIT_TABS_FOR_ENTRY'),
+      value: "",
+      placeholder: _t('BAZ_FORM_EDIT_TABS_VIEWTITLES_DESCRIPTION'),
+      description: _t('BAZ_FORM_EDIT_TABS_VIEWTITLES_DESCRIPTION')
+  },
+  moveSubmitButtonToLastTab: {
+      label: _t('BAZ_FORM_EDIT_TABS_MOVESUBMITBUTTONTOLASTTAB_LABEL'),
+      options: { "": _t('NO'),"moveSubmit": _t('YES') },
+      description: _t('BAZ_FORM_EDIT_TABS_MOVESUBMITBUTTONTOLASTTAB_DESCRIPTION')
+    },
+  navClass: {
+      label: _t('BAZ_FORM_EDIT_TABS_NAVCLASS_LABEL'),
+      options: { "nav-tabs": _t('BAZ_FORM_EDIT_TABS_NAVCLASS_OPTION_NAVTABS'),"nav-pills": _t('BAZ_FORM_EDIT_TABS_NAVCLASS_OPTION_NAVPILLS') },
+    },
+  btnColor: {
+        label: _t('BAZ_FORM_EDIT_TABS_BTNCOLOR_LABEL'),
+        options: { "btn-primary": _t('PRIMARY'),"btn-secondary-1": _t('SECONDARY') + " 1","btn-secondary-2": _t('SECONDARY') + " 2" },
+      },
+  btnSize: {
+          label: _t('BAZ_FORM_EDIT_TABS_BTNSIZE_LABEL'),
+          options: { "": _t('NORMAL_F'),"btn-xs": _t('SMALL_F') },
+      },
+};
+var TabChangeConf = {
+  formChange: {
+      label: _t('BAZ_FORM_EDIT_TABS_FOR_FORM'),
+      options: { "formChange": _t('YES'), "noformchange":_t('NO') },
+      description: _t('BAZ_FORM_EDIT_TABCHANGE_CHANGE_LABEL') + ' ' + _t('BAZ_FORM_EDIT_TABS_FOR_FORM')
+    },
+  viewChange: {
+      label:  _t('BAZ_FORM_EDIT_TABS_FOR_ENTRY'),
+      options: { "": _t('NO'), "viewChange": _t('YES') },
+      description: _t('BAZ_FORM_EDIT_TABCHANGE_CHANGE_LABEL') + ' ' + _t('BAZ_FORM_EDIT_TABS_FOR_ENTRY')
+    },
 };
 
 // Attributes to be configured for each field
@@ -446,6 +501,115 @@ var typeUserAttrs = {
     param14: { label: "Param14" },
     param15: { label: "Param15" },
   },
+  tabs: TabsConf,
+  tabchange: TabChangeConf,
+};
+
+// function to render help for tabs and tabchange
+const templateHelper = {
+  cache: {},
+  holders:{},
+  ids:{},
+  formFields:{},
+  getFormField: function (fieldId) {
+    if (!this.formFields.hasOwnProperty(fieldId)){
+      let formField = $(`.field-${fieldId}`).closest("li.form-field")
+      var newFormField = {};
+      newFormField[fieldId] = (formField.length == 0) ? false : formField;
+      this.formFields = {...this.formFields,...newFormField};
+    }
+    return this.formFields[fieldId];
+  },
+  getHolder: function (field) {
+    let fieldId = field.id;
+    if (!this.holders.hasOwnProperty(fieldId)){
+      let formField = this.getFormField(fieldId);
+      var newHolder = {};
+      var newId = {};
+      let id = false;
+      if (formField){
+        id = $(formField).attr('id');
+        let anchor = $(`#${id}-holder`);
+        if (typeof anchor === "undefined" 
+            || anchor.length == 0) {
+              newHolder[fieldId] = false;
+              newId[fieldId] = false;
+        } else {
+          newHolder[fieldId] = anchor.first();
+          newId[fieldId] = id;
+        }
+      } else {
+        newHolder[fieldId] = false;
+        newId[fieldId] = false;
+      }
+      this.holders = {...this.holders,...newHolder};
+      this.ids = {...this.ids,...newId};
+    }
+    return this.holders[fieldId];
+  },
+  getId: function (field) {
+    let fieldId = field.id;
+    if (!this.ids.hasOwnProperty(fieldId)){
+      this.getHolder(field);
+    }
+    return this.ids[fieldId];
+  },
+  prependHint: function (field,message){
+    let holder = this.getHolder(field);
+    if (holder){
+      if (holder.data('hint-already-defined') !== "1"){
+        let formElements = holder.find('.form-elements').first();
+        let helpMsg = $('<div/>')
+          .addClass('custom-hint')
+          .append(message);
+          formElements.prepend(helpMsg);
+        holder.data('hint-already-defined',"1");
+      }
+    }
+  },
+  prependHTMLBeforeGroup: function (field,formGroupName,html){
+    let holder = this.getHolder(field);
+    if (holder){
+      let formGroup = holder.find('.'+formGroupName+'-wrap');
+      if (typeof formGroup !== undefined && formGroup.length > 0){
+        if (formGroup.data('prepended-html-already-defined') !== "1") {
+          formGroup.before(html);
+          formGroup.data('prepended-html-already-defined',"1");
+        }
+      }
+    }
+  },
+  defineLabelHintForGroup: function (field,formGroupName,message){
+    let holder = this.getHolder(field);
+    if (holder){
+      let formGroup = holder.find('.'+formGroupName+'-wrap');
+      if (typeof formGroup !== undefined && formGroup.length > 0){
+        let label = formGroup.find('label').first();
+          if (label.data('label-hint-already-defined') !== "1") {
+          label.append(' ');
+          label.append($('<i/>')
+            .addClass('fa fa-question-circle')
+            .attr("title",message)
+            .tooltip()
+          );
+          label.data('label-hint-already-defined',"1");
+        }
+      }
+    }
+  },
+  removeStandardProperties: function (field){
+    let holder = this.getHolder(field);
+    let id = this.getId(field);
+    if (holder){
+      if (holder.data('properties-already-removed') !== "1"){
+        holder.data('properties-already-removed',"1");
+        $(`#required-${id}`).closest('.form-group').hide();
+        $(`#label-${id}`).closest('.form-group').hide();
+        $(`#value-${id}`).closest('.form-group').hide();
+        $(`#name-${id}`).closest('.form-group').hide();
+      }
+    }
+  },
 };
 
 // How a field is represented in the formBuilder view
@@ -512,6 +676,37 @@ var templates = {
   },
   custom: function (field) {
     return { field: "" };
+  },
+  tabs: function (field) {
+      return { 
+        field: "" ,
+        onRender: function(){
+          templateHelper.prependHint(field,_t('BAZ_FORM_TABS_HINT',{
+            '\\n':'<BR>',
+            'tabs-field-label': _t('BAZ_FORM_EDIT_TABS'),
+            'tabchange-field-label': _t('BAZ_FORM_EDIT_TABCHANGE')
+          }));
+          templateHelper.removeStandardProperties(field);
+          templateHelper.prependHTMLBeforeGroup(field,'formTitles',$('<div/>').addClass('form-group').append($('<b/>').append(_t('BAZ_FORM_EDIT_TABS_TITLES_LABEL'))));
+          templateHelper.defineLabelHintForGroup(field,'formTitles',_t('BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION'));
+          templateHelper.defineLabelHintForGroup(field,'viewTitles',_t('BAZ_FORM_EDIT_TABS_VIEWTITLES_DESCRIPTION'));
+          templateHelper.prependHTMLBeforeGroup(field,'moveSubmitButtonToLastTab',$('<hr/>').addClass('form-group'));
+        },
+      };
+  },
+  tabchange: function (field) {
+      return { 
+        field: "" ,
+        onRender: function(){
+          templateHelper.prependHint(field,_t('BAZ_FORM_TABS_HINT',{
+            '\\n':'<BR>',
+            'tabs-field-label': _t('BAZ_FORM_EDIT_TABS'),
+            'tabchange-field-label': _t('BAZ_FORM_EDIT_TABCHANGE')
+          }));
+          templateHelper.removeStandardProperties(field);
+          templateHelper.prependHTMLBeforeGroup(field,'formChange',$('<div/>').addClass('form-group').append($('<b/>').append(_t('BAZ_FORM_EDIT_TABCHANGE_CHANGE_LABEL'))));
+        },
+      };
   },
 };
 
@@ -612,6 +807,26 @@ var yesWikiMapping = {
     13: "param13",
     14: "param14",
     15: "param15",
+  },
+  tabs: {
+      ...defaultMapping,
+      ...{
+          1:'formTitles',
+          2: "",
+          3: 'viewTitles',
+          5: 'moveSubmitButtonToLastTab',
+          6: 'navClass',
+          7: 'btnColor',
+          9: 'btnSize'
+      }
+  },
+  tabchange: {
+      ...defaultMapping,
+      ...{
+          1:'formChange',
+          2: "",
+          3:'viewChange'
+      }
   },
 };
 // Mapping betwwen yeswiki field type and standard field implemented by form builder
