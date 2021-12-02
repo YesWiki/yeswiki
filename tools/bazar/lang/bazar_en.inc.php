@@ -174,6 +174,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_IMAGE_FILE_NOT_FOUND' => 'Image file not found',
 'BAZAR_CHECKALL' => 'Check all',
 'BAZAR_FILTER' => 'Filter',
+'BAZ_UNKNOWN_USER' => 'Unkown user',
 
 
 //================ Calendrier Bazar =======================================

@@ -142,7 +142,7 @@ class EntryController extends YesWikiController
         $owner = $this->wiki->GetPageOwner($entryId);
         $isOwnerIpAddress = preg_replace('/([0-9]|\.)/', '', $owner) == '';
         if ($isOwnerIpAddress || !$owner) {
-            $owner = "Utilisateur Inconu";
+            $owner = _t('BAZ_UNKNOWN_USER');
         }
         if (!empty($this->config['sso_config']) && isset($this->config['sso_config']['bazar_user_entry_id']) && $this->pageManager->getOne($owner)) {
             $owner = $this->wiki->Format('[[' . $this->wiki->GetPageOwner($entryId) . ' ' . $this->wiki->GetPageOwner($entryId) . ']]');
