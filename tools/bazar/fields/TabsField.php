@@ -31,7 +31,7 @@ class TabsField extends LabelField
         $this->searchable = null;
         $this->formTitles = $this->sanitizeTitles($values[self::FIELD_FORM_TITLES]);
         $this->viewTitles = $this->sanitizeTitles($values[self::FIELD_VIEW_TITLES]);
-        $this->moveSubmitButtonToLastTab = in_array($values[self::FIELD_MOVE_SUBMIT_BUTTON_TO_LAST_TAB], [1,"1",true,"true","moveSubmit"], true) ;
+        $this->moveSubmitButtonToLastTab = ($values[self::FIELD_MOVE_SUBMIT_BUTTON_TO_LAST_TAB] === "moveSubmit") ;
         $this->tabsClass = in_array($values[self::FIELD_TABS_CLASS], ["nav-tabs","nav-pills"], true) ? $values[self::FIELD_TABS_CLASS] : "nav-tabs";
         $this->btnClass = (in_array($values[self::FIELD_BTN_COLOR], ["btn-primary","btn-secondary-1","btn-secondary-2"], true) ? $values[self::FIELD_BTN_COLOR] : "btn-primary") .
           ($values[self::FIELD_BTN_SIZE] === "btn-xs" ? " btn-xs" : "") ;

@@ -27,8 +27,8 @@ class TabChangeField extends LabelField
         $this->viewText = null;
         $this->maxChars = null;
         $this->default = null;
-        $this->formChange = in_array($values[self::FIELD_FORM_CHANGE], [1,"1",true,"true","formChange"], true) ;
-        $this->viewChange = in_array($values[self::FIELD_VIEW_CHANGE], [1,"1",true,"true","viewChange"], true) ;
+        $this->formChange = ($values[self::FIELD_FORM_CHANGE] === "formChange") ;
+        $this->viewChange = ($values[self::FIELD_VIEW_CHANGE] === "viewChange") ;
     }
 
     protected function renderInput($entry)
