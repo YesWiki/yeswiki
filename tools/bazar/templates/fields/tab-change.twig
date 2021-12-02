@@ -33,8 +33,7 @@
 {# next tab #}
 {% if not isLast %}
   <!--ouvre l'onglet n°{{ counter + 1}} -->
-  <div role="tabpanel" class="tab-pane" id="menu{{ counter + 1}}">
-    <br>
+  <div role="tabpanel" class="with-padding tab-pane" id="menu{{ counter + 1}}">
 {% else %}
   </div><!-- ferme l'ensemble des onglets -->
 {% endif %}
