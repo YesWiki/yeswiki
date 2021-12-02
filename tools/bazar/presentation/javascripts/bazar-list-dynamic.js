@@ -190,7 +190,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       },
       getExternalEntry(entry){
         let url = entry.url+'/iframe';
-        Vue.set(entry, 'html_render', `<iframe src="${url}" width="500px" height="600px" style="border:none;"></ifarame>`)
+        Vue.set(entry, 'html_render', `<iframe src="${url}" width="500px" height="600px" style="border:none;"></iframe>`)
       },
       colorIconValueFor(entry, field, mapping) {
         if (!entry[field]) return null
