@@ -22,7 +22,7 @@
           <input type="hidden" name="id" value="{{ formId }}">
         {% endif %}
         {% if params.query %}
-          <input type="hidden" name="query" value="{{ params.query }}">
+          <input type="hidden" name="query" value="{{ params.query|map((val,key)=>"#{key}=#{val}")|join('|')|e('html_attr') }}">
         {% endif %}
         <input type="hidden" name="facette" value="{{ facette }}">
         <span class="input-group-btn search-button-container">
