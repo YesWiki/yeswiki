@@ -119,6 +119,7 @@ abstract class EnumField extends BazarField
             true  // use Guard
         );
 
+        $this->options = [];
         foreach ($fiches as $fiche) {
             $this->options[$fiche['id_fiche']] = $fiche['bf_titre'];
         }
