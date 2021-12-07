@@ -27,7 +27,7 @@ if (!empty($nbcols)) {
 <div class="cols<?php echo $nbcols; ?>">
     <?php foreach ($fiches as $fiche) : ?>
 	    <?php if ($premier==true) : $premier = false; ?>
-		    <div class="jumbotron bazar-entry" <?php echo $fiche['html_data']; ?>>
+		    <div class="well bazar-entry" <?php echo $fiche['html_data']; ?>>
 				<?php if (!empty($fiche['imagebf_image']) && (file_exists('files/'.$fiche['imagebf_image']) || isset($fiche['external-data']))) : ?>
 					<a class="pull-right" style="margin:0 0 1em 1em;" href="<?php echo $fiche['url']; ?>">
 					<img class="img-blog" alt="<?php echo htmlentities($fiche['bf_titre']);?>"
