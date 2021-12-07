@@ -68,27 +68,23 @@ class Files
 
     public function download($sourceUrl, $destPath = null, $returnContent = false)
     {
-        try {
-            $this->downloadedFile = $destPath;
-            if ($this->downloadedFile !== null) {
-                $fp = fopen($this->downloadedFile, 'wb');
-            } else {
-                $fp = tmpfile();
-                $metaData = stream_get_meta_data($fp);
-                $this->downloadedFile = $metaData["uri"];
-            }
-            $ch = curl_init($sourceUrl);
-            curl_setopt($ch, CURLOPT_FILE, $fp);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_exec($ch);
-            curl_close($ch);
-            if ($returnContent === true) {
-                return file_get_contents($this->downloadedFile);
-            }
-            fclose($fp);
-        } catch (Throwable $t) {
-            return $t;
+        $this->downloadedFile = $destPath;
+        if ($this->downloadedFile !== null) {
+            $fp = fopen($this->downloadedFile, 'wb');
+        } else {
+            $fp = tmpfile();
+            $metaData = stream_get_meta_data($fp);
+            $this->downloadedFile = $metaData["uri"];
         }
+        $ch = curl_init($sourceUrl);
+        curl_setopt($ch, CURLOPT_FILE, $fp);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_exec($ch);
+        curl_close($ch);
+        if ($returnContent === true) {
+            return file_get_contents($this->downloadedFile);
+        }
+        fclose($fp);
     }
 
     private function isWritableFolder($path)
