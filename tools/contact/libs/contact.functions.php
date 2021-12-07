@@ -11,7 +11,7 @@ function ValidateEmail($email)
 {
     $regex = "/([a-z0-9_\.\-]+)" . # name
     "@" . # at
-    "([a-z0-9\.\-\+]+){2,255}" . # domain & possibly subdomains
+    "([a-z0-9\.\-\+]+){1,255}" . # domain & possibly subdomains
     "\." . # period
     "([a-z]+){2,10}/i"; # domain extension
     $eregi = preg_replace($regex, '', $email);
