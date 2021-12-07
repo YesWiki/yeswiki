@@ -49,13 +49,15 @@ abstract class EnumField extends BazarField
     public function loadOptionsFromJson()
     {
         $params = $this->getService(ParameterBagInterface::class);
-        $refreshCacheDuration = ($params->has('baz_enum_field_time_cache_for_json'))
-            ? $params->get('baz_enum_field_time_cache_for_json')
+        $refreshCacheDuration = ($params->has('baz_external_service_time_cache_to_check_changes'))
+            ? $params->get('baz_external_service_time_cache_to_check_changes')
             : 7200 ; // 2 hours by default
-        if ((($_GET['refresh'] ?? false) === 'true') && $this->getService(Wiki::class)->UserIsAdmin()) {
-            $refreshCacheDuration = 0;
-        }
-        $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent($this->getLinkedObjectName(), $refreshCacheDuration);
+        $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent(
+            $this->sanitizeUrlForEntries($this->getLinkedObjectName()),
+            $refreshCacheDuration,
+            isset($_GET['refresh']) && ($_GET['refresh'] === 'true') && $this->getService(Wiki::class)->UserIsAdmin(),
+            'entries'
+        );
         $entries = json_decode($json, true);
         $options = [];
         $this->optionsUrls = [];
@@ -186,5 +188,36 @@ abstract class EnumField extends BazarField
                 'options' => $this->getOptions(),
             ]
         );
+    }
+
+    
+    /**
+     * check existence of &fields=bf_titre,id_fiche,url in url when api
+     * @param string $url
+     * @return string $url
+     */
+    private function sanitizeUrlForEntries(string $url): string
+    {
+        // sanitize url
+        $query = parse_url($url, PHP_URL_QUERY);
+        if (!empty($query)) {
+            $queries = explode('&', $query);
+            if (substr($queries[0], 0, 3) === "api") {
+                foreach ($queries as $key => $elem) {
+                    $extraction = explode('=', $elem, 2);
+                    if ($extraction[0] === 'fields') {
+                        $fields = explode(',', $extraction[1]);
+                        $fields = $fields + ['id_fiche','bf_titre','url'];
+                        $queries[$key] = 'fields=' . implode(',', $fields);
+                    }
+                }
+                if (empty($fields)) {
+                    $queries[] = 'fields=id_fiche,bf_titre,url';
+                }
+                $newQuery = implode('&', $queries);
+                $url = str_replace($query, $newQuery, $url);
+            }
+        }
+        return $url;
     }
 }

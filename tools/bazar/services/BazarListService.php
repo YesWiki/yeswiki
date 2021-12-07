@@ -47,8 +47,8 @@ class BazarListService
         if (($options['externalModeActivated'] ?? false) === true) {
             $entries = $this->externalBazarService->getEntries([
                 'forms' => $forms,
-                'refresh' => $options['refresh'],
-                'queries' => $options['query']
+                'refresh' => $options['refresh'] ?? false,
+                'queries' => $options['query'] ?? ''
             ]);
         } else {
             $entries = $this->entryManager->search(
