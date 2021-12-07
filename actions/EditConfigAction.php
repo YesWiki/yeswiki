@@ -6,6 +6,7 @@ use YesWiki\Core\Service\Performer;
 class EditConfigAction extends YesWikiAction
 {
     private const SAVE_NAME = 'save_config';
+    private const SAVED_NAME = 'saved_config';
     private const CONFIG_POSTFIX = '_editable_config_params';
     private const AUTHORIZED_KEYS = [
         'wakka_name' => 'core',
@@ -32,6 +33,7 @@ class EditConfigAction extends YesWikiAction
     {
         return [
             'saving' => $this->formatBoolean($_POST, false, self::SAVE_NAME),
+            'saved' => $this->formatBoolean($_GET, false, self::SAVED_NAME),
             'post' => $_POST,
         ];
     }
@@ -57,7 +59,13 @@ class EditConfigAction extends YesWikiAction
 
         $output = '';
         if ($this->arguments['saving']) {
-            $output .= $this->save();
+            $this->save();
+        }
+        if ($this->arguments['saved']) {
+            $output .= $this->render('@templates/alert-message.twig', [
+                'type'=>'info',
+                'message'=> _t('EDIT_CONFIG_SAVE')
+            ]);
         }
 
         // display form
@@ -186,10 +194,7 @@ class EditConfigAction extends YesWikiAction
         }
 
         $config->write();
-        return $this->render('@templates/alert-message.twig', [
-            'type'=>'info',
-            'message'=> _t('EDIT_CONFIG_SAVE')
-        ]);
+        $this->wiki->Redirect($this->wiki->Href('', '', [self::SAVED_NAME => "1"], false)) ;
     }
 
     /**
