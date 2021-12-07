@@ -12,6 +12,8 @@ abstract class Package extends Files
     protected $extractionPath = null;
     // Chemin vers le paquet temporaire téléchargé localement
     protected $downloadedFile = null;
+    // md5 du paquet temporaire téléchargé localement
+    protected $md5File = null;
     // nom du tool
     public $name = null;
     // Version du paquet
@@ -92,7 +94,7 @@ abstract class Package extends Files
 
     public function getFile()
     {
-        $this->downloadFile($this->address);
+        $this->downloadedFile = $this->download($this->address);
 
         if (is_file($this->downloadedFile)) {
             return $this->downloadedFile;
@@ -125,6 +127,7 @@ abstract class Package extends Files
     {
         $this->delete($this->downloadedFile);
         $this->delete($this->extractionPath);
+        $this->delete($this->md5File);
         $this->downloadedFile = null;
         $this->extractionPath = null;
     }
@@ -142,18 +145,8 @@ abstract class Package extends Files
 
     private function getMD5()
     {
-        $disMd5File = $this->download(
-            $this->address . '.md5',
-            null,
-            true
-        );
-        return explode(' ', $disMd5File)[0];
-    }
-
-    private function downloadFile($sourceUrl)
-    {
-        $this->downloadedFile = null;
-        return $this->download($sourceUrl, $this->downloadedFile);
+        $this->md5File = $this->download($this->address . '.md5');
+        return explode(' ', file_get_contents($this->md5File))[0];
     }
 
     protected function updateAvailable()

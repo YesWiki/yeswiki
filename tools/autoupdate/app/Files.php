@@ -66,25 +66,19 @@ class Files
         return false;
     }
 
-    public function download($sourceUrl, $destPath = null, $returnContent = false)
+    public function download($sourceUrl, $destPath = null)
     {
-        $this->downloadedFile = $destPath;
-        if ($this->downloadedFile !== null) {
-            $fp = fopen($this->downloadedFile, 'wb');
-        } else {
-            $fp = tmpfile();
-            $metaData = stream_get_meta_data($fp);
-            $this->downloadedFile = $metaData["uri"];
+        if ($destPath === null) {
+            $destPath = tempnam('cache', 'tmp_to_delete_');
         }
+        $fp = fopen($destPath, 'wb');
         $ch = curl_init($sourceUrl);
         curl_setopt($ch, CURLOPT_FILE, $fp);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_exec($ch);
         curl_close($ch);
-        if ($returnContent === true) {
-            return file_get_contents($this->downloadedFile);
-        }
         fclose($fp);
+        return $destPath;
     }
 
     private function isWritableFolder($path)

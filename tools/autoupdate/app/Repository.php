@@ -23,12 +23,8 @@ class Repository extends PackageCollection
             return false;
         }
         $repoInfosFile = $this->address . $this::INDEX_FILENAME;
-        $data = $this->fileHandler->download(
-            $repoInfosFile,
-            null,
-            true
-        );
-        $data = json_decode($data, true);
+        $file = $this->fileHandler->download($repoInfosFile);
+        $data = json_decode(file_get_contents($file), true);
 
         if (is_null($data)) {
             return false;
