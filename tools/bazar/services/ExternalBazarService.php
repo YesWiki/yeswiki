@@ -588,7 +588,7 @@ class ExternalBazarService
             }
             foreach ($entries as $key => $entry) {
                 if (!isset($entriesList[$entry['id_fiche']])) {
-                    if ($this->debug) {
+                    if ($this->debug && $this->wiki->UserIsAdmin()) {
                         trigger_error('Deleting '.$entry['id_fiche'].' from '.$cache_file);
                     }
                     unset($entries[$key]);
