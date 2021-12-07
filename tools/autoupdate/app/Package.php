@@ -144,7 +144,7 @@ abstract class Package extends Files
     {
         $disMd5File = $this->download(
             $this->address . '.md5',
-            'cache/temp-'.$this->name().'.md5',
+            null,
             true
         );
         return explode(' ', $disMd5File)[0];
@@ -152,7 +152,7 @@ abstract class Package extends Files
 
     private function downloadFile($sourceUrl)
     {
-        $this->downloadedFile = tempnam(realpath('cache'), $this::PREFIX_FILENAME);
+        $this->downloadedFile = null;
         return $this->download($sourceUrl, $this->downloadedFile);
     }
 

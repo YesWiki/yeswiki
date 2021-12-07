@@ -22,11 +22,10 @@ class Repository extends PackageCollection
         if (filter_var($this->address, FILTER_VALIDATE_URL) === false) {
             return false;
         }
-        $localRepoFile = 'cache/repository-packages.json';
         $repoInfosFile = $this->address . $this::INDEX_FILENAME;
         $data = $this->fileHandler->download(
             $repoInfosFile,
-            $localRepoFile,
+            null,
             true
         );
         $data = json_decode($data, true);
