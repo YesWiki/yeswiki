@@ -1,4 +1,5 @@
 <?php
+
 namespace AutoUpdate;
 
 class Files
@@ -65,10 +66,9 @@ class Files
         return false;
     }
 
-    protected function download($sourceUrl)
+    public function download($sourceUrl, $destPath = null, $returnContent = false)
     {
-        $this->downloadedFile = tempnam(realpath('cache'), $this::PREFIX_FILENAME);
-        //file_put_contents($this->downloadedFile, fopen($sourceUrl, 'r'));
+        $this->downloadedFile = $destPath ?? tempnam(realpath('cache'), $this::PREFIX_FILENAME);
         $ch = curl_init($sourceUrl);
         $fp = fopen($this->downloadedFile, 'wb');
         curl_setopt($ch, CURLOPT_FILE, $fp);
@@ -76,6 +76,9 @@ class Files
         curl_exec($ch);
         curl_close($ch);
         fclose($fp);
+        if ($returnContent === true) {
+            return file_get_contents($this->downloadedFile);
+        }
     }
 
     private function isWritableFolder($path)

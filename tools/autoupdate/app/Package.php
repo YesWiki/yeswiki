@@ -1,9 +1,10 @@
 <?php
+
 namespace AutoUpdate;
 
 abstract class Package extends Files
 {
-    const PREFIX_FILENAME = 'yeswiki_';
+    public const PREFIX_FILENAME = 'yeswiki_';
 
     // URL vers le fichier dans le dépôt.
     protected $address;
@@ -106,7 +107,7 @@ abstract class Package extends Files
             throw new \Exception("Le paquet n'a pas été téléchargé.", 1);
         }
 
-        $zip = new \ZipArchive;
+        $zip = new \ZipArchive();
         if (true !== $zip->open($this->downloadedFile)) {
             return false;
         }
@@ -141,21 +142,18 @@ abstract class Package extends Files
 
     private function getMD5()
     {
-        $disMd5File = file_get_contents($this->address . '.md5');
+        $disMd5File = $this->download(
+            $this->address . '.md5',
+            'cache/temp-'.$this->name().'.md5',
+            true
+        );
         return explode(' ', $disMd5File)[0];
     }
 
     private function downloadFile($sourceUrl)
     {
         $this->downloadedFile = tempnam(realpath('cache'), $this::PREFIX_FILENAME);
-        //file_put_contents($this->downloadedFile, fopen($sourceUrl, 'r'));
-        $ch = curl_init($sourceUrl);
-        $fp = fopen($this->downloadedFile, 'wb');
-        curl_setopt($ch, CURLOPT_FILE, $fp);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_exec($ch);
-        curl_close($ch);
-        fclose($fp);
+        return $this->download($sourceUrl, $this->downloadedFile);
     }
 
     protected function updateAvailable()
