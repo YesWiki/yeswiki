@@ -572,6 +572,16 @@ class ExternalBazarService
             $this->alreadyCheckingDeletionsURL[] = $urlToCheckDeletion;
         }
         $json = file_get_contents($cache_file);
+        // remove string before '{' because the aimed website's api can give warning messages
+        $beginning = strpos($json, '{');
+        if ($beginning > 1) {
+            $noticeMessage = substr($json, 0, $beginning);
+            $json = substr($json, $beginning);
+            if ($this->debug) {
+                trigger_error($noticeMessage.' from '.$cache_file);
+            }
+        }
+
         $entries = json_decode($json, true);
         if (empty($entries) || !is_array($entries)) {
             $this->secureFilePutContents($url, '', $cache_file, false);
