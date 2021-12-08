@@ -368,16 +368,7 @@ class ExternalBazarService
             $testFileModificationDate = true;
         }
         $json = $this->getCachedUrlContent($url, $testFileModificationDate, $cache_life, $forceRefresh, $mode);
-
-        // remove string before '{' because the aimed website's api can give warning messages
-        $beginning = strpos($json, '{');
-        if ($beginning > 1) {
-            $noticeMessage = substr($json, 0, $beginning);
-            $json = substr($json, $beginning);
-            if ($this->debug) {
-                trigger_error($noticeMessage.' from '.$url);
-            }
-        }
+        $json = $this->extractErrors($json, $url);
 
         return $json;
     }
@@ -572,15 +563,7 @@ class ExternalBazarService
             $this->alreadyCheckingDeletionsURL[] = $urlToCheckDeletion;
         }
         $json = file_get_contents($cache_file);
-        // remove string before '{' because the aimed website's api can give warning messages
-        $beginning = strpos($json, '{');
-        if ($beginning > 1) {
-            $noticeMessage = substr($json, 0, $beginning);
-            $json = substr($json, $beginning);
-            if ($this->debug) {
-                trigger_error($noticeMessage.' from '.$cache_file);
-            }
-        }
+        $json = $this->extractErrors($json, $cache_file);
 
         $entries = json_decode($json, true);
         if (empty($entries) || !is_array($entries)) {
@@ -590,7 +573,7 @@ class ExternalBazarService
                 trigger_error('checking deletions (refreshing) :'.$diffTime/1E+6.' ms ; url : '.$url);
             }
         } else {
-            $entriesList = json_decode(file_get_contents($urlToCheckDeletion), true);
+            $entriesList = json_decode($this->extractErrors(file_get_contents($urlToCheckDeletion), $urlToCheckDeletion), true);
             if ($this->debug && $this->timeDebug) {
                 $diffTime+=hrtime(true);
                 trigger_error('checking deletions (only list) :'.$diffTime/1E+6.' ms ; url : '.$urlToCheckDeletion);
@@ -620,6 +603,7 @@ class ExternalBazarService
     private function getLastModificationDateFromFile(string $cache_file): ?array
     {
         $json = file_get_contents($cache_file);
+        $json = $this->extractErrors($json, $cache_file);
         $entries = json_decode($json, true);
         
         if (!empty($entries) && is_array($entries)) {
@@ -653,7 +637,7 @@ class ExternalBazarService
             $diffTime = -hrtime(true);
         }
         $sanitizedUrl = $url.(strpos($url, '?') === false ? '?' : '&').'dateMin='.urlencode($dateMin);
-        $newEntries = json_decode(file_get_contents($sanitizedUrl), true);
+        $newEntries = json_decode($this->extractErrors(file_get_contents($sanitizedUrl), $sanitizedUrl), true);
         if ($this->debug && $this->timeDebug) {
             $diffTime+=hrtime(true);
             trigger_error('Getting new entries :'.$diffTime/1E+6.' ms ; url : '.$url.' ; sanitizedUrl : '.$sanitizedUrl);
@@ -793,7 +777,7 @@ class ExternalBazarService
                 $details = $this->importService->extractBaseUrlAndRootPage($url) ;
                 file_put_contents($cache_file, json_encode($details));
             } else {
-                $details = json_decode(file_get_contents($cache_file));
+                $details = json_decode($this->extractErrors(file_get_contents($cache_file), $cache_file), true);
             }
             
             $this->urlCache[$url] = $details;
@@ -844,5 +828,19 @@ class ExternalBazarService
                 self::JSON_ENTRIES_OLD_BASE_URL
             ).
             (empty($querystring) ? '' : ($urlDetails[2] ? '?' : '&').$querystring);
+    }
+
+    private function extractErrors(string $json, string $from): string
+    {
+        // remove string before '{' because the aimed website's api can give warning messages
+        $beginning = strpos($json, '{');
+        if ($beginning > 1) {
+            $noticeMessage = substr($json, 0, $beginning);
+            $json = substr($json, $beginning);
+            if ($this->debug && $this->wiki->UserIsAdmin()) {
+                trigger_error($noticeMessage.' from '.$from);
+            }
+        }
+        return $json;
     }
 }
