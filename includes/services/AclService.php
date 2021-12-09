@@ -269,4 +269,82 @@ class AclService
         // tough luck.
         return false;
     }
+    /** create request for ACL
+     * @return string $request request to append to request
+     */
+    public function updateRequestWithACL():string
+    {
+        // needed ACL
+        $neededACL = ['*'];
+        // connected ?
+        $user = $this->userManager->getLoggedUser();
+        if (!empty($user)) {
+            $userName = $user['name'];
+            $neededACL[] = '+';
+            $neededACL[] = $userName;
+            $groups = $this->wiki->GetGroupsList();
+            foreach ($groups as $group) {
+                if ($this->wiki->UserIsInGroup($group, $userName, true)) {
+                    $neededACL[] = '@'.$group;
+                }
+            }
+        }
+
+        // check default readacl
+        $newRequestStart = ' AND ';
+        $newRequestEnd = '';
+        if ($this->check($this->params->has('default_read_acl') ? $this->params->get('default_read_acl') : '*')) {
+            // current user can display pages without read acl
+            $newRequestStart .= '(';
+            $newRequestEnd = ')'.$newRequestEnd;
+
+            $newRequestStart .= 'tag NOT IN (SELECT DISTINCT page_tag FROM ' . $this->dbService->prefixTable('acls') .
+            'WHERE privilege="read")';
+
+            $newRequestStart .= ' OR (';
+            $newRequestEnd = ')'.$newRequestEnd;
+        }
+        // construct new request when acl
+        $newRequestStart .= 'tag in (SELECT DISTINCT page_tag FROM ' . $this->dbService->prefixTable('acls') .
+            'WHERE privilege="read"';
+        $newRequestEnd = ')'.$newRequestEnd;
+
+        // needed ACL
+        if (count($neededACL) > 0) {
+            $newRequestStart .= ' AND (';
+            if (!empty($user)) {
+                $newRequestStart .= '(';
+                $newRequestEnd = ')'.$newRequestEnd;
+            }
+
+            $addOr = false;
+            foreach ($neededACL as $acl) {
+                if ($addOr) {
+                    $newRequestStart .= ' OR ';
+                } else {
+                    $addOr = true;
+                }
+                $newRequestStart .= ' list LIKE "%'.$acl.'%"';
+            }
+            $newRequestStart .= ')';
+            // not authorized ACL
+            foreach ($neededACL as $acl) {
+                $newRequestStart .= ' AND ';
+                $newRequestStart .= ' list NOT LIKE "%!'.$acl.'%"';
+            }
+            
+            // add detection of '%'
+            if (!empty($user)) {
+                $newRequestStart .= ') OR (';
+                
+                $newRequestStart .= '(list LIKE "%\\%%" AND list NOT LIKE "%!\\%%")';
+                $newRequestStart .= ' AND owner = _utf8\'' . $this->dbService->escape($userName) . '\'';
+            }
+        }
+
+        $request = $newRequestStart.$newRequestEnd;
+
+        // return request to append
+        return $request;
+    }
 }
