@@ -91,8 +91,10 @@ function replaceLinksWithIframe(string $body): string
             // target="_blank" ou class="new window" avant ou après le href
             // et si le lien ne s'ouvre dans une autre fenêtre, on insère /iframe à l'url
             $NEW_WINDOW_PATTERN = "~^(.*target=[\"']\s*_blank\s*[\"'].*)|(.*class=[\"'].*?new-window.*?[\"'].*)$~i";
-            if (preg_match($NEW_WINDOW_PATTERN, $matches[1]) || preg_match($NEW_WINDOW_PATTERN,
-                    $matches[5])) {
+            if (preg_match($NEW_WINDOW_PATTERN, $matches[1]) || preg_match(
+                $NEW_WINDOW_PATTERN,
+                $matches[5]
+            )) {
                 return $matches[1] . $GLOBALS['wiki']->config['base_url'] . $matches[2] . $matches[3] . $matches[4] .
                     $matches[5];
             } else {
@@ -112,8 +114,10 @@ function replaceLinksWithIframe(string $body): string
             // target="_blank" ou class="new window" avant ou après le href
             // et si le lien ne s'ouvre dans une autre fenêtre, on insère /editiframe à l'url
             $NEW_WINDOW_PATTERN = "~^(.*target=[\"']\s*_blank\s*[\"'].*)|(.*class=[\"'].*?new-window.*?[\"'].*)$~i";
-            if (preg_match($NEW_WINDOW_PATTERN, $matches[1]) || preg_match($NEW_WINDOW_PATTERN,
-                    $matches[5])) {
+            if (preg_match($NEW_WINDOW_PATTERN, $matches[1]) || preg_match(
+                $NEW_WINDOW_PATTERN,
+                $matches[5]
+            )) {
                 return $matches[1] . $GLOBALS['wiki']->config['base_url'] . $matches[2] . '/edit' . $matches[3]
                     . $matches[4] . $matches[5];
             } else {
@@ -132,7 +136,7 @@ function testUrlInIframe($url = '')
         // test si on est dans une iframe
         $url = getAbsoluteUrl();
     }
-    $iframe = preg_match('/\/(edit)?iframe/Ui', $url);
+    $iframe = preg_match('/(?:\/|%2F)(edit)?iframe/Ui', $url);
     return $iframe ? 'iframe' : '';
 }
 

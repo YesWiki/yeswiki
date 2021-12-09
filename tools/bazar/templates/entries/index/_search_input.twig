@@ -1,6 +1,7 @@
 <div id="bazar-search-{{ listId }}">
   <form action="" method="get" name="search-form" id="search-form" class="form-horizontal">
-    <input type="hidden" name="wiki" value="{{ pageTag }}">
+    {% set handler = url({tag:pageTag})|slice(url({tag:pageTag,handler:' '})|length-1) %}
+    <input type="hidden" name="wiki" value="{{ pageTag ~ (handler ? '/' ~ handler : '') }}">
     <input type="hidden" name="vue" value="consulter">
     <input type="hidden" name="action" value="recherche">
     <div class="bazar-search control-group">
