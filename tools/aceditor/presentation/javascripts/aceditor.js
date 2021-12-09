@@ -25,7 +25,7 @@ var SYNTAX = {
     'STRIKE_LFT'      : '@@',
     'STRIKE_RGT'      : '@@',
     'LIST_LFT'        : ' - ',
-    'LIST_RGT'        : '\n',
+    'LIST_RGT'        : '',
     'LINE_LFT'        : '\n------\n',
     'LINE_RGT'        : '',
     'LINK_LFT'        : '[[',
