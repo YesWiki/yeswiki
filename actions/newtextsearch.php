@@ -16,6 +16,8 @@
  use YesWiki\Bazar\Service\EntryManager;
  use YesWiki\Bazar\Service\FormManager;
  use YesWiki\Bazar\Service\SearchManager;
+ use YesWiki\Core\Service\AclService;
+ use YesWiki\Core\Service\DbService;
 
  // On récupére ou initialise toutes le varible comme pour textsearch
 // label à afficher devant la zone de saisie
@@ -145,23 +147,22 @@ if ($phrase) {
     if (!empty($requeteSQLForList)) {
         $requeteSQLForList = ' OR ('.$requeteSQLForList.') ';
     }
+
+    // get some services
+    $aclService = $this->services->get(AclService::class);
+    $dbService = $this->services->get(DbService::class);
     
     // Modification de caractère spéciaux
     $phraseFormatted= str_replace(array('*', '?'), array('%', '_'), $phrase);
-    $phraseFormatted = $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($phraseFormatted);
+    $phraseFormatted = $dbService->escape($phraseFormatted);
 
     // Blablabla SQL
-    $requestfull = 'SELECT body, tag FROM '.$prefixe.'pages
-                  WHERE latest = "Y"
-                  AND EXISTS( SELECT * FROM '.$prefixe.'acls WHERE tag = page_tag AND privilege = "read"
-                  AND ( list IS NULL OR list ="*" '.
-                  ($user ? 'OR owner = "'.$user['name'].'" OR list = "+" OR (list NOT LIKE "%!'.$user['name'].'%" AND list LIKE "%'.$user['name'].'")':'').')'.
-                  // TODO retrouver la facon d'afficher les commentaires (AFFICHER_COMMENTAIRES ? '':'AND tag NOT LIKE "comment%"').
-                  ') AND body LIKE "%' . $phraseFormatted . '%"'.$requeteSQLForList.'
-                  ORDER BY tag LIMIT 100';
+    // TODO retrouver la facon d'afficher les commentaires (AFFICHER_COMMENTAIRES ? '':'AND tag NOT LIKE "comment%"').
+    $requestfull = "SELECT body, tag FROM {$dbService->prefixTable('pages')} WHERE latest = \"Y\" {$aclService->updateRequestWithACL()}".
+                "AND (body LIKE \"%{$phraseFormatted}%\"{$requeteSQLForList}) ORDER BY tag LIMIT 100";
 
     // exécution de la requete
-    if ($resultat = $this->LoadAll($requestfull)) {
+    if ($resultat = $dbService->loadAll($requestfull)) {
         if ($GLOBALS['js']) {
             $js = $GLOBALS['js'];
         } else {
