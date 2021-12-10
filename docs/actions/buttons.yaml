@@ -1,83 +1,84 @@
-label: "Boutons"
+label: _t(AB_buttons_label)
 position: 2
 previewHeight: 100px
 actions:
   button:
-    label: Bouton
-    description: Créer un bouton cliquable
+    label: _t(AB_buttons_action_button_label)
+    description: _t(AB_buttons_action_button_description)
     properties:
       text:
-        label: Texte du bouton
-        default: Mon bouton
+        label: _t(AB_buttons_action_button_text_label)
+        default: _t(AB_buttons_action_button_text_default)
         type: text
       link:
-        label: Addresse du lien
+        label: _t(AB_buttons_action_button_link_label)
         default: https://yeswiki.net
-        type: url
+        hint: _t(AB_buttons_action_button_link_hint)
+        type: page-list
         required: true
       title:
-        label: Texte affiché au survol
+        label: _t(AB_buttons_action_button_title_label)
         advanced: true
         type: text
       icon:
-        label: Icone
+        label: _t(AB_buttons_action_button_icon_label)
         type: icon
       class:
-        label: Classe
+        label: _t(AB_buttons_action_button_class_label)
         type: class
         subproperties:
           color:
-            label: Couleur
+            label: _t(AB_buttons_action_button_color_label)
             type: list
             default: btn-primary
             options:
-              btn-default: Défaut
-              btn-primary: Primaire
-              btn-secondary-1: Secondaire-1
-              btn-secondary-2: Secondaire-2
-              btn-success: Succès
-              btn-info: Info
-              btn-warning: Attention
-              btn-danger: Danger
-              btn-link: Lien
+              btn-default: _t(AB_buttons_action_button_color_default)
+              btn-primary: _t(AB_buttons_action_button_color_primary)
+              btn-secondary-1: _t(AB_buttons_action_button_color_secondary1)
+              btn-secondary-2: _t(AB_buttons_action_button_color_secondary2)
+              btn-success: _t(AB_buttons_action_button_color_success)
+              btn-info: _t(AB_buttons_action_button_color_info)
+              btn-warning: _t(AB_buttons_action_button_color_warning)
+              btn-danger: _t(AB_buttons_action_button_color_danger)
+              btn-link: _t(AB_buttons_action_button_color_link)
           size:
-            label: Taille
+            label: _t(AB_buttons_action_button_size_label)
             advanced: true
             type: list
             options:
-              '': Normal
-              btn-xs: Petit
-              btn-sm: Moyen
-              btn-lg: Grand
+              '': _t(AB_buttons_action_button_size_standard)
+              btn-xs: _t(AB_buttons_action_button_size_small)
+              btn-sm: _t(AB_buttons_action_button_size_medium)
+              btn-lg: _t(AB_buttons_action_button_size_big)
           modal:
-            label: Ouvrir le contenu du lien dans une popup
-            hint: Fonctionne vers une page de ce wiki
+            label: _t(AB_buttons_action_button_modal_label)
+            hint: _t(AB_buttons_action_button_modal_hint)
             type: list
             advanced: true
             options:
-              modalbox: Lors du clic
-              modalbox-hover: Au survol
+              modalbox: _t(AB_buttons_action_button_modal_modalbox)
+              modalbox-hover: _t(AB_buttons_action_button_modal_modalbox_hover)
           pull:
-            label: Position
+            label: _t(AB_buttons_action_button_pull_label)
             advanced: true
             type: list
             options:
-              pull-right: Droite
-              btn-block: Toute la largeur
+              pull-right: _t(AB_buttons_action_button_pull_right)
+              btn-block: _t(AB_buttons_action_button_pull_block)
           new-window:
-            label: Ouvrir dans une nouvelle fenètre
+            label: _t(AB_buttons_action_button_new_window_label)
             advanced: true
             type: list
             options:
-              new-window: oui
+              new-window: _t(AB_buttons_action_button_new_window_yes)
       hideifnoaccess:
         advanced: true
-        label: Masquer si l'utilisateur n'a pas accès à la page liée
+        label: _t(AB_buttons_action_button_hideifnoaccess_label)
         type: checkbox
         default: false
       nobtn:
         advanced: true
-        label: Afficher sous forme de lien
+        label: _t(AB_buttons_action_button_nobtn_label)
         type: checkbox
         default: 0
         checkedvalue: 1

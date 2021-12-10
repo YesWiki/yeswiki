@@ -1,0 +1,18 @@
+<div class="input-group">
+    <label for="{{ confirmName }}">
+        <input 
+            class="element_checkbox" 
+            type="checkbox" 
+            id="{{ confirmName }}" 
+            value="1" 
+            name="{{ confirmName }}"
+            form="formulaire"
+        />
+        <span></span>
+    </label>
+  <div class="input-group-append">
+    <span class="input-group-text">
+        {{ _t('BAZ_USER_FIELD_EXISTING_USER_BY_NAME')|replace({'{currentName}':wikiName,'{proposedName}':newWikiName})|nl2br() }}
+    </span>
+  </div>
+</div>

@@ -1,5 +1,5 @@
 <?php
-if (!empty($GLOBALS['wiki']->getParameter('header'))) {
+if (!in_array($GLOBALS['wiki']->getParameter('header','true'),['true',true,1,'1'],true)) {
 	$premier = false;
 } else {
 	$premier = true;
@@ -27,34 +27,42 @@ if (!empty($nbcols)) {
 <div class="cols<?php echo $nbcols; ?>">
     <?php foreach ($fiches as $fiche) : ?>
 	    <?php if ($premier==true) : $premier = false; ?>
-		    <div class="jumbotron bazar-entry" <?php echo $fiche['html_data']; ?>>
-				<?php if (!empty($fiche['imagebf_image']) && file_exists('files/'.$fiche['imagebf_image'])) : ?>
-					<a class="pull-right" style="margin:0 0 1em 1em;" href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">
+		    <div class="well bazar-entry" <?php echo $fiche['html_data']; ?>>
+				<?php if (!empty($fiche['imagebf_image']) && (file_exists('files/'.$fiche['imagebf_image']) || isset($fiche['external-data']))) : ?>
+					<a class="pull-right" style="margin:0 0 1em 1em;" href="<?php echo $fiche['url']; ?>">
 					<img class="img-blog" alt="<?php echo htmlentities($fiche['bf_titre']);?>"
-						src="<?php echo redimensionner_image(
+						src="<?php echo (isset($fiche['external-data']))
+						? $fiche['external-data']['baseUrl'] . 'cache/image_400_300_'.$fiche['imagebf_image']
+						: redimensionner_image(
 							'files/'.$fiche['imagebf_image'],
 							'cache/image_400_300_'.$fiche['imagebf_image'],
 							400,
 							300,
 							'crop'
-						); ?>">
+						); ?>" <?php echo (isset($fiche['external-data']))
+						? 'onerror="this.src=\''.$fiche['external-data']['baseUrl'].'files/'.$fiche['imagebf_image'].'\'"'
+						 .'style="max-width:400px;max-height:300px;"'
+						: '' //TODO refactor redimensionner_image to use url and local cache ; idea  http://image.intervention.io/  ?
+					  ;?>>
 					</a>
 				<?php endif; ?>	  
 				<h2 style="margin-top:0;margin-bottom:.25em;">
-					<a href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">
+					<a href="<?php echo $fiche['url']; ?>">
 						<?php echo $fiche['bf_titre']; ?>
 					</a>
 				</h2>
 				<?php if ($showdate) : ?>
 				<small>
-					<a href="<?php echo $GLOBALS['wiki']->href('revisions', $fiche['id_fiche']);?>">
+					<a href="<?php echo $fiche['url'].'/revisions';?>">
 						<i class="far fa-calendar-alt"></i>
 					</a>
 					&nbsp;<?php echo date('d.m.Y', strtotime($fiche['date_maj_fiche'])); ?>
 				</small>
 				<?php endif; ?>
 				<?php if ($showauthor) : ?>
-					<small>par <?php echo $GLOBALS['wiki']->Format($fiche['owner']); ?></small>
+					<small>par <?php echo (isset($fiche['external-data']))
+						? '<a href="'.$fiche['external-data']['baseUrl'].'?'.$fiche['owner'].'">'.$fiche['owner'].'</a>'
+						: $GLOBALS['wiki']->Format($fiche['owner']); ?></small>
 				<?php endif; ?>
 
         <?php if (isset($fiche['soustitre']) && !empty($fiche['soustitre'])) :
@@ -64,7 +72,7 @@ if (!empty($nbcols)) {
           </p>
         <?php endif; ?>
 				<p class="lead">
-					<a href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">Plus d'infos ...</a>
+					<a href="<?php echo $fiche['url']; ?>">Plus d'infos ...</a>
 				</p>
 				<div class="clearfix"></div>
 			</div>
@@ -72,33 +80,41 @@ if (!empty($nbcols)) {
 			<?php if ($nbcols == 2) : ?>
 			<?php endif; ?>
 			<div class="article bazar-entry" <?php echo $fiche['html_data']; ?>>
-				<?php if (!empty($fiche['imagebf_image']) && file_exists('files/'.$fiche['imagebf_image'])) : ?>
-					<a class="pull-left" style="margin:0 1em 1em 0;" href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">
+				<?php if (!empty($fiche['imagebf_image']) && (file_exists('files/'.$fiche['imagebf_image'])||isset($fiche['external-data']))) : ?>
+					<a class="pull-left" style="margin:0 1em 1em 0;" href="<?php echo $fiche['url']; ?>">
 					<img class="img-blog" alt="<?php echo htmlentities($fiche['bf_titre']);?>"
-						src="<?php echo redimensionner_image(
+						src="<?php echo (isset($fiche['external-data']))
+						? $fiche['external-data']['baseUrl'] . 'cache/image_200_150_'.$fiche['imagebf_image']
+						: redimensionner_image(
 							'files/'.$fiche['imagebf_image'],
 							'cache/image_200_150_'.$fiche['imagebf_image'],
 							200,
 							150,
 							'crop'
-						); ?>">
+						); ?>"<?php echo (isset($fiche['external-data']))
+						? 'onerror="this.src=\''.$fiche['external-data']['baseUrl'].'files/'.$fiche['imagebf_image'].'\'"'
+						.'style="max-width:200px;max-height:150px;"'
+						: '' //TODO refactor redimensionner_image to use url and local cache ; idea  http://image.intervention.io/  ?
+					  ;?>>
 					</a>
 				<?php endif; ?>	  
 				<h4 class="title-article">
-					<a href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">
+					<a href="<?php echo $fiche['url']; ?>">
 						<?php echo $fiche['bf_titre'];?>
 					</a>
 				</h4>
 				<?php if ($showdate) : ?>
 				<small>
-					<a href="<?php echo $GLOBALS['wiki']->href('revisions', $fiche['id_fiche']);?>">
+					<a href="<?php echo $fiche['url'].'/revisions';?>">
 						<i class="far fa-calendar-alt"></i>
 					</a>
 					&nbsp;<?php echo date('d.m.Y', strtotime($fiche['date_maj_fiche'])); ?>
 				</small>
 				<?php endif; ?>
 				<?php if ($showauthor) : ?>
-					<small>par <?php echo $GLOBALS['wiki']->Format($fiche['owner']); ?></small>
+					<small>par <?php echo (isset($fiche['external-data']))
+						? '<a href="'.$fiche['external-data']['baseUrl'].'?'.$fiche['owner'].'">'.$fiche['owner'].'</a>'
+						: $GLOBALS['wiki']->Format($fiche['owner']); ?></small>
 				<?php endif; ?>
         <?php if (isset($fiche['soustitre']) && !empty($fiche['soustitre'])) :
         $soustitre = nl2br(strip_tags($GLOBALS['wiki']->format($fiche['soustitre']), '<br>')); ?>
@@ -106,7 +122,7 @@ if (!empty($nbcols)) {
             <?php echo substr($soustitre, 0, 280) . (strlen($soustitre) > 280 ? '...' : ''); ?>
           </p>
         <?php endif; ?>
-				<a class="link-more" href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">Plus d'infos ...</a>
+				<a class="link-more" href="<?php echo $fiche['url']; ?>">Plus d'infos ...</a>
 				<div class="clearfix"></div>
 			</div>
 		<?php endif;  ?> 

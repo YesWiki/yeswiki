@@ -11,7 +11,7 @@ $GLOBALS['translations'] = array_merge(
         'ATTACH_PARAM_WIDTH_NOT_NUMERIC' => 'le param&egrave;tre "width", en pixels, doit &ecirc;tre uniquement compos&eacute; de chiffres entiers',
         'ATTACH_UPLOAD_FORM_FOR_FILE' => 'Formulaire d\'envoi du fichier',
         'ATTACH_BACK_TO_PAGE' => 'Retour &agrave; la page',
-        'NO_RIGHT_TO_WRITE_IN_THIS_PAGE' => 'Vous n\'avez pas l\'acc&ecirc;s en &eacute;criture &agrave; cette page',
+        'NO_RIGHT_TO_WRITE_IN_THIS_PAGE' => 'Vous n\'avez pas l\'accès en &eacute;criture &agrave; cette page',
         'INVALID_REQUEST_METHOD' => 'M&eacute;thode de requ&egrave;te invalide',
         'ERROR_MOVING_TEMPORARY_FILE' => 'Erreur lors du d&eacute;placement du fichier temporaire',
         'ERROR_UPLOAD_MAX_FILESIZE' => 'Le fichier t&eacute;l&eacute;charg&eacute; exc&ecirc;de la taille de upload_max_filesize, configur&eacute; dans le php.ini.',
@@ -19,6 +19,7 @@ $GLOBALS['translations'] = array_merge(
         'ERROR_PARTIAL_UPLOAD' => 'Le fichier n\'a &eacute;t&eacute; que partiellement t&eacute;l&eacute;charg&eacute;.',
         'ERROR_NO_FILE_UPLOADED' => 'Aucun fichier n\'a &eacute;t&eacute; t&eacute;l&eacute;charg&eacute;.',
         'ERROR_NOT_AUTHORIZED_EXTENSION' => 'Le fichier n\'a pas une extension autorisée, voici celles que la configuration autorise : ',
+        'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Ajouter un lien pour afficher l'image seule en entier",
 
 
         // actions/filemanager.php
@@ -52,6 +53,9 @@ $GLOBALS['translations'] = array_merge(
         
         // actions/pdf.php
         'ATTACH_ACTION_PDF_PARAM_URL_ERROR' => 'L\'action pdf doit être appelée avec le paramètre « url » et l\'url renseignée doit provenir de la même origine que le wiki : c\'est à dire du même sous-domaine du serveur (par exemple \'xxx.yyy.com\'), du même schéma (par exemple \'https\') et du même port s\'il est spécifié (par exemple \'8080\').',
+        'ATTACH_ACTION_DISPLAY_PDF_TEXT' => 'Afficher le pdf dans la page :',
+        'ATTACH_ACTION_DISPLAY_PDF_LINK_TEXT' => 'sous forme de lien',
+        'ATTACH_ACTION_DISPLAY_PDF_INCLUDED_TEXT' => 'directement inclus dans la page',
 
         // handler edit
         'ACTIVATE_JS_TO_UPLOAD_FILES' => 'Activer JavaScript pour joindre des fichiers',
@@ -77,9 +81,15 @@ $GLOBALS['translations'] = array_merge(
         'ZOOM_HOVER' => 'Agrandissement au survol',
         'ALT_INFOS' => 'Ce texte sera affich&eacute; &agrave; la place de l\'image si elle est introuvable sur le serveur',
         'ALTERNATIVE_TEXT' => 'Texte de remplacement',
+        'NONE' => 'Texte en dessous',
         'LEFT' => 'Gauche',
         'CENTER' => 'Centre',
         'RIGHT' => 'Droite',
-        'FAILED' => '&Eacute;chou&eacute;'
+        'FAILED' => '&Eacute;chou&eacute;',
+        
+        // edit config action
+        'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_VIDEO_SERVICE]' => 'Service de vidéo par défaut (peertube, youtube ou vimeo)',
+        'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_PEERTUBE_INSTANCE]' => 'Adresse du serveur peertube par défaut',
+        'EDIT_CONFIG_GROUP_ATTACH' => 'Insertion de médias (images, vidéos)',
     )
 );

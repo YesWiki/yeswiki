@@ -1,6 +1,8 @@
 <?php
 namespace AutoUpdate;
 
+use YesWiki\Security\Controller\SecurityController;
+
 /**
  * Classe Controller
  *
@@ -15,12 +17,14 @@ class Controller
     private $autoUpdate;
     private $messages;
     private $wiki;
+    private $securityController;
 
     public function __construct($autoUpdate, $messages, $wiki)
     {
         $this->autoUpdate = $autoUpdate;
         $this->messages = $messages;
         $this->wiki = $wiki;
+        $this->securityController = $this->wiki->services->get(SecurityController::class);
     }
 
     /*	Parameter $requestedVersion contains the name of the YesWiki version
@@ -39,16 +43,48 @@ class Controller
 
         if (isset($get['upgrade'])
             and $this->autoUpdate->isAdmin()
+            and !$this->securityController->isWikiHibernated()
             ) {
+            $previousMessages = [];
+            foreach($this->messages as $message){
+                $previousMessages[] = $message;
+            }
             $this->upgrade($get['upgrade']);
-            return $this->wiki->render("@autoupdate/update.twig", [
-                'messages' => $this->messages,
-                'baseUrl' => $this->autoUpdate->baseUrl(),
-            ]);
+            if ($get['upgrade'] == 'yeswiki') {
+                // reload wiki to prevent missing files' error due to upgrade.
+                // prepare data
+                $data = [];
+                foreach ($previousMessages as $message) {
+                    $data_message = [];
+                    $data_message['status'] = $message['status'];
+                    $data_message['text'] = $message['text'];
+                    $data['messages'][] = $data_message;
+                }
+                foreach ($this->messages as $message) {
+                    $data_message = [];
+                    $data_message['status'] = $message['status'];
+                    $data_message['text'] = $message['text'];
+                    $data['messages'][] = $data_message;
+                }
+                $data['baseURL'] = $this->autoUpdate->baseUrl();
+                $_SESSION['updateMessage'] = json_encode($data);
+                
+                // call the same href to reload wiki in new doryphore version
+                // give $data by $_SESSION['updateMessage']
+                $newAdress = $this->wiki->Href();
+                header("Location: ".$newAdress);
+                exit();
+            } else {
+                return $this->wiki->render("@autoupdate/update.twig", [
+                    'messages' => $this->messages,
+                    'baseUrl' => $this->autoUpdate->baseUrl(),
+                ]);
+            }
         }
 
         if (isset($get['delete'])
             and $this->autoUpdate->isAdmin()
+            and !$this->securityController->isWikiHibernated()
             ) {
             $this->delete($get['delete']);
             return $this->wiki->render("@autoupdate/update.twig", [
@@ -59,13 +95,14 @@ class Controller
 
         return $this->wiki->render("@autoupdate/status.twig", [
             'baseUrl' => $this->autoUpdate->baseUrl(),
-            'isAdmin' => $this->autoUpdate->isAdmin(),
+            'isAdmin' => $this->autoUpdate->isAdmin() && !$this->securityController->isWikiHibernated(),
             'core' => $this->autoUpdate->repository->getCorePackage(),
             'themes' => $this->autoUpdate->repository->getThemesPackages(),
             'tools' => $this->autoUpdate->repository->getToolsPackages(),
             'showCore' => true,
             'showThemes' => true,
-            'showTools' => true
+            'showTools' => true,
+            'phpVersion' => PHP_VERSION
         ]);
     }
 
@@ -89,7 +126,7 @@ class Controller
         $package = $this->autoUpdate->repository->getPackage($packageName);
 
         // Téléchargement de l'archive
-        $file = $package->getFile();
+        $file = $package ? $package->getFile() : false;
         if (false === $file) {
             $this->messages->add('AU_DOWNLOAD', 'AU_ERROR');
             return;

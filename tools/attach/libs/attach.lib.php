@@ -24,7 +24,7 @@ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
 IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
 INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR wiki->; LOSS OF USE,
 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
@@ -33,6 +33,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # Classe de gestion de l'action {{attach}}
 # voir actions/attach.php ppour la documentation
 # copyrigth Eric Feldstein 2003-2004
+
+use YesWiki\Core\Service\LinkTracker;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -549,6 +551,11 @@ if (!class_exists('attach')) {
                     //modifie $link pour ?tre un lien vers un autre wiki
                     $this->link = $this->wiki->GetInterWikiUrl($matches[1], $matches[2]);
                 }
+                // create link if needed
+                $linkParts = $this->wiki->extractLinkParts($this->link);
+                if ($linkParts) {
+                    $this->wiki->services->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
+                }
                 $link = '<a href="'.$this->wiki->generateLink($this->link).'">';
             } else {
                 if (empty($this->nofullimagelink) or !$this->nofullimagelink) {
@@ -570,7 +577,8 @@ if (!class_exists('attach')) {
                 }
             }
 
-            $output = (isset($link) ? $link : '')."<figure class=\"$this->classes\" $data>$img$caption$legend</figure>".(isset($link) ? '</a>' : '');
+            $notAligned = (strpos($this->classes, 'left') === false && strpos($this->classes, 'right') == false  && strpos($this->classes, 'center') == false);
+            $output = ($notAligned ? '<div>' : '').(isset($link) ? $link : '')."<figure class=\"$this->classes\" $data>$img$caption$legend</figure>".(isset($link) ? '</a>' : '').($notAligned ? '</div>' :'');
 
             echo $output;
             //$this->showUpdateLink();
@@ -658,7 +666,7 @@ if (!class_exists('attach')) {
             
             // Call pdf actions
             $params = $this->wiki->parameter;
-            echo $this->wiki->Action('pdf',0,$params) ;
+            echo $this->wiki->Action('pdf', 0, $params) ;
         }
 
 

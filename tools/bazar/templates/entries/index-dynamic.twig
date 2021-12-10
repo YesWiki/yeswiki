@@ -1,0 +1,44 @@
+{{ include_javascript('javascripts/vendor/vue/vue.js') }}
+
+{% block assets %}{% endblock %}
+
+{{ include_javascript('tools/bazar/presentation/javascripts/bazar-list-dynamic.js', false, true) }}
+{{ include_css('tools/bazar/presentation/styles/bazar-list-dynamic.css') }}
+
+{# Extra Fields to retrieve from API call. By default we retrieve the one specified in the displayfields config #}
+{% if necessary_fields is defined %}
+  {% set params = params|merge({necessary_fields: necessary_fields}) %}
+{% endif %}
+
+<div class="bazar-list-dynamic-container no-dblclick" data-params="{{ params|json_encode }}" 
+     style="opacity: 0" :class="{mounted: mounted}">
+
+  {% if params.search and not params.groups %}
+    {{ include("@bazar/entries/index-dynamic/_search_input.twig") }}
+  {% endif %}
+  
+  <div class="facette-container dynamic row" data-filter-align="{{ params.groups ? params.filterposition : '' }}">
+    
+    {% set resultsColSize = params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format %}
+    {% set resultsColSize = params.groups ? resultsColSize : 12 %}
+    <div class="results-col col-sm-{{ resultsColSize }}">
+      <div class="bazar-list dynamic">
+        {% block display_entries %}
+        {% endblock %}      
+      </div>      
+    </div>
+
+    {% if params.groups %}
+      {{ include("@bazar/entries/index-dynamic/_filters.twig") }}
+    {% endif %}
+    
+  </div>
+
+  {{ include("@bazar/entries/index-dynamic/_pagination.twig") }}
+
+  {% if not params.isInIframe and params.showexportbuttons %}
+    {{ include("@bazar/entries/index/_export_buttons.twig") }}
+  {% endif %}
+
+  <modal-entry ref="modal"></modal-entry>
+</div>

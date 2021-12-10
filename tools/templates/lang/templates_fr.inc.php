@@ -43,10 +43,13 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_CUSTOM_GRAPHICS' => 'Apparence de la page',
     'TEMPLATE_SAVE' => 'Sauver',
     'TEMPLATE_APPLY' => 'Appliquer',
+    'TEMPLATE_APPLY_ALL' => 'Appliquer pour tout le site',
     'TEMPLATE_CANCEL' => 'Annuler',
     'TEMPLATE_THEME' => 'Th&egrave;me',
     'TEMPLATE_SQUELETTE' => 'Squelette',
     'TEMPLATE_STYLE' => 'Style',
+    'TEMPLATE_PRESET' => 'Preset',
+    'TEMPLATE_DEFAULT_PRESET' => 'Preset par défaut',
     'TEMPLATE_BG_IMAGE' => 'Image de fond',
     'TEMPLATE_ERROR_NO_DATA' => 'ERREUR : rien &agrave; ajouter dans les meta-donn&eacute;es.',
     'TEMPLATE_ERROR_NO_ACCESS' => 'ERREUR : pas les droits d\'acc&eacute;s.',
@@ -57,7 +60,7 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_EDIT_THIS_PAGE' => '&Eacute;diter la page',
     'TEMPLATE_WIKINAME_IS_NOT_A_PAGE' => 'Ce ChatMot n\'est pas une page',
     'TEMPLATE_CLICK_TO_SEE_REVISIONS' => 'Les derni&egrave;res modifications de la page',
-    'TEMPLATE_LAST_UPDATE' => 'Modifi&eacute;e le',
+    'TEMPLATE_LAST_UPDATE' => 'Dernière édition :',
     'TEMPLATE_OWNER' => 'Propri&eacute;taire',
     'TEMPLATE_YOU' => 'vous',
     'TEMPLATE_NO_OWNER' => 'Pas de propri&eacute;taire',
@@ -76,7 +79,7 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_SHARE' => 'Partager',
 
     // formatage des dates
-    'TEMPLATE_DATE_FORMAT' => 'd.m.Y \&\a\g\r\a\v\e; H:i:s',
+    'TEMPLATE_DATE_FORMAT' => 'd M Y',
 
     // recherche
     'TEMPLATE_SEARCH_INPUT_TITLE' => 'Rechercher dans YesWiki [alt-shift-C]',
@@ -169,8 +172,68 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_FORCE_TEMPLATE' => 'Forcer le choix pour tout le wiki.',
 
     // themeselector.tpl.html
+    'TEMPLATE_PRIMARY_COLOR' => 'Couleur primaire',
+    'TEMPLATE_SECONDARY_COLOR_1' => 'Couleur secondaire 1',
+    'TEMPLATE_SECONDARY_COLOR_2' => 'Couleur secondaire 2',
+    'TEMPLATE_NEUTRAL_COLOR' => 'Couleur de texte',
+    'TEMPLATE_SOFT_COLOR' => 'Couleur neutre',
+    'TEMPLATE_LIGHT_COLOR' => 'Couleur claire',
+    'TEMPLATE_MAIN_TEXT_SIZE' => 'Taille de texte',
+    'TEMPLATE_MAIN_TEXT_FONT' => 'Police des textes',
+    'TEMPLATE_MAIN_TITLE_FONT' => 'Police des titres',
+    'TEMPLATE_CHOOSE_FONT' => 'Choisir une police',
+    'TEMPLATE_SEARCH_POINTS' => 'Rechercher...',
+    'TEMPLATE_DELETE_CSS_PRESET' => 'Voulez-vous supprimer le preset personnalisé',
+    'TEMPLATE_ADD_CSS_PRESET_API_HINT' => 'Sauvegarde un fichier preset personnalisé',
+    'TEMPLATE_DELETE_CSS_PRESET_API_HINT' => 'Supprime un fichier preset personnalisé',
+    'TEMPLATE_PRESET_FILENAME' => 'Nom du preset',
+    'TEMPLATE_THEME_NOT_SAVE' => 'Thème non sauvegardé',
+    'TEMPLATE_FILE_NOT_ADDED' => ' non ajouté !',
+    'TEMPLATE_FILE_NOT_DELETED' => ' non supprimé !',
+    'TEMPLATE_FILE_ALREADY_EXISTING' => "Le fichier est déjà existant ! Changez de nom de preset ou connectez-vous en admin !",
+    'TEMPLATE_PRESET_ERROR' => "Impossible d'appliquer ce preset, il y a une erreur !",
     'TEMPLATE_PRESETS' => 'Configurations graphiques',
-    'TEMPLATE_CREATE_PRESET' => 'Créer sa configuration graphique',
+    'TEMPLATE_CREATE_PRESET' => 'Créer une nouvelle configuration graphique',
     'TEMPLATE_CUSTOMIZE_PRESET' => 'Configuration graphique',
+
+    // actions-builder
+    'AB_template_group_label' => 'Mise en forme',
+    'AB_template_action_label_label' => 'Etiquette',
+    'AB_template_action_label_example' => 'Texte de votre étiquette à changer par la suite',
+    'AB_template_actions_class' => 'Classe',
+    'AB_template_actions_color' => 'Couleur',
+    'AB_template_actions_primary' => 'Primaire',
+    'AB_template_actions_secondary_1' => 'Secondaire-1',
+    'AB_template_actions_secondary_2' => 'Secondaire-2',
+    'AB_template_actions_success' => 'Succès',
+    'AB_template_actions_info' => 'Info',
+    'AB_template_actions_warning' => 'Attention',
+    'AB_template_actions_danger' => 'Danger',
+    'AB_template_action_accordion_label' => 'Afficher des encadrés en accordéon',
+    'AB_template_action_accordion_example' => "{{panel title=\"Titre 1\"}}\nTexte du panneau 1 à changer par la suite\n{{end elem=\"panel\"}}\n"
+        ."{{panel title=\"Titre 2\"}}\nTexte du panneau 2 à changer par la suite\n{{end elem=\"panel\"}}\n",
+    'AB_template_action_ariane_label' => 'Fil d\'ariane',
+    'AB_template_action_col_label' => 'Colonne',
+    'AB_template_action_col_example' => 'Texte de votre colonne à changer par la suite',
+    'AB_template_col_size_label' => 'Largeur de la colonne',
+    'AB_template_action_grid_label' => 'Afficher plusieurs colonnes',
+    'AB_template_action_grid_example' => "{{col size=\"3\"}}\nTexte de la colonne 1 à changer par la suite\n{{end elem=\"col\"}}\n"
+        ."{{col size=\"3\"}}\nTexte de la colonne 2 à changer par la suite\n{{end elem=\"col\"}}\n"
+        ."{{col size=\"3\"}}\nTexte de la colonne 3 à changer par la suite\n{{end elem=\"col\"}}\n"
+        ."{{col size=\"3\"}}\nTexte de la colonne 4 à changer par la suite\n{{end elem=\"col\"}}\n",
+
+    // gererdroits
+    'ACLS_SELECT_PAGES_FILTER' => 'Filtrer :',
+    'ACLS_SELECT_PAGES_FILTER_ON_PAGES' => 'les pages uniquement',
+    'ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES' => 'les pages spéciales uniquement',
+    'ACLS_SELECT_PAGES_FILTER_ON_LISTS' => 'les listes uniquement',
+    'ACLS_SELECT_PAGES_FILTER_FORM' => 'les fiches du formulaire : {name} ({id})',
+
+    // for edit config
+    'EDIT_CONFIG_HINT_META_KEYWORDS' => 'Mots clés pour le référencement (séparés par des virgules, pas plus de 20-30)',
+    'EDIT_CONFIG_HINT_META_DESCRIPTION' => 'Description du site en une phrase, pour le référencement (Attention : ne pas mettre de "." (point))',
+    'EDIT_CONFIG_HINT_META[ROBOTS]' => 'Empêcher les robots à indexer le wiki (Mettre \'noindex,nofollow,noarchive,noimageindex\')',
+    'EDIT_CONFIG_GROUP_TEMPLATES' => 'Balises meta pour l\'indexation web', // idéalement 'Mise en forme' mais templates est pour le moment uniquement utilisé pour meta
+
     )
 );

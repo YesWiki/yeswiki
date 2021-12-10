@@ -2,10 +2,12 @@
     "name": "yeswiki/yeswiki",
     "description": "A wiki system with extensions making collaboration more simple (databases, maps, easy editing, themes,...)",
     "homepage": "https://yeswiki.net",
-    "license": "AGPL-3.0",
-    "version": "4.0.0-beta",
+    "license": "AGPL-3.0-or-later",
     "minimum-stability": "dev",
     "prefer-stable": true,
+    "scripts": {
+      "test": "phpunit tests"
+    },
     "require": {
         "php": "^7.3",
         "ext-json": "*",
@@ -14,14 +16,16 @@
         "symfony/dependency-injection": "^5.1",
         "symfony/config": "^5.1",
         "symfony/yaml": "^5.1",
-        "yeswiki/theme-margot": "*",
+        "yeswiki/theme-margot": "dev-master",
         "oomphinc/composer-installers-extender": "^2.0",
         "twig/twig": "^3.0",
         "doctrine/annotations": "^1.11",
         "doctrine/cache": "^1.10",
         "symfony/routing": "^5.1",
         "symfony/http-foundation": "^5.1",
-        "symfony/http-kernel": "^5.1"
+        "symfony/http-kernel": "^5.1",
+        "tamtamchik/simple-flash": "^2.0",
+        "caxy/php-htmldiff": "^0.1.13"
     },
     "extra": {
         "installer-types": ["yeswiki-extension", "yeswiki-theme"],
@@ -31,6 +35,7 @@
         }
     },
     "require-dev": {
-        "symfony/var-dumper": "^5.1"
+        "symfony/var-dumper": "^5.1",
+        "phpunit/phpunit": "^9"
     }
 }

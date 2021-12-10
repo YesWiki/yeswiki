@@ -31,7 +31,7 @@
             </td>
             <td>
                 {% if isAdmin and ext.updateAvailable and ext.installed %}
-                    <a  href="{{ baseUrl }}{{ ext.updateLink }}"
+                    <a  href="{{ url({params:{upgrade:ext.updateLink}}) }}"
                         class="btn btn-xs btn-primary"
                         title="{{ _t('AU_UPDATE') }}"
                     >
@@ -43,7 +43,7 @@
             </td>
             <td>
                 {% if isAdmin and not ext.installed %}
-                    <a  href="{{ baseUrl }}{{ ext.updateLink }}"
+                    <a  href="{{ url({params:{upgrade:ext.updateLink}}) }}"
                         class="btn btn-xs btn-primary"
                         title="{{ _t('AU_INSTALL') }}"
                     >

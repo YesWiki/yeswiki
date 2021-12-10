@@ -1,0 +1,17 @@
+parameters:
+  favorite_theme: 'margot'
+  favorite_style: 'margot.css'
+  favorite_squelette: '1col.tpl.html'
+  favorite_background_image: ''
+  hide_action_template: false
+  # for edit config action
+  templates_editable_config_params:
+    - meta_keywords
+    - meta_description
+    - meta:
+      - robots
+
+services:
+  _defaults:
+    autowire: true
+    public: true

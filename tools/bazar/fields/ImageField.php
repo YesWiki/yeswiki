@@ -4,7 +4,8 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\Guard;
+use YesWiki\Core\Service\AclService;
+use YesWiki\Security\Controller\SecurityController;
 
 /**
  * @Field({"image"})
@@ -46,7 +47,7 @@ class ImageField extends FileField
         $js = 'function getOrientation(file, callback) {
           var reader = new FileReader();
           reader.onload = function(e) {
-        
+
             var view = new DataView(e.target.result);
             if (view.getUint16(0, false) != 0xFFD8) return callback(-2);
             var length = view.byteLength, offset = 2;
@@ -139,21 +140,28 @@ class ImageField extends FileField
 
         if (isset($value) && $value != '') {
             if (isset($_GET['suppr_image']) && $_GET['suppr_image'] == $value) {
-                if ($this->getService(Guard::class)->isAllowed('supp_fiche', (isset($entry['owner']) ? $entry['owner'] : ''))) {
+                if ($this->isAllowedToDeleteFile($entry)) {
                     if (file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
                         unlink(BAZ_CHEMIN_UPLOAD . $value);
+                    }
+                    if (file_exists('cache/vignette_' . $value)) {
+                        unlink('cache/vignette_' . $value);
+                    }
+                    if (file_exists('cache/image_' . $value)) {
+                        unlink('cache/image_' . $value);
                     }
 
                     $this->updateEntryAfterImageDelete($entry);
 
-                    return '<div class="alert alert-info">' . _t('BAZ_FICHIER') . $value . _t('BAZ_A_ETE_EFFACE') . '</div>';
+                    return '<div class="alert alert-info">' . _t('BAZ_FICHIER') . $value . _t('BAZ_A_ETE_EFFACE') . '</div>'."\n".
+                            $this->render('@bazar/inputs/image.twig');
                 } else {
-                    return '<div class="alert alert-info">' . _t('BAZ_DROIT_INSUFFISANT') . '</div>' . "\n";
+                    $alertMessage = '<div class="alert alert-info">' . _t('BAZ_DROIT_INSUFFISANT') . '</div>' . "\n";
                 }
             }
 
             if (file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
-                return $this->render('@bazar/inputs/image.twig', [
+                return ($alertMessage ?? '') .$this->render('@bazar/inputs/image.twig', [
                     'value' => $value,
                     'downloadUrl' => BAZ_CHEMIN_UPLOAD . $value,
                     'deleteUrl' => $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag(), 'suppr_image=' . $value, false),
@@ -166,16 +174,16 @@ class ImageField extends FileField
                         $this->thumbnailHeight,
                         $this->imageWidth,
                         $this->imageHeight
-                    )
+                    ),
+                    'isAllowedToDeleteFile' => $this->isAllowedToDeleteFile($entry),
                 ]);
             } else {
                 $this->updateEntryAfterImageDelete($entry);
 
-                return '<div class="alert alert-danger">' . _t('BAZ_FICHIER') . $value . _t('BAZ_FICHIER_IMAGE_INEXISTANT') . '</div>';
+                $alertMessage = '<div class="alert alert-danger">' . _t('BAZ_FICHIER') . $value . _t('BAZ_FICHIER_IMAGE_INEXISTANT') . '</div>';
             }
-        } else {
-            return $this->render('@bazar/inputs/image.twig');
         }
+        return ($alertMessage ?? '') .$this->render('@bazar/inputs/image.twig');
     }
 
     public function formatValuesBeforeSave($entry)
@@ -185,9 +193,25 @@ class ImageField extends FileField
             $filePath = BAZ_CHEMIN_UPLOAD . $fileName;
 
             if (preg_match("/(gif|jpeg|png|jpg)$/i", $fileName)) {
-                if (!file_exists($filePath)) {
+                if (!file_exists($filePath) && !$this->getService(SecurityController::class)->isWikiHibernated()) {
                     file_put_contents($filePath, file_get_contents($_POST['data-'.$this->propertyName]));
                     chmod($filePath, 0755);
+
+                    if (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '') {
+                        // delete previous files only if authorized (owner)
+                        if ($this->getService(AclService::class)->check('%', null, true, $entry['id_fiche'])) {
+                            $previousFileName = $entry['oldimage_' . $this->propertyName];
+                            if (file_exists(BAZ_CHEMIN_UPLOAD . $previousFileName)) {
+                                unlink(BAZ_CHEMIN_UPLOAD . $previousFileName);
+                            }
+                            if (file_exists('cache/vignette_' . $previousFileName)) {
+                                unlink('cache/vignette_' . $previousFileName);
+                            }
+                            if (file_exists('cache/image_' . $previousFileName)) {
+                                unlink('cache/image_' . $previousFileName);
+                            }
+                        }
+                    }
 
                     // Generate thumbnails
                     if ($this->thumbnailWidth != '' && $this->thumbnailHeight != '' && !file_exists('cache/vignette_' . $fileName)) {
@@ -204,17 +228,14 @@ class ImageField extends FileField
             } else {
                 echo '<div class="alert alert-danger">Extension non autoris&eacute;.</div>';
             }
-
-            return [
-                $this->propertyName => $fileName,
-                'fields-to-remove' => ['filename-'.$this->propertyName, 'data-'.$this->propertyName, 'oldimage_'.$this->propertyName]
-            ];
+            $entry[$this->propertyName] = $fileName;
         } elseif (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '') {
-            return [
-                $this->propertyName => $entry['oldimage_' . $this->propertyName],
-                'fields-to-remove' => ['filename-'.$this->propertyName, 'data-'.$this->propertyName, 'oldimage_' . $this->propertyName]
-            ];
+            $entry[$this->propertyName] = $entry['oldimage_' . $this->propertyName];
         }
+        return [
+            $this->propertyName => $this->getValue($entry),
+            'fields-to-remove' => ['filename-'.$this->propertyName, 'data-'.$this->propertyName, 'oldimage_' . $this->propertyName]
+        ];
     }
 
     protected function renderStatic($entry)

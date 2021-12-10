@@ -24,6 +24,13 @@ class EditHandlersAclsAction extends YesWikiAction
 {
     public function run()
     {
+        if (!$this->wiki->UserIsAdmin()) {
+            return $this->render('@templates/alert-message.twig', [
+                'type'=>'danger',
+                'message'=> "EditHandlersAclsAction : " . _t('BAZ_NEED_ADMIN_RIGHTS')
+            ]) ;
+        }
+
         $wiki = &$this->wiki;
         $list = $wiki->services->get(Performer::class)->list('handler');
         sort($list);

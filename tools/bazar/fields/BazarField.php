@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Wiki;
 
 abstract class BazarField implements \JsonSerializable
 {
@@ -53,19 +54,27 @@ abstract class BazarField implements \JsonSerializable
         $this->required = $values[self::FIELD_REQUIRED] == 1;
         $this->searchable = $values[self::FIELD_SEARCHABLE];
         $this->hint = $values[self::FIELD_HINT];
-        $this->readAccess = $values[self::FIELD_READ_ACCESS];
-        $this->writeAccess = $values[self::FIELD_WRITE_ACCESS];
+        $this->readAccess = str_replace(',', "\n", $values[self::FIELD_READ_ACCESS]);
+        $this->writeAccess = str_replace(',', "\n", $values[self::FIELD_WRITE_ACCESS]);
         $this->semanticPredicate = $values[self::FIELD_SEMANTIC_PREDICATE];
+        $this->semanticPredicate = strpos($this->semanticPredicate, ',')
+                ? array_map('trim', explode(',', $this->semanticPredicate))
+            : $this->semanticPredicate;
 
         // By default, the entry ID is the field name
         $this->propertyName = $values[self::FIELD_NAME];
     }
 
-    // Render the edit view of the field. Check ACLS first
-    public function renderStaticIfPermitted($entry)
+    /**
+     * Render the edit view of the field. Check ACLS first
+     * @param array|null $entry
+     * @param string|null $userNameForRendering username to render the field, if empty uses connected user
+     * @return string|null $html
+     */
+    public function renderStaticIfPermitted($entry, ?string $userNameForRendering = null)
     {
         // Safety checks, must be run before every renderStatic
-        if (!$this->canRead($entry)) {
+        if (!$this->canRead($entry, $userNameForRendering)) {
             return '';
         }
 
@@ -86,7 +95,8 @@ abstract class BazarField implements \JsonSerializable
     // Format input values before save
     public function formatValuesBeforeSave($entry)
     {
-        return [$this->propertyName => $this->getValue($entry)];
+        // to prevent creation of empty keys
+        return empty($this->propertyName) ? [] : [$this->propertyName => $this->getValue($entry)];
     }
 
     // Render the show view of the field
@@ -121,21 +131,25 @@ abstract class BazarField implements \JsonSerializable
     }
 
     // HELPERS
-
-    /* Return true if we are if reading is allowed for the field */
-    protected function canRead($entry)
+    /**
+     * Return true if we are if reading is allowed for the field
+     * @param array|null $entry
+     * @param string|null $userNameForRendering username to render the field, if empty uses connected user
+     * @return bool
+     */
+    public function canRead($entry, ?string $userNameForRendering = null)
     {
         $readAcl = empty($this->readAccess) ? '' : $this->readAccess;
         $isCreation = !$entry;
-        return empty($readAcl) || $this->getService(AclService::class)->check($readAcl, null, true, $isCreation ? '' : $entry['id_fiche']);
+        return empty($readAcl) || $this->getService(AclService::class)->check($readAcl, $userNameForRendering, true, $isCreation ? '' : $entry['id_fiche']);
     }
 
     /* Return true if we are if editing is allowed for the field */
-    protected function canEdit($entry)
+    public function canEdit($entry)
     {
         $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
         $isCreation = !$entry;
-        return empty($writeAcl) || $this->getService(AclService::class)->check($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : '');
+        return empty($writeAcl) || $this->getService(AclService::class)->check($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : 'edit');
     }
 
     protected function render($templatePath, $data = [])
@@ -230,5 +244,14 @@ abstract class BazarField implements \JsonSerializable
             'write_acl' => $this->getWriteAccess(),
             'sem_type' => $this->getSemanticPredicate(),
             ];
+    }
+
+    /**
+     * return wiki from service but do not instanciate it at construct to prevent infinite loop
+     * @return Wiki $wiki
+     */
+    protected function getWiki(): Wiki
+    {
+        return $this->getService(Wiki::class);
     }
 }

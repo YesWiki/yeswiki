@@ -93,14 +93,13 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'CONTACT_TEMPLATE_NOT_FOUND' => 'Fichier de template non trouvé',
 'CONTACT_MESSAGE_SENT_FROM' => 'Message envoyé à partir de',
 
-'CONTACT_PERIOD' => 'Période',
+'CONTACT_PERIOD' => 'Recevoir le contenu de cette page par email de manière',
 'CONTACT_DAILY' => 'Journalière',
 'CONTACT_WEEKLY' => 'Hebdomadaire',
 'CONTACT_MONTHLY' => 'Mensuelle',
-'CONTACT_FOREVER' => 'Toujours',
-'CONTACT_SUBSCRIBE_FOR_THIS_PERIOD' => 'Me notifier par mail sur cette période',
-'CONTACT_UNSUBSCRIBE_FOR_THIS_PERIOD' => 'Me désabonner des notifications de cette période',
-'CONTACT_LOGIN_TO_GET_INFOS' => 'Pour vous abonner à ce contenu, vous devez vous identifier.',
+'CONTACT_UNSUBSCRIBE' => 'Se désabonner',
+'CONTACT_SUCCESS_SUBSCRIBE' => 'Vous êtes maintenant abonné de manière ',
+'CONTACT_SUCCESS_UNSUBSCRIBE' => 'Vous avez bien été désabonné',
 
 'CONTACT_THIS_MESSAGE' => 'Ce message est envoyé par un visiteur depuis la fiche',
 'CONTACT_FROM_FORM' => 'du formulaire',
@@ -108,6 +107,28 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'CONTACT_REPLY' => 'Vous pouvez lui écrire un message à',
 'CONTACT_REPLY2' => 'en répondant à ce mail',
 
+// action-builder Contact
+'AB_contact_group_label' => "Actions d'envoi d'e-mail/listes",
+'AB_abonnement_action_label' => "S'abonner à une liste de diffusion",
+'AB_abonnement_template_label' => "template",
+'AB_abonnement_class_label' => "classe",
+'AB_abonnement_mailinglist_label' => "Liste de diffusion",
+'AB_deabonnement_action_label' => "Se désabonner d'une liste de diffusion",
+'AB_contact_action_label' => "Afficher un formulaire de contact",
+'AB_contact_action_mail_label' => "E-mail du destinataire",
+'AB_contact_action_entete_label' => "En-tête",
+'AB_contact_action_template_label' => "Template personnalisé",
+'AB_contact_action_template_hint' => "Ex. : complete-contact-form.tpl.html",
+'AB_contact_action_class_label' => "classe css",
+'AB_listsubscription_action_label' => "listsubscription",
+'AB_mailperiod_action_label' => "S'abonner pour recevoir périodiquement le contenu d'une page par email",
+'AB_mailperiod_action_hint' => "Pour que cette aciton fonctionne vous devez vérifier certains paramètres sur votre serveur. Voir la documentation sur https://yeswiki.net/?MailPeriod",
+'AB_mailinglist_action_label' => "Inscrire massivement des mails à une newsletter",
+'AB_mailinglist_action_description' => "Action permettant d'inscrire ou désinscrire massivement des mails à une newsletter",
 
+
+// for edit config
+'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => "Ajouter 'wiki=' aux liens vers ce wiki dans les e-mails",
+'EDIT_CONFIG_GROUP_CONTACT' => 'Envoi des e-mails',
 
 ));

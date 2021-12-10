@@ -8,7 +8,7 @@ $yeswiki_javascripts = "\n" . '  <!-- javascripts -->' . "\n";
 if (isset($this->config['use_jquery_cdn']) && $this->config['use_jquery_cdn'] == "1") {
     $this->addJavascriptFile('https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js', true);
 } else {
-    $this->addJavascriptFile('tools/templates/libs/vendor/jquery-3.5.1.min.js', true);
+    $this->addJavascriptFile('javascripts/vendor/jquery/jquery.min.js', true);
 }
 
 // on récupère le bon chemin pour le theme
@@ -46,7 +46,7 @@ if (is_dir($repertoire)) {
 
 // s'il n'y a pas le javascript de bootstrap dans le theme, on le rajoute
 if (!$bootstrapjs) {
-    $this->addJavascriptFile('tools/templates/libs/vendor/bootstrap.min.js');
+    $this->addJavascriptFile('javascripts/vendor/bootstrap/bootstrap.min.js');
     $this->addJavascriptFile('tools/templates/libs/vendor/bootstrap3-typeahead.min.js');
 }
 
@@ -60,8 +60,11 @@ if (isset($scripts) && is_array($scripts)) {
 
 // s'il n'y a pas le javascript de yeswiki dans le theme, on le rajoute
 if (!$yeswikijs) {
-    $this->addJavascriptFile('tools/templates/libs/yeswiki-base.js');
+    $this->addJavascriptFile('javascripts/yeswiki-base.js');
 }
+
+// ajoute la méthode pour les traductions js
+$this->addJavascriptFile('javascripts/yeswiki-base-no-defer.js', true);
 
 // add javascript files which are included in the custom javascript directory
 $customJsPath = 'custom/javascripts';
@@ -78,6 +81,23 @@ $yeswiki_javascripts .= isset($GLOBALS['js']) ? $GLOBALS['js'] : '';
 // on vide la variable globale pour le javascript
 $GLOBALS['js'] = '';
 
+// do not use $GLOBALS['prefered_language'] because can be update for current page language
+
+// Globale wiki variable
+echo "<script>
+    var wiki = {
+        ...((typeof wiki !== 'undefined') ? wiki : null),
+        ...{
+    locale: '".detectPreferedLanguage($this, $GLOBALS['available_languages'], 'auto', '')."',
+    baseUrl: '{$this->config['base_url']}',
+    lang: {
+        ...((typeof wiki !== 'undefined') ? (wiki.lang ?? null) : null),
+        ...".json_encode($GLOBALS['translations_js'] ?? null)."
+    },
+    pageTag: '{$this->getPageTag()}',
+    isDebugEnabled: ".($this->GetConfigValue('debug') =='yes' ? 'true' : 'false')."
+}};
+</script>";
 
 // TODO: CSS a ajouter ailleurs?
 if (isset($GLOBALS['css']) && !empty($GLOBALS['css'])) {

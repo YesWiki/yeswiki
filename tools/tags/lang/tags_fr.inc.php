@@ -109,6 +109,11 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'TAGS_DOWNLOAD' => 'Télécharger',
 'TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE' => 'Contenu en ligne sur la page',
 'TAGS_NO_EBOOK_METADATAS' => 'Cette page ne poss&egrave;de pas les m&eacute;tadonn&eacute;es n&eacute;cessaires pour cr&eacute;er l\'ebook.',
-'TAGS_NO_EBOOK_FOUND' => 'Pas d\'ebook trouv&eacute;.'
+'TAGS_NO_EBOOK_FOUND' => 'Pas d\'ebook trouv&eacute;.',
+
+// action builder tags group
+'AB_tags_group_label' => 'Gestion des tags',
+'AB_tags_admintag_label' => 'Gestion des tags',
+'AB_tags_listpagestag_label' => 'Liste des pages par tag',
 
 ));

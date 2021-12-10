@@ -5,14 +5,17 @@ namespace YesWiki\Bazar\Controller;
 use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Security\Controller\SecurityController;
 
 class ListController extends YesWikiController
 {
     protected $listManager;
+    protected $securityController;
 
-    public function __construct(ListManager $listManager)
+    public function __construct(ListManager $listManager, SecurityController $securityController)
     {
         $this->listManager = $listManager;
+        $this->securityController = $securityController;
     }
 
     public function displayAll()
@@ -31,13 +34,14 @@ class ListController extends YesWikiController
         foreach ($lists as $key => $list) {
             $values[$key]['title'] = $list['titre_liste'];
             $values[$key]['options'] = $list['label'];
-            $values[$key]['canEdit'] = $this->wiki->HasAccess('write', $key);
-            $values[$key]['canDelete'] = $this->wiki->UserIsAdmin() || $this->wiki->UserIsOwner($key);
+            $values[$key]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->wiki->HasAccess('write', $key);
+            $values[$key]['canDelete'] = !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin() || $this->wiki->UserIsOwner($key));
         }
 
         return $this->render('@bazar/lists/list_table.twig', [
             'lists' => $values,
-            'loggedUser' => $this->wiki->GetUser()
+            'loggedUser' => $this->wiki->GetUser(),
+            'canCreate' => !$this->securityController->isWikiHibernated()
             ]);
     }
 

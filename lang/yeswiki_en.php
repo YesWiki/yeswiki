@@ -28,7 +28,7 @@
 *@copyright     2014 Outils-Réseaux
 */
 
-$GLOBALS['translations'] = array(
+$GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 
 // wakka.php
 'UNKNOWN_ACTION' => 'Unknown action',
@@ -268,6 +268,7 @@ $GLOBALS['translations'] = array(
 'ALL_ADMIN_TASKS_ARE_DESCRIBED_IN_THE_PAGE' => 'All admin tasks are described in the page "AdministrationDeYesWiki" accessible from the homepage',
 'USE_AN_EXISTING_ACCOUNT' => 'Use an existing account',
 'NO' => 'No',
+'YES' => 'Yes',
 'OR_CREATE_NEW_ACCOUNT' => 'Or create a new one',
 'ADMIN' => 'Administrator',
 'MUST_BE_WIKINAME' => 'must be a WikiName',
@@ -402,4 +403,48 @@ $GLOBALS['translations'] = array(
 // YesWiki\Session class
 'SESSION_YOU_MUST_FIRST_SET_ARGUMENT' => 'You must set argument for object of \YesWiki\Session class',
 
-);
+// include/services/ThemeManager.php
+'THEME_MANAGER_THEME_FOLDER' => 'The theme\'s folder ',
+'THEME_MANAGER_SQUELETTE_FILE' => 'The 	skeleton\'s file ',
+'THEME_MANAGER_NOT_FOUND' => ' is not found.',
+'THEME_MANAGER_ERROR_GETTING_FILE' => 'An error occured while loading the file : ',
+'THEME_MANAGER_CLICK_TO_INSTALL' => 'Click to install the theme ',
+'THEME_MANAGER_AND_REPAIR' => ' and repair the website',
+'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Login as admin to upgrade.',
+
+// actions/EditConfigAction.php
+'EDIT_CONFIG_TITLE' => 'Change configuration file',
+'EDIT_CONFIG_CURRENT_VALUE' => 'Current value',
+'EDIT_CONFIG_SAVE' => 'Configuration saved',
+'EDIT_CONFIG_HINT_WAKKA_NAME' => 'Head of the YesWiki website',
+'EDIT_CONFIG_HINT_ROOT_PAGE' => 'Welcome page\'s name',
+'EDIT_CONFIG_HINT_DEFAULT_WRITE_ACL' => 'Default write pages access control',
+'EDIT_CONFIG_HINT_DEFAULT_READ_ACL' => 'Default read pages access control',
+'EDIT_CONFIG_HINT_DEBUG' => 'Activate debug mode (\'yes\'/\'no\')',
+'EDIT_CONFIG_HINT_DEFAULT_LANGUAGE' => '(\'fr\',\'en\',...)',
+'EDIT_CONFIG_HINT_CONTACT_FROM' => 'E-mail address used as sender for messages from entries',
+'EDIT_CONFIG_HINT_MAIL_CUSTOM_MESSAGE' => 'Custom message for e-mail sending',
+'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING' => 'Asked password to modify forms (empty = no restriction)',
+'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING_MESSAGE' => 'Message displayed above the password asked password to modify forms',
+'EDIT_CONFIG_HINT_ALLOW_DOUBLECLIC' => 'Allow double click to edit menus and special pages',
+'EDIT_CONFIG_GROUP_CORE' => 'Main parameters',
+'EDIT_CONFIG_GROUP_ACCESS' => "Access rights",
+'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
+
+// handlers/update
+'UPDATE_ADMIN_PAGES' => 'Update admin pages',
+'UPDATE_ADMIN_PAGES_CONFIRM' => 'Confirm pages\' update : ',
+'UPDATE_ADMIN_PAGES_HINT' => 'Update admin pages with latest features. This is reversible.',
+'UPDATE_ADMIN_PAGES_ERROR' => 'Not possible to update all admin pages !',
+
+// handlers/revisions
+'SUCCESS_RESTORE_REVISION' => "The version was restored",
+'TITLE_PAGE_HISTORY' => 'Page history',
+'TITLE_ENTRY_HISTORY' => 'Entry history',
+'REVISION_VERSION' => 'Revision N°',
+'REVISION_ON' => 'on',
+'REVISION_BY' => 'by',
+'CURRENT_VERSION' => 'Current revision',
+'RESTORE_REVISION' => 'Restore this revision',
+'DISPLAY_WIKI_CODE' => 'Display Wiki code',
+));

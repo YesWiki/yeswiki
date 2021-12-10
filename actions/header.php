@@ -1,4 +1,5 @@
 <?php
+// DEPRECIATED keep same filename without class to prevent error at update
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -34,6 +35,10 @@ if ($act = preg_match_all("/".'(\\{\\{)'.'(.*?)'.'(\\}\\})'."/is", $template_hea
         }
         $i++;
     }
+}
+
+if ($this->GetConfigValue('debug')=='yes') {
+    $template_header .= "<div>DEPRECIATED HEADER USED FOR BACKUP</div>\n";
 }
 
 echo $template_header;

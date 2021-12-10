@@ -4,8 +4,11 @@ namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Field\CheckboxEntryField;
 use YesWiki\Bazar\Field\EnumField;
+use YesWiki\Bazar\Field\SelectEntryField;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class FormManager
@@ -13,34 +16,19 @@ class FormManager
     protected $wiki;
     protected $dbService;
     protected $entryManager;
+    protected $securityController;
     protected $fieldFactory;
     protected $params;
 
     protected $cachedForms;
-
-    private const FIELD_TYPE = 0;
-    private const FIELD_ID = 1;
-    private const FIELD_LABEL = 2;
-    private const FIELD_SIZE = 3;
-    private const FIELD_MAX_LENGTH = 4;
-    private const FIELD_DEFAULT = 5;
-    private const FIELD_PATTERN = 6;
-    private const FIELD_SUB_TYPE = 7;
-    private const FIELD_REQUIRED = 8;
-    private const FIELD_SEARCHABLE = 9;
-    private const FIELD_HELP = 10;
-    private const FIELD_READ_ACCESS = 11;
-    private const FIELD_WRITE_ACCESS = 12;
-    private const FIELD_KEYWORDS = 13;
-    private const FIELD_SEMANTIC = 14;
-    private const FIELD_QUERIES = 15;
 
     public function __construct(
         Wiki $wiki,
         DbService $dbService,
         EntryManager $entryManager,
         FieldFactory $fieldFactory,
-        ParameterBagInterface $params
+        ParameterBagInterface $params,
+        SecurityController $securityController
     ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
@@ -49,6 +37,7 @@ class FormManager
         $this->params = $params;
 
         $this->cachedForms = [];
+        $this->securityController = $securityController;
     }
 
     public function getOne($formId): ?array
@@ -57,7 +46,7 @@ class FormManager
             return $this->cachedForms[$formId];
         }
 
-        $form = $this->dbService->loadSingle('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=\'' . $formId . '\'');
+        $form = $this->dbService->loadSingle('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=\'' . $this->dbService->escape($formId) . '\'');
 
         if (!$form) {
             return null;
@@ -93,7 +82,7 @@ class FormManager
         $results = [];
 
         foreach ($formsIds as $formId) {
-            if (!$this->cachedForms[$formId]) {
+            if (empty($this->cachedForms[$formId])) {
                 $this->cachedForms[$formId] = $this->getOne($formId);
             }
             $results[$formId] = $this->cachedForms[$formId];
@@ -105,6 +94,9 @@ class FormManager
     // TODO Pass a Form object instead of a raw array
     public function create($data)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         // If ID is not set or if it is already used, find a new ID
         if (!$data['bn_id_nature'] || $this->getOne($data['bn_id_nature'])) {
             $data['bn_id_nature'] = $this->findNewId();
@@ -113,54 +105,76 @@ class FormManager
         return $this->dbService->query('INSERT INTO ' . $this->dbService->prefixTable('nature')
             . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_context` ,`bn_sem_type` ,`bn_sem_use_template` ,`bn_condition`)'
             . ' VALUES (' . $data['bn_id_nature'] . ', "fr-FR", "'
-            . addslashes(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '","'
-            . addslashes(_convert($data['bn_template'], YW_CHARSET, true)) . '", "'
-            . addslashes(_convert($data['bn_description'], YW_CHARSET, true)) . '", "'
-            . addslashes(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '", "'
-            . addslashes(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '", '
+            . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '","'
+            . $this->dbService->escape(_convert($data['bn_template'], YW_CHARSET, true)) . '", "'
+            . $this->dbService->escape(_convert($data['bn_description'], YW_CHARSET, true)) . '", "'
+            . $this->dbService->escape(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '", "'
+            . $this->dbService->escape(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '", '
             . (isset($data['bn_sem_use_template']) ? '1' : '0') . ', "'
-            . addslashes(_convert($data['bn_condition'], YW_CHARSET, true)) . '")');
+            . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '")');
     }
 
     public function update($data)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         return $this->dbService->query('UPDATE' . $this->dbService->prefixTable('nature') . 'SET '
-            . '`bn_label_nature`="' . addslashes(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '" ,'
-            . '`bn_template`="' . addslashes(_convert($data['bn_template'], YW_CHARSET, true)) . '" ,'
-            . '`bn_description`="' . addslashes(_convert($data['bn_description'], YW_CHARSET, true)) . '" ,'
-            . '`bn_sem_context`="' . addslashes(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '" ,'
-            . '`bn_sem_type`="' . addslashes(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '" ,'
+            . '`bn_label_nature`="' . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '" ,'
+            . '`bn_template`="' . $this->dbService->escape(_convert($data['bn_template'], YW_CHARSET, true)) . '" ,'
+            . '`bn_description`="' . $this->dbService->escape(_convert($data['bn_description'], YW_CHARSET, true)) . '" ,'
+            . '`bn_sem_context`="' . $this->dbService->escape(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '" ,'
+            . '`bn_sem_type`="' . $this->dbService->escape(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '" ,'
             . '`bn_sem_use_template`=' . (isset($data['bn_sem_use_template']) ? '1' : '0') . ' ,'
-            . '`bn_condition`="' . addslashes(_convert($data['bn_condition'], YW_CHARSET, true)) . '"'
-            . ' WHERE `bn_id_nature`=' . $data['bn_id_nature']);
+            . '`bn_condition`="' . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '"'
+            . ' WHERE `bn_id_nature`=' . $this->dbService->escape($data['bn_id_nature']));
+    }
+
+    public function clone($id)
+    {
+        $data = $this->getOne($id);
+        if (!empty($data)) {
+            unset($data['bn_id_nature']);
+            $data['bn_label_nature'] = $data['bn_label_nature'].' ('._t('BAZ_DUPLICATE').')';
+            return $this->create($data);
+        } else {
+            // raise error?
+            return false;
+        }
     }
 
     public function delete($id)
     {
-        //TODO : suppression des fiches associees au formulaire
-        
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+
         // tests of if $formId is int
         if (strval(intval($id)) != strval($id)) {
             return null ;
         }
 
-        return $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $id);
+        $this->clear($id);
+        return $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $this->dbService->escape($id));
     }
 
     public function clear($id)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $this->dbService->query(
             'DELETE FROM' . $this->dbService->prefixTable('acls') .
             'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
             'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
-            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $id . '"%\' );'
+            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\' );'
         );
 
         // TODO use PageManager
         $this->dbService->query(
             'DELETE FROM' . $this->dbService->prefixTable('pages') .
             'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
-            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $id . '"%\';'
+            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\';'
         );
 
         // TODO use TripleStore
@@ -243,44 +257,13 @@ class FormManager
 
             if ($classField) {
                 $prepared[$i] = $classField;
-            } else {
-                /*
-                 * DEFAULT VALUES
-                 */
-
-                // champs obligatoire
-                if ($field[self::FIELD_REQUIRED] == 1) {
-                    $prepared[$i]['required'] = true;
-                } else {
-                    $prepared[$i]['required'] = false;
-                }
-
-                // texte d'invitation à la saisie
-                $prepared[$i]['label'] = $field[self::FIELD_LABEL];
-
-                // attributs html du champs
-                $prepared[$i]['attributes'] = '';
-
-                // valeurs associées
-                $prepared[$i]['values'] = '';
-
-                // texte d'aide
-                $prepared[$i]['helper'] = $field[self::FIELD_HELP];
-
-                // values for read acl
-                $prepared[$i]['read_acl'] = $field[self::FIELD_READ_ACCESS];
-
-                // values for write acl
-                $prepared[$i]['write_acl'] = $field[self::FIELD_WRITE_ACCESS];
-
-                // traitement sémantique
-                // TODO move to BazarField
-                if (!empty($field[self::FIELD_SEMANTIC])) {
-                    $prepared[$i]['sem_type'] = strpos($field[self::FIELD_SEMANTIC], ',')
-                        ? array_map(function ($str) {
-                            return trim($str);
-                        }, explode(',', $field[self::FIELD_SEMANTIC]))
-                        : $field[self::FIELD_SEMANTIC];
+            } elseif (function_exists($field[0])) {
+                $functionName = $field[0];
+                $field[0] = 'old'; // field name
+                $field['functionName'] = $functionName ;
+                $classField = $this->fieldFactory->create($field);
+                if ($classField) {
+                    $prepared[$i] = $classField;
                 }
             }
             $i++;
@@ -311,20 +294,19 @@ class FormManager
                     if ($field instanceof BazarField) {
                         $fieldPropName = $field->getPropertyName();
                         $fieldType = $field->getType();
-                    } elseif (is_array($field)) {
-                        $fieldPropName = $field['id'];
-                        $fieldType = $field['type'];
                     }
 
                     if ($fieldPropName) {
-                        $islistforeign = (strpos($fieldPropName, 'listefiche')===0) || (strpos($fieldPropName, 'checkboxfiche')===0);
-                        $islist = in_array($fieldType, array('checkbox', 'select', 'scope', 'radio', 'liste')) && !$islistforeign;
-                        $istext = (!in_array($fieldType, array('checkbox', 'select', 'scope', 'radio', 'liste', 'checkboxfiche', 'listefiche')));
+                        if ($field instanceof EnumField) {
+                            if ($field instanceof SelectEntryField || $field instanceof CheckboxEntryField) {
+                                // listefiche ou checkboxfiche
+                                $facetteValue[$fieldPropName]['type'] = 'fiche';
+                            } else {
+                                $facetteValue[$fieldPropName]['type'] = 'liste';
+                            }
 
-                        if ($islistforeign) {
-                            // listefiche ou checkboxfiche
-                            $facetteValue[$fieldPropName]['type'] = 'fiche';
                             $facetteValue[$fieldPropName]['source'] = $key;
+
                             $tabval = explode(',', $value);
                             foreach ($tabval as $tval) {
                                 if (isset($facetteValue[$fieldPropName][$tval])) {
@@ -333,19 +315,7 @@ class FormManager
                                     $facetteValue[$fieldPropName][$tval] = 1;
                                 }
                             }
-                        } elseif ($islist) {
-                            // liste ou checkbox
-                            $facetteValue[$fieldPropName]['type'] = 'liste';
-                            $facetteValue[$fieldPropName]['source'] = $key;
-                            $tabval = explode(',', $value);
-                            foreach ($tabval as $tval) {
-                                if (isset($facetteValue[$fieldPropName][$tval])) {
-                                    ++$facetteValue[$fieldPropName][$tval];
-                                } else {
-                                    $facetteValue[$fieldPropName][$tval] = 1;
-                                }
-                            }
-                        } elseif ($istext and !$onlyLists) {
+                        } elseif (!$onlyLists) {
                             // texte
                             $facetteValue[$key]['type'] = 'form';
                             $facetteValue[$key]['source'] = $key;
@@ -377,10 +347,54 @@ class FormManager
             return array_filter($fields, function ($field) use ($id) {
                 if ($field instanceof BazarField) {
                     return $id[0] === 'all' || in_array($field->getPropertyName(), $id);
-                } elseif (is_array($field) && isset($field['id'])) {
-                    return $id[0] === 'all' || in_array($field['id'], $id);
                 }
             });
         }
+    }
+
+    /**
+     * put a form form External Wiki in cache
+     * @param int $localFormId
+     * @return bool
+     */
+    public function putInCacheFromExternalBazarService(int $localFormId): bool
+    {
+        if (empty($localFormId) || !empty($this->getOne($localFormId))) {
+            // error
+            return false;
+        }
+        $form = $this->wiki->services->get(ExternalBazarService::class)->getTmpForm();
+        if (empty($form)) {
+            return false;
+        } else {
+            $this->cachedForms[$localFormId] = $form;
+            return true;
+        }
+    }
+
+    /**
+     * return field from field name or property name
+     * @param null|string $name
+     * @param null|string $formId
+     * @return null|BazarField
+     */
+    public function findFieldFromNameOrPropertyName(?string $name, ?string $formId): ?BazarField
+    {
+        // check params
+        if (empty($name) || empty($formId) || strval(intval($formId)) != strval($formId)) {
+            return null;
+        }
+
+        $form = $this->getOne($formId);
+        if (empty($form) || !is_array($form['prepared'])) {
+            return null;
+        }
+
+        foreach ($form['prepared'] as $field) {
+            if (in_array($name, [$field->getName(),$field->getPropertyName()])) {
+                return $field;
+            }
+        }
+        return null;
     }
 }

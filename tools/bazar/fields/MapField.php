@@ -24,8 +24,34 @@ class MapField extends BazarField
         $this->latitudeField = $values[self::FIELD_LATITUDE_FIELD] ?? 'bf_latitude';
         $this->longitudeField = $values[self::FIELD_LONGITUDE_FIELD] ?? 'bf_longitude';
         $this->autocomplete = $values[self::FIELD_AUTOCOMPLETE];
+        $this->propertyName = 'geolocation';
+        $this->label = $this->propertyName;
+    }
 
-        $this->propertyName = 'carte_google';
+    protected function getValue($entry)
+    {
+        $value = $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
+
+        // backward compatibility with former `carte_google` propertyName
+        if (empty($value)){
+            if (!empty($entry['carte_google'])) {
+                $value = explode('|', $entry['carte_google']);
+                if (empty($value[0]) || empty($value[1])) {
+                    $value = null;
+                } else {
+                    $value = [
+                        $this->getLatitudeField() => $value[0],
+                        $this->getLongitudeField()=> $value[1]
+                    ];
+                }
+            } elseif (!empty($entry[$this->getLatitudeField()]) && !empty($entry[$this->getLongitudeField()])) {
+                $value = [
+                    $this->getLatitudeField() => $entry[$this->getLatitudeField()],
+                    $this->getLongitudeField()=> $entry[$this->getLongitudeField()]
+                ];
+            }
+        }
+        return $value;
     }
 
     protected function renderInput($entry)
@@ -134,14 +160,15 @@ class MapField extends BazarField
                 geocodedmarker.setLatLng(point);
                 map.panTo(point, {animate:true}).zoomIn();
             });
+            var fields = ["#bf_adresse", "#bf_adresse1", "#bf_adresse2", "#bf_ville", "#bf_code_postal", "#bf_pays"]
+            fields = fields.map((id) => $(id)).filter((field) => field.length > 0)
+
             function showAddress(map) {
                 var address = "";
-                if (document.getElementById("bf_adresse")) address += document.getElementById("bf_adresse").value + \' \';
-                if (document.getElementById("bf_adresse1")) address += document.getElementById("bf_adresse1").value + \' \';
-                if (document.getElementById("bf_adresse2")) address += document.getElementById("bf_adresse2").value + \' \';
-                if (document.getElementById("bf_ville")) address += document.getElementById("bf_ville").value + \' \';
-                if (document.getElementById("bf_code_postal")) address += document.getElementById("bf_code_postal").value + \' \';
+                fields.forEach((field) => address += field.val() + " ")
+                console.log("geocode address", address);
                 address = address.replace(/\\("|\'|\\)/g, " ").trim();
+                if (!address) return
                 geocodage( address, showAddressOk, showAddressError );
                 return false;
             }
@@ -162,15 +189,28 @@ class MapField extends BazarField
                 }
             }
             function popupHtml( point ) {
-                return "<div class=\"input-group\"><span class=\"input-group-addon\"><i class=\"fa fa-globe\"></i> Lat</span><input type=\"text\" class=\"form-control bf_latitude\" pattern=\"-?\\\d{1,3}\\\.\\\d+\" value=\""+point.lat+"\" /></div><br><div class=\"input-group\"><span class=\"input-group-addon\"><i class=\"fa fa-globe\"></i> Lon</span><input type=\"text\" pattern=\"-?\\\d{1,3}\\\.\\\d+\" class=\"form-control bf_longitude\" value=\""+point.lng+"\" /></div><br>Déplacer le point ailleurs si besoin ou modifier les coordonnées GPS.";
+                return `
+                    <div class="input-group" style="margin-bottom: 10px">
+                        <span class="input-group-addon">Lat</span>
+                        <input type="text" class="form-control bf_latitude" pattern="-?\\\d{1,3}\\\.\\\d+" value="${point.lat}" />
+                        <span class="input-group-addon">Lon</span>
+                        <input type="text" class="form-control bf_longitude" pattern="-?\\\d{1,3}\\\.\\\d+" value="${point.lng}" />
+                    </div>
+                    <div class="text-center">'._t('BAZ_ADJUST_MARKER_POSITION').'</div>
+                `
             }
         
             function geocodedmarkerRefresh( point )
             {
                 if (geocodedmarker) map.removeLayer(geocodedmarker);
                 geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
-                geocodedmarker.bindPopup(popupHtml( geocodedmarker.getLatLng() ), {closeButton: false, closeOnClick: false}).openPopup();
-                map.panTo( geocodedmarker.getLatLng(), {animate:true});
+                geocodedmarker.bindPopup(popupHtml( geocodedmarker.getLatLng() ), {
+                    closeButton: false, 
+                    closeOnClick: false,
+                    minWidth: 300
+                }).openPopup();
+                map.setView(point, 18);
+                // map.panTo( geocodedmarker.getLatLng(), {animate:true});
                 $(\'#bf_latitude\').val(point.lat);
                 $(\'#bf_longitude\').val(point.lng);
         
@@ -200,14 +240,9 @@ class MapField extends BazarField
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/geocoder.js');
 
         $geoCodingScript = '';
-        $latitude = '';
-        $longitude = '';
-        if (isset($value)) {
-            $tab = explode('|', $value);
-            if (count($tab) > 1 && !empty($tab[0]) && !empty($tab[1])) {
-                $latitude = $tab[0];
-                $longitude = $tab[1];
-                $geoCodingScript .= 'var point = L.latLng('.$latitude.', '.$longitude.');
+        if (is_array($value)) {
+            if (count($value) > 1) {
+                $geoCodingScript .= 'var point = L.latLng('.$value[$this->getLatitudeField()].', '.$value[$this->getLongitudeField()].');
                 geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
                 map.panTo( geocodedmarker.getLatLng(), {animate:true});
                 geocodedmarker.bindPopup(popupHtml( point ), {closeButton: false, closeOnClick: false});
@@ -224,21 +259,56 @@ class MapField extends BazarField
         }
         $geoCodingScript .= '});';
 
-        $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/leaflet.css');
-        $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
-        $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet-providers.js');
+        $GLOBALS['wiki']->AddCSSFile('styles/vendor/leaflet/leaflet.css');
+        $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet/leaflet.min.js');
+        $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet-providers/leaflet-providers.js');
         $GLOBALS['wiki']->AddJavascript($initMapScript.$geoCodingScript);
 
         return $this->render("@bazar/inputs/map.twig", [
-            'value' => $this->getValue($entry),
-            'latitude' => $latitude,
-            'longitude' => $longitude
+            'latitude' => is_array($value) && !empty($value[$this->getLatitudeField()]) ? $value[$this->getLatitudeField()] : null,
+            'longitude' => is_array($value) && !empty($value[$this->getLongitudeField()]) ? $value[$this->getLongitudeField()] : null
         ]);
     }
 
     public function formatValuesBeforeSave($entry)
     {
-        return [$this->propertyName => $entry[$this->latitudeField] . '|' . $entry[$this->longitudeField]];
+        if (!$this->canEdit($entry)) {
+            // retrieve value from value because redefined with right value
+            $values = $this->getValue($entry);
+            if (empty($values)) {
+                if (isset($entry[$this->getLatitudeField()])) {
+                    unset($entry[$this->getLatitudeField()]);
+                }
+                if (isset($entry[$this->getLongitudeField()])) {
+                    unset($entry[$this->getLongitudeField()]);
+                }
+            } else {
+                $entry[$this->getPropertyName()] = $values;
+                $entry[$this->getLatitudeField()] = $values[$this->getLatitudeField()];
+                $entry[$this->getLongitudeField()] = $values[$this->getLatitudeField()];
+            }
+        }
+        if (!empty($entry[$this->getLatitudeField()]) && !empty($entry[$this->getLongitudeField()])) {
+            $entry[$this->getPropertyName()] = [
+                $this->getLatitudeField() => $entry[$this->getLatitudeField()],
+                $this->getLongitudeField() => $entry[$this->getLongitudeField()]
+            ];
+            return [
+            $this->getPropertyName() => $entry[$this->getPropertyName()],
+            $this->getLatitudeField() => $entry[$this->getLatitudeField()],
+            $this->getLongitudeField() => $entry[$this->getLongitudeField()],
+            'fields-to-remove' => ['carte_google']
+          ];
+        } else {
+            return [
+          'fields-to-remove' => [
+            $this->getPropertyName(),
+            $this->getLatitudeField(),
+            $this->getLongitudeField(),
+            'carte_google'
+            ]
+        ];
+        }
     }
 
     protected function renderStatic($entry)
@@ -261,5 +331,17 @@ class MapField extends BazarField
     public function getAutocomplete()
     {
         return $this->autocomplete;
+    }
+
+    public function jsonSerialize()
+    {
+        return array_merge(
+            parent::jsonSerialize(),
+            [
+              'latitudeField' => $this->getLatitudeField(),
+              'longitudeField' => $this->getLongitudeField(),
+              'autocomplete' => $this->getAutocomplete(),
+            ]
+        );
     }
 }

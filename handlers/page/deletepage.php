@@ -52,16 +52,15 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
             $msg = '<form action="' . $this->Href('deletepage', '', 'confirme=oui' . $incomingUrlParam);
             $msg .= '" method="post" style="display: inline">' . "\n";
             $msg .= 'Voulez-vous vraiment supprimer d&eacute;finitivement la page ' . $this->Link($tag) . "&nbsp;?\n";
-            $msg .= '<input type="submit" value="Oui" ';
+            $msg .= '</br></br>';
+            $msg .= '<input type="submit" class="btn btn-danger" value="Supprimer" ';
             $msg .= 'style="vertical-align: middle; display: inline" />' . "\n";
             $msg .= "</form>\n";
             $msg .= '<form action="' . $cancelUrl . '" method="post" style="display: inline">' . "\n";
-            $msg .= '<input type="submit" value="Non" style="vertical-align: middle; display: inline" />' . "\n";
+            $msg .= '<input type="submit" value="Annuler" class="btn btn-default" style="vertical-align: middle; display: inline" />' . "\n";
             $msg .= "</form></span>\n";
         } else {
             $this->DeleteOrphanedPage($tag);
-            $this->Query("DELETE FROM " . $this->config["table_prefix"] . "triples "
-                . "WHERE resource = '" . $this->GetPageTag() . "'");
             $this->LogAdministrativeAction($this->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
             $msg = "La page ${tag} a d&eacute;finitivement &eacute;t&eacute; supprim&eacute;e";
 
@@ -81,15 +80,16 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
 
         $msg .= "</ul>\n";
         // eraselink=oui will delete the page links in tools/tags/handlers/page/__deletepage.php
-        $msg .= '<form action="' . $this->Href('deletepage', "", "confirme=oui&eraselink=oui" . $incomingUrlParam);
+        $msg .= '</br><form action="' . $this->Href('deletepage', "", "confirme=oui&eraselink=oui" . $incomingUrlParam);
         $msg .= '" method="post" style="display: inline">' . "\n";
         $msg .= 'Voulez-vous vraiment supprimer d&eacute;finitivement la page '
-            . 'malgr&eacute; la pr&eacute;sence de liens ? ' . "\n";
-        $msg .= '<input type="submit" value="Oui" ';
+            . 'malgr&eacute; la pr&eacute;sence de liens? ' . "\n";
+        $msg .= '</br></br>';
+        $msg .= '<input type="submit" value="Supprimer" class="btn btn-danger" ';
         $msg .= 'style="vertical-align: middle; display: inline" />' . "\n";
         $msg .= "</form>\n";
         $msg .= '<form action="' . $cancelUrl . '" method="post" style="display: inline">' . "\n";
-        $msg .= '<input type="submit" value="Non" style="vertical-align: middle; display: inline" />' . "\n";
+        $msg .= '<input type="submit" value="Annuler" class="btn btn-default" style="vertical-align: middle; display: inline" />' . "\n";
         $msg .= "</form></span>\n";
     }
 } else {

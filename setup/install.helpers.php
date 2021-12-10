@@ -53,10 +53,14 @@ function querySqlFile($dblink, $sqlFile, $replacements = [])
             );
         }
         # echo '<hr><pre>';var_dump($sql);echo '</pre><hr>'; # DEBUG SQL
-        mysqli_multi_query($dblink, $sql);
-        do {
-            ;
-        } while (mysqli_next_result($dblink));
+        if (!mysqli_multi_query($dblink, $sql)) {
+            return false;
+        }
+        while (mysqli_more_results($dblink)) {
+            if (!mysqli_next_result($dblink)) {
+                return false;
+            }
+        }
         return true;
     } else {
         die(_t('SQL_FILE_NOT_FOUND').' "'.$sqlFile.'".');

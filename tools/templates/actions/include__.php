@@ -32,7 +32,7 @@ if (!empty($actif) && $actif == '1') {
     }
     // d'abord les liens avec des attributs class
     $plugin_output_new = preg_replace(
-        '~<a href="'.preg_quote($this->config['base_url'].$page_active).'" class="(.*)"~Ui',
+        '~<a href="'.preg_quote($this->config['base_url'].$page_active, '~').'" class="(.*)"~Ui',
         '<a class="active-link $1" href="'.$this->config['base_url'].$page_active.'"',
         $plugin_output_new
     );
@@ -45,8 +45,9 @@ if (!empty($actif) && $actif == '1') {
     );
 }
 
-// rajoute le javascript pour le double clic si le parametre est activé et les droits en écriture existent
-if (!empty($dblclic) && $dblclic == '1' && $this->HasAccess('write', $incPageName)) {
+// rajoute le javascript pour le double clic si la configuration l'autorise, si le parametre est activé et les droits en écriture existent
+if (!empty($this->config['allow_doubleclic']) && in_array($this->config['allow_doubleclic'], ['1', 'yes', true])
+    && !empty($dblclic) && $dblclic == '1' && $this->HasAccess('write', $incPageName)) {
     $actiondblclic = ' ondblclick="document.location=\''.$this->Href('edit', $incPageName).'\';"';
 } else {
     $actiondblclic = '';

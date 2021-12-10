@@ -31,12 +31,14 @@ require_once 'includes/objects/YesWikiAction.php';
 require_once 'includes/objects/YesWikiHandler.php';
 require_once 'includes/objects/YesWikiFormatter.php';
 
+use Throwable;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
@@ -48,8 +50,11 @@ use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\Service\UserManager;
+use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\YesWikiControllerResolver;
+use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Tags\Service\TagsManager;
 
 class Wiki
@@ -58,6 +63,7 @@ class Wiki
     public $page;
     public $tag;
     public $parameter = array();
+    public $request;
     // current output used for actions/handlers/formatters
     public $output;
     public $interWiki = array();
@@ -251,8 +257,6 @@ class Wiki
      */
     public function AppendContentToPage($content, $page, $bypass_acls = false)
     {
-        $linkTracker = $this->services->get(LinkTracker::class);
-
         // Si un contenu est specifie
         if (isset($content)) {
             // -- Determine quelle est la page :
@@ -271,22 +275,8 @@ class Wiki
             $this->SavePage($page, $body, '', $bypass_acls);
 
             // now we render it internally so we can write the updated link table.
-            $linkTracker->clear();
-            $linkTracker->start();
-            // on simule totalement un affichage normal
-            $temp = $this->SetInclusions();
-            $this->RegisterInclusion($this->GetPageTag());
-            $this->Format($body);
-            $this->SetInclusions($temp);
-            if ($user = $this->GetUser()) {
-                $linkTracker->add($user['name']);
-            }
-            if ($owner = $this->GetPageOwner()) {
-                $linkTracker->add($owner);
-            }
-            $linkTracker->stop();
-            $linkTracker->persist();
-            $linkTracker->clear();
+            $page = $this->services->get(PageManager::class)->getOne($this->tag);
+            $this->services->get(LinkTracker::class)->registerLinks($page, false, false);
 
             // Retourne 0 seulement si tout c'est bien passe
             return 0;
@@ -327,7 +317,7 @@ class Wiki
      */
     public function PurgePages()
     {
-        if ($days = $this->GetConfigValue('pages_purge_time')) {
+        if (($days = $this->GetConfigValue('pages_purge_time')) && !$this->services->get(SecurityController::class)->isWikiHibernated()) {
             // is purge active ?
             // let's search which pages versions we have to remove
             // this is necessary beacause even MySQL does not handel multi-tables deletes before version 4.0
@@ -559,7 +549,7 @@ class Wiki
     public function extractLinkParts($link): ?array
     {
         if (preg_match('/^(' . WN_CAMEL_CASE_EVOLVED . ')(?:\/(' . WN_CAMEL_CASE_EVOLVED . '))?(?:[?&]('
-            . RFC3986_URI_CHARS . '))?$/', $link, $linkParts)) {
+            . RFC3986_URI_CHARS . '))?$/u', $link, $linkParts)) {
             $tag = !empty($linkParts[1]) ? $linkParts[1] : null;
             $method = !empty($linkParts[2]) ? $linkParts[2] : null;
             $paramsStr = !empty($linkParts[3]) ? $linkParts[3] : null;
@@ -606,7 +596,7 @@ class Wiki
     // FORMS
     public function FormOpen($method = '', $tag = '', $formMethod = 'post', $class = '')
     {
-        if ($method=='edit') {
+        if ($method=='edit' || $method=='editiframe') {
             $result  = '<form id="ACEditor" name="ACEditor" enctype="multipart/form-data" action="'.$this->href($method, $tag).'" method="'.$formMethod.'"';
             $result .= !empty($class) ? ' class="'.$class.'"' : '';
             $result .= ">\n";
@@ -690,7 +680,7 @@ class Wiki
 
     public function PurgeReferrers()
     {
-        if ($days = $this->GetConfigValue("referrers_purge_time")) {
+        if (($days = $this->GetConfigValue("referrers_purge_time"))&& !$this->services->get(SecurityController::class)->isWikiHibernated()) {
             $this->Query('delete from ' . $this->config['table_prefix'] . "referrers where time < date_sub(now(), interval '" . mysqli_real_escape_string($this->dblink, $days) . "' day)");
         }
     }
@@ -725,7 +715,7 @@ class Wiki
 
         // match all attributes (key and value)
         // prepare an array for extract() to work with (in $this->IncludeBuffered())
-        if (preg_match_all("/([a-zA-Z0-9]*)=\"(.*)\"/U", $vars_temp, $matches)) {
+        if (preg_match_all("/([a-zA-Z0-9_]*)=\"(.*)\"/U", $vars_temp, $matches)) {
             for ($a = 0; $a < count($matches[1]); $a ++) {
                 $vars[$matches[1][$a]] = $matches[2][$a];
             }
@@ -774,18 +764,28 @@ class Wiki
         $this->output = &$plugin_output_new;
 
         ob_start();
-        include($___file);
+        try {
+            include($___file);
+        } catch (Throwable $throwableToThrow) {
+            // $throwableToThrow is thrown at the of the method because ob_end_clean() and get_defined_vars()
+            // could change the way to catch Throwable at higher levels
+            // for pre actions
+        }
         $plugin_output_new .= ob_get_contents();
         ob_end_clean();
 
         // save the context variables into $updatedVars
         $updatedVars = get_defined_vars();
         unset($updatedVars['___file']);
+        unset($updatedVars['throwableToThrow']);
         // add new variables added to $this->parameter in $updatedVars (already existing vars share the same ref)
         if (isset($this->parameter)) {
             $updatedVars = array_merge($updatedVars, $this->parameter);
         }
         unset($this->parameter);
+        if (isset($throwableToThrow)) {
+            throw $throwableToThrow;
+        }
         return $updatedVars;
     }
 
@@ -1157,46 +1157,11 @@ class Wiki
             $this->SetUser($user, $_COOKIE['remember']);
         }
 
+        $this->request = Request::createFromGlobals();
+
         // Is this a special page ?
         if ($tag === 'api') {
-            // We must manually parse the body data for the PUT or PATCH methods
-            // See https://www.php.net/manual/fr/features.file-upload.put-method.php
-            // TODO properly use the Symfony HttpFoundation component to avoid this
-            if (empty($_POST) && ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
-                $_POST = json_decode(file_get_contents('php://input'), true);
-            }
-
-            $context = new RequestContext();
-            $request = Request::createFromGlobals();
-            $context->fromRequest($request);
-
-            // Use query string as the path
-            $context->setPathInfo('/' . $context->getQueryString());
-            $context->setQueryString('');
-
-            $matcher = new UrlMatcher($this->routes, $context);
-
-            $controllerResolver = new YesWikiControllerResolver($this);
-            $argumentResolver = new ArgumentResolver();
-
-            try {
-                // TODO put this elsewhere ?
-                if ($this->services->get(ApiService::class)->isAuthorized()) {
-                    $request->attributes->add($matcher->match($context->getPathInfo()));
-
-                    $controller = $controllerResolver->getController($request);
-                    $arguments = $argumentResolver->getArguments($request, $controller);
-
-                    $response = call_user_func_array($controller, $arguments);
-                } else {
-                    $response = new Response('', Response::HTTP_UNAUTHORIZED);
-                }
-            } catch (ResourceNotFoundException $exception) {
-                $response = new Response('', Response::HTTP_NOT_FOUND);
-            } catch (HttpException $exception) {
-                $response = new Response($exception->getMessage(), $exception->getStatusCode(), $exception->getHeaders());
-            }
-            $response->send();
+            $this->RunAPI();
         } else {
             $this->SetPage($this->LoadPage($tag, (isset($_REQUEST['time']) ? $_REQUEST['time'] : '')));
             $this->LogReferrer();
@@ -1210,68 +1175,106 @@ class Wiki
         }
     }
 
+    private function RunAPI()
+    {
+        // We must manually parse the body data for the PUT or PATCH methods
+        // See https://www.php.net/manual/fr/features.file-upload.put-method.php
+        // TODO properly use the Symfony HttpFoundation component to avoid this
+        if (($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
+            if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
+                $response = new Response(_t('WIKI_IN_HIBERNATION'), Response::HTTP_UNAUTHORIZED);
+                $response->send();
+                exit();
+            }
+            if (empty($_POST)) {
+                $_POST = json_decode(file_get_contents('php://input'), true) ?? [];
+            }
+        }
+
+        $context = new RequestContext();
+        $context->fromRequest($this->request);
+        
+        // Use query string as the path (part before '&')
+        $extract = explode('&', $context->getQueryString());
+        $path = $extract[0];
+        if (strpos($path, "=") !== false) {
+            if (!empty($this->method)) {
+                if ($this->method === 'show' && $path === 'wiki=api') {
+                    $path = 'api';
+                } else {
+                    $path = $this->tag.'/'.$this->method;
+                    $newQuerytring = implode('&', $extract);
+                }
+            } else {
+                $response = new Response(_t('ROUTE_BAD_CONFIGURED'), Response::HTTP_BAD_REQUEST);
+                $response->send();
+                exit();
+            }
+        } elseif (count($extract) > 1) {
+            array_shift($extract);
+            $newQuerytring = implode('&', $extract);
+        }
+        $context->setPathInfo('/' . $path);
+        $context->setQueryString($newQuerytring ?? '');
+
+        $matcher = new UrlMatcher($this->routes, $context);
+
+        $controllerResolver = new YesWikiControllerResolver($this);
+        $argumentResolver = new ArgumentResolver();
+
+        try {
+            // TODO put this elsewhere ?
+            $attributes = $matcher->match($context->getPathInfo());
+            if ($this->services->get(ApiService::class)->isAuthorized($attributes, $this->routes)) {
+                $this->request->attributes->add($attributes);
+
+                $controller = $controllerResolver->getController($this->request);
+                $arguments = $argumentResolver->getArguments($this->request, $controller);
+
+                $response = call_user_func_array($controller, $arguments);
+            } else {
+                $response = new Response('', Response::HTTP_UNAUTHORIZED);
+            }
+        } catch (ResourceNotFoundException $exception) {
+            $response = new Response('', Response::HTTP_NOT_FOUND);
+        } catch (HttpException $exception) {
+            $response = new Response($exception->getMessage(), $exception->getStatusCode(), $exception->getHeaders());
+        } catch (MethodNotAllowedException $exception) {
+            $response = new Response('', Response::HTTP_METHOD_NOT_ALLOWED);
+        }
+        $response->send();
+    }
+
+    /**
+     * @deprecated Use AssetsManager service instead
+     */
     public function AddCSS($style)
     {
-        if (!isset($GLOBALS['css'])) {
-            $GLOBALS['css'] = '';
-        }
-        if (!empty($style) && !strpos($GLOBALS['css'], '<style>'."\n".$style.'</style>')) {
-            $GLOBALS['css'] .= '  <style>'."\n".$style.'</style>'."\n";
-        }
-        return;
+        return $this->services->get(AssetsManager::class)->AddCSS($style);
     }
 
+    /**
+     * @deprecated Use AssetsManager service instead
+     */
     public function AddCSSFile($file, $conditionstart = '', $conditionend = '')
     {
-        if (!isset($GLOBALS['css'])) {
-            $GLOBALS['css'] = '';
-        }
-        if (!empty($file) && file_exists($file)) {
-            if (!strpos($GLOBALS['css'], '<link rel="stylesheet" href="'.$this->getBaseUrl().'/'.$file.'">')) {
-                $GLOBALS['css'] .= '  '.$conditionstart."\n"
-                .'  <link rel="stylesheet" href="'.$this->getBaseUrl().'/'.$file.'">'
-                ."\n".'  '.$conditionend."\n";
-            }
-        } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {
-            if (!strpos($GLOBALS['css'], '<link rel="stylesheet" href="'.$file.'">')) {
-                $GLOBALS['css'] .= '  '.$conditionstart."\n"
-                    .'  <link rel="stylesheet" href="'.$file.'">'."\n"
-                    .'  '.$conditionend."\n";
-            }
-        }
-        return;
+        return $this->services->get(AssetsManager::class)->AddCSSFile($file, $conditionstart, $conditionend);
     }
 
+    /**
+     * @deprecated Use AssetsManager service instead
+     */
     public function AddJavascript($script)
     {
-        if (!isset($GLOBALS['js'])) {
-            $GLOBALS['js'] = '';
-        }
-        if (!empty($script) && !strpos($GLOBALS['js'], '<script>'."\n".$script.'</script>')) {
-            $GLOBALS['js'] .= '  <script>'."\n".$script.'</script>'."\n";
-        }
-        return;
+        return $this->services->get(AssetsManager::class)->AddJavascript($script);
     }
 
-    public function AddJavascriptFile($file, $first = false)
+    /**
+     * @deprecated Use AssetsManager service instead
+     */
+    public function AddJavascriptFile($file, $first = false, $module = false)
     {
-        if (!isset($GLOBALS['js'])) {
-            $GLOBALS['js'] = '';
-        }
-        if (!empty($file) && file_exists($file)) {
-            if (!strpos($GLOBALS['js'], '<script defer src="'.$this->getBaseUrl().'/'.$file.'"></script>')) {
-                if ($first) {
-                    $GLOBALS['js'] = '  <script src="'.$this->getBaseUrl().'/'.$file.'"></script>'."\n".$GLOBALS['js'];
-                } else {
-                    $GLOBALS['js'] .= '  <script defer src="'.$this->getBaseUrl().'/'.$file.'"></script>'."\n";
-                }
-            }
-        } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {
-            if (!strpos($GLOBALS['js'], '<script defer src="'.$file.'"></script>')) {
-                $GLOBALS['js'] .= '  <script defer src="'.$file.'"></script>'."\n";
-            }
-        }
-        return;
+        return $this->services->get(AssetsManager::class)->AddJavascriptFile($file, $first, $module);
     }
 
     public function parse_size($size)
@@ -1353,16 +1356,26 @@ class Wiki
             }
 
             // TODO load the user-defined configs after this loop
-            if (file_exists($pluginBase . 'config.yml')) {
-                $loader->load('config.yml');
+            if (file_exists($pluginBase . 'config.yaml')) {
+                $loader->load('config.yaml');
             }
 
             // language files : first default language, then preferred language
             if (file_exists($pluginBase . 'lang/' . $k . '_fr.inc.php')) {
-                include $pluginBase . 'lang/' . $k . '_fr.inc.php';
+                $returnedArray = include $pluginBase . 'lang/' . $k . '_fr.inc.php';
+                load_translations($returnedArray);
+            }
+            if (file_exists($pluginBase . 'lang/' . $k . 'js_fr.inc.php')) {
+                $returnedArray = include $pluginBase . 'lang/' . $k . 'js_fr.inc.php';
+                load_translations($returnedArray, true);
             }
             if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php')) {
-                include $pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php';
+                $returnedArray = include $pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php';
+                load_translations($returnedArray);
+            }
+            if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . 'js_' . $GLOBALS['prefered_language'] . '.inc.php')) {
+                $returnedArray = include $pluginBase . 'lang/' . $k . 'js_' . $GLOBALS['prefered_language'] . '.inc.php';
+                load_translations($returnedArray, true);
             }
 
             // api functions
@@ -1371,17 +1384,14 @@ class Wiki
             }
         }
 
+        // merge the config between the wakka.config.php and the config.yaml of each tool
+        // the priority is given for the wakka.config.php settings for scalar values and indexed arrays
+        // but it's different for associative arrays, the result array is the merge between the array of the two settings
+        $config = array_replace_recursive($this->services->getParameterBag()->all(), $this->config);
+        $this->replaceRecursivelyIndexedArrays($config, $this->config);
         // set all wakka configs as container's parameters
-        // overwrite the parameters if they were already defined in the extensions's config (for arrays, recursively
-        // merge them)
-        foreach ($this->config as $key => $value) {
-            if (is_array($value) && $this->services->hasParameter($key) && is_array($this->services->getParameter($key))){
-                // merge recursively the arrays to let overwrite only some values
-                $mergedArray = array_replace_recursive($this->services->getParameter($key), $value);
-                $this->services->setParameter($key, $mergedArray);
-            } else {
-                $this->services->setParameter($key, $value);
-            }
+        foreach ($config as $key => $value) {
+            $this->services->setParameter($key, $value);
         }
 
         // Now we have loaded all the services, compile them
@@ -1391,7 +1401,6 @@ class Wiki
         // set to wakka config the same parameters than the merged service's parameter bag
         // need to be executed after $this->services->compile() because the %paramName% are resolved there
         $this->config = $this->services->getParameterBag()->all();
-
         $this->dblink = $this->services->get(DbService::class)->getLink();
 
         // This must be done after service initialization, as it uses services
@@ -1407,7 +1416,41 @@ class Wiki
 
         // TODO Don't put templates in configs
         // TODO avoid modifying the $wakkaConfig array
-        $this->config['templates'] = loadTemplates($metadata, $this->config);
+        $this->config['templates'] = $this->services->get(ThemeManager::class)->loadTemplates($metadata);
+    }
+
+    /**
+     * Replace recursively all the indexed arrays of $array1 with the corresponding indexed array of $array2
+     * @param $array1 the first array that is merged
+     * @param $array2 the second array that give the value for indexed array
+     */
+    public function replaceRecursivelyIndexedArrays(&$array1, &$array2)
+    {
+        foreach ($array2 as $key => $val) {
+            if (is_array($val)) {
+                if (!$this->isAssocArray($val)) {
+                    if(!isset($array1[$key]) || $array1[$key] != $val) {
+                        $array1[$key] = $val;
+                    }
+                } else {
+                    $subarray1 = &$array1[$key];
+                    $subarray2 = &$array2[$key];
+                    $this->replaceRecursivelyIndexedArrays($subarray1, $subarray2);
+                }
+            }
+        }
+    }
+
+    /**
+     * Test if an array is an associative array and not an indexed on*
+     * From php8.1, @see https://www.php.net/manual/fr/function.array-is-list.php instead
+     * @param $arr the array
+     * @return bool true is it's an associative array, otherwise false
+     *
+     */
+    public function isAssocArray($arr)
+    {
+        return array_keys($arr) !== range(0, count($arr) - 1);
     }
 
     /**
@@ -1480,14 +1523,6 @@ class Wiki
     public function LoadPageById($id)
     {
         return $this->services->get(PageManager::class)->getById($id);
-    }
-
-    /**
-     * @deprecated Use PageManager::getRevisions instead
-     */
-    public function LoadRevisions($page)
-    {
-        return $this->services->get(PageManager::class)->getRevisions($page);
     }
 
     /**

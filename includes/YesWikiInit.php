@@ -47,8 +47,10 @@ use Symfony\Component\Routing\RouteCollection;
 
 // TODO put elsewhere
 // https://github.com/sensiolabs/SensioFrameworkExtraBundle/blob/master/src/Routing/AnnotatedRouteControllerLoader.php
-class AnnotatedRouteControllerLoader extends AnnotationClassLoader {
-    protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, $annot) {
+class AnnotatedRouteControllerLoader extends AnnotationClassLoader
+{
+    protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, $annot)
+    {
         $route->setDefault('_controller', $class->getName() . '::' . $method->getName());
     }
 }
@@ -80,6 +82,7 @@ class Init
     {
         $this->getRoute();
         $this->config = $this->getConfig($config);
+        $this->setIframeHeaders();
 
         /* @todo : compare versions, start installer for update if necessary */
         if (!file_exists($this->configFile)) {
@@ -129,6 +132,10 @@ class Init
                         $this->method = $args[1];
                     }
                 }
+            } elseif (preg_match('`^api/('.WN_CHAR2.'+(?:' . WN_CHAR2 . '|/| )*)$`u', $wiki, $matches)) {
+                // for api split into api/end of route, checking wiki name & method name (XSS proof)
+                $this->page = 'api';
+                list(, $this->method) = $matches;
             } else {
                 // invalid WikiPageName
                 echo '<p>', _t('INCORRECT_PAGENAME'), '</p>';
@@ -140,7 +147,7 @@ class Init
                 // We must manually parse the body data for the PUT or PATCH methods
                 // See https://www.php.net/manual/fr/features.file-upload.put-method.php
                 if (empty($_POST) && ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
-                    $_POST = json_decode(file_get_contents('php://input'), true);
+                    $_POST = json_decode(file_get_contents('php://input'), true) ?? [];
                 }
 
                 header('Access-Control-Allow-Origin: *');
@@ -164,6 +171,27 @@ class Init
             }
 
             $_GET['wiki'] = $this->page.($this->method ? '/'.$this->method : '');
+        }
+    }
+
+    /**
+     * set headers for iframes
+     */
+    private function setIframeHeaders()
+    {
+        // set header for Content-Security-Policy
+        $allowedMethods = $this->config['allowed_methods_in_iframe'] ?? 'all';
+
+        if ($allowedMethods === 'all' || (
+            is_array($allowedMethods) && in_array($this->method, $allowedMethods, true)
+        )) {
+            // allow local ('self') and everyone (*)
+            header("Content-Security-Policy: frame-ancestors 'self' *;");
+        } else {
+            // for old browsers
+            header("X-frame-Options: deny");
+            // disallow (CSP takes advantage on x-frame-options)
+            header("Content-Security-Policy: frame-ancestors 'none';");
         }
     }
 
@@ -202,8 +230,9 @@ class Init
             'default_read_acl' => '*',
             'default_comment_acl' => '@admins',
             'preview_before_save' => 0,
-            'allow_raw_html' => false,
+            'allow_raw_html' => true,
             'disable_wiki_links' => false,
+            'allowed_methods_in_iframe' => ['iframe','editiframe','render'],
             'timezone'=>'GMT' // Only used if not set in wakka.config.php nor in php.ini
         );
         unset($_rewrite_mode);
@@ -279,7 +308,7 @@ class Init
         $containerBuilder->set(ParameterBagInterface::class, $containerBuilder->getParameterBag());
 
         $loader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__));
-        $loader->load('services.yml');
+        $loader->load('services.yaml');
 
         return $containerBuilder;
     }
@@ -298,9 +327,9 @@ class Init
         // Core controllers
         $routes->addCollection($loader->load('includes/controllers'));
 
-        foreach($wiki->extensions as $extensionKey => $extensionPath) {
-            $controllersDir = __DIR__ . '/../' . $extensionPath . 'controllers';
-            if( is_dir($controllersDir)) {
+        foreach ($wiki->extensions as $extensionKey => $extensionPath) {
+            $controllersDir = \getcwd(). '/' . $extensionPath . 'controllers';
+            if (is_dir($controllersDir)) {
                 $routes->addCollection($loader->load($controllersDir));
             }
         }
@@ -317,22 +346,29 @@ class Init
     {
         // configuration du cookie de session
         // determine le chemin pour les cookies
-        $a = parse_url($this->config['base_url']);
-        $CookiePath = $a['path'];
+        $urlParsed = parse_url($this->config['base_url']);
+        $CookiePath = $urlParsed['path'];
 
-        // Fixe la gestion des cookie sous les OS utilisant le \ comme separteur de chemin
+        // Fixe la gestion des cookie sous les OS utilisant le \ comme separateur de chemin
         $CookiePath = str_replace('\\', '/', $CookiePath);
 
-        // ajoute un '/' si on est a la racine web
-        if (empty($CookiePath) || !empty($this->config['global_cookie_path'])) {
-            $CookiePath = '/';
+        // ajoute un '/' terminal sauf si on est a la racine web et si nécessaire
+        if (substr($CookiePath, -1) !== '/') {
+            $CookiePath .= '/';
+        }
+
+        $sessionName = "YesWiki-main";
+        if ($CookiePath !== '/') {
+            $sessionName = "YesWiki-" . str_replace('/', '-', substr($CookiePath, 1, -1));
         }
 
         // test if session exists, because the wiki object is instanciated for every plugin
         if (!isset($_SESSION)) {
-            $a = session_get_cookie_params();
-            session_set_cookie_params($a['lifetime'], $CookiePath);
-            unset($a);
+            $cookiesParam = session_get_cookie_params();
+            $cookiesParam['path'] = $CookiePath;
+            $cookiesParam['httponly'] = true;
+            session_set_cookie_params($cookiesParam);
+            session_name($sessionName);
             session_start();
         }
 

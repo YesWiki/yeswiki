@@ -11,22 +11,35 @@ if (empty($destination)) {
     echo _t(LANG_DESTINATION_REQUIRED);
 }
 
-$wikireq = $_REQUEST['wiki'];
-// remove leading slash
-$wikireq = preg_replace("/^\//", "", $wikireq);
-// split into page/method, checking wiki name & method name (XSS proof)
-if (preg_match('`^' . '(' . "[A-Za-z0-9]+" . ')/(' . "[A-Za-z0-9_-]" . '*)' . '$`', $wikireq, $matches)) {
-    list(, $PageTag, $method) = $matches;
-} elseif (preg_match('`^' . "[A-Za-z0-9]+" . '$`', $wikireq)) {
-    $PageTag = $wikireq;
-}
-// Todo : utiliser template
-
 $flagfile='tools/lang/presentation/images/'.$destination.'.png';
 
 if (file_exists($flagfile)) {
-    echo '<a href="wakka.php?wiki='.$PageTag.'&lang='.$destination.'">
+    $wikireq = $_GET['wiki'] ?? null;
+
+    $currentMethod = empty($this->method) ? '' : '/' . $this->method;
+    $currentTag = (strpos($wikireq,'/') !== false)
+        ? substr($wikireq,0,-strlen($currentMethod))
+        : $wikireq;
+
+    $queries = [];
+    parse_str($_SERVER['QUERY_STRING'],$queries);
+    unset($queries[$wikireq]);
+    unset($queries['wiki']);
+    $queries['lang'] = $destination;
+
+    // remove $_GET['lang'] because it is used by Href
+    if (isset($_GET['lang'])){
+        $previousLang = $_GET['lang'];
+        unset($_GET['lang']);
+    }
+    // Todo : utiliser template
+    echo '<a href="'.$this->Href($wikireq === $currentTag ? '' : $this->method,$currentTag,$queries,false).'">
         <img src="'.$flagfile.'" title="'.$destination.'" alt="Flag'.$destination.'"></img></a>';
+
+    if (isset($previousLang)){
+        $_GET['lang'] = $previousLang;
+        unset($previousLang);
+    }
 } else {
     echo _t(LANG_FLAG_FILE_MISSING);
 }

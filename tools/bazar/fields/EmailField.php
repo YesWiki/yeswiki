@@ -10,7 +10,7 @@ use Psr\Container\ContainerInterface;
 class EmailField extends BazarField
 {
     protected $sendMail;
-    protected $showContactForm;
+    public $showContactForm;
 
     // Field-specific
     protected const FIELD_SHOW_CONTACT_FORM = 6;
@@ -22,7 +22,7 @@ class EmailField extends BazarField
 
         $this->type = 'email';
         $this->sendMail = $values[self::FIELD_SEND_EMAIL] == 1;
-        $this->showContactForm = $values[self::FIELD_SHOW_CONTACT_FORM] == 'form';
+        $this->showContactForm = $values[self::FIELD_SHOW_CONTACT_FORM] === 'form';
         $this->maxChars = $this->maxChars ?? 255;
     }
 
@@ -57,10 +57,12 @@ class EmailField extends BazarField
 
         return $this->render('@bazar/fields/email.twig', [
             'value' => $value,
-            'showContactForm' => $this->showContactForm,
-            'contactFormUrl' => $this->showContactForm ? $GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(),
-                'field=' . $this->propertyName) : null
         ]);
+    }
+
+    public function getShowContactForm()
+    {
+        return $this->showContactForm ;
     }
 
     public function jsonSerialize()
@@ -69,7 +71,7 @@ class EmailField extends BazarField
             parent::jsonSerialize(),
             [
                 'sendMail' => $this->sendMail,
-                'showContactForm' => $this->showContactForm
+                'showContactForm' => $this->getShowContactForm()
             ]
         );
     }

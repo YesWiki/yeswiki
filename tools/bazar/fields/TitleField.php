@@ -3,8 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\ListManager;
+use YesWiki\Bazar\Service\FormManager;
 
 /**
  * Generate a title based on other values from the entry
@@ -36,30 +35,56 @@ class TitleField extends BazarField
     public function formatValuesBeforeSave($entry)
     {
         $value = $this->getValue($entry);
-        $entryManager = $this->getService(EntryManager::class);
+        $formManager = $this->getService(FormManager::class);
 
         // TODO improve import detection
         if (!isset($GLOBALS['_BAZAR_']['provenance']) || $GLOBALS['_BAZAR_']['provenance'] !== 'import') {
             preg_match_all('#{{(.*)}}#U', $value, $matches);
+            $formId = $entry['id_typeannonce'] ?? null;
             foreach ($matches[1] as $fieldName) {
-                if (isset($entry[$fieldName])) {
-                    if (preg_match('#^listefiche#', $fieldName) !== 0 || preg_match('#^checkboxfiche#', $fieldName) !== 0) {
-                        // For a "listefiche" or a "checkboxfiche", find the entry's title
-                        $fiche = $entryManager->getOne($entry[$fieldName]);
-                        $value = str_replace('{{' . $fieldName . '}}', ($fiche['bf_titre'] != null) ? $fiche['bf_titre'] : '', $value);
-                    } elseif (preg_match('#^liste#', $fieldName) !== 0 || preg_match('#^checkbox#', $fieldName) !== 0) {
-                        // For a "liste" or a "checkbox", find the list labels
-                        $listId = preg_replace('#^(liste|checkbox)(.*)#', '$2', $fieldName);
-                        $listValues = $this->getService(ListManager::class)->getOne($listId);
-                        $list = explode(',', $entry[$fieldName]);
-                        $listLabels = [];
-                        foreach ($list as $l) {
-                            $listLabels[] = $listValues['label'][$l];
+                $field = $formManager->findFieldFromNameOrPropertyName($fieldName, $formId);
+                if ($field instanceof EnumField || $field instanceof FileField) {
+                    $fieldValue = $field->getValue($entry);
+                    if ($field instanceof CheckboxField) {
+                        // get first value instead of keys
+                        $formattedValue = $field->formatValuesBeforeSave($entry)[$field->getPropertyName()];
+                        $fieldValues = $field->getValues([$field->getPropertyName() => $formattedValue]);
+                        $replacement = $field->getOptions()[$fieldValues[0] ?? null] ?? '';
+                    } elseif ($field instanceof TagsField) {
+                        // get first value instead of keys
+                        $fieldValues = explode(',', $fieldValue);
+                        $replacement = trim($fieldValues[0]) ?? '';
+                    } elseif ($field instanceof EnumField) {
+                        // get value instead of key
+                        $replacement = $field->getOptions()[$fieldValue] ?? '';
+                    } elseif ($field instanceof ImageField) {
+                        if (!empty($_POST['filename-'.$field->getPropertyName()])) {
+                            $replacement = sanitizeFilename($_POST['filename-'.$field->getPropertyName()]);
+                            if (empty($replacement)) {
+                                $replacement = 'image';
+                            }
+                        } elseif (!empty($fieldValue)) {
+                            $replacement = $fieldValue;
+                        } else {
+                            $replacement = 'image';
                         }
-                        $value = str_replace('{{' . $fieldName . '}}', implode(', ', $listLabels), $value);
+                    } elseif ($field instanceof FileField) {
+                        if (!empty($_FILES[$field->getPropertyName()]['name'])) {
+                            $replacement = sanitizeFilename($_FILES[$field->getPropertyName()]['name']);
+                            if (empty($replacement)) {
+                                $replacement = 'file';
+                            }
+                        } elseif (!empty($fieldValue)) {
+                            $replacement = $fieldValue;
+                        } else {
+                            $replacement = 'file';
+                        }
                     } else {
-                        $value = str_replace('{{' . $fieldName . '}}', $entry[$fieldName], $value);
+                        $replacement = $fieldValue;
                     }
+                    $value = str_replace('{{' . $fieldName . '}}', $replacement, $value);
+                } elseif (isset($entry[$fieldName])) {
+                    $value = str_replace('{{' . $fieldName . '}}', $entry[$fieldName], $value);
                 }
             }
         }

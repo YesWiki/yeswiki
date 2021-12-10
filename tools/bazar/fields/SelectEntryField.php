@@ -4,14 +4,16 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Wiki;
 
 /**
  * @Field({"listefiche"})
  */
 class SelectEntryField extends EnumField
 {
-    protected $isDistantJson;
+    public $isDistantJson;
     protected $displayMethod;
+    protected $baseUrl ;
 
     protected const FIELD_DISPLAY_METHOD = 3;
 
@@ -22,11 +24,11 @@ class SelectEntryField extends EnumField
         $this->displayMethod = $values[self::FIELD_DISPLAY_METHOD];
         $this->isDistantJson = filter_var($this->name, FILTER_VALIDATE_URL);
 
-        if($this->isDistantJson) {
-            $this->propertyName = $this->type . removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $this->name))) . $this->listLabel;
-            $this->loadOptionsFromJson();
+        if ($this->isDistantJson) {
+            $this->prepareJSONEntryField();
         } else {
-            $this->loadOptionsFromEntries();
+            $this->options = null ;
+            $this->baseUrl = null;
         }
     }
 
@@ -34,18 +36,20 @@ class SelectEntryField extends EnumField
     {
         return $this->render('@bazar/inputs/select.twig', [
             'value' => $this->getValue($entry),
-            'options' => $this->options
+            'options' => $this->getOptions()
         ]);
     }
 
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
-        if( !$value ) return null;
+        if (!$value) {
+            return null;
+        }
 
-        if( $this->displayMethod === 'fiche' ) {
-            if( $this->isDistantJson ) {
-                // TODO display the entry in a iframe ?
+        if ($this->displayMethod === 'fiche') {
+            if ($this->isDistantJson) {
+                // TODO display the entry in an iframe ?
                 return null;
             } else {
                 // TODO add documentation
@@ -53,17 +57,25 @@ class SelectEntryField extends EnumField
             }
         }
 
-        if( $this->isDistantJson ) {
-            $entryUrl = explode('BazaR/json', $this->name);
-            $entryUrl = $entryUrl[0] . $value;
+        if ($this->isDistantJson) {
+            if (!empty($this->optionsUrls[$value])) {
+                $entryUrl = $this->optionsUrls[$value];
+            } else {
+                $entryUrl = $baseUrl . $value;
+            }
         } else {
-            $entryUrl = $GLOBALS['wiki']->href('', $value);
+            $entryUrl = $this->services->get(Wiki::class)->Href('', $value);
         }
 
         return $this->render('@bazar/fields/select_entry.twig', [
             'value' => $value,
-            'label' => $this->options[$value],
+            'label' => $this->getOptions()[$value],
             'entryUrl' => $entryUrl
         ]);
+    }
+
+    public function getOptions()
+    {
+        return  $this->getEntriesOptions();
     }
 }

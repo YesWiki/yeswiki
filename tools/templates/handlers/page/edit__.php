@@ -100,13 +100,13 @@ if (isset($_SERVER["HTTP_REFERER"])) {
 // le bouton apercu c'est pour les vieilles versions de wikini, on en profite pour rajouter des classes pour colorer les boutons et la personnalisation graphique
 $patterns = array(0 => '/<input name=\"submit\" type=\"submit\" value=\"Sauver\" accesskey=\"s\" \/>/',
                     1 => '/<input name=\"submit\" type=\"submit\" value=\"Aper\&ccedil;u\" accesskey=\"p\" \/>/',
-                    2 => '/<input type=\"button\" value=\"Annulation\" onclick=\"document.location=\''.preg_quote(addslashes($this->href()), '/').'\';\" \/>/',
+                    2 => '/<input type=\"button\" value=\"Annulation\" onclick=\"document.location=\''.preg_quote(addslashes($this->href(testUrlInIframe())), '/').'\';\" \/>/',
                     3 => '/ class=\"edit\">/',
                     );
 $replacements = array(
                     0 => $hidden.'<div class="form-actions">'."\n".'<button type="submit" name="submit" value="Sauver" class="btn btn-primary">'._t('TEMPLATE_SAVE').'</button>'."\n",
                     1 => '',
-                    2 => '<button class="btn btn-default" onclick="location.href=\''.addslashes($this->href()).'\';return false;">'._t('TEMPLATE_CANCEL').'</button>'."\n".
+                    2 => '<button class="btn btn-default" onclick="location.href=\''.addslashes($this->href(testUrlInIframe())).'\';return false;">'._t('TEMPLATE_CANCEL').'</button>'."\n".
                             (($changetheme) ? '<span class="other-actions"><a class="btn btn-neutral" data-toggle="modal" data-target="#graphical_options">'._t('TEMPLATE_THEME').'</a>'."\n" : '').'</span></div>'."\n", // le bouton Theme du bas de l'interface d'edition
                     3 => ' class="edit form-control">',
                     );

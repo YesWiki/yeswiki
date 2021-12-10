@@ -1,5 +1,7 @@
 <?php
 
+use YesWiki\Security\Controller\SecurityController;
+
 function getConfigValue($key, $default = false, $cfg = '')
 {
     if (isset($cfg[$key]) and !empty($cfg[$key])) {
@@ -117,7 +119,7 @@ function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $meth
 {
     if (file_exists($image_src)) {
         if (!file_exists($image_dest) || (isset($_GET['refresh']) && $_GET['refresh']==1)) {
-            if (file_exists($image_dest)) {
+            if (!$GLOBALS['wiki']->services->get(SecurityController::class)->isWikiHibernated() && file_exists($image_dest)) {
                 unlink($image_dest);
             }
             if (!class_exists('Image')) {
@@ -202,20 +204,6 @@ function obtenir_extension($filename)
     } else {
         $extension = substr($filename, $pos + 1);
         return $extension;
-    }
-}
-
-function testUrlInIframe($url = '')
-{
-    if (empty($url)) {
-        // test si on est dans une iframe
-        $url = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
-    }
-    $iframe = preg_match('/\/(edit)?iframe/Ui', $url);
-    if ($iframe) {
-        return 'iframe';
-    } else {
-        return '';
     }
 }
 

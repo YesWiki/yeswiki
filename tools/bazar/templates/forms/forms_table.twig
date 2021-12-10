@@ -3,6 +3,8 @@
 {{ include_javascript('tools/bazar/libs/bazar.edit_forms.js') }}
 {{ include_css('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css') }}
 
+{% set tooltipMessage =  isWikiHibernated ? _t('WIKI_IN_HIBERNATION') : _t('BAZ_NEED_ADMIN_RIGHTS') %}
+
 {% if message %}
 <div class="alert alert-success">
   <a data-dismiss="alert" class="close" type="button">&times;</a>
@@ -44,12 +46,25 @@
             <a class="btn btn-default btn-xs" title="{{ _t('BAZ_CSV') }}" href="{{ url({ params: { 'vue': 'exporter', 'id': key }}) }}" data-toggle="tooltip" data-placement="bottom">
               CSV
             </a>
-            <a class="btn btn-default btn-mini btn-xs" target="_blank" title="{{ _t('BAZ_JSON') }}" href="{{ url({ tag: 'api/fiche/' ~ key }) }}" data-toggle="tooltip" data-placement="bottom">
+            <a class="btn btn-default btn-mini btn-xs" target="_blank" title="{{ _t('BAZ_JSON') }}" href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries'}) }}" data-toggle="tooltip" data-placement="bottom">
               JSON
             </a>
             {% if form.isSemantic %}
-              <a class="btn btn-default btn-mini btn-xs" target="_blank" title="{{ _t('BAZ_JSON_LD') }}" href="{{ url({ tag: 'api/fiche/' ~ key ~ '/json-ld' }) }}" data-toggle="tooltip" data-placement="bottom">
+              <a class="btn btn-default btn-mini btn-xs" target="_blank" title="{{ _t('BAZ_JSON_LD') }}" href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries/json-ld'}) }}" data-toggle="tooltip" data-placement="bottom">
                 JSON-LD
+              </a>
+            {% endif %}
+            {% if form.isGeo %}
+              <a class="btn btn-default btn-mini btn-xs" target="_blank" title="{{ _t('BAZ_GEOJSON') }}" href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries/geojson'}) }}" data-toggle="tooltip" data-placement="bottom">
+                GeoJSON
+              </a>
+            {% endif %}
+            {% if form.isDate %}
+              <a class="btn btn-default btn-mini btn-xs" 
+                target="_blank" title="{{ _t('BAZ_ICAL') }}" 
+                href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries/ical'}) }}" 
+                data-toggle="tooltip" data-placement="bottom">
+                ICAL
               </a>
             {% endif %}
             <a class="btn btn-default btn-mini btn-xs" title="{{ _t('BAZ_WIDGET') }}" href="{{ url({ handler: 'widget', params: { id: key }}) }}" data-toggle="tooltip" data-placement="bottom">
@@ -60,30 +75,43 @@
             {{ key }}
           </td>
           <td>
+            <div class="create-actions">
+            {% if form.canEdit %}
+            <a class="btn btn-default btn-mini btn-xs"title="{{ _t('BAZ_CLONE_FORM') }}"href="{{ url({ params: { vue: 'formulaire', action: 'clone', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
+              <i class="far fa-clone"></i>
+            </a>
+            {% else %}
+              <button type="button" class="btn btn-default btn-mini btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
+                <i class="far fa-clone"></i>
+              </button>
+            {% endif %}
             {% if form.canEdit %}
               <a class="btn btn-default btn-mini btn-xs"title="{{ _t('BAZ_MODIFIER_FORMULAIRE') }}"href="{{ url({ params: { vue: 'formulaire', action: 'modif', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
                 <i class="fa fa-pencil-alt"></i>
               </a>
             {% else %}
-              <button type="button" class="btn btn-default btn-mini btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_DROIT_INSUFFISANT') }}">
+              <button type="button" class="btn btn-default btn-mini btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
                 <i class="fa fa-pencil-alt"></i>
               </button>
             {% endif %}
+            </div>
+            <div class="erase-actions">
             {% if form.canDelete %}
-              <a class="btn btn-danger btn-xs" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'empty', idformulaire: key }}) }}" onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_VIDER_FORMULAIRE') }} ?');" -toggle="tooltip" data-placement="bottom">
+              <a class="btn btn-danger btn-xs" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'empty', idformulaire: key }}) }}" onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_VIDER_FORMULAIRE') }} ?');" data-toggle="tooltip" data-placement="bottom">
                 <i class="fas fa-eraser"></i>
               </a>
               <a class="btn btn-danger btn-xs" title="{{ _t('BAZ_SUPPRIMER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'delete', idformulaire: key }}) }}"  onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_FORMULAIRE') }} ?');" data-toggle="tooltip" data-placement="bottom">
                 <i class="fa fa-trash"></i>
               </a>
             {% else %}
-              <button type="button" class="btn btn-danger btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_DROIT_INSUFFISANT') }}">
+              <button type="button" class="btn btn-danger btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
                 <i class="fas fa-eraser"></i>
               </button>
-              <button type="button" class="btn btn-danger btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_DROIT_INSUFFISANT') }}">
+              <button type="button" class="btn btn-danger btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
                 <i class="fa fa-trash"></i>
               </button>
             {% endif %}
+            </div>
           </td>
         </tr>
       {% endfor %}
@@ -96,10 +124,14 @@
 </div>
 {% endif %}
 
-<a class="btn btn-primary {% if not loggedUser %}disabled{% endif %}" href="{{ url({ params: { vue: 'formulaire', action: 'new' }}) }}">
+{% if userIsAdmin and not isWikiHibernated %}
+  <a class="btn btn-primary" href="{{ url({ params: { vue: 'formulaire', action: 'new' }}) }}">
+{% else %}
+  <button type="button" class="btn btn-primary" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage  }}">
+{% endif %}
   <i class="fa fa-plus icon-plus icon-white"></i>
   {{ _t('BAZ_NOUVEAU_FORMULAIRE') }}
-</a>
+{% if userIsAdmin and not isWikiHibernated %}</a>{% else %}</button>{% endif %}
 
 <hr>
 
@@ -109,9 +141,9 @@
 		<span class="add-on input-group-addon">
       <i class="fa fa-link icon-globe"></i>
     </span>
-		<input id="url-import-forms" class="form-control input-xxlarge" {% if not loggedUser %}disabled{% endif %} placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}" type="url" />
+		<input id="url-import-forms" class="form-control input-xxlarge" {% if not userIsAdmin or isWikiHibernated %}disabled  data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}"{% endif %} placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}" type="url" />
 		<span class="input-group-btn">
-      <button id="btn-import-forms" {% if not loggedUser %}disabled{% endif %} class="btn btn-primary" type="submit">{{ _t('BAZ_GO') }} !</button>
+      <button id="btn-import-forms" {% if not userIsAdmin or isWikiHibernated %}disabled  disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}"{% endif %} class="btn btn-primary" type="submit">{{ _t('BAZ_GO') }} !</button>
     </span>
 	</div>
   <p class="text-info">Exemple d'url pour obtenir des formulaires types: <code>https://yeswiki.net</code></p>

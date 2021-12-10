@@ -3,10 +3,10 @@
 export default {
   methods: {
     componentIdFrom(config) {
-      return `input-${['text', 'number', 'range', 'url'].includes(config.type) ? 'text' : (config.type || 'hidden')}`
+      return `input-${['text', 'number', 'range', 'url', 'email'].includes(config.type) ? 'text' : (config.type || 'hidden')}`
     },
     // Whether or not display this field (and include it's key/value in the action params)
-    display(config) {
+    checkConfigDisplay(config) {
       if (!config) return false
       let showIfResult = true
       // condition with showif attribute
@@ -18,9 +18,9 @@ export default {
         }
         // Check every condition is respected
         for(const field in showIfConf) {
-          const value = this.values[field]
-          const expectedValue = showIfConf[field]
-          if (expectedValue == 'notNull') showIfResult = showIfResult && !!value
+          const value = (this.values[field] || false).toString()          
+          const expectedValue = showIfConf[field].toString()
+          if (expectedValue == 'notNull') showIfResult = showIfResult && !["", "false"].includes(value)
           else if (Array.isArray(expectedValue)) showIfResult = showIfResult && expectedValue.includes(value)
           else if (value) showIfResult = showIfResult && new RegExp(expectedValue, 'i').exec(value) != null
         }
@@ -32,7 +32,7 @@ export default {
       return !hideIf
     },
     checkVisibility(config) {
-      return this.display(config) && (!config.advanced || this.$root.displayAdvancedParams)
+      return this.checkConfigDisplay(config) && (!config.advanced || this.$root.displayAdvancedParams)
     },
     refFrom(config) {
       return config.subproperties || config.type == "geo" ? 'specialInput' : ''

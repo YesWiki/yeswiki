@@ -118,6 +118,12 @@ echo '<style>
     #tocjs-'.$tag.'.affix {
         top : '.$offset.'px
     }
+    
+    @media (max-width:768px){
+        #tocjs-'.$tag.'.affix {
+            right: 5px;
+        }
+    }
 
     #tocjs-'.$tag.' ol {
         list-style:none;

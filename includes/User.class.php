@@ -1,6 +1,9 @@
 <?php
 namespace YesWiki;
+
+use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\TripleStore;
+use YesWiki\Security\Controller\SecurityController;
 
 class User
 {
@@ -29,6 +32,9 @@ class User
     protected $passwordMinimumLength = 5;
 
     protected $keyVocabulary = 'http://outils-reseaux.org/_vocabulary/key';
+
+    protected $securityController;
+    protected $dbService;
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~ END OF PROPERTIES ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 
@@ -37,6 +43,8 @@ class User
         $this->wiki = $wiki;
         $this->initUsersTable();
         $this->initLimitations();
+        $this->dbService = $this->wiki->services->get(DbService::class);
+        $this->securityController = $this->wiki->services->get(SecurityController::class);
     }
 
     /* ~~~~~~~~~~~~~~~~~~~~~~ SETS PROPERTY METHODS ~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -232,6 +240,8 @@ class User
             $this->error = _t('USER_YOU_MUST_SPECIFY_A_NAME').'.';
         } elseif (strlen($newName) > $this->nameMaxLength) {
             $this->error = _t('USER_NAME_S_MAXIMUM_LENGTH_IS').' '.$this->nameMaxLength.'.';
+        } elseif (preg_match('/[!#@<>\\\\\/][^<>\\\\\/]{2,}/', $newName)) {
+            $this->error = _t('USER_THIS_IS_NOT_A_VALID_NAME').'.';
         } else {
             $result = true;
         }
@@ -370,7 +380,7 @@ class User
      */
     public function checkPassword($pwd, $newUser = '')
     {
-        if (empty($newUser) && $this->properties['password'] != md5($pwd)) {
+        if (empty($newUser) && $this->properties['password'] !== md5($pwd)) {
             $this->error = _t('USER_WRONG_PASSWORD').' !';
             return false;
         } else {
@@ -399,7 +409,7 @@ class User
     {
         $correct = true;
         if (isset($confPassword) && (trim($confPassword) !='')) {
-            if ($confPassword != $pwd) {
+            if ($confPassword !== $pwd) {
                 $this->error = _t('USER_PASSWORDS_NOT_IDENTICAL').'.';
                 $correct = false;
             }
@@ -433,12 +443,12 @@ class User
         // Generate the password recovery key
         $key = md5($this->properties['name'] . '_' . $this->properties['email'] . rand(0, 10000) . date('Y-m-d H:i:s') . PW_SALT);
         // Erase the previous triples in the trible table
-        $this->wiki->services->get(TripleStore::class)->delete($this->properties['name'],$this->keyVocabulary,null,'','') ;
+        $this->wiki->services->get(TripleStore::class)->delete($this->properties['name'], $this->keyVocabulary, null, '', '') ;
         // Store the (name, vocabulary, key) triple in triples table
         $res = $this->wiki->services->get(TripleStore::class)->create($this->properties['name'], $this->keyVocabulary, $key, '', '');
 
         // Generate the recovery email
-        $passwordLink = $this->wiki->Href() . '&a=recover&email=' . $key . '&u=' . urlencode(base64_encode($this->properties['name']));
+        $passwordLink = $this->wiki->Href() . (($this->wiki->config['rewrite_mode'] ?? false) ? '?' : '&').'a=recover&email=' . $key . '&u=' . urlencode(base64_encode($this->properties['name']));
         $pieces = parse_url($this->wiki->GetConfigValue('base_url'));
         $domain = isset($pieces['host']) ? $pieces['host'] : '';
 
@@ -475,6 +485,9 @@ class User
     */
     public function resetPassword($user, $key, $password, $confPassword='')
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $this->error = '';
         if ($this->checkEmailKey($key, $user) === false) { // The password recovery key does not match
             $this->error = _t('USER_INCORRECT_PASSWORD_KEY').'.';
@@ -506,7 +519,7 @@ class User
     public function checkEmailKey($hash, $user): bool
     {
         // Pas de detournement possible car utilisation de _vocabulary/key ....
-        return !is_null($this->wiki->services->get(TripleStore::class)->exist($user, 'http://outils-reseaux.org/_vocabulary/key',$hash,'',''));
+        return !is_null($this->wiki->services->get(TripleStore::class)->exist($user, 'http://outils-reseaux.org/_vocabulary/key', $hash, '', ''));
     }
     /* End of Password recovery process (AKA reset password)   */
 
@@ -521,6 +534,9 @@ class User
      */
     public function updatePassword($password, $confPassword='')
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $this->error = '';
         if (isset($confPassword) && ($confPassword != '')) {
             $OK = $this->passwordIsCorrect($password, $confPassword);
@@ -531,7 +547,7 @@ class User
             // Update user's password
             $sql	= 'UPDATE '.$this->usersTable;
             $sql .= ' SET password = "'.MD5($password).'" ';
-            $sql .= 'WHERE name = "'.$this->properties['name'].'" LIMIT 1;';
+            $sql .= 'WHERE name = "'.$this->dbService->escape($this->properties['name']).'" LIMIT 1;';
             $OK = $this->wiki->query($sql); // true or false depending on the query execution
             if ($OK) {
                 $this->properties['password'] = md5($password);
@@ -598,6 +614,7 @@ class User
             $_SESSION['user'] = '';
             $this->wiki->session->deleteCookie('name');
             $this->wiki->session->deleteCookie('password');
+            $this->wiki->session->deleteCookie('remember');
             $OK = true;
         }
         return $OK;
@@ -636,6 +653,9 @@ class User
     */
     public function createIntoDB()
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $this->error = '';
         $result = false;
         $sql = 'INSERT INTO `'.$this->usersTable.'` SET '.
@@ -763,6 +783,9 @@ class User
    */
     public function updateIntoDB($fieldsToUpdate = '')
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         // NOTE: Can we update name ?
         $this->error = '';
         $fieldsTab = array_map('trim', explode(',', $fieldsToUpdate));
@@ -866,6 +889,9 @@ class User
     */
     public function delete()
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $this->error = '';
         $OK = true;
         if (!$this->runnerIsAdmin()) { // actual user is not admin
@@ -892,9 +918,9 @@ class User
             if ($OK) {
                 // Delete user in every group
                 $triplesTable = $this->wiki->config['table_prefix'].'triples';
-                $searched_value = '%' . $this->properties['name'] . '%';
-                $seek_value_bf = '' . $this->properties['name'] . '\n'; // username to delete can be followed by another username
-                $seek_value_af = '\n' . $this->properties['name']; // username to delete can follow another username
+                $searched_value = '%' . $this->dbService->escape($this->properties['name']) . '%';
+                $seek_value_bf = '' . $this->dbService->escape($this->properties['name']) . '\n'; // username to delete can be followed by another username
+                $seek_value_af = '\n' . $this->dbService->escape($this->properties['name']); // username to delete can follow another username
                 // get rid of this username everytime it's followed by another
                 $sql  = 'UPDATE '.$triplesTable.'';
                 $sql .= ' SET value = REPLACE(value, "'.$seek_value_bf.'", "")';
@@ -919,7 +945,7 @@ class User
                     $sql = 'UPDATE `'.$pagesTable.'`';
                     // $sql .= ' SET `owner` = NULL';
                     $sql .= ' SET `owner` = "" ';
-                    $sql .= ' WHERE `owner` = "'.$this->properties['name'].'";';
+                    $sql .= ' WHERE `owner` = "'.$this->dbService->escape($this->properties['name']).'";';
                     $OK = $this->wiki->query($sql);
                     if (!$OK) {
                         $this->error = _t('USER_DELETE_QUERY_FAILED').'.';
@@ -928,7 +954,7 @@ class User
                 // Delete the user row from the user table
                 if ($OK) {
                     $sql = 'DELETE FROM `'.$this->usersTable.'`';
-                    $sql .= ' WHERE `name` = "'.$this->properties['name'].'";';
+                    $sql .= ' WHERE `name` = "'.$this->dbService->escape($this->properties['name']).'";';
                     $OK = $this->wiki->query($sql);
                     if (!$OK) {
                         $this->error = _t('USER_DELETE_QUERY_FAILED').'.';
@@ -974,7 +1000,7 @@ class User
     {
         /* Build sql query*/
         $sql  = 'SELECT * FROM '.$this->usersTable;
-        $sql .= ' WHERE email = "'.$email.'";';
+        $sql .= ' WHERE email = "'.mysqli_real_escape_string($this->wiki->dblink,$email).'";';
         /* Execute query */
         $results = $this->wiki->loadAll($sql);
         return $results; // If the password does not already exist in DB, $result is an empty table => false
@@ -1003,7 +1029,7 @@ class User
         $sql  = 'SELECT resource FROM '.$triplesTable;
         $sql .= ' WHERE resource LIKE "'.GROUP_PREFIX.'%"';
         $sql .= ' AND property LIKE "'.WIKINI_VOC_ACLS_URI.'"';
-        $sql .= ' AND value LIKE "%'.$this->properties['name'].'%";';
+        $sql .= ' AND value LIKE "%'.$this->dbService->escape($this->properties['name']).'%";';
         /* Execute query */
         $results = array();
         if ($groups = $this->wiki->loadAll($sql)) {

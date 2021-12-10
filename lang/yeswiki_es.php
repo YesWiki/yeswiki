@@ -28,7 +28,7 @@
 *@copyright     2016 Outils-Réseaux
 */
 
-$GLOBALS['translations'] = array(
+$GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 
 // wakka.php
 'UNKNOWN_ACTION' => 'Acción desconocida',
@@ -324,4 +324,13 @@ $GLOBALS['translations'] = array(
 'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'directamente en el repertorio de YesWiki. Una vez hecho, tu sitio YesWiki deberia funcionar bien',
 'TRY_AGAIN' => 'Intentar de nuevo',
 
-);
+// include/services/ThemeManager.php
+'THEME_MANAGER_THEME_FOLDER' => 'La carpeta del tema ',
+'THEME_MANAGER_SQUELETTE_FILE' => 'El fichero del esqueleto ',
+'THEME_MANAGER_NOT_FOUND' => ' no fue encontrado/encontrada.',
+'THEME_MANAGER_ERROR_GETTING_FILE' => 'Una error estalle cargando el fichero : ',
+'THEME_MANAGER_CLICK_TO_INSTALL' => 'Clicar para instalar el tema ',
+'THEME_MANAGER_AND_REPAIR' => ' y reparar el sitio',
+'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Conectaya como administrador para actualizar.',
+
+));

@@ -13,7 +13,7 @@
                     class="element_checkbox"
                     {% if not value or value == subscribeEmail %}checked="checked"{% endif %}}
             >
-            {{ field.label}}
+            {{ field.label|raw}}
         </label>
     </div>
 {% endblock %}

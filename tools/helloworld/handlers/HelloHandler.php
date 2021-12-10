@@ -4,8 +4,10 @@ use YesWiki\Core\YesWikiHandler;
 
 class HelloHandler extends YesWikiHandler
 {
-    function run()
+    public function run()
     {
+        $this->denyAccessUnlessGranted('read');
+        
         $pageBody = $this->wiki->page['body'];
         return $this->renderInSquelette('@helloworld/hello.twig', ['body' => $pageBody]);
     }

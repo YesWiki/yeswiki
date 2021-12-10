@@ -14,12 +14,12 @@
           <select v-model="selectedFormId" required class="form-control">
             <option v-for="(name, id) in formIds" :value="id">{{ name }}</option>
           </select>
-          Nb. : Il est possible d'afficher plusieurs bases de donn&eacute;es d'un coup en entrant leur id s&eacute;par&eacute; par une virgule [<a href="https://yeswiki.net/?ActionBazarliste">acc&eacute;der &agrave; la documentation</a>].
+          <span v-if="isBazarListeAction" class="text-muted"><?php echo  _t('ACTION_BUILDER_SEVERAL_FORMS_HINT'); ?></span>
         </div>
 
         <!-- Choose Action -->
         <div class="form-group" v-show="Object.keys(this.actions).length > 1">
-          <label class="control-label">{{ needFormField ? '<?php echo _t('ACTION_BUILDER_CHOOSE_ACTION'); ?>' : 'Actions' }}</label>
+          <label class="control-label">{{ isBazarListeAction ? '<?php echo _t('ACTION_BUILDER_CHOOSE_TEMPLATE'); ?>' : '<?php echo _t('ACTION_BUILDER_CHOOSE_ACTION'); ?>' }}</label>
           <select v-model="selectedActionId" required class="form-control">
             <option v-for="(action, actionId) in actions" v-if="action.label" :value="actionId">{{ action.label }}</option>
           </select>
@@ -28,14 +28,14 @@
         <!-- Action Configuration -->
         <div v-if="selectedAction && (!needFormField || selectedForm)" class="action-parameters-container">
 
-          <div v-if="selectedAction.hint" class="alert alert-warning">{{ selectedAction.hint }}</div>
+          <div v-if="selectedAction.hint" class="alert alert-info">{{ selectedAction.hint }}</div>
 
           <!-- Iframe Preview -->
           <preview-action :wiki-code="wikiCodeForIframe" :height="actionGroup.previewHeight"></preview-action>
 
           <div class="panels-config-container">
             <div v-for="panel in configPanels" class="config-panel" :class="panel.params.class" 
-                 :style="{width: panel.params.width || '50%'}" v-show="checkVisibility(panel.params)">
+                 :style="{width: panel.params.width || (configPanels.length == 1 ? '50%' : '33%')}" v-show="checkVisibility(panel.params)">
               <h3>{{ panel.params.title ? panel.params.title : '<?php echo _t('ACTION_BUILDER_PARAMETERS') ?>'}}</h3>
               <div class="config-panel-content">
                 <template v-for="(config, propName) in panel.params.properties">
@@ -51,7 +51,10 @@
           </div>
 
           <!-- Advanced Params Checkbox -->
-          <input-checkbox v-model="displayAdvancedParams" :config="{label: 'Paramètres Avancés'}" class="advanced-params"></input-checkbox>
+          <input-checkbox v-if="isSomeAdvancedParams" v-model="displayAdvancedParams" 
+                          :config="{label: '<?php echo _t('ACTION_BUILDER_ADVANCED_PARAMETERS') ?>'}" 
+                          class="advanced-params">
+          </input-checkbox>
 
           <div class="col-md-12 result-container">
             <h3><?php echo _t('ACTION_BUILDER_WIKI_CODE_TITLE') ?></h3>
@@ -74,16 +77,20 @@
   var actionsBuilderData = <?php echo json_encode($data) ?>;
 </script>
 
-<!-- Load manually script because we need to use type="module" for ES6 import to work -->
-<script src="tools/templates/libs/vendor/vue/vue.js"></script>
-<script type="module" src="tools/aceditor/presentation/javascripts/actions-builder.js"></script>
-
 <?php
-  $GLOBALS['wiki']->addCSSFile('tools/aceditor/presentation/styles/actions-builder.css');
-  $GLOBALS['wiki']->addCSSFile('tools/templates/libs/vendor/font-picker/fontawesome-picker.min.css');
-  $GLOBALS['wiki']->addJavascriptFile('tools/templates/libs/vendor/font-picker/fontawesome-picker.min.js');
-  $GLOBALS['wiki']->addJavascriptFile('tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.js');
-  $GLOBALS['wiki']->addCSSFile('tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.css');
-  $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/leaflet.css');
-  $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
+  $this->wiki->addCSSFile('tools/templates/libs/vendor/font-picker/fontawesome-picker.min.css');
+  $this->wiki->AddJavascriptFile('tools/templates/libs/vendor/font-picker/fontawesome-picker.min.js');
+
+  $this->wiki->AddJavascriptFile('javascripts/vendor/spectrum-colorpicker2/spectrum.min.js');
+  $this->wiki->AddCSSFile('styles/vendor/spectrum-colorpicker2/spectrum.min.css');
+
+  $this->wiki->AddCSSFile('styles/vendor/leaflet/leaflet.css');
+  $this->wiki->AddJavascriptFile('javascripts/vendor/leaflet/leaflet.min.js');
+
+  $this->wiki->AddJavascriptFile('javascripts/vendor/vue/vue.js');
+  $this->wiki->AddJavascriptFile('javascripts/vendor/vue-select/vue-select.min.js');
+  $this->wiki->AddCSSFile('styles/vendor/vue-select/vue-select.css');
+
+  $this->wiki->AddJavascriptFile('tools/aceditor/presentation/javascripts/actions-builder.js', false, true);
+  $this->wiki->addCSSFile('tools/aceditor/presentation/styles/actions-builder.css');
 ?>

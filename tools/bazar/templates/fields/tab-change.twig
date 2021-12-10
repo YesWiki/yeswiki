@@ -1,0 +1,39 @@
+  {# previous tab button #}
+  {% if counter > 1 %}
+    <a 
+      class="btn {{ btnClass }} pull-left" 
+      href="#menu{{ counter - 1 }}" 
+      role="tab" 
+      data-toggle="tab"
+      onclick="window.dispatchEvent(new Event('resize'));" {# needed to refresh map for geolocalization #}
+    >
+      <i class="glyphicon glyphicon-chevron-left"></i>
+      {{ counter -1 }}. {{ titles[counter - 2] }}
+    </a>
+  {% endif %}
+  {# next tab button #}
+  {% if not isLast %}
+    <a 
+      class="btn {{ btnClass }} pull-right" 
+      href="#menu{{ counter + 1 }}" 
+      role="tab" 
+      data-toggle="tab"
+      onclick="window.dispatchEvent(new Event('resize'));" {# needed to refresh map for geolocalization #}
+    >
+      {{ counter + 1 }}. {{ titles[counter] }}
+      <i class="glyphicon glyphicon-chevron-right"></i>
+    </a>
+  {% else %}
+    <br>
+    <div class="anchor-for-for-actions pull-right"></div>
+  {% endif %}
+  {# close tab #}
+  <div class="clearfix"></div>
+</div><!--ferme l'onglet n°{{ counter }} -->
+{# next tab #}
+{% if not isLast %}
+  <!--ouvre l'onglet n°{{ counter + 1}} -->
+  <div role="tabpanel" class="with-padding tab-pane" id="menu{{ counter + 1}}">
+{% else %}
+  </div><!-- ferme l'ensemble des onglets -->
+{% endif %}

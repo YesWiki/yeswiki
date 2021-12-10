@@ -101,7 +101,7 @@ if (isset($_POST['title']) && !empty($_POST['title'])
 $donneesbody = $this->LoadSingle("SELECT * FROM ".$this->config["table_prefix"]."pages WHERE tag = '".$datapagetag."'and latest = 'Y' limit 1");
 
 // search for markers info
-preg_match_all('/~~(.*)~~/msU', $donneesbody['body'], $locations);
+preg_match_all('/~~(.*)~~/msU', $donneesbody['body'] ?? '', $locations);
 $markers = array();
 foreach ($locations[1] as $location) {
     // extract all informations if present

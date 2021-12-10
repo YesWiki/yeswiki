@@ -2,17 +2,21 @@
 
 namespace YesWiki\Bazar\Controller;
 
+use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Security\Controller\SecurityController;
 
 class FormController extends YesWikiController
 {
     protected $formManager;
+    protected $securityController;
 
-    public function __construct(FormManager $formManager)
+    public function __construct(FormManager $formManager, SecurityController $securityController)
     {
         $this->formManager = $formManager;
+        $this->securityController = $securityController;
     }
 
     public function displayAll($message)
@@ -43,57 +47,99 @@ class FormController extends YesWikiController
             foreach ($forms as $form) {
                 $values[$form['bn_id_nature']]['title'] = $form['bn_label_nature'];
                 $values[$form['bn_id_nature']]['description'] = $form['bn_description'];
-                $values[$form['bn_id_nature']]['canEdit'] = $this->getService(Guard::class)->isAllowed('saisie_formulaire');
-                $values[$form['bn_id_nature']]['canDelete'] = $this->wiki->UserIsAdmin();
+                $values[$form['bn_id_nature']]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
+                $values[$form['bn_id_nature']]['canDelete'] = !$this->securityController->isWikiHibernated() &&$this->wiki->UserIsAdmin();
                 $values[$form['bn_id_nature']]['isSemantic'] = isset($form['bn_sem_type']) && $form['bn_sem_type'] !== "";
+                $values[$form['bn_id_nature']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
+                    return ($field instanceof MapField);
+                }));
+                $values[$form['bn_id_nature']]['isDate'] = $this->getService(IcalFormatter::class)->isICALForm($form);
             }
         }
 
         return $this->render("@bazar/forms/forms_table.twig", [
             'message' => $message,
             'forms' => $values,
-            'loggedUser' => $this->wiki->GetUser()
+            'userIsAdmin' => $this->wiki->UserIsAdmin(),
+            'isWikiHibernated' => $this->securityController->isWikiHibernated()
         ]);
     }
 
     public function create()
     {
-        if( isset($_POST['valider']) ) {
-            $this->formManager->create($_POST);
+        if ($this->wiki->UserIsAdmin()) {
+            if (isset($_POST['valider'])) {
+                $this->formManager->create($_POST);
 
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE'], false));
+                return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE'], false));
+            }
+
+            return $this->render("@bazar/forms/forms_form.twig", [
+                'formAndListIds' => baz_forms_and_lists_ids(),
+                'groupsList' => $this->getGroupsListIfEnabled()
+            ]);
+        } else {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
         }
-
-        return $this->render("@bazar/forms/forms_form.twig", [
-            'formAndListIds' => baz_forms_and_lists_ids()
-        ]);
     }
 
     public function update($id)
     {
-        if( isset($_POST['valider']) ) {
-            $this->formManager->update($_POST);
+        if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
+            if (isset($_POST['valider'])) {
+                $this->formManager->update($_POST);
 
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
+                return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
+            }
+
+            return $this->render("@bazar/forms/forms_form.twig", [
+                'form' => $this->formManager->getOne($id),
+                'formAndListIds' => baz_forms_and_lists_ids(),
+                'groupsList' => $this->getGroupsListIfEnabled()
+            ]);
+        } else {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
         }
-
-        return $this->render("@bazar/forms/forms_form.twig", [
-            'form' => $this->formManager->getOne($id),
-            'formAndListIds' => baz_forms_and_lists_ids()
-        ]);
     }
 
     public function delete($id)
     {
-        $this->formManager->delete($id);
+        if ($this->wiki->UserIsAdmin()) {
+            $this->formManager->clear($id);
+            $this->formManager->delete($id);
 
-        return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES'], false));
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES'], false));
+        } else {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
+        }
     }
 
     public function empty($id)
     {
-        $this->formManager->clear($id);
+        if ($this->wiki->UserIsAdmin()) {
+            $this->formManager->clear($id);
 
-        return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_VIDE'], false));
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_VIDE'], false));
+        } else {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
+        }
+    }
+
+    public function clone($id)
+    {
+        if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
+            $this->formManager->clone($id);
+
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORM_CLONED'], false));
+        } else {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
+        }
+    }
+
+    private function getGroupsListIfEnabled(): ?array
+    {
+        return $this->wiki->UserIsAdmin()
+            ? $this->wiki->GetGroupsList()
+            : null;
     }
 }

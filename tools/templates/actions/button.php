@@ -16,7 +16,7 @@ if ($link == "config/root_page") {
 }
 
 $linkParts = $this->extractLinkParts($link);
-if ($linkParts){
+if ($linkParts) {
     $link = $this->href($linkParts['method'], $linkParts['tag'], $linkParts['params']);
     $this->services->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
 }
@@ -74,6 +74,7 @@ if ($hideIfNoAccess == "true" && isset($linkParts['tag']) && !$GLOBALS['wiki']->
         . (!empty($link) ? ' href="' . $link . '"' : '')
         . (!empty($class) ? ' class="' . $class . '"' : '')
         . (!empty($datasize) ? ' data-size="' . $datasize . '"' : '')
+        . ((!empty($datasize) && empty($linkParts)) ? ' data-iframe="1"':'') // use iframe for external links in modalbox
         . (!empty($title) ? ' title="' . htmlentities($title, ENT_COMPAT, YW_CHARSET) . '"' : '');
     $btn .= '>' . $icon . (!empty($text) ? htmlentities($text, ENT_COMPAT, YW_CHARSET) : '') . '</a>';
     echo $btn;

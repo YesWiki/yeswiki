@@ -18,13 +18,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+ use YesWiki\Core\Service\AclService;
+ use YesWiki\Core\Service\PageManager;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
 if ($this->GetMethod() != 'xml') {
     echo _t('TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS').' : ';
-    echo $this->Link($this->Href('xml'));
+    echo $this->Link($this->getPageTag(), 'xml', null, $this->Href('xml'));
     return;
 }
 
@@ -35,15 +38,28 @@ if ($user = $this->GetUser()) {
     $max = $user["changescount"];
 }
 
-$pageTableName = $this->config["table_prefix"] . 'pages';
-$sql = "SELECT id, tag, time, user, owner
-    FROM $pageTableName
-    WHERE comment_on = '' ORDER BY time desc limit $max";
-
-$pages = $this->LoadAll($sql);
-if (!$pages) {
+$aclService = $this->services->get(AclService::class);
+$pageManager = $this->services->get(PageManager::class);
+$pagesList = $pageManager->getRecentlyChanged($max);
+if (empty($pagesList)) {
     return;
 }
+$pages = [];
+foreach ($pagesList as $page) {
+    $revisions = $pageManager->getRevisions($page['tag'], $max);
+    foreach ($revisions as $revision) {
+        $pages[] = $revision + ['tag' => $page['tag']];
+    }
+}
+
+usort($pages, function ($page1, $page2) {
+    if ($page1['time'] == $page2['time']) {
+        return 0;
+    }
+    return ($page1['time'] > $page2['time']) ? -1 : 1; // décroissant
+});
+
+$pages = array_slice($pages, 0, $max);
 
 if (!($link = $this->GetParameter("link"))) {
     $link = $this->GetConfigValue("root_page");
@@ -70,6 +86,7 @@ $output =
 
 for ($i = 0; $i < sizeof($pages); $i++) {
     $page = $pages[$i];
+    $readAcl = $aclService->hasAccess('read', $page['tag']);
     $firstpage = $page;
     $lastpage = $page;
     $break_on_tag = $page['tag'];
@@ -89,6 +106,7 @@ for ($i = 0; $i < sizeof($pages); $i++) {
     if ($i < sizeof($pages)) {
         $page = $firstpage;
         $tag = htmlspecialchars($page["tag"], ENT_COMPAT, YW_CHARSET);
+        $tag = $readAcl ? $tag : substr($tag, 0, 3).'___';
         $user = htmlspecialchars($page["user"], ENT_COMPAT, YW_CHARSET);
         $formatedDate = gmdate('D, d M Y H:i:s \G\M\T', strtotime($page['time']));
         $rawTime =  htmlspecialchars(
@@ -98,9 +116,9 @@ for ($i = 0; $i < sizeof($pages); $i++) {
         );
         $itemurl = $this->href(false, $tag, "time=$rawTime");
         $description = htmlspecialchars(
-            'Modification de ' . $this->ComposeLinkToPage($page["tag"])
-            . ' (' . $this->ComposeLinkToPage($page["tag"], 'revisions', 'historique') . ')'
-            . " --- par $user"  . rssdiff($page["tag"], $firstpage["id"], $lastpage["id"])
+            'Modification de ' . ($readAcl ? $this->ComposeLinkToPage($page["tag"]) : $tag)
+            . ($readAcl ? ' (' . $this->ComposeLinkToPage($page["tag"], 'revisions', 'historique') . ')' : '')
+            . " --- par $user"  . ($readAcl ? rssdiff($page["tag"], $firstpage["id"], $lastpage["id"]) : '<br><div><i>Contenu masqué</i></div>')
         );
 
         $output .= "<item>\n"

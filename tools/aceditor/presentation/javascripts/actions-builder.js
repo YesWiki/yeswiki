@@ -1,6 +1,7 @@
 import InputHelper from './components/InputHelper.js'
 import InputHidden from './components/InputHidden.js'
 import InputText from './components/InputText.js'
+import InputPageList from './components/InputPageList.js'
 import InputCheckbox from './components/InputCheckbox.js'
 import InputList from './components/InputList.js'
 import InputIcon from './components/InputIcon.js'
@@ -19,13 +20,14 @@ import FlyingActionBar from './components/flying-action-bar.js'
 import InputHint from './components/InputHint.js'
 
 const ACTIONS_BACKWARD_COMPATIBILITY = {
-  calendrier: 'bazaragenda',
+  calendrier: 'bazarcalendar',
   map: 'bazarcarto'
 }
 console.log("actionsBuilderData", actionsBuilderData) // data variable has been defined in actions-builder.tpl.html
 
 // Declare this one globally because we use it everywhere
 Vue.component('input-hint', InputHint)
+Vue.component('v-select', VueSelect.VueSelect);
 
 // Handle oldbrowser not supporting ES6
 if (!('noModule' in HTMLScriptElement.prototype)) {
@@ -34,7 +36,7 @@ if (!('noModule' in HTMLScriptElement.prototype)) {
 
 window.myapp = new Vue({
   el: "#actions-builder-app",
-  components: { InputText, InputCheckbox, InputList, InputIcon, InputColor, InputFormField, InputHidden,
+  components: { InputPageList, InputText, InputCheckbox, InputList, InputIcon, InputColor, InputFormField, InputHidden,
                 InputFacette, InputIconMapping, InputColorMapping, InputGeo, InputClass, InputCorrespondance,
                 WikiCodeInput, PreviewAction },
   mixins: [ InputHelper ],
@@ -53,7 +55,7 @@ window.myapp = new Vue({
     actionParams: {},
     // Aceditor
     editor: null,
-    displayAdvancedParams: false
+    displayAdvancedParams: false,
   },
   computed: {
     actionGroup() { return this.currentGroupId ? this.actionGroups[this.currentGroupId] : {} },
@@ -64,7 +66,7 @@ window.myapp = new Vue({
     // so we always display those commons properties in different panels
     configPanels() {
       let result = []
-      if (Object.values(this.selectedAction.properties).some(conf => conf.type)) {
+      if (this.selectedAction.properties && Object.values(this.selectedAction.properties).some(conf => conf.type)) {
         result.push({params: this.selectedAction, class: 'specific-action-params'})
       }
       for(let actionName in this.actions) {
@@ -72,10 +74,19 @@ window.myapp = new Vue({
       }
       return result
     },
+    isSomeAdvancedParams() {
+      return this.configPanels.some(panel => {
+        let props = Object.values(panel.params.properties)
+        return props.some(prop => prop.advanced)
+      })
+    },
     // Are we editing an action or creating a new one?
     isEditingExistingAction() {
       if (!this.editor) return false;
       return this.editor.currentSelectedAction != ""
+    },
+    isBazarListeAction(){
+      return this.currentGroupId == 'bazarliste'
     },
     selectedActionAllConfigs() {
       let result = {}
@@ -84,7 +95,7 @@ window.myapp = new Vue({
     },
     wikiCodeBase() {
       let actionId = this.selectedActionId
-      if (actionId.startsWith('bazar')) actionId = 'bazarliste'
+      if (this.isBazarListeAction) actionId = 'bazarliste'
       var result = `{{${actionId}`
       for(var key in this.actionParams) {
         result += ` ${key}="${this.actionParams[key]}"`
@@ -116,7 +127,7 @@ window.myapp = new Vue({
         // use a fake dom to parse wiki code attributes
         let fakeDom = $(`<${this.editor.currentSelectedAction}/>`)[0]
 
-        for(let attribute of fakeDom.attributes) this.values[attribute.name] = attribute.value
+        for(let attribute of fakeDom.attributes) Vue.set(this.values, attribute.name, attribute.value)
 
         let newActionId = fakeDom.tagName.toLowerCase()
         // backward compatibilty
@@ -155,13 +166,25 @@ window.myapp = new Vue({
     },
     getSelectedFormByAjax() {
       if (!this.selectedFormId) return;
-      if (this.loadedForms[this.selectedFormId]) this.selectedForm = this.loadedForms[this.selectedFormId]
+      if (this.loadedForms[this.selectedFormId])
+      {
+        this.selectedForm = this.loadedForms[this.selectedFormId]
+        if (this.selectedAction){
+          // action choosen updateActionParams
+          setTimeout(() => this.updateActionParams(), 0);
+        }
+      }
       else {
-        $.getJSON(location.origin + location.pathname + `?root/json&demand=forms&id=${this.selectedFormId}`, data => {
+        $.getJSON(wiki.url('?root/json', {demand: 'forms', id: this.selectedFormId}), data => {
+            // keep ? because standart http rewrite waits for CamelCase and 'root' is not
           this.loadedForms[this.selectedFormId] = data[0]
           // On first form loaded, we load again the values so the special components are rendered and we can parse values on each special component
           if (!this.selectedForm && this.isEditingExistingAction) setTimeout(() => this.initValues(), 0)
           this.selectedForm = data[0]
+          if (this.selectedAction){
+            // action choosen updateActionParams
+            setTimeout(() => this.updateActionParams(), 0);
+          }
         })
       }
     },
@@ -172,11 +195,11 @@ window.myapp = new Vue({
     initValuesOnActionSelected() {
       if (!this.selectedAction) return;
       // Populate the values field from the config
-      for(var propName in this.selectedAction.properties) {
+      for(var propName in this.selectedAction.properties) {        
         var configValue = this.selectedAction.properties[propName].value || this.selectedAction.properties[propName].default
-        if (configValue && !this.values[propName]) this.values[propName] = configValue
+        if (configValue && !this.values[propName]) Vue.set(this.values, propName, configValue)
       }
-      if (this.selectedAction.properties.template) this.values.template = this.selectedAction.properties.template.value
+      if (this.selectedAction.properties && this.selectedAction.properties.template) this.values.template = this.selectedAction.properties.template.value
       setTimeout(() => this.updateActionParams(), 0);
     },
     updateActionParams() {
@@ -188,27 +211,47 @@ window.myapp = new Vue({
         let config = this.selectedActionAllConfigs[key]
         let value = this.values[key]
         if (result.hasOwnProperty(key) || value === undefined 
-            || typeof value == "object" || config && !this.display(config) ) 
+            || typeof value == "object" || config && !this.checkConfigDisplay(config) ) 
           continue
         result[key] = value
       }
       // Adds values from special components
       if (this.$refs.specialInput) this.$refs.specialInput.forEach(p => result = {...result, ...p.getValues()})
 
+      // default value for 'bazarliste'
+      if (this.selectedActionId == 'bazarliste') result.template = result.template || 'liste_accordeon'
+
+      // put in first position 'id' and 'template' if existing
+      const orderedResult = {}
+      if (result.id) orderedResult['id'] = result.id
+      if (result.template) orderedResult['template'] = result.template
       // Order params, and remove empty values
-      const orderedResult = this.needFormField ? { id: result.id, template: result.template || 'liste_accordeon' } : {}
       Object.keys(result).sort().forEach(key => { if (result[key] !== "") orderedResult[key] = result[key] })
       this.actionParams = orderedResult
+    },
+    actionGroupsWithBackwardCompatibility() {
+      let actionGroupsWithBackwardCompatibility = this.actionGroups
+      if (actionGroupsWithBackwardCompatibility.bazarliste.actions){
+        for(let key in ACTIONS_BACKWARD_COMPATIBILITY){
+          actionGroupsWithBackwardCompatibility.bazarliste.actions[key] = key
+        }
+      }
+      return actionGroupsWithBackwardCompatibility
     }
   },
   watch: {
     selectedFormId: function() { this.getSelectedFormByAjax() },
-    selectedActionId: function() { this.initValuesOnActionSelected() }
+    selectedActionId: function() { 
+      if (!this.isBazarListeAction && !this.isEditingExistingAction){
+        this.values = {};
+      }
+      this.initValuesOnActionSelected();
+    }
   },
   mounted() {
     $(document).ready(() => {
       this.editor = new AceEditorWrapper()
-      new FlyingActionBar(this.editor, this.actionGroups)
+      new FlyingActionBar(this.editor, this.actionGroupsWithBackwardCompatibility())
       $('.open-actions-builder-btn').click((event) => {
         $('#actions-builder-modal').modal('show')
         this.currentGroupId = $(event.target).data('group-name')

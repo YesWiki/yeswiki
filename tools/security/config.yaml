@@ -1,0 +1,24 @@
+parameters:
+  use_alerte: true    # alerte pour quitter le mode édition
+  use_hashcash: true  # hashcash pour le mode edition
+  use_nospam: false   # antispam pour commentaires
+  use_captcha: false  # recaptcha
+  wiki_status: 'running'  # status of the wiki ('running','maintenance','hibernation')
+  security_editable_config_params:
+    - 'use_alerte'
+    - 'use_captcha'
+    - 'use_hashcash'
+    - 'wiki_status'
+    
+services:
+  _defaults:
+    autowire: true
+    public: true
+
+  # YesWiki\Security\Service\:
+  #   resource: 'services/*'
+
+  # Allows to use controllers as services
+  YesWiki\Security\Controller\:
+    resource: 'controllers/*'
+

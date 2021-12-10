@@ -42,7 +42,7 @@
   text-rendering: auto;
   line-height: 1;
   font-size: 20px;
-  color: darkred;
+  color: var(--primary-color);
   position: relative;
   text-align: center;
   display: block;
@@ -60,15 +60,145 @@
   height: 46px;
   font-size: 40px;
 }
+.bazar-marker.xl:hover {
+  z-index: 1000 !important;
+}
+.bazar-marker.xl:hover .bazar-entry,
+.bazar-marker.xl.selected .bazar-entry {
+  transform: scale(1.3) translateY(-5px);
+}
 .bazar-marker .bazar-entry i {
   position: absolute;
   top: 3.5px;
-  left: 3.5px;
+  left: 2.5px;
   font-size: 8px;
   color:#fff;
 }
 .bazar-marker.xl .bazar-entry i {
   top: 8px;
-  left: 10px;
+  left: 7.5px;
   font-size: 16px;
+}
+
+/* ----------------- */
+/* Dynamic Bazar Map */
+/* ----------------- */
+.bazar-map-container {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+}
+.facette-container.dynamic[data-filter-align="right"] .bazar-map-container {
+  flex-direction: row-reverse;
+}
+
+/* MARKER */
+.bazar-map-container .bazar-marker.xl .bazar-entry i {
+  left: 9.5px;
+}
+.bazar-map-container .bazar-marker .bazar-entry i {
+  left: 3.5px;
+}
+.bazar-map-container .bazar-marker .entry-name {
+  position: absolute;
+  top: -46px;
+  left: -5px;
+  width: 1000px;
+  display: none;
+}
+.bazar-map-container .bazar-marker .entry-name span {
+  background-color: var(--primary-color);
+  color: var(--neutral-light-color);
+  padding: .3rem .8rem;
+  border-radius: 5px;
+  font-size: .95em;
+}
+.bazar-map-container .bazar-marker.xl.selected .entry-name,
+.bazar-map-container .bazar-marker.xl:hover .entry-name {
+  display: block;
+}
+
+/* CLUSTERS */
+:root {
+  --cluster-size: 32px;
+}
+.marker-cluster div {  
+  margin-left: 5px;
+  margin-top: 5px;
+  text-align: center;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  /* box-shadow: 4px -2px 5px 0px rgba(167, 167, 167, 0.56); */
+  width: var(--cluster-size);
+  height: var(--cluster-size);
+  background-color: #f8ab00;;
+}
+.marker-cluster div span { 
+  line-height: var(--cluster-size); 
+}    
+.marker-cluster.medium div {
+  --cluster-size: 38px;
+  font-size: 15px;
+  background-color: #f78b16;
+}
+.marker-cluster.large div {
+  --cluster-size: 44px;
+  font-size: 15px;
+  background-color: #f5701e;
+}
+
+/* ENTRY PANEL */
+.bazar-map-container .entry-container {
+  position: relative;
+  transition: all .3s;
+  min-height: 50%;
+  min-width: 400px;
+  background-color: var(--neutral-light-color);
+  padding: 0 0 1rem 1rem;
+  overflow: auto;
+}
+.bazar-map-container .entry-container .btn-close i {
+  padding-right: 1rem;
+}
+.facette-container.dynamic[data-filter-align="right"] .bazar-map-container .entry-container {
+  padding-left: 0;
+  padding-right: 1rem;
+}
+.facette-container.dynamic:not([data-filter-align="right"]) .bazar-map-container .entry-container .btn-close i {
+  padding-right: 0;
+}
+.bazar-map-container .entry-container .btn-close {
+  height: 5.4rem;
+}
+.bazar-map-container.small-width .entry-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.leaflet-container {
+  font: inherit !important;
+}
+.leaflet-control-container .leaflet-bar.leaflet-control {
+  border:none;
+  margin-top: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.leaflet-control-container .leaflet-bar.leaflet-control a {
+  font-size: 18px !important;
+  font-weight: normal;
+  text-indent: 0;
+}
+.leaflet-control-container .leaflet-control-zoom-fullscreen.fullscreen-icon {
+  background-image: none;
+}
+.leaflet-control-container .leaflet-control-zoom-fullscreen.fullscreen-icon:before {
+  content: "⇱";
+  font-weight: 600;
 }

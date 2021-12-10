@@ -1,9 +1,11 @@
 <?php
+
+use YesWiki\Security\Controller\SecurityController;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
-
-if ($this->HasAccess("write")) {
+if ($this->HasAccess("write") && $this->method != "revisions") {
     // on récupére la page et ses valeurs associées
     $page = $this->GetParameter('page');
     if (empty($page)) {
@@ -27,7 +29,7 @@ if ($this->HasAccess("write")) {
     $barreredactionelements['class'] = ($this->GetParameter('class') ? 'footer '.$this->GetParameter('class') : 'footer');
 
     // on ajoute le lien d'édition si l'action est autorisée
-    if ($this->HasAccess("write", $page)) {
+    if ($this->HasAccess("write", $page) && !$this->services->get(SecurityController::class)->isWikiHibernated()) {
         $barreredactionelements['linkedit'] = $this->href("edit", $page);
     }
 
@@ -40,26 +42,27 @@ if ($this->HasAccess("write")) {
 
     // if this page exists
     if ($content) {
-        // if owner is current user
-        if ($this->UserIsOwner($page) || $this->UserIsAdmin()) {
-            $barreredactionelements['owner'] = _t('TEMPLATE_OWNER')." : "._t('TEMPLATE_YOU').' - '._t('TEMPLATE_PERMISSIONS');
-            $barreredactionelements['linkacls'] = $this->href("acls", $page);
-            $barreredactionelements['linkdeletepage'] = $this->href("deletepage", $page);
+        $owner = $this->GetPageOwner($page);
+        // message
+        if ($this->UserIsOwner($page)) {
+            $barreredactionelements['owner'] = _t('TEMPLATE_OWNER')." : "._t('TEMPLATE_YOU');
+        } elseif ($owner) {
+            $barreredactionelements['owner'] = _t('TEMPLATE_OWNER')." : ".$owner;
         } else {
-            if ($owner = $this->GetPageOwner($page)) {
-                $barreredactionelements['owner'] = _t('TEMPLATE_OWNER')." : ".$owner;
-                if ($this->UserIsAdmin()) {
-                    $barreredactionelements['linkacls'] = $this->href("acls", $page);
-                    $barreredactionelements['owner'] .= ' - '._t('TEMPLATE_PERMISSIONS');
-                } else {
-                    //$barreredactionelements['linkacls'] = $this->href('', $owner);
-                }
-            } else {
-                $barreredactionelements['owner'] = _t('TEMPLATE_NO_OWNER').($this->GetUser() ? " - "._t('TEMPLATE_CLAIM') : "");
-                if ($this->GetUser()) {
-                    $barreredactionelements['linkacls'] = $this->href("claim", $page);
-                }
-                //else $barreredactionelements['linkacls'] = $this->href("claim", $page);
+            $barreredactionelements['owner'] = _t('TEMPLATE_NO_OWNER');
+        }
+
+        // if current user is owner or admin
+        if ($this->UserIsOwner($page) || $this->UserIsAdmin()) {
+            $barreredactionelements['owner'] .= ' - '._t('TEMPLATE_PERMISSIONS');
+            if (!$this->services->get(SecurityController::class)->isWikiHibernated()) {
+                $barreredactionelements['linkacls'] = $this->href("acls", $page);
+                $barreredactionelements['linkdeletepage'] = $this->href("deletepage", $page);
+            }
+        } elseif (!$owner && $this->GetUser()) {
+            $barreredactionelements['owner'] .= " - "._t('TEMPLATE_CLAIM');
+            if (!$this->services->get(SecurityController::class)->isWikiHibernated()) {
+                $barreredactionelements['linkacls'] = $this->href("claim", $page);
             }
         }
     }

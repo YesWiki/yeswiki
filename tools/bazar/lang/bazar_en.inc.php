@@ -86,6 +86,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_NOMBRE_FICHE_IMPORTE' => 'Number of imported entries : ',
 'BAZ_IMPORTER' => 'Import',
 'BAZ_EXPORTER' => 'Export',
+'BAZ_EXPORT_KEYS_INSTEAD_OF_VALUES' => 'Export keys instead of values (more stable forimports but less readable)',
 'BAZ_NON' => 'No',
 'BAZ_ANNULER' => 'Cancel',
 'BAZ_VALIDER' => 'Submit',
@@ -173,6 +174,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_IMAGE_FILE_NOT_FOUND' => 'Image file not found',
 'BAZAR_CHECKALL' => 'Check all',
 'BAZAR_FILTER' => 'Filter',
+'BAZ_UNKNOWN_USER' => 'Unknown user',
 
 
 //================ Calendrier Bazar =======================================

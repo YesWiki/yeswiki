@@ -2,6 +2,9 @@
 
 namespace YesWiki\Bazar\Service;
 
+use YesWiki\Bazar\Controller\ApiController as BazarApiController;
+use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Field\EmailField;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Wiki;
@@ -35,6 +38,8 @@ class Guard
 
         switch ($action) {
             case 'supp_fiche':
+                // it should not be possible to delete a file if not connected even if no owner (prevent spam)
+                return $ownerId != '' && $isOwner;
             case 'voir_champ':
                 return $isOwner;
 
@@ -51,21 +56,20 @@ class Guard
         }
     }
 
-    // Teste les droits d'acces champ par champ du contenu d'un fiche bazar
-    // Si utilisateur connecte est  proprietaire ou adminstrateur : acces a tous les champs
-    // Sinon ne sont retournes que les champs dont les droits d'acces sont compatibles.
-    // Introduction du droit % : seul le proprietaire peut acceder
-    public function checkAcls($page, $tag)
+    /**
+     * Teste les droits d'acces champ par champ du contenu d'un fiche bazar
+     * Si utilisateur connecte est  proprietaire ou adminstrateur : acces a tous les champs
+     * Sinon ne sont retournes que les champs dont les droits d'acces sont compatibles.
+     * Introduction du droit % : seul le proprietaire peut acceder
+     * @param array $page
+     * @param string $tag
+     * @param string|null $userNameForCheckingACL username used to check ACL, if empty, uses en the connectd user
+     * @return array $page
+     */
+    public function checkAcls($page, $tag, ?string $userNameForCheckingACL = null)
     {
-        // TODO :
-        // loadpagebyid
-        // bazarliste ...
-        // champ mot de passe ?
-        //
-
-        $INDEX_CHELOUS = ['radio', 'liste', 'checkbox', 'listefiche', 'checkboxfiche'];
-        if ($this->isPageOwner($page)) {
-            // Pas de controle si proprietaire
+        if ($this->wiki->UserIsAdmin($userNameForCheckingACL) || $this->isPageOwner($page, $userNameForCheckingACL)) {
+            // Pas de controle si proprietaire ou administrateur
             return $page;
         }
         if ($page) {
@@ -73,28 +77,34 @@ class Guard
             $valeur = json_decode($valjson, true);
 
             if ($valeur) {
-                $val_formulaire = $this->formManager->getOne($valeur['id_typeannonce']);
-                if ($val_formulaire) {
+                $form = $this->formManager->getOne($valeur['id_typeannonce']);
+                if ($form) {
                     $fieldname = array();
-                    foreach ($val_formulaire['template'] as $line) {
+                    foreach ($form['prepared'] as $field) {
                         // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw
-                        if ($line[0] == 'champs_mail' and !empty($line[6]) and $line[6] == 'form') {
-                            if ($this->wiki->getMethod() == 'raw' || $this->wiki->getMethod() == 'json') {
-                                $fieldname[] = $line[1];
-                            }
+                        if ($field instanceof EmailField
+                                && $field->getShowContactForm()
+                                && (
+                                    (
+                                        $this->wiki->GetPageTag() !== 'api'
+                                        &&
+                                        !in_array($this->wiki->getMethod(), ['show','edit','editiframe','mail'])
+                                    )
+                                    ||
+                                    (
+                                        $this->wiki->GetPageTag() == 'api'
+                                        &&
+                                        // only authorized api routes /api/entries/html/{selectedEntry}&fields=html_output
+                                        !$this->wiki->services->get(BazarApiController::class)->isEntryViewFastAccessHelper()
+                                    )
+                                )
+                            ) {
+                            $fieldname[] = $field->getPropertyName();
                         }
-                        if (isset($line[11]) && $line[11] != '') {
-                            if ($line[11] == "%") {
-                                $line[11] = $this->userManager->getLoggedUserName();
-                            }
-                            if (!$this->aclService->check($line[11])) {
-                                // on memorise les champs non autorisés
-                                if (in_array($line[0], $INDEX_CHELOUS)) {
-                                    $fieldname[] = $line[0] . $line[1] . $line[6];
-                                } else {
-                                    $fieldname[] = $line[1];
-                                }
-                            }
+                        if ($field instanceof BazarField
+                                && !$field->canRead(['id_fiche' => $tag], $userNameForCheckingACL)
+                                ) {
+                            $fieldname[] = $field->getPropertyName() ;
                         }
                     }
                     if (count($fieldname) > 0) {
@@ -112,8 +122,12 @@ class Guard
         return $page;
     }
 
-    protected function isPageOwner($page) : bool
+    protected function isPageOwner($page, ?string $userName = null) : bool
     {
+        if (!empty($userName)) {
+            // check if userName is owner
+            return ($page['owner'] === $userName);
+        }
         // check if user is logged in
         if (!$this->userManager->getLoggedUser()) {
             return false;

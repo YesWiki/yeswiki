@@ -1,30 +1,14 @@
-<?php $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/trombinoscope.css'); ?>
-<?php if (count($fiches)>0) : ?>
-	<div class="trombi-container">
-  <?php foreach ($fiches as $fiche) : ?>
-    <a class="bazar-entry modalbox" <?php echo $fiche['html_data'];?>
-       href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>"
-       title="<?php echo htmlentities($fiche['bf_titre']);?>">
+<?php 
 
-      <div class="image-container">
-        <?php if (isset($fiche['imagebf_image']) && $fiche['imagebf_image']!='') : ?>
-          <img class="trombi-image" alt="<?php echo htmlentities($fiche['bf_titre']);?>"
-               src="<?php echo redimensionner_image(
-                    'files/'.$fiche['imagebf_image'],
-                    'cache/image_300_300_'.$fiche['imagebf_image'],
-                     300, 300, 'crop'); ?>">
-        <?php else : ?>
-          <img class="trombi-image img-placeholder"
-               src="tools/bazar/libs/vendor/placeholder.php?size=300x300&amp;bg=efefef&amp;text=">
-          <i class="trombi-image icon-placeholder fa fa-user-circle"></i>
-        <?php endif; ?>
-      </div>
-
-      <div class="caption trombi-content">
-        <span class="title"><?php echo $fiche['bf_titre'];?></span>
-      </div>
-		</a> <!-- / bazar-entry -->
-  <?php endforeach; ?>
-  </div> <!-- / trombi-container -->
-<?php endif; ?>
-<?php echo $pager_links;?>
+    // resize images 
+    $resizedImages = [];
+    foreach($fiches as $fiche){
+        if (!empty($fiche['imagebf_image'])){
+            $resizedImages[$fiche['id_fiche']] = redimensionner_image(
+                'files/'.$fiche['imagebf_image'],
+                'cache/image_300_300_'.$fiche['imagebf_image'],
+                 300, 300, 'crop');
+        }
+    }
+    
+    echo $this->render('@bazar/trombinoscope.twig',compact(['fiches','resizedImages']));

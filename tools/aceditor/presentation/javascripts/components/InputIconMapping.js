@@ -2,9 +2,6 @@ import InputMultiInput from './InputMultiInput.js'
 
 export default {
   mixins: [InputMultiInput],
-  mounted() {
-    this.addElement()
-  },
   methods: {
     parseNewValues(newValues) {
       if (newValues.icon) {

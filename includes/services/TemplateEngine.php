@@ -14,10 +14,12 @@ class TemplateEngine
     protected $wiki;
     protected $twigLoader;
     protected $twig;
+    protected $assetsManager;
 
-    public function __construct(Wiki $wiki, ParameterBagInterface $config)
+    public function __construct(Wiki $wiki, ParameterBagInterface $config, AssetsManager $assetsManager)
     {
         $this->wiki = $wiki;
+        $this->assetsManager = $assetsManager;
         // Default path (main namespace) is the root of the project. There are no templates
         // there, but it's needed to call relative path like render('tools/bazar/templates/...')
         $this->twigLoader = new \Twig\Loader\FilesystemLoader('./');
@@ -30,15 +32,7 @@ class TemplateEngine
         foreach ($this->wiki->extensions as $extensionName => $pluginInfo) {
             // Ability to override an extension template from the custom folder
             $paths = ["custom/templates/$extensionName/"];
-            // Ability to override an extension template from another extension
-            foreach ($this->wiki->extensions as $otherExtensionName => $pluginInfo) {
-                $paths[] = "tools/$otherExtensionName/templates/$extensionName/";
-            }
-            // Standard path for an extension template
-            $paths[] = "tools/$extensionName/templates/";
-            // Legacy directories, should not be used anymore for new templates. Maybe
-            // of them are not used by anybody, but just in case we keep them for backward compatibility
-            $paths[] = "tools/$extensionName/presentation/templates/";
+            // Ability to override an extension template from the legacy directories, should not be used anymore for new templates.
             $paths[] = "custom/themes/tools/$extensionName/templates/";
             foreach ([
                          'custom/templates',
@@ -49,11 +43,34 @@ class TemplateEngine
                 $paths[] = $dir . '/' . $extensionName . '/templates/';
                 $paths[] = $dir . '/' . $extensionName . '/';
             }
+            // Ability to override an extension template from another extension
+            foreach ($this->wiki->extensions as $otherExtensionName => $pluginInfo) {
+                $paths[] = "tools/$otherExtensionName/templates/$extensionName/";
+            }
+            // Standard path for an extension template
+            $paths[] = "tools/$extensionName/templates/";
+            // Legacy directories, should not be used anymore for new templates. Maybe
+            // of them are not used by anybody, but just in case we keep them for backward compatibility
+            $paths[] = "tools/$extensionName/presentation/templates/";
 
             foreach ($paths as $path) {
                 if (file_exists($path)) {
                     $this->twigLoader->addPath($path, $extensionName);
                 }
+            }
+        }
+        
+        // Core templates
+        $corePaths = [];
+        $corePaths[] = 'custom/templates/core/';
+        // Ability to override an extension template from another extensioncore
+        foreach ($this->wiki->extensions as $otherExtensionName => $pluginInfo) {
+            $corePaths[] = "tools/$otherExtensionName/templates/core/";
+        }
+        $corePaths[] = 'templates/';
+        foreach ($corePaths as $path) {
+            if (file_exists($path)) {
+                $this->twigLoader->addPath($path, 'core');
             }
         }
 
@@ -69,16 +86,17 @@ class TemplateEngine
         });
         $this->addTwigHelper('url', function ($options) {
             $options = array_merge(['tag' => '', 'handler' => '', 'params' => []], $options);
-            return $this->wiki->Href($options['handler'], $options['tag'], $options['params'], false);
+            $iframe = !empty($options['handler']) ? $options['handler'] : testUrlInIframe();
+            return $this->wiki->Href($iframe, $options['tag'], $options['params'], false);
         });
         $this->addTwigHelper('format', function ($text, $formatter = 'wakka') {
             return $this->wiki->Format($text, $formatter);
         });
-        $this->addTwigHelper('include_javascript', function ($file, $first = false) {
-            $this->wiki->AddJavascriptFile($file, $first);
+        $this->addTwigHelper('include_javascript', function ($file, $first = false, $module = false) {
+            $this->assetsManager->AddJavascriptFile($file, $first, $module);
         });
         $this->addTwigHelper('include_css', function ($file) {
-            $this->wiki->AddCSSFile($file);
+            $this->assetsManager->AddCSSFile($file);
         });
     }
 
@@ -92,7 +110,9 @@ class TemplateEngine
     {
         $result = '';
         $result .= $this->wiki->Header();
+        $result .= '<div class="page">';
         $result .= $this->render($templatePath, $data);
+        $result .= '</div>';
         $result .= $this->wiki->Footer();
         return $result;
     }
@@ -102,7 +122,7 @@ class TemplateEngine
         return $this->twigLoader->exists($templatePath);
     }
 
-    // second argument provide namespace, so we when we render '@bazar/bazaraliste.twig'
+    // second argument provide namespace, so we when we render '@bazar/bazarliste.twig'
     // it will look first in custom/templates/bazar/,
     // then in tools/XXX/templates/bazar/
     // and finally in tools/bazar/templates/

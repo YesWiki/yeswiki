@@ -29,6 +29,28 @@ All the javascript files in the `custom/javascripts/` directory are included.
 
 All the css files in the `custom/styles/` directory are included.
 
+## Custom Css-Presets
+
+For themes using presets, you can have custom presets.
+
+ - They should be in folder `custom/css-presets/`.
+ - Their extension should be `.css`
+ - Their content should be like this:
+
+```
+:root {
+  --primary-color: #1a89a0;
+  --secondary-color-1: #d8604c;
+  --secondary-color-2: #d78958;
+  --neutral-color: #4e5056;
+  --neutral-soft-color: #b0b1b3;
+  --neutral-light-color: #ffffff;
+  --main-text-fontsize: 17px;
+  --main-text-fontfamily: 'Nunito', sans-serif;
+  --main-title-fontfamily:'Nunito', sans-serif;
+}
+```
+
 ## Custom Squelette
 
 Override the theme squelette following the path `custom/themes/THEME_TO_OVERRIDE/squelettes/SQUELETTE_TO_OVERRIDE.tpl.html`
@@ -45,9 +67,52 @@ Names of the param can only be lower case character
 
 ## Custom Handlers
 
-Puts your custom handlers in `custom/handlers/page`
+Puts your custom handlers in `custom/handlers/page` or `custom/handlers` as class
 
 ## Custom Langs
 
 Puts your custom translations in `custom/lang/custom_LOCALE.inc.php`, where LOCALE is `fr` `en` `es`...
 you can then use your translation with following code `<?php echo _t('MY_TRANSLATION_KEY'); ?>`
+
+## Custom Field
+
+Puts your custom fields in `custom/fields`
+use `namespace YesWiki\Custom\Field;`
+
+## Custom Service
+
+Puts your custom fields in `custom/services`
+use `namespace YesWiki\Custom\Service;`
+and create the file`custom/config.yaml` with
+
+```
+services:
+  _defaults:
+    autowire: true
+    public: true
+
+  YesWiki\Custom\Service\:
+    resource: 'services/*'
+```
+
+## Custom Controller
+
+Puts your custom fields in `custom/controller`
+use `namespace YesWiki\Custom\Controller;`
+and create the file`custom/config.yaml` with
+
+```
+services:
+  _defaults:
+    autowire: true
+    public: true
+
+  # Allows to use controllers as services
+  YesWiki\Custom\Controller\:
+    resource: 'controllers/*'
+```
+
+## Custom Command
+
+Puts your custom fields in `custom/commands`
+use `namespace YesWiki\Custom\Commands;`

@@ -3,7 +3,12 @@ if (!WIKINI_VERSION) {
     die('acc&egrave;s direct interdit');
 }
 
-if ($this->HasAccess('write')) {
+use YesWiki\Core\Service\DbService;
+
+$hasTempTag = (isset($_GET['tempTag'])
+    && preg_match("/^{$this->config['temp_tag_for_entry_creation']}_[A-Fa-f0-9]+$/m", $_GET['tempTag']));
+
+if ($this->HasAccess('write') || ($this->HasAccess('read') && $hasTempTag)) {
     /**
      * Handle file uploads via XMLHttpRequest
      */
@@ -76,8 +81,9 @@ if ($this->HasAccess('write')) {
         private $allowedExtensions = array();
         private $sizeLimit = '10000';
         private $file;
+        private $hasTempTag;
 
-        public function __construct(array $allowedExtensions = array(), $sizeLimit = '10000')
+        public function __construct(array $allowedExtensions = array(), $sizeLimit = '10000', $hasTempTag = false)
         {
             $allowedExtensions = array_map("strtolower", $allowedExtensions);
 
@@ -93,6 +99,7 @@ if ($this->HasAccess('write')) {
             } else {
                 $this->file = false;
             }
+            $this->hasTempTag = $hasTempTag;
         }
 
         private function checkServerSettings()
@@ -167,19 +174,38 @@ if ($this->HasAccess('write')) {
             $replace = array('e','a','i','u','o','c','_','');
             $filename = preg_replace($search, $replace, utf8_decode($filename));
 
+            if ($this->hasTempTag) {
+                $previousTag = $GLOBALS['wiki']->tag;
+                $previousPage = $GLOBALS['wiki']->page;
+                $GLOBALS['wiki']->tag = $_GET['tempTag'];
+                $GLOBALS['wiki']->page = [
+                    'tag' => $GLOBALS['wiki']->tag,
+                    'body' => '{##}',
+                    'time' => '',
+                    'owner' => '',
+                    'user' => '',
+                ];
+            }
+
             $attach = new Attach($GLOBALS['wiki']);
             $GLOBALS['wiki']->setParameter("desc", $filename);
             $GLOBALS['wiki']->setParameter("file", $filename . '.' . $ext);
 
-            // dans le cas d'une nouvelle page, on donne une valeur a la date de création
-            if ($GLOBALS['wiki']->page['time'] == '') {
-                $GLOBALS['wiki']->page['time'] = date('YmdHis');
+            // dans le cas d'une nouvelle page, on donne une valeur a la date de création dans le fuseau horaire du serveur (heure SQL)
+            if ($this->hasTempTag || $GLOBALS['wiki']->page['time'] == '') {
+                $dbTz = $GLOBALS['wiki']->services->get(DbService::class)->getDbTimeZone();
+                $sqlTimeFormat = 'Y-m-d H:i:s';
+                $GLOBALS['wiki']->page['time'] = !empty($dbTz) ? (new DateTime())->setTimezone(new DateTimeZone($dbTz))->format($sqlTimeFormat) : date($sqlTimeFormat);
             }
 
             // on envoi l'attachement en retenant l'affichage du résultat dans un buffer
             ob_start();
             $attach->doAttach();
             $fullfilename = $attach->GetFullFilename(true);
+            if ($this->hasTempTag) {
+                $GLOBALS['wiki']->tag = $previousTag;
+                $GLOBALS['wiki']->page = $previousPage;
+            }
             ob_end_clean();
 
             if ($this->file->save($fullfilename)) {
@@ -198,6 +224,7 @@ if ($this->HasAccess('write')) {
     if (!class_exists('attach')) {
         include_once 'tools/attach/libs/attach.lib.php';
     }
+    ob_start();
     $att = new attach($this);
 
     // list of valid extensions, ex. array("jpeg", "xml", "bmp")
@@ -206,11 +233,17 @@ if ($this->HasAccess('write')) {
     // max file size in bytes
     $sizeLimit = $att->attachConfig['max_file_size'];
 
-    $uploader = new qqFileUploader($allowedExtensions, $sizeLimit);
+    $uploader = new qqFileUploader($allowedExtensions, $sizeLimit, $hasTempTag);
     $result = $uploader->handleUpload($att->attachConfig['upload_path']);
 
 
     unset($att);
+    $errorsMessage = ob_get_contents();
+    ob_end_clean();
+    if (!empty($errorsMessage)) {
+        $result['errorMessage'] = $errorsMessage;
+    }
+    unset($errorsMessage);
 } else {
     $result = array('error' => _t(NO_RIGHT_TO_WRITE_IN_THIS_PAGE));
 }

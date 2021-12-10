@@ -125,12 +125,12 @@ class TheCaptcha
         $maxWord = (($this->size - 30) / 27);
         $cur_left = (strlen($this->text) == $maxWord ? 15 : (15 + ((($maxWord - strlen($this->text)) * 27)) /2));
 
-        for ($t = 0; isset($this->text{$t}); $t++) {
+        for ($t = 0; isset($this->text[$t]); $t++) {
             $cur_incli = rand(-20, 20);
             // ombre
-            imagettftext($this->image, 32, $cur_incli, $cur_left, 40, $black, $font, $this->text{$t});
+            imagettftext($this->image, 32, $cur_incli, $cur_left, 40, $black, $font, $this->text[$t]);
             // texte
-            imagettftext($this->image, 32, $cur_incli, ($cur_left -1), 39, $this->colours[array_rand($this->colours)], $font, $this->text{$t});
+            imagettftext($this->image, 32, $cur_incli, ($cur_left -1), 39, $this->colours[array_rand($this->colours)], $font, $this->text[$t]);
             $cur_left += 27;
         }
 

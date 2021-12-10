@@ -1,0 +1,51 @@
+<div class="filters-col col-sm-{{ params.filtercolsize }}">
+  <div class="filters no-dblclick {{ params.filterposition }}">
+    <div class="results-info text-info">
+      <span class="nb-results">{{ numEntries }}</span>
+      {% if numEntries > 1 %}
+        <span class="result-label" style="display: none;">{{ _t('BAZ_FICHE_CORRESPONDANT_FILTRES') }}</span>
+        <span class="results-label">{{ _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') }}</span>
+      {% else %}
+        <span class="result-label">{{ _t('BAZ_FICHE_CORRESPONDANT_FILTRES') }}</span>
+        <span class="results-label" style="display: none;">{{ _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') }}</span>
+      {% endif %}
+      {% if params.resetfiltersbutton %}
+        <span class="btn btn-xs btn-info reset-filters pull-right {{ params.filtercolsize < 4 ? 'btn-block': '' }}">
+          {{ _t('BAZ_RESET_FILTERS') }}
+        </span>
+        <div class="clearfix"></div>
+      {% endif %}
+    </div>
+    {% if params.filtertext %}
+      <div class="input-group filtertext">
+        <span class="input-group-addon">
+          <i class="fa fa-filter"></i>
+        </span>
+        <input type="text" class="form-control filter-bazar" id="inputBazarFilter{{ listId }}"
+               placeholder="{{ _t('BAZAR_FILTER') }}" data-target="bazar-list-{{ listId }}"/>
+      </div>
+    {% endif %}
+    <div class="results-container">
+      {% for key, filter in filters %}
+        <div class="filter-box panel panel-default {{ key }}" data-id="{{ key }}">
+          <div class="panel-heading {{ filter.collapsed ? 'collapsed ': '' }}" data-toggle="collapse" data-target="#collapse{{ listId }}_{{ key }}" aria-expanded="true">
+            {{ filter.icon|raw }}
+            {{ filter.title }}
+          </div>
+          <div class="panel-collapse collapse {{ filter.collapsed ? '': 'in' }}" id="collapse{{ listId }}_{{ key }}">
+            {% for filterValue in filter.list %}
+              <div class="checkbox">
+                <label>
+                  <input class="filter-checkbox" type="checkbox" id="{{ filterValue.id }}" name="{{ filterValue.name }}" value="{{ filterValue.value }}" {{ filterValue.checked }}>
+                  <span>
+                    {{ filterValue.label|raw }} <span class="nb-wrapper">(<span class="nb">{{ filterValue.nb }}</span>)</span>
+                  </span>
+                </label>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>

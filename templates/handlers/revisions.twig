@@ -1,0 +1,84 @@
+{{ include_javascript('javascripts/vendor/vue/vue.js') }}
+{{ include_javascript('javascripts/handlers/revisions.js', false, true) }}
+{{ include_css('styles/handlers/revisions.css') }}
+
+<div class="revisions-container" 
+     data-revisions="{{ revisions|json_encode }}" 
+     data-revisions-count="{{ revisionsCount }}"
+     data-is-entry="{{ isEntry }}">
+  <template v-if="selectedRevision">
+    
+    {# Title #}
+    <div class="revision-page-title">
+      <a class="btn btn-sm btn-default" href="{{ url({}) }}">
+        <i class="fas fa-arrow-left"></i>{{  _t('GO_BACK') }}
+      </a>
+      <h1 class="text-center text-default">
+        {{ isEntry ? _t('TITLE_ENTRY_HISTORY') : _t('TITLE_PAGE_HISTORY') }}
+      </h1>
+    </div>
+
+    {# Timeline #}
+    <div class="timeline-container">
+      <template v-for="revision in revisions">
+        <div class="timeline-item" :key="revision.id"
+            :style="timelineItemStyle(revision)"
+            :class="{active: selectedRevision == revision}"
+            @click="selectedRevision = revision">
+        </div>
+        <span class="timeline-item-text" :style="timelineItemStyle(revision, false)">
+          N°{{"{{revision.number }}"}} - {{"{{revision.displayTime }}"}}
+        </span>
+      </template>
+      <div class="timeline-bar"></div>
+    </div>
+
+    {# Selected Revision Title with buttons #}
+    <div class="revision-title-container">
+      <i class="fa fa-chevron-left fa-4x" @click="moveRevision(true)" :disabled="selectedRevision == firstRevision"></i>
+      <div class="text-center revision-title">
+        <h3 class="text-secondary-1">
+          {{ _t('REVISION_VERSION') ~ "{{selectedRevision.number }}" }}
+          {{ _t('REVISION_ON') ~ " {{selectedRevision.displayTime }}" }}
+          {{ _t('REVISION_BY') ~ " {{ selectedRevision.user }}" }}
+        </h3>        
+         <a :href="restoreUrl" class="btn btn-success btn-restore"
+            :disabled="selectedRevision == lastRevision"
+            v-text="selectedRevision == lastRevision ? '{{ _t('CURRENT_VERSION') }}' : '{{ _t('RESTORE_REVISION') }}'">
+        </a>
+      </div>
+      <i class="fa fa-chevron-right fa-4x" @click="moveRevision(false)" :disabled="selectedRevision == lastRevision"></i>
+    </div>
+    
+    {# View Types Selector #}
+    <ul class="view-types-selector nav nav-tabs">
+      <li v-for="label, type in viewTypes" role="presentation"
+          :class="{active: selectedViewType == type}"
+          @click="selectedViewType = type"
+          v-show="type != 'diff' || selectedRevision != lastRevision">
+          <a v-text="label"></a>
+      </li>
+      <label class="code-or-preview"> 
+        <input type="checkbox" v-model="displayWikiCode" />
+        <span>{{ _t('DISPLAY_WIKI_CODE') }}</span>
+      </span>
+    </ul>
+
+    <div class="preview-container">
+      {# Loader #}
+      <spinner-loader v-if="!selectedRevision.fullyRetrieved"></spinner-loader>
+
+      {# View Types display #}
+      <template v-else>
+        <template v-if="displayWikiCode">
+          <div v-if="isEntry" class="preview-content" v-html="selectedRevision[`${selectedViewType}_code`]"></div>
+          <pre v-else class="preview-content" v-html="selectedRevision[`${selectedViewType}_code`]"></pre>
+        </template>
+        <template v-else>
+          <iframe v-if="selectedViewType == 'current' && !isEntry" :src="previewUrl" width="100%" height="800px" frameborder="0"></iframe>
+          <div v-else class="preview-content" v-html="selectedRevision[`${selectedViewType}_html`]"></div>
+        </template>   
+      </template>      
+    </div>
+  </template>
+</div>

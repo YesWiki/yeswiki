@@ -70,7 +70,15 @@ $(document).ready(function () {
     $('div[id^=\'' + id + '\'], div[id^=\'' + id.replace('liste', '') + '\']')
       .not('div[id=\'' + id + '_' + $(this).val() + '\'], div[id=\'' + id.replace('liste', '') + '_' + $(this).val() + '\']').hide()
      .find(':input').val('').removeProp('checked');
-    $('div[id=\'' + id + '_' + $(this).val() + '\'], div[id=\'' + id.replace('liste', '') + '_' + $(this).val() + '\']').show();
+    $('div[id=\'' + id + '_' + $(this).val() + '\'], div[id=\'' + id.replace('liste', '') + '_' + $(this).val() + '\']').show()
+  }
+  function handleConditionnalRadioChoice() {
+    var id = $(this).attr('id');
+    let shortId = id.substr(0,id.length-$(this).val().toString().length-1)
+    $('div[id^=\'' + shortId+ '\']')
+      .not('div[id=\'' + id + '\']').hide()
+     .find(':input').val('').removeProp('checked');
+    $('div[id=\'' + id + '\']').show();
   }
   function handleConditionnalCheckboxChoice() {
     var id = $(this).attr('id');
@@ -84,15 +92,19 @@ $(document).ready(function () {
     }
     if (m) {
       if ($(this).prop('checked') == true) {
-        $('div[id=\'' + m[1] + '_' + m[2] + '\']').show();
+        $('div[id=\'' + m[1] + '_' + m[2] + '\']:not(.conditional_inversed_checkbox)').show();
+        $('div[id=\'' + m[1] + '_' + m[2] + '\'].conditional_inversed_checkbox').hide()
+          .find(':input').val('').removeProp('checked');;
       } else {
-        $('div[id=\'' + m[1] + '_' + m[2] + '\']').hide()
+        $('div[id=\'' + m[1] + '_' + m[2] + '\']:not(.conditional_inversed_checkbox)').hide()
         .find(':input').val('').removeProp('checked');
+        $('div[id=\'' + m[1] + '_' + m[2] + '\'].conditional_inversed_checkbox').show();
       }
     }
   }
 
   $('select[id^=\'liste\']').each(handleConditionnalListChoice).change(handleConditionnalListChoice);
+  $('input.element_radio').each(handleConditionnalRadioChoice).change(handleConditionnalRadioChoice);
   $('.element_checkbox[id^=\'checkboxListe\']').each(handleConditionnalCheckboxChoice).change(handleConditionnalCheckboxChoice);
 
   //choix de l'heure pour une date
@@ -136,12 +148,6 @@ $(document).ready(function () {
   $('object').append('<param value="opaque" name="wmode">');
   $('embed').attr('wmode', 'opaque');
 
-  /* swap open/close side menu icons */
-  $('.yeswiki-list-category[data-toggle=collapse]').click(function () {
-    // toggle icon
-    $(this).find('i').toggleClass('glyphicon-chevron-right glyphicon-chevron-down');
-  });
-
   //============validation formulaire============================
   //============gestion des dates================================
 
@@ -157,12 +163,13 @@ $(document).ready(function () {
     var atleastonemailfieldnotvalid = false;
     var atleastoneurlfieldnotvalid = false;
     var atleastonecheckboxfieldnotvalid = false;
+    var atleastoneradiofieldnotvalid = false;
     var atleastonetagfieldnotvalid = false;
 
     // il y a des champs requis, on teste la validite champs par champs
     if (inputsreq.length > 0) {
       inputsreq.each(function () {
-        if (!($(this).val().length === 0 || $(this).val() === '' || $(this).val() === '0')) {
+        if (!($(this).val().length === 0 || $(this).val() === '' || ($(this).attr('type') == 'range' && $(this).val() === $(this).data('default')))) {
           $(this).removeClass('invalid');
         } else {
           atleastonefieldnotvalid = true;
@@ -217,6 +224,17 @@ $(document).ready(function () {
       }
     });
 
+    // radio inputs .radio_required
+    $('#formulaire .radio_required:visible').each(function () {
+      var nbradio = $(this).find(':checked');
+      if (nbradio.length === 0) {
+        atleastoneradiofieldnotvalid = true;
+        $(this).addClass('invalid');
+      } else {
+        $(this).removeClass('invalid');
+      }
+    });
+
     // les checkbox des tags
     $('#formulaire [required] .bootstrap-tagsinput:visible').each(function () {
       var nbtag = $(this).find('.tag');
@@ -252,6 +270,13 @@ $(document).ready(function () {
       $('html, body').animate({
         scrollTop: $('#formulaire .invalid').offset().top - 80,
       }, 500);
+    } else if (atleastoneradiofieldnotvalid=== true) {
+      alert('Il faut choisir une valeur de bouton radio');
+      
+      //on remonte en haut du formulaire
+      $('html, body').animate({
+        scrollTop: $('#formulaire .radio_required.invalid').offset().top - 80,
+      }, 500);
     } else if (atleastonecheckboxfieldnotvalid === true) {
       alert('Il faut cocher au moins une case a cocher');
 
@@ -266,8 +291,14 @@ $(document).ready(function () {
       $('html, body').animate({
         scrollTop: $('#formulaire .bootstrap-tagsinput.invalid').offset().top - 80,
       }, 500);
-    }
+    } else if ($('#formulaire .geocode-input.required').length > 0 && !$('#formulaire .geocode-input #bf_latitude').val()) {
+      alert("Vous devez géolocaliser l'adresse");
 
+      //on remonte en haut du formulaire
+      $('html, body').animate({
+        scrollTop: $('#formulaire .geocode-input').offset().top - 80,
+      }, 500);
+    }
     // formulaire validé, on soumet le formulaire
     else {
       return true;
@@ -538,24 +569,22 @@ $(document).ready(function () {
     changeURLParameter('facette', newquery);
 
     // on ajuste les liens vers les formulaires d'export
-    if (newquery !== '') {
-      $('.export-links a').each(
-        function() {
-          var link = $(this).attr('href');
-          var queryexists = new RegExp('&query=' + '([^&;]+?)(&|#|;|$)').exec(link) || null;
-          if (queryexists == null) {
-            $(this).attr('href', link+'&query='+newquery);
-          } else {
-            var queryinit = $('#queryinit').val();
-            if (queryinit) { newquery = queryinit+'|'+newquery}
-            $(this).attr(
-              'href',
-              link.replace(new RegExp('&query=' + '([^&;]+?)(&|#|;|$)'), '&query=' + newquery)
-            );
-          }
+    $('.export-links a').each(
+      function() {
+        var link = $(this).attr('href');
+        var queryexists = new RegExp('&query=' + '([^&;]+?)(&|#|;|$)').exec(link) || null;
+        if (queryexists == null) {
+          $(this).attr('href', link+((newquery !== '')?'&query='+newquery:''));
+        } else {
+          var queryinit = $('#queryinit').val();
+          if (queryinit) { newquery = queryinit+'|'+newquery}
+          $(this).attr(
+            'href',
+            link.replace(new RegExp('&query=' + '([^&;]+?)(&|#|;|$)'), ((newquery !== '')?'&query='+newquery:''))
+          );
         }
-      );
-    }
+      }
+    );
 
     // au moins un filtre à actionner
     if (tabfilters.length > 0) {
@@ -592,7 +621,7 @@ $(document).ready(function () {
   }
 
   // process changes on visible entries according to filters
-  $('.facette-container').each(function () {
+  $('.facette-container:not(.dynamic)').each(function () {
     var $container = $(this);
     var $filters = $('.filter-checkbox', $container);
     var data = {
@@ -649,7 +678,9 @@ $(document).ready(function () {
   });
 
   $('.bootstrap-tagsinput').on('change', function () {
-    $(this).find('input').val('');
+    $(this).parent().find('.yeswiki-input-entries, .yeswiki-input-pagetag').each(function () {
+      $(this).tagsinput('input').val('');
+    });
   });
 
   $.extend($.fn.typeahead.Constructor.prototype, {
@@ -664,7 +695,7 @@ $(document).ready(function () {
   });
 
   var bazarList = [];
-  $('.filter-bazar').on('keyup', function(e) {
+  $('.facette-container:not(.dynamic) .filter-bazar').on('keyup', function(e) {
     var target = $(this).data('target')
     var searchstring = $(this).val()
     if (searchstring) {
@@ -689,6 +720,11 @@ $(document).ready(function () {
       $(this).parents('.facette-container').find('.result-label').show();
       $(this).parents('.facette-container').find('.results-label').hide();
     }
+  });
+
+  // gestion du bouton de réinitialisation des filtres
+  $('.facette-container:not(.dynamic) .filters .reset-filters').on('click', function(){
+    $('.facette-container:not(.dynamic) .filters input.filter-checkbox:checked').click();
   });
 })
 
@@ -733,4 +769,10 @@ function downloadCSV(csv, filename) {
 
   // Click download link
   downloadLink.click();
+}
+
+function removeCSVCrochet(str){
+  var res = str.replace(/&lt;/gm,'<');
+  res = res.replace(/&gt;/gm,'>');
+  return res;
 }

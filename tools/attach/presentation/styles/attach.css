@@ -268,7 +268,11 @@ box-shadow: 2px 2px 15px 0px #444;
   border-top-right-radius: 0;
 }
 
-/* embeded pdf*/
+/* embedded pdf or videos */
+.embed-responsive {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
 .embed-responsive.pdf {
 	padding-bottom: 138%;
 }

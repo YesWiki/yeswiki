@@ -1,0 +1,20 @@
+{% extends "@bazar/layouts/input.twig" %}
+
+{% block input %}
+    <div class="input-group">
+        <input
+            type="{{ field.subType }}"
+            value="{{ value }}"
+            id="{{ field.name }}"
+            name="{{ field.name }}"
+            class="form-control input-xxlarge"
+            min="{{ field.size }}"
+            max="{{ field.maxChars }}"
+            data-default="{{ ((((field.size != "0" and field.size is empty) ? 100 : field.size)|number_format + 
+                ((field.maxChars != "0" and field.maxChars is empty) ? 100 : field.maxChars)|number_format)/2)|round(0,'ceil') }}"
+            {% if field.pattern %}pattern="{{ field.pattern }}"{% endif %}
+            placeholder="{{ field.label|raw('html')|striptags }}"
+            {% if field.required %}required{% endif %}
+        />
+    </div>
+{% endblock %}

@@ -109,7 +109,7 @@ if (!defined('WIKINI_VERSION')) {
         <div class="form-group">
           <label class="col-sm-3 control-label"><?php echo _t('HOMEPAGE'); ?></label>
           <div class="col-sm-9">
-            <input type="text" required class="form-control" name="config[root_page]" value="<?php echo $wakkaConfig['root_page'] ?>" />
+            <input type="text" required class="form-control" name="config[root_page]" value="<?php echo $wakkaConfig['root_page'] ?>" pattern="<?php echo WN_CAMEL_CASE_EVOLVED ;?>"/>
             <p class="help-block"><?php echo _t('MUST_BE_WIKINAME'); ?></p>
           </div>
         </div>
@@ -278,7 +278,8 @@ if (!defined('WIKINI_VERSION')) {
                 <div class="checkbox">
                   <label>
                     <input type="hidden" name="config[rewrite_mode]" value="0" />
-                    <input type="checkbox" name="config[rewrite_mode]" value="1" <?php echo $wakkaConfig['rewrite_mode'] ? 'checked' : '' ?> >
+                    <input type="checkbox" name="config[rewrite_mode]" value="1" <?php
+                      echo ($wakkaConfig['rewrite_mode'] ?? true) ? 'checked' : '' ?> />
                     <span></span>
                     &nbsp;<?php echo _t('ACTIVATE_REDIRECTION_MODE'); ?>
                   </label>
@@ -287,7 +288,8 @@ if (!defined('WIKINI_VERSION')) {
 
                 <div class="checkbox">
                   <label>
-                    <input type="checkbox" name="config[allow_raw_html]" value="1" <?php echo $wakkaConfig['allow_raw_html'] ? '' : 'checked' ?> />
+                    <input type="checkbox" name="config[allow_raw_html]" value="1" <?php
+                      echo ($wakkaConfig['allow_raw_html'] ?? true) ? 'checked' : '' ?> />
                     <span></span>
                     &nbsp;<?php echo _t('AUTHORIZE_HTML_INSERTION'); ?>
                   </label>
@@ -296,7 +298,8 @@ if (!defined('WIKINI_VERSION')) {
 
                 <div class="checkbox">
                   <label>
-                    <input type="checkbox" name="allowRobots" value="1" <?php echo isset($wakkaConfig['allowRobots']) ? '' : 'checked' ?> />
+                    <input type="checkbox" name="config[allow_robots]" value="1" <?php
+                      echo ($wakkaConfig['allow_robots'] ?? true) ? 'checked' : '' ?> />
                     <span></span>
                     &nbsp;<?php echo _t('AUTHORIZE_INDEX_BY_ROBOTS'); ?>
                   </label>
@@ -316,3 +319,9 @@ if (!defined('WIKINI_VERSION')) {
     </fieldset>
 
   </form>
+  
+  <style>
+    input:not(:placeholder-shown):invalid, textarea:not(:placeholder-shown):invalid {
+        border-color: #DD2C00;
+    }
+  </style>

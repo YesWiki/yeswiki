@@ -5,11 +5,11 @@ if (count($fiches)>0) :
 	// TODO: y-a-t'il pagination en mode carto ?
 	echo $pager_links;
 
-    $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/leaflet.css');
+    $GLOBALS['wiki']->AddCSSFile('styles/vendor/leaflet/leaflet.css');
     $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/bazarcarto.css');
     $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/bazar.js');
-    $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
-    $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet-providers.js');
+    $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet/leaflet.min.js');
+    $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet-providers/leaflet-providers.js');
     ?>
 
     <div id="osmmap<?php echo $param['nbbazarliste']; ?>"
@@ -32,8 +32,8 @@ if (count($fiches)>0) :
 
     } elseif ($param['cluster'] == 'true' or $param['cluster'] == '1') {
 
-      $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/markercluster/MarkerCluster.css');
-      $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/markercluster/leaflet.markercluster.js');
+      $GLOBALS['wiki']->AddCSSFile('styles/vendor/leaflet-markercluster/leaflet.markercluster.css');
+      $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet-markercluster/leaflet-markercluster.min.js');
       $markersjs = 'var markerscluster = new L.MarkerClusterGroup();'."\n";
 
     } else {
@@ -42,8 +42,8 @@ if (count($fiches)>0) :
 
     if ($param['fullscreen'] == 'true' || $param['fullscreen'] == '1') {
 		$param['fullscreen'] = 'true';
-      $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/fullscreen/Control.FullScreen.css');
-      $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/fullscreen/Control.FullScreen.js');
+      $GLOBALS['wiki']->AddCSSFile('styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css');
+      $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js');
 	} else {
 		$param['fullscreen'] = 'false' ;
 	}
@@ -59,12 +59,22 @@ if (count($fiches)>0) :
 			$icon = $param['iconprefix']
 					.getCustomValueForEntry($param['icon'], $param['iconfield'], $fiche, $GLOBALS['wiki']->config['baz_marker_icon']);
 
-			$tab = explode('|', isset($fiche['carte_google']) ? $fiche['carte_google'] : '');
-			if (count($tab)>1 && $tab[0]!='' && $tab[1]!='' && is_numeric($tab[0]) && is_numeric($tab[1])) {
+			if (!isset($fiche['geolocation'])) { // backward compatibility hack for old carte_google fields
+        $fiche['geolocation'] = [];
+        $tab = explode('|', isset($fiche['carte_google']) ? $fiche['carte_google'] : '');
+        if (!empty($tab[0]) && !empty($tab[1])) {
+            $fiche['geolocation']['bf_latitude'] = $tab[0];
+            $fiche['geolocation']['bf_longitude'] = $tab[1];
+        } elseif (!empty($fiche['bf_latitude']) && !empty($fiche['bf_longitude'])){
+            $fiche['geolocation']['bf_latitude'] = $fiche['bf_latitude'];
+            $fiche['geolocation']['bf_longitude'] = $fiche['bf_longitude'];
+		}
+      }
+      if (count($fiche['geolocation'])>1 && $fiche['geolocation']['bf_latitude']!='' && $fiche['geolocation']['bf_longitude']!='' && is_numeric($fiche['geolocation']['bf_latitude']) && is_numeric($fiche['geolocation']['bf_longitude'])) {
 					// on genere le point marqueur sur la carte
 					$markersjs .= '
 					i++;
-					var markerLocation = new L.LatLng('.$tab[0].', '.$tab[1].');
+					var markerLocation = new L.LatLng('.$fiche['geolocation']['bf_latitude'].', '.$fiche['geolocation']['bf_longitude'].');
 					marker[i] = new L.Marker(
 							markerLocation,
 							{
@@ -75,7 +85,7 @@ if (count($fiches)>0) :
 											className: \'bazar-marker'.$param['smallmarker'].'\',
 											html: \'<div class="bazar-entry" '
 											.str_replace('\'', '', $fiche['html_data']).' style="color:'.$color.';">'
-											.(!empty($icon) ? '<i class="'.$icon.'"></i>' : '')
+											.(!empty($icon) ? '<i class="fa-fw '.$icon.'"></i>' : '')
 											.'</div>\'
 									}),
 									title: \''.addslashes($fiche['bf_titre']).'\'
@@ -124,7 +134,7 @@ if (count($fiches)>0) :
 			$js.= 'provider = L.tileLayer.provider("'.$param['provider'].'");' ;
 			$js.= 'baseLayers["'.$param['provider'].'"] = provider ;' ;
 		}*/
-		if( ! is_array($param['providers']) ){
+		if( empty($param['providers']) ){
 			$param['providers'] = array($param['provider']);
 		}
 		foreach( $param['providers'] as $provider ) {
@@ -169,6 +179,13 @@ if (count($fiches)>0) :
 
 						$styleJs = '' ;
 						if( $layerOptions!=null ){
+							// extract 'visiblebydefault'
+							if (preg_match_all("/visiblebydefault\\s*;?/i",$layerOptions,$matches)){
+                                $isVisibleByDefault = true;
+                                foreach ($matches[0] as $key => $value) {
+                                    $layerOptions = str_replace($value,'',$layerOptions);
+                                }
+							}
 							$layerOptions = str_replace(';',',',$layerOptions);
 							$styleJs.='
 							style: function (feature, latlng) {
@@ -235,6 +252,10 @@ if (count($fiches)>0) :
 								layer.bindPopup( str );
 							}
 						} );' ;
+						if ($isVisibleByDefault){
+								// add layer to the map
+								$js.= 'layers["'.$layerLabel.'"].addTo(map'.$param['nbbazarliste'].');' ;
+						}
 						break;
 				}
 			}

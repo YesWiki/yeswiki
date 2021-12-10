@@ -1,0 +1,48 @@
+#!/usr/bin/env php
+<?php
+// application.php
+
+namespace YesWiki\AutoUpdate\Commands;
+
+if (!file_exists('wakka.config.php')) {
+  exit("\e[31mThe command should be launched from your YesWiki root directory\e[0m");
+} else {
+  include_once('wakka.config.php');
+  // fake $_SERVER vars
+  $_SERVER['REQUEST_URI'] = $wakkaConfig['base_url'].$wakkaConfig['root_page'];
+  $_SERVER['HTTP_HOST'] = parse_url($wakkaConfig['base_url'], PHP_URL_HOST);
+  $_SERVER['REQUEST_METHOD'] = 'GET';
+  // fake wiki page
+  $_REQUEST['wiki'] = $wakkaConfig['root_page'];
+}
+
+use Doctrine\Common\Annotations\AnnotationRegistry;
+
+require_once 'includes/autoload.inc.php';
+$loader = require_once 'vendor/autoload.php';
+AnnotationRegistry::registerLoader([$loader, 'loadClass']);
+require_once __DIR__.'/../vendor/autoload.php';
+
+use Symfony\Component\Console\Application;
+
+$application = new Application();
+
+require_once 'includes/YesWiki.php';
+$wiki = new \YesWiki\Wiki();
+
+// little hack to understand that we are lauching a cli command
+$wiki->config['is_cli'] = true;
+
+// second little hack (bad habit..): we use the first admin user to perform updates as an admin
+$admins = $wiki->GetGroupACL('admins');
+$firstAdmin = $wiki->LoadUser(preg_split("/\s+/", $admins)[0]);
+$wiki->setUser($firstAdmin);
+
+// ... register commands
+use YesWiki\AutoUpdate\Commands\UpdaterCommand;
+$application->add(new UpdaterCommand($wiki));
+
+use YesWiki\AutoUpdate\Commands\PostUpdaterCommand;
+$application->add(new PostUpdaterCommand($wiki));
+
+$application->run();

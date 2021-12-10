@@ -1,5 +1,7 @@
 <?php
 
+use YesWiki\Security\Controller\SecurityController;
+
 // Charles Nepote 2005-2006
 // Didier Loiseau 2005
 // License GPL.
@@ -60,7 +62,7 @@ if ($this->UserIsAdmin()) {
               "select *
               from ".$this->config["table_prefix"]."pages
               where
-              time > date_sub(now(), interval " . addslashes($_POST['from']) . " hour)
+              time > date_sub(now(), interval " . $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($_POST['from']) . " hour)
               and latest = 'Y'
               order by `time` desc";
             $title =
@@ -85,6 +87,11 @@ if ($this->UserIsAdmin()) {
               $page["tag"]. " ".
               "(". $page["time"]. ") ".
                 " par ". $page['user'] . " ".
+                "<a href=\"".$this->Href('iframe', $page["tag"], ['time'=>urlencode($page["time"])])."\" ".
+                "title=\"Voir la fiche {$page["tag"]} ({$page["time"]})\" ".
+                "class=\"btn btn-xs btn-default modalbox\" ".
+                "data-size=\"modal-lg\" ".
+                "data-iframe=\"1\"><i class=\"fas fa-eye\"></i></a>".
               "</td>\n";
             echo "<td>".
               "<input name=\"suppr[]\" value=\"" . $page["tag"] . "\" type=\"checkbox\" /> [Suppr.!]".
@@ -92,7 +99,7 @@ if ($this->UserIsAdmin()) {
             echo "<td>\n";
             echo "<p>";
             echo "_____________________________________________________________________________________________________";
-            echo "<p>";
+            echo "</p><table>";
 
 
 
@@ -103,12 +110,18 @@ if ($this->UserIsAdmin()) {
                     $revision1 = "";
                     continue;
                 }
-                echo "<input name=  \"rev[]\" value=\"" . $revision["id"] . "\" type=\"checkbox\" /> ";
+                echo "<tr><td><input name=  \"rev[]\" value=\"" . $revision["id"] . "\" type=\"checkbox\" /></td><td>";
                 echo "Restaurer depuis la version du ".
                    " ".$revision["time"]." ".
                   " par ". $revision['user'] . " ".
-                  "<br />\n";
+                  "<a href=\"".$this->Href('iframe', $page["tag"], ['time'=>urlencode($revision["time"])])."\" ".
+                    "title=\"Voir la fiche {$page["tag"]} ({$revision["time"]})\" ".
+                    "class=\"btn btn-xs btn-default modalbox\" ".
+                    "data-size=\"modal-lg\" ".
+                    "data-iframe=\"1\"><i class=\"fas fa-eye\"></i></a>".
+                  "</td></tr>\n";
             }
+            echo "</table>\n";
             unset($revision1);
             echo //" . . . . ",$this->Format($page["user"]),"</p>\n",
               "</td>\n",
@@ -125,6 +138,9 @@ if ($this->UserIsAdmin()) {
         echo "</form>\n";
         echo "</div>\n\n";
     } elseif (isset($_POST['clean'])) {
+        if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         // -- (3) Nettoyage des pages et affichage de la page de resultats -------
         //
         $deletedPages = "";

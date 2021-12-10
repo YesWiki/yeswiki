@@ -28,7 +28,7 @@
 *@copyright     2014 Outils-Réseaux
 */
 
-$GLOBALS['translations'] = array(
+$GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 
 // wakka.php
 'INVALID_ACTION' => 'Action invalide',
@@ -42,6 +42,13 @@ $GLOBALS['translations'] = array(
 'PERFORMABLE_ERROR' => 'Une erreur inattendue s\'est produite. Veuillez contacter l\'administrateur du site et lui communiquer l\'erreur suivante :',
 'HOMEPAGE_WIKINAME' => 'PagePrincipale',
 'MY_YESWIKI_SITE' => 'Mon site YesWiki',
+'FILE_WRITE_PROTECTED' => 'le fichier de configuration est protégé en écriture',
+
+// ACLs
+'DENY_READ' => "Vous n'êtes pas autorisé à lire cette page",
+'DENY_WRITE' => "Vous n'êtes pas autorisé à écrire sur cette page",
+'DENY_COMMENT' => "Vous n'êtes pas autorisé à commenter cette page",
+'DENY_DELETE' => "Vous n'êtes pas autorisé à supprimer cette page",
 
 // tools.php
 'YESWIKI_TOOLS_CONFIG' => 'Configuration extension(s) de YesWiki',
@@ -208,7 +215,7 @@ $GLOBALS['translations'] = array(
 'YOUR_OLD_PASSWORD' => 'Votre ancien mot de passe',
 'NEW_PASSWORD' => 'Nouveau mot de passe',
 'CHANGE' => 'Changer',
-'USERNAME_MUST_BE_WIKINAME' => 'Votre nom d\'utilisateur doit &ecirc;tre format&eacute; en NomWiki (<em>ex: CapitaineHaddock</em>)',
+'USERNAME_MUST_BE_WIKINAME' => 'Votre nom d\'utilisateur ne doit pas commencé par \'!\',\'@\',\'\\\', \'/\' ni \'#\' avec 3 caractères minimum.',
 'YOU_MUST_SPECIFY_AN_EMAIL' => 'Vous devez sp&eacute;cifier une adresse de messagerie &eacute;lectronique',
 'THIS_IS_NOT_A_VALID_EMAIL' => 'Ceci ne ressemble pas &agrave; une adresse de messagerie &eacute;lectronique',
 'PASSWORDS_NOT_IDENTICAL' => 'Les mots de passe n\'&eacute;taient pas identiques',
@@ -271,6 +278,7 @@ $GLOBALS['translations'] = array(
 'ALL_ADMIN_TASKS_ARE_DESCRIBED_IN_THE_PAGE' => 'Toutes les t&acirc;ches d\'administration sont accessibles depuis le bouton avec la roue crant&eacute;e',
 'USE_AN_EXISTING_ACCOUNT' => 'Utiliser un compte existant',
 'NO' => 'Non',
+'YES' => 'Oui',
 'OR_CREATE_NEW_ACCOUNT' => 'Ou cr&eacute;er un nouveau compte',
 'ADMIN' => 'Administrateur',
 'MUST_BE_WIKINAME' => 'doit &ecirc;tre un NomWiki',
@@ -306,10 +314,13 @@ $GLOBALS['translations'] = array(
 'DATABASE_DOESNT_EXIST_YOU_MUST_CREATE_IT' => 'La base de donn&eacute;es que vous avez choisie n\'existe pas, vous devez la cr&eacute;er avant d\'installer YesWiki',
 'CHECKING_THE_ADMIN_PASSWORD' => 'V&eacute;rification du mot de passe Administrateur',
 'CHECKING_THE_ADMIN_PASSWORD_CONFIRMATION' => 'V&eacute;rification de la concordance des deux mots de passes administrateurs',
+'CHECKING_ROOT_PAGE_NAME' => 'V&eacute;rification du nom de la page d\'accueil',
+'INCORRECT_ROOT_PAGE_NAME' => 'Le nom de la page d\'accueil doit uniquement contenir des lettres non accentuées, des chiffres, \'_\', \'-\' ou \'.\'',
 'ADMIN_PASSWORD_ARE_DIFFERENT' => 'Les mots de passe Aaministrateur sont diff&eacute;rents',
 'DATABASE_INSTALLATION' => 'Installation de la base de donn&eacute;es',
 'CREATION_OF_TABLES' => 'Cr&eacute;ation des tables, de l\'administrateur et du groupe admins',
 'SQL_FILE_NOT_FOUND' => 'Fichier SQL non trouv&eacute;',
+'NOT_POSSIBLE_TO_CREATE_SQL_TABLES' => 'Impossible de créer les tables SQL.',
 'ALREADY_CREATED' => 'D&eacute;j&agrave; cr&eacute;&eacute;e',
 'ADMIN_ACCOUNT_CREATION' => 'Cr&eacute;ation du compte Administrateur',
 'INSERTION_OF_PAGES' => 'Insertion des pages par d&eacute;faut',
@@ -320,6 +331,8 @@ $GLOBALS['translations'] = array(
 'INSERTION_OF_USER_IN_ADMIN_GROUP' => 'Insertion de l\'utilisateur sp&eacute;cifi&eacute; dans le groupe admin',
 'NEXT_STEP_WRITE_CONFIGURATION_FILE' => 'A l\'&eacute;tape suivante, le programme d\'installation va essayer d\'&eacute;crire le fichier de configuration ',
 'VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE' => 'Assurez vous que le serveur web a bien le droit d\'&eacute;crire dans ce fichier, sinon vous devrez le modifier manuellement',
+'CHECK_EXISTING_TABLE_PREFIX' => 'Vérification de l\'existence du préfixe de table',
+'TABLE_PREFIX_ALREADY_USED' => 'Le préfixe de table est déjà utilisé. Veuillez en choisir un nouveau.',
 
 // setup/writeconfig.php
 'WRITING_CONFIGURATION_FILE' => '&Eacute;criture du fichier de configuration',
@@ -354,6 +367,7 @@ $GLOBALS['translations'] = array(
 'USER_PASSWORDS_NOT_IDENTICAL' => 'Les deux mots de passe saisis doivent être identiques',
 'USER_PASSWORD_TOO_SHORT' => 'Mot de passe trop court',
 'USER_THIS_EMAIL_IS_ALLREADY_USED_ON_THIS_WIKI' => 'L\'email saisi est déjà utilisé sur ce wiki',
+'USER_THIS_IS_NOT_A_VALID_NAME' => 'Ceci n\'est pas un nom d\'utilisateur valide',
 'USER_THIS_IS_NOT_A_VALID_EMAIL' => 'Ceci n\'est pas un email valide',
 'USER_UPDATE_QUERY_FAILED' => 'La requête de mise à jour de l\'utilisateur dans la base de données a échoué',
 'USER_YOU_MUST_SPECIFY_A_NAME' => 'Veuillez saisir un nom pour l\'utilisateur',
@@ -392,6 +406,7 @@ $GLOBALS['translations'] = array(
 'USER_CHANGE' => 'Changer',
 'USER_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED' => 'Vous devez accepter les cookies pour pouvoir vous connecter',
 'USER_WIKINAME' => 'Votre NomWiki',
+'USER_USERNAME' => 'Votre nom d\'utilisateur, utilisatrice',
 'USER_PASSWORD_CONFIRMATION' => 'Confirmation du mot de passe',
 'USER_NEW_ACCOUNT' => 'Nouveau compte',
 'USER_PASSWORD' => 'Mot de passe',
@@ -416,7 +431,7 @@ $GLOBALS['translations'] = array(
 'ACLS_FOR_SELECTED_PAGES' => 'Actions pour les pages cochées ci dessus',
 'ACLS_RESET_SELECTED_PAGES' => 'Réinitialiser (avec les valeurs par défaut définies dans',
 'ACLS_REPLACE_SELECTED_PAGES' => 'Remplacer (Les droits actuels seront supprim&eacute;s)',
-'ACLS_HELPER' => 'Séparez chaque entrée par un retour à la ligne, par example</br>
+'ACLS_HELPER' => 'Séparez chaque entrée des virgules, par exemple</br>
 <b>*</b> (tous les utilisateurs)</br>
 <b>+</b> (utilisateurs enregistrés)</br>
 <b>%</b> (créateur de la fiche/page)</br>
@@ -432,4 +447,52 @@ $GLOBALS['translations'] = array(
 'ACLS_ADMIN_GROUP' => 'Groupe admin',
 'ACLS_LIST_OF_ACLS' => 'Liste des droits séparés par des virgules',
 'ACLS_UPDATE' => 'Mettre &agrave; jour',
-);
+
+// include/services/ThemeManager.php
+'THEME_MANAGER_THEME_FOLDER' => 'Le dossier du thème ',
+'THEME_MANAGER_SQUELETTE_FILE' => 'Le fichier du squelette ',
+'THEME_MANAGER_NOT_FOUND' => ' n\'a pas été trouvé.',
+'THEME_MANAGER_ERROR_GETTING_FILE' => 'Une erreur s\'est produite en chargeant ce fichier : ',
+'THEME_MANAGER_CLICK_TO_INSTALL' => 'Cliquer pour installer le thème ',
+'THEME_MANAGER_AND_REPAIR' => ' et réparer le site',
+'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Veuillez vous connecter en tant qu\'administrateur pour faire la mise à jour.',
+
+// actions/EditConfigAction.php
+'EDIT_CONFIG_TITLE' => 'Modification du fichier de configuration',
+'EDIT_CONFIG_CURRENT_VALUE' => 'Valeur actuelle ',
+'EDIT_CONFIG_SAVE' => 'Configuration sauvegardée',
+'EDIT_CONFIG_HINT_WAKKA_NAME' => 'Titre de votre wiki',
+'EDIT_CONFIG_HINT_ROOT_PAGE' => 'Nom de la page d\'accueil',
+'EDIT_CONFIG_HINT_DEFAULT_WRITE_ACL' => 'Droits d\'écriture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin)',
+'EDIT_CONFIG_HINT_DEFAULT_READ_ACL' => 'Droits de lecture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin)',
+'EDIT_CONFIG_HINT_DEBUG' => 'Activer le mode de debug (yes ou no)',
+'EDIT_CONFIG_HINT_DEFAULT_LANGUAGE' => 'Langue par défaut (fr ou en ou ...)',
+'EDIT_CONFIG_HINT_CONTACT_FROM' => 'Remplacer le mail utilisé comme expéditeur des messages',
+'EDIT_CONFIG_HINT_MAIL_CUSTOM_MESSAGE' => 'Message personnalisé des mails envoyés depuis l\'action contact',
+'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING' => 'Mot de passe demandé pour modifier les pages',
+'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING_MESSAGE' => 'Message informatif pour demander le mot de passe',
+'EDIT_CONFIG_HINT_ALLOW_DOUBLECLIC' => 'Autoriser le doubleclic pour éditer les menus et pages spéciales',
+'EDIT_CONFIG_HINT_TIMEZONE' => 'Fuseau horaire du site (ex. UCT, Europe/Paris, Europe/London, GMT = utiliser celui du serveur,)',
+'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Méthodes autorisées à être affichées dans les iframes (all = autoriser tout)',
+'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
+'EDIT_CONFIG_GROUP_ACCESS' => "Droit d'accès",
+'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
+
+// handlers/update
+'UPDATE_ADMIN_PAGES' => 'Mettre à jour les pages de gestion',
+'UPDATE_ADMIN_PAGES_CONFIRM' => 'Confirmer la mise à jour des pages : ',
+'UPDATE_ADMIN_PAGES_HINT' => 'Mets à jour les pages de gestion avec les dernières fonctionnalités. Ceci est réversible.',
+'UPDATE_ADMIN_PAGES_ERROR' => 'Il n\'a pas été possible de mettre à jour toutes les pages de gestion !',
+'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => 'la page "{{page}}" n\'a pas été trouvée dans default-content.sql',
+
+// handlers/revisions
+'SUCCESS_RESTORE_REVISION' => "La version a bien été restaurée",
+'TITLE_PAGE_HISTORY' => 'Historique de la page',
+'TITLE_ENTRY_HISTORY' => 'Historique de la fiche',
+'REVISION_VERSION' => 'Version N°',
+'REVISION_ON' => 'du',
+'REVISION_BY' => 'par',
+'CURRENT_VERSION' => 'Version actuelle',
+'RESTORE_REVISION' => 'Restaurer cette version',
+'DISPLAY_WIKI_CODE' => 'Afficher le code Wiki'
+));

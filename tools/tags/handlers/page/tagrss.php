@@ -19,6 +19,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+use YesWiki\Core\Service\AclService;
+
 // Vérification de sécurité
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -58,7 +60,9 @@ if (!empty($tags)) {
         $output .= "<description>" . $textetitre . "</description>\n";
         $output .= "<atom:link href=\"" . $this->Href('xml') . "\" rel=\"self\" type=\"application/rss+xml\" />\n";
         $items = '';
+        $aclService = $this->services->get(AclService::class);
         foreach ($results as $page) {
+            $readAcl = $aclService->hasAccess('read', $page['tag']);
             $this->tag = $page['tag'];
             $this->page = $page;
             $items.= "<item>\r\n";
@@ -66,10 +70,14 @@ if (!empty($tags)) {
             $items.= "<link>" . $this->config["base_url"] . $page["tag"] . "</link>\r\n";
             $items.= "<description><![CDATA[";
             
-            //on enleve les actions recentchangesrssplus pour eviter les boucles infinies
-            $page["body"] = preg_replace("/\{\{recentchangesrss(.*?)\}\}/s", '', $page["body"]);
-            $page["body"] = preg_replace("/\{\{rss(.*?)\}\}/s", '', $page["body"]);
-            $texteformat = $this->Format($page['body'], 'wakka', $page['tag']);
+            if ($readAcl) {
+                //on enleve les actions recentchangesrssplus pour eviter les boucles infinies
+                $page["body"] = preg_replace("/\{\{recentchangesrss(.*?)\}\}/s", '', $page["body"]);
+                $page["body"] = preg_replace("/\{\{rss(.*?)\}\}/s", '', $page["body"]);
+                $texteformat = $this->Format($page['body'], 'wakka', $page['tag']);
+            } else {
+                $texteformat = '<i>Contenu masqué</i>';
+            }
             
             $items.= $texteformat . "]]></description>\r\n";
             $items.= "<dc:creator>by ".htmlspecialchars($page["user"], ENT_COMPAT, YW_CHARSET).

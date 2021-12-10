@@ -14,11 +14,13 @@ class MetadataField extends BazarField
     protected $template;
     protected $style;
     protected $bgImage;
+    protected $favorite_preset;
 
     protected const FIELD_THEME = 1;
     protected const FIELD_TEMPLATE = 2;
     protected const FIELD_STYLE = 3;
     protected const FIELD_BG_IMAGE = 4;
+    protected const FIELD_CSS_PRESET = 5;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -28,6 +30,13 @@ class MetadataField extends BazarField
         $this->template = empty($values[self::FIELD_TEMPLATE]) ? SQUELETTE_PAR_DEFAUT : $values[self::FIELD_TEMPLATE];
         $this->style = empty($values[self::FIELD_STYLE]) ? CSS_PAR_DEFAUT : $values[self::FIELD_STYLE];
         $this->bgImage = $values[self::FIELD_BG_IMAGE];
+        $this->favorite_preset = empty($values[self::FIELD_CSS_PRESET]) ? null : $values[self::FIELD_CSS_PRESET];
+        $this->name = null;
+        $this->label = null;
+        $this->propertyName = null;
+        $this->size = null;
+        $this->maxChars = null;
+        $this->default = null;
     }
 
     protected function renderInput($entry)
@@ -41,8 +50,12 @@ class MetadataField extends BazarField
             'theme' => $this->theme,
             'style' => $this->style,
             'squelette' => $this->template,
-            'bgimg' => $this->bgImage
-        ]);
+            'bgimg' => $this->bgImage,
+        ] + (
+            !empty($this->favorite_preset)
+            ? ['favorite_preset' => $this->favorite_preset]
+            :[]
+        ));
 
         return [];
     }
@@ -50,5 +63,41 @@ class MetadataField extends BazarField
     protected function renderStatic($entry)
     {
         return null;
+    }
+
+    public function getTheme()
+    {
+        return $this->theme;
+    }
+
+    public function getStyle()
+    {
+        return $this->style;
+    }
+    public function getTemplate()
+    {
+        return $this->template;
+    }
+
+    public function getBgImage()
+    {
+        return $this->bgImage;
+    }
+
+    public function getFavoritePreset()
+    {
+        return $this->favorite_preset;
+    }
+
+    public function jsonSerialize()
+    {
+        return [
+            'type' => $this->getType(),
+            'theme' => $this->getTheme(),
+            'style' => $this->getStyle(),
+            'template' => $this->getTemplate(),
+            'bgImage' => $this->getBgImage(),
+            'favorite_preset' => $this->getFavoritePreset(),
+            ];
     }
 }

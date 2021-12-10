@@ -1,5 +1,5 @@
 <?php
-
+// DEPRECIATED keep same filename without class to prevent error at update
 use YesWiki\Core\Service\DbService;
 
 if (!defined("WIKINI_VERSION")) {
@@ -49,7 +49,8 @@ if ($this->GetConfigValue('debug')=='yes') {
     }
 
     $end = microtime(true);
-    $debug_log = "<div class=\"debug\">\n<h4>Query log</h4>\n";
+    $debug_log = "<div>DEPRECIATED FOOTER USED FOR BACKUP</div>\n";
+    $debug_log .= "<div class=\"debug\">\n<h4>Query log</h4>\n";
     $debug_log .= "<strong>".round($end-T_START, 4)." s total time<br />\n";
     $debug_log .= round($T_SQL, 4)." s total SQL time</strong> (".round((($T_SQL/($end-T_START))*100), 2)."% of total time)<br />\n";
     $debug_log .= "<strong>".count($queryLog)." queries :</strong><br />\n";

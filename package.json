@@ -1,0 +1,26 @@
+{
+  "name": "yeswiki",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yeswiki/yeswiki.git"
+  },
+  "license": "AGPL-3.0",
+  "homepage": "http://yeswiki.net",
+  "scripts": {
+    "postinstall": "./javascripts/vendor/extract-files-from-node-modules.sh"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.4",
+    "bootstrap": "^3",
+    "gogocarto-js": "^1.7.11",
+    "jquery": "^3.5.1",
+    "leaflet": "^1.7.1",
+    "leaflet-providers": "^1.12.0",
+    "leaflet.fullscreen": "^2.0.0",
+    "leaflet.markercluster": "^1.5.1",
+    "spectrum-colorpicker2": "^2.0.8",
+    "vue": "^2.6.14",
+    "vue-select": "^3.13.0",
+    "vue2-leaflet": "^2.7.1"
+  }
+}

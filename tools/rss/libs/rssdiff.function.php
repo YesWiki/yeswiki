@@ -3,9 +3,6 @@
 if (!function_exists("rssdiff")) {
     function rssdiff($tag, $idfirst, $idlast)
     {
-        require_once 'includes/diff/diff.class.php';
-        require_once 'includes/diff/diffformatter.class.php';
-
         $output='';
         global $wiki;
         // TODO : cache ?
@@ -42,11 +39,11 @@ if (!function_exists("rssdiff")) {
         $output .= "<br />\n";
         $output .= "<br />\n";
         $output .= "<b>Comparaison de <a href=\""
-            . $wiki->href("", "", "time="
+            . $wiki->href("", $tag, "time="
             . urlencode($pageA["time"]))
             . "\">".$pageA["time"]
             . "</a> &agrave; <a href=\""
-            . $wiki->href("", "", "time=".urlencode($pageB["time"]))
+            . $wiki->href("", $tag, "time=".urlencode($pageB["time"]))
             . "\">"
             . $pageB["time"]
             . "</a></b><br />\n";

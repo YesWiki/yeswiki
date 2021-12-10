@@ -9,13 +9,14 @@ use YesWiki\Tags\Service\TagsManager;
 /**
  * @Field({"tags"})
  */
-class TagsField extends BazarField
+class TagsField extends EnumField
 {
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
 
         $this->maxChars = $this->maxChars ?? 255;
+        $this->propertyName = $this->name ;
     }
 
     protected function renderInput($entry)
@@ -40,11 +41,12 @@ class TagsField extends BazarField
 
         $script = '$(function(){
             var tagsexistants = [' . $allTags . '];
-            var pagetag = $(\'#formulaire .yeswiki-input-pagetag\');
+            var pagetag = $(\'#formulaire .yeswiki-input-pagetag[name="'.$this->getName().'"]\');
             pagetag.tagsinput({
                 typeahead: {
-                    afterSelect: function(val) { this.$element.val(""); },
-                    source: tagsexistants
+                    afterSelect: function(val) { pagetag.tagsinput(\'input\').val(""); },
+                    source: tagsexistants,
+                    autoSelect: false,
                 },
                 confirmKeys: [13, 186, 188]
             });
@@ -111,5 +113,30 @@ class TagsField extends BazarField
         } else {
             return null ;
         }
+    }
+
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    public function getOptions()
+    {
+        if (empty($this->options)) {
+            $this->loadOptionsFromTags();
+        }
+        return parent::getOptions() ;
+    }
+
+    private function loadOptionsFromTags()
+    {
+        // TODO use TagsManager instead of TripleStore
+        $tripleStore = $this->getService(TripleStore::class);
+
+        $rawOptions = $tripleStore->getMatching(null, 'http://outils-reseaux.org/_vocabulary/tag');
+        $this->options = array_map(function ($rawOption) {
+            return $rawOption['value'] ;
+        }, $rawOptions);
+        $this->options = array_combine($this->options, $this->options);
     }
 }

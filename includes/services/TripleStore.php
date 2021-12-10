@@ -2,18 +2,22 @@
 
 namespace YesWiki\Core\Service;
 
+use YesWiki\Security\Controller\SecurityController;
+
 class TripleStore
 {
     protected $dbService;
+    protected $securityController;
 
     protected $cacheByResource;
 
     public const TYPE_URI = 'http://outils-reseaux.org/_vocabulary/type';
     public const SOURCE_URL_URI = 'http://outils-reseaux.org/_vocabulary/sourceUrl';
 
-    public function __construct(DbService $dbService)
+    public function __construct(DbService $dbService, SecurityController $securityController)
     {
         $this->dbService = $dbService;
+        $this->securityController = $securityController;
         $this->cacheByResource = array();
     }
 
@@ -183,6 +187,9 @@ class TripleStore
      */
     public function create($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $res = $re_prefix . $resource ;
 
         if ($this->exist($res, $property, $value, '', $prop_prefix)) {
@@ -219,6 +226,9 @@ class TripleStore
      */
     public function update($resource, $property, $oldvalue, $newvalue, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $res = $re_prefix . $resource ;
 
         $id = $this->exist($res, $property, $oldvalue, '', $prop_prefix);
@@ -256,6 +266,9 @@ class TripleStore
      */
     public function delete($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $res = $re_prefix . $resource ;
 
         $sql = 'DELETE FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = "' . $this->dbService->escape($res) . '" ' . 'AND property = "' . $this->dbService->escape($prop_prefix . $property) . '" ';

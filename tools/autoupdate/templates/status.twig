@@ -23,7 +23,7 @@
 				{% if nbMaj > 0 %}
 					{% set alerte = '' %}
 					{% if nbMaj > 1 %}
-						{% set alerte = 'Vous avez {{nbMaj}} thèmes à mettre à jour' %}
+						{% set alerte = 'Vous avez ' ~ nbMaj ~ ' thèmes à mettre à jour' %}
 					{% else %}
 						{% set alerte = 'Vous avez 1 thème à mettre à jour' %}
 					{% endif %}
@@ -57,7 +57,7 @@
 				{% if nbMaj > 0 %}
 					{% set alerte = '' %}
 					{% if nbMaj > 1 %}
-						{% set alerte = 'Vous avez {{nbMaj}} extensions à mettre à jour' %}
+						{% set alerte = 'Vous avez ' ~ nbMaj ~ ' extensions à mettre à jour' %}
 					{% else %}
 						{% set alerte = 'Vous avez 1 extension à mettre à jour' %}
 					{% endif %}

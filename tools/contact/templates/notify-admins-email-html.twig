@@ -1,0 +1,14 @@
+<html>
+    <head>
+        <style type="text/css">{{ style|replace({'url(':'url(' ~ baseUrl ~ '/tools/bazar/presentation/'})|raw }}</style>
+    </head>
+    <body>
+        {{- entryHTML|replace({'src="tools':'src="' ~ baseUrl ~ '/tools'})|raw }}
+        <br />
+        <br />
+        <a href="{{ url({tag:entry.id_fiche}) }}" 
+            title="{{ _t('BAZ_SEE_ENTRY') }}">
+            {{ _t('BAZ_SEE_ENTRY_ONLINE_TO_ADMIN') }}
+        </a>
+    </body>
+</html>

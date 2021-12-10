@@ -1,0 +1,4 @@
+parameters:
+  # Field name for textarea that is used to activate action-builder
+  actionbuilder_textarea_name: 'bf_description'
+  aceditor_editable_config_params: 'actionbuilder_textarea_name'

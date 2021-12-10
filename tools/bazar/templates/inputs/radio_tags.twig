@@ -1,0 +1,30 @@
+{% extends "@bazar/layouts/input.twig" %}
+
+{% block input %}
+  {{ include_javascript('tools/tags/libs/vendor/bootstrap-tagsinput.min.js') }}
+  {{ include_javascript('tools/bazar/presentation/javascripts/bazar-tagsinput.js') }}
+    {% if field.isDistantJson %}
+      <div class="input-group">
+    {% endif %}
+    <input type="text" name="{{ field.propertyName }}" class="yeswiki-input-entries yeswiki-input-entries{{ field.propertyName }}">
+    {% if field.isDistantJson %}
+        <div class="input-group-append">
+            <button 
+                class="btn btn-default btn-xs btn-icon tagsinput-refresh" 
+                data-property-name="{{ field.propertyName }}" 
+                type="button"
+                data-toggle="tooltip"
+                data-placement="right"
+                title="{{ _t('BAZ_RADIO_REFRESH') }}">
+              <i class="fas fa-sync"></i>
+            </button>
+        </div>
+      </div>
+    {% endif %}
+    <script>
+      if (typeof bazarlistTagsInputsData === "undefined"){
+        var bazarlistTagsInputsData = new Object();
+      }
+      bazarlistTagsInputsData['{{ field.propertyName }}'] = {{ bazarlistTagsInputsData|raw }};
+    </script>
+{% endblock %}

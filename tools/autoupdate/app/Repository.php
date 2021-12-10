@@ -1,15 +1,18 @@
 <?php
+
 namespace AutoUpdate;
 
 class Repository extends PackageCollection
 {
-    const INDEX_FILENAME = 'packages.json';
+    public const INDEX_FILENAME = 'packages.json';
 
     private $address;
+    private $fileHandler;
 
     public function __construct($address)
     {
         $this->address = $address . '/';
+        $this->fileHandler = new \AutoUpdate\Files();
     }
 
     public function load()
@@ -19,20 +22,13 @@ class Repository extends PackageCollection
         if (filter_var($this->address, FILTER_VALIDATE_URL) === false) {
             return false;
         }
-
         $repoInfosFile = $this->address . $this::INDEX_FILENAME;
-
-        if (($repoInfos = @file_get_contents($repoInfosFile)) === false) {
-            return false;
-        }
-
-        $data = json_decode($repoInfos, true);
+        $file = $this->fileHandler->download($repoInfosFile);
+        $data = json_decode(file_get_contents($file), true);
 
         if (is_null($data)) {
             return false;
         }
-
-
 
         foreach ($data as $packageInfos) {
             if (!isset($packageInfos['description'])) {
@@ -44,7 +40,8 @@ class Repository extends PackageCollection
                 $this->address,
                 $packageInfos['file'],
                 $packageInfos['description'],
-                $packageInfos['documentation']
+                $packageInfos['documentation'],
+                $packageInfos['minimal_php_version'] ?? null
             );
         }
 

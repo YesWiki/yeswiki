@@ -1,4 +1,9 @@
 <?php
+
+use YesWiki\Core\Service\LinkTracker;
+use YesWiki\Core\Service\PageManager;
+use YesWiki\Security\Controller\SecurityController;
+
 /*
 $Id: edit.php 851 2007-08-29 14:54:07Z lordfarquaad $
 Copyright (c) 2002, Hendrik Mans <hendrik@mans.de>
@@ -40,7 +45,9 @@ if (!defined('WIKINI_VERSION')) {
 // on initialise la sortie:
 $output = '';
 
-if ($this->HasAccess('write') && $this->HasAccess('read')) {
+$isWikiHibernated = $this->services->get(SecurityController::class)->isWikiHibernated();
+
+if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated) {
     if (!empty($_POST['submit'])) {
         $submit = $_POST['submit'];
     } else {
@@ -67,20 +74,20 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
               "<div class=\"page_preview\">\n".
               "<div class=\"prev_alert\"><strong>Aper&ccedil;u</strong></div>\n".
               $this->Format($body)."\n\n".
-              $this->FormOpen('edit').
+              $this->FormOpen(testUrlInIframe() ? 'editiframe' : 'edit').
               "<input type=\"hidden\" name=\"previous\" value=\"$previous\" />\n".
               '<input type="hidden" name="body" value="'.htmlspecialchars($body, ENT_COMPAT, YW_CHARSET)."\" />\n".
               "<br />\n".
               "<input name=\"submit\" type=\"submit\" value=\"Sauver\" accesskey=\"s\" />\n".
               "<input name=\"submit\" type=\"submit\" value=\"R&eacute;&eacute;diter\" accesskey=\"p\" />\n".
-              "<input type=\"button\" value=\"Annulation\" onclick=\"document.location='".addslashes($this->href())."';\" />\n".
+              "<input type=\"button\" value=\"Annulation\" onclick=\"document.location='".addslashes($this->href(testUrlInIframe()))."';\" />\n".
               $this->FormClose()."\n"."</div>\n";
             $this->SetInclusions($temp);
             break;
 
         // pour les navigateurs n'interprétant pas le javascript
         case 'Annulation':
-            $this->Redirect($this->Href());
+            $this->Redirect($this->Href(testUrlInIframe()));
             exit; // sécurité
 
         // only if saving:
@@ -91,16 +98,11 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
                 "Cette page a &eacute;t&eacute; modifi&eacute;e par quelqu'un d'autre pendant que vous l'&eacute;ditiez.<br />\n".
                 "Veuillez copier vos changements et r&eacute;&eacute;diter cette page.\n";
             } else { // store
-                if (!isset($GLOBALS['inIframe'])) {
-                    $method = '';
-                } else {
-                    $method = 'iframe';
-                }
                 $body = str_replace("\r", '', $body);
                 // teste si la nouvelle page est differente de la précédente
-                if (rtrim($body) == rtrim($this->page['body'])) {
+                if (isset($this->page['body']) && rtrim($body) == rtrim($this->page['body'])) {
                     $this->SetMessage('Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car elle n\'a subi aucune modification.');
-                    $this->Redirect($this->href($method));
+                    $this->Redirect($this->href(testUrlInIframe()));
                 } else {
                     // l'encodage de la base est en iso-8859-1, voir s'il faut convertir
                     $body = _convert($body, YW_CHARSET, true);
@@ -109,27 +111,14 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
                     $this->SavePage($this->tag, $body);
 
                     // now we render it internally so we can write the updated link table.
-                    $this->ClearLinkTable();
-                    $this->StartLinkTracking();
-                    $temp = $this->SetInclusions(); // a priori, éa ne sert é rien, mais on ne sait jamais...
-                    $this->RegisterInclusion($this->GetPageTag()); // on simule totalement un affichage normal
-                    $this->Format($body);
-                    $this->SetInclusions($temp);
-                    if ($user = $this->GetUser()) {
-                        $this->TrackLinkTo($user['name']);
-                    }
-                    if ($owner = $this->GetPageOwner()) {
-                        $this->TrackLinkTo($owner);
-                    }
-                    $this->StopLinkTracking();
-                    $this->WriteLinkTable();
-                    $this->ClearLinkTable();
+                    $page = $this->services->get(PageManager::class)->getOne($this->tag);
+                    $this->services->get(LinkTracker::class)->registerLinks($page,false,false);
 
                     // forward
                     if ($this->page['comment_on']) {
-                        $this->Redirect($this->href($method, $this->page['comment_on']).'#'.$this->tag);
+                        $this->Redirect($this->href(testUrlInIframe(), $this->page['comment_on']).'#'.$this->tag);
                     } else {
-                        $this->Redirect($this->href($method));
+                        $this->Redirect($this->href(testUrlInIframe()));
                     }
                 }
 
@@ -150,7 +139,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
             }
 
             $output .=
-              $this->FormOpen('edit').
+              $this->FormOpen(testUrlInIframe() ? 'editiframe' : 'edit').
               "<input type=\"hidden\" name=\"previous\" value=\"$previous\" />\n".
               "<textarea id=\"body\" name=\"body\" style='display: none'>" .
                 htmlspecialchars($body, ENT_COMPAT, YW_CHARSET).
@@ -160,15 +149,18 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
               "</script>\n".
               ($this->config['preview_before_save'] ? '' : "<input name=\"submit\" type=\"submit\" value=\"Sauver\" accesskey=\"s\" />\n").
               "<input name=\"submit\" type=\"submit\" value=\"Aper&ccedil;u\" accesskey=\"p\" />\n".
-              "<input type=\"button\" value=\"Annulation\" onclick=\"document.location='".addslashes($this->href())."';\" />\n".
+              "<input type=\"button\" value=\"Annulation\" onclick=\"document.location='".addslashes($this->href(testUrlInIframe()))."';\" />\n".
               $this->FormClose();
     } // switch
 } else {
     $output .= "<i>Vous n'avez pas acc&egrave;s en &eacute;criture &agrave; cette page !</i>\n";
+    if ($isWikiHibernated) {
+        $output .= $this->services->get(SecurityController::class)->getMessageWhenHibernated();
+    }
 }
 
 // Header
-if (!isset($GLOBALS['inIframe'])) {
+if (!testUrlInIframe()) {
     echo $this->Header();
 }
 
@@ -179,6 +171,6 @@ echo '<div class="page">'."\n".$output."\n".'<hr class="hr_clear" />'."\n".'</di
 include 'tools/aceditor/actions/actions_builder.php';
 
 // Footer
-if (!isset($GLOBALS['inIframe'])) {
+if (!testUrlInIframe()) {
     echo $this->Footer();
 }

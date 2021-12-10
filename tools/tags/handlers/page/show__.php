@@ -40,7 +40,7 @@ $plugin_output_new = preg_replace($string, '', $plugin_output_new);
 
 $output = '';
 
-if ($GLOBALS["open_comments"][$tag]) {
+if (isset($GLOBALS["open_comments"][$tag]) && $GLOBALS["open_comments"][$tag]) {
     if ($HasAccessRead && (!$this->page || !$this->page["comment_on"])) {
         // load comments for this page
         $comments = $this->LoadComments($this->tag);

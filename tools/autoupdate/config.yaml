@@ -1,0 +1,14 @@
+parameters:
+  admin_pages_to_update:
+    - BazaR
+    - GererSite
+    - GererDroits
+    - GererDroitsActions
+    - GererDroitsHandlers
+    - GererMisesAJour
+    - GererThemes
+    - GererConfig
+    - GererUtilisateurs
+    - GererMotsClef
+    - TableauDeBord
+    - LookWiki

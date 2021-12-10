@@ -16,7 +16,7 @@
       </ul>
     </div>
     <div class="modal-footer">
-      <a href="<?php echo $incomingurl; ?>&amp;action=logout" class="btn btn-default" title="<?php echo _t('LOGIN_LOGOUT'); ?>"><?php echo _t('LOGIN_LOGOUT'); ?></a>
+      <a href="<?php echo $incomingurl.(strpos($incomingurl,'?') === false ? '?' : '&amp;'); ?>action=logout" class="btn btn-default" title="<?php echo _t('LOGIN_LOGOUT'); ?>"><?php echo _t('LOGIN_LOGOUT'); ?></a>
     </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->

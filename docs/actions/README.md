@@ -12,6 +12,7 @@ label: Ajouter un bouton # Nom affiché dans la barre d'action de l'éditeur
 position: 3 # en 3ème position dans la liste des groupe d'actions disponibles
 previewHeight: 350px # La hauteur de la zone d'aperçu
 needFormField: false # Est ce qu'un formulaire doit être choisi en même temps que l'action ? (c'est le cas pour bazar)
+onlyForAdmins: true # Est ce que lcontenu de ce fichier ne doit être affiché que pour les admins ?
 actions:
   # La liste des actions de ce groupe
 ```
@@ -89,6 +90,7 @@ Les type sont
   - checkbox
   - list
   - form-field
+  - page-list
 
 #### checkbox
 Paramètres optionels : `checkedvalue` `uncheckedvalue`. Par défault la valeur d'un paramètre checkbox est "true" ou "false", si par exemple vous voulez que lorsqu'on coche la case, la valeur soit "1", alors renseignez checkvalue: 1 et uncheckedvalue: 0

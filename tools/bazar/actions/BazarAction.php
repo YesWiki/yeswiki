@@ -31,6 +31,7 @@ class BazarAction extends YesWikiAction
     public const ACTION_FORM_EDIT = 'modif';
     public const ACTION_FORM_DELETE = 'delete';
     public const ACTION_FORM_EMPTY = 'empty';
+    public const ACTION_FORM_CLONE = 'clone';
     public const CHOISIR_TYPE_FICHE = 'choisir_type_fiche';
 
     // Lists
@@ -51,7 +52,7 @@ class BazarAction extends YesWikiAction
             // Identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
             'idtypeannonce' => $this->formatArray($_REQUEST['id_typeannonce'] ?? $arg['id'] ?? $arg['idtypeannonce'] ?? $_GET['id'] ?? null),
             // Permet de rediriger vers une url après saisie de fiche
-            'redirecturl' => $arg['redirecturl'] ?? ''
+            'redirecturl' => $_GET['redirecturl'] ?? $arg['redirecturl'] ?? ''
         ]);
     }
 
@@ -77,6 +78,9 @@ class BazarAction extends YesWikiAction
 
         switch ($view) {
             case self::VOIR_SAISIR:
+                if ($this->isWikiHibernated()) {
+                    return $this->getMessageWhenHibernated();
+                }
                 switch ($action) {
                     case self::ACTION_ENTRY_CREATE:
                         return $entryController->create($_REQUEST['id_typeannonce'] ?? $_REQUEST['id'] ?? $this->arguments['idtypeannonce'][0], $this->arguments['redirecturl']);
@@ -92,7 +96,11 @@ class BazarAction extends YesWikiAction
                         return $entryController->selectForm();
                     default:
                         if (!empty($this->arguments['idtypeannonce'])) {
-                            return $entryController->create($this->arguments['idtypeannonce'][0], $this->arguments['redirecturl']);
+                            if (count($this->arguments['idtypeannonce']) > 1) {
+                                return $entryController->selectForm($this->arguments['idtypeannonce']);
+                            } else {
+                                return $entryController->create($this->arguments['idtypeannonce'][0], $this->arguments['redirecturl']);
+                            }
                         } else {
                             return $entryController->selectForm();
                         }
@@ -101,13 +109,30 @@ class BazarAction extends YesWikiAction
             case self::VOIR_FORMULAIRE:
                 switch ($action) {
                     case self::ACTION_FORM_CREATE:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
                         return $formController->create();
                     case self::ACTION_FORM_EDIT:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
                         return $formController->update($_GET['idformulaire']);
                     case self::ACTION_FORM_DELETE:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
                         return $formController->delete($_GET['idformulaire']);
                     case self::ACTION_FORM_EMPTY:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
                         return $formController->empty($_GET['idformulaire']);
+                    case self::ACTION_FORM_CLONE:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
+                        return $formController->clone($_GET['idformulaire']);
                     default:
                         return $formController->displayAll(!empty($_GET['msg']) ? $_GET['msg'] : null);
                 }
@@ -115,19 +140,28 @@ class BazarAction extends YesWikiAction
             case self::VOIR_LISTES:
                 switch ($action) {
                     case self::ACTION_LIST_CREATE:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
                         return $listController->create();
                     case self::ACTION_LIST_EDIT:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
                         return $listController->update($_GET['idliste']);
                     case self::ACTION_LIST_DELETE:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
                         return $listController->delete($_GET['idliste']);
                     default:
                         return $listController->displayAll();
                 }
                 // no break
             case self::VOIR_IMPORTER:
-                return baz_afficher_formulaire_import();
+                return $this->callAction('bazarimport', $this->arguments);
             case self::VOIR_EXPORTER:
-                return baz_afficher_formulaire_export();
+                return $this->callAction('bazarexport', $this->arguments);
             case self::VOIR_CONSULTER:
             case self::VOIR_DEFAUT:
             default:

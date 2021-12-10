@@ -41,8 +41,10 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
         $chemin = 'themes/'.$this->config['favorite_theme'].'/squelettes/'.$this->config['favorite_squelette'];
         if (file_exists($chemin)) {
             $file_content = file_get_contents($chemin);
-        } else {
+        } elseif (file_exists('tools/templates/'.$chemin)) {
             $file_content = file_get_contents('tools/templates/'.$chemin);
+        } else {
+            $file_content = '{WIKINI_PAGE}';
         }
         $body = str_replace('{WIKINI_PAGE}', $this->page["body"], $file_content);
         $mail_receiver = (isset($_POST['nbactionmail'])) ?

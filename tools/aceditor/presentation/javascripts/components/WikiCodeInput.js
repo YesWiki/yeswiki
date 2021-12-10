@@ -2,10 +2,8 @@ export default {
   props: [ 'isEditing', 'editor', 'wikiCode' ],
   methods: {
     selectFullText() {
-      var range = document.createRange();
-      range.selectNode(this.$refs.input);
-      window.getSelection().removeAllRanges();
-      window.getSelection().addRange(range);
+      var range = $(this.$refs.input);
+      range.select();
     },
     copyContent() {
       this.selectFullText();
@@ -23,10 +21,10 @@ export default {
   template: `
     <div class="input-group">
       <div class="input-group-addon btn btn-primary" @click="insertCodeInEditor">
-        {{ isEditing ? 'Mettre à jour le code' : 'Insérer dans la page' }}
+        {{ isEditing ? '`+wiki.lang['ACTION_BUILDER_UPDATE_CODE']+`' : '`+wiki.lang['ACTION_BUILDER_INSERT_CODE']+`' }}
       </div>
       <input type="text" class="result form-control" @click="selectFullText" :value="wikiCode" ref="input">
-      <div class="input-group-addon btn btn-default" @click="copyContent">Copier</div>
+      <div class="input-group-addon btn btn-default" @click="copyContent">`+wiki.lang['ACTION_BUILDER_COPY']+`</div>
     </div>
   `
 }

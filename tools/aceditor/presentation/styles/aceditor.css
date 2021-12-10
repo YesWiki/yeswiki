@@ -103,3 +103,8 @@ form:not(#ACEditor) .ace-editor-container .ace_scroller {
 .component-action-list > li.open-existing-action { display: none; }
 .component-action-list.only-edit > li.open-existing-action { display: block; }
 .component-action-list.only-edit > li:not(.open-existing-action) { display: none; }
+
+.aceditor-btn-comment {
+  font-style: italic;
+  color: green !important;
+}

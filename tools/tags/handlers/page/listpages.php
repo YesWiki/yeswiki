@@ -75,25 +75,28 @@ $text = '';
 // affiche le resultat de la recherche
 $resultat = $tagsManager->getPagesByTags($tags, $type, $nb, $tri, $template, $class, $lienedit);
 if ($resultat) {
-    $nb_total = count($resultat);
-
+    $aclService = $this->services->get(\YesWiki\Core\Service\AclService::class);
+    $element = [];
     foreach ($resultat as $page) {
-        $element[$page['tag']]['tagnames'] = '';
-        $element[$page['tag']]['tagbadges'] = '';
-        $element[$page['tag']]['body'] = $page['body'];
-        $element[$page['tag']]['owner'] = $page['owner'];
-        $element[$page['tag']]['user'] = $page['user'];
-        $element[$page['tag']]['time'] = $page['time'];
-        $element[$page['tag']]['title'] = get_title_from_body($page);
-        $element[$page['tag']]['image'] = get_image_from_body($page);
-        $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->Format($page['body'], 'wakka', $page["tag"])), $nbcartrunc);
-        $pagetags = $this->GetAllTriplesValues($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
-        foreach ($pagetags as $tag) {
-            $element[$page['tag']]['tagnames'] .= sanitizeEntity($tag['value']).' ';
-            $element[$page['tag']]['tagbadges'] .= '<span class="tag-label label label-primary">'.$tag['value'].'</span>&nbsp;';
+        if ($aclService->hasAccess('read', $page['tag'])) {
+            $element[$page['tag']]['tagnames'] = '';
+            $element[$page['tag']]['tagbadges'] = '';
+            $element[$page['tag']]['body'] = $page['body'];
+            $element[$page['tag']]['owner'] = $page['owner'];
+            $element[$page['tag']]['user'] = $page['user'];
+            $element[$page['tag']]['time'] = $page['time'];
+            $element[$page['tag']]['title'] = get_title_from_body($page);
+            $element[$page['tag']]['image'] = get_image_from_body($page);
+            $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->Format($page['body'], 'wakka', $page["tag"])), $nbcartrunc);
+            $pagetags = $this->GetAllTriplesValues($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
+            foreach ($pagetags as $tag) {
+                $element[$page['tag']]['tagnames'] .= sanitizeEntity($tag['value']).' ';
+                $element[$page['tag']]['tagbadges'] .= '<span class="tag-label label label-primary">'.$tag['value'].'</span>&nbsp;';
+            }
         }
     }
-    $text .= $this->render("@tags/$template", ['elements' => $element]);
+    $text .= $this->render("@tags/$template", ['elements' => $element ]);
+    $nb_total = count($element);
 } else {
     $nb_total = 0;
 }
@@ -106,7 +109,9 @@ if ($nb_total > 1) {
 } else {
     $output .= 'Aucune page trouv&eacute;e';
 }
-$output .= (!empty($tags) ? ' avec le mot cl&eacute; <span class="tag-label label label-info">'.$tags.'</span>' : '').'.';
+$output .= (!empty($tab_selected_tags) ? ' avec le mot cl&eacute; '.implode(' et ', array_map(function ($tagName) {
+    return '<span class="tag-label label label-info">'.$tagName.'</span>';
+}, $tab_selected_tags)) : '').'.';
 $output .= $this->Format('{{rss tags="'.$tags.'" class="pull-right"}}')."\n";
 $output .= '</div>'."\n".$text;
 

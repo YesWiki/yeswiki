@@ -1289,9 +1289,11 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
     // code goes here
     var $this = $(this.element);
     var position;
-    var body = $('#body');
-    var uploadurl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + '/ajaxupload';
-    var downloadlist = $('.qq-upload-list');
+    let textAreaId = $(this.element).data('textarea');
+    var body = (textAreaId && textAreaId.length > 0) ? $(textAreaId) : $('#body');
+    var tempTag = $(this.element).data('temptag');
+    var uploadurl = wiki.url(wiki.pageTag+'/ajaxupload');
+    var downloadlist = $this.find('.qq-upload-list');
     var UploadModal = $('#UploadModal');
     var UploadModalForm = $('#form-modal-upload');
     var filedownloadtext = UploadModal.find('.file-option .attach_link_text');
@@ -1299,6 +1301,8 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
     var hiddenfilenameinput = UploadModal.find('.filename');
     var imageinput = UploadModal.find('.image-option');
     var fileinput = UploadModal.find('.file-option');
+    var fileinput = UploadModal.find('.file-option');
+    var pdfinput = UploadModal.find('.pdf-option');
 
     function hideUploadModal() {
       // delete element in upload list
@@ -1333,12 +1337,20 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
 
     // Handle of the modal insert button
     UploadModal.find('.btn-insert-upload').on('click', function(e) {
+      if ($this.data('textarea') !== $(this).data('textarea')) {
+        return false;
+      }
       var formvals = UploadModalForm.find(':input').serialize();
       var desctxt = getParameterByName(formvals, 'attach_alt');
       if (typeof desctxt == 'undefined' || desctxt == '') {
         desctxt = getParameterByName(formvals, 'attach_link_text');
       }
-      var actionattach = '{{attach file="' + getParameterByName(formvals, 'filename') + '" desc="' + desctxt + '"';
+      var actionattach = '{{attach file="' + (tempTag ? tempTag+'/': '') + getParameterByName(formvals, 'filename') + '" desc="' + desctxt + '"';
+
+      var displaypdf = getParameterByName(formvals, 'attach_action_display_pdf');
+      if (typeof displaypdf != 'undefined' && displaypdf == '1') {
+        actionattach += ' displaypdf="1"';
+      }
 
       var imagesize = getParameterByName(formvals, 'attach_imagesize');
       if (typeof imagesize != 'undefined' && imagesize != '') {
@@ -1364,6 +1376,11 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
         actionattach += ' caption="' + imagecaption + '"';
       }
 
+      var nofullimagelink = getParameterByName(formvals, 'attach_nofullimagelink');
+      if (typeof nofullimagelink != 'undefined' && nofullimagelink == '1') {
+        actionattach += ' nofullimagelink="1"';
+      }
+
       actionattach += '}}';
 
       setTimeout(function() {
@@ -1382,11 +1399,14 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
       element: this.element,
       action: uploadurl,
       debug: false,
+      params: {...{},...(tempTag ? {tempTag:tempTag}:{})},
 
       onSubmit: function(id, fileName) {
         // upload modal is cleaned and showed
         fileinput.hide();
+        pdfinput.hide();
         imageinput.hide();
+        UploadModal.find('.btn-insert-upload').data('textarea',$(this.element).data('textarea')); // to set which textarea is asking a new file
         UploadModal.modal('show');
       },
 
@@ -1400,6 +1420,11 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
           imageinput.show();
           hiddenfilenameinput.val(responseJSON.simplefilename);
           UploadModal.find('.attach_alt').val('image ' + responseJSON.simplefilename + ' (' + filesize.text() + ')');
+        } else if (responseJSON.extension === 'pdf') {
+          fileinput.show();
+          pdfinput.show();
+          hiddenfilenameinput.val(responseJSON.simplefilename);
+          filedownloadtext.val(responseJSON.simplefilename + ' (' + filesize.text() + ')');
         } else {
           fileinput.show();
           hiddenfilenameinput.val(responseJSON.simplefilename);
@@ -1430,5 +1455,13 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
 
 $(document).ready(function () {
   // Initialize the button for upload in Aceditor
-  $('#attach-file-uploader').appendTo('#ACEditor .aceditor-toolbar').uploadbutton();
+  $('.attach-file-uploader').each(function(){
+    let anchorId = $(this).data('anchor');
+    let disabledUploadButton = $(this).data('disabledUploadButton') === true;
+    anchorId = (anchorId && $(anchorId).length > 0) ? anchorId : '#ACEditor .aceditor-toolbar' ;
+    $(this).appendTo($(anchorId));
+    if (!disabledUploadButton) {
+      $(this).uploadbutton();
+    }
+  });
 });

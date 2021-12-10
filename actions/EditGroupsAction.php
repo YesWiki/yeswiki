@@ -24,6 +24,13 @@ class EditGroupsAction extends YesWikiAction
 {
     public function run()
     {
+        if (!$this->wiki->UserIsAdmin()) {
+            return $this->render('@templates/alert-message.twig', [
+                'type'=>'danger',
+                'message'=> "EditGroupsAction : " . _t('BAZ_NEED_ADMIN_RIGHTS')
+            ]) ;
+        }
+
         // Form definition
         $wiki = &$this->wiki;
         $list = $wiki->GetGroupsList(); // retrieves an array of group names from table 'triples' (content of 'resource' starts with 'ThisWikiGroup' and content of 'property' equals  'http://www.wikini.net/_vocabulary/acls')

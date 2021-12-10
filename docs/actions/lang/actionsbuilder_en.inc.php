@@ -6,6 +6,18 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'AB_bazar_commons_search_label' => 'Search bar',
     'AB_bazar_facettes_groupsexpanded_false' => "Only first expanded",
     'AB_bazar_facettes_groupsexpanded_true' => "All expanded",
+    'AB_bazar_commons2_filter_on_date' => "Filter on date",
+    'AB_bazar_commons2_filter_on_date_future' => "future",
+    'AB_bazar_commons2_filter_on_date_past' => "past",
+    'AB_bazar_commons2_filter_on_date_today' => "today",
+    'AB_bazar_commons2_filter_on_date_for_one_month' => "for one month",
+    'AB_bazar_commons2_filter_on_date_for_two_years' => "for two years",
+    'AB_bazar_commons2_filter_on_date_one_week_more_and_less' => "+/- one week",
+    'AB_bazar_commons2_filter_index' => "'bf_date_debut_evenement' shoud be defined.",
+    // BazarAction
+    'AB_bazar_action_label' => "Display a form to create an entry",
+    'AB_bazar_action_description' => "Help to display a form to create an entry",
+    'AB_bazar_action_redirecturl_label' => "redirect url after entry's submit",
     //video
     'AB_attach_video_label' => "Embeded video",
     'AB_attach_video_description' => "Embeding of youtube, vimeo or peertube video.",
@@ -27,4 +39,13 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'AB_attach_pdf_position_label' => "Position",
     'AB_attach_pdf_largeur_max_label' => "PDF file maximum width",
     'AB_attach_pdf_hauteur_max_label' => "PDF file Video maximum height)",
+    // management
+    'AB_management_label' => 'YesWiki management',
+    'AB_management_editactionsacls_label' => 'Edit actions access control rights',
+    'AB_management_edithandlersacls_label' => 'Edit handlers access control rights',
+    'AB_management_editgroups_label' => 'Edit users\' groups',
+    'AB_management_adminpages_label' => 'Display admin logs',
+    'AB_management_gererdroits_label' => 'Manage pages\' access control rights',
+    'AB_management_gererthemes_label' => 'Manage pages\' theme',
+    'AB_management_setwikidefaulttheme_label' => 'Set page\'s default theme',
 ));

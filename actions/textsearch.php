@@ -45,10 +45,10 @@ $separator = $this->GetParameter('separator', false);
 // -- ou du CGI http://example.org/wakka.php?wiki=RechercheTexte&phrase=Test
 //
 // récupérer le paramétre de l'action
-$paramPhrase = $phrase;
+$paramPhrase = htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET);
 // ou, le cas échéant, récupérer le paramétre du CGI
 if (!$phrase && isset($_GET['phrase'])) {
-    $phrase = $_GET['phrase'];
+    $phrase = htmlspecialchars($_GET['phrase'], ENT_COMPAT, YW_CHARSET);
 }
 
 // s'il y a un paramétre d'action "phrase", on affiche uniquement le résultat
@@ -57,7 +57,7 @@ if (!$paramPhrase) {
     echo $this->FormOpen('', '', 'get');
     echo '<div class="input-prepend input-append input-group input-group-lg">
 			<span class="add-on input-group-addon"><i class="fa fa-search icon-search"></i></span>
-      <input name="phrase" type="text" class="form-control" placeholder="'.(($label) ? $label : '').'" size="', $size, '" value="', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '" >
+      <input name="phrase" type="text" class="form-control" placeholder="'.(($label) ? $label : '').'" size="', $size, '" value="', $phrase, '" >
       <span class="input-group-btn">
         <input type="submit" class="btn btn-primary btn-lg" value="', $button, '" />
       </span>
@@ -67,14 +67,21 @@ if (!$paramPhrase) {
 
 if ($phrase) {
     $results = $this->FullTextSearch($phrase);
+    $aclService = $this->services->get(\YesWiki\Core\Service\AclService::class);
+    $results = array_filter($results, function ($page) use ($aclService) {
+        return $aclService->hasAccess('read', $page['tag']);
+    });
     if ($results) {
         if ($separator) {
             $separator = htmlspecialchars($separator, ENT_COMPAT, YW_CHARSET);
             if (!$paramPhrase) {
                 echo '<p>'._t('SEARCH_RESULT_OF').' "', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '"&nbsp;: ';
             }
+            $first = true;
             foreach ($results as $i => $page) {
-                if ($i > 0) {
+                if ($first) {
+                    $first = false;
+                } else {
                     echo $separator;
                 }
                 echo $this->ComposeLinkToPage($page['tag']);

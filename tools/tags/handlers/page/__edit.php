@@ -24,10 +24,12 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read")) 
     var pagetag = $(\'#ACEditor .yeswiki-input-pagetag\');
 	pagetag.tagsinput({
 		typeahead: {
-			source: tagsexistants
+            afterSelect: function(val) {pagetag.tagsinput(\'input\').val(""); },
+			source: tagsexistants,
+            autoSelect:false,
         },
         trimValue: true,
-		confirmKeys: [13, 186, 188]
+		confirmKeys: [13, 186, 188],
 	});
 	
 	//bidouille antispam

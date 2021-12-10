@@ -8,6 +8,8 @@
   }
 </script>
 <?php
+use YesWiki\Security\Controller\SecurityController;
+
 /**
  * Copyright 2014 Rémi PESQUERS (rp.lefamillien@gmail.com)
  * Cette action à pour but de gérer massivement les droits sur les pages d'un wiki.
@@ -116,8 +118,16 @@ for ($x = 0; $x < $num_page; $x++) {
 </div>
 
 <p>
-  <input name="theme_modifier" type="submit" value="Mettre &agrave; jour"
-       class="btn btn-primary" onclick="this.form.action+='#gererthemes'; return true;"/>
+  <input
+    name="theme_modifier" 
+    type="submit" 
+    value="Mettre &agrave; jour"
+    class="btn btn-primary"
+    onclick="this.form.action+='#gererthemes'; return true;"
+    <?php if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
+    echo 'disabled data-toggle="tooltip" data-placement="bottom" title="'._t('WIKI_IN_HIBERNATION').'"';
+} ?>
+    />
 </p>
 
 

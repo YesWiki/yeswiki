@@ -1,6 +1,7 @@
 <?php
 
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\Service\ThemeManager;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -38,18 +39,18 @@ function search_template_files($directory)
     $dir = opendir($directory);
     while ($dir && ($file = readdir($dir)) !== false) {
         if ($file!='.' && $file!='..' && $file!='CVS' && is_dir($directory.DIRECTORY_SEPARATOR.$file)) {
-            if (is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles')
-                && is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes')
-            ) {
-                $dir2 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles');
-                while (false !== ($file2 = readdir($dir2))) {
-                    if (substr($file2, -4, 4)=='.css' || substr($file2, -5, 5)=='.less') {
-                        $tab_themes[$file]["style"][$file2] = $file2;
+            if (is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes')) {
+                if (is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles')) {
+                    $dir2 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles');
+                    while (false !== ($file2 = readdir($dir2))) {
+                        if (substr($file2, -4, 4)=='.css' || substr($file2, -5, 5)=='.less') {
+                            $tab_themes[$file]["style"][$file2] = $file2;
+                        }
                     }
-                }
-                closedir($dir2);
-                if (is_array($tab_themes[$file]["style"])) {
-                    ksort($tab_themes[$file]["style"]);
+                    closedir($dir2);
+                    if (is_array($tab_themes[$file]["style"])) {
+                        ksort($tab_themes[$file]["style"]);
+                    }
                 }
                 $dir3 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes');
                 while (false !== ($file3 = readdir($dir3))) {
@@ -64,15 +65,16 @@ function search_template_files($directory)
                 $pathToPresets = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'presets';
                 if (is_dir($pathToPresets) && $dir4 = opendir($pathToPresets)) {
                     while (false !== ($file4 = readdir($dir4))) {
-                        if (substr($file4, -5, 5)=='.json' && file_exists($pathToPresets.'/'.$file4)) {
-                            $json = file_get_contents($pathToPresets.'/'.$file4);
-                            if (!empty($json)) {
-                                $jsonData = json_decode($json, true);
-                                if (!empty($jsonData)) {
-                                    $tab_themes[$file]["presets"][$file4] = $jsonData;
-                                }
+                        if (substr($file4, -4, 4)=='.css' && file_exists($pathToPresets.'/'.$file4)) {
+                            $css = file_get_contents($pathToPresets.'/'.$file4);
+                            if (!empty($css)) {
+                                $tab_themes[$file]["presets"][$file4] = $css;
                             }
                         }
+                    }
+                    closedir($dir4);
+                    if (is_array($tab_themes[$file]["presets"] ?? null)) {
+                        ksort($tab_themes[$file]["presets"]);
                     }
                 }
             }
@@ -152,24 +154,34 @@ function nomwikidouble($nomwiki, $nomswiki)
 function replace_missingpage_links($output)
 {
     $pattern = '/<span class="(forced-link )?missingpage">(.*)<\/span><a href="' . str_replace(
-        array('/', '?'),
-        array('\/', '\?'),
+        array('/', '?','.'),
+        array('\/', '\?','\.'),
         $GLOBALS['wiki']->config['base_url']
     ) . '(.*)\/edit">\?<\/a>/U';
     preg_match_all($pattern, $output, $matches, PREG_SET_ORDER);
 
+    $wiki = $GLOBALS['wiki'];
+    $config = $wiki->config;
+    $tag = $wiki->GetPageTag();
+    $pageMetadatas = empty($tag) ? [] : $wiki->GetMetaDatas($tag);
+
     foreach ($matches as $values) {
         // on passe en parametres GET les valeurs du template de la page de provenance,
         // pour avoir le meme graphisme dans la page creee
-        $query_string = (!empty($GLOBALS['wiki']->config['favorite_theme']) ?
-                'theme=' . urlencode($GLOBALS['wiki']->config['favorite_theme']) : '')
-            . (!empty($GLOBALS['wiki']->config['favorite_squelette']) ?
-                '&amp;squelette=' . urlencode($GLOBALS['wiki']->config['favorite_squelette']) : '')
-            . (!empty($GLOBALS['wiki']->config['favorite_style']) ?
-                '&amp;style=' . urlencode($GLOBALS['wiki']->config['favorite_style']) : '')
-            . (!empty($GLOBALS['wiki']->config['favorite_background_image']) ?
-                '&amp;bgimg=' . urlencode($GLOBALS['wiki']->config['favorite_background_image']) : '')
-            . (($values[2] != $values[3]) ?
+        $query_string = (!empty($config['favorite_theme']) ?
+                'theme=' . urlencode($config['favorite_theme']) : '')
+            . (!empty($config['favorite_squelette']) ?
+                '&amp;squelette=' . urlencode($config['favorite_squelette']) : '')
+            . (!empty($config['favorite_style']) ?
+                '&amp;style=' . urlencode($config['favorite_style']) : '')
+            . (!empty($config['favorite_background_image']) ?
+                '&amp;bgimg=' . urlencode($config['favorite_background_image']) : '');
+        foreach (\YesWiki\Core\Service\ThemeManager::SPECIAL_METADATA as $metadata) {
+            if (!empty($pageMetadatas[$metadata])) {
+                $query_string .= '&amp;'.$metadata.'=' . urlencode($pageMetadatas[$metadata]);
+            }
+        }
+        $query_string .= (($values[2] != $values[3]) ?
                 '&amp;body=' . urlencode($values[2]) : '') . '&amp;newpage=1';
         $replacement = '<a class="yeswiki-editable" title="' . _t('TEMPLATE_EDIT_THIS_PAGE') . '" href="'
             . $GLOBALS['wiki']->href("edit", $values[3], $query_string)
@@ -394,31 +406,34 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
     }
     $listWikinames = '["'.implode('","', $listWikinames).'"]';
 
-    $selecteur = $GLOBALS['wiki']->render("@templates/themeselector.tpl.html", [
+    $wiki = $GLOBALS['wiki'];
+    $presetsData = $wiki->services->get(ThemeManager::class)->getPresetsData();
+
+    $selecteur =$wiki->render("@templates/themeselector.tpl.html", [
         'mode' => $mode,
-        'wiki' => $GLOBALS['wiki'],
+        'wiki' => $wiki,
         'id' => $id,
         'class' => $formclass,
         'bgselector' => $bgselector,
-        'themeNames' => array_keys($GLOBALS['wiki']->config['templates']),
-        'themes' => $GLOBALS['wiki']->config['templates'],
+        'themeNames' => array_keys($wiki->config['templates']),
+        'themes' => $wiki->config['templates'],
         'listWikinames' => $listWikinames,
+        'favoriteTheme' => $wiki->config['favorite_theme'] ?? null,
+        'favoriteSquelette' => $wiki->config['favorite_squelette'] ?? null,
+        'favoriteStyle' => $wiki->config['favorite_style'] ?? null,
+        'dataHtmlForPresets' => $presetsData['dataHtmlForPresets'],
+        'customCSSPresets' => $presetsData['customCSSPresets'],
+        'dataHtmlForCustomCSSPresets' => $presetsData['dataHtmlForCustomCSSPresets'],
+        'showAdminActions' => ($wiki->UserIsAdmin()),
+        'currentCSSValues' => $presetsData['currentCSSValues'] ?? [],
+        'selectedPresetName' => $presetsData['selectedPresetName'] ??  null,
+        'selectedCustomPresetName' => $presetsData['selectedCustomPresetName'] ??  null,
     ]);
 
     $js = add_templates_list_js();
-    $js .= "
-    $('.css-preset').click(function() {
-        var cssvar = $(this).data('variables');
-        cssvar.forEach(function(item){
-            document.documentElement.style.setProperty('--'+item.name, item.value);
-        });
-        return false;
-    });
-    ";
     $GLOBALS['wiki']->addJavascript($js);
     return $selecteur;
 }
-
 
 function add_templates_list_js()
 {
@@ -707,7 +722,7 @@ function getImageFromBody($page, $width, $height)
     // on cherche les actions attach avec image, puis les images bazar
     preg_match_all("/\{\{attach.*file=\".*\.(?i)(jpe?g|png).*\}\}/U", $page['body'], $images);
     if (is_array($images[0]) && !empty($images[0][0])) {
-        preg_match_all("/.*file=\"(.*\.(?i)(jpe?g|pngif))\".*desc=\"(.*)\".*\}\}/U", $images[0][0], $img);
+        preg_match_all("/.*file=\"(.*\.(?i)(jpe?g|png))\".*desc=\"(.*)\".*\}\}/U", $images[0][0], $img);
 
         $oldpage = $GLOBALS['wiki']->GetPageTag();
         $GLOBALS['wiki']->tag = $page['tag'];
@@ -860,111 +875,4 @@ function getDescriptionFromBody($page, $title, $length = 300)
     );
     $desc = strtok(wordwrap($desc, $length, "…\n"), "\n");
     return $desc;
-}
-
-function loadTemplates($metadata, &$config)
-{
-    // Premier cas le template par défaut est forcé : on ajoute ce qui est présent dans le fichier de configuration, ou le theme par defaut précisé ci dessus
-    if (isset($config['hide_action_template']) && $config['hide_action_template'] == '1') {
-        if (!isset($config['favorite_theme'])) {
-            $config['favorite_theme'] = THEME_PAR_DEFAUT;
-        }
-        if (!isset($config['favorite_style'])) {
-            $config['favorite_style'] = CSS_PAR_DEFAUT;
-        }
-        if (!isset($config['favorite_squelette'])) {
-            $config['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
-        }
-        if (!isset($config['favorite_background_image'])) {
-            $config['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
-        }
-    } else {
-        // Sinon, on récupère premièrement les valeurs passées en REQUEST, ou deuxièmement les métasdonnées présentes pour la page, ou troisièmement les valeurs du fichier de configuration
-        if (isset($_REQUEST['theme']) && (is_dir('custom/themes/'.$_REQUEST['theme']) || is_dir('themes/'.$_REQUEST['theme'])) &&
-            isset($_REQUEST['style']) && (is_file('custom/themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style']) || is_file('themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style'])) &&
-            isset($_REQUEST['squelette']) && (is_file('custom/themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']) || is_file('themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']))
-        ) {
-            $config['favorite_theme'] = $_REQUEST['theme'];
-            $config['favorite_style'] = $_REQUEST['style'];
-            $config['favorite_squelette'] = $_REQUEST['squelette'];
-
-            if (isset($_REQUEST['bgimg']) && (is_file('files/backgrounds/'.$_REQUEST['bgimg']))) {
-                $config['favorite_background_image'] = $_REQUEST['bgimg'];
-            } else {
-                $config['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
-            }
-        } else {
-            // si les metas sont présentes on les utilise
-            if (isset($metadata['theme']) && isset($metadata['style']) && isset($metadata['squelette'])) {
-                $config['favorite_theme'] = $metadata['theme'];
-                $config['favorite_style'] = $metadata['style'];
-                $config['favorite_squelette'] = $metadata['squelette'];
-                if (isset($metadata['bgimg'])) {
-                    $config['favorite_background_image'] = $metadata['bgimg'];
-                } else {
-                    $config['favorite_background_image'] = '';
-                }
-            } else {
-                if (!isset($config['favorite_theme'])) {
-                    $config['favorite_theme'] = THEME_PAR_DEFAUT;
-                }
-                if (!isset($config['favorite_style'])) {
-                    $config['favorite_style'] = CSS_PAR_DEFAUT;
-                }
-                if (!isset($config['favorite_squelette'])) {
-                    $config['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
-                }
-                if (!isset($config['favorite_background_image'])) {
-                    $config['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
-                }
-            }
-        }
-    }
-
-    // Test existence du template, on utilise le template par defaut sinon==============================
-    if (
-        (!file_exists('custom/themes/'.$config['favorite_theme'].'/squelettes/'.$config['favorite_squelette'])
-            and !file_exists('themes/'.$config['favorite_theme'].'/squelettes/'.$config['favorite_squelette']))
-        || (!file_exists('custom/themes/'.$config['favorite_theme'].'/styles/'.$config['favorite_style'])
-            && !file_exists('themes/'.$config['favorite_theme'].'/styles/'.$config['favorite_style']))
-    ) {
-        if (
-            $config['favorite_theme'] != THEME_PAR_DEFAUT ||
-            (
-                $config['favorite_theme'] == THEME_PAR_DEFAUT && (!file_exists('themes/'.THEME_PAR_DEFAUT.'/squelettes/'.$config['favorite_squelette'])  or
-                    !file_exists('themes/'.THEME_PAR_DEFAUT.'/styles/'.$config['favorite_style']))
-            )
-        ) {
-            if (
-                file_exists('themes/'.THEME_PAR_DEFAUT.'/squelettes/'.SQUELETTE_PAR_DEFAUT)
-                && file_exists('themes/'.THEME_PAR_DEFAUT.'/styles/'.CSS_PAR_DEFAUT)
-            ) {
-                $GLOBALS['template-error']['type'] = 'theme-not-found';
-                $GLOBALS['template-error']['theme'] = $config['favorite_theme'];
-                $GLOBALS['template-error']['style'] = $config['favorite_style'];
-                $GLOBALS['template-error']['squelette'] = $config['favorite_squelette'];
-                $config['favorite_theme'] = THEME_PAR_DEFAUT;
-                $config['favorite_style'] = CSS_PAR_DEFAUT;
-                $config['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
-                $config['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
-            } else {
-                exit('<div class="alert alert-danger">'._t('TEMPLATE_NO_DEFAULT_THEME').'.</div>');
-            }
-        }
-        $config['use_fallback_theme'] = true;
-    }
-
-    $templates = [];
-
-    // themes folder (used by {{update}})
-    if (is_dir('themes')) {
-        $templates = array_merge($templates, search_template_files('themes'));
-    }
-    // custom themes folder
-    if (is_dir('custom/themes')) {
-        $templates = array_merge($templates, search_template_files('custom/themes'));
-    }
-    ksort($templates);
-
-    return $templates;
 }

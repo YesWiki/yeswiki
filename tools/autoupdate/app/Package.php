@@ -1,9 +1,10 @@
 <?php
+
 namespace AutoUpdate;
 
 abstract class Package extends Files
 {
-    const PREFIX_FILENAME = 'yeswiki_';
+    public const PREFIX_FILENAME = 'yeswiki_';
 
     // URL vers le fichier dans le dépôt.
     protected $address;
@@ -11,6 +12,8 @@ abstract class Package extends Files
     protected $extractionPath = null;
     // Chemin vers le paquet temporaire téléchargé localement
     protected $downloadedFile = null;
+    // md5 du paquet temporaire téléchargé localement
+    protected $md5File = null;
     // nom du tool
     public $name = null;
     // Version du paquet
@@ -21,6 +24,7 @@ abstract class Package extends Files
     public $updateLink;
     public $description = "";
     public $documentation = "";
+    protected $minimalPhpVersion;
 
     abstract public function upgrade();
     abstract public function upgradeInfos();
@@ -28,15 +32,16 @@ abstract class Package extends Files
     abstract protected function localRelease();
     //abstract protected function updateAvailable();
 
-    public function __construct($release, $address, $desc, $doc)
+    public function __construct($release, $address, $desc, $doc, $minimalPhpVersion = null)
     {
         $this->release = $release;
         $this->address = $address;
         $this->description = $desc;
         $this->documentation = $doc;
         $this->name = $this->name();
-        $this->updateLink = '&upgrade=' . $this->name;
+        $this->updateLink = $this->name;
         $this->localRelease = $this->localRelease();
+        $this->minimalPhpVersion = $minimalPhpVersion;
     }
 
     public function checkACL()
@@ -89,7 +94,7 @@ abstract class Package extends Files
 
     public function getFile()
     {
-        $this->downloadFile($this->address);
+        $this->downloadedFile = $this->download($this->address);
 
         if (is_file($this->downloadedFile)) {
             return $this->downloadedFile;
@@ -104,7 +109,7 @@ abstract class Package extends Files
             throw new \Exception("Le paquet n'a pas été téléchargé.", 1);
         }
 
-        $zip = new \ZipArchive;
+        $zip = new \ZipArchive();
         if (true !== $zip->open($this->downloadedFile)) {
             return false;
         }
@@ -122,6 +127,7 @@ abstract class Package extends Files
     {
         $this->delete($this->downloadedFile);
         $this->delete($this->extractionPath);
+        $this->delete($this->md5File);
         $this->downloadedFile = null;
         $this->extractionPath = null;
     }
@@ -139,21 +145,8 @@ abstract class Package extends Files
 
     private function getMD5()
     {
-        $disMd5File = file_get_contents($this->address . '.md5');
-        return explode(' ', $disMd5File)[0];
-    }
-
-    private function downloadFile($sourceUrl)
-    {
-        $this->downloadedFile = tempnam(realpath('cache'), $this::PREFIX_FILENAME);
-        //file_put_contents($this->downloadedFile, fopen($sourceUrl, 'r'));
-        $ch = curl_init($sourceUrl);
-        $fp = fopen($this->downloadedFile, 'wb');
-        curl_setopt($ch, CURLOPT_FILE, $fp);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_exec($ch);
-        curl_close($ch);
-        fclose($fp);
+        $this->md5File = $this->download($this->address . '.md5');
+        return explode(' ', file_get_contents($this->md5File))[0];
     }
 
     protected function updateAvailable()

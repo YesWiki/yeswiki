@@ -13,8 +13,35 @@ Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utili
      for(var i=0; i < cases.length; i++)
        if(cases[i].type == 'checkbox') cases[i].checked = etat;
   }
+  // function to relaod page with filter parameter
+  function reloadGererDroits(elem){
+      var value = $(elem).val();
+      let urlwindow = window.location.toString();
+      let urlSplitted = urlwindow.split("?");
+      let baseUrl = urlSplitted[0];
+      let paramsSplitted = (urlSplitted.length > 1) ? urlSplitted[1].split("&") : [];
+      let i;
+      let params = '';
+      for (i = 0; i < paramsSplitted.length; i++) {
+          if (paramsSplitted[i].substr(0,7) != 'filter='){
+              if (i > 0){
+                params = params + "&";
+              }
+              params = params + paramsSplitted[i];
+          }
+      } 
+      if (value != ''){
+        if (params.length > 0) {
+          params = params + '&';
+        }
+        params = params + "filter=" + value;
+      }
+      window.location = baseUrl + ((params.length > 0) ? '?' + params: '');
+  }
 </script>
 <?php
+use YesWiki\Core\Service\DbService;
+use YesWiki\Security\Controller\SecurityController;
 
 //action réservée aux admins
 if (! $this->UserIsAdmin()) {
@@ -51,7 +78,7 @@ if (! $this->UserIsAdmin()) {
                         } elseif (!empty($_POST['newecrire'])) {
                             $this->SaveAcl($page_cochee, 'write', $_POST['newecrire'], $appendAcl);
                         }
-                        if (!empty($_POST['newecrire_advanced'])) {
+                        if (!empty($_POST['newcomment_advanced'])) {
                             $this->SaveAcl($page_cochee, 'comment', $_POST['newcomment_advanced'], $appendAcl);
                         } elseif (!empty($_POST['newcomment'])) {
                             $this->SaveAcl($page_cochee, 'comment', $_POST['newcomment'], $appendAcl);
@@ -64,11 +91,50 @@ if (! $this->UserIsAdmin()) {
         }
     }
 
+    // récupération des filtres
+    $filter = $_GET['filter'] ?? null;
+    if (!empty($filter)) {
+        $dbService = $this->services->get(DbService::class);
+        $filter = strval($filter);
+        if ($filter == "pages") {
+            $search = ' AND tag NOT IN ('.
+          'SELECT DISTINCT resource FROM '.$table.'triples ' .
+          'WHERE value = "fiche_bazar"'.
+          ') ';
+        } elseif ($filter == "specialpages") {
+            $search = ' AND tag IN ("BazaR","GererSite","GererDroits","GererThemes","GererMisesAJour","GererUtilisateurs",'.
+              '"GererDroitsActions","GererDroitsHandlers","TableauDeBord"'.
+              ',"PageTitre","PageMenuHaut","PageRapideHaut","PageHeader","PageFooter","PageCSS","PageMenu"'.
+              ',"PageColonneDroite","MotDePassePerdu","ParametresUtilisateur","GererConfig","ActuYeswiki","LookWiki") ';
+        } elseif ($filter === strval(intval($filter))) {
+            $requete_pages_wiki_bazar_fiches =
+          'SELECT DISTINCT resource FROM '.$table.'triples ' .
+          'WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type" ' .
+          'ORDER BY resource ASC';
+
+            $search = ' AND body LIKE \'%"id_typeannonce":"' . $dbService->escape($filter) . '"%\'';
+            $search .= ' AND tag IN (' . $requete_pages_wiki_bazar_fiches . ')';
+            $search .= ' ';
+        } elseif ($filter == "lists") {
+            $requete_pages_wiki_listes =
+              'SELECT DISTINCT resource FROM '.$table.'triples ' .
+              'WHERE value = "liste" AND property = "http://outils-reseaux.org/_vocabulary/type" ' .
+              'ORDER BY resource ASC';
+            $search = ' AND tag IN (' . $requete_pages_wiki_listes . ')';
+            $search .= ' ';
+        } else {
+            $filter = null;
+        }
+    }
+
+    // récupération de tous les formulaires
+    $forms = $this->services->get(YesWiki\Bazar\Service\FormManager::class)->getAll();
+
     //Récupération de la liste des pages
-    $liste_pages = $this->Query('SELECT * FROM '.$table."pages WHERE latest='Y' ORDER BY "
+    $liste_pages = $this->Query('SELECT * FROM '.$table."pages WHERE latest='Y' ".($search ?? '')."ORDER BY "
         .$table.'pages.tag ASC');
 
-    echo '<form method="post" action="'.$this->href().'" class="form-acls form-inline">';
+    echo '<form method="post" action="'.$this->href(null, null, (!empty($filter) ? ['filter' => $filter] : [])).'" class="form-acls form-inline">';
 ?>
 
 <?php
@@ -90,6 +156,19 @@ $this->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.boot
 $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
 ?>
 <p><?php echo _t('ACLS_SELECT_PAGES_TO_MODIFY'); ?></p>
+<div class="form-group" style="display:flex;justify-content:flex-end;margin-bottom:10px;margin-top:10px;">
+  <label for="filterforpages" style="margin-right:10px;"><?php echo _t('ACLS_SELECT_PAGES_FILTER'); ?></label>
+  <select class="form-control" id="filterforpages" onchange="reloadGererDroits(this)">
+    <option value="" <?php echo (empty($filter)) ? 'selected="selected"' : ''; ?>></option>
+    <option value="pages" <?php echo ("pages" == $filter) ? 'selected="selected"' : ''; ?>><?php echo _t('ACLS_SELECT_PAGES_FILTER_ON_PAGES'); ?></option>
+    <option value="specialpages" <?php echo ("specialpages" == $filter) ? 'selected="selected"' : ''; ?>><?php echo _t('ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES'); ?></option>
+    <option value="lists" <?php echo ("lists" == $filter) ? 'selected="selected"' : ''; ?>><?php echo _t('ACLS_SELECT_PAGES_FILTER_ON_LISTS'); ?></option>
+    <?php foreach ($forms as $id => $form): ?>
+      <option value="<?php echo $id;?>" <?php echo ($id == $filter) ? 'selected="selected"' : '';
+        ?>><?php echo str_replace('{name}', $form['bn_label_nature'], str_replace('{id}', $id, _t('ACLS_SELECT_PAGES_FILTER_FORM')));?>
+    <?php endforeach ?>
+  </select>
+</div>
 <div class="table-responsive">
   <table class="table table-striped table-condensed table-acls">
     <thead>
@@ -110,25 +189,25 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
 
 <?php
 if (!function_exists('display_droit')) {
-    function display_droit($text)
-    {
-        $values = explode("\n", $text);
-        $values = array_map(function ($el) {
-            switch ($el) {
+            function display_droit($text)
+            {
+                $values = explode("\n", $text);
+                $values = array_map(function ($el) {
+                    switch ($el) {
                 case '*': return '<span class="label label-success">'._t('ACLS_EVERYBODY').'</span>';
                 case '+': return '<span class="label label-warning">'._t('ACLS_AUTHENTIFICATED_USERS').'</span>';
                 case '%': return '<span class="label label-danger">'._t('ACLS_OWNER').'</span>';
             }
-            switch ($el[0]) {
+                    switch ($el[0]) {
                 case '@': return "<span class='label label-primary'>$el</span>";
                 case '!': return "<span class='label label-danger'>$el</span>";
             }
-            return "<span class='label label-default'>$el</span>";
-        }, $values);
-        $result = implode('<br>', $values);
-        return nl2br($result);
-    }
-}
+                    return "<span class='label label-default'>$el</span>";
+                }, $values);
+                $result = implode('<br>', $values);
+                return nl2br($result);
+            }
+        }
 ?>
 <?php for ($x = 0; $x < $num_page; ++$x) : ?>
     <tr>
@@ -210,7 +289,15 @@ if (!function_exists('display_droit')) {
   </div>
 
 	<p>
-		<input name="geredroits_modifier" class="btn btn-primary" onclick="$('.table-acls').DataTable().$('input, select').appendTo('.form-acls');" value="<?php echo _t('ACLS_UPDATE'); ?>" type="submit">
+		<input
+      name="geredroits_modifier"
+      class="btn btn-primary" 
+      onclick="$('.table-acls').DataTable().$('input, select').appendTo('.form-acls');" 
+      value="<?php echo _t('ACLS_UPDATE'); ?>" 
+      <?php if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
+          echo 'disabled data-toggle="tooltip" data-placement="bottom" title="'._t('WIKI_IN_HIBERNATION').'"';
+      } ?>
+      type="submit">
 	</p>
 <?php
 echo $this->FormClose();

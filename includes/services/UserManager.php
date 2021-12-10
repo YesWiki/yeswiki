@@ -5,19 +5,22 @@ namespace YesWiki\Core\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
+use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class UserManager
 {
     protected $wiki;
     protected $dbService;
+    protected $securityController;
     protected $params;
 
 
-    public function __construct(Wiki $wiki, DbService $dbService, ParameterBagInterface $params)
+    public function __construct(Wiki $wiki, DbService $dbService, ParameterBagInterface $params, SecurityController $securityController)
     {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
+        $this->securityController = $securityController;
         $this->params = $params;
     }
 
@@ -70,16 +73,38 @@ class UserManager
         $_SESSION['user'] = '';
         $this->wiki->DeleteCookie('name');
         $this->wiki->DeleteCookie('password');
+        $this->wiki->DeleteCookie('remember');
     }
 
     public function create($wikiName, $email, $password)
     {
-        return $this->dbService->query('INSERT INTO ' . $this->dbService->prefixTable('users') . 'SET ' .
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+        return $this->dbService->query(
+            'INSERT INTO ' . $this->dbService->prefixTable('users') . 'SET ' .
             "signuptime = now(), " .
             "name = '" . $this->dbService->escape($wikiName) . "', " .
             "motto = '', " .
             "email = '" . $this->dbService->escape($email) . "', " .
             "password = md5('" . $this->dbService->escape($password) . "')"
         );
+    }
+
+    public function updateEmail($wikiName, $email)
+    {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+        $user = $this->getOneByName($wikiName);
+        if (!empty($user)) {
+            $query =
+                'UPDATE ' . $this->dbService->prefixTable('users') . 'SET ' .
+                'email = "' . $this->dbService->escape($email) . '"'.
+                ' WHERE name = "'.$this->dbService->escape($user['name']).'" '.
+                'AND email= "'.$this->dbService->escape($user['email']).'" '.
+                'AND password= "'.$this->dbService->escape($user['password']).'";';
+            $this->dbService->query($query);
+        }
     }
 }

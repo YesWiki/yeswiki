@@ -2,7 +2,10 @@
 
 namespace YesWiki\Bazar\Field;
 
+use DateTime;
+use DateTimeZone;
 use Psr\Container\ContainerInterface;
+use YesWiki\Core\Service\DbService;
 
 /**
  * @Field({"textelong"})
@@ -17,35 +20,39 @@ class TextareaField extends BazarField
 
     protected const ACCEPTED_TAGS = '<h1><h2><h3><h4><h5><h6><hr><hr/><br><br/><span><blockquote><i><u><b><strong><ol><ul><li><small><div><p><a><table><tr><th><td><img><figure><caption><iframe>';
 
-    protected const SYNTAX_WIKI = 'wiki-textarea';
-    protected const SYNTAX_HTML = 'html';
-    protected const SYNTAX_PLAIN = 'nohtml';
+    public const SYNTAX_WIKI = 'wiki-textarea';
+    public const SYNTAX_HTML = 'html';
+    public const SYNTAX_PLAIN = 'nohtml';
 
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
 
-        $this->numRows = $values[self::FIELD_NUM_ROWS] ?? 3;
+        $this->numRows = empty($values[self::FIELD_NUM_ROWS]) ? 3 : $values[self::FIELD_NUM_ROWS];
         $this->syntax = $values[self::FIELD_SYNTAX] ?? self::SYNTAX_WIKI;
 
         // For this field, max chars are defined in the 6th column, instead of the already-used 4th
         $this->maxChars = $values[6];
 
         // Retro-compatibility
-        if( $this->syntax === 'wiki' ) $this->syntax = self::SYNTAX_WIKI;
+        if ($this->syntax === 'wiki') {
+            $this->syntax = self::SYNTAX_WIKI;
+        }
     }
 
     protected function renderInput($entry)
     {
+        $output = "";
+        $wiki = $this->getWiki();
         // If HTML syntax, load editor's JS and CSS
-        if( $this->syntax === self::SYNTAX_HTML ) {
-            $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/summernote/summernote.min.js');
-            $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/summernote/summernote.css');
+        if ($this->syntax === self::SYNTAX_HTML) {
+            $wiki->AddJavascriptFile('tools/bazar/libs/vendor/summernote/summernote.min.js');
+            $wiki->AddCSSFile('tools/bazar/libs/vendor/summernote/summernote.css');
 
             $langKey = strtolower($GLOBALS['prefered_language']).'-'.strtoupper($GLOBALS['prefered_language']);
             $langFile = 'tools/bazar/libs/vendor/summernote/lang/summernote-'.$langKey.'.js';
             if (file_exists($langFile)) {
-                $GLOBALS['wiki']->AddJavascriptFile($langFile);
+                $wiki->AddJavascriptFile($langFile);
                 $langOptions = 'lang: "'.$langKey.'",';
             } else {
                 $langOptions = '';
@@ -83,20 +90,37 @@ class TextareaField extends BazarField
               });
             });';
 
-            $GLOBALS['wiki']->AddJavascript($script);
+            $wiki->AddJavascript($script);
+        } elseif ($this->syntax === self::SYNTAX_WIKI &&
+            !empty($wiki->config['actionbuilder_textarea_name'])
+            && $this->getName() == $wiki->config['actionbuilder_textarea_name']) {
+            // load action builder but be carefull to output
+            ob_start();
+            include_once 'tools/aceditor/actions/actions_builder.php';
+            $output = ob_get_contents();
+            ob_end_clean();
         }
 
-        return $this->render("@bazar/inputs/textarea.twig", [
-            'value' => $this->getValue($entry)
+        $tempTag = !isset($entry['id_fiche']) ? ($wiki->config['temp_tag_for_entry_creation'] ?? null) : null;
+        if ($tempTag) {
+            $tempTag .= '_' . bin2hex(random_bytes(10));
+        }
+        return $output . $this->render("@bazar/inputs/textarea.twig", [
+            'value' => $this->getValue($entry),
+            'entryId' => $entry['id_fiche'] ?? null,
+            'tempTag' => $tempTag,
         ]);
-    }  
+    }
 
     public function formatValuesBeforeSave($entry)
     {
         $value = $this->getValue($entry);
 
-        if ($this->syntax == self::SYNTAX_HTML) {
+        if ($this->syntax === self::SYNTAX_HTML) {
             $value = strip_tags($value, self::ACCEPTED_TAGS);
+            $value = $this->sanitizeBase64Img($value, $entry);
+        } elseif ($this->syntax === self::SYNTAX_WIKI) {
+            $value = $this->sanitizeAttach($value, $entry);
         }
 
         return [$this->propertyName => $value];
@@ -105,9 +129,11 @@ class TextareaField extends BazarField
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
-        if( !$value ) return null;
+        if (!$value) {
+            return null;
+        }
         
-        switch($this->syntax){
+        switch ($this->syntax) {
             case self::SYNTAX_WIKI:
                 // Do the page change in any case (useful for attach or grid)
                 $oldPage = $GLOBALS['wiki']->GetPageTag();
@@ -153,5 +179,138 @@ class TextareaField extends BazarField
     public function getSyntax()
     {
         return $this->syntax;
+    }
+
+    private function sanitizeAttach(string $text, array $entry): string
+    {
+        $wiki = $this->getWiki();
+        $temp_tag_for_entry_creation = $wiki->config['temp_tag_for_entry_creation'];
+
+        if (preg_match_all("/({{attach[^}]*file=\")(({$temp_tag_for_entry_creation}_[A-Fa-f0-9]+)\/([^\"]*))(\"[^}]*}})/m", $text, $matches)) {
+            if (!class_exists('attach')) {
+                include('tools/attach/libs/attach.lib.php');
+            }
+            $entryCreationTime = $this->getEntryCreationTime($entry);
+            foreach ($matches[0] as $key => $value) {
+                $attach = new \Attach($wiki);
+                $attach->file = $matches[2][$key];
+                $previousTag = $wiki->tag;
+                $previousPage = $wiki->page;
+                $wiki->tag = $matches[3][$key];
+                $wiki->page = [
+                    'tag' => $wiki->tag,
+                    'body' => '{##}',
+                    'time' => date('YmdHis'),
+                    'owner' => '',
+                    'user' => '',
+                ];
+                $previousFileName = $attach->GetFullFilename();
+                $attach->file = $matches[4][$key];
+                $wiki->tag = $entry['id_fiche'];
+                $wiki->page = [
+                    'tag' => $entry['id_fiche'],
+                    'body' => json_encode($entry),
+                    'time' => $entryCreationTime,
+                    'owner' => '',
+                    'user' => '',
+                ];
+                $newFileName = $attach->GetFullFilename(true);
+                rename($previousFileName, $newFileName);
+                $text =  str_replace($matches[0][$key], $matches[1][$key].$matches[4][$key].$matches[5][$key], $text);
+                unset($attach);
+                $wiki->tag = $previousTag;
+                $wiki->page = $previousPage;
+            }
+        }
+
+        
+        return $text;
+    }
+
+    private function sanitizeBase64Img(string $text, array $entry): string
+    {
+        $wiki = $this->getWiki();
+        $regExpSearch = '(<img\s*'; // image
+        $regExpSearch .= 'style="[^"]*"\s*)'; // with style
+        $imageExtensions = '(gif|jpeg|png|jpg|svg|webp)';
+        $imageContent = '([^"]*)';
+        $regExpSearch .= "src=\"data:image\/$imageExtensions;base64,$imageContent\"\\s*"; // src base 64
+        $regExpSearch .= '[^>]*((?<=data-filename=")[^"]*)(?=")'; // containing eventually a filename
+        $regExpSearch .= '[^>]*>'; // end of img tag
+        if (preg_match_all("/$regExpSearch/", $text, $matches)) {
+            if (!class_exists('attach')) {
+                include('tools/attach/libs/attach.lib.php');
+            }
+            $entryCreationTime = $this->getEntryCreationTime($entry);
+            $previousTag = $wiki->tag;
+            $previousPage = $wiki->page;
+            foreach ($matches[0] as $index => $textToReplace) {
+                $imageType = $matches[2][$index];
+                $imageContent = base64_decode($matches[3][$index]);
+                $fileName = $matches[4][$index];
+                if (empty(trim($fileName))) {
+                    $fileName = bin2hex(random_bytes(10)).$imageType;
+                }
+                if (preg_match('/^(.*)(\.[A-Za-z0-9]+)$/m', $fileName, $matchesForFile)) {
+                    $fileNameWithoutExtension = $matchesForFile[1];
+                    $fileExtension = $matchesForFile[2];
+                    $fileName = $this->sanitizeFileName($fileNameWithoutExtension).$fileExtension;
+                } else {
+                    $fileName = $this->sanitizeFileName($fileName);
+                }
+                
+                $attach = new \Attach($wiki);
+                $attach->file = $fileName;
+
+                // fake page
+                $wiki->tag = $entry['id_fiche'];
+                $wiki->page = [
+                    'tag' => $entry['id_fiche'],
+                    'page' => json_encode($entry),
+                    'time' => $entryCreationTime,
+                    'owner' => '',
+                    'user' => '',
+                ];
+                $newFilePath = $attach->GetFullFilename(true);
+
+                if (!empty($newFilePath)) {
+                    // save file
+                    file_put_contents($newFilePath, $imageContent);
+    
+                    $newText = $matches[1][$index];
+                    $newText .= "src=\"$newFilePath\">";
+    
+                    $text = str_replace($textToReplace, $newText, $text);
+                }
+                unset($attach);
+            }
+            $wiki->tag = $previousTag;
+            $wiki->page = $previousPage;
+        }
+        return $text;
+    }
+
+    private function getEntryCreationTime(?array $entry): string
+    {
+        $dbTz = $this->getService(DbService::class)->getDbTimeZone();
+        $sqlTimeFormat = 'Y-m-d H:i:s';
+        $entryCreationTime = !empty($entry['date_maj_fiche'])
+            ? $entry['date_creation_fiche']
+            : (
+                !empty($dbTz)
+                ? (new DateTime())->setTimezone(new DateTimeZone($dbTz))->format($sqlTimeFormat)
+                : date($sqlTimeFormat)
+            );
+        return $entryCreationTime;
+    }
+        
+    /**
+     * sanitize file name
+     * @param string $inputString
+     * @return string $outputString
+     */
+    private function sanitizeFileName(string $inputString):string
+    {
+        return removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $inputString)));
     }
 }

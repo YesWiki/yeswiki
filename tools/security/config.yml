@@ -1,5 +1,0 @@
-parameters:
-  use_alerte: true    # alerte pour quitter le mode édition
-  use_hashcash: true  # hashcash pour le mode edition
-  use_nospam: false   # antispam pour commentaires
-  use_captcha: false  # recaptcha

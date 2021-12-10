@@ -2,7 +2,7 @@
     {% block label_container %}
         {#- No leading/trailing whitespace, see https://twig.symfony.com/doc/3.x/templates.html#templates-whitespace-control-#}
         <span class="BAZ_label">
-            {%- block label -%}{{ field.label }}{%- endblock -%}
+            {%- block label -%}{{ field.label|raw }}{%- endblock -%}
         </span>
     {% endblock %}
     {% block value_container %}

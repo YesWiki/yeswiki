@@ -2,6 +2,9 @@
 
 namespace YesWiki\Core\Service;
 
+use DateTime;
+use DateInterval;
+use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class DbService
@@ -77,8 +80,7 @@ class DbService
         }
 
         if (!$result = mysqli_query($this->link, $query)) {
-            ob_end_clean();
-            die('Query failed: ' . $query . ' (' . mysqli_error($this->link) . ')');
+            throw new Exception('Query failed: ' . $query . ' (' . mysqli_error($this->link) . ')');
         }
 
         if ($this->params->get('debug')) {
@@ -124,5 +126,43 @@ class DbService
             mysqli_free_result($r);
         }
         return $data;
+    }
+
+    public function count($query): int
+    {
+        return mysqli_num_rows($this->query($query));
+    }
+
+    public function getDbTimeZone(): ?string
+    {
+        $query = 'SELECT @@SESSION.time_zone as timezone;';
+        $result = $this->loadSingle($query);
+        $tz = (!empty($result['timezone']))
+            ? $result['timezone']
+            : null;
+        if ($tz === 'SYSTEM') {
+            $tz = ini_get('date.timezone') ?? null ;
+        }
+        if (empty($tz)) {
+            $queryBis = 'SELECT NOW() as time;';
+            $result = $this->loadSingle($queryBis);
+            if (empty($result['time'])) {
+                $tz = null;
+            } else {
+                $diff = (new DateTime())->diff(new DateTime($result['time']));
+                // TODO use Carbon
+                $diffInMinutes = ($diff->invert ? -1 : 1)*($diff->i+60*$diff->h);
+                // convert to UTC
+                $diffInMinutes += intval(floor((new DateTime())->getOffset() / 60));
+                // convert in DateInterval
+                $diff = new DateInterval("PT0S");
+                $diff->invert = ($diffInMinutes >= 0) ? 0 : 1;
+                $diff->i = abs($diffInMinutes) % 60;
+                $diff->h = (abs($diffInMinutes) - $diff->i)/60;
+
+                $tz = $diff->format("%R%H:%I");
+            }
+        }
+        return $tz;
     }
 }

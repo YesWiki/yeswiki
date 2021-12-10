@@ -25,11 +25,13 @@ var SYNTAX = {
     'STRIKE_LFT'      : '@@',
     'STRIKE_RGT'      : '@@',
     'LIST_LFT'        : ' - ',
-    'LIST_RGT'        : '\n',
+    'LIST_RGT'        : '',
     'LINE_LFT'        : '\n------\n',
     'LINE_RGT'        : '',
     'LINK_LFT'        : '[[',
-    'LINK_RGT'        : ']]'
+    'LINK_RGT'        : ']]',
+    'COMMENT_LFT'     : '{#',
+    'COMMENT_RGT'     : '#}'
   },
   html : {
     'TITLE1_LFT'      : '<h1>',
@@ -61,7 +63,9 @@ var SYNTAX = {
     'LINE_LFT'        : '<hr>\n',
     'LINE_RGT'        : '',
     'LINK_LFT'        : '<a href=&quot;#&quot;>',
-    'LINK_RGT'        : '</a>'
+    'LINK_RGT'        : '</a>',
+    'COMMENT_LFT'     : '<!--',
+    'COMMENT_RGT'     : '-->'
   }
 };
 
@@ -91,7 +95,8 @@ var SYNTAX = {
   // The actual plugin constructor
   function Plugin( element, options ) {
     this.element = element;
-    this.lang = aceditorlang;
+    this.lang = wiki.lang;
+    this.wiki = wiki;
 
     this.options = $.extend( {}, defaults, options) ;
 
@@ -139,6 +144,9 @@ var SYNTAX = {
       aceditor.getSession().on('change', function(){
         textarea.val(aceditor.getSession().getValue());
       });
+      aceditor.on('change', function(){
+        if (typeof showPopup !== "undefined"){showPopup = 1};
+      });
 
       textarea.data('aceditor', aceditor);
 
@@ -159,11 +167,17 @@ var SYNTAX = {
                 '<li><a title="'+this.lang['ACEDITOR_BIGGER_TEXT']+'" class="aceditor-btn aceditor-btn-lead" data-lft="'+this.syntax['LEAD_LFT']+'" data-rgt="'+this.syntax['LEAD_RGT']+'"><div class="lead">'+this.lang['ACEDITOR_BIGGER_TEXT']+'</div></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_HIGHLIGHT_TEXT']+'" class="aceditor-btn aceditor-btn-well" data-lft="'+this.syntax['HIGHLIGHT_LFT']+'" data-rgt="'+this.syntax['HIGHLIGHT_RGT']+'"><div class="well">'+this.lang['ACEDITOR_HIGHLIGHT_TEXT']+'</div></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_SOURCE_CODE']+'" class="aceditor-btn aceditor-btn-code" data-lft="'+this.syntax['CODE_LFT']+'" data-rgt="'+this.syntax['CODE_RGT']+'"><div class="code"><pre>'+this.lang['ACEDITOR_SOURCE_CODE']+'</pre></div></a></li>' +
+                '<li><a title="'+this.lang['ACEDITOR_COMMENT']+'" class="aceditor-btn aceditor-btn-comment" data-lft="'+this.syntax['COMMENT_LFT']+'" data-rgt="'+this.syntax['COMMENT_RGT']+'">'+this.lang['ACEDITOR_COMMENT']+'</a></li>' +
               '</ul>' +
             '</div>');
 
       // Actions Builder, actionsBuilderData has been defined in action-builder.tpl.html
-      if (typeof actionsBuilderData !== 'undefined' && actionsBuilderData) {
+      if (typeof actionsBuilderData !== 'undefined' && actionsBuilderData && (textarea.prop('id') == 'body' 
+          || (typeof actionsBuilderData.actionBuilderTextareaName !== 'undefined'
+          && textarea.prop('id') == actionsBuilderData.actionBuilderTextareaName))) {
+        if (textarea.prop('id') != 'body'){
+          textarea.addClass("action-builder-anchor");
+        }
         var result = '<div class="btn-group">' +
                '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang['ACEDITOR_ACTIONS']+'  <span class="caret"></span></a>' +
                '<ul class="dropdown-menu component-action-list">';
@@ -206,14 +220,19 @@ var SYNTAX = {
               '<a class="btn btn-default aceditor-btn aceditor-btn-line" data-lft="'+this.syntax['LINE_LFT']+'" data-rgt="'+this.syntax['LINE_RGT']+'" title="'+this.lang['ACEDITOR_LINE']+'">' +
                 '<i class="fa fa-minus icon-minus"></i>' +
               '</a>' +
-              '<a class="btn btn-default aceditor-btn aceditor-btn-link" data-prompt="'+this.lang['ACEDITOR_LINK_PROMPT']+'" data-prompt-val="http://" data-lft="'+this.syntax['LINK_LFT']+'" data-rgt="'+this.syntax['LINK_RGT']+'" title="'+this.lang['ACEDITOR_LINK_TITLE']+'" class="btn">' +
-                '<i class="fa fa-link"></i></a>' +
+              '<a class="btn btn-default aceditor-btn aceditor-btn-link" '+
+                  'data-link="1" data-lft="" data-rgt="" '+
+                  'title="'+this.lang["ACEDITOR_LINK_TITLE"]+'">'+
+                  '<i class="fa fa-link"></i> ' +
+                  "</a>" +
             '</div>');
 
       // help
       toolbar.append( '<div class="btn-group pull-right">' +
-              '<a class="btn btn-default aceditor-btn aceditor-btn-help" data-remote="true" href="wakka.php?wiki=ReglesDeFormatage" title="'+this.lang['ACEDITOR_HELP']+'">' +
-                '<i class="fa fa-question-circle"></i></a>' +
+              '<a class="btn btn-info aceditor-btn aceditor-btn-help" data-remote="true" href="wakka.php?wiki=ReglesDeFormatage" title="'+this.lang['ACEDITOR_HELP']+'">' +
+                this.lang['ACEDITOR_HELP'] +
+                '<i class="fa fa-question-circle" style="margin-left: 8px"></i>' +
+              '</a>' +
             '</div>');
 
 
@@ -254,6 +273,142 @@ var SYNTAX = {
               }).modal('show').on('hidden hidden.bs.modal', function () {
                 $modal.remove();
               });
+          }  else if ($(this).data('link')) {
+            /* get pageList */
+            if(!pagelist){
+              var pagelist = [];
+              $.ajax({
+                url: wiki.url("?root/json", {demand: "pages"}), // keep ? because standart http rewrite waits for CamelCase and 'root' is not
+                async:true,
+                type: 'GET',
+                cache: true,
+                success: function(result){
+                  pagelist = [];
+                  for (var key in result) {
+                    let pageTag = result[key].tag;
+                    if (pageTag){
+                      pagelist.push(pageTag);
+                    }
+                  }
+                  // remove previous typeahead and refresh source
+                  $('#wikiurl-page-list-input').typeahead('destroy');
+                  $('#wikiurl-page-list-input').typeahead({ source: pagelist, items: 5});
+                },
+              });
+            }
+            /* create modal */
+            $("body").append(
+              `
+<div class="modal fade" id="YesWikiLinkModal">
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal">&times;</button>
+      <h3>` +
+                $(this).attr("title") +
+                `</h3>
+    </div>
+    <div class="modal-body">
+    <form id="form-link">
+      <div class="control-group form-group">
+        <label class="radio-inline">
+          <input type="radio" name="linkType" id="linkint" value="internal" checked><span></span> `+wiki.lang['ACEDITOR_LINK_ADD_INTERNAL']+`
+        </label>
+        <label class="radio-inline">
+          <input type="radio" name="linkType" id="linkext" value="external"><span></span> `+wiki.lang['ACEDITOR_LINK_ADD_EXTERNAL']+`
+        </label>
+      </div>
+      <div class="control-group form-group internal-link">
+        <label class="control-label">`+wiki.lang['ACEDITOR_LINK_PAGE_NAME']+`</label>
+        <div class="controls">
+          <input id="wikiurl-page-list-input" class="form-control" type="text" autocomplete="off" name="wikiurl" data-provide="typeahead" data-items="5" data-source='` +
+                JSON.stringify(pagelist) +
+                `' value="">
+          <span class="text-info">`+wiki.lang['ACEDITOR_LINK_HINT_NEW_PAGE_NAME']+`</span>
+        </div>
+      </div>
+      <div class="control-group form-group external-link hide">
+        <label class="control-label">`+wiki.lang['ACEDITOR_LINK_EXTERNAL']+`</label>
+        <div class="controls">
+          <input class="form-control" type="url" name="url" value="">
+        </div>
+      </div>
+      <div class="control-group form-group">
+        <label class="control-label">`+wiki.lang['ACEDITOR_LINK_TEXT']+`</label>
+        <div class="controls">
+          <input class="form-control" type="text" name="text-url" value="` + aceditor.getSelectedText() + `">
+        </div>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="linkOptions" id="linkOptions1" value="int" checked><span></span>
+          `+wiki.lang['ACEDITOR_LINK_OPEN_IN_CURRENT_TAB']+` 
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="linkOptions" id="linkOptions2" value="ext"><span></span>
+          `+wiki.lang['ACEDITOR_LINK_OPEN_IN_NEW_TAB']+`
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="linkOptions" id="linkOptions3" value="modal"><span></span>
+          `+wiki.lang['ACEDITOR_LINK_OPEN_IN_MODAL']+`
+        </label>
+      </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <a href="#" class="btn btn-default" data-dismiss="modal">`+wiki.lang['ACEDITOR_LINK_CANCEL']+`</a>
+      <a href="#" class="btn btn-primary btn-insert"  data-dismiss="modal">`+wiki.lang['ACEDITOR_LINK_INSERT']+`</a>
+    </div>
+  </div>
+</div>
+</div>`
+            );
+
+            var $linkmodal = $("#YesWikiLinkModal");
+            $('[name="linkType"]').change(function() {
+              if ($(this).val() == "internal") {
+                $(".internal-link").removeClass("hide");
+                $(".external-link").addClass("hide");
+              } else {
+                $(".external-link").removeClass("hide");
+                $(".internal-link").addClass("hide");
+              }
+            });
+
+            $(".btn-insert").click(function() {
+              var internal = $('#YesWikiLinkModal .radio-inline input[value="internal"]').is(':checked') ;
+              var wikiurl = $('#YesWikiLinkModal [name="wikiurl"]').val() ;
+              var exturl = $('#YesWikiLinkModal [name="url"]').val() ;
+              var realLink = internal ? wikiurl : exturl;
+              var text = $('#YesWikiLinkModal [name="text-url"]').val() ;
+              text = text ? text : realLink;
+              if ($('#YesWikiLinkModal .radio input[value="ext"]').is(':checked') && realLink) {
+                var replacement = '{{button class="new-window" link="' + realLink + '" nobtn="1" text="'+text+'" title="'+text+'"}}';
+              } else if($('#YesWikiLinkModal .radio input[value="modal"]').is(':checked') && realLink) {
+                var replacement = '{{button class="modalbox" nobtn="1" link="'+realLink+'" text="'+text+'" title="'+text+'"}}';
+              } else if (realLink) {
+                var replacement = '[[' + realLink + ' '+text+']]';
+              }
+              if (realLink){
+                aceditor.session.replace(aceditor.getSelectionRange(),replacement);
+              } else {
+                // do nothing
+              }
+            });
+
+            $linkmodal
+              .modal({
+                keyboard: false
+              })
+              .modal("show")
+              .on("hidden hidden.bs.modal", function() {
+                $linkmodal.remove();
+              });
+          /* End of link modal */
           } else {
             textarea.surroundSelectedText($(this).data('lft'), $(this).data('rgt'))
           }
@@ -339,6 +494,10 @@ var SYNTAX = {
           // save page
           else if (keyCode == 83 && isShift === false) {
             $('.aceditor-btn-save').click();e.preventDefault();
+          }
+          // comment key ':'
+          else if (keyCode == 58 && isShift === false) {
+            $('.aceditor-btn-comment').mousedown();e.preventDefault();
           }
           return;
         }

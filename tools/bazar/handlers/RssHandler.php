@@ -12,7 +12,9 @@ class RssHandler extends YesWikiHandler
 {
     public function run()
     {
-        if (!$this->wiki->HasAccess("read") || !$this->wiki->page) return null;
+        if (!$this->wiki->HasAccess("read") || !$this->wiki->page) {
+            return null;
+        }
         
         $urlrss = $this->wiki->href('rss');
         if (isset($_GET['id'])) {
@@ -61,12 +63,16 @@ class RssHandler extends YesWikiHandler
             $query = '';
         }
 
-        $tableau_flux_rss = $this->getService(EntryManager::class)->search([
-            'queries'=>$query,
-            'formsIds'=>$id,
-            'user'=>$utilisateur,
-            'keywords'=>$q
-        ]);
+        $tableau_flux_rss = $this->getService(EntryManager::class)->search(
+            [
+                'queries'=>$query,
+                'formsIds'=>$id,
+                'user'=>$utilisateur,
+                'keywords'=>$q
+            ],
+            true, // filter on read ACL
+            true  // use Guard
+        );
 
         $GLOBALS['ordre'] = 'desc';
         $GLOBALS['champ'] = 'date_creation_fiche';
