@@ -96,7 +96,11 @@ class BazarAction extends YesWikiAction
                         return $entryController->selectForm();
                     default:
                         if (!empty($this->arguments['idtypeannonce'])) {
-                            return $entryController->create($this->arguments['idtypeannonce'][0], $this->arguments['redirecturl']);
+                            if (count($this->arguments['idtypeannonce']) > 1) {
+                                return $entryController->selectForm($this->arguments['idtypeannonce']);
+                            } else {
+                                return $entryController->create($this->arguments['idtypeannonce'][0], $this->arguments['redirecturl']);
+                            }
                         } else {
                             return $entryController->selectForm();
                         }

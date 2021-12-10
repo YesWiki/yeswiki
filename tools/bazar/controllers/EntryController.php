@@ -47,9 +47,20 @@ class EntryController extends YesWikiController
         $this->parentsEntries = [];
     }
 
-    public function selectForm()
+    /**
+     * @param array $formsIds (empty = all)
+     * @return string
+     */
+    public function selectForm(array $formsIds = [])
     {
-        $forms = $this->formManager->getAll();
+        $formsIds = array_filter($formsIds, function ($formId) {
+            return strval($formId) === strval(intval($formId));
+        });
+        if (empty($formsIds)) {
+            $forms = $this->formManager->getAll();
+        } else {
+            $forms = $this->formManager->getMany($formsIds);
+        }
 
         return $this->render("@bazar/entries/select_form.twig", ['forms' => $forms]);
     }
