@@ -73,8 +73,8 @@ class WakkaFormatter__ extends YesWikiFormatter
             $row = trim(preg_replace("/^!([^\|]*)!/", '', $row));
         }
         $result .= "   <tr $rowattr>\n";
-        $row = trim(preg_replace("/^\|/", '', trim($row)));
-        $row = trim(preg_replace("/\|$/", '', trim($row)));
+        $row = preg_replace("/^\|/", '', trim($row));
+        $row = preg_replace("/\|$/", '', $row);
 
         //recuperation de chaque cellule
         $cells = explode('|', $row);    //nb : seule les indices impaire sont significatif
