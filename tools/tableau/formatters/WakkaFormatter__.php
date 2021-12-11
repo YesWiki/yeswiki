@@ -1,22 +1,47 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
-}
+namespace YesWiki\Tableau;
 
-if (!function_exists('wakka2callbacktableaux')) {
-    function parsetable($thing)
+use YesWiki\Core\YesWikiFormatter;
+
+class WakkaFormatter__ extends YesWikiFormatter
+{
+    public function formatArguments($args)
+    {
+        return [];
+    }
+
+    public function run()
+    {
+        if (preg_match("/(\[\|.*?\|\])/msu", $this->output)) {
+            $outputSplittedByPre = explode('<pre>', $this->output);
+            $outputWithoutPre = $this->output;
+            foreach ($outputSplittedByPre as $preContent) {
+                $extract = explode('</pre>', $preContent);
+                $outputWithoutPre = str_replace("<pre>{$extract[0]}</pre>", "<pre></pre>", $outputWithoutPre);
+            }
+            if (preg_match_all("/(\[\|.*?\|\])/msu", $outputWithoutPre, $matches)) {
+                $newOutput = $this->output ;
+                foreach ($matches[0] as $key => $value) {
+                    $replacement = $this->wakka2callbacktableaux([$value,$matches[1][$key]]);
+                    $newOutput = str_replace($matches[1][$key], $replacement, $newOutput);
+                }
+                $this->output = $newOutput;
+            }
+        }
+    }
+
+    private function parsetable($thing)
     {
         $tableclass = '';
 
         // recuperation des attributs
-        preg_match("/^\[\|(.*)$/m", $thing, $match);
-        if ($match[1]) {
+        if (preg_match("/^\[\|(.*)$/m", $thing, $match)) {
             $tableclass = $match[1];
         }
-        $GLOBALS['wiki']->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
-        $GLOBALS['wiki']->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js');
-        $GLOBALS['wiki']->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
+        $this->wiki->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
+        $this->wiki->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js');
+        $this->wiki->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
         $table = "<table class=\"table".(!empty($tableclass) ? ' '.$tableclass: ' table-striped table-bordered')."\" $tableclass >\n";
         // suppression de [|xxxx et de |]
         $thing = preg_replace("/^\[\|(.*)$/m", '', $thing);
@@ -27,14 +52,14 @@ if (!function_exists('wakka2callbacktableaux')) {
 
         //analyse de chaque ligne
         foreach ($rows[0] as $row) {
-            $table .= parsetablerow($row);
+            $table .= $this->parsetablerow($row);
         }
         $table .= '</table>';
 
         return $table;
     }
     // parse la definition d'une ligne
-    function parsetablerow($row)
+    private function parsetablerow($row)
     {
         $result = '';
         $rowattr = '';
@@ -55,7 +80,7 @@ if (!function_exists('wakka2callbacktableaux')) {
         $cells = explode('|', $row);    //nb : seule les indices impaire sont significatif
         $i = 0;
         foreach ($cells as $cell) {
-            $result .= parsetablecell($cell);
+            $result .= $this->parsetablecell($cell);
             ++$i;
         }
         $result .= "   </tr>\n";
@@ -63,9 +88,8 @@ if (!function_exists('wakka2callbacktableaux')) {
         return $result;
     }
     //parse la definition d'une cellule
-    function parsetablecell($cell)
+    private function parsetablecell($cell)
     {
-        global $wiki;
         $cellattr = '';
 
         if (preg_match('/^!(.*)!/', $cell, $match)) {
@@ -91,20 +115,17 @@ if (!function_exists('wakka2callbacktableaux')) {
         return "      <td $cellattr>".$cell."</td>\n";
     }
 
-    function wakka2callbacktableaux($things)
+    private function wakka2callbacktableaux($things)
     {
         $thing = $things[1];
-        global $wiki;
 
         if (preg_match("/^\[\|(.*)\|\]/s", $thing)) {
             $thing = preg_replace("/^\[\|(.*)<br \/>/", '[|$1', $thing);
             $thing = preg_replace("/\|<br \/>/", '|', $thing);
-            return parsetable($thing);
+            return $this->parsetable($thing);
         }
 
         // if we reach this point, it must have been an accident.
         return $thing;
     }
 }
-
-$plugin_output_new = preg_replace_callback("/(\[\|.*?\|\])/msu", 'wakka2callbacktableaux', $plugin_output_new);
