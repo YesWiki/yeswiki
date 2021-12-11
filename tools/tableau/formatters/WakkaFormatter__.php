@@ -48,7 +48,7 @@ class WakkaFormatter__ extends YesWikiFormatter
         $thing = trim(preg_replace("/\|\]/m", '', $thing));
 
         // recuperation de chaque portion commencant par | et finissant par |
-        preg_match_all('/(^\|.*\|$)/Ums', $thing, $rows);
+        preg_match_all('/(^(?:!([^\|]*)!)?\|.*\|$)/Ums', $thing, $rows);
 
         //analyse de chaque ligne
         foreach ($rows[0] as $row) {
