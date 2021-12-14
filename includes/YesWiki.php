@@ -418,7 +418,7 @@ class Wiki
                 $paramsArray = [];
                 foreach ($params as $key => $value) {
                     if ($value) {
-                        $paramsArray[] = "$key=$value";
+                        $paramsArray[] = "$key=".urlencode($value);
                     }
                 };
                 if (count($paramsArray)>0) {
@@ -1429,7 +1429,7 @@ class Wiki
         foreach ($array2 as $key => $val) {
             if (is_array($val)) {
                 if (!$this->isAssocArray($val)) {
-                    if(!isset($array1[$key]) || $array1[$key] != $val) {
+                    if (!isset($array1[$key]) || $array1[$key] != $val) {
                         $array1[$key] = $val;
                     }
                 } else {
