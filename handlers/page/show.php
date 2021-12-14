@@ -32,6 +32,9 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Bazar\Service\EntryManager;
+
 // V?rification de s?curit?
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -82,7 +85,13 @@ if ($HasAccessRead=$this->HasAccess("read")) {
 
         // display page
         $this->RegisterInclusion($this->GetPageTag());
-        echo $this->Format($this->page['body'], 'wakka', $this->GetPageTag());
+        $entryManager = $this->services->get(EntryManager::class);
+        if ($entryManager->isEntry($this->page['tag'])) {
+            $entryController = $this->services->get(EntryController::class);
+            echo $entryController->view($tag, 0);
+        } else {
+            echo $this->Format($this->page['body'], 'wakka', $this->GetPageTag());
+        }
         $this->UnregisterLastInclusion();
     }
 } else {
@@ -117,7 +126,7 @@ if ($HasAccessRead && (!$this->page || !$this->page["comment_on"])) {
 
     // display comments!
     if ($this->page && $_SESSION["show_comments"][$tag]) {
-        // display comments header ?>
+        // display comments header?>
 		<div class="commentsheader">
 			Commentaires [<a href="<?php echo  $this->href("", "", "show_comments=0") ?>">Cacher commentaires/formulaire</a>]
 		</div>
