@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Wiki;
@@ -285,14 +286,16 @@ class UserField extends BazarField
             $groupsNames = [];
             $wiki = $this->getWiki();
             $existingsGroups = $wiki->GetGroupsList();
+            $formManager = $this->getService(FormManager::class);
             foreach ($groups as $group) {
                 $group = trim($group);
                 $forceGroupCreation =  (substr($group, 0, 1) === '+');
                 $groupName = substr($group, ($forceGroupCreation ? 1 : 0));
                 if (substr($groupName, 0, 1) !== '@') {
                     // field name
-                    if (!empty($entry[$groupName])) {
-                        $groupsNamesFromField = explode(',', $entry[$groupName]);
+                    $field = $formManager->findFieldFromNameOrPropertyName($groupName, $entry['id_typeannonce']);
+                    if (!empty($field) && !empty($entry[$field->getPropertyName()])) {
+                        $groupsNamesFromField = explode(',', $entry[$field->getPropertyName()]);
                         foreach ($groupsNamesFromField as $groupNameFromField) {
                             if ($this->userMustBeAddedToGroup($wikiName, $groupNameFromField, $forceGroupCreation, $wiki, $existingsGroups)) {
                                 $groupsNames[] = $groupNameFromField;
