@@ -671,7 +671,12 @@ var templates = {
     };
   },
   utilisateur_wikini: function (field) {
-    return { field: "" };
+    return {
+      field: "",
+      onRender: function(){
+        templateHelper.defineLabelHintForGroup(field,'auto_add_to_group',_t('BAZ_FORM_EDIT_ADD_TO_GROUP_HELP'));
+      },
+    };
   },
   acls: function (field) {
     return { field: "" };

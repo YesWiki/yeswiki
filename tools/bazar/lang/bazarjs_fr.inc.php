@@ -94,5 +94,6 @@ return [
         " - le champ \"{tabs-field-label}\" dans lequel spécifier le nom des onglets séparés par des \"|\" {\\n}".
         " - le champ \"{tabchange-field-label}\" à intégrer à la fin de chaque onglet ainsi qu'à la fin de votre formulaire",
     'BAZ_FORM_EDIT_ADD_TO_GROUP_LABEL' => "Groupes où ajouter l'utilisateur",
-    'BAZ_FORM_EDIT_ADD_TO_GROUP_DESCRIPTION' => "Groupes où ajouter l'utilisateur, séparés par ',', peut être le nom d'un champ. Ex: @groupName,bf_name,@groupName2",
+    'BAZ_FORM_EDIT_ADD_TO_GROUP_DESCRIPTION' => "Groupes où ajouter l'utilisateur, séparés par ','",
+    'BAZ_FORM_EDIT_ADD_TO_GROUP_HELP' => "Groupes où ajouter l'utilisateur, séparés par ',', peut être le nom d'un champ. Ex: @groupName,bf_name,@groupName2",
 ];
