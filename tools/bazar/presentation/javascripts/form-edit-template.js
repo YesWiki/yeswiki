@@ -181,6 +181,7 @@ var searchableConf = {
 };
 var semanticConf = {
   label: _t('BAZ_FORM_EDIT_SEMANTIC_LABEL'),
+  value:'',
   placeholder: "Ex: https://schema.org/name",
 };
 var selectConf = {
@@ -210,8 +211,9 @@ var selectConf = {
   },
   defaultValue: {
     label: _t('BAZ_FORM_EDIT_SELECT_DEFAULT'),
+    value:'',
   },
-  hint: { label: _t('BAZ_FORM_EDIT_HELP') },
+  hint: { label: _t('BAZ_FORM_EDIT_HELP'), value:'' },
   read: readConf,
   write: writeconf,
   semantic: semanticConf,
@@ -264,9 +266,9 @@ var TabChangeConf = {
 // Attributes to be configured for each field
 var typeUserAttrs = {
   text: {
-    size: { label: _t('BAZ_FORM_EDIT_TEXT_SIZE') },
-    maxlength: { label: _t('BAZ_FORM_EDIT_TEXT_MAX_LENGTH') },
-    hint: { label: _t('BAZ_FORM_EDIT_HELP') },
+    size: { label: _t('BAZ_FORM_EDIT_TEXT_SIZE'), value:'' },
+    maxlength: { label: _t('BAZ_FORM_EDIT_TEXT_MAX_LENGTH'), value:'' },
+    hint: { label: _t('BAZ_FORM_EDIT_HELP'), value:'' },
     separator: { label: "" }, // separate important attrs from others
     subtype: {
       label: _t('BAZ_FORM_EDIT_TEXT_TYPE_LABEL'),
@@ -284,6 +286,7 @@ var typeUserAttrs = {
     semantic: semanticConf,
     pattern: {
       label: _t('BAZ_FORM_EDIT_TEXT_PATTERN'),
+      value:'',
       placeholder: "Mode avancé. Ex: [0-9]+ ou [A-Za-z]{3}, ...",
     }
   },
@@ -293,7 +296,7 @@ var typeUserAttrs = {
     semantic: semanticConf
   },
   champs_mail: {
-    hint: { label: _t('BAZ_FORM_EDIT_HELP') },
+    hint: { label: _t('BAZ_FORM_EDIT_HELP'), value:'' },
     separator: { label: "" }, // separate important attrs from others
     replace_email_by_button: {
       label: "Remplacer l'email par un bouton contact",
@@ -316,13 +319,13 @@ var typeUserAttrs = {
     today_button: {
       options: { " ": _t('NO'), today: _t('YES') },
     },
-    hint: { label: _t('BAZ_FORM_EDIT_HELP') },
+    hint: { label: _t('BAZ_FORM_EDIT_HELP'), value:'' },
     read: readConf,
     write: writeconf,
     semantic: semanticConf,
   },
   image: {
-    hint: { label: _t('BAZ_FORM_EDIT_HELP') },
+    hint: { label: _t('BAZ_FORM_EDIT_HELP'), value:'' },
     thumb_height: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH'), value: "140" },
     thumb_width: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH'), value: "140" },
     resize_height: { label: _t('BAZ_FORM_EDIT_IMAGE_HEIGHT_RESIZE'), value: "600" },
@@ -341,6 +344,7 @@ var typeUserAttrs = {
     ...{
       queries: {
         label: _t('BAZ_FORM_EDIT_QUERIES_LABEL'),
+        value:'',
         placeholder: "ex. : checkboxfiche6=PageTag ; cf. https://yeswiki.net/?LierFormulairesEntreEux",
       },
     },
@@ -358,6 +362,7 @@ var typeUserAttrs = {
       },
       queries: {
         label: _t('BAZ_FORM_EDIT_QUERIES_LABEL'),
+        value:'',
         placeholder: "ex. : checkboxfiche6=PageTag ; cf. https://yeswiki.net/?LierFormulairesEntreEux",
       },
     },
@@ -374,6 +379,7 @@ var typeUserAttrs = {
       },
       queries: {
         label: _t('BAZ_FORM_EDIT_QUERIES_LABEL'),
+        value:'',
         placeholder: "ex. : checkboxfiche6=PageTag ; cf. https://yeswiki.net/?LierFormulairesEntreEux",
       },
     },
@@ -387,8 +393,8 @@ var typeUserAttrs = {
         nohtml: "Texte non interprété",
       },
     },
-    hint: { label: _t('BAZ_FORM_EDIT_HELP') },
-    size: { label: "Largeur champ de saisie" },
+    hint: { label: _t('BAZ_FORM_EDIT_HELP'), value:'' },
+    size: { label: "Largeur champ de saisie", value:'' },
     rows: {
       label: "Nombre de lignes",
       type: 'number',
@@ -399,30 +405,31 @@ var typeUserAttrs = {
     semantic: semanticConf,
   },
   file: {
-    maxsize: { label: "Taille max" },
-    hint: { label: _t('BAZ_FORM_EDIT_HELP') },
+    maxsize: { label: "Taille max", value:'' },
+    hint: { label: _t('BAZ_FORM_EDIT_HELP'), value:'' },
     read: readConf,
     write: writeconf,
     semantic: semanticConf,
   },
   tags: {
-    hint: { label: _t('BAZ_FORM_EDIT_HELP') },
+    hint: { label: _t('BAZ_FORM_EDIT_HELP'), value:'' },
     read: readConf,
     write: writeconf,
     semantic: semanticConf,
   },
   inscriptionliste: {
-    subscription_email: { label: "Email pour s'inscrire" },
+    subscription_email: { label: "Email pour s'inscrire", value:'' },
     email_field_id: {
       label: "Champ du formulaire fournissant l'email à inscire",
       value: "bf_mail",
     },
     mailing_list_tool: {
       label: "Type de service de diffusion",
+      value:''
     },
   },
   labelhtml: {
-    label: { value: "Custom HTML" },
+    label: { value: "Custom HTML", value:'' },
     content_saisie: { label: "Contenu lors de la saisie", type: "textarea", rows: "4" },
     content_display: { label: "Contenu lors de l'affichage d'une fiche", type: "textarea", rows: "4"  },
   },
@@ -448,34 +455,39 @@ var typeUserAttrs = {
   metadatas: {
     theme: {
       label: _t('BAZ_FORM_EDIT_METADATA_THEME_LABEL'),
+      value:'',
       placeholder: "margot, interface, colibris",
     },
     squelette: { label: _t('BAZ_FORM_EDIT_METADATA_SQUELETON_LABEL'), value: "1col.tpl.html" },
-    style: { label: _t('BAZ_FORM_EDIT_METADATA_STYLE_LABEL'), placeholder: "bootstrap.css..." },
-    preset: { label: _t("BAZ_FORM_EDIT_METADATA_PRESET_LABEL"), placeholder: "blue.css (" + _t("BAZ_FORM_EDIT_METADATA_PRESET_PLACEHOLDER") + ")" },
-    image: { label: _t('BAZ_FORM_EDIT_METADATA_BACKGROUND_IMAGE_LABEL'), placeholder: "foret.jpg..." },
+    style: { label: _t('BAZ_FORM_EDIT_METADATA_STYLE_LABEL'), value:'', placeholder: "bootstrap.css..." },
+    preset: { label: _t("BAZ_FORM_EDIT_METADATA_PRESET_LABEL"), value:'', placeholder: "blue.css (" + _t("BAZ_FORM_EDIT_METADATA_PRESET_PLACEHOLDER") + ")" },
+    image: { label: _t('BAZ_FORM_EDIT_METADATA_BACKGROUND_IMAGE_LABEL'), value:'', placeholder: "foret.jpg..." },
   },
   bookmarklet: {},
   collaborative_doc: {},
   titre: {},
   listefichesliees: {
-    id: { label: "id du formulaire lié" },
+    id: { label: "id du formulaire lié", value:'' },
     query: {
-      label: "Query",
+      label: "Query", 
+      value:'',
       placeholder: "Voir doc sur https://yeswiki.net/?DocQuery/iframe",
     },
     param: {
       label: "Params de l'action",
+      value:'',
       placeholder: 'Ex: champs="bf_nom" ordre="desc"',
     },
-    number: { label: "Nombre de fiches à ficher", placeholder: "" },
+    number: { label: "Nombre de fiches à ficher", value:'', placeholder: "" },
     template: {
       label: "Template de restitution",
+      value:'',
       placeholder:
         'Exple: template="liste_liens.tpl.html (par défault = accordéon)"',
     },
     type_link: {
       label: "Type de fiche liée (ou label du champ)",
+      value:'',
       placeholder:
         "mettre 'checkbox' ici si vos fiches liées le sont via un checkbox",
     },
@@ -484,22 +496,22 @@ var typeUserAttrs = {
     semantic: semanticConf,
   },
   custom: {
-    param0: { label: "Param0" },
-    param1: { label: "Param1" },
-    param2: { label: "Param2" },
-    param3: { label: "Param3" },
-    param4: { label: "Param4" },
-    param5: { label: "Param5" },
-    param6: { label: "Param6" },
-    param7: { label: "Param7" },
-    param8: { label: "Param8" },
-    param9: { label: "Param9" },
-    param10: { label: "Param10" },
-    param11: { label: "Param11" },
-    param12: { label: "Param12" },
-    param13: { label: "Param13" },
-    param14: { label: "Param14" },
-    param15: { label: "Param15" },
+    param0: { label: "Param0", value:'' },
+    param1: { label: "Param1", value:'' },
+    param2: { label: "Param2", value:'' },
+    param3: { label: "Param3", value:'' },
+    param4: { label: "Param4", value:'' },
+    param5: { label: "Param5", value:'' },
+    param6: { label: "Param6", value:'' },
+    param7: { label: "Param7", value:'' },
+    param8: { label: "Param8", value:'' },
+    param9: { label: "Param9", value:'' },
+    param10: { label: "Param10", value:'' },
+    param11: { label: "Param11", value:'' },
+    param12: { label: "Param12", value:'' },
+    param13: { label: "Param13", value:'' },
+    param14: { label: "Param14", value:'' },
+    param15: { label: "Param15", value:'' },
   },
   tabs: TabsConf,
   tabchange: TabChangeConf,
