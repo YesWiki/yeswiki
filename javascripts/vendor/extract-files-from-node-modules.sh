@@ -44,3 +44,9 @@ cp -f -r node_modules/gogocarto-js/dist/fonts styles/vendor/gogocarto
 # Spectrum Color Picker
 mkdir -p javascripts/vendor/spectrum-colorpicker2 && cp -f node_modules/spectrum-colorpicker2/dist/spectrum.min.js javascripts/vendor/spectrum-colorpicker2/spectrum.min.js
 mkdir -p styles/vendor/spectrum-colorpicker2 && cp -f node_modules/spectrum-colorpicker2/dist/spectrum.min.css styles/vendor/spectrum-colorpicker2/spectrum.min.css
+
+# formBuilder
+mkdir -p javascripts/vendor/formBuilder && cp -f node_modules/formBuilder/dist/form-builder.min.js javascripts/vendor/formBuilder
+
+#jquery-ui
+mkdir -p javascripts/vendor/jquery-ui-sortable && cp -f node_modules/jquery-ui-sortable/jquery-ui.min.js javascripts/vendor/jquery-ui-sortable

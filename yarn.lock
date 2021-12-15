@@ -191,6 +191,14 @@ ext@^1.1.2:
   dependencies:
     type "^2.5.0"
 
+formBuilder@^3:
+  version "3.7.3"
+  resolved "https://registry.yarnpkg.com/formBuilder/-/formBuilder-3.7.3.tgz#65160f0269efe28f8cc9a201811861e964d276fd"
+  integrity sha512-prSeP4i3rZY686G8Cgh4pfTYk2YUU/x+NrXwBUBIIdDi0W8pOPCdzp4DoypmRiF+GX+Z7KVXo8foF/Yf4i84zw==
+  dependencies:
+    jquery ">=3.4.1"
+    jquery-ui-sortable "*"
+
 fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
@@ -259,12 +267,17 @@ jquery-ui-dist@^1.12.1:
   resolved "https://registry.yarnpkg.com/jquery-ui-dist/-/jquery-ui-dist-1.12.1.tgz#5c0815d3cc6f90ff5faaf5b268a6e23b4ca904fa"
   integrity sha1-XAgV08xvkP9fqvWyaKbiO0ypBPo=
 
+jquery-ui-sortable@*:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/jquery-ui-sortable/-/jquery-ui-sortable-1.0.0.tgz#0ee062ce02b29b36585ede3a3e0ddde666060f96"
+  integrity sha1-DuBizgKymzZYXt46Pg3d5mYGD5Y=
+
 jquery@2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-2.2.1.tgz#3c3e16854ad3d2ac44ac65021b17426d22ad803f"
   integrity sha1-PD4WhUrT0qxErGUCGxdCbSKtgD8=
 
-jquery@^3.5.1:
+jquery@>=3.4.1, jquery@^3.5.1:
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.6.0.tgz#c72a09f15c1bdce142f49dbf1170bdf8adac2470"
   integrity sha512-JVzAR/AjBvVt2BmYhxRCSYysDsPcssdmTFnzyLEts9qNwmjmu4JTAMYubEfwVOSwpQ1I1sKKFcxhZCI2buerfw==

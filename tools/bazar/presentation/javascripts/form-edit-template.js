@@ -894,7 +894,10 @@ function initializeFormbuilder(formAndListIds) {
   formBuilder = $formBuilderContainer.formBuilder({
     showActionButtons: false,
     fields: fields,
-    i18n: { locale: I18nOption[wiki.locale] ?? 'fr-FR'},
+    i18n: {
+      locale: I18nOption[wiki.locale] ?? 'fr-FR',
+      location: 'https://formbuilder.online/assets/lang/',
+    },
     templates: templates,
     disableFields: [
       "number",
