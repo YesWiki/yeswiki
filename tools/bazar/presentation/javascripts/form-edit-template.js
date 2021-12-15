@@ -908,7 +908,7 @@ function initializeFormbuilder(formAndListIds) {
     fields: fields,
     i18n: {
       locale: I18nOption[wiki.locale] ?? 'fr-FR',
-      location: 'https://formbuilder.online/assets/lang/',
+      location: wiki.baseUrl.replace('?','')+"javascripts/vendor/formbuilder-languages/"
     },
     templates: templates,
     disableFields: [

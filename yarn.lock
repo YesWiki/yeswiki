@@ -199,6 +199,13 @@ formBuilder@^3:
     jquery ">=3.4.1"
     jquery-ui-sortable "*"
 
+formbuilder-languages@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/formbuilder-languages/-/formbuilder-languages-1.1.0.tgz#af2193015ecc53afc2a595bdce079b49b5eefe6d"
+  integrity sha512-IeccGyLBpNEJTPBx41eB995Bob1MKqqha3uahgPhJElIqMIxjRTGlwQvvfAjef1MXczAdxwDI3yY4AARhEn3qg==
+  dependencies:
+    mi18n "^0.4.8"
+
 fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
@@ -329,6 +336,13 @@ mdurl@~1.0.1:
   resolved "https://registry.yarnpkg.com/mdurl/-/mdurl-1.0.1.tgz#fe85b2ec75a59037f2adfec100fd6c601761152e"
   integrity sha1-/oWy7HWlkDfyrf7BAP1sYBdhFS4=
 
+mi18n@^0.4.8:
+  version "0.4.8"
+  resolved "https://registry.yarnpkg.com/mi18n/-/mi18n-0.4.8.tgz#b69c1fbd9dd47c3cc6b6c14e7decb51c1740c9f3"
+  integrity sha512-T9H5fI0RIpAHBvWEe7xbQSMROhty7DBp5oWMhu/XKWqdbvTVgLzR5TEE2zIsAnIaC6HzZOTcR5FTQ40Pg552gw==
+  dependencies:
+    now "^11.5.2"
+
 minimatch@^3.0.4, minimatch@~3.0.2:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.0.4.tgz#5166e286457f03306064be5497e8dbb0c3d32083"
@@ -367,6 +381,11 @@ nouislider@^14.0.3:
   version "14.7.0"
   resolved "https://registry.yarnpkg.com/nouislider/-/nouislider-14.7.0.tgz#a71db0587c92567b6da1df57d251d3696d942362"
   integrity sha512-4RtQ1+LHJKesDCNJrXkQcwXAWCrC2aggdLYMstS/G5fEWL+fXZbUA9pwVNHFghMGuFGRATlDLNInRaPeRKzpFQ==
+
+now@^11.5.2:
+  version "11.5.2"
+  resolved "https://registry.yarnpkg.com/now/-/now-11.5.2.tgz#d91f7f6665ebea5e3a9b96c72215aab2b81fe42e"
+  integrity sha512-h1iL68uLLAFbunBZ4Qt+lN2lS5lN0WTsT1/ulqUGZ0CxgzxLj0iZL13+iNcBitdJmOAYO2reh08JUpkHlCIRHg==
 
 npm-ci@0.0.2:
   version "0.0.2"
