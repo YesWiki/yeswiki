@@ -9,6 +9,7 @@ import InputIcon from './components/InputIcon.js'
 import InputColor from './components/InputColor.js'
 import InputFormField from './components/InputFormField.js'
 import InputFacette from './components/InputFacette.js'
+import InputReaction from './components/InputReaction.js';
 import InputIconMapping from './components/InputIconMapping.js'
 import InputColorMapping from './components/InputColorMapping.js'
 import InputGeo from './components/InputGeo.js'
@@ -41,7 +42,7 @@ window.myapp = new Vue({
   el: "#actions-builder-app",
   components: { InputPageList, InputText, InputCheckbox, InputList, InputIcon, InputColor, 
                 InputFormField, InputHidden, InputDivider,
-                InputFacette, InputIconMapping, InputColorMapping, InputGeo, InputClass, InputCorrespondance,
+                InputFacette, InputReaction, InputIconMapping, InputColorMapping, InputGeo, InputClass, InputCorrespondance,
                 WikiCodeInput, PreviewAction },
   mixins: [ InputHelper ],
   data: {
