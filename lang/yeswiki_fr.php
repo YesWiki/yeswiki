@@ -247,6 +247,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'CHECK_YOUR_CONFIG_INFORMATION_BELOW' => 'Veuillez revoir vos informations de configuration ci-dessous',
 'FILL_THE_FORM_BELOW' => 'Veuillez compl&eacute;ter le formulaire suivant',
 'DEFAULT_LANGUAGE' => 'Langue par d&eacute;faut',
+'NAVIGATOR_LANGUAGE' => 'Langue du navigateur',
 'DEFAULT_LANGUAGE_INFOS' => 'Langue utilis&eacute;e par d&eacute;faut pour l\'interface de YesWiki, il sera toujours possible de changer de langue pour chacune des pages cr&eacute;&eacute;es',
 'GENERAL_CONFIGURATION' => 'Configuration générale',
 'DATABASE_CONFIGURATION' => 'Base de donn&eacute;es',

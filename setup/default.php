@@ -80,6 +80,7 @@ if (!defined('WIKINI_VERSION')) {
                 foreach ($GLOBALS['available_languages'] as $value) {
                     echo '<option value="'.$value.'"'.(($value == $GLOBALS['prefered_language']) ? ' selected="selected"' : '').'>'.ucfirst(htmlentities($GLOBALS['languages_list'][$value]['nativeName'], ENT_COMPAT | ENT_HTML401, 'UTF-8'))."</option>\n";
                 }
+                echo "<option value=\"auto\">_t('NAVIGATOR_LANGUAGE')</option>\n";
                 ?>
             </select>
           </div>

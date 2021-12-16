@@ -165,13 +165,13 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
         if (isset($wiki->metadatas['lang']) && in_array($wiki->metadatas['lang'], $available_languages)) {
             return $wiki->metadatas['lang'];
         }
-        if ($http_accept_language == "auto") {
-            // if $http_accept_language was left out, read it from the HTTP-Header of the browser
-            $http_accept_language = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
-        }
         // default language from config file
         if ((empty($http_accept_language) || $http_accept_language == "auto") && isset($wiki->config['default_language']) && in_array($wiki->config['default_language'], $available_languages)) {
             return $wiki->config['default_language'];
+        }
+        if ($http_accept_language == "auto") {
+            // if $http_accept_language was left out, read it from the HTTP-Header of the browser
+            $http_accept_language = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
         }
     } elseif ($http_accept_language == "auto") {
         // if $http_accept_language was left out, read it from the HTTP-Header of the browser
