@@ -446,6 +446,12 @@ var typeUserAttrs = {
       label: "Auto. Sychro. e-mail",
       options: { 0: "Non", 1: "Oui" },
     },
+    auto_add_to_group: {
+      label: _t('BAZ_FORM_EDIT_ADD_TO_GROUP_LABEL'),
+      value:'',
+      placeholder: _t('BAZ_FORM_EDIT_ADD_TO_GROUP_DESCRIPTION'),
+      description: _t('BAZ_FORM_EDIT_ADD_TO_GROUP_DESCRIPTION')
+    },
   },
   acls: {
     read: { label: _t('BAZ_FORM_EDIT_ACL_READ_LABEL'), options: aclsOptions },
@@ -666,7 +672,12 @@ var templates = {
     };
   },
   utilisateur_wikini: function (field) {
-    return { field: "" };
+    return {
+      field: "",
+      onRender: function(){
+        templateHelper.defineLabelHintForGroup(field,'auto_add_to_group',_t('BAZ_FORM_EDIT_ADD_TO_GROUP_HELP'));
+      },
+    };
   },
   acls: function (field) {
     return { field: "" };
@@ -786,7 +797,10 @@ var yesWikiMapping = {
     4: "mailing_list_tool",
   },
   labelhtml: { 0: "type", 1: "content_saisie", 2: "", 3: "content_display" },
-  utilisateur_wikini: { 0: "type", 1: "name_field", 2: "email_field",/*5:"mailing_list",*/9:"autoupdate_email" },
+  utilisateur_wikini: { 
+    ...defaultMapping,
+    ...{0: "type", 1: "name_field", 2: "email_field",5:'',/*5:"mailing_list",*/6: "auto_add_to_group",8:"",9:"autoupdate_email" }
+  },
   titre: { 0: "type", 1: "value", 2: "label" },
   acls: { 0: "type", 1: "read", 2: "write", 3: "comment" },
   metadatas: { 0: "type", 1: "theme", 2: "squelette", 3: "style", 4: "image", 5:"preset" },
