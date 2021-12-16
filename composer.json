@@ -6,7 +6,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
-      "test": "phpunit tests"
+      "test": "phpunit --do-not-cache-result --stderr tests"
     },
     "require": {
         "php": "^7.3",
