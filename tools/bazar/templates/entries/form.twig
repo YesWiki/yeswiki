@@ -11,6 +11,9 @@
       </label>
     </div>
   {% else %}
+    {% if form.bn_condition is not empty %}
+      <input type="hidden" required name="accept_condition" value="1">
+    {% endif %}
     {% for renderedInput in renderedInputs %}
       {{ renderedInput|raw }}
     {% endfor %}
