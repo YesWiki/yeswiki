@@ -88,7 +88,7 @@ echo "<script>
     var wiki = {
         ...((typeof wiki !== 'undefined') ? wiki : null),
         ...{
-    locale: '".detectPreferedLanguage($this, $GLOBALS['available_languages'], 'auto', '')."',
+    locale: '{$GLOBALS['prefered_language']}',
     baseUrl: '{$this->config['base_url']}',
     lang: {
         ...((typeof wiki !== 'undefined') ? (wiki.lang ?? null) : null),
