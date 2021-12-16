@@ -776,3 +776,33 @@ function removeCSVCrochet(str){
   res = res.replace(/&gt;/gm,'>');
   return res;
 }
+
+
+// range input
+$(document).ready(function () {
+
+  var PositionCalculator = {
+    getLeft: function (range){
+      let val = range.value;
+      let min = range.min ? range.min : 0;
+      let max = range.max ? range.max : 100;
+      let maximumRange = Math.abs(max - min);
+      let leftPosition = Math.min(Math.abs(val - min),maximumRange) * 100  / maximumRange;
+      let leftOffset = 11;//px
+      let width = $(range).innerWidth()-22; //px
+      leftPosition = (parseFloat(leftOffset) + width*leftPosition/100)/$(range).innerWidth();
+      return (leftPosition*100)+"%";
+    }
+  };
+
+  $(".range-output").each(function(){
+    let group = $(this).parent();
+    let range = $(group).find('input[type=range]');
+    let output = $(this);
+    $(output).css('left',PositionCalculator.getLeft($(range)[0]));
+    $(range).on('input',function(){
+      $(output)[0].value = this.value;
+      $(output).css('left',PositionCalculator.getLeft(this));
+    });
+  });
+});
