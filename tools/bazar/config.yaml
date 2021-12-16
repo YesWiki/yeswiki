@@ -113,7 +113,7 @@ parameters:
     cache_time_to_refresh_forms: 7200 # seconds (2 hours)
     time_debug: false
   # option only for configs with 500 errors when not admin connected
-  baz_check_owner_acl_only_for_field_can_edit: false
+  baz_check_owner_acl_only_for_field_can_edit: true # put by default at true because there is an infinite loop on acls
   # tag used to upload file at entry creation
   temp_tag_for_entry_creation: 'unknown_entry_id'
   # for edit config action
