@@ -44,6 +44,7 @@ class YesWikiLoader
                     $_SERVER['HTTP_HOST'] = $_SERVER['HTTP_HOST'] ?? 'localhost';
                     $_SERVER['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
                     $_SESSION = $_SESSION ?? [];
+                    $_REQUEST['wiki'] = 'TesT';
                 }
 
                 self::$wiki = new Wiki();
