@@ -125,6 +125,15 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
     // sanitize parameters
     $getLang = (isset($_GET['lang']) && in_array($_GET['lang'], $available_languages)) ? $_GET['lang'] : '';
 
+    $pageMetadataLang = "";
+    if ($page!='') {
+        // page's metadata lang
+        $wiki->metadatas = $wiki->GetMetaDatas($page);
+        if (isset($wiki->metadatas['lang']) && in_array($wiki->metadatas['lang'], $available_languages)) {
+            $pageMetadataLang = $wiki->metadatas['lang'];
+        }
+    }
+
     // first priority
     if (!empty($getLang)) {
         return $getLang;
@@ -169,17 +178,6 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
         return $postConfigLang;
     }
 
-    $pageMetadataLang = "";
-    if ($page!='') {
-        // page's metadata lang
-        $wiki->metadatas = $wiki->GetTripleValue($page, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
-        if (!empty($wiki->metadatas)) {
-            $wiki->metadatas =  json_decode($wiki->metadatas, true);
-        }
-        if (isset($wiki->metadatas['lang']) && in_array($wiki->metadatas['lang'], $available_languages)) {
-            $pageMetadataLang = $wiki->metadatas['lang'];
-        }
-    }
     // default language from config file
     $configLang = !empty($wiki) && isset($wiki->config['default_language']) && in_array($wiki->config['default_language'], $available_languages)
         ? $wiki->config['default_language'] : '';
