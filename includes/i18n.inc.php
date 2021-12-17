@@ -270,15 +270,6 @@ function initI18n()
     $wiki = isset($GLOBALS['wiki']) ? $GLOBALS['wiki'] : '';
     $GLOBALS['prefered_language'] = detectPreferedLanguage($wiki, $GLOBALS['available_languages']);
 
-    if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswiki_'.$GLOBALS['prefered_language'].'.php')) {
-        // this will overwrite the values of $GLOBALS['translations'] in the selected language
-        $returnedArray = require_once 'lang/yeswiki_'.$GLOBALS['prefered_language'].'.php';
-        load_translations($returnedArray);
-    }
-    if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswikijs_'.$GLOBALS['prefered_language'].'.php')) {
-        $returnedArray = require_once 'lang/yeswikijs_'.$GLOBALS['prefered_language'].'.php';
-        load_translations($returnedArray, true);
-    }
     return;
 }
 
