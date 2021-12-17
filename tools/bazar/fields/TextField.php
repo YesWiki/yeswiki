@@ -14,7 +14,7 @@ class TextField extends BazarField
 
     protected const FIELD_PATTERN = 6;
     protected const FIELD_SUB_TYPE = 7;
-    
+
     protected const ALLOWED_SUB_TYPES = ['text', 'date', 'email', 'url', 'range', 'password', 'number', 'color'];
 
     public function __construct(array $values, ContainerInterface $services)
@@ -31,6 +31,11 @@ class TextField extends BazarField
         }
 
         $this->maxChars = $this->maxChars ?? 255;
+
+        if ($this->type === 'range') {
+            $this->size = empty($this->size) ? 0 : $this->size;
+            $this->maxChars = empty($this->maxChars) ? 100 : $this->maxChars;
+        }
     }
 
     protected function renderInput($entry)
