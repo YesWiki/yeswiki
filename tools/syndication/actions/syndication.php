@@ -1,10 +1,10 @@
 <?php
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
 include_once('tools/syndication/libs/syndication.lib.php');
-include_once('tools/syndication/libs/simplepie_1.3.1.compiled.php');
 
 // on verifie si il existe un dossier pour le cache et si on a les droits d'ecriture dessus
 if (file_exists('cache')) {
