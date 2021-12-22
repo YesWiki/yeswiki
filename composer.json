@@ -6,7 +6,13 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
-      "test": "phpunit --do-not-cache-result --stderr tests"
+      "test": "phpunit --do-not-cache-result --stderr tests",
+      "post-install-cmd": [
+        "@composer install --working-dir ./tools/syndication/"
+      ],
+      "post-update-cmd": [
+        "@composer update --working-dir ./tools/syndication/"
+      ]
     },
     "require": {
         "php": "^7.3",
@@ -26,8 +32,7 @@
         "symfony/http-kernel": "^5.3.12",
         "psr/container": "<=1.1.1",
         "tamtamchik/simple-flash": "^2.0",
-        "caxy/php-htmldiff": "^0.1.13",
-        "simplepie/simplepie": "*"
+        "caxy/php-htmldiff": "^0.1.13"
     },
     "extra": {
         "installer-types": ["yeswiki-extension", "yeswiki-theme"],

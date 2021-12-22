@@ -1,10 +1,10 @@
 <?php
-
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
 include_once('tools/syndication/libs/syndication.lib.php');
+require_once __DIR__.'/../vendor/autoload.php';
 
 // on verifie si il existe un dossier pour le cache et si on a les droits d'ecriture dessus
 if (file_exists('cache')) {
