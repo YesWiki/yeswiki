@@ -75,9 +75,9 @@ return [
     'BAZ_FORM_EDIT_TABS_TITLES_LABEL' => "Tabs' titles",
     'BAZ_FORM_EDIT_TABS_FOR_FORM' => "in form",
     'BAZ_FORM_EDIT_TABS_FOR_ENTRY' => "in entry",
-    'BAZ_FORM_EDIT_TABS_FORMTITLES_VALUE' => "Tab 1|Tab 2|Tab 3",
-    'BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION' => "Separate each title by '|'. Keep empty to not have tabs into form.",
-    'BAZ_FORM_EDIT_TABS_VIEWTITLES_DESCRIPTION' => "Separate each title by '|'. Keep empty to not have tabs into entry.",
+    'BAZ_FORM_EDIT_TABS_FORMTITLES_VALUE' => "Tab 1,Tab 2,Tab 3",
+    'BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION' => "Separate each title by ','. Keep empty to not have tabs into form.",
+    'BAZ_FORM_EDIT_TABS_VIEWTITLES_DESCRIPTION' => "Separate each title by ','. Keep empty to not have tabs into entry.",
     'BAZ_FORM_EDIT_TABS_MOVESUBMITBUTTONTOLASTTAB_LABEL' => "Move 'Submit' button",
     'BAZ_FORM_EDIT_TABS_MOVESUBMITBUTTONTOLASTTAB_DESCRIPTION' => "Move 'Valider' button in last tab",
     'BAZ_FORM_EDIT_TABS_NAVCLASS_LABEL' => "Tabs' shape",
@@ -91,6 +91,9 @@ return [
     'PRIMARY' => "Primary",
     'SECONDARY' => "Secondary",
     "BAZ_FORM_TABS_HINT" => "To use tabs, it needs two fields : {\\n}".
-        " - the field \"{tabs-field-label}\" in which tabs' titles should be defined separated by \"|\" {\\n}".
+        " - the field \"{tabs-field-label}\" in which tabs' titles should be defined separated by \",\" {\\n}".
         " - the field \"{tabchange-field-label}\" to pu at the end of each tab either at the end of the form",
+    'BAZ_FORM_EDIT_ADD_TO_GROUP_LABEL' => "Groups where to add the user",
+    'BAZ_FORM_EDIT_ADD_TO_GROUP_DESCRIPTION' => "Groups where to add the user, separated by ','",
+    'BAZ_FORM_EDIT_ADD_TO_GROUP_HELP' => "Groups where to add the user, separated by ',', can be a filed name. Ex: @groupName,bf_name,@groupName2",
 ];

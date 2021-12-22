@@ -75,7 +75,7 @@ abstract class CheckboxField extends EnumField
     public function getValues($entry)
     {
         $value = $this->getValue($entry);
-        return explode(',', $value);
+        return $this->sanitizeValues($value, "array") ;
     }
     
     public function formatValuesBeforeSave($entry)
@@ -93,20 +93,41 @@ abstract class CheckboxField extends EnumField
             }
             
             // format value
-            if (is_array($checkboxField)) {
-                $checkboxField = array_filter($checkboxField, function ($value) {
-                    return ($value == 1 || $value == true || $value == 'true') ;
-                });
-                $entry[$this->propertyName] = implode(',', array_keys($checkboxField)) ;
-            } else {
-                $entry[$this->propertyName] = $checkboxField ;
-            }
+            $entry[$this->propertyName] = $this->sanitizeValues($checkboxField, "string") ;
         }
         return [$this->propertyName => $this->getValue($entry) ,
             'fields-to-remove' => [
                 $this->propertyName . self::FROM_FORM_ID,
                 $this->propertyName
                 ]];
+    }
+
+    /**
+     * @param string|array $rawValue
+     * @param string $format "string" or "array"
+     * @return array|string
+     */
+    private function sanitizeValues($rawValue, string $format = "string")
+    {
+        if (is_array($rawValue)) {
+            $rawValue = array_filter($rawValue, function ($value) {
+                return in_array($value, [1,"1",true,"true"]);
+            });
+            $rawValue = array_keys($rawValue);
+            if ($format == "string") {
+                $rawValue = implode(',', $rawValue) ;
+            }
+        } else {
+            try {
+                $rawValue = strval($rawValue) ;
+            } catch (\Throwable $th) {
+                $rawValue = "";
+            }
+            if ($format != "string") {
+                $rawValue = empty(trim($rawValue)) ? [] : explode(',', $rawValue);
+            }
+        }
+        return $rawValue;
     }
 
     private function generateTagsData($entry)

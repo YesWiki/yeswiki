@@ -144,9 +144,10 @@ class Init
 
             // TODO refactor this
             if (!$this->method) {
+                $requestMethod = $_SERVER['REQUEST_METHOD'] ?? null;
                 // We must manually parse the body data for the PUT or PATCH methods
                 // See https://www.php.net/manual/fr/features.file-upload.put-method.php
-                if (empty($_POST) && ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
+                if (empty($_POST) && ($requestMethod == 'POST' || $requestMethod == 'PUT' || $requestMethod == 'PATCH')) {
                     $_POST = json_decode(file_get_contents('php://input'), true) ?? [];
                 }
 
@@ -157,7 +158,7 @@ class Init
                 header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT, PATCH');
                 header('Access-Control-Max-Age: 86400');
 
-                switch ($_SERVER['REQUEST_METHOD']) {
+                switch ($requestMethod) {
                     case 'DELETE':
                         $this->method = 'api_delete';
                         break;

@@ -9,7 +9,9 @@ THe whole documentation is available here : https://phpunit.de and https://phpun
 
 1. in command line, go to root directory.
 2. ensure phpunit is installed with command `composer install`
-3. start test with command `./vendor/bin/phpunit tests`
+3. start test with command `./vendor/bin/phpunit --stderr tests`
+  - `--stderr` is use to prevent seding output before headers definition
+  - to get error output in a file : `./vendor/bin/phpunit --stderr tests 2>output.err`
 
 ## Create a test
 

@@ -19,6 +19,8 @@ class AssetsManager
         'tools/bazar/libs/vendor/leaflet/markercluster/leaflet.markercluster.js' => 'javascripts/vendor/leaflet-markercluster/leaflet-markercluster.min.js',
         'tools/bazar/libs/vendor/leaflet/fullscreen/Control.FullScreen.css' => 'styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css',
         'tools/bazar/libs/vendor/leaflet/fullscreen/Control.FullScreen.js' => 'javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js',
+        'tools/bazar/presentation/javascripts/form-builder.min.js' => 'javascripts/vendor/formBuilder/form-builder.min.js',
+        'tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js' => 'javascripts/vendor/jquery-ui-sortable/jquery-ui.min.js',
     ];
 
     protected const PRODUCTION_PATH_MAPPING = [

@@ -907,8 +907,8 @@ class User
             $grouptab = $this->listGroupMemberships(); // All the groups with this user in
             foreach ($grouptab as $group) {
                 $groupmembers = $this->wiki->GetGroupACL($group);
-                $groupmembers = explode('\n', $groupmembers);
-                $groupmembers = array_map('trim', $groupmembers);
+                $groupmembers = explode("\n", $groupmembers);
+                $groupmembers = array_filter(array_map('trim', $groupmembers));
                 if (count($groupmembers) == 1) { // Only one user in (this user then)
                     $this->error = _t('USER_DELETE_LONE_MEMBER_OF_GROUP').'.';
                     //				$this->error .= 'La suppression de cet utilisateur est impossible car c\'est l\'unique membre du groupe @'.$group.'. Faîtes en sorte que ce ne soit plus le cas avant de tenter à nouveau de le supprimer.';
@@ -1000,7 +1000,7 @@ class User
     {
         /* Build sql query*/
         $sql  = 'SELECT * FROM '.$this->usersTable;
-        $sql .= ' WHERE email = "'.mysqli_real_escape_string($this->wiki->dblink,$email).'";';
+        $sql .= ' WHERE email = "'.mysqli_real_escape_string($this->wiki->dblink, $email).'";';
         /* Execute query */
         $results = $this->wiki->loadAll($sql);
         return $results; // If the password does not already exist in DB, $result is an empty table => false
@@ -1024,23 +1024,12 @@ class User
     */
     public function listGroupMemberships()
     {
-        /* Build sql query*/
-        $triplesTable = $this->wiki->config['table_prefix'].'triples';
-        $sql  = 'SELECT resource FROM '.$triplesTable;
-        $sql .= ' WHERE resource LIKE "'.GROUP_PREFIX.'%"';
-        $sql .= ' AND property LIKE "'.WIKINI_VOC_ACLS_URI.'"';
-        $sql .= ' AND value LIKE "%'.$this->dbService->escape($this->properties['name']).'%";';
-        /* Execute query */
-        $results = array();
-        if ($groups = $this->wiki->loadAll($sql)) {
-            foreach ($variable as $key => $groupName) {
-                $results[] = ltrim($groupName, "@ \t\n\r\0\xOB");
-            }
-            return $results;
-        } else {
-            $error = _t('USER_LISTGROUPMEMBERSHIPS_QUERY_FAILED').'.';
-            return $error;
-        }
+        $groups = $this->wiki->GetGroupsList();
+        $groups = array_filter($groups, function ($group) {
+            return $this->wiki->UserIsInGroup($group, $this->properties['name']);
+        });
+
+        return $groups;
     }
     /* ~~~~~~~~~~~~~~~~~~~~~~~ END OF INFO METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~ */
 } //end User class

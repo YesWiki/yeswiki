@@ -122,10 +122,25 @@ function detectAvailableLanguages()
  */
 function detectPreferedLanguage($wiki, $available_languages, $http_accept_language = "auto", $page = '')
 {
-    if (isset($_GET['lang']) && in_array($_GET['lang'], $available_languages)) {
-        // first choice : if lang changed in url
-        return $_GET['lang'];
-    } elseif (isset($_POST["config"])) {
+    // sanitize parameters
+    $getLang = (isset($_GET['lang']) && in_array($_GET['lang'], $available_languages)) ? $_GET['lang'] : '';
+
+    $pageMetadataLang = "";
+    if ($page!='') {
+        // page's metadata lang
+        $wiki->metadatas = $wiki->GetMetaDatas($page);
+        if (isset($wiki->metadatas['lang']) && in_array($wiki->metadatas['lang'], $available_languages)) {
+            $pageMetadataLang = $wiki->metadatas['lang'];
+        }
+    }
+
+    // first priority
+    if (!empty($getLang)) {
+        return $getLang;
+    }
+
+    $postConfigLang = '' ;
+    if (isset($_POST["config"])) {
         // just for installation
         if (count($_POST["config"])==1) {
             if (version_compare(PHP_VERSION, '7.0.0') >= 0) {
@@ -150,33 +165,36 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
                 $conf = unserialize($_POST["config"]);
             }
             if (isset($conf['default_language']) && in_array($conf['default_language'], $available_languages)) {
-                return $conf['default_language'];
+                $postConfigLang = $conf['default_language'];
             }
         } elseif (isset($_POST["config"]['default_language'])
             && in_array($_POST["config"]['default_language'], $available_languages)) {
-            return $_POST["config"]['default_language'];
+            $postConfigLang = $_POST["config"]['default_language'];
         }
-    } elseif ($page!='') {
-        // page's metadata lang
-        $wiki->metadatas = $wiki->GetTripleValue($page, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
-        if (!empty($wiki->metadatas)) {
-            $wiki->metadatas =  json_decode($wiki->metadatas, true);
-        }
-        if (isset($wiki->metadatas['lang']) && in_array($wiki->metadatas['lang'], $available_languages)) {
-            return $wiki->metadatas['lang'];
-        }
-        if ($http_accept_language == "auto") {
-            // if $http_accept_language was left out, read it from the HTTP-Header of the browser
-            $http_accept_language = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
-        }
-        // default language from config file
-        if ((empty($http_accept_language) || $http_accept_language == "auto") && isset($wiki->config['default_language']) && in_array($wiki->config['default_language'], $available_languages)) {
-            return $wiki->config['default_language'];
-        }
-    } elseif ($http_accept_language == "auto") {
-        // if $http_accept_language was left out, read it from the HTTP-Header of the browser
-        $http_accept_language = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
     }
+
+    // second priority
+    if (!empty($postConfigLang)) {
+        return $postConfigLang;
+    }
+
+    // default language from config file
+    $configLang = !empty($wiki) && isset($wiki->config['default_language']) && in_array($wiki->config['default_language'], $available_languages)
+        ? $wiki->config['default_language'] : '';
+
+    $httpAcceptLang = ($http_accept_language !== "auto") ? $http_accept_language: (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '');
+
+    // third priority
+    if (!empty($pageMetadataLang)) {
+        return $pageMetadataLang;
+    }
+
+    // fourth priority if 'auto' or other word not representing an available lang, allow usage of http_accept_language
+    if (!empty($configLang)) {
+        return $configLang;
+    }
+
+    // fifth priority 'httpAcceptLang'
 
     // standard  for HTTP_ACCEPT_LANGUAGE is defined under
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.4
@@ -189,7 +207,7 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
     preg_match_all(
         "/([[:alpha:]]{1,8})(-([[:alpha:]|-]{1,8}))?"
         ."(\s*;\s*q\s*=\s*(1\.0{0,3}|0\.\d{0,3}))?\s*(,|$)/i",
-        $http_accept_language,
+        $httpAcceptLang,
         $hits,
         PREG_SET_ORDER
     );
@@ -252,15 +270,6 @@ function initI18n()
     $wiki = isset($GLOBALS['wiki']) ? $GLOBALS['wiki'] : '';
     $GLOBALS['prefered_language'] = detectPreferedLanguage($wiki, $GLOBALS['available_languages']);
 
-    if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswiki_'.$GLOBALS['prefered_language'].'.php')) {
-        // this will overwrite the values of $GLOBALS['translations'] in the selected language
-        $returnedArray = require_once 'lang/yeswiki_'.$GLOBALS['prefered_language'].'.php';
-        load_translations($returnedArray);
-    }
-    if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswikijs_'.$GLOBALS['prefered_language'].'.php')) {
-        $returnedArray = require_once 'lang/yeswikijs_'.$GLOBALS['prefered_language'].'.php';
-        load_translations($returnedArray, true);
-    }
     return;
 }
 

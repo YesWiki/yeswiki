@@ -6,7 +6,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
-      "test": "phpunit tests"
+      "test": "phpunit --do-not-cache-result --stderr tests"
     },
     "require": {
         "php": "^7.3",
@@ -23,7 +23,8 @@
         "doctrine/cache": "^1.10",
         "symfony/routing": "^5.1",
         "symfony/http-foundation": "^5.1",
-        "symfony/http-kernel": "^5.1",
+        "symfony/http-kernel": "^5.3.12",
+        "psr/container": "<=1.1.1",
         "tamtamchik/simple-flash": "^2.0",
         "caxy/php-htmldiff": "^0.1.13"
     },

@@ -418,7 +418,7 @@ class Wiki
                 $paramsArray = [];
                 foreach ($params as $key => $value) {
                     if ($value) {
-                        $paramsArray[] = "$key=$value";
+                        $paramsArray[] = "$key=".urlencode($value);
                     }
                 };
                 if (count($paramsArray)>0) {
@@ -1360,24 +1360,6 @@ class Wiki
                 $loader->load('config.yaml');
             }
 
-            // language files : first default language, then preferred language
-            if (file_exists($pluginBase . 'lang/' . $k . '_fr.inc.php')) {
-                $returnedArray = include $pluginBase . 'lang/' . $k . '_fr.inc.php';
-                load_translations($returnedArray);
-            }
-            if (file_exists($pluginBase . 'lang/' . $k . 'js_fr.inc.php')) {
-                $returnedArray = include $pluginBase . 'lang/' . $k . 'js_fr.inc.php';
-                load_translations($returnedArray, true);
-            }
-            if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php')) {
-                $returnedArray = include $pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php';
-                load_translations($returnedArray);
-            }
-            if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . 'js_' . $GLOBALS['prefered_language'] . '.inc.php')) {
-                $returnedArray = include $pluginBase . 'lang/' . $k . 'js_' . $GLOBALS['prefered_language'] . '.inc.php';
-                load_translations($returnedArray, true);
-            }
-
             // api functions
             if (file_exists($pluginBase . 'libs/' . $k . '.api.php')) {
                 include $pluginBase . 'libs/' . $k . '.api.php';
@@ -1405,6 +1387,27 @@ class Wiki
 
         // This must be done after service initialization, as it uses services
         loadpreferredI18n($this, $this->tag);
+        
+        // translations
+        foreach ($this->extensions as $k => $pluginBase) {
+            // language files : first default language, then preferred language
+            if (file_exists($pluginBase . 'lang/' . $k . '_fr.inc.php')) {
+                $returnedArray = include $pluginBase . 'lang/' . $k . '_fr.inc.php';
+                load_translations($returnedArray);
+            }
+            if (file_exists($pluginBase . 'lang/' . $k . 'js_fr.inc.php')) {
+                $returnedArray = include $pluginBase . 'lang/' . $k . 'js_fr.inc.php';
+                load_translations($returnedArray, true);
+            }
+            if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php')) {
+                $returnedArray = include $pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php';
+                load_translations($returnedArray);
+            }
+            if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . 'js_' . $GLOBALS['prefered_language'] . '.inc.php')) {
+                $returnedArray = include $pluginBase . 'lang/' . $k . 'js_' . $GLOBALS['prefered_language'] . '.inc.php';
+                load_translations($returnedArray, true);
+            }
+        }
 
         $metadata = $this->services->get(PageManager::class)->getMetadata($this->tag);
 
@@ -1429,7 +1432,7 @@ class Wiki
         foreach ($array2 as $key => $val) {
             if (is_array($val)) {
                 if (!$this->isAssocArray($val)) {
-                    if(!isset($array1[$key]) || $array1[$key] != $val) {
+                    if (!isset($array1[$key]) || $array1[$key] != $val) {
                         $array1[$key] = $val;
                     }
                 } else {

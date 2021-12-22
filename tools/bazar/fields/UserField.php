@@ -3,8 +3,10 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\UserManager;
+use YesWiki\Wiki;
 
 class UserFieldException extends \Exception
 {
@@ -19,10 +21,12 @@ class UserField extends BazarField
     protected $emailField;
     protected $mailingList;
     protected $autoUpdateMail;
+    protected $autoAddToGroup;
 
     protected const FIELD_NAME_FIELD = 1;
     protected const FIELD_EMAIL_FIELD = 2;
     protected const FIELD_MAILING_LIST = 5;
+    protected const FIELD_AUTO_ADD_TO_GROUP = 6;
     protected const FIELD_AUTO_UPDATE_MAIL = 9;
 
     private const CONFIRM_NAME_SUFFIX = '_confirmNewName';
@@ -36,6 +40,7 @@ class UserField extends BazarField
         $this->emailField = $values[self::FIELD_EMAIL_FIELD];
         $this->mailingList = $values[self::FIELD_MAILING_LIST];
         $this->autoUpdateMail = in_array($values[self::FIELD_AUTO_UPDATE_MAIL], [true,"1",1], true);
+        $this->autoAddToGroup = trim(strval($values[self::FIELD_AUTO_ADD_TO_GROUP]));
 
         // We have no default value
         $this->default = null;
@@ -55,7 +60,7 @@ class UserField extends BazarField
         if (!empty($loggedUser)) {
             $associatedUser = $userManager->getOneByName($loggedUser['name']);
             if (!empty($associatedUser['name'])) {
-                if (empty($value)) {
+                if (empty($value) || !$this->isUserByName($value)) {
                     $value = $associatedUser['name'];
                     $message = str_replace(
                         ['{wikiname}','{email}'],
@@ -148,6 +153,9 @@ class UserField extends BazarField
             // check existence of user with same
             $userManager->create($wikiName, $entry[$this->emailField], $entry['mot_de_passe_wikini']);
 
+            // add in groups
+            $this->addUserToGroups($wikiName, $entry);
+
             // Do not send mails if we are importing
             // TODO improve import detection
             if (!$isImport) {
@@ -213,6 +221,11 @@ class UserField extends BazarField
         return $this->autoUpdateMail;
     }
 
+    public function getAutoAddToGroup()
+    {
+        return $this->autoAddToGroup;
+    }
+
     public function jsonSerialize()
     {
         return array_merge(
@@ -222,6 +235,7 @@ class UserField extends BazarField
                 'emailField' => $this->getEmailField(),
                 'mailingList' => $this->getMailingList(),
                 'autoUpdateMail' => $this->getAutoUpdateMail(),
+                'autoAddToGroup' => $this->getAutoAddToGroup(),
             ]
         );
     }
@@ -263,5 +277,68 @@ class UserField extends BazarField
                 $userManager->updateEmail($user['name'], $email);
             }
         }
+    }
+
+    private function addUserToGroups(string $wikiName, ?array $entry)
+    {
+        if (!empty($this->autoAddToGroup)) {
+            $groups = explode(',', $this->autoAddToGroup);
+            $groupsNames = [];
+            $wiki = $this->getWiki();
+            $existingsGroups = $wiki->GetGroupsList();
+            $formManager = $this->getService(FormManager::class);
+            foreach ($groups as $group) {
+                $group = trim($group);
+                $forceGroupCreation =  (substr($group, 0, 1) === '+');
+                $groupName = substr($group, ($forceGroupCreation ? 1 : 0));
+                if (substr($groupName, 0, 1) !== '@') {
+                    // field name
+                    $field = $formManager->findFieldFromNameOrPropertyName($groupName, $entry['id_typeannonce']);
+                    if (!empty($field) && !empty($entry[$field->getPropertyName()])) {
+                        $groupsNamesFromField = explode(',', $entry[$field->getPropertyName()]);
+                        foreach ($groupsNamesFromField as $groupNameFromField) {
+                            if ($this->userMustBeAddedToGroup($wikiName, $groupNameFromField, $forceGroupCreation, $wiki, $existingsGroups)) {
+                                $groupsNames[] = $groupNameFromField;
+                            }
+                        }
+                    }
+                } else {
+                    $groupName = substr($groupName, 1);
+                    if ($this->userMustBeAddedToGroup($wikiName, $groupName, $forceGroupCreation, $wiki, $existingsGroups)) {
+                        $groupsNames[] = $groupName;
+                    }
+                }
+            }
+            
+            $groupsNames = array_unique($groupsNames);
+
+            foreach ($groupsNames as $groupName) {
+                $previousACL = !in_array($groupName, $existingsGroups, true)
+                    ? ''
+                    : $wiki->GetGroupACL($groupName)."\n";
+                $wiki->SetGroupACL($groupName, $previousACL.$wikiName);
+            }
+        }
+    }
+
+    private function userMustBeAddedToGroup(
+        string $wikiName,
+        string $groupName,
+        bool $forceGroupCreation,
+        Wiki $wiki,
+        array $existingsGroups
+    ) {
+        if (!preg_match('/^[A-Za-z0-9]+$/m', $groupName)) {
+            return false;
+        }
+        
+        if (in_array($groupName, $existingsGroups, true)) {
+            if (!$wiki->UserIsInGroup($groupName, $wikiName)) {
+                return true;
+            }
+        } elseif ($forceGroupCreation) {
+            return true;
+        }
+        return false;
     }
 }

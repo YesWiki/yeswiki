@@ -776,3 +776,21 @@ function removeCSVCrochet(str){
   res = res.replace(/&gt;/gm,'>');
   return res;
 }
+
+
+// range input
+$(document).ready(function () {
+  const rangeInputs = document.querySelectorAll('.range-wrap input[type="range"]')
+  function handleInputChange(e) {
+    let target = e.target
+    const min = target.min
+    const max = target.max
+    const val = target.value
+    target.style.backgroundSize = (val - min) * 100 / (max - min) + '% 100%'
+    $(target).siblings('output').val(val)
+  }
+
+  rangeInputs.forEach(input => {
+    input.addEventListener('input', handleInputChange)
+  })
+});

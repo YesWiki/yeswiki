@@ -40,7 +40,7 @@
 
   <?php
   $fiche['bf_titre'] = trim($fiche['bf_titre']);
-  $firstChar = mb_strtolower($fiche['bf_titre'][0]);
+  $firstChar = strtolower(removeAccents($fiche['bf_titre'])[0]);
 
   // si on change de lettre dans le parcours alphabétique, on rajoute une ancre avec le titre de la lettre
   if (empty($curChar) || $firstChar != $curChar) : ?>

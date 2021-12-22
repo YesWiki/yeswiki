@@ -247,10 +247,22 @@ class BazarListService
     {
         return function ($a, $b) use ($ordre, $champ) {
             if ($ordre == 'desc') {
-                return strcoll($b[$champ], $a[$champ]);
+                $first = $b[$champ] ?? '';
+                $second = $a[$champ] ?? '';
             } else {
-                return strcoll($a[$champ], $b[$champ]);
+                $first = $a[$champ] ?? '';
+                $second = $b[$champ] ?? '';
             }
+            // compare insentive uppercase even for special chars
+            return strcmp($this->sanitizeStringForCompare($first), $this->sanitizeStringForCompare($second));
         };
+    }
+
+    private function sanitizeStringForCompare($value): string
+    {
+        $value = is_scalar($value)
+            ? strval($value)
+            : json_encode($value);
+        return strtoupper(removeAccents($value));
     }
 }

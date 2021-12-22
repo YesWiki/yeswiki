@@ -48,13 +48,21 @@ if ($isAdmin && (!empty($_POST['userstable_action']))) { // Check if the page re
         $rowUser = new \YesWiki\User($wiki);
         $OK= $rowUser->loadByNameFromDB($user);
         if (!$OK) {
-            die($rowUser->error);
+            echo $this->render('@templates/alert-message.twig', [
+                'type' => 'warning',
+                'message' => $rowUser->error
+            ]);
+        } else {
+            $OK = $rowUser->delete();
+            if (!$OK) {
+                echo $this->render('@templates/alert-message.twig', [
+                    'type' => 'warning',
+                    'message' => $rowUser->error
+                ]);
+            } else {
+                $wiki->redirect($wiki->href());
+            }
         }
-        $OK = $rowUser->delete();
-        if (!$OK) {
-            die($rowUser->error);
-        }
-        $wiki->redirect($wiki->href());
     } else { // We arrived on this page with an unexpected $_POST
         die(_t('USER_USERSTABLE_MISTAKEN_ARGUMENT'));
     }
@@ -80,7 +88,7 @@ foreach ($last_users as $user) {
     $userIsTheOneConnected = (isset($loggedUser['name']) && isset($user['name']) && ($loggedUser['name'] == $user['name']));
     $ug = array();
     foreach ($groups as $group) {
-        if ($wiki->UserIsInGroup($group, $user['name'], true)) {
+        if ($wiki->UserIsInGroup($group, $user['name'], false)) { // false to not display admins in other groups
             $ug[] = $group ;
         }
     }

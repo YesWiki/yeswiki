@@ -405,9 +405,11 @@ actions:
           floating:
             type: form-field
             label: Champ pour la zone flottante
+            default: ""
           visual:
             type: form-field
             label: Champ pour la zone visuelle
+            default: ""
 
   bazartrombi:
     label: Trombinoscope

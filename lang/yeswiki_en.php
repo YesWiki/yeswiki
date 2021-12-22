@@ -421,7 +421,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'EDIT_CONFIG_HINT_DEFAULT_WRITE_ACL' => 'Default write pages access control',
 'EDIT_CONFIG_HINT_DEFAULT_READ_ACL' => 'Default read pages access control',
 'EDIT_CONFIG_HINT_DEBUG' => 'Activate debug mode (\'yes\'/\'no\')',
-'EDIT_CONFIG_HINT_DEFAULT_LANGUAGE' => '(\'fr\',\'en\',...)',
+'EDIT_CONFIG_HINT_DEFAULT_LANGUAGE' => 'Default language (fr or en or ... auto = navigator\'s language)',
 'EDIT_CONFIG_HINT_CONTACT_FROM' => 'E-mail address used as sender for messages from entries',
 'EDIT_CONFIG_HINT_MAIL_CUSTOM_MESSAGE' => 'Custom message for e-mail sending',
 'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING' => 'Asked password to modify forms (empty = no restriction)',

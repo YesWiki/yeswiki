@@ -46,4 +46,4 @@ shell: ## Start shell inside Docker
 
 ## —— Tests ———————————————
 test: ## Launch unit tests
-	./vendor/bin/phpunit tests
+	./vendor/bin/phpunit --do-not-cache-result --stderr tests
