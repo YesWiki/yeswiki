@@ -175,6 +175,14 @@ actions:
           '+': Utilisateur connecté
           '%': Propriétaire de la page
           '@admins': Admins seulement
+      nocontainer:
+        advanced: true
+        type: list
+        label:  Ne pas mettre de conteneur
+        default: 0
+        options:
+          '1': Oui
+          '0': Non
 #      data:
 #        label: Data wow
 #        type: text
