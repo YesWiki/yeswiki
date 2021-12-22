@@ -615,19 +615,6 @@ const templateHelper = {
       }
     }
   },
-  removeStandardProperties: function (field){
-    let holder = this.getHolder(field);
-    let id = this.getId(field);
-    if (holder){
-      if (holder.data('properties-already-removed') !== "1"){
-        holder.data('properties-already-removed',"1");
-        $(`#required-${id}`).closest('.form-group').hide();
-        $(`#label-${id}`).closest('.form-group').hide();
-        $(`#value-${id}`).closest('.form-group').hide();
-        $(`#name-${id}`).closest('.form-group').hide();
-      }
-    }
-  },
 };
 
 // How a field is represented in the formBuilder view
@@ -709,11 +696,21 @@ var templates = {
             'tabs-field-label': _t('BAZ_FORM_EDIT_TABS'),
             'tabchange-field-label': _t('BAZ_FORM_EDIT_TABCHANGE')
           }));
-          templateHelper.removeStandardProperties(field);
           templateHelper.prependHTMLBeforeGroup(field,'formTitles',$('<div/>').addClass('form-group').append($('<b/>').append(_t('BAZ_FORM_EDIT_TABS_TITLES_LABEL'))));
           templateHelper.defineLabelHintForGroup(field,'formTitles',_t('BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION'));
           templateHelper.defineLabelHintForGroup(field,'viewTitles',_t('BAZ_FORM_EDIT_TABS_VIEWTITLES_DESCRIPTION'));
           templateHelper.prependHTMLBeforeGroup(field,'moveSubmitButtonToLastTab',$('<hr/>').addClass('form-group'));
+          
+          let holder = templateHelper.getHolder(field);
+          if (holder){
+            let formGroup = holder.find('.formTitles-wrap');
+            if (typeof formGroup !== undefined && formGroup.length > 0){
+              let input = formGroup.find('input').first();
+              if (typeof input !== undefined && input.length > 0){
+                $(input).val($(input).val().replace(/\|/g,","));
+              }
+            }
+          }
         },
       };
   },
@@ -726,12 +723,42 @@ var templates = {
             'tabs-field-label': _t('BAZ_FORM_EDIT_TABS'),
             'tabchange-field-label': _t('BAZ_FORM_EDIT_TABCHANGE')
           }));
-          templateHelper.removeStandardProperties(field);
           templateHelper.prependHTMLBeforeGroup(field,'formChange',$('<div/>').addClass('form-group').append($('<b/>').append(_t('BAZ_FORM_EDIT_TABCHANGE_CHANGE_LABEL'))));
         },
       };
   },
 };
+
+var typeUserDisabledAttrs = {
+  tabs:['required','value','name','label'],
+  tabchange:['required','value','name','label'],
+};
+
+var inputSets = [
+  {
+    label: _t('BAZ_FORM_EDIT_TABS'),
+    name: "tabs",
+    icon: '<i class="fas fa-layer-group"></i>',
+    fields: [
+      {
+        type: "tabs",
+        label: _t('BAZ_FORM_EDIT_TABS'),
+      },
+      {
+        type: "tabchange",
+        label: _t('BAZ_FORM_EDIT_TABCHANGE'),
+      },
+      {
+        type: "tabchange",
+        label: _t('BAZ_FORM_EDIT_TABCHANGE'),
+      },
+      {
+        type: "tabchange",
+        label: _t('BAZ_FORM_EDIT_TABCHANGE'),
+      },
+    ],
+  },
+];
 
 // Mapping betwwen yes wiki syntax and FormBuilder json syntax
 var defaultMapping = {
@@ -946,6 +973,8 @@ function initializeFormbuilder(formAndListIds) {
       "multiple",
     ],
     typeUserAttrs: typeUserAttrs,
+    typeUserDisabledAttrs: typeUserDisabledAttrs,
+    inputSets:inputSets,
   });
 
   // Each 300ms update the text field converting form bulder content into wiki syntax

@@ -41,7 +41,7 @@ class TabsField extends LabelField
 
     protected function sanitizeTitles(?string $input):?array
     {
-        $titles = explode('|', $input);
+        $titles = explode(',', str_replace("|",",",$input));
         $titles = array_filter(array_map('trim', $titles), function ($title) {
             return !empty($title);
         });

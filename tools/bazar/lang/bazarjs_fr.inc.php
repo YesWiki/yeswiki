@@ -75,9 +75,9 @@ return [
     'BAZ_FORM_EDIT_TABS_TITLES_LABEL' => "Titres des onglets",
     'BAZ_FORM_EDIT_TABS_FOR_FORM' => "pour le formulaire",
     'BAZ_FORM_EDIT_TABS_FOR_ENTRY' => "pour la fiche",
-    'BAZ_FORM_EDIT_TABS_FORMTITLES_VALUE' => "Onglet 1|Onglet 2|Onglet 3",
-    'BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION' => "Séparer chaque titre par '|'. Laisser vide pour ne pas avoir d'onglets dans le formulaire",
-    'BAZ_FORM_EDIT_TABS_VIEWTITLES_DESCRIPTION' => "Séparer chaque titre par '|'. Laisser vide pour ne pas avoir d'onglets dans la fiche",
+    'BAZ_FORM_EDIT_TABS_FORMTITLES_VALUE' => "Onglet 1,Onglet 2,Onglet 3",
+    'BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION' => "Séparer chaque titre par ','. Laisser vide pour ne pas avoir d'onglets dans le formulaire",
+    'BAZ_FORM_EDIT_TABS_VIEWTITLES_DESCRIPTION' => "Séparer chaque titre par ','. Laisser vide pour ne pas avoir d'onglets dans la fiche",
     'BAZ_FORM_EDIT_TABS_MOVESUBMITBUTTONTOLASTTAB_LABEL' => "Déplacer le bouton 'Valider'",
     'BAZ_FORM_EDIT_TABS_MOVESUBMITBUTTONTOLASTTAB_DESCRIPTION' => "Déplacer le bouton 'Valider' dans le dernier onglet",
     'BAZ_FORM_EDIT_TABS_NAVCLASS_LABEL' => "Forme des onglets",
@@ -91,7 +91,7 @@ return [
     'PRIMARY' => "Primaire",
     'SECONDARY' => "Secondaire",
     "BAZ_FORM_TABS_HINT" => "Pour utiliser les onglets, il vous faut deux champs : {\\n}".
-        " - le champ \"{tabs-field-label}\" dans lequel spécifier le nom des onglets séparés par des \"|\" {\\n}".
+        " - le champ \"{tabs-field-label}\" dans lequel spécifier le nom des onglets séparés par des \",\" {\\n}".
         " - le champ \"{tabchange-field-label}\" à intégrer à la fin de chaque onglet ainsi qu'à la fin de votre formulaire",
     'BAZ_FORM_EDIT_ADD_TO_GROUP_LABEL' => "Groupes où ajouter l'utilisateur",
     'BAZ_FORM_EDIT_ADD_TO_GROUP_DESCRIPTION' => "Groupes où ajouter l'utilisateur, séparés par ','",
