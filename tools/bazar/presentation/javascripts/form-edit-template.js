@@ -1228,7 +1228,7 @@ function parseWikiTextIntoJsonData(text) {
         var field = mapping && j in mapping ? mapping[j] : j;
         if (field == "required") value = value == "1" ? true : false;
         if (field){
-          if (field == "read" || field == "write"){
+          if (field == "read" || field == "write" || field == "comment"){
             fieldObject[field] = value.split(',');
           } else {
             fieldObject[field] = value;
