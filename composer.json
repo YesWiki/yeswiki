@@ -6,7 +6,13 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
-      "test": "phpunit --do-not-cache-result --stderr tests"
+      "test": "phpunit --do-not-cache-result --stderr tests",
+      "post-install-cmd": [
+        "@composer install --working-dir ./tools/autoupdate/"
+      ],
+      "post-update-cmd": [
+        "@composer update --working-dir ./tools/autoupdate/"
+      ]
     },
     "require": {
         "php": "^7.3",
@@ -21,6 +27,7 @@
         "twig/twig": "^3.0",
         "doctrine/annotations": "^1.11",
         "doctrine/cache": "^1.10",
+        "symfony/console": "^5.2",
         "symfony/routing": "^5.1",
         "symfony/http-foundation": "^5.1",
         "symfony/http-kernel": "^5.3.12",
