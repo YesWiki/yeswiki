@@ -4,7 +4,7 @@
   <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
     {% for group, data in keysList %}
       <div class="panel panel-{{ group == 'core' ? 'primary' : 'default' }}">
-        <div class="panel-heading" id="head_{{ group }}" data-parent="#accordion" data-toggle="collapse" href="#{{ group }}">
+        <div class="panel-heading collapsed" id="head_{{ group }}" data-parent="#accordion" data-toggle="collapse" href="#{{ group }}">
           <h4 class="panel-title">
             {% set groupTitle = 'EDIT_CONFIG_GROUP_' ~ group|upper %}
             {{ (_t(groupTitle) == groupTitle) ? group|upper : _t(groupTitle) }}
