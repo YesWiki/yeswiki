@@ -10,7 +10,6 @@ return [
     // 'BAZ_FORM_EDIT_MIN_VAL' => "Valeur min",
     // 'BAZ_FORM_EDIT_MAX_VAL' => "Valeur max",
     'BAZ_FORM_EDIT_OWNER_AND_ADMINS' => "Entry owner and admins",
-    'BAZ_FORM_EDIT_OWNER_AND_MEMBER_OF_GROUP' => "Entry owner,admins and member of group {groupName}",
     // 'BAZ_FORM_EDIT_USER' => "Utilisateur (lorsqu'on créé un utilisateur en même temps que la fiche)",
     'BAZ_FORM_EDIT_CAN_BE_READ_BY' => "Can be read by",
     'BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY' => "Can be written by",
