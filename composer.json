@@ -6,13 +6,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
-      "test": "phpunit --do-not-cache-result --stderr tests",
-      "post-install-cmd": [
-        "@composer install --working-dir ./tools/syndication/"
-      ],
-      "post-update-cmd": [
-        "@composer update --working-dir ./tools/syndication/"
-      ]
+      "test": "phpunit --do-not-cache-result --stderr tests"
     },
     "require": {
         "php": "^7.3",

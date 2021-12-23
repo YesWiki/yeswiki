@@ -1,14 +1,9 @@
 {
-    "_readme": [
-        "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
-        "This file is @generated automatically"
-    ],
-    "content-hash": "01f247dec3169ca8befa2722e3566cfa",
     "packages": [
         {
             "name": "simplepie/simplepie",
             "version": "1.5.7",
+            "version_normalized": "1.5.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/simplepie/simplepie.git",
@@ -36,7 +31,9 @@
                 "ext-mbstring": "",
                 "mf2/mf2": "Microformat module that allows for parsing HTML for microformats"
             },
+            "time": "2021-12-19T07:39:23+00:00",
             "type": "library",
+            "installation-source": "dist",
             "autoload": {
                 "psr-0": {
                     "SimplePie": "library"
@@ -75,16 +72,9 @@
                 "issues": "https://github.com/simplepie/simplepie/issues",
                 "source": "https://github.com/simplepie/simplepie/tree/1.5.7"
             },
-            "time": "2021-12-19T07:39:23+00:00"
+            "install-path": "../simplepie/simplepie"
         }
     ],
-    "packages-dev": [],
-    "aliases": [],
-    "minimum-stability": "stable",
-    "stability-flags": [],
-    "prefer-stable": false,
-    "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": [],
-    "plugin-api-version": "2.1.0"
+    "dev": true,
+    "dev-package-names": []
 }
