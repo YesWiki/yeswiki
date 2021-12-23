@@ -7,7 +7,7 @@ actions:
   # Champs Communs concernant l'affichage
   # -------------------------------------
   commons:
-    title: Affichage
+    title: _t(AB_bazar_commons_title)
     width: 33%
     properties:
       search:
@@ -30,15 +30,15 @@ actions:
           - bazarliste
           - bazarcarto
       dynamic:
-        label: Rendu dynamique (version beta)
+        label: _t(AB_bazar_commons_dynamic_label)
         showOnlyFor:
           - bazarliste
           - bazarcarto
         type: checkbox
         advanced: true
       pagination:
-        label: Nombre de fiches par page
-        hint: Laisser vide pour ne pas utiliser la pagination
+        label: _t(AB_bazar_commons_pagination_label)
+        hint: _t(AB_bazar_commons_pagination_hint)
         type: number
         showExceptFor:
           - bazarcarto
@@ -48,7 +48,7 @@ actions:
           - bazarcalendar
       
       colorfield:
-        label: Champ pour la couleur
+        label: _t(AB_bazar_commons_colorfield_label)
         type: form-field
         only: lists # ce champ doit être de type checkboxListe, listeListe ...
         showOnlyFor:
@@ -64,14 +64,14 @@ actions:
           - bazarliste
         subproperties:
           id:
-            label: Valeur
+            label: _t(AB_bazar_commons_subproperty_id_label)
             type: list
             dataFromFormField: colorfield
           color:
-            label: Couleur
+            label: _t(AB_bazar_commons_colormapping_color_label)
             type: color
       iconfield:
-        label: Champ pour l'icone
+        label: _t(AB_bazar_commons_iconfield_label)
         type: form-field
         only: lists # ce champ doit être de type checkboxListe, listeListe ...
         showOnlyFor:
@@ -87,17 +87,17 @@ actions:
           - bazarliste
         subproperties:
           id:
-            label: Valeur
+            label: _t(AB_bazar_commons_subproperty_id_label)
             type: list
             dataFromFormField: iconfield
           icon:
-            label: Icone
+            label: _t(AB_bazar_commons_iconfield_icon_label)
             type: icon
         iconprefix:
           advanced: true
           type: text
-          label: Prefixe pour les icones
-          hint: Si vous utilisez le selecteur d'icone, vous n'avez pas besoin de ce champ
+          label: _t(AB_bazar_commons_iconfield_iconprefix_label)
+          hint: _t(AB_bazar_commons_iconfield_iconprefix_hint)
       minical:
         label: _t(AB_bazar_commons_minical)
         type: checkbox
@@ -115,43 +115,43 @@ actions:
   # Champs Communs concernant les filtres
   # -------------------------------------
   commons2:
-    title: Filtres / Facettes
+    title: _t(AB_bazar_commons2_title)
     width: 33%
     properties:
       facettes:
         type: facette
-        btn-label-add: Ajouter Une Facette
+        btn-label-add: _t(AB_bazar_facettes_btn-label-add)
         subproperties:
           field:
-            label: Champ
+            label: _t(AB_bazar_facettes_field_label)
             type: form-field
             only: lists # ce champ doit être de type checkboxListe, listeListe ...
           title:
-            label: Titre
+            label: _t(AB_bazar_facettes_title_label)
             type: text
           icon:
             label: Icone
             type: icon
       groupsexpanded:
-        label: Affichage initial des facettes
+        label: _t(AB_bazar_commons2_groupsexpanded_label)
         type: list
         advanced: true
         options:
-          'false': _t(AB_bazar_facettes_groupsexpanded_false)
-          'true': _t(AB_bazar_facettes_groupsexpanded_true)
+          'false': _t(AB_bazar_commons2_groupsexpanded_false)
+          'true': _t(AB_bazar_commons2_groupsexpanded_true)
         showif: facettes
       filterposition:
-        label: Position des facettes
+        label: _t(AB_bazar_commons2_filterposition_label)
         type: list
         advanced: true
         options:
-          right: Droite
-          left: Gauche
+          right: _t(AB_RIGHT)
+          left: _t(AB_LEFT)
         showif: facettes
         showExceptFor:
           - bazargogocarto
       filtercolsize:
-        label: Largeur des facettes
+        label: _t(AB_bazar_commons2_filtercolsize_label)
         advanced: true
         type: range
         min: 1
@@ -162,8 +162,8 @@ actions:
         type: checkbox
         advanced: true
       champ:
-        label: Champ pour le tri
-        hint: Il est possible d'effectuer des requètes avancées, pour en savoir plus
+        label: _t(AB_bazar_commons2_champ_label)
+        hint: _t(AB_bazar_commons2_champ_hint)
         doclink: https://yeswiki.net/?DocQuery
         type: form-field
         default:
@@ -175,13 +175,13 @@ actions:
           - bazarannuaire
           - bazarcalendar
       ordre:
-        label: Ordre de classement
+        label: _t(AB_bazar_commons2_ordre_label)
         type: list
         default: asc
         advanced: true
         options:
-          asc: Croissant
-          desc: Décroissant
+          asc: _t(AB_bazar_commons2_ordre_option_asc)
+          desc: _t(AB_bazar_commons2_ordre_option_desc)
         showExceptFor:
           - bazarcarto
           - bazargogocarto
@@ -189,13 +189,13 @@ actions:
           - bazarannuaire
           - bazarcalendar
       nb:
-        label: Limitation
-        hint: Limite l'affichage du nombre de fiche
+        label: _t(AB_bazar_commons2_nb_label)
+        hint: _t(AB_bazar_commons2_nb_hint)
         type: number
         advanced: true
 #      query:
 #        advanced: true
-#        label: "Requête SQL (avancé)"
+#        label: _t(AB_bazar_commons2_query_label)
 #        type: text
       datefilter:
         label: _t(AB_bazar_commons2_filter_on_date)
@@ -225,15 +225,15 @@ actions:
   # Liste des Actions
   # -----------------
   bazarcarto:
-    label: Cartographie
-    description: Les fiches seront sous forme de marqueur.
-    hint: Le champ géolocalisation doit être présent dans votre formulaire
+    label: _t(AB_bazarcarto_label)
+    description: _t(AB_bazarcarto_description)
+    hint: _t(AB_bazarcarto_hint)
     width: 35%
     properties:
       template:
         value: map
       provider:
-        label: Fond de carte
+        label: _t(AB_bazarcarto_provider_label)
         required: true
         type: list
         default: OpenStreetMap.Mapnik # TODO change to Stadia.OSMBright if community agrees?
@@ -276,32 +276,32 @@ actions:
           - BasemapAT.orthofoto
           - NASAGIBS.ViirsEarthAtNight2012
       coordinates:
-        label: Vue initiale
+        label: _t(AB_bazarcarto_coordinates_label)
         type: geo
       cluster:
-        label: Regroupe les points par zone (clusters)
+        label: _t(AB_bazarcarto_cluster_label)
         type: checkbox
         default: false
       width:
         advanced: true
-        label: Largeur de la carte
+        label: _t(AB_bazarcarto_width_label)
         hint: 500px, 100%...
         type: text
         default: 100%
       height:
         advanced: true
-        label: Hauteur de la carte
+        label: _t(AB_bazarcarto_height_label)
         type: text
         default: 600px
       entrydisplay:
-        label: Lors du click, afficher la fiche
+        label: _t(AB_bazarcarto_entrydisplay_label)
         type: list
         default: sidebar
         advanced: true
         showif: dynamic
         options:
-          sidebar: Dans une barre latérale
-          modal: Dans une popup    
+          sidebar: _t(AB_bazarcarto_entrydisplay_option_sidebar)
+          modal: _t(AB_bazarcarto_entrydisplay_option_modal)
       displayfields:
         type: correspondance
         showif: dynamic
@@ -309,40 +309,40 @@ actions:
         subproperties:
           markerhover:
             type: form-field
-            label: Champ à afficher au survol du marker
+            label: _t(AB_bazarcarto_displayfields_markhover_label)
             default: bf_titre
       smallmarker:
         advanced: true
-        label: Petit marqueurs
+        label: _t(AB_bazarcarto_smallmarker_label)
         type: checkbox
         default: 0
         checkedvalue: 1
         uncheckedvalue: 0
       # spider:
       #   advanced: true
-      #   label: Mode spider
-      #   hint: Éclate un groupe de point lors du click
+      #   label: _t(AB_bazarcarto_spider_label)
+      #   hint: _t(AB_bazarcarto_spider_hint)
       #   type: checkbox
       #   default: false
       # barregestion:
       #   advanced: true
-      #   label: Barre de gestion des fiches
+      #   label: _t(AB_bazarcarto_barregestion_label)
       #   type: checkbox
       #   default: false
       # navigation:
       #   advanced: true
-      #   label: Boutons de contrôle du zoom
+      #   label: _t(AB_bazarcarto_navigation_label)
       #   type: checkbox
       #   default: true
       zoommolette:
         advanced: true
-        label: Pouvoir zoomer avec la molette de la souris
+        label: _t(AB_bazarcarto_zoommolette_label)
         type: checkbox
         default: false
 
   bazaragenda:
-    label: Agenda
-    description: Les fiches seront sous forme d'événement dans un agenda.
+    label: _t(AB_bazaragenda_label)
+    description: _t(AB_bazaragenda_description)
     properties:
       template:
         value: agenda
@@ -351,17 +351,17 @@ actions:
         subproperties:
           bf_date_debut_evenement:
             type: form-field
-            label: Champ pour la date de début
+            label: _t(AB_bazar_bf_date_debut_evenement_label)
           bf_date_fin_evenement:
             type: form-field
-            label: Champ pour la date de fin
+            label: _t(AB_bazar_bf_date_fin_evenement_label)
       nbcol:
-        label: Nombre de colonnes
+        label: _t(AB_bazaragenda_nbcol_label)
         type: number
         default:
         advanced: true
       modal:
-        label: Affichage d'une fenêtre modale lors du clic
+        label: _t(AB_bazaragenda_modal_label)
         type: checkbox
         default:
         advanced: true
@@ -369,8 +369,8 @@ actions:
         uncheckedvalue:
 
   bazarcalendar:
-    label: Calendrier
-    description: Les fiches seront sous forme d'événement dans un calendrier.
+    label: _t(AB_bazarcalendar)
+    description: _t(AB_bazarcalendar_description)
     properties:
       template:
         value: calendar
@@ -379,14 +379,14 @@ actions:
         subproperties:
           bf_date_debut_evenement:
             type: form-field
-            label: Champ pour la date de début
+            label: _t(AB_bazar_bf_date_debut_evenement_label)
           bf_date_fin_evenement:
             type: form-field
-            label: Champ pour la date de fin
+            label: _t(AB_bazar_bf_date_fin_evenement_label)
 
   bazarliste:
-    label: Liste
-    description: Les fiches seront sous forme d'accordéons
+    label: _t(AB_bazarliste_label)
+    description: _t(AB_bazarliste_description)
     properties:
       template:
         value: 'liste_accordeon'
@@ -396,38 +396,38 @@ actions:
         subproperties:
           title:
             type: form-field
-            label: Champ pour la zone de titre
+            label: _t(AB_bazarliste_displayfields_title_label)
             default: bf_titre
           subtitle:
             type: form-field
-            label: Champ pour la zone de sous titre
+            label: _t(AB_bazarliste_displayfields_subtitle_label)
             default: ""
           floating:
             type: form-field
-            label: Champ pour la zone flottante
+            label: _t(AB_bazarliste_displayfields_floating_label)
             default: ""
           visual:
             type: form-field
-            label: Champ pour la zone visuelle
+            label: _t(AB_bazarliste_displayfields_visual_label)
             default: ""
 
   bazartrombi:
-    label: Trombinoscope
-    description: Les fiches seront sous forme de Trombinoscope.
-    hint: Un champ de type bf_image est nécessaire
+    label: _t(AB_bazartrombi_label)
+    description: _t(AB_bazartrombi_description)
+    hint: _t(AB_bazartrombi_hint)
     properties:
       template:
         value: trombinoscope
 
   bazarmaterialcard:
-    label: Material card
-    description: Les fiches seront sous forme de boite modale.
-    hint: Un champ de type bf_image est nécessaire
+    label: _t(AB_bazarmaterialcard_label)
+    description: _t(AB_bazarmaterialcard_description)
+    hint: _t(AB_bazarmaterialcard_hint)
     properties:
       template:
         value: material-card
       nbcol:
-        label: Nombre de colonnes
+        label: _t(AB_bazarmaterialcard_nbcol_label)
         type: list
         default: 4
         options:
@@ -437,13 +437,13 @@ actions:
           - 4
           - 6
       type:
-        label: Affichage sans effet
+        label: _t(AB_bazarmaterialcard_type_label)
         type: checkbox
         default:
         checkedvalue: simple
         uncheckedvalue:
       modal:
-        label: Affichage d'une fenêtre modale lors du clic
+        label: _t(AB_bazarmaterialcard_modal_label)
         type: checkbox
         default:
         checkedvalue: 1
@@ -453,24 +453,24 @@ actions:
         subproperties:
           bf_baseline:
             type: form-field
-            label: Champ pour le sous titre
+            label: _t(AB_bazarmaterialcard_bf_baseline_label)
 
   bazarannuaire:
-    label: Annuaire
-    description: Affiche les fiches sous forme d'annuaire alphabétique
+    label: _t(AB_bazarannuaire_label)
+    description: _t(AB_bazarannuaire_description)
     properties:
       template:
         value: annuaire_alphabetique
 
   bazardamier:
-    label: Damier
-    description: Affiche les fiches sous forme de damier paramétrable
-    hint: Un champ de type bf_debut, bf_fin, bf_lieu, bf_image, bf_lien, bf_fichier, bf_bouton sont utilisés
+    label: _t(AB_bazardamier_label)
+    description: _t(AB_bazardamier_description)
+    hint: _t(AB_bazardamier_hint)
     properties:
       template:
         value: damier
       nbcol:
-        label: Nombre de colonnes
+        label: _t(AB_bazardamier_nbcol_label)
         type: list
         default: 4
         options:
@@ -480,21 +480,21 @@ actions:
           - 4
           - 6
       couleur:
-        label: Couleur du damier
+        label: _t(AB_bazardamier_couleur_label)
         type: color
       correspondance:
         type: correspondance
-        hint: Ce template est fortement customisable
+        hint: _t(AB_bazardamier_correpondance_hint)
         doclink: https://yeswiki.net/?DamierTplHtml2
         subproperties:
           bf_description:
             type: form-field
-            label: Champ pour la description
+            label: _t(AB_bazardamier_bf_description_label)
 
   bazartimeline:
-    label: Time line
-    description: Affiche les fiches dans une time line.
-    hint: Un champ de type bf_image est nécessaire.
+    label: _t(AB_bazartimeline_label)
+    description: _t(AB_bazartimeline_description)
+    hint: _t(AB_bazartimeline_hint)
     properties:
       template:
         value: timeline
@@ -503,31 +503,31 @@ actions:
         subproperties:
           bf_date_debut_evenement:
             type: form-field
-            label: Champ pour la date de début
+            label: _t(AB_bazar_bf_date_debut_evenement_label)
 
   bazarcarousel:
-    label: Carousel
-    description: Affiche les images des fiches sous forme de carousel
-    hint: Un champ de type bf_image est nécessaire.
+    label: _t(AB_bazarcarousel_label)
+    description: _t(AB_bazarcarousel_description)
+    hint: _t(AB_bazarcarousel_hint)
     properties:
       template:
         value: carousel
       sanstitre:
-        label: Cacher le titre de la fiche sur l'image
+        label: _t(AB_bazarcarousel_sanstitre_label)
         type: checkbox
         default:
         checkedvalue: oui
         uncheckedvalue:
       avecpage:
-        label: Afficher une page au-dessus du slider
+        label: _t(AB_bazarcarousel_avecpage_label)
         type: checkbox
         default:
         checkedvalue: oui
         uncheckedvalue:
-        hint: La page affichée sera PageDessusSlider
+        hint: _t(AB_bazarcarousel_avecpage_hint)
         advanced: true
       showlinkinsteadofurl:
-        label: Montrer le lien bf_lien au lieu de celui vers la fiche
+        label: _t(AB_bazarcarousel_showlinkinsteadofurl_label)
         type: checkbox
         default:
         checkedvalue: oui
@@ -538,76 +538,76 @@ actions:
         subproperties:
           bf_titre:
             type: form-field
-            label: Champ pour le texte affiché
+            label: _t(AB_bazarcarousel_bf_titre_label)
 
   # bazargaleriephoto:
-  #   label: Galerie photo
-  #   description: Affiche les images des fiches sous forme de galerie photo.
-  #   hint: Un champ de type bf_image est nécessaire.
+  #   label: _t(AB_bazargaleriephoto_label)
+  #   description: _t(AB_bazargaleriephoto_description)
+  #   hint: _t(AB_bazargaleriephoto_hint)
   #   properties:
   #     template:
   #       value: galerie_photos
 
   # bazarlistegalerie:
-  #   label: Liste Galerie photo
-  #   description: Affiche les images des fiches sous forme de galerie photo.
-  #   hint: Un champ de type bf_image est nécessaire.
+  #   label: _t(AB_bazarlistegalerie_label)
+  #   description: _t(AB_bazarlistegalerie_description)
+  #   hint: _t(AB_bazarlistegalerie_hint)
   #   properties:
   #     template:
   #       value: liste_galerie
 
   bazarlistephotobox:
-    label: Photobox
-    description: Affiche les images des fiches sous forme de galerie photo.
-    hint: Un champ de type bf_image est nécessaire.
+    label: _t(AB_bazarlistephotobox_label)
+    description: _t(AB_bazarlistephotobox_description)
+    hint: _t(AB_bazarlistephotobox_hint)
     properties:
       template:
         value: photobox
 
   bazarlisteliens:
-    label: Liste des liens
-    description:  Affiche les liens vers les fiches sous forme de liste à puces.
+    label: _t(AB_bazarlisteliens_label)
+    description: _t(AB_bazarlisteliens_description)
     properties:
       template:
         value: liste_liens
 
   bazarlisteliensdates:
-    label: Liste des liens avec dates
-    description:  Affiche les liens vers les fiches sous forme de liste avec les dates de création.
+    label: _t(AB_bazarlisteliensdates_label)
+    description: _t(AB_bazarlisteliensdates_description)
     properties:
       template:
         value: liste_liens_date
 
   # bazarmail:
-  #   label: Ecrire à tous
-  #   description: Affiche uniquement la liste des mails trouvées dans le formulaire
-  #   hint: Un champ de type bf_mail est nécessaire.
+  #   label: _t(AB_bazarmail_label)
+  #   description: _t(AB_bazarmail_description)
+  #   hint: _t(AB_bazarmail_hint)
   #   properties:
   #     template:
   #       value: liste_mails_seuls
 
   bazarblog:
-    label: Blog
-    description: Les fiches seront sous forme de blog.
-    hint: Un champ de type bf_image est possible
+    label: _t(AB_bazarblog_label)
+    description: _t(AB_bazarblog_description)
+    hint: _t(AB_bazarblog_hint)
     properties:
       template:
         value: blog
       header:
-        label: Afficher l'en-tête
+        label: _t(AB_bazarblog_header_label)
         type: checkbox
         default: 'true'
         checkedvalue: 'true'
         uncheckedvalue: 'false'
       show_author:
-        label: Afficher l'auteur, l'autrice
+        label: _t(AB_bazarblog_show_author_label)
         advanced: true
         type: checkbox
         default: 0
         checkedvalue: 1
         uncheckedvalue: 0
       show_date:
-        label: Afficher la date de création
+        label: _t(AB_bazarblog_show_date_label)
         advanced: true
         type: checkbox
         default: 0
@@ -618,25 +618,23 @@ actions:
         subproperties:
           date_creation_fiche:
             type: form-field
-            label: Champ pour la date de publication
+            label: _t(AB_bazarblog_date_creation_fiche_label)
 
   bazargogocarto:
-    label: Cartographie 2 - GoGocarto
-    description: Les fiches seront sous forme de marqueur.
-    hint: >-
-      Le champ géolocalisation doit être présent dans votre formulaire.
-      Pensez aussi à choisir un champ pour l'icone et la couleur des marqueurs
+    label: _t(AB_bazargogocarto_label)
+    description: _t(AB_bazargogocarto_description)
+    hint: _t(AB_bazargogocarto_hint)
     width: 35%
     properties:
       template:
         value: gogocarto
       height:
-        label: Hauteur de la carte
+        label: _t(AB_bazargogocarto_height_label)
         type: text
         default: 600px
       width:
         advanced: true
-        label: Largeur de la carte
+        label: _t(AB_bazargogocarto_width_label)
         hint: 500px, 100%...
         type: text
         default: 100%

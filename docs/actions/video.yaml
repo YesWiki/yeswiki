@@ -4,7 +4,7 @@ actions:
   video:
     label: _t(AB_attach_video_label)
     description: _t(AB_attach_video_description)
-    hint: L'identifiant de la vidéo correspond aux chiffres ou lettres à la fin de son URL
+    hint: _t(AB_attach_video_hint)
     properties:
       serveur:
         label: _t(AB_attach_video_serveur_label)
@@ -53,5 +53,5 @@ actions:
             default: ''
             options:
               '': standard
-              pull-left: float left
-              pull-right: float right
+              pull-left: _t(AB_LEFT)
+              pull-right: _t(AB_RIGHT)

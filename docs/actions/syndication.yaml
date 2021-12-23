@@ -1,47 +1,47 @@
-label: Syndication / Flux RSS
+label: _t(AB_syndication_main_label)
 position: 4
 previewHeight: 300px
 actions:
   syndication:
-    label: Syndication
-    description: Syndiquer le flux RSS d'un site tiers
+    label: _t(AB_syndication_action_label)
+    description: _t(AB_syndication_action_description)
     properties:
       url:
-        label: Adresse du flux RSS
-        hint: Vous pouvez ajouter plusieurs flux séparés d'une virgule
+        label: _t(AB_syndication_action_url_label)
+        hint: _t(AB_syndication_action_url_hint)
         default: https://yeswiki.net
         type: url
         required: true
       title:
-        label: Titre  
+        label: _t(AB_syndication_action_title_label)
         type: text
       source:
-        label: Sources des flux
-        hint: source du flux1, source du flux2... indique en cas de sources multiples le source du flux
+        label: _t(AB_syndication_action_source_label)
+        hint: _t(AB_syndication_action_source_hint)
         type: text
       nb:
-        label: Nbre d'info à afficher
+        label: _t(AB_syndication_action_nb_label)
         type: number
       template:
         type: list
-        label: Template de visualisation
+        label: _t(AB_syndication_action_template_label)
         options:
-          accordeon.tpl.html: Flux sous forme d'accordéons
-          liste.tpl.html: Flux sous forme de liste
-          liste_description.tpl.html: Flux sous forme de liste avec description
+          accordeon.tpl.html: _t(AB_syndication_action_template_acordion)
+          liste.tpl.html: _t(AB_syndication_action_template_list)
+          liste_description.tpl.html: _t(AB_syndication_action_template_list_and_description)
       nouvellefenetre:
         advanced: true
-        label: Les liens s'ouvrent dans un nouvel onglet
+        label: _t(AB_syndication_action_nouvellefenetre_label)
         type: checkbox
         default: 0
         checkedvalue: 1
         uncheckedvalue: 0
       formatdate:
         advanced: true
-        label: Affiche les dates de publication
+        label: _t(AB_syndication_action_formatdate_label)
         type: list
         options:
-          jm: Jour mois
-          jma:  Jour Mois année
-          jmh:  Jour mois heure
-          jmah:  Jour mois année heure
+          jm: _t(AB_syndication_action_formatdate_option_jm)
+          jma:  _t(AB_syndication_action_formatdate_option_jma)
+          jmh:  _t(AB_syndication_action_formatdate_option_jmh)
+          jmah:  _t(AB_syndication_action_formatdate_option_jmah)
