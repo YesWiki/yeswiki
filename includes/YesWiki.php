@@ -448,7 +448,7 @@ class Wiki
             } else {
                 return '<a href="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET)
                 . '">' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET)
-                . ' (interwiki inconnu)</a>';
+                . ' ('._t('UNKNOWN_INTERWIKI').')</a>';
             }
         } else {
             // is this a full link? ie, does it contain non alpha-numeric characters?

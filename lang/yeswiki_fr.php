@@ -528,5 +528,8 @@ return [
     'REVISION_BY' => 'par',
     'CURRENT_VERSION' => 'Version actuelle',
     'RESTORE_REVISION' => 'Restaurer cette version',
-    'DISPLAY_WIKI_CODE' => 'Afficher le code Wiki'
+    'DISPLAY_WIKI_CODE' => 'Afficher le code Wiki',
+
+    // YesWiki
+    "UNKNOWN_INTERWIKI" => "interwiki inconnu",
 ];
