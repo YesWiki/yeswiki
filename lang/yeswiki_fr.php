@@ -531,5 +531,5 @@ return [
     'DISPLAY_WIKI_CODE' => 'Afficher le code Wiki',
 
     // YesWiki
-    "UNKNOWN_INTERWIKI" => "interwiki inconnu",
+    'UNKNOWN_INTERWIKI' => 'interwiki inconnu',
 ];
