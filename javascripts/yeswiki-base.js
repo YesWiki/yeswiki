@@ -4,25 +4,25 @@ var DATATABLE_OPTIONS = {
   //responsive: true,
   paging: false,
   language: {
-    "sProcessing": "Traitement en cours...",
-    "sSearch": "Rechercher&nbsp;:",
-    "sLengthMenu": "Afficher _MENU_ &eacute;l&eacute;ments",
-    "sInfo": "Affichage de l'&eacute;l&eacute;ment _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
-    "sInfoEmpty": "Affichage de l'&eacute;l&eacute;ment 0 &agrave; 0 sur 0 &eacute;l&eacute;ment",
-    "sInfoFiltered": "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+    "sProcessing": _t('DATATABLES_PROCESSING'),
+    "sSearch": _t('DATATABLES_SEARCH'),
+    "sLengthMenu": _t('DATATABLES_LENGTHMENU'),
+    "sInfo": _t('DATATABLES_INFO'),
+    "sInfoEmpty": _t('DATATABLES_INFOEMPTY'),
+    "sInfoFiltered": _t('DATATABLES_INFOFILTERED'),
     "sInfoPostFix": "",
-    "sLoadingRecords": "Chargement en cours...",
-    "sZeroRecords": "Aucun &eacute;l&eacute;ment &agrave; afficher",
-    "sEmptyTable": "Aucune donn&eacute;e disponible dans le tableau",
+    "sLoadingRecords": _t('DATATABLES_LOADINGRECORDS'),
+    "sZeroRecords": _t('DATATABLES_ZERORECORD'),
+    "sEmptyTable": _t('DATATABLES_EMPTYTABLE'),
     "oPaginate": {
-      "sFirst": "Premier",
-      "sPrevious": "Pr&eacute;c&eacute;dent",
-      "sNext": "Suivant",
-      "sLast": "Dernier"
+      "sFirst": _t('FIRST'),
+      "sPrevious": _t('PREVIOUS'),
+      "sNext": _t('NEXT'),
+      "sLast": _t('LAST')
     },
     "oAria": {
-      "sSortAscending": ": activer pour trier la colonne par ordre croissant",
-      "sSortDescending": ": activer pour trier la colonne par ordre d&eacute;croissant"
+      "sSortAscending": _t('DATATABLES_SORTASCENDING'),
+      "sSortDescending": _t('DATATABLES_SORTDESCENDING')
     }
   },
   fixedHeader: {
@@ -36,7 +36,7 @@ var DATATABLE_OPTIONS = {
     {
       extend: 'copy',
       className: 'btn btn-default',
-      text: '<i class="far fa-copy"></i> Copier'
+      text: '<i class="far fa-copy"></i> '+_t('COPY')
     },
     {
       extend: 'csv',
@@ -46,11 +46,11 @@ var DATATABLE_OPTIONS = {
     {
       extend: 'print',
       className: 'btn btn-default',
-      text: '<i class="fas fa-print"></i> Imprimer'
+      text: '<i class="fas fa-print"></i> '+_t('PRINT')
     },
     // {
     //   extend: 'colvis',
-    //   text: 'Colonnes à afficher'
+    //   text: _t('DATATABLES_COLS_TO_DISPLAY')
     // },
 
   ]
@@ -395,7 +395,7 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
         '<div class="modal-content">' +
         '<div class="modal-header">' +
         '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
-        "<h3>Editer une zone du menu horizontal</h3>" +
+        "<h3>"+_t('NAVBAR_EDIT_MESSAGE')+"</h3>" +
         "</div>" +
         '<div class="modal-body">' +
         "</div>" +
@@ -421,7 +421,7 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
             '<a href="' +
               href +
               '" class="btn btn-default btn-block">' +
-              '<i class="fa fa-pencil-alt"></i> Editer la page ' +
+              '<i class="fa fa-pencil-alt"></i> '+_t('YESWIKIMODAL_EDIT_MSG')+' ' +
               pagewiki +
               "</a>"
           );
@@ -431,7 +431,7 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
       .find(".modal-body")
       .append(
         '<a href="#" data-dismiss="modal" class="btn btn-warning btn-xs btn-block">' +
-          "En fait, je ne voulais pas double-cliquer...</a>"
+          + _t('EDIT_OUPS_MSG') +"</a>"
       );
 
     $editmodal
