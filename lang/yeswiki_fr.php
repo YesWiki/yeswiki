@@ -45,7 +45,7 @@ return [
     // wakka.php
     'INVALID_ACTION' => 'Action invalide',
     'ERROR_NO_ACCESS' => 'Accès interdit',
-    'NOT_FOUND' => "N'existe pas",
+    'NOT_FOUND' => 'N\'existe pas',
     'NO_REQUEST_FOUND' => '$_REQUEST[] pas trouv&eacute;. Wakka n&eacute;cessite PHP 4.1.0 ou plus r&eacute;cent!',
     'SITE_BEING_UPDATED' => 'Ce site est en cours de mise &agrave; jour. Veuillez essayer plus tard.',
     'DB_CONNECT_FAIL' => 'Pour des raisons ind&eacute;pendantes de notre volont&eacute;, le contenu de ce YesWiki est temporairement inaccessible.<br>Probablement l\'acc&egrave;s &agrave; la base de donn&eacute;es a &eacute;chou&eacute;. <br><br>Veuillez r&eacute;essayer ult&eacute;rieurement, merci de votre compr&eacute;hension.',
@@ -57,10 +57,10 @@ return [
     'FILE_WRITE_PROTECTED' => 'le fichier de configuration est protégé en écriture',
 
     // ACLs
-    'DENY_READ' => "Vous n'êtes pas autorisé à lire cette page",
-    'DENY_WRITE' => "Vous n'êtes pas autorisé à écrire sur cette page",
-    'DENY_COMMENT' => "Vous n'êtes pas autorisé à commenter cette page",
-    'DENY_DELETE' => "Vous n'êtes pas autorisé à supprimer cette page",
+    'DENY_READ' => 'Vous n\'êtes pas autorisé à lire cette page',
+    'DENY_WRITE' => 'Vous n\'êtes pas autorisé à écrire sur cette page',
+    'DENY_COMMENT' => 'Vous n\'êtes pas autorisé à commenter cette page',
+    'DENY_DELETE' => 'Vous n\'êtes pas autorisé à supprimer cette page',
 
     // tools.php
     'YESWIKI_TOOLS_CONFIG' => 'Configuration extension(s) de YesWiki',
@@ -76,8 +76,8 @@ return [
 
     // actions/changestyle.php
     'STYLE_SHEET' => 'Feuille de style',
-    'CHANGESTYLE_ERROR' => "Le nom '{name}' n'est pas conforme à la règle de nommage imposée par l'action ChangeStyle. ".
-        "Reportez-vous à la documentation de cette action pour plus de précisions.",
+    'CHANGESTYLE_ERROR' => 'Le nom \'{name}\' n\'est pas conforme à la règle de nommage imposée par l\'action ChangeStyle.'.
+        'Reportez-vous à la documentation de cette action pour plus de précisions',
 
     // handlers/page/acls.php
     'YW_ACLS_LIST' => 'Liste des droits d\'acc&egrave;s de la page',
@@ -116,8 +116,8 @@ return [
     'GROUP_NAME' => 'Nom du groupe',
     'SEE_EDIT' => 'Voir / Éditer',
     'ONLY_ALPHANUM_FOR_GROUP_NAME' => 'Les noms de groupes ne peuvent contenir que des caract&egrave;res alphanum&eacute;riques',
-    'LIST_GROUP_MEMBERS' => "Liste des membres du groupe {groupName}",
-    'ONE_NAME_BY_LINE' => "un nom d'utilisateur par ligne",
+    'LIST_GROUP_MEMBERS' => 'Liste des membres du groupe {groupName}',
+    'ONE_NAME_BY_LINE' => 'un nom d\'utilisateur par ligne',
 
     // actions/edithandlersacls.class.php
     'HANDLER_RIGHTS' => 'Droits du handler',
@@ -130,7 +130,7 @@ return [
     'ERASED_COMMENTS' => 'Commentaire(s) effacé(s)',
     'FORM_RETURN' => 'Retour au formulaire',
     'NO_RECENT_COMMENTS' => 'Pas de commentaires récents',
-    'NO_SELECTED_COMMENTS_TO_ERASE' => "Aucun commentaire n'a été sélectionné pour étre effacé",
+    'NO_SELECTED_COMMENTS_TO_ERASE' => 'Aucun commentaire n\'a été sélectionné pour étre effacé',
 
     // actions/footer.php ignoree, car le tools templates court circuite
     // actions/header.php ignoree, car le tools templates court circuite
@@ -173,9 +173,9 @@ return [
     'YOU_DONT_OWN_ANY_PAGE' => 'Vous n\'&ecirc;tes le propri&eacute;taire d\'aucune page',
 
     // actions/nextextsearch.php
-    'NEWTEXTSEARCH_HINT' => "Un caractère inconnu peut être remplacé par « ? » plusieurs par « * »",
-    'NO_SEARCH_RESULT' => "Désolé mais il n'y a aucun de résultat pour votre recherche",
-    'SEARCH_RESULTS' => "Résultats de la recherche",
+    'NEWTEXTSEARCH_HINT' => 'Un caractère inconnu peut être remplacé par « ? » plusieurs par « * »',
+    'NO_SEARCH_RESULT' => 'Désolé mais il n\'y a aucun de résultat pour votre recherche',
+    'SEARCH_RESULTS' => 'Résultats de la recherche',
 
     // actions/orphanedpages.php
     'NO_ORPHAN_PAGES' => 'Pas de pages orphelines',
@@ -221,7 +221,7 @@ return [
     'NO_RESULT_FOR' => 'Aucun r&eacute;sultat pour',
 
     // actions/testtriples.php
-    'END_OF_EXEC' => "Fin de l'exécution",
+    'END_OF_EXEC' => 'Fin de l\'exécution',
 
     // actions/trail.php
     'ERROR_ACTION_TRAIL' => 'Erreur action {{trail ...}}',
@@ -229,7 +229,7 @@ return [
 
     // actions/usersettings.php
     'USER_SETTINGS' => 'Paramètres utilisateur',
-    'USER_SIGN_UP' => "S'inscrire",
+    'USER_SIGN_UP' => 'S\'inscrire',
     'YOU_ARE_NOW_DISCONNECTED' => 'Vous &ecirc;tes maintenant d&eacute;connect&eacute;',
     'PARAMETERS_SAVED' => 'Param&egrave;tres sauvegard&eacute;s',
     'NO_SPACES_IN_PASSWORD' => 'Les espaces ne sont pas permis dans les mots de passe',
@@ -506,7 +506,7 @@ return [
     'EDIT_CONFIG_HINT_TIMEZONE' => 'Fuseau horaire du site (ex. UCT, Europe/Paris, Europe/London, GMT = utiliser celui du serveur,)',
     'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Méthodes autorisées à être affichées dans les iframes (all = autoriser tout)',
     'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
-    'EDIT_CONFIG_GROUP_ACCESS' => "Droit d'accès",
+    'EDIT_CONFIG_GROUP_ACCESS' => 'Droit d\'accès',
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
 
     // actions/usertable.php
@@ -520,7 +520,7 @@ return [
     'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => 'la page "{{page}}" n\'a pas été trouvée dans default-content.sql',
 
     // handlers/revisions
-    'SUCCESS_RESTORE_REVISION' => "La version a bien été restaurée",
+    'SUCCESS_RESTORE_REVISION' => 'La version a bien été restaurée',
     'TITLE_PAGE_HISTORY' => 'Historique de la page',
     'TITLE_ENTRY_HISTORY' => 'Historique de la fiche',
     'REVISION_VERSION' => 'Version N°',
