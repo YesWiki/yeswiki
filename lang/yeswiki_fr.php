@@ -38,7 +38,7 @@ return [
     'EMAIL' => 'Email',
     'INVERT' => 'Inverser',
     'MODIFY' => 'Modifier',
-    'NAME' => 'Name',
+    'NAME' => 'Nom',
     'SUBSCRIPTION' => 'Inscription',
     'UNKNOWN' => 'Inconnu',
 
@@ -405,8 +405,6 @@ return [
     'USER_UPDATE_QUERY_FAILED' => 'La requête de mise à jour de l\'utilisateur dans la base de données a échoué',
     'USER_YOU_MUST_SPECIFY_A_NAME' => 'Veuillez saisir un nom pour l\'utilisateur',
     'USER_YOU_MUST_SPECIFY_AN_EMAIL' => 'Veuillez saisir un email pour l\'utilisateur',
-    'USER_MODIFY' => 'Modifier',
-    'USER_DELETE' => 'Supprimer',
     'USER_USERSTABLE_MISTAKEN_ARGUMENT' => 'l\'action usertable a reçu un argument non autorisé',
     'USER_WRONG_PASSWORD' => 'Mot de passe incorrect',
     'USER_INCORRECT_PASSWORD_KEY' => 'La clef de validation du mot de passe est incorrecte',

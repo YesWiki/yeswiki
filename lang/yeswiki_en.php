@@ -30,6 +30,18 @@
 
 $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 
+    // Commons
+    'BY' => 'by',
+    'CLEAN' => 'Clean',
+    'DELETE' => 'Delete',
+    'DEL' => 'Del', // fives chars max.
+    'EMAIL' => 'Email',
+    'INVERT' => 'Invert',
+    'MODIFY' => 'Modify',
+    'NAME' => 'Name',
+    'SUBSCRIPTION' => 'Subscription',
+    'UNKNOWN' => 'Unknown',
+
 // wakka.php
 'UNKNOWN_ACTION' => 'Unknown action',
 'INVALID_ACTION' => 'Invalid action',
@@ -356,8 +368,6 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'USER_UPDATE_QUERY_FAILED' => 'User update query failed',
 'USER_YOU_MUST_SPECIFY_A_NAME' => 'Please specify a name for the user',
 'USER_YOU_MUST_SPECIFY_AN_EMAIL' => 'Please specify an email address for the user',
-'USER_MODIFY' => 'Modify',
-'USER_DELETE' => 'Delete',
 'USER_USERSTABLE_MISTAKEN_ARGUMENT' => 'Action usertable received an unexpected argument',
 'USER_WRONG_PASSWORD' => 'Wrong password',
 'USER_INCORRECT_PASSWORD_KEY' => 'Incorrect password validation key',

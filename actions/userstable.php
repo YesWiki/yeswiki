@@ -101,10 +101,10 @@ foreach ($last_users as $user) {
     echo '<td>', $user['signuptime'] , '</td>';
     echo '<td>';
     if ($userIsTheOneConnected) { // $loggedUser fullness allready tested. Current user
-        echo '<a href="'.$this->href('', 'ParametresUtilisateur').'" class="btn btn-sm btn-primary" role="button">'._t('USER_MODIFY').'</a>';
+        echo '<a href="'.$this->href('', 'ParametresUtilisateur').'" class="btn btn-sm btn-primary" role="button">'._t('MODIFY').'</a>';
     } else { // not the current user, then can be modified
         if ($isAdmin) {
-            echo '<a href="'.$this->href('', 'ParametresUtilisateur', 'user='.$user['name'], false).'&from='.$this->tag.'" class="btn btn-sm btn-warning " role="button">'._t('USER_MODIFY').'</a>';
+            echo '<a href="'.$this->href('', 'ParametresUtilisateur', 'user='.$user['name'], false).'&from='.$this->tag.'" class="btn btn-sm btn-warning " role="button">'._t('MODIFY').'</a>';
         }
     }
     echo '</td>';
@@ -112,7 +112,7 @@ foreach ($last_users as $user) {
         echo '<td>';
         echo '<form action="'.$this->href('', $this->tag).'" method="post">';
         echo '<input type="hidden" name="userstable_action" value="delete_'.htmlspecialchars($user['name']).'" />';
-        echo '<input class="btn btn-sm btn-danger" type="submit" onclick="return confirm(\''._t('USER_CONFIRM_DELETE').'\');" value="'._t('USER_DELETE').'" />';
+        echo '<input class="btn btn-sm btn-danger" type="submit" onclick="return confirm(\''._t('USER_CONFIRM_DELETE').'\');" value="'._t('DELETE').'" />';
         echo $this->FormClose();
         echo '</td>';
     } else {
