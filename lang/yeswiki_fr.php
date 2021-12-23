@@ -30,6 +30,18 @@
 
 return [
 
+    // Commons
+    'BY' => 'par',
+    'CLEAN' => 'Nettoyer',
+    'DELETE' => 'Supprimer',
+    'DEL' => 'Suppr.', // fives chars max.
+    'EMAIL' => 'Email',
+    'INVERT' => 'Inverser',
+    'MODIFY' => 'Modifier',
+    'NAME' => 'Name',
+    'SUBSCRIPTION' => 'Inscription',
+    'UNKNOWN' => 'Inconnu',
+
     // wakka.php
     'INVALID_ACTION' => 'Action invalide',
     'ERROR_NO_ACCESS' => 'Accès interdit',
@@ -62,7 +74,10 @@ return [
     'PAGES_WITH_LINK_TO_CURRENT_PAGE' => 'Pages ayant un lien vers la page courante',
     'NO_PAGES_WITH_LINK_TO' => 'Aucune page n\'a de lien vers',
 
-    // actions/changestyle.php ignoree...
+    // actions/changestyle.php
+    'STYLE_SHEET' => 'Feuille de style',
+    'CHANGESTYLE_ERROR' => "Le nom '{name}' n'est pas conforme à la règle de nommage imposée par l'action ChangeStyle. ".
+        "Reportez-vous à la documentation de cette action pour plus de précisions.",
 
     // handlers/page/acls.php
     'YW_ACLS_LIST' => 'Liste des droits d\'acc&egrave;s de la page',
@@ -96,7 +111,13 @@ return [
     'NEW_ACL_FOR_GROUP' => 'Nouvelle ACL pour le groupe',
     'NEW_ACL_SUCCESSFULLY_SAVED_FOR_THE_GROUP' => 'Nouvelle ACL enr&eacute;gistr&eacute;e avec succ&egrave;s pour le groupe',
     'EDIT_GROUP' => '&Eacute;diter le groupe',
+    'EDIT_EXISTING_GROUP' => 'Éditer un groupe existant',
+    'DELETE_EXISTING_GROUP' => 'Supprimer un groupe existant',
+    'GROUP_NAME' => 'Nom du groupe',
+    'SEE_EDIT' => 'Voir / Éditer',
     'ONLY_ALPHANUM_FOR_GROUP_NAME' => 'Les noms de groupes ne peuvent contenir que des caract&egrave;res alphanum&eacute;riques',
+    'LIST_GROUP_MEMBERS' => "Liste des membres du groupe {groupName}",
+    'ONE_NAME_BY_LINE' => "un nom d'utilisateur par ligne",
 
     // actions/edithandlersacls.class.php
     'HANDLER_RIGHTS' => 'Droits du handler',
@@ -105,7 +126,12 @@ return [
     'NEW_ACL_SUCCESSFULLY_SAVED_FOR_HANDLER' => 'Nouvelle ACL enregistr&eacute;e avec succ&egrave;s pour le handler',
     'EDIT_RIGHTS_FOR_HANDLER' => '&Eacute;diter les droits du handler',
 
-    // actions/erasespamedcomments.class.php ignoree...
+    // actions/erasespamedcomments.class.php
+    'ERASED_COMMENTS' => 'Commentaire(s) effacé(s)',
+    'FORM_RETURN' => 'Retour au formulaire',
+    'NO_RECENT_COMMENTS' => 'Pas de commentaires récents',
+    'NO_SELECTED_COMMENTS_TO_ERASE' => "Aucun commentaire n'a été sélectionné pour étre effacé",
+
     // actions/footer.php ignoree, car le tools templates court circuite
     // actions/header.php ignoree, car le tools templates court circuite
 
@@ -125,7 +151,6 @@ return [
     // actions/listpages.php
     'THE_PAGE' => 'La page',
     'BELONGING_TO' => 'appartenant &agrave;',
-    'UNKNOWN' => 'Inconnu',
     'LAST_CHANGE_BY' => 'derni&egrave;re modification par',
     'LAST_CHANGE' => 'derni&egrave;re modification',
     'PAGE_LIST_WHERE' => 'Liste des pages auxquelles',
@@ -137,8 +162,6 @@ return [
     'IN_THIS_WIKI' => 'dans ce wiki',
     'LIST_PAGES_BELONGING_TO' => 'Liste des pages appartenant &agrave;',
     'THIS_USER_HAS_NO_PAGE' => 'Cet utilisateur ne poss&egrave;de aucune page',
-    'UNKNOWN' => 'Inconnu',
-    'BY' => 'par',
 
     // actions/mychanges.php
     'YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE' => 'Liste des pages que vous avez modifi&eacute;es, tri&eacute;e par date de modification',
@@ -148,6 +171,11 @@ return [
     'IMPOSSIBLE_TO_SHOW_YOUR_MODIFIED_PAGES' => 'impossible d\'afficher la liste des pages que vous avez modifi&eacute;es',
     'LIST_OF_PAGES_WHERE_YOU_ARE_THE_OWNER' => 'Liste des pages dont vous &ecirc;tes le propri&eacute;taire',
     'YOU_DONT_OWN_ANY_PAGE' => 'Vous n\'&ecirc;tes le propri&eacute;taire d\'aucune page',
+
+    // actions/nextextsearch.php
+    'NEWTEXTSEARCH_HINT' => "Un caractère inconnu peut être remplacé par « ? » plusieurs par « * »",
+    'NO_SEARCH_RESULT' => "Désolé mais il n'y a aucun de résultat pour votre recherche",
+    'SEARCH_RESULTS' => "Résultats de la recherche",
 
     // actions/orphanedpages.php
     'NO_ORPHAN_PAGES' => 'Pas de pages orphelines',
@@ -167,6 +195,7 @@ return [
     'LATEST_COMMENTS_ON' => 'Derniers commentaires sur',
 
     // actions/recentlycommented.php
+    'LAST COMMENT' => 'dernier commentaire',
     'NO_RECENT_COMMENTS_ON_PAGES' => 'Aucune page n\'a &eacute;t&eacute; comment&eacute;e r&eacute;cemment',
 
     // actions/redirect.php
@@ -190,6 +219,9 @@ return [
     //'SEARCH' => 'Rechercher',
     'SEARCH_RESULT_OF' => 'R&eacute;sultat(s) de la recherche de',
     'NO_RESULT_FOR' => 'Aucun r&eacute;sultat pour',
+
+    // actions/testtriples.php
+    'END_OF_EXEC' => "Fin de l'exécution",
 
     // actions/trail.php
     'ERROR_ACTION_TRAIL' => 'Erreur action {{trail ...}}',
@@ -478,6 +510,9 @@ return [
     'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
     'EDIT_CONFIG_GROUP_ACCESS' => "Droit d'accès",
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
+
+    // actions/usertable.php
+    'GROUP_S' => 'Groupe(s)',
 
     // handlers/update
     'UPDATE_ADMIN_PAGES' => 'Mettre à jour les pages de gestion',

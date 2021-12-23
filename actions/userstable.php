@@ -73,14 +73,14 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
 echo '<table class="table table-striped">', "\n";
 echo '<thead>', "\n";
 echo '<tr>', "\n";
-echo '	<th>Nom</th>', "\n";
-echo '	<th>Groupe(s)</th>', "\n";
+echo '	<th>'._t('NAME').'</th>', "\n";
+echo '	<th>'._t('GROUP_S').'</th>', "\n";
 if ($isAdmin) { // Emails only shown to admins
-    echo '	<th>Email</th>', "\n";
+    echo '	<th>'._t('EMAIL').'</th>', "\n";
 }
-echo '	<th>Inscription</th>', "\n";
-echo '	<th>Modifier</th>', "\n";
-echo '	<th>Supprimer</th>', "\n";
+echo '	<th>'._t('SUBSCRIPTION').'</th>', "\n";
+echo '	<th>'._t('MODIFY').'</th>', "\n";
+echo '	<th>'._t('DELETE').'</th>', "\n";
 echo '</tr>', "\n";
 echo '</thead>', "\n";
 echo '<tbody>', "\n";
