@@ -48,7 +48,7 @@ function querySqlFile($dblink, $sqlFile, $replacements = [])
         foreach ($replacements as $keyword => $replace) {
             $sql = str_replace(
                 '{{'.$keyword.'}}',
-                $replace,
+                mysqli_real_escape_string($dblink, $replace),
                 $sql
             );
         }
