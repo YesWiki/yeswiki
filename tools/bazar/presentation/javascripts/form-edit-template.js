@@ -1182,9 +1182,9 @@ function formatJsonDataIntoWikiText(formData) {
         if (["required", "access"].indexOf(property) > -1)
           value = value ? "1" : "0";
         if (property == "label"){
-          wikiProps[key] = removeBR(value);
+          wikiProps[key] = removeBR(value).replace(/\n$/gm,"");
         } else {
-          wikiProps[key] = value;
+          wikiProps[key] = value ;
         }
       }
     }
