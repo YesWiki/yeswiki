@@ -160,7 +160,6 @@ if (groupsList && groupsList.length > 0){
   for(i=0;i<groupsListLen;++i){
     if (groupsList[i] !== "admins"){
       formattedGroupList["@"+groupsList[i]] = _t('MEMBER_OF_GROUP',{groupName:groupsList[i]});
-      formattedGroupList["%,@"+groupsList[i]] = _t('BAZ_FORM_EDIT_OWNER_AND_MEMBER_OF_GROUP',{groupName:groupsList[i]});
     }
   }
 }
@@ -173,8 +172,8 @@ var aclsOptions = {
   },
   ...formattedGroupList,
 };
-var readConf = { label: _t('BAZ_FORM_EDIT_CAN_BE_READ_BY'), options: {...visibilityOptions,...formattedGroupList} };
-var writeconf = { label: _t('BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY'), options: {...visibilityOptions,...formattedGroupList} };
+var readConf = { label: _t('BAZ_FORM_EDIT_CAN_BE_READ_BY'), options: {...visibilityOptions,...formattedGroupList}, multiple: true };
+var writeconf = { label: _t('BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY'), options: {...visibilityOptions,...formattedGroupList}, multiple: true };
 var searchableConf = {
   label: "Présence dans le moteur de recherche",
   options: { "": _t('NO'), 1: _t('YES') },
@@ -454,9 +453,9 @@ var typeUserAttrs = {
     },
   },
   acls: {
-    read: { label: _t('BAZ_FORM_EDIT_ACL_READ_LABEL'), options: aclsOptions },
-    write: { label: _t('BAZ_FORM_EDIT_ACL_WRITE_LABEL'), options: aclsOptions },
-    comment: { label: _t('BAZ_FORM_EDIT_ACL_COMMENT_LABEL'), options: aclsOptions },
+    read: { label: _t('BAZ_FORM_EDIT_ACL_READ_LABEL'), options: aclsOptions, multiple: true },
+    write: { label: _t('BAZ_FORM_EDIT_ACL_WRITE_LABEL'), options: aclsOptions, multiple: true },
+    comment: { label: _t('BAZ_FORM_EDIT_ACL_COMMENT_LABEL'), options: aclsOptions, multiple: true },
   },
   metadatas: {
     theme: {
@@ -975,6 +974,17 @@ function initializeFormbuilder(formAndListIds) {
     typeUserAttrs: typeUserAttrs,
     typeUserDisabledAttrs: typeUserDisabledAttrs,
     inputSets:inputSets,
+    onAddField: function(fieldId, field) {
+      if (!field.hasOwnProperty("read")){
+        field.read = [" * "];// everyone by default
+      };
+      if (!field.hasOwnProperty("write")){
+        field.write = [" * "];// everyone by default
+      };
+      if (field.type === "acls" && !field.hasOwnProperty("comment")){
+        field.comment = [" * "];// everyone by default
+      }
+    },
   });
 
   // Each 300ms update the text field converting form bulder content into wiki syntax
@@ -1228,7 +1238,13 @@ function parseWikiTextIntoJsonData(text) {
         var value = fieldValues[j];
         var field = mapping && j in mapping ? mapping[j] : j;
         if (field == "required") value = value == "1" ? true : false;
-        if (field) fieldObject[field] = value;
+        if (field){
+          if (field == "read" || field == "write" || field == "comment"){
+            fieldObject[field] = (value.trim() === "") ? [" * "] : value.split(',');
+          } else {
+            fieldObject[field] = value;
+          }
+        }
       }
       if (!fieldObject.label) {
         fieldObject.label = wikiType;
