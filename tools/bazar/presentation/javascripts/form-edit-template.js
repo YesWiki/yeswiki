@@ -974,6 +974,17 @@ function initializeFormbuilder(formAndListIds) {
     typeUserAttrs: typeUserAttrs,
     typeUserDisabledAttrs: typeUserDisabledAttrs,
     inputSets:inputSets,
+    onAddField: function(fieldId, field) {
+      if (!field.hasOwnProperty("read")){
+        field.read = [" * "];// everyone by default
+      };
+      if (!field.hasOwnProperty("write")){
+        field.write = [" * "];// everyone by default
+      };
+      if (field.type === "acls" && !field.hasOwnProperty("comment")){
+        field.comment = [" * "];// everyone by default
+      }
+    },
   });
 
   // Each 300ms update the text field converting form bulder content into wiki syntax
@@ -1229,7 +1240,7 @@ function parseWikiTextIntoJsonData(text) {
         if (field == "required") value = value == "1" ? true : false;
         if (field){
           if (field == "read" || field == "write" || field == "comment"){
-            fieldObject[field] = value.split(',');
+            fieldObject[field] = (value.trim() === "") ? [" * "] : value.split(',');
           } else {
             fieldObject[field] = value;
           }
