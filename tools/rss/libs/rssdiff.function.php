@@ -1,5 +1,7 @@
 <?php
 
+use YesWiki\Bazar\Service\EntryManager;
+
 if (!function_exists("rssdiff")) {
     function rssdiff($tag, $idfirst, $idlast)
     {
@@ -25,20 +27,10 @@ if (!function_exists("rssdiff")) {
         $pageA = $wiki->LoadPageById($idfirst);
         $pageB = $wiki->LoadPageById($idlast);
 
-        if (substr($pageA["body"], 0, 1) == "{" &&
-            substr($pageA["body"], -1) == "}" &&
-            substr($pageB["body"], 0, 1) == "{" &&
-            substr($pageB["body"], -1) == "}"
-            ) {
-            $bodyA = json_decode($pageA["body"], true);
-            $bodyB = json_decode($pageB["body"], true);
-            if (!is_array($bodyA) || !is_array($bodyB)) {
-                $bodyA = explode("\n", $pageA["body"]);
-                $bodyB = explode("\n", $pageB["body"]);
-            } else {
-                $bodyA = explode(",\"", $pageA["body"]);
-                $bodyB = explode(",\"", $pageB["body"]);
-            }
+        $entryManager = $wiki->services->get(EntryManager::class);
+        if ($entryManager->isEntry($tag)) {
+            $bodyA = explode(",\"", $pageA["body"]);
+            $bodyB = explode(",\"", $pageB["body"]);
         } else {
             $bodyA = explode("\n", $pageA["body"]);
             $bodyB = explode("\n", $pageB["body"]);
