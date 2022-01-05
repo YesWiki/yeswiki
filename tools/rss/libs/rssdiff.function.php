@@ -25,9 +25,24 @@ if (!function_exists("rssdiff")) {
         $pageA = $wiki->LoadPageById($idfirst);
         $pageB = $wiki->LoadPageById($idlast);
 
-
-        $bodyA = explode("\n", $pageA["body"]);
-        $bodyB = explode("\n", $pageB["body"]);
+        if (substr($pageA["body"], 0, 1) == "{" &&
+            substr($pageA["body"], -1) == "}" &&
+            substr($pageB["body"], 0, 1) == "{" &&
+            substr($pageB["body"], -1) == "}"
+            ) {
+            $bodyA = json_decode($pageA["body"], true);
+            $bodyB = json_decode($pageB["body"], true);
+            if (!is_array($bodyA) || !is_array($bodyB)) {
+                $bodyA = explode("\n", $pageA["body"]);
+                $bodyB = explode("\n", $pageB["body"]);
+            } else {
+                $bodyA = explode(",\"", $pageA["body"]);
+                $bodyB = explode(",\"", $pageB["body"]);
+            }
+        } else {
+            $bodyA = explode("\n", $pageA["body"]);
+            $bodyB = explode("\n", $pageB["body"]);
+        }
 
         $added = array_diff($bodyA, $bodyB);
         $deleted = array_diff($bodyB, $bodyA);
