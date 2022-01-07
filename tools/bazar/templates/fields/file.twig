@@ -8,7 +8,7 @@
             title="{{ _t('BAZ_DOWNLOAD_FILE') ~ ' ' ~ shortFileName}}" 
             data-toggle="tooltip" 
             data-placement="right"
-            download{{ shortFileName ? '="'~ shortFileName ~'"' : ''}}>
+            download{{ shortFileName ? '='~ shortFileName  : ''}}>
         {{ _t('TAGS_DOWNLOAD') }}
     </a>
 {% endblock %}
