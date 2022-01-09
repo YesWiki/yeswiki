@@ -574,13 +574,13 @@ const templateHelper = {
   prependHint: function (field,message){
     let holder = this.getHolder(field);
     if (holder){
-      if (holder.data('hint-already-defined') !== "1"){
+      if (!holder.hasClass("hint-already-defined")){
         let formElements = holder.find('.form-elements').first();
         let helpMsg = $('<div/>')
           .addClass('custom-hint')
           .append(message);
           formElements.prepend(helpMsg);
-        holder.data('hint-already-defined',"1");
+        holder.addClass('hint-already-defined');
       }
     }
   },
@@ -589,9 +589,9 @@ const templateHelper = {
     if (holder){
       let formGroup = holder.find('.'+formGroupName+'-wrap');
       if (typeof formGroup !== undefined && formGroup.length > 0){
-        if (formGroup.data('prepended-html-already-defined') !== "1") {
+        if (!formGroup.hasClass('prepended-html-already-defined')) {
           formGroup.before(html);
-          formGroup.data('prepended-html-already-defined',"1");
+          formGroup.addClass('prepended-html-already-defined');
         }
       }
     }
@@ -602,14 +602,14 @@ const templateHelper = {
       let formGroup = holder.find('.'+formGroupName+'-wrap');
       if (typeof formGroup !== undefined && formGroup.length > 0){
         let label = formGroup.find('label').first();
-          if (label.data('label-hint-already-defined') !== "1") {
+          if (!label.hasClass('label-hint-already-defined')) {
           label.append(' ');
           label.append($('<i/>')
             .addClass('fa fa-question-circle')
             .attr("title",message)
             .tooltip()
           );
-          label.data('label-hint-already-defined',"1");
+          label.addClass('label-hint-already-defined');
         }
       }
     }
