@@ -31,22 +31,37 @@
 
 return [
 
+    // Commons
+    'BY' => 'Door',
+    // 'CLEAN' => 'Nettoyer',
+    // 'DELETE' => 'Supprimer',
+    // 'DEL' => 'Suppr.', // fives chars max.
+    // 'EMAIL' => 'Email',
+    // 'INVERT' => 'Inverser',
+    // 'MODIFY' => 'Modifier',
+    // 'NAME' => 'Nom',
+    // 'SUBSCRIPTION' => 'Inscription',
+    'UNKNOWN' => 'Onbekend',
+
     // wakka.php
-    'UNKNOWN_ACTION' => 'Actie onbekend',
     'INVALID_ACTION' => 'Actie ongeldig',
     'ERROR_NO_ACCESS' => 'Fout: u hebt geen toegang tot de actie',
-    'INCORRECT_CLASS' => 'onjuiste klasse',
-    'UNKNOWN_METHOD' => 'Onbekende methode',
-    'FORMATTER_NOT_FOUND' => 'Formatter niet gevonden',
-    'HANDLER_NO_ACCESS' => 'U hebt geen toegang tot deze pagina met de gespecificeerde handler.',
+    'NOT_FOUND' => 'Niet gevonden',
     'NO_REQUEST_FOUND' => '$_REQUEST[] niet gevonden. Wakka vereist PHP 4.1.0 of hoger!',
     'SITE_BEING_UPDATED' => 'Deze site wordt momenteel bijgewerkt. Probeer het later nog een keer.',
-    'INCORRECT_PAGENAME' => 'De naam van de pagina is niet correct.',
     'DB_CONNECT_FAIL' => 'Om redenen buiten onze wil om is de inhoud van deze YesWiki tijdelijk niet bereikbaar. Probeer het later nog een keer. Dank u voor uw begrip.',
     'LOG_DB_CONNECT_FAIL' => 'YesWiki: de BDD-verbinding is verbroken', // sans accents car commande systeme
     'INCORRECT_PAGENAME' => 'De naam van de pagina is niet correct.',
+    // 'PERFORMABLE_ERROR' => 'Une erreur inattendue s\'est produite. Veuillez contacter l\'administrateur du site et lui communiquer l\'erreur suivante :',
     'HOMEPAGE_WIKINAME' => 'Hoofdpagina',
     'MY_YESWIKI_SITE' => 'Mijn YesWiki-site',
+    // 'FILE_WRITE_PROTECTED' => 'le fichier de configuration est protégé en écriture',
+
+    // ACLs
+    // 'DENY_READ' => 'Vous n\'êtes pas autorisé à lire cette page',
+    // 'DENY_WRITE' => 'Vous n\'êtes pas autorisé à écrire sur cette page',
+    // 'DENY_COMMENT' => 'Vous n\'êtes pas autorisé à commenter cette page',
+    // 'DENY_DELETE' => 'Vous n\'êtes pas autorisé à supprimer cette page',
 
     // tools.php
     'YESWIKI_TOOLS_CONFIG' => 'Configuratie YesWiki-extensie(s)',
@@ -60,7 +75,21 @@ return [
     'PAGES_WITH_LINK_TO_CURRENT_PAGE' => 'Pagina’s met een koppeling naar de huidige pagina',
     'NO_PAGES_WITH_LINK_TO' => 'Geen enkele pagina heeft een koppeling naar',
 
-    // actions/changestyle.php ignoree...
+    // actions/changestyle.php
+    // 'STYLE_SHEET' => 'Feuille de style',
+    // 'CHANGESTYLE_ERROR' => 'Le nom \'{name}\' n\'est pas conforme à la règle de nommage imposée par l\'action ChangeStyle.'.
+        // 'Reportez-vous à la documentation de cette action pour plus de précisions',
+
+    // handlers/page/acls.php
+    // 'YW_ACLS_LIST' => 'Liste des droits d\'acc&egrave;s de la page',
+    // 'YW_ACLS_UPDATED' => 'Droits d\'acc&egrave;s mis &agrave; jour',
+    // 'YW_NEW_OWNER' => ' et changement du propri&eacute;taire. Nouveau propri&eacute;taire : ',
+    // 'YW_CANCEL' => 'Annuler',
+    // 'YW_ACLS_READ' => 'Droits de lecture',
+    // 'YW_ACLS_WRITE' => 'Droits d\'écriture',
+    // 'YW_CHANGE_OWNER' => 'Changer le propri&eacute;taire',
+    // 'YW_CHANGE_NOTHING' => 'Ne rien modifier',
+    // 'YW_CANNOT_CHANGE_ACLS' => 'Vous ne pouvez pas g&eacute;rer les permissions de cette page',
 
     // actions/editactionsacls.class.php
     'ACTION_RIGHTS' => 'Rechten van de actie',
@@ -83,7 +112,13 @@ return [
     'NEW_ACL_FOR_GROUP' => 'Nieuwe ACL voor de groep',
     'NEW_ACL_SUCCESSFULLY_SAVED_FOR_THE_GROUP' => 'Nieuwe ACL met succes geregistreerd voor de groep',
     'EDIT_GROUP' => 'De groep bewerken',
+    // 'EDIT_EXISTING_GROUP' => 'Éditer un groupe existant',
+    // 'DELETE_EXISTING_GROUP' => 'Supprimer un groupe existant',
+    // 'GROUP_NAME' => 'Nom du groupe',
+    // 'SEE_EDIT' => 'Voir / Éditer',    
     'ONLY_ALPHANUM_FOR_GROUP_NAME' => 'De namen van groepen mogen enkel alfanumerieke karakters bevatten',
+    // 'LIST_GROUP_MEMBERS' => 'Liste des membres du groupe {groupName}',
+    // 'ONE_NAME_BY_LINE' => 'un nom d\'utilisateur par ligne',
 
     // actions/edithandlersacls.class.php
     'HANDLER_RIGHTS' => 'Rechten van de handler',
@@ -92,7 +127,12 @@ return [
     'NEW_ACL_SUCCESSFULLY_SAVED_FOR_HANDLER' => 'Nieuwe ACL voor de handler met succes geregistreerd',
     'EDIT_RIGHTS_FOR_HANDLER' => 'de rechten van de handler bewerken',
 
-    // actions/erasespamedcomments.class.php ignoree...
+    // actions/erasespamedcomments.class.php
+    'ERASED_COMMENTS' => 'Commentaire(s) effacé(s)',
+    'FORM_RETURN' => 'Retour au formulaire',
+    'NO_RECENT_COMMENTS' => 'Pas de commentaires récents',
+    'NO_SELECTED_COMMENTS_TO_ERASE' => 'Aucun commentaire n\'a été sélectionné pour étre effacé',
+
     // actions/footer.php ignoree, car le tools templates court circuite
     // actions/header.php ignoree, car le tools templates court circuite
 
@@ -112,7 +152,6 @@ return [
     // actions/listpages.php
     'THE_PAGE' => 'De pagina',
     'BELONGING_TO' => 'eigendom van',
-    'UNKNOWN' => 'Onbekend',
     'LAST_CHANGE_BY' => 'laatste wijziging door',
     'LAST_CHANGE' => 'laatste wijziging',
     'PAGE_LIST_WHERE' => 'Lijst met pagina’s waaraan',
@@ -124,8 +163,6 @@ return [
     'IN_THIS_WIKI' => 'in deze wiki',
     'LIST_PAGES_BELONGING_TO' => 'Lijst met pagina’s die eigendom zijn van',
     'THIS_USER_HAS_NO_PAGE' => 'Deze gebruiker bezit geen enkele pagina',
-    'UNKNOWN' => 'Onbekend',
-    'BY' => 'Door',
 
     // actions/mychanges.php
     'YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE' => 'Lijst met pagina\'s die u hebt gewijzigd, volgens datum van wijziging',
@@ -135,6 +172,11 @@ return [
     'IMPOSSIBLE_TO_SHOW_YOUR_MODIFIED_PAGES' => 'De lijst met pagina\'s die u hebt gewijzigd, kan niet worden weergegeven',
     'LIST_OF_PAGES_WHERE_YOU_ARE_THE_OWNER' => 'Lijst met pagina\'s waarvan u de eigenaar bent',
     'YOU_DONT_OWN_ANY_PAGE' => 'U bezit geen enkele pagina',
+
+    // actions/nextextsearch.php
+    // 'NEWTEXTSEARCH_HINT' => 'Un caractère inconnu peut être remplacé par « ? » plusieurs par « * »',
+    // 'NO_SEARCH_RESULT' => 'Désolé mais il n\'y a aucun de résultat pour votre recherche',
+    // 'SEARCH_RESULTS' => 'Résultats de la recherche',
 
     // actions/orphanedpages.php
     'NO_ORPHAN_PAGES' => 'Geen weespagina\'s',
@@ -154,6 +196,7 @@ return [
     'LATEST_COMMENTS_ON' => 'Laatste commentaren over',
 
     // actions/recentlycommented.php
+    // 'LAST COMMENT' => 'dernier commentaire',
     'NO_RECENT_COMMENTS_ON_PAGES' => 'Er werd recent geen enkele pagina becommentarieerd',
 
     // actions/redirect.php
@@ -177,11 +220,16 @@ return [
     'SEARCH_RESULT_OF' => 'Resulta(a)t(en) van de opzoeking van',
     'NO_RESULT_FOR' => 'Geen enkel resultaat voor',
 
+    // actions/testtriples.php
+    // 'END_OF_EXEC' => 'Fin de l\'exécution',
+
     // actions/trail.php
     'ERROR_ACTION_TRAIL' => 'Actiefout {{trail ...}}',
     'INDICATE_THE_PARAMETER_TOC' => 'Geef de naam van de beknopte pagina in, "toc"',
 
     // actions/usersettings.php
+    // 'USER_SETTINGS' => 'Paramètres utilisateur',
+    // 'USER_SIGN_UP' => 'S\'inscrire',
     'YOU_ARE_NOW_DISCONNECTED' => 'U bent niet langer verbonden',
     'PARAMETERS_SAVED' => 'Parameters opgeslagen',
     'NO_SPACES_IN_PASSWORD' => 'Spaties zijn niet toegestaan in het wachtwoord',
@@ -195,7 +243,6 @@ return [
     'MAX_NUMBER_OF_LASTEST_COMMENTS' => 'Maximaal aantal recentste commentaren',
     'MAX_NUMBER_OF_VERSIONS' => 'Maximaal aantal versies',
     'YOUR_MOTTO' => 'Uw devies',
-    'UPDATE' => 'Update',
     'CHANGE_THE_PASSWORD' => 'Wachtwoord wijzigen',
     'YOUR_OLD_PASSWORD' => 'Uw vorige wachtwoord',
     'NEW_PASSWORD' => 'Nieuw wachtwoord',
@@ -207,13 +254,13 @@ return [
     'PASSWORD_SHOULD_HAVE_5_CHARS_MINIMUM' => 'moet ten minste vijf alfanumerieke karakters bevatten',
     'YOU_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED' => 'U dient cookies te aanvaarden om zich aan te melden',
     'IF_YOU_ARE_REGISTERED_LOGGIN_HERE' => 'Als u reeds geregistreerd bent, kunt u zich hier aanmelden',
-    'YOUR_WIKINAME' => 'Uw WikiNaam',
     'PASSWORD_5_CHARS_MINIMUM' => 'Wachtwoord (minimaal vijf karakters)',
     'REMEMBER_ME' => 'Gegevens onthouden',
     'IDENTIFICATION' => 'Identificatie',
     'FILL_THE_NEXT_FIELDS_IF_YOU_LOGGIN_FOR_THE_FIRST_TIME_AND_REGISTER' => 'De volgende velden dient u in te vullen als u zich voor het eerst aanmeldt (zo maakt u een account aan)',
     'PASSWORD_CONFIRMATION' => 'Wachtwoordbevestiging',
     'NEW_ACCOUNT' => 'Nieuwe account',
+    // 'LOGGED_USERS_ONLY_ACTION' => 'Il faut être connecté pour pouvoir exécuter cette action',
 
 
     // actions/wantedpages.php
@@ -232,7 +279,9 @@ return [
     'CHECK_YOUR_CONFIG_INFORMATION_BELOW' => 'Bekijk hieronder uw configuratiegegevens',
     'FILL_THE_FORM_BELOW' => 'Vul het volgende formulier in',
     'DEFAULT_LANGUAGE' => 'Standaardtaal',
+    // 'NAVIGATOR_LANGUAGE' => 'Langue du navigateur',
     'DEFAULT_LANGUAGE_INFOS' => 'Standaardtaal gebruikt voor de interface van YesWiki. Deze taal kan voor elk van de aangemaakte pagina’s worden gewijzigd',
+    // 'GENERAL_CONFIGURATION' => 'Configuration générale',
     'DATABASE_CONFIGURATION' => 'Configuratie van de database',
     'MORE_INFOS' => 'Meer info',
     'MYSQL_SERVER' => 'Machine MySQL',
@@ -262,6 +311,7 @@ return [
     'ALL_ADMIN_TASKS_ARE_DESCRIBED_IN_THE_PAGE' => 'Alle beheertaken worden beschreven op de pagina ‘AdministratieVanYesWiki’, die men vanaf de startpagina kan raadplegen',
     'USE_AN_EXISTING_ACCOUNT' => 'Een bestaande account gebruiken',
     'NO' => 'Neen',
+    // 'YES' => 'Oui',
     'OR_CREATE_NEW_ACCOUNT' => 'Of een nieuwe account aanmaken',
     'ADMIN' => 'Beheerder',
     'MUST_BE_WIKINAME' => 'moet een WikiNaam zijn',
@@ -274,10 +324,13 @@ return [
     'PAGENAME_WILL_BE_ADDED_AFTER_CHANGE_JUST_FOR_REDIRECTION' => 'De namen van de pagina’s zullen rechtstreeks worden toegevoegd aan de basis-URL van uw YesWiki-site. Wis het gedeelte "?wiki=" enkel als u de omleiding gebruikt (zie verder)',
     'BASE_URL' => 'Basis-URL',
     'REDIRECTION_SHOULD_BE_ACTIVE_ONLY_IF_USED_IN_YESWIKI' => 'De modus "automatische omleiding" moet enkel geselecteerd worden als u YesWiki gebruikt met de URL-omleiding (als u niet weet wat URL-omleiding is, activeert u deze optie niet) ',
+    // 'HTML_INSERTION_HELP_TEXT' => 'Augmente grandement les fonctionnalités du wiki, en permettant l\'ajout de vidéos et iframe par exemple, mais est moins sécurisé',
+    // 'INDEX_HELP_TEXT' => 'Indique dans les meta-données html et dans le fichier robots.txt si votre site doit etre indexé par les moteurs de recherche ou pas',
     'ACTIVATE_REDIRECTION_MODE' => 'Activering van de modus "automatische omleiding"',
     'OTHER_OPTIONS' => 'Andere opties',
     'OBLIGE_TO_PREVIEW_BEFORE_SAVING_PAGE' => 'Voorbeeldweergave verplichten alvorens een pagina op te slaan',
     'AUTHORIZE_HTML_INSERTION' => 'Invoeging van HTML toestaan',
+    // 'AUTHORIZE_INDEX_BY_ROBOTS' => 'Autoriser l\'indexation par les moteurs de recherche',
     'CONTINUE' => 'Verder',
 
     // setup/install.php
@@ -291,13 +344,16 @@ return [
     'NO_DATABASE_FOUND_TRY_TO_CREATE' => 'De database die u hebt gekozen, bestaat niet. We zullen trachten ze aan te maken',
     'TRYING_TO_CREATE_DATABASE' => 'Poging tot aanmaken van de database',
     'DATABASE_COULD_NOT_BE_CREATED_YOU_MUST_CREATE_IT_MANUALLY' => 'De database kon niet worden aangemaakt. U dient deze database manueel aan te maken alvorens YesWiki te installeren',
-    'SEARCH' => 'Databaseopzoeking',
     'DATABASE_DOESNT_EXIST_YOU_MUST_CREATE_IT' => 'De database die u hebt gekozen, bestaat niet. U dient ze aan te maken alvorens YesWiki te installeren',
     'CHECKING_THE_ADMIN_PASSWORD' => 'Controle van het beheerderswachtwoord',
     'CHECKING_THE_ADMIN_PASSWORD_CONFIRMATION' => 'Controle van de identiteit van de beheerderswachtwoorden',
+    // 'CHECKING_ROOT_PAGE_NAME' => 'V&eacute;rification du nom de la page d\'accueil',
+    // 'INCORRECT_ROOT_PAGE_NAME' => 'Le nom de la page d\'accueil doit uniquement contenir des lettres non accentuées, des chiffres, \'_\', \'-\' ou \'.\'',
     'ADMIN_PASSWORD_ARE_DIFFERENT' => 'De beheerderswachtwoorden zijn verschillend',
     'DATABASE_INSTALLATION' => 'Installatie van de database',
     'CREATION_OF_TABLE' => 'Aanmaak van de tabel',
+    // 'SQL_FILE_NOT_FOUND' => 'Fichier SQL non trouv&eacute;',
+    // 'NOT_POSSIBLE_TO_CREATE_SQL_TABLES' => 'Impossible de créer les tables SQL.',
     'ALREADY_CREATED' => 'Reeds aangemaakt',
     'ADMIN_ACCOUNT_CREATION' => 'Aanmaak van de beheerdersaccount',
     'INSERTION_OF_PAGE' => 'Insluiting van de pagina',
@@ -308,6 +364,8 @@ return [
     'INSERTION_OF_USER_IN_ADMIN_GROUP' => 'Opname van de gespecificeerde gebruiker in de beheerdersgroep',
     'NEXT_STEP_WRITE_CONFIGURATION_FILE' => 'Bij de volgende fase zal het installatieprogramma het configuratiebestand proberen te schrijven ',
     'VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE' => 'Zorg ervoor dat de webserver het recht heeft om in dit bestand te schrijven. Anders dient u het manueel te wijzigen',
+    // 'CHECK_EXISTING_TABLE_PREFIX' => 'Vérification de l\'existence du préfixe de table',
+    // 'TABLE_PREFIX_ALREADY_USED' => 'Le préfixe de table est déjà utilisé. Veuillez en choisir un nouveau.',
 
     // setup/writeconfig.php
     'WRITING_CONFIGURATION_FILE' => 'Schrijven van het configuratiebestand',
@@ -324,5 +382,155 @@ return [
     'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Controleer of uw server schrijfrechten heeft voor dit bestand. Als u dit om een of andere reden niet kunt, dient u de volgende gegevens te kopiëren in een bestand en dat bestand met een software voor bestandsoverdracht (ftp) op de server over te zetten naar een bestand',
     'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'rechtstreeks in de YesWiki-map. Zodra u dat hebt gedaan, zou uw YesWiki-site correct moeten werken',
     'TRY_AGAIN' => 'Opnieuw proberen',
+
+    // API
+    // 'USERS' => 'Utilisateurs',
+    // 'GROUPS' => 'Groupes',
+
+    // YesWiki\User class
+    // 'USER_CONFIRM_DELETE' => 'Êtes-vous sûr·e de vouloir supprimer l’utilisateur·ice ?',
+    // 'USER_DELETE_LONE_MEMBER_OF_GROUP' => 'Vous ne pouvez pas supprimer un utilisateur qui est seul dans au moins un groupe',
+    // 'USER_DELETE_QUERY_FAILED' => 'La requête de suppression de l\'utilisateur dans la base de données a échoué',
+    // 'USER_EMAIL_S_MAXIMUM_LENGTH_IS' => 'Le nomnbre maximum de caractères d\'un email d\'utilisateur est',
+    // 'USER_LISTGROUPMEMBERSHIPS_QUERY_FAILED' => 'La requête pour lsiter les groupes auquels l\'utilisateur appartient a échoué',
+    // 'USER_MUST_BE_ADMIN_TO_DELETE' => 'Vous devez être administrateur pour supprimer un utilisateur',
+    // 'USER_NAME_S_MAXIMUM_LENGTH_IS' => 'Le nomnbre maximum de caractères d\'un nom d\'utilisateur est',
+    // 'USER_NO_SPACES_IN_PASSWORD' => 'Les espaces ne sont pas autorisés dans un mot de passe',
+    // 'USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS' => 'Le nombre minimum de caractères d\'un mot de passe est',
+    // 'USER_PASSWORDS_NOT_IDENTICAL' => 'Les deux mots de passe saisis doivent être identiques',
+    // 'USER_PASSWORD_TOO_SHORT' => 'Mot de passe trop court',
+    // 'USER_THIS_EMAIL_IS_ALLREADY_USED_ON_THIS_WIKI' => 'L\'email saisi est déjà utilisé sur ce wiki',
+    // 'USER_THIS_IS_NOT_A_VALID_NAME' => 'Ceci n\'est pas un nom d\'utilisateur valide',
+    // 'USER_THIS_IS_NOT_A_VALID_EMAIL' => 'Ceci n\'est pas un email valide',
+    // 'USER_UPDATE_QUERY_FAILED' => 'La requête de mise à jour de l\'utilisateur dans la base de données a échoué',
+    // 'USER_YOU_MUST_SPECIFY_A_NAME' => 'Veuillez saisir un nom pour l\'utilisateur',
+    // 'USER_YOU_MUST_SPECIFY_AN_EMAIL' => 'Veuillez saisir un email pour l\'utilisateur',
+    // 'USER_USERSTABLE_MISTAKEN_ARGUMENT' => 'l\'action usertable a reçu un argument non autorisé',
+    // 'USER_WRONG_PASSWORD' => 'Mot de passe incorrect',
+    // 'USER_INCORRECT_PASSWORD_KEY' => 'La clef de validation du mot de passe est incorrecte',
+    // 'USER_PASSWORD_UPDATE_FAILED' => 'La modification du mot de passe a échoué',
+    // 'USER_NOT_LOGGED_IN_CANT_LOG_OUT' => 'Déconnexion impossible car personne n\'est connecté',
+    // 'USER_TRYING_TO_LOG_WRONG_USER_OUT' => 'Vous essayez de déconnecter quelqu\'un d\'autre',
+    // 'USER_CREATION_FAILED' => 'La création de l\'utilisateur a échoué',
+    // 'USER_LOAD_BY_NAME_QUERY_FAILED' => 'La requête de chargement de l\'utilisateur par son nom depuis la base de données a échoué',
+    // 'USER_NO_USER_WITH_THAT_NAME' => 'Il n\'y a aucun utilisateur avec ce nom',
+    // 'USER_LOAD_BY_EMAIL_QUERY_FAILED' => 'La requête de chargement de l\'utilisateur par son email depuis la base de données a échoué',
+    // 'USER_NO_USER_WITH_THAT_EMAIL' => 'Il n\'y a aucun utilisateur avec cet email',
+    // 'USER_UPDATE_MISSPELLED_PROPERTIES' => 'La liste des champs à modifier par updateIntoDB est certainement défectueuse',
+    // 'USER_CANT_DELETE_ONESELF' => 'Vous ne pouvez supprimer votre compte',
+    // 'USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER' => 'L\'utilisateur en cours de modification n\'existe pas dans la base de données',
+    // 'USER_YOU_ARE_NOW_DISCONNECTED' => 'Vous êtes à présent déconnecté',
+    // 'USER_PARAMETERS_SAVED' => 'Paramètres sauvegardés',
+    // 'USER_DELETED' => 'utilisateur supprimé',
+    // 'USER_PASSWORD_CHANGED' => 'Mot de passe modifié',
+    // 'USER_EMAIL_ADDRESS' => 'Adresse de messagerie électronique',
+    // 'USER_DOUBLE_CLICK_TO_EDIT' => 'Éditer en double-cliquant',
+    // 'USER_SHOW_COMMENTS_BY_DEFAULT' => 'Par défaut, montrer les commentaires',
+    // 'USER_MAX_NUMBER_OF_LASTEST_COMMENTS' => 'Nombre maximum de derniers commentaires',
+    // 'USER_MAX_NUMBER_OF_VERSIONS' => 'Nombre maximum de versions',
+    // 'USER_MOTTO' => 'Votre devise',
+    // 'USER_UPDATE' => 'Mise &agrave; jour',
+    // 'USER_DISCONNECT' => 'Déconnexion',
+    // 'USER_CHANGE_THE_PASSWORD' => 'Changement de mot de passe',
+    // 'USER_OLD_PASSWORD' => 'Votre ancien mot de passe',
+    // 'USER_NEW_PASSWORD' => 'Nouveau mot de passe',
+    // 'USER_CHANGE' => 'Changer',
+    // 'USER_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED' => 'Vous devez accepter les cookies pour pouvoir vous connecter',
+    // 'USER_WIKINAME' => 'Votre NomWiki',
+    // 'USER_USERNAME' => 'Votre nom d\'utilisateur, utilisatrice',
+    // 'USER_PASSWORD_CONFIRMATION' => 'Confirmation du mot de passe',
+    // 'USER_NEW_ACCOUNT' => 'Nouveau compte',
+    // 'USER_PASSWORD' => 'Mot de passe',
+    // 'USER_ERRORS_FOUND' => 'Erreur(s) trouvée(s)',
+    // 'USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR' => 'Il faut une valeur entier positif pour ',
+
+    // YesWiki\Database class
+    // 'DATABASE_QUERY_FAILED' => 'La requête a échoué {\YesWiki\Database}',
+    // 'DATABASE_YOU_MUST_FIRST_SET_ARGUMENT' => 'Il manque des arguments pour un objet de la classe \YesWiki\Database',
+    // 'DATABASE_MISSING_ARGUMENT' => ' manque(nt)',
+
+    // YesWiki\Session class
+    // 'SESSION_YOU_MUST_FIRST_SET_ARGUMENT' => 'Il manque l\'argument pour un objet de la classe \YesWiki\Session',
+
+    // gererdroits
+    // 'ACLS_RESERVED_FOR_ADMINS' => 'Cette action est r&eacute;serv&eacute;e aux admins',
+    // 'ACLS_NO_SELECTED_PAGE' => 'Aucune page n\'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.',
+    // 'ACLS_NO_SELECTED_RIGHTS' => 'Vous n\'avez pas s&eacute;lectionn&eacute; de droits &agrave; modifier.',
+    // 'ACLS_RIGHTS_WERE_SUCCESFULLY_CHANGED' => 'Droit modifi&eacute;s avec succ&egrave;s',
+    // 'ACLS_SELECT_PAGES_TO_MODIFY' => 'Cochez les pages que vous souhaitez modifier et choisissez une action en bas de page',
+    // 'ACLS_PAGE' => 'Page',
+    // 'ACLS_FOR_SELECTED_PAGES' => 'Actions pour les pages cochées ci dessus',
+    // 'ACLS_RESET_SELECTED_PAGES' => 'Réinitialiser (avec les valeurs par défaut définies dans',
+    // 'ACLS_REPLACE_SELECTED_PAGES' => 'Remplacer (Les droits actuels seront supprim&eacute;s)',
+    // 'ACLS_HELPER' => 'Séparez chaque entrée des virgules, par exemple</br>
+    // <b>*</b> (tous les utilisateurs)</br>
+    // <b>+</b> (utilisateurs enregistrés)</br>
+    // <b>%</b> (créateur de la fiche/page)</br>
+    // <b>@nom_du_groupe</b> (groupe d\'utilisateur, ex: @admins)</br>
+    // <b>JamesBond</b> (nom YesWiki d\'un utilisateur)</br>
+    // <b>!SuperCat</b> (négation, SuperCat n\'est pas autorisé)</br>',
+    // 'ACLS_MODE_SIMPLE' => 'Mode simple',
+    // 'ACLS_MODE_ADVANCED' => 'Mode avancé',
+    // 'ACLS_NO_CHANGE' => 'Ne rien changer',
+    // 'ACLS_EVERYBODY' => 'Tout le monde',
+    // 'ACLS_AUTHENTIFICATED_USERS' => 'Utilisateurs connectés',
+    // 'ACLS_OWNER' => 'Propriétaire de la page',
+    // 'ACLS_ADMIN_GROUP' => 'Groupe admin',
+    // 'ACLS_LIST_OF_ACLS' => 'Liste des droits séparés par des virgules',
+    // 'ACLS_UPDATE' => 'Mettre &agrave; jour',
+
+    // include/services/ThemeManager.php
+    // 'THEME_MANAGER_THEME_FOLDER' => 'Le dossier du thème ',
+    // 'THEME_MANAGER_SQUELETTE_FILE' => 'Le fichier du squelette ',
+    // 'THEME_MANAGER_NOT_FOUND' => ' n\'a pas été trouvé.',
+    // 'THEME_MANAGER_ERROR_GETTING_FILE' => 'Une erreur s\'est produite en chargeant ce fichier : ',
+    // 'THEME_MANAGER_CLICK_TO_INSTALL' => 'Cliquer pour installer le thème ',
+    // 'THEME_MANAGER_AND_REPAIR' => ' et réparer le site',
+    // 'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Veuillez vous connecter en tant qu\'administrateur pour faire la mise à jour.',
+
+    // actions/EditConfigAction.php
+    // 'EDIT_CONFIG_TITLE' => 'Modification du fichier de configuration',
+    // 'EDIT_CONFIG_CURRENT_VALUE' => 'Valeur actuelle ',
+    // 'EDIT_CONFIG_SAVE' => 'Configuration sauvegardée',
+    // 'EDIT_CONFIG_HINT_WAKKA_NAME' => 'Titre de votre wiki',
+    // 'EDIT_CONFIG_HINT_ROOT_PAGE' => 'Nom de la page d\'accueil',
+    // 'EDIT_CONFIG_HINT_DEFAULT_WRITE_ACL' => 'Droits d\'écriture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin)',
+    // 'EDIT_CONFIG_HINT_DEFAULT_READ_ACL' => 'Droits de lecture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin)',
+    // 'EDIT_CONFIG_HINT_DEBUG' => 'Activer le mode de debug (yes ou no)',
+    // 'EDIT_CONFIG_HINT_DEFAULT_LANGUAGE' => 'Langue par défaut (fr ou en ou ... auto = langue du navigateur)',
+    // 'EDIT_CONFIG_HINT_CONTACT_FROM' => 'Remplacer le mail utilisé comme expéditeur des messages',
+    // 'EDIT_CONFIG_HINT_MAIL_CUSTOM_MESSAGE' => 'Message personnalisé des mails envoyés depuis l\'action contact',
+    // 'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING' => 'Mot de passe demandé pour modifier les pages',
+    // 'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING_MESSAGE' => 'Message informatif pour demander le mot de passe',
+    // 'EDIT_CONFIG_HINT_ALLOW_DOUBLECLIC' => 'Autoriser le doubleclic pour éditer les menus et pages spéciales',
+    // 'EDIT_CONFIG_HINT_TIMEZONE' => 'Fuseau horaire du site (ex. UCT, Europe/Paris, Europe/London, GMT = utiliser celui du serveur,)',
+    // 'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Méthodes autorisées à être affichées dans les iframes (all = autoriser tout)',
+    // 'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
+    // 'EDIT_CONFIG_GROUP_ACCESS' => 'Droit d\'accès',
+    // 'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
+
+    // actions/usertable.php
+    // 'GROUP_S' => 'Groupe(s)',
+
+    // handlers/update
+    // 'UPDATE_ADMIN_PAGES' => 'Mettre à jour les pages de gestion',
+    // 'UPDATE_ADMIN_PAGES_CONFIRM' => 'Confirmer la mise à jour des pages : ',
+    // 'UPDATE_ADMIN_PAGES_HINT' => 'Mets à jour les pages de gestion avec les dernières fonctionnalités. Ceci est réversible.',
+    // 'UPDATE_ADMIN_PAGES_ERROR' => 'Il n\'a pas été possible de mettre à jour toutes les pages de gestion !',
+    // 'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => 'la page "{{page}}" n\'a pas été trouvée dans default-content.sql',
+
+    // handlers/revisions
+    // 'SUCCESS_RESTORE_REVISION' => 'La version a bien été restaurée',
+    // 'TITLE_PAGE_HISTORY' => 'Historique de la page',
+    // 'TITLE_ENTRY_HISTORY' => 'Historique de la fiche',
+    // 'REVISION_VERSION' => 'Version N°',
+    // 'REVISION_ON' => 'du',
+    // 'REVISION_BY' => 'par',
+    // 'CURRENT_VERSION' => 'Version actuelle',
+    // 'RESTORE_REVISION' => 'Restaurer cette version',
+    // 'DISPLAY_WIKI_CODE' => 'Afficher le code Wiki',
+
+    // YesWiki
+    // 'UNKNOWN_INTERWIKI' => 'interwiki inconnu',
 
 ];

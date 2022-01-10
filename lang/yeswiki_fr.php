@@ -216,7 +216,6 @@ return [
     // actions/textsearch.php
     'WHAT_YOU_SEARCH' => 'Ce que vous souhaitez chercher',
     'SEARCH' => 'Chercher',
-    //'SEARCH' => 'Rechercher',
     'SEARCH_RESULT_OF' => 'R&eacute;sultat(s) de la recherche de',
     'NO_RESULT_FOR' => 'Aucun r&eacute;sultat pour',
 

@@ -217,7 +217,6 @@ return [
     // actions/textsearch.php
     'WHAT_YOU_SEARCH' => 'What you search',
     'SEARCH' => 'Search',
-    //'SEARCH' => 'Search database',
     'SEARCH_RESULT_OF' => 'Search results for',
     'NO_RESULT_FOR' => 'No result for',
 
