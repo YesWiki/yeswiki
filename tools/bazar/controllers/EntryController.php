@@ -176,7 +176,7 @@ class EntryController extends YesWikiController
             "showFooter" => $showFooter,
             "canShow" => $this->wiki->GetPageTag() != $entry['id_fiche'], // hide if we are already in the show page
             "canEdit" =>  !$this->securityController->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId),
-            "canDelete" => !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin($userNameForRendering) or $this->wiki->UserIsOwner()),
+            "canDelete" => !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin($userNameForRendering) || $this->wiki->UserIsOwner($entryId)),
             "isAdmin" => $this->wiki->UserIsAdmin($userNameForRendering),
             "renderedEntry" => $renderedEntry,
             "incomingUrl" => $_GET['incomingurl'] ?? getAbsoluteUrl()

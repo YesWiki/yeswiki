@@ -904,9 +904,7 @@ class Wiki
         }
 
         // check if user is owner
-        if ($this->GetPageOwner($tag) == $this->GetUserName()) {
-            return true;
-        }
+        return ($this->GetPageOwner($tag) == $this->GetUserName());
     }
 
     /**
