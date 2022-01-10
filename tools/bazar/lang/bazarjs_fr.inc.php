@@ -191,7 +191,8 @@ return [
     'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'En affichant le constructeur graphique, vous perdrez vos modifications faites dans le code ici-même. Continuer sans sauvegarder les changements ? (Cliquez sur le bouton "Valider" en bas de page pour conserver vos modifications !)',
 
     // condition checking field
-    "BAZ_FORM_CONDITIONSCHEKING_HINT" => "La condition doit respecter le format suivant (sans les `):{\\n}".
+    "BAZ_FORM_CONDITIONSCHEKING_HINT" => "CHAMP EXPERIMENTAL{\\n}".
+        "La condition doit respecter le format suivant (sans les `):{\\n}".
         " - `&` = ET{\\n}".
         " - `|` = OU{\\n}".
         " - `=` = EST ÉGALE À{\\n}".
