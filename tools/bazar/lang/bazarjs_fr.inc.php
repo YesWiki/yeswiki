@@ -189,4 +189,23 @@ return [
     'BAZ_FORM_EDIT_UNIQUE_ID' => 'Identifiant unique',
     'BAZ_FORM_EDIT_NAME' => 'Intitulé',
     'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'En affichant le constructeur graphique, vous perdrez vos modifications faites dans le code ici-même. Continuer sans sauvegarder les changements ? (Cliquez sur le bouton "Valider" en bas de page pour conserver vos modifications !)',
+
+    // condition checking field
+    "BAZ_FORM_CONDITIONSCHEKING_HINT" => "La condition doit respecter le format suivant (sans les `):{\\n}".
+        " - `&` = ET{\\n}".
+        " - `|` = OU{\\n}".
+        " - `=` = EST ÉGALE À{\\n}".
+        " - `!=` = EST DIFFÉRENT DE {\\n}".
+        " - ` IN (value1,value2)` = FAIT PARTIE DE liste d'éléments séparés par des espaces {\\n}".
+        " - `.length > 6` = vérifie si le nombre d'éléments cochés est supérieur à 6 (fonctionne avec '>=','<','<=') {\\n}".
+        " - ` = value1,value2` = VAUT EXACTEMENT LA liste d'éléments séparés par des espaces (uniquement pour checkbox){\\n}".
+        " - `(  )` permet de grouper des conditions sinon priorité de gauche à droite{\\n}".
+        " - `!(  )` négation de la condition{\\n}".
+        " - indiquer à gauche d'un `=` ou `!=` le label du champ ex:`bf_thematique` ou le nom long `listeListeOuiNonbf_choix`{\\n}",
+        " - une valeur vide à droite de `=` (ou entourée par deux ,) permet de signifier une valeur vide{\\n}",
+        " - les espaces en trop sont retirés automatiquement",
+    "BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL" => "Affichage conditionnel",
+    "BAZ_FORM_EDIT_CONDITION_LABEL" => "Condition",
+    "BAZ_FORM_EDIT_CONDITIONCHECKING_END" => "Fin de condition",
+
 ];
