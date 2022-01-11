@@ -16,10 +16,16 @@ return [
     'ERROR_MAX_FILE_SIZE' => 'Het geüploade bestand overschrijdt de grootte van MAX_FILE_SIZE ingesteld in het HTML-formulier.',
     'ERROR_PARTIAL_UPLOAD' => 'Het bestand werd slechts deels gewijzigd.',
     'ERROR_NO_FILE_UPLOADED' => 'Er werd geen enkel bestand geüpload.',
+    // 'ERROR_NOT_AUTHORIZED_EXTENSION' => 'Le fichier n\'a pas une extension autorisée, voici celles que la configuration autorise : ',
+    // 'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Ajouter un lien pour afficher l'image seule en entier",
 
 
     // actions/filemanager.php
     'ATTACH_NO_RIGHTS_TO_ACCESS_FILEMANAGER' => 'U moet een schrijftoelating hebben om de bestanden in bijlage als beheerder te openen',
+
+    // actions/backgroundimage.php
+    // 'ATTACH_ACTION_BACKGROUNDIMAGE' => 'Action {{backgroundimage ...}}',
+    // 'ATTACH_PARAM_FILE_OR_BGCOLOR_NOT_FOUND' => 'il faut indiquer soit une image avec le paramètre "file" ou une couleur de fond avec le paramètre "bgcolor"',
 
     // actions/player.php
     'ATTACH_ACTION_PLAYER' => 'Actie {{player ...}}',
@@ -39,12 +45,16 @@ return [
     'ATTACH_DESCRIPTION' => 'Beschrijving',
     'ATTACH_CANCEL' => 'Annuleren',
     'ATTACH_SAVE' => 'Opslaan',
-
+    
     // actions/video.php
     'ATTACH_ACTION_VIDEO_PARAM_ERROR' => 'De actie video moet worden aangeroepen met de parameters «id» en «serveur». Voor «serveur» zijn alleen waarden «vimeo» of «youtube» of «peertube» toegestaan.',
-
+    
     // actions/pdf.php
     'ATTACH_ACTION_PDF_PARAM_URL_ERROR' => 'De actie pdf moet worden aangeroepen met parameter «url» en de opgegeven url moet op dezelfde host staan als de wiki (bijvoorbeeld \' xxx.yyy.com \'), hetzelfde schema (bijvoorbeeld \' https \') en dezelfde poort indien opgegeven (bijvoorbeeld \'8080 \'). ',
+    // 'ATTACH_ACTION_DISPLAY_PDF_TEXT' => 'Afficher le pdf dans la page :',
+    // 'ATTACH_ACTION_DISPLAY_PDF_LINK_TEXT' => 'sous forme de lien',
+    // 'ATTACH_ACTION_DISPLAY_PDF_INCLUDED_TEXT' => 'directement inclus dans la page',
+
 
     // handler edit
     'ACTIVATE_JS_TO_UPLOAD_FILES' => 'JavaScript activeren om bestanden te uploaden',
@@ -70,9 +80,14 @@ return [
     'ZOOM_HOVER' => 'Zoomen bij muis-over',
     'ALT_INFOS' => 'Deze tekst zal worden weergegeven op de plaats van de afbeelding wanneer deze onvindbaar is op de server.',
     'ALTERNATIVE_TEXT' => 'Alternatieve tekst',
+    // 'NONE' => 'Texte en dessous',
     'LEFT' => 'Links',
     'CENTER' => 'Midden',
     'RIGHT' => 'Rechts',
-    'FAILED' => 'mislukt'
+    'FAILED' => 'mislukt',
 
+    // edit config action
+    // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_VIDEO_SERVICE]' => 'Service de vidéo par défaut (peertube, youtube ou vimeo)',
+    // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_PEERTUBE_INSTANCE]' => 'Adresse du serveur peertube par défaut',
+    // 'EDIT_CONFIG_GROUP_ATTACH' => 'Insertion de médias (images, vidéos)',
 ];

@@ -7,6 +7,7 @@ return [
     'ATTACH_PARAM_DESC_REQUIRED' => 'parámetro "desc" obligatorio para una imagen',
     'ATTACH_PARAM_HEIGHT_NOT_NUMERIC' => 'el parámetro "height", en pixels, sólo debe estar compuesto de números enteros',
     'ATTACH_PARAM_WIDTH_NOT_NUMERIC' => 'el parámetro "width", en pixels, sólo debe estar compuesto de números enteros',
+    // 'ATTACH_UPLOAD_FORM_FOR_FILE' => 'Formulaire d\'envoi du fichier',
     'ATTACH_BACK_TO_PAGE' => 'Regreso hacia la página',
     'NO_RIGHT_TO_WRITE_IN_THIS_PAGE' => 'No tienes los derechos de acceso para escribir en esta página',
     'INVALID_REQUEST_METHOD' => 'Método de  petición invalide',
@@ -15,6 +16,8 @@ return [
     'ERROR_MAX_FILE_SIZE' => 'EL archivo descargado excede al tamaño de MAX_FILE_SIZE, configurado en el formulario HTML.',
     'ERROR_PARTIAL_UPLOAD' => 'La descarga del archivo ha sido parcial.',
     'ERROR_NO_FILE_UPLOADED' => 'Ningun archivo ha sido descargado.',
+    // 'ERROR_NOT_AUTHORIZED_EXTENSION' => 'Le fichier n\'a pas une extension autorisée, voici celles que la configuration autorise : ',
+    // 'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Ajouter un lien pour afficher l'image seule en entier",
 
 
     // actions/filemanager.php
@@ -48,6 +51,9 @@ return [
     
     // actions/pdf.php
     'ATTACH_ACTION_PDF_PARAM_URL_ERROR' => 'La acción pdf debe llamarse con el parámetro «url» y la URL dada debe estar en el mismo host que el wiki (por ejemplo, \' xxx.yyy.com \'), mismo esquema (por ejemplo, \' https \') y el mismo puerto si se especifica (por ejemplo, \'8080 \'). ',
+    // 'ATTACH_ACTION_DISPLAY_PDF_TEXT' => 'Afficher le pdf dans la page :',
+    // 'ATTACH_ACTION_DISPLAY_PDF_LINK_TEXT' => 'sous forme de lien',
+    // 'ATTACH_ACTION_DISPLAY_PDF_INCLUDED_TEXT' => 'directement inclus dans la page',
 
     // handler edit
     'ACTIVATE_JS_TO_UPLOAD_FILES' => 'Activar el JavaScript para adjuntar archivos',
@@ -73,8 +79,14 @@ return [
     'ZOOM_HOVER' => 'Ampliación',
     'ALT_INFOS' => 'Si no se encuentra la imagen, este texto aparecera en su lugar',
     'ALTERNATIVE_TEXT' => 'Texto de sustitución',
+    // 'NONE' => 'Texte en dessous',
     'LEFT' => 'Izquierda',
     'CENTER' => 'Centro',
     'RIGHT' => 'Derecha',
-    'FAILED' => 'Error'
+    'FAILED' => 'Error',
+    
+    // edit config action
+    // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_VIDEO_SERVICE]' => 'Service de vidéo par défaut (peertube, youtube ou vimeo)',
+    // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_PEERTUBE_INSTANCE]' => 'Adresse du serveur peertube par défaut',
+    // 'EDIT_CONFIG_GROUP_ATTACH' => 'Insertion de médias (images, vidéos)',
 ];

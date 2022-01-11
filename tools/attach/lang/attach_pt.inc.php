@@ -16,10 +16,17 @@ return [
     'ERROR_MAX_FILE_SIZE' => 'O arquivo de upload excede o tamanho MAX_FILE_SIZE, que foi especificado no formulário HTML.',
     'ERROR_PARTIAL_UPLOAD' => 'O arquivo foi parcialmente baixado.',
     'ERROR_NO_FILE_UPLOADED' => 'Nenhum arquivo foi baixado.',
+    // 'ERROR_NOT_AUTHORIZED_EXTENSION' => 'Le fichier n\'a pas une extension autorisée, voici celles que la configuration autorise : ',
+    // 'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Ajouter un lien pour afficher l'image seule en entier",
 
 
     // actions/filemanager.php
     'ATTACH_NO_RIGHTS_TO_ACCESS_FILEMANAGER' => 'Deve ter acesso em gravação à página para acessar aos anexos gerentes',
+    
+    // actions/backgroundimage.php
+    // 'ATTACH_ACTION_BACKGROUNDIMAGE' => 'Action {{backgroundimage ...}}',
+    // 'ATTACH_PARAM_FILE_OR_BGCOLOR_NOT_FOUND' => 'il faut indiquer soit une image avec le paramètre "file" ou une couleur de fond avec le paramètre "bgcolor"',
+
 
     // actions/player.php
     'ATTACH_ACTION_PLAYER' => 'Ação {{player ...}}',
@@ -45,6 +52,9 @@ return [
 
     // actions/pdf.php
     'ATTACH_ACTION_PDF_PARAM_URL_ERROR' => 'O pdf de ação deve ser chamado com o parâmetro «url» e o url fornecido deve estar no mesmo host que o wiki (por exemplo \' xxx.yyy.com \'), mesmo esquema (por exemplo \' https \') e a mesma porta se especificada (por exemplo \'8080 \'). ',
+    // 'ATTACH_ACTION_DISPLAY_PDF_TEXT' => 'Afficher le pdf dans la page :',
+    // 'ATTACH_ACTION_DISPLAY_PDF_LINK_TEXT' => 'sous forme de lien',
+    // 'ATTACH_ACTION_DISPLAY_PDF_INCLUDED_TEXT' => 'directement inclus dans la page',
 
     // handler edit
     'ACTIVATE_JS_TO_UPLOAD_FILES' => 'Habilitar o JavaScript para anexar arquivos',
@@ -70,9 +80,15 @@ return [
     'ZOOM_HOVER' => 'Visão geral ampliação',
     'ALT_INFOS' => 'Este texto será exibido em vez da imagem, se não for encontrada no servidor',
     'ALTERNATIVE_TEXT' => 'Texto de substituição',
+    // 'NONE' => 'Texte en dessous',
     'LEFT' => 'Esquerda',
     'CENTER' => 'Centro',
     'RIGHT' => 'Direita',
-    'FAILED' => 'Falhado'
+    'FAILED' => 'Falhado',
+    
+    // edit config action
+    // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_VIDEO_SERVICE]' => 'Service de vidéo par défaut (peertube, youtube ou vimeo)',
+    // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_PEERTUBE_INSTANCE]' => 'Adresse du serveur peertube par défaut',
+    // 'EDIT_CONFIG_GROUP_ATTACH' => 'Insertion de médias (images, vidéos)',
 
 ];
