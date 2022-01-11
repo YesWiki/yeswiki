@@ -32,6 +32,7 @@
 return [
 
     // Commons
+    // 'CAUTION' => 'Attention',
     'BY' => 'per',
     // 'CLEAN' => 'Nettoyer',
     // 'DELETE' => 'Supprimer',
@@ -42,6 +43,7 @@ return [
     // 'NAME' => 'Nom',
     // 'SUBSCRIPTION' => 'Inscription',
     'UNKNOWN' => 'Desconegut',
+    'WARNING' => 'ADVERTIMENT',
 
     // wakka.php
     'INVALID_ACTION' => 'Acció no permesa',
@@ -377,7 +379,6 @@ return [
     'GO_TO_YOUR_NEW_YESWIKI_WEBSITE' => 'Accediu al vostre nou lloc YesWiki',
     'IT_IS_RECOMMANDED_TO_REMOVE_WRITE_ACCESS_TO_CONFIG_FILE' => 'Es recomana eliminar l\'accés d\'escriptura al fitxer de configuració',
     'THIS_COULD_BE_UNSECURE' => 'Això podria ser una fallada de seguretat',
-    'WARNING' => 'ADVERTIMENT',
     'CONFIGURATION_FILE' => 'el fitxer de configuració',
     'CONFIGURATION_FILE_NOT_CREATED' => 'no s\'ha pogut crear',
     'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Verifiqueu que el vostre servidor té drets d\'accés per l\'escriptura d\'aquest fitxer. Si per alguna raó no podeu fer-ho, heu de copiar les informacions següents en un fitxer i transferir-les mitjançant un programa FTP al servidor.',

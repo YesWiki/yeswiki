@@ -32,6 +32,7 @@
 return [
 
     // Commons
+    // 'CAUTION' => 'Attention',
     'BY' => 'Door',
     // 'CLEAN' => 'Nettoyer',
     // 'DELETE' => 'Supprimer',
@@ -42,6 +43,7 @@ return [
     // 'NAME' => 'Nom',
     // 'SUBSCRIPTION' => 'Inscription',
     'UNKNOWN' => 'Onbekend',
+    'WARNING' => 'WAARSCHUWING',
 
     // wakka.php
     'INVALID_ACTION' => 'Actie ongeldig',
@@ -115,7 +117,7 @@ return [
     // 'EDIT_EXISTING_GROUP' => 'Éditer un groupe existant',
     // 'DELETE_EXISTING_GROUP' => 'Supprimer un groupe existant',
     // 'GROUP_NAME' => 'Nom du groupe',
-    // 'SEE_EDIT' => 'Voir / Éditer',    
+    // 'SEE_EDIT' => 'Voir / Éditer',
     'ONLY_ALPHANUM_FOR_GROUP_NAME' => 'De namen van groepen mogen enkel alfanumerieke karakters bevatten',
     // 'LIST_GROUP_MEMBERS' => 'Liste des membres du groupe {groupName}',
     // 'ONE_NAME_BY_LINE' => 'un nom d\'utilisateur par ligne',
@@ -376,7 +378,6 @@ return [
     'GO_TO_YOUR_NEW_YESWIKI_WEBSITE' => 'Ga nu naar uw nieuwe YesWiki-site',
     'IT_IS_RECOMMANDED_TO_REMOVE_WRITE_ACCESS_TO_CONFIG_FILE' => 'Het verdient aanbeveling om de schrijfmachtiging voor het bestand in te trekken',
     'THIS_COULD_BE_UNSECURE' => 'dit kan een beveiligingsprobleem geven',
-    'WARNING' => 'WAARSCHUWING',
     'CONFIGURATION_FILE' => 'Het configuratiebestand',
     'CONFIGURATION_FILE_NOT_CREATED' => 'kon niet worden aangemaakt',
     'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Controleer of uw server schrijfrechten heeft voor dit bestand. Als u dit om een of andere reden niet kunt, dient u de volgende gegevens te kopiëren in een bestand en dat bestand met een software voor bestandsoverdracht (ftp) op de server over te zetten naar een bestand',

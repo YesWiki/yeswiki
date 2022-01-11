@@ -32,6 +32,7 @@
 return [
 
     // Commons
+    // 'CAUTION' => 'Attention',
     'BY' => 'por',
     // 'CLEAN' => 'Nettoyer',
     // 'DELETE' => 'Supprimer',
@@ -42,6 +43,7 @@ return [
     // 'NAME' => 'Nom',
     // 'SUBSCRIPTION' => 'Inscription',
     'UNKNOWN' => 'Desconocido',
+    'WARNING' => 'AVISO',
 
     // wakka.php
     'INVALID_ACTION' => 'Acción inválida',
@@ -379,7 +381,6 @@ return [
     'GO_TO_YOUR_NEW_YESWIKI_WEBSITE' => 'Acceder a tu nuevo sitio YesWiki',
     'IT_IS_RECOMMANDED_TO_REMOVE_WRITE_ACCESS_TO_CONFIG_FILE' => 'Se recomenda eliminar el acceso de escritura al archivo de configuración',
     'THIS_COULD_BE_UNSECURE' => 'esto puede ser un fallo de seguridad',
-    'WARNING' => 'AVISO',
     'CONFIGURATION_FILE' => 'el archivo de configuración',
     'CONFIGURATION_FILE_NOT_CREATED' => 'no ha podido crearse',
     'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Verifica que tu servidor tiene los derechos de acceso de escritura para este archivo. Si por cualquier razón no lo puedes hacer, tienes que copiar las informaciones siguientes en un archivo y transferirlas con un programa ftp al servidor',

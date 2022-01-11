@@ -947,23 +947,23 @@ if (!class_exists('attach')) {
         {
             $method = ($this->wiki->GetMethod() != 'show' ? $this->wiki->GetMethod() : '');
             $output = '<ul id="fmtab' . $this->wiki->tag . '" class="nav nav-tabs">
-				<li' . (($trash) ? '' : ' class="active"') . '><a href="' . $this->wiki->href($method, $this->wiki->tag . '#fmtab' . $this->wiki->tag) . '" title="Gestion des fichiers"><i class="fa fa-file icon-file"></i>&nbsp;Gestion des fichiers</a></li>
-				<li' . (($trash) ? ' class="active"' : '') . '><a href="' . $this->wiki->href($method, $this->wiki->GetPageTag(), 'do=trash') . '" title="Corbeille"><i class="fa fa-trash icon-trash"></i>&nbsp;Corbeille</a></li>
+				<li' . (($trash) ? '' : ' class="active"') . '><a href="' . $this->wiki->href($method, $this->wiki->tag) . '#fmtab' . $this->wiki->tag . '" title="'._t('ATTACH_FILE_MANAGEMENT').'"><i class="fa fa-file icon-file"></i>&nbsp;'._t('ATTACH_FILE_MANAGEMENT').'</a></li>
+				<li' . (($trash) ? ' class="active"' : '') . '><a href="' . $this->wiki->href($method, $this->wiki->GetPageTag(), 'do=trash') . '#fmtab' . $this->wiki->tag . '" title="'._t('ATTACH_TRASH').'"><i class="fa fa-trash icon-trash"></i>&nbsp;'._t('ATTACH_TRASH').'</a></li>
             </ul>';
 
             $files = $this->fmGetFiles($trash);
 
             if (!$files) {
-                $output .= '<div class="alert alert-info">Pas de fichiers attach&eacute;s &agrave; la page ' . $this->wiki->Format($this->wiki->tag) . ' pour l\'instant.</div>' . "\n";
+                $output .= '<div class="alert alert-info">'. str_replace('{tag}', $this->wiki->Format($this->wiki->tag), _t('ATTACH_NO_ATTACHED_FILES')) . '</div>' . "\n";
             } else {
                 // tri du tableau des fichiers
                 $files = $this->sortByNameRevFile($files);
                 //entete du tableau
                 $fmHeadTable = '	<thead>' . "\n" .
                     '		<tr>' . "\n" .
-                    '			<td class="fmfilename">Nom du fichier</td>' . "\n" .
-                    '			<td class="fmfilesize">Taille</td>' . "\n" .
-                    '			<td class="fmfiledate">Date de modification</td>' . "\n" .
+                    '			<td class="fmfilename">'._t('ATTACH_FILENAME').'</td>' . "\n" .
+                    '			<td class="fmfilesize">'._t('ATTACH_SIZE').'</td>' . "\n" .
+                    '			<td class="fmfiledate">'._t('ATTACH_DATE_OF_MODIFICATION').'</td>' . "\n" .
                     '			<td class="fmfileactions">&nbsp;</td>' . "\n";
                 $fmHeadTable .= '		</tr>' . "\n" .
                     '	</thead>' . "\n";
@@ -982,19 +982,19 @@ if (!class_exists('attach')) {
                         $url = $this->wiki->href('', $this->wiki->GetPageTag(), 'do=del&file=' . $file['realname']);
                         $icon = 'fa fa-trash icon-trash';
                     }
-                    $dellink = '<a class="btn btn-mini btn-danger" href="' . $url . '" title="Supprimer"><i class="' . $icon . ' icon-white"></i></a>';
+                    $dellink = '<a class="btn btn-mini btn-danger" href="' . $url . '" title="'._t('DELETE').'"><i class="' . $icon . ' icon-white"></i></a>';
                     //lien de restauration
                     $restlink = '';
                     if ($trash) {
                         $url = $this->wiki->href('', $this->wiki->GetPageTag(), 'do=restore&file=' . $file['realname']);
-                        $restlink = '<a class="btn btn-xs btn-primary" href="' . $url . '" title="Restaurer"><i class="fa fa-refresh icon-refresh icon-white"></i>&nbsp;Restaurer</a>';
+                        $restlink = '<a class="btn btn-xs btn-primary" href="' . $url . '" title="'._t('ATTACH_RESTORE').'"><i class="fa fa-refresh icon-refresh icon-white"></i>&nbsp;'._t('ATTACH_RESTORE').'</a>';
                     }
 
                     //lien pour downloader le fichier
                     $url = $this->wiki->href("download", $this->wiki->GetPageTag(), "file=" . $file['realname']);
-                    $fileinfo = 'Nom r&eacute;el du fichier : ' . $file['realname'];
+                    $fileinfo = str_replace('{file}', $file['realname'], _t('ATTACH_REAL_FILENAME'));
                     if ($trash) {
-                        $fileinfo .= ' - Supprim&eacute; le : ' . $this->parseDate($file['trashdate']);
+                        $fileinfo .= str_replace('{date}', $this->parseDate($file['trashdate']), _t('ATTACH_DELETED_ON'));
                     }
                     $dlLink = '<a class="filenamelink" href="' . $url . '" title="' . $fileinfo . '">' . substr($file['name'], 0, 25) . '&hellip;' . '.' . $file['ext'] . "</a>";
                     $fmBodyTable .= '		<tr class="' . $color . '">' . "\n" .
@@ -1011,7 +1011,7 @@ if (!class_exists('attach')) {
                 $output .= '<table class="fmtable table table-condensed table-hover table-striped">' . "\n" . $fmHeadTable . $fmBodyTable . '</table>' . "\n";
                 if ($trash) {
                     //Avertissement
-                    $output .= '<div class="alert alert-danger"><a href="' . $this->wiki->href($method, $this->wiki->tag, 'do=emptytrash') . '" class="btn btn-danger pull-right"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;Vider la corbeille</a><strong>Attention :</strong> les fichiers effac&eacute;s &agrave; partir de la corbeille le seront d&eacute;finitivement.<div class="clearfix"></div></div>';
+                    $output .= '<div class="alert alert-danger"><a href="' . $this->wiki->href($method, $this->wiki->tag, 'do=emptytrash') . '" class="btn btn-danger pull-right"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;'._t('ATTACH_EMPTY_TRASH').'</a><strong>'._t('CAUTION').' :</strong> '._t('ATTACH_EMPTY_TRASH_NOTICE').'<div class="clearfix"></div></div>';
                 }
             }
             echo $output;
@@ -1021,22 +1021,22 @@ if (!class_exists('attach')) {
          */
         public function fmShow($trash = false)
         {
-            $fmTitlePage = $this->wiki->Format("====Gestion des fichiers attach&eacute;s ?  la page " . $this->wiki->tag . "====\n---");
+            $fmTitlePage = $this->wiki->Format("====". str_replace('{tag}', $this->wiki->tag, _t('ATTACH_FILE_MANAGEMENT_TITLE')) . "====\n---");
             if ($trash) {
                 //Avertissement
-                $fmTitlePage .= '<div class="prev_alert">Les fichiers effac&eacute;s sur cette page le sont d&eacute;finitivement</div>';
+                $fmTitlePage .= '<div class="prev_alert">'._t('ATTACH_FILE_MANAGEMENT_WARNING').'</div>';
                 //Pied du tableau
-                $url = $this->wiki->Link($this->wiki->tag, 'filemanager', null, 'Gestion des fichiers');
+                $url = $this->wiki->Link($this->wiki->tag, 'filemanager', null, _t('ATTACH_FILE_MANAGEMENT'));
                 $fmFootTable = '	<tfoot>' . "\n" .
                     '		<tr>' . "\n" .
                     '			<td colspan="6">' . $url . '</td>' . "\n";
-                $url = $this->wiki->Link($this->wiki->tag, 'filemanage', ['do' => 'emptytrash'], 'Vider la corbeille');
+                $url = $this->wiki->Link($this->wiki->tag, 'filemanage', ['do' => 'emptytrash'], _t('ATTACH_EMPTY_TRASH'));
                 $fmFootTable .= '			<td>' . $url . '</td>' . "\n" .
                     '		</tr>' . "\n" .
                     '	</tfoot>' . "\n";
             } else {
                 //pied du tableau
-                $url = '<a href="' . $this->wiki->href('filemanager', $this->wiki->GetPageTag(), 'do=trash') . '" title="Corbeille">' . $this->attachConfig['fmTrash_symbole'] . "</a>";
+                $url = '<a href="' . $this->wiki->href('filemanager', $this->wiki->GetPageTag(), 'do=trash') . '" title="'._t('ATTACH_TRASH').'">' . $this->attachConfig['fmTrash_symbole'] . "</a>";
                 $fmFootTable = '	<tfoot>' . "\n" .
                     '		<tr>' . "\n" .
                     '			<td colspan="6">' . $url . '</td>' . "\n" .
@@ -1047,13 +1047,14 @@ if (!class_exists('attach')) {
             $fmHeadTable = '	<thead>' . "\n" .
                 '		<tr>' . "\n" .
                 '			<td>&nbsp;</td>' . "\n" .
-                '			<td>Nom du fichier</td>' . "\n" .
-                '			<td>Nom r&eacute;el du fichier</td>' . "\n" .
-                '			<td>Taille</td>' . "\n" .
-                '			<td>R&eacute;vision de la page</td>' . "\n" .
-                '			<td>R&eacute;vison du fichier</td>' . "\n";
+                '			<td>'._t('ATTACH_FILENAME').'</td>' . "\n" .
+                '			<td>'._t('ATTACH_REAL_FILENAME').'</td>' . "\n" .
+                '			<td>'._t('ATTACH_SIZE').'</td>' . "\n" .
+                '			<td>'._t('ATTACH_PAGE_REVISION').'</td>' . "\n" .
+                '			<td>'._t('ATTACH_FILE_REVISION').'</td>' . "\n";
+
             if ($trash) {
-                $fmHeadTable .= '			<td>Suppression</td>' . "\n";
+                $fmHeadTable .= '			<td>'._t('ATTACH_DELETION').'</td>' . "\n";
             }
             $fmHeadTable .= '		</tr>' . "\n" .
                 '	</thead>' . "\n";
@@ -1072,12 +1073,12 @@ if (!class_exists('attach')) {
                 } else {
                     $url = $this->wiki->href('filemanager', $this->wiki->GetPageTag(), 'do=del&file=' . $file['realname']);
                 }
-                $dellink = '<a href="' . $url . '" title="Supprimer">' . $this->attachConfig['fmDelete_symbole'] . "</a>";
+                $dellink = '<a href="' . $url . '" title="'._t('DELETE').'">' . $this->attachConfig['fmDelete_symbole'] . "</a>";
                 //lien de restauration
                 $restlink = '';
                 if ($trash) {
                     $url = $this->wiki->href('filemanager', $this->wiki->GetPageTag(), 'do=restore&file=' . $file['realname']);
-                    $restlink = '<a href="' . $url . '" title="Restaurer">' . $this->attachConfig['fmRestore_symbole'] . "</a>";
+                    $restlink = '<a href="' . $url . '" title="'._t('ATTACH_RESTORE').'">' . $this->attachConfig['fmRestore_symbole'] . "</a>";
                 }
 
                 //lien pour downloader le fichier

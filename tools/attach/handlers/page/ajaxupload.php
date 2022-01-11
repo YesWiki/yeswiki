@@ -135,21 +135,21 @@ if ($this->HasAccess('write') || ($this->HasAccess('read') && $hasTempTag)) {
         public function handleUpload($uploadDirectory, $replaceOldFile = false)
         {
             if (!is_writable($uploadDirectory)) {
-                return array('error' => "Le dossier de téléchargement n'est pas accessible en écriture.");
+                return array('error' => _t('ATTACH_HANDLER_AJAXUPLOAD_FOLDER_NOT_READABLE'));
             }
 
             if (!$this->file) {
-                return array('error' => 'Pas de fichiers envoyés.');
+                return array('error' => _t('ATTACH_HANDLER_AJAXUPLOAD_NO_FILE'));
             }
 
             $size = $this->file->getSize();
 
             if ($size == 0) {
-                return array('error' => 'Le fichier est vide.');
+                return array('error' => _t('ATTACH_HANDLER_AJAXUPLOAD_EMPTY_FILE'));
             }
 
             if ($size > $this->sizeLimit) {
-                return array('error' => 'Le fichier est trop large.');
+                return array('error' => _t('ATTACH_HANDLER_AJAXUPLOAD_FILE_TOO_LARGE'));
             }
 
             $pathinfo = pathinfo($this->file->getName());
@@ -159,7 +159,7 @@ if ($this->HasAccess('write') || ($this->HasAccess('read') && $hasTempTag)) {
 
             if ($this->allowedExtensions && !in_array($ext, $this->allowedExtensions)) {
                 $these = implode(', ', $this->allowedExtensions);
-                return array('error' => "Le fichier n'a pas une extension autorisée, voici les autorisées : ". $these . '.');
+                return array('error' => str_replace('{ext}', $these, _t('ATTACH_HANDLER_AJAXUPLOAD_AUTHORIZED_EXT')));
             }
 
             /*if(!$replaceOldFile){
@@ -214,7 +214,7 @@ if ($this->HasAccess('write') || ($this->HasAccess('read') && $hasTempTag)) {
                 return array_map(
                     'utf8_encode',
                     array(
-                        'error'=> 'Impossible de sauver le fichier.' ."L'upload a été annulé ou le serveur a planté..."
+                        'error'=> _t('ATTACH_HANDLER_AJAXUPLOAD_ERROR')
                     )
                 );
             }
@@ -245,7 +245,7 @@ if ($this->HasAccess('write') || ($this->HasAccess('read') && $hasTempTag)) {
     }
     unset($errorsMessage);
 } else {
-    $result = array('error' => _t(NO_RIGHT_TO_WRITE_IN_THIS_PAGE));
+    $result = array('error' => _t('NO_RIGHT_TO_WRITE_IN_THIS_PAGE'));
 }
 // to pass data through iframe you will need to encode all html tags
 echo htmlspecialchars(json_encode($result), ENT_NOQUOTES, YW_CHARSET);

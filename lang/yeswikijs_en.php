@@ -2,6 +2,7 @@
 
 return [
     // commons
+    "CANCEL" => "Cancel",
     "COPY" => "Copy",
     "DUPLICATE" => "Duplicate",
     "EVERYONE" => "Everyone",

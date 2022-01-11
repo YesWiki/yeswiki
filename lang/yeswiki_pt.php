@@ -42,6 +42,7 @@ return [
     // 'NAME' => 'Nom',
     // 'SUBSCRIPTION' => 'Inscription',
     'UNKNOWN' => 'Desconhecido',
+    // 'WARNING' => 'Attention',
 
     // wakka.php
     'INVALID_ACTION' => 'A&ccedil;&atilde;o inv&aacute;lida',

@@ -19,9 +19,26 @@ return [
     // 'ERROR_NOT_AUTHORIZED_EXTENSION' => 'Le fichier n\'a pas une extension autorisée, voici celles que la configuration autorise : ',
     // 'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Ajouter un lien pour afficher l'image seule en entier",
 
+    // 'ATTACH_FILE_MANAGEMENT' => 'Gestion des fichiers',
+    // 'ATTACH_TRASH' => 'Corbeille',
+    // 'ATTACH_NO_ATTACHED_FILES' => 'Pas de fichiers attachés à la page {tag} pour l\'instant.',
+    // 'ATTACH_FILENAME' => 'Nom du fichier',
+    // 'ATTACH_SIZE' => 'Taille',
+    // 'ATTACH_DATE_OF_MODIFICATION' => 'Date de modification',
+    // 'ATTACH_RESTORE' => 'Restaurer',
+    // 'ATTACH_REAL_FILENAME' => 'Nom réel du fichier : {file}',
+    // 'ATTACH_DELETED_ON' => ' - Supprimé le : {date}',
+    // 'ATTACH_EMPTY_TRASH' => 'Vider la corbeille',
+    // 'ATTACH_EMPTY_TRASH_NOTICE' => 'les fichiers effacés à partir de la corbeille le seront définitivement.',
+    // 'ATTACH_FILE_MANAGEMENT_TITLE' => 'Gestion des fichiers attachés à la page {tag}',
+    // 'ATTACH_FILE_MANAGEMENT_WARNING' => 'Les fichiers effac&eacute;s sur cette page le sont d&eacute;finitivement',
+    // 'ATTACH_PAGE_REVISION' => 'Version de la page',
+    // 'ATTACH_FILE_REVISION' => 'Version du fichier',
+    // 'ATTACH_DELETION' => 'Suppression',
 
     // actions/filemanager.php
     'ATTACH_NO_RIGHTS_TO_ACCESS_FILEMANAGER' => 'Necesitas los derechos de escritura de la página para acceder al administrador de los archivos atados',
+    // 'FILEMANAGER_ACTION_NEED_ACCESS' => 'Seul le propriétaire de cette page peut accéder au gestionnaire des fichiers attaché',
 
     // actions/backgroundimage.php
     'ATTACH_ACTION_BACKGROUNDIMAGE' => 'Acción {{backgroundimage ...}}',
@@ -84,9 +101,19 @@ return [
     'CENTER' => 'Centro',
     'RIGHT' => 'Derecha',
     'FAILED' => 'Error',
+
+    // handler ajaxupload
+    // 'ATTACH_HANDLER_AJAXUPLOAD_FOLDER_NOT_READABLE' => 'Le dossier de téléchargement n\'est pas accessible en écriture.',
+    // 'ATTACH_HANDLER_AJAXUPLOAD_NO_FILE' => 'Pas de fichiers envoyés.',
+    // 'ATTACH_HANDLER_AJAXUPLOAD_EMPTY_FILE' => 'Le fichier est vide.',
+    // 'ATTACH_HANDLER_AJAXUPLOAD_FILE_TOO_LARGE' => 'Le fichier est trop large.',
+    // 'ATTACH_HANDLER_AJAXUPLOAD_AUTHORIZED_EXT' => 'Le fichier n\'a pas une extension autorisée, voici les autorisées : {ext}.',
+    // 'ATTACH_HANDLER_AJAXUPLOAD_ERROR' => 'Impossible de sauver le fichier. L\'upload a été annulé ou le serveur a planté...',
     
     // edit config action
     // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_VIDEO_SERVICE]' => 'Service de vidéo par défaut (peertube, youtube ou vimeo)',
     // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_PEERTUBE_INSTANCE]' => 'Adresse du serveur peertube par défaut',
     // 'EDIT_CONFIG_GROUP_ATTACH' => 'Insertion de médias (images, vidéos)',
 ];
+
+    // 'FILEMANAGER_ACTION_NEED_ACCESS' => 'Seul le propriétaire de cette page peut accéder au gestionnaire des fichiers attaché',

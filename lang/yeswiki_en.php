@@ -31,6 +31,7 @@
 return [
 
     // Commons
+    'CAUTION' => 'Caution',
     'BY' => 'by',
     'CLEAN' => 'Clean',
     'DELETE' => 'Delete',
@@ -41,6 +42,7 @@ return [
     'NAME' => 'Name',
     'SUBSCRIPTION' => 'Subscription',
     'UNKNOWN' => 'Unknown',
+    'WARNING' => 'WARNING',
 
     // wakka.php
     'INVALID_ACTION' => 'Invalid action',
@@ -369,7 +371,6 @@ return [
     'GO_TO_YOUR_NEW_YESWIKI_WEBSITE' => 'Go to your new YesWiki website',
     'IT_IS_RECOMMANDED_TO_REMOVE_WRITE_ACCESS_TO_CONFIG_FILE' => 'It is recommanded to remove write access rights to the file',
     'THIS_COULD_BE_UNSECURE' => 'this could be a security issue',
-    'WARNING' => 'WARNING',
     'CONFIGURATION_FILE' => 'the configuration file',
     'CONFIGURATION_FILE_NOT_CREATED' => 'was not created',
     'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Try to change the write access rights on the file. If not possible, you must create the file and copy those informations inside, then transfert it by FTP on your server in a file ',

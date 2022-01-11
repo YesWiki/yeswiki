@@ -51,7 +51,7 @@ if ($this->UserIsOwner()) {
     $att->doFilemanager();
     unset($att);
 } else {
-    echo $this->Format("//Seul le propriétaire de cette page peut accéder au gestionnaire des fichiers attaché//");
+    echo $this->Format("//".t('FILEMANAGER_ACTION_NEED_ACCESS')."//");
 }
 ?>
 </div>

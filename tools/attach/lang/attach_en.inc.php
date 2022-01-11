@@ -18,10 +18,27 @@ return [
     // 'ERROR_NO_FILE_UPLOADED' => 'Aucun fichier n\'a &eacute;t&eacute; t&eacute;l&eacute;charg&eacute;.',
     // 'ERROR_NOT_AUTHORIZED_EXTENSION' => 'Le fichier n\'a pas une extension autorisée, voici celles que la configuration autorise : ',
     'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Add a link to only display the full image",
-
+    
+    'ATTACH_FILE_MANAGEMENT' => 'File management',
+    'ATTACH_TRASH' => 'Trash',
+    'ATTACH_NO_ATTACHED_FILES' => 'At this time, no attached files to the page {tag}.',
+    'ATTACH_FILENAME' => 'Filename',
+    'ATTACH_SIZE' => 'Size',
+    'ATTACH_DATE_OF_MODIFICATION' => 'Date of modification',
+    'ATTACH_RESTORE' => 'Restore',
+    'ATTACH_REAL_FILENAME' => 'Real filename : {file}',
+    'ATTACH_DELETED_ON' => ' - Deleted on : {date}',
+    'ATTACH_EMPTY_TRASH' => 'Empty trash',
+    'ATTACH_EMPTY_TRASH_NOTICE' => 'files are forever deleted from trash.',
+    'ATTACH_FILE_MANAGEMENT_TITLE' => 'Management of files attached to page {tag}',
+    'ATTACH_FILE_MANAGEMENT_WARNING' => 'Files deleted from this page are forever deleted',
+    'ATTACH_PAGE_REVISION' => 'Page revision',
+    'ATTACH_FILE_REVISION' => 'File revision',
+    'ATTACH_DELETION' => 'Deletion',
 
     // actions/filemanager.php
     'ATTACH_NO_RIGHTS_TO_ACCESS_FILEMANAGER' => 'You have no rights to access the filemanager',
+    // 'FILEMANAGER_ACTION_NEED_ACCESS' => 'Seul le propriétaire de cette page peut accéder au gestionnaire des fichiers attaché',
 
     // actions/backgroundimage.php
     // 'ATTACH_ACTION_BACKGROUNDIMAGE' => 'Action {{backgroundimage ...}}',
@@ -84,6 +101,14 @@ return [
     'CENTER' => 'Center',
     'RIGHT' => 'Right',
     'FAILED' => 'Failed',
+
+    // handler ajaxupload
+    // 'ATTACH_HANDLER_AJAXUPLOAD_FOLDER_NOT_READABLE' => 'Le dossier de téléchargement n\'est pas accessible en écriture.',
+    // 'ATTACH_HANDLER_AJAXUPLOAD_NO_FILE' => 'Pas de fichiers envoyés.',
+    // 'ATTACH_HANDLER_AJAXUPLOAD_EMPTY_FILE' => 'Le fichier est vide.',
+    // 'ATTACH_HANDLER_AJAXUPLOAD_FILE_TOO_LARGE' => 'Le fichier est trop large.',
+    // 'ATTACH_HANDLER_AJAXUPLOAD_AUTHORIZED_EXT' => 'Le fichier n\'a pas une extension autorisée, voici les autorisées : {ext}.',
+    // 'ATTACH_HANDLER_AJAXUPLOAD_ERROR' => 'Impossible de sauver le fichier. L\'upload a été annulé ou le serveur a planté...',
     
     // edit config action
     // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_VIDEO_SERVICE]' => 'Service de vidéo par défaut (peertube, youtube ou vimeo)',
