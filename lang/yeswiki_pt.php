@@ -46,7 +46,7 @@ return [
     // wakka.php
     'INVALID_ACTION' => 'A&ccedil;&atilde;o inv&aacute;lida',
     'ERROR_NO_ACCESS' => 'Erro: você não tem acesso a essa ação',
-    // 'NOT_FOUND' => 'N\'existe pas',    
+    // 'NOT_FOUND' => 'N\'existe pas',
     'NO_REQUEST_FOUND' => '$ _REQUEST[] não foi encontrado. Wakka requer PHP 4.1.0 ou mais reciente!',
     'SITE_BEING_UPDATED' => 'Este site está sendo atualizado. Por favor, tente novamente mais tarde.',
     'DB_CONNECT_FAIL' => 'Por razões além do nosso controle, o conteúdo deste YesWiki está temporariamente indisponível. Por favor, tente novamente mais tarde. Obrigado pela sua compreensão.',
@@ -364,7 +364,7 @@ return [
     'ALREADY_DONE' => 'Já fiz? Hmm!',
     'INSERTION_OF_USER_IN_ADMIN_GROUP' => 'Inserção do usuário especificado no grupo de administração',
     'NEXT_STEP_WRITE_CONFIGURATION_FILE' => 'No próximo passo o instalador tentará de escrever o arquivo de configuração',
-    'VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE' => 'Verifique se o servidor web tem o direito de gravação para este arquivo, caso contrário você terá que alterar-o manualmente',ire dans ce fichier, sinon vous devrez le modifier manuellement',
+    'VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE' => 'Verifique se o servidor web tem o direito de gravação para este arquivo, caso contrário você terá que alterar-o manualmente',
     // 'CHECK_EXISTING_TABLE_PREFIX' => 'Vérification de l\'existence du préfixe de table',
     // 'TABLE_PREFIX_ALREADY_USED' => 'Le préfixe de table est déjà utilisé. Veuillez en choisir un nouveau.',
 

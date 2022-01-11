@@ -230,7 +230,7 @@ return [
 
     // actions/usersettings.php
     // 'USER_SETTINGS' => 'Paramètres utilisateur',
-    // 'USER_SIGN_UP' => 'S\'inscrire',          
+    // 'USER_SIGN_UP' => 'S\'inscrire',
     'YOU_ARE_NOW_DISCONNECTED' => 'No esteu connectat',
     'PARAMETERS_SAVED' => 'S\'han desat els paràmetres',
     'NO_SPACES_IN_PASSWORD' => 'No es permeten espais a la contrasenya',
@@ -382,7 +382,7 @@ return [
     'CONFIGURATION_FILE_NOT_CREATED' => 'no s\'ha pogut crear',
     'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Verifiqueu que el vostre servidor té drets d\'accés per l\'escriptura d\'aquest fitxer. Si per alguna raó no podeu fer-ho, heu de copiar les informacions següents en un fitxer i transferir-les mitjançant un programa FTP al servidor.',
     'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'Directament al directori de YesWiki. Així que ho hagueu fet, el vostre YesWiki ha de funcionar correctament',
-    'TRY_AGAIN' => 'Proveu-ho una altra vegada',*
+    'TRY_AGAIN' => 'Proveu-ho una altra vegada',
 
     // API
     // 'USERS' => 'Utilisateurs',

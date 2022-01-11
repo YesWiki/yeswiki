@@ -366,7 +366,7 @@ return [
     'ALREADY_DONE' => 'Hecho',
     'INSERTION_OF_USER_IN_ADMIN_GROUP' => 'Inserción del usuario en el grupo admin',
     'NEXT_STEP_WRITE_CONFIGURATION_FILE' => 'En la etapa siguiente, el programa de instalación intentara escribir el archivo de configuración',
-    'VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE' => 'Verifica que tienes los derechos para escribir en este archivo, sino lo tendras que modificar manualmente',ire dans ce fichier, sinon vous devrez le modifier manuellement',
+    'VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE' => 'Verifica que tienes los derechos para escribir en este archivo, sino lo tendras que modificar manualmente',
     // 'CHECK_EXISTING_TABLE_PREFIX' => 'Vérification de l\'existence du préfixe de table',
     // 'TABLE_PREFIX_ALREADY_USED' => 'Le préfixe de table est déjà utilisé. Veuillez en choisir un nouveau.',
 
