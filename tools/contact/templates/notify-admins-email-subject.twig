@@ -1,1 +1,1 @@
-[{{ baseUrl|replace({'http://':'','https://':''}) }}] nouvelle fiche {{ new ? 'ajoutee' : 'modifiee' }} : {{ entry.bf_titre }}, dans le formulaire : {{ entry.id_typeannonce }}
+[{{ baseUrl|replace({'http://':'','https://':''}) }}] {{ new ? _t('CONTACT_ENTRY_ADDED') : _t('CONTACT_ENTRY_CHANGED') }} : {{ entry.bf_titre }}, {{ _t('CONTACT_IN_FORM') }} : {{ entry.id_typeannonce }}

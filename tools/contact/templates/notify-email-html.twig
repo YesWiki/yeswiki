@@ -3,7 +3,7 @@
         <style type="text/css">{{ style|replace({'url(':'url(' ~ baseUrl ~ '/tools/bazar/presentation/'})|raw }}</style>
     </head>
     <body>
-        Bienvenue sur {{ baseUrl|replace({'http://':'','https://':''}) }},
+        {{ _t('CONTACT_WELCOME_ON') }} {{ baseUrl|replace({'http://':'','https://':''}) }},
         <br />
         <br />
         <a href="{{ url({tag:entry.id_fiche}) }}" 

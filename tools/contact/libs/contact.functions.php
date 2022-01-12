@@ -108,11 +108,11 @@ function filterMonthlyMailGroups($var)
 function sendPeriodicalMailToGroup($period, $groups, $subject = '')
 {
     if ($period == 'day') {
-        $sub = 'rapport journalier du';
+        $sub = _t('CONTACT_DAILY_REPORT');
     } elseif ($period == 'week') {
-        $sub = 'rapport hebdomadaire du';
+        $sub = _t('CONTACT_WEEKLY_REPORT');
     } elseif ($period == 'month') {
-        $sub = 'rapport mensuel du';
+        $sub = _t('CONTACT_MONTHLY_REPORT');
     }
 
     foreach ($groups as $group) {
