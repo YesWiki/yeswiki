@@ -85,7 +85,7 @@ abstract class Package extends Files
     public function checkIntegrity()
     {
         if ($this->downloadedFile === null) {
-            throw new \Exception("Le paquet n'a pas été téléchargé.", 1);
+            throw new \Exception(_t('AU_PACKAGE_NOT_DOWNLOADED'), 1);
         }
         $md5Repo = $this->getMD5();
         $md5File = md5_file($this->downloadedFile);
@@ -106,7 +106,7 @@ abstract class Package extends Files
     public function extract()
     {
         if ($this->downloadedFile === null) {
-            throw new \Exception("Le paquet n'a pas été téléchargé.", 1);
+            throw new \Exception(_t('AU_PACKAGE_NOT_DOWNLOADED'), 1);
         }
 
         $zip = new \ZipArchive();
