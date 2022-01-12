@@ -188,7 +188,7 @@ if ($user = $this->GetUser()) {
 
     // si l'authentification passe mais la session n'est pas créée, on a un problème de cookie
     if ($_REQUEST['action'] == 'checklogged') {
-        $error = 'Vous devez accepter les cookies pour pouvoir vous connecter.';
+        $error = _t('LOGIN_COOKIES_ERROR');
     }
 }
 
