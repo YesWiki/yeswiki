@@ -15,7 +15,8 @@ class MapField extends BazarField
 
     protected const FIELD_LATITUDE_FIELD = 1;
     protected const FIELD_LONGITUDE_FIELD = 2;
-    protected const FIELD_AUTOCOMPLETE = 5;
+    protected const FIELD_AUTOCOMPLETE_POSTALCODE = 4;
+    protected const FIELD_AUTOCOMPLETE_TOWN = 5;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -23,7 +24,8 @@ class MapField extends BazarField
 
         $this->latitudeField = $values[self::FIELD_LATITUDE_FIELD] ?? 'bf_latitude';
         $this->longitudeField = $values[self::FIELD_LONGITUDE_FIELD] ?? 'bf_longitude';
-        $this->autocomplete = $values[self::FIELD_AUTOCOMPLETE];
+        $this->autocomplete = (!empty($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) && !empty($values[self::FIELD_AUTOCOMPLETE_TOWN])) ?
+            trim($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]).','.trim($values[self::FIELD_AUTOCOMPLETE_TOWN]) : null;
         $this->propertyName = 'geolocation';
         $this->label = $this->propertyName;
     }
@@ -33,7 +35,7 @@ class MapField extends BazarField
         $value = $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
 
         // backward compatibility with former `carte_google` propertyName
-        if (empty($value)){
+        if (empty($value)) {
             if (!empty($entry['carte_google'])) {
                 $value = explode('|', $entry['carte_google']);
                 if (empty($value[0]) || empty($value[1])) {
@@ -58,7 +60,7 @@ class MapField extends BazarField
     {
         $value = $this->getValue($entry);
 
-        if ($this->autocomplete) {
+        if (!empty($this->autocomplete)) {
             $autocompleteArray = explode(',', $this->autocomplete);
             $js = '$(document).ready(function () {
                 $("input[name=\''.$autocompleteArray[0].'\'],input[name=\''.$autocompleteArray[1].'\']").attr("autocomplete", "off");
@@ -74,12 +76,12 @@ class MapField extends BazarField
                             result[index] = {id: value.codesPostaux[0], name: value.codesPostaux[0]+" "+value.nom, ville: value.nom}
                           });
                         } else {
-                          result[0] = {id: input, name: \'Pas de ville trouvée pour le code postal \'+input};
+                          result[0] = {id: input, name: _t(\'BAZ_POSTAL_CODE_NOT_FOUND\',{input:input})};
                         }
                         callback(result);
                       });
                     } else {
-                      result[0] = {id: input, name: \'Veuillez entrer 5 chiffres pour voir les villes associées au code postal\'};
+                      result[0] = {id: input, name: _t(\'BAZ_POSTAL_CODE_HINT\')};
                       callback(result);
                     }
                   },

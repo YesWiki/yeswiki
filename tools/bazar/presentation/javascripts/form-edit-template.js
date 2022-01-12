@@ -313,6 +313,8 @@ var typeUserAttrs = {
   map: {
     name_latitude: { label: _t('BAZ_FORM_EDIT_MAP_LATITUDE'), value: "bf_latitude" },
     name_longitude: { label: _t('BAZ_FORM_EDIT_MAP_LONGITUDE'), value: "bf_longitude" },
+    autocomplete_postalcode: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_POSTALCODE'), value: "" , placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_POSTALCODE_PLACEHOLDER') },
+    autocomplete_town: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWN'), value: "" , placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWNE_PLACEHOLDER') },
   },
   date: {
     today_button: {
@@ -793,8 +795,9 @@ var yesWikiMapping = {
     0: "type",
     1: "name_latitude",
     2: "name_longitude",
-    3: "?",
-    4: "?",
+    3: "",
+    4: "autocomplete_postalcode",
+    5: "autocomplete_town",
     8: "required"
   },
   date: { ...defaultMapping, ...{ 5: "today_button" } },
