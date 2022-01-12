@@ -35,7 +35,7 @@ class AlertField extends BazarField
         // Here you can perform operations on each create/update operation
 
         // Return the values you want to be saved in the entry
-        return ['alert' => 'This will be saved in the entry'];
+        return ['alert' => _t('HELLOWORLD_FIELD_ALERT')];
     }
 
     protected function renderStatic($entry)
