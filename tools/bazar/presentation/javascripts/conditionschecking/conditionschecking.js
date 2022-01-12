@@ -3,7 +3,7 @@ const ConditionsChecking = {
     fieldNamesCache: {},
     triggersCache: {},
     operationsLists: ['&','|','(',')','!('],
-    conditionsList: ['=','!=',' in (',' in(','.length =','.length !=','.length <','.length <=','.length >=','.length >'],
+    conditionsList: ['=','!=',' in (',' in(',' IN (',' IN(','.length =','.length !=','.length <','.length <=','.length >=','.length >'],
     getFirstOperation: function (parsingObject){
         let condition = parsingObject.restOfCondition.trim();
         let indexOfOperation = -1;
@@ -11,7 +11,10 @@ const ConditionsChecking = {
         for (let index = 0; index < this.operationsLists.length; index++) {
             let element = this.operationsLists[index];
             let newIndex = condition.indexOf(element);
-            if (element == "(" && (condition.substr(newIndex-4,5) == " in (" || condition.substr(newIndex-3,4) == " in(")){
+            if (element == "(" && (condition.substr(newIndex-4,5) == " in (" ||
+                    condition.substr(newIndex-4,5) == " IN (" || 
+                    condition.substr(newIndex-3,4) == " in(" || 
+                    condition.substr(newIndex-3,4) == " IN(")){
                 newIndex = -1;
             }
             if ( newIndex > -1 && (newIndex < indexOfOperation || indexOfOperation < 0)){
@@ -215,6 +218,8 @@ const ConditionsChecking = {
                 return ` this.isUnEqual("${fieldName}","${values}")`;
             case 'in (':
             case 'in(':
+            case 'IN (':
+            case 'IN(':
                 return ` this.isIn("${fieldName}","${values}")`;
             case '.length =':
             case '.length !=':
@@ -445,7 +450,9 @@ const ConditionsChecking = {
                 let currentStructuredCondition = structuredConditions[index];
                 if ((
                         previousStructuredCondition.typeOfCondition == " in (" ||
-                        previousStructuredCondition.typeOfCondition == " in("
+                        previousStructuredCondition.typeOfCondition == " in("||
+                        previousStructuredCondition.typeOfCondition == " IN("||
+                        previousStructuredCondition.typeOfCondition == " IN ("
                     ) && previousStructuredCondition.operation == ")"
                     && typeof currentStructuredCondition.leftPart == "undefined"
                     ){
@@ -456,7 +463,9 @@ const ConditionsChecking = {
             let lastStructuredCondition = structuredConditions[Object.keys(structuredConditions).length-1];
             if ((
                     lastStructuredCondition.typeOfCondition == " in (" ||
-                    lastStructuredCondition.typeOfCondition == " in("
+                    lastStructuredCondition.typeOfCondition == " in(" ||
+                    lastStructuredCondition.typeOfCondition == " IN(" ||
+                    lastStructuredCondition.typeOfCondition == " IN ("
                 ) && lastStructuredCondition.operation == ")"){
                 structuredConditions[Object.keys(structuredConditions).length-1].operation = "";
             }
