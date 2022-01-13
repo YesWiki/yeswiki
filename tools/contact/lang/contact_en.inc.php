@@ -147,7 +147,7 @@ return [
     'CONTACT_NEW_USER_MESSAGE' => "Hello!\n\n".
         "Your subscription on the website is finished, nw you can sign-in with following information :\n\n".
         "Url : {{ baseUrl }}\n\n".
-        "Your ID WikiName : {{ wikiName }}\n\n".
+        "Your login WikiName : {{ wikiName }}\n\n".
         "Your email : {{ email }}\n\n".
         "Your password : (the password you have choosen)\n\n".
         "To reinitiate your password : {{ urlForPasswordRenewal }}\n\n".
