@@ -65,7 +65,14 @@ if (!($link = $this->GetParameter("link"))) {
     $link = $this->GetConfigValue("root_page");
 }
 
-$xmlUrl = $this->Href("xml");
+// correctly format lang param for xml
+if (!empty($_GET['lang'])) {
+    $langParam = ['lang' => $_GET['lang']];
+    unset($_GET['lang']);
+} else {
+    $langParam = [];
+}
+$xmlUrl = $this->Href("xml", '', $langParam);
 $wakkaName = htmlspecialchars(
     $this->GetConfigValue("wakka_name"),
     ENT_COMPAT,
@@ -79,7 +86,7 @@ $output =
     <channel>
         <atom:link href='$xmlUrl' rel='self' type='application/rss+xml' />
         <title>$wakkaName</title>
-        <link>" . $this->Href(false, $link) . "</link>
+        <link>" . $this->Href(false, $link, $langParam) . "</link>
         <description>$wakkaName</description>
         <generator>WikiNi " . WIKINI_VERSION . "</generator>
 ";
@@ -114,11 +121,11 @@ for ($i = 0; $i < sizeof($pages); $i++) {
             ENT_COMPAT,
             YW_CHARSET
         );
-        $itemurl = $this->href(false, $tag, "time=$rawTime");
+        $itemurl = $this->href(false, $tag, ['time'=>$rawTime]+$langParam);
         $description = htmlspecialchars(
-            'Modification de ' . ($readAcl ? $this->ComposeLinkToPage($page["tag"]) : $tag)
-            . ($readAcl ? ' (' . $this->ComposeLinkToPage($page["tag"], 'revisions', 'historique') . ')' : '')
-            . " --- par $user"  . ($readAcl ? rssdiff($page["tag"], $firstpage["id"], $lastpage["id"]) : '<br><div><i>Contenu masqué</i></div>')
+            _t('RSS_CHANGE_OF').' ' . ($readAcl ? $this->ComposeLinkToPage($page["tag"]) : $tag)
+            . ($readAcl ? ' (' . $this->ComposeLinkToPage($page["tag"], 'revisions', _t('RSS_HISTORY')) . ')' : '')
+            . " --- " . _t('BY'). " $user"  . ($readAcl ? rssdiff($page["tag"], $firstpage["id"], $lastpage["id"]) : '<br><div><i>' . _t('RSS_HIDDEN_CONTENT'). '</i></div>')
         );
 
         $output .= "<item>\n"

@@ -33,7 +33,7 @@ return [
 
     // Commons
     // 'CAUTION' => 'Attention',
-    'BY' => 'Door',
+    'BY' => 'door',
     // 'CLEAN' => 'Nettoyer',
     // 'DELETE' => 'Supprimer',
     // 'DEL' => 'Suppr.', // fives chars max.
