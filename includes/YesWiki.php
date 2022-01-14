@@ -812,16 +812,23 @@ class Wiki
 
     // COMMENTS
     /**
-     * Charge les commentaires relatifs a une page.
+     * Charge les commentaires relatifs à une page.
      *
      * @param string $tag
-     *            Nom de la page. Ex : "PagePrincipale"
+     *            Nom de la page. Ex : "PagePrincipale" si vide, tous les commentaires
      * @return array Tableau contenant tous les commentaires et leurs
      *         proprietes correspondantes.
      */
     public function LoadComments($tag)
     {
-        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . 'pages ' . "where comment_on = '" . mysqli_real_escape_string($this->dblink, $tag) . "' " . "and latest = 'Y' " . "order by substring(tag, 8) + 0");
+        $query = 'SELECT * FROM ' . $this->config['table_prefix'] . 'pages ' . 'WHERE ';
+        if (empty($tag)) {
+            $query .= 'comment_on != "" ';
+        } else {
+            $query .= 'comment_on = "' . mysqli_real_escape_string($this->dblink, $tag) . '" ';
+        }
+        $query .= 'AND latest = "Y" ' . 'ORDER BY substring(tag, 8) + 0';
+        return $this->LoadAll($query);
     }
 
     /**

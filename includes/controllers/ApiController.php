@@ -13,6 +13,7 @@ use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\DiffService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\UserManager;
+use YesWiki\Core\Service\CommentService;
 use YesWiki\Core\YesWikiController;
 
 class ApiController extends YesWikiController
@@ -24,17 +25,23 @@ class ApiController extends YesWikiController
     {
         $output = '<h1>YesWiki API</h1>';
 
-        $urlUser = $this->wiki->Href('', 'api/user');
+        $urlUser = $this->wiki->Href('', 'api/users');
         $output .= '<h2>'._t('USERS').'</h2>'."\n".
-            'GET <code><a href="'.$urlUser.'">'.$urlUser.'</a></code><br />';
+            '<p><code>GET '.$urlUser.'</code></p>';
 
-        $urlGroup = $this->wiki->Href('', 'api/group');
+        $urlGroup = $this->wiki->Href('', 'api/groups');
         $output .= '<h2>'._t('GROUPS').'</h2>'."\n".
-            'GET <code><a href="'.$urlGroup.'">'.$urlGroup.'</a></code><br />';
-        
+            '<p><code>GET '.$urlGroup.'</code></p>';
+
         $urlPages = $this->wiki->Href('', 'api/pages');
         $output .= '<h2>'._t('PAGES').'</h2>'."\n".
-            'GET <code><a href="'.$urlPages.'">'.$urlPages.'</a></code><br />';
+            '<p><code>GET '.$urlPages.'</code></p>';
+        $urlPagesComments = $this->wiki->Href('', 'api/pages/{pageTag}/comments');
+        $output .= '<p><code>GET '.$urlPagesComments.'</code></p>';
+
+        $urlComments = $this->wiki->Href('', 'api/comments');
+        $output .= '<h2>'._t('COMMENTS').'</h2>'."\n".
+            '<p><code>GET '.$urlComments.'</code></p>';
 
         // TODO use annotations to document the API endpoints
         $extensions = $this->wiki->extensions;
@@ -63,13 +70,13 @@ class ApiController extends YesWikiController
             }
         }
 
-        $output = $this->wiki->Header().$output.$this->wiki->Footer();
+        $output = $this->wiki->Header().'<div class="api-container">'.$output.'</div>'.$this->wiki->Footer();
 
         return new Response($output);
     }
 
     /**
-     * @Route("/api/user/{userId}")
+     * @Route("/api/users/{userId}")
      */
     public function getUser($userId)
     {
@@ -79,17 +86,53 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/user")
+     * @Route("/api/users", options={"acl":{"public"}})
      */
-    public function getAllUsers()
+    public function getAllUsers($userFields = ['name', 'email', 'signuptime'])
     {
         $this->denyAccessUnlessAdmin();
 
-        return new ApiResponse($this->getService(UserManager::class)->getAll());
+        return new ApiResponse($this->getService(UserManager::class)->getAll($userFields));
     }
 
     /**
-     * @Route("/api/group")
+     * @Route("/api/comments/{tag}",methods={"GET"}, options={"acl":{"public"}})
+     */
+    public function getAllComments($tag = '')
+    {
+        return new ApiResponse([$this->wiki->LoadCommands($tag)]);
+    }
+
+    /**
+     * @Route("/api/comments",methods={"POST"}, options={"acl":{"public"}})
+     */
+    public function postComment()
+    {
+        $commentService = $this->getService(CommentService::class);
+        $result = $commentService->addCommentIfAutorized($_POST);
+        return new ApiResponse($result, $result['code']);
+    }
+    /**
+     * @Route("/api/comments/{tag}",methods={"DELETE"}, options={"acl":{"public"}})
+     */
+    public function deleteComment($tag)
+    {
+        if ($this->wiki->UserIsOwner($tag) || $this->wiki->UserIsAdmin()) {
+            $pageManager = $this->getService(PageManager::class);
+            $pageManager->deleteOrphaned($tag);
+            // delete children comments
+            $comments = $this->wiki->LoadComments($tag);
+            foreach ($comments as $com) {
+                $pageManager->deleteOrphaned($com['tag']);
+            }
+            return new ApiResponse(['success' => _t('COMMENT_REMOVED')], 200);
+        } else {
+            return new ApiResponse(['error' => _t('NOT_AUTORIZED_TO_REMOVE_COMMENT')], 403);
+        }
+    }
+
+    /**
+     * @Route("/api/groups", options={"acl":{"public"}})
      */
     public function getAllGroups()
     {
@@ -97,9 +140,9 @@ class ApiController extends YesWikiController
 
         return new ApiResponse($this->wiki->GetGroupsList());
     }
-    
+
     /**
-     * @Route("/api/pages",options={"acl":{"public"}})
+     * @Route("/api/pages", options={"acl":{"public"}})
      */
     public function getAllPages()
     {
@@ -128,7 +171,7 @@ class ApiController extends YesWikiController
     {
         ob_start(); // to catch error messages
         $this->denyAccessUnlessGranted('read', $tag);
-        
+
         $pageManager = $this->getService(PageManager::class);
         $diffService = $this->getService(DiffService::class);
         $entryManager = $this->getService(EntryManager::class);
@@ -137,7 +180,7 @@ class ApiController extends YesWikiController
         if (!$page) {
             return new ApiResponse(null, Response::HTTP_NOT_FOUND);
         }
-        
+
         if ($entryManager->isEntry($page['tag'])) {
             $page['html'] = $entryController->view($page['tag'], $page['time'], false);
             $page['code'] = $diffService->formatJsonCodeIntoHtmlTable($page);

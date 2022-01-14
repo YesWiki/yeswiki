@@ -1,0 +1,10 @@
+{% if first == true %}
+<div id="yeswiki-comments-{{ tag }}" class="yeswiki-page-comments">
+	<p><strong><i class="fa fa-comments"></i> {{ _t('COMMENTS') }}</strong></p>
+{% endif %}
+	{% for idcom, comment in comments %}
+	  {% include '@core/comment.twig' with comment %}
+	{% endfor %}
+{% if first == true %}
+</div><!-- /#yeswiki-comments-{{ tag }} -->
+{% endif %}

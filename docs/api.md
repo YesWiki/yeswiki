@@ -52,7 +52,7 @@ This `controllers/ApiController.php` can be defined in any extension (in the too
 We are using Symfony annotations to **declare new routes** for the API.
 ```php
 /**
- * @Route("/api/user/{userId}")
+ * @Route("/api/users/{userId}")
  */
 public function getUser($userId)
 { ...}

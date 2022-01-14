@@ -1,0 +1,11 @@
+<form id="post-comment" action="{{ formlink }}" method="POST">
+	<input type="hidden" name="pagetag" value="{{ pagetag }}">
+	<div class="form-group">
+		<label>{{ _t('YW_ADD_COMMENT') }}</label>
+		<textarea name="body" class="form-control" rows="3" placeholder="{{ _t('YW_WRITE_COMMENT_HERE') }}"></textarea>
+	</div>
+	{{ hashcash|raw }}
+	<button class="btn-post-comment btn btn-primary" name="action" value="addcomment">
+		{{ _t('SAVE') }}
+	</button>
+</form>

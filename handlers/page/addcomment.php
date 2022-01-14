@@ -35,30 +35,15 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-if ($this->HasAccess("comment") && $this->page && !$this->page['comment_on']) {
-    // find number
-    $sql = 'SELECT MAX(SUBSTRING(tag, 8) + 0) AS comment_id'
-        . ' FROM ' . $this->GetConfigValue('table_prefix') . 'pages'
-        . ' WHERE comment_on != ""';
-    if ($lastComment = $this->LoadSingle($sql)) {
-        $num = $lastComment['comment_id'] + 1;
-    } else {
-        $num = "1";
-    }
+use YesWiki\Core\Service\CommentService;
 
-    $body = trim($_POST["body"]);
-    if (!$body) {
-        $this->SetMessage("Commentaire vide  -- pas de sauvegarde !");
-    } else {
-        // store new comment
-        $this->SavePage("Comment".$num, $body, $this->tag);
-    }
+$commentService = $this->services->get(CommentService::class);
+$result = $commentService->addCommentIfAutorized($_POST);
 
-    
-    // redirect to page
-    $this->redirect($this->href());
-} else {
-    echo $this->Header();
-    echo"<div class=\"page\"><i>Vous n'&ecirc;tes pas autoris&eacute; &agrave; commenter cette page.</i></div>\n";
-    echo $this->Footer();
+if (!empty($result['error'])) {
+    $this->SetMessage($result['error']);
+} elseif (!empty($result['success'])) {
+    $this->SetMessage($result['success']);
 }
+// redirect to page
+$this->redirect($this->href('', '', '#post-comment'));

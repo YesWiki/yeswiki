@@ -35,6 +35,7 @@ return [
     'TUESDAY' => 'Mardi',
     'WEDNESDAY' => 'Mercredi',
     "YES" => "Oui",
+    "CANCEL" => "Annuler",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Modifs apportées par cette version",
@@ -54,6 +55,7 @@ return [
     "DATATABLES_SORTASCENDING" => ": activer pour trier la colonne par ordre croissant",
     "DATATABLES_SORTDESCENDING" => ": activer pour trier la colonne par ordre d&eacute;croissant",
     "DATATABLES_COLS_TO_DISPLAY" => "Colonnes à afficher",
+    'DELETE_COMMENT_AND_ANSWERS' => 'Supprimer ce commentaire et les réponses associées ?',
 
     "NAVBAR_EDIT_MESSAGE" => "Editer une zone du menu horizontal",
 

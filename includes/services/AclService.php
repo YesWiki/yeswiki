@@ -162,14 +162,19 @@ class AclService
             $user = $this->userManager->getLoggedUserName();
         }
 
+        // load acl
+        $acl = $this->load($tag, $privilege);
+
+        // empty acls is considered as no access
+        if ($acl === null) {
+            return false;
+        }
+
         // if current user is owner, return true. owner can do anything!
         if ($this->wiki->UserIsOwner($tag)) {
             return true;
         }
-
-        // load acl
-        $acl = $this->load($tag, $privilege);
-        // now check them
+        // now check the acls
         $access = $this->check($acl['list'], $user);
 
         return $access ;

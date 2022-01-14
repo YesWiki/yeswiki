@@ -710,3 +710,42 @@ section.full-width:not(.with-bg-pattern) {
 .dataTables_footer .dataTables_info {
   white-space: normal !important; /* more responsive */
 }
+.dropup:hover {
+  cursor: pointer;
+}
+.yeswiki-page-comments {
+  margin-top:2em;
+}
+.yw-comment {
+  margin: 1em 0 3em;
+}
+.yw-comment .comment-info {
+  font-size:.8rem;
+  margin-bottom:0em;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.yw-comment .user-pic {
+  width:32px;
+  height:32px;
+  margin:0 1em 0 0;
+}
+.yw-comment .comment-date {
+  color: var(--neutral-soft-color);
+}
+.yw-comment .comment-html {
+  margin-bottom:0;
+}
+.yw-comment .comment-links {
+  font-size:.8rem;
+}
+.comment-reponses {
+  margin-left: 42px;
+}
+.api-container code {
+  font-weight: normal;
+}
+.comment-reponses .yw-comment {
+  margin: 1em 0;
+}

@@ -48,5 +48,5 @@ abstract class YesWikiController
     protected function getService($className)
     {
         return $this->wiki->services->get($className);
-    }   
+    }
 }
