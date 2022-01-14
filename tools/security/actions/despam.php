@@ -35,21 +35,21 @@ if ($this->UserIsAdmin()) {
         echo "<div class=\"action_erasespam\">\n" .
             "<form method=\"post\" action=\"". $despam_url . "\" name=\"selection\">\n".
             "<fieldset>\n".
-            "<legend>S&eacute;lection des pages</legend>\n";
+            "<legend>" . _t('DESPAM_PAGES_SELECTION') . "</legend>\n";
         echo "<p>\n".
-          "Toutes les modifications depuis ".
+        _t('DESPAM_ALL_CHANGES_FROM') . " ".
           "<select name=\"from\">\n".
-          "<option selected=\"selected\" value=\"1\">depuis 1 heure</option>\n".
-          "<option value=\"3\">depuis 3 heures</option>\n".
-          "<option value=\"6\">depuis 6 heures</option>\n".
-          "<option value=\"12\">depuis 12 heures</option>\n".
-          "<option value=\"24\">depuis 24 heures</option>\n".
-          "<option value=\"48\">depuis 48 heures</option>\n".
-          "<option value=\"168\">depuis 1 semaine</option>\n".
-          "<option value=\"336\">depuis 2 semaines</option>\n".
-          "<option value=\"744\">depuis 1 mois</option>\n".
+          "<option selected=\"selected\" value=\"1\">" . _t('DESPAM_FOR_ONE_HOUR') . "</option>\n".
+          "<option value=\"3\">" . str_replace('{x}', 3, _t('DESPAM_FOR_X_HOURS')) . "</option>\n".
+          "<option value=\"6\">" . str_replace('{x}', 6, _t('DESPAM_FOR_X_HOURS')) . "</option>\n".
+          "<option value=\"12\">" . str_replace('{x}', 12, _t('DESPAM_FOR_X_HOURS')) . "</option>\n".
+          "<option value=\"24\">" . str_replace('{x}', 24, _t('DESPAM_FOR_X_HOURS')) . "</option>\n".
+          "<option value=\"48\">" . str_replace('{x}', 48, _t('DESPAM_FOR_X_HOURS')) . "</option>\n".
+          "<option value=\"168\">" . _t('DESPAM_FOR_ONE_WEEK') . "</option>\n".
+          "<option value=\"336\">" . _t('DESPAM_FOR_TWO_WEEKS') . "</option>\n".
+          "<option value=\"744\">" . _t('DESPAM_FOR_ONE_MONTH') . "</option>\n".
           "</select>\n".
-          "<button name=\"2\" value=\"Valider\">Valider</button>\n".
+          "<button name=\"2\" value=\"Valider\">" . _t('DESPAM_VALIDATE') . "</button>\n".
           "</p>\n";
         echo "</fieldset>\n".
           "</form>\n".
@@ -66,8 +66,7 @@ if ($this->UserIsAdmin()) {
               and latest = 'Y'
               order by `time` desc";
             $title =
-              "<h2>Nettoyage des pages vandalisées depuis " .
-              $_POST['from'] . " heure(s)</h2>\n";
+              "<h2>" . str_replace('{x}', $_POST['from'], _t('DESPAM_CLEAN_SPAMMED_PAGES')) . "</h2>\n";
         }
         //echo $requete;
         $pagesFromSpammer = $this->LoadAll($requete);
@@ -111,11 +110,9 @@ if ($this->UserIsAdmin()) {
                     continue;
                 }
                 echo "<tr><td><input name=  \"rev[]\" value=\"" . $revision["id"] . "\" type=\"checkbox\" /></td><td>";
-                echo "Restaurer depuis la version du ".
-                   " ".$revision["time"]." ".
-                  " par ". $revision['user'] . " ".
+                echo str_replace(['{time}','{user}'], [$revision["time"],$revision['user']], _t('DESPAM_RESTORE_FROM')) . " ".
                   "<a href=\"".$this->Href('iframe', $page["tag"], ['time'=>urlencode($revision["time"])])."\" ".
-                    "title=\"Voir la fiche {$page["tag"]} ({$revision["time"]})\" ".
+                    "title=\"" . _t('BAZ_SEE_ENTRY') . " {$page["tag"]} ({$revision["time"]})\" ".
                     "class=\"btn btn-xs btn-default modalbox\" ".
                     "data-size=\"modal-lg\" ".
                     "data-iframe=\"1\"><i class=\"fas fa-eye\"></i></a>".
@@ -133,7 +130,7 @@ if ($this->UserIsAdmin()) {
         echo "<p>\n".
           "<input type=\"hidden\" name=\"spammer\" value=\"" . (isset($_POST['spammer']) ? $_POST['spammer'] : '') . "\" />\n".
           "<input type=\"hidden\" name=\"clean\" value=\"yes\" />\n".
-          "<button class=\"btn btn-danger\" value=\"Valider\">Nettoyer >></button>\n".
+          "<button class=\"btn btn-danger\" value=\"Valider\">" . _t('CLEAN') . " >></button>\n".
           "</p>\n";
         echo "</form>\n";
         echo "</div>\n\n";
@@ -194,15 +191,15 @@ if ($this->UserIsAdmin()) {
         }
         $restoredPages = trim($restoredPages, ", ");
 
-        echo "<li>Pages restaurées&nbsp;: " .
+        echo "<li>" . _t('DESPAM_RESTORED_PAGES') . "&nbsp;: " .
         $restoredPages . ".</li>\n";
-        echo "<li>Pages supprimées&nbsp;: " .
+        echo "<li>" . _t('DESPAM_DELETED_PAGES') . "&nbsp;: " .
         $deletedPages . ".</li>\n" ;
 
         echo "</ul>\n";
-        echo "<p><a href=\"". $despam_url. "\">Retour au formulaire de départ >></a></p>\n";
+        echo "<p><a href=\"". $despam_url. "\">" . _t('DESPAM_BACK_TO_PREVIOUS_FORM') . " >></a></p>\n";
         echo "</div>\n\n";
     }
 } else {
-    echo '<div class="alert alert-danger">Action {{despam}} réservée aux administrateurs.</div>';
+    echo '<div class="alert alert-danger">' . _t('DESPAM_ONLY_FOR_ADMINS') . '</div>';
 }
