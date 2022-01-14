@@ -5,7 +5,7 @@
 	class="modalbox" 
 			data-size="modal-lg"
 			{{ field.isDistantJson ? 'data-iframe="1"' }}
-			title="Voir la fiche {{ value.value|striptags }}">
+			title="{{ _t('BAZ_SEE_ENTRY') }} {{ value.value|striptags }}">
 	{{- value.value|raw -}}
 	</a>
 {%- endblock %}

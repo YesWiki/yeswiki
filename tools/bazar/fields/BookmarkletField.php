@@ -34,12 +34,12 @@ class BookmarkletField extends BazarField
                 'url' => $url
             ]);
         }
-    }  
+    }
 
     protected function renderStatic($entry)
     {
         if ($GLOBALS['wiki']->GetMethod() == 'bazariframe') {
-            return '<a class="btn btn-danger pull-right" href="javascript:window.close();"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;Fermer cette fen&ecirc;tre</a>';
+            return '<a class="btn btn-danger pull-right" href="javascript:window.close();"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;' . _t('BAZ_CLOSE_THIS_WINDOW') . '</a>';
         }
     }
 

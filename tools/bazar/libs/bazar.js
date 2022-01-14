@@ -248,14 +248,14 @@ $(document).ready(function () {
 
     // affichage des erreurs de validation
     if (atleastonefieldnotvalid === true) {
-      alert('Veuillez saisir tous les champs obligatoires (avec une asterisque rouge)');
+      alert(_t('BAZ_FORM_REQUIRED_FIELD'));
 
       //on remonte en haut du formulaire
       $('html, body').animate({
         scrollTop: $('#formulaire .invalid').offset().top - 80,
       }, 500);
     } else if (atleastonemailfieldnotvalid === true) {
-      alert('L\'email saisi n\'est pas valide');
+      alert(_t('BAZ_FORM_INVALID_EMAIL'));
 
       //on remonte en haut du formulaire
       $('html, body').animate({
@@ -263,36 +263,35 @@ $(document).ready(function () {
       }, 500);
 
     } else if (atleastoneurlfieldnotvalid === true) {
-      alert('L\'url saisie n\'est pas valide, elle doit commencer par http:// '
-        + 'et ne pas contenir d\'espaces ou caracteres speciaux');
+      alert(_t('BAZ_FORM_INVALID_URL'));
 
       //on remonte en haut du formulaire
       $('html, body').animate({
         scrollTop: $('#formulaire .invalid').offset().top - 80,
       }, 500);
     } else if (atleastoneradiofieldnotvalid=== true) {
-      alert('Il faut choisir une valeur de bouton radio');
+      alert(_t('BAZ_FORM_EMPTY_RADIO'));
       
       //on remonte en haut du formulaire
       $('html, body').animate({
         scrollTop: $('#formulaire .radio_required.invalid').offset().top - 80,
       }, 500);
     } else if (atleastonecheckboxfieldnotvalid === true) {
-      alert('Il faut cocher au moins une case a cocher');
+      alert(_t('BAZ_FORM_EMPTY_CHECKBOX'));
 
       //on remonte en haut du formulaire
       $('html, body').animate({
         scrollTop: $('#formulaire .invalid').offset().top - 80,
       }, 500);
     } else if (atleastonetagfieldnotvalid === true) {
-      alert('Il faut saisir au moins une entrée pour le champs en autocomplétion');
+      alert(_t('BAZ_FORM_EMPTY_AUTOCOMPLETE'));
 
       //on remonte en haut du formulaire
       $('html, body').animate({
         scrollTop: $('#formulaire .bootstrap-tagsinput.invalid').offset().top - 80,
       }, 500);
     } else if ($('#formulaire .geocode-input.required').length > 0 && !$('#formulaire .geocode-input #bf_latitude').val()) {
-      alert("Vous devez géolocaliser l'adresse");
+      alert(_t('BAZ_FORM_EMPTY_GEOLOC'));
 
       //on remonte en haut du formulaire
       $('html, body').animate({
@@ -342,46 +341,16 @@ $(document).ready(function () {
   //if ($dateinputs.length > 0 && (input.value == notADateValue)) {
   if ($dateinputs.length > 0) {
     $.fn.datepicker.dates.fr = {
-      days: [
-        'Dimanche',
-        'Lundi',
-        'Mardi',
-        'Mercredi',
-        'Jeudi',
-        'Vendredi',
-        'Samedi',
-        'Dimanche',
-      ],
-      daysShort: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
-      daysMin: ['D', 'L', 'Ma', 'Me', 'J', 'V', 'S', 'D'],
-      months: [
-        'Janvier',
-        'Février',
-        'Mars',
-        'Avril',
-        'Mai',
-        'Juin',
-        'Juillet',
-        'Août',
-        'Septembre',
-        'Octobre',
-        'Novembre',
-        'Décembre',
-      ],
-      monthsShort: [
-        'Jan',
-        'Fév',
-        'Mar',
-        'Avr',
-        'Mai',
-        'Jui',
-        'Jul',
-        'Aou',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Déc',
-      ],
+      days: ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY']
+        .map(day => {return _t(day);}),
+      daysShort: ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY']
+        .map(day => {return _t('BAZ_DATESHORT_'+day);}),
+      daysMin: ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY']
+        .map(day => {return _t('BAZ_DATEMIN_'+day);}),
+      months: ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER']
+        .map(month => {return _t(month);}),
+      monthsShort: ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER']
+      .map(month => {return _t('BAZ_DATESHORT_'+month);}),
     };
     $dateinputs.datepicker({
       format: 'yyyy-mm-dd',

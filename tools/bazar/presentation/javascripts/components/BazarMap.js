@@ -30,8 +30,8 @@ Vue.component('BazarMap', {
         fullscreenControl: this.params.fullscreen,
         fullscreenControlOptions: {
           forceSeparateButton: true,
-          title: 'Mode plein écran', // change the title of the button, default Full Screen
-          titleCancel: 'Retour à la vue normale', // change the title of the button when fullscreen is on, default Exit Full Screen
+          title: _t('BAZ_FULLSCREEN'), // change the title of the button, default Full Screen
+          titleCancel: _t('BAZ_BACK_TO_NORMAL_VIEW'), // change the title of the button when fullscreen is on, default Exit Full Screen
           // content: '<i class="fa fa-expand-alt"></i>', // change the content of the button, can be HTML, default null
           forceSeparateButton: true, // force seperate button to detach from zoom buttons, default false
         },

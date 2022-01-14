@@ -35,7 +35,7 @@ if (!function_exists('date_compare')) {
     if ( !isset($anneeencours) || $anneeencours < $date[0] ) {
       $anneeencours = $date[0];
       $years[] =  $anneeencours;
-      $output .= affiche_ligne_timeline('<h2 id="annee'.$anneeencours.'">Ann&eacute;e</h2>', '<h2>'.$anneeencours.'</h2>');
+      $output .= affiche_ligne_timeline('<h2 id="annee'.$anneeencours.'"><?php echo _t('BAZ_YEAR'); ?></h2>', '<h2>'.$anneeencours.'</h2>');
     }
 
     switch ($fiche['listeListeTailleImage'] ?? null) {

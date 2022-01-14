@@ -151,7 +151,7 @@ function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $meth
                 $image->save($image_dest, "cache", $ext);
                 return 'cache/'.$image_dest.'.'.$ext;
             } catch (Exception $e) {
-                echo '<div class="alert alert-danger">Erreur Image :<br>';
+                echo '<div class="alert alert-danger">' . _t('BAZ_ERROR_IMAGE') . '<br>';
                 echo $e->getMessage();
                 echo '</div>';
                 return;

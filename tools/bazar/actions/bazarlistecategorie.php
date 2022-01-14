@@ -135,7 +135,7 @@ if (empty($list)) {
             $output .=  '<h3 class="collapsed yeswiki-list-category" '
                 .'data-target="#collapse_'.htmlspecialchars(trim(str_replace('/', '', $fiche[$id])))
                 .'" data-toggle="collapse"><i class="fa fa-chevron-right"></i> '
-                .(empty($listvalues['label'][$fiche[$id]]) ? 'Non catégorisé' : $listvalues['label'][$fiche[$id]]).'</h3>
+                .(empty($listvalues['label'][$fiche[$id]]) ? _t('BAZ_NOT_CATEGORIZED') : $listvalues['label'][$fiche[$id]]).'</h3>
                 <div id="collapse_'.htmlspecialchars(trim(str_replace('/', '', $fiche[$id]))).'" class="collapse">';
         }
         $currentlabel = $fiche[$id];

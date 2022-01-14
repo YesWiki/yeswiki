@@ -43,7 +43,7 @@ if (count($fiches)>0) {
                     : $this->wiki->Format($fiche['owner'])).'</small></div>'."\n";
     }
 } else {
-   echo 'Il n\'y a pas de fiche pour cette période.';
+   echo _t('BAZ_NO_ENTRY_FOR_THIS_PERIOD');
 }
 ?>
 <?php echo $pager_links;?>

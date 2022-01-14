@@ -208,13 +208,13 @@
       </div>
 
       <div class="panel panel-default">
-        <div class="panel-heading">Apparence des facettes</div>
+        <div class="panel-heading"><?php echo _t('BAZ_FACETTES_DISPLAY'); ?></div>
         <div class="panel-body">
           <div class="form-group">
-            <label>Facettes dépliées</label>
+            <label><?php echo _t('BAZ_EXPANDED_FACETTES'); ?></label>
             <select v-model="groupsexpandedmodel" class="form-control">
-                <option selected value="false">Non dépliées</option>
-                <option value="true">Dépliées</option>
+                <option selected value="false"><?php echo _t('BAZ_NOT_EXPANDED'); ?></option>
+                <option value="true"><?php echo _t('BAZ_EXPANDED'); ?></option>
             </select>
           </div>
         </div>
@@ -222,17 +222,17 @@
     </div> <!-- end of col -->
     <div class="col-md-9"> <!-- start of col -->
       <div class="panel panel-default">
-        <div class="panel-heading">Prévisualisation <strong>(cette partie est non cliquable, les paramêtres se changent dans la colonne de gauche)</strong></div>
+        <div class="panel-heading"><?php echo _t('BAZ_PREVIEW'); ?> <strong>(<?php echo _t('BAZ_PREVIEW_DETAILS'); ?>)</strong></div>
         <div class="panel-body">
           <div class="widget-iframe-container">
             <iframe class="iframe-preview" width="<?php echo $params['width']; ?>" height="<?php echo $params['height']; ?>" frameborder="0" :src="newiframeurl"></iframe>
             <div class="iframe-blocker"></div>
           </div>
 
-          <strong>Code embed a copier coller dans votre site</strong>
+          <strong><?php echo _t('BAZ_WIDGET_INSTRUCTION'); ?></strong>
           <pre><code>&lt;iframe width="<?php echo $params['width']; ?>" height="<?php echo $params['height']; ?>" frameborder="0" allowfullscreen="true" src="{{newiframeurl}}"&gt;&lt;/bazariframe&gt;</code></pre>
 
-          <strong>Code action wiki a copier coller dans une page de ce site</strong>
+          <strong><?php echo _t('BAZ_WIDGET_INSTRUCTION2'); ?></strong>
           <pre><code>{{wikiquery}}</code></pre>
         </div>
       </div>

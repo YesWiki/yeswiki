@@ -860,11 +860,11 @@ class EntryManager
                             $fiche[$key] = '';
                         }
                     } else {
-                        echo '<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
+                        echo '<div class="alert alert-danger">'._t('BAZ_CORRESPONDANCE_ERROR').'</div>';
                     }
                 }
             } else {
-                echo '<div class="alert alert-danger">action bazarliste : le paramètre correspondance est mal rempli.<br />Il doit être de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
+                echo '<div class="alert alert-danger">'.str_replace("\n", "<br/>", _t('BAZ_CORRESPONDANCE_ERROR2')).'</div>';
             }
         }
 

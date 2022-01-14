@@ -19,7 +19,7 @@ class __WidgetHandler extends YesWikiHandler
 
         echo $this->wiki->Header();
         echo '<div class="page">';
-        echo '<h1>Partager les résultats par widget HTML (code embed)</h1>' . "\n";
+        echo '<h1>' . _t('BAZ_WIDGET_HANDLER_TITLE') . '</h1>' . "\n";
 
         $entries = $entryManager->search(['formsIds' => [$_GET['id'] ?? null], 'keywords' => $_GET['q'] ?? null], true, true);
         $facettables = $formManager->scanAllFacettable($entries);

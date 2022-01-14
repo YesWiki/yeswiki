@@ -223,10 +223,10 @@ class ImageField extends FileField
                         redimensionner_image($filePath, 'cache/image_' . $fileName, $this->imageWidth, $this->imageHeight);
                     }
                 } else {
-                    echo '<div class="alert alert-danger">L\'image ' . $fileName . ' existait d&eacute;ja, elle n\'a pas &eacute;t&eacute; remplac&eacute;e.</div>';
+                    echo '<div class="alert alert-danger">' . str_replace('{fileName}', $fileName, _t('BAZ_IMAGE_ALREADY_EXISTING')) .'</div>';
                 }
             } else {
-                echo '<div class="alert alert-danger">Extension non autoris&eacute;.</div>';
+                echo '<div class="alert alert-danger">' . _t('BAZ_NOT_AUTHORIZED_EXTENSION') . '</div>';
             }
             $entry[$this->propertyName] = $fileName;
         } elseif (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '') {

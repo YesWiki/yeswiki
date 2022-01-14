@@ -62,10 +62,10 @@ class FileField extends BazarField
                     move_uploaded_file($_FILES[$this->propertyName]['tmp_name'], $filePath);
                     chmod($filePath, 0755);
                 } else {
-                    echo 'fichier déja existant<br />';
+                    echo _t('BAZ_FILE_ALREADY_EXISTING').'<br />';
                 }
             } else {
-                echo 'fichier non autorise<br />';
+                echo _t('BAZ_NOT_AUTHORIZED_FILE').'<br />';
 
                 return [$this->propertyName => ''];
             }

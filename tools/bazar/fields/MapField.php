@@ -105,12 +105,12 @@ class MapField extends BazarField
                             result[index] = {id: value.codesPostaux[0], name: value.nom+" "+value.codesPostaux[0], ville: value.nom}
                           });
                         } else {
-                          result[0] = {id: input, name: \'Pas de ville trouvée pour la recherche: \'+input};
+                          result[0] = {id: input, name: _t(\'BAZ_TOWN_NOT_FOUND\',{input:input})};
                         }
                         callback(result);
                       });
                     } else {
-                      result[0] = {id: input, name: \'Veuillez entrer les 3 premieres lettres pour voir les villes associées\'};
+                      result[0] = {id: input, name: _t(\'BAZ_TOWN_HINT\')};
                       callback(result);
                     }
                   },
@@ -184,10 +184,10 @@ class MapField extends BazarField
             {
                 //console.log("showAddressError: "+msg);
                 if ( msg == "not found" ) {
-                    alert("Adresse non trouvée, veuillez déplacer le point vous meme ou indiquer les coordonnées");
+                    alert(_t("BAZ_GEOLOC_NOT_FOUND"));
                     geocodedmarkerRefresh( map.getCenter() );
                 } else {
-                    alert("Une erreur est survenue: " + msg );
+                    alert(_t(\'BAZ_MAP_ERROR\',{msg:msg}));
                 }
             }
             function popupHtml( point ) {
@@ -230,7 +230,7 @@ class MapField extends BazarField
                 if ($(this).is(":invalid")) {
                     $(\'#bf_latitude\').val(\'\');
                     $(\'#bf_longitude\').val(\'\');
-                    alert(\'Format de coordonnées GPS non valide (que des chiffres et un point . pour les décimales)\');
+                    alert(_t(\'BAZ_NOT_VALID_GEOLOC_FORMAT\'));
                 } else {
                     $(\'#bf_latitude\').val($(\'.bf_latitude\').val());
                     $(\'#bf_longitude\').val($(\'.bf_longitude\').val());
