@@ -47,6 +47,9 @@ return [
     'SUBSCRIPTION' => 'Inscription',
     'UNKNOWN' => 'Inconnu',
     'WARNING' => 'AVERTISSEMENT',
+    'PAGES' => 'Pages',
+    'COMMENTS' => 'Commentaires',
+    'ANSWER' => 'Répondre',
 
     // wakka.php
     'INVALID_ACTION' => 'Action invalide',
