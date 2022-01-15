@@ -171,10 +171,13 @@ $(document).ready(function () {
         if (typeof notVisibleParents === "undefined" || notVisibleParents.length == 0){
           return false;
         }
-        let firstNotVisibleParent = $(notVisibleParents).last();
-        let otherParents = $(notVisibleParents).slice(0,-1);
-        if ($(firstNotVisibleParent).attr("role") == "tabpanel" && $(otherParents).find("[style*='display:none;']").length == 0){
-          return true;
+        // check if visible in a tab
+        if ($(this).parentsUntil(':visible')
+          .filter(function(){
+            return $(this).css('display') == 'none' 
+                && $(this).attr('role') != "tabpanel";
+          }).length == 0){
+          return true
         }
         return false;
       });
@@ -369,7 +372,14 @@ $(document).ready(function () {
         //on remonte en haut du formulaire
         let input = this.requiredInputs[this.error];
         if ($(input).filter(':visible').length == 0){
-          input = $(input).closest(':visible');
+          // panel ?
+          let panel = $(input).parentsUntil(':visible').last();
+          if ($(panel).attr('role') == "tabpanel"){
+            $(`a[href="#${$(panel).attr('id')}"][role=tab]`).first().click();
+          }
+          if ($(input).filter(':visible').length == 0){
+            input = $(input).closest(':visible');
+          }
         }
         $('html, body').animate({
           scrollTop: $(input).offset().top - 80,
@@ -458,9 +468,13 @@ $(document).ready(function () {
   $('#formulaire').submit(function(e) {
     $(this).addClass('submitted');
 
-    if (requirementHelper.run(this)){
-      // formulaire validé, on soumet le formulaire
-      return true;
+    try {
+      if (requirementHelper.run(this)){
+        // formulaire validé, on soumet le formulaire
+        return true;
+      }
+    } catch (error) {
+      console.warn(error.message);
     }
     e.preventDefault();
     return false;
