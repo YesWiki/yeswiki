@@ -6,7 +6,11 @@
     {% if field.isDistantJson %}
       <div class="input-group">
     {% endif %}
-    <input type="text" name="{{ field.propertyName }}" class="yeswiki-input-entries yeswiki-input-entries{{ field.propertyName }}">
+    <input 
+      type="text" 
+      name="{{ field.propertyName }}" 
+      class="yeswiki-input-entries yeswiki-input-entries{{ field.propertyName }}"
+      {% if field.required %}required{% endif %}>
     {% if field.isDistantJson %}
         <div class="input-group-append">
             <button 

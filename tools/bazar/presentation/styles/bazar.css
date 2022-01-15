@@ -144,7 +144,16 @@ color:#E9322D;
 .titre_accordeon:hover  {
 	background-color: #fc9200; text-decoration: none;
 }
-input:not(:placeholder-shown):invalid, textarea:not(:placeholder-shown):invalid, .submitted input:required:invalid, .submitted textarea:required:invalid {
+input:not(:placeholder-shown):invalid, 
+textarea:not(:placeholder-shown):invalid, 
+.submitted input:required:invalid, 
+.submitted textarea:required:invalid, 
+.submitted select:required:invalid, 
+.submitted .bootstrap-tagsinput.invalid, 
+.submitted .form-group.input-checkbox.invalid, 
+.submitted .form-group.input-radio.invalid, 
+.submitted .invalid > .ace-editor-container, 
+.submitted .textarea.summernote.invalid {
   border-color: #DD2C00;
 }
 .BAZ_label {font-weight: bold;display: block;}
