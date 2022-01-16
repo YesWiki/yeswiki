@@ -306,7 +306,7 @@ return [
     "AB_buttons_action_button_text_label" => "Texte du bouton",
     "AB_buttons_action_button_text_default" => "Mon bouton",
     "AB_buttons_action_button_link_label" => "Lien web ou nom d'une page de ce wiki",
-    "AB_buttons_action_button_link_hint" => "Si lien web, n'oubliez pas le \"https://",
+    "AB_buttons_action_button_link_hint" => "Si lien web, n'oubliez pas le \"https://\"",
     "AB_buttons_action_button_title_label" => "Texte affiché au survol",
     "AB_buttons_action_button_icon_label" => "Icone",
     "AB_buttons_action_button_class_label" => "Classe",
