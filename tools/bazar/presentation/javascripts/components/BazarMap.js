@@ -13,7 +13,8 @@ Vue.component('BazarMap', {
     return {
       selectedEntry: null,
       center: null,
-      bounds: null
+      bounds: null,
+      layers: {}
     }
   },    
   computed: {
@@ -44,10 +45,40 @@ Vue.component('BazarMap', {
       if (!this.$refs.map) return
       this.bounds = this.map.getBounds()        
     },
-    createTileLayer() {
+    createTileLayers() {
       if (!this.map) return
       let provideOptions = this.params.provider_credentials ? JSON.parse(this.params.provider_credentials) : {}
       L.tileLayer.provider(this.params.provider, provideOptions).addTo(this.map)
+
+      for (let layer of this.params.layers) {
+        let [label, type, options, url] = layer.split('|')
+        if (!url) { url = options; options = null; }
+        switch (type.toLowerCase()) {
+          case 'tiles':
+            this.layers[label] = L.tileLayer(url).addTo(this.map)
+            break;
+          case 'geojson':
+            this.layers[label] = L.geoJson.ajax(url, {
+              style: function (feature, latlng) {
+                if (feature.geometry.type == "Point") return
+                const props = feature.properties || {};
+                // convert options string "color: blue; fill: red" to object
+                options.split(';').forEach(o => {
+                  let [key, value] = o.split(':')
+                  props[key.trim()] = value.trim().replaceAll("'", '')
+                })
+                return props;
+              },
+              pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng);
+              },
+            }).addTo(this.map)
+            break;
+          default:
+            alert(`Error in Layers parameter: type ${type} is unknown` )
+            break;
+        }
+      }
     },
     arraysEqual(a, b) {
       if (a === b) return true;
@@ -131,12 +162,13 @@ Vue.component('BazarMap', {
     <div class="bazar-map-container" :style="{height: params.height}"
         :class="{'small-width': $el ? $el.offsetWidth < 800 : true, 'small-height': $el ? $el.offsetHeight < 600 : true }">
       
-        <l-map v-if="center" ref="map" :zoom="params.zoom" :center="center"
-            :options="mapOptions"
-            @update:center="updateBounds()" @ready="updateBounds(); createTileLayer()"
-            @click="selectedEntry = null">
+      <l-map v-if="center" ref="map" :zoom="params.zoom" :center="center"
+             :options="mapOptions"
+             @update:center="updateBounds()" @ready="updateBounds(); createTileLayers()"
+             @click="selectedEntry = null">
         <l-marker-cluster ref="cluster" ></l-marker-cluster>
       </l-map>
+      
 
       <!-- SideNav to display entry -->
       <div v-if="selectedEntry && this.params.entrydisplay == 'sidebar'" class="entry-container">
