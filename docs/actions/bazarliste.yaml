@@ -410,12 +410,38 @@ actions:
           floating:
             type: form-field
             label: _t(AB_bazarliste_displayfields_floating_label)
-            default: ""
+            default: bf_date_debut_evenement
           visual:
             type: form-field
             label: _t(AB_bazarliste_displayfields_visual_label)
-            default: ""
+            default: imagebf_image
 
+  bazarcard:
+    label: _t(AB_bazarcard_label)
+    description: _t(AB_bazarcard_description)
+    properties:
+      template:
+        value: 'card'
+      displayfields:
+        type: correspondance
+        subproperties:
+          title:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_title_label)
+            default: bf_titre
+          subtitle:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_subtitle_label)
+            default: bf_date_debut_evenement
+          floating:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_floating_label)
+            default: bf_description
+          visual:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_visual_label)
+            default: imagebf_image
+  
   bazartrombi:
     label: _t(AB_bazartrombi_label)
     description: _t(AB_bazartrombi_description)

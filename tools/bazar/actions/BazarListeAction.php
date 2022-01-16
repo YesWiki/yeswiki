@@ -73,6 +73,7 @@ class BazarListeAction extends YesWikiAction
         
         // Dynamic templates
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
+
         if (isset($arg['displayfields']) && is_array($arg['displayfields'])) { // with bazarcarto this method is run twice
             $displayFields = $arg['displayfields'];
         } else {
@@ -87,9 +88,14 @@ class BazarListeAction extends YesWikiAction
         if ($dynamic && $template == 'liste_accordeon') {
             $template = 'list';
         }
+        if ($template == 'card') {
+            $dynamic = true;
+            // Handling default values
+            if (!array_key_exists('visual', $displayFields)) $displayFields['visual'] = 'imagebf_image';
+        }
         $searchfields = $this->formatArray($arg['searchfields'] ?? null);
         $searchfields = empty($searchfields) ? ['bf_titre'] : $searchfields;
-        // End dynamic
+        // End dynamic        
 
         $agendaMode = (!empty($arg['agenda']) || !empty($arg['datefilter']) || substr($template, 0, strlen('agenda')) == 'agenda') ;
 

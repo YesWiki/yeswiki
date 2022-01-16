@@ -1,0 +1,35 @@
+{% extends "@bazar/entries/index-dynamic.twig" %}
+
+{% block assets %}
+  {{ include_css('tools/bazar/presentation/styles/card.css') }}
+{% endblock %}
+
+{% block display_entries %}
+  <div class="bazar-cards-container" v-if="ready" :class="{ready: ready}">
+    <div v-if="entriesToDisplay.length == 0" class="alert alert-info">
+      {{ _t('BAZ_NO_RESULT') }}
+    </div>
+    <div v-for="entry in entriesToDisplay" :key="entry.id_fiche" class="bazar-entry bazar-card" 
+         @click="getEntryRender(entry)">
+      
+      {# VISUAL AREA #}
+      <div class="visual-area" v-if="field(entry, 'visual')" 
+          :style="{'background-image': `url(cache/vignette_${field(entry, 'visual')})`}">
+      </div>
+      {# TITLE AREA #}
+      <h4 div class="title-area">
+        <span v-show="entry.color" class="pellet" :style="{'background-color': entry.color}"></span>
+        <i v-show="entry.icon" :class="entry.icon"></i>
+        <span class="title">{{"{{ field(entry, 'title', 'bf_titre') }}"}}</span>
+      </h4>
+      {# FLOATING AREA #}
+      <div class="floating-area" v-html="field(entry, 'floating', 'bf_date_debut_evenement')"></div>
+      {# SUBTITLE AREA #}
+      <div class='subtitle-area' v-if="field(entry, 'subtitle', 'bf_description')"
+           v-html="field(entry, 'subtitle', 'bf_description')"></div>
+    </div>
+
+    <spinner-loader v-if="isLoading" class="overlay"></spinner-loader>
+  </div>
+  <spinner-loader v-else height="500"></spinner-loader>
+{% endblock %}

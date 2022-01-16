@@ -1,0 +1,11 @@
+.bazar-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.bazar-card {
+  padding: 1rem;
+  width: calc(33% - 0.6rem);
+  border: 1px solid grey;
+  margin-bottom: 1rem;
+}
