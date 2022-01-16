@@ -72,10 +72,10 @@ if(count($fiches)>0) {
                 next: ' ► ',
                 prevYear: ' << ',
                 nextYear: ' >> ',
-                today: '"._t('BAZ_TODAY')."',
-                month: '"._t('BAZ_MONTH')."',
-                week: '"._t('BAZ_WEEK')."',
-                day: '"._t('BAZ_DAY')."'
+                today: ".json_encode(_t('BAZ_TODAY')).",
+                month: ".json_encode(_t('BAZ_MONTH')).",
+                week: ".json_encode(_t('BAZ_WEEK')).",
+                day: ".json_encode(_t('BAZ_DAY'))."
             },
             firstDay : 1,
             themeSystem: 'bootstrap3',
