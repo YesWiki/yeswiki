@@ -118,8 +118,8 @@ return [
     "AB_bazarcarousel_description" => "Affiche les images des fiches sous forme de carousel",
     "AB_bazarcarousel_hint" => "Un champ de type bf_image est nécessaire.",
     "AB_bazarcarousel_sanstitre_label" => "Cacher le titre de la fiche sur l'image",
-    "AB_bazarcarousel_avecpage_label" => "Afficher une page au-dessus du slider",
-    "AB_bazarcarousel_avecpage_hint" => "La page affichée sera PageDessusSlider",
+    "AB_bazarcarousel_avecpage_label" => "Afficher une page en surimpression sur le carousel",
+    "AB_bazarcarousel_avecpage_hint" => "La page affichée sera nommée PageDessusSlider",
     "AB_bazarcarousel_showlinkinsteadofurl_label" => "Montrer le lien bf_lien au lieu de celui vers la fiche",
     "AB_bazarcarousel_bf_titre_label" => "Champ pour le texte affiché",
     // bazargaleriephoto
