@@ -1,6 +1,6 @@
 .bazar-cards-container {
   display: grid;
-  grid-gap: 4rem;
+  gap: 2rem;
   /* grid-template-columns is set in Vue template */
 }
 @media (max-width: 800px) {
@@ -9,28 +9,41 @@
   }
 }
 .bazar-card {
-  /* box-shadow: 0 4px 10px rgba(0,0,0,.03),0 0 2px rgba(0,0,0,.06),0 2px 6px rgba(0,0,0,.12)!important; */
   display: flex;
   flex-direction: column;
   position: relative;
 }
+.bazar-card .area {
+  margin: 0
+}
+.area + .area:not(.floating-area) {
+  margin-top: .5rem
+}
+.bazar-card .content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
 .bazar-card .title-area {
   color: var(--neutral-color);
-  margin-bottom: 1rem;
   margin-top: 0;
 }
 .bazar-card .subtitle-area {
+  font-weight: 600;
+}
+.bazar-card .title-area + .subtitle-area {
+  font-weight: normal;
   color: var(--primary-color);
-  margin-bottom: .5rem;
 }
 .bazar-card .text-area {
-  margin-bottom: .5rem;
   position: relative;
   text-align: justify;
   color: var(--neutral-soft-color);
-  max-height: 200px;
+  max-height: 6.5rem;
   overflow: hidden;
   flex-grow: 1;
+  line-height: 1.4;
+  font-size: .9rem;
 }
 .bazar-card .text-area:after {
   content: '';
@@ -46,12 +59,9 @@
   background-repeat: no-repeat;
   background-size: cover;
   border-radius: 6px;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 .bazar-card .footer-area {
-  font-size: .8rem;
-  font-weight: bold;
-  color: var(--neutral-soft-color);
   line-break: anywhere;
 }
 .bazar-card .floating-area {
@@ -64,4 +74,106 @@
   border-radius: 3px;
   transform: translateY(-50%);
   font-size: .9rem;
+}
+
+/* STYLE CARD */
+.style-card .bazar-card {
+  /* box-shadow: 0 4px 10px rgba(0,0,0,.03),0 0 2px rgba(0,0,0,.06),0 2px 6px rgba(0,0,0,.12) !important; */
+  padding: 1.5rem;
+  border-radius: 6px;
+  justify-content: space-between;
+  border: 1px solid #ebebeb;
+  background-color: whitesmoke;
+}
+.style-card .bazar-card .visual-area {
+  margin: -1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: 1px solid #ebebeb;
+} 
+.style-card .bazar-card .footer-area {
+  margin: -1.5rem;
+  margin-top: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid #dfdfdf;
+  border-radius: 0 0 6px 6px;
+  font-size: .9rem;
+}
+.style-card .bazar-card .text-area:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  background-image: linear-gradient(#ffffff00, whitesmoke);
+}
+.style-card .bazar-card .subtitle-area {
+  flex-grow: 1;
+}
+
+/* STYLE FLAT */
+.style-flat.bazar-cards-container {
+  gap: 4rem;
+}
+.style-flat .bazar-card .footer-area {
+  font-size: .8rem;
+  font-weight: bold;
+  color: var(--neutral-soft-color);
+}
+
+/* STYLE HORIZONTAL */
+.style-horizontal.bazar-cards-container {
+  row-gap: 4rem;
+}
+.style-horizontal .bazar-card {
+  flex-wrap: wrap;
+  min-height: 11rem;
+}
+.style-horizontal .bazar-card .visual-area {
+  height: 100%;
+  width: 13.5rem;
+  margin-right: 1.5rem;
+  margin-bottom: 0;
+}
+.style-horizontal .bazar-card .floating-area {
+  left: 1rem;
+  bottom: 0;
+  right: auto;
+  top: auto;
+  width: auto !important;
+}
+.style-horizontal .bazar-card > *:not(.visual-area) {
+  width: calc(100% - 15rem);
+}
+.style-horizontal .bazar-card h4 {
+  font-size: 1.8rem;
+}
+.style-horizontal .bazar-card .footer-area {
+  font-size: .7rem;
+  font-weight: bold;
+  background-color: whitesmoke;
+  color: var(--neutral-soft-color);
+  padding: 3px .7rem;
+  border-radius: 8px;
+  width: auto !important;
+  align-self: baseline;
+  display: inline;
+}
+
+/* STYLE HOVER */
+.style-hover .bazar-card .visual-area {
+  margin-bottom: 0;
+  height: 20rem;
+}
+.style-hover .bazar-card .content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: whitesmoke;
+  padding: 1rem;
+  max-height: 10rem;
+  overflow: hidden;
 }

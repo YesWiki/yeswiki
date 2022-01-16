@@ -91,6 +91,10 @@ return [
     "AB_bazarcard_label" => "Card",
     "AB_bazarcard_description" => "Les fiches seront sous forme de cartes",
     "AB_bazarliste_displayfields_footer_label" => "Champ pour la zone footer",
+    "AB_bazarcard_style_label" => "Type de rendu",
+    "AB_bazarcard_style_flat" => 'Flat',
+    "AB_bazarcard_style_card" => 'Card',
+    "AB_bazarcard_style_horizontal" => 'Horizontal',
     // BazarTrombi
     "AB_bazartrombi_label" => "Trombinoscope",
     "AB_bazartrombi_description" => "Les fiches seront sous forme de Trombinoscope.",

@@ -5,39 +5,43 @@
 {% endblock %}
 
 {% block display_entries %}
-  <div class="bazar-cards-container" v-if="ready" :class="{ready: ready}" 
+  <div class="bazar-cards-container" v-if="ready" :class="[{ready: ready}, `style-${params.style || 'card'}`]" 
        :style="{'grid-template-columns': `repeat(${params.nbcol}, 1fr)`}">
+    
     <div v-if="entriesToDisplay.length == 0" class="alert alert-info">
       {{ _t('BAZ_NO_RESULT') }}
     </div>
+
     <div v-for="entry in entriesToDisplay" :key="entry.id_fiche" class="bazar-entry bazar-card" 
          @click="getEntryRender(entry)">
       
       {# VISUAL AREA #}
-      <div class="visual-area" v-if="field(entry, 'visual')" 
+      <div class="area visual-area" v-if="field(entry, 'visual')" 
           :style="{'background-image': `url(cache/image_${field(entry, 'visual')})`}">
       </div>
       
-      {# TITLE AREA #}
-      <h4 div class="title-area" v-if="field(entry, 'title')">
-        <span v-show="entry.color" class="pellet" :style="{'background-color': entry.color}"></span>
-        <i v-show="entry.icon" :class="entry.icon"></i>
-        <span class="title">{{"{{ field(entry, 'title') }}"}}</span>
-      </h4>  
+      <div class="content">
+        {# TITLE AREA #}
+        <h4 div class="area title-area" v-if="field(entry, 'title')">
+          <span v-show="entry.color" class="pellet" :style="{'background-color': entry.color}"></span>
+          <i v-show="entry.icon" :class="entry.icon"></i>
+          <span class="title">{{"{{ field(entry, 'title') }}"}}</span>
+        </h4>  
 
-      {# SUBTITLE AREA #}
-      <div class='subtitle-area' v-if="field(entry, 'subtitle')"
-           v-html="field(entry, 'subtitle')"></div>   
-      
-      {# TEXT AREA #}
-      <div class='text-area' v-if="field(entry, 'text')"
-           v-html="field(entry, 'text')"></div>
+        {# SUBTITLE AREA #}
+        <div class='area subtitle-area' v-if="field(entry, 'subtitle')"
+            v-html="field(entry, 'subtitle')"></div>   
+        
+        {# TEXT AREA #}
+        <div class='area text-area' v-if="field(entry, 'text')"
+            v-html="field(entry, 'text')"></div>
 
-      {# FOOTER AREA #}
-      <div class="footer-area" v-html="field(entry, 'footer')"></div>
-      
-      {# FLOATING AREA #}
-      <div class="floating-area" v-html="field(entry, 'floating')"></div>
+        {# FOOTER AREA #}
+        <div class="area footer-area" v-if="field(entry, 'footer')" v-html="field(entry, 'footer')"></div>
+        
+        {# FLOATING AREA #}
+        <div class="area floating-area" v-if="field(entry, 'floating')" v-html="field(entry, 'floating')"></div>
+      </div>
     </div>
 
     <spinner-loader v-if="isLoading" class="overlay"></spinner-loader>

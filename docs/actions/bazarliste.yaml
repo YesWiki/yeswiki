@@ -406,15 +406,12 @@ actions:
           subtitle:
             type: form-field
             label: _t(AB_bazarliste_displayfields_subtitle_label)
-            default: ""
           floating:
             type: form-field
             label: _t(AB_bazarliste_displayfields_floating_label)
-            default: bf_date_debut_evenement
           visual:
             type: form-field
             label: _t(AB_bazarliste_displayfields_visual_label)
-            default: imagebf_image
 
   bazarcard:
     label: _t(AB_bazarcard_label)
@@ -447,6 +444,15 @@ actions:
           floating:
             type: form-field
             label: _t(AB_bazarliste_displayfields_floating_label)
+      style:
+        type: list
+        label: _t(AB_bazarcard_style_label)
+        default: card
+        options:          
+          flat: _t(AB_bazarcard_style_flat)
+          card: _t(AB_bazarcard_style_card)
+          horizontal: _t(AB_bazarcard_style_horizontal)
+
           
   
   bazartrombi:
