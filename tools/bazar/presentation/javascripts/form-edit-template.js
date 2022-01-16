@@ -236,10 +236,6 @@ var TabsConf = {
       options: { "": _t('NO'),"moveSubmit": _t('YES') },
       description: _t('BAZ_FORM_EDIT_TABS_MOVESUBMITBUTTONTOLASTTAB_DESCRIPTION')
     },
-  navClass: {
-      label: _t('BAZ_FORM_EDIT_TABS_NAVCLASS_LABEL'),
-      options: { "nav-tabs": _t('BAZ_FORM_EDIT_TABS_NAVCLASS_OPTION_NAVTABS'),"nav-pills": _t('BAZ_FORM_EDIT_TABS_NAVCLASS_OPTION_NAVPILLS') },
-    },
   btnColor: {
         label: _t('BAZ_FORM_EDIT_TABS_BTNCOLOR_LABEL'),
         options: { "btn-primary": _t('PRIMARY'),"btn-secondary-1": _t('SECONDARY') + " 1","btn-secondary-2": _t('SECONDARY') + " 2" },
@@ -870,7 +866,7 @@ var yesWikiMapping = {
           2: "",
           3: 'viewTitles',
           5: 'moveSubmitButtonToLastTab',
-          6: 'navClass',
+          6: '',
           7: 'btnColor',
           9: 'btnSize'
       }

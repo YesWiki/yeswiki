@@ -2,7 +2,7 @@
   {{ include_javascript('tools/bazar/presentation/javascripts/bazar-edit-tabs-field.js') }}
 {% endif %}
 {% if titles is not empty %}
-  <ul class="nav {{ field.tabsClass }}" role="tablist">
+  <ul class="nav nav-tabs" role="tablist">
     {% for title in titles %}
       <li role="presentation"{%if loop.first %} class="active"{% endif %}>
         <a 
