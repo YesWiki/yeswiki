@@ -14,7 +14,8 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       params: {},
 
       filters: [],
-      entries: [],     
+      entries: [],  
+      formFields: {},   
       searchedEntries: [],
       filteredEntries: [],
       paginatedEntries: [],
@@ -224,6 +225,14 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
             })
             
             return entry
+          })
+          Object.values(data.forms).forEach(formFields => {
+            formFields.forEach(field => {
+              this.formFields[field.id] = field
+              Object.entries(this.params.displayfields).forEach( ([fieldId, mappedField]) => {
+                if (mappedField == field.id) this.formFields[fieldId] = this.formFields[mappedField]
+              })
+            })
           })
           this.calculateBaseEntries()
           this.ready = true
