@@ -316,15 +316,6 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
   /* tooltips */
   $("[data-toggle='tooltip']").tooltip();
 
-  // detecte quand on scrolle en dessus de la barre horizontale, afin de la fixer en haut
-  var $topnav = $("#yw-topnav.fixable");
-  if ($topnav.length > 0) {
-    var topoffset = $topnav.data("offset") || $topnav.offset().top;
-    $topnav.affix({
-      offset: topoffset
-    });
-  }
-
   // moteur de recherche utilisé dans un template
   $('a[href="#search"]').on("click", function(e) {
     e.preventDefault();

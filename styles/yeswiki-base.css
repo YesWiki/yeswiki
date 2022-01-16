@@ -241,15 +241,9 @@ body > :not(#YesWikiModal) .current-revision-text {
 }
 
 /* menu du haut fixe */
-#yw-topnav.affix {
-  position: fixed;
+#yw-topnav.fixable {
+  position: sticky;
   top: 0;
-  z-index: 2000;
-  right: 0;
-  left: 0;
-}
-#yw-topnav.affix-top {
-  position: relative;
 }
 
 .aceditor-btn-well:hover .well {
