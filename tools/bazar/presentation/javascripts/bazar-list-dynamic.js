@@ -160,10 +160,6 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         }  
         return filters      
       },
-      field(entry, field, fallbackField) {
-        let mappedField = this.params.displayfields[field]
-        return mappedField ? entry[mappedField] : entry[fallbackField]
-      },
       getEntryRender(entry) {
         if (entry.html_render) return
         let fieldsToExclude = this.params.displayfields ? Object.values(this.params.displayfields) : []
@@ -223,6 +219,10 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
             for(let key in data.fieldMapping) {
               entry[data.fieldMapping[key]] = array[key]
             }
+            Object.entries(this.params.displayfields).forEach( ([field, mappedField]) => {
+              if (mappedField) entry[field] = entry[mappedField]
+            })
+            
             return entry
           })
           this.calculateBaseEntries()

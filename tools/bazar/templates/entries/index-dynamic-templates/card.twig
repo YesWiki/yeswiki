@@ -16,31 +16,29 @@
          @click="getEntryRender(entry)">
       
       {# VISUAL AREA #}
-      <div class="area visual-area" v-if="field(entry, 'visual')" 
-          :style="{'background-image': `url(cache/image_${field(entry, 'visual')})`}">
+      <div class="area visual-area" v-if="entry.visual" 
+          :style="{'background-image': `url(cache/image_${entry.visual})`}">
       </div>
       
       <div class="content">
         {# TITLE AREA #}
-        <h4 div class="area title-area" v-if="field(entry, 'title')">
+        <h4 div class="area title-area" v-if="entry.title">
           <span v-show="entry.color" class="pellet" :style="{'background-color': entry.color}"></span>
           <i v-show="entry.icon" :class="entry.icon"></i>
-          <span class="title">{{"{{ field(entry, 'title') }}"}}</span>
+          <span class="title" v-html="entry.title"></span>
         </h4>  
 
         {# SUBTITLE AREA #}
-        <div class='area subtitle-area' v-if="field(entry, 'subtitle')"
-            v-html="field(entry, 'subtitle')"></div>   
+        <div class='area subtitle-area' v-if="entry.subtitle" v-html="entry.subtitle"></div>   
         
         {# TEXT AREA #}
-        <div class='area text-area' v-if="field(entry, 'text')"
-            v-html="field(entry, 'text')"></div>
+        <div class='area text-area' v-if="entry.text" v-html="entry.text"></div>
 
         {# FOOTER AREA #}
-        <div class="area footer-area" v-if="field(entry, 'footer')" v-html="field(entry, 'footer')"></div>
+        <div class="area footer-area" v-if="entry.footer" v-html="entry.footer"></div>
         
         {# FLOATING AREA #}
-        <div class="area floating-area" v-if="field(entry, 'floating')" v-html="field(entry, 'floating')"></div>
+        <div class="area floating-area" v-if="entry.floating" v-html="entry.floating"></div>
       </div>
     </div>
 
