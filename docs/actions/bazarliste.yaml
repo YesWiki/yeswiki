@@ -422,25 +422,32 @@ actions:
     properties:
       template:
         value: 'card'
+      nbcol:
+        label: _t(AB_bazarmaterialcard_nbcol_label)
+        type: number
+        default: 3
       displayfields:
         type: correspondance
         subproperties:
-          title:
-            type: form-field
-            label: _t(AB_bazarliste_displayfields_title_label)
-            default: bf_titre
-          subtitle:
-            type: form-field
-            label: _t(AB_bazarliste_displayfields_subtitle_label)
-            default: bf_date_debut_evenement
-          floating:
-            type: form-field
-            label: _t(AB_bazarliste_displayfields_floating_label)
-            default: bf_description
           visual:
             type: form-field
             label: _t(AB_bazarliste_displayfields_visual_label)
-            default: imagebf_image
+          title:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_title_label)
+          subtitle:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_subtitle_label)
+          text:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_text_label)
+          footer:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_footer_label)
+          floating:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_floating_label)
+          
   
   bazartrombi:
     label: _t(AB_bazartrombi_label)

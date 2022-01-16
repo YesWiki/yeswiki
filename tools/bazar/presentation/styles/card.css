@@ -1,11 +1,67 @@
 .bazar-cards-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  display: grid;
+  grid-gap: 4rem;
+  /* grid-template-columns is set in Vue template */
+}
+@media (max-width: 800px) {
+  .bazar-cards-container {
+    grid-template-columns: 1fr !important;
+  }
 }
 .bazar-card {
-  padding: 1rem;
-  width: calc(33% - 0.6rem);
-  border: 1px solid grey;
+  /* box-shadow: 0 4px 10px rgba(0,0,0,.03),0 0 2px rgba(0,0,0,.06),0 2px 6px rgba(0,0,0,.12)!important; */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.bazar-card .title-area {
+  color: var(--neutral-color);
   margin-bottom: 1rem;
+  margin-top: 0;
+}
+.bazar-card .subtitle-area {
+  color: var(--primary-color);
+  margin-bottom: .5rem;
+}
+.bazar-card .text-area {
+  margin-bottom: .5rem;
+  position: relative;
+  text-align: justify;
+  color: var(--neutral-soft-color);
+  max-height: 200px;
+  overflow: hidden;
+  flex-grow: 1;
+}
+.bazar-card .text-area:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  background-image: linear-gradient(#ffffff00, white);
+}
+.bazar-card .visual-area {
+  height: 200px;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+.bazar-card .footer-area {
+  font-size: .8rem;
+  font-weight: bold;
+  color: var(--neutral-soft-color);
+  line-break: anywhere;
+}
+.bazar-card .floating-area {
+  position: absolute;
+  right: 1rem;
+  top: 200px;
+  background-color: var(--primary-color);
+  color: var(--neutral-light-color);
+  padding: 3px 1rem;
+  border-radius: 3px;
+  transform: translateY(-50%);
+  font-size: .9rem;
 }

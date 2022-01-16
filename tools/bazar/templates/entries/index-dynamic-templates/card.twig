@@ -5,7 +5,8 @@
 {% endblock %}
 
 {% block display_entries %}
-  <div class="bazar-cards-container" v-if="ready" :class="{ready: ready}">
+  <div class="bazar-cards-container" v-if="ready" :class="{ready: ready}" 
+       :style="{'grid-template-columns': `repeat(${params.nbcol}, 1fr)`}">
     <div v-if="entriesToDisplay.length == 0" class="alert alert-info">
       {{ _t('BAZ_NO_RESULT') }}
     </div>
@@ -14,19 +15,29 @@
       
       {# VISUAL AREA #}
       <div class="visual-area" v-if="field(entry, 'visual')" 
-          :style="{'background-image': `url(cache/vignette_${field(entry, 'visual')})`}">
+          :style="{'background-image': `url(cache/image_${field(entry, 'visual')})`}">
       </div>
+      
       {# TITLE AREA #}
-      <h4 div class="title-area">
+      <h4 div class="title-area" v-if="field(entry, 'title')">
         <span v-show="entry.color" class="pellet" :style="{'background-color': entry.color}"></span>
         <i v-show="entry.icon" :class="entry.icon"></i>
-        <span class="title">{{"{{ field(entry, 'title', 'bf_titre') }}"}}</span>
-      </h4>
-      {# FLOATING AREA #}
-      <div class="floating-area" v-html="field(entry, 'floating', 'bf_date_debut_evenement')"></div>
+        <span class="title">{{"{{ field(entry, 'title') }}"}}</span>
+      </h4>  
+
       {# SUBTITLE AREA #}
-      <div class='subtitle-area' v-if="field(entry, 'subtitle', 'bf_description')"
-           v-html="field(entry, 'subtitle', 'bf_description')"></div>
+      <div class='subtitle-area' v-if="field(entry, 'subtitle')"
+           v-html="field(entry, 'subtitle')"></div>   
+      
+      {# TEXT AREA #}
+      <div class='text-area' v-if="field(entry, 'text')"
+           v-html="field(entry, 'text')"></div>
+
+      {# FOOTER AREA #}
+      <div class="footer-area" v-html="field(entry, 'footer')"></div>
+      
+      {# FLOATING AREA #}
+      <div class="floating-area" v-html="field(entry, 'floating')"></div>
     </div>
 
     <spinner-loader v-if="isLoading" class="overlay"></spinner-loader>

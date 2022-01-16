@@ -84,8 +84,13 @@ return [
     "AB_bazarliste_description" => "Les fiches seront sous forme d'accordéons",
     "AB_bazarliste_displayfields_title_label" => "Champ pour la zone de titre",
     "AB_bazarliste_displayfields_subtitle_label" => "Champ pour la zone de sous titre",
+    "AB_bazarliste_displayfields_text_label" => "Champ pour la zone de texte",
     "AB_bazarliste_displayfields_floating_label" => "Champ pour la zone flottante",
     "AB_bazarliste_displayfields_visual_label" => "Champ pour la zone visuelle",
+    // BazarCard
+    "AB_bazarcard_label" => "Card",
+    "AB_bazarcard_description" => "Les fiches seront sous forme de cartes",
+    "AB_bazarliste_displayfields_footer_label" => "Champ pour la zone footer",
     // BazarTrombi
     "AB_bazartrombi_label" => "Trombinoscope",
     "AB_bazartrombi_description" => "Les fiches seront sous forme de Trombinoscope.",
