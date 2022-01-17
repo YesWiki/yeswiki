@@ -9,16 +9,17 @@ actions:
       url:
         label: _t(AB_syndication_action_url_label)
         hint: _t(AB_syndication_action_url_hint)
-        default: https://yeswiki.net
+        default: yeswiki.net, lemonde.fr
         type: url
         required: true
-      title:
-        label: _t(AB_syndication_action_title_label)
-        type: text
+#      title:
+#       label: _t(AB_syndication_action_title_label)
+#       type: text
       source:
         label: _t(AB_syndication_action_source_label)
         hint: _t(AB_syndication_action_source_hint)
         type: text
+        default: Yeswiki, le Monde
       nb:
         label: _t(AB_syndication_action_nb_label)
         type: number
