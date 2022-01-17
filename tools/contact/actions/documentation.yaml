@@ -12,6 +12,7 @@ actions:
       entete:
         label: _t(AB_contact_action_entete_label)
         type: text
+        default: Envoyé depuis le site...
       template:
         label: _t(AB_contact_action_template_label)
         hint: _t(AB_contact_action_template_hint)
