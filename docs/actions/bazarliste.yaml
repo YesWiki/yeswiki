@@ -29,6 +29,8 @@ actions:
         showOnlyFor:
           - bazarliste
           - bazarcarto
+        showExceptFor:
+          - bazarcarousel
       dynamic:
         label: _t(AB_bazar_commons_dynamic_label)
         showOnlyFor:
@@ -110,6 +112,8 @@ actions:
         default: 0
         checkedvalue: 1
         uncheckedvalue: 0
+        showExceptFor:
+          - bazarcarousel
 
   # -------------------------------------
   # Champs Communs concernant les filtres
@@ -174,6 +178,7 @@ actions:
           - bazartimeline
           - bazarannuaire
           - bazarcalendar
+          - bazarcarousel
       ordre:
         label: _t(AB_bazar_commons2_ordre_label)
         type: list
@@ -571,12 +576,12 @@ actions:
       template:
         value: liste_liens
 
-  bazarlisteliensdates:
-    label: _t(AB_bazarlisteliensdates_label)
-    description: _t(AB_bazarlisteliensdates_description)
-    properties:
-      template:
-        value: liste_liens_date
+#  bazarlisteliensdates:
+#    label: _t(AB_bazarlisteliensdates_label)
+#    description: _t(AB_bazarlisteliensdates_description)
+#    properties:
+#      template:
+#        value: liste_liens_date
 
   # bazarmail:
   #   label: _t(AB_bazarmail_label)
