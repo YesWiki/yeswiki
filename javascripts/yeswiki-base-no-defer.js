@@ -3,7 +3,7 @@ function _t(message,replacements = {}){
     // init translation
     if (wiki.lang !== null && typeof wiki.lang === "object" && Object.keys(wiki.lang) == 0){
         try {
-            let translation = $.ajax({method:"GET",url:wiki.url("api/translations/js",{lang:wiki.locale}),async:false,cache:true}).responseJSON.translation;
+            let translation = $.ajax({method:"GET",url:wiki.url("api/translations",{lang:wiki.locale}),async:false,cache:true}).responseJSON.translation;
             if (translation !== null && typeof translation === "object" && Object.keys(translation) != 0){
                 wiki.lang = translation;
             }

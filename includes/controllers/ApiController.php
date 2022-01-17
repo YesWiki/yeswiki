@@ -38,7 +38,7 @@ class ApiController extends YesWikiController
         $output .= '<h2>'._t('PAGES').'</h2>'."\n".
             'GET <code><a href="'.$urlPages.'">'.$urlPages.'</a></code><br />';
 
-        $urlTranslationJs = $this->wiki->Href('', 'api/translations/js');
+        $urlTranslationJs = $this->wiki->Href('', 'api/translations');
         $output .= '<h2>'._t('TRANSLATION_FOR_JS').'</h2>'."\n".
             'GET <code><a href="'.$urlTranslationJs.'">'.$urlTranslationJs.'</a></code><br />';
 
@@ -171,7 +171,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/translations/js", methods={"GET"}, options={"acl":{"public"}})
+     * @Route("/api/translations", methods={"GET"}, options={"acl":{"public"}})
      */
     public function getTranslationJs()
     {
