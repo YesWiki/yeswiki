@@ -38,10 +38,6 @@ class ApiController extends YesWikiController
         $output .= '<h2>'._t('PAGES').'</h2>'."\n".
             'GET <code><a href="'.$urlPages.'">'.$urlPages.'</a></code><br />';
 
-        $urlTranslationJs = $this->wiki->Href('', 'api/translations');
-        $output .= '<h2>'._t('TRANSLATION_FOR_JS').'</h2>'."\n".
-            'GET <code><a href="'.$urlTranslationJs.'">'.$urlTranslationJs.'</a></code><br />';
-
         // TODO use annotations to document the API endpoints
         $extensions = $this->wiki->extensions;
         foreach ($this->wiki->extensions as $extension => $pluginBase) {
@@ -168,31 +164,5 @@ class ApiController extends YesWikiController
         $errors = ob_get_contents();
         ob_end_clean();
         return new ApiResponse((empty($errors) ? [] : ['errors' => $errors])+$page);
-    }
-
-    /**
-     * @Route("/api/translations", methods={"GET"}, options={"acl":{"public"}})
-     */
-    public function getTranslationJs()
-    {
-        try {
-            ob_start(); // to catch error messages
-            $errormsg = ob_get_contents();
-            header_remove('Cache-Control');
-            header_remove('pragma');
-            ob_end_clean();
-            return new ApiResponse(
-                ['translation'=>$GLOBALS['translations_js'] ?? []],
-                Response::HTTP_OK,
-                [
-                    'Cache-Control' => [
-                        'public',
-                        'max-age=10800' // 3h
-                    ]
-                ]
-            );
-        } catch (\Exception $e) {
-            return new ApiResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
     }
 }

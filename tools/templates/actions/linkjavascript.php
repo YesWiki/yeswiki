@@ -90,7 +90,10 @@ echo "<script>
         ...{
     locale: '{$GLOBALS['prefered_language']}',
     baseUrl: '{$this->config['base_url']}',
-    lang: ((typeof wiki !== 'undefined') ? (wiki.lang ?? {}) : {}),
+    lang: {
+        ...((typeof wiki !== 'undefined') ? (wiki.lang ?? null) : null),
+        ...".json_encode($GLOBALS['translations_js'] ?? null)."
+    },
     pageTag: '{$this->getPageTag()}',
     isDebugEnabled: ".($this->GetConfigValue('debug') =='yes' ? 'true' : 'false')."
 }};
