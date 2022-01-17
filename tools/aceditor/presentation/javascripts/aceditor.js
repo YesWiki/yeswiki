@@ -171,27 +171,6 @@ var SYNTAX = {
               '</ul>' +
             '</div>');
 
-      // Actions Builder, actionsBuilderData has been defined in action-builder.tpl.html
-      if (typeof actionsBuilderData !== 'undefined' && actionsBuilderData && (textarea.prop('id') == 'body' 
-          || (typeof actionsBuilderData.actionBuilderTextareaName !== 'undefined'
-          && textarea.prop('id') == actionsBuilderData.actionBuilderTextareaName))) {
-        if (textarea.prop('id') != 'body'){
-          textarea.addClass("action-builder-anchor");
-        }
-        var result = '<div class="btn-group">' +
-               '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang['ACEDITOR_ACTIONS']+'  <span class="caret"></span></a>' +
-               '<ul class="dropdown-menu component-action-list">';
-        for(var actionGroupName in actionsBuilderData.action_groups) {     
-            var groupConfig = actionsBuilderData.action_groups[actionGroupName]
-            if (groupConfig.onlyEdit) continue 
-            result += '<li><a class="open-actions-builder-btn" data-group-name="' + actionGroupName + '">'+
-                        groupConfig.label+
-                      '</a></li>'
-        }
-        result += '<li class="open-actions-builder-btn open-existing-action"><a>'+ this.lang['ACEDITOR_ACTIONS_EDIT_CURRENT'] +'</a></li>'
-        toolbar.append(result + '</ul></div>')
-      }
-
       // Bold Italic Underline Stroke
       toolbar.append( '<div class="btn-group">' +
               '<a class="btn btn-default aceditor-btn aceditor-btn-bold" data-lft="'+this.syntax['BOLD_LFT']+'" data-rgt="'+this.syntax['BOLD_RGT']+'" title="'+this.lang['ACEDITOR_BOLD_TEXT']+'">' +
@@ -226,6 +205,27 @@ var SYNTAX = {
                   '<i class="fa fa-link"></i> ' +
                   "</a>" +
             '</div>');
+
+      // Actions Builder, actionsBuilderData has been defined in action-builder.tpl.html
+      if (typeof actionsBuilderData !== 'undefined' && actionsBuilderData && (textarea.prop('id') == 'body' 
+          || (typeof actionsBuilderData.actionBuilderTextareaName !== 'undefined'
+          && textarea.prop('id') == actionsBuilderData.actionBuilderTextareaName))) {
+        if (textarea.prop('id') != 'body'){
+          textarea.addClass("action-builder-anchor");
+        }
+        var result = '<div class="btn-group">' +
+               '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang['ACEDITOR_ACTIONS']+'  <span class="caret"></span></a>' +
+               '<ul class="dropdown-menu component-action-list">';
+        for(var actionGroupName in actionsBuilderData.action_groups) {     
+            var groupConfig = actionsBuilderData.action_groups[actionGroupName]
+            if (groupConfig.onlyEdit) continue 
+            result += '<li><a class="open-actions-builder-btn" data-group-name="' + actionGroupName + '">'+
+                        groupConfig.label+
+                      '</a></li>'
+        }
+        result += '<li class="open-actions-builder-btn open-existing-action"><a>'+ this.lang['ACEDITOR_ACTIONS_EDIT_CURRENT'] +'</a></li>'
+        toolbar.append(result + '</ul></div>')
+      }
 
       // help
       toolbar.append( '<div class="btn-group pull-right">' +
