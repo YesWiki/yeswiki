@@ -576,12 +576,12 @@ actions:
       template:
         value: liste_liens
 
-  bazarlisteliensdates:
-    label: _t(AB_bazarlisteliensdates_label)
-    description: _t(AB_bazarlisteliensdates_description)
-    properties:
-      template:
-        value: liste_liens_date
+#  bazarlisteliensdates:
+#    label: _t(AB_bazarlisteliensdates_label)
+#    description: _t(AB_bazarlisteliensdates_description)
+#    properties:
+#      template:
+#        value: liste_liens_date
 
   # bazarmail:
   #   label: _t(AB_bazarmail_label)
