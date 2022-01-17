@@ -10,20 +10,32 @@ actions:
         type: text
       type: 
         label: type
-        type: text
-      class: 
-        label: class
-        type: text
+        type: list
+        options:
+          "": "toutes les pages et les fiches du wiki"
+	        wiki: "uniquement les pages du wiki"
+          bazar: "uniquement les fiches des formulaires"
+   #  class: 
+   #    label: class
+   #    type: text
       nb: 
         label: nb
         type: number
         min: 0
       tri: 
         label: tri
-        type: text
+        type: list
+        options:
+          "": 
+	        date: "tri par date décroissante"
+          alpha: "tri par ordre alphabétique"
       template:
         label: template
-        type: text
+        type: list
+        options:
+	        pages_list.tpl.html: "liste"
+	        pages_listgroup.tpl.html: "liste avec encadré"
+          pages_listnum.tpl.html: "liste avec puces"
       shownumberinfo:
         label: shownumberinfo
         type: checkbox
