@@ -68,12 +68,37 @@
   position: absolute;
   right: 1rem;
   top: 200px;
+  transform: translateY(-50%);
+  font-weight: 600;
+}
+.bazar-card .floating-area .text {
   background-color: var(--primary-color);
   color: var(--neutral-light-color);
   padding: 3px 1rem;
   border-radius: 3px;
-  transform: translateY(-50%);
   font-size: .9rem;
+}
+.bazar-card .floating-area .date {
+  background-color: var(--primary-color);
+  color: var(--neutral-light-color);
+  font-size: 18px;
+  min-height: 48px;
+  font-weight: 700;
+  min-width: 48px;
+  padding: 10px 0;
+  text-align: center;
+  text-transform: uppercase;
+  border-radius: 50%;
+}
+.bazar-card .floating-area .date span {
+  display: block;
+  line-height: 14px;
+}
+.bazar-card .floating-area .date .month {
+  font-size: 11px;
+}
+.bazar-card .floating-area .date .full {
+  display: none;
 }
 
 /* STYLE CARD */

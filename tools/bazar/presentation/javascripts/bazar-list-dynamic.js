@@ -176,6 +176,9 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
           })
         }
       },
+      fieldInfo(field) {
+        return this.formFields[field] || {}
+      },
       openEntryModal(entry) {
         this.$refs.modal.displayEntry(entry)
       },
@@ -214,18 +217,8 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         if (data.entries.length > 1000) this.params.cluster = true // Activate cluster for map mode
         
         setTimeout(() => {
-          this.entries = data.entries.map(array => {
-            let entry = { color: null, icon: null }
-            // Transform array data into object using the fieldMapping
-            for(let key in data.fieldMapping) {
-              entry[data.fieldMapping[key]] = array[key]
-            }
-            Object.entries(this.params.displayfields).forEach( ([field, mappedField]) => {
-              if (mappedField) entry[field] = entry[mappedField]
-            })
-            
-            return entry
-          })
+          // Transform forms info into a list of field mapping
+          // { bf_titre: { type: 'text', ...}, bf_date: { type: 'listedatedeb', ... } }
           Object.values(data.forms).forEach(formFields => {
             formFields.forEach(field => {
               this.formFields[field.id] = field
@@ -234,6 +227,24 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
               })
             })
           })
+
+          this.entries = data.entries.map(array => {
+            let entry = { color: null, icon: null }
+            // Transform array data into object using the fieldMapping
+            for(let key in data.fieldMapping) {
+              let field = data.fieldMapping[key]
+              let value = array[key]
+              // convert date string to Date Object
+              if (this.fieldInfo(field).type == 'listedatedeb') value = new Date(value)
+              entry[field] = value
+            }
+            Object.entries(this.params.displayfields).forEach( ([field, mappedField]) => {
+              if (mappedField) entry[field] = entry[mappedField]
+            })
+            
+            return entry
+          })
+         
           this.calculateBaseEntries()
           this.ready = true
         }, 0)  
