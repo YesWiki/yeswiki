@@ -380,6 +380,7 @@ return [
     // API
     'USERS' => 'Users',
     'GROUPS' => 'Groups',
+    'TRANSLATION_FOR_JS' => 'Translations for javascript',
     
     // YesWiki\User class
     'USER_DELETE_QUERY_FAILED' => 'User deletion query failed',

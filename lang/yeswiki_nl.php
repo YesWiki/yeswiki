@@ -387,6 +387,7 @@ return [
     // API
     // 'USERS' => 'Utilisateurs',
     // 'GROUPS' => 'Groupes',
+    // 'TRANSLATION_FOR_JS' => 'Traductions pour le javascript',
 
     // YesWiki\User class
     // 'USER_CONFIRM_DELETE' => 'Êtes-vous sûr·e de vouloir supprimer l’utilisateur·ice ?',
