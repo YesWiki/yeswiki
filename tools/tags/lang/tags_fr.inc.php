@@ -115,5 +115,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'AB_tags_group_label' => 'Gestion des tags',
 'AB_tags_admintag_label' => 'Gestion des tags',
 'AB_tags_listpagestag_label' => 'Liste des pages par tag',
+'AB_tags_listpagestag_type_all' => 'toutes les pages et les fiches du wiki',
+'AB_tags_listpagestag_type_wiki' => 'uniquement les pages du wiki',
+'AB_tags_listpagestag_type_bazar'=> 'uniquement les fiches des formulaires',
 
 ));
