@@ -152,178 +152,332 @@ $(document).ready(function () {
   //============gestion des dates================================
 
   //validation formulaire de saisie
-  var inputsreq = $('#formulaire input[required=required]:visible, '
-    + '#formulaire select[required=required]:visible, '
-    + '#formulaire textarea[required=required]:visible')
-    .not('#formulaire input.bazar-date[required=required]');
+  let requirementHelper = {
+    requiredInputs: [],
+    error: -1, // error contain the index of the first error (-1 = no error)
+    errorMessage: '', 
+    filterVisibleInputs: function(){
+      this.requiredInputs = this.requiredInputs.filter(function(){
+        let inputVisible = $(this).filter(':visible');
+        if ((
+            $(this).prop('tagName') == "TEXTAREA" && ($(this).hasClass('wiki-textarea') || $(this).hasClass('summernote'))
+            ) || $(this).siblings('.bootstrap-tagsinput').length > 0){
+          inputVisible = $(this).parent().filter(':visible');
+        }
+        if (typeof inputVisible !== "undefined" && inputVisible.length > 0){
+          return true;
+        }
+        let notVisibleParents = $(this).parentsUntil(':visible');
+        if (typeof notVisibleParents === "undefined" || notVisibleParents.length == 0){
+          return false;
+        }
+        // check if visible in a tab
+        if ($(this).parentsUntil(':visible')
+          .filter(function(){
+            return $(this).css('display') == 'none' 
+                && $(this).attr('role') != "tabpanel";
+          }).length == 0){
+          return true
+        }
+        return false;
+      });
+
+    },
+    getInputType: function(input){
+      if ($(input).hasClass('bazar-date')){
+        return "date";
+      }
+      if ($(input).hasClass('chk_required')){
+        return "checkbox";
+      }
+      if ($(input).hasClass('geocode-input')){
+        return "geocode";
+      }
+      if ($(input).hasClass('radio_required')){
+        return "radio";
+      }
+      if ($(input).siblings('.bootstrap-tagsinput').length > 0){
+        return "tags";
+      }
+      if ($(input).attr('type') == "email"){
+        return "email";
+      }
+      if ($(input).attr('type') == "url"){
+        return "url";
+      }
+      if ($(input).attr('type') == "range"){
+        return "range";
+      }
+      if ($(input).prop('tagName') == "SELECT"){
+        return "select";
+      }
+      if ($(input).prop('tagName') == "TEXTAREA"){
+        if ($(input).hasClass('wiki-textarea')){
+          return "wikitextarea";
+        }
+        if ($(input).hasClass('summernote')){
+          return "summernote";
+        }
+        return "textarea";
+      }
+      return "default";
+    },
+    updateError: function(index){
+      if (this.error == -1){
+        this.error = index;
+      }
+    },
+    updateErrorMessage: function(message){
+      if (this.error == -1){
+        this.errorMessage = message;
+      }
+    },
+    dateChecking: function (input){
+      if ($(input).val() === ''){
+        this.updateErrorMessage(_t('BAZ_FORM_REQUIRED_FIELD'));
+        return false;
+      }
+      return true;
+    },
+    rangeChecking: function (input){
+      if ($(input).val() === $(input).data('default')){
+        this.updateErrorMessage(_t('BAZ_FORM_REQUIRED_FIELD'));
+        return false;
+      }
+      return true;
+    },
+    emailChecking: function (input){
+      let reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; // regex that works for 99,99%, following RFC 5322
+      if ($(input).prop('required') && !this.defaultChecking(input)){
+        return false;
+      } else if ( $(input).val() != "" &&  reg.test($(input).val()) === false){
+        this.updateErrorMessage(_t('BAZ_FORM_INVALID_EMAIL'));
+        return false;
+      }
+      return true;
+    },
+    urlChecking: function (input){
+      var reg = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+      if ($(input).prop('required') && !this.defaultChecking(input)){
+        return false;
+      } else if ( $(input).val() != "" && reg.test($(input).val()) === false){
+        this.updateErrorMessage(_t('BAZ_FORM_INVALID_URL'));
+        return false;
+      }
+      return true;
+    },
+    selectChecking: function (input){
+      return this.defaultChecking(input);
+    },
+    textareaChecking: function (input){
+      return this.defaultChecking(input);
+    },
+    wikitextareaChecking: function (input){
+      let value = $(input).data('aceditor').getValue();
+      if (value.length === 0 || value === ''){
+        this.updateErrorMessage(_t('BAZ_FORM_REQUIRED_FIELD'));
+        $(input).parent().addClass('invalid');
+        return false;
+      } else {
+        $(input).parent().removeClass('invalid');
+        return true;
+      }
+    },
+    summernoteChecking: function (input){
+      if ($(input).summernote('isEmpty')){
+        $(input).closest('.form-control.textarea.summernote').addClass('invalid');
+        this.updateErrorMessage(_t('BAZ_FORM_REQUIRED_FIELD'));
+        return false;
+      } else {
+        $(input).closest('.form-control.textarea.summernote').removeClass('invalid');
+        return true;
+      }
+    },
+    checkboxChecking: function (input){
+      var nbelems = $(input).find('input:checked');
+      let parentToInvalid = $(input).closest('.form-group.input-checkbox');
+      if (nbelems.length === 0) {
+        this.updateErrorMessage(_t('BAZ_FORM_EMPTY_CHECKBOX'));
+        $(parentToInvalid).addClass('invalid');
+        return false;
+      }
+      $(parentToInvalid).removeClass('invalid');
+      return true;
+    },
+    radioChecking: function (input){
+      var nbelems = $(input).find('input:checked');
+      let parentToInvalid = $(input).closest('.form-group.input-radio');
+      if (nbelems.length === 0) {
+        this.updateErrorMessage(_t('BAZ_FORM_EMPTY_RADIO'));
+        $(parentToInvalid).addClass('invalid');
+        return false;
+      }
+      $(parentToInvalid).removeClass('invalid');
+      return true;
+    },
+    tagsChecking: function (input){
+      let bootstrapBaseDiv = $(input).siblings('.bootstrap-tagsinput');
+      var nbelems = $(bootstrapBaseDiv).find('.tag');
+      if (nbelems.length === 0) {
+        this.updateErrorMessage(_t('BAZ_FORM_EMPTY_AUTOCOMPLETE'));
+        $(bootstrapBaseDiv).addClass('invalid');
+        return false;
+      }
+      $(bootstrapBaseDiv).removeClass('invalid');
+      return true;
+    },
+    geocodeChecking: function (input){
+      if (!$(input).find('#bf_latitude').val()) {
+        this.updateErrorMessage(_t('BAZ_FORM_EMPTY_GEOLOC'));
+        return false;
+      }
+      return true;
+    },
+    defaultChecking: function (input){
+      if ($(input).val().length === 0 || $(input).val() === ''){
+        this.updateErrorMessage(_t('BAZ_FORM_REQUIRED_FIELD'));
+        return false;
+      }
+      return true;
+    },
+    checkInput: function (input, saveError, index){
+      let inputType = this.getInputType(input);
+      if (typeof this[inputType+"Checking"] !== "function"){
+        $(input).addClass('invalid');
+        this.updateErrorMessage('Not possible to check field : unknown function requirementHelper.'+inputType+"Checking() !");
+        if (saveError){
+          this.updateError(index);
+        }
+      } else if (!(this[inputType+"Checking"](input))){
+        $(input).addClass('invalid');
+        if (saveError){
+          this.updateError(index);
+        }
+      } else {
+        $(input).removeClass('invalid');
+      }
+    },
+    checkInputs: function(){
+      for (let index = 0; index < this.requiredInputs.length; index++) {
+        let input= this.requiredInputs[index];
+        this.checkInput(input,true,index);
+      }
+    },
+    displayErrorMessage: function(){
+      alert(this.errorMessage);
+    },
+    scrollToFirstinputInError: function (){
+      if (this.error>-1){
+        // TODO afficher l'onglet en question
+        //on remonte en haut du formulaire
+        let input = this.requiredInputs[this.error];
+        if ($(input).filter(':visible').length == 0){
+          // panel ?
+          let panel = $(input).parentsUntil(':visible').last();
+          if ($(panel).attr('role') == "tabpanel"){
+            $(`a[href="#${$(panel).attr('id')}"][role=tab]`).first().click();
+          }
+          if ($(input).filter(':visible').length == 0){
+            input = $(input).closest(':visible');
+          }
+        }
+        $('html, body').animate({
+          scrollTop: $(input).offset().top - 80,
+        }, 500);
+      }
+    },
+    initRequiredInputs: function (form){
+      this.requiredInputs = $(form).find(
+        'input[required],'+
+        'select[required],'+
+        'textarea[required],'+
+        ':not(.prev-holder) input[type=email],'+
+        ':not(.prev-holder) input[type=url],'+
+        '.chk_required,'+
+        '.radio_required,'+
+        '.geocode-input.required'
+      );
+      this.error = -1;
+    },
+    run: function(form){
+      this.initRequiredInputs(form);
+      this.filterVisibleInputs();
+      this.checkInputs();
+      if (this.error > -1){
+        this.displayErrorMessage();
+        this.scrollToFirstinputInError();
+        return false;
+      }
+      return true;
+    },
+    runWhenUpdated: function(target,reqChecking){
+      reqChecking.checkInput(target,false,0);
+    },
+    inputInitlistener: function (input){
+      let reqChecking = this;
+      $(input).keypress(function(event){
+        reqChecking.runWhenUpdated(event.target,reqChecking);
+      });
+      $(input).change(function(event){
+        reqChecking.runWhenUpdated(event.target,reqChecking);
+      });
+    },
+    summernoteInitlistener: function (input){
+      let reqChecking = this;
+      $(input).on('summernote.change',function(event){
+        reqChecking.runWhenUpdated(event.target,reqChecking);
+      });
+    },
+    wikitextareaInitlistener: function (input){
+      let reqChecking = this;
+      let aceditor = $(input).data('aceditor');
+      aceditor.on('change',function(event){
+        reqChecking.runWhenUpdated(input,reqChecking);
+      });
+    },
+    checkboxInitlistener: function (input){
+      let reqChecking = this;
+      let checkboxes = $(input).find('input[type=checkbox]');
+      $(checkboxes).change(function(event){
+        reqChecking.runWhenUpdated($(event.target).closest('.chk_required'),reqChecking);
+      });
+    },
+    radioInitlistener: function (input){
+      let reqChecking = this;
+      let radioButtons = $(input).find('input[type=radio]');
+      $(radioButtons).change(function(event){
+        reqChecking.runWhenUpdated($(event.target).closest('.radio_required'),reqChecking);
+      });
+    },
+    initListeners: function(){
+      this.initRequiredInputs($('#formulaire'));
+      for (let index = 0; index < this.requiredInputs.length; index++) {
+        let input= this.requiredInputs[index];
+        let inputType = this.getInputType(input);
+        if (["default","select","textarea","tags"].indexOf(inputType) > -1){
+          this.inputInitlistener(input);
+        } else if (["summernote","wikitextarea","checkbox","radio"].indexOf(inputType) > -1) {
+          this[inputType+"Initlistener"](input);
+        }
+      }
+    }
+  };
+
+  requirementHelper.initListeners();
 
   $('#formulaire').submit(function(e) {
     $(this).addClass('submitted');
-    var atleastonefieldnotvalid = false;
-    var atleastonemailfieldnotvalid = false;
-    var atleastoneurlfieldnotvalid = false;
-    var atleastonecheckboxfieldnotvalid = false;
-    var atleastoneradiofieldnotvalid = false;
-    var atleastonetagfieldnotvalid = false;
 
-    // il y a des champs requis, on teste la validite champs par champs
-    if (inputsreq.length > 0) {
-      inputsreq.each(function () {
-        if (!($(this).val().length === 0 || $(this).val() === '' || ($(this).attr('type') == 'range' && $(this).val() === $(this).data('default')))) {
-          $(this).removeClass('invalid');
-        } else {
-          atleastonefieldnotvalid = true;
-          $(this).addClass('invalid');
-        }
-      });
-    }
-
-    // les dates
-    $('#formulaire input.bazar-date[required=required]:visible').each(function () {
-      if ($(this).val() === '') {
-        atleastonefieldnotvalid = true;
-        $(this).addClass('invalid');
-      } else {
-        $(this).removeClass('invalid');
+    try {
+      if (requirementHelper.run(this)){
+        // formulaire validé, on soumet le formulaire
+        return true;
       }
-    });
-
-    // les emails
-    $('#formulaire input[type=email]:visible').each(function () {
-      var reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; // regex that works for 99,99%, following RFC 5322
-      var address = $(this).val();
-      if (reg.test(address) === false
-        && !(address === '' && $(this).attr('required') !== 'required')) {
-        atleastonemailfieldnotvalid = true;
-        $(this).addClass('invalid');
-      } else {
-        $(this).removeClass('invalid');
-      }
-    });
-
-    // les urls
-    $('#formulaire input[type=url]:visible').each(function () {
-      var reg = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-      var url = $(this).val();
-      if (reg.test(url) === false && !(url === '' && $(this).attr('required') !== 'required')) {
-        atleastoneurlfieldnotvalid = true;
-        $(this).addClass('invalid');
-      } else {
-        $(this).removeClass('invalid');
-      }
-    });
-
-    // les checkbox chk_required
-    $('#formulaire .chk_required:visible').each(function () {
-      var nbchkbox = $(this).find(':checked');
-      if (nbchkbox.length === 0) {
-        atleastonecheckboxfieldnotvalid = true;
-        $(this).addClass('invalid');
-      } else {
-        $(this).removeClass('invalid');
-      }
-    });
-
-    // radio inputs .radio_required
-    $('#formulaire .radio_required:visible').each(function () {
-      var nbradio = $(this).find(':checked');
-      if (nbradio.length === 0) {
-        atleastoneradiofieldnotvalid = true;
-        $(this).addClass('invalid');
-      } else {
-        $(this).removeClass('invalid');
-      }
-    });
-
-    // les checkbox des tags
-    $('#formulaire [required] .bootstrap-tagsinput:visible').each(function () {
-      var nbtag = $(this).find('.tag');
-      if (nbtag.length === 0) {
-        atleastonetagfieldnotvalid = true;
-        $(this).addClass('invalid');
-      } else {
-        $(this).removeClass('invalid');
-      }
-    });
-
-    // affichage des erreurs de validation
-    if (atleastonefieldnotvalid === true) {
-      alert(_t('BAZ_FORM_REQUIRED_FIELD'));
-
-      //on remonte en haut du formulaire
-      $('html, body').animate({
-        scrollTop: $('#formulaire .invalid').offset().top - 80,
-      }, 500);
-    } else if (atleastonemailfieldnotvalid === true) {
-      alert(_t('BAZ_FORM_INVALID_EMAIL'));
-
-      //on remonte en haut du formulaire
-      $('html, body').animate({
-        scrollTop: $('#formulaire .invalid').offset().top - 80,
-      }, 500);
-
-    } else if (atleastoneurlfieldnotvalid === true) {
-      alert(_t('BAZ_FORM_INVALID_URL'));
-
-      //on remonte en haut du formulaire
-      $('html, body').animate({
-        scrollTop: $('#formulaire .invalid').offset().top - 80,
-      }, 500);
-    } else if (atleastoneradiofieldnotvalid=== true) {
-      alert(_t('BAZ_FORM_EMPTY_RADIO'));
-      
-      //on remonte en haut du formulaire
-      $('html, body').animate({
-        scrollTop: $('#formulaire .radio_required.invalid').offset().top - 80,
-      }, 500);
-    } else if (atleastonecheckboxfieldnotvalid === true) {
-      alert(_t('BAZ_FORM_EMPTY_CHECKBOX'));
-
-      //on remonte en haut du formulaire
-      $('html, body').animate({
-        scrollTop: $('#formulaire .invalid').offset().top - 80,
-      }, 500);
-    } else if (atleastonetagfieldnotvalid === true) {
-      alert(_t('BAZ_FORM_EMPTY_AUTOCOMPLETE'));
-
-      //on remonte en haut du formulaire
-      $('html, body').animate({
-        scrollTop: $('#formulaire .bootstrap-tagsinput.invalid').offset().top - 80,
-      }, 500);
-    } else if ($('#formulaire .geocode-input.required').length > 0 && !$('#formulaire .geocode-input #bf_latitude').val()) {
-      alert(_t('BAZ_FORM_EMPTY_GEOLOC'));
-
-      //on remonte en haut du formulaire
-      $('html, body').animate({
-        scrollTop: $('#formulaire .geocode-input').offset().top - 80,
-      }, 500);
-    }
-    // formulaire validé, on soumet le formulaire
-    else {
-      return true;
+    } catch (error) {
+      console.warn(error.message);
     }
     e.preventDefault();
     return false;
-  });
-
-  //on change le look des champs obligatoires en cas de saisie dedans
-  inputsreq.keypress(function (event) {
-    if (!($(this).val().length === 0 || $(this).val() === '' || $(this).val() === '0')) {
-      $(this).removeClass('invalid');
-    } else {
-      atleastonefieldnotvalid = true;
-      $(this).addClass('invalid');
-    }
-  });
-
-  //on change le look des champs obligatoires en cas de changement de valeur
-  inputsreq.change(function (event) {
-    if (!($(this).val().length === 0 || $(this).val() === '' || $(this).val() === '0')) {
-      $(this).removeClass('invalid');
-    } else {
-      atleastonefieldnotvalid = true;
-      $(this).addClass('invalid');
-    }
   });
 
   // bidouille PEAR form
