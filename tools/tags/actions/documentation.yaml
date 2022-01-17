@@ -12,8 +12,8 @@ actions:
         label: type
         type: list
         options:
-          "": "toutes les pages et les fiches du wiki"
-	        wiki: "uniquement les pages du wiki"
+          '': 'toutes les pages et les fiches du wiki'
+          wiki: "uniquement les pages du wiki"
           bazar: "uniquement les fiches des formulaires"
    #  class: 
    #    label: class
@@ -26,19 +26,20 @@ actions:
         label: tri
         type: list
         options:
-          "": 
-	        date: "tri par date décroissante"
+          date : "tri par date décroissante"
           alpha: "tri par ordre alphabétique"
       template:
         label: template
         type: list
         options:
-	        pages_list.tpl.html: "liste"
-	        pages_listgroup.tpl.html: "liste avec encadré"
+          pages_list.tpl.html: "liste"
+          pages_listgroup.tpl.html: "liste avec encadré"
           pages_listnum.tpl.html: "liste avec puces"
       shownumberinfo:
         label: shownumberinfo
         type: checkbox
+        checkedvalue: '1'
+        uncheckedvalue: ''
   nuagetag:
     label: nuagetag
     properties:
