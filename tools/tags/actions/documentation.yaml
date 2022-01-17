@@ -12,9 +12,9 @@ actions:
         label: type
         type: list
         options:
-          '': 'toutes les pages et les fiches du wiki'
-          wiki: "uniquement les pages du wiki"
-          bazar: "uniquement les fiches des formulaires"
+          '': _t(AB_tags_listpagestag_type_all)
+          wiki: _t(AB_tags_listpagestag_type_wiki)
+          bazar: _t(AB_tags_listpagestag_type_bazar)
    #  class: 
    #    label: class
    #    type: text
