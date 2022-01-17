@@ -104,6 +104,21 @@ actions:
         advanced: true
         type: text
         hint: Entrez le nom.jpg d'une image déjà uploadé dans cette page, ou le nom d'une nouvelle image.jpg pour faire apparaitre son boutton d'upload
+      pattern:
+        label: Texture de fond de la section
+        type: list
+        options:
+          '': Uni
+          cross: Croix alignés
+          cross2: Croix décalées
+          point: Points alignés
+          point2: Points décalées
+          zigzag: Zigzag
+          diagonal: Diagonales
+      patternreverse:
+        label: Inverser les couleurs de la texture
+        type: checkbox
+        showif: pattern
       height:
         label: Hauteur de la section (en pixels)
         type: text
@@ -129,6 +144,13 @@ actions:
             options:
               white: Claire
               black: Foncée
+          fullwidth:
+            label: Prendre toute la largeur disponible
+            type: list
+            default: ""
+            options:
+              full-width: Oui
+              '': Non
           textalign:
             label: Centrage du texte
             type: list
