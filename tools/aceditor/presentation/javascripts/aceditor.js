@@ -10,6 +10,8 @@ var SYNTAX = {
     'TITLE4_RGT'      : '===',
     'TITLE5_LFT'      : '==',
     'TITLE5_RGT'      : '==',
+    'CENTER_LFT'      : '&quot;&quot;<center>&quot;&quot;',
+    'CENTER_RGT'      : '&quot;&quot;</center>&quot;&quot;',
     'LEAD_LFT'        : '&quot;&quot;<div class=&quot;lead&quot;>&quot;&quot;',
     'LEAD_RGT'        : '&quot;&quot;</div>&quot;&quot;',
     'HIGHLIGHT_LFT'   : '&quot;&quot;<div class=&quot;well&quot;>&quot;&quot;',
@@ -164,6 +166,7 @@ var SYNTAX = {
                 '<li><a title="'+this.lang['ACEDITOR_TITLE3']+'" class="aceditor-btn aceditor-btn-title3" data-lft="'+this.syntax['TITLE3_LFT']+'" data-rgt="'+this.syntax['TITLE3_RGT']+'"><h3>'+this.lang['ACEDITOR_TITLE3']+'</h3></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_TITLE4']+'" class="aceditor-btn aceditor-btn-title4" data-lft="'+this.syntax['TITLE4_LFT']+'" data-rgt="'+this.syntax['TITLE4_RGT']+'"><h4>'+this.lang['ACEDITOR_TITLE4']+'</h4></a></li>' +
                 '<li class="divider"></li>' +
+                '<li><a title="'+this.lang['ACEDITOR_CENTER']+'" class="aceditor-btn aceditor-btn-center" data-lft="'+this.syntax['CENTER_LFT']+'" data-rgt="'+this.syntax['CENTER_RGT']+'"><center>'+this.lang['ACEDITOR_CENTER']+'</center></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_BIGGER_TEXT']+'" class="aceditor-btn aceditor-btn-lead" data-lft="'+this.syntax['LEAD_LFT']+'" data-rgt="'+this.syntax['LEAD_RGT']+'"><div class="lead">'+this.lang['ACEDITOR_BIGGER_TEXT']+'</div></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_HIGHLIGHT_TEXT']+'" class="aceditor-btn aceditor-btn-well" data-lft="'+this.syntax['HIGHLIGHT_LFT']+'" data-rgt="'+this.syntax['HIGHLIGHT_RGT']+'"><div class="well">'+this.lang['ACEDITOR_HIGHLIGHT_TEXT']+'</div></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_SOURCE_CODE']+'" class="aceditor-btn aceditor-btn-code" data-lft="'+this.syntax['CODE_LFT']+'" data-rgt="'+this.syntax['CODE_RGT']+'"><div class="code"><pre>'+this.lang['ACEDITOR_SOURCE_CODE']+'</pre></div></a></li>' +
