@@ -118,8 +118,8 @@ return [
     // "AB_bazarcarousel_description" => "Affiche les images des fiches sous forme de carousel",
     // "AB_bazarcarousel_hint" => "Un champ de type bf_image est nécessaire.",
     // "AB_bazarcarousel_sanstitre_label" => "Cacher le titre de la fiche sur l'image",
-    // "AB_bazarcarousel_avecpage_label" => "Afficher une page au-dessus du slider",
-    // "AB_bazarcarousel_avecpage_hint" => "La page affichée sera PageDessusSlider",
+    // "AB_bazarcarousel_avecpage_label" => "Afficher une page en surimpression sur le carousel,
+    // "AB_bazarcarousel_avecpage_hint" => "La page affichée sera nommée PageDessusSlider",
     // "AB_bazarcarousel_showlinkinsteadofurl_label" => "Montrer le lien bf_lien au lieu de celui vers la fiche",
     // "AB_bazarcarousel_bf_titre_label" => "Champ pour le texte affiché",
     // // bazargaleriephoto
@@ -162,7 +162,7 @@ return [
     // BazarAction
     "AB_bazar_action_label" => "Exibir um formulário de criação de arquivo",
     "AB_bazar_action_description" => "Usado para exibir o formulário para criar um arquivo.",
-    "AB_bazar_action_redirecturl_label" => "Endereço de redirecionamento após a entrada",
+    //"AB_bazar_action_redirecturl_label" => "Nom de la page de ce wiki à afficher après création d'une fiche",
     // attach
     // "AB_attach_commons_title" => "Pour les images",
     // "AB_attach_link_label" => "Lien quand on cliquera sur l'image",
@@ -305,8 +305,8 @@ return [
     // "AB_buttons_action_button_description" => "Créer un bouton cliquable",
     // "AB_buttons_action_button_text_label" => "Texte du bouton",
     // "AB_buttons_action_button_text_default" => "Mon bouton",
-    // "AB_buttons_action_button_link_label" => "Lien",
-    // "AB_buttons_action_button_link_hint" => "Vous pouvez aussi entrer le nom d'une page de votre wiki",
+    // "AB_buttons_action_button_link_label" => "Lien web ou nom d'une page de ce wiki",
+    // "AB_buttons_action_button_link_hint" => "Si lien web, n'oubliez pas le \"https://\"",
     // "AB_buttons_action_button_title_label" => "Texte affiché au survol",
     // "AB_buttons_action_button_icon_label" => "Icone",
     // "AB_buttons_action_button_class_label" => "Classe",
