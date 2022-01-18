@@ -618,7 +618,7 @@ body {
   box-shadow: 0 0 9px 1px rgba(0, 0, 0, 0.42);
 }
 
-.yeswiki-iframe-body .container {
+.yeswiki-iframe-body > .container {
   margin: 0 !important;
   width: 100% !important;
 }

@@ -1,5 +1,5 @@
 label: _t(AB_template_group_label)
-previewHeight: 200px
+previewHeight: 300px
 position: 3
 actions:
   label:
@@ -93,7 +93,10 @@ actions:
   section:
     label: Section
     isWrapper: true
-    wrappedContentExample: Texte de votre section à remplacer par la suite
+    wrappedContentExample: >-
+      =====Titre====
+      Texte de votre section 
+      à remplacer par la suite
     properties:
       bgcolor:
         label: Couleur de fond de la section
