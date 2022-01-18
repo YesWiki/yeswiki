@@ -4,6 +4,7 @@ import InputText from './components/InputText.js'
 import InputPageList from './components/InputPageList.js'
 import InputCheckbox from './components/InputCheckbox.js'
 import InputList from './components/InputList.js'
+import InputDivider from './components/InputDivider.js'
 import InputIcon from './components/InputIcon.js'
 import InputColor from './components/InputColor.js'
 import InputFormField from './components/InputFormField.js'
@@ -38,7 +39,8 @@ if (!('noModule' in HTMLScriptElement.prototype)) {
 
 window.myapp = new Vue({
   el: "#actions-builder-app",
-  components: { InputPageList, InputText, InputCheckbox, InputList, InputIcon, InputColor, InputFormField, InputHidden,
+  components: { InputPageList, InputText, InputCheckbox, InputList, InputIcon, InputColor, 
+                InputFormField, InputHidden, InputDivider,
                 InputFacette, InputIconMapping, InputColorMapping, InputGeo, InputClass, InputCorrespondance,
                 WikiCodeInput, PreviewAction },
   mixins: [ InputHelper ],

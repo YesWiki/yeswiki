@@ -91,6 +91,7 @@ Les type sont
   - list
   - form-field
   - page-list
+  - divider
 
 #### checkbox
 Paramètres optionels : `checkedvalue` `uncheckedvalue`. Par défault la valeur d'un paramètre checkbox est "true" ou "false", si par exemple vous voulez que lorsqu'on coche la case, la valeur soit "1", alors renseignez checkvalue: 1 et uncheckedvalue: 0
@@ -157,3 +158,11 @@ class:
         btn-xs: Petit
 ```
 Ainsi, plutôt que `{{button color="btn-default" size="btn-xs"}}` le résultat sera `{{button class="btn-default btn-xs"}}`
+
+### type divider
+Il permet d'incruster un titre au milieu des autres champs, pour créer des sous sections par exemple
+```
+mydivider:
+  label: Un titre
+  type: divider
+```
