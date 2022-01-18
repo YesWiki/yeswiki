@@ -223,6 +223,9 @@
   padding: 1rem;
   max-height: 50%;
 }
+.style-square .bazar-card .text-area:after {
+  background-image: none;
+}
 .style-square .bazar-card .floating-area {
   top: -.5rem;
 }
