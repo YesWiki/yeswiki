@@ -63,6 +63,7 @@ return [
     "AB_bazarcarto_height_label" => "Hauteur de la carte",
     "AB_bazarcarto_entrydisplay_label" => "Lors du clic, afficher la fiche",
     "AB_bazarcarto_entrydisplay_option_sidebar" => "Dans une barre latérale",
+    "AB_bazarcarto_entrydisplay_option_newtab" => "Dans un nouvel onglet",
     "AB_bazarcarto_entrydisplay_option_modal" => "Dans une popup",
     "AB_bazarcarto_displayfields_markhover_label" => "Champ à afficher au survol du marker",
     "AB_bazarcarto_smallmarker_label" => "Petit marqueurs",

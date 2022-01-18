@@ -179,6 +179,12 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       fieldInfo(field) {
         return this.formFields[field] || {}
       },
+      openEntry(entry) {
+        if (this.params.entrydisplay == 'newtab')
+          document.location = wiki.url(entry.id_fiche)
+        else
+          this.$root.openEntryModal(entry)
+      },
       openEntryModal(entry) {
         this.$refs.modal.displayEntry(entry)
       },

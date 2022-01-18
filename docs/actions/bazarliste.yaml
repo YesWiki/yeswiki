@@ -452,6 +452,14 @@ actions:
           flat: _t(AB_bazarcard_style_flat)
           card: _t(AB_bazarcard_style_card)
           horizontal: _t(AB_bazarcard_style_horizontal)
+      entrydisplay:
+        label: _t(AB_bazarcarto_entrydisplay_label)
+        type: list
+        default: modal
+        advanced: true
+        options:
+          newtab: _t(AB_bazarcarto_entrydisplay_option_newtab)
+          modal: _t(AB_bazarcarto_entrydisplay_option_modal)
 
           
   

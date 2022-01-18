@@ -13,7 +13,7 @@
     </div>
 
     <div v-for="entry in entriesToDisplay" :key="entry.id_fiche" class="bazar-entry bazar-card" 
-         @click="getEntryRender(entry)">
+         @click="openEntry(entry)">
       
       {# VISUAL AREA #}
       <div class="area visual-area" v-if="entry.visual" 
