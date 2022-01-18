@@ -55,7 +55,7 @@
 .entry-container .btn-close i {
   padding: 1rem 2rem;
   cursor: pointer;
-  background-color: var(--neutral-light-color);
+  background-color: var(--main-bg-color);
 }
 .entry-container .btn-close i:hover {
   font-size: 1.2em;
