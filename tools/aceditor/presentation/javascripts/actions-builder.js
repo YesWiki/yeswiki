@@ -18,6 +18,7 @@ import PreviewAction from './components/PreviewAction.js'
 import AceEditorWrapper from './components/aceditor-wrapper.js'
 import FlyingActionBar from './components/flying-action-bar.js'
 import InputHint from './components/InputHint.js'
+import AddonIcon from './components/AddonIcon.js'
 
 const ACTIONS_BACKWARD_COMPATIBILITY = {
   calendrier: 'bazarcalendar',
@@ -27,6 +28,7 @@ console.log("actionsBuilderData", actionsBuilderData) // data variable has been 
 
 // Declare this one globally because we use it everywhere
 Vue.component('input-hint', InputHint)
+Vue.component('addon-icon', AddonIcon)
 Vue.component('v-select', VueSelect.VueSelect);
 
 // Handle oldbrowser not supporting ES6

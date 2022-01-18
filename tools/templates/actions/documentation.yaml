@@ -101,10 +101,12 @@ actions:
       bgcolor:
         label: Couleur de fond
         type: color
+        icon: fill-drip
         doclink: https://yeswiki.net/?section
       height:
         label: Hauteur (en pixels)
         type: text
+        icon: arrows-alt-v
       pattern:
         label: Texture
         type: list
@@ -127,6 +129,7 @@ actions:
         label: Image de fond
         advanced: true
         type: text
+        icon: image
         hint: Entrez le nom.jpg d'une image déjà uploadé dans cette page, ou le nom d'une nouvelle image.jpg pour faire apparaitre son boutton d'upload
       class:
         label: Classe
@@ -141,6 +144,7 @@ actions:
           fullwidth:
             label: Prendre toute la largeur disponible
             type: list
+            icon: arrows-alt-h
             default: ""
             options:
               full-width: Oui
@@ -148,6 +152,7 @@ actions:
           shape:
             label: Forme
             type: list
+            icon: shapes
             default: ""
             options:
               '': Rectangle
@@ -161,6 +166,7 @@ actions:
           textalign:
             label: Centrage du texte
             type: list
+            icon: align-center
             default : text-left
             options :
               text-left: Calé à gauche
