@@ -447,10 +447,9 @@ actions:
       style:
         type: list
         label: _t(AB_bazarcard_style_label)
-        default: card
+        default: vertical
         options:          
-          flat: _t(AB_bazarcard_style_flat)
-          card: _t(AB_bazarcard_style_card)
+          vertical: _t(AB_bazarcard_style_vertical)
           horizontal: _t(AB_bazarcard_style_horizontal)
       entrydisplay:
         label: _t(AB_bazarcarto_entrydisplay_label)

@@ -106,30 +106,31 @@
   display: none;
 }
 
-/* STYLE CARD */
-.style-card .bazar-card {
+/* STYLE VERTICAL */
+.style-vertical .bazar-card {
   padding: 1.5rem;
   border-radius: 6px;
   justify-content: space-between;
   border: 1px solid #ebebeb;
   background-color: whitesmoke;
 }
-.style-card .bazar-card .visual-area {
+.style-vertical .bazar-card .visual-area {
   margin: -1.5rem;
   margin-bottom: 1.5rem;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
   border-bottom: 1px solid #ebebeb;
 } 
-.style-card .bazar-card .footer-area {
+.style-vertical .bazar-card .footer-area {
   margin: -1.5rem;
   margin-top: 1rem;
-  padding: 1.5rem;
-  border-top: 1px solid #dfdfdf;
+  padding: 1rem 1.5rem;
   border-radius: 0 0 6px 6px;
   font-size: .9rem;
+  background-color: var(--neutral-soft-color);
+  color: white;
 }
-.style-card .bazar-card .text-area:after {
+.style-vertical .bazar-card .text-area:after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -138,18 +139,8 @@
   height: 4rem;
   background-image: linear-gradient(#ffffff00, whitesmoke);
 }
-.style-card .bazar-card .subtitle-area {
+.style-vertical .bazar-card .subtitle-area {
   flex-grow: 1;
-}
-
-/* STYLE FLAT */
-.style-flat.bazar-cards-container {
-  gap: 4rem;
-}
-.style-flat .bazar-card .footer-area {
-  font-size: .8rem;
-  font-weight: bold;
-  color: var(--neutral-soft-color);
 }
 
 /* STYLE HORIZONTAL */

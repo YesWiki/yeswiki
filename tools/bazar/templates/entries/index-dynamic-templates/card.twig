@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block display_entries %}
-  <div class="bazar-cards-container" v-if="ready" :class="[{ready: ready}, `style-${params.style || 'card'}`]" 
+  <div class="bazar-cards-container" v-if="ready" :class="[{ready: ready}, `style-${params.style || 'vertical'}`]" 
        :style="{'grid-template-columns': `repeat(${params.nbcol}, 1fr)`}">
     
     <div v-if="entriesToDisplay.length == 0" class="alert alert-info">
