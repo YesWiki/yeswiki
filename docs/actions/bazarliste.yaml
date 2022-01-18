@@ -459,50 +459,6 @@ actions:
         advanced: true
         checkedvalue: 1
         uncheckedvalue:      
-  
-  bazartrombi:
-    label: _t(AB_bazartrombi_label)
-    description: _t(AB_bazartrombi_description)
-    hint: _t(AB_bazartrombi_hint)
-    properties:
-      template:
-        value: trombinoscope
-
-  bazarmaterialcard:
-    label: _t(AB_bazarmaterialcard_label)
-    description: _t(AB_bazarmaterialcard_description)
-    hint: _t(AB_bazarmaterialcard_hint)
-    properties:
-      template:
-        value: material-card
-      nbcol:
-        label: _t(AB_bazarmaterialcard_nbcol_label)
-        type: list
-        default: 4
-        options:
-          - 1
-          - 2
-          - 3
-          - 4
-          - 6
-      type:
-        label: _t(AB_bazarmaterialcard_type_label)
-        type: checkbox
-        default:
-        checkedvalue: simple
-        uncheckedvalue:
-      modal:
-        label: _t(AB_bazarmaterialcard_modal_label)
-        type: checkbox
-        default:
-        checkedvalue: 1
-        uncheckedvalue:
-      correspondance:
-        type: correspondance
-        subproperties:
-          bf_baseline:
-            type: form-field
-            label: _t(AB_bazarmaterialcard_bf_baseline_label)
 
   bazarannuaire:
     label: _t(AB_bazarannuaire_label)
@@ -510,35 +466,6 @@ actions:
     properties:
       template:
         value: annuaire_alphabetique
-
-  bazardamier:
-    label: _t(AB_bazardamier_label)
-    description: _t(AB_bazardamier_description)
-    hint: _t(AB_bazardamier_hint)
-    properties:
-      template:
-        value: damier
-      nbcol:
-        label: _t(AB_bazardamier_nbcol_label)
-        type: list
-        default: 4
-        options:
-          - 1
-          - 2
-          - 3
-          - 4
-          - 6
-      couleur:
-        label: _t(AB_bazardamier_couleur_label)
-        type: color
-      correspondance:
-        type: correspondance
-        hint: _t(AB_bazardamier_correpondance_hint)
-        doclink: https://yeswiki.net/?DamierTplHtml2
-        subproperties:
-          bf_description:
-            type: form-field
-            label: _t(AB_bazardamier_bf_description_label)
 
   bazartimeline:
     label: _t(AB_bazartimeline_label)
