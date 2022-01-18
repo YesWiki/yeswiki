@@ -20,9 +20,9 @@
             <span class="title">{{"{{ entry.title || entry.bf_titre }}"}}</span>
           </h4>
           {# FLOATING AREA #}
-          <div class="floating-area" v-html="entry.floating"></div>
+          <entry-field :entry="entry" prop="floating" class="floating-area"></entry-field>
           {# SUBTITLE AREA #}
-          <div class='subtitle-area' v-if="entry.subtitle" v-html="entry.subtitle"></div>
+          <entry-field :entry="entry" prop="subtitle" class="subtitle-area"></entry-field>
         </div>
       </template>
       <template #body>

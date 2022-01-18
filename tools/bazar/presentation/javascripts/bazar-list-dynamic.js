@@ -1,4 +1,5 @@
 import Panel from './components/Panel.js'
+import EntryField from './components/EntryField.js'
 import SpinnerLoader from './components/SpinnerLoader.js'
 import ModalEntry from './components/ModalEntry.js'
 import BazarSearch from './components/BazarSearch.js'
@@ -6,7 +7,7 @@ import BazarSearch from './components/BazarSearch.js'
 document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>{
   new Vue({
     el: domElement,
-    components: { Panel, ModalEntry, SpinnerLoader },
+    components: { Panel, ModalEntry, SpinnerLoader, EntryField },
     mixins: [ BazarSearch ],
     data: {
       mounted: false, // when vue get initialized

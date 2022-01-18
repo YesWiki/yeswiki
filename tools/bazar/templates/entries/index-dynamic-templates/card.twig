@@ -34,13 +34,13 @@
         </h4>  
 
         {# SUBTITLE AREA #}
-        <div class='area subtitle-area' v-if="entry.subtitle" v-html="entry.subtitle"></div>   
+        <entry-field :entry="entry" prop="subtitle" class="area subtitle-area"></entry-field>  
         
         {# TEXT AREA #}
-        <div class='area text-area' v-if="entry.text" v-html="entry.text"></div>
+        <entry-field :entry="entry" prop="text" class="area text-area"></entry-field>
 
         {# FOOTER AREA #}
-        <div class="area footer-area" v-if="entry.footer" v-html="entry.footer"></div>
+        <entry-field :entry="entry" prop="footer" class="area footer-area"></entry-field>
         
         {# FLOATING AREA #}
         <div class="area floating-area" v-if="entry.floating">
