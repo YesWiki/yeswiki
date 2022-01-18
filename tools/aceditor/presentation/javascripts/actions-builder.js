@@ -4,6 +4,7 @@ import InputText from './components/InputText.js'
 import InputPageList from './components/InputPageList.js'
 import InputCheckbox from './components/InputCheckbox.js'
 import InputList from './components/InputList.js'
+import InputDivider from './components/InputDivider.js'
 import InputIcon from './components/InputIcon.js'
 import InputColor from './components/InputColor.js'
 import InputFormField from './components/InputFormField.js'
@@ -18,6 +19,7 @@ import PreviewAction from './components/PreviewAction.js'
 import AceEditorWrapper from './components/aceditor-wrapper.js'
 import FlyingActionBar from './components/flying-action-bar.js'
 import InputHint from './components/InputHint.js'
+import AddonIcon from './components/AddonIcon.js'
 
 const ACTIONS_BACKWARD_COMPATIBILITY = {
   calendrier: 'bazarcalendar',
@@ -27,6 +29,7 @@ console.log("actionsBuilderData", actionsBuilderData) // data variable has been 
 
 // Declare this one globally because we use it everywhere
 Vue.component('input-hint', InputHint)
+Vue.component('addon-icon', AddonIcon)
 Vue.component('v-select', VueSelect.VueSelect);
 
 // Handle oldbrowser not supporting ES6
@@ -36,7 +39,8 @@ if (!('noModule' in HTMLScriptElement.prototype)) {
 
 window.myapp = new Vue({
   el: "#actions-builder-app",
-  components: { InputPageList, InputText, InputCheckbox, InputList, InputIcon, InputColor, InputFormField, InputHidden,
+  components: { InputPageList, InputText, InputCheckbox, InputList, InputIcon, InputColor, 
+                InputFormField, InputHidden, InputDivider,
                 InputFacette, InputIconMapping, InputColorMapping, InputGeo, InputClass, InputCorrespondance,
                 WikiCodeInput, PreviewAction },
   mixins: [ InputHelper ],

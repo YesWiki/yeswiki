@@ -25,6 +25,27 @@ input[type=range] {
 #actions-builder-app [type="checkbox"] + span:not(.lever) {
   padding-left: 1.5rem;
 }
+#actions-builder-app .input-group {
+  flex-wrap: wrap;
+  align-items: center;
+}
+#actions-builder-app .input-group .form-control {
+  width: auto;
+  flex-grow: 1;
+}
+#actions-builder-app .input-group .hint-container {
+  width: 100%;
+}
+#actions-builder-app .input-group .hint {
+  margin-bottom: 0;
+  text-align: right;
+}
+.addon-icon {
+  width: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 .input-group-addon.btn {
   overflow: visible;
 }
@@ -91,19 +112,25 @@ input[type=range] {
   line-height: 1rem;
   text-align: justify;
 }
-.config-panel-content .hint + .hint {
-  margin-top: -1rem;
-}
 #actions-builder-modal h3 {
   text-align: center;
   margin-bottom: 30px;
 }
 .advanced-params {
-  text-align: center;
+  justify-content: center;
   margin-top: 2rem;
 }
 #actions-builder-modal .text-muted{
   font-size: .8em;
+}
+#actions-builder-modal .input-group .sp-original-input-container {
+  flex-grow: 1;
+}
+#actions-builder-modal .input-group-addon + label {
+  margin-left: 1rem !important;
+}
+#actions-builder-modal .input-group-addon + label.control-label {
+  margin-left: 2.5rem !important;
 }
 
 

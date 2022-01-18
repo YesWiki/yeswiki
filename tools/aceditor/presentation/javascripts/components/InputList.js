@@ -28,7 +28,8 @@ export default {
     }    
   },
   template: `
-    <div class="form-group" :class="config.type" :title="config.hint" >
+    <div class="form-group input-group" :class="config.type" :title="config.hint" >
+      <addon-icon :config="config" v-if="config.icon"></addon-icon>
       <label v-if="config.label" class="control-label">{{ config.label }}</label>
       <select :value="value" v-on:input="$emit('input', $event.target.value)"
               :required="config.required" class="form-control">

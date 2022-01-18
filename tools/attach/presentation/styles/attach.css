@@ -238,6 +238,9 @@ box-shadow: 2px 2px 15px 0px #444;
 .white, .white h1, .white h2, .white h3, .white h4, .white h5, .white h6, .white a, .white a:hover {
   color:#fff !important;
 }
+.black, .black h1, .black h2, .black h3, .black h4, .black h5, .black h6, .black a, .black a:hover {
+  color:var(--neutral-color) !important;
+}
 
 
 /* Custom video player */
