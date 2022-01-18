@@ -325,8 +325,8 @@ var typeUserAttrs = {
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: "" },
     thumb_height: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH'), value: "140" },
     thumb_width: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH'), value: "140" },
-    resize_height: { label: _t('BAZ_FORM_EDIT_IMAGE_HEIGHT_RESIZE'), value: "600" },
-    resize_width: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH_RESIZE'), value: "600" },
+    resize_height: { label: _t('BAZ_FORM_EDIT_IMAGE_HEIGHT_RESIZE'), value: "400" },
+    resize_width: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH_RESIZE'), value: "400" },
     align: {
       label: _t('BAZ_FORM_EDIT_IMAGE_ALIGN_LABEL'),
       value: "right",
