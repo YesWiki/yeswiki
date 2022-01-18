@@ -194,7 +194,7 @@
 
       // When everything is ready, starts gogocarto
       interval = setInterval(function() {
-        if (goGoCarto != undefined && confReady) {
+        if (typeof goGoCarto != "undefined" && confReady) {
           carto = goGoCarto('#gogo-map<?php echo $param['nbbazarliste']; ?>', gogoConf)
           clearInterval(interval);
         }
