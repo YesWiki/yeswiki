@@ -705,14 +705,3 @@ section.shape-blob5 {
 section.full-width:not(.with-bg-pattern) {
   padding: 2rem 0;
 }
-
-.input-group .sp-original-input-container {
-  flex-grow: 1;
-}
-.input-group-addon + label {
-  margin-left: 1rem !important;
-}
-.input-group-addon + label.control-label {
-  margin-left: 2rem !important;
-}
-

@@ -123,6 +123,15 @@ input[type=range] {
 #actions-builder-modal .text-muted{
   font-size: .8em;
 }
+#actions-builder-modal .input-group .sp-original-input-container {
+  flex-grow: 1;
+}
+#actions-builder-modal .input-group-addon + label {
+  margin-left: 1rem !important;
+}
+#actions-builder-modal .input-group-addon + label.control-label {
+  margin-left: 2.5rem !important;
+}
 
 
 /* ADVANCED PROPERTIES */
