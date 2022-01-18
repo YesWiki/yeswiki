@@ -133,9 +133,13 @@ if ($GLOBALS['check_' . $pagetag]['section']) {
     $role = $this->GetParameter('visibility');
     $role = empty($role) ? $role : str_replace("\\n", "\n", $role);
     $visible = !$role || ($GLOBALS['wiki']->CheckACL($role, null, false));
-    
+    $class = ($backgroundimg ? 'background-image' : '') 
+     . ($this->GetParameter('pattern') ? ' with-bg-pattern' : '') 
+     . ($visible ? '' : ' remove-this-div-on-page-load ') 
+     . (!empty($class) ? ' ' . $class : '');
+
     echo '<!-- start of section -->
-    <section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. ($backgroundimg ? 'background-image' : '') . ($this->GetParameter('pattern') ? ' with-bg-pattern' : '') . ($visible ? '' : ' remove-this-div-on-page-load ') . (!empty($class) ? ' ' . $class : '') . '" style="'
+    <section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. $class . '" style="'
         .(!empty($bgcolor) ? 'background-color:' . $bgcolor .'; ' : '')
         .(!empty($height) ? 'height:' . $height . 'px; ' : '')
         .(!empty($pattern) ? $pattern : '')

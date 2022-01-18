@@ -151,6 +151,19 @@ actions:
             options:
               full-width: Oui
               '': Non
+          shape:
+            label: Forme
+            type: list
+            default: ""
+            options:
+              '': Rectangle
+              shape-rounded: Arrondi
+              shape-circle: Cercle
+              shape-blob1: Blob 1
+              shape-blob2: Blob 2
+              shape-blob3: Blob 3
+              shape-blob4: Blob 4
+              shape-blob5: Blob 5
           textalign:
             label: Centrage du texte
             type: list
