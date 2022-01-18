@@ -239,14 +239,13 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
             let entry = { color: null, icon: null }
             // Transform array data into object using the fieldMapping
             for(let key in data.fieldMapping) {
-              let field = data.fieldMapping[key]
-              let value = array[key]
-              // convert date string to Date Object
-              if (this.fieldInfo(field).type == 'listedatedeb') value = new Date(value)
-              entry[field] = value
+              entry[data.fieldMapping[key]] = array[key]
             }
             Object.entries(this.params.displayfields).forEach( ([field, mappedField]) => {
-              if (mappedField) entry[field] = entry[mappedField]
+              if (mappedField) {
+                entry[field] = entry[mappedField]
+                if (entry[`${mappedField}_is_time`]) entry[`${field}_is_time`] = entry[`${mappedField}_is_time`]
+              }
             })
             
             return entry

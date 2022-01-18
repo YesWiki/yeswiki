@@ -43,14 +43,7 @@
         <entry-field :entry="entry" prop="footer" class="area footer-area"></entry-field>
         
         {# FLOATING AREA #}
-        <div class="area floating-area" v-if="entry.floating">
-          <div v-if="fieldInfo('floating').type == 'listedatedeb'" class="date">
-            <span class="full">{{"{{ entry.floating.toLocaleDateString([], { weekday: 'short', month: 'long', day: 'numeric' }) }}"}}</span>
-            <span class="day">{{"{{ entry.floating.toLocaleDateString([], { day: 'numeric' }) }}"}}</span>
-            <span class="month">{{"{{ entry.floating.toLocaleDateString([], { month: 'short' }).replace('.', '') }}"}}</span>
-          </div>
-          <span v-else v-html="entry.floating" class="text"></span>
-        </div>
+        <entry-field :entry="entry" prop="floating" class="area floating-area"></entry-field>
       </div>
     </div>
 

@@ -62,6 +62,14 @@
 }
 
 /* ------------- */
+/*  ENTRY FIELD  */
+/* ------------- */
+/* Helpers div to used only when needed */
+.field-date .day, .field-date .month {
+  display: none;
+}
+
+/* ------------- */
 /* LIST TEMPLATE */
 /* ------------- */
 .bazar-list.dynamic .panel-heading-container {

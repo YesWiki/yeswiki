@@ -76,14 +76,14 @@
   transform: translateY(-50%);
   font-weight: 600;
 }
-.bazar-card .floating-area .text {
+.bazar-card .floating-area .field-default {
   background-color: var(--primary-color);
   color: var(--neutral-light-color);
   padding: 3px 1rem;
   border-radius: 3px;
   font-size: .9rem;
 }
-.bazar-card .floating-area .date {
+.bazar-card .floating-area .field-date {
   background-color: var(--primary-color);
   color: var(--neutral-light-color);
   font-size: 18px;
@@ -95,14 +95,17 @@
   text-transform: uppercase;
   border-radius: 50%;
 }
-.bazar-card .floating-area .date span {
+.bazar-card .floating-area .field-date span {
   display: block;
   line-height: 14px;
 }
-.bazar-card .floating-area .date .month {
+.bazar-card .floating-area .field-date .month {
   font-size: 11px;
 }
-.bazar-card .floating-area .date .full {
+.bazar-card .floating-area .field-date .full {
+  display: none;
+}
+.bazar-card .floating-area .field-date .default {
   display: none;
 }
 
