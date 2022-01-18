@@ -142,6 +142,8 @@
   font-size: .9rem;
   background-color: var(--neutral-soft-color);
   color: white;
+  font-weight: 600;
+  text-align: center;
 }
 .style-vertical .bazar-card .text-area:after {
   content: '';
@@ -222,6 +224,9 @@
   background-color: #f5f5f5b3;
   padding: 1rem;
   max-height: 50%;
+}
+.style-square .bazar-card .text-area {
+  color: var(--neutral-color);
 }
 .style-square .bazar-card .text-area:after {
   background-image: none;
