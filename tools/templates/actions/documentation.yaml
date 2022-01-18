@@ -99,16 +99,14 @@ actions:
       à remplacer par la suite
     properties:
       bgcolor:
-        label: Couleur de fond de la section
+        label: Couleur de fond
         type: color
         doclink: https://yeswiki.net/?section
-      file:
-        label: Image de fond de la section
-        advanced: true
+      height:
+        label: Hauteur (en pixels)
         type: text
-        hint: Entrez le nom.jpg d'une image déjà uploadé dans cette page, ou le nom d'une nouvelle image.jpg pour faire apparaitre son boutton d'upload
       pattern:
-        label: Texture de fond de la section
+        label: Texture
         type: list
         options:
           '': Uni
@@ -125,28 +123,18 @@ actions:
         label: Inverser les couleurs de la texture
         type: checkbox
         showif: pattern
-      height:
-        label: Hauteur de la section (en pixels)
+      file:
+        label: Image de fond
+        advanced: true
         type: text
+        hint: Entrez le nom.jpg d'une image déjà uploadé dans cette page, ou le nom d'une nouvelle image.jpg pour faire apparaitre son boutton d'upload
       class:
         label: Classe
         type: class
         subproperties:
-          height:
-            advanced: true
-            label: Hauteur préfigurée de la section
-            type: list
-            options:
-              one-quarter-height: un quart de la hauteur
-              one-third-height: un tiers
-              half-height: une moitié
-              two-third-height: deux tiers
-              three-quarter-height: trois quarts
-              full-height: 100% hauteur
           textcolor:
             label: Tonalité du texte
             type: list
-            default: black
             options:
               white: Claire
               black: Foncée
@@ -183,11 +171,23 @@ actions:
             advanced: true
             label: Comportement de l'image
             type: list
+            showif: file
             options:
               cover: Couvre section avec l'image
               fixed: L'image est bloquée lors du scroll
               center: L'image reste centré
               parallax: L'image remonte au scroll genre parallax
+          height:
+            advanced: true
+            label: Hauteur préfigurée de la section
+            type: list
+            options:
+              one-quarter-height: un quart de la hauteur
+              one-third-height: un tiers
+              half-height: une moitié
+              two-third-height: deux tiers
+              three-quarter-height: trois quarts
+              full-height: 100% hauteur
           animation:
             label: Animation
             type: list

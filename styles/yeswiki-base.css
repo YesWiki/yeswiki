@@ -250,10 +250,6 @@ body > :not(#YesWikiModal) .current-revision-text {
   top: 0;
 }
 
-.aceditor-btn-well:hover .well {
-  color: #333;
-}
-
 /* retour à la ligne pour les éléments flottants */
 .clear,
 .hr_clear {
