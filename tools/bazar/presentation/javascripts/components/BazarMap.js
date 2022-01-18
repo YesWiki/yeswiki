@@ -62,7 +62,6 @@ Vue.component('BazarMap', {
               style: function (feature, latlng) {
                 if (feature.geometry.type == "Point") return
                 let props = feature.properties || {};
-                console.log(options.split(';'))
                 // convert options string "color: blue; fill: red" to object
                 options.split(';').forEach(o => {
                   if (!0) return
@@ -70,9 +69,9 @@ Vue.component('BazarMap', {
                   props[key.trim()] = value.trim().replaceAll("'", '')
                 })
                 return { ...{
-                  fillColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
+                  fillColor: wiki.cssVar('--primary-color'),
                   fillOpacity: 0.1,
-                  color: getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
+                  color: wiki.cssVar('--primary-color'),
                   opacity: 1,
                   weight: 3,
                 }, ...props };

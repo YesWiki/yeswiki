@@ -31,6 +31,9 @@ var wiki = {
             }
             return result;
         },
+        cssVar(varName) {
+            return getComputedStyle(document.documentElement).getPropertyValue(varName)
+        }
     }
 };
   

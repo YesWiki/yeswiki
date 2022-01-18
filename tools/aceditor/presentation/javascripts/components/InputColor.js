@@ -3,14 +3,14 @@ export default {
   mounted() {
     const palette = [
       [
-        getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
-        getComputedStyle(document.documentElement).getPropertyValue('--secondary-color-1'),
-        getComputedStyle(document.documentElement).getPropertyValue('--secondary-color-2'),
-        getComputedStyle(document.documentElement).getPropertyValue('--neutral-light-color'),
-        getComputedStyle(document.documentElement).getPropertyValue('--neutral-soft-color'),
-        getComputedStyle(document.documentElement).getPropertyValue('--neutral-color'),
-        getComputedStyle(document.documentElement).getPropertyValue('--success-color'),
-        getComputedStyle(document.documentElement).getPropertyValue('--danger-color')
+        wiki.cssVar('--primary-color'),
+        wiki.cssVar('--secondary-color-1'),
+        wiki.cssVar('--secondary-color-2'),
+        wiki.cssVar('--neutral-light-color'),
+        wiki.cssVar('--neutral-soft-color'),
+        wiki.cssVar('--neutral-color'),
+        wiki.cssVar('--success-color'),
+        wiki.cssVar('--danger-color')
       ],
       ["#f4cccc","#fce5cd","#fff2cc","#d9ead3","#d0e0e3","#cfe2f3","#d9d2e9","#ead1dc"],
       ["#ea9999","#f9cb9c","#ffe599","#b6d7a8","#a2c4c9","#9fc5e8","#b4a7d6","#d5a6bd"],
