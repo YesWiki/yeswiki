@@ -18,6 +18,9 @@ export default {
         case 'checkboxfiche':
         case 'radio':
         case 'radiofiche':
+        case 'listefiches':
+        case 'listefichesliees':
+        case 'tags':
           const values = value.split(',').map(v => this.field.options[v])
           return values.length <= 1 ? values[0] : values
         default:
