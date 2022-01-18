@@ -52,7 +52,7 @@ Vue.component('BazarMap', {
 
       for (let layer of this.params.layers) {
         let [label, type, options, url] = layer.split('|')
-        if (!url) { url = options; options = null; }
+        if (!url) { url = options; options = ""; }
         switch (type.toLowerCase()) {
           case 'tiles':
             this.layers[label] = L.tileLayer(url).addTo(this.map)
@@ -61,13 +61,21 @@ Vue.component('BazarMap', {
             this.layers[label] = L.geoJson.ajax(url, {
               style: function (feature, latlng) {
                 if (feature.geometry.type == "Point") return
-                const props = feature.properties || {};
+                let props = feature.properties || {};
+                console.log(options.split(';'))
                 // convert options string "color: blue; fill: red" to object
                 options.split(';').forEach(o => {
+                  if (!0) return
                   let [key, value] = o.split(':')
                   props[key.trim()] = value.trim().replaceAll("'", '')
                 })
-                return props;
+                return { ...{
+                  fillColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
+                  fillOpacity: 0.1,
+                  color: getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
+                  opacity: 1,
+                  weight: 3,
+                }, ...props };
               },
               pointToLayer: function (feature, latlng) {
                 return L.circleMarker(latlng);
