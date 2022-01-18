@@ -1,0 +1,223 @@
+<?php
+/*
+  $fiches contient l ensemble des fiches
+  au cas où besoin les résultats sont paginés, $pager_links
+  $this référence l objet courant
+  or dans les templates, on doit passer par $GLOBALS['wiki'] pour accéder à cet objet.
+  Méthodes définies dans includes/yeswiki.php
+*/
+/* Paramètres
+ id
+	l'id du template dont on veut afficher les fiches
+	par défaut = 1
+ titrecolonnes
+	les titres à afficher en tête des colonnes
+	séparés par des virgules
+	par défaut, le libellé de la colonne dans le formulaire
+ champcolonnes
+	les id des champs à afficher dans le tableau
+	séparés par des virgules
+	par défaut, tous
+ checkboxEnColonnes
+	permet de décomposer, lorsqu'il y a une ou des checkbox, les réponses en autant de colonnes.
+	par défaut, non (les valeurs de checkbox sont listés dans une seule case du tableau).
+*/
+
+/* Functions — Start */
+if (!function_exists('recupere_infos_cols')) {
+  // rend les informations sur les colonnes dont les id sont donnés en paramètre
+  // le tableau retourné a la structure id => (nature, label)
+	function recupere_infos_cols ($id_typeannonce) {
+		$natures = [];
+		$titres = [];
+		$ids = [];
+		$id2natures = [];
+		$id2valeursliste = [];
+		// on recupere les infos liées à ce type de fiche
+    $fichebazar['form'] =  baz_valeurs_formulaire($id_typeannonce);
+		// on parcourt le tableau des valeurs pour récupérer les ids
+		for ($i = 0; $i < count($fichebazar['form']['prepared']); ++$i) {
+			$nature = $fichebazar['form']['prepared'][$i]->getType();
+			$natures[] = $nature;
+      $titres[] = $fichebazar['form']['prepared'][$i]->getLabel();
+      $id = $fichebazar['form']['prepared'][$i]->getPropertyName();
+			$ids[] = $id;  // dans le tableau prepared les identifiants sont dejà formates ex imagebf_image
+			$id2natures[$id] = $nature;
+      $valeursliste =  method_exists($fichebazar['form']['prepared'][$i], 'getOptions') ? $fichebazar['form']['prepared'][$i]->getOptions() : null;
+			$id2valeursliste[$id] = $valeursliste;
+		}
+		return array ($natures, $ids, $titres, $id2natures, $id2valeursliste);
+	}
+}
+/* Functions — End */
+
+if (count($fiches)>0) {
+// dans l'immédiat on limite à l'affichage d'un seul formulaire à la fois
+	$formtype = $GLOBALS['wiki']->GetParameter('id');
+	if ($formtype == '' or strpos($formtype, ',')) {
+		$formtype = "1";
+	}
+	$infosColonne = recupere_infos_cols($formtype);
+/*	Parameters — Start */
+	/* $titrecolonnes */
+	$titrecolonnes = $GLOBALS['wiki']->GetParameter('titrecolonnes');
+	if (empty($titrecolonnes)) {
+		// si pas de titre, on affiche tous les champs
+		$tabtitrecolonnes = $infosColonne[2];
+	} else {
+		// explode fonction php qui transforme la chaine de caractère en tableau
+		$tabtitrecolonnes = explode(',', $titrecolonnes);
+		// on supprime les espaces avec la fonction trim
+		$tabtitrecolonnes = array_map('trim', $tabtitrecolonnes);
+	}
+	$nbcols = count($tabtitrecolonnes);
+
+	/* $champcolonnes */
+	$champcolonnes = $GLOBALS['wiki']->GetParameter('champcolonnes');
+	if (empty($champcolonnes)) {
+		// si pas de champs, on affiche tous les champs
+		$tabchampscolonnes = $infosColonne[1];
+	} else {
+		// explode fonction php qui transforme la chaine de caractère en tableau
+		$tabchampscolonnes = explode(',', $champcolonnes);
+		// on supprime les espaces avec la fonction trim
+		$tabchampscolonnes = array_map('trim', $tabchampscolonnes);
+	}
+
+	/* $checkboxEnColonnes */
+	$checkboxEnCols = $GLOBALS['wiki']->GetParameter('checkboxEnColonnes');
+	$checkboxEnColonnes['0µ0'] = 0; // False (0µ0 parce que c'est une chaîne improbable dans un titre de champ)
+	if ((!empty($checkboxEnCols)) and $checkboxEnCols != "non") {
+		$i = -1;
+		foreach ($infosColonne[0] as $nature){
+			$i ++;
+			if ($nature == 'checkbox') {
+				$checkboxEnColonnes['0µ0'] ++; // True if not 0
+				$checkboxEnColonnes[$infosColonne[1][$i]] = $infosColonne[4][$infosColonne[1][$i]]["label"]; // [n° champ]=>[tableau des valeurs de la liste]
+			}
+		}
+	} // End if !empty($checkboxEnCols)
+
+	if ($checkboxEnColonnes['0µ0']){
+		// Il faut faire une colonne par valeurs des checkbox et il y a des checkbox
+		// On initialise un tableau avec toutes les valeurs possibles
+		$contenucolonnes = array(array(array()));
+		foreach($checkboxEnColonnes as $champ => $colonnes){ // On parcourt les champs de type checkbox
+			if ($champ != '0µ0'){
+				foreach($colonnes as $id => $libelle){ // On parcourt, pour le champ courant, les valeurs possibles
+					$contenucolonnes[$champ][$id]['titre'] = $libelle;
+					$contenucolonnes[$champ][$id]['nombre'] = 0;
+				}
+			}
+		}
+		foreach($fiches as $fiche){ // On parcourt les fiches pour remplir le tableau
+			foreach($checkboxEnColonnes as $champ => $colonnes){ // On parcourt les champs de type checkbox
+				if ($champ != '0µ0'){
+					$valeurschamp = explode(',',$fiche[$champ]);
+					foreach($valeurschamp as $idliste) { // On parcourt les valeurs des id contenus dans le champ
+						$contenucolonnes[$champ][$idliste]['nombre'] ++;
+						$contenucolonnes[$champ][$idliste][$fiche['bf_titre']] = 1; // True
+					}
+				}
+			}
+		}
+		// On enlève de $contenucolonnes les colonnes vides
+		foreach ($contenucolonnes as $key => $contenucolonne){
+			foreach ($contenucolonne as $id => $valeurliste){
+			if ($valeurliste['nombre'] == 0) {
+					unset($contenucolonnes[$key][$id]);
+				}
+			}
+		}
+		// On met à jour $tabtitrecolonnes en fonction du tableau des valeurs de checkbox
+		$i = -1;
+		$j = 0;
+		foreach ($tabchampscolonnes as $champcolonne) {
+			$i ++;
+			if (array_key_exists ($champcolonne , $contenucolonnes)){ // Le champ fait partie des checkbox
+				$titrecourt = $tabtitrecolonnes[$i+$j];
+				unset($tabtitrecolonnes[$i+$j]);
+				foreach ($contenucolonnes[$champcolonne] as $valeurliste){ // On parcourt les valeurs possibles
+					$inserted = array($titrecourt . ' – ' . $valeurliste['titre']);
+					array_splice( $tabtitrecolonnes, $i+$j, 0, $inserted );
+					$j ++;
+				} // End foreach ($contenucolonnes[$champcolonne] as $valeurliste)
+				$j --;
+			}
+		}
+	}
+/*	Parameters — End */
+?>
+
+	<?php echo $info_res; // affiche le nombre de résultats ?>
+<!--
+l'id doit être unique - dans le cas où il y a plusieurs tableaux sur la même page
+ , on utilise $param['nbbazarliste'] qui s'incrémente à chaque fois qu'on appelle bazarliste
+ pour différencier les différents tableaux table_1 table_2
+ -->
+	<table id="datatable_<?php echo $param['nbbazarliste']; ?>" class="table table-condensed display">
+		<thead>
+			<tr>
+				<?php
+				// on affiche les titres de colonnes
+				foreach ($tabtitrecolonnes as $titre): ?>
+					<th><?php echo $titre; ?></th>
+				<?php endforeach; ?>
+			</tr>
+		</thead>
+		<tbody>
+
+	<?php
+	foreach($fiches as $fiche): ?>
+			<tr>
+				<?php
+				// on affiche les valeurs pour chaque colonne
+				foreach($tabchampscolonnes as $champ) {
+					if (isset($fiche[$champ])) {
+            // TODO : a partir de la nature du champ, formatter le contenu comme il faut (image, lien)
+						$nature = $infosColonne[3][$champ];
+						if ($nature == 'checkbox') {
+							if ($checkboxEnColonnes['0µ0']){
+								foreach ($contenucolonnes[$champ] as $idvaleurliste => $valeurliste) {
+									if (isset($valeurliste[$fiche['bf_titre']]) and $valeurliste[$fiche['bf_titre']]){
+										echo '<td>X</td>'."\n";
+									} else {
+										echo '<td>&nbsp;</td>'."\n";
+									}
+								}
+							} else {
+								$valeursliste = $infosColonne[4][$champ];
+								$valeurschamp = explode(',',$fiche[$champ]);
+								$val = '';
+								$prefixe = '';
+								foreach($valeurschamp as $idliste) {
+									$val .= $prefixe . $valeursliste["label"][$idliste];
+									$prefixe = ', ';
+								}
+								echo '<td>'.$val.'</td>'."\n";
+							}
+						} elseif (($nature == 'liste') or ($nature == 'radio')) {
+								$valeursliste = $infosColonne[4][$champ];
+								$val = $valeursliste["label"][$fiche[$champ]];
+								echo '<td>'.$val.'</td>'."\n";
+						 } else {
+							$val = $fiche[$champ];
+							echo '<td>'.$val.'</td>'."\n";
+					 	}
+					} else {
+						$val = '';
+						echo '<td>'.$val.'</td>'."\n";
+					}
+				}
+				?>
+			</tr>
+		<?php
+	endforeach; ?>
+	</tbody>
+</table>
+    <?php
+  $GLOBALS['wiki']->addCSSFile('custom/templates/bazar/styles/jquery.dataTables.min.css');
+  $GLOBALS['wiki']->addCSSFile('custom/templates/bazar/styles/dataTables.bootstrap.min.css');
+  $GLOBALS['wiki']->addJavascriptFile('custom/templates/bazar/javascripts/jquery.dataTables.min.js');
+  $GLOBALS['wiki']->addJavascriptFile('custom/templates/bazar/javascripts/dataTables.bootstrap.min.js');
+}
