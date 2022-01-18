@@ -109,6 +109,9 @@ actions:
         type: list
         options:
           '': Uni
+          border-solid: Bordure
+          border-dashed: Bordure tirets
+          border-dotted: Bordure pointillés
           cross: Croix alignés
           cross2: Croix décalées
           point: Points alignés

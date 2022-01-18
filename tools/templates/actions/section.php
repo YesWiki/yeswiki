@@ -28,9 +28,20 @@ $bgcolor = $this->GetParameter('bgcolor');
 
 // backgournd pattern
 $patternreverse = $this->GetParameter('patternreverse') == 'true';
-$patternbg = $patternreverse ? 'white' : $bgcolor;
-$patterncolor = $patternreverse ? $bgcolor : 'white';
-switch ($this->GetParameter('pattern')) {
+$patternId = $this->GetParameter('pattern');
+$patternbg = $patternreverse ? 'var(--main-bg-color)' : $bgcolor;
+$patterncolor = $patternreverse ? $bgcolor : 'var(--main-bg-color)';
+$patternborder = false;
+switch ($patternId) {
+    case 'border-solid':
+    case 'border-dashed':
+    case 'border-dotted':
+        $patternborder = true;
+        $pattern = <<<css
+            border-color: $bgcolor;
+            background-color: var(--main-bg-color);
+        css;
+        break;
     case 'point':
         $pattern = <<<css
             background-image: radial-gradient($patterncolor 2.5px, transparent 2.5px);
@@ -71,7 +82,7 @@ switch ($this->GetParameter('pattern')) {
         $pattern = '';
         break;
 }
-if ($pattern) $pattern .= <<<css
+if ($pattern && !$patternborder) $pattern .= <<<css
     background-color: $patternbg !important;
     background-repeat: repeat;
 css;
@@ -134,8 +145,10 @@ if ($GLOBALS['check_' . $pagetag]['section']) {
     $role = empty($role) ? $role : str_replace("\\n", "\n", $role);
     $visible = !$role || ($GLOBALS['wiki']->CheckACL($role, null, false));
     $class = ($backgroundimg ? 'background-image' : '') 
-     . ($this->GetParameter('pattern') ? ' with-bg-pattern' : '') 
+     . ($patternId && !$patternborder ? ' with-bg-pattern' : '') 
+     . ($patternborder ? ' pattern-border' : '') 
      . ($visible ? '' : ' remove-this-div-on-page-load ') 
+     . " pattern-$patternId"
      . (!empty($class) ? ' ' . $class : '');
 
     echo '<!-- start of section -->
