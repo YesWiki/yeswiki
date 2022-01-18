@@ -706,3 +706,7 @@ section.shape-blob5 {
   padding: 4rem;
 }
 
+section.full-width:not(.with-bg-pattern) {
+  padding: 2rem 0;
+}
+
