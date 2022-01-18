@@ -8,16 +8,17 @@ export default {
   computed: {
     value() {
       const value = this.entry[this.prop] || ""
-      
       switch (this.type) {
         case 'listedatedeb':
           if (value.includes('T')) this.isDateTime = true
           return new Date(value)
         case 'liste':
+        case 'listefiche':
         case 'checkbox':
-
+        case 'checkboxfiche':
+        case 'radio':
+        case 'radiofiche':
           const values = value.split(',').map(v => this.field.options[v])
-          console.log(this.type, this.field, values)
           return values.length <= 1 ? values[0] : values
         default:
           return value
