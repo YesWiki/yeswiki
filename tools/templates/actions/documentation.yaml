@@ -93,10 +93,7 @@ actions:
   section:
     label: Section
     isWrapper: true
-    wrappedContentExample: >-
-      =====Titre====
-      Texte de votre section 
-      à remplacer par la suite
+    wrappedContentExample: =====Titre===== Texte de votre section à remplacer par la suite
     properties:
       bgcolor:
         label: Couleur de fond
