@@ -55,10 +55,23 @@
 .entry-container .btn-close i {
   padding: 1rem 2rem;
   cursor: pointer;
-  background-color: var(--neutral-light-color);
+  background-color: var(--main-bg-color);
 }
 .entry-container .btn-close i:hover {
   font-size: 1.2em;
+}
+
+/* ------------- */
+/*  ENTRY FIELD  */
+/* ------------- */
+/* Helpers div to used only when needed */
+.field-date .day, .field-date .month {
+  display: none;
+}
+.field-array > span {
+  font-size: .8rem;
+  font-weight: 600;
+  margin-right: .5rem;
 }
 
 /* ------------- */

@@ -103,7 +103,7 @@ Vue.component('BazarMap', {
             html: `
               <div class="entry-name">
                 <span style="background-color: ${entry.color}">
-                  ${this.$root.field(entry, 'markerhover', 'bf_titre')}
+                  ${entry.markerhover || entry.bf_titre}
                 </span>
               </div>
               <div class="bazar-entry" style="color: ${entry.color}">

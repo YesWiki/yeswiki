@@ -1,0 +1,205 @@
+.bazar-cards-container {
+  display: grid;
+  gap: 2rem;
+  /* grid-template-columns is set in Vue template */
+}
+@media (max-width: 800px) {
+  .bazar-cards-container {
+    grid-template-columns: 1fr !important;
+  }
+}
+.bazar-card {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  cursor: pointer;
+}
+.bazar-card:hover .visual-area {
+  filter: brightness(1.05) contrast(1.05);
+}
+.bazar-card .area {
+  margin: 0
+}
+.area + .area:not(.floating-area) {
+  margin-top: .5rem
+}
+.bazar-card .content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+.bazar-card .title-area {
+  color: var(--neutral-color);
+  margin-top: 0;
+}
+.bazar-card .subtitle-area {
+  font-weight: 600;
+}
+.bazar-card .title-area + .subtitle-area {
+  font-weight: normal;
+  color: var(--primary-color);
+}
+.bazar-card .text-area {
+  position: relative;
+  text-align: justify;
+  color: var(--neutral-soft-color);
+  max-height: 6.5rem;
+  overflow: hidden;
+  flex-grow: 1;
+  line-height: 1.4;
+  font-size: .9rem;
+}
+.bazar-card .text-area:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  background-image: linear-gradient(#ffffff00, white);
+}
+.bazar-card .visual-area {
+  height: 200px;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  transition: filter .2s;
+}
+.bazar-card .footer-area {
+  line-break: anywhere;
+}
+.bazar-card .floating-area {
+  position: absolute;
+  right: 1rem;
+  top: 200px;
+  transform: translateY(-50%);
+  font-weight: 600;
+}
+.bazar-card .floating-area .field-default {
+  background-color: var(--primary-color);
+  color: var(--neutral-light-color);
+  padding: 3px 1rem;
+  border-radius: 3px;
+  font-size: .9rem;
+}
+.bazar-card .floating-area .field-date {
+  background-color: var(--primary-color);
+  color: var(--neutral-light-color);
+  font-size: 18px;
+  min-height: 48px;
+  font-weight: 700;
+  min-width: 48px;
+  padding: 10px 0;
+  text-align: center;
+  text-transform: uppercase;
+  border-radius: 50%;
+}
+.bazar-card .floating-area .field-date span {
+  display: block;
+  line-height: 14px;
+}
+.bazar-card .floating-area .field-date .month {
+  font-size: 11px;
+}
+.bazar-card .floating-area .field-date .full {
+  display: none;
+}
+.bazar-card .floating-area .field-date .default {
+  display: none;
+}
+
+/* STYLE VERTICAL */
+.style-vertical .bazar-card {
+  padding: 1.5rem;
+  border-radius: 6px;
+  justify-content: space-between;
+  border: 1px solid #ebebeb;
+  background-color: whitesmoke;
+}
+.style-vertical .bazar-card .visual-area {
+  margin: -1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: 1px solid #ebebeb;
+} 
+.style-vertical .bazar-card .footer-area {
+  margin: -1.5rem;
+  margin-top: 1rem;
+  padding: 1rem 1.5rem;
+  border-radius: 0 0 6px 6px;
+  font-size: .9rem;
+  background-color: var(--neutral-soft-color);
+  color: white;
+}
+.style-vertical .bazar-card .text-area:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  background-image: linear-gradient(#ffffff00, whitesmoke);
+}
+.style-vertical .bazar-card .subtitle-area {
+  flex-grow: 1;
+}
+
+/* STYLE HORIZONTAL */
+.style-horizontal.bazar-cards-container {
+  row-gap: 4rem;
+}
+.style-horizontal .bazar-card {
+  flex-wrap: wrap;
+  min-height: 11rem;
+}
+.style-horizontal .bazar-card .visual-area {
+  height: 100%;
+  width: 13.5rem;
+  margin-right: 1.5rem;
+  margin-bottom: 0;
+}
+.style-horizontal .bazar-card .floating-area {
+  left: 1rem;
+  bottom: 0;
+  right: auto;
+  top: auto;
+  width: auto !important;
+}
+.style-horizontal .bazar-card > *:not(.visual-area) {
+  width: calc(100% - 15rem);
+}
+.style-horizontal .bazar-card h4 {
+  font-size: 1.8rem;
+}
+.style-horizontal .bazar-card .footer-area {
+  font-size: .7rem;
+  font-weight: bold;
+  background-color: whitesmoke;
+  color: var(--neutral-soft-color);
+  padding: 3px .7rem;
+  border-radius: 8px;
+  width: auto !important;
+  align-self: baseline;
+  display: inline;
+}
+
+/* STYLE SQUARE */
+.style-square .bazar-card .visual-area {
+  margin-bottom: 0;
+  width: 100%;
+  height: auto;
+}
+.style-square .bazar-card .content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #f5f5f5b3;
+  padding: 1rem;
+  max-height: 50%;
+}
+.style-square .bazar-card .floating-area {
+  top: -.5rem;
+}

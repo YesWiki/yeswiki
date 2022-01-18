@@ -1,4 +1,5 @@
 import Panel from './components/Panel.js'
+import EntryField from './components/EntryField.js'
 import SpinnerLoader from './components/SpinnerLoader.js'
 import ModalEntry from './components/ModalEntry.js'
 import BazarSearch from './components/BazarSearch.js'
@@ -6,7 +7,7 @@ import BazarSearch from './components/BazarSearch.js'
 document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>{
   new Vue({
     el: domElement,
-    components: { Panel, ModalEntry, SpinnerLoader },
+    components: { Panel, ModalEntry, SpinnerLoader, EntryField },
     mixins: [ BazarSearch ],
     data: {
       mounted: false, // when vue get initialized
@@ -14,7 +15,8 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       params: {},
 
       filters: [],
-      entries: [],     
+      entries: [],  
+      formFields: {},   
       searchedEntries: [],
       filteredEntries: [],
       paginatedEntries: [],
@@ -160,10 +162,6 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         }  
         return filters      
       },
-      field(entry, field, fallbackField) {
-        let mappedField = this.params.displayfields[field]
-        return mappedField ? entry[mappedField] : entry[fallbackField]
-      },
       getEntryRender(entry) {
         if (entry.html_render) return
         let fieldsToExclude = this.params.displayfields ? Object.values(this.params.displayfields) : []
@@ -178,6 +176,15 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
             Vue.set(entry, 'html_render', (data[entry.id_fiche] && data[entry.id_fiche].html_output) ? data[entry.id_fiche].html_output : 'error')
           })
         }
+      },
+      fieldInfo(field) {
+        return this.formFields[field] || {}
+      },
+      openEntry(entry) {
+        if (this.params.entrydisplay == 'newtab')
+          document.location = wiki.url(entry.id_fiche)
+        else
+          this.$root.openEntryModal(entry)
       },
       openEntryModal(entry) {
         this.$refs.modal.displayEntry(entry)
@@ -217,14 +224,33 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         if (data.entries.length > 1000) this.params.cluster = true // Activate cluster for map mode
         
         setTimeout(() => {
+          // Transform forms info into a list of field mapping
+          // { bf_titre: { type: 'text', ...}, bf_date: { type: 'listedatedeb', ... } }
+          Object.values(data.forms).forEach(formFields => {
+            formFields.forEach(field => {
+              this.formFields[field.id] = field
+              Object.entries(this.params.displayfields).forEach( ([fieldId, mappedField]) => {
+                if (mappedField == field.id) this.formFields[fieldId] = this.formFields[mappedField]
+              })
+            })
+          })
+
           this.entries = data.entries.map(array => {
             let entry = { color: null, icon: null }
             // Transform array data into object using the fieldMapping
             for(let key in data.fieldMapping) {
               entry[data.fieldMapping[key]] = array[key]
             }
+            Object.entries(this.params.displayfields).forEach( ([field, mappedField]) => {
+              if (mappedField) {
+                entry[field] = entry[mappedField]
+                if (entry[`${mappedField}_is_time`]) entry[`${field}_is_time`] = entry[`${mappedField}_is_time`]
+              }
+            })
+            
             return entry
           })
+         
           this.calculateBaseEntries()
           this.ready = true
         }, 0)  

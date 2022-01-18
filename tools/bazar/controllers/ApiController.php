@@ -296,15 +296,26 @@ class ApiController extends YesWikiController
             $fieldList = array_merge($fieldList, $_GET['necessary_fields'] ?? []);
             $fieldList = array_values(array_unique(array_filter($fieldList))); // array_values to have incremental keys
             
+            $formIds = array_map(function ($entry) { return $entry['id_typeannonce']; }, $entries);
+            $formIds = array_unique($formIds);
+
             // Reduce the size of the data sent by transforming entries object into array
             // we use the $fieldMapping to transform back the data when receiving data in the front end
-            $entries = array_map(function ($entry) use ($fieldList) {
+            $entries = array_map(function ($entry) use ($fieldList, $formIds) {
                 $result = [];
                 foreach ($fieldList as $field) {
                     $result[] = $entry[$field] ?? null;
                 }
                 return $result;
             }, $entries);
+            
+            $usedForms = array_filter($forms, function($form) use ($formIds) {
+                return in_array($form['bn_id_nature'], $formIds);
+            });
+            $usedForms = array_map(function($f) {
+                return $f['prepared'];
+            }, $usedForms);
+            
             $errormsg = ob_get_contents();
             ob_end_clean();
         } catch (\Exception $e) {
@@ -315,7 +326,8 @@ class ApiController extends YesWikiController
             [
                 'entries' => $entries,
                 'fieldMapping' => $fieldList,
-                'filters' => $filters
+                'filters' => $filters,
+                'forms' => $usedForms
             ] + (empty($errormsg) ? [] : ['errorMessage' => $errormsg]),
             Response::HTTP_OK
         );

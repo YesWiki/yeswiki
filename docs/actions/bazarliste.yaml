@@ -13,6 +13,7 @@ actions:
       search:
         label: _t(AB_bazar_commons_search_label)
         type: list
+        icon: search
         options:          
           'true': _t(AB_attach_yes)
           'false': _t(AB_attach_no)
@@ -205,7 +206,6 @@ actions:
       datefilter:
         label: _t(AB_bazar_commons2_filter_on_date)
         type: list
-        advanced: true
         hint: _t(AB_bazar_commons2_filter_index)
         options:
           futur: _t(AB_bazar_commons2_filter_on_date_future)
@@ -229,6 +229,87 @@ actions:
   # -----------------
   # Liste des Actions
   # -----------------
+  bazarliste:
+    label: _t(AB_bazarliste_label)
+    description: _t(AB_bazarliste_description)
+    properties:
+      template:
+        value: 'liste_accordeon'
+      displayfields:
+        type: correspondance
+        showif: dynamic
+        subproperties:
+          title:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_title_label)
+            default: bf_titre
+          subtitle:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_subtitle_label)
+          floating:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_floating_label)
+          visual:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_visual_label)
+
+  bazarcard:
+    label: _t(AB_bazarcard_label)
+    description: _t(AB_bazarcard_description)
+    properties:
+      template:
+        value: 'card'
+      nbcol:
+        label: _t(AB_bazarmaterialcard_nbcol_label)
+        type: number
+        default: 3
+        icon: columns
+      style:
+        type: list
+        label: _t(AB_bazarcard_style_label)
+        icon: paint-brush
+        default: vertical
+        options:          
+          vertical: _t(AB_bazarcard_style_vertical)
+          square: _t(AB_bazarcard_style_square)
+          horizontal: _t(AB_bazarcard_style_horizontal)
+      div:
+        type: divider
+        label: _t(AB_bazarliste_displayfields_title)
+      displayfields:
+        type: correspondance
+        subproperties:
+          visual:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_visual_label)
+          title:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_title_label)
+          subtitle:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_subtitle_label)
+          text:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_text_label)
+          footer:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_footer_label)
+          floating:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_floating_label)
+      
+      advanced:
+        type: divider
+        label: _t(AB_advanced)
+        advanced: true
+      entrydisplay:
+        label: _t(AB_bazarcarto_entrydisplay_label)
+        type: list
+        default: modal
+        advanced: true
+        options:
+          newtab: _t(AB_bazarcarto_entrydisplay_option_newtab)
+          modal: _t(AB_bazarcarto_entrydisplay_option_modal)
   bazarcarto:
     label: _t(AB_bazarcarto_label)
     description: _t(AB_bazarcarto_description)
@@ -345,6 +426,22 @@ actions:
         type: checkbox
         default: false
 
+  bazarcalendar:
+    label: _t(AB_bazarcalendar)
+    description: _t(AB_bazarcalendar_description)
+    properties:
+      template:
+        value: calendar
+      correspondance:
+        type: correspondance
+        subproperties:
+          bf_date_debut_evenement:
+            type: form-field
+            label: _t(AB_bazar_bf_date_debut_evenement_label)
+          bf_date_fin_evenement:
+            type: form-field
+            label: _t(AB_bazar_bf_date_fin_evenement_label)
+
   bazaragenda:
     label: _t(AB_bazaragenda_label)
     description: _t(AB_bazaragenda_description)
@@ -371,94 +468,7 @@ actions:
         default:
         advanced: true
         checkedvalue: 1
-        uncheckedvalue:
-
-  bazarcalendar:
-    label: _t(AB_bazarcalendar)
-    description: _t(AB_bazarcalendar_description)
-    properties:
-      template:
-        value: calendar
-      correspondance:
-        type: correspondance
-        subproperties:
-          bf_date_debut_evenement:
-            type: form-field
-            label: _t(AB_bazar_bf_date_debut_evenement_label)
-          bf_date_fin_evenement:
-            type: form-field
-            label: _t(AB_bazar_bf_date_fin_evenement_label)
-
-  bazarliste:
-    label: _t(AB_bazarliste_label)
-    description: _t(AB_bazarliste_description)
-    properties:
-      template:
-        value: 'liste_accordeon'
-      displayfields:
-        type: correspondance
-        showif: dynamic
-        subproperties:
-          title:
-            type: form-field
-            label: _t(AB_bazarliste_displayfields_title_label)
-            default: bf_titre
-          subtitle:
-            type: form-field
-            label: _t(AB_bazarliste_displayfields_subtitle_label)
-            default: ""
-          floating:
-            type: form-field
-            label: _t(AB_bazarliste_displayfields_floating_label)
-            default: ""
-          visual:
-            type: form-field
-            label: _t(AB_bazarliste_displayfields_visual_label)
-            default: ""
-
-  bazartrombi:
-    label: _t(AB_bazartrombi_label)
-    description: _t(AB_bazartrombi_description)
-    hint: _t(AB_bazartrombi_hint)
-    properties:
-      template:
-        value: trombinoscope
-
-  bazarmaterialcard:
-    label: _t(AB_bazarmaterialcard_label)
-    description: _t(AB_bazarmaterialcard_description)
-    hint: _t(AB_bazarmaterialcard_hint)
-    properties:
-      template:
-        value: material-card
-      nbcol:
-        label: _t(AB_bazarmaterialcard_nbcol_label)
-        type: list
-        default: 4
-        options:
-          - 1
-          - 2
-          - 3
-          - 4
-          - 6
-      type:
-        label: _t(AB_bazarmaterialcard_type_label)
-        type: checkbox
-        default:
-        checkedvalue: simple
-        uncheckedvalue:
-      modal:
-        label: _t(AB_bazarmaterialcard_modal_label)
-        type: checkbox
-        default:
-        checkedvalue: 1
-        uncheckedvalue:
-      correspondance:
-        type: correspondance
-        subproperties:
-          bf_baseline:
-            type: form-field
-            label: _t(AB_bazarmaterialcard_bf_baseline_label)
+        uncheckedvalue:      
 
   bazarannuaire:
     label: _t(AB_bazarannuaire_label)
@@ -466,35 +476,6 @@ actions:
     properties:
       template:
         value: annuaire_alphabetique
-
-  bazardamier:
-    label: _t(AB_bazardamier_label)
-    description: _t(AB_bazardamier_description)
-    hint: _t(AB_bazardamier_hint)
-    properties:
-      template:
-        value: damier
-      nbcol:
-        label: _t(AB_bazardamier_nbcol_label)
-        type: list
-        default: 4
-        options:
-          - 1
-          - 2
-          - 3
-          - 4
-          - 6
-      couleur:
-        label: _t(AB_bazardamier_couleur_label)
-        type: color
-      correspondance:
-        type: correspondance
-        hint: _t(AB_bazardamier_correpondance_hint)
-        doclink: https://yeswiki.net/?DamierTplHtml2
-        subproperties:
-          bf_description:
-            type: form-field
-            label: _t(AB_bazardamier_bf_description_label)
 
   bazartimeline:
     label: _t(AB_bazartimeline_label)
