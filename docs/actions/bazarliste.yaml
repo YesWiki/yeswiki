@@ -263,6 +263,19 @@ actions:
         label: _t(AB_bazarmaterialcard_nbcol_label)
         type: number
         default: 3
+        icon: columns
+      style:
+        type: list
+        label: _t(AB_bazarcard_style_label)
+        icon: paint-brush
+        default: vertical
+        options:          
+          vertical: _t(AB_bazarcard_style_vertical)
+          square: _t(AB_bazarcard_style_square)
+          horizontal: _t(AB_bazarcard_style_horizontal)
+      div:
+        type: divider
+        label: _t(AB_bazarliste_displayfields_title)
       displayfields:
         type: correspondance
         subproperties:
@@ -284,14 +297,11 @@ actions:
           floating:
             type: form-field
             label: _t(AB_bazarliste_displayfields_floating_label)
-      style:
-        type: list
-        label: _t(AB_bazarcard_style_label)
-        default: vertical
-        options:          
-          vertical: _t(AB_bazarcard_style_vertical)
-          square: _t(AB_bazarcard_style_square)
-          horizontal: _t(AB_bazarcard_style_horizontal)
+      
+      advanced:
+        type: divider
+        label: _t(AB_advanced)
+        advanced: true
       entrydisplay:
         label: _t(AB_bazarcarto_entrydisplay_label)
         type: list

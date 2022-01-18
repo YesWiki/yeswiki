@@ -4,6 +4,7 @@ return [
     // Commons
     "AB_LEFT" => "Gauche",
     "AB_RIGHT" => "Droite",
+    "AB_advanced" => "Avancé",
     // BAZAR
     "AB_bazar_label" => "Afficher les données d'un formulaire",
     "AB_bazar_commons_colorfield_label" => "Champ pour la couleur",
@@ -83,15 +84,16 @@ return [
     // BazarListe
     "AB_bazarliste_label" => "Liste",
     "AB_bazarliste_description" => "Les fiches seront sous forme d'accordéons",
-    "AB_bazarliste_displayfields_title_label" => "Champ pour la zone de titre",
-    "AB_bazarliste_displayfields_subtitle_label" => "Champ pour la zone de sous titre",
-    "AB_bazarliste_displayfields_text_label" => "Champ pour la zone de texte",
-    "AB_bazarliste_displayfields_floating_label" => "Champ pour la zone flottante",
-    "AB_bazarliste_displayfields_visual_label" => "Champ pour la zone visuelle",
+    "AB_bazarliste_displayfields_title" => "Choix des champs à inclure",
+    "AB_bazarliste_displayfields_title_label" => "Zone de titre",
+    "AB_bazarliste_displayfields_subtitle_label" => "Zone de sous titre",
+    "AB_bazarliste_displayfields_text_label" => "Zone de texte",
+    "AB_bazarliste_displayfields_floating_label" => "Zone flottante",
+    "AB_bazarliste_displayfields_visual_label" => "Zone visuelle",
     // BazarCard
     "AB_bazarcard_label" => "Blocs (agenda, actus, trombinoscope, damier...)",
     "AB_bazarcard_description" => "Les fiches seront sous forme de cartes",
-    "AB_bazarliste_displayfields_footer_label" => "Champ pour la zone footer",
+    "AB_bazarliste_displayfields_footer_label" => "Zone footer",
     "AB_bazarcard_style_label" => "Type de rendu",
     "AB_bazarcard_style_vertical" => 'Vertical',
     "AB_bazarcard_style_square" => 'Carré',
