@@ -68,6 +68,11 @@
 .field-date .day, .field-date .month {
   display: none;
 }
+.field-array > span {
+  font-size: .8rem;
+  font-weight: 600;
+  margin-right: .5rem;
+}
 
 /* ------------- */
 /* LIST TEMPLATE */
