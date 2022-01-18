@@ -5,7 +5,8 @@
 {% endblock %}
 
 {% block display_entries %}
-  <div class="bazar-cards-container" v-if="ready" :class="[{ready: ready}, `style-${params.style || 'vertical'}`]" 
+  <div class="bazar-cards-container" v-if="ready" 
+       :class="[{ready: ready}, `style-${params.style || 'vertical'}`, `nbcol-${params.nbcol}`]" 
        :style="{'grid-template-columns': `repeat(${params.nbcol}, 1fr)`}">
     
     <div v-if="entriesToDisplay.length == 0" class="alert alert-info">
@@ -16,13 +17,20 @@
          @click="openEntry(entry)">
       
       {# VISUAL AREA #}
-      <template v-if="entry.visual">
-        <img class="area visual-area" v-if="params.style == 'square'" 
-            :src="`cache/image_450x450_${entry.visual}`">
-        </img>
-        <div class="area visual-area" v-else
-            :style="{'background-image': `url(cache/image_450x450_${entry.visual})`}">
-        </div>
+      <template v-if="Object.keys(entry).includes('visual')">
+        <template v-if="params.style == 'square'">
+          <img v-if="entry.visual" class="area visual-area" :src="`cache/image_${entry.visual}`"></img>
+          <div v-else class="area area visual-area placeholder"></div>
+        </template>
+        <template v-else>
+          <div v-if="entry.visual" class="area visual-area" 
+            :style="{'background-image': `url(cache/image_${entry.visual})`}">
+          </div>
+          <div v-else class="area area visual-area placeholder"></div>
+        </template>
+        
+        
+        
       </template>
       
       <div class="content">
