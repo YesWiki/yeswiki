@@ -16,9 +16,14 @@
          @click="openEntry(entry)">
       
       {# VISUAL AREA #}
-      <div class="area visual-area" v-if="entry.visual" 
-          :style="{'background-image': `url(cache/image_${entry.visual})`}">
-      </div>
+      <template v-if="entry.visual">
+        <img class="area visual-area" v-if="params.style == 'square'" 
+            :src="`cache/image_450x450_${entry.visual}`">
+        </img>
+        <div class="area visual-area" v-else
+            :style="{'background-image': `url(cache/image_450x450_${entry.visual})`}">
+        </div>
+      </template>
       
       <div class="content">
         {# TITLE AREA #}

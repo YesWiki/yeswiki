@@ -94,6 +94,7 @@ return [
     "AB_bazarliste_displayfields_footer_label" => "Champ pour la zone footer",
     "AB_bazarcard_style_label" => "Type de rendu",
     "AB_bazarcard_style_vertical" => 'Vertical',
+    "AB_bazarcard_style_square" => 'Carré',
     "AB_bazarcard_style_horizontal" => 'Horizontal',
     // BazarTrombi
     "AB_bazartrombi_label" => "Trombinoscope",
