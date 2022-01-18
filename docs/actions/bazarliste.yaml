@@ -450,6 +450,7 @@ actions:
         default: vertical
         options:          
           vertical: _t(AB_bazarcard_style_vertical)
+          square: _t(AB_bazarcard_style_square)
           horizontal: _t(AB_bazarcard_style_horizontal)
       entrydisplay:
         label: _t(AB_bazarcarto_entrydisplay_label)
