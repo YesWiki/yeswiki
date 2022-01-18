@@ -13,6 +13,7 @@ actions:
       search:
         label: _t(AB_bazar_commons_search_label)
         type: list
+        icon: search
         options:          
           'true': _t(AB_attach_yes)
           'false': _t(AB_attach_no)
@@ -205,7 +206,6 @@ actions:
       datefilter:
         label: _t(AB_bazar_commons2_filter_on_date)
         type: list
-        advanced: true
         hint: _t(AB_bazar_commons2_filter_index)
         options:
           futur: _t(AB_bazar_commons2_filter_on_date_future)
