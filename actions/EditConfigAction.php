@@ -22,8 +22,8 @@ class EditConfigAction extends YesWikiAction
         'password_for_editing_message' => 'access',
         'allow_doubleclic' => 'access',
 
-        'contact_from' => 'email',
-        'mail_custom_message' => 'email',
+        'contact_from' => 'contact', // merged in contact instead of email to prevent duplication of blocks
+        'mail_custom_message' => 'contact',
     ];
 
     private $keys ;
