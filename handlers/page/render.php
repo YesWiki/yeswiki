@@ -7,7 +7,7 @@ $output .= $header[0] . '<body class="yeswiki-render">'."\n"
     .'<div class="container">'."\n"
     .'<div class="yeswiki-page-widget page-widget page" '.$this->Format('{{doubleclic iframe="1"}}').'>'."\n";
 
-$this->page['body'] = $_GET['content']; // fake Page for actions and handlers
+$this->page['body'] = strip_tags($_GET['content']); // fake Page for actions and handlers, all html is striped
 
 $output .= $this->Format($this->page['body']);
 $output .= '</div><!-- end .page-widget -->'."\n";
