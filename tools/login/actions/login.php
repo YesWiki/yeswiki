@@ -27,6 +27,8 @@ if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
+use YesWiki\Core\Service\TemplateEngine;
+
 // Lecture des parametres de l'action
 
 // NOTE: à mettre dans la classe ?
@@ -94,7 +96,7 @@ $nobtn = $this->GetParameter("nobtn");
 
 // template par défaut
 $template = $this->GetParameter("template");
-$template = $this->getService(TemplateEngine::class)->hasTemplate("@login/$template") ? $template : '';
+$template = $this->services->get(TemplateEngine::class)->hasTemplate("@login/$template") ? $template : '';
 if (empty($template)) {
     $template = 'default.tpl.html';
 }
