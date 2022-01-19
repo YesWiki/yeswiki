@@ -105,12 +105,3 @@ if (isset($this->config['favorite_background_image']) && $this->config['favorite
         CSS);
     }
 }
-
-// if exists and not empty, add the 'PageCss' yeswiki page to the styles 
-// (the PageCss content must respect the CSS syntax)
-$pageCss = $this->LoadPage('PageCss');
-if ($pageCss && !empty($pageCss['body'])) {
-    echo <<<HTML
-        <link rel="stylesheet" href="{$this->href('css', 'PageCss')}" />
-    HTML;
-}
