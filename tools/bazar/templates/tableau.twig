@@ -5,7 +5,7 @@
 , on utilise $param['nbbazarliste'] qui s'incrémente à chaque fois qu'on appelle bazarliste
 pour différencier les différents tableaux table_1 table_2 #}
 
-<table id="table_{{ param.nbbazarliste}}" class="table table-condensed display" {#data-scroll-x="true"#}{{ nbbytab > 0 ? " data-paging=true data-page-length=#{nbbytab} data-length-change=false":''}}>
+<table id="table_{{ param.nbbazarliste}}" class="table table-condensed display" data-scroll-x="true"{{ nbbytab > 0 ? " data-paging=true data-page-length=#{nbbytab} data-length-change=false":''}}>
   <thead>
     <tr>
       {# Column titles #}
