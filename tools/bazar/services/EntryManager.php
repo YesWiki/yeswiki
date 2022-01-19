@@ -337,9 +337,10 @@ class EntryManager
 
         // requete de jointure : reprend la requete precedente et ajoute des criteres
         if (isset($_GET['joinquery'])) {
+            $join = $this->dbService->escape($_GET['joinquery']);
             $joinrequeteSQL = '';
             $tableau = array();
-            $tab = explode('|', $_GET['joinquery']);
+            $tab = explode('|', $join);
             //découpe la requete autour des |
             foreach ($tab as $req) {
                 $tabdecoup = explode('=', $req, 2);

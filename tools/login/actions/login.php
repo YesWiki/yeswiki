@@ -94,7 +94,7 @@ $nobtn = $this->GetParameter("nobtn");
 
 // template par défaut
 $template = $this->GetParameter("template");
-if (empty($template) || !file_exists('tools/login/presentation/templates/' . $template)) {
+if (empty($template) || !file_exists('tools/login/presentation/templates/' . realpath($template))) {
     $template = "default.tpl.html";
 }
 
