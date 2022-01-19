@@ -36,15 +36,11 @@ $nouvellefenetre = $this->GetParameter("nouvellefenetre");
 $formatdate = $this->GetParameter("formatdate");
 
 $template = $this->GetParameter("template");
-if (empty($template)) {
-    $template = 'tools/syndication/templates/liste.tpl.html';
-} else {
-    $template = realpath('tools/syndication/templates/' . $this->GetParameter("template"));
-    if (!file_exists($template)) {
-        echo '<p class="alert alert-error alert-danger">' . _t('SYNDICATION_ACTION_SYNDICATION') . ' : '
-             . $template . ' ' . _t('SYNDICATION_TEMPLATE_NOT_FOUND') . '.</p>' . "\n";
-        $template = 'tools/syndication/templates/liste.tpl.html';
-    }
+$path = empty($template) ? null : realpath('tools/syndication/templates/' . $template);
+if (empty($path) || !file_exists($path)) {
+    echo '<p class="alert alert-error alert-danger">' . _t('SYNDICATION_ACTION_SYNDICATION') . ' : '
+             . $path . ' ' . _t('SYNDICATION_TEMPLATE_NOT_FOUND') . '.</p>' . "\n";
+    $path = 'tools/syndication/templates/liste.tpl.html';
 }
 
 $tabsrc = '';
@@ -155,7 +151,7 @@ if (!empty($urls)) {
     echo '<div class="feed_syndication' . ($class ? ' ' . $class : '') . '">' . "\n";
 
     // Gestion des squelettes
-    include($template);
+    include($path);
     echo '</div>' . "\n";
 } else {
     echo '<div class="alert alert-danger"><strong>' . _t('SYNDICATION_ACTION_SYNDICATION') . '</strong> : '
