@@ -85,11 +85,12 @@ class BazarListeAction extends YesWikiAction
                 }
             }
         }
+        
+        if (in_array($template, ['list', 'card'])) {
+            $dynamic = true;
+        }
         if ($dynamic && $template == 'liste_accordeon') {
             $template = 'list';
-        }
-        if ($template == 'card') {
-            $dynamic = true;
         }
         $searchfields = $this->formatArray($arg['searchfields'] ?? null);
         $searchfields = empty($searchfields) ? ['bf_titre'] : $searchfields;
