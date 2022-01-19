@@ -242,10 +242,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
               entry[data.fieldMapping[key]] = array[key]
             }
             Object.entries(this.params.displayfields).forEach( ([field, mappedField]) => {
-              if (mappedField) {
-                entry[field] = entry[mappedField]
-                if (entry[`${mappedField}_is_time`]) entry[`${field}_is_time`] = entry[`${mappedField}_is_time`]
-              }
+              if (mappedField) entry[field] = entry[mappedField]
             })
             
             return entry
