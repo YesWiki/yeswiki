@@ -39,7 +39,7 @@ $template = $this->GetParameter("template");
 if (empty($template)) {
     $template = 'tools/syndication/templates/liste.tpl.html';
 } else {
-    $template = 'tools/syndication/templates/' . realpath($this->GetParameter("template"));
+    $template = realpath('tools/syndication/templates/' . $this->GetParameter("template"));
     if (!file_exists($template)) {
         echo '<p class="alert alert-error alert-danger">' . _t('SYNDICATION_ACTION_SYNDICATION') . ' : '
              . $template . ' ' . _t('SYNDICATION_TEMPLATE_NOT_FOUND') . '.</p>' . "\n";
