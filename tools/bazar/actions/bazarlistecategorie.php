@@ -47,10 +47,9 @@ if (empty($GLOBALS['ordre'])) {
 }
 
 $template = $this->GetParameter("template");
+$template = $this->getService(TemplateEngine::class)->hasTemplate("@bazar/$template") ? $template : '';
 if (empty($template)) {
     $template = $GLOBALS['wiki']->config['default_bazar_template'];
-} else {
-    $template = realpath($template);
 }
 
 // identifiant de la base de donnée pour la liste
