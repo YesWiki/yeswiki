@@ -8,7 +8,10 @@ use YesWiki\Core\Service\DbService;
 $hasTempTag = (isset($_GET['tempTag'])
     && preg_match("/^{$this->config['temp_tag_for_entry_creation']}_[A-Fa-f0-9]+$/m", $_GET['tempTag']));
 
-if ($this->HasAccess('write') || ($this->HasAccess('read') && $hasTempTag)) {
+if (
+    ($this->LoadPage($this->getPageTag()) && $this->HasAccess('write'))
+    || ($this->HasAccess('read') && $hasTempTag)
+) {
     /**
      * Handle file uploads via XMLHttpRequest
      */
