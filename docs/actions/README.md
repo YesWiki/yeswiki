@@ -67,10 +67,12 @@ Vous pouvez ajouter autant de **paramètres** que vous voulez. Ils représentent
 ```yaml
 label: Texte à Afficher # Nom du champ que l'utilisateur peut remplir
 type: text # Type de champ
-default:  # valeur par défault
+default:  # valeur par défault. Si le parametre est égal à cette valeur par default, il n'est pas inclus dans le code wiki généré
+value: # valeur lors de l'initialisation
 required: true # true/false, est ce que ce champ doit absolument être configuré par l'utilisateur
 advanced: true # sera masqué tant que l'utilisateur ne coche pas la case "paramètres avancés"
 hint: Mon Texte # Indications
+icon: leaf # nom d'une icone fantwesome
 doclink: https://... # Lien vers une documentation en ligne
 showif: colorfield # Ce paramètre sera visible uniquement lorsque le paramètre colorfield n'est pas vide
 showif:
