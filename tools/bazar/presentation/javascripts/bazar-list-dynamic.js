@@ -4,7 +4,10 @@ import SpinnerLoader from './components/SpinnerLoader.js'
 import ModalEntry from './components/ModalEntry.js'
 import BazarSearch from './components/BazarSearch.js'
 
-document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>{
+// Wait for Dom to be loaded, so we can load some Vue component like BazarpMap in order
+// to be used inside index-dynamic
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>{
   new Vue({
     el: domElement,
     components: { Panel, ModalEntry, SpinnerLoader, EntryField },
@@ -254,4 +257,4 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       })
     }
   })
-})
+})})
