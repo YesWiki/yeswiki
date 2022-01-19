@@ -282,9 +282,11 @@ actions:
           visual:
             type: form-field
             label: _t(AB_bazarliste_displayfields_visual_label)
+            value: imagebf_image
           title:
             type: form-field
             label: _t(AB_bazarliste_displayfields_title_label)
+            value: bf_titre
           subtitle:
             type: form-field
             label: _t(AB_bazarliste_displayfields_subtitle_label)

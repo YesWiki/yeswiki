@@ -90,8 +90,6 @@ class BazarListeAction extends YesWikiAction
         }
         if ($template == 'card') {
             $dynamic = true;
-            // Handling default values
-            if (!array_key_exists('visual', $displayFields)) $displayFields['visual'] = 'imagebf_image';
         }
         $searchfields = $this->formatArray($arg['searchfields'] ?? null);
         $searchfields = empty($searchfields) ? ['bf_titre'] : $searchfields;
