@@ -36,8 +36,8 @@ mkdir -p javascripts/vendor/leaflet-fullscreen && cp -f node_modules/leaflet.ful
 mkdir -p styles/vendor/leaflet-fullscreen && cp -f node_modules/leaflet.fullscreen/Control.FullScreen.css styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css
 
 # GoGoCartoJs
-mkdir -p javascripts/vendor/gogocarto && cp -f node_modules/gogocarto-js/dist/gogocarto.min.js javascripts/vendor/gogocarto/gogocarto.min.js
-mkdir -p styles/vendor/gogocarto && cp -f node_modules/gogocarto-js/dist/gogocarto.min.css styles/vendor/gogocarto/gogocarto.min.css
+mkdir -p javascripts/vendor/gogocarto && cp -f node_modules/gogocarto-js/dist/gogocarto.js javascripts/vendor/gogocarto/gogocarto.min.js
+mkdir -p styles/vendor/gogocarto && cp -f node_modules/gogocarto-js/dist/gogocarto.css styles/vendor/gogocarto/gogocarto.min.css
 cp -f -r node_modules/gogocarto-js/dist/images styles/vendor/gogocarto
 cp -f -r node_modules/gogocarto-js/dist/fonts styles/vendor/gogocarto
 
