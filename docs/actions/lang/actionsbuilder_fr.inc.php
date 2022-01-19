@@ -9,7 +9,7 @@ return [
     "AB_bazar_label" => "Afficher les données d'un formulaire",
     "AB_bazar_commons_colorfield_label" => "Champ pour la couleur",
     "AB_bazar_commons_colormapping_color_label" => "Couleur",
-    "AB_bazar_commons_dynamic_label" => "Rendu dynamique (version beta)",
+    "AB_bazar_commons_dynamic_label" => "Rendu dynamique",
     "AB_bazar_commons_iconfield_label" => "Champ pour l'icone",
     "AB_bazar_commons_iconfield_icon_label" => "Icone",
     "AB_bazar_commons_iconfield_iconprefix_label" => "Prefixe pour les icones",

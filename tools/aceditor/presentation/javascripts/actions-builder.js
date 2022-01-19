@@ -163,6 +163,8 @@ window.myapp = new Vue({
         if (this.$refs.specialInput) this.$refs.specialInput.forEach(component => component.resetValues())
         this.selectedFormId = ''
         this.selectedActionId = ''
+        // Bazar dynamic by default
+        if (this.currentGroupId == 'bazarliste') Vue.set(this.values, "dynamic", true)
       }
       this.updateActionParams()
       // If only one action available, select it
@@ -224,7 +226,7 @@ window.myapp = new Vue({
 
       // default value for 'bazarliste'
       if (this.selectedActionId == 'bazarliste') result.template = result.template || 'liste_accordeon'
-
+      
       // put in first position 'id' and 'template' if existing
       const orderedResult = {}
       if (result.id) orderedResult['id'] = result.id
