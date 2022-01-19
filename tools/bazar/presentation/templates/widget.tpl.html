@@ -2,7 +2,7 @@
   var facettetext = <?php echo json_encode(array('facettetext' => $facettestext, 'show_tooltip' => $showtooltip)); ?>;
 </script>
 <div id="widgetapp" v-cloak
-  data-formid="<?php echo $_GET['id']; ?>"
+  data-formid="<?php echo strip_tags($_GET['id']); ?>"
   data-templatemodel="<?php echo $params['template']; ?>"
   data-providermodel="<?php echo $params['provider']; ?>"
   data-iframeUrl="<?php echo $GLOBALS['wiki']->href('bazariframe', '', $urlparams, false); ?>"

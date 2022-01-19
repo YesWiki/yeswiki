@@ -21,7 +21,7 @@ class __WidgetHandler extends YesWikiHandler
         echo '<div class="page">';
         echo '<h1>' . _t('BAZ_WIDGET_HANDLER_TITLE') . '</h1>' . "\n";
 
-        $entries = $entryManager->search(['formsIds' => [$_GET['id'] ?? null], 'keywords' => $_GET['q'] ?? null], true, true);
+        $entries = $entryManager->search(['formsIds' => [strip_tags($_GET['id']) ?? null], 'keywords' =>strip_tags($_GET['q']) ?? null], true, true);
         $facettables = $formManager->scanAllFacettable($entries);
    
         $labels = array();
@@ -52,7 +52,7 @@ class __WidgetHandler extends YesWikiHandler
             'height' => $this->params->get('baz_map_height')
         ];
 
-        $urlParams = 'id=' . $_GET['id'] . (isset($_GET['query']) ? '&query=' . $_GET['query'] : '') . (!empty($q) ? '&q=' . $q : '');
+        $urlParams = 'id=' . strip_tags($_GET['id']) . (isset($_GET['query']) ? '&query=' . strip_tags($_GET['query']) : '') . (!empty($q) ? '&q=' . $q : '');
 
         echo $this->render("@bazar/widget.tpl.html", [
             'facettes' => $facettables,

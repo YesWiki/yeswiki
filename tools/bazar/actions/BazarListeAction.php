@@ -109,6 +109,7 @@ class BazarListeAction extends YesWikiAction
         $ids = array_values(array_map(function ($externalId) {
             return $externalId['id'];
         }, $externalIds));
+        $ids = array_map('strip_tags', $ids); // filter xss
 
         // Only keep "true" and "dynamic" value, so we can still do if params.search in twig
         $search = !isset($arg['search'])

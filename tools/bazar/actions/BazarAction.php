@@ -50,7 +50,7 @@ class BazarAction extends YesWikiAction
             // afficher le menu de vues bazar ?
             'voirmenu' => $arg['voirmenu'] ?? $this->params->get('baz_menu'),
             // Identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
-            'idtypeannonce' => $this->formatArray($_REQUEST['id_typeannonce'] ?? $arg['id'] ?? $arg['idtypeannonce'] ?? $_GET['id'] ?? null),
+            'idtypeannonce' => $this->formatArray($_REQUEST['id_typeannonce'] ?? $arg['id'] ?? $arg['idtypeannonce'] ?? strip_tags($_GET['id']) ?? null),
             // Permet de rediriger vers une url après saisie de fiche
             'redirecturl' => $_GET['redirecturl'] ?? $arg['redirecturl'] ?? ''
         ]);
