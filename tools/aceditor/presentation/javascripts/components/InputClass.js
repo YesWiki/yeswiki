@@ -18,7 +18,7 @@ export default {
     resetValues() {
       this.classValues = {}
       for(let propName in this.config.subproperties) {
-        this.classValues[propName] = this.config.subproperties[propName].default || ''
+        this.classValues[propName] = (this.config.subproperties[propName] || {}).default || ''
       }
     },
     parseNewValues(newValues) {
@@ -27,7 +27,7 @@ export default {
         let optionsList = []
         for(let classValue of classes) {
           for(let propName in this.config.subproperties) {
-            optionsList = Object.keys(this.config.subproperties[propName].options)
+            optionsList = Object.keys((this.config.subproperties[propName] || {}).options)
             if (optionsList.find(o => o == classValue)) this.classValues[propName] = classValue
           }
         }
