@@ -368,4 +368,16 @@ return [
     // "AB_syndication_action_formatdate_option_jma" => "Jour Mois année",
     // "AB_syndication_action_formatdate_option_jmh" => "Jour mois heure",
     // "AB_syndication_action_formatdate_option_jmah" => "Jour mois année heure",
+    
+    // tableau
+    "AB_bazartableau_label" => "Table",
+    "AB_bazartableau_description" => "Display in a table",
+    "AB_bazartableau_hint" => "Template still experimental",
+    "AB_bazartableau_columnfieldsids_label" => "Fields to display",
+    "AB_bazartableau_columnfieldsids_hint" => "Empty = all",
+    "AB_bazartableau_columntitles_label" => "Comlumns titles",
+    "AB_bazartableau_columntitles_hint" => "Separated by coma - empty = field's name autoatically get",
+    "AB_bazartableau_checkboxfieldsincolumns_label" => "Merge answer for checkbox fields",
+    "AB_bazartableau_nbbytab_label" => "Nuber of lines by page",
+    "AB_bazartableau_nbbytab_hint" => "empty = no pagination",
 ];
