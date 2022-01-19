@@ -43,28 +43,38 @@ class AssetsManager
         return;
     }
 
-    public function AddCSSFile($file, $conditionstart = '', $conditionend = '')
+    public function AddCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = "")
     {
         if (!isset($GLOBALS['css'])) {
             $GLOBALS['css'] = '';
         }
 
-        $file = $this->mapFilePath($file);
+        $code = $this->LinkCSSFile($file, $conditionstart, $conditionend, $attrs);
 
-        if (!empty($file) && file_exists($file)) {
-            if (!strpos($GLOBALS['css'], '<link rel="stylesheet" href="'.$this->wiki->getBaseUrl().'/'.$file.'">')) {
-                $GLOBALS['css'] .= '  '.$conditionstart."\n"
-                .'  <link rel="stylesheet" href="'.$this->wiki->getBaseUrl().'/'.$file.'">'
-                ."\n".'  '.$conditionend."\n";
-            }
-        } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {
-            if (!strpos($GLOBALS['css'], '<link rel="stylesheet" href="'.$file.'">')) {
-                $GLOBALS['css'] .= '  '.$conditionstart."\n"
-                    .'  <link rel="stylesheet" href="'.$file.'">'."\n"
-                    .'  '.$conditionend."\n";
-            }
+        if ($code && !strpos($GLOBALS['css'], $code)) {
+            $GLOBALS['css'] .= $code;
         }
         return;
+    }
+
+    // this one can be used to directly include a css file within HTML with "echo $this->LinkCSSFile()"
+    // so we can better control the order of inclusion
+    public function LinkCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = "")
+    {
+        $file = $this->mapFilePath($file);
+        $isUrl = strpos($file, "http://") === 0 || strpos($file, "https://") === 0;
+        
+        if ($isUrl || !empty($file) && file_exists($file)) {
+            $href = $isUrl ? $file : "{$this->wiki->getBaseUrl()}/{$file}";
+            $revision = $this->wiki->GetConfigValue('yeswiki_release', null);
+            return <<<HTML
+                $conditionstart
+                <link rel="stylesheet" href="{$href}?v={$revision}" $attrs>
+                $conditionend
+            HTML;
+        } else {
+            return "";
+        }
     }
 
     public function AddJavascript($script)

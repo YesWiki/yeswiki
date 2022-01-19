@@ -1254,9 +1254,17 @@ class Wiki
     /**
      * @deprecated Use AssetsManager service instead
      */
-    public function AddCSSFile($file, $conditionstart = '', $conditionend = '')
+    public function AddCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = '')
     {
         return $this->services->get(AssetsManager::class)->AddCSSFile($file, $conditionstart, $conditionend);
+    }
+
+    /**
+     * @deprecated Use AssetsManager service instead
+     */
+    public function LinkCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = '')
+    {
+        return $this->services->get(AssetsManager::class)->LinkCSSFile($file, $conditionstart, $conditionend);
     }
 
     /**
