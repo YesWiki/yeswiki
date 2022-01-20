@@ -6,9 +6,7 @@ class BazarIframeHandler extends YesWikiHandler
 {
     public function run()
     {
-        // on recupere les entetes html mais pas ce qu'il y a dans le body
-        $header = explode('<body', $this->wiki->Header());
-        $output = $header[0];
+        $output = '';
 
         if ($this->wiki->HasAccess("read")) {
             if (empty($_GET['id'])) {
@@ -48,6 +46,11 @@ class BazarIframeHandler extends YesWikiHandler
         $output .= '</div>';
 
         $this->wiki->AddJavascriptFile('tools/templates/libs/vendor/iframeResizer.contentWindow.min.js');
+
+        
+        // on recupere les entetes html mais pas ce qu'il y a dans le body
+        $header = explode('<body', $this->wiki->Header());
+        $output = $header[0].$output;
         // on recupere juste les javascripts et la fin des balises body et html
         $output .= preg_replace('/^.+<script/Us', '<script', $this->wiki->Footer());
 

@@ -102,11 +102,3 @@ echo "<script>
 
 // on affiche
 echo $yeswiki_javascripts;
-
-// This GLOBALS is populated from AddCSS and AddCSSFile, we add it at the end
-// It would be better to add it in linkstyles, but the problem is that actions are
-// called within WIKINI_PAGE, which is executed AFTER linkstyles (see squelette)
-// so we add the style after javascript, in the body instead of in the head
-if (isset($GLOBALS['css']) && !empty($GLOBALS['css'])) {
-    echo $GLOBALS['css'];
-}

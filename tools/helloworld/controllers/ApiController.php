@@ -24,9 +24,8 @@ class ApiController extends YesWikiController
      */
     public function onlineDoc()
     {
-        $output = $this->wiki->Header();
-        $output .= $this->getDocumentation() ;
-        $output .= $this->wiki->Footer();
+        $output = $this->getDocumentation();
+        $output = $this->wiki->Header().$output.$this->wiki->Footer();
 
         return new Response($output);
     }

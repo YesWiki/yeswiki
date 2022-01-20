@@ -108,11 +108,10 @@ class TemplateEngine
 
     public function renderInSquelette($templatePath, $data = [])
     {
-        $result = '';
-        $result .= $this->wiki->Header();
-        $result .= '<div class="page">';
+        $result = '<div class="page">';
         $result .= $this->render($templatePath, $data);
         $result .= '</div>';
+        $result = $this->wiki->Header().$result;
         $result .= $this->wiki->Footer();
         return $result;
     }

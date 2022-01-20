@@ -17,7 +17,7 @@ class __WidgetHandler extends YesWikiHandler
 
         $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
-        echo $this->wiki->Header();
+        ob_start();
         echo '<div class="page">';
         echo '<h1>' . _t('BAZ_WIDGET_HANDLER_TITLE') . '</h1>' . "\n";
 
@@ -63,7 +63,9 @@ class __WidgetHandler extends YesWikiHandler
         ]);
 
         echo '</div>';
-        echo $this->wiki->Footer();
+        $output = ob_get_contents();
+        ob_end_clean();
+        echo $this->wiki->Header().$output.$this->wiki->Footer();
         exit();
     }
 };

@@ -112,7 +112,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
 
                     // now we render it internally so we can write the updated link table.
                     $page = $this->services->get(PageManager::class)->getOne($this->tag);
-                    $this->services->get(LinkTracker::class)->registerLinks($page,false,false);
+                    $this->services->get(LinkTracker::class)->registerLinks($page, false, false);
 
                     // forward
                     if ($this->page['comment_on']) {
@@ -159,18 +159,18 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
     }
 }
 
-// Header
-if (!testUrlInIframe()) {
-    echo $this->Header();
-}
-
 // Main Page
-echo '<div class="page">'."\n".$output."\n".'<hr class="hr_clear" />'."\n".'</div>'."\n";
+$output = '<div class="page">'."\n".$output."\n".'<hr class="hr_clear" />'."\n".'</div>'."\n";
 
 // Popups for aceditor toolbar
+ob_start();
 include 'tools/aceditor/actions/actions_builder.php';
+$output .= ob_get_contents();
+ob_end_clean();
 
-// Footer
+// Header - // Footer
 if (!testUrlInIframe()) {
-    echo $this->Footer();
+    echo $this->Header().$output.$this->Footer();
+} else {
+    echo $output;
 }
