@@ -456,7 +456,8 @@ function add_templates_list_js()
 
         $js .= '        tab2["'.$value.'"] = new Array(';
         $nbocc=0;
-        foreach ($GLOBALS['wiki']->config['templates'][$value]["style"] as $key3 => $value3) {
+        $styles = $GLOBALS['wiki']->config['templates'][$value]["style"] ?? [];
+        foreach ($styles as $key3 => $value3) {
             if ($nbocc==0) {
                 $js .= '\''.$value3.'\'';
             } else {
