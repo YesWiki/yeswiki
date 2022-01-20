@@ -25,18 +25,18 @@ input[type=range] {
 #actions-builder-app [type="checkbox"] + span:not(.lever) {
   padding-left: 1.5rem;
 }
-#actions-builder-app .input-group {
+#actions-builder-app :not(.multi-input-container) > * > .input-group:not(.iconpicker-container) {
   flex-wrap: wrap;
   align-items: center;
 }
-#actions-builder-app .input-group .form-control {
+#actions-builder-app :not(.multi-input-container) > * > .input-group:not(.iconpicker-container) .form-control {
   width: auto;
   flex-grow: 1;
 }
-#actions-builder-app .input-group .hint-container {
+#actions-builder-app :not(.multi-input-container) > * > .input-group:not(.iconpicker-container) .hint-container {
   width: 100%;
 }
-#actions-builder-app .input-group .hint {
+#actions-builder-app :not(.multi-input-container) > * > .input-group:not(.iconpicker-container) .hint {
   margin-bottom: 0;
 }
 .addon-icon {
