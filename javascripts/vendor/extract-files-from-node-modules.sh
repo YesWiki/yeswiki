@@ -53,3 +53,18 @@ mkdir -p javascripts/vendor/formbuilder-languages && cp -f node_modules/formbuil
 
 #jquery-ui-sortable
 mkdir -p javascripts/vendor/jquery-ui-sortable && cp -f node_modules/jquery-ui-sortable/jquery-ui.min.js javascripts/vendor/jquery-ui-sortable
+
+# DataTables
+mkdir -p javascripts/vendor/datatables.net && cp -f node_modules/datatables.net/js/jquery.dataTables.min.js javascripts/vendor/datatables.net
+mkdir -p javascripts/vendor/datatables.net-bs && cp -f node_modules/datatables.net-bs/js/dataTables.bootstrap.min.js javascripts/vendor/datatables.net-bs
+mkdir -p styles/vendor/datatables.net-bs && cp -f node_modules/datatables.net-bs/css/dataTables.bootstrap.min.css styles/vendor/datatables.net-bs
+mkdir -p javascripts/vendor/datatables.net-buttons && cp -f node_modules/datatables.net-buttons/js/*.min.js javascripts/vendor/datatables.net-buttons
+mkdir -p javascripts/vendor/datatables.net-buttons-bs && cp -f node_modules/datatables.net-buttons-bs/js/buttons.bootstrap.min.js javascripts/vendor/datatables.net-buttons-bs
+mkdir -p styles/vendor/datatables.net-buttons-bs && cp -f node_modules/datatables.net-buttons-bs/css/buttons.bootstrap.min.css styles/vendor/datatables.net-buttons-bs
+mkdir -p javascripts/vendor/datatables.net-fixedheader && cp -f node_modules/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js javascripts/vendor/datatables.net-fixedheader
+mkdir -p javascripts/vendor/datatables.net-fixedheader-bs && cp -f node_modules/datatables.net-fixedheader-bs/js/fixedHeader.bootstrap.min.js javascripts/vendor/datatables.net-fixedheader-bs
+mkdir -p styles/vendor/datatables.net-fixedheader-bs && cp -f node_modules/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css styles/vendor/datatables.net-fixedheader-bs
+mkdir -p javascripts/vendor/datatables.net-responsive && cp -f node_modules/datatables.net-responsive/js/dataTables.responsive.min.js javascripts/vendor/datatables.net-responsive
+mkdir -p javascripts/vendor/datatables.net-responsive-bs && cp -f node_modules/datatables.net-responsive-bs/js/responsive.bootstrap.min.js javascripts/vendor/datatables.net-responsive-bs
+mkdir -p styles/vendor/datatables.net-responsive-bs && cp -f node_modules/datatables.net-responsive-bs/css/responsive.bootstrap.min.css styles/vendor/datatables.net-responsive-bs
+
