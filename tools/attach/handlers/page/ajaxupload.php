@@ -41,7 +41,7 @@ if (
         }
         public function getName()
         {
-            return $_GET['qqfile'];
+            return basename($_GET['qqfile']);
         }
         public function getSize()
         {
@@ -71,7 +71,7 @@ if (
         }
         public function getName()
         {
-            return $_FILES['qqfile']['name'];
+            return basenmae($_FILES['qqfile']['name']);
         }
         public function getSize()
         {
