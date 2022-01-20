@@ -43,13 +43,13 @@ Yeswiki repose sur le bénévolat et le don. **[[https://www.helloasso.com/assoc
 ('BacASable',  now(), '=====Bac à sable=====
 ===Premiers défis à réaliser===
 1) premier défi => **écrire dans cette page**
-  - cliquez sur \"éditez la page\" (en bas) ou double cliquez dans la page,
+  - cliquez sur \"éditer la page\" (en bas) ou double cliquez dans la page,
   - l\'aspect de la page va légèrement changer car vous êtes en __mode édition__
   - écrivez ce que vous voulez ici => 
   - puis cliquez sur le bouton \"sauver\" (en haut à gauche) et observez votre travail
 
 2) deuxième défi => **insérer un bouton**
-  - cliquez sur \"éditez la page\" ou double cliquez dans la page,
+  - cliquez sur \"éditer la page\" ou double cliquez dans la page,
   - Positionnez votre curseur ici => 
   - cliquez sur __composants__ / boutons et laissez vous guider,
   - cliquez sur \"insérer dans la page\",
@@ -58,21 +58,24 @@ Yeswiki repose sur le bénévolat et le don. **[[https://www.helloasso.com/assoc
 
 3) troisième défi => **modifier votre bouton**
   - Passez la page en mode édition,
-  - cliquez sur le code du bouton => un petit crayon apparaît dans la marge,
+  - cliquez sur la ligne correspondant au code du bouton (commençant par \"\"{{button}}\"\")=> un petit crayon apparaît dans la marge,
   - cliquez sur __le petit crayon__ et changez les paramètres,
   - cliquez sur \"mettre à jour le code\",
   - sauvez
-   - Cela fonctionnera pour tous les codes des composants
+   - Cette démarche de modification fonctionnera pour tous les codes des composants
 
-4) Et enfin => **revenir en arrière**, restaurer une version précédente de la page
-  - cliquez, en bas de la page, sur Dernière édition :
+4) quatrième défi => **trouver le nom d\'une page**
+  - Regardez l\'url de cette page 
+  - le nom de cette page est le mot se situant après le ?
+
+5) Et enfin => **restaurer la version précédente d\'une page** (en cas de préférence ou d\'erreur)
+  - cliquez, en bas de la page, sur Dernière édition : 17 jan 2022
   - choisissez une des versions précédentes,
   - cliquez sur \"Restaurer cette version\",
   - le tour est joué.
 
 Une aide simple est aisément accessible en cliquant sur \"aide mémoire ?\" lorsque vous êtes en mode édition.', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('BazaR',  now(), '{{bazar showexportbuttons=\"1\"}}
-', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('BazaR',  now(), '{{bazar showexportbuttons=\"1\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('CartoAnnuaire',  now(), '{{nav links=\"TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire\" titles=\"Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S\'inscrire dans l\'annuaire\"}}
 
 {{bazarliste id=\"1\" template=\"map\" markersize=\"small\" height=\"800px\" zoom=\"6\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
@@ -284,7 +287,7 @@ En mode édition, si on est propriétaire de la page, ou que les droits sont ouv
 Voici quelques possibilités autour des annuaires (à copier-coller - adapter)
 {{nav links=\"SaisirAnnuaire, AnnuaireAlpha, CartoAnnuaire, TrombiAnnuaire\" titles=\"S\'inscrire dans l\'annuaire, Annuaire alphabétique, Annuaire cartographique, Trombinoscope\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('ExempleFormulaire',  now(), '{{nav links=\"DocuMentation, Aide, CommentFairePour, ExempleFormulaire, ActuYeswiki\" titles=\"Documentation Yeswiki, Aide mémoire, Comment faire pour, Exemples, Actualité\"}}
-======Exemples de formulaires à adapter (ou à jeter)======
+=====Exemples de formulaires à adapter (ou à jeter)=====
 Les formulaires qui vous sont proposés dans ce menu sont souvent demandés par les collectifs.
 Ils sont fournis pour inspiration et __sont bien sûr adaptables (ou supprimables)__ via la page BazaR.
 Vous pouvez aussi renommer-réorganiser-enlever les pages de ce menu selon vos besoins. 
@@ -641,16 +644,21 @@ donne
 \"\"<pre>si vous déposez du html dans la page wiki, 
 il faut l\'entourer de &quot;&quot; <bout de html> &quot;&quot; 
 pour qu\'il soit interprété</pre>\"\"
-===Eviter qu\'un mot avec deux majuscules ne soit reconnu comme lien wiki===
-\"\"<pre>Il faut aussi l\'entourer de &quot;&quot; MonMotAvecDeuxMajuscules &quot;&quot; 
-pour qu\'il ne soit interprété comme mot wiki</pre>\"\"
+===Eviter qu\'un mot avec deux majuscules ne soit reconnu comme lien vers une page wiki===
+\"\"<pre>Il faut l\'entourer de &quot;&quot; &quot;&quot; (ex : &quot;&quot; MonMotAvecDeuxMajuscules &quot;&quot;) pour qu\'il ne soit pas interprété comme lien wiki</pre>\"\"
+===Créer une ancre, un lien qui envoie sur une partie de votre page===
+Le code suivant permet de créer le lien qui ira vers votre paragraphe
+%%<a href=\"#ancre1\">Aller vers le paragraphe cible</a>%% 
+Et cette partie de code sera à placer juste au dessus du paragraphe cible
+%%<div id=\"ancre1\"></div>%% 
 {{end elem=\"col\"}}
 {{col size=\"6\"}}
 ===Mettre du texte en couleur===
 %%\"\"<span style=\"color:#votrecodecouleur;\">votre texte à colorer</span>\"\"%%//Quelques codes couleur => mauve : #990066 / vert : #99cc33 / rouge : #cc3333 / orange : #ff9900 / bleu : #006699//
 //Voir les codes hexa des couleurs : [[http://fr.wikipedia.org/wiki/Liste_de_couleurs http://fr.wikipedia.org/wiki/Liste_de_couleurs]]//
-
-===Utiliser des icônes Emoji ?===
+===Aligner du texte===
+Placez votre texte dans une section (voir composant) et choisissez votre alignement (gauche, centré, droite, justifié)
+===Utiliser des icônes Emoji===
 Il est possible de copier des icônes dans des sites sources puis de les coller dans votre wiki. \"\"<a href=\"http://getemoji.com\" target=\"_blank\" class=\"btn btn-primary btn-xs\">Par exemple sur ce site</a>\"\"
 
 ===Mettre en page par colonne===\"\"<a href=\"https://yeswiki.net/?DemoGrid\" target=\"_blank\" class=\"btn btn-primary btn-xs\">Doc en ligne</a>\"\"
@@ -675,10 +683,8 @@ Texte colonne 3
 &#x5B;10%] donne [10%]
 &#x5B;40%] donne [40%]
 &#x5B;80%] donne [80%]
-===Créer une ancre, un lien qui envoie sur une partie de votre page===
-%%<a href=\"#paragraphe1\">Aller vers le paragraphe cible</a>%% Permet de créer le lien qui ira vers votre paragraphe
-%%<div id=\"paragraphe1\"></div>%% Cette partie sera à placer juste au dessus de la partie cible
-====Vous trouverez beaucoup d\'autres astuces dans====
+
+===Vous trouverez beaucoup d\'autres astuces dans===
 **Comment faire pour**... Dans Roue crantée / Aide, démo, actu
 {{end elem=\"col\"}}
 {{end elem=\"grid\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
