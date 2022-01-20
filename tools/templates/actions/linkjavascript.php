@@ -106,17 +106,7 @@ echo $yeswiki_javascripts;
 // This GLOBALS is populated from AddCSS and AddCSSFile, we add it at the end
 // It would be better to add it in linkstyles, but the problem is that actions are
 // called within WIKINI_PAGE, which is executed AFTER linkstyles (see squelette)
-// so we add the style after javascript, in the body instead of in the head 
+// so we add the style after javascript, in the body instead of in the head
 if (isset($GLOBALS['css']) && !empty($GLOBALS['css'])) {
     echo $GLOBALS['css'];
-}
-
-// if exists and not empty, add the 'PageCss' yeswiki page to the styles 
-// (the PageCss content must respect the CSS syntax)
-// Same reason than for GLOBALS, we include it so we are sure it's included at the end
-$pageCss = $this->LoadPage('PageCss');
-if ($pageCss && !empty($pageCss['body'])) {
-    echo <<<HTML
-        <link rel="stylesheet" href="{$this->href('css', 'PageCss')}" />
-    HTML;
 }
