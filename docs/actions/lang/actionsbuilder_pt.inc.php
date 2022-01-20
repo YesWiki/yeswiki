@@ -4,6 +4,7 @@ return [
     // Commons
     // "AB_LEFT" => "Gauche",
     // "AB_RIGHT" => "Droite",
+    // "AB_advanced" => "Avancé",
     // BAZAR
     "AB_bazar_label" => "Exibir os dados de um formulário",
     // "AB_bazar_commons_colorfield_label" => "Champ pour la couleur",
@@ -63,6 +64,7 @@ return [
     // "AB_bazarcarto_height_label" => "Hauteur de la carte",
     // "AB_bazarcarto_entrydisplay_label" => "Lors du clic, afficher la fiche",
     // "AB_bazarcarto_entrydisplay_option_sidebar" => "Dans une barre latérale",
+    // "AB_bazarcarto_entrydisplay_option_newtab" => "Dans un nouvel onglet",
     // "AB_bazarcarto_entrydisplay_option_modal" => "Dans une popup",
     // "AB_bazarcarto_displayfields_markhover_label" => "Champ à afficher au survol du marker",
     // "AB_bazarcarto_smallmarker_label" => "Petit marqueurs",
@@ -82,11 +84,21 @@ return [
     // // BazarListe
     // "AB_bazarliste_label" => "Liste",
     // "AB_bazarliste_description" => "Les fiches seront sous forme d'accordéons",
-    // "AB_bazarliste_displayfields_title_label" => "Champ pour la zone de titre",
-    // "AB_bazarliste_displayfields_subtitle_label" => "Champ pour la zone de sous titre",
-    // "AB_bazarliste_displayfields_floating_label" => "Champ pour la zone flottante",
-    // "AB_bazarliste_displayfields_visual_label" => "Champ pour la zone visuelle",
-    // // BazarTrombi
+    // "AB_bazarliste_displayfields_title" => "Choix des champs à inclure",
+    // "AB_bazarliste_displayfields_title_label" => "Zone de titre",
+    // "AB_bazarliste_displayfields_subtitle_label" => "Zone de sous titre",
+    // "AB_bazarliste_displayfields_text_label" => "Zone de texte",
+    // "AB_bazarliste_displayfields_floating_label" => "Zone flottante",
+    // "AB_bazarliste_displayfields_visual_label" => "Zone visuelle",
+    // BazarCard
+    // "AB_bazarcard_label" => "Blocs (agenda, actus, trombinoscope, damier...)",
+    // "AB_bazarcard_description" => "Les fiches seront sous forme de cartes",
+    // "AB_bazarliste_displayfields_footer_label" => "Zone footer",
+    // "AB_bazarcard_style_label" => "Type de rendu",
+    // "AB_bazarcard_style_vertical" => 'Vertical',
+    // "AB_bazarcard_style_square" => 'Carré',
+    // "AB_bazarcard_style_horizontal" => 'Horizontal',
+    // BazarTrombi
     // "AB_bazartrombi_label" => "Trombinoscope",
     // "AB_bazartrombi_description" => "Les fiches seront sous forme de Trombinoscope.",
     // "AB_bazartrombi_hint" => "Un champ de type bf_image est nécessaire.",

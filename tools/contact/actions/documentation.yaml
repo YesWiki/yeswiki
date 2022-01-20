@@ -12,7 +12,7 @@ actions:
       entete:
         label: _t(AB_contact_action_entete_label)
         type: text
-        default: Envoyé depuis le site...
+        default: _t(AB_contact_action_entete_default)
       template:
         label: _t(AB_contact_action_template_label)
         hint: _t(AB_contact_action_template_hint)
@@ -26,7 +26,7 @@ actions:
     label: _t(AB_abonnement_action_label)
     properties:
       mail:
-        label: _t(AB_contact_action_mail_label)
+        label: _t(AB_abonnement_action_mail_label)
         type: email
         required: true
       mailinglist:
@@ -47,7 +47,7 @@ actions:
     label: _t(AB_deabonnement_action_label)
     properties:
       mail:
-        label: _t(AB_contact_action_mail_label)
+        label: _t(AB_abonnement_action_mail_label)
         type: email
         required: true
       mailinglist:

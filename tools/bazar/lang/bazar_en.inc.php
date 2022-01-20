@@ -344,7 +344,7 @@ return [
     // 'EDIT_CONFIG_HINT_BAZ_MAP_HEIGHT' => 'Hauteur par défaut en pixels des affichages cartographiques',
     // 'EDIT_CONFIG_HINT_BAZ_ADRESSE_MAIL_ADMIN' => 'Adresse mail de l\'expéditeur des modifications des fiches bazar',
     // 'EDIT_CONFIG_HINT_BAZ_ENVOI_MAIL_ADMIN' => 'Envoyer un mail aux admininistrateurs à chaque modification de fiche (true ou false)',
-    // 'EDIT_CONFIG_HINT_BAZ_CHECK_OWNER_ACL_ONLY_FOR_FIELD_CAN_EDIT' => 'Tester les droits de lecture de type \'%\' uniquement pour l\'écriture des champs bazar (false par défaut)',
+    // 'EDIT_CONFIG_HINT_BAZ_CHECK_OWNER_ACL_ONLY_FOR_FIELD_CAN_EDIT' => 'Tester les droits de lecture de type \'%\' uniquement pour l\'écriture des champs bazar (false par défaut). à modifier uniquement sur demande d\'un débuggeur',
     // 'EDIT_CONFIG_HINT_BAZ_EXTERNAL_SERVICE[CACHE_TIME_TO_CHECK_CHANGES]' => 'Temps (s) entre deux rafraîchissements du cache pour vérifier les ajouts et modifications dans les requêtes JSON',
     // 'EDIT_CONFIG_HINT_BAZ_EXTERNAL_SERVICE[CACHE_TIME_TO_CHECK_DELETION]' => 'Temps (s) entre deux rafraîchissements du cache pour vérifier les suppresions dans les requêtes JSON',
     // 'EDIT_CONFIG_HINT_BAZ_EXTERNAL_SERVICE[CACHE_TIME_TO_REFRESH_FORMS]' => 'Temps (s) entre deux rafraîchissements du cache pour formulaires nécessaires aux requêtes JSON',

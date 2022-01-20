@@ -8,6 +8,7 @@ return [
     'ACEDITOR_TITLE3'			=> 'Big title',
     'ACEDITOR_TITLE4'			=> 'Basic title',
     'ACEDITOR_TITLE5'			=> 'Small title',
+    'ACEDITOR_CENTER'           => 'Center',
     'ACEDITOR_BIGGER_TEXT'		=> 'Bigger text',
     'ACEDITOR_HIGHLIGHT_TEXT'	=> 'Highlighted text',
     'ACEDITOR_SOURCE_CODE'		=> 'Source code',
