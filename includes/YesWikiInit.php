@@ -233,7 +233,7 @@ class Init
             'preview_before_save' => 0,
             'allow_raw_html' => true,
             'disable_wiki_links' => false,
-            'allowed_methods_in_iframe' => ['iframe','editiframe','render'],
+            'allowed_methods_in_iframe' => ['iframe','editiframe','bazariframe','render'],
             'timezone'=>'GMT' // Only used if not set in wakka.config.php nor in php.ini
         );
         unset($_rewrite_mode);
