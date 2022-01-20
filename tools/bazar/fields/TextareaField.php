@@ -116,6 +116,21 @@ class TextareaField extends BazarField
         ]);
     }
 
+    /**
+     * only for `include_once` in `renderInput`
+     */
+    private function AddJavascriptFile($file)
+    {
+        $this->getWiki()->AddJavascriptFile($file);
+    }
+    /**
+     * only for `include_once` in `renderInput`
+     */
+    private function AddCSSFile($file)
+    {
+        $this->getWiki()->AddCSSFile($file);
+    }
+
     public function formatValuesBeforeSave($entry)
     {
         $value = $this->getValue($entry);
