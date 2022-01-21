@@ -39,8 +39,6 @@ if (count($fiches)>0) {
             : ($param['checkboxfieldsincolumns'] ?? null);
         $checkboxFieldsInColumns = !in_array($checkboxFieldsInColumns, ["0",0,false,"false","non"], true);
 
-        $nbbytab = $param['nbbytab'] ?? null;
-
         /* columnsInfo */
         if (!function_exists('tableauGetFieldsCols')) {
             function tableauGetFieldsCols($field, $checkboxFieldsInColumns): array
@@ -123,5 +121,4 @@ echo $this->render('@bazar/tableau.twig', [
     'param' => $param,
     'columnsInfo' => $columnsInfo,
     'entries' => $fiches,
-    'nbbytab' => $nbbytab ?? null,
 ]);

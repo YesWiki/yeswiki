@@ -378,6 +378,4 @@ return [
     "AB_bazartableau_columntitles_label" => "Comlumns titles",
     "AB_bazartableau_columntitles_hint" => "Separated by coma - empty = field's name autoatically get",
     "AB_bazartableau_checkboxfieldsincolumns_label" => "Merge answer for checkbox fields",
-    "AB_bazartableau_nbbytab_label" => "Nuber of lines by page",
-    "AB_bazartableau_nbbytab_hint" => "empty = no pagination",
 ];

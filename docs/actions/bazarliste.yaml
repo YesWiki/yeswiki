@@ -664,10 +664,3 @@ actions:
         label: _t(AB_bazartableau_checkboxfieldsincolumns_label)
         checkedvalue: "false"
         uncheckedvalue: "true"
-      # nbbytab:
-      #   type: number
-      #   label: _t(AB_bazartableau_nbbytab_label)
-      #   hint: _t(AB_bazartableau_nbbytab_hint)
-      #   default: ''
-      #   min: 0
-      #   advanced: true

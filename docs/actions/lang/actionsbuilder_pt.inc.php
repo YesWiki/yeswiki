@@ -379,6 +379,4 @@ return [
     // "AB_bazartableau_columntitles_label" => "Titres des colonnes",
     // "AB_bazartableau_columntitles_hint" => "Séparés par des virgules - vide = nom du champ récupéré automatiquement",
     // "AB_bazartableau_checkboxfieldsincolumns_label" => "Fusionner les réponses des cases à cocher",
-    // "AB_bazartableau_nbbytab_label" => "Nombre de lignes par page",
-    // "AB_bazartableau_nbbytab_hint" => "vide = pas de pagination",
 ];
