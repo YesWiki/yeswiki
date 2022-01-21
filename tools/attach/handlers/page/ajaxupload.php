@@ -71,7 +71,7 @@ if (
         }
         public function getName()
         {
-            return basenmae($_FILES['qqfile']['name']);
+            return basename($_FILES['qqfile']['name']);
         }
         public function getSize()
         {
