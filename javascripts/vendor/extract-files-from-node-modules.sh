@@ -68,3 +68,24 @@ mkdir -p javascripts/vendor/datatables.net-responsive && cp -f node_modules/data
 mkdir -p javascripts/vendor/datatables.net-responsive-bs && cp -f node_modules/datatables.net-responsive-bs/js/responsive.bootstrap.min.js javascripts/vendor/datatables.net-responsive-bs
 mkdir -p styles/vendor/datatables.net-responsive-bs && cp -f node_modules/datatables.net-responsive-bs/css/responsive.bootstrap.min.css styles/vendor/datatables.net-responsive-bs
 
+mkdir -p javascripts/vendor/datatables-full && \
+  cat javascripts/vendor/datatables.net/jquery.dataTables.min.js \
+      javascripts/vendor/datatables.net-bs/dataTables.bootstrap.min.js \
+      javascripts/vendor/datatables.net-buttons/dataTables.buttons.min.js \
+      javascripts/vendor/datatables.net-buttons/buttons.colVis.min.js \
+      javascripts/vendor/datatables.net-buttons/buttons.flash.min.js \
+      javascripts/vendor/datatables.net-buttons/buttons.html5.min.js \
+      javascripts/vendor/datatables.net-buttons/buttons.print.min.js  \
+      javascripts/vendor/datatables.net-buttons-bs/buttons.bootstrap.min.js  \
+      javascripts/vendor/datatables.net-fixedheader/dataTables.fixedHeader.min.js  \
+      javascripts/vendor/datatables.net-fixedheader-bs/fixedHeader.bootstrap.min.js  \
+      javascripts/vendor/datatables.net-responsive/dataTables.responsive.min.js  \
+      javascripts/vendor/datatables.net-responsive-bs/responsive.bootstrap.min.js  \
+      > javascripts/vendor/datatables-full/jquery.dataTables.min.js 
+
+mkdir -p styles/vendor/datatables-full && \
+  cat styles/vendor/datatables.net-bs/dataTables.bootstrap.min.css \
+      styles/vendor/datatables.net-buttons-bs/buttons.bootstrap.min.css  \
+      styles/vendor/datatables.net-fixedheader-bs/fixedHeader.bootstrap.min.css  \
+      styles/vendor/datatables.net-responsive-bs/responsive.bootstrap.min.css  \
+      > styles/vendor/datatables-full/dataTables.bootstrap.min.css 
