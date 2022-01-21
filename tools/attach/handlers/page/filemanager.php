@@ -39,7 +39,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 if (!WIKINI_VERSION) {
     die("acc&egrave;s direct interdit");
 }
-echo $this->Header();
+ob_start();
 ?>
 <div class="page">
 <?php
@@ -51,8 +51,11 @@ if ($this->UserIsOwner()) {
     $att->doFilemanager();
     unset($att);
 } else {
-    echo $this->Format("//".t('FILEMANAGER_ACTION_NEED_ACCESS')."//");
+    echo $this->Format("//"._t('FILEMANAGER_ACTION_NEED_ACCESS')."//");
 }
 ?>
 </div>
-<?php echo $this->Footer(); ?>
+<?php
+$output = ob_get_contents();
+ob_end_clean();
+echo $this->Header().$output.$this->Footer(); ?>

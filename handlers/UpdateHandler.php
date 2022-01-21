@@ -16,9 +16,6 @@ class UpdateHandler extends YesWikiHandler
         };
 
         $output = '';
-        if (empty($this->wiki->config['is_cli']) || $this->wiki->config['is_cli'] !== true) {
-            $output = $this->wiki->header();
-        }
 
         if ($this->wiki->UserIsAdmin()) {
             $output .= '<strong>YesWiki core</strong><br />';
@@ -82,8 +79,8 @@ class UpdateHandler extends YesWikiHandler
         // BE CAREFULL this comment is used for extensions to add content above, don't delete it!
         $output .= '<!-- end handler /update -->';
 
-
         if (empty($this->wiki->config['is_cli']) || $this->wiki->config['is_cli'] !== true) {
+            $output = $this->wiki->header().$output;
             // add button to return to previous page
             $output .= '<div>
                 <a class="btn btn-sm btn-secondary-1" href="'.$this->wiki->Href().'">

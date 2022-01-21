@@ -39,7 +39,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 if (!WIKINI_VERSION) {
     die("acc&egrave;s direct interdit");
 }
-echo $this->Header();
+ob_start();
 ?>
 <div class="page">
 <?php
@@ -52,4 +52,7 @@ $att->doUpload();
 unset($att);
 ?>
 </div>
-<?php echo $this->Footer(); ?>
+<?php
+$output = ob_get_contents();
+ob_end_clean();
+echo $this->Header().$output.$this->Footer(); ?>

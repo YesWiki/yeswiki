@@ -26,8 +26,7 @@ if (isset($GLOBALS['template-error']) && $GLOBALS['template-error']['type'] == '
 
 if (!$this->HasAccess('read')) {
     if ($contenu = $this->LoadPage("PageLogin")) {
-        $output = $this->Header();
-        $output .= '<body class="login-body">'."\n"
+        $output = '<body class="login-body">'."\n"
             .'<div class="container">'."\n"
             .'<div class="yeswiki-page-widget page-widget page" '.$this->Format('{{doubleclic iframe="1"}}').'>'."\n";
         $output .= '<div class="alert alert-danger alert-error">'.
@@ -36,6 +35,7 @@ if (!$this->HasAccess('read')) {
         $output .= $this->Format($contenu["body"]);
         $output .= '</div><!-- end .page-widget -->' . "\n";
         $output .= '</div><!-- end .container -->' . "\n";
+        $output = $this->Header().$output;
         $output .= $this->Footer();
     } else {
         // sinon on affiche le formulaire d'identification minimal

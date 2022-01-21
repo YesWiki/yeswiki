@@ -22,9 +22,7 @@ class ApiController extends YesWikiController
      */
     public function getDocumentation()
     {
-        $output = $this->wiki->Header();
-
-        $output .= '<h1>YesWiki API</h1>';
+        $output = '<h1>YesWiki API</h1>';
 
         $urlUser = $this->wiki->Href('', 'api/user');
         $output .= '<h2>'._t('USERS').'</h2>'."\n".
@@ -65,7 +63,7 @@ class ApiController extends YesWikiController
             }
         }
 
-        $output .= $this->wiki->Footer();
+        $output = $this->wiki->Header().$output.$this->wiki->Footer();
 
         return new Response($output);
     }
