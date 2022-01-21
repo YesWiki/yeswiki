@@ -21,6 +21,8 @@ class AssetsManager
         'tools/bazar/libs/vendor/leaflet/fullscreen/Control.FullScreen.js' => 'javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js',
         'tools/bazar/presentation/javascripts/form-builder.min.js' => 'javascripts/vendor/formBuilder/form-builder.min.js',
         'tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js' => 'javascripts/vendor/jquery-ui-sortable/jquery-ui.min.js',
+        'tools/templates/libs/vendor/datatables/jquery.dataTables.min.js' => 'javascripts/vendor/datatables-full/jquery.dataTables.min.js',
+        'tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css' => 'styles/vendor/datatables-full/dataTables.bootstrap.min.css',
     ];
 
     protected const PRODUCTION_PATH_MAPPING = [
