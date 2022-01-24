@@ -12,8 +12,5 @@
     "psr-4": {
       "AutoUpdate\\": "app"
     }
-  },
-  "require": {
-    "symfony/console": "^5.2"
   }
 }
