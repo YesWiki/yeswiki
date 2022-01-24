@@ -31,6 +31,8 @@ class EntryManager
     protected $params;
     protected $searchManager;
 
+    private $cachedEntriestags ;
+
     public const TRIPLES_ENTRY_ID = 'fiche_bazar';
 
     public function __construct(
@@ -57,6 +59,7 @@ class EntryManager
         $this->params = $params;
         $this->searchManager = $searchManager;
         $this->securityController = $securityController;
+        $this->cachedEntriestags = [];
     }
 
     /**
@@ -66,7 +69,10 @@ class EntryManager
      */
     public function isEntry($tag): bool
     {
-        return !is_null($this->tripleStore->exist($tag, TripleStore::TYPE_URI, self::TRIPLES_ENTRY_ID, '', ''));
+        if (!isset($this->cachedEntriestags[$tag])) {
+            $this->cachedEntriestags[$tag] = !is_null($this->tripleStore->exist($tag, TripleStore::TYPE_URI, self::TRIPLES_ENTRY_ID, '', ''));
+        }
+        return $this->cachedEntriestags[$tag];
     }
 
     /**
@@ -558,6 +564,8 @@ class EntryManager
             $this->mailer->notifyAdmins($data, true);
         }
 
+        $this->cachedEntriestags[$data['id_fiche']] = true;
+
         return $data;
     }
 
@@ -733,6 +741,8 @@ class EntryManager
             $this->userManager->getLoggedUserName(),
             "Suppression de la page ->\"\"" . $tag . "\"\""
         );
+        
+        unset($this->cachedEntriestags[$tag]);
     }
 
     /*
