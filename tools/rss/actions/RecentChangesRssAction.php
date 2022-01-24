@@ -106,10 +106,14 @@ class RecentChangesRssAction extends YesWikiAction
                 $items[] = compact(["tag","user","formatedDate","description","itemurl"]);
             }
         }
+
+        $yesWikiRevision = "{$this->params->get('yeswiki_version')} {$this->params->get('yeswiki_release')}";
+        $description = $this->params->has('meta_description') ? $this->params->get('meta_description'): "";
+        $description = empty($decription) ? $wakkaName : $description;
         
         return $this->render(
             "@rss/recent-changes-rss.twig",
-            compact(["xmlUrl","wakkaName","link","items"])
+            compact(["xmlUrl","wakkaName","link","items","yesWikiRevision","description"])
         );
     }
 }
