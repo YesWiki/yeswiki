@@ -36,7 +36,7 @@ $nouvellefenetre = $this->GetParameter("nouvellefenetre");
 $formatdate = $this->GetParameter("formatdate");
 
 $template = $this->GetParameter("template");
-$path = empty($template) ? null : realpath('tools/syndication/templates/' . basename($template));
+$path = empty($template) ? 'tools/syndication/templates/liste.tpl.html' : realpath('tools/syndication/templates/' . basename($template));
 if (empty($path) || !file_exists($path)) {
     echo '<p class="alert alert-error alert-danger">' . _t('SYNDICATION_ACTION_SYNDICATION') . ' : '
              . htmlspecialchars($template) . ' ' . _t('SYNDICATION_TEMPLATE_NOT_FOUND') . '.</p>' . "\n";
