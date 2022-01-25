@@ -56,7 +56,8 @@ if (!empty($_SESSION['redirects'])) {
 
 if ($HasAccessRead=$this->HasAccess("read")) {
     if (!$this->page) {
-        echo "Cette page n'existe pas encore, voulez vous la <a href=\"".$this->href("edit")."\">cr&eacute;er</a> ?" ;
+        echo _t("NOT_FOUND_PAGE") . ' <a href="' . $this->href("edit") . '">' . _t("NOT_FOUND_PAGE2") .
+        "</a> " . _t("NOT_FOUND_PAGE3");
     } else {
         // comment header?
         if ($this->page["comment_on"]) {

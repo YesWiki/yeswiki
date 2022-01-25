@@ -8,8 +8,10 @@ class IframeHandler extends YesWikiHandler
     public function run()
     {
         $output = '';
-
-        if ($this->wiki->HasAccess("read")) {
+        if (!$this->wiki->page) {
+            echo _t("NOT_FOUND_PAGE") . ' <a href="' . $this->wiki->href("edit") . '">' . _t("NOT_FOUND_PAGE2")
+                . "</a> " . _t("NOT_FOUND_PAGE3");
+        } else if ($this->wiki->HasAccess("read")) {
             $entryManager = $this->wiki->services->get(EntryManager::class);
 
             $output .= '<body class="yeswiki-iframe-body">' . "\n"

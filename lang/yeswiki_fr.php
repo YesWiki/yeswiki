@@ -43,6 +43,9 @@ return [
     'SUBSCRIPTION' => 'Inscription',
     'UNKNOWN' => 'Inconnu',
     'WARNING' => 'AVERTISSEMENT',
+    'NOT_FOUND_PAGE' => 'Cette page n\'existe pas encore, voulez-vous la',
+    'NOT_FOUND_PAGE2' => 'créer',
+    'NOT_FOUND_PAGE3' => '?',
 
     // wakka.php
     'INVALID_ACTION' => 'Action invalide',
