@@ -7,13 +7,14 @@
   "license": "AGPL-3.0",
   "homepage": "http://yeswiki.net",
   "scripts": {
-    "postinstall": "./javascripts/vendor/extract-files-from-node-modules.sh"
+    "postinstall": "node ./javascripts/vendor/extract-files-from-node-modules.js"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
     "bootstrap": "^3",
     "formBuilder": "^3",
     "formbuilder-languages": "^1.1.0",
+    "fs-extra": "^10.0.0",
     "gogocarto-js": "^1.7.11",
     "jquery": "^3.5.1",
     "leaflet": "^1.7.1",
