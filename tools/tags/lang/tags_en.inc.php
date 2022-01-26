@@ -30,6 +30,7 @@
 
 return [
     
+    'TAGS_TAGS' => 'Tags',
     'TAGS_ACTION_ADMINTAGS' => 'Action {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'this action is for the admins only',
     'TAGS_NO_WRITE_ACCESS' => 'You have no rights to write on this page !',
