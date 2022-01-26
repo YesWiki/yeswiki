@@ -9,9 +9,12 @@ class IframeHandler extends YesWikiHandler
     {
         $output = '';
         if (!$this->wiki->page) {
-            echo _t("NOT_FOUND_PAGE") . ' <a href="' . $this->wiki->href("edit") . '">' . _t("NOT_FOUND_PAGE2")
-                . "</a> " . _t("NOT_FOUND_PAGE3");
-        } else if ($this->wiki->HasAccess("read")) {
+            echo str_replace(
+                ["{beginLink}","{endLink}"],
+                ["<a href=\"{$this->wiki->href("editiframe")}\">","</a>"],
+                _t("NOT_FOUND_PAGE")
+            );
+        } elseif ($this->wiki->HasAccess("read")) {
             $entryManager = $this->wiki->services->get(EntryManager::class);
 
             $output .= '<body class="yeswiki-iframe-body">' . "\n"

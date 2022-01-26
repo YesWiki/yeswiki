@@ -43,9 +43,6 @@ return [
     'SUBSCRIPTION' => 'Inscription',
     'UNKNOWN' => 'Inconnu',
     'WARNING' => 'AVERTISSEMENT',
-    'NOT_FOUND_PAGE' => 'Cette page n\'existe pas encore, voulez-vous la',
-    'NOT_FOUND_PAGE2' => 'créer',
-    'NOT_FOUND_PAGE3' => '?',
 
     // wakka.php
     'INVALID_ACTION' => 'Action invalide',
@@ -532,6 +529,9 @@ return [
     'CURRENT_VERSION' => 'Version actuelle',
     'RESTORE_REVISION' => 'Restaurer cette version',
     'DISPLAY_WIKI_CODE' => 'Afficher le code Wiki',
+
+    // handlers/page/show + handlers/page/iframe
+    'NOT_FOUND_PAGE' => 'Cette page n\'existe pas encore, voulez-vous la {beginLink}créer{endLink} ?',
 
     // YesWiki
     'UNKNOWN_INTERWIKI' => 'interwiki inconnu',

@@ -56,8 +56,11 @@ if (!empty($_SESSION['redirects'])) {
 
 if ($HasAccessRead=$this->HasAccess("read")) {
     if (!$this->page) {
-        echo _t("NOT_FOUND_PAGE") . ' <a href="' . $this->href("edit") . '">' . _t("NOT_FOUND_PAGE2") .
-        "</a> " . _t("NOT_FOUND_PAGE3");
+        echo str_replace(
+            ["{beginLink}","{endLink}"],
+            ["<a href=\"{$this->href("edit")}\">","</a>"],
+            _t("NOT_FOUND_PAGE")
+        );
     } else {
         // comment header?
         if ($this->page["comment_on"]) {
