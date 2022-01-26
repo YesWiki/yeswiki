@@ -530,6 +530,12 @@ return [
     'RESTORE_REVISION' => 'Restaurer cette version',
     'DISPLAY_WIKI_CODE' => 'Afficher le code Wiki',
 
+    // handlers/show
+    'COMMENT_INFO' => 'Ceci est un commentaire sur {tag} post&eacute; par {user} &agrave; {time}',
+    'EDIT_ARCHIVED_REVISION' => 'R&eacute;&eacute;diter cette version archiv&eacute;e',
+    'REVISION_IS_ARCHIVE_OF_TAG_ON_TIME' => 'Ceci est une version archivée de {link} à {time}',
+    'REDIRECTED_FROM' => 'Redirig&eacute; depuis {linkFrom}',
+
     // handlers/page/show + handlers/page/iframe
     'NOT_FOUND_PAGE' => 'Cette page n\'existe pas encore, voulez-vous la {beginLink}créer{endLink} ?',
 

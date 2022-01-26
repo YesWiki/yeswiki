@@ -50,7 +50,7 @@ if (!empty($_SESSION['redirects'])) {
     $trace = $_SESSION['redirects'];
     $tag = $trace[count($trace) - 1];
     $prevpage = $this->LoadPage($tag);
-    echo '<div class="redirectfrom"><em>(Redirig&eacute; depuis ', $this->Link($prevpage['tag'], 'edit'), ")</em></div>\n";
+    echo '<div class="redirectfrom"><em>(' . str_replace("{linkFrom}", $this->Link($prevpage['tag'], 'edit'), _t('REDIRECTED_FROM')) . ")</em></div>\n";
     unset($_SESSION['redirects'][count($trace) - 1]);
 }
 
@@ -64,12 +64,16 @@ if ($HasAccessRead=$this->HasAccess("read")) {
     } else {
         // comment header?
         if ($this->page["comment_on"]) {
-            echo "<div class=\"commentinfo\">Ceci est un commentaire sur ",$this->ComposeLinkToPage($this->page["comment_on"], "", "", 0),", post&eacute; par ",$this->Format($this->page["user"])," &agrave; ",$this->page["time"],"</div>";
+            echo "<div class=\"commentinfo\">" . str_replace(
+                ["{tag}","{user}","{time}"],
+                [$this->ComposeLinkToPage($this->page["comment_on"], "", "", 0),$this->Format($this->page["user"]),$this->page["time"]],
+                _t('COMMENT_INFO')
+            ) . "</div>";
         }
 
         if ($this->page["latest"] == "N") {
             echo '<div class="alert alert-info">'."\n";
-            echo "Ceci est une version archiv&eacute;e de <a href=\"",$this->href(),"\">",$this->GetPageTag(),"</a> &agrave; ",$this->page["time"];
+            echo str_replace(["{link}","{time}"], ["<a href=\"{$this->href()}\">{$this->GetPageTag()}</a>",$this->page["time"]], _t('REVISION_IS_ARCHIVE_OF_TAG_ON_TIME'));
             // if this is an old revision, display some buttons
             if ($this->HasAccess("write")) {
                 $latest = $this->LoadPage($this->tag); ?>
@@ -79,7 +83,7 @@ if ($HasAccessRead=$this->HasAccess("read")) {
 				<input type="hidden" name="time" value="<?php echo $time ?>" />
 				<input type="hidden" name="previous" value="<?php echo  $latest["id"] ?>" />
 				<input type="hidden" name="body" value="<?php echo  htmlspecialchars($this->page["body"], ENT_COMPAT, YW_CHARSET) ?>" />
-				<input class="btn btn-primary" type="submit" value="R&eacute;&eacute;diter cette version archiv&eacute;e" />
+				<input class="btn btn-primary" type="submit" value="<?php echo _t('EDIT_ARCHIVED_REVISION'); ?>" />
 				<?php echo  $this->FormClose(); ?>
 				<?php
             }
@@ -99,7 +103,7 @@ if ($HasAccessRead=$this->HasAccess("read")) {
         $this->UnregisterLastInclusion();
     }
 } else {
-    echo "<i>Vous n'&ecirc;tes pas autoris&eacute; &agrave; lire cette page</i>" ;
+    echo "<i>"._t('DENY_READ')."</i>" ;
 }
 ?>
 <hr class="hr_clear" />

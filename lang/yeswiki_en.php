@@ -493,6 +493,15 @@ return [
     'RESTORE_REVISION' => 'Restore this revision',
     'DISPLAY_WIKI_CODE' => 'Display Wiki code',
 
+    // handlers/show
+    'COMMENT_INFO' => 'This a comment on {tag} proposed by {user} on {time}',
+    'EDIT_ARCHIVED_REVISION' => 'Edit a new time this archived revision',
+    'REVISION_IS_ARCHIVE_OF_TAG_ON_TIME' => 'This is an archived revision of {link} on {time}',
+    'REDIRECTED_FROM' => 'Redirected from {linkFrom}',
+
+    // handlers/page/show + handlers/page/iframe
+    'NOT_FOUND_PAGE' => 'This page does not already exist, would you {beginLink}create{endLink} it ?',
+
     // YesWiki
     'UNKNOWN_INTERWIKI' => 'unkwon interwiki',
 ];
