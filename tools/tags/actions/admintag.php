@@ -32,7 +32,7 @@ if ($this->UserIsAdmin()) {
             'tags' => $tags,
         ]);
     } else {
-        echo '<p>Aucun mot clé utilisé pour le moment</p>';
+        echo '<p>' . _t('TAGS_NO_TAG') . '</p>';
     }
 } else {
     echo '<div class="alert alert-danger"><strong>'._t('TAGS_ACTION_ADMINTAGS').' :</strong>&nbsp;'._t('TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS').'...</div>'."\n";
