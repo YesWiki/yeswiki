@@ -43,12 +43,27 @@ ob_start();
 $global = isset($_REQUEST["global"]) && $_REQUEST["global"];
 // Si le paramétre "global" a été spécifié
 if ($global) {
-    $title = "Sites faisant r&eacute;f&eacute;rence &agrave; ce wiki (<a href=\"".$this->href("referrers_sites", "", "global=1")."\">voir la liste des domaines</a>)&nbsp;:";
+    $title = str_replace(
+        ["{beginLink}","{endLink}"],
+        ["<a href=\"{$this->href("referrers_sites", "", "global=1")}\">","</a>"],
+        _t('LINK_TO_REFERRERS_SITES')
+    );
     $referrers = $this->LoadReferrers();
 } else {
-    $title = "Pages externes faisant r&eacute;f&eacute;rence &agrave;  ".$this->ComposeLinkToPage($this->GetPageTag()).
-    ($this->GetConfigValue("referrers_purge_time") ? " (depuis ".($this->GetConfigValue("referrers_purge_time") == 1 ? "24 heures" : $this->GetConfigValue("referrers_purge_time")." jours").")" : "")." (<a href=\"".$this->href("referrers_sites")."\">voir la liste des domaines</a>)&nbsp;:";
-        
+    $since = $this->GetConfigValue("referrers_purge_time")
+        ? " (".str_replace(
+            "{time}",
+            $this->GetConfigValue("referrers_purge_time") == 1
+                ? _t('REFERRERS_SITES_24_HOURS')
+                : str_replace("{nb}", $this->GetConfigValue("referrers_purge_time"), _t('REFERRERS_SITES_X_DAYS')),
+            _t('REFERRERS_SITES_SINCE')
+        ).")"
+        : "";
+    $title = str_replace(
+        ["{tag}","{since}","{beginLink}","{endLink}"],
+        [$this->ComposeLinkToPage($this->GetPageTag()),$since,"<a href=\"{$this->href("referrers_sites")}\">","</a>"],
+        _t('LINK_TO_REFERRERS_NO_GLOBAL')
+    );
     $referrers = $this->LoadReferrers($this->GetPageTag());
 }
 
@@ -69,9 +84,13 @@ if ($referrers) {
 }
 
 if ($global) {
-    echo "<br />[<a href=\"",$this->href("referrers_sites"),"\">Voir les domaines faisant r&eacute;f&eacute;rence &agrave; ",$this->GetPageTag()," seulement</a> | <a href=\"",$this->href("referrers"),"\">Voir les r&eacute;f&eacute;rences &agrave; ",$this->GetPageTag()," seulement</a>]" ;
+    echo "<br />[<a href=\"{$this->href("referrers_sites")}\">".
+        str_replace("{tag}", $this->GetPageTag(), _t('LINK_TO_REFERRERS_SITES_ONLY_TAG')).
+        "</a> | <a href=\"",$this->href("referrers"),"\">".
+        str_replace("{tag}", $this->GetPageTag(), _t('LINK_TO_REFERRERS_SITES_PAGES_ONLY_TAG'))."</a>]" ;
 } else {
-    echo "<br />[<a href=\"",$this->href("referrers_sites", "", "global=1"),"\">Voir tous les domaines faisant r&eacute;f&eacute;rence </a> | <a href=\"",$this->href("referrers", "", "global=1"),"\">Voir toutes les r&eacute;f&eacute;rences </a>]" ;
+    echo "<br />[<a href=\"{$this->href("referrers_sites", "", "global=1")}\">"
+        ._t('LINK_TO_REFERRERS_ALL_DOMAINS')."</a> | <a href=\"{$this->href("referrers", "", "global=1")}\">" . _t('LINK_TO_REFERRERS_ALL_REFS') . "</a>]" ;
 }
 
 

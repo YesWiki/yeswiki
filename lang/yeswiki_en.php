@@ -475,11 +475,23 @@ return [
     // actions/usertable.php
     'GROUP_S' => 'Groupe(s)',
 
+    // handlers/deletepage
+    'DELETEPAGE_CANCEL' => 'Cancel',
+    'DELETEPAGE_CONFIRM' => 'Would you really definitively delete the page {tag}&nbsp;?',
+    'DELETEPAGE_CONFIRM_WHEN_BACKLINKS' => 'Would you really definitively delete the page {tag} while there are links leading to it&nbsp;?',
+    'DELETEPAGE_DELETE' => 'Delete',
+    'DELETEPAGE_MESSAGE' => 'The page {tag} has been definitevely deleted',
+    'DELETEPAGE_NOT_ORPHEANED' => 'This page is not orpheaned.',
+    'DELETEPAGE_NOT_OWNER' => 'You are not owner of this page.',
+    'DELETEPAGE_PAGES_WITH_LINKS_TO' => 'Pages with a link to {tag} :',
+
     // handlers/edit
     'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' => 'ALERT : '.
         'Thispage has benn modified by another user while you were editing it.'."\n".
         'Copy your changes and edit a new time this page.',
+    'EDIT_NO_WRITE_ACCESS' => 'You do not have writte acces to this page !',
     'EDIT_NO_CHANGE_MSG' => 'This page was not saved because it has not changes.',
+    'EDIT_PREVIEW' => 'Preview',
 
 
     // handlers/update
@@ -488,6 +500,19 @@ return [
     'UPDATE_ADMIN_PAGES_HINT' => 'Update admin pages with latest features. This is reversible.',
     'UPDATE_ADMIN_PAGES_ERROR' => 'Not possible to update all admin pages !',
     // 'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => 'la page "{{page}}" n\'a pas été trouvée dans default-content.sql',
+
+    // handlers/referrers_sites.php
+    // 'LINK_TO_REFERRERS_DOMAINS' => 'Domaines faisant r&eacute;f&eacute;rence &agrave; ce wiki ({beginLink}voir la liste des pages externes{endLink}):',
+    // 'LINK_TO_REFERRERS_SITES' => 'Sites faisant r&eacute;f&eacute;rence &agrave; ce wiki ({beginLink}voir la liste des domaines{endLink}):',
+    // 'LINK_TO_REFERRERS_SITES_ONLY_TAG' => 'Voir les domaines faisant r&eacute;f&eacute;rence &agrave; {tag} seulement',
+    // 'LINK_TO_REFERRERS_SITES_PAGES_ONLY_TAG' => 'Voir les r&eacute;f&eacute;rences &agrave; {tag} seulement',
+    // 'LINK_TO_REFERRERS_ALL_DOMAINS' => 'Voir tous les domaines faisant r&eacute;f&eacute;rence',
+    // 'LINK_TO_REFERRERS_ALL_REFS' => 'Voir toutes les r&eacute;f&eacute;rences',
+    // 'LINK_TO_REFERRERS_SITES_NO_GLOBAL' => 'Domaines faisant r&eacute;f&eacute;rence &agrave; {tag}{since} ({beginLink}voir la liste des pages externes{endLink}):',
+    // 'LINK_TO_REFERRERS_NO_GLOBAL' => 'Pages externes faisant r&eacute;f&eacute;rence &agrave; {tag}{since} ({beginLink}voir la liste des domaines{endLink}):',
+    // 'REFERRERS_SITES_SINCE' => 'depuis {time}',
+    // 'REFERRERS_SITES_24_HOURS' => '24 heures',
+    // 'REFERRERS_SITES_X_DAYS' => '{nb} jours',
 
     // handlers/revisions
     'SUCCESS_RESTORE_REVISION' => 'The version was restored',

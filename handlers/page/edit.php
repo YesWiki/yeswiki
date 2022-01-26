@@ -72,7 +72,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
             $this->RegisterInclusion($this->GetPageTag()); // on simule totalement un affichage normal
             $output .=
               "<div class=\"page_preview\">\n".
-              "<div class=\"prev_alert\"><strong>Aper&ccedil;u</strong></div>\n".
+              "<div class=\"prev_alert\"><strong>" . _t('EDIT_PREVIEW') . "</strong></div>\n".
               $this->Format($body)."\n\n".
               $this->FormOpen(testUrlInIframe() ? 'editiframe' : 'edit').
               "<input type=\"hidden\" name=\"previous\" value=\"$previous\" />\n".
@@ -151,7 +151,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
               $this->FormClose();
     } // switch
 } else {
-    $output .= "<i>Vous n'avez pas acc&egrave;s en &eacute;criture &agrave; cette page !</i>\n";
+    $output .= "<i>" . _t('EDIT_NO_WRITE_ACCESS') . "</i>\n";
     if ($isWikiHibernated) {
         $output .= $this->services->get(SecurityController::class)->getMessageWhenHibernated();
     }
