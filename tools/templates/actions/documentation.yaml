@@ -166,67 +166,67 @@ actions:
             icon: align-center
             default : text-left
             options :
-              text-left: Calé à gauche
-              text-right: Calé à droite
-              text-center: Centré
-              text-justify: Justifié
+              text-left: _t(AB_templates_section_textalign_left)
+              text-right: _t(AB_templates_section_textalign_right)
+              text-center: _t(AB_templates_section_textalign_center)
+              text-justify: _t(AB_templates_section_textalign_justify)
           image:
             advanced: true
-            label: Comportement de l'image
+            label: _t(AB_templates_section_image_label)
             type: list
             showif: file
             options:
-              cover: Couvre section avec l'image
-              fixed: L'image est bloquée lors du scroll
-              center: L'image reste centré
-              parallax: L'image remonte au scroll genre parallax
+              cover: _t(AB_templates_section_image_cover)
+              fixed: _t(AB_templates_section_image_fixed)
+              center: _t(AB_templates_section_image_center)
+              parallax: _t(AB_templates_section_image_parallax)
           height:
             advanced: true
-            label: Hauteur préfigurée de la section
+            label: _t(AB_templates_section_height_label)
             type: list
             options:
-              one-quarter-height: un quart de la hauteur
-              one-third-height: un tiers
-              half-height: une moitié
-              two-third-height: deux tiers
-              three-quarter-height: trois quarts
-              full-height: 100% hauteur
+              one-quarter-height: _t(AB_templates_section_height_one_quarter)
+              one-third-height: _t(AB_templates_section_height_one_third)
+              half-height: _t(AB_templates_section_height_half)
+              two-third-height: _t(AB_templates_section_height_two_third)
+              three-quarter-height: _t(AB_templates_section_height_three_quarter)
+              full-height: _t(AB_templates_section_height_full)
           animation:
-            label: Animation
+            label: _t(AB_templates_section_animation_label)
             type: list
             advanced: true
-            hint: Beaucoup plus d'effets disponibles sur https://animate.style/
+            hint: _t(AB_templates_section_animation_hint)
             doclink: https://yeswiki.net/?AniMation
             options:
-              wow bounce: Bonds
-              wow flash: Flash
-              wow pulse: Pulse
-              wow rubberBand: Elastique
-              wow shakeX: Gauche à droite
-              wow shakeY: Bas en haut
-              wow headShake: Secoué
-              wow swing: Swing
-              wow tada: Tada
-              wow wobble: Essuie glace
-              wow jello: Danse
-              wow heartBeat: Bat
+              wow bounce: _t(AB_templates_section_animation_bounce)
+              wow flash: _t(AB_templates_section_animation_flash)
+              wow pulse: _t(AB_templates_section_animation_pulse)
+              wow rubberBand: _t(AB_templates_section_animation_rubberband)
+              wow shakeX: _t(AB_templates_section_animation_shakex)
+              wow shakeY: _t(AB_templates_section_animation_shakey)
+              wow headShake: _t(AB_templates_section_animation_headshaked)
+              wow swing: _t(AB_templates_section_animation_swing)
+              wow tada: _t(AB_templates_section_animation_tada)
+              wow wobble: _t(AB_templates_section_animation_wobble)
+              wow jello: _t(AB_templates_section_animation_jello)
+              wow heartBeat: _t(AB_templates_section_animation_heartbat)
       visibility:
         advanced: true
         type: list
-        label: Visible par 
+        label: _t(AB_templates_section_visible_label) 
         options:
-          '': Tout le monde
-          '+': Utilisateur connecté
-          '%': Propriétaire de la page
-          '@admins': Admins seulement
+          '': _t(AB_templates_section_visible_everyone)
+          '+': _t(AB_templates_section_visible_connected_user)
+          '%': _t(AB_templates_section_visible_owner)
+          '@admins': _t(AB_templates_section_visible_admins)
       nocontainer:
         advanced: true
         type: list
-        label:  Ne pas mettre de conteneur
+        label: _t(AB_templates_section_visible_no_container)
         default: 0
         options:
-          '1': Oui
-          '0': Non
+          '1': _t(YES)
+          '0': _t(NO)
 #      data:
 #        label: Data wow
 #        type: text
