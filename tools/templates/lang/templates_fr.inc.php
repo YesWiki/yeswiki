@@ -28,9 +28,7 @@
 *@copyright     2012 Outils-Réseaux
 */
 
-$GLOBALS['translations'] = array_merge(
-    $GLOBALS['translations'],
-    array(
+return [
     'TEMPLATE_ACTION' => 'Action',
     'TEMPLATE_FILE_NOT_FOUND' => 'Template non trouvé',
 
@@ -77,6 +75,10 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_CLASSIC_SLIDESHOW' => 'Diaporama classique',
     'TEMPLATE_SEE_SHARING_OPTIONS' => 'Partager la page',
     'TEMPLATE_SHARE' => 'Partager',
+
+    // action/diaporama
+    'DIAPORAMA_PAGE_PARAM_MISSING' => 'Action diaporama : param&ecirc;tre "page" obligatoire.',
+    'DIAPORAMA_TEMPLATE_PARAM_ERROR' => 'Action diaporama : le param&ecirc;tre "template" pointe sur un fichier inexistant ou illisible. Le template par d&eacute;faut sera utilis&eacute;.',
 
     // formatage des dates
     'TEMPLATE_DATE_FORMAT' => 'd M Y',
@@ -201,6 +203,7 @@ $GLOBALS['translations'] = array_merge(
     'AB_template_action_label_label' => 'Etiquette',
     'AB_template_action_label_example' => 'Texte de votre étiquette à changer par la suite',
     'AB_template_actions_class' => 'Classe',
+    'AB_template_actions_default' => 'Défaut',
     'AB_template_actions_color' => 'Couleur',
     'AB_template_actions_primary' => 'Primaire',
     'AB_template_actions_secondary_1' => 'Secondaire-1',
@@ -221,6 +224,59 @@ $GLOBALS['translations'] = array_merge(
         ."{{col size=\"3\"}}\nTexte de la colonne 2 à changer par la suite\n{{end elem=\"col\"}}\n"
         ."{{col size=\"3\"}}\nTexte de la colonne 3 à changer par la suite\n{{end elem=\"col\"}}\n"
         ."{{col size=\"3\"}}\nTexte de la colonne 4 à changer par la suite\n{{end elem=\"col\"}}\n",
+    'AB_templates_nav_label' => 'Onglets',
+    'AB_templates_nav_description' => 'Générer un menu',
+    'AB_templates_nav_hint' => 'LeNomDeVotrePage doit être le nom de la page dans laquelle vous mettrez cette action. Pensez à coller le code obtenu dans chacune des pages des onglets.',
+    'AB_templates_nav_links_label' => 'Liens vers vos pages wiki',
+    'AB_templates_nav_links_default' => 'LeNomDeVotrePage, LaSecondePage, LaTroisiemePage', // no special chars !!
+    'AB_templates_nav_links_hint' => 'Nom des pages wiki séparées par des virgules',
+    'AB_templates_nav_titles_label' => 'Intitulés de vos pages',
+    'AB_templates_nav_titles_default' => 'Première page, Seconde page, Troisième page',
+    'AB_templates_nav_titles_hint' => 'Textes de chaque onglet séparés par des virgules',
+    'AB_templates_nav_class_tabs' => 'Horizontal souligné',
+    'AB_templates_nav_class_pills' => 'Horizontal sobre',
+    'AB_templates_nav_class_justified' => 'Horizontal justifié',
+    'AB_templates_nav_class_vertical' => 'Vertical',
+    'AB_templates_nav_hide_if_no_access_label' => 'Masquer si l\'utilisateur n\'a pas accès à la page liée',
+    'AB_templates_panel_label' => 'Encadré',
+    'AB_templates_panel_wrappedcontentexample' => 'Texte de votre encadré à modifier par la suite',
+    'AB_templates_panel_title_label' => 'Titre',
+    'AB_templates_panel_title_default' => 'Titre de mon encadré',
+    'AB_templates_panel_type_default' => 'Simple encadré',
+    'AB_templates_panel_type_collapsible' => 'Accordéon ouvert',
+    'AB_templates_panel_type_collapsed' => 'Accordéon fermé',
+    'AB_templates_section_label' => 'Section',
+    'AB_templates_section_wrappedcontentexample' => '=====Titre===== Texte de votre section à remplacer par la suite',
+    'AB_templates_section_bgcolor_label' => 'Couleur de fond',
+    'AB_templates_section_height_label' => 'Hauteur (en pixels)',
+    'AB_templates_section_pattern_label' => 'Texture',
+    'AB_templates_section_pattern_solid' => 'Uni',
+    'AB_templates_section_pattern_border_solid' => 'Bordure',
+    'AB_templates_section_pattern_border_dashed' => 'Bordure tirets',
+    'AB_templates_section_pattern_border_dotted' => 'Bordure pointillés',
+    'AB_templates_section_pattern_cross' => 'Croix alignés',
+    'AB_templates_section_pattern_cross_not_aligned' => 'Croix décalées',
+    'AB_templates_section_pattern_points' => 'Points alignés',
+    'AB_templates_section_pattern_points_not_aligned' => 'Points décalées',
+    'AB_templates_section_pattern_zigzag' => 'Zigzag',
+    'AB_templates_section_pattern_diag' => 'Diagonales',
+    'AB_templates_section_pattern_reverse' => 'Inverser les couleurs de la texture',
+    'AB_templates_section_file_label' => 'Image de fond',
+    'AB_templates_section_file_hint' => 'Entrez le nom.jpg d\'une image déjà uploadé dans cette page, ou le nom d\'une nouvelle image.jpg pour faire apparaitre son boutton d\'upload',
+    'AB_templates_section_textcolor_label' => 'Tonalité du texte',
+    'AB_templates_section_textcolor_white' => 'Claire',
+    'AB_templates_section_textcolor_black' => 'Foncée',
+    'AB_templates_section_fullwidth_label' => 'Prendre toute la largeur disponible',
+    'AB_templates_section_shape_label' => 'Forme',
+    'AB_templates_section_shape_rect' => 'Rectangle',
+    'AB_templates_section_shape_rounded' => 'Arrondi',
+    'AB_templates_section_shape_circ' => 'Cercle',
+    'AB_templates_section_shape_blob1' => 'Blob 1',
+    'AB_templates_section_shape_blob2' => 'Blob 2',
+    'AB_templates_section_shape_blob3' => 'Blob 3',
+    'AB_templates_section_shape_blob4' => 'Blob 4',
+    'AB_templates_section_shape_blob5' => 'Blob 5',
+    'AB_templates_section_textalign_label' => 'Centrage du texte',
 
     // gererdroits
     'ACLS_SELECT_PAGES_FILTER' => 'Filtrer :',
@@ -229,11 +285,21 @@ $GLOBALS['translations'] = array_merge(
     'ACLS_SELECT_PAGES_FILTER_ON_LISTS' => 'les listes uniquement',
     'ACLS_SELECT_PAGES_FILTER_FORM' => 'les fiches du formulaire : {name} ({id})',
 
+    // actions/gererthemes.php
+    'GERERTHEMES_ACTIONS' => 'Actions',
+    'GERERTHEMES_HINT' => 'Cochez les pages que vous souhaitez modifier et choisissez une action en bas de page',
+    'GERERTHEMES_INIT_THEME_FOR_SELECTED_PAGES' => 'Réinitialiser les pages selectionnées (elles utiliseront le thème par défault)',
+    'GERERTHEMES_MODIFY_THEME_FOR_SELECTED_PAGES' => 'Modifier les valeurs pour les pages sélectionnées',
+    'GERERTHEMES_PAGE' => 'Page',
+
+    // actions/progressbar.php
+    'PROGRESSBAR_REQUIRED_VAL_PARAM' => 'param&egrave;tre "val" obligatoire.',
+    'PROGRESSBAR_ERROR_VAL_PARAM' => 'le param&egrave;tre "val" doit étre un chiffre entre 0 et 100.',
+
     // for edit config
     'EDIT_CONFIG_HINT_META_KEYWORDS' => 'Mots clés pour le référencement (séparés par des virgules, pas plus de 20-30)',
     'EDIT_CONFIG_HINT_META_DESCRIPTION' => 'Description du site en une phrase, pour le référencement (Attention : ne pas mettre de "." (point))',
     'EDIT_CONFIG_HINT_META[ROBOTS]' => 'Empêcher les robots à indexer le wiki (Mettre \'noindex,nofollow,noarchive,noimageindex\')',
     'EDIT_CONFIG_GROUP_TEMPLATES' => 'Balises meta pour l\'indexation web', // idéalement 'Mise en forme' mais templates est pour le moment uniquement utilisé pour meta
 
-    )
-);
+];

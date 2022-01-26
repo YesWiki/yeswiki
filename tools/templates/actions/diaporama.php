@@ -6,17 +6,17 @@ if (!defined("WIKINI_VERSION")) {
 //parametres wikini
 $pagetag = trim($this->GetParameter('page')) ;
 if (empty($pagetag)) {
-    return ('<div class="error_box">Action diaporama : param&ecirc;tre "page" obligatoire.</div>') ;
+    return ('<div class="error_box">' . _t('DIAPORAMA_PAGE_PARAM_MISSING') . '</div>') ;
 }
 
 $class = trim($this->GetParameter('class')) ;
 
 $template = trim($this->GetParameter('template'));
 if (empty($template)) {
-    $template = 'diaporama_slide.tpl.html';
-} elseif (!file_exists('tools/templates/presentation/templates/'.$template)) {
-    echo('<div class="error_box">Action diaporama : le param&ecirc;tre "template" pointe sur un fichier inexistant ou illisible. Le template par d&eacute;faut sera utilis&eacute;.</div>') ;
-    $template = 'diaporama_slide.tpl.html';
+    $template = 'diaporama_slides.tpl.html';
+} elseif (!file_exists('tools/templates/presentation/templates/'.basename($template))) {
+    echo('<div class="error_box">'. _t('DIAPORAMA_TEMPLATE_PARAM_ERROR') .'</div>') ;
+    $template = 'diaporama_slides.tpl.html';
 }
 
 //pour l'action diaporama, on simule la presence sur la page, afin qu'il recupere les fichiers attaches au bon endroit
