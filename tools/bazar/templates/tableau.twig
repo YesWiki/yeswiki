@@ -16,7 +16,7 @@ pour différencier les différents tableaux table_1 table_2 #}
   </thead>
   <tbody>
     {% for entry in entries %}
-      <tr class="bazar-entry" {{ entry.html_data|raw }}>
+      <tr {{ entry.html_data|raw }}>
         {% set searchTitle = ("bf_titre" in columnsInfo|map(p => p.propertyName)) %}
         {% for info in columnsInfo %}
           {% set val = entry[info.propertyName] %}
@@ -43,4 +43,5 @@ pour différencier les différents tableaux table_1 table_2 #}
 </table>
 
 {{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
+{{ include_javascript('tools/bazar/presentation/javascripts/tableau.js') }}
 {{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
