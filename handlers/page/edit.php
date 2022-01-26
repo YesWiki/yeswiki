@@ -94,14 +94,12 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
         case 'Sauver':
             // check for overwriting
             if ($this->page && $this->page['id'] != $_POST['previous']) {
-                $error = 'ALERTE : '.
-                "Cette page a &eacute;t&eacute; modifi&eacute;e par quelqu'un d'autre pendant que vous l'&eacute;ditiez.<br />\n".
-                "Veuillez copier vos changements et r&eacute;&eacute;diter cette page.\n";
+                $error = str_replace("\n", "<br />", _t('EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER'));
             } else { // store
                 $body = str_replace("\r", '', $body);
                 // teste si la nouvelle page est differente de la précédente
                 if (isset($this->page['body']) && rtrim($body) == rtrim($this->page['body'])) {
-                    $this->SetMessage('Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car elle n\'a subi aucune modification.');
+                    $this->SetMessage(_t('EDIT_NO_CHANGE_MSG'));
                     $this->Redirect($this->href(testUrlInIframe()));
                 } else {
                     // l'encodage de la base est en iso-8859-1, voir s'il faut convertir

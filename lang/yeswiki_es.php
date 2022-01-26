@@ -517,6 +517,12 @@ return [
     // actions/usertable.php
     // 'GROUP_S' => 'Groupe(s)',
 
+    // handlers/edit
+    // 'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' => 'ALERTE : '.
+    //     'Cette page a &eacute;t&eacute; modifi&eacute;e par quelqu\'un d\'autre pendant que vous l\'&eacute;ditiez.'."\n".
+    //     'Veuillez copier vos changements et r&eacute;&eacute;diter cette page.',
+    // 'EDIT_NO_CHANGE_MSG' => 'Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car elle n\'a subi aucune modification.',
+
     // handlers/update
     // 'UPDATE_ADMIN_PAGES' => 'Mettre à jour les pages de gestion',
     // 'UPDATE_ADMIN_PAGES_CONFIRM' => 'Confirmer la mise à jour des pages : ',

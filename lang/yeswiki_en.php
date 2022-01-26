@@ -475,6 +475,13 @@ return [
     // actions/usertable.php
     'GROUP_S' => 'Groupe(s)',
 
+    // handlers/edit
+    'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' => 'ALERT : '.
+        'Thispage has benn modified by another user while you were editing it.'."\n".
+        'Copy your changes and edit a new time this page.',
+    'EDIT_NO_CHANGE_MSG' => 'This page was not saved because it has not changes.',
+
+
     // handlers/update
     'UPDATE_ADMIN_PAGES' => 'Update admin pages',
     'UPDATE_ADMIN_PAGES_CONFIRM' => 'Confirm pages\' update : ',
