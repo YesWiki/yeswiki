@@ -39,6 +39,12 @@ if (count($fiches)>0) {
             : ($param['checkboxfieldsincolumns'] ?? null);
         $checkboxFieldsInColumns = !in_array($checkboxFieldsInColumns, ["0",0,false,"false","non"], true);
 
+        $sumFieldsIds = $param['sumfieldsids'] ?? null;
+        $sumFieldsIds = array_filter(array_map('trim', explode(',', trim($sumFieldsIds))),
+            function($id){
+                return !empty($id);
+            });
+
         /* columnsInfo */
         if (!function_exists('tableauGetFieldsCols')) {
             function tableauGetFieldsCols($field, $checkboxFieldsInColumns): array
@@ -121,4 +127,5 @@ echo $this->render('@bazar/tableau.twig', [
     'param' => $param,
     'columnsInfo' => $columnsInfo,
     'entries' => $fiches,
+    'sumFieldsIds' => $sumFieldsIds,
 ]);

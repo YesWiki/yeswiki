@@ -5,12 +5,12 @@
 , on utilise $param['nbbazarliste'] qui s'incrémente à chaque fois qu'on appelle bazarliste
 pour différencier les différents tableaux table_1 table_2 #}
 
-<table id="table_{{ param.nbbazarliste}}" class="table table-condensed display" data-scroll-x="true">
+<table id="table_{{ param.nbbazarliste}}" class="table prevent-auto-init table-condensed display in-tableau-template" data-scroll-x="true">
   <thead>
     <tr>
       {# Column titles #}
       {% for index,info in columnsInfo %}
-        <th>{{ info.title }}</th>
+        <th{{ (info.propertyName in sumFieldsIds) ? ' class="sum-activated"' : ''}}>{{ info.title }}</th>
       {% endfor %}
     </tr>
   </thead>
@@ -39,6 +39,16 @@ pour différencier les différents tableaux table_1 table_2 #}
         {% endfor %}
       </tr>
     {% endfor %}
+    {% if sumFieldsIds is not empty %}
+      {# sums by col #}
+      <tfoot>
+        {% for index,info in columnsInfo %}
+          <th>
+            {{ loop.first and (info.propertyName not in sumFieldsIds) ? _t('SUM'):''}}
+          </th>
+        {% endfor %}
+      </tfoot>
+    {% endif %}
   </tbody>
 </table>
 

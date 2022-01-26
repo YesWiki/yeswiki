@@ -199,7 +199,7 @@ return [
     'BAZ_FICHE' => 'ficha.',
     'BAZ_FICHES_CORRESPONDANTES_FILTRES' => 'ficha(s) que corresponde(n) a tus filtros',
     // 'BAZ_FICHE_CORRESPONDANT_FILTRES' => 'fiche trouvée',
-    'BAZ_FICHES_CORRESPONDANTES' => 'fichas que corresponden a tu búsqueda',                                 
+    'BAZ_FICHES_CORRESPONDANTES' => 'fichas que corresponden a tu búsqueda',
     'BAZ_FICHE_CORRESPONDANTE' => 'fichas que corresponden a tu búsqueda',
     'BAZ_DESCRIPTION' => 'Descripción',
     'BAZ_DU' => 'desde',
@@ -367,6 +367,9 @@ return [
     
     // presentation/templates/liste_liens_date.tpl.html
     // 'BAZ_NO_ENTRY_FOR_THIS_PERIOD' => 'Il n\'y a pas de fiche pour cette période.',
+    
+    // templates/tableau.twig
+    // 'SUM' => 'Somme',
     
     // presentation/templates/timeline.tpl.html
     // 'BAZ_YEAR' => 'Ann&eacute;e',

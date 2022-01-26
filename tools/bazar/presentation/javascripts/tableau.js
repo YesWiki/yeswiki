@@ -9,9 +9,52 @@ $.fn.dataTable.ext.search.push(
 );
 
 const TableHelper = {
+    tables: {},
     updateTables: function(){
-        $('.table').each(function(){
-            let table = $(this).DataTable();
+        Object.keys(TableHelper.tables).forEach(key => {
+            let table = TableHelper.tables[key];
+            table.draw();
+        });
+    },
+    sanitizeValue: function (val){
+        return (isNaN(val)) ? 1 : Number(val) ;
+    },
+    updateFooter: function(index,footer){
+        let table = TableHelper.tables[index];
+        if (typeof table !== "undefined"){
+            let activatedRows = [];
+            table.rows({search:'applied'}).every(function(){
+                    activatedRows.push(this.index());
+                });
+            let activatedCols = [];
+            table.columns( '.sum-activated' ).every( function () {
+                activatedCols.push(this.index());
+            });
+            activatedCols.forEach(function(indexCol){
+                var sum = 0;
+                activatedRows.forEach(function(indexRow){
+                    let value = table.row(indexRow).data()[indexCol];
+                    sum = sum + TableHelper.sanitizeValue(value);
+
+                });
+                $(table.columns(indexCol).footer()).html(sum );
+            });
+        }
+    },
+    initTables: function (){
+        $('.table.prevent-auto-init.in-tableau-template').each(function(){
+            
+            var index = Object.keys(TableHelper.tables).length;
+            let table = $(this).DataTable({
+                ...DATATABLE_OPTIONS,
+                ...{
+                        "footerCallback": function ( row, data, start, end, display ) {
+                            TableHelper.updateFooter(index,row);
+                        },
+                    }
+                }
+            );
+            TableHelper.tables[index] = table;
             table.draw();
         });
     },
@@ -20,6 +63,7 @@ const TableHelper = {
         $('.filter-checkbox').on('click', function(){
             helper.updateTables();
         });
+        this.initTables();
     },
     getCheckedFilters: function(){
         let inputs = $('.filter-checkbox:checked');
@@ -66,5 +110,6 @@ const TableHelper = {
         }
     }
 };
-
-TableHelper.init();
+$(document).ready(function () {
+    TableHelper.init();
+});
