@@ -45,12 +45,22 @@ const TableHelper = {
         $('.table.prevent-auto-init.in-tableau-template').each(function(){
             
             var index = Object.keys(TableHelper.tables).length;
+            let buttons = [];
+            DATATABLE_OPTIONS.buttons.forEach(function(option){
+                buttons.push({
+                    ...option,
+                    ...{
+                        footer:true
+                    }
+                });
+            });
             let table = $(this).DataTable({
                 ...DATATABLE_OPTIONS,
                 ...{
                         "footerCallback": function ( row, data, start, end, display ) {
                             TableHelper.updateFooter(index,row);
                         },
+                        buttons: buttons,
                     }
                 }
             );
