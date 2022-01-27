@@ -1358,7 +1358,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
       }
 
       var imagealign = getParameterByName(formvals, 'attach_align');
-      if (typeof imagealign != 'undefined' && imagealign != '') {
+      if (typeof imagealign != 'undefined') {
         actionattach += ' class="' + imagealign;
         UploadModalForm.find('input[name="attach_css_class"]:checked').each(function() {
           actionattach += ' ' + $(this).val();

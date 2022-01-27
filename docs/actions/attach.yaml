@@ -66,15 +66,30 @@ actions:
               left: _t(AB_attach_class_position_left)
               center: _t(AB_attach_class_position_center)
               right: _t(AB_attach_class_position_right)
-          effect:
-            label: _t(AB_attach_class_effect_label)
+          lightshadow:
+            label: _t(AB_attach_class_effect_lightshadow)
             type: list
+            default: ''
+            options: 
+              lightshadow: _t(YES)
             showif:
               file: \.(png|jpg|jpeg|gif|pdf)$
-            options:
-              lightshadow: _t(AB_attach_class_effect_lightshadow)
-              whiteborder: _t(AB_attach_class_effect_whiteborder)
-              zoom: _t(AB_attach_class_effect_zoom)
+          whiteborder:
+            label: _t(AB_attach_class_effect_whiteborder)
+            type: list
+            default: ''
+            options: 
+              whiteborder: _t(YES)
+            showif:
+              file: \.(png|jpg|jpeg|gif|pdf)$
+          zoom:
+            label: _t(AB_attach_class_effect_zoom)
+            type: list
+            default: ''
+            options: 
+              zoom: _t(YES)
+            showif:
+              file: \.(png|jpg|jpeg|gif|pdf)$
           izmir:
             label: _t(AB_attach_class_izmir_label)
             type: list
