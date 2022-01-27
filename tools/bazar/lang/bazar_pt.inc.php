@@ -366,6 +366,9 @@ return [
     // presentation/templates/liste_liens_date.tpl.html
     // 'BAZ_NO_ENTRY_FOR_THIS_PERIOD' => 'Il n\'y a pas de fiche pour cette période.',
     
+    // templates/tableau.twig
+    // 'SUM' => 'Somme',
+    
     // presentation/templates/timeline.tpl.html
     // 'BAZ_YEAR' => 'Ann&eacute;e',
     

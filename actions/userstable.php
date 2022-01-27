@@ -68,8 +68,8 @@ if ($isAdmin && (!empty($_POST['userstable_action']))) { // Check if the page re
     }
 }
 
-$this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
-$this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
+$this->addJavascriptFile('javascripts/vendor/datatables-full/jquery.dataTables.min.js');
+$this->addCSSFile('styles/vendor/datatables-full/dataTables.bootstrap.min.css');
 echo '<table class="table table-striped">', "\n";
 echo '<thead>', "\n";
 echo '<tr>', "\n";

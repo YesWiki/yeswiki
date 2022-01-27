@@ -640,3 +640,42 @@ actions:
         hint: 500px, 100%...
         type: text
         default: 100%
+  bazartableau:
+    label: _t(AB_bazartableau_label)
+    description: _t(AB_bazartableau_description)
+    hint: _t(AB_bazartableau_hint)
+    width: 35%
+    properties:
+      template:
+        value: tableau.tpl.html
+      columnfieldsids:
+        type: form-field
+        label: _t(AB_bazartableau_columnfieldsids_label)
+        hint: _t(AB_bazartableau_columnfieldsids_hint)
+        multiple: true
+        default: ''
+      columntitles:
+        type: text
+        label: _t(AB_bazartableau_columntitles_label)
+        hint: _t(AB_bazartableau_columntitles_hint)
+        default: ''
+      checkboxfieldsincolumns:
+        type: checkbox
+        label: _t(AB_bazartableau_checkboxfieldsincolumns_label)
+        checkedvalue: "false"
+        uncheckedvalue: "true"
+      sumfieldsids:
+        type: form-field
+        label: _t(AB_bazartableau_sumfieldsids_label)
+        hint: _t(AB_bazartableau_sumfieldsids_hint)
+        multiple: true
+        default: ''
+      displayadmincol:
+        type: list
+        label: _t(AB_bazartableau_displayadmincol_label)
+        hint: _t(AB_bazartableau_displayadmincol_hint)
+        default: ''
+        options: 
+          '': _t(NO)
+          yes: _t(YES)
+          onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)

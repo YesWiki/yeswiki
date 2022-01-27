@@ -39,9 +39,8 @@ class WakkaFormatter__ extends YesWikiFormatter
         if (preg_match("/^\[\|(.*)$/m", $thing, $match)) {
             $tableclass = $match[1];
         }
-        $this->wiki->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
-        $this->wiki->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js');
-        $this->wiki->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
+        $this->wiki->addJavascriptFile('javascripts/vendor/datatables-full/jquery.dataTables.min.js');
+        $this->wiki->addCSSFile('styles/vendor/datatables-full/dataTables.bootstrap.min.css');
         $table = "<table class=\"table".(!empty($tableclass) ? ' '.$tableclass: ' table-striped table-bordered')."\" $tableclass >\n";
         // suppression de [|xxxx et de |]
         $thing = preg_replace("/^\[\|(.*)$/m", '', $thing);

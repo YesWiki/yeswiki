@@ -705,3 +705,8 @@ section.shape-blob5 {
 section.full-width:not(.with-bg-pattern) {
   padding: 2rem 0;
 }
+
+/* for datatables bootstrap */
+.dataTables_footer .dataTables_info {
+  white-space: normal !important; /* more responsive */
+}

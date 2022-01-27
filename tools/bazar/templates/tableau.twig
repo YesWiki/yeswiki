@@ -1,0 +1,111 @@
+
+{{ infoRes|raw }} {# affiche le nombre de résultats #}
+
+{# l'id doit être unique - dans le cas où il y a plusieurs tableaux sur la même page
+, on utilise $param['nbbazarliste'] qui s'incrémente à chaque fois qu'on appelle bazarliste
+pour différencier les différents tableaux table_1 table_2 #}
+
+<table id="table_{{ param.nbbazarliste}}" class="table prevent-auto-init table-condensed display in-tableau-template" data-scroll-x="true">
+  <thead>
+    <tr>
+      {# Column titles #}
+      {% for index,info in columnsInfo %}
+        <th{{ (info.propertyName in sumFieldsIds) ? ' class="sum-activated"' : ''}}>{{ info.title }}</th>
+      {% endfor %}
+      {% if displayadmincol %}
+        <th class="not-printable-col"></th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for entry in entries %}
+      <tr {{ entry.html_data|raw }}>
+        {% set searchTitle = ("bf_titre" in columnsInfo|map(p => p.propertyName)) %}
+        {% for info in columnsInfo %}
+          {% set val = entry[info.propertyName] %}
+          <td>
+            {% if loop.first %}
+              <span class="bazar-entry" {{ entry.html_data|raw }}></span>
+            {% endif %}
+            {% if info.key is empty %}
+              {% if (searchTitle and info.propertyName == "bf_titre") or 
+                    (not searchTitle and loop.first and not info.mapFieldId) %}
+                <a href="{{ url({tag:entry.id_fiche}) }}" class="modalbox" data-size="modal-lg">
+                  {{ val }}
+                </a>
+              {% elseif info.mapFieldId %}
+                {{ val[info.mapFieldId] }}
+              {% else %}
+                {{ val }}
+              {% endif %}
+            {% else %}
+              {{ (info.key in val|split(',')) ? 'X' : '' }}
+            {% endif %}
+          </td>
+        {% endfor %}
+        {% if displayadmincol %}
+          <td class="not-printable-col horizontal-admins-btn">
+            {% if aclService.hasAccess('write',entry.id_fiche) %}
+              <a href="{{ url({tag:entry.id_fiche,handler:'edit'}) }}"
+                data-toggle="tooltip"
+                data-placement="left"
+                class="btn btn-default btn-icon btn-xs"
+                target="blank"
+                title="{{ _t('MODIFY') }} {{ entry.id_fiche }}"
+                >
+                <i class="fas fa-pencil-alt"></i>
+              </a>
+            {% else %}
+              <button disabled="disabled"
+                data-toggle="tooltip"
+                data-placement="left"
+                class="btn btn-default btn-icon btn-xs"
+                target="blank"
+                title="{{ _t('DENY_WRITE') }}"
+                >
+                <i class="fas fa-pencil-alt"></i>
+              </buttom>
+            {% endif %}
+            {% if wiki.UserIsAdmin or wiki.UserIsOwner(entry.id_fiche) %}
+              <a href="{{ url({tag:entry.id_fiche,handler:'deletepage',params:{incomingurl:url({handler:''})}}) }}"
+                data-toggle="tooltip"
+                data-placement="left"
+                class="btn btn-danger btn-icon btn-xs modalbox"
+                title="{{ _t('DELETE') }} {{ entry.id_fiche }}"
+                >
+                <i class="fas fa-trash"></i>
+              </a>
+            {% else %}
+              <button disabled="disabled"
+                data-toggle="tooltip"
+                data-placement="left"
+                class="btn btn-danger btn-icon btn-xs"
+                title="{{ _t('DELETEPAGE_NOT_OWNER') }}"
+                >
+                <i class="fas fa-trash"></i>
+              </buttom>
+            {% endif %}
+          </td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+    {% if sumFieldsIds is not empty %}
+      {# sums by col #}
+      <tfoot>
+        {% for index,info in columnsInfo %}
+          <th>
+            {{ loop.first and (info.propertyName not in sumFieldsIds) ? _t('SUM'):''}}
+          </th>
+        {% endfor %}
+        {% if displayadmincol %}
+          <th class="not-printable-col"></th>
+        {% endif %}
+      </tfoot>
+    {% endif %}
+  </tbody>
+</table>
+
+{{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
+{{ include_javascript('tools/bazar/presentation/javascripts/tableau.js') }}
+{{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
+{{ include_css('tools/bazar/presentation/styles/tableau.css') }}

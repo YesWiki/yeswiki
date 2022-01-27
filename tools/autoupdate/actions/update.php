@@ -152,9 +152,8 @@ if ($endUpdate) {
     ]);
     echo $output ;
 } else {
-    $this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
-    $this->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js');
-    $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
+    $this->addJavascriptFile('javascripts/vendor/datatables-full/jquery.dataTables.min.js');
+    $this->addCSSFile('styles/vendor/datatables-full/dataTables.bootstrap.min.css');
 
     // tries to give 5 minutes time for the script to execute
     @ini_set('max_execution_time', 300);

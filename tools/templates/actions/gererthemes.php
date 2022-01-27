@@ -52,8 +52,8 @@ while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
 if (isset($error)) {
     echo "<div class='alert alert-danger'>$error</div>";
 }
-$this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
-$this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
+$this->addJavascriptFile('javascripts/vendor/datatables-full/jquery.dataTables.min.js');
+$this->addCSSFile('styles/vendor/datatables-full/dataTables.bootstrap.min.css');
 echo '<form method="post" action="'.$this->href().'">';
 ?>
 <p><?php echo _t('GERERTHEMES_HINT'); ?></p>

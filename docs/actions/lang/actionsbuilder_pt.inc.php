@@ -369,4 +369,17 @@ return [
     // "AB_syndication_action_formatdate_option_jma" => "Jour Mois année",
     // "AB_syndication_action_formatdate_option_jmh" => "Jour mois heure",
     // "AB_syndication_action_formatdate_option_jmah" => "Jour mois année heure",
+
+    // tableau
+    // "AB_bazartableau_label" => "Tableau",
+    // "AB_bazartableau_description" => "Afficher sous forme de tableau",
+    // "AB_bazartableau_hint" => "Template encore expérimental - aider-nous en signalant les bugs sur https://yeswiki.net/forum/",
+    // "AB_bazartableau_columnfieldsids_label" => "Champs à afficher",
+    // "AB_bazartableau_columnfieldsids_hint" => "Vide = tous",
+    // "AB_bazartableau_columntitles_label" => "Titres des colonnes",
+    // "AB_bazartableau_columntitles_hint" => "Séparés par des virgules - vide = nom du champ récupéré automatiquement",
+    // "AB_bazartableau_checkboxfieldsincolumns_label" => "Fusionner les réponses des cases à cocher",
+    // "AB_bazartableau_displayadmincol_label" => "Afficher les boutons d'administration",
+    // "AB_bazartableau_displayadmincol_hint" => "Modifier/supprimer",
+    // "AB_bazartableau_displayadmincol_onlyadmins" => "Seulement pour les administrateurs",
 ];

@@ -12,6 +12,10 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
     "bootstrap": "^3",
+    "datatables.net-bs": "^1.11.3",
+    "datatables.net-buttons-bs": "^2.2.1",
+    "datatables.net-fixedheader-bs": "^3.2.1",
+    "datatables.net-responsive-bs": "^2.2.9",
     "formBuilder": "^3",
     "formbuilder-languages": "^1.1.0",
     "gogocarto-js": "^1.7.11",

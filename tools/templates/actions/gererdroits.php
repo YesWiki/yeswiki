@@ -151,9 +151,8 @@ if (isset($error)) {
 } elseif (isset($success)) {
     echo "<div class='alert alert-success'>$success</div>";
 }
-$this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
-$this->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js');
-$this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
+$this->addJavascriptFile('javascripts/vendor/datatables-full/jquery.dataTables.min.js');
+$this->addCSSFile('styles/vendor/datatables-full/dataTables.bootstrap.min.css');
 ?>
 <p><?php echo _t('ACLS_SELECT_PAGES_TO_MODIFY'); ?></p>
 <div class="form-group" style="display:flex;justify-content:flex-end;margin-bottom:10px;margin-top:10px;">

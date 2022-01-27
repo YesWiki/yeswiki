@@ -1,0 +1,151 @@
+<?php
+
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Bazar\Field\CheckboxField ;
+use YesWiki\Bazar\Field\MapField ;
+use YesWiki\Bazar\Service\FormManager ;
+use YesWiki\Core\Service\AclService ;
+use YesWiki\Wiki ;
+
+// get services
+$formManager = $this->wiki->services->get(FormManager::class);
+$aclService = $this->wiki->services->get(AclService::class);
+
+$dataList = [];
+$columnsInfo = [];
+
+if (count($fiches)>0) {
+    $formId = $fiches[array_key_first($fiches)]['id_typeannonce'] ?? null;
+    $form = $formManager->getOne($formId);
+    if (!empty($form)) {
+        $fields = $form['prepared'];
+        
+        /*	Parameters  */
+        $columnTitlesNames = $param['columntitles'] ?? null;
+        $columnTitlesNames = array_filter(
+            array_map('trim', explode(',', trim($columnTitlesNames))),
+            function ($name) {
+                return !empty($name);
+            }
+        );
+
+        $columnFieldsIdsRaw = $param['columnfieldsids'] ?? null;
+        $columnFieldsIdsRaw = array_filter(
+            array_map('trim', explode(',', trim($columnFieldsIdsRaw))),
+            function ($id) {
+                return !empty($id);
+            }
+        );
+
+        $checkboxFieldsInColumns = $param['checkboxfieldsincolumns'] ?? null;
+        $checkboxFieldsInColumns = !in_array($checkboxFieldsInColumns, ["0",0,false,"false","non"], true);
+
+        $sumFieldsIds = $param['sumfieldsids'] ?? null;
+        $sumFieldsIds = array_filter(
+            array_map('trim', explode(',', trim($sumFieldsIds))),
+            function ($id) {
+                return !empty($id);
+            }
+        );
+
+        $displayadmincol = (!empty($param['displayadmincol']) && in_array($param['displayadmincol'], ['yes','onlyadmins'], true)) ? $param['displayadmincol'] : false;
+        switch ($displayadmincol) {
+            case 'onlyadmins':
+                $displayadmincol = $this->wiki->UserIsAdmin();
+                break;
+            case 'yes':
+                $displayadmincol = true;
+                break;
+            case false:
+            default:
+                $displayadmincol = false;
+                break;
+        }
+
+        /* columnsInfo */
+        if (!function_exists('tableauGetFieldsCols')) {
+            function tableauGetFieldsCols($field, $checkboxFieldsInColumns): array
+            {
+                $propertyName = $field->getPropertyName();
+                if (empty($propertyName)) {
+                    return [];
+                }
+                
+                $fieldLabel = $field->getLabel();
+                if (!($field instanceof CheckboxField && $checkboxFieldsInColumns) && !($field instanceof MapField)) {
+                    return [['propertyName' => $propertyName, 'title' => $fieldLabel, 'key' => null,
+                        'mapFieldId' =>  null]];
+                } elseif ($field instanceof MapField) {
+                    $cols = [];
+                    $cols[]  = [
+                        'propertyName' => $propertyName,
+                        'title' => _t('BAZ_LATITUDE'),
+                        'key' => null,
+                        'mapFieldId' => $field->getLatitudeField()];
+                    $cols[]  = [
+                        'propertyName' => $propertyName,
+                        'title' => _t('BAZ_LONGITUDE'),
+                        'key' => null,
+                        'mapFieldId' => $field->getLongitudeField()];
+                    return $cols;
+                } else {
+                    $options = $field->getOptions();
+                    if (empty($options)) {
+                        return [];
+                    } else {
+                        $cols = [];
+                        foreach ($options as $key => $optionName) {
+                            $cols[] = [
+                                'propertyName' => $propertyName,
+                                'title' => "$fieldLabel - $optionName",
+                                'key' => $key,
+                                'mapFieldId' => null];
+                        }
+                        return $cols;
+                    }
+                }
+            }
+        }
+        if (empty($columnFieldsIdsRaw)) {
+            // if no title, display all fields
+            foreach ($fields as $field) {
+                foreach (tableauGetFieldsCols($field, $checkboxFieldsInColumns) as $col) {
+                    $columnsInfo[] = $col;
+                }
+            }
+        } else {
+            foreach ($columnFieldsIdsRaw as $fieldId) {
+                $field = $formManager->findFieldFromNameOrPropertyName($fieldId, $formId);
+                if (!empty($field)) {
+                    foreach (tableauGetFieldsCols($field, $checkboxFieldsInColumns) as $col) {
+                        $columnsInfo[] = $col;
+                    }
+                }
+            }
+        }
+
+        /* columnTitles custom */
+        if (!empty($columnTitlesNames)) {
+            foreach ($columnTitlesNames as $key => $value) {
+                if (isset($columnsInfo[$key]) && !empty($value)) {
+                    $columnsInfo[$key]['title'] = $value;
+                }
+            }
+        }
+    } else {
+        echo $this->render('@templates/alert-message.twig', [
+            'type' => 'danger',
+            'message' => _t('BAZ_NO_FORMS_FOUND'),
+        ]);
+    }
+}
+echo $this->render('@bazar/tableau.twig', [
+    'infoRes' => $info_res ?? null,
+    'param' => $param,
+    'columnsInfo' => $columnsInfo,
+    'entries' => $fiches,
+    'sumFieldsIds' => $sumFieldsIds,
+    'displayadmincol' => $displayadmincol,
+    'aclService' => $aclService,
+    'wiki' => $this->wiki,
+]);
