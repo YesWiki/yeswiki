@@ -4,12 +4,13 @@ $.fn.dataTable.ext.search.push(
         let table = $(settings.nTable).DataTable();
         let row = table.rows(index);
         let node = row.nodes().to$().first();
-        return TableHelper.checkDataForNode(node);
+        return TableHelper.checkDataForNode(table,node);
     }
 );
 
 const TableHelper = {
     tables: {},
+    tablesByIds: {},
     checkedFilters: {},
     updateCheckedFilters: function(){
         this.checkedFilters = TableHelper.getCheckedFilters();
@@ -99,6 +100,7 @@ const TableHelper = {
                 }
             );
             TableHelper.tables[index] = table;
+            TableHelper.tablesByIds[$(table.table(0).node()).prop('id')] = index;
             table.on( 'draw', function () {
                 TableHelper.updateNBResults(table);
             } );
@@ -113,44 +115,69 @@ const TableHelper = {
         this.initTables();
     },
     getCheckedFilters: function(){
-        let inputs = $('.filter-checkbox:checked');
-        if (inputs.length == 0){
-            return {};
-        } else {
-            let res = {};
-            for (let index = 0; index < inputs.length; index++) {
-                let input = inputs[index];
-                let name = $(input).attr('name');
-                let value = $(input).attr('value');
-                if (res.hasOwnProperty(name)){
-                    res[name].push(value);
+        let res = {};
+        Object.keys(TableHelper.tables).forEach(function(key){
+            let table = TableHelper.tables[key];
+            let filterContainer = TableHelper.findBazarListFiltersContainer(table);
+            if (filterContainer.length == 0){
+                res[key] = {};
+            } else {
+                let inputs = $(filterContainer).find('.filter-checkbox:checked');
+                if (inputs.length == 0){
+                    res[key] = {};
                 } else {
-                    res[name] = [value];
+                    let tableRes = {};
+                    for (let index = 0; index < inputs.length; index++) {
+                        let input = inputs[index];
+                        let name = $(input).attr('name');
+                        let value = $(input).attr('value');
+                        if (tableRes.hasOwnProperty(name)){
+                            tableRes[name].push(value);
+                        } else {
+                            tableRes[name] = [value];
+                        }
+                    }
+                    res[key] = tableRes;
                 }
             }
-            return res;
-        }
+        });
+        return res;
     },
-    checkDataForNode: function(node){
+    checkDataForNode: function(table,node){
         if(Object.keys(this.checkedFilters).length == 0){
             return true;
         } else {
-            for (const name in this.checkedFilters) {
-                if (this.checkedFilters[name].length == 0){
+            let tableId = $(table.table(0).node()).prop('id');
+            if (tableId.length == 0 || !TableHelper.tablesByIds.hasOwnProperty(tableId)){
+                return true;
+            } else {
+                let indexTable = TableHelper.tablesByIds[tableId];
+                if (!TableHelper.checkedFilters.hasOwnProperty(indexTable)){
                     return true;
                 } else {
-                    let nodeValue = $(node).attr('data-'+name);
-                    if (typeof nodeValue === "undefined" || nodeValue.length == 0) {
-                        return false;
+                    let checkedFilters = TableHelper.checkedFilters[indexTable];
+                    if(Object.keys(checkedFilters).length == 0){
+                        return true;
                     } else {
-                        let values = nodeValue.split(",");
-                        
-                        for (let index = 0; index < this.checkedFilters[name].length; index++) {
-                            if (values.indexOf(this.checkedFilters[name][index]) > -1){
+                        for (const name in checkedFilters) {
+                            if (checkedFilters[name].length == 0){
                                 return true;
+                            } else {
+                                let nodeValue = $(node).attr('data-'+name);
+                                if (typeof nodeValue === "undefined" || nodeValue.length == 0) {
+                                    return false;
+                                } else {
+                                    let values = nodeValue.split(",");
+                                    
+                                    for (let index = 0; index < checkedFilters[name].length; index++) {
+                                        if (values.indexOf(checkedFilters[name][index]) > -1){
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                }
                             }
                         }
-                        return false;
                     }
                 }
             }
