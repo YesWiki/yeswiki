@@ -4,9 +4,12 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\CheckboxField ;
 use YesWiki\Bazar\Field\MapField ;
 use YesWiki\Bazar\Service\FormManager ;
+use YesWiki\Core\Service\AclService ;
+use YesWiki\Wiki ;
 
 // get services
 $formManager = $this->wiki->services->get(FormManager::class);
+$aclService = $this->wiki->services->get(AclService::class);
 
 $dataList = [];
 $columnsInfo = [];
@@ -19,25 +22,45 @@ if (count($fiches)>0) {
         
         /*	Parameters  */
         $columnTitlesNames = $param['columntitles'] ?? null;
-        $columnTitlesNames = array_filter(array_map('trim', explode(',', trim($columnTitlesNames))),
-            function($name){
+        $columnTitlesNames = array_filter(
+            array_map('trim', explode(',', trim($columnTitlesNames))),
+            function ($name) {
                 return !empty($name);
-            });
+            }
+        );
 
         $columnFieldsIdsRaw = $param['columnfieldsids'] ?? null;
-        $columnFieldsIdsRaw = array_filter(array_map('trim', explode(',', trim($columnFieldsIdsRaw))),
-            function($id){
+        $columnFieldsIdsRaw = array_filter(
+            array_map('trim', explode(',', trim($columnFieldsIdsRaw))),
+            function ($id) {
                 return !empty($id);
-            });
+            }
+        );
 
         $checkboxFieldsInColumns = $param['checkboxfieldsincolumns'] ?? null;
         $checkboxFieldsInColumns = !in_array($checkboxFieldsInColumns, ["0",0,false,"false","non"], true);
 
         $sumFieldsIds = $param['sumfieldsids'] ?? null;
-        $sumFieldsIds = array_filter(array_map('trim', explode(',', trim($sumFieldsIds))),
-            function($id){
+        $sumFieldsIds = array_filter(
+            array_map('trim', explode(',', trim($sumFieldsIds))),
+            function ($id) {
                 return !empty($id);
-            });
+            }
+        );
+
+        $displayadmincol = (!empty($param['displayadmincol']) && in_array($param['displayadmincol'], ['yes','onlyadmins'], true)) ? $param['displayadmincol'] : false;
+        switch ($displayadmincol) {
+            case 'onlyadmins':
+                $displayadmincol = $this->wiki->UserIsAdmin();
+                break;
+            case 'yes':
+                $displayadmincol = true;
+                break;
+            case false:
+            default:
+                $displayadmincol = false;
+                break;
+        }
 
         /* columnsInfo */
         if (!function_exists('tableauGetFieldsCols')) {
@@ -50,9 +73,9 @@ if (count($fiches)>0) {
                 
                 $fieldLabel = $field->getLabel();
                 if (!($field instanceof CheckboxField && $checkboxFieldsInColumns) && !($field instanceof MapField)) {
-                    return [['propertyName' => $propertyName, 'title' => $fieldLabel, 'key' => null, 
+                    return [['propertyName' => $propertyName, 'title' => $fieldLabel, 'key' => null,
                         'mapFieldId' =>  null]];
-                } elseif($field instanceof MapField) {
+                } elseif ($field instanceof MapField) {
                     $cols = [];
                     $cols[]  = [
                         'propertyName' => $propertyName,
@@ -122,4 +145,7 @@ echo $this->render('@bazar/tableau.twig', [
     'columnsInfo' => $columnsInfo,
     'entries' => $fiches,
     'sumFieldsIds' => $sumFieldsIds,
+    'displayadmincol' => $displayadmincol,
+    'aclService' => $aclService,
+    'wiki' => $this->wiki,
 ]);

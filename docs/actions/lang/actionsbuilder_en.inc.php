@@ -378,4 +378,7 @@ return [
     "AB_bazartableau_columntitles_label" => "Comlumns titles",
     "AB_bazartableau_columntitles_hint" => "Separated by coma - empty = field's name autoatically get",
     "AB_bazartableau_checkboxfieldsincolumns_label" => "Merge answer for checkbox fields",
+    "AB_bazartableau_displayadmincol_label" => "Display admins buttons",
+    "AB_bazartableau_displayadmincol_hint" => "Edit/Delete",
+    "AB_bazartableau_displayadmincol_onlyadmins" => "Only for admins",
 ];

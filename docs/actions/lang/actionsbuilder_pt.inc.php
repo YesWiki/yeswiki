@@ -379,4 +379,7 @@ return [
     // "AB_bazartableau_columntitles_label" => "Titres des colonnes",
     // "AB_bazartableau_columntitles_hint" => "Séparés par des virgules - vide = nom du champ récupéré automatiquement",
     // "AB_bazartableau_checkboxfieldsincolumns_label" => "Fusionner les réponses des cases à cocher",
+    // "AB_bazartableau_displayadmincol_label" => "Afficher les boutons d'administration",
+    // "AB_bazartableau_displayadmincol_hint" => "Modifier/supprimer",
+    // "AB_bazartableau_displayadmincol_onlyadmins" => "Seulement pour les administrateurs",
 ];

@@ -670,3 +670,12 @@ actions:
         hint: _t(AB_bazartableau_sumfieldsids_hint)
         multiple: true
         default: ''
+      displayadmincol:
+        type: list
+        label: _t(AB_bazartableau_displayadmincol_label)
+        hint: _t(AB_bazartableau_displayadmincol_hint)
+        default: ''
+        options: 
+          '': _t(NO)
+          yes: _t(YES)
+          onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
