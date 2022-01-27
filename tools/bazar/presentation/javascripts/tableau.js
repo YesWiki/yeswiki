@@ -14,6 +14,36 @@ const TableHelper = {
     updateCheckedFilters: function(){
         this.checkedFilters = TableHelper.getCheckedFilters();
     },
+    getBazarListeContainer: function (table){
+        let tableNode = table.tables().nodes().to$();
+        return $(tableNode).closest('.bazar-list');
+    },
+    findBazarListFiltersContainer: function (table){
+        let bazarlistContainer = this.getBazarListeContainer(table);
+        if (!$(bazarlistContainer).parent().hasClass('results-col')){
+            return {length:0};
+        } else {
+            return $(bazarlistContainer).parent().siblings('.filters-col').find('.filters');
+        }
+    },
+    updateNBResults: function (table){
+        let filterContainer = this.findBazarListFiltersContainer(table);
+        if (filterContainer.length > 0){
+            let bazarlistContainer = this.getBazarListeContainer(table);
+            let nbResults = bazarlistContainer.find('.bazar-entry:visible').length;
+            let nbResultInfoNode = $(filterContainer).find('.nb-results');
+            if (nbResultInfoNode.length > 0){
+                $(nbResultInfoNode).html(nbResults);
+                if (nbResults > 1) {
+                    $(filterContainer).find('.result-label').hide();
+                    $(filterContainer).find('.results-label').show();
+                } else {
+                    $(filterContainer).find('.result-label').show();
+                    $(filterContainer).find('.results-label').hide();
+                }
+            }
+        }
+    },
     updateTables: function(){
         TableHelper.updateCheckedFilters();
         Object.keys(TableHelper.tables).forEach(key => {
@@ -40,15 +70,14 @@ const TableHelper = {
                 activatedRows.forEach(function(indexRow){
                     let value = table.row(indexRow).data()[indexCol];
                     sum = sum + TableHelper.sanitizeValue(value);
-
                 });
                 $(table.columns(indexCol).footer()).html(sum );
             });
         }
     },
     initTables: function (){
+        TableHelper.updateCheckedFilters();
         $('.table.prevent-auto-init.in-tableau-template').each(function(){
-            
             var index = Object.keys(TableHelper.tables).length;
             let buttons = [];
             DATATABLE_OPTIONS.buttons.forEach(function(option){
@@ -70,7 +99,9 @@ const TableHelper = {
                 }
             );
             TableHelper.tables[index] = table;
-            TableHelper.updateCheckedFilters();
+            table.on( 'draw', function () {
+                TableHelper.updateNBResults(table);
+            } );
             table.draw();
         });
     },
