@@ -4,13 +4,18 @@ $.fn.dataTable.ext.search.push(
         let table = $(settings.nTable).DataTable();
         let row = table.rows(index);
         let node = row.nodes().to$().first();
-        return TableHelper.checkDataForNode(TableHelper.getCheckedFilters(),node);
+        return TableHelper.checkDataForNode(node);
     }
 );
 
 const TableHelper = {
     tables: {},
+    checkedFilters: {},
+    updateCheckedFilters: function(){
+        this.checkedFilters = TableHelper.getCheckedFilters();
+    },
     updateTables: function(){
+        TableHelper.updateCheckedFilters();
         Object.keys(TableHelper.tables).forEach(key => {
             let table = TableHelper.tables[key];
             table.draw();
@@ -19,7 +24,7 @@ const TableHelper = {
     sanitizeValue: function (val){
         return (isNaN(val)) ? 1 : Number(val) ;
     },
-    updateFooter: function(index,footer){
+    updateFooter: function(index){
         let table = TableHelper.tables[index];
         if (typeof table !== "undefined"){
             let activatedRows = [];
@@ -58,13 +63,14 @@ const TableHelper = {
                 ...DATATABLE_OPTIONS,
                 ...{
                         "footerCallback": function ( row, data, start, end, display ) {
-                            TableHelper.updateFooter(index,row);
+                            TableHelper.updateFooter(index);
                         },
                         buttons: buttons,
                     }
                 }
             );
             TableHelper.tables[index] = table;
+            TableHelper.updateCheckedFilters();
             table.draw();
         });
     },
@@ -94,12 +100,12 @@ const TableHelper = {
             return res;
         }
     },
-    checkDataForNode: function(checkedFilters,node){
-        if(Object.keys(checkedFilters).length == 0){
+    checkDataForNode: function(node){
+        if(Object.keys(this.checkedFilters).length == 0){
             return true;
         } else {
-            for (const name in checkedFilters) {
-                if (checkedFilters[name].length == 0){
+            for (const name in this.checkedFilters) {
+                if (this.checkedFilters[name].length == 0){
                     return true;
                 } else {
                     let nodeValue = $(node).attr('data-'+name);
@@ -108,8 +114,8 @@ const TableHelper = {
                     } else {
                         let values = nodeValue.split(",");
                         
-                        for (let index = 0; index < checkedFilters[name].length; index++) {
-                            if (values.indexOf(checkedFilters[name][index]) > -1){
+                        for (let index = 0; index < this.checkedFilters[name].length; index++) {
+                            if (values.indexOf(this.checkedFilters[name][index]) > -1){
                                 return true;
                             }
                         }
