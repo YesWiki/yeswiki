@@ -18,25 +18,19 @@ if (count($fiches)>0) {
         $fields = $form['prepared'];
         
         /*	Parameters  */
-        $columnTitlesNames = !empty($param['titrecolonnes']) // for backwardcompatibility
-            ? $param['titrecolonnes']
-            : ($param['columntitles'] ?? null);
+        $columnTitlesNames = $param['columntitles'] ?? null;
         $columnTitlesNames = array_filter(array_map('trim', explode(',', trim($columnTitlesNames))),
             function($name){
                 return !empty($name);
             });
 
-        $columnFieldsIdsRaw = !empty($param['champcolonnes']) // for backwardcompatibility
-            ? $param['champcolonnes']
-            : ($param['columnfieldsids'] ?? null);
+        $columnFieldsIdsRaw = $param['columnfieldsids'] ?? null;
         $columnFieldsIdsRaw = array_filter(array_map('trim', explode(',', trim($columnFieldsIdsRaw))),
             function($id){
                 return !empty($id);
             });
 
-        $checkboxFieldsInColumns = !empty($param['checkboxEnColonnes']) // for backwardcompatibility
-            ? $param['checkboxEnColonnes']
-            : ($param['checkboxfieldsincolumns'] ?? null);
+        $checkboxFieldsInColumns = $param['checkboxfieldsincolumns'] ?? null;
         $checkboxFieldsInColumns = !in_array($checkboxFieldsInColumns, ["0",0,false,"false","non"], true);
 
         $sumFieldsIds = $param['sumfieldsids'] ?? null;

@@ -373,7 +373,7 @@ return [
     // tableau
     "AB_bazartableau_label" => "Tableau",
     "AB_bazartableau_description" => "Afficher sous forme de tableau",
-    "AB_bazartableau_hint" => "Template encore expérimental",
+    "AB_bazartableau_hint" => "Template encore expérimental - aider-nous en signalant les bugs sur https://yeswiki.net/forum/",
     "AB_bazartableau_columnfieldsids_label" => "Champs à afficher",
     "AB_bazartableau_columnfieldsids_hint" => "Vide = tous",
     "AB_bazartableau_columntitles_label" => "Titres des colonnes",
