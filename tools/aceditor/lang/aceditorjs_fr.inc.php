@@ -23,7 +23,7 @@ return [
     'ACEDITOR_LINK_TITLE'              => 'Ajoute un lien au texte s&eacute;lectionn&eacute;',
     'ACEDITOR_LINK_ADD_INTERNAL'       => 'Ajouter une page interne au YesWiki',
     'ACEDITOR_LINK_ADD_EXTERNAL'       => 'Ajouter une URL (lien externe)',
-    'ACEDITOR_LINK_PAGE_NAME'          => 'Nom de la page YesWiki (sans espace ni caract&egrave;re sp&eacute;ciaux)',
+    'ACEDITOR_LINK_PAGE_NAME'          => 'Nom de la page (sans espace ni caract&egrave;re sp&eacute;ciaux) ex : nom-de-la-page ou NomDeLaPage',
     'ACEDITOR_LINK_HINT_NEW_PAGE_NAME' => 'Si vous rentrez une page non-existante, elle sera cr&eacute;&eacute;e.',
     'ACEDITOR_LINK_EXTERNAL'           => 'Lien externe',
     'ACEDITOR_LINK_TEXT'               => 'Texte du lien',
