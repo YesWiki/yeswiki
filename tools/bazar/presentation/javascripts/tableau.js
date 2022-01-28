@@ -30,8 +30,7 @@ const TableHelper = {
     updateNBResults: function (table){
         let filterContainer = this.findBazarListFiltersContainer(table);
         if (filterContainer.length > 0){
-            let bazarlistContainer = this.getBazarListeContainer(table);
-            let nbResults = bazarlistContainer.find('.bazar-entry:visible').length;
+            let nbResults = table.rows({search:'applied'}).data().length;
             let nbResultInfoNode = $(filterContainer).find('.nb-results');
             if (nbResultInfoNode.length > 0){
                 $(nbResultInfoNode).html(nbResults);
@@ -104,8 +103,8 @@ const TableHelper = {
             table.on( 'draw', function () {
                 TableHelper.updateNBResults(table);
             } );
-            table.draw();
         });
+        TableHelper.updateTables();
     },
     init: function(){
         let helper = this;
@@ -160,24 +159,26 @@ const TableHelper = {
                         return true;
                     } else {
                         for (const name in checkedFilters) {
-                            if (checkedFilters[name].length == 0){
-                                return true;
-                            } else {
+                            if (checkedFilters[name].length != 0){
                                 let nodeValue = $(node).attr('data-'+name);
                                 if (typeof nodeValue === "undefined" || nodeValue.length == 0) {
                                     return false;
                                 } else {
                                     let values = nodeValue.split(",");
                                     
+                                    let resultForThisname = false;
                                     for (let index = 0; index < checkedFilters[name].length; index++) {
-                                        if (values.indexOf(checkedFilters[name][index]) > -1){
-                                            return true;
+                                        if (!resultForThisname && values.indexOf(checkedFilters[name][index]) > -1){
+                                            resultForThisname = true;
                                         }
                                     }
-                                    return false;
+                                    if (!resultForThisname){
+                                        return false;
+                                    }
                                 }
                             }
                         }
+                        return true;
                     }
                 }
             }
