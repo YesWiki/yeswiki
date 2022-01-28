@@ -15,6 +15,7 @@ class PasswordField extends BazarField
 
         $this->type = 'password';
         $this->maxChars = $this->maxChars ?? 255;
+        $this->readAccess = empty($this->readAccess) ? '%' : str_replace(['!*','*'], ['%','%'], $this->readAccess); // not public
     }
 
     public function formatValuesBeforeSave($entry)
