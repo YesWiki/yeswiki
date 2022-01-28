@@ -154,11 +154,9 @@ class Guard
                 && isset($entry[$fieldName])
                 && !empty($entry['id_typeannonce'])) {
             $formId = $entry['id_typeannonce'];
-            if (strval($formId) == strval(intval($formId))) {
-                $field = $this->formManager->findFieldFromNameOrPropertyName($fieldName, $formId);
-                if (!empty($field) && $field instanceof EmailField && $field->getShowContactForm()) {
-                    return '';
-                }
+            $field = $this->formManager->findFieldFromNameOrPropertyName($fieldName, $formId);
+            if (!empty($field) && $field instanceof EmailField && $field->getShowContactForm()) {
+                return '';
             }
         }
         return (empty($fieldName) || !isset($entry[$fieldName])) ? "" : $entry[$fieldName];
