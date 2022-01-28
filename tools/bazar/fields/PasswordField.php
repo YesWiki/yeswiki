@@ -15,6 +15,9 @@ class PasswordField extends BazarField
 
         $this->type = 'password';
         $this->maxChars = $this->maxChars ?? 255;
+        // Here, we force not to use public read acces for password (not empty, not presence of *)
+        // because, the field is not rendered and it is not waited to see it in api, or bazar templates like tablea.twig
+        $this->readAccess = empty($this->readAccess) ? '%' : str_replace(['!*','*'], ['%','%'], $this->readAccess);
     }
 
     public function formatValuesBeforeSave($entry)
