@@ -146,7 +146,9 @@ if (count($fiches)>0) {
                         unset($fiches[$index]);
                     } else {
                         foreach($form['prepared'] as $field){
-                            if ($field instanceof EmailField){
+                            if ((empty(trim($field->renderStaticIfPermitted($fiche))))){
+                                $fiches[$index][$field->getPropertyName()] = "";
+                            } else if ($field instanceof EmailField){
                                 $fiches[$index][$field->getPropertyName()] = "***@***.***";
                             }
                         }
