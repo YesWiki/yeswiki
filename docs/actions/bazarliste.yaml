@@ -679,3 +679,30 @@ actions:
           '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
+      displaycreationdate:
+        type: list
+        label: _t(AB_bazartableau_displaycreationdate_label)
+        advanced: true
+        default: ''
+        options: 
+          '': _t(NO)
+          yes: _t(YES)
+          onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
+      displaylastchangedate:
+        type: list
+        label: _t(AB_bazartableau_displaylastchangedate_label)
+        advanced: true
+        default: ''
+        options: 
+          '': _t(NO)
+          yes: _t(YES)
+          onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
+      displayowner:
+        type: list
+        label: _t(AB_bazartableau_displayowner_label)
+        advanced: true
+        default: ''
+        options: 
+          '': _t(NO)
+          yes: _t(YES)
+          onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)

@@ -10,7 +10,7 @@ pour différencier les différents tableaux table_1 table_2 #}
     <tr>
       {# Column titles #}
       {% for index,info in columnsInfo %}
-        <th{{ (info.propertyName in sumFieldsIds) ? ' class="sum-activated"' : ''}}>{{ info.title }}</th>
+        <th{{ (info.propertyName in sumFieldsIds) ? ' class="sum-activated"' : ''}}>{{ info.title|raw }}</th>
       {% endfor %}
       {% if displayadmincol %}
         <th class="not-printable-col"></th>

@@ -14,6 +14,7 @@ $aclService = $this->wiki->services->get(AclService::class);
 
 $dataList = [];
 $columnsInfo = [];
+$sanitizedParams = [];
 
 if (count($fiches)>0) {
     $formId = $fiches[array_key_first($fiches)]['id_typeannonce'] ?? null;
@@ -49,18 +50,21 @@ if (count($fiches)>0) {
             }
         );
 
-        $displayadmincol = (!empty($param['displayadmincol']) && in_array($param['displayadmincol'], ['yes','onlyadmins'], true)) ? $param['displayadmincol'] : false;
-        switch ($displayadmincol) {
-            case 'onlyadmins':
-                $displayadmincol = $this->wiki->UserIsAdmin();
-                break;
-            case 'yes':
-                $displayadmincol = true;
-                break;
-            case false:
-            default:
-                $displayadmincol = false;
-                break;
+        foreach(['displayadmincol','displaycreationdate','displaylastchangedate','displayowner'] as $paramName){
+            $paramValue = (!empty($param[$paramName]) && in_array($param[$paramName], ['yes','onlyadmins'], true)) ? $param[$paramName] : false;
+            switch ($paramValue) {
+                case 'onlyadmins':
+                    $paramValue = $this->wiki->UserIsAdmin();
+                    break;
+                case 'yes':
+                    $paramValue = true;
+                    break;
+                case false:
+                default:
+                    $paramValue = false;
+                    break;
+            }
+            $sanitizedParams[$paramName] = $paramValue;
         }
 
         /* columnsInfo */
@@ -125,6 +129,31 @@ if (count($fiches)>0) {
             }
         }
 
+        /* append extra cols */
+        foreach([
+                'displaycreationdate' => [
+                        'fieldName'=>'date_creation_fiche',
+                        'translationKey'=>'BAZ_DATE_CREATION'
+                    ],
+                'displaylastchangedate' => [
+                    'fieldName'=>'date_maj_fiche',
+                    'translationKey'=>'BAZ_DATE_MAJ'
+                ],
+                'displayowner' => [
+                    'fieldName'=>'owner',
+                    'translationKey'=>'TEMPLATE_OWNER'
+                ],
+            ] as $paramName => $data){
+            if (isset($sanitizedParams[$paramName]) && $sanitizedParams[$paramName]){
+                $columnsInfo[] = [
+                    'propertyName' => $data['fieldName'],
+                    'title' => _t($data['translationKey']),
+                    'key' => null,
+                    'mapFieldId' => null
+                ];
+            }
+        }
+
         /* columnTitles custom */
         if (!empty($columnTitlesNames)) {
             foreach ($columnTitlesNames as $key => $value) {
@@ -169,7 +198,7 @@ echo $this->render('@bazar/tableau.twig', [
     'columnsInfo' => $columnsInfo,
     'entries' => $fiches,
     'sumFieldsIds' => $sumFieldsIds ?? null,
-    'displayadmincol' => $displayadmincol ?? null,
+    'displayadmincol' => $sanitizedParams['displayadmincol'] ?? null,
     'aclService' => $aclService,
     'wiki' => $this->wiki,
 ]);

@@ -383,4 +383,7 @@ return [
     "AB_bazartableau_displayadmincol_label" => "Afficher les boutons d'administration",
     "AB_bazartableau_displayadmincol_hint" => "Modifier/supprimer",
     "AB_bazartableau_displayadmincol_onlyadmins" => "Seulement pour les administrateurs",
+    "AB_bazartableau_displaycreationdate_label" => "Afficher la date de création",
+    "AB_bazartableau_displaylastchangedate_label" => "Afficher la date de modification",
+    "AB_bazartableau_displayowner_label" => "Afficher le propriétaire",
 ];
