@@ -30,7 +30,7 @@ pour différencier les différents tableaux table_1 table_2 #}
             {% if info.key is empty %}
               {% if (searchTitle and info.propertyName == "bf_titre") or 
                     (not searchTitle and loop.first and not info.mapFieldId) %}
-                <a href="{{ url({tag:entry.id_fiche}) }}" class="modalbox" data-size="modal-lg">
+                <a href="{{ entry.url }}" class="modalbox" data-size="modal-lg">
                   {{ val }}
                 </a>
               {% elseif info.mapFieldId %}
@@ -45,45 +45,47 @@ pour différencier les différents tableaux table_1 table_2 #}
         {% endfor %}
         {% if displayadmincol %}
           <td class="not-printable-col horizontal-admins-btn">
-            {% if aclService.hasAccess('write',entry.id_fiche) %}
-              <a href="{{ url({tag:entry.id_fiche,handler:'edit'}) }}"
-                data-toggle="tooltip"
-                data-placement="left"
-                class="btn btn-default btn-icon btn-xs"
-                target="blank"
-                title="{{ _t('MODIFY') }} {{ entry.id_fiche }}"
-                >
-                <i class="fas fa-pencil-alt"></i>
-              </a>
-            {% else %}
-              <button disabled="disabled"
-                data-toggle="tooltip"
-                data-placement="left"
-                class="btn btn-default btn-icon btn-xs"
-                target="blank"
-                title="{{ _t('DENY_WRITE') }}"
-                >
-                <i class="fas fa-pencil-alt"></i>
-              </buttom>
-            {% endif %}
-            {% if wiki.UserIsAdmin or wiki.UserIsOwner(entry.id_fiche) %}
-              <a href="{{ url({tag:entry.id_fiche,handler:'deletepage',params:{incomingurl:url({handler:''})}}) }}"
-                data-toggle="tooltip"
-                data-placement="left"
-                class="btn btn-danger btn-icon btn-xs modalbox"
-                title="{{ _t('DELETE') }} {{ entry.id_fiche }}"
-                >
-                <i class="fas fa-trash"></i>
-              </a>
-            {% else %}
-              <button disabled="disabled"
-                data-toggle="tooltip"
-                data-placement="left"
-                class="btn btn-danger btn-icon btn-xs"
-                title="{{ _t('DELETEPAGE_NOT_OWNER') }}"
-                >
-                <i class="fas fa-trash"></i>
-              </buttom>
+            {% if entry.external-data is empty %}
+              {% if aclService.hasAccess('write',entry.id_fiche) %}
+                <a href="{{ url({tag:entry.id_fiche,handler:'edit'}) }}"
+                  data-toggle="tooltip"
+                  data-placement="left"
+                  class="btn btn-default btn-icon btn-xs"
+                  target="blank"
+                  title="{{ _t('MODIFY') }} {{ entry.id_fiche }}"
+                  >
+                  <i class="fas fa-pencil-alt"></i>
+                </a>
+              {% else %}
+                <button disabled="disabled"
+                  data-toggle="tooltip"
+                  data-placement="left"
+                  class="btn btn-default btn-icon btn-xs"
+                  target="blank"
+                  title="{{ _t('DENY_WRITE') }}"
+                  >
+                  <i class="fas fa-pencil-alt"></i>
+                </buttom>
+              {% endif %}
+              {% if wiki.UserIsAdmin or wiki.UserIsOwner(entry.id_fiche) %}
+                <a href="{{ url({tag:entry.id_fiche,handler:'deletepage',params:{incomingurl:url({handler:''})}}) }}"
+                  data-toggle="tooltip"
+                  data-placement="left"
+                  class="btn btn-danger btn-icon btn-xs modalbox"
+                  title="{{ _t('DELETE') }} {{ entry.id_fiche }}"
+                  >
+                  <i class="fas fa-trash"></i>
+                </a>
+              {% else %}
+                <button disabled="disabled"
+                  data-toggle="tooltip"
+                  data-placement="left"
+                  class="btn btn-danger btn-icon btn-xs"
+                  title="{{ _t('DELETEPAGE_NOT_OWNER') }}"
+                  >
+                  <i class="fas fa-trash"></i>
+                </buttom>
+              {% endif %}
             {% endif %}
           </td>
         {% endif %}

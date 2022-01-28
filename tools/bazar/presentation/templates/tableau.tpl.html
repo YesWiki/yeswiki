@@ -168,8 +168,8 @@ echo $this->render('@bazar/tableau.twig', [
     'param' => $param,
     'columnsInfo' => $columnsInfo,
     'entries' => $fiches,
-    'sumFieldsIds' => $sumFieldsIds,
-    'displayadmincol' => $displayadmincol,
+    'sumFieldsIds' => $sumFieldsIds ?? null,
+    'displayadmincol' => $displayadmincol ?? null,
     'aclService' => $aclService,
     'wiki' => $this->wiki,
 ]);
