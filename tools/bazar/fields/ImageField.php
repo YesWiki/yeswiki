@@ -54,7 +54,7 @@ class ImageField extends FileField
 
         if (isset($value) && $value != '') {
             if (isset($_GET['suppr_image']) && $_GET['suppr_image'] == $value) {
-                if ($this->isAllowedToDeleteFile($entry)) {
+                if ($this->isAllowedToDeleteFile($entry, $value)) {
                     if (file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
                         unlink(BAZ_CHEMIN_UPLOAD . $value);
                     }
@@ -94,7 +94,7 @@ class ImageField extends FileField
                         $this->imageWidth,
                         $this->imageHeight
                     ),
-                    'isAllowedToDeleteFile' => $this->isAllowedToDeleteFile($entry),
+                    'isAllowedToDeleteFile' => $this->isAllowedToDeleteFile($entry, $value),
                 ]);
             } else {
                 $this->updateEntryAfterImageDelete($entry);
@@ -111,7 +111,7 @@ class ImageField extends FileField
     public function formatValuesBeforeSave($entry)
     {
         if (!empty($_POST['data-'.$this->propertyName]) and !empty($_POST['filename-'.$this->propertyName])) {
-            $fileName = $entry['id_fiche'] . '_' . sanitizeFilename($_POST['filename-'.$this->propertyName]);
+            $fileName = $this->defineFilePrefix($entry) . sanitizeFilename($_POST['filename-'.$this->propertyName]);
             $filePath = BAZ_CHEMIN_UPLOAD . $fileName;
 
             if (preg_match("/(gif|jpeg|png|jpg)$/i", $fileName)) {
@@ -121,8 +121,8 @@ class ImageField extends FileField
 
                     if (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '') {
                         // delete previous files only if authorized (owner)
-                        if ($this->getService(AclService::class)->check('%', null, true, $entry['id_fiche'])) {
-                            $previousFileName = $entry['oldimage_' . $this->propertyName];
+                        $previousFileName = $entry['oldimage_' . $this->propertyName];
+                        if ($this->isAllowedToDeleteFile($entry, $previousFileName)) {
                             if (file_exists(BAZ_CHEMIN_UPLOAD . $previousFileName)) {
                                 unlink(BAZ_CHEMIN_UPLOAD . $previousFileName);
                             }

@@ -28,7 +28,7 @@ class FileField extends BazarField
 
         if (isset($value) && $value != '') {
             if (isset($_GET['delete_file']) && $_GET['delete_file'] == $value) {
-                if ($this->isAllowedToDeleteFile($entry)) {
+                if ($this->isAllowedToDeleteFile($entry, $value)) {
                     if (file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
                         unlink(BAZ_CHEMIN_UPLOAD . $value);
                     }
@@ -43,7 +43,7 @@ class FileField extends BazarField
                     'shortFileName' => $this->getShortFileName($value, $entry),
                     'fileUrl' => BAZ_CHEMIN_UPLOAD . $value,
                     'deleteUrl' => $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag(), 'delete_file=' . $value, false),
-                    'isAllowedToDeleteFile' => $this->isAllowedToDeleteFile($entry)
+                    'isAllowedToDeleteFile' => $this->isAllowedToDeleteFile($entry, $value)
                 ]);
             }
         }
@@ -57,7 +57,7 @@ class FileField extends BazarField
 
         if (isset($_FILES[$this->propertyName]['name']) && $_FILES[$this->propertyName]['name'] != '') {
             // Remove accents and spaces
-            $fileName = $entry['id_fiche'] . '_' . $this->name . '_' . sanitizeFilename($_FILES[$this->propertyName]['name']);
+            $fileName = $this->defineFilePrefix($entry) . sanitizeFilename($_FILES[$this->propertyName]['name']);
             $filePath = BAZ_CHEMIN_UPLOAD . $fileName;
 
             $extension = obtenir_extension($fileName);
@@ -100,11 +100,24 @@ class FileField extends BazarField
     /**
      * check if user is allowed to delete file
      * @param array $entry
+     * @param string $fileName
      * @return bool
      */
-    protected function isAllowedToDeleteFile(array $entry):bool
+    protected function isAllowedToDeleteFile(array $entry, string $fileName):bool
     {
-        return !$this->getService(SecurityController::class)->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('supp_fiche', $entry['owner'] ?? '');
+        return !$this->getService(SecurityController::class)->isWikiHibernated()
+            && $this->getService(Guard::class)->isAllowed('supp_fiche', $entry['owner'] ?? '')
+            && substr($fileName, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry);
+    }
+
+    /**
+     * define file prefix
+     * @param array $entry
+     * @return string $prefixFileName
+     */
+    protected function defineFilePrefix(array $entry)
+    {
+        return $entry['id_fiche'].'_'.$this->getPropertyName().'_';
     }
 
     /**
