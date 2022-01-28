@@ -865,11 +865,8 @@ class EntryManager
             if ($tabcorrespondances['fail'] != 1) {
                 foreach ($tabcorrespondances as $key => $data) {
                     if (isset($key)) {
-                        if (isset($data) && isset($fiche[$data])) {
-                            $fiche[$key] = $fiche[$data];
-                        } else {
-                            $fiche[$key] = '';
-                        }
+                        // not possible to init the Guard in the constructor because of circular reference problem
+                        $fiche[$key] = $this->wiki->services->get(Guard::class)->isFieldDataAuthorizedForCorrespondance($page, $fiche, $data);
                     } else {
                         echo '<div class="alert alert-danger">'._t('BAZ_CORRESPONDANCE_ERROR').'</div>';
                     }

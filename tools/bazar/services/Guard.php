@@ -138,4 +138,29 @@ class Guard
         }
         return false;
     }
+
+    /**
+     * sanitize data for correspondance
+     * @param null|array $page
+     * @param null|array $entry
+     * @param string $fieldName
+     * @return $value value or empty string
+     */
+    public function isFieldDataAuthorizedForCorrespondance(?array $page, ?array $entry, $fieldName)
+    {
+        if (!$this->wiki->UserIsAdmin()
+                && !$this->isPageOwner($page)
+                && !empty($fieldName)
+                && isset($entry[$fieldName])
+                && !empty($entry['id_typeannonce'])) {
+            $formId = $entry['id_typeannonce'];
+            if (strval($formId) == strval(intval($formId))) {
+                $field = $this->formManager->findFieldFromNameOrPropertyName($fieldName, $formId);
+                if (!empty($field) && $field instanceof EmailField && $field->getShowContactForm()) {
+                    return '';
+                }
+            }
+        }
+        return (empty($fieldName) || !isset($entry[$fieldName])) ? "" : $entry[$fieldName];
+    }
 }
