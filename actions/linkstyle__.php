@@ -9,6 +9,8 @@ if (!defined("WIKINI_VERSION")) {
 // do not use YesWiki:AddCSSFile(), YesWiki:LinkCSSFile() or YesWiki:AddCSS() in custom/linkstyle__.php (it will not work)
 if (isset($GLOBALS['css']) && !empty($GLOBALS['css'])) {
     echo $GLOBALS['css'];
+    // empty $GLOBALS['css'] to fill it with other calls to AddCSS flushed in linkjavascript.php
+    $GLOBALS['css'] = '';
 }
 
 // if exists and not empty, add the 'PageCss' yeswiki page to the styles

@@ -102,3 +102,9 @@ echo "<script>
 
 // on affiche
 echo $yeswiki_javascripts;
+
+// This GLOBALS is populated from AddCSS and AddCSSFile, but already flush in <HEAD> by actions/linkstyle__.php
+// we add it at the end to catch other calls to ADDCSSFile ou AddCSS
+if (isset($GLOBALS['css']) && !empty($GLOBALS['css'])) {
+    echo $GLOBALS['css'];
+}
