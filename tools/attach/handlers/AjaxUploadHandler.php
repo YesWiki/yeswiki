@@ -30,21 +30,26 @@ class AjaxUploadHandler extends YesWikiHandler
         if (!class_exists('attach')) {
             include_once 'tools/attach/libs/attach.lib.php';
         }
+        $errorsMessage = '';
         ob_start();
-        $att = new attach($this->wiki);
+        try {
+            $att = new attach($this->wiki);
 
-        // list of valid extensions, ex. array("jpeg", "xml", "bmp")
-        $allowedExtensions = array_keys($this->params->get('authorized-extensions'));
-
-        // max file size in bytes
-        $sizeLimit = $att->attachConfig['max_file_size'];
-
-        $uploader = new qqFileUploader($allowedExtensions, $sizeLimit, $this->hasTempTag);
-        $result = $uploader->handleUpload($att->attachConfig['upload_path']);
-        $errorsMessage = ob_get_contents();
+            // list of valid extensions, ex. array("jpeg", "xml", "bmp")
+            $allowedExtensions = array_keys($this->params->get('authorized-extensions'));
+    
+            // max file size in bytes
+            $sizeLimit = $att->attachConfig['max_file_size'];
+    
+            $uploader = new qqFileUploader($allowedExtensions, $sizeLimit, $this->hasTempTag);
+            $result = $uploader->handleUpload($att->attachConfig['upload_path']);
+        } catch (\Throwable $th) {
+            $errorsMessage .= "{$th->getMessage()} in {$th->getFile()}, line {$th->getLine()}";
+        }
+        $errorsMessage .= ob_get_contents();
         ob_end_clean();
         if (!empty($errorsMessage)) {
-            $result['errorMessage'] = $errorsMessage;
+            $result['error'] = ($result['error'] ?? '').$errorsMessage;
         }
         return $this->formatOuput($result);
     }
