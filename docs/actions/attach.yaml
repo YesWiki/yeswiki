@@ -6,24 +6,24 @@ actions:
     title: _t(AB_attach_commons_title)
     width: 40%
     showif:
-      file: \.(png|jpg|jpeg|gif|pdf)$
+      file: \.(png|jpg|jpeg|gif|pdf|svg)$
     properties:
       link:
         label: _t(AB_attach_link_label)
         default: https://
         type: url
         showif:
-          file: \.(png|jpg|jpeg|gif)$
+          file: \.(png|jpg|jpeg|gif|svg)$
       caption:
         label: _t(AB_attach_caption_label)
         type: text
         showif:
-          file: \.(png|jpg|jpeg|gif)$
+          file: \.(png|jpg|jpeg|gif|svg)$
       legend:
         label: _t(AB_attach_legend_label)
         type: text
         showif:
-          file: \.(png|jpg|jpeg|gif)$
+          file: \.(png|jpg|jpeg|gif|svg)$
       nofullimagelink:
         label: _t(AB_attach_nofullimagelink_label)
         type: list
@@ -34,7 +34,7 @@ actions:
         label: _t(AB_attach_size_label)
         type: list
         showif:
-          file: \.(png|jpg|jpeg|gif)$
+          file: \.(png|jpg|jpeg|gif|svg)$
         options:
           small: _t(AB_attach_size_small)
           medium: _t(AB_attach_size_medium)
@@ -45,13 +45,13 @@ actions:
         type: number
         advanced: true
         showif:
-          file: \.(png|jpg|jpeg|gif)$
+          file: \.(png|jpg|jpeg|gif|svg)$
       height:
         label: _t(AB_attach_height_label)
         type: number
         advanced: true
         showif:
-          file: \.(png|jpg|jpeg|gif)$
+          file: \.(png|jpg|jpeg|gif|svg)$
       class:
         label: _t(AB_attach_class_label)
         type: class
@@ -60,7 +60,7 @@ actions:
             label: _t(AB_attach_class_position_label)
             type: list
             showif:
-              file: \.(png|jpg|jpeg|gif|pdf)$
+              file: \.(png|jpg|jpeg|gif|pdf|svg)$
             options:
               '': _t(AB_attach_class_position_none)
               left: _t(AB_attach_class_position_left)
@@ -73,7 +73,7 @@ actions:
             options: 
               lightshadow: _t(YES)
             showif:
-              file: \.(png|jpg|jpeg|gif|pdf)$
+              file: \.(png|jpg|jpeg|gif|pdf|svg)$
           whiteborder:
             label: _t(AB_attach_class_effect_whiteborder)
             type: list
@@ -81,7 +81,7 @@ actions:
             options: 
               whiteborder: _t(YES)
             showif:
-              file: \.(png|jpg|jpeg|gif|pdf)$
+              file: \.(png|jpg|jpeg|gif|pdf|svg)$
           zoom:
             label: _t(AB_attach_class_effect_zoom)
             type: list
@@ -89,7 +89,7 @@ actions:
             options: 
               zoom: _t(YES)
             showif:
-              file: \.(png|jpg|jpeg|gif|pdf)$
+              file: \.(png|jpg|jpeg|gif|pdf|svg)$
           izmir:
             label: _t(AB_attach_class_izmir_label)
             type: list
