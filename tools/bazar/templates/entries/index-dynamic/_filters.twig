@@ -18,23 +18,6 @@
       </template>
     </div>
 
-    <div class="results-container">
-      <Panel class="filter-box" v-for="filter, key in filters" :collapsed.sync="filter.collapsed" :key="key">
-        <template #header>
-          <i v-html="filter.icon"></i>{{"{{ filter.title }}"}}
-        </template>
-        <template #body>
-          <div class="checkbox" v-for="filterOption, id in filter.list" :key="id">
-            <label>
-              <input class="filter-checkbox" type="checkbox" v-model="filterOption.checked" :value="filterOption.value">
-              <span>
-                <span v-html="filterOption.label"></span>
-                <span class="nb" v-if="filterOption.nb">({{"{{ filterOption.nb }}"}})</span>
-              </span>
-            </label>
-          </div>
-        </template>
-      </Panel>
-    </div>
+    {{ include('@bazar/entries/index-dynamic/_filters-list.twig') }}
   </div>
 </div>
