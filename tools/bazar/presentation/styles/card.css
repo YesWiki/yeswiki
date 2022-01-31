@@ -180,7 +180,7 @@
     top: auto;
     width: auto !important;
   }
-  .style-horizontal .bazar-card > *:not(.visual-area) {
+  .style-horizontal .bazar-card.with-image > *:not(.visual-area) {
     width: calc(100% - 15rem);
   }
   .style-horizontal .bazar-card h4 {
