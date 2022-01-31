@@ -92,6 +92,10 @@ class BazarListeAction extends YesWikiAction
         if ($dynamic && $template == 'liste_accordeon') {
             $template = 'list';
         }
+        // Restrict number of columns for horizontal card
+        if ($template == 'card' && $arg['style'] == 'horizontal' && $displayFields['visual'] && $arg['nbcol'] > 2)
+            $arg['nbcol'] = 2;
+
         $searchfields = $this->formatArray($arg['searchfields'] ?? null);
         $searchfields = empty($searchfields) ? ['bf_titre'] : $searchfields;
         // End dynamic        
@@ -155,10 +159,13 @@ class BazarListeAction extends YesWikiAction
             // paramètre de tri des fiches sur une date (en gardant la retrocompatibilité avec le paramètre agenda)
             'agenda' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
             'datefilter' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
+            
             // Dynamic mean the template will be rendered from the front end in order to improve UX and perf
             // Only few bazar templates have been converted to javascript
             'dynamic' => $dynamic,
             'displayfields' => $displayFields,
+            // Number of columns for card template
+            'nbcol' => $arg['nbcol'],
 
             // AFFICHAGE
             // Template pour l'affichage de la liste de fiches
