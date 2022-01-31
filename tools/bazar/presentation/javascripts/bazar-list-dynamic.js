@@ -167,10 +167,16 @@ document.addEventListener('DOMContentLoaded', function() {
       },
       getEntryRender(entry) {
         if (entry.html_render) return
-        let fieldsToExclude = this.params.displayfields ? Object.values(this.params.displayfields) : []
         if (this.isExternalUrl(entry)){
           this.getExternalEntry(entry)
         } else {
+          let fieldsToExclude = []
+          if (this.params.template == 'list' && this.params.displayfields) {
+            // In list template (collapsible panels with header and body), the rendered entry 
+            // is displayed in the body section and we don't want to show the fields 
+            // that are already displayed in the panel header
+            fieldsToExclude = Object.values(this.params.displayfields)
+          }
           let url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
             fields: 'html_output',
             excludeFields: fieldsToExclude
