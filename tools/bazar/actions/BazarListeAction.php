@@ -93,7 +93,7 @@ class BazarListeAction extends YesWikiAction
             $template = 'list';
         }
         // Restrict number of columns for horizontal card
-        if ($template == 'card' && $arg['style'] == 'horizontal' && $displayFields['visual'] && $arg['nbcol'] > 2)
+        if ($template == 'card' && $arg['style'] == 'horizontal' && $displayFields['visual'] && $arg['nbcol'] && $arg['nbcol'] > 2)
             $arg['nbcol'] = 2;
 
         $searchfields = $this->formatArray($arg['searchfields'] ?? null);
@@ -165,7 +165,7 @@ class BazarListeAction extends YesWikiAction
             'dynamic' => $dynamic,
             'displayfields' => $displayFields,
             // Number of columns for card template
-            'nbcol' => $arg['nbcol'],
+            'nbcol' => $arg['nbcol'] ?? null,
 
             // AFFICHAGE
             // Template pour l'affichage de la liste de fiches
