@@ -73,7 +73,7 @@ function search_template_files($directory)
                         }
                     }
                     closedir($dir4);
-                    if (is_array($tab_themes[$file]["presets"] ?? null)) {
+                    if (isset($tab_themes[$file]["presets"]) && is_array($tab_themes[$file]["presets"])) {
                         ksort($tab_themes[$file]["presets"]);
                     }
                 }
