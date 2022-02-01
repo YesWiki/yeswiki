@@ -234,6 +234,7 @@ class Init
             'allow_raw_html' => true,
             'disable_wiki_links' => false,
             'allowed_methods_in_iframe' => ['iframe','editiframe','bazariframe','render'],
+            'revisionscount' => 30,
             'timezone'=>'GMT' // Only used if not set in wakka.config.php nor in php.ini
         );
         unset($_rewrite_mode);
