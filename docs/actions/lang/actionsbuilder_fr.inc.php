@@ -378,6 +378,7 @@ return [
     "AB_bazartableau_columntitles_label" => "Titres des colonnes",
     "AB_bazartableau_columntitles_hint" => "Séparés par des virgules - vide = nom du champ récupéré automatiquement",
     "AB_bazartableau_checkboxfieldsincolumns_label" => "Fusionner les réponses des cases à cocher",
+    "AB_bazartableau_displayvaluesinsteadofkeys_label" => "Afficher les valeurs au lieu des clés",
     "AB_bazartableau_sumfieldsids_label" => "Champs pour lesquels calculer la somme",
     "AB_bazartableau_sumfieldsids_hint" => "Vide = aucun",
     "AB_bazartableau_displayadmincol_label" => "Afficher les boutons d'administration",

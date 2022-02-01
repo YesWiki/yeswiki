@@ -3,6 +3,7 @@
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\CheckboxField ;
 use YesWiki\Bazar\Field\EmailField ;
+use YesWiki\Bazar\Field\EnumField ;
 use YesWiki\Bazar\Field\MapField ;
 use YesWiki\Bazar\Service\FormManager ;
 use YesWiki\Core\Service\AclService ;
@@ -15,6 +16,7 @@ $aclService = $this->wiki->services->get(AclService::class);
 $dataList = [];
 $columnsInfo = [];
 $sanitizedParams = [];
+$optionsIfDisplayvaluesinsteadofkeys = [];
 
 if (count($fiches)>0) {
     $formId = $fiches[array_key_first($fiches)]['id_typeannonce'] ?? null;
@@ -66,6 +68,7 @@ if (count($fiches)>0) {
             }
             $sanitizedParams[$paramName] = $paramValue;
         }
+        $sanitizedParams['displayvaluesinsteadofkeys'] = !isset($param['displayvaluesinsteadofkeys']) ? false : filter_var($param['displayvaluesinsteadofkeys'],FILTER_VALIDATE_BOOLEAN);
 
         /* columnsInfo */
         if (!function_exists('tableauGetFieldsCols')) {
@@ -111,12 +114,25 @@ if (count($fiches)>0) {
                 }
             }
         }
+        /* options when displaying values */
+        if (!function_exists('tableauGetOptionsForField')) {
+            function tableauGetOptionsForField($field,&$optionsIfDisplayvaluesinsteadofkeys,$sanitizedParams){
+                $propertyName = $field->getPropertyName();
+                if ($sanitizedParams['displayvaluesinsteadofkeys'] &&
+                    $field instanceof EnumField && 
+                    !isset($optionsIfDisplayvaluesinsteadofkeys[$propertyName])){
+                    $optionsIfDisplayvaluesinsteadofkeys[$propertyName] = $field->getOptions();
+                }
+            }
+        }
+
         if (empty($columnFieldsIdsRaw)) {
             // if no title, display all fields
             foreach ($fields as $field) {
                 foreach (tableauGetFieldsCols($field, $checkboxFieldsInColumns) as $col) {
                     $columnsInfo[] = $col;
                 }
+                tableauGetOptionsForField($field,$optionsIfDisplayvaluesinsteadofkeys,$sanitizedParams);
             }
         } else {
             foreach ($columnFieldsIdsRaw as $fieldId) {
@@ -125,6 +141,7 @@ if (count($fiches)>0) {
                     foreach (tableauGetFieldsCols($field, $checkboxFieldsInColumns) as $col) {
                         $columnsInfo[] = $col;
                     }
+                    tableauGetOptionsForField($field,$optionsIfDisplayvaluesinsteadofkeys,$sanitizedParams);
                 }
             }
         }
@@ -199,6 +216,8 @@ echo $this->render('@bazar/tableau.twig', [
     'entries' => $fiches,
     'sumFieldsIds' => $sumFieldsIds ?? null,
     'displayadmincol' => $sanitizedParams['displayadmincol'] ?? null,
+    'displayvaluesinsteadofkeys' => $sanitizedParams['displayvaluesinsteadofkeys'],
+    'optionsIfDisplayvaluesinsteadofkeys' => $optionsIfDisplayvaluesinsteadofkeys,
     'aclService' => $aclService,
     'wiki' => $this->wiki,
 ]);

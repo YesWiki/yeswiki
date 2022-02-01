@@ -4,6 +4,7 @@ return [
     // Commons
     // "AB_LEFT" => "Gauche",
     // "AB_RIGHT" => "Droite",
+    "AB_advanced" => "Advanced",
     // BAZAR
     "AB_bazar_label" => "Display form's data",
     // "AB_bazar_commons_colorfield_label" => "Champ pour la couleur",
@@ -367,7 +368,7 @@ return [
     // "AB_syndication_action_formatdate_option_jma" => "Jour Mois année",
     // "AB_syndication_action_formatdate_option_jmh" => "Jour mois heure",
     // "AB_syndication_action_formatdate_option_jmah" => "Jour mois année heure",
-    
+
     // tableau
     "AB_bazartableau_label" => "Table",
     "AB_bazartableau_description" => "Display in a table",
@@ -377,7 +378,13 @@ return [
     "AB_bazartableau_columntitles_label" => "Comlumns titles",
     "AB_bazartableau_columntitles_hint" => "Separated by coma - empty = field's name autoatically get",
     "AB_bazartableau_checkboxfieldsincolumns_label" => "Merge answer for checkbox fields",
+    "AB_bazartableau_displayvaluesinsteadofkeys_label" => "Display values instead of keys",
+    "AB_bazartableau_sumfieldsids_label" => "Fields fo which calculate the sum",
+    "AB_bazartableau_sumfieldsids_hint" => "Empty = no field",
     "AB_bazartableau_displayadmincol_label" => "Display admins buttons",
     "AB_bazartableau_displayadmincol_hint" => "Edit/Delete",
     "AB_bazartableau_displayadmincol_onlyadmins" => "Only for admins",
+    "AB_bazartableau_displaycreationdate_label" => "Display creation date",
+    "AB_bazartableau_displaylastchangedate_label" => "Display modification date",
+    "AB_bazartableau_displayowner_label" => "Display owner",
 ];

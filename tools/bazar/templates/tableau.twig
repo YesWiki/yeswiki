@@ -23,6 +23,10 @@ pour différencier les différents tableaux table_1 table_2 #}
         {% set searchTitle = ("bf_titre" in columnsInfo|map(p => p.propertyName)) %}
         {% for info in columnsInfo %}
           {% set val = entry[info.propertyName] %}
+          {% if info.key is empty and displayvaluesinsteadofkeys and (optionsIfDisplayvaluesinsteadofkeys[info.propertyName] is not empty) %}
+            {% set val = val|split(',')|map( key => optionsIfDisplayvaluesinsteadofkeys[info.propertyName][key] 
+              ? '"' ~ optionsIfDisplayvaluesinsteadofkeys[info.propertyName][key] ~ '"': key)|join(',') %}
+          {% endif %}
           <td>
             {% if loop.first %}
               <span class="bazar-entry" {{ entry.html_data|raw }}></span>
