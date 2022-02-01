@@ -94,7 +94,7 @@ if ($action == 'logout') { // User wants to log out
                 }
             }
         } // End of changepass action
-    } // End of actions performed by a logged in user ?>
+    } // End of actions performed by a logged in user?>
 
 <!-- FORM UPDATE (user is logged in; display config form) -->
 <h2><?php
@@ -119,13 +119,14 @@ if ($adminIsActing) {
 		<div class="controls col-sm-9">
 			<input class="form-control" name="email" value="<?php echo htmlspecialchars($this->user->getProperty('email'), ENT_COMPAT, YW_CHARSET) ?>" size="40" />
 		</div>
-	</div>
-	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('USER_MAX_NUMBER_OF_VERSIONS'); ?></label>
-		<div class="controls col-sm-9">
-			<input class="form-control" name="revisioncount" value="<?php echo htmlspecialchars($this->user->getProperty('revisioncount'), ENT_COMPAT, YW_CHARSET) ?>" size="40" />
-		</div>
-	</div>
+	</div><?php
+    // <div class="control-group form-group">
+    // 	<label class="control-label col-sm-3"><?php echo _t('USER_MAX_NUMBER_OF_VERSIONS'); ? ></label>
+    // 	<div class="controls col-sm-9">
+    // 		<input class="form-control" name="revisioncount" value="<?php echo htmlspecialchars($this->user->getProperty('revisioncount'), ENT_COMPAT, YW_CHARSET) ? >" size="40" />
+    // 	</div>
+    // </div>
+    ?>
 	<div class="control-group form-group">
 		<div class="controls col-sm-9 col-sm-offset-3">
 			<input class="btn btn-primary" type="submit" value="<?php echo _t('USER_UPDATE'); ?>" />
@@ -185,7 +186,7 @@ if ($userLoggedIn) { // The one who runs the session is acting
 } // End of the one who runs the session is acting
 } else { // Neither logged in user nor admin trying to do something
     // sanitize $_POST['name']
-    if (isset($_POST['name'])){
+    if (isset($_POST['name'])) {
         $_POST['name'] = htmlspecialchars($_POST['name']);
     }
     if ($action == 'signup') { // user is trying to register

@@ -15,6 +15,7 @@ class EditConfigAction extends YesWikiAction
         'debug' => 'core',
         'timezone' => 'core',
         'allowed_methods_in_iframe' => 'core',
+        'revisionscount' => 'core',
 
         'default_read_acl' => 'access',
         'default_write_acl' => 'access',
