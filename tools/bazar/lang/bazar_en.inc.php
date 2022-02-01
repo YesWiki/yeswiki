@@ -368,6 +368,9 @@ return [
     // presentation/templates/liste_liens_date.tpl.html
     // 'BAZ_NO_ENTRY_FOR_THIS_PERIOD' => 'Il n\'y a pas de fiche pour cette période.',
     
+    // templates/entries/index-dynamic-templates/card.twig
+    'BAZ_CARD_NBCOL_TOO_HIGH' => 'The parameter `nbcol` can not be taken in count with `style="horizontal"` and keep limited to 2 !',
+    
     // templates/tableau.twig
     'SUM' => 'Sum',
     

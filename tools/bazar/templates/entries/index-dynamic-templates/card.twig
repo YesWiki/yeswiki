@@ -5,9 +5,15 @@
 {% endblock %}
 
 {% block display_entries %}
+  {% set nbcol = params.nbcol %}
+  {# Restrict number of columns for horizontal card #}
+  {% if nbcol > 2 and params.displayfields.visual and params.style == "horizontal" %}
+    {% set nbcol =  2 %}
+    {{ include('@templates/alert-message.twig',{type:'info',message:_t('BAZ_CARD_NBCOL_TOO_HIGH')}) }}
+  {% endif %}
   <div class="bazar-cards-container" v-if="ready" 
-       :class="[{ready: ready}, `style-${params.style || 'vertical'}`, `nbcol-${params.nbcol}`]" 
-       :style="{'grid-template-columns': `repeat(${params.nbcol}, 1fr)`}">
+       :class="[{ready: ready}, `style-${params.style || 'vertical'}`, `nbcol-{{nbcol}}`]" 
+       :style="{'grid-template-columns': `repeat({{nbcol}}, 1fr)`}">
     
     <div v-if="entriesToDisplay.length == 0" class="alert alert-info">
       {{ _t('BAZ_NO_RESULT') }}

@@ -92,13 +92,9 @@ class BazarListeAction extends YesWikiAction
         if ($dynamic && $template == 'liste_accordeon') {
             $template = 'list';
         }
-        // Restrict number of columns for horizontal card
-        if ($template == 'card' && $arg['style'] == 'horizontal' && $displayFields['visual'] && $arg['nbcol'] && $arg['nbcol'] > 2)
-            $arg['nbcol'] = 2;
-
         $searchfields = $this->formatArray($arg['searchfields'] ?? null);
         $searchfields = empty($searchfields) ? ['bf_titre'] : $searchfields;
-        // End dynamic        
+        // End dynamic
 
         $agendaMode = (!empty($arg['agenda']) || !empty($arg['datefilter']) || substr($template, 0, strlen('agenda')) == 'agenda') ;
 
