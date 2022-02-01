@@ -710,9 +710,10 @@ $(document).ready(function () {
     );
 
     // au moins un filtre à actionner
+    let tabres = [];
     if (tabfilters.length > 0) {
       // un premier résultat pour le tableau
-      var tabres = tabfilters[0].toArray();
+      tabres = tabfilters[0].toArray();
 
       // pour chaque boite de filtre, on fait l'intersection avec la suivante
       $.each(tabfilters, function (index, tab) {
@@ -720,7 +721,7 @@ $(document).ready(function () {
           return tab.toArray().indexOf(n) != -1;
         });
       });
-      $('body').trigger( 'updatefilters', [ tabres ] );
+      $('body').trigger( 'updatefilters', [ tabres ]);
       e.data.$entries.hide().filter(tabres).show();
       e.data.$entries.parent('.bazar-marker').hide();
       e.data.$entries.filter(tabres).parent('.bazar-marker').show();
@@ -741,6 +742,8 @@ $(document).ready(function () {
       e.data.$resultlabel.show();
       e.data.$resultslabel.hide();
     }
+
+    $('body').trigger('updatedfilters', (!tabres.length) ? [] : [ tabres ]);
   }
 
   // process changes on visible entries according to filters
