@@ -343,7 +343,7 @@ class ExternalBazarService
         string $url,
         bool $testFileModificationDate,
         int $cache_life = 90,
-        bool $forceRefresh,
+        bool $forceRefresh = false,
         string $mode = 'standard'
     ) {
         $cache_life = min($cache_life, self::MAX_CACHE_TIME);
@@ -391,7 +391,7 @@ class ExternalBazarService
         string $url,
         bool $testFileModificationDate,
         int $cache_life = 90,
-        bool $forceRefresh,
+        bool $forceRefresh = false,
         string $dir = 'cache'
     ) {
         if ($this->debug && $this->timeDebug) {
@@ -424,7 +424,7 @@ class ExternalBazarService
         string $url,
         bool $testFileModificationDate,
         int $cache_life = 90,
-        bool $forceRefresh,
+        bool $forceRefresh = false,
         string $dir = 'cache'
     ) {
         if ($this->debug && $this->timeDebug) {

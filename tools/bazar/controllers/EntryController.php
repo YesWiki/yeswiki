@@ -571,7 +571,7 @@ class EntryController extends YesWikiController
         return $date;
     }
 
-    private function filterEntriesOnDateTraversing(?array $entry, string $mode = "=", \DateTime $date): bool
+    private function filterEntriesOnDateTraversing(?array $entry, string $mode, \DateTime $date): bool
     {
         if (empty($entry) || !isset($entry['bf_date_debut_evenement'])) {
             return false;

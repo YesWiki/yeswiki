@@ -857,7 +857,7 @@ class EntryManager
      *      helping to get owner without asking a new Time to Page manager to get it
      * @throws Exception
      */
-    public function appendDisplayData(&$fiche, $semantic = false, $correspondance = '', array $page)
+    public function appendDisplayData(&$fiche, $semantic, $correspondance, array $page)
     {
         // champs correspondants
         if (!empty($correspondance)) {
@@ -953,7 +953,7 @@ class EntryManager
     * @param bool $applyOnAllRevisions
     * return bool true if attributesNames are foond and replaced
     */
-    public function removeAttributes($params = [], array $attributesNames, bool $applyOnAllRevisions = false): bool
+    public function removeAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false): bool
     {
         return $this->manageAttributes($params, $attributesNames, $applyOnAllRevisions, 'remove');
     }
@@ -965,7 +965,7 @@ class EntryManager
     * @param bool $applyOnAllRevisions
     * return bool true if attributesNames are foond and replaced
     */
-    public function renameAttributes($params = [], array $attributesNames, bool $applyOnAllRevisions = false): bool
+    public function renameAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false): bool
     {
         return $this->manageAttributes($params, $attributesNames, $applyOnAllRevisions, 'rename');
     }
@@ -978,7 +978,7 @@ class EntryManager
      * @param string $mode
      * return bool true if attributesNames are foond and replaced
      */
-    private function manageAttributes($params = [], array $attributesNames, bool $applyOnAllRevisions = false, string $mode = 'remove'): bool
+    private function manageAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false, string $mode = 'remove'): bool
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
