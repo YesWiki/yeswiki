@@ -23,7 +23,6 @@
         "ext-mysqli": "*",
         "oomphinc/composer-installers-extender": "^2.0",
         "phpmailer/phpmailer": "^6.2",
-        "psr/container": "<=1.1.1",
         "symfony/config": "^5.1",
         "symfony/console": "^5.2",
         "symfony/dependency-injection": "^5.1",
@@ -34,6 +33,17 @@
         "tamtamchik/simple-flash": "^2.0",
         "twig/twig": "^3.0",
         "yeswiki/theme-margot": "dev-master"
+    },
+    "conflict": {
+        "psr/cache": ">=2.0",
+        "psr/container": ">=1.1.2",
+        "psr/log": ">=2.0",
+        "symfony/deprecation-contracts": ">=3.0",
+        "symfony/event-dispatcher-contracts": ">=3.0",
+        "symfony/error-handler": ">=6.0",
+        "symfony/event-dispatcher": ">=6.0",
+        "symfony/filesystem": ">=6.0",
+        "symfony/string": ">=6.0"
     },
     "extra": {
         "installer-types": ["yeswiki-extension", "yeswiki-theme"],
