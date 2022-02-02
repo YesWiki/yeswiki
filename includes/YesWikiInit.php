@@ -235,7 +235,9 @@ class Init
             'disable_wiki_links' => false,
             'allowed_methods_in_iframe' => ['iframe','editiframe','bazariframe','render'],
             'revisionscount' => 30,
-            'timezone'=>'GMT' // Only used if not set in wakka.config.php nor in php.ini
+            'timezone' => 'GMT', // Only used if not set in wakka.config.php nor in php.ini
+            'root_page' => 'PagePrincipale', // backup root_page if deleted from wakka.config.php
+            'wakka_name' => '', // backup wakka_name if deleted from wakka.config.php
         );
         unset($_rewrite_mode);
 
