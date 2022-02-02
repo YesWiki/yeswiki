@@ -43,7 +43,7 @@ actions:
         label:  _t(AB_abonnement_class_label)
         type: text
         advanced: true
-  deabonnement:
+  desabonnement:
     label: _t(AB_deabonnement_action_label)
     properties:
       mail:
