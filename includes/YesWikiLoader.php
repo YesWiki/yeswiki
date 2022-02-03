@@ -13,6 +13,7 @@
 namespace YesWiki\Core;
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
+use Throwable;
 use YesWiki\Wiki;
 
 class YesWikiLoader
@@ -31,7 +32,18 @@ class YesWikiLoader
     {
         if (is_null(self::$wiki)) {
             require_once 'includes/autoload.inc.php';
-            $loader = require_once 'vendor/autoload.php';
+            try {
+                $loader = require_once 'vendor/autoload.php';
+            } catch (Throwable $th) {
+                $message = "";
+                if (!file_exists('vendor/autoload.php')) {
+                    $message .= "ERROR ! : Folder `vendor/` seems not to be entirely copied ! (Maybe a YesWiki update aborted before its end !)<br/><strong>Could you manually copy th efolder `vendor/` on your server by ftp ?</strong><br/>";
+                }
+                $message .= $th->getMessage();
+                // echo message directly because TemplateEngine not ready here
+                echo "<div style=\"border:1px red solid;background-color: #FFCCCC;margin:3px;padding:5px;border-radius:5px;\">$message</div>";
+                exit();
+            }
             if ($loader !== true) { // not true if not already included
                 AnnotationRegistry::registerLoader([$loader, 'loadClass']);
             }
