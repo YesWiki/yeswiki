@@ -34,6 +34,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # voir actions/attach.php ppour la documentation
 # copyrigth Eric Feldstein 2003-2004
 
+use enshrined\svgSanitize\Sanitizer;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\LinkTracker;
 
@@ -734,6 +735,9 @@ if (!class_exists('attach')) {
                 $srcFile = $_FILES['upFile']['tmp_name'];
                 if (move_uploaded_file($srcFile, $destFile)) {
                     chmod($destFile, 0644);
+                    if ($ext  === "svg") {
+                        $this->sanitizeSVGfile($destFile);
+                    }
                     header("Location: " . $this->wiki->href("", $this->wiki->GetPageTag(), ""));
                 } else {
                     echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_MOVING_TEMPORARY_FILE') . "</div>\n";
@@ -1172,6 +1176,25 @@ if (!class_exists('attach')) {
             } else {
                 return $imgTrans->targetFile;
             }
+        }
+
+        /**
+         * @param string $content of svg
+         * @return string $content
+         */
+        public function sanitizeSVG(string $content): string
+        {
+            $sanitizer = new Sanitizer();
+            return $sanitizer->sanitize($content);
+        }
+
+        /**
+         * @param string $filePath svg
+         */
+        public function sanitizeSVGfile(string $filePath)
+        {
+            $content = file_get_contents($filePath);
+            file_put_contents($filePath, $this->sanitizeSVG($content));
         }
     }
 }

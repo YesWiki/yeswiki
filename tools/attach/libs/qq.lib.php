@@ -204,6 +204,9 @@ if (!class_exists('qqFileUploader')) {
             ob_end_clean();
 
             if ($this->file->save($fullfilename)) {
+                if ($ext === "svg") {
+                    $attach->sanitizeSVGfile($fullfilename);
+                }
                 return array_map('utf8_encode', array('success'=>true, 'filename'=>$fullfilename, 'simplefilename'=>$filename . '.' . $ext, 'extension'=>$ext));
             } else {
                 return array_map(

@@ -8,7 +8,8 @@
     "scripts": {
       "test": "phpunit --do-not-cache-result --stderr tests",
       "post-install-cmd": [
-        "@composer install --working-dir ./tools/autoupdate/"
+        "@composer install --working-dir ./tools/autoupdate/",
+        "@php -r \"array_map('unlink', glob('vendor/enshrined/svg-sanitize/tests/data/*.svg'));\""
       ],
       "post-update-cmd": [
         "@composer update --working-dir ./tools/autoupdate/"
@@ -16,11 +17,12 @@
     },
     "require": {
         "php": "^7.3 || ^8.0",
+        "ext-json": "*",
+        "ext-mysqli": "*",
         "caxy/php-htmldiff": "^0.1.13",
         "doctrine/annotations": "^1.11",
         "doctrine/cache": "^1.10",
-        "ext-json": "*",
-        "ext-mysqli": "*",
+        "enshrined/svg-sanitize": "^0.14.1",
         "oomphinc/composer-installers-extender": "^2.0",
         "phpmailer/phpmailer": "^6.2",
         "symfony/config": "^5.1",
