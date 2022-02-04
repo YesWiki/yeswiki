@@ -1258,3 +1258,10 @@ function parseWikiTextIntoJsonData(text) {
   }
   return result;
 }
+
+$('a[href="#formbuilder"]').on('click',function (event){
+  if(!confirm(_t('BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER'))){
+    event.preventDefault();
+    return false;
+  };
+});
