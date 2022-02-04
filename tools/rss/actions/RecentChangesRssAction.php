@@ -51,8 +51,6 @@ class RecentChangesRssAction extends YesWikiAction
 
         $pages = array_slice($pages, 0, $max);
 
-        $link = $this->arguments["link"];
-
         // correctly format lang param for xml
         if (!empty($_GET['lang'])) {
             $langParam = ['lang' => $_GET['lang']];
@@ -60,7 +58,8 @@ class RecentChangesRssAction extends YesWikiAction
         } else {
             $langParam = [];
         }
-        $xmlUrl = $this->wiki->Href("xml", '', $langParam);
+        $link = $this->wiki->Href(false, $this->arguments["link"], $langParam, false) ;
+        $xmlUrl = $this->wiki->Href("xml", '', $langParam, false);
         $wakkaName = htmlspecialchars(
             $this->params->get("wakka_name"),
             ENT_COMPAT,
