@@ -34,6 +34,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # voir actions/attach.php ppour la documentation
 # copyrigth Eric Feldstein 2003-2004
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\LinkTracker;
 
 if (!defined("WIKINI_VERSION")) {
@@ -62,72 +63,22 @@ if (!class_exists('attach')) {
         public $pageId = 0; //identifiant de la page
         public $isSafeMode = true; //indicateur du safe mode de PHP
         public $data = ''; //indicateur du safe mode de PHP
+        private $params;
         /**
          * Constructeur. Met les valeurs par defaut aux parametres de configuration
          */
         public function __construct(&$wiki)
         {
             $this->wiki = $wiki;
-            $this->attachConfig = $this->wiki->GetConfigValue("attach_config");
+            $this->params = $this->wiki->services->get(ParameterBagInterface::class);
+            $this->attachConfig = $this->params->get("attach_config");
 
             if (!is_array($this->attachConfig)) {
-                $this->attachConfig = array();
-            }
-
-            if (empty($this->attachConfig["ext_images"])) {
-                $this->attachConfig["ext_images"] = "gif|jpeg|png|jpg|svg|webp";
-            }
-
-            if (empty($this->attachConfig["ext_audio"])) {
-                $this->attachConfig["ext_audio"] = "mp3|aac";
-            }
-
-            if (empty($this->attachConfig["ext_video"])) {
-                $this->attachConfig["ext_video"] = "mp4|webm|ogg";
-            }
-
-            if (empty($this->attachConfig["ext_wma"])) {
-                $this->attachConfig["ext_wma"] = "wma";
-            }
-            
-            if (empty($this->attachConfig["ext_pdf"])) {
-                $this->attachConfig["ext_pdf"] = "pdf";
-            }
-
-            if (empty($this->attachConfig["ext_freemind"])) {
-                $this->attachConfig["ext_freemind"] = "mm";
-            }
-
-            if (empty($this->attachConfig["ext_flashvideo"])) {
-                $this->attachConfig["ext_flashvideo"] = "flv";
-            }
-
-            if (empty($this->attachConfig["ext_script"])) {
-                $this->attachConfig["ext_script"] = "php|php3|asp|asx|vb|vbs|js";
-            }
-
-            if (empty($this->attachConfig['upload_path'])) {
-                $this->attachConfig['upload_path'] = 'files';
-            }
-
-            if (empty($this->attachConfig['update_symbole'])) {
-                $this->attachConfig['update_symbole'] = '';
+                throw new Exception("attach_config should be an array in wakka.config.php");
             }
 
             if (empty($this->attachConfig['max_file_size'])) {
                 $this->attachConfig['max_file_size'] = $this->wiki->GetConfigValue("max_file_size") ? $this->wiki->GetConfigValue("max_file_size") : $this->file_upload_max_size();
-            }
-
-            if (empty($this->attachConfig['fmDelete_symbole'])) {
-                $this->attachConfig['fmDelete_symbole'] = 'Supr';
-            }
-
-            if (empty($this->attachConfig['fmRestore_symbole'])) {
-                $this->attachConfig['fmRestore_symbole'] = 'Rest';
-            }
-
-            if (empty($this->attachConfig['fmTrash_symbole'])) {
-                $this->attachConfig['fmTrash_symbole'] = 'Corbeille';
             }
 
             $safemode = $this->wiki->GetConfigValue("no_safe_mode");
