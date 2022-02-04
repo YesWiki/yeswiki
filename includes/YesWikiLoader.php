@@ -37,7 +37,7 @@ class YesWikiLoader
             } catch (Throwable $th) {
                 $message = "";
                 if (!file_exists('vendor/autoload.php')) {
-                    $message .= "ERROR ! : Folder `vendor/` seems not to be entirely copied ! (Maybe a YesWiki update aborted before its end !)<br/><strong>Could you manually copy th efolder `vendor/` on your server by ftp ?</strong><br/>";
+                    $message .= "ERROR ! : Folder `vendor/` seems not to be entirely copied ! (Maybe a YesWiki update aborted before its end !)<br/><strong>Could you manually copy the folder `vendor/` on your server by ftp ?</strong><br/>";
                 }
                 $message .= $th->getMessage();
                 // echo message directly because TemplateEngine not ready here
