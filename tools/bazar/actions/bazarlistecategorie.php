@@ -16,7 +16,7 @@
 
 // test de sécurité pour vérifier si on passe par wiki
 if (!defined("WIKINI_VERSION")) {
-        die ("acc&egrave;s direct interdit");
+    die("acc&egrave;s direct interdit");
 }
 
 // js lib
@@ -53,8 +53,10 @@ if (empty($GLOBALS['ordre'])) {
 }
 
 $template = $this->GetParameter("template");
-if (empty($template)) {
+if (empty($template) || empty(basename($template))) {
     $template = $GLOBALS['wiki']->config['default_bazar_template'];
+} else {
+    $template = basename($template);
 }
 
 // identifiant de la base de donnée pour la liste

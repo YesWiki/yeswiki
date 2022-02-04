@@ -36,15 +36,12 @@ $nouvellefenetre = $this->GetParameter("nouvellefenetre");
 $formatdate = $this->GetParameter("formatdate");
 
 $template = $this->GetParameter("template");
-if (empty($template)) {
+
+$path = empty($template) ? 'tools/syndication/templates/liste.tpl.html' : realpath('tools/syndication/templates/' . basename($template));
+if (empty($path) || !file_exists($path)) {
+    echo '<p class="alert alert-error alert-danger">' . _t('SYNDICATION_ACTION_SYNDICATION') . ' : '
+            . htmlspecialchars($template) . ' ' . _t('SYNDICATION_TEMPLATE_NOT_FOUND') . '.</p>' . "\n";
     $template = 'tools/syndication/templates/liste.tpl.html';
-} else {
-    $template = 'tools/syndication/templates/' . $this->GetParameter("template");
-    if (!file_exists($template)) {
-        echo '<p class="alert alert-error alert-danger">' . _t('SYNDICATION_ACTION_SYNDICATION') . ' : '
-             . $template . ' ' . _t('SYNDICATION_TEMPLATE_NOT_FOUND') . '.</p>' . "\n";
-        $template = 'tools/syndication/templates/liste.tpl.html';
-    }
 }
 
 $tabsrc = '';
@@ -82,8 +79,7 @@ if (!empty($urls)) {
                     // Gestion du titre
                     if (empty($titre)) {
                         $aso_page['titre_site'] = '';
-                    }
-                    elseif ($titre == 'rss') {
+                    } elseif ($titre == 'rss') {
                         $aso_page['titre_site'] = $feed->get_title();
                     } else {
                         $aso_page['titre_site'] = $titre;
