@@ -29,6 +29,9 @@
         <div style="display:none;">{{ include('@attach/attach-file-uploader-button.twig',
             {fileUploaderAnchor:'#' ~ field.name ~ 'Container .aceditor-toolbar',
             fileUploaderSelector:'#' ~ field.name }) }}</div>
+        <script>
+            var fileUploaderConfig = {attach_config:{ext_images:{{ attachConfigExtImages|json_encode()|raw }}}};
+        </script>
         {{ include_javascript('tools/attach/libs/fileuploader.js') }}
         <!-- include_javascript('tools/attach/libs/fileuploader.js') -->
     {% endif %}

@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Field;
 use DateTime;
 use DateTimeZone;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\DbService;
 
 /**
@@ -101,7 +102,7 @@ class TextareaField extends BazarField
                 ob_start();
                 include_once 'tools/aceditor/actions/actions_builder.php';
                 $output = ob_get_contents();
-                ob_end_clean();     
+                ob_end_clean();
             }
         }
 
@@ -113,6 +114,7 @@ class TextareaField extends BazarField
             'value' => $this->getValue($entry),
             'entryId' => $entry['id_fiche'] ?? null,
             'tempTag' => $tempTag,
+            'attachConfigExtImages' => explode("|", $this->getService(ParameterBagInterface::class)->get("attach_config")["ext_images"])
         ]);
     }
 

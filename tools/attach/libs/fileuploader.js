@@ -1416,7 +1416,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
         UploadModal.find('.modal-title').append(fileuploaded).append(filesize);
 
         // If it's an image
-        if ((responseJSON.extension === 'jpg') || (responseJSON.extension === 'jpeg') || (responseJSON.extension === 'gif') || (responseJSON.extension === 'png')) {
+        if (typeof fileUploaderConfig !== "undefined" && fileUploaderConfig.attach_config.ext_images.indexOf(responseJSON.extension) > -1) {
           imageinput.show();
           hiddenfilenameinput.val(responseJSON.simplefilename);
           UploadModal.find('.attach_alt').val('image ' + responseJSON.simplefilename + ' (' + filesize.text() + ')');
