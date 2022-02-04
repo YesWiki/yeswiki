@@ -12,6 +12,7 @@ parameters:
     png: 'PNG'
     gif: 'GIF'
     jpeg: 'JPEG'
+    webp: 'WEBP'
     # Autres images (peuvent utiliser le tag <img>)
     bmp: 'BMP'
     tif: 'TIFF'
@@ -66,6 +67,7 @@ parameters:
     h: 'C header'
     kml: 'Keyhole Markup Language'
     kmz: 'Google Earth Placemark File'
+    md: 'Markdown'
     mm: 'Mindmap'
     pas: 'Pascal'
     pdf: 'PDF'
@@ -93,7 +95,9 @@ parameters:
     xspf: 'XSPF'
     xls: 'Excel'
     xlsx: 'Excel'
+    xlsm: 'Excel'
     xml: 'XML'
+    yaml: 'YAML'
     zip: 'Zip'
     #  Open Document
     odt: 'opendocument text'
