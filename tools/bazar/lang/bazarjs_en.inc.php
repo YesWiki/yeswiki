@@ -184,5 +184,5 @@ return [
 
     'BAZ_FORM_EDIT_UNIQUE_ID' => 'Unique ID',
     'BAZ_FORM_EDIT_NAME' => 'Label',
-    'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'Displaying the form builder, you will delete changes done here in the code. Whould you continue without saving changes ?',
+    'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'Displaying the form builder, you will delete changes done here in the code. Whould you continue without saving changes ?  (Click on "Submit" button in page footer to keep your changes !)',
 ];

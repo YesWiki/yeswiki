@@ -184,5 +184,5 @@ return [
 
     'BAZ_FORM_EDIT_UNIQUE_ID' => 'Identifiant unique',
     'BAZ_FORM_EDIT_NAME' => 'Intitulé',
-    'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'En affichant le constructeur graphique, vous perdrez vos modifications faites dans le code ici-même. Continuer sans sauvegarder les changements ?',
+    'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'En affichant le constructeur graphique, vous perdrez vos modifications faites dans le code ici-même. Continuer sans sauvegarder les changements ? (Cliquez sur le bouton "Valider" en bas de page pour conserver vos modifications !)',
 ];
