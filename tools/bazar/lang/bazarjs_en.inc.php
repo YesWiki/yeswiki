@@ -182,6 +182,7 @@ return [
     // 'BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_PLACEHOLDER' => 'mettre \'checkbox\' ici si vos fiches liées le sont via un checkbox',
     // 'BAZ_FORM_EDIT_ADDRESS' => 'Adresse',
 
-    // 'BAZ_FORM_EDIT_UNIQUE_ID' => 'Identifiant unique',
-    // 'BAZ_FORM_EDIT_NAME' => 'Intitulé',
+    'BAZ_FORM_EDIT_UNIQUE_ID' => 'Unique ID',
+    'BAZ_FORM_EDIT_NAME' => 'Label',
+    'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'Displaying the form builder, you will delete changes done here in the code. Whould you continue without saving changes ?  (Click on "Submit" button in page footer to keep your changes !)',
 ];
