@@ -183,7 +183,9 @@ if ($GLOBALS['check_' . $pagetag]['section']) {
             <div class="$containterClass">
     HTML;
 } else {
-    echo '<div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_SECTION') . '</strong> : '
-        . _t('TEMPLATE_ELEM_SECTION_NOT_CLOSED') . '.</div>' . "\n";
-    return;
+    echo <<<HTML
+        <div class="alert alert-danger">
+            <strong>{$this->t('TEMPLATE_ACTION_SECTION')}</strong>: {$this->t('TEMPLATE_ELEM_SECTION_NOT_CLOSED')}
+        </div>
+    HTML;
 }
