@@ -1474,6 +1474,12 @@ class Wiki
         }
     }
 
+    // Shortcut so we can do string interpolation -> "<div>{$this->t('MY_KEY')}</div>" 
+    public function t($textkey, $params = [])
+    {
+        return _t($textkey, $params);
+    }
+
     /*
      * RETRO-COMPATIBILITY
      */
