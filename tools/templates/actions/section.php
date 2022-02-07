@@ -162,6 +162,9 @@ if ($GLOBALS['check_' . $pagetag]['section']) {
     if (!empty($this->GetParameter('id'))) {
         $attributes['id'] = $this->GetParameter('id');
     }
+    if (!empty($file)) {
+        $attributes['data-file'] = $file;
+    }
     $data = getDataParameter();
     if (is_array($data)) {
         foreach ($data as $key => $value) {
