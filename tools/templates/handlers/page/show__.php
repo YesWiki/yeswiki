@@ -41,7 +41,7 @@ if (!$this->HasAccess('read')) {
     } else {
         // sinon on affiche le formulaire d'identification minimal
         $output = str_replace(
-            "<i>"._t('LOGIN_NOT_AUTORIZED')."</i>",
+            "<i>"._t('LOGIN_NOT_AUTORIZED')."</i>", // to sync with /handlers/page/show.php
             '<div class="alert alert-danger alert-error">'.
             _t('LOGIN_NOT_AUTORIZED').', '._t('LOGIN_PLEASE_REGISTER').'.'.
             '</div>'."\n".
