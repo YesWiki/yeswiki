@@ -497,3 +497,13 @@ input[type="date"]::-webkit-input-placeholder{
   border: none;
   background: transparent;
 }
+
+/* Display tabs when printing */
+@media print {
+  div[role=tabpanel] {
+    display: block !important;
+  }
+  a[role=tab] {
+    display:none !important;
+  }
+}
