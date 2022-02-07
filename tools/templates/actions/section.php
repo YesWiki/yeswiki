@@ -89,7 +89,7 @@ css;
 
 // image's filename
 $file = $this->GetParameter('file');
-$backgroundimg =true;
+$backgroundimg = true;
 if (empty($file) && empty($bgcolor)) {
     $bgcolor = false;
     $backgroundimg = false;
@@ -123,59 +123,62 @@ if (!empty($file)) {
     $att->height = $height;
     $att->width = $width;
     $fullFilename = $att->GetFullFilename();
+
+    // test d'existance du fichier
+    if (isset($fullFilename) and (!file_exists($fullFilename) or $fullFilename == '')) {
+        $att->showFileNotExits();
+    }
 }
-
-// container class
-$class = $this->GetParameter('class');
-
-// container id
-$id = $this->GetParameter('id');
-
-// container data attributes
-$data = getDataParameter();
 
 $pagetag = $this->GetPageTag();
 if (!isset($GLOBALS['check_' . $pagetag]['section'])) {
     $GLOBALS['check_' . $pagetag]['section'] = check_graphical_elements('section', $pagetag, $this->page['body']);
 }
+
 if ($GLOBALS['check_' . $pagetag]['section']) {
 
     // specify the role to be checked ( *, +, %, @admins)
     $role = $this->GetParameter('visibility');
     $role = empty($role) ? $role : str_replace("\\n", "\n", $role);
     $visible = !$role || ($GLOBALS['wiki']->CheckACL($role, null, false));
+    
     $class = ($backgroundimg ? 'background-image' : '') 
      . ($patternId && !$patternborder ? ' with-bg-pattern' : '') 
      . ($patternborder ? ' pattern-border' : '') 
      . ($visible ? '' : ' remove-this-div-on-page-load ') 
-     . " pattern-$patternId"
-     . (!empty($class) ? ' ' . $class : '');
+     . " pattern-$patternId "
+     . " {$this->GetParameter('class')}";
 
-    echo '<!-- start of section -->
-    <section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. $class . '" style="'
-        .(!empty($bgcolor) ? 'background-color:' . $bgcolor .'; ' : '')
-        .(!empty($height) ? 'height:' . $height . 'px; ' : '')
-        .(!empty($pattern) ? $pattern : '')
-        .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '').'"'
-        ;
+    $style = (!empty($bgcolor) ? 'background-color:' . $bgcolor .'; ' : '')
+     . (!empty($height) ? 'height:' . $height . 'px; ' : '')
+     . (!empty($pattern) ? $pattern : '')
+     . (isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '').'"';
+    
+    // HTML attributes
+    $attributes = [ 
+        'class' => $class, 
+        'style' => $style
+    ];
+    if (!empty($this->GetParameter('id'))) {
+        $attributes['id'] = $this->GetParameter('id');
+    }
+    $data = getDataParameter();
     if (is_array($data)) {
         foreach ($data as $key => $value) {
-            echo ' data-'.$key.'="'.$value.'"';
+            $attributes["data-$key"] = $value;
         }
     }
-    echo '>' . "\n";
+    $attributesString = "";
+    foreach($attributes as $attr => $value) {
+        $attributesString .= "$attr='$value'";
+    }
+    $containterClass = empty($this->GetParameter('nocontainer')) ? 'container' : '';
     
-    $nocontainer = $this->GetParameter('nocontainer');
-    if (empty($nocontainer)) {
-        echo '<div class="container">' . "\n";
-    } else {
-        echo '<div>';
-    }
-    //test d'existance du fichier
-    if (isset($fullFilename) and (!file_exists($fullFilename) or $fullFilename == '')) {
-        $att->showFileNotExits();
-        //return;
-    }
+    echo <<<HTML
+        <!-- start of section -->
+        <section $attributesString>
+            <div class="$containterClass">
+    HTML;
 } else {
     echo '<div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_SECTION') . '</strong> : '
         . _t('TEMPLATE_ELEM_SECTION_NOT_CLOSED') . '.</div>' . "\n";
