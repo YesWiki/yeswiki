@@ -94,7 +94,7 @@ function checkParamActionSetTemplate($post, $availableThemes)
     $params['squelette'] = $post['wdtSquelette'];
 
     // Vérifie la validité du preset.
-    $params['preset'] = $post['preset'] ;
+    $params['preset'] = $post['preset'] ?? null ;
     if (!empty($params['preset']) && substr($params['preset'], -4) != '.css') {
         return false;
     }

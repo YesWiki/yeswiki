@@ -53,18 +53,22 @@ $hideIfNoAccess = $this->GetParameter('hideifnoaccess');
 $listlinks = '';
 foreach ($titles as $key => $title) {
     $haveAccess = true;
-    $linkParts = $this->extractLinkParts($links[$key]);
-    [$url, $method, $params] = ['', '', ''];
-    if ($linkParts) {
-        $this->services->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
-        $method = $linkParts['method'];
-        $params = $linkParts['params'];
-        $url = $this->href($method, $linkParts['tag'], $params);
-        if ($hideIfNoAccess == "true" && isset($linkParts['tag']) && !$GLOBALS['wiki']->HasAccess('read', $linkParts['tag'])) {
-            $haveAccess = false;
-        }
+    if (empty($links[$key])) {
+        $url = "";
     } else {
-        $url = $links[$key];
+        $linkParts = $this->extractLinkParts($links[$key]);
+        [$url, $method, $params] = ['', '', ''];
+        if ($linkParts) {
+            $this->services->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
+            $method = $linkParts['method'];
+            $params = $linkParts['params'];
+            $url = $this->href($method, $linkParts['tag'], $params);
+            if ($hideIfNoAccess == "true" && isset($linkParts['tag']) && !$GLOBALS['wiki']->HasAccess('read', $linkParts['tag'])) {
+                $haveAccess = false;
+            }
+        } else {
+            $url = $links[$key];
+        }
     }
     // class="active" if the url have the same url than the current one (independently of the method and the params)
     if ($haveAccess) {

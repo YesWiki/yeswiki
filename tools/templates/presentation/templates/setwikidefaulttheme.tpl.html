@@ -60,12 +60,14 @@
     <label class="control-label col-lg-4"><?php print(_t('TEMPLATE_PRESETS')); ?></label>
     <div class="controls col-lg-4">
       <select id='presetSelect' name='preset' class="form-control">
-        <?php foreach ($themes[$defTheme]['presets'] as $presetKey => $preset) : ?>
-          <option
-            value="<?php echo $presetKey; ?>"
-            <?php echo ($presetKey === $selectedPresetName) ? 'selected': ''; ?>
-            ><?php echo str_replace('.css', '', $presetKey); ?></option>
-        <?php endforeach; ?>
+        <?php if (isset($themes[$defTheme]['presets'])): ?>
+          <?php foreach ($themes[$defTheme]['presets'] as $presetKey => $preset) : ?>
+            <option
+              value="<?php echo $presetKey; ?>"
+              <?php echo ($presetKey === $selectedPresetName) ? 'selected': ''; ?>
+              ><?php echo str_replace('.css', '', $presetKey); ?></option>
+          <?php endforeach; ?>
+        <?php endif; ?>
         <?php foreach ($customCSSPresets as $presetKey => $preset) : ?>
           <option
             value="<?php echo YesWiki\Core\Service\ThemeManager::CUSTOM_CSS_PRESETS_PREFIX . $presetKey; ?>"

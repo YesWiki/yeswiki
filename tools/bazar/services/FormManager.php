@@ -98,7 +98,7 @@ class FormManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         // If ID is not set or if it is already used, find a new ID
-        if (!$data['bn_id_nature'] || $this->getOne($data['bn_id_nature'])) {
+        if (empty($data['bn_id_nature']) || $this->getOne($data['bn_id_nature'])) {
             $data['bn_id_nature'] = $this->findNewId();
         }
 
