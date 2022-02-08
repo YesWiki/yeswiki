@@ -114,6 +114,9 @@ class UserField extends BazarField
 
         if ($value && $this->isUserByName($value)) {
             $wikiName = $value;
+            // add in groups
+            $this->addUserToGroups($wikiName, $entry);
+            
             $this->updateEmailIfNeeded($wikiName, $entry[$this->emailField] ?? null);
         } else {
             $wikiName = $entry[$this->nameField];
