@@ -152,7 +152,7 @@ if ($GLOBALS['check_' . $pagetag]['section']) {
      . (!empty($class) ? ' ' . $class : '');
 
     echo '<!-- start of section -->
-    <section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. $class . '" style="'
+    <section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. $class . '" data-file="'. $file .'" style="'
         .(!empty($bgcolor) ? 'background-color:' . $bgcolor .'; ' : '')
         .(!empty($height) ? 'height:' . $height . 'px; ' : '')
         .(!empty($pattern) ? $pattern : '')
