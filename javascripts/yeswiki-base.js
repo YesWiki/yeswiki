@@ -319,8 +319,8 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
   // moteur de recherche utilisé dans un template
   $('a[href="#search"]').on("click", function(e) {
     e.preventDefault();
-    $("#search").addClass("open");
-    $("#search .search-query").focus();
+    $(this).siblings('#search').addClass("open");
+    $(this).siblings('#search').find(".search-query").focus();
   });
 
   $("#search, #search button.close-search").on("click keyup", function(e) {
