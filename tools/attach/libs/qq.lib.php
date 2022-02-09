@@ -1,20 +1,8 @@
 <?php
-if (!WIKINI_VERSION) {
-    die('acc&egrave;s direct interdit');
-}
 
 use YesWiki\Core\Service\DbService;
 
-$hasTempTag = (isset($_GET['tempTag'])
-    && preg_match("/^{$this->config['temp_tag_for_entry_creation']}_[A-Fa-f0-9]+$/m", $_GET['tempTag']));
-
-if (
-    ($this->LoadPage($this->getPageTag()) && $this->HasAccess('write'))
-    || ($this->HasAccess('read') && $hasTempTag)
-) {
-    /**
-     * Handle file uploads via XMLHttpRequest
-     */
+if (!class_exists('qqUploadedFileXhr')) {
     class qqUploadedFileXhr
     {
         /**
@@ -52,7 +40,9 @@ if (
             }
         }
     }
+}
 
+if (!class_exists('qqUploadedFileForm')) {
     /**
      * Handle file uploads via regular form post (uses the $_FILES array)
      */
@@ -78,7 +68,9 @@ if (
             return $_FILES['qqfile']['size'];
         }
     }
+}
 
+if (!class_exists('qqFileUploader')) {
     class qqFileUploader
     {
         private $allowedExtensions = array();
@@ -195,7 +187,7 @@ if (
             $GLOBALS['wiki']->setParameter("file", $filename . '.' . $ext);
 
             // dans le cas d'une nouvelle page, on donne une valeur a la date de création dans le fuseau horaire du serveur (heure SQL)
-            if ($this->hasTempTag || $GLOBALS['wiki']->page['time'] == '') {
+            if ($this->hasTempTag || !isset($GLOBALS['wiki']->page['time']) || $GLOBALS['wiki']->page['time'] == '') {
                 $dbTz = $GLOBALS['wiki']->services->get(DbService::class)->getDbTimeZone();
                 $sqlTimeFormat = 'Y-m-d H:i:s';
                 $GLOBALS['wiki']->page['time'] = !empty($dbTz) ? (new DateTime())->setTimezone(new DateTimeZone($dbTz))->format($sqlTimeFormat) : date($sqlTimeFormat);
@@ -212,6 +204,9 @@ if (
             ob_end_clean();
 
             if ($this->file->save($fullfilename)) {
+                if ($ext === "svg") {
+                    $attach->sanitizeSVGfile($fullfilename);
+                }
                 return array_map('utf8_encode', array('success'=>true, 'filename'=>$fullfilename, 'simplefilename'=>$filename . '.' . $ext, 'extension'=>$ext));
             } else {
                 return array_map(
@@ -223,32 +218,4 @@ if (
             }
         }
     }
-
-    if (!class_exists('attach')) {
-        include_once 'tools/attach/libs/attach.lib.php';
-    }
-    ob_start();
-    $att = new attach($this);
-
-    // list of valid extensions, ex. array("jpeg", "xml", "bmp")
-    $allowedExtensions = array_keys($this->config['authorized-extensions']);
-
-    // max file size in bytes
-    $sizeLimit = $att->attachConfig['max_file_size'];
-
-    $uploader = new qqFileUploader($allowedExtensions, $sizeLimit, $hasTempTag);
-    $result = $uploader->handleUpload($att->attachConfig['upload_path']);
-
-
-    unset($att);
-    $errorsMessage = ob_get_contents();
-    ob_end_clean();
-    if (!empty($errorsMessage)) {
-        $result['errorMessage'] = $errorsMessage;
-    }
-    unset($errorsMessage);
-} else {
-    $result = array('error' => _t('NO_RIGHT_TO_WRITE_IN_THIS_PAGE'));
 }
-// to pass data through iframe you will need to encode all html tags
-echo htmlspecialchars(json_encode($result), ENT_NOQUOTES, YW_CHARSET);
