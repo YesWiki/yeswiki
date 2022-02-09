@@ -4,8 +4,6 @@ use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\YesWikiHandler;
 
-require_once BAZ_CHEMIN.'libs/vendor/XML/Util.php';
-
 // TODO use Symfony XmlEncoder instead
 // https://symfony.com/doc/current/components/serializer.html#the-xmlencoder
 class RssHandler extends YesWikiHandler
@@ -99,7 +97,7 @@ class RssHandler extends YesWikiHandler
         $xml .= "\r\n      ";
         $xml .= XML_Util::createTag('language', null, 'fr-FR');
         $xml .= "\r\n      ";
-        $xml .= XML_Util::createTag('copyright', null, 'Copyright (c) '.date('Y').' '. $this->sanitize($this->wiki->config['BAZ_RSS_NOMSITE']));
+        $xml .= XML_Util::createTag('copyright', null, 'Copyright (c) '.date('Y').' '. htmlentities($this->wiki->config['BAZ_RSS_NOMSITE']));
         $xml .= "\r\n      ";
         $xml .= XML_Util::createTag('lastBuildDate', null, gmstrftime('%a, %d %b %Y %H:%M:%S %Z'));
         $xml .= "\r\n      ";
