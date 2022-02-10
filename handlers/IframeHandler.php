@@ -38,14 +38,14 @@ class IframeHandler extends YesWikiHandler
 
             if ($contenu = $this->wiki->LoadPage("PageLogin")) {
                 // si une page PageLogin existe, on l'affiche
-                $output .= $this->wiki->Format($contenu["body"]);
+                $output .= $this->replaceLinksWithIframeIfNeeded($this->wiki->Format($contenu["body"]));
             } else {
                 // sinon on affiche le formulaire d'identification minimal
                 $output .= '<div class="vertical-center white-bg">' . "\n"
                     . '<div class="alert alert-danger alert-error">' . "\n"
                     . _t('LOGIN_NOT_AUTORIZED') . '. ' . _t('LOGIN_PLEASE_REGISTER') . '.' . "\n"
                     . '</div>' . "\n"
-                    . $this->wiki->Format('{{login signupurl="0"}}' . "\n\n")
+                    . $this->replaceLinksWithIframeIfNeeded($this->wiki->Format('{{login signupurl="0"}}' . "\n\n"))
                     . '</div><!-- end .vertical-center -->' . "\n";
             }
         }
@@ -87,12 +87,7 @@ class IframeHandler extends YesWikiHandler
         $entry = baz_voir_fiche(true, $tab_valeurs);
         if (!empty($entry)) {
             // affichage de la page formatee
-            if (isset($_GET['iframelinks']) && $_GET['iframelinks'] == '0') {
-                // pas de modification des urls
-                $output .= $entry;
-            } else {
-                $output .= replaceLinksWithIframe($entry);
-            }
+            $output .= $this->replaceLinksWithIframeIfNeeded($entry);
         }
         return $output;
     }
@@ -113,13 +108,22 @@ class IframeHandler extends YesWikiHandler
         }
 
         // affichage de la page formatée
+        $output .= $this->replaceLinksWithIframeIfNeeded($this->wiki->Format($this->wiki->page["body"], 'wakka', $this->wiki->GetPageTag()));
+        return $output;
+    }
+
+    /**
+     * replace links with iframe if needed
+     * @param string $input
+     * @return string $output
+     */
+    private function replaceLinksWithIframeIfNeeded(string $input): string
+    {
         if (isset($_GET['iframelinks']) && $_GET['iframelinks'] == '0') {
             // pas de modification des urls
-            $output .= $this->wiki->Format($this->wiki->page["body"], 'wakka', $this->wiki->GetPageTag());
+            return $input;
         } else {
-            $body = $this->wiki->Format($this->wiki->page["body"], 'wakka', $this->wiki->GetPageTag());
-            $output .= replaceLinksWithIframe($body);
+            return replaceLinksWithIframe($input);
         }
-        return $output;
     }
 }

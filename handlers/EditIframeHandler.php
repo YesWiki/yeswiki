@@ -51,14 +51,14 @@ class EditIframeHandler extends YesWikiHandler
 
             if ($contenu = $this->wiki->LoadPage("PageLogin")) {
                 // si une page PageLogin existe, on l'affiche
-                $output .= $this->wiki->Format($contenu["body"]);
+                $output .= replaceLinksWithIframe($this->wiki->Format($contenu["body"]));
             } else {
                 // sinon on affiche le formulaire d'identification minimal
                 $output .= '<div class="vertical-center white-bg">' . "\n"
                     . '<div class="alert alert-danger alert-error">' . "\n"
                     . _t('LOGIN_NOT_AUTORIZED') . '. ' . _t('LOGIN_PLEASE_REGISTER') . '.' . "\n"
                     . '</div>' . "\n"
-                    . $this->wiki->Format('{{login signupurl="0"}}' . "\n\n")
+                    . replaceLinksWithIframe($this->wiki->Format('{{login signupurl="0"}}' . "\n\n"))
                     . '</div><!-- end .vertical-center -->' . "\n";
             }
         }
