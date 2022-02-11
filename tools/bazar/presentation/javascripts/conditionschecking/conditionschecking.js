@@ -2,24 +2,26 @@ const ConditionsChecking = {
     conditionsCache: [],
     fieldNamesCache: {},
     triggersCache: {},
-    operationsLists: ['&','|','(',')','!('],
-    conditionsList: ['=','!=',' in (',' in(',' IN (',' IN(','.length =','.length !=','.length <','.length <=','.length >=','.length >'],
+    operationsLists: [' and ',' or ','(',')','!(','not ('],
+    conditionsList: ['==','!=',' in','|length ==','|length !=','|length <','|length <=','|length >=','|length >','is empty','is not empty'],
+    pregQuote: function (input){
+        return (input + '').replace(new RegExp(
+            '[.\\[\\]\\^(){}!=\\\\+*?$<>|:]','g'
+        ),'\\$&');
+    },
     getFirstOperation: function (parsingObject){
         let condition = parsingObject.restOfCondition.trim();
         let indexOfOperation = -1;
-        let  operation = "";
+        let operation = "";
+        let operationFull = "";
         for (let index = 0; index < this.operationsLists.length; index++) {
             let element = this.operationsLists[index];
-            let newIndex = condition.indexOf(element);
-            if (element == "(" && (condition.substr(newIndex-4,5) == " in (" ||
-                    condition.substr(newIndex-4,5) == " IN (" || 
-                    condition.substr(newIndex-3,4) == " in(" || 
-                    condition.substr(newIndex-3,4) == " IN(")){
-                newIndex = -1;
-            }
+            let rest = condition.match(new RegExp("("+this.pregQuote(element)+")(.*)$",'i'));
+            let newIndex = (rest == undefined ) ? -1 : condition.length - rest[0].length;
             if ( newIndex > -1 && (newIndex < indexOfOperation || indexOfOperation < 0)){
                 indexOfOperation = newIndex;
                 operation = element;
+                operationFull = rest[1];
             }
         }
         let result = {};
@@ -30,7 +32,7 @@ const ConditionsChecking = {
         } else {
             result.currentCondition = condition.substr(0,indexOfOperation).trim();
             result.operation = operation;
-            result.restOfCondition = condition.substr(indexOfOperation+operation.length).trim();
+            result.restOfCondition = condition.substr(indexOfOperation+operationFull.length).trim();
         }
         return result;
     },
@@ -38,12 +40,15 @@ const ConditionsChecking = {
         let conditionLocal = condition.trim();
         let indexOfCondition = -1;
         let typeOfCondition = "";
+        let typeOfConditionFull = "";
         for (let index = 0; index < this.conditionsList.length; index++) {
             let element = this.conditionsList[index];
-            let newIndex = conditionLocal.indexOf(element);
+            let rest = conditionLocal.match(new RegExp("("+this.pregQuote(element)+")(.*)$",'i'));
+            let newIndex = (rest == undefined ) ? -1 : condition.length - rest[0].length;
             if ( newIndex > -1 && (newIndex < indexOfCondition || indexOfCondition < 0)){
                 indexOfCondition = newIndex;
                 typeOfCondition = element;
+                typeOfConditionFull = rest[1];
             }
         }
         if (indexOfCondition < 0){
@@ -53,7 +58,7 @@ const ConditionsChecking = {
         } else {
             baseObject.leftPart = conditionLocal.substr(0,indexOfCondition).trim();
             baseObject.typeOfCondition = typeOfCondition;
-            baseObject.rigthPart = conditionLocal.substr(indexOfCondition+typeOfCondition.length).trim();
+            baseObject.rigthPart = conditionLocal.substr(indexOfCondition+typeOfConditionFull.length).trim();
         }
     },
     getCheckboxValues: function (field){
@@ -116,7 +121,11 @@ const ConditionsChecking = {
         if (values.trim()==""){
             return [];
         }
-        return values.split(",");
+        let tempValues = values.trim();
+        if (tempValues.substr(0,1) == '[' && tempValues.substr(-1) == ']'){
+            tempValues = tempValues.substr(1,tempValues.length - 2);
+        }
+        return tempValues.split(",");
     },
     commonForOperations: function(fieldName, values, extract){
         let fieldValues = this.getFieldNameValues(fieldName);
@@ -198,6 +207,12 @@ const ConditionsChecking = {
         }
         return result;
     },
+    isEmpty: function (fieldName){
+        return this.isEqual(fieldName,"");
+    },
+    isNotEmpty: function (fieldName){
+        return this.isUnEqual(fieldName,"");
+    },
     renderCondition: function(structuredCondition){
         if (typeof structuredCondition.leftPart !== "undefined" &&
             typeof structuredCondition.rigthPart !== "undefined" &&
@@ -212,22 +227,23 @@ const ConditionsChecking = {
     },
     renderConditionSecured: function(fieldName, condition, values){
         switch (condition) {
-            case "=":
+            case "==":
                 return ` this.isEqual("${fieldName}","${values}")`;
             case "!=":
                 return ` this.isUnEqual("${fieldName}","${values}")`;
-            case 'in (':
-            case 'in(':
-            case 'IN (':
-            case 'IN(':
+            case 'in':
                 return ` this.isIn("${fieldName}","${values}")`;
-            case '.length =':
-            case '.length !=':
-            case '.length <':
-            case '.length <=':
-            case '.length >':
-            case '.length >=':
-                return ` this.isLength("${fieldName}","${values}","${condition.substr(".length ".length)}")`;
+            case 'is empty':
+                return ` this.isEmpty("${fieldName}")`;
+            case 'is not empty':
+                return ` this.isNotEmpty("${fieldName}")`;
+            case '|length ==':
+            case '|length !=':
+            case '|length <':
+            case '|length <=':
+            case '|length >':
+            case '|length >=':
+                return ` this.isLength("${fieldName}","${values}","${condition.substr("|length ".length)}")`;
             default:
                 break;
         }
@@ -261,12 +277,21 @@ const ConditionsChecking = {
                             stringToEval = stringToEval+structuredCondition.operation
                         }
                         break;
+                    case "not (":
+                        if (this.renderBadFormatingError(structuredCondition)) {
+                            errorFound = true;
+                        } else {
+                            stringToEval = stringToEval+"!("
+                        }
+                        break;
                     case ")":
                         stringToEval = stringToEval+this.renderCondition(structuredCondition)+structuredCondition.operation
                         break;
-                    case "&":
-                    case "|":
-                        stringToEval = stringToEval+this.renderCondition(structuredCondition)+structuredCondition.operation+structuredCondition.operation;
+                    case " and ":
+                        stringToEval = stringToEval+this.renderCondition(structuredCondition)+"&&";
+                        break;
+                    case " or ":
+                        stringToEval = stringToEval+this.renderCondition(structuredCondition)+"||";
                         break;
                     default:
                         if (stack.length > 0){
