@@ -44,6 +44,7 @@ use Symfony\Component\Routing\Loader\AnnotationClassLoader;
 use Symfony\Component\Routing\Loader\AnnotationDirectoryLoader;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
 
 // TODO put elsewhere
 // https://github.com/sensiolabs/SensioFrameworkExtraBundle/blob/master/src/Routing/AnnotatedRouteControllerLoader.php
@@ -310,6 +311,7 @@ class Init
 
         $containerBuilder->set(Wiki::class, $wiki);
         $containerBuilder->set(ParameterBagInterface::class, $containerBuilder->getParameterBag());
+        $containerBuilder->set(CsrfTokenManager::class, new CsrfTokenManager());
 
         $loader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__));
         $loader->load('services.yaml');
