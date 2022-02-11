@@ -101,7 +101,6 @@ Paramètres optionels : `checkedvalue` `uncheckedvalue`. Par défault la valeur 
 modal:
   label: Affichage d'une fenêtre modale lors du clic
   type: checkbox
-  default: 0
   checkedvalue: 1
   uncheckedvalue: 0
 ```
@@ -168,3 +167,25 @@ mydivider:
   label: Un titre
   type: divider
 ```
+
+### default vs value
+Ils vont tous les deux servir à initialiser une valeur.
+La différence étant que si on utilise `default`, alors si la valeur est égale à `default` le paramètre
+sera masqué dans le wiki code généré
+Généralement on utilisera donc `default` afin d'éviter les code wiki à rallonge
+
+```
+modal:
+  label: Affichage d'une fenêtre modale lors du clic
+  type: checkbox
+  default: true
+```
+-> checkbox cochée par default, et le code généré ne contiendra pas le param modal si il est égal à true, mais contiendra `modal="false"` si on décoche
+
+```
+modal:
+  label: Affichage d'une fenêtre modale lors du clic
+  type: checkbox
+  value: true
+```
+-> checkbox cochée par default, et le code généré contiendra quoiqu'il arrive soit `modal="true"` soit `modal="false"`
