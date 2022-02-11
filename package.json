@@ -5,7 +5,7 @@
     "url": "git+https://github.com/yeswiki/yeswiki.git"
   },
   "license": "AGPL-3.0",
-  "homepage": "http://yeswiki.net",
+  "homepage": "https://yeswiki.net",
   "scripts": {
     "postinstall": "./javascripts/vendor/extract-files-from-node-modules.sh"
   },
