@@ -191,21 +191,24 @@ return [
     'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'Displaying the form builder, you will delete changes done here in the code. Whould you continue without saving changes ?  (Click on "Submit" button in page footer to keep your changes !)',
 
     // condition checking field
-    // "BAZ_FORM_CONDITIONSCHEKING_HINT" => "La condition doit respecter le format suivant (sans les `):{\\n}".
-    //     " - `&` = ET{\\n}".
-    //     " - `|` = OU{\\n}".
-    //     " - `=` = EST ÉGALE À{\\n}".
-    //     " - `!=` = EST DIFFÉRENT DE {\\n}".
-    //     " - ` IN (value1,value2)` = FAIT PARTIE DE liste d'éléments séparés par des espaces {\\n}".
-    //     " - `.length > 6` = vérifie si le nombre d'éléments cochés est supérieur à 6 (fonctionne avec '>=','<','<=') {\\n}".
-    //     " - ` = value1,value2` = VAUT EXACTEMENT LA liste d'éléments séparés par des espaces (uniquement pour checkbox){\\n}".
-    //     " - `(  )` permet de grouper des conditions sinon priorité de gauche à droite{\\n}".
-    //     " - `!(  )` négation de la condition{\\n}".
-    //     " - indiquer à gauche d'un `=` ou `!=` le label du champ ex:`bf_thematique` ou le nom long `listeListeOuiNonbf_choix`{\\n}",
-    //     " - une valeur vide à droite de `=` (ou entourée par deux ,) permet de signifier une valeur vide{\\n}",
-    //     " - les espaces en trop sont retirés automatiquement",
-    // "BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL" => "Affichage conditionnel",
-    // "BAZ_FORM_EDIT_CONDITION_LABEL" => "Condition",
-    // "BAZ_FORM_EDIT_CONDITIONCHECKING_END" => "Fin de condition",
+    "BAZ_FORM_CONDITIONSCHEKING_HINT" => "EXPERIMENTAL FIELD{\\n}".
+        "The condition must match the following format (without `):{\\n}".
+        " - ` and ` : gives AND{\\n}".
+        " - ` or ` : gives OR{\\n}".
+        " - `==` : gives IS EQUAL TO{\\n}".
+        " - `!=` : gives IS NOT EQUAL TO {\\n}".
+        " - ` in [value1,value2]` : IS IN the list of elements separated by coma and surrounded by hookss {\\n}".
+        " - `|length > 6` : check if the number of elements checked is hight than 6 (foworks also with '>=','<','<=') {\\n}".
+        " - ` == [value1,value2]` : IS EXACTLY the list of elements separated by coma and surrounded by hookss (only for checkbox){\\n}".
+        " - `(  )` allos to group conditions with priority left to rigth{\\n}".
+        " - `!(  )` or `not (  )` negate a group of condition{\\n}".
+        " - put a left part of `==` or `!=` the filedname ex:`bf_theme` or long fieldname `listeListeYesNobf_choice`{\\n}".
+        " - ` is empty ` : check if the value is empty{\\n}".
+        " - ` is not empty ` : check if the value is not empty{\\n}".
+        " - spaces or automaticaly removed{\\n}".
+        " - operations are waited to be case insensitive",
+    "BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL" => "Conditionnal display",
+    "BAZ_FORM_EDIT_CONDITION_LABEL" => "Condition",
+    "BAZ_FORM_EDIT_CONDITIONCHECKING_END" => "End of condition",
 
 ];

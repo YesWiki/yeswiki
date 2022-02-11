@@ -193,18 +193,20 @@ return [
     // condition checking field
     "BAZ_FORM_CONDITIONSCHEKING_HINT" => "CHAMP EXPERIMENTAL{\\n}".
         "La condition doit respecter le format suivant (sans les `):{\\n}".
-        " - `&` = ET{\\n}".
-        " - `|` = OU{\\n}".
-        " - `=` = EST ÉGALE À{\\n}".
-        " - `!=` = EST DIFFÉRENT DE {\\n}".
-        " - ` in (value1,value2)` = FAIT PARTIE DE liste d'éléments séparés par des espaces {\\n}".
-        " - `.length > 6` = vérifie si le nombre d'éléments cochés est supérieur à 6 (fonctionne avec '>=','<','<=') {\\n}".
-        " - ` = value1,value2` = VAUT EXACTEMENT LA liste d'éléments séparés par des espaces (uniquement pour checkbox){\\n}".
+        " - ` and ` : donne ET{\\n}".
+        " - ` or ` : donne OU{\\n}".
+        " - `==` : donne EST ÉGALE À{\\n}".
+        " - `!=` : donne EST DIFFÉRENT DE {\\n}".
+        " - ` in [value1,value2]` : FAIT PARTIE DE liste d'éléments séparés par des virgules et entouré de crohets {\\n}".
+        " - `|length > 6` : vérifie si le nombre d'éléments cochés est supérieur à 6 (fonctionne avec '>=','<','<=') {\\n}".
+        " - ` == [value1,value2]` : VAUT EXACTEMENT LA liste d'éléments séparés par des virgules et entouré de crohets (uniquement pour checkbox){\\n}".
         " - `(  )` permet de grouper des conditions sinon priorité de gauche à droite{\\n}".
-        " - `!(  )` négation de la condition{\\n}".
-        " - indiquer à gauche d'un `=` ou `!=` le label du champ ex:`bf_thematique` ou le nom long `listeListeOuiNonbf_choix`{\\n}",
-        " - une valeur vide à droite de `=` (ou entourée par deux ,) permet de signifier une valeur vide{\\n}",
-        " - les espaces en trop sont retirés automatiquement",
+        " - `!(  )` ou `not (  )` négation de la condition{\\n}".
+        " - indiquer à gauche d'un `==` ou `!=` le label du champ ex:`bf_thematique` ou le nom long `listeListeOuiNonbf_choix`{\\n}".
+        " - ` is empty ` : permet de vérifier si la valeur est vide{\\n}".
+        " - ` is not empty ` : permet de vérifier si la valeur n'est pas vide{\\n}".
+        " - les espaces en trop sont retirés automatiquement{\\n}".
+        " - les opérations sont normalement insensibles à la casse",
     "BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL" => "Affichage conditionnel",
     "BAZ_FORM_EDIT_CONDITION_LABEL" => "Condition",
     "BAZ_FORM_EDIT_CONDITIONCHECKING_END" => "Fin de condition",
