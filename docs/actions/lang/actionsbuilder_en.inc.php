@@ -45,6 +45,7 @@ return [
     // "AB_bazar_commons2_nb_label" => "Limitation",
     // "AB_bazar_commons2_nb_hint" => "Limite l'affichage du nombre de fiche",
     // "AB_bazar_commons2_query_label" => "Requête (avancé)",
+    // "AB_bazar_commons2_filtersresultnb_label" => "Afficher le nombre de fiches trouvées par les filtres",
     // "AB_bazar_commons2_resetfiltersbutton_label" => "Bouton pour réinitialiser les filtres",
     // "AB_bazar_commons2_showexportbuttons" => "Boutons d'export (CSV, JSON...)",
     // "AB_bazar_commons2_title" => "Filtres / Facettes",

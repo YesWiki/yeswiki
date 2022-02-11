@@ -216,6 +216,14 @@ actions:
           '>-0D&<+1M': _t(AB_bazar_commons2_filter_on_date_on_current_month)
           '>-2Y': _t(AB_bazar_commons2_filter_on_date_for_two_years)
           '>-7D&<+7D': _t(AB_bazar_commons2_filter_on_date_one_week_more_and_less)
+      filtersresultnb:
+        label: _t(AB_bazar_commons2_filtersresultnb_label)
+        advanced: true
+        type: checkbox
+        default: true
+        showif: facettes
+        showExceptFor:
+          - bazargogocarto
       resetfiltersbutton:
         label: _t(AB_bazar_commons2_resetfiltersbutton_label)
         advanced: true

@@ -207,8 +207,8 @@ class BazarListeAction extends YesWikiAction
             'colorfield' => $colorField,
             // couleur des marqueurs
             'color' => $color,
-            // affichage le nombre de fiches trouvées par les filtres
-            'filtersresultsnb' => $this->formatBoolean($arg, true, 'filtersresultsnb'),
+            // affichage du nombre de fiches trouvées par les filtres
+            'filtersresultnb' => $this->formatBoolean($arg, true, 'filtersresultnb'),
             // bouton de réinitialisation des filtres
             'resetfiltersbutton' => $this->formatBoolean($arg, false, 'resetfiltersbutton'),
         ]);
