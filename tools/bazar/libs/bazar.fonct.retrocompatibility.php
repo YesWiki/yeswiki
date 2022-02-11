@@ -8,6 +8,7 @@ use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Bazar\Service\ListManager;
+use YesWiki\Core\Service\TemplateEngine;
 
 /**
  * @deprecated Use EntryManager::create
@@ -280,7 +281,16 @@ function baz_a_le_droit($demande = 'saisie_fiche', $id = '')
  */
 function baz_voir_fiche($danslappli, $idfiche, $form = '')
 {
-    return $GLOBALS['wiki']->services->get(EntryController::class)->view($idfiche, '', $danslappli);
+    try {
+        $output = $GLOBALS['wiki']->services->get(EntryController::class)->view($idfiche, '', $danslappli);
+    } catch (Throwable $t) {
+        return $GLOBALS['wiki']->services->get(TemplateEngine::class)
+            ->render('@templates/alert-message.twig', [
+                'type' => 'danger',
+                'message' => _t('PERFORMABLE_ERROR')."<br/>{$t->getMessage()} in <i>{$t->getFile()}</i> on line <i>{$t->getLine()}</i>"
+            ]);
+    }
+    return $output;
 }
 
 /**
