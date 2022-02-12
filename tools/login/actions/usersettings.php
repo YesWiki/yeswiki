@@ -4,6 +4,9 @@ usersettings.php
 Software under AGPL Licence
 */
 
+use Symfony\Component\Security\Csrf\CsrfToken;
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
+
 if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
@@ -84,13 +87,30 @@ if ($action == 'logout') { // User wants to log out
             if (!$this->user->checkPassword($_POST['oldpass'])) { // check password first
                 $error = $this->user->error;
             } else { // user properly typed his old password in
-                $password = $_POST['password'];
-                if ($this->user->updatePassword($password)) {
-                    $this->session->setMessage(_t('USER_PASSWORD_CHANGED').' !');
-                    $this->user->logIn();
-                    $this->Redirect($this->href());
-                } else { // Something when wrong when updating the user in DB
-                    $this->session->setMessage($this->user->error);
+                // check token
+                $csrfTokenManager = $this->services->get(CsrfTokenManager::class);
+                try {
+                    $postToken = filter_input(INPUT_POST, 'crsf-token', FILTER_SANITIZE_STRING);
+                    if (is_null($postToken) || $postToken === false) {
+                        throw new \Exception(_t('USERSTTINGS_CHANGE_PASS_NO_TOKEN_ERROR'));
+                    }
+                    $token = new CsrfToken('login\action\usersettings\changepass', $postToken);
+                    if (!$csrfTokenManager->isTokenValid($token)) {
+                        $csrfTokenManager->removeToken('login\action\usersettings\changepass');
+                        throw new \Exception(_t('USERSTTINGS_CHANGE_PASS_TOKEN_FAIL_ERROR'));
+                    }
+                    $csrfTokenManager->removeToken('login\action\usersettings\changepass');
+
+                    $password = $_POST['password'];
+                    if ($this->user->updatePassword($password)) {
+                        $this->session->setMessage(_t('USER_PASSWORD_CHANGED').' !');
+                        $this->user->logIn();
+                        $this->Redirect($this->href());
+                    } else { // Something when wrong when updating the user in DB
+                        $this->session->setMessage($this->user->error);
+                    }
+                } catch (\Throwable $th) {
+                    $error = $th->getMessage();
                 }
             }
         } // End of changepass action
@@ -178,6 +198,7 @@ if ($userLoggedIn) { // The one who runs the session is acting
 	</div>
 	<div class="control-group form-group">
 		<div class="controls col-sm-9 col-sm-offset-3">
+            <input type="hidden" name="crsf-token" value="<?php echo htmlentities($this->services->get(CsrfTokenManager::class)->refreshToken('login\action\usersettings\changepass')) ;?>">
 			<input class="btn btn-primary" type="submit" value="<?php echo _t('USER_CHANGE');?>" size="40" />
 		</div>
 	</div>

@@ -71,4 +71,10 @@ return [
 
     // actions/login.php
     // 'LOGIN_COOKIES_ERROR' => 'Vous devez accepter les cookies pour pouvoir vous connecter.',
+
+    // actions/usersettins.php
+    'USERSTTINGS_CHANGE_PASS_NO_TOKEN_ERROR' => 'Error de diseño del sitio: el nuevo formulario de envío de contraseña no contenía el token de identificación único '.
+        'necesario para los mecanismos de seguridad internos. Contraseña no cambiada.',
+    'USERSTTINGS_CHANGE_PASS_TOKEN_FAIL_ERROR' => 'La contraseña no se ha cambiado porque es posible que esta página se haya abierto por segunda vez. '.
+        'Renueve la solicitud de cambio desde esta ventana (el token de seguridad interno no era bueno).',
 ];

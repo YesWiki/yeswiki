@@ -71,4 +71,10 @@ return [
 
     // actions/login.php
     'LOGIN_COOKIES_ERROR' => 'Vous devez accepter les cookies pour pouvoir vous connecter.',
+
+    // actions/usersettins.php
+    'USERSTTINGS_CHANGE_PASS_NO_TOKEN_ERROR' => 'Erreur de conception du site : Le formulaire de soumission du nouveau mot de passe ne contenait pas '.
+        'le jeton d\'identification unique nécessaire aux mécanismes internes de sécurité. Mot de passe non modifié.',
+    'USERSTTINGS_CHANGE_PASS_TOKEN_FAIL_ERROR' => 'Mot de passe non modifié car cette page a peut-être été ouverte une seconde fois. '.
+        'Veuillez renouveler la demande de changement depuis cette fenêtre (le jeton interne de sécurité n\'était pas bon).',
 ];

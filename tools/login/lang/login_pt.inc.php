@@ -71,4 +71,10 @@ return [
 
     // actions/login.php
     // 'LOGIN_COOKIES_ERROR' => 'Vous devez accepter les cookies pour pouvoir vous connecter.',
+
+    // actions/usersettins.php
+    'USERSTTINGS_CHANGE_PASS_NO_TOKEN_ERROR' => 'Erro de conceção do site: O novo formulário de submissão da palavra-passe não continha o símbolo de '.
+        'identificação único necessário para os mecanismos de segurança interna. A palavra-passe não foi alterada.',
+    'USERSTTINGS_CHANGE_PASS_TOKEN_FAIL_ERROR' => 'A palavra-passe não foi alterada porque esta página pode ter sido aberta uma segunda vez. '.
+        'Por favor, renove o pedido de alteração desta janela (o sinal de segurança interna não foi bom).',
 ];
