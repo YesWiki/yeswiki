@@ -13,8 +13,10 @@ export default {
       this.checked = false
     }
     else {
-      if (this.config.checkedvalue) this.checked = this.value == this.config.checkedvalue
-      else this.checked = this.value
+      // Cast values to string before compare, because in yaml we might use boolean or number, but
+      // wikicode will always use strings
+      let checkedvalue = this.config.checkedvalue || "true"
+      this.checked = `${this.value}` == `${checkedvalue}`
     }
   },
   watch: {
