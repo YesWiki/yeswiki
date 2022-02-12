@@ -4,12 +4,16 @@ usersettings.php
 Software under AGPL Licence
 */
 
+use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 
 if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
+
+// get services
+$csrfTokenManager = $this->services->get(CsrfTokenManager::class);
 
 $userLoggedIn = false;
 $referrer='';
@@ -48,38 +52,68 @@ if ($action == 'logout') { // User wants to log out
     $this->Redirect($this->href());
 } elseif ($adminIsActing || $userLoggedIn) { // Admin or user wants to manage the user
     if (substr($action, 0, 6) == 'update') { // Whoever it is tries to update the user
-        $OK = $this->user->setByAssociativeArray(array(
-            'email'	 			=> isset($_POST['email']) ? $_POST['email'] : '',
-            'motto'				=> isset($_POST['motto']) ? $_POST['motto'] : '',
-            'revisioncount'  	=> isset($_POST['revisioncount']) ? $_POST['revisioncount'] : '',
-            'changescount'		=> isset($_POST['changescount']) ? $_POST['changescount'] : '',
-            'doubleclickedit'	=> isset($_POST['doubleclickedit']) ? $_POST['doubleclickedit'] : '',
-            'show_comments' 	=> isset($_POST['show_comments']) ? $_POST['show_comments'] : '',
-        ));
-        if ($OK) {
-            $OK = $this->user->updateIntoDB('email, motto, revisioncount, changescount, doubleclickedit, show_comments');
-            if ($userLoggedIn) { // In case it's the user trying to update oneself, need to reset the cooky
-                $this->user->logIn();
+        try {
+            $postToken = filter_input(INPUT_POST, 'crsf-token', FILTER_SANITIZE_STRING);
+            if (is_null($postToken) || $postToken === false) {
+                throw new TokenNotFoundException(_t('USERSTTINGS_CHANGE_PASS_NO_TOKEN_ERROR'));
             }
-            // forward
-            $this->session->setMessage(_t('USER_PARAMETERS_SAVED').' !');
-            if ($userLoggedIn) { // In case it's the usther trying to update oneself
-                $this->Redirect($this->href());
-            } else { // That's the admin acting, we need to pass the user on
-                $this->Redirect($this->href('', '', 'user='.$_GET['user'].'&from='.$referrer, false));
+            $token = new CsrfToken('login\action\usersettings\updateuser', $postToken);
+            if (!$csrfTokenManager->isTokenValid($token)) {
+                $csrfTokenManager->removeToken('login\action\usersettings\updateuser');
+                throw new TokenNotFoundException(_t('USERSTTINGS_CHANGE_PASS_TOKEN_FAIL_ERROR'));
             }
-        } else { // Unable to update
-            $this->session->setMessage($this->user->error);
+            $csrfTokenManager->removeToken('login\action\usersettings\updateuser');
+
+            $OK = $this->user->setByAssociativeArray(array(
+                'email'	 			=> isset($_POST['email']) ? $_POST['email'] : '',
+                'motto'				=> isset($_POST['motto']) ? $_POST['motto'] : '',
+                'revisioncount'  	=> isset($_POST['revisioncount']) ? $_POST['revisioncount'] : '',
+                'changescount'		=> isset($_POST['changescount']) ? $_POST['changescount'] : '',
+                'doubleclickedit'	=> isset($_POST['doubleclickedit']) ? $_POST['doubleclickedit'] : '',
+                'show_comments' 	=> isset($_POST['show_comments']) ? $_POST['show_comments'] : '',
+            ));
+            if ($OK) {
+                $OK = $this->user->updateIntoDB('email, motto, revisioncount, changescount, doubleclickedit, show_comments');
+                if ($userLoggedIn) { // In case it's the user trying to update oneself, need to reset the cooky
+                    $this->user->logIn();
+                }
+                // forward
+                $this->session->setMessage(_t('USER_PARAMETERS_SAVED').' !');
+                if ($userLoggedIn) { // In case it's the usther trying to update oneself
+                    $this->Redirect($this->href());
+                } else { // That's the admin acting, we need to pass the user on
+                    $this->Redirect($this->href('', '', 'user='.$_GET['user'].'&from='.$referrer, false));
+                }
+            } else { // Unable to update
+                $this->session->setMessage($this->user->error);
+            }
+        } catch (TokenNotFoundException $th) {
+            $errorUpdate = $th->getMessage();
         }
     } // End of update action
 
     if ($adminIsActing) { // Admin wants to manage the user
 
         if ($action == 'deleteByAdmin') { // Admin trying to delete user
-            $this->user->delete();
-            // forward
-            $this->session->setMessage(_t('USER_DELETED').' !');
-            $this->Redirect($this->href('', $referrer));
+            try {
+                $postToken = filter_input(INPUT_POST, 'crsf-token', FILTER_SANITIZE_STRING);
+                if (is_null($postToken) || $postToken === false) {
+                    throw new TokenNotFoundException(_t('USERSTTINGS_CHANGE_PASS_NO_TOKEN_ERROR'));
+                }
+                $token = new CsrfToken('login\action\usersettings\deleteByAdmin', $postToken);
+                if (!$csrfTokenManager->isTokenValid($token)) {
+                    $csrfTokenManager->removeToken('login\action\usersettings\deleteByAdmin');
+                    throw new TokenNotFoundException(_t('USERSTTINGS_CHANGE_PASS_TOKEN_FAIL_ERROR'));
+                }
+                $csrfTokenManager->removeToken('login\action\usersettings\deleteByAdmin');
+
+                $this->user->delete();
+                // forward
+                $this->session->setMessage(_t('USER_DELETED').' !');
+                $this->Redirect($this->href('', $referrer));
+            } catch (TokenNotFoundException $th) {
+                $errorUpdate = $th->getMessage();
+            }
         } // End of delete by admin action
     } elseif ($userLoggedIn) { // Admin isn't acting therefore that's an already logged in user
 
@@ -88,16 +122,15 @@ if ($action == 'logout') { // User wants to log out
                 $error = $this->user->error;
             } else { // user properly typed his old password in
                 // check token
-                $csrfTokenManager = $this->services->get(CsrfTokenManager::class);
                 try {
                     $postToken = filter_input(INPUT_POST, 'crsf-token', FILTER_SANITIZE_STRING);
                     if (is_null($postToken) || $postToken === false) {
-                        throw new \Exception(_t('USERSTTINGS_CHANGE_PASS_NO_TOKEN_ERROR'));
+                        throw new TokenNotFoundException(_t('USERSTTINGS_CHANGE_PASS_NO_TOKEN_ERROR'));
                     }
                     $token = new CsrfToken('login\action\usersettings\changepass', $postToken);
                     if (!$csrfTokenManager->isTokenValid($token)) {
                         $csrfTokenManager->removeToken('login\action\usersettings\changepass');
-                        throw new \Exception(_t('USERSTTINGS_CHANGE_PASS_TOKEN_FAIL_ERROR'));
+                        throw new TokenNotFoundException(_t('USERSTTINGS_CHANGE_PASS_TOKEN_FAIL_ERROR'));
                     }
                     $csrfTokenManager->removeToken('login\action\usersettings\changepass');
 
@@ -109,7 +142,7 @@ if ($action == 'logout') { // User wants to log out
                     } else { // Something when wrong when updating the user in DB
                         $this->session->setMessage($this->user->error);
                     }
-                } catch (\Throwable $th) {
+                } catch (TokenNotFoundException $th) {
                     $error = $th->getMessage();
                 }
             }
@@ -122,6 +155,9 @@ if ($action == 'logout') { // User wants to log out
     if ($adminIsActing) {
         echo ' — '.$this->user->getProperty('name');
     } ?></h2>
+<?php if (!empty($errorUpdate)) : ?>
+    <div class="alert alert-danger"><?php echo $errorUpdate ; ?></div>
+<?php endif ; ?>
 <?php
 if ($adminIsActing) {
         $href = $this->href('', '', 'user='.$this->user->getProperty('name').'&from='.$referrer, false);
@@ -149,6 +185,7 @@ if ($adminIsActing) {
     ?>
 	<div class="control-group form-group">
 		<div class="controls col-sm-9 col-sm-offset-3">
+            <input type="hidden" name="crsf-token" value="<?php echo htmlentities($csrfTokenManager->refreshToken('login\action\usersettings\updateuser')) ; ?>">
 			<input class="btn btn-primary" type="submit" value="<?php echo _t('USER_UPDATE'); ?>" />
 <?php
             if ($userLoggedIn) { // The one who runs the session is acting
@@ -166,6 +203,7 @@ if ($adminIsActing) {
             if ($adminIsActing) { // Admin is acting
 ?>
 <form action="<?php echo $this->href('', '', 'user='.$this->user->getProperty('name').'&from='.$referrer, false); ?>" method="post" class="form-horizontal">
+    <input type="hidden" name="crsf-token" value="<?php echo htmlentities($csrfTokenManager->refreshToken('login\action\usersettings\deleteByAdmin')) ; ?>">
 	<input type="hidden" name="usersettings_action" value="deleteByAdmin" />
 	<input class="btn btn-danger" type="submit" value="<?php echo _t('USER_DELETE');?>" />
 <?php echo $this->FormClose();
@@ -198,7 +236,7 @@ if ($userLoggedIn) { // The one who runs the session is acting
 	</div>
 	<div class="control-group form-group">
 		<div class="controls col-sm-9 col-sm-offset-3">
-            <input type="hidden" name="crsf-token" value="<?php echo htmlentities($this->services->get(CsrfTokenManager::class)->refreshToken('login\action\usersettings\changepass')) ;?>">
+            <input type="hidden" name="crsf-token" value="<?php echo htmlentities($csrfTokenManager->refreshToken('login\action\usersettings\changepass')) ;?>">
 			<input class="btn btn-primary" type="submit" value="<?php echo _t('USER_CHANGE');?>" size="40" />
 		</div>
 	</div>
