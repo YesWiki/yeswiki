@@ -1,0 +1,55 @@
+# YesWiki's anti CSRF Documentation 
+
+## What is it ?
+
+CRSF (Cross-site request forgery) is a method of web attack in one click described for example in [Wikipedia](https://en.wikipedia.org/wiki/Cross-site_request_forgery).
+
+## Usage
+
+`symfony/security-csrf` is used to manage tokens needed to prevent csrf. It is installed bt default with composer and `YesWiki::loadExtensions()`.
+
+ 1. Get a token and use it into the concerned form or link for dangerous actions reserved to admins or owners (like `deletepage`, delete a user, change password)
+    - in php code, get a token with this code for example :
+    ```
+    use Symfony\Component\Security\Csrf\CsrfTokenManager;
+    ...
+    $token = $this->wiki->services->get(CsrfTokenManager::class)->getToken('tokenId');
+    ```
+    - in `twig` template, use `{{ crsfToken('tokenId') }}`
+ 2. when processing a request with the token, check if it is right inspiring of this example :
+   ```
+   use Symfony\Component\Security\Csrf\CsrfToken;
+   use Symfony\Component\Security\Csrf\CsrfTokenManager;
+   ...
+   $csrfTokenManager = $this->wiki->services->get(CsrfTokenManager::class);
+   $token = new CsrfToken('tokenId', filter_input(INPUT_POST,'token', FILTER_SANITIZE_STRING));
+   // replace 'token' by the used name in form's input
+   if ($csrfTokenManager->isTokenValid($token)) {
+       ...
+       $csrfTokenManager->removeToken('tokenId'); // remove it if you want only one usage
+   }
+   ```
+
+## Refreshing a token
+
+You can refresh a token to delete its previous value and replace it by a new one.
+```
+$token = $this->wiki->services->get(CsrfTokenManager::class)->refreshToken('tokenId');
+```
+Previous token will be considered as invalid after calling `refreshToken`.
+
+## Rules to name 'tokenId'
+
+We propose the following rule to name token and avoid trouble between methods.
+`<type-of-class>\<name-of-class/action>\<concerned-page>`.
+For api we can have
+`METHOD api/route/id`.
+
+Examples:
+ - delete a page `handler\deletepage\MyPageTag`
+ - delete a user `action\usertable\deleteuser\UserName`
+ - password update `action\usersettings\changepass`
+ - password update `DELETE api/pages/MyPageTag`
+
+It is possible to add the tool's name like `login\action\usersettings\changepass`.
+
