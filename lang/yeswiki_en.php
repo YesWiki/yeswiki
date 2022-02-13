@@ -491,6 +491,7 @@ return [
     'DELETEPAGE_NOT_ORPHEANED' => 'This page is not orpheaned.',
     'DELETEPAGE_NOT_OWNER' => 'You are not owner of this page.',
     'DELETEPAGE_PAGES_WITH_LINKS_TO' => 'Pages with a link to {tag} :',
+    'DELETEPAGE_NOT_DELETED' => 'Not deleted page.',
 
     // handlers/edit
     'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' => 'ALERT : '.

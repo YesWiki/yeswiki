@@ -21,14 +21,26 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+use Symfony\Component\Security\Csrf\CsrfToken;
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
+
 // Vérification de sécurité
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-if ($this->UserIsOwner() || $this->UserIsAdmin()) {
-    if (isset($_GET['eraselink']) && $_GET['eraselink'] == 'oui') {
-        $this->Query("DELETE FROM " . $this->config["table_prefix"] . "links WHERE to_tag = '"
-          . $this->GetPageTag() . "'");
+if (($this->UserIsOwner() || $this->UserIsAdmin())
+        && isset($_GET['eraselink'])
+        && $_GET['eraselink'] === 'oui'
+        && isset($_GET['confirme'])
+        && ($_GET['confirme'] === 'oui')
+    ) {
+    $inputToken = filter_input(INPUT_POST, 'crsf-token', FILTER_SANITIZE_STRING);
+    if (!is_null($inputToken) && $inputToken !== false) {
+        $tag = $this->GetPageTag();
+        $token = new CsrfToken("handler\deletepage\\$tag", $inputToken);
+        if ($this->services->get(CsrfTokenManager::class)->isTokenValid($token)) {
+            $this->Query("DELETE FROM {$this->config["table_prefix"]}links WHERE to_tag = '$tag'");
+        }
     }
 }

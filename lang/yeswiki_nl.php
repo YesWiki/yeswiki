@@ -529,6 +529,7 @@ return [
     // 'DELETEPAGE_NOT_ORPHEANED' => 'Cette page n\'est pas orpheline.',
     // 'DELETEPAGE_NOT_OWNER' => 'Vous n\'&ecirc;tes pas le propri&eacute;taire de cette page.',
     // 'DELETEPAGE_PAGES_WITH_LINKS_TO' => 'Pages ayant un lien vers {tag} :',
+    'DELETEPAGE_NOT_DELETED' => 'Pagina niet verwijderd.',
 
     // handlers/edit
     // 'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' => 'ALERTE : '.
