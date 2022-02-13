@@ -5,8 +5,8 @@ Software under AGPL Licence
 */
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Core\Controller\CsrfTokenController;
 
 if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
@@ -14,6 +14,7 @@ if (!defined('WIKINI_VERSION')) {
 
 // get services
 $csrfTokenManager = $this->services->get(CsrfTokenManager::class);
+$csrfTokenController = $this->services->get(CsrfTokenController::class);
 
 $userLoggedIn = false;
 $referrer='';
@@ -53,16 +54,7 @@ if ($action == 'logout') { // User wants to log out
 } elseif ($adminIsActing || $userLoggedIn) { // Admin or user wants to manage the user
     if (substr($action, 0, 6) == 'update') { // Whoever it is tries to update the user
         try {
-            $postToken = filter_input(INPUT_POST, 'crsf-token', FILTER_SANITIZE_STRING);
-            if (is_null($postToken) || $postToken === false) {
-                throw new TokenNotFoundException(_t('USERSTTINGS_CHANGE_PASS_NO_TOKEN_ERROR'));
-            }
-            $token = new CsrfToken('login\action\usersettings\updateuser', $postToken);
-            if (!$csrfTokenManager->isTokenValid($token)) {
-                $csrfTokenManager->removeToken('login\action\usersettings\updateuser');
-                throw new TokenNotFoundException(_t('USERSTTINGS_CHANGE_PASS_TOKEN_FAIL_ERROR'));
-            }
-            $csrfTokenManager->removeToken('login\action\usersettings\updateuser');
+            $csrfTokenController->checkTockenThenRemove('login\action\usersettings\updateuser', 'POST', 'crsf-token');
 
             $OK = $this->user->setByAssociativeArray(array(
                 'email'	 			=> isset($_POST['email']) ? $_POST['email'] : '',
@@ -88,7 +80,7 @@ if ($action == 'logout') { // User wants to log out
                 $this->session->setMessage($this->user->error);
             }
         } catch (TokenNotFoundException $th) {
-            $errorUpdate = $th->getMessage();
+            $errorUpdate = _t('USERSETTINGS_EMAIL_NOT_CHANGED') .' '. $th->getMessage();
         }
     } // End of update action
 
@@ -96,23 +88,14 @@ if ($action == 'logout') { // User wants to log out
 
         if ($action == 'deleteByAdmin') { // Admin trying to delete user
             try {
-                $postToken = filter_input(INPUT_POST, 'crsf-token', FILTER_SANITIZE_STRING);
-                if (is_null($postToken) || $postToken === false) {
-                    throw new TokenNotFoundException(_t('USERSTTINGS_CHANGE_PASS_NO_TOKEN_ERROR'));
-                }
-                $token = new CsrfToken('login\action\usersettings\deleteByAdmin', $postToken);
-                if (!$csrfTokenManager->isTokenValid($token)) {
-                    $csrfTokenManager->removeToken('login\action\usersettings\deleteByAdmin');
-                    throw new TokenNotFoundException(_t('USERSTTINGS_CHANGE_PASS_TOKEN_FAIL_ERROR'));
-                }
-                $csrfTokenManager->removeToken('login\action\usersettings\deleteByAdmin');
+                $csrfTokenController->checkTockenThenRemove('login\action\usersettings\deleteByAdmin', 'POST', 'crsf-token');
 
                 $this->user->delete();
                 // forward
                 $this->session->setMessage(_t('USER_DELETED').' !');
                 $this->Redirect($this->href('', $referrer));
             } catch (TokenNotFoundException $th) {
-                $errorUpdate = $th->getMessage();
+                $errorUpdate = _t('USERSETTINGS_USER_NOT_DELETED') .' '. $th->getMessage();
             }
         } // End of delete by admin action
     } elseif ($userLoggedIn) { // Admin isn't acting therefore that's an already logged in user
@@ -123,16 +106,7 @@ if ($action == 'logout') { // User wants to log out
             } else { // user properly typed his old password in
                 // check token
                 try {
-                    $postToken = filter_input(INPUT_POST, 'crsf-token', FILTER_SANITIZE_STRING);
-                    if (is_null($postToken) || $postToken === false) {
-                        throw new TokenNotFoundException(_t('USERSTTINGS_CHANGE_PASS_NO_TOKEN_ERROR'));
-                    }
-                    $token = new CsrfToken('login\action\usersettings\changepass', $postToken);
-                    if (!$csrfTokenManager->isTokenValid($token)) {
-                        $csrfTokenManager->removeToken('login\action\usersettings\changepass');
-                        throw new TokenNotFoundException(_t('USERSTTINGS_CHANGE_PASS_TOKEN_FAIL_ERROR'));
-                    }
-                    $csrfTokenManager->removeToken('login\action\usersettings\changepass');
+                    $csrfTokenController->checkTockenThenRemove('login\action\usersettings\changepass', 'POST', 'crsf-token');
 
                     $password = $_POST['password'];
                     if ($this->user->updatePassword($password)) {
@@ -143,7 +117,7 @@ if ($action == 'logout') { // User wants to log out
                         $this->session->setMessage($this->user->error);
                     }
                 } catch (TokenNotFoundException $th) {
-                    $error = $th->getMessage();
+                    $error = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') .' '. $th->getMessage();
                 }
             }
         } // End of changepass action

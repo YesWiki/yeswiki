@@ -72,9 +72,8 @@ return [
     // actions/login.php
     // 'LOGIN_COOKIES_ERROR' => 'Vous devez accepter les cookies pour pouvoir vous connecter.',
 
-    // actions/usersettins.php
-    'USERSTTINGS_CHANGE_PASS_NO_TOKEN_ERROR' => 'Error de diseño del sitio: el nuevo formulario de envío de contraseña no contenía el token de identificación único '.
-        'necesario para los mecanismos de seguridad internos. Contraseña no cambiada.',
-    'USERSTTINGS_CHANGE_PASS_TOKEN_FAIL_ERROR' => 'La contraseña no se ha cambiado porque es posible que esta página se haya abierto por segunda vez. '.
-        'Renueve la solicitud de cambio desde esta ventana (el token de seguridad interno no era bueno).',
+    // actions/usersettings.php
+    'USERSETTINGS_EMAIL_NOT_CHANGED' => 'Correo electrónico no cambiado.',
+    'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'Contraseña no cambiada.',
+    'USERSETTINGS_USER_NOT_DELETED' => 'Usuario no eliminado.',
 ];

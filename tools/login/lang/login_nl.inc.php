@@ -72,9 +72,8 @@ return [
     // actions/login.php
     // 'LOGIN_COOKIES_ERROR' => 'Vous devez accepter les cookies pour pouvoir vous connecter.',
 
-    // actions/usersettins.php
-    'USERSTTINGS_CHANGE_PASS_NO_TOKEN_ERROR' => 'Fout bij siteontwerp: het nieuwe formulier voor het indienen van wachtwoorden bevatte niet het '.
-        'unieke identificatietoken dat nodig is voor interne beveiligingsmechanismen. Wachtwoord niet gewijzigd.',
-    'USERSTTINGS_CHANGE_PASS_TOKEN_FAIL_ERROR' => 'Wachtwoord niet gewijzigd omdat deze pagina mogelijk een tweede keer is geopend. '.
-        'Verleng het wijzigingsverzoek vanuit dit venster (het interne beveiligingstoken was niet goed).',
+    // actions/usersettings.php
+    'USERSETTINGS_EMAIL_NOT_CHANGED' => 'E-mail niet gewijzigd.',
+    'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'Wachtwoord niet gewijzigd.',
+    'USERSETTINGS_USER_NOT_DELETED' => 'Gebruiker niet verwijderd.',
 ];

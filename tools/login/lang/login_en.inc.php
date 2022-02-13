@@ -72,9 +72,8 @@ return [
     // actions/login.php
     // 'LOGIN_COOKIES_ERROR' => 'Vous devez accepter les cookies pour pouvoir vous connecter.',
 
-    // actions/usersettins.php
-    'USERSTTINGS_CHANGE_PASS_NO_TOKEN_ERROR' => 'Site design error: The new password submission form did not contain the unique identification token '.
-        'needed for internal security mechanisms. Password not changed.',
-    'USERSTTINGS_CHANGE_PASS_TOKEN_FAIL_ERROR' => 'Password not changed because this page may have been opened a second time. '.
-        'Please renew the change request from this window (the internal security token was not good). ',
+    // actions/usersettings.php
+    'USERSETTINGS_EMAIL_NOT_CHANGED' => 'Email not modified.',
+    'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'Password not changed.',
+    'USERSETTINGS_USER_NOT_DELETED' => 'User not deleted.',
 ];

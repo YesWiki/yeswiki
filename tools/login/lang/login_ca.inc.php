@@ -72,10 +72,8 @@ return [
     // actions/login.php
     // 'LOGIN_COOKIES_ERROR' => 'Vous devez accepter les cookies pour pouvoir vous connecter.',
 
-    // actions/usersettins.php
-    'USERSTTINGS_CHANGE_PASS_NO_TOKEN_ERROR' => 'Error de disseny del lloc: el nou formulari d\'enviament de contrasenyes '.
-        'no contenia el testimoni d\'identificació únic necessari per als mecanismes de seguretat interns. '.
-        'La contrasenya no ha canviat.',
-    'USERSTTINGS_CHANGE_PASS_TOKEN_FAIL_ERROR' => 'La contrasenya no s\'ha canviat perquè és possible que aquesta pàgina s\'hagi obert per segona vegada. '.
-        'Si us plau, renoveu la sol·licitud de canvi des d\'aquesta finestra (el testimoni de seguretat intern no era bo). ',
+    // actions/usersettings.php
+    'USERSETTINGS_EMAIL_NOT_CHANGED' => 'El correu electrònic no s\'ha modificat.',
+    'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'La contrasenya no ha canviat.',
+    'USERSETTINGS_USER_NOT_DELETED' => 'Utilizador não eliminado.',
 ];

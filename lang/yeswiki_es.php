@@ -271,6 +271,12 @@ return [
     // actions/wantedpages.php
     'NO_PAGE_TO_CREATE' => 'Ninguna página para crear',
 
+    // includes/controllers/CrsfController.php
+    'NO_CSRF_TOKEN_ERROR' => 'Error de diseño del sitio: el formulario de envío no contenía el token '.
+        'de identificación único necesario para los mecanismos de seguridad internos.',
+    'CSRF_TOKEN_FAIL_ERROR' => 'Es posible que esta página se haya abierto por segunda vez. '.
+        'Renueve la solicitud desde esta ventana (el token de seguridad interno no era bueno).',
+
     // setup/header.php
     'OK' => 'OK',
     'FAIL' => 'FRACASO',

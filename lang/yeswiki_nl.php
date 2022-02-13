@@ -268,6 +268,12 @@ return [
     // actions/wantedpages.php
     'NO_PAGE_TO_CREATE' => 'Geen enkele pagina aan te maken',
 
+    // includes/controllers/CrsfController.php
+    'NO_CSRF_TOKEN_ERROR' => 'Fout bij het ontwerpen van de site: het indieningsformulier bevatte niet het unieke identificatietoken '.
+        'dat nodig is voor interne beveiligingsmechanismen.',
+    'CSRF_TOKEN_FAIL_ERROR' => 'Deze pagina is mogelijk een tweede keer geopend. '.
+        'Verleng het verzoek vanuit dit venster (het interne beveiligingstoken was niet goed).',
+
     // setup/header.php
     'OK' => 'OK',
     'FAIL' => 'MISLUKT',

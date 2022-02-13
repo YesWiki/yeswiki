@@ -19,3 +19,6 @@ services:
 
   YesWiki\Core\Service\:
     resource: 'services/*'
+
+  YesWiki\Core\Controller\:
+    resource: 'controllers/*'

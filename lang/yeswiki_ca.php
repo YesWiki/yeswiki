@@ -269,6 +269,12 @@ return [
     // actions/wantedpages.php
     'NO_PAGE_TO_CREATE' => 'No hi ha cap pàgina per crear',
 
+    // includes/controllers/CrsfController.php
+    'NO_CSRF_TOKEN_ERROR' => 'Error de disseny del lloc: el formulari d\'enviament no contenia el testimoni '.
+        'd\'identificació únic necessari per als mecanismes de seguretat interns.',
+    'CSRF_TOKEN_FAIL_ERROR' => 'Pot ser que aquesta pàgina s\'hagi obert per segona vegada. '.
+        'Si us plau, renoveu la sol·licitud des d\'aquesta finestra (el testimoni de seguretat intern no era bo).',
+
     // setup/header.php
     'OK' => 'D\'acord',
     'FAIL' => 'Error',

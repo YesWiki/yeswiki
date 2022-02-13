@@ -22,11 +22,25 @@ CRSF (Cross-site request forgery) is a method of web attack in one click describ
    use Symfony\Component\Security\Csrf\CsrfTokenManager;
    ...
    $csrfTokenManager = $this->wiki->services->get(CsrfTokenManager::class);
-   $token = new CsrfToken('tokenId', filter_input(INPUT_POST,'token', FILTER_SANITIZE_STRING));
+   $token = new CsrfToken('tokenId', filter_input(INPUT_POST,'tokenNameInForm', FILTER_SANITIZE_STRING));
    // replace 'token' by the used name in form's input
    if ($csrfTokenManager->isTokenValid($token)) {
        ...
        $csrfTokenManager->removeToken('tokenId'); // remove it if you want only one usage
+   }
+   ```
+
+   or with a controller throwing `TokenNotFoundException` :
+   ```
+   use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+   use YesWiki\Core\Controller\CsrfTokenController;
+   $csrfTokenController = $this->wiki->services->get(CsrfTokenController::class);
+   try {
+      $csrfTokenController->checkTockenThenRemove('tokenId', 'POST', 'tokenNameInForm');
+      ... code if OK
+   } catch (TokenNotFoundException $th) {
+      $errorMessage = $th->getMessage();
+      ... // code if not OK
    }
    ```
 
