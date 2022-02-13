@@ -33,9 +33,13 @@ CRSF (Cross-site request forgery) is a method of web attack in one click describ
 ## Refreshing a token
 
 You can refresh a token to delete its previous value and replace it by a new one.
+ - in PHP
 ```
 $token = $this->wiki->services->get(CsrfTokenManager::class)->refreshToken('tokenId');
 ```
+ -  in `twig` template, use `{{ crsfToken({id:'tokenId',refresh:true}) }}`;
+```
+
 Previous token will be considered as invalid after calling `refreshToken`.
 
 ## Rules to name 'tokenId'

@@ -2,6 +2,7 @@
 
 namespace YesWiki\Core\Service;
 
+use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Wiki;
@@ -106,7 +107,21 @@ class TemplateEngine
             $this->assetsManager->AddCSSFile($file);
         });
         $this->addTwigHelper('crsfToken', function ($tokenId) {
-            $this->csrfTokenManager->getToken($tokenId);
+            if (is_string($tokenId)) {
+                return $this->csrfTokenManager->getToken($tokenId);
+            } elseif (is_array($tokenId)) {
+                if (!isset($tokenId['id'])) {
+                    throw new Exception("When array, `\$tokenId` should contain `id` key !");
+                } else {
+                    if (isset($tokenId['refresh']) && $tokenId['refresh'] === true) {
+                        return $this->csrfTokenManager->grefreshToken($tokenId['id']);
+                    } else {
+                        return $this->csrfTokenManager->getToken($tokenId['id']);
+                    }
+                }
+            } else {
+                throw new Exception("`\$tokenId` should be a string or an array !");
+            }
         });
     }
 
