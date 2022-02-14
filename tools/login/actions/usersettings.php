@@ -54,7 +54,7 @@ if ($action == 'logout') { // User wants to log out
 } elseif ($adminIsActing || $userLoggedIn) { // Admin or user wants to manage the user
     if (substr($action, 0, 6) == 'update') { // Whoever it is tries to update the user
         try {
-            $csrfTokenController->checkTockenThenRemove('login\action\usersettings\updateuser', 'POST', 'crsf-token');
+            $csrfTokenController->checkTocken('login\action\usersettings\updateuser', 'POST', 'crsf-token');
 
             $OK = $this->user->setByAssociativeArray(array(
                 'email'	 			=> isset($_POST['email']) ? $_POST['email'] : '',
@@ -88,7 +88,7 @@ if ($action == 'logout') { // User wants to log out
 
         if ($action == 'deleteByAdmin') { // Admin trying to delete user
             try {
-                $csrfTokenController->checkTockenThenRemove('login\action\usersettings\deleteByAdmin', 'POST', 'crsf-token');
+                $csrfTokenController->checkTocken('login\action\usersettings\deleteByAdmin', 'POST', 'crsf-token');
 
                 $this->user->delete();
                 // forward
@@ -106,7 +106,7 @@ if ($action == 'logout') { // User wants to log out
             } else { // user properly typed his old password in
                 // check token
                 try {
-                    $csrfTokenController->checkTockenThenRemove('login\action\usersettings\changepass', 'POST', 'crsf-token');
+                    $csrfTokenController->checkTocken('login\action\usersettings\changepass', 'POST', 'crsf-token');
 
                     $password = $_POST['password'];
                     if ($this->user->updatePassword($password)) {

@@ -20,14 +20,16 @@ class CsrfTokenController extends YesWikiController
 
     /**
      * check if token is present and valid in input
-     * throw TokenNotFoundException or Exception
      *
      * @param string $name
      * @param string $inputType "GET" or "POST"
      * @param string $inputKey key in the input to use
      * @return bool
+     *
+     * @throws TokenNotFoundException
+     * @throws Exception
      */
-    public function checkTockenThenRemove(string $name, string $inputType, string $inputKey): bool
+    public function checkTocken(string $name, string $inputType, string $inputKey): bool
     {
         if (empty($name)) {
             throw new Exception("parameter `\$name` should not be empty !");
