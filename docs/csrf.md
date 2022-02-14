@@ -8,14 +8,17 @@ CRSF (Cross-site request forgery) is a method of web attack in one click describ
 
 `symfony/security-csrf` is used to manage tokens needed to prevent csrf. It is installed bt default with composer and `YesWiki::loadExtensions()`.
 
- 1. Get a token and use it into the concerned form or link for dangerous actions reserved to admins or owners (like `deletepage`, delete a user, change password)
+ 1. Get a token and use it into the concerned form or link for any action that may alter data (create/update/delete) and that needs acl validation (like `deletepage`, delete a user, change password)
     - in php code, get a token with this code for example :
     ```
     use Symfony\Component\Security\Csrf\CsrfTokenManager;
     ...
     $token = $this->wiki->services->get(CsrfTokenManager::class)->getToken('tokenId');
     ```
-    - in `twig` template, use `{{ crsfToken('tokenId') }}`
+    - in `twig` template, use `{{ crsfToken('tokenId') }}`. Example for a form (twig):
+    ```
+    <input type="hiden" name="tokenNameInForm" value="{{ crsfToken('tokenId')|e('html_attr') }}">
+    ```
  2. when processing a request with the token, check if it is right inspiring of this example :
    ```
    use Symfony\Component\Security\Csrf\CsrfToken;
@@ -36,7 +39,7 @@ CRSF (Cross-site request forgery) is a method of web attack in one click describ
    use YesWiki\Core\Controller\CsrfTokenController;
    $csrfTokenController = $this->wiki->services->get(CsrfTokenController::class);
    try {
-      $csrfTokenController->checkTockenThenRemove('tokenId', 'POST', 'tokenNameInForm');
+      $csrfTokenController->checkTocken('tokenId', 'POST', 'tokenNameInForm');
       ... code if OK
    } catch (TokenNotFoundException $th) {
       $errorMessage = $th->getMessage();
