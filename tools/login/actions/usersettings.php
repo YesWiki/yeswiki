@@ -54,7 +54,7 @@ if ($action == 'logout') { // User wants to log out
 } elseif ($adminIsActing || $userLoggedIn) { // Admin or user wants to manage the user
     if (substr($action, 0, 6) == 'update') { // Whoever it is tries to update the user
         try {
-            $csrfTokenController->checkTocken('login\action\usersettings\updateuser', 'POST', 'crsf-token');
+            $csrfTokenController->checkTocken('login\action\usersettings\updateuser', 'POST', 'csrf-token');
 
             $OK = $this->user->setByAssociativeArray(array(
                 'email'	 			=> isset($_POST['email']) ? $_POST['email'] : '',
@@ -88,7 +88,7 @@ if ($action == 'logout') { // User wants to log out
 
         if ($action == 'deleteByAdmin') { // Admin trying to delete user
             try {
-                $csrfTokenController->checkTocken('login\action\usersettings\deleteByAdmin', 'POST', 'crsf-token');
+                $csrfTokenController->checkTocken('login\action\usersettings\deleteByAdmin', 'POST', 'csrf-token');
 
                 $this->user->delete();
                 // forward
@@ -106,7 +106,7 @@ if ($action == 'logout') { // User wants to log out
             } else { // user properly typed his old password in
                 // check token
                 try {
-                    $csrfTokenController->checkTocken('login\action\usersettings\changepass', 'POST', 'crsf-token');
+                    $csrfTokenController->checkTocken('login\action\usersettings\changepass', 'POST', 'csrf-token');
 
                     $password = $_POST['password'];
                     if ($this->user->updatePassword($password)) {
@@ -159,7 +159,7 @@ if ($adminIsActing) {
     ?>
 	<div class="control-group form-group">
 		<div class="controls col-sm-9 col-sm-offset-3">
-            <input type="hidden" name="crsf-token" value="<?php echo htmlentities($csrfTokenManager->refreshToken('login\action\usersettings\updateuser')) ; ?>">
+            <input type="hidden" name="csrf-token" value="<?php echo htmlentities($csrfTokenManager->refreshToken('login\action\usersettings\updateuser')) ; ?>">
 			<input class="btn btn-primary" type="submit" value="<?php echo _t('USER_UPDATE'); ?>" />
 <?php
             if ($userLoggedIn) { // The one who runs the session is acting
@@ -177,7 +177,7 @@ if ($adminIsActing) {
             if ($adminIsActing) { // Admin is acting
 ?>
 <form action="<?php echo $this->href('', '', 'user='.$this->user->getProperty('name').'&from='.$referrer, false); ?>" method="post" class="form-horizontal">
-    <input type="hidden" name="crsf-token" value="<?php echo htmlentities($csrfTokenManager->refreshToken('login\action\usersettings\deleteByAdmin')) ; ?>">
+    <input type="hidden" name="csrf-token" value="<?php echo htmlentities($csrfTokenManager->refreshToken('login\action\usersettings\deleteByAdmin')) ; ?>">
 	<input type="hidden" name="usersettings_action" value="deleteByAdmin" />
 	<input class="btn btn-danger" type="submit" value="<?php echo _t('USER_DELETE');?>" />
 <?php echo $this->FormClose();
@@ -210,7 +210,7 @@ if ($userLoggedIn) { // The one who runs the session is acting
 	</div>
 	<div class="control-group form-group">
 		<div class="controls col-sm-9 col-sm-offset-3">
-            <input type="hidden" name="crsf-token" value="<?php echo htmlentities($csrfTokenManager->refreshToken('login\action\usersettings\changepass')) ;?>">
+            <input type="hidden" name="csrf-token" value="<?php echo htmlentities($csrfTokenManager->refreshToken('login\action\usersettings\changepass')) ;?>">
 			<input class="btn btn-primary" type="submit" value="<?php echo _t('USER_CHANGE');?>" size="40" />
 		</div>
 	</div>

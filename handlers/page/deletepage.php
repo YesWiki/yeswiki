@@ -61,7 +61,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
             $msg .= '" method="post" style="display: inline">' . "\n";
             $msg .= str_replace("{tag}", $this->Link($tag), _t('DELETEPAGE_CONFIRM')) . "\n";
             $msg .= '</br></br>';
-            $msg .= '<input type="hidden" name="crsf-token" value="'. htmlentities($csrfTokenManager->refreshToken("handler\deletepage\\$tag")) .'">';
+            $msg .= '<input type="hidden" name="csrf-token" value="'. htmlentities($csrfTokenManager->refreshToken("handler\deletepage\\$tag")) .'">';
             $msg .= '<input type="submit" class="btn btn-danger" value="' . _t('DELETEPAGE_DELETE') . '" ';
             $msg .= 'style="vertical-align: middle; display: inline" />' . "\n";
             $msg .= "</form>\n";
@@ -70,7 +70,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
             $msg .= "</form></span>\n";
         } else {
             try {
-                $csrfTokenController->checkTocken("handler\deletepage\\$tag", 'POST', 'crsf-token');
+                $csrfTokenController->checkTocken("handler\deletepage\\$tag", 'POST', 'csrf-token');
 
                 $this->DeleteOrphanedPage($tag);
                 $this->LogAdministrativeAction($this->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
@@ -93,7 +93,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
             && ($_GET['confirme'] === 'oui')) {
             // a trouble occured, invald token ?
             try {
-                $csrfTokenController->checkTocken("handler\deletepage\\{$this->tag}", 'POST', 'crsf-token');
+                $csrfTokenController->checkTocken("handler\deletepage\\{$this->tag}", 'POST', 'csrf-token');
             } catch (TokenNotFoundException $th) {
                 $msg .= $this->render("@templates/alert-message.twig", [
                     'type' => 'danger',
@@ -116,7 +116,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
         $msg .= '" method="post" style="display: inline">' . "\n";
         $msg .= str_replace("{tag}", $this->Link($this->tag), _t('DELETEPAGE_CONFIRM_WHEN_BACKLINKS')) . "\n";
         $msg .= '</br></br>';
-        $msg .= '<input type="hidden" name="crsf-token" value="'. htmlentities($csrfTokenManager->refreshToken("handler\deletepage\\{$this->tag}")) .'">';
+        $msg .= '<input type="hidden" name="csrf-token" value="'. htmlentities($csrfTokenManager->refreshToken("handler\deletepage\\{$this->tag}")) .'">';
         $msg .= '<input type="submit" value="' . _t('DELETEPAGE_DELETE') . '" class="btn btn-danger" ';
         $msg .= 'style="vertical-align: middle; display: inline" />' . "\n";
         $msg .= "</form>\n";

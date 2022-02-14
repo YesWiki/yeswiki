@@ -106,7 +106,7 @@ class TemplateEngine
         $this->addTwigHelper('include_css', function ($file) {
             $this->assetsManager->AddCSSFile($file);
         });
-        $this->addTwigHelper('crsfToken', function ($tokenId) {
+        $this->addTwigHelper('csrfToken', function ($tokenId) {
             if (is_string($tokenId)) {
                 return $this->csrfTokenManager->getToken($tokenId);
             } elseif (is_array($tokenId)) {
@@ -114,7 +114,7 @@ class TemplateEngine
                     throw new Exception("When array, `\$tokenId` should contain `id` key !");
                 } else {
                     if (isset($tokenId['refresh']) && $tokenId['refresh'] === true) {
-                        return $this->csrfTokenManager->grefreshToken($tokenId['id']);
+                        return $this->csrfTokenManager->refreshToken($tokenId['id']);
                     } else {
                         return $this->csrfTokenManager->getToken($tokenId['id']);
                     }
