@@ -49,6 +49,9 @@ if (!empty($nobtn) && $nobtn == '1') {
 $pagetag = $this->GetPageTag();
 
 // teste s'il y a bien un element de fermeture associé avant d'ouvrir une balise
+if (!isset($GLOBALS['check_'.$pagetag])) {
+    $GLOBALS['check_'.$pagetag] = [];
+}
 if (!isset($GLOBALS['check_'.$pagetag]['buttondropdown'])) {
     $GLOBALS['check_'.$pagetag ]['buttondropdown'] = check_graphical_elements('buttondropdown', $pagetag, $this->page['body']);
 }
