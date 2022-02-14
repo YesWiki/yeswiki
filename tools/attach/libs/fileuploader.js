@@ -284,7 +284,7 @@ qq.FileUploaderBasic = function(o) {
       onLeave: "The files are being uploaded, if you leave now the upload will be cancelled."
     },
     showMessage: function(message) {
-      alert(message);
+      alert(message.replace("&lt;","<").replace("&gt;",">").replace("&quot;","\"").replace("&amp;","&"));
     }
   };
   qq.extend(this._options, o);
