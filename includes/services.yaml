@@ -9,9 +9,16 @@ services:
     synthetic: true
 
   # Manually set inside the initCoreService method
+  Symfony\Component\Security\Csrf\CsrfTokenManager:
+    synthetic: true
+
+  # Manually set inside the initCoreService method
   # TODO remove this object when refactoring will be finished
   YesWiki\Wiki:
     synthetic: true
 
   YesWiki\Core\Service\:
     resource: 'services/*'
+
+  YesWiki\Core\Controller\:
+    resource: 'controllers/*'

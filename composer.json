@@ -34,7 +34,8 @@
         "symfony/yaml": "^5.1",
         "tamtamchik/simple-flash": "^2.0",
         "twig/twig": "^3.0",
-        "yeswiki/theme-margot": "dev-master"
+        "yeswiki/theme-margot": "dev-master",
+        "symfony/security-csrf": "^5.0"
     },
     "conflict": {
         "psr/cache": ">=2.0",
@@ -45,6 +46,8 @@
         "symfony/error-handler": ">=6.0",
         "symfony/event-dispatcher": ">=6.0",
         "symfony/filesystem": ">=6.0",
+        "symfony/password-hasher": ">=6.0",
+        "symfony/security-core": ">=6.0",
         "symfony/string": ">=6.0"
     },
     "extra": {

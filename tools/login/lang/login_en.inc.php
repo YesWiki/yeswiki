@@ -71,4 +71,9 @@ return [
 
     // actions/login.php
     // 'LOGIN_COOKIES_ERROR' => 'Vous devez accepter les cookies pour pouvoir vous connecter.',
+
+    // actions/usersettings.php
+    'USERSETTINGS_EMAIL_NOT_CHANGED' => 'Email not modified.',
+    'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'Password not changed.',
+    'USERSETTINGS_USER_NOT_DELETED' => 'User not deleted.',
 ];

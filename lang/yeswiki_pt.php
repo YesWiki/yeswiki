@@ -267,6 +267,12 @@ return [
     // actions/wantedpages.php
     'NO_PAGE_TO_CREATE' => 'Nenhuma página para criar',
 
+    // includes/controllers/CrsfController.php
+    'NO_CSRF_TOKEN_ERROR' => 'Erro de conceção do local: O formulário de submissão não continha o símbolo de identificação '.
+    'único necessário para os mecanismos de segurança interna.',
+    'CSRF_TOKEN_FAIL_ERROR' => 'Esta página pode ter sido aberta uma segunda vez. '.
+        'Por favor, renove o pedido desta janela (o sinal de segurança interna não foi bom).',
+
     // setup/header.php
     'OK' => 'OK',
     'FAIL' => 'FALHA',
@@ -524,6 +530,7 @@ return [
     // 'DELETEPAGE_NOT_ORPHEANED' => 'Cette page n\'est pas orpheline.',
     // 'DELETEPAGE_NOT_OWNER' => 'Vous n\'&ecirc;tes pas le propri&eacute;taire de cette page.',
     // 'DELETEPAGE_PAGES_WITH_LINKS_TO' => 'Pages ayant un lien vers {tag} :',
+    'DELETEPAGE_NOT_DELETED' => 'Página não apagada.',
 
     // handlers/edit
     // 'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' => 'ALERTE : '.

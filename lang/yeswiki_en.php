@@ -266,6 +266,12 @@ return [
     
     // actions/wantedpages.php
     'NO_PAGE_TO_CREATE' => 'No page to create',
+
+    // includes/controllers/CrsfController.php
+    'NO_CSRF_TOKEN_ERROR' => 'Site design error: The submission form did not contain the unique '.
+        'identification token needed for internal security mechanisms.',
+    'CSRF_TOKEN_FAIL_ERROR' => 'This page may have been opened a second time. '.
+        'Please renew the request from this window (the internal security token was not good).',
     
     // setup/header.php
     'OK' => 'OK',
@@ -485,6 +491,7 @@ return [
     'DELETEPAGE_NOT_ORPHEANED' => 'This page is not orpheaned.',
     'DELETEPAGE_NOT_OWNER' => 'You are not owner of this page.',
     'DELETEPAGE_PAGES_WITH_LINKS_TO' => 'Pages with a link to {tag} :',
+    'DELETEPAGE_NOT_DELETED' => 'Not deleted page.',
 
     // handlers/edit
     'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' => 'ALERT : '.

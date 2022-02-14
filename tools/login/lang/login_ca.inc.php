@@ -71,4 +71,9 @@ return [
 
     // actions/login.php
     // 'LOGIN_COOKIES_ERROR' => 'Vous devez accepter les cookies pour pouvoir vous connecter.',
+
+    // actions/usersettings.php
+    'USERSETTINGS_EMAIL_NOT_CHANGED' => 'El correu electrònic no s\'ha modificat.',
+    'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'La contrasenya no ha canviat.',
+    'USERSETTINGS_USER_NOT_DELETED' => 'Utilizador não eliminado.',
 ];

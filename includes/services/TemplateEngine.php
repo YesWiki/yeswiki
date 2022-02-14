@@ -2,7 +2,9 @@
 
 namespace YesWiki\Core\Service;
 
+use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Wiki;
 
 class TemplateNotFound extends \Exception
@@ -15,11 +17,17 @@ class TemplateEngine
     protected $twigLoader;
     protected $twig;
     protected $assetsManager;
+    protected $csrfTokenManager;
 
-    public function __construct(Wiki $wiki, ParameterBagInterface $config, AssetsManager $assetsManager)
-    {
+    public function __construct(
+        Wiki $wiki,
+        ParameterBagInterface $config,
+        AssetsManager $assetsManager,
+        CsrfTokenManager $csrfTokenManager
+    ) {
         $this->wiki = $wiki;
         $this->assetsManager = $assetsManager;
+        $this->csrfTokenManager = $csrfTokenManager;
         // Default path (main namespace) is the root of the project. There are no templates
         // there, but it's needed to call relative path like render('tools/bazar/templates/...')
         $this->twigLoader = new \Twig\Loader\FilesystemLoader('./');
@@ -97,6 +105,23 @@ class TemplateEngine
         });
         $this->addTwigHelper('include_css', function ($file) {
             $this->assetsManager->AddCSSFile($file);
+        });
+        $this->addTwigHelper('crsfToken', function ($tokenId) {
+            if (is_string($tokenId)) {
+                return $this->csrfTokenManager->getToken($tokenId);
+            } elseif (is_array($tokenId)) {
+                if (!isset($tokenId['id'])) {
+                    throw new Exception("When array, `\$tokenId` should contain `id` key !");
+                } else {
+                    if (isset($tokenId['refresh']) && $tokenId['refresh'] === true) {
+                        return $this->csrfTokenManager->grefreshToken($tokenId['id']);
+                    } else {
+                        return $this->csrfTokenManager->getToken($tokenId['id']);
+                    }
+                }
+            } else {
+                throw new Exception("`\$tokenId` should be a string or an array !");
+            }
         });
     }
 
