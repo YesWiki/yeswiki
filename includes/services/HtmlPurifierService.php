@@ -10,8 +10,6 @@ use YesWiki\Wiki;
 
 class HtmlPurifierService
 {
-    public const HTMLPURIFIER_PATH = "vendor/ezyang/htmlpurifier/";
-
     protected $wiki;
     private $purifier;
 
