@@ -206,7 +206,11 @@ class BazarListeAction extends YesWikiAction
             // Champ utilise pour la couleur des marqueurs
             'colorfield' => $colorField,
             // couleur des marqueurs
-            'color' => $color ,
+            'color' => $color,
+            // affichage du nombre de fiches trouvées par les filtres
+            'filtersresultnb' => $this->formatBoolean($arg, true, 'filtersresultnb'),
+            // bouton de réinitialisation des filtres
+            'resetfiltersbutton' => $this->formatBoolean($arg, false, 'resetfiltersbutton'),
         ]);
     }
 

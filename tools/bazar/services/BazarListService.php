@@ -87,7 +87,7 @@ class BazarListService
 
     public function formatFilters($options, $entries, $forms) : array
     {
-        if (count($options['groups'] ?? []) == 0) {
+        if (empty($options['groups'])) {
             return [];
         }
         
@@ -175,12 +175,10 @@ class BazarListService
                 return ($value == $idkey) ;
             }));
 
-            $filters[$idkey]['icon'] =
-                (isset($options['groupicons'][$i]) && !empty($options['groupicons'][$i])) ?
+            $filters[$idkey]['icon'] = !empty($options['groupicons'][$i]) ?
                     '<i class="'.$options['groupicons'][$i].'"></i> ' : '';
 
-            $filters[$idkey]['title'] =
-                (isset($options['titles'][$i]) && !empty($options['titles'][$i])) ?
+            $filters[$idkey]['title'] = !empty($options['titles'][$i]) ?
                     $options['titles'][$i] : $list['titre_liste'];
 
             $filters[$idkey]['collapsed'] = ($i != 0) && !$options['groupsexpanded'];
@@ -188,7 +186,7 @@ class BazarListService
             $filters[$idkey]['index'] = $i;
 
             foreach ($list['label'] as $listkey => $label) {
-                if (isset($facettables[$id][$listkey]) && !empty($facettables[$id][$listkey])) {
+                if (!empty($facettables[$id][$listkey])) {
                     $filters[$idkey]['list'][] = [
                         'id' => $idkey.$listkey,
                         'name' => $idkey,
