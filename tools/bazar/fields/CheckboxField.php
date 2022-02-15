@@ -50,7 +50,7 @@ abstract class CheckboxField extends EnumField
                     'formName' => ($this->formName) ?? $this->getFormName(),
                     'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
                     'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : $GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT'],
-                    'oldValue' => $this->getValue($entry)
+                    'oldValue' => $this->sanitizeValues($this->getValue($entry), "string")
                 ]);
                 break ;
             default:
@@ -67,7 +67,7 @@ abstract class CheckboxField extends EnumField
                     'values' => $this->getValues($entry),
                     'displaySelectAllLimit' => $this->displaySelectAllLimit,
                     'displayFilterLimit' => $this->displayFilterLimit,
-                    'oldValue' => $this->getValue($entry)
+                    'oldValue' => $this->sanitizeValues($this->getValue($entry), "string")
                 ]);
         }
     }
