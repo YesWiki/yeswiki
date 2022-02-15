@@ -25,8 +25,9 @@ CRSF (Cross-site request forgery) is a method of web attack in one click describ
    use Symfony\Component\Security\Csrf\CsrfTokenManager;
    ...
    $csrfTokenManager = $this->wiki->services->get(CsrfTokenManager::class);
+   // replace 'token' by the used name in form's inputin following line
    $token = new CsrfToken('tokenId', filter_input(INPUT_POST,'tokenNameInForm', FILTER_SANITIZE_STRING));
-   // replace 'token' by the used name in form's input
+   
    if ($csrfTokenManager->isTokenValid($token)) {
        ...
        $csrfTokenManager->removeToken('tokenId'); // remove it if you want only one usage
@@ -55,7 +56,6 @@ You can refresh a token to delete its previous value and replace it by a new one
 $token = $this->wiki->services->get(CsrfTokenManager::class)->refreshToken('tokenId');
 ```
  -  in `twig` template, use `{{ crsfToken({id:'tokenId',refresh:true}) }}`;
-```
 
 Previous token will be considered as invalid after calling `refreshToken`.
 
