@@ -39,15 +39,17 @@ class PostUpdaterCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         ob_start();
+        $_GET['wiki'] = $this->wiki->getPageTag().'/update';
+        $_GET['withoutHeaders'] = "1";
         $this->wiki->Run($this->wiki->getPageTag(), 'update');
         $bufferedOutput = ob_get_contents();
         ob_end_clean();
 
         $bufferedOutput = strip_tags($bufferedOutput, '<br><hr><em><strong>');
         $bufferedOutput = preg_replace(
-          ['#<[bh]r ?/?>#Ui', '/<(em|strong)>/Ui', '#</ ?(em|strong)>#Ui'],
-          ["\n", "\e[1m", "\e[0m"],
-          $bufferedOutput
+            ['#<[bh]r ?/?>#Ui', '/<(em|strong)>/Ui', '#</ ?(em|strong)>#Ui'],
+            ["\n", "\e[1m", "\e[0m"],
+            $bufferedOutput
         );
         $output->write($bufferedOutput);
 
