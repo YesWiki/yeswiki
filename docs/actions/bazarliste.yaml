@@ -110,9 +110,9 @@ actions:
         label: _t(AB_bazar_commons2_showexportbuttons)
         type: checkbox
         advanced: true
-        default: 0
-        checkedvalue: 1
-        uncheckedvalue: 0
+        default: "0"
+        checkedvalue: "1"
+        uncheckedvalue: "0"
         showExceptFor:
           - bazarcarousel
 
@@ -166,6 +166,7 @@ actions:
         label: _t(AB_bazar_commons2_filter_user_as_owner)
         type: checkbox
         advanced: true
+        default: "false"
       champ:
         label: _t(AB_bazar_commons2_champ_label)
         hint: _t(AB_bazar_commons2_champ_hint)
@@ -219,9 +220,9 @@ actions:
         label: _t(AB_bazar_commons2_resetfiltersbutton_label)
         advanced: true
         type: checkbox
-        default: 0
-        checkedvalue: 1
-        uncheckedvalue: 0
+        default: "0"
+        checkedvalue: "1"
+        uncheckedvalue: "0"
         showif: facettes
         showExceptFor:
           - bazargogocarto
@@ -376,7 +377,7 @@ actions:
       cluster:
         label: _t(AB_bazarcarto_cluster_label)
         type: checkbox
-        default: false
+        default: "false"
       width:
         advanced: true
         label: _t(AB_bazarcarto_width_label)
@@ -410,30 +411,30 @@ actions:
         advanced: true
         label: _t(AB_bazarcarto_smallmarker_label)
         type: checkbox
-        default: 0
-        checkedvalue: 1
-        uncheckedvalue: 0
+        default: "0"
+        checkedvalue: "1"
+        uncheckedvalue: "0"
       # spider:
       #   advanced: true
       #   label: _t(AB_bazarcarto_spider_label)
       #   hint: _t(AB_bazarcarto_spider_hint)
       #   type: checkbox
-      #   default: false
+      #   default: "false"
       # barregestion:
       #   advanced: true
       #   label: _t(AB_bazarcarto_barregestion_label)
       #   type: checkbox
-      #   default: false
+      #   default: "false"
       # navigation:
       #   advanced: true
       #   label: _t(AB_bazarcarto_navigation_label)
       #   type: checkbox
-      #   default: true
+      #   default: "true"
       zoommolette:
         advanced: true
         label: _t(AB_bazarcarto_zoommolette_label)
         type: checkbox
-        default: false
+        default: "false"
 
   bazarcalendar:
     label: _t(AB_bazarcalendar)
@@ -480,7 +481,7 @@ actions:
         type: checkbox
         default:
         advanced: true
-        checkedvalue: 1
+        checkedvalue: "1"
         uncheckedvalue:      
 
   bazarannuaire:
@@ -604,16 +605,16 @@ actions:
         label: _t(AB_bazarblog_show_author_label)
         advanced: true
         type: checkbox
-        default: 0
-        checkedvalue: 1
-        uncheckedvalue: 0
+        default: "0"
+        checkedvalue: "1"
+        uncheckedvalue: "0"
       show_date:
         label: _t(AB_bazarblog_show_date_label)
         advanced: true
         type: checkbox
-        default: 0
-        checkedvalue: 1
-        uncheckedvalue: 0
+        default: "0"
+        checkedvalue: "1"
+        uncheckedvalue: "0"
       correspondance:
         type: correspondance
         subproperties:
@@ -662,8 +663,9 @@ actions:
       checkboxfieldsincolumns:
         type: checkbox
         label: _t(AB_bazartableau_checkboxfieldsincolumns_label)
-        checkedvalue: "false"
-        uncheckedvalue: "true"
+        default: "false"
+        checkedvalue: "true"
+        uncheckedvalue: "false"
       displayvaluesinsteadofkeys:
         type: checkbox
         label: _t(AB_bazartableau_displayvaluesinsteadofkeys_label)

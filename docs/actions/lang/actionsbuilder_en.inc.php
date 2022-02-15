@@ -377,7 +377,7 @@ return [
     "AB_bazartableau_columnfieldsids_hint" => "Empty = all",
     "AB_bazartableau_columntitles_label" => "Comlumns titles",
     "AB_bazartableau_columntitles_hint" => "Separated by coma - empty = field's name autoatically get",
-    "AB_bazartableau_checkboxfieldsincolumns_label" => "Merge answer for checkbox fields",
+    "AB_bazartableau_checkboxfieldsincolumns_label" => "Display answers for checkbox fields in separated columns",
     "AB_bazartableau_displayvaluesinsteadofkeys_label" => "Display values instead of keys",
     "AB_bazartableau_sumfieldsids_label" => "Fields fo which calculate the sum",
     "AB_bazartableau_sumfieldsids_hint" => "Empty = no field",
