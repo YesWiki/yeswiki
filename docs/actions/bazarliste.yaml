@@ -663,13 +663,13 @@ actions:
       checkboxfieldsincolumns:
         type: checkbox
         label: _t(AB_bazartableau_checkboxfieldsincolumns_label)
-        default: "false"
+        default: "true"
         checkedvalue: "true"
         uncheckedvalue: "false"
       displayvaluesinsteadofkeys:
         type: checkbox
         label: _t(AB_bazartableau_displayvaluesinsteadofkeys_label)
-        value: "true"
+        default: "false"
         checkedvalue: "true"
         uncheckedvalue: "false"
       sumfieldsids:
