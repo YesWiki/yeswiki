@@ -29,7 +29,7 @@ class CsrfTokenController extends YesWikiController
      * @throws TokenNotFoundException
      * @throws Exception
      */
-    public function checkTocken(string $name, string $inputType, string $inputKey): bool
+    public function checkToken(string $name, string $inputType, string $inputKey): bool
     {
         if (empty($name)) {
             throw new Exception("parameter `\$name` should not be empty !");

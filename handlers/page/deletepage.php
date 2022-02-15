@@ -70,7 +70,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
             $msg .= "</form></span>\n";
         } else {
             try {
-                $csrfTokenController->checkTocken("handler\deletepage\\$tag", 'POST', 'csrf-token');
+                $csrfTokenController->checkToken("handler\deletepage\\$tag", 'POST', 'csrf-token');
 
                 $this->DeleteOrphanedPage($tag);
                 $this->LogAdministrativeAction($this->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
@@ -93,7 +93,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
             && ($_GET['confirme'] === 'oui')) {
             // a trouble occured, invald token ?
             try {
-                $csrfTokenController->checkTocken("handler\deletepage\\{$this->tag}", 'POST', 'csrf-token');
+                $csrfTokenController->checkToken("handler\deletepage\\{$this->tag}", 'POST', 'csrf-token');
             } catch (TokenNotFoundException $th) {
                 $msg .= $this->render("@templates/alert-message.twig", [
                     'type' => 'danger',

@@ -39,7 +39,7 @@ CRSF (Cross-site request forgery) is a method of web attack in one click describ
    use YesWiki\Core\Controller\CsrfTokenController;
    $csrfTokenController = $this->wiki->services->get(CsrfTokenController::class);
    try {
-      $csrfTokenController->checkTocken('tokenId', 'POST', 'tokenNameInForm');
+      $csrfTokenController->checkToken('tokenId', 'POST', 'tokenNameInForm');
       ... code if OK
    } catch (TokenNotFoundException $th) {
       $errorMessage = $th->getMessage();
