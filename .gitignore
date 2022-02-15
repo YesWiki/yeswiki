@@ -40,6 +40,7 @@ tools/*
 !tools/aceditor/*
 !tools/attach
 !tools/attach/*
+!tools/attach/libs/vendor
 !tools/bazar
 !tools/bazar/*
 !tools/contact
