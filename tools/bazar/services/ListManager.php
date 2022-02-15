@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Security\Controller\SecurityController;
@@ -14,21 +15,30 @@ class ListManager
 {
     protected $wiki;
     protected $dbService;
-    protected $tripleStore;
-    protected $securityController;
+    protected $htmlPurifierService;
     protected $pageManager;
     protected $params;
+    protected $securityController;
+    protected $tripleStore;
 
     public const TRIPLES_LIST_ID = 'liste';
 
     protected $cachedLists;
 
-    public function __construct(Wiki $wiki, DbService $dbService, TripleStore $tripleStore, PageManager $pageManager, ParameterBagInterface $params, SecurityController $securityController)
-    {
+    public function __construct(
+        Wiki $wiki,
+        DbService $dbService,
+        HtmlPurifierService $htmlPurifierService,
+        PageManager $pageManager,
+        ParameterBagInterface $params,
+        SecurityController $securityController,
+        TripleStore $tripleStore
+    ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->tripleStore = $tripleStore;
         $this->pageManager = $pageManager;
+        $this->htmlPurifierService = $htmlPurifierService;
         $this->params = $params;
         $this->securityController = $securityController;
 
@@ -78,6 +88,8 @@ class ListManager
         }
         $id = genere_nom_wiki('Liste '.$title);
 
+        $values = $this->sanitizeHMTL($values);
+
         if (YW_CHARSET !== 'UTF-8') {
             $values = array_map('utf8_encode', $values);
             $title = utf8_encode($title);
@@ -96,6 +108,8 @@ class ListManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
+        
+        $values = $this->sanitizeHMTL($values);
         if (YW_CHARSET !== 'UTF-8') {
             $values = array_map('utf8_encode', $values);
             $title = utf8_encode($title);
@@ -123,5 +137,12 @@ class ListManager
         $this->pageManager->deleteOrphaned($id);
 
         $this->tripleStore->delete($id, TripleStore::TYPE_URI, null, '', '');
+    }
+
+    private function sanitizeHMTL(array $values)
+    {
+        return array_map(function ($value) {
+            return $this->htmlPurifierService->cleanHTML($value);
+        }, $values);
     }
 }
