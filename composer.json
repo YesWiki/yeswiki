@@ -22,7 +22,7 @@
         "caxy/php-htmldiff": "^0.1.13",
         "doctrine/annotations": "^1.11",
         "doctrine/cache": "^1.10",
-        "enshrined/svg-sanitize": "^0.14.1",
+        "enshrined/svg-sanitize": "^0.15.0",
         "oomphinc/composer-installers-extender": "^2.0",
         "phpmailer/phpmailer": "^6.2",
         "symfony/config": "^5.1",
