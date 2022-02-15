@@ -8,9 +8,9 @@ actions:
     description: _t(AB_bazar_action_description)
     properties:
       voirmenu:
-        default: '0'
+        value: '0'
       vue:
-        default: 'saisir'
+        value: 'saisir'
       redirecturl:
         label: _t(AB_bazar_action_redirecturl_label)
         type: url
