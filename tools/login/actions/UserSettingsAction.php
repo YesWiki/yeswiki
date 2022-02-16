@@ -2,8 +2,10 @@
 
 namespace YesWiki\Login;
 
+use Exception;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 
 class UserSettingsAction extends YesWikiAction
@@ -19,6 +21,7 @@ class UserSettingsAction extends YesWikiAction
     ];
 
     private $csrfTokenController;
+    private $userManager;
 
     private $action;
     private $adminIsActing;
@@ -54,6 +57,7 @@ class UserSettingsAction extends YesWikiAction
     private function getServices()
     {
         $this->csrfTokenController = $this->getService(CsrfTokenController::class);
+        $this->userManager = $this->getService(UserManager::class);
     }
 
     private function setActionFromRequest(array $request)
@@ -175,6 +179,16 @@ class UserSettingsAction extends YesWikiAction
         if ($this->adminIsActing || $this->userLoggedIn) {
             try {
                 $this->csrfTokenController->checkToken('login\action\usersettings\updateuser', 'POST', 'csrf-token-update');
+
+                $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
+                if (empty($email)) {
+                    throw new Exception(_t('USER_THIS_IS_NOT_A_VALID_EMAIL'));
+                }
+                // check if e-mail is already used
+                $user = $this->userManager->getOneByEmail($email);
+                if (!empty($user)) {
+                    throw new Exception(_t('BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL'));
+                }
     
                 $OK = $this->wiki->user->setByAssociativeArray([
                     'email'	 			=> $post['email'] ?? '',
@@ -200,6 +214,9 @@ class UserSettingsAction extends YesWikiAction
                     $this->wiki->session->setMessage($this->wiki->user->error);
                 }
             } catch (TokenNotFoundException $th) {
+                $this->errorUpdate = _t('USERSETTINGS_EMAIL_NOT_CHANGED') .' '. $th->getMessage();
+            } catch (Exception $th) {
+                // TODO use a specific exception
                 $this->errorUpdate = _t('USERSETTINGS_EMAIL_NOT_CHANGED') .' '. $th->getMessage();
             }
         }
