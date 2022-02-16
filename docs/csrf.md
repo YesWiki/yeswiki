@@ -25,7 +25,7 @@ CRSF (Cross-site request forgery) is a method of web attack in one click describ
    use Symfony\Component\Security\Csrf\CsrfTokenManager;
    ...
    $csrfTokenManager = $this->wiki->services->get(CsrfTokenManager::class);
-   // replace 'token' by the used name in form's input in following line
+   // replace 'tokenNameInForm' by the used name in form's input in following line
    $token = new CsrfToken('tokenId', filter_input(INPUT_POST,'tokenNameInForm', FILTER_SANITIZE_STRING));
 
    if ($csrfTokenManager->isTokenValid($token)) {
@@ -73,4 +73,6 @@ Examples:
  - password update `DELETE api/pages/MyPageTag`
 
 It is possible to add the tool's name like `login\action\usersettings\changepass`.
+
+Be careful, it is better to write `"handler\\update\\MyPageTag"` than `"handler\update\MyPageTag"`, or prefer using `'handler\update\MyPageTag'`
 
