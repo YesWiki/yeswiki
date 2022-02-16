@@ -76,4 +76,8 @@ return [
     'USERSETTINGS_EMAIL_NOT_CHANGED' => 'E-mail non modifié.',
     'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'Mot de passe non modifié.',
     'USERSETTINGS_USER_NOT_DELETED' => 'Utilisateur non supprimé.',
+    'USERSETTINGS_CAPTCHA_USER_CREATION' => 'Vérification pour créer un utilisateur',
+    'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'Les paramètres \'{parameters}\' ne peuvent être vides !',
+    'USERSETTINGS_NAME_ALREADY_USED' => 'L\'identifiant "{currentName}" existe déjà !',
+    'USERSETTINGS_EMAIL_ALREADY_USED' => 'L\'email "{email}" est déjà utilisé par un autre compte !',
 ];

@@ -76,4 +76,8 @@ return [
     'USERSETTINGS_EMAIL_NOT_CHANGED' => 'El correu electrònic no s\'ha modificat.',
     'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'La contrasenya no ha canviat.',
     'USERSETTINGS_USER_NOT_DELETED' => 'Utilizador não eliminado.',
+    'USERSETTINGS_CAPTCHA_USER_CREATION' => 'Verificació per crear un usuari',
+    'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'Els paràmetres \'{parameters}\' no poden estar buits !',
+    'USERSETTINGS_NAME_ALREADY_USED' => 'L\'identificador "{currentName}" ja existeix !',
+    'USERSETTINGS_EMAIL_ALREADY_USED' => 'Un altre compte ja ha utilitzat el correu electrònic "{email}" !',
 ];

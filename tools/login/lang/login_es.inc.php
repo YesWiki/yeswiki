@@ -76,4 +76,8 @@ return [
     'USERSETTINGS_EMAIL_NOT_CHANGED' => 'Correo electrónico no cambiado.',
     'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'Contraseña no cambiada.',
     'USERSETTINGS_USER_NOT_DELETED' => 'Usuario no eliminado.',
+    'USERSETTINGS_CAPTCHA_USER_CREATION' => 'Verification to create a user',
+    'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'The \'{parameters}\' parameters cannot be empty!',
+    'USERSETTINGS_NAME_ALREADY_USED' => 'The identifier "{currentName}" already exists!',
+    'USERSETTINGS_EMAIL_ALREADY_USED' => 'The email "{email}" is already used by another account!',
 ];

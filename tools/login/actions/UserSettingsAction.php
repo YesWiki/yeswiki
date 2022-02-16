@@ -7,6 +7,7 @@ use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Security\Controller\SecurityController;
 
 class UserSettingsAction extends YesWikiAction
 {
@@ -21,6 +22,7 @@ class UserSettingsAction extends YesWikiAction
     ];
 
     private $csrfTokenController;
+    private $securityController;
     private $userManager;
 
     private $action;
@@ -57,6 +59,7 @@ class UserSettingsAction extends YesWikiAction
     private function getServices()
     {
         $this->csrfTokenController = $this->getService(CsrfTokenController::class);
+        $this->securityController = $this->getService(SecurityController::class);
         $this->userManager = $this->getService(UserManager::class);
     }
 
@@ -139,13 +142,23 @@ class UserSettingsAction extends YesWikiAction
                 'userLoggedIn' => $this->userLoggedIn
             ]);
         } else {
+            $captcha = $this->securityController->renderCaptchaField();
+            $captcha = preg_replace("/(".
+                preg_quote('<div class="media-body">', '/').
+                "\s*".
+                preg_quote('<strong>', '/').
+                ")[^<]*(".
+                preg_quote('</strong>', '/').
+                ")/", '$1'._t('USERSETTINGS_CAPTCHA_USER_CREATION').'$2', $captcha);
             // this file is kept to manage custom user-signup-form.tpl.html that will not been used if use directly .twig
             // TODO remove the .tpl.html for ectoplasme and use directly .twig
             return $this->render("@login/user-signup-form.tpl.html", [
                 "link" => $this->wiki->href(), // notice 'link' is not used in .twig TODO remove this line for ectoplasme
+                "namesToExport" => ["error","name","email","captcha"], // TOTO remove this line when removing .tpl.html
                 "error" => $this->error,
                 "name" => $this->wantedUserName,
-                "email" => $this->wantedEmail
+                "email" => $this->wantedEmail,
+                "captcha" => $captcha
             ]);
         }
     }
@@ -187,7 +200,7 @@ class UserSettingsAction extends YesWikiAction
                 // check if e-mail is already used
                 $user = $this->userManager->getOneByEmail($email);
                 if (!empty($user)) {
-                    throw new Exception(_t('BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL'));
+                    throw new Exception(str_replace('{email}', $email, _t('USERSETTINGS_EMAIL_ALREADY_USED')));
                 }
     
                 $OK = $this->wiki->user->setByAssociativeArray([
@@ -263,11 +276,19 @@ class UserSettingsAction extends YesWikiAction
                 return empty($post[$key]);
             });
             if (!empty($emptyInputsParametersNames)) {
-                $this->error = str_replace('{parameters}', implode(',', $emptyInputsParametersNames), _t('LOGIN_SIGNUP_MISSING_INPUT'));
+                $this->error = str_replace('{parameters}', implode(',', $emptyInputsParametersNames), _t('USERSETTINGS_SIGNUP_MISSING_INPUT'));
             } elseif (!$this->wiki->user->passwordIsCorrect($post['password'], $post['confpassword'])) {
                 $this->error = $this->wiki->user->error;
             } else { // Password is correct
-                if ($this->wiki->user->setByAssociativeArray(
+                $_POST['submit'] = "Sauver";
+                list($state, $error) = $this->securityController->checkCaptchaBeforeSave();
+                if (!$state) {
+                    $this->error = $error;
+                } elseif (!empty($this->userManager->getOneByName(filter_var($post['name'], FILTER_SANITIZE_STRING)))) {
+                    $this->error = str_replace('{currentName}', filter_var($post['name'], FILTER_SANITIZE_STRING), _t('USERSETTINGS_NAME_ALREADY_USED'));
+                } elseif (!empty($this->userManager->getOneByEmail(filter_var($post['email'], FILTER_SANITIZE_STRING)))) {
+                    $this->error = str_replace('{email}', filter_var($post['email'], FILTER_SANITIZE_STRING), _t('USERSETTINGS_EMAIL_ALREADY_USED'));
+                } elseif ($this->wiki->user->setByAssociativeArray(
                     [
                         'name'				=> trim($post['name']),
                         'email'				=> trim($post['email']),
@@ -285,7 +306,7 @@ class UserSettingsAction extends YesWikiAction
                         $this->error = $this->wiki->user->error;
                     }
                 } else { // We had problems with the properties setting
-                    $wiki->error = $this->wiki->user->error;
+                    $this->wiki->error = $this->wiki->user->error;
                 }
             }
         }

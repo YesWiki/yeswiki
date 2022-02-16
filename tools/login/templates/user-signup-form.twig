@@ -3,7 +3,11 @@
 <form action="{{ url({tag:''}) }}" method="post" class="form-horizontal">
   <input type="hidden" name="usersettings_action" value="signup" />
   {% if error is not empty %}
-    <div class="alert alert-danger">{{ error }}</div>          
+    {% if error matches '/<div[^>]*class\="alert.*/' %}
+      {{ error|raw }}
+    {% else %}
+      <div class="alert alert-danger">{{ error }}</div>          
+    {% endif %}
   {% endif %}
   <div class="control-group form-group">
   <label class="control-label col-sm-3">{{ _t('USER_USERNAME') }}
@@ -38,6 +42,7 @@
     <input class="form-control" type="password" name="confpassword" size="40" />
   </div>
 </div>
+{{ captcha|raw }}
 <div class="control-group form-group">
   <div class="controls col-sm-9 col-sm-offset-3">
     <input class="btn btn-block btn-primary" type="submit" value="{{ _t('USER_NEW_ACCOUNT')|e('html_attr') }}" size="40" />

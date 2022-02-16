@@ -76,4 +76,8 @@ return [
     'USERSETTINGS_EMAIL_NOT_CHANGED' => 'E-mail niet gewijzigd.',
     'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'Wachtwoord niet gewijzigd.',
     'USERSETTINGS_USER_NOT_DELETED' => 'Gebruiker niet verwijderd.',
+    'USERSETTINGS_CAPTCHA_USER_CREATION' => 'Verificatie om een gebruiker te maken',
+    'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'De parameters \'{parameters}\' kunnen niet leeg zijn!',
+    'USERSETTINGS_NAME_ALREADY_USED' => 'De identifier "{currentName}" bestaat al!',
+    'USERSETTINGS_EMAIL_ALREADY_USED' => 'De e-mail "{email}" wordt al gebruikt door een ander account!',
 ];

@@ -3,4 +3,4 @@
 // this file is kept to manage custom user-signup-form.tpl.html that will not been used if use directly .twig
 // TODO remove it for ectoplasme
 
-echo $this->wiki->render("@login/user-signup-form.twig",compact(['error','name','email']));
+echo $this->wiki->render("@login/user-signup-form.twig",compact($namesToExport));
