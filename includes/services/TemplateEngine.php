@@ -108,15 +108,15 @@ class TemplateEngine
         });
         $this->addTwigHelper('csrfToken', function ($tokenId) {
             if (is_string($tokenId)) {
-                return $this->csrfTokenManager->getToken($tokenId);
+                return $this->csrfTokenManager->getToken($tokenId)->getValue();
             } elseif (is_array($tokenId)) {
                 if (!isset($tokenId['id'])) {
                     throw new Exception("When array, `\$tokenId` should contain `id` key !");
                 } else {
                     if (isset($tokenId['refresh']) && $tokenId['refresh'] === true) {
-                        return $this->csrfTokenManager->refreshToken($tokenId['id']);
+                        return $this->csrfTokenManager->refreshToken($tokenId['id'])->getValue();
                     } else {
-                        return $this->csrfTokenManager->getToken($tokenId['id']);
+                        return $this->csrfTokenManager->getToken($tokenId['id'])->getValue();
                     }
                 }
             } else {
