@@ -1,0 +1,80 @@
+<h2>{{ _t('USER_SETTINGS') }}{{ adminIsActing ? ' — ' ~ user.property('name') : ''}}</h2>
+
+{% if errorUpdate is not empty %}
+  <div class="alert alert-danger">{{ errorUpdate }}</div>
+{% endif %}
+
+<form
+  action="{{ url({tag:''}|merge((
+    adminIsActing 
+    ? {user:user.property('name'),from:referrer} 
+    : {}
+    ))) }}"
+  method="post"
+  class="form-horizontal">
+  <input type="hidden" name="usersettings_action" value="update{{ adminIsActing ? 'ByAdmin' : '' }}" />
+  <div class="control-group form-group">
+		<label class="control-label col-sm-3">{{ _t('USER_EMAIL_ADDRESS') }}</label>
+		<div class="controls col-sm-9">
+			<input class="form-control" name="email" value="{{ user.property('email') }}" size="40" />
+		</div>
+	</div>
+  {# <div class="control-group form-group">
+    <label class="control-label col-sm-3">{{ _t('USER_MAX_NUMBER_OF_VERSIONS') }}</label>
+    <div class="controls col-sm-9">
+      <input class="form-control" name="revisioncount" value="{{ user.property('revisioncount')|e('html_attr') }}" size="40" />
+    </div>
+  </div> #}
+  <div class="control-group form-group">
+		<div class="controls col-sm-9 col-sm-offset-3">
+      <input type="hidden" name="csrf-token-update" value="{{ csrfToken({id:"login\\action\\usersettings\\updateuser",refresh:true}) }}">
+			<input class="btn btn-primary" type="submit" value="{{ _t('USER_UPDATE')|e('html_attr') }}" />
+      {% if userLoggedIn %}{# // The one who runs the session is acting #}
+        <input 
+          class="btn btn-warning" 
+          type="button" 
+          value="{{ _t('USER_DISCONNECT')|e('html_attr') }}" 
+          onclick="document.location='{{ url({params:{action:'logout'}})|e('html_attr') }}'" />
+      {% endif %}
+		</div>
+	</div>
+</form>
+
+{# FORM DELETE #}
+{% if adminIsActing %}
+  <form action="<{{ url({params:{user:user.property('name'),from:referrer}}) }}" method="post" class="form-horizontal">
+    <input type="hidden" name="csrf-token-delete" value="{{ csrfToken({id:"login\\action\\usersettings\\deleteByAdmin\\#{user.property('name')}",refresh:true})|e('html_attr') }}">
+    <input type="hidden" name="usersettings_action" value="deleteByAdmin" />
+    <input class="btn btn-danger" type="submit" value="{{ _t('USER_DELETE')|e('html_attr') }}" />
+  </form>
+{% endif %}
+
+{# FORM CHANGE PASSWORD #}
+{% if userLoggedIn %}
+  <form action="{{ url({tag:''}) }}" method="post" class="form-horizontal">
+	  <hr>
+	  <input type="hidden" name="usersettings_action" value="changepass" />
+	  <h2>{{ _t('USER_CHANGE_THE_PASSWORD') }}</h2>
+    {% if errorPasswordChange is not empty %}
+      <div class="alert alert-danger">{{ errorPasswordChange }}</div>
+    {% endif %}
+    <div class="control-group form-group">
+      <label class="control-label col-sm-3">{{ _t('USER_OLD_PASSWORD') }}</label>
+      <div class="controls col-sm-9">
+        <input class="form-control" type="password" name="oldpass" size="40" />
+      </div>
+    </div>
+    <div class="control-group form-group">
+      <label class="control-label col-sm-3">{{ _t('USER_NEW_PASSWORD') }}</label>
+      <div class="controls col-sm-9">
+        <input class="form-control" type="password" name="password" size="40" />
+      </div>
+    </div>
+    <div class="control-group form-group">
+      <div class="controls col-sm-9 col-sm-offset-3">
+        <input type="hidden" name="csrf-token-changepass" value="{{ csrfToken({id:"login\\action\\usersettings\\changepass",refresh:true})|e('html_attr') }}">
+        <input class="btn btn-primary" type="submit" value="{{ _t('USER_CHANGE')|e('html_attr') }}" size="40" />
+      </div>
+    </div>
+  </form>
+{% endif %}
