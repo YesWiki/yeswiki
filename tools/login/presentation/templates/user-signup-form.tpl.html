@@ -1,52 +1,6 @@
-<!-- FORM SIGN UP -->
-<h2><?php echo _t('USER_SIGN_UP'); ?></h2>
-<form action="<?php echo $link; ?>" method="post" class="form-horizontal">
-	<input type="hidden" name="usersettings_action" value="signup" />
-  <?php if (!empty($error)) : ?>
-      <div class="alert alert-danger"><?php echo $error; ?></div>          
-  <?php endif; ?>
-	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('USER_USERNAME');?>
-			<span class='form-help fa fa-question-circle'
-				title="<?php echo _t('USERNAME_MUST_BE_WIKINAME');?>"
-				onclick="$(this).tooltip('toggle');"
-				onmouseover="$(this).tooltip('toggle');">
-			</span>
-		</label>
-		<div class="controls col-sm-9">
-			<input class="form-control" name="name" size="40" value="<?php echo $name; ?>" 
-				pattern="[^!#@\\\/]{1}[^\\\/]{2,}"/><?php /* pattern for not special characters */ ?>
-		</div>
- 	</div>
-	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('USER_EMAIL_ADDRESS');?></label>
-		<div class="controls col-sm-9">
-			<input class="form-control" name="email" size="40" value="<?php echo $email; ?>" 
-				pattern="[!#-'*+/-9=?A-Za-z^-~-]+(?:\.[!#-'*+/-9=?A-Z^-~-]+)*@(?:[!#-'*+/-9=?A-Z^-~-]+\.[!#-'*+/-9=?A-Z^-~-]+)*"/><?php
-				// pattern inspired from RFC 5322 ?>
-		</div>
-	</div>
-	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('USER_PASSWORD');?></label>
-		<div class="controls col-sm-9">
-			<input class="form-control" type="password" name="password" size="40"/>
-		</div>
-	</div>
-	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('USER_PASSWORD_CONFIRMATION');?></label>
-		<div class="controls col-sm-9">
-			<input class="form-control" type="password" name="confpassword" size="40" />
-		</div>
-	</div>
-	<div class="control-group form-group">
-		<div class="controls col-sm-9 col-sm-offset-3">
-			<input class="btn btn-block btn-primary" type="submit" value="<?php echo _t('USER_NEW_ACCOUNT');?>" size="40" />
-		</div>
-	</div>
-</form>
+<?php
 
-<hr>
+// this file is kept to manage custom user-signup-form.tpl.html that will not been used if use directly .twig
+// TODO remove it for ectoplasme
 
-<button class="btn btn-block btn-default" onclick="$('a[href=\'#LoginModal\']').click()">
-  <?php echo _t('LOGIN_LOGIN'); ?>
-</button>
+echo $this->wiki->render("@login/user-signup-form.twig",compact(['error','name','email']));
