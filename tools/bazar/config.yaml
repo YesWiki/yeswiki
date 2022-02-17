@@ -28,7 +28,7 @@ parameters:
   # nombre maximum d'articles présents dans le flux rss
   BAZ_NB_ENTREES_FLUX_RSS: 20
   # Logo du site indique dans les flux rss
-  BAZ_RSS_LOGOSITE: 'https:#yeswiki.net/themes/margot/images/apple-touch-icon.png'
+  BAZ_RSS_LOGOSITE: 'https:#yeswiki.net/themes/margot/images/favicon.png'
   # Managing editor du site
   BAZ_RSS_MANAGINGEDITOR: 'contact@yeswiki.net (Mr YesWiki)'
   # Mail Webmaster du site

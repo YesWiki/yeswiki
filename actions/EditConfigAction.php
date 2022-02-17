@@ -12,10 +12,11 @@ class EditConfigAction extends YesWikiAction
         'wakka_name' => 'core',
         'root_page' => 'core',
         'default_language' => 'core',
+        'favicon' => 'core',
         'debug' => 'core',
         'timezone' => 'core',
         'allowed_methods_in_iframe' => 'core',
-        'revisionscount' => 'core',
+        'revisionscount' => 'core',        
 
         'default_read_acl' => 'access',
         'default_write_acl' => 'access',
