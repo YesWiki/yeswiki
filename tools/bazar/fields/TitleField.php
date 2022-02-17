@@ -34,7 +34,8 @@ class TitleField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
-        $value = $this->getValue($entry);
+        $dirtyHtml = $this->getValue($entry);
+        $value = $this->getService(HtmlPurifierService::class)->cleanHTML($dirtyHtml);
         $formManager = $this->getService(FormManager::class);
 
         // TODO improve import detection
