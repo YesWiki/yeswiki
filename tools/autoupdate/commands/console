@@ -12,7 +12,6 @@ if (!file_exists('wakka.config.php')) {
     $_SERVER['REQUEST_URI'] = $wakkaConfig['base_url'].$wakkaConfig['root_page'];
     $_SERVER['HTTP_HOST'] = parse_url($wakkaConfig['base_url'], PHP_URL_HOST);
     $_SERVER['REQUEST_METHOD'] = 'GET';
-    $_SERVER['REMOTE_ADDR'] = 'console script';
     // fake wiki page
     $_REQUEST['wiki'] = $wakkaConfig['root_page'];
 }

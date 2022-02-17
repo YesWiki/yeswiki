@@ -31,6 +31,7 @@ require_once 'includes/objects/YesWikiAction.php';
 require_once 'includes/objects/YesWikiHandler.php';
 require_once 'includes/objects/YesWikiFormatter.php';
 
+use Exception;
 use Throwable;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
@@ -56,6 +57,8 @@ use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\YesWikiControllerResolver;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Tags\Service\TagsManager;
+
+class ExitException extends Exception {}
 
 class Wiki
 {
@@ -155,6 +158,11 @@ class Wiki
     public function GetWikiNiVersion()
     {
         return WIKINI_VERSION;
+    }
+
+    public function isCli(): bool
+    {
+        return in_array(php_sapi_name(),['cli', 'cli-server',' phpdbg'],true);
     }
 
     // inclusions
@@ -393,7 +401,16 @@ class Wiki
     public function Redirect($url)
     {
         header("Location: $url");
-        exit();
+        $this->exit();
+    }
+
+    public function exit(string $message = "")
+    {
+        if ($this->isCli()){
+            throw new ExitException($message);
+        } else {
+            exit($message);
+        }
     }
 
     // returns just PageName[/method].
@@ -1155,7 +1172,18 @@ class Wiki
             $this->SetPage($this->LoadPage($tag, (isset($_REQUEST['time']) ? $_REQUEST['time'] : '')));
             $this->LogReferrer();
 
-            echo $this->Method($this->method);
+            try {
+                echo $this->Method($this->method);
+            } catch (ExitException $th) {
+                if (!$this->isCli()){
+                    // action redirect: aucune redirection n'a eu lieu, effacer la liste des redirections precedentes
+                    if (!empty($_SESSION['redirects'])) {
+                        unset($_SESSION['redirects']);
+                    }
+                    // do nothing except and script with message
+                    exit($th->getMessage);
+                }
+            }
 
             // action redirect: aucune redirection n'a eu lieu, effacer la liste des redirections precedentes
             if (!empty($_SESSION['redirects'])) {
@@ -1173,7 +1201,7 @@ class Wiki
             if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
                 $response = new Response(_t('WIKI_IN_HIBERNATION'), Response::HTTP_UNAUTHORIZED);
                 $response->send();
-                exit();
+                $this->exit();
             }
             if (empty($_POST)) {
                 $_POST = json_decode(file_get_contents('php://input'), true) ?? [];
@@ -1197,7 +1225,7 @@ class Wiki
             } else {
                 $response = new Response(_t('ROUTE_BAD_CONFIGURED'), Response::HTTP_BAD_REQUEST);
                 $response->send();
-                exit();
+                $this->exit();
             }
         } elseif (count($extract) > 1) {
             array_shift($extract);

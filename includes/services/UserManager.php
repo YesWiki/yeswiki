@@ -54,7 +54,7 @@ class UserManager
         if ($user = $this->getLoggedUser()) {
             $name = $user["name"];
         } else {
-            $name = $_SERVER["REMOTE_ADDR"];
+            $name = $this->wiki->isCli() ? '' : $_SERVER["REMOTE_ADDR"];
         }
         return $name;
     }
