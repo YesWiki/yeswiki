@@ -10,11 +10,13 @@ use YesWiki\Wiki;
 
 class HtmlPurifierService
 {
+    protected $params;
     protected $wiki;
     private $purifier;
 
-    public function __construct(Wiki $wiki)
+    public function __construct(Wiki $wiki, ParameterBagInterface $params)
     {
+        $this->params = $params;
         $this->wiki = $wiki;
         $this->purifier = null;
     }
@@ -26,6 +28,9 @@ class HtmlPurifierService
      */
     public function cleanHTML(string $dirty_html): string
     {
+        if (!$this->params->get('htmlPurifierActivated')) {
+            return $dirty_html;
+        }
         if (is_null($this->purifier)) {
             $this->load();
         }

@@ -51,6 +51,8 @@ $config['wikini_version'] = WIKINI_VERSION;
 $config['wakka_version'] = WAKKA_VERSION;
 $config['yeswiki_version'] = YESWIKI_VERSION;
 $config['yeswiki_release'] = YESWIKI_RELEASE;
+// default var
+$config['htmlPurifierActivated'] = true; // TODO ectoplasme remove this line
 // list of tableNames
 $tablesNames = ['pages','links','referrers','nature','triples','users','acls'];
 
