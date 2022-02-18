@@ -10,6 +10,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Throwable;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Entity\User;
@@ -201,7 +202,22 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         if (!$this->supportsClass(get_class($user))) {
             throw new UnsupportedUserException();
         }
-        $user->setPassword($newHashedPassword);
+        try {
+            $previousPassword = $user['password'];
+            $user->setPassword($newHashedPassword);
+            $query =
+                'UPDATE ' . $this->dbService->prefixTable('users') . 'SET ' .
+                'password = "' . $this->dbService->escape($newHashedPassword) . '"'.
+                ' WHERE name = "'.$this->dbService->escape($user['name']).'" '.
+                'AND email= "'.$this->dbService->escape($user['email']).'" '.
+                'AND password= "'.$this->dbService->escape($previousPassword).'";';
+            $this->dbService->query($query);
+        } catch (Throwable $th) {
+            // only throw error in debug mode
+            if ($this->wiki->GetConfigValue('debug')=='yes') {
+                throw $th;
+            }
+        }
     }
 
     /* ~~~~~~~~~~~~~~~~~~ implements  UserProviderInterface ~~~~~~~~~~~~~~~~~~ */

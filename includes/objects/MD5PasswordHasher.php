@@ -38,7 +38,7 @@ class MD5PasswordHasher implements LegacyPasswordHasherInterface
      */
     public function verify(string $hashedPassword, string $plainPassword, string $salt = null): bool
     {
-        return $hashedPassword === md5($plainPassword);
+        return $hashedPassword === $this->hash($plainPassword);
     }
 
     /**
