@@ -2,6 +2,8 @@
 
 namespace YesWiki\Core\Exception;
 
-class PerformerException extends \Exception
+use Exception;
+
+class PerformerException extends Exception
 {
 }
