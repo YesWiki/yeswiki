@@ -47,6 +47,12 @@ spl_autoload_register(function ($className) {
                         require "$basePath/commands/{$matches[3]}.php";
                     }
                     break;
+                case 'Entity':
+                    require "$basePath/entities/{$matches[3]}.php";
+                    break;
+                case 'Exception':
+                    require "$basePath/exceptions/{$matches[3]}.php";
+                    break;
                 default:
                     // do nothing
                     break;
