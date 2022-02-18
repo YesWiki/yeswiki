@@ -3,7 +3,10 @@ namespace YesWiki;
 
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\TripleStore;
+use YesWiki\Core\Service\UserManager;
 use YesWiki\Security\Controller\SecurityController;
+
+// DEPRECIATED use UserManager instead
 
 class User
 {
@@ -35,6 +38,7 @@ class User
 
     protected $securityController;
     protected $dbService;
+    protected $userManager;
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~ END OF PROPERTIES ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 
@@ -45,6 +49,7 @@ class User
         $this->initLimitations();
         $this->dbService = $this->wiki->services->get(DbService::class);
         $this->securityController = $this->wiki->services->get(SecurityController::class);
+        $this->userManager = $this->wiki->services->get(UserManager::class);
     }
 
     /* ~~~~~~~~~~~~~~~~~~~~~~ SETS PROPERTY METHODS ~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -1011,25 +1016,24 @@ class User
      * @param string $groupName The name of the group for wich we are testing membership
      *
      * @return boolean True if the $this user is member of $groupName, false otherwise
+     * @deprecated use UserManager->isInGroup() instead
     */
     public function isInGroup($groupName)
     {
-        //	public function UserIsInGroup($group, $user = null, $admincheck = true)
-        return $this->wiki->CheckACL($this->wiki->GetGroupACL($groupName), $this->properties['name'], false);
+        trigger_error("Usage of User.class.php::isInGroup is deprecated, use UserManager::isInGroup instead!");
+        return $this->userManager->isInGroup($groupName,$this->properties['name'],false);
     }
 
     /** Lists the groups $this user is member of
      *
      * @return string[] An array of group names
+     * @deprecated use UserManager::groupsWhereIsMember() instead
     */
     public function listGroupMemberships()
     {
-        $groups = $this->wiki->GetGroupsList();
-        $groups = array_filter($groups, function ($group) {
-            return $this->wiki->UserIsInGroup($group, $this->properties['name']);
-        });
-
-        return $groups;
+        trigger_error("Usage of User.class.php::listGroupMemberships is deprecated, use UserManager::groupsWhereIsMember instead!");
+        $user = $this->userManager->getOneByName($this->properties['name']);
+        return empty($user) ? [] : $this->userManager->groupsWhereIsMember($user);
     }
     /* ~~~~~~~~~~~~~~~~~~~~~~~ END OF INFO METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~ */
 } //end User class

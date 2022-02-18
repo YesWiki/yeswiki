@@ -10,9 +10,10 @@ use YesWiki\Core\YesWikiAction;
 class MailPeriodAction extends YesWikiAction 
 {
     function run()
-    {       
-        $user = $this->getService(UserManager::class)->getLoggedUser();
-        $userName = $this->getService(UserManager::class)->getLoggedUserName();
+    {
+        $userManager = $this->getService(UserManager::class);
+        $user = $userManager->getLoggedUser();
+        $userName = $userManager->getLoggedUserName();
         $periods = [
             'day' =>   ['label' => _t('CONTACT_DAILY')], 
             'week' =>  ['label' => _t('CONTACT_WEEKLY')],
@@ -47,7 +48,7 @@ class MailPeriodAction extends YesWikiAction
     private function updatePeriods($periods, $userName) {
         foreach($periods as $period => $config) {
             $group = $this->groupName($period);
-            $periods[$period]['subscribed'] = $this->wiki->UserIsInGroup($group, $userName, false);
+            $periods[$period]['subscribed'] = $userManager->UserIsInGroup($group, $userName, false);
             $periods[$period]['group'] = $this->groupName($period);
         }
         return $periods;

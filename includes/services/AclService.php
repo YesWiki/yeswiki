@@ -253,7 +253,7 @@ class AclService
                         $gname = substr($line, 1);
                         // paranoiac: avoid line = '@'
                         if ($gname) {
-                            if (!empty($username) && $this->wiki->UserIsInGroup($gname, $username, false/* we have allready checked if user was an admin */)) {
+                            if (!empty($username) && $this->userManager->isInGroup($gname, $username, false/* we have allready checked if user was an admin */)) {
                                 $result = $std_response ;
                             } else {
                                 $result = ! $std_response ;
@@ -293,7 +293,7 @@ class AclService
             $neededACL[] = $userName;
             $groups = $this->wiki->GetGroupsList();
             foreach ($groups as $group) {
-                if ($this->wiki->UserIsInGroup($group, $userName, true)) {
+                if ($this->userManager->isInGroup($group, $userName, true)) {
                     $neededACL[] = '@'.$group;
                 }
             }

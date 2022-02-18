@@ -158,6 +158,33 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $this->getOneByNameCacheResults = [];
     }
 
+    /** Lists the groups $this user is member of
+     *
+     * @return string[] An array of group names
+    */
+    public function groupsWhereIsMember(User $user)
+    {
+        $groups = $this->wiki->GetGroupsList();
+        $groups = array_filter($groups, function ($group) use ($user) {
+            return $this->wiki->UserIsInGroup($group, $user['name']);
+        });
+
+        return $groups;
+    }
+
+    /** Tells if a user is member of the specified group.
+     *
+     * @param string $groupName The name of the group for which we are testing membership
+     * @param string|null $username if null check current user
+     * @param bool $admincheck
+     *
+     * @return boolean True if the $user is member of $groupName, false otherwise
+    */
+    public function isInGroup(string $groupName, ?string $username = null, bool $admincheck = true)
+    {
+        return $this->wiki->CheckACL($this->wiki->GetGroupACL($groupName), $username, $admincheck);
+    }
+
     /* ~~~~~~~~~~~~~~~~~~ implements  PasswordUpgraderInterface ~~~~~~~~~~~~~~~~~~ */
 
     /**

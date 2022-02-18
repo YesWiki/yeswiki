@@ -77,7 +77,7 @@ class Wiki
     public $extensions = array();
     public $routes = array();
     public $session;
-    public $user;
+    public $user; // depreciated TODO remove it for ectoplasme : replaced by userManager
     public $services;
 
     /**
@@ -1021,17 +1021,6 @@ class Wiki
     }
 
     /**
-     *
-     * @param string $group
-     *            The name of a group
-     * @return boolean true iff the user is in the given $group
-     */
-    public function UserIsInGroup($group, $user = null, $admincheck = true)
-    {
-        return $this->CheckACL($this->GetGroupACL($group), $user, $admincheck);
-    }
-
-    /**
      * Checks if a given user is administrator
      *
      * @param string $user
@@ -1040,7 +1029,7 @@ class Wiki
      */
     public function UserIsAdmin($user = null)
     {
-        return $this->UserIsInGroup(ADMIN_GROUP, $user, false);
+        return $this->services->get(UserManager::class)->isInGroup(ADMIN_GROUP, $user, false);
     }
 
     /**
@@ -1935,5 +1924,17 @@ class Wiki
     public function ClearLinkTable()
     {
         return $this->services->get(LinkTracker::class)->clear();
+    }
+    
+    /**
+     *
+     * @param string $group
+     *            The name of a group
+     * @return boolean true iff the user is in the given $group
+     * @deprecated Use UserManager::isInGroup instead
+     */
+    public function UserIsInGroup($group, $user = null, $admincheck = true)
+    {
+        return $this->services->get(UserManager::class)->isInGroup($group,$user, $admincheck);
     }
 }

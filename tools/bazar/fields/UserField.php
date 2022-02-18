@@ -293,6 +293,7 @@ class UserField extends BazarField
             $wiki = $this->getWiki();
             $existingsGroups = $wiki->GetGroupsList();
             $formManager = $this->getService(FormManager::class);
+            $userManager = $this->getService(UserManager::class);
             foreach ($groups as $group) {
                 $group = trim($group);
                 $forceGroupCreation =  (substr($group, 0, 1) === '+');
@@ -303,7 +304,7 @@ class UserField extends BazarField
                     if (!empty($field) && !empty($entry[$field->getPropertyName()])) {
                         $groupsNamesFromField = explode(',', $entry[$field->getPropertyName()]);
                         foreach ($groupsNamesFromField as $groupNameFromField) {
-                            if ($this->userMustBeAddedToGroup($wikiName, $groupNameFromField, $forceGroupCreation, $wiki, $existingsGroups)) {
+                            if ($this->userMustBeAddedToGroup($wikiName, $groupNameFromField, $forceGroupCreation, $userManager, $existingsGroups)) {
                                 $groupsNames[] = $groupNameFromField;
                             }
                         }
@@ -331,7 +332,7 @@ class UserField extends BazarField
         string $wikiName,
         string $groupName,
         bool $forceGroupCreation,
-        Wiki $wiki,
+        USerManager $userManager,
         array $existingsGroups
     ) {
         if (!preg_match('/^[A-Za-z0-9]+$/m', $groupName)) {
@@ -339,7 +340,7 @@ class UserField extends BazarField
         }
         
         if (in_array($groupName, $existingsGroups, true)) {
-            if (!$wiki->UserIsInGroup($groupName, $wikiName, false)) {
+            if (!$userManager->isInGroup($groupName, $wikiName, false)) {
                 return true;
             }
         } elseif ($forceGroupCreation) {
