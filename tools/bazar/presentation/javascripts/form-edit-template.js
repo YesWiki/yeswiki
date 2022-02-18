@@ -402,6 +402,11 @@ var typeUserAttrs = {
     semantic: semanticConf,
   },
   file: {
+    readlabel: {
+      label: _t('BAZ_FORM_EDIT_FILE_READLABEL_LABEL'), 
+      value: "",
+      placeholder: _t('BAZ_FILEFIELD_FILE')
+    },
     maxsize: { label: _t('BAZ_FORM_EDIT_FILE_MAXSIZE_LABEL'), value: "" },
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: "" },
     read: readConf,
@@ -812,7 +817,7 @@ var yesWikiMapping = {
   "checkbox-group": { ...lists, ...{ 7: "fillingMode" } },
   "radio-group": { ...lists, ...{ 7: "fillingMode" } },
   textarea: { ...defaultMapping, ...{ 4: "rows", 7: "syntax" } },
-  file: { ...defaultMapping, ...{ 3: "maxsize" } },
+  file: { ...defaultMapping, ...{ 3: "maxsize", 6: "readlabel" } },
   tags: defaultMapping,
   inscriptionliste: {
     0: "type",

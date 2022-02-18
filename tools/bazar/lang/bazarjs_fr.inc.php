@@ -2,6 +2,10 @@
 
 return [
 
+    // fields/FileField.php
+    'BAZ_FILEFIELD_FILE' => 'Fichier : {filename}',
+    'BAZ_FORM_EDIT_FILE_READLABEL_LABEL' => 'Label à l\'affichage',
+
     // fields/MapField.php
     'BAZ_POSTAL_CODE_NOT_FOUND' => 'Pas de ville trouvée pour le code postal : {input}',
     'BAZ_POSTAL_CODE_HINT' => 'Veuillez entrer 5 chiffres pour voir les villes associées au code postal',

@@ -11,11 +11,15 @@ use YesWiki\Security\Controller\SecurityController;
  */
 class FileField extends BazarField
 {
+    private $readLabel;
+    protected const FIELD_READ_LABEL = 6;
+
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
 
         $this->propertyName = $this->type . $this->name;
+        $this->readLabel = empty(trim($values[self::FIELD_READ_LABEL])) ? _t('BAZ_FILEFIELD_FILE') : $values[self::FIELD_READ_LABEL];
     }
 
     protected function renderInput($entry)
@@ -117,5 +121,20 @@ class FileField extends BazarField
             ? $match[1]
             : $longFileName ;
         return $shortFileName;
+    }
+
+    public function getReadLabel(): string
+    {
+        return $this->readLabel;
+    }
+
+    public function jsonSerialize()
+    {
+        return array_merge(
+            parent::jsonSerialize(),
+            [
+              'readLabel' => $this->getReadLabel(),
+            ]
+        );
     }
 }
