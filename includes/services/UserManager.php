@@ -16,6 +16,7 @@ use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
+use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
@@ -23,17 +24,29 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 {
     protected $wiki;
     protected $dbService;
+    protected $passwordHasherFactory;
     protected $securityController;
     protected $params;
+    
     private $getOneByNameCacheResults;
+    private $limitations;
 
-    public function __construct(Wiki $wiki, DbService $dbService, ParameterBagInterface $params, SecurityController $securityController)
+
+    public function __construct(
+        Wiki $wiki,
+        DbService $dbService,
+        ParameterBagInterface $params,
+        PasswordHasherFactory $passwordHasherFactory,
+        SecurityController $securityController
+    )
     {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
+        $this->passwordHasherFactory = $passwordHasherFactory;
         $this->securityController = $securityController;
         $this->params = $params;
         $this->getOneByNameCacheResults = [];
+        $this->initLimitations();
     }
 
     private function arrayToUser(?array $userAsArray = null): ?User
@@ -108,27 +121,70 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     }
 
     /**
+     * @param array|string $wikiNameOrUser array to create the wiki or wikiname
+     * @param string email (optionnal if parameters by array)
+     * @param string plainPassword (optionnal if parameters by array)
      * @throws UserNameAlreadyUsedException|UserEmailAlreadyUsedException|Exception
      */
-    public function create($wikiName, $email, $password)
+    public function create($wikiNameOrUser, string $email ="", string $plainPassword ="")
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
+
+        if (is_array($wikiNameOrUser)) {
+            $userAsArray = $wikiNameOrUser;
+            $wikiName = $userAsArray['name'];
+            $email = $userAsArray['email'];
+            $plainPassword = $userAsArray['password'];
+        } elseif (is_string($wikiNameOrUser)) {
+            $wikiName = $wikiNameOrUser;
+            $userAsArray = [
+                'changescount' => "",
+                'doubleclickedit' => "",
+                'email' => $email,
+                'motto' => "",
+                'name' => $wikiName,
+                'password' => "",
+                'revisioncount' => "",
+                'show_comments' => "",
+                'signuptime' => ""
+            ];
+        } else {
+            throw new Exception("First parameter of UserManager->create should be string or array!");
+        }
+        
+        if (empty($wikiName)) {
+            throw new Exception("'Name' parameter of UserManager->create should not be empty!");
+        }
         if (!empty($this->getOneByName($wikiName))) {
             throw new UserNameAlreadyUsedException();
+        }
+        if (empty($email)) {
+            throw new Exception("'email' parameter of UserManager->create should not be empty!");
         }
         if (!empty($this->getOneByEmail($email))) {
             throw new UserEmailAlreadyUsedException();
         }
+        if (empty($plainPassword)) {
+            throw new Exception("'password' parameter of UserManager->create shouldnot be empty!");
+        }
+        
         $this->getOneByNameCacheResults = [];
+        $user = $this->arrayToUser($userAsArray);
+        $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user);
+        $hashedPassword = $passwordHasher->hash($plainPassword);
         return $this->dbService->query(
             'INSERT INTO ' . $this->dbService->prefixTable('users') . 'SET ' .
             "signuptime = now(), " .
-            "name = '" . $this->dbService->escape($wikiName) . "', " .
-            "motto = '', " .
-            "email = '" . $this->dbService->escape($email) . "', " .
-            "password = md5('" . $this->dbService->escape($password) . "')"
+            "name = '" . $this->dbService->escape($user['name']) . "', " .
+            "motto = '". (empty($user['motto']) ? '' : $this->dbService->escape($user['motto']))."', " .
+            (empty($user['changescount']) ? '' : "changescount = '" .$this->dbService->escape($user['changescount'])."', ") .
+            (empty($user['doubleclickedit']) ? '' : "doubleclickedit = '" .$this->dbService->escape($user['doubleclickedit'])."', ") .
+            (empty($user['revisioncount']) ? '' : "revisioncount = '" .$this->dbService->escape($user['revisioncount'])."', ") .
+            (empty($user['show_comments']) ? '' : "show_comments = '" .$this->dbService->escape($user['show_comments'])."', ") .
+            "email = '" . $this->dbService->escape($user['email']) . "', " .
+            "password = '" . $this->dbService->escape($hashedPassword) . "'"
         );
     }
 
@@ -279,5 +335,33 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     public function loadUserByIdentifier(string $username)
     {
         return $this->getOneByName($username);
+    }
+
+    /** Initializes object limitation properties using values from the config file
+     *
+     * @param none
+     *
+     * @return void
+     */
+    private function initLimitations()
+    {
+        $this->limitations = [];
+        $this->initLimitationHelper('user_name_max_length', 'nameMaxLength', 'USER_NAME_MAX_LENGTH_NOT_INT');
+        $this->initLimitationHelper('user_email_max_length', 'emailMaxLength', 'USER_EMAIL_MAX_LENGTH_NOT_INT');
+        $this->initLimitationHelper('user_password_min_length', 'passwordMinimumLength', 'USER_PASSWORD_MIN_LENGTH_NOT_INT');
+    }
+
+    private function initLimitationHelper(string $parameterName, string $limitationKey, string $errorMessageKey)
+    {
+        if ($this->params->has($parameterName)) {
+            $parameter = $this->params->get($parameterName);
+            if (!empty($parameter)) {
+                if (filter_var($parameter, FILTER_VALIDATE_INT)) {
+                    $this->limitations[$limitationKey] = $parameter;
+                } else {
+                    trigger_error(_t($errorMessageKey));
+                }
+            }
+        }
     }
 }

@@ -292,7 +292,7 @@ class UserSettingsAction extends YesWikiAction
                     [
                         'name'				=> trim($post['name']),
                         'email'				=> trim($post['email']),
-                        'password'			=> md5($post['password']),
+                        'password'			=> $post['password'],
                         'revisioncount'	    => 20,
                         'changescount'		=> 100,
                         'doubleclickedit'	=> 'Y',

@@ -1,6 +1,8 @@
 <?php
 namespace YesWiki;
 
+use YesWiki\Core\Entity\User as CoreUser;
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
@@ -36,20 +38,24 @@ class User
 
     protected $keyVocabulary = 'http://outils-reseaux.org/_vocabulary/key';
 
+    protected $authController;
     protected $securityController;
     protected $dbService;
     protected $userManager;
+    protected $currentUser;
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~ END OF PROPERTIES ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 
     public function __construct($wiki)
     {
         $this->wiki = $wiki;
+        $this->currentUser = null;
         $this->initUsersTable();
         $this->initLimitations();
         $this->dbService = $this->wiki->services->get(DbService::class);
         $this->securityController = $this->wiki->services->get(SecurityController::class);
         $this->userManager = $this->wiki->services->get(UserManager::class);
+        $this->authController = $this->wiki->services->get(AuthController::class);
     }
 
     /* ~~~~~~~~~~~~~~~~~~~~~~ SETS PROPERTY METHODS ~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -188,9 +194,6 @@ class User
                     } else {
                         $OK = $this->passwordIsCorrect($newValue);
                     } // $result is true if password IS correct and $this->error contains error if any
-                    if ($OK) { // password is correct
-                        $newValue = MD5($newValue);
-                    }
                     break;
                 case 'revisioncount':
                 case 'changescount':
@@ -316,7 +319,7 @@ class User
             }
         }
         if (isset($newValues['password']) && (trim($newValues['password']) != '')) {
-            if (!$this->setProperty('password', $newValues['password'], isset($_POST['confpassword']) ? '1' : '')) {
+            if (!$this->setProperty('password', $newValues['password'], isset($_POST['confpassword']) ? $_POST['confpassword'] : '')) {
                 $result = false;
                 $error[]= $this->error;
             }
@@ -382,15 +385,23 @@ class User
      *
      * @param string $pwd The password to check
      * @return boolean True if OK or false if any problems
+     * 
+     * @deprecated use AuthController::checkPassword instead
      */
     public function checkPassword($pwd, $newUser = '')
     {
-        if (empty($newUser) && $this->properties['password'] !== md5($pwd)) {
-            $this->error = _t('USER_WRONG_PASSWORD').' !';
-            return false;
-        } else {
-            return true;
+        if (empty($newUser) && !empty($this->properties['name'])){
+            $userObject = $this->userManager->getOneByName($this->properties['name']);
+            if (empty($userObject)){
+                $this->error = _t('USER_NO_USER_WITH_THAT_NAME').' : '.$this->properties['name'].'!';
+                return false;
+            }
+            if (!$this->authController->checkPassword($pwd,$userObject)){
+                $this->error = _t('USER_WRONG_PASSWORD').' !';
+                return false;
+            };
         }
+        return true;
     }
 
     /**	Checks if the given password complies with the rules
@@ -663,28 +674,19 @@ class User
         }
         $this->error = '';
         $result = false;
-        $sql = 'INSERT INTO `'.$this->usersTable.'` SET '.
-            'signuptime = now(), '.
-            'name = "'.mysqli_real_escape_string($this->wiki->dblink, $this->properties['name']).'", '.
-            'email = "'.mysqli_real_escape_string($this->wiki->dblink, $this->properties['email']).'", '.
-            'password = "'.mysqli_real_escape_string($this->wiki->dblink, $this->properties['password']).'"'; // has already been md5ed.
-        if (isset($this->properties['motto'])) {
-            $sql .= ', motto = "'.mysqli_real_escape_string($this->wiki->dblink, $this->properties['motto']).'"';
+        $userAsArray = ['signuptime' => ''];
+        foreach([
+            'changescount',
+            'doubleclickedit',
+            'email',
+            'motto',
+            'name',
+            'password',
+            'revisioncount',
+            'show_comments'] as $propName){
+            $userAsArray[$propName] = $this->properties[$propName] ?? '';
         }
-        if (isset($this->properties['revisioncount'])) {
-            $sql .= ', revisioncount = "'.$this->properties['revisioncount'].'"';
-        }
-        if (isset($this->properties['changescount'])) {
-            $sql .= ', changescount = "'.$this->properties['changescount'].'"';
-        }
-        if (isset($this->properties['doubleclickedit'])) {
-            $sql .= ', doubleclickedit = "'.mysqli_real_escape_string($this->wiki->dblink, $this->properties['doubleclickedit']).'"';
-        }
-        if (isset($this->properties['show_comments'])) {
-            $sql .= ', show_comments = "'.mysqli_real_escape_string($this->wiki->dblink, $this->properties['show_comments']).'"';
-        }
-        $sql .= ';';
-        $queryResult = $this->wiki->query($sql);
+        $queryResult = $this->userManager->create($userAsArray);
         if ($queryResult) {
             $result = true;
         } else {
