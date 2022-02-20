@@ -34,7 +34,7 @@
         "symfony/yaml": "^5.1",
         "tamtamchik/simple-flash": "^2.0",
         "twig/twig": "^3.0",
-        "yeswiki/theme-margot": "dev-master",
+        "yeswiki/theme-margot": "^1.0",
         "symfony/security-csrf": "^5.0"
     },
     "conflict": {
