@@ -216,7 +216,7 @@ class FileField extends BazarField
         return $fullFileName;
     }
 
-    private function getBasePath(): string
+    protected function getBasePath(): string
     {
         $attach = $this->getAttach();
         $basePath = $attach->GetUploadPath();

@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Security\Controller\SecurityController;
@@ -54,17 +55,7 @@ class ImageField extends FileField
 
         if (isset($value) && $value != '') {
             if (isset($_GET['suppr_image']) && $_GET['suppr_image'] == $value) {
-                if ($this->isAllowedToDeleteFile($entry, $value)) {
-                    if (file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
-                        unlink(BAZ_CHEMIN_UPLOAD . $value);
-                    }
-                    if (file_exists('cache/vignette_' . $value)) {
-                        unlink('cache/vignette_' . $value);
-                    }
-                    if (file_exists('cache/image_' . $value)) {
-                        unlink('cache/image_' . $value);
-                    }
-
+                if ($this->securedDeleteImageAndCache($entry, $value)) {
                     $this->updateEntryAfterImageDelete($entry);
 
                     return $this->render('@templates/alert-message.twig', [
@@ -79,11 +70,11 @@ class ImageField extends FileField
                 }
             }
 
-            if (file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
+            if (file_exists($this->getBasePath(). $value)) {
                 return ($alertMessage ?? '') .$this->render('@bazar/inputs/image.twig', [
                     'value' => $value,
-                    'downloadUrl' => BAZ_CHEMIN_UPLOAD . $value,
-                    'deleteUrl' => $wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . $value, false),
+                    'downloadUrl' => $this->getBasePath(). $value,
+                    'deleteUrl' => empty($entry) ? '' :$wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . $value, false),
                     'image' => afficher_image(
                         $this->name,
                         $value,
@@ -94,7 +85,7 @@ class ImageField extends FileField
                         $this->imageWidth,
                         $this->imageHeight
                     ),
-                    'isAllowedToDeleteFile' => $this->isAllowedToDeleteFile($entry, $value),
+                    'isAllowedToDeleteFile' => empty($entry) ? false :$this->isAllowedToDeleteFile($entry, $value),
                 ]);
             } else {
                 $this->updateEntryAfterImageDelete($entry);
@@ -110,29 +101,23 @@ class ImageField extends FileField
 
     public function formatValuesBeforeSave($entry)
     {
-        if (!empty($_POST['data-'.$this->propertyName]) and !empty($_POST['filename-'.$this->propertyName])) {
-            $fileName = $this->defineFilePrefix($entry) . sanitizeFilename($_POST['filename-'.$this->propertyName]);
-            $filePath = BAZ_CHEMIN_UPLOAD . $fileName;
+        if (!empty($_POST['data-'.$this->propertyName]) && !empty($_POST['filename-'.$this->propertyName]) && !empty($entry['id_fiche'])) {
+            $rawFileName = filter_var($_POST['filename-'.$this->propertyName], FILTER_SANITIZE_STRING);
+            $fileName = "{$this->getPropertyName()}_$rawFileName";
+            $filePath = $this->getFullFileName($fileName, $entry['id_fiche'], true);
+            $fileName = basename($filePath);
 
-            if (preg_match("/(gif|jpeg|png|jpg)$/i", $fileName)) {
+            if ($this->isImage($rawFileName)) {
                 if (!file_exists($filePath) && !$this->getService(SecurityController::class)->isWikiHibernated()) {
                     file_put_contents($filePath, file_get_contents($_POST['data-'.$this->propertyName]));
                     chmod($filePath, 0755);
 
+
+
                     if (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '') {
                         // delete previous files only if authorized (owner)
                         $previousFileName = $entry['oldimage_' . $this->propertyName];
-                        if ($this->isAllowedToDeleteFile($entry, $previousFileName)) {
-                            if (file_exists(BAZ_CHEMIN_UPLOAD . $previousFileName)) {
-                                unlink(BAZ_CHEMIN_UPLOAD . $previousFileName);
-                            }
-                            if (file_exists('cache/vignette_' . $previousFileName)) {
-                                unlink('cache/vignette_' . $previousFileName);
-                            }
-                            if (file_exists('cache/image_' . $previousFileName)) {
-                                unlink('cache/image_' . $previousFileName);
-                            }
-                        }
+                        $this->securedDeleteImageAndCache($entry, $previousFileName);
                     }
 
                     // Generate thumbnails
@@ -164,7 +149,7 @@ class ImageField extends FileField
     {
         $value = $this->getValue($entry);
 
-        if (isset($value) && $value != '' && file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
+        if (isset($value) && $value != '' && file_exists($this->getBasePath(). $value)) {
             return afficher_image(
                 $this->name,
                 $value,
@@ -202,5 +187,38 @@ class ImageField extends FileField
             $_POST = $previousPost;
             $_REQUEST = $previousRequest;
         }
+    }
+
+    protected function isImage($fileName)
+    {
+        $imageExtPreg = $this->getService(ParameterBagInterface::class)->get("attach_config")["ext_images"];
+        return preg_match("/($imageExtPreg)\$/i", $fileName);
+    }
+
+    private function securedDeleteImageAndCache($entry, string $filename)
+    {
+        if ($this->isAllowedToDeleteFile($entry, $filename)) {
+            if (substr($filename, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
+                $attach = $this->getAttach();
+                $previousFile = $_GET['file'] ?? null;
+                $_GET['file'] = $filename;
+                $attach->fmDelete();
+                if (is_null($previousFile)) {
+                    unset($_GET['file']);
+                } else {
+                    $_GET['file'] = $previousFile;
+                }
+            } else {
+                // do not delete file if not same entry name (only remove from this entry)
+            }
+            if (file_exists('cache/vignette_' . $filename)) {
+                unlink('cache/vignette_' . $filename);
+            }
+            if (file_exists('cache/image_' . $filename)) {
+                unlink('cache/image_' . $filename);
+            }
+            return true;
+        }
+        return false;
     }
 }
