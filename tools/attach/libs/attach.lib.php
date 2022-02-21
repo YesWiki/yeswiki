@@ -1159,7 +1159,7 @@ if (!class_exists('attach')) {
             return $file_vignette;
         }
 
-        public function redimensionner_image($image_src, $image_dest, $largeur, $hauteur)
+        public function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $mode = "fit")
         {
             if (!class_exists('imageTransform')) {
                 require_once 'tools/attach/libs/class.imagetransform.php';
@@ -1169,6 +1169,41 @@ if (!class_exists('attach')) {
             $imgTrans->targetFile = $image_dest;
             $imgTrans->resizeToWidth = $largeur;
             $imgTrans->resizeToHeight = $hauteur;
+            if ($mode == "crop") {
+                $wantedRatio = $largeur/$hauteur;
+                // get image info
+                $result = $imgTrans->create_image_from_source_file();
+                
+                // if operation was successful
+                if (!is_array($result)) {
+                    return false;
+                }
+                list($sourceImageIdentifier, $sourceImageWidth, $sourceImageHeight, $sourceImageType) = $result;
+                $imageRatio = $sourceImageWidth/$sourceImageHeight;
+
+                if ($imageRatio != $wantedRatio) {
+                    if ($imageRatio > $wantedRatio) {
+                        // width too large, keep height
+                        $newWidth = round($sourceImageHeight * $wantedRatio);
+                        $newHeight = $sourceImageHeight;
+                    } else {
+                        // height too large, keep width
+                        $newHeight = round($sourceImageWidth / $wantedRatio);
+                        $newWidth = $sourceImageWidth;
+                    }
+                    // crop
+                    $tempFileName = tmpfile();
+                    $imgTrans->targetFile = $tempFileName;
+                    $x0 = ($sourceImageWidth-$newWidth)/2;
+                    $y0 = ($sourceImageHeight-$newHeight)/2;
+                    $x1 = $x0 + $newWidth;
+                    $y1 = $y0 + $newHeight;
+                    if ($imgTrans->crop($x0, $y0, $x1, $y1)) {
+                        $imgTrans->sourceFile = $tempFileName;
+                    }
+                    $imgTrans->targetFile = $image_dest;
+                }
+            }
             if (!$imgTrans->resize()) {
                 // in case of error, show error code
                 return $imgTrans->error;
