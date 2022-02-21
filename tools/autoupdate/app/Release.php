@@ -1,9 +1,10 @@
 <?php
+
 namespace AutoUpdate;
 
 class Release
 {
-    const UNKNOW_RELEASE = "0000-00-00-0";
+    public const UNKNOW_RELEASE = "0000-00-00-0";
     public $release;
 
     public function __construct($release)
@@ -45,8 +46,12 @@ class Release
 
     private function checkFormat($release)
     {
-        $pattern = "/^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{1,2}$/";
-        if (preg_match($pattern, $release) === 1) {
+        $patternDate = "/^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{1,2}$/";
+        if (preg_match($patternDate, $release) === 1) {
+            return true;
+        }
+        $patternSemVersion = "/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/"; #cf. https://ihateregex.io/expr/semver/
+        if (preg_match($patternSemVersion, $release) === 1) {
             return true;
         }
         return false;
