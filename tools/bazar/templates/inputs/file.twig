@@ -31,6 +31,13 @@
                 class="form-control"
                 {% if field.required %}required{% endif %}
             />
+            {% if deletedFile %}
+                <input
+                    type="hidden"
+                    name="{{ field.propertyName }}_deletedValue"
+                    value="{{ oldValue }}"
+                />
+            {% endif %}
         {% endif %}
     </div>
 {% endblock %}

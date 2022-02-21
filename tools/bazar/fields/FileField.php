@@ -2,7 +2,9 @@
 
 namespace YesWiki\Bazar\Field;
 
+use attach;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Security\Controller\SecurityController;
 
@@ -13,6 +15,7 @@ class FileField extends BazarField
 {
     private $readLabel;
     protected const FIELD_READ_LABEL = 6;
+    protected $attach;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -20,48 +23,72 @@ class FileField extends BazarField
 
         $this->propertyName = $this->type . $this->name;
         $this->readLabel = empty(trim($values[self::FIELD_READ_LABEL])) ? _t('BAZ_FILEFIELD_FILE') : $values[self::FIELD_READ_LABEL];
+        $this->attach = null;
     }
 
     protected function renderInput($entry)
     {
         $value = $this->getValue($entry);
 
-        if (isset($value) && $value != '') {
-            if (isset($_GET['delete_file']) && $_GET['delete_file'] == $value) {
+        $deletedFile = false;
+
+        if (!empty($value)) {
+            if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] == $value && isset($_GET['file']) && $_GET['file'] == $value) {
                 if ($this->isAllowedToDeleteFile($entry, $value)) {
-                    if (file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
-                        unlink(BAZ_CHEMIN_UPLOAD . $value);
+                    if (substr($value, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
+                        $attach = $this->getAttach();
+                        $attach->fmDelete();
+                    } else {
+                        // do not delete file if not same entry name (only remove from this entry)
+                        $deletedFile = true;
+                        $alertMessage = $this->render("@templates/alert-message.twig", [
+                            'type' => 'info',
+                            'message' => _t('BAZ_FILEFIELD_SAVE_ENTRY_TO_REGISTER_DELETION')
+                        ]);
                     }
                 } else {
                     $alertMessage = '<div class="alert alert-info">' . _t('BAZ_DROIT_INSUFFISANT') . '</div>' . "\n";
                 }
             }
-
-            if (file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
-                return ($alertMessage ?? '') .$this->render('@bazar/inputs/file.twig', [
-                    'value' => $value,
-                    'shortFileName' => $this->getShortFileName($value, $entry),
-                    'fileUrl' => BAZ_CHEMIN_UPLOAD . $value,
-                    'deleteUrl' => $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag(), 'delete_file=' . $value, false),
-                    'isAllowedToDeleteFile' => $this->isAllowedToDeleteFile($entry, $value)
-                ]);
-            }
         }
 
-        return ($alertMessage ?? '') . $this->render('@bazar/inputs/file.twig');
+        return ($alertMessage ?? '') . $this->render('@bazar/inputs/file.twig', (
+            empty($value) ||  !file_exists($this->getBasePath().  $value) || $deletedFile
+            ? [
+                'deletedFile' => $deletedFile,
+                'oldValue' => $deletedFile ? $value : ''
+            ]
+            : [
+                'value' => $value,
+                'shortFileName' => $this->getShortFileName($value, $entry),
+                'fileUrl' => $this->getBasePath().  $value,
+                'deleteUrl' => empty($entry) ? '' : $this->getWiki()->href('edit', $entry['id_fiche'], ['delete_file' => $value ,'file' => $value], false),
+                'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value)
+            ]
+        ));
     }
 
     public function formatValuesBeforeSave($entry)
     {
         $value = $this->getValue($entry);
 
-        if (isset($_FILES[$this->propertyName]['name']) && $_FILES[$this->propertyName]['name'] != '') {
-            // Remove accents and spaces
-            $fileName = $this->defineFilePrefix($entry) . sanitizeFilename($_FILES[$this->propertyName]['name']);
-            $filePath = BAZ_CHEMIN_UPLOAD . $fileName;
+        if (!empty($value)
+            && !empty($_POST["{$this->getPropertyName()}_deletedValue"])
+            && $_POST["{$this->getPropertyName()}_deletedValue"] === $value) {
+            $value = "";
+        }
 
-            $extension = obtenir_extension($fileName);
-            if ($extension != '' && extension_autorisee($extension) == true) {
+        $params = $this->getService(ParameterBagInterface::class);
+        if (!empty($_FILES[$this->propertyName]['name']) && !empty($entry['id_fiche'])) {
+            // Remove accents and spaces
+            $rawFileName = filter_var($_FILES[$this->propertyName]['name'], FILTER_SANITIZE_STRING);
+            $fileName = "{$this->getPropertyName()}_$rawFileName";
+            $filePath = $this->getFullFileName($fileName, $entry['id_fiche'], true);
+
+            $pathinfo = pathinfo($filePath);
+            $extension = strtolower($pathinfo['extension']);
+            $extension = preg_replace("/_$/", "", $extension);
+            if ($extension != '' && in_array($extension, array_keys($params->get('authorized-extensions')))) {
                 if (!file_exists($filePath)) {
                     move_uploaded_file($_FILES[$this->propertyName]['tmp_name'], $filePath);
                     chmod($filePath, 0755);
@@ -74,9 +101,9 @@ class FileField extends BazarField
                 return [$this->propertyName => ''];
             }
 
-            return [$this->propertyName => $fileName];
-        } elseif (isset($value) && file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
-            return [$this->propertyName => $value];
+            return [$this->propertyName => basename($filePath)];
+        } elseif (!empty($value)) {
+            return [$this->propertyName => file_exists($this->getBasePath(). $value) ? $value : ''];
         } else {
             return [$this->propertyName => ''];
         }
@@ -86,10 +113,10 @@ class FileField extends BazarField
     {
         $value = $this->getValue($entry);
 
-        if (isset($value) && $value != '') {
+        if (!empty($value)) {
             return $this->render('@bazar/fields/file.twig', [
                 'value' => $value,
-                'fileUrl' => BAZ_CHEMIN_UPLOAD . $value,
+                'fileUrl' => $this->getBasePath() . $value,
                 'shortFileName' => $this->getShortFileName($value, $entry),
             ]);
         }
@@ -106,8 +133,7 @@ class FileField extends BazarField
     protected function isAllowedToDeleteFile(array $entry, string $fileName):bool
     {
         return !$this->getService(SecurityController::class)->isWikiHibernated()
-            && $this->getService(Guard::class)->isAllowed('supp_fiche', $entry['owner'] ?? '')
-            && substr($fileName, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry);
+            && $this->getService(Guard::class)->isAllowed('supp_fiche', $entry['owner'] ?? '');
     }
 
     /**
@@ -128,11 +154,21 @@ class FileField extends BazarField
      */
     private function getShortFileName(string $longFileName, ?array $entry): string
     {
-        $shortFileName =  (!empty($entry['id_fiche'])
-            && preg_match("/^{$entry['id_fiche']}_{$this->name}_(.*)$/m", $longFileName, $match)
-            && !empty($match[1]))
-            ? $match[1]
-            : $longFileName ;
+        $attach = $this->getAttach();
+
+        $fullFileName = "{$this->getBasePath()}$longFileName";
+        $fileNameInfos = file_exists($fullFileName) ? $attach->decodeLongFilename($fullFileName) : [];
+
+        unset($attach);
+
+        $shortFileName =  (empty($fileNameInfos['name']))
+            ? $longFileName
+            : (
+                (preg_match("/^{$this->getPropertyName()}_(.*)$/m", "{$fileNameInfos['name']}.{$fileNameInfos['ext']}", $match)
+                && !empty($match[1]))
+                ? $match[1]
+                : "{$fileNameInfos['name']}.{$fileNameInfos['ext']}"
+            );
         return $shortFileName;
     }
 
@@ -149,5 +185,55 @@ class FileField extends BazarField
               'readLabel' => $this->getReadLabel(),
             ]
         );
+    }
+
+    protected function getFullFileName(string $fileName, string $tag, bool $newName = false): string
+    {
+        $wiki = $this->getWiki();
+        $attach = $this->getAttach();
+        // adjust $params
+        $attach->file = $fileName;
+
+        // current page
+        $previousTag = $wiki->tag;
+        $previousPage = $wiki->page;
+        // fake page
+        $wiki->tag = $tag;
+        $wiki->page = [
+            'tag' => $wiki->tag,
+            'body' => '{##}',
+            'time' => date('YmdHis'),
+            'owner' => '',
+            'user' => '',
+        ];
+        $fullFileName = $attach->GetFullFilename($newName);
+
+        // reset params
+        unset($attach);
+        $wiki->tag = $previousTag;
+        $wiki->page = $previousPage;
+
+        return $fullFileName;
+    }
+
+    private function getBasePath(): string
+    {
+        $attach = $this->getAttach();
+        $basePath = $attach->GetUploadPath();
+        return $basePath . (substr($basePath, -1) != "/" ? "/" : "");
+    }
+
+    protected function getAttach():attach
+    {
+        if (is_null($this->attach)) {
+            if (!class_exists('attach')) {
+                include('tools/attach/libs/attach.lib.php');
+            }
+    
+            $wiki = $this->getWiki();
+            
+            $this->attach = new attach($wiki);
+        }
+        return $this->attach;
     }
 }

@@ -303,6 +303,7 @@ return [
     // 'BAZ_FILE_ALREADY_EXISTING' => 'fichier déja existant',
     // 'BAZ_NOT_AUTHORIZED_FILE' => 'fichier non autorise',
     // 'BAZ_FILEFIELD_FILE' => 'File : {filename}',
+    'BAZ_FILEFIELD_SAVE_ENTRY_TO_REGISTER_DELETION' => 'Save the entry to register the file\'s deletion!',
 
     // fields/ImageField.php
     // 'BAZ_IMAGE_ALREADY_EXISTING' => 'L\'image {fileName} existait d&eacute;ja, elle n\'a pas &eacute;t&eacute; remplac&eacute;e.',
