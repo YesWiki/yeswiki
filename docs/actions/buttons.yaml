@@ -30,7 +30,7 @@ actions:
           color:
             label: _t(AB_buttons_action_button_color_label)
             type: list
-            default: "btn-primary"
+            value: "btn-primary"
             options:
               btn-default: _t(AB_buttons_action_button_color_default)
               btn-primary: _t(AB_buttons_action_button_color_primary)

@@ -18,7 +18,8 @@ export default {
     resetValues() {
       this.classValues = {}
       for(let propName in this.config.subproperties) {
-        this.classValues[propName] = (this.config.subproperties[propName] || {}).default || ''
+        let config = this.config.subproperties[propName] || {}
+        this.classValues[propName] = config.default || config.value || ''
       }
     },
     parseNewValues(newValues) {
