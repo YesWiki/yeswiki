@@ -30,22 +30,21 @@ actions:
       links:
         label: _t(AB_templates_nav_links_label)
         type: text
-        default: _t(AB_templates_nav_links_default)
+        value: _t(AB_templates_nav_links_default)
         hint: _t(AB_templates_nav_links_hint)
         doclink: https://yeswiki.net/?DocumentationMiseEnPageOnglet
       titles:
         label: _t(AB_templates_nav_titles_label)
-        default: _t(AB_templates_nav_titles_default)
+        value: _t(AB_templates_nav_titles_default)
         hint: _t(AB_templates_nav_titles_hint)
         type: text
-      class:
-        label: _t(AB_template_actions_class)
+      class: 
         type: class
         subproperties:
           type:
-            label: class
+            label: _t(AB_templates_nav_class_label)
             type: list
-            default: 
+            default: nav nav-tabs
             options:
               nav nav-tabs: _t(AB_templates_nav_class_tabs)
               nav nav-pills: _t(AB_templates_nav_class_pills)
@@ -64,7 +63,7 @@ actions:
       title:
         label: _t(AB_templates_panel_title_label)
         type: text
-        default: _t(AB_templates_panel_title_default)
+        value: _t(AB_templates_panel_title_default)
         required: true
       type:
         label: Type
@@ -164,8 +163,8 @@ actions:
             label: _t(AB_templates_section_textalign_label)
             type: list
             icon: align-center
-            default : text-left
-            options :
+            default: text-left
+            options:
               text-left: _t(AB_templates_section_textalign_left)
               text-right: _t(AB_templates_section_textalign_right)
               text-center: _t(AB_templates_section_textalign_center)
