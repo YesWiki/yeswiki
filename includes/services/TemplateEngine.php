@@ -2,6 +2,7 @@
 
 namespace YesWiki\Core\Service;
 
+use attach;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
@@ -118,6 +119,36 @@ class TemplateEngine
                 }
             } else {
                 throw new Exception("`\$tokenId` should be a string or an array !");
+            }
+        });
+        $this->addTwigHelper('urlImage', function ($options) {
+            if (!isset($options['fileName'])) {
+                throw new Exception("`urlImage` should be called with `fileName` key in params!");
+            }
+            if (!isset($options['width'])) {
+                throw new Exception("`urlImage` should be called with `width` key in params!");
+            }
+            if (!isset($options['heigth'])) {
+                throw new Exception("`urlImage` should be called with `heigth` key in params!");
+            }
+            $options = array_merge(['mode' => 'fit'], $options);
+            
+            if (!class_exists('attach')) {
+                include('tools/attach/libs/attach.lib.php');
+            }
+            $basePath = $this->wiki->getBaseUrl().'/';
+            $attach = new attach($this->wiki);
+            $image_dest = $attach->getResizedFilename($options['fileName'],$options['width'], $options['height'], $options['mode']);
+            if (!file_exists($image_dest)) {
+
+                $result = $attach->redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $method);
+                if ($result != $image_dest) {
+                    // do nothing : error
+                    return $basePath.$image_src;
+                }
+                return $basePath.$image_dest;
+            } else {
+                return $basePath.$image_dest;
             }
         });
     }
