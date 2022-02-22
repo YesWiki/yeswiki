@@ -28,10 +28,13 @@ class Release
         if ((string)$releaseToCompare === $this->release) {
             return 0;
         }
+        if (strpos($this->release, '.') !== false && strpos((string)$releaseToCompare, '.') === false) {
+            return 1;
+        }
         $releaseToCompare = $this->evalRelease(is_string($releaseToCompare) ? $releaseToCompare : $releaseToCompare->release);
         $release = $this->evalRelease($this->release);
 
-        for ($i = 0; $i < 4; $i++) {
+        for ($i = 0; $i < min(count($release), count($releaseToCompare)); $i++) {
             if ($release[$i] > $releaseToCompare[$i]) {
                 return $i + 1;
             }
@@ -41,7 +44,7 @@ class Release
 
     private function evalRelease($release)
     {
-        return explode('-', $release);
+        return strpos($release, '-') !== false ? explode('-', $release) : explode('.', $release);
     }
 
     private function checkFormat($release)
