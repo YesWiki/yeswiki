@@ -8,11 +8,11 @@ actions:
     properties:
       text:
         label: _t(AB_buttons_action_button_text_label)
-        default: _t(AB_buttons_action_button_text_default)
+        value: _t(AB_buttons_action_button_text_default)
         type: text
       link:
         label: _t(AB_buttons_action_button_link_label)
-        default: https://yeswiki.net
+        value: https://yeswiki.net
         hint: _t(AB_buttons_action_button_link_hint)
         type: page-list
         required: true
@@ -30,7 +30,7 @@ actions:
           color:
             label: _t(AB_buttons_action_button_color_label)
             type: list
-            default: btn-primary
+            value: "btn-primary"
             options:
               btn-default: _t(AB_buttons_action_button_color_default)
               btn-primary: _t(AB_buttons_action_button_color_primary)
@@ -75,11 +75,11 @@ actions:
         advanced: true
         label: _t(AB_buttons_action_button_hideifnoaccess_label)
         type: checkbox
-        default: false
+        default: "false"
       nobtn:
         advanced: true
         label: _t(AB_buttons_action_button_nobtn_label)
         type: checkbox
-        default: 0
+        default: "0"
         checkedvalue: 1
         uncheckedvalue: 0

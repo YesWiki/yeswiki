@@ -8,6 +8,7 @@ actions:
       mail:
         label: _t(AB_contact_action_mail_label)
         type: email
+        value: my@email.com
         required: true
       entete:
         label: _t(AB_contact_action_entete_label)
@@ -28,6 +29,7 @@ actions:
       mail:
         label: _t(AB_abonnement_action_mail_label)
         type: email
+        value: my@mailing.list
         required: true
       mailinglist:
         label: _t(AB_abonnement_mailinglist_label)
@@ -49,6 +51,7 @@ actions:
       mail:
         label: _t(AB_abonnement_action_mail_label)
         type: email
+        value: my@mailing.list
         required: true
       mailinglist:
         label: _t(AB_abonnement_mailinglist_label)
