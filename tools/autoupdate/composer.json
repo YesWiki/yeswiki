@@ -1,5 +1,5 @@
 {
-    "name": "autoupdate",
+    "name": "yeswiki/autoupdate",
     "description": "Mise à jour automatique de YesWiki",
     "license": "MIT",
     "authors": [
