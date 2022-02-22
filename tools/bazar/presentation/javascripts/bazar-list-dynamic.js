@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
           // Transform forms info into a list of field mapping
           // { bf_titre: { type: 'text', ...}, bf_date: { type: 'listedatedeb', ... } }
           Object.values(data.forms).forEach(formFields => {
-            formFields.forEach(field => {
+            Object.values(formFields).forEach(field => {
               this.formFields[field.id] = field
               Object.entries(this.params.displayfields).forEach( ([fieldId, mappedField]) => {
                 if (mappedField == field.id) this.formFields[fieldId] = this.formFields[mappedField]
