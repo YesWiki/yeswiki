@@ -139,7 +139,8 @@ abstract class Package extends Files
     protected function name()
     {
         $namePlusDate =  explode('-', basename($this->address, '.zip'), 2)[1];
-        return preg_replace('/-\d*(.\d)?(.\d)?$/', '', preg_replace('/-\d*-\d*-\d*-\d*$/', '', $namePlusDate));
+
+        return preg_replace('/-'.SEMVER.'$/', '', preg_replace('/-\d*-\d*-\d*-\d*$/', '', $namePlusDate));
     }
 
 
