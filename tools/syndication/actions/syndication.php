@@ -55,6 +55,7 @@ $urls = $this->GetParameter("url");
 if (!empty($urls)) {
     $tab_url = array_map('trim', explode(',', $urls));
     $nburl = 0;
+    $syndication = ['pages' => []];
     foreach ($tab_url as $cle => $url) {
         if ($url != '') {
             // Parse it
