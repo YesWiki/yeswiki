@@ -228,10 +228,10 @@ class ApiController extends YesWikiController
     {
         try {
             ob_start(); // to catch error messages
-            $bazatListService = $this->getService(BazarListService::class);
+            $bazarListService = $this->getService(BazarListService::class);
             $externalIds = $_GET['externalIds'] ?? null;
             $externalModeActivated = (is_array($externalIds) && isset($_GET['externalModeActivated'])) ? in_array($_GET['externalModeActivated'], [1,true,'1','true'], true): false;
-            $forms = $bazatListService->getForms([
+            $forms = $bazarListService->getForms([
                 'externalModeActivated' => $externalModeActivated,
                 'externalIds' => $externalIds,
                 'refresh' => isset($_GET['refresh']) ? in_array($_GET['refresh'], [1,true,'1','true'], true): false,
@@ -253,20 +253,20 @@ class ApiController extends YesWikiController
             $formattedGet['searchfields'] = $searchfields;
             $formattedGet['externalModeActivated'] = $externalModeActivated;
             
-            $entries = $bazatListService->getEntries(
+            $entries = $bazarListService->getEntries(
                 $formattedGet + [
                     'user' => null,
-                    'dateMin' =>  null,
+                    'dateMin' => null,
                     'random' => false,
                     'ordre' => 'asc',
                     'champ' => 'bf_titre',
-                    'nb' =>  null,
+                    'nb' => null,
                     'colorfield ' => null,
                     'iconfield ' => null,
                 ],
                 $forms
             );
-            $filters = $bazatListService->formatFilters($formattedGet, $entries, $forms);
+            $filters = $bazarListService->formatFilters($formattedGet, $entries, $forms);
             
             // Basic fields
             $fieldList = ['id_fiche', 'bf_titre'];
