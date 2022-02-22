@@ -216,6 +216,7 @@ return [
     // 'AB_templates_nav_titles_label' => 'Intitulés de vos pages',
     // 'AB_templates_nav_titles_default' => 'Première page, Seconde page, Troisième page',
     // 'AB_templates_nav_titles_hint' => 'Textes de chaque onglet séparés par des virgules',
+    // 'AB_templates_nav_class_label' => 'Affichage',
     // 'AB_templates_nav_class_tabs' => 'Horizontal souligné',
     // 'AB_templates_nav_class_pills' => 'Horizontal sobre',
     // 'AB_templates_nav_class_justified' => 'Horizontal justifié',
