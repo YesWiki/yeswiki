@@ -254,7 +254,7 @@ class ApiController extends YesWikiController
             $formattedGet['externalModeActivated'] = $externalModeActivated;
             
             $entries = $bazatListService->getEntries(
-                [
+                $formattedGet + [
                     'user' => null,
                     'dateMin' =>  null,
                     'random' => false,
@@ -263,7 +263,7 @@ class ApiController extends YesWikiController
                     'nb' =>  null,
                     'colorfield ' => null,
                     'iconfield ' => null,
-                ] + $formattedGet,
+                ],
                 $forms
             );
             $filters = $bazatListService->formatFilters($formattedGet, $entries, $forms);
