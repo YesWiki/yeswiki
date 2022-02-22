@@ -487,7 +487,7 @@ if (!class_exists('attach')) {
             if (!preg_match("/.(svg)$/i", $this->file) == 1) {
                 if ((!empty($this->height)) && (!empty($this->width))) {
                     // Si des parametres width ou height present : redimensionnement
-                    if (!file_exists($image_dest = $this->calculer_nom_fichier_vignette($fullFilename, $this->width, $this->height))) {
+                    if (!file_exists($image_dest = $this->getResizedFilename($fullFilename, $this->width, $this->height))) {
                         $this->redimensionner_image($fullFilename, $image_dest, $this->width, $this->height);
                     }
                     $img_name = $image_dest;
@@ -1122,10 +1122,42 @@ if (!class_exists('attach')) {
         public function fmDelete()
         {
             $path = $this->GetUploadPath();
-            $filename = $path . '/' . ($_GET['file'] ? $_GET['file'] : '');
-            if (file_exists($filename)) {
+            $rawFileName = filter_input(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $filename = $path . '/' . basename($rawFileName);
+            if (!empty($rawFileName) && file_exists($filename)) {
                 $trash = $filename . 'trash' . $this->getDate();
                 rename($filename, $trash);
+
+                // delete cache files
+                $cachePath = $this->GetCachePath();
+                $fileInfo = $this->decodeLongFilename($filename);
+    
+                $filenamesToDelete = [];
+                // vignettes
+                $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9]", "[0-9][0-9][0-9]", "fit");
+                $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9][0-9]", "[0-9][0-9][0-9]", "fit");
+                $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9]", "[0-9][0-9][0-9][0-9]", "fit");
+                $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9][0-9]", "[0-9][0-9][0-9][0-9]", "fit");
+                $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9]", "[0-9][0-9][0-9]", "crop");
+                $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9][0-9]", "[0-9][0-9][0-9]", "crop");
+                $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9]", "[0-9][0-9][0-9][0-9]", "crop");
+                $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9][0-9]", "[0-9][0-9][0-9][0-9]", "crop");
+                // old Image Field
+                $filenamesToDelete[] = $cachePath."/vignette_".basename($filename);
+                $filenamesToDelete[] = $cachePath."/image_".basename($filename);
+                // old agenda.tpl.html|blog.tpl.html|damier.tpl.html|materiel-card.tpl.html|news.tpl.html|photobox.tpl.html|trombinoscope.tpl.html
+                $filenamesToDelete[] = $cachePath."/image_[0-9][0-9][0-9][x_][0-9][0-9][0-9]_".basename($filename);
+                $filenamesToDelete[] = $cachePath."/image_[0-9][0-9][0-9][x_][0-9][0-9][0-9][0-9]_".basename($filename);
+                $filenamesToDelete[] = $cachePath."/image_[0-9][0-9][0-9][0-9][x_][0-9][0-9][0-9]_".basename($filename);
+                $filenamesToDelete[] = $cachePath."/image_[0-9][0-9][0-9][0-9][x_][0-9][0-9][0-9][0-9]_".basename($filename);
+                // old tempaltes.functions.php getImageFromBody
+                $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9]x[0-9][0-9][0-9]-".basename($filename);
+                $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9]0-9]x[0-9][0-9][0-9]-".basename($filename);
+                $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9]x[0-9]0-9][0-9][0-9]-".basename($filename);
+                $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9]0-9]x[0-9]0-9][0-9][0-9]-".basename($filename);
+                foreach ($filenamesToDelete as $path) {
+                    array_map('unlink', glob($path));
+                }
             }
         }
         /**
@@ -1165,10 +1197,10 @@ if (!class_exists('attach')) {
         public function calculer_nom_fichier_vignette($fullFilename, $width, $height)
         {
             $file = $this->decodeLongFilename($fullFilename);
-            if (!empty($file['name'])){
+            if (!empty($file['name'])) {
                 if ($this->isSafeMode) {
                     $currentTag = $this->wiki->GetPageTag();
-                    $prefixFileName = substr($file['realname'],0,strlen($currentTag)) == $currentTag ? $currentTag."_" : "";
+                    $prefixFileName = substr($file['realname'], 0, strlen($currentTag)) == $currentTag ? $currentTag."_" : "";
                     $file_vignette = $file['path'] . '/' . $prefixFileName . $file['name'] . "_vignette_" . $width . '_' . $height . '_' . $file['datepage'] . '_' . $file['dateupload'] . '.' . $file['ext'];
                 } else {
                     $file_vignette = $file['path'] . '/' . $file['name'] . "_vignette_" . $width . '_' . $height . '_' . $file['datepage'] . '_' . $file['dateupload'] . '.' . $file['ext'];
@@ -1185,10 +1217,10 @@ if (!class_exists('attach')) {
         {
             $uploadPath = $this->GetUploadPath();
             $cachePath = $this->GetCachePath();
-            $newFileName = preg_replace("/^$uploadPath/","$cachePath",$fullFilename);
+            $newFileName = preg_replace("/^$uploadPath/", "$cachePath", $fullFilename);
             $newFileName = $this->calculer_nom_fichier_vignette($newFileName, $width, $height);
-            if ($mode == "crop"){
-                $newFileName = preg_replace("/_vignette_/","_cropped_",$newFileName);
+            if ($mode == "crop") {
+                $newFileName = preg_replace("/_vignette_/", "_cropped_", $newFileName);
             }
             return $newFileName;
         }
