@@ -50,7 +50,7 @@ class Release
         if (preg_match($patternDate, $release) === 1) {
             return true;
         }
-        $patternSemVersion = "/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/"; #cf. https://ihateregex.io/expr/semver/
+        $patternSemVersion = '/^'.SEMVER.'$/';
         if (preg_match($patternSemVersion, $release) === 1) {
             return true;
         }
