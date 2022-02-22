@@ -117,93 +117,34 @@ function afficher_image(
 
 function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $method = 'fit')
 {
+    $wiki = $GLOBALS['wiki'];
     if (file_exists($image_src)) {
-        if (!file_exists($image_dest) || (isset($_GET['refresh']) && $_GET['refresh']==1)) {
-            if (!$GLOBALS['wiki']->services->get(SecurityController::class)->isWikiHibernated() && file_exists($image_dest)) {
-                unlink($image_dest);
-            }
-            if (!class_exists('Image')) {
-                include_once('tools/bazar/libs/vendor/class.Images.php');
-            }
+        if (!class_exists('attach')) {
+            include('tools/attach/libs/attach.lib.php');
+        }
+        $attach = new attach($wiki);
 
-            try {
-                $image = new Image($image_src);
-                $image->resize($largeur, $hauteur, $method);
-                // Fix Orientation
-                $exif = @exif_read_data($image_src);
-                if (isset($exif['Orientation'])) {
-                    $orientation = $exif['Orientation'];
-                    switch ($orientation) {
-                        case 3:
-                            $image->rotate(180);
-                            break;
-                        case 6:
-                            $image->rotate(-90);
-                            break;
-                        case 8:
-                            $image->rotate(90);
-                            break;
-                    }
-                }
-                $ext = explode('.', $image_dest);
-                $ext = end($ext);
-                $image_dest = str_replace(array('cache/', '.'.$ext), '', $image_dest);
-                $image->save($image_dest, "cache", $ext);
-                return 'cache/'.$image_dest.'.'.$ext;
-            } catch (Exception $e) {
-                echo '<div class="alert alert-danger">' . _t('BAZ_ERROR_IMAGE') . '<br>';
-                echo $e->getMessage();
-                echo '</div>';
-                return;
+        // force new name
+        $image_dest = $attach->getResizedFilename($image_src,$largeur, $hauteur, $method);
+        
+        if (!$wiki->services->get(SecurityController::class)->isWikiHibernated()
+            && file_exists($image_dest)
+            && isset($_GET['refresh'])
+            && $_GET['refresh']== 1
+            && $wiki->UserIsAdmin()) {
+            unlink($image_dest);
+        }
+        if (!file_exists($image_dest)) {
+
+            $result = $attach->redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $method);
+            if ($result != $image_dest) {
+                // do nothing : error
+                return $image_src;
             }
+            return $image_dest;
         } else {
             return $image_dest;
         }
-    }
-}
-
-// Code provenant de spip :
-function extension_autorisee($ext)
-{
-    $tables_images = array(
-
-    // Images reconnues par PHP
-    'jpg' => 'JPEG', 'png' => 'PNG', 'gif' => 'GIF', 'jpeg' => 'JPEG',
-
-    // Autres images (peuvent utiliser le tag <img>)
-    'bmp' => 'BMP', 'tif' => 'TIFF', 'svg' => 'SVG');
-
-    $tables_sequences = array('aiff' => 'AIFF', 'anx' => 'Annodex', 'axa' => 'Annodex Audio', 'axv' => 'Annodex Video', 'asf' => 'Windows Media', 'avi' => 'AVI', 'flac' => 'Free Lossless Audio Codec', 'flv' => 'Flash Video', 'mid' => 'Midi', 'mng' => 'MNG', 'mka' => 'Matroska Audio', 'mkv' => 'Matroska Video', 'mov' => 'QuickTime', 'mp3' => 'MP3', 'mp4' => 'MPEG4', 'mpg' => 'MPEG', 'oga' => 'Ogg Audio', 'ogg' => 'Ogg Vorbis', 'ogv' => 'Ogg Video', 'ogx' => 'Ogg Multiplex', 'qt' => 'QuickTime', 'ra' => 'RealAudio', 'ram' => 'RealAudio', 'rm' => 'RealAudio', 'spx' => 'Ogg Speex', 'svg' => 'Scalable Vector Graphics', 'swf' => 'Flash', 'wav' => 'WAV', 'wmv' => 'Windows Media', '3gp' => '3rd Generation Partnership Project');
-
-    $tables_documents = array('abw' => 'Abiword', 'ai' => 'Adobe Illustrator', 'bz2' => 'BZip', 'bin' => 'Binary Data', 'blend' => 'Blender', 'c' => 'C source', 'cls' => 'LaTeX Class', 'css' => 'Cascading Style Sheet', 'csv' => 'Comma Separated Values', 'deb' => 'Debian', 'doc' => 'Word', 'docx' => 'Word', 'djvu' => 'DjVu', 'dvi' => 'LaTeX DVI', 'eps' => 'PostScript', 'gz' => 'GZ', 'h' => 'C header', 'html' => 'HTML', 'kml' => 'Keyhole Markup Language', 'kmz' => 'Google Earth Placemark File', 'pas' => 'Pascal', 'pdf' => 'PDF', 'pgn' => 'Portable Game Notation', 'ppt' => 'PowerPoint', 'pptx' => 'PowerPoint', 'ppsx' => 'PowerPoint', 'ps' => 'PostScript', 'psd' => 'Photoshop', 'pub' => 'Microsoft Publisher', 'rpm' => 'RedHat/Mandrake/SuSE', 'rtf' => 'RTF', 'sdd' => 'StarOffice', 'sdw' => 'StarOffice', 'sit' => 'Stuffit', 'sty' => 'LaTeX Style Sheet', 'sxc' => 'OpenOffice.org Calc', 'sxi' => 'OpenOffice.org Impress', 'sxw' => 'OpenOffice.org', 'tex' => 'LaTeX', 'tgz' => 'TGZ', 'torrent' => 'BitTorrent', 'ttf' => 'TTF Font', 'txt' => 'texte', 'xcf' => 'GIMP multi-layer', 'xspf' => 'XSPF', 'xls' => 'Excel', 'xlsx' => 'Excel', 'xml' => 'XML', 'zip' => 'Zip', 'md' => 'Markdown',
-
-    // open document format
-    'odt' => 'opendocument text', 'ods' => 'opendocument spreadsheet', 'odp' => 'opendocument presentation', 'odg' => 'opendocument graphics', 'odc' => 'opendocument chart', 'odf' => 'opendocument formula', 'odb' => 'opendocument database', 'odi' => 'opendocument image', 'odm' => 'opendocument text-master', 'ott' => 'opendocument text-template', 'ots' => 'opendocument spreadsheet-template', 'otp' => 'opendocument presentation-template', 'otg' => 'opendocument graphics-template',);
-
-    if (array_key_exists($ext, $tables_images)) {
-        return true;
-    } else {
-        if (array_key_exists($ext, $tables_sequences)) {
-            return true;
-        } else {
-            if (array_key_exists($ext, $tables_documents)) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
-}
-
-function obtenir_extension($filename)
-{
-    $pos = strrpos($filename, '.');
-    if ($pos === false) {
-        // dot is not found in the filename
-        return ''; // no extension
-    } else {
-        $extension = substr($filename, $pos + 1);
-        return $extension;
     }
 }
 

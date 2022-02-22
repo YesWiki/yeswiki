@@ -188,6 +188,21 @@ if (!class_exists('attach')) {
             return $path;
         }
         /**
+         * Calcul le repertoire de cache en fonction du safe_mode
+         */
+        public function GetCachePath()
+        {
+            if ($this->isSafeMode) {
+                $path = $this->attachConfig['cache_path'];
+            } else {
+                $path = $this->attachConfig['cache_path'] . '/' . $this->wiki->GetPageTag();
+                if (!is_dir($path)) {
+                    $this->mkdir_recursif($path);
+                }
+            }
+            return $path;
+        }
+        /**
          * Calcule le nom complet du fichier attach&eacute; en fonction du safe_mode, du nom et de la date de
          * revision la page courante.
          * Le nom du fichier "mon fichier.ext" attache ? la page "LaPageWiki"sera :
@@ -345,7 +360,7 @@ if (!class_exists('attach')) {
         {
             $afile = array();
             $afile['realname'] = basename($filename);
-            $afile['size'] = filesize($filename);
+            $afile['size'] = file_exists($filename) ? filesize($filename) : null;
             $afile['path'] = dirname($filename);
             if (preg_match('`^(.*)_(\d{14})_(\d{14})\.(.*)(trash\d{14})?$`', $afile['realname'], $m)) {
                 $afile['name'] = $m[1];
@@ -1150,13 +1165,32 @@ if (!class_exists('attach')) {
         public function calculer_nom_fichier_vignette($fullFilename, $width, $height)
         {
             $file = $this->decodeLongFilename($fullFilename);
-            if ($this->isSafeMode) {
-                $file_vignette = $file['path'] . '/' . $this->wiki->GetPageTag() . '_' . $file['name'] . "_vignette_" . $width . '_' . $height . '_' . $file['datepage'] . '_' . $file['dateupload'] . '.' . $file['ext'];
+            if (!empty($file['name'])){
+                if ($this->isSafeMode) {
+                    $currentTag = $this->wiki->GetPageTag();
+                    $prefixFileName = substr($file['realname'],0,strlen($currentTag)) == $currentTag ? $currentTag."_" : "";
+                    $file_vignette = $file['path'] . '/' . $prefixFileName . $file['name'] . "_vignette_" . $width . '_' . $height . '_' . $file['datepage'] . '_' . $file['dateupload'] . '.' . $file['ext'];
+                } else {
+                    $file_vignette = $file['path'] . '/' . $file['name'] . "_vignette_" . $width . '_' . $height . '_' . $file['datepage'] . '_' . $file['dateupload'] . '.' . $file['ext'];
+                }
             } else {
-                $file_vignette = $file['path'] . '/' . $file['name'] . "_vignette_" . $width . '_' . $height . '_' . $file['datepage'] . '_' . $file['dateupload'] . '.' . $file['ext'];
+                $pathInfo = pathinfo($fullFilename);
+                $file_vignette = "{$file['path']}/{$pathInfo['filename']}_vignette_{$width}_{$height}.{$pathInfo['extension']}";
             }
 
             return $file_vignette;
+        }
+
+        public function getResizedFilename($fullFilename, $width, $height, string $mode = "fit")
+        {
+            $uploadPath = $this->GetUploadPath();
+            $cachePath = $this->GetCachePath();
+            $newFileName = preg_replace("/^$uploadPath/","$cachePath",$fullFilename);
+            $newFileName = $this->calculer_nom_fichier_vignette($newFileName, $width, $height);
+            if ($mode == "crop"){
+                $newFileName = preg_replace("/_vignette_/","_cropped_",$newFileName);
+            }
+            return $newFileName;
         }
 
         public function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $mode = "fit")
@@ -1192,7 +1226,12 @@ if (!class_exists('attach')) {
                         $newWidth = $sourceImageWidth;
                     }
                     // crop
-                    $tempFileName = tmpfile();
+                    $ext = pathinfo($image_src)['extension'];
+                    do {
+                        $tempFile = tmpfile();
+                        $tempFileName = stream_get_meta_data($tempFile)['uri'].".$ext";
+                        unlink(stream_get_meta_data($tempFile)['uri']);
+                    } while (file_exists($tempFileName));
                     $imgTrans->targetFile = $tempFileName;
                     $x0 = ($sourceImageWidth-$newWidth)/2;
                     $y0 = ($sourceImageHeight-$newHeight)/2;
@@ -1204,7 +1243,12 @@ if (!class_exists('attach')) {
                     $imgTrans->targetFile = $image_dest;
                 }
             }
-            if (!$imgTrans->resize()) {
+            $result = $imgTrans->resize();
+            
+            if ($mode == "crop" && !empty($tempFileName)) {
+                unlink($tempFileName);
+            }
+            if (!$result) {
                 // in case of error, show error code
                 return $imgTrans->error;
             // if there were no errors

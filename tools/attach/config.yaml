@@ -123,6 +123,7 @@ parameters:
     ext_flashvideo: "flv"
     ext_script: "php|php3|asp|asx|vb|vbs|js"
     upload_path: "files"
+    cache_path: "cache"
     update_symbole: ""
     fmDelete_symbole: "Supr"
     fmRestore_symbole: "Rest"
