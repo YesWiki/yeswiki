@@ -24,6 +24,16 @@ if (isset($_SESSION['updateMessage'])) {
 }
 
 if ($endUpdate) {
+
+    // update unknown release
+    $params = $this->services->getParameterBag();
+    $releaseInConfig = $params->get('yeswiki_release');
+    if ($releaseInConfig == _t('AU_UNKNOW') || !preg_match("/^\d{1,4}[.-].*/", $releaseInConfig)) {
+        $autoUpdate = new AutoUpdate($this);
+        $configFromFile = $autoUpdate->getWikiConfiguration();
+        $configFromFile['yeswiki_release'] = YESWIKI_RELEASE;
+        $configFromFile->write();
+    }
     
     // specific message when updating from cercopitheque
     if (isset($data['fromCercopitheque']) && $data['fromCercopitheque']) {
@@ -32,7 +42,7 @@ if ($endUpdate) {
         $newMessages = [];
         $newMessages[0]['text'] = _t('AU_YESWIKI_DORYPHORE_POSTINSTALL');
         $newMessages[0]['status'] = _t('AU_OK');
-        foreach($data['messages'] as $message){
+        foreach ($data['messages'] as $message) {
             $newMessages[] = $message;
         }
         $data['messages'] = $newMessages;
@@ -133,10 +143,10 @@ if ($endUpdate) {
         }
     }
 
-    if ($data['messages'][0]['text'] == _t('AU_YESWIKI_DORYPHORE_POSTINSTALL')){
+    if ($data['messages'][0]['text'] == _t('AU_YESWIKI_DORYPHORE_POSTINSTALL')) {
         $fromCercopitheque = true;
         $newMessages = [];
-        for ($i=1; $i < count($data['messages']); $i++) { 
+        for ($i=1; $i < count($data['messages']); $i++) {
             $newMessages[] = $data['messages'][$i];
         }
         $data['messages'] = $newMessages;
