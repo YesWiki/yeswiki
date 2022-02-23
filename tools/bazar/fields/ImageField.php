@@ -150,16 +150,16 @@ class ImageField extends FileField
         $value = $this->getValue($entry);
 
         if (isset($value) && $value != '' && file_exists($this->getBasePath(). $value)) {
-            return afficher_image(
-                $this->name,
-                $value,
-                $this->label,
-                $this->imageClass,
-                $this->thumbnailWidth,
-                $this->thumbnailHeight,
-                $this->imageWidth,
-                $this->imageHeight
-            );
+            return $this->getWiki()->render('@attach/display-image.twig', [
+                'baseUrl' => $this->getWiki()->GetBaseUrl().'/',
+                'imageFullPath' => $this->getBasePath(). $value,
+                'fieldName' => $this->name,
+                'thumbnailHeight' => $this->thumbnailHeight,
+                'thumbnailWidth' => $this->thumbnailWidth,
+                'imageHeight' => $this->imageHeight,
+                'imageWidth' => $this->imageWidth,
+                'class' => $this->imageClass
+               ]);
         }
 
         return null;

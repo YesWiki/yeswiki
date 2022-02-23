@@ -38,17 +38,17 @@ class ExternalImageField extends ImageField
         $value = $this->getValue($entry);
 
         if (isset($value) && $value != '') {
-            return $this->displayImageWithoutCache(
-                $entry['external-data']['baseUrl'],
-                $this->name,
-                $value,
-                $this->label,
-                $this->imageClass,
-                $this->thumbnailWidth,
-                $this->thumbnailHeight,
-                $this->imageWidth,
-                $this->imageHeight
-            );
+            return $this->render("@bazar/fields/external-image.twig", [
+                'attachClass' => $this->getAttach(),
+                'baseUrl' => $entry['external-data']['baseUrl'],
+                'imageFullPath' => $this->getBasePath() . $value,
+                'fieldName' => $this->name,
+                'thumbnailHeight' => $this->thumbnailHeight,
+                'thumbnailWidth' => $this->thumbnailHeight,
+                'imageHeight' => $this->imageHeight,
+                'imageWidth' => $this->imageWidth,
+                'class' => $this->imageClass,
+            ]);
         }
 
         return null;
@@ -81,8 +81,7 @@ class ExternalImageField extends ImageField
         int $hauteur_image,
         string $method = 'fit',
         bool $show_vignette = true
-    ):string 
-    {
+    ):string {
         // l'image initiale existe t'elle et est bien avec une extension jpg ou png et bien formatee
         $destimg = sanitizeFilename($nom_image);
         // If we have a full URL, remove the base URL first
@@ -120,7 +119,7 @@ class ExternalImageField extends ImageField
                 $adr_newsize = $baseUrl .'cache/image_' . $destimg;
 
                 return '<img src="' . $adr_newsize . '" class="img-responsive ' . $class
-                    . '" alt="' . $destimg . '"' 
+                    . '" alt="' . $destimg . '"'
                     . 'onerror="this.src=\''.$baseUrl . BAZ_CHEMIN_UPLOAD . $nom_image.'\'"'
                     . ' />' . "\n";
             } else {
@@ -130,5 +129,4 @@ class ExternalImageField extends ImageField
             }
         }
     }
-
 }

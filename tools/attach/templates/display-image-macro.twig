@@ -1,0 +1,35 @@
+{% macro displayImage(baseUrl, imageFullPath, fieldName, thumbnailHeight, thumbnailWidth, imageHeight, imageWidth, class = "",mode = "fit", showThumbnail = true) %}
+  {# use $_GET['refresh'] via 'request' #}
+  {% set shortImageName = imageFullPath|split('/')|slice(-1,1)|first %}
+  {% if thumbnailHeight is not empty and thumbnailWidth is not empty %}
+    {% set thumbnailLink = urlImage({fileName:imageFullPath,width:thumbnailWidth,height:thumbnailHeight,mode:mode ?? "fit",refresh: request.refresh ?? false}) %}
+    {% if imageHeight is not empty and imageWidth is not empty %}
+      {% set resizedImageLink = urlImage({fileName:imageFullPath,width:imageWidth,height:imageHeight,mode:mode ?? "fit",refresh: request.refresh ?? false}) %}
+      <a data-id="{{ fieldName }}" 
+        class="modalbox {{class}}" 
+        href="{{ resizedImageLink }}" 
+        title="{{ shortImageName|e('html_attr') }}">
+        <img src="{{ showThumbnail ? thumbnailLink : resizedImageLink }}" alt="{{ shortImageName|e('html_attr') }}" />
+      </a>
+    {% else %}
+      <a data-id="{{ fieldName }}" 
+        class="modalbox {{class}}" 
+        href="{{ imageFullPath }}" 
+        title="{{ shortImageName|e('html_attr') }}">
+        <img class="img-responsive" 
+          src="{{ thumbnailLink }}"
+          alt="{{ shortImageName|e('html_attr') }}"
+          rel="{{ baseUrl ~ imageFullPath }}" />' . "\n"
+      </a>
+    {% endif %}
+  {% elseif imageHeight is not empty and imageWidth is not empty %}
+    {% set resizedImageLink = urlImage({fileName:imageFullPath,width:imageWidth,height:imageHeight,mode:mode ?? "fit",refresh: request.refresh ?? false}) %}
+    <img src="{{ resizedImageLink }}"
+      class="img-responsive {{class}}"
+      alt="{{ shortImageName|e('html_attr') }}" />
+  {% else %}
+    <img src="{{ baseUrl ~ imageFullPath }}"
+      class="img-responsive {{class}}"
+      alt="{{ shortImageName|e('html_attr') }}" />
+  {% endif %}
+{% endmacro displayImage %}
