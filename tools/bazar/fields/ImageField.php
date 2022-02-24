@@ -118,16 +118,6 @@ class ImageField extends FileField
                         $previousFileName = $entry['oldimage_' . $this->propertyName];
                         $this->securedDeleteImageAndCache($entry, $previousFileName);
                     }
-
-                    // Generate thumbnails
-                    if ($this->thumbnailWidth != '' && $this->thumbnailHeight != '' && !file_exists('cache/vignette_' . $fileName)) {
-                        redimensionner_image($filePath, 'cache/vignette_' . $fileName, $this->thumbnailWidth, $this->thumbnailHeight);
-                    }
-
-                    // Adapt image dimensions
-                    if ($this->imageWidth != '' && $this->imageWidth != '' && !file_exists('cache/image_' . '_' . $fileName)) {
-                        redimensionner_image($filePath, 'cache/image_' . $fileName, $this->imageWidth, $this->imageHeight);
-                    }
                 } else {
                     flash(str_replace('{fileName}', $fileName, _t('BAZ_IMAGE_ALREADY_EXISTING')), 'info');
                 }
@@ -185,12 +175,6 @@ class ImageField extends FileField
                 }
             } else {
                 // do not delete file if not same entry name (only remove from this entry)
-            }
-            if (file_exists('cache/vignette_' . $filename)) {
-                unlink('cache/vignette_' . $filename);
-            }
-            if (file_exists('cache/image_' . $filename)) {
-                unlink('cache/image_' . $filename);
             }
             return true;
         }
