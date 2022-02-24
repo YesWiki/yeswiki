@@ -7,6 +7,9 @@ return [
     'BAZ_FORM_EDIT_FILE_READLABEL_LABEL' => 'Label à l\'affichage',
 
     // fields/MapField.php
+    'IMAGEFIELD_TOO_LARGE_IMAGE' => 'L\'image est trop grosse, maximum {imageMaxSize} octets',
+
+    // fields/MapField.php
     'BAZ_POSTAL_CODE_NOT_FOUND' => 'Pas de ville trouvée pour le code postal : {input}',
     'BAZ_POSTAL_CODE_HINT' => 'Veuillez entrer 5 chiffres pour voir les villes associées au code postal',
     'BAZ_TOWN_NOT_FOUND' => 'Pas de ville trouvée pour la recherche : {input}',
