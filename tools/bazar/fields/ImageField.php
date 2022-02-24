@@ -74,16 +74,17 @@ class ImageField extends FileField
                     'value' => $value,
                     'downloadUrl' => $this->getBasePath(). $value,
                     'deleteUrl' => empty($entry) ? '' :$wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . $value, false),
-                    'image' => afficher_image(
-                        $this->name,
-                        $value,
-                        $this->label,
-                        'img-responsive',
-                        $this->thumbnailWidth,
-                        $this->thumbnailHeight,
-                        $this->imageWidth,
-                        $this->imageHeight
-                    ),
+                    'image' => $this->getWiki()->render('@attach/display-image.twig', [
+                        'baseUrl' => $this->getWiki()->GetBaseUrl().'/',
+                        'imageFullPath' => $this->getBasePath(). $value,
+                        'fieldName' => $this->name,
+                        'thumbnailHeight' => $this->thumbnailHeight,
+                        'thumbnailWidth' => $this->thumbnailWidth,
+                        'imageHeight' => $this->imageHeight,
+                        'imageWidth' => $this->imageWidth,
+                        'class' => 'img-responsive',
+                        'shortImageName' => $this->getShortFileName($value)
+                    ]),
                     'isAllowedToDeleteFile' => empty($entry) ? false :$this->isAllowedToDeleteFile($entry, $value),
                 ]);
             } else {
@@ -147,7 +148,8 @@ class ImageField extends FileField
                 'thumbnailWidth' => $this->thumbnailWidth,
                 'imageHeight' => $this->imageHeight,
                 'imageWidth' => $this->imageWidth,
-                'class' => $this->imageClass
+                'class' => $this->imageClass,
+                'shortImageName' => $this->getShortFileName($value)
                ]);
         }
 

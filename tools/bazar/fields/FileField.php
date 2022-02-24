@@ -59,7 +59,7 @@ class FileField extends BazarField
             ]
             : [
                 'value' => $value,
-                'shortFileName' => $this->getShortFileName($value, $entry),
+                'shortFileName' => $this->getShortFileName($value),
                 'fileUrl' => $this->getBasePath().  $value,
                 'deleteUrl' => empty($entry) ? '' : $this->getWiki()->href('edit', $entry['id_fiche'], ['delete_file' => $value], false),
                 'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value)
@@ -116,7 +116,7 @@ class FileField extends BazarField
             return $this->render('@bazar/fields/file.twig', [
                 'value' => $value,
                 'fileUrl' => $this->getBasePath() . $value,
-                'shortFileName' => $this->getShortFileName($value, $entry),
+                'shortFileName' => $this->getShortFileName($value),
             ]);
         }
 
@@ -148,10 +148,9 @@ class FileField extends BazarField
     /**
      * method to get the filename from the value
      * @param string $longFileName
-     * @param null|array $entry
      * @return string $shortFileName
      */
-    private function getShortFileName(string $longFileName, ?array $entry): string
+    protected function getShortFileName(string $longFileName): string
     {
         $attach = $this->getAttach();
 

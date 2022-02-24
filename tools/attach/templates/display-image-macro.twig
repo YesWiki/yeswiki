@@ -1,6 +1,6 @@
-{% macro displayImage(baseUrl, imageFullPath, fieldName, thumbnailHeight, thumbnailWidth, imageHeight, imageWidth, class = "",mode = "fit", showThumbnail = true) %}
+{% macro displayImage(baseUrl, imageFullPath, fieldName, thumbnailHeight, thumbnailWidth, imageHeight, imageWidth, class = "",mode = "fit", showThumbnail = true, shortImageName = "") %}
   {# use $_GET['refresh'] via 'request' #}
-  {% set shortImageName = imageFullPath|split('/')|slice(-1,1)|first %}
+  {% set shortImageName = (shortImageName is empty) ? imageFullPath|split('/')|slice(-1,1)|first : shortImageName %}
   {% if thumbnailHeight is not empty and thumbnailWidth is not empty %}
     {% set thumbnailLink = urlImage({fileName:imageFullPath,width:thumbnailWidth,height:thumbnailHeight,mode:mode ?? "fit",refresh: request.refresh ?? false}) %}
     {% if imageHeight is not empty and imageWidth is not empty %}
