@@ -32,21 +32,21 @@
 return [
 
     // Commons
-    'CAUTION' => 'Attention',
+    'ANSWER' => 'Répondre',
     'BY' => 'par',
+    'CAUTION' => 'Attention',
     'CLEAN' => 'Nettoyer',
+    'COMMENTS' => 'Commentaires',
     'DELETE' => 'Supprimer',
     'DEL' => 'Suppr.', // fives chars max.
     'EMAIL' => 'Email',
     'INVERT' => 'Inverser',
     'MODIFY' => 'Modifier',
     'NAME' => 'Nom',
+    'PAGES' => 'Pages',
     'SUBSCRIPTION' => 'Inscription',
     'UNKNOWN' => 'Inconnu',
     'WARNING' => 'AVERTISSEMENT',
-    'PAGES' => 'Pages',
-    'COMMENTS' => 'Commentaires',
-    'ANSWER' => 'Répondre',
 
     // wakka.php
     'INVALID_ACTION' => 'Action invalide',

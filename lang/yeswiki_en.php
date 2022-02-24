@@ -31,15 +31,18 @@
 return [
 
     // Commons
-    'CAUTION' => 'Caution',
+    'ANSWER' => 'Answer',
     'BY' => 'by',
+    'CAUTION' => 'Caution',
     'CLEAN' => 'Clean',
+    'COMMENTS' => 'Comments',
     'DELETE' => 'Delete',
     'DEL' => 'Del', // fives chars max.
     'EMAIL' => 'Email',
     'INVERT' => 'Invert',
     'MODIFY' => 'Modify',
     'NAME' => 'Name',
+    'PAGES' => 'Pages',
     'SUBSCRIPTION' => 'Subscription',
     'UNKNOWN' => 'Unknown',
     'WARNING' => 'WARNING',
