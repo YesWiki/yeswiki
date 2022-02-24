@@ -53,10 +53,7 @@ class FileField extends BazarField
 
         return ($alertMessage ?? '') . $this->render('@bazar/inputs/file.twig', (
             empty($value) ||  !file_exists($this->getBasePath().  $value) || $deletedFile
-            ? [
-                'deletedFile' => $deletedFile,
-                'oldValue' => $deletedFile ? $value : ''
-            ]
+            ? []
             : [
                 'value' => $value,
                 'shortFileName' => $this->getShortFileName($value),
@@ -70,12 +67,6 @@ class FileField extends BazarField
     public function formatValuesBeforeSave($entry)
     {
         $value = $this->getValue($entry);
-
-        if (!empty($value)
-            && !empty($_POST["{$this->getPropertyName()}_deletedValue"])
-            && $_POST["{$this->getPropertyName()}_deletedValue"] === $value) {
-            $value = "";
-        }
 
         $params = $this->getService(ParameterBagInterface::class);
         if (!empty($_FILES[$this->propertyName]['name']) && !empty($entry['id_fiche'])) {
@@ -112,10 +103,11 @@ class FileField extends BazarField
     {
         $value = $this->getValue($entry);
 
-        if (!empty($value)) {
+        $basePath = $this->getBasePath() ;
+        if (!empty($value) && file_exists($basePath.$value)) {
             return $this->render('@bazar/fields/file.twig', [
                 'value' => $value,
-                'fileUrl' => $this->getBasePath() . $value,
+                'fileUrl' => $this->getWiki()->getBaseUrl().'/'.$basePath . $value,
                 'shortFileName' => $this->getShortFileName($value),
             ]);
         }
