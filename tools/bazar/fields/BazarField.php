@@ -47,7 +47,7 @@ abstract class BazarField implements \JsonSerializable
 
         $this->type = $values[self::FIELD_TYPE];
         $this->name = $values[self::FIELD_NAME];
-        $this->label = $values[self::FIELD_LABEL];
+        $this->label = empty($values[self::FIELD_LABEL]) ? '' : html_entity_decode($values[self::FIELD_LABEL]);
         $this->size = $values[self::FIELD_SIZE];
         $this->maxChars = $values[self::FIELD_MAX_CHARS];
         $this->default = $values[self::FIELD_DEFAULT];
