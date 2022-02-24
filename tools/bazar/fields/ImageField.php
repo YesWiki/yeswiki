@@ -4,7 +4,6 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Security\Controller\SecurityController;
 
@@ -56,7 +55,7 @@ class ImageField extends FileField
         if (isset($value) && $value != '') {
             if (isset($_GET['suppr_image']) && $_GET['suppr_image'] == $value) {
                 if ($this->securedDeleteImageAndCache($entry, $value)) {
-                    $this->updateEntryAfterImageDelete($entry);
+                    $this->updateEntryAfterFileDelete($entry);
 
                     return $this->render('@templates/alert-message.twig', [
                         'type' => 'info',
@@ -88,7 +87,7 @@ class ImageField extends FileField
                     'isAllowedToDeleteFile' => empty($entry) ? false :$this->isAllowedToDeleteFile($entry, $value),
                 ]);
             } else {
-                $this->updateEntryAfterImageDelete($entry);
+                $this->updateEntryAfterFileDelete($entry);
 
                 $alertMessage = $this->render('@templates/alert-message.twig', [
                     'type' => 'danger',
@@ -163,30 +162,6 @@ class ImageField extends FileField
         }
 
         return null;
-    }
-
-    private function updateEntryAfterImageDelete($entry)
-    {
-        $entryManager = $this->services->get(EntryManager::class);
-
-        // unset value in entry from db without modifier from GET
-        $entryFromDb = $entryManager->getOne($entry['id_fiche']);
-        if (!empty($entryFromDb)) {
-            $previousGet = $_GET;
-            $_GET = ['wiki' => $previousGet['wiki']];
-            $previousPost = $_POST;
-            $_POST= [];
-            $previousRequest = $_REQUEST;
-            $_REQUEST = [];
-            unset($entryFromDb[$this->propertyName]);
-            $entryFromDb['antispam'] = 1;
-            $entryFromDb['date_maj_fiche'] = date('Y-m-d H:i:s', time());
-            $entryManager->update($entryFromDb['id_fiche'], $entryFromDb, false, true);
-            
-            $_GET = $previousGet;
-            $_POST = $previousPost;
-            $_REQUEST = $previousRequest;
-        }
     }
 
     protected function isImage($fileName)

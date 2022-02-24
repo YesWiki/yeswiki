@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Field;
 use attach;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Security\Controller\SecurityController;
 
@@ -41,10 +42,7 @@ class FileField extends BazarField
                     } else {
                         // do not delete file if not same entry name (only remove from this entry)
                         $deletedFile = true;
-                        $alertMessage = $this->render("@templates/alert-message.twig", [
-                            'type' => 'info',
-                            'message' => _t('BAZ_FILEFIELD_SAVE_ENTRY_TO_REGISTER_DELETION')
-                        ]);
+                        $this->updateEntryAfterFileDelete($entry);
                     }
                 } else {
                     $alertMessage = '<div class="alert alert-info">' . _t('BAZ_DROIT_INSUFFISANT') . '</div>' . "\n";
@@ -235,5 +233,29 @@ class FileField extends BazarField
             $this->attach = new attach($wiki);
         }
         return $this->attach;
+    }
+
+    protected function updateEntryAfterFileDelete($entry)
+    {
+        $entryManager = $this->services->get(EntryManager::class);
+
+        // unset value in entry from db without modifier from GET
+        $entryFromDb = $entryManager->getOne($entry['id_fiche']);
+        if (!empty($entryFromDb)) {
+            $previousGet = $_GET;
+            $_GET = ['wiki' => $previousGet['wiki']];
+            $previousPost = $_POST;
+            $_POST= [];
+            $previousRequest = $_REQUEST;
+            $_REQUEST = [];
+            unset($entryFromDb[$this->propertyName]);
+            $entryFromDb['antispam'] = 1;
+            $entryFromDb['date_maj_fiche'] = date('Y-m-d H:i:s', time());
+            $entryManager->update($entryFromDb['id_fiche'], $entryFromDb, false, true);
+            
+            $_GET = $previousGet;
+            $_POST = $previousPost;
+            $_REQUEST = $previousRequest;
+        }
     }
 }
