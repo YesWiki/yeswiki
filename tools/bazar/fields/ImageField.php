@@ -184,10 +184,23 @@ class ImageField extends FileField
     {
         $entryManager = $this->services->get(EntryManager::class);
 
-        unset($entry[$this->propertyName]);
-        $entry['antispam'] = 1;
-        $entry['date_maj_fiche'] = date('Y-m-d H:i:s', time());
-
-        $entryManager->update($entry['id_fiche'], $entry, false, true);
+        // unset value in entry from db without modifier from GET
+        $entryFromDb = $entryManager->getOne($entry['id_fiche']);
+        if (!empty($entryFromDb)) {
+            $previousGet = $_GET;
+            $_GET = ['wiki' => $previousGet['wiki']];
+            $previousPost = $_POST;
+            $_POST= [];
+            $previousRequest = $_REQUEST;
+            $_REQUEST = [];
+            unset($entryFromDb[$this->propertyName]);
+            $entryFromDb['antispam'] = 1;
+            $entryFromDb['date_maj_fiche'] = date('Y-m-d H:i:s', time());
+            $entryManager->update($entryFromDb['id_fiche'], $entryFromDb, false, true);
+            
+            $_GET = $previousGet;
+            $_POST = $previousPost;
+            $_REQUEST = $previousRequest;
+        }
     }
 }
