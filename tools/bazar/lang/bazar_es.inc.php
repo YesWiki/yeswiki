@@ -160,7 +160,7 @@ return [
     'BAZ_ADD_NEW_ENTRY' => 'Añadir una nueva ficha',
     'BAZ_SUPPRIMER' => 'Suprimir',
     'BAZ_SUPPRIMER_IMAGE' => 'Suprimir la imagen',
-    'BAZ_CONFIRMATION_SUPPRESSION_IMAGE' => 'Estas seguro de querer suprimir la imagen?',
+    'BAZ_CONFIRMATION_SUPPRESSION_IMAGE' => '¿Está seguro de querer suprimir la imagen? (no se guardarán otros cambios en curso)',
     'BAZ_DROIT_INSUFFISANT' => 'Operación permitida al proprietario de la ficha o sólo a un administrador',
     'BAZ_NEED_ADMIN_RIGHTS' => 'Opération permitida sólo a los administradores',
     'BAZ_TITRE_SAISIE_FICHE' => 'Picar una ficha : ',
@@ -185,7 +185,7 @@ return [
     'BAZ_SAISIR_UNE_NOUVELLE_FICHE' => 'Crear una nueva ficha',
     'BAZ_MODIFIER_IMAGE' => ', o modificar la imagen',
     'BAZ_FICHIER_IMAGE_INEXISTANT' => 'El archivo {file} no existe en el servidor, la base de datos va a ser actualizada. Gracias por actualizar tu navegador.',
-    'BAZ_CONFIRMATION_SUPPRESSION_FICHIER' => 'Estas seguro de querer suprimir este archivo ?',
+    'BAZ_CONFIRMATION_SUPPRESSION_FICHIER' => '¿Está seguro de que desea eliminar este archivo? (no se guardarán otros cambios en curso)',
     'BAZ_SUPPRIMER_LA_FICHE' => 'Suprimir la ficha',
     'BAZ_INVALIDER_LA_FICHE' => 'Invalidar la ficha',
     'BAZ_LATITUDE' => 'Latitud',
@@ -303,7 +303,6 @@ return [
     // 'BAZ_FILE_ALREADY_EXISTING' => 'fichier déja existant',
     // 'BAZ_NOT_AUTHORIZED_FILE' => 'fichier non autorise',
     // 'BAZ_FILEFIELD_FILE' => 'Fichier : {filename}',
-    // 'BAZ_FILEFIELD_SAVE_ENTRY_TO_REGISTER_DELETION' => 'Veuillez sauvegarder la fiche pour enregistrer la suppression du fichier !',
 
     // fields/ImageField.php
     // 'BAZ_IMAGE_ALREADY_EXISTING' => 'L\'image {fileName} existait d&eacute;ja, elle n\'a pas &eacute;t&eacute; remplac&eacute;e.',

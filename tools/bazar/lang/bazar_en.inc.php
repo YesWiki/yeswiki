@@ -161,7 +161,7 @@ return [
     // 'BAZ_ADD_NEW_ENTRY' => 'Ajouter une nouvelle fiche',
     'BAZ_SUPPRIMER' => 'Delete',
     'BAZ_SUPPRIMER_IMAGE' => 'delete the image',
-    'BAZ_CONFIRMATION_SUPPRESSION_IMAGE' => 'Are you sure to delete this image ?',
+    'BAZ_CONFIRMATION_SUPPRESSION_IMAGE' => 'Are you sure to delete this image ? (other changes in progress will not be saved)',
     'BAZ_DROIT_INSUFFISANT' => 'Operation permited to owner of the entry or an administrator only',
     'BAZ_NEED_ADMIN_RIGHTS' => 'Operation permited to administrators only',
     'BAZ_TITRE_SAISIE_FICHE' => 'Add an entry : ',
@@ -186,7 +186,7 @@ return [
     'BAZ_SAISIR_UNE_NOUVELLE_FICHE' => 'Add a new entry',
     'BAZ_MODIFIER_IMAGE' => ', or modify the image',
     'BAZ_FICHIER_IMAGE_INEXISTANT' => 'The file {file} is not found on the server, the database will be updated. Please refresh your web browser.',
-    'BAZ_CONFIRMATION_SUPPRESSION_FICHIER' => 'Are you sure you want to delete this file ?',
+    'BAZ_CONFIRMATION_SUPPRESSION_FICHIER' => 'Are you sure you want to delete this file? (other changes in progress will not be saved)',
     'BAZ_SUPPRIMER_LA_FICHE' => 'Delete the entry',
     'BAZ_INVALIDER_LA_FICHE' => 'Invalidate the entry',
     'BAZ_LATITUDE' => 'Latitude',
@@ -303,7 +303,6 @@ return [
     // 'BAZ_FILE_ALREADY_EXISTING' => 'fichier déja existant',
     // 'BAZ_NOT_AUTHORIZED_FILE' => 'fichier non autorise',
     // 'BAZ_FILEFIELD_FILE' => 'File : {filename}',
-    'BAZ_FILEFIELD_SAVE_ENTRY_TO_REGISTER_DELETION' => 'Save the entry to register the file\'s deletion!',
 
     // fields/ImageField.php
     // 'BAZ_IMAGE_ALREADY_EXISTING' => 'L\'image {fileName} existait d&eacute;ja, elle n\'a pas &eacute;t&eacute; remplac&eacute;e.',

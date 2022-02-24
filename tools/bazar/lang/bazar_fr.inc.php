@@ -161,7 +161,7 @@ return [
     'BAZ_ADD_NEW_ENTRY' => 'Ajouter une nouvelle fiche',
     'BAZ_SUPPRIMER' => 'Supprimer',
     'BAZ_SUPPRIMER_IMAGE' => 'Supprimer l\'image',
-    'BAZ_CONFIRMATION_SUPPRESSION_IMAGE' => 'Etes vous s&ucirc;rs de vouloir supprimer cette image?',
+    'BAZ_CONFIRMATION_SUPPRESSION_IMAGE' => 'Etes vous s&ucirc;rs de vouloir supprimer cette image? (les autres modifications en cours ne seront pas sauvegardées)',
     'BAZ_DROIT_INSUFFISANT' => 'L\'op&eacute;ration est permise uniquement au propri&eacute;taire ou aux administrateurs',
     'BAZ_NEED_ADMIN_RIGHTS' => 'Op&eacute;ration permise aux administrateurs uniquement',
     'BAZ_TITRE_SAISIE_FICHE' => 'Saisir une fiche : ',
@@ -186,7 +186,7 @@ return [
     'BAZ_SAISIR_UNE_NOUVELLE_FICHE' => 'Saisir une nouvelle fiche',
     'BAZ_MODIFIER_IMAGE' => 'Modifier l\'image',
     'BAZ_FICHIER_IMAGE_INEXISTANT' => 'Fichier {file} inexistant sur le serveur, la base de donn&eacute;es va être actualis&eacute;e. Veuillez actualiser votre navigateur.',
-    'BAZ_CONFIRMATION_SUPPRESSION_FICHIER' => 'Etes-vous s&ucirc;r de vouloir supprimer ce fichier ?',
+    'BAZ_CONFIRMATION_SUPPRESSION_FICHIER' => 'Etes-vous sûr de vouloir supprimer ce fichier ? (les autres modifications en cours ne seront pas sauvegardées)',
     'BAZ_SUPPRIMER_LA_FICHE' => 'Supprimer la fiche',
     'BAZ_INVALIDER_LA_FICHE' => 'Invalider la fiche',
     'BAZ_LATITUDE' => 'Latitude',
@@ -303,7 +303,6 @@ return [
     'BAZ_FILE_ALREADY_EXISTING' => 'fichier déja existant',
     'BAZ_NOT_AUTHORIZED_FILE' => 'fichier non autorise',
     'BAZ_FILEFIELD_FILE' => 'Fichier : {filename}',
-    'BAZ_FILEFIELD_SAVE_ENTRY_TO_REGISTER_DELETION' => 'Veuillez sauvegarder la fiche pour enregistrer la suppression du fichier !',
 
     // fields/ImageField.php
     'BAZ_IMAGE_ALREADY_EXISTING' => 'L\'image {fileName} existait d&eacute;ja, elle n\'a pas &eacute;t&eacute; remplac&eacute;e.',

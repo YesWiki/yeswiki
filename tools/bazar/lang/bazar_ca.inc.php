@@ -161,7 +161,7 @@ return [
     // 'BAZ_ADD_NEW_ENTRY' => 'Ajouter une nouvelle fiche',
     'BAZ_SUPPRIMER' => 'Suprimeix',
     'BAZ_SUPPRIMER_IMAGE' => 'Suprimeix la imatge',
-    'BAZ_CONFIRMATION_SUPPRESSION_IMAGE' => 'Confirmeu que voleu suprimir aquesta imatge',
+    'BAZ_CONFIRMATION_SUPPRESSION_IMAGE' => 'Confirmeu que voleu suprimir aquesta imatge? (no es desaran altres canvis en curs)',
     'BAZ_DROIT_INSUFFISANT' => 'Només el propietari de la fitxa o un administrador poden fer aquesta operació',
     'BAZ_NEED_ADMIN_RIGHTS' => 'Només un administrador pode fer aquesta operació',
     'BAZ_TITRE_SAISIE_FICHE' => 'Entrar una fitxa: ',
@@ -186,7 +186,7 @@ return [
     'BAZ_SAISIR_UNE_NOUVELLE_FICHE' => 'Entra una nova fitxa',
     'BAZ_MODIFIER_IMAGE' => ', o modifica la imatge',
     'BAZ_FICHIER_IMAGE_INEXISTANT' => 'Fitxer {file} no existeix al servidor, la base de dades serà actualitzada. Actualitzeu sisplau el vostre navegador.',
-    'BAZ_CONFIRMATION_SUPPRESSION_FICHIER' => 'Confirmeu que voleu eliminar aquest fitxer',
+    'BAZ_CONFIRMATION_SUPPRESSION_FICHIER' => 'Confirmeu que voleu eliminar aquest fitxer? (no es desaran altres canvis en curs)',
     'BAZ_SUPPRIMER_LA_FICHE' => 'Elimina la fitxa',
     'BAZ_INVALIDER_LA_FICHE' => 'Desactivar la fitxa',
     'BAZ_LATITUDE' => 'Latitud',
@@ -303,7 +303,6 @@ return [
     // 'BAZ_FILE_ALREADY_EXISTING' => 'fichier déja existant',
     // 'BAZ_NOT_AUTHORIZED_FILE' => 'fichier non autorise',
     // 'BAZ_FILEFIELD_FILE' => 'Fichier : {filename}',
-    // 'BAZ_FILEFIELD_SAVE_ENTRY_TO_REGISTER_DELETION' => 'Veuillez sauvegarder la fiche pour enregistrer la suppression du fichier !',
 
     // fields/ImageField.php
     // 'BAZ_IMAGE_ALREADY_EXISTING' => 'L\'image {fileName} existait d&eacute;ja, elle n\'a pas &eacute;t&eacute; remplac&eacute;e.',

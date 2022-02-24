@@ -161,7 +161,7 @@ return [
     // 'BAZ_ADD_NEW_ENTRY' => 'Ajouter une nouvelle fiche',
     'BAZ_SUPPRIMER' => 'Wissen',
     'BAZ_SUPPRIMER_IMAGE' => 'De afbeelding wissen',
-    'BAZ_CONFIRMATION_SUPPRESSION_IMAGE' => 'Weet u zeker dat u deze afbeelding wilt wissen?',
+    'BAZ_CONFIRMATION_SUPPRESSION_IMAGE' => 'Weet u zeker dat u deze afbeelding wilt wissen? (andere lopende wijzigingen worden niet opgeslagen)',
     'BAZ_DROIT_INSUFFISANT' => 'Handeling enkel toegestaan voor de eigenaar van de fiche of een beheerder',
     'BAZ_NEED_ADMIN_RIGHTS' => 'Handeling enkel toegestaan voor beheerders',
     'BAZ_TITRE_SAISIE_FICHE' => 'Een fiche invoeren: ',
@@ -186,7 +186,7 @@ return [
     'BAZ_SAISIR_UNE_NOUVELLE_FICHE' => 'Een nieuwe fiche invoeren',
     'BAZ_MODIFIER_IMAGE' => ', of de afbeelding wijzigen',
     'BAZ_FICHIER_IMAGE_INEXISTANT' => 'Het bestand {file} bestaat niet op de server. De database zal worden bijgewerkt. Gelieve uw browser te vernieuwen.',
-    'BAZ_CONFIRMATION_SUPPRESSION_FICHIER' => 'Weet u zeker dat u deze fiche wilt verwijderen?',
+    'BAZ_CONFIRMATION_SUPPRESSION_FICHIER' => 'Weet u zeker dat u dit bestand wilt verwijderen? (andere lopende wijzigingen worden niet opgeslagen)',
     'BAZ_SUPPRIMER_LA_FICHE' => 'De fiche verwijderen',
     'BAZ_INVALIDER_LA_FICHE' => 'De fiche afkeuren',
     'BAZ_LATITUDE' => 'Breedtegraad',
@@ -303,7 +303,6 @@ return [
     // 'BAZ_FILE_ALREADY_EXISTING' => 'fichier déja existant',
     // 'BAZ_NOT_AUTHORIZED_FILE' => 'fichier non autorise',
     // 'BAZ_FILEFIELD_FILE' => 'Fichier : {filename}',
-    // 'BAZ_FILEFIELD_SAVE_ENTRY_TO_REGISTER_DELETION' => 'Veuillez sauvegarder la fiche pour enregistrer la suppression du fichier !',
 
     // fields/ImageField.php
     // 'BAZ_IMAGE_ALREADY_EXISTING' => 'L\'image {fileName} existait d&eacute;ja, elle n\'a pas &eacute;t&eacute; remplac&eacute;e.',
