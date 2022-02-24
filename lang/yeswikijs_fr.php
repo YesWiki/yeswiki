@@ -35,7 +35,6 @@ return [
     'TUESDAY' => 'Mardi',
     'WEDNESDAY' => 'Mercredi',
     "YES" => "Oui",
-    "CANCEL" => "Annuler",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Modifs apportées par cette version",
