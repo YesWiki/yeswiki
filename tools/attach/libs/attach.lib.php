@@ -1119,10 +1119,10 @@ if (!class_exists('attach')) {
         /**
          * Met le fichier a la corbeille
          */
-        public function fmDelete()
+        public function fmDelete(string $rawFileName = "")
         {
             $path = $this->GetUploadPath();
-            $rawFileName = filter_input(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $rawFileName = empty($rawFileName) ? filter_input(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS) : $rawFileName;
             $filename = $path . '/' . basename($rawFileName);
             if (!empty($rawFileName) && file_exists($filename)) {
                 $trash = $filename . 'trash' . $this->getDate();

@@ -34,11 +34,12 @@ class FileField extends BazarField
         $deletedFile = false;
 
         if (!empty($value)) {
-            if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] == $value && isset($_GET['file']) && $_GET['file'] == $value) {
+            if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {
                 if ($this->isAllowedToDeleteFile($entry, $value)) {
                     if (substr($value, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
                         $attach = $this->getAttach();
-                        $attach->fmDelete();
+                        $rawFileName = filter_input(INPUT_GET, 'delete_file', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+                        $attach->fmDelete($rawFileName);
                     } else {
                         // do not delete file if not same entry name (only remove from this entry)
                         $deletedFile = true;
@@ -60,7 +61,7 @@ class FileField extends BazarField
                 'value' => $value,
                 'shortFileName' => $this->getShortFileName($value, $entry),
                 'fileUrl' => $this->getBasePath().  $value,
-                'deleteUrl' => empty($entry) ? '' : $this->getWiki()->href('edit', $entry['id_fiche'], ['delete_file' => $value ,'file' => $value], false),
+                'deleteUrl' => empty($entry) ? '' : $this->getWiki()->href('edit', $entry['id_fiche'], ['delete_file' => $value], false),
                 'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value)
             ]
         ));

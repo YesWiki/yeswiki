@@ -53,7 +53,7 @@ class ImageField extends FileField
         $wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/image-field.js');
 
         if (isset($value) && $value != '') {
-            if (isset($_GET['suppr_image']) && $_GET['suppr_image'] == $value) {
+            if (isset($_GET['suppr_image']) && $_GET['suppr_image'] === $value) {
                 if ($this->securedDeleteImageAndCache($entry, $value)) {
                     $this->updateEntryAfterFileDelete($entry);
 
@@ -165,14 +165,7 @@ class ImageField extends FileField
         if ($this->isAllowedToDeleteFile($entry, $filename)) {
             if (substr($filename, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
                 $attach = $this->getAttach();
-                $previousFile = $_GET['file'] ?? null;
-                $_GET['file'] = $filename;
-                $attach->fmDelete();
-                if (is_null($previousFile)) {
-                    unset($_GET['file']);
-                } else {
-                    $_GET['file'] = $previousFile;
-                }
+                $attach->fmDelete($filename);
             } else {
                 // do not delete file if not same entry name (only remove from this entry)
             }
