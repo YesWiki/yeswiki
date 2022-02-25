@@ -256,6 +256,70 @@ const ConditionsChecking = {
         }
         return false;
     },
+    emptyCheckbox: function (element){
+        $(element).find("input[type=checkbox]").each(function(){
+            $(this).prop("checked",false);
+            $(this).trigger("change");
+        });
+    },
+    emptySelect: function (element){
+        $(element).find("select").each(function(){
+            $(this).val('');
+            $(this).trigger("change");
+        });
+    },
+    emptyTextarea: function (element){
+        $(element).find("textarea").each(function(){
+            $(this).val('');
+            $(this).trigger("change");
+        });
+    },
+    emptyRadio: function (element){
+        // warning it unselect the radio button but this will not erase previous saved value
+        // it is needed to have a new value to erase it
+        $(element).find("input[type=radio]").each(function(){
+            $(this).prop("checked",false);
+            $(this).trigger("change");
+        });
+    },
+    emptyTextarea: function (element){
+        $(element).find("textarea").each(function(){
+            $(this).val('');
+            $(this).trigger("change");
+        });
+    },
+    emptyGeocode: function (element){
+        $(element).find("div[class*=\"geocode-input\"] input[type=hidden]").each(function(){
+            $(this).val('');
+            $(this).trigger("change");
+        });
+    },
+    emptyImage: function (element){
+        $(element).find("div[class*=\"bazar-entry-edit-image\"]").each(function(){
+            // currently not activated because ImageField is not safe
+            // TODO activate and TEST (prefer usage of ajax)
+            // $(this).find('output').html("");
+            // $(this).find('input[id^=data-][type=hidden]').val("");
+            // $(this).find('input[id^=filename-][type=hidden]').val("");
+            // $(this).find('input[id^=oldimage-][type=hidden]').val("");
+            // $(this).find('input[type=file]').val(" "); // works only if after this.emptyOthersInputs
+        });
+    },
+    emptyOthersInputs: function (element){
+        $(element).find("input:not([type=checkbox]):not([type=radio]):not([type=hidden])").each(function(){
+            $(this).val('');
+            $(this).trigger("change");
+        });
+    },
+    emptyChildren: function (element){
+        this.emptyCheckbox(element);
+        this.emptySelect(element);
+        this.emptyTextarea(element);
+        this.emptyRadio(element);
+        this.emptyGeocode(element);
+        this.emptyOthersInputs(element);
+        // this.emptyImage(element);
+    },
     resolveCondition: function (id){
         if (typeof this.conditionsCache[id] !== "undefined"){
             let conditionData = this.conditionsCache[id];
@@ -314,6 +378,7 @@ const ConditionsChecking = {
                 $(conditionData.node).show();
             } else {
                 $(conditionData.node).hide();
+                this.emptyChildren(conditionData.node);
             }
         }
     },
