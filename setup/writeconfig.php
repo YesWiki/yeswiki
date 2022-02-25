@@ -54,7 +54,7 @@ $config['yeswiki_release'] = YESWIKI_RELEASE;
 $config['db_charset'] = 'utf8mb4';
 
 // convert config array into PHP code
-$configCode = "<?php\n// wakka.config.php "._t('CREATED').' '.strftime('%c')."\n// "._t('DONT_CHANGE_YESWIKI_VERSION_MANUALLY')." !\n\n\$wakkaConfig = ";
+$configCode = "<?php\n// wakka.config.php "._t('CREATED').' '.date('c')."\n// "._t('DONT_CHANGE_YESWIKI_VERSION_MANUALLY')." !\n\n\$wakkaConfig = ";
 if (function_exists('var_export')) {
     // var_export gives a better result but was added in php 4.2.0 (wikini asks only php 4.1.0)
     $configCode .= var_export($config, true).";\n?>";

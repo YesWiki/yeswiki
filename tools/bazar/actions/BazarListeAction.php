@@ -70,7 +70,7 @@ class BazarListeAction extends YesWikiAction
         }
 
         $template = $_GET['template'] ?? $arg['template'] ?? null ;
-        
+
         // Dynamic templates
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
 
@@ -85,7 +85,7 @@ class BazarListeAction extends YesWikiAction
                 }
             }
         }
-        
+
         if (in_array($template, ['list', 'card'])) {
             $dynamic = true;
         }
@@ -96,7 +96,7 @@ class BazarListeAction extends YesWikiAction
         $searchfields = empty($searchfields) ? ['bf_titre'] : $searchfields;
         // End dynamic
 
-        $agendaMode = (!empty($arg['agenda']) || !empty($arg['datefilter']) || substr($template, 0, strlen('agenda')) == 'agenda') ;
+        $agendaMode = (!empty($arg['agenda']) || !empty($arg['datefilter']) || (is_string($template) && substr($template, 0, strlen('agenda')) == 'agenda')) ;
 
         // get form ids for ExternalBazarService
         // format id="4,https://example.com|6,7,https://example.com|6->8"
@@ -155,7 +155,7 @@ class BazarListeAction extends YesWikiAction
             // paramètre de tri des fiches sur une date (en gardant la retrocompatibilité avec le paramètre agenda)
             'agenda' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
             'datefilter' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
-            
+
             // Dynamic mean the template will be rendered from the front end in order to improve UX and perf
             // Only few bazar templates have been converted to javascript
             'dynamic' => $dynamic,
@@ -227,7 +227,7 @@ class BazarListeAction extends YesWikiAction
                 && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'CalendrierAction')) {
             return $this->callAction('calendrier', $this->arguments);
         }
-        
+
         $bazarListService = $this->getService(BazarListService::class);
         $forms = $bazarListService->getForms($this->arguments);
 
@@ -250,7 +250,7 @@ class BazarListeAction extends YesWikiAction
             }
             ++$GLOBALS['_BAZAR_']['nbbazarliste'];
             $this->arguments['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'] ;
-            
+
             // TODO put in all bazar templates
             $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
@@ -317,7 +317,7 @@ class BazarListeAction extends YesWikiAction
         }
     }
 
-    
+
 
     private function formatDateMin($period)
     {

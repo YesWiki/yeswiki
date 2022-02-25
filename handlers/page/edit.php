@@ -133,7 +133,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
 
             // append a comment?
             if (isset($_REQUEST['appendcomment'])) {
-                $body = trim($body)."\n\n----\n\n-- ".$this->GetUserName().' ('.strftime('%c').')';
+                $body = trim($body)."\n\n----\n\n-- ".$this->GetUserName().' ('.date('c').')';
             }
 
             $output .=

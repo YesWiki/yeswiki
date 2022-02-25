@@ -1,4 +1,5 @@
 <?php
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -123,16 +124,16 @@ if (!empty($urls)) {
                     $aso_page['datestamp'] = strtotime($item->get_date('j M Y, g:i a'));
                     switch ($formatdate) {
                         case 'jm':
-                            $aso_page['date'] = strftime('%d.%m', $aso_page['datestamp']);
+                            $aso_page['date'] = date('d.m', $aso_page['datestamp']);
                             break;
                         case 'jma':
-                            $aso_page['date'] = strftime('%d.%m.%Y', $aso_page['datestamp']);
+                            $aso_page['date'] = date('d.m.Y', $aso_page['datestamp']);
                             break;
                         case 'jmh':
-                            $aso_page['date'] = strftime('%d.%m %H:%M', $aso_page['datestamp']);
+                            $aso_page['date'] = date('d.m H:m', $aso_page['datestamp']);
                             break;
                         case 'jmah':
-                            $aso_page['date'] = strftime('%d.%m.%Y %H:%M', $aso_page['datestamp']);
+                            $aso_page['date'] = date('d.m.Y H:m', $aso_page['datestamp']);
                             break;
                         default:
                             $aso_page['date'] = '';

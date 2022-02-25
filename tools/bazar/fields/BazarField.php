@@ -227,7 +227,8 @@ abstract class BazarField implements \JsonSerializable
     {
         return $this->semanticPredicate;
     }
-    
+
+    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return [

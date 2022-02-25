@@ -121,7 +121,7 @@ class Wiki
 
     public function GetPageTime()
     {
-        return empty($this->page['time']) ?  '' : $this->page['time'];
+        return empty($this->page['time']) ? '' : $this->page['time'];
     }
 
     public function GetMethod()
@@ -409,7 +409,7 @@ class Wiki
     // returns the full url to a page/method.
     public function Href($method = null, $tag = null, $params = null, $htmlspchars = true)
     {
-        if (! $tag = trim($tag)) {
+        if ($tag == null || ! $tag = trim($tag)) {
             $tag = $this->tag;
         }
         $href = $this->config["base_url"] . $this->MiniHref($method, $tag);
@@ -553,7 +553,11 @@ class Wiki
             $tag = !empty($linkParts[1]) ? $linkParts[1] : null;
             $method = !empty($linkParts[2]) ? $linkParts[2] : null;
             $paramsStr = !empty($linkParts[3]) ? $linkParts[3] : null;
-            parse_str($paramsStr, $params);
+            $params = [];
+            if (is_string($paramsStr)) {
+                parse_str($paramsStr, $params);
+            }
+
             return [
                 'tag' => $tag,
                 'method' => $method,
@@ -1132,7 +1136,7 @@ class Wiki
     // THE BIG EVIL NASTY ONE!
     public function Run($tag = '', $method = '')
     {
-        if (! ($this->GetMicroTime() % 9)) {
+        if (! (intval($this->GetMicroTime()) % 9)) {
             $this->Maintenance();
         }
 
@@ -1191,7 +1195,7 @@ class Wiki
 
         $context = new RequestContext();
         $context->fromRequest($this->request);
-        
+
         // Use query string as the path (part before '&')
         $extract = explode('&', $context->getQueryString());
         $path = $extract[0];
@@ -1393,7 +1397,7 @@ class Wiki
 
         // This must be done after service initialization, as it uses services
         loadpreferredI18n($this, $this->tag);
-        
+
         // translations
         foreach ($this->extensions as $k => $pluginBase) {
             // language files : first default language, then preferred language

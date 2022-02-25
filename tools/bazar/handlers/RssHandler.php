@@ -13,7 +13,7 @@ class RssHandler extends YesWikiHandler
         if (!$this->wiki->HasAccess("read") || !$this->wiki->page) {
             return null;
         }
-        
+
         $urlrss = $this->wiki->href('rss');
         if (isset($_GET['id'])) {
             $id = $_GET['id'];
@@ -99,7 +99,7 @@ class RssHandler extends YesWikiHandler
         $xml .= "\r\n      ";
         $xml .= XML_Util::createTag('copyright', null, 'Copyright (c) '.date('Y').' '. htmlentities($this->wiki->config['BAZ_RSS_NOMSITE']));
         $xml .= "\r\n      ";
-        $xml .= XML_Util::createTag('lastBuildDate', null, gmstrftime('%a, %d %b %Y %H:%M:%S %Z'));
+        $xml .= XML_Util::createTag('lastBuildDate', null, date('r'));
         $xml .= "\r\n      ";
         $xml .= XML_Util::createTag('docs', null, 'http://www.stervinou.com/projets/rss/');
         $xml .= "\r\n      ";
@@ -145,7 +145,7 @@ class RssHandler extends YesWikiHandler
                     ).']]>'
                 );
                 $xml .= "\r\n        ";
-                $xml .= XML_Util::createTag('pubDate', null, strftime('%a, %d %b %Y %H:%M:%S +0100', strtotime($ligne['date_creation_fiche'])));
+                $xml .= XML_Util::createTag('pubDate', null, date('r', strtotime($ligne['date_creation_fiche'])));
                 $xml .= "\r\n      ";
                 $xml .= XML_Util::createEndElement('item');
             }
@@ -162,7 +162,7 @@ class RssHandler extends YesWikiHandler
             $xml .= "\r\n          ";
             $xml .= XML_Util::createTag('description', null, $this->sanitize(_t('BAZ_PAS_DE_FICHES')));
             $xml .= "\r\n          ";
-            $xml .= XML_Util::createTag('pubDate', null, strftime('%a, %d %b %Y %H:%M:%S GMT', strtotime('01/01/%Y')));
+            $xml .= XML_Util::createTag('pubDate', null, date('r', strtotime('01/01/%Y')));
             $xml .= "\r\n      ";
             $xml .= XML_Util::createEndElement('item');
         }
@@ -181,7 +181,7 @@ class RssHandler extends YesWikiHandler
             $this->sanitize($xml, ENT_QUOTES, 'UTF-8')
         );
     }
-    
+
     private function sanitize($string)
     {
         $string = html_entity_decode($string, ENT_QUOTES, 'UTF-8');

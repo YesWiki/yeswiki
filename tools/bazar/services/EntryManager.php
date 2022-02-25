@@ -216,7 +216,7 @@ class EntryManager
         $requeteSQL = '';
 
         //preparation de la requete pour trouver les mots cles
-        if (trim($params['keywords']) != '' && $params['keywords'] != _t('BAZ_MOT_CLE')) {
+        if (is_string($params['keywords']) && trim($params['keywords']) != '' && $params['keywords'] != _t('BAZ_MOT_CLE')) {
             $needles = $this->searchManager->searchWithLists($params['keywords'], $this->getFormsFromIds($param['formsIds'] ?? null));
             if (!empty($needles)) {
                 $first = true;
@@ -411,7 +411,7 @@ class EntryManager
 
         return $requete;
     }
-        
+
     /**
      * Return an array of fiches based on search parameters
      * @param array $params
@@ -595,7 +595,7 @@ class EntryManager
 
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
-        
+
         // replace the field values which are restricted at reading and writing
         $data = $this->assignRestrictedFields($data, $previousData, $form);
 
@@ -741,7 +741,7 @@ class EntryManager
             $this->userManager->getLoggedUserName(),
             "Suppression de la page ->\"\"" . $tag . "\"\""
         );
-        
+
         unset($this->cachedEntriestags[$tag]);
     }
 
@@ -945,7 +945,7 @@ class EntryManager
         }
     }
 
-    
+
     /**
     * remove attributes from entries only for admins !!!
     * @param array $params
@@ -969,7 +969,7 @@ class EntryManager
     {
         return $this->manageAttributes($params, $attributesNames, $applyOnAllRevisions, 'rename');
     }
-      
+
     /**
      * manage attributes from entries only for admins !!!
      * @param array $params
@@ -1033,7 +1033,7 @@ class EntryManager
 
         foreach ($pages as $page) {
             $entry = $this->decode($page['body']);
-            
+
             foreach ($attributesNames as $attributeName) {
                 if ($mode ==='rename') {
                     foreach ($attributeName as $oldName => $newName) {
