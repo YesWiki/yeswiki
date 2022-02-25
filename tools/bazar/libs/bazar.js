@@ -64,12 +64,26 @@ $(document).ready(function () {
     return false;
   });
 
+  function emptyChildren(element){
+    if (typeof ConditionsChecking === "undefined"){
+      // backward compatibility old system (not clean) TODO remove it when ConditionsChecking is sure to be installed (even in local cahe)
+      $(element).find(':input').val('').removeProp('checked');
+    } else {
+      ConditionsChecking.emptyChildren(element);
+    }
+  }
+
+  // TODO : when conditionschecking is the only system (ex: for ectoplasme) remove the followings line to manage 
+  // conditions by the old way
+
   //permet de gerer des affichages conditionnels, en fonction de balises div
   function handleConditionnalListChoice() {
     var id = $(this).attr('id');
     $('div[id^=\'' + id + '\'], div[id^=\'' + id.replace('liste', '') + '\']')
       .not('div[id=\'' + id + '_' + $(this).val() + '\'], div[id=\'' + id.replace('liste', '') + '_' + $(this).val() + '\']').hide()
-     .find(':input').val('').removeProp('checked');
+     .each(function(){
+      emptyChildren(this);
+     });
     $('div[id=\'' + id + '_' + $(this).val() + '\'], div[id=\'' + id.replace('liste', '') + '_' + $(this).val() + '\']').show()
   }
   function handleConditionnalRadioChoice() {
@@ -77,7 +91,9 @@ $(document).ready(function () {
     let shortId = id.substr(0,id.length-$(this).val().toString().length-1)
     $('div[id^=\'' + shortId+ '\']')
       .not('div[id=\'' + id + '\']').hide()
-     .find(':input').val('').removeProp('checked');
+      .each(function(){
+        emptyChildren(this);
+       });
     $('div[id=\'' + id + '\']').show();
   }
   function handleConditionnalCheckboxChoice() {
@@ -94,10 +110,14 @@ $(document).ready(function () {
       if ($(this).prop('checked') == true) {
         $('div[id=\'' + m[1] + '_' + m[2] + '\']:not(.conditional_inversed_checkbox)').show();
         $('div[id=\'' + m[1] + '_' + m[2] + '\'].conditional_inversed_checkbox').hide()
-          .find(':input').val('').removeProp('checked');;
+          .each(function(){
+            emptyChildren(this);
+          });
       } else {
         $('div[id=\'' + m[1] + '_' + m[2] + '\']:not(.conditional_inversed_checkbox)').hide()
-        .find(':input').val('').removeProp('checked');
+          .each(function(){
+            emptyChildren(this);
+          });
         $('div[id=\'' + m[1] + '_' + m[2] + '\'].conditional_inversed_checkbox').show();
       }
     }
