@@ -249,7 +249,7 @@ const ConditionsChecking = {
         }
         return " false ";
     },
-    renderBadFormatingError: function (structuredCondition){
+    renderBadFormatingError: function (structuredCondition,conditionData){
         if (typeof structuredCondition.leftPart !== "undefined") {
             console.warn(`${structuredCondition.leftPart} is not waited before '${structuredCondition.operation}' in '${conditionData.condition}'`);
             return true;
@@ -271,14 +271,14 @@ const ConditionsChecking = {
                 switch (structuredCondition.operation) {
                     case "(":
                     case "!(":
-                        if (this.renderBadFormatingError(structuredCondition)) {
+                        if (this.renderBadFormatingError(structuredCondition,conditionData)) {
                             errorFound = true;
                         } else {
                             stringToEval = stringToEval+structuredCondition.operation
                         }
                         break;
                     case "not (":
-                        if (this.renderBadFormatingError(structuredCondition)) {
+                        if (this.renderBadFormatingError(structuredCondition,conditionData)) {
                             errorFound = true;
                         } else {
                             stringToEval = stringToEval+"!("
