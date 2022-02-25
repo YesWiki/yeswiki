@@ -319,6 +319,7 @@ const ConditionsChecking = {
         this.emptyGeocode(element);
         this.emptyOthersInputs(element);
         // this.emptyImage(element);
+        // do not work for FileField also
     },
     resolveCondition: function (id){
         if (typeof this.conditionsCache[id] !== "undefined"){
