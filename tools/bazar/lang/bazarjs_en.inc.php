@@ -197,7 +197,7 @@ return [
         " - ` or ` : gives OR{\\n}".
         " - `==` : gives IS EQUAL TO{\\n}".
         " - `!=` : gives IS NOT EQUAL TO {\\n}".
-        " - ` in [value1,value2]` : IS IN the list of elements separated by coma and surrounded by hookss {\\n}".
+        " - ` in [value1,value2]` : IS IN the list of elements separated by coma and surrounded by hooks {\\n}".
         " - `|length > 6` : check if the number of elements checked is hight than 6 (foworks also with '>=','<','<=') {\\n}".
         " - ` == [value1,value2]` : IS EXACTLY the list of elements separated by coma and surrounded by hookss (only for checkbox){\\n}".
         " - `(  )` allos to group conditions with priority left to rigth{\\n}".

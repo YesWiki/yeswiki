@@ -197,7 +197,7 @@ return [
         " - ` or ` : donne OU{\\n}".
         " - `==` : donne EST ÉGALE À{\\n}".
         " - `!=` : donne EST DIFFÉRENT DE {\\n}".
-        " - ` in [value1,value2]` : FAIT PARTIE DE liste d'éléments séparés par des virgules et entouré de crohets {\\n}".
+        " - ` in [value1,value2]` : FAIT PARTIE DE liste d'éléments séparés par des virgules et entouré de crochets {\\n}".
         " - `|length > 6` : vérifie si le nombre d'éléments cochés est supérieur à 6 (fonctionne avec '>=','<','<=') {\\n}".
         " - ` == [value1,value2]` : VAUT EXACTEMENT LA liste d'éléments séparés par des virgules et entouré de crohets (uniquement pour checkbox){\\n}".
         " - `(  )` permet de grouper des conditions sinon priorité de gauche à droite{\\n}".
