@@ -354,7 +354,7 @@ const ConditionsChecking = {
         if (result.type != ""){
             return result;
         }
-        let node = $(`div[class$=${fieldName}]`);
+        let node = $(`div[class*="group-checkbox-"][class*="${fieldName}"]`);
         if (node.length > 0){
             let inputs = $(node).find('input[type=checkbox]');
             if (inputs.length > 0 ){
