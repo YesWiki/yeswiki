@@ -105,10 +105,13 @@ class FileField extends BazarField
 
         $basePath = $this->getBasePath() ;
         if (!empty($value) && file_exists($basePath.$value)) {
+            $shortFileName = $this->getShortFileName($value);
             return $this->render('@bazar/fields/file.twig', [
                 'value' => $value,
-                'fileUrl' => $this->getWiki()->getBaseUrl().'/'.$basePath . $value,
-                'shortFileName' => $this->getShortFileName($value),
+                'fileUrl' => ($shortFileName == $value)
+                    ? $this->getWiki()->getBaseUrl().'/'.$basePath . $value
+                    : $this->getWiki()->Href('download', $entry['id_fiche']."_".$this->getPropertyName(), ['file'=>$value], false),
+                'shortFileName' => $shortFileName,
             ]);
         }
 
