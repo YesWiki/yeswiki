@@ -473,6 +473,9 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
 
   // ouvrir les liens dans une nouvelle fenetre
   $(".new-window").attr("target", "_blank");
+  $(document).on("yw-modal-open",function(){
+    $(".new-window:not([target])").attr("target", "_blank");
+  });
 
   // acl switch
   $("#acl-switch-mode")
