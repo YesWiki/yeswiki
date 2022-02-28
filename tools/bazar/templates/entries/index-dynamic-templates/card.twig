@@ -25,12 +25,12 @@
       {# VISUAL AREA #}
       <template v-if="Object.keys(entry).includes('visual')">
         <template v-if="params.style == 'square'">
-          <img v-if="entry.visual" class="area visual-area" :src="`cache/image_${entry.visual}`"></img>
+          <img v-if="entry.visual" class="area visual-area" :src="`${urlImage(entry,'visual')}`"></img>
           <div v-else class="area area visual-area placeholder"></div>
         </template>
         <template v-else>
           <div v-if="entry.visual" class="area visual-area" 
-            :style="{'background-image': `url(cache/image_${entry.visual})`}">
+            :style="{'background-image': `url(${urlImage(entry,'visual')})`}">
           </div>
           <div v-else class="area area visual-area placeholder"></div>
         </template>

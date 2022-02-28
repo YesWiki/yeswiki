@@ -208,6 +208,20 @@ class ImageField extends FileField
                 'imageHeight' => $this->imageHeight,
                 'imageWidth' => $this->imageWidth,
                 'imageClass' => $this->imageClass,
+                'regExp' => [
+                    'thumbnailPath' => [
+                        "^({tag}_{$this->getPropertyName()}_.*)_(\d{14})_(\d{14})\.(.*)$" => "{$baseUrl}/{$this->getAttach()->GetCachePath()}/$1_vignette_{$this->thumbnailWidth}_{$this->thumbnailHeight}_$2_$3.$4"
+                    ],
+                    'imagePath' => [
+                        "^({tag}_{$this->getPropertyName()}_.*)_(\d{14})_(\d{14})\.(.*)$" => "{$baseUrl}/{$this->getAttach()->GetCachePath()}/$1_vignette_{$this->imageWidth}_{$this->imageHeight}_$2_$3.$4"
+                    ],
+                    'oldThumbnailPath' => [
+                        "^(.*)\.([^.]*)$" => "{$baseUrl}/{$this->getAttach()->GetCachePath()}/vignette_$1.$2"
+                    ],
+                    'oldImagePath' => [
+                        "^(.*)\.([^.]*)$" => "{$baseUrl}/{$this->getAttach()->GetCachePath()}/image_$1.$2"
+                    ],
+                ],
             ]
         );
     }

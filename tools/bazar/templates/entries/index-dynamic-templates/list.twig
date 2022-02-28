@@ -11,7 +11,7 @@
         <div class="panel-heading-container" :class="{'with-image': entry.visual}">
           {# VISUAL AREA #}
           <div class="visual-area" v-if="entry.visual" 
-              :style="{'background-image': `url(cache/vignette_${entry.visual})`}">
+              :style="{'background-image': `url(${urlImage(entry,'visual','thumbnail')})`}">
           </div>
           {# TITLE AREA #}
           <h4 div class="title-area panel-title">

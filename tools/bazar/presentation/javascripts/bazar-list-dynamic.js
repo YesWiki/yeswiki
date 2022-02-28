@@ -228,7 +228,33 @@ document.addEventListener('DOMContentLoaded', function() {
         // TODO BazarListDynamic check with users if this is expected behaviour
         if (this.computedFilters[field]) values = values.filter(val => this.computedFilters[field].includes(val))
         return mapping[values[0]]
-      }      
+      },
+      urlImage(entry,fieldName,mode = "image") {
+        if (!entry[fieldName]){
+          return null;
+        }
+        let fileName = entry[fieldName];
+        let field = this.fieldInfo(fieldName);
+        if (field.regExp != undefined){
+          let regExpData = (mode == "image") ? field.regExp.imagePath : field.regExp.thumbnailPath;
+          let imageRegExp = Object.keys(regExpData)[0];
+          imageRegExp = imageRegExp.replace('{tag}',entry.id_fiche);
+          imageRegExp = new RegExp(imageRegExp);
+          if (imageRegExp.test(fileName)){
+            let imageReplacement = Object.values(regExpData)[0];
+            return fileName.replace(imageRegExp,imageReplacement);
+          }
+          regExpData = (mode == "image") ? field.regExp.oldImagePath : field.regExp.oldThumbnailPath;
+          imageRegExp = Object.keys(regExpData)[0];
+          imageRegExp = new RegExp(imageRegExp);
+          if (imageRegExp.test(fileName)){
+            let imageReplacement = Object.values(regExpData)[0];
+            return fileName.replace(imageRegExp,imageReplacement);
+          }
+          // TODO manage external-data and Image from other entry
+        }
+        return `files/${fileName}`;
+      }
     },
     mounted() {
       let savedHash = document.location.hash // don't know how, but the hash get cleared after 
