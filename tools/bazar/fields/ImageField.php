@@ -27,6 +27,7 @@ class ImageField extends FileField
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
+        $this->readLabel = "";
 
         $this->thumbnailHeight = $values[self::FIELD_THUMBNAIL_HEIGHT];
         $this->thumbnailWidth = $values[self::FIELD_THUMBNAIL_WIDTH];
@@ -119,6 +120,24 @@ class ImageField extends FileField
                         $previousFileName = $entry['oldimage_' . $this->propertyName];
                         $this->securedDeleteImageAndCache($entry, $previousFileName);
                     }
+                    
+
+                    // Generate thumbnails to speedup loading of bazar templates
+                    if (!empty($this->thumbnailWidth) && !empty($this->thumbnailHeight)) {
+                        $attach = $this->getAttach();
+                        $filePathResized = $attach->getResizedFilename($filePath, $this->thumbnailWidth, $this->thumbnailHeight);
+                        if (!file_exists($filePathResized)) {
+                            $attach->redimensionner_image($filePath, $filePathResized, $this->thumbnailWidth, $this->thumbnailHeight);
+                        }
+                    }
+                    // Adapt image dimensions
+                    if (!empty($this->imageWidth) && !empty($this->imageHeight)) {
+                        $attach = $this->getAttach();
+                        $filePathResized = $attach->getResizedFilename($filePath, $this->imageWidth, $this->imageHeight);
+                        if (!file_exists($filePathResized)) {
+                            $attach->redimensionner_image($filePath, $filePathResized, $this->imageWidth, $this->imageHeight);
+                        }
+                    }
                 } else {
                     flash(str_replace('{fileName}', $fileName, _t('BAZ_IMAGE_ALREADY_EXISTING')), 'info');
                 }
@@ -174,5 +193,22 @@ class ImageField extends FileField
             return true;
         }
         return false;
+    }
+    
+    public function jsonSerialize()
+    {
+        $fileFieldData = parent::jsonSerialize();
+        unset($fileFieldData['readLabel']);
+        $baseUrl = $this->getWiki()->getBaseUrl();
+        return array_merge(
+            $fileFieldData,
+            [
+                'thumbnailHeight' => $this->thumbnailHeight,
+                'thumbnailWidth' => $this->thumbnailWidth,
+                'imageHeight' => $this->imageHeight,
+                'imageWidth' => $this->imageWidth,
+                'imageClass' => $this->imageClass,
+            ]
+        );
     }
 }
