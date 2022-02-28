@@ -31,8 +31,12 @@ abstract class PackageExt extends Package
             throw new \Exception(_t('AU_PACKAGE_NOT_UNZIPPED'), 1);
         }
 
+        // get the first subfolder extracted from the zip (it contains everything)
+        $dirs = array_filter(glob($this->extractionPath.'/*'), 'is_dir');
+        $extractionPath = $dirs[0].'/';
+    
         $this->copy(
-            $this->extractionPath . '/' . $this->name(),
+            $extractionPath,
             $desPath
         );
 
