@@ -263,6 +263,7 @@ return [
     'PASSWORD_CONFIRMATION' => 'Wachtwoordbevestiging',
     'NEW_ACCOUNT' => 'Nieuwe account',
     // 'LOGGED_USERS_ONLY_ACTION' => 'Il faut être connecté pour pouvoir exécuter cette action',
+    'USER_DELETE' => 'Gebruiker verwijderen',
 
 
     // actions/wantedpages.php
@@ -517,8 +518,11 @@ return [
     // 'EDIT_CONFIG_GROUP_ACCESS' => 'Droit d\'accès',
     // 'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
 
-    // actions/usertable.php
-    // 'GROUP_S' => 'Groupe(s)',
+    // actions/userstable.php
+    'USERSTABLE_USER_DELETED' => 'De gebruiker "{gebruikersnaam}" is verwijderd.',
+    'USERSTABLE_USER_NOT_DELETED' => 'De gebruiker "{gebruikersnaam}" is niet verwijderd.',
+    'USERSTABLE_NOT_EXISTING_USER' => 'De gebruiker "{gebruikersnaam}" bestaat niet!',
+    'GROUP_S' => 'Groep(en)',
 
     // handlers/deletepage
     // 'DELETEPAGE_CANCEL' => 'Annuler',

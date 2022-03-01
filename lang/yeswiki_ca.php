@@ -264,6 +264,7 @@ return [
     'PASSWORD_CONFIRMATION' => 'Confirmació de contrasenya',
     'NEW_ACCOUNT' => 'Crea un compte nou',
     // 'LOGGED_USERS_ONLY_ACTION' => 'Il faut être connecté pour pouvoir exécuter cette action',
+    'USER_DELETE' => 'Suprimeix l\'usuari',
 
 
     // actions/wantedpages.php
@@ -518,8 +519,11 @@ return [
     // 'EDIT_CONFIG_GROUP_ACCESS' => 'Droit d\'accès',
     // 'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
 
-    // actions/usertable.php
-    // 'GROUP_S' => 'Groupe(s)',
+    // actions/userstable.php
+    'USERSTABLE_USER_DELETED' => 'S\'ha suprimit l\'usuari "{username}".',
+    'USERSTABLE_USER_NOT_DELETED' => 'L\'usuari "{username}" no s\'ha suprimit.',
+    'USERSTABLE_NOT_EXISTING_USER' => 'L\'usuari "{username}" no existeix!',
+    'GROUP_S' => 'Grup(s)',
 
     // handlers/deletepage
     // 'DELETEPAGE_CANCEL' => 'Annuler',

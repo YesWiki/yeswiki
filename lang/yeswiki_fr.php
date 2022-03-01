@@ -262,6 +262,7 @@ return [
     'PASSWORD_CONFIRMATION' => 'Confirmation du mot de passe',
     'NEW_ACCOUNT' => 'Nouveau compte',
     'LOGGED_USERS_ONLY_ACTION' => 'Il faut être connecté pour pouvoir exécuter cette action',
+    'USER_DELETE' => 'Supprimer l\'utilisateur',
 
 
     // actions/wantedpages.php
@@ -517,7 +518,10 @@ return [
     'EDIT_CONFIG_GROUP_ACCESS' => 'Droit d\'accès',
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
 
-    // actions/usertable.php
+    // actions/userstable.php
+    'USERSTABLE_USER_DELETED' => 'L\'utilisateur "{username}" a été supprimé.',
+    'USERSTABLE_USER_NOT_DELETED' => 'L\'utilisateur "{username}" n\'a pas été supprimé.',
+    'USERSTABLE_NOT_EXISTING_USER' => 'L\'utilisateur "{username}" n\'existe pas !',
     'GROUP_S' => 'Groupe(s)',
 
     // handlers/deletepage

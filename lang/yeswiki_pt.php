@@ -262,7 +262,7 @@ return [
     'PASSWORD_CONFIRMATION' => 'Confirme a senha',
     'NEW_ACCOUNT' => 'Nova conta',
     // 'LOGGED_USERS_ONLY_ACTION' => 'Il faut être connecté pour pouvoir exécuter cette action',
-
+    'USER_DELETE' => 'Eliminar utilizador',
 
     // actions/wantedpages.php
     'NO_PAGE_TO_CREATE' => 'Nenhuma página para criar',
@@ -518,8 +518,11 @@ return [
     // 'EDIT_CONFIG_GROUP_ACCESS' => 'Droit d\'accès',
     // 'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
 
-    // actions/usertable.php
-    // 'GROUP_S' => 'Groupe(s)',
+    // actions/userstable.php
+    'USERSTABLE_USER_DELETED' => 'O utilizador "{username}" foi eliminado.',
+    'USERSTABLE_USER_NOT_DELETED' => 'O utilizador "{username}" não foi eliminado.',
+    'USERSTABLE_NOT_EXISTING_USER' => 'O utilizador "{username}" não existe!',
+    'GROUP_S' => 'Grupo(s)',
 
     // handlers/deletepage
     // 'DELETEPAGE_CANCEL' => 'Annuler',

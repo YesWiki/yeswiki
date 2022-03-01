@@ -1,0 +1,63 @@
+{{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
+{{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
+
+{{ postActionMessages|raw }}
+
+{# order on signuptime desc #}
+<table class="table table-striped" data-order='[[ {{ isAdmin ? 3 : 2 }}, "desc" ]]'>
+  <thead>
+    <tr>
+      <th>{{ _t('NAME') }}</th>
+      <th>{{ _t('GROUP_S') }}</th>
+      {% if isAdmin %}
+        <th>{{ _t('EMAIL') }}</th>
+      {% endif %}
+      <th>{{ _t('SUBSCRIPTION') }}</th>
+      <th>{{ _t('MODIFY') }}</th>
+      <th>{{ _t('DELETE') }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+      {% set userIsTheOneConnected = (connectedUserName is not empty and connectedUserName == user.name)%}
+      <tr>
+        <td>{{ user.name }}</td>
+        <td>{{ (isAdmin or userIsTheOneConnected) ? user.groups|join(', ') : ((user.groups is not empty) ? '***' : '') }}</td>
+        {% if isAdmin %} {# Email only shown to admins #}
+          <td>{{ user.email }}</td>
+        {% endif %}
+        <td>{{ user.signuptime }}</td>
+        <td>
+          {% if userIsTheOneConnected %} 
+            <a href="{{ url({tag:'ParametresUtilisateur'}) }}"
+              class="btn btn-sm btn-primary" role="button">
+              {{ _t('MODIFY') }}
+            </a>
+          {% elseif isAdmin %}
+            {# not the current user, then can be modified #} 
+            <a href="{{ url({tag:'ParametresUtilisateur',params:{user:user.name,from:tag}}) }}"
+              class="btn btn-sm btn-warning" role="button">
+              {{ _t('MODIFY') }}
+            </a>
+          {% endif %}
+        </td>
+        <td>
+          {% if isAdmin and not userIsTheOneConnected %}
+            <form action="{{ url({handler:''}) }}" method="post">
+              <input type="hidden" name="userstable_action" value="deleteUser" />
+              <input type="hidden" name="username" value="{{ user.name|e('html_attr') }}" />
+              <input
+                type="hidden"
+                name="csrf-token-delete" 
+                value="{{ csrfToken({id:"action\\userstable\\deleteUser\\#{user.name}",refresh:true})|e('html_attr') }}">
+              <input class="btn btn-sm btn-danger" 
+                type="submit" 
+                onclick="return confirm(\'{{ _t('USER_CONFIRM_DELETE') }}\');" 
+                {# TODO use yeswikijs for USER_CONFIRM_DELETE  #}
+                value="{{ _t('DELETE') }}" />
+            </form>
+          {% endif %}
+        </td>
+    {% endfor %}
+  </tbody>
+</table>

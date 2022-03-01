@@ -263,6 +263,7 @@ return [
     'PASSWORD_CONFIRMATION' => 'Password confirmation',
     'NEW_ACCOUNT' => 'New account',
     'LOGGED_USERS_ONLY_ACTION' => 'You must be logged in to perform this action',
+    'USER_DELETE' => 'Delete user',
     
     // actions/wantedpages.php
     'NO_PAGE_TO_CREATE' => 'No page to create',
@@ -479,8 +480,11 @@ return [
     'EDIT_CONFIG_GROUP_ACCESS' => "Access rights",
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
 
-    // actions/usertable.php
-    'GROUP_S' => 'Groupe(s)',
+    // actions/userstable.php
+    'USERSTABLE_USER_DELETED' => 'User "{username}" has been deleted.',
+    'USERSTABLE_USER_NOT_DELETED' => 'The user "{username}" has not been deleted.',
+    'USERSTABLE_NOT_EXISTING_USER' => 'The user "{username}" does not exist!',
+    'GROUP_S' => 'Group(s)',
 
     // handlers/deletepage
     'DELETEPAGE_CANCEL' => 'Cancel',
