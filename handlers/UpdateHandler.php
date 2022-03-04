@@ -19,54 +19,55 @@ class UpdateHandler extends YesWikiHandler
 
         if ($this->wiki->UserIsAdmin()) {
             $output .= '<strong>YesWiki core</strong><br />';
-            $dblink = $this->getService(DbService::class)->getLink();
+            $dbService = $this->getService(DbService::class);
+            $dblink = $dbService->getLink();
 
             // drop old nature table fields
-            $result = $this->wiki->Query("SHOW COLUMNS FROM ".$this->wiki->config['table_prefix']."nature WHERE FIELD IN ('bn_ce_id_menu' ,'bn_commentaire' , 'bn_appropriation' , 'bn_image_titre' , 'bn_image_logo' , 'bn_couleur_calendrier' , 'bn_picto_calendrier' , 'bn_type_fiche' , 'bn_label_class')");
+            $result = $this->wiki->Query("SHOW COLUMNS FROM {$dbService->prefixTable("nature")} WHERE FIELD IN ('bn_ce_id_menu' ,'bn_commentaire' , 'bn_appropriation' , 'bn_image_titre' , 'bn_image_logo' , 'bn_couleur_calendrier' , 'bn_picto_calendrier' , 'bn_type_fiche' , 'bn_label_class')");
             if (@mysqli_num_rows($result) > 0) {
-                $output .= 'ℹ️ Removing old fields from ' . $this->wiki->config['table_prefix'].'nature table.<br />';
+                $output .= "ℹ️ Removing old fields from {$dbService->prefixTable("nature")}table.<br />";
 
                 // don't show output because it can be an error if column doesn't exists
-                @$this->wiki->Query("ALTER TABLE ".$this->wiki->config['table_prefix']."nature DROP `bn_ce_id_menu`;");
-                @$this->wiki->Query("ALTER TABLE ".$this->wiki->config['table_prefix']."nature DROP `bn_commentaire`;");
-                @$this->wiki->Query("ALTER TABLE ".$this->wiki->config['table_prefix']."nature DROP `bn_appropriation`;");
-                @$this->wiki->Query("ALTER TABLE ".$this->wiki->config['table_prefix']."nature DROP `bn_image_titre`;");
-                @$this->wiki->Query("ALTER TABLE ".$this->wiki->config['table_prefix']."nature DROP `bn_image_logo`;");
-                @$this->wiki->Query("ALTER TABLE ".$this->wiki->config['table_prefix']."nature DROP `bn_couleur_calendrier`;");
-                @$this->wiki->Query("ALTER TABLE ".$this->wiki->config['table_prefix']."nature DROP `bn_picto_calendrier`;");
-                @$this->wiki->Query("ALTER TABLE ".$this->wiki->config['table_prefix']."nature DROP `bn_type_fiche`;");
-                @$this->wiki->Query("ALTER TABLE ".$this->wiki->config['table_prefix']."nature DROP `bn_label_class`;");
-                @$this->wiki->Query("ALTER TABLE ".$this->wiki->config['table_prefix']."nature MODIFY COLUMN bn_ce_i18n VARCHAR(5) NOT NULL DEFAULT ''");
+                @$this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} DROP `bn_ce_id_menu`;");
+                @$this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} DROP `bn_commentaire`;");
+                @$this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} DROP `bn_appropriation`;");
+                @$this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} DROP `bn_image_titre`;");
+                @$this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} DROP `bn_image_logo`;");
+                @$this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} DROP `bn_couleur_calendrier`;");
+                @$this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} DROP `bn_picto_calendrier`;");
+                @$this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} DROP `bn_type_fiche`;");
+                @$this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} DROP `bn_label_class`;");
+                @$this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} MODIFY COLUMN bn_ce_i18n VARCHAR(5) NOT NULL DEFAULT ''");
                 $output .= '✅ Done !<br />';
             } else {
-                $output .= '✅ The table '.$this->wiki->config['table_prefix'].'nature is already cleaned up from old tables !<br />';
+                $output .= "✅ The table {$dbService->prefixTable("nature")}is already cleaned up from old tables !<br />";
             }
 
             // remove createur field
             $entryManager = $this->getService(EntryManager::class);
             if (method_exists(EntryManager::class, 'removeAttributes')) {
                 if ($entryManager->removeAttributes([], ['createur'], true)) {
-                    $output .= 'ℹ️ Removing createur field from bazar entries in ' . $this->wiki->config['table_prefix'].'pages table.<br />';
+                    $output .= "ℹ️ Removing createur field from bazar entries in {$dbService->prefixTable("pages")}table.<br />";
                     $output .= '✅ Done !<br />';
                 } else {
-                    $output .= '✅ The table '.$this->wiki->config['table_prefix'].'pages is already free of createur fields in bazar entries !<br />';
+                    $output .= "✅ The table {$dbService->prefixTable("pages")}is already free of createur fields in bazar entries !<br />";
                 }
             } else {
-                $output .= '! Not possible to remove createur field from bazar entries in ' . $this->wiki->config['table_prefix'].'pages table.<br />';
+                $output .= "! Not possible to remove createur field from bazar entries in {$dbService->prefixTable("pages")}table.<br />";
             }
 
             // add semantic bazar fields
-            $result = $this->wiki->Query("SHOW COLUMNS FROM ".$this->wiki->config['table_prefix']."nature LIKE 'bn_sem_context'");
+            $result = $this->wiki->Query("SHOW COLUMNS FROM {$dbService->prefixTable("nature")} LIKE 'bn_sem_context'");
             if (@mysqli_num_rows($result) === 0) {
-                $output .= 'ℹ️ Adding fields bn_sem_context, bn_sem_type and bn_sem_use_template to ' . $this->wiki->config['table_prefix'].'nature table.<br />';
+                $output .= "ℹ️ Adding fields bn_sem_context, bn_sem_type and bn_sem_use_template to {$dbService->prefixTable("nature")}table.<br />";
 
-                $this->wiki->Query("ALTER TABLE ".$this->wiki->config['table_prefix']."nature ADD COLUMN bn_sem_context text COLLATE utf8mb4_unicode_ci AFTER bn_condition");
-                $this->wiki->Query("ALTER TABLE ".$this->wiki->config['table_prefix']."nature ADD COLUMN bn_sem_type varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL AFTER bn_sem_context");
-                $this->wiki->Query("ALTER TABLE ".$this->wiki->config['table_prefix']."nature ADD COLUMN bn_sem_use_template tinyint(1) NOT NULL DEFAULT 1 AFTER bn_sem_type");
+                $this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} ADD COLUMN bn_sem_context text COLLATE utf8mb4_unicode_ci AFTER bn_condition");
+                $this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} ADD COLUMN bn_sem_type varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL AFTER bn_sem_context");
+                $this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} ADD COLUMN bn_sem_use_template tinyint(1) NOT NULL DEFAULT 1 AFTER bn_sem_type");
 
                 $output .= '✅ Done !<br />';
             } else {
-                $output .= '✅ The table '.$this->wiki->config['table_prefix'].'nature is already up-to-date with semantic fields!<br />';
+                $output .= "✅ The table {$dbService->prefixTable("nature")}is already up-to-date with semantic fields!<br />";
             }
 
             // propose to update content of admin's pages
