@@ -3,14 +3,11 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Wiki;
-
-class UserFieldException extends \Exception
-{
-}
 
 /**
  * @Field({"yeswiki_user", "utilisateur_wikini"})

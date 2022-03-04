@@ -4,7 +4,7 @@ use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Core\Service\UserManager;
-use YesWiki\Core\Service\TemplateNotFound;
+use YesWiki\Core\Exception\TemplateNotFound;
 
 class BazarListeAction extends YesWikiAction
 {

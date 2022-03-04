@@ -5,11 +5,8 @@ namespace YesWiki\Core\Service;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Core\Exception\TemplateNotFound;
 use YesWiki\Wiki;
-
-class TemplateNotFound extends \Exception
-{
-}
 
 class TemplateEngine
 {
