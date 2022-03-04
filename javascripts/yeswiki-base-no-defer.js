@@ -1,9 +1,12 @@
 
 function _t(message,replacements = {}){
-    var translation = wiki.lang[message] ?? null ;
+    var translation =
+        typeof wiki !== 'undefined' && 
+        wiki.lang !== undefined
+        ? (wiki.lang[message] ?? null) : null ;
     if (!translation){
         translation = message;
-        if (wiki.isDebugEnabled){
+        if (typeof wiki !== 'undefined' && wiki.isDebugEnabled){
             console.warn('Translation was not found in wiki.lang for "'+message+'", (wiki.locale = '+wiki.locale+')');
         }
     }
