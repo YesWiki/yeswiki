@@ -11,9 +11,9 @@
   {% endif %}
 {% endif %}
 {% if value %}
-    <input type="hidden" name="nomwiki" value="{{ value }}" />
+    <input type="hidden" name="nomwiki" value="{{ value }}"{% if userEmail is not empty %} data-fieldnametoupdate="{{ field.emailField }}" data-useremail="{{ userEmail }}"{% endif %}/>
 {% endif %}
-{% if userIsAdmin and value == userName %}
+{% if userIsAdmin and value == userName and creationMode %}
     <div class="input-group">
         <label for="checkboxListe{{ forceLabel }}[fake_value_checked]">
             <input 
@@ -33,7 +33,7 @@
         </div>
     </div>
 {% endif %}
-{% if not value or ( userIsAdmin and value == userName ) %}
+{% if not value or ( userIsAdmin and value == userName and creationMode) %}
     <div class="control-group form-group"{{ userIsAdmin ? " id=checkboxListe" ~ forceLabel ~ "_fake_value_checked" : '' }}>
         <label class="control-label col-sm-3">
             <span class="symbole_obligatoire"></span>
@@ -63,3 +63,4 @@
         </div>
     </div>
 {% endif %}
+{{ include_javascript('tools/bazar/presentation/javascripts/user-field-update-email.js') }}

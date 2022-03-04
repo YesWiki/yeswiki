@@ -79,9 +79,11 @@ class UserField extends BazarField
         }
         return $this->render("@bazar/inputs/user.twig", [
             'value' => $value,
+            'creationMode' => empty($entry[$this->getPropertyName()]),
             'message' => $message ?? null,
             'userIsAdmin' =>  $this->getWiki()->UserIsAdmin(),
             'userName' =>  $loggedUser['name'] ?? null,
+            'userEmail' =>  $loggedUser['email'] ?? null,
             'forceLabel' => $this->propertyName.self::FORCE_LABEL,
             'forceLabelChecked' => $_POST[$this->propertyName.self::FORCE_LABEL] ?? false,
         ]);
@@ -128,7 +130,10 @@ class UserField extends BazarField
                     $wikiName = genere_nom_wiki($wikiName);
                 }
                 if (!$isImport
-                    && !in_array($_POST[$this->propertyName.self::CONFIRM_NAME_SUFFIX] ?? false, [true,1,"1"], true)
+                    && (
+                        !isset($_POST[$this->propertyName.self::CONFIRM_NAME_SUFFIX])
+                        || !in_array($_POST[$this->propertyName.self::CONFIRM_NAME_SUFFIX], [true,1,"1"], true)
+                    )
                     ) {
                     throw new UserFieldException(
                         $this->render("@bazar/inputs/user-confirm.twig", [
