@@ -12,6 +12,7 @@ use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
 
@@ -25,6 +26,7 @@ class EntryController extends YesWikiController
     protected $templateEngine;
     protected $config;
     protected $securityController;
+    protected $userManager;
 
     private $parentsEntries ;
 
@@ -35,7 +37,8 @@ class EntryController extends YesWikiController
         SemanticTransformer $semanticTransformer,
         PageManager $pageManager,
         ParameterBagInterface $config,
-        SecurityController $securityController
+        SecurityController $securityController,
+        UserManager $userManager
     ) {
         $this->entryManager = $entryManager;
         $this->formManager = $formManager;
@@ -44,6 +47,7 @@ class EntryController extends YesWikiController
         $this->pageManager = $pageManager;
         $this->config = $config->all();
         $this->securityController = $securityController;
+        $this->userManager = $userManager;
         $this->parentsEntries = [];
     }
 
@@ -211,29 +215,36 @@ class EntryController extends YesWikiController
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FORM_AVEC_CET_ID') . ' : \'' . $formId . '\'</div>';
         }
 
-        list($state, $error) = $this->securityController->checkCaptchaBeforeSave('entry');
-        try {
-            if ($state && isset($_POST['bf_titre'])) {
-                $entry = $this->entryManager->create($formId, $_POST);
-                if (empty($redirectUrl)) {
-                    $redirectUrl = $this->wiki->Href(
-                        testUrlInIframe(),
-                        '',
-                        [  'vue' => 'consulter',
-                        'action' => 'voir_fiche',
-                        'id_fiche' => $entry['id_fiche'],
-                        'message' => 'ajout_ok'],
-                        false
-                    );
+        $results = $this->checkIfOnlyOneEntry($form, $_POST ?? []);
+        if (!empty($results['output'])) {
+            return $results['output'];
+        } elseif (empty($results['error'])) {
+            list($state, $error) = $this->securityController->checkCaptchaBeforeSave('entry');
+            try {
+                if ($state && isset($_POST['bf_titre'])) {
+                    $entry = $this->entryManager->create($formId, $_POST);
+                    if (empty($redirectUrl)) {
+                        $redirectUrl = $this->wiki->Href(
+                            testUrlInIframe(),
+                            '',
+                            [  'vue' => 'consulter',
+                            'action' => 'voir_fiche',
+                            'id_fiche' => $entry['id_fiche'],
+                            'message' => 'ajout_ok'],
+                            false
+                        );
+                    }
+                    header('Location: ' . $redirectUrl);
+                    $this->wiki->exit();
                 }
-                header('Location: ' . $redirectUrl);
-                $this->wiki->exit();
+            } catch (UserFieldException $e) {
+                $error .= $this->render('@templates/alert-message.twig', [
+                    'type' => 'warning',
+                    'message' => $e->getMessage()
+                ]);
             }
-        } catch (UserFieldException $e) {
-            $error .= $this->render('@templates/alert-message.twig', [
-                'type' => 'warning',
-                'message' => $e->getMessage()
-            ]);
+        } else {
+            $error = $results['error'];
         }
 
         $renderedInputs = $this->getRenderedInputs($form);
@@ -632,5 +643,73 @@ class EntryController extends YesWikiController
             );
         }
         return $this->wiki->Action('bazarliste', 0, $params);
+    }
+
+    /**
+     * check if creation of entry is authorized for this form
+     * @param array $form
+     * @param array $post
+     * @return array ["error" => string, "output" => string]
+     */
+    private function checkIfOnlyOneEntry(array $form, array $post): array
+    {
+        $results = [
+            "error" => "",
+            "output" => ""
+        ];
+        if (isset($form['bn_only_one_entry']) && $form['bn_only_one_entry'] === "Y") {
+            // get LoggedUser and check if is owner of another entry of this form
+            $loggerUser = $this->userManager->getLoggedUser();
+            $formHasBfMail = !empty(array_filter($form['prepared'], function ($field) {
+                return $field->getPropertyName() === 'bf_mail';
+            }));
+            if (!empty($loggerUser)) {
+                $userName = $loggerUser['name'];
+                $entries = $this->entryManager->search([
+                    'formsIds' => [$form['bn_id_nature']],
+                    'user' => $userName
+                ]);
+                if (!empty($entries)) {
+                    $firstEntry = $entries[array_keys($entries)[0]];
+                    $results['output'] = $this->view($firstEntry['id_fiche']);
+                    return $results;
+                } elseif ($formHasBfMail) {
+                    $userEmail = $loggerUser['email'];
+                    $entries = $this->entryManager->search([
+                        'formsIds' => [$form['bn_id_nature']],
+                        'queries' => ['bf_mail' => $userEmail]
+                    ]);
+                    if (!empty($entries)) {
+                        $firstEntry = $entries[array_keys($entries)[0]];
+                        $results['output'] = $this->view($firstEntry['id_fiche']);
+                        return $results;
+                    }
+                }
+            } elseif (isset($_POST['bf_titre'])) {
+                // save not connected
+                if ($formHasBfMail) {
+                    $entryEmail = filter_input(INPUT_POST, 'bf_mail', FILTER_VALIDATE_DOMAIN);
+                    if (empty($entryEmail)) {
+                        $results['error'] = $this->render('@templates/alert-message.twig', [
+                            'type' => 'danger',
+                            'message' => _t('BAZ_BF_MAIL_SHOULD_NOT_BE_AN_EMAIL_NOT_EMPTY')
+                        ]);
+                    } else {
+                        $entries = $this->entryManager->search([
+                            'formsIds' => [$form['bn_id_nature']],
+                            'queries' => ['bf_mail' => $entryEmail]
+                        ]);
+                        if (!empty($entries)) {
+                            $firstEntry = $entries[array_keys($entries)[0]];
+                            $results['error'] = $this->render('@templates/alert-message.twig', [
+                                'type' => 'danger',
+                                'message' => _t('BAZ_ANOTHER_ENTRY_WITH_SAME_EMAIL')
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+        return $results;
     }
 }
