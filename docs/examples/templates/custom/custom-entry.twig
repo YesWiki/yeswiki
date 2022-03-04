@@ -1,0 +1,77 @@
+{# macro import to put at top of twig file (or first twig file if included) #}
+{% import '@custom/custom-macro.twig' as customMacro %}
+{# ----- #}
+
+{# USEFUL SYNTAXES : 
+	- {{ fiche.nom_champ }} the easiest way to access to a field's value but could be unsafe for XSS attacks (be careful when using `|raw`)
+	- {{ customMacro.showStr(html.listenom_champ,'optionnal label','optionnal class css') }} Display a list field  
+	- {{ customMacro.displayValueIfNotEmpty(fiche,'fullFieldName','Text',form) }} Display the fieldName value only if not empty with the choosen 'Text' (the text is not displayed if empty)
+	- {{ customMacro.showIfNotEmpty('Text','fullFieldName',html) }} Same as above but faster, to prefer if html contains the rigth thing
+#}  
+
+<div class="row" style="margin:30px;">
+  <div class="col-xs-6 col-md-6" style="text-align:left;">
+   <h2>{{ fiche.bf_titre }}</h2>
+	{% if fiche.bf_description %}
+		   {{ customMacro.showStr(html.bf_description,'','') }}
+		
+    {% endif %}
+
+	
+  </div>
+  <div class="col-xs-6 col-md-6 ">
+   {% if headerImageAddr %}
+  
+    <img
+      class="center"
+      style=" display: block;border:3px solid var(--neutral-light-color);"
+      alt="{{ fiche.bf_titre|e('html_attr') }}"
+      src="{{ headerImageAddr }}"
+    />
+	{% endif %}
+	 <div class="bloc-date-lieu" >
+		<h3>Du {{ html.bf_date_debut_evenement }} </h3>
+		{% if fiche.bf_date_fin_evenement %}	<h3>au {{ html.bf_date_fin_evenement }} </h3>  {% endif %}
+	
+		{# Mise en forme du bloc CONTACT
+			- Pensez à vérifier que les intitulés des champs dans votre formulaire correspond bien à ceux ci : bf_adresse1 / bf_code_postal / bf_ville / bf_mail / bf_site_internet
+			ou à les remplacer dans le présent template
+			- Les icones fournies via les fontawesome  #}
+			
+		{% if fiche.bf_lieu %} 	<h3>{{ fiche.bf_lieu }} </h3> 	{% endif %}
+		{% if fiche.bf_adresse or fiche.bf_adresse12 %}	
+			<p><i class="fas fa-map-marker"> </i> {{ fiche.bf_adresse }}</p> 
+			<p style="margin-left:20px;">     {{ fiche.bf_adresse12 }}</p> 
+			{% endif %}
+		<p style="margin-left:20px;"> {{ fiche.bf_code_postal ~ ' ' ~ fiche.bf_ville }} </p>
+		{% if fiche.bf_telephone   %}	<p><i class="fas fa-phone-alt"> </i> {{ format(fiche.bf_telephone)|raw }} </p> {% endif %}
+		{% if fiche.bf_site_internet and not (fiche.bf_site_internet == 'http://') %} <p><i class="fas fa-link"> </i> {{ format(fiche.bf_site_internet)|raw }}</p>{% endif %}
+		{{ customMacro.showStr(html.bf_mail,'','primary') }}
+	</div>
+
+   
+	</div>
+</div> {# --Fin de la partie info grand public-- #}
+
+{# --- Debut infos réservées administrateur --#}
+{{ format('{{section visibility="@admins"}}')|raw }}
+
+<div class="panel panel-warning">
+  <div class="panel-heading  center"><h4><i class="far fa-hand-point-right"></i> Administration</h4></div>
+      <div class="panel-body">
+    {{ customMacro.showStr(html.listeListeListeprojets,'Cadre','') }}
+        {{ customMacro.showStr(html.checkboxListeParametresDAffichagecheckbox_parametres_affichage,'Affichage','') }}
+  </div>
+</div>
+
+{{ format('{{end elem="section"}}')|raw }}
+
+	
+	
+
+   
+
+
+
+
+
