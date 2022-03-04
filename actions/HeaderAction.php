@@ -39,7 +39,7 @@ class HeaderAction extends YesWikiAction
                     'message' => _t('TEMPLATE_NO_DEFAULT_THEME') .'<br><b>' .  _t('THEME_MANAGER_LOGIN_AS_ADMIN') . '</b>',
                 ]);
                 $output .= $this->callAction('login');
-                exit($output);
+                $this->wiki->exit($output);
             }
         } else {
             return $themeManager->renderHeader() ;

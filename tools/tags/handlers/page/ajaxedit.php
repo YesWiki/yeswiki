@@ -101,7 +101,7 @@ if (isset($_GET['jsonp_callback'])) {
                     }
                     
                     // sécurité
-                    exit;
+                    $this->exit();
                 }
                 // NB.: en cas d'erreur on arrive ici, donc default sera exécuté...
                 // no break

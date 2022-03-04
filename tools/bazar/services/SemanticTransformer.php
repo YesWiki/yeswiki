@@ -76,7 +76,7 @@ class SemanticTransformer
         ];
 
         if (($data['@type'] && $data['@type'] !== $form['bn_sem_type']) || $data['type'] && $data['type'] !== $form['bn_sem_type']) {
-            exit('The @type of the sent data must be ' . $form['bn_sem_type']);
+            throw new \Exception('The @type of the sent data must be ' . $form['bn_sem_type']);
         }
 
         foreach ($form['prepared'] as $field) {

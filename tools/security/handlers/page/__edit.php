@@ -14,7 +14,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
         echo $this->Header().
             $message.
             $this->Footer();
-        exit;
+        $this->exit();
     }
   
     if ($this->config['use_hashcash']) {

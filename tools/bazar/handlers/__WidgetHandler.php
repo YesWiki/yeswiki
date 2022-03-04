@@ -66,6 +66,6 @@ class __WidgetHandler extends YesWikiHandler
         $output = ob_get_contents();
         ob_end_clean();
         echo $this->wiki->Header().$output.$this->wiki->Footer();
-        exit();
+        $this->wiki->exit();
     }
 };

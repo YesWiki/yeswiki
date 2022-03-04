@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 use YesWiki\Core\Exception\PerformerException;
+use YesWiki\ExitException;
 use YesWiki\Wiki;
 
 /**
@@ -197,6 +198,8 @@ class Performer
                     $output = &$vars['plugin_output_new'];
                     unset($vars['plugin_output_new']);
                 }
+            } catch (ExitException $t) {
+                throw $t;
             } catch (Throwable $t) {
                 // catch all errors and exceptions thrown by the execution of the performable
                 $message = _t('PERFORMABLE_ERROR');

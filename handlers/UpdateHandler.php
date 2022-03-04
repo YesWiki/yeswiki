@@ -16,7 +16,6 @@ class UpdateHandler extends YesWikiHandler
         };
 
         $output = '';
-        $withoutHeaders = filter_input(INPUT_GET, 'withoutHeaders', FILTER_VALIDATE_BOOL);
 
         if ($this->wiki->UserIsAdmin()) {
             $output .= '<strong>YesWiki core</strong><br />';
@@ -80,7 +79,7 @@ class UpdateHandler extends YesWikiHandler
         // BE CAREFULL this comment is used for extensions to add content above, don't delete it!
         $output .= '<!-- end handler /update -->';
 
-        if (!$withoutHeaders) {
+        if (!$this->wiki->isCli()) {
             $output = $this->wiki->header().$output;
             // add button to return to previous page
             $output .= '<div>

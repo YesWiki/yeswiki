@@ -227,7 +227,7 @@ class EntryController extends YesWikiController
                     );
                 }
                 header('Location: ' . $redirectUrl);
-                exit;
+                $this->wiki->exit();
             }
         } catch (UserFieldException $e) {
             $error .= $this->render('@templates/alert-message.twig', [
@@ -272,7 +272,7 @@ class EntryController extends YesWikiController
                     ], false);
                 }
                 header('Location: ' . $redirectUrl);
-                exit;
+                $this->wiki->exit();
             }
         } catch (UserFieldException $e) {
             $error .= $this->render('@templates/alert-message.twig', [
