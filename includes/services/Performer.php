@@ -5,8 +5,8 @@ namespace YesWiki\Core\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
+use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Exception\PerformerException;
-use YesWiki\ExitException;
 use YesWiki\Wiki;
 
 /**

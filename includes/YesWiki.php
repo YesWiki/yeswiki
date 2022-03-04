@@ -43,6 +43,7 @@ use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
+use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ApiService;
 use YesWiki\Core\Service\DbService;
@@ -57,8 +58,6 @@ use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\YesWikiControllerResolver;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Tags\Service\TagsManager;
-
-class ExitException extends Exception {}
 
 class Wiki
 {
@@ -162,7 +161,7 @@ class Wiki
 
     public function isCli(): bool
     {
-        return in_array(php_sapi_name(),['cli', 'cli-server',' phpdbg'],true);
+        return in_array(php_sapi_name(), ['cli', 'cli-server',' phpdbg'], true);
     }
 
     // inclusions
@@ -406,7 +405,7 @@ class Wiki
 
     public function exit(string $message = "")
     {
-        if ($this->isCli()){
+        if ($this->isCli()) {
             throw new ExitException($message);
         } else {
             exit($message);
@@ -1175,7 +1174,7 @@ class Wiki
             try {
                 echo $this->Method($this->method);
             } catch (ExitException $th) {
-                if (!$this->isCli()){
+                if (!$this->isCli()) {
                     // action redirect: aucune redirection n'a eu lieu, effacer la liste des redirections precedentes
                     if (!empty($_SESSION['redirects'])) {
                         unset($_SESSION['redirects']);
