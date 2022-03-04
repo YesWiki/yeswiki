@@ -1,42 +1,61 @@
 <?php
 spl_autoload_register(function ($className) {
-    $classNameArray = explode('\\', $className);
     // Autoload services
-    if (isset($classNameArray[2])) {
-        if ($classNameArray[1] === 'Core') {
-            if ($classNameArray[2] === 'Service') {
-                require 'includes/services/' . $classNameArray[3] . '.php';
-            } elseif ($classNameArray[2] === 'Controller') {
-                require 'includes/controllers/' . $classNameArray[3] . '.php';
-            } elseif (file_exists('includes/' . $classNameArray[2] . '.php')) {
-                require 'includes/' . $classNameArray[2] . '.php';
+    if (preg_match("/^YesWiki\\\\([^\\\\]+)(?:\\\\([^\\\\]+))?(?:\\\\([^\\\\]+))?$/", $className, $matches)) {
+        if (empty($matches[2])) {
+            // not currently managed
+        } elseif (empty($matches[3])) {
+            switch ($matches[1]) {
+                case 'Core':
+                    if (file_exists('includes/' . $matches[2] . '.php')) {
+                        require 'includes/' . $matches[2] . '.php';
+                    }
+                    break;
+                default:
+                    // actions or handlers, directly managed by Performer
+                    break;
             }
         } else {
-            $extension = strtolower($classNameArray[1]);
-            if ($classNameArray[2] === 'Service') {
-                if ($extension == 'custom') {
-                    require 'custom/services/' . $classNameArray[3] . '.php';
-                } else {
-                    require 'tools/' . $extension . '/services/' . $classNameArray[3] . '.php';
-                }
-            } elseif ($classNameArray[2] === 'Field') {
-                if ($extension == 'custom') {
-                    require 'custom/fields/' . $classNameArray[3] . '.php';
-                } else {
-                    require 'tools/' . $extension . '/fields/' . $classNameArray[3] . '.php';
-                }
-            } elseif ($classNameArray[2] === 'Controller') {
-                if ($extension == 'custom') {
-                    require 'custom/controllers/' . $classNameArray[3] . '.php';
-                } else {
-                    require 'tools/' . $extension . '/controllers/' . $classNameArray[3] . '.php';
-                }
-            } elseif ($classNameArray[2] === 'Commands') {                
-                if ($extension == 'custom') {
-                    require 'custom/commands/' . $classNameArray[3] . '.php';
-                } else {
-                    require 'tools/' . $extension . '/commands/' . $classNameArray[3] . '.php';
-                }
+            // basePath
+            switch ($matches[1]) {
+                case 'Core':
+                    $basePath = 'includes';
+                    break;
+                case 'Custom':
+                    $basePath = 'custom';
+                    break;
+                default:
+                    $extension = strtolower($matches[1]);
+                    $basePath = "tools/$extension";
+                    break;
+            }
+            // Autoload services
+            switch ($matches[2]) {
+                case 'Service':
+                    require "$basePath/services/{$matches[3]}.php";
+                    break;
+                case 'Controller':
+                    require "$basePath/controllers/{$matches[3]}.php";
+                    break;
+                case 'Field':
+                    if ($matches[1] != "Core") {
+                        require "$basePath/fields/{$matches[3]}.php";
+                    }
+                    break;
+                case 'Commands':
+                    if ($matches[1] != "Core") {
+                        require "$basePath/commands/{$matches[3]}.php";
+                    }
+                    break;
+                case 'Entity':
+                    require "$basePath/entities/{$matches[3]}.php";
+                    break;
+                case 'Exception':
+                    require "$basePath/exceptions/{$matches[3]}.php";
+                    break;
+                default:
+                    // do nothing
+                    break;
             }
         }
     }
