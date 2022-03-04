@@ -289,12 +289,15 @@ return [
     'BAZ_TODAY' => 'Vandaag',
     'BAZ_MONTH' => 'Maand',
     'BAZ_WEEK' => 'Week',
-    'BAZ_DAY' => 'Dag'
+    'BAZ_DAY' => 'Dag',
 
     // 'BAZ_ALL_DAY' => 'Toute la journ&eacute;e',
     // 'BAZ_ENTER_HOUR' => 'Entrer l\'heure',
 
     // 'BAZ_RESET_FILTERS' => 'Réinitialiser les filtres',
+
+    // controllers/FormController.php
+    'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Beperk het aantal kaarten tot één per gebruiker (het formulier moet de \'bf_mail\') bevatten.',
 
     // fields/BookmarkletField.php
     // 'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',

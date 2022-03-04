@@ -294,6 +294,9 @@ return [
 
     // 'BAZ_RESET_FILTERS' => 'Réinitialiser les filtres',
 
+    // controllers/FormController.php
+    'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Restringir o número de cartões a um por utilizador (o formulário deve conter o \'bf_mail\')',
+
     // fields/BookmarkletField.php
     // 'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',
 

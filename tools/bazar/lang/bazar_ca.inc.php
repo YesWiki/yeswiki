@@ -284,7 +284,7 @@ return [
     'BAZ_SEPTEMBRE' => 'Setembre',
     'BAZ_OCTOBRE' => 'Octubre',
     'BAZ_NOVEMBRE' => 'Novembre',
-    'BAZ_DECEMBRE' => 'Desembre'
+    'BAZ_DECEMBRE' => 'Desembre',
 
     // 'BAZ_TODAY' => 'Aujourd\'hui',
     // 'BAZ_MONTH' => 'Mois',
@@ -295,6 +295,9 @@ return [
     // 'BAZ_ENTER_HOUR' => 'Entrer l\'heure',
 
     // 'BAZ_RESET_FILTERS' => 'Réinitialiser les filtres',
+
+    // controllers/FormController.php
+    'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Restringeix el nombre de targetes a una per usuari (el formulari ha de contenir el \'bf_mail\')',
 
     // fields/BookmarkletField.php
     // 'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',

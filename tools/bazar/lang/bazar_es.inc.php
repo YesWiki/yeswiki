@@ -296,6 +296,9 @@ return [
 
     // 'BAZ_RESET_FILTERS' => 'Réinitialiser les filtres',
 
+    // controllers/FormController.php
+    'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Restrinja el número de tarjetas a una por usuario (el formulario debe contener el \'bf_mail\')',
+
     // fields/BookmarkletField.php
     // 'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',
 

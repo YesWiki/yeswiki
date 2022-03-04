@@ -296,6 +296,9 @@ return [
 
     'BAZ_RESET_FILTERS' => 'Réinitialiser les filtres',
 
+    // controllers/FormController.php
+    'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Restreindre le nombre de fiche à une seule par utilisateur (le formulaire doit contenir le champ \'bf_mail\')',
+
     // fields/BookmarkletField.php
     'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',
 
