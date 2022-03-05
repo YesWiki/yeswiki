@@ -38,6 +38,8 @@ return [
     'CLEAN' => 'Nettoyer',
     'COMMENTS' => 'Commentaires',
     'DELETE' => 'Supprimer',
+    'DELETE_ALL' => 'Supprimer tout',
+    'DELETE_ALL_SELECTED_PAGES' => 'Supprimer toutes les pages sélectionnées',
     'DEL' => 'Suppr.', // fives chars max.
     'EMAIL' => 'Email',
     'INVERT' => 'Inverser',
