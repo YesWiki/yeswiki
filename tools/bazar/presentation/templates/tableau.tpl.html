@@ -216,7 +216,7 @@ echo $this->render('@bazar/tableau.twig', [
     'entries' => $fiches,
     'sumFieldsIds' => $sumFieldsIds ?? null,
     'displayadmincol' => $sanitizedParams['displayadmincol'] ?? null,
-    'displayvaluesinsteadofkeys' => $sanitizedParams['displayvaluesinsteadofkeys'],
+    'displayvaluesinsteadofkeys' => $sanitizedParams['displayvaluesinsteadofkeys'] ?? null,
     'optionsIfDisplayvaluesinsteadofkeys' => $optionsIfDisplayvaluesinsteadofkeys,
     'aclService' => $aclService,
     'wiki' => $this->wiki,
