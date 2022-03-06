@@ -39,7 +39,7 @@ return [
     'COMMENTS' => 'Commentaires',
     'DELETE' => 'Supprimer',
     'DELETE_ALL' => 'Supprimer tout',
-    'DELETE_ALL_SELECTED_PAGES' => 'Supprimer toutes les pages sélectionnées',
+    'DELETE_ALL_SELECTED_ITEMS' => 'Supprimer tous les éléments sélectionnés',
     'DEL' => 'Suppr.', // fives chars max.
     'EMAIL' => 'Email',
     'INVERT' => 'Inverser',

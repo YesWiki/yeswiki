@@ -1,4 +1,4 @@
-
+{% import "@core/multidelete-macro.twig" as multidelete %}
 {{ infoRes|raw }} {# affiche le nombre de résultats #}
 
 {# l'id doit être unique - dans le cas où il y a plusieurs tableaux sur la même page
@@ -9,18 +9,9 @@ pour différencier les différents tableaux table_1 table_2 #}
   <thead>
     <tr>
       {# Column titles #}
-      {% if displayadmincol %}
-        <th class="not-printable-col prevent-sorting">
-          <label class="check-all-container" for="checkbox_checkall_top_{{ param.nbbazarliste}}">
-            <input
-              type="checkbox"
-              id="checkbox_checkall_top_{{ param.nbbazarliste}}" 
-              name="checkbox_checkall_top_{{ param.nbbazarliste}}" 
-              value="" onclick="checkAllFirstCol(this)">
-            <span></span>
-          </label>
-        </th>
-      {% endif %}
+          {% if displayadmincol %}
+            {{ multidelete.insertSelectAll('bazar-list-'~ param.nbbazarliste,'top') }}
+          {% endif %}
       {% for index,info in columnsInfo %}
         <th{{ (info.propertyName in sumFieldsIds) ? ' class="sum-activated"' : ''}}>{{ info.title|raw }}</th>
       {% endfor %}
@@ -33,32 +24,11 @@ pour différencier les différents tableaux table_1 table_2 #}
     {% for entry in entries %}
       <tr {{ entry.html_data|raw }}>
         {% if displayadmincol %}
-          <td class="not-printable-col">
-            {% if entry.external-data is empty and (
-              wiki.UserIsAdmin or wiki.UserIsOwner(entry.id_fiche)
-            ) %}
-              <label for="selectpage_{{ param.nbbazarliste }}_{{ entry.id_fiche }}">
-                <input
-                  class="selectpage"
-                  type="checkbox"
-                  id="selectpage_{{ param.nbbazarliste }}_{{ entry.id_fiche }}" 
-                  name="selectpage_{{ param.nbbazarliste }}_{{ entry.id_fiche }}" 
-                  value=""
-                  data-entryid="{{ entry.id_fiche }}">
-                <span></span>
-              </label>
-            {% else %}
-              <label for="selectpage_{{ param.nbbazarliste }}_{{ entry.id_fiche }}">
-                <input
-                  type="checkbox"
-                  id="selectpage_{{ param.nbbazarliste }}_{{ entry.id_fiche }}" 
-                  name="selectpage_{{ param.nbbazarliste }}_{{ entry.id_fiche }}" 
-                  value=""
-                  disabled>
-                <span></span>
-              </label>
-            {% endif %}
-          </td>
+          {{ multidelete.insertSelectLine(
+              'bazar-list-'~ param.nbbazarliste,
+              entry.id_fiche,
+              entry.external-data is not empty or not(
+                wiki.UserIsAdmin or wiki.UserIsOwner(entry.id_fiche))) }}
         {% endif %}
         {% set searchTitle = ("bf_titre" in columnsInfo|map(p => p.propertyName)) %}
         {% for info in columnsInfo %}
@@ -138,18 +108,9 @@ pour différencier les différents tableaux table_1 table_2 #}
     {% if sumFieldsIds is not empty or displayadmincol %}
       {# sums by col #}
       <tfoot>
-        <tr>  
+        <tr>
           {% if displayadmincol %}
-            <th class="not-printable-col">
-              <label class="check-all-container" for="checkbox_checkall_bottom_{{ param.nbbazarliste}}">
-                <input
-                  type="checkbox"
-                  id="checkbox_checkall_bottom_{{ param.nbbazarliste}}" 
-                  name="checkbox_checkall_bottom_{{ param.nbbazarliste}}" 
-                  value="" onclick="checkAllFirstCol(this)">
-                <span></span>
-              </label>
-            </th>
+            {{ multidelete.insertSelectAll('bazar-list-'~ param.nbbazarliste,'bottom') }}
           {% endif %}
           {% for index,info in columnsInfo %}
             <th>
@@ -167,19 +128,10 @@ pour différencier les différents tableaux table_1 table_2 #}
   </tbody>
 </table>
 {% if displayadmincol %}
-  <button 
-      class="btn btn-sm btn-danger" 
-      title="{{ _t('DELETE_ALL_SELECTED_PAGES')|e('html_attr') }}"
-      data-toggle="tooltip"
-      data-placement="right"
-      onclick="multiDelete(this)">
-    <i class="fa fa-trash"></i>
-    {{ _t('DELETE_ALL') }}
-  </button>
+            {{ multidelete.insertButton('bazar-list-'~ param.nbbazarliste,'pages') }}
 {% endif %}
 
 {{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
 {{ include_javascript('tools/bazar/presentation/javascripts/tableau.js') }}
 {{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
 {{ include_css('tools/bazar/presentation/styles/tableau.css') }}
-{{ include_javascript('javascripts/multidelete.js') }}

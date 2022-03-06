@@ -7,6 +7,7 @@ return [
     "CANCEL" => "Cancel",
     "COPY" => "Copy",
     "DECEMBER" => "December",
+    "DELETE_ALL_SELECTED_ITEMS_QUESTION" => "Do you confirm the deletion of all selected items?",
     "DUPLICATE" => "Duplicate",
     "EVERYONE" => "Everyone",
     "FEBRUARY" => "February",

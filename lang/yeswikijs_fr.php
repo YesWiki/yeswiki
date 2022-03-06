@@ -7,7 +7,7 @@ return [
     "CANCEL" => "Annuler",
     "COPY" => "Copier",
     "DECEMBER" => "Décembre",
-    "DELETE_ALL_SELECTED_PAGES_QUESTION" => "Êtes-vous sûr de vouloir supprimer toutes les pages sélectionnées ?",
+    "DELETE_ALL_SELECTED_ITEMS_QUESTION" => "Êtes-vous sûr de vouloir supprimer tous les éléments sélectionnées ?",
     "DUPLICATE" => "Dupliquer",
     "EVERYONE" => "Tout le monde",
     "FEBRUARY" => "Février",

@@ -1,0 +1,73 @@
+{% macro insertButton(targetId, type) %}
+  {{ include_javascript('javascripts/multidelete.js') }}
+  {% set modalId = modalId is not empty ? modalId : 'MultiDeleteModal' ~ targetId %}
+  <a 
+    class="btn btn-sm btn-danger" 
+    title="{{ _t('DELETE_ALL_SELECTED_ITEMS')|e('html_attr') }}"
+    data-toggle="modal"
+    role="button"
+    href="#{{ modalId }}">	
+    <i class="fa fa-trash"></i>
+    {{ _t('DELETE_ALL') }}
+  </a>
+  <div class="modal fade" 
+    id="{{ modalId }}" 
+    tabindex="-1" 
+    role="dialog" 
+    aria-labelledby="{{ modalId }}Label" 
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h3 id="{{ modalId }}Label">{{ _t('DELETE_ALL_SELECTED_ITEMS') }}</h3>
+        </div>
+        <div class="modal-body">
+          <button class="btn btn-sm btn-warning start-btn-delete-all" data-target="{{ targetId }}" data-type="{{ type }}">{{ _t('DELETE') }}</button>
+          <div class="multi-delete-results"></div>
+        </div>
+        <div class="modal-footer">
+          <div class="progressbar progress">
+            <div class="progress-bar" role="progressbar"
+              style="width: 0%;"
+              aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            </div>
+          </div>
+        </div>
+      </div>{# .modal-content #}
+    </div>{# .modal-dialog #}
+  </div>
+{% endmacro insertButton %}
+
+{% macro insertSelectLine(targetId, itemId, disabled = false) %}
+  <td class="not-printable-col">
+    <label for="selectline_{{ targetId }}_{{ itemId }}">
+      <input
+        {% if disabled %}
+          disabled
+        {% else %}
+          class="selectline"
+          data-itemid="{{ itemId }}"
+        {% endif %}
+        type="checkbox"
+        id="selectline_{{ targetId }}_{{ itemId }}" 
+        name="selectline_{{ targetId }}_{{ itemId }}" 
+        value="">
+      <span></span>
+    </label>
+  </td>
+{% endmacro insertSelectLine %}
+
+{% macro insertSelectAll(targetId, selectAllType) %}
+  {{ include_javascript('javascripts/multidelete.js') }}
+  <th class="prevent-sorting not-printable-col">
+    <label class="check-all-container" for="checkbox_checkall_{{ selectAllType }}_{{ targetId }}">
+      <input
+        type="checkbox"
+        id="checkbox_checkall_{{ selectAllType }}_{{ targetId }}" 
+        name="checkbox_checkall_{{ selectAllType }}_{{targetId }}" 
+        value="" onclick="checkAllFirstCol(this)">
+      <span></span>
+    </label>
+  </th>
+{% endmacro insertSelectAll %}

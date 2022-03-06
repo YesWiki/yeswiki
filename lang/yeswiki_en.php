@@ -37,6 +37,7 @@ return [
     'CLEAN' => 'Clean',
     'COMMENTS' => 'Comments',
     'DELETE' => 'Delete',
+    'DELETE_ALL_SELECTED_ITEMS' => 'Delete all selected items',
     'DEL' => 'Del', // fives chars max.
     'EMAIL' => 'Email',
     'INVERT' => 'Invert',
