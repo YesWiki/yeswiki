@@ -15,41 +15,81 @@ function checkAllFirstCol(elem){
 }
 
 const multiDeleteService = {
+  isRunning: false,
+  refreshOnModalClosing : {},
+  modalClosing: function (modalContainer){
+    let id = $(modalContainer).prop('id');
+    if (multiDeleteService.refreshOnModalClosing.hasOwnProperty(id) 
+      && multiDeleteService.refreshOnModalClosing[id] === true){
+      window.location.reload();
+    }
+  },
+  initProgressBar: function (modal){
+    multiDeleteService.updateProgressBar(modal,['test'],-1);
+  },
   updateProgressBar: function (modal,items,currentIndex){
-    let value = (items.length == 0) ? 100 : (currentIndex+1)/items.length;
+    let value = (items.length == 0) ? 100 : Math.min(100,Math.round((currentIndex+1)/items.length*100));
     $(modal).find('.modal-footer .progress-bar').each(function(){
         $(this).attr('style',`width: ${value}%;`);
         $(this).attr('aria-valuenow',value);
       });
   },
-  deleteNextItem: function (modal,items,type,currentIndex){
+  modalIsClosed: function (modal){
+    return ($(modal).filter(':visible').length == 0);
+  },
+  addErrorMessage: function (modal,message){
+    $(modal).find('.modal-body .multi-delete-results').first().append(
+      $('<div>').addClass('alert alert-danger')
+        .text(message)
+    );
+  },
+  removeLine: function (target,itemId){
+    let table = $(`#${target} .dataTable[id]`);
+    if (table.length == 0){
+      return false;
+    }
+    table.DataTable().row($(`#${target} [data-itemid="${itemId}"]`).parents('tr')).remove().draw();
+    return true;
+  },
+  deleteNextItem: function (modal,items,type,currentIndex,target){
     multiDeleteService.updateProgressBar(modal,items,currentIndex);
-    if (currentIndex < items.length){
-      multiDeleteService.deleteOneItem(modal,items,type,currentIndex +1);
+    if ((currentIndex +1)< items.length ){
+      multiDeleteService.deleteOneItem(modal,items,type,currentIndex +1,target);
     } else {
-      $(modal).find('.modal-body').append(
+      multiDeleteService.isRunning = false;
+      $(modal).find('.modal-body .multi-delete-results').first().append(
         $('<div>').text(_t('MULTIDELETE_END'))
       );
     }
   },
-  deleteOneItem: function (modal,items,type,currentIndex){
-    let tag = items[currentIndex] ?? '';
-    let sanitizedType = 'pages';
-    if (tag.length == 0){
-      multiDeleteService.deleteNextItem(modal,items,sanitizedType,currentIndex);
+  deleteOneItem: function (modal,items,type,currentIndex,target){
+    if (['pages'].indexOf(type) == -1){
+      multiDeleteService.addErrorMessage(modal,"Unknown type ! Should be 'pages' !");
+      return;
+    }
+    let itemId = items[currentIndex] ?? '';
+    if (itemId.length == 0){
+      multiDeleteService.deleteNextItem(modal,items,type,currentIndex,target);
     }
     $.ajax({
       type: 'DELETE',
-      url: wiki.url(`?api/${sanitizedType}/${tag}`),
+      url: wiki.url(`?api/${type}/${itemId}`),
       timeout: 30000, // 30 seconds
       error: function (xhr,status,error){
-        $(modal).find('.modal-body').append(
-          $('<div>').addClass('alert alert-danger')
-            .text(_t('MULTIDELETE_ERROR').replace('{tag}',tag))
-        );
+        multiDeleteService.addErrorMessage(modal,
+          _t('MULTIDELETE_ERROR')
+          .replace('{itemId}',itemId)
+          .replace('{error}',error));
+          // if error force reload
+          multiDeleteService.refreshOnModalClosing[$(modal).parent().prop('id')] = true;
+      },
+      success: function(){
+        if (!multiDeleteService.removeLine(target,itemId)){
+          multiDeleteService.refreshOnModalClosing[$(modal).parent().prop('id')] = true;
+        }
       },
       complete: function (){
-        multiDeleteService.deleteNextItem(modal,items,sanitizedType,currentIndex);
+        setTimeout(function(){multiDeleteService.deleteNextItem(modal,items,type,currentIndex,target);},0);
       },
     });
   },
@@ -58,7 +98,7 @@ const multiDeleteService = {
     let type = $(elem).data('type');
     // get selected item
     if (target.length > 0){
-      let inputs = $(`#${target}`).find('tr > td:first-child input.selectline[type=checkbox]:visible');
+      let inputs = $(`#${target}`).find('tr > td:first-child input.selectline[type=checkbox]:visible:checked');
       let modal = $(elem).closest('.modal-dialog');
       
       let items = [];
@@ -69,15 +109,29 @@ const multiDeleteService = {
         }
       }
       if (items.length > 0){
-        multiDeleteService.deleteOneItem(modal,items,type,0);
+        setTimeout(function(){multiDeleteService.deleteOneItem(modal,items,type,0,target);},0);
       }
     }
   }
 };
 
 $('button.start-btn-delete-all').on('click',function(){
-  let elem = event.target;
-  if (elem){
-    multiDeleteService.deleteItems(elem);
+  if (!multiDeleteService.isRunning){
+    multiDeleteService.isRunning = true;
+    let elem = event.target;
+    if (elem){
+      $(elem).attr('disabled','disabled');
+      multiDeleteService.deleteItems(elem);
+    }
   }
+});
+
+$(".modal.multidelete").on('shown.bs.modal',function(){
+  multiDeleteService.initProgressBar($(this));
+  $(this).find('.modal-body .multi-delete-results').html('');
+  $(this).find('button.start-btn-delete-all').removeAttr('disabled');
+});
+
+$(".modal.multidelete").on('hidden.bs.modal',function(){
+  multiDeleteService.modalClosing($(this));
 });

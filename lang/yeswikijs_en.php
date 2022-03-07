@@ -43,6 +43,10 @@ return [
     "REVISIONS_DIFF" => "Comparison to the current revision",
     "REVISIONS_PREVIEW" => "Preview of this revision",
 
+    // javascripts/multidelete.js
+    "MULTIDELETE_END" => "Deletions finished",
+    "MULTIDELETE_ERROR" => "Item {itemId} has not been deleted! {error}",
+
     // /javascripts/yeswiki-base.js
     "DATATABLES_PROCESSING" => "Processing...",
     "DATATABLES_SEARCH" => "Search&nbsp;:",

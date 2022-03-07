@@ -10,7 +10,7 @@
     <i class="fa fa-trash"></i>
     {{ _t('DELETE_ALL') }}
   </a>
-  <div class="modal fade" 
+  <div class="modal fade multidelete" 
     id="{{ modalId }}" 
     tabindex="-1" 
     role="dialog" 
@@ -24,6 +24,7 @@
         </div>
         <div class="modal-body">
           <button class="btn btn-sm btn-warning start-btn-delete-all" data-target="{{ targetId }}" data-type="{{ type }}">{{ _t('DELETE') }}</button>
+          <br/><br/>
           <div class="multi-delete-results"></div>
         </div>
         <div class="modal-footer">

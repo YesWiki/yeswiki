@@ -43,6 +43,10 @@ return [
     "REVISIONS_DIFF" => "Comparaison avec version actuelle",
     "REVISIONS_PREVIEW" => "Aperçu de cette version",
 
+    // javascripts/multidelete.js
+    "MULTIDELETE_END" => "Suppressions réalisées",
+    "MULTIDELETE_ERROR" => "L'élément {itemId} n'a pas été supprimé ! {error}",
+
     // /javascripts/yeswiki-base.js
     "DATATABLES_PROCESSING" => "Traitement en cours...",
     "DATATABLES_SEARCH" => "Rechercher&nbsp;:",
