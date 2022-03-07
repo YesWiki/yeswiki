@@ -136,7 +136,7 @@ class PackageCore extends Package
      * @param string $neededRevision
      * @return bool
      */
-    public function PHPVersionEnoughHigh(?string $neededRevision = null)
+    public function PHPVersionEnoughHigh($neededRevision = null)
     {
         return version_compare(
             PHP_VERSION,
