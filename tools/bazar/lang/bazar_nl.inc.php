@@ -297,9 +297,10 @@ return [
     // 'BAZ_RESET_FILTERS' => 'Réinitialiser les filtres',
 
     // controllers/FormController.php
-    'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Beperk het aantal kaarten tot één per gebruiker (het formulier moet de \'bf_mail\') bevatten.',
+    'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Beperk het aantal kaarten tot één per gebruiker bevatten.',
     'BAZ_MESSAGE_IF_OTHER_ENTRY_EXIST' => 'Mensagem para exibir quando um cartão já existe. Laat leeg om het standaardbericht te behouden.',
     'BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM' => 'U hebt al een kaart ingevoerd voor het formulier "{formName}". Het wordt hieronder weergegeven.',
+    'BAZ_USER_SHOULD_BE_CONNECTED_TO_ACCES_THIS_FORM' => 'Het is noodzakelijk om ingelogd te zijn om dit formulier te kunnen invullen.',
 
     // fields/BookmarkletField.php
     // 'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',

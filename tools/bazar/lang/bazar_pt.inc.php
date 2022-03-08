@@ -295,9 +295,10 @@ return [
     // 'BAZ_RESET_FILTERS' => 'Réinitialiser les filtres',
 
     // controllers/FormController.php
-    'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Restringir o número de cartões a um por utilizador (o formulário deve conter o \'bf_mail\')',
+    'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Restringir o número de cartões a um por utilizador',
     'BAZ_MESSAGE_IF_OTHER_ENTRY_EXIST' => 'Mensagem para exibir quando um cartão já existe. Laat leeg om het standaardbericht te behouden.',
     'BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM' => 'Já inseriu um cartão para o formulário "{formName}". É exibido abaixo.',
+    'BAZ_USER_SHOULD_BE_CONNECTED_TO_ACCES_THIS_FORM' => 'É necessário fazer login para poder completar este formulário.',
 
     // fields/BookmarkletField.php
     // 'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',
