@@ -45,6 +45,7 @@ class UserField extends BazarField
         $this->searchable = null;
 
         $this->propertyName = 'nomwiki';
+        $this->label = _t('BAZ_USER_FIELD_LABEL');
         $this->maxChars = 60;
     }
 

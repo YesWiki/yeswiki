@@ -357,6 +357,7 @@ return [
     // 'BAZ_USER_FIELD_ALREADY_CONNECTED' => "Vous êtes déjà connecté avec l'identifiant \"{wikiname}\" et l'e-mail \"{email}\".\nLa fiche créée sera automatiquement liée à votre compte. Veuillez vous déconnecter pour créer un nouveau compte !",
     // 'BAZ_USER_FIELD_ALREADY_CONNECTED_AUTOUPDATE' => 'Pour changer l\'adresse e-mail associée à ce compte, tapez-en une différente de "{email}".',
     // 'BAZ_USER_FIELD_FORCE_SAVE_ENTRY' => 'En tant qu\'admin, forcer la création de la fiche pour l\'e-mail donné (et ne créer un compte que s\'il n\'existe pas déjà)',
+    // 'BAZ_USER_FIELD_LABEL' => 'Utilisateur',
 
     // presentation/templates/annuaire_alphabetique.tpl.html
     // 'BAZ_MEMBERS' => 'membres',
