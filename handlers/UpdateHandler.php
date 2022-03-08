@@ -83,6 +83,17 @@ class UpdateHandler extends YesWikiHandler
                 $output .= "✅ The table {$dbService->prefixTable("nature")}is already up-to-date with 'bn_only_one_entry' field!<br />";
             }
 
+            // add isAvailableOnlyOneEntryMessage bazar fields
+            if (!$formManager->isAvailableOnlyOneEntryMessage()) {
+                $output .= "ℹ️ Adding 'bn_only_one_entry_message' to {$dbService->prefixTable("nature")}table.<br />";
+
+                $this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} ADD COLUMN `bn_only_one_entry_message` text DEFAULT NULL COLLATE utf8mb4_unicode_ci;");
+
+                $output .= '✅ Done !<br />';
+            } else {
+                $output .= "✅ The table {$dbService->prefixTable("nature")}is already up-to-date with 'bn_only_one_entry_message' field!<br />";
+            }
+
             // propose to update content of admin's pages
             $output .= $this->frontUpdateAdminPages();
         } else {

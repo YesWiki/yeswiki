@@ -298,6 +298,8 @@ return [
 
     // controllers/FormController.php
     'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Beperk het aantal kaarten tot één per gebruiker (het formulier moet de \'bf_mail\') bevatten.',
+    'BAZ_MESSAGE_IF_OTHER_ENTRY_EXIST' => 'Mensagem para exibir quando um cartão já existe. Laat leeg om het standaardbericht te behouden.',
+    'BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM' => 'U hebt al een kaart ingevoerd voor het formulier "{formName}". Het wordt hieronder weergegeven.',
 
     // fields/BookmarkletField.php
     // 'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',

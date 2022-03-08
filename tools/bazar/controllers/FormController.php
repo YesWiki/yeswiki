@@ -97,7 +97,7 @@ class FormController extends YesWikiController
                 'form' => $this->formManager->getOne($id),
                 'formAndListIds' => baz_forms_and_lists_ids(),
                 'groupsList' => $this->getGroupsListIfEnabled(),
-                'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption()
+                'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption() && $this->formManager->isAvailableOnlyOneEntryMessage()
             ]);
         } else {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));

@@ -298,6 +298,8 @@ return [
 
     // controllers/FormController.php
     'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Restringeix el nombre de targetes a una per usuari (el formulari ha de contenir el \'bf_mail\')',
+    'BAZ_MESSAGE_IF_OTHER_ENTRY_EXIST' => 'Missatge a mostrar quan ja existeixi una targeta. Deixeu-ho en blanc per mantenir el missatge per defecte.',
+    'BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM' => 'Ja heu introduït una targeta per al formulari "{formName}". Es mostra a continuació.',
 
     // fields/BookmarkletField.php
     // 'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',

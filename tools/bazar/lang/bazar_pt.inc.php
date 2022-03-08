@@ -296,6 +296,8 @@ return [
 
     // controllers/FormController.php
     'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Restringir o número de cartões a um por utilizador (o formulário deve conter o \'bf_mail\')',
+    'BAZ_MESSAGE_IF_OTHER_ENTRY_EXIST' => 'Mensagem para exibir quando um cartão já existe. Laat leeg om het standaardbericht te behouden.',
+    'BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM' => 'Já inseriu um cartão para o formulário "{formName}". É exibido abaixo.',
 
     // fields/BookmarkletField.php
     // 'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',
