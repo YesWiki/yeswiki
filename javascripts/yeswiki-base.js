@@ -620,7 +620,7 @@ function toastMessage(
       e.preventDefault();
       var link = $(this);
       $.ajax({
-        type: 'DELETE',
+        type: "GET",
         url: link.attr('href'),
         dataType: 'json',
         success: function (e) {

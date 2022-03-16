@@ -130,6 +130,13 @@ class ApiController extends YesWikiController
             return new ApiResponse(['error' => _t('NOT_AUTORIZED_TO_REMOVE_COMMENT')], 403);
         }
     }
+    /**
+     * @Route("/api/comments/{tag}/delete",methods={"GET"}, options={"acl":{"public"}})
+     */
+    public function deleteCommentByGetMethod($tag)
+    {
+        return $this->deleteComment($tag);
+    }
 
     /**
      * @Route("/api/groups", options={"acl":{"public"}})

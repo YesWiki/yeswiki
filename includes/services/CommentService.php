@@ -71,7 +71,7 @@ class CommentService
                     $com['body'] = $this->wiki->Format($comment['body']);
                     $com['user'] = $comment['user'];
                     $com['linkuser'] = $this->wiki->href('', $comment['user']);
-                    $com['userpicture'] = 'https://www.dailymoss.com/wp-content/uploads/2019/08/funny-profile-pic26.jpg';
+                    $com['userpicture'] = 'https://colibris-universite.org/mooc-democratie-v2/files/avatar-colibris.png';
                     $com['date'] = 'le '.date("d.m.Y à H:i:s", strtotime($comment['time']));
                     if ($this->wiki->HasAccess('comment', $comment['tag'])) {
                         $com['linkcomment'] = $this->wiki->href('pages/'.$comment['tag'].'/comments', 'api');
@@ -122,7 +122,7 @@ class CommentService
                     $com['comments'][$i]['linkeditcomment'] = $this->wiki->href('edit', $comment['tag']);
                 }
                 if ($this->wiki->UserIsOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
-                    $com['comments'][$i]['linkdeletecomment'] = $this->wiki->href('comments/'.$comment['tag'], 'api');
+                    $com['comments'][$i]['linkdeletecomment'] = $this->wiki->href('comments/'.$comment['tag'].'/delete', 'api');
                     //$this->wiki->href('deletepage', $comment['tag']);
                 }
                 $com['comments'][$i]['reponses'] = $this->getCommentList($comment['tag'], false);
