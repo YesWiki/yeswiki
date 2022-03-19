@@ -36,7 +36,7 @@ class CommentService
                 'error' => _t('USER_MUST_BE_LOGGED_TO_COMMENT')
             ];
         } else {
-            if ($this->wiki->HascAcess("comment", $content['pagetag']) && $this->wiki->Loadpage($content['pagetag'])) {
+            if ($this->wiki->HasAccess("comment", $content['pagetag']) && $this->wiki->Loadpage($content['pagetag'])) {
                 if ($this->wiki->config['use_hashcash']) {
                     require_once('tools/security/secret/wp-hashcash.lib');
                     if (!isset($content["hashcash_value"]) || ($content["hashcash_value"] != hashcash_field_value())) {
