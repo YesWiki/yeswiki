@@ -8,6 +8,6 @@ class CommentsAction extends YesWikiAction
     public function run()
     {
         // render the comments if needed
-        echo $this->getService(CommentService::class)->renderCommentsForPage($this->wiki->getPageTag());
+        return $this->getService(CommentService::class)->renderCommentsForPage($this->wiki->getPageTag());
     }
 }
