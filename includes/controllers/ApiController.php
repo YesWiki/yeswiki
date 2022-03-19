@@ -119,12 +119,13 @@ class ApiController extends YesWikiController
     {
         if ($this->wiki->UserIsOwner($tag) || $this->wiki->UserIsAdmin()) {
             $pageManager = $this->getService(PageManager::class);
-            $pageManager->deleteOrphaned($tag);
+            $commentService = $this->getService(CommentService::class);
             // delete children comments
-            $comments = $this->wiki->LoadComments($tag);
+            $comments = $commentService->loadComments($tag);
             foreach ($comments as $com) {
                 $pageManager->deleteOrphaned($com['tag']);
             }
+            $pageManager->deleteOrphaned($tag);
             return new ApiResponse(['success' => _t('COMMENT_REMOVED')], 200);
         } else {
             return new ApiResponse(['error' => _t('NOT_AUTORIZED_TO_REMOVE_COMMENT')], 403);

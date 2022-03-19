@@ -57,7 +57,7 @@ class AclService
                 'comment' => [
                     'page_tag' => $tag,
                     'privilege' => 'comment',
-                    'list' => $this->params->get('default_comment_acl')
+                    'list' => 'comments-closed'
                 ]
             ];
         } else {
@@ -72,6 +72,12 @@ class AclService
 
         if (isset($this->cache[$tag][$privilege])) {
             return $this->cache[$tag][$privilege];
+        } elseif ($privilege == 'comment') {
+            return [ // in case of non-presence of acls for comments, we inform that they are closed
+                'page_tag' => $tag,
+                'privilege' => 'comment',
+                'list' => 'comments-closed'
+            ];
         }
 
         return null ;
@@ -93,6 +99,9 @@ class AclService
         }
 
         $acl = $this->load($tag, $privilege, false);
+        if (isset($acl['list']) && $acl['list'] === 'comments-closed') {
+            $acl = null;
+        }
 
         if ($acl && $appendAcl) {
             $list = $acl['list']."\n".$list ;
@@ -168,12 +177,15 @@ class AclService
         // empty acls is considered as no access
         if ($acl === null) {
             return false;
+        } elseif (isset($acl['list']) && $acl['list'] === 'comments-closed') {
+            return 'comments-closed';
         }
 
         // if current user is owner, return true. owner can do anything!
         if ($this->wiki->UserIsOwner($tag)) {
             return true;
         }
+
         // now check the acls
         $access = $this->check($acl['list'], $user);
 

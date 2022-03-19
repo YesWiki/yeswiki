@@ -114,18 +114,12 @@ if ($HasAccessRead=$this->HasAccess("read")) {
 
 
 <?php
-// Handle comments on page
-$tag = $this->getPageTag();
-$aclsService = $this->services->get(AclService::class);
-$hasAccessComment = $aclsService->hasAccess('accescomment');
-if ($HasAccessRead && $hasAccessComment && (!$this->page || !$this->page["comment_on"])) {
-    $commentService = $this->services->get(CommentService::class);
-    echo $commentService->getCommentList($tag);
-    echo $commentService->getCommentForm($tag);
-}
+// render the comments if needed
+echo $this->services->get(CommentService::class)->renderCommentsForPage($this->getPageTag());
+
+// get the content buffer and display the page
 $content = ob_get_clean();
 echo $this->Header();
 echo $content;
 echo $this->Footer();
-
 ?>

@@ -523,6 +523,7 @@ return [
     'EDIT_CONFIG_HINT_FAVICON' => 'Icône du site (emoji ou URL vers une image PNG)',
     'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Méthodes autorisées à être affichées dans les iframes (iframe,editiframe,bazariframe,render,all = autoriser tout)',
     'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Nombre maximum de versions d\'une page affichées par le handler `/revisions`.',
+    'EDIT_CONFIG_HINT_DEFAULT_COMMENT_AVATAR' => 'Image d\'avatar par défaut pour les commentaires (URL vers une image)',
     'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
     'EDIT_CONFIG_GROUP_ACCESS' => 'Droit d\'accès',
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
@@ -592,17 +593,20 @@ return [
     // handlers/page/show + handlers/page/iframe
     'NOT_FOUND_PAGE' => 'Cette page n\'existe pas encore, voulez-vous la {beginLink}créer{endLink} ?',
     'NOT_AUTORIZED_TO_READ_PAGE' => 'Vous n\'êtes pas autorisé à lire cette page',
-    
+
     'YW_ADD_COMMENT' => 'Ajouter votre commentaire',
     'YW_WRITE_COMMENT_HERE' => 'Ecrire votre commentaire ici...',
     'COMMENTS' => 'Commentaires',
 
     // Comments
-    'COMMENT_PUBLISHED' => 'Commentaire publié !',
     'COMMENT_EMPTY_NOT_SAVED' => 'Commentaire vide, pas de sauvegarde.',
+    'COMMENT_LOGIN' => 'Se connecter pour commenter',
+    'COMMENT_NOT_ENOUGH_RIGHTS' => 'Vous n\'avez pas les droits suffisants pour commenter.',
+    'COMMENT_PUBLISHED' => 'Commentaire publié !',
+    'COMMENT_REMOVED' => 'Le commentaire a été supprimé.',
+    'COMMENTS_CURRENTLY_CLOSED' => 'L\'ajout de commentaires sur cette page est présentement désactivé',
     'USER_MUST_BE_LOGGED_TO_COMMENT' => 'Vous devez vous identifier pour pouvoir publier un commentaire.',
     'USER_NOT_ALLOWED_TO_COMMENT' => 'Vous n\'êtes pas dans un groupe autorisé à laisser des commentaires.',
-    'COMMENT_REMOVED' => 'Le commentaire a été supprimé.',
     'NOT_AUTORIZED_TO_REMOVE_COMMENT' => 'Vous n\'êtes pas autorisé à supprimer ce commentaire.',
 
     // YesWiki

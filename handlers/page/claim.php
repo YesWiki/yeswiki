@@ -46,27 +46,23 @@ if ($this->page) {
         && ($this->UserIsAdmin() || $this->UserIsOwner($tag))
     ) {
         $aclsService = $this->services->get(AclService::class);
-        $commentsAcls = $aclsService->load($tag, 'accescomment');
+        $commentsAcls = $aclsService->load($tag, 'comment');
         $wikiGroups = $this->GetGroupsList();
         switch ($_GET['action']) {
             case 'opencomments':
-                if ($commentsAcls == null) {
-                    if (
-                        !empty($_GET['list'])
-                        && (in_array($_GET['list'], $wikiGroups) || $_GET['list']=='+')
-                    ) {
-                        $aclsService->save($tag, 'accescomment', $_GET['list']);
-                        $this->SetMessage(_t('YW_COMMENTS_ARE_NOW_OPEN'));
-                    } else {
-                        $this->SetMessage(_t('YW_PROBLEM_WITH_ACLS_LIST'));
-                    }
+                if (
+                    !empty($_GET['list'])
+                    && (in_array($_GET['list'], $wikiGroups) || $_GET['list']=='+')
+                ) {
+                    $aclsService->save($tag, 'comment', $_GET['list']);
+                    $this->SetMessage(_t('YW_COMMENTS_ARE_NOW_OPEN'));
                 } else {
-                    $this->SetMessage(_t('YW_COMMENTS_ALREADY_OPEN'));
+                    $this->SetMessage(_t('YW_PROBLEM_WITH_ACLS_LIST'));
                 }
                 break;
             case 'closecomments':
                 if ($commentsAcls != null) {
-                    $aclsService->delete($tag, ['accescomment']);
+                    $aclsService->delete($tag, ['comment']);
                     $this->SetMessage(_t('YW_COMMENTS_ARE_NOW_CLOSED'));
                 } else {
                     $this->SetMessage(_t('YW_COMMENTS_ALREADY_CLOSED'));

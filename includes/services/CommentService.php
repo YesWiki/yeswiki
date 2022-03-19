@@ -12,6 +12,7 @@ class CommentService
     protected $dbService;
     protected $pageManager;
     protected $params;
+    protected $pagesWhereCommentWereRendered;
 
 
     public function __construct(
@@ -24,7 +25,9 @@ class CommentService
         $this->dbService = $dbService;
         $this->pageManager = $pageManager;
         $this->params = $params;
+        $this->pagesWhereCommentWereRendered = [];
     }
+
     public function addCommentIfAutorized($content, $idComment = '')
     {
         if (!$this->wiki->getUser()) {
@@ -33,7 +36,7 @@ class CommentService
                 'error' => _t('USER_MUST_BE_LOGGED_TO_COMMENT')
             ];
         } else {
-            if ($this->wiki->HasAccess("comment", $content['pagetag']) && $this->wiki->Loadpage($content['pagetag'])) {
+            if ($this->wiki->HascAcess("comment", $content['pagetag']) && $this->wiki->Loadpage($content['pagetag'])) {
                 if ($this->wiki->config['use_hashcash']) {
                     require_once('tools/security/secret/wp-hashcash.lib');
                     if (!isset($content["hashcash_value"]) || ($content["hashcash_value"] != hashcash_field_value())) {
@@ -99,13 +102,31 @@ class CommentService
         }
     }
 
-    public function getCommentList($tag, $first = true)
+    /**
+    * Load comments for given page.
+    *
+    * @param string $tag Page name (Ex : "PagePrincipale") if empty, all comments
+    * @return array All comments and their corresponding properties.
+    */
+    public function loadComments($tag)
+    {
+        $query = 'SELECT * FROM ' . $this->wiki->config['table_prefix'] . 'pages ' . 'WHERE ';
+        if (empty($tag)) {
+            $query .= 'comment_on != "" ';
+        } else {
+            $query .= 'comment_on = "' . mysqli_real_escape_string($this->wiki->dblink, $tag) . '" ';
+        }
+        $query .= 'AND latest = "Y" ' . 'ORDER BY substring(tag, 8) + 0';
+        return $this->wiki->LoadAll($query);
+    }
+
+    public function getCommentList($tag, $first = true, $comments = null)
     {
         $com = array();
         $com['first'] = $first;
         $com['tag'] = $tag;
         $com['comments'] = array();
-        $comments = $this->wiki->LoadComments($tag);
+        $comments = is_array($comments) ? $comments : $this->loadComments($tag);
         if ($comments) {
             foreach ($comments as $i => $comment) {
                 $com['comments'][$i]['tag'] = $comment['tag'];
@@ -113,7 +134,8 @@ class CommentService
                 $com['comments'][$i]['body'] = $this->wiki->Format($comment['body']);
                 $com['comments'][$i]['user'] = $comment['user'];
                 $com['comments'][$i]['linkuser'] = $this->wiki->href('', $comment['user']);
-                $com['comments'][$i]['userpicture'] = 'https://www.dailymoss.com/wp-content/uploads/2019/08/funny-profile-pic26.jpg';
+                $com['comments'][$i]['usercolor'] = $this->genColorCodeFromText($comment['user']);
+                $com['comments'][$i]['userpicture'] = !empty($this->wiki->config['default_comment_avatar']) ? $this->wiki->config['default_comment_avatar'] : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='".str_replace('#', '%23', $com['comments'][$i]['usercolor'])."' class='bi bi-person-circle' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z'/%3E%3C/svg%3E";
                 $com['comments'][$i]['date'] = 'le '.date("d.m.Y à H:i:s", strtotime($comment['time']));
                 if ($this->wiki->HasAccess('comment', $comment['tag'])) {
                     $com['comments'][$i]['linkcomment'] = $this->wiki->href('pages/'.$comment['tag'].'/comments', 'api');
@@ -123,7 +145,6 @@ class CommentService
                 }
                 if ($this->wiki->UserIsOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
                     $com['comments'][$i]['linkdeletecomment'] = $this->wiki->href('comments/'.$comment['tag'].'/delete', 'api');
-                    //$this->wiki->href('deletepage', $comment['tag']);
                 }
                 $com['comments'][$i]['reponses'] = $this->getCommentList($comment['tag'], false);
             }
@@ -160,5 +181,92 @@ class CommentService
             }
         }
         return $this->wiki->render("@core/comment-form.twig", $options);
+    }
+
+    public function renderCommentsForPage($tag, $showOnlyOnce = true)
+    {
+        $output = '';
+        // if the comments were allready render in page, we don't show them again
+        if ($showOnlyOnce && in_array($tag, $this->pagesWhereCommentWereRendered)) {
+            return '';
+        }
+        $aclsService = $this->wiki->services->get(AclService::class);
+        $hasAccessComment = $aclsService->hasAccess('comment', $tag);
+        $HasAccessRead = $aclsService->HasAccess("read", $tag);
+
+        if ($HasAccessRead) {
+            $comments = $this->loadComments($tag);
+            $coms = $this->getCommentList($tag, true, $comments);
+            if ($hasAccessComment === 'comments-closed') {
+                if (!empty($comments)) {
+                    $output .= $coms;
+                    $output .= '<div class="alert alert-info comments-closed-info">'._t('COMMENTS_CURRENTLY_CLOSED').'.</div>';
+                }
+            } else {
+                $output .= $coms;
+                if ($hasAccessComment) {
+                    $output .= $this->getCommentForm($tag);
+                } else {
+                    if (! $this->wiki->GetUser()) {
+                        $output .= '<div class="comments-connect-info"><a href="#LoginModal" role="button" data-toggle="modal"><i class="fa fa-user"></i> '._t('COMMENT_LOGIN').'.</a></div>';
+                    } else {
+                        $output .= '<div class="alert alert-info comments-acls-info">'._t('COMMENT_NOT_ENOUGH_RIGHTS').'</div>';
+                    }
+                }
+            }
+        }
+
+        // indicate that those comments on page were already rendered once
+        $this->pagesWhereCommentWereRendered[] = $tag;
+
+        return $output;
+    }
+
+    /*
+    * Outputs a color (#000000) based Text input thanks https://gist.github.com/mrkmg/1607621
+    *
+    * @param $text String of text
+    * @param $min_brightness Integer between 0 and 100
+    * @param $spec Integer between 2-10, determines how unique each color will be
+    */
+
+    public function genColorCodeFromText($text, $min_brightness=100, $spec=10)
+    {
+        // Check inputs
+        if (!is_int($min_brightness)) {
+            throw new Exception("$min_brightness is not an integer");
+        }
+        if (!is_int($spec)) {
+            throw new Exception("$spec is not an integer");
+        }
+        if ($spec < 2 or $spec > 10) {
+            throw new Exception("$spec is out of range");
+        }
+        if ($min_brightness < 0 or $min_brightness > 255) {
+            throw new Exception("$min_brightness is out of range");
+        }
+
+
+        $hash = md5($text);  //Gen hash of text
+        $colors = array();
+        for ($i=0;$i<3;$i++) {
+            $colors[$i] = max(array(round(((hexdec(substr($hash, $spec*$i, $spec)))/hexdec(str_pad('', $spec, 'F')))*255),$min_brightness));
+        } //convert hash into 3 decimal values between 0 and 255
+
+        if ($min_brightness > 0) {  //only check brightness requirements if min_brightness is about 100
+            while (array_sum($colors)/3 < $min_brightness) {  //loop until brightness is above or equal to min_brightness
+                for ($i=0;$i<3;$i++) {
+                    $colors[$i] += 10;
+                }
+            }
+        }	//increase each color by 10
+
+        $output = '';
+
+        for ($i=0;$i<3;$i++) {
+            $output .= str_pad(dechex($colors[$i]), 2, 0, STR_PAD_LEFT);
+        }  //convert each color to hex and append to output
+
+        return '#'.$output;
     }
 }

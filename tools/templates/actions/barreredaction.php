@@ -61,9 +61,9 @@ if ($this->HasAccess("write") && $this->method != "revisions") {
                 $barreredactionelements['linkdeletepage'] = $this->href("deletepage", $page);
             }
             $aclsService = $this->services->get(AclService::class);
-            $hasAccessComment = $aclsService->hasAccess('accescomment');
+            $hasAccessComment = $aclsService->hasAccess('comment');
             $barreredactionelements['wikigroups'] = $this->GetGroupsList();
-            if ($hasAccessComment) {
+            if ($hasAccessComment && $hasAccessComment !== 'comments-closed') {
                 $barreredactionelements['linkclosecomments'] = $this->href("claim", $page, 'action=closecomments');
             } else {
                 $barreredactionelements['linkopencomments'] = $this->href("claim", $page, 'action=opencomments');
