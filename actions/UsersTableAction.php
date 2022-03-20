@@ -87,7 +87,7 @@ class UsersTableAction extends YesWikiAction
         return array_map(function ($user) use ($groups) {
             $userGroups = [];
             foreach ($groups as $group) {
-                if ($this->wiki->UserIsInGroup($group, $user['name'], false)) { // false to not display admins in other groups
+                if ($this->userManager->isInGroup($group, $user['name'], false)) { // false to not display admins in other groups
                     $userGroups[] = $group ;
                 }
             }
