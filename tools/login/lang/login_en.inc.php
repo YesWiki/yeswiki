@@ -80,4 +80,7 @@ return [
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'The \'{parameters}\' parameters cannot be empty!',
     'USERSETTINGS_NAME_ALREADY_USED' => 'The identifier "{currentName}" already exists!',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'The email "{email}" is already used by another account!',
+    'USERSETTINGS_CHANGE_PWD_IN_IFRAME' => "You are about to change your password in an iframe window.\n".
+        "To avoid keylogging attacks, make sure the site url starts with {baseUrl}.\n".
+        "If in doubt, open this form in a dedicated page by clicking on this link {link}.",
 ];

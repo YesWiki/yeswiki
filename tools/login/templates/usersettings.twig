@@ -58,6 +58,14 @@
     {% if errorPasswordChange is not empty %}
       <div class="alert alert-danger">{{ errorPasswordChange }}</div>
     {% endif %}
+    {% if inIframe %}
+      {% set urlWithoutIframe = url({handler:'show'})|replace({"/show":""}) %}
+      <div class="alert alert-warning">{{ _t('USERSETTINGS_CHANGE_PWD_IN_IFRAME')|nl2br
+        |replace({
+          "{baseUrl}":urlWithoutIframe,
+          "{link}": "<a target=\"_blank\" href=\"#{urlWithoutIframe}\">#{urlWithoutIframe}</a>"
+          })|raw }}</div>
+    {% endif %}
     <div class="control-group form-group">
       <label class="control-label col-sm-3">{{ _t('USER_OLD_PASSWORD') }}</label>
       <div class="controls col-sm-9">

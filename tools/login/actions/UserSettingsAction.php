@@ -137,6 +137,7 @@ class UserSettingsAction extends YesWikiAction
                 'adminIsActing' => $this->adminIsActing,
                 'errorPasswordChange' => $this->errorPasswordChange,
                 'errorUpdate' => $this->errorUpdate,
+                'inIframe' => testUrlInIframe() == 'iframe',
                 'referrer' => $this->referrer,
                 'user' => $this->wiki->user,
                 'userLoggedIn' => $this->userLoggedIn

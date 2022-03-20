@@ -110,6 +110,21 @@ switch ($step) {
         }
         echo $this->FormOpen();
     ?>
+<?php if (testUrlInIframe() == 'iframe') :
+    $urlWithoutIframe = str_replace("/show", "", $this->Href(
+        'show',
+        '',
+        (!empty($_GET['a']) ? [ "a" => $_GET['a']] : []) + (!empty($_GET['email']) ? [ "email" => $_GET['email']]: []) + (!empty($_GET['u']) ? [ "u" => $_GET['u']]: []),
+        false
+    )); ?>
+    <div class="alert alert-warning">
+        <?php echo str_replace(
+        ["\n","{baseUrl}","{link}"],
+        ["<br/>",$urlWithoutIframe,"<a target=\"_blank\" href=\"{$urlWithoutIframe}\">{$urlWithoutIframe}</a>"],
+        _t('USERSETTINGS_CHANGE_PWD_IN_IFRAME')
+    ) ;?>
+    </div>
+<?php endif ; ?>
 <div class="form-group">
   <label for="pw0"><?php echo _t('LOGIN_NEW_PASSWORD'); ?></label>
   <input type="password" class="form-control" name="pw0" id="pw0" value="" maxlength="40" required>

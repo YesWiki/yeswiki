@@ -80,4 +80,7 @@ return [
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'Els paràmetres \'{parameters}\' no poden estar buits !',
     'USERSETTINGS_NAME_ALREADY_USED' => 'L\'identificador "{currentName}" ja existeix !',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'Un altre compte ja ha utilitzat el correu electrònic "{email}" !',
+    'USERSETTINGS_CHANGE_PWD_IN_IFRAME' => "Esteu a punt de canviar la contrasenya en una finestra d'iframe.\n".
+        "Per evitar atacs de registre de claus, assegureu-vos que l'adreça URL del lloc comenci amb {baseUrl}.\n".
+        "En cas de dubte, obriu aquest formulari en una pàgina dedicada fent clic en aquest enllaç {link}.",
 ];

@@ -80,4 +80,7 @@ return [
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'De parameters \'{parameters}\' kunnen niet leeg zijn!',
     'USERSETTINGS_NAME_ALREADY_USED' => 'De identifier "{currentName}" bestaat al!',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'De e-mail "{email}" wordt al gebruikt door een ander account!',
+    'USERSETTINGS_CHANGE_PWD_IN_IFRAME' => "U staat op het punt uw wachtwoord te wijzigen in een iframe-venster.\n".
+        "Om keylogging-aanvallen te voorkomen, moet u ervoor zorgen dat de site-URL begint met {baseUrl}.\n".
+        "Bij twijfel, open dit formulier op een speciale pagina door op deze link {link} te klikken.",
 ];
