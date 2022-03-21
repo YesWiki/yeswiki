@@ -112,10 +112,10 @@ if(count($fiches)>0) {
       }
       setTimeout(init_calendar_tooltip,2000);';
   }
-  $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/fullcalendar/fullcalendar.min.css');
+  $GLOBALS['wiki']->AddCSSFile('styles/vendor/fullcalendar-jquery-v3.10.0/fullcalendar.min.css');
   $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/moment.min.js');
-  $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/fullcalendar/fullcalendar.min.js');
-  $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/fullcalendar/locale-all.js');
+  $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/fullcalendar-jquery-v3.10.0/fullcalendar.min.js');
+  $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/fullcalendar-jquery-v3.10.0/locale-all.min.js');
   $GLOBALS['wiki']->AddJavascript($script);
   echo '<div id="calendar'.$param['nbbazarliste'].'" class="no-dblclick '.$param['class'].'"></div>'."\n";
 }
