@@ -76,3 +76,7 @@ mkdir -p styles/vendor/datatables-full && \
       node_modules/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css  \
       node_modules/datatables.net-responsive-bs/css/responsive.bootstrap.min.css  \
       > styles/vendor/datatables-full/dataTables.bootstrap.min.css 
+
+# Moment
+mkdir -p javascripts/vendor/moment && \
+  cp -f node_modules/moment/min/moment-with-locales.min.js javascripts/vendor/moment
