@@ -162,7 +162,19 @@ document.addEventListener('DOMContentLoaded', function() {
               if (filterValues.includes(filter.value)) filter.checked = true
             }
           }
-        }  
+        }
+        // init q from GET q also
+        if (this.search.length == 0) {
+          let params = document.location.search;
+          params = params.substring(1) // remove ?
+          for(let combinaison of params.split('&')) {          
+            let filterId = combinaison.split('=')[0]
+            let filterValues = combinaison.split('=')[1]
+            if (filterId == "q") {
+              this.search = decodeURIComponent(filterValues);
+            }
+          }
+        }
         return filters      
       },
       getEntryRender(entry) {
