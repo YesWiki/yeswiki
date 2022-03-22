@@ -285,7 +285,7 @@ const ConditionsChecking = {
         $(element).find("select[data-default]").each(function(){
             let defaultVal = $(this).data('default');
             let val = $(this).val();
-            if (val.length > 0 && defaultVal != undefined){
+            if (defaultVal != undefined){
                 $(this).val(defaultVal);
                 $(this).trigger("change");
             }
@@ -455,8 +455,11 @@ const ConditionsChecking = {
             }
             // for debug console.log(stringToEval+" => "+display)
             if (display) {
+                let previousStateVisible = ($(conditionData.node).filter(':visible').length > 0);
                 $(conditionData.node).show();
-                this.setDefaultChildren(conditionData.node);
+                if (!previousStateVisible) {
+                    this.setDefaultChildren(conditionData.node);
+                }
             } else {
                 $(conditionData.node).hide();
                 this.emptyChildren(conditionData.node);
