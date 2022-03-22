@@ -7,6 +7,7 @@
         class="form-control"
         {% if field.maxChars and field.maxChars > 1 %}multiple="multiple" size="{{ field.maxChars }}"{% endif %}
         {% if field.required %}required{% endif %}
+        {% if field.default is not empty %}data-default="{{ field.default }}"{% endif %}
     >
         {% if not value %}
             <option value='' selected="selected">{{ _t('BAZ_CHOISIR') }}</option>

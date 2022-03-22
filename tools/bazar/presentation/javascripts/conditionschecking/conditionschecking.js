@@ -262,10 +262,33 @@ const ConditionsChecking = {
             $(this).trigger("change");
         });
     },
+    setDefaultCheckbox: function (element){
+        $(element).find("input[type=checkbox]:not([data-default])").each(function(){
+            $(this).prop("checked",false);
+            $(this).trigger("change");
+        });
+        $(element).find("input[type=checkbox][data-default]").each(function(){
+            let defaultVal = $(this).data('default');
+            if (defaultVal == "checked"){
+                $(this).prop("checked",true);
+                $(this).trigger("change");
+            }
+        });
+    },
     emptySelect: function (element){
         $(element).find("select").each(function(){
             $(this).val('');
             $(this).trigger("change");
+        });
+    },
+    setDefaultSelect: function (element){
+        $(element).find("select[data-default]").each(function(){
+            let defaultVal = $(this).data('default');
+            let val = $(this).val();
+            if (val.length > 0 && defaultVal != undefined){
+                $(this).val(defaultVal);
+                $(this).trigger("change");
+            }
         });
     },
     emptyTextarea: function (element){
@@ -280,6 +303,19 @@ const ConditionsChecking = {
         $(element).find("input[type=radio]").each(function(){
             $(this).prop("checked",false);
             $(this).trigger("change");
+        });
+    },
+    setDefaultRadio: function (element){
+        $(element).find("input[type=radio]:not([data-default])").each(function(){
+            $(this).prop("checked",false);
+            $(this).trigger("change");
+        });
+        $(element).find("input[type=radio][data-default]").each(function(){
+            let defaultVal = $(this).data('default');
+            if (defaultVal == "checked"){
+                $(this).prop("checked",true);
+                $(this).trigger("change");
+            }
         });
     },
     emptyTextarea: function (element){
@@ -305,8 +341,44 @@ const ConditionsChecking = {
             // $(this).find('input[type=file]').val(" "); // works only if after this.emptyOthersInputs
         });
     },
+    hasTagsInput: function (element){
+        let result = false;
+        Object.values($(element)[0]).forEach(param => {
+            if (Object.keys(param).includes('tagsinput')) {
+                result = true;
+            }
+        });
+        return result;
+    },
+    emptyByTags: function (element) {
+        $(element).find("input.yeswiki-input-entries").each(function(){
+            if (ConditionsChecking.hasTagsInput(this)){
+                $(this).tagsinput('removeAll');
+            }
+        });
+    },
+    setDefaultByTags: function (element){
+        $(element).find("input.yeswiki-input-entries").each(function(){
+            let propertyName = $(this).prop('name');
+            let val = $(this).val();
+            if (val.length == 0 && propertyName.length > 0 &&
+                typeof bazarlistTagsInputsData !== "undefined" && 
+                bazarlistTagsInputsData[propertyName] != undefined &&
+                ConditionsChecking.hasTagsInput(this)
+                ){
+                let selectedOptions = bazarlistTagsInputsData[propertyName].selectedOptions || [];
+                let existingTags = bazarlistTagsInputsData[propertyName].existingTags || [];
+                $(this).tagsinput('removeAll');
+                selectedOptions.forEach(tag => {
+                    if (existingTags[tag] != undefined){
+                        $(this).tagsinput('add',existingTags[tag]);
+                    }
+                });
+            }
+        });
+    },
     emptyOthersInputs: function (element){
-        $(element).find("input:not([type=checkbox]):not([type=radio]):not([type=hidden])").each(function(){
+        $(element).find("input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not(.yeswiki-input-entries)").each(function(){
             $(this).val('');
             $(this).trigger("change");
         });
@@ -317,9 +389,16 @@ const ConditionsChecking = {
         this.emptyTextarea(element);
         this.emptyRadio(element);
         this.emptyGeocode(element);
+        this.emptyByTags(element);
         this.emptyOthersInputs(element);
         // this.emptyImage(element);
         // do not work for FileField also
+    },
+    setDefaultChildren: function (element){
+        this.setDefaultSelect(element);
+        this.setDefaultRadio(element);
+        this.setDefaultCheckbox(element);
+        this.setDefaultByTags(element);
     },
     resolveCondition: function (id){
         if (typeof this.conditionsCache[id] !== "undefined"){
@@ -377,6 +456,7 @@ const ConditionsChecking = {
             // for debug console.log(stringToEval+" => "+display)
             if (display) {
                 $(conditionData.node).show();
+                this.setDefaultChildren(conditionData.node);
             } else {
                 $(conditionData.node).hide();
                 this.emptyChildren(conditionData.node);
