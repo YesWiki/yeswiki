@@ -29,18 +29,18 @@ ul.fake-ul {
   padding-left: 0;
 }
 .additions {
-  color: #008800;
+  color: var(--success-color);
 }
 .deletions {
-  color: #880000;
+  color: var(--danger-color);
 }
 .add, .add * {
   color: white !important;
-  background-color: #4ea952 !important;
+  background-color: var(--success-color) !important;
 }
 .del, .del * {
   color: white !important;
-  background-color: red !important;
+  background-color: var(--danger-color) !important;
   text-decoration: line-through !important;
 }
 
@@ -49,7 +49,7 @@ ul.fake-ul {
   line-height: 30px;
 }
 .trail_button {
-  color: #993333;
+  color: var(--secondary-color-1);
 }
 
 /* Page absentes */
@@ -67,7 +67,7 @@ span.missingpage,
   border-bottom: none;
 }
 .prev_alert {
-  background-color: red;
+  background-color: var(--danger-color);
   color: white;
   font-size: 1.7em;
   font-weight: bold;
@@ -113,7 +113,7 @@ span.missingpage,
 .rightcolumnpage {
   position: relative;
   margin: 0;
-  min-height: 400px;
+  min-height: 100px;
 }
 
 .footer {
@@ -741,7 +741,7 @@ section.full-width:not(.with-bg-pattern) {
   font-size:.8rem;
 }
 .comment-reponses {
-  margin-left: 42px;
+  margin-left: 3em;
 }
 .api-container code {
   font-weight: normal;
