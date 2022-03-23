@@ -79,6 +79,16 @@ mkdir -p styles/vendor/datatables-full && \
       node_modules/datatables.net-responsive-bs/css/responsive.bootstrap.min.css  \
       > styles/vendor/datatables-full/dataTables.bootstrap.min.css 
 
+# fullcalendar
+mkdir -p styles/vendor/fullcalendar && \
+  cp -f node_modules/fullcalendar/main.min.css styles/vendor/fullcalendar
+
+mkdir -p javascripts/vendor/fullcalendar && \
+  cp -f node_modules/fullcalendar/main.min.js javascripts/vendor/fullcalendar && \
+  cp -f node_modules/fullcalendar/locales-all.min.js javascripts/vendor/fullcalendar && \
+  cp -f node_modules/fullcalendar/LICENSE.txt javascripts/vendor/fullcalendar && \
+  cp -f node_modules/fullcalendar/README.md javascripts/vendor/fullcalendar
+
 # Moment
 mkdir -p javascripts/vendor/moment && \
   cp -f node_modules/moment/min/moment-with-locales.min.js javascripts/vendor/moment && \
