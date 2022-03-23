@@ -75,7 +75,7 @@ class CalcField extends BazarField
                 }
             }
             $formula = preg_replace('/\s+/', '', $formula);
-            $regexpToCheckIfMathFormula = '/^(('.$number.'|'.$functions.'\s*\((?1)+\)|\((?1)+\))(?:'.$operators.'(?2))?)+$/';
+            $regexpToCheckIfMathFormula = '/^(('.$number.'|'.$functions.'\s*\((?1)+\)|\((?1)+\))(?:'.$operators.'(?1))?)+$/';
             // Final regexp, heavily using recursive patterns
             if (preg_match($regexpToCheckIfMathFormula, $formula)) {
                 $formula = preg_replace('!pi|π!', 'pi()', $formula);
