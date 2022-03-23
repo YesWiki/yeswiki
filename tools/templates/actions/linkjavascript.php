@@ -81,8 +81,6 @@ $yeswiki_javascripts .= isset($GLOBALS['js']) ? $GLOBALS['js'] : '';
 // on vide la variable globale pour le javascript
 $GLOBALS['js'] = '';
 
-// do not use $GLOBALS['prefered_language'] because can be update for current page language
-
 // Globale wiki variable
 echo "<script>
     var wiki = {
