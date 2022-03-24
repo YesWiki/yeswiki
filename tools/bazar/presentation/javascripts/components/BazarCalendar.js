@@ -8,11 +8,12 @@ Vue.component('BazarCalendar', {
       calendar: null,
       calendarOptions: {
         editable: false,
+        eventDisplay: 'block',
         firstDay : 1,
         headerToolbar: {
           left: 'prev today',
           center: 'title',
-          right: 'dayGridMonth,dayGridWeek,dayGridDay next'
+          right: 'dayGridMonth,timeGridWeek,timeGridDay next'
         },
         initialView: 'dayGridMonth', // TODO use param to choose the view
         locale: wiki.locale,
@@ -83,17 +84,31 @@ Vue.component('BazarCalendar', {
       // Fixs bug, when no time is specified, is the event is on multiple day, calendJs show it like
       // it end one day earlier
       let startDate = entry.bf_date_debut_evenement;
-      if (entry.bf_date_fin_evenement == undefined){
-        // TODO manage end hour if start contains hours
-        return startDate;
+      let endDate = (entry.bf_date_fin_evenement == undefined) ? null : entry.bf_date_fin_evenement;
+      try {
+        endDate = new Date(endDate);
+      } catch (error) {
+        endDate = null;
       }
-      let endDate = entry.bf_date_fin_evenement;
-      if (endDate.length <= 10) {
-        let dateObject = new Date(endDate);
-        dateObject.setDate(dateObject.getDate()+1); // +1 day
-        endDate = dateObject.toISOString();
+      if (endDate == null || endDate == "Invalid Date"){
+        if (startDate.length <= 10){
+          return startDate;
+        }
+        endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate()+1); // +1 day
+        endDate.setHours(0);
+        endDate.setMinutes(0);
+        endDate.setSeconds(0);
+        endDate.setMilliseconds(0);
+        return endDate.toISOString();
       }
-      return endDate;
+      let endDateRaw = entry.bf_date_fin_evenement;
+      if (endDateRaw.length <= 10) {
+        endDate.setDate(endDate.getDate()+1); // +1 day
+        endDate.setHours(0);
+        endDateRaw = endDate.toISOString();
+      }
+      return endDateRaw;
     },
     removeEntry: function (entry){
       let entryId = entry.id_fiche;
@@ -109,6 +124,10 @@ Vue.component('BazarCalendar', {
       $.each($('<div '+ htmlAttributes + '>').data(), function (index, value) {
         $(element).attr('data-'+index, value);
       })
+      if (this.params.minical != undefined && [1,"1",true,"true"].indexOf(this.params.minical) > -1 && !$(element).hasClass("toolTipDefined")){
+        $(element).tooltip({title:event.title, html:true});
+        $(element).addClass("toolTipDefined");
+      }
     }
   },
   computed: {
