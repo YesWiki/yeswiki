@@ -1,5 +1,7 @@
 <div class="filters-col col-sm-{{ params.filtercolsize }}">
-  {{ include("@bazar/entries/index-dynamic/_search_input.twig") }}
+  {% if params.search %}
+    {{ include("@bazar/entries/index-dynamic/_search_input.twig") }}
+  {% endif %}
 
   <div class="filters no-dblclick {{ params.filterposition }}" v-if="Object.keys(filters).length">
     <div class="results-info text-info">
