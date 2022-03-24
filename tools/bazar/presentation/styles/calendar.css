@@ -90,4 +90,7 @@
   --fc-button-hover-border-color: var(--main-bg-color,#adadad);
   --fc-button-active-bg-color: var(--primary-color,#333);
   --fc-button-active-border-color: var(--primary-color,#333);
+
+  --fc-event-bg-color: var(--secondary-color-2,#3788d8);
+  --fc-event-border-color: var(--secondary-color-2,#3788d8);
 }

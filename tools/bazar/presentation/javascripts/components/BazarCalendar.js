@@ -16,18 +16,19 @@ Vue.component('BazarCalendar', {
       let entryId = entry.id_fiche;
       let existingEvent = this.getEventById(entryId);
       if (!existingEvent && typeof entry.bf_date_debut_evenement != "undefined") {
-        let titleIcon = "";
-        let backgroundColor = "";
+        let backgroundColor = (entry.color == undefined || entry.color.length == 0) ? "": entry.color;
         let newEvent = {
           id: entryId,
-          title: titleIcon + entry.bf_titre,
+          title: entry.bf_titre,
           start: entry.bf_date_debut_evenement,
           end: this.formatEndDate(entry),
           url: entry.url + ((entry['external-data'] != undefined) ? '/iframe':''),
           allDay: this.isAllDayDate(entry.bf_date_debut_evenement),
           className: "bazar-entry"+((this.params.entrydisplay == undefined || this.params.entrydisplay.length == 0 || this.params.entrydisplay == 'modal') ?  " modalbox":""),
           backgroundColor: backgroundColor,
+          borderColor: backgroundColor,
           extendedProps: {
+            icon: (entry.icon == undefined || entry.icon.length == 0) ? "": `<i class="${entry.icon}">&nbsp;</i>`,
             htmlattributes: ((entry.html_data != undefined) ? entry.html_data : '')+
               ((entry['external-data'] != undefined) ? ' data-iframe="1"':'')+
               ' data-size="modal-lg"'
@@ -120,6 +121,16 @@ Vue.component('BazarCalendar', {
       $.each($('<div '+ htmlAttributes + '>').data(), function (index, value) {
         $(element).attr('data-'+index, value);
       })
+      if (!$(element).hasClass("iconDefined")){
+        if (event.extendedProps.icon.length > 0){
+          if (!$(element).hasClass("fc-list-event")){
+            $(element).find('.fc-event-title').prepend($(event.extendedProps.icon));
+          } else {
+            $(element).find('.fc-list-event-title a').prepend($(event.extendedProps.icon));
+          }
+        }
+        $(element).addClass("iconDefined");
+      }
       if (this.params.minical != undefined && [1,"1",true,"true"].indexOf(this.params.minical) > -1 && !$(element).hasClass("toolTipDefined")){
         $(element).tooltip({title:event.title, html:true});
         $(element).addClass("toolTipDefined");
@@ -196,4 +207,5 @@ Vue.component('BazarCalendar', {
       </div>
     </div>
   `
+  // TODO add button with link to .ics for local forms + options
 })
