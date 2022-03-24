@@ -1,0 +1,60 @@
+.fc-prev-button.fc-button .fc-icon,
+.fc-next-button.fc-button .fc-icon{
+  font-size: 2em;
+}
+
+.fc .fc-button-group > .fc-button,
+.fc .fc-button-group > .fc-button.fc-button-active{
+  border-radius: var(--btn-border-radius,0.25em);
+  height: 2.1em;
+  padding: 0 .6em;
+}
+
+.fc .fc-button-group > .fc-button:not(:last-child),
+.fc .fc-button-group > .fc-button.fc-button-active:not(:last-child){
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.fc .fc-button-group > .fc-button:not(:first-child),
+.fc .fc-button-group > .fc-button.fc-button-active:not(:first-child){
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.fc .fc-button-group > .fc-button,
+.fc .fc-button-group > .fc-button.fc-button-active {
+  border: 2px solid var(--primary-color,#333);
+}
+.fc .fc-button-group > .fc-button.fc-button-active {
+  color: var(--neutral-light-color,#e6e6e6);
+}
+
+@media (max-width:800px){
+  .fc-prev-button.fc-button .fc-icon,
+  .fc-next-button.fc-button .fc-icon{
+    font-size: 1.3em;
+  }
+
+  .fc .fc-button-group > .fc-button,
+  .fc .fc-button-group > .fc-button.fc-button-active {
+    font-size: 0.8em;
+    line-height: 1.2em;
+  }
+  
+  .fc .fc-toolbar-title{
+    font-size: 1.2em;
+  }
+}
+
+
+:root {
+  /* use theming vars if existing */
+  --fc-button-text-color: var(--primary-color,#333);
+  --fc-button-bg-color: var(--main-bg-color,#fff);
+  --fc-button-border-color: var(--main-bg-color,#ccc);
+  --fc-button-hover-bg-color: var(--neutral-light-color,#e6e6e6);
+  --fc-button-hover-border-color: var(--main-bg-color,#adadad);
+  --fc-button-active-bg-color: var(--primary-color,#333);
+  --fc-button-active-border-color: var(--primary-color,#333);
+}

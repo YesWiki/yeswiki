@@ -1,9 +1,10 @@
 {% extends "@bazar/entries/index-dynamic.twig" %}
 
-{% set necessary_fields = ['bf_date_debut_evenement', 'bf_date_fin_evenement'] %}
+{% set necessary_fields = ['bf_date_debut_evenement', 'bf_date_fin_evenement','url'] %}
 
 {% block assets %}
   {{ include_css('styles/vendor/fullcalendar/main.min.css') }}
+  {{ include_css('tools/bazar/presentation/styles/calendar.css') }}
 
   {{ include_javascript('javascripts/vendor/moment/moment-with-locales.min.js') }}
   {{ include_javascript('javascripts/vendor/fullcalendar/main.min.js') }}
