@@ -8,7 +8,6 @@ Vue.component('BazarCalendar', {
       calendar: null,
       calendarOptions: {
         editable: false,
-        eventLimit: true, // allow more link when too many events
         firstDay : 1,
         headerToolbar: {
           left: 'prev today',
@@ -46,7 +45,7 @@ Vue.component('BazarCalendar', {
           end: this.formatEndDate(entry),
           url: entry.url + ((entry['external-data'] != undefined) ? '/iframe':''),
           allDay: this.isAllDayDate(entry.bf_date_debut_evenement),
-          className: "bazar-entry"+((this.params.entrydisplay == undefined || this.params.entrydisplay) == 'modal' ?  " modalbox":""),
+          className: "bazar-entry"+((this.params.entrydisplay == undefined || this.params.entrydisplay.length == 0 || this.params.entrydisplay == 'modal') ?  " modalbox":""),
           backgroundColor: backgroundColor,
           extendedProps: {
             htmlattributes: ((entry.html_data != undefined) ? entry.html_data : '')+
@@ -106,8 +105,7 @@ Vue.component('BazarCalendar', {
     updateEventData: function (arg){
       let event = arg.event;
       let htmlAttributes = event.extendedProps.htmlattributes;
-      let element = arg.el;
-      $(element).find('.fc-event-title').html(event.title);
+      let element = $(arg.el);
       $.each($('<div '+ htmlAttributes + '>').data(), function (index, value) {
         $(element).attr('data-'+index, value);
       })
