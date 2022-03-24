@@ -47,6 +47,39 @@
   }
 }
 
+/* ENTRY PANEL */
+.bazar-list-dynamic-template-container .entry-container {
+  position: relative;
+  transition: all .3s;
+  min-height: 50%;
+  min-width: 400px;
+  background-color: var(--neutral-light-color);
+  padding: 0 0 1rem 1rem;
+  overflow: auto;
+}
+.bazar-list-dynamic-template-container .entry-container .btn-close i {
+  padding-right: 1rem;
+}
+.facette-container.dynamic[data-filter-align="right"] .bazar-list-dynamic-template-container .entry-container {
+  padding-left: 0;
+  padding-right: 1rem;
+}
+.facette-container.dynamic:not([data-filter-align="right"]) .bazar-list-dynamic-template-container .entry-container .btn-close i {
+  padding-right: 0;
+}
+.bazar-list-dynamic-template-container .entry-container .btn-close {
+  height: 5.4rem;
+}
+.bazar-list-dynamic-template-container.small-width .entry-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+/* === ENTRY PANEL === */
+
 
 :root {
   /* use theming vars if existing */

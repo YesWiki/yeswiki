@@ -6,31 +6,10 @@ Vue.component('BazarCalendar', {
     return {
       selectedEntry: null,
       calendar: null,
-      calendarOptions: {
-        editable: false,
-        eventDisplay: 'block',
-        firstDay : 1,
-        headerToolbar: {
-          left: 'prev today',
-          center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay next'
-        },
-        initialView: 'dayGridMonth', // TODO use param to choose the view
-        locale: wiki.locale,
-        navLinks : true, 
-        weekNumbers: true // TODO use param
-      }
+      mounted: false
     }
   },
   mounted() {
-    let calendarEl = $('<div>').addClass('no-dblclick');
-    $(this.$el).prepend(calendarEl);
-    this.calendar = new FullCalendar.Calendar(calendarEl.get(0),this.calendarOptions);
-    this.calendar.setOption('eventDidMount',this.updateEventData);
-    if (this.params.entrydisplay == 'sidebar'){
-      this.calendar.setOption('eventClick' ,this.displaySideBar);
-    }
-    this.calendar.render();
   },
   methods: {
     addEntry: function (entry){
@@ -69,10 +48,9 @@ Vue.component('BazarCalendar', {
       return true;
     },
     displaySideBar: function(info) {
-      // TODO repair: NOT working
       info.jsEvent.preventDefault();
       let entries = this.entries;
-      this.selectedEntry = entries.filter(entry => (entry.id == info.event.id));
+      this.selectedEntry = entries.filter(entry => (entry.id_fiche == info.event.id))[0];
     },
     getEventById: function (id){
       return this.calendar ? this.calendar.getEventById(id): null;
@@ -110,6 +88,24 @@ Vue.component('BazarCalendar', {
       }
       return endDateRaw;
     },
+    mountCalendar: function(){
+      if (!this.mounted){
+        let calendarEl = $('<div>').on(
+          "dblclick",
+          function(e) {
+            return false;
+          }
+        );
+        $(this.$el).prepend(calendarEl);
+        this.calendar = new FullCalendar.Calendar(calendarEl.get(0),this.calendarOptions);
+        this.calendar.setOption('eventDidMount',this.updateEventData);
+        if (this.params.entrydisplay == 'sidebar'){
+          this.calendar.setOption('eventClick' ,this.displaySideBar);
+        }
+        this.calendar.render();
+        this.mounted = true;
+      }
+    },
     removeEntry: function (entry){
       let entryId = entry.id_fiche;
       let existingEvent = this.getEventById(entryId);
@@ -131,6 +127,36 @@ Vue.component('BazarCalendar', {
     }
   },
   computed: {
+    calendarOptions() {
+      let extendedList = "";
+      switch (this.params['showlist']) {
+        case "week":
+          extendedList = ",listWeek";
+          break;
+        case "month":
+          extendedList = ",listMonth";
+          break;
+        case "year":
+          extendedList = ",listYear";
+          break;
+        default:
+          break;
+      }
+      return {
+        editable: false,
+        eventDisplay: 'block',
+        firstDay : 1,
+        headerToolbar: {
+          left: 'prev today',
+          center: 'title',
+          right: `dayGridMonth,timeGridWeek,timeGridDay${extendedList} next`
+        },
+        initialView: 'dayGridMonth', // TODO use param to choose the view
+        locale: wiki.locale,
+        navLinks : true, 
+        weekNumbers: true // TODO use param
+      }
+    },
     entries() {
       return this.$root.entriesToDisplay.filter(entry => entry.bf_date_debut_evenement)
     },
@@ -141,11 +167,12 @@ Vue.component('BazarCalendar', {
   watch: {
     selectedEntry: function (newVal, oldVal) {
       if (this.selectedEntry) {
-        if (this.params.entrydisplay == 'sidebar')
+        if (this.params['entrydisplay'] == 'sidebar')
           this.$root.getEntryRender(this.selectedEntry)
       }
     },
     params() {
+      this.mountCalendar();
     },
     entries(newVal, oldVal) {
       let newIds = newVal.map(e => e.id_fiche)
@@ -161,7 +188,7 @@ Vue.component('BazarCalendar', {
     }
   },
   template: `
-    <div class="bazar-calendar-container">
+    <div class="bazar-list-dynamic-template-container">
       <!-- SideNav to display entry -->
       <div v-if="selectedEntry && this.params.entrydisplay == 'sidebar'" class="entry-container">
         <div class="btn-close" @click="selectedEntry = null"><i class="fa fa-times"></i></div>
