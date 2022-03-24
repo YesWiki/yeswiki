@@ -80,8 +80,12 @@ return [
     // "AB_bazaragenda_nbcol_label" => "Nombre de colonnes",
     // "AB_bazaragenda_modal_label" => "Affichage d'une fenêtre modale lors du clic",
     // // BazarCalendar
-    // "AB_bazarcalendar" => "Calendrier",
-    // "AB_bazarcalendar_description" => "Les fiches seront sous forme d'événement dans un calendrier.",
+    "AB_bazarcalendar" => "Calendar",
+    "AB_bazarcalendar_description" => "The entry will be in the form of an event in a calendar.",
+    "AB_bazarcalendar_showlist_label" => "Display the 'list' button",
+    "AB_bazarcalendar_showlist_week" => "Week",
+    "AB_bazarcalendar_showlist_month" => "Month",
+    "AB_bazarcalendar_showlist_year" => "Year",
     // // BazarListe
     // "AB_bazarliste_label" => "Liste",
     // "AB_bazarliste_description" => "Les fiches seront sous forme d'accordéons",
