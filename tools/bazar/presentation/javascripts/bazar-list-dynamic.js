@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
           hashes.push(`${filterId}=${this.computedFilters[filterId].join(',')}`)
         }
         if (this.search) hashes.push(`q=${this.search}`)
-        document.location.hash = hashes.join('&')
+        document.location.hash = hashes.length > 0 ? hashes.join('&') : null;
       },
       initFiltersFromHash(filters, hash) {
         hash = hash.substring(1) // remove #
