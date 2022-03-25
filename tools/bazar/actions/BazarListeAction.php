@@ -35,7 +35,7 @@ class BazarListeAction extends YesWikiAction
                         $icon = trim(array_values($tabparam)[0]);
                     }
                 } else {
-                    exit('<div class="alert alert-danger">action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"</div>');
+                    throw new Exception('action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"');
                 }
             } else {
                 $icon = $this->params->get('baz_marker_icon');
@@ -62,7 +62,7 @@ class BazarListeAction extends YesWikiAction
                         $color = trim(array_values($tabparam)[0]);
                     }
                 } else {
-                    exit('<div class="alert alert-danger">action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"</div>');
+                    throw new Exception('action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"');
                 }
             } else {
                 $color = $this->params->get('baz_marker_color');

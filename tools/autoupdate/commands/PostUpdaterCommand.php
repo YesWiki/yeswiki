@@ -45,9 +45,9 @@ class PostUpdaterCommand extends Command
 
         $bufferedOutput = strip_tags($bufferedOutput, '<br><hr><em><strong>');
         $bufferedOutput = preg_replace(
-          ['#<[bh]r ?/?>#Ui', '/<(em|strong)>/Ui', '#</ ?(em|strong)>#Ui'],
-          ["\n", "\e[1m", "\e[0m"],
-          $bufferedOutput
+            ['#<[bh]r ?/?>#Ui', '/<(em|strong)>/Ui', '#</ ?(em|strong)>#Ui'],
+            ["\n", "\e[1m", "\e[0m"],
+            $bufferedOutput
         );
         $output->write($bufferedOutput);
 

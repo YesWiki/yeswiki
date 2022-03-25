@@ -15,6 +15,7 @@
 // +------------------------------------------------------------------------------------------------------+
 
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\Service\TemplateEngine;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -47,7 +48,7 @@ if (empty($GLOBALS['ordre'])) {
 }
 
 $template = $this->GetParameter("template");
-$template = $this->getService(TemplateEngine::class)->hasTemplate("@bazar/$template") ? $template : '';
+$template = $this->services->get(TemplateEngine::class)->hasTemplate("@bazar/$template") ? $template : '';
 if (empty($template)) {
     $template = $GLOBALS['wiki']->config['default_bazar_template'];
 }
@@ -55,7 +56,7 @@ if (empty($template)) {
 // identifiant de la base de donnée pour la liste
 $id = $this->GetParameter("id");
 if (empty($id)) {
-    exit('<div class="alert alert-danger">Error action bazarlistecategorie: parameter "id" missing.</div>');
+    throw new Exception('Error action bazarlistecategorie: parameter "id" missing.');
 } else {
     $GLOBALS['champ'] = $id;
 }

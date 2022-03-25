@@ -67,5 +67,5 @@ if ($pages = $this->LoadAll("select tag, time, user, owner, LEFT(body,500) as bo
     // Définition du type de document et de son encodage.
     header("Content-Type: text/xml; charset=ISO-8859-1");
     echo $output;
-    exit;
+    $this->exit();
 }

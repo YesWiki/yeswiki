@@ -43,7 +43,7 @@ if ($entryManager->isEntry($this->GetPageTag()) && $this->HasAccess("read")) {
         header("Access-Control-Allow-Origin: *");
 
         $fiche = $entryManager->getOne($this->GetPageTag(), $semantic);
-        exit(json_encode($fiche));
+        $this->exit(json_encode($fiche));
     } else {
         $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
     }

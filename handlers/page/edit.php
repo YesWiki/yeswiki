@@ -121,7 +121,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
                 }
 
                 // sécurité
-                exit;
+                $this->exit();
             }
         // NB.: en cas d'erreur on arrive ici, donc default sera exécuté...
         // no break

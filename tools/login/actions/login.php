@@ -114,7 +114,7 @@ if ($_REQUEST["action"] == "logout") {
     $this->LogoutUser();
     $this->SetMessage(_t('LOGIN_YOU_ARE_NOW_DISCONNECTED'));
     $this->Redirect(preg_replace('/(&|\\\?)$/m', '', preg_replace('/(&|\\\?)action=logout(&)?/', '$1', $incomingurl)));
-    exit;
+    $this->exit();
 }
 
 // cas de l'identification

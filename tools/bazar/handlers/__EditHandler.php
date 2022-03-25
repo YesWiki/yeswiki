@@ -27,7 +27,7 @@ class __EditHandler extends YesWikiHandler
             $this->output .= $this->wiki->Footer();
 
             // we use die so that the script stop there and the default handler of wiki isn't called
-            die($this->output);
+            $this->wiki->exit($this->output);
         }
     }
 }

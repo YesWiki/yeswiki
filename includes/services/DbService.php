@@ -43,7 +43,7 @@ class DbService
                 }
             }
         } else {
-            exit(_t('DB_CONNECT_FAIL'));
+            $this->wiki->exit(_t('DB_CONNECT_FAIL'));
         }
     }
 

@@ -49,7 +49,7 @@ if (!$this->HasAccess('read')) {
             $plugin_output_new
         );
     }
-    exit($output);
+    $this->exit($output);
 }
 
 // TODO : make it work with big buffers
