@@ -284,7 +284,7 @@ return [
     'BAZ_SEPTEMBRE' => 'Setembre',
     'BAZ_OCTOBRE' => 'Octubre',
     'BAZ_NOVEMBRE' => 'Novembre',
-    'BAZ_DECEMBRE' => 'Desembre'
+    'BAZ_DECEMBRE' => 'Desembre',
 
     // 'BAZ_TODAY' => 'Aujourd\'hui',
     // 'BAZ_MONTH' => 'Mois',
@@ -295,6 +295,12 @@ return [
     // 'BAZ_ENTER_HOUR' => 'Entrer l\'heure',
 
     // 'BAZ_RESET_FILTERS' => 'Réinitialiser les filtres',
+
+    // controllers/FormController.php
+    'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Restringeix el nombre de targetes a una per usuari',
+    'BAZ_MESSAGE_IF_OTHER_ENTRY_EXIST' => 'Missatge a mostrar quan ja existeixi una targeta. Deixeu-ho en blanc per mantenir el missatge per defecte.',
+    'BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM' => 'Ja heu introduït una targeta per al formulari "{formName}". Es mostra a continuació.',
+    'BAZ_USER_SHOULD_BE_CONNECTED_TO_ACCES_THIS_FORM' => 'Cal iniciar sessió per poder emplenar aquest formulari.',
 
     // fields/BookmarkletField.php
     // 'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',

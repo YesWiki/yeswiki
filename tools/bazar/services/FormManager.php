@@ -21,6 +21,8 @@ class FormManager
     protected $params;
 
     protected $cachedForms;
+    protected $isAvailableOnlyOneEntryOption;
+    protected $isAvailableOnlyOneEntryMessage;
 
     public function __construct(
         Wiki $wiki,
@@ -38,6 +40,8 @@ class FormManager
 
         $this->cachedForms = [];
         $this->securityController = $securityController;
+        $this->isAvailableOnlyOneEntryOption = null;
+        $this->isAvailableOnlyOneEntryMessage = null;
     }
 
     public function getOne($formId): ?array
@@ -103,7 +107,10 @@ class FormManager
         }
 
         return $this->dbService->query('INSERT INTO ' . $this->dbService->prefixTable('nature')
-            . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_context` ,`bn_sem_type` ,`bn_sem_use_template` ,`bn_condition`)'
+            . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_context` ,`bn_sem_type` ,`bn_sem_use_template`'
+            . ($this->isAvailableOnlyOneEntryOption() ? ',`bn_only_one_entry`' : '')
+            . ($this->isAvailableOnlyOneEntryMessage() ? ',`bn_only_one_entry_message`' : '')
+            .',`bn_condition`)'
             . ' VALUES (' . $data['bn_id_nature'] . ', "fr-FR", "'
             . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '","'
             . $this->dbService->escape(_convert($data['bn_template'], YW_CHARSET, true)) . '", "'
@@ -111,6 +118,8 @@ class FormManager
             . $this->dbService->escape(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '", "'
             . $this->dbService->escape(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '", '
             . (isset($data['bn_sem_use_template']) ? '1' : '0') . ', "'
+            . ($this->isAvailableOnlyOneEntryOption() ? ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === "Y") ? "Y" : "N") . '", "' : '')
+            . ($this->isAvailableOnlyOneEntryMessage() ? (empty($data['bn_only_one_entry_message']) ? "" : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '", "' : '')
             . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '")');
     }
 
@@ -126,6 +135,8 @@ class FormManager
             . '`bn_sem_context`="' . $this->dbService->escape(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '" ,'
             . '`bn_sem_type`="' . $this->dbService->escape(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '" ,'
             . '`bn_sem_use_template`=' . (isset($data['bn_sem_use_template']) ? '1' : '0') . ' ,'
+            . ($this->isAvailableOnlyOneEntryOption() ? '`bn_only_one_entry`="' . ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === "Y") ? "Y" : "N") . '",' : '')
+            . ($this->isAvailableOnlyOneEntryMessage() ? '`bn_only_one_entry_message`="' . (empty($data['bn_only_one_entry_message']) ? "" : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '",' : '')
             . '`bn_condition`="' . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '"'
             . ' WHERE `bn_id_nature`=' . $this->dbService->escape($data['bn_id_nature']));
     }
@@ -396,5 +407,31 @@ class FormManager
             }
         }
         return null;
+    }
+
+    /**
+     * check if the bn_only_one_entry option is available
+     * @return bool
+     */
+    public function isAvailableOnlyOneEntryOption(): bool
+    {
+        if (is_null($this->isAvailableOnlyOneEntryOption)) {
+            $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable("nature")} LIKE 'bn_only_one_entry';");
+            $this->isAvailableOnlyOneEntryOption = (@mysqli_num_rows($result) !== 0);
+        }
+        return $this->isAvailableOnlyOneEntryOption;
+    }
+
+    /**
+     * check if the bn_only_one_entry_message is available
+     * @return bool
+     */
+    public function isAvailableOnlyOneEntryMessage(): bool
+    {
+        if (is_null($this->isAvailableOnlyOneEntryMessage)) {
+            $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable("nature")} LIKE 'bn_only_one_entry_message';");
+            $this->isAvailableOnlyOneEntryMessage = (@mysqli_num_rows($result) !== 0);
+        }
+        return $this->isAvailableOnlyOneEntryMessage;
     }
 }

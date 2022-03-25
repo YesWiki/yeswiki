@@ -76,7 +76,8 @@ class FormController extends YesWikiController
 
             return $this->render("@bazar/forms/forms_form.twig", [
                 'formAndListIds' => baz_forms_and_lists_ids(),
-                'groupsList' => $this->getGroupsListIfEnabled()
+                'groupsList' => $this->getGroupsListIfEnabled(),
+                'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption()
             ]);
         } else {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
@@ -95,7 +96,8 @@ class FormController extends YesWikiController
             return $this->render("@bazar/forms/forms_form.twig", [
                 'form' => $this->formManager->getOne($id),
                 'formAndListIds' => baz_forms_and_lists_ids(),
-                'groupsList' => $this->getGroupsListIfEnabled()
+                'groupsList' => $this->getGroupsListIfEnabled(),
+                'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption() && $this->formManager->isAvailableOnlyOneEntryMessage()
             ]);
         } else {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));

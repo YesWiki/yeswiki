@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}nature` (
   `bn_sem_use_template` tinyint(1) NOT NULL DEFAULT 1,
   `bn_template` text NOT NULL,
   `bn_ce_i18n` varchar(5) NOT NULL,
+  `bn_only_one_entry` enum('Y','N') NOT NULL DEFAULT 'N',
+  `bn_only_one_entry_message` text DEFAULT NULL,
   PRIMARY KEY (`bn_id_nature`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB;
 

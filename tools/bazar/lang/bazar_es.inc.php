@@ -296,6 +296,12 @@ return [
 
     // 'BAZ_RESET_FILTERS' => 'Réinitialiser les filtres',
 
+    // controllers/FormController.php
+    'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Restrinja el número de tarjetas a una por usuario',
+    'BAZ_MESSAGE_IF_OTHER_ENTRY_EXIST' => 'Mensaje para mostrar cuando ya existe una tarjeta. Deje en blanco para mantener el mensaje predeterminado.',
+    'BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM' => 'Ya ha introducido una tarjeta para el formulario "{formName}". Se muestra a continuación.',
+    'BAZ_USER_SHOULD_BE_CONNECTED_TO_ACCES_THIS_FORM' => 'Es necesario estar conectado para poder completar este formulario.',
+
     // fields/BookmarkletField.php
     // 'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',
 

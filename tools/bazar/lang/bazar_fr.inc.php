@@ -296,6 +296,12 @@ return [
 
     'BAZ_RESET_FILTERS' => 'Réinitialiser les filtres',
 
+    // controllers/FormController.php
+    'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Restreindre le nombre de fiche à une seule par utilisateur',
+    'BAZ_MESSAGE_IF_OTHER_ENTRY_EXIST' => 'Message à afficher quand une fiche existe déjà. Laisser vide pour garder le message par défaut.',
+    'BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM' => 'Vous avez déjà saisi une fiche pour le formulaire "{formName}". Elle est affichée ci-dessous.',
+    'BAZ_USER_SHOULD_BE_CONNECTED_TO_ACCES_THIS_FORM' => 'Il est nécessaire d\'être connecté pour pouvoir compléter ce formulaire.',
+
     // fields/BookmarkletField.php
     'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',
 

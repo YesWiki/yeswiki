@@ -79,6 +79,37 @@
     </div>
   </div>
 
+  {% if onlyOneEntryOptionAvailable %}
+    <div class="controls checkbox">
+      <label for="bn_only_one_entry">
+			    {% apply spaceless %}
+            <input 
+              id="bn_only_one_entry" 
+              type="checkbox" 
+              value="Y" 
+              name="bn_only_one_entry"{{ form.bn_only_one_entry == "Y" ? ' checked' : ''}}
+              onchange="javascript:if($(this).prop('checked')){$('#bn_only_one_entry_message-group').show();}else{$('#bn_only_one_entry_message-group').hide();};"
+              />
+            <span>{{ _t('BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM') }}</span>
+			    {% endapply %}
+        </label>
+    </div>
+    <div id="bn_only_one_entry_message-group" class="control-group form-group"{{ form.bn_only_one_entry == "Y" ? '': ' style="display:none;"' }}>
+      <label class="control-label col-sm-3">
+        {{ _t('BAZ_MESSAGE_IF_OTHER_ENTRY_EXIST') }}
+      </label>
+      <div class="controls col-sm-9">
+        <input
+          class="form-control input-xxlarge"
+          name="bn_only_one_entry_message"
+          type="text"
+          value="{{ form.bn_only_one_entry_message }}"
+          placeholder="{{ _t('BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM') }}"
+        />
+      </div>
+    </div>
+  {% endif %}
+
   <div class="control-group form-group">
     <div class="controls col-sm-9 col-sm-offset-3">
       <div class="accordion-heading">

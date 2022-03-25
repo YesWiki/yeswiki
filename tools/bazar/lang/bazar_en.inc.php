@@ -296,6 +296,12 @@ return [
 
     // 'BAZ_RESET_FILTERS' => 'Réinitialiser les filtres',
 
+    // controllers/FormController.php
+    'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Restrict the number of cards to one per user',
+    'BAZ_MESSAGE_IF_OTHER_ENTRY_EXIST' => 'Message to display when an entry already exists. Leave blank to keep the default message.',
+    'BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM' => 'You have already entered an entry for the "{formName}" form. It is displayed below.',
+    'BAZ_USER_SHOULD_BE_CONNECTED_TO_ACCES_THIS_FORM' => 'It is necessary to be logged in to be able to complete this form.',
+
     // fields/BookmarkletField.php
     // 'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',
 
