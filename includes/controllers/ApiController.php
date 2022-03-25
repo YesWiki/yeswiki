@@ -2,12 +2,15 @@
 
 namespace YesWiki\Core\Controller;
 
+use Throwable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\ApiResponse;
+use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\DiffService;
@@ -184,7 +187,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/pages/{tag}",options={"acl":{"public"}})
+     * @Route("/api/pages/{tag}",methods={"GET"},options={"acl":{"public"}})
      */
     public function getPage(Request $request, $tag)
     {
@@ -224,5 +227,105 @@ class ApiController extends YesWikiController
         $errors = ob_get_contents();
         ob_end_clean();
         return new ApiResponse((empty($errors) ? [] : ['errors' => $errors])+$page);
+    }
+
+    /**
+     * @Route("/api/pages/{tag}",methods={"DELETE"},options={"acl":{"public","+"}})
+     */
+    public function deletePage($tag)
+    {
+        ob_start(); // to catch error messages
+        $pageManager = $this->getService(PageManager::class);
+        $dbService = $this->getService(DbService::class);
+
+        $result = [];
+        $code = Response::HTTP_INTERNAL_SERVER_ERROR;
+        try {
+            $page = $pageManager->getOne($tag, null, false);
+            if (empty($page)) {
+                $code = Response::HTTP_NOT_FOUND;
+            } else {
+                $tag = isset($page['tag']) ? $page['tag'] : $tag;
+                if ($this->wiki->UserIsOwner($tag) || $this->wiki->UserIsAdmin()) {
+                    if (!$pageManager->isOrphaned($tag)) {
+                        $dbService->query("DELETE FROM {$dbService->prefixTable('links')} WHERE to_tag = '$tag'");
+                    }
+                    $pageManager->deleteOrphaned($tag);
+                    $page = $pageManager->getOne($tag, null, false);
+                    if (!empty($page)) {
+                        $code = Response::HTTP_INTERNAL_SERVER_ERROR;
+                        $result = [
+                            'notDeleted' => [$tag]
+                        ];
+                    } else {
+                        $this->wiki->LogAdministrativeAction($this->wiki->GetUserName(), "Suppression de la page ->\"\"$tag\"\"", false);
+                        $result = [
+                            'deleted' => [$tag]
+                        ];
+                        $code = Response::HTTP_OK;
+                    }
+                } else {
+                    $code = Response::HTTP_UNAUTHORIZED;
+                }
+            }
+        } catch (Throwable $th) {
+            try {
+                $page = $pageManager->getOne($tag, null, false);
+                if (!empty($page)) {
+                    $code = Response::HTTP_INTERNAL_SERVER_ERROR;
+                    $result = [
+                        'notDeleted' => [$tag],
+                        'error' => $th->getMessage()
+                    ];
+                } else {
+                    $code = Response::HTTP_OK;
+                    $result = [
+                        'deleted' => [$tag],
+                        'error' => $th->getMessage()
+                    ];
+                }
+            } catch (Throwable $th) {
+                $code = Response::HTTP_INTERNAL_SERVER_ERROR;
+                $result = [
+                    'notDeleted' => [$tag],
+                    'error' => $th->getMessage()
+                ];
+            }
+        }
+
+        $errors = ob_get_contents();
+        ob_end_clean();
+        return new ApiResponse((empty($errors) ? [] : ['errors' => $errors])+$result, $code);
+    }
+    
+    /**
+     * @Route("/api/pages/{tag}/delete",methods={"GET"},options={"acl":{"public","+"}})
+     */
+    public function deletePageByGetMethod($tag)
+    {
+        ob_start(); // to catch error messages
+        $result = [];
+        $code = Response::HTTP_INTERNAL_SERVER_ERROR;
+        try {
+            $csrfTokenController = $this->wiki->services->get(CsrfTokenController::class);
+            $csrfTokenController->checkToken("api\\pages\\$tag\\delete", 'GET', 'csrfToken');
+        } catch (TokenNotFoundException $th) {
+            $code = Response::HTTP_UNAUTHORIZED;
+            $result = [
+                'notDeleted' => [$tag],
+                'error' => $th->getMessage()
+            ];
+        } catch (Throwable $th) {
+            $code = Response::HTTP_INTERNAL_SERVER_ERROR;
+            $result = [
+                'notDeleted' => [$tag],
+                'error' => $th->getMessage()
+            ];
+        }
+        $errors = ob_get_contents();
+        ob_end_clean();
+        return (empty($errors) && empty($result))
+            ? $this->deletePage($tag)
+            : new ApiResponse((empty($errors) ? [] : ['errors' => $errors])+$result, $code);
     }
 }

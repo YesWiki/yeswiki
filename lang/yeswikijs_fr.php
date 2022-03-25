@@ -7,6 +7,7 @@ return [
     "CANCEL" => "Annuler",
     "COPY" => "Copier",
     "DECEMBER" => "Décembre",
+    "DELETE_ALL_SELECTED_ITEMS_QUESTION" => "Êtes-vous sûr de vouloir supprimer tous les éléments sélectionnées ?",
     "DUPLICATE" => "Dupliquer",
     "EVERYONE" => "Tout le monde",
     "FEBRUARY" => "Février",
@@ -41,6 +42,10 @@ return [
     "REVISIONS_COMMIT_DIFF" => "Modifs apportées par cette version",
     "REVISIONS_DIFF" => "Comparaison avec version actuelle",
     "REVISIONS_PREVIEW" => "Aperçu de cette version",
+
+    // javascripts/multidelete.js
+    "MULTIDELETE_END" => "Suppressions réalisées",
+    "MULTIDELETE_ERROR" => "L'élément {itemId} n'a pas été supprimé ! {error}",
 
     // /javascripts/yeswiki-base.js
     "DATATABLES_PROCESSING" => "Traitement en cours...",

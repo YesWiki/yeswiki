@@ -7,6 +7,7 @@ return [
     "CANCEL" => "Cancel",
     "COPY" => "Copy",
     "DECEMBER" => "December",
+    "DELETE_ALL_SELECTED_ITEMS_QUESTION" => "Do you confirm the deletion of all selected items?",
     "DUPLICATE" => "Duplicate",
     "EVERYONE" => "Everyone",
     "FEBRUARY" => "February",
@@ -41,6 +42,10 @@ return [
     "REVISIONS_COMMIT_DIFF" => "Changes done by this revision",
     "REVISIONS_DIFF" => "Comparison to the current revision",
     "REVISIONS_PREVIEW" => "Preview of this revision",
+
+    // javascripts/multidelete.js
+    "MULTIDELETE_END" => "Deletions finished",
+    "MULTIDELETE_ERROR" => "Item {itemId} has not been deleted! {error}",
 
     // /javascripts/yeswiki-base.js
     "DATATABLES_PROCESSING" => "Processing...",
