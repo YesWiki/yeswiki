@@ -89,7 +89,7 @@ class CommentService
                     $com['user'] = $comment['user'];
                     $com['usercolor'] = $this->genColorCodeFromText($comment['user']);
                     $com['linkuser'] = $this->wiki->href('', $comment['user']);
-                    $com['userpicture'] = !empty($this->wiki->config['default_comment_avatar']) ? $this->wiki->config['default_comment_avatar'] : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='".str_replace('#', '%23', $com['comments'][$i]['usercolor'])."' class='bi bi-person-circle' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z'/%3E%3C/svg%3E";
+                    $com['userpicture'] = !empty($this->wiki->config['default_comment_avatar']) ? $this->wiki->config['default_comment_avatar'] : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='".str_replace('#', '%23', $com['usercolor'])."' class='bi bi-person-circle' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z'/%3E%3C/svg%3E";
                     $com['date'] = 'le '.date("d.m.Y à H:i:s", strtotime($comment['time']));
                     if ($this->wiki->HasAccess('comment', $comment['tag'])) {
                         $com['linkcomment'] = $this->wiki->href('pages/'.$comment['tag'].'/comments', 'api');
