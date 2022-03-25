@@ -257,6 +257,12 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     },
     mounted() {
+      $(this.$el).on(
+        "dblclick",
+        function (e) {
+          return false;
+        }
+      );
       let savedHash = document.location.hash // don't know how, but the hash get cleared after 
       this.params = JSON.parse(this.$el.dataset.params)
       this.pagination = parseInt(this.params.pagination)
