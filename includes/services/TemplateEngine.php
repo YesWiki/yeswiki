@@ -2,10 +2,12 @@
 
 namespace YesWiki\Core\Service;
 
+use attach;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Core\Exception\TemplateNotFound;
+use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class TemplateEngine
@@ -118,6 +120,39 @@ class TemplateEngine
                 }
             } else {
                 throw new Exception("`\$tokenId` should be a string or an array !");
+            }
+        });
+        $this->addTwigHelper('urlImage', function ($options) {
+            if (!isset($options['fileName'])) {
+                throw new Exception("`urlImage` should be called with `fileName` key in params!");
+            }
+            if (!isset($options['width'])) {
+                throw new Exception("`urlImage` should be called with `width` key in params!");
+            }
+            if (!isset($options['height'])) {
+                throw new Exception("`urlImage` should be called with `height` key in params!");
+            }
+            $options = array_merge(['mode' => 'fit','refresh'=>false], $options);
+            
+            if (!class_exists('attach')) {
+                include('tools/attach/libs/attach.lib.php');
+            }
+            $basePath = $this->wiki->getBaseUrl().'/';
+            $attach = new attach($this->wiki);
+            $image_dest = $attach->getResizedFilename($options['fileName'], $options['width'], $options['height'], $options['mode']);
+            $safeRefresh = !$this->wiki->services->get(SecurityController::class)->isWikiHibernated()
+                && file_exists($image_dest)
+                && filter_var($options['refresh'], FILTER_VALIDATE_BOOL)
+                && $this->wiki->UserIsAdmin();
+            if (!file_exists($image_dest) || $safeRefresh) {
+                $result = $attach->redimensionner_image($options['fileName'], $image_dest, $options['width'], $options['height'], $options['mode']);
+                if ($result != $image_dest) {
+                    // do nothing : error
+                    return $basePath.$options['fileName'];
+                }
+                return $basePath.$image_dest;
+            } else {
+                return $basePath.$image_dest;
             }
         });
     }
