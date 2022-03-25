@@ -55,7 +55,7 @@ if (empty($template)) {
 // identifiant de la base de donnée pour la liste
 $id = $this->GetParameter("id");
 if (empty($id)) {
-    exit('<div class="alert alert-danger">Error action bazarlistecategorie: parameter "id" missing.</div>');
+    throw new Exception('Error action bazarlistecategorie: parameter "id" missing.');
 } else {
     $GLOBALS['champ'] = $id;
 }
