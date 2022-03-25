@@ -11,7 +11,9 @@ mkdir -p styles/vendor/fontawesome && cp -f -r node_modules/@fortawesome/fontawe
 mkdir -p styles/vendor/fontawesome/css && cp -f node_modules/@fortawesome/fontawesome-free/css/all.min.css styles/vendor/fontawesome/css
 # Bootstrap
 mkdir -p javascripts/vendor/bootstrap && cp -f node_modules/bootstrap/dist/js/bootstrap.min.js javascripts/vendor/bootstrap/bootstrap.min.js
-mkdir -p styles/vendor/bootstrap/css && cp -f node_modules/bootstrap/dist/css/bootstrap.min.css styles/vendor/bootstrap/css/bootstrap.min.css
+mkdir -p styles/vendor/bootstrap/css && \
+  cp -f node_modules/bootstrap/dist/css/bootstrap.min.css styles/vendor/bootstrap/css/bootstrap.min.css && \
+  cp -f node_modules/bootstrap/dist/css/bootstrap.min.css.map styles/vendor/bootstrap/css
 mkdir -p styles/vendor/bootstrap && cp -f -r node_modules/bootstrap/dist/fonts styles/vendor/bootstrap
 
 #  Vue
@@ -76,3 +78,18 @@ mkdir -p styles/vendor/datatables-full && \
       node_modules/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css  \
       node_modules/datatables.net-responsive-bs/css/responsive.bootstrap.min.css  \
       > styles/vendor/datatables-full/dataTables.bootstrap.min.css 
+
+# fullcalendar
+mkdir -p styles/vendor/fullcalendar && \
+  cp -f node_modules/fullcalendar/main.min.css styles/vendor/fullcalendar
+
+mkdir -p javascripts/vendor/fullcalendar && \
+  cp -f node_modules/fullcalendar/main.min.js javascripts/vendor/fullcalendar && \
+  cp -f node_modules/fullcalendar/locales-all.min.js javascripts/vendor/fullcalendar && \
+  cp -f node_modules/fullcalendar/LICENSE.txt javascripts/vendor/fullcalendar && \
+  cp -f node_modules/fullcalendar/README.md javascripts/vendor/fullcalendar
+
+# Moment
+mkdir -p javascripts/vendor/moment && \
+  cp -f node_modules/moment/min/moment-with-locales.min.js javascripts/vendor/moment && \
+  cp -f node_modules/moment/min/moment-with-locales.min.js.map javascripts/vendor/moment

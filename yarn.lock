@@ -188,6 +188,11 @@ formbuilder-languages@^1.1.0:
   dependencies:
     mi18n "^0.4.8"
 
+fullcalendar@^5.10.2:
+  version "5.10.2"
+  resolved "https://registry.yarnpkg.com/fullcalendar/-/fullcalendar-5.10.2.tgz#182cdfb285b8a36da652bd990e43655469304312"
+  integrity sha512-a5qS3RaR5kRZyl5lVGJaPMQorY5hyuJvVONFwnQzNSqL32HZ9COq9ROuoaa/jSGcYqv57T7eRIvIgnu80qs7Nw==
+
 gogocarto-js@^1.7.11:
   version "1.7.22"
   resolved "https://registry.yarnpkg.com/gogocarto-js/-/gogocarto-js-1.7.22.tgz#f8aa2efd8972b996d8902fa320ab875d3f7c96d3"

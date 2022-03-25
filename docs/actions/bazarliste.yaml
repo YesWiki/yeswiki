@@ -37,6 +37,7 @@ actions:
         showOnlyFor:
           - bazarliste
           - bazarcarto
+          - bazarcalendar
         type: checkbox
         advanced: true
       pagination:
@@ -58,6 +59,7 @@ actions:
           - bazarcarto
           - bazargogocarto
           - bazarliste
+          - bazarcalendar
       colormapping:
         type: color-mapping
         showif: colorfield
@@ -65,6 +67,7 @@ actions:
           - bazarcarto
           - bazargogocarto
           - bazarliste
+          - bazarcalendar
         subproperties:
           id:
             label: _t(AB_bazar_commons_subproperty_id_label)
@@ -81,6 +84,7 @@ actions:
           - bazarcarto
           - bazargogocarto
           - bazarliste
+          - bazarcalendar
       iconmapping:
         type: icon-mapping
         showif: iconfield
@@ -88,6 +92,7 @@ actions:
           - bazarcarto
           - bazargogocarto
           - bazarliste
+          - bazarcalendar
         subproperties:
           id:
             label: _t(AB_bazar_commons_subproperty_id_label)
@@ -104,6 +109,7 @@ actions:
       minical:
         label: _t(AB_bazar_commons_minical)
         type: checkbox
+        default: "false"
         showOnlyFor:
           - bazarcalendar
       showexportbuttons:
@@ -461,6 +467,24 @@ actions:
             type: form-field
             label: _t(AB_bazar_bf_date_fin_evenement_label)
             default: ""
+      showlist:
+        type: list
+        label: _t(AB_bazarcalendar_showlist_label)
+        default: ''
+        options: 
+          week: _t(AB_bazarcalendar_showlist_week)
+          month: _t(AB_bazarcalendar_showlist_month)
+          year: _t(AB_bazarcalendar_showlist_year)
+      entrydisplay:
+        label: _t(AB_bazarcarto_entrydisplay_label)
+        type: list
+        default: "modal"
+        value: "modal"
+        advanced: true
+        showif: dynamic
+        options:
+          sidebar: _t(AB_bazarcarto_entrydisplay_option_sidebar)
+          modal: _t(AB_bazarcarto_entrydisplay_option_modal)
 
   bazaragenda:
     label: _t(AB_bazaragenda_label)

@@ -80,8 +80,12 @@ return [
     // "AB_bazaragenda_nbcol_label" => "Nombre de colonnes",
     // "AB_bazaragenda_modal_label" => "Affichage d'une fenêtre modale lors du clic",
     // // BazarCalendar
-    // "AB_bazarcalendar" => "Calendrier",
-    // "AB_bazarcalendar_description" => "Les fiches seront sous forme d'événement dans un calendrier.",
+    "AB_bazarcalendar" => "Calendário",
+    "AB_bazarcalendar_description" => "As cartas serão na forma de um evento num calendário.",
+    "AB_bazarcalendar_showlist_label" => "Mostrar o botão 'agendar'",
+    "AB_bazarcalendar_showlist_week" => "Semana",
+    "AB_bazarcalendar_showlist_month" => "Mês",
+    "AB_bazarcalendar_showlist_year" => "Ano",
     // // BazarListe
     // "AB_bazarliste_label" => "Liste",
     // "AB_bazarliste_description" => "Les fiches seront sous forme d'accordéons",

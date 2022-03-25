@@ -82,6 +82,10 @@ return [
     // BazarCalendar
     "AB_bazarcalendar" => "Calendrier",
     "AB_bazarcalendar_description" => "Les fiches seront sous forme d'événement dans un calendrier.",
+    "AB_bazarcalendar_showlist_label" => "Afficher le bouton 'planning'",
+    "AB_bazarcalendar_showlist_week" => "Semaine",
+    "AB_bazarcalendar_showlist_month" => "Mois",
+    "AB_bazarcalendar_showlist_year" => "Année",
     // BazarListe
     "AB_bazarliste_label" => "Liste",
     "AB_bazarliste_description" => "Les fiches seront sous forme d'accordéons",
