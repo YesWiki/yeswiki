@@ -230,7 +230,7 @@ class Init
             'pages_purge_time' => 365,
             'default_write_acl' => '*',
             'default_read_acl' => '*',
-            'default_comment_acl' => '+',
+            'default_comment_acl' => 'comments-closed',
             'preview_before_save' => 0,
             'allow_raw_html' => true,
             'disable_wiki_links' => false,

@@ -100,11 +100,11 @@ class ApiController extends YesWikiController
      */
     public function getAllComments($tag = '')
     {
-        return new ApiResponse([$this->wiki->LoadCommands($tag)]);
+        return new ApiResponse([$this->getService(CommentService::class)->loadComments($tag)]);
     }
 
     /**
-     * @Route("/api/comments",methods={"POST"}, options={"acl":{"public"}})
+     * @Route("/api/comments",methods={"POST"}, options={"acl":{"public","+"}})
      */
     public function postComment()
     {
@@ -114,7 +114,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/comments/{tag}",methods={"POST"}, options={"acl":{"public"}})
+     * @Route("/api/comments/{tag}",methods={"POST"}, options={"acl":{"public","+"}})
      */
     public function editComment($tag)
     {
@@ -124,7 +124,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/comments/{tag}",methods={"DELETE"}, options={"acl":{"public"}})
+     * @Route("/api/comments/{tag}",methods={"DELETE"}, options={"acl":{"public","+"}})
      */
     public function deleteComment($tag)
     {
@@ -143,7 +143,7 @@ class ApiController extends YesWikiController
         }
     }
     /**
-     * @Route("/api/comments/{tag}/delete",methods={"GET"}, options={"acl":{"public"}})
+     * @Route("/api/comments/{tag}/delete",methods={"GET"}, options={"acl":{"public","+"}})
      */
     public function deleteCommentByGetMethod($tag)
     {
