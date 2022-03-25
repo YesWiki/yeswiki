@@ -9,8 +9,6 @@ Vue.component('BazarCalendar', {
       mounted: false
     }
   },
-  mounted() {
-  },
   methods: {
     addEntry: function (entry){
       let entryId = entry.id_fiche;
@@ -31,7 +29,8 @@ Vue.component('BazarCalendar', {
             icon: (entry.icon == undefined || entry.icon.length == 0) ? "": `<i class="${entry.icon}">&nbsp;</i>`,
             htmlattributes: ((entry.html_data != undefined) ? entry.html_data : '')+
               ((entry['external-data'] != undefined) ? ' data-iframe="1"':'')+
-              ' data-size="modal-lg"'
+              ' data-size="modal-lg"',
+            isExternal: (entry['external-data'] != undefined)
           }
         }
         this.calendar.addEvent(newEvent);
@@ -89,6 +88,12 @@ Vue.component('BazarCalendar', {
       }
       return endDateRaw;
     },
+    manageClick: function(info) {
+      if (['listWeek','listMonth','listYear'].indexOf(info.view.type) > -1){
+        info.jsEvent.preventDefault(); // don't let the browser navigate
+        $(info.el).find('a').first().click();
+      }
+    },
     mountCalendar: function(){
       if (!this.mounted){
         let calendarEl = $('<div>').on(
@@ -130,6 +135,15 @@ Vue.component('BazarCalendar', {
           }
         }
         $(element).addClass("iconDefined");
+      }
+      if ($(element).hasClass("fc-list-event")){
+        $(element).find('.fc-list-event-title a').each(function(){
+          $(this).addClass("modalbox");
+          $(this).attr("data-size","modal-lg");
+          if (event.extendedProps.isExternal){
+            $(this).attr("data-iframe","1");
+          }
+        });
       }
       if (this.params.minical != undefined && [1,"1",true,"true"].indexOf(this.params.minical) > -1 && !$(element).hasClass("toolTipDefined")){
         $(element).tooltip({title:event.title, html:true});
@@ -173,6 +187,7 @@ Vue.component('BazarCalendar', {
       return {
         editable: false,
         eventDisplay: 'block',
+        eventClick: this.manageClick,
         firstDay : 1,
         headerToolbar: {
           left: 'prev today',
