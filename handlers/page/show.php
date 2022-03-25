@@ -40,6 +40,9 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
+use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\CommentService;
+
 // Generate page before displaying the header, so that it might interract with the header
 ob_start();
 
@@ -111,96 +114,12 @@ if ($HasAccessRead=$this->HasAccess("read")) {
 
 
 <?php
-if ($HasAccessRead && (!$this->page || !$this->page["comment_on"])) {
-    // load comments for this page
-    $comments = $this->LoadComments($this->tag);
+// render the comments if needed
+echo $this->services->get(CommentService::class)->renderCommentsForPage($this->getPageTag());
 
-    // store comments display in session
-    $tag = $this->GetPageTag();
-
-    if (!isset($_SESSION["show_comments"][$tag])) {
-        $_SESSION["show_comments"][$tag] = ($this->UserWantsComments() ? "1" : "0");
-    }
-    if (isset($_REQUEST["show_comments"])) {
-        switch ($_REQUEST["show_comments"]) {
-        case "0":
-            $_SESSION["show_comments"][$tag] = 0;
-            break;
-        case "1":
-            $_SESSION["show_comments"][$tag] = 1;
-            break;
-        }
-    }
-
-    // display comments!
-    if ($this->page && $_SESSION["show_comments"][$tag]) {
-        // display comments header?>
-		<div class="commentsheader">
-			Commentaires [<a href="<?php echo  $this->href("", "", "show_comments=0") ?>">Cacher commentaires/formulaire</a>]
-		</div>
-		<?php
-
-        // display comments themselves
-        if ($comments) {
-            foreach ($comments as $comment) {
-                echo "<a name=\"",$comment["tag"],"\"></a>\n" ;
-                echo "<div class=\"comment\">\n" ;
-                if ($this->HasAccess('write', $comment['tag'])
-                 || $this->UserIsOwner($comment['tag'])
-                 || $this->UserIsAdmin($comment['tag'])) {
-                    echo '<div class="commenteditlink">';
-                    if ($this->HasAccess('write', $comment['tag'])) {
-                        echo '<a href="',$this->href('edit', $comment['tag']),'">&Eacute;diter ce commentaire</a>';
-                    }
-                    if ($this->UserIsOwner($comment['tag'])
-                     || $this->UserIsAdmin()) {
-                        echo '<br />','<a href="',$this->href('deletepage', $comment['tag']),'">Supprimer ce commentaire</a>';
-                    }
-                    echo "</div>\n";
-                }
-                echo $this->Format($comment["body"]),"\n" ;
-                echo "<div class=\"commentinfo\">\n-- ",$this->Format($comment["user"])," (".$comment["time"],")\n</div>\n" ;
-                echo "</div>\n" ;
-            }
-        }
-
-        // display comment form
-        echo "<div class=\"commentform\">\n" ;
-        if ($this->HasAccess("comment")) {
-            ?>
-				Ajouter un commentaire &agrave; cette page:<br />
-				<?php echo  $this->FormOpen("addcomment"); ?>
-					<textarea name="body" rows="6" cols="65" style="width: 100%"></textarea><br />
-					<input type="submit" value="Ajouter Commentaire" accesskey="s" />
-				<?php echo  $this->FormClose(); ?>
-			<?php
-        }
-        echo "</div>\n" ;
-    } else {
-        ?>
-		<div class="commentsheader">
-		<?php
-            switch (count($comments)) {
-            case 0:
-                echo "Il n'y a pas de commentaire sur cette page." ;
-                break;
-            case 1:
-                echo "Il y a un commentaire sur cette page." ;
-                break;
-            default:
-                echo "Il y a ",count($comments)," commentaires sur cette page." ;
-            } ?>
-
-		[<a href="<?php echo  $this->href("", "", "show_comments=1") ?>">Afficher commentaires/formulaire</a>]
-
-		</div>
-		<?php
-    }
-}
-
+// get the content buffer and display the page
 $content = ob_get_clean();
 echo $this->Header();
 echo $content;
 echo $this->Footer();
-
 ?>

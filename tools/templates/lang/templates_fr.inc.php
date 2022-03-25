@@ -1,4 +1,5 @@
 <?php
+
 /*vim: set expandtab tabstop=4 shiftwidth=4: */
 // +------------------------------------------------------------------------------------------------------+
 // | PHP version 5                                                                                        |
@@ -75,6 +76,13 @@ return [
     'TEMPLATE_CLASSIC_SLIDESHOW' => 'Diaporama classique',
     'TEMPLATE_SEE_SHARING_OPTIONS' => 'Partager la page',
     'TEMPLATE_SHARE' => 'Partager',
+    'TEMPLATE_OPEN_COMMENTS' => 'Ouvrir les commentaires',
+    'TEMPLATE_CLICK_TO_OPEN_COMMENTS' => 'Cliquer pour ouvrir les commentaires',
+    'TEMPLATE_CLOSE_COMMENTS' => 'Fermer les commentaires',
+    'TEMPLATE_CLICK_TO_CLOSE_COMMENTS' => 'Cliquer pour fermer les commentaires',
+    'TEMPLATE_FOR_CONNECTED_PEOPLE' => 'Pour les personnes connectées',
+    'TEMPLATE_FOR_MEMBERS_OF_GROUP' => 'Pour les membres du groupe',
+
 
     // action/diaporama
     'DIAPORAMA_PAGE_PARAM_MISSING' => 'Action diaporama : param&ecirc;tre "page" obligatoire.',

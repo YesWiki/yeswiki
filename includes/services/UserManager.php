@@ -34,15 +34,14 @@ class UserManager
         return $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where email = '" . $this->dbService->escape($mail) . "' " . ($password === 0 ? "" : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1');
     }
 
-    public function getAll(): array
+    public function getAll($dbFields = ['name', 'password', 'email', 'motto', 'revisioncount', 'changescount', 'doubleclickedit', 'signuptime', 'show_comments']): array
     {
         if ($this->params->has('user_table_prefix') && !empty($this->params->get('user_table_prefix'))) {
             $prefix = $this->params->get('user_table_prefix');
         } else {
             $prefix = $this->params->get('table_prefix');
         }
-
-        return $this->dbService->loadAll('select * from ' . $prefix . 'users order by name');
+        return $this->dbService->loadAll('select '.implode(', ', $dbFields).' from ' . $prefix . 'users order by name');
     }
 
     public function getLoggedUser()

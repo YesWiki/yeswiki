@@ -15,8 +15,8 @@ services:
     autowire: true
     public: true
 
-  # YesWiki\Security\Service\:
-  #   resource: 'services/*'
+  YesWiki\Security\Service\:
+    resource: 'services/*'
 
   # Allows to use controllers as services
   YesWiki\Security\Controller\:

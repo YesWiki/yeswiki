@@ -1,4 +1,5 @@
 <?php
+
 /*vim: set expandtab tabstop=4 shiftwidth=4: */
 // +------------------------------------------------------------------------------------------------------+
 // | PHP version 5                                                                                        |
@@ -31,15 +32,18 @@
 return [
 
     // Commons
-    'CAUTION' => 'Attention',
+    'ANSWER' => 'Répondre',
     'BY' => 'par',
+    'CAUTION' => 'Attention',
     'CLEAN' => 'Nettoyer',
+    'COMMENTS' => 'Commentaires',
     'DELETE' => 'Supprimer',
     'DEL' => 'Suppr.', // fives chars max.
     'EMAIL' => 'Email',
     'INVERT' => 'Inverser',
     'MODIFY' => 'Modifier',
     'NAME' => 'Nom',
+    'PAGES' => 'Pages',
     'SUBSCRIPTION' => 'Inscription',
     'UNKNOWN' => 'Inconnu',
     'WARNING' => 'AVERTISSEMENT',
@@ -88,10 +92,13 @@ return [
     'YW_CANCEL' => 'Annuler',
     'YW_ACLS_READ' => 'Droits de lecture',
     'YW_ACLS_WRITE' => 'Droits d\'écriture',
+    'YW_ACLS_COMMENT' => 'Droits pour commenter',
     'YW_CHANGE_OWNER' => 'Changer le propri&eacute;taire',
     'YW_CHANGE_NOTHING' => 'Ne rien modifier',
     'YW_CANNOT_CHANGE_ACLS' => 'Vous ne pouvez pas g&eacute;rer les permissions de cette page',
 
+    // handlers/page/claim.php
+    'YW_YOU_ARE_NOW_OWNER_OF_PAGE' => 'Vous êtes maintenant le propriétaire de cette page',
     // actions/editactionsacls.class.php
     'ACTION_RIGHTS' => 'Droits de l\'action',
     'SEE' => 'Voir',
@@ -101,6 +108,9 @@ return [
     'NEW_ACL_SUCCESSFULLY_SAVED_FOR_ACTION' => 'Nouvelle ACL enregistr&eacute;e avec succ&egrave;s pour l\'action',
     'EDIT_RIGHTS_FOR_ACTION' => '&Eacute;diter les droits de l\'action',
     'SAVE' => 'Enregistrer',
+    'YW_COMMENTS_ARE_NOW_OPEN' => 'Les commentaires ont été ouverts sur cette page',
+    'YW_COMMENTS_ARE_NOW_CLOSED' => 'Les commentaires ont été fermés sur cette page',
+    'YW_PROBLEM_WITH_ACLS_LIST' => 'Pas de groupe valide d\'indiqué pour ouvrir les commentaires',
 
     // actions/editgroups.class.php
     'DEFINITION_OF_THE_GROUP' => 'D&eacute;finition du groupe',
@@ -485,6 +495,7 @@ return [
     'ACLS_ADMIN_GROUP' => 'Groupe admin',
     'ACLS_LIST_OF_ACLS' => 'Liste des droits séparés par des virgules',
     'ACLS_UPDATE' => 'Mettre &agrave; jour',
+    'ACLS_COMMENTS_CLOSED' => 'Commentaires fermés',
 
     // include/services/ThemeManager.php
     'THEME_MANAGER_THEME_FOLDER' => 'Le dossier du thème ',
@@ -514,6 +525,7 @@ return [
     'EDIT_CONFIG_HINT_FAVICON' => 'Icône du site (emoji ou URL vers une image PNG)',
     'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Méthodes autorisées à être affichées dans les iframes (iframe,editiframe,bazariframe,render,all = autoriser tout)',
     'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Nombre maximum de versions d\'une page affichées par le handler `/revisions`.',
+    'EDIT_CONFIG_HINT_DEFAULT_COMMENT_AVATAR' => 'Image d\'avatar par défaut pour les commentaires (URL vers une image)',
     'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
     'EDIT_CONFIG_GROUP_ACCESS' => 'Droit d\'accès',
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
@@ -582,6 +594,21 @@ return [
 
     // handlers/page/show + handlers/page/iframe
     'NOT_FOUND_PAGE' => 'Cette page n\'existe pas encore, voulez-vous la {beginLink}créer{endLink} ?',
+    'NOT_AUTORIZED_TO_READ_PAGE' => 'Vous n\'êtes pas autorisé à lire cette page',
+
+    'YW_ADD_COMMENT' => 'Ajouter votre commentaire',
+    'YW_WRITE_COMMENT_HERE' => 'Ecrire votre commentaire ici...',
+
+    // Comments
+    'COMMENT_EMPTY_NOT_SAVED' => 'Commentaire vide, pas de sauvegarde.',
+    'COMMENT_LOGIN' => 'Se connecter pour commenter',
+    'COMMENT_NOT_ENOUGH_RIGHTS' => 'Vous n\'avez pas les droits suffisants pour commenter.',
+    'COMMENT_PUBLISHED' => 'Commentaire publié !',
+    'COMMENT_REMOVED' => 'Le commentaire a été supprimé.',
+    'COMMENTS_CURRENTLY_CLOSED' => 'L\'ajout de commentaires sur cette page est présentement désactivé',
+    'USER_MUST_BE_LOGGED_TO_COMMENT' => 'Vous devez vous identifier pour pouvoir publier un commentaire.',
+    'USER_NOT_ALLOWED_TO_COMMENT' => 'Vous n\'êtes pas dans un groupe autorisé à laisser des commentaires.',
+    'NOT_AUTORIZED_TO_REMOVE_COMMENT' => 'Vous n\'êtes pas autorisé à supprimer ce commentaire.',
 
     // YesWiki
     'UNKNOWN_INTERWIKI' => 'interwiki inconnu',

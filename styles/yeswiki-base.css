@@ -29,18 +29,18 @@ ul.fake-ul {
   padding-left: 0;
 }
 .additions {
-  color: #008800;
+  color: var(--success-color);
 }
 .deletions {
-  color: #880000;
+  color: var(--danger-color);
 }
 .add, .add * {
   color: white !important;
-  background-color: #4ea952 !important;
+  background-color: var(--success-color) !important;
 }
 .del, .del * {
   color: white !important;
-  background-color: red !important;
+  background-color: var(--danger-color) !important;
   text-decoration: line-through !important;
 }
 
@@ -49,7 +49,7 @@ ul.fake-ul {
   line-height: 30px;
 }
 .trail_button {
-  color: #993333;
+  color: var(--secondary-color-1);
 }
 
 /* Page absentes */
@@ -67,7 +67,7 @@ span.missingpage,
   border-bottom: none;
 }
 .prev_alert {
-  background-color: red;
+  background-color: var(--danger-color);
   color: white;
   font-size: 1.7em;
   font-weight: bold;
@@ -113,7 +113,7 @@ span.missingpage,
 .rightcolumnpage {
   position: relative;
   margin: 0;
-  min-height: 400px;
+  min-height: 100px;
 }
 
 .footer {
@@ -709,4 +709,43 @@ section.full-width:not(.with-bg-pattern) {
 /* for datatables bootstrap */
 .dataTables_footer .dataTables_info {
   white-space: normal !important; /* more responsive */
+}
+.dropup:hover {
+  cursor: pointer;
+}
+.yeswiki-page-comments {
+  margin-top:2em;
+}
+.yw-comment {
+  margin: 1em 0 3em;
+}
+.yw-comment .comment-info {
+  font-size:.8rem;
+  margin-bottom:0em;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.yw-comment .user-pic {
+  width:32px;
+  height:32px;
+  margin:0 1em 0 0;
+}
+.yw-comment .comment-date {
+  color: var(--neutral-soft-color);
+}
+.yw-comment .comment-html {
+  margin-bottom:0;
+}
+.yw-comment .comment-links {
+  font-size:.8rem;
+}
+.comment-reponses {
+  margin-left: 3em;
+}
+.api-container code {
+  font-weight: normal;
+}
+.comment-reponses .yw-comment {
+  margin: 1em 0;
 }

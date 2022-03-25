@@ -33,10 +33,49 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-// only claim ownership if this page has no owner, and if user is logged in.
-if ($this->page && !$this->GetPageOwner() && $this->GetUser()) {
-    $this->SetPageOwner($this->GetPageTag(), $this->GetUserName());
-    // $this->SetMessage("Vous &ecirc;tes maintenant le propri&eacute;taire de cette page");
+use YesWiki\Core\Service\AclService;
+
+$tag = $this->getPageTag();
+// only do it on existing pages
+if ($this->page) {
+    $availableActions = ['opencomments', 'closecomments'];
+    // check if actions are requested
+    if (
+        !empty($_GET['action'])
+        && in_array($_GET['action'], $availableActions)
+        && ($this->UserIsAdmin() || $this->UserIsOwner($tag))
+    ) {
+        $aclsService = $this->services->get(AclService::class);
+        $commentsAcls = $aclsService->load($tag, 'comment');
+        $wikiGroups = $this->GetGroupsList();
+        switch ($_GET['action']) {
+            case 'opencomments':
+                if (
+                    !empty($_GET['list'])
+                    && (in_array($_GET['list'], $wikiGroups) || $_GET['list']=='+')
+                ) {
+                    $aclsService->save($tag, 'comment', $_GET['list']);
+                    $this->SetMessage(_t('YW_COMMENTS_ARE_NOW_OPEN'));
+                } else {
+                    $this->SetMessage(_t('YW_PROBLEM_WITH_ACLS_LIST'));
+                }
+                break;
+            case 'closecomments':
+                if ($commentsAcls != null) {
+                    $aclsService->delete($tag, ['comment']);
+                    $this->SetMessage(_t('YW_COMMENTS_ARE_NOW_CLOSED'));
+                } else {
+                    $this->SetMessage(_t('YW_COMMENTS_ALREADY_CLOSED'));
+                }
+                break;
+        }
+    }
+
+    // only claim ownership if this page has no owner, and if user is logged in.
+    if (!$this->GetPageOwner() && $this->GetUser()) {
+        $this->SetPageOwner($tag, $this->GetUserName());
+        $this->SetMessage(_t('YW_YOU_ARE_NOW_OWNER_OF_PAGE'));
+    }
 }
 
 $this->Redirect($this->href());
