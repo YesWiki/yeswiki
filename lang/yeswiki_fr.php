@@ -598,7 +598,6 @@ return [
 
     'YW_ADD_COMMENT' => 'Ajouter votre commentaire',
     'YW_WRITE_COMMENT_HERE' => 'Ecrire votre commentaire ici...',
-    'COMMENTS' => 'Commentaires',
 
     // Comments
     'COMMENT_EMPTY_NOT_SAVED' => 'Commentaire vide, pas de sauvegarde.',
