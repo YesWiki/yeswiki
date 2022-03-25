@@ -6,9 +6,11 @@ use Throwable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\ApiResponse;
+use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\DiffService;
@@ -294,5 +296,36 @@ class ApiController extends YesWikiController
         $errors = ob_get_contents();
         ob_end_clean();
         return new ApiResponse((empty($errors) ? [] : ['errors' => $errors])+$result, $code);
+    }
+    
+    /**
+     * @Route("/api/pages/{tag}/delete",methods={"GET"},options={"acl":{"public","+"}})
+     */
+    public function deletePageByGetMethod($tag)
+    {
+        ob_start(); // to catch error messages
+        $result = [];
+        $code = Response::HTTP_INTERNAL_SERVER_ERROR;
+        try {
+            $csrfTokenController = $this->wiki->services->get(CsrfTokenController::class);
+            $csrfTokenController->checkToken("api\\pages\\$tag\\delete", 'GET', 'csrfToken');
+        } catch (TokenNotFoundException $th) {
+            $code = Response::HTTP_UNAUTHORIZED;
+            $result = [
+                'notDeleted' => [$tag],
+                'error' => $th->getMessage()
+            ];
+        } catch (Throwable $th) {
+            $code = Response::HTTP_INTERNAL_SERVER_ERROR;
+            $result = [
+                'notDeleted' => [$tag],
+                'error' => $th->getMessage()
+            ];
+        }
+        $errors = ob_get_contents();
+        ob_end_clean();
+        return (empty($errors) && empty($result))
+            ? $this->deletePage($tag)
+            : new ApiResponse((empty($errors) ? [] : ['errors' => $errors])+$result, $code);
     }
 }

@@ -67,13 +67,16 @@ const multiDeleteService = {
       multiDeleteService.addErrorMessage(modal,"Unknown type ! Should be 'pages' !");
       return;
     }
-    let itemId = items[currentIndex] ?? '';
-    if (itemId.length == 0){
+    let item = items[currentIndex] ?? {};
+    let itemId = (item.id != undefined) ? item.id : '';
+    let csrfToken = (item.token != undefined) ? item.token : '';
+    if (itemId.length == 0 || csrfToken.length == 0){
       multiDeleteService.deleteNextItem(modal,items,type,currentIndex,target);
+      return ;
     }
     $.ajax({
-      type: 'DELETE',
-      url: wiki.url(`?api/${type}/${itemId}`),
+      type: 'GET',
+      url: wiki.url(`?api/${type}/${itemId}/delete`,{csrfToken:csrfToken}),
       timeout: 30000, // 30 seconds
       error: function (xhr,status,error){
         multiDeleteService.addErrorMessage(modal,
@@ -104,8 +107,9 @@ const multiDeleteService = {
       let items = [];
       for (let index = 0; index < inputs.length; index++) {
         let itemId = $(inputs[index]).data('itemid');
-        if (itemId.length > 0){
-          items.push(itemId);
+        let csrfToken = $(inputs[index]).data('csrftoken');
+        if (itemId.length > 0 && csrfToken.length > 0){
+          items.push({id:itemId,token:csrfToken});
         }
       }
       if (items.length > 0){

@@ -49,6 +49,7 @@
         {% else %}
           class="selectline"
           data-itemid="{{ itemId }}"
+          data-csrftoken="{{ csrfToken({id:"api\\pages\\#{itemId}\\delete",refresh:true})|e('html_attr') }}"
         {% endif %}
         type="checkbox"
         id="selectline_{{ targetId }}_{{ itemId }}" 
