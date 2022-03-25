@@ -40,7 +40,7 @@ class CommentService
             ];
         } else {
             if ($this->wiki->HasAccess("comment", $content['pagetag']) && $this->wiki->Loadpage($content['pagetag'])) {
-                if ($this->wiki->config['use_hashcash']) {
+                if ($this->params->get('use_hashcash')) {
                     require_once('tools/security/secret/wp-hashcash.lib');
                     if (!isset($content["hashcash_value"]) || ($content["hashcash_value"] != hashcash_field_value())) {
                         return [

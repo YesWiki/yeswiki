@@ -72,12 +72,6 @@ class AclService
 
         if (isset($this->cache[$tag][$privilege])) {
             return $this->cache[$tag][$privilege];
-        } elseif ($privilege == 'comment') {
-            return [ // in case of non-presence of acls for comments, we inform that they are closed
-                'page_tag' => $tag,
-                'privilege' => 'comment',
-                'list' => 'comments-closed'
-            ];
         }
 
         return null ;
@@ -99,9 +93,6 @@ class AclService
         }
 
         $acl = $this->load($tag, $privilege, false);
-        if (isset($acl['list']) && $acl['list'] === 'comments-closed') {
-            $acl = null;
-        }
 
         if ($acl && $appendAcl) {
             $list = $acl['list']."\n".$list ;
