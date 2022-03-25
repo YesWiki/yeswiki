@@ -86,6 +86,11 @@ return [
     "AB_bazarcalendar_showlist_week" => "Semana",
     "AB_bazarcalendar_showlist_month" => "Mês",
     "AB_bazarcalendar_showlist_year" => "Ano",
+    "AB_bazarcalendar_initialview_label" => "Vista inicial",
+    "AB_bazarcalendar_initialview_month" => "Mês (valor de incumprimento)",
+    "AB_bazarcalendar_initialview_week" => "Semana",
+    "AB_bazarcalendar_initialview_day" => "Dia",
+    "AB_bazarcalendar_initialview_list" => "Agendar",
     // // BazarListe
     // "AB_bazarliste_label" => "Liste",
     // "AB_bazarliste_description" => "Les fiches seront sous forme d'accordéons",

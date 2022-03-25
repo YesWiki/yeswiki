@@ -475,6 +475,15 @@ actions:
           week: _t(AB_bazarcalendar_showlist_week)
           month: _t(AB_bazarcalendar_showlist_month)
           year: _t(AB_bazarcalendar_showlist_year)
+      initialview:
+        type: list
+        label: _t(AB_bazarcalendar_initialview_label)
+        default: 'dayGridMonth'
+        options:
+          dayGridMonth: _t(AB_bazarcalendar_initialview_month)
+          timeGridWeek: _t(AB_bazarcalendar_initialview_week)
+          timeGridDay: _t(AB_bazarcalendar_initialview_day)
+          list: _t(AB_bazarcalendar_initialview_list)
       entrydisplay:
         label: _t(AB_bazarcarto_entrydisplay_label)
         type: list

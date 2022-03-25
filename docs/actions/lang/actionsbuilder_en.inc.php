@@ -86,6 +86,11 @@ return [
     "AB_bazarcalendar_showlist_week" => "Week",
     "AB_bazarcalendar_showlist_month" => "Month",
     "AB_bazarcalendar_showlist_year" => "Year",
+    "AB_bazarcalendar_initialview_label" => "Initia view",
+    "AB_bazarcalendar_initialview_month" => "Month (default value)",
+    "AB_bazarcalendar_initialview_week" => "Week",
+    "AB_bazarcalendar_initialview_day" => "Day",
+    "AB_bazarcalendar_initialview_list" => "List",
     // // BazarListe
     // "AB_bazarliste_label" => "Liste",
     // "AB_bazarliste_description" => "Les fiches seront sous forme d'accordéons",

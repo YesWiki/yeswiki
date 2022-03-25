@@ -153,6 +153,23 @@ Vue.component('BazarCalendar', {
         default:
           break;
       }
+      let initialView = 'dayGridMonth';
+      switch (this.params['initialview']) {
+        case 'timeGridWeek':
+          initialView = 'timeGridWeek';
+          break;
+        case 'timeGridDay':
+          initialView = 'timeGridDay';
+          break;
+        case 'list':
+          if (extendedList.length > 0){
+            initialView = extendedList.slice(1); // remove first char
+            break;
+          }
+        case 'dayGridMonth':
+        default:
+          break;
+      }
       return {
         editable: false,
         eventDisplay: 'block',
@@ -162,7 +179,7 @@ Vue.component('BazarCalendar', {
           center: 'title',
           right: `dayGridMonth,timeGridWeek,timeGridDay${extendedList} next`
         },
-        initialView: 'dayGridMonth', // TODO use param to choose the view
+        initialView: initialView, // TODO use param to choose the view
         locale: wiki.locale,
         navLinks : true, 
         weekNumbers: true // TODO use param
