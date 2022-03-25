@@ -20,6 +20,7 @@ return [
     "LEFT" => "Left",
     'MARCH' => 'March',
     'MAY' => 'May',
+    'MODIFY' => 'Modify',
     'MONDAY' => 'Monday',
     "NEXT" => "Next",
     "NO" => "No",

@@ -10,6 +10,7 @@ class CommentService
 {
     protected $wiki;
     protected $dbService;
+    protected $aclService;
     protected $pageManager;
     protected $params;
     protected $pagesWhereCommentWereRendered;
@@ -18,11 +19,13 @@ class CommentService
     public function __construct(
         Wiki $wiki,
         DbService $dbService,
+        AclService $aclService,
         PageManager $pageManager,
         ParameterBagInterface $params
     ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
+        $this->aclService = $aclService;
         $this->pageManager = $pageManager;
         $this->params = $params;
         $this->pagesWhereCommentWereRendered = [];
@@ -47,6 +50,7 @@ class CommentService
                     }
                 }
                 if (empty($idComment)) {
+                    $newComment = true;
                     // find number
                     $sql = 'SELECT MAX(SUBSTRING(tag, 8) + 0) AS comment_id'
                         . ' FROM ' . $this->wiki->GetConfigValue('table_prefix') . 'pages'
@@ -57,6 +61,8 @@ class CommentService
                         $num = "1";
                     }
                     $idComment = "Comment".$num;
+                } else {
+                    $newComment = false;
                 }
 
                 $body = trim($content["body"]);
@@ -68,21 +74,28 @@ class CommentService
                 } else {
                     // store new comment
                     $this->wiki->SavePage($idComment, $body, $content['pagetag']);
+                    if ($newComment) {
+                        // default ACLs for comments : visible for all, writable by owner, commentable like parent.
+                        // TODO: config param for default comments rights?
+                        $this->aclService->save($idComment, 'write', '%');
+                        $this->aclService->save($idComment, 'read', '*');
+                        $this->aclService->save($idComment, 'comment', '+');
+                    }
+
                     $comment = $this->wiki->LoadPage($idComment);
                     $com['tag'] = $comment['tag'];
                     $com['rawbody'] = $comment['body'];
                     $com['body'] = $this->wiki->Format($comment['body']);
                     $com['user'] = $comment['user'];
+                    $com['comments'][$i]['usercolor'] = $this->genColorCodeFromText($comment['user']);
                     $com['linkuser'] = $this->wiki->href('', $comment['user']);
-                    $com['userpicture'] = 'https://colibris-universite.org/mooc-democratie-v2/files/avatar-colibris.png';
+                    $com['userpicture'] = !empty($this->wiki->config['default_comment_avatar']) ? $this->wiki->config['default_comment_avatar'] : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='".str_replace('#', '%23', $com['comments'][$i]['usercolor'])."' class='bi bi-person-circle' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z'/%3E%3C/svg%3E";
                     $com['date'] = 'le '.date("d.m.Y à H:i:s", strtotime($comment['time']));
                     if ($this->wiki->HasAccess('comment', $comment['tag'])) {
                         $com['linkcomment'] = $this->wiki->href('pages/'.$comment['tag'].'/comments', 'api');
                     }
-                    if ($this->wiki->HasAccess('write', $comment['tag']) || $this->wiki->UserIsOwner($comment['tag']) || $this->wiki->UserIsAdmin($comment['tag'])) {
-                        $com['linkeditcomment'] = $this->wiki->href('edit', $comment['tag']);
-                    }
                     if ($this->wiki->UserIsOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
+                        $com['linkeditcomment'] = $this->wiki->href('edit', $comment['tag']);
                         $com['linkdeletecomment'] = $this->wiki->href('comments/'.$comment['tag'], 'api');
                         //$this->wiki->href('deletepage', $comment['tag']);
                     }
@@ -140,10 +153,8 @@ class CommentService
                 if ($this->wiki->HasAccess('comment', $comment['tag'])) {
                     $com['comments'][$i]['linkcomment'] = $this->wiki->href('pages/'.$comment['tag'].'/comments', 'api');
                 }
-                if ($this->wiki->HasAccess('write', $comment['tag']) || $this->wiki->UserIsOwner($comment['tag']) || $this->wiki->UserIsAdmin($comment['tag'])) {
-                    $com['comments'][$i]['linkeditcomment'] = $this->wiki->href('edit', $comment['tag']);
-                }
                 if ($this->wiki->UserIsOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
+                    $com['comments'][$i]['linkeditcomment'] = $this->wiki->href('edit', $comment['tag']);
                     $com['comments'][$i]['linkdeletecomment'] = $this->wiki->href('comments/'.$comment['tag'].'/delete', 'api');
                 }
                 $com['comments'][$i]['reponses'] = $this->getCommentList($comment['tag'], false);

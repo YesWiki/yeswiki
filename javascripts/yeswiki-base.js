@@ -539,11 +539,19 @@ function toastMessage(
       success: function (e) {
         form.trigger("reset");
         toastMessage(e.success, 3000, "alert alert-success");
-        if (form.parent().hasClass('comment-reponses')) {
+        // we place the new comment in different places if its an answer, a modification or a new comment
+        if (form.hasClass('comment-modify')) {
+          form.parents('.yw-comment').html($('<div>').html(e.html).find('.yw-comment').html())
+          form.remove();
+          $('#post-comment').removeClass('hide')
+        } else if (form.parent().hasClass('comment-reponses')) {
           form.parent().append(e.html);
+          form.remove()
+          $('#post-comment').removeClass('hide')
         } else {
           $(".yeswiki-page-comments").append(e.html);
         }
+
       },
       error: function (e) {
         toastMessage(e.responseJSON.error, 3000, "alert alert-danger");
@@ -558,10 +566,16 @@ function toastMessage(
 
     var com = $(this).parent().parent()
 
+    // delete temporary forms that may be open
+    $('.temporary-form').remove()
+
     // clone comment form and change some options
     var formAnswer = com.find('.comment-reponses:first')
     $('#post-comment').clone().appendTo(formAnswer) 
-    formAnswer.find('form').attr('id', 'form-comment-'+com.data('tag'))
+    formAnswer.find('form')
+      .attr('id', 'form-comment-'+com.data('tag'))
+      .removeClass('hide')
+      .addClass('temporary-form')
     formAnswer.find('label').remove()
     formAnswer.find('[name="pagetag"]').val(com.data('tag'))
 		formAnswer.find('form').append('<button class="btn-cancel-comment btn btn-sm btn-danger">'+_t('CANCEL')+'</button>')
@@ -574,19 +588,29 @@ function toastMessage(
   });
 
   // ajax edit comment
-  $comments.on('click', '.btn-edit-comment', function () {
+  $comments.on('click', '.btn-edit-comment', function (e) {
+    e.preventDefault()
     var com = $(this).parent().parent()
 
     // hide comment while editor is open
     com.find('.comment-html:first').addClass('hide')
 
+    // delete temporary forms that may be open
+    $('.temporary-form').remove()
+
     // clone comment form and change some options
     var formcom = com.find('.form-comment:first')
     $('#post-comment').clone().appendTo(formcom) 
-    formcom.find('form').attr('id', 'form-comment-'+com.data('tag'))
+    formcom.find('form')
+      .attr('id', 'form-comment-'+com.data('tag'))
+      .attr('action', formcom.find('form').attr('action')+'/'+com.data('tag'))
+      .removeClass('hide')
+      .addClass('temporary-form')
+      .addClass('comment-modify')
     formcom.find('label').remove()
     formcom.find('textarea').val(com.find('.comment-body').val())
     formcom.find('[name="pagetag"]').val(com.data('tag'))
+    formcom.find('.btn-post-comment').text(_t('MODIFY'))
 		formcom.find('form').append('<button class="btn-cancel-comment btn btn-sm btn-danger">'+_t('CANCEL')+'</button>')
     com.find('.comment-links:first').addClass('hide')
 	

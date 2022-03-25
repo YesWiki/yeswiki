@@ -20,6 +20,7 @@ return [
     "LEFT" => "Gauche",
     'MARCH' => 'Mars',
     'MAY' => 'Mai',
+    'MODIFY' => 'Modifier',
     'MONDAY' => 'Lundi',
     "NEXT" => "Suivant",
     "NO" => "Non",

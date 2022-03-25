@@ -112,6 +112,17 @@ class ApiController extends YesWikiController
         $result = $commentService->addCommentIfAutorized($_POST);
         return new ApiResponse($result, $result['code']);
     }
+
+    /**
+     * @Route("/api/comments/{tag}",methods={"POST"}, options={"acl":{"public"}})
+     */
+    public function editComment($tag)
+    {
+        $commentService = $this->getService(CommentService::class);
+        $result = $commentService->addCommentIfAutorized($_POST, $tag);
+        return new ApiResponse($result, $result['code']);
+    }
+
     /**
      * @Route("/api/comments/{tag}",methods={"DELETE"}, options={"acl":{"public"}})
      */
