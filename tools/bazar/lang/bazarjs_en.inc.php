@@ -214,4 +214,7 @@ return [
     "BAZ_FORM_EDIT_CONDITION_LABEL" => "Condition",
     "BAZ_FORM_EDIT_CONDITIONCHECKING_END" => "End of condition",
 
+    // templates/entries/index-dynamic-temapltes/BazarCalendar_ButtonICS.js
+    'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => "Add to your agenda",
+
 ];

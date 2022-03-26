@@ -1,6 +1,9 @@
+import ButtonIcs from './BazarCalendar_ButtonICS.js';
+
 Vue.component('BazarCalendar', {
   props: [ 'params' ],
   components: {
+    ButtonIcs
   },
   data() {
     return {
@@ -194,10 +197,10 @@ Vue.component('BazarCalendar', {
           center: 'title',
           right: `dayGridMonth,timeGridWeek,timeGridDay${extendedList} next`
         },
-        initialView: initialView, // TODO use param to choose the view
+        initialView: initialView,
         locale: wiki.locale,
         navLinks : true, 
-        weekNumbers: true // TODO use param
+        weekNumbers: true 
       }
     },
     entries() {
@@ -237,7 +240,7 @@ Vue.component('BazarCalendar', {
         <div class="btn-close" @click="selectedEntry = null"><i class="fa fa-times"></i></div>
         <div v-html="selectedEntry.html_render"></div>
       </div>
+      <ButtonIcs v-if="this.params.showicalbutton" :bazarcalendar="this"/> 
     </div>
   `
-  // TODO add button with link to .ics for local forms + options
 })

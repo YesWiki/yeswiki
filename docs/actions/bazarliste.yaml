@@ -121,6 +121,7 @@ actions:
         uncheckedvalue: "0"
         showExceptFor:
           - bazarcarousel
+          - bazarcalendar
 
   # -------------------------------------
   # Champs Communs concernant les filtres
@@ -494,6 +495,10 @@ actions:
         options:
           sidebar: _t(AB_bazarcarto_entrydisplay_option_sidebar)
           modal: _t(AB_bazarcarto_entrydisplay_option_modal)
+      showicalbutton:
+        label: _t(AB_bazarcarto_showicalbutton_label)
+        type: checkbox
+        default: "false"
 
   bazaragenda:
     label: _t(AB_bazaragenda_label)

@@ -91,6 +91,7 @@ return [
     "AB_bazarcalendar_initialview_week" => "Semana",
     "AB_bazarcalendar_initialview_day" => "Dia",
     "AB_bazarcalendar_initialview_list" => "Agendar",
+    "AB_bazarcarto_showicalbutton_label" => "Mostrar botão ical de exportação",
     // // BazarListe
     // "AB_bazarliste_label" => "Liste",
     // "AB_bazarliste_description" => "Les fiches seront sous forme d'accordéons",
