@@ -136,7 +136,7 @@ Vue.component('BazarCalendar', {
         }
         $(element).addClass("iconDefined");
       }
-      if ($(element).hasClass("fc-list-event")){
+      if ($(element).hasClass("fc-list-event") && this.params.entrydisplay != 'sidebar'){
         $(element).find('.fc-list-event-title a').each(function(){
           $(this).addClass("modalbox");
           $(this).attr("data-size","modal-lg");
