@@ -87,6 +87,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (this.search && this.search.length > 2) {
           result = this.searchEntries(result, this.search)
+          if (result == undefined){
+            result = this.entries
+          }
         }
         this.searchedEntries = result
         this.filterEntries()
