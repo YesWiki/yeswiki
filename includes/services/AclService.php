@@ -222,6 +222,7 @@ class AclService
         $acl = is_string($acl) ? trim($acl) : '';
         $result = false ; // result by default , this function is like a big "OR LOGICAL"
 
+        $acl = str_replace(["\r\n","\r"], "\n", $acl);
         foreach (explode("\n", $acl) as $line) {
             $line = trim($line);
 
