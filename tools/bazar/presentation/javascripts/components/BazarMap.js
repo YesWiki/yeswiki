@@ -102,6 +102,11 @@ Vue.component('BazarMap', {
       if (entry.marker) return entry.marker
       try {
         entry.marker = L.marker([entry.bf_latitude, entry.bf_longitude], { riseOnHover: true });
+        let isModal = (this.params.entrydisplay == 'modal');
+        let tagName = isModal ? 'a' : 'div';
+        let isExternal = (entry['external-data'] != undefined);
+        let url = entry.url + (isExternal ? '/iframe':'');
+        let modalData = isModal ? 'data-size="modal-lg"' + (isExternal ? ' data-iframe="1"':''):'';
         entry.marker.setIcon(
           L.divIcon({
             className: `bazar-marker ${this.params.smallmarker}`,
@@ -113,14 +118,16 @@ Vue.component('BazarMap', {
                   ${entry.markerhover || entry.bf_titre}
                 </span>
               </div>
-              <div class="bazar-entry" style="color: ${entry.color}">
+              <${tagName} class="bazar-entry${isModal ? ' modalbox':''}" ${isModal ? `href="${url}"`:''} style="color: ${entry.color}" ${modalData}>
                 <i class="${entry.icon || 'fa fa-bullseye'}"></i>
-              </div>`,
+              </${tagName}>`,
           })
         );
-        entry.marker.on('click', (ev) => {
-          this.selectedEntry = entry
-        });
+        if (!isModal){
+          entry.marker.on('click', (ev) => {
+            this.selectedEntry = entry
+          });
+        }
         return entry.marker
       } catch(e) {
         entry.marker = null
@@ -132,9 +139,7 @@ Vue.component('BazarMap', {
     selectedEntry: function (newVal, oldVal) {
       if (oldVal) oldVal.marker._icon.classList.remove('selected')
       if (this.selectedEntry) {
-        if (this.params.entrydisplay == 'modal')
-          this.$root.openEntryModal(this.selectedEntry)
-        else
+        if (this.params.entrydisplay != 'modal')
           this.$root.getEntryRender(this.selectedEntry)
         
         this.$nextTick(function() {

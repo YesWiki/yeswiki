@@ -118,6 +118,9 @@
 .bazar-map-container .bazar-marker.xl:hover .entry-name {
   display: block;
 }
+.bazar-map-container .bazar-marker a.bazar-entry{
+  text-decoration: none;
+}
 
 /* CLUSTERS */
 :root {
