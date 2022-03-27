@@ -6,6 +6,7 @@
 
 {% block display_entries %}
   {% set nbcol = params.nbcol %}
+  {% set isModal = (params.entrydisplay == 'modal' or params.entrydisplay is empty) %}
   {# Restrict number of columns for horizontal card #}
   {% if nbcol > 2 and params.displayfields.visual and params.style == "horizontal" %}
     {% set nbcol =  2 %}
@@ -19,8 +20,13 @@
       {{ _t('BAZ_NO_RESULT') }}
     </div>
 
-    <div v-for="entry in entriesToDisplay" :key="entry.id_fiche" class="bazar-entry bazar-card" 
-         @click="openEntry(entry)" :class="{'with-image': Object.keys(entry).includes('visual')}">
+    {% if isModal %}<a{% else %}<div{% endif %} v-for="entry in entriesToDisplay" :key="entry.id_fiche" 
+        class="bazar-entry bazar-card{{ isModal ? ' modalbox' : ''}}" 
+        {% if not isModal %}@click="openEntry(entry)"{% endif %} 
+        :class="{'with-image': Object.keys(entry).includes('visual')}"
+        {% if isModal %}data-size="modal-lg" :href="`${entry.url + (isExternalUrl(entry) ? '/iframe': '')}`"
+        :data-iframe="`${isExternalUrl(entry) ? '1': '0'}`"
+        {% endif %}>
       
       {# VISUAL AREA #}
       <template v-if="Object.keys(entry).includes('visual')">
@@ -56,7 +62,7 @@
         {# FLOATING AREA #}
         <entry-field :entry="entry" prop="floating" class="area floating-area"></entry-field>
       </div>
-    </div>
+    {% if isModal %}</a>{% else %}</div>{% endif %}
 
     <spinner-loader v-if="isLoading" class="overlay"></spinner-loader>
   </div>

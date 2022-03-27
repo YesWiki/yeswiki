@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
       },
       openEntry(entry) {
         if (this.params.entrydisplay == 'newtab')
-          document.location = wiki.url(entry.id_fiche)
+          window.open(entry.url)
         else
           this.$root.openEntryModal(entry)
       },
@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
         Vue.set(entry, 'html_render', `<iframe src="${url}" width="500px" height="600px" style="border:none;"></iframe>`)
       },
       colorIconValueFor(entry, field, mapping) {
-        if (!entry[field]) return null
+        if (!entry[field] || typeof entry[field] != "string") return null
         let values = entry[field].split(',')
         // If some filters are checked, and the entry have multiple values, we display 
         // the value associated with the checked filter

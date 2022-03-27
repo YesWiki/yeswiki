@@ -104,7 +104,7 @@ Vue.component('BazarMap', {
         entry.marker = L.marker([entry.bf_latitude, entry.bf_longitude], { riseOnHover: true });
         let isModal = (this.params.entrydisplay == 'modal');
         let tagName = isModal ? 'a' : 'div';
-        let isExternal = (entry['external-data'] != undefined);
+        let isExternal = this.$root.isExternalUrl(entry);
         let url = entry.url + (isExternal ? '/iframe':'');
         let modalData = isModal ? 'data-size="modal-lg"' + (isExternal ? ' data-iframe="1"':''):'';
         entry.marker.setIcon(
@@ -139,8 +139,11 @@ Vue.component('BazarMap', {
     selectedEntry: function (newVal, oldVal) {
       if (oldVal) oldVal.marker._icon.classList.remove('selected')
       if (this.selectedEntry) {
-        if (this.params.entrydisplay != 'modal')
+        if (this.params.entrydisplay == 'newtab') {
+          this.$root.openEntry(this.selectedEntry)
+        } else if (this.params.entrydisplay != 'modal') {
           this.$root.getEntryRender(this.selectedEntry)
+        }
         
         this.$nextTick(function() {
           this.selectedEntry.marker._icon.classList.add('selected')

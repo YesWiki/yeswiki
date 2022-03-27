@@ -18,22 +18,23 @@ Vue.component('BazarCalendar', {
       let existingEvent = this.getEventById(entryId);
       if (!existingEvent && typeof entry.bf_date_debut_evenement != "undefined") {
         let backgroundColor = (entry.color == undefined || entry.color.length == 0) ? "": entry.color;
+        let isExternal = this.$root.isExternalUrl(entry);
         let newEvent = {
           id: entryId,
           title: entry.bf_titre,
           start: entry.bf_date_debut_evenement,
           end: this.formatEndDate(entry),
-          url: entry.url + ((entry['external-data'] != undefined) ? '/iframe':''),
+          url: entry.url + ((this.isModalDisplay() && isExternal) ? '/iframe':''),
           allDay: this.isAllDayDate(entry.bf_date_debut_evenement),
-          className: "bazar-entry"+((this.params.entrydisplay == undefined || this.params.entrydisplay.length == 0 || this.params.entrydisplay == 'modal') ?  " modalbox":""),
+          className: "bazar-entry"+(this.isModalDisplay() ?  " modalbox":"")+(isExternal ?  " new-window":""),
           backgroundColor: backgroundColor,
           borderColor: backgroundColor,
           extendedProps: {
             icon: (entry.icon == undefined || entry.icon.length == 0) ? "": `<i class="${entry.icon}">&nbsp;</i>`,
             htmlattributes: ((entry.html_data != undefined) ? entry.html_data : '')+
-              ((entry['external-data'] != undefined) ? ' data-iframe="1"':'')+
+              (isExternal ? ' data-iframe="1"':'')+
               ' data-size="modal-lg"',
-            isExternal: (entry['external-data'] != undefined)
+            isExternal: isExternal
           }
         }
         this.calendar.addEvent(newEvent);
@@ -60,6 +61,9 @@ Vue.component('BazarCalendar', {
     },
     isAllDayDate: function (date){
       return (date.length <= 10);
+    },
+    isModalDisplay: function (){
+      return (this.params.entrydisplay == undefined || this.params.entrydisplay.length == 0 || this.params.entrydisplay == 'modal');
     },
     formatEndDate: function(entry){
       // Fixs bug, when no time is specified, is the event is on multiple day, calendJs show it like
@@ -92,7 +96,10 @@ Vue.component('BazarCalendar', {
       return endDateRaw;
     },
     manageClick: function(info) {
-      if (['listWeek','listMonth','listYear'].indexOf(info.view.type) > -1){
+      if (this.params.entrydisplay == 'newtab'){
+        info.jsEvent.preventDefault(); // don't let the browser navigate
+        window.open(info.event.url);
+      } else if (['listWeek','listMonth','listYear'].indexOf(info.view.type) > -1){
         info.jsEvent.preventDefault(); // don't let the browser navigate
         $(info.el).find('a').first().click();
       }
@@ -139,7 +146,7 @@ Vue.component('BazarCalendar', {
         }
         $(element).addClass("iconDefined");
       }
-      if ($(element).hasClass("fc-list-event") && this.params.entrydisplay != 'sidebar'){
+      if ($(element).hasClass("fc-list-event") && this.isModalDisplay()){
         $(element).find('.fc-list-event-title a').each(function(){
           $(this).addClass("modalbox");
           $(this).attr("data-size","modal-lg");

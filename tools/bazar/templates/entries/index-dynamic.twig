@@ -7,8 +7,11 @@
 
 {# Extra Fields to retrieve from API call. By default we retrieve the one specified in the displayfields config #}
 {% if necessary_fields is defined %}
-  {% set params = params|merge({necessary_fields: necessary_fields}) %}
+  {% set necessary_fields = necessary_fields|merge(['url']) %}
+{% else %}
+  {% set necessary_fields = ['url'] %}
 {% endif %}
+{% set params = params|merge({necessary_fields: necessary_fields}) %}
 
 <div class="bazar-list-dynamic-container no-dblclick" data-params="{{ params|json_encode }}" 
      style="opacity: 0" :class="{mounted: mounted}">

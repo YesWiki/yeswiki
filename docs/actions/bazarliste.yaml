@@ -413,6 +413,7 @@ actions:
         options:
           sidebar: _t(AB_bazarcarto_entrydisplay_option_sidebar)
           modal: _t(AB_bazarcarto_entrydisplay_option_modal)
+          newtab: _t(AB_bazarcarto_entrydisplay_option_newtab)
       displayfields:
         type: correspondance
         showif: dynamic
@@ -495,6 +496,7 @@ actions:
         options:
           sidebar: _t(AB_bazarcarto_entrydisplay_option_sidebar)
           modal: _t(AB_bazarcarto_entrydisplay_option_modal)
+          newtab: _t(AB_bazarcarto_entrydisplay_option_newtab)
       showicalbutton:
         label: _t(AB_bazarcarto_showicalbutton_label)
         type: checkbox
