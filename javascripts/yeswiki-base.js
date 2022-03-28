@@ -541,7 +541,7 @@ function toastMessage(
         toastMessage(e.success, 3000, "alert alert-success");
         // we place the new comment in different places if its an answer, a modification or a new comment
         if (form.hasClass('comment-modify')) {
-          form.parents('.yw-comment').html($('<div>').html(e.html).find('.yw-comment').html())
+          form.closest('.yw-comment').html($('<div>').html(e.html).find('.yw-comment').html())
           form.remove();
           $('#post-comment').removeClass('hide')
         } else if (form.parent().hasClass('comment-reponses')) {
