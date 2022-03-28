@@ -2,6 +2,7 @@
 
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
@@ -92,6 +93,13 @@ class UpdateHandler extends YesWikiHandler
                 $output .= '✅ Done !<br />';
             } else {
                 $output .= "✅ The table {$dbService->prefixTable("nature")}is already up-to-date with 'bn_only_one_entry_message' field!<br />";
+            }
+
+            // update comment acls
+            if (!$this->params->get('default_comment_acl_updated')) {
+                $output .= $this->updateDefaultCommentsAcls();
+            } else {
+                $output .= "ℹ️ Comment acls already reset!<br />";
             }
 
             // propose to update content of admin's pages
@@ -204,5 +212,34 @@ class UpdateHandler extends YesWikiHandler
             }
         }
         return [empty($output),$output];
+    }
+
+    private function updateDefaultCommentsAcls(): string
+    {
+        $output = "ℹ️ Resetting comment acls<br />";
+
+        // default acls in wakka.config.php
+        include_once 'tools/templates/libs/Configuration.php';
+        $config = new Configuration('wakka.config.php');
+        $config->load();
+
+        $baseKey = 'default_comment_acl';
+        $config->$baseKey = 'comment-closed';
+        $baseKey = 'default_comment_acl_updated';
+        $config->$baseKey = true;
+        $config->write();
+        unset($config);
+
+        // remove all comment acl
+        $pageManager = $this->getService(PageManager::class);
+        $aclService = $this->getService(AclService::class);
+
+        $pages = $pageManager->getAll();
+        foreach ($pages as $page) {
+            $aclService->delete($page['tag'], ['comment']);
+        }
+        $output .= '✅ Done !<br />';
+
+        return $output;
     }
 }

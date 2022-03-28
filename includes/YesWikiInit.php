@@ -231,6 +231,7 @@ class Init
             'default_write_acl' => '*',
             'default_read_acl' => '*',
             'default_comment_acl' => 'comments-closed',
+            'default_comment_acl_updated' => false,
             'preview_before_save' => 0,
             'allow_raw_html' => true,
             'disable_wiki_links' => false,

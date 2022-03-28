@@ -318,6 +318,7 @@ if (!defined('WIKINI_VERSION')) {
     </div>
 
     </fieldset>
+    <input type="hidden" name="default_comment_acl_updated" value="true"/>
 
   </form>
   
