@@ -76,10 +76,12 @@ class CommentService
                     $this->wiki->SavePage($idComment, $body, $content['pagetag']);
                     if ($newComment) {
                         // default ACLs for comments : visible for all, writable by owner, commentable like parent.
-                        // TODO: config param for default comments rights?
+                        $parentCommentAcl = $this->aclService->load($content['pagetag'], 'comment', false);
+                        $parentCommentAcl = empty($parentCommentAcl) || empty($parentCommentAcl['list']) ? $this->aclService->load($content['pagetag'], 'comment', true) : $parentCommentAcl;
+                        $parentCommentAcl = $parentCommentAcl['list'];
                         $this->aclService->save($idComment, 'write', '%');
                         $this->aclService->save($idComment, 'read', '*');
-                        $this->aclService->save($idComment, 'comment', '+');
+                        $this->aclService->save($idComment, 'comment', $parentCommentAcl);
                     }
 
                     $comment = $this->wiki->LoadPage($idComment);
