@@ -609,7 +609,7 @@ function toastMessage(
       .addClass('comment-modify')
     formcom.find('label').remove()
     formcom.find('textarea').val(com.find('.comment-body').val())
-    formcom.find('[name="pagetag"]').val(com.data('tag'))
+    formcom.find('[name="pagetag"]').val(com.data('commenton'))
     formcom.find('.btn-post-comment').text(_t('MODIFY'))
 		formcom.find('form').append('<button class="btn-cancel-comment btn btn-sm btn-danger">'+_t('CANCEL')+'</button>')
     com.find('.comment-links:first').addClass('hide')

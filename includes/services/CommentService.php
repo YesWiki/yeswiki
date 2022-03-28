@@ -86,6 +86,7 @@ class CommentService
 
                     $comment = $this->wiki->LoadPage($idComment);
                     $com['tag'] = $comment['tag'];
+                    $com['commentOn'] = $comment['comment_on'];
                     $com['rawbody'] = $comment['body'];
                     $com['body'] = $this->wiki->Format($comment['body']);
                     $com['user'] = $comment['user'];
@@ -131,8 +132,12 @@ class CommentService
         } else {
             $query .= 'comment_on = "' . mysqli_real_escape_string($this->wiki->dblink, $tag) . '" ';
         }
+        // remove current comment to prevent infinite loop
+        $query .= " AND `tag` != '{$this->dbService->escape($tag)}' ";
         $query .= 'AND latest = "Y" ' . 'ORDER BY substring(tag, 8) + 0';
-        return $this->wiki->LoadAll($query);
+        return array_filter($this->wiki->LoadAll($query), function ($comment) {
+            return !empty($comment['tag']);
+        });
     }
 
     public function getCommentList($tag, $first = true, $comments = null)
@@ -145,6 +150,7 @@ class CommentService
         if ($comments) {
             foreach ($comments as $i => $comment) {
                 $com['comments'][$i]['tag'] = $comment['tag'];
+                $com['comments'][$i]['commentOn'] = $comment['comment_on'];
                 $com['comments'][$i]['rawbody'] = $comment['body'];
                 $com['comments'][$i]['body'] = $this->wiki->Format($comment['body']);
                 $com['comments'][$i]['user'] = $comment['user'];
@@ -181,8 +187,10 @@ class CommentService
                     $hashCash = $this->wiki->services->get(HashCashService::class);
                     $hashCashCode = $hashCash->getJavascriptCode('post-comment');
                 }
+                $page = $this->pageManager->getOne($tag);
+                $commentOn = !empty($page['comment_on']) ? $page['comment_on'] : $page['tag'];
                 $options = [
-                    'pagetag' => $tag,
+                    'pagetag' => $commentOn,
                     'formlink' => $this->wiki->href('comments', 'api'),
                     'hashcash' => $hashCashCode
                 ];
@@ -210,7 +218,8 @@ class CommentService
         if ($HasAccessRead) {
             $comments = $this->loadComments($tag);
             $coms = $this->getCommentList($tag, true, $comments);
-            if ($hasAccessComment === 'comments-closed') {
+            $acl = $aclsService->load($tag, 'comment');
+            if (!empty($acl['list']) && $acl['list']  == 'comments-closed') {
                 if (!empty($comments)) {
                     $output .= $coms;
                     $output .= '<div class="alert alert-info comments-closed-info">'._t('COMMENTS_CURRENTLY_CLOSED').'.</div>';

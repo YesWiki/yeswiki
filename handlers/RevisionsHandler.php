@@ -20,7 +20,7 @@ class RevisionsHandler extends YesWikiHandler
         if ($this->getRequest()->get('restoreRevisionId')) {
             if ($aclService->hasAccess('write')) {
                 $page = $pageManager->getById($this->getRequest()->get('restoreRevisionId'));
-                $pageManager->save($page['tag'], $page['body']);
+                $pageManager->save($page['tag'], $page['body'], empty($page['comment_on']) ? "" : $page['comment_on']);
                 // save links
                 $linkTracker->registerLinks($pageManager->getOne($page['tag']));
                 Flash::success(_t('SUCCESS_RESTORE_REVISION'));
