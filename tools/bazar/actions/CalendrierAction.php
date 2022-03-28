@@ -32,6 +32,7 @@ class CalendrierAction extends YesWikiAction
             //template - default value calendar
             'template' => $template,
             'dynamic' => $dynamic,
+            'pagination' => -1 // disable pagination
         ]);
     }
 

@@ -197,9 +197,11 @@ Vue.component('BazarCalendar', {
           break;
       }
       return {
+        dayMaxEventRows: 3,
         editable: false,
         eventDisplay: 'block',
         eventClick: this.manageClick,
+        eventMaxStack: 3,
         firstDay : 1,
         headerToolbar: {
           left: 'prev today',
