@@ -35,6 +35,7 @@ use Exception;
 use Throwable;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
@@ -43,6 +44,7 @@ use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
+use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ApiService;
@@ -1238,6 +1240,9 @@ class Wiki
         $controllerResolver = new YesWikiControllerResolver($this);
         $argumentResolver = new ArgumentResolver();
 
+
+        // start buffer to prevent bad formatting response
+        ob_start();
         try {
             // TODO put this elsewhere ?
             $attributes = $matcher->match($context->getPathInfo());
@@ -1257,6 +1262,34 @@ class Wiki
             $response = new Response($exception->getMessage(), $exception->getStatusCode(), $exception->getHeaders());
         } catch (MethodNotAllowedException $exception) {
             $response = new Response('', Response::HTTP_METHOD_NOT_ALLOWED);
+        } catch (Throwable $th) {
+            if (isset($response) && $response instanceof JsonResponse) {
+                $previousContent = json_decode($response->getContent(), true);
+                $newContent = ['exceptionMessage' => $th->__toString()] + $previousContent;
+                $response->setData($newContent);
+                $response->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
+            } else {
+                $response = new ApiResponse(['exceptionMessage' => $th->__toString()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+        }
+        $rawOutput = ob_get_contents();
+        ob_end_clean();
+        if (!empty($rawOutput)) {
+            if ($response instanceof JsonResponse) {
+                $previousContent = json_decode($response->getContent(), true);
+                $newContent = is_array($previousContent)
+                    ? ['rawOutput' => $rawOutput] + $previousContent
+                    : (
+                        is_string($previousContent)
+                        ? $previousContent.$rawOutput
+                        :$rawOutput
+                    );
+                $response->setData($newContent);
+            } else {
+                $previousContent = $response->getContent();
+                $newContent = $previousContent . $rawOutput;
+                $response->setContent($newContent);
+            }
         }
         $response->send();
     }

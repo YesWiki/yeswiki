@@ -191,7 +191,6 @@ class ApiController extends YesWikiController
      */
     public function getPage(Request $request, $tag)
     {
-        ob_start(); // to catch error messages
         $this->denyAccessUnlessGranted('read', $tag);
 
         $pageManager = $this->getService(PageManager::class);
@@ -224,9 +223,7 @@ class ApiController extends YesWikiController
             $page['diff_code'] = $diffService->getPageDiff($lastVersion, $page, false);
         }
 
-        $errors = ob_get_contents();
-        ob_end_clean();
-        return new ApiResponse((empty($errors) ? [] : ['errors' => $errors])+$page);
+        return new ApiResponse($page);
     }
 
     /**
@@ -234,7 +231,6 @@ class ApiController extends YesWikiController
      */
     public function deletePage($tag)
     {
-        ob_start(); // to catch error messages
         $pageManager = $this->getService(PageManager::class);
         $dbService = $this->getService(DbService::class);
 
@@ -293,9 +289,7 @@ class ApiController extends YesWikiController
             }
         }
 
-        $errors = ob_get_contents();
-        ob_end_clean();
-        return new ApiResponse((empty($errors) ? [] : ['errors' => $errors])+$result, $code);
+        return new ApiResponse($result, $code);
     }
     
     /**
@@ -303,7 +297,6 @@ class ApiController extends YesWikiController
      */
     public function deletePageByGetMethod($tag)
     {
-        ob_start(); // to catch error messages
         $result = [];
         $code = Response::HTTP_INTERNAL_SERVER_ERROR;
         try {
@@ -322,10 +315,8 @@ class ApiController extends YesWikiController
                 'error' => $th->getMessage()
             ];
         }
-        $errors = ob_get_contents();
-        ob_end_clean();
-        return (empty($errors) && empty($result))
+        return (empty($result))
             ? $this->deletePage($tag)
-            : new ApiResponse((empty($errors) ? [] : ['errors' => $errors])+$result, $code);
+            : new ApiResponse($result, $code);
     }
 }
