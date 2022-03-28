@@ -471,6 +471,7 @@ return [
     'EDIT_CONFIG_HINT_DEFAULT_WRITE_ACL' => 'Default write pages access control',
     'EDIT_CONFIG_HINT_DEFAULT_READ_ACL' => 'Default read pages access control',
     'EDIT_CONFIG_HINT_DEFAULT_COMMENT_ACL' => 'Default comment pages access control',
+    'EDIT_CONFIG_HINT_COMMENTS_ACTIVATED' => 'Comments activated (true or false)',
     'EDIT_CONFIG_HINT_DEBUG' => 'Activate debug mode (\'yes\'/\'no\')',
     'EDIT_CONFIG_HINT_DEFAULT_LANGUAGE' => 'Default language (fr or en or ... auto = navigator\'s language)',
     'EDIT_CONFIG_HINT_CONTACT_FROM' => 'E-mail address used as sender for messages from entries',

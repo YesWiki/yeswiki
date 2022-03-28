@@ -1,5 +1,6 @@
 <?php
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Core\Service\AclService;
 
@@ -63,10 +64,12 @@ if ($this->HasAccess("write") && $this->method != "revisions") {
             $aclsService = $this->services->get(AclService::class);
             $hasAccessComment = $aclsService->hasAccess('comment');
             $barreredactionelements['wikigroups'] = $this->GetGroupsList();
-            if ($hasAccessComment && $hasAccessComment !== 'comments-closed') {
-                $barreredactionelements['linkclosecomments'] = $this->href("claim", $page, 'action=closecomments');
-            } else {
-                $barreredactionelements['linkopencomments'] = $this->href("claim", $page, 'action=opencomments');
+            if ($this->services->get(ParameterBagInterface::class)->get('comments_activated')) {
+                if ($hasAccessComment && $hasAccessComment !== 'comments-closed') {
+                    $barreredactionelements['linkclosecomments'] = $this->href("claim", $page, 'action=closecomments');
+                } else {
+                    $barreredactionelements['linkopencomments'] = $this->href("claim", $page, 'action=opencomments');
+                }
             }
         } elseif (!$owner && $this->GetUser()) {
             $barreredactionelements['owner'] .= " - "._t('TEMPLATE_CLAIM');
