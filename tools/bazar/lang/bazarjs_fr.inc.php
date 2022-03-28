@@ -2,6 +2,17 @@
 
 return [
 
+    // fields/CalcField.php
+    'BAZ_FORM_EDIT_CALC_LABEL' => 'Calculs',
+    'BAZ_FORM_EDIT_DISPLAYTEXT_LABEL' => 'Texte d\'affichage',
+    'BAZ_FORM_EDIT_DISPLAYTEXT_HELP' => 'Ajouter si besoin une unité après {value}, (ex: `{value} €`)',
+    'BAZ_FORM_EDIT_FORMULA_LABEL' => 'Formule',
+    'BAZ_FORM_CALC_HINT' => "CHAMP EXPERIMENTAL{\\n}".
+       "La formule doit être une formule mathématique.{\\n}".
+       "Il est possible de faire référence à la valeur d'un champ en tapant son nom (ex: `+ sin(bf_number)*2` ),{\\n}".
+       "ou de tester la valeur d'un champ (ex: `test(checkboxListeTypebf_type,premiere_cle)`{\\n}".
+       "qui rend 1 si checkboxListeTypebf_type == premiere_cle sinon 0).",
+
     // fields/FileField.php
     'BAZ_FILEFIELD_FILE' => 'Fichier : {filename}',
     'BAZ_FORM_EDIT_FILE_READLABEL_LABEL' => 'Label à l\'affichage',
