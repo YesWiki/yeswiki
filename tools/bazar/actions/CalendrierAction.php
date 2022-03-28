@@ -17,7 +17,7 @@ class CalendrierAction extends YesWikiAction
         }
         $class = (isset($classes) && count($classes)>0) ? implode(' ', $classes) :null;
 
-        $template = basename($arg['template']) ?? 'calendar.tpl.html';
+        $template = !empty($arg['template']) ? basename($arg['template']) : 'calendar.tpl.html';
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
         $templateEngine = $this->getService(TemplateEngine::class);
         if (($template === 'calendar.tpl.html' && !$templateEngine->hasTemplate("@bazar/{$template}")) ||
