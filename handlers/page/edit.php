@@ -106,7 +106,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
                     $body = _convert($body, YW_CHARSET, true);
 
                     // add page (revisions)
-                    $this->SavePage($this->tag, $body);
+                    $this->SavePage($this->tag, $body, !empty($this->page['comment_on']) ? $this->page['comment_on'] : '');
 
                     // now we render it internally so we can write the updated link table.
                     $page = $this->services->get(PageManager::class)->getOne($this->tag);
