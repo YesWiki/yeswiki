@@ -38,7 +38,7 @@ class AclService
      */
     public function load($tag, $privilege, $useDefaults = true): ?array
     {
-        if (isset($this->cache[$tag][$privilege])) {
+        if ($useDefaults && isset($this->cache[$tag][$privilege])) {
             return $this->cache[$tag][$privilege] ;
         }
 
@@ -169,7 +169,7 @@ class AclService
         if ($acl === null) {
             return false;
         } elseif (isset($acl['list']) && $acl['list'] === 'comments-closed') {
-            return 'comments-closed';
+            return false;
         }
 
         // if current user is owner, return true. owner can do anything!
