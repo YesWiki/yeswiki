@@ -102,11 +102,12 @@ Vue.component('BazarMap', {
       if (entry.marker) return entry.marker
       try {
         entry.marker = L.marker([entry.bf_latitude, entry.bf_longitude], { riseOnHover: true });
-        let isModal = (this.params.entrydisplay == 'modal');
+        let isModal = (this.params.entrydisplay == 'modal' || this.params.entrydisplay == 'modaliframe');
         let tagName = isModal ? 'a' : 'div';
         let isExternal = this.$root.isExternalUrl(entry);
-        let url = entry.url + (isExternal ? '/iframe':'');
-        let modalData = isModal ? 'data-size="modal-lg"' + (isExternal ? ' data-iframe="1"':''):'';
+        let isIframe = isExternal || (this.params.entrydisplay == 'modaliframe')
+        let url = entry.url + (isIframe ? '/iframe':'');
+        let modalData = isModal ? 'data-size="modal-lg"' + (isIframe ? ' data-iframe="1"':''):'';
         entry.marker.setIcon(
           L.divIcon({
             className: `bazar-marker ${this.params.smallmarker}`,
@@ -141,7 +142,7 @@ Vue.component('BazarMap', {
       if (this.selectedEntry) {
         if (this.params.entrydisplay == 'newtab') {
           this.$root.openEntry(this.selectedEntry)
-        } else if (this.params.entrydisplay != 'modal') {
+        } else if (this.params.entrydisplay == 'sidebar') {
           this.$root.getEntryRender(this.selectedEntry)
         }
         

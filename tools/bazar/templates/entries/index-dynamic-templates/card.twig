@@ -6,7 +6,7 @@
 
 {% block display_entries %}
   {% set nbcol = params.nbcol %}
-  {% set isModal = (params.entrydisplay == 'modal' or params.entrydisplay is empty) %}
+  {% set isModal = (params.entrydisplay == 'modal' or params.entrydisplay == 'modaliframe' or params.entrydisplay is empty) %}
   {# Restrict number of columns for horizontal card #}
   {% if nbcol > 2 and params.displayfields.visual and params.style == "horizontal" %}
     {% set nbcol =  2 %}
@@ -24,8 +24,8 @@
         class="bazar-entry bazar-card{{ isModal ? ' modalbox' : ''}}" 
         {% if not isModal %}@click="openEntry(entry)"{% endif %} 
         :class="{'with-image': Object.keys(entry).includes('visual')}"
-        {% if isModal %}data-size="modal-lg" :href="`${entry.url + (isExternalUrl(entry) ? '/iframe': '')}`"
-        :data-iframe="`${isExternalUrl(entry) ? '1': '0'}`"
+        {% if isModal %}data-size="modal-lg" :href="`${entry.url + {% if params.entrydisplay == 'modaliframe' %}'/iframe'{% else %}(isExternalUrl(entry) ? '/iframe': ''){% endif %}}`"
+        :data-iframe="{% if params.entrydisplay == 'modaliframe' %}1{% else %}`${isExternalUrl(entry) ? '1': '0'}`{% endif %}"
         {% endif %}>
       
       {# VISUAL AREA #}
