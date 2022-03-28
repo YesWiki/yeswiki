@@ -14,7 +14,7 @@ class CommentService
     protected $pageManager;
     protected $params;
     protected $pagesWhereCommentWereRendered;
-
+    protected $commentsActivated;
 
     public function __construct(
         Wiki $wiki,
@@ -29,6 +29,7 @@ class CommentService
         $this->pageManager = $pageManager;
         $this->params = $params;
         $this->pagesWhereCommentWereRendered = [];
+        $this->commmentsActivated = $this->params->get('comments_activated');
     }
 
     public function addCommentIfAutorized($content, $idComment = '')
@@ -206,6 +207,9 @@ class CommentService
 
     public function renderCommentsForPage($tag, $showOnlyOnce = true)
     {
+        if (!$this->commmentsActivated) {
+            return '';
+        }
         $output = '';
         // if the comments were allready render in page, we don't show them again
         if ($showOnlyOnce && in_array($tag, $this->pagesWhereCommentWereRendered)) {
