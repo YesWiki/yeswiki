@@ -281,7 +281,7 @@ actions:
       nbcol:
         label: _t(AB_bazarmaterialcard_nbcol_label)
         type: number
-        default: 3
+        value: 3
         icon: columns
       style:
         type: list
