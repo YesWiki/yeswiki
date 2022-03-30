@@ -10,7 +10,9 @@ typeUserAttrs = {
       formula: {
         label: _t('BAZ_FORM_EDIT_FORMULA_LABEL'),
         value: "",
-      }
+      },
+      read: readConf,
+      // write: writeconf
     },
   }
 };
