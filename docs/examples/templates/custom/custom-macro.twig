@@ -1,6 +1,6 @@
 {# Aim : replace show function in .tpl.html (only for string) #}
-{# Usage : `show($value,$label,$class,$tag);` => {{ showStr(value,label,class,tag) }} #}
-{% macro showStr(value,label = '',class = '',tag = 'p') %}
+{# Usage : `show($value,$label,$class,$tag);` => {{ displayHtml(value,label,class,tag) }} #}
+{% macro displayHtml(value,label = '',class = '',tag = 'p') %}
   {% if tag not in ['p','div','span','h1','h2','h3','h4','h5','h6'] %}
     {% set tag = 'p' %}
   {% endif %}
@@ -12,10 +12,10 @@
       {{ value|raw }}
     </{{ tag }}>
   {% endif %}
-{% endmacro showStr %}
+{% endmacro displayHtml %}
 {# ----- #}
 
-{% macro displayValueIfNotEmpty(entry,fieldName,text,form) %}
+{% macro displayFieldValueIfNotEmpty(entry,fieldName,text,form) %}
   {{ include_css('custom/styles/bazar/entry-custom.css') }}
   {% if entry[fieldName] is not empty %}
     <div class="no-display-BAZ-label">
@@ -27,10 +27,10 @@
       {% endfor %}
     </div>
   {% endif %}
-{% endmacro displayValueIfNotEmpty %}
+{% endmacro displayFieldValueIfNotEmpty %}
 
-{% macro showIfNotEmpty(text,fieldName,html) %}
+{% macro displayHtmlIfNotEmpty(text,fieldName,html) %}
   {% if html[fieldName] is not empty %}
     <p><strong>{{ text }}</strong> {{ html[fieldName]|raw }}</p>
   {% endif %}
-{% endmacro showIfNotEmpty %}
+{% endmacro displayHtmlIfNotEmpty %}

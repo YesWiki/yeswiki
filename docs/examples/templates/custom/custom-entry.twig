@@ -4,16 +4,16 @@
 
 {# USEFUL SYNTAXES : 
 	- {{ fiche.nom_champ }} the easiest way to access to a field's value but could be unsafe for XSS attacks (be careful when using `|raw`)
-	- {{ customMacro.showStr(html.listenom_champ,'optionnal label','optionnal class css') }} Display a list field  
-	- {{ customMacro.displayValueIfNotEmpty(fiche,'fullFieldName','Text',form) }} Display the fieldName value only if not empty with the choosen 'Text' (the text is not displayed if empty)
-	- {{ customMacro.showIfNotEmpty('Text','fullFieldName',html) }} Same as above but faster, to prefer if html contains the rigth thing
+	- {{ customMacro.displayHtml(html.listenom_champ,'optionnal label','optionnal class css') }} Display a list field  
+	- {{ customMacro.displayFieldValueIfNotEmpty(fiche,'fullFieldName','Text',form) }} Display the fieldName value only if not empty with the choosen 'Text' (the text is not displayed if empty)
+	- {{ customMacro.displayHtmlIfNotEmpty('Text','fullFieldName',html) }} Same as above but faster, to prefer if html contains the rigth thing
 #}  
 
 <div class="row" style="margin:30px;">
   <div class="col-xs-6 col-md-6" style="text-align:left;">
    <h2>{{ fiche.bf_titre }}</h2>
 	{% if fiche.bf_description %}
-		   {{ customMacro.showStr(html.bf_description,'','') }}
+		   {{ customMacro.displayHtml(html.bf_description,'','') }}
 		
     {% endif %}
 
@@ -46,7 +46,7 @@
 		<p style="margin-left:20px;"> {{ fiche.bf_code_postal ~ ' ' ~ fiche.bf_ville }} </p>
 		{% if fiche.bf_telephone   %}	<p><i class="fas fa-phone-alt"> </i> {{ format(fiche.bf_telephone)|raw }} </p> {% endif %}
 		{% if fiche.bf_site_internet and not (fiche.bf_site_internet == 'http://') %} <p><i class="fas fa-link"> </i> {{ format(fiche.bf_site_internet)|raw }}</p>{% endif %}
-		{{ customMacro.showStr(html.bf_mail,'','primary') }}
+		{{ customMacro.displayHtml(html.bf_mail,'','primary') }}
 	</div>
 
    
@@ -59,8 +59,8 @@
 <div class="panel panel-warning">
   <div class="panel-heading  center"><h4><i class="far fa-hand-point-right"></i> Administration</h4></div>
       <div class="panel-body">
-    {{ customMacro.showStr(html.listeListeListeprojets,'Cadre','') }}
-        {{ customMacro.showStr(html.checkboxListeParametresDAffichagecheckbox_parametres_affichage,'Affichage','') }}
+    {{ customMacro.displayHtml(html.listeListeListeprojets,'Cadre','') }}
+        {{ customMacro.displayHtml(html.checkboxListeParametresDAffichagecheckbox_parametres_affichage,'Affichage','') }}
   </div>
 </div>
 
