@@ -1,0 +1,93 @@
+{# macro import to put at top of twig file (or first twig file if included) #}
+{% import '@custom/custom-macro.twig' as customMacro %}
+{# ----- #}
+
+{# USEFUL SYNTAXES : 
+	- {{ fiche.nom_champ }} the easiest way to access to a field's value but could be unsafe for XSS attacks (be careful when using `|raw`)
+	- {{ customMacro.displayHtml(html.listenom_champ,'optionnal label','optionnal class css') }} Display a list field  
+	- {{ customMacro.displayFieldValueIfNotEmpty(fiche,'fullFieldName','Text',form) }} Display the fieldName value only if not empty with the choosen 'Text' (the text is not displayed if empty)
+	- {{ customMacro.displayHtmlIfNotEmpty('Text','fullFieldName',html) }} Same as above but faster, to prefer if html contains the rigth thing
+#}  
+
+{# import css file to customize #}
+{{ include_css('custom/styles/bazar/fiche-x.css') }}
+
+{# change line .custom-entry.row in fiche-x.css to configure style #}
+<div class="row custom-entry">
+	{# class text-left works only of bootstrap is loaded otherwise create a class in fiche-x.css #}
+  <div class="col-xs-6 col-md-6 text-left">
+		<h2>{{ fiche.bf_titre }}</h2>
+		{% if fiche.bf_description %}
+			{{ customMacro.displayHtml(html.bf_description,'','') }}
+    {% endif %}
+
+	
+  </div>
+  <div class="col-xs-6 col-md-6 ">
+		{% if fiche.imagebf_image is not empty %}
+			{# you can choose width, height (in px)  and mode "fit" or "crop" #}
+			{% set imageFileAddr = urlImage({"files/#{fiche.imagebf_image}":,width:400,height:400,mode:"crop"}) %}
+			{% if imageFileAddr same as(false) or imageFileAddr matches '/^\\d+$/' %}
+				{# imageFileAddr is not false or not integer otherwise error #}
+				<img
+					class="center custom-entry"
+					alt="{{ fiche.bf_titre|e('html_attr') }}"
+					src="{{ imageFileAddr }}"
+				/>
+		{% endif %}
+		<div class="bloc-date-lieu" >
+			<h3>From {{ html.bf_date_debut_evenement }} </h3>
+			{% if fiche.bf_date_fin_evenement %}
+				<h3>to {{ html.bf_date_fin_evenement }} </h3>
+			{% endif %}
+	
+			{# Style of block CONTACT
+			- Check that fields'id in your form correspond to these ones: bf_adresse1 / bf_code_postal / bf_ville / bf_mail / bf_site_internet
+			or replace them in the current form
+			- icons from fontawesome  #}
+			
+			{% if fiche.bf_lieu %}
+				<h3>{{ fiche.bf_lieu }} </h3>
+			{% endif %}
+			{% if fiche.bf_adresse or fiche.bf_adresse12 %}	
+				<p><i class="fas fa-map-marker"> </i> {{ fiche.bf_adresse }}</p> 
+				<p class="custom-entry-p">     {{ fiche.bf_adresse12 }}</p> 
+			{% endif %}
+			<p class="custom-entry-p"> {{ fiche.bf_code_postal ~ ' ' ~ fiche.bf_ville }} </p>
+			{% if fiche.bf_telephone   %}
+				<p><i class="fas fa-phone-alt"> </i> {{ format(fiche.bf_telephone)|raw }} </p>
+			{% endif %}
+			{% if fiche.bf_site_internet and not (fiche.bf_site_internet == 'http://') %}
+				<p><i class="fas fa-link"> </i> {{ format(fiche.bf_site_internet)|raw }}</p>
+			{% endif %}
+			{{ customMacro.displayHtml(html.bf_mail,'','primary') }}
+		</div>
+
+   
+	</div>
+</div> {# --- End of public part --- #}
+
+{# --- Start reserved adins info --- #}
+{{ format('{{section visibility="@admins"}}')|raw }}
+
+<div class="panel panel-warning">
+  <div class="panel-heading  center">
+		<h4><i class="far fa-hand-point-right"></i> Administration</h4>
+	</div>
+	<div class="panel-body">
+    {{ customMacro.displayHtml(html.listeListeListeprojets,'Project','') }}
+		{{ customMacro.displayHtml(html.checkboxListeParametresDAffichagecheckbox_parametres_affichage,'Display','') }}
+  </div>
+</div>
+
+{{ format('{{end elem="section"}}')|raw }}
+
+	
+	
+
+   
+
+
+
+
+
