@@ -314,6 +314,7 @@ var typeUserAttrs = {
   },
   date: {
     today_button: {
+      label: _t('BAZ_FORM_EDIT_DATE_TODAY_BUTTON'),
       options: { " ": _t('NO'), today: _t('YES') },
     },
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: "" },
