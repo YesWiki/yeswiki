@@ -744,7 +744,7 @@ function getImageFromBody($page, $width, $height)
         $attach->CheckParams();
         $imagefile = $attach->GetFullFilename();
         $GLOBALS['wiki']->tag = $oldpage;
-        $image = $GLOBALS['wiki']->getBaseUrl().'/'.redimensionner_image(
+        $image = $GLOBALS['wiki']->getBaseUrl().'/'.$attach->redimensionner_image(
             $imagefile,
             'cache/'.$width.'x'.$height.'-'.str_replace('files/', '', $imagefile),
             $width,
@@ -755,14 +755,12 @@ function getImageFromBody($page, $width, $height)
         preg_match_all('/"imagebf_image":"(.*)"/U', $page['body'], $image);
         if (is_array($image[1]) && !empty($image[1][0])) {
             include_once 'tools/tags/libs/tags.functions.php';
-            $imagefile = utf8_decode(
-                preg_replace_callback(
-                    '/\\\\u([a-f0-9]{4})/',
-                    'utf8_encode',
-                    $image[1][0]
-                )
-            );
-            $image = $GLOBALS['wiki']->getBaseUrl().'/'.redimensionner_image(
+            $imagefile = json_decode('"'.$image[1][0].'"', true);
+            if (!class_exists('attach')) {
+                include 'tools/attach/libs/attach.lib.php';
+            }
+            $attach = new Attach($GLOBALS['wiki']);
+            $image = $GLOBALS['wiki']->getBaseUrl().'/'.$attach->redimensionner_image(
                 'files/'.$imagefile,
                 'cache/'.$width.'x'.$height.'-'.$imagefile,
                 $width,
