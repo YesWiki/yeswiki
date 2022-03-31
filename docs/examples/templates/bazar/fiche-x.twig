@@ -1,12 +1,12 @@
 {# macro import to put at top of twig file (or first twig file if included) #}
-{% import '@custom/custom-macro.twig' as customMacro %}
+{% import '@custom/custom-entry-helper.twig' as entryHelper %}
 {# ----- #}
 
 {# USEFUL SYNTAXES : 
 	- {{ fiche.nom_champ }} the easiest way to access to a field's value but could be unsafe for XSS attacks (be careful when using `|raw`)
-	- {{ customMacro.displayHtml(html.listenom_champ,'optionnal label','optionnal class css') }} Display a list field  
-	- {{ customMacro.displayFieldValueIfNotEmpty(fiche,'fullFieldName','Text',form) }} Display the fieldName value only if not empty with the choosen 'Text' (the text is not displayed if empty)
-	- {{ customMacro.displayHtmlIfNotEmpty('Text','fullFieldName',html) }} Same as above but faster, to prefer if html contains the rigth thing
+	- {{ entryHelper.displayHtml(html.listenom_champ,'optionnal label','optionnal class css') }} Display a list field  
+	- {{ entryHelper.displayFieldValueIfNotEmpty(fiche,'fullFieldName','Text',form) }} Display the fieldName value only if not empty with the choosen 'Text' (the text is not displayed if empty)
+	- {{ entryHelper.displayHtmlIfNotEmpty('Text','fullFieldName',html) }} Same as above but faster, to prefer if html contains the rigth thing
 #}  
 
 {# import css file to customize #}
@@ -18,7 +18,7 @@
   <div class="col-xs-6 col-md-6 text-left">
 		<h2>{{ fiche.bf_titre }}</h2>
 		{% if fiche.bf_description %}
-			{{ customMacro.displayHtml(html.bf_description,'','') }}
+			{{ entryHelper.displayHtml(html.bf_description,'','') }}
     {% endif %}
 
 	
@@ -60,7 +60,7 @@
 			{% if fiche.bf_site_internet and not (fiche.bf_site_internet == 'http://') %}
 				<p><i class="fas fa-link"> </i> {{ format(fiche.bf_site_internet)|raw }}</p>
 			{% endif %}
-			{{ customMacro.displayHtml(html.bf_mail,'','primary') }}
+			{{ entryHelper.displayHtml(html.bf_mail,'','primary') }}
 		</div>
 
    
@@ -75,8 +75,8 @@
 		<h4><i class="far fa-hand-point-right"></i> Administration</h4>
 	</div>
 	<div class="panel-body">
-    {{ customMacro.displayHtml(html.listeListeListeprojets,'Project','') }}
-		{{ customMacro.displayHtml(html.checkboxListeParametresDAffichagecheckbox_parametres_affichage,'Display','') }}
+    {{ entryHelper.displayHtml(html.listeListeListeprojets,'Project','') }}
+		{{ entryHelper.displayHtml(html.checkboxListeParametresDAffichagecheckbox_parametres_affichage,'Display','') }}
   </div>
 </div>
 
