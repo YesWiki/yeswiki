@@ -110,16 +110,9 @@ class EditConfigAction extends YesWikiAction
                         if (!empty($keysToMerge)) {
                             if (is_array($keysToMerge)) {
                                 $keys = array_merge($keys, $keysToMerge);
-                                foreach ($keysToMerge as $key) {
-                                    if (is_array($key)) {
-                                        foreach ($key as $keyname => $values) {
-                                            foreach ($values as $value) {
-                                                $associatedExtensions[$keyname.'['.$value.']'] = $extensionName;
-                                            }
-                                        }
-                                    } else {
-                                        $associatedExtensions[$key] = $extensionName;
-                                    }
+                                $keyNames = $this->prepareKeyNames($keysToMerge, true);
+                                foreach ($keyNames as $keyName) {
+                                    $associatedExtensions[$keyName] = $extensionName;
                                 }
                             } elseif (is_string($keysToMerge)) {
                                 $keys[] = $keysToMerge;
@@ -155,6 +148,47 @@ class EditConfigAction extends YesWikiAction
     }
 
     /**
+     * prepare array of $keyNames from $keys
+     * recursive
+     *
+     * @param array|string $keys
+     * @param bool $firstLevel
+     * @return array [$keyName1,$keyName2]
+     */
+    private function prepareKeyNames($keys, bool $firstLevel = false):array
+    {
+        if (is_string($keys)) {
+            return ($firstLevel ? [$keys] : ["[{$keys}]"]);
+        } elseif (is_array($keys)) {
+            $result = [];
+            $isList = $this->arrayIsList($keys);
+            foreach ($keys as $key => $value) {
+                $subLevelKeyNames = $this->prepareKeyNames($value, $firstLevel && $isList);
+                foreach ($subLevelKeyNames as $subLevelKeyName) {
+                    $result[] = ($isList ? "" : ($firstLevel ? $key : "[{$key}]")).$subLevelKeyName;
+                }
+            }
+            return $result;
+        } else {
+            return [];
+        }
+    }
+
+    /**
+     * could be replace by array_is_list since php 8.1
+     */
+    private function arrayIsList(array $array): bool
+    {
+        $keys = array_keys($array);
+        foreach ($keys as $index => $key) {
+            if ($index != $key) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * save data to wakka.config.php
      * @return string|null message to display at the top of the part for editing
      */
@@ -163,16 +197,30 @@ class EditConfigAction extends YesWikiAction
         $config = new Configuration('wakka.config.php');
         $config->load();
 
-        foreach ($this->getAuthorizedKeys()[0] as $key) {
-            // some keys could be arrays
-            if (is_array($key)) {
-                foreach ($key as $firstLevelKey => $secondLevelKeys) {
-                    foreach ($secondLevelKeys as $secondLevelKey) {
-                        $new_value = $this->arguments['post'][$firstLevelKey][$secondLevelKey] ??  null;
+        $keysAsArray = $this->convertKeysAsArray($this->getAuthorizedKeys()[0]);
+        foreach ($keysAsArray as $keyAsArray) {
+            if (!empty($keyAsArray)) {
+                $length = count($keyAsArray);
+                $firstLevelKey = $keyAsArray[0];
+                switch ($length) {
+                    case 1:
+                        $new_value = $this->arguments['post'][$firstLevelKey] ?? null;
                         if (is_null($new_value) || $new_value === '') {
-                            if (isset($config->$firstLevelKey[$secondLevelKey])) {
+                            unset($config->$firstLevelKey);
+                        } else {
+                            $config->$firstLevelKey = $this->strtoarray($new_value);
+                        }
+                        break;
+                    case 2:
+                        $new_value =
+                            isset($this->arguments['post'][$firstLevelKey])
+                            && isset($this->arguments['post'][$firstLevelKey][$keyAsArray[1]])
+                            ? $this->arguments['post'][$firstLevelKey][$keyAsArray[1]]
+                            : null;
+                        if (is_null($new_value) || $new_value === '') {
+                            if (isset($config->$firstLevelKey) && isset($config->$firstLevelKey[$keyAsArray[1]])) {
                                 $tmp = $config->$firstLevelKey;
-                                unset($tmp[$secondLevelKey]);
+                                unset($tmp[$keyAsArray[1]]);
                                 if (empty($tmp)) {
                                     unset($config->$firstLevelKey);
                                 } else {
@@ -181,19 +229,61 @@ class EditConfigAction extends YesWikiAction
                             }
                         } else {
                             if (isset($config->$firstLevelKey) && is_array($config->$firstLevelKey)) {
-                                $config->$firstLevelKey = array_merge($config->$firstLevelKey, [$secondLevelKey => $this->strtoarray($new_value)]);
+                                $config->$firstLevelKey = array_merge($config->$firstLevelKey, [$keyAsArray[1] => $this->strtoarray($new_value)]);
                             } else {
-                                $config->$firstLevelKey = [$secondLevelKey => $this->strtoarray($new_value)];
+                                $config->$firstLevelKey = [$keyAsArray[1] => $this->strtoarray($new_value)];
                             }
                         }
-                    }
-                }
-            } else {
-                $new_value = $this->arguments['post'][$key] ??  null;
-                if (is_null($new_value) || $new_value === '') {
-                    unset($config->$key);
-                } else {
-                    $config->$key = $this->strtoarray($new_value);
+                        break;
+                    case 3:
+                        $new_value =
+                            isset($this->arguments['post'][$firstLevelKey])
+                            && isset($this->arguments['post'][$firstLevelKey][$keyAsArray[1]])
+                            && isset($this->arguments['post'][$firstLevelKey][$keyAsArray[1]][$keyAsArray[2]])
+                            ? $this->arguments['post'][$firstLevelKey][$keyAsArray[1]][$keyAsArray[2]]
+                            : null;
+                        if (is_null($new_value) || $new_value === '') {
+                            if (isset($config->$firstLevelKey)
+                                && isset($config->$firstLevelKey[$keyAsArray[1]])
+                                && isset($config->$firstLevelKey[$keyAsArray[1]][$keyAsArray[2]])) {
+                                $tmp = $config->$firstLevelKey;
+                                unset($tmp[$keyAsArray[1]][$keyAsArray[2]]);
+                                if (empty($tmp[$keyAsArray[1]])) {
+                                    unset($tmp[$keyAsArray[1]]);
+                                }
+                                if (empty($tmp)) {
+                                    unset($config->$firstLevelKey);
+                                } else {
+                                    $config->$firstLevelKey = $tmp;
+                                }
+                            }
+                        } else {
+                            if (isset($config->$firstLevelKey) && is_array($config->$firstLevelKey)) {
+                                if (isset($config->$firstLevelKey[$keyAsArray[1]]) && is_array($config->$firstLevelKey[$keyAsArray[1]])) {
+                                    $tmp = $config->$firstLevelKey;
+                                    $tmp[$keyAsArray[1]] = array_merge($tmp[$keyAsArray[1]], [$keyAsArray[2] => $this->strtoarray($new_value)]);
+                                    $config->$firstLevelKey = $tmp;
+                                } else {
+                                    $config->$firstLevelKey = array_merge(
+                                        $config->$firstLevelKey,
+                                        [
+                                            $keyAsArray[1] => [
+                                                $keyAsArray[2] => $this->strtoarray($new_value)
+                                            ]
+                                        ]
+                                    );
+                                }
+                            } else {
+                                $config->$firstLevelKey = [$keyAsArray[1] => [
+                                        $keyAsArray[2] => $this->strtoarray($new_value)
+                                    ]
+                                ];
+                            }
+                        }
+                        break;
+                    
+                    default:
+                        break;
                 }
             }
         }
@@ -214,34 +304,92 @@ class EditConfigAction extends YesWikiAction
         $data = [];
         $placeholders = [];
         list($keys, $associatedExtensions) = $this->getAuthorizedKeys();
-        foreach ($keys as $key) {
-            // some keys could be arrays
-            if (is_array($key)) {
-                foreach ($key as $firstLevelKey => $secondLevelKeys) {
-                    foreach ($secondLevelKeys as $secondLevelKey) {
-                        if (isset($config->$firstLevelKey[$secondLevelKey])) {
-                            $data[$firstLevelKey.'['.$secondLevelKey.']'] = $this->array2Str($config->$firstLevelKey[$secondLevelKey]);
+        $keysAsArray = $this->convertKeysAsArray($keys);
+        foreach ($keysAsArray as $keyAsArray) {
+            if (!empty($keyAsArray)) {
+                $length = count($keyAsArray);
+                $firstLevelKey = $keyAsArray[0];
+                $keyName = $firstLevelKey . ($length > 1 ? "[".implode("][", array_slice($keyAsArray, 1))."]": "");
+                switch ($length) {
+                    case 1:
+                        if (isset($config->$firstLevelKey)) {
+                            $data[$keyName] = $this->array2Str($config->$firstLevelKey);
                         } else {
-                            $data[$firstLevelKey.'['.$secondLevelKey.']'] = '';
+                            $data[$keyName] = "";
                         }
-                        if ($this->params->has($firstLevelKey) && isset($this->params->get($firstLevelKey)[$secondLevelKey])) {
-                            $placeholders[$firstLevelKey.'['.$secondLevelKey.']'] = $this->array2Str($this->params->get($firstLevelKey)[$secondLevelKey]);
+                        if ($this->params->has($firstLevelKey)) {
+                            $placeholders[$keyName] = $this->array2Str($this->params->get($firstLevelKey));
                         }
-                    }
-                }
-            } else {
-                if (isset($config->$key)) {
-                    $data[$key] = $this->array2Str($config->$key);
-                } else {
-                    $data[$key] = '';
-                }
-                if ($this->params->has($key)) {
-                    $placeholders[$key] = $this->array2Str($this->params->get($key));
+                        break;
+                    case 2:
+                        if (isset($config->$firstLevelKey)
+                            && isset($config->$firstLevelKey[$keyAsArray[1]])) {
+                            $data[$keyName] = $this->array2Str($config->$firstLevelKey[$keyAsArray[1]]);
+                        } else {
+                            $data[$keyName] = "";
+                        }
+                        if ($this->params->has($firstLevelKey)
+                            && isset($this->params->get($firstLevelKey)[$keyAsArray[1]])) {
+                            $placeholders[$keyName] = $this->array2Str($this->params->get($firstLevelKey)[$keyAsArray[1]]);
+                        }
+                        break;
+                    case 3:
+                        if (isset($config->$firstLevelKey)
+                            && isset($config->$firstLevelKey[$keyAsArray[1]])
+                            && isset($config->$firstLevelKey[$keyAsArray[1]][$keyAsArray[2]])) {
+                            $data[$keyName] = $this->array2Str($config->$firstLevelKey[$keyAsArray[1]][$keyAsArray[2]]);
+                        } else {
+                            $data[$keyName] = "";
+                        }
+                        if ($this->params->has($firstLevelKey)
+                            && isset($this->params->get($firstLevelKey)[$keyAsArray[1]])
+                            && isset($this->params->get($firstLevelKey)[$keyAsArray[1]][$keyAsArray[2]])) {
+                            $placeholders[$keyName] = $this->array2Str($this->params->get($firstLevelKey)[$keyAsArray[1]][$keyAsArray[2]]);
+                        }
+                        break;
+                    
+                    default:
+                        $data[$keyName] = "";
+                        break;
                 }
             }
         }
         return [$data,$placeholders,$associatedExtensions];
     }
+
+    /**
+     * convert $keys to array of arrays
+     * @param array $keys
+     * @return array $conertedKeys
+     */
+    private function convertKeysAsArray(array $keys):array
+    {
+        $convertedKeys = [];
+        $isList = $this->arrayIsList($keys);
+        foreach ($keys as $key => $subKey) {
+            if (is_string($subKey)) {
+                $convertedKeys[] = $isList ? [$subKey] : [$key,$subKey];
+            } elseif (is_array($subKey)) {
+                $result = $this->convertKeysAsArray($subKey);
+                foreach ($result as $value) {
+                    if ($isList) {
+                        $convertedKeys[] = $value;
+                    } else {
+                        $newValue = array_values($value);
+                        array_unshift($newValue, $key);
+                        $convertedKeys[] = $newValue;
+                    }
+                }
+            }
+        }
+        return $convertedKeys;
+    }
+
+    /**
+     * extract associated values from config second level
+     * @param Configuration $config
+     * @param string $firstLevelKey
+     */
 
     /**
      * array to string
@@ -251,7 +399,7 @@ class EditConfigAction extends YesWikiAction
     private function array2Str($value): string
     {
         if (is_array($value)) {
-            if (count($value) > 0 && count(array_diff_key($value, array_fill(0, count($value), " "))) == 0) {
+            if (count($value) > 0 && $this->arrayIsList($value)) {
                 $value = '['
                     .implode(
                         ',',
@@ -332,24 +480,14 @@ class EditConfigAction extends YesWikiAction
     private function getHelp(): array
     {
         $help = [];
-        foreach ($this->getAuthorizedKeys()[0] as $key) {
-            if (!is_array($key)) {
-                if (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.$key])) {
-                    $help[$key] = _t('EDIT_CONFIG_HINT_'.$key);
-                } elseif (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.strtoupper($key)])) {
-                    $help[$key] = _t('EDIT_CONFIG_HINT_'.strtoupper($key));
-                }
-            } else {
-                foreach ($key as $firstLevelKey => $secondLevelKeys) {
-                    foreach ($secondLevelKeys as $secondLevelKey) {
-                        $hintKey = 'EDIT_CONFIG_HINT_'.$firstLevelKey.'['.$secondLevelKey.']';
-                        if (isset($GLOBALS['translations'][$hintKey])) {
-                            $help[$firstLevelKey.'['.$secondLevelKey.']'] = _t($hintKey);
-                        } elseif (isset($GLOBALS['translations'][strtoupper($hintKey)])) {
-                            $help[$firstLevelKey.'['.$secondLevelKey.']'] = _t(strtoupper($hintKey));
-                        }
-                    }
-                }
+        foreach ($this->convertKeysAsArray($this->getAuthorizedKeys()[0]) as $keyAsArray) {
+            $length = count($keyAsArray);
+            $firstLevelKey = $keyAsArray[0];
+            $keyName = $firstLevelKey . ($length > 1 ? "[".implode("][", array_slice($keyAsArray, 1))."]": "");
+            if (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.$keyName])) {
+                $help[$keyName] = _t('EDIT_CONFIG_HINT_'.$keyName);
+            } elseif (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.strtoupper($keyName)])) {
+                $help[$keyName] = _t('EDIT_CONFIG_HINT_'.strtoupper($keyName));
             }
         }
 
