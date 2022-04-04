@@ -71,14 +71,17 @@
 {# --- Start reserved admins info --- #}
 {{ format('{{section visibility="@admins"}}')|raw }}
 
-<div class="panel panel-warning">
-  <div class="panel-heading  center">
-		<h4><i class="far fa-hand-point-right"></i> Administration</h4>
-	</div>
-	<div class="panel-body">
-    {{ entryHelper.displayHtml(html.listeListeProjects,'Project','') }}
-		{{ entryHelper.displayHtml(html.checkboxListeParamsbf_display_params,'Display','') }}
-  </div>
-</div>
+		<div class="panel panel-warning">
+		<div class="panel-heading  center">
+				<h4><i class="far fa-hand-point-right"></i> Administration</h4>
+			</div>
+			<div class="panel-body">
+			{{ entryHelper.displayHtml(html.listeListeProjects,'Project','') }}
+				{{ entryHelper.displayHtml(html.checkboxListeParamsbf_display_params,'Display','') }}
+		</div>
+		</div>
 
-{{ format('{{end elem="section"}}')|raw }}
+	{# replacing end action by raw html because not stable if entry's content contains section #}
+	{# {{ format('{{end elem="section"}}')|raw }} #}
+	</div>
+</section>
