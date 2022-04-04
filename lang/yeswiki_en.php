@@ -253,7 +253,7 @@ return [
     'YOUR_OLD_PASSWORD' => 'Your former password',
     'NEW_PASSWORD' => 'New password',
     'CHANGE' => 'Change',
-    // 'USERNAME_MUST_BE_WIKINAME' => 'Votre nom d\'utilisateur ne doit pas commencé par \'!\',\'@\',\'\\\', \'/\' ni \'#\' avec 3 caractères minimum.',
+    'USERNAME_MUST_BE_WIKINAME' => 'Your username must not start with \'!\',\'@\',\'\\\', \'/\' ni \'#\' with 3 characters minimum.',
     // 'YOU_MUST_SPECIFY_AN_EMAIL' => 'Vous devez sp&eacute;cifier une adresse de messagerie &eacute;lectronique',
     // 'THIS_IS_NOT_A_VALID_EMAIL' => 'Ceci ne ressemble pas &agrave; une adresse de messagerie &eacute;lectronique',
     // 'PASSWORDS_NOT_IDENTICAL' => 'Les mots de passe n\'&eacute;taient pas identiques',
