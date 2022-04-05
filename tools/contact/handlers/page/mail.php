@@ -96,9 +96,9 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             $type,
             $mail_sender,
             $name_sender,
-            $mail_receiver,
-            $subject,
-            $message_txt
+            $mail_receiver ?? "",
+            $subject ?? "",
+            $message_txt ?? ""
         );
     
         // adding the infomsg after checking the size of the message
