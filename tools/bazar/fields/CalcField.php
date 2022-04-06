@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use Throwable;
 use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Service\FormManager;
 
 /**
  * @Field({"calc"})
@@ -17,6 +18,8 @@ class CalcField extends BazarField
     protected $calcFormula;
     protected $displayText;
 
+    protected $formManager ;
+
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -24,6 +27,7 @@ class CalcField extends BazarField
         $this->displayText = empty($values[self::FIELD_DISPLAY_TEXT]) ? "{value}" : $values[self::FIELD_DISPLAY_TEXT];
         $this->default = ""; // to prevent field 5 to change default value
         $this->maxChars = ""; // to prevent field 4 to change maxChars
+        $this->formManager = null;
     }
     protected function renderInput($entry)
     {
@@ -93,21 +97,39 @@ class CalcField extends BazarField
     }
     private function getEntryValue($entry, $name, $default = 0)
     {
-        return (!isset($entry[$name]) || !is_scalar($entry[$name])) ? $default : floatval($entry[$name]);
+        $propertyName = $this->getPropertyNameIfDefined($entry, $name);
+        return empty($propertyName) ? $default : floatval($entry[$propertyName]);
     }
 
     private function testEntryValue($entry, $name, $value)
     {
         $result = false ;
-        if (isset($entry[$name]) && is_scalar($entry[$name])) {
-            $fieldValue = $entry[$name];
+        $propertyName = $this->getPropertyNameIfDefined($entry, $name);
+        if (!empty($propertyName)) {
+            $fieldValue = $entry[$propertyName];
             if (empty($value) && !in_array($value, [0,"0"], true)) {
                 $result = empty($fieldValue);
             } else {
                 $result = ($fieldValue == $value);
             }
         }
-        return $result ?  1 : 0;
+        return $result ?  "1" : "0";
+    }
+
+    private function getPropertyNameIfDefined($entry, $name): ?string
+    {
+        if (!empty($entry['id_typeannonce'])) {
+            if (is_null($this->formManager)) {
+                // lazy loading because not possible at construct
+                $this->formManager = $this->getService(FormManager::class);
+            }
+            $field = $this->formManager->findFieldFromNameOrPropertyName($name, $entry['id_typeannonce']);
+            $propertyName = $field->getPropertyName();
+            if (!empty($propertyName) && isset($entry[$propertyName]) && is_scalar($entry[$propertyName])) {
+                return $propertyName;
+            }
+        }
+        return null;
     }
 
     public function getCalcFormula(): ?string
