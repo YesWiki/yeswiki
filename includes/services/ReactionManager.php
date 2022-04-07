@@ -138,7 +138,8 @@ class ReactionManager
             throw new \Exception('Reaction value not specified');
         }
 
-        if (!$this->wiki->UserIsAdmin() && !$this->wiki->UserIsOwner($id)) {
+        $connectedUser = $this->wiki->getUser();
+        if (!$this->wiki->UserIsAdmin() || empty($connectedUser) || $connectedUser['name'] !== $user) {
             throw new \Exception('Unauthorized');
         }
 
