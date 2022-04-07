@@ -418,6 +418,11 @@ class ApiController extends YesWikiController
                                         $_POST['pagetag'],
                                         $reactionValues
                                     );
+                                    // hurra, the reaction is saved!
+                                    return new ApiResponse(
+                                        $reactionValues,
+                                        Response::HTTP_OK
+                                    );
                                 }
                             } else {
                                 return new ApiResponse(
@@ -426,10 +431,9 @@ class ApiController extends YesWikiController
                                 );
                             }
                         }
-                        // hurra, the reaction is saved!
                         return new ApiResponse(
-                            $reactionValues,
-                            Response::HTTP_OK
+                            ['error' => "'".strval($_POST['reactionid']) . "' n'est pas une réaction déclarée sur la page '".strval($_POST['pagetag'])."'"],
+                            Response::HTTP_INTERNAL_SERVER_ERROR
                         );
                     } else {
                         return new ApiResponse(
