@@ -791,6 +791,9 @@ html[lang="pt"] [lang]:not([lang="pt"]){
   max-height: 2.5em;
   display: inline-block;
 }
+.mini-react > img.reaction-img {
+  max-width: 2.0em;
+}
 .mini-react .reaction-emoji,
 .mini-react .reaction-fa-icons {
   font-size: 1.5em;

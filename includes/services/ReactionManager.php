@@ -2,6 +2,8 @@
 
 namespace YesWiki\Core\Service;
 
+use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Wiki;
 
@@ -9,15 +11,23 @@ class ReactionManager
 {
     protected $wiki;
     protected $dbService;
+    protected $entryManager;
+    protected $formManager;
     protected $tripleStore;
 
     public const TYPE_URI = 'https://yeswiki.net/vocabulary/reaction';
 
     protected $cachedReactions;
 
-    public function __construct(Wiki $wiki, TripleStore $tripleStore)
-    {
+    public function __construct(
+        Wiki $wiki,
+        TripleStore $tripleStore,
+        EntryManager $entryManager,
+        formManager $formManager
+    ) {
         $this->wiki = $wiki;
+        $this->entryManager = $entryManager;
+        $this->formManager = $formManager;
         $this->tripleStore = $tripleStore;
     }
 
@@ -32,7 +42,7 @@ class ReactionManager
             if (!empty($user) && $user != $v['value']['user']) {
                 continue;
             }
-            if (!empty($ids) && !in_array($v['value']['idReaction'], $ids)) {
+            if (!empty($ids) && isset($v['value']['idReaction']) && isset($v['value']['date']) && !in_array($v['value']['idReaction'], $ids)) {
                 continue;
             }
             if (!empty($pageTag)) {
@@ -43,13 +53,31 @@ class ReactionManager
             if (empty($v['value']['date'])) {
                 $v['value']['date'] = _t('REACTION_DATE_UNKNOWN');
             }
-            // get title and reaction labels for choosen reaction id in choosen page page
-            if (!isset($res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters'])) {
-                $params = $this->getActionParametersFromPage($v['value']['pageTag'], $v['value']['idReaction']);
-                $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters'] = $params[$v['value']['idReaction']];
-                $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters']['pageTag'] = $v['value']['pageTag'];
+            if (!isset($v['value']['idReaction']) || !isset($v['value']['date'])) {
+                // old format form lms extension
+                // @todo remove this for ectoplasme
+                $idReaction = 'reactionField';
+                $resKey = "$idReaction|{$v['value']['pageTag']}";
+                if (!isset($res[$resKey]) || !isset($res[$resKey]['parameters'])) {
+                    $params = $this->getParametersFromField($v['value']['pageTag']);
+                    if (!isset($res[$resKey])) {
+                        $res[$resKey] = [];
+                    }
+                    $res[$resKey]['parameters'] = $params;
+                    $res[$resKey]['parameters']['pageTag'] = $v['value']['pageTag'];
+                }
+                $res[$resKey]['reactions'][]=array_merge([
+                    'idReaction' => $idReaction,
+                ], $v['value']);
+            } else {
+                // get title and reaction labels for choosen reaction id in choosen page page
+                if (!isset($res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters'])) {
+                    $params = $this->getActionParametersFromPage($v['value']['pageTag'], $v['value']['idReaction']);
+                    $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters'] = $params[$v['value']['idReaction']];
+                    $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters']['pageTag'] = $v['value']['pageTag'];
+                }
+                $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['reactions'][]=$v['value'];
             }
-            $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['reactions'][]=$v['value'];
         }
         ksort($res);
         return $res;
@@ -103,6 +131,52 @@ class ReactionManager
                 return $params;
             }
         }
+    }
+
+    /**
+     * to ensure backward compatibility with old reactions from lms extension
+     * @param string $tag
+     * @return array $params
+     */
+    protected function getParametersFromField(string $tag): array
+    {
+        $entry = $this->entryManager->getOne($tag);
+        $formId = $entry['id_typeannonce'];
+        $field = $this->formManager->findFieldFromNameOrPropertyName('reactions', $formId);
+        $labels = [];
+        $images = [];
+        if (!empty($field)) {
+            $data = $field->jsonSerialize();
+            $ids = $data['ids'];
+            $titles = $data['titles'];
+            foreach ($ids as $key => $id) {
+                $labels[$id] = $titles[$key] ?? $id;
+            }
+            $form = $this->formManager->getOne($formId);
+            $fieldTemplate = array_filter($form['template'], function ($fTemplate) {
+                return $fTemplate[0] == 'reactions';
+            });
+            $fieldTemplate = $fieldTemplate[array_key_first($fieldTemplate)];
+            $fImages = isset($fieldTemplate[4]) ? explode(',', $fieldTemplate[4]) : [];
+            foreach ($ids as $key => $id) {
+                if (!empty($fImages[$key])) {
+                    if (file_exists("files/{$fImages[$key]}")) {
+                        $images[$id] = "<img class=\"reaction-img\" alt=\"icon $id\" src=\"files/{$fImages[$key]}\"/>";
+                    }
+                } else {
+                    if (file_exists("tools/lms/presentation/images/mikone-$id.svg")) {
+                        $images[$id] = "<img class=\"reaction-img\" alt=\"icon $id\" src=\"tools/lms/presentation/images/mikone-$id.svg\"/>";
+                    }
+                }
+            }
+        }
+
+        return [
+            'images' => $images,
+            'labels' => $labels,
+            'pageTag' => $tag,
+            'title' => _t('REACTION_ON_ENTRY')
+        ];
     }
 
     public function getAllReactionInfos($idReaction, $page)
