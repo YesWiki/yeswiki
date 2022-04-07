@@ -360,6 +360,20 @@ return [
     // "AB_buttons_action_button_hideifnoaccess_label" => "Masquer si l'utilisateur n'a pas accès à la page liée",
     // "AB_buttons_action_button_nobtn_label" => "Afficher sous forme de lien",
 
+    // reactions
+    'AB_REACTION_GROUP_LABEL' => 'Reactions / Votes',
+    'AB_REACTION_TITLE_LABEL' => 'Title of the vote',
+    'AB_REACTION_LABEL' => 'Reactions and votes',
+    'AB_REACTION_DESC' => 'Allows logged-in users to react and vote',
+    'AB_REACTION_MAXREACTION_LABEL' => 'Number of possible reactions/votes',
+    'AB_REACTION_ADD_REACTION' => 'Add a reaction',
+    'AB_REACTION_NAME' => 'Reaction Name',
+    'AB_REACTION_ICON' => 'Icon',
+    'AB_USERREACTIONS_LABEL' => 'Reactions of the logged-in user',
+    'AB_USERREACTIONS_HINT' => 'Allows logged-in users to see their reactions',
+    'AB_ADMINREACTIONS_LABEL' => 'Reaction administration',
+    'AB_ADMINREACTIONS_HINT' => 'Allows administrators to manage reactions',
+
     // // syndication
     // "AB_syndication_main_label" => "Syndication / Flux RSS",
     // "AB_syndication_action_label" => "Syndication",
