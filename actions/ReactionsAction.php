@@ -10,6 +10,20 @@ class ReactionsAction extends YesWikiAction
     protected array $images;
     protected array $labels;
 
+    public function formatArguments($args)
+    {
+        return [
+            'labels' => !empty($args['labels'])
+                ? array_map('trim', explode(',', $args['labels']))
+                : [_t('REACTION_LIKE'), _t('REACTION_DISLIKE'), _t('REACTION_ANGRY'), _t('REACTION_SURPRISED'), _t('REACTION_THINKING')],
+            'images' => !empty($args['images'])
+                ? array_map('trim', explode(',', $args['images']))
+                : ['👍', '👎', '😡', '😮', '🤔'],
+            'title' => $args['title'] ?? "",
+            'maxreaction' => !empty($args['maxreaction']) ? $args['maxreaction'] : 1,
+        ];
+    }
+
     public function formatReactionItems($idreaction)
     {
         $reactionItems = [];
@@ -55,19 +69,11 @@ class ReactionsAction extends YesWikiAction
     }
     public function run()
     {
-        $labels = $this->wiki->getParameter('labels');
-        if (!empty($labels)) {
-            $this->labels = array_map('trim', explode(',', $labels));
-        } else { // default values
-            $this->labels = [_t('REACTION_LIKE'), _t('REACTION_DISLIKE'), _t('REACTION_ANGRY'), _t('REACTION_SURPRISED'), _t('REACTION_THINKING')];
-        }
-        $images = $this->wiki->getParameter('images');
-        if (!empty($images)) {
-            $this->images = array_map('trim', explode(',', $images));
-        } else { // default values
-            $this->images = ['👍', '👎', '😡', '😮', '🤔'];
-        }
-        $title = $this->wiki->getParameter('title');
+        $this->labels = $this->arguments['labels'];
+        $this->images = $this->arguments['images'];
+        $title = $this->arguments['title'];
+        $maxReaction = $this->arguments['maxreaction'];
+        
         if (empty($title)) {
             if (empty($GLOBALS['nbreactions'])) {
                 $GLOBALS['nbreactions'] = 0;
@@ -76,10 +82,6 @@ class ReactionsAction extends YesWikiAction
             $idreaction = 'reaction'.$GLOBALS['nbreactions'];
         } else {
             $idreaction = URLify::slug($title);
-        }
-        $maxReaction = $this->wiki->getParameter('maxreaction');
-        if (empty($maxReaction)) {
-            $maxReaction = 1;
         }
 
         $userReactions = null;
