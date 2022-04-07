@@ -745,6 +745,7 @@ function toastMessage(
             alert(message)
           }
         }
+        return false;
       }
     }
   });
