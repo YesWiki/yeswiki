@@ -25,3 +25,10 @@ actions:
             type: icon
       # labels
       # images
+  userreactions:
+    label: _t(AB_USERREACTIONS_LABEL)
+    hint: _t(AB_USERREACTIONS_HINT)
+  adminreactions:
+    label: _t(AB_ADMINREACTIONS_LABEL)
+    hint: _t(AB_ADMINREACTIONS_HINT)
+  

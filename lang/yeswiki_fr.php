@@ -653,4 +653,8 @@ return [
     'AB_REACTION_ADD_REACTION' => 'Ajouter une réaction',
     'AB_REACTION_NAME' => 'Nom de la réaction',
     'AB_REACTION_ICON' => 'Icone',
+    'AB_USERREACTIONS_LABEL' => 'Réactions de l\'utilisateur·ice connecté·e',
+    'AB_USERREACTIONS_HINT' => 'Permet aux utilisateur·ices connecté·es de voir leurs réactions',
+    'AB_ADMINREACTIONS_LABEL' => 'Administration des réactions',
+    'AB_ADMINREACTIONS_HINT' => 'Permet aux administrateur·ices de gérér les réactions',
 ];
