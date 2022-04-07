@@ -1,0 +1,13 @@
+<strong>Bazar</strong><br />
+ℹ️ Removing old geolocation from entries in {{ tablePrefix }}page table<br />
+{% if updatedEntries is empty %}
+✅ The table {{ tablePrefix }}page is already already updated with no old geolocacation data!<br />
+{% else %}
+✅ Done !<br />
+  <ul>
+    {% for entry in updatedEntries %}
+      <li><a href="{{ url({tag:entry}) }}" class="modalbox" data-size="modal-lg">{{ entry }}</a></li>
+    {% endfor %}
+  </ul>
+{% endif %}
+<hr>
