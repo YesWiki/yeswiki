@@ -69,7 +69,7 @@
 </div> {# --- End of public part --- #}
 
 {# --- Start reserved admins info --- #}
-{{ format('{{section visibility="@admins"}}')|raw }}
+{% if hasAcl("@admins",fiche.id_fiche) %}
 
   <div class="panel panel-warning">
     <div class="panel-heading  center">
@@ -81,7 +81,4 @@
     </div>
   </div>
 
-  {# replacing end action by raw html because not stable if entry's content contains section #}
-  {# {{ format('{{end elem="section"}}')|raw }} #}
-  </div>
-</section>
+{% endif %}
