@@ -693,18 +693,38 @@ function toastMessage(
           }
           return false;
         } else {
-          nb.text(nbInit - 1);
-          $(this).removeClass("user-reaction");
-          var nbReactionLeft = parseFloat(
-            $(this).parents(".reactions-container").find(".max-reaction").text()
-          );
-          $(this)
-            .parents(".reactions-container")
-            .find(".max-reaction")
-            .text(nbReactionLeft + 1);
+          let link = $(this);
           $.ajax({
             method: "DELETE",
-            url: url+'/'+data.reactionid+'/'+data.id+'/'+data.pagetag+'/'+data.username
+            url: url+'/'+data.reactionid+'/'+data.id+'/'+data.pagetag+'/'+data.username,
+            success: function (){
+              nb.text(nbInit - 1);
+              $(link).removeClass("user-reaction");
+              var nbReactionLeft = parseFloat(
+                $(link).parents(".reactions-container").find(".max-reaction").text()
+              );
+              $(link)
+                .parents(".reactions-container")
+                .find(".max-reaction")
+                .text(nbReactionLeft + 1);
+            },
+            error: function (jqXHR,textStatus, errorThrown){
+              let message = _t('REACTION_NOT_POSSIBLE_TO_DELETE_REACTION',{
+                error:`${textStatus} / ${errorThrown}${(jqXHR.responseJSON.error != undefined) ? ':'+jqXHR.responseJSON.error: ''}`
+              });
+              if (typeof toastMessage == "function") {
+                toastMessage(
+                  message,
+                  3000,
+                  "alert alert-danger"
+                );
+              } else {
+                alert(message);
+              }
+              if (jqXHR.responseJSON.exceptionMessage != undefined){
+                console.warn(jqXHR.responseJSON.exceptionMessage);
+              }
+            },
           })
           return false;
         }
@@ -712,25 +732,40 @@ function toastMessage(
         // on ajoute la reaction si le max n'est pas dépassé
         var nbReactionLeft = parseFloat( $(this).parents(".reactions-container").find(".max-reaction").text());
         if (nbReactionLeft>0) {
-          $(this)
-            .find(".reaction-numbers")
-            .text(nbReactionLeft - 1);
-            
-          nb.text(nbInit + 1);
-          $(this).addClass("user-reaction");
-          $(this)
-            .parents(".reactions-container")
-            .find(".max-reaction")
-            .text(nbReactionLeft -1);
+          let link = $(this);
           $.ajax({
             method: "POST",
             url: url,
             data: data,
-          }).done(function (data) {
-            if (data.state == "error") {
-              alert(data.errorMessage);
-              nb.text(nbInit);
-            }
+            success: function (){
+              $(link)
+                .find(".reaction-numbers")
+                .text(nbReactionLeft - 1);
+                
+              nb.text(nbInit + 1);
+              $(link).addClass("user-reaction");
+              $(link)
+                .parents(".reactions-container")
+                .find(".max-reaction")
+                .text(nbReactionLeft -1);
+            },
+            error: function (jqXHR,textStatus, errorThrown){
+              let message = _t('REACTION_NOT_POSSIBLE_TO_ADD_REACTION',{
+                TypeError:`${textStatus} / ${errorThrown}${(jqXHR.responseJSON.error != undefined) ? ':'+jqXHR.responseJSON.error: ''}`
+              });
+              if (typeof toastMessage == "function") {
+                toastMessage(
+                  message,
+                  3000,
+                  "alert alert-danger"
+                );
+              } else {
+                alert(message);
+              }
+              if (jqXHR.responseJSON.exceptionMessage != undefined){
+                console.warn(jqXHR.responseJSON.exceptionMessage);
+              }
+            },
           });
         } else {
           var message = 'Vous n\'avez plus de choix possibles, vous pouvez retirer un choix existant pour changer'
