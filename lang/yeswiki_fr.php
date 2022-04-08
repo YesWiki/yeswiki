@@ -639,8 +639,6 @@ return [
     'REACTION_DATE_UNKNOWN' => 'Date inconnue',
     'REACTION_DELETE' => 'Supprimer',
     'REACTION_DELETE_ALL' => 'Tout supprimer',
-    'REACTION_CONFIRM_DELETE' => 'Etes-vous sur de vouloir supprimer cette réaction ?',
-    'REACTION_CONFIRM_DELETE_ALL' => 'Etes-vous sur de vouloir supprimer toutes les réactions de ce vote ?',
     'REACTION_LOGIN_TO_SEE_YOUR_REACTION' => 'Se connecter pour voir vos réactions.',
     'REACTION_YOU_VOTED' => 'Vous avez voté',
     'REACTION_FOR_POLL' => 'au sondage',

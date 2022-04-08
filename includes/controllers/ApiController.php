@@ -408,7 +408,7 @@ class ApiController extends YesWikiController
             ];
         }
         return (empty($result))
-            ? deleteReaction($idreaction, $id, $page, $username)
+            ? $this->deleteReaction($idreaction, $id, $page, $username)
             : new ApiResponse($result, $code);
     }
 

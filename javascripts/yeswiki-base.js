@@ -671,6 +671,53 @@ function toastMessage(
       .find(".max-reaction")
       .text(nbReactionLeft - userReaction);
   });
+
+  // Reaction Management Helper
+  const reactionManagementHelper = {
+    renderAjaxError: function (translation,jqXHR,textStatus, errorThrown){
+      let message = _t(translation,{
+        error:`${textStatus} / ${errorThrown}${(jqXHR.responseJSON.error != undefined) ? ':'+jqXHR.responseJSON.error: ''}`
+      });
+      if (typeof toastMessage == "function") {
+        toastMessage(
+          message,
+          3000,
+          "alert alert-danger"
+        );
+      } else {
+        alert(message);
+      }
+      if (jqXHR.responseJSON.exceptionMessage != undefined){
+        console.warn(jqXHR.responseJSON.exceptionMessage);
+      }
+    },
+    deleteATag: function (elem){
+      let url = $(elem).attr("href");
+      $.ajax({
+        method: "GET",
+        url: url,
+        success: function (){
+          let table = $(elem).closest('table');
+          if (table.length != 0){
+            console.log(table.DataTable());
+            table.DataTable().row($(elem).closest('tr')).remove().draw();
+          }
+        },
+        error: function (jqXHR,textStatus, errorThrown){
+          reactionManagementHelper.renderAjaxError('REACTION_NOT_POSSIBLE_TO_DELETE_REACTION',jqXHR,textStatus, errorThrown);
+        },
+      });
+    },
+    deleteTags: function (headElem){
+      let table = $(headElem).closest('table');
+      if (table.length != 0){
+        $(table).find('.btn-delete-reaction:not(.btn-delete-all)').each(function (){
+          reactionManagementHelper.deleteATag($(this));
+        });
+      }
+    }
+  };
+
   // handler reaction click
   $(".link-reaction").click(function () {
     var url = $(this).attr("href");
@@ -710,21 +757,7 @@ function toastMessage(
                 .text(nbReactionLeft + 1);
             },
             error: function (jqXHR,textStatus, errorThrown){
-              let message = _t('REACTION_NOT_POSSIBLE_TO_DELETE_REACTION',{
-                error:`${textStatus} / ${errorThrown}${(jqXHR.responseJSON.error != undefined) ? ':'+jqXHR.responseJSON.error: ''}`
-              });
-              if (typeof toastMessage == "function") {
-                toastMessage(
-                  message,
-                  3000,
-                  "alert alert-danger"
-                );
-              } else {
-                alert(message);
-              }
-              if (jqXHR.responseJSON.exceptionMessage != undefined){
-                console.warn(jqXHR.responseJSON.exceptionMessage);
-              }
+              reactionManagementHelper.renderAjaxError('REACTION_NOT_POSSIBLE_TO_DELETE_REACTION',jqXHR,textStatus, errorThrown);
             },
           })
           return false;
@@ -751,21 +784,7 @@ function toastMessage(
                 .text(nbReactionLeft -1);
             },
             error: function (jqXHR,textStatus, errorThrown){
-              let message = _t('REACTION_NOT_POSSIBLE_TO_ADD_REACTION',{
-                TypeError:`${textStatus} / ${errorThrown}${(jqXHR.responseJSON.error != undefined) ? ':'+jqXHR.responseJSON.error: ''}`
-              });
-              if (typeof toastMessage == "function") {
-                toastMessage(
-                  message,
-                  3000,
-                  "alert alert-danger"
-                );
-              } else {
-                alert(message);
-              }
-              if (jqXHR.responseJSON.exceptionMessage != undefined){
-                console.warn(jqXHR.responseJSON.exceptionMessage);
-              }
+              reactionManagementHelper.renderAjaxError('REACTION_NOT_POSSIBLE_TO_ADD_REACTION',jqXHR,textStatus, errorThrown);
             },
           });
         } else {
@@ -781,6 +800,19 @@ function toastMessage(
           }
         }
         return false;
+      }
+    }
+  });
+
+  $('.btn-delete-reaction').on('click',function(e){
+    e.preventDefault();
+    if (!$(this).hasClass('btn-delete-all')){
+      if (confirm(_t('REACTION_CONFIRM_DELETE'))){
+        reactionManagementHelper.deleteATag($(this));
+      }
+    } else {
+      if (confirm(_t('REACTION_CONFIRM_DELETE_ALL'))){
+        reactionManagementHelper.deleteTags($(this));
       }
     }
   });

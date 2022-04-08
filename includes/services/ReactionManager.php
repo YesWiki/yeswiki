@@ -73,7 +73,7 @@ class ReactionManager
                 // get title and reaction labels for choosen reaction id in choosen page page
                 if (!isset($res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters'])) {
                     $params = $this->getActionParametersFromPage($v['value']['pageTag'], $v['value']['idReaction']);
-                    $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters'] = $params[$v['value']['idReaction']];
+                    $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters'] = $params[$v['value']['idReaction']] ?? [];
                     $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters']['pageTag'] = $v['value']['pageTag'];
                 }
                 $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['reactions'][]=$v['value'];
@@ -131,6 +131,7 @@ class ReactionManager
                 return $params;
             }
         }
+        return [];
     }
 
     /**

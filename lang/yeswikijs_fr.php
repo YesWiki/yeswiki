@@ -67,6 +67,9 @@ return [
     "YESWIKIMODAL_EDIT_MSG" => "Éditer la page",
     "EDIT_OUPS_MSG" => "En fait, je ne voulais pas double-cliquer...",
 
+    // reactions
     "REACTION_NOT_POSSIBLE_TO_ADD_REACTION" => "Impossible d'ajouter la réaction en raison de l'erreur suivante : {error}!",
     "REACTION_NOT_POSSIBLE_TO_DELETE_REACTION" => "Impossible de supprimer la réaction en raison de l'erreur suivante : {error}!",
+    'REACTION_CONFIRM_DELETE' => 'Etes-vous sur de vouloir supprimer cette réaction ?',
+    'REACTION_CONFIRM_DELETE_ALL' => 'Etes-vous sur de vouloir supprimer toutes les réactions de ce vote ?',
 ];
