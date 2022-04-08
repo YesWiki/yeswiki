@@ -17,8 +17,16 @@
     },
     "require": {
         "php": "^7.3 || ^8.0",
+        "ext-ctype": "*",
+        "ext-curl": "*",
+        "ext-filter": "*",
+        "ext-gd": "*",
+        "ext-iconv": "*",
         "ext-json": "*",
+        "ext-mbstring": "*",
         "ext-mysqli": "*",
+        "ext-pcre": "*",
+        "ext-zip": "^1.0",
         "caxy/php-htmldiff": "^0.1.13",
         "doctrine/annotations": "^1.11",
         "doctrine/cache": "^1.10",
@@ -31,24 +39,13 @@
         "symfony/http-foundation": "^5.1",
         "symfony/http-kernel": "^5.3.12",
         "symfony/routing": "^5.1",
+        "symfony/security-csrf": "^5.0",
         "symfony/yaml": "^5.1",
         "tamtamchik/simple-flash": "^2.0",
         "twig/twig": "^3.0",
-        "yeswiki/theme-margot": "^1.0",
-        "symfony/security-csrf": "^5.0"
+        "yeswiki/theme-margot": "^1.0"
     },
     "conflict": {
-        "psr/cache": ">=2.0",
-        "psr/container": ">=1.1.2",
-        "psr/log": ">=2.0",
-        "symfony/deprecation-contracts": ">=3.0",
-        "symfony/event-dispatcher-contracts": ">=3.0",
-        "symfony/error-handler": ">=6.0",
-        "symfony/event-dispatcher": ">=6.0",
-        "symfony/filesystem": ">=6.0",
-        "symfony/password-hasher": ">=6.0",
-        "symfony/security-core": ">=6.0",
-        "symfony/string": ">=6.0"
     },
     "extra": {
         "installer-types": ["yeswiki-extension", "yeswiki-theme"],
@@ -65,6 +62,12 @@
         "allow-plugins": {
             "composer/installers": true,
             "oomphinc/composer-installers-extender": true
-        }
+        },
+        "optimize-autoloader": true,
+        "platform": {
+            "php": "7.3.0"
+        },
+        "platform-check": true,
+        "sort-packages": true
     }
 }
