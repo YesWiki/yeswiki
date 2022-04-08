@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\Service\HtmlPurifierService;
 
 /**
  * Generate a title based on other values from the entry
