@@ -2,8 +2,10 @@
 
 namespace YesWiki\Core\Service;
 
+use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Wiki;
 
@@ -22,10 +24,12 @@ class ReactionManager
     public function __construct(
         Wiki $wiki,
         TripleStore $tripleStore,
+        DbService $dbService,
         EntryManager $entryManager,
         formManager $formManager
     ) {
         $this->wiki = $wiki;
+        $this->dbService = $dbService;
         $this->entryManager = $entryManager;
         $this->formManager = $formManager;
         $this->tripleStore = $tripleStore;
@@ -72,7 +76,7 @@ class ReactionManager
             } else {
                 // get title and reaction labels for choosen reaction id in choosen page page
                 if (!isset($res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters'])) {
-                    $params = $this->getActionParametersFromPage($v['value']['pageTag'], $v['value']['idReaction']);
+                    $params = $this->getActionParameters($v['value']['pageTag'], $v['value']['idReaction']);
                     $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters'] = $params[$v['value']['idReaction']] ?? [];
                     $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters']['pageTag'] = $v['value']['pageTag'];
                 }
@@ -83,11 +87,66 @@ class ReactionManager
         return $res;
     }
 
+    public function getActionParameters($page, $idReaction = null)
+    {
+        if ($this->entryManager->isEntry($page)) {
+            return $this->getActionParametersFromEntry($page, $idReaction = null);
+        } else {
+            return $this->getActionParametersFromPage($page, $idReaction = null);
+        }
+    }
+
     public function getActionParametersFromPage($page, $idReaction = null)
     {
         $p = $this->wiki->LoadPage($page);
-        if (preg_match_all('/{{reactions\s([^}]*)\s*}}/Ui', $p['body'], $matches)) {
-            $params = [];
+        if (!empty($p)) {
+            $params = $this->extractParamsFromActionDefinition($p['body']);
+            if (!empty($params)) {
+                if ($idReaction != null && isset($params[$idReaction])) {
+                    return [$idReaction => $params[$idReaction]];
+                } else {
+                    ksort($params);
+                    return $params;
+                }
+            }
+        }
+        return [];
+    }
+    
+    public function getActionParametersFromEntry($entryId, $idReaction = null)
+    {
+        $entry = $this->entryManager->getOne($entryId);
+        $params = [];
+        if (!empty($entry) && !empty($entry['id_typeannonce'])) {
+            $formId = $entry['id_typeannonce'];
+            $form = $this->formManager->getOne($formId);
+            if (!empty($form['prepared'])) {
+                foreach ($form['prepared'] as $field) {
+                    if ($field instanceof TextareaField && $field->getSyntax() == TextareaField::SYNTAX_WIKI && !empty($entry[$field->getPropertyName()])) {
+                        $params = array_merge($params, $this->extractParamsFromActionDefinition($entry[$field->getPropertyName()]));
+                    }
+                }
+                $fieldParams = $this->getParametersFromField($entryId);
+                if (!empty($fieldParams)) {
+                    $params = array_merge($params, [ 'reactionField' => $fieldParams]);
+                }
+            }
+            if (!empty($params)) {
+                if ($idReaction != null && isset($params[$idReaction])) {
+                    return [$idReaction => $params[$idReaction]];
+                } else {
+                    ksort($params);
+                    return $params;
+                }
+            }
+        }
+        return $params;
+    }
+
+    protected function extractParamsFromActionDefinition(string $text): array
+    {
+        $params = [];
+        if (preg_match_all('/{{reactions\s([^}]*)\s*}}/Ui', $text, $matches)) {
             foreach ($matches[0] as $id => $m) {
                 $paramText = $matches[1][$id];
                 if (preg_match_all('/([a-zA-Z0-9_]*)=\"(.*)\"/U', $paramText, $paramMatches)) {
@@ -124,14 +183,8 @@ class ReactionManager
                     }
                 }
             }
-            if ($idReaction != null && isset($params[$idReaction])) {
-                return [$idReaction => $params[$idReaction]];
-            } else {
-                ksort($params);
-                return $params;
-            }
         }
-        return [];
+        return $params;
     }
 
     /**
@@ -182,7 +235,7 @@ class ReactionManager
 
     public function getAllReactionInfos($idReaction, $page)
     {
-        return $this->getActionParametersFromPage($page)[$idReaction] ?? null;
+        return $this->getActionParameters($page)[$idReaction] ?? null;
     }
 
     public function addUserReaction($pageTag, $values)
@@ -218,6 +271,23 @@ class ReactionManager
             throw new \Exception('Unauthorized');
         }
 
-        $this->tripleStore->delete($pageTag, self::TYPE_URI, null, '', '', 'value LIKE \'%user":"'.$user.'","idReaction":"'.$reactionId.'","id":"'.$id.'"%\'');
+        if ($this->entryManager->isEntry($pageTag) && $reactionId == 'reactionField') {
+            $this->tripleStore->delete(
+                $pageTag,
+                self::TYPE_URI,
+                null,
+                '',
+                '',
+                "(`value` LIKE '%\"user\":\"{$this->dbService->escape($user)}\"%')".
+                "AND".
+                "(`value` LIKE '%\"id\":\"{$this->dbService->escape($id)}\"%')".
+                "AND".
+                "(`value` NOT LIKE '%\"idReaction\":\"%')".
+                "AND".
+                "(`value` NOT LIKE '%\"date\":\"%')"
+            );
+        } else {
+            $this->tripleStore->delete($pageTag, self::TYPE_URI, null, '', '', 'value LIKE \'%user":"'.$user.'","idReaction":"'.$reactionId.'","id":"'.$id.'"%\'');
+        }
     }
 }
