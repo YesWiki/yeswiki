@@ -353,6 +353,21 @@ if (!class_exists('attach')) {
             }
             return ($res ? $res : false);
         }
+
+        /**
+         * sanitize filename without special chars - spaces or accents
+         * @param string $filename
+         * @return string $sanitizedFilename
+         */
+        public function sanitizeFilename(string $filename): string
+        {
+            $search = array('@[éèêëÊË]@i','@[àâäÂÄ]@i','@[îïÎÏ]@i','@[ûùüÛÜ]@i','@[ôöÔÖ]@i','@[ç]@i','@[ ]@i','@[^a-zA-Z0-9_\.]@');
+            $replace = array('e','a','i','u','o','c','_','');
+            $sanitizedFilename = preg_replace($search, $replace, utf8_decode($filename));
+
+            return $sanitizedFilename;
+        }
+
         /**
          * Decode un nom long de fichier
          */

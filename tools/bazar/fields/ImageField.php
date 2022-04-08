@@ -104,7 +104,8 @@ class ImageField extends FileField
     {
         if (!empty($_POST['data-'.$this->propertyName]) && !empty($_POST['filename-'.$this->propertyName]) && !empty($entry['id_fiche'])) {
             $rawFileName = filter_var($_POST['filename-'.$this->propertyName], FILTER_SANITIZE_STRING);
-            $fileName = "{$this->getPropertyName()}_$rawFileName";
+            $sanitizedFilename = $this->sanitizeFilename($rawFileName);
+            $fileName = "{$this->getPropertyName()}_$sanitizedFilename";
             $filePath = $this->getFullFileName($fileName, $entry['id_fiche'], true);
             $fileName = basename($filePath);
 

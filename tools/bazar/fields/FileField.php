@@ -70,9 +70,9 @@ class FileField extends BazarField
 
         $params = $this->getService(ParameterBagInterface::class);
         if (!empty($_FILES[$this->propertyName]['name']) && !empty($entry['id_fiche'])) {
-            // Remove accents and spaces
             $rawFileName = filter_var($_FILES[$this->propertyName]['name'], FILTER_SANITIZE_STRING);
-            $fileName = "{$this->getPropertyName()}_$rawFileName";
+            $sanitizedFilename = $this->sanitizeFilename($rawFileName);
+            $fileName = "{$this->getPropertyName()}_$sanitizedFilename";
             $filePath = $this->getFullFileName($fileName, $entry['id_fiche'], true);
 
             $pathinfo = pathinfo($filePath);
@@ -207,6 +207,19 @@ class FileField extends BazarField
         $wiki->page = $previousPage;
 
         return $fullFileName;
+    }
+
+    /**
+     * sanitize filename
+     * @param string $filename
+     * @return string $sanitizedFilename
+     */
+    protected function sanitizeFilename(string $filename):string
+    {
+        $attach = $this->getAttach();
+        // Remove accents and spaces
+        $sanitizedFilename = $attach->sanitizeFilename($filename);
+        return $sanitizedFilename;
     }
 
     protected function getBasePath(): string

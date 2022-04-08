@@ -164,11 +164,6 @@ if (!class_exists('qqFileUploader')) {
                 }
             }*/
 
-            // on enleve les espaces et les accents pour le nom de fichier
-            $search = array('@[éèêëÊË]@i','@[àâäÂÄ]@i','@[îïÎÏ]@i','@[ûùüÛÜ]@i','@[ôöÔÖ]@i','@[ç]@i','@[ ]@i','@[^a-zA-Z0-9_]@');
-            $replace = array('e','a','i','u','o','c','_','');
-            $filename = preg_replace($search, $replace, utf8_decode($filename));
-
             if ($this->hasTempTag) {
                 $previousTag = $GLOBALS['wiki']->tag;
                 $previousPage = $GLOBALS['wiki']->page;
@@ -183,6 +178,7 @@ if (!class_exists('qqFileUploader')) {
             }
 
             $attach = new Attach($GLOBALS['wiki']);
+            $filename = $attach->sanitizeFilename($filename);
             $GLOBALS['wiki']->setParameter("desc", $filename);
             $GLOBALS['wiki']->setParameter("file", $filename . '.' . $ext);
 
