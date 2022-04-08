@@ -271,7 +271,7 @@ return [
     // actions/wantedpages.php
     'NO_PAGE_TO_CREATE' => 'No hi ha cap pàgina per crear',
 
-    // includes/controllers/CrsfController.php
+    // includes/controllers/CsrfController.php
     'NO_CSRF_TOKEN_ERROR' => 'Error de disseny del lloc: el formulari d\'enviament no contenia el testimoni '.
         'd\'identificació únic necessari per als mecanismes de seguretat interns.',
     'CSRF_TOKEN_FAIL_ERROR' => 'Pot ser que aquesta pàgina s\'hagi obert per segona vegada. '.

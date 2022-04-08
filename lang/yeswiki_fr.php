@@ -280,7 +280,7 @@ return [
     // actions/wantedpages.php
     'NO_PAGE_TO_CREATE' => 'Aucune page &agrave; cr&eacute;er',
 
-    // includes/controllers/CrsfController.php
+    // includes/controllers/CsrfController.php
     'NO_CSRF_TOKEN_ERROR' => 'Erreur de conception du site : Le formulaire de soumission ne contenait pas '.
         'le jeton d\'identification unique nécessaire aux mécanismes internes de sécurité.',
     'CSRF_TOKEN_FAIL_ERROR' => 'Cette page a peut-être été ouverte une seconde fois. '.

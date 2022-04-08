@@ -268,7 +268,7 @@ return [
     // actions/wantedpages.php
     'NO_PAGE_TO_CREATE' => 'Nenhuma página para criar',
 
-    // includes/controllers/CrsfController.php
+    // includes/controllers/CsrfController.php
     'NO_CSRF_TOKEN_ERROR' => 'Erro de conceção do local: O formulário de submissão não continha o símbolo de identificação '.
     'único necessário para os mecanismos de segurança interna.',
     'CSRF_TOKEN_FAIL_ERROR' => 'Esta página pode ter sido aberta uma segunda vez. '.

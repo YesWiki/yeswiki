@@ -272,7 +272,7 @@ return [
     // actions/wantedpages.php
     'NO_PAGE_TO_CREATE' => 'No page to create',
 
-    // includes/controllers/CrsfController.php
+    // includes/controllers/CsrfController.php
     'NO_CSRF_TOKEN_ERROR' => 'Site design error: The submission form did not contain the unique '.
         'identification token needed for internal security mechanisms.',
     'CSRF_TOKEN_FAIL_ERROR' => 'This page may have been opened a second time. '.

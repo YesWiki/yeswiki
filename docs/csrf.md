@@ -2,7 +2,7 @@
 
 ## What is it ?
 
-CRSF (Cross-site request forgery) is a method of web attack in one click described for example in [Wikipedia](https://en.wikipedia.org/wiki/Cross-site_request_forgery).
+CSRF (Cross-site request forgery) is a method of web attack in one click described for example in [Wikipedia](https://en.wikipedia.org/wiki/Cross-site_request_forgery).
 
 ## Usage
 
@@ -15,9 +15,9 @@ CRSF (Cross-site request forgery) is a method of web attack in one click describ
     ...
     $token = $this->wiki->services->get(CsrfTokenManager::class)->getToken('tokenId');
     ```
-    - in `twig` template, use `{{ crsfToken('tokenId') }}`. Example for a form (twig):
+    - in `twig` template, use `{{ csrfToken('tokenId') }}`. Example for a form (twig):
     ```
-    <input type="hiden" name="tokenNameInForm" value="{{ crsfToken('tokenId')|e('html_attr') }}">
+    <input type="hiden" name="tokenNameInForm" value="{{ crssrToken('tokenId')|e('html_attr') }}">
     ```
  2. when processing a request with the token, check if it is right inspiring of this example :
    ```
@@ -55,7 +55,7 @@ You can refresh a token to delete its previous value and replace it by a new one
 ```
 $token = $this->wiki->services->get(CsrfTokenManager::class)->refreshToken('tokenId');
 ```
- -  in `twig` template, use `{{ crsfToken({id:'tokenId',refresh:true}) }}`;
+ -  in `twig` template, use `{{ csrfToken({id:'tokenId',refresh:true}) }}`;
 
 Previous token will be considered as invalid after calling `refreshToken`.
 
