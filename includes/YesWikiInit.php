@@ -241,6 +241,7 @@ class Init
             'timezone' => 'GMT', // Only used if not set in wakka.config.php nor in php.ini
             'root_page' => 'PagePrincipale', // backup root_page if deleted from wakka.config.php
             'wakka_name' => '', // backup wakka_name if deleted from wakka.config.php
+            'htmlPurifierActivated' => false, // TODO ectoplasme set to true
         );
         unset($_rewrite_mode);
 

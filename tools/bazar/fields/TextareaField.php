@@ -7,6 +7,7 @@ use DateTimeZone;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\HtmlPurifierService;
 
 /**
  * @Field({"textelong"})
@@ -140,8 +141,12 @@ class TextareaField extends BazarField
         if ($this->syntax === self::SYNTAX_HTML) {
             $value = strip_tags($value, self::ACCEPTED_TAGS);
             $value = $this->sanitizeBase64Img($value, $entry);
+            $value = $this->sanitizeHTML($value);
         } elseif ($this->syntax === self::SYNTAX_WIKI) {
             $value = $this->sanitizeAttach($value, $entry);
+            $value = $this->sanitizeHTMLInWikiCode($value);
+        } else {
+            $value = $this->sanitizeHTML($value);
         }
 
         return [$this->propertyName => $value];
@@ -333,5 +338,24 @@ class TextareaField extends BazarField
     private function sanitizeFileName(string $inputString):string
     {
         return removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $inputString)));
+    }
+
+    /**
+     * sanitize html to prevent xss
+     */
+    private function sanitizeHTMLInWikiCode(string $value)
+    {
+        $preformattedDirtyHTML = str_replace('""', '@@', $value);
+        $preformattedCleanHTML = $this->getService(HtmlPurifierService::class)->cleanHTML($preformattedDirtyHTML);
+        $preformattedCleanHTML = str_replace('""', '\'\'', $preformattedCleanHTML);
+        return str_replace('@@', '""', $preformattedCleanHTML);
+    }
+
+    /**
+     * sanitize html to prevent xss
+     */
+    private function sanitizeHTML(string $value)
+    {
+        return $this->getService(HtmlPurifierService::class)->cleanHTML($value);
     }
 }
