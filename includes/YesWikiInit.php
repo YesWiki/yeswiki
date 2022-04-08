@@ -232,7 +232,7 @@ class Init
             'default_read_acl' => '*',
             'default_comment_acl' => 'comments-closed',
             'default_comment_acl_updated' => false,
-            'comments_activated' => false,
+            'comments_activated' => true,
             'preview_before_save' => 0,
             'allow_raw_html' => true,
             'disable_wiki_links' => false,
