@@ -10,11 +10,11 @@
 #}  
 
 {# import css file to customize #}
-{{ include_css('custom/styles/bazar/fiche-x.css') }}
+{{ include_css('custom/styles/bazar/entry-custom.css') }}
 
-{# change line .custom-entry.row in fiche-x.css to configure style #}
+{# change line .custom-entry.row in entry-custom.css to configure style #}
 <div class="row custom-entry">
-  {# class text-left works only of bootstrap is loaded otherwise create a class in fiche-x.css #}
+  {# class text-left works only of bootstrap is loaded otherwise create a class in entry-custom.css #}
   <div class="col-xs-6 col-md-6 text-left">
     <h2>{{ fiche.bf_titre }}</h2>
     {% if fiche.bf_description %}

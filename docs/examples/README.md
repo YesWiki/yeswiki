@@ -5,7 +5,7 @@ Customization is available by putting files into folder `custom/`.
 Here are example of files and folders to put into `custom/` with the same hierarchy from this folder.
 Example :
  - Copy `docs/examples/templates/custom/custom-entry-helper.twig` into `custom/templates/custom/custom-entry-helper.twig` then modify its content.
- - Copy `docs/examples/styles/bazar/entry-custom.css` into `custom/styles/bazar/entry-custom.css` then modify its content.
+ - Copy `docs/examples/styles/bazar/macro-custom.css` into `custom/styles/bazar/macro-custom.css` then modify its content.
 
 **Particularity**:
 For `fiche-x.twig` files, you must rename it with the corresponding form'id.

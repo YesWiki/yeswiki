@@ -16,7 +16,7 @@
 {# ----- #}
 
 {% macro displayFieldValueIfNotEmpty(entry,fieldName,text,form) %}
-  {{ include_css('custom/styles/bazar/entry-custom.css') }}
+  {{ include_css('custom/styles/bazar/macro-custom.css') }}
   {% if entry[fieldName] is not empty %}
     <div class="no-display-BAZ-label">
       <strong>{{ text }}</strong>
