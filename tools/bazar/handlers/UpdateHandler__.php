@@ -135,6 +135,10 @@ class UpdateHandler__ extends YesWikiHandler
         if (isset($data['owner'])) {
             unset($data['owner']);
         }
+        
+        if (isset($data['sendmail'])) {
+            unset($data['sendmail']);
+        }
 
         // on encode en utf-8 pour reussir a encoder en json
         if (YW_CHARSET != 'UTF-8') {
