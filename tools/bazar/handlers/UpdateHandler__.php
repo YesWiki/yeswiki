@@ -175,24 +175,23 @@ class UpdateHandler__ extends YesWikiHandler
         $value = $entry[$field->getPropertyName()] ?? $field->getDefault();
 
         // backward compatibility with former `carte_google` propertyName
+        $returnValue = [];
         if (empty($value)) {
             if (!empty($entry['carte_google'])) {
                 $value = explode('|', $entry['carte_google']);
-                if (empty($value[0]) || empty($value[1])) {
-                    $value = null;
-                } else {
-                    $value = [
+                if (!empty($value[0]) && !empty($value[1])) {
+                    $returnValue = [
                         $field->getLatitudeField() => $value[0],
                         $field->getLongitudeField()=> $value[1]
                     ];
                 }
             } elseif (!empty($entry[$field->getLatitudeField()]) && !empty($entry[$field->getLongitudeField()])) {
-                $value = [
+                $returnValue = [
                     $field->getLatitudeField() => $entry[$field->getLatitudeField()],
                     $field->getLongitudeField()=> $entry[$field->getLongitudeField()]
                 ];
             }
         }
-        return $value;
+        return $returnValue;
     }
 }
