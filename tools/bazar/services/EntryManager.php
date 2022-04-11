@@ -2,6 +2,8 @@
 
 namespace YesWiki\Bazar\Service;
 
+use DateInterval;
+use DateTime;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
@@ -575,10 +577,12 @@ class EntryManager
      * @param $data
      * @param false $semantic
      * @param false $replace If true, all the data will be provided (no merge with the previous data)
+     * @param bool $sendmail
+     * @param null|DateInterval $dateIntervalToAdd
      * @return array
      * @throws Exception
      */
-    public function update($tag, $data, $semantic = false, $replace = false)
+    public function update($tag, $data, $semantic = false, $replace = false, bool $sendmail = true, ?DateInterval $dateIntervalToAdd = null)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -610,19 +614,26 @@ class EntryManager
 
         $this->validate($data);
 
-        $data = $this->formatDataBeforeSave($data);
+        $data = $this->formatDataBeforeSave($data,$dateIntervalToAdd);
 
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
-        $this->pageManager->save($data['id_fiche'], json_encode($data), '');
+        $this->pageManager->save(
+            $data['id_fiche'], 
+            json_encode($data), 
+            '',
+            false,
+            (empty($dateIntervalToAdd) || empty($data['date_maj_fiche'])) ? null : new DateTime($data['date_maj_fiche']));
 
         // if sendmail has referenced email fields, send an email to their adresses
-        $this->sendMailToNotifiedEmails($sendmail, $data);
+        if ($sendmail){
+            $this->sendMailToNotifiedEmails($sendmail, $data);
 
-        if ($this->params->get('BAZ_ENVOI_MAIL_ADMIN')) {
-            // Envoi d'un mail aux administrateurs
-            $this->mailer->notifyAdmins($data, false);
+            if ($this->params->get('BAZ_ENVOI_MAIL_ADMIN')) {
+                // Envoi d'un mail aux administrateurs
+                $this->mailer->notifyAdmins($data, false);
+            }
         }
 
         return $data;
@@ -761,10 +772,11 @@ class EntryManager
      * prepare la requete d'insertion ou de MAJ de la fiche en supprimant
      * de la valeur POST les valeurs inadequates et en formattant les champs.
      * @param $data
+     * @param ?DateInterval $dateIntervalToAdd 
      * @return array
      * @throws Exception
      */
-    public function formatDataBeforeSave($data)
+    public function formatDataBeforeSave($data, ?DateInterval $dateIntervalToAdd = null)
     {
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
@@ -823,7 +835,12 @@ class EntryManager
             throw new Exception('$data[\'id_fiche\'] is empty !');
         }
 
-        $data['date_maj_fiche'] = date('Y-m-d H:i:s', time());
+        if (!empty($data['date_maj_fiche']) && !empty($dateIntervalToAdd) && $dateIntervalToAdd->invert == 0){
+            // only positives values
+            $data['date_maj_fiche'] = (new DateTime($data['date_maj_fiche']))->add($dateIntervalToAdd)->format('Y-m-d H:i:s');
+        } else {
+            $data['date_maj_fiche'] = date('Y-m-d H:i:s', time());
+        }
 
         // on enleve les champs hidden pas necessaires a la fiche
         unset($data['valider']);

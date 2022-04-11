@@ -2,6 +2,7 @@
 
 namespace YesWiki\Core\Service;
 
+use DateTime;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
@@ -247,9 +248,10 @@ class PageManager
      *            Indication si c'est un commentaire
      * @param boolean $bypass_acls
      *            Indication si on bypasse les droits d'ecriture
+     * @param null|DateTime $forcedDateTime
      * @return int Code d'erreur : 0 (succes), 1 (l'utilisateur n'a pas les droits)
      */
-    public function save($tag, $body, $comment_on = "", $bypass_acls = false)
+    public function save($tag, $body, $comment_on = "", $bypass_acls = false, ?DateTime $forcedDateTime = null)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -296,11 +298,26 @@ class PageManager
                 }
             }
 
+            // time
+            if (!empty($forcedDateTime)) {
+                $time = "'{$forcedDateTime->format("Y-m-d H:i:s")}'";
+            } else {
+                $time = "now()";
+            }
+
             // set all other revisions to old
             $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET latest = 'N' WHERE tag = '" . $this->dbService->escape($tag) . "'");
 
             // add new revision
-            $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . "SET tag = '" . $this->dbService->escape($tag) . "', " . ($comment_on ? "comment_on = '" . $this->dbService->escape($comment_on) . "', " : "") . "time = now(), " . "owner = '" . $this->dbService->escape($owner) . "', " . "user = '" . $this->dbService->escape($user) . "', " . "latest = 'Y', " . "body = '" . $this->dbService->escape(chop($body)) . "', " . "body_r = ''");
+            $this->dbService->query("INSERT INTO {$this->dbService->prefixTable('pages')} ".
+                "SET `tag` = '{$this->dbService->escape($tag)}', ".
+                ($comment_on ? "comment_on = '" . $this->dbService->escape($comment_on) . "', " : "").
+                "`time` = $time, ".
+                "`owner` = '{$this->dbService->escape($owner)}', ".
+                "`user` = '{$this->dbService->escape($user)}', " .
+                "`latest` = 'Y', " .
+                "`body` = '{$this->dbService->escape(chop($body))}', ".
+                "body_r = ''");
 
             unset($this->pageCache[$tag]);
 

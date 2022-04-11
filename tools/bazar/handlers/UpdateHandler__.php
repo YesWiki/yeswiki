@@ -3,7 +3,6 @@
 namespace YesWiki\Bazar;
 
 use DateInterval;
-use DateTime;
 use Throwable;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\EntryManager;
@@ -113,61 +112,14 @@ class UpdateHandler__ extends YesWikiHandler
             }
         }
         if ($updated) {
-            $entry['date_maj_fiche'] = empty($entry['date_maj_fiche'])
-                ? date('Y-m-d H:i:s', time())
-                : (new DateTime($entry['date_maj_fiche']))->add(new DateInterval("PT1S"))->format('Y-m-d H:i:s');
             $this->updateEntry($entry);
         }
         return $updated;
     }
 
     private function updateEntry($data)
-    {
-        if ($this->securityController->isWikiHibernated()) {
-            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
-        }
-
-        $this->entryManager->validate(array_merge($data, ['antispam' => 1]));
-
-        // on enleve les champs hidden pas necessaires a la fiche
-        unset($data['valider']);
-        unset($data['MAX_FILE_SIZE']);
-        unset($data['antispam']);
-        unset($data['mot_de_passe_wikini']);
-        unset($data['mot_de_passe_repete_wikini']);
-        unset($data['html_data']);
-        unset($data['url']);
-
-        // on nettoie le champ owner qui n'est pas sauvegardé (champ owner de la page)
-        if (isset($data['owner'])) {
-            unset($data['owner']);
-        }
-        
-        if (isset($data['sendmail'])) {
-            unset($data['sendmail']);
-        }
-
-        // on encode en utf-8 pour reussir a encoder en json
-        if (YW_CHARSET != 'UTF-8') {
-            $data = array_map('utf8_encode', $data);
-        }
-
-        $oldPage = $this->pageManager->getOne($data['id_fiche']);
-        $owner = $oldPage['owner'] ?? '';
-        $user = $oldPage['user'] ?? '';
-
-        // set all other revisions to old
-        $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET `latest` = 'N' WHERE `tag` = '{$this->dbService->escape($data['id_fiche'])}'");
-
-        // add new revision
-        $this->dbService->query("INSERT INTO {$this->dbService->prefixTable('pages')} SET ".
-            "`tag` = '{$this->dbService->escape($data['id_fiche'])}', ".
-            "`time` = '{$this->dbService->escape($data['date_maj_fiche'])}', ".
-            "`owner` = '{$this->dbService->escape($owner)}', ".
-            "`user` = '{$this->dbService->escape($user)}', ".
-            "`latest` = 'Y', ".
-            "`body` = '" . $this->dbService->escape(json_encode($data)) . "', ".
-            "`body_r` = ''");
+    {   
+        $this->entryManager->update($data['id_fiche'],array_merge($data, ['antispam' => 1]),false,false,false,new DateInterval("PT1S"));
     }
 
     private function getMapFieldValue($field, $entry)
