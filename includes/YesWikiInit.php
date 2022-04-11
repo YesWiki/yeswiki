@@ -361,6 +361,13 @@ class Init
         // Fixe la gestion des cookie sous les OS utilisant le \ comme separateur de chemin
         $CookiePath = str_replace('\\', '/', $CookiePath);
 
+        // retire wakka.php dans path
+        foreach (["wakka.php","index.php"] as $anchor) {
+            if (substr($CookiePath, -strlen($anchor)) == $anchor) {
+                $CookiePath = substr($CookiePath, 0, strlen($CookiePath)-strlen($anchor));
+            }
+        }
+
         // ajoute un '/' terminal sauf si on est a la racine web et si nécessaire
         if (substr($CookiePath, -1) !== '/') {
             $CookiePath .= '/';
