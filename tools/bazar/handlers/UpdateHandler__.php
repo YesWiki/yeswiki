@@ -4,6 +4,7 @@ namespace YesWiki\Bazar;
 
 use DateInterval;
 use DateTime;
+use Throwable;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
@@ -50,15 +51,21 @@ class UpdateHandler__ extends YesWikiHandler
     {
         $entries = $this->searchEntriesWithOnlyOldGeoloc();
         $updatedEntries = [];
+        $entriesWithErrors = [];
         if (!empty($entries)) {
             foreach ($entries as $entry) {
-                if ($this->extractOldCarto($entry)) {
-                    $updatedEntries[] = $entry['id_fiche'];
+                try {
+                    if ($this->extractOldCarto($entry)) {
+                        $updatedEntries[] = $entry['id_fiche'];
+                    }
+                } catch (Throwable $th) {
+                    $entriesWithErrors[$entry['id_fiche']] = $th->getMessage();
                 }
             }
         }
         return $this->render('@bazar/handlers/extract-old-geoloc-at-update.twig', [
             'updatedEntries' => $updatedEntries,
+            'entriesWithErrors' => $entriesWithErrors,
             'tablePrefix' => $this->params->get('table_prefix'),
         ]);
     }
