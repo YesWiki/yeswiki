@@ -615,7 +615,7 @@ class EntryManager
         $this->validate($data);
 
            
-        if (!$sendmail){
+        if (!$sendmail) {
             // prevent UserField to send emails
             // @todo find a better way to have this behaviour (see in UserField)
             if (!isset($GLOBALS['_BAZAR_'])) {
@@ -624,20 +624,21 @@ class EntryManager
             $GLOBALS['_BAZAR_']['provenance'] = 'import';
         }
 
-        $data = $this->formatDataBeforeSave($data,$dateIntervalToAdd);
+        $data = $this->formatDataBeforeSave($data, $dateIntervalToAdd);
 
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
         $this->pageManager->save(
-            $data['id_fiche'], 
-            json_encode($data), 
+            $data['id_fiche'],
+            json_encode($data),
             '',
             false,
-            (empty($dateIntervalToAdd) || empty($data['date_maj_fiche'])) ? null : new DateTime($data['date_maj_fiche']));
+            (empty($dateIntervalToAdd) || empty($data['date_maj_fiche'])) ? null : new DateTime($data['date_maj_fiche'])
+        );
 
         // if sendmail has referenced email fields, send an email to their adresses
-        if ($sendmail){
+        if ($sendmail) {
             $this->sendMailToNotifiedEmails($sendmail, $data);
 
             if ($this->params->get('BAZ_ENVOI_MAIL_ADMIN')) {
@@ -782,7 +783,7 @@ class EntryManager
      * prepare la requete d'insertion ou de MAJ de la fiche en supprimant
      * de la valeur POST les valeurs inadequates et en formattant les champs.
      * @param $data
-     * @param ?DateInterval $dateIntervalToAdd 
+     * @param ?DateInterval $dateIntervalToAdd
      * @return array
      * @throws Exception
      */
@@ -845,7 +846,7 @@ class EntryManager
             throw new Exception('$data[\'id_fiche\'] is empty !');
         }
 
-        if (!empty($data['date_maj_fiche']) && !empty($dateIntervalToAdd) && $dateIntervalToAdd->invert == 0){
+        if (!empty($data['date_maj_fiche']) && !empty($dateIntervalToAdd) && $dateIntervalToAdd->invert == 0) {
             // only positives values
             $data['date_maj_fiche'] = (new DateTime($data['date_maj_fiche']))->add($dateIntervalToAdd)->format('Y-m-d H:i:s');
         } else {

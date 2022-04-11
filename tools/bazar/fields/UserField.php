@@ -155,6 +155,9 @@ class UserField extends BazarField
                 && $entry['mot_de_passe_wikini'] !== $entry['mot_de_passe_repete_wikini']) {
                 throw new UserFieldException(_t('USER_PASSWORDS_NOT_IDENTICAL'));
             }
+            if (empty($entry['mot_de_passe_wikini'])) {
+                throw new UserFieldException(_t('BAZ_USER_FIELD_EMPTY_PASSWORD'));
+            }
 
             // check existence of user with same
             $userManager->create($wikiName, $entry[$this->emailField], $entry['mot_de_passe_wikini']);

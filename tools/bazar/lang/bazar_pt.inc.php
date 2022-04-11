@@ -363,6 +363,7 @@ return [
     // 'BAZ_USER_FIELD_ALREADY_CONNECTED_AUTOUPDATE' => 'Pour changer l\'adresse e-mail associée à ce compte, tapez-en une différente de "{email}".',
     // 'BAZ_USER_FIELD_FORCE_SAVE_ENTRY' => 'En tant qu\'admin, forcer la création de la fiche pour l\'e-mail donné (et ne créer un compte que s\'il n\'existe pas déjà)',
     // 'BAZ_USER_FIELD_LABEL' => 'Utilisateur',
+    // 'BAZ_USER_FIELD_EMPTY_PASSWORD' => 'Mot de passe vide !',
 
     // presentation/templates/annuaire_alphabetique.tpl.html
     // 'BAZ_MEMBERS' => 'membres',
