@@ -614,6 +614,16 @@ class EntryManager
 
         $this->validate($data);
 
+           
+        if (!$sendmail){
+            // prevent UserField to send emails
+            // @todo find a better way to have this behaviour (see in UserField)
+            if (!isset($GLOBALS['_BAZAR_'])) {
+                $GLOBALS['_BAZAR_'] = [];
+            }
+            $GLOBALS['_BAZAR_']['provenance'] = 'import';
+        }
+
         $data = $this->formatDataBeforeSave($data,$dateIntervalToAdd);
 
         // get the sendmail and remove it before saving

@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar;
 
 use DateInterval;
+use DateTime;
 use Throwable;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\EntryManager;
@@ -52,13 +53,20 @@ class UpdateHandler__ extends YesWikiHandler
         $updatedEntries = [];
         $entriesWithErrors = [];
         if (!empty($entries)) {
+            $startTime = new DateTime();
+            $startTimePlus20s = $startTime->add(new DateInterval("PT20S"));
             foreach ($entries as $entry) {
-                try {
-                    if ($this->extractOldCarto($entry)) {
-                        $updatedEntries[] = $entry['id_fiche'];
+                if ($startTimePlus20s->diff(new DateTime())->invert > 0){
+                    // current DateTime below startTimePlus30s
+                    try {
+                        if ($this->extractOldCarto($entry)) {
+                            $updatedEntries[] = $entry['id_fiche'];
+                        }
+                    } catch (Throwable $th) {
+                        $entriesWithErrors[$entry['id_fiche']] = $th->getMessage();
                     }
-                } catch (Throwable $th) {
-                    $entriesWithErrors[$entry['id_fiche']] = $th->getMessage();
+                } else {
+                    $entriesWithErrors[$entry['id_fiche']] = "Not enough time, reload /update to finish !";
                 }
             }
         }
