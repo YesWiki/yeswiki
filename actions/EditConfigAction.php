@@ -182,7 +182,7 @@ class EditConfigAction extends YesWikiAction
     {
         $keys = array_keys($array);
         foreach ($keys as $index => $key) {
-            if ($index != $key) {
+            if (strval($index) != strval($key)) {
                 return false;
             }
         }
