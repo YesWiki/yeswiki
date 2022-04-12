@@ -74,25 +74,30 @@ class UpdateHandler extends YesWikiHandler
 
             // add bn_only_one_entry bazar fields
             $formManager = $this->getService(FormManager::class);
-            if (!$formManager->isAvailableOnlyOneEntryOption()) {
-                $output .= "ℹ️ Adding 'bn_only_one_entry' to {$dbService->prefixTable("nature")}table.<br />";
+            if (method_exists(FormManager::class, 'isAvailableOnlyOneEntryOption')) {
+                if (!$formManager->isAvailableOnlyOneEntryOption()) {
+                    $output .= "ℹ️ Adding 'bn_only_one_entry' to {$dbService->prefixTable("nature")}table.<br />";
 
-                $this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} ADD COLUMN `bn_only_one_entry` enum('Y','N') NOT NULL DEFAULT 'N' COLLATE utf8mb4_unicode_ci;");
+                    $this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} ADD COLUMN `bn_only_one_entry` enum('Y','N') NOT NULL DEFAULT 'N' COLLATE utf8mb4_unicode_ci;");
 
-                $output .= '✅ Done !<br />';
+                    $output .= '✅ Done !<br />';
+                } else {
+                    $output .= "✅ The table {$dbService->prefixTable("nature")}is already up-to-date with 'bn_only_one_entry' field!<br />";
+                }
+
+                // add isAvailableOnlyOneEntryMessage bazar fields
+                if (!$formManager->isAvailableOnlyOneEntryMessage()) {
+                    $output .= "ℹ️ Adding 'bn_only_one_entry_message' to {$dbService->prefixTable("nature")}table.<br />";
+
+                    $this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} ADD COLUMN `bn_only_one_entry_message` text DEFAULT NULL COLLATE utf8mb4_unicode_ci;");
+
+                    $output .= '✅ Done !<br />';
+                } else {
+                    $output .= "✅ The table {$dbService->prefixTable("nature")}is already up-to-date with 'bn_only_one_entry_message' field!<br />";
+                }
             } else {
-                $output .= "✅ The table {$dbService->prefixTable("nature")}is already up-to-date with 'bn_only_one_entry' field!<br />";
-            }
-
-            // add isAvailableOnlyOneEntryMessage bazar fields
-            if (!$formManager->isAvailableOnlyOneEntryMessage()) {
-                $output .= "ℹ️ Adding 'bn_only_one_entry_message' to {$dbService->prefixTable("nature")}table.<br />";
-
-                $this->wiki->Query("ALTER TABLE {$dbService->prefixTable("nature")} ADD COLUMN `bn_only_one_entry_message` text DEFAULT NULL COLLATE utf8mb4_unicode_ci;");
-
-                $output .= '✅ Done !<br />';
-            } else {
-                $output .= "✅ The table {$dbService->prefixTable("nature")}is already up-to-date with 'bn_only_one_entry_message' field!<br />";
+                $output .= "<span class=\"label label-warning\">! Not possible to update {$dbService->prefixTable("nature")}table because FormManager is not up to date.</span><br />";
+                $output .= "<span class=\"label label-warning\">Disconnect then connect a new time and force a new install of yeswiki to resolve this.</span><br />";
             }
 
             // update comment acls
