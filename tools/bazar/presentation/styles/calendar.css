@@ -34,6 +34,10 @@ a.ical-export-button {
   color: var(--neutral-light-color,#e6e6e6);
 }
 
+.fc-h-event .fc-event-time {
+  overflow: initial;
+}
+
 @media (max-width:800px){
   .fc-prev-button.fc-button .fc-icon,
   .fc-next-button.fc-button .fc-icon{

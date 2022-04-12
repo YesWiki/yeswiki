@@ -211,6 +211,16 @@ Vue.component('BazarCalendar', {
         initialView: initialView,
         locale: wiki.locale,
         navLinks : true, 
+        views: {
+          dayGridMonth: { // name of view
+            eventTimeFormat: {
+              hour: '2-digit',
+              minute: '2-digit',
+              meridiem: false
+            }
+            // other view-specific options here
+          }
+        },
         weekNumbers: true 
       }
     },
