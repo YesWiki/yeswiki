@@ -124,9 +124,11 @@ class CalcField extends BazarField
                 $this->formManager = $this->getService(FormManager::class);
             }
             $field = $this->formManager->findFieldFromNameOrPropertyName($name, $entry['id_typeannonce']);
-            $propertyName = $field->getPropertyName();
-            if (!empty($propertyName) && isset($entry[$propertyName]) && is_scalar($entry[$propertyName])) {
-                return $propertyName;
+            if (!empty($field)) {
+                $propertyName = $field->getPropertyName();
+                if (!empty($propertyName) && isset($entry[$propertyName]) && is_scalar($entry[$propertyName])) {
+                    return $propertyName;
+                }
             }
         }
         return null;
