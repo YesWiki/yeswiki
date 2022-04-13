@@ -242,6 +242,7 @@ class Init
             'root_page' => 'PagePrincipale', // backup root_page if deleted from wakka.config.php
             'wakka_name' => '', // backup wakka_name if deleted from wakka.config.php
             'htmlPurifierActivated' => false, // TODO ectoplasme set to true
+            'favorites_activated' => false,
         );
         unset($_rewrite_mode);
 
