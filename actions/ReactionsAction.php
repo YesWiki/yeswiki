@@ -100,7 +100,7 @@ class ReactionsAction extends YesWikiAction
 
         $items = $this->formatReactionItems($idreaction);
 
-        $output .= $this->render("@templates/reactions.twig", [
+        $output .= $this->render("@core/reactions.twig", [
             'reactionId' => $idreaction,
             'title' => empty($title) ? _t('REACTION_SHARE_YOUR_REACTION') : $title,
             'connected' => $user,
