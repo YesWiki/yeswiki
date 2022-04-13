@@ -100,7 +100,7 @@ class CommentService
                     }
                     if ($this->wiki->UserIsOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
                         $com['linkeditcomment'] = $this->wiki->href('edit', $comment['tag']);
-                        $com['linkdeletecomment'] = $this->wiki->href('comments/'.$comment['tag'], 'api');
+                        $com['linkdeletecomment'] = $this->wiki->href("comments/{$comment['tag']}/delete", 'api');
                         //$this->wiki->href('deletepage', $comment['tag']);
                     }
                     $com['reponses'] = $this->getCommentList($comment['tag'], false);
