@@ -24,7 +24,7 @@ if ($this->HasAccess("write") && $this->method != "revisions") {
     // on choisit le template utilisé
     $template = $this->GetParameter('template');
     if (empty($template)) {
-        $template = 'barreredaction_basic.tpl.html';
+        $template = 'barreredaction_basic.twig';
     }
 
     // on peut ajouter des classes, la classe par défaut est .footer
@@ -66,9 +66,9 @@ if ($this->HasAccess("write") && $this->method != "revisions") {
             $barreredactionelements['wikigroups'] = $this->GetGroupsList();
             if ($this->services->get(ParameterBagInterface::class)->get('comments_activated')) {
                 if ($hasAccessComment && $hasAccessComment !== 'comments-closed') {
-                    $barreredactionelements['linkclosecomments'] = $this->href("claim", $page, 'action=closecomments');
+                    $barreredactionelements['linkclosecomments'] = $this->href("claim", $page, ['action' => 'closecomments'], false);
                 } else {
-                    $barreredactionelements['linkopencomments'] = $this->href("claim", $page, 'action=opencomments');
+                    $barreredactionelements['linkopencomments'] = $this->href("claim", $page, ['action' => 'opencomments'], false);
                 }
             }
         } elseif (!$owner && $this->GetUser()) {
