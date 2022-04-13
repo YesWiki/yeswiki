@@ -648,7 +648,7 @@ function toastMessage(
         url: link.attr('href'),
         dataType: 'json',
         success: function (e) {
-          link.parents('.yw-comment').slideUp(250, function() {
+          link.closest('.yw-comment').slideUp(250, function() {
             $(this).remove();
           });
           toastMessage(e.success, 3000, 'alert alert-success');
