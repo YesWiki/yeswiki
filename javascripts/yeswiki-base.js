@@ -539,6 +539,7 @@ function toastMessage(
       success: function (e) {
         form.trigger("reset");
         toastMessage(e.success, 3000, "alert alert-success");
+        form.parents('.yw-comment').find('.comment-links').removeClass('hide');
         // we place the new comment in different places if its an answer, a modification or a new comment
         if (form.hasClass('comment-modify')) {
           form.closest('.yw-comment').html($('<div>').html(e.html).find('.yw-comment').html())
@@ -579,7 +580,7 @@ function toastMessage(
     formAnswer.find('label').remove()
     formAnswer.find('[name="pagetag"]').val(com.data('tag'))
 		formAnswer.find('form').append('<button class="btn-cancel-comment btn btn-sm btn-danger">'+_t('CANCEL')+'</button>')
-    com.find('.comment-links:first').addClass('hide')
+    com.parents('.yw-comment').find('.comment-links').addClass('hide')
 	
     // hide comment form while another comment form is open
     $('#post-comment').addClass('hide') 
@@ -612,7 +613,7 @@ function toastMessage(
     formcom.find('[name="pagetag"]').val(com.data('commenton'))
     formcom.find('.btn-post-comment').text(_t('MODIFY'))
 		formcom.find('form').append('<button class="btn-cancel-comment btn btn-sm btn-danger">'+_t('CANCEL')+'</button>')
-    com.find('.comment-links:first').addClass('hide')
+    com.parents('.yw-comment').find('.comment-links').addClass('hide');
 	
     // hide comment form while another comment form is open
     $('#post-comment').addClass('hide') 
@@ -628,7 +629,7 @@ function toastMessage(
 
     // restore html comment and links
     com.find('.comment-html:first').removeClass('hide')
-    com.find('.comment-links:first').removeClass('hide')
+    com.parents('.yw-comment').find('.comment-links').removeClass('hide');
     // remove modify comment form
     $('#form-comment-'+com.data('tag')).remove()
     
