@@ -14,32 +14,15 @@ Vue.component('BazarCalendar', {
   },
   methods: {
     addEntry: function (entry){
-      let entryId = entry.id_fiche;
-      let existingEvent = this.getEventById(entryId);
-      if (!existingEvent && typeof entry.bf_date_debut_evenement != "undefined") {
-        let backgroundColor = (entry.color == undefined || entry.color.length == 0) ? "": entry.color;
-        let isExternal = this.$root.isExternalUrl(entry);
-        let isIframe = isExternal || this.params.entrydisplay == 'modaliframe';
-        let newEvent = {
-          id: entryId,
-          title: entry.bf_titre,
-          start: entry.bf_date_debut_evenement,
-          end: this.formatEndDate(entry),
-          url: entry.url + ((this.isModalDisplay() && isIframe) ? '/iframe':''),
-          allDay: this.isAllDayDate(entry.bf_date_debut_evenement),
-          className: "bazar-entry"+(this.isModalDisplay() ?  " modalbox":"")+(isExternal ?  " new-window":""),
-          backgroundColor: backgroundColor,
-          borderColor: backgroundColor,
-          extendedProps: {
-            icon: (entry.icon == undefined || entry.icon.length == 0) ? "": `<i class="${entry.icon}">&nbsp;</i>`,
-            htmlattributes: ((entry.html_data != undefined) ? entry.html_data : '')+
-              (isIframe ? ' data-iframe="1"':'')+
-              ' data-size="modal-lg"',
-            isExternal: isExternal,
-            isIframe:isIframe
-          }
-        }
+      let newEvent = this.prepareEvent(entry);
+      if (Object.keys(newEvent).length > 0){
         this.calendar.addEvent(newEvent);
+      }
+    },
+    addEntries: function (entries){
+      let newEvents = entries.map(entry => this.prepareEvent(entry));
+      if (Array.isArray(newEvents) && newEvents.length > 0){
+        this.calendar.addEventSource({events:newEvents});
       }
     },
     arraysEqual(a, b) {
@@ -71,13 +54,16 @@ Vue.component('BazarCalendar', {
       // Fixs bug, when no time is specified, is the event is on multiple day, calendJs show it like
       // it end one day earlier
       let startDate = entry.bf_date_debut_evenement;
-      let endDate = (entry.bf_date_fin_evenement == undefined) ? null : entry.bf_date_fin_evenement;
-      try {
-        endDate = new Date(endDate);
-      } catch (error) {
-        endDate = null;
+      let endDate = null;
+      if (entry.bf_date_fin_evenement != undefined){
+        endDate = entry.bf_date_fin_evenement;
+        try {
+          endDate = new Date(endDate);
+        } catch (error) {
+          endDate = null;
+        }
       }
-      if (endDate == null || endDate == "Invalid Date"){
+      if (entry.bf_date_fin_evenement == undefined || endDate == null || endDate == "Invalid Date"){
         if (startDate.length <= 10){
           return startDate;
         }
@@ -123,6 +109,36 @@ Vue.component('BazarCalendar', {
         this.calendar.render();
         this.mounted = true;
       }
+    },
+    prepareEvent: function (entry){
+      let entryId = entry.id_fiche;
+      let existingEvent = this.getEventById(entryId);
+      if (!existingEvent && typeof entry.bf_date_debut_evenement != "undefined") {
+        let backgroundColor = (entry.color == undefined || entry.color.length == 0) ? "": entry.color;
+        let isExternal = this.$root.isExternalUrl(entry);
+        let isIframe = isExternal || this.params.entrydisplay == 'modaliframe';
+        let newEvent = {
+          id: entryId,
+          title: entry.bf_titre,
+          start: entry.bf_date_debut_evenement,
+          end: this.formatEndDate(entry),
+          url: entry.url + ((this.isModalDisplay() && isIframe) ? '/iframe':''),
+          allDay: this.isAllDayDate(entry.bf_date_debut_evenement),
+          className: "bazar-entry"+(this.isModalDisplay() ?  " modalbox":"")+(isExternal ?  " new-window":""),
+          backgroundColor: backgroundColor,
+          borderColor: backgroundColor,
+          extendedProps: {
+            icon: (entry.icon == undefined || entry.icon.length == 0) ? "": `<i class="${entry.icon}">&nbsp;</i>`,
+            htmlattributes: ((entry.html_data != undefined) ? entry.html_data : '')+
+              (isIframe ? ' data-iframe="1"':'')+
+              ' data-size="modal-lg"',
+            isExternal: isExternal,
+            isIframe:isIframe
+          }
+        }
+        return newEvent;
+      }
+      return {};
     },
     removeEntry: function (entry){
       let entryId = entry.id_fiche;
@@ -247,8 +263,8 @@ Vue.component('BazarCalendar', {
       if (!this.arraysEqual(newIds, oldIds)) {
         let entries = this.entries;
         this.$nextTick(function() {
-            oldVal.forEach(entry => this.removeEntry(entry));
-            entries.forEach(entry => this.addEntry(entry));
+            this.calendar.getEventSources().forEach(source => source.remove());
+            this.addEntries(entries);
           }
         );
       }
