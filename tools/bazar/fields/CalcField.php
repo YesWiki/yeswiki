@@ -64,7 +64,7 @@ class CalcField extends BazarField
                 if (!empty($matches[1][$key])) {
                     // operators or parenthesis
                     $formula .= $matches[1][$key];
-                } elseif (!empty($matches[2][$key])) {
+                } elseif (!empty($matches[2][$key]) || in_array($matches[2][$key], [0,"0"], true)) {
                     // number
                     $formula .= floatval($matches[2][$key]);
                 } elseif (!empty($matches[3][$key])) {
