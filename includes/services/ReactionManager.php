@@ -289,7 +289,7 @@ class ReactionManager
         }
 
         $connectedUser = $this->wiki->getUser();
-        if (!$this->wiki->UserIsAdmin() || empty($connectedUser) || $connectedUser['name'] !== $user) {
+        if (!$this->wiki->UserIsAdmin() && (empty($connectedUser) || $connectedUser['name'] !== $user)) {
             throw new \Exception('Unauthorized');
         }
 
