@@ -155,13 +155,19 @@ class ReactionManager
                 $paramText = $matches[1][$id];
                 if (preg_match_all('/([a-zA-Z0-9_]*)=\"(.*)\"|\s*/U', $paramText, $paramMatches)) {
                     $k = array_search('title', $paramMatches[1]);
-                    $title = ($k === false)
-                        ? _t(ReactionManager::DEFAULT_TITLE_T)
-                        : $paramMatches[2][$k];
+                    if ($k === false) {
+                        $paramMatches[1][] = 'title';
+                        $k = array_search('title', $paramMatches[1]);
+                        $paramMatches[2][$k] = _t(ReactionManager::DEFAULT_TITLE_T);
+                    }
+                    $title = $paramMatches[2][$k];
                     $k = array_search('labels', $paramMatches[1]);
-                    $labels = ($k === false)
-                        ? array_map('_t', ReactionManager::DEFAULT_LABELS_T)
-                        : array_map('trim', explode(',', $paramMatches[2][$k]));
+                    if ($k === false) {
+                        $paramMatches[1][] = 'labels';
+                        $k = array_search('labels', $paramMatches[1]);
+                        $paramMatches[2][$k] = implode(',', array_map('_t', ReactionManager::DEFAULT_LABELS_T));
+                    }
+                    $labels = array_map('trim', explode(',', $paramMatches[2][$k]));
                     $labelsWithId = [];
                     foreach ($labels as $lab) {
                         $id = \URLify::slug($lab); //generate the id from the label
@@ -170,9 +176,12 @@ class ReactionManager
                     $paramMatches[2][$k] = $labelsWithId;
                     $ids = array_keys($labelsWithId);
                     $k = array_search('images', $paramMatches[1]);
-                    $images = ($k === false)
-                        ? ReactionManager::DEFAULT_IMAGES
-                        : array_map('trim', explode(',', $paramMatches[2][$k]));
+                    if ($k === false) {
+                        $paramMatches[1][] = 'images';
+                        $k = array_search('images', $paramMatches[1]);
+                        $paramMatches[2][$k] = implode(',', ReactionManager::DEFAULT_IMAGES);
+                    }
+                    $images = array_map('trim', explode(',', $paramMatches[2][$k]));
                     $htmlImages = [];
                     foreach ($images as $i => $img) {
                         $image = '';
