@@ -7,8 +7,8 @@ use YesWiki\Core\Service\ReactionManager;
 
 class ReactionsAction extends YesWikiAction
 {
-    protected array $images;
-    protected array $labels;
+    protected $images;
+    protected $labels;
 
     public function formatArguments($args)
     {
