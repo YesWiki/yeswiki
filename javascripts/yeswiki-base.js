@@ -743,8 +743,8 @@ function toastMessage(
         } else {
           let link = $(this);
           $.ajax({
-            method: "DELETE",
-            url: url+'/'+data.reactionid+'/'+data.id+'/'+data.pagetag+'/'+data.username,
+            method: "GET",
+            url: `${url}/${data.reactionid}/${data.id}/${data.pagetag}/${data.username}/delete`,
             success: function (){
               nb.text(nbInit - 1);
               $(link).removeClass("user-reaction");

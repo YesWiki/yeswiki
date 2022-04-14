@@ -390,26 +390,7 @@ class ApiController extends YesWikiController
      */
     public function deleteReactionByGetMethod($idreaction, $id, $page, $username)
     {
-        $result = [];
-        $code = Response::HTTP_INTERNAL_SERVER_ERROR;
-        try {
-            $csrfTokenController = $this->wiki->services->get(CsrfTokenController::class);
-            $csrfTokenController->checkToken("api/reactions/$idreaction/$id/$page/$username/delete", 'GET', 'csrfToken');
-        } catch (Throwable $th) {
-            $code = ($th instanceof TokenNotFoundException) ? Response::HTTP_UNAUTHORIZED : Response::HTTP_INTERNAL_SERVER_ERROR;
-            $result = [
-                'notDeleted' => [
-                    'idReaction'=>$idreaction,
-                    'id'=>$id,
-                    'page' => $page,
-                    'user'=> $username
-                ],
-                'error' => $th->getMessage()
-            ];
-        }
-        return (empty($result))
-            ? $this->deleteReaction($idreaction, $id, $page, $username)
-            : new ApiResponse($result, $code);
+        return $this->deleteReaction($idreaction, $id, $page, $username);
     }
 
     /**
