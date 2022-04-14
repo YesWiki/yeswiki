@@ -159,6 +159,7 @@ class ReactionManager
                         $paramMatches[1][] = 'title';
                         $k = array_search('title', $paramMatches[1]);
                         $paramMatches[2][$k] = _t(ReactionManager::DEFAULT_TITLE_T);
+                        $paramMatches[0][] = "title=\"{$paramMatches[2][$k]}\"";
                     }
                     $title = $paramMatches[2][$k];
                     $k = array_search('labels', $paramMatches[1]);
@@ -166,6 +167,7 @@ class ReactionManager
                         $paramMatches[1][] = 'labels';
                         $k = array_search('labels', $paramMatches[1]);
                         $paramMatches[2][$k] = implode(',', array_map('_t', ReactionManager::DEFAULT_LABELS_T));
+                        $paramMatches[0][] = "labels=\"{$paramMatches[2][$k]}\"";
                     }
                     $labels = array_map('trim', explode(',', $paramMatches[2][$k]));
                     $labelsWithId = [];
@@ -180,6 +182,7 @@ class ReactionManager
                         $paramMatches[1][] = 'images';
                         $k = array_search('images', $paramMatches[1]);
                         $paramMatches[2][$k] = implode(',', ReactionManager::DEFAULT_IMAGES);
+                        $paramMatches[0][] = "images=\"{$paramMatches[2][$k]}\"";
                     }
                     $images = array_map('trim', explode(',', $paramMatches[2][$k]));
                     $htmlImages = [];
