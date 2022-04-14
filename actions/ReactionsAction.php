@@ -15,12 +15,12 @@ class ReactionsAction extends YesWikiAction
         return [
             'labels' => !empty($args['labels'])
                 ? array_map('trim', explode(',', $args['labels']))
-                : [_t('REACTION_LIKE'), _t('REACTION_DISLIKE'), _t('REACTION_ANGRY'), _t('REACTION_SURPRISED'), _t('REACTION_THINKING')],
+                : array_map('_t', ReactionManager::DEFAULT_LABELS_T),
             'images' => !empty($args['images'])
                 ? array_map('trim', explode(',', $args['images']))
-                : ['👍', '👎', '😡', '😮', '🤔'],
-            'title' => $args['title'] ?? "",
-            'maxreaction' => !empty($args['maxreaction']) ? $args['maxreaction'] : 1,
+                : ReactionManager::DEFAULT_IMAGES,
+            'title' => $args['title'] ?? _t(ReactionManager::DEFAULT_TITLE_T),
+            'maxreaction' => !empty($args['maxreaction']) ? $args['maxreaction'] : ReactionManager::DEFAULT_MAX_REACTIONS,
         ];
     }
 
@@ -75,6 +75,10 @@ class ReactionsAction extends YesWikiAction
         $maxReaction = $this->arguments['maxreaction'];
         
         if (empty($title)) {
+            return $this->render("@templates/alert-message.twig", [
+                'type' => 'danger',
+                'message' => _t('REACTION_TITLE_PARAM_NEEDED')
+            ]);
             if (empty($GLOBALS['nbreactions'])) {
                 $GLOBALS['nbreactions'] = 0;
             }

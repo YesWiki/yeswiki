@@ -592,4 +592,32 @@ return [
 
     // YesWiki
     // 'UNKNOWN_INTERWIKI' => 'interwiki inconnu',
+
+    // reactions
+    // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',
+    // 'REACTION_LIKE' => 'J\'approuve',
+    // 'REACTION_DISLIKE' => 'Je n\'approuve pas',
+    // 'REACTION_ANGRY' => 'Faché·e',
+    // 'REACTION_SURPRISED' => 'Surpris·e',
+    // 'REACTION_THINKING' => 'Dubitatif·ve',
+    // 'REACTION_LOGIN_TO_REACT' => 'Pour réagir, identifiez-vous!',
+    // 'REACTION_SHARE_YOUR_REACTION' => 'Partagez votre réaction à propos de ce contenu',
+    // 'REACTION_TO_ALLOW_REACTION' => 'Pour vous permettre de réagir',
+    // 'REACTION_PLEASE_LOGIN' => 's\'identifier',
+    // 'REACTION_NB_REACTIONS_LEFT' => 'choix possible(s)',
+    // 'REACTION_ADMINISTER_REACTIONS' => 'Administrer les réactions',
+    // 'REACTION_CONNECT_AS_ADMIN' => 'Veuillez vous connecter en tant qu\'admin pour administrer les réactions.',
+    // 'REACTION_USER' => 'Utilisateur·ice',
+    // 'REACTION_YOUR_REACTIONS' => 'Vos réactions',
+    // 'REACTION_VOTE' => 'Vote',
+    // 'REACTION_DATE' => 'Date',
+    // 'REACTION_DATE_UNKNOWN' => 'Date inconnue',
+    // 'REACTION_DELETE' => 'Supprimer',
+    // 'REACTION_DELETE_ALL' => 'Tout supprimer',
+    // 'REACTION_LOGIN_TO_SEE_YOUR_REACTION' => 'Se connecter pour voir vos réactions.',
+    // 'REACTION_YOU_VOTED' => 'Vous avez voté',
+    // 'REACTION_FOR_POLL' => 'au sondage',
+    // 'REACTION_FROM_PAGE' => 'de la page',
+    // 'REACTION_ON_ENTRY' => 'Réaction sur une fiche',
+    // 'REACTION_TITLE_PARAM_NEEDED' => 'Le paramètre \'titre\' est obligatoire',
 ];

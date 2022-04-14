@@ -18,6 +18,10 @@ class ReactionManager
     protected $tripleStore;
 
     public const TYPE_URI = 'https://yeswiki.net/vocabulary/reaction';
+    public const DEFAULT_TITLE_T = 'REACTION_SHARE_YOUR_REACTION';
+    public const DEFAULT_LABELS_T = ['REACTION_LIKE', 'REACTION_DISLIKE', 'REACTION_ANGRY', 'REACTION_SURPRISED', 'REACTION_THINKING'];
+    public const DEFAULT_IMAGES = ['👍', '👎', '😡', '😮', '🤔'];
+    public const DEFAULT_MAX_REACTIONS = 1;
 
     protected $cachedReactions;
 
@@ -146,14 +150,18 @@ class ReactionManager
     protected function extractParamsFromActionDefinition(string $text): array
     {
         $params = [];
-        if (preg_match_all('/{{reactions\s([^}]*)\s*}}/Ui', $text, $matches)) {
+        if (preg_match_all('/{{reactions(?:\s([^}]*))?\s*}}/Ui', $text, $matches)) {
             foreach ($matches[0] as $id => $m) {
                 $paramText = $matches[1][$id];
-                if (preg_match_all('/([a-zA-Z0-9_]*)=\"(.*)\"/U', $paramText, $paramMatches)) {
+                if (preg_match_all('/([a-zA-Z0-9_]*)=\"(.*)\"|\s*/U', $paramText, $paramMatches)) {
                     $k = array_search('title', $paramMatches[1]);
-                    $title = $paramMatches[2][$k];
+                    $title = ($k === false)
+                        ? _t(ReactionManager::DEFAULT_TITLE_T)
+                        : $paramMatches[2][$k];
                     $k = array_search('labels', $paramMatches[1]);
-                    $labels = array_map('trim', explode(',', $paramMatches[2][$k]));
+                    $labels = ($k === false)
+                        ? array_map('_t', ReactionManager::DEFAULT_LABELS_T)
+                        : array_map('trim', explode(',', $paramMatches[2][$k]));
                     $labelsWithId = [];
                     foreach ($labels as $lab) {
                         $id = \URLify::slug($lab); //generate the id from the label
@@ -162,7 +170,9 @@ class ReactionManager
                     $paramMatches[2][$k] = $labelsWithId;
                     $ids = array_keys($labelsWithId);
                     $k = array_search('images', $paramMatches[1]);
-                    $images = array_map('trim', explode(',', $paramMatches[2][$k]));
+                    $images = ($k === false)
+                        ? ReactionManager::DEFAULT_IMAGES
+                        : array_map('trim', explode(',', $paramMatches[2][$k]));
                     $htmlImages = [];
                     foreach ($images as $i => $img) {
                         $image = '';

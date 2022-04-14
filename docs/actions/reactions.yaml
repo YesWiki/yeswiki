@@ -7,6 +7,7 @@ actions:
       title:
         type: text
         label: _t(AB_REACTION_TITLE_LABEL)
+        value: _t(REACTION_SHARE_YOUR_REACTION)
         required: true
       maxreaction:
         type: number

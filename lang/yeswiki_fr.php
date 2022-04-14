@@ -644,4 +644,5 @@ return [
     'REACTION_FOR_POLL' => 'au sondage',
     'REACTION_FROM_PAGE' => 'de la page',
     'REACTION_ON_ENTRY' => 'Réaction sur une fiche',
+    'REACTION_TITLE_PARAM_NEEDED' => 'Le paramètre \'titre\' est obligatoire',
 ];
