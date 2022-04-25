@@ -381,6 +381,20 @@ return [
     // "AB_syndication_action_formatdate_option_jmh" => "Jour mois heure",
     // "AB_syndication_action_formatdate_option_jmah" => "Jour mois année heure",
 
+    // reactions
+    'AB_REACTION_GROUP_LABEL' => 'Reações / Votos',
+    'AB_REACTION_TITLE_LABEL' => 'Título da votação',
+    'AB_REACTION_LABEL' => 'Reações e votos',
+    'AB_REACTION_DESC' => 'Permite que os utilizadores com login reajam e votem',
+    'AB_REACTION_MAXREACTION_LABEL' => 'Número de possíveis reações/votos',
+    'AB_REACTION_ADD_REACTION' => 'Adicione uma reação',
+    'AB_REACTION_NAME' => 'Nome de reação',
+    'AB_REACTION_ICON' => 'Ícone',
+    'AB_USERREACTIONS_LABEL' => 'Reações do utilizador com sessão registada',
+    'AB_USERREACTIONS_HINT' => 'Permite que os utilizadores com login vejam as suas reações',
+    'AB_ADMINREACTIONS_LABEL' => 'Administração de reações',
+    'AB_ADMINREACTIONS_HINT' => 'Permite que os administradores gerem reações',
+
     // tableau
     // "AB_bazartableau_label" => "Tableau",
     // "AB_bazartableau_description" => "Afficher sous forme de tableau",
