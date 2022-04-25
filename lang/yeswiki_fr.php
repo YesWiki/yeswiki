@@ -48,6 +48,7 @@ return [
     'NAME' => 'Nom',
     'PAGES' => 'Pages',
     'SUBSCRIPTION' => 'Inscription',
+    'TRIPLES' => 'Triples',
     'UNKNOWN' => 'Inconnu',
     'WARNING' => 'AVERTISSEMENT',
 

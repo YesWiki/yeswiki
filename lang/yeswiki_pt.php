@@ -43,6 +43,7 @@ return [
     // 'MODIFY' => 'Modifier',
     // 'NAME' => 'Nom',
     // 'SUBSCRIPTION' => 'Inscription',
+    'TRIPLES' => 'Triplos',
     'UNKNOWN' => 'Desconhecido',
     // 'WARNING' => 'Attention',
 

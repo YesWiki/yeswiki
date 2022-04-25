@@ -44,6 +44,7 @@ return [
     // 'MODIFY' => 'Modifier',
     // 'NAME' => 'Nom',
     // 'SUBSCRIPTION' => 'Inscription',
+    'TRIPLES' => 'Triples',
     'UNKNOWN' => 'Desconegut',
     'WARNING' => 'ADVERTIMENT',
 

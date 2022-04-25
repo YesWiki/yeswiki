@@ -18,6 +18,7 @@ use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\Service\CommentService;
 use YesWiki\Core\Service\ReactionManager;
+use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiController;
 
 class ApiController extends YesWikiController
@@ -46,6 +47,10 @@ class ApiController extends YesWikiController
         $urlComments = $this->wiki->Href('', 'api/comments');
         $output .= '<h2>'._t('COMMENTS').'</h2>'."\n".
             '<p><code>GET '.$urlComments.'</code></p>';
+
+        $urlTriples = $this->wiki->Href('', 'api/triples/{resource}', ['property' => 'http://outils-reseaux.org/_vocabulary/type', 'user' => 'username'], false);
+        $output .= '<h2>'._t('TRIPLES').'</h2>'."\n".
+            '<p><code>GET '.$urlTriples.'</code></p>';
 
         // TODO use annotations to document the API endpoints
         $extensions = $this->wiki->extensions;
@@ -467,5 +472,54 @@ class ApiController extends YesWikiController
                 Response::HTTP_UNAUTHORIZED
             );
         }
+    }
+
+    
+    /**
+     * @Route("/api/triples/{resource}", methods={"GET"}, options={"acl":{"public", "+"}})
+     */
+    public function getTriples($resource)
+    {
+        if (empty($resource)) {
+            return new ApiResponse(
+                ['error' => 'Resource should not be empty !'],
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+        $property = filter_input(INPUT_GET, 'property', FILTER_SANITIZE_STRING);
+        if (empty($property)) {
+            $property = null;
+        }
+
+        $username = filter_input(INPUT_GET, 'user', FILTER_SANITIZE_STRING);
+        if (empty($username)) {
+            if (!$this->wiki->UserIsAdmin()) {
+                return new ApiResponse(
+                    ['error' => 'Not authorized to access a triple of without user params if not admin !'],
+                    Response::HTTP_UNAUTHORIZED
+                );
+            }
+            $username = null;
+        }
+        $currentUser = $this->getService(UserManager::class)->getLoggedUser();
+        if (!$this->wiki->UserIsAdmin() && $currentUser['name'] != $username) {
+            return new ApiResponse(
+                ['error' => 'Not authorized to access a triple of another user if not admin !'],
+                Response::HTTP_UNAUTHORIZED
+            );
+        }
+        $value = empty($username) ? null : "%\\\"user\\\":\\\"{$username}\\\"%";
+        $triples = $this->getService(TripleStore::class)->getMatching(
+            $resource,
+            $property,
+            $value,
+            "=",
+            "=",
+            "LIKE"
+        );
+        return new ApiResponse(
+            $triples,
+            Response::HTTP_OK
+        );
     }
 }
