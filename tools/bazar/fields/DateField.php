@@ -63,7 +63,7 @@ class DateField extends BazarField
         }
 
         if (strlen($value) > 10) {
-            $value = date('d.m.Y - H:M', strtotime($value));
+            $value = date('d.m.Y - H:i', strtotime($value));
         } else {
             $value =  date('d.m.Y', strtotime($value));
         }
