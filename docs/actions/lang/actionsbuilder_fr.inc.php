@@ -382,6 +382,7 @@ return [
     'AB_USERREACTIONS_HINT' => 'Permet aux utilisateur·ices connecté·es de voir leurs réactions',
     'AB_ADMINREACTIONS_LABEL' => 'Administration des réactions',
     'AB_ADMINREACTIONS_HINT' => 'Permet aux administrateur·ices de gérer les réactions',
+    'AB_MYFAVORITES_LABEL' => 'Mes favoris',
 
     // syndication
     "AB_syndication_main_label" => "Syndication / Flux RSS",

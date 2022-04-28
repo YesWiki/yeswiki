@@ -48,8 +48,9 @@ return [
     "MULTIDELETE_ERROR" => "L'élément {itemId} n'a pas été supprimé ! {error}",
 
     // javascripts/favorites.js
-    'FAVORITES_ERROR' => 'Une erreur est survenue : {error}',
     'FAVORITES_ADD' => 'Ajouter aux favoris',
+    'FAVORITES_ALL_DELETED' => 'Favoris supprimés',
+    'FAVORITES_ERROR' => 'Une erreur est survenue : {error}',
     'FAVORITES_REMOVE' => 'Retirer des favoris',
     'FAVORITES_ADDED' => 'Favori ajouté',
     'FAVORITES_REMOVED' => 'Favori supprimé',

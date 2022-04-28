@@ -32,4 +32,6 @@ actions:
   adminreactions:
     label: _t(AB_ADMINREACTIONS_LABEL)
     hint: _t(AB_ADMINREACTIONS_HINT)
+  myfavorites:
+    label: _t(AB_MYFAVORITES_LABEL)
   

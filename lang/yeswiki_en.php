@@ -284,6 +284,13 @@ return [
     // javascripts/favorites.js
     'FAVORITES_ADD' => 'Add to favorites',
     'FAVORITES_REMOVE' => 'Remove from favorites',
+
+    // templates/actions/my-favorites.twig
+    'FAVORITES_DELETE_ALL' => 'Delete all favorites',
+    'FAVORITES_MY_FAVORITES' => 'My favorites',
+    'FAVORITES_NO_FAVORITE' => 'No favorite',
+    'FAVORITES_NOT_ACTIVATED' => 'The use of favorites is not enabled on this site.',
+    'FAVORITES_NOT_CONNECTED' => 'The use of favorites is possible only for connected people.',
     
     // setup/header.php
     'OK' => 'OK',

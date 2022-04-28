@@ -403,6 +403,7 @@ return [
     'AB_USERREACTIONS_HINT' => 'Permite que os utilizadores com login vejam as suas reações',
     'AB_ADMINREACTIONS_LABEL' => 'Administração de reações',
     'AB_ADMINREACTIONS_HINT' => 'Permite que os administradores gerem reações',
+    // 'AB_MYFAVORITES_LABEL' => 'My favorites',
 
     // tableau
     "AB_bazartableau_label" => "Tabela",

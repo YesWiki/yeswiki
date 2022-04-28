@@ -1,0 +1,39 @@
+<h4>{{ _t('FAVORITES_MY_FAVORITES') }}</h4>{% if not areFavoritesActivated %}
+  {{ include("@templates/alert-message.twig",{
+		type: "warning",
+		message: _t('FAVORITES_NOT_ACTIVATED')
+	}) }}
+{% elseif currentUser is empty %}
+  {{ include("@templates/alert-message.twig",{
+		type: "warning",
+		message: _t('FAVORITES_NOT_CONNECTED')
+	}) }}
+{% else %}
+	{% if favorites is empty %}
+		{{ include("@templates/alert-message.twig",{
+			type: "info",
+			message: _t('FAVORITES_NO_FAVORITE')
+		}) }}
+	{% else %}
+    {{ include_javascript('javascripts/favorites.js') }}
+	  <ul>
+			{% for favorite in favorites %}
+				<li>
+					<a href="#"
+						title="{{ _t('FAVORITES_REMOVE')  }}"
+						data-resource="{{ favorite.resource }}" 
+						data-user="{{ currentUser }}"
+						data-toggle="tooltip"
+						data-placement="right"
+						class="btn btn-icon btn-default btn-xs favorites user-favorite">
+						<i class="fas fa-star"></i>
+					</a>
+					<a href="{{ url({tag:favorite.resource}) }}" class="modalbox" data-size="modal-lg" title="{{ favorite.resource }}">
+						{{ favorite.resource }}
+					</a>
+				</li>
+			{% endfor %}
+		</ul>
+		<button class="btn btn-danger btn-sm" onclick="FavoritesHelper.deleteAll({{ currentUser|json_encode() }});"><i class="fa fa-trash"></i> {{ _t('FAVORITES_DELETE_ALL') }}</button>
+	{% endif %}
+{% endif %}

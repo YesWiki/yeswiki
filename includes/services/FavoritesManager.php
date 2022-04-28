@@ -43,7 +43,7 @@ class FavoritesManager
         if (empty($userName)) {
             throw new Exception('userName should not be empty !');
         }
-        $value = "%\\\"user\\\":\\\"{$username}\\\"%";
+        $value = "%\\\"user\\\":\\\"{$userName}\\\"%";
         $triples = $this->tripleStore->getMatching(
             null,
             self::TYPE_URI,

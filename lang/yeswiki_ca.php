@@ -284,6 +284,13 @@ return [
     'FAVORITES_ADD' => 'Afegeix-ho als preferits',
     'FAVORITES_REMOVE' => 'Suprimeix dels preferits',
 
+    // templates/actions/my-favorites.twig
+    'FAVORITES_DELETE_ALL' => 'Suprimeix tots els preferits',
+    'FAVORITES_MY_FAVORITES' => 'Els meus favorits',
+    'FAVORITES_NO_FAVORITE' => 'No hi ha cap favorit',
+    'FAVORITES_NOT_ACTIVATED' => 'L\'ús de preferits no està habilitat en aquest lloc.',
+    'FAVORITES_NOT_CONNECTED' => 'L\'ús de favorits només és possible per a les persones connectades.',
+
     // setup/header.php
     'OK' => 'D\'acord',
     'FAIL' => 'Error',

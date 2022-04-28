@@ -474,11 +474,34 @@ class ApiController extends YesWikiController
         }
     }
 
+    /**
+     * @Route("/api/triples", methods={"GET"}, options={"acl":{"public", "+"}})
+     */
+    public function ByResource()
+    {
+        extract($this->extractTriplesParams(INPUT_GET, "not empty"));
+        if (!empty($apiResponse)) {
+            return $apiResponse;
+        }
+        $value = empty($username) ? null : "%\\\"user\\\":\\\"{$username}\\\"%";
+        $triples = $this->getService(TripleStore::class)->getMatching(
+            null,
+            $property,
+            $value,
+            "=",
+            "=",
+            "LIKE"
+        );
+        return new ApiResponse(
+            $triples,
+            Response::HTTP_OK
+        );
+    }
     
     /**
      * @Route("/api/triples/{resource}", methods={"GET"}, options={"acl":{"public", "+"}})
      */
-    public function getTriples($resource)
+    public function getTriplesByResource($resource)
     {
         extract($this->extractTriplesParams(INPUT_GET, $resource));
         if (!empty($apiResponse)) {

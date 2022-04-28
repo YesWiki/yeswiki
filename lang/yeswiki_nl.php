@@ -283,6 +283,13 @@ return [
     'FAVORITES_ADD' => 'Toevoegen aan favorieten',
     'FAVORITES_REMOVE' => 'Verwijderen uit favorieten',
 
+    // templates/actions/my-favorites.twig
+    'FAVORITES_DELETE_ALL' => 'Alle favorieten verwijderen',
+    'FAVORITES_MY_FAVORITES' => 'Mijn favorieten',
+    'FAVORITES_NO_FAVORITE' => 'Geen favoriet',
+    'FAVORITES_NOT_ACTIVATED' => 'Het gebruik van favorieten is niet ingeschakeld op deze site.',
+    'FAVORITES_NOT_CONNECTED' => 'Het gebruik van favorieten is alleen mogelijk voor mensen die verbonden zijn.',
+
     // setup/header.php
     'OK' => 'OK',
     'FAIL' => 'MISLUKT',
