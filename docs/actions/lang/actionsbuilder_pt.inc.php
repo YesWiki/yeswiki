@@ -404,6 +404,10 @@ return [
     'AB_ADMINREACTIONS_LABEL' => 'Administração de reações',
     'AB_ADMINREACTIONS_HINT' => 'Permite que os administradores gerem reações',
     // 'AB_MYFAVORITES_LABEL' => 'My favorites',
+    // 'AB_MYFAVORITES_TEMPLATE_LABEL' => 'Template',
+    // 'AB_MYFAVORITES_TEMPLATE_LINKS' => 'Liens',
+    // 'AB_MYFAVORITES_TEMPLATE_LINKS_WITH_TITLES' => 'Liens avec titres',
+    // 'AB_MYFAVORITES_TEMPLATE_TILES' => 'Vignettes',
 
     // tableau
     "AB_bazartableau_label" => "Tabela",

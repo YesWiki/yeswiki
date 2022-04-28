@@ -34,4 +34,13 @@ actions:
     hint: _t(AB_ADMINREACTIONS_HINT)
   myfavorites:
     label: _t(AB_MYFAVORITES_LABEL)
+    properties:
+      template:
+        label: _t(AB_MYFAVORITES_TEMPLATE_LABEL)
+        type: list
+        default: '@core/actions/my-favorites.twig'
+        options:
+          '@core/actions/my-favorites.twig': _t(AB_MYFAVORITES_TEMPLATE_LINKS)
+          '@core/actions/my-favorites-with-titles.twig': _t(AB_MYFAVORITES_TEMPLATE_LINKS_WITH_TITLES)
+          '@core/actions/my-favorites-tiles.twig': _t(AB_MYFAVORITES_TEMPLATE_TILES)
   

@@ -383,6 +383,10 @@ return [
     'AB_ADMINREACTIONS_LABEL' => 'Reaction administration',
     'AB_ADMINREACTIONS_HINT' => 'Allows administrators to manage reactions',
     'AB_MYFAVORITES_LABEL' => 'My favorites',
+    'AB_MYFAVORITES_TEMPLATE_LABEL' => 'Template',
+    'AB_MYFAVORITES_TEMPLATE_LINKS' => 'Links',
+    'AB_MYFAVORITES_TEMPLATE_LINKS_WITH_TITLES' => 'Links with titles',
+    'AB_MYFAVORITES_TEMPLATE_TILES' => 'Tiles',
 
     // // syndication
     // "AB_syndication_main_label" => "Syndication / Flux RSS",

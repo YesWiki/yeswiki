@@ -1,0 +1,23 @@
+{% extends "@core/actions/my-favorites.twig" %}
+
+{% block favorites %}
+    <ul>
+        {% for favorite in favorites %}
+            <li>
+                <a href="#"
+                    title="{{ _t('FAVORITES_REMOVE')  }}"
+                    data-resource="{{ favorite.resource }}" 
+                    data-user="{{ currentUser }}"
+                    data-toggle="tooltip"
+                    data-placement="right"
+                    class="btn btn-icon btn-default btn-xs favorites user-favorite">
+                    <i class="fas fa-star"></i>
+                </a>
+                <a href="{{ url({tag:favorite.resource}) }}" class="modalbox" data-size="modal-lg" title="{{ favorite.title ?? favorite.resource }}">
+                    {{ favorite.title ?? favorite.resource }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+    {{ block('deleteAllButton') }}
+{% endblock %}

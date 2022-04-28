@@ -1,0 +1,34 @@
+{% extends "@core/actions/my-favorites.twig" %}
+
+{% block favorites %}
+    {{ include_css('tools/bazar/presentation/styles/trombinoscope.css') }}
+    {{ include_css('styles/actions/my-favorites.css') }}
+
+    {{ block('deleteAllButton') }}
+    <div class="trombi-container my-favorites">
+        {% for favorite in favorites %}
+            {% set favoriteTitle = favorite.title is not empty ? favorite.title : favorite.resource %}
+            <a class="bazar-entry modalbox " data-size="modal-lg" 
+                {{ (favorite.entry is not empty and favorite.entry.html_data is not empty) ? favorite.entry.html_data|raw : '' }}
+                href="{{ url({tag:favorite.resource}) }}"
+                title="{{ favoriteTitle }}">
+                <div class="image-container">
+                    <img class="trombi-image img-placeholder"
+                    src="tools/bazar/libs/vendor/placeholder.php?size=140x140&amp;bg=efefef&amp;text=">
+                    {% if favorite.image is not empty %}
+                        <img class="trombi-image for-my-favorites" alt="{{ favoriteTitle }}"
+                            src="{{ urlImage({fileName:"files/#{favorite.image}",width:140,height:140,mode:'fit'}) }}"
+                            onerror="javascripts:this.src='{{ "files/#{favorite.image}" }}';this.removeAttribute('onerror');"
+                        >
+                    {% else %}
+                        <i class="trombi-image icon-placeholder far fa-question-circle"></i>
+                    {% endif %}
+                </div>
+
+                <div class="caption trombi-content">
+                    <div class="title">{{ favoriteTitle }}</div>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+{% endblock %}
