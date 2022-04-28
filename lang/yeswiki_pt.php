@@ -277,6 +277,10 @@ return [
     'CSRF_TOKEN_FAIL_ERROR' => 'Esta página pode ter sido aberta uma segunda vez. '.
         'Por favor, renove o pedido desta janela (o sinal de segurança interna não foi bom).',
 
+    // javascripts/favorites.js
+    'FAVORITES_ADD' => 'Adicionar a aavoritos',
+    'FAVORITES_REMOVE' => 'Remova dos favoritos',
+
     // setup/header.php
     'OK' => 'OK',
     'FAIL' => 'FALHA',

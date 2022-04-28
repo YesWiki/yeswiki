@@ -3,6 +3,8 @@
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\FavoritesManager;
+use YesWiki\Core\Service\UserManager;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -79,6 +81,13 @@ if ($this->HasAccess("write") && $this->method != "revisions") {
         }
     }
     $barreredactionelements['linkshare'] = $this->href("share", $page);
+
+    $user = $this->services->get(UserManager::class)->getLoggedUser();
+    $favoritesManager = $this->services->get(FavoritesManager::class);
+    if (!empty($user) && $favoritesManager->areFavoritesActivated()) {
+        $barreredactionelements['currentuser'] = $user['name'];
+        $barreredactionelements['isUserFavorite'] = $favoritesManager->isUserFavorite($user['name'], $page);
+    }
 
     echo $this->render("@templates/$template", $barreredactionelements);
     echo ' <!-- /.footer -->'."\n";

@@ -288,6 +288,10 @@ return [
     'CSRF_TOKEN_FAIL_ERROR' => 'Cette page a peut-être été ouverte une seconde fois. '.
         'Veuillez renouveler la demande depuis cette fenêtre (le jeton interne de sécurité n\'était pas bon).',
 
+    // javascripts/favorites.js
+    'FAVORITES_ADD' => 'Ajouter aux favoris',
+    'FAVORITES_REMOVE' => 'Retirer des favoris',
+
     // setup/header.php
     'OK' => 'OK',
     'FAIL' => 'ECHEC',

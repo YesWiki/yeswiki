@@ -40,5 +40,17 @@
   {% endif %}
 	<a title="{{ _t('TEMPLATE_SEE_SHARING_OPTIONS') ~ ' ' ~ page}}" href="{{ linkshare }}" class="link-share modalbox">
 		<i class="fa fa-share-alt"></i><span>{{ _t('TEMPLATE_SHARE') }}</span>
+  {% if currentuser is not empty %}
+    {{ include_javascript('javascripts/favorites.js') }}
+    <a href="#"
+      title="{{ (isUserFavorite) ? _t('FAVORITES_REMOVE') : _t('FAVORITES_ADD') }}"
+      data-resource="{{ page }}" 
+      data-user="{{ currentuser }}"
+      data-toggle="tooltip"
+      data-placement="right"
+      class="btn btn-icon favorites{{ (isUserFavorite) ? ' user-favorite' : '' }}">
+      <i class="{{ (isUserFavorite) ? 'fas' : 'far' }} fa-star"></i>
+    </a>
+  {% endif %}
 	</a>
 </div>

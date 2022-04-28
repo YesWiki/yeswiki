@@ -279,6 +279,10 @@ return [
     'CSRF_TOKEN_FAIL_ERROR' => 'Deze pagina is mogelijk een tweede keer geopend. '.
         'Verleng het verzoek vanuit dit venster (het interne beveiligingstoken was niet goed).',
 
+    // javascripts/favorites.js
+    'FAVORITES_ADD' => 'Toevoegen aan favorieten',
+    'FAVORITES_REMOVE' => 'Verwijderen uit favorieten',
+
     // setup/header.php
     'OK' => 'OK',
     'FAIL' => 'MISLUKT',

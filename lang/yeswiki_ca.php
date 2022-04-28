@@ -280,6 +280,10 @@ return [
     'CSRF_TOKEN_FAIL_ERROR' => 'Pot ser que aquesta pàgina s\'hagi obert per segona vegada. '.
         'Si us plau, renoveu la sol·licitud des d\'aquesta finestra (el testimoni de seguretat intern no era bo).',
 
+    // javascripts/favorites.js
+    'FAVORITES_ADD' => 'Afegeix-ho als preferits',
+    'FAVORITES_REMOVE' => 'Suprimeix dels preferits',
+
     // setup/header.php
     'OK' => 'D\'acord',
     'FAIL' => 'Error',

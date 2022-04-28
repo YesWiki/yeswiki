@@ -280,6 +280,10 @@ return [
         'identification token needed for internal security mechanisms.',
     'CSRF_TOKEN_FAIL_ERROR' => 'This page may have been opened a second time. '.
         'Please renew the request from this window (the internal security token was not good).',
+
+    // javascripts/favorites.js
+    'FAVORITES_ADD' => 'Add to favorites',
+    'FAVORITES_REMOVE' => 'Remove from favorites',
     
     // setup/header.php
     'OK' => 'OK',

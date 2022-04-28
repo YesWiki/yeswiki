@@ -43,6 +43,13 @@ return [
     "REVISIONS_DIFF" => "Comparison to the current revision",
     "REVISIONS_PREVIEW" => "Preview of this revision",
 
+    // javascripts/favorites.js
+    'FAVORITES_ERROR' => 'An error occurred : {error}',
+    'FAVORITES_ADD' => 'Add to favorites',
+    'FAVORITES_REMOVE' => 'Remove from favorites',
+    'FAVORITES_ADDED' => 'Favorite added',
+    'FAVORITES_REMOVED' => 'Favorite deleted',
+
     // javascripts/multidelete.js
     "MULTIDELETE_END" => "Deletions finished",
     "MULTIDELETE_ERROR" => "Item {itemId} has not been deleted! {error}",
