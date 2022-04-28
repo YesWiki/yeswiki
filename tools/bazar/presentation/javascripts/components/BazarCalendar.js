@@ -94,6 +94,9 @@ Vue.component('BazarCalendar', {
     },
     mountCalendar: function(){
       if (!this.mounted){
+        if (this.params.minical){
+          $(this.$el).addClass("minical");
+        }
         let calendarEl = $('<div>').on(
           "dblclick",
           function(e) {
@@ -173,7 +176,7 @@ Vue.component('BazarCalendar', {
           }
         });
       }
-      if (this.params.minical != undefined && [1,"1",true,"true"].indexOf(this.params.minical) > -1 && !$(element).hasClass("toolTipDefined")){
+      if (!$(element).hasClass("toolTipDefined")){
         $(element).tooltip({title:event.title, html:true});
         $(element).addClass("toolTipDefined");
       }

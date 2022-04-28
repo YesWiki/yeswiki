@@ -375,12 +375,6 @@ input[type="date"]::-webkit-input-placeholder{
   right: -1.6em;
 }
 
-
-.minical .fc-today-button, .minical .fc-right {display: none;}
-.minical .fc-center h2 {font-size: 13px !important;}
-.minical table {font-size: 10px !important;}
-.minical .fc-event-inner { font-size: 8px !important; line-height: 8px !important;}
-
 .pellet {
   display: inline-block;
   height: 15px;
