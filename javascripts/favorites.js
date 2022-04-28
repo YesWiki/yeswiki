@@ -70,7 +70,7 @@ const FavoritesHelper = {
             });
           }
         } else {
-          FavoritesHelper.updateElem(elem,"add");
+          FavoritesHelper.updateElem($(`[data-resource=${resource}]`),"add");
         }
       },
       error: function(xhr,status,error){
@@ -119,7 +119,7 @@ const FavoritesHelper = {
             });
           }
         } else {
-          FavoritesHelper.updateElem(elem,"delete");
+          FavoritesHelper.updateElem($(`[data-resource=${resource}]`),"delete");
         }
       },
       error: function(xhr,status,error){
@@ -230,11 +230,11 @@ const FavoritesHelper = {
     });
   },
   init: function (){
-    // polyfill placeholder
-    (function ($) {
-      $("a.favorites").click(FavoritesHelper.manageFavorites);
-    })(jQuery);
+    $("a.favorites").addClass("eventSet").on("click",FavoritesHelper.manageFavorites);
   }
 };
 
 FavoritesHelper.init();
+$(document).on("yw-modal-open",function(){
+  $("a.favorites:not(.eventSet)").addClass("eventSet").on("click",FavoritesHelper.manageFavorites);
+});
