@@ -29,6 +29,15 @@
                     <div class="title">{{ favoriteTitle }}</div>
                 </div>
             </a>
+            <div class="favorite-container">
+                <a href="#"
+                    title="{{ _t('FAVORITES_REMOVE')  }}"
+                    data-resource="{{ favorite.resource }}" 
+                    data-user="{{ currentUser }}"
+                    class="btn btn-icon btn-default btn-xs favorites user-favorite">
+                    <i class="fas fa-star"></i>
+                </a>
+            </div>
         {% endfor %}
     </div>
 {% endblock %}

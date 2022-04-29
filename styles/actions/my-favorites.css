@@ -1,13 +1,26 @@
+.my-favorites .favorite-container {
+  position: relative;
+  width: 0px;
+  height: 36px;
+}
+
+.my-favorites .favorites {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  z-index: 1;
+}
+
 .my-favorites .image-container {
-    display: flex;
-    align-items: center;
-  }
+  display: flex;
+  align-items: center;
+}
   
 .trombi-image.for-my-favorites {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    max-height: 100%;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-height: 100%;
 }
 
 .trombi-container.my-favorites .bazar-entry i.icon-placeholder {
