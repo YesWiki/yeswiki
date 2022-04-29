@@ -1,0 +1,48 @@
+{% extends "@core/actions/my-favorites.twig" %}
+
+{% block favorites %}
+    {{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
+    {{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th></th>
+                <th>{{ _t('FAVORITES_TITLE') }}</th>
+                <th>{{ _t('FAVORITES_LINK') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for favorite in favorites %}
+                {% set favoriteTitle = favorite.title is not empty ? favorite.title : favorite.resource %}
+                <tr>
+                    <td>
+                        <a href="#"
+                            title="{{ _t('FAVORITES_REMOVE')  }}"
+                            data-resource="{{ favorite.resource }}" 
+                            data-user="{{ currentUser }}"
+                            class="btn btn-icon btn-default btn-xs favorites user-favorite">
+                            <i class="fas fa-star"></i>
+                        </a>
+                    </td>
+                    <td>
+                        <a class="bazar-entry modalbox " data-size="modal-lg" 
+                            href="{{ url({tag:favorite.resource}) }}"
+                            title="{{ favoriteTitle }}">
+                            {{ favoriteTitle }}
+                        </a>
+                    </td>
+                    <td>
+                        <a class="bazar-entry modalbox " data-size="modal-lg" 
+                            href="{{ url({tag:favorite.resource}) }}"
+                            title="{{ favoriteTitle }}">
+                            {{ url({tag:favorite.resource}) }}
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {{ block('deleteAllButton') }}
+{% endblock %}

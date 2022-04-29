@@ -387,6 +387,7 @@ return [
     'AB_MYFAVORITES_TEMPLATE_LINKS' => 'Liens',
     'AB_MYFAVORITES_TEMPLATE_LINKS_WITH_TITLES' => 'Liens avec titres',
     'AB_MYFAVORITES_TEMPLATE_TILES' => 'Vignettes',
+    'AB_MYFAVORITES_TEMPLATE_TABLE' => 'Tableau',
 
     // syndication
     "AB_syndication_main_label" => "Syndication / Flux RSS",

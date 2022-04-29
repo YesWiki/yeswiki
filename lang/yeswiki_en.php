@@ -291,6 +291,10 @@ return [
     'FAVORITES_NO_FAVORITE' => 'No favorite',
     'FAVORITES_NOT_ACTIVATED' => 'The use of favorites is not enabled on this site.',
     'FAVORITES_NOT_CONNECTED' => 'The use of favorites is possible only for connected people.',
+
+    // templates/actions/my-favorites-table.twig
+    'FAVORITES_TITLE' => 'Title',
+    'FAVORITES_LINK' => 'Link',
     
     // setup/header.php
     'OK' => 'OK',

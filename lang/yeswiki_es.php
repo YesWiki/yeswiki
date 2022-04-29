@@ -292,6 +292,10 @@ return [
     'FAVORITES_NOT_ACTIVATED' => 'El uso de favoritos no está habilitado en este sitio.',
     'FAVORITES_NOT_CONNECTED' => 'El uso de favoritos solo es posible para personas conectadas.',
 
+    // templates/actions/my-favorites-table.twig
+    'FAVORITES_TITLE' => 'Título',
+    'FAVORITES_LINK' => 'Enlace',
+
     // setup/header.php
     'OK' => 'OK',
     'FAIL' => 'FRACASO',

@@ -299,6 +299,10 @@ return [
     'FAVORITES_NOT_ACTIVATED' => 'L\'usage des favoris n\'est pas activé sur ce site.',
     'FAVORITES_NOT_CONNECTED' => 'L\'usage des favoris n\'est possible que pour les personnes connectées.',
 
+    // templates/actions/my-favorites-table.twig
+    'FAVORITES_TITLE' => 'Titre',
+    'FAVORITES_LINK' => 'Lien',
+
     // setup/header.php
     'OK' => 'OK',
     'FAIL' => 'ECHEC',

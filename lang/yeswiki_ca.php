@@ -291,6 +291,10 @@ return [
     'FAVORITES_NOT_ACTIVATED' => 'L\'ús de preferits no està habilitat en aquest lloc.',
     'FAVORITES_NOT_CONNECTED' => 'L\'ús de favorits només és possible per a les persones connectades.',
 
+    // templates/actions/my-favorites-table.twig
+    'FAVORITES_TITLE' => 'Títol',
+    'FAVORITES_LINK' => 'Lligam',
+
     // setup/header.php
     'OK' => 'D\'acord',
     'FAIL' => 'Error',

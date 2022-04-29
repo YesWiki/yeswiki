@@ -290,6 +290,10 @@ return [
     'FAVORITES_NOT_ACTIVATED' => 'Het gebruik van favorieten is niet ingeschakeld op deze site.',
     'FAVORITES_NOT_CONNECTED' => 'Het gebruik van favorieten is alleen mogelijk voor mensen die verbonden zijn.',
 
+    // templates/actions/my-favorites-table.twig
+    'FAVORITES_TITLE' => 'Titel',
+    'FAVORITES_LINK' => 'Verbinden',
+
     // setup/header.php
     'OK' => 'OK',
     'FAIL' => 'MISLUKT',

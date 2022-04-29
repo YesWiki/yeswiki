@@ -288,6 +288,10 @@ return [
     'FAVORITES_NOT_ACTIVATED' => 'O uso de favoritos não está ativado neste site.',
     'FAVORITES_NOT_CONNECTED' => 'O uso de favoritos só é possível para pessoas ligadas.',
 
+    // templates/actions/my-favorites-table.twig
+    'FAVORITES_TITLE' => 'Título',
+    'FAVORITES_LINK' => 'Ligação',
+
     // setup/header.php
     'OK' => 'OK',
     'FAIL' => 'FALHA',

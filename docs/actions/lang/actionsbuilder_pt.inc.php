@@ -408,6 +408,7 @@ return [
     // 'AB_MYFAVORITES_TEMPLATE_LINKS' => 'Liens',
     // 'AB_MYFAVORITES_TEMPLATE_LINKS_WITH_TITLES' => 'Liens avec titres',
     // 'AB_MYFAVORITES_TEMPLATE_TILES' => 'Vignettes',
+    // 'AB_MYFAVORITES_TEMPLATE_TABLE' => 'Tableau',
 
     // tableau
     "AB_bazartableau_label" => "Tabela",
