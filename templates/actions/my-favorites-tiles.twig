@@ -4,7 +4,6 @@
     {{ include_css('tools/bazar/presentation/styles/trombinoscope.css') }}
     {{ include_css('styles/actions/my-favorites.css') }}
 
-    {{ block('deleteAllButton') }}
     <div class="trombi-container my-favorites">
         {% for favorite in favorites %}
             {% set favoriteTitle = favorite.title is not empty ? favorite.title : favorite.resource %}
@@ -40,4 +39,5 @@
             </div>
         {% endfor %}
     </div>
+    {{ block('deleteAllButton') }}
 {% endblock %}

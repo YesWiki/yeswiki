@@ -282,7 +282,7 @@ return [
     'FAVORITES_REMOVE' => 'Remova dos favoritos',
 
     // templates/actions/my-favorites.twig
-    'FAVORITES_DELETE_ALL' => 'Eliminar todos os favoritos',
+    'FAVORITES_DELETE_ALL' => 'Apague todos os meus favoritos',
     'FAVORITES_MY_FAVORITES' => 'Os meus favoritos',
     'FAVORITES_NO_FAVORITE' => 'Sem favoritos',
     'FAVORITES_NOT_ACTIVATED' => 'O uso de favoritos não está ativado neste site.',

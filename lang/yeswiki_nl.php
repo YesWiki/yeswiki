@@ -284,7 +284,7 @@ return [
     'FAVORITES_REMOVE' => 'Verwijderen uit favorieten',
 
     // templates/actions/my-favorites.twig
-    'FAVORITES_DELETE_ALL' => 'Alle favorieten verwijderen',
+    'FAVORITES_DELETE_ALL' => 'Al mijn favorieten verwijderen',
     'FAVORITES_MY_FAVORITES' => 'Mijn favorieten',
     'FAVORITES_NO_FAVORITE' => 'Geen favoriet',
     'FAVORITES_NOT_ACTIVATED' => 'Het gebruik van favorieten is niet ingeschakeld op deze site.',
