@@ -22,7 +22,7 @@ class MyFavoritesAction extends YesWikiAction
     public function formatArguments($arg)
     {
         return [
-            'template' => !empty($arg['template']) ? $arg['template'] : "" ,
+            'template' => !empty($arg['template']) ? basename($arg['template']) : "" ,
         ];
     }
 
@@ -45,9 +45,9 @@ class MyFavoritesAction extends YesWikiAction
 
         $favorites = empty($currentUser) ? [] : $this->favoritesManager->getUserFavorites($currentUser) ;
 
-        $template = (empty($this->arguments['template']) || !$this->templateEngine->hasTemplate($this->arguments['template']))
+        $template = (empty($this->arguments['template']) || !$this->templateEngine->hasTemplate("@core/actions/{$this->arguments['template']}"))
             ? '@core/actions/my-favorites.twig'
-            : $this->arguments['template'];
+            : "@core/actions/{$this->arguments['template']}";
 
         $this->updateFavoritesWithTitleImagesAndEntries($favorites);
 
