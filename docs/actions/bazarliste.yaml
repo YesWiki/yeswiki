@@ -421,6 +421,7 @@ actions:
           sidebar: _t(AB_bazarcarto_entrydisplay_option_sidebar)
           modal: _t(AB_bazarcarto_entrydisplay_option_modal)
           newtab: _t(AB_bazarcarto_entrydisplay_option_newtab)
+          popup: _t(AB_bazarcarto_entrydisplay_option_popup)
       displayfields:
         type: correspondance
         showif: dynamic

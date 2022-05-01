@@ -68,6 +68,7 @@ return [
     "AB_bazarcarto_entrydisplay_option_newtab" => "Em um novo separador",
     "AB_bazarcarto_entrydisplay_option_sidebar" => "Em uma barra lateral",
     "AB_bazarcarto_entrydisplay_option_modal" => "Em um pop-up",
+    // "AB_bazarcarto_entrydisplay_option_popup" => "Dans une petite popup (sur la carte)",
     // "AB_bazarcarto_displayfields_markhover_label" => "Champ à afficher au survol du marker",
     // "AB_bazarcarto_smallmarker_label" => "Petit marqueurs",
     // "AB_bazarcarto_spider_label" => "Mode spider",
