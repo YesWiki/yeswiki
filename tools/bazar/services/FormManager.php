@@ -292,7 +292,11 @@ class FormManager
             // on filtre pour n'avoir que les liste, checkbox, listefiche ou checkboxfiche
             $fields[$entry['id_typeannonce']] = isset($fields[$entry['id_typeannonce']])
                 ? $fields[$entry['id_typeannonce']]
-                : $this->filterFieldsByPropertyName($form['prepared'], $groups);
+                : (
+                    !empty($form['prepared'])
+                    ? $this->filterFieldsByPropertyName($form['prepared'], $groups)
+                    : []
+                );
 
             foreach ($entry as $key => $value) {
                 $facetteasked = (isset($groups[0]) && $groups[0] == 'all') || in_array($key, $groups);
