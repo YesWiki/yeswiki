@@ -21,5 +21,11 @@
 {% endblock %}
 
 {% block display_entries %}
-  <Bazar-Map :params="params" class="bazar-map"></Bazar-Map>
+  <Bazar-Map :params="params" class="bazar-map">
+    {% if params.entrydisplay == 'popup' %}
+      {% set templateName = params.popuptemplate ?? '_map_popup.twig' %}
+      {% set templateName = templateName|slice(-5) != '.twig' ? templateName ~ '.twig' : templateName %}
+      {{ include("@bazar/entries/index-dynamic-templates/#{templateName}") }}
+    {% endif %}
+  </Bazar-Map>
 {% endblock %}

@@ -16,7 +16,7 @@ Vue.component('BazarMap', {
       bounds: null,
       layers: {}
     }
-  },    
+  },
   computed: {
     entries() {
       return this.$root.entriesToDisplay.filter(entry => entry.bf_latitude && entry.bf_longitude)
@@ -155,6 +155,32 @@ Vue.component('BazarMap', {
     isDirectLinkDisplay: function (){
       return (this.params.entrydisplay != undefined && this.params.entrydisplay == 'direct');
     },
+    openPopup(entry) {
+      if (entry.marker == undefined) {
+        return false;
+      }
+      if (entry.html_render == undefined) {
+        let url = "";
+        let bazarMap = this;
+        if (this.$root.isExternalUrl(entry)){
+          url = entry.url.replace(new RegExp(`${entry.id_fiche}$`),`api/entries/html/${entry.id_fiche}`);
+        } else {
+          url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
+            fields: 'html_output',
+          });
+        }
+        $.getJSON(url, function(data) {
+          Vue.set(entry, 'html_render', (data[entry.id_fiche] && data[entry.id_fiche].html_output) ? data[entry.id_fiche].html_output : 'error')
+          bazarMap.openPopup(entry);
+        })
+      } else {
+        if (entry.marker.popup == undefined){
+          entry.marker.bindPopup(entry.html_render).openPopup();
+        } else {
+          entry.marker.popup.openPopup();
+        }
+      }
+    }
   },
   watch: {
     selectedEntry: function (newVal, oldVal) {
@@ -164,6 +190,8 @@ Vue.component('BazarMap', {
           this.$root.openEntry(this.selectedEntry)
         } else if (this.params.entrydisplay == 'sidebar') {
           this.$root.getEntryRender(this.selectedEntry)
+        } else if (this.params.entrydisplay == 'popup') {
+          this.openPopup(this.selectedEntry)
         }
         
         this.$nextTick(function() {
