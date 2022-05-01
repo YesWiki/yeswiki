@@ -422,6 +422,15 @@ actions:
           modal: _t(AB_bazarcarto_entrydisplay_option_modal)
           newtab: _t(AB_bazarcarto_entrydisplay_option_newtab)
           popup: _t(AB_bazarcarto_entrydisplay_option_popup)
+      popuptemplate: 
+        label: _t(AB_bazarcarto_popuptemplate_label)
+        type: text
+        default: '_map_popup.twig'
+        hint: _t(AB_bazarcarto_popuptemplate_hint)
+        advanced: true
+        showif: 
+          dynamic: true
+          entrydisplay: 'popup'
       displayfields:
         type: correspondance
         showif: dynamic

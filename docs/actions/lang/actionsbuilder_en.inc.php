@@ -69,6 +69,8 @@ return [
     "AB_bazarcarto_entrydisplay_option_sidebar" => "In sidebar",
     "AB_bazarcarto_entrydisplay_option_modal" => "In popup",
     "AB_bazarcarto_entrydisplay_option_popup" => "In small popup (into map)",
+    "AB_bazarcarto_popuptemplate_label" => "Template for small popup",
+    "AB_bazarcarto_popuptemplate_hint" => "ex. '_map_popup.twig' to put in 'custom/templates/bazar/entries/index-dynamic-templates/'",
     // "AB_bazarcarto_displayfields_markhover_label" => "Champ à afficher au survol du marker",
     // "AB_bazarcarto_smallmarker_label" => "Petit marqueurs",
     // "AB_bazarcarto_spider_label" => "Mode spider",
