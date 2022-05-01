@@ -175,7 +175,17 @@ Vue.component('BazarMap', {
         })
       } else {
         if (entry.marker.popup == undefined){
-          entry.marker.bindPopup(entry.html_render).openPopup();
+          let renderedHtml = $(this.$el).find('.popupentry-container > div').first().html();
+          if (renderedHtml == undefined || renderedHtml.length == 0){
+            this.$nextTick(function () {
+              /**
+               * Triggers when the component is ready
+               * */
+               this.openPopup(entry);
+            });
+          } else {
+            entry.marker.bindPopup(renderedHtml).openPopup();
+          }
         } else {
           entry.marker.popup.openPopup();
         }
@@ -238,6 +248,9 @@ Vue.component('BazarMap', {
       <div v-if="selectedEntry && this.params.entrydisplay == 'sidebar'" class="entry-container">
         <div class="btn-close" @click="selectedEntry = null"><i class="fa fa-times"></i></div>
         <div v-html="selectedEntry.html_render"></div>
+      </div>
+      <div v-if="selectedEntry && this.params.entrydisplay == 'popup'" class="popupentry-container">
+        <slot name="popupentry" v-bind="selectedEntry"></slot>
       </div>
     </div>
   `
