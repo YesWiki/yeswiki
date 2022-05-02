@@ -2,64 +2,69 @@ const ConditionsChecking = {
     conditionsCache: [],
     fieldNamesCache: {},
     triggersCache: {},
-    operationsLists: [' and ',' or ','(',')','!(','not ('],
-    conditionsList: ['==','!=',' in','|length ==','|length !=','|length <','|length <=','|length >=','|length >','is empty','is not empty'],
+    boolList: ['false','true'],
+    operationsList: ['!(','not(','not (','(',')'],
+    operationsListIncludInSpaceParenthesis: ['and','or'],
+    conditionsList: ['==','!=',' in','|length ==','|length !=','|length <','|length <=','|length >=','|length >',' is empty',' is not empty'],
     pregQuote: function (input){
         return (input + '').replace(new RegExp(
             '[.\\[\\]\\^(){}!=\\\\+*?$<>|:]','g'
         ),'\\$&');
     },
-    getFirstOperation: function (parsingObject){
-        let condition = parsingObject.restOfCondition.trim();
-        let indexOfOperation = -1;
-        let operation = "";
-        let operationFull = "";
-        for (let index = 0; index < this.operationsLists.length; index++) {
-            let element = this.operationsLists[index];
-            let rest = condition.match(new RegExp("("+this.pregQuote(element)+")(.*)$",'i'));
-            let newIndex = (rest == undefined ) ? -1 : condition.length - rest[0].length;
-            if ( newIndex > -1 && (newIndex < indexOfOperation || indexOfOperation < 0)){
-                indexOfOperation = newIndex;
-                operation = element;
-                operationFull = rest[1];
-            }
+    updateOperationData: function (data, rest, condition, element){
+        let newIndex = (rest == undefined ) ? -1 : condition.length - rest[0].length;
+        if (Object.keys(data).length == 0 || data.indexOf == undefined){
+            data.indexOf = -1;
         }
+        if ( newIndex > -1 && (newIndex < data.indexOf || data.indexOf < 0)){
+            data.indexOf = newIndex;
+            data.element = element;
+            data.fullRest = rest[1];
+        }
+    },
+    updateObject: function (data, condition, names){
         let result = {};
-        if (indexOfOperation < 0){
-            result.currentCondition = condition;
-            result.restOfCondition = "";
-            result.operation = "";
+        if (data.indexOf < 0){
+            result[names.current] = condition;
+            result[names.rest] = "";
+            result[names.element] = "";
         } else {
-            result.currentCondition = condition.substr(0,indexOfOperation).trim();
-            result.operation = operation;
-            result.restOfCondition = condition.substr(indexOfOperation+operationFull.length).trim();
+            result[names.current] = condition.substr(0,data.indexOf).trim();
+            result[names.element] = data.element;
+            result[names.rest] = condition.substr(data.indexOf+data.fullRest.length).trim();
         }
         return result;
     },
-    addCondition: function (condition, baseObject){
+    getFirstOperation: function (parsingObject){
+        let condition = parsingObject.restOfCondition.trim();
+        let data = {};
+        for (let index = 0; index < this.operationsList.length; index++) {
+            let element = this.operationsList[index];
+            let rest = condition.match(new RegExp(`(${this.pregQuote(element)})(.*)$`,'i'));
+            this.updateOperationData(data,rest,condition,element);
+        }
+        for (let index = 0; index < this.operationsListIncludInSpaceParenthesis.length; index++) {
+            let element = this.operationsListIncludInSpaceParenthesis[index];
+            let rest = condition.match(new RegExp(`((?<= |\\)|^)${element}(?= |\\)))(.*)$`,'i'));
+            this.updateOperationData(data,rest,condition,element);
+        }
+        return this.updateObject(data, condition, {current:"currentCondition", rest:"restOfCondition",element:"operation"});
+    },
+    addCondition: function (condition){
         let conditionLocal = condition.trim();
-        let indexOfCondition = -1;
-        let typeOfCondition = "";
-        let typeOfConditionFull = "";
+        let data = {
+        };
         for (let index = 0; index < this.conditionsList.length; index++) {
             let element = this.conditionsList[index];
             let rest = conditionLocal.match(new RegExp("("+this.pregQuote(element)+")(.*)$",'i'));
-            let newIndex = (rest == undefined ) ? -1 : condition.length - rest[0].length;
-            if ( newIndex > -1 && (newIndex < indexOfCondition || indexOfCondition < 0)){
-                indexOfCondition = newIndex;
-                typeOfCondition = element;
-                typeOfConditionFull = rest[1];
-            }
+            this.updateOperationData(data,rest,conditionLocal,element);
         }
-        if (indexOfCondition < 0){
-            baseObject.leftPart = "";
-            baseObject.rigthPart = "";
-            baseObject.typeOfCondition = "";
-        } else {
-            baseObject.leftPart = conditionLocal.substr(0,indexOfCondition).trim();
-            baseObject.typeOfCondition = typeOfCondition;
-            baseObject.rigthPart = conditionLocal.substr(indexOfCondition+typeOfConditionFull.length).trim();
+        for (let index = 0; index < this.boolList.length; index++) {
+            let element = this.boolList[index];
+            let rest = conditionLocal.match(new RegExp("("+this.pregQuote(element)+")(.*)$",'i'));
+            this.updateOperationData(data,rest,conditionLocal,element);
         }
+        return this.updateObject(data, conditionLocal, {current:"leftPart", rest:"rightPart",element:"typeOfCondition"});
     },
     getCheckboxValues: function (field){
         let result = [];
@@ -215,13 +220,15 @@ const ConditionsChecking = {
     },
     renderCondition: function(structuredCondition){
         if (typeof structuredCondition.leftPart !== "undefined" &&
-            typeof structuredCondition.rigthPart !== "undefined" &&
+            typeof structuredCondition.rightPart !== "undefined" &&
             typeof structuredCondition.typeOfCondition !== "undefined"){
             return this.renderConditionSecured(
                 structuredCondition.leftPart.trim(),
                 structuredCondition.typeOfCondition.trim(),
-                structuredCondition.rigthPart.trim()
+                structuredCondition.rightPart.trim()
             );
+        } else {
+            console.log(structuredCondition)
         }
         return "";
     },
@@ -244,14 +251,20 @@ const ConditionsChecking = {
             case '|length >':
             case '|length >=':
                 return ` this.isLength("${fieldName}","${values}","${condition.substr("|length ".length)}")`;
+            case 'false':
+                return ' false ';
+            case 'true':
+                return ' true ';
+            case '':
+                return '';
             default:
                 break;
         }
         return " false ";
     },
     renderBadFormatingError: function (structuredCondition,conditionData){
-        if (typeof structuredCondition.leftPart !== "undefined") {
-            console.warn(`${structuredCondition.leftPart} is not waited before '${structuredCondition.operation}' in '${conditionData.condition}'`);
+        if (typeof structuredCondition.leftPart !== "undefined" && structuredCondition.leftPart.length != 0) {
+            console.warn(`Left part ('${structuredCondition.leftPart}') should be empty before '${structuredCondition.operation}' in '${conditionData.condition}'`);
             return true;
         }
         return false;
@@ -421,6 +434,7 @@ const ConditionsChecking = {
                             stringToEval = stringToEval+structuredCondition.operation
                         }
                         break;
+                    case "not(":
                     case "not (":
                         if (this.renderBadFormatingError(structuredCondition,conditionData)) {
                             errorFound = true;
@@ -431,10 +445,10 @@ const ConditionsChecking = {
                     case ")":
                         stringToEval = stringToEval+this.renderCondition(structuredCondition)+structuredCondition.operation
                         break;
-                    case " and ":
+                    case "and":
                         stringToEval = stringToEval+this.renderCondition(structuredCondition)+"&&";
                         break;
-                    case " or ":
+                    case "or":
                         stringToEval = stringToEval+this.renderCondition(structuredCondition)+"||";
                         break;
                     default:
@@ -605,54 +619,20 @@ const ConditionsChecking = {
             };
             let structuredCondition = this.conditionsCache[id].structuredConditions[indexForStructuredCondition];
             if (parsingObject.currentCondition.length > 0){
-                this.addCondition(
-                    parsingObject.currentCondition,
-                    structuredCondition);
+                structuredCondition = this.addCondition(
+                    parsingObject.currentCondition);
+            } else {
+                structuredCondition.leftPart = "";
+                structuredCondition.rightPart = "";
+                structuredCondition.typeOfCondition = "";
             }
             // activate trigger
             if (typeof structuredCondition.leftPart !== "undefined" && structuredCondition.leftPart.length > 0){
                 let fieldName = structuredCondition.leftPart.trim();
                 this.registerFieldName(fieldName,id);
             }
-        }
-        let structuredConditions = this.conditionsCache[id].structuredConditions;
-        if (Object.keys(structuredConditions).length > 0){
-            // clean ')' after 'in 
-            let indexesToRemove = [];
-            for (let index = 1; index < Object.keys(structuredConditions).length; index++) {
-                let previousStructuredCondition = structuredConditions[index-1];
-                let currentStructuredCondition = structuredConditions[index];
-                if ((
-                        previousStructuredCondition.typeOfCondition == " in (" ||
-                        previousStructuredCondition.typeOfCondition == " in("||
-                        previousStructuredCondition.typeOfCondition == " IN("||
-                        previousStructuredCondition.typeOfCondition == " IN ("
-                    ) && previousStructuredCondition.operation == ")"
-                    && typeof currentStructuredCondition.leftPart == "undefined"
-                    ){
-                    structuredConditions[index - 1].operation = currentStructuredCondition.operation;
-                    indexesToRemove.push(index);
-                }
-            }
-            let lastStructuredCondition = structuredConditions[Object.keys(structuredConditions).length-1];
-            if ((
-                    lastStructuredCondition.typeOfCondition == " in (" ||
-                    lastStructuredCondition.typeOfCondition == " in(" ||
-                    lastStructuredCondition.typeOfCondition == " IN(" ||
-                    lastStructuredCondition.typeOfCondition == " IN ("
-                ) && lastStructuredCondition.operation == ")"){
-                structuredConditions[Object.keys(structuredConditions).length-1].operation = "";
-            }
-            let delta = 0;
-            let maxIndex = Object.keys(structuredConditions).length;
-            for (let index = 1; index < maxIndex; index++) {
-                if (indexesToRemove.indexOf(index) > -1){
-                    delete this.conditionsCache[id].structuredConditions[index];
-                    delta = delta + 1;
-                } else if (delta > 0){
-                    this.conditionsCache[id].structuredConditions[index-delta] = this.conditionsCache[id].structuredConditions[index];
-                    delete this.conditionsCache[id].structuredConditions[index];
-                }
+            for (const key in structuredCondition) {
+                this.conditionsCache[id].structuredConditions[indexForStructuredCondition][key] = structuredCondition[key];
             }
         }
     },
