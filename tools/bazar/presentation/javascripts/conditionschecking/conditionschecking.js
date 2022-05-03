@@ -468,15 +468,19 @@ const ConditionsChecking = {
                 display = false;
             }
             // for debug console.log(stringToEval+" => "+display)
+            // extract no clean param
+            let clean = $(conditionData.node).data('noclean') != true;
             if (display) {
                 let previousStateVisible = ($(conditionData.node).filter(':visible').length > 0);
                 $(conditionData.node).show();
-                if (!previousStateVisible) {
+                if (clean && !previousStateVisible) {
                     this.setDefaultChildren(conditionData.node);
                 }
             } else {
                 $(conditionData.node).hide();
-                this.emptyChildren(conditionData.node);
+                if (clean) {
+                    this.emptyChildren(conditionData.node);
+                }
             }
         }
     },

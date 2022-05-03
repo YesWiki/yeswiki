@@ -224,8 +224,12 @@ return [
         " - les espaces en trop sont retirés automatiquement{\\n}".
         " - les opérations sont normalement insensibles à la casse",
     "BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL" => "Affichage conditionnel",
-    "BAZ_FORM_EDIT_CONDITION_LABEL" => "Condition",
-    "BAZ_FORM_EDIT_CONDITIONCHECKING_END" => "Fin de condition",
+    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL" => "Condition",
+    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_END" => "Fin de condition",
+    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_LABEL" => "Ne pas effacer au masquage",
+    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION" => "Effacer",
+    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION" => "Ne pas effacer",
+    "BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT" => "Pour effacer ou non le contenu de ce qui est masqué",
 
     // templates/entries/index-dynamic-temapltes/BazarCalendar_ButtonICS.js
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => "Ajouter à votre calendrier",
