@@ -102,12 +102,10 @@ Vue.component('BazarMap', {
       if (entry.marker) return entry.marker
       try {
         entry.marker = L.marker([entry.bf_latitude, entry.bf_longitude], { riseOnHover: true });
-        let isModal = (this.params.entrydisplay == 'modal' || this.params.entrydisplay == 'modaliframe');
-        let tagName = isModal ? 'a' : 'div';
-        let isExternal = this.$root.isExternalUrl(entry);
-        let isIframe = isExternal || (this.params.entrydisplay == 'modaliframe')
-        let url = entry.url + (isIframe ? '/iframe':'');
-        let modalData = isModal ? 'data-size="modal-lg"' + (isIframe ? ' data-iframe="1"':''):'';
+        let isLink = (this.isModalDisplay() || this.isDirectLinkDisplay() || this.isNewTabDisplay());
+        let tagName =  isLink ? 'a' : 'div';
+        let url = entry.url + (this.isModalDisplay() ? '/iframe':'');
+        let modalData = this.isModalDisplay() ? 'data-size="modal-lg" data-iframe="1"' : '';
         entry.marker.setIcon(
           L.divIcon({
             className: `bazar-marker ${this.params.smallmarker}`,
@@ -119,12 +117,19 @@ Vue.component('BazarMap', {
                   ${entry.markerhover || entry.bf_titre}
                 </span>
               </div>
-              <${tagName} class="bazar-entry${isModal ? ' modalbox':''}" ${isModal ? `href="${url}"`:''} style="color: ${entry.color}" ${modalData}>
+              <${tagName} class="bazar-entry${this.isModalDisplay() ? ' modalbox': ''}" `+
+              `${isLink ? `href="${url}" title="${entry.bf_titre}"`:''} style="color: ${entry.color}" ${modalData}>
                 <i class="${entry.icon || 'fa fa-bullseye'}"></i>
               </${tagName}>`,
           })
         );
-        if (!isModal){
+        if (this.isNewTabDisplay()){
+          entry.marker.on('click', function() {
+            event.preventDefault();
+            window.open(entry.url);
+            this.selectedEntry = entry
+          });
+        } else if (!isLink ){
           entry.marker.on('click', (ev) => {
             this.selectedEntry = entry
           });
@@ -134,7 +139,16 @@ Vue.component('BazarMap', {
         entry.marker = null
         console.error(`Entry ${entry.id_fiche} has invalid geolocation`, entry, e)
       }
-    }
+    },  
+    isModalDisplay: function (){
+      return (this.params.entrydisplay != undefined && this.params.entrydisplay == 'modal');
+    },
+    isNewTabDisplay: function (){
+      return (this.params.entrydisplay != undefined && this.params.entrydisplay == 'newtab');
+    },
+    isDirectLinkDisplay: function (){
+      return (this.params.entrydisplay != undefined && this.params.entrydisplay == 'direct');
+    },
   },
   watch: {
     selectedEntry: function (newVal, oldVal) {
