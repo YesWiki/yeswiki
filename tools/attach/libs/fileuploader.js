@@ -1459,7 +1459,13 @@ $(document).ready(function () {
     let anchorId = $(this).data('anchor');
     let disabledUploadButton = $(this).data('disabledUploadButton') === true;
     anchorId = (anchorId && $(anchorId).length > 0) ? anchorId : '#ACEditor .aceditor-toolbar' ;
-    $(this).appendTo($(anchorId));
+    let anchor = $(anchorId);
+    let actionsBuilderButton = $(anchor).find('.btn-group.actions-builder-button').last();
+    if (actionsBuilderButton == undefined || actionsBuilderButton.length == 0){
+      $(this).appendTo($(anchor));
+    } else {
+      $(actionsBuilderButton).before($(this));
+    }
     if (!disabledUploadButton) {
       $(this).uploadbutton();
     }

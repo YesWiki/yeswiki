@@ -218,7 +218,7 @@ var SYNTAX = {
         if (textarea.prop('id') != 'body'){
           textarea.addClass("action-builder-anchor");
         }
-        var result = '<div class="btn-group">' +
+        var result = '<div class="btn-group actions-builder-button">' +
                '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang['ACEDITOR_ACTIONS']+'  <span class="caret"></span></a>' +
                '<ul class="dropdown-menu component-action-list">';
         for(var actionGroupName in actionsBuilderData.action_groups) {     
