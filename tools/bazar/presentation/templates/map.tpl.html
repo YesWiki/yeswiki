@@ -178,6 +178,7 @@ if (count($fiches)>0) :
 						}
 
 						$styleJs = '' ;
+						$isVisibleByDefault = false;
 						if( $layerOptions!=null ){
 							// extract 'visiblebydefault'
 							if (preg_match_all("/visiblebydefault\\s*;?/i",$layerOptions,$matches)){
