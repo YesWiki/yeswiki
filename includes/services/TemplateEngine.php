@@ -155,8 +155,8 @@ class TemplateEngine
                 return $basePath.$image_dest;
             }
         });
-        $this->addTwigHelper('hasAcl', function ($acl, $tag = "") {
-            return $this->wiki->services->get(AclService::class)->check($acl, null, true, $tag);
+        $this->addTwigHelper('hasAcl', function ($acl, $tag = "", $adminCheck = true) {
+            return $this->wiki->services->get(AclService::class)->check($acl, null, $adminCheck, $tag);
         });
     }
 
