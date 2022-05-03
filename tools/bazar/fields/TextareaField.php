@@ -345,10 +345,9 @@ class TextareaField extends BazarField
      */
     private function sanitizeHTMLInWikiCode(string $value)
     {
-        $preformattedDirtyHTML = str_replace('""', '@@', $value);
+        $preformattedDirtyHTML = str_replace(['@@','""'], ['\\@\\@\\','@@'], $value);
         $preformattedCleanHTML = $this->getService(HtmlPurifierService::class)->cleanHTML($preformattedDirtyHTML);
-        $preformattedCleanHTML = str_replace('""', '\'\'', $preformattedCleanHTML);
-        return str_replace('@@', '""', $preformattedCleanHTML);
+        return str_replace(['""','@@','\\@\\@\\'], ['\'\'','""','@@'], $preformattedCleanHTML);
     }
 
     /**
