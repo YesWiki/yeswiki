@@ -30,7 +30,7 @@
           :data-iframe="1" :href="`${entry.url}/iframe`"
         {% endif %}
         {% if isLink %}
-          :href="`${entry.url}{{ isModal ? '/iframe' : ''}}`"
+          :href="`${entry.url + (({{ isModal ? 'true' : 'false' }} || $root.isInIframe()) ? '/iframe' : '')}`"
           :title="entry.title"
         {% endif %}
         >

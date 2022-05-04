@@ -123,7 +123,13 @@ Vue.component('BazarMap', {
               </${tagName}>`,
           })
         );
-        if (this.isNewTabDisplay()){
+        if (this.isDirectLinkDisplay()){
+          let BazarMap = this;
+          entry.marker.on('click', function() {
+            event.preventDefault();
+            window.location = entry.url + (BazarMap.$root.isInIframe() ? '/iframe' : '');
+          });
+        } else if (this.isNewTabDisplay()){
           entry.marker.on('click', function() {
             event.preventDefault();
             window.open(entry.url);

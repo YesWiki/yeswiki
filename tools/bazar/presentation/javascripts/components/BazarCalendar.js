@@ -95,7 +95,7 @@ Vue.component('BazarCalendar', {
         window.open(info.event.url);
       } else if (this.isDirectLinkDisplay()){
         info.jsEvent.preventDefault();
-        window.location = info.event.url;
+        window.location = info.event.url+ (this.$root.isInIframe() ? '/iframe' : '');
       } else if (['listWeek','listMonth','listYear'].indexOf(info.view.type) > -1){
         info.jsEvent.preventDefault(); // don't let the browser navigate
         $(info.el).find('a').first().click();
