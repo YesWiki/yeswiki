@@ -219,6 +219,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return entry.url !== wiki.url(entry.id_fiche);
       },
+      isInIframe(){
+        return (window != window.parent);
+      },
       getExternalEntry(entry){
         let url = entry.url+'/iframe';
         Vue.set(entry, 'html_render', `<iframe src="${url}" width="500px" height="600px" style="border:none;"></iframe>`)

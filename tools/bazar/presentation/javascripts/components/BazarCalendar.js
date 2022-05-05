@@ -48,7 +48,13 @@ Vue.component('BazarCalendar', {
       return (date.length <= 10);
     },
     isModalDisplay: function (){
-      return (this.params.entrydisplay == undefined || this.params.entrydisplay.length == 0 || this.params.entrydisplay == 'modal' || this.params.entrydisplay == 'modaliframe');
+      return (this.params.entrydisplay == undefined || this.params.entrydisplay.length == 0 || this.params.entrydisplay == 'modal' || ["modal","newtab","direct","sidebar"].indexOf(this.params.entrydisplay) == -1);
+    },
+    isNewTabDisplay: function (){
+      return (this.params.entrydisplay != undefined && this.params.entrydisplay == 'newtab');
+    },
+    isDirectLinkDisplay: function (){
+      return (this.params.entrydisplay != undefined && this.params.entrydisplay == 'direct');
     },
     formatEndDate: function(entry){
       // Fixs bug, when no time is specified, is the event is on multiple day, calendJs show it like
@@ -84,9 +90,12 @@ Vue.component('BazarCalendar', {
       return endDateRaw;
     },
     manageClick: function(info) {
-      if (this.params.entrydisplay == 'newtab'){
+      if (this.isNewTabDisplay()){
         info.jsEvent.preventDefault(); // don't let the browser navigate
         window.open(info.event.url);
+      } else if (this.isDirectLinkDisplay()){
+        info.jsEvent.preventDefault();
+        window.location = info.event.url+ (this.$root.isInIframe() ? '/iframe' : '');
       } else if (['listWeek','listMonth','listYear'].indexOf(info.view.type) > -1){
         info.jsEvent.preventDefault(); // don't let the browser navigate
         $(info.el).find('a').first().click();
@@ -118,25 +127,21 @@ Vue.component('BazarCalendar', {
       let existingEvent = this.getEventById(entryId);
       if (!existingEvent && typeof entry.bf_date_debut_evenement != "undefined") {
         let backgroundColor = (entry.color == undefined || entry.color.length == 0) ? "": entry.color;
-        let isExternal = this.$root.isExternalUrl(entry);
-        let isIframe = isExternal || this.params.entrydisplay == 'modaliframe';
         let newEvent = {
           id: entryId,
           title: entry.bf_titre,
           start: entry.bf_date_debut_evenement,
           end: this.formatEndDate(entry),
-          url: entry.url + ((this.isModalDisplay() && isIframe) ? '/iframe':''),
+          url: entry.url + (this.isModalDisplay() ? '/iframe':''),
           allDay: this.isAllDayDate(entry.bf_date_debut_evenement),
-          className: "bazar-entry"+(this.isModalDisplay() ?  " modalbox":"")+(isExternal ?  " new-window":""),
+          className: "bazar-entry"+(this.isModalDisplay() ?  " modalbox":""),
           backgroundColor: backgroundColor,
           borderColor: backgroundColor,
           extendedProps: {
             icon: (entry.icon == undefined || entry.icon.length == 0) ? "": `<i class="${entry.icon}">&nbsp;</i>`,
             htmlattributes: ((entry.html_data != undefined) ? entry.html_data : '')+
-              (isIframe ? ' data-iframe="1"':'')+
-              ' data-size="modal-lg"',
-            isExternal: isExternal,
-            isIframe:isIframe
+              (this.isModalDisplay() ? ' data-iframe="1"':'')+
+              ' data-size="modal-lg"'
           }
         }
         return newEvent;
@@ -171,14 +176,19 @@ Vue.component('BazarCalendar', {
         $(element).find('.fc-list-event-title a').each(function(){
           $(this).addClass("modalbox");
           $(this).attr("data-size","modal-lg");
-          if (event.extendedProps.isIframe){
-            $(this).attr("data-iframe","1");
-          }
+          $(this).attr("data-iframe","1");
+          $(this).attr("title",event.title);
+        });
+      } else if ($(element).hasClass("fc-list-event") && this.isNewTabDisplay()){
+        $(element).find('.fc-list-event-title a').each(function(){
+          $(this).addClass("new-window");
+          $(this).attr("title",event.title);
         });
       }
       if (!$(element).hasClass("toolTipDefined")){
         $(element).tooltip({title:event.title, html:true});
         $(element).addClass("toolTipDefined");
+        $(element).attr("title",event.title);
       }
     }
   },

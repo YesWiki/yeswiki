@@ -333,9 +333,9 @@ actions:
         default: modal
         advanced: true
         options:
+          direct: _t(AB_bazarcarto_entrydisplay_option_direct)
           newtab: _t(AB_bazarcarto_entrydisplay_option_newtab)
           modal: _t(AB_bazarcarto_entrydisplay_option_modal)
-          modaliframe: _t(AB_bazarcarto_entrydisplay_option_modaliframe)
   bazarcarto:
     label: _t(AB_bazarcarto_label)
     description: _t(AB_bazarcarto_description)
@@ -412,9 +412,9 @@ actions:
         advanced: true
         showif: dynamic
         options:
+          direct: _t(AB_bazarcarto_entrydisplay_option_direct)
           sidebar: _t(AB_bazarcarto_entrydisplay_option_sidebar)
           modal: _t(AB_bazarcarto_entrydisplay_option_modal)
-          modaliframe: _t(AB_bazarcarto_entrydisplay_option_modaliframe)
           newtab: _t(AB_bazarcarto_entrydisplay_option_newtab)
       displayfields:
         type: correspondance
@@ -494,11 +494,10 @@ actions:
         default: "modal"
         value: "modal"
         advanced: true
-        showif: dynamic
         options:
+          direct: _t(AB_bazarcarto_entrydisplay_option_direct)
           sidebar: _t(AB_bazarcarto_entrydisplay_option_sidebar)
           modal: _t(AB_bazarcarto_entrydisplay_option_modal)
-          modaliframe: _t(AB_bazarcarto_entrydisplay_option_modaliframe)
           newtab: _t(AB_bazarcarto_entrydisplay_option_newtab)
       showicalbutton:
         label: _t(AB_bazarcarto_showicalbutton_label)

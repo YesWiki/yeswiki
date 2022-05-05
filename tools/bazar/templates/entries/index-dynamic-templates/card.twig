@@ -6,7 +6,8 @@
 
 {% block display_entries %}
   {% set nbcol = params.nbcol %}
-  {% set isModal = (params.entrydisplay == 'modal' or params.entrydisplay == 'modaliframe' or params.entrydisplay is empty) %}
+  {% set isModal = (params.entrydisplay == 'modal' or params.entrydisplay is empty or params.entrydisplay not in ['modal','direct','newtab']) %}
+  {% set isLink = isModal or (params.entrydisplay == 'direct') %}
   {# Restrict number of columns for horizontal card #}
   {% if nbcol > 2 and params.displayfields.visual and params.style == "horizontal" %}
     {% set nbcol =  2 %}
@@ -20,14 +21,19 @@
       {{ _t('BAZ_NO_RESULT') }}
     </div>
 
-    {% if isModal %}<a{% else %}<div{% endif %} v-for="entry in entriesToDisplay" :key="entry.id_fiche" 
+    {% if isLink %}<a{% else %}<div{% endif %} v-for="entry in entriesToDisplay" :key="entry.id_fiche" 
         class="bazar-entry bazar-card{{ isModal ? ' modalbox' : ''}}" 
-        {% if not isModal %}@click="openEntry(entry)"{% endif %} 
+        {% if not isLink %}@click="openEntry(entry)"{% endif %} 
         :class="{'with-image': Object.keys(entry).includes('visual')}"
-        {% if isModal %}data-size="modal-lg" :href="`${entry.url + {% if params.entrydisplay == 'modaliframe' %}'/iframe'{% else %}(isExternalUrl(entry) ? '/iframe': ''){% endif %}}`"
-        :data-iframe="{% if params.entrydisplay == 'modaliframe' %}1{% else %}`${isExternalUrl(entry) ? '1': '0'}`{% endif %}"
-        :title="entry.title"
-        {% endif %}>
+        {% if isModal %}
+          data-size="modal-lg"
+          :data-iframe="1" :href="`${entry.url}/iframe`"
+        {% endif %}
+        {% if isLink %}
+          :href="`${entry.url + (({{ isModal ? 'true' : 'false' }} || $root.isInIframe()) ? '/iframe' : '')}`"
+          :title="entry.title"
+        {% endif %}
+        >
       
       {# VISUAL AREA #}
       <template v-if="Object.keys(entry).includes('visual')">
@@ -63,7 +69,7 @@
         {# FLOATING AREA #}
         <entry-field :entry="entry" prop="floating" class="area floating-area"></entry-field>
       </div>
-    {% if isModal %}</a>{% else %}</div>{% endif %}
+    {% if isLink %}</a>{% else %}</div>{% endif %}
 
     <spinner-loader v-if="isLoading" class="overlay"></spinner-loader>
   </div>
