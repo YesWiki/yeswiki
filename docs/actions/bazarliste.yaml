@@ -424,13 +424,25 @@ actions:
           popup: _t(AB_bazarcarto_entrydisplay_option_popup)
       popuptemplate: 
         label: _t(AB_bazarcarto_popuptemplate_label)
-        type: text
+        type: list
         default: '_map_popup.twig'
-        hint: _t(AB_bazarcarto_popuptemplate_hint)
+        advanced: true
+        options:
+          '_map_popup.twig': _t(AB_bazarcarto_popuptemplate_whole_entry)
+          'custom': _t(AB_bazarcarto_popuptemplate_custom)
+        showif: 
+          dynamic: true
+          entrydisplay: 'popup'
+      popupcustomtemplate:
+        label: _t(AB_bazarcarto_popupcustomtemplate_label)
+        type: text
+        value: 'custom_map_popup.twig'
+        hint: _t(AB_bazarcarto_popupcustomtemplate_hint)
         advanced: true
         showif: 
           dynamic: true
           entrydisplay: 'popup'
+          popuptemplate: 'custom'
       displayfields:
         type: correspondance
         showif: dynamic
