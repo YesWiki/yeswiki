@@ -39,6 +39,9 @@ Vue.component('BazarMap', {
         },
         maxZoom: 18
       }
+    },
+    wiki() {
+      return wiki;
     }
   },
   methods: {
@@ -112,6 +115,7 @@ Vue.component('BazarMap', {
             className: `bazar-marker ${this.params.smallmarker}`,
             iconSize: JSON.parse(this.params.iconSize),
             iconAnchor: JSON.parse(this.params.iconAnchor),
+            popupAnchor: JSON.parse(this.params.popupAnchor),
             html: `
               <div class="entry-name">
                 <span style="background-color: ${entry.color}">
@@ -164,11 +168,36 @@ Vue.component('BazarMap', {
         if (entry.html_render == undefined) {
           let url = "";
           let bazarMap = this;
+          let excludeFields = "";
+          if (this.params.popupselectedfields && this.params.popupselectedfields.length > 0){
+            let necessaryFieldsArray = this.params.popupselectedfields.split(',');
+            let keys = Object.keys(this.$root.formFields);
+            for (let index = 0; index < keys.length; index++) {
+              const key = keys[index];
+              if (['id_fiche','id_typeannonce','url','color','icon','visual','marker'].indexOf(key) == -1 &&
+                  necessaryFieldsArray.indexOf(key) == -1) {
+                excludeFields = excludeFields.length == 0 ? key : excludeFields + ',' + key;
+              }
+            }
+          }
           if (this.$root.isExternalUrl(entry)){
             url = entry.url.replace(new RegExp(`${entry.id_fiche}$`),`api/entries/html/${entry.id_fiche}`);
+            if (excludeFields.length > 0){
+              url = url + (url.match('?') ? '&' : '?') + 
+              `excludeFields=${excludeFields}`;
+            }
           } else {
             url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
-              fields: 'html_output',
+              ...{
+                fields: 'html_output',
+              },
+              ...(
+                (excludeFields.length > 0)
+                ? {
+                  excludeFields:excludeFields
+                }
+                : {}
+              )
             });
           }
           $.getJSON(url, function(data) {
@@ -270,10 +299,10 @@ Vue.component('BazarMap', {
       </div>`+
       // popup content
       `<div v-if="selectedEntry && this.params.entrydisplay == 'popup'" class="popupentry-container with-html-render">
-        <slot name="popupentrywithhtmlrender" v-bind="selectedEntry"></slot>
+        <slot name="popupentrywithhtmlrender" v-bind="{entry:selectedEntry,wiki:wiki}"></slot>
       </div>
       <div v-if="selectedEntry && this.params.entrydisplay == 'popup'" class="popupentry-container">
-        <slot name="popupentry" v-bind="selectedEntry"></slot>
+        <slot name="popupentry" v-bind="{entry:selectedEntry,wiki:wiki}"></slot>
       </div>
     </div>
   `

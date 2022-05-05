@@ -1,7 +1,7 @@
 .leaflet-popup .BAZ_cadre_fiche,
 .BAZ_cadre_map {
   font-size: 12px;
-  height: 320px;
+  max-height: 320px;
   overflow: auto;
   width: 320px;
   margin: 0;
@@ -216,4 +216,13 @@
 .leaflet-control-container .leaflet-control-zoom-fullscreen.fullscreen-icon:before {
   content: "⇱";
   font-weight: 600;
+}
+
+img.popup-visual {
+  width: 200px;
+  height: auto;
+  max-height: 200px;
+  object-fit: contain;
+  object-position: 50% 50%;
+  margin-bottom: 5px;
 }

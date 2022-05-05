@@ -425,10 +425,11 @@ actions:
       popuptemplate: 
         label: _t(AB_bazarcarto_popuptemplate_label)
         type: list
-        default: '_map_popup.twig'
+        value: '_map_popup.twig'
         advanced: true
         options:
           '_map_popup.twig': _t(AB_bazarcarto_popuptemplate_whole_entry)
+          '_map_popup_only_title_image_and_button.twig': _t(AB_bazarcarto_popuptemplate_only_title_image_and_button)
           'custom': _t(AB_bazarcarto_popuptemplate_custom)
         showif: 
           dynamic: true
@@ -443,6 +444,16 @@ actions:
           dynamic: true
           entrydisplay: 'popup'
           popuptemplate: 'custom'
+      popupselectedfields:
+        type: form-field
+        label: _t(AB_bazarliste_popupselectedfields_label)
+        multiple: true
+        advanced: true
+        default: ""
+        showif: 
+          dynamic: true
+          entrydisplay: 'popup'
+          popuptemplate: '_map_popup.twig'
       displayfields:
         type: correspondance
         showif: dynamic
@@ -452,6 +463,13 @@ actions:
             type: form-field
             label: _t(AB_bazarcarto_displayfields_markhover_label)
             default: bf_titre
+          visual:
+            type: form-field
+            label: _t(AB_bazarliste_displayfields_visual_label)
+            default: ""
+            showif: 
+              entrydisplay: 'popup'
+              popuptemplate: '_map_popup_only_title_image_and_button.twig'
       smallmarker:
         advanced: true
         label: _t(AB_bazarcarto_smallmarker_label)

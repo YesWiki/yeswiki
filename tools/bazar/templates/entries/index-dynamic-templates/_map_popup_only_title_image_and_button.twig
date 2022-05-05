@@ -1,0 +1,7 @@
+<template v-slot:popupentry ="{entry,wiki}">
+  <div>
+    <h3 v-html="entry.bf_titre"></h3>
+    <img v-if="entry.visual" class="popup-visual" :src="`${urlImage(entry,'visual','thumbnails')}`"></img>
+    <a class="btn btn-primary btn-block" :href="wiki.url(entry.id_fiche)">{{ _t('BAZ_SEE_ENTRY') }}</a>
+  </div>
+</template>
