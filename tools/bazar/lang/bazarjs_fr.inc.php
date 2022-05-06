@@ -226,7 +226,7 @@ return [
     "BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL" => "Affichage conditionnel",
     "BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL" => "Condition",
     "BAZ_FORM_EDIT_CONDITIONS_CHECKING_END" => "Fin de condition",
-    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_LABEL" => "Ne pas effacer au masquage",
+    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_LABEL" => "Effacer au masquage",
     "BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION" => "Effacer",
     "BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION" => "Ne pas effacer",
     "BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT" => "Pour effacer ou non le contenu de ce qui est masqué",

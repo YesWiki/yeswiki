@@ -413,7 +413,7 @@ const ConditionsChecking = {
         this.setDefaultCheckbox(element);
         this.setDefaultByTags(element);
     },
-    resolveCondition: function (id){
+    resolveCondition: function (id, cleanSubelements = true, elemsToClean = {}){
         if (typeof this.conditionsCache[id] !== "undefined"){
             let conditionData = this.conditionsCache[id];
             let stack = [];
@@ -453,7 +453,7 @@ const ConditionsChecking = {
                         break;
                     default:
                         if (stack.length > 0){
-                            error = true;
+                            errorFound = true;
                             console.warn(`Unknown operation '${structuredCondition.operation}' in '${conditionData.condition}'`);
                         }
                         stringToEval = stringToEval+this.renderCondition(structuredCondition);
@@ -474,12 +474,20 @@ const ConditionsChecking = {
                 let previousStateVisible = ($(conditionData.node).filter(':visible').length > 0);
                 $(conditionData.node).show();
                 if (clean && !previousStateVisible) {
-                    this.setDefaultChildren(conditionData.node);
+                    if (cleanSubelements){
+                        this.setDefaultChildren(conditionData.node);
+                    } else {
+                        elemsToClean[id] = false;
+                    }
                 }
             } else {
                 $(conditionData.node).hide();
                 if (clean) {
-                    this.emptyChildren(conditionData.node);
+                    if (cleanSubelements){
+                        this.emptyChildren(conditionData.node);
+                    } else {
+                        elemsToClean[id] = true;
+                    }
                 }
             }
         }
@@ -521,7 +529,14 @@ const ConditionsChecking = {
         if (result.type != ""){
             return result;
         }
-        let node = $(`div[class*="group-checkbox-"][class*="${fieldName}"]`);
+        let node = $(`div[class*="group-checkbox-"][class*="${fieldName}"]`).filter(
+            function(index) {
+                let classes = $(this).attr('class').split(" ");
+                return classes.filter(function(className){
+                    return className.slice(-fieldName.length) == fieldName;
+                }).length > 0;
+            }
+        );
         if (node.length > 0){
             let inputs = $(node).find('input[type=checkbox]');
             if (inputs.length > 0 ){
@@ -647,8 +662,15 @@ const ConditionsChecking = {
             conditionschecking.parseCondition(element);
         });
         // init conditions
+        let elemsToClean = {};
         for (let index = 0; index < this.conditionsCache.length; index++) {
-            this.resolveCondition(index);
+            this.resolveCondition(index,false,elemsToClean);
+        }
+        for (const id in elemsToClean) {
+            if (elemsToClean[id]) {
+                let conditionData = this.conditionsCache[id];
+                this.emptyChildren(conditionData.node);
+            }
         }
     }
 }

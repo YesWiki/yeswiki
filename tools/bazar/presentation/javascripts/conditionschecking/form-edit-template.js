@@ -6,8 +6,8 @@ typeUserAttrs = {
                 label: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL'),
                 value: "",
             },
-            noclean: {
-                label: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_LABEL'),
+            clean: {
+                label: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_LABEL'),
                 options: {
                     ' ' : _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION'),
                     noclean: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION'),
@@ -41,7 +41,7 @@ yesWikiMapping = {
             ...defaultMapping,
             ...{
                 1: "condition",
-                2: "noclean",
+                2: "clean",
                 5: "",
                 8: "",
                 9: "",
