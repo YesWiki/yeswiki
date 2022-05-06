@@ -92,6 +92,7 @@ return [
     'YW_CANCEL' => 'Cancel',
     'YW_ACLS_READ' => 'Read rights',
     'YW_ACLS_WRITE' => 'Write rights',
+    'YW_ACLS_COMMENT' => 'Comment rights',
     'YW_CHANGE_OWNER' => 'Change the owner',
     'YW_CHANGE_NOTHING' => 'No changes',
     'YW_CANNOT_CHANGE_ACLS' => 'You cannot change rights on this page',
@@ -452,6 +453,34 @@ return [
     
     // YesWiki\Session class
     'SESSION_YOU_MUST_FIRST_SET_ARGUMENT' => 'You must set argument for object of \YesWiki\Session class',
+
+    // gererdroits
+    'ACLS_RESERVED_FOR_ADMINS' => 'This action is limited to admins',
+    'ACLS_NO_SELECTED_PAGE' => 'No page has been selected.',
+    'ACLS_NO_SELECTED_RIGHTS' => 'No edit rights has been selected.',
+    'ACLS_RIGHTS_WERE_SUCCESFULLY_CHANGED' => 'Right correctly changed',
+    'ACLS_SELECT_PAGES_TO_MODIFY' => 'Check pages that you want to modify et choose an action at the bottom of the page',
+    'ACLS_PAGE' => 'Page',
+    'ACLS_FOR_SELECTED_PAGES' => 'Actions for checked pages above',
+    'ACLS_RESET_SELECTED_PAGES' => 'Reset (with default values defined in',
+    'ACLS_REPLACE_SELECTED_PAGES' => 'Replace (Current rights will be deleted)',
+    'ACLS_HELPER' => 'Split each entry by coma, for example</br>
+    <b>*</b> (every users)</br>
+    <b>+</b> (connected users)</br>
+    <b>%</b> (entry/page owner)</br>
+    <b>@name_of_group</b> (users\' group, ex: @admins)</br>
+    <b>JamesBond</b> (YesWiki name of a user)</br>
+    <b>!SuperCat</b> (negation, SuperCat is not allowed)</br>',
+    'ACLS_MODE_SIMPLE' => 'Simple mode',
+    'ACLS_MODE_ADVANCED' => 'Advanced mode',
+    'ACLS_NO_CHANGE' => 'Change nothing',
+    'ACLS_EVERYBODY' => 'Everyone',
+    'ACLS_AUTHENTIFICATED_USERS' => 'Connected users',
+    'ACLS_OWNER' => 'Page owner',
+    'ACLS_ADMIN_GROUP' => 'Admin group',
+    'ACLS_LIST_OF_ACLS' => 'List of rights separated by coma',
+    'ACLS_UPDATE' => 'Update',
+    'ACLS_COMMENTS_CLOSED' => 'Comments closed',
     
     // include/services/ThemeManager.php
     'THEME_MANAGER_THEME_FOLDER' => 'The theme\'s folder ',

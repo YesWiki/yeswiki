@@ -198,11 +198,13 @@ return [
     // 'BAZ_FORM_EDIT_LISTEFICHES_TEMPLATE_PLACEHOLDER' => 'Exple: template="liste_liens.tpl.html (par défault = accordéon)"',
     // 'BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_LABEL' => 'Type de fiche liée (ou label du champ)',
     // 'BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_PLACEHOLDER' => 'mettre \'checkbox\' ici si vos fiches liées le sont via un checkbox',
-    // 'BAZ_FORM_EDIT_ADDRESS' => 'Adresse',
+    'BAZ_FORM_EDIT_ADDRESS' => 'Address',
 
     'BAZ_FORM_EDIT_UNIQUE_ID' => 'Unique ID',
     'BAZ_FORM_EDIT_NAME' => 'Label',
     'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'Displaying the form builder, you will delete changes done here in the code. Whould you continue without saving changes ?  (Click on "Submit" button in page footer to keep your changes !)',
+    
+    'BAZ_FORM_EDIT_COMMENTS_CLOSED' => 'Comments closed',
 
     // condition checking field
     "BAZ_FORM_CONDITIONSCHEKING_HINT" => "EXPERIMENTAL FIELD{\\n}".

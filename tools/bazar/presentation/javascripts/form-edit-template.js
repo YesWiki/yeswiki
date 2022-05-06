@@ -172,6 +172,16 @@ var aclsOptions = {
   },
   ...formattedGroupList,
 };
+var aclsCommentOptions = {
+  ...{
+    "comments-closed": _t('BAZ_FORM_EDIT_COMMENTS_CLOSED')
+  },
+  ...visibilityOptions,
+  ...{
+    user: _t('BAZ_FORM_EDIT_USER')
+  },
+  ...formattedGroupList,
+};
 var readConf = { label: _t('BAZ_FORM_EDIT_CAN_BE_READ_BY'), options: {...visibilityOptions,...formattedGroupList}, multiple: true };
 var writeconf = { label: _t('BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY'), options: {...visibilityOptions,...formattedGroupList}, multiple: true };
 var searchableConf = {
@@ -459,7 +469,7 @@ var typeUserAttrs = {
   acls: {
     read: { label: _t('BAZ_FORM_EDIT_ACL_READ_LABEL'), options: aclsOptions, multiple: true },
     write: { label: _t('BAZ_FORM_EDIT_ACL_WRITE_LABEL'), options: aclsOptions, multiple: true },
-    comment: { label: _t('BAZ_FORM_EDIT_ACL_COMMENT_LABEL'), options: aclsOptions, multiple: true },
+    comment: { label: _t('BAZ_FORM_EDIT_ACL_COMMENT_LABEL'), options: aclsCommentOptions, multiple: true },
   },
   metadatas: {
     theme: {
@@ -852,6 +862,33 @@ var I18nOption = {
   zh: 'zh-CN',
 };
 
+function copyMultipleSelectValues(currentField){
+  let currentId = $(currentField).prop('id');
+  // based on formBuilder/Helpers.js 'incrementId' function
+  let split = currentId.lastIndexOf('-');
+  let clonedFieldNumber = parseInt(currentId.substring(split + 1)) - 1;
+  let baseString = currentId.substring(0, split);
+  let clonedId = `${baseString}-${clonedFieldNumber}`;
+
+  // find cloned field 
+  let clonedField = $(`#${clonedId}`);
+  if (clonedField.length > 0){
+    // copy multiple select
+    let clonedFieldSelects = $(clonedField).find('select[multiple=true]');
+    clonedFieldSelects.each(function(){
+      let currentSelect = $(currentField).find(`select[multiple=true][name=${$(this).prop('name')}]`);
+      currentSelect.val($(this).val());
+    });
+  }
+}
+
+var typeUserEvents = {};
+for (const key in typeUserAttrs) {
+  typeUserEvents[key] = {
+    onclone: copyMultipleSelectValues
+  };
+}
+
 function initializeFormbuilder(formAndListIds) {
   // FormBuilder conf
   formBuilder = $formBuilderContainer.formBuilder({
@@ -884,6 +921,7 @@ function initializeFormbuilder(formAndListIds) {
     ],
     typeUserAttrs: typeUserAttrs,
     typeUserDisabledAttrs: typeUserDisabledAttrs,
+    typeUserEvents: typeUserEvents,
     inputSets:inputSets,
     onAddField: function(fieldId, field) {
       if (!field.hasOwnProperty("read")){
@@ -893,7 +931,7 @@ function initializeFormbuilder(formAndListIds) {
         field.write = [" * "];// everyone by default
       };
       if (field.type === "acls" && !field.hasOwnProperty("comment")){
-        field.comment = [" * "];// everyone by default
+        field.comment = ["comments-closed"];// comments-closed by default
       }
     },
   });

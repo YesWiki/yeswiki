@@ -56,6 +56,10 @@ typeUserDisabledAttrs = {
   }
 }
 
+typeUserEvents['calc'] = {
+  onclone: copyMultipleSelectValues
+};
+
 fields.push({
   label: _t('BAZ_FORM_EDIT_CALC_LABEL'),
   name: "calc",

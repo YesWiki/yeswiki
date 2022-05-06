@@ -93,6 +93,7 @@ return [
     // 'YW_CANCEL' => 'Annuler',
     // 'YW_ACLS_READ' => 'Droits de lecture',
     // 'YW_ACLS_WRITE' => 'Droits d\'écriture',
+    // 'YW_ACLS_COMMENT' => 'Droits pour commenter',
     // 'YW_CHANGE_OWNER' => 'Changer le propri&eacute;taire',
     // 'YW_CHANGE_NOTHING' => 'Ne rien modifier',
     // 'YW_CANNOT_CHANGE_ACLS' => 'Vous ne pouvez pas g&eacute;rer les permissions de cette page',
@@ -489,6 +490,7 @@ return [
     // 'ACLS_ADMIN_GROUP' => 'Groupe admin',
     // 'ACLS_LIST_OF_ACLS' => 'Liste des droits séparés par des virgules',
     // 'ACLS_UPDATE' => 'Mettre &agrave; jour',
+    // 'ACLS_COMMENTS_CLOSED' => 'Commentaires fermés',
 
 
     // include/services/ThemeManager.php
