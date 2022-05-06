@@ -224,8 +224,12 @@ return [
         " - spaces or automaticaly removed{\\n}".
         " - operations are waited to be case insensitive",
     "BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL" => "Conditionnal display",
-    "BAZ_FORM_EDIT_CONDITION_LABEL" => "Condition",
-    "BAZ_FORM_EDIT_CONDITIONCHECKING_END" => "End of condition",
+    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL" => "Condition",
+    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_END" => "End of condition",
+    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_LABEL" => "Clean when hiding",
+    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION" => "Clean",
+    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION" => "Do not clean",
+    "BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT" => "To clean or not the content of what is being hidden",
 
     // templates/entries/index-dynamic-temapltes/BazarCalendar_ButtonICS.js
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => "Add to your agenda",
