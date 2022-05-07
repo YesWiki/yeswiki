@@ -431,6 +431,8 @@ class EntryManager
             $results = $this->dbService->loadAll($requete);
             $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
             foreach ($results as $page) {
+                // save owner to reduce sql calls
+                $this->pageManager->cacheOwner($page);
                 // not possible to init the Guard in the constructor because of circular reference problem
                 $filteredPage = (!$this->wiki->UserIsAdmin() && $useGuard)
                     ? $this->wiki->services->get(Guard::class)->checkAcls($page, $page['tag'])

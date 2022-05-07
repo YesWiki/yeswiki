@@ -127,7 +127,7 @@ class PageManager
         $this->pageCache[$pageTag] = $page;
     }
 
-    private function cacheOwner($page)
+    public function cacheOwner($page)
     {
         if (!empty($page['tag']) && isset($page['owner'])) {
             $this->ownersCache[$page['tag']] = $page['owner'];
