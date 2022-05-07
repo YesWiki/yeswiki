@@ -203,10 +203,13 @@ class AclService
     public function check($acl, $user = null, $adminCheck = true, $tag = '', $mode = '')
     {
         if (!$user) {
-            $user = $this->userManager->getLoggedUserName();
+            $user = $this->userManager->getLoggedUser();
+            $username = !empty($user['name']) ? $user['name'] : null;
+        } else {
+            $username = $user;
         }
 
-        if ($adminCheck && $this->wiki->UserIsAdmin($user)) {
+        if ($adminCheck && !empty($username) && $this->wiki->UserIsAdmin($username)) {
             return true;
         }
 
@@ -234,7 +237,7 @@ class AclService
                         $result = $std_response;
                         break;
                     case '+': // registered users
-                        $result = ($this->userManager->getOneByName($user)) ? $std_response : !$std_response ;
+                        $result = (!empty($username) && $this->userManager->getOneByName($username)) ? $std_response : !$std_response ;
                         break;
                     case '%': // owner
                         if ($mode == 'creation') {
@@ -253,7 +256,7 @@ class AclService
                         $gname = substr($line, 1);
                         // paranoiac: avoid line = '@'
                         if ($gname) {
-                            if ($this->wiki->UserIsInGroup($gname, $user, false/* we have allready checked if user was an admin */)) {
+                            if (!empty($username) && $this->wiki->UserIsInGroup($gname, $username, false/* we have allready checked if user was an admin */)) {
                                 $result = $std_response ;
                             } else {
                                 $result = ! $std_response ;
@@ -263,7 +266,7 @@ class AclService
                         }
                         break;
                     default: // simple user entry
-                        if ($line == $user) {
+                        if (!empty($username) && $line == $username) {
                             $result = $std_response ;
                         } else {
                             $result = ! $std_response ;
