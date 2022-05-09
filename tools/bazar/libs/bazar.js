@@ -491,6 +491,17 @@ $(document).ready(function () {
     try {
       if (requirementHelper.run(this)){
         // formulaire validé, on soumet le formulaire
+        // mais juste avant on change le comportement du bouton pour éviter les validations multiples
+        $(this).find('.form-actions button[type=submit]').each(function(){
+          $(this).attr('disabled',true);
+          $(this).addClass('submit-disabled');
+          $(this).attr('title',_t('BAZ_SAVING'));
+          let button = $(this);
+          setTimeout(function(){
+            // on réactive le bouton au bout de 10s juste pour permettre de forcer une nouvelle validation si jamais ça a planté
+            $(button).removeAttr('disabled');
+          },10000);
+        });
         return true;
       }
     } catch (error) {

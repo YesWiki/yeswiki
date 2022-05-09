@@ -269,6 +269,11 @@ input[type="date"]::-webkit-input-placeholder{
   visibility: hidden !important;
 }
 
+/* submit button disbled */
+#formulaire .form-actions button[type=submit].submit-disabled {
+  cursor: progress;
+}
+
 /*!
  * Datepicker for Bootstrap v1.7.1 (https://github.com/uxsolutions/bootstrap-datepicker)
  *

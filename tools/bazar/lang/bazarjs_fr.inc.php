@@ -68,6 +68,7 @@ return [
     'BAZ_DATESHORT_OCTOBER' => 'Oct',
     'BAZ_DATESHORT_NOVEMBER' => 'Nov',
     'BAZ_DATESHORT_DECEMBER' => 'Déc',
+    'BAZ_SAVING' => 'En cours d\'enregistrement',
 
     // presentation/javascripts/components/BazarMap.js
     'BAZ_FULLSCREEN' => 'Mode plein écran',
