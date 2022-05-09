@@ -17,7 +17,7 @@ CSRF (Cross-site request forgery) is a method of web attack in one click describ
     ```
     - in `twig` template, use `{{ csrfToken('tokenId') }}`. Example for a form (twig):
     ```
-    <input type="hiden" name="tokenNameInForm" value="{{ crssrToken('tokenId')|e('html_attr') }}">
+    <input type="hidden" name="tokenNameInForm" value="{{ csrfToken('tokenId')|e('html_attr') }}">
     ```
  2. when processing a request with the token, check if it is right inspiring of this example :
    ```
