@@ -38,8 +38,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         ParameterBagInterface $params,
         PasswordHasherFactory $passwordHasherFactory,
         SecurityController $securityController
-    )
-    {
+    ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->passwordHasherFactory = $passwordHasherFactory;
@@ -58,14 +57,23 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         return new User($userAsArray);
     }
 
-    public function getOneByName($name, $password = 0): ?User
+    public function getOneByName($name, $password = null): ?User
     {
-        return $this->arrayToUser($this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where name = '" . $this->dbService->escape($name) . "' " . ($password === 0 ? "" : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1'));
+        // use !is_string($password) instead of !$password to allow $password == ""
+        if (!is_string($password) && isset($getOneByNameCacheResults[$name])) {
+            $result = $getOneByNameCacheResults[$name];
+        } else {
+            $result = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where name = '" . $this->dbService->escape($name) . "' " . (!is_string($password) ? "" : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1');
+            if (!is_string($password)) {
+                $getOneByNameCacheResults[$name] = $result;
+            }
+        }
+        return $this->arrayToUser($result);
     }
 
-    public function getOneByEmail($mail, $password = 0): ?User
+    public function getOneByEmail($mail, $password = null): ?User
     {
-        return $this->arrayToUser($this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where email = '" . $this->dbService->escape($mail) . "' " . ($password === 0 ? "" : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1'));
+        return $this->arrayToUser($this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where email = '" . $this->dbService->escape($mail) . "' " . (!is_string($password) ? "" : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1'));
     }
 
     public function getAll($dbFields = ['name', 'password', 'email', 'motto', 'revisioncount', 'changescount', 'doubleclickedit', 'signuptime', 'show_comments']): array
