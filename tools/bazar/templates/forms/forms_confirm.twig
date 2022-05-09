@@ -1,0 +1,33 @@
+<div>
+	<form action="{{ url({params:{
+			vue: 'formulaire',
+			action: type,
+			idformulaire: request.idformulaire ?? 'error'
+		}}) }}"
+		method="post"
+		style="display: inline"
+		>
+		{{ include("@templates/alert-message.twig",{
+			type: "warning",
+			message: 
+				_t(type == 'delete' ? 'BAZ_FORM_DELETE' : 'BAZ_FORM_EMPTY',{'formId':request.idformulaire}) ~ '<br/>' ~
+		    '<b>' ~ _t(type == 'delete' ? 'BAZ_CONFIRM_SUPPRIMER_FORMULAIRE' : 'BAZ_CONFIRM_VIDER_FORMULAIRE') ~ ' ?</b><br/>'
+		}) }}
+		<input type="hidden" name="confirm{{ type == 'delete' ? 'Delete' : 'Empty' }}Token" value="{{ csrfToken({id:"action\\bazar\\forms\\#{type}\\#{request.idformulaire}",refresh:true})|e('html_attr') }}">
+		<input type="submit"
+			class="btn btn-danger" 
+			value="{{ _t(type == 'delete' ? 'BAZ_SUPPRIMER_FORMULAIRE' : 'BAZ_VIDER_FORMULAIRE') }}" 
+			style="vertical-align: middle; display: inline" />
+	</form>
+	<form action="{{ url({params:{
+			vue: 'formulaire'
+		}}) }}"
+		method="post"
+		style="display: inline"
+		>
+		<input type="submit" 
+			value="{{ _t('BAZ_ANNULER') }}" 
+			class="btn btn-default" 
+			style="vertical-align: middle; display: inline" />
+	</form>
+</div>

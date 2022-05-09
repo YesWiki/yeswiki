@@ -44,6 +44,8 @@ return [
     // 'BAZ_INTRO_AJOUT_FORMULAIRE' => '<strong>Pas de formulaire cr&eacute;&eacute; pour l\'instant.</strong><br />Vous pouvez cr&eacute;er un nouveau formulaire manuellement (cliquez sur le bouton avec un signe plus),<br />ou importer les formulaires d\'un YesWiki existant (comme http://yeswiki.net).',
     // 'BAZ_FORMULAIRE_VIDE' => 'Toutes les fiches de ce formulaire ont bien été supprimées.',
     // 'BAZ_VIDER_FORMULAIRE' => 'Vider toutes les données de ce formulaire',
+    'BAZ_FORM_DELETE' => 'Delete form %{formId} :',
+    'BAZ_FORM_EMPTY' => 'Delete all entries of form %{formId} :',
     // 'BAZ_CONFIRM_VIDER_FORMULAIRE' => 'Attention! Toutes les fiches enregistr&eacute;es pour ce formulaire seront perdues, seul le formulaire vide restera disponible.. Etes-vous s&ucirc;rs de vouloir vider ce formulaire de ses fiches associ&eacute;es',
     'BAZ_CONFIRM_SUPPRIMER_FORMULAIRE' => 'Warning! All datas will be lost... Are you sure you want to delete this form and all the associated entries',
     'BAZ_CONFIRM_SUPPRIMER_LISTE' => 'Warning! All datas will be lost... Are you sure you want to delete this list and all the associated data',

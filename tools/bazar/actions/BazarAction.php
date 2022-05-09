@@ -30,7 +30,9 @@ class BazarAction extends YesWikiAction
     public const ACTION_FORM_CREATE = 'new';
     public const ACTION_FORM_EDIT = 'modif';
     public const ACTION_FORM_DELETE = 'delete';
+    public const ACTION_FORM_CONFIRM_DELETE = 'confirm_delete';
     public const ACTION_FORM_EMPTY = 'empty';
+    public const ACTION_FORM_CONFIRM_EMPTY = 'confirm_empty';
     public const ACTION_FORM_CLONE = 'clone';
     public const CHOISIR_TYPE_FICHE = 'choisir_type_fiche';
 
@@ -123,6 +125,14 @@ class BazarAction extends YesWikiAction
                             return $this->getMessageWhenHibernated();
                         }
                         return $formController->delete($_GET['idformulaire']);
+                    case self::ACTION_FORM_CONFIRM_DELETE:
+                    case self::ACTION_FORM_CONFIRM_EMPTY:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
+                        return $this->render("@bazar/forms/forms_confirm.twig", [
+                            'type' => ($action == self::ACTION_FORM_CONFIRM_DELETE) ? 'delete' : 'empty',
+                        ]);
                     case self::ACTION_FORM_EMPTY:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();
