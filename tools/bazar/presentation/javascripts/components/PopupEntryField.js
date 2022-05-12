@@ -61,21 +61,21 @@ export default {
     }
   },
   template: `
-    <div v-if="renderViaEntryField && displayLabel && value">
+    <div v-if="renderViaEntryField && displayLabel && value" v-bind="$attrs">
       <div><strong>{{ label }} :</strong></div>
-      <EntryField :entry="entry" :prop="prop"></EntryField>
+      <EntryField :entry="entry" :prop="prop" v-bind="$attrs"></EntryField>
     </div>
-    <EntryField v-else-if="renderViaEntryField" :entry="entry" :prop="prop"></EntryField>
-    <h3 v-else-if="type == 'titre' && value" v-html="value"></h3>
-    <img v-else-if="type == 'image' && value" class="popup-visual" :src="$root.urlImage(entry,prop,'thumbnails')"></img>
-    <div v-else-if="displayLabel && displayOnOneLine && value">
+    <EntryField v-else-if="renderViaEntryField" :entry="entry" :prop="prop" v-bind="$attrs"></EntryField>
+    <h3 v-else-if="type == 'titre' && value" v-html="value" v-bind="$attrs"></h3>
+    <img v-else-if="type == 'image' && value" class="popup-visual" :src="$root.urlImage(entry,prop,'thumbnails')" v-bind="$attrs"></img>
+    <div v-else-if="displayLabel && displayOnOneLine && value" v-bind="$attrs">
       <strong>{{ label }} :</strong>&nbsp;
       <span v-html="value"></span>
     </div>
-    <div v-else-if="displayLabel && value">
+    <div v-else-if="displayLabel && value" v-bind="$attrs">
       <div><strong>{{ label }} :</strong></div>
       <div v-html="value"></div>
     </div>
-    <div v-else-if="value" v-html="value"></div>
+    <div v-else-if="value" v-html="value" v-bind="$attrs"></div>
   `
 }
