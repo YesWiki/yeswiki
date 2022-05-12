@@ -232,8 +232,7 @@ Vue.component('BazarMap', {
         : $(this.$el).find('.popupentry-container > div').first().html();
       if (entry.marker.popup == undefined){
         if (renderedHtml != undefined && renderedHtml.length != 0){
-          // todo add offset options for popup
-          entry.marker.bindPopup(renderedHtml).openPopup();
+          entry.marker.bindPopup(renderedHtml,{keepInView:true}).openPopup();
         }
       } else {
         entry.marker.popup.openPopup();

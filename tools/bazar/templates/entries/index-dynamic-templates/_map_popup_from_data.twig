@@ -1,0 +1,16 @@
+<template v-slot:popupentry ="{entry}">
+  <div>
+    <div class="popup-entry-content">
+      <template v-for="field in [{{ params.necessary_fields|filter(v => v not in ['url','bf_longitude','bf_latitude'])|map(p => "'#{p}'")|join(',')|raw }}]">
+        <popup-entry-field :entry="entry" :prop="field" :withlabel="1" :oneline="0"></popup-entry-field>
+      </template>
+    </div>
+    <a class="btn btn-primary btn-block btn-popup-map" 
+      :class="{modalbox:!isExternalUrl(entry)}" 
+      :target="{blank:isExternalUrl(entry)}"
+      data-iframe="1"
+      data-size="modal-lg"
+      :title="entry.title || entry.id_fiche"
+      :href="`${entry.url+(!isExternalUrl(entry)?'/iframe':'')}`">{{ _t('BAZ_SEE_ENTRY') }}</a>
+  </div>
+</template>
