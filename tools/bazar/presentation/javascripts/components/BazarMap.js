@@ -1,6 +1,9 @@
 
 import LeafletMarkerCluster from './LeafletMarkerCluster.js'
 
+// allow usage of wiki in templates
+Vue.prototype.wiki = wiki;
+
 Vue.component('BazarMap', {
   props: [ 'params' ],
   components: {
@@ -39,9 +42,6 @@ Vue.component('BazarMap', {
         },
         maxZoom: 18
       }
-    },
-    wiki() {
-      return wiki;
     }
   },
   methods: {
@@ -299,10 +299,10 @@ Vue.component('BazarMap', {
       </div>`+
       // popup content
       `<div v-if="selectedEntry && this.params.entrydisplay == 'popup'" class="popupentry-container with-html-render">
-        <slot name="popupentrywithhtmlrender" v-bind="{entry:selectedEntry,wiki:wiki}"></slot>
+        <slot name="popupentrywithhtmlrender" v-bind="{entry:selectedEntry}"></slot>
       </div>
       <div v-if="selectedEntry && this.params.entrydisplay == 'popup'" class="popupentry-container">
-        <slot name="popupentry" v-bind="{entry:selectedEntry,wiki:wiki}"></slot>
+        <slot name="popupentry" v-bind="{entry:selectedEntry}"></slot>
       </div>
     </div>
   `

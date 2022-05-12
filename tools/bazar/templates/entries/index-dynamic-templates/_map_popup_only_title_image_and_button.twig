@@ -1,4 +1,4 @@
-<template v-slot:popupentry ="{entry,wiki}">
+<template v-slot:popupentry ="{entry}">
   <div>
     <h3 v-html="entry.bf_titre"></h3>
     <img v-if="entry.visual" class="popup-visual" :src="`${urlImage(entry,'visual','thumbnails')}`"></img>
