@@ -71,6 +71,7 @@ return [
     // "AB_bazarcarto_entrydisplay_option_popup" => "Dans une petite popup (sur la carte)",
     // "AB_bazarcarto_popuptemplate_label" => "Template pour la petite popup",
     // "AB_bazarcarto_popuptemplate_entry_from_html" => "Rendu côté serveur",
+    // "AB_bazarliste_popupneededfields_label" => "Champs à ajouter dans la popup",
     // "AB_bazarcarto_popuptemplate_entry_from_data" => "Rendu local",
     // "AB_bazarcarto_popuptemplate_custom" => "Template personnalisé",
     // "AB_bazarliste_popupselectedfields_label" => "Champs à conserver dans la popup",

@@ -453,19 +453,17 @@ actions:
         showif: 
           dynamic: true
           entrydisplay: 'popup'
-          popuptemplate: '_map_popup_html.twig'
+          popuptemplate: '_map_popup_html.twig|custom'
       necessary_fields:
         type: form-field
-        label: _t(AB_bazarliste_popupselectedfields_label)
+        label: _t(AB_bazarliste_popupneededfields_label)
         multiple: true
         advanced: true
         value: "bf_titre,imagebf_image"
         showif: 
           dynamic: true
           entrydisplay: 'popup'
-          popuptemplate: 
-            '_map_popup_from_data.twig'
-            'custom'
+          popuptemplate: '_map_popup_from_data.twig|custom'
       displayfields:
         type: correspondance
         showif: dynamic
