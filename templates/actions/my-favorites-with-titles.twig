@@ -3,13 +3,14 @@
 {% block favorites %}
     <ul>
         {% for favorite in favorites %}
-            <li>
+            <li id="favoriteLi{{favorite.resource}}">
                 <a href="#"
                     title="{{ _t('FAVORITES_REMOVE')  }}"
                     data-resource="{{ favorite.resource }}" 
                     data-user="{{ currentUser }}"
                     data-toggle="tooltip"
                     data-placement="right"
+                    data-linkedFavoriteid="favoriteLi{{favorite.resource}}"
                     class="btn btn-icon btn-default btn-xs favorites user-favorite">
                     <i class="fas fa-star"></i>
                 </a>

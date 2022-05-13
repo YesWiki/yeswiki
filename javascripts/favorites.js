@@ -31,6 +31,23 @@ const FavoritesHelper = {
           "alert alert-warning"
         );
       }
+      // remove linked favorite 1.5s after
+      setTimeout(function(){
+        $(elem).each(function(){
+          if (!$(this).hasClass('user-favorite')){
+            let linkedFavoriteId = $(this).attr("data-linkedFavoriteid");
+            if (linkedFavoriteId != undefined && linkedFavoriteId.length > 0){
+              let linkedFavorite = $(`#${linkedFavoriteId}`);
+              if (linkedFavorite != undefined && linkedFavorite.length > 0){
+                $(linkedFavorite).remove();
+                $(this).remove();
+              } else {
+                console.warn(`#linkedFavoriteId was waited but not found : ${JSON.stringify(linkedFavorite)}`);
+              }
+            }
+          }
+        });
+      }, 1500);
     }
   },
   addFavorite: function (resource, user, elem, checkNotEmpty = false){

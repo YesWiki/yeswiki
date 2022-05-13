@@ -10,7 +10,8 @@
             <a class="bazar-entry modalbox " data-size="modal-lg" 
                 {{ (favorite.entry is not empty and favorite.entry.html_data is not empty) ? favorite.entry.html_data|raw : '' }}
                 href="{{ url({tag:favorite.resource}) }}"
-                title="{{ favoriteTitle }}">
+                title="{{ favoriteTitle }}"
+                id="favoriteTile{{favorite.resource}}">
                 <div class="image-container">
                     <img class="trombi-image img-placeholder"
                     src="tools/bazar/libs/vendor/placeholder.php?size=140x140&amp;bg=efefef&amp;text=">
@@ -33,6 +34,7 @@
                     title="{{ _t('FAVORITES_REMOVE')  }}"
                     data-resource="{{ favorite.resource }}" 
                     data-user="{{ currentUser }}"
+                    data-linkedFavoriteid="favoriteTile{{favorite.resource}}"
                     class="btn btn-icon btn-default btn-xs favorites user-favorite">
                     <i class="fas fa-star"></i>
                 </a>

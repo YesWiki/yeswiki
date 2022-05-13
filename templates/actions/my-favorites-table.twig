@@ -15,12 +15,13 @@
         <tbody>
             {% for favorite in favorites %}
                 {% set favoriteTitle = favorite.title is not empty ? favorite.title : favorite.resource %}
-                <tr>
+                <tr id="favoriteRow{{favorite.resource}}">
                     <td>
                         <a href="#"
                             title="{{ _t('FAVORITES_REMOVE')  }}"
                             data-resource="{{ favorite.resource }}" 
                             data-user="{{ currentUser }}"
+                            data-linkedFavoriteid="favoriteRow{{favorite.resource}}"
                             class="btn btn-icon btn-default btn-xs favorites user-favorite">
                             <i class="fas fa-star"></i>
                         </a>
