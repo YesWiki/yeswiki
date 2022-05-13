@@ -241,7 +241,7 @@ Vue.component('BazarMap', {
   },
   watch: {
     selectedEntry: function (newVal, oldVal) {
-      if (oldVal && oldVal.marker) oldVal.marker._icon.classList.remove('selected')
+      if (oldVal && oldVal.marker && oldVal.marker._icon) oldVal.marker._icon.classList.remove('selected')
       if (this.selectedEntry) {
         if (this.params.entrydisplay == 'newtab') {
           this.$root.openEntry(this.selectedEntry)
