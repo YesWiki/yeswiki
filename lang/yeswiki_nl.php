@@ -286,7 +286,7 @@ return [
     // templates/actions/my-favorites.twig
     'FAVORITES_DELETE_ALL' => 'Al mijn favorieten verwijderen',
     'FAVORITES_MY_FAVORITES' => 'Mijn favorieten',
-    'FAVORITES_NO_FAVORITE' => 'Geen favoriet',
+    'FAVORITES_NO_FAVORITE' => 'Er zijn geen favorieten opgeslagen',
     'FAVORITES_NOT_ACTIVATED' => 'Het gebruik van favorieten is niet ingeschakeld op deze site.',
     'FAVORITES_NOT_CONNECTED' => 'Het gebruik van favorieten is alleen mogelijk voor mensen die verbonden zijn.',
 

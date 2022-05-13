@@ -284,7 +284,7 @@ return [
     // templates/actions/my-favorites.twig
     'FAVORITES_DELETE_ALL' => 'Apague todos os meus favoritos',
     'FAVORITES_MY_FAVORITES' => 'Os meus favoritos',
-    'FAVORITES_NO_FAVORITE' => 'Sem favoritos',
+    'FAVORITES_NO_FAVORITE' => 'Nenhum favorito foi salvo',
     'FAVORITES_NOT_ACTIVATED' => 'O uso de favoritos não está ativado neste site.',
     'FAVORITES_NOT_CONNECTED' => 'O uso de favoritos só é possível para pessoas ligadas.',
 
