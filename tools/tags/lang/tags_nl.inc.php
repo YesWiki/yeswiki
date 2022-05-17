@@ -72,7 +72,7 @@ return [
     // 'TAGS_NO_TAG' => 'Aucun mot clé utilisé pour le moment',
 
     // actions/listpagestag.php
-    // 'TAGS_TOTAL_NB_PAGES' => 'Un total de {$nb_total} pages ont &eacute;t&eacute; trouv&eacute;es',
+    // 'TAGS_TOTAL_NB_PAGES' => 'Un total de %{nb_total} pages a &eacute;t&eacute; trouv&eacute;',
     // 'TAGS_ONE_PAGE_FOUND' => 'Une page a &eacute;t&eacute; trouv&eacute;e',
     // 'TAGS_NO_PAGE' => 'Aucune page trouv&eacute;e',
     // 'TAGS_WITH_KEYWORD' => 'avec le mot cl&eacute;',

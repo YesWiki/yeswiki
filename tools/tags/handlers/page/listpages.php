@@ -103,7 +103,7 @@ if ($resultat) {
 
 $output .= '<div class="alert alert-info">'."\n";
 if ($nb_total > 1) {
-    $output .= str_replace('TAGS_TOTAL_NB_PAGES', $nb_total, _t('TAGS_TOTAL_NB_PAGES'));
+    $output .= _t('TAGS_TOTAL_NB_PAGES', ['nb_total'=> $nb_total]);
 } elseif ($nb_total == 1) {
     $output .= _t('TAGS_ONE_PAGE_FOUND');
 } else {

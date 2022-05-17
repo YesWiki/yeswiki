@@ -72,7 +72,7 @@ return [
     // 'TAGS_NO_TAG' => 'No tags currently used',
 
     // actions/listpagestag.php
-    'TAGS_TOTAL_NB_PAGES' => 'A total of {$nb_total} pages have been found',
+    'TAGS_TOTAL_NB_PAGES' => 'A total of %{nb_total} pages has been found',
     'TAGS_ONE_PAGE_FOUND' => 'A page has been found',
     'TAGS_NO_PAGE' => 'No found page',
     'TAGS_WITH_KEYWORD' => 'with tag',

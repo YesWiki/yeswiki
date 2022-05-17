@@ -74,7 +74,7 @@ $shownumberinfo = $this->GetParameter('shownumberinfo');
 if (!empty($shownumberinfo) && $shownumberinfo == 1) {
     $info = '<div class="alert alert-info">'."\n";
     if ($nb_total > 1) {
-        $info .= str_replace('TAGS_TOTAL_NB_PAGES', $nb_total, _t('TAGS_TOTAL_NB_PAGES'));
+        $info .= _t('TAGS_TOTAL_NB_PAGES', ['nb_total'=> $nb_total]);
     } elseif ($nb_total == 1) {
         $info .= _t('TAGS_ONE_PAGE_FOUND');
     } else {
