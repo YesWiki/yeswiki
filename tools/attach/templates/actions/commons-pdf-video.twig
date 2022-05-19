@@ -1,0 +1,31 @@
+{% set styleForSize = manageSize ? "max-width:#{maxWidth}px;max-height:#{maxHeight}px;": '' %}
+{% if 'pull-right' in class|split(' ') or 'pull-left' in class|split(' ') %}
+  <div style="
+    {%- if manageSize -%}
+      width:{{ maxWidth }}px;height:{{ maxHeight }}px;max-width:100%;
+    {%- else -%}
+      width:100%;
+    {%- endif -%}"
+    class="{{ class }}">
+    {% set manageSize = false %}
+    {% set removeClass = true %}
+    {{ block('firstContainer') }}
+  </div>
+{% else %}
+  {% block firstContainer %}
+    {% if manageSize %}
+      <div style="{{ styleForSize }}"
+        class="{{ class }}">
+        {{ block('secondContainer') }}
+      </div>
+    {% else %}
+      {% block secondContainer %}
+        <div 
+          class="{{ not removeClass and not manageSize ? class : '' }} embed-responsive {{ shape }}"
+          style="{{ styleForSize }}">
+          {% block main %}{% endblock %}
+        </div>
+      {% endblock %}
+    {% endif %}
+  {% endblock %}
+{% endif %}

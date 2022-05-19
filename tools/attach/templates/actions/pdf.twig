@@ -1,0 +1,8 @@
+{% extends "@attach/actions/commons-pdf-video.twig" %}
+
+{% block main %}
+  <iframe
+    src="tools/attach/libs/vendor/pdfjs-dist/web/viewer.html?file={{ url|e('url') }}"
+    class="embed-responsive-item" frameborder="0" allowfullscreen></iframe>
+{% endblock %}
+  
