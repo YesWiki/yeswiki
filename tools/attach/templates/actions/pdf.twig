@@ -1,8 +1,12 @@
 {% extends "@attach/actions/commons-pdf-video.twig" %}
 
 {% block main %}
+  <span class="throbber pdf-block-loading"></span>
   <iframe
     src="tools/attach/libs/vendor/pdfjs-dist/web/viewer.html?file={{ url|e('url') }}"
-    class="embed-responsive-item" frameborder="0" allowfullscreen></iframe>
+    class="embed-responsive-item" frameborder="0" allowfullscreen
+    onload="$(this).siblings('.pdf-block-loading').hide();"
+    >
+    </iframe>
 {% endblock %}
   

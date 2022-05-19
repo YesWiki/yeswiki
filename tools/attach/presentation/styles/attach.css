@@ -285,3 +285,10 @@ box-shadow: 2px 2px 15px 0px #444;
 .embed-responsive.pdf-square {
 	padding-bottom: 100%;
 }
+
+.pdf-block-loading {
+  position: absolute;
+  z-index: 1000;
+  top: 30vh;
+  left: 48%;
+}
