@@ -473,6 +473,7 @@ const ConditionsChecking = {
             if (display) {
                 let previousStateVisible = ($(conditionData.node).filter(':visible').length > 0);
                 $(conditionData.node).show();
+                window.dispatchEvent(new Event('resize')); // needed to refresh map for geolocalization
                 if (clean && !previousStateVisible) {
                     if (cleanSubelements){
                         this.setDefaultChildren(conditionData.node);
