@@ -208,8 +208,7 @@ return [
     'BAZ_FORM_EDIT_COMMENTS_CLOSED' => 'Commentaires fermés',
 
     // condition checking field
-    "BAZ_FORM_CONDITIONSCHEKING_HINT" => "CHAMP EXPERIMENTAL{\\n}".
-        "La condition doit respecter le format suivant (sans les `):{\\n}".
+    "BAZ_FORM_CONDITIONSCHEKING_HINT" => "La condition doit respecter le format suivant (sans les `):{\\n}".
         " - ` and ` : donne ET{\\n}".
         " - ` or ` : donne OU{\\n}".
         " - `==` : donne EST ÉGALE À{\\n}".

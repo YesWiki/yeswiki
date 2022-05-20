@@ -208,8 +208,7 @@ return [
     'BAZ_FORM_EDIT_COMMENTS_CLOSED' => 'Comments closed',
 
     // condition checking field
-    "BAZ_FORM_CONDITIONSCHEKING_HINT" => "EXPERIMENTAL FIELD{\\n}".
-        "The condition must match the following format (without `):{\\n}".
+    "BAZ_FORM_CONDITIONSCHEKING_HINT" => "The condition must match the following format (without `):{\\n}".
         " - ` and ` : gives AND{\\n}".
         " - ` or ` : gives OR{\\n}".
         " - `==` : gives IS EQUAL TO{\\n}".
