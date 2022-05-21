@@ -398,7 +398,6 @@ return [
     // tableau
     "AB_bazartableau_label" => "Table",
     "AB_bazartableau_description" => "Display in a table",
-    "AB_bazartableau_hint" => "Template still experimental - help us by incating bugs on https://yeswiki.net/forum/",
     "AB_bazartableau_columnfieldsids_label" => "Fields to display",
     "AB_bazartableau_columnfieldsids_hint" => "Empty = all",
     "AB_bazartableau_columntitles_label" => "Comlumns titles",

@@ -694,7 +694,6 @@ actions:
   bazartableau:
     label: _t(AB_bazartableau_label)
     description: _t(AB_bazartableau_description)
-    hint: _t(AB_bazartableau_hint)
     width: 35%
     properties:
       template:
