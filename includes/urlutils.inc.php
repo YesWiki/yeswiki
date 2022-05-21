@@ -83,51 +83,28 @@ function detectRewriteMode()
 function replaceLinksWithIframe(string $body): string
 {
     // pattern qui rajoute le /iframe pour les liens au bon endroit, merci raphael@tela-botanica.org
-    $pattern = '~(<a.*?href.*?)' . preg_quote($GLOBALS['wiki']->config['base_url'], '~') . '([\w\-_]+)([&#?].*?)?(["\'])([^>]*?>)~i';
-    $pagebody = preg_replace_callback(
-        $pattern,
-        function ($matches) {
-            // on vérifie si le lien ne s'ouvre pas dans une nouvelle fenêtre, c'est à dire s'il n'y a pas d'attribut
-            // target="_blank" ou class="new window" avant ou après le href
-            // et si le lien ne s'ouvre dans une autre fenêtre, on insère /iframe à l'url
-            $NEW_WINDOW_PATTERN = "~^(.*target=[\"']\s*_blank\s*[\"'].*)|(.*class=[\"'].*?new-window.*?[\"'].*)$~i";
-            if (preg_match($NEW_WINDOW_PATTERN, $matches[1]) || preg_match(
+    $pattern = '~(<a.*?href.*?)' . preg_quote($GLOBALS['wiki']->config['base_url'], '~') . '([\w\-_]+)(\/(?:edit|show))?([&#?].*?)?(["\'])([^>]*?>)~i';
+    $NEW_WINDOW_PATTERN = "~^(.*target=[\"']\s*_?blank\s*[\"'].*)|(.*class=[\"'].*?new-window.*?[\"'].*)$~i";
+    if (preg_match_all($pattern, $body, $matches)) {
+        foreach ($matches[0] as $key => $match) {
+            if (!preg_match($NEW_WINDOW_PATTERN, $matches[1][$key]) && !preg_match(
                 $NEW_WINDOW_PATTERN,
-                $matches[5]
+                $matches[6][$key]
             )) {
-                return $matches[1] . $GLOBALS['wiki']->config['base_url'] . $matches[2] . $matches[3] . $matches[4] .
-                    $matches[5];
-            } else {
-                return $matches[1] . $GLOBALS['wiki']->config['base_url'] . $matches[2] . '/iframe' . $matches[3] .
-                    $matches[4] . $matches[5];
+                $replacement =
+                    $matches[1][$key] .
+                    $GLOBALS['wiki']->config['base_url'] .
+                    $matches[2][$key] .
+                    ($matches[3][$key] == "/edit" ? "/editiframe" : "/iframe") .
+                    $matches[4][$key] .
+                    $matches[5][$key] .
+                    $matches[6][$key];
+                $body = str_replace($match, $replacement, $body);
             }
-        },
-        $body
-    );
+        }
+    }
 
-    // pattern qui rajoute le /editiframe pour les liens au bon endroit
-    $pattern = '~(<a.*?href.*?)' . preg_quote($GLOBALS['wiki']->config['base_url'], '~') . '([\w\-_]+)\/edit([&#?].*?)?(["\'])([^>]*?>)~i';
-    $pagebody = preg_replace_callback(
-        $pattern,
-        function ($matches) {
-            // on vérifie si le lien ne s'ouvre pas dans une nouvelle fenêtre, c'est à dire s'il n'y a pas d'attribut
-            // target="_blank" ou class="new window" avant ou après le href
-            // et si le lien ne s'ouvre dans une autre fenêtre, on insère /editiframe à l'url
-            $NEW_WINDOW_PATTERN = "~^(.*target=[\"']\s*_blank\s*[\"'].*)|(.*class=[\"'].*?new-window.*?[\"'].*)$~i";
-            if (preg_match($NEW_WINDOW_PATTERN, $matches[1]) || preg_match(
-                $NEW_WINDOW_PATTERN,
-                $matches[5]
-            )) {
-                return $matches[1] . $GLOBALS['wiki']->config['base_url'] . $matches[2] . '/edit' . $matches[3]
-                    . $matches[4] . $matches[5];
-            } else {
-                return $matches[1] . $GLOBALS['wiki']->config['base_url'] . $matches[2] . '/editiframe' . $matches[3]
-                    . $matches[4] . $matches[5];
-            }
-        },
-        $pagebody
-    );
-    return $pagebody;
+    return $body;
 }
 
 function testUrlInIframe($url = '')
