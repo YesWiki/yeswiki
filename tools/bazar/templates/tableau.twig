@@ -33,11 +33,25 @@ pour différencier les différents tableaux table_1 table_2 #}
         {% set searchTitle = ("bf_titre" in columnsInfo|map(p => p.propertyName)) %}
         {% for info in columnsInfo %}
           {% set val = entry[info.propertyName] %}
+          {% set exportval = val %}
           {% if info.key is empty and displayvaluesinsteadofkeys and (optionsIfDisplayvaluesinsteadofkeys[info.propertyName] is not empty) %}
-            {% set val = val|split(',')|map( key => optionsIfDisplayvaluesinsteadofkeys[info.propertyName][key] 
-              ? '"' ~ optionsIfDisplayvaluesinsteadofkeys[info.propertyName][key] ~ '"': key)|join(',') %}
+            {% if info.multivalues %}
+              {% set exportval = val|split(',')|map( key => optionsIfDisplayvaluesinsteadofkeys[info.propertyName][key] 
+                ? '"' ~ optionsIfDisplayvaluesinsteadofkeys[info.propertyName][key] ~ '"': key)|join(",") %}
+              {% set val = val|split(',')|map( key => optionsIfDisplayvaluesinsteadofkeys[info.propertyName][key] 
+                ? optionsIfDisplayvaluesinsteadofkeys[info.propertyName][key] : key)|join(",\n") %}  
+            {% elseif optionsIfDisplayvaluesinsteadofkeys[info.propertyName][val] %}
+              {% set val = optionsIfDisplayvaluesinsteadofkeys[info.propertyName][val] %}
+              {% set exportval = val %}
+            {% endif %}
+          {% elseif info.key is empty and info.mapFieldId %}
+            {% set val = val[info.mapFieldId] %}
+            {% set exportval = val %}
+          {% elseif info.key is not empty %}
+            {% set val = (info.key in val|split(',')) ? 'X' : '' %}
+            {% set exportval = val %}
           {% endif %}
-          <td>
+          <td data-sort="{{ exportval }}">
             {% if loop.first %}
               <span class="bazar-entry" {{ entry.html_data|raw }}></span>
             {% endif %}
@@ -47,15 +61,13 @@ pour différencier les différents tableaux table_1 table_2 #}
                 {% if colors[entry.id_fiche] is not empty %}<span class="pellet" style="background-color: {{ colors[entry.id_fiche] }} ;"></span>{% endif %}
                 {% if icons[entry.id_fiche] is not empty %}<i class="{{ icons[entry.id_fiche] }}"></i>{% endif %}
                 <a href="{{ entry.url }}" class="modalbox" data-size="modal-lg">
-                  {{ val }}
+                  {{ val|nl2br }}
                 </a>
-              {% elseif info.mapFieldId %}
-                {{ val[info.mapFieldId] }}
               {% else %}
-                {{ val }}
+                {{ val|nl2br }}
               {% endif %}
             {% else %}
-              {{ (info.key in val|split(',')) ? 'X' : '' }}
+              {{ val }}
             {% endif %}
           </td>
         {% endfor %}

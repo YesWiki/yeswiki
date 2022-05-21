@@ -84,19 +84,22 @@ if (count($fiches)>0) {
                 $fieldLabel = $field->getLabel();
                 if (!($field instanceof CheckboxField && $checkboxFieldsInColumns) && !($field instanceof MapField)) {
                     return [['propertyName' => $propertyName, 'title' => $fieldLabel, 'key' => null,
-                        'mapFieldId' =>  null]];
+                        'mapFieldId' =>  null,
+                        'multivalues' => $field instanceof CheckboxField]];
                 } elseif ($field instanceof MapField) {
                     $cols = [];
                     $cols[]  = [
                         'propertyName' => $propertyName,
                         'title' => _t('BAZ_LATITUDE'),
                         'key' => null,
-                        'mapFieldId' => $field->getLatitudeField()];
+                        'mapFieldId' => $field->getLatitudeField(),
+                        'multivalues' => false];
                     $cols[]  = [
                         'propertyName' => $propertyName,
                         'title' => _t('BAZ_LONGITUDE'),
                         'key' => null,
-                        'mapFieldId' => $field->getLongitudeField()];
+                        'mapFieldId' => $field->getLongitudeField(),
+                        'multivalues' => false];
                     return $cols;
                 } else {
                     $options = $field->getOptions();
@@ -109,7 +112,8 @@ if (count($fiches)>0) {
                                 'propertyName' => $propertyName,
                                 'title' => "$fieldLabel - $optionName",
                                 'key' => $key,
-                                'mapFieldId' => null];
+                                'mapFieldId' => null,
+                                'multivalues' => false];
                         }
                         return $cols;
                     }
