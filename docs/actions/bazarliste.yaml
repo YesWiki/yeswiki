@@ -50,6 +50,7 @@ actions:
           - bazartimeline
           - bazarcarousel
           - bazarcalendar
+          - bazartableau
       
       colorfield:
         label: _t(AB_bazar_commons_colorfield_label)
