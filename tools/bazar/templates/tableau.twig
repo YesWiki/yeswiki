@@ -61,12 +61,14 @@ pour différencier les différents tableaux table_1 table_2 #}
           <td class="not-printable-col horizontal-admins-btn">
             {% if entry.external-data is empty %}
               {% if aclService.hasAccess('write',entry.id_fiche) %}
-                <a href="{{ url({tag:entry.id_fiche,handler:'edit'}) }}"
+                <a href="{{ url({tag:entry.id_fiche,handler:'editiframe'}) }}"
                   data-toggle="tooltip"
                   data-placement="left"
-                  class="btn btn-default btn-icon btn-xs"
-                  target="blank"
+                  class="btn btn-default btn-icon btn-xs modalbox"
+                  data-size="modal-lg"
+                  data-iframe="1"
                   title="{{ _t('MODIFY') }} {{ entry.id_fiche }}"
+                  onclick="$(this).tooltip('hide');$(this).attr('title',$(this).data('original-title'));"
                   >
                   <i class="fas fa-pencil-alt"></i>
                 </a>
@@ -87,6 +89,7 @@ pour différencier les différents tableaux table_1 table_2 #}
                   data-placement="left"
                   class="btn btn-danger btn-icon btn-xs modalbox"
                   title="{{ _t('DELETE') }} {{ entry.id_fiche }}"
+                  onclick="$(this).tooltip('hide');$(this).attr('title',$(this).data('original-title'));"
                   >
                   <i class="fas fa-trash"></i>
                 </a>
