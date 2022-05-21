@@ -36,6 +36,7 @@ return [
     // 'CLEAN' => 'Nettoyer',
     // 'DELETE' => 'Supprimer',
     // 'DELETE_ALL_SELECTED_ITEMS' => 'Supprimer tous les éléments sélectionnés',
+    // 'DELETE_SELECTION' => 'Supprimer la sélection',
     // 'DEL' => 'Suppr.', // fives chars max.
     // 'EMAIL' => 'Email',
     // 'INVERT' => 'Inverser',

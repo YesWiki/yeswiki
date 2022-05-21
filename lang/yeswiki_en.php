@@ -38,6 +38,7 @@ return [
     'COMMENTS' => 'Comments',
     'DELETE' => 'Delete',
     'DELETE_ALL_SELECTED_ITEMS' => 'Delete all selected items',
+    'DELETE_SELECTION' => 'Delete selection',
     'DEL' => 'Del', // fives chars max.
     'EMAIL' => 'Email',
     'INVERT' => 'Invert',
