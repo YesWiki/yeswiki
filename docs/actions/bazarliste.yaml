@@ -61,6 +61,7 @@ actions:
           - bazargogocarto
           - bazarliste
           - bazarcalendar
+          - bazartableau
       colormapping:
         type: color-mapping
         showif: colorfield
@@ -69,6 +70,7 @@ actions:
           - bazargogocarto
           - bazarliste
           - bazarcalendar
+          - bazartableau
         subproperties:
           id:
             label: _t(AB_bazar_commons_subproperty_id_label)
@@ -86,6 +88,7 @@ actions:
           - bazargogocarto
           - bazarliste
           - bazarcalendar
+          - bazartableau
       iconmapping:
         type: icon-mapping
         showif: iconfield
@@ -94,6 +97,7 @@ actions:
           - bazargogocarto
           - bazarliste
           - bazarcalendar
+          - bazartableau
         subproperties:
           id:
             label: _t(AB_bazar_commons_subproperty_id_label)

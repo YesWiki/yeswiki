@@ -14,6 +14,8 @@ $formManager = $this->wiki->services->get(FormManager::class);
 $aclService = $this->wiki->services->get(AclService::class);
 
 $dataList = [];
+$colors = [];
+$icons = [];
 $columnsInfo = [];
 $sanitizedParams = [];
 $optionsIfDisplayvaluesinsteadofkeys = [];
@@ -202,6 +204,22 @@ if (count($fiches)>0) {
                 }
             }
         }
+
+        /* manage colors and icons */
+        foreach($fiches as $fiche){
+            $colors[$fiche['id_fiche']] = getCustomValueForEntry(
+                $param['color'],
+                $param['colorfield'],
+                $fiche,
+                ''
+              );
+            $icons[$fiche['id_fiche']] = getCustomValueForEntry(
+                $param['icon'],
+                $param['iconfield'],
+                $fiche,
+                ''
+              );
+        }
     } else {
         echo $this->render('@templates/alert-message.twig', [
             'type' => 'danger',
@@ -220,4 +238,6 @@ echo $this->render('@bazar/tableau.twig', [
     'optionsIfDisplayvaluesinsteadofkeys' => $optionsIfDisplayvaluesinsteadofkeys,
     'aclService' => $aclService,
     'wiki' => $this->wiki,
+    'colors' => $colors,
+    'icons' => $icons,
 ]);

@@ -44,6 +44,8 @@ pour différencier les différents tableaux table_1 table_2 #}
             {% if info.key is empty %}
               {% if (searchTitle and info.propertyName == "bf_titre") or 
                     (not searchTitle and loop.first and not info.mapFieldId) %}
+                {% if colors[entry.id_fiche] is not empty %}<span class="pellet" style="background-color: {{ colors[entry.id_fiche] }} ;"></span>{% endif %}
+                {% if icons[entry.id_fiche] is not empty %}<i class="{{ icons[entry.id_fiche] }}"></i>{% endif %}
                 <a href="{{ entry.url }}" class="modalbox" data-size="modal-lg">
                   {{ val }}
                 </a>
