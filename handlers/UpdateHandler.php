@@ -8,6 +8,7 @@ use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Wiki;
 
 class UpdateHandler extends YesWikiHandler
 {
@@ -101,7 +102,7 @@ class UpdateHandler extends YesWikiHandler
             }
 
             // update comment acls
-            if (!$this->params->get('default_comment_acl_updated')) {
+            if (!$this->params->has('default_comment_acl_updated') || !$this->params->get('default_comment_acl_updated')) {
                 $output .= $this->updateDefaultCommentsAcls();
             } else {
                 $output .= "ℹ️ Comment acls already reset!<br />";
@@ -117,7 +118,7 @@ class UpdateHandler extends YesWikiHandler
         // BE CAREFULL this comment is used for extensions to add content above, don't delete it!
         $output .= '<!-- end handler /update -->';
 
-        if (!$this->wiki->isCli()) {
+        if (!method_exists(Wiki::class, 'isCli') || !$this->wiki->isCli()) {
             $output = $this->wiki->header().$output;
             // add button to return to previous page
             $output .= '<div>
