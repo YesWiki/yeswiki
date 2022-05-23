@@ -3,13 +3,19 @@
 {% endif %}
 
 {% if filters %}
-  <div class="facette-container row" data-filter-align="{{ params.filterposition }}" data-template="{{ params.template }}">
-    {% set resultsColSize = params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format %}
+  {% set resultsColSize = params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format %}
+  <div class="facette-container row {{ resultsColSize == 12 ? 'facette-container-fullwidth' : ''}}" data-filter-align="{{ params.filterposition }}" data-template="{{ params.template }}">
+    
+    {% if resultsColSize == 12 and params.filterposition == "left" %}
+      {{ include("@bazar/entries/index/_filters.twig") }}
+    {% endif %}
     <div class="results-col col-sm-{{ resultsColSize }}">
       {{ include("@bazar/entries/index/_entries.twig") }}
     </div>
 
-    {{ include("@bazar/entries/index/_filters.twig") }}
+    {% if params.filterposition != "left" or resultsColSize != 12 %}
+      {{ include("@bazar/entries/index/_filters.twig") }}
+    {% endif %}
   </div>
 {% else %}
   {{ include("@bazar/entries/index/_entries.twig") }}

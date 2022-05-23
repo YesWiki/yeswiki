@@ -20,10 +20,15 @@
     {{ include("@bazar/entries/index-dynamic/_search_input.twig") }}
   {% endif %}
   
-  <div class="facette-container dynamic row" data-filter-align="{{ params.groups ? params.filterposition : '' }}">
+  {% set resultsColSize = params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format %}
+  {% set resultsColSize = params.groups ? resultsColSize : 12 %}
+
+  <div class="facette-container dynamic row {{ resultsColSize == 12 ? 'facette-container-fullwidth' : ''}}" data-filter-align="{{ params.groups ? params.filterposition : '' }}">
     
-    {% set resultsColSize = params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format %}
-    {% set resultsColSize = params.groups ? resultsColSize : 12 %}
+    {% if params.groups and params.filterposition == "left" and resultsColSize == 12 %}
+      {{ include("@bazar/entries/index-dynamic/_filters.twig") }}
+    {% endif %}
+
     <div class="results-col col-sm-{{ resultsColSize }}">
       <div class="bazar-list dynamic">
         {% block display_entries %}
@@ -31,7 +36,7 @@
       </div>      
     </div>
 
-    {% if params.groups %}
+    {% if params.groups and not (params.filterposition == "left" and resultsColSize == 12) %}
       {{ include("@bazar/entries/index-dynamic/_filters.twig") }}
     {% endif %}
     

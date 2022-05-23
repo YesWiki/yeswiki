@@ -203,6 +203,9 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
   display: flex;
   flex-direction: row;
 }
+.facette-container-fullwidth {
+  flex-wrap: wrap;
+}
 .facette-container[data-filter-align=left] {
   flex-direction: row-reverse;
 }
