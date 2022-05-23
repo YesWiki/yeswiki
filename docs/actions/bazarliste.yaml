@@ -768,3 +768,22 @@ actions:
           '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
+      defaultcolumnwidth:
+        label: _t(AB_bazartableau_defaultcolumnwidth_label)
+        hint: _t(AB_bazartableau_defaultcolumnwidth_hint)
+        type: text
+        advanced: true
+        default: ''
+      columnswidth:
+        label: _t(AB_bazartableau_columnswidth_label)
+        hint: _t(AB_bazartableau_defaultcolumnwidth_hint)
+        type: columns-width
+        advanced: true
+        subproperties:
+          field:
+            label: _t(AB_bazartableau_columnswidth_field_label)
+            type: form-field
+          width:
+            label: _t(AB_bazartableau_columnswidth_width_label)
+            type: text
+            default: ''

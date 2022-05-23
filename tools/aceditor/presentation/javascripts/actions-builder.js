@@ -12,6 +12,7 @@ import InputFacette from './components/InputFacette.js'
 import InputReaction from './components/InputReaction.js';
 import InputIconMapping from './components/InputIconMapping.js'
 import InputColorMapping from './components/InputColorMapping.js'
+import InputColumnsWidth from './components/InputColumnsWidth.js'
 import InputGeo from './components/InputGeo.js'
 import InputClass from './components/InputClass.js'
 import InputCorrespondance from './components/InputCorrespondance.js'
@@ -43,6 +44,7 @@ window.myapp = new Vue({
   components: { InputPageList, InputText, InputCheckbox, InputList, InputIcon, InputColor, 
                 InputFormField, InputHidden, InputDivider,
                 InputFacette, InputReaction, InputIconMapping, InputColorMapping, InputGeo, InputClass, InputCorrespondance,
+                InputColumnsWidth,
                 WikiCodeInput, PreviewAction },
   mixins: [ InputHelper ],
   data: {

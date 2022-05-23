@@ -412,4 +412,9 @@ return [
     "AB_bazartableau_displaycreationdate_label" => "Display creation date",
     "AB_bazartableau_displaylastchangedate_label" => "Display modification date",
     "AB_bazartableau_displayowner_label" => "Display owner",
+    "AB_bazartableau_defaultcolumnwidth_label" => "Minimal column width",
+    "AB_bazartableau_defaultcolumnwidth_hint" => "ex. : 100px ou 20% ; empty = automatic width",
+    "AB_bazartableau_columnswidth_label" => "Custom columns width",
+    "AB_bazartableau_columnswidth_field_label" => "Field",
+    "AB_bazartableau_columnswidth_width_label" => "Width",
 ];

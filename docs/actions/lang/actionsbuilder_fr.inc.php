@@ -412,4 +412,9 @@ return [
     "AB_bazartableau_displaycreationdate_label" => "Afficher la date de création",
     "AB_bazartableau_displaylastchangedate_label" => "Afficher la date de modification",
     "AB_bazartableau_displayowner_label" => "Afficher le propriétaire",
+    "AB_bazartableau_defaultcolumnwidth_label" => "Largeur minimale des colonnes",
+    "AB_bazartableau_defaultcolumnwidth_hint" => "ex. : 100px ou 20% ; vide = largeur automatique",
+    "AB_bazartableau_columnswidth_label" => "Largeur personnalisée des colonnes",
+    "AB_bazartableau_columnswidth_field_label" => "Champ",
+    "AB_bazartableau_columnswidth_width_label" => "Largeur",
 ];

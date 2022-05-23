@@ -13,7 +13,12 @@ pour différencier les différents tableaux table_1 table_2 #}
             {{ multidelete.insertSelectAll('bazar-list-'~ param.nbbazarliste,'top') }}
           {% endif %}
       {% for index,info in columnsInfo %}
-        <th{{ (info.propertyName in sumFieldsIds) ? ' class="sum-activated"' : ''}}>{{ info.title|raw }}</th>
+        <th{{ (info.propertyName in sumFieldsIds) ? ' class="sum-activated"' : ''}}
+          {% if columnswidth[info.propertyName] is not empty %}
+            data-width="{{ columnswidth[info.propertyName] }}"
+          {% elseif param.defaultcolumnwidth is not empty %}
+            data-width="{{ param.defaultcolumnwidth }}"
+          {% endif %}>{{ info.title|raw }}</th>
       {% endfor %}
       {% if displayadmincol %}
         <th class="not-printable-col"></th>

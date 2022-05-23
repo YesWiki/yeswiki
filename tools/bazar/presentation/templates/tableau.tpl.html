@@ -72,6 +72,16 @@ if (count($fiches)>0) {
         }
         $sanitizedParams['displayvaluesinsteadofkeys'] = !isset($param['displayvaluesinsteadofkeys']) ? false : filter_var($param['displayvaluesinsteadofkeys'],FILTER_VALIDATE_BOOLEAN);
 
+        $sanitizedParams['columnswidth'] = [];
+        if (isset($param['columnswidth']) && is_string($param['columnswidth'])){
+            foreach(explode(',',$param['columnswidth']) as $columnInfo){
+                $columnInfoExtracted = explode('=',$columnInfo);
+                if (!empty($columnInfoExtracted[0]) && !empty($columnInfoExtracted[1])){
+                    $sanitizedParams['columnswidth'][$columnInfoExtracted[0]] = $columnInfoExtracted[1];
+                }
+            }
+        }
+
         /* columnsInfo */
         if (!function_exists('tableauGetFieldsCols')) {
             function tableauGetFieldsCols($field, $checkboxFieldsInColumns): array
@@ -244,4 +254,5 @@ echo $this->render('@bazar/tableau.twig', [
     'wiki' => $this->wiki,
     'colors' => $colors,
     'icons' => $icons,
+    'columnswidth' => $sanitizedParams['columnswidth'],
 ]);
