@@ -787,3 +787,8 @@ actions:
             label: _t(AB_bazartableau_columnswidth_width_label)
             type: text
             default: ''
+      exportallcolumns:
+        label: _t(AB_bazartableau_exportallcolumns_label)
+        advanced: true
+        type: checkbox
+        default: 'false'

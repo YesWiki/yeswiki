@@ -2,9 +2,3 @@ td.horizontal-admins-btn {
     display: flex;
     flex-direction: row;
 }
-@media print {
-    td.not-printable-col,
-    th.not-printable-col {
-        display:none;
-    }
-}

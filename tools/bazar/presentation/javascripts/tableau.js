@@ -91,11 +91,24 @@ const TableHelper = {
                     ...{
                         footer:true,
                     },
-                    ...(option.extend != "print" ?{
-                        exportOptions: {
-                            orthogonal: 'sort', // use sort data for export
-                        },
-                    } : {})
+                    ...{
+                        exportOptions: (
+                            option.extend != "print"
+                            ? {
+                                orthogonal: 'sort', // use sort data for export
+                                columns: function(idx, data, node){
+                                    return !$(node).hasClass('not-export-this-col');
+                                },
+                            }
+                            : {
+                                columns: function(idx, data, node){
+                                let isVisible = $(node).data('visible');
+                                return !$(node).hasClass('not-export-this-col') && (
+                                    isVisible == undefined || isVisible != false
+                                );
+                            }
+                        }),
+                    }
                 });
             });
             let table = $(this).DataTable({

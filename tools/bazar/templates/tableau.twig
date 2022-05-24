@@ -18,10 +18,13 @@ pour différencier les différents tableaux table_1 table_2 #}
             data-width="{{ columnswidth[info.propertyName] }}"
           {% elseif param.defaultcolumnwidth is not empty %}
             data-width="{{ param.defaultcolumnwidth }}"
+          {% endif %}
+          {% if info['not-visible'] %}
+            data-visible="false"
           {% endif %}>{{ info.title|raw }}</th>
       {% endfor %}
       {% if displayadmincol %}
-        <th class="not-printable-col"></th>
+        <th class="not-export-this-col"></th>
       {% endif %}
     </tr>
   </thead>
@@ -77,7 +80,7 @@ pour différencier les différents tableaux table_1 table_2 #}
           </td>
         {% endfor %}
         {% if displayadmincol %}
-          <td class="not-printable-col horizontal-admins-btn">
+          <td class="horizontal-admins-btn">
             {% if entry.external-data is empty %}
               {% if aclService.hasAccess('write',entry.id_fiche) %}
                 <a href="{{ url({tag:entry.id_fiche,handler:'editiframe'}) }}"
@@ -142,7 +145,7 @@ pour différencier les différents tableaux table_1 table_2 #}
             </th>
           {% endfor %}
           {% if displayadmincol %}
-            <th class="not-printable-col"></th>
+            <th class="not-export-this-col"></th>
           {% endif %}
         </tr>
       </tfoot>

@@ -71,6 +71,7 @@ if (count($fiches)>0) {
             $sanitizedParams[$paramName] = $paramValue;
         }
         $sanitizedParams['displayvaluesinsteadofkeys'] = !isset($param['displayvaluesinsteadofkeys']) ? false : filter_var($param['displayvaluesinsteadofkeys'],FILTER_VALIDATE_BOOLEAN);
+        $sanitizedParams['exportallcolumns'] = !isset($param['exportallcolumns']) ? false : filter_var($param['exportallcolumns'],FILTER_VALIDATE_BOOLEAN);
 
         $sanitizedParams['columnswidth'] = [];
         if (isset($param['columnswidth']) && is_string($param['columnswidth'])){
@@ -158,6 +159,20 @@ if (count($fiches)>0) {
                         $columnsInfo[] = $col;
                     }
                     tableauGetOptionsForField($field,$optionsIfDisplayvaluesinsteadofkeys,$sanitizedParams);
+                }
+            }
+            if ($sanitizedParams['exportallcolumns']) {
+                $alreadyDefinedPropertyNames = array_map(function ($col){
+                    return $col['propertyName'];
+                },$columnsInfo);
+                foreach ($fields as $field) {
+                    $fieldPropertyName = $field->getPropertyName();
+                    if (!empty($fieldPropertyName) && !in_array($fieldPropertyName,$alreadyDefinedPropertyNames)){
+                        foreach (tableauGetFieldsCols($field, $checkboxFieldsInColumns) as $col) {
+                            $columnsInfo[] = array_merge($col,[ 'not-visible' => true ]);
+                        }
+                        tableauGetOptionsForField($field,$optionsIfDisplayvaluesinsteadofkeys,$sanitizedParams);
+                    }
                 }
             }
         }

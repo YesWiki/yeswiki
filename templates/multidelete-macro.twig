@@ -41,7 +41,7 @@
 {% endmacro insertButton %}
 
 {% macro insertSelectLine(targetId, itemId, disabled = false) %}
-  <td class="not-printable-col">
+  <td>
     <label for="selectline_{{ targetId }}_{{ itemId }}">
       <input
         {% if disabled %}
@@ -62,7 +62,7 @@
 
 {% macro insertSelectAll(targetId, selectAllType) %}
   {{ include_javascript('javascripts/multidelete.js') }}
-  <th class="prevent-sorting not-printable-col">
+  <th class="prevent-sorting not-export-this-col">
     <label class="check-all-container" for="checkbox_checkall_{{ selectAllType }}_{{ targetId }}">
       <input
         type="checkbox"

@@ -417,4 +417,5 @@ return [
     // "AB_bazartableau_columnswidth_label" => "Largeur personnalisée des colonnes",
     // "AB_bazartableau_columnswidth_field_label" => "Champ",
     // "AB_bazartableau_columnswidth_width_label" => "Largeur",
+    // "AB_bazartableau_exportallcolumns_label" => "Exporter aussi les colonnes masquées",
 ];
