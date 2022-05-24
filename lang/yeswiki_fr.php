@@ -605,6 +605,9 @@ return [
     'YW_ADD_COMMENT' => 'Ajouter votre commentaire',
     'YW_WRITE_COMMENT_HERE' => 'Ecrire votre commentaire ici...',
 
+    // templates/multidelete-macro.twig
+    'NUMBER_OF_ELEMENTS' => 'Nombre d\'éléments sélectionnés',
+
     // Comments
     'COMMENT_EMPTY_NOT_SAVED' => 'Commentaire vide, pas de sauvegarde.',
     'COMMENT_LOGIN' => 'Se connecter pour commenter',

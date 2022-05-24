@@ -116,6 +116,17 @@ const multiDeleteService = {
         setTimeout(function(){multiDeleteService.deleteOneItem(modal,items,type,0,target);},0);
       }
     }
+  },
+  updateNbSelected: function (modalId){
+    let button = $(`#${modalId} .modal-body > button.start-btn-delete-all`);
+    let text = $(`#${modalId} .modal-body > .alert.alert-info > span.nb-elem-selected`);
+    let target = $(button).data('target');
+    if (target.length > 0){
+      let inputs = $(`#${target}`).find('tr > td:first-child input.selectline[type=checkbox]:visible:checked');
+      $(text).html(inputs.length);
+    } else {
+      $(text).html('error');
+    }
   }
 };
 

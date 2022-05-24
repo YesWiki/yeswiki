@@ -586,6 +586,9 @@ return [
     // YesWiki
     'UNKNOWN_INTERWIKI' => 'unkwon interwiki',
 
+    // templates/multidelete-macro.twig
+    'NUMBER_OF_ELEMENTS' => 'Number of selected items',
+
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',
     // 'REACTION_LIKE' => 'J\'approuve',

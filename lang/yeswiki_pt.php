@@ -593,6 +593,8 @@ return [
     // YesWiki
     // 'UNKNOWN_INTERWIKI' => 'interwiki inconnu',
 
+    // templates/multidelete-macro.twig
+    // 'NUMBER_OF_ELEMENTS' => 'Nombre d\'éléments sélectionnés',
 
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',
