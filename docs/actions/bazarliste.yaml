@@ -776,7 +776,7 @@ actions:
         default: ''
       columnswidth:
         label: _t(AB_bazartableau_columnswidth_label)
-        hint: _t(AB_bazartableau_defaultcolumnwidth_hint)
+        hint: _t(AB_bazartableau_columnswidth_hint)
         type: columns-width
         advanced: true
         subproperties:
