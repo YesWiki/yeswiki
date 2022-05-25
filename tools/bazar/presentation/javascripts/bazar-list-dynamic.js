@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let result = this.searchedEntries
         for(const filterId in this.computedFilters) {
           result = result.filter(entry => {
-            if (!entry[filterId]) return false
+            if (!entry[filterId] || typeof entry[filterId] != "string") return false
             return entry[filterId].split(',').some(value => {
               return this.computedFilters[filterId].includes(value)
             })
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
           for (let option of this.filters[fieldName].list) {
             option.nb = this.searchedEntries.filter(entry => {
               let entryValues = entry[fieldName]
-              if (!entryValues) return
+              if (!entryValues || typeof entryValues != "string") return
               entryValues = entryValues.split(',')
               return entryValues.some(value => value == option.value)
             }).length
