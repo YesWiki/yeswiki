@@ -14,6 +14,7 @@ use Throwable;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Entity\User;
+use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Service\PasswordHasherFactory;
@@ -192,6 +193,25 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             "email = '" . $this->dbService->escape($user['email']) . "', " .
             "password = '" . $this->dbService->escape($hashedPassword) . "'"
         );
+    }
+
+    /**
+     * delete a user
+     * SHOULD NOT BE USE DIRECTLY => use UserController->delete()
+     * @param User $user
+     * @throws DeleteUserException
+     */
+    public function delete(User $user)
+    {
+        $query = "DELETE FROM {$this->dbService->prefixTable('users')} ".
+            " WHERE `name` = \"{$this->dbService->escape($user['name'])}\";";
+        try {
+            if (!$this->dbService->query($query)) {
+                throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED').'.');
+            }
+        } catch (Exception $ex) {
+            throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED').'.');
+        }
     }
 
     /**
