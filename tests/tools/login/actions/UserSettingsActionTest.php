@@ -2,10 +2,12 @@
 
 namespace YesWiki\Test\Core\Service;
 
+use YesWiki\Core\Entity\User;
+use YesWiki\Core\Exception\ExitException;
+use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\UserManager;
-use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Login\UserSettingsAction;
-use YesWiki\User;
+use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -86,7 +88,7 @@ class UserSettingsActionTest extends YesWikiTestCase
         $output = $wiki->Format("{{usersettings}}");
         // logout
         $userManager->logout();
-        $this->assertIsArray($user);
+        $this->assertInstanceOf(User::class, $user);
 
         $rexExpStr = "/.*".implode('\s*', explode(' ', preg_quote('<input type="hidden" name="usersettings_action" value="update', '/'))).".*/";
         $this->assertMatchesRegularExpression($rexExpStr, $output, "`usersettings_action` input badly set for update in usersettings.twig !");
@@ -156,13 +158,23 @@ class UserSettingsActionTest extends YesWikiTestCase
         unset($_POST['name']);
     }
 
+    public function dataProvidertestSignup()
+    {
+        // mode , suffix, expected result
+        return [
+            'bad signup' => ['error',false],
+            'good signup' => ['',true],
+        ];
+    }
+
     /**
      * @depends testWikiExisting
      * @depends testDisplayForm
-     * @covers UserSettingsAction::signup cover only bad request because right request do a redirect with exit which stops the test
+     * @dataProvider dataProvidertestSignup
+     * @covers UserSettingsAction::signup
      * @param Wiki $wiki
      */
-    public function testSignup(Wiki $wiki)
+    public function testSignup($suffix, $expectedResult, Wiki $wiki)
     {
         $userManager = $wiki->services->get(UserManager::class);
 
@@ -179,11 +191,15 @@ class UserSettingsActionTest extends YesWikiTestCase
         $_POST['email'] = $email;
         $_POST['name'] = $name;
         $_POST['password'] = $password;
-        $_POST['confpassword'] = $password.'error'; // do not set rigth password to prevent redirecting and exit
-        // YesWiki is not yet ready to prevent exit() when cli mode.
+        $_POST['confpassword'] = $password.$suffix;
         $_REQUEST['usersettings_action'] = 'signup';
 
-        $output = $wiki->Format("{{usersettings}}");
+        $exitExceptionCaught = false;
+        try {
+            $output = $wiki->Format("{{usersettings}}");
+        } catch (ExitException $e) {
+            $exitExceptionCaught = true;
+        }
 
         unset($_POST['email']);
         unset($_POST['name']);
@@ -191,31 +207,51 @@ class UserSettingsActionTest extends YesWikiTestCase
         unset($_POST['confpassword']);
         unset($_REQUEST['usersettings_action']);
         $user = $userManager->getOneByName($name);
-        $this->assertIsNotArray($user);
+
+        if ($expectedResult) {
+            $connectedUser = $userManager->getLoggedUser();
+            //clean user before tests
+            if (!empty($user['name'])) {
+                $dbService = $wiki->services->get(DbService::class);
+                $dbService->query(
+                    "DELETE FROM {$dbService->prefixTable('users')} ".
+                    "WHERE `name` = \"{$dbService->escape($user['name'])}\";"
+                );
+            }
+            $this->assertInstanceOf(User::class, $user);
+            $this->assertTrue($exitExceptionCaught);
+            $this->assertIsArray($connectedUser);
+            $this->assertNotEmpty($connectedUser['name']);
+            $this->assertEquals($connectedUser['name'], $user['name']);
+        } else {
+            $this->assertIsNotArray($user);
+            $this->assertNotInstanceOf(User::class, $user);
+            $this->assertFalse($exitExceptionCaught);
         
-        $rexExpStr = "/.*".implode(
-            '\s*',
-            explode(
-                ' ',
-                preg_quote('<input class="', '/').'.*'.preg_quote('" name="name" ', '/').'(size\=".*" )?'.preg_quote('value="'.htmlentities($name).'"', '/')
-            )
-        ).".*/";
-        $this->assertMatchesRegularExpression($rexExpStr, $output, "`name` input badly set in user-signup-form.twig !");
+            $rexExpStr = "/.*".implode(
+                '\s*',
+                explode(
+                    ' ',
+                    preg_quote('<input class="', '/').'.*'.preg_quote('" name="name" ', '/').'(size\=".*" )?'.preg_quote('value="'.htmlentities($name).'"', '/')
+                )
+            ).".*/";
+            $this->assertMatchesRegularExpression($rexExpStr, $output, "`name` input badly set in user-signup-form.twig !");
 
-        $rexExpStr = "/.*".implode(
-            '\s*',
-            explode(
-                ' ',
-                preg_quote('<input class="', '/').'.*'.preg_quote('" name="email" ', '/').'(size\=".*" )?'.preg_quote('value="'.htmlentities($email).'"', '/')
-            )
-        ).".*/";
-        $this->assertMatchesRegularExpression($rexExpStr, $output, "`email` input badly set in user-signup-form.twig !");
+            $rexExpStr = "/.*".implode(
+                '\s*',
+                explode(
+                    ' ',
+                    preg_quote('<input class="', '/').'.*'.preg_quote('" name="email" ', '/').'(size\=".*" )?'.preg_quote('value="'.htmlentities($email).'"', '/')
+                )
+            ).".*/";
+            $this->assertMatchesRegularExpression($rexExpStr, $output, "`email` input badly set in user-signup-form.twig !");
 
-        $rexExpStr = "/.*".implode('\s*', explode(' ', preg_quote('<input class="', '/').'.*'.preg_quote('" type="password" name="password"', '/'))).".*/";
-        $this->assertMatchesRegularExpression($rexExpStr, $output, "`password` input badly set in user-signup-form.twig !");
+            $rexExpStr = "/.*".implode('\s*', explode(' ', preg_quote('<input class="', '/').'.*'.preg_quote('" type="password" name="password"', '/'))).".*/";
+            $this->assertMatchesRegularExpression($rexExpStr, $output, "`password` input badly set in user-signup-form.twig !");
 
-        $rexExpStr = "/.*".implode('\s*', explode(' ', preg_quote('<input class="', '/').'.*'.preg_quote('" type="password" name="confpassword"', '/'))).".*/";
-        $this->assertMatchesRegularExpression($rexExpStr, $output, "`confpassword` input badly set in user-signup-form.twig !");
+            $rexExpStr = "/.*".implode('\s*', explode(' ', preg_quote('<input class="', '/').'.*'.preg_quote('" type="password" name="confpassword"', '/'))).".*/";
+            $this->assertMatchesRegularExpression($rexExpStr, $output, "`confpassword` input badly set in user-signup-form.twig !");
+        }
     }
 
     /**
