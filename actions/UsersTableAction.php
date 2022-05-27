@@ -2,6 +2,8 @@
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Controller\UserController;
+use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\User;
@@ -9,6 +11,7 @@ use YesWiki\User;
 class UsersTableAction extends YesWikiAction
 {
     protected $csrfTokenController;
+    protected $userController;
     protected $userManager;
 
     public function formatArguments($arg)
@@ -27,6 +30,7 @@ class UsersTableAction extends YesWikiAction
     public function run()
     {
         // get Services
+        $this->userController  = $this->getService(UserController::class);
         $this->userManager  = $this->getService(UserManager::class);
         $this->csrfTokenController = $this->getService(CsrfTokenController::class);
 
@@ -125,25 +129,18 @@ class UsersTableAction extends YesWikiAction
                         'message' => str_replace('{username}', $userName, _t('USERSTABLE_NOT_EXISTING_USER'))
                     ]);
                 } else {
-                    // TODO use future $this->userManager->delete($user); instead of following lines
-                    require_once 'includes/User.class.php';
-                    $tmpUser = new User($this->wiki);
-                    $OK= $tmpUser->loadByNameFromDB($rawUserName);
-                    if ($OK) {
-                        $OK = $tmpUser->delete();
-                        if (!$OK) {
-                            return $this->render('@templates/alert-message.twig', [
-                                'type' => 'warning',
-                                'message' => $tmpUser->error
-                            ]);
-                        } else {
-                            return $this->render("@templates/alert-message.twig", [
-                                'type' => 'success',
-                                'message' => str_replace('{username}', $userName, _t('USERSTABLE_USER_DELETED'))
-                            ]);
-                        }
+                    try {
+                        $this->userController->delete($user);
+                        return $this->render("@templates/alert-message.twig", [
+                            'type' => 'success',
+                            'message' => str_replace('{username}', $userName, _t('USERSTABLE_USER_DELETED'))
+                        ]);
+                    } catch (DeleteUserException $ex) {
+                        return $this->render('@templates/alert-message.twig', [
+                            'type' => 'warning',
+                            'message' => $ex->getMessage()
+                        ]);
                     }
-                    unset($tmpUser);
                 }
             } catch (TokenNotFoundException $th) {
                 return $this->render("@templates/alert-message.twig", [

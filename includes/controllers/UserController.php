@@ -6,6 +6,8 @@ use Exception;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
@@ -13,16 +15,22 @@ use YesWiki\Security\Controller\SecurityController;
 class UserController extends YesWikiController
 {
     protected $dbService;
+    protected $pageManager;
     protected $securityController;
+    protected $tripleStore;
     protected $userManager;
 
     public function __construct(
         DbService $dbService,
+        PageManager $pageManager,
         SecurityController $securityController,
+        TripleStore $tripleStore,
         UserManager $userManager
     ) {
         $this->dbService = $dbService;
+        $this->pageManager = $pageManager;
         $this->securityController = $securityController;
+        $this->tripleStore = $tripleStore;
         $this->userManager = $userManager;
     }
 
@@ -40,12 +48,41 @@ class UserController extends YesWikiController
         if (!$this->wiki->UserIsAdmin()) {
             throw new DeleteUserException(_t('USER_MUST_BE_ADMIN_TO_DELETE').'.');
         }
-        if ($this->isRunner()) {
+        if ($this->isRunner($user)) {
             throw new DeleteUserException(_t('USER_CANT_DELETE_ONESELF').'.');
         }
         $this->checkIfUserIsNotAloneInEachGroup($user);
         $this->deleteUserFromEveryGroup($user);
+        $this->removeOwnership($user);
         $this->userManager->delete($user);
+    }
+
+    /**
+     * get first admin name
+     * @return string $adminName
+     * @throws Exception
+     */
+    public function getFirstAdmin(): string
+    {
+        $admins = $this->wiki->GetGroupACL(ADMIN_GROUP);
+        $admins = str_replace(["\r\n","\r"], "\n", $admins);
+        $admins = explode("\n", $admins);
+        foreach ($admins as $line) {
+            $line = trim($line);
+            if (!empty($line) &&
+                !in_array(substr($line, 0, 1), ['@','!','#'])) {
+                $adminUser = $this->userManager->getOneByName($line);
+                if (!empty($adminUser['name'])) {
+                    $admin = $adminUser['name'];
+                    break;
+                }
+            }
+        }
+        if (empty($admin)) {
+            throw new Exception("No admin found");
+        }
+
+        return $admin;
     }
 
     /**
@@ -66,7 +103,7 @@ class UserController extends YesWikiController
      */
     private function checkIfUserIsNotAloneInEachGroup(User $user)
     {
-        $grouptab = $this->userManager->groupsWhereIsMember($user);
+        $grouptab = $this->userManager->groupsWhereIsMember($user, false);
         foreach ($grouptab as $group) {
             $groupmembers = $this->wiki->GetGroupACL($group);
             $groupmembers = str_replace(["\r\n","\r"], "\n", $groupmembers);
@@ -86,59 +123,58 @@ class UserController extends YesWikiController
     private function deleteUserFromEveryGroup(User $user)
     {
         // Delete user in every group
-        $triplesTable = $this->dbService->prefixTable('triples');
         $searchedValue = $this->dbService->escape($user['name']);
-
-        $queries = [];
-
-        // replace for first line
-        $queries[] = "UPDATE $triplesTable SET `value` = ".
-            "REPLACE(`value`,\"$searchedValue\\n\",\"\") ".
-            "WHERE `resource` LIKE \"".GROUP_PREFIX."\" AND `value` LIKE \"$searchedValue\\n%\";";
-        $queries[] = "UPDATE $triplesTable SET `value` = ".
-            "REPLACE(`value`,\"$searchedValue\\r\\n\",\"\") ".
-            "WHERE `resource` LIKE \"".GROUP_PREFIX."\" AND `value` LIKE \"$searchedValue\\r\\n%\";";
-        $queries[] = "UPDATE $triplesTable SET `value` = ".
-            "REPLACE(`value`,\"$searchedValue\\r\",\"\") ".
-            "WHERE `resource` LIKE \"".GROUP_PREFIX."\" AND `value` LIKE \"$searchedValue\\r%\";";
-        // replace for next lines (except last)
-        $queries[] = "UPDATE $triplesTable SET `value` = ".
-            "REPLACE(`value`,\"\\n$searchedValue\\n\",\"\\n\") ".
-            "WHERE `resource` LIKE \"".GROUP_PREFIX."\" AND `value` LIKE \"%\\n$searchedValue\\n%\";";
-        $queries[] = "UPDATE $triplesTable SET `value` = ".
-            "REPLACE(`value`,\"\\r$searchedValue\\n\",\"\\n\") ".
-            "WHERE `resource` LIKE \"".GROUP_PREFIX."\" AND `value` LIKE \"%\\r$searchedValue\\n%\";";
-        $queries[] = "UPDATE $triplesTable SET `value` = ".
-            "REPLACE(`value`,\"\\n$searchedValue\\r\\n\",\"\\n\") ".
-            "WHERE `resource` LIKE \"".GROUP_PREFIX."\" AND `value` LIKE \"%\\n$searchedValue\\r\\n%\";";
-        $queries[] = "UPDATE $triplesTable SET `value` = ".
-            "REPLACE(`value`,\"\\r$searchedValue\\r\\n\",\"\\n\") ".
-            "WHERE `resource` LIKE \"".GROUP_PREFIX."\" AND `value` LIKE \"%\\r$searchedValue\\r\\n%\";";
-        $queries[] = "UPDATE $triplesTable SET `value` = ".
-            "REPLACE(`value`,\"\\n$searchedValue\\r\",\"\\n\") ".
-            "WHERE `resource` LIKE \"".GROUP_PREFIX."\" AND `value` LIKE \"%\\n$searchedValue\\r%\";";
-        $queries[] = "UPDATE $triplesTable SET `value` = ".
-            "REPLACE(`value`,\"\\r$searchedValue\\r\",\"\\n\") ".
-            "WHERE `resource` LIKE \"".GROUP_PREFIX."\" AND `value` LIKE \"%\\r$searchedValue\\r%\";";
-        // replace for last line
-        $queries[] = "UPDATE $triplesTable SET `value` = ".
-            "REPLACE(`value`,\"\\n$searchedValue\",\"\\n\") ".
-            "WHERE `resource` LIKE \"".GROUP_PREFIX."\" AND `value` LIKE \"%\\n$searchedValue\";";
-        $queries[] = "UPDATE $triplesTable SET `value` = ".
-            "REPLACE(`value`,\"\\r\\n$searchedValue\",\"\\n\") ".
-            "WHERE `resource` LIKE \"".GROUP_PREFIX."\" AND `value` LIKE \"%\\r\\n$searchedValue\";";
-        $queries[] = "UPDATE $triplesTable SET `value` = ".
-            "REPLACE(`value`,\"\\r$searchedValue\",\"\\n\") ".
-            "WHERE `resource` LIKE \"".GROUP_PREFIX."\" AND `value` LIKE \"%\\r$searchedValue\";";
-
-        foreach ($queries as $query) {
-            try {
-                if (!$this->dbService->query($query)) {
-                    throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED').'.');
+        $groups = $this->tripleStore->getMatching(
+            GROUP_PREFIX."%",
+            "http://www.wikini.net/_vocabulary/acls",
+            "%$searchedValue%",
+            "LIKE",
+            "=",
+            "LIKE"
+        );
+        $error = false;
+        if (is_array($groups)) {
+            $pregQuoteSearchValue = preg_quote($searchedValue, '/');
+            foreach ($groups as $group) {
+                $newValue = $group['value'];
+                $newValue = preg_replace("/(?<=^|\\n|\\r)$pregQuoteSearchValue(?:\\r\\n|\\n|\\r|$)/", "", $newValue);
+                if ($newValue != $group['value'] &&
+                    !in_array($this->tripleStore->update(
+                        $group['resource'],
+                        $group['property'],
+                        $group['value'],
+                        $newValue,
+                        '',
+                        ''
+                    ), [0,3])) {
+                    $error = true;
                 }
-            } catch (Exception $ex) {
-                throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED').'.');
             }
+        }
+        if ($error) {
+            throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED').'.');
+        }
+    }
+
+    /**
+     * remove user from every group
+     * @param User $user
+     * @throws Exception
+     */
+    private function removeOwnership(User $user)
+    {
+        $pagesWhereOwner = $this->dbService->loadAll("
+            SELECT `tag` FROM {$this->dbService->prefixTable('pages')} 
+            WHERE `owner` = \"{$this->dbService->escape($user['name'])}\"
+            AND `latest` = \"Y\" ;
+        ");
+        $pagesWhereOwner = array_map(function ($page) {
+            return $page['tag'];
+        }, $pagesWhereOwner);
+
+        $firstAdmin = $this->getFirstAdmin();
+        foreach ($pagesWhereOwner as $tag) {
+            $this->pageManager->setOwner($tag, $firstAdmin);
         }
     }
 }
