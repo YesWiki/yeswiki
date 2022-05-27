@@ -29,7 +29,6 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     protected $params;
     
     private $getOneByNameCacheResults;
-    private $limitations;
 
 
     public function __construct(
@@ -45,7 +44,6 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $this->securityController = $securityController;
         $this->params = $params;
         $this->getOneByNameCacheResults = [];
-        $this->initLimitations();
     }
 
     private function arrayToUser(?array $userAsArray = null): ?User
@@ -343,33 +341,5 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     public function loadUserByIdentifier(string $username)
     {
         return $this->getOneByName($username);
-    }
-
-    /** Initializes object limitation properties using values from the config file
-     *
-     * @param none
-     *
-     * @return void
-     */
-    private function initLimitations()
-    {
-        $this->limitations = [];
-        $this->initLimitationHelper('user_name_max_length', 'nameMaxLength', 'USER_NAME_MAX_LENGTH_NOT_INT');
-        $this->initLimitationHelper('user_email_max_length', 'emailMaxLength', 'USER_EMAIL_MAX_LENGTH_NOT_INT');
-        $this->initLimitationHelper('user_password_min_length', 'passwordMinimumLength', 'USER_PASSWORD_MIN_LENGTH_NOT_INT');
-    }
-
-    private function initLimitationHelper(string $parameterName, string $limitationKey, string $errorMessageKey)
-    {
-        if ($this->params->has($parameterName)) {
-            $parameter = $this->params->get($parameterName);
-            if (!empty($parameter)) {
-                if (filter_var($parameter, FILTER_VALIDATE_INT)) {
-                    $this->limitations[$limitationKey] = $parameter;
-                } else {
-                    trigger_error(_t($errorMessageKey));
-                }
-            }
-        }
     }
 }

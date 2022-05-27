@@ -2,6 +2,7 @@
 namespace YesWiki;
 
 use YesWiki\Core\Entity\User as CoreUser;
+use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\TripleStore;
@@ -385,18 +386,18 @@ class User
      *
      * @param string $pwd The password to check
      * @return boolean True if OK or false if any problems
-     * 
+     *
      * @deprecated use AuthController::checkPassword instead
      */
     public function checkPassword($pwd, $newUser = '')
     {
-        if (empty($newUser) && !empty($this->properties['name'])){
+        if (empty($newUser) && !empty($this->properties['name'])) {
             $userObject = $this->userManager->getOneByName($this->properties['name']);
-            if (empty($userObject)){
+            if (empty($userObject)) {
                 $this->error = _t('USER_NO_USER_WITH_THAT_NAME').' : '.$this->properties['name'].'!';
                 return false;
             }
-            if (!$this->authController->checkPassword($pwd,$userObject)){
+            if (!$this->authController->checkPassword($pwd, $userObject)) {
                 $this->error = _t('USER_WRONG_PASSWORD').' !';
                 return false;
             };
@@ -430,8 +431,10 @@ class User
                 $correct = false;
             }
         }
-        if (strlen($pwd) < $this->passwordMinimumLength) {
-            $this->error = _t('USER_PASSWORD_TOO_SHORT').'. '._t('USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS').' ' .$this->passwordMinimumLength.'.';
+        try {
+            $correct = $this->authController->checkPasswordValidateRequirements($pwd);
+        } catch (BadFormatPasswordException $ex) {
+            $this->error = $ex->getMessage();
             $correct = false;
         }
         return $correct;
@@ -675,7 +678,7 @@ class User
         $this->error = '';
         $result = false;
         $userAsArray = ['signuptime' => ''];
-        foreach([
+        foreach ([
             'changescount',
             'doubleclickedit',
             'email',
@@ -683,7 +686,7 @@ class User
             'name',
             'password',
             'revisioncount',
-            'show_comments'] as $propName){
+            'show_comments'] as $propName) {
             $userAsArray[$propName] = $this->properties[$propName] ?? '';
         }
         $queryResult = $this->userManager->create($userAsArray);
@@ -1023,7 +1026,7 @@ class User
     public function isInGroup($groupName)
     {
         trigger_error("Usage of User.class.php::isInGroup is deprecated, use UserManager::isInGroup instead!");
-        return $this->userManager->isInGroup($groupName,$this->properties['name'],false);
+        return $this->userManager->isInGroup($groupName, $this->properties['name'], false);
     }
 
     /** Lists the groups $this user is member of
