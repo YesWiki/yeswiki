@@ -27,7 +27,10 @@ if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Core\Service\UserManager;
+use YesWiki\Login\Exception\LoginException;
 
 // Lecture des parametres de l'action
 
@@ -120,51 +123,55 @@ if ($_REQUEST["action"] == "logout") {
 // cas de l'identification
 if ($_REQUEST["action"] == "login") {
     // si l'utilisateur existe, on vérifie son mot de passe
-    if (isset($_POST["name"]) && $_POST["name"] != '' && $existingUser = $this->LoadUser($_POST["name"])) {
-        // si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
-        if ($existingUser["password"] === md5($_POST["password"])) {
-            $this->SetUser($existingUser, $_POST["remember"]);
-
-            // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
-            if ($userpage == 'user' && $this->LoadPage($_POST["name"])) {
-                $this->Redirect($this->href('', $_POST["name"], ''));
+    try {
+        $userManager = $this->services->get(UserManager::class);
+        if (!empty($_POST["name"])) {
+            $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
+            if (empty($name)) {
+                throw new LoginException(_t('LOGIN_WRONG_USER'));
+            }
+            if (strpos($name, '@') !== false) {
+                // si le nomWiki est un mail
+                $user = $userManager->getOneByEmail($name);
             } else {
-                // on va sur la page d'ou on s'est identifie sinon
-                $this->Redirect($incomingurl);
+                $user = $userManager->getOneByName($name);
             }
         } else {
-            // on affiche une erreur sur le mot de passe sinon
-            $this->SetMessage(_t('LOGIN_WRONG_PASSWORD'));
-            $this->Redirect($incomingurl);
-        }
-    } else {
-        // si le nomWiki est un mail
-        if (isset($_POST["name"]) && strstr($_POST["name"], '@')) {
-            $_POST["email"] = $_POST["name"];
-        }
-
-        if (isset($_POST["email"]) && $_POST["email"] != '' && $this->user->loadByEmailFromDB($_POST["email"])) {
-            // si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
-            if ($this->user->checkPassword($_POST['password'])) {
-                $this->SetUser($this->user->getAllProperties(), $_POST["remember"]);
-
-                // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
-                if ($userpage == 'user' && $this->LoadPage($existingUser["name"])) {
-                    $this->Redirect($this->href('', $existingUser["name"], ''));
-                } else {
-                    // on va sur la page d'ou on s'est identifie sinon
-                    $this->Redirect($incomingurl);
-                }
-            } else {
-                // on affiche une erreur sur le mot de passe sinon
-                $this->SetMessage(_t('LOGIN_WRONG_PASSWORD'));
-                $this->Redirect($incomingurl);
+            if (empty($_POST["email"])) {
+                throw new LoginException(_t('LOGIN_WRONG_USER'));
             }
+            $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_STRING);
+            if (empty($email)) {
+                throw new LoginException(_t('LOGIN_WRONG_USER'));
+            }
+            $user = $userManager->getOneByEmail($email);
+        }
+        if (empty($user)) {
+            throw new LoginException(_t('LOGIN_WRONG_USER'));
+        }
+        $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING);
+        $authController = $this->services->get(AuthController::class);
+        if (!$authController->checkPassword($password, $user)) {
+            throw new LoginException(_t('LOGIN_WRONG_PASSWORD'));
+        }
+        $remember = filter_input(INPUT_POST, 'remember', FILTER_VALIDATE_BOOL);
+        $userManager->login($user, $remember);
+        
+        // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
+        if ($userpage == 'user' && $this->LoadPage($user["name"])) {
+            $this->Redirect($this->href('', $user["name"], ''));
         } else {
-            // on affiche une erreur sur le NomWiki sinon
-            $this->SetMessage(_t('LOGIN_WRONG_USER'));
+            // on va sur la page d'ou on s'est identifie sinon
             $this->Redirect($incomingurl);
         }
+    } catch (LoginException $ex) {
+        // on affiche une erreur sur le NomWiki sinon
+        $this->SetMessage($ex->getMessage());
+        $this->Redirect($incomingurl);
+    } catch (Exception $ex) {
+        // error error
+        flash($ex->getMessage(), 'error');
+        $this->Redirect($incomingurl);
     }
 }
 
