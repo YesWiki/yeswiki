@@ -172,6 +172,8 @@ class UserSettingsActionTest extends YesWikiTestCase
      * @depends testDisplayForm
      * @dataProvider dataProvidertestSignup
      * @covers UserSettingsAction::signup
+     * @param string $suffix
+     * @param bool $expectedResult
      * @param Wiki $wiki
      */
     public function testSignup($suffix, $expectedResult, Wiki $wiki)
@@ -207,26 +209,22 @@ class UserSettingsActionTest extends YesWikiTestCase
         unset($_POST['confpassword']);
         unset($_REQUEST['usersettings_action']);
         $user = $userManager->getOneByName($name);
+        $connectedUser = $userManager->getLoggedUser();
+        //clean user before tests
+        if (!empty($user['name'])) {
+            $userManager->delete($user);
+        }
 
         if ($expectedResult) {
-            $connectedUser = $userManager->getLoggedUser();
-            //clean user before tests
-            if (!empty($user['name'])) {
-                $dbService = $wiki->services->get(DbService::class);
-                $dbService->query(
-                    "DELETE FROM {$dbService->prefixTable('users')} ".
-                    "WHERE `name` = \"{$dbService->escape($user['name'])}\";"
-                );
-            }
-            $this->assertInstanceOf(User::class, $user);
             $this->assertTrue($exitExceptionCaught);
+            $this->assertInstanceOf(User::class, $user);
             $this->assertIsArray($connectedUser);
             $this->assertNotEmpty($connectedUser['name']);
             $this->assertEquals($connectedUser['name'], $user['name']);
         } else {
+            $this->assertFalse($exitExceptionCaught);
             $this->assertIsNotArray($user);
             $this->assertNotInstanceOf(User::class, $user);
-            $this->assertFalse($exitExceptionCaught);
         
             $rexExpStr = "/.*".implode(
                 '\s*',

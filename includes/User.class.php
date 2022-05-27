@@ -431,11 +431,13 @@ class User
                 $correct = false;
             }
         }
-        try {
-            $correct = $this->authController->checkPasswordValidateRequirements($pwd);
-        } catch (BadFormatPasswordException $ex) {
-            $this->error = $ex->getMessage();
-            $correct = false;
+        if ($correct) {
+            try {
+                $correct = $this->authController->checkPasswordValidateRequirements($pwd);
+            } catch (BadFormatPasswordException $ex) {
+                $this->error = $ex->getMessage();
+                $correct = false;
+            }
         }
         return $correct;
     }
