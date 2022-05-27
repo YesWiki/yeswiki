@@ -91,7 +91,7 @@ class UsersTableAction extends YesWikiAction
                     $userGroups[] = $group ;
                 }
             }
-            return array_merge($user, ['groups' => $userGroups]);
+            return array_merge($user->getArrayCopy(), ['groups' => $userGroups]);
         }, $users);
     }
 

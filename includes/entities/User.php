@@ -32,11 +32,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
     public function __construct(array $properties)
     {
         foreach (self::PROPS_LIST as $key) {
-            if (!isset($properties[$key])){
+            if (!isset($properties[$key])) {
                 throw new Exception("\$properties[$key] should be set to construct an User!");
             }
             $this->properties[$key] = $properties[$key];
         }
+    }
+
+    public function getArrayCopy(): array
+    {
+        return $this->properties;
     }
 
     /* ~~~~~~~~~~~~~~~~~~ getters ~~~~~~~~~~~~~~~~~~ */
@@ -50,7 +55,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
         return $this->properties['email'];
     }
 
-    /* ~~~~~~~~~ implements PasswordAuthenticatedUserInterface ~~~~~~~~~~ */    
+    /* ~~~~~~~~~ implements PasswordAuthenticatedUserInterface ~~~~~~~~~~ */
     
     /**
      * Returns the hashed password used to authenticate the user.
@@ -72,12 +77,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
 
     public function offsetExists(mixed $offset): bool
     {
-        return (in_array($offset,self::PROPS_LIST));
+        return (in_array($offset, self::PROPS_LIST));
     }
 
     public function offsetGet(mixed $offset): mixed
     {
-        if (!$this->offsetExists($offset)){
+        if (!$this->offsetExists($offset)) {
             throw new UserNotExistingOffset("Not existing $offset in User!");
         }
         return $this->properties[$offset];
@@ -85,7 +90,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
 
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        if (!$this->offsetExists($offset)){
+        if (!$this->offsetExists($offset)) {
             throw new UserNotAuthorizedToSetOffset();
         }
         $this->properties[$offset] = $value;
@@ -162,5 +167,4 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
     {
         return $this->getName();
     }
-
 }
