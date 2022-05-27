@@ -47,7 +47,7 @@ class UserSettingsActionTest extends YesWikiTestCase
     {
         // acl , expected
         return [
-            'not connexted' => ['not connected'],
+            'not connected' => ['not connected'],
             'connected' => ['connected'],
             // 'admin' => ['admin'],
         ];
