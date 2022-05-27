@@ -82,6 +82,20 @@ class AuthController extends YesWikiController
     }
 
     /**
+     * force a new password when renewing password
+     * @param User $user
+     * @param string $plainTextPassword
+     * @throws BadFormatPasswordException
+     */
+    public function setPassword(User $user, string $plainTextPassword)
+    {
+        $this->checkPasswordValidateRequirements($plainTextPassword);
+        $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user);
+        $newHashedPassword = $passwordHasher->hash($plainTextPassword);
+        $this->userManager->upgradePassword($user, $newHashedPassword);
+    }
+
+    /**
      * check if password respets the requirements
      * @param string $password
      * @return bool
@@ -90,7 +104,7 @@ class AuthController extends YesWikiController
     public function checkPasswordValidateRequirements(string $password):bool
     {
         if (strlen($password) < $this->limitations['passwordMinimumLength']) {
-            throw new BadFormatPasswordException(_t('USER_PASSWORD_TOO_SHORT').'. '._t('USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS').' ' .$this->passwordMinimumLength.'.');
+            throw new BadFormatPasswordException(_t('USER_PASSWORD_TOO_SHORT').'. '._t('USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS').' ' .$this->limitations['passwordMinimumLength'].'.');
         }
         return true;
     }
