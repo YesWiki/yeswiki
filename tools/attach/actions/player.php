@@ -178,7 +178,7 @@ if (!empty($url)) {
           </div>';
         echo $output;
     } elseif ($extension=="mm") {
-        $output = '<embed id="visorFreeMind" height="'.$height.'" align="middle" width="'.$width.'" flashvars="openUrl=_blank&initLoadFile='.$url.'&startCollapsedToLevel=5" quality="high" bgcolor="#ffffff" src="tools/attach/players/visorFreemind.swf" type="application/x-shockwave-flash"/>';
+        $output = '<embed id="visorFreeMind" height="'.$height.'" align="middle" width="'.$width.'" flashvars="openUrl=_blank&initLoadFile='.$url.'&startCollapsedToLevel=5" quality="high" bgcolor="#ffffff" src="'.$this->getBaseUrl(true).'/tools/attach/players/visorFreemind.swf" type="application/x-shockwave-flash"/>';
         $output .="[<a href=\"$url\" title=\""._t('ATTACH_DOWNLOAD_THE_FILE')."\">mm</a>]";
         echo $output;
     } else {

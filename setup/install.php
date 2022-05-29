@@ -131,7 +131,7 @@ if (!$result) {
     foreach ($tablesNames as $tableName) {
         try {
             if (mysqli_num_rows(mysqli_query($dblink, "SHOW TABLES LIKE \"{$config['table_prefix']}$tableName\";")) !== 0 // existing table
-                && mysqli_num_rows(mysqli_query($dblink, "SELECT * FROM `{$config['table_prefix']}$tableName`;")) === 0) /* empty table */{
+                && mysqli_num_rows(mysqli_query($dblink, "SELECT * FROM `{$config['table_prefix']}$tableName`;")) === 0) { /* empty table */
                 mysqli_query($dblink, "DROP TABLE IF EXISTS `{$config['table_prefix']}$tableName`;");
             }
         } catch (\Throwable $th) {
@@ -148,11 +148,14 @@ test(
 );
 mysqli_autocommit($dblink, true);
 
+// get path is src and data are separated
+$dataPath = (!empty($_SERVER['YESWIKI_DATA_PATH']) && is_dir($_SERVER['YESWIKI_DATA_PATH'])) ? $_SERVER['YESWIKI_DATA_PATH'].'/' : '';
+
 // Config indexation by robots
 if (!isset($config['allow_robots']) || $config['allow_robots'] != '1') {
     // update robots.txt file
-    if (file_exists('robots.txt')) {
-        $robotFile = file_get_contents('robots.txt');
+    if (file_exists("{$dataPath}robots.txt")) {
+        $robotFile = file_get_contents("{$dataPath}robots.txt");
         // replace text
         if (preg_match(
             "/User-agent: \*(\r?\n?)(?:\s*(?:Disa|A)llow:\s*\/\s*)?/",
@@ -173,7 +176,7 @@ if (!isset($config['allow_robots']) || $config['allow_robots'] != '1') {
         $robotFile .= "Disallow: /\n";
     }
     // save robots.txt file
-    file_put_contents('robots.txt', $robotFile);
+    file_put_contents($dataPath.'robots.txt', $robotFile);
 
     // set meta
     $config['meta'] = array_merge(
@@ -181,8 +184,8 @@ if (!isset($config['allow_robots']) || $config['allow_robots'] != '1') {
         ['robots' => 'noindex,nofollow,max-image-preview:none,noarchive,noimageindex']
     );
 } else {
-    if (file_exists('robots.txt')) {
-        $robotFile = file_get_contents('robots.txt');
+    if (file_exists("{$dataPath}robots.txt")) {
+        $robotFile = file_get_contents("{$dataPath}robots.txt");
         // replace text
         if (preg_match(
             "/User-agent: \*(\r?\n?)(?:\s*(?:Disa|A)llow:\s*\/\s*)?/",
@@ -203,7 +206,7 @@ if (!isset($config['allow_robots']) || $config['allow_robots'] != '1') {
         $robotFile .= "Allow: /\n";
     }
     // save robots.txt file
-    file_put_contents('robots.txt', $robotFile);
+    file_put_contents("{$dataPath}robots.txt", $robotFile);
 }
 
 

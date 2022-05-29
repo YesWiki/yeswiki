@@ -6,7 +6,9 @@ class Files
 {
     protected function tmpdir()
     {
-        $path = tempnam(realpath('cache'), 'yeswiki_');
+        $cachePath = (!empty($this->wiki->config['dataPath'])) ? $this->wiki->config['dataPath'].'/cache' : 'cache';
+        
+        $path = tempnam(realpath($cachePath), 'yeswiki_');
 
         if (is_file($path)) {
             unlink($path);
@@ -72,7 +74,8 @@ class Files
     public function download($sourceUrl, $destPath = null, $timeoutInSec = 5)
     {
         if ($destPath === null) {
-            $destPath = tempnam('cache', 'tmp_to_delete_');
+            $cachePath = (!empty($this->wiki->config['dataPath'])) ? $this->wiki->config['dataPath'].'/cache' : 'cache';
+            $destPath = tempnam($cachePath, 'tmp_to_delete_');
         }
         $fp = fopen($destPath, 'wb');
         $ch = curl_init($sourceUrl);

@@ -75,6 +75,7 @@ class ExternalBazarService
         ImportService $importService
     ) {
         $this->wiki = $wiki;
+        $this->cachePath = (!empty($this->wiki->config['dataPath'])) ? $this->wiki->config['dataPath'].'/cache' : 'cache';
         $this->params = $params;
         $this->formManager = $formManager;
         $this->importService = $importService;
@@ -779,7 +780,7 @@ class ExternalBazarService
      */
     private function cleanOldCacheFiles()
     {
-        $cacheFiles = glob('cache/'.self::CACHE_FILENAME_PREFIX.'*');
+        $cacheFiles = glob($this->cachePath.'/'.self::CACHE_FILENAME_PREFIX.'*');
         foreach ($cacheFiles as $filePath) {
             $filemtime = @filemtime($filePath);  // returns FALSE if file does not exist
             if (!$filemtime or (time() - $filemtime >= self::MAX_CACHE_TIME)) {

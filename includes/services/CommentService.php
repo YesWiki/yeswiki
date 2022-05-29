@@ -22,6 +22,7 @@ class CommentService implements EventSubscriberInterface
     protected $eventDispatcher;
     protected $mailer;
     protected $pageManager;
+    protected $hashcashService;
     protected $params;
     protected $pagesWhereCommentWereRendered;
     protected $userManager;
@@ -35,6 +36,7 @@ class CommentService implements EventSubscriberInterface
         EventDispatcher $eventDispatcher,
         Mailer $mailer,
         PageManager $pageManager,
+        HashCashService $hashcashService,
         ParameterBagInterface $params,
         TemplateEngine $templateEngine,
         UserManager $userManager
@@ -47,6 +49,7 @@ class CommentService implements EventSubscriberInterface
         $this->pageManager = $pageManager;
         $this->templateEngine = $templateEngine;
         $this->userManager = $userManager;
+        $this->hashcashService = $hashcashService;
         $this->params = $params;
         $this->pagesWhereCommentWereRendered = [];
         $this->commentsActivated = $this->params->get('comments_activated');
@@ -71,8 +74,7 @@ class CommentService implements EventSubscriberInterface
         } else {
             if ($this->wiki->HasAccess("comment", $content['pagetag']) && $this->wiki->Loadpage($content['pagetag'])) {
                 if ($this->params->get('use_hashcash')) {
-                    require_once('tools/security/secret/wp-hashcash.lib');
-                    if (!isset($content["hashcash_value"]) || ($content["hashcash_value"] != hashcash_field_value())) {
+                    if (!isset($content["hashcash_value"]) || ($content["hashcash_value"] != $this->hashcashService->hashcash_field_value())) {
                         return [
                             'code' => 400,
                             'error' => _t('HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT')

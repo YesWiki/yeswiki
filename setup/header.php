@@ -9,6 +9,7 @@ $charset='UTF-8';
 if (!defined('YW_CHARSET')) {
     define('YW_CHARSET', $charset);
 }
+$yesWikiDataPath = !empty($_SERVER['YESWIKI_DATA_PATH']) ? $_SERVER['YESWIKI_DATA_PATH'] : ''; 
 header("Content-Type: text/html; charset=$charset");
 ob_start();
 ?>
@@ -17,9 +18,9 @@ ob_start();
 <head>
   <meta charset="<?php echo $charset; ?>">
   <title><?php echo _t('INSTALLATION_OF_YESWIKI'); ?></title>
-  <link href="<?php echo computeBaseUrl(true); ?>styles/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link href="<?php echo computeBaseUrl(true); ?>styles/yeswiki-base.css" rel="stylesheet">
-  <link href="<?php echo computeBaseUrl(true); ?>themes/margot/styles/margot.css" rel="stylesheet">
+  <link href="<?php echo computeBaseUrl(true, $yesWikiDataPath); ?>styles/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="<?php echo computeBaseUrl(true, $yesWikiDataPath); ?>styles/yeswiki-base.css" rel="stylesheet">
+  <link href="<?php echo computeBaseUrl(true, $yesWikiDataPath); ?>themes/margot/styles/margot.css" rel="stylesheet">
 </head>
 
 <body>

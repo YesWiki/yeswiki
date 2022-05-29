@@ -12,7 +12,7 @@ use YesWiki\Wiki;
 
 class FieldFactory
 {
-    private const CACHE_PATH = '/../../../cache/';
+    protected $cachePath;
     protected $wiki;
 
     protected $availableFields;
@@ -20,6 +20,7 @@ class FieldFactory
     public function __construct(Wiki $wiki)
     {
         $this->wiki = $wiki;
+        $this->cachePath = $this->wiki->getLocalPath('cache').'/';
         $this->checkCacheFolderExistence();
         $this->loadAvailableField();
     }
@@ -27,11 +28,11 @@ class FieldFactory
     private function checkCacheFolderExistence()
     {
         try {
-            if (!file_exists(__DIR__ .self::CACHE_PATH) || !is_dir(__DIR__ .self::CACHE_PATH)) {
+            if (!file_exists($this->cachePath) || !is_dir($this->cachePath)) {
                 throw new Exception("ERROR ! : Folder `cache/` not existing in the root folder on the website host ! Can you create it ? ");
             }
             
-            if (!is_writable(__DIR__ .self::CACHE_PATH)) {
+            if (!is_writable($this->cachePath)) {
                 throw new Exception("ERROR ! : Folder `cache/` is not writable ! Can you give it write acces by ftp for example (code 770) ?");
             }
         } catch (Exception $th) {
@@ -47,7 +48,7 @@ class FieldFactory
 
         $reader = new CachedReader(
             new AnnotationReader(),
-            new PhpFileCache(__DIR__ . self::CACHE_PATH . 'fields'),
+            new PhpFileCache($this->cachePath . 'fields'),
             $debug = true
         );
 

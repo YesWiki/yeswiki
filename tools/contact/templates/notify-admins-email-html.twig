@@ -3,7 +3,7 @@
         <style type="text/css">{{ style|replace({'url(':'url(' ~ baseUrl ~ '/tools/bazar/presentation/'})|raw }}</style>
     </head>
     <body>
-        {{- entryHTML|replace({'src="tools':'src="' ~ baseUrl ~ '/tools'})|raw }}
+        {{- entryHTML|replace({'src="tools':'src="' ~ baseUrl(true) ~ '/tools'})|raw }}
         <br />
         <br />
         <a href="{{ url({tag:entry.id_fiche}) }}" 

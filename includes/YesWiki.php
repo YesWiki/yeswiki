@@ -386,12 +386,26 @@ class Wiki
         return $message;
     }
 
-    public function getBaseUrl()
+    public function getBaseUrl($useDataPath = false)
     {
         $url = explode('wakka.php', $this->config['base_url']);
         $url = explode('index.php', $url[0]);
         $url = preg_replace(array('/\/\?$/', '/\/$/'), '', $url[0]);
+        if ($useDataPath && !empty($this->config['dataPath']) ) {
+            // we add an imaginary folder in order to retrieve yeswiki assets from yeswiki's source folder. web servers need to be configured to redirect yeswiki-assets to the main yeswiki folder 
+            $url .= '/yeswiki-assets';
+        }
         return $url;
+    }
+
+    public function getLocalPath($folder = '')
+    {
+        $dataFolders = ['', 'cache', 'files', 'custom'];
+        if (in_array($folder, $dataFolders) && !empty($this->config['dataPath']) ) {
+            // we add an imaginary folder in order to retrieve yeswiki assets from yeswiki's source folder. web servers need to be configured to redirect yeswiki-assets to the main yeswiki folder 
+            $folder = $this->config['dataPath'].'/'.$folder ;
+        }
+        return $folder;
     }
 
     public function Redirect($url)

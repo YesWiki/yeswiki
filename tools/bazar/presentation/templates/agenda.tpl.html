@@ -27,7 +27,7 @@ $modal = ''; // declaration d'une chaine de char vide
               ;?>>
         <?php else : ?>
           <img loading="lazy" class="trombi-image img-placeholder"
-               src="tools/bazar/libs/vendor/placeholder.php?size=300x300&amp;bg=efefef&amp;text=">
+               src="<?php echo $GLOBALS['wiki']->getBaseUrl(true); ?>/tools/bazar/libs/vendor/placeholder.php?size=300x300&amp;bg=efefef&amp;text=">
           <i class="trombi-image icon-placeholder fa fa-calendar"></i>
         <?php endif; ?>
       </div>

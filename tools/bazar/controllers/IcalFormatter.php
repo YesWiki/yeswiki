@@ -349,6 +349,7 @@ class IcalFormatter extends YesWikiController
     /** get base Url
      * @return string
      */
+    // TODO: use getBaseUrl from core unless there is a trap ?
     private function getBaseURL():string
     {
         $baseUrl = $this->params->get('base_url');

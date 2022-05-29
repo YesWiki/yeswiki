@@ -75,7 +75,7 @@ class AssetsManager
         $isUrl = strpos($file, "http://") === 0 || strpos($file, "https://") === 0;
         
         if ($isUrl || !empty($file) && file_exists($file)) {
-            $href = $isUrl ? $file : "{$this->wiki->getBaseUrl()}/{$file}";
+            $href = $isUrl ? $file : "{$this->wiki->getBaseUrl(true)}/{$file}";
             $revision = $this->wiki->GetConfigValue('yeswiki_release', null);
             return <<<HTML
                 $conditionstart
@@ -112,7 +112,7 @@ class AssetsManager
 
         if (!empty($file) && file_exists($file)) {
             // include local files
-            $code = "<script src='{$this->wiki->getBaseUrl()}/$file$rev'";
+            $code = "<script src='{$this->wiki->getBaseUrl(true)}/$file$rev'";
             if (!str_contains($GLOBALS['js'], $code) || $first) {
                 if (!$first) {
                     $code .= " defer";
@@ -139,12 +139,12 @@ class AssetsManager
 
     private function mapFilePath($file)
     {
-        // Handle backwar compatibility
+        // Handle backward compatibility
         if (array_key_exists($file, self::BACKWARD_PATH_MAPPING)) {
             $file = self::BACKWARD_PATH_MAPPING[$file];
         }
 
-        // Handle production environement
+        // Handle production environment
         if ($this->wiki->GetConfigValue('debug') != 'yes') {
             if (array_key_exists($file, self::PRODUCTION_PATH_MAPPING)) {
                 $file = self::PRODUCTION_PATH_MAPPING[$file];

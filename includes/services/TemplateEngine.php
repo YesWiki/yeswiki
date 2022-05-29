@@ -81,9 +81,11 @@ class TemplateEngine
             }
         }
 
+        $dataPath = (!empty($this->wiki->config['dataPath'])) ? $this->wiki->config['dataPath'].'/' : '';
+
         // Set up twig
         $this->twig = new \Twig\Environment($this->twigLoader, [
-            'cache' => 'cache/templates/',
+            'cache' => $dataPath.'cache/templates/',
             'auto_reload' => true
         ]);
 
@@ -103,6 +105,9 @@ class TemplateEngine
         // Adds Helpers
         $this->addTwigHelper('_t', function ($key, $params = []) {
             return html_entity_decode(_t($key, $params));
+        });
+        $this->addTwigHelper('baseUrl', function ($useDataPath = null) {
+            return $this->wiki->getBaseUrl($useDataPath);
         });
         $this->addTwigHelper('url', function ($options) {
             $options = array_merge(['tag' => '', 'handler' => '', 'params' => []], $options);

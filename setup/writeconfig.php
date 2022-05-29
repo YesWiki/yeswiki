@@ -26,7 +26,7 @@ $config['yeswiki_release'] = YESWIKI_RELEASE;
 $config['db_charset'] = 'utf8mb4';
 
 // convert config array into PHP code
-$configCode = "<?php\n// wakka.config.php "._t('CREATED').' '.date('c')."\n// "._t('DONT_CHANGE_YESWIKI_VERSION_MANUALLY')." !\n\n\$wakkaConfig = ";
+$configCode = "<?php\n// YesWiki config file "._t('CREATED').' '.date('c')."\n// "._t('DONT_CHANGE_YESWIKI_VERSION_MANUALLY')." !\n\n\$wakkaConfig = ";
 if (function_exists('var_export')) {
     // var_export gives a better result but was added in php 4.2.0 (wikini asks only php 4.1.0)
     $configCode .= var_export($config, true).";\n?>";
@@ -48,7 +48,7 @@ if ($fp) {
     // write
     fclose($fp);
 
-    echo    "<br />\n<div class=\"alert alert-success\"><strong>"._t('FINISHED_CONGRATULATIONS').' !</strong><br />'._t('IT_IS_RECOMMANDED_TO_REMOVE_WRITE_ACCESS_TO_CONFIG_FILE').' <tt>wakka.config.php</tt> ('._t('THIS_COULD_BE_UNSECURE').').</div>';
+    echo    "<br />\n<div class=\"alert alert-success\"><strong>"._t('FINISHED_CONGRATULATIONS').' !</strong><br />'._t('IT_IS_RECOMMANDED_TO_REMOVE_WRITE_ACCESS_TO_CONFIG_FILE').' <tt>'.$wakkaConfigLocation.'</tt> ('._t('THIS_COULD_BE_UNSECURE').').</div>';
     echo "<div class=\"form-actions\">\n<a class=\"btn btn-lg btn-primary\" href=\"",$config['base_url'].$config['root_page'],'">'._t('GO_TO_YOUR_NEW_YESWIKI_WEBSITE')."</a>\n</div>\n";
 //header('Location: '.$config['base_url'].$config['root_page']);
 } else {

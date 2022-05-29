@@ -11,6 +11,6 @@
             {{ _t('BAZ_SEE_ENTRY_ONLINE') }}
         </a>
         {{ mailCustomMessage|raw }}
-        {{- entryHTML|replace({'src="tools':'src="' ~ baseUrl ~ '/tools'})|raw }}
+        {{- entryHTML|replace({'src="tools':'src="' ~ baseUrl(true) ~ '/tools'})|raw }}
     </body>
 </html>

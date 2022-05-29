@@ -42,7 +42,7 @@ class AjaxUploadHandler extends YesWikiHandler
             $sizeLimit = $att->attachConfig['max_file_size'];
     
             $uploader = new qqFileUploader($allowedExtensions, $sizeLimit, $this->hasTempTag);
-            $result = $uploader->handleUpload($att->attachConfig['upload_path']);
+            $result = $uploader->handleUpload($att->getUploadPath());
         } catch (\Throwable $th) {
             $errorsMessage .= "{$th->getMessage()} in {$th->getFile()}, line {$th->getLine()}";
         }

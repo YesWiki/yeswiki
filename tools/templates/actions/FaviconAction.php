@@ -12,6 +12,7 @@ class FaviconAction extends YesWikiAction
         if (!$favicon) {
           $favicon = "themes/{$this->wiki->getConfigValue('favorite_theme')}/images/favicon.png";
           if (file_exists("custom/$favicon")) $favicon = "custom/$favicon"; // handles custom theme
+          $favicon = $this->wiki->getBaseUrl(true).'/'.$favicon;
         }
 
         $isEmoji = strpos($favicon, '.') === false;

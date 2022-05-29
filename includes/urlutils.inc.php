@@ -35,9 +35,10 @@ function getAbsoluteUrl()
  * as it affects the resulting url. Defaults to false.
  * @return string The base url of the wiki
  */
-function computeBaseURL($rewrite_mode = false)
+function computeBaseURL($rewrite_mode = false, $dataPath = null)
 {
-    $scriptlocation = str_replace(array('/index.php', '/wakka.php'), '', $_SERVER["SCRIPT_NAME"]);
+    $prefix = (!empty($dataPath) && is_dir($dataPath)) ? '/yeswiki-assets' : '';
+    $scriptlocation = $prefix.str_replace(array('/index.php', '/wakka.php'), '', $_SERVER["SCRIPT_NAME"]);
 
     return getRootUrl()
         . $scriptlocation

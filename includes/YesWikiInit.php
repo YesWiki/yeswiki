@@ -48,9 +48,12 @@ class Init
     public function __construct($config = array())
     {
         $this->getRoute();
+        if (!empty($_SERVER['YESWIKI_DATA_PATH']) && is_dir($_SERVER['YESWIKI_DATA_PATH'])) {
+            $this->configFile = $_SERVER['YESWIKI_DATA_PATH'].'/yeswiki.config.php';
+        }
         $this->config = $this->getConfig($config);
         $this->setIframeHeaders();
-
+        
         /* @todo : compare versions, start installer for update if necessary */
         if (!file_exists($this->configFile)) {
             $this->doInstall();
@@ -231,6 +234,7 @@ class Init
             'timezone' => 'Europe/Paris', // Only used if not set in wakka.config.php nor in php.ini
             'root_page' => 'PagePrincipale', // backup root_page if deleted from wakka.config.php
             'wakka_name' => '', // backup wakka_name if deleted from wakka.config.php
+            'dataPath' => !empty($_SERVER['YESWIKI_DATA_PATH']) ? $_SERVER['YESWIKI_DATA_PATH'] : '',
             'htmlPurifierActivated' => false, // TODO ectoplasme set to true
             'favorites_activated' => true,
             ArchiveService::PARAMS_KEY_IN_WAKKA => [
