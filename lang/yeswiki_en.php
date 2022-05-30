@@ -461,6 +461,10 @@ return [
     'USER_PASSWORD_CONFIRMATION' => 'Password confirmation',
     'USER_NEW_ACCOUNT' => 'New account',
     'USER_PASSWORD' => 'Password',
+    'USER_ERRORS_FOUND' => 'Found(s) errors(s)',
+    'USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR' => 'A positive integer is needed for %{name}.',
+    'USER_YOU_MUST_SPECIFY_YES_OR_NO' => '\'Y\' or \'N\' is required for %{name}.',
+    'USER_YOU_MUST_SPECIFY_A_STRING' => 'A string is required for %{name}.',
     
     // YesWiki\Database class
     'DATABASE_QUERY_FAILED' => 'Database query failed',

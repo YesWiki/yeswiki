@@ -94,13 +94,11 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 
     public function getLoggedUser()
     {
-        // TODO use AuthController
         return isset($_SESSION['user']) ? $_SESSION['user'] : '';
     }
 
     public function getLoggedUserName()
     {
-        // TODO use AuthController
         if ($user = $this->getLoggedUser()) {
             $name = $user["name"];
         } else {
@@ -111,20 +109,28 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 
     public function login($user, $remember = 0)
     {
-        // TODO use AuthController
-        $_SESSION['user'] = $user;
-        $this->wiki->SetPersistentCookie('name', $user['name'], $remember);
-        $this->wiki->SetPersistentCookie('password', $user['password'], $remember);
-        $this->wiki->SetPersistentCookie('remember', $remember, $remember);
+        $_SESSION['user'] = [
+            'name' => $user['name'],
+            'email' => $user['email'],
+            'password' => $user['password'],
+        ];
+        if (!$this->wiki->isCli()) {
+            // prevent setting cookies in CLI (could be errors)
+            $this->wiki->SetPersistentCookie('name', $user['name'], $remember);
+            $this->wiki->SetPersistentCookie('password', $user['password'], $remember);
+            $this->wiki->SetPersistentCookie('remember', $remember, $remember);
+        }
     }
 
     public function logout()
     {
-        // TODO use AuthController
         $_SESSION['user'] = '';
-        $this->wiki->DeleteCookie('name');
-        $this->wiki->DeleteCookie('password');
-        $this->wiki->DeleteCookie('remember');
+        if (!$this->wiki->isCli()) {
+            // prevent setting cookies in CLI (could be errors)
+            $this->wiki->DeleteCookie('name');
+            $this->wiki->DeleteCookie('password');
+            $this->wiki->DeleteCookie('remember');
+        }
     }
 
     /**
@@ -140,10 +146,17 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         }
 
         if (is_array($wikiNameOrUser)) {
-            $userAsArray = $wikiNameOrUser;
-            $wikiName = $userAsArray['name'];
-            $email = $userAsArray['email'];
-            $plainPassword = $userAsArray['password'];
+            $userAsArray = array_merge($wikiNameOrUser, [
+                'changescount' => "",
+                'doubleclickedit' => "",
+                'motto' => "",
+                'revisioncount' => "",
+                'show_comments' => "",
+                'signuptime' => ""
+            ]);
+            $wikiName = $userAsArray['name'] ?? "";
+            $email = $userAsArray['email'] ?? "";
+            $plainPassword = $userAsArray['password'] ?? "";
         } elseif (is_string($wikiNameOrUser)) {
             $wikiName = $wikiNameOrUser;
             $userAsArray = [
@@ -174,7 +187,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             throw new UserEmailAlreadyUsedException();
         }
         if (empty($plainPassword)) {
-            throw new Exception("'password' parameter of UserManager->create shouldnot be empty!");
+            throw new Exception("'password' parameter of UserManager->create should not be empty!");
         }
         
         $this->getOneByNameCacheResults = [];
@@ -193,6 +206,50 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             "email = '" . $this->dbService->escape($user['email']) . "', " .
             "password = '" . $this->dbService->escape($hashedPassword) . "'"
         );
+    }
+ 
+    /**
+     * update user params
+     * for e-mail check is existing e-mail
+     *
+     * @param User $user
+     * @param array $newValues (associative array)
+     * @return bool
+     */
+    public function update(User $user, array $newValues): bool
+    {
+        if (!empty($newValues['email']) && $user['email'] != $newValues['email']) {
+            $this->updateEmail($user['name'], $newValues['email']);
+            $user['email'] = $newValues['email'];
+        }
+        $newKeys = array_keys($newValues);
+        $authorizedKeys = array_filter($newKeys, function ($key) {
+            return in_array($key, [
+                'changescount',
+                'doubleclickedit',
+                'motto',
+                //'name', // name not currently updateable
+                // 'password', // password not updateable by this method
+                'revisioncount' => "",
+                'show_comments' => ""
+            ]);
+        });
+        if (count($authorizedKeys) > 0) {
+            $query = "UPDATE {$this->dbService->prefixTable('users')} SET ";
+            foreach ($authorizedKeys as $idx => $key) {
+                if ($idx > 0) {
+                    $query .= ", ";
+                }
+                $query .= "`$key` = \"{$this->dbService->escape($newValues[$key])}\" ";
+            }
+            $query .= "WHERE `name` = \"{$this->dbService->escape($user['name'])}\" ";
+            $query .= "AND `email` = \"{$this->dbService->escape($user['email'])}\" ";
+            $query .= "AND `password` = \"{$this->dbService->escape($user['password'])}\" ";
+            $this->dbService->query($query);
+        }
+
+        $this->getOneByNameCacheResults = [];
+        return true;
     }
 
     /**

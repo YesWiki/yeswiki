@@ -25,7 +25,6 @@ require_once 'includes/urlutils.inc.php';
 require_once 'includes/i18n.inc.php';
 require_once 'includes/YesWikiInit.php';
 require_once 'includes/Session.class.php';
-require_once 'includes/User.class.php';
 require_once 'includes/YesWikiPerformable.php';
 require_once 'includes/objects/YesWikiAction.php';
 require_once 'includes/objects/YesWikiHandler.php';
@@ -107,7 +106,6 @@ class Wiki
         $this->routes = $init->initRoutes($this);
 
         $this->session = new \YesWiki\Session($this);
-        $this->user = new \YesWiki\User($this);
     }
 
     // MISC
@@ -1935,6 +1933,6 @@ class Wiki
      */
     public function UserIsInGroup($group, $user = null, $admincheck = true)
     {
-        return $this->services->get(UserManager::class)->isInGroup($group,$user, $admincheck);
+        return $this->services->get(UserManager::class)->isInGroup($group, $user, $admincheck);
     }
 }

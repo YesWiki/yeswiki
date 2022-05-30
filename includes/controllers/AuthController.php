@@ -11,8 +11,6 @@ use YesWiki\Core\YesWikiController;
 
 class AuthController extends YesWikiController
 {
-    public const DEFAULT_NAME_MAX_LENGTH = 80;
-    public const DEFAULT_EMAIL_MAX_LENGTH = 254;
     public const DEFAULT_PASSWORD_MINIMUM_LENGTH = 5;
 
     private $limitations;
@@ -38,20 +36,6 @@ class AuthController extends YesWikiController
     private function initLimitations()
     {
         $this->limitations = [];
-        $this->initLimitationHelper(
-            'user_name_max_length',
-            'nameMaxLength',
-            FILTER_VALIDATE_INT,
-            self::DEFAULT_NAME_MAX_LENGTH,
-            'USER_NAME_MAX_LENGTH_NOT_INT'
-        );
-        $this->initLimitationHelper(
-            'user_email_max_length',
-            'emailMaxLength',
-            FILTER_VALIDATE_INT,
-            self::DEFAULT_EMAIL_MAX_LENGTH,
-            'USER_EMAIL_MAX_LENGTH_NOT_INT'
-        );
         $this->initLimitationHelper(
             'user_password_min_length',
             'passwordMinimumLength',

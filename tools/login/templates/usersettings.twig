@@ -1,4 +1,4 @@
-<h2>{{ _t('USER_SETTINGS') }}{{ adminIsActing ? ' — ' ~ user.property('name') : ''}}</h2>
+<h2>{{ _t('USER_SETTINGS') }}{{ adminIsActing ? ' — ' ~ user.name : ''}}</h2>
 
 {% if errorUpdate is not empty %}
   <div class="alert alert-danger">{{ errorUpdate }}</div>
@@ -7,7 +7,7 @@
 <form
   action="{{ url({tag:''}|merge((
     adminIsActing 
-    ? {user:user.property('name'),from:referrer} 
+    ? {user:user.name,from:referrer} 
     : {}
     ))) }}"
   method="post"
@@ -16,13 +16,13 @@
   <div class="control-group form-group">
 		<label class="control-label col-sm-3">{{ _t('USER_EMAIL_ADDRESS') }}</label>
 		<div class="controls col-sm-9">
-			<input class="form-control" name="email" value="{{ user.property('email') }}" size="40" />
+			<input class="form-control" name="email" value="{{ user.email }}" size="40" />
 		</div>
 	</div>
   {# <div class="control-group form-group">
     <label class="control-label col-sm-3">{{ _t('USER_MAX_NUMBER_OF_VERSIONS') }}</label>
     <div class="controls col-sm-9">
-      <input class="form-control" name="revisioncount" value="{{ user.property('revisioncount')|e('html_attr') }}" size="40" />
+      <input class="form-control" name="revisioncount" value="{{ user.revisioncount|e('html_attr') }}" size="40" />
     </div>
   </div> #}
   <div class="control-group form-group">
@@ -42,8 +42,8 @@
 
 {# FORM DELETE #}
 {% if adminIsActing %}
-  <form action="<{{ url({params:{user:user.property('name'),from:referrer}}) }}" method="post" class="form-horizontal">
-    <input type="hidden" name="csrf-token-delete" value="{{ csrfToken({id:"login\\action\\usersettings\\deleteByAdmin\\#{user.property('name')}",refresh:true})|e('html_attr') }}">
+  <form action="<{{ url({params:{user:user.name,from:referrer}}) }}" method="post" class="form-horizontal">
+    <input type="hidden" name="csrf-token-delete" value="{{ csrfToken({id:"login\\action\\usersettings\\deleteByAdmin\\#{user.name}",refresh:true})|e('html_attr') }}">
     <input type="hidden" name="usersettings_action" value="deleteByAdmin" />
     <input class="btn btn-danger" type="submit" value="{{ _t('USER_DELETE')|e('html_attr') }}" />
   </form>
