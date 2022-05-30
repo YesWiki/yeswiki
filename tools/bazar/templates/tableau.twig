@@ -73,6 +73,12 @@ pour différencier les différents tableaux table_1 table_2 #}
                 <a href="{{ entry.url }}" class="modalbox" data-size="modal-lg">
                   {{ val|nl2br }}
                 </a>
+              {% elseif info.imageAsThumbnail and val is not empty %}
+                {% set size = 100 %}
+                {% set width = size*3//2 %}
+                <div class="tableau-thumbnail" style="width:{{ width }}px;height:{{ size }}px">
+                  <img src="{{ urlImage({fileName:"files/#{val}",width:width,height:size,mode:"fit"})}}"/>
+                </div>
               {% else %}
                 {{ val|nl2br }}
               {% endif %}

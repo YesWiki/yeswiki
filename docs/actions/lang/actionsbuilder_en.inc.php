@@ -419,4 +419,5 @@ return [
     "AB_bazartableau_columnswidth_field_label" => "Field",
     "AB_bazartableau_columnswidth_width_label" => "Width",
     "AB_bazartableau_exportallcolumns_label" => "Also export hidden columns",
+    "AB_bazartableau_displayimagesasthumbnails_label" => "Display images as thumbnails",
 ];

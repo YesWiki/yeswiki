@@ -419,4 +419,5 @@ return [
     "AB_bazartableau_columnswidth_field_label" => "Campo",
     "AB_bazartableau_columnswidth_width_label" => "Largura",
     "AB_bazartableau_exportallcolumns_label" => "Exportação também colunas escondidas",
+    // "AB_bazartableau_displayimagesasthumbnails_label" => "Afficher les images sous forme de vignette",
 ];

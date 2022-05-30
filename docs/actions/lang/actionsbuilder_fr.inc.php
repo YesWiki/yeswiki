@@ -419,4 +419,5 @@ return [
     "AB_bazartableau_columnswidth_field_label" => "Champ",
     "AB_bazartableau_columnswidth_width_label" => "Largeur",
     "AB_bazartableau_exportallcolumns_label" => "Exporter aussi les colonnes masquées",
+    "AB_bazartableau_displayimagesasthumbnails_label" => "Afficher les images sous forme de vignette",
 ];

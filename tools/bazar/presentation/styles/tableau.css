@@ -1,4 +1,18 @@
 td.horizontal-admins-btn {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
+}
+
+div.tableau-thumbnail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+div.tableau-thumbnail > img {
+  max-width: 100%;
+  width: auto;
+  height: 100%;
+  object-fit: contain;
+  object-position: 50% 50%;
 }

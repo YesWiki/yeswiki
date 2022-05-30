@@ -4,6 +4,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\CheckboxField ;
 use YesWiki\Bazar\Field\EmailField ;
 use YesWiki\Bazar\Field\EnumField ;
+use YesWiki\Bazar\Field\ImageField ;
 use YesWiki\Bazar\Field\MapField ;
 use YesWiki\Bazar\Service\FormManager ;
 use YesWiki\Core\Service\AclService ;
@@ -72,6 +73,7 @@ if (count($fiches)>0) {
         }
         $sanitizedParams['displayvaluesinsteadofkeys'] = !isset($param['displayvaluesinsteadofkeys']) ? false : filter_var($param['displayvaluesinsteadofkeys'],FILTER_VALIDATE_BOOLEAN);
         $sanitizedParams['exportallcolumns'] = !isset($param['exportallcolumns']) ? false : filter_var($param['exportallcolumns'],FILTER_VALIDATE_BOOLEAN);
+        $sanitizedParams['displayimagesasthumbnails'] = !isset($param['displayimagesasthumbnails']) ? false : filter_var($param['displayimagesasthumbnails'],FILTER_VALIDATE_BOOLEAN);
 
         $sanitizedParams['columnswidth'] = [];
         if (isset($param['columnswidth']) && is_string($param['columnswidth'])){
@@ -85,7 +87,7 @@ if (count($fiches)>0) {
 
         /* columnsInfo */
         if (!function_exists('tableauGetFieldsCols')) {
-            function tableauGetFieldsCols($field, $checkboxFieldsInColumns): array
+            function tableauGetFieldsCols($field, $checkboxFieldsInColumns, $displayimagesasthumbnails): array
             {
                 $propertyName = $field->getPropertyName();
                 if (empty($propertyName)) {
@@ -93,11 +95,7 @@ if (count($fiches)>0) {
                 }
                 
                 $fieldLabel = $field->getLabel();
-                if (!($field instanceof CheckboxField && $checkboxFieldsInColumns) && !($field instanceof MapField)) {
-                    return [['propertyName' => $propertyName, 'title' => $fieldLabel, 'key' => null,
-                        'mapFieldId' =>  null,
-                        'multivalues' => $field instanceof CheckboxField]];
-                } elseif ($field instanceof MapField) {
+                if ($field instanceof MapField) {
                     $cols = [];
                     $cols[]  = [
                         'propertyName' => $propertyName,
@@ -112,7 +110,7 @@ if (count($fiches)>0) {
                         'mapFieldId' => $field->getLongitudeField(),
                         'multivalues' => false];
                     return $cols;
-                } else {
+                } elseif ($field instanceof CheckboxField && $checkboxFieldsInColumns) {
                     $options = $field->getOptions();
                     if (empty($options)) {
                         return [];
@@ -128,6 +126,14 @@ if (count($fiches)>0) {
                         }
                         return $cols;
                     }
+                } else {
+                    return [['propertyName' => $propertyName, 'title' => $fieldLabel, 'key' => null,
+                        'mapFieldId' =>  null,
+                        'multivalues' => $field instanceof CheckboxField]+(
+                            $displayimagesasthumbnails && $field instanceof ImageField
+                            ? ['imageAsThumbnail' => true]
+                            :[]
+                        )];
                 }
             }
         }
@@ -146,7 +152,7 @@ if (count($fiches)>0) {
         if (empty($columnFieldsIdsRaw)) {
             // if no title, display all fields
             foreach ($fields as $field) {
-                foreach (tableauGetFieldsCols($field, $checkboxFieldsInColumns) as $col) {
+                foreach (tableauGetFieldsCols($field, $checkboxFieldsInColumns, $sanitizedParams['displayimagesasthumbnails']) as $col) {
                     $columnsInfo[] = $col;
                 }
                 tableauGetOptionsForField($field,$optionsIfDisplayvaluesinsteadofkeys,$sanitizedParams);
@@ -155,7 +161,7 @@ if (count($fiches)>0) {
             foreach ($columnFieldsIdsRaw as $fieldId) {
                 $field = $formManager->findFieldFromNameOrPropertyName($fieldId, $formId);
                 if (!empty($field)) {
-                    foreach (tableauGetFieldsCols($field, $checkboxFieldsInColumns) as $col) {
+                    foreach (tableauGetFieldsCols($field, $checkboxFieldsInColumns, $sanitizedParams['displayimagesasthumbnails']) as $col) {
                         $columnsInfo[] = $col;
                     }
                     tableauGetOptionsForField($field,$optionsIfDisplayvaluesinsteadofkeys,$sanitizedParams);
@@ -168,7 +174,7 @@ if (count($fiches)>0) {
                 foreach ($fields as $field) {
                     $fieldPropertyName = $field->getPropertyName();
                     if (!empty($fieldPropertyName) && !in_array($fieldPropertyName,$alreadyDefinedPropertyNames)){
-                        foreach (tableauGetFieldsCols($field, $checkboxFieldsInColumns) as $col) {
+                        foreach (tableauGetFieldsCols($field, $checkboxFieldsInColumns, $sanitizedParams['displayimagesasthumbnails']) as $col) {
                             $columnsInfo[] = array_merge($col,[ 'not-visible' => true ]);
                         }
                         tableauGetOptionsForField($field,$optionsIfDisplayvaluesinsteadofkeys,$sanitizedParams);

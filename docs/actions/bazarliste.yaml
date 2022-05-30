@@ -720,6 +720,12 @@ actions:
         default: "true"
         checkedvalue: "true"
         uncheckedvalue: "false"
+      displayimagesasthumbnails:
+        type: checkbox
+        label: _t(AB_bazartableau_displayimagesasthumbnails_label)
+        default: "false"
+        checkedvalue: "true"
+        uncheckedvalue: "false"
       displayvaluesinsteadofkeys:
         type: checkbox
         label: _t(AB_bazartableau_displayvaluesinsteadofkeys_label)
