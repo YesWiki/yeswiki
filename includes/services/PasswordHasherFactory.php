@@ -7,18 +7,21 @@ require_once 'includes/objects/MD5PasswordHasher.php'; // TODO use autoload
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory as SymfonyPasswordHasherFactory;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\MD5PasswordHasher;
+use YesWiki\Core\Service\DbService;
 
 class PasswordHasherFactory extends SymfonyPasswordHasherFactory
 {
-    public function __construct()
+    protected $dbService;
+
+    public function __construct(DbService $dbService)
     {
-        $newModeActivated = false;
-        // TODO determine needRehash according to DB params
-        if ($newModeActivated){
+        $this->dbService = $dbService;
+        $newModeActivated = $this->newModeIsActivated();
+        if ($newModeActivated) {
             $params = [
                 'md5' => [
                     'class' => MD5PasswordHasher::class,
-                    'arguments' => [true] 
+                    'arguments' => [true]
                 ],
                 User::class => [
                     'algorithm' => 'auto',
@@ -36,5 +39,21 @@ class PasswordHasherFactory extends SymfonyPasswordHasherFactory
             ];
         }
         parent::__construct($params);
+    }
+
+    public function newModeIsActivated(): bool
+    {
+        $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable("users")} LIKE 'password';");
+        if (@mysqli_num_rows($result) === 0) {
+            return false;
+        }
+        $row = mysqli_fetch_assoc($result);
+        mysqli_free_result($result);
+        return !empty($row['Type']) && $row['Type'] == "varchar(256)";
+    }
+
+    public function activateNewMode(): bool
+    {
+        return $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable("users")} MODIFY COLUMN `password` varchar(256) NOT NULL;");
     }
 }

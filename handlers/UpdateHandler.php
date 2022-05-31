@@ -6,6 +6,7 @@ use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Wiki;
@@ -106,6 +107,18 @@ class UpdateHandler extends YesWikiHandler
                 $output .= $this->updateDefaultCommentsAcls();
             } else {
                 $output .= "ℹ️ Comment acls already reset!<br />";
+            }
+
+            // update user table to increase size of password
+            if ($this->wiki->services->has(PasswordHasherFactory::class)) {
+                $passwordHasherFactory = $this->getService(PasswordHasherFactory::class);
+                if (!$passwordHasherFactory->newModeIsActivated()) {
+                    $output .= "ℹ️ Increasing 'password' column size for {$dbService->prefixTable("users")}table.<br />";
+                    $passwordHasherFactory->activateNewMode();
+                    $output .=  '✅ Done !<br />';
+                } else {
+                    $output .= "✅ The table {$dbService->prefixTable("users")}is already up-to-date with right 'password' column size!<br />";
+                }
             }
 
             // propose to update content of admin's pages
