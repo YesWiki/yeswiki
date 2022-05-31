@@ -241,8 +241,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 'motto',
                 //'name', // name not currently updateable
                 // 'password', // password not updateable by this method
-                'revisioncount' => "",
-                'show_comments' => ""
+                'revisioncount',
+                'show_comments'
             ]);
         });
         if (isset($newValues['email'])) {

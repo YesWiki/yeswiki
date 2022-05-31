@@ -123,6 +123,197 @@ class UserControllerTest extends YesWikiTestCase
             // 'admin current user' => ['%',false], // not currently covered
         ];
     }
+
+    public function dataProviderTestCreate()
+    {
+        // name, email, newValues, UserNameExist, EmailExist, Other Exception
+        return [
+            'email name all right' => ['newRandom','newRandom',[],false,false,false],
+            'email with 5 chars ext' => ['newRandom','newRandom2',[],false,false,false],
+            'name existing' => ['name of first user','newRandom',[],false,false,true],
+            'empty name' => ['empty','newRandom',[],false,false,true],
+            'email existing' => ['newRandom','email of first user',[],false,false,true],
+            'empty email' => ['newRandom','empty',[],false,false,true],
+        ];
+    }
+
+    /**
+     * @depends testUserControllerExisting
+     * @covers UserController::create
+     * @dataProvider dataProviderTestCreate
+     * @param string $name
+     * @param string $email
+     * @param array $newValues
+     * @param bool $userNameExist
+     * @param bool $emailExist
+     * @param bool $otherException
+     * @param Wiki $wiki
+     */
+    public function testCreate(
+        string $name,
+        string $email,
+        array $newValues,
+        bool $userNameExist,
+        bool $emailExist,
+        bool $otherException,
+        Wiki $wiki
+    ) {
+        $userController = $wiki->services->get(UserController::class);
+        $userManager = $wiki->services->get(UserManager::class);
+        
+        $users = $userManager->getAll();
+        $firstUser = $users[array_key_first($users)];
+        if ($name == 'newRandom') {
+            do {
+                $name= $this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+                    .$this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+            } while (!empty($userManager->getOneByName($name)));
+        } elseif ($name == 'empty') {
+            $name = "";
+        } else {
+            $name = $firstUser['name'];
+        }
+        if ($email == 'newRandom') {
+            do {
+                $email = strtolower($this->randomString(10)).'@example.com';
+            } while (!empty($userManager->getOneByEmail($email)));
+        } elseif ($email == 'newRandom2') {
+            do {
+                $email = strtolower($this->randomString(10)).'@xyz.earth';
+            } while (!empty($userManager->getOneByEmail($email)));
+        } elseif ($email == 'empty') {
+            $email = "";
+        } else {
+            $email = $firstUser['email'];
+        }
+        $newValues['name'] = $name;
+        $newValues['email'] = $email;
+        $newValues['password'] = $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+        
+        $exceptionThrown = false;
+        $userNameAlreadyExist = false;
+        $emailAlreadyExist = false;
+        $exceptionMessage =  "";
+        try {
+            $userController->create($newValues);
+            $user = $userManager->getOneByName($name);
+        } catch (UserNameAlreadyUsedException $ex) {
+            $userNameAlreadyExist = true;
+        } catch (UserEmailAlreadyUsedException $ex) {
+            $emailAlreadyExist = true;
+        } catch (Throwable $ex) {
+            $exceptionThrown = true;
+            $exceptionMessage = $ex->getMessage();
+        }
+        try {
+            if (!empty($user)) {
+                $userManager->delete($user);
+            }
+        } catch (Throwable $th) {
+        }
+
+        if ($userNameExist) {
+            $this->assertTrue($userNameAlreadyExist);
+        } elseif ($emailExist) {
+            $this->assertTrue($emailAlreadyExist);
+        } elseif ($otherException) {
+            $this->assertTrue($exceptionThrown);
+        } else {
+            $this->assertFalse($userNameAlreadyExist);
+            $this->assertFalse($emailAlreadyExist);
+            $this->assertEquals($exceptionMessage, "");
+            $this->assertFalse($exceptionThrown);
+            $this->assertInstanceOf(User::class, $user);
+            $this->assertNotEmpty($user['name']);
+            $this->assertEquals($user['name'], $name);
+            $this->assertNotEmpty($user['email']);
+            $this->assertEquals($user['email'], $email);
+            foreach ([
+                'changescount',
+                'doubleclickedit',
+                'motto',
+                'revisioncount',
+                'show_comments'
+            ] as $propName) {
+                if (isset($newValues[$propName])) {
+                    $this->assertEquals($user[$propName], $newValues[$propName]);
+                }
+            }
+        }
+    }
+
+    
+    public function dataProviderTestSanitizeName()
+    {
+        // name,Other Exception
+        return [
+            'random string' => ['newRandom',false],
+            'empty string' => ['',true],
+            'not string' => ['',true],
+            'tooo long string' => [$this->randomString(400),true],
+            'forbidden \\' => ["{$this->randomString(2)}\\{$this->randomString(8)}",true],
+            'forbidden /' => ["{$this->randomString(2)}/{$this->randomString(8)}",true],
+            'forbidden <' => ["{$this->randomString(2)}<{$this->randomString(8)}",true],
+            'forbidden >' => ["{$this->randomString(2)}>{$this->randomString(8)}",true],
+            'forbidden begin !' => ["!{$this->randomString(8)}",true],
+            'forbidden begin #' => ["#{$this->randomString(8)}",true],
+            'forbidden begin @' => ["@{$this->randomString(8)}",true],
+        ];
+    }
+    
+    /**
+     * @depends testUserControllerExisting
+     * @depends testCreate
+     * @depends testDelete
+     * @covers UserController::sanitizeName
+     * @dataProvider dataProviderTestSanitizeName
+     * @param mixed $name
+     * @param bool $otherException
+     * @param Wiki $wiki
+     */
+    public function testSanitizeName($name, bool $otherException, Wiki $wiki)
+    {
+        $userController = $wiki->services->get(UserController::class);
+        $userManager = $wiki->services->get(UserManager::class);
+        if ($name == 'newRandom') {
+            do {
+                $name= $this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+                    .$this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+            } while (!empty($userManager->getOneByName($name)));
+        }
+        do {
+            $email = strtolower($this->randomString(10)).'@example.com';
+        } while (!empty($userManager->getOneByEmail($email)));
+        $password = $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+
+        $exceptionThrown = false;
+        $exceptionMessage =  "";
+        try {
+            $userController->create([
+                'name' => $name,
+                'email' => $email,
+                'password' => $password
+            ]);
+            $user = $userManager->getOneByName($name);
+        } catch (Throwable $ex) {
+            $exceptionThrown = true;
+            $exceptionMessage = $ex->getMessage();
+        }
+        try {
+            if (!empty($user)) {
+                $userManager->delete($user);
+            }
+        } catch (Throwable $th) {
+        }
+
+        if ($otherException) {
+            $this->assertTrue($exceptionThrown);
+        } else {
+            $this->assertEquals($exceptionMessage, "");
+            $this->assertFalse($exceptionThrown);
+            $this->assertInstanceOf(User::class, $user);
+        }
+    }
     
     /**
      * gives a random string with ascii characters
