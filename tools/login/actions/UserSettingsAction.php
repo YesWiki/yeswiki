@@ -215,16 +215,6 @@ class UserSettingsAction extends YesWikiAction
             try {
                 $this->csrfTokenController->checkToken('login\action\usersettings\updateuser', 'POST', 'csrf-token-update');
 
-                $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
-                if (empty($email)) {
-                    throw new Exception(_t('USER_THIS_IS_NOT_A_VALID_EMAIL'));
-                }
-                // check if e-mail is already used
-                $existingUser = $this->userManager->getOneByEmail($email);
-                if (!empty($existingUser)) {
-                    throw new Exception(str_replace('{email}', $email, _t('USERSETTINGS_EMAIL_ALREADY_USED')));
-                }
-
                 $sanitizedPost = array_map(function ($item) {
                     return is_scalar($item) ? $item : "" ;
                 }, $post);
@@ -252,6 +242,9 @@ class UserSettingsAction extends YesWikiAction
                 }
             } catch (TokenNotFoundException $th) {
                 $this->errorUpdate = _t('USERSETTINGS_EMAIL_NOT_CHANGED') .' '. $th->getMessage();
+            } catch (UserEmailAlreadyUsedException $th) {
+                $email = isset($post['email']) && is_string($post['email']) ? htmlspecialchars($post['email']) : "";
+                $this->errorUpdate = _t('USERSETTINGS_EMAIL_NOT_CHANGED') .' '. str_replace('{email}', $email, _t('USERSETTINGS_EMAIL_ALREADY_USED'));
             } catch (Exception $th) {
                 // TODO use a specific exception
                 $this->errorUpdate = _t('USERSETTINGS_EMAIL_NOT_CHANGED') .' '. $th->getMessage();

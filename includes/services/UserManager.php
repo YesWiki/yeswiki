@@ -214,19 +214,21 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      *
      * @param User $user
      * @param array $newValues (associative array)
+     * @throws Exception
+     * @throws UserEmailAlreadyUsedException
      * @return bool
      */
     public function update(User $user, array $newValues): bool
     {
-        if (!empty($newValues['email']) && $user['email'] != $newValues['email']) {
-            $this->updateEmail($user['name'], $newValues['email']);
-            $user['email'] = $newValues['email'];
+        if ($this->securityController->isWikiHibernated()) {
+            throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $newKeys = array_keys($newValues);
         $authorizedKeys = array_filter($newKeys, function ($key) {
             return in_array($key, [
                 'changescount',
                 'doubleclickedit',
+                'email',
                 'motto',
                 //'name', // name not currently updateable
                 // 'password', // password not updateable by this method
@@ -234,6 +236,17 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 'show_comments' => ""
             ]);
         });
+        if (isset($newValues['email'])) {
+            if (empty($newValues['email'])) {
+                throw new Exception("\$newValues['email'] parameter of UserManager->update should not be empty!");
+            } elseif ($user['email'] == $newValues['email']) {
+                $authorizedKeys = array_filter($authorizedKeys, function ($item) {
+                    return $item != 'email';
+                });
+            } elseif (!empty($this->getOneByEmail($newValues['email']))) {
+                throw new UserEmailAlreadyUsedException();
+            }
+        }
         if (count($authorizedKeys) > 0) {
             $query = "UPDATE {$this->dbService->prefixTable('users')} SET ";
             foreach ($authorizedKeys as $idx => $key) {
@@ -260,6 +273,10 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function delete(User $user)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+        $this->getOneByNameCacheResults = [];
         $query = "DELETE FROM {$this->dbService->prefixTable('users')} ".
             " WHERE `name` = \"{$this->dbService->escape($user['name'])}\";";
         try {
@@ -269,33 +286,6 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         } catch (Exception $ex) {
             throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED').'.');
         }
-    }
-
-    /**
-     * @throws UserEmailAlreadyUsedException
-     */
-    public function updateEmail($wikiName, $email)
-    {
-        if ($this->securityController->isWikiHibernated()) {
-            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
-        }
-        $this->getOneByNameCacheResults = [];
-        $user = $this->getOneByName($wikiName);
-        if (!empty($user)) {
-            if ($user->getEmail() !== $email) {
-                if (!empty($this->getOneByEmail($email))) {
-                    throw new UserEmailAlreadyUsedException();
-                };
-            }
-            $query =
-                'UPDATE ' . $this->dbService->prefixTable('users') . 'SET ' .
-                'email = "' . $this->dbService->escape($email) . '"'.
-                ' WHERE name = "'.$this->dbService->escape($user['name']).'" '.
-                'AND email= "'.$this->dbService->escape($user['email']).'" '.
-                'AND password= "'.$this->dbService->escape($user['password']).'";';
-            $this->dbService->query($query);
-        }
-        $this->getOneByNameCacheResults = [];
     }
 
     /** Lists the groups $this user is member of
@@ -336,10 +326,14 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      * it's fine if it does nothing or if it fails without throwing any exception.
      * @param PasswordAuthenticatedUserInterface|UserInterface $user
      * @throws UnsupportedUserException if the user is not supported
+     * @throws Exception if wiki is in hibernation
      * @param string $newHashedPassword
      */
     public function upgradePassword(PasswordAuthenticatedUserInterface|UserInterface $user, string $newHashedPassword)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         if (!$this->supportsClass(get_class($user))) {
             throw new UnsupportedUserException();
         }

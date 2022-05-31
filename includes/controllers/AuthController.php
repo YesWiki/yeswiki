@@ -8,6 +8,7 @@ use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Security\Controller\SecurityController;
 
 class AuthController extends YesWikiController
 {
@@ -16,16 +17,19 @@ class AuthController extends YesWikiController
     private $limitations;
     protected $params;
     protected $passwordHasherFactory;
+    protected $securityController;
     protected $userManager;
 
     public function __construct(
         ParameterBagInterface $params,
         PasswordHasherFactory $passwordHasherFactory,
+        SecurityController $securityController,
         UserManager $userManager
     ) {
         $this->params = $params;
         $this->passwordHasherFactory = $passwordHasherFactory;
         $this->userManager = $userManager;
+        $this->securityController = $securityController;
         $this->initLimitations();
     }
 
@@ -58,7 +62,7 @@ class AuthController extends YesWikiController
         if (!$passwordHasher->verify($hashedPassword, $plainTextPassword)) {
             return false;
         }
-        if ($passwordHasher->needsRehash($hashedPassword)) {
+        if ($passwordHasher->needsRehash($hashedPassword) && !$this->securityController->isWikiHibernated()) {
             $newHashedPassword = $passwordHasher->hash($plainTextPassword);
             $this->userManager->upgradePassword($user, $newHashedPassword);
         }

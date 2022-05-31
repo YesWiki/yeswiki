@@ -5,7 +5,10 @@ namespace YesWiki\Core\Controller;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Entity\User;
+use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Exception\DeleteUserException;
+use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
@@ -20,6 +23,7 @@ class UserController extends YesWikiController
     
     private $limitations;
 
+    protected $authController;
     protected $dbService;
     protected $pageManager;
     protected $params;
@@ -28,6 +32,7 @@ class UserController extends YesWikiController
     protected $userManager;
 
     public function __construct(
+        AuthController $authController,
         DbService $dbService,
         PageManager $pageManager,
         ParameterBagInterface $params,
@@ -35,6 +40,7 @@ class UserController extends YesWikiController
         TripleStore $tripleStore,
         UserManager $userManager
     ) {
+        $this->authController = $authController;
         $this->dbService = $dbService;
         $this->pageManager = $pageManager;
         $this->params = $params;
@@ -100,13 +106,20 @@ class UserController extends YesWikiController
      *
      * @param User $user
      * @param array $newValues (associative array)
+     * @throws BadFormatPasswordException
      * @throws Exception
+     * @throws UserEmailAlreadyUsedException
      * @return bool
      */
     public function update(User $user, array $newValues): bool
     {
         $newValues = $this->sanitizeValues($newValues);
-        return $this->userManager->update($user, $newValues);
+        $this->userManager->update($user, $newValues);
+        if (isset($newValues['password'])) {
+            $user = $this->userManager->getOneByName($user['name']);
+            $this->authController->setPassword($user, $newValues['password']);
+        }
+        return true;
     }
 
     /**
