@@ -49,7 +49,7 @@ class Init
     {
         $this->getRoute();
         if (!empty($_SERVER['YESWIKI_DATA_PATH']) && is_dir($_SERVER['YESWIKI_DATA_PATH'])) {
-            $this->configFile = $_SERVER['YESWIKI_DATA_PATH'].'/yeswiki.config.php';
+            $this->configFile = $_SERVER['YESWIKI_DATA_PATH'].'/'.$this->configFile;
         }
         $this->config = $this->getConfig($config);
         $this->setIframeHeaders();
