@@ -126,6 +126,10 @@ const TableHelper = {
             table.on( 'draw', function () {
                 TableHelper.updateNBResults(table);
             } );
+            $(`#${$(table.table(0).node()).prop('id')}_wrapper`).on('dblclick',function(e){
+                e.preventDefault();
+                return false;
+            });
         });
         TableHelper.updateTables();
     },
