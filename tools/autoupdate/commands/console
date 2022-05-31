@@ -4,6 +4,13 @@
 
 namespace YesWiki\AutoUpdate\Commands;
 
+use Doctrine\Common\Annotations\AnnotationRegistry;
+use Symfony\Component\Console\Application;
+use YesWiki\AutoUpdate\Commands\UpdaterCommand;
+use YesWiki\AutoUpdate\Commands\PostUpdaterCommand;
+use YesWiki\Core\Controller\UserController;
+use YesWiki\Core\Service\UserManager;
+
 if (!file_exists('wakka.config.php')) {
     exit("\e[31mThe command should be launched from your YesWiki root directory\e[0m");
 } else {
@@ -16,14 +23,12 @@ if (!file_exists('wakka.config.php')) {
     $_REQUEST['wiki'] = $wakkaConfig['root_page'];
 }
 
-use Doctrine\Common\Annotations\AnnotationRegistry;
 
 require_once 'includes/autoload.inc.php';
 $loader = require_once 'vendor/autoload.php';
 AnnotationRegistry::registerLoader([$loader, 'loadClass']);
 require_once __DIR__.'/../vendor/autoload.php';
 
-use Symfony\Component\Console\Application;
 
 $application = new Application();
 
@@ -31,17 +36,21 @@ require_once 'includes/YesWiki.php';
 $wiki = new \YesWiki\Wiki();
 
 // second little hack (bad habit..): we use the first admin user to perform updates as an admin
-$admins = $wiki->GetGroupACL('admins');
-$firstAdmin = $wiki->LoadUser(preg_split("/\s+/", $admins)[0]);
-$wiki->setUser($firstAdmin);
+$firstAdminName = $wiki->services->get(UserController::class)->getFirstAdmin();
+if (!empty($firstAdminName)) {
+    $userManager = $wiki->services->get(UserManager::class);
+    $firstAdmin = $userManager->getOneByName($userManager);
+    if (!empty($firstAdmin)) {
+        $userManager->login($firstAdmin);
+        
+        // ... register commands
 
-// ... register commands
-use YesWiki\AutoUpdate\Commands\UpdaterCommand;
+        $application->add(new UpdaterCommand($wiki));
 
-$application->add(new UpdaterCommand($wiki));
+        $application->add(new PostUpdaterCommand($wiki));
 
-use YesWiki\AutoUpdate\Commands\PostUpdaterCommand;
+        $application->run();
 
-$application->add(new PostUpdaterCommand($wiki));
-
-$application->run();
+        $userManager->logout();
+    }
+}
