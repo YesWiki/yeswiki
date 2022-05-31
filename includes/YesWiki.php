@@ -44,6 +44,7 @@ use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use YesWiki\Core\ApiResponse;
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ApiService;
@@ -1147,9 +1148,7 @@ class Wiki
             $this->Redirect($this->href("", $this->config['root_page']));
         }
 
-        if ((! $this->GetUser() && isset($_COOKIE['name'])) && ($user = $this->LoadUser($_COOKIE['name'], $_COOKIE['password']))) {
-            $this->SetUser($user, $_COOKIE['remember']);
-        }
+        $this->services->get(AuthController::class)->connectUser();
 
         $this->request = Request::createFromGlobals();
 

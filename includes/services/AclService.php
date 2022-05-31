@@ -156,7 +156,8 @@ class AclService
 
         // set default to current user
         if (!$user) {
-            $user = $this->userManager->getLoggedUserName();
+            $loggedUser = $this->userManager->getLoggedUser();
+            $user = $loggedUser['name'] ?? "";
         }
 
         // load acl

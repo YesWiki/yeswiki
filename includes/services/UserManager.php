@@ -59,12 +59,12 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     public function getOneByName($name, $password = null): ?User
     {
         // use !is_string($password) instead of !$password to allow $password == ""
-        if (!is_string($password) && isset($getOneByNameCacheResults[$name])) {
-            $result = $getOneByNameCacheResults[$name];
+        if (!is_string($password) && isset($this->getOneByNameCacheResults[$name])) {
+            $result = $this->getOneByNameCacheResults[$name];
         } else {
             $result = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where name = '" . $this->dbService->escape($name) . "' " . (!is_string($password) ? "" : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1');
             if (!is_string($password)) {
-                $getOneByNameCacheResults[$name] = $result;
+                $this->getOneByNameCacheResults[$name] = $result;
             }
         }
         return $this->arrayToUser($result);
@@ -109,11 +109,20 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 
     public function login($user, $remember = 0)
     {
-        $_SESSION['user'] = [
-            'name' => $user['name'],
-            'email' => $user['email'],
-            'password' => $user['password'],
-        ];
+        if (isset($_SESSION['user']) && isset($_SESSION['user']['remember']) && $_SESSION['user']['name'] == $user['name']) {
+            $remember = filter_var($_SESSION['user']['remember'], FILTER_VALIDATE_BOOL) ? 1 : 0;
+        } else {
+            $remember = filter_var($remember, FILTER_VALIDATE_BOOL) ? 1 : 0;
+        }
+        $_SESSION['user'] = array_merge(
+            ($user instanceof User ? $user->getArrayCopy() : (
+                is_array($user) ? $user: []
+            )),
+            [
+                'remember' => $remember,
+                'lastConnection' => time()
+            ]
+        );
         if (!$this->wiki->isCli()) {
             // prevent setting cookies in CLI (could be errors)
             $this->wiki->SetPersistentCookie('name', $user['name'], $remember);
@@ -190,7 +199,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             throw new Exception("'password' parameter of UserManager->create should not be empty!");
         }
         
-        $this->getOneByNameCacheResults = [];
+        unset($this->getOneByNameCacheResults[$wikiName]);
         $user = $this->arrayToUser($userAsArray);
         $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user);
         $hashedPassword = $passwordHasher->hash($plainPassword);
@@ -261,7 +270,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             $this->dbService->query($query);
         }
 
-        $this->getOneByNameCacheResults = [];
+        unset($this->getOneByNameCacheResults[$user['name']]);
         return true;
     }
 
@@ -276,7 +285,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         if ($this->securityController->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        $this->getOneByNameCacheResults = [];
+        unset($this->getOneByNameCacheResults[$user['name']]);
         $query = "DELETE FROM {$this->dbService->prefixTable('users')} ".
             " WHERE `name` = \"{$this->dbService->escape($user['name'])}\";";
         try {

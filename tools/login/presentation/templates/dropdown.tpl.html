@@ -29,7 +29,6 @@
 				<button type="submit" class="btn btn-block <?php echo $btnclass; ?> btn-primary"><?php echo _t('LOGIN_LOGIN'); ?></button>
 				<input type="hidden" name="action" value="login" />
 				<input type="hidden" name="incomingurl" value="<?php echo $userpage; ?>" />
-				<input type="hidden" name="remember" value="0" />
 				<?php if ($signupurl != '' && $signupurl != '0') : ?>
 					<hr>
 					<a class="btn btn-block btn-default <?php echo $btnclass; ?>" href="<?php echo $signupurl; ?>"><?php echo _t('LOGIN_SIGNUP'); ?></a>
