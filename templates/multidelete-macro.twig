@@ -6,9 +6,10 @@
     title="{{ _t('DELETE_ALL_SELECTED_ITEMS')|e('html_attr') }}"
     data-toggle="modal"
     role="button"
-    href="#{{ modalId }}">	
+    href="#{{ modalId }}"	
+    onclick="multiDeleteService.updateNbSelected('{{ modalId }}')">
     <i class="fa fa-trash"></i>
-    {{ _t('DELETE_ALL') }}
+    {{ _t('DELETE_SELECTION') }}
   </a>
   <div class="modal fade multidelete" 
     id="{{ modalId }}" 
@@ -23,6 +24,10 @@
           <h3 id="{{ modalId }}Label">{{ _t('DELETE_ALL_SELECTED_ITEMS') }}</h3>
         </div>
         <div class="modal-body">
+          <div class="alert alert-info">
+            <b>{{ _t('NUMBER_OF_ELEMENTS') }}&nbsp;:</b>
+            <span class="nb-elem-selected"></span>
+          </div>
           <button class="btn btn-sm btn-warning start-btn-delete-all" data-target="{{ targetId }}" data-type="{{ type }}">{{ _t('DELETE') }}</button>
           <br/><br/>
           <div class="multi-delete-results"></div>
@@ -41,7 +46,7 @@
 {% endmacro insertButton %}
 
 {% macro insertSelectLine(targetId, itemId, disabled = false) %}
-  <td class="not-printable-col">
+  <td>
     <label for="selectline_{{ targetId }}_{{ itemId }}">
       <input
         {% if disabled %}
@@ -62,7 +67,7 @@
 
 {% macro insertSelectAll(targetId, selectAllType) %}
   {{ include_javascript('javascripts/multidelete.js') }}
-  <th class="prevent-sorting not-printable-col">
+  <th class="prevent-sorting not-export-this-col">
     <label class="check-all-container" for="checkbox_checkall_{{ selectAllType }}_{{ targetId }}">
       <input
         type="checkbox"

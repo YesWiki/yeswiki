@@ -38,6 +38,7 @@ return [
     'COMMENTS' => 'Comments',
     'DELETE' => 'Delete',
     'DELETE_ALL_SELECTED_ITEMS' => 'Delete all selected items',
+    'DELETE_SELECTION' => 'Delete selection',
     'DEL' => 'Del', // fives chars max.
     'EMAIL' => 'Email',
     'INVERT' => 'Invert',
@@ -584,6 +585,9 @@ return [
 
     // YesWiki
     'UNKNOWN_INTERWIKI' => 'unkwon interwiki',
+
+    // templates/multidelete-macro.twig
+    'NUMBER_OF_ELEMENTS' => 'Number of selected items',
 
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',

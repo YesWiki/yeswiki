@@ -398,7 +398,6 @@ return [
     // tableau
     "AB_bazartableau_label" => "Table",
     "AB_bazartableau_description" => "Display in a table",
-    "AB_bazartableau_hint" => "Template still experimental - help us by incating bugs on https://yeswiki.net/forum/",
     "AB_bazartableau_columnfieldsids_label" => "Fields to display",
     "AB_bazartableau_columnfieldsids_hint" => "Empty = all",
     "AB_bazartableau_columntitles_label" => "Comlumns titles",
@@ -413,4 +412,12 @@ return [
     "AB_bazartableau_displaycreationdate_label" => "Display creation date",
     "AB_bazartableau_displaylastchangedate_label" => "Display modification date",
     "AB_bazartableau_displayowner_label" => "Display owner",
+    "AB_bazartableau_defaultcolumnwidth_label" => "Minimal column width",
+    "AB_bazartableau_defaultcolumnwidth_hint" => "e.g.: 100px or 20%; empty = automatic width (empty is prettier in case of customization per field)",
+    "AB_bazartableau_columnswidth_label" => "Custom columns width",
+    "AB_bazartableau_columnswidth_hint" => "ex. : 100px ou 20% ; empty = automatic width",
+    "AB_bazartableau_columnswidth_field_label" => "Field",
+    "AB_bazartableau_columnswidth_width_label" => "Width",
+    "AB_bazartableau_exportallcolumns_label" => "Also export hidden columns",
+    "AB_bazartableau_displayimagesasthumbnails_label" => "Display images as thumbnails",
 ];

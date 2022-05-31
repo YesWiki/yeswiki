@@ -37,6 +37,7 @@ return [
     // 'CLEAN' => 'Nettoyer',
     // 'DELETE' => 'Supprimer',
     // 'DELETE_ALL_SELECTED_ITEMS' => 'Supprimer tous les éléments sélectionnés',
+    // 'DELETE_SELECTION' => 'Supprimer la sélection',
     // 'DEL' => 'Suppr.', // fives chars max.
     // 'EMAIL' => 'Email',
     // 'INVERT' => 'Inverser',
@@ -591,6 +592,9 @@ return [
 
     // YesWiki
     // 'UNKNOWN_INTERWIKI' => 'interwiki inconnu',
+
+    // templates/multidelete-macro.twig
+    // 'NUMBER_OF_ELEMENTS' => 'Nombre d\'éléments sélectionnés',
 
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',

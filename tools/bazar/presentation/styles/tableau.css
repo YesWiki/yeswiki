@@ -1,10 +1,18 @@
 td.horizontal-admins-btn {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
 }
-@media print {
-    td.not-printable-col,
-    th.not-printable-col {
-        display:none;
-    }
+
+div.tableau-thumbnail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+div.tableau-thumbnail > img {
+  max-width: 100%;
+  width: auto;
+  height: 100%;
+  object-fit: contain;
+  object-position: 50% 50%;
 }

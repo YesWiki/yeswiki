@@ -4,6 +4,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\CheckboxField ;
 use YesWiki\Bazar\Field\EmailField ;
 use YesWiki\Bazar\Field\EnumField ;
+use YesWiki\Bazar\Field\ImageField ;
 use YesWiki\Bazar\Field\MapField ;
 use YesWiki\Bazar\Service\FormManager ;
 use YesWiki\Core\Service\AclService ;
@@ -14,6 +15,8 @@ $formManager = $this->wiki->services->get(FormManager::class);
 $aclService = $this->wiki->services->get(AclService::class);
 
 $dataList = [];
+$colors = [];
+$icons = [];
 $columnsInfo = [];
 $sanitizedParams = [];
 $optionsIfDisplayvaluesinsteadofkeys = [];
@@ -69,10 +72,22 @@ if (count($fiches)>0) {
             $sanitizedParams[$paramName] = $paramValue;
         }
         $sanitizedParams['displayvaluesinsteadofkeys'] = !isset($param['displayvaluesinsteadofkeys']) ? false : filter_var($param['displayvaluesinsteadofkeys'],FILTER_VALIDATE_BOOLEAN);
+        $sanitizedParams['exportallcolumns'] = !isset($param['exportallcolumns']) ? false : filter_var($param['exportallcolumns'],FILTER_VALIDATE_BOOLEAN);
+        $sanitizedParams['displayimagesasthumbnails'] = !isset($param['displayimagesasthumbnails']) ? false : filter_var($param['displayimagesasthumbnails'],FILTER_VALIDATE_BOOLEAN);
+
+        $sanitizedParams['columnswidth'] = [];
+        if (isset($param['columnswidth']) && is_string($param['columnswidth'])){
+            foreach(explode(',',$param['columnswidth']) as $columnInfo){
+                $columnInfoExtracted = explode('=',$columnInfo);
+                if (!empty($columnInfoExtracted[0]) && !empty($columnInfoExtracted[1])){
+                    $sanitizedParams['columnswidth'][$columnInfoExtracted[0]] = $columnInfoExtracted[1];
+                }
+            }
+        }
 
         /* columnsInfo */
         if (!function_exists('tableauGetFieldsCols')) {
-            function tableauGetFieldsCols($field, $checkboxFieldsInColumns): array
+            function tableauGetFieldsCols($field, $checkboxFieldsInColumns, $displayimagesasthumbnails): array
             {
                 $propertyName = $field->getPropertyName();
                 if (empty($propertyName)) {
@@ -80,23 +95,22 @@ if (count($fiches)>0) {
                 }
                 
                 $fieldLabel = $field->getLabel();
-                if (!($field instanceof CheckboxField && $checkboxFieldsInColumns) && !($field instanceof MapField)) {
-                    return [['propertyName' => $propertyName, 'title' => $fieldLabel, 'key' => null,
-                        'mapFieldId' =>  null]];
-                } elseif ($field instanceof MapField) {
+                if ($field instanceof MapField) {
                     $cols = [];
                     $cols[]  = [
                         'propertyName' => $propertyName,
                         'title' => _t('BAZ_LATITUDE'),
                         'key' => null,
-                        'mapFieldId' => $field->getLatitudeField()];
+                        'mapFieldId' => $field->getLatitudeField(),
+                        'multivalues' => false];
                     $cols[]  = [
                         'propertyName' => $propertyName,
                         'title' => _t('BAZ_LONGITUDE'),
                         'key' => null,
-                        'mapFieldId' => $field->getLongitudeField()];
+                        'mapFieldId' => $field->getLongitudeField(),
+                        'multivalues' => false];
                     return $cols;
-                } else {
+                } elseif ($field instanceof CheckboxField && $checkboxFieldsInColumns) {
                     $options = $field->getOptions();
                     if (empty($options)) {
                         return [];
@@ -107,10 +121,19 @@ if (count($fiches)>0) {
                                 'propertyName' => $propertyName,
                                 'title' => "$fieldLabel - $optionName",
                                 'key' => $key,
-                                'mapFieldId' => null];
+                                'mapFieldId' => null,
+                                'multivalues' => false];
                         }
                         return $cols;
                     }
+                } else {
+                    return [['propertyName' => $propertyName, 'title' => $fieldLabel, 'key' => null,
+                        'mapFieldId' =>  null,
+                        'multivalues' => $field instanceof CheckboxField]+(
+                            $displayimagesasthumbnails && $field instanceof ImageField
+                            ? ['imageAsThumbnail' => true]
+                            :[]
+                        )];
                 }
             }
         }
@@ -129,7 +152,7 @@ if (count($fiches)>0) {
         if (empty($columnFieldsIdsRaw)) {
             // if no title, display all fields
             foreach ($fields as $field) {
-                foreach (tableauGetFieldsCols($field, $checkboxFieldsInColumns) as $col) {
+                foreach (tableauGetFieldsCols($field, $checkboxFieldsInColumns, $sanitizedParams['displayimagesasthumbnails']) as $col) {
                     $columnsInfo[] = $col;
                 }
                 tableauGetOptionsForField($field,$optionsIfDisplayvaluesinsteadofkeys,$sanitizedParams);
@@ -138,10 +161,24 @@ if (count($fiches)>0) {
             foreach ($columnFieldsIdsRaw as $fieldId) {
                 $field = $formManager->findFieldFromNameOrPropertyName($fieldId, $formId);
                 if (!empty($field)) {
-                    foreach (tableauGetFieldsCols($field, $checkboxFieldsInColumns) as $col) {
+                    foreach (tableauGetFieldsCols($field, $checkboxFieldsInColumns, $sanitizedParams['displayimagesasthumbnails']) as $col) {
                         $columnsInfo[] = $col;
                     }
                     tableauGetOptionsForField($field,$optionsIfDisplayvaluesinsteadofkeys,$sanitizedParams);
+                }
+            }
+            if ($sanitizedParams['exportallcolumns']) {
+                $alreadyDefinedPropertyNames = array_map(function ($col){
+                    return $col['propertyName'];
+                },$columnsInfo);
+                foreach ($fields as $field) {
+                    $fieldPropertyName = $field->getPropertyName();
+                    if (!empty($fieldPropertyName) && !in_array($fieldPropertyName,$alreadyDefinedPropertyNames)){
+                        foreach (tableauGetFieldsCols($field, $checkboxFieldsInColumns, $sanitizedParams['displayimagesasthumbnails']) as $col) {
+                            $columnsInfo[] = array_merge($col,[ 'not-visible' => true ]);
+                        }
+                        tableauGetOptionsForField($field,$optionsIfDisplayvaluesinsteadofkeys,$sanitizedParams);
+                    }
                 }
             }
         }
@@ -202,6 +239,22 @@ if (count($fiches)>0) {
                 }
             }
         }
+
+        /* manage colors and icons */
+        foreach($fiches as $fiche){
+            $colors[$fiche['id_fiche']] = getCustomValueForEntry(
+                $param['color'],
+                $param['colorfield'],
+                $fiche,
+                ''
+              );
+            $icons[$fiche['id_fiche']] = getCustomValueForEntry(
+                $param['icon'],
+                $param['iconfield'],
+                $fiche,
+                ''
+              );
+        }
     } else {
         echo $this->render('@templates/alert-message.twig', [
             'type' => 'danger',
@@ -220,4 +273,7 @@ echo $this->render('@bazar/tableau.twig', [
     'optionsIfDisplayvaluesinsteadofkeys' => $optionsIfDisplayvaluesinsteadofkeys,
     'aclService' => $aclService,
     'wiki' => $this->wiki,
+    'colors' => $colors,
+    'icons' => $icons,
+    'columnswidth' => $sanitizedParams['columnswidth'],
 ]);

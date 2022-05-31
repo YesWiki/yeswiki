@@ -40,6 +40,7 @@ return [
     'DELETE' => 'Supprimer',
     'DELETE_ALL' => 'Supprimer tout',
     'DELETE_ALL_SELECTED_ITEMS' => 'Supprimer tous les éléments sélectionnés',
+    'DELETE_SELECTION' => 'Supprimer la sélection',
     'DEL' => 'Suppr.', // fives chars max.
     'EMAIL' => 'Email',
     'INVERT' => 'Inverser',
@@ -603,6 +604,9 @@ return [
 
     'YW_ADD_COMMENT' => 'Ajouter votre commentaire',
     'YW_WRITE_COMMENT_HERE' => 'Ecrire votre commentaire ici...',
+
+    // templates/multidelete-macro.twig
+    'NUMBER_OF_ELEMENTS' => 'Nombre d\'éléments sélectionnés',
 
     // Comments
     'COMMENT_EMPTY_NOT_SAVED' => 'Commentaire vide, pas de sauvegarde.',

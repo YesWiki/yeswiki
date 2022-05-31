@@ -398,7 +398,6 @@ return [
     // tableau
     "AB_bazartableau_label" => "Tableau",
     "AB_bazartableau_description" => "Afficher sous forme de tableau",
-    "AB_bazartableau_hint" => "Template encore expérimental - aider-nous en signalant les bugs sur https://yeswiki.net/forum/",
     "AB_bazartableau_columnfieldsids_label" => "Champs à afficher",
     "AB_bazartableau_columnfieldsids_hint" => "Vide = tous",
     "AB_bazartableau_columntitles_label" => "Titres des colonnes",
@@ -413,4 +412,12 @@ return [
     "AB_bazartableau_displaycreationdate_label" => "Afficher la date de création",
     "AB_bazartableau_displaylastchangedate_label" => "Afficher la date de modification",
     "AB_bazartableau_displayowner_label" => "Afficher le propriétaire",
+    "AB_bazartableau_defaultcolumnwidth_label" => "Largeur minimale des colonnes",
+    "AB_bazartableau_defaultcolumnwidth_hint" => "ex. : 100px ou 20% ; vide = largeur automatique (vide est plus joli en cas de personnalisation par champ)",
+    "AB_bazartableau_columnswidth_label" => "Largeur personnalisée des colonnes",
+    "AB_bazartableau_columnswidth_hint" => "ex. : 100px ou 20% ; vide = largeur automatique",
+    "AB_bazartableau_columnswidth_field_label" => "Champ",
+    "AB_bazartableau_columnswidth_width_label" => "Largeur",
+    "AB_bazartableau_exportallcolumns_label" => "Exporter aussi les colonnes masquées",
+    "AB_bazartableau_displayimagesasthumbnails_label" => "Afficher les images sous forme de vignette",
 ];

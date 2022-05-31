@@ -52,7 +52,12 @@ const TableHelper = {
         });
     },
     sanitizeValue: function (val){
-        return (isNaN(val)) ? 1 : Number(val) ;
+        let sanitizedValue = val;
+        if (Object.prototype.toString.call(val) === '[object Object]'){
+            // because if orthogonal data is defined, valu is an object
+            sanitizedValue = val.display || "";
+        }
+        return (isNaN(sanitizedValue)) ? 1 : Number(sanitizedValue) ;
     },
     updateFooter: function(index){
         let table = TableHelper.tables[index];
@@ -84,7 +89,25 @@ const TableHelper = {
                 buttons.push({
                     ...option,
                     ...{
-                        footer:true
+                        footer:true,
+                    },
+                    ...{
+                        exportOptions: (
+                            option.extend != "print"
+                            ? {
+                                orthogonal: 'sort', // use sort data for export
+                                columns: function(idx, data, node){
+                                    return !$(node).hasClass('not-export-this-col');
+                                },
+                            }
+                            : {
+                                columns: function(idx, data, node){
+                                let isVisible = $(node).data('visible');
+                                return !$(node).hasClass('not-export-this-col') && (
+                                    isVisible == undefined || isVisible != false
+                                );
+                            }
+                        }),
                     }
                 });
             });

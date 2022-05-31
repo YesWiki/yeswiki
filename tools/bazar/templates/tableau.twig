@@ -13,10 +13,18 @@ pour différencier les différents tableaux table_1 table_2 #}
             {{ multidelete.insertSelectAll('bazar-list-'~ param.nbbazarliste,'top') }}
           {% endif %}
       {% for index,info in columnsInfo %}
-        <th{{ (info.propertyName in sumFieldsIds) ? ' class="sum-activated"' : ''}}>{{ info.title|raw }}</th>
+        <th{{ (info.propertyName in sumFieldsIds) ? ' class="sum-activated"' : ''}}
+          {% if columnswidth[info.propertyName] is not empty %}
+            data-width="{{ columnswidth[info.propertyName] }}"
+          {% elseif param.defaultcolumnwidth is not empty %}
+            data-width="{{ param.defaultcolumnwidth }}"
+          {% endif %}
+          {% if info['not-visible'] %}
+            data-visible="false"
+          {% endif %}>{{ info.title|raw }}</th>
       {% endfor %}
       {% if displayadmincol %}
-        <th class="not-printable-col"></th>
+        <th class="not-export-this-col"></th>
       {% endif %}
     </tr>
   </thead>
@@ -30,43 +38,67 @@ pour différencier les différents tableaux table_1 table_2 #}
               entry.external-data is not empty or not(
                 wiki.UserIsAdmin or wiki.UserIsOwner(entry.id_fiche))) }}
         {% endif %}
-        {% set searchTitle = ("bf_titre" in columnsInfo|map(p => p.propertyName)) %}
+        {% set searchTitle = ("bf_titre" in columnsInfo|filter(
+          info => info['not-visible'] is not defined or not info['not-visible'])|map(
+            p => p.propertyName)) %}
         {% for info in columnsInfo %}
           {% set val = entry[info.propertyName] %}
+          {% set exportval = val %}
           {% if info.key is empty and displayvaluesinsteadofkeys and (optionsIfDisplayvaluesinsteadofkeys[info.propertyName] is not empty) %}
-            {% set val = val|split(',')|map( key => optionsIfDisplayvaluesinsteadofkeys[info.propertyName][key] 
-              ? '"' ~ optionsIfDisplayvaluesinsteadofkeys[info.propertyName][key] ~ '"': key)|join(',') %}
+            {% if info.multivalues %}
+              {% set exportval = val|split(',')|map( key => optionsIfDisplayvaluesinsteadofkeys[info.propertyName][key] 
+                ? '"' ~ optionsIfDisplayvaluesinsteadofkeys[info.propertyName][key] ~ '"': key)|join(",") %}
+              {% set val = val|split(',')|map( key => optionsIfDisplayvaluesinsteadofkeys[info.propertyName][key] 
+                ? optionsIfDisplayvaluesinsteadofkeys[info.propertyName][key] : key)|join(",\n") %}  
+            {% elseif optionsIfDisplayvaluesinsteadofkeys[info.propertyName][val] %}
+              {% set val = optionsIfDisplayvaluesinsteadofkeys[info.propertyName][val] %}
+              {% set exportval = val %}
+            {% endif %}
+          {% elseif info.key is empty and info.mapFieldId %}
+            {% set val = val[info.mapFieldId] %}
+            {% set exportval = val %}
+          {% elseif info.key is not empty %}
+            {% set val = (info.key in val|split(',')) ? 'X' : '' %}
+            {% set exportval = val %}
           {% endif %}
-          <td>
+          <td data-sort="{{ exportval }}">
             {% if loop.first %}
               <span class="bazar-entry" {{ entry.html_data|raw }}></span>
             {% endif %}
             {% if info.key is empty %}
               {% if (searchTitle and info.propertyName == "bf_titre") or 
                     (not searchTitle and loop.first and not info.mapFieldId) %}
+                {% if colors[entry.id_fiche] is not empty %}<span class="pellet" style="background-color: {{ colors[entry.id_fiche] }} ;"></span>{% endif %}
+                {% if icons[entry.id_fiche] is not empty %}<i class="{{ icons[entry.id_fiche] }}"></i>{% endif %}
                 <a href="{{ entry.url }}" class="modalbox" data-size="modal-lg">
-                  {{ val }}
+                  {{ val|nl2br }}
                 </a>
-              {% elseif info.mapFieldId %}
-                {{ val[info.mapFieldId] }}
+              {% elseif info.imageAsThumbnail and val is not empty %}
+                {% set size = 100 %}
+                {% set width = size*3//2 %}
+                <div class="tableau-thumbnail" style="width:{{ width }}px;height:{{ size }}px">
+                  <img src="{{ urlImage({fileName:"files/#{val}",width:width,height:size,mode:"fit"})}}"/>
+                </div>
               {% else %}
-                {{ val }}
+                {{ val|nl2br }}
               {% endif %}
             {% else %}
-              {{ (info.key in val|split(',')) ? 'X' : '' }}
+              {{ val }}
             {% endif %}
           </td>
         {% endfor %}
         {% if displayadmincol %}
-          <td class="not-printable-col horizontal-admins-btn">
+          <td class="horizontal-admins-btn">
             {% if entry.external-data is empty %}
               {% if aclService.hasAccess('write',entry.id_fiche) %}
-                <a href="{{ url({tag:entry.id_fiche,handler:'edit'}) }}"
+                <a href="{{ url({tag:entry.id_fiche,handler:'editiframe'}) }}"
                   data-toggle="tooltip"
                   data-placement="left"
-                  class="btn btn-default btn-icon btn-xs"
-                  target="blank"
+                  class="btn btn-default btn-icon btn-xs modalbox"
+                  data-size="modal-lg"
+                  data-iframe="1"
                   title="{{ _t('MODIFY') }} {{ entry.id_fiche }}"
+                  onclick="$(this).tooltip('hide');$(this).attr('title',$(this).data('original-title'));"
                   >
                   <i class="fas fa-pencil-alt"></i>
                 </a>
@@ -87,6 +119,7 @@ pour différencier les différents tableaux table_1 table_2 #}
                   data-placement="left"
                   class="btn btn-danger btn-icon btn-xs modalbox"
                   title="{{ _t('DELETE') }} {{ entry.id_fiche }}"
+                  onclick="$(this).tooltip('hide');$(this).attr('title',$(this).data('original-title'));"
                   >
                   <i class="fas fa-trash"></i>
                 </a>
@@ -120,7 +153,7 @@ pour différencier les différents tableaux table_1 table_2 #}
             </th>
           {% endfor %}
           {% if displayadmincol %}
-            <th class="not-printable-col"></th>
+            <th class="not-export-this-col"></th>
           {% endif %}
         </tr>
       </tfoot>

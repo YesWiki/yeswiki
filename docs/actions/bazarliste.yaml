@@ -50,6 +50,7 @@ actions:
           - bazartimeline
           - bazarcarousel
           - bazarcalendar
+          - bazartableau
       
       colorfield:
         label: _t(AB_bazar_commons_colorfield_label)
@@ -60,6 +61,7 @@ actions:
           - bazargogocarto
           - bazarliste
           - bazarcalendar
+          - bazartableau
       colormapping:
         type: color-mapping
         showif: colorfield
@@ -68,6 +70,7 @@ actions:
           - bazargogocarto
           - bazarliste
           - bazarcalendar
+          - bazartableau
         subproperties:
           id:
             label: _t(AB_bazar_commons_subproperty_id_label)
@@ -85,6 +88,7 @@ actions:
           - bazargogocarto
           - bazarliste
           - bazarcalendar
+          - bazartableau
       iconmapping:
         type: icon-mapping
         showif: iconfield
@@ -93,6 +97,7 @@ actions:
           - bazargogocarto
           - bazarliste
           - bazarcalendar
+          - bazartableau
         subproperties:
           id:
             label: _t(AB_bazar_commons_subproperty_id_label)
@@ -694,7 +699,6 @@ actions:
   bazartableau:
     label: _t(AB_bazartableau_label)
     description: _t(AB_bazartableau_description)
-    hint: _t(AB_bazartableau_hint)
     width: 35%
     properties:
       template:
@@ -714,6 +718,12 @@ actions:
         type: checkbox
         label: _t(AB_bazartableau_checkboxfieldsincolumns_label)
         default: "true"
+        checkedvalue: "true"
+        uncheckedvalue: "false"
+      displayimagesasthumbnails:
+        type: checkbox
+        label: _t(AB_bazartableau_displayimagesasthumbnails_label)
+        default: "false"
         checkedvalue: "true"
         uncheckedvalue: "false"
       displayvaluesinsteadofkeys:
@@ -764,3 +774,27 @@ actions:
           '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
+      defaultcolumnwidth:
+        label: _t(AB_bazartableau_defaultcolumnwidth_label)
+        hint: _t(AB_bazartableau_defaultcolumnwidth_hint)
+        type: text
+        advanced: true
+        default: ''
+      columnswidth:
+        label: _t(AB_bazartableau_columnswidth_label)
+        hint: _t(AB_bazartableau_columnswidth_hint)
+        type: columns-width
+        advanced: true
+        subproperties:
+          field:
+            label: _t(AB_bazartableau_columnswidth_field_label)
+            type: form-field
+          width:
+            label: _t(AB_bazartableau_columnswidth_width_label)
+            type: text
+            default: ''
+      exportallcolumns:
+        label: _t(AB_bazartableau_exportallcolumns_label)
+        advanced: true
+        type: checkbox
+        default: 'false'
