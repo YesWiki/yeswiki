@@ -36,8 +36,8 @@ class PdfAction extends YesWikiAction
     public function run()
     {
         if (
-            empty($this->arguments['url']) || 
-            parse_url($this->arguments['url'], PHP_URL_HOST) != $_SERVER['SERVER_NAME'] ||
+		empty($this->arguments['url']) ||
+		(!in_array(parse_url($this->arguments['url'], PHP_URL_HOST), [$_SERVER['SERVER_NAME'], 'www.'.$_SERVER['SERVER_NAME']])) ||
             (
                 parse_url($this->arguments['url'], PHP_URL_PORT) ==  '' && 
                 $_SERVER['SERVER_PORT'] != '' 
