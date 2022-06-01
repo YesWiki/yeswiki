@@ -28,10 +28,12 @@
       </div>
     </form>
   {% endif %}
-  <table class="table table-striped" data-order='[[ {{ isAdmin ? 4 : 3 }}, "desc" ]]'>
+  <table class="table table-striped" data-order='[[ {{ isAdmin ? 4 : 2 }}, "desc" ]]'>
     <thead>
       <tr>
-        {{ multidelete.insertSelectAll('users-table-action','top') }}
+        {% if isAdmin %}
+          {{ multidelete.insertSelectAll('users-table-action','top') }}
+        {% endif %}
         <th>{{ _t('NAME') }}</th>
         <th>{{ _t('GROUP_S') }}</th>
         {% if isAdmin %}
@@ -46,11 +48,13 @@
       {% for user in users %}
         {% set userIsTheOneConnected = (connectedUserName is not empty and connectedUserName == user.name)%}
         <tr>
-          {{ multidelete.insertSelectLine(
-                'users-table-action',
-                user.name,
-                not(isAdmin and not userIsTheOneConnected),
-                'users') }}
+          {% if isAdmin %}
+            {{ multidelete.insertSelectLine(
+                  'users-table-action',
+                  user.name,
+                  not(isAdmin and not userIsTheOneConnected),
+                  'users') }}
+          {% endif %}
           <td>{{ user.name }}</td>
           <td>{{ (isAdmin or userIsTheOneConnected) ? user.groups|join(', ') : ((user.groups is not empty) ? '***' : '') }}</td>
           {% if isAdmin %} {# Email only shown to admins #}
@@ -85,51 +89,55 @@
             {% endif %}
           </td>
       {% endfor %}
-      <tfoot>
-        <tr>
-          {{ multidelete.insertSelectAll('users-table-action','bottom') }}
-          <th></th>
-          <th></th>
-          {% if isAdmin %}
+      {% if isAdmin %}
+        <tfoot>
+          <tr>
+            {{ multidelete.insertSelectAll('users-table-action','bottom') }}
             <th></th>
-          {% endif %}
-          <th></th>
-          <th></th>
-          <th></th>
-        </tr>
-      </tfoot>
+            <th></th>
+            {% if isAdmin %}
+              <th></th>
+            {% endif %}
+            <th></th>
+            <th></th>
+            <th></th>
+          </tr>
+        </tfoot>
+      {% endif %}
     </tbody>
   </table>
-  {{ multidelete.insertButton('users-table-action','users') }}
-  <div class="modal fade" 
-    id="userTableDeleteModal" 
-    tabindex="-1" 
-    role="dialog" 
-    aria-labelledby="userTableDeleteModalLabel" 
-    aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h3 id="userTableDeleteModalLabel">{{ _t('USER_DELETE') }} :<span id="userNameToDelete"></span></h3>
-        </div>
-        <div class="modal-body">
-          <div class="alert alert-warning">
-            {{ _t('USER_CONFIRM_DELETE') }}
+  {% if isAdmin %}
+    {{ multidelete.insertButton('users-table-action','users') }}
+    <div class="modal fade" 
+      id="userTableDeleteModal" 
+      tabindex="-1" 
+      role="dialog" 
+      aria-labelledby="userTableDeleteModalLabel" 
+      aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3 id="userTableDeleteModalLabel">{{ _t('USER_DELETE') }} :<span id="userNameToDelete"></span></h3>
           </div>
-          <button class="btn btn-sm btn-warning start-btn-delete-user">{{ _t('DELETE') }}</button>
-          <br/><br/>
-          <div class="multi-delete-results"></div>
-        </div>
-        <div class="modal-footer">
-          <div class="progressbar progress">
-            <div class="progress-bar" role="progressbar"
-              style="width: 0%;"
-              aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+          <div class="modal-body">
+            <div class="alert alert-warning">
+              {{ _t('USER_CONFIRM_DELETE') }}
+            </div>
+            <button class="btn btn-sm btn-warning start-btn-delete-user">{{ _t('DELETE') }}</button>
+            <br/><br/>
+            <div class="multi-delete-results"></div>
+          </div>
+          <div class="modal-footer">
+            <div class="progressbar progress">
+              <div class="progress-bar" role="progressbar"
+                style="width: 0%;"
+                aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+              </div>
             </div>
           </div>
-        </div>
-      </div>{# .modal-content #}
-    </div>{# .modal-dialog #}
-  </div>
+        </div>{# .modal-content #}
+      </div>{# .modal-dialog #}
+    </div>
+  {% endif %}
 </div>
