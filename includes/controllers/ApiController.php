@@ -2,6 +2,7 @@
 
 namespace YesWiki\Core\Controller;
 
+use Exception;
 use Throwable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,6 +12,9 @@ use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Controller\UserController;
+use YesWiki\Core\Exception\DeleteUserException;
+use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\DiffService;
@@ -85,7 +89,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/users/{userId}")
+     * @Route("/api/users/{userId}",methods={"GET"})
      */
     public function getUser($userId)
     {
@@ -95,7 +99,128 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/users", options={"acl":{"public"}})
+     * @Route("/api/users/{userId}/delete",methods={"GET"}, options={"acl":{"public","@admins"}})
+     */
+    public function deleteUser($userId)
+    {
+        $this->denyAccessUnlessAdmin();
+        $userController = $this->getService(UserController::class);
+        $userManager = $this->getService(UserManager::class);
+
+        $result = [];
+        try {
+            $csrfTokenController = $this->getService(CsrfTokenController::class);
+            $csrfTokenController->checkToken("api\\users\\$userId\\delete", 'GET', 'csrfToken');
+            $user = $userManager->getOneByName($userId);
+            if (empty($user)) {
+                $code = Response::HTTP_BAD_REQUEST;
+                $result = [
+                    'notDeleted' => [$userId],
+                    'error' => 'not existing user'
+                ];
+            } else {
+                $userController->delete($user);
+                $code = Response::HTTP_OK;
+                $result = [
+                    'deleted' => [$userId],
+                ];
+            }
+        } catch (TokenNotFoundException $th) {
+            $code = Response::HTTP_UNAUTHORIZED;
+            $result = [
+                'notDeleted' => [$userId],
+                'error' => $th->getMessage()
+            ];
+        } catch (DeleteUserException $th) {
+            $code = Response::HTTP_BAD_REQUEST;
+            $result = [
+                'notDeleted' => [$userId],
+                'error' => $th->getMessage(),
+            ];
+        } catch (Throwable $th) {
+            $code = Response::HTTP_INTERNAL_SERVER_ERROR;
+            $result = [
+                'notDeleted' => [$userId],
+                'error' => $th->getMessage()
+            ];
+        }
+        return new ApiResponse($result, $code);
+    }
+    
+    /**
+     * @Route("/api/users",methods={"POST"}, options={"acl":{"public","@admins"}})
+     */
+    public function createUser()
+    {
+        $this->denyAccessUnlessAdmin();
+        $userController = $this->getService(UserController::class);
+
+        if (empty($_POST['name'])) {
+            $code = Response::HTTP_BAD_REQUEST;
+            $result = [
+                'error' => "\$_POST['name'] should not be empty",
+            ];
+        } elseif (empty($_POST['email'])) {
+            $code = Response::HTTP_BAD_REQUEST;
+            $result = [
+                'error' => "\$_POST['email'] should not be empty",
+            ];
+        } else {
+            try {
+                $charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-_*=.:,?';
+                $randompassword = "";
+                $maxIndex = strlen($charset) -1;
+
+                for ($i=0; $i < 30; $i++) {
+                    $randompassword .= substr($charset, random_int(0, $maxIndex), 1);
+                }
+                $user = $userController->create([
+                    'name' => strval($_POST['name']),
+                    'email' => strval($_POST['email']),
+                    'password' => $randompassword,
+                ]);
+                $code = Response::HTTP_OK;
+                $result = [
+                    'created' => [$user['name']],
+                    'user' => [
+                        'name' => $user['name'],
+                        'email' => $user['email'],
+                        'signuptime' => $user['signuptime'],
+                    ]
+                ];
+            } catch (UserNameAlreadyUsedException $th) {
+                $code = Response::HTTP_BAD_REQUEST;
+                $result = [
+                    'notCreated' => [strval($_POST['name'])],
+                    'error' => str_replace('{currentName}', strval($_POST['name']), _t('USERSETTINGS_NAME_ALREADY_USED'))
+                ];
+            } catch (UserEmailAlreadyUsedException $th) {
+                $code = Response::HTTP_BAD_REQUEST;
+                $result = [
+                    'notCreated' => [strval($_POST['name'])],
+                    'error' => str_replace('{email}', strval($_POST['email']), _t('USERSETTINGS_EMAIL_ALREADY_USED'))
+                ];
+            } catch (ExitException $th) {
+                throw $th;
+            } catch (Exception $th) {
+                $code = Response::HTTP_BAD_REQUEST;
+                $result = [
+                    'notCreated' => [strval($_POST['name'])],
+                    'error' => $th->getMessage()
+                ];
+            } catch (Throwable $th) {
+                $code = Response::HTTP_INTERNAL_SERVER_ERROR;
+                $result = [
+                    'notCreated' => [strval($_POST['name'])],
+                    'error' => $th->getMessage()
+                ];
+            }
+        }
+        return new ApiResponse($result, $code);
+    }
+
+    /**
+     * @Route("/api/users",methods={"GET"}, options={"acl":{"public"}})
      */
     public function getAllUsers($userFields = ['name', 'email', 'signuptime'])
     {

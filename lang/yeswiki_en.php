@@ -543,6 +543,8 @@ return [
     'USERSTABLE_USER_NOT_DELETED' => 'The user "{username}" has not been deleted.',
     'USERSTABLE_NOT_EXISTING_USER' => 'The user "{username}" does not exist!',
     'GROUP_S' => 'Group(s)',
+    'USERSTABLE_CREATE_USER' => 'Create a user',
+    'USERSTABLE_CREATE_USER_HINT' => 'Password randomly generated',
 
     // handlers/deletepage
     'DELETEPAGE_CANCEL' => 'Cancel',

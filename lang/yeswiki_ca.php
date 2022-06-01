@@ -550,6 +550,8 @@ return [
     'USERSTABLE_USER_NOT_DELETED' => 'L\'usuari "{username}" no s\'ha suprimit.',
     'USERSTABLE_NOT_EXISTING_USER' => 'L\'usuari "{username}" no existeix!',
     'GROUP_S' => 'Grup(s)',
+    // 'USERSTABLE_CREATE_USER' => 'Créer un utilisateur',
+    // 'USERSTABLE_CREATE_USER_HINT' => 'Mot de passe généré aléatoirement',
 
     // handlers/deletepage
     // 'DELETEPAGE_CANCEL' => 'Annuler',

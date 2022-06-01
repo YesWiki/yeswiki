@@ -560,6 +560,8 @@ return [
     'USERSTABLE_USER_NOT_DELETED' => 'L\'utilisateur "{username}" n\'a pas été supprimé.',
     'USERSTABLE_NOT_EXISTING_USER' => 'L\'utilisateur "{username}" n\'existe pas !',
     'GROUP_S' => 'Groupe(s)',
+    'USERSTABLE_CREATE_USER' => 'Créer un utilisateur',
+    'USERSTABLE_CREATE_USER_HINT' => 'Mot de passe généré aléatoirement',
 
     // handlers/deletepage
     'DELETEPAGE_CANCEL' => 'Annuler',

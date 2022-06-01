@@ -1,63 +1,135 @@
+{% import "@core/multidelete-macro.twig" as multidelete %}
+
 {{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
 {{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
+{{ include_javascript('javascripts/users-table.js') }}
 
 {{ postActionMessages|raw }}
 
 {# order on signuptime desc #}
-<table class="table table-striped" data-order='[[ {{ isAdmin ? 3 : 2 }}, "desc" ]]'>
-  <thead>
-    <tr>
-      <th>{{ _t('NAME') }}</th>
-      <th>{{ _t('GROUP_S') }}</th>
-      {% if isAdmin %}
-        <th>{{ _t('EMAIL') }}</th>
-      {% endif %}
-      <th>{{ _t('SUBSCRIPTION') }}</th>
-      <th>{{ _t('MODIFY') }}</th>
-      <th>{{ _t('DELETE') }}</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for user in users %}
-      {% set userIsTheOneConnected = (connectedUserName is not empty and connectedUserName == user.name)%}
+<div id='users-table-action'>
+  {% if isAdmin %}
+    <form class="form-inline pull-left" method="post" action="#">
+      <div class="form-row">
+        <div class="form-group col-sm-3">
+          <label for="newUserName" class="sr-only">{{ _t('NAME') }}</label>
+          <input id="newUserName" class="form-control" name="name" size="10" value="" placeholder="{{ _t('NAME') }}"
+            pattern="[^!#@\\\/]{1}[^\\\/]{2,}"/>{# pattern for not special characters #}
+        </div>
+        <div class="form-group col-sm-4">
+          <label for="newUserEmail" class="sr-only">{{ _t('EMAIL') }}</label>
+          <input id="newUserEmail" class="form-control" name="email" size="15" value="" placeholder="{{ _t('EMAIL') }}"
+            pattern="[!#-'*+/-9=?A-Za-z^-~-]+(?:\.[!#-'*+/-9=?A-Z^-~-]+)*@(?:[!#-'*+/-9=?A-Z^-~-]+\.[!#-'*+/-9=?A-Z^-~-]+)*"/>
+          {# pattern inspired from RFC 5322  #}
+        </div>
+        <div class="form-group col-sm-2">
+          <button class="btn btn-primary btn-xs create-user" title="{{ _t('USERSTABLE_CREATE_USER_HINT') }}" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-user-plus"></i>&nbsp;{{ _t('USERSTABLE_CREATE_USER') }}</button>
+        </div>
+      </div>
+    </form>
+  {% endif %}
+  <table class="table table-striped" data-order='[[ {{ isAdmin ? 4 : 3 }}, "desc" ]]'>
+    <thead>
       <tr>
-        <td>{{ user.name }}</td>
-        <td>{{ (isAdmin or userIsTheOneConnected) ? user.groups|join(', ') : ((user.groups is not empty) ? '***' : '') }}</td>
-        {% if isAdmin %} {# Email only shown to admins #}
-          <td>{{ user.email }}</td>
+        {{ multidelete.insertSelectAll('users-table-action','top') }}
+        <th>{{ _t('NAME') }}</th>
+        <th>{{ _t('GROUP_S') }}</th>
+        {% if isAdmin %}
+          <th>{{ _t('EMAIL') }}</th>
         {% endif %}
-        <td>{{ user.signuptime }}</td>
-        <td>
-          {% if userIsTheOneConnected %} 
-            <a href="{{ url({tag:'ParametresUtilisateur'}) }}"
-              class="btn btn-sm btn-primary" role="button">
-              {{ _t('MODIFY') }}
-            </a>
-          {% elseif isAdmin %}
-            {# not the current user, then can be modified #} 
-            <a href="{{ url({tag:'ParametresUtilisateur',params:{user:user.name,from:tag}}) }}"
-              class="btn btn-sm btn-warning" role="button">
-              {{ _t('MODIFY') }}
-            </a>
+        <th>{{ _t('SUBSCRIPTION') }}</th>
+        <th>{{ _t('MODIFY') }}</th>
+        <th>{{ _t('DELETE') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+        {% set userIsTheOneConnected = (connectedUserName is not empty and connectedUserName == user.name)%}
+        <tr>
+          {{ multidelete.insertSelectLine(
+                'users-table-action',
+                user.name,
+                not(isAdmin and not userIsTheOneConnected),
+                'users') }}
+          <td>{{ user.name }}</td>
+          <td>{{ (isAdmin or userIsTheOneConnected) ? user.groups|join(', ') : ((user.groups is not empty) ? '***' : '') }}</td>
+          {% if isAdmin %} {# Email only shown to admins #}
+            <td>{{ user.email }}</td>
           {% endif %}
-        </td>
-        <td>
-          {% if isAdmin and not userIsTheOneConnected %}
-            <form action="{{ url({handler:''}) }}" method="post">
-              <input type="hidden" name="userstable_action" value="deleteUser" />
-              <input type="hidden" name="username" value="{{ user.name|e('html_attr') }}" />
-              <input
-                type="hidden"
-                name="csrf-token-delete" 
-                value="{{ csrfToken({id:"action\\userstable\\deleteUser\\#{user.name}",refresh:true})|e('html_attr') }}">
-              <input class="btn btn-sm btn-danger" 
-                type="submit" 
-                onclick="return confirm(\'{{ _t('USER_CONFIRM_DELETE') }}\');" 
-                {# TODO use yeswikijs for USER_CONFIRM_DELETE  #}
-                value="{{ _t('DELETE') }}" />
-            </form>
+          <td>{{ user.signuptime }}</td>
+          <td>
+            {% if userIsTheOneConnected %} 
+              <a href="{{ url({tag:'ParametresUtilisateur'}) }}"
+                class="btn btn-sm btn-primary" role="button">
+                {{ _t('MODIFY') }}
+              </a>
+            {% elseif isAdmin %}
+              {# not the current user, then can be modified #} 
+              <a href="{{ url({tag:'ParametresUtilisateur',params:{user:user.name,from:tag}}) }}"
+                class="btn btn-sm btn-warning" role="button">
+                {{ _t('MODIFY') }}
+              </a>
+            {% endif %}
+          </td>
+          <td>
+            {% if isAdmin and not userIsTheOneConnected %}
+              <a 
+                data-toggle="modal"
+                role="button"
+                href="#userTableDeleteModal"
+                class="btn btn-sm btn-danger" 
+                data-name="{{ user.name }}"
+                title="{{ _t('USER_DELETE') }}">
+                {{ _t('DELETE') }}
+              </a>
+            {% endif %}
+          </td>
+      {% endfor %}
+      <tfoot>
+        <tr>
+          {{ multidelete.insertSelectAll('users-table-action','bottom') }}
+          <th></th>
+          <th></th>
+          {% if isAdmin %}
+            <th></th>
           {% endif %}
-        </td>
-    {% endfor %}
-  </tbody>
-</table>
+          <th></th>
+          <th></th>
+          <th></th>
+        </tr>
+      </tfoot>
+    </tbody>
+  </table>
+  {{ multidelete.insertButton('users-table-action','users') }}
+  <div class="modal fade" 
+    id="userTableDeleteModal" 
+    tabindex="-1" 
+    role="dialog" 
+    aria-labelledby="userTableDeleteModalLabel" 
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h3 id="userTableDeleteModalLabel">{{ _t('USER_DELETE') }} :<span id="userNameToDelete"></span></h3>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-warning">
+            {{ _t('USER_CONFIRM_DELETE') }}
+          </div>
+          <button class="btn btn-sm btn-warning start-btn-delete-user">{{ _t('DELETE') }}</button>
+          <br/><br/>
+          <div class="multi-delete-results"></div>
+        </div>
+        <div class="modal-footer">
+          <div class="progressbar progress">
+            <div class="progress-bar" role="progressbar"
+              style="width: 0%;"
+              aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            </div>
+          </div>
+        </div>
+      </div>{# .modal-content #}
+    </div>{# .modal-dialog #}
+  </div>
+</div>

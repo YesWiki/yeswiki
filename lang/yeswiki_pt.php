@@ -549,6 +549,8 @@ return [
     'USERSTABLE_USER_NOT_DELETED' => 'O utilizador "{username}" não foi eliminado.',
     'USERSTABLE_NOT_EXISTING_USER' => 'O utilizador "{username}" não existe!',
     'GROUP_S' => 'Grupo(s)',
+    // 'USERSTABLE_CREATE_USER' => 'Créer un utilisateur',
+    // 'USERSTABLE_CREATE_USER_HINT' => 'Mot de passe généré aléatoirement',
 
     // handlers/deletepage
     // 'DELETEPAGE_CANCEL' => 'Annuler',

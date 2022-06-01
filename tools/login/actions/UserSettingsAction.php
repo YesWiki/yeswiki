@@ -328,7 +328,9 @@ class UserSettingsAction extends YesWikiAction
             } catch (BadFormatPasswordException $ex) {
                 $this->error = $ex->getMessage();
             } catch (UserNameAlreadyUsedException $ex) {
-                $this->error = _t('USERSETTINGS_NAME_ALREADY_USED');
+                $this->error = str_replace('{currentName}', strval($post['name']), _t('USERSETTINGS_NAME_ALREADY_USED'));
+            } catch (UserEmailAlreadyUsedException $ex) {
+                $this->error = str_replace('{email}', strval($post['email']), _t('USERSETTINGS_EMAIL_ALREADY_USED'));
             } catch (ExitException $ex) {
                 throw $ex;
             } catch (Exception $ex) {
