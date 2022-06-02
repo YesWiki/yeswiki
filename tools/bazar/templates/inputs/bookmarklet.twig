@@ -3,7 +3,19 @@
     <div class="controls col-sm-9">
         <div class="alert alert-info">
             <a
-                href="javascript:var wleft = (screen.width-700)/2; var wtop=(screen.height-530)/2; window.open('{{ url }}&amp;bf_titre='+escape(document.title)+'&amp;{{ field.urlField }}='+encodeURIComponent(location.href)+'&amp;{{ field.descriptionField }}='+escape(document.getSelection()), '{{ field.name }}', 'height=530,width=700,left='+wleft+',top='+wtop+',toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=yes,menubar=no');void 0;"
+                href="javascript:var wleft = (screen.width-700)/2; var wtop=(screen.height-530)/2; window.open('{{ 
+                        url({handler:'bazariframe',params:
+                            urlParams|merge({
+                            bf_titre: "_",
+                            (field.urlField): "_",
+                            (field.descriptionField): "_"
+                        })})|replace({
+                            "bf_titre=_": "bf_titre='+escape(document.title)+'",
+                            "id=_": "id='+escape(document.querySelector('input[name=id_typeannonce]').getAttribute('value'))+'",
+                            (field.urlField~"=_"): field.urlField~"='+encodeURIComponent(location.href)+'",
+                            (field.descriptionField~"=_"): field.descriptionField~"='+escape(document.getSelection())+'",
+                        }) 
+                    }}', '{{ field.name }}', 'height=530,width=700,left='+wleft+',top='+wtop+',toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=yes,menubar=no');void 0;"
                 class="btn btn-default"
             >
                 {{ field.name }}

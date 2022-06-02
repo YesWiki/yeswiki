@@ -206,6 +206,11 @@ return [
     'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'Displaying the form builder, you will delete changes done here in the code. Whould you continue without saving changes ?  (Click on "Submit" button in page footer to keep your changes !)',
     
     'BAZ_FORM_EDIT_COMMENTS_CLOSED' => 'Comments closed',
+    'BAZ_FORM_EDIT_BOOKMARKLET_URLFIELD_LABEL' => "Associated url field",
+    'BAZ_FORM_EDIT_BOOKMARKLET_DESCRIPTIONFIELD_LABEL' => "Associated long text field",
+    'BAZ_BOOKMARKLET_HINT' => "This field needs to fields to work:{\\n}".
+        "  - url field (default: 'bf_url'){\\n}".
+        "  - long text field (default: 'bf_description')",
 
     // condition checking field
     "BAZ_FORM_CONDITIONSCHEKING_HINT" => "The condition must match the following format (without `):{\\n}".

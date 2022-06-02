@@ -482,7 +482,10 @@ var typeUserAttrs = {
     preset: { label: _t("BAZ_FORM_EDIT_METADATA_PRESET_LABEL"), value: "", placeholder: "blue.css (" + _t("BAZ_FORM_EDIT_METADATA_PRESET_PLACEHOLDER") + ")" },
     image: { label: _t('BAZ_FORM_EDIT_METADATA_BACKGROUND_IMAGE_LABEL'), value: "", placeholder: "foret.jpg..." },
   },
-  bookmarklet: {},
+  bookmarklet: {
+    urlField: {label: _t('BAZ_FORM_EDIT_BOOKMARKLET_URLFIELD_LABEL'), value: "bf_url" },
+    descriptionField: {label: _t('BAZ_FORM_EDIT_BOOKMARKLET_DESCRIPTIONFIELD_LABEL'), value: "bf_description" },
+  },
   collaborative_doc: {},
   titre: {},
   listefichesliees: {
@@ -592,7 +595,12 @@ var templates = {
     return { field: "" };
   },
   bookmarklet: function (field) {
-    return { field: "" };
+    return { 
+      field: "",
+      onRender: function(){
+        templateHelper.prependHint(field,_t('BAZ_BOOKMARKLET_HINT',{'\\n':"<br>"}));
+      },
+    };
   },
   listefichesliees: function (field) {
     return { field: "" };
@@ -651,6 +659,7 @@ var templates = {
 var typeUserDisabledAttrs = {
   tabs:['required','value','name','label'],
   tabchange:['required','value','name','label'],
+  bookmarklet:['required','value'],
 };
 
 var inputSets = [
@@ -752,7 +761,13 @@ var yesWikiMapping = {
   acls: { 0: "type", 1: "read", 2: "write", 3: "comment" },
   metadatas: { 0: "type", 1: "theme", 2: "squelette", 3: "style", 4: "image", 5:"preset" },
   hidden: { 0: "type", 1: "name", 5: "value" },
-  bookmarklet: { 0: "type", 1: "name", 2: "label", 3: "value" },
+  bookmarklet: { 
+    0: "type", 
+    1: "name", 
+    2: "label", 
+    3: "urlField",
+    4: "descriptionField" 
+  },
   listefichesliees: {
     0: "type",
     1: "id",

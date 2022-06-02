@@ -206,6 +206,11 @@ return [
     'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'En affichant le constructeur graphique, vous perdrez vos modifications faites dans le code ici-même. Continuer sans sauvegarder les changements ? (Cliquez sur le bouton "Valider" en bas de page pour conserver vos modifications !)',
 
     'BAZ_FORM_EDIT_COMMENTS_CLOSED' => 'Commentaires fermés',
+    'BAZ_FORM_EDIT_BOOKMARKLET_URLFIELD_LABEL' => "Champ url associé",
+    'BAZ_FORM_EDIT_BOOKMARKLET_DESCRIPTIONFIELD_LABEL' => "Champ texte long associé",
+    'BAZ_BOOKMARKLET_HINT' => "Ce champ nécessite deux autres champs pour fonctionner :{\\n}".
+        "  - un champ url (par défaut 'bf_url'){\\n}".
+        "  - un champ texte long (par défaut 'bf_description')",
 
     // condition checking field
     "BAZ_FORM_CONDITIONSCHEKING_HINT" => "La condition doit respecter le format suivant (sans les `):{\\n}".
