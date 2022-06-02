@@ -133,6 +133,7 @@
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
   border-bottom: 1px solid #ebebeb;
+  object-fit: cover;
 } 
 .style-vertical .bazar-card .footer-area {
   margin: -1.5rem;
@@ -172,6 +173,7 @@
     width: 13.5rem;
     margin-right: 1.5rem;
     margin-bottom: 0;
+    object-fit: cover;
   }
   .style-horizontal .bazar-card .floating-area {
     left: 1rem;
@@ -213,7 +215,10 @@
 .bazar-cards-container.nbcol-4.style-square .bazar-card .visual-area {
   height: 250px;
 }
-.bazar-cards-container.nbcol-5.style-square .bazar-card .visual-area {
+.bazar-cards-container.nbcol-5.style-square .bazar-card .visual-area ,
+.bazar-cards-container.nbcol-6.style-square .bazar-card .visual-area ,
+.bazar-cards-container.nbcol-7.style-square .bazar-card .visual-area ,
+.bazar-cards-container.nbcol-8.style-square .bazar-card .visual-area {
   height: 200px;
 }
 .style-square .bazar-card .content {
