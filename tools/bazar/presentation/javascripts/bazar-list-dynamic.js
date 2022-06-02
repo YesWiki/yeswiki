@@ -243,24 +243,33 @@ document.addEventListener('DOMContentLoaded', function() {
         $(node).removeAttr('onerror');
         if (entry[fieldName]){
           let fileName = entry[fieldName];
-          if (this.tokenForImages === null){
-            this.tokenForImages = token;
+          if (!this.isExternalUrl(entry)){
+            // currently not supporting api for external images (anti-csrf token not generated)
+            if (this.tokenForImages === null){
+              this.tokenForImages = token;
+            }
+            this.imagesToProcess.push({
+              fileName: fileName,
+              width: width,
+              height: height,
+              mode: mode,
+              node: node
+            });
+            this.processNextImage();
+          } else {
+            let baseUrl = entry.url.slice(0,-entry.id_fiche.length).replace(/\?$/,"").replace(/\/$/,"");
+            $(node).prop('src',`${baseUrl}/files/${fileName}`);
           }
-          this.imagesToProcess.push({
-            fileName: fileName,
-            width: width,
-            height: height,
-            mode: mode,
-            node: node
-          });
-          this.processNextImage();
         }
       },
       urlImage(entry,fieldName,width,height,mode) {
         if (!entry[fieldName]){
           return null;
         }
-        let baseUrl = wiki.baseUrl.replace(/\?$/,"").replace(/\/$/,"");
+        let baseUrl = (this.isExternalUrl(entry))
+          ? entry.url.slice(0,-entry.id_fiche.length)
+          : wiki.baseUrl;
+        baseUrl = baseUrl.replace(/\?$/,"").replace(/\/$/,"");
         let fileName = entry[fieldName];
         let field = this.fieldInfo(fieldName);
         let regExp = new RegExp(`^(${entry.id_fiche}_${field.propertyname}_.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`);
