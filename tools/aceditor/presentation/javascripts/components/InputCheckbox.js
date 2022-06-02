@@ -27,6 +27,11 @@ export default {
       if (this.config.checkedvalue) result = this.checked ? this.config.checkedvalue : this.config.uncheckedvalue
       else result = this.checked
       this.$emit('input', result)
+    },
+    value() {
+      // watch value because it can be affected after mounted
+      let checkedvalue = this.config.checkedvalue || "true"
+      this.checked = `${this.value}` == `${checkedvalue}`
     }
   },
   template: `
