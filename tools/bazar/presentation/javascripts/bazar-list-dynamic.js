@@ -238,12 +238,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (this.computedFilters[field]) values = values.filter(val => this.computedFilters[field].includes(val))
         return mapping[values[0]]
       },
-      urlImage(entry,fieldName,mode = "image") {
-        // kept for backward compatibility
-        let width = (mode == "image") ? 600 : 140;
-        let height = (mode == "image") ? 600 : 140;
-        return this.urlImageResized(entry,fieldName,width,height,"fit");
-      },
       urlImageResizedOnError(entry,fieldName,width,height,mode,token) {
         let node = event.target;
         $(node).removeAttr('onerror');
@@ -262,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
           this.processNextImage();
         }
       },
-      urlImageResized(entry,fieldName,width,height,mode) {
+      urlImage(entry,fieldName,width,height,mode) {
         if (!entry[fieldName]){
           return null;
         }
