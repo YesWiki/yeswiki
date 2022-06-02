@@ -1,6 +1,9 @@
 {% extends "@bazar/entries/index-dynamic.twig" %}
 
 {% block display_entries %}
+  {% set imWidth = 170 %}
+  {% set imHeight = 170 %}
+  {% set firstTokenCrop = csrfToken("GET api/images/cache/#{imWidth}/#{imHeight}/crop") %}
   <div class="panel-group no-dblclick" style="opacity: 0;" :class="{ready: ready}" v-if="ready">
     <div v-if="entriesToDisplay.length == 0" class="alert alert-info">
       {{ _t('BAZ_NO_RESULT') }}
@@ -10,8 +13,11 @@
       <template #header>
         <div class="panel-heading-container" :class="{'with-image': entry.visual}">
           {# VISUAL AREA #}
-          <div class="visual-area" v-if="entry.visual" 
-              :style="{'background-image': `url(${urlImage(entry,'visual','thumbnail')})`}">
+          <div class="visual-area" v-if="entry.visual">
+            <img
+              :src="urlImageResized(entry,'visual',{{ imWidth }},{{ imHeight }},'crop')"
+              @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'crop',{{ firstTokenCrop|json_encode }})">
+            </img>
           </div>
           {# TITLE AREA #}
           <h4 div class="title-area panel-title">
