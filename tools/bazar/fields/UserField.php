@@ -339,7 +339,7 @@ class UserField extends BazarField
         }
         
         if (in_array($groupName, $existingsGroups, true)) {
-            if (!$wiki->UserIsInGroup($groupName, $wikiName)) {
+            if (!$wiki->UserIsInGroup($groupName, $wikiName, false)) {
                 return true;
             }
         } elseif ($forceGroupCreation) {
