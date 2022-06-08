@@ -173,10 +173,10 @@ ext@^1.1.2:
   dependencies:
     type "^2.5.0"
 
-"formBuilder@>=3.7 <3.8":
-  version "3.7.4"
-  resolved "https://registry.yarnpkg.com/formBuilder/-/formBuilder-3.7.4.tgz#b3c19f543cd8e74f838ac14904f856198d5d5f2f"
-  integrity sha512-82FetPYuwIJ08iOTqvVghaP667EkDDmkkdh5X7Lt482i965/o6kQTkTlzrQ+ESd+jISDrA6OrIiJFTUoOkmPSw==
+formBuilder@3.7.3:
+  version "3.7.3"
+  resolved "https://registry.yarnpkg.com/formBuilder/-/formBuilder-3.7.3.tgz#65160f0269efe28f8cc9a201811861e964d276fd"
+  integrity sha512-prSeP4i3rZY686G8Cgh4pfTYk2YUU/x+NrXwBUBIIdDi0W8pOPCdzp4DoypmRiF+GX+Z7KVXo8foF/Yf4i84zw==
   dependencies:
     jquery ">=3.4.1"
     jquery-ui-sortable "*"

@@ -16,7 +16,7 @@
     "datatables.net-buttons-bs": "^2.2.1",
     "datatables.net-fixedheader-bs": "^3.2.1",
     "datatables.net-responsive-bs": "^2.2.9",
-    "formBuilder": ">=3.7 <3.8",
+    "formBuilder": "3.7.3",
     "formbuilder-languages": "^1.1.0",
     "fullcalendar": "^5.10.2",
     "gogocarto-js": "^1.7.11",
