@@ -2,6 +2,8 @@
 
 namespace YesWiki\Bazar\Controller;
 
+use DateInterval;
+use DateTime;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Field\BazarField;
@@ -496,18 +498,18 @@ class EntryController extends YesWikiController
         $BETWEEN_TEMPLATE = "/^>".$DATE_TEMPLATE."&<".$DATE_TEMPLATE."$/i" ;
 
         if (preg_match_all($TODAY_TEMPLATE, $datefilter, $matches)) {
-            $todayMidnigth = new \DateTime() ;
+            $todayMidnigth = new DateTime() ;
             $todayMidnigth->setTime(0, 0);
             $entries = array_filter($entries, function ($entry) use ($todayMidnigth) {
                 return $this->filterEntriesOnDateTraversing($entry, "=", $todayMidnigth) ;
             });
         } elseif (preg_match_all($FUTURE_TEMPLATE, $datefilter, $matches)) {
-            $now = new \DateTime() ;
+            $now = new DateTime() ;
             $entries = array_filter($entries, function ($entry) use ($now) {
                 return $this->filterEntriesOnDateTraversing($entry, ">", $now) ;
             });
         } elseif (preg_match_all($PAST_TEMPLATE, $datefilter, $matches)) {
-            $now = new \DateTime() ;
+            $now = new DateTime() ;
             $entries = array_filter($entries, function ($entry) use ($now) {
                 return $this->filterEntriesOnDateTraversing($entry, "<", $now) ;
             });
@@ -567,9 +569,9 @@ class EntryController extends YesWikiController
         return $entries ;
     }
 
-    private function extractDate(string $sign, string $nbYears, string $nbMonth, string $nbDays): \DateTime
+    private function extractDate(string $sign, string $nbYears, string $nbMonth, string $nbDays): DateTime
     {
-        $dateInterval = new \DateInterval(
+        $dateInterval = new DateInterval(
             'P'
                 .(!empty($nbYears) ? $nbYears . 'Y' : '')
                 .(!empty($nbMonth) ? $nbMonth . 'M' : '')
@@ -577,48 +579,65 @@ class EntryController extends YesWikiController
         );
         $dateInterval->invert = ($sign == "-") ? 1 : 0;
 
-        $date = new \DateTime() ;
+        $date = new DateTime() ;
         $date->add($dateInterval) ;
 
         return $date;
     }
 
-    private function filterEntriesOnDateTraversing(?array $entry, string $mode, \DateTime $date): bool
+    private function filterEntriesOnDateTraversing(?array $entry, string $mode, DateTime $date): bool
     {
         if (empty($entry) || !isset($entry['bf_date_debut_evenement'])) {
             return false;
         }
 
-        $entryStartDate = new \DateTime($entry['bf_date_debut_evenement']);
-        $entryEndDate = isset($entry['bf_date_fin_evenement']) ? new \DateTime($entry['bf_date_fin_evenement']) : null  ;
-        if (isset($entry['bf_date_fin_evenement']) && strpos($entry['bf_date_fin_evenement'], 'T')=== false) {
-            // all day (so = midnigth of next day)
-            $entryEndDate->add(new \DateInterval("P1D"));
+        $entryStartDate = new DateTime($entry['bf_date_debut_evenement']);
+        if (isset($entry['bf_date_fin_evenement']) && !empty(trim($entry['bf_date_fin_evenement']))) {
+            $entryEndDate = new DateTime($entry['bf_date_fin_evenement']);
+            if ($entryEndDate && strpos($entry['bf_date_fin_evenement'], 'T')=== false) {
+                // all day (so = midnigth of next day)
+                $entryEndDate->add(new DateInterval("P1D"));
+            }
         }
-        $nextDay = (clone $date)->add(new \DateInterval("P1D"));
+        if (empty($entryEndDate)) {
+            $entryEndDate = (clone $entryStartDate)->setTime(0, 0)->add(new DateInterval("P1D")); // endDate to next day after start day if empty
+        }
+        $nextDay = (clone $date)->add(new DateInterval("P1D"));
         switch ($mode) {
             case "<":
-                // start before date
+                // start before date and whatever finish
                 return (
                     $date->diff($entryStartDate)->invert == 1
-                    && $entryEndDate && $date->diff($entryEndDate)->invert == 1
                     );
                 break;
             case ">":
                 // start after date or (before date but and end should be after date, end is needed)
                 return (
                     $date->diff($entryStartDate)->invert == 0
-                    || ($entryEndDate && $date->diff($entryEndDate)->invert == 0)
+                    || !$this->dateIsStrictlyBefore($entryEndDate, $date)
                     );
                 break;
             case "=":
             default:
-                // start before next day midnight and end should be after date midnigth
+                // start before next day midnight and should end after date midnigth
                 return (
                         $nextDay->diff($entryStartDate)->invert == 1
-                        && $entryEndDate && $date->diff($entryEndDate)->invert == 0
+                        && !$this->dateIsStrictlyBefore($entryEndDate, $date)
                     );
         }
+    }
+
+    private function dateIsStrictlyBefore(DateTime $dateToCompare, DateTime $referenceDate): bool
+    {
+        $diff = $referenceDate->diff($dateToCompare);
+        return $diff->invert == 1 || (
+            $diff->invert == 0
+            && $diff->days == 0
+            && $diff->h == 0
+            && $diff->i == 0
+            && $diff->s == 0
+            && $diff->f == 0
+        );
     }
 
     /* END OF PART TO FILTER ON DATE */
