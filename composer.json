@@ -6,7 +6,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
-      "test": "phpunit --do-not-cache-result --stderr tests",
+      "test": "bash tests/tests.sh",
       "post-install-cmd": [
         "@composer install --working-dir ./tools/autoupdate/",
         "@php -r \"array_map('unlink', glob('vendor/enshrined/svg-sanitize/tests/data/*.svg'));\""
