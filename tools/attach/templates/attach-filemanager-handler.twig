@@ -1,0 +1,6 @@
+{# Header #}
+{{ format("====" ~ _t('ATTACH_FILE_MANAGEMENT_TITLE')|replace({'{tag}':tag}) ~ "====\n---")|raw }}
+{# Tabular #}
+{{ include('@attach/attach-filemanager.twig') }}
+{# Footer #}
+{{ format("\n-----\n[[#{tag} " ~ _t('ATTACH_BACK_TO_PAGE') ~ " #{tag}]]\n")|raw }}
