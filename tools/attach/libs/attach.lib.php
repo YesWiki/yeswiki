@@ -832,30 +832,30 @@ if (!class_exists('attach')) {
         /******************************************************************************
          *    FONTIONS DU FILEMANAGER
          *******************************************************************************/
-        public function doFileManager()
+        public function doFileManager($isAction = false)
         {
             $do = (isset($_GET['do']) && $_GET['do']) ? $_GET['do'] : '';
             switch ($do) {
                 case 'restore':
                     $this->fmRestore();
-                    $this->fmShow(true);
+                    $this->fmShow(true, $isAction);
                     break;
                 case 'erase':
                     $this->fmErase();
-                    $this->fmShow(true);
+                    $this->fmShow(true, $isAction);
                     break;
                 case 'del':
                     $this->fmDelete();
-                    $this->fmShow();
+                    $this->fmShow(false, $isAction);
                     break;
                 case 'trash':
-                    $this->fmShow(true);
+                    $this->fmShow(true, $isAction);
                     break;
                 case 'emptytrash':
                     $this->fmEmptyTrash(); //pas de break car apres un emptytrash => retour au gestionnaire
                     // no break
                 default:
-                    $this->fmShow();
+                    $this->fmShow(false, $isAction);
             }
         }
         /**
@@ -863,29 +863,7 @@ if (!class_exists('attach')) {
          */
         public function doFileManagerAction()
         {
-            $do = (isset($_GET['do']) && $_GET['do']) ? $_GET['do'] : '';
-            switch ($do) {
-                case 'restore':
-                    $this->fmRestore();
-                    $this->fmShowAction(true);
-                    break;
-                case 'erase':
-                    $this->fmErase();
-                    $this->fmShowAction(true);
-                    break;
-                case 'del':
-                    $this->fmDelete();
-                    $this->fmShowAction();
-                    break;
-                case 'trash':
-                    $this->fmShowAction(true);
-                    break;
-                case 'emptytrash':
-                    $this->fmEmptyTrash(); //pas de break car apres un emptytrash => retour au gestionnaire
-                    // no break
-                default:
-                    $this->fmShowAction();
-            }
+            $this->doFileManager(true);
         }
         /**
          * Return human readable sizes
@@ -930,30 +908,12 @@ if (!class_exists('attach')) {
          */
         public function fmShowAction($trash = false)
         {
-            $method = ($this->wiki->GetMethod() != 'show' ? $this->wiki->GetMethod() : '');
-
-            $files = $this->fmGetFiles($trash);
-            if (is_array($files)) {
-                $files = array_map(function ($file) {
-                    return array_merge($file, [
-                        'parsedTrashDate' => isset($file['trashdate']) ? $this->parseDate($file['trashdate']) : '',
-                        'parsedDateUpload' => isset($file['dateupload']) ? $this->parseDate($file['dateupload']) : '',
-                        'readableSize' => isset($file['size']) ? $this->size_readable($file['size']) : '',
-                    ]);
-                }, $files);
-            }
-
-            echo $this->wiki->render("@attach/attach-filemanager.twig", [
-                'tag' => $this->wiki->tag,
-                'method' => ($this->wiki->GetMethod() != 'show' ? $this->wiki->GetMethod() : ''),
-                'trash' => $trash,
-                'files' => $files,
-            ]);
+            $this->fmShow($trash, true);
         }
         /**
          * Affiche la liste des fichiers
          */
-        public function fmShow($trash = false)
+        public function fmShow($trash = false, bool $isAction = false)
         {
             $method = ($this->wiki->GetMethod() != 'show' ? $this->wiki->GetMethod() : '');
 
@@ -968,7 +928,9 @@ if (!class_exists('attach')) {
                     ]);
                 }, $files);
             }
-            echo $this->wiki->render("@attach/attach-filemanager-handler.twig", [
+            echo $this->wiki->render($isAction
+                ? "@attach/attach-filemanager.twig"
+                : "@attach/attach-filemanager-handler.twig", [
                 'tag' => $this->wiki->tag,
                 'method' => ($this->wiki->GetMethod() != 'show' ? $this->wiki->GetMethod() : ''),
                 'trash' => $trash,
