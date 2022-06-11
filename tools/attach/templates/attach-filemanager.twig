@@ -43,7 +43,7 @@
                 )
               }}"
             >
-              {{ file.name|length < 26 ? file.name : (file.name|slice(0,25) ~'&hellip;') }}.{{ file.ext }}
+              {% if file.name|length < 26 %}{{ file.name }}{% else %}{{ file.name|slice(0,25) }}&hellip;{% endif %}.{{ file.ext }}
             </a>
           </td>
           <td class="fmfilesize">{{ file.readableSize }}</td>
