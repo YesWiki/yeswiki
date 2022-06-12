@@ -30,6 +30,8 @@ actions:
         options:
           0: _t(AB_attach_yes)
           1: _t(AB_attach_no)
+        showif:
+          file: \.(png|jpg|jpeg|gif|svg)$
       size:
         label: _t(AB_attach_size_label)
         type: list
@@ -73,7 +75,7 @@ actions:
             options: 
               lightshadow: _t(YES)
             showif:
-              file: \.(png|jpg|jpeg|gif|pdf|svg)$
+              file: \.(png|jpg|jpeg|gif|svg)$
           whiteborder:
             label: _t(AB_attach_class_effect_whiteborder)
             type: list
@@ -81,7 +83,7 @@ actions:
             options: 
               whiteborder: _t(YES)
             showif:
-              file: \.(png|jpg|jpeg|gif|pdf|svg)$
+              file: \.(png|jpg|jpeg|gif|svg)$
           zoom:
             label: _t(AB_attach_class_effect_zoom)
             type: list
@@ -89,7 +91,7 @@ actions:
             options: 
               zoom: _t(YES)
             showif:
-              file: \.(png|jpg|jpeg|gif|pdf|svg)$
+              file: \.(png|jpg|jpeg|gif|svg)$
           izmir:
             label: _t(AB_attach_class_izmir_label)
             type: list
