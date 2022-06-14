@@ -823,7 +823,9 @@ if (!class_exists('attach')) {
             header('Content-Transfer-Encoding: none');
             header('Content-Type: application/octet-stream; name="' . $dlFilename . '"'); //This should work for the rest
             header('Content-Type: application/octetstream; name="' . $dlFilename . '"'); //This should work for IE & Opera
-            header('Content-Type: application/download; name="' . $dlFilename . '"'); //This should work for IE & Opera
+            if (in_array(preg_replace("/^.*\.([^.]+$)/", "$1", $dlFilename), ['txt','md','png','svg','jpeg','jpg','mp3'])) {
+                header('Content-Type: '.mime_content_type($fullFilename).'; name="' . $dlFilename . '"');
+            }
             header('Content-Disposition: attachment; filename="' . $dlFilename . '"');
             header("Content-Description: File Transfer");
             header("Content-length: $size");
