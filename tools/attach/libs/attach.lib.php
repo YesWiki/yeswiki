@@ -37,6 +37,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 use enshrined\svgSanitize\Sanitizer;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\LinkTracker;
+use Zebra_Image;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -1092,26 +1093,35 @@ if (!class_exists('attach')) {
 
         public function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $mode = "fit")
         {
-            if (!class_exists('imageTransform')) {
-                require_once 'tools/attach/libs/class.imagetransform.php';
+            if (empty($image_src) || empty($image_dest)) {
+                return false;
             }
-            $imgTrans = new imageTransform();
-            $imgTrans->sourceFile = $image_src;
-            $imgTrans->targetFile = $image_dest;
-            $imgTrans->resizeToWidth = $largeur;
-            $imgTrans->resizeToHeight = $hauteur;
+            $imgTrans = new Zebra_Image();
+            $imgTrans->auto_handle_exif_orientation = true;
+            $imgTrans->preserve_aspect_ratio = true;
+            $imgTrans->enlarge_smaller_images = true;
+            $imgTrans->preserve_time = true;
+            $imgTrans->handle_exif_orientation_tag = true;
+            $imgTrans->source_path = $image_src;
+            $imgTrans->target_path = $image_dest;
+            
             if ($mode == "crop") {
                 $wantedRatio = $largeur/$hauteur;
-                // get image info
-                $result = $imgTrans->create_image_from_source_file();
-                
-                // if operation was successful
-                if (!is_array($result)) {
+                // get image info except for webp (code copier from Zebra_Image)
+                if (
+                        !(
+                            version_compare(PHP_VERSION, '7.0.0') >= 0 &&
+                            version_compare(PHP_VERSION, '7.1.0') < 0 &&
+                            (
+                                $imgTrans->source_type = strtolower(substr($imgTrans->source_path, strrpos($imgTrans->source_path, '.') + 1))
+                            ) === 'webp'
+                        ) &&
+                        !list($sourceImageWidth, $sourceImageHeight, $sourceImageType) = @getimagesize($imgTrans->source_path)
+                    ) {
                     return false;
                 }
-                list($sourceImageIdentifier, $sourceImageWidth, $sourceImageHeight, $sourceImageType) = $result;
                 $imageRatio = $sourceImageWidth/$sourceImageHeight;
-
+    
                 if ($imageRatio != $wantedRatio) {
                     if ($imageRatio > $wantedRatio) {
                         // width too large, keep height
@@ -1129,20 +1139,16 @@ if (!class_exists('attach')) {
                         $tempFileName = stream_get_meta_data($tempFile)['uri'].".$ext";
                         unlink(stream_get_meta_data($tempFile)['uri']);
                     } while (file_exists($tempFileName));
-                    $imgTrans->targetFile = $tempFileName;
-                    $x0 = ($sourceImageWidth-$newWidth)/2;
-                    $y0 = ($sourceImageHeight-$newHeight)/2;
-                    $x1 = $x0 + $newWidth;
-                    $y1 = $y0 + $newHeight;
-                    if ($imgTrans->crop($x0, $y0, $x1, $y1)) {
-                        $imgTrans->sourceFile = $tempFileName;
+                    $imgTrans->target_path = $tempFileName;
+                    if ($imgTrans->resize(intval($newWidth), intval($newHeight), ZEBRA_IMAGE_CROP_CENTER, '#FFFFFF')) {
+                        $imgTrans->source_path = $tempFileName;
                     }
-                    $imgTrans->targetFile = $image_dest;
+                    $imgTrans->target_path = $image_dest;
                 }
             }
-            $result = $imgTrans->resize();
+            $result = $imgTrans->resize(intval($largeur), intval($hauteur), ZEBRA_IMAGE_NOT_BOXED, '#FFFFFF');
             
-            if ($mode == "crop" && !empty($tempFileName)) {
+            if ($mode == "crop" && !empty($tempFileName) && file_exists($tempFileName)) {
                 unlink($tempFileName);
             }
             if (!$result) {
@@ -1150,7 +1156,7 @@ if (!class_exists('attach')) {
                 return $imgTrans->error;
             // if there were no errors
             } else {
-                return $imgTrans->targetFile;
+                return $imgTrans->target_path;
             }
         }
 

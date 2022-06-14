@@ -2,6 +2,7 @@
 
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\ThemeManager;
+use Zebra_Image;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -317,14 +318,16 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
             // les jpg sont les fonds d'ecrans, ils doivent etre mis en miniature
             if ($imgextension == '.jpg') {
                 if (!is_file($backgroundsdir.'/thumbs/'.$file)) {
-                    require_once 'tools/attach/libs/class.imagetransform.php';
-                    $imgTrans = new imageTransform();
-                    $imgTrans->sourceFile = $backgroundsdir.'/'.$file;
-                    $imgTrans->targetFile = $backgroundsdir.'/thumbs/'.$file;
-                    $imgTrans->resizeToWidth = 100;
-                    $imgTrans->resizeToHeight = 75;
-                    if ($imgTrans->resize()) {
-                        $backgrounds[] = $imgTrans->targetFile;
+                    $imgTrans = new Zebra_Image();
+                    $imgTrans->auto_handle_exif_orientation = true;
+                    $imgTrans->preserve_aspect_ratio = true;
+                    $imgTrans->enlarge_smaller_images = true;
+                    $imgTrans->preserve_time = true;
+                    $imgTrans->handle_exif_orientation_tag = true;
+                    $imgTrans->source_path = $backgroundsdir.'/'.$file;
+                    $imgTrans->target_path = $backgroundsdir.'/thumbs/'.$file;
+                    if ($imgTrans->resize(intval(100), intval(75), ZEBRA_IMAGE_NOT_BOXED, '#FFFFFF')) {
+                        $backgrounds[] = $imgTrans->target_path;
                     }
                 } else {
                     $backgrounds[] = $backgroundsdir.'/thumbs/'.$file;
