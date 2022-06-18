@@ -10,10 +10,12 @@ var SYNTAX = {
     'TITLE4_RGT'      : '===',
     'TITLE5_LFT'      : '==',
     'TITLE5_RGT'      : '==',
+    'CENTER_LFT'      : '&quot;&quot;<center>&quot;&quot;',
+    'CENTER_RGT'      : '&quot;&quot;</center>&quot;&quot;',
     'LEAD_LFT'        : '&quot;&quot;<div class=&quot;lead&quot;>&quot;&quot;',
     'LEAD_RGT'        : '&quot;&quot;</div>&quot;&quot;',
-    'HIGHLIGHT_LFT'   : '&quot;&quot;<div class=&quot;well&quot;>&quot;&quot;',
-    'HIGHLIGHT_RGT'   : '&quot;&quot;</div>&quot;&quot;',
+    'HIGHLIGHT_LFT'   : '{{section bgcolor=&quot;var(--primary-color)&quot; class=&quot;shape-rounded&quot; pattern=&quot;border-solid&quot; }}',
+    'HIGHLIGHT_RGT'   : '{{end elem=&quot;section&quot;}}',
     'CODE_LFT'        : '%%',
     'CODE_RGT'        : '%%',
     'BOLD_LFT'        : '**',
@@ -44,6 +46,8 @@ var SYNTAX = {
     'TITLE4_RGT'      : '</h4>',
     'TITLE5_LFT'      : '<h5>',
     'TITLE5_RGT'      : '</h5>',
+    'CENTER_LFT'      : '<center>',
+    'CENTER_RGT'      : '</center>',
     'LEAD_LFT'        : '<div class=&quot;lead&quot;>',
     'LEAD_RGT'        : '</div>',
     'HIGHLIGHT_LFT'   : '<div class=&quot;well&quot;>',
@@ -164,33 +168,13 @@ var SYNTAX = {
                 '<li><a title="'+this.lang['ACEDITOR_TITLE3']+'" class="aceditor-btn aceditor-btn-title3" data-lft="'+this.syntax['TITLE3_LFT']+'" data-rgt="'+this.syntax['TITLE3_RGT']+'"><h3>'+this.lang['ACEDITOR_TITLE3']+'</h3></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_TITLE4']+'" class="aceditor-btn aceditor-btn-title4" data-lft="'+this.syntax['TITLE4_LFT']+'" data-rgt="'+this.syntax['TITLE4_RGT']+'"><h4>'+this.lang['ACEDITOR_TITLE4']+'</h4></a></li>' +
                 '<li class="divider"></li>' +
+                '<li><a title="'+this.lang['ACEDITOR_CENTER']+'" class="aceditor-btn aceditor-btn-center" data-lft="'+this.syntax['CENTER_LFT']+'" data-rgt="'+this.syntax['CENTER_RGT']+'"><center>'+this.lang['ACEDITOR_CENTER']+'</center></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_BIGGER_TEXT']+'" class="aceditor-btn aceditor-btn-lead" data-lft="'+this.syntax['LEAD_LFT']+'" data-rgt="'+this.syntax['LEAD_RGT']+'"><div class="lead">'+this.lang['ACEDITOR_BIGGER_TEXT']+'</div></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_HIGHLIGHT_TEXT']+'" class="aceditor-btn aceditor-btn-well" data-lft="'+this.syntax['HIGHLIGHT_LFT']+'" data-rgt="'+this.syntax['HIGHLIGHT_RGT']+'"><div class="well">'+this.lang['ACEDITOR_HIGHLIGHT_TEXT']+'</div></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_SOURCE_CODE']+'" class="aceditor-btn aceditor-btn-code" data-lft="'+this.syntax['CODE_LFT']+'" data-rgt="'+this.syntax['CODE_RGT']+'"><div class="code"><pre>'+this.lang['ACEDITOR_SOURCE_CODE']+'</pre></div></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_COMMENT']+'" class="aceditor-btn aceditor-btn-comment" data-lft="'+this.syntax['COMMENT_LFT']+'" data-rgt="'+this.syntax['COMMENT_RGT']+'">'+this.lang['ACEDITOR_COMMENT']+'</a></li>' +
               '</ul>' +
             '</div>');
-
-      // Actions Builder, actionsBuilderData has been defined in action-builder.tpl.html
-      if (typeof actionsBuilderData !== 'undefined' && actionsBuilderData && (textarea.prop('id') == 'body' 
-          || (typeof actionsBuilderData.actionBuilderTextareaName !== 'undefined'
-          && textarea.prop('id') == actionsBuilderData.actionBuilderTextareaName))) {
-        if (textarea.prop('id') != 'body'){
-          textarea.addClass("action-builder-anchor");
-        }
-        var result = '<div class="btn-group">' +
-               '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang['ACEDITOR_ACTIONS']+'  <span class="caret"></span></a>' +
-               '<ul class="dropdown-menu component-action-list">';
-        for(var actionGroupName in actionsBuilderData.action_groups) {     
-            var groupConfig = actionsBuilderData.action_groups[actionGroupName]
-            if (groupConfig.onlyEdit) continue 
-            result += '<li><a class="open-actions-builder-btn" data-group-name="' + actionGroupName + '">'+
-                        groupConfig.label+
-                      '</a></li>'
-        }
-        result += '<li class="open-actions-builder-btn open-existing-action"><a>'+ this.lang['ACEDITOR_ACTIONS_EDIT_CURRENT'] +'</a></li>'
-        toolbar.append(result + '</ul></div>')
-      }
 
       // Bold Italic Underline Stroke
       toolbar.append( '<div class="btn-group">' +
@@ -227,9 +211,30 @@ var SYNTAX = {
                   "</a>" +
             '</div>');
 
+      // Actions Builder, actionsBuilderData has been defined in action-builder.tpl.html
+      if (typeof actionsBuilderData !== 'undefined' && actionsBuilderData && (textarea.prop('id') == 'body' 
+          || (typeof actionsBuilderData.actionBuilderTextareaName !== 'undefined'
+          && textarea.prop('id') == actionsBuilderData.actionBuilderTextareaName))) {
+        if (textarea.prop('id') != 'body'){
+          textarea.addClass("action-builder-anchor");
+        }
+        var result = '<div class="btn-group actions-builder-button">' +
+               '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang['ACEDITOR_ACTIONS']+'  <span class="caret"></span></a>' +
+               '<ul class="dropdown-menu component-action-list">';
+        for(var actionGroupName in actionsBuilderData.action_groups) {     
+            var groupConfig = actionsBuilderData.action_groups[actionGroupName]
+            if (groupConfig.onlyEdit) continue 
+            result += '<li><a class="open-actions-builder-btn" data-group-name="' + actionGroupName + '">'+
+                        groupConfig.label+
+                      '</a></li>'
+        }
+        result += '<li class="open-actions-builder-btn open-existing-action"><a>'+ this.lang['ACEDITOR_ACTIONS_EDIT_CURRENT'] +'</a></li>'
+        toolbar.append(result + '</ul></div>')
+      }
+
       // help
       toolbar.append( '<div class="btn-group pull-right">' +
-              '<a class="btn btn-info aceditor-btn aceditor-btn-help" data-remote="true" href="wakka.php?wiki=ReglesDeFormatage" title="'+this.lang['ACEDITOR_HELP']+'">' +
+              '<a class="btn btn-info aceditor-btn aceditor-btn-help" data-remote="true" href="'+this.wiki.url('ReglesDeFormatage')+'" title="'+this.lang['ACEDITOR_HELP']+'">' +
                 this.lang['ACEDITOR_HELP'] +
                 '<i class="fa fa-question-circle" style="margin-left: 8px"></i>' +
               '</a>' +
@@ -453,53 +458,62 @@ var SYNTAX = {
         } else {
           isShift = false;
         }
-
+        let currentACE = $('pre.ace_editor.ace_focus');
+        if (currentACE.length == 0){
+          currentACE = $('pre.ace_editor').first();
+        }
+        let currentToolbar = $(currentACE).closest('.ace-editor-container').siblings('.aceditor-toolbar').first();
         if (isCtrl === true && isAlt === false) {
           // title 1
           if (keyCode == 49 && isShift === true) {
-            $('.aceditor-btn-title1').mousedown();e.preventDefault();
+            $(currentToolbar).find('.aceditor-btn-title1').mousedown();e.preventDefault();
           }
           // title 2
           else if (keyCode == 50 && isShift === true) {
-            $('.aceditor-btn-title2').mousedown();e.preventDefault();
+            $(currentToolbar).find('.aceditor-btn-title2').mousedown();e.preventDefault();
           }
           // title 3
           else if (keyCode == 51 && isShift === true) {
-            $('.aceditor-btn-title3').mousedown();e.preventDefault();
+            $(currentToolbar).find('.aceditor-btn-title3').mousedown();e.preventDefault();
           }
           // title 4
           else if (keyCode == 52 && isShift === true) {
-            $('.aceditor-btn-title4').mousedown();e.preventDefault();
+            $(currentToolbar).find('.aceditor-btn-title4').mousedown();e.preventDefault();
           }
           // title 5
           else if (keyCode == 53 && isShift === true) {
-            $('.aceditor-btn-title5').mousedown();e.preventDefault();
+            $(currentToolbar).find('.aceditor-btn-title5').mousedown();e.preventDefault();
           }
           // bold
           else if (keyCode == 66 && isShift === false) {
-            $('.aceditor-btn-bold').mousedown();e.preventDefault();
+            $(currentToolbar).find('.aceditor-btn-bold').mousedown();e.preventDefault();
           }
           // italic
           else if (keyCode == 73 && isShift === false) {
-            $('.aceditor-btn-italic').mousedown();e.preventDefault();
+            $(currentToolbar).find('.aceditor-btn-italic').mousedown();e.preventDefault();
           }
           // underline
           else if (keyCode == 85 && isShift === false) {
-            $('.aceditor-btn-underline').mousedown();e.preventDefault();
+            $(currentToolbar).find('.aceditor-btn-underline').mousedown();e.preventDefault();
           }
           // strike
-          else if (keyCode == 89 && isShift === false) {
-            $('.aceditor-btn-strike').mousedown();e.preventDefault();
+          else if (keyCode == 89) {
+            $(currentToolbar).find('.aceditor-btn-strike').mousedown();e.preventDefault();
           }
           // save page
           else if (keyCode == 83 && isShift === false) {
-            $('.aceditor-btn-save').click();e.preventDefault();
+            $(currentToolbar).find('.aceditor-btn-save').click();e.preventDefault();
           }
           // comment key ':'
           else if (keyCode == 58 && isShift === false) {
-            $('.aceditor-btn-comment').mousedown();e.preventDefault();
+            $(currentToolbar).find('.aceditor-btn-comment').mousedown();e.preventDefault();
           }
           return;
+        } else if (isCtrl === false && isAlt === true) {
+          if (keyCode == 85 && isShift === false) {
+            $(currentToolbar).find('.aceditor-btn-underline').mousedown();e.preventDefault();
+          }
+          return ;
         }
       });
     }

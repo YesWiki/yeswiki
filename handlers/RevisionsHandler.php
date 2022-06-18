@@ -20,7 +20,7 @@ class RevisionsHandler extends YesWikiHandler
         if ($this->getRequest()->get('restoreRevisionId')) {
             if ($aclService->hasAccess('write')) {
                 $page = $pageManager->getById($this->getRequest()->get('restoreRevisionId'));
-                $pageManager->save($page['tag'], $page['body']);
+                $pageManager->save($page['tag'], $page['body'], empty($page['comment_on']) ? "" : $page['comment_on']);
                 // save links
                 $linkTracker->registerLinks($pageManager->getOne($page['tag']));
                 Flash::success(_t('SUCCESS_RESTORE_REVISION'));
@@ -31,7 +31,7 @@ class RevisionsHandler extends YesWikiHandler
         } else {
             $revisionsCount = $pageManager->countRevisions($this->wiki->GetPageTag());
             // Limit to 30 revisions otherwise the UI is too crowded
-            $revisions = $pageManager->getRevisions($this->wiki->GetPageTag(), 30);
+            $revisions = $pageManager->getRevisions($this->wiki->GetPageTag(), $this->params->get('revisionscount'));
             $entryManager = $this->getService(EntryManager::class);
             return $this->renderInSquelette('@core/handlers/revisions.twig', [
                 'revisions' => $revisions,

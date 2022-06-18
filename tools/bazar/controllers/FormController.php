@@ -2,19 +2,23 @@
 
 namespace YesWiki\Bazar\Controller;
 
+use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
+use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
 
 class FormController extends YesWikiController
 {
+    protected $csrfTokenController;
     protected $formManager;
     protected $securityController;
 
-    public function __construct(FormManager $formManager, SecurityController $securityController)
+    public function __construct(FormManager $formManager, SecurityController $securityController, CsrfTokenController $csrfTokenController)
     {
+        $this->csrfTokenController = $csrfTokenController;
         $this->formManager = $formManager;
         $this->securityController = $securityController;
     }
@@ -76,7 +80,8 @@ class FormController extends YesWikiController
 
             return $this->render("@bazar/forms/forms_form.twig", [
                 'formAndListIds' => baz_forms_and_lists_ids(),
-                'groupsList' => $this->getGroupsListIfEnabled()
+                'groupsList' => $this->getGroupsListIfEnabled(),
+                'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption()
             ]);
         } else {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
@@ -95,7 +100,8 @@ class FormController extends YesWikiController
             return $this->render("@bazar/forms/forms_form.twig", [
                 'form' => $this->formManager->getOne($id),
                 'formAndListIds' => baz_forms_and_lists_ids(),
-                'groupsList' => $this->getGroupsListIfEnabled()
+                'groupsList' => $this->getGroupsListIfEnabled(),
+                'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption() && $this->formManager->isAvailableOnlyOneEntryMessage()
             ]);
         } else {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
@@ -105,10 +111,15 @@ class FormController extends YesWikiController
     public function delete($id)
     {
         if ($this->wiki->UserIsAdmin()) {
-            $this->formManager->clear($id);
-            $this->formManager->delete($id);
-
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES'], false));
+            try {
+                $this->csrfTokenController->checkToken("action\\bazar\\forms\\delete\\$id", 'POST', 'confirmDeleteToken');
+                $this->formManager->clear($id);
+                $this->formManager->delete($id);
+    
+                return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES'], false));
+            } catch (TokenNotFoundException $th) {
+                $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => $th->getMessage()], false));
+            }
         } else {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
         }
@@ -117,9 +128,14 @@ class FormController extends YesWikiController
     public function empty($id)
     {
         if ($this->wiki->UserIsAdmin()) {
-            $this->formManager->clear($id);
+            try {
+                $this->csrfTokenController->checkToken("action\\bazar\\forms\\empty\\$id", 'POST', 'confirmEmptyToken');
+                $this->formManager->clear($id);
 
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_VIDE'], false));
+                return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_VIDE'], false));
+            } catch (TokenNotFoundException $th) {
+                $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => $th->getMessage()], false));
+            }
         } else {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
         }

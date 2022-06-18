@@ -15,6 +15,7 @@
 // +------------------------------------------------------------------------------------------------------+
 
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\Service\TemplateEngine;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -47,6 +48,7 @@ if (empty($GLOBALS['ordre'])) {
 }
 
 $template = $this->GetParameter("template");
+$template = $this->services->get(TemplateEngine::class)->hasTemplate("@bazar/$template") ? $template : '';
 if (empty($template)) {
     $template = $GLOBALS['wiki']->config['default_bazar_template'];
 }
@@ -54,7 +56,7 @@ if (empty($template)) {
 // identifiant de la base de donnée pour la liste
 $id = $this->GetParameter("id");
 if (empty($id)) {
-    exit('<div class="alert alert-danger">Error action bazarlistecategorie: parameter "id" missing.</div>');
+    throw new Exception('Error action bazarlistecategorie: parameter "id" missing.');
 } else {
     $GLOBALS['champ'] = $id;
 }
@@ -135,7 +137,7 @@ if (empty($list)) {
             $output .=  '<h3 class="collapsed yeswiki-list-category" '
                 .'data-target="#collapse_'.htmlspecialchars(trim(str_replace('/', '', $fiche[$id])))
                 .'" data-toggle="collapse"><i class="fa fa-chevron-right"></i> '
-                .(empty($listvalues['label'][$fiche[$id]]) ? 'Non catégorisé' : $listvalues['label'][$fiche[$id]]).'</h3>
+                .(empty($listvalues['label'][$fiche[$id]]) ? _t('BAZ_NOT_CATEGORIZED') : $listvalues['label'][$fiche[$id]]).'</h3>
                 <div id="collapse_'.htmlspecialchars(trim(str_replace('/', '', $fiche[$id]))).'" class="collapse">';
         }
         $currentlabel = $fiche[$id];

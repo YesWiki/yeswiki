@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Core\Service\HtmlPurifierService;
 
 /**
  * @Field({"texte"})
@@ -62,6 +63,17 @@ class TextField extends BazarField
                 'value' => $value
             ]);
         }
+    }
+
+    public function formatValuesBeforeSave($entry)
+    {
+        if (empty($this->propertyName)) {
+            return [];
+        }
+        $dirtyHtml = $this->getValue($entry);
+        $cleanHTML = $this->getService(HtmlPurifierService::class)->cleanHTML($dirtyHtml);
+
+        return [$this->propertyName => $cleanHTML];
     }
 
     public function getPattern()

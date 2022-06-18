@@ -23,7 +23,7 @@ switch ($type) {
         $expired [] = $eax;
 
         $val = intval(hashcash_field_value());
-        $inc = rand($val / 100, $val - 1);
+        $inc = rand(intval($val / 100), $val - 1);
         $n = floor($val / $inc);
         $r = $val % $inc;
 

@@ -151,9 +151,8 @@ if (isset($error)) {
 } elseif (isset($success)) {
     echo "<div class='alert alert-success'>$success</div>";
 }
-$this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
-$this->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js');
-$this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
+$this->addJavascriptFile('javascripts/vendor/datatables-full/jquery.dataTables.min.js');
+$this->addCSSFile('styles/vendor/datatables-full/dataTables.bootstrap.min.css');
 ?>
 <p><?php echo _t('ACLS_SELECT_PAGES_TO_MODIFY'); ?></p>
 <div class="form-group" style="display:flex;justify-content:flex-end;margin-bottom:10px;margin-top:10px;">
@@ -182,7 +181,7 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
         <th><div><b><?php echo _t('ACLS_PAGE'); ?></b></div></th>
         <th><div align="center"><b><?php echo _t('YW_ACLS_READ'); ?></b></div></th>
         <th><div align="center"><b><?php echo _t('YW_ACLS_WRITE'); ?></b></div></th>
-        <!-- TODO : repair comments <th><div align="center"><b>Commentaires</b></div></th> -->
+        <th><div align="center"><b><?php echo _t('COMMENTS'); ?></b></div></th>
       </tr>
     </thead>
 <tbody>
@@ -228,7 +227,7 @@ if (!function_exists('display_droit')) {
       <td align="center">
       	<?php echo display_droit($page_et_droits[$x]['ecrire']); ?>
 	  </td>
-      <!-- TODO : repair comments <td align="center"> <?php // echo display_droit($page_et_droits[$x]['comment']);?> </td> -->
+      <td align="center"> <?php echo display_droit($page_et_droits[$x]['comment']);?> </td>
     </tr>
 
 <?php endfor; ?>
@@ -269,7 +268,11 @@ if (!function_exists('display_droit')) {
     </div>
 
     <div class="acl-container">
-      <?php $roles = ['lire' => _t('YW_ACLS_READ'), 'ecrire' => _t('YW_ACLS_WRITE')]; //TODO : repair comments , 'comment' => 'Commentaire'];
+      <?php $roles = [
+        'lire' => _t('YW_ACLS_READ'),
+        'ecrire' => _t('YW_ACLS_WRITE'),
+        'comment' => _t('YW_ACLS_COMMENT')
+      ];
       foreach ($roles as $role => $label) { ?>
         <div class="acl-single-container">
           <label for="new<?php echo $role ?>" class="control-label">
@@ -277,6 +280,7 @@ if (!function_exists('display_droit')) {
           </label>
           <select name="new<?php echo $role ?>" class="form-control acl-simple">
             <option value=""><?php echo _t('ACLS_NO_CHANGE'); ?></option>
+            <?php if ($role == 'comment') : ?><option value="comments-closed"><?php echo _t('ACLS_COMMENTS_CLOSED'); ?></option><?php endif; ?>
             <option value="*"><?php echo _t('ACLS_EVERYBODY'); ?></option>
             <option value="+"><?php echo _t('ACLS_AUTHENTIFICATED_USERS'); ?></option>
             <option value="%"><?php echo _t('ACLS_OWNER'); ?></option>

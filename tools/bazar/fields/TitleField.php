@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\Service\HtmlPurifierService;
 
 /**
  * Generate a title based on other values from the entry
@@ -34,7 +35,8 @@ class TitleField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
-        $value = $this->getValue($entry);
+        $dirtyHtml = $this->getValue($entry);
+        $value = $this->getService(HtmlPurifierService::class)->cleanHTML($dirtyHtml);
         $formManager = $this->getService(FormManager::class);
 
         // TODO improve import detection

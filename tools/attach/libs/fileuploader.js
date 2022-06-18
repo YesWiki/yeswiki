@@ -284,7 +284,7 @@ qq.FileUploaderBasic = function(o) {
       onLeave: "The files are being uploaded, if you leave now the upload will be cancelled."
     },
     showMessage: function(message) {
-      alert(message);
+      alert(message.replace("&lt;","<").replace("&gt;",">").replace("&quot;","\"").replace("&amp;","&"));
     }
   };
   qq.extend(this._options, o);
@@ -506,8 +506,8 @@ qq.FileUploader = function(o) {
       '<span class="qq-upload-file"></span>' +
       '<span class="qq-upload-spinner"></span>' +
       '<span class="qq-upload-size"></span>' +
-      '<a class="qq-upload-cancel btn btn-danger" href="#">Annuler</a>' +
-      '<span class="qq-upload-failed-text">&Eacute;chou&eacute;</span>' +
+      '<a class="qq-upload-cancel btn btn-danger" href="#">'+_t('CANCEL')+'</a>' +
+      '<span class="qq-upload-failed-text">'+_t('ATTACH_FAILED')+'</span>' +
       '</li>',
 
     classes: {
@@ -1358,7 +1358,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
       }
 
       var imagealign = getParameterByName(formvals, 'attach_align');
-      if (typeof imagealign != 'undefined' && imagealign != '') {
+      if (typeof imagealign != 'undefined') {
         actionattach += ' class="' + imagealign;
         UploadModalForm.find('input[name="attach_css_class"]:checked').each(function() {
           actionattach += ' ' + $(this).val();
@@ -1416,7 +1416,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
         UploadModal.find('.modal-title').append(fileuploaded).append(filesize);
 
         // If it's an image
-        if ((responseJSON.extension === 'jpg') || (responseJSON.extension === 'jpeg') || (responseJSON.extension === 'gif') || (responseJSON.extension === 'png')) {
+        if (typeof fileUploaderConfig !== "undefined" && fileUploaderConfig.attach_config.ext_images.indexOf(responseJSON.extension) > -1) {
           imageinput.show();
           hiddenfilenameinput.val(responseJSON.simplefilename);
           UploadModal.find('.attach_alt').val('image ' + responseJSON.simplefilename + ' (' + filesize.text() + ')');
@@ -1459,7 +1459,13 @@ $(document).ready(function () {
     let anchorId = $(this).data('anchor');
     let disabledUploadButton = $(this).data('disabledUploadButton') === true;
     anchorId = (anchorId && $(anchorId).length > 0) ? anchorId : '#ACEditor .aceditor-toolbar' ;
-    $(this).appendTo($(anchorId));
+    let anchor = $(anchorId);
+    let actionsBuilderButton = $(anchor).find('.btn-group.actions-builder-button').last();
+    if (actionsBuilderButton == undefined || actionsBuilderButton.length == 0){
+      $(this).appendTo($(anchor));
+    } else {
+      $(actionsBuilderButton).before($(this));
+    }
     if (!disabledUploadButton) {
       $(this).uploadbutton();
     }

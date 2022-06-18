@@ -51,7 +51,7 @@ class IcalFormatter extends YesWikiController
         if (!empty($formId) && is_array($formId)) {
             $formId = $formId[array_key_first($formId)];
         }
-        if (strval(intval($formId)) !== strval($formId)) {
+        if (is_array($formId) || strval(intval($formId)) !== strval($formId)) {
             $formId = null;
         }
         if (empty($filename)) {
@@ -191,8 +191,8 @@ class IcalFormatter extends YesWikiController
     {
         $output = "BEGIN:VEVENT\r\n";
         // TODO use real UID with random hex followed by @base URL
-        $output .="UID:".$entry['url']."\r\n";
-        $output .="URL:".$entry['url']."\r\n";
+        $output .=$this->chunck_split_except_last("UID:".$entry['url'], 75, "\r\n", " ");
+        $output .=$this->chunck_split_except_last("URL:".$entry['url'], 75, "\r\n", " ");
         $output .="DTSTAMP".$this->formatDate('')."\r\n";
         $output .="DTSTART".$this->formatDate($icalData['startDate'])."\r\n";
         $output .="DTEND".$this->formatDate($icalData['endDate'])."\r\n";
@@ -219,8 +219,8 @@ class IcalFormatter extends YesWikiController
         if (!empty($entry['imagebf_image'])) {
             $baseUrl = $this->getBaseURL();
             $url = $baseUrl . 'files/' . $entry['imagebf_image'];
-            $output .=$this->splitAt75thChar("IMAGE;VALUE=URI;DISPLAY=BADGE:".$url."\r\n");
-            $output .=$this->splitAt75thChar("ATTACH:".$url."\r\n"); // duplicate on attach to be compatible with more calendar client
+            $output .=$this->chunck_split_except_last("IMAGE;VALUE=URI;DISPLAY=BADGE:".$url, 75, "\r\n", " ");
+            $output .=$this->chunck_split_except_last("ATTACH:".$url, 75, "\r\n", " "); // duplicate on attach to be compatible with more calendar client
         }
         // image https://icalendar.org/New-Properties-for-iCalendar-RFC-7986/5-10-image-property.html
         $output .="END:VEVENT\r\n";
@@ -262,6 +262,25 @@ class IcalFormatter extends YesWikiController
             $output = substr($output, 0, -strlen(" \r\n"));
         }
         return $output;
+    }
+
+    private function chunck_split_except_last(string $input, int $length = 76, string $escape = "\r\n", string $additionnalSeparator = " ")
+    {
+        $output = $this->chunk_split_unicode($input, $length, $escape.$additionnalSeparator);
+        return substr($output, 0, -strlen($additionnalSeparator));
+    }
+
+    private function chunk_split_unicode(string $input, int $length = 76, string $escape = "\r\n")
+    {
+        $tmp = array_chunk(
+            preg_split("//u", $input, -1, PREG_SPLIT_NO_EMPTY),
+            $length
+        );
+        $str = "";
+        foreach ($tmp as $t) {
+            $str .= join("", $t) . $escape;
+        }
+        return $str;
     }
 
     /**

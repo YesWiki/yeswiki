@@ -72,7 +72,7 @@ class PackageCollection extends Collection
                 break;
 
             default:
-                throw new \Exception("Type de paquet inconnu", 1);
+                throw new \Exception(_t('AU_UNKWON_PACKAGE_TYPE'), 1);
                 break;
         }
     }

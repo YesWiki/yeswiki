@@ -17,11 +17,11 @@ class __WidgetHandler extends YesWikiHandler
 
         $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
-        echo $this->wiki->Header();
+        ob_start();
         echo '<div class="page">';
-        echo '<h1>Partager les résultats par widget HTML (code embed)</h1>' . "\n";
+        echo '<h1>' . _t('BAZ_WIDGET_HANDLER_TITLE') . '</h1>' . "\n";
 
-        $entries = $entryManager->search(['formsIds' => [$_GET['id'] ?? null], 'keywords' => $_GET['q'] ?? null], true, true);
+        $entries = $entryManager->search(['formsIds' => [!empty($_GET['id']) ? strip_tags($_GET['id']) : null], 'keywords' =>(!empty($_GET['q']) ? strip_tags($_GET['q']) : null)], true, true);
         $facettables = $formManager->scanAllFacettable($entries);
    
         $labels = array();
@@ -52,7 +52,7 @@ class __WidgetHandler extends YesWikiHandler
             'height' => $this->params->get('baz_map_height')
         ];
 
-        $urlParams = 'id=' . $_GET['id'] . (isset($_GET['query']) ? '&query=' . $_GET['query'] : '') . (!empty($q) ? '&q=' . $q : '');
+        $urlParams = 'id=' . strip_tags($_GET['id']) . (isset($_GET['query']) ? '&query=' . strip_tags($_GET['query']) : '') . (!empty($q) ? '&q=' . $q : '');
 
         echo $this->render("@bazar/widget.tpl.html", [
             'facettes' => $facettables,
@@ -63,7 +63,9 @@ class __WidgetHandler extends YesWikiHandler
         ]);
 
         echo '</div>';
-        echo $this->wiki->Footer();
-        exit();
+        $output = ob_get_contents();
+        ob_end_clean();
+        echo $this->wiki->Header().$output.$this->wiki->Footer();
+        $this->wiki->exit();
     }
 };

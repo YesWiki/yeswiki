@@ -160,7 +160,6 @@ if (groupsList && groupsList.length > 0){
   for(i=0;i<groupsListLen;++i){
     if (groupsList[i] !== "admins"){
       formattedGroupList["@"+groupsList[i]] = _t('MEMBER_OF_GROUP',{groupName:groupsList[i]});
-      formattedGroupList["%,@"+groupsList[i]] = _t('BAZ_FORM_EDIT_OWNER_AND_MEMBER_OF_GROUP',{groupName:groupsList[i]});
     }
   }
 }
@@ -173,10 +172,20 @@ var aclsOptions = {
   },
   ...formattedGroupList,
 };
-var readConf = { label: _t('BAZ_FORM_EDIT_CAN_BE_READ_BY'), options: {...visibilityOptions,...formattedGroupList} };
-var writeconf = { label: _t('BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY'), options: {...visibilityOptions,...formattedGroupList} };
+var aclsCommentOptions = {
+  ...{
+    "comments-closed": _t('BAZ_FORM_EDIT_COMMENTS_CLOSED')
+  },
+  ...visibilityOptions,
+  ...{
+    user: _t('BAZ_FORM_EDIT_USER')
+  },
+  ...formattedGroupList,
+};
+var readConf = { label: _t('BAZ_FORM_EDIT_CAN_BE_READ_BY'), options: {...visibilityOptions,...formattedGroupList}, multiple: true };
+var writeconf = { label: _t('BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY'), options: {...visibilityOptions,...formattedGroupList}, multiple: true };
 var searchableConf = {
-  label: "Présence dans le moteur de recherche",
+  label: _t('BAZ_FORM_EDIT_SEARCH_LABEL'),
   options: { "": _t('NO'), 1: _t('YES') },
 };
 var semanticConf = {
@@ -237,10 +246,6 @@ var TabsConf = {
       options: { "": _t('NO'),"moveSubmit": _t('YES') },
       description: _t('BAZ_FORM_EDIT_TABS_MOVESUBMITBUTTONTOLASTTAB_DESCRIPTION')
     },
-  navClass: {
-      label: _t('BAZ_FORM_EDIT_TABS_NAVCLASS_LABEL'),
-      options: { "nav-tabs": _t('BAZ_FORM_EDIT_TABS_NAVCLASS_OPTION_NAVTABS'),"nav-pills": _t('BAZ_FORM_EDIT_TABS_NAVCLASS_OPTION_NAVPILLS') },
-    },
   btnColor: {
         label: _t('BAZ_FORM_EDIT_TABS_BTNCOLOR_LABEL'),
         options: { "btn-primary": _t('PRIMARY'),"btn-secondary-1": _t('SECONDARY') + " 1","btn-secondary-2": _t('SECONDARY') + " 2" },
@@ -287,7 +292,7 @@ var typeUserAttrs = {
     pattern: {
       label: _t('BAZ_FORM_EDIT_TEXT_PATTERN'),
       value: "",
-      placeholder: "Mode avancé. Ex: [0-9]+ ou [A-Za-z]{3}, ...",
+      placeholder: _t('BAZ_FORM_EDIT_ADVANCED_MODE')+" Ex: [0-9]+ ou [A-Za-z]{3}, ...",
     }
   },
   url: {
@@ -299,11 +304,11 @@ var typeUserAttrs = {
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: "" },
     separator: { label: "" }, // separate important attrs from others
     replace_email_by_button: {
-      label: "Remplacer l'email par un bouton contact",
+      label: _t('BAZ_FORM_EDIT_EMAIL_REPLACE_BY_BUTTON_LABEL'),
       options: { "": _t('NO'), form: _t('YES') },
     },
     send_form_content_to_this_email: {
-      label: "Envoyer le contenu de la fiche à cet email",
+      label: _t('BAZ_FORM_EDIT_EMAIL_SEND_FORM_CONTENT_LABEL'),
       options: { 0: _t('NO'), 1: _t('YES') },
     },
     // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
@@ -314,9 +319,12 @@ var typeUserAttrs = {
   map: {
     name_latitude: { label: _t('BAZ_FORM_EDIT_MAP_LATITUDE'), value: "bf_latitude" },
     name_longitude: { label: _t('BAZ_FORM_EDIT_MAP_LONGITUDE'), value: "bf_longitude" },
+    autocomplete_postalcode: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_POSTALCODE'), value: "" , placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_POSTALCODE_PLACEHOLDER') },
+    autocomplete_town: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWN'), value: "" , placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWNE_PLACEHOLDER') },
   },
   date: {
     today_button: {
+      label: _t('BAZ_FORM_EDIT_DATE_TODAY_BUTTON'),
       options: { " ": _t('NO'), today: _t('YES') },
     },
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: "" },
@@ -328,8 +336,8 @@ var typeUserAttrs = {
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: "" },
     thumb_height: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH'), value: "140" },
     thumb_width: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH'), value: "140" },
-    resize_height: { label: _t('BAZ_FORM_EDIT_IMAGE_HEIGHT_RESIZE'), value: "600" },
-    resize_width: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH_RESIZE'), value: "600" },
+    resize_height: { label: _t('BAZ_FORM_EDIT_IMAGE_HEIGHT_RESIZE'), value: "400" },
+    resize_width: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH_RESIZE'), value: "400" },
     align: {
       label: _t('BAZ_FORM_EDIT_IMAGE_ALIGN_LABEL'),
       value: "right",
@@ -353,11 +361,11 @@ var typeUserAttrs = {
     ...selectConf,
     ...{
       fillingMode: {
-        label: "Mode de saisie",
+        label: _t('BAZ_FORM_EDIT_FILLING_MODE_LABEL'),
         options: {
-          " ": "Normal",
-          tags: "En Tags",
-          dragndrop: "Drag & drop",
+          " ": _t('BAZ_FORM_EDIT_FILLING_MODE_NORMAL'),
+          tags: _t('BAZ_FORM_EDIT_FILLING_MODE_TAGS'),
+          dragndrop: _t('BAZ_FORM_EDIT_FILLING_MODE_DRAG_AND_DROP'),
         },
       },
       queries: {
@@ -371,10 +379,10 @@ var typeUserAttrs = {
     ...selectConf,
     ...{
       fillingMode: {
-        label: "Mode de saisie",
+        label: _t('BAZ_FORM_EDIT_FILLING_MODE_LABEL'),
         options: {
-          " ": "Normal",
-          tags: "En Tags",
+          " ": _t('BAZ_FORM_EDIT_FILLING_MODE_NORMAL'),
+          tags: _t('BAZ_FORM_EDIT_FILLING_MODE_TAGS'),
         },
       },
       queries: {
@@ -386,26 +394,31 @@ var typeUserAttrs = {
   },
   textarea: {
     syntax: {
-      label: "Format d'écriture",
+      label: _t('BAZ_FORM_EDIT_TEXTAREA_SYNTAX_LABEL'),
       options: {
         wiki: "Wiki",
-        html: "Editeur Wysiwyg",
-        nohtml: "Texte non interprété",
+        html: _t('BAZ_FORM_EDIT_TEXTAREA_SYNTAX_HTML'),
+        nohtml: _t('BAZ_FORM_EDIT_TEXTAREA_SYNTAX_NOHTML'),
       },
     },
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: "" },
-    size: { label: "Largeur champ de saisie", value: "" },
+    size: { label: _t('BAZ_FORM_EDIT_TEXTAREA_SIZE_LABEL'), value: "" },
     rows: {
-      label: "Nombre de lignes",
+      label: _t('BAZ_FORM_EDIT_TEXTAREA_ROWS_LABEL'),
       type: 'number',
-      placeholder: 'Défaut vide = 3 lignes'
+      placeholder: _t('BAZ_FORM_EDIT_TEXTAREA_ROWS_PLACEHOLDER')
     },
     read: readConf,
     write: writeconf,
     semantic: semanticConf,
   },
   file: {
-    maxsize: { label: "Taille max", value: "" },
+    readlabel: {
+      label: _t('BAZ_FORM_EDIT_FILE_READLABEL_LABEL'), 
+      value: "",
+      placeholder: _t('BAZ_FILEFIELD_FILE')
+    },
+    maxsize: { label: _t('BAZ_FORM_EDIT_FILE_MAXSIZE_LABEL'), value: "" },
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: "" },
     read: readConf,
     write: writeconf,
@@ -418,20 +431,20 @@ var typeUserAttrs = {
     semantic: semanticConf,
   },
   inscriptionliste: {
-    subscription_email: { label: "Email pour s'inscrire", value: "" },
+    subscription_email: { label: _t('BAZ_FORM_EDIT_INSCRIPTIONLISTE_EMAIL_LABEL'), value: "" },
     email_field_id: {
-      label: "Champ du formulaire fournissant l'email à inscire",
+      label: _t('BAZ_FORM_EDIT_INSCRIPTIONLISTE_EMAIL_FIELDID'),
       value: "bf_mail",
     },
     mailing_list_tool: {
-      label: "Type de service de diffusion",
+      label: _t('BAZ_FORM_EDIT_INSCRIPTIONLISTE_MAILINGLIST'),
       value: ""
     },
   },
   labelhtml: {
-    label: { value: "Custom HTML", value: "" },
-    content_saisie: { label: "Contenu lors de la saisie", type: "textarea", rows: "4", value: "" },
-    content_display: { label: "Contenu lors de l'affichage d'une fiche", type: "textarea", rows: "4", value: ""  },
+    label: { value: _t('BAZ_FORM_EDIT_CUSTOM_HTML_LABEL'), value: "" },
+    content_saisie: { label: _t('BAZ_FORM_EDIT_EDIT_CONTENT_LABEL'), type: "textarea", rows: "4", value: "" },
+    content_display: { label: _t('BAZ_FORM_EDIT_VIEW_CONTENT_LABEL'), type: "textarea", rows: "4", value: ""  },
   },
   utilisateur_wikini: {
     name_field: { label: _t('BAZ_FORM_EDIT_USERS_WIKINI_NAME_FIELD_LABEL'), value: "bf_titre" },
@@ -443,8 +456,8 @@ var typeUserAttrs = {
     //   label: "Inscrite à une liste de diffusion"
     // },
     autoupdate_email: {
-      label: "Auto. Sychro. e-mail",
-      options: { 0: "Non", 1: "Oui" },
+      label: _t('BAZ_FORM_EDIT_USERS_WIKINI_AUTOUPDATE_MAIL'),
+      options: { 0: _t('NO'), 1: _t('YES') },
     },
     auto_add_to_group: {
       label: _t('BAZ_FORM_EDIT_ADD_TO_GROUP_LABEL'),
@@ -454,9 +467,9 @@ var typeUserAttrs = {
     },
   },
   acls: {
-    read: { label: _t('BAZ_FORM_EDIT_ACL_READ_LABEL'), options: aclsOptions },
-    write: { label: _t('BAZ_FORM_EDIT_ACL_WRITE_LABEL'), options: aclsOptions },
-    comment: { label: _t('BAZ_FORM_EDIT_ACL_COMMENT_LABEL'), options: aclsOptions },
+    read: { label: _t('BAZ_FORM_EDIT_ACL_READ_LABEL'), options: aclsOptions, multiple: true },
+    write: { label: _t('BAZ_FORM_EDIT_ACL_WRITE_LABEL'), options: aclsOptions, multiple: true },
+    comment: { label: _t('BAZ_FORM_EDIT_ACL_COMMENT_LABEL'), options: aclsCommentOptions, multiple: true },
   },
   metadatas: {
     theme: {
@@ -469,33 +482,36 @@ var typeUserAttrs = {
     preset: { label: _t("BAZ_FORM_EDIT_METADATA_PRESET_LABEL"), value: "", placeholder: "blue.css (" + _t("BAZ_FORM_EDIT_METADATA_PRESET_PLACEHOLDER") + ")" },
     image: { label: _t('BAZ_FORM_EDIT_METADATA_BACKGROUND_IMAGE_LABEL'), value: "", placeholder: "foret.jpg..." },
   },
-  bookmarklet: {},
+  bookmarklet: {
+    urlField: {label: _t('BAZ_FORM_EDIT_BOOKMARKLET_URLFIELD_LABEL'), value: "bf_url" },
+    descriptionField: {label: _t('BAZ_FORM_EDIT_BOOKMARKLET_DESCRIPTIONFIELD_LABEL'), value: "bf_description" },
+  },
   collaborative_doc: {},
   titre: {},
   listefichesliees: {
-    id: { label: "id du formulaire lié", value: "" },
+    id: { label: _t('BAZ_FORM_EDIT_LISTEFICHES_FORMID_LABEL'), value: "" },
     query: {
-      label: "Query", 
+      label: _t('BAZ_FORM_EDIT_LISTEFICHES_QUERY_LABEL'), 
       value: "",
-      placeholder: "Voir doc sur https://yeswiki.net/?DocQuery/iframe",
+      placeholder: _t('BAZ_FORM_EDIT_LISTEFICHES_QUERY_PLACEHOLDER',{url:'https://yeswiki.net/?DocQuery/iframe'}),
     },
     param: {
-      label: "Params de l'action",
+      label: _t('BAZ_FORM_EDIT_LISTEFICHES_PARAMS_LABEL'),
       value: "",
       placeholder: 'Ex: champs="bf_nom" ordre="desc"',
     },
-    number: { label: "Nombre de fiches à ficher", value: "", placeholder: "" },
+    number: { label: _t('BAZ_FORM_EDIT_LISTEFICHES_NUMBER_LABEL'), value: "", placeholder: "" },
     template: {
-      label: "Template de restitution",
+      label: _t('BAZ_FORM_EDIT_LISTEFICHES_TEMPLATE_LABEL'),
       value: "",
       placeholder:
-        'Exple: template="liste_liens.tpl.html (par défault = accordéon)"',
+        _t('BAZ_FORM_EDIT_LISTEFICHES_TEMPLATE_PLACEHOLDER'),
     },
     type_link: {
-      label: "Type de fiche liée (ou label du champ)",
+      label: _t('BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_LABEL'),
       value: "",
       placeholder:
-        "mettre 'checkbox' ici si vos fiches liées le sont via un checkbox",
+        _t('BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_PLACEHOLDER'),
     },
     read: readConf,
     write: writeconf,
@@ -521,100 +537,6 @@ var typeUserAttrs = {
   },
   tabs: TabsConf,
   tabchange: TabChangeConf,
-};
-
-// function to render help for tabs and tabchange
-const templateHelper = {
-  cache: {},
-  holders:{},
-  ids:{},
-  formFields:{},
-  getFormField: function (fieldId) {
-    if (!this.formFields.hasOwnProperty(fieldId)){
-      let formField = $(`.field-${fieldId}`).closest("li.form-field")
-      var newFormField = {};
-      newFormField[fieldId] = (formField.length == 0) ? false : formField;
-      this.formFields = {...this.formFields,...newFormField};
-    }
-    return this.formFields[fieldId];
-  },
-  getHolder: function (field) {
-    let fieldId = field.id;
-    if (!this.holders.hasOwnProperty(fieldId)){
-      let formField = this.getFormField(fieldId);
-      var newHolder = {};
-      var newId = {};
-      let id = false;
-      if (formField){
-        id = $(formField).attr('id');
-        let anchor = $(`#${id}-holder`);
-        if (typeof anchor === "undefined" 
-            || anchor.length == 0) {
-              newHolder[fieldId] = false;
-              newId[fieldId] = false;
-        } else {
-          newHolder[fieldId] = anchor.first();
-          newId[fieldId] = id;
-        }
-      } else {
-        newHolder[fieldId] = false;
-        newId[fieldId] = false;
-      }
-      this.holders = {...this.holders,...newHolder};
-      this.ids = {...this.ids,...newId};
-    }
-    return this.holders[fieldId];
-  },
-  getId: function (field) {
-    let fieldId = field.id;
-    if (!this.ids.hasOwnProperty(fieldId)){
-      this.getHolder(field);
-    }
-    return this.ids[fieldId];
-  },
-  prependHint: function (field,message){
-    let holder = this.getHolder(field);
-    if (holder){
-      if (holder.data('hint-already-defined') !== "1"){
-        let formElements = holder.find('.form-elements').first();
-        let helpMsg = $('<div/>')
-          .addClass('custom-hint')
-          .append(message);
-          formElements.prepend(helpMsg);
-        holder.data('hint-already-defined',"1");
-      }
-    }
-  },
-  prependHTMLBeforeGroup: function (field,formGroupName,html){
-    let holder = this.getHolder(field);
-    if (holder){
-      let formGroup = holder.find('.'+formGroupName+'-wrap');
-      if (typeof formGroup !== undefined && formGroup.length > 0){
-        if (formGroup.data('prepended-html-already-defined') !== "1") {
-          formGroup.before(html);
-          formGroup.data('prepended-html-already-defined',"1");
-        }
-      }
-    }
-  },
-  defineLabelHintForGroup: function (field,formGroupName,message){
-    let holder = this.getHolder(field);
-    if (holder){
-      let formGroup = holder.find('.'+formGroupName+'-wrap');
-      if (typeof formGroup !== undefined && formGroup.length > 0){
-        let label = formGroup.find('label').first();
-          if (label.data('label-hint-already-defined') !== "1") {
-          label.append(' ');
-          label.append($('<i/>')
-            .addClass('fa fa-question-circle')
-            .attr("title",message)
-            .tooltip()
-          );
-          label.data('label-hint-already-defined',"1");
-        }
-      }
-    }
-  },
 };
 
 // How a field is represented in the formBuilder view
@@ -673,7 +595,12 @@ var templates = {
     return { field: "" };
   },
   bookmarklet: function (field) {
-    return { field: "" };
+    return { 
+      field: "",
+      onRender: function(){
+        templateHelper.prependHint(field,_t('BAZ_BOOKMARKLET_HINT',{'\\n':"<br>"}));
+      },
+    };
   },
   listefichesliees: function (field) {
     return { field: "" };
@@ -732,6 +659,7 @@ var templates = {
 var typeUserDisabledAttrs = {
   tabs:['required','value','name','label'],
   tabchange:['required','value','name','label'],
+  bookmarklet:['required','value'],
 };
 
 var inputSets = [
@@ -794,8 +722,9 @@ var yesWikiMapping = {
     0: "type",
     1: "name_latitude",
     2: "name_longitude",
-    3: "?",
-    4: "?",
+    3: "",
+    4: "autocomplete_postalcode",
+    5: "autocomplete_town",
     8: "required"
   },
   date: { ...defaultMapping, ...{ 5: "today_button" } },
@@ -814,7 +743,7 @@ var yesWikiMapping = {
   "checkbox-group": { ...lists, ...{ 7: "fillingMode" } },
   "radio-group": { ...lists, ...{ 7: "fillingMode" } },
   textarea: { ...defaultMapping, ...{ 4: "rows", 7: "syntax" } },
-  file: { ...defaultMapping, ...{ 3: "maxsize" } },
+  file: { ...defaultMapping, ...{ 3: "maxsize", 6: "readlabel" } },
   tags: defaultMapping,
   inscriptionliste: {
     0: "type",
@@ -832,7 +761,13 @@ var yesWikiMapping = {
   acls: { 0: "type", 1: "read", 2: "write", 3: "comment" },
   metadatas: { 0: "type", 1: "theme", 2: "squelette", 3: "style", 4: "image", 5:"preset" },
   hidden: { 0: "type", 1: "name", 5: "value" },
-  bookmarklet: { 0: "type", 1: "name", 2: "label", 3: "value" },
+  bookmarklet: { 
+    0: "type", 
+    1: "name", 
+    2: "label", 
+    3: "urlField",
+    4: "descriptionField" 
+  },
   listefichesliees: {
     0: "type",
     1: "id",
@@ -868,7 +803,7 @@ var yesWikiMapping = {
           2: "",
           3: 'viewTitles',
           5: 'moveSubmitButtonToLastTab',
-          6: 'navClass',
+          6: '',
           7: 'btnColor',
           9: 'btnSize'
       }
@@ -942,6 +877,33 @@ var I18nOption = {
   zh: 'zh-CN',
 };
 
+function copyMultipleSelectValues(currentField){
+  let currentId = $(currentField).prop('id');
+  // based on formBuilder/Helpers.js 'incrementId' function
+  let split = currentId.lastIndexOf('-');
+  let clonedFieldNumber = parseInt(currentId.substring(split + 1)) - 1;
+  let baseString = currentId.substring(0, split);
+  let clonedId = `${baseString}-${clonedFieldNumber}`;
+
+  // find cloned field 
+  let clonedField = $(`#${clonedId}`);
+  if (clonedField.length > 0){
+    // copy multiple select
+    let clonedFieldSelects = $(clonedField).find('select[multiple=true]');
+    clonedFieldSelects.each(function(){
+      let currentSelect = $(currentField).find(`select[multiple=true][name=${$(this).prop('name')}]`);
+      currentSelect.val($(this).val());
+    });
+  }
+}
+
+var typeUserEvents = {};
+for (const key in typeUserAttrs) {
+  typeUserEvents[key] = {
+    onclone: copyMultipleSelectValues
+  };
+}
+
 function initializeFormbuilder(formAndListIds) {
   // FormBuilder conf
   formBuilder = $formBuilderContainer.formBuilder({
@@ -974,7 +936,19 @@ function initializeFormbuilder(formAndListIds) {
     ],
     typeUserAttrs: typeUserAttrs,
     typeUserDisabledAttrs: typeUserDisabledAttrs,
+    typeUserEvents: typeUserEvents,
     inputSets:inputSets,
+    onAddField: function(fieldId, field) {
+      if (!field.hasOwnProperty("read")){
+        field.read = [" * "];// everyone by default
+      };
+      if (!field.hasOwnProperty("write")){
+        field.write = [" * "];// everyone by default
+      };
+      if (field.type === "acls" && !field.hasOwnProperty("comment")){
+        field.comment = ["comments-closed"];// comments-closed by default
+      }
+    },
   });
 
   // Each 300ms update the text field converting form bulder content into wiki syntax
@@ -991,8 +965,8 @@ function initializeFormbuilder(formAndListIds) {
     }
     if ($formBuilderTextInput.is(":focus")) return;
     // Change names
-    $(".form-group.name-wrap label").text("Identifiant unique");
-    $(".form-group.label-wrap label").text("Intitulé");
+    $(".form-group.name-wrap label").text(_t('BAZ_FORM_EDIT_UNIQUE_ID'));
+    $(".form-group.label-wrap label").text(_t('BAZ_FORM_EDIT_NAME'));
     existingFieldsNames = []
     $(".fld-name").each(function() { existingFieldsNames.push($(this).val()) })
     
@@ -1076,7 +1050,7 @@ function initializeFormbuilder(formAndListIds) {
             type: 'text',
             subtype: 'text',
             name: 'bf_adresse',
-            label: 'Adresse'
+            label: _t('BAZ_FORM_EDIT_ADDRESS')
           };
           var index = $(this).closest('.form-field').index()
           formBuilder.actions.addField(field, index);
@@ -1182,9 +1156,9 @@ function formatJsonDataIntoWikiText(formData) {
         if (["required", "access"].indexOf(property) > -1)
           value = value ? "1" : "0";
         if (property == "label"){
-          wikiProps[key] = removeBR(value);
+          wikiProps[key] = removeBR(value).replace(/\n$/gm,"");
         } else {
-          wikiProps[key] = value;
+          wikiProps[key] = value ;
         }
       }
     }
@@ -1228,7 +1202,13 @@ function parseWikiTextIntoJsonData(text) {
         var value = fieldValues[j];
         var field = mapping && j in mapping ? mapping[j] : j;
         if (field == "required") value = value == "1" ? true : false;
-        if (field) fieldObject[field] = value;
+        if (field){
+          if (field == "read" || field == "write" || field == "comment"){
+            fieldObject[field] = (value.trim() === "") ? [" * "] : value.split(',');
+          } else {
+            fieldObject[field] = value;
+          }
+        }
       }
       if (!fieldObject.label) {
         fieldObject.label = wikiType;
@@ -1238,6 +1218,15 @@ function parseWikiTextIntoJsonData(text) {
       result.push(fieldObject);
     }
   }
-  console.log("parse result", result);
+  if (wiki.isDebugEnabled){
+    console.log("parse result", result);
+  }
   return result;
 }
+
+$('a[href="#formbuilder"]').on('click',function (event){
+  if(!confirm(_t('BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER'))){
+    event.preventDefault();
+    return false;
+  };
+});

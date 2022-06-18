@@ -27,6 +27,8 @@ if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
+use YesWiki\Core\Service\TemplateEngine;
+
 // Lecture des parametres de l'action
 
 // NOTE: à mettre dans la classe ?
@@ -94,8 +96,9 @@ $nobtn = $this->GetParameter("nobtn");
 
 // template par défaut
 $template = $this->GetParameter("template");
-if (empty($template) || !file_exists('tools/login/presentation/templates/' . $template)) {
-    $template = "default.tpl.html";
+$template = $this->services->get(TemplateEngine::class)->hasTemplate("@login/$template") ? $template : '';
+if (empty($template)) {
+    $template = 'default.tpl.html';
 }
 
 $error = '';
@@ -111,7 +114,7 @@ if ($_REQUEST["action"] == "logout") {
     $this->LogoutUser();
     $this->SetMessage(_t('LOGIN_YOU_ARE_NOW_DISCONNECTED'));
     $this->Redirect(preg_replace('/(&|\\\?)$/m', '', preg_replace('/(&|\\\?)action=logout(&)?/', '$1', $incomingurl)));
-    exit;
+    $this->exit();
 }
 
 // cas de l'identification
@@ -188,7 +191,7 @@ if ($user = $this->GetUser()) {
 
     // si l'authentification passe mais la session n'est pas créée, on a un problème de cookie
     if ($_REQUEST['action'] == 'checklogged') {
-        $error = 'Vous devez accepter les cookies pour pouvoir vous connecter.';
+        $error = _t('LOGIN_COOKIES_ERROR');
     }
 }
 

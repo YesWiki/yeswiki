@@ -1,0 +1,21 @@
+<rss version="2.0"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <atom:link href="{{ xmlUrl|raw }}" rel="self" type="application/rss+xml" />
+        <title>{{ wakkaName }}</title>
+        <link>{{ link|raw }}</link>
+        <description>{{ description }}</description>
+        <generator>YesWiki {{ yesWikiRevision }}</generator>
+        {% for item in items %}
+            <item>
+                <title>{{ item.tag }}</title>
+                <dc:creator>{{ item.user|raw }}</dc:creator>
+                <pubDate>{{ item.formatedDate|raw }}</pubDate>
+                <description>{{ item.description|raw }}</description>
+                <dc:format>text/html</dc:format>
+                <guid>{{ item.itemurl }}</guid>
+            </item>
+        {% endfor %}
+    </channel>
+</rss>

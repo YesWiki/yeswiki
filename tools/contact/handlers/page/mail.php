@@ -96,9 +96,9 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             $type,
             $mail_sender,
             $name_sender,
-            $mail_receiver,
-            $subject,
-            $message_txt
+            $mail_receiver ?? "",
+            $subject ?? "",
+            $message_txt ?? ""
         );
     
         // adding the infomsg after checking the size of the message
@@ -196,7 +196,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             <div class="input-group">
               <div class="input-group-addon"><i class="fa fa-envelope"></i></div>
               <input required class="form-control" type="email" name="mail"
-                        value="" placeholder="Adresse mail du destinataire" />
+                        value="" placeholder="' . _t('CONTACT_TO_PLACEHOLDER') . '" />
             </div>
           </div>
           <div class="form-group">

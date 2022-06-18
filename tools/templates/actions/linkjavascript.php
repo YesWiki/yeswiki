@@ -81,29 +81,28 @@ $yeswiki_javascripts .= isset($GLOBALS['js']) ? $GLOBALS['js'] : '';
 // on vide la variable globale pour le javascript
 $GLOBALS['js'] = '';
 
-// do not use $GLOBALS['prefered_language'] because can be update for current page language
-
 // Globale wiki variable
 echo "<script>
     var wiki = {
         ...((typeof wiki !== 'undefined') ? wiki : null),
         ...{
-    locale: '{$GLOBALS['prefered_language']}',
-    baseUrl: '{$this->config['base_url']}',
-    lang: {
-        ...((typeof wiki !== 'undefined') ? (wiki.lang ?? null) : null),
-        ...".json_encode($GLOBALS['translations_js'] ?? null)."
-    },
-    pageTag: '{$this->getPageTag()}',
-    isDebugEnabled: ".($this->GetConfigValue('debug') =='yes' ? 'true' : 'false')."
-}};
+            locale: '{$GLOBALS['prefered_language']}',
+            baseUrl: '{$this->config['base_url']}',
+            lang: {
+                ...((typeof wiki !== 'undefined') ? (wiki.lang ?? null) : null),
+                ...".json_encode($GLOBALS['translations_js'] ?? null)."
+            },
+            pageTag: '{$this->getPageTag()}',
+            isDebugEnabled: ".($this->GetConfigValue('debug') =='yes' ? 'true' : 'false')."
+        }
+    };
 </script>";
-
-// TODO: CSS a ajouter ailleurs?
-if (isset($GLOBALS['css']) && !empty($GLOBALS['css'])) {
-    $yeswiki_javascripts .=  $GLOBALS['css'];
-    $GLOBALS['css'] = '';
-}
 
 // on affiche
 echo $yeswiki_javascripts;
+
+// This GLOBALS is populated from AddCSS and AddCSSFile, but already flush in <HEAD> by actions/linkstyle__.php
+// we add it at the end to catch other calls to ADDCSSFile ou AddCSS
+if (isset($GLOBALS['css']) && !empty($GLOBALS['css'])) {
+    echo $GLOBALS['css'];
+}

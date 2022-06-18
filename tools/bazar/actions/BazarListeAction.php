@@ -4,7 +4,7 @@ use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Core\Service\UserManager;
-use YesWiki\Core\Service\TemplateNotFound;
+use YesWiki\Core\Exception\TemplateNotFound;
 
 class BazarListeAction extends YesWikiAction
 {
@@ -35,7 +35,7 @@ class BazarListeAction extends YesWikiAction
                         $icon = trim(array_values($tabparam)[0]);
                     }
                 } else {
-                    exit('<div class="alert alert-danger">action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"</div>');
+                    throw new Exception('action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"');
                 }
             } else {
                 $icon = $this->params->get('baz_marker_icon');
@@ -62,7 +62,7 @@ class BazarListeAction extends YesWikiAction
                         $color = trim(array_values($tabparam)[0]);
                     }
                 } else {
-                    exit('<div class="alert alert-danger">action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"</div>');
+                    throw new Exception('action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"');
                 }
             } else {
                 $color = $this->params->get('baz_marker_color');
@@ -70,9 +70,10 @@ class BazarListeAction extends YesWikiAction
         }
 
         $template = $_GET['template'] ?? $arg['template'] ?? null ;
-        
+
         // Dynamic templates
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
+
         if (isset($arg['displayfields']) && is_array($arg['displayfields'])) { // with bazarcarto this method is run twice
             $displayFields = $arg['displayfields'];
         } else {
@@ -84,6 +85,10 @@ class BazarListeAction extends YesWikiAction
                 }
             }
         }
+
+        if (in_array($template, ['list', 'card'])) {
+            $dynamic = true;
+        }
         if ($dynamic && $template == 'liste_accordeon') {
             $template = 'list';
         }
@@ -91,7 +96,7 @@ class BazarListeAction extends YesWikiAction
         $searchfields = empty($searchfields) ? ['bf_titre'] : $searchfields;
         // End dynamic
 
-        $agendaMode = (!empty($arg['agenda']) || !empty($arg['datefilter']) || substr($template, 0, strlen('agenda')) == 'agenda') ;
+        $agendaMode = (!empty($arg['agenda']) || !empty($arg['datefilter']) || (is_string($template) && substr($template, 0, strlen('agenda')) == 'agenda')) ;
 
         // get form ids for ExternalBazarService
         // format id="4,https://example.com|6,7,https://example.com|6->8"
@@ -104,6 +109,7 @@ class BazarListeAction extends YesWikiAction
         $ids = array_values(array_map(function ($externalId) {
             return $externalId['id'];
         }, $externalIds));
+        $ids = array_map('strip_tags', $ids); // filter xss
 
         // Only keep "true" and "dynamic" value, so we can still do if params.search in twig
         $search = !isset($arg['search'])
@@ -149,10 +155,13 @@ class BazarListeAction extends YesWikiAction
             // paramètre de tri des fiches sur une date (en gardant la retrocompatibilité avec le paramètre agenda)
             'agenda' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
             'datefilter' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
+
             // Dynamic mean the template will be rendered from the front end in order to improve UX and perf
             // Only few bazar templates have been converted to javascript
             'dynamic' => $dynamic,
             'displayfields' => $displayFields,
+            // Number of columns for card template
+            'nbcol' => $arg['nbcol'] ?? null,
 
             // AFFICHAGE
             // Template pour l'affichage de la liste de fiches
@@ -197,7 +206,11 @@ class BazarListeAction extends YesWikiAction
             // Champ utilise pour la couleur des marqueurs
             'colorfield' => $colorField,
             // couleur des marqueurs
-            'color' => $color ,
+            'color' => $color,
+            // affichage du nombre de fiches trouvées par les filtres
+            'filtersresultnb' => $this->formatBoolean($arg, true, 'filtersresultnb'),
+            // bouton de réinitialisation des filtres
+            'resetfiltersbutton' => $this->formatBoolean($arg, false, 'resetfiltersbutton'),
         ]);
     }
 
@@ -214,7 +227,7 @@ class BazarListeAction extends YesWikiAction
                 && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'CalendrierAction')) {
             return $this->callAction('calendrier', $this->arguments);
         }
-        
+
         $bazarListService = $this->getService(BazarListService::class);
         $forms = $bazarListService->getForms($this->arguments);
 
@@ -237,7 +250,7 @@ class BazarListeAction extends YesWikiAction
             }
             ++$GLOBALS['_BAZAR_']['nbbazarliste'];
             $this->arguments['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'] ;
-            
+
             // TODO put in all bazar templates
             $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
@@ -304,7 +317,7 @@ class BazarListeAction extends YesWikiAction
         }
     }
 
-    
+
 
     private function formatDateMin($period)
     {

@@ -42,5 +42,5 @@ header('Content-type: application/json; charset=UTF-8');
 if ($this->HasAccess("read")) {
     echo json_encode(array('result' => $this->GetMetaDatas($this->GetPageTag())));
 } else {
-    echo json_encode(array('result' => 'ERREUR : pas les droits d\'acc&eacute;s.'));
+    echo json_encode(array('result' => _t('TEMPLATE_ERROR_NO_ACCESS')));
 }

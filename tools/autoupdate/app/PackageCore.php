@@ -47,7 +47,7 @@ class PackageCore extends Package
     {
         $desPath = $this->localPath;
         if ($this->extractionPath === null) {
-            throw new \Exception("Le paquet n'a pas été décompressé.", 1);
+            throw new \Exception(_t('AU_PACKAGE_NOT_UNZIPPED'), 1);
         }
         if (substr($this->extractionPath, -1) != '/') {
             $this->extractionPath .= '/';

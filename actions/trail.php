@@ -53,7 +53,7 @@ if (!$sommaire) {
     //chargement de la page sommaire
     $tocPage = $this->LoadPage($sommaire);
     if (!$tocPage) {
-        echo '<div class="alert alert-danger"><strong>'._t('ERROR_ACTION_TRAIL').'</strong> :é'._t('THE_PAGE').' ', $this->Link($sommaire), ' '._t('DOESNT_EXIST').' !</div>'."\n";
+        echo '<div class="alert alert-danger"><strong>'._t('ERROR_ACTION_TRAIL').'</strong> : '._t('THE_PAGE').' ', $this->Link($sommaire), ' '._t('DOESNT_EXIST').' !</div>'."\n";
         return;
     }
     //analyse de la page sommaire pour récupérer la liste des pages

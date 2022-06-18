@@ -38,16 +38,16 @@ if (!function_exists('test')) {
     {
         echo "$text ";
         if ($condition) {
-            echo "<span class=\"ok\">OK</span><br />\n";
+            echo "<span class=\"ok\">"._t('OK')."</span><br />\n";
             return 0;
         } else {
-            echo "<span class=\"failed\">ECHEC</span>";
+            echo "<span class=\"failed\">"._t('FAIL')."</span>";
             if ($errorText) {
                 echo ": ",$errorText;
             }
             echo "<br />\n";
             if ($stopOnError) {
-                echo "Fin de l'exécution.<br />\n";
+                echo _t('END_OF_EXEC').".<br />\n";
                 echo "</body>\n</html>\n";
                 exit;
             }

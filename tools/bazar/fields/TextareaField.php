@@ -5,7 +5,9 @@ namespace YesWiki\Bazar\Field;
 use DateTime;
 use DateTimeZone;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\HtmlPurifierService;
 
 /**
  * @Field({"textelong"})
@@ -91,14 +93,18 @@ class TextareaField extends BazarField
             });';
 
             $wiki->AddJavascript($script);
-        } elseif ($this->syntax === self::SYNTAX_WIKI &&
-            !empty($wiki->config['actionbuilder_textarea_name'])
-            && $this->getName() == $wiki->config['actionbuilder_textarea_name']) {
-            // load action builder but be carefull to output
-            ob_start();
-            include_once 'tools/aceditor/actions/actions_builder.php';
-            $output = ob_get_contents();
-            ob_end_clean();
+        } elseif ($this->syntax === self::SYNTAX_WIKI) {
+            $wiki->AddJavascriptFile('tools/aceditor/presentation/javascripts/ace-lib.js');
+            $wiki->AddJavascriptFile('tools/aceditor/presentation/javascripts/mode-html.js');
+            $wiki->AddJavascriptFile('tools/aceditor/presentation/javascripts/aceditor.js');
+            $wiki->AddCSSFile('tools/aceditor/presentation/styles/aceditor.css');
+            if (!empty($wiki->config['actionbuilder_textarea_name']) && $this->getName() == $wiki->config['actionbuilder_textarea_name']) {
+                // load action builder but be carefull to output
+                ob_start();
+                include_once 'tools/aceditor/actions/actions_builder.php';
+                $output = ob_get_contents();
+                ob_end_clean();
+            }
         }
 
         $tempTag = !isset($entry['id_fiche']) ? ($wiki->config['temp_tag_for_entry_creation'] ?? null) : null;
@@ -109,7 +115,23 @@ class TextareaField extends BazarField
             'value' => $this->getValue($entry),
             'entryId' => $entry['id_fiche'] ?? null,
             'tempTag' => $tempTag,
+            'attachConfigExtImages' => explode("|", $this->getService(ParameterBagInterface::class)->get("attach_config")["ext_images"])
         ]);
+    }
+
+    /**
+     * only for `include_once` in `renderInput`
+     */
+    private function AddJavascriptFile($file)
+    {
+        $this->getWiki()->AddJavascriptFile($file);
+    }
+    /**
+     * only for `include_once` in `renderInput`
+     */
+    private function AddCSSFile($file)
+    {
+        $this->getWiki()->AddCSSFile($file);
     }
 
     public function formatValuesBeforeSave($entry)
@@ -119,8 +141,12 @@ class TextareaField extends BazarField
         if ($this->syntax === self::SYNTAX_HTML) {
             $value = strip_tags($value, self::ACCEPTED_TAGS);
             $value = $this->sanitizeBase64Img($value, $entry);
+            $value = $this->sanitizeHTML($value);
         } elseif ($this->syntax === self::SYNTAX_WIKI) {
             $value = $this->sanitizeAttach($value, $entry);
+            $value = $this->sanitizeHTMLInWikiCode($value);
+        } else {
+            $value = $this->sanitizeHTML($value);
         }
 
         return [$this->propertyName => $value];
@@ -312,5 +338,23 @@ class TextareaField extends BazarField
     private function sanitizeFileName(string $inputString):string
     {
         return removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $inputString)));
+    }
+
+    /**
+     * sanitize html to prevent xss
+     */
+    private function sanitizeHTMLInWikiCode(string $value)
+    {
+        $preformattedDirtyHTML = str_replace(['@@','""'], ['\\@\\@\\','@@'], $value);
+        $preformattedCleanHTML = $this->getService(HtmlPurifierService::class)->cleanHTML($preformattedDirtyHTML);
+        return str_replace(['""','@@','\\@\\@\\'], ['\'\'','""','@@'], $preformattedCleanHTML);
+    }
+
+    /**
+     * sanitize html to prevent xss
+     */
+    private function sanitizeHTML(string $value)
+    {
+        return $this->getService(HtmlPurifierService::class)->cleanHTML($value);
     }
 }

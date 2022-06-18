@@ -74,14 +74,14 @@ document.addEventListener('DOMContentLoaded', function(){
         },
         palette: [
             [
-            getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
-            getComputedStyle(document.documentElement).getPropertyValue('--secondary-color-1'),
-            getComputedStyle(document.documentElement).getPropertyValue('--secondary-color-2')
+                wiki.cssVar('--primary-color'),
+                wiki.cssVar('--secondary-color-1'),
+                wiki.cssVar('--secondary-color-2')
             ],
             [
-            getComputedStyle(document.documentElement).getPropertyValue('--neutral-light-color'),
-            getComputedStyle(document.documentElement).getPropertyValue('--neutral-soft-color'),
-            getComputedStyle(document.documentElement).getPropertyValue('--neutral-color')
+                wiki.cssVar('--neutral-light-color'),
+                wiki.cssVar('--neutral-soft-color'),
+                wiki.cssVar('--neutral-color')
             ]
         ]
         })
@@ -206,7 +206,7 @@ function extractFromStringWithRGB(value){
 function getStyleValueEvenIfNotInitialized(prop){
     var value = document.documentElement.style.getPropertyValue(prop);
     if (!value){
-        value = getComputedStyle(document.documentElement).getPropertyValue(prop);
+        value = wiki.cssVar(prop);
     }
     return value ;
 }

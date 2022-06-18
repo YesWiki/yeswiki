@@ -12,6 +12,7 @@ parameters:
     png: 'PNG'
     gif: 'GIF'
     jpeg: 'JPEG'
+    webp: 'WEBP'
     # Autres images (peuvent utiliser le tag <img>)
     bmp: 'BMP'
     tif: 'TIFF'
@@ -66,6 +67,7 @@ parameters:
     h: 'C header'
     kml: 'Keyhole Markup Language'
     kmz: 'Google Earth Placemark File'
+    md: 'Markdown'
     mm: 'Mindmap'
     pas: 'Pascal'
     pdf: 'PDF'
@@ -93,7 +95,9 @@ parameters:
     xspf: 'XSPF'
     xls: 'Excel'
     xlsx: 'Excel'
+    xlsm: 'Excel'
     xml: 'XML'
+    yaml: 'YAML'
     zip: 'Zip'
     #  Open Document
     odt: 'opendocument text'
@@ -109,6 +113,21 @@ parameters:
     ots: 'opendocument spreadsheet-template'
     otp: 'opendocument presentation-template'
     otg: 'opendocument graphics-template'
+  attach_config:
+    ext_images: "gif|jpeg|png|jpg|svg|webp"
+    ext_audio: "mp3|aac"
+    ext_video: "mp4|webm|ogg"
+    ext_wma: "wma"
+    ext_pdf: "pdf"
+    ext_freemind: "mm"
+    ext_flashvideo: "flv"
+    ext_script: "php|php3|asp|asx|vb|vbs|js"
+    upload_path: "files"
+    cache_path: "cache"
+    update_symbole: ""
+    fmDelete_symbole: "Supr"
+    fmRestore_symbole: "Rest"
+    fmTrash_symbole: "Corbeille"
   attach-video-config:
     default_video_service: 'peertube'
     default_peertube_instance: 'https://framatube.org/'

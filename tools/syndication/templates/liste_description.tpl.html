@@ -11,7 +11,7 @@
 		  <a class="lien_rss" href="<?php echo $page['url'];?>" <?php echo ($page['ext'])? 'target="_blank"':'';?>><?php echo $page['titre'];?></a>
       <?php
       if (!empty($page['source'])) {
-          echo ' <small>source : '.$page['source'].'</small>';
+          echo ' <small>' . _t('SYNDICATION_SOURCE') . ' : '.$page['source'].'</small>';
       }
       ?>
     </h3>

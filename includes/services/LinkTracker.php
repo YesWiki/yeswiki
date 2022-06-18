@@ -173,7 +173,7 @@ class LinkTracker
 
     private function preventNotTrackingActions(string $body): string
     {
-        if (preg_match_all('/{{(?:gerertheme|setwikidefaulttheme|admintag|editgroups|userstable|editconfig|gererdroits|update\\s*(?:version="[^"]*")?|listpages(?:[^}]|\\s)*|bazarliste(?:[^}]|\\s)*|bazarcarto(?:[^}]|\\s)*|bazar(?:[^}]|\\s)*)\\s*}}/i', $body, $matches)) {
+        if (preg_match_all('/{{(?:gerertheme|setwikidefaulttheme|admintag|editgroups|userstable|editconfig|gererdroits|update\\s*(?:version="[^"]*")?|syndication(?:[^}]|\\s)*|listpages(?:[^}]|\\s)*|bazarliste(?:[^}]|\\s)*|bazarcarto(?:[^}]|\\s)*|bazar(?:[^}]|\\s)*)\\s*}}/i', $body, $matches)) {
             foreach ($matches[0] as $key => $value) {
                 $body = str_replace($matches[0][$key], '', $body);
             }

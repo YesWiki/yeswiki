@@ -4,10 +4,10 @@ if (!empty($this->config['contact_passphrase']) && isset($_GET['key']) && $_GET[
     echo 'Clé valide !<br>';
     require_once 'tools/contact/libs/contact.functions.php';
     if (isset($_GET['period']) && in_array($_GET['period'], ['day', 'week', 'month'], true)) {
-        echo 'On envoie les mails pour la période '.htmlspecialchars($_GET['period']).' !<br>';
+        echo _t('CONTACT_SENDMAIL_INFO').' '.htmlspecialchars($_GET['period']).' !<br>';
         $subject = (isset($_GET['subject'])) ? $_GET['subject'] : '';
         sendEmailsToSubscribers($_GET['period'], $subject);
     } else {
-        echo 'La période n\'a pas été renseignée ou n\'a pas de valeur standard (month, week ou day).<br>';
+        echo _t('CONTACT_SENDMAIL_ERROR').'<br>';
     }
 }

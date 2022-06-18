@@ -2,12 +2,13 @@
 
 namespace YesWiki\Core\Service;
 
+use attach;
+use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Core\Exception\TemplateNotFound;
+use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
-
-class TemplateNotFound extends \Exception
-{
-}
 
 class TemplateEngine
 {
@@ -15,11 +16,17 @@ class TemplateEngine
     protected $twigLoader;
     protected $twig;
     protected $assetsManager;
+    protected $csrfTokenManager;
 
-    public function __construct(Wiki $wiki, ParameterBagInterface $config, AssetsManager $assetsManager)
-    {
+    public function __construct(
+        Wiki $wiki,
+        ParameterBagInterface $config,
+        AssetsManager $assetsManager,
+        CsrfTokenManager $csrfTokenManager
+    ) {
         $this->wiki = $wiki;
         $this->assetsManager = $assetsManager;
+        $this->csrfTokenManager = $csrfTokenManager;
         // Default path (main namespace) is the root of the project. There are no templates
         // there, but it's needed to call relative path like render('tools/bazar/templates/...')
         $this->twigLoader = new \Twig\Loader\FilesystemLoader('./');
@@ -98,6 +105,59 @@ class TemplateEngine
         $this->addTwigHelper('include_css', function ($file) {
             $this->assetsManager->AddCSSFile($file);
         });
+        $this->addTwigHelper('csrfToken', function ($tokenId) {
+            if (is_string($tokenId)) {
+                return $this->csrfTokenManager->getToken($tokenId)->getValue();
+            } elseif (is_array($tokenId)) {
+                if (!isset($tokenId['id'])) {
+                    throw new Exception("When array, `\$tokenId` should contain `id` key !");
+                } else {
+                    if (isset($tokenId['refresh']) && $tokenId['refresh'] === true) {
+                        return $this->csrfTokenManager->refreshToken($tokenId['id'])->getValue();
+                    } else {
+                        return $this->csrfTokenManager->getToken($tokenId['id'])->getValue();
+                    }
+                }
+            } else {
+                throw new Exception("`\$tokenId` should be a string or an array !");
+            }
+        });
+        $this->addTwigHelper('urlImage', function ($options) {
+            if (!isset($options['fileName'])) {
+                throw new Exception("`urlImage` should be called with `fileName` key in params!");
+            }
+            if (!isset($options['width'])) {
+                throw new Exception("`urlImage` should be called with `width` key in params!");
+            }
+            if (!isset($options['height'])) {
+                throw new Exception("`urlImage` should be called with `height` key in params!");
+            }
+            $options = array_merge(['mode' => 'fit','refresh'=>false], $options);
+            
+            if (!class_exists('attach')) {
+                include('tools/attach/libs/attach.lib.php');
+            }
+            $basePath = $this->wiki->getBaseUrl().'/';
+            $attach = new attach($this->wiki);
+            $image_dest = $attach->getResizedFilename($options['fileName'], $options['width'], $options['height'], $options['mode']);
+            $safeRefresh = !$this->wiki->services->get(SecurityController::class)->isWikiHibernated()
+                && file_exists($image_dest)
+                && filter_var($options['refresh'], FILTER_VALIDATE_BOOL)
+                && $this->wiki->UserIsAdmin();
+            if (!file_exists($image_dest) || $safeRefresh) {
+                $result = $attach->redimensionner_image($options['fileName'], $image_dest, $options['width'], $options['height'], $options['mode']);
+                if ($result != $image_dest) {
+                    // do nothing : error
+                    return $basePath.$options['fileName'];
+                }
+                return $basePath.$image_dest;
+            } else {
+                return $basePath.$image_dest;
+            }
+        });
+        $this->addTwigHelper('hasAcl', function ($acl, $tag = "", $adminCheck = true) {
+            return $this->wiki->services->get(AclService::class)->check($acl, null, $adminCheck, $tag);
+        });
     }
 
     private function addTwigHelper($name, $callback)
@@ -108,11 +168,10 @@ class TemplateEngine
 
     public function renderInSquelette($templatePath, $data = [])
     {
-        $result = '';
-        $result .= $this->wiki->Header();
-        $result .= '<div class="page">';
+        $result = '<div class="page">';
         $result .= $this->render($templatePath, $data);
         $result .= '</div>';
+        $result = $this->wiki->Header().$result;
         $result .= $this->wiki->Footer();
         return $result;
     }

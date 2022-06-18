@@ -124,7 +124,7 @@ abstract class YesWikiPerformable
         }
         if (is_bool($param)) {
             return $param;
-        } elseif ($param == '0' || $param == 'no' || $param == 'non' || $param == 'false') {
+        } elseif (in_array($param,[0,'0','no','non','false'],true)) {
             return false ;
         } elseif (empty($param)) {
             return $default ;

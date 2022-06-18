@@ -226,97 +226,103 @@ class ApiController extends YesWikiController
      */
     public function getBazarListData()
     {
-        try {
-            ob_start(); // to catch error messages
-            $bazatListService = $this->getService(BazarListService::class);
-            $externalIds = $_GET['externalIds'] ?? null;
-            $externalModeActivated = (is_array($externalIds) && isset($_GET['externalModeActivated'])) ? in_array($_GET['externalModeActivated'], [1,true,'1','true'], true): false;
-            $forms = $bazatListService->getForms([
-                'externalModeActivated' => $externalModeActivated,
-                'externalIds' => $externalIds,
-                'refresh' => isset($_GET['refresh']) ? in_array($_GET['refresh'], [1,true,'1','true'], true): false,
-            ]);
-            
-            $formattedGet = array_map(function ($value) {
-                return ($value === 'true') ? true : (($value === 'false') ? false : $value);
-            }, $_GET);
+        $bazarListService = $this->getService(BazarListService::class);
+        $externalIds = $_GET['externalIds'] ?? null;
+        $externalModeActivated = (is_array($externalIds) && isset($_GET['externalModeActivated'])) ? in_array($_GET['externalModeActivated'], [1,true,'1','true'], true): false;
+        $forms = $bazarListService->getForms([
+            'externalModeActivated' => $externalModeActivated,
+            'externalIds' => $externalIds,
+            'refresh' => isset($_GET['refresh']) ? in_array($_GET['refresh'], [1,true,'1','true'], true): false,
+        ]);
+        
+        $formattedGet = array_map(function ($value) {
+            return ($value === 'true') ? true : (($value === 'false') ? false : $value);
+        }, $_GET);
 
-            // format search field
-            $searchfields = $_GET['search'] == 'dynamic' ? $_GET['searchfields'] ?? [] : [];
-            $searchfields = (empty($searchfields) || !is_string($searchfields) || !is_array($searchfields))
-                ? ['bf_titre']
-                : (
-                    is_string($searchfields)
-                    ? explode(',', $searchfields)
-                    : $searchfields
-                );
-            $formattedGet['searchfields'] = $searchfields;
-            $formattedGet['externalModeActivated'] = $externalModeActivated;
-            
-            $entries = $bazatListService->getEntries(
-                [
-                    'user' => null,
-                    'dateMin' =>  null,
-                    'random' => false,
-                    'ordre' => 'asc',
-                    'champ' => 'bf_titre',
-                    'nb' =>  null,
-                    'colorfield ' => null,
-                    'iconfield ' => null,
-                ] + $formattedGet,
-                $forms
+        // format search field
+        $searchfields = $_GET['search'] == 'dynamic' ? $_GET['searchfields'] ?? [] : [];
+        $searchfields = (empty($searchfields) || !is_string($searchfields) || !is_array($searchfields))
+            ? ['bf_titre']
+            : (
+                is_string($searchfields)
+                ? explode(',', $searchfields)
+                : $searchfields
             );
-            $filters = $bazatListService->formatFilters($formattedGet, $entries, $forms);
-            
-            // Basic fields
-            $fieldList = ['id_fiche', 'bf_titre'];
-            // If no id, we need idtypeannonce (== formId) to filter
-            if (!isset($_GET['id'])) {
-                $fieldList[] = 'id_typeannonce';
-            }
-            // fields for colo / icon
-            $fieldList = array_merge($fieldList, [ $_GET['colorfield'] ?? null, $_GET['iconfield'] ?? null]);
-            // Fields for filters
-            foreach ($filters as $field => $config) {
-                $fieldList[] = $field;
-            }
-            // Fields used to search
-            foreach ($searchfields as $field) {
-                $fieldList[] = $field;
-            }
-            // Fields used by template
-            foreach ($_GET['displayfields'] ?? [] as $field) {
-                $fieldList[] = $field;
-            }
-            // Fields for external urls
-            if ($formattedGet['externalModeActivated']) {
-                $fieldList[] = 'url';
-            }
-            // extra fields required by template
-            $fieldList = array_merge($fieldList, $_GET['necessary_fields'] ?? []);
-            $fieldList = array_values(array_unique(array_filter($fieldList))); // array_values to have incremental keys
-            
-            // Reduce the size of the data sent by transforming entries object into array
-            // we use the $fieldMapping to transform back the data when receiving data in the front end
-            $entries = array_map(function ($entry) use ($fieldList) {
-                $result = [];
-                foreach ($fieldList as $field) {
-                    $result[] = $entry[$field] ?? null;
-                }
-                return $result;
-            }, $entries);
-            $errormsg = ob_get_contents();
-            ob_end_clean();
-        } catch (\Exception $e) {
-            return new ApiResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        $formattedGet['searchfields'] = $searchfields;
+        $formattedGet['externalModeActivated'] = $externalModeActivated;
+        
+        $entries = $bazarListService->getEntries(
+            $formattedGet + [
+                'user' => null,
+                'dateMin' => null,
+                'random' => false,
+                'ordre' => 'asc',
+                'champ' => 'bf_titre',
+                'nb' => null,
+                'colorfield ' => null,
+                'iconfield ' => null,
+            ],
+            $forms
+        );
+        $filters = $bazarListService->formatFilters($formattedGet, $entries, $forms);
+        
+        // Basic fields
+        $fieldList = ['id_fiche', 'bf_titre'];
+        // If no id, we need idtypeannonce (== formId) to filter
+        if (!isset($_GET['id'])) {
+            $fieldList[] = 'id_typeannonce';
         }
+        // fields for colo / icon
+        $fieldList = array_merge($fieldList, [ $_GET['colorfield'] ?? null, $_GET['iconfield'] ?? null]);
+        // Fields for filters
+        foreach ($filters as $field => $config) {
+            $fieldList[] = $field;
+        }
+        // Fields used to search
+        foreach ($searchfields as $field) {
+            $fieldList[] = $field;
+        }
+        // Fields used by template
+        foreach ($_GET['displayfields'] ?? [] as $field) {
+            $fieldList[] = $field;
+        }
+        // Fields for external urls
+        if ($formattedGet['externalModeActivated']) {
+            $fieldList[] = 'url';
+        }
+        // extra fields required by template
+        $fieldList = array_merge($fieldList, $_GET['necessary_fields'] ?? []);
+        $fieldList = array_values(array_unique(array_filter($fieldList))); // array_values to have incremental keys
+        
+        $formIds = array_map(function ($entry) {
+            return $entry['id_typeannonce'];
+        }, $entries);
+        $formIds = array_unique($formIds);
+
+        // Reduce the size of the data sent by transforming entries object into array
+        // we use the $fieldMapping to transform back the data when receiving data in the front end
+        $entries = array_map(function ($entry) use ($fieldList, $formIds) {
+            $result = [];
+            foreach ($fieldList as $field) {
+                $result[] = $entry[$field] ?? null;
+            }
+            return $result;
+        }, $entries);
+        
+        $usedForms = array_filter($forms, function ($form) use ($formIds) {
+            return in_array($form['bn_id_nature'], $formIds);
+        });
+        $usedForms = array_map(function ($f) {
+            return $f['prepared'];
+        }, $usedForms);
 
         return new ApiResponse(
             [
                 'entries' => $entries,
                 'fieldMapping' => $fieldList,
-                'filters' => $filters
-            ] + (empty($errormsg) ? [] : ['errorMessage' => $errormsg]),
+                'filters' => $filters,
+                'forms' => $usedForms
+            ],
             Response::HTTP_OK
         );
     }

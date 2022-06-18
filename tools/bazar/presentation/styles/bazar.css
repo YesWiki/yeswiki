@@ -144,7 +144,16 @@ color:#E9322D;
 .titre_accordeon:hover  {
 	background-color: #fc9200; text-decoration: none;
 }
-input:not(:placeholder-shown):invalid, textarea:not(:placeholder-shown):invalid, .submitted input:required:invalid, .submitted textarea:required:invalid {
+input:not(:placeholder-shown):invalid, 
+textarea:not(:placeholder-shown):invalid, 
+.submitted input:required:invalid, 
+.submitted textarea:required:invalid, 
+.submitted select:required:invalid, 
+.submitted .bootstrap-tagsinput.invalid, 
+.submitted .form-group.input-checkbox.invalid, 
+.submitted .form-group.input-radio.invalid, 
+.submitted .invalid > .ace-editor-container, 
+.submitted .textarea.summernote.invalid {
   border-color: #DD2C00;
 }
 .BAZ_label {font-weight: bold;display: block;}
@@ -193,6 +202,9 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
 .facette-container {
   display: flex;
   flex-direction: row;
+}
+.facette-container-fullwidth {
+  flex-wrap: wrap;
 }
 .facette-container[data-filter-align=left] {
   flex-direction: row-reverse;
@@ -258,6 +270,11 @@ input::-webkit-calendar-picker-indicator{
 }
 input[type="date"]::-webkit-input-placeholder{
   visibility: hidden !important;
+}
+
+/* submit button disbled */
+#formulaire .form-actions button[type=submit].submit-disabled {
+  cursor: progress;
 }
 
 /*!
@@ -365,12 +382,6 @@ input[type="date"]::-webkit-input-placeholder{
   animation: throbber 2000ms 450ms infinite ease-out;
   right: -1.6em;
 }
-
-
-.minical .fc-today-button, .minical .fc-right {display: none;}
-.minical .fc-center h2 {font-size: 13px !important;}
-.minical table {font-size: 10px !important;}
-.minical .fc-event-inner { font-size: 8px !important; line-height: 8px !important;}
 
 .pellet {
   display: inline-block;
@@ -487,4 +498,14 @@ input[type="date"]::-webkit-input-placeholder{
   -webkit-appearance: none;
   border: none;
   background: transparent;
+}
+
+/* Display tabs when printing */
+@media print {
+  div[role=tabpanel] {
+    display: block !important;
+  }
+  a[role=tab] {
+    display:none !important;
+  }
 }

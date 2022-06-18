@@ -7,7 +7,7 @@ export default {
     }
   },
   mounted() {
-    let initalValues = this.value ? this.value.split(',') : [this.config.default]
+    let initalValues = this.value ? this.value.split(',') : [this.config.value || this.config.default]
     this.fields = this.fieldOptions.filter((field) => initalValues.includes(field.id))
   },
   computed: {

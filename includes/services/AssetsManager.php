@@ -21,6 +21,12 @@ class AssetsManager
         'tools/bazar/libs/vendor/leaflet/fullscreen/Control.FullScreen.js' => 'javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js',
         'tools/bazar/presentation/javascripts/form-builder.min.js' => 'javascripts/vendor/formBuilder/form-builder.min.js',
         'tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js' => 'javascripts/vendor/jquery-ui-sortable/jquery-ui.min.js',
+        'tools/templates/libs/vendor/datatables/jquery.dataTables.min.js' => 'javascripts/vendor/datatables-full/jquery.dataTables.min.js',
+        'tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css' => 'styles/vendor/datatables-full/dataTables.bootstrap.min.css',
+        'tools/bazar/libs/vendor/fullcalendar/fullcalendar.min.css' => 'styles/vendor/fullcalendar-jquery-v3.10.0/fullcalendar.min.css',
+        'tools/bazar/libs/vendor/fullcalendar/fullcalendar.min.js' => 'javascripts/vendor/fullcalendar-jquery-v3.10.0/fullcalendar.min.js',
+        'tools/bazar/libs/vendor/fullcalendar/locale-all.js' => 'javascripts/vendor/fullcalendar-jquery-v3.10.0/locale-all.min.js',
+        'tools/bazar/libs/vendor/moment.min.js' => 'javascripts/vendor/moment/moment-with-locales.min.js',
     ];
 
     protected const PRODUCTION_PATH_MAPPING = [
@@ -43,28 +49,38 @@ class AssetsManager
         return;
     }
 
-    public function AddCSSFile($file, $conditionstart = '', $conditionend = '')
+    public function AddCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = "")
     {
         if (!isset($GLOBALS['css'])) {
             $GLOBALS['css'] = '';
         }
 
-        $file = $this->mapFilePath($file);
+        $code = $this->LinkCSSFile($file, $conditionstart, $conditionend, $attrs);
 
-        if (!empty($file) && file_exists($file)) {
-            if (!strpos($GLOBALS['css'], '<link rel="stylesheet" href="'.$this->wiki->getBaseUrl().'/'.$file.'">')) {
-                $GLOBALS['css'] .= '  '.$conditionstart."\n"
-                .'  <link rel="stylesheet" href="'.$this->wiki->getBaseUrl().'/'.$file.'">'
-                ."\n".'  '.$conditionend."\n";
-            }
-        } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {
-            if (!strpos($GLOBALS['css'], '<link rel="stylesheet" href="'.$file.'">')) {
-                $GLOBALS['css'] .= '  '.$conditionstart."\n"
-                    .'  <link rel="stylesheet" href="'.$file.'">'."\n"
-                    .'  '.$conditionend."\n";
-            }
+        if ($code && !strpos($GLOBALS['css'], $code)) {
+            $GLOBALS['css'] .= $code;
         }
         return;
+    }
+
+    // this one can be used to directly include a css file within HTML with "echo $this->LinkCSSFile()"
+    // so we can better control the order of inclusion
+    public function LinkCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = "")
+    {
+        $file = $this->mapFilePath($file);
+        $isUrl = strpos($file, "http://") === 0 || strpos($file, "https://") === 0;
+        
+        if ($isUrl || !empty($file) && file_exists($file)) {
+            $href = $isUrl ? $file : "{$this->wiki->getBaseUrl()}/{$file}";
+            $revision = $this->wiki->GetConfigValue('yeswiki_release', null);
+            return <<<HTML
+                $conditionstart
+                <link rel="stylesheet" href="{$href}?v={$revision}" $attrs>
+                $conditionend
+            HTML;
+        } else {
+            return "";
+        }
     }
 
     public function AddJavascript($script)

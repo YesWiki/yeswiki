@@ -51,14 +51,14 @@ class EraseSpamedCommentsAction extends YesWikiAction
                             echo "</ul>\n" ;
                         }
                         $erase_id = 'erasecommday_' . str_replace('-', '', $day);
-                        echo "<b>$day:</b> <a href=\"#\" onclick=\"return invert_selection('" . $erase_id . "')\">inverser</a> <br />\n" ;
+                        echo "<b>$day:</b> <a href=\"#\" onclick=\"return invert_selection('" . $erase_id . "')\">".htmlspecialchars(strtolower(_t('INVERT')))."</a> <br />\n" ;
                         echo "<ul id=\"" . $erase_id . "\">\n";
                         $curday = $day;
                     }
 
                     // echo entry
                     echo
-                        "<li><input name=\"suppr[]\" value=\"" . $comment["tag"] . "\" type=\"checkbox\" /> [Suppr.!] ".
+                        "<li><input name=\"suppr[]\" value=\"" . $comment["tag"] . "\" type=\"checkbox\" /> [".htmlspecialchars(_t('DEL'))."!] ".
                         $comment["tag"].
                         " (",$comment["time"],") <code>".
                         htmlspecialchars(substr($comment['body'], 0, 25), ENT_COMPAT, YW_CHARSET)."</code> ".
@@ -67,10 +67,10 @@ class EraseSpamedCommentsAction extends YesWikiAction
                         $wiki->Format($comment["user"]),"</li>\n" ;
                 }
                 echo "</ul>\n<input type=\"hidden\" name=\"clean\" value=\"yes\" />\n";
-                echo "<button value=\"Valider\">Nettoyer >></button>\n";
+                echo "<button value=\"Valider\">".htmlspecialchars(_t('CLEAN'))." >></button>\n";
                 echo "</form>";
             } else {
-                echo "<i>Pas de commentaires r&eacute;cents.</i>" ;
+                echo "<i>".htmlspecialchars(_t('NO_RECENT_COMMENTS')).".</i>" ;
             }
         }
 
@@ -93,13 +93,13 @@ class EraseSpamedCommentsAction extends YesWikiAction
                     $deletedPages .= $page . ", ";
                 }
                 $deletedPages = trim($deletedPages, ", ");
-                echo "<p><a href=\"".$wiki->Href()."\">Retour au formulaire.</a></p>";
+                echo "<p><a href=\"".$wiki->Href()."\">"._t('FORM_RETURN').".</a></p>";
             }
 
             // -- 3.2 Si aucune page n'a été sélectionné : message
             else {
-                echo "<p>Aucun commentaire n'a été sélectionné pour étre effacé.</p>";
-                echo "<p><a href=\"".$wiki->Href()."\">Retour au formulaire.</a></p>";
+                echo "<p>"._t('NO_SELECTED_COMMENTS_TO_ERASE').".</p>";
+                echo "<p><a href=\"".$wiki->Href()."\">"._t('FORM_RETURN').".</a></p>";
             }
 
             // -- 3.3 écriture du journal des actions ---
@@ -114,7 +114,7 @@ class EraseSpamedCommentsAction extends YesWikiAction
                 // -- Ajout de la ligne de log
                 $wiki->LogAdministrativeAction(
                     $wiki->GetUserName(),
-                    "Commentaire(s) effacé(s)" .
+                    _t("ERASED_COMMENTS") .
                     /*" [" .*/ /*$_POST['comment'] .*/ /* "]".*/
                     "&nbsp;: " .
                     "\"\"".

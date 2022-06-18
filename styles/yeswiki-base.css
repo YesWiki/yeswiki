@@ -1,15 +1,19 @@
 /************************************* CSS Wikini original ****************************************/
 /* Default color, in case someone use these variable outside of margot template */
 :root {
- --primary-color: #1A89A0;
- --secondary-color-1: #d8604c;
- --secondary-color-2:#D78958;
- --neutral-color:#4E5056;
- --neutral-soft-color:#b0b1b3;
- --neutral-light-color:#fff;
- --success-color: #5cb75c;
- --danger-color: #d9534e;
- --warning-color: #f0ad4e;
+  --primary-color: #1a89a0;
+  --secondary-color-1: #d8604c;
+  --secondary-color-2: #d78958;
+  --neutral-color: #4e5056;
+  --neutral-soft-color: #87898e;
+  --neutral-light-color: #f2f2f2;
+  --main-text-fontsize: 17px;
+  --main-text-fontfamily: "Nunito", sans-serif;
+  --main-title-fontfamily:'Nunito', sans-serif;
+
+  --success-color: #3cab3b;
+  --danger-color: #d8604c;
+  --warning-color: #D78958;
 }
 
 html {
@@ -25,10 +29,19 @@ ul.fake-ul {
   padding-left: 0;
 }
 .additions {
-  color: #008800;
+  color: var(--success-color);
 }
 .deletions {
-  color: #880000;
+  color: var(--danger-color);
+}
+.add, .add * {
+  color: white !important;
+  background-color: var(--success-color) !important;
+}
+.del, .del * {
+  color: white !important;
+  background-color: var(--danger-color) !important;
+  text-decoration: line-through !important;
 }
 
 /* Navigation par table des matieres */
@@ -36,7 +49,7 @@ ul.fake-ul {
   line-height: 30px;
 }
 .trail_button {
-  color: #993333;
+  color: var(--secondary-color-1);
 }
 
 /* Page absentes */
@@ -54,14 +67,16 @@ span.missingpage,
   border-bottom: none;
 }
 .prev_alert {
-  background-color: red;
+  background-color: var(--danger-color);
   color: white;
   font-size: 1.7em;
   font-weight: bold;
   margin-bottom: 5px;
 }
 
-#form_graphical_options .preset-settings-container { display: none; }
+#form_graphical_options .preset-settings-container {
+  display: none;
+}
 
 /* Divers mise en forme */
 .code {
@@ -71,7 +86,7 @@ span.missingpage,
 .code pre.hljs {
   width: 200px; /* fake width overwrittent by flex: 1 auto; but needed for flexbox to work correctly */
   flex: 1 auto;
-  padding: .5em .5em .3em .5em;
+  padding: 0.5em 0.5em 0.3em 0.5em;
 }
 .revisioninfo {
   color: #aaaaaa;
@@ -100,7 +115,7 @@ span.missingpage,
 .rightcolumnpage {
   position: relative;
   margin: 0;
-  min-height: 400px;
+  min-height: 100px;
 }
 
 .footer {
@@ -167,7 +182,7 @@ span.missingpage,
 
 /* lanceur d'accordéon*/
 .accordion-trigger,
-.panel-heading[data-toggle=collapse] {
+.panel-heading[data-toggle="collapse"] {
   cursor: pointer;
 }
 
@@ -226,25 +241,16 @@ li.toc5 {
   border: 0;
 }
 /* remove first column of revisions */
-#YesWikiModal .first-revisions-selector, #YesWikiModal  .current-page-revision,
+#YesWikiModal .first-revisions-selector,
+#YesWikiModal .current-page-revision,
 body > :not(#YesWikiModal) .current-revision-text {
-  display:none;
+  display: none;
 }
 
 /* menu du haut fixe */
-#yw-topnav.affix {
-  position: fixed;
+#yw-topnav.fixable {
+  position: sticky;
   top: 0;
-  z-index: 2000;
-  right: 0;
-  left: 0;
-}
-#yw-topnav.affix-top {
-  position: relative;
-}
-
-.aceditor-btn-well:hover .well {
-  color: #333;
 }
 
 /* retour à la ligne pour les éléments flottants */
@@ -311,7 +317,9 @@ body > :not(#YesWikiModal) .current-revision-text {
 .accordion-group .panel-heading:not(.collapsed) .chevron-up {
   display: inline-block;
 }
-.panel-heading > i { margin-right: 8px; }
+.panel-heading > i {
+  margin-right: 8px;
+}
 
 /* dropdown menu in modal */
 #page_options .typeahead.dropdown-menu {
@@ -508,7 +516,7 @@ body {
     0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
 }
 
-.form-control[type=checkbox] {
+.form-control[type="checkbox"] {
   border: none;
   height: auto;
   display: inline-block;
@@ -600,7 +608,7 @@ body {
 .toast-message {
   position: fixed;
   top: -5rem;
-  transition: top .5s, opacity .3s;
+  transition: top 0.5s, opacity 0.3s;
   left: 0;
   right: 0;
   z-index: 5000;
@@ -611,7 +619,7 @@ body {
   box-shadow: 0 0 9px 1px rgba(0, 0, 0, 0.42);
 }
 
-.yeswiki-iframe-body .container {
+.yeswiki-iframe-body > .container {
   margin: 0 !important;
   width: 100% !important;
 }
@@ -656,4 +664,235 @@ body {
   background-color: #ececec;
   border-radius: .5rem;
   opacity: .3;
+}
+
+section.pattern-border {
+  border-width: 4px;
+  border-style: solid;
+  padding: 2rem;
+}
+section.pattern-border-dashed {
+  border-style: dashed;
+}
+section.pattern-border-dotted {
+  border-style: dotted;
+}
+
+section.shape-rounded {
+  border-radius: .5rem;
+  padding: 2rem;
+}
+section.shape-circle {
+  border-radius: 50%;
+  padding: 4rem;
+}
+section.shape-blob1 {
+  border-radius: 50% 50% 59% 41% / 35% 50% 50% 65%;
+  padding: 4rem;
+}
+section.shape-blob2 {
+  border-radius: 33% 67% 50% 50% / 25% 19% 81% 75%;
+  padding: 4rem;
+}
+section.shape-blob3 {
+  border-radius: 33% 67% 50% 50% / 65% 73% 27% 35%;
+  padding: 4rem;
+}
+section.shape-blob4 {
+  border-radius: 23% 77% 27% 73% / 41% 31% 69% 59%;
+  padding: 4rem;
+}
+section.shape-blob5 {
+  border-radius: 75% 25% 76% 24% / 50% 50% 50% 50%;
+  padding: 4rem;
+}
+
+section.full-width:not(.with-bg-pattern) {
+  padding: 2rem 0;
+}
+
+/* for datatables bootstrap */
+.dataTables_footer .dataTables_info {
+  white-space: normal !important; /* more responsive */
+}
+.dropup:hover {
+  cursor: pointer;
+}
+.yeswiki-page-comments {
+  margin-top:2em;
+}
+.yw-comment {
+  margin: 1em 0 3em;
+}
+.yw-comment .comment-info {
+  font-size:.8rem;
+  margin-bottom:0em;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.yw-comment .user-pic {
+  width:32px;
+  height:32px;
+  margin:0 1em 0 0;
+}
+.yw-comment .comment-date {
+  color: var(--neutral-soft-color);
+}
+.yw-comment .comment-html {
+  margin-bottom:0;
+}
+.yw-comment .comment-links {
+  font-size:.8rem;
+}
+.comment-reponses {
+  margin-left: 3em;
+}
+.api-container code {
+  font-weight: normal;
+}
+.comment-reponses .yw-comment {
+  margin: 1em 0;
+}
+
+/* === trick to manage lists'translation === */
+
+html[lang="ca"] [lang]:not([lang="ca"]),
+html[lang="en"] [lang]:not([lang="en"]),
+html[lang="es"] [lang]:not([lang="es"]),
+html[lang="fr"] [lang]:not([lang="fr"]),
+html[lang="nl"] [lang]:not([lang="nl"]),
+html[lang="pt"] [lang]:not([lang="pt"]){
+  display:none;
+}
+
+/* === === */
+/* reactions */
+.reactions-container {
+  margin: 2em 0;
+}
+.reactions-flex {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: start;
+}
+.reaction-img {
+  width: 80%;
+}
+.reaction-emoji,
+.reaction-fa-icons {
+  font-size: 3em;
+}
+.mini-react {
+  font-weight: bold;
+  color: var(--primary-color);
+}
+.mini-react > img {
+  max-height: 2.5em;
+  display: inline-block;
+}
+.mini-react > img.reaction-img {
+  max-width: 2.0em;
+}
+.mini-react .reaction-emoji,
+.mini-react .reaction-fa-icons {
+  font-size: 1.5em;
+}
+.reaction-content {
+  width: 9em;
+  text-align: center;
+  margin: 0 1em 1em 0;
+  padding: 0;
+  font-size: 0.9em;
+}
+.reaction-title {
+  color: var(--neutral-color);
+  text-transform: uppercase;
+  font-size: 12px;
+  margin-top: 1em;
+  word-wrap: anywhere;
+}
+.reaction-numbers {
+  color: var(--neutral-color);
+  font-size: 1.1em;
+  font-weight: bold;
+}
+.link-reaction {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  align-content: center;
+  justify-content: space-between;
+  height: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 0.5em;
+  padding: 1em 0.5em;
+  transition: all 200ms ease-in;
+  box-shadow: none;
+}
+.link-reaction:hover {
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+  text-decoration: none;
+}
+.link-reaction:focus,
+.link-reaction:active,
+.link-reaction:visited {
+  text-decoration: none;
+}
+.disabled,
+.disabled:hover {
+  cursor: not-allowed !important;
+}
+.user-reaction {
+  border: 3px solid var(--primary-color);
+}
+.user-reaction:hover {
+  border: 3px solid rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+  text-decoration: none;
+}
+
+.update-hint {
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  opacity: 0.9;
+  font-style: italic;
+  line-height: 1rem;
+  text-align: justify;
+}
+
+/* timeline */
+.timeline {
+  position: relative;
+  margin: 2em 0;
+  padding: 0em 3em;
+}
+
+.timeline:before {
+  content: "";
+  position: absolute;
+  height: calc(100% + 2em);
+  width: 1px;
+  border-left: 3px solid var(--primary-color);
+  left: 1.15em;
+  top: -1em;
+  bottom: 0;
+  z-index: 0;
+}
+
+.timeline li {
+  list-style: none;
+  margin-top: 2em;
+}
+
+.timeline li:before {
+  position: absolute;
+  content: "·";
+  font-size: 8em;
+  left: 4px;
+  vertical-align: middle;
+  line-height: 8px;
+  color: var(--primary-color);
 }

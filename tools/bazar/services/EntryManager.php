@@ -31,6 +31,8 @@ class EntryManager
     protected $params;
     protected $searchManager;
 
+    private $cachedEntriestags ;
+
     public const TRIPLES_ENTRY_ID = 'fiche_bazar';
 
     public function __construct(
@@ -57,6 +59,7 @@ class EntryManager
         $this->params = $params;
         $this->searchManager = $searchManager;
         $this->securityController = $securityController;
+        $this->cachedEntriestags = [];
     }
 
     /**
@@ -66,7 +69,10 @@ class EntryManager
      */
     public function isEntry($tag): bool
     {
-        return !is_null($this->tripleStore->exist($tag, TripleStore::TYPE_URI, self::TRIPLES_ENTRY_ID, '', ''));
+        if (!isset($this->cachedEntriestags[$tag])) {
+            $this->cachedEntriestags[$tag] = !is_null($this->tripleStore->exist($tag, TripleStore::TYPE_URI, self::TRIPLES_ENTRY_ID, '', ''));
+        }
+        return $this->cachedEntriestags[$tag];
     }
 
     /**
@@ -210,7 +216,7 @@ class EntryManager
         $requeteSQL = '';
 
         //preparation de la requete pour trouver les mots cles
-        if (trim($params['keywords']) != '' && $params['keywords'] != _t('BAZ_MOT_CLE')) {
+        if (is_string($params['keywords']) && trim($params['keywords']) != '' && $params['keywords'] != _t('BAZ_MOT_CLE')) {
             $needles = $this->searchManager->searchWithLists($params['keywords'], $this->getFormsFromIds($param['formsIds'] ?? null));
             if (!empty($needles)) {
                 $first = true;
@@ -337,9 +343,10 @@ class EntryManager
 
         // requete de jointure : reprend la requete precedente et ajoute des criteres
         if (isset($_GET['joinquery'])) {
+            $join = $this->dbService->escape($_GET['joinquery']);
             $joinrequeteSQL = '';
             $tableau = array();
-            $tab = explode('|', $_GET['joinquery']);
+            $tab = explode('|', $join);
             //découpe la requete autour des |
             foreach ($tab as $req) {
                 $tabdecoup = explode('=', $req, 2);
@@ -404,7 +411,7 @@ class EntryManager
 
         return $requete;
     }
-        
+
     /**
      * Return an array of fiches based on search parameters
      * @param array $params
@@ -424,6 +431,8 @@ class EntryManager
             $results = $this->dbService->loadAll($requete);
             $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
             foreach ($results as $page) {
+                // save owner to reduce sql calls
+                $this->pageManager->cacheOwner($page);
                 // not possible to init the Guard in the constructor because of circular reference problem
                 $filteredPage = (!$this->wiki->UserIsAdmin() && $useGuard)
                     ? $this->wiki->services->get(Guard::class)->checkAcls($page, $page['tag'])
@@ -541,12 +550,10 @@ class EntryManager
             );
         }
 
-        // on remet l'utilisateur initial
-        if (isset($GLOBALS['utilisateur_wikini'])) {
+        // on remet l'utilisateur initial s'il y en avait un
+        if (isset($GLOBALS['utilisateur_wikini']) && !empty($olduser)) {
             $this->userManager->logout();
-            if (!empty($olduser)) {
-                $this->userManager->login($olduser, 1);
-            }
+            $this->userManager->login($olduser, 1);
         }
 
         // if sendmail has referenced email fields, send an email to their adresses
@@ -556,6 +563,8 @@ class EntryManager
             // Envoi d'un mail aux administrateurs
             $this->mailer->notifyAdmins($data, true);
         }
+
+        $this->cachedEntriestags[$data['id_fiche']] = true;
 
         return $data;
     }
@@ -586,7 +595,7 @@ class EntryManager
 
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
-        
+
         // replace the field values which are restricted at reading and writing
         $data = $this->assignRestrictedFields($data, $previousData, $form);
 
@@ -732,6 +741,8 @@ class EntryManager
             $this->userManager->getLoggedUserName(),
             "Suppression de la page ->\"\"" . $tag . "\"\""
         );
+
+        unset($this->cachedEntriestags[$tag]);
     }
 
     /*
@@ -846,7 +857,7 @@ class EntryManager
      *      helping to get owner without asking a new Time to Page manager to get it
      * @throws Exception
      */
-    public function appendDisplayData(&$fiche, $semantic = false, $correspondance = '', array $page)
+    public function appendDisplayData(&$fiche, $semantic, $correspondance, array $page)
     {
         // champs correspondants
         if (!empty($correspondance)) {
@@ -854,17 +865,14 @@ class EntryManager
             if ($tabcorrespondances['fail'] != 1) {
                 foreach ($tabcorrespondances as $key => $data) {
                     if (isset($key)) {
-                        if (isset($data) && isset($fiche[$data])) {
-                            $fiche[$key] = $fiche[$data];
-                        } else {
-                            $fiche[$key] = '';
-                        }
+                        // not possible to init the Guard in the constructor because of circular reference problem
+                        $fiche[$key] = $this->wiki->services->get(Guard::class)->isFieldDataAuthorizedForCorrespondance($page, $fiche, $data);
                     } else {
-                        echo '<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
+                        echo '<div class="alert alert-danger">'._t('BAZ_CORRESPONDANCE_ERROR').'</div>';
                     }
                 }
             } else {
-                echo '<div class="alert alert-danger">action bazarliste : le paramètre correspondance est mal rempli.<br />Il doit être de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
+                echo '<div class="alert alert-danger">'.str_replace("\n", "<br/>", _t('BAZ_CORRESPONDANCE_ERROR2')).'</div>';
             }
         }
 
@@ -937,7 +945,7 @@ class EntryManager
         }
     }
 
-    
+
     /**
     * remove attributes from entries only for admins !!!
     * @param array $params
@@ -945,7 +953,7 @@ class EntryManager
     * @param bool $applyOnAllRevisions
     * return bool true if attributesNames are foond and replaced
     */
-    public function removeAttributes($params = [], array $attributesNames, bool $applyOnAllRevisions = false): bool
+    public function removeAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false): bool
     {
         return $this->manageAttributes($params, $attributesNames, $applyOnAllRevisions, 'remove');
     }
@@ -957,11 +965,11 @@ class EntryManager
     * @param bool $applyOnAllRevisions
     * return bool true if attributesNames are foond and replaced
     */
-    public function renameAttributes($params = [], array $attributesNames, bool $applyOnAllRevisions = false): bool
+    public function renameAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false): bool
     {
         return $this->manageAttributes($params, $attributesNames, $applyOnAllRevisions, 'rename');
     }
-      
+
     /**
      * manage attributes from entries only for admins !!!
      * @param array $params
@@ -970,7 +978,7 @@ class EntryManager
      * @param string $mode
      * return bool true if attributesNames are foond and replaced
      */
-    private function manageAttributes($params = [], array $attributesNames, bool $applyOnAllRevisions = false, string $mode = 'remove'): bool
+    private function manageAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false, string $mode = 'remove'): bool
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -1025,7 +1033,7 @@ class EntryManager
 
         foreach ($pages as $page) {
             $entry = $this->decode($page['body']);
-            
+
             foreach ($attributesNames as $attributeName) {
                 if ($mode ==='rename') {
                     foreach ($attributeName as $oldName => $newName) {

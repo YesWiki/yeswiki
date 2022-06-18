@@ -20,7 +20,6 @@ class TabsField extends LabelField
     protected const FIELD_FORM_TITLES = 1;
     protected const FIELD_VIEW_TITLES = 3;
     protected const FIELD_MOVE_SUBMIT_BUTTON_TO_LAST_TAB = 5;
-    protected const FIELD_TABS_CLASS = 6;
     protected const FIELD_BTN_COLOR = 7;
     protected const FIELD_BTN_SIZE = 9;
 
@@ -32,7 +31,6 @@ class TabsField extends LabelField
         $this->formTitles = $this->sanitizeTitles($values[self::FIELD_FORM_TITLES]);
         $this->viewTitles = $this->sanitizeTitles($values[self::FIELD_VIEW_TITLES]);
         $this->moveSubmitButtonToLastTab = ($values[self::FIELD_MOVE_SUBMIT_BUTTON_TO_LAST_TAB] === "moveSubmit") ;
-        $this->tabsClass = in_array($values[self::FIELD_TABS_CLASS], ["nav-tabs","nav-pills"], true) ? $values[self::FIELD_TABS_CLASS] : "nav-tabs";
         $this->btnClass = (in_array($values[self::FIELD_BTN_COLOR], ["btn-primary","btn-secondary-1","btn-secondary-2"], true) ? $values[self::FIELD_BTN_COLOR] : "btn-primary") .
           ($values[self::FIELD_BTN_SIZE] === "btn-xs" ? " btn-xs" : "") ;
         $this->formText = $this->prepareFormText();
@@ -41,7 +39,7 @@ class TabsField extends LabelField
 
     protected function sanitizeTitles(?string $input):?array
     {
-        $titles = explode(',', str_replace("|",",",$input));
+        $titles = explode(',', str_replace("|", ",", $input));
         $titles = array_filter(array_map('trim', $titles), function ($title) {
             return !empty($title);
         });
@@ -92,11 +90,6 @@ class TabsField extends LabelField
         return $this->moveSubmitButtonToLastTab;
     }
 
-    public function getTabsClass()
-    {
-        return $this->tabsClass;
-    }
-
     public function getBtnClass()
     {
         return $this->btnClass;
@@ -110,7 +103,6 @@ class TabsField extends LabelField
                 'formTitles' => $this->getFormTitles(),
                 'viewTitles' => $this->getViewTitles(),
                 'moveSubmitButtonToLastTab' => $this->getMoveSubmitButtonToLastTab(),
-                'tabsClass' => $this->getTabsClass(),
                 'btnClass' => $this->getBtnClass(),
             ]
         );

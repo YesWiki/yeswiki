@@ -1,12 +1,16 @@
 import Panel from './components/Panel.js'
+import EntryField from './components/EntryField.js'
 import SpinnerLoader from './components/SpinnerLoader.js'
 import ModalEntry from './components/ModalEntry.js'
 import BazarSearch from './components/BazarSearch.js'
 
-document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>{
+// Wait for Dom to be loaded, so we can load some Vue component like BazarpMap in order
+// to be used inside index-dynamic
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>{
   new Vue({
     el: domElement,
-    components: { Panel, ModalEntry, SpinnerLoader },
+    components: { Panel, ModalEntry, SpinnerLoader, EntryField },
     mixins: [ BazarSearch ],
     data: {
       mounted: false, // when vue get initialized
@@ -14,7 +18,8 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       params: {},
 
       filters: [],
-      entries: [],     
+      entries: [],  
+      formFields: {},   
       searchedEntries: [],
       filteredEntries: [],
       paginatedEntries: [],
@@ -82,6 +87,9 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         }
         if (this.search && this.search.length > 2) {
           result = this.searchEntries(result, this.search)
+          if (result == undefined){
+            result = this.entries
+          }
         }
         this.searchedEntries = result
         this.filterEntries()
@@ -91,7 +99,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         let result = this.searchedEntries
         for(const filterId in this.computedFilters) {
           result = result.filter(entry => {
-            if (!entry[filterId]) return false
+            if (!entry[filterId] || typeof entry[filterId] != "string") return false
             return entry[filterId].split(',').some(value => {
               return this.computedFilters[filterId].includes(value)
             })
@@ -121,7 +129,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
           for (let option of this.filters[fieldName].list) {
             option.nb = this.searchedEntries.filter(entry => {
               let entryValues = entry[fieldName]
-              if (!entryValues) return
+              if (!entryValues || typeof entryValues != "string") return
               entryValues = entryValues.split(',')
               return entryValues.some(value => value == option.value)
             }).length
@@ -141,7 +149,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
           hashes.push(`${filterId}=${this.computedFilters[filterId].join(',')}`)
         }
         if (this.search) hashes.push(`q=${this.search}`)
-        document.location.hash = hashes.join('&')
+        document.location.hash = hashes.length > 0 ? hashes.join('&') : null;
       },
       initFiltersFromHash(filters, hash) {
         hash = hash.substring(1) // remove #
@@ -157,19 +165,33 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
               if (filterValues.includes(filter.value)) filter.checked = true
             }
           }
-        }  
+        }
+        // init q from GET q also
+        if (this.search.length == 0) {
+          let params = document.location.search;
+          params = params.substring(1) // remove ?
+          for(let combinaison of params.split('&')) {          
+            let filterId = combinaison.split('=')[0]
+            let filterValues = combinaison.split('=')[1]
+            if (filterId == "q") {
+              this.search = decodeURIComponent(filterValues);
+            }
+          }
+        }
         return filters      
-      },
-      field(entry, field, fallbackField) {
-        let mappedField = this.params.displayfields[field]
-        return mappedField ? entry[mappedField] : entry[fallbackField]
       },
       getEntryRender(entry) {
         if (entry.html_render) return
-        let fieldsToExclude = this.params.displayfields ? Object.values(this.params.displayfields) : []
         if (this.isExternalUrl(entry)){
           this.getExternalEntry(entry)
         } else {
+          let fieldsToExclude = []
+          if (this.params.template == 'list' && this.params.displayfields) {
+            // In list template (collapsible panels with header and body), the rendered entry 
+            // is displayed in the body section and we don't want to show the fields 
+            // that are already displayed in the panel header
+            fieldsToExclude = Object.values(this.params.displayfields)
+          }
           let url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
             fields: 'html_output',
             excludeFields: fieldsToExclude
@@ -178,6 +200,15 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
             Vue.set(entry, 'html_render', (data[entry.id_fiche] && data[entry.id_fiche].html_output) ? data[entry.id_fiche].html_output : 'error')
           })
         }
+      },
+      fieldInfo(field) {
+        return this.formFields[field] || {}
+      },
+      openEntry(entry) {
+        if (this.params.entrydisplay == 'newtab')
+          window.open(entry.url)
+        else
+          this.$root.openEntryModal(entry)
       },
       openEntryModal(entry) {
         this.$refs.modal.displayEntry(entry)
@@ -188,21 +219,56 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         }
         return entry.url !== wiki.url(entry.id_fiche);
       },
+      isInIframe(){
+        return (window != window.parent);
+      },
       getExternalEntry(entry){
         let url = entry.url+'/iframe';
         Vue.set(entry, 'html_render', `<iframe src="${url}" width="500px" height="600px" style="border:none;"></iframe>`)
       },
       colorIconValueFor(entry, field, mapping) {
-        if (!entry[field]) return null
+        if (!entry[field] || typeof entry[field] != "string") return null
         let values = entry[field].split(',')
         // If some filters are checked, and the entry have multiple values, we display 
         // the value associated with the checked filter
         // TODO BazarListDynamic check with users if this is expected behaviour
         if (this.computedFilters[field]) values = values.filter(val => this.computedFilters[field].includes(val))
         return mapping[values[0]]
-      }      
+      },
+      urlImage(entry,fieldName,mode = "image") {
+        if (!entry[fieldName]){
+          return null;
+        }
+        let fileName = entry[fieldName];
+        let field = this.fieldInfo(fieldName);
+        if (field.regExp != undefined){
+          let regExpData = (mode == "image") ? field.regExp.imagePath : field.regExp.thumbnailPath;
+          let imageRegExp = Object.keys(regExpData)[0];
+          imageRegExp = imageRegExp.replace('{tag}',entry.id_fiche);
+          imageRegExp = new RegExp(imageRegExp);
+          if (imageRegExp.test(fileName)){
+            let imageReplacement = Object.values(regExpData)[0];
+            return fileName.replace(imageRegExp,imageReplacement);
+          }
+          regExpData = (mode == "image") ? field.regExp.oldImagePath : field.regExp.oldThumbnailPath;
+          imageRegExp = Object.keys(regExpData)[0];
+          imageRegExp = new RegExp(imageRegExp);
+          if (imageRegExp.test(fileName)){
+            let imageReplacement = Object.values(regExpData)[0];
+            return fileName.replace(imageRegExp,imageReplacement);
+          }
+          // TODO manage external-data and Image from other entry
+        }
+        return `files/${fileName}`;
+      }
     },
     mounted() {
+      $(this.$el).on(
+        "dblclick",
+        function (e) {
+          return false;
+        }
+      );
       let savedHash = document.location.hash // don't know how, but the hash get cleared after 
       this.params = JSON.parse(this.$el.dataset.params)
       this.pagination = parseInt(this.params.pagination)
@@ -217,18 +283,34 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         if (data.entries.length > 1000) this.params.cluster = true // Activate cluster for map mode
         
         setTimeout(() => {
+          // Transform forms info into a list of field mapping
+          // { bf_titre: { type: 'text', ...}, bf_date: { type: 'listedatedeb', ... } }
+          Object.values(data.forms).forEach(formFields => {
+            Object.values(formFields).forEach(field => {
+              this.formFields[field.id] = field
+              Object.entries(this.params.displayfields).forEach( ([fieldId, mappedField]) => {
+                if (mappedField == field.id) this.formFields[fieldId] = this.formFields[mappedField]
+              })
+            })
+          })
+
           this.entries = data.entries.map(array => {
             let entry = { color: null, icon: null }
             // Transform array data into object using the fieldMapping
             for(let key in data.fieldMapping) {
               entry[data.fieldMapping[key]] = array[key]
             }
+            Object.entries(this.params.displayfields).forEach( ([field, mappedField]) => {
+              if (mappedField) entry[field] = entry[mappedField]
+            })
+            
             return entry
           })
+         
           this.calculateBaseEntries()
           this.ready = true
         }, 0)  
       })
     }
   })
-})
+})})

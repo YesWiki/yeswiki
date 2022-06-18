@@ -1,7 +1,6 @@
-{{ include_javascript('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js') }}
-{{ include_javascript('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js') }}
+{{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
 {{ include_javascript('tools/bazar/libs/bazar.edit_forms.js') }}
-{{ include_css('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css') }}
+{{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
 
 {% set tooltipMessage =  isWikiHibernated ? _t('WIKI_IN_HIBERNATION') : _t('BAZ_NEED_ADMIN_RIGHTS') %}
 
@@ -97,10 +96,10 @@
             </div>
             <div class="erase-actions">
             {% if form.canDelete %}
-              <a class="btn btn-danger btn-xs" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'empty', idformulaire: key }}) }}" onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_VIDER_FORMULAIRE') }} ?');" data-toggle="tooltip" data-placement="bottom">
+              <a class="btn btn-danger btn-xs modalbox" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'confirm_empty', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom">
                 <i class="fas fa-eraser"></i>
               </a>
-              <a class="btn btn-danger btn-xs" title="{{ _t('BAZ_SUPPRIMER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'delete', idformulaire: key }}) }}"  onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_FORMULAIRE') }} ?');" data-toggle="tooltip" data-placement="bottom">
+              <a class="btn btn-danger btn-xs modalbox" title="{{ _t('BAZ_SUPPRIMER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'confirm_delete', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom">
                 <i class="fa fa-trash"></i>
               </a>
             {% else %}

@@ -14,7 +14,7 @@ class UserManager
     protected $dbService;
     protected $securityController;
     protected $params;
-
+    private $getOneByNameCacheResults;
 
     public function __construct(Wiki $wiki, DbService $dbService, ParameterBagInterface $params, SecurityController $securityController)
     {
@@ -22,11 +22,19 @@ class UserManager
         $this->dbService = $dbService;
         $this->securityController = $securityController;
         $this->params = $params;
+        $this->getOneByNameCacheResults = [];
     }
 
     public function getOneByName($name, $password = 0): ?array
     {
-        return $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where name = '" . $this->dbService->escape($name) . "' " . ($password === 0 ? "" : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1');
+        if ($password === 0 && isset($this->getOneByNameCacheResults[$name])) {
+            return $this->getOneByNameCacheResults[$name];
+        }
+        $result = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where name = '" . $this->dbService->escape($name) . "' " . ($password === 0 ? "" : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1');
+        if ($password === 0) {
+            $this->getOneByNameCacheResults[$name] = $result;
+        }
+        return $result;
     }
 
     public function getOneByEmail($mail, $password = 0): ?array
@@ -34,15 +42,14 @@ class UserManager
         return $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where email = '" . $this->dbService->escape($mail) . "' " . ($password === 0 ? "" : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1');
     }
 
-    public function getAll(): array
+    public function getAll($dbFields = ['name', 'password', 'email', 'motto', 'revisioncount', 'changescount', 'doubleclickedit', 'signuptime', 'show_comments']): array
     {
         if ($this->params->has('user_table_prefix') && !empty($this->params->get('user_table_prefix'))) {
             $prefix = $this->params->get('user_table_prefix');
         } else {
             $prefix = $this->params->get('table_prefix');
         }
-
-        return $this->dbService->loadAll('select * from ' . $prefix . 'users order by name');
+        return $this->dbService->loadAll('select '.implode(', ', $dbFields).' from ' . $prefix . 'users order by name');
     }
 
     public function getLoggedUser()
@@ -55,7 +62,7 @@ class UserManager
         if ($user = $this->getLoggedUser()) {
             $name = $user["name"];
         } else {
-            $name = $_SERVER["REMOTE_ADDR"];
+            $name = $this->wiki->isCli() ? '' : $_SERVER["REMOTE_ADDR"];
         }
         return $name;
     }
@@ -81,6 +88,7 @@ class UserManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
+        $this->getOneByNameCacheResults = [];
         return $this->dbService->query(
             'INSERT INTO ' . $this->dbService->prefixTable('users') . 'SET ' .
             "signuptime = now(), " .
@@ -96,6 +104,7 @@ class UserManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
+        $this->getOneByNameCacheResults = [];
         $user = $this->getOneByName($wikiName);
         if (!empty($user)) {
             $query =
@@ -106,5 +115,6 @@ class UserManager
                 'AND password= "'.$this->dbService->escape($user['password']).'";';
             $this->dbService->query($query);
         }
+        $this->getOneByNameCacheResults = [];
     }
 }

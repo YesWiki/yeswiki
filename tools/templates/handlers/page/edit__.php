@@ -125,5 +125,5 @@ if (!$this->HasAccess('write')) {
     .'</div><!-- end .page -->'."\n";
     // on recupere juste les javascripts et la fin des balises body et html
     $output .= preg_replace('/^.+<script/Us', '<script', $this->Footer());
-    exit($output);
+    $this->exit($output);
 }

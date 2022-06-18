@@ -166,9 +166,20 @@ class ExternalBazarService
                 }
             } else {
                 foreach ($ids as $values) {
-                    if (empty($values['localFormId'])) {
+                    $localIdCorrespondToEmptyForm = false;
+                    if (!empty($values['localFormId'])) {
+                        $localFormId = $values['localFormId'];
+                        if ($form = $this->formManager->getOne($localFormId)) {
+                            $form['external_bn_id_nature'] = $values['id'];
+                            $form['external_url'] = $url;
+                            $forms[] = $form;
+                        } else {
+                            $localIdCorrespondToEmptyForm = true;
+                        }
+                    }
+                    if (empty($values['localFormId']) || $localIdCorrespondToEmptyForm) {
                         if ($form = $this->getForm($url, $values['id'], $refresh, false)) {
-                            $localFormId = $this->findNewId();
+                            $localFormId = $localIdCorrespondToEmptyForm ? $localFormId : $this->findNewId();
                             $form = $this->prepareExtForm($localFormId, $url, $form);
                             // put in cache in FormManager
                             $this->tmpForm = $form;
@@ -177,13 +188,6 @@ class ExternalBazarService
                             if ($result) {
                                 $forms[] = $form;
                             }
-                        }
-                    } else {
-                        $localFormId = $values['localFormId'];
-                        if ($form = $this->formManager->getOne($localFormId)) {
-                            $form['external_bn_id_nature'] = $values['id'];
-                            $form['external_url'] = $url;
-                            $forms[] = $form;
                         }
                     }
                 }
@@ -339,7 +343,7 @@ class ExternalBazarService
         string $url,
         bool $testFileModificationDate,
         int $cache_life = 90,
-        bool $forceRefresh,
+        bool $forceRefresh = false,
         string $mode = 'standard'
     ) {
         $cache_life = min($cache_life, self::MAX_CACHE_TIME);
@@ -387,7 +391,7 @@ class ExternalBazarService
         string $url,
         bool $testFileModificationDate,
         int $cache_life = 90,
-        bool $forceRefresh,
+        bool $forceRefresh = false,
         string $dir = 'cache'
     ) {
         if ($this->debug && $this->timeDebug) {
@@ -420,7 +424,7 @@ class ExternalBazarService
         string $url,
         bool $testFileModificationDate,
         int $cache_life = 90,
-        bool $forceRefresh,
+        bool $forceRefresh = false,
         string $dir = 'cache'
     ) {
         if ($this->debug && $this->timeDebug) {

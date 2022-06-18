@@ -48,6 +48,9 @@
   white-space: normal;
   text-overflow: initial;
 }
+.form-wrap.form-builder .form-elements .form-group > label {
+  white-space: normal !important;
+}
 
 .listId-wrap, .formId-wrap { display: none !important; }
 

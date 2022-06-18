@@ -18,7 +18,7 @@ export default {
     resetValues() {
       this.mappingValues = {}
       for(let propName in this.config.subproperties) {
-        this.mappingValues[propName] = this.config.subproperties[propName].default || ''
+        this.mappingValues[propName] = (this.config.subproperties[propName] || {}).default || ''
       }
     },
     parseNewValues(newValues) {
@@ -37,7 +37,7 @@ export default {
       let result = []
       for(let propName in this.mappingValues) {
         let value = this.mappingValues[propName]
-        if (propName && value != this.config.subproperties[propName].default && value != ','
+        if (propName && value != (this.config.subproperties[propName] || {}).default && value != ','
             && Object.keys(this.config.subproperties).includes(propName)) {
           result.push(`${propName}=${value}`)
         }

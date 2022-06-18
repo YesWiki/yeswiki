@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\YesWikiAction;
 
 class CalendrierAction extends YesWikiAction
@@ -16,11 +17,22 @@ class CalendrierAction extends YesWikiAction
         }
         $class = (isset($classes) && count($classes)>0) ? implode(' ', $classes) :null;
 
+        $template = !empty($arg['template']) ? basename($arg['template']) : 'calendar.tpl.html';
+        $dynamic = $this->formatBoolean($arg, false, 'dynamic');
+        $templateEngine = $this->getService(TemplateEngine::class);
+        if (($template === 'calendar.tpl.html' && !$templateEngine->hasTemplate("@bazar/{$template}")) ||
+            ($template === 'calendar' && !$templateEngine->hasTemplate("@bazar/{$template}.tpl.html"))) {
+            $template = "calendar";
+            $dynamic = true;
+        }
+
         return([
             'minical' => $minical ?? null,
             'class' => $class,
             //template - default value calendar
-            'template' => $arg['template'] ?? 'calendar.tpl.html',
+            'template' => $template,
+            'dynamic' => $dynamic,
+            'pagination' => -1 // disable pagination
         ]);
     }
 

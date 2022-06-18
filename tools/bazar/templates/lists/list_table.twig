@@ -6,9 +6,8 @@
     {{ _t('BAZ_INTRO_AJOUT_LISTE')|raw }}
   </div>
 {% else %}
-  {{ include_javascript('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js') }}
-  {{ include_javascript('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js') }}
-  {{ include_css('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css') }}
+  {{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
+  {{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
   <div class="table-responsive">
   <table id="existing-lists-table" class="table table-condensed table-striped">
     <thead>

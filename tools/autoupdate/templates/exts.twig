@@ -1,9 +1,9 @@
 <table class="table table-striped table-condensed table-updates">
   <thead>
     <tr>
-        <th>Nom</th>
-        <th>Version installée</th>
-        <th>Version disponible</th>
+        <th>{{ _t('AU_NAME') }}</th>
+        <th>{{ _t('AU_INSTALLED_REVISION') }}</th>
+        <th>{{ _t('AU_AVAILABLE_REVISION') }}</th>
         <th></th>
         <th></th>
     </tr>
@@ -31,33 +31,66 @@
             </td>
             <td>
                 {% if isAdmin and ext.updateAvailable and ext.installed %}
-                    <a  href="{{ url({params:{upgrade:ext.updateLink}}) }}"
-                        class="btn btn-xs btn-primary"
-                        title="{{ _t('AU_UPDATE') }}"
-                    >
-                        {{ _t('AU_UPDATE') }}
-                    </a>
+                    {% if not isHibernated %}
+                        <a  href="{{ url({params:{upgrade:ext.updateLink}}) }}"
+                            class="btn btn-xs btn-primary"
+                            title="{{ _t('AU_UPDATE') }}"
+                        >
+                            {{ _t('AU_UPDATE') }}
+                        </a>
+                    {% else %}
+                        <button disabled
+                            class="btn btn-xs btn-primary"
+                            title="{{ _t('WIKI_IN_HIBERNATION') }}"
+                            data-toggle="tooltip"
+                            data-placement="bottom"
+                        >
+                            {{ _t('AU_UPDATE') }}
+                        </button>
+                    {% endif %}
                 {% endif %}
 
 
             </td>
             <td>
                 {% if isAdmin and not ext.installed %}
-                    <a  href="{{ url({params:{upgrade:ext.updateLink}}) }}"
-                        class="btn btn-xs btn-primary"
-                        title="{{ _t('AU_INSTALL') }}"
-                    >
-                        {{ _t('AU_INSTALL') }}
-                    </a>
+                    {% if not isHibernated %}
+                        <a  href="{{ url({params:{upgrade:ext.updateLink}}) }}"
+                            class="btn btn-xs btn-primary"
+                            title="{{ _t('AU_INSTALL') }}"
+                        >
+                            {{ _t('AU_INSTALL') }}
+                        </a>
+                    {% else %}
+                        <button disabled
+                            class="btn btn-xs btn-primary"
+                            title="{{ _t('WIKI_IN_HIBERNATION') }}"
+                            data-toggle="tooltip"
+                            data-placement="bottom"
+                        >
+                            {{ _t('AU_INSTALL') }}
+                        </button>
+                    {% endif %}
                 {% endif %}
 
                 {% if isAdmin and ext.installed and ext.name != 'autoupdate' %}
-                    <a  href="{{ baseUrl }}{{ ext.deleteLink }}"
-                        class="btn btn-xs btn-danger"
-                        title="{{ _t('AU_DELETE_EXT') }}"
-                    >
-                        {{ _t('AU_DELETE_EXT') }}
-                    </a>
+                    {% if not isHibernated %}
+                        <a  href="{{ baseUrl }}{{ ext.deleteLink }}"
+                            class="btn btn-xs btn-danger"
+                            title="{{ _t('AU_DELETE_EXT') }}"
+                        >
+                            {{ _t('AU_DELETE_EXT') }}
+                        </a>
+                    {% else %}
+                        <button disabled
+                            class="btn btn-xs btn-danger"
+                            title="{{ _t('WIKI_IN_HIBERNATION') }}"
+                            data-toggle="tooltip"
+                            data-placement="bottom"
+                        >
+                            {{ _t('AU_DELETE_EXT') }}
+                        </button>
+                    {% endif %}
                 {% endif %}
             </td>
         </tr>

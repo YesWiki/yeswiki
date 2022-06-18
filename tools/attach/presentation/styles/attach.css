@@ -226,7 +226,10 @@ box-shadow: 2px 2px 15px 0px #444;
 .background-image.fixed {
   background-attachment:fixed;
 }
-.background-image.center {
+.background-image.center.full-width {
+  background-position:center top;
+}
+.background-image.center:not(.full-width) {
   background-position:center top;
   margin: 0 !important;
 }
@@ -237,6 +240,9 @@ box-shadow: 2px 2px 15px 0px #444;
 
 .white, .white h1, .white h2, .white h3, .white h4, .white h5, .white h6, .white a, .white a:hover {
   color:#fff !important;
+}
+.black, .black h1, .black h2, .black h3, .black h4, .black h5, .black h6, .black a, .black a:hover {
+  color:var(--neutral-color) !important;
 }
 
 
@@ -281,4 +287,11 @@ box-shadow: 2px 2px 15px 0px #444;
 }
 .embed-responsive.pdf-square {
 	padding-bottom: 100%;
+}
+
+.pdf-block-loading {
+  position: absolute;
+  z-index: 1000;
+  top: 30vh;
+  left: 48%;
 }

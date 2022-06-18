@@ -3,7 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Bazar\Service\EntryManager;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Security\Controller\SecurityController;
 
@@ -27,6 +27,7 @@ class ImageField extends FileField
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
+        $this->readLabel = "";
 
         $this->thumbnailHeight = $values[self::FIELD_THUMBNAIL_HEIGHT];
         $this->thumbnailWidth = $values[self::FIELD_THUMBNAIL_WIDTH];
@@ -40,147 +41,60 @@ class ImageField extends FileField
 
     protected function renderInput($entry)
     {
+        $wiki = $this->getWiki();
         $value = $this->getValue($entry);
-        $maxSize = $GLOBALS['wiki']->config['BAZ_TAILLE_MAX_FICHIER'] ;
+        $maxSize = $wiki->config['BAZ_TAILLE_MAX_FICHIER'] ;
 
         // javascript pour gerer la previsualisation
-        $js = 'function getOrientation(file, callback) {
-          var reader = new FileReader();
-          reader.onload = function(e) {
-
-            var view = new DataView(e.target.result);
-            if (view.getUint16(0, false) != 0xFFD8) return callback(-2);
-            var length = view.byteLength, offset = 2;
-            while (offset < length) {
-              var marker = view.getUint16(offset, false);
-              offset += 2;
-              if (marker == 0xFFE1) {
-                if (view.getUint32(offset += 2, false) != 0x45786966) return callback(-1);
-                var little = view.getUint16(offset += 6, false) == 0x4949;
-                offset += view.getUint32(offset + 4, little);
-                var tags = view.getUint16(offset, little);
-                offset += 2;
-                for (var i = 0; i < tags; i++)
-                  if (view.getUint16(offset + (i * 12), little) == 0x0112)
-                    return callback(view.getUint16(offset + (i * 12) + 8, little));
-              }
-              else if ((marker & 0xFF00) != 0xFF00) break;
-              else offset += view.getUint16(offset, false);
-            }
-            return callback(-1);
-          };
-          reader.readAsArrayBuffer(file.slice(0, 64 * 1024));
-        }
-
-
-        function handleFileSelect(evt) {
-          var target = evt.target || evt.srcElement;
-          var id = target.id;
-          var files = target.files; // FileList object
-
-          // Loop through the FileList and render image files as thumbnails.
-          for (var i = 0, f; f = files[i]; i++) {
-
-            // Only process image files.
-            if (!f.type.match(\'image.*\')) {
-              continue;
-            }';
 
         // si une taille maximale est indiquée, on teste
         if (!empty($maxSize)) {
-            $js .= 'if (f.size>'.$maxSize.') {
-                    alert("L\'image est trop grosse, maximum '.$maxSize.' octets");
-                    document.getElementById(id).type = \'\';
-                    document.getElementById(id).type = \'file\';
-                    continue ;
-                  }';
+            $wiki->addJavascript("var imageMaxSize = {$maxSize};");
         }
-
-        $js .= 'var reader = new FileReader();
-            // Closure to capture the file information.
-            reader.onload = (function(theFile) {
-              return function(e) {
-                getOrientation(theFile, function(orientation) {
-                  var css = \'\';
-                  if (orientation === 6) {
-                    css = \'transform:rotate(90deg);\';
-                  } else if (orientation === 8) {
-                    css = \'transform:rotate(270deg);\';
-                  } else if (orientation === 3) {
-                    css = \'transform:rotate(180deg);\';
-                  } else {
-                    css = \'\';
-                  }
-                  // TODO: rotate image
-                  //console.log(\'orientation: \' + css);
-                  css = \'\';
-                  // Render thumbnail.
-                  var span = document.createElement(\'span\');
-                  span.innerHTML = [\'<img class="img-responsive" style="\', css, \'" src="\', e.target.result,
-                  \'" title="\', escape(theFile.name), \'"/>\'].join(\'\');
-                  document.getElementById(\'img-\'+id).innerHTML = span.innerHTML;
-                  document.getElementById(\'data-\'+id).value = e.target.result;
-                  document.getElementById(\'filename-\'+id).value = theFile.name;
-                });
-
-              };
-            })(f);
-
-            // Read in the image file as a data URL.
-            reader.readAsDataURL(f);
-          }
-        }
-
-        var imageinputs = document.getElementsByClassName(\'yw-image-upload\');
-        for (var i = 0; i < imageinputs.length; i++)
-        {
-           imageinputs.item(i).addEventListener(\'change\', handleFileSelect, false);
-        }';
-        $GLOBALS['wiki']->addJavascript($js);
+        $wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/image-field.js');
 
         if (isset($value) && $value != '') {
-            if (isset($_GET['suppr_image']) && $_GET['suppr_image'] == $value) {
-                if ($this->isAllowedToDeleteFile($entry)) {
-                    if (file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
-                        unlink(BAZ_CHEMIN_UPLOAD . $value);
-                    }
-                    if (file_exists('cache/vignette_' . $value)) {
-                        unlink('cache/vignette_' . $value);
-                    }
-                    if (file_exists('cache/image_' . $value)) {
-                        unlink('cache/image_' . $value);
-                    }
+            if (isset($_GET['suppr_image']) && $_GET['suppr_image'] === $value) {
+                if ($this->securedDeleteImageAndCache($entry, $value)) {
+                    $this->updateEntryAfterFileDelete($entry);
 
-                    $this->updateEntryAfterImageDelete($entry);
-
-                    return '<div class="alert alert-info">' . _t('BAZ_FICHIER') . $value . _t('BAZ_A_ETE_EFFACE') . '</div>'."\n".
-                            $this->render('@bazar/inputs/image.twig');
+                    return $this->render('@templates/alert-message.twig', [
+                        'type' => 'info',
+                        'message' => str_replace('{file}', $value, _t('BAZ_LE_FICHIER_A_ETE_EFFACE'))
+                    ])."\n".$this->render('@bazar/inputs/image.twig');
                 } else {
-                    $alertMessage = '<div class="alert alert-info">' . _t('BAZ_DROIT_INSUFFISANT') . '</div>' . "\n";
+                    $alertMessage = $this->render('@templates/alert-message.twig', [
+                        'type' => 'info',
+                        'message' => _t('BAZ_DROIT_INSUFFISANT')
+                    ]). "\n";
                 }
             }
 
-            if (file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
+            if (file_exists($this->getBasePath(). $value)) {
                 return ($alertMessage ?? '') .$this->render('@bazar/inputs/image.twig', [
                     'value' => $value,
-                    'downloadUrl' => BAZ_CHEMIN_UPLOAD . $value,
-                    'deleteUrl' => $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag(), 'suppr_image=' . $value, false),
-                    'image' => afficher_image(
-                        $this->name,
-                        $value,
-                        $this->label,
-                        'img-responsive',
-                        $this->thumbnailWidth,
-                        $this->thumbnailHeight,
-                        $this->imageWidth,
-                        $this->imageHeight
-                    ),
-                    'isAllowedToDeleteFile' => $this->isAllowedToDeleteFile($entry),
+                    'downloadUrl' => $this->getBasePath(). $value,
+                    'deleteUrl' => empty($entry) ? '' :$wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . $value, false),
+                    'image' => $this->getWiki()->render('@attach/display-image.twig', [
+                        'baseUrl' => $this->getWiki()->GetBaseUrl().'/',
+                        'imageFullPath' => $this->getBasePath(). $value,
+                        'fieldName' => $this->name,
+                        'thumbnailHeight' => $this->thumbnailHeight,
+                        'thumbnailWidth' => $this->thumbnailWidth,
+                        'imageHeight' => $this->imageHeight,
+                        'imageWidth' => $this->imageWidth,
+                        'class' => 'img-responsive',
+                        'shortImageName' => $this->getShortFileName($value)
+                    ]),
+                    'isAllowedToDeleteFile' => empty($entry) ? false :$this->isAllowedToDeleteFile($entry, $value),
                 ]);
             } else {
-                $this->updateEntryAfterImageDelete($entry);
+                $this->updateEntryAfterFileDelete($entry);
 
-                $alertMessage = '<div class="alert alert-danger">' . _t('BAZ_FICHIER') . $value . _t('BAZ_FICHIER_IMAGE_INEXISTANT') . '</div>';
+                $alertMessage = $this->render('@templates/alert-message.twig', [
+                    'type' => 'danger',
+                    'message' => str_replace('{file}', $value, _t('BAZ_FICHIER_IMAGE_INEXISTANT'))
+                ]);
             }
         }
         return ($alertMessage ?? '') .$this->render('@bazar/inputs/image.twig');
@@ -188,45 +102,48 @@ class ImageField extends FileField
 
     public function formatValuesBeforeSave($entry)
     {
-        if (!empty($_POST['data-'.$this->propertyName]) and !empty($_POST['filename-'.$this->propertyName])) {
-            $fileName = $entry['id_fiche'] . '_' . sanitizeFilename($_POST['filename-'.$this->propertyName]);
-            $filePath = BAZ_CHEMIN_UPLOAD . $fileName;
+        if (!empty($_POST['data-'.$this->propertyName]) && !empty($_POST['filename-'.$this->propertyName]) && !empty($entry['id_fiche'])) {
+            $rawFileName = filter_var($_POST['filename-'.$this->propertyName], FILTER_SANITIZE_STRING);
+            $sanitizedFilename = $this->sanitizeFilename($rawFileName);
+            $fileName = "{$this->getPropertyName()}_$sanitizedFilename";
+            $filePath = $this->getFullFileName($fileName, $entry['id_fiche'], true);
+            $fileName = basename($filePath);
 
-            if (preg_match("/(gif|jpeg|png|jpg)$/i", $fileName)) {
+            if ($this->isImage($rawFileName)) {
                 if (!file_exists($filePath) && !$this->getService(SecurityController::class)->isWikiHibernated()) {
                     file_put_contents($filePath, file_get_contents($_POST['data-'.$this->propertyName]));
                     chmod($filePath, 0755);
 
+
+
                     if (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '') {
                         // delete previous files only if authorized (owner)
-                        if ($this->getService(AclService::class)->check('%', null, true, $entry['id_fiche'])) {
-                            $previousFileName = $entry['oldimage_' . $this->propertyName];
-                            if (file_exists(BAZ_CHEMIN_UPLOAD . $previousFileName)) {
-                                unlink(BAZ_CHEMIN_UPLOAD . $previousFileName);
-                            }
-                            if (file_exists('cache/vignette_' . $previousFileName)) {
-                                unlink('cache/vignette_' . $previousFileName);
-                            }
-                            if (file_exists('cache/image_' . $previousFileName)) {
-                                unlink('cache/image_' . $previousFileName);
-                            }
+                        $previousFileName = $entry['oldimage_' . $this->propertyName];
+                        $this->securedDeleteImageAndCache($entry, $previousFileName);
+                    }
+                    
+
+                    // Generate thumbnails to speedup loading of bazar templates
+                    if (!empty($this->thumbnailWidth) && !empty($this->thumbnailHeight)) {
+                        $attach = $this->getAttach();
+                        $filePathResized = $attach->getResizedFilename($filePath, $this->thumbnailWidth, $this->thumbnailHeight);
+                        if (!file_exists($filePathResized)) {
+                            $attach->redimensionner_image($filePath, $filePathResized, $this->thumbnailWidth, $this->thumbnailHeight);
                         }
                     }
-
-                    // Generate thumbnails
-                    if ($this->thumbnailWidth != '' && $this->thumbnailHeight != '' && !file_exists('cache/vignette_' . $fileName)) {
-                        redimensionner_image($filePath, 'cache/vignette_' . $fileName, $this->thumbnailWidth, $this->thumbnailHeight);
-                    }
-
                     // Adapt image dimensions
-                    if ($this->imageWidth != '' && $this->imageWidth != '' && !file_exists('cache/image_' . '_' . $fileName)) {
-                        redimensionner_image($filePath, 'cache/image_' . $fileName, $this->imageWidth, $this->imageHeight);
+                    if (!empty($this->imageWidth) && !empty($this->imageHeight)) {
+                        $attach = $this->getAttach();
+                        $filePathResized = $attach->getResizedFilename($filePath, $this->imageWidth, $this->imageHeight);
+                        if (!file_exists($filePathResized)) {
+                            $attach->redimensionner_image($filePath, $filePathResized, $this->imageWidth, $this->imageHeight);
+                        }
                     }
                 } else {
-                    echo '<div class="alert alert-danger">L\'image ' . $fileName . ' existait d&eacute;ja, elle n\'a pas &eacute;t&eacute; remplac&eacute;e.</div>';
+                    flash(str_replace('{fileName}', $fileName, _t('BAZ_IMAGE_ALREADY_EXISTING')), 'info');
                 }
             } else {
-                echo '<div class="alert alert-danger">Extension non autoris&eacute;.</div>';
+                flash(_t('BAZ_NOT_AUTHORIZED_EXTENSION'), 'error');
             }
             $entry[$this->propertyName] = $fileName;
         } elseif (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '') {
@@ -242,30 +159,71 @@ class ImageField extends FileField
     {
         $value = $this->getValue($entry);
 
-        if (isset($value) && $value != '' && file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
-            return afficher_image(
-                $this->name,
-                $value,
-                $this->label,
-                $this->imageClass,
-                $this->thumbnailWidth,
-                $this->thumbnailHeight,
-                $this->imageWidth,
-                $this->imageHeight
-            );
+        if (isset($value) && $value != '' && file_exists($this->getBasePath(). $value)) {
+            return $this->getWiki()->render('@attach/display-image.twig', [
+                'baseUrl' => $this->getWiki()->GetBaseUrl().'/',
+                'imageFullPath' => $this->getBasePath(). $value,
+                'fieldName' => $this->name,
+                'thumbnailHeight' => $this->thumbnailHeight,
+                'thumbnailWidth' => $this->thumbnailWidth,
+                'imageHeight' => $this->imageHeight,
+                'imageWidth' => $this->imageWidth,
+                'class' => $this->imageClass,
+                'shortImageName' => $this->getShortFileName($value)
+               ]);
         }
 
         return null;
     }
 
-    private function updateEntryAfterImageDelete($entry)
+    protected function isImage($fileName)
     {
-        $entryManager = $this->services->get(EntryManager::class);
+        $imageExtPreg = $this->getService(ParameterBagInterface::class)->get("attach_config")["ext_images"];
+        return preg_match("/($imageExtPreg)\$/i", $fileName);
+    }
 
-        unset($entry[$this->propertyName]);
-        $entry['antispam'] = 1;
-        $entry['date_maj_fiche'] = date('Y-m-d H:i:s', time());
-
-        $entryManager->update($entry['id_fiche'], $entry, false, true);
+    private function securedDeleteImageAndCache($entry, string $filename)
+    {
+        if ($this->isAllowedToDeleteFile($entry, $filename)) {
+            if (substr($filename, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
+                $attach = $this->getAttach();
+                $attach->fmDelete($filename);
+            } else {
+                // do not delete file if not same entry name (only remove from this entry)
+            }
+            return true;
+        }
+        return false;
+    }
+    
+    public function jsonSerialize()
+    {
+        $fileFieldData = parent::jsonSerialize();
+        unset($fileFieldData['readLabel']);
+        $baseUrl = $this->getWiki()->getBaseUrl();
+        return array_merge(
+            $fileFieldData,
+            [
+                'thumbnailHeight' => $this->thumbnailHeight,
+                'thumbnailWidth' => $this->thumbnailWidth,
+                'imageHeight' => $this->imageHeight,
+                'imageWidth' => $this->imageWidth,
+                'imageClass' => $this->imageClass,
+                'regExp' => [
+                    'thumbnailPath' => [
+                        "^({tag}_{$this->getPropertyName()}_.*)_(\d{14})_(\d{14})\.(.*)$" => "{$baseUrl}/{$this->getAttach()->GetCachePath()}/$1_vignette_{$this->thumbnailWidth}_{$this->thumbnailHeight}_$2_$3.$4"
+                    ],
+                    'imagePath' => [
+                        "^({tag}_{$this->getPropertyName()}_.*)_(\d{14})_(\d{14})\.(.*)$" => "{$baseUrl}/{$this->getAttach()->GetCachePath()}/$1_vignette_{$this->imageWidth}_{$this->imageHeight}_$2_$3.$4"
+                    ],
+                    'oldThumbnailPath' => [
+                        "^(.*)\.([^.]*)$" => "{$baseUrl}/{$this->getAttach()->GetCachePath()}/vignette_$1.$2"
+                    ],
+                    'oldImagePath' => [
+                        "^(.*)\.([^.]*)$" => "{$baseUrl}/{$this->getAttach()->GetCachePath()}/image_$1.$2"
+                    ],
+                ],
+            ]
+        );
     }
 }

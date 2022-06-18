@@ -9,6 +9,18 @@
   display: block;
   text-align: left;
 }
+.leaflet-popup .BAZ_fiche_info{
+  font-size: 12px;
+}
+.leaflet-container a.btn {
+  font-size: 12px;
+}
+.leaflet-container a.btn:not(.btn-default) {
+  color: var(--neutral-light-color,#0078A8);
+}
+.leaflet-container a.btn.btn-default {
+  color: var(--neutral-color,#0078A8);
+}
 .leaflet-popup .BAZ_titre,
 .BAZ_cadre_map .BAZ_titre {
   font-size: 10px;
@@ -117,6 +129,9 @@
 .bazar-map-container .bazar-marker.xl.selected .entry-name,
 .bazar-map-container .bazar-marker.xl:hover .entry-name {
   display: block;
+}
+.bazar-map-container .bazar-marker a.bazar-entry{
+  text-decoration: none;
 }
 
 /* CLUSTERS */

@@ -32,10 +32,16 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Bazar\Service\EntryManager;
+
 // V?rification de s?curit?
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
+
+use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\CommentService;
 
 // Generate page before displaying the header, so that it might interract with the header
 ob_start();
@@ -47,22 +53,30 @@ if (!empty($_SESSION['redirects'])) {
     $trace = $_SESSION['redirects'];
     $tag = $trace[count($trace) - 1];
     $prevpage = $this->LoadPage($tag);
-    echo '<div class="redirectfrom"><em>(Redirig&eacute; depuis ', $this->Link($prevpage['tag'], 'edit'), ")</em></div>\n";
+    echo '<div class="redirectfrom"><em>(' . str_replace("{linkFrom}", $this->Link($prevpage['tag'], 'edit'), _t('REDIRECTED_FROM')) . ")</em></div>\n";
     unset($_SESSION['redirects'][count($trace) - 1]);
 }
 
 if ($HasAccessRead=$this->HasAccess("read")) {
     if (!$this->page) {
-        echo "Cette page n'existe pas encore, voulez vous la <a href=\"".$this->href("edit")."\">cr&eacute;er</a> ?" ;
+        echo str_replace(
+            ["{beginLink}","{endLink}"],
+            ["<a href=\"{$this->href("edit")}\">","</a>"],
+            _t("NOT_FOUND_PAGE")
+        );
     } else {
         // comment header?
         if ($this->page["comment_on"]) {
-            echo "<div class=\"commentinfo\">Ceci est un commentaire sur ",$this->ComposeLinkToPage($this->page["comment_on"], "", "", 0),", post&eacute; par ",$this->Format($this->page["user"])," &agrave; ",$this->page["time"],"</div>";
+            echo "<div class=\"commentinfo\">" . str_replace(
+                ["{tag}","{user}","{time}"],
+                [$this->ComposeLinkToPage($this->page["comment_on"], "", "", 0),$this->Format($this->page["user"]),$this->page["time"]],
+                _t('COMMENT_INFO')
+            ) . "</div>";
         }
 
         if ($this->page["latest"] == "N") {
             echo '<div class="alert alert-info">'."\n";
-            echo "Ceci est une version archiv&eacute;e de <a href=\"",$this->href(),"\">",$this->GetPageTag(),"</a> &agrave; ",$this->page["time"];
+            echo str_replace(["{link}","{time}"], ["<a href=\"{$this->href()}\">{$this->GetPageTag()}</a>",$this->page["time"]], _t('REVISION_IS_ARCHIVE_OF_TAG_ON_TIME'));
             // if this is an old revision, display some buttons
             if ($this->HasAccess("write")) {
                 $latest = $this->LoadPage($this->tag); ?>
@@ -72,7 +86,7 @@ if ($HasAccessRead=$this->HasAccess("read")) {
 				<input type="hidden" name="time" value="<?php echo $time ?>" />
 				<input type="hidden" name="previous" value="<?php echo  $latest["id"] ?>" />
 				<input type="hidden" name="body" value="<?php echo  htmlspecialchars($this->page["body"], ENT_COMPAT, YW_CHARSET) ?>" />
-				<input class="btn btn-primary" type="submit" value="R&eacute;&eacute;diter cette version archiv&eacute;e" />
+				<input class="btn btn-primary" type="submit" value="<?php echo _t('EDIT_ARCHIVED_REVISION'); ?>" />
 				<?php echo  $this->FormClose(); ?>
 				<?php
             }
@@ -82,11 +96,17 @@ if ($HasAccessRead=$this->HasAccess("read")) {
 
         // display page
         $this->RegisterInclusion($this->GetPageTag());
-        echo $this->Format($this->page['body'], 'wakka', $this->GetPageTag());
+        $entryManager = $this->services->get(EntryManager::class);
+        if ($entryManager->isEntry($this->page['tag'])) {
+            $entryController = $this->services->get(EntryController::class);
+            echo $entryController->view($tag, 0);
+        } else {
+            echo $this->Format($this->page['body'], 'wakka', $this->GetPageTag());
+        }
         $this->UnregisterLastInclusion();
     }
 } else {
-    echo "<i>Vous n'&ecirc;tes pas autoris&eacute; &agrave; lire cette page</i>" ;
+    echo "<i>"._t('LOGIN_NOT_AUTORIZED')."</i>" ; // to sync with /tools/templates/handlers/page/show__.php
 }
 ?>
 <hr class="hr_clear" />
@@ -94,96 +114,12 @@ if ($HasAccessRead=$this->HasAccess("read")) {
 
 
 <?php
-if ($HasAccessRead && (!$this->page || !$this->page["comment_on"])) {
-    // load comments for this page
-    $comments = $this->LoadComments($this->tag);
+// render the comments if needed
+echo $this->services->get(CommentService::class)->renderCommentsForPage($this->getPageTag());
 
-    // store comments display in session
-    $tag = $this->GetPageTag();
-
-    if (!isset($_SESSION["show_comments"][$tag])) {
-        $_SESSION["show_comments"][$tag] = ($this->UserWantsComments() ? "1" : "0");
-    }
-    if (isset($_REQUEST["show_comments"])) {
-        switch ($_REQUEST["show_comments"]) {
-        case "0":
-            $_SESSION["show_comments"][$tag] = 0;
-            break;
-        case "1":
-            $_SESSION["show_comments"][$tag] = 1;
-            break;
-        }
-    }
-
-    // display comments!
-    if ($this->page && $_SESSION["show_comments"][$tag]) {
-        // display comments header ?>
-		<div class="commentsheader">
-			Commentaires [<a href="<?php echo  $this->href("", "", "show_comments=0") ?>">Cacher commentaires/formulaire</a>]
-		</div>
-		<?php
-
-        // display comments themselves
-        if ($comments) {
-            foreach ($comments as $comment) {
-                echo "<a name=\"",$comment["tag"],"\"></a>\n" ;
-                echo "<div class=\"comment\">\n" ;
-                if ($this->HasAccess('write', $comment['tag'])
-                 || $this->UserIsOwner($comment['tag'])
-                 || $this->UserIsAdmin($comment['tag'])) {
-                    echo '<div class="commenteditlink">';
-                    if ($this->HasAccess('write', $comment['tag'])) {
-                        echo '<a href="',$this->href('edit', $comment['tag']),'">&Eacute;diter ce commentaire</a>';
-                    }
-                    if ($this->UserIsOwner($comment['tag'])
-                     || $this->UserIsAdmin()) {
-                        echo '<br />','<a href="',$this->href('deletepage', $comment['tag']),'">Supprimer ce commentaire</a>';
-                    }
-                    echo "</div>\n";
-                }
-                echo $this->Format($comment["body"]),"\n" ;
-                echo "<div class=\"commentinfo\">\n-- ",$this->Format($comment["user"])," (".$comment["time"],")\n</div>\n" ;
-                echo "</div>\n" ;
-            }
-        }
-
-        // display comment form
-        echo "<div class=\"commentform\">\n" ;
-        if ($this->HasAccess("comment")) {
-            ?>
-				Ajouter un commentaire &agrave; cette page:<br />
-				<?php echo  $this->FormOpen("addcomment"); ?>
-					<textarea name="body" rows="6" cols="65" style="width: 100%"></textarea><br />
-					<input type="submit" value="Ajouter Commentaire" accesskey="s" />
-				<?php echo  $this->FormClose(); ?>
-			<?php
-        }
-        echo "</div>\n" ;
-    } else {
-        ?>
-		<div class="commentsheader">
-		<?php
-            switch (count($comments)) {
-            case 0:
-                echo "Il n'y a pas de commentaire sur cette page." ;
-                break;
-            case 1:
-                echo "Il y a un commentaire sur cette page." ;
-                break;
-            default:
-                echo "Il y a ",count($comments)," commentaires sur cette page." ;
-            } ?>
-
-		[<a href="<?php echo  $this->href("", "", "show_comments=1") ?>">Afficher commentaires/formulaire</a>]
-
-		</div>
-		<?php
-    }
-}
-
+// get the content buffer and display the page
 $content = ob_get_clean();
 echo $this->Header();
 echo $content;
 echo $this->Footer();
-
 ?>

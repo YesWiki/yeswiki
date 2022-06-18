@@ -23,9 +23,9 @@
 				{% if nbMaj > 0 %}
 					{% set alerte = '' %}
 					{% if nbMaj > 1 %}
-						{% set alerte = 'Vous avez ' ~ nbMaj ~ ' thèmes à mettre à jour' %}
+						{% set alerte = _t('AU_SEVERAL_THEMES_UPDATE')|replace({'{nbMaj}':nbMaj}) %}
 					{% else %}
-						{% set alerte = 'Vous avez 1 thème à mettre à jour' %}
+						{% set alerte = _t('AU_ONE_THEME_UPDATE') %}
 					{% endif %}
 					<span class="alert-msg" style="float: right;">{{alerte}}</span>
 				{% endif %}
@@ -57,9 +57,9 @@
 				{% if nbMaj > 0 %}
 					{% set alerte = '' %}
 					{% if nbMaj > 1 %}
-						{% set alerte = 'Vous avez ' ~ nbMaj ~ ' extensions à mettre à jour' %}
+						{% set alerte = _t('AU_SEVERAL_TOOLS_UPDATE')|replace({'{nbMaj}':nbMaj}) %}
 					{% else %}
-						{% set alerte = 'Vous avez 1 extension à mettre à jour' %}
+						{% set alerte = _t('AU_ONE_TOOL_UPDATE') %}
 					{% endif %}
 					<span style="float: right;">{{alerte}}</span>
 				{% endif %}

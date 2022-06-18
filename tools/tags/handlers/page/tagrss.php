@@ -76,7 +76,7 @@ if (!empty($tags)) {
                 $page["body"] = preg_replace("/\{\{rss(.*?)\}\}/s", '', $page["body"]);
                 $texteformat = $this->Format($page['body'], 'wakka', $page['tag']);
             } else {
-                $texteformat = '<i>Contenu masqué</i>';
+                $texteformat = '<i>' . _t('TAGS_HIDDEN_CONTENT') . '</i>';
             }
             
             $items.= $texteformat . "]]></description>\r\n";

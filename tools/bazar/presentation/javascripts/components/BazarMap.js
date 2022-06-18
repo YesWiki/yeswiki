@@ -13,7 +13,8 @@ Vue.component('BazarMap', {
     return {
       selectedEntry: null,
       center: null,
-      bounds: null
+      bounds: null,
+      layers: {}
     }
   },    
   computed: {
@@ -30,8 +31,8 @@ Vue.component('BazarMap', {
         fullscreenControl: this.params.fullscreen,
         fullscreenControlOptions: {
           forceSeparateButton: true,
-          title: 'Mode plein écran', // change the title of the button, default Full Screen
-          titleCancel: 'Retour à la vue normale', // change the title of the button when fullscreen is on, default Exit Full Screen
+          title: _t('BAZ_FULLSCREEN'), // change the title of the button, default Full Screen
+          titleCancel: _t('BAZ_BACK_TO_NORMAL_VIEW'), // change the title of the button when fullscreen is on, default Exit Full Screen
           // content: '<i class="fa fa-expand-alt"></i>', // change the content of the button, can be HTML, default null
           forceSeparateButton: true, // force seperate button to detach from zoom buttons, default false
         },
@@ -44,10 +45,47 @@ Vue.component('BazarMap', {
       if (!this.$refs.map) return
       this.bounds = this.map.getBounds()        
     },
-    createTileLayer() {
+    createTileLayers() {
       if (!this.map) return
       let provideOptions = this.params.provider_credentials ? JSON.parse(this.params.provider_credentials) : {}
       L.tileLayer.provider(this.params.provider, provideOptions).addTo(this.map)
+
+      for (let layer of this.params.layers) {
+        let [label, type, options, url] = layer.split('|')
+        if (!url) { url = options; options = ""; }
+        switch (type.toLowerCase()) {
+          case 'tiles':
+            this.layers[label] = L.tileLayer(url).addTo(this.map)
+            break;
+          case 'geojson':
+            this.layers[label] = L.geoJson.ajax(url, {
+              style: function (feature, latlng) {
+                if (feature.geometry.type == "Point") return
+                let props = feature.properties || {};
+                // convert options string "color: blue; fill: red" to object
+                options.split(';').forEach(o => {
+                  if (!0) return
+                  let [key, value] = o.split(':')
+                  props[key.trim()] = value.trim().replaceAll("'", '')
+                })
+                return { ...{
+                  fillColor: wiki.cssVar('--primary-color'),
+                  fillOpacity: 0.1,
+                  color: wiki.cssVar('--primary-color'),
+                  opacity: 1,
+                  weight: 3,
+                }, ...props };
+              },
+              pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng);
+              },
+            }).addTo(this.map)
+            break;
+          default:
+            alert(`Error in Layers parameter: type ${type} is unknown` )
+            break;
+        }
+      }
     },
     arraysEqual(a, b) {
       if (a === b) return true;
@@ -64,6 +102,10 @@ Vue.component('BazarMap', {
       if (entry.marker) return entry.marker
       try {
         entry.marker = L.marker([entry.bf_latitude, entry.bf_longitude], { riseOnHover: true });
+        let isLink = (this.isModalDisplay() || this.isDirectLinkDisplay() || this.isNewTabDisplay());
+        let tagName =  isLink ? 'a' : 'div';
+        let url = entry.url + (this.isModalDisplay() ? '/iframe':'');
+        let modalData = this.isModalDisplay() ? 'data-size="modal-lg" data-iframe="1"' : '';
         entry.marker.setIcon(
           L.divIcon({
             className: `bazar-marker ${this.params.smallmarker}`,
@@ -72,32 +114,57 @@ Vue.component('BazarMap', {
             html: `
               <div class="entry-name">
                 <span style="background-color: ${entry.color}">
-                  ${this.$root.field(entry, 'markerhover', 'bf_titre')}
+                  ${entry.markerhover || entry.bf_titre}
                 </span>
               </div>
-              <div class="bazar-entry" style="color: ${entry.color}">
+              <${tagName} class="bazar-entry${this.isModalDisplay() ? ' modalbox': ''}" `+
+              `${isLink ? `href="${url}" title="${entry.bf_titre}"`:''} style="color: ${entry.color}" ${modalData}>
                 <i class="${entry.icon || 'fa fa-bullseye'}"></i>
-              </div>`,
+              </${tagName}>`,
           })
         );
-        entry.marker.on('click', (ev) => {
-          this.selectedEntry = entry
-        });
+        if (this.isDirectLinkDisplay()){
+          let BazarMap = this;
+          entry.marker.on('click', function() {
+            event.preventDefault();
+            window.location = entry.url + (BazarMap.$root.isInIframe() ? '/iframe' : '');
+          });
+        } else if (this.isNewTabDisplay()){
+          entry.marker.on('click', function() {
+            event.preventDefault();
+            window.open(entry.url);
+            this.selectedEntry = entry
+          });
+        } else if (!isLink ){
+          entry.marker.on('click', (ev) => {
+            this.selectedEntry = entry
+          });
+        }
         return entry.marker
       } catch(e) {
         entry.marker = null
         console.error(`Entry ${entry.id_fiche} has invalid geolocation`, entry, e)
       }
-    }
+    },  
+    isModalDisplay: function (){
+      return (this.params.entrydisplay != undefined && this.params.entrydisplay == 'modal');
+    },
+    isNewTabDisplay: function (){
+      return (this.params.entrydisplay != undefined && this.params.entrydisplay == 'newtab');
+    },
+    isDirectLinkDisplay: function (){
+      return (this.params.entrydisplay != undefined && this.params.entrydisplay == 'direct');
+    },
   },
   watch: {
     selectedEntry: function (newVal, oldVal) {
       if (oldVal) oldVal.marker._icon.classList.remove('selected')
       if (this.selectedEntry) {
-        if (this.params.entrydisplay == 'modal')
-          this.$root.openEntryModal(this.selectedEntry)
-        else
+        if (this.params.entrydisplay == 'newtab') {
+          this.$root.openEntry(this.selectedEntry)
+        } else if (this.params.entrydisplay == 'sidebar') {
           this.$root.getEntryRender(this.selectedEntry)
+        }
         
         this.$nextTick(function() {
           this.selectedEntry.marker._icon.classList.add('selected')
@@ -131,12 +198,13 @@ Vue.component('BazarMap', {
     <div class="bazar-map-container" :style="{height: params.height}"
         :class="{'small-width': $el ? $el.offsetWidth < 800 : true, 'small-height': $el ? $el.offsetHeight < 600 : true }">
       
-        <l-map v-if="center" ref="map" :zoom="params.zoom" :center="center"
-            :options="mapOptions"
-            @update:center="updateBounds()" @ready="updateBounds(); createTileLayer()"
-            @click="selectedEntry = null">
+      <l-map v-if="center" ref="map" :zoom="params.zoom" :center="center"
+             :options="mapOptions"
+             @update:center="updateBounds()" @ready="updateBounds(); createTileLayers()"
+             @click="selectedEntry = null">
         <l-marker-cluster ref="cluster" ></l-marker-cluster>
       </l-map>
+      
 
       <!-- SideNav to display entry -->
       <div v-if="selectedEntry && this.params.entrydisplay == 'sidebar'" class="entry-container">

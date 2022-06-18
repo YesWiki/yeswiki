@@ -1,5 +1,5 @@
 label: _t(AB_template_group_label)
-previewHeight: 200px
+previewHeight: 300px
 position: 3
 actions:
   label:
@@ -23,166 +23,235 @@ actions:
               label-warning: _t(AB_template_actions_warning)
               label-danger: _t(AB_template_actions_danger)
   nav:
-    label: Onglets
-    description: Générer un menu
-    hint: LeNomDeVotrePage doit être le nom de la page dans laquelle vous mettrez cette action. Pensez à coller le code obtenu dans chacune des pages des onglets.
+    label: _t(AB_templates_nav_label)
+    description: _t(AB_templates_nav_description)
+    hint: _t(AB_templates_nav_hint)
     properties:
       links:
-        label: Liens vers vos pages wiki
+        label: _t(AB_templates_nav_links_label)
         type: text
-        default: LeNomDeVotrePage, LaSecondePage, LaTroisiemePage
-        hint: Nom des pages wiki séparées par des virgules
+        value: _t(AB_templates_nav_links_default)
+        hint: _t(AB_templates_nav_links_hint)
         doclink: https://yeswiki.net/?DocumentationMiseEnPageOnglet
       titles:
-        label: Intitulés de vos pages
-        default: Première page, Seconde page, Troisième page
-        hint: Textes de chaque onglet séparés par des virgules
+        label: _t(AB_templates_nav_titles_label)
+        value: _t(AB_templates_nav_titles_default)
+        hint: _t(AB_templates_nav_titles_hint)
         type: text
-      class:
-        label: _t(AB_template_actions_class)
+      class: 
         type: class
         subproperties:
           type:
-            label: class
+            label: _t(AB_templates_nav_class_label)
             type: list
-            default: 
+            default: nav nav-tabs
             options:
-              nav nav-tabs: Horizontal souligné
-              nav nav-pills: Horizontal sobre
-              nav nav-tabs nav-justified : Horizontal justifié
-              nav nav-stacked: Vertical
+              nav nav-tabs: _t(AB_templates_nav_class_tabs)
+              nav nav-pills: _t(AB_templates_nav_class_pills)
+              nav nav-tabs nav-justified : _t(AB_templates_nav_class_justified)
+              nav nav-stacked: _t(AB_templates_nav_class_vertical)
       hideifnoaccess:
         advanced: true
-        label: Masquer si l'utilisateur n'a pas accès à la page liée
+        label: _t(AB_templates_nav_hide_if_no_access_label)
         type: checkbox
         default: false
   panel:
-    label: Encadré
+    label: _t(AB_templates_panel_label)
     isWrapper: true
-    wrappedContentExample: Texte de votre encadré à modifier par la suite
+    wrappedContentExample: _t(AB_templates_panel_wrappedcontentexample)
     properties:
       title:
-        label: Titre
+        label: _t(AB_templates_panel_title_label)
         type: text
-        default: Titre de mon encadré
+        value: _t(AB_templates_panel_title_default)
         required: true
       type:
         label: Type
         type: list
         doclink: https://yeswiki.net/?DemoAccordion
         options:
-          default: Simple encadré
-          collapsible: Accordéon ouvert
-          collapsed: Accordéon fermé
+          default: _t(AB_templates_panel_type_default)
+          collapsible: _t(AB_templates_panel_type_collapsible)
+          collapsed: _t(AB_templates_panel_type_collapsed)
       class:
         label: _t(AB_template_actions_class)
         type: class
         subproperties:
           label:
-            label: Couleur
+            label: _t(AB_template_actions_color)
             type: list
             options:
-              panel-default: Défaut
-              panel-primary: Primaire
-              panel-secondary-1: Secondaire-1
-              panel-secondary-2: Secondaire-2
-              panel-success: Succès
-              panel-info: Info
-              panel-warning: Attention
-              panel-danger: Danger
+              panel-default: _t(AB_template_actions_default)
+              panel-primary: _t(AB_template_actions_primary)
+              panel-secondary-1: _t(AB_template_actions_secondary_1)
+              panel-secondary-2: _t(AB_template_actions_secondary_2)
+              panel-success: _t(AB_template_actions_success)
+              panel-info: _t(AB_template_actions_info)
+              panel-warning: _t(AB_template_actions_warning)
+              panel-danger: _t(AB_template_actions_danger)
   section:
-    label: Section
+    label: _t(AB_templates_section_label)
     isWrapper: true
-    wrappedContentExample: Texte de votre section à remplacer par la suite
+    wrappedContentExample: _t(AB_templates_section_wrappedcontentexample)
     properties:
       bgcolor:
-        label: Couleur de fond de la section
+        label: _t(AB_templates_section_bgcolor_label)
         type: color
+        icon: fill-drip
         doclink: https://yeswiki.net/?section
+      height:
+        label: _t(AB_templates_section_height_label)
+        type: text
+        icon: arrows-alt-v
+      pattern:
+        label: _t(AB_templates_section_pattern_label)
+        type: list
+        options:
+          '': _t(AB_templates_section_pattern_solid)
+          border-solid: _t(AB_templates_section_pattern_border_solid)
+          border-dashed: _t(AB_templates_section_pattern_border_dashed)
+          border-dotted: _t(AB_templates_section_pattern_border_dotted)
+          cross: _t(AB_templates_section_pattern_cross)
+          cross2: _t(AB_templates_section_pattern_cross_not_aligned)
+          point: _t(AB_templates_section_pattern_points)
+          point2: _t(AB_templates_section_pattern_points_not_aligned)
+          zigzag: _t(AB_templates_section_pattern_zigzag)
+          diagonal: _t(AB_templates_section_pattern_diag)
+      patternreverse:
+        label: _t(AB_templates_section_pattern_reverse)
+        type: checkbox
+        showif: pattern
       file:
-        label: Image de fond de la section
+        label: _t(AB_templates_section_file_label)
         advanced: true
         type: text
-        hint: Entrez le nom.jpg d'une image déjà uploadé dans cette page, ou le nom d'une nouvelle image.jpg pour faire apparaitre son boutton d'upload
-      height:
-        label: Hauteur de la section (en pixels)
-        type: text
+        icon: image
+        hint: _t(AB_templates_section_file_hint)
       class:
         label: Classe
         type: class
         subproperties:
+          textcolor:
+            label: _t(AB_templates_section_textcolor_label)
+            type: list
+            options:
+              white: _t(AB_templates_section_textcolor_white)
+              black: _t(AB_templates_section_textcolor_black)
+          fullwidth:
+            label: _t(AB_templates_section_fullwidth_label)
+            type: checkbox
+            icon: arrows-alt-h
+            value: ""
+            default: ""
+            checkedvalue: "full-width"
+            uncheckedvalue: ""
+          shape:
+            label: _t(AB_templates_section_shape_label)
+            type: list
+            icon: shapes
+            default: ""
+            options:
+              '': _t(AB_templates_section_shape_rect)
+              shape-rounded: _t(AB_templates_section_shape_rounded)
+              shape-circle: _t(AB_templates_section_shape_circ)
+              shape-blob1: _t(AB_templates_section_shape_blob1)
+              shape-blob2: _t(AB_templates_section_shape_blob2)
+              shape-blob3: _t(AB_templates_section_shape_blob3)
+              shape-blob4: _t(AB_templates_section_shape_blob4)
+              shape-blob5: _t(AB_templates_section_shape_blob5)
+          textalign:
+            label: _t(AB_templates_section_textalign_label)
+            type: list
+            icon: align-center
+            default: text-left
+            options:
+              text-left: _t(AB_templates_section_textalign_left)
+              text-right: _t(AB_templates_section_textalign_right)
+              text-center: _t(AB_templates_section_textalign_center)
+              text-justify: _t(AB_templates_section_textalign_justify)
+          cover:
+            advanced: true
+            label: _t(AB_templates_section_image_cover)
+            type: checkbox
+            showif: file
+            value: "cover"
+            default: ""
+            checkedvalue: "cover"
+            uncheckedvalue: ""
+          fixed:
+            advanced: true
+            label: _t(AB_templates_section_image_fixed)
+            type: checkbox
+            showif: file
+            value: ""
+            default: ""
+            checkedvalue: "fixed"
+            uncheckedvalue: ""
+          center:
+            advanced: true
+            label: _t(AB_templates_section_image_center)
+            type: checkbox
+            showif: file
+            value: ""
+            default: ""
+            checkedvalue: "center"
+            uncheckedvalue: ""
+          parallax:
+            advanced: true
+            label: _t(AB_templates_section_image_parallax)
+            type: checkbox
+            showif: file
+            value: ""
+            default: ""
+            checkedvalue: "parallax"
+            uncheckedvalue: ""
           height:
             advanced: true
-            label: Hauteur préfigurée de la section
+            label: _t(AB_templates_section_height_label)
             type: list
             options:
-              one-quarter-height: un quart de la hauteur
-              one-third-height: un tiers
-              half-height: une moitié
-              two-third-height: deux tiers
-              three-quarter-height: trois quarts
-              full-height: 100% hauteur
-          textcolor:
-            label: Tonalité du texte
-            type: list
-            default: black
-            options:
-              white: Claire
-              black: Foncée
-          textalign:
-            label: Centrage du texte
-            type: list
-            default : text-left
-            options :
-              text-left: Calé à gauche
-              text-right: Calé à droite
-              text-center: Centré
-              text-justify: Justifié
-          image:
-            advanced: true
-            label: Comportement de l'image
-            type: list
-            options:
-              cover: Couvre section avec l'image
-              fixed: L'image est bloquée lors du scroll
-              center: L'image reste centré
-              parallax: L'image remonte au scroll genre parallax
+              one-quarter-height: _t(AB_templates_section_height_one_quarter)
+              one-third-height: _t(AB_templates_section_height_one_third)
+              half-height: _t(AB_templates_section_height_half)
+              two-third-height: _t(AB_templates_section_height_two_third)
+              three-quarter-height: _t(AB_templates_section_height_three_quarter)
+              full-height: _t(AB_templates_section_height_full)
           animation:
-            label: Animation
+            label: _t(AB_templates_section_animation_label)
             type: list
             advanced: true
-            hint: Beaucoup plus d'effets disponibles sur https://animate.style/
+            hint: _t(AB_templates_section_animation_hint)
             doclink: https://yeswiki.net/?AniMation
             options:
-              wow bounce: Bonds
-              wow flash: Flash
-              wow pulse: Pulse
-              wow rubberBand: Elastique
-              wow shakeX: Gauche à droite
-              wow shakeY: Bas en haut
-              wow headShake: Secoué
-              wow swing: Swing
-              wow tada: Tada
-              wow wobble: Essuie glace
-              wow jello: Danse
-              wow heartBeat: Bat
+              wow bounce: _t(AB_templates_section_animation_bounce)
+              wow flash: _t(AB_templates_section_animation_flash)
+              wow pulse: _t(AB_templates_section_animation_pulse)
+              wow rubberBand: _t(AB_templates_section_animation_rubberband)
+              wow shakeX: _t(AB_templates_section_animation_shakex)
+              wow shakeY: _t(AB_templates_section_animation_shakey)
+              wow headShake: _t(AB_templates_section_animation_headshaked)
+              wow swing: _t(AB_templates_section_animation_swing)
+              wow tada: _t(AB_templates_section_animation_tada)
+              wow wobble: _t(AB_templates_section_animation_wobble)
+              wow jello: _t(AB_templates_section_animation_jello)
+              wow heartBeat: _t(AB_templates_section_animation_heartbat)
       visibility:
         advanced: true
         type: list
-        label: Visible par 
+        label: _t(AB_templates_section_visible_label) 
         options:
-          '': Tout le monde
-          '+': Utilisateur connecté
-          '%': Propriétaire de la page
-          '@admins': Admins seulement
+          '': _t(AB_templates_section_visible_everyone)
+          '+': _t(AB_templates_section_visible_connected_user)
+          '%': _t(AB_templates_section_visible_owner)
+          '@admins': _t(AB_templates_section_visible_admins)
       nocontainer:
         advanced: true
         type: list
-        label:  Ne pas mettre de conteneur
+        label: _t(AB_templates_section_visible_no_container)
         default: 0
         options:
-          '1': Oui
-          '0': Non
+          '1': _t(YES)
+          '0': _t(NO)
 #      data:
 #        label: Data wow
 #        type: text

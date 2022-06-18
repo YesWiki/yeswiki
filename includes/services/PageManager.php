@@ -21,6 +21,7 @@ class PageManager
     protected $params;
 
     protected $pageCache;
+    protected $ownersCache; // different cache because to set at the same time to prevent infinite loop
 
     public function __construct(
         Wiki $wiki,
@@ -42,6 +43,7 @@ class PageManager
         $this->tagsManager = $tagsManager;
 
         $this->pageCache = [];
+        $this->ownersCache = [];
     }
 
     /**
@@ -70,6 +72,9 @@ class PageManager
                 LIMIT 1
             ");
 
+            // set ownersCache before using guard
+            $this->cacheOwner($page);
+
             if ($page) {
                 $page["metadatas"] = $this->getMetadata($tag);
             }
@@ -81,6 +86,9 @@ class PageManager
             // cache result
             if (!$bypassAcls && !$time) {
                 $this->cache($page, $tag);
+            } else {
+                // owner in pageCache could be different from ownersCache so unset
+                $this->unsetCacheOwner($page);
             }
         }
         return $page;
@@ -117,6 +125,19 @@ class PageManager
             $pageTag = $page['tag'];
         }
         $this->pageCache[$pageTag] = $page;
+    }
+
+    public function cacheOwner($page)
+    {
+        if (!empty($page['tag']) && isset($page['owner'])) {
+            $this->ownersCache[$page['tag']] = $page['owner'];
+        }
+    }
+    private function unsetCacheOwner($page)
+    {
+        if (!empty($page['tag'])) {
+            unset($this->ownersCache[$page['tag']]);
+        }
     }
 
     public function getById($id): ?array
@@ -227,10 +248,12 @@ class PageManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        $this->dbService->query("DELETE FROM " . $this->dbService->prefixTable('pages') . "WHERE tag='" . $this->dbService->escape($tag) . "' OR comment_on='" . $this->dbService->escape($tag) . "'");
-        $this->dbService->query("DELETE FROM " . $this->dbService->prefixTable('links') . "WHERE from_tag='" . $this->dbService->escape($tag) . "' ");
-        $this->dbService->query("DELETE FROM " . $this->dbService->prefixTable('acls') . "WHERE page_tag='" . $this->dbService->escape($tag) . "' ");
-        $this->dbService->query("DELETE FROM " . $this->dbService->prefixTable('referrers') . "WHERE page_tag='" . $this->dbService->escape($tag) . "' ");
+        unset($this->ownersCache[$tag]);
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag='{$this->dbService->escape($tag)}' OR comment_on='{$this->dbService->escape($tag)}'");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag='{$this->dbService->escape($tag)}' ");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('acls')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='".TripleStore::TYPE_URI."' and `value`='".EntryManager::TRIPLES_ENTRY_ID."'");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('referrers')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->tagsManager->deleteAll($tag);
     }
 
@@ -302,6 +325,7 @@ class PageManager
             $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . "SET tag = '" . $this->dbService->escape($tag) . "', " . ($comment_on ? "comment_on = '" . $this->dbService->escape($comment_on) . "', " : "") . "time = now(), " . "owner = '" . $this->dbService->escape($owner) . "', " . "user = '" . $this->dbService->escape($user) . "', " . "latest = 'Y', " . "body = '" . $this->dbService->escape(chop($body)) . "', " . "body_r = ''");
 
             unset($this->pageCache[$tag]);
+            $this->ownersCache[$tag] = $owner;
 
             return 0;
         } else {
@@ -315,9 +339,20 @@ class PageManager
             $tag = $this->wiki->GetPageTag();
         }
 
-        if ($page = $this->getOne($tag, $time)) {
-            return isset($page["owner"]) ? $page["owner"] : null;
+        if (!isset($this->ownersCache[$tag])) {
+            if (empty($time) && isset($this->pageCache[$tag])) {
+                $this->ownersCache[$tag] = $this->pageCache[$tag]['owner'] ?? null;
+            } else {
+                $timeQuery = $time ? "time = '{$this->dbService->escape($time)}'" : "latest = 'Y'";
+                $page = $this->dbService->loadSingle(
+                    "SELECT `owner` FROM {$this->dbService->prefixTable('pages')} ".
+                    "WHERE tag = '{$this->dbService->escape($tag)}' AND {$timeQuery} ".
+                    "LIMIT 1"
+                );
+                $this->ownersCache[$tag] = $page['owner'] ?? null;
+            }
         }
+        return $this->ownersCache[$tag];
     }
 
     public function setOwner($tag, $user)
@@ -330,6 +365,7 @@ class PageManager
         }
 
         $this->dbService->query('UPDATE ' . $this->dbService->prefixTable('pages') . "SET owner = '" . $this->dbService->escape($user) . "' WHERE tag = '" . $this->dbService->escape($tag) . "' AND latest = 'Y' LIMIT 1");
+        $this->ownersCache[$tag] = $user;
     }
 
     public function getMetadata($tag): ?array
@@ -381,6 +417,12 @@ class PageManager
             // do not check following tests to be faster because admins can see anything
             return $pages;
         }
+        
+        // affect cache before checking acls
+        foreach ($pages as $page) {
+            $this->cacheOwner($page);
+        }
+
         // not possible to init the EntryManager or Guard in the constructor because of circular reference problem
         $entryManager = $this->wiki->services->get(EntryManager::class);
         $guard = $this->wiki->services->get(Guard::class);

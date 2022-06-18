@@ -1,0 +1,32 @@
+<div id="{{reactionId}}" class="reactions-container">
+  <h6>
+    {% if connected %}
+      {{ title }} <small><span class="max-reaction">{{maxReaction}}</span> {{_t('REACTION_NB_REACTIONS_LEFT')}}</small>
+    {% else %}
+      {{ _t('REACTION_TO_ALLOW_REACTION') }}, <a href="#LoginModal" class="btn btn-default" data-toggle="modal"><i class="fas fa-user"></i> 
+      {{ _t('REACTION_PLEASE_LOGIN') }}</a>
+    {% endif %}
+  </h6>
+  <div class="reactions-flex">
+    {% for reaction in reactionItems %}
+      <div class="reaction-content">
+        {% if connected -%}
+          <a href="{{ url({tag:'api/reactions'}) }}"
+            title="{{reaction.label}}"
+            data-id="{{reaction.id}}" data-reactionId="{{reactionId}}" data-pageTag="{{pageTag}}" data-maxReaction="{{maxReaction}}" data-userName="{{userName}}"
+            class="link-reaction{{ (userReaction and reaction.id in userReaction) ? ' user-reaction' : '' }}">
+            {% block reactionBlock %}
+              <div class="reaction-image">{{ reaction.image|raw }}</div>
+              <h6 class="reaction-title">{{ reaction.label }}</h6>
+              <div class="reaction-numbers">{{ reaction.nbReactions }}</div>
+            {% endblock %}
+          </a>
+        {% else %}
+          <a href="#" onclick="return false;" title="{{_t('REACTION_LOGIN_TO_REACT')}}" class="disabled link-reaction">
+            {{- block('reactionBlock') -}}
+          </a>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</div>

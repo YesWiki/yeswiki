@@ -26,6 +26,67 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // image's background color
 $bgcolor = $this->GetParameter('bgcolor');
 
+// backgournd pattern
+$patternreverse = $this->GetParameter('patternreverse') == 'true';
+$patternId = $this->GetParameter('pattern');
+$patternbg = $patternreverse ? 'var(--main-bg-color)' : $bgcolor;
+$patterncolor = $patternreverse ? $bgcolor : 'var(--main-bg-color)';
+$patternborder = false;
+switch ($patternId) {
+    case 'border-solid':
+    case 'border-dashed':
+    case 'border-dotted':
+        $patternborder = true;
+        $pattern = <<<css
+            border-color: $bgcolor;
+            background-color: var(--main-bg-color);
+        css;
+        break;
+    case 'point':
+        $pattern = <<<css
+            background-image: radial-gradient($patterncolor 2.5px, transparent 2.5px);
+            background-size: 31px 31px;
+        css;
+        break;
+    case 'point2':
+        $pattern = <<<css
+            background-image: radial-gradient($patterncolor 2px, transparent 2px), radial-gradient($patterncolor 2px, transparent 2px);
+            background-size: 25px 25px;
+            background-position: 0 0, 12.5px 12.5px;
+        css;
+        break;
+    case 'cross':
+        $pattern = <<<css
+            background: radial-gradient(circle, transparent 20%, $patternbg 30%, $patternbg 70%, transparent 70%, transparent) 0% 0% / 30px 30px, radial-gradient(circle, transparent 20%, $patternbg 40%, $patternbg 75%, transparent 70%, transparent) 30px 30px / 30px 30px, linear-gradient($patterncolor 2px, transparent 2px) 0px -1px / 30px 30px, linear-gradient(90deg, $patterncolor 2px, $patternbg 2px) -1px 0px / 30px 30px $patternbg;
+            background-position-y: 7px;
+        css;
+        break;
+    case 'cross2':
+        $pattern = <<<css
+            background: radial-gradient(circle, transparent 20%, $patternbg 20%, $patternbg 80%, transparent 80%, transparent) 0% 0% / 46px 46px, radial-gradient(circle, transparent 20%, $patternbg 20%, $patternbg 80%, transparent 80%, transparent) 23px 23px / 46px 46px, linear-gradient($patterncolor 2px, transparent 2px) 0px -1px / 23px 23px, linear-gradient(90deg, $patterncolor 2px, $patternbg 2px) -1px 0px / 23px 23px $patternbg;
+        css;
+        break;
+    case 'zigzag':
+        $pattern = <<<css
+            background: linear-gradient(135deg, $patterncolor 25%, transparent 25%) -10px 0, linear-gradient(225deg, $patterncolor 25%, transparent 25%) -10px 0, linear-gradient(315deg, $patterncolor 25%, transparent 25%), linear-gradient(45deg, $patterncolor 25%, transparent 25%);
+            background-size: 20px 20px;
+        css;
+        break;
+    case 'diagonal':
+        $pattern = <<<css
+            background-image: repeating-linear-gradient(45deg, $patterncolor 0, $patterncolor 3.5px, transparent 0, transparent 50%);
+            background-size: 18px 18px;
+        css;
+        break;    
+    default:
+        $pattern = '';
+        break;
+}
+if ($pattern && !$patternborder) $pattern .= <<<css
+    background-color: $patternbg !important;
+    background-repeat: repeat;
+css;
+
 // image's filename
 $file = $this->GetParameter('file');
 $backgroundimg =true;
@@ -83,12 +144,20 @@ if ($GLOBALS['check_' . $pagetag]['section']) {
     $role = $this->GetParameter('visibility');
     $role = empty($role) ? $role : str_replace("\\n", "\n", $role);
     $visible = !$role || ($GLOBALS['wiki']->CheckACL($role, null, false));
-    
+    $class = ($backgroundimg ? 'background-image' : '') 
+     . ($patternId && !$patternborder ? ' with-bg-pattern' : '') 
+     . ($patternborder ? ' pattern-border' : '') 
+     . ($visible ? '' : ' remove-this-div-on-page-load ') 
+     . " pattern-$patternId"
+     . (!empty($class) ? ' ' . $class : '');
+
     echo '<!-- start of section -->
-    <section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. ($backgroundimg ? 'background-image' : '') . ($visible ? '' : ' remove-this-div-on-page-load ') . (!empty($class) ? ' ' . $class : '') . '" style="'
+    <section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. $class . '" data-file="'. $file .'" style="'
         .(!empty($bgcolor) ? 'background-color:' . $bgcolor .'; ' : '')
         .(!empty($height) ? 'height:' . $height . 'px; ' : '')
-        .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '').'"';
+        .(!empty($pattern) ? $pattern : '')
+        .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '').'"'
+        ;
     if (is_array($data)) {
         foreach ($data as $key => $value) {
             echo ' data-'.$key.'="'.$value.'"';

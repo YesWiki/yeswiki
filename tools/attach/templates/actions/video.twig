@@ -1,0 +1,20 @@
+{% extends "@attach/actions/commons-pdf-video.twig" %}
+
+{% block main %}
+  {% if serveur == 'vimeo' %}
+    <iframe src="https://player.vimeo.com/video/{{ id }}?color=ffffff&title=0&byline=0&portrait=0" 
+      class="embed-responsive-item" frameborder="0"
+      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+      allowfullscreen></iframe>
+  {% elseif serveur == 'peertube' %}
+    <iframe src="{{ peertubeinstance }}videos/embed/{{ id }}"
+      class="embed-responsive-item" sandbox="allow-same-origin allow-scripts" frameborder="0"
+      allowfullscreen></iframe>
+  {% else %}
+    <iframe src="https://www.youtube-nocookie.com/embed/{{ id }}?cc_load_policy=1&iv_load_policy=3&modestbranding=1" 
+      class="embed-responsive-item" frameborder="0"
+      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+      allowfullscreen></iframe>
+  {% endif %}
+{% endblock %}
+  

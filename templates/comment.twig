@@ -1,0 +1,37 @@
+<a id="yw-comment-{{ comment.tag }}" name="yw-comment-{{ comment.tag }}"></a>
+<div class="yw-comment" data-tag="{{ comment.tag }}"  data-commenton="{{ comment.commentOn }}">
+	<div class="comment-info">
+		<a href="{{ comment.linkuser }}" style="color:{{ comment.usercolor }}">
+			<img src="{{ comment.userpicture }}" alt="user picture" class="user-pic img-circle" />
+		</a>
+		<div class="comment-user-and-date">
+			<div class="comment-user">
+				<a href="{{ comment.linkuser }}">
+					{{ comment.user }}
+				</a>
+			</div>
+			<div class="comment-date">{{ comment.date }}</div>
+		</div>
+	</div>
+	<div class="comment-html">
+		{{ comment.body|raw }}
+	</div>
+	<input type="hidden" class="comment-body" name="body" value="{{ comment.rawbody }}" />
+	<div class="comment-links">
+		{% if comment.linkcomment %}
+		<a href="{{ comment.linkcomment }}" class="btn-answer-comment btn btn-xs btn-default"><i class="fas fa-comment"></i> {{ _t('ANSWER')}}</a>
+		{% endif %}	
+		{% if comment.linkeditcomment %}
+		<a href="{{ comment.linkeditcomment }}" class="btn-edit-comment btn btn-xs btn-default"><i class="fas fa-edit"></i> {{ _t('MODIFY')}}</a>
+		{% endif %}	
+		{% if comment.linkdeletecomment %}
+		<a href="{{ comment.linkdeletecomment }}" class="btn-delete-comment btn btn-xs btn-danger"><i class="fas fa-trash"></i> {{ _t('DELETE')}}</a>
+		{% endif %}	
+	</div>
+	<div class="form-comment"></div>
+	{% if comment.reponses is not empty %}
+	<div class="comment-reponses">
+		{{ comment.reponses|raw }}
+	</div>
+	{% endif %}		
+</div>		

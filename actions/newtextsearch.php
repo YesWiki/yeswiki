@@ -64,7 +64,7 @@ if (!$paramPhrase) {
           </span>
           </div>
           <span class="">
-          <small>Un caract&eacute;re inconnu peut &ecirc;tre remplac&eacute; par « ? » plusieurs par « * »</small>
+          <small>'.htmlspecialchars(_t('NEWTEXTSEARCH_HINT')).'</small>
           </span><!-- /input-group --><br>';
     echo "\n", $this->FormClose();
 }
@@ -172,7 +172,7 @@ if ($phrase) {
 
         // affichage des résultats en liste
         if (empty($separator)) {
-            echo $this->Format('---- --- **Résultats de la recherche [""'.$phrase.'""] :---**');
+            echo $this->Format('---- --- **'._t('SEARCH_RESULTS').' [""'.$phrase.'""] :---**');
             echo('<ol>');
             $counter = 0;
             foreach ($resultat as $i => $page) {
@@ -208,6 +208,6 @@ if ($phrase) {
         }
         $GLOBALS['js'] = $js;
     } else {
-        echo $this->Format('---- --- **Désolé mais il n\'y a aucun de résultat pour votre recherche.**');
+        echo $this->Format('---- --- **'._t('NO_SEARCH_RESULT').'.**');
     }
 }

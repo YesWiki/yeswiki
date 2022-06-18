@@ -34,6 +34,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # voir actions/attach.php ppour la documentation
 # copyrigth Eric Feldstein 2003-2004
 
+use enshrined\svgSanitize\Sanitizer;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\LinkTracker;
 
 if (!defined("WIKINI_VERSION")) {
@@ -62,72 +64,22 @@ if (!class_exists('attach')) {
         public $pageId = 0; //identifiant de la page
         public $isSafeMode = true; //indicateur du safe mode de PHP
         public $data = ''; //indicateur du safe mode de PHP
+        private $params;
         /**
          * Constructeur. Met les valeurs par defaut aux parametres de configuration
          */
         public function __construct(&$wiki)
         {
             $this->wiki = $wiki;
-            $this->attachConfig = $this->wiki->GetConfigValue("attach_config");
+            $this->params = $this->wiki->services->get(ParameterBagInterface::class);
+            $this->attachConfig = $this->params->get("attach_config");
 
             if (!is_array($this->attachConfig)) {
-                $this->attachConfig = array();
-            }
-
-            if (empty($this->attachConfig["ext_images"])) {
-                $this->attachConfig["ext_images"] = "gif|jpeg|png|jpg|svg|webp";
-            }
-
-            if (empty($this->attachConfig["ext_audio"])) {
-                $this->attachConfig["ext_audio"] = "mp3|aac";
-            }
-
-            if (empty($this->attachConfig["ext_video"])) {
-                $this->attachConfig["ext_video"] = "mp4|webm|ogg";
-            }
-
-            if (empty($this->attachConfig["ext_wma"])) {
-                $this->attachConfig["ext_wma"] = "wma";
-            }
-            
-            if (empty($this->attachConfig["ext_pdf"])) {
-                $this->attachConfig["ext_pdf"] = "pdf";
-            }
-
-            if (empty($this->attachConfig["ext_freemind"])) {
-                $this->attachConfig["ext_freemind"] = "mm";
-            }
-
-            if (empty($this->attachConfig["ext_flashvideo"])) {
-                $this->attachConfig["ext_flashvideo"] = "flv";
-            }
-
-            if (empty($this->attachConfig["ext_script"])) {
-                $this->attachConfig["ext_script"] = "php|php3|asp|asx|vb|vbs|js";
-            }
-
-            if (empty($this->attachConfig['upload_path'])) {
-                $this->attachConfig['upload_path'] = 'files';
-            }
-
-            if (empty($this->attachConfig['update_symbole'])) {
-                $this->attachConfig['update_symbole'] = '';
+                throw new Exception("attach_config should be an array in wakka.config.php");
             }
 
             if (empty($this->attachConfig['max_file_size'])) {
                 $this->attachConfig['max_file_size'] = $this->wiki->GetConfigValue("max_file_size") ? $this->wiki->GetConfigValue("max_file_size") : $this->file_upload_max_size();
-            }
-
-            if (empty($this->attachConfig['fmDelete_symbole'])) {
-                $this->attachConfig['fmDelete_symbole'] = 'Supr';
-            }
-
-            if (empty($this->attachConfig['fmRestore_symbole'])) {
-                $this->attachConfig['fmRestore_symbole'] = 'Rest';
-            }
-
-            if (empty($this->attachConfig['fmTrash_symbole'])) {
-                $this->attachConfig['fmTrash_symbole'] = 'Corbeille';
             }
 
             $safemode = $this->wiki->GetConfigValue("no_safe_mode");
@@ -229,6 +181,21 @@ if (!class_exists('attach')) {
                 $path = $this->attachConfig['upload_path'];
             } else {
                 $path = $this->attachConfig['upload_path'] . '/' . $this->wiki->GetPageTag();
+                if (!is_dir($path)) {
+                    $this->mkdir_recursif($path);
+                }
+            }
+            return $path;
+        }
+        /**
+         * Calcul le repertoire de cache en fonction du safe_mode
+         */
+        public function GetCachePath()
+        {
+            if ($this->isSafeMode) {
+                $path = $this->attachConfig['cache_path'];
+            } else {
+                $path = $this->attachConfig['cache_path'] . '/' . $this->wiki->GetPageTag();
                 if (!is_dir($path)) {
                     $this->mkdir_recursif($path);
                 }
@@ -386,6 +353,21 @@ if (!class_exists('attach')) {
             }
             return ($res ? $res : false);
         }
+
+        /**
+         * sanitize filename without special chars - spaces or accents
+         * @param string $filename
+         * @return string $sanitizedFilename
+         */
+        public function sanitizeFilename(string $filename): string
+        {
+            $search = array('@[éèêëÊË]@i','@[àâäÂÄ]@i','@[îïÎÏ]@i','@[ûùüÛÜ]@i','@[ôöÔÖ]@i','@[ç]@i','@[ ]@i','@[^a-zA-Z0-9_\.]@');
+            $replace = array('e','a','i','u','o','c','_','');
+            $sanitizedFilename = preg_replace($search, $replace, utf8_decode($filename));
+
+            return $sanitizedFilename;
+        }
+
         /**
          * Decode un nom long de fichier
          */
@@ -393,7 +375,7 @@ if (!class_exists('attach')) {
         {
             $afile = array();
             $afile['realname'] = basename($filename);
-            $afile['size'] = filesize($filename);
+            $afile['size'] = file_exists($filename) ? filesize($filename) : null;
             $afile['path'] = dirname($filename);
             if (preg_match('`^(.*)_(\d{14})_(\d{14})\.(.*)(trash\d{14})?$`', $afile['realname'], $m)) {
                 $afile['name'] = $m[1];
@@ -520,7 +502,7 @@ if (!class_exists('attach')) {
             if (!preg_match("/.(svg)$/i", $this->file) == 1) {
                 if ((!empty($this->height)) && (!empty($this->width))) {
                     // Si des parametres width ou height present : redimensionnement
-                    if (!file_exists($image_dest = $this->calculer_nom_fichier_vignette($fullFilename, $this->width, $this->height))) {
+                    if (!file_exists($image_dest = $this->getResizedFilename($fullFilename, $this->width, $this->height))) {
                         $this->redimensionner_image($fullFilename, $image_dest, $this->width, $this->height);
                     }
                     $img_name = $image_dest;
@@ -783,6 +765,9 @@ if (!class_exists('attach')) {
                 $srcFile = $_FILES['upFile']['tmp_name'];
                 if (move_uploaded_file($srcFile, $destFile)) {
                     chmod($destFile, 0644);
+                    if ($ext  === "svg") {
+                        $this->sanitizeSVGfile($destFile);
+                    }
                     header("Location: " . $this->wiki->href("", $this->wiki->GetPageTag(), ""));
                 } else {
                     echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_MOVING_TEMPORARY_FILE') . "</div>\n";
@@ -947,23 +932,23 @@ if (!class_exists('attach')) {
         {
             $method = ($this->wiki->GetMethod() != 'show' ? $this->wiki->GetMethod() : '');
             $output = '<ul id="fmtab' . $this->wiki->tag . '" class="nav nav-tabs">
-				<li' . (($trash) ? '' : ' class="active"') . '><a href="' . $this->wiki->href($method, $this->wiki->tag . '#fmtab' . $this->wiki->tag) . '" title="Gestion des fichiers"><i class="fa fa-file icon-file"></i>&nbsp;Gestion des fichiers</a></li>
-				<li' . (($trash) ? ' class="active"' : '') . '><a href="' . $this->wiki->href($method, $this->wiki->GetPageTag(), 'do=trash') . '" title="Corbeille"><i class="fa fa-trash icon-trash"></i>&nbsp;Corbeille</a></li>
+				<li' . (($trash) ? '' : ' class="active"') . '><a href="' . $this->wiki->href($method, $this->wiki->tag) . '#fmtab' . $this->wiki->tag . '" title="'._t('ATTACH_FILE_MANAGEMENT').'"><i class="fa fa-file icon-file"></i>&nbsp;'._t('ATTACH_FILE_MANAGEMENT').'</a></li>
+				<li' . (($trash) ? ' class="active"' : '') . '><a href="' . $this->wiki->href($method, $this->wiki->GetPageTag(), 'do=trash') . '#fmtab' . $this->wiki->tag . '" title="'._t('ATTACH_TRASH').'"><i class="fa fa-trash icon-trash"></i>&nbsp;'._t('ATTACH_TRASH').'</a></li>
             </ul>';
 
             $files = $this->fmGetFiles($trash);
 
             if (!$files) {
-                $output .= '<div class="alert alert-info">Pas de fichiers attach&eacute;s &agrave; la page ' . $this->wiki->Format($this->wiki->tag) . ' pour l\'instant.</div>' . "\n";
+                $output .= '<div class="alert alert-info">'. str_replace('{tag}', $this->wiki->Format($this->wiki->tag), _t('ATTACH_NO_ATTACHED_FILES')) . '</div>' . "\n";
             } else {
                 // tri du tableau des fichiers
                 $files = $this->sortByNameRevFile($files);
                 //entete du tableau
                 $fmHeadTable = '	<thead>' . "\n" .
                     '		<tr>' . "\n" .
-                    '			<td class="fmfilename">Nom du fichier</td>' . "\n" .
-                    '			<td class="fmfilesize">Taille</td>' . "\n" .
-                    '			<td class="fmfiledate">Date de modification</td>' . "\n" .
+                    '			<td class="fmfilename">'._t('ATTACH_FILENAME').'</td>' . "\n" .
+                    '			<td class="fmfilesize">'._t('ATTACH_SIZE').'</td>' . "\n" .
+                    '			<td class="fmfiledate">'._t('ATTACH_DATE_OF_MODIFICATION').'</td>' . "\n" .
                     '			<td class="fmfileactions">&nbsp;</td>' . "\n";
                 $fmHeadTable .= '		</tr>' . "\n" .
                     '	</thead>' . "\n";
@@ -982,19 +967,19 @@ if (!class_exists('attach')) {
                         $url = $this->wiki->href('', $this->wiki->GetPageTag(), 'do=del&file=' . $file['realname']);
                         $icon = 'fa fa-trash icon-trash';
                     }
-                    $dellink = '<a class="btn btn-mini btn-danger" href="' . $url . '" title="Supprimer"><i class="' . $icon . ' icon-white"></i></a>';
+                    $dellink = '<a class="btn btn-mini btn-danger" href="' . $url . '" title="'._t('DELETE').'"><i class="' . $icon . ' icon-white"></i></a>';
                     //lien de restauration
                     $restlink = '';
                     if ($trash) {
                         $url = $this->wiki->href('', $this->wiki->GetPageTag(), 'do=restore&file=' . $file['realname']);
-                        $restlink = '<a class="btn btn-xs btn-primary" href="' . $url . '" title="Restaurer"><i class="fa fa-refresh icon-refresh icon-white"></i>&nbsp;Restaurer</a>';
+                        $restlink = '<a class="btn btn-xs btn-primary" href="' . $url . '" title="'._t('ATTACH_RESTORE').'"><i class="fa fa-refresh icon-refresh icon-white"></i>&nbsp;'._t('ATTACH_RESTORE').'</a>';
                     }
 
                     //lien pour downloader le fichier
                     $url = $this->wiki->href("download", $this->wiki->GetPageTag(), "file=" . $file['realname']);
-                    $fileinfo = 'Nom r&eacute;el du fichier : ' . $file['realname'];
+                    $fileinfo = str_replace('{file}', $file['realname'], _t('ATTACH_REAL_FILENAME'));
                     if ($trash) {
-                        $fileinfo .= ' - Supprim&eacute; le : ' . $this->parseDate($file['trashdate']);
+                        $fileinfo .= str_replace('{date}', $this->parseDate($file['trashdate']), _t('ATTACH_DELETED_ON'));
                     }
                     $dlLink = '<a class="filenamelink" href="' . $url . '" title="' . $fileinfo . '">' . substr($file['name'], 0, 25) . '&hellip;' . '.' . $file['ext'] . "</a>";
                     $fmBodyTable .= '		<tr class="' . $color . '">' . "\n" .
@@ -1011,7 +996,7 @@ if (!class_exists('attach')) {
                 $output .= '<table class="fmtable table table-condensed table-hover table-striped">' . "\n" . $fmHeadTable . $fmBodyTable . '</table>' . "\n";
                 if ($trash) {
                     //Avertissement
-                    $output .= '<div class="alert alert-danger"><a href="' . $this->wiki->href($method, $this->wiki->tag, 'do=emptytrash') . '" class="btn btn-danger pull-right"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;Vider la corbeille</a><strong>Attention :</strong> les fichiers effac&eacute;s &agrave; partir de la corbeille le seront d&eacute;finitivement.<div class="clearfix"></div></div>';
+                    $output .= '<div class="alert alert-danger"><a href="' . $this->wiki->href($method, $this->wiki->tag, 'do=emptytrash') . '" class="btn btn-danger pull-right"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;'._t('ATTACH_EMPTY_TRASH').'</a><strong>'._t('CAUTION').' :</strong> '._t('ATTACH_EMPTY_TRASH_NOTICE').'<div class="clearfix"></div></div>';
                 }
             }
             echo $output;
@@ -1021,22 +1006,22 @@ if (!class_exists('attach')) {
          */
         public function fmShow($trash = false)
         {
-            $fmTitlePage = $this->wiki->Format("====Gestion des fichiers attach&eacute;s ?  la page " . $this->wiki->tag . "====\n---");
+            $fmTitlePage = $this->wiki->Format("====". str_replace('{tag}', $this->wiki->tag, _t('ATTACH_FILE_MANAGEMENT_TITLE')) . "====\n---");
             if ($trash) {
                 //Avertissement
-                $fmTitlePage .= '<div class="prev_alert">Les fichiers effac&eacute;s sur cette page le sont d&eacute;finitivement</div>';
+                $fmTitlePage .= '<div class="prev_alert">'._t('ATTACH_FILE_MANAGEMENT_WARNING').'</div>';
                 //Pied du tableau
-                $url = $this->wiki->Link($this->wiki->tag, 'filemanager', null, 'Gestion des fichiers');
+                $url = $this->wiki->Link($this->wiki->tag, 'filemanager', null, _t('ATTACH_FILE_MANAGEMENT'));
                 $fmFootTable = '	<tfoot>' . "\n" .
                     '		<tr>' . "\n" .
                     '			<td colspan="6">' . $url . '</td>' . "\n";
-                $url = $this->wiki->Link($this->wiki->tag, 'filemanage', ['do' => 'emptytrash'], 'Vider la corbeille');
+                $url = $this->wiki->Link($this->wiki->tag, 'filemanage', ['do' => 'emptytrash'], _t('ATTACH_EMPTY_TRASH'));
                 $fmFootTable .= '			<td>' . $url . '</td>' . "\n" .
                     '		</tr>' . "\n" .
                     '	</tfoot>' . "\n";
             } else {
                 //pied du tableau
-                $url = '<a href="' . $this->wiki->href('filemanager', $this->wiki->GetPageTag(), 'do=trash') . '" title="Corbeille">' . $this->attachConfig['fmTrash_symbole'] . "</a>";
+                $url = '<a href="' . $this->wiki->href('filemanager', $this->wiki->GetPageTag(), 'do=trash') . '" title="'._t('ATTACH_TRASH').'">' . $this->attachConfig['fmTrash_symbole'] . "</a>";
                 $fmFootTable = '	<tfoot>' . "\n" .
                     '		<tr>' . "\n" .
                     '			<td colspan="6">' . $url . '</td>' . "\n" .
@@ -1047,13 +1032,14 @@ if (!class_exists('attach')) {
             $fmHeadTable = '	<thead>' . "\n" .
                 '		<tr>' . "\n" .
                 '			<td>&nbsp;</td>' . "\n" .
-                '			<td>Nom du fichier</td>' . "\n" .
-                '			<td>Nom r&eacute;el du fichier</td>' . "\n" .
-                '			<td>Taille</td>' . "\n" .
-                '			<td>R&eacute;vision de la page</td>' . "\n" .
-                '			<td>R&eacute;vison du fichier</td>' . "\n";
+                '			<td>'._t('ATTACH_FILENAME').'</td>' . "\n" .
+                '			<td>'._t('ATTACH_REAL_FILENAME').'</td>' . "\n" .
+                '			<td>'._t('ATTACH_SIZE').'</td>' . "\n" .
+                '			<td>'._t('ATTACH_PAGE_REVISION').'</td>' . "\n" .
+                '			<td>'._t('ATTACH_FILE_REVISION').'</td>' . "\n";
+
             if ($trash) {
-                $fmHeadTable .= '			<td>Suppression</td>' . "\n";
+                $fmHeadTable .= '			<td>'._t('ATTACH_DELETION').'</td>' . "\n";
             }
             $fmHeadTable .= '		</tr>' . "\n" .
                 '	</thead>' . "\n";
@@ -1072,12 +1058,12 @@ if (!class_exists('attach')) {
                 } else {
                     $url = $this->wiki->href('filemanager', $this->wiki->GetPageTag(), 'do=del&file=' . $file['realname']);
                 }
-                $dellink = '<a href="' . $url . '" title="Supprimer">' . $this->attachConfig['fmDelete_symbole'] . "</a>";
+                $dellink = '<a href="' . $url . '" title="'._t('DELETE').'">' . $this->attachConfig['fmDelete_symbole'] . "</a>";
                 //lien de restauration
                 $restlink = '';
                 if ($trash) {
                     $url = $this->wiki->href('filemanager', $this->wiki->GetPageTag(), 'do=restore&file=' . $file['realname']);
-                    $restlink = '<a href="' . $url . '" title="Restaurer">' . $this->attachConfig['fmRestore_symbole'] . "</a>";
+                    $restlink = '<a href="' . $url . '" title="'._t('ATTACH_RESTORE').'">' . $this->attachConfig['fmRestore_symbole'] . "</a>";
                 }
 
                 //lien pour downloader le fichier
@@ -1148,13 +1134,45 @@ if (!class_exists('attach')) {
         /**
          * Met le fichier a la corbeille
          */
-        public function fmDelete()
+        public function fmDelete(string $rawFileName = "")
         {
             $path = $this->GetUploadPath();
-            $filename = $path . '/' . ($_GET['file'] ? $_GET['file'] : '');
-            if (file_exists($filename)) {
+            $rawFileName = empty($rawFileName) ? filter_input(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS) : $rawFileName;
+            $filename = $path . '/' . basename($rawFileName);
+            if (!empty($rawFileName) && file_exists($filename)) {
                 $trash = $filename . 'trash' . $this->getDate();
                 rename($filename, $trash);
+
+                // delete cache files
+                $cachePath = $this->GetCachePath();
+                $fileInfo = $this->decodeLongFilename($filename);
+    
+                $filenamesToDelete = [];
+                // vignettes
+                $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9]", "[0-9][0-9][0-9]", "fit");
+                $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9][0-9]", "[0-9][0-9][0-9]", "fit");
+                $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9]", "[0-9][0-9][0-9][0-9]", "fit");
+                $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9][0-9]", "[0-9][0-9][0-9][0-9]", "fit");
+                $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9]", "[0-9][0-9][0-9]", "crop");
+                $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9][0-9]", "[0-9][0-9][0-9]", "crop");
+                $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9]", "[0-9][0-9][0-9][0-9]", "crop");
+                $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9][0-9]", "[0-9][0-9][0-9][0-9]", "crop");
+                // old Image Field
+                $filenamesToDelete[] = $cachePath."/vignette_".basename($filename);
+                $filenamesToDelete[] = $cachePath."/image_".basename($filename);
+                // old agenda.tpl.html|blog.tpl.html|damier.tpl.html|materiel-card.tpl.html|news.tpl.html|photobox.tpl.html|trombinoscope.tpl.html
+                $filenamesToDelete[] = $cachePath."/image_[0-9][0-9][0-9][x_][0-9][0-9][0-9]_".basename($filename);
+                $filenamesToDelete[] = $cachePath."/image_[0-9][0-9][0-9][x_][0-9][0-9][0-9][0-9]_".basename($filename);
+                $filenamesToDelete[] = $cachePath."/image_[0-9][0-9][0-9][0-9][x_][0-9][0-9][0-9]_".basename($filename);
+                $filenamesToDelete[] = $cachePath."/image_[0-9][0-9][0-9][0-9][x_][0-9][0-9][0-9][0-9]_".basename($filename);
+                // old tempaltes.functions.php getImageFromBody
+                $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9]x[0-9][0-9][0-9]-".basename($filename);
+                $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9]0-9]x[0-9][0-9][0-9]-".basename($filename);
+                $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9]x[0-9]0-9][0-9][0-9]-".basename($filename);
+                $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9]0-9]x[0-9]0-9][0-9][0-9]-".basename($filename);
+                foreach ($filenamesToDelete as $path) {
+                    array_map('unlink', glob($path));
+                }
             }
         }
         /**
@@ -1194,16 +1212,35 @@ if (!class_exists('attach')) {
         public function calculer_nom_fichier_vignette($fullFilename, $width, $height)
         {
             $file = $this->decodeLongFilename($fullFilename);
-            if ($this->isSafeMode) {
-                $file_vignette = $file['path'] . '/' . $this->wiki->GetPageTag() . '_' . $file['name'] . "_vignette_" . $width . '_' . $height . '_' . $file['datepage'] . '_' . $file['dateupload'] . '.' . $file['ext'];
+            if (!empty($file['name'])) {
+                if ($this->isSafeMode) {
+                    $currentTag = $this->wiki->GetPageTag();
+                    $prefixFileName = substr($file['realname'], 0, strlen($currentTag)) == $currentTag ? $currentTag."_" : "";
+                    $file_vignette = $file['path'] . '/' . $prefixFileName . $file['name'] . "_vignette_" . $width . '_' . $height . '_' . $file['datepage'] . '_' . $file['dateupload'] . '.' . $file['ext'];
+                } else {
+                    $file_vignette = $file['path'] . '/' . $file['name'] . "_vignette_" . $width . '_' . $height . '_' . $file['datepage'] . '_' . $file['dateupload'] . '.' . $file['ext'];
+                }
             } else {
-                $file_vignette = $file['path'] . '/' . $file['name'] . "_vignette_" . $width . '_' . $height . '_' . $file['datepage'] . '_' . $file['dateupload'] . '.' . $file['ext'];
+                $pathInfo = pathinfo($fullFilename);
+                $file_vignette = "{$file['path']}/{$pathInfo['filename']}_vignette_{$width}_{$height}.{$pathInfo['extension']}";
             }
 
             return $file_vignette;
         }
 
-        public function redimensionner_image($image_src, $image_dest, $largeur, $hauteur)
+        public function getResizedFilename($fullFilename, $width, $height, string $mode = "fit")
+        {
+            $uploadPath = $this->GetUploadPath();
+            $cachePath = $this->GetCachePath();
+            $newFileName = preg_replace("/^$uploadPath/", "$cachePath", $fullFilename);
+            $newFileName = $this->calculer_nom_fichier_vignette($newFileName, $width, $height);
+            if ($mode == "crop") {
+                $newFileName = preg_replace("/_vignette_/", "_cropped_", $newFileName);
+            }
+            return $newFileName;
+        }
+
+        public function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $mode = "fit")
         {
             if (!class_exists('imageTransform')) {
                 require_once 'tools/attach/libs/class.imagetransform.php';
@@ -1213,13 +1250,77 @@ if (!class_exists('attach')) {
             $imgTrans->targetFile = $image_dest;
             $imgTrans->resizeToWidth = $largeur;
             $imgTrans->resizeToHeight = $hauteur;
-            if (!$imgTrans->resize()) {
+            if ($mode == "crop") {
+                $wantedRatio = $largeur/$hauteur;
+                // get image info
+                $result = $imgTrans->create_image_from_source_file();
+                
+                // if operation was successful
+                if (!is_array($result)) {
+                    return false;
+                }
+                list($sourceImageIdentifier, $sourceImageWidth, $sourceImageHeight, $sourceImageType) = $result;
+                $imageRatio = $sourceImageWidth/$sourceImageHeight;
+
+                if ($imageRatio != $wantedRatio) {
+                    if ($imageRatio > $wantedRatio) {
+                        // width too large, keep height
+                        $newWidth = round($sourceImageHeight * $wantedRatio);
+                        $newHeight = $sourceImageHeight;
+                    } else {
+                        // height too large, keep width
+                        $newHeight = round($sourceImageWidth / $wantedRatio);
+                        $newWidth = $sourceImageWidth;
+                    }
+                    // crop
+                    $ext = pathinfo($image_src)['extension'];
+                    do {
+                        $tempFile = tmpfile();
+                        $tempFileName = stream_get_meta_data($tempFile)['uri'].".$ext";
+                        unlink(stream_get_meta_data($tempFile)['uri']);
+                    } while (file_exists($tempFileName));
+                    $imgTrans->targetFile = $tempFileName;
+                    $x0 = ($sourceImageWidth-$newWidth)/2;
+                    $y0 = ($sourceImageHeight-$newHeight)/2;
+                    $x1 = $x0 + $newWidth;
+                    $y1 = $y0 + $newHeight;
+                    if ($imgTrans->crop($x0, $y0, $x1, $y1)) {
+                        $imgTrans->sourceFile = $tempFileName;
+                    }
+                    $imgTrans->targetFile = $image_dest;
+                }
+            }
+            $result = $imgTrans->resize();
+            
+            if ($mode == "crop" && !empty($tempFileName)) {
+                unlink($tempFileName);
+            }
+            if (!$result) {
                 // in case of error, show error code
                 return $imgTrans->error;
             // if there were no errors
             } else {
                 return $imgTrans->targetFile;
             }
+        }
+
+        /**
+         * @param string $content of svg
+         * @return string $content
+         */
+        public function sanitizeSVG(string $content): string
+        {
+            $sanitizer = new Sanitizer();
+            return $sanitizer->sanitize($content);
+        }
+
+        /**
+         * @param string $filePath svg
+         */
+        public function sanitizeSVGfile(string $filePath)
+        {
+            $content = file_get_contents($filePath);
+            file_put_contents($filePath, $this->sanitizeSVG($content));
         }
     }
 }

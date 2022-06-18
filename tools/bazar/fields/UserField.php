@@ -3,14 +3,11 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Wiki;
-
-class UserFieldException extends \Exception
-{
-}
 
 /**
  * @Field({"yeswiki_user", "utilisateur_wikini"})
@@ -48,6 +45,7 @@ class UserField extends BazarField
         $this->searchable = null;
 
         $this->propertyName = 'nomwiki';
+        $this->label = _t('BAZ_USER_FIELD_LABEL');
         $this->maxChars = 60;
     }
 
@@ -82,9 +80,11 @@ class UserField extends BazarField
         }
         return $this->render("@bazar/inputs/user.twig", [
             'value' => $value,
+            'creationMode' => empty($entry[$this->getPropertyName()]),
             'message' => $message ?? null,
             'userIsAdmin' =>  $this->getWiki()->UserIsAdmin(),
             'userName' =>  $loggedUser['name'] ?? null,
+            'userEmail' =>  $loggedUser['email'] ?? null,
             'forceLabel' => $this->propertyName.self::FORCE_LABEL,
             'forceLabelChecked' => $_POST[$this->propertyName.self::FORCE_LABEL] ?? false,
         ]);
@@ -114,6 +114,9 @@ class UserField extends BazarField
 
         if ($value && $this->isUserByName($value)) {
             $wikiName = $value;
+            // add in groups
+            $this->addUserToGroups($wikiName, $entry);
+            
             $this->updateEmailIfNeeded($wikiName, $entry[$this->emailField] ?? null);
         } else {
             $wikiName = $entry[$this->nameField];
@@ -128,7 +131,10 @@ class UserField extends BazarField
                     $wikiName = genere_nom_wiki($wikiName);
                 }
                 if (!$isImport
-                    && !in_array($_POST[$this->propertyName.self::CONFIRM_NAME_SUFFIX] ?? false, [true,1,"1"], true)
+                    && (
+                        !isset($_POST[$this->propertyName.self::CONFIRM_NAME_SUFFIX])
+                        || !in_array($_POST[$this->propertyName.self::CONFIRM_NAME_SUFFIX], [true,1,"1"], true)
+                    )
                     ) {
                     throw new UserFieldException(
                         $this->render("@bazar/inputs/user-confirm.twig", [
@@ -333,7 +339,7 @@ class UserField extends BazarField
         }
         
         if (in_array($groupName, $existingsGroups, true)) {
-            if (!$wiki->UserIsInGroup($groupName, $wikiName)) {
+            if (!$wiki->UserIsInGroup($groupName, $wikiName, false)) {
                 return true;
             }
         } elseif ($forceGroupCreation) {

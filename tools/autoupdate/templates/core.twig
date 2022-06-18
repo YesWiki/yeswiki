@@ -7,7 +7,7 @@
 </p>
 
 {% if core.newVersionRequested %}
-    {% if isAdmin %}
+    {% if isAdmin and not isHibernated %}
         {% if core.PHPVersionEnoughHigh %}
             <a  href="{{ url({params:{upgrade:core.updateLink}}) }}"
                 class="btn btn-danger" title="{{ _t('AU_VERSION_UPDATE') }}">
@@ -25,12 +25,12 @@
         {% endif %}
     {% else %}
         <button type="button" class="btn btn-danger" disabled data-toggle="tooltip"
-            data-placement="bottom" title="{{ _t('ACLS_RESERVED_FOR_ADMINS') }}">
+            data-placement="bottom" title="{{ isHibernated ? _t('WIKI_IN_HIBERNATION') : _t('ACLS_RESERVED_FOR_ADMINS') }}">
             {{ _t('AU_VERSION_UPDATE') }}
         </button>
     {% endif %}
 {% elseif core.updateAvailable %}
-    {% if isAdmin %}
+    {% if isAdmin and not isHibernated %}
         {% if core.PHPVersionEnoughHigh %}
             <p> {{ _t('AU_WARNING') }} </p>
             <a  href="{{ url({params:{upgrade:core.updateLink}}) }}"
@@ -49,12 +49,12 @@
         {% endif %}
     {% else %}
         <button type="button" class="btn btn-primary" disabled data-toggle="tooltip"
-            data-placement="bottom" title="{{ _t('ACLS_RESERVED_FOR_ADMINS') }}">
+            data-placement="bottom" title="{{ isHibernated ? _t('WIKI_IN_HIBERNATION') : _t('ACLS_RESERVED_FOR_ADMINS') }}">
             {{ _t('AU_UPDATE') }}
         </button>
     {% endif %}
 {% elseif not core.updateAvailable %}
-    {% if isAdmin %}
+    {% if isAdmin and not isHibernated %}
         {% if core.PHPVersionEnoughHigh %}
             <a  href="{{ url({params:{upgrade:core.updateLink}})  }}"
                 class="btn btn-warning" title="{{ _t('AU_FORCE_UPDATE') }}">
@@ -72,7 +72,7 @@
         {% endif %}
     {% else %}
         <button type="button" class="btn btn-warning" disabled data-toggle="tooltip"
-            data-placement="bottom" title="{{ _t('ACLS_RESERVED_FOR_ADMINS') }}">
+            data-placement="bottom" title="{{ isHibernated ? _t('WIKI_IN_HIBERNATION') : _t('ACLS_RESERVED_FOR_ADMINS') }}">
             {{ _t('AU_FORCE_UPDATE') }}
         </button>
     {% endif %}

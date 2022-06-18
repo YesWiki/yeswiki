@@ -1,13 +1,17 @@
 <div class="filters-col col-sm-{{ params.filtercolsize }}">
-  {{ include("@bazar/entries/index-dynamic/_search_input.twig") }}
+  {% if params.search %}
+    {{ include("@bazar/entries/index-dynamic/_search_input.twig") }}
+  {% endif %}
 
   <div class="filters no-dblclick {{ params.filterposition }}" v-if="Object.keys(filters).length">
     <div class="results-info text-info">
-      <span class="nb-results">{{"{{ filteredEntriesCount }}"}}</span>
-      <span class="result-label">
-        <template v-if="entriesToDisplay.length > 1">{{ _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') }}</template>
-        <template v-else>{{ _t('BAZ_FICHE_CORRESPONDANT_FILTRES') }}</template>
-      </span>
+      <template v-if="params.filtersresultnb">
+        <span class="nb-results">{{"{{ filteredEntriesCount }}"}}</span>
+        <span class="result-label">
+          <template v-if="entriesToDisplay.length > 1">{{ _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') }}</template>
+          <template v-else>{{ _t('BAZ_FICHE_CORRESPONDANT_FILTRES') }}</template>
+        </span>
+      </template>
 
       <template v-if="params.resetfiltersbutton">
         <span class="btn btn-xs btn-info reset-filters pull-right" @click="resetFilters()"

@@ -46,7 +46,7 @@ class Controller
             and !$this->securityController->isWikiHibernated()
             ) {
             $previousMessages = [];
-            foreach($this->messages as $message){
+            foreach ($this->messages as $message) {
                 $previousMessages[] = $message;
             }
             $this->upgrade($get['upgrade']);
@@ -95,7 +95,8 @@ class Controller
 
         return $this->wiki->render("@autoupdate/status.twig", [
             'baseUrl' => $this->autoUpdate->baseUrl(),
-            'isAdmin' => $this->autoUpdate->isAdmin() && !$this->securityController->isWikiHibernated(),
+            'isAdmin' => $this->autoUpdate->isAdmin(),
+            'isHibernated' => $this->securityController->isWikiHibernated(),
             'core' => $this->autoUpdate->repository->getCorePackage(),
             'themes' => $this->autoUpdate->repository->getThemesPackages(),
             'tools' => $this->autoUpdate->repository->getToolsPackages(),

@@ -1,10 +1,11 @@
 <?php
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
 include_once('tools/syndication/libs/syndication.lib.php');
-include_once('tools/syndication/libs/simplepie_1.3.1.compiled.php');
+require_once __DIR__.'/../vendor/autoload.php';
 
 // on verifie si il existe un dossier pour le cache et si on a les droits d'ecriture dessus
 if (file_exists('cache')) {
@@ -36,15 +37,11 @@ $nouvellefenetre = $this->GetParameter("nouvellefenetre");
 $formatdate = $this->GetParameter("formatdate");
 
 $template = $this->GetParameter("template");
-if (empty($template)) {
-    $template = 'tools/syndication/templates/liste.tpl.html';
-} else {
-    $template = 'tools/syndication/templates/' . $this->GetParameter("template");
-    if (!file_exists($template)) {
-        echo '<p class="alert alert-error alert-danger">' . _t('SYNDICATION_ACTION_SYNDICATION') . ' : '
-             . $template . ' ' . _t('SYNDICATION_TEMPLATE_NOT_FOUND') . '.</p>' . "\n";
-        $template = 'tools/syndication/templates/liste.tpl.html';
-    }
+$path = empty($template) ? 'tools/syndication/templates/liste.tpl.html' : realpath('tools/syndication/templates/' . basename($template));
+if (empty($path) || !file_exists($path)) {
+    echo '<p class="alert alert-error alert-danger">' . _t('SYNDICATION_ACTION_SYNDICATION') . ' : '
+             . htmlspecialchars($template) . ' ' . _t('SYNDICATION_TEMPLATE_NOT_FOUND') . '.</p>' . "\n";
+    $path = 'tools/syndication/templates/liste.tpl.html';
 }
 
 $tabsrc = '';
@@ -59,6 +56,7 @@ $urls = $this->GetParameter("url");
 if (!empty($urls)) {
     $tab_url = array_map('trim', explode(',', $urls));
     $nburl = 0;
+    $syndication = ['pages' => []];
     foreach ($tab_url as $cle => $url) {
         if ($url != '') {
             // Parse it
@@ -126,16 +124,16 @@ if (!empty($urls)) {
                     $aso_page['datestamp'] = strtotime($item->get_date('j M Y, g:i a'));
                     switch ($formatdate) {
                         case 'jm':
-                            $aso_page['date'] = strftime('%d.%m', $aso_page['datestamp']);
+                            $aso_page['date'] = date('d.m', $aso_page['datestamp']);
                             break;
                         case 'jma':
-                            $aso_page['date'] = strftime('%d.%m.%Y', $aso_page['datestamp']);
+                            $aso_page['date'] = date('d.m.Y', $aso_page['datestamp']);
                             break;
                         case 'jmh':
-                            $aso_page['date'] = strftime('%d.%m %H:%M', $aso_page['datestamp']);
+                            $aso_page['date'] = date('d.m H:m', $aso_page['datestamp']);
                             break;
                         case 'jmah':
-                            $aso_page['date'] = strftime('%d.%m.%Y %H:%M', $aso_page['datestamp']);
+                            $aso_page['date'] = date('d.m.Y H:m', $aso_page['datestamp']);
                             break;
                         default:
                             $aso_page['date'] = '';
@@ -155,7 +153,7 @@ if (!empty($urls)) {
     echo '<div class="feed_syndication' . ($class ? ' ' . $class : '') . '">' . "\n";
 
     // Gestion des squelettes
-    include($template);
+    include($path);
     echo '</div>' . "\n";
 } else {
     echo '<div class="alert alert-danger"><strong>' . _t('SYNDICATION_ACTION_SYNDICATION') . '</strong> : '

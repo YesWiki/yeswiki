@@ -21,10 +21,18 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Core\Controller\CsrfTokenController;
+
 // Vérification de sécurité
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
+
+// get services
+$csrfTokenManager = $this->services->get(CsrfTokenManager::class);
+$csrfTokenController = $this->services->get(CsrfTokenController::class);
 
 // get the GET parameter 'incomingurl' for the incoming url
 if (!empty($_REQUEST['incomingurl'])) {
@@ -51,28 +59,52 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
         if (!isset($_GET['confirme']) || !($_GET['confirme'] == 'oui')) {
             $msg = '<form action="' . $this->Href('deletepage', '', 'confirme=oui' . $incomingUrlParam);
             $msg .= '" method="post" style="display: inline">' . "\n";
-            $msg .= 'Voulez-vous vraiment supprimer d&eacute;finitivement la page ' . $this->Link($tag) . "&nbsp;?\n";
+            $msg .= str_replace("{tag}", $this->Link($tag), _t('DELETEPAGE_CONFIRM')) . "\n";
             $msg .= '</br></br>';
-            $msg .= '<input type="submit" class="btn btn-danger" value="Supprimer" ';
+            $msg .= '<input type="hidden" name="csrf-token" value="'. htmlentities($csrfTokenManager->refreshToken("handler\deletepage\\$tag")) .'">';
+            $msg .= '<input type="submit" class="btn btn-danger" value="' . _t('DELETEPAGE_DELETE') . '" ';
             $msg .= 'style="vertical-align: middle; display: inline" />' . "\n";
             $msg .= "</form>\n";
             $msg .= '<form action="' . $cancelUrl . '" method="post" style="display: inline">' . "\n";
-            $msg .= '<input type="submit" value="Annuler" class="btn btn-default" style="vertical-align: middle; display: inline" />' . "\n";
+            $msg .= '<input type="submit" value="' . _t('DELETEPAGE_CANCEL') . '" class="btn btn-default" style="vertical-align: middle; display: inline" />' . "\n";
             $msg .= "</form></span>\n";
         } else {
-            $this->DeleteOrphanedPage($tag);
-            $this->LogAdministrativeAction($this->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
-            $msg = "La page ${tag} a d&eacute;finitivement &eacute;t&eacute; supprim&eacute;e";
+            try {
+                $csrfTokenController->checkToken("handler\deletepage\\$tag", 'POST', 'csrf-token');
 
-            $hasBeenDeleted = true;
-            // if $incomingurl has been defined and doesn't refer to the deleted page, redirect to it
-            $redirectToIncoming = !empty($incomingurl);
+                $this->DeleteOrphanedPage($tag);
+                $this->LogAdministrativeAction($this->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
+                $msg = str_replace("{tag}", $tag, _t('DELETEPAGE_MESSAGE'));
+
+                $hasBeenDeleted = true;
+                // if $incomingurl has been defined and doesn't refer to the deleted page, redirect to it
+                $redirectToIncoming = !empty($incomingurl);
+            } catch (TokenNotFoundException $th) {
+                $msg = $this->render("@templates/alert-message-with-back.twig", [
+                    'type' => 'danger',
+                    'message' => _t('DELETEPAGE_NOT_DELETED').' '.$th->getMessage()
+                ]);
+            }
         }
     } else {
-        $msg = "<p><em>Cette page n'est pas orpheline.</em></p>\n";
+        if (isset($_GET['eraselink'])
+            && $_GET['eraselink'] === 'oui'
+            && isset($_GET['confirme'])
+            && ($_GET['confirme'] === 'oui')) {
+            // a trouble occured, invald token ?
+            try {
+                $csrfTokenController->checkToken("handler\deletepage\\{$this->tag}", 'POST', 'csrf-token');
+            } catch (TokenNotFoundException $th) {
+                $msg .= $this->render("@templates/alert-message.twig", [
+                    'type' => 'danger',
+                    'message' => _t('DELETEPAGE_NOT_DELETED').' '.$th->getMessage()
+                ]);
+            }
+        }
+        $msg = "<p><em>" . _t('DELETEPAGE_NOT_ORPHEANED') . "</em></p>\n";
         $linkedFrom = $this->LoadAll("SELECT DISTINCT from_tag " . "FROM " . $this->config["table_prefix"] . "links "
             . "WHERE to_tag = '" . $this->GetPageTag() . "'");
-        $msg .= "<p>Pages ayant un lien vers " . $this->ComposeLinkToPage($this->tag, "", "", 0) . " :</p>\n";
+        $msg .= "<p>" . str_replace("{tag}", $this->ComposeLinkToPage($this->tag, "", "", 0), _t('DELETEPAGE_PAGES_WITH_LINKS_TO')) . "</p>\n";
         $msg .= "<ul>\n";
         foreach ($linkedFrom as $page) {
             $msg .= "<li>" . $this->ComposeLinkToPage($page["from_tag"], "", "", 0) . "</li>\n";
@@ -82,18 +114,18 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
         // eraselink=oui will delete the page links in tools/tags/handlers/page/__deletepage.php
         $msg .= '</br><form action="' . $this->Href('deletepage', "", "confirme=oui&eraselink=oui" . $incomingUrlParam);
         $msg .= '" method="post" style="display: inline">' . "\n";
-        $msg .= 'Voulez-vous vraiment supprimer d&eacute;finitivement la page '
-            . 'malgr&eacute; la pr&eacute;sence de liens? ' . "\n";
+        $msg .= str_replace("{tag}", $this->Link($this->tag), _t('DELETEPAGE_CONFIRM_WHEN_BACKLINKS')) . "\n";
         $msg .= '</br></br>';
-        $msg .= '<input type="submit" value="Supprimer" class="btn btn-danger" ';
+        $msg .= '<input type="hidden" name="csrf-token" value="'. htmlentities($csrfTokenManager->refreshToken("handler\deletepage\\{$this->tag}")) .'">';
+        $msg .= '<input type="submit" value="' . _t('DELETEPAGE_DELETE') . '" class="btn btn-danger" ';
         $msg .= 'style="vertical-align: middle; display: inline" />' . "\n";
         $msg .= "</form>\n";
         $msg .= '<form action="' . $cancelUrl . '" method="post" style="display: inline">' . "\n";
-        $msg .= '<input type="submit" value="Annuler" class="btn btn-default" style="vertical-align: middle; display: inline" />' . "\n";
+        $msg .= '<input type="submit" value="' . _t('DELETEPAGE_CANCEL') . '" class="btn btn-default" style="vertical-align: middle; display: inline" />' . "\n";
         $msg .= "</form></span>\n";
     }
 } else {
-    $msg = "<p><em>Vous n'&ecirc;tes pas le propri&eacute;taire de cette page.</em></p>\n";
+    $msg = "<p><em>" . _t('DELETEPAGE_NOT_OWNER') . "</em></p>\n";
 }
 
 if ($hasBeenDeleted) {

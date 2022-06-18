@@ -44,6 +44,7 @@ use Symfony\Component\Routing\Loader\AnnotationClassLoader;
 use Symfony\Component\Routing\Loader\AnnotationDirectoryLoader;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
 
 // TODO put elsewhere
 // https://github.com/sensiolabs/SensioFrameworkExtraBundle/blob/master/src/Routing/AnnotatedRouteControllerLoader.php
@@ -229,12 +230,18 @@ class Init
             'pages_purge_time' => 365,
             'default_write_acl' => '*',
             'default_read_acl' => '*',
-            'default_comment_acl' => '@admins',
+            'default_comment_acl' => 'comments-closed',
+            'default_comment_acl_updated' => false,
+            'comments_activated' => true,
             'preview_before_save' => 0,
             'allow_raw_html' => true,
             'disable_wiki_links' => false,
-            'allowed_methods_in_iframe' => ['iframe','editiframe','render'],
-            'timezone'=>'GMT' // Only used if not set in wakka.config.php nor in php.ini
+            'allowed_methods_in_iframe' => ['iframe','editiframe','bazariframe','render'],
+            'revisionscount' => 30,
+            'timezone' => 'GMT', // Only used if not set in wakka.config.php nor in php.ini
+            'root_page' => 'PagePrincipale', // backup root_page if deleted from wakka.config.php
+            'wakka_name' => '', // backup wakka_name if deleted from wakka.config.php
+            'htmlPurifierActivated' => false, // TODO ectoplasme set to true
         );
         unset($_rewrite_mode);
 
@@ -307,6 +314,7 @@ class Init
 
         $containerBuilder->set(Wiki::class, $wiki);
         $containerBuilder->set(ParameterBagInterface::class, $containerBuilder->getParameterBag());
+        $containerBuilder->set(CsrfTokenManager::class, new CsrfTokenManager());
 
         $loader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__));
         $loader->load('services.yaml');
@@ -352,6 +360,13 @@ class Init
 
         // Fixe la gestion des cookie sous les OS utilisant le \ comme separateur de chemin
         $CookiePath = str_replace('\\', '/', $CookiePath);
+
+        // retire wakka.php dans path
+        foreach (["wakka.php","index.php"] as $anchor) {
+            if (substr($CookiePath, -strlen($anchor)) == $anchor) {
+                $CookiePath = substr($CookiePath, 0, strlen($CookiePath)-strlen($anchor));
+            }
+        }
 
         // ajoute un '/' terminal sauf si on est a la racine web et si nécessaire
         if (substr($CookiePath, -1) !== '/') {

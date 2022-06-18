@@ -63,16 +63,16 @@ class DateField extends BazarField
         }
 
         if (strlen($value) > 10) {
-            $value = strftime('%d.%m.%Y - %H:%M', strtotime($value));
+            $value = date('d.m.Y - H:i', strtotime($value));
         } else {
-            $value =  strftime('%d.%m.%Y', strtotime($value));
+            $value =  date('d.m.Y', strtotime($value));
         }
 
         return $this->render('@bazar/fields/date.twig', [
             'value' => $value
         ]);
     }
-    
+
     protected function getValue($entry)
     {
         // TODO see if it is necessary to look for $_REQUEST

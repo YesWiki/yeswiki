@@ -40,7 +40,7 @@ class EditGroupsAction extends YesWikiAction
         sort($list);
         // Start of group edition
         $res = $wiki->FormOpen('', '', 'get', 'form-inline');
-        $res .= '<label>Editer un groupe existant</label><p><select class="form-control" name="groupname">';
+        $res .= '<label>'._t('EDIT_EXISTING_GROUP').'</label><p><select class="form-control" name="groupname">';
         foreach ($list as $group) {
             $res .= '<option value="' . htmlspecialchars($group, ENT_COMPAT, YW_CHARSET) . '"';
             if (!empty($_GET['groupname']) && $_GET['groupname'] == $group) {
@@ -48,15 +48,15 @@ class EditGroupsAction extends YesWikiAction
             }
             $res .= '>' . htmlspecialchars($group, ENT_COMPAT, YW_CHARSET) .  '</option>';
         }
-        $res .= '</select>'."\n".'<input class="btn btn-primary btn-edit-group" type="submit" value="Voir / Editer" /></p>'."\n" . $wiki->FormClose();
+        $res .= '</select>'."\n".'<input class="btn btn-primary btn-edit-group" type="submit" value="'.htmlspecialchars(_t('SEE_EDIT')).'" /></p>'."\n" . $wiki->FormClose();
         // End of group edition
         // Start of group creation
-        $res .= $wiki->FormOpen('', '', 'get', 'form-inline') . '<label>' . _t('CREATE_NEW_GROUP').'</label><p> <input type="text" name="groupname" placeholder="Nom du groupe" class="form-control" />';
+        $res .= $wiki->FormOpen('', '', 'get', 'form-inline') . '<label>' . _t('CREATE_NEW_GROUP').'</label><p> <input type="text" name="groupname" placeholder="'.htmlspecialchars(_t('GROUP_NAME')).'" class="form-control" />';
         $res .= '<input class="btn btn-primary btn-create-group" type="submit" value="'._t('DEFINE').'" /></p>' . $wiki->FormClose();
         // End of group creation
         // Start of group deletion
         $res .= $wiki->FormOpen('', '', 'get', 'form-inline');
-        $res .= '<label>Supprimer un groupe existant</label>';
+        $res .= '<label>'.htmlspecialchars(_t('DELETE_EXISTING_GROUP')).'</label>';
         $res .= '<p><select class="form-control" name="deletegroup">';
         foreach ($list as $group) {
             $res .= '<option value="' . htmlspecialchars($group, ENT_COMPAT, YW_CHARSET) . '"';
@@ -65,7 +65,7 @@ class EditGroupsAction extends YesWikiAction
             }
             $res .= '>' . htmlspecialchars($group, ENT_COMPAT, YW_CHARSET) .  '</option>';
         }
-        $res .= '</select>'."\n".'<input class="btn btn-danger btn-delete-group" type="submit" value="Supprimer" /></p>'."\n" . $wiki->FormClose();
+        $res .= '</select>'."\n".'<input class="btn btn-danger btn-delete-group" type="submit" value="'.htmlspecialchars(_t('DELETE')).'" /></p>'."\n" . $wiki->FormClose();
         // End of group deletion
         // End of form definition
 
@@ -154,7 +154,7 @@ class EditGroupsAction extends YesWikiAction
             $name = $_GET['groupname'];
             if (!preg_match('/[^A-Za-z0-9]/', $name)) { // only alphanumeric characters
                 $res .= $wiki->FormOpen(); // form method is 'post' by default
-                $res .= '<hr><label class="edit-group">Liste des membres du groupe <strong>' . htmlspecialchars($name, ENT_COMPAT, YW_CHARSET) . '</strong></label> (un nom d\'utilisateur par ligne)';
+                $res .= '<hr><label class="edit-group">'.str_replace("{groupName}",'<strong>' . htmlspecialchars($name, ENT_COMPAT, YW_CHARSET) . '</strong>',htmlspecialchars(_t('LIST_GROUP_MEMBERS'))).'</label> ('. htmlspecialchars(_t('ONE_NAME_BY_LINE')).')';
                 $res .= '<input type="hidden" name="groupname" value="'. $name . '" />';
                 $res .= '<textarea name="acl" rows="3" class="form-control">' . (in_array($name, $list) ? $wiki->GetGroupACL($name) : '') . '</textarea><br />';
                 $res .= '<input type="submit" value="'._t('SAVE').'" class="btn btn-primary" accesskey="s" />';

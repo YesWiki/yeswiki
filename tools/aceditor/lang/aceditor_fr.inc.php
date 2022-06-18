@@ -37,6 +37,6 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'ACTION_BUILDER_ADVANCED_PARAMETERS' => 'Paramètres Avancés',
 
     // for edit config
-    'EDIT_CONFIG_HINT_ACTIONBUILDER_TEXTAREA_NAME' => 'Nom du champ bazar texte long pour lequel les composants sont visibles',
+    'EDIT_CONFIG_HINT_ACTIONBUILDER_TEXTAREA_NAME' => 'Nom du champ bazar texte long pour lequel les composants doivent être visibles',
     'EDIT_CONFIG_GROUP_ACEDITOR' => 'Barre d\'édition pour les pages et les champs texte',
 ));

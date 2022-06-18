@@ -44,7 +44,7 @@ if ($pages = $this->LoadRecentlyCommented($max)) {
     if ($this->GetParameter("max")) {
         foreach ($pages as $page) {
             // echo entry
-            echo "(",$page["comment_time"],") <a href=\"",$this->href("", $page["tag"], "show_comments=1"),"#",$page["comment_tag"],"\">",$page["tag"],"</a> . . . . dernier commentaire par ",$this->Format($page["comment_user"]),"<br />\n" ;
+            echo "(",$page["comment_time"],") <a href=\"",$this->href("", $page["tag"], "show_comments=1"),"#",$page["comment_tag"],"\">",$page["tag"],"</a> . . . . "._t('LAST_COMMENT')." "._t('BY')." ",$this->Format($page["comment_user"]),"<br />\n" ;
         }
     } else {
         $curday='';
@@ -60,7 +60,7 @@ if ($pages = $this->LoadRecentlyCommented($max)) {
             }
 
             // echo entry
-            echo "&nbsp;&nbsp;&nbsp;(",$time,") <a href=\"",$this->href("", $page["tag"], "show_comments=1"),"#",$page["comment_tag"],"\">",$page["tag"],"</a> . . . . dernier commentaire par ",$this->Format($page["comment_user"]),"<br />\n" ;
+            echo "&nbsp;&nbsp;&nbsp;(",$time,") <a href=\"",$this->href("", $page["tag"], "show_comments=1"),"#",$page["comment_tag"],"\">",$page["tag"],"</a> . . . . "._t('LAST_COMMENT')." "._t('BY')." ",$this->Format($page["comment_user"]),"<br />\n" ;
         }
     }
 } else {

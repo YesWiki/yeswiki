@@ -1,0 +1,77 @@
+{% extends "@bazar/entries/index-dynamic.twig" %}
+
+{% block assets %}
+  {{ include_css('tools/bazar/presentation/styles/card.css') }}
+{% endblock %}
+
+{% block display_entries %}
+  {% set nbcol = params.nbcol %}
+  {% set isModal = (params.entrydisplay == 'modal' or params.entrydisplay is empty or params.entrydisplay not in ['modal','direct','newtab']) %}
+  {% set isLink = isModal or (params.entrydisplay == 'direct') %}
+  {# Restrict number of columns for horizontal card #}
+  {% if nbcol > 2 and params.displayfields.visual and params.style == "horizontal" %}
+    {% set nbcol =  2 %}
+    {{ include('@templates/alert-message.twig',{type:'info',message:_t('BAZ_CARD_NBCOL_TOO_HIGH')}) }}
+  {% endif %}
+  <div class="bazar-cards-container" v-if="ready" 
+       :class="[{ready: ready}, `style-${params.style || 'vertical'}`, `nbcol-{{nbcol}}`]" 
+       :style="{'grid-template-columns': `repeat({{nbcol}}, 1fr)`}">
+    
+    <div v-if="entriesToDisplay.length == 0" class="alert alert-info">
+      {{ _t('BAZ_NO_RESULT') }}
+    </div>
+
+    {% if isLink %}<a{% else %}<div{% endif %} v-for="entry in entriesToDisplay" :key="entry.id_fiche" 
+        class="bazar-entry bazar-card{{ isModal ? ' modalbox' : ''}}" 
+        {% if not isLink %}@click="openEntry(entry)"{% endif %} 
+        :class="{'with-image': Object.keys(entry).includes('visual')}"
+        {% if isModal %}
+          data-size="modal-lg"
+          :data-iframe="1" :href="`${entry.url}/iframe`"
+        {% endif %}
+        {% if isLink %}
+          :href="`${entry.url + (({{ isModal ? 'true' : 'false' }} || $root.isInIframe()) ? '/iframe' : '')}`"
+          :title="entry.title"
+        {% endif %}
+        >
+      
+      {# VISUAL AREA #}
+      <template v-if="Object.keys(entry).includes('visual')">
+        <template v-if="params.style == 'square'">
+          <img v-if="entry.visual" class="area visual-area" :src="`${urlImage(entry,'visual')}`"></img>
+          <div v-else class="area area visual-area placeholder"></div>
+        </template>
+        <template v-else>
+          <div v-if="entry.visual" class="area visual-area" 
+            :style="{'background-image': `url(${urlImage(entry,'visual')})`}">
+          </div>
+          <div v-else class="area area visual-area placeholder"></div>
+        </template>
+      </template>
+      
+      <div class="content">
+        {# TITLE AREA #}
+        <h4 div class="area title-area" v-if="entry.title">
+          <span v-show="entry.color" class="pellet" :style="{'background-color': entry.color}"></span>
+          <i v-show="entry.icon" :class="entry.icon"></i>
+          <span class="title" v-html="entry.title"></span>
+        </h4>  
+
+        {# SUBTITLE AREA #}
+        <entry-field :entry="entry" prop="subtitle" class="area subtitle-area"></entry-field>  
+        
+        {# TEXT AREA #}
+        <entry-field :entry="entry" prop="text" class="area text-area"></entry-field>
+
+        {# FOOTER AREA #}
+        <entry-field :entry="entry" prop="footer" class="area footer-area"></entry-field>
+        
+        {# FLOATING AREA #}
+        <entry-field :entry="entry" prop="floating" class="area floating-area"></entry-field>
+      </div>
+    {% if isLink %}</a>{% else %}</div>{% endif %}
+
+    <spinner-loader v-if="isLoading" class="overlay"></spinner-loader>
+  </div>
+  <spinner-loader v-else height="500"></spinner-loader>
+{% endblock %}

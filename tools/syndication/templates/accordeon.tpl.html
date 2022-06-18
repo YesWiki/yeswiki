@@ -15,7 +15,7 @@ $id = md5($GLOBALS['wiki']->GetParameter("url")); ?>
           		<?php echo $page['titre'];?>
               <?php
               if (!empty($page['source'])) {
-                  echo ' <small>source : '.$page['source'].'</small>';
+                  echo ' <small>' . _t('SYNDICATION_SOURCE') . ' : '.$page['source'].'</small>';
               }
               ?>
             </h4>
@@ -25,7 +25,7 @@ $id = md5($GLOBALS['wiki']->GetParameter("url")); ?>
               <?php echo $page['description'];?>
               <br>
               <a class="btn btn-default" href="<?php echo $page['url'];?>" <?php echo ($page['ext'])? 'target="_blank"' : '';?>>
-                Accéder à l'intégralité du contenu
+                <?php echo _t('SYNDICATION_SEE_ALL_CONTENT'); ?>
               </a>
             </div>
           </div>

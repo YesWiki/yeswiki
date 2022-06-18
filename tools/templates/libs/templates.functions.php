@@ -18,6 +18,9 @@ if (!defined("WIKINI_VERSION")) {
  */
 function check_graphical_elements($element, $pagetag, $pagecontent)
 {
+    if ($pagecontent == null) {
+        $pagecontent = '';
+    }
     preg_match_all('/{{'.$element.'.*}}/Ui', $pagecontent, $matchesaction);
     preg_match_all('/{{end.*elem="'.$element.'".*}}/Ui', $pagecontent, $matchesendaction);
     return count($matchesaction[0]) == count($matchesendaction[0]);
@@ -73,7 +76,7 @@ function search_template_files($directory)
                         }
                     }
                     closedir($dir4);
-                    if (is_array($tab_themes[$file]["presets"] ?? null)) {
+                    if (isset($tab_themes[$file]["presets"]) && is_array($tab_themes[$file]["presets"])) {
                         ksort($tab_themes[$file]["presets"]);
                     }
                 }
@@ -456,7 +459,8 @@ function add_templates_list_js()
 
         $js .= '        tab2["'.$value.'"] = new Array(';
         $nbocc=0;
-        foreach ($GLOBALS['wiki']->config['templates'][$value]["style"] as $key3 => $value3) {
+        $styles = $GLOBALS['wiki']->config['templates'][$value]["style"] ?? [];
+        foreach ($styles as $key3 => $value3) {
             if ($nbocc==0) {
                 $js .= '\''.$value3.'\'';
             } else {
@@ -740,7 +744,7 @@ function getImageFromBody($page, $width, $height)
         $attach->CheckParams();
         $imagefile = $attach->GetFullFilename();
         $GLOBALS['wiki']->tag = $oldpage;
-        $image = $GLOBALS['wiki']->getBaseUrl().'/'.redimensionner_image(
+        $image = $GLOBALS['wiki']->getBaseUrl().'/'.$attach->redimensionner_image(
             $imagefile,
             'cache/'.$width.'x'.$height.'-'.str_replace('files/', '', $imagefile),
             $width,
@@ -751,14 +755,12 @@ function getImageFromBody($page, $width, $height)
         preg_match_all('/"imagebf_image":"(.*)"/U', $page['body'], $image);
         if (is_array($image[1]) && !empty($image[1][0])) {
             include_once 'tools/tags/libs/tags.functions.php';
-            $imagefile = utf8_decode(
-                preg_replace_callback(
-                    '/\\\\u([a-f0-9]{4})/',
-                    'utf8_encode',
-                    $image[1][0]
-                )
-            );
-            $image = $GLOBALS['wiki']->getBaseUrl().'/'.redimensionner_image(
+            $imagefile = json_decode('"'.$image[1][0].'"', true);
+            if (!class_exists('attach')) {
+                include 'tools/attach/libs/attach.lib.php';
+            }
+            $attach = new Attach($GLOBALS['wiki']);
+            $image = $GLOBALS['wiki']->getBaseUrl().'/'.$attach->redimensionner_image(
                 'files/'.$imagefile,
                 'cache/'.$width.'x'.$height.'-'.$imagefile,
                 $width,

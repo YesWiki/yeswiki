@@ -67,10 +67,12 @@ Vous pouvez ajouter autant de **paramètres** que vous voulez. Ils représentent
 ```yaml
 label: Texte à Afficher # Nom du champ que l'utilisateur peut remplir
 type: text # Type de champ
-default:  # valeur par défault
+default:  # valeur par défault. Si le parametre est égal à cette valeur par default, il n'est pas inclus dans le code wiki généré
+value: # valeur lors de l'initialisation
 required: true # true/false, est ce que ce champ doit absolument être configuré par l'utilisateur
 advanced: true # sera masqué tant que l'utilisateur ne coche pas la case "paramètres avancés"
 hint: Mon Texte # Indications
+icon: leaf # nom d'une icone fantwesome
 doclink: https://... # Lien vers une documentation en ligne
 showif: colorfield # Ce paramètre sera visible uniquement lorsque le paramètre colorfield n'est pas vide
 showif:
@@ -91,6 +93,7 @@ Les type sont
   - list
   - form-field
   - page-list
+  - divider
 
 #### checkbox
 Paramètres optionels : `checkedvalue` `uncheckedvalue`. Par défault la valeur d'un paramètre checkbox est "true" ou "false", si par exemple vous voulez que lorsqu'on coche la case, la valeur soit "1", alors renseignez checkvalue: 1 et uncheckedvalue: 0
@@ -98,7 +101,6 @@ Paramètres optionels : `checkedvalue` `uncheckedvalue`. Par défault la valeur 
 modal:
   label: Affichage d'une fenêtre modale lors du clic
   type: checkbox
-  default: 0
   checkedvalue: 1
   uncheckedvalue: 0
 ```
@@ -157,3 +159,33 @@ class:
         btn-xs: Petit
 ```
 Ainsi, plutôt que `{{button color="btn-default" size="btn-xs"}}` le résultat sera `{{button class="btn-default btn-xs"}}`
+
+### type divider
+Il permet d'incruster un titre au milieu des autres champs, pour créer des sous sections par exemple
+```
+mydivider:
+  label: Un titre
+  type: divider
+```
+
+### default vs value
+Ils vont tous les deux servir à initialiser une valeur.
+La différence étant que si on utilise `default`, alors si la valeur est égale à `default` le paramètre
+sera masqué dans le wiki code généré
+Généralement on utilisera donc `default` afin d'éviter les code wiki à rallonge
+
+```
+modal:
+  label: Affichage d'une fenêtre modale lors du clic
+  type: checkbox
+  default: true
+```
+-> checkbox cochée par default, et le code généré ne contiendra pas le param modal si il est égal à true, mais contiendra `modal="false"` si on décoche
+
+```
+modal:
+  label: Affichage d'une fenêtre modale lors du clic
+  type: checkbox
+  value: true
+```
+-> checkbox cochée par default, et le code généré contiendra quoiqu'il arrive soit `modal="true"` soit `modal="false"`

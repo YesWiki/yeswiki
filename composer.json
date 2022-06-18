@@ -6,27 +6,49 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
-      "test": "phpunit --do-not-cache-result --stderr tests"
+      "test": "phpunit --do-not-cache-result --stderr tests",
+      "post-install-cmd": [
+        "@composer install --working-dir ./tools/autoupdate/",
+        "@php -r \"array_map('unlink', glob('vendor/enshrined/svg-sanitize/tests/data/*.svg'));\""
+      ],
+      "post-update-cmd": [
+        "@composer update --working-dir ./tools/autoupdate/"
+      ]
     },
     "require": {
-        "php": "^7.3",
+        "php": "^7.3 || ^8.0",
+        "ext-ctype": "*",
+        "ext-curl": "*",
+        "ext-filter": "*",
+        "ext-gd": "*",
+        "ext-iconv": "*",
         "ext-json": "*",
+        "ext-mbstring": "*",
         "ext-mysqli": "*",
-        "phpmailer/phpmailer": "^6.2",
-        "symfony/dependency-injection": "^5.1",
-        "symfony/config": "^5.1",
-        "symfony/yaml": "^5.1",
-        "yeswiki/theme-margot": "dev-master",
-        "oomphinc/composer-installers-extender": "^2.0",
-        "twig/twig": "^3.0",
+        "ext-pcre": "*",
+        "ext-zip": "^1.0",
+        "caxy/php-htmldiff": "^0.1.13",
         "doctrine/annotations": "^1.11",
         "doctrine/cache": "^1.10",
-        "symfony/routing": "^5.1",
+        "enshrined/svg-sanitize": "^0.15.0",
+        "ezyang/htmlpurifier": "^4.14",
+        "jbroadway/urlify": "^1.2",
+        "nesbot/carbon": "^2.57",
+        "oomphinc/composer-installers-extender": "^2.0",
+        "phpmailer/phpmailer": "^6.2",
+        "symfony/config": "^5.1",
+        "symfony/console": "^5.2",
+        "symfony/dependency-injection": "^5.1",
         "symfony/http-foundation": "^5.1",
         "symfony/http-kernel": "^5.3.12",
-        "psr/container": "<=1.1.1",
+        "symfony/routing": "^5.1",
+        "symfony/security-csrf": "^5.0",
+        "symfony/yaml": "^5.1",
         "tamtamchik/simple-flash": "^2.0",
-        "caxy/php-htmldiff": "^0.1.13"
+        "twig/twig": "^3.0",
+        "yeswiki/theme-margot": "^1.0"
+    },
+    "conflict": {
     },
     "extra": {
         "installer-types": ["yeswiki-extension", "yeswiki-theme"],
@@ -38,5 +60,17 @@
     "require-dev": {
         "symfony/var-dumper": "^5.1",
         "phpunit/phpunit": "^9"
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "oomphinc/composer-installers-extender": true
+        },
+        "optimize-autoloader": true,
+        "platform": {
+            "php": "7.3.0"
+        },
+        "platform-check": true,
+        "sort-packages": true
     }
 }

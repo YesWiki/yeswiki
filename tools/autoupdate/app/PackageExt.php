@@ -13,7 +13,7 @@ abstract class PackageExt extends Package
 
     public function __construct($release, $address, $desc, $doc, $minimalPhpVersion = null)
     {
-        parent::__construct($release, $address, $desc, $doc,$minimalPhpVersion);
+        parent::__construct($release, $address, $desc, $doc, $minimalPhpVersion);
         $this->installed = $this->installed();
         $this->localPath = $this->localPath();
         $this->updateAvailable = $this->updateAvailable();
@@ -28,11 +28,15 @@ abstract class PackageExt extends Package
         mkdir($desPath);
 
         if ($this->extractionPath === null) {
-            throw new \Exception("Le paquet n'a pas été décompressé.", 1);
+            throw new \Exception(_t('AU_PACKAGE_NOT_UNZIPPED'), 1);
         }
 
+        // get the first subfolder extracted from the zip (it contains everything)
+        $dirs = array_filter(glob($this->extractionPath.'/*'), 'is_dir');
+        $extractionPath = $dirs[0].'/';
+    
         $this->copy(
-            $this->extractionPath . '/' . $this->name(),
+            $extractionPath,
             $desPath
         );
 

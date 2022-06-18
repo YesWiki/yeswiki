@@ -28,7 +28,7 @@ parameters:
   # nombre maximum d'articles présents dans le flux rss
   BAZ_NB_ENTREES_FLUX_RSS: 20
   # Logo du site indique dans les flux rss
-  BAZ_RSS_LOGOSITE: 'https:#yeswiki.net/themes/margot/images/apple-touch-icon.png'
+  BAZ_RSS_LOGOSITE: 'https:#yeswiki.net/themes/margot/images/favicon.png'
   # Managing editor du site
   BAZ_RSS_MANAGINGEDITOR: 'contact@yeswiki.net (Mr YesWiki)'
   # Mail Webmaster du site
@@ -112,8 +112,6 @@ parameters:
     cache_time_to_check_deletion: 86400 # seconds (1 day)
     cache_time_to_refresh_forms: 7200 # seconds (2 hours)
     time_debug: false
-  # option only for configs with 500 errors when not admin connected
-  baz_check_owner_acl_only_for_field_can_edit: true # put by default at true because there is an infinite loop on acls
   # tag used to upload file at entry creation
   temp_tag_for_entry_creation: 'unknown_entry_id'
   # for edit config action
@@ -128,7 +126,6 @@ parameters:
       - cache_time_to_check_changes
       - cache_time_to_check_deletion
       - cache_time_to_refresh_forms
-    - 'baz_check_owner_acl_only_for_field_can_edit'
     - 'bazarIgnoreAcls'
 
 services:

@@ -1,5 +1,7 @@
 <?php
 
+use YesWiki\Bazar\Service\EntryManager;
+
 if (!function_exists("rssdiff")) {
     function rssdiff($tag, $idfirst, $idlast)
     {
@@ -25,9 +27,14 @@ if (!function_exists("rssdiff")) {
         $pageA = $wiki->LoadPageById($idfirst);
         $pageB = $wiki->LoadPageById($idlast);
 
-
-        $bodyA = explode("\n", $pageA["body"]);
-        $bodyB = explode("\n", $pageB["body"]);
+        $entryManager = $wiki->services->get(EntryManager::class);
+        if ($entryManager->isEntry($tag)) {
+            $bodyA = explode(",\"", $pageA["body"]);
+            $bodyB = explode(",\"", $pageB["body"]);
+        } else {
+            $bodyA = explode("\n", $pageA["body"]);
+            $bodyB = explode("\n", $pageB["body"]);
+        }
 
         $added = array_diff($bodyA, $bodyB);
         $deleted = array_diff($bodyB, $bodyA);
@@ -38,11 +45,11 @@ if (!function_exists("rssdiff")) {
 
         $output .= "<br />\n";
         $output .= "<br />\n";
-        $output .= "<b>Comparaison de <a href=\""
+        $output .= "<b>" . _t('RSS_COMPARISON_OF') . " <a href=\""
             . $wiki->href("", $tag, "time="
             . urlencode($pageA["time"]))
             . "\">".$pageA["time"]
-            . "</a> &agrave; <a href=\""
+            . "</a> " . _t('RSS_TO') . " <a href=\""
             . $wiki->href("", $tag, "time=".urlencode($pageB["time"]))
             . "\">"
             . $pageB["time"]
@@ -51,19 +58,19 @@ if (!function_exists("rssdiff")) {
         $wiki->RegisterInclusion($tag);
         if ($added) {
             // remove blank lines
-            $output .= "<br />\n<b>Ajouts:</b><br />\n";
+            $output .= "<br />\n<b>" . _t('RSS_ADDS') . ":</b><br />\n";
             $output .= "<div class=\"additions\">".(implode("\n", $added))."</div>";
         }
 
         if ($deleted) {
-            $output .= "<br />\n<b>Suppressions:</b><br />\n";
+            $output .= "<br />\n<b>" . _t('RSS_DELETIONS') . ":</b><br />\n";
             $output .= "<div class=\"deletions\">".(implode("\n", $deleted))."</div>";
         }
 
         $wiki->UnregisterLastInclusion();
 
         if (!$added && !$deleted) {
-            $output .= "<br />\nPas de diff&eacute;rences.";
+            $output .= "<br />\n" . _t('RSS_NO_DIFF') . ".";
         }
         return $output;
     }

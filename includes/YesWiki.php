@@ -31,9 +31,11 @@ require_once 'includes/objects/YesWikiAction.php';
 require_once 'includes/objects/YesWikiHandler.php';
 require_once 'includes/objects/YesWikiFormatter.php';
 
+use Exception;
 use Throwable;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
@@ -42,6 +44,8 @@ use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
+use YesWiki\Core\ApiResponse;
+use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ApiService;
 use YesWiki\Core\Service\DbService;
@@ -121,7 +125,7 @@ class Wiki
 
     public function GetPageTime()
     {
-        return empty($this->page['time']) ?  '' : $this->page['time'];
+        return empty($this->page['time']) ? '' : $this->page['time'];
     }
 
     public function GetMethod()
@@ -155,6 +159,11 @@ class Wiki
     public function GetWikiNiVersion()
     {
         return WIKINI_VERSION;
+    }
+
+    public function isCli(): bool
+    {
+        return in_array(php_sapi_name(), ['cli', 'cli-server',' phpdbg'], true);
     }
 
     // inclusions
@@ -275,7 +284,7 @@ class Wiki
             $this->SavePage($page, $body, '', $bypass_acls);
 
             // now we render it internally so we can write the updated link table.
-            $page = $this->services->get(PageManager::class)->getOne($this->tag);
+            $page = $this->services->get(PageManager::class)->getOne($page);
             $this->services->get(LinkTracker::class)->registerLinks($page, false, false);
 
             // Retourne 0 seulement si tout c'est bien passe
@@ -393,7 +402,16 @@ class Wiki
     public function Redirect($url)
     {
         header("Location: $url");
-        exit();
+        $this->exit();
+    }
+
+    public function exit(string $message = "")
+    {
+        if ($this->isCli()) {
+            throw new ExitException($message);
+        } else {
+            exit($message);
+        }
     }
 
     // returns just PageName[/method].
@@ -409,7 +427,7 @@ class Wiki
     // returns the full url to a page/method.
     public function Href($method = null, $tag = null, $params = null, $htmlspchars = true)
     {
-        if (! $tag = trim($tag)) {
+        if ($tag == null || ! $tag = trim($tag)) {
             $tag = $this->tag;
         }
         $href = $this->config["base_url"] . $this->MiniHref($method, $tag);
@@ -448,7 +466,7 @@ class Wiki
             } else {
                 return '<a href="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET)
                 . '">' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET)
-                . ' (interwiki inconnu)</a>';
+                . ' ('._t('UNKNOWN_INTERWIKI').')</a>';
             }
         } else {
             // is this a full link? ie, does it contain non alpha-numeric characters?
@@ -553,7 +571,11 @@ class Wiki
             $tag = !empty($linkParts[1]) ? $linkParts[1] : null;
             $method = !empty($linkParts[2]) ? $linkParts[2] : null;
             $paramsStr = !empty($linkParts[3]) ? $linkParts[3] : null;
-            parse_str($paramsStr, $params);
+            $params = [];
+            if (is_string($paramsStr)) {
+                parse_str($paramsStr, $params);
+            }
+
             return [
                 'tag' => $tag,
                 'method' => $method,
@@ -808,19 +830,6 @@ class Wiki
 
     // COMMENTS
     /**
-     * Charge les commentaires relatifs a une page.
-     *
-     * @param string $tag
-     *            Nom de la page. Ex : "PagePrincipale"
-     * @return array Tableau contenant tous les commentaires et leurs
-     *         proprietes correspondantes.
-     */
-    public function LoadComments($tag)
-    {
-        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . 'pages ' . "where comment_on = '" . mysqli_real_escape_string($this->dblink, $tag) . "' " . "and latest = 'Y' " . "order by substring(tag, 8) + 0");
-    }
-
-    /**
      * Charge les derniers commentaires de toutes les pages.
      *
      * @param int $limit
@@ -904,9 +913,7 @@ class Wiki
         }
 
         // check if user is owner
-        if ($this->GetPageOwner($tag) == $this->GetUserName()) {
-            return true;
-        }
+        return ($this->GetPageOwner($tag) == $this->GetUserName());
     }
 
     /**
@@ -1134,7 +1141,7 @@ class Wiki
     // THE BIG EVIL NASTY ONE!
     public function Run($tag = '', $method = '')
     {
-        if (! ($this->GetMicroTime() % 9)) {
+        if (! (intval($this->GetMicroTime()) % 9)) {
             $this->Maintenance();
         }
 
@@ -1166,7 +1173,18 @@ class Wiki
             $this->SetPage($this->LoadPage($tag, (isset($_REQUEST['time']) ? $_REQUEST['time'] : '')));
             $this->LogReferrer();
 
-            echo $this->Method($this->method);
+            try {
+                echo $this->Method($this->method);
+            } catch (ExitException $th) {
+                if (!$this->isCli()) {
+                    // action redirect: aucune redirection n'a eu lieu, effacer la liste des redirections precedentes
+                    if (!empty($_SESSION['redirects'])) {
+                        unset($_SESSION['redirects']);
+                    }
+                    // do nothing except and script with message
+                    exit($th->getMessage);
+                }
+            }
 
             // action redirect: aucune redirection n'a eu lieu, effacer la liste des redirections precedentes
             if (!empty($_SESSION['redirects'])) {
@@ -1184,7 +1202,7 @@ class Wiki
             if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
                 $response = new Response(_t('WIKI_IN_HIBERNATION'), Response::HTTP_UNAUTHORIZED);
                 $response->send();
-                exit();
+                $this->exit();
             }
             if (empty($_POST)) {
                 $_POST = json_decode(file_get_contents('php://input'), true) ?? [];
@@ -1193,7 +1211,7 @@ class Wiki
 
         $context = new RequestContext();
         $context->fromRequest($this->request);
-        
+
         // Use query string as the path (part before '&')
         $extract = explode('&', $context->getQueryString());
         $path = $extract[0];
@@ -1208,7 +1226,7 @@ class Wiki
             } else {
                 $response = new Response(_t('ROUTE_BAD_CONFIGURED'), Response::HTTP_BAD_REQUEST);
                 $response->send();
-                exit();
+                $this->exit();
             }
         } elseif (count($extract) > 1) {
             array_shift($extract);
@@ -1222,6 +1240,9 @@ class Wiki
         $controllerResolver = new YesWikiControllerResolver($this);
         $argumentResolver = new ArgumentResolver();
 
+
+        // start buffer to prevent bad formatting response
+        ob_start();
         try {
             // TODO put this elsewhere ?
             $attributes = $matcher->match($context->getPathInfo());
@@ -1241,6 +1262,34 @@ class Wiki
             $response = new Response($exception->getMessage(), $exception->getStatusCode(), $exception->getHeaders());
         } catch (MethodNotAllowedException $exception) {
             $response = new Response('', Response::HTTP_METHOD_NOT_ALLOWED);
+        } catch (Throwable $th) {
+            if (isset($response) && $response instanceof JsonResponse) {
+                $previousContent = json_decode($response->getContent(), true);
+                $newContent = ['exceptionMessage' => $th->__toString()] + $previousContent;
+                $response->setData($newContent);
+                $response->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
+            } else {
+                $response = new ApiResponse(['exceptionMessage' => $th->__toString()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+        }
+        $rawOutput = ob_get_contents();
+        ob_end_clean();
+        if (!empty($rawOutput)) {
+            if ($response instanceof JsonResponse) {
+                $previousContent = json_decode($response->getContent(), true);
+                $newContent = is_array($previousContent)
+                    ? ['rawOutput' => $rawOutput] + $previousContent
+                    : (
+                        is_string($previousContent)
+                        ? $previousContent.$rawOutput
+                        :$rawOutput
+                    );
+                $response->setData($newContent);
+            } else {
+                $previousContent = $response->getContent();
+                $newContent = $previousContent . $rawOutput;
+                $response->setContent($newContent);
+            }
         }
         $response->send();
     }
@@ -1256,9 +1305,17 @@ class Wiki
     /**
      * @deprecated Use AssetsManager service instead
      */
-    public function AddCSSFile($file, $conditionstart = '', $conditionend = '')
+    public function AddCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = '')
     {
         return $this->services->get(AssetsManager::class)->AddCSSFile($file, $conditionstart, $conditionend);
+    }
+
+    /**
+     * @deprecated Use AssetsManager service instead
+     */
+    public function LinkCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = '')
+    {
+        return $this->services->get(AssetsManager::class)->LinkCSSFile($file, $conditionstart, $conditionend);
     }
 
     /**
@@ -1387,7 +1444,7 @@ class Wiki
 
         // This must be done after service initialization, as it uses services
         loadpreferredI18n($this, $this->tag);
-        
+
         // translations
         foreach ($this->extensions as $k => $pluginBase) {
             // language files : first default language, then preferred language

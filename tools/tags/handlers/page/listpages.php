@@ -103,13 +103,13 @@ if ($resultat) {
 
 $output .= '<div class="alert alert-info">'."\n";
 if ($nb_total > 1) {
-    $output .= 'Un total de '.$nb_total.' pages ont &eacute;t&eacute; trouv&eacute;es';
+    $output .= _t('TAGS_TOTAL_NB_PAGES', ['nb_total'=> $nb_total]);
 } elseif ($nb_total == 1) {
-    $output .= 'Une page a &eacute;t&eacute; trouv&eacute;e';
+    $output .= _t('TAGS_ONE_PAGE_FOUND');
 } else {
-    $output .= 'Aucune page trouv&eacute;e';
+    $output .= _t('TAGS_NO_PAGE');
 }
-$output .= (!empty($tab_selected_tags) ? ' avec le mot cl&eacute; '.implode(' et ', array_map(function ($tagName) {
+$output .= (!empty($tab_selected_tags) ? ' ' . _t('TAGS_WITH_KEYWORD') . ' '.implode(' '.  _t('TAGS_WITH_KEYWORD_SEPARATOR') .' ', array_map(function ($tagName) {
     return '<span class="tag-label label label-info">'.$tagName.'</span>';
 }, $tab_selected_tags)) : '').'.';
 $output .= $this->Format('{{rss tags="'.$tags.'" class="pull-right"}}')."\n";

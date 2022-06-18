@@ -5,11 +5,9 @@ namespace YesWiki\Core\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
+use YesWiki\Core\Exception\ExitException;
+use YesWiki\Core\Exception\PerformerException;
 use YesWiki\Wiki;
-
-class PerformerException extends \Exception
-{
-}
 
 /**
  * Loads and run Handlers, Formatters and Actions
@@ -192,7 +190,7 @@ class Performer
                         $output .= $performable->run();
                     } catch (HttpException $exception) {
                         return $this->renderError($exception->getMessage(), $objectType);
-                    }                    
+                    }
                 } else {
                     $vars['plugin_output_new'] = &$output;
                     // need to run them from YesWiki Class so the variable $this (used in all the plain PHP object) refers to YesWiki, not to Performer service
@@ -200,6 +198,8 @@ class Performer
                     $output = &$vars['plugin_output_new'];
                     unset($vars['plugin_output_new']);
                 }
+            } catch (ExitException $t) {
+                throw $t;
             } catch (Throwable $t) {
                 // catch all errors and exceptions thrown by the execution of the performable
                 $message = _t('PERFORMABLE_ERROR');

@@ -6,9 +6,9 @@ if (!defined("WIKINI_VERSION")) {
 // valeur de la progressbar
 $val = $this->GetParameter('val');
 if (empty($val)) {
-    $error = ' param&egrave;tre "val" obligatoire.';
+    $error = ' '._t('PROGRESSBAR_REQUIRED_VAL_PARAM');
 } elseif (!is_numeric($val) || $val<0 || $val > 100) {
-    $error = ' le param&egrave;tre "val" doit étre un chiffre entre 0 et 100.';
+    $error = ' '._t('PROGRESSBAR_ERROR_VAL_PARAM');
 }
 
 // classe css supplémentaire pour changer le look

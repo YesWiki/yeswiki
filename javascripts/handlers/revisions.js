@@ -10,9 +10,9 @@ new Vue({
     revisions: [],
     selectedRevision: null,
     viewTypes: {
-      'current': "Aperçu de cette version",
-      'commit_diff': "Modifs apportées par cette version",
-      'diff': "Comparaison avec version actuelle"
+      'current': _t('REVISIONS_PREVIEW'),
+      'commit_diff': _t('REVISIONS_COMMIT_DIFF'),
+      'diff': _t('REVISIONS_DIFF')
     },
     displayWikiCode: false,
     selectedViewType: 'current',

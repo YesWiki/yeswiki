@@ -6,49 +6,70 @@ actions:
     label: _t(AB_tags_listpagestag_label)
     properties:
       tags: 
-        label: tags
+        label: _t(AB_tags_listpagestag_tags_label)
         type: text
+        hint: _t(AB_tags_listpagestag_tags_hint)
       type: 
-        label: type
-        type: text
-      class: 
-        label: class
-        type: text
+        label: _t(AB_tags_listpagestag_type_label)
+        type: list
+        options:
+          '': _t(AB_tags_listpagestag_type_all)
+          wiki: _t(AB_tags_listpagestag_type_wiki)
+          bazar: _t(AB_tags_listpagestag_type_bazar)
+   #  class: 
+   #    label: class
+   #    type: text
       nb: 
-        label: nb
+        label: _t(AB_tags_listpagestag_nb_label)
         type: number
         min: 0
       tri: 
-        label: tri
-        type: text
+        label: _t(AB_tags_listpagestag_tri_label)
+        type: list
+        options:
+          date : _t(AB_tags_listpagestag_tri_date)
+          alpha: _t(AB_tags_listpagestag_tri_alpha)
       template:
-        label: template
-        type: text
+        label: _t(AB_tags_listpagestag_template_label)
+        type: list
+        options:
+          pages_list.tpl.html: _t(AB_tags_listpagestag_template_list)
+          pages_listgroup.tpl.html: _t(AB_tags_listpagestag_template_list_panel)
+          pages_listnum.tpl.html: _t(AB_tags_listpagestag_template_list_num)
       shownumberinfo:
-        label: shownumberinfo
+        label: _t(AB_tags_listpagestag_shownumberinfo_label)
         type: checkbox
+        checkedvalue: '1'
+        uncheckedvalue: ''
   nuagetag:
-    label: nuagetag
+    label: _t(AB_tags_listpagestag_nuagetag_label)
     properties:
       tags:
-        label: tags
+        label: _t(AB_tags_listpagestag_tags_label)
         type: text
-      class:
-        label: class
-        type: text
-      nbclasses:
-        label: nbclasses
-        type: number
-        min: 0
+        hint: _t(AB_tags_listpagestag_tags_hint)
+      # class:
+      #   label: class
+      #   type: text
       tri:
-        label: tri
-        type: text
+        label: _t(AB_tags_listpagestag_tri_label)
+        type: list
+        default: ''
+        options:
+          '' : _t(AB_tags_nuagetag_tri_shuffle)
+          apha: _t(AB_tags_listpagestag_tri_alpha)
+      nbclasses:
+        label: _t(AB_tags_listpagestag_nbclasses_label)
+        type: number
+        advanced: true
+        min: 0
   rss:
-    label: rss
+    label: _t(AB_tags_listpagestag_rss_label)
     properties:
       tags:
-        label: tags
+        label: _t(AB_tags_listpagestag_tags_label)
         type: text
-      class:
-        label: class
-        type: text
+        hint: _t(AB_tags_listpagestag_tags_hint)
+      # class:
+      #   label: class
+      #   type: text

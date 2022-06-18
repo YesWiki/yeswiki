@@ -72,7 +72,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
             $this->RegisterInclusion($this->GetPageTag()); // on simule totalement un affichage normal
             $output .=
               "<div class=\"page_preview\">\n".
-              "<div class=\"prev_alert\"><strong>Aper&ccedil;u</strong></div>\n".
+              "<div class=\"prev_alert\"><strong>" . _t('EDIT_PREVIEW') . "</strong></div>\n".
               $this->Format($body)."\n\n".
               $this->FormOpen(testUrlInIframe() ? 'editiframe' : 'edit').
               "<input type=\"hidden\" name=\"previous\" value=\"$previous\" />\n".
@@ -94,25 +94,23 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
         case 'Sauver':
             // check for overwriting
             if ($this->page && $this->page['id'] != $_POST['previous']) {
-                $error = 'ALERTE : '.
-                "Cette page a &eacute;t&eacute; modifi&eacute;e par quelqu'un d'autre pendant que vous l'&eacute;ditiez.<br />\n".
-                "Veuillez copier vos changements et r&eacute;&eacute;diter cette page.\n";
+                $error = str_replace("\n", "<br />", _t('EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER'));
             } else { // store
                 $body = str_replace("\r", '', $body);
                 // teste si la nouvelle page est differente de la précédente
                 if (isset($this->page['body']) && rtrim($body) == rtrim($this->page['body'])) {
-                    $this->SetMessage('Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car elle n\'a subi aucune modification.');
+                    $this->SetMessage(_t('EDIT_NO_CHANGE_MSG'));
                     $this->Redirect($this->href(testUrlInIframe()));
                 } else {
                     // l'encodage de la base est en iso-8859-1, voir s'il faut convertir
                     $body = _convert($body, YW_CHARSET, true);
 
                     // add page (revisions)
-                    $this->SavePage($this->tag, $body);
+                    $this->SavePage($this->tag, $body, !empty($this->page['comment_on']) ? $this->page['comment_on'] : '');
 
                     // now we render it internally so we can write the updated link table.
                     $page = $this->services->get(PageManager::class)->getOne($this->tag);
-                    $this->services->get(LinkTracker::class)->registerLinks($page,false,false);
+                    $this->services->get(LinkTracker::class)->registerLinks($page, false, false);
 
                     // forward
                     if ($this->page['comment_on']) {
@@ -123,7 +121,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
                 }
 
                 // sécurité
-                exit;
+                $this->exit();
             }
         // NB.: en cas d'erreur on arrive ici, donc default sera exécuté...
         // no break
@@ -135,7 +133,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
 
             // append a comment?
             if (isset($_REQUEST['appendcomment'])) {
-                $body = trim($body)."\n\n----\n\n-- ".$this->GetUserName().' ('.strftime('%c').')';
+                $body = trim($body)."\n\n----\n\n-- ".$this->GetUserName().' ('.date('c').')';
             }
 
             $output .=
@@ -153,24 +151,24 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
               $this->FormClose();
     } // switch
 } else {
-    $output .= "<i>Vous n'avez pas acc&egrave;s en &eacute;criture &agrave; cette page !</i>\n";
+    $output .= "<i>" . _t('EDIT_NO_WRITE_ACCESS') . "</i>\n";
     if ($isWikiHibernated) {
         $output .= $this->services->get(SecurityController::class)->getMessageWhenHibernated();
     }
 }
 
-// Header
-if (!testUrlInIframe()) {
-    echo $this->Header();
-}
-
 // Main Page
-echo '<div class="page">'."\n".$output."\n".'<hr class="hr_clear" />'."\n".'</div>'."\n";
+$output = '<div class="page">'."\n".$output."\n".'<hr class="hr_clear" />'."\n".'</div>'."\n";
 
 // Popups for aceditor toolbar
+ob_start();
 include 'tools/aceditor/actions/actions_builder.php';
+$output .= ob_get_contents();
+ob_end_clean();
 
-// Footer
+// Header - // Footer
 if (!testUrlInIframe()) {
-    echo $this->Footer();
+    echo $this->Header().$output.$this->Footer();
+} else {
+    echo $output;
 }

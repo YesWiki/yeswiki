@@ -30,7 +30,9 @@ class BazarAction extends YesWikiAction
     public const ACTION_FORM_CREATE = 'new';
     public const ACTION_FORM_EDIT = 'modif';
     public const ACTION_FORM_DELETE = 'delete';
+    public const ACTION_FORM_CONFIRM_DELETE = 'confirm_delete';
     public const ACTION_FORM_EMPTY = 'empty';
+    public const ACTION_FORM_CONFIRM_EMPTY = 'confirm_empty';
     public const ACTION_FORM_CLONE = 'clone';
     public const CHOISIR_TYPE_FICHE = 'choisir_type_fiche';
 
@@ -50,7 +52,7 @@ class BazarAction extends YesWikiAction
             // afficher le menu de vues bazar ?
             'voirmenu' => $arg['voirmenu'] ?? $this->params->get('baz_menu'),
             // Identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
-            'idtypeannonce' => $this->formatArray($_REQUEST['id_typeannonce'] ?? $arg['id'] ?? $arg['idtypeannonce'] ?? $_GET['id'] ?? null),
+            'idtypeannonce' => $this->formatArray($_REQUEST['id_typeannonce'] ?? $arg['id'] ?? $arg['idtypeannonce'] ?? (!empty($_GET['id']) ? strip_tags($_GET['id']) : null)),
             // Permet de rediriger vers une url après saisie de fiche
             'redirecturl' => $_GET['redirecturl'] ?? $arg['redirecturl'] ?? ''
         ]);
@@ -123,6 +125,14 @@ class BazarAction extends YesWikiAction
                             return $this->getMessageWhenHibernated();
                         }
                         return $formController->delete($_GET['idformulaire']);
+                    case self::ACTION_FORM_CONFIRM_DELETE:
+                    case self::ACTION_FORM_CONFIRM_EMPTY:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
+                        return $this->render("@bazar/forms/forms_confirm.twig", [
+                            'type' => ($action == self::ACTION_FORM_CONFIRM_DELETE) ? 'delete' : 'empty',
+                        ]);
                     case self::ACTION_FORM_EMPTY:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();

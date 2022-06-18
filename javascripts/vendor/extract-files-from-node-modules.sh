@@ -11,7 +11,9 @@ mkdir -p styles/vendor/fontawesome && cp -f -r node_modules/@fortawesome/fontawe
 mkdir -p styles/vendor/fontawesome/css && cp -f node_modules/@fortawesome/fontawesome-free/css/all.min.css styles/vendor/fontawesome/css
 # Bootstrap
 mkdir -p javascripts/vendor/bootstrap && cp -f node_modules/bootstrap/dist/js/bootstrap.min.js javascripts/vendor/bootstrap/bootstrap.min.js
-mkdir -p styles/vendor/bootstrap/css && cp -f node_modules/bootstrap/dist/css/bootstrap.min.css styles/vendor/bootstrap/css/bootstrap.min.css
+mkdir -p styles/vendor/bootstrap/css && \
+  cp -f node_modules/bootstrap/dist/css/bootstrap.min.css styles/vendor/bootstrap/css/bootstrap.min.css && \
+  cp -f node_modules/bootstrap/dist/css/bootstrap.min.css.map styles/vendor/bootstrap/css
 mkdir -p styles/vendor/bootstrap && cp -f -r node_modules/bootstrap/dist/fonts styles/vendor/bootstrap
 
 #  Vue
@@ -36,8 +38,8 @@ mkdir -p javascripts/vendor/leaflet-fullscreen && cp -f node_modules/leaflet.ful
 mkdir -p styles/vendor/leaflet-fullscreen && cp -f node_modules/leaflet.fullscreen/Control.FullScreen.css styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css
 
 # GoGoCartoJs
-mkdir -p javascripts/vendor/gogocarto && cp -f node_modules/gogocarto-js/dist/gogocarto.min.js javascripts/vendor/gogocarto/gogocarto.min.js
-mkdir -p styles/vendor/gogocarto && cp -f node_modules/gogocarto-js/dist/gogocarto.min.css styles/vendor/gogocarto/gogocarto.min.css
+mkdir -p javascripts/vendor/gogocarto && cp -f node_modules/gogocarto-js/dist/gogocarto.js javascripts/vendor/gogocarto/gogocarto.min.js
+mkdir -p styles/vendor/gogocarto && cp -f node_modules/gogocarto-js/dist/gogocarto.css styles/vendor/gogocarto/gogocarto.min.css
 cp -f -r node_modules/gogocarto-js/dist/images styles/vendor/gogocarto
 cp -f -r node_modules/gogocarto-js/dist/fonts styles/vendor/gogocarto
 
@@ -53,3 +55,41 @@ mkdir -p javascripts/vendor/formbuilder-languages && cp -f node_modules/formbuil
 
 #jquery-ui-sortable
 mkdir -p javascripts/vendor/jquery-ui-sortable && cp -f node_modules/jquery-ui-sortable/jquery-ui.min.js javascripts/vendor/jquery-ui-sortable
+
+# DataTables
+mkdir -p javascripts/vendor/datatables-full && \
+  cat node_modules/datatables.net/js/jquery.dataTables.min.js \
+      node_modules/datatables.net-bs/js/dataTables.bootstrap.min.js \
+      node_modules/datatables.net-buttons/js/dataTables.buttons.min.js \
+      node_modules/datatables.net-buttons/js/buttons.colVis.min.js \
+      node_modules/datatables.net-buttons/js/buttons.flash.min.js \
+      node_modules/datatables.net-buttons/js/buttons.html5.min.js \
+      node_modules/datatables.net-buttons/js/buttons.print.min.js  \
+      node_modules/datatables.net-buttons-bs/js/buttons.bootstrap.min.js  \
+      node_modules/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js  \
+      node_modules/datatables.net-fixedheader-bs/js/fixedHeader.bootstrap.min.js  \
+      node_modules/datatables.net-responsive/js/dataTables.responsive.min.js  \
+      node_modules/datatables.net-responsive-bs/js/responsive.bootstrap.min.js  \
+      > javascripts/vendor/datatables-full/jquery.dataTables.min.js 
+
+mkdir -p styles/vendor/datatables-full && \
+  cat node_modules/datatables.net-bs/css/dataTables.bootstrap.min.css \
+      node_modules/datatables.net-buttons-bs/css/buttons.bootstrap.min.css  \
+      node_modules/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css  \
+      node_modules/datatables.net-responsive-bs/css/responsive.bootstrap.min.css  \
+      > styles/vendor/datatables-full/dataTables.bootstrap.min.css 
+
+# fullcalendar
+mkdir -p styles/vendor/fullcalendar && \
+  cp -f node_modules/fullcalendar/main.min.css styles/vendor/fullcalendar
+
+mkdir -p javascripts/vendor/fullcalendar && \
+  cp -f node_modules/fullcalendar/main.min.js javascripts/vendor/fullcalendar && \
+  cp -f node_modules/fullcalendar/locales-all.min.js javascripts/vendor/fullcalendar && \
+  cp -f node_modules/fullcalendar/LICENSE.txt javascripts/vendor/fullcalendar && \
+  cp -f node_modules/fullcalendar/README.md javascripts/vendor/fullcalendar
+
+# Moment
+mkdir -p javascripts/vendor/moment && \
+  cp -f node_modules/moment/min/moment-with-locales.min.js javascripts/vendor/moment && \
+  cp -f node_modules/moment/min/moment-with-locales.min.js.map javascripts/vendor/moment

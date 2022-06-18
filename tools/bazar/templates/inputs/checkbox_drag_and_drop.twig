@@ -2,7 +2,7 @@
 
 {% block input %}
 {{ include_css('tools/bazar/presentation/styles/checkbox-drag-and-drop.css') }}
-<div class="row row-fluid yeswiki-checkbox checkbox">
+<div class="row row-fluid yeswiki-checkbox checkbox{{ field.required ? ' chk_required' : ''}}">
 	<div class="col-lg-4 export-table-container">
 		<h4>{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM') }}<img class="tooltip_aide" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO')  ~ "'+'." }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></h4>		
 		<div class="input-group input-prepend input-append">

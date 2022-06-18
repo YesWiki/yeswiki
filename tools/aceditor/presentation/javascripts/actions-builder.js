@@ -4,12 +4,15 @@ import InputText from './components/InputText.js'
 import InputPageList from './components/InputPageList.js'
 import InputCheckbox from './components/InputCheckbox.js'
 import InputList from './components/InputList.js'
+import InputDivider from './components/InputDivider.js'
 import InputIcon from './components/InputIcon.js'
 import InputColor from './components/InputColor.js'
 import InputFormField from './components/InputFormField.js'
 import InputFacette from './components/InputFacette.js'
+import InputReaction from './components/InputReaction.js';
 import InputIconMapping from './components/InputIconMapping.js'
 import InputColorMapping from './components/InputColorMapping.js'
+import InputColumnsWidth from './components/InputColumnsWidth.js'
 import InputGeo from './components/InputGeo.js'
 import InputClass from './components/InputClass.js'
 import InputCorrespondance from './components/InputCorrespondance.js'
@@ -18,6 +21,7 @@ import PreviewAction from './components/PreviewAction.js'
 import AceEditorWrapper from './components/aceditor-wrapper.js'
 import FlyingActionBar from './components/flying-action-bar.js'
 import InputHint from './components/InputHint.js'
+import AddonIcon from './components/AddonIcon.js'
 
 const ACTIONS_BACKWARD_COMPATIBILITY = {
   calendrier: 'bazarcalendar',
@@ -27,6 +31,7 @@ console.log("actionsBuilderData", actionsBuilderData) // data variable has been 
 
 // Declare this one globally because we use it everywhere
 Vue.component('input-hint', InputHint)
+Vue.component('addon-icon', AddonIcon)
 Vue.component('v-select', VueSelect.VueSelect);
 
 // Handle oldbrowser not supporting ES6
@@ -36,8 +41,10 @@ if (!('noModule' in HTMLScriptElement.prototype)) {
 
 window.myapp = new Vue({
   el: "#actions-builder-app",
-  components: { InputPageList, InputText, InputCheckbox, InputList, InputIcon, InputColor, InputFormField, InputHidden,
-                InputFacette, InputIconMapping, InputColorMapping, InputGeo, InputClass, InputCorrespondance,
+  components: { InputPageList, InputText, InputCheckbox, InputList, InputIcon, InputColor, 
+                InputFormField, InputHidden, InputDivider,
+                InputFacette, InputReaction, InputIconMapping, InputColorMapping, InputGeo, InputClass, InputCorrespondance,
+                InputColumnsWidth,
                 WikiCodeInput, PreviewAction },
   mixins: [ InputHelper ],
   data: {
@@ -159,6 +166,8 @@ window.myapp = new Vue({
         if (this.$refs.specialInput) this.$refs.specialInput.forEach(component => component.resetValues())
         this.selectedFormId = ''
         this.selectedActionId = ''
+        // Bazar dynamic by default
+        if (this.currentGroupId == 'bazarliste') Vue.set(this.values, "dynamic", true)
       }
       this.updateActionParams()
       // If only one action available, select it
@@ -210,7 +219,7 @@ window.myapp = new Vue({
       for(let key in this.values) {
         let config = this.selectedActionAllConfigs[key]
         let value = this.values[key]
-        if (result.hasOwnProperty(key) || value === undefined 
+        if (result.hasOwnProperty(key) || value === undefined || config && config.default && `${value}` == `${config.default}`
             || typeof value == "object" || config && !this.checkConfigDisplay(config) ) 
           continue
         result[key] = value
@@ -220,7 +229,7 @@ window.myapp = new Vue({
 
       // default value for 'bazarliste'
       if (this.selectedActionId == 'bazarliste') result.template = result.template || 'liste_accordeon'
-
+      
       // put in first position 'id' and 'template' if existing
       const orderedResult = {}
       if (result.id) orderedResult['id'] = result.id

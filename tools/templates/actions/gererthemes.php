@@ -18,7 +18,7 @@ use YesWiki\Security\Controller\SecurityController;
 
 //action réservée aux admins
 if (!$this->UserIsAdmin()) {
-    echo '<div class="alert alert-danger alert-error">Cette action est r&eacute;serv&eacute;e aux admins.</div>';
+    echo '<div class="alert alert-danger alert-error">' . _t('ACLS_RESERVED_FOR_ADMINS') . '.</div>';
     return ;
 }
 
@@ -28,7 +28,7 @@ $table = $this->config['table_prefix'];
 
 if (isset($_POST['theme_modifier'])) {
     if (!isset($_POST['selectpage'])) {
-        $error = 'Aucune page n\'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.';
+        $error = _t('ACLS_NO_SELECTED_PAGE');
     } else {
         foreach ($_POST['selectpage'] as $page_cochee) {
             if ($_POST['typemaj'] == 'reinitialiser') {
@@ -52,11 +52,11 @@ while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
 if (isset($error)) {
     echo "<div class='alert alert-danger'>$error</div>";
 }
-$this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
-$this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
+$this->addJavascriptFile('javascripts/vendor/datatables-full/jquery.dataTables.min.js');
+$this->addCSSFile('styles/vendor/datatables-full/dataTables.bootstrap.min.css');
 echo '<form method="post" action="'.$this->href().'">';
 ?>
-<p>Cochez les pages que vous souhaitez modifier et choisissez une action en bas de page</p>
+<p><?php echo _t('GERERTHEMES_HINT'); ?></p>
 <div class="table-responsive">
 <table class="table table-striped table-condensed gerer-theme">
 <thead>
@@ -67,10 +67,10 @@ echo '<form method="post" action="'.$this->href().'">';
             <span></span>
           </label>
         </th>
-        <th><div><b>Page</b></div></th>
-        <th><div align="center"><b>Theme</b></div></th>
-        <th><div align="center"><b>Squelette</b></div></th>
-        <th><div align="center"><b>Style</b></div></th>
+        <th><div><b><?php echo _t('GERERTHEMES_PAGE'); ?></b></div></th>
+        <th><div align="center"><b><?php echo _t('TEMPLATE_THEME'); ?></b></div></th>
+        <th><div align="center"><b><?php echo _t('TEMPLATE_SQUELETTE'); ?></b></div></th>
+        <th><div align="center"><b><?php echo _t('TEMPLATE_STYLE'); ?></b></div></th>
     </tr>
 </thead>
 <tbody>
@@ -98,18 +98,18 @@ for ($x = 0; $x < $num_page; $x++) {
 </table>
 </div>
 
-<p><b>Actions</b></p>
+<p><b><?php echo _t('GERERTHEMES_ACTIONS'); ?></b></p>
 
 <p class="type-modif-container">
   <label for="typemajdefault">
     <input type=radio name="typemaj" value="reinitialiser" id="typemajdefault" checked
            onClick="$('.edit-theme-container').slideUp()">
-    <span>Réinitialiser les pages selectionnées (elles utiliseront le thème par défault)</span>
+    <span><?php echo _t('GERERTHEMES_INIT_THEME_FOR_SELECTED_PAGES'); ?></span>
   </label>
   <label for="typemajajouter">
     <input type=radio name="typemaj" value="modifier" id="typemajajouter"
            onClick="$('.edit-theme-container').slideDown()">
-    <span>Modifier les valeurs pour les pages sélectionnées</span>
+    <span><?php echo _t('GERERTHEMES_MODIFY_THEME_FOR_SELECTED_PAGES'); ?></span>
   </label>
 </p>
 

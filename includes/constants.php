@@ -1,4 +1,5 @@
 <?php
+
 // do not change this line, you fool. In fact, don't change anything! Ever!
 define('WAKKA_VERSION', '0.1.1');
 define('WIKINI_VERSION', '0.5.0');
@@ -51,3 +52,6 @@ define('WIKINI_VOC_HANDLERS_PREFIX', WIKINI_VOC_PREFIX . 'handler/');
 // standard properties
 define('WIKINI_VOC_ACLS', 'acls');
 define('WIKINI_VOC_ACLS_URI', WIKINI_VOC_PREFIX . WIKINI_VOC_ACLS);
+
+// for package updates
+define('SEMVER', '(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?');

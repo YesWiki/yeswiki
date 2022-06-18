@@ -93,7 +93,7 @@ class Mailer
         $text = $this->templateEngine->render(
             '@contact/notify-admins-list-deleted-email-text.twig',
             [
-                'ip' => $_SERVER['REMOTE_ADDR'],
+                'ip' => $this->wiki->isCli() ? '' : $_SERVER['REMOTE_ADDR'],
                 'userName' => $this->wiki->GetUserName(),
             ]
         );
@@ -101,7 +101,7 @@ class Mailer
             '@contact/notify-admins-list-deleted-email-html.twig',
             [
                 'style' => file_get_contents('tools/bazar/presentation/styles/bazar.css'),
-                'ip' => $_SERVER['REMOTE_ADDR'],
+                'ip' => $this->wiki->isCli() ? '' : $_SERVER['REMOTE_ADDR'],
                 'userName' => $this->wiki->GetUserName(),
                 'baseUrl' => $baseUrl,
             ]
@@ -139,7 +139,20 @@ class Mailer
             ]
         );
         $user = $this->userManager->getOneByEmail($email);
-        $userName = $user['name'] ?? null ;
+        $currentUser = $this->userManager->getLoggedUser();
+        if (!empty($user['name'])) {
+            $userName = $user['name'];
+        } elseif (empty($currentUser)) {
+            $userName = null;
+        } else {
+            // in this case, we can used empty $userName otherwise the acl will be check for the current user not the email
+            // so we use a fake username
+            do {
+                $randomString = md5(rand());
+                $existingUser = $this->userManager->getOneByName($randomString);
+            } while (!empty($existingUser));
+            $userName = $randomString;
+        }
         $html = $this->sanitizeLinksIfNeeded($this->templateEngine->render(
             '@contact/notify-email-html.twig',
             [

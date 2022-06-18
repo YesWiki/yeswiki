@@ -15,7 +15,6 @@ class AclService
     protected $params;
 
     protected $cache;
-    private $checkOwnerReadAcl;
 
     public function __construct(Wiki $wiki, DbService $dbService, UserManager $userManager, ParameterBagInterface $params, SecurityController $securityController)
     {
@@ -24,21 +23,19 @@ class AclService
         $this->userManager = $userManager;
         $this->params = $params;
         $this->securityController = $securityController;
-        
+
         $this->cache = [];
-        $this->checkOwnerReadAcl = !($this->params->has('baz_check_owner_acl_only_for_field_can_edit')
-            && $this->params->get('baz_check_owner_acl_only_for_field_can_edit'));
     }
-    
+
     /**
      * @param string $tag
      * @param string $privilege
      * @param boolean $useDefaults
      * @return array [page_tag, privilege, list]
      */
-    public function load($tag, $privilege, $useDefaults = true) : ?array
+    public function load($tag, $privilege, $useDefaults = true): ?array
     {
-        if (isset($this->cache[$tag][$privilege])) {
+        if ($useDefaults && isset($this->cache[$tag][$privilege])) {
             return $this->cache[$tag][$privilege] ;
         }
 
@@ -57,7 +54,7 @@ class AclService
                 'comment' => [
                     'page_tag' => $tag,
                     'privilege' => 'comment',
-                    'list' => $this->params->get('default_comment_acl')
+                    'list' => 'comments-closed'
                 ]
             ];
         } else {
@@ -153,7 +150,7 @@ class AclService
     public function hasAccess($privilege, $tag = '', $user = '')
     {
         // set default to current page
-        if (! $tag = trim($tag)) {
+        if ($tag == null || ! $tag = trim($tag)) {
             $tag = $this->wiki->GetPageTag();
         }
 
@@ -162,14 +159,22 @@ class AclService
             $user = $this->userManager->getLoggedUserName();
         }
 
+        // load acl
+        $acl = $this->load($tag, $privilege);
+
+        // empty acls is considered as no access
+        if ($acl === null) {
+            return false;
+        } elseif (isset($acl['list']) && $acl['list'] === 'comments-closed') {
+            return false;
+        }
+
         // if current user is owner, return true. owner can do anything!
         if ($this->wiki->UserIsOwner($tag)) {
             return true;
         }
 
-        // load acl
-        $acl = $this->load($tag, $privilege);
-        // now check them
+        // now check the acls
         $access = $this->check($acl['list'], $user);
 
         return $access ;
@@ -195,16 +200,20 @@ class AclService
     public function check($acl, $user = null, $adminCheck = true, $tag = '', $mode = '')
     {
         if (!$user) {
-            $user = $this->userManager->getLoggedUserName();
+            $user = $this->userManager->getLoggedUser();
+            $username = !empty($user['name']) ? $user['name'] : null;
+        } else {
+            $username = $user;
         }
 
-        if ($adminCheck && $this->wiki->UserIsAdmin($user)) {
+        if ($adminCheck && !empty($username) && $this->wiki->UserIsAdmin($username)) {
             return true;
         }
 
-        $acl = trim($acl);
+        $acl = is_string($acl) ? trim($acl) : '';
         $result = false ; // result by default , this function is like a big "OR LOGICAL"
 
+        $acl = str_replace(["\r\n","\r"], "\n", $acl);
         foreach (explode("\n", $acl) as $line) {
             $line = trim($line);
 
@@ -225,7 +234,7 @@ class AclService
                         $result = $std_response;
                         break;
                     case '+': // registered users
-                        $result = ($this->userManager->getOneByName($user)) ? $std_response : !$std_response ;
+                        $result = (!empty($username) && $this->userManager->getOneByName($username)) ? $std_response : !$std_response ;
                         break;
                     case '%': // owner
                         if ($mode == 'creation') {
@@ -236,7 +245,7 @@ class AclService
                             // to manage retrocompatibility without usage of CheckACL without $tag
                             // and no management of '%'
                             $result = false;
-                        } elseif ($this->checkOwnerReadAcl || ($mode == 'edit')) {
+                        } else {
                             $result = ($this->wiki->UserIsOwner($tag)) ? $std_response : !$std_response ;
                         }
                         break;
@@ -244,7 +253,7 @@ class AclService
                         $gname = substr($line, 1);
                         // paranoiac: avoid line = '@'
                         if ($gname) {
-                            if ($this->wiki->UserIsInGroup($gname, $user, false/* we have allready checked if user was an admin */)) {
+                            if (!empty($username) && $this->wiki->UserIsInGroup($gname, $username, false/* we have allready checked if user was an admin */)) {
                                 $result = $std_response ;
                             } else {
                                 $result = ! $std_response ;
@@ -254,7 +263,7 @@ class AclService
                         }
                         break;
                     default: // simple user entry
-                        if ($line == $user) {
+                        if (!empty($username) && $line == $username) {
                             $result = $std_response ;
                         } else {
                             $result = ! $std_response ;
@@ -272,7 +281,7 @@ class AclService
     /** create request for ACL
      * @return string $request request to append to request
      */
-    public function updateRequestWithACL():string
+    public function updateRequestWithACL(): string
     {
         // needed ACL
         $neededACL = ['*'];
@@ -332,11 +341,11 @@ class AclService
                 $newRequestStart .= ' AND ';
                 $newRequestStart .= ' list NOT LIKE "%!'.$acl.'%"';
             }
-            
+
             // add detection of '%'
             if (!empty($user)) {
                 $newRequestStart .= ') OR (';
-                
+
                 $newRequestStart .= '(list LIKE "%\\%%" AND list NOT LIKE "%!\\%%")';
                 $newRequestStart .= ' AND owner = _utf8\'' . $this->dbService->escape($userName) . '\'';
             }

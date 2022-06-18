@@ -59,7 +59,7 @@ $(document).ready(function() {
     var id = '#' + $(this).parent('.liste_ligne').attr('id');
     var nb = $("#bazar_form_lists .list-sortables input[name^='label']").length;
     if (nb > 1) {
-      if (confirm('Confirmez-vous la suppression de cette valeur dans la liste ?')) {
+      if (confirm(_t('BAZ_EDIT_LISTS_CONFIRM_DELETE'))) {
         var nom = 'a_effacer_' + $(id).find('input:hidden').attr('name');
         $(id).find('input:hidden').attr('name', nom).appendTo('#bazar_form_lists');
         $(id).remove();
@@ -71,7 +71,7 @@ $(document).ready(function() {
         });
       }
     } else {
-      alert('Le dernier élément ne peut être supprimé.');
+      alert(_t('BAZ_EDIT_LISTS_DELETE_ERROR'));
     }
 
     return false;

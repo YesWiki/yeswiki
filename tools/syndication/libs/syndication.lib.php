@@ -163,7 +163,7 @@ function getRelativeDate($date)
     // si elle est proche alors on retourne une date relative...
     if ($time < $after && $time > $before) {
         if ($time >= $after) {
-            $relative = strftime('%A', $date).' prochain';
+            $relative = date('l', $date).' prochain';
         } elseif ($time >= $afterTomorrow) {
             $relative = 'Apr&egrave;s demain';
         } elseif ($time >= $tomorrow) {
@@ -175,11 +175,11 @@ function getRelativeDate($date)
         } elseif ($time >= $beforeYesterday) {
             $relative = 'Avant hier';
         } elseif ($time >= $before) {
-            $relative = strftime('%A', $time).' dernier';
+            $relative = date('l', $time).' dernier';
         }
         // sinon on retourne une date complète.
     } else {
-        $relative = 'Le '.strftime('%A %d %B %Y', $time);
+        $relative = 'Le '.date("j.n.Y", $time);
     }
     // si l'heure est présente dans la date originale, on l'ajoute
     if (preg_match('/[0-9]{2}:[0-9]{2}/', $date)) {

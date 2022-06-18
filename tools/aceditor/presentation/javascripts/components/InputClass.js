@@ -1,9 +1,10 @@
 import InputHelper from './InputHelper.js'
 import InputList from './InputList.js'
+import InputCheckbox from './InputCheckbox.js'
 
 export default {
   props: [ 'name', 'value', 'config', 'selectedForm', 'values' ],
-  components: { InputList },
+  components: { InputList, InputCheckbox },
   mixins: [ InputHelper ],
   data() {
     return {
@@ -18,17 +19,30 @@ export default {
     resetValues() {
       this.classValues = {}
       for(let propName in this.config.subproperties) {
-        this.classValues[propName] = this.config.subproperties[propName].default || ''
+        let config = this.config.subproperties[propName] || {}
+        this.classValues[propName] = config.default || config.value || ''
       }
     },
     parseNewValues(newValues) {
       if (newValues.class) {
         const classes = newValues.class.split(' ')
         let optionsList = []
-        for(let classValue of classes) {
-          for(let propName in this.config.subproperties) {
-            optionsList = Object.keys(this.config.subproperties[propName].options)
-            if (optionsList.find(o => o == classValue)) this.classValues[propName] = classValue
+        for(let propName in this.config.subproperties) {
+          let componentDefinition = this.config.subproperties[propName] || {};
+          if (componentDefinition.type == 'list'){
+            optionsList = Object.keys(componentDefinition.options)
+            for(let classValue of classes) {
+              if (optionsList.find(o => o == classValue)) this.classValues[propName] = classValue
+            }
+          } else if (componentDefinition.type == 'checkbox') {
+            let checkedValue = componentDefinition.checkedvalue || "";
+            let unCheckedValue = componentDefinition.uncheckedvalue || "";
+            for(let classValue of classes) {
+              if ((classValue == checkedValue && checkedValue != "") || 
+                (classValue == unCheckedValue && unCheckedValue != "")){
+                this.classValues[propName] = classValue
+              }
+            }
           }
         }
       }

@@ -143,8 +143,7 @@
       <div class="control-group form-group">
         <label class="control-label"><?php echo _t('FAST_ACCESS_RIGHT_PAGE'); ?></label>
         <div class="controls">
-          <input class="form-control typeahead" type="text" autocomplete="off" name="PageRapideHaut" data-provide="typeahead" data-items="5" data-source='<?php echo $listWikinames; ?>' value="<?php echo (isset($wiki->page[" metadatas"]['PageRapideHaut']) ?
-            $wiki->page["metadatas"]['PageRapideHaut'] : 'PageRapideHaut'); ?>" />
+          <input class="form-control typeahead" type="text" autocomplete="off" name="PageRapideHaut" data-provide="typeahead" data-items="5" data-source='<?php echo $listWikinames; ?>' value="<?php echo (isset($wiki->page["metadatas"]['PageRapideHaut']) ? $wiki->page["metadatas"]['PageRapideHaut'] : 'PageRapideHaut'); ?>" />
         </div>
       </div>
 

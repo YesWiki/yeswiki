@@ -1,17 +1,8 @@
-Bonjour!
-
-Votre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :
-
-Url : {{ baseUrl }}
-
-Votre identifiant NomWiki : {{ wikiName }}
-
-Votre email : {{ email }}
-
-Votre mot de passe : (le mot de passe que vous avez choisi)
-
-Pour reinitialiser votre mot de passe : {{ url({tag:'MotDePassePerdu'}) }}
-
-A tres bientot ! 
+{{ _t('CONTACT_NEW_USER_MESSAGE')|replace({
+    '{{ baseUrl }}': baseUrl,
+    '{{ wikiName }}': wikiName,
+    '{{ email }}': email,
+    '{{ urlForPasswordRenewal }}': url({tag:'MotDePassePerdu'}),
+})|raw }}
 
 

@@ -21,25 +21,28 @@ class BookmarkletField extends BazarField
 
         $this->urlField = $values[self::FIELD_URL_FIELD] ?? 'bf_url';
         $this->descriptionField = $values[self::FIELD_DESCRIPTION_FIELD] ?? 'bf_description';
+        $this->size = null;
+        $this->maxChars = null;
     }
 
     protected function renderInput($entry)
     {
-        if ($_GET['wiki'] != $GLOBALS['wiki']->getPageTag().'/bazariframe') {
-            $id = isset($GLOBALS['params']['idtypeannonce']) ? $GLOBALS['params']['idtypeannonce'] : $entry['id_typeannonce'];
-            $urlParams = 'vue='.BAZ_VOIR_SAISIR.'&action='.BAZ_ACTION_NOUVEAU.'&id='.$id;
-            $url = $GLOBALS['wiki']->href('bazariframe', $GLOBALS['wiki']->getPageTag(), $urlParams);
-
+        $wiki = $this->getWiki();
+        if ($this->getWiki()->GetMethod() != 'bazariframe') {
             return $this->render("@bazar/inputs/bookmarklet.twig", [
-                'url' => $url
+                'urlParams' => [
+                    'vue' => BAZ_VOIR_SAISIR,
+                    'action' => BAZ_ACTION_NOUVEAU,
+                    'id' => $entry['id_typeannonce'] ?? "_",
+                ]
             ]);
         }
-    }  
+    }
 
     protected function renderStatic($entry)
     {
-        if ($GLOBALS['wiki']->GetMethod() == 'bazariframe') {
-            return '<a class="btn btn-danger pull-right" href="javascript:window.close();"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;Fermer cette fen&ecirc;tre</a>';
+        if ($this->getWiki()->GetMethod() == 'bazariframe') {
+            return '<a class="btn btn-danger pull-right" href="javascript:window.close();"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;' . _t('BAZ_CLOSE_THIS_WINDOW') . '</a>';
         }
     }
 
@@ -53,5 +56,16 @@ class BookmarkletField extends BazarField
     public function getDescriptionField()
     {
         return $this->descriptionField;
+    }
+
+    public function jsonSerialize()
+    {
+        return array_merge(
+            parent::jsonSerialize(),
+            [
+                'urlField' => $this->getUrlField(),
+                'descriptionField' => $this->getDescriptionField()
+            ]
+        );
     }
 }

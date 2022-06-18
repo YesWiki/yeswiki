@@ -1,0 +1,51 @@
+{{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
+{{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
+
+<h2>{{ _t('REACTION_ADMINISTER_REACTIONS') }}</h2>
+{% for key, reaction in reactions %}
+  <h3>{{reaction.parameters.title}} <small>{{_t('REACTION_FROM_PAGE')}} <a href="{{ url({tag:reaction.parameters.pageTag}) }}">{{ reaction.parameters.pageTag }}</a></small></h3>
+  <div class="table-responsive">
+    <table id="admin-reactions-table" class="bazar-table table table-condensed table-striped">
+      <thead>
+        <tr>
+          <th>{{ _t('REACTION_USER') }}</th>
+          <th>{{ _t('REACTION_VOTE') }}</th>
+          <th>{{ _t('REACTION_DATE') }}</th>
+          <th>
+            <a href="#"
+              class="btn-delete-reaction btn-delete-all btn btn-danger btn-xs"
+              title="{{  _t('REACTION_DELETE_ALL') }}" >
+              <i class="fa fa-trash"></i> {{  _t('REACTION_DELETE_ALL') }}
+            </a>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for key, react in reaction.reactions %}
+            <tr>
+              <td>{{ react.user }}</td>
+              <td><span class="mini-react">{{ reaction.parameters.images[react.id]|raw }} {{ reaction.parameters.labels[react.id] }}</span></td>
+              <td>{{ react.date }}</td>
+              <td>
+                <a href="{{ url({
+                    tag:'api',
+                    handler:"reactions/#{react.idReaction}/#{react.id}/#{react.pageTag}/#{react.user}/delete",
+                    params: {
+                      csrfToken: csrfToken({
+                          id:"api/reactions/#{react.idReaction}/#{react.id}/#{react.pageTag}/#{react.user}/delete",
+                          refresh: true
+                        })
+                    }
+                  }) }}"
+                  class="btn-delete-reaction btn btn-danger btn-xs"
+                  title="{{  _t('REACTION_DELETE') }}">
+                  <i class="fa fa-trash"></i>
+                </a>
+              </td>
+            </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div> <!-- /.table-responsive -->
+  <hr />
+{% endfor %}

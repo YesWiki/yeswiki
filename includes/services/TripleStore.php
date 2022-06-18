@@ -122,7 +122,7 @@ class TripleStore
      */
     public function getAll($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX): array
     {
-        $res = $re_prefix . $resource ;
+        $res = empty($resource) ? '' : $re_prefix . $resource ;
         $prop = $prop_prefix . $property ;
         if (isset($this->cacheByResource[$res])) {
             // All resource's properties was previously loaded.
@@ -133,12 +133,17 @@ class TripleStore
             return array();
         }
         $this->cacheByResource[$res] = array();
-        $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = "' . $this->dbService->escape($res) . '"' ;
+        $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('triples') . ' WHERE ';
+        if (empty($res)) { // get everything if no resource given
+            $sql .= '1';
+        } else {
+            $sql .= 'resource = "' . $this->dbService->escape($res) . '"' ;
+        }
         foreach ($this->dbService->loadAll($sql) as $triple) {
             if (! isset($this->cacheByResource[$res][ $triple['property'] ])) {
                 $this->cacheByResource[$res][ $triple['property'] ] = array();
             }
-            $this->cacheByResource[$res][ $triple['property'] ][] = array( 'id'=>$triple['id'], 'value'=>$triple['value']) ;
+            $this->cacheByResource[$res][ $triple['property'] ][] = array( 'id'=>$triple['id'], 'value'=>$triple['value'], 'resource'=>$triple['resource']) ;
         }
         if (isset($this->cacheByResource[$res][$prop])) {
             return $this->cacheByResource[$res][$prop] ;
@@ -263,8 +268,10 @@ class TripleStore
      *            The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
      * @param string $prop_prefix
      *            The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
+     * @param string $extraSQL
+     *            Extra SQL query (null by default)
      */
-    public function delete($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
+    public function delete($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX, $extraSQL = null)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -275,7 +282,9 @@ class TripleStore
         if ($value !== null) {
             $sql .= 'AND value = "' . $this->dbService->escape($value) . '"';
         }
-
+        if ($extraSQL !== null) {
+            $sql .= 'AND ('.$extraSQL.')';
+        }
         // invalidate the cache
         if (isset($this->cacheByResource[$res])) {
             unset($this->cacheByResource[$res]);

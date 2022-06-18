@@ -51,6 +51,11 @@ $config['wikini_version'] = WIKINI_VERSION;
 $config['wakka_version'] = WAKKA_VERSION;
 $config['yeswiki_version'] = YESWIKI_VERSION;
 $config['yeswiki_release'] = YESWIKI_RELEASE;
+// default var
+$config['htmlPurifierActivated'] = true; // TODO ectoplasme remove this line
+$config['default_comment_acl_updated'] = true; // TODO ectoplasme remove this line
+// list of tableNames
+$tablesNames = ['pages','links','referrers','nature','triples','users','acls'];
 
 if (!$version = trim($wakkaConfig['wikini_version'])) {
     $version = '0';
@@ -82,7 +87,9 @@ if ($testdb == 1) {
 }
 test(
     _t('CHECK_EXISTING_TABLE_PREFIX').' ...',
-    (mysqli_num_rows(@mysqli_query($dblink, 'SHOW TABLES LIKE \''.$config['table_prefix'].'pages\'')) === 0),
+    empty(array_filter($tablesNames, function ($tableName) use ($dblink, $config) {
+        return mysqli_num_rows(@mysqli_query($dblink, "SHOW TABLES LIKE \"{$config['table_prefix']}$tableName\"")) !== 0 ;
+    })),
     _t('TABLE_PREFIX_ALREADY_USED').' !',
     1
 );
@@ -132,20 +139,42 @@ $replacements = [
 
 // tables, admin user and admin group creation
 echo '<br /><b>'._t('DATABASE_INSTALLATION')."</b><br>\n";
+mysqli_begin_transaction($dblink);
+mysqli_autocommit($dblink, false);
+$result = @querySqlFile($dblink, 'setup/sql/create-tables.sql', $replacements);
+if (!$result) {
+    mysqli_rollback($dblink);
+}
 test(
     _t('CREATION_OF_TABLES').' ...',
-    @querySqlFile($dblink, 'setup/sql/create-tables.sql', $replacements),
+    $result,
     _t('NOT_POSSIBLE_TO_CREATE_SQL_TABLES').' ?',
     1
 );
 
 // Default pages content
+$result = @querySqlFile($dblink, 'setup/sql/default-content.sql', $replacements);
+if (!$result) {
+    mysqli_rollback($dblink);
+    foreach ($tablesNames as $tableName) {
+        try {
+            if (mysqli_num_rows(mysqli_query($dblink, "SHOW TABLES LIKE \"{$config['table_prefix']}$tableName\";")) !== 0 // existing table
+                && mysqli_num_rows(mysqli_query($dblink, "SELECT * FROM `{$config['table_prefix']}$tableName`;")) === 0) /* empty table */{
+                mysqli_query($dblink, "DROP TABLE IF EXISTS `{$config['table_prefix']}$tableName`;");
+            }
+        } catch (\Throwable $th) {
+        }
+    }
+} else {
+    mysqli_commit($dblink);
+}
 test(
     _t('INSERTION_OF_PAGES').' ...',
-    @querySqlFile($dblink, 'setup/sql/default-content.sql', $replacements),
+    $result,
     _t('ALREADY_CREATED').' ?',
-    0
+    1
 );
+mysqli_autocommit($dblink, true);
 
 // Config indexation by robots
 if (!isset($config['allow_robots']) || $config['allow_robots'] != '1') {

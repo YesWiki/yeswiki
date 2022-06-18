@@ -59,7 +59,7 @@ class ApiController extends YesWikiController
     {
         $urlAuth = $this->wiki->href('', 'api/auth');
         $output = '<h2>Extension login</h2>'."\n".
-        'GET <code><a href="'.$urlAuth.'">'.$urlAuth.'</a></code><br />';
+        '<p><code>GET '.$urlAuth.'</code></p>';
         return $output;
     }
 }

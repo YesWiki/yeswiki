@@ -8,10 +8,12 @@ actions:
       mail:
         label: _t(AB_contact_action_mail_label)
         type: email
+        value: my@email.com
         required: true
       entete:
         label: _t(AB_contact_action_entete_label)
         type: text
+        default: _t(AB_contact_action_entete_default)
       template:
         label: _t(AB_contact_action_template_label)
         hint: _t(AB_contact_action_template_hint)
@@ -25,8 +27,9 @@ actions:
     label: _t(AB_abonnement_action_label)
     properties:
       mail:
-        label: _t(AB_contact_action_mail_label)
+        label: _t(AB_abonnement_action_mail_label)
         type: email
+        value: my@mailing.list
         required: true
       mailinglist:
         label: _t(AB_abonnement_mailinglist_label)
@@ -42,12 +45,13 @@ actions:
         label:  _t(AB_abonnement_class_label)
         type: text
         advanced: true
-  deabonnement:
+  desabonnement:
     label: _t(AB_deabonnement_action_label)
     properties:
       mail:
-        label: _t(AB_contact_action_mail_label)
+        label: _t(AB_abonnement_action_mail_label)
         type: email
+        value: my@mailing.list
         required: true
       mailinglist:
         label: _t(AB_abonnement_mailinglist_label)

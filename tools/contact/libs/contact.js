@@ -19,7 +19,7 @@ $(document).ready(function() {
         } else {
           atleastonefieldnotvalid = true;
           $(this).parents('.form-group').addClass('has-error');
-          $('<span>').addClass('help-block').text('La saisie de ce champ est obligatoire.').appendTo($(this).parents('.form-group'));
+          $('<span>').addClass('help-block').text(_t('CONTACT_REQUIRED_FIELD')).appendTo($(this).parents('.form-group'));
         }
       });
     }
@@ -31,7 +31,7 @@ $(document).ready(function() {
       if (reg.test(address) == false && !(address === '' && $(this).attr('required') !== 'required')) {
         atleastonemailfieldnotvalid = true;
         $(this).parents('.form-group').addClass('has-error');
-        $('<span>').addClass('help-block').text('L\'email saisi n\'est pas valide.').appendTo($(this).parents('.form-group'));
+        $('<span>').addClass('help-block').text(_t('CONTACT_EMAIL_NOT_VALID')).appendTo($(this).parents('.form-group'));
       } else {
         $(this).parents('.form-group').removeClass('has-error');
       }
