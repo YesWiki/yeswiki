@@ -11,11 +11,7 @@ services:
             - .:/var/www/html
         depends_on:
             - db
-        environment:
-            YESWIKI_MYSQL_HOST: db
-            YESWIKI_MYSQL_USER: root
-            YESWIKI_MYSQL_PASSWORD: root
-            YESWIKI_MYSQL_DATABASE: yeswiki_dev
+        command: bash -c "chmod -R +wx . && make install && apache2-foreground"
 
     db:
         image: mysql:5.6
