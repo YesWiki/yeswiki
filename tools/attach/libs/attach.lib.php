@@ -37,7 +37,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 use enshrined\svgSanitize\Sanitizer;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\LinkTracker;
-use Zebra_Image;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");

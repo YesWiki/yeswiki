@@ -2,7 +2,6 @@
 
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\ThemeManager;
-use Zebra_Image;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
