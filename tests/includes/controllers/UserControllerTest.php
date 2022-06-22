@@ -14,6 +14,9 @@ require_once 'tests/YesWikiTestCase.php';
 
 class UserControllerTest extends YesWikiTestCase
 {
+    public const CHARS_FOR_EMAIL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    public const CHARS_FOR_PASSWORD = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_';
+    public const UPPER_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     /**
      * @covers UserController::__construct
      * @return Wiki $wiki
@@ -57,14 +60,14 @@ class UserControllerTest extends YesWikiTestCase
 
         // create a user
         do {
-            $email = strtolower($this->randomString(10)).'@example.com';
+            $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)).'@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
         do {
-            $name= $this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-                .$this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+            $name= $wiki->generateRandomString(1, self::UPPER_CHARS)
+                .$wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
         } while (!empty($userManager->getOneByName($name)));
         
-        $password= $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+        $password= $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
 
         
         $userManager->create($name, $email, $password);
@@ -165,8 +168,8 @@ class UserControllerTest extends YesWikiTestCase
         $firstUser = $users[array_key_first($users)];
         if ($name == 'newRandom') {
             do {
-                $name= $this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-                    .$this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+                $name= $wiki->generateRandomString(1, self::UPPER_CHARS)
+                    .$wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
             } while (!empty($userManager->getOneByName($name)));
         } elseif ($name == 'empty') {
             $name = "";
@@ -175,11 +178,11 @@ class UserControllerTest extends YesWikiTestCase
         }
         if ($email == 'newRandom') {
             do {
-                $email = strtolower($this->randomString(10)).'@example.com';
+                $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)).'@example.com';
             } while (!empty($userManager->getOneByEmail($email)));
         } elseif ($email == 'newRandom2') {
             do {
-                $email = strtolower($this->randomString(10)).'@xyz.earth';
+                $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)).'@xyz.earth';
             } while (!empty($userManager->getOneByEmail($email)));
         } elseif ($email == 'empty') {
             $email = "";
@@ -188,7 +191,7 @@ class UserControllerTest extends YesWikiTestCase
         }
         $newValues['name'] = $name;
         $newValues['email'] = $email;
-        $newValues['password'] = $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+        $newValues['password'] = $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
         
         $exceptionThrown = false;
         $userNameAlreadyExist = false;
@@ -245,19 +248,21 @@ class UserControllerTest extends YesWikiTestCase
     
     public function dataProviderTestSanitizeName()
     {
-        // name,Other Exception
+        // name,char,length,Other Exception
         return [
-            'random string' => ['newRandom',false],
-            'empty string' => ['',true],
-            'not string' => ['',true],
-            'tooo long string' => [$this->randomString(400),true],
-            'forbidden \\' => ["{$this->randomString(2)}\\{$this->randomString(8)}",true],
-            'forbidden /' => ["{$this->randomString(2)}/{$this->randomString(8)}",true],
-            'forbidden <' => ["{$this->randomString(2)}<{$this->randomString(8)}",true],
-            'forbidden >' => ["{$this->randomString(2)}>{$this->randomString(8)}",true],
-            'forbidden begin !' => ["!{$this->randomString(8)}",true],
-            'forbidden begin #' => ["#{$this->randomString(8)}",true],
-            'forbidden begin @' => ["@{$this->randomString(8)}",true],
+            'random string' => ['newRandom','',0,false],
+            'empty string' => ['','',0,true],
+            'not string' => [false,'',0,true],
+            'too long string' => ['random','',400,true],
+            'too long short' => ['random','',2,true],
+            'forbidden \\' => ['thirdplace','\\',10,true],
+            'forbidden /' => ['thirdplace','/',10,true],
+            'forbidden <' => ['thirdplace','<',10,true],
+            'forbidden >' => ['thirdplace','>',10,true],
+            'forbidden begin !' => ['begin','!',10,true],
+            'forbidden begin #' => ['begin','#',10,true],
+            'forbidden begin @' => ['begin','@',10,true],
+            'contain @' => ['thirdplace','@',10,false],
         ];
     }
     
@@ -268,23 +273,39 @@ class UserControllerTest extends YesWikiTestCase
      * @covers UserController::sanitizeName
      * @dataProvider dataProviderTestSanitizeName
      * @param mixed $name
+     * @param string $char
+     * @param int $length
      * @param bool $otherException
      * @param Wiki $wiki
      */
-    public function testSanitizeName($name, bool $otherException, Wiki $wiki)
+    public function testSanitizeName($name, string $char, int $length, bool $otherException, Wiki $wiki)
     {
         $userController = $wiki->services->get(UserController::class);
         $userManager = $wiki->services->get(UserManager::class);
-        if ($name == 'newRandom') {
-            do {
-                $name= $this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-                    .$this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
-            } while (!empty($userManager->getOneByName($name)));
+        switch ($name) {
+            case 'newRandom':
+                do {
+                    $name= $wiki->generateRandomString(1, self::UPPER_CHARS)
+                        .$wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
+                } while (!empty($userManager->getOneByName($name)));
+                break;
+            case 'random':
+                $name = $wiki->generateRandomString($length, self::CHARS_FOR_EMAIL);
+                break;
+            case 'thirdplace':
+                $name = $wiki->generateRandomString(2, self::CHARS_FOR_EMAIL).$char.
+                    $wiki->generateRandomString($length-2, self::CHARS_FOR_EMAIL);
+                break;
+            case 'begin':
+                $name = $char.$wiki->generateRandomString($length, self::CHARS_FOR_EMAIL);
+                break;
+            default:
+                break;
         }
         do {
-            $email = strtolower($this->randomString(10)).'@example.com';
+            $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)).'@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
-        $password = $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+        $password = $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
 
         $exceptionThrown = false;
         $exceptionMessage =  "";
@@ -309,28 +330,9 @@ class UserControllerTest extends YesWikiTestCase
         if ($otherException) {
             $this->assertTrue($exceptionThrown);
         } else {
-            $this->assertEquals($exceptionMessage, "");
             $this->assertFalse($exceptionThrown);
+            $this->assertEquals($exceptionMessage, "");
             $this->assertInstanceOf(User::class, $user);
         }
-    }
-    
-    /**
-     * gives a random string with ascii characters
-     * @param int $length
-     * @param string $charset optional list of chars
-     * @return string
-     */
-    private function randomString(
-        int $length,
-        string $charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    ): string {
-        $output = "";
-        $maxIndex = strlen($charset) -1;
-
-        for ($i=0; $i < (max(1, $length)); $i++) {
-            $output .= substr($charset, rand(0, $maxIndex), 1);
-        }
-        return $output;
     }
 }

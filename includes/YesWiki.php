@@ -1281,6 +1281,29 @@ class Wiki
     }
 
     /**
+     * furnish a method to generateRandomString
+     * @param int $length
+     * @param string $charset
+     * @return string
+     */
+    public function generateRandomString(
+        int $length = 30,
+        string $charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-_*=.:,?'
+    ): string {
+        $randompassword = "";
+        $maxIndex = strlen($charset) -1;
+
+        if ($length < 1) {
+            $length = 30;
+        }
+
+        for ($i=0; $i < $length; $i++) {
+            $randompassword .= substr($charset, random_int(0, $maxIndex), 1);
+        }
+        return $randompassword;
+    }
+
+    /**
      * @deprecated Use AssetsManager service instead
      */
     public function AddCSS($style)

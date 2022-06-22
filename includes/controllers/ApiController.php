@@ -167,17 +167,10 @@ class ApiController extends YesWikiController
             ];
         } else {
             try {
-                $charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-_*=.:,?';
-                $randompassword = "";
-                $maxIndex = strlen($charset) -1;
-
-                for ($i=0; $i < 30; $i++) {
-                    $randompassword .= substr($charset, random_int(0, $maxIndex), 1);
-                }
                 $user = $userController->create([
                     'name' => strval($_POST['name']),
                     'email' => strval($_POST['email']),
-                    'password' => $randompassword,
+                    'password' => $this->wiki->generateRandomString(30),
                 ]);
                 $code = Response::HTTP_OK;
                 $result = [
