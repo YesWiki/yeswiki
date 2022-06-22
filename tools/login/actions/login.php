@@ -6,6 +6,8 @@
  * - signupurl
  * - profileurl
  * - incomingurl
+ * - loggedinurl
+ * - loggedouturl
  * - userpage
  * - template
  * - class
@@ -20,6 +22,11 @@
  * - remember
  *
  * Copyright 2010  Florian SCHMITT
+ * v1.1 : Yves Gufflet : 
+ *			- correct signupurl = "0" which doesn't work
+ *			- add support for loggedinurl and loggedouturl
+ *			urls to redirect when user has just logged in 
+ *			and when user has just logged out
  *
 */
 
@@ -32,15 +39,20 @@ use YesWiki\Core\Service\TemplateEngine;
 // Lecture des parametres de l'action
 
 // NOTE: à mettre dans la classe ?
+
+// urls after successfull login and successfull logout
+
+$loggedinurl = $this->GetParameter('loggedinurl');
+$loggedouturl = $this->GetParameter('loggedouturl');
+
 // url d'inscription
 $signupurl = $this->GetParameter('signupurl');
 // si pas d'url d'inscription renseignée, on utilise ParametresUtilisateur
-if (empty($signupurl) || $signupurl === "0") {
+
+if (empty($signupurl) && (!(isset ($signupurl) && $signupurl === "0"))) {
     $signupurl = $this->href("", "ParametresUtilisateur", "");
-} else {
-    if ($this->IsWikiName($signupurl, WN_CAMEL_CASE_EVOLVED)) {
+} else if (($signupurl !== "0") && ($this->IsWikiName($signupurl, WN_CAMEL_CASE_EVOLVED))) {	
         $signupurl = $this->href('', $signupurl);
-    }
 }
 
 // url du profil
@@ -56,6 +68,7 @@ if (empty($incomingurl)) {
 }
 
 $userpage = $this->GetParameter("userpage");
+
 // si pas d'url de page de sortie renseignée, on retourne sur la page courante
 if (empty($userpage)) {
     $userpage = $incomingurl;
@@ -113,8 +126,17 @@ if (!isset($_REQUEST["action"])) {
 if ($_REQUEST["action"] == "logout") {
     $this->LogoutUser();
     $this->SetMessage(_t('LOGIN_YOU_ARE_NOW_DISCONNECTED'));
-    $this->Redirect(preg_replace('/(&|\\\?)$/m', '', preg_replace('/(&|\\\?)action=logout(&)?/', '$1', $incomingurl)));
-    $this->exit();
+    
+    if (isset($loggedouturl))
+    {
+    	$this->Redirect(preg_replace('/(&|\\\?)$/m', '', preg_replace('/(&|\\\?)action=logout(&)?/', '$1', $incomingurl)));
+    	$this->exit();
+    }
+    else
+    {
+    	$this->Redirect($this->href('', $loggedouturl, ''));   
+    	$this->exit();
+    }
 }
 
 // cas de l'identification
@@ -125,8 +147,13 @@ if ($_REQUEST["action"] == "login") {
         if ($existingUser["password"] === md5($_POST["password"])) {
             $this->SetUser($existingUser, $_POST["remember"]);
 
+            // si l'on veut utiliser l'url spécifié par $loggedinurl
+            if (isset($loggedinurl))
+            {
+            	$this->Redirect($this->href('', $loggedinurl, ''));
+            }
             // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
-            if ($userpage == 'user' && $this->LoadPage($_POST["name"])) {
+            elseif ($userpage == 'user' && $this->LoadPage($_POST["name"])) {
                 $this->Redirect($this->href('', $_POST["name"], ''));
             } else {
                 // on va sur la page d'ou on s'est identifie sinon
@@ -148,8 +175,13 @@ if ($_REQUEST["action"] == "login") {
             if ($this->user->checkPassword($_POST['password'])) {
                 $this->SetUser($this->user->getAllProperties(), $_POST["remember"]);
 
+                // si l'on veut utiliser l'url spécifié par $loggedinurl
+                if (isset($loggedinurl))
+                {
+                	$this->Redirect($this->href('', $loggedinurl, ''));
+                }	
                 // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
-                if ($userpage == 'user' && $this->LoadPage($existingUser["name"])) {
+                elseif ($userpage == 'user' && $this->LoadPage($existingUser["name"])) {
                     $this->Redirect($this->href('', $existingUser["name"], ''));
                 } else {
                     // on va sur la page d'ou on s'est identifie sinon
