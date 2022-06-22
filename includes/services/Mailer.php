@@ -224,7 +224,7 @@ class Mailer
             && $this->params->get('contact_use_long_wiki_urls_in_emails')
             ) {
             $baseUrl = $this->getBaseUrl();
-            $text = preg_replace("/(".preg_quote("href=\"{$baseUrl}/?", "/").")(?=[A-Za-z0-9\\/]+(?:&|$))/", "$1wiki=", $text);
+            $text = preg_replace("/(".preg_quote("href=\"{$baseUrl}/?", "/").")(?=".WN_CAMEL_CASE_EVOLVED_WITH_SLASH."(?:&|\\\"))/u", "$1wiki=", $text);
         }
         return $text;
     }
