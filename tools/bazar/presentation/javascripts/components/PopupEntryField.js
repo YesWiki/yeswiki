@@ -1,7 +1,7 @@
 import EntryField from './EntryField.js'
 
 export default {
-  props: [ 'entry', 'prop', 'withlabel', 'oneline' ],
+  props: [ 'entry', 'prop', 'withlabel', 'oneline', 'imagewidth', 'imageheight', 'imagemethod', 'imagetoken' ],
   components: {
     'EntryField': EntryField
   },
@@ -67,7 +67,12 @@ export default {
     </div>
     <EntryField v-else-if="renderViaEntryField" :entry="entry" :prop="prop" v-bind="$attrs"></EntryField>
     <h3 v-else-if="type == 'titre' && value" v-html="value" v-bind="$attrs"></h3>
-    <img v-else-if="type == 'image' && value" class="popup-visual" :src="$root.urlImage(entry,prop,'thumbnails')" v-bind="$attrs"></img>
+    <img 
+      v-else-if="type == 'image' && value" class="popup-visual" 
+      v-bind="$attrs"
+      :src="$root.urlImage(entry,prop,imagewidth,imageheight,imagemethod)"
+      @error="$root.urlImageResizedOnError(entry,prop,imagewidth,imageheight,imagemethod,imagetoken)">
+    </img>
     <div v-else-if="displayLabel && displayOnOneLine && value" v-bind="$attrs">
       <strong>{{ label }} :</strong>&nbsp;
       <span v-html="value"></span>

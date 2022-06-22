@@ -2,7 +2,19 @@
   <div>
     <div class="popup-entry-content">
       <template v-for="field in [{{ params.necessary_fields|filter(v => v not in ['url','bf_longitude','bf_latitude'])|map(p => "'#{p}'")|join(',')|raw }}]">
-        <popup-entry-field :entry="entry" :prop="field" :withlabel="1" :oneline="0"></popup-entry-field>
+        {% set imWidth = 140 %}
+        {% set imHeight = 140 %}
+        {% set imagemethod = 'fit' %}
+        <popup-entry-field 
+          :entry="entry" 
+          :prop="field" 
+          :withlabel="1" 
+          :oneline="0" 
+          :imagewidth="{{ imWidth }}" 
+          :imageheight="{{ imHeight }}" 
+          :imagemethod="{{ imagemethod|json_encode }}" 
+          :imagetoken="{{ csrfToken("GET api/images/cache/#{imWidth}/#{imHeight}/#{imagemethod}")|json_encode }}"
+          ></popup-entry-field>
       </template>
     </div>
     <a class="btn btn-primary btn-block btn-popup-map" 

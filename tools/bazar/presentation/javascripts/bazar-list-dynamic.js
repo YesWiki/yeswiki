@@ -305,7 +305,12 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'get',
             cache: false,
             success: function (data){
-              $(newImageParams.node).prop('src',data.cachefilename);
+              let previousUrl = $(newImageParams.node).prop('src');
+              if (data.cachefilename != previousUrl){
+                $(`img[src="${previousUrl}"]`).each(function(){
+                  $(this).prop('src',data.cachefilename);
+                });
+              }
             },
             complete: function (e){
               if (e.responseJSON != undefined && e.responseJSON.newToken != undefined ){
