@@ -106,6 +106,12 @@
   min-height: 100px;
   background-color: var(--neutral-soft-color);
 }
+.bazar-list.dynamic .panel-heading-container .visual-area img {
+  object-fit: cover;
+  width: 100%;
+  min-height: 100px;
+  max-height: 170px;
+}
 .bazar-list.dynamic .panel-heading-container .title-area {
   grid-area: title;
 }

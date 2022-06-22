@@ -13,6 +13,9 @@
     {% set nbcol =  2 %}
     {{ include('@templates/alert-message.twig',{type:'info',message:_t('BAZ_CARD_NBCOL_TOO_HIGH')}) }}
   {% endif %}
+  {% set imWidth = (nbcol == 4) ? 250 : (nbcol == 5 ? 200 : 300 ) %}
+  {% set imHeight = params.style == "square" ? imWidth : (params.style == "horizontal" ? imWidth*23//27 : imWidth*3//2 ) %}
+  {% set firstTokenCrop = csrfToken("GET api/images/cache/#{imWidth}/#{imHeight}/crop") %}
   <div class="bazar-cards-container" v-if="ready" 
        :class="[{ready: ready}, `style-${params.style || 'vertical'}`, `nbcol-{{nbcol}}`]" 
        :style="{'grid-template-columns': `repeat({{nbcol}}, 1fr)`}">
@@ -37,16 +40,9 @@
       
       {# VISUAL AREA #}
       <template v-if="Object.keys(entry).includes('visual')">
-        <template v-if="params.style == 'square'">
-          <img v-if="entry.visual" class="area visual-area" :src="`${urlImage(entry,'visual')}`"></img>
-          <div v-else class="area area visual-area placeholder"></div>
-        </template>
-        <template v-else>
-          <div v-if="entry.visual" class="area visual-area" 
-            :style="{'background-image': `url(${urlImage(entry,'visual')})`}">
-          </div>
-          <div v-else class="area area visual-area placeholder"></div>
-        </template>
+        <img v-if="entry.visual" class="area visual-area" :src="urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'crop')"
+        @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'crop',{{ firstTokenCrop|json_encode }})"></img>
+        <div v-else class="area area visual-area placeholder"></div>
       </template>
       
       <div class="content">

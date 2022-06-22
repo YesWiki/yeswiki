@@ -2,6 +2,11 @@
 
 return [
 
+    // controllers/ApiController.php
+    'ATTACH_GET_URLIMAGE_CACHE_API_HELP' => "Gives cache filename for wanted image\n".
+        "Need anti-csrf token!",
+        'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'Not existing image file',
+
     // libs/attach.lib.php
     'ATTACH_ACTION_ATTACH' => 'Action {{attach ...}}',
     'ATTACH_PARAM_DESC_REQUIRED' => '"desc" parameter required for an image',

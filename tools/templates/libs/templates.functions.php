@@ -746,9 +746,11 @@ function getImageFromBody($page, $width, $height)
         $attach->CheckParams();
         $imagefile = $attach->GetFullFilename();
         $GLOBALS['wiki']->tag = $oldpage;
+        
+        $image_dest = $attach->getResizedFilename($imagefile, $width, $height, 'crop');
         $image = $GLOBALS['wiki']->getBaseUrl().'/'.$attach->redimensionner_image(
             $imagefile,
-            'cache/'.$width.'x'.$height.'-'.str_replace('files/', '', $imagefile),
+            $image_dest,
             $width,
             $height,
             'crop'
@@ -762,9 +764,10 @@ function getImageFromBody($page, $width, $height)
                 include 'tools/attach/libs/attach.lib.php';
             }
             $attach = new Attach($GLOBALS['wiki']);
+            $image_dest = $attach->getResizedFilename('files/'.$imagefile, $width, $height, 'crop');
             $image = $GLOBALS['wiki']->getBaseUrl().'/'.$attach->redimensionner_image(
                 'files/'.$imagefile,
-                'cache/'.$width.'x'.$height.'-'.$imagefile,
+                $image_dest,
                 $width,
                 $height,
                 'crop'
