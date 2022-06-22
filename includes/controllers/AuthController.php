@@ -7,11 +7,14 @@ use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Core\Service\UserManager;
+use YesWiki\Core\Trait\LimitationsTrait;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
 
 class AuthController extends YesWikiController
 {
+    use LimitationsTrait;
+
     public const DEFAULT_PASSWORD_MINIMUM_LENGTH = 5;
 
     private $limitations;
@@ -137,27 +140,6 @@ class AuthController extends YesWikiController
         } else {
             $this->userManager->login($user, $remember);
             // login each time to set persistent cookies
-        }
-    }
-
-    /**
-     * init and store limitations in limitations array
-     * @param string $parameterName
-     * @param string $limitationKey
-     * @param mixed $type
-     * @param mixed $default
-     * @param string $errorMessageKey
-     */
-    private function initLimitationHelper(string $parameterName, string $limitationKey, $type, $default, string $errorMessageKey)
-    {
-        $this->limitations[$limitationKey] = $default;
-        if ($this->params->has($parameterName)) {
-            $parameter = $this->params->get($parameterName);
-            if (!filter_var($parameter, FILTER_VALIDATE_INT)) {
-                trigger_error(_t($errorMessageKey));
-            } else {
-                $this->limitations[$limitationKey] = $parameter;
-            }
         }
     }
 }
