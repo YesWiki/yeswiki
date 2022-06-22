@@ -555,6 +555,8 @@ class EntryManager
             $this->userManager->logout();
             $this->userManager->login($olduser, 1);
         }
+        
+        $this->cachedEntriestags[$data['id_fiche']] = true;
 
         // if sendmail has referenced email fields, send an email to their adresses
         $this->sendMailToNotifiedEmails($sendmail, $data);
@@ -563,8 +565,6 @@ class EntryManager
             // Envoi d'un mail aux administrateurs
             $this->mailer->notifyAdmins($data, true);
         }
-
-        $this->cachedEntriestags[$data['id_fiche']] = true;
 
         return $data;
     }
