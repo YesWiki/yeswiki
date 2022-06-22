@@ -364,7 +364,7 @@ class UserController extends YesWikiController
         $value = strval($value);
         if (strlen($value) > $this->limitations['nameMaxLength']) {
             throw new Exception(_t('USER_NAME_S_MAXIMUM_LENGTH_IS')." {$this->limitations['nameMaxLength']}.");
-        } elseif (preg_match('/[!#@<>\\\\\/][^<>\\\\\/]{2,}/', $value)) {
+        } elseif (preg_match('/(?:^[!#@<>\\\\\/].*$|[<>\\\\\/]|^.{0,2}$)/', $value)) {
             throw new Exception(_t('USER_THIS_IS_NOT_A_VALID_NAME').".");
         }
         return $value;
