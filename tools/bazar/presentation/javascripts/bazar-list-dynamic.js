@@ -259,7 +259,13 @@ document.addEventListener('DOMContentLoaded', function() {
             this.processNextImage();
           } else {
             let baseUrl = entry.url.slice(0,-entry.id_fiche.length).replace(/\?$/,"").replace(/\/$/,"");
-            $(node).prop('src',`${baseUrl}/files/${fileName}`);
+            let previousUrl = $(node).prop('src');
+            let newUrl = `${baseUrl}/files/${fileName}`;
+            if (newUrl != previousUrl){
+              $(`img[src="${previousUrl}"]`).each(function(){
+                $(this).prop('src',newUrl);
+              });
+            }
           }
         }
       },
