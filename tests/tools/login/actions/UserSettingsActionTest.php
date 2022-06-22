@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Core\Service;
 
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Service\DbService;
@@ -75,6 +76,7 @@ class UserSettingsActionTest extends YesWikiTestCase
     private function checkdisplayFormConnected(Wiki $wiki)
     {
         $userManager = $wiki->services->get(UserManager::class);
+        $authController = $wiki->services->get(AuthController::class);
         $users = $userManager->getAll();
         
         // use first user
@@ -83,11 +85,11 @@ class UserSettingsActionTest extends YesWikiTestCase
         $name = $user['name'];
 
         // login
-        $userManager->login($user);
+        $authController->login($user);
 
         $output = $wiki->Format("{{usersettings}}");
         // logout
-        $userManager->logout();
+        $authController->logout();
         $this->assertInstanceOf(User::class, $user);
 
         $rexExpStr = "/.*".implode('\s*', explode(' ', preg_quote('<input type="hidden" name="usersettings_action" value="update', '/'))).".*/";
@@ -179,6 +181,7 @@ class UserSettingsActionTest extends YesWikiTestCase
     public function testSignup($suffix, $expectedResult, Wiki $wiki)
     {
         $userManager = $wiki->services->get(UserManager::class);
+        $authController = $wiki->services->get(AuthController::class);
 
         do {
             $email = strtolower($this->randomString(10)).'@example.com';
@@ -209,7 +212,7 @@ class UserSettingsActionTest extends YesWikiTestCase
         unset($_POST['confpassword']);
         unset($_REQUEST['usersettings_action']);
         $user = $userManager->getOneByName($name);
-        $connectedUser = $userManager->getLoggedUser();
+        $connectedUser = $authController->getLoggedUser();
         //clean user before tests
         if (!empty($user['name'])) {
             $userManager->delete($user);

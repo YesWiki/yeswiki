@@ -215,7 +215,7 @@ class UserController extends YesWikiController
      */
     private function isRunner(User $user): bool
     {
-        $loggedUser = $this->userManager->getLoggedUser();
+        $loggedUser = $this->authController->getLoggedUser();
         return (!empty($loggedUser) && ($loggedUser['name'] == $user['name']));
     }
 

@@ -13,6 +13,7 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Throwable;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
@@ -90,56 +91,6 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             },
             $this->dbService->loadAll("select $selectDefinition from {$prefix}users order by name")
         );
-    }
-
-    public function getLoggedUser()
-    {
-        return isset($_SESSION['user']) ? $_SESSION['user'] : '';
-    }
-
-    public function getLoggedUserName()
-    {
-        if ($user = $this->getLoggedUser()) {
-            $name = $user["name"];
-        } else {
-            $name = $this->wiki->isCli() ? '' : $_SERVER["REMOTE_ADDR"];
-        }
-        return $name;
-    }
-
-    public function login($user, $remember = 0)
-    {
-        if (isset($_SESSION['user']) && isset($_SESSION['user']['remember']) && $_SESSION['user']['name'] == $user['name']) {
-            $remember = filter_var($_SESSION['user']['remember'], FILTER_VALIDATE_BOOL) ? 1 : 0;
-        } else {
-            $remember = filter_var($remember, FILTER_VALIDATE_BOOL) ? 1 : 0;
-        }
-        $_SESSION['user'] = array_merge(
-            ($user instanceof User ? $user->getArrayCopy() : (
-                is_array($user) ? $user: []
-            )),
-            [
-                'remember' => $remember,
-                'lastConnection' => time()
-            ]
-        );
-        if (!$this->wiki->isCli()) {
-            // prevent setting cookies in CLI (could be errors)
-            $this->wiki->SetPersistentCookie('name', $user['name'], $remember);
-            $this->wiki->SetPersistentCookie('password', $user['password'], $remember);
-            $this->wiki->SetPersistentCookie('remember', $remember, $remember);
-        }
-    }
-
-    public function logout()
-    {
-        $_SESSION['user'] = '';
-        if (!$this->wiki->isCli()) {
-            // prevent setting cookies in CLI (could be errors)
-            $this->wiki->DeleteCookie('name');
-            $this->wiki->DeleteCookie('password');
-            $this->wiki->DeleteCookie('remember');
-        }
     }
 
     /**
@@ -423,5 +374,39 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     public function loadUserByIdentifier(string $username)
     {
         return $this->getOneByName($username);
+    }
+    
+    /* ~~~~~~~~~~~~~~~~~~ DEPRECATED ~~~~~~~~~~~~~~~~~~ */
+    
+    /**
+     * @deprecated Use AuthController::getLoggedUser
+     */
+    public function getLoggedUser()
+    {
+        return $this->wiki->services->get(AuthController::class)->getLoggedUser();
+    }
+
+    /**
+     * @deprecated Use AuthController::getLoggedUserName
+     */
+    public function getLoggedUserName()
+    {
+        return $this->wiki->services->get(AuthController::class)->getLoggedUserName();
+    }
+
+    /**
+     * @deprecated Use AuthController::login
+     */
+    public function login($user, $remember = 0)
+    {
+        $this->wiki->services->get(AuthController::class)->login($user, $remember);
+    }
+
+    /**
+     * @deprecated Use AuthController::logout
+     */
+    public function logout()
+    {
+        $this->wiki->services->get(AuthController::class)->logout();
     }
 }

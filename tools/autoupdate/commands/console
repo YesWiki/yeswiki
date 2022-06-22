@@ -8,6 +8,7 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
 use Symfony\Component\Console\Application;
 use YesWiki\AutoUpdate\Commands\UpdaterCommand;
 use YesWiki\AutoUpdate\Commands\PostUpdaterCommand;
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\UserController;
 use YesWiki\Core\Service\UserManager;
 
@@ -39,9 +40,10 @@ $wiki = new \YesWiki\Wiki();
 $firstAdminName = $wiki->services->get(UserController::class)->getFirstAdmin();
 if (!empty($firstAdminName)) {
     $userManager = $wiki->services->get(UserManager::class);
-    $firstAdmin = $userManager->getOneByName($userManager);
+    $authController = $wiki->services->get(AuthController::class);
+    $firstAdmin = $userManager->getOneByName($firstAdminName);
     if (!empty($firstAdmin)) {
-        $userManager->login($firstAdmin);
+        $authController->login($firstAdmin);
         
         // ... register commands
 
@@ -51,6 +53,6 @@ if (!empty($firstAdminName)) {
 
         $application->run();
 
-        $userManager->logout();
+        $authController->logout();
     }
 }

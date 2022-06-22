@@ -109,7 +109,7 @@ class UserSettingsAction extends YesWikiAction
                 }
             }
         } else {
-            $userFromSession = $this->userManager->getLoggedUser();
+            $userFromSession = $this->authController->getLoggedUser();
             $user = isset($userFromSession['name']) ? $this->userManager->getOneByName($userFromSession['name']) : null;
             if ($user) { // Trying to instanciate $user from the session cooky)
                 $this->userLoggedIn = true;
@@ -183,7 +183,7 @@ class UserSettingsAction extends YesWikiAction
     private function logout()
     {
         // User wants to log out
-        $this->userManager->logout();
+        $this->authController->logout();
         $this->wiki->session->setMessage(_t('USER_YOU_ARE_NOW_DISCONNECTED').' !');
         $this->wiki->Redirect($this->wiki->href());
     }
@@ -228,7 +228,7 @@ class UserSettingsAction extends YesWikiAction
 
                 if (!empty($user)) {
                     if ($this->userLoggedIn) { // In case it's the user trying to update oneself, need to reset the cookies
-                        $this->userManager->login($user);
+                        $this->authController->login($user);
                     }
                     // forward
                     $this->wiki->session->setMessage(_t('USER_PARAMETERS_SAVED').' !');
@@ -267,9 +267,9 @@ class UserSettingsAction extends YesWikiAction
                     $this->authController->setPassword($user, $password);
                     $this->wiki->session->setMessage(_t('USER_PASSWORD_CHANGED').' !');
                     // reload $user
-                    $user = $this->userManage->getOneByName($user['name']);
+                    $user = $this->userManager->getOneByName($user['name']);
                     if (!empty($user)) {
-                        $this->userManage->login($user);
+                        $this->authController->login($user);
                     }
                     $this->wiki->Redirect($this->wiki->href());
                 } catch (TokenNotFoundException $th) {
@@ -319,7 +319,7 @@ class UserSettingsAction extends YesWikiAction
                             'show_comments' => "N",
                         ]);
                         if (!empty($user)) {
-                            $this->userManager->login($user);
+                            $this->authController->login($user);
                             $this->wiki->Redirect($this->wiki->href()); // forward
                         }
                         $this->error = _t('USER_CREATION_FAILED').'.';

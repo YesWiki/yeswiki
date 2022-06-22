@@ -1819,35 +1819,35 @@ class Wiki
     }
 
     /**
-     * @deprecated Use UserManager::getLoggedUser instead
+     * @deprecated Use AuthController::getLoggedUser instead
      */
     public function GetUser()
     {
-        return $this->services->get(UserManager::class)->getLoggedUser();
+        return $this->services->get(AuthController::class)->getLoggedUser();
     }
 
     /**
-     * @deprecated Use UserManager::getLoggedUserName instead
+     * @deprecated Use AuthController::getLoggedUserName instead
      */
     public function GetUserName()
     {
-        return $this->services->get(UserManager::class)->getLoggedUserName();
+        return $this->services->get(AuthController::class)->getLoggedUserName();
     }
 
     /**
-     * @deprecated Use UserManager::login instead
+     * @deprecated Use AuthController::login instead
      */
     public function SetUser($user, $remember = 0)
     {
-        return $this->services->get(UserManager::class)->login($user, $remember);
+        return $this->services->get(AuthController::class)->login($user, $remember);
     }
 
     /**
-     * @deprecated Use UserManager::logout instead
+     * @deprecated Use AuthController::logout instead
      */
     public function LogoutUser()
     {
-        return $this->services->get(UserManager::class)->logout();
+        return $this->services->get(AuthController::class)->logout();
     }
 
     /**

@@ -6,6 +6,7 @@ use Exception;
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\UserController;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Service\Mailer;
@@ -56,8 +57,9 @@ class UserField extends BazarField
     {
         $value = $this->getValue($entry);
         
+        $authController = $this->getService(AuthController::class);
         $userManager = $this->getService(UserManager::class);
-        $loggedUser = $userManager->getLoggedUser();
+        $loggedUser = $authController->getLoggedUser();
         if (!empty($loggedUser)) {
             $associatedUser = $userManager->getOneByName($loggedUser['name']);
             if (!empty($associatedUser['name'])) {
@@ -205,12 +207,12 @@ class UserField extends BazarField
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
-        $userManager = $this->getService(UserManager::class);
+        $authController = $this->getService(AuthController::class);
 
         if ($value) {
             return $this->render("@bazar/fields/user.twig", [
                 'value' => $value,
-                'isLoggedUser' => $userManager->getLoggedUser() && $userManager->getLoggedUserName() === $value,
+                'isLoggedUser' => $authController->getLoggedUser() && $authController->getLoggedUserName() === $value,
                 'editUrl' => $this->getWiki()->href('edit', $value),
                 'settingsUrl' => $this->getWiki()->href('', 'ParametresUtilisateur')
             ]);
@@ -275,10 +277,11 @@ class UserField extends BazarField
     private function updateEmailIfNeeded(string $userName, string $email)
     {
         if ($this->getAutoUpdateMail() && !empty($userName) && !empty($email)) {
+            $authController = $this->getService(AuthController::class);
             $userController = $this->getService(UserController::class);
             $userManager = $this->getService(UserManager::class);
             $user = $userManager->getOneByName($userName);
-            $loggedUser = $userManager->getLoggedUser();
+            $loggedUser = $authController->getLoggedUser();
             if (!empty($user)
                     && (
                         $this->getWiki()->UserIsAdmin()
@@ -347,7 +350,7 @@ class UserField extends BazarField
         string $wikiName,
         string $groupName,
         bool $forceGroupCreation,
-        USerManager $userManager,
+        UserManager $userManager,
         array $existingsGroups
     ) {
         if (!preg_match('/^[A-Za-z0-9]+$/m', $groupName)) {

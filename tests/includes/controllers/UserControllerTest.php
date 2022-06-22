@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Core\Controller;
 
 use Throwable;
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\UserController;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\DeleteUserException;
@@ -55,6 +56,7 @@ class UserControllerTest extends YesWikiTestCase
      */
     public function testDelete(string $connexionMode, bool $expectedResult, Wiki $wiki, string $firstAdmin)
     {
+        $authController = $wiki->services->get(AuthController::class);
         $userController = $wiki->services->get(UserController::class);
         $userManager = $wiki->services->get(UserManager::class);
 
@@ -75,19 +77,19 @@ class UserControllerTest extends YesWikiTestCase
 
         switch ($connexionMode) {
             case '!@admins':
-                $userManager->login($user);
+                $authController->login($user);
                 break;
             // case '%':
                 // not currently covered
-            //     $userManager->login($user);
+            //     $authController->login($user);
             //     break;
             case '@admins':
                 $adminUser = $userManager->getOneByName($firstAdmin);
-                $userManager->login($adminUser);
+                $authController->login($adminUser);
                 break;
             case '!+':
             default:
-                $userManager->logout();
+                $authController->logout();
                 break;
         }
 
@@ -104,7 +106,7 @@ class UserControllerTest extends YesWikiTestCase
         if (!empty($userDeleted)) {
             $userManager->delete($userDeleted);
         }
-        $userManager->logout();
+        $authController->logout();
 
         // check tests
         if ($expectedResult) {

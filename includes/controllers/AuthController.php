@@ -105,7 +105,7 @@ class AuthController extends YesWikiController
      */
     public function connectUser()
     {
-        $userFromSession = $this->userManager->getLoggedUser();
+        $userFromSession = $this->getLoggedUser();
         if (!empty($userFromSession['name'])) {
             // check if user ever existing
             $user = $this->userManager->getOneByName($userFromSession['name']);
@@ -136,10 +136,62 @@ class AuthController extends YesWikiController
             }
         }
         if (empty($user)) {
-            $this->userManager->logout();
+            $this->logout();
         } else {
-            $this->userManager->login($user, $remember);
+            $this->login($user, $remember);
             // login each time to set persistent cookies
+        }
+    }
+
+    // methods imported from UserManager
+
+    public function getLoggedUser()
+    {
+        return isset($_SESSION['user']) ? $_SESSION['user'] : '';
+    }
+
+    public function getLoggedUserName()
+    {
+        if ($user = $this->getLoggedUser()) {
+            $name = $user["name"];
+        } else {
+            $name = $this->wiki->isCli() ? '' : $_SERVER["REMOTE_ADDR"];
+        }
+        return $name;
+    }
+
+    public function login($user, $remember = 0)
+    {
+        if (isset($_SESSION['user']) && isset($_SESSION['user']['remember']) && $_SESSION['user']['name'] == $user['name']) {
+            $remember = filter_var($_SESSION['user']['remember'], FILTER_VALIDATE_BOOL) ? 1 : 0;
+        } else {
+            $remember = filter_var($remember, FILTER_VALIDATE_BOOL) ? 1 : 0;
+        }
+        $_SESSION['user'] = array_merge(
+            ($user instanceof User ? $user->getArrayCopy() : (
+                is_array($user) ? $user: []
+            )),
+            [
+                'remember' => $remember,
+                'lastConnection' => time()
+            ]
+        );
+        if (!$this->wiki->isCli()) {
+            // prevent setting cookies in CLI (could be errors)
+            $this->wiki->SetPersistentCookie('name', $user['name'], $remember);
+            $this->wiki->SetPersistentCookie('password', $user['password'], $remember);
+            $this->wiki->SetPersistentCookie('remember', $remember, $remember);
+        }
+    }
+
+    public function logout()
+    {
+        $_SESSION['user'] = '';
+        if (!$this->wiki->isCli()) {
+            // prevent setting cookies in CLI (could be errors)
+            $this->wiki->DeleteCookie('name');
+            $this->wiki->DeleteCookie('password');
+            $this->wiki->DeleteCookie('remember');
         }
     }
 }

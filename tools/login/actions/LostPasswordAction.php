@@ -161,7 +161,7 @@ class LostPasswordAction extends YesWikiAction
                         $this->typeOfRendering = 'recoverSuccess';
                         // get $user a new time to have the new password
                         $user = $this->userManager->getOneByName($userName);
-                        $this->userManager->login($user);
+                        $this->authController->login($user);
                     } else { // Not able to load the user from DB
                         $this->errorType = 'userNotFound';
                     }

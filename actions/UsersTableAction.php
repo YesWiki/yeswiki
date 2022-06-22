@@ -1,6 +1,7 @@
 <?php
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Controller\UserController;
 use YesWiki\Core\Exception\DeleteUserException;
@@ -30,6 +31,7 @@ class UsersTableAction extends YesWikiAction
     public function run()
     {
         // get Services
+        $this->authController  = $this->getService(AuthController::class);
         $this->userController  = $this->getService(UserController::class);
         $this->userManager  = $this->getService(UserManager::class);
         $this->csrfTokenController = $this->getService(CsrfTokenController::class);
@@ -73,7 +75,7 @@ class UsersTableAction extends YesWikiAction
         }
 
         // connected user
-        $connectedUser = $this->userManager->getLoggedUser();
+        $connectedUser = $this->authController->getLoggedUser();
         $connectedUserName = empty($connectedUser['name']) ? '' : $connectedUser['name'];
 
         return $this->render('@core/users-table.twig', [

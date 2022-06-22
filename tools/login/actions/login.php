@@ -155,7 +155,7 @@ if ($_REQUEST["action"] == "login") {
             throw new LoginException(_t('LOGIN_WRONG_PASSWORD'));
         }
         $remember = filter_input(INPUT_POST, 'remember', FILTER_VALIDATE_BOOL);
-        $userManager->login($user, $remember);
+        $authController->login($user, $remember);
         
         // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
         if ($userpage == 'user' && $this->LoadPage($user["name"])) {
