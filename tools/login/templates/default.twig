@@ -50,8 +50,11 @@
 								</label>
 							</div>
 							<button type="submit" class="btn btn-block {{ btnclass }} btn-primary">{{ _t('LOGIN_LOGIN') }}</button>
-							<input type="hidden" name="action" value="login" />
-							<input type="hidden" name="incomingurl" value="{{ userpage }}" />
+							{% block hidden %}
+								<input type="hidden" name="action" value="login" />
+								<input type="hidden" name="incomingurl" value="{{ userpage == 'user' ? incomingurl : userpage }}" />
+								<input type="hidden" name="userpage" value="{{ userpage }}" />
+							{% endblock %}
 							{% if signupurl is not empty and signupurl != "0" %}
 								<hr>
 								<a class="btn btn-block btn-default {{ btnclass }}" href="{{ signupurl }}">{{ _t('LOGIN_SIGNUP') }}</a>

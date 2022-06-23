@@ -347,6 +347,10 @@ return [
     "AB_advanced_action_login_template_modal" => "Modal",
     "AB_advanced_action_login_template_horizontal" => "Horizontal",
     "AB_advanced_action_login_template_dropdown" => "Menu déroulant",
+    "AB_advanced_action_login_successloggedinurl_label" => "Url de redirection après connexion réussie",
+    "AB_advanced_action_login_successloggedinurl_hint" => "Page du wiki ou url (utilise 'incomingurl' si vide ou en cas d'erreur)",
+    "AB_advanced_action_login_loggedouturl_label" => "Url de redirection après déconnexion",
+    "AB_advanced_action_login_loggedouturl_hint" => "Page du wiki ou url (utilise 'incomingurl' si vide)",
 
     // col
     "AB_template_col_size_hint" => "Attention, la somme des largeurs de toutes les colonnes ne devra pas excéder 12 !",

@@ -35,7 +35,7 @@ class LoginAction extends YesWikiAction
     {
         $noSignupButton = (isset($arg['signupurl']) && $arg['signupurl'] === "0");
         $incomingurl = !empty($arg['incomingurl'])
-            ? $arg['incomingurl']
+            ? $this->wiki->generateLink($arg['incomingurl'])
             : $this->getIncomingUrlFromServer($_SERVER ?? []);
         $this->templateEngine = $this->getService(TemplateEngine::class);
 
@@ -57,10 +57,18 @@ class LoginAction extends YesWikiAction
 
             'incomingurl' => $incomingurl,
 
+            'successloggedinurl' => empty($arg['successloggedinurl'])
+                ? $incomingurl
+                : $this->wiki->generateLink($arg['successloggedinurl']),
+
+            'loggedouturl' => empty($arg['loggedouturl'])
+                ? $incomingurl
+                : $this->wiki->generateLink($arg['loggedouturl']),
+
             'userpage' => !empty($arg['userpage'])
                 ? (
                     $arg['userpage'] == 'user'
-                    ? 'user' // only this line is currently used
+                    ? 'user'
                     :$this->wiki->generateLink($arg['userpage'])
                 )
                 : (
@@ -200,7 +208,7 @@ class LoginAction extends YesWikiAction
                 $this->wiki->Redirect($this->href('', $user["name"]));
             } else {
                 // on va sur la page d'ou on s'est identifie sinon
-                $this->wiki->Redirect($incomingurl);
+                $this->wiki->Redirect($this->arguments['successloggedinurl']);
             }
         } catch (LoginException $ex) {
             // on affiche une erreur sur le NomWiki sinon
@@ -217,7 +225,7 @@ class LoginAction extends YesWikiAction
     {
         $this->authController->logout();
         $this->wiki->SetMessage(_t('LOGIN_YOU_ARE_NOW_DISCONNECTED'));
-        $this->wiki->Redirect(preg_replace('/(&|\\\?)$/m', '', preg_replace('/(&|\\\?)action=logout(&)?/', '$1', $this->arguments['incomingurl'])));
+        $this->wiki->Redirect(preg_replace('/(&|\\\?)$/m', '', preg_replace('/(&|\\\?)action=logout(&)?/', '$1', $this->arguments['loggedouturl'])));
         $this->wiki->exit();
     }
 }

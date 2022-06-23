@@ -9,8 +9,7 @@
     {% if signupurl is not empty and signupurl != "0" %}
         <a class="btn btn-default {{ btnclass }}" href="{{ signupurl }}">{{ _t('LOGIN_SIGNUP') }}</a>
     {% endif %}
-    <input type="hidden" name="action" value="login" />
-    <input type="hidden" name="incomingurl" value="{{ userpage }}" />
+    {{ block('hidden') }}
     <input type="hidden" name="remember" value="0" />
     {{ block('lostPassword') }}
 {% endblock %}

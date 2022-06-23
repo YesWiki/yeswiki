@@ -223,6 +223,18 @@ actions:
         label: _t(AB_advanced_action_login_incomingurl_label)
         type: page-list
         default: ""
+      successloggedinurl:
+        label: _t(AB_advanced_action_login_successloggedinurl_label)
+        hint: _t(AB_advanced_action_login_successloggedinurl_hint)
+        type: page-list
+        default: ""
+        advanced: true
+      loggedouturl:
+        label: _t(AB_advanced_action_login_loggedouturl_label)
+        hint: _t(AB_advanced_action_login_loggedouturl_hint)
+        type: page-list
+        default: ""
+        advanced: true
       userpage:
         label: _t(AB_advanced_action_login_userpage_label)
         type: checkbox
