@@ -40,8 +40,6 @@ class LoginAction extends YesWikiAction
         $this->templateEngine = $this->getService(TemplateEngine::class);
 
         return [
-            'noSignupButton' => $noSignupButton,
-
             'signupurl' => $noSignupButton ? "0" : (
                 empty($arg['signupurl'])
                 // TODO : check page name for other languages
@@ -78,7 +76,7 @@ class LoginAction extends YesWikiAction
 
             'class' => !empty($arg['class'])  ? $arg['class'] : '',
             'btnclass' => !empty($arg['btnclass'])  ? $arg['btnclass'] : '',
-            'nobtn' => !empty($arg['nobtn'])  ? $arg['nobtn'] : '',
+            'nobtn' => $this->formatBoolean($arg, false, 'nobtn'),
             'template' => (empty($arg['template']) ||
                 empty(basename($arg['template'])) ||
                 !$this->templateEngine->hasTemplate("@login/".basename($arg['template'])))
