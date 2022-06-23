@@ -1,0 +1,29 @@
+{% extends "@login/default.twig" %}
+
+{% block connected %}
+    <button data-toggle="dropdown" class="btn btn-default dropdown-toggle {{ btnclass }}"><i class="fa fa-user"></i> {{ user }} <span class="caret"></span></button>
+    <ul class="dropdown-menu">
+        {{ block('loginActions') }}
+    </ul>
+{% endblock %}
+
+{% block formClass %}login-form-dropdown{% endblock %}
+{% block formTitle %}<h4 class="text-center">{{ _t('LOGIN_LOGIN') }}</h4>{% endblock %}
+
+{% block wikiNameInputGroup %}
+    <div class="form-group">
+        <input id="inputWikiName" class="form-control" type="text" name="name" value="{{user ? user|e('html_attr') : '' }}" required required placeholder="{{ _t('LOGIN_WIKINAME') }}"/>
+    </div>
+{% endblock %}
+{% block passwordInputGroup %}
+    <div class="form-group">
+        <input id="inputPassword" class="form-control" name="password" type="password" required placeholder="{{ _t('LOGIN_PASSWORD') }}"/>
+    </div>
+{% endblock %}
+
+{% block notConnected %}
+    <button data-toggle="dropdown" class="btn btn-default dropdown-toggle {{ btnclass }}"><i class="fa fa-user"></i> {{ _t('LOGIN_LOGIN') }} <span class="caret"></span></button>
+    <div class="dropdown-menu">
+        {{ block('form') }}
+    </div>
+{% endblock %}
