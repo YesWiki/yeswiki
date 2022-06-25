@@ -57,9 +57,9 @@ class LoginAction extends YesWikiAction
 
             'incomingurl' => $incomingurl,
 
-            'successloggedinurl' => empty($arg['successloggedinurl'])
+            'loggedinurl' => empty($arg['loggedinurl'])
                 ? $incomingurl
-                : $this->wiki->generateLink($arg['successloggedinurl']),
+                : $this->wiki->generateLink($arg['loggedinurl']),
 
             'loggedouturl' => empty($arg['loggedouturl'])
                 ? $incomingurl
@@ -207,8 +207,7 @@ class LoginAction extends YesWikiAction
             if (((!empty($_POST['userpage']) && $_POST['userpage'] == 'user') || $userpage == 'user') && $this->pageManager->getOne($user["name"])) {
                 $this->wiki->Redirect($this->href('', $user["name"]));
             } else {
-                // on va sur la page d'ou on s'est identifie sinon
-                $this->wiki->Redirect($this->arguments['successloggedinurl']);
+                $this->wiki->Redirect($this->arguments['loggedinurl']);
             }
         } catch (LoginException $ex) {
             // on affiche une erreur sur le NomWiki sinon
