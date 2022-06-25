@@ -55,10 +55,12 @@
 								<input type="hidden" name="incomingurl" value="{{ userpage == 'user' ? incomingurl : userpage }}" />
 								<input type="hidden" name="userpage" value="{{ userpage }}" />
 							{% endblock %}
-							{% if signupurl is not empty and signupurl != "0" %}
-								<hr>
-								<a class="btn btn-block btn-default {{ btnclass }}" href="{{ signupurl }}">{{ _t('LOGIN_SIGNUP') }}</a>
-							{% endif %}
+							{% block signupurl %}
+								{% if signupurl is not empty and signupurl != "0" %}
+									{% block signupurlhead %}<hr>{% endblock %}
+									<a class="{% block signupurlbtnclass %}btn btn-block btn-default{% endblock %} {{ btnclass }}" href="{{ signupurl }}">{{ _t('LOGIN_SIGNUP') }}</a>
+								{% endif %}
+							{% endblock %}
 						{% endblock %}
 					</form>
 				{% endblock %}
