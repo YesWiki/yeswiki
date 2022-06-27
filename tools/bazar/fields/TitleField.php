@@ -49,7 +49,7 @@ class TitleField extends BazarField
                     $fieldValue = $field->getValue($entry);
                     if ($field instanceof CheckboxField) {
                         // get first value instead of keys
-                        $formattedValue = $field->formatValuesBeforeSave($entry)[$field->getPropertyName()];
+                        $formattedValue = $field->formatValuesBeforeSaveIfEditable($entry)[$field->getPropertyName()];
                         $fieldValues = $field->getValues([$field->getPropertyName() => $formattedValue]);
                         $replacement = $field->getOptions()[$fieldValues[0] ?? null] ?? '';
                     } elseif ($field instanceof TagsField) {

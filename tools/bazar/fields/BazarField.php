@@ -85,11 +85,18 @@ abstract class BazarField implements \JsonSerializable
     public function renderInputIfPermitted($entry)
     {
         // Safety checks, must be run before every renderInput
-        if (!$this->canEdit($entry)) {
+        if (!$this->canEdit($entry, !$entry)) {
             return '';
         }
 
         return $this->renderInput($entry);
+    }
+
+    public function formatValuesBeforeSaveIfEditable($entry, bool $isCreation = false)
+    {
+        // this method is defined to check $this->canEdit with $isCreation
+        // without changing signature of formatValuesBeforeSave()
+        return $this->formatValuesBeforeSave($entry);
     }
 
     // Format input values before save
@@ -145,10 +152,9 @@ abstract class BazarField implements \JsonSerializable
     }
 
     /* Return true if we are if editing is allowed for the field */
-    public function canEdit($entry)
+    public function canEdit($entry, bool $isCreation = false)
     {
         $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
-        $isCreation = !$entry;
         return empty($writeAcl) || $this->getService(AclService::class)->check($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : 'edit');
     }
 

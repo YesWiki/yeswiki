@@ -80,7 +80,12 @@ abstract class CheckboxField extends EnumField
     
     public function formatValuesBeforeSave($entry)
     {
-        if ($this->canEdit($entry)) {
+        return $this->formatValuesBeforeSaveIfEditable($entry, false);
+    }
+
+    public function formatValuesBeforeSaveIfEditable($entry, bool $isCreation = false)
+    {
+        if ($this->canEdit($entry, $isCreation)) {
             // get value
             $checkboxField = $entry[$this->propertyName] ?? null ;
             // detect if from Form to check if clean field

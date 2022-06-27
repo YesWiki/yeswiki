@@ -499,7 +499,7 @@ class EntryManager
 
         $this->validate($data);
 
-        $data = $this->formatDataBeforeSave($data);
+        $data = $this->formatDataBeforeSave($data, true);
 
         // on change provisoirement d'utilisateur
         if (isset($GLOBALS['utilisateur_wikini'])) {
@@ -610,7 +610,7 @@ class EntryManager
 
         $this->validate($data);
 
-        $data = $this->formatDataBeforeSave($data);
+        $data = $this->formatDataBeforeSave($data, false);
 
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
@@ -648,7 +648,7 @@ class EntryManager
                 // be carefull : BazarField's objects, that do not save data (as ACL, Label, Hidden), do not have propertyName
                 // see BazarField->formatValuesBeforeSave() for details
                 // so do not save the previous data even if existing
-                if (!empty($propName) && !$field->canEdit($data)) {
+                if (!empty($propName) && !$field->canEdit($data, false)) {
                     $restrictedFields[] = $propName;
                 }
             }
@@ -761,10 +761,11 @@ class EntryManager
      * prepare la requete d'insertion ou de MAJ de la fiche en supprimant
      * de la valeur POST les valeurs inadequates et en formattant les champs.
      * @param $data
+     * @param bool $isCreation
      * @return array
      * @throws Exception
      */
-    public function formatDataBeforeSave($data)
+    public function formatDataBeforeSave($data, bool $isCreation = false)
     {
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
@@ -772,7 +773,7 @@ class EntryManager
         // If there is a title field, compute the entry's title
         foreach ($form['prepared'] as $field) {
             if ($field instanceof TitleField) {
-                $data = array_merge($data, $field->formatValuesBeforeSave($data));
+                $data = array_merge($data, $field->formatValuesBeforeSaveIfEditable($data, $isCreation));
             }
         }
 
@@ -803,7 +804,7 @@ class EntryManager
 
         foreach ($form['prepared'] as $bazarField) {
             if ($bazarField instanceof BazarField) {
-                $tab = $bazarField->formatValuesBeforeSave($data);
+                $tab = $bazarField->formatValuesBeforeSaveIfEditable($data, $isCreation);
             }
 
             if (is_array($tab)) {
