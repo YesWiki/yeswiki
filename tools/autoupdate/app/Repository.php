@@ -25,6 +25,8 @@ class Repository extends PackageCollection
         $repoInfosFile = $this->address . $this::INDEX_FILENAME;
         $file = $this->fileHandler->download($repoInfosFile);
         $data = json_decode(file_get_contents($file), true);
+        // release tmp file
+        unlink($file);
 
         if (is_null($data)) {
             return false;

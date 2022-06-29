@@ -18,6 +18,9 @@ class Files
 
     protected function delete($path)
     {
+        if (empty($path)) {
+            return false;
+        }
         if (is_file($path)) {
             if (unlink($path)) {
                 return true;
@@ -66,7 +69,7 @@ class Files
         return false;
     }
 
-    public function download($sourceUrl, $destPath = null)
+    public function download($sourceUrl, $destPath = null, $timeoutInSec = 5)
     {
         if ($destPath === null) {
             $destPath = tempnam('cache', 'tmp_to_delete_');
@@ -75,6 +78,8 @@ class Files
         $ch = curl_init($sourceUrl);
         curl_setopt($ch, CURLOPT_FILE, $fp);
         curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
         curl_exec($ch);
         curl_close($ch);
         fclose($fp);

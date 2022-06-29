@@ -137,6 +137,7 @@ class Controller
         // Vérification MD5
         if (!$package->checkIntegrity($file)) {
             $this->messages->add('AU_INTEGRITY', 'AU_ERROR');
+            $package->cleanTempFiles();
             return;
         }
         $this->messages->add('AU_INTEGRITY', 'AU_OK');
@@ -145,6 +146,7 @@ class Controller
         $path = $package->extract();
         if (false === $path) {
             $this->messages->add('AU_EXTRACT', 'AU_ERROR');
+            $package->cleanTempFiles();
             return;
         }
         $this->messages->add('AU_EXTRACT', 'AU_OK');
@@ -152,6 +154,7 @@ class Controller
         // Vérification des droits sur le fichiers
         if (!$package->checkACL()) {
             $this->messages->add('AU_ACL', 'AU_ERROR');
+            $package->cleanTempFiles();
             return;
         }
         $this->messages->add('AU_ACL', 'AU_OK');
@@ -162,6 +165,7 @@ class Controller
                 _t('AU_UPDATE_PACKAGE') . $packageName,
                 'AU_ERROR'
             );
+            $package->cleanTempFiles();
             return;
         }
         $this->messages->add(_t('AU_UPDATE_PACKAGE') . $packageName, 'AU_OK');
@@ -170,6 +174,7 @@ class Controller
             // Mise à jour des tools.
             if (!$package->upgradeTools()) {
                 $this->messages->add('AU_UPDATE_TOOL', 'AU_ERROR');
+                $package->cleanTempFiles();
                 return;
             }
             $this->messages->add('AU_UPDATE_TOOL', 'AU_OK');
@@ -178,6 +183,7 @@ class Controller
         // Mise à jour de la configuration de YesWiki
         if (!$package->upgradeInfos()) {
             $this->messages->add('AU_UPDATE_INFOS', 'AU_ERROR');
+            $package->cleanTempFiles();
             return;
         }
         $this->messages->add('AU_UPDATE_INFOS', 'AU_OK');
