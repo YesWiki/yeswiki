@@ -2,9 +2,11 @@
 
 namespace YesWiki\Bazar\Service;
 
+use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\ImportService;
 use YesWiki\Wiki;
+use YesWiki\Bazar\Exception\ExternalBazarServiceException;
 use YesWiki\Bazar\Field\ExternalImageField;
 
 class ExternalBazarService
@@ -227,7 +229,7 @@ class ExternalBazarService
         }
 
         if (empty($params['forms'])) {
-            throw new \Exception("parameter forms should not be empty");
+            throw new Exception("parameter forms should not be empty");
         }
 
         // Formattage des queries
@@ -577,24 +579,27 @@ class ExternalBazarService
                 trigger_error('checking deletions (refreshing) :'.$diffTime/1E+6.' ms ; url : '.$url);
             }
         } else {
-            $entriesList = json_decode($this->extractErrors(file_get_contents($urlToCheckDeletion), $urlToCheckDeletion), true);
-            if ($this->debug && $this->timeDebug) {
-                $diffTime+=hrtime(true);
-                trigger_error('checking deletions (only list) :'.$diffTime/1E+6.' ms ; url : '.$urlToCheckDeletion);
-                $diffTime = -hrtime(true);
-            }
-            foreach ($entries as $key => $entry) {
-                if (!isset($entriesList[$entry['id_fiche']])) {
-                    if ($this->debug && $this->wiki->UserIsAdmin()) {
-                        trigger_error('Deleting '.$entry['id_fiche'].' from '.$cache_file);
-                    }
-                    unset($entries[$key]);
+            try {
+                $entriesList = json_decode($this->extractErrors($this->securedFileGetContentFromUrl($urlToCheckDeletion), $urlToCheckDeletion), true);
+                if ($this->debug && $this->timeDebug) {
+                    $diffTime+=hrtime(true);
+                    trigger_error('checking deletions (only list) :'.$diffTime/1E+6.' ms ; url : '.$urlToCheckDeletion);
+                    $diffTime = -hrtime(true);
                 }
-            }
-            $this->secureFilePutContents('', json_encode($entries), $cache_file, false);
-            if ($this->debug && $this->timeDebug) {
-                $diffTime+=hrtime(true);
-                trigger_error('Updating deletions :'.$diffTime/1E+6.' ms ; url : '.$url);
+                foreach ($entries as $key => $entry) {
+                    if (!isset($entriesList[$entry['id_fiche']])) {
+                        if ($this->debug && $this->wiki->UserIsAdmin()) {
+                            trigger_error('Deleting '.$entry['id_fiche'].' from '.$cache_file);
+                        }
+                        unset($entries[$key]);
+                    }
+                }
+                $this->secureFilePutContents('', json_encode($entries), $cache_file, false);
+                if ($this->debug && $this->timeDebug) {
+                    $diffTime+=hrtime(true);
+                    trigger_error('Updating deletions :'.$diffTime/1E+6.' ms ; url : '.$url);
+                }
+            } catch (ExternalBazarServiceException $th) {
             }
         }
     }
@@ -641,12 +646,16 @@ class ExternalBazarService
             $diffTime = -hrtime(true);
         }
         $sanitizedUrl = $url.(strpos($url, '?') === false ? '?' : '&').'dateMin='.urlencode($dateMin);
-        $newEntries = json_decode($this->extractErrors(file_get_contents($sanitizedUrl), $sanitizedUrl), true);
-        if ($this->debug && $this->timeDebug) {
-            $diffTime+=hrtime(true);
-            trigger_error('Getting new entries :'.$diffTime/1E+6.' ms ; url : '.$url.' ; sanitizedUrl : '.$sanitizedUrl);
+        try {
+            $newEntries = json_decode($this->extractErrors($this->securedFileGetContentFromUrl($sanitizedUrl), $sanitizedUrl), true);
+            if ($this->debug && $this->timeDebug) {
+                $diffTime+=hrtime(true);
+                trigger_error('Getting new entries :'.$diffTime/1E+6.' ms ; url : '.$url.' ; sanitizedUrl : '.$sanitizedUrl);
+            }
+            return (empty($newEntries) || !is_array($newEntries)) ? null : $newEntries;
+        } catch (ExternalBazarServiceException $th) {
+            return null;
         }
-        return (empty($newEntries) || !is_array($newEntries)) ? null : $newEntries;
     }
 
     /**
@@ -802,11 +811,46 @@ class ExternalBazarService
         $tmpFilemtime = @filemtime($cache_file.self::UPDATING_SUFFIX); // false if no file
         if (!$tmpFilemtime || $forceRefresh || (time() - $tmpFilemtime >= 60)) { // after 60 seconds force creation
             file_put_contents($cache_file.self::UPDATING_SUFFIX, date('Y-m-d H:i:s'));
-            file_put_contents($cache_file, empty($url) ? $content : file_get_contents($url));
+            if (!empty($url)) {
+                try {
+                    file_put_contents($cache_file, $this->securedFileGetContentFromUrl($url));
+                } catch (ExternalBazarServiceException $th) {
+                }
+            } else {
+                file_put_contents($cache_file, $content);
+            }
             if (file_exists($cache_file.self::UPDATING_SUFFIX)) {
                 unlink($cache_file.self::UPDATING_SUFFIX);
             }
         }
+    }
+
+    /**
+     * @param string $url
+     * @return string
+     * @throws ExternalBazarServiceException
+     */
+    private function securedFileGetContentFromUrl($url): string
+    {
+        $destPath = tempnam('cache', 'tmp_to_delete_');
+        $fp = fopen($destPath, 'wb');
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_FILE, $fp);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3); // connect timeout in seconds
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30); // total timeout in seconds
+        curl_exec($ch);
+        $error = curl_errno($ch);
+        curl_close($ch);
+        fclose($fp);
+        if (!$error && file_exists($destPath)) {
+            $content = file_get_contents($destPath);
+        }
+        unlink($destPath);
+        if ($error) {
+            throw new ExternalBazarServiceException("Error getting content from $url");
+        }
+        return $content;
     }
 
     private function getFormUrl(array $urlDetails, $formId):string
