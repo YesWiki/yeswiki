@@ -1,12 +1,16 @@
 <?php
 
+use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\YesWikiHandler;
 
 class IframeHandler extends YesWikiHandler
 {
+    protected $entryController ;
+
     public function run()
     {
+        $this->entryController = $this->getService(EntryController::class);
         $output = '';
         if (!$this->wiki->page) {
             echo str_replace(
@@ -84,7 +88,7 @@ class IframeHandler extends YesWikiHandler
         if (YW_CHARSET != 'UTF-8') {
             $tab_valeurs = array_map('utf8_decode', $tab_valeurs);
         }
-        $entry = baz_voir_fiche(true, $tab_valeurs);
+        $entry = $this->entryController->view($this->wiki->tag, 0, true);
         if (!empty($entry)) {
             // affichage de la page formatee
             $output .= $this->replaceLinksWithIframeIfNeeded($entry);
