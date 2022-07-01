@@ -823,7 +823,9 @@ if (!class_exists('attach')) {
             header('Content-Transfer-Encoding: none');
             header('Content-Type: application/octet-stream; name="' . $dlFilename . '"'); //This should work for the rest
             header('Content-Type: application/octetstream; name="' . $dlFilename . '"'); //This should work for IE & Opera
-            header('Content-Type: application/download; name="' . $dlFilename . '"'); //This should work for IE & Opera
+            if (in_array(preg_replace("/^.*\.([^.]+$)/", "$1", $dlFilename), ['txt','md','png','svg','jpeg','jpg','mp3'])) {
+                header('Content-Type: '.mime_content_type($fullFilename).'; name="' . $dlFilename . '"');
+            }
             header('Content-Disposition: attachment; filename="' . $dlFilename . '"');
             header("Content-Description: File Transfer");
             header("Content-length: $size");
@@ -832,30 +834,30 @@ if (!class_exists('attach')) {
         /******************************************************************************
          *    FONTIONS DU FILEMANAGER
          *******************************************************************************/
-        public function doFileManager()
+        public function doFileManager($isAction = false)
         {
             $do = (isset($_GET['do']) && $_GET['do']) ? $_GET['do'] : '';
             switch ($do) {
                 case 'restore':
                     $this->fmRestore();
-                    $this->fmShow(true);
+                    $this->fmShow(true, $isAction);
                     break;
                 case 'erase':
                     $this->fmErase();
-                    $this->fmShow(true);
+                    $this->fmShow(true, $isAction);
                     break;
                 case 'del':
                     $this->fmDelete();
-                    $this->fmShow();
+                    $this->fmShow(false, $isAction);
                     break;
                 case 'trash':
-                    $this->fmShow(true);
+                    $this->fmShow(true, $isAction);
                     break;
                 case 'emptytrash':
                     $this->fmEmptyTrash(); //pas de break car apres un emptytrash => retour au gestionnaire
                     // no break
                 default:
-                    $this->fmShow();
+                    $this->fmShow(false, $isAction);
             }
         }
         /**
@@ -863,29 +865,7 @@ if (!class_exists('attach')) {
          */
         public function doFileManagerAction()
         {
-            $do = (isset($_GET['do']) && $_GET['do']) ? $_GET['do'] : '';
-            switch ($do) {
-                case 'restore':
-                    $this->fmRestore();
-                    $this->fmShowAction(true);
-                    break;
-                case 'erase':
-                    $this->fmErase();
-                    $this->fmShowAction(true);
-                    break;
-                case 'del':
-                    $this->fmDelete();
-                    $this->fmShowAction();
-                    break;
-                case 'trash':
-                    $this->fmShowAction(true);
-                    break;
-                case 'emptytrash':
-                    $this->fmEmptyTrash(); //pas de break car apres un emptytrash => retour au gestionnaire
-                    // no break
-                default:
-                    $this->fmShowAction();
-            }
+            $this->doFileManager(true);
         }
         /**
          * Return human readable sizes
@@ -930,164 +910,34 @@ if (!class_exists('attach')) {
          */
         public function fmShowAction($trash = false)
         {
-            $method = ($this->wiki->GetMethod() != 'show' ? $this->wiki->GetMethod() : '');
-            $output = '<ul id="fmtab' . $this->wiki->tag . '" class="nav nav-tabs">
-				<li' . (($trash) ? '' : ' class="active"') . '><a href="' . $this->wiki->href($method, $this->wiki->tag) . '#fmtab' . $this->wiki->tag . '" title="'._t('ATTACH_FILE_MANAGEMENT').'"><i class="fa fa-file icon-file"></i>&nbsp;'._t('ATTACH_FILE_MANAGEMENT').'</a></li>
-				<li' . (($trash) ? ' class="active"' : '') . '><a href="' . $this->wiki->href($method, $this->wiki->GetPageTag(), 'do=trash') . '#fmtab' . $this->wiki->tag . '" title="'._t('ATTACH_TRASH').'"><i class="fa fa-trash icon-trash"></i>&nbsp;'._t('ATTACH_TRASH').'</a></li>
-            </ul>';
-
-            $files = $this->fmGetFiles($trash);
-
-            if (!$files) {
-                $output .= '<div class="alert alert-info">'. str_replace('{tag}', $this->wiki->Format($this->wiki->tag), _t('ATTACH_NO_ATTACHED_FILES')) . '</div>' . "\n";
-            } else {
-                // tri du tableau des fichiers
-                $files = $this->sortByNameRevFile($files);
-                //entete du tableau
-                $fmHeadTable = '	<thead>' . "\n" .
-                    '		<tr>' . "\n" .
-                    '			<td class="fmfilename">'._t('ATTACH_FILENAME').'</td>' . "\n" .
-                    '			<td class="fmfilesize">'._t('ATTACH_SIZE').'</td>' . "\n" .
-                    '			<td class="fmfiledate">'._t('ATTACH_DATE_OF_MODIFICATION').'</td>' . "\n" .
-                    '			<td class="fmfileactions">&nbsp;</td>' . "\n";
-                $fmHeadTable .= '		</tr>' . "\n" .
-                    '	</thead>' . "\n";
-
-                //corps du tableau
-                $fmBodyTable = '	<tbody>' . "\n";
-                $i = 0;
-                foreach ($files as $file) {
-                    $i++;
-                    $color = ($i % 2 ? "tableFMCol1" : "tableFMCol2");
-                    //lien de suppression
-                    if ($trash) {
-                        $url = $this->wiki->href('', $this->wiki->GetPageTag(), 'do=erase&file=' . $file['realname']);
-                        $icon = 'fa fa-remove icon-remove';
-                    } else {
-                        $url = $this->wiki->href('', $this->wiki->GetPageTag(), 'do=del&file=' . $file['realname']);
-                        $icon = 'fa fa-trash icon-trash';
-                    }
-                    $dellink = '<a class="btn btn-mini btn-danger" href="' . $url . '" title="'._t('DELETE').'"><i class="' . $icon . ' icon-white"></i></a>';
-                    //lien de restauration
-                    $restlink = '';
-                    if ($trash) {
-                        $url = $this->wiki->href('', $this->wiki->GetPageTag(), 'do=restore&file=' . $file['realname']);
-                        $restlink = '<a class="btn btn-xs btn-primary" href="' . $url . '" title="'._t('ATTACH_RESTORE').'"><i class="fa fa-refresh icon-refresh icon-white"></i>&nbsp;'._t('ATTACH_RESTORE').'</a>';
-                    }
-
-                    //lien pour downloader le fichier
-                    $url = $this->wiki->href("download", $this->wiki->GetPageTag(), "file=" . $file['realname']);
-                    $fileinfo = str_replace('{file}', $file['realname'], _t('ATTACH_REAL_FILENAME'));
-                    if ($trash) {
-                        $fileinfo .= str_replace('{date}', $this->parseDate($file['trashdate']), _t('ATTACH_DELETED_ON'));
-                    }
-                    $dlLink = '<a class="filenamelink" href="' . $url . '" title="' . $fileinfo . '">' . substr($file['name'], 0, 25) . '&hellip;' . '.' . $file['ext'] . "</a>";
-                    $fmBodyTable .= '		<tr class="' . $color . '">' . "\n" .
-
-                    '			<td class="fmfilename">' . $dlLink . '</td>' . "\n" .
-                    '			<td class="fmfilesize">' . $this->size_readable($file['size']) . '</td>' . "\n" .
-                    '			<td class="fmfiledate">' . $this->parseDate($file['dateupload']) . '</td>' . "\n" .
-                        '			<td class="fmfileactions">' . $restlink . ' ' . $dellink . '</td>' . "\n";
-
-                    $fmBodyTable .= '		</tr>' . "\n";
-                }
-                $fmBodyTable .= '	</tbody>' . "\n";
-                //affichage
-                $output .= '<table class="fmtable table table-condensed table-hover table-striped">' . "\n" . $fmHeadTable . $fmBodyTable . '</table>' . "\n";
-                if ($trash) {
-                    //Avertissement
-                    $output .= '<div class="alert alert-danger"><a href="' . $this->wiki->href($method, $this->wiki->tag, 'do=emptytrash') . '" class="btn btn-danger pull-right"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;'._t('ATTACH_EMPTY_TRASH').'</a><strong>'._t('CAUTION').' :</strong> '._t('ATTACH_EMPTY_TRASH_NOTICE').'<div class="clearfix"></div></div>';
-                }
-            }
-            echo $output;
+            $this->fmShow($trash, true);
         }
         /**
          * Affiche la liste des fichiers
          */
-        public function fmShow($trash = false)
+        public function fmShow($trash = false, bool $isAction = false)
         {
-            $fmTitlePage = $this->wiki->Format("====". str_replace('{tag}', $this->wiki->tag, _t('ATTACH_FILE_MANAGEMENT_TITLE')) . "====\n---");
-            if ($trash) {
-                //Avertissement
-                $fmTitlePage .= '<div class="prev_alert">'._t('ATTACH_FILE_MANAGEMENT_WARNING').'</div>';
-                //Pied du tableau
-                $url = $this->wiki->Link($this->wiki->tag, 'filemanager', null, _t('ATTACH_FILE_MANAGEMENT'));
-                $fmFootTable = '	<tfoot>' . "\n" .
-                    '		<tr>' . "\n" .
-                    '			<td colspan="6">' . $url . '</td>' . "\n";
-                $url = $this->wiki->Link($this->wiki->tag, 'filemanage', ['do' => 'emptytrash'], _t('ATTACH_EMPTY_TRASH'));
-                $fmFootTable .= '			<td>' . $url . '</td>' . "\n" .
-                    '		</tr>' . "\n" .
-                    '	</tfoot>' . "\n";
-            } else {
-                //pied du tableau
-                $url = '<a href="' . $this->wiki->href('filemanager', $this->wiki->GetPageTag(), 'do=trash') . '" title="'._t('ATTACH_TRASH').'">' . $this->attachConfig['fmTrash_symbole'] . "</a>";
-                $fmFootTable = '	<tfoot>' . "\n" .
-                    '		<tr>' . "\n" .
-                    '			<td colspan="6">' . $url . '</td>' . "\n" .
-                    '		</tr>' . "\n" .
-                    '	</tfoot>' . "\n";
-            }
-            //entete du tableau
-            $fmHeadTable = '	<thead>' . "\n" .
-                '		<tr>' . "\n" .
-                '			<td>&nbsp;</td>' . "\n" .
-                '			<td>'._t('ATTACH_FILENAME').'</td>' . "\n" .
-                '			<td>'._t('ATTACH_REAL_FILENAME').'</td>' . "\n" .
-                '			<td>'._t('ATTACH_SIZE').'</td>' . "\n" .
-                '			<td>'._t('ATTACH_PAGE_REVISION').'</td>' . "\n" .
-                '			<td>'._t('ATTACH_FILE_REVISION').'</td>' . "\n";
+            $method = ($this->wiki->GetMethod() != 'show' ? $this->wiki->GetMethod() : '');
 
-            if ($trash) {
-                $fmHeadTable .= '			<td>'._t('ATTACH_DELETION').'</td>' . "\n";
-            }
-            $fmHeadTable .= '		</tr>' . "\n" .
-                '	</thead>' . "\n";
-            //corps du tableau
             $files = $this->fmGetFiles($trash);
-            $files = $this->sortByNameRevFile($files);
-
-            $fmBodyTable = '	<tbody>' . "\n";
-            $i = 0;
-            foreach ($files as $file) {
-                $i++;
-                $color = ($i % 2 ? "tableFMCol1" : "tableFMCol2");
-                //lien de suppression
-                if ($trash) {
-                    $url = $this->wiki->href('filemanager', $this->wiki->GetPageTag(), 'do=erase&file=' . $file['realname']);
-                } else {
-                    $url = $this->wiki->href('filemanager', $this->wiki->GetPageTag(), 'do=del&file=' . $file['realname']);
-                }
-                $dellink = '<a href="' . $url . '" title="'._t('DELETE').'">' . $this->attachConfig['fmDelete_symbole'] . "</a>";
-                //lien de restauration
-                $restlink = '';
-                if ($trash) {
-                    $url = $this->wiki->href('filemanager', $this->wiki->GetPageTag(), 'do=restore&file=' . $file['realname']);
-                    $restlink = '<a href="' . $url . '" title="'._t('ATTACH_RESTORE').'">' . $this->attachConfig['fmRestore_symbole'] . "</a>";
-                }
-
-                //lien pour downloader le fichier
-                $url = $this->wiki->href("download", $this->wiki->GetPageTag(), "file=" . $file['realname']);
-                $dlLink = '<a href="' . $url . '">' . $file['name'] . '.' . $file['ext'] . "</a>";
-                $fmBodyTable .= '		<tr class="' . $color . '">' . "\n" .
-                '			<td>' . $dellink . ' ' . $restlink . '</td>' . "\n" .
-                '			<td>' . $dlLink . '</td>' . "\n" .
-                '			<td>' . $file['realname'] . '</td>' . "\n" .
-                '			<td>' . $file['size'] . '</td>' . "\n" .
-                '			<td>' . $this->parseDate($file['datepage']) . '</td>' . "\n" .
-                '			<td>' . $this->parseDate($file['dateupload']) . '</td>' . "\n";
-                if ($trash) {
-                    $fmBodyTable .= '			<td>' . $this->parseDate($file['trashdate']) . '</td>' . "\n";
-                }
-                $fmBodyTable .= '		</tr>' . "\n";
+            if (is_array($files)) {
+                $files = $this->sortByNameRevFile($files);
+                $files = array_map(function ($file) {
+                    return array_merge($file, [
+                        'parsedTrashDate' => isset($file['trashdate']) ? $this->parseDate($file['trashdate']) : '',
+                        'parsedDateUpload' => isset($file['dateupload']) ? $this->parseDate($file['dateupload']) : '',
+                        'readableSize' => isset($file['size']) ? $this->size_readable($file['size']) : '',
+                    ]);
+                }, $files);
             }
-            $fmBodyTable .= '	</tbody>' . "\n";
-            //pied de la page
-            $fmFooterPage = "---\n-----\n[[" . $this->wiki->tag . " " . _t('ATTACH_BACK_TO_PAGE') . " " . $this->wiki->tag . "]]\n";
-            //affichage
-            echo $fmTitlePage . "\n";
-            echo '<table class="tableFM" border="0" cellspacing="0">' . "\n" . $fmHeadTable . $fmFootTable . $fmBodyTable . '</table>' . "\n";
-            echo $this->wiki->Format($fmFooterPage);
+            echo $this->wiki->render($isAction
+                ? "@attach/attach-filemanager.twig"
+                : "@attach/attach-filemanager-handler.twig", [
+                'tag' => $this->wiki->tag,
+                'method' => ($this->wiki->GetMethod() != 'show' ? $this->wiki->GetMethod() : ''),
+                'trash' => $trash,
+                'files' => $files,
+            ]);
         }
         /**
          * Renvoie la liste des fichiers
@@ -1242,26 +1092,35 @@ if (!class_exists('attach')) {
 
         public function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $mode = "fit")
         {
-            if (!class_exists('imageTransform')) {
-                require_once 'tools/attach/libs/class.imagetransform.php';
+            if (empty($image_src) || empty($image_dest)) {
+                return false;
             }
-            $imgTrans = new imageTransform();
-            $imgTrans->sourceFile = $image_src;
-            $imgTrans->targetFile = $image_dest;
-            $imgTrans->resizeToWidth = $largeur;
-            $imgTrans->resizeToHeight = $hauteur;
+            $imgTrans = new Zebra_Image();
+            $imgTrans->auto_handle_exif_orientation = true;
+            $imgTrans->preserve_aspect_ratio = true;
+            $imgTrans->enlarge_smaller_images = true;
+            $imgTrans->preserve_time = true;
+            $imgTrans->handle_exif_orientation_tag = true;
+            $imgTrans->source_path = $image_src;
+            $imgTrans->target_path = $image_dest;
+            
             if ($mode == "crop") {
                 $wantedRatio = $largeur/$hauteur;
-                // get image info
-                $result = $imgTrans->create_image_from_source_file();
-                
-                // if operation was successful
-                if (!is_array($result)) {
+                // get image info except for webp (code copier from Zebra_Image)
+                if (
+                        !(
+                            version_compare(PHP_VERSION, '7.0.0') >= 0 &&
+                            version_compare(PHP_VERSION, '7.1.0') < 0 &&
+                            (
+                                $imgTrans->source_type = strtolower(substr($imgTrans->source_path, strrpos($imgTrans->source_path, '.') + 1))
+                            ) === 'webp'
+                        ) &&
+                        !list($sourceImageWidth, $sourceImageHeight, $sourceImageType) = @getimagesize($imgTrans->source_path)
+                    ) {
                     return false;
                 }
-                list($sourceImageIdentifier, $sourceImageWidth, $sourceImageHeight, $sourceImageType) = $result;
                 $imageRatio = $sourceImageWidth/$sourceImageHeight;
-
+    
                 if ($imageRatio != $wantedRatio) {
                     if ($imageRatio > $wantedRatio) {
                         // width too large, keep height
@@ -1279,20 +1138,16 @@ if (!class_exists('attach')) {
                         $tempFileName = stream_get_meta_data($tempFile)['uri'].".$ext";
                         unlink(stream_get_meta_data($tempFile)['uri']);
                     } while (file_exists($tempFileName));
-                    $imgTrans->targetFile = $tempFileName;
-                    $x0 = ($sourceImageWidth-$newWidth)/2;
-                    $y0 = ($sourceImageHeight-$newHeight)/2;
-                    $x1 = $x0 + $newWidth;
-                    $y1 = $y0 + $newHeight;
-                    if ($imgTrans->crop($x0, $y0, $x1, $y1)) {
-                        $imgTrans->sourceFile = $tempFileName;
+                    $imgTrans->target_path = $tempFileName;
+                    if ($imgTrans->resize(intval($newWidth), intval($newHeight), ZEBRA_IMAGE_CROP_CENTER, '#FFFFFF')) {
+                        $imgTrans->source_path = $tempFileName;
                     }
-                    $imgTrans->targetFile = $image_dest;
+                    $imgTrans->target_path = $image_dest;
                 }
             }
-            $result = $imgTrans->resize();
+            $result = $imgTrans->resize(intval($largeur), intval($hauteur), ZEBRA_IMAGE_NOT_BOXED, '#FFFFFF');
             
-            if ($mode == "crop" && !empty($tempFileName)) {
+            if ($mode == "crop" && !empty($tempFileName) && file_exists($tempFileName)) {
                 unlink($tempFileName);
             }
             if (!$result) {
@@ -1300,7 +1155,7 @@ if (!class_exists('attach')) {
                 return $imgTrans->error;
             // if there were no errors
             } else {
-                return $imgTrans->targetFile;
+                return $imgTrans->target_path;
             }
         }
 

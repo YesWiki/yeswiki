@@ -27,6 +27,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
       currentPage: 0,
       pagination: 10,
+      tokenForImages: null,
+      imagesToProcess: [],
+      processingImage: false,
       search: '',
       searchFormId: null, // wether to search for a particular form ID (only used when no form id is defined for the bazar list action)
       searchTimer: null // use ot debounce user input
@@ -235,31 +238,83 @@ document.addEventListener('DOMContentLoaded', function() {
         if (this.computedFilters[field]) values = values.filter(val => this.computedFilters[field].includes(val))
         return mapping[values[0]]
       },
-      urlImage(entry,fieldName,mode = "image") {
+      urlImageResizedOnError(entry,fieldName,width,height,mode,token) {
+        let node = event.target;
+        $(node).removeAttr('onerror');
+        if (entry[fieldName]){
+          let fileName = entry[fieldName];
+          if (!this.isExternalUrl(entry)){
+            // currently not supporting api for external images (anti-csrf token not generated)
+            if (this.tokenForImages === null){
+              this.tokenForImages = token;
+            }
+            this.imagesToProcess.push({
+              fileName: fileName,
+              width: width,
+              height: height,
+              mode: mode,
+              node: node
+            });
+            this.processNextImage();
+          } else {
+            let baseUrl = entry.url.slice(0,-entry.id_fiche.length).replace(/\?$/,"").replace(/\/$/,"");
+            $(node).prop('src',`${baseUrl}/files/${fileName}`);
+          }
+        }
+      },
+      urlImage(entry,fieldName,width,height,mode) {
         if (!entry[fieldName]){
           return null;
         }
+        let baseUrl = (this.isExternalUrl(entry))
+          ? entry.url.slice(0,-entry.id_fiche.length)
+          : wiki.baseUrl;
+        baseUrl = baseUrl.replace(/\?$/,"").replace(/\/$/,"");
         let fileName = entry[fieldName];
         let field = this.fieldInfo(fieldName);
-        if (field.regExp != undefined){
-          let regExpData = (mode == "image") ? field.regExp.imagePath : field.regExp.thumbnailPath;
-          let imageRegExp = Object.keys(regExpData)[0];
-          imageRegExp = imageRegExp.replace('{tag}',entry.id_fiche);
-          imageRegExp = new RegExp(imageRegExp);
-          if (imageRegExp.test(fileName)){
-            let imageReplacement = Object.values(regExpData)[0];
-            return fileName.replace(imageRegExp,imageReplacement);
-          }
-          regExpData = (mode == "image") ? field.regExp.oldImagePath : field.regExp.oldThumbnailPath;
-          imageRegExp = Object.keys(regExpData)[0];
-          imageRegExp = new RegExp(imageRegExp);
-          if (imageRegExp.test(fileName)){
-            let imageReplacement = Object.values(regExpData)[0];
-            return fileName.replace(imageRegExp,imageReplacement);
-          }
-          // TODO manage external-data and Image from other entry
+        let regExp = new RegExp(`^(${entry.id_fiche}_${field.propertyname}_.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`);
+        
+        if (regExp.test(fileName)){
+          return `${baseUrl}/cache/${fileName.replace(regExp,`$1_${mode == "fit" ? "vignette" : "cropped"}_${width}_${height}_$2_$3.$4`)}`;
         }
-        return `files/${fileName}`;
+        regExp = new RegExp(`^(${entry.id_fiche}_${field.propertyname}_.*)\\.([^.]+)$`);
+        if (regExp.test(fileName)){
+          return `${baseUrl}/cache/${fileName.replace(regExp,`$1_${mode == "fit" ? "vignette" : "cropped"}_${width}_${height}.$2`)}`;
+        }
+        // maybe from other entry
+        regExp = new RegExp(`^([A-Za-z0-9-_]+_${field.propertyname}_.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`);
+        if (regExp.test(fileName)){
+          return `${baseUrl}/cache/${fileName.replace(regExp,`$1_${mode == "fit" ? "vignette" : "cropped"}_${width}_${height}_$2_$3.$4`)}`;
+        }
+        // last possible format
+        regExp = new RegExp(`^(.*)\\.([^.]+)$`);
+        if (regExp.test(fileName)){
+          return `${baseUrl}/cache/${fileName.replace(regExp,`$1_${mode == "fit" ? "vignette" : "cropped"}_${width}_${height}.$2`)}`;
+        }
+        return `${baseUrl}/files/${fileName}`;
+      },
+      processNextImage(){
+        if (!this.processingImage && this.imagesToProcess.length > 0){
+          this.processingImage = true;
+          let newImageParams = this.imagesToProcess[0];
+          this.imagesToProcess = this.imagesToProcess.slice(1);
+          let bazarListDynamicRoot = this;
+          $.ajax({
+            url: wiki.url(`api/images/${newImageParams.fileName}/cache/${newImageParams.width}/${newImageParams.height}/${newImageParams.mode}`,{csrftoken:this.tokenForImages}),
+            method: 'get',
+            cache: false,
+            success: function (data){
+              $(newImageParams.node).prop('src',data.cachefilename);
+            },
+            complete: function (e){
+              if (e.responseJSON != undefined && e.responseJSON.newToken != undefined ){
+                bazarListDynamicRoot.tokenForImages = e.responseJSON.newToken;
+              }
+              bazarListDynamicRoot.processingImage = false;
+              bazarListDynamicRoot.processNextImage();
+            }
+          });
+        }
       }
     },
     mounted() {

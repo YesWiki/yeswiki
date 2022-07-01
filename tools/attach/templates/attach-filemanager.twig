@@ -1,0 +1,86 @@
+<ul id="fmtab{{ tag }}" class="nav nav-tabs">
+  <li {% if not trash %} class="active"{% endif %}>
+    <a 
+      href="{{ url({tag:tag,handler:method}) ~ '#fmtab' ~ tag }}" 
+      title="{{ _t('ATTACH_FILE_MANAGEMENT') }}">
+      <i class="fa fa-file icon-file"></i>&nbsp;{{ _t('ATTACH_FILE_MANAGEMENT') }}
+    </a>
+  </li>
+	<li {% if trash %} class="active"{% endif %}>
+    <a 
+      href="{{ url({tag:tag,handler:method,params:{do:'trash'}}) ~ '#fmtab' ~ tag }}"
+      title="{{ _t('ATTACH_TRASH') }}">
+      <i class="fa fa-trash icon-trash"></i>&nbsp;{{ _t('ATTACH_TRASH') }}</a>
+    </li>
+</ul>
+{% if files is empty %}
+  <div class="alert alert-info">
+    {{ _t('ATTACH_NO_ATTACHED_FILES')|replace({'{tag}':format(tag)|raw})|raw }}
+  </div>
+{% else %}
+  <table class="fmtable table table-condensed table-hover table-striped">
+    <thead>
+      <tr>
+        <td class="fmfilename">{{ _t('ATTACH_FILENAME') }}</td>
+        <td class="fmfilesize">{{ _t('ATTACH_SIZE') }}</td>
+        <td class="fmfiledate">{{ _t('ATTACH_DATE_OF_MODIFICATION') }}</td>
+        {% if trash %}<td class="fmfiletrashdate">{{ _t('ATTACH_DELETION') }}</td>{% endif %}
+        <td class="fmfileactions">&nbsp;</td>
+      </tr>
+    </thead>
+    <tbody>
+      {% for file in files %}
+        <tr class="{{ (loop.index % 2) == 1 ? "tableFMCol1" : "tableFMCol2"}}"> {# manage color #}
+          <td class="fmfilename">
+            <a 
+              class="filenamelink" 
+              href="{{ url({tag:tag,handler:"download",params:{file:file.realname}}) }}"
+              title="{{ _t('ATTACH_REAL_FILENAME')|replace({'{file}':file.realname}) ~ 
+                (
+                  trash 
+                  ? _t('ATTACH_DELETED_ON')|replace({'{date}':file.parsedTrashDate})
+                  : ''
+                )
+              }}"
+            >
+              {% if file.name|length < 26 %}{{ file.name }}{% else %}{{ file.name|slice(0,25) }}&hellip;{% endif %}.{{ file.ext }}
+            </a>
+          </td>
+          <td class="fmfilesize">{{ file.readableSize }}</td>
+          <td class="fmfiledate">{{ file.parsedDateUpload }}</td>
+          {% if trash %}<td class="fmfiletrashdate">{{ file.parsedTrashDate }}</td>{% endif %}
+          <td class="fmfileactions">
+            {% if trash %}
+              {# lien de restauration #}
+              <a 
+                class="btn btn-sm btn-primary"
+                href="{{ url({tag:tag,handler:method,params:{do:'restore',file:file.realname}}) }}"
+                title="{{ _t('ATTACH_RESTORE') }}"
+              >
+                <i class="fas fa-redo"></i>&nbsp;{{ _t('ATTACH_RESTORE') }}
+              </a>
+            {% endif %}
+            {# lien de suppression #}
+            <a
+              class="btn btn-sm btn-danger btn-icon"
+              href="{{ url({tag:tag,handler:method,params:{do: (trash ? 'erase' : 'del'),file:file.realname}}) }}"
+              title="{{ _t('DELETE') }}">
+              <i class="{{ trash ? 'fa fa-remove icon-remove' : 'fa fa-trash icon-trash' }} icon-white"></i>
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if trash %}
+    <div class="alert alert-danger">
+      <a
+        href="{{ url({tag:tag,handler:method,params:{do:'emptytrash'}}) }}"
+        class="btn btn-danger pull-right">
+        <i class="fa fa-remove icon-remove icon-white"></i>&nbsp;{{ _t('ATTACH_EMPTY_TRASH') }}
+      </a>
+      <strong>{{ _t('CAUTION') }} :</strong> {{ _t('ATTACH_EMPTY_TRASH_NOTICE') }}
+      <div class="clearfix"></div>
+    </div>
+  {% endif %}
+{% endif %}

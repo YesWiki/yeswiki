@@ -135,3 +135,12 @@ parameters:
     - attach-video-config:
       - default_video_service
       - default_peertube_instance
+
+services:
+  _defaults:
+    autowire: true
+    public: true
+
+  # Allows to use controllers as services
+  YesWiki\Attach\Controller\:
+    resource: 'controllers/*'

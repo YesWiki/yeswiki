@@ -555,6 +555,8 @@ class EntryManager
             $this->userManager->logout();
             $this->userManager->login($olduser, 1);
         }
+        
+        $this->cachedEntriestags[$data['id_fiche']] = true;
 
         // if sendmail has referenced email fields, send an email to their adresses
         $this->sendMailToNotifiedEmails($sendmail, $data);
@@ -563,8 +565,6 @@ class EntryManager
             // Envoi d'un mail aux administrateurs
             $this->mailer->notifyAdmins($data, true);
         }
-
-        $this->cachedEntriestags[$data['id_fiche']] = true;
 
         return $data;
     }
@@ -863,6 +863,7 @@ class EntryManager
         if (!empty($correspondance)) {
             $tabcorrespondances = getMultipleParameters($correspondance, ',', '=');
             if ($tabcorrespondances['fail'] != 1) {
+                unset($tabcorrespondances['fail']);
                 foreach ($tabcorrespondances as $key => $data) {
                     if (isset($key)) {
                         // not possible to init the Guard in the constructor because of circular reference problem

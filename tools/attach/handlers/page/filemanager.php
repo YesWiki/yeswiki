@@ -43,7 +43,7 @@ ob_start();
 ?>
 <div class="page">
 <?php
-if ($this->UserIsOwner()) {
+if ($this->UserIsOwner() || $this->UserIsAdmin()) {
     if (!class_exists('attach')) {
         include('tools/attach/libs/attach.lib.php');
     }

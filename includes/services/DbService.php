@@ -42,6 +42,8 @@ class DbService
                     mysqli_query($this->link, 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
                 }
             }
+        } elseif (in_array(php_sapi_name(), ['cli', 'cli-server',' phpdbg'], true)) {
+            throw new Exception(_t('DB_CONNECT_FAIL'));
         } else {
             exit(_t('DB_CONNECT_FAIL'));
         }

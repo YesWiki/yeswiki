@@ -2,6 +2,11 @@
 
 return [
 
+    // controllers/ApiController.php
+    // 'ATTACH_GET_URLIMAGE_CACHE_API_HELP' => "Fournit l'url du fichier de cache pour l'image voulue\n".
+    //     "Nécessite le passage du jeton anti-csrf !",
+    // 'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'Fichier image inexistant',
+
     // libs/attach.lib.php
     'ATTACH_ACTION_ATTACH' => 'Ação {{attach ...}}',
     'ATTACH_PARAM_DESC_REQUIRED' => 'parâmetro "desc" necessário para uma imagem',

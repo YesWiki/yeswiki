@@ -167,7 +167,7 @@ window.myapp = new Vue({
         this.selectedFormId = ''
         this.selectedActionId = ''
         // Bazar dynamic by default
-        if (this.currentGroupId == 'bazarliste') Vue.set(this.values, "dynamic", true)
+        if (this.isBazarListeAction) Vue.set(this.values, "dynamic", true)
       }
       this.updateActionParams()
       // If only one action available, select it
@@ -208,7 +208,7 @@ window.myapp = new Vue({
         var configValue = this.selectedAction.properties[propName].value || this.selectedAction.properties[propName].default
         if (configValue && !this.values[propName]) Vue.set(this.values, propName, configValue)
       }
-      if (this.selectedAction.properties && this.selectedAction.properties.template) this.values.template = this.selectedAction.properties.template.value
+      if (this.isBazarListeAction && this.selectedAction.properties && this.selectedAction.properties.template) this.values.template = this.selectedAction.properties.template.value
       setTimeout(() => this.updateActionParams(), 0);
     },
     updateActionParams() {

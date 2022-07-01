@@ -94,7 +94,7 @@ abstract class Package extends Files
 
     public function getFile()
     {
-        $this->downloadedFile = $this->download($this->address);
+        $this->downloadedFile = $this->download($this->address, null, 30);
 
         if (is_file($this->downloadedFile)) {
             return $this->downloadedFile;

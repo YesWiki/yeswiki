@@ -11,7 +11,7 @@
     </div>
     <div class="modal-body">
       <ul class="login-actions">
-        <?php echo $PageMenuUser; ?>
+        <?php echo $PageMenuUser ?? ''; ?>
         <li><a href="<?php echo $profileurl; ?>" title="<?php echo _t('LOGIN_MODIFY_USER'); ?>"><?php echo _t('LOGIN_MODIFY_USER'); ?></a></li>
       </ul>
     </div>
