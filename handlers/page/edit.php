@@ -139,8 +139,8 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
             $output .=
               $this->FormOpen(testUrlInIframe() ? 'editiframe' : 'edit').
               "<input type=\"hidden\" name=\"previous\" value=\"$previous\" />\n".
-              "<textarea id=\"body\" name=\"body\" style='display: none'>" .
-                htmlspecialchars($body, ENT_COMPAT, YW_CHARSET).
+              "<textarea id=\"body\" name=\"body\" style='display: none'>" .                
+                ((!empty($body))?htmlspecialchars($body, ENT_COMPAT, YW_CHARSET):"") .                
               "</textarea>".
               "<script type=\"text/javascript\">\n".
               "document.getElementById(\"body\").onkeydown=fKeyDown;\n".
