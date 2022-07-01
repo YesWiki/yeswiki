@@ -35,7 +35,7 @@ if (($this->UserIsOwner() || $this->UserIsAdmin())
         && isset($_GET['confirme'])
         && ($_GET['confirme'] === 'oui')
     ) {
-    $inputToken = filter_input(INPUT_POST, 'csrf-token', FILTER_SANITIZE_STRING);
+      $inputToken = !empty ($_POST['csrf-token'])?htmlspecialchars ($_POST['csrf-token']):null;
     if (!is_null($inputToken) && $inputToken !== false) {
         $tag = $this->GetPageTag();
         $token = new CsrfToken("handler\deletepage\\$tag", $inputToken);
