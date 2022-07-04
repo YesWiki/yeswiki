@@ -10,6 +10,7 @@ export default {
       const value = this.entry[this.prop] || ""
       switch (this.type) {
         case 'listedatedeb':
+          if (!value) return ""
           if (value.includes('T')) this.isDateTime = true
           return new Date(value)
         case 'liste':
