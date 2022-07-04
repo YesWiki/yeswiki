@@ -225,6 +225,7 @@ box-shadow: 2px 2px 15px 0px #444;
 }
 .background-image.fixed {
   background-attachment:fixed;
+  background-size: auto;
 }
 .background-image.center.full-width {
   background-position:center top;
