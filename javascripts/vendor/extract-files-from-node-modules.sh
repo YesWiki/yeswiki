@@ -93,3 +93,9 @@ mkdir -p javascripts/vendor/fullcalendar && \
 mkdir -p javascripts/vendor/moment && \
   cp -f node_modules/moment/min/moment-with-locales.min.js javascripts/vendor/moment && \
   cp -f node_modules/moment/min/moment-with-locales.min.js.map javascripts/vendor/moment
+
+# Docsify
+mkdir -p javascripts/vendor/docsify && \
+  cp -f node_modules/docsify/lib/docsify.min.js javascripts/vendor/docsify && \
+  cp -f node_modules/docsify/LICENSE javascripts/vendor/docsify && \
+  cp -f node_modules/docsify/README.md javascripts/vendor/docsify
