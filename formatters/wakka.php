@@ -65,6 +65,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
             $text = preg_replace_callback(
                 "/\%\%.*?\%\%|"
                 ."\"\".*?\"\"|"
+                ."`[^`]*`|"
                 ."\[\[.*?\]\]|"
                 .'\b[a-z0-9]+:\/\/[^ \t\n\r\f"\|\\\\\^\`\{\}\[\]><]+|'
                 .'([\*\#@£_\/])\\1|'// attention à la référence arriére \1, à changer s'il y a d'autres parenthèses capturantes
@@ -347,6 +348,11 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                     // comment
                     elseif (preg_match("/^\{\#(.*?)\#\}$/s", $thing, $matches)) {
                         return null;
+                    }
+                    // inline code
+                    elseif (preg_match("/^`(.*?)`$/s", $thing, $matches)) {
+                        $code = $matches[1];
+                        return "<code>{$wiki->Format(trim($code))}</code>";
                     }
                     // events / action
                     // process this regex before "indented text" regex to permits linebreak and space in action tag formatting
