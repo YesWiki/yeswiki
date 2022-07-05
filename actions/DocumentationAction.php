@@ -13,6 +13,7 @@ class DocumentationAction extends YesWikiAction
     public function run()
     {
         return $this->render('@core/documentation.twig', [
+            'isIframe' => (testUrlInIframe() == 'iframe'),
         ]) ;
     }
 }
