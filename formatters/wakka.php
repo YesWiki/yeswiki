@@ -65,13 +65,14 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
             $text = preg_replace_callback(
                 "/\%\%.*?\%\%|"
                 ."\"\".*?\"\"|"
-                ."_[^_]+_|" // mardown italic
-                ."`[^`]*`|"
+                ."(?!\\\\)_[^_{]+_|" // markdown italic
+                ."(?!\\\\)\\*[^*{]+\\*|" // markdown italic
+                ."(?!\\\\)`[^`]*(?!\\\\)`|" // inline code
                 ."\[\[.*?\]\]|"
-                ."(?!\!)\[[^\]]+\]\([^\)]+\)|" // markdown links
+                ."(?!\!\\\\)\[[^\]]+\]\([^\)]+\)|" // markdown links
                 ."\!\[[^\]]*\]\([^\)]+\)|" // markdown images
                 .'\b[a-z0-9]+:\/\/[^ \t\n\r\f"\|\\\\\^\`\{\}\[\]><]+|'
-                .'^\#{1,6} [^\\n\#]*\\n|' // markdown titles doit être avant la ligne suivante pour être prioritaire sur le ## ##
+                .'^(?!\\\\)\#{1,6} [^\\n\#]*\\n|' // markdown titles doit être avant la ligne suivante pour être prioritaire sur le ## ##
                 .'([\*\#@£_\/])\\1|'// attention à la référence arriére \1, à changer s'il y a d'autres parenthèses capturantes
                 .'[<>"]|'
                 .'&(?!(\#[xX][a-fA-F0-9]+|\#[0-9]+|[a-zA-Z0-9]+);)|'
