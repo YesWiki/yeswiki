@@ -200,6 +200,7 @@ if (!class_exists('qqFileUploader')) {
             ob_end_clean();
 
             if ($this->file->save($fullfilename)) {
+                chmod($fullfilename, 0664); // fix file permissions to be sure to be able to write on exotic servers configurations
                 if ($ext === "svg") {
                     $attach->sanitizeSVGfile($fullfilename);
                 }
