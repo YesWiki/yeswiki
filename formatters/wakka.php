@@ -65,14 +65,8 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
             $text = preg_replace_callback(
                 "/\%\%.*?\%\%|"
                 ."\"\".*?\"\"|"
-                ."(?!\\\\)_[^_{]+_|" // markdown italic
-                ."(?!\\\\)\\*[^*{]+\\*|" // markdown italic
-                ."(?!\\\\)`[^`]*(?!\\\\)`|" // inline code
                 ."\[\[.*?\]\]|"
-                ."(?!\!\\\\)\[[^\]]+\]\([^\)]+\)|" // markdown links
-                ."\!\[[^\]]*\]\([^\)]+\)|" // markdown images
                 .'\b[a-z0-9]+:\/\/[^ \t\n\r\f"\|\\\\\^\`\{\}\[\]><]+|'
-                .'^(?!\\\\)\#{1,6} [^\\n\#]*\\n|' // markdown titles doit être avant la ligne suivante pour être prioritaire sur le ## ##
                 .'([\*\#@£_\/])\\1|'// attention à la référence arriére \1, à changer s'il y a d'autres parenthèses capturantes
                 .'[<>"]|'
                 .'&(?!(\#[xX][a-fA-F0-9]+|\#[0-9]+|[a-zA-Z0-9]+);)|'
@@ -316,11 +310,8 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                     // forced links
                     // \S : any character that is not a whitespace character
                     // \s : any whitespace character
-                    elseif (preg_match("/^\[\[(\S*)(\s+(.+))?\]\]$|^(?!\!)\[([^\]]+)\]\(([^\)]+)\)$/um", $thing, $matches)) {
-                        if (!empty($matches[4]) && !empty($matches[5])) {
-                            $url = $matches[5];
-                            $text = $matches[4];
-                        } elseif (isset($matches[3])) {
+                    elseif (preg_match("/^\[\[(\S*)(\s+(.+))?\]\]$/um", $thing, $matches)) {
+                        if (isset($matches[3])) {
                             list(, $url, , $text) = $matches;
                         } else {
                             $url = $matches[1];
@@ -357,11 +348,6 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                     elseif (preg_match("/^\{\#(.*?)\#\}$/s", $thing, $matches)) {
                         return null;
                     }
-                    // inline code
-                    elseif (preg_match("/^`(.*?)`$/s", $thing, $matches)) {
-                        $code = $matches[1];
-                        return "<code>{$wiki->Format(trim($code), "code")}</code>";
-                    }
                     // events / action
                     // process this regex before "indented text" regex to permits linebreak and space in action tag formatting
                     elseif (preg_match("/^\{\{(.*?)\}\}$/s", $thing, $matches)) {
@@ -390,19 +376,6 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                         //       Which is a stupid thing to do anyway! HAW HAW! Ahem.
                         $this->br = 0;
                         return "<hr />\n";
-                    }
-                    // markdown titles compatibility
-                    elseif (preg_match('/^(\#{1,6}) (.*)$/s', $thing, $matches)) {
-                        $nb_hash_tags = strlen($matches[1]);
-                        return $this->titleHeader($nb_hash_tags) . $matches[2] .$this->titleHeader($nb_hash_tags);
-                    }
-                    // markdown italic compatibility
-                    elseif (preg_match('/^_(.*)_$/s', $thing, $matches)) {
-                        return $this->inLineTag('i') . $matches[1] .$this->inLineTag('i');
-                    }
-                    // markdown images compatibility
-                    elseif (preg_match('/^\!\[([^\]]*)\]\(([^\) ]+)(?: "(.*)")?\)$/sm', $thing, $matches)) {
-                        return "<img class=\"img-responsive\" src=\"{$matches[2]}\" alt=\"{$matches[1]}\"".(!empty($matches[3]) ? " title=\"".htmlspecialchars($matches[3])."\"" : "")."/>";
                     }
                     // if we reach this point, it must have been an accident.
                     return htmlspecialchars($thing, ENT_COMPAT, YW_CHARSET);
