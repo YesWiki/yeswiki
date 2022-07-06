@@ -148,6 +148,14 @@
       theme: 'flat',
       map: {
         defaultTileLayer: 'wikimedia',
+        tileLayers: [
+          {
+            attribution: "<a href=\"https://wikimediafoundation.org/wiki/Maps_Terms_of_Use\">Wikimedia</a> | Map data © <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap contributors</a>",
+            maxZoom: 19,
+            name: "wikimedia",
+            url: "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
+          }
+        ]
       },
       colors: {
         primary: "#d8604c",
@@ -166,7 +174,6 @@
         width: 300 + (parseInt(param['filtercolsize']) - 3) * 30
       },
       features: {
-        layers: {},
         mapdefaultview: {}      
       }
     }
