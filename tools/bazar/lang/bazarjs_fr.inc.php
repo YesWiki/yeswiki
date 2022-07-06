@@ -211,6 +211,9 @@ return [
     'BAZ_BOOKMARKLET_HINT' => "Ce champ nécessite deux autres champs pour fonctionner :{\\n}".
         "  - un champ url (par défaut 'bf_url'){\\n}".
         "  - un champ texte long (par défaut 'bf_description')",
+    'BAZ_FORM_EDIT_BOOKMARKLET_HINT_DEFAULT_VALUE' => "Glisser-déposer le bouton dans votre barre de navigateur",
+    'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_LABEL' => "Texte affiché",
+    'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_VALUE' => "Glisser-déposer le bouton dans votre barre de favoris",
 
     // condition checking field
     "BAZ_FORM_CONDITIONSCHEKING_HINT" => "La condition doit respecter le format suivant (sans les `):{\\n}".

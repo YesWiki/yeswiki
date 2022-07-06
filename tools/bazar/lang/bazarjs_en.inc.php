@@ -211,6 +211,9 @@ return [
     'BAZ_BOOKMARKLET_HINT' => "This field needs to fields to work:{\\n}".
         "  - url field (default: 'bf_url'){\\n}".
         "  - long text field (default: 'bf_description')",
+    'BAZ_FORM_EDIT_BOOKMARKLET_HINT_DEFAULT_VALUE' => "Click and move the button to your navigator's bar",
+    'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_LABEL' => "Displayed text",
+    'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_VALUE' => "Click and move the button to your favorites's bar",
 
     // condition checking field
     "BAZ_FORM_CONDITIONSCHEKING_HINT" => "The condition must match the following format (without `):{\\n}".
