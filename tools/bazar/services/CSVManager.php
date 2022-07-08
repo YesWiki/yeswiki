@@ -121,20 +121,17 @@ class CSVManager
     {
         if (!empty($data)) {
             
-            // create a file pointer connected to a tmp file
-            $handle = tmpfile();
-            $path = stream_get_meta_data($handle)['uri'];
+            // output up to 50MB is kept in memory, if it becomes bigger it will automatically be written to a temporary file
+            $csv = fopen('php://temp/maxmemory:'. (50*1024*1024), 'r+');
 
             foreach ($data as $line) {
                 // output the column headings
-                fputcsv($handle, $line);
+                fputcsv($csv, $line);
             }
+            rewind($csv);
             
             // read file
-            fseek($handle, 0);
-            $csv = (fread($handle, filesize($path)));
-            // delete file
-            fclose($handle);
+            $csv =  stream_get_contents($csv);
         }
 
         return $csv ?? null;
