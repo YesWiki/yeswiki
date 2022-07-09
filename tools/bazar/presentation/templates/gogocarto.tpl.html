@@ -147,15 +147,7 @@
       language: 'fr',
       theme: 'flat',
       map: {
-        defaultTileLayer: 'wikimedia',
-        tileLayers: [
-          {
-            attribution: "<a href=\"https://wikimediafoundation.org/wiki/Maps_Terms_of_Use\">Wikimedia</a> | Map data © <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap contributors</a>",
-            maxZoom: 19,
-            name: "wikimedia",
-            url: "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
-          }
-        ]
+        defaultTileLayer: 'Stadia Bright',
       },
       colors: {
         primary: "#d8604c",
@@ -173,9 +165,9 @@
       menu: {
         width: 300 + (parseInt(param['filtercolsize']) - 3) * 30
       },
-      features: {
-        mapdefaultview: {}      
-      }
+      // features: {
+      //   mapdefaultview: {}
+      // }
     }
     if (param['search'] == 'true' || param['search'] === true) {
         gogoConf.features.searchCategories = {};
