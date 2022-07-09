@@ -696,6 +696,20 @@ actions:
         hint: 500px, 100%...
         type: text
         default: 100%
+      tilelayer:
+        label: _t(AB_bazarcarto_provider_label)
+        required: true
+        type: list
+        value: Stadia Bright
+        options:
+          - Stadia Bright
+          - Stadia Smooth
+          - cartodb
+          - osmfr
+          - lyrk
+          - stamen
+          - stamenWaterColor
+
   bazartableau:
     label: _t(AB_bazartableau_label)
     description: _t(AB_bazartableau_description)

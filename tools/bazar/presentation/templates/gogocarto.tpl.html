@@ -147,7 +147,7 @@
       language: 'fr',
       theme: 'flat',
       map: {
-        defaultTileLayer: 'Stadia Bright',
+        defaultTileLayer: param['tilelayer'] || 'Stadia Bright',
       },
       colors: {
         primary: "#d8604c",
@@ -165,9 +165,7 @@
       menu: {
         width: 300 + (parseInt(param['filtercolsize']) - 3) * 30
       },
-      // features: {
-      //   mapdefaultview: {}
-      // }
+      features: {}
     }
     if (param['search'] == 'true' || param['search'] === true) {
         gogoConf.features.searchCategories = {};
