@@ -122,16 +122,19 @@ class CSVManager
         if (!empty($data)) {
             
             // output up to 50MB is kept in memory, if it becomes bigger it will automatically be written to a temporary file
-            $csv = fopen('php://temp/maxmemory:'. (50*1024*1024), 'r+');
+            $csvResource = fopen('php://temp/maxmemory:'. (50*1024*1024), 'r+');
 
             foreach ($data as $line) {
                 // output the column headings
-                fputcsv($csv, $line);
+                fputcsv($csvResource, $line);
             }
-            rewind($csv);
+            rewind($csvResource);
             
             // read file
-            $csv =  stream_get_contents($csv);
+            $csv =  stream_get_contents($csvResource);
+
+            // close file to release tmp file and leave system to ulink it
+            fclose($csvResource);
         }
 
         return $csv ?? null;
