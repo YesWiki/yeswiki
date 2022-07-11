@@ -388,7 +388,7 @@ Vous trouverez un formulaire permettant
 {{end elem=\"col\"}}
 {{end elem=\"grid\"}}
 
-{{section class=\"full-width white\" bgcolor=\"var(--secondary-color-1)\" height=\"250\"}}
+{{section class=\"full-width white\" bgcolor=\"var(--secondary-color-1)\" height=\"25\"}}
 	======Insertion de pad ou de vidéo======
 	Il est possible d\'incruster dans son wiki des pads, des vidéos, des lignes du temps...
 {{end elem=\"section\"}}
@@ -481,6 +481,12 @@ Pour en savoir plus, voyez la documentation sur https://yeswiki.net/?Documentati
 
 /* :root { */
 
+/* couleur des titres */
+/* --title-h1-color:var(--neutral-color); */
+/* --title-h2-color:var(--primary-color); */
+/* --title-h3-color:var(--secondary-color-1); */
+/* --title-h4-color:var(--secondary-color-2); */
+ 
 /* couleur pour les messages positifs par defaut vert */
 /* --success-color: #3cab3b; */
 
@@ -531,7 +537,7 @@ Pour en savoir plus, voyez la documentation sur https://yeswiki.net/?Documentati
 
 /* --footer-title-color: var(--main-text-color); */
 
-/* --footer-border-top: 3px solid var(--neutral-soft-color); */
+/* --footer-border: 3px solid var(--neutral-soft-color); */
 
 /* --btn-border: none; */
 
@@ -543,7 +549,8 @@ Pour en savoir plus, voyez la documentation sur https://yeswiki.net/?Documentati
 ('PageFooter',  now(), '{{section class=\"text-center\"}}
 {{yeswikiversion}}
 {{end elem=\"section\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageHeader',  now(), '{{section bgcolor=\"var(--neutral-color)\" class=\"white text-center cover\" file=\"bandeau.png\" height=\"250\" }}
+('PageHeader',  now(), '{{section bgcolor=\"var(--neutral-color)\" class=\"white text-center cover\" file=\"bandeau.png\" }}
+
 ======Description de mon wiki======
 Rendez-vous dans la roue crantée / gestion du site pour modifier ce bandeau
 
