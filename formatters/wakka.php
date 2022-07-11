@@ -72,7 +72,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                 ."(?!\!\\\\)\[[^\]]+\]\([^\)]+\)|" // markdown links
                 ."\!\[[^\]]*\]\([^\)]+\)|" // markdown images
                 .'\b[a-z0-9]+:\/\/[^ \t\n\r\f"\|\\\\\^\`\{\}\[\]><]+|'
-                .'^(?!\\\\)\#{1,6} [^\\n\#]*\\n|' // markdown titles doit être avant la ligne suivante pour être prioritaire sur le ## ##
+                .'(?:^|(?<=\>""))(?!\\\\)\#{1,6} [^\\n\#]*\\n|' // markdown titles doit être avant la ligne suivante pour être prioritaire sur le ## ##
                 .'([\*\#@£_\/])\\1|'// attention à la référence arriére \1, à changer s'il y a d'autres parenthèses capturantes
                 .'[<>"]|'
                 .'&(?!(\#[xX][a-fA-F0-9]+|\#[0-9]+|[a-zA-Z0-9]+);)|'
@@ -392,7 +392,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                         return "<hr />\n";
                     }
                     // markdown titles compatibility
-                    elseif (preg_match('/^(\#{1,6}) (.*)$/s', $thing, $matches)) {
+                    elseif (preg_match('/(?:^|(?<=\>""))(\#{1,6}) (.*)$/s', $thing, $matches)) {
                         $nb_hash_tags = strlen($matches[1]);
                         return $this->titleHeader($nb_hash_tags) . $matches[2] .$this->titleHeader($nb_hash_tags);
                     }

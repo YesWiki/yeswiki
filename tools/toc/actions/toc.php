@@ -43,43 +43,43 @@ if (!function_exists("translate2toc")) {
         $output = '';
 
         while ($cur_text) {
-            if (! preg_match("/(={2,6})(.*)/ms", $cur_text, $matches)) {
+            if (! preg_match("/(?:(={2,6})|^(?!\\\\)(\#{1,5}) (?=[^\\n\#]*\\n))(.*)/ms", $cur_text, $matches)) {
                 break;
             }
 
-            $cur_text=$matches[2];
+            $cur_text=$matches[3];
             $class="";
             $endmatch="";
-            if ($matches[1] == "======") {
+            if ($matches[1] == "======" || $matches[2] == "#") {
                 $l1++;
                 $class="toc1";
                 $toc="TOC_1_".(2*$l1 - 1);
                 $l1++;
-                $endmatch="/(.*)======(.*?)/msU";
-            } elseif ($matches[1] == "=====") {
+                $endmatch=empty($matches[2]) ? "/(.*)======(.*?)/msU" : "/(.*)\n(.*?)/msU";
+            } elseif ($matches[1] == "=====" || $matches[2] == "##") {
                 $l2++;
                 $class="toc2";
                 $toc="TOC_2_".(2*$l2 - 1);
                 $l2++;
-                $endmatch="/(.*)=====(.*?)/msU";
-            } elseif ($matches[1] == "====") {
+                $endmatch=empty($matches[2]) ? "/(.*)=====(.*?)/msU" : "/(.*)\n(.*?)/msU";
+            } elseif ($matches[1] == "====" || $matches[2] == "###") {
                 $l3++;
                 $class="toc3";
                 $toc="TOC_3_".(2*$l3 - 1);
                 $l3++;
-                $endmatch="/(.*)====(.*?)/msU";
-            } elseif ($matches[1] == "===") {
+                $endmatch=empty($matches[2]) ? "/(.*)====(.*?)/msU" : "/(.*)\n(.*?)/msU";
+            } elseif ($matches[1] == "==="  || $matches[2] == "####") {
                 $l4++;
                 $class="toc4";
                 $toc="TOC_4_".(2*$l4 - 1);
                 $l4++;
-                $endmatch="/(.*)===(.*?)/msU";
-            } elseif ($matches[1] == "==") {
+                $endmatch=empty($matches[2]) ? "/(.*)===(.*?)/msU" : "/(.*)\n(.*?)/msU";
+            } elseif ($matches[1] == "==" || $matches[2] == "#####") {
                 $l5++;
                 $class="toc5";
                 $toc="TOC_5_".(2*$l5 - 1);
                 $l5++;
-                $endmatch="/(.*)==(.*?)/msU";
+                $endmatch=empty($matches[2]) ? "/(.*)==(.*?)/msU" : "/(.*)\n(.*?)/msU";
             } else {
                 $output .= "????\n";
             }
@@ -138,7 +138,7 @@ $script = "$(document).ready(function(){
 $this->AddJavascript($script);
 
     // on vérifie qu'il y est au moins un titre pour faire la liste
-    if (preg_match("/(={2,6})(.*)/ms", $toc_body, $matches)) {
+    if (preg_match("/(={2,6})(.*)|^(?!\\\\)\#{1,5} [^\\n\#]*\\n/ms", $toc_body, $matches)) {
         echo    "<ul class=\"unstyled\">\n".
                     translate2toc(preg_replace("/\"\".*?\"\"/ms", "", $toc_body)).
                 "</ul>\n";
