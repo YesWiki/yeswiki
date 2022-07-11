@@ -700,7 +700,7 @@ actions:
         label: _t(AB_bazarcarto_provider_label)
         required: true
         type: list
-        value: Stadia Bright
+        default: cartodb
         options:
           - Stadia Bright
           - Stadia Smooth
