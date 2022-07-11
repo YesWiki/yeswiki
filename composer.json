@@ -11,9 +11,9 @@
         "@composer install --working-dir ./tools/autoupdate/",
         "@php -r \"array_map('unlink', glob('vendor/enshrined/svg-sanitize/tests/data/*.svg'));\"",
         "@php -r \"array_map('unlink', glob('vendor/stefangabos/zebra_image/examples/images/*'));\"",
-        "@php -r \"rmdir('vendor/stefangabos/zebra_image/examples/images/');\"",
+        "@php -r \"if (is_dir('vendor/stefangabos/zebra_image/examples/images/')){rmdir('vendor/stefangabos/zebra_image/examples/images/');}\"",
         "@php -r \"array_map('unlink', glob('vendor/stefangabos/zebra_image/examples/*'));\"",
-        "@php -r \"rmdir('vendor/stefangabos/zebra_image/examples');\""
+        "@php -r \"if (is_dir('vendor/stefangabos/zebra_image/examples')){rmdir('vendor/stefangabos/zebra_image/examples');}\""
       ],
       "post-update-cmd": [
         "@composer update --working-dir ./tools/autoupdate/"
