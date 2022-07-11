@@ -409,7 +409,7 @@ actions:
         advanced: true
         label: _t(AB_bazarcarto_height_label)
         type: text
-        default: 600px
+        default: 300px
       entrydisplay:
         label: _t(AB_bazarcarto_entrydisplay_label)
         type: list
@@ -689,7 +689,7 @@ actions:
       height:
         label: _t(AB_bazargogocarto_height_label)
         type: text
-        default: 600px
+        default: 300px
       width:
         advanced: true
         label: _t(AB_bazargogocarto_width_label)
