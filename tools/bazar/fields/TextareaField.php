@@ -241,8 +241,13 @@ class TextareaField extends BazarField
                     'user' => '',
                 ];
                 $newFileName = $attach->GetFullFilename(true);
-                rename($previousFileName, $newFileName);
-                $text =  str_replace($matches[0][$key], $matches[1][$key].$matches[4][$key].$matches[5][$key], $text);
+                $dirRealPath = realpath(dirname($previousFileName));
+                if (rename(
+                    $dirRealPath . DIRECTORY_SEPARATOR . basename($previousFileName),
+                    $dirRealPath . DIRECTORY_SEPARATOR . basename($newFileName)
+                )) {
+                    $text =  str_replace($matches[0][$key], $matches[1][$key].$matches[4][$key].$matches[5][$key], $text);
+                }
                 unset($attach);
                 $wiki->tag = $previousTag;
                 $wiki->page = $previousPage;
