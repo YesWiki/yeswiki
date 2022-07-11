@@ -755,19 +755,18 @@ Texte colonne 3
 
 # Bazar forms
 INSERT INTO `{{prefix}}nature` (`bn_id_nature`, `bn_label_nature`, `bn_description`, `bn_condition`, `bn_sem_context`, `bn_sem_type`, `bn_sem_use_template`, `bn_template`, `bn_ce_i18n`, `bn_only_one_entry`, `bn_only_one_entry_message`) VALUES
-('4', 'Ressources', 'Un formulaire pour créer un espace de ressources partagées. ', '', '', '', '1', 'texte***bf_titre***Nom de la ressource***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
-lien_internet***bf_url***Site web***40***255*** *** ***url***0*** *** *** * *** * *** *** *** ***
-checkbox***ListeType***Type de ressource*** *** *** *** *** ***1*** *** *** * *** * *** *** *** ***
-textelong***bf_description***Description***5***5*** *** ***wiki***0*** *** *** * *** * *** *** *** ***
-texte***bf_auteur***Auteur***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***
-image***bf_image***Image de présentation (facultatif)***140***140***600***600***right***0*** *** *** * *** * *** *** *** ***
+('2', 'Agenda', '', '', '1', '1', '1', 'texte***bf_titre***Nom de l\'événement***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
+textelong***bf_description***Description***40***5*** *** ***wiki***0*** *** *** * *** * *** *** *** ***
+listedatedeb***bf_date_debut_evenement***Début de l\'événement*** *** ***today*** *** ***1*** *** *** * *** * *** *** *** ***
+listedatefin***bf_date_fin_evenement***Fin de l\'événement*** *** ***today*** *** ***1*** *** *** * *** * *** *** *** ***
+lien_internet***bf_site_internet***Adresse url*** *** *** *** *** ***0*** *** *** * *** * *** *** *** ***
+image***bf_image***Image (facultatif)***140***140***600***600***right***0*** ***Votre image doit être au format .jpg ou .gif ou .png*** * *** * *** *** *** ***
 fichier***fichier***Documents***20000000*** *** *** ***file***0*** *** *** * *** * *** *** *** ***
+texte***bf_adresse***Adresse***50***50*** *** ***text***0*** *** *** * *** * *** *** *** ***
+texte***bf_code_postal***Code postal***8***8*** *** ***text***0*** *** *** * *** * *** *** *** ***
+texte***bf_ville***Ville***50***80*** *** ***text***0*** *** *** * *** * *** *** *** ***
+map***bf_latitude***bf_longitude*** *** ***
 labelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***
-', 'fr-FR','N',''),
-('3', 'Blog-actu', '', '', '', '', '1', 'image***bf_image***Image***400***300***1200***900***right***1*** *** *** * *** * *** *** *** ***
-texte***bf_titre***Titre***80***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
-textelong***bf_chapeau***Résumé***40***3*** *** ***wiki***1*** *** *** * *** * *** *** *** ***
-textelong***bf_description***Billet***40***9*** *** ***wiki***1*** *** *** * *** * *** *** *** ***
 ', 'fr-FR','N',''),
 ('1', 'Annuaire', '', '', '', '', '1', 'titre***{{bf_nom}} {{bf_prenom}}***Titre Automatique***
 texte***bf_nom***Nom***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
@@ -784,17 +783,18 @@ texte***bf_ville***Ville***50***80*** *** ***text***0*** *** *** * *** * *** ***
 map***bf_latitude***bf_longitude*** *** ***
 labelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***
 ', 'fr-FR','N',''),
-('2', 'Agenda', '', '', '1', '1', '1', 'texte***bf_titre***Nom de l\'événement***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
-textelong***bf_description***Description***40***5*** *** ***wiki***0*** *** *** * *** * *** *** *** ***
-listedatedeb***bf_date_debut_evenement***Début de l\'événement*** *** ***today*** *** ***1*** *** *** * *** * *** *** *** ***
-listedatefin***bf_date_fin_evenement***Fin de l\'événement*** *** ***today*** *** ***1*** *** *** * *** * *** *** *** ***
-lien_internet***bf_site_internet***Adresse url*** *** *** *** *** ***0*** *** *** * *** * *** *** *** ***
-image***bf_image***Image (facultatif)***140***140***600***600***right***0*** ***Votre image doit être au format .jpg ou .gif ou .png*** * *** * *** *** *** ***
+('3', 'Blog-actu', '', '', '', '', '1', 'image***bf_image***Image***400***300***1200***900***right***1*** *** *** * *** * *** *** *** ***
+texte***bf_titre***Titre***80***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
+textelong***bf_chapeau***Résumé***40***3*** *** ***wiki***1*** *** *** * *** * *** *** *** ***
+textelong***bf_description***Billet***40***9*** *** ***wiki***1*** *** *** * *** * *** *** *** ***
+', 'fr-FR','N',''),
+('4', 'Ressources', 'Un formulaire pour créer un espace de ressources partagées. ', '', '', '', '1', 'texte***bf_titre***Nom de la ressource***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
+lien_internet***bf_url***Site web***40***255*** *** ***url***0*** *** *** * *** * *** *** *** ***
+checkbox***ListeType***Type de ressource*** *** *** *** *** ***1*** *** *** * *** * *** *** *** ***
+textelong***bf_description***Description***5***5*** *** ***wiki***0*** *** *** * *** * *** *** *** ***
+texte***bf_auteur***Auteur***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***
+image***bf_image***Image de présentation (facultatif)***140***140***600***600***right***0*** *** *** * *** * *** *** *** ***
 fichier***fichier***Documents***20000000*** *** *** ***file***0*** *** *** * *** * *** *** *** ***
-texte***bf_adresse***Adresse***50***50*** *** ***text***0*** *** *** * *** * *** *** *** ***
-texte***bf_code_postal***Code postal***8***8*** *** ***text***0*** *** *** * *** * *** *** *** ***
-texte***bf_ville***Ville***50***80*** *** ***text***0*** *** *** * *** * *** *** *** ***
-map***bf_latitude***bf_longitude*** *** ***
 labelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***
 ', 'fr-FR','N','');
 # end Bazar forms
