@@ -26,7 +26,7 @@ CSRF (Cross-site request forgery) is a method of web attack in one click describ
    ...
    $csrfTokenManager = $this->wiki->services->get(CsrfTokenManager::class);
    // replace 'tokenNameInForm' by the used name in form's input in following line
-   $token = new CsrfToken('tokenId', filter_input(INPUT_POST,'tokenNameInForm', FILTER_SANITIZE_STRING));
+   $token = new CsrfToken('tokenId', htmlspecialchars(filter_input(INPUT_POST,'tokenNameInForm', FILTER_UNSAFE_RAW)));
 
    if ($csrfTokenManager->isTokenValid($token)) {
        ...

@@ -36,11 +36,13 @@ class CsrfTokenController extends YesWikiController
         }
         switch ($inputType) {
             case 'GET':
-                $inputToken = filter_input(INPUT_GET, $inputKey, FILTER_SANITIZE_STRING);
+                $inputToken = filter_input(INPUT_GET, $inputKey, FILTER_UNSAFE_RAW);
+                $inputToken = in_array($inputToken,[false,null],true) ? $inputToken : htmlspecialchars(strip_tags($inputToken));
                 break;
 
             case 'POST':
-                $inputToken = filter_input(INPUT_POST, $inputKey, FILTER_SANITIZE_STRING);
+                $inputToken = filter_input(INPUT_POST, $inputKey, FILTER_UNSAFE_RAW);
+                $inputToken = in_array($inputToken,[false,null],true) ? $inputToken : htmlspecialchars(strip_tags($inputToken));
                 break;
             
             default:
