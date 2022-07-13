@@ -1,5 +1,6 @@
 import Panel from './components/Panel.js'
 import EntryField from './components/EntryField.js'
+import PopupEntryField from './components/PopupEntryField.js'
 import SpinnerLoader from './components/SpinnerLoader.js'
 import ModalEntry from './components/ModalEntry.js'
 import BazarSearch from './components/BazarSearch.js'
@@ -10,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>{
   new Vue({
     el: domElement,
-    components: { Panel, ModalEntry, SpinnerLoader, EntryField },
+    components: { Panel, ModalEntry, SpinnerLoader, EntryField, PopupEntryField },
     mixins: [ BazarSearch ],
     data: {
       mounted: false, // when vue get initialized
@@ -258,7 +259,13 @@ document.addEventListener('DOMContentLoaded', function() {
             this.processNextImage();
           } else {
             let baseUrl = entry.url.slice(0,-entry.id_fiche.length).replace(/\?$/,"").replace(/\/$/,"");
-            $(node).prop('src',`${baseUrl}/files/${fileName}`);
+            let previousUrl = $(node).prop('src');
+            let newUrl = `${baseUrl}/files/${fileName}`;
+            if (newUrl != previousUrl){
+              $(`img[src="${previousUrl}"]`).each(function(){
+                $(this).prop('src',newUrl);
+              });
+            }
           }
         }
       },
@@ -304,7 +311,12 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'get',
             cache: false,
             success: function (data){
-              $(newImageParams.node).prop('src',data.cachefilename);
+              let previousUrl = $(newImageParams.node).prop('src');
+              if (data.cachefilename != previousUrl){
+                $(`img[src="${previousUrl}"]`).each(function(){
+                  $(this).prop('src',data.cachefilename);
+                });
+              }
             },
             complete: function (e){
               if (e.responseJSON != undefined && e.responseJSON.newToken != undefined ){

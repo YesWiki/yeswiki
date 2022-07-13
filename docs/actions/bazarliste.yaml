@@ -421,6 +421,49 @@ actions:
           sidebar: _t(AB_bazarcarto_entrydisplay_option_sidebar)
           modal: _t(AB_bazarcarto_entrydisplay_option_modal)
           newtab: _t(AB_bazarcarto_entrydisplay_option_newtab)
+          popup: _t(AB_bazarcarto_entrydisplay_option_popup)
+      popuptemplate: 
+        label: _t(AB_bazarcarto_popuptemplate_label)
+        type: list
+        value: '_map_popup_html.twig'
+        advanced: true
+        options:
+          '_map_popup_html.twig': _t(AB_bazarcarto_popuptemplate_entry_from_html)
+          '_map_popup_from_data.twig': _t(AB_bazarcarto_popuptemplate_entry_from_data)
+          'custom': _t(AB_bazarcarto_popuptemplate_custom)
+        showif: 
+          dynamic: true
+          entrydisplay: 'popup'
+      popupcustomtemplate:
+        label: _t(AB_bazarcarto_popupcustomtemplate_label)
+        type: text
+        value: 'custom_map_popup.twig'
+        hint: _t(AB_bazarcarto_popupcustomtemplate_hint)
+        advanced: true
+        showif: 
+          dynamic: true
+          entrydisplay: 'popup'
+          popuptemplate: 'custom'
+      popupselectedfields:
+        type: form-field
+        label: _t(AB_bazarliste_popupselectedfields_label)
+        multiple: true
+        advanced: true
+        default: ""
+        showif: 
+          dynamic: true
+          entrydisplay: 'popup'
+          popuptemplate: '_map_popup_html.twig|custom'
+      necessary_fields:
+        type: form-field
+        label: _t(AB_bazarliste_popupneededfields_label)
+        multiple: true
+        advanced: true
+        value: "bf_titre,imagebf_image"
+        showif: 
+          dynamic: true
+          entrydisplay: 'popup'
+          popuptemplate: '_map_popup_from_data.twig|custom'
       displayfields:
         type: correspondance
         showif: dynamic

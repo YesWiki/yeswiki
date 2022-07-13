@@ -1,4 +1,8 @@
+
 import LeafletMarkerCluster from './LeafletMarkerCluster.js'
+
+// allow usage of wiki in templates
+Vue.prototype.wiki = wiki;
 
 Vue.component('BazarMap', {
   props: [ 'params' ],
@@ -16,7 +20,7 @@ Vue.component('BazarMap', {
       bounds: null,
       layers: {}
     }
-  },    
+  },
   computed: {
     entries() {
       return this.$root.entriesToDisplay.filter(entry => entry.bf_latitude && entry.bf_longitude)
@@ -111,6 +115,7 @@ Vue.component('BazarMap', {
             className: `bazar-marker ${this.params.smallmarker}`,
             iconSize: JSON.parse(this.params.iconSize),
             iconAnchor: JSON.parse(this.params.iconAnchor),
+            popupAnchor: JSON.parse(this.params.popupAnchor),
             html: `
               <div class="entry-name">
                 <span style="background-color: ${entry.color}">
@@ -155,15 +160,95 @@ Vue.component('BazarMap', {
     isDirectLinkDisplay: function (){
       return (this.params.entrydisplay != undefined && this.params.entrydisplay == 'direct');
     },
+    openPopup(entry) {
+      if (entry.marker == undefined) {
+        return false;
+      }
+      if (this.$scopedSlots.popupentrywithhtmlrender != undefined){
+        if (entry.html_render == undefined) {
+          let url = "";
+          let bazarMap = this;
+          let excludeFields = "";
+          if (this.params.popupselectedfields && this.params.popupselectedfields.length > 0){
+            let necessaryFieldsArray = this.params.popupselectedfields.split(',');
+            let keys = Object.keys(this.$root.formFields);
+            for (let index = 0; index < keys.length; index++) {
+              const key = keys[index];
+              if (['id_fiche','id_typeannonce','url','color','icon','visual','marker'].indexOf(key) == -1 &&
+                  necessaryFieldsArray.indexOf(key) == -1) {
+                excludeFields = excludeFields.length == 0 ? key : excludeFields + ',' + key;
+              }
+            }
+          }
+          if (this.$root.isExternalUrl(entry)){
+            url = entry.url.replace(new RegExp(`${entry.id_fiche}$`),`api/entries/html/${entry.id_fiche}`);
+            if (excludeFields.length > 0){
+              url = url + (url.match('?') ? '&' : '?') + 
+              `excludeFields=${excludeFields}`;
+            }
+          } else {
+            url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
+              ...{
+                fields: 'html_output',
+              },
+              ...(
+                (excludeFields.length > 0)
+                ? {
+                  excludeFields:excludeFields
+                }
+                : {}
+              )
+            });
+          }
+          $.getJSON(url, function(data) {
+            Vue.set(entry, 'html_render', (data[entry.id_fiche] && data[entry.id_fiche].html_output) ? data[entry.id_fiche].html_output : 'error')
+            bazarMap.$nextTick(function () {
+              /**
+               * Triggers when the component is ready
+               * */
+               bazarMap.definePopupContent(entry);
+            });
+          })
+        } else {
+          this.$nextTick(function () {
+            /**
+             * Triggers when the component is ready
+             * */
+             this.definePopupContent(entry);
+          });
+        }
+      } else if (this.$scopedSlots.popupentry != undefined){
+        this.$nextTick(function () {
+          /**
+           * Triggers when the component is ready
+           * */
+           this.definePopupContent(entry);
+        });
+      }
+    },
+    definePopupContent: function(entry){
+      let renderedHtml = (this.$scopedSlots.popupentrywithhtml != undefined)
+        ? $(this.$el).find('.popupentry-container.with-html-render > div').first().html()
+        : $(this.$el).find('.popupentry-container > div').first().html();
+      if (entry.marker.popup == undefined){
+        if (renderedHtml != undefined && renderedHtml.length != 0){
+          entry.marker.bindPopup(renderedHtml,{keepInView:true}).openPopup();
+        }
+      } else {
+        entry.marker.popup.openPopup();
+      }
+    }
   },
   watch: {
     selectedEntry: function (newVal, oldVal) {
-      if (oldVal) oldVal.marker._icon.classList.remove('selected')
+      if (oldVal && oldVal.marker && oldVal.marker._icon) oldVal.marker._icon.classList.remove('selected')
       if (this.selectedEntry) {
         if (this.params.entrydisplay == 'newtab') {
           this.$root.openEntry(this.selectedEntry)
         } else if (this.params.entrydisplay == 'sidebar') {
           this.$root.getEntryRender(this.selectedEntry)
+        } else if (this.params.entrydisplay == 'popup') {
+          this.openPopup(this.selectedEntry)
         }
         
         this.$nextTick(function() {
@@ -210,6 +295,13 @@ Vue.component('BazarMap', {
       <div v-if="selectedEntry && this.params.entrydisplay == 'sidebar'" class="entry-container">
         <div class="btn-close" @click="selectedEntry = null"><i class="fa fa-times"></i></div>
         <div v-html="selectedEntry.html_render"></div>
+      </div>`+
+      // popup content
+      `<div v-if="selectedEntry && this.params.entrydisplay == 'popup'" class="popupentry-container with-html-render">
+        <slot name="popupentrywithhtmlrender" v-bind="{entry:selectedEntry}"></slot>
+      </div>
+      <div v-if="selectedEntry && this.params.entrydisplay == 'popup'" class="popupentry-container">
+        <slot name="popupentry" v-bind="{entry:selectedEntry}"></slot>
       </div>
     </div>
   `
