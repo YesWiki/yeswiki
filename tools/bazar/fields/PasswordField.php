@@ -22,8 +22,13 @@ class PasswordField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
+        return $this->formatValuesBeforeSaveIfEditable($entry, false);
+    }
+
+    public function formatValuesBeforeSaveIfEditable($entry, bool $isCreation = false)
+    {
         $value = $this->getValue($entry);
-        if ($this->canEdit($entry)) {
+        if ($this->canEdit($entry, $isCreation)) {
             if (!empty($value)) {
                 // If a new password has been set, encode it
                 return [$this->propertyName => md5($value),

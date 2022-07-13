@@ -88,7 +88,7 @@ class UpdateHandler__ extends YesWikiHandler
         $updated = false;
         foreach ($form['prepared'] as $field) {
             if ($field instanceof TextareaField && !empty($entry[$field->getPropertyName()])) {
-                $newValue = $field->formatValuesBeforeSave($entry);
+                $newValue = $field->formatValuesBeforeSaveIfEditable($entry);
                 if (isset($newValue[$field->getPropertyName()])) {
                     $oldValue = json_encode($entry[$field->getPropertyName()]);
                     $newValue = json_encode($newValue[$field->getPropertyName()]);
