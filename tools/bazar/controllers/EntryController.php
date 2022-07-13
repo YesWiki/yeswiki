@@ -318,7 +318,7 @@ class EntryController extends YesWikiController
     private function inputsAreContainingUpload(array $renderedInputs): bool
     {
         return !empty(array_filter($renderedInputs, function ($renderedInput) {
-            return strpos($renderedInput, "<!-- include_javascript('tools/attach/libs/fileuploader.js') -->") !== false;
+            return !empty($renderedInput) && (strpos($renderedInput, "<!-- include_javascript('tools/attach/libs/fileuploader.js') -->") !== false);
         }));
     }
 
