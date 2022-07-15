@@ -1072,7 +1072,7 @@ if (!class_exists('attach')) {
                 }
             } else {
                 $pathInfo = pathinfo($fullFilename);
-                $file_vignette = "{$file['path']}/{$pathInfo['filename']}_vignette_{$width}_{$height}.{$pathInfo['extension']}";
+                $file_vignette = "{$file['path']}/{$pathInfo['filename']}_vignette_{$width}_{$height}".(isset($pathInfo['extension']) ? ".{$pathInfo['extension']}": '');
             }
 
             return $file_vignette;
