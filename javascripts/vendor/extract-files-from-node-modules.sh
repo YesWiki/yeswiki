@@ -17,7 +17,9 @@ mkdir -p styles/vendor/bootstrap/css && \
 mkdir -p styles/vendor/bootstrap && cp -f -r node_modules/bootstrap/dist/fonts styles/vendor/bootstrap
 
 #  Vue
-mkdir -p javascripts/vendor/vue && cp -f node_modules/vue/dist/{vue.js,vue.min.js} javascripts/vendor/vue
+mkdir -p javascripts/vendor/vue && \
+  cp -f node_modules/@vue/compat/dist/vue.global.js javascripts/vendor/vue/vue.js && \
+  cp -f node_modules/@vue/compat/dist/vue.global.prod.js javascripts/vendor/vue/vue.min.js
 # Vue Select
 mkdir -p javascripts/vendor/vue-select && cp -f node_modules/vue-select/dist/vue-select.js javascripts/vendor/vue-select/vue-select.min.js
 mkdir -p styles/vendor/vue-select && cp -f node_modules/vue-select/dist/vue-select.css styles/vendor/vue-select
