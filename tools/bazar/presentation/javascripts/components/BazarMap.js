@@ -254,33 +254,41 @@ window.bazarVueApp.component('BazarMap', {
         } else if (this.params.entrydisplay == 'popup') {
           this.openPopup(this.selectedEntry)
         }
+        let bazarMap = this;
         
         nextTick(function() {
           bazarMap.selectedEntry.marker._icon.classList.add('selected')
         })
       }
     },
-    params() {
-      this.center = [this.params.latitude, this.params.longitude]
+    params: {
+      handler() {
+        this.center = [this.params.latitude, this.params.longitude]
+      },
+      deep: true
     },
-    entries(newVal, oldVal) {
-      let newIds = newVal.map(e => e.id_fiche)
-      let oldIds = oldVal.map(e => e.id_fiche)
-      if (!this.arraysEqual(newIds, oldIds)) {
-        nextTick(function() {
-          bazarMap.entries.forEach(entry => bazarMap.createMarker(entry))
-          let entries = bazarMap.entries.filter(entry => entry.marker) // remove entries without marker (prob error creating it)
-          if (bazarMap.params.cluster) {
-            bazarMap.$refs.cluster.addLayers(entries.map(entry => entry.marker))
-          } else {
-            oldVal.filter(entry => entry.marker).forEach(entry => entry.marker.remove())
-            entries.forEach(entry => {
-              try { entry.marker.addTo(bazarMap.map) }
-              catch(error) { console.error(`Entry ${entry.id_fiche} has invalid geolocation`, error) }
-            })
-          }
-        })
-      }
+    entries: {
+      handler(newVal, oldVal) {
+        let newIds = newVal.map(e => e.id_fiche)
+        let oldIds = oldVal.map(e => e.id_fiche)
+        if (!this.arraysEqual(newIds, oldIds)) {
+          let bazarMap = this;
+          nextTick(function() {
+            bazarMap.entries.forEach(entry => bazarMap.createMarker(entry))
+            let entries = bazarMap.entries.filter(entry => entry.marker) // remove entries without marker (prob error creating it)
+            if (bazarMap.params.cluster) {
+              bazarMap.$refs.cluster.addLayers(entries.map(entry => entry.marker))
+            } else {
+              oldVal.filter(entry => entry.marker).forEach(entry => entry.marker.remove())
+              entries.forEach(entry => {
+                try { entry.marker.addTo(bazarMap.map) }
+                catch(error) { console.error(`Entry ${entry.id_fiche} has invalid geolocation`, error) }
+              })
+            }
+          })
+        }
+      },
+      deep: true
     }
   },
   template: `

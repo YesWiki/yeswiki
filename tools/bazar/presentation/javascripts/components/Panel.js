@@ -13,6 +13,7 @@ export default {
       default: true
     },
   },
+  emits: ['update:collapsed'],
   data() {
     return {
       internalCollapsed: true // value to work internally, name should not conflict with prop

@@ -1,6 +1,7 @@
 // Text/Number/Color/slider
 export default {
   props: [ 'value', 'config', 'selectedForm' ],
+  emits: ['input'],
   data() {
     return {
       fields: []

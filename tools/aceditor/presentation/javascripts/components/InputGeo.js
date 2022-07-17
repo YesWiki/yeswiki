@@ -1,6 +1,7 @@
 // ext/Number/Color/slider
 export default {
   props: [ 'value', 'config', 'values' ],
+  emits: ['input'],
   data() {
     return {
       defaultLatitude: 46.22763,

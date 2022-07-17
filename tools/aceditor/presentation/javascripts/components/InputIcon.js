@@ -1,5 +1,6 @@
 export default {
   props: [ 'value', 'config' ],
+  emits: ['input'],
   mounted() {
     $(this.$refs.input).iconpicker(pickerConfig).on('iconpickerSelected', (event) => {
       // handle this event with jquery cause vue does not support camelCase event

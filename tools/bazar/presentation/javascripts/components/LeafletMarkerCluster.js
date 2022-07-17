@@ -9,6 +9,7 @@ const { nextTick } = Vue
 
 export default {
   props: props,
+  emits: ['ready'],
   data() {
     return {
       ready: false,

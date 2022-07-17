@@ -337,7 +337,7 @@ window.bazarVueApp = createApp({
     }
   },
   mounted() {
-    $(this.$el).on(
+    $(this.$el.parentNode).on(
       "dblclick",
       function (e) {
         return false;

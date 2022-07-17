@@ -2,6 +2,7 @@ import InputHelper from './InputHelper.js'
 
 export default {
   props: [ 'name', 'value', 'config', 'selectedForm', 'values' ],
+  emits: ['input'],
   mixins: [ InputHelper ],
   computed: {
     optionsList() {
