@@ -24,6 +24,11 @@
   dependencies:
     "@types/geojson" "*"
 
+"@vue-leaflet/vue-leaflet@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@vue-leaflet/vue-leaflet/-/vue-leaflet-0.6.1.tgz#d731a5d2256d049e345f58330616180191d88b12"
+  integrity sha512-/sm0bdrdftXh5nSGEPsoKrJI1D/GtKiEsBo9X/TA2yu4lYTDcaem6U4t1Ea5CoLleiZRCNUrZr9PG/xHdUPXYA==
+
 "@vue/compat@^3.2.37":
   version "3.2.37"
   resolved "https://registry.yarnpkg.com/@vue/compat/-/compat-3.2.37.tgz#bd2062a2be88d06046311d5c058aefb17a1d438a"
@@ -505,11 +510,6 @@ vue-select@^3.13.0:
   version "3.18.3"
   resolved "https://registry.yarnpkg.com/vue-select/-/vue-select-3.18.3.tgz#31f188d7181a4a86d07b937303c457efe863c4bc"
   integrity sha512-nKmwxEDO4RRoZ6lWkkVE2bpgne7IJSRzSh1pIawLI7dJLZbtJuSgA0xGaLrT0pUp+JYHBDul242PwOBDHi28vg==
-
-vue2-leaflet@^2.7.1:
-  version "2.7.1"
-  resolved "https://registry.yarnpkg.com/vue2-leaflet/-/vue2-leaflet-2.7.1.tgz#2f95c287621bf778f10804c88223877f5c049257"
-  integrity sha512-K7HOlzRhjt3Z7+IvTqEavIBRbmCwSZSCVUlz9u4Rc+3xGCLsHKz4TAL4diAmfHElCQdPPVdZdJk8wPUt2fu6WQ==
 
 vue@^3.2.37:
   version "3.2.37"

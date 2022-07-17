@@ -8,10 +8,10 @@ Vue.prototype.wiki = wiki;
 Vue.component('BazarMap', {
   props: [ 'params' ],
   components: {
-    'l-map': window.Vue2Leaflet.LMap,
-    'l-tile-layer': window.Vue2Leaflet.LTileLayer,
-    'l-marker': window.Vue2Leaflet.LMarker,
-    'l-icon': window.Vue2Leaflet.LIcon,
+    'l-map': window['vue-leaflet'].LMap,
+    'l-tile-layer': window['vue-leaflet'].LTileLayer,
+    'l-marker': window['vue-leaflet'].LMarker,
+    'l-icon': window['vue-leaflet'].LIcon,
     'l-marker-cluster': LeafletMarkerCluster,
     'spinner-loader': SpinnerLoader
   },

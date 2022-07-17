@@ -24,7 +24,9 @@ mkdir -p javascripts/vendor/vue && \
 mkdir -p javascripts/vendor/vue-select && cp -f node_modules/vue-select/dist/vue-select.js javascripts/vendor/vue-select/vue-select.min.js
 mkdir -p styles/vendor/vue-select && cp -f node_modules/vue-select/dist/vue-select.css styles/vendor/vue-select
 # Vue Leaflet
-mkdir -p javascripts/vendor/vue2-leaflet && cp -f node_modules/vue2-leaflet/dist/vue2-leaflet.min.js javascripts/vendor/vue2-leaflet/vue2-leaflet.js
+mkdir -p javascripts/vendor/vue-leaflet && \
+  cp -f node_modules/@vue-leaflet/vue-leaflet/dist/vue-leaflet.umd.js javascripts/vendor/vue-leaflet/vue-leaflet.js && \
+  cp -f node_modules/@vue-leaflet/vue-leaflet/dist/vue-leaflet.umd.js.map javascripts/vendor/vue-leaflet
 
 # Leaflet
 mkdir -p javascripts/vendor/leaflet && \
