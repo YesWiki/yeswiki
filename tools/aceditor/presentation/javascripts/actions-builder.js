@@ -29,40 +29,39 @@ const ACTIONS_BACKWARD_COMPATIBILITY = {
 }
 console.log("actionsBuilderData", actionsBuilderData) // data variable has been defined in actions-builder.tpl.html
 
-// Declare this one globally because we use it everywhere
-Vue.component('input-hint', InputHint)
-Vue.component('addon-icon', AddonIcon)
-Vue.component('v-select', VueSelect.VueSelect);
+// New for VueJs3
+const { createApp } = Vue
 
 // Handle oldbrowser not supporting ES6
 if (!('noModule' in HTMLScriptElement.prototype)) {
   $('#actions-builder-app').empty().append('<p>Désolé, votre Navigateur est trop vieux pour utiliser cette fonctionalité.. Mettez le à jour ! ou <a href="https://www.mozilla.org/fr/firefox/new/">installez Firefox</a> </p>')
 } else {
 
-window.myapp = new Vue({
-  el: "#actions-builder-app",
+window.myapp = createApp({
   components: { InputPageList, InputText, InputCheckbox, InputList, InputIcon, InputColor, 
                 InputFormField, InputHidden, InputDivider,
                 InputFacette, InputReaction, InputIconMapping, InputColorMapping, InputGeo, InputClass, InputCorrespondance,
                 InputColumnsWidth,
                 WikiCodeInput, PreviewAction },
   mixins: [ InputHelper ],
-  data: {
-    // Available Actions
-    actionGroups: actionsBuilderData.action_groups,
-    currentGroupId: '',
-    selectedActionId: "",
-    // Some Actions require to select a Form (like bazar actions)
-    formIds: actionsBuilderData.forms, // list of this YesWiki Forms
-    selectedFormId: "",
-    selectedForm: null, // used only when useFormField is present
-    loadedForms: {}, // we retrive Form by ajax, and store it in case we need to get it again
-    // Values
-    values: {},
-    actionParams: {},
-    // Aceditor
-    editor: null,
-    displayAdvancedParams: false,
+  data(){
+    return {
+      // Available Actions
+      actionGroups: actionsBuilderData.action_groups,
+      currentGroupId: '',
+      selectedActionId: "",
+      // Some Actions require to select a Form (like bazar actions)
+      formIds: actionsBuilderData.forms, // list of this YesWiki Forms
+      selectedFormId: "",
+      selectedForm: null, // used only when useFormField is present
+      loadedForms: {}, // we retrive Form by ajax, and store it in case we need to get it again
+      // Values
+      values: {},
+      actionParams: {},
+      // Aceditor
+      editor: null,
+      displayAdvancedParams: false,
+    }
   },
   computed: {
     actionGroup() { return this.currentGroupId ? this.actionGroups[this.currentGroupId] : {} },
@@ -270,3 +269,10 @@ window.myapp = new Vue({
   }
 });
 }
+
+// Declare this one globally because we use it everywhere
+window.myapp.component('input-hint', InputHint)
+window.myapp.component('addon-icon', AddonIcon)
+window.myapp.component('v-select', VueSelect.VueSelect)
+
+window.myapp.mount("#actions-builder-app")
