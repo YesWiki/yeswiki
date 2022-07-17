@@ -27,7 +27,9 @@ mkdir -p styles/vendor/vue-select && cp -f node_modules/vue-select/dist/vue-sele
 mkdir -p javascripts/vendor/vue2-leaflet && cp -f node_modules/vue2-leaflet/dist/vue2-leaflet.min.js javascripts/vendor/vue2-leaflet/vue2-leaflet.js
 
 # Leaflet
-mkdir -p javascripts/vendor/leaflet && cp -f node_modules/leaflet/dist/leaflet.js javascripts/vendor/leaflet/leaflet.min.js
+mkdir -p javascripts/vendor/leaflet && \
+  cp -f node_modules/leaflet/dist/leaflet.js javascripts/vendor/leaflet/leaflet.min.js && \
+  cp -f node_modules/leaflet/dist/leaflet.js.map javascripts/vendor/leaflet/
 mkdir -p styles/vendor/leaflet && cp -f node_modules/leaflet/dist/leaflet.css styles/vendor/leaflet
 cp -f -r node_modules/leaflet/dist/images styles/vendor/leaflet
 # Leaflet Markercluster
