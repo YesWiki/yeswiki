@@ -53,7 +53,7 @@ export default {
     <div class="multi-input-container" :class="name">
       <div class="inline-form" v-for="element in elements">
         <template v-for="(property, propName) in config.subproperties">
-          <component :is="componentIdFrom(property)" v-model="element[propName]"
+          <component :is="componentIdFrom(property)" :value="element[propName]"
                      v-show="checkVisibility(property)" :name="propName" :values="values"
                      :config="property" :selected-form="selectedForm">
           </component>
