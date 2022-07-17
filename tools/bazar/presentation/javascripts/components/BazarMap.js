@@ -2,10 +2,12 @@
 import LeafletMarkerCluster from './LeafletMarkerCluster.js'
 import SpinnerLoader from './SpinnerLoader.js'
 
+// New for VueJs3
+const { nextTick } = Vue
 // allow usage of wiki in templates
 Vue.prototype.wiki = wiki;
 
-Vue.component('BazarMap', {
+window.bazarVueApp.component('BazarMap', {
   props: [ 'params' ],
   components: {
     'l-map': window['vue-leaflet'].LMap,
@@ -166,10 +168,10 @@ Vue.component('BazarMap', {
       if (entry.marker == undefined) {
         return false;
       }
+      let bazarMap = this;
       if (this.$scopedSlots.popupentrywithhtmlrender != undefined){
         if (entry.html_render == undefined) {
           let url = "";
-          let bazarMap = this;
           let excludeFields = "";
           if (this.params.popupselectedfields && this.params.popupselectedfields.length > 0){
             let necessaryFieldsArray = this.params.popupselectedfields.split(',');
@@ -204,7 +206,7 @@ Vue.component('BazarMap', {
           }
           $.getJSON(url, function(data) {
             Vue.set(entry, 'html_render', (data[entry.id_fiche] && data[entry.id_fiche].html_output) ? data[entry.id_fiche].html_output : 'error')
-            bazarMap.$nextTick(function () {
+            nextTick(function () {
               /**
                * Triggers when the component is ready
                * */
@@ -212,19 +214,19 @@ Vue.component('BazarMap', {
             });
           })
         } else {
-          this.$nextTick(function () {
+          nextTick(function () {
             /**
              * Triggers when the component is ready
              * */
-             this.definePopupContent(entry);
+             bazarMap.definePopupContent(entry);
           });
         }
       } else if (this.$scopedSlots.popupentry != undefined){
-        this.$nextTick(function () {
+        nextTick(function () {
           /**
            * Triggers when the component is ready
            * */
-           this.definePopupContent(entry);
+           bazarMap.definePopupContent(entry);
         });
       }
     },
@@ -253,8 +255,8 @@ Vue.component('BazarMap', {
           this.openPopup(this.selectedEntry)
         }
         
-        this.$nextTick(function() {
-          this.selectedEntry.marker._icon.classList.add('selected')
+        nextTick(function() {
+          bazarMap.selectedEntry.marker._icon.classList.add('selected')
         })
       }
     },
@@ -265,15 +267,15 @@ Vue.component('BazarMap', {
       let newIds = newVal.map(e => e.id_fiche)
       let oldIds = oldVal.map(e => e.id_fiche)
       if (!this.arraysEqual(newIds, oldIds)) {
-        this.$nextTick(function() {
-          this.entries.forEach(entry => this.createMarker(entry))
-          let entries = this.entries.filter(entry => entry.marker) // remove entries without marker (prob error creating it)
-          if (this.params.cluster) {
-            this.$refs.cluster.addLayers(entries.map(entry => entry.marker))
+        nextTick(function() {
+          bazarMap.entries.forEach(entry => bazarMap.createMarker(entry))
+          let entries = bazarMap.entries.filter(entry => entry.marker) // remove entries without marker (prob error creating it)
+          if (bazarMap.params.cluster) {
+            bazarMap.$refs.cluster.addLayers(entries.map(entry => entry.marker))
           } else {
             oldVal.filter(entry => entry.marker).forEach(entry => entry.marker.remove())
             entries.forEach(entry => {
-              try { entry.marker.addTo(this.map) }
+              try { entry.marker.addTo(bazarMap.map) }
               catch(error) { console.error(`Entry ${entry.id_fiche} has invalid geolocation`, error) }
             })
           }

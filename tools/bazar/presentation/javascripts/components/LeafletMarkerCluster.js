@@ -5,6 +5,8 @@ const props = {
   }
 }
 
+const { nextTick } = Vue
+
 export default {
   props: props,
   data() {
@@ -40,8 +42,9 @@ export default {
     this.ready = true;
     this.parentContainer = window.Vue2Leaflet.findRealParent(this.$parent);
     this.parentContainer.addLayer(this);
-    this.$nextTick(() => {
-      this.$emit('ready', this.mapObject);
+    let leafletMarkerCluster = this;
+    nextTick(() => {
+      leafletMarkerCluster.$emit('ready', leafletMarkerCluster.mapObject);
     });
   },
   beforeDestroy() {
