@@ -54,7 +54,6 @@ $config['yeswiki_release'] = YESWIKI_RELEASE;
 // default var
 $config['htmlPurifierActivated'] = true; // TODO ectoplasme remove this line
 $config['default_comment_acl_updated'] = true; // TODO ectoplasme remove this line
-$config['favorites_activated'] = true; // TODO ectoplasme remove this line
 // list of tableNames
 $tablesNames = ['pages','links','referrers','nature','triples','users','acls'];
 
