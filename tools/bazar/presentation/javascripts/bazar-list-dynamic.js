@@ -389,6 +389,7 @@ window.bazarVueApp = createApp({
 });
 // allow usage of wiki in templates
 window.bazarVueApp.config.globalProperties.wiki = wiki;
+window.vue = Vue // add Vue globally to allow vue-leaflet to use it
 
 // Wait for Dom to be loaded, so we can load some Vue component like BazarpMap in order
 // to be used inside index-dynamic
