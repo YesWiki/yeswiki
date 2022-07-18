@@ -289,7 +289,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      * @throws Exception if wiki is in hibernation
      * @param string $newHashedPassword
      */
-    public function upgradePassword(PasswordAuthenticatedUserInterface|UserInterface $user, string $newHashedPassword)
+    public function upgradePassword($user, string $newHashedPassword)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));

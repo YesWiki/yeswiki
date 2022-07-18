@@ -75,12 +75,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
 
     /* ~~~~~~~~~~~~~~~~~~ implement ArrayAccess ~~~~~~~~~~~~~~~~~~ */
 
-    public function offsetExists(mixed $offset): bool
+    public function offsetExists($offset): bool
     {
         return (in_array($offset, self::PROPS_LIST));
     }
 
-    public function offsetGet(mixed $offset): mixed
+    public function offsetGet($offset)
     {
         if (!$this->offsetExists($offset)) {
             throw new UserNotExistingOffset("Not existing $offset in User!");
@@ -88,7 +88,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
         return $this->properties[$offset];
     }
 
-    public function offsetSet(mixed $offset, mixed $value): void
+    public function offsetSet($offset, $value): void
     {
         if (!$this->offsetExists($offset)) {
             throw new UserNotAuthorizedToSetOffset();
@@ -96,7 +96,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
         $this->properties[$offset] = $value;
     }
 
-    public function offsetUnset(mixed $offset): void
+    public function offsetUnset($offset): void
     {
         throw new UserNotAuthorizedToSetOffset("unsetting offset is not allowed for User!");
     }

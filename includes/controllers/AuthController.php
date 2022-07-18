@@ -7,9 +7,35 @@ use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Core\Service\UserManager;
-use YesWiki\Core\Trait\LimitationsTrait;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
+
+// this trait should be into includes/traits/LimitationsTrait folder
+// with namespace namespace YesWiki\Core\Trait; but it is not working for old php version previous php 8
+
+trait LimitationsTrait
+{
+    /**
+     * init and store limitations in limitations array
+     * @param string $parameterName
+     * @param string $limitationKey
+     * @param mixed $type
+     * @param mixed $default
+     * @param string $errorMessageKey
+     */
+    private function initLimitationHelper(string $parameterName, string $limitationKey, $type, $default, string $errorMessageKey)
+    {
+        $this->limitations[$limitationKey] = $default;
+        if ($this->params->has($parameterName)) {
+            $parameter = $this->params->get($parameterName);
+            if (!filter_var($parameter, FILTER_VALIDATE_INT)) {
+                trigger_error(_t($errorMessageKey));
+            } else {
+                $this->limitations[$limitationKey] = $parameter;
+            }
+        }
+    }
+}
 
 class AuthController extends YesWikiController
 {

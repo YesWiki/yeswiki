@@ -13,13 +13,12 @@ use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
-use YesWiki\Core\Trait\LimitationsTrait;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
 
 class UserController extends YesWikiController
 {
-    use LimitationsTrait;
+    use LimitationsTrait; // can be used here because included via AuthController
 
     public const DEFAULT_NAME_MAX_LENGTH = 80;
     public const DEFAULT_EMAIL_MAX_LENGTH = 254;
