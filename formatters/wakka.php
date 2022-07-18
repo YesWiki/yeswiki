@@ -360,7 +360,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                     // inline code
                     elseif (preg_match("/^`(.*?)`$/s", $thing, $matches)) {
                         $code = $matches[1];
-                        return "<code>{$wiki->Format(trim($code), "code")}</code>";
+                        return "<code>".htmlspecialchars(trim($code), ENT_COMPAT, YW_CHARSET)."</code>";
                     }
                     // events / action
                     // process this regex before "indented text" regex to permits linebreak and space in action tag formatting
