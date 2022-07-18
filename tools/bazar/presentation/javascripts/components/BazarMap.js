@@ -1,5 +1,6 @@
 
 import LeafletMarkerCluster from './LeafletMarkerCluster.js'
+import SpinnerLoader from './SpinnerLoader.js'
 
 // allow usage of wiki in templates
 Vue.prototype.wiki = wiki;
@@ -11,7 +12,8 @@ Vue.component('BazarMap', {
     'l-tile-layer': window.Vue2Leaflet.LTileLayer,
     'l-marker': window.Vue2Leaflet.LMarker,
     'l-icon': window.Vue2Leaflet.LIcon,
-    'l-marker-cluster': LeafletMarkerCluster
+    'l-marker-cluster': LeafletMarkerCluster,
+    'spinner-loader': SpinnerLoader
   },
   data() {
     return {
@@ -303,6 +305,8 @@ Vue.component('BazarMap', {
       <div v-if="selectedEntry && this.params.entrydisplay == 'popup'" class="popupentry-container">
         <slot name="popupentry" v-bind="{entry:selectedEntry}"></slot>
       </div>
+
+      <spinner-loader v-if="this.$root.isLoading || !this.$root.ready" class="overlay super-overlay"></spinner-loader>
     </div>
   `
 })
