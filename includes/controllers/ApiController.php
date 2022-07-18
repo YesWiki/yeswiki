@@ -768,12 +768,14 @@ class ApiController extends YesWikiController
                 Response::HTTP_BAD_REQUEST
             );
         } else {
-            $property = filter_input($method, 'property', FILTER_SANITIZE_STRING);
+            $property = filter_input($method, 'property', FILTER_UNSAFE_RAW);
+            $property = ($property === false) ? "" : htmlspecialchars(strip_tags($property));
             if (empty($property)) {
                 $property = null;
             }
 
-            $username = filter_input($method, 'user', FILTER_SANITIZE_STRING);
+            $username = filter_input($method, 'user', FILTER_UNSAFE_RAW);
+            $username = ($username === false) ? "" : htmlspecialchars(strip_tags($username));
             if (empty($username)) {
                 if (!$this->wiki->UserIsAdmin()) {
                     $username = $this->getService(UserManager::class)->getLoggedUser()['name'];

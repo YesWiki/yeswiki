@@ -173,7 +173,8 @@ class LoginAction extends YesWikiAction
         }
         try {
             if (!empty($_POST["name"])) {
-                $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
+                $name = filter_input(INPUT_POST, 'name', FILTER_UNSAFE_RAW);
+                $name = ($name === false) ? "" : htmlspecialchars(strip_tags($name));
                 if (empty($name)) {
                     throw new LoginException(_t('LOGIN_WRONG_USER'));
                 }
@@ -187,7 +188,8 @@ class LoginAction extends YesWikiAction
                 if (empty($_POST["email"])) {
                     throw new LoginException(_t('LOGIN_WRONG_USER'));
                 }
-                $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_STRING);
+                $email = filter_input(INPUT_POST, 'email', FILTER_UNSAFE_RAW);
+                $email = ($email === false) ? "" : htmlspecialchars(strip_tags($email));
                 if (empty($email)) {
                     throw new LoginException(_t('LOGIN_WRONG_USER'));
                 }
@@ -196,7 +198,8 @@ class LoginAction extends YesWikiAction
             if (empty($user)) {
                 throw new LoginException(_t('LOGIN_WRONG_USER'));
             }
-            $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING);
+            $password = filter_input(INPUT_POST, 'password', FILTER_UNSAFE_RAW);
+            $password = ($password === false) ? "" : $password;
             if (!$this->authController->checkPassword($password, $user)) {
                 throw new LoginException(_t('LOGIN_WRONG_PASSWORD'));
             }
