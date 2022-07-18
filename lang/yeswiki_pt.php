@@ -469,7 +469,9 @@ return [
     // 'USER_NEW_ACCOUNT' => 'Nouveau compte',
     // 'USER_PASSWORD' => 'Mot de passe',
     // 'USER_ERRORS_FOUND' => 'Erreur(s) trouvée(s)',
-    // 'USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR' => 'Il faut une valeur entier positif pour ',
+    // 'USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR' => 'Il faut une valeur entier positif pour %{name}.',
+    // 'USER_YOU_MUST_SPECIFY_YES_OR_NO' => 'Il faut une value \'Y\' ou  \'N\' pour %{name}.',
+    // 'USER_YOU_MUST_SPECIFY_A_STRING' => 'Il faut une chaîne de caractères pour %{name}.',
 
     // YesWiki\Database class
     // 'DATABASE_QUERY_FAILED' => 'La requête a échoué {\YesWiki\Database}',
@@ -547,6 +549,8 @@ return [
     'USERSTABLE_USER_NOT_DELETED' => 'O utilizador "{username}" não foi eliminado.',
     'USERSTABLE_NOT_EXISTING_USER' => 'O utilizador "{username}" não existe!',
     'GROUP_S' => 'Grupo(s)',
+    // 'USERSTABLE_CREATE_USER' => 'Créer un utilisateur',
+    // 'USERSTABLE_CREATE_USER_HINT' => 'Mot de passe généré aléatoirement',
 
     // handlers/deletepage
     // 'DELETEPAGE_CANCEL' => 'Annuler',

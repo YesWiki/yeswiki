@@ -2,19 +2,25 @@
 
 namespace YesWiki\Contact;
 
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 
 // TODO create GroupManager
 
-class MailPeriodAction extends YesWikiAction 
+class MailPeriodAction extends YesWikiAction
 {
-    function run()
-    {       
-        $user = $this->getService(UserManager::class)->getLoggedUser();
-        $userName = $this->getService(UserManager::class)->getLoggedUserName();
+    protected $authController;
+    protected $userManager;
+
+    public function run()
+    {
+        $this->authController = $this->getService(AuthController::class);
+        $this->userManager = $this->getService(UserManager::class);
+        $user = $this->authController->getLoggedUser();
+        $userName = $this->authController->getLoggedUserName();
         $periods = [
-            'day' =>   ['label' => _t('CONTACT_DAILY')], 
+            'day' =>   ['label' => _t('CONTACT_DAILY')],
             'week' =>  ['label' => _t('CONTACT_WEEKLY')],
             'month' => ['label' => _t('CONTACT_MONTHLY')]
         ];
@@ -28,7 +34,7 @@ class MailPeriodAction extends YesWikiAction
                 $this->unsubscribUserFromAllGroups($userName, $periods);
                 $this->subscribeUserToGroup($userName, $group);
                 $messages['success'] = _t('CONTACT_SUCCESS_SUBSCRIBE') . $periods[$period]['label'];
-            } else if (isset($_REQUEST['unsubscribe'])) {
+            } elseif (isset($_REQUEST['unsubscribe'])) {
                 $this->unsubscribUserFromAllGroups($userName, $periods);
                 $messages['info'] = _t('CONTACT_SUCCESS_UNSUBSCRIBE');
             }
@@ -44,10 +50,11 @@ class MailPeriodAction extends YesWikiAction
         ]);
     }
 
-    private function updatePeriods($periods, $userName) {
-        foreach($periods as $period => $config) {
+    private function updatePeriods($periods, $userName)
+    {
+        foreach ($periods as $period => $config) {
             $group = $this->groupName($period);
-            $periods[$period]['subscribed'] = $this->wiki->UserIsInGroup($group, $userName, false);
+            $periods[$period]['subscribed'] = $this->userManager->UserIsInGroup($group, $userName, false);
             $periods[$period]['group'] = $this->groupName($period);
         }
         return $periods;
@@ -63,7 +70,7 @@ class MailPeriodAction extends YesWikiAction
         $this->wiki->SetGroupACL($group, $this->wiki->GetGroupACL($group)."\n".$userName);
     }
 
-    private function unsubscribeUserFromGroup($userName, $group) : void 
+    private function unsubscribeUserFromGroup($userName, $group) : void
     {
         $newgroup = str_replace($userName, '', $this->wiki->GetGroupACL($group));
         $newgroup = explode("\n", $newgroup);
@@ -76,7 +83,7 @@ class MailPeriodAction extends YesWikiAction
     private function unsubscribUserFromAllGroups($userName, $periods)
     {
         // unsubscribe all groups
-        foreach($periods as $period => $config) {
+        foreach ($periods as $period => $config) {
             if ($config['subscribed']) {
                 $this->unsubscribeUserFromGroup($userName, $config['group']);
             }

@@ -461,6 +461,10 @@ return [
     'USER_PASSWORD_CONFIRMATION' => 'Password confirmation',
     'USER_NEW_ACCOUNT' => 'New account',
     'USER_PASSWORD' => 'Password',
+    'USER_ERRORS_FOUND' => 'Found(s) errors(s)',
+    'USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR' => 'A positive integer is needed for %{name}.',
+    'USER_YOU_MUST_SPECIFY_YES_OR_NO' => '\'Y\' or \'N\' is required for %{name}.',
+    'USER_YOU_MUST_SPECIFY_A_STRING' => 'A string is required for %{name}.',
     
     // YesWiki\Database class
     'DATABASE_QUERY_FAILED' => 'Database query failed',
@@ -539,6 +543,8 @@ return [
     'USERSTABLE_USER_NOT_DELETED' => 'The user "{username}" has not been deleted.',
     'USERSTABLE_NOT_EXISTING_USER' => 'The user "{username}" does not exist!',
     'GROUP_S' => 'Group(s)',
+    'USERSTABLE_CREATE_USER' => 'Create a user',
+    'USERSTABLE_CREATE_USER_HINT' => 'Password randomly generated',
 
     // handlers/deletepage
     'DELETEPAGE_CANCEL' => 'Cancel',

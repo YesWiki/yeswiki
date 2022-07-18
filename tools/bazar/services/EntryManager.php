@@ -8,6 +8,7 @@ use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\TitleField;
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\Mailer;
@@ -21,6 +22,7 @@ class EntryManager
 {
     protected $wiki;
     protected $mailer;
+    protected $authController;
     protected $pageManager;
     protected $tripleStore;
     protected $aclService;
@@ -38,6 +40,7 @@ class EntryManager
     public function __construct(
         Wiki $wiki,
         Mailer $mailer,
+        AuthController $authController,
         PageManager $pageManager,
         TripleStore $tripleStore,
         AclService $aclService,
@@ -50,6 +53,7 @@ class EntryManager
     ) {
         $this->wiki = $wiki;
         $this->mailer = $mailer;
+        $this->authController = $authController;
         $this->pageManager = $pageManager;
         $this->tripleStore = $tripleStore;
         $this->aclService = $aclService;
@@ -503,13 +507,13 @@ class EntryManager
 
         // on change provisoirement d'utilisateur
         if (isset($GLOBALS['utilisateur_wikini'])) {
-            $olduser = $this->userManager->getLoggedUser();
-            $this->userManager->logout();
+            $olduser = $this->authController->getLoggedUser();
+            $this->authController->logout();
 
             // On s'identifie de facon a attribuer la propriete de la fiche a
             // l'utilisateur qui vient d etre cree
             $user = $this->userManager->getOneByName($GLOBALS['utilisateur_wikini']);
-            $this->userManager->login($user);
+            $this->authController->login($user);
         }
 
         $ignoreAcls = true;
@@ -552,8 +556,8 @@ class EntryManager
 
         // on remet l'utilisateur initial s'il y en avait un
         if (isset($GLOBALS['utilisateur_wikini']) && !empty($olduser)) {
-            $this->userManager->logout();
-            $this->userManager->login($olduser, 1);
+            $this->authController->logout();
+            $this->authController->login($olduser, $olduser['remember'] ?? 1);
         }
         
         $this->cachedEntriestags[$data['id_fiche']] = true;
@@ -738,7 +742,7 @@ class EntryManager
         $this->tripleStore->delete($tag, TripleStore::TYPE_URI, null, '', '');
         $this->tripleStore->delete($tag, TripleStore::SOURCE_URL_URI, null, '', '');
         $this->wiki->LogAdministrativeAction(
-            $this->userManager->getLoggedUserName(),
+            $this->authController->getLoggedUserName(),
             "Suppression de la page ->\"\"" . $tag . "\"\""
         );
 

@@ -12,11 +12,11 @@ use YesWiki\Bazar\Field\UserField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\FavoritesManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
-use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
 
@@ -26,12 +26,12 @@ class EntryController extends YesWikiController
     protected $favoritesManager;
     protected $formManager;
     protected $aclService;
+    protected $authController;
     protected $semanticTransformer;
     protected $pageManager;
     protected $templateEngine;
     protected $config;
     protected $securityController;
-    protected $userManager;
 
     private $parentsEntries ;
 
@@ -40,12 +40,13 @@ class EntryController extends YesWikiController
         FavoritesManager $favoritesManager,
         FormManager $formManager,
         AclService $aclService,
+        AuthController $authController,
         SemanticTransformer $semanticTransformer,
         PageManager $pageManager,
         ParameterBagInterface $config,
-        SecurityController $securityController,
-        UserManager $userManager
+        SecurityController $securityController
     ) {
+        $this->authController = $authController;
         $this->entryManager = $entryManager;
         $this->favoritesManager = $favoritesManager;
         $this->formManager = $formManager;
@@ -54,7 +55,6 @@ class EntryController extends YesWikiController
         $this->pageManager = $pageManager;
         $this->config = $config->all();
         $this->securityController = $securityController;
-        $this->userManager = $userManager;
         $this->parentsEntries = [];
     }
 
@@ -691,7 +691,7 @@ class EntryController extends YesWikiController
             $formHasUserField = !empty(array_filter($form['prepared'], function ($field) {
                 return $field instanceof UserField;
             }));
-            $loggerUser = $this->userManager->getLoggedUser();
+            $loggerUser = $this->authController->getLoggedUser();
             if (!$formHasUserField && empty($loggerUser)) {
                 // forbidden : ask to connect
                 $results['output'] = $this->render('@templates/alert-message.twig', [

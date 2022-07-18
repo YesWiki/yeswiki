@@ -2,9 +2,13 @@
 
 namespace YesWiki\Bazar\Field;
 
+use Exception;
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Controller\UserController;
+use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Wiki;
@@ -53,8 +57,9 @@ class UserField extends BazarField
     {
         $value = $this->getValue($entry);
         
+        $authController = $this->getService(AuthController::class);
         $userManager = $this->getService(UserManager::class);
-        $loggedUser = $userManager->getLoggedUser();
+        $loggedUser = $authController->getLoggedUser();
         if (!empty($loggedUser)) {
             $associatedUser = $userManager->getOneByName($loggedUser['name']);
             if (!empty($associatedUser['name'])) {
@@ -92,6 +97,7 @@ class UserField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
+        $userController = $this->getService(UserController::class);
         $userManager = $this->getService(UserManager::class);
         $mailer = $this->getService(Mailer::class);
 
@@ -145,19 +151,29 @@ class UserField extends BazarField
                     );
                 }
             }
-            if ($this->isUserByEmail($entry[$this->emailField])) {
+            if (!isset($entry[$this->emailField])) {
+                throw new Exception("\$entry[{$this->emailField}] should be set in UserField->formatValuesBeforeSave(\$entry)");
+            }
+            if (!$isImport) {
+                if (!isset($entry['mot_de_passe_repete_wikini'])) {
+                    throw new Exception("\$entry['mot_de_passe_repete_wikini'] should be set in UserField->formatValuesBeforeSave(\$entry)");
+                }
+                if ($entry['mot_de_passe_wikini'] !== $entry['mot_de_passe_repete_wikini']) {
+                    throw new UserFieldException(_t('USER_PASSWORDS_NOT_IDENTICAL'));
+                }
+            }
+            
+            try {
+                $userController->create([
+                    'name' => $wikiName,
+                    'email' => $entry[$this->emailField],
+                    'password' => $entry['mot_de_passe_wikini']
+                ]);
+            } catch (UserNameAlreadyUsedException $ex) {
                 throw new UserFieldException(_t('BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL'));
+            } catch (Exception $ex) {
+                throw new UserFieldException($ex->getMessage(), $ex->getCode(), $ex);
             }
-            if (!filter_var($entry[$this->emailField], FILTER_VALIDATE_EMAIL)) {
-                throw new UserFieldException(_t('USER_THIS_IS_NOT_A_VALID_EMAIL'));
-            }
-            if (!$isImport
-                && $entry['mot_de_passe_wikini'] !== $entry['mot_de_passe_repete_wikini']) {
-                throw new UserFieldException(_t('USER_PASSWORDS_NOT_IDENTICAL'));
-            }
-
-            // check existence of user with same
-            $userManager->create($wikiName, $entry[$this->emailField], $entry['mot_de_passe_wikini']);
 
             // add in groups
             $this->addUserToGroups($wikiName, $entry);
@@ -191,12 +207,12 @@ class UserField extends BazarField
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
-        $userManager = $this->getService(UserManager::class);
+        $authController = $this->getService(AuthController::class);
 
         if ($value) {
             return $this->render("@bazar/fields/user.twig", [
                 'value' => $value,
-                'isLoggedUser' => $userManager->getLoggedUser() && $userManager->getLoggedUserName() === $value,
+                'isLoggedUser' => $authController->getLoggedUser() && $authController->getLoggedUserName() === $value,
                 'editUrl' => $this->getWiki()->href('edit', $value),
                 'settingsUrl' => $this->getWiki()->href('', 'ParametresUtilisateur')
             ]);
@@ -261,26 +277,28 @@ class UserField extends BazarField
     private function updateEmailIfNeeded(string $userName, string $email)
     {
         if ($this->getAutoUpdateMail() && !empty($userName) && !empty($email)) {
+            $authController = $this->getService(AuthController::class);
+            $userController = $this->getService(UserController::class);
             $userManager = $this->getService(UserManager::class);
             $user = $userManager->getOneByName($userName);
-            $loggedUser = $userManager->getLoggedUser();
+            $loggedUser = $authController->getLoggedUser();
             if (!empty($user)
-                && (
-                    $this->getWiki()->UserIsAdmin()
-                        || (
-                            !empty($loggedUser)
-                            && $user['name'] === $loggedUser['name']
-                        )
-                )
-                && $user['email'] !== $email
+                    && (
+                        $this->getWiki()->UserIsAdmin()
+                            || (
+                                !empty($loggedUser)
+                                && $user['name'] === $loggedUser['name']
+                            )
+                    )
+                    && $user['email'] !== $email
                 ) {
-                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    throw new UserFieldException(_t('USER_THIS_IS_NOT_A_VALID_EMAIL'));
-                }
-                if ($this->isUserByEmail($email)) {
+                try {
+                    $userController->update($user, ['email'=>$email]);
+                } catch (UserNameAlreadyUsedException $ex) {
                     throw new UserFieldException(_t('BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL'));
+                } catch (Exception $ex) {
+                    throw new UserFieldException($ex->getMessage(), $ex->getCode(), $ex);
                 }
-                $userManager->updateEmail($user['name'], $email);
             }
         }
     }
@@ -293,6 +311,7 @@ class UserField extends BazarField
             $wiki = $this->getWiki();
             $existingsGroups = $wiki->GetGroupsList();
             $formManager = $this->getService(FormManager::class);
+            $userManager = $this->getService(UserManager::class);
             foreach ($groups as $group) {
                 $group = trim($group);
                 $forceGroupCreation =  (substr($group, 0, 1) === '+');
@@ -303,7 +322,7 @@ class UserField extends BazarField
                     if (!empty($field) && !empty($entry[$field->getPropertyName()])) {
                         $groupsNamesFromField = explode(',', $entry[$field->getPropertyName()]);
                         foreach ($groupsNamesFromField as $groupNameFromField) {
-                            if ($this->userMustBeAddedToGroup($wikiName, $groupNameFromField, $forceGroupCreation, $wiki, $existingsGroups)) {
+                            if ($this->userMustBeAddedToGroup($wikiName, $groupNameFromField, $forceGroupCreation, $userManager, $existingsGroups)) {
                                 $groupsNames[] = $groupNameFromField;
                             }
                         }
@@ -331,7 +350,7 @@ class UserField extends BazarField
         string $wikiName,
         string $groupName,
         bool $forceGroupCreation,
-        Wiki $wiki,
+        UserManager $userManager,
         array $existingsGroups
     ) {
         if (!preg_match('/^[A-Za-z0-9]+$/m', $groupName)) {
@@ -339,7 +358,7 @@ class UserField extends BazarField
         }
         
         if (in_array($groupName, $existingsGroups, true)) {
-            if (!$wiki->UserIsInGroup($groupName, $wikiName, false)) {
+            if (!$userManager->isInGroup($groupName, $wikiName, false)) {
                 return true;
             }
         } elseif ($forceGroupCreation) {

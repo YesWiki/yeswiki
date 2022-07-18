@@ -1,7 +1,10 @@
 <?php
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Controller\UserController;
+use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\User;
@@ -9,6 +12,7 @@ use YesWiki\User;
 class UsersTableAction extends YesWikiAction
 {
     protected $csrfTokenController;
+    protected $userController;
     protected $userManager;
 
     public function formatArguments($arg)
@@ -27,6 +31,8 @@ class UsersTableAction extends YesWikiAction
     public function run()
     {
         // get Services
+        $this->authController  = $this->getService(AuthController::class);
+        $this->userController  = $this->getService(UserController::class);
         $this->userManager  = $this->getService(UserManager::class);
         $this->csrfTokenController = $this->getService(CsrfTokenController::class);
 
@@ -69,7 +75,7 @@ class UsersTableAction extends YesWikiAction
         }
 
         // connected user
-        $connectedUser = $this->userManager->getLoggedUser();
+        $connectedUser = $this->authController->getLoggedUser();
         $connectedUserName = empty($connectedUser['name']) ? '' : $connectedUser['name'];
 
         return $this->render('@core/users-table.twig', [
@@ -87,11 +93,11 @@ class UsersTableAction extends YesWikiAction
         return array_map(function ($user) use ($groups) {
             $userGroups = [];
             foreach ($groups as $group) {
-                if ($this->wiki->UserIsInGroup($group, $user['name'], false)) { // false to not display admins in other groups
+                if ($this->userManager->isInGroup($group, $user['name'], false)) { // false to not display admins in other groups
                     $userGroups[] = $group ;
                 }
             }
-            return array_merge($user, ['groups' => $userGroups]);
+            return array_merge($user->getArrayCopy(), ['groups' => $userGroups]);
         }, $users);
     }
 
@@ -125,25 +131,18 @@ class UsersTableAction extends YesWikiAction
                         'message' => str_replace('{username}', $userName, _t('USERSTABLE_NOT_EXISTING_USER'))
                     ]);
                 } else {
-                    // TODO use future $this->userManager->delete($user); instead of following lines
-                    require_once 'includes/User.class.php';
-                    $tmpUser = new User($this->wiki);
-                    $OK= $tmpUser->loadByNameFromDB($rawUserName);
-                    if ($OK) {
-                        $OK = $tmpUser->delete();
-                        if (!$OK) {
-                            return $this->render('@templates/alert-message.twig', [
-                                'type' => 'warning',
-                                'message' => $tmpUser->error
-                            ]);
-                        } else {
-                            return $this->render("@templates/alert-message.twig", [
-                                'type' => 'success',
-                                'message' => str_replace('{username}', $userName, _t('USERSTABLE_USER_DELETED'))
-                            ]);
-                        }
+                    try {
+                        $this->userController->delete($user);
+                        return $this->render("@templates/alert-message.twig", [
+                            'type' => 'success',
+                            'message' => str_replace('{username}', $userName, _t('USERSTABLE_USER_DELETED'))
+                        ]);
+                    } catch (DeleteUserException $ex) {
+                        return $this->render('@templates/alert-message.twig', [
+                            'type' => 'warning',
+                            'message' => $ex->getMessage()
+                        ]);
                     }
-                    unset($tmpUser);
                 }
             } catch (TokenNotFoundException $th) {
                 return $this->render("@templates/alert-message.twig", [
