@@ -46,6 +46,7 @@ return [
     'NAME' => 'Name',
     'PAGES' => 'Pages',
     'SUBSCRIPTION' => 'Subscription',
+    'TRIPLES' => 'Triples',
     'UNKNOWN' => 'Unknown',
     'WARNING' => 'WARNING',
 
@@ -279,6 +280,21 @@ return [
         'identification token needed for internal security mechanisms.',
     'CSRF_TOKEN_FAIL_ERROR' => 'This page may have been opened a second time. '.
         'Please renew the request from this window (the internal security token was not good).',
+
+    // javascripts/favorites.js
+    'FAVORITES_ADD' => 'Add to favorites',
+    'FAVORITES_REMOVE' => 'Remove from favorites',
+
+    // templates/actions/my-favorites.twig
+    'FAVORITES_DELETE_ALL' => 'Delete all my favorites',
+    'FAVORITES_MY_FAVORITES' => 'My favorites',
+    'FAVORITES_NO_FAVORITE' => 'No favorites have been saved',
+    'FAVORITES_NOT_ACTIVATED' => 'The use of favorites is not enabled on this site.',
+    'FAVORITES_NOT_CONNECTED' => 'The use of favorites is possible only for connected people.',
+
+    // templates/actions/my-favorites-table.twig
+    'FAVORITES_TITLE' => 'Title',
+    'FAVORITES_LINK' => 'Link',
     
     // setup/header.php
     'OK' => 'OK',
@@ -509,10 +525,11 @@ return [
     'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING' => 'Asked password to modify forms (see doc on spam management)',
     'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING_MESSAGE' => 'Message displayed above the password asked password to modify forms (see doc on spam management)',
     'EDIT_CONFIG_HINT_ALLOW_DOUBLECLIC' => 'Allow double click to edit menus and special pages (true ou false)',
-    // 'EDIT_CONFIG_HINT_TIMEZONE' => 'Fuseau horaire du site (ex. UCT, Europe/Paris, Europe/London, GMT = utiliser celui du serveur,)',
-    // 'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Méthodes autorisées à être affichées dans les iframes (iframe,editiframe,bazariframe,render,all = autoriser tout)',
+    'EDIT_CONFIG_HINT_TIMEZONE' => 'Time zone of the site (e.g. UCT, Europe/Paris, Europe/London, GMT = use the server time zone,)',
+    'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Methods allowed to be displayed in iframes (iframe,editiframe,bazariframe,render,all = allow all)',
     'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Maximum number of page\'s revisions displayed by the handler `/revisions`.',
-    // 'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false)',
+    'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Enable HTML purifier before backup. Be careful, modify the content to backup! (true or false)',
+    'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Enable favorites (true or false)',
     'EDIT_CONFIG_GROUP_CORE' => 'Main parameters',
     'EDIT_CONFIG_GROUP_ACCESS' => "Access rights",
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',

@@ -382,6 +382,12 @@ return [
     'AB_USERREACTIONS_HINT' => 'Permet aux utilisateur·ices connecté·es de voir leurs réactions',
     'AB_ADMINREACTIONS_LABEL' => 'Administration des réactions',
     'AB_ADMINREACTIONS_HINT' => 'Permet aux administrateur·ices de gérer les réactions',
+    'AB_MYFAVORITES_LABEL' => 'Mes favoris',
+    'AB_MYFAVORITES_TEMPLATE_LABEL' => 'Template',
+    'AB_MYFAVORITES_TEMPLATE_LINKS' => 'Liens',
+    'AB_MYFAVORITES_TEMPLATE_LINKS_WITH_TITLES' => 'Liens avec titres',
+    'AB_MYFAVORITES_TEMPLATE_TILES' => 'Vignettes',
+    'AB_MYFAVORITES_TEMPLATE_TABLE' => 'Tableau',
 
     // syndication
     "AB_syndication_main_label" => "Syndication / Flux RSS",

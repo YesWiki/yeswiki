@@ -43,6 +43,7 @@ return [
     // 'MODIFY' => 'Modifier',
     // 'NAME' => 'Nom',
     // 'SUBSCRIPTION' => 'Inscription',
+    'TRIPLES' => 'Triplos',
     'UNKNOWN' => 'Desconhecido',
     // 'WARNING' => 'Attention',
 
@@ -275,6 +276,21 @@ return [
     'único necessário para os mecanismos de segurança interna.',
     'CSRF_TOKEN_FAIL_ERROR' => 'Esta página pode ter sido aberta uma segunda vez. '.
         'Por favor, renove o pedido desta janela (o sinal de segurança interna não foi bom).',
+
+    // javascripts/favorites.js
+    'FAVORITES_ADD' => 'Adicionar a aavoritos',
+    'FAVORITES_REMOVE' => 'Remova dos favoritos',
+
+    // templates/actions/my-favorites.twig
+    'FAVORITES_DELETE_ALL' => 'Apague todos os meus favoritos',
+    'FAVORITES_MY_FAVORITES' => 'Os meus favoritos',
+    'FAVORITES_NO_FAVORITE' => 'Nenhum favorito foi salvo',
+    'FAVORITES_NOT_ACTIVATED' => 'O uso de favoritos não está ativado neste site.',
+    'FAVORITES_NOT_CONNECTED' => 'O uso de favoritos só é possível para pessoas ligadas.',
+
+    // templates/actions/my-favorites-table.twig
+    'FAVORITES_TITLE' => 'Título',
+    'FAVORITES_LINK' => 'Ligação',
 
     // setup/header.php
     'OK' => 'OK',
@@ -521,6 +537,7 @@ return [
     // 'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Méthodes autorisées à être affichées dans les iframes (iframe,editiframe,bazariframe,render,all = autoriser tout)',
     // 'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Nombre maximum de versions d\'une page affichées par le handler `/revisions`.',
     // 'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false)',
+    // 'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Activer les favoris (true ou false)',
     // 'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
     // 'EDIT_CONFIG_GROUP_ACCESS' => 'Droit d\'accès',
     // 'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',

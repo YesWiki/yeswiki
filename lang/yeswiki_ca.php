@@ -44,6 +44,7 @@ return [
     // 'MODIFY' => 'Modifier',
     // 'NAME' => 'Nom',
     // 'SUBSCRIPTION' => 'Inscription',
+    'TRIPLES' => 'Triples',
     'UNKNOWN' => 'Desconegut',
     'WARNING' => 'ADVERTIMENT',
 
@@ -278,6 +279,21 @@ return [
         'd\'identificació únic necessari per als mecanismes de seguretat interns.',
     'CSRF_TOKEN_FAIL_ERROR' => 'Pot ser que aquesta pàgina s\'hagi obert per segona vegada. '.
         'Si us plau, renoveu la sol·licitud des d\'aquesta finestra (el testimoni de seguretat intern no era bo).',
+
+    // javascripts/favorites.js
+    'FAVORITES_ADD' => 'Afegeix-ho als preferits',
+    'FAVORITES_REMOVE' => 'Suprimeix dels preferits',
+
+    // templates/actions/my-favorites.twig
+    'FAVORITES_DELETE_ALL' => 'Suprimeix tots els meus preferits',
+    'FAVORITES_MY_FAVORITES' => 'Els meus favorits',
+    'FAVORITES_NO_FAVORITE' => 'No s\'ha desat cap favorit',
+    'FAVORITES_NOT_ACTIVATED' => 'L\'ús de preferits no està habilitat en aquest lloc.',
+    'FAVORITES_NOT_CONNECTED' => 'L\'ús de favorits només és possible per a les persones connectades.',
+
+    // templates/actions/my-favorites-table.twig
+    'FAVORITES_TITLE' => 'Títol',
+    'FAVORITES_LINK' => 'Lligam',
 
     // setup/header.php
     'OK' => 'D\'acord',
@@ -518,13 +534,14 @@ return [
     // 'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING' => 'Mot de passe demandé pour modifier les pages (voir doc gestion des spams)',
     // 'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING_MESSAGE' => 'Message informatif pour demander le mot de passe (voir doc gestion des spams)',
     // 'EDIT_CONFIG_HINT_ALLOW_DOUBLECLIC' => 'Autoriser le doubleclic pour éditer les menus et pages spéciales (true ou false)',
-    // 'EDIT_CONFIG_HINT_TIMEZONE' => 'Fuseau horaire du site (ex. UCT, Europe/Paris, Europe/London, GMT = utiliser celui du serveur,)',
-    // 'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Méthodes autorisées à être affichées dans les iframes (iframe,editiframe,bazariframe,render,all = autoriser tout)',
+    'EDIT_CONFIG_HINT_TIMEZONE' => 'Fus horari del lloc (per exemple, UCT, Europa / París, Europa / Londres, GMT = utilitzeu la zona horària del servidor,)',
+    'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Mètodes permesos per ser mostrats en iframes (iframe,editiframe,bazariframe,render,all = allow all)',
     // 'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Nombre maximum de versions d\'une page affichées par le handler `/revisions`.',
-    // 'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false)',
-    // 'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
-    // 'EDIT_CONFIG_GROUP_ACCESS' => 'Droit d\'accès',
-    // 'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
+    'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Habilita la neteja HTML abans de fer la còpia de seguretat. Aneu amb compte, modifiqueu el contingut a la còpia de seguretat! (vertader o fals)',
+    'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Activer les favoris (true ou false)',
+    'EDIT_CONFIG_GROUP_CORE' => 'Paràmetres principals',
+    'EDIT_CONFIG_GROUP_ACCESS' => 'Dret d\'accés',
+    'EDIT_CONFIG_GROUP_EMAIL' => 'Correus electrònics',
 
     // actions/userstable.php
     'USERSTABLE_USER_DELETED' => 'S\'ha suprimit l\'usuari "{username}".',

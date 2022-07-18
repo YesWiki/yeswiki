@@ -48,6 +48,7 @@ return [
     'NAME' => 'Nom',
     'PAGES' => 'Pages',
     'SUBSCRIPTION' => 'Inscription',
+    'TRIPLES' => 'Triples',
     'UNKNOWN' => 'Inconnu',
     'WARNING' => 'AVERTISSEMENT',
 
@@ -286,6 +287,21 @@ return [
         'le jeton d\'identification unique nécessaire aux mécanismes internes de sécurité.',
     'CSRF_TOKEN_FAIL_ERROR' => 'Cette page a peut-être été ouverte une seconde fois. '.
         'Veuillez renouveler la demande depuis cette fenêtre (le jeton interne de sécurité n\'était pas bon).',
+
+    // javascripts/favorites.js
+    'FAVORITES_ADD' => 'Ajouter aux favoris',
+    'FAVORITES_REMOVE' => 'Retirer des favoris',
+
+    // templates/actions/my-favorites.twig
+    'FAVORITES_DELETE_ALL' => 'Supprimer tous mes favoris',
+    'FAVORITES_MY_FAVORITES' => 'Mes favoris',
+    'FAVORITES_NO_FAVORITE' => 'Aucun favori n\'a été enregistré',
+    'FAVORITES_NOT_ACTIVATED' => 'L\'usage des favoris n\'est pas activé sur ce site.',
+    'FAVORITES_NOT_CONNECTED' => 'L\'usage des favoris n\'est possible que pour les personnes connectées.',
+
+    // templates/actions/my-favorites-table.twig
+    'FAVORITES_TITLE' => 'Titre',
+    'FAVORITES_LINK' => 'Lien',
 
     // setup/header.php
     'OK' => 'OK',
@@ -532,6 +548,7 @@ return [
     'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Nombre maximum de versions d\'une page affichées par le handler `/revisions`.',
     'EDIT_CONFIG_HINT_DEFAULT_COMMENT_AVATAR' => 'Image d\'avatar par défaut pour les commentaires (URL vers une image)',
     'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false)',
+    'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Activer les favoris (true ou false)',
     'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
     'EDIT_CONFIG_GROUP_ACCESS' => 'Droit d\'accès',
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',

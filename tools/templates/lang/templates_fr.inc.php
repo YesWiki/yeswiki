@@ -62,7 +62,7 @@ return [
     'TEMPLATE_LAST_UPDATE' => 'Dernière édition :',
     'TEMPLATE_OWNER' => 'Propri&eacute;taire',
     'TEMPLATE_YOU' => 'vous',
-    'TEMPLATE_NO_OWNER' => 'Pas de propri&eacute;taire',
+    'TEMPLATE_NO_OWNER' => 'Pas de propriétaire',
     'TEMPLATE_CLAIM' => 'Appropriation',
     'TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS' => '&Eacute;diter les permissions de la page',
     'TEMPLATE_PERMISSIONS' => 'Permissions',

@@ -863,6 +863,24 @@ html[lang="pt"] [lang]:not([lang="pt"]){
   text-align: justify;
 }
 
+/* favorites */
+.favorites {
+  height: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 0.5em;
+  padding: 1em 0.5em;
+  transition: all 200ms ease-in;
+  box-shadow: none;
+}
+.favorites:focus,
+.favorites:active,
+.favorites:visited {
+  text-decoration: none;
+}
+.favorites > i {
+  margin-right: 0px !important;
+}
+
 /* timeline */
 .timeline {
   position: relative;
