@@ -457,6 +457,33 @@ Contenu panel-danger
 {{button link=\"{{rootPage}}\" class=\"btn btn-secondary-2\" text=\"btn-secondary-2\"}}
 {{button link=\"{{rootPage}}\" class=\"btn btn-success\" text=\"btn-success\"}}
 {{button link=\"{{rootPage}}\" class=\"btn btn-info\" text=\"btn-info\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('MesContenus',  now(), '=====Mes contenus=====
+{{accordion }}
+{{panel title=\"Mes paramètres\"}}
+{{UserSettings}}
+{{lostpassword}}
+{{end elem=\"panel\"}}
+{{panel title=\"Mes pages\"}}
+{{mypages}}
+{{end elem=\"panel\"}}
+{{panel title=\"Mes favoris\"}}
+{{myfavorites template=\"my-favorites-tiles.twig\" }}
+{{myfavorites template=\"my-favorites-with-titles.twig\"}}
+{{myfavorites template=\"my-favorites-table.twig\"}}
+{{end elem=\"panel\"}}
+{{panel title=\"Mes fiches bazar\"}}
+{{bazarliste template=\"liste_accordeon\" dynamic=\"true\" filteruserasowner=\"true\"}}
+{{end elem=\"panel\"}}
+{{panel title=\"Mes changements\"}}
+{{mychanges}}
+{{end elem=\"panel\"}}
+{{panel title=\"Mes votes, réactions\"}}
+{{userreactions}}
+{{end elem=\"panel\"}}
+{{panel title=\"Mes commentaires\"}}
+{{userreactions}}
+{{end elem=\"panel\"}}
+{{end elem=\"accordion\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('MotDePassePerdu',  now(), '{{lostpassword}}
 ', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageColonneDroite',  now(), 'Double cliquer sur ce texte pour éditer cette colonne.
@@ -605,10 +632,10 @@ Vous êtes dans la page qui se nomme PageMenuHaut qui sert à modifier le menu d
  - ------
  - {{button nobtn=\"1\" icon=\"fa fa-question\" text=\"Aide, démo, actu\" link=\"DocuMentation\"}}
  - {{button nobtn=\"1\" icon=\"fas fa-yin-yang\" text=\"Présentation YesWiki\" link=\"AccueilYeswiki\"}}
- - {{button nobtn=\"1\" icon=\"far fa-star\" title=\"Mes favoris\" text=\"Mes favoris\" link=\"MesFavoris\" hideifnoaccess=\"true\"}}
  - ------
  - {{button nobtn=\"1\" icon=\"fa fa-wrench\" text=\"Gestion du site\" link=\"GererSite\"}}
  - {{button nobtn=\"1\" icon=\"fa fa-tachometer-alt\" text=\"Tableau de bord\" link=\"TableauDeBord\"}}
+ - {{button class=\"btn-primary\" icon=\"fas fa-user\" link=\"MesContenus\" nobtn=\"1\" text=\"Mes contenus\" }}
  - {{button nobtn=\"1\" icon=\"fa fa-briefcase\" text=\"Base de données\" link=\"BazaR\"}}
 {{end elem=\"buttondropdown\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('Pagetest1',  now(), '======Sous menu 1======', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
@@ -758,18 +785,8 @@ Texte colonne 3
 {{bazarliste id=\"2\" template=\"calendar\" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('WikiAdmin',  now(), '{{redirect page=\"GererSite\"}}
 ', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('YesWiki',  now(), 'YesWiki', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('MesFavoris',  now(), '{{nav class=\"nav nav-tabs\" hideifnoaccess=\"false\" links=\"MesFavoris,MesFavorisTableau\" titles=\"Liste,Tableau\" }}
-{{myfavorites}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('MesFavorisTableau',  now(), '{{nav class=\"nav nav-tabs\" hideifnoaccess=\"false\" links=\"MesFavoris,MesFavorisTableau\" titles=\"Liste,Tableau\" }}
-{{myfavorites template=\"my-favorites-table.twig\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
+('YesWiki',  now(), 'YesWiki', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
 # end YesWiki pages
-
-# YesWiki Acl
-INSERT INTO `{{prefix}}acls` (`page_tag`, `privilege`, `list`) VALUES
-('MesFavoris','read','+'),
-('MesFavorisTableau','read','+');
-# end YesWiki Acl
 
 # Bazar forms
 INSERT INTO `{{prefix}}nature` (`bn_id_nature`, `bn_label_nature`, `bn_description`, `bn_condition`, `bn_sem_context`, `bn_sem_type`, `bn_sem_use_template`, `bn_template`, `bn_ce_i18n`, `bn_only_one_entry`, `bn_only_one_entry_message`) VALUES
