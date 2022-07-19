@@ -57,6 +57,7 @@ class UserSettingsActionTest extends YesWikiTestCase
 
     private function checkdisplayFormNotConnected(Wiki $wiki)
     {
+        $this->ensureCacheFolderIsWritable();
         $output = $wiki->Format("{{usersettings}}");
         $rexExpStr = "/.*".implode('\s*', explode(' ', preg_quote('<input type="hidden" name="usersettings_action" value="signup" />', '/'))).".*/";
         $this->assertMatchesRegularExpression($rexExpStr, $output, "`usersettings_action` input badly set in user-signup-form.twig !");
@@ -85,6 +86,8 @@ class UserSettingsActionTest extends YesWikiTestCase
         $email = $user['email'];
         $name = $user['name'];
 
+        $this->ensureCacheFolderIsWritable();
+        
         // login
         $authController->login($user);
 
@@ -133,6 +136,9 @@ class UserSettingsActionTest extends YesWikiTestCase
         $name= $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
         $_POST['email'] = $email;
         $_POST['name'] = $name;
+
+        $this->ensureCacheFolderIsWritable();
+
         $output = $wiki->Format("{{usersettings}}");
         
         $rexExpStr = "/.*".implode(
@@ -203,6 +209,8 @@ class UserSettingsActionTest extends YesWikiTestCase
             $_POST['password'] = $password;
             $_POST['confpassword'] = $password.$suffix;
             $_REQUEST['usersettings_action'] = 'signup';
+
+            $this->ensureCacheFolderIsWritable();
 
             $exitExceptionCaught = false;
             try {
@@ -278,5 +286,15 @@ class UserSettingsActionTest extends YesWikiTestCase
             $output .= substr($charset, rand(0, $maxIndex), 1);
         }
         return $output;
+    }
+
+    /**
+     * ensure the cache folder is writable before tests
+     */
+    private function ensureCacheFolderIsWritable()
+    {
+        // cache folder should be writable to ensure that twig template cache system works
+        $this->assertTrue(is_dir('cache'), "The cache folder is not existing !");
+        $this->assertTrue(is_writable('cache'), "The cache folder is not writable !");
     }
 }
