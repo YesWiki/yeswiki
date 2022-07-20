@@ -60,7 +60,7 @@ if (! $this->UserIsAdmin()) {
         } else {
             if ($_POST['typemaj'] != 'default' && empty($_POST['newlire'])
             && empty($_POST['newecrire']) && empty($_POST['newcomment']) && empty($_POST['newlire_advanced'])
-            && empty($_POST['newecrire_advanced']) && empty($_POST['newecrire_advanced'])) {
+            && empty($_POST['newecrire_advanced']) && empty($_POST['newcomment_advanced'])) {
                 $error = _t('ACLS_NO_SELECTED_RIGHTS');
             } else {
                 foreach ($_POST['selectpage'] as $page_cochee) {

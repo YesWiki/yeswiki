@@ -63,7 +63,7 @@ class AclService
                 'comment' => [
                     'page_tag' => $tag,
                     'privilege' => 'comment',
-                    'list' => 'comments-closed'
+                    'list' => $this->params->get('default_comment_acl')
                 ]
             ];
         } else {

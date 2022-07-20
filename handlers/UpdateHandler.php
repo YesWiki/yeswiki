@@ -108,6 +108,7 @@ class UpdateHandler extends YesWikiHandler
             } else {
                 $output .= "ℹ️ Comment acls already reset!<br />";
             }
+            $output .= $this->fixDefaultCommentsAcls();
 
             // update user table to increase size of password
             if ($this->wiki->services->has(PasswordHasherFactory::class)) {
@@ -243,7 +244,7 @@ class UpdateHandler extends YesWikiHandler
         $config->load();
 
         $baseKey = 'default_comment_acl';
-        $config->$baseKey = 'comment-closed';
+        $config->$baseKey = 'comments-closed';
         $baseKey = 'default_comment_acl_updated';
         $config->$baseKey = true;
         $config->write();
@@ -256,6 +257,37 @@ class UpdateHandler extends YesWikiHandler
         $pages = $pageManager->getAll();
         foreach ($pages as $page) {
             $aclService->delete($page['tag'], ['comment']);
+        }
+        $output .= '✅ Done !<br />';
+
+        return $output;
+    }
+    private function fixDefaultCommentsAcls(): string
+    {
+        $output = "ℹ️ Fix comment acls<br />";
+
+        // default acls in wakka.config.php
+        include_once 'tools/templates/libs/Configuration.php';
+        $config = new Configuration('wakka.config.php');
+        $config->load();
+
+        $baseKey = 'default_comment_acl';
+        if ($config->$baseKey == "comment-closed") {
+            $config->$baseKey = 'comments-closed';
+            $config->write();
+        }
+        unset($config);
+
+        // remove all comment acl
+        $pageManager = $this->getService(PageManager::class);
+        $aclService = $this->getService(AclService::class);
+
+        $pages = $pageManager->getAll();
+        foreach ($pages as $page) {
+            $pageCommentAcl = $aclService->load($page['tag'], 'comment', false)['list'] ?? '';
+            if (!empty($pageCommentAcl) && preg_match("/comment-closed\s*/", strval($pageCommentAcl))) {
+                $aclService->save($page['tag'], 'comment', "comments-closed");
+            }
         }
         $output .= '✅ Done !<br />';
 
