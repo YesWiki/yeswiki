@@ -178,7 +178,7 @@ class EntryController extends YesWikiController
             $_GET['vue'] = 'consulter';
         }
 
-        $user = $this->userManager->getLoggedUser();
+        $user = $this->authController->getLoggedUser();
         if (!empty($user) && $this->favoritesManager->areFavoritesActivated()) {
             $currentuser = $user['name'];
             $isUserFavorite = $this->favoritesManager->isUserFavorite($currentuser, $entryId);

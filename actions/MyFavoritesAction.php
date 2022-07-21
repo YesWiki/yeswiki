@@ -3,21 +3,21 @@
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\FavoritesManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
-use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 
 class MyFavoritesAction extends YesWikiAction
 {
     protected $attach;
+    protected $authController;
     protected $entryManager;
     protected $favoritesManager;
     protected $formManager;
     protected $pageManager;
     protected $templateEngine;
-    protected $userManager;
 
     public function formatArguments($arg)
     {
@@ -29,18 +29,18 @@ class MyFavoritesAction extends YesWikiAction
     public function run()
     {
         // get Services
+        $this->authController  = $this->getService(AuthController::class);
         $this->entryManager  = $this->getService(EntryManager::class);
         $this->favoritesManager  = $this->getService(FavoritesManager::class);
         $this->formManager  = $this->getService(FormManager::class);
         $this->pageManager  = $this->getService(PageManager::class);
         $this->templateEngine  = $this->getService(TemplateEngine::class);
-        $this->userManager  = $this->getService(UserManager::class);
         if (!class_exists('attach')) {
             include 'tools/attach/libs/attach.lib.php';
         }
         $this->attach  = new attach($this->wiki);
 
-        $user = $this->userManager->getLoggedUser();
+        $user = $this->authController->getLoggedUser();
         $currentUser = empty($user) ? null : $user['name'];
 
         $favorites = empty($currentUser) ? [] : $this->favoritesManager->getUserFavorites($currentUser) ;
