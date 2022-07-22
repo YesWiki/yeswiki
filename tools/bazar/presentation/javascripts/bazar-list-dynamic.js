@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
       },
       pages() {
         if (this.pagination <= 0) return []
-        let pagesCount = Math.floor(this.filteredEntries.length / parseInt(this.pagination)) + 1
+        let pagesCount = Math.ceil(this.filteredEntries.length / parseInt(this.pagination))
         let start = 0, end = pagesCount - 1        
         let pages = [this.currentPage - 2, this.currentPage - 1, this.currentPage, this.currentPage + 1, this.currentPage + 2]
         pages = pages.filter(page => page >= start && page <= end)
