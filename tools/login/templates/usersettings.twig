@@ -7,7 +7,7 @@
 <form
   action="{{ url({tag:''}|merge((
     adminIsActing 
-    ? {user:user.name,from:referrer} 
+    ? {params:{user:user.name,from:referrer}} 
     : {}
     ))) }}"
   method="post"

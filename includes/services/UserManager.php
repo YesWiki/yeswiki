@@ -207,14 +207,18 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 throw new UserEmailAlreadyUsedException();
             }
         }
+        
         if (count($authorizedKeys) > 0) {
             $query = "UPDATE {$this->dbService->prefixTable('users')} SET ";
-            foreach ($authorizedKeys as $idx => $key) {
-                if ($idx > 0) {
-                    $query .= ", ";
-                }
-                $query .= "`$key` = \"{$this->dbService->escape($newValues[$key])}\" ";
-            }
+            $query .= implode(
+                ", ",
+                array_map(
+                    function ($key) use ($newValues) {
+                        return "`$key` = \"{$this->dbService->escape($newValues[$key])}\" ";
+                    },
+                    $authorizedKeys
+                )
+            );
             $query .= "WHERE `name` = \"{$this->dbService->escape($user['name'])}\" ";
             $query .= "AND `email` = \"{$this->dbService->escape($user['email'])}\" ";
             $query .= "AND `password` = \"{$this->dbService->escape($user['password'])}\" ";

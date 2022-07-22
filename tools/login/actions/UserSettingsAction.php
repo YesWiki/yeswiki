@@ -235,7 +235,7 @@ class UserSettingsAction extends YesWikiAction
                     if ($this->userLoggedIn) { // In case it's the usther trying to update oneself
                         $this->wiki->Redirect($this->wiki->href());
                     } else { // That's the admin acting, we need to pass the user on
-                        $this->wiki->Redirect($this->href('', '', 'user='.$this->wantedUserName.'&from='.$this->referrer, false));
+                        $this->wiki->Redirect($this->wiki->href('', '', 'user='.$this->wantedUserName.'&from='.$this->referrer, false));
                     }
                 } else { // Unable to update
                     throw new Exception("");
