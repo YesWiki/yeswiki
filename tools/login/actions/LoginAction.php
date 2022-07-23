@@ -204,6 +204,13 @@ class LoginAction extends YesWikiAction
                 throw new LoginException(_t('LOGIN_WRONG_PASSWORD'));
             }
             $remember = filter_input(INPUT_POST, 'remember', FILTER_VALIDATE_BOOL);
+            if (($this->wiki->GetConfigValue ("signup_mail_activation") === "1") && !$this->userManager->isActivated ($user["name"])){
+                throw new LoginException("Your account must be activated first. " . (
+                    $this->userManager->sendActivationLink ($user["name"])
+                    ? "An email was sent to you with the instruction to activate you account."
+                    : "There was a problem to send you an mail to activate you account. Please contact the website administrator."
+                ));
+            }
             $this->authController->login($user, $remember);
             
             // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur

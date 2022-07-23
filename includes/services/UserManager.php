@@ -22,6 +22,7 @@ use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
+use YesWiki\Core\Service\Mailer;
 
 class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 {
@@ -407,6 +408,52 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 		// Create and return the link
 		
 		return ($vWiki->GetConfigValue ("base_url")) . INACTIVATEUSERPAGE . "&" . ACTIONPARAMETER_INACTIVATEUSER_USER . "=" . $pUser . "&" . ACTIONPARAMETER_INACTIVATEUSER_KEY . "=" .  (urlencode($vKey));
+	}
+
+	/* 
+     * Send an activation link to a user
+     * @params : 
+     * - $pUser : the user name
+	*/
+	
+	public function sendActivationLink ($pUser)
+	{			
+		// Ask for an activation link
+
+		$vActivationLink = $this->getActivationLink ($pUser);
+				
+		// Send a mail to the user with the activation link
+					
+		$vUser = $this->getOneByName($pUser);
+		
+		$vMail = $vUser ["email"];
+			
+		return $this->wiki->services->get(Mailer::class)->sendEmailFromAdmin($vMail, 
+					"Activation de votre compte", 
+					"Cliquez sur ce lien ou copier/coller le dans la barre d'adresse de votre navigateur pour activer votre compte : " . 
+						$vActivationLink, 
+					"Cliquez sur ce lien ou copier/coller le dans la barre d'adresse de votre navigateur pour activer votre compte : " . 
+						"<a href='" . $vActivationLink . "'>" . $vActivationLink . "</a>");
+	}
+
+	/* 
+     * Indicates if the user account is currently activated
+     * @params : 
+     * - $pUser : the user name
+	*/
+	
+	public function isActivated ($pUser)
+	{			
+		// Get activation status
+	
+		$vActivationStatus = $this->wiki->services->get(TripleStore::class)->GetOne ($pUser, TRIPLEPROPERTY_USER_ISACTIVATED, TRIPLERESSOURCEPREFIX_ACCOUNTSECURITY, TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY);
+
+		// Check if it is activated or not
+
+		if ($vActivationStatus === TRIPLEVALUE_USER_ISACTIVATED_YES) $vIsActivated = true;
+		else $vIsActivated = false;
+
+		return $vIsActivated;
 	}
 
 	/* 
