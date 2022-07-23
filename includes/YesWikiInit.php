@@ -243,6 +243,8 @@ class Init
             'wakka_name' => '', // backup wakka_name if deleted from wakka.config.php
             'htmlPurifierActivated' => false, // TODO ectoplasme set to true
             'favorites_activated' => true,
+            'signup_mail_activation' => true, 		// Activate the signup activation mail process
+		    'user_activation_key_length' => 20		// lenght of activation/inactivation keys
         );
         unset($_rewrite_mode);
 
