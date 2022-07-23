@@ -19,7 +19,6 @@ use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
-use YesWiki\Core\Service\Mailer;
 
 class EntryController extends YesWikiController
 {
