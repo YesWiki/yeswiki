@@ -573,6 +573,59 @@ class EntryManager
             $this->mailer->notifyAdmins($data, true);
         }
 
+		/////////////////////////////////////// - yg
+		// Signup account validation process
+		// If the created entry has a user field, utilisateur_wikini is defined, and we consider we are creating an account
+
+		if (isset($GLOBALS['utilisateur_wikini']))
+		{
+			$vWiki = $this->wiki;				
+			$userManager = $this->userManager;
+
+			if ($vWiki->GetConfigValue ("signup_mail_activation") === "1")
+			{	
+				// Inactivate the account first
+			
+				$userManager->inactivateUser ($GLOBALS['utilisateur_wikini'], "", true);
+
+				// Ask for an activation link
+
+				$vActivationLink = $userManager->getActivationLink ($GLOBALS['utilisateur_wikini']);
+				
+				// Send a mail to the user with the activation link
+					
+				$vUser = $this->userManager->getOneByName($GLOBALS['utilisateur_wikini']);
+	
+				$vMail = $vUser ["email"];
+					
+				$vMailer = $vWiki->services->get(Mailer::class);
+
+				if ($vMailer->sendEmailFromAdmin($vMail, 
+							"Activation de votre compte", 
+							"Cliquez sur ce lien ou copier/coller le dans la barre d'adresse de votre navigateur pour activer votre compte : " . 
+								$vActivationLink, 
+							"Cliquez sur ce lien ou copier/coller le dans la barre d'adresse de votre navigateur pour activer votre compte : " . 
+								"<a href='" . $vActivationLink . "'>" . $vActivationLink . "</a>"))
+				{										
+					// On redirige vers une page sans menu qui explique qu'il faut cliquer sur le lien pour activer le compte.
+						
+					$userManager->logout ();										
+					$redirectUrl = ($vWiki->GetConfigValue("base_url")) . "ActivationLinkSent";
+					header('Location: ' . $redirectUrl);
+					$this->wiki->exit();
+				}
+				// Problems while sending mail
+				else
+				{		
+					throw new \RuntimeException("Error sending activation mail. Please contact the website administrator.");
+		        	return null;								
+				}
+			}
+        }
+
+        //
+        ///////////////////////////////////////
+
         return $data;
     }
 

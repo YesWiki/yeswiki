@@ -181,7 +181,8 @@ class UserField extends BazarField
             // Do not send mails if we are importing
             // TODO improve import detection
             if (!$isImport) {
-                $mailer->notifyNewUser($wikiName, $entry[$this->emailField]);
+                if ($wiki->GetConfigValue ("signup_mail_activation") !== "1") // Do not notify the user now if we are waiting for an account activation by mail
+                	$mailer->notifyNewUser($wikiName, $entry[$this->emailField]);
 
                 // Check if we need to subscribe the user to a mailing list
                 if (isset($this->mailingList) && $this->mailingList != '') {
