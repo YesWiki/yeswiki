@@ -204,6 +204,8 @@ class LoginAction extends YesWikiAction
             {            
             	$vMessage = "Your account must be activated first. ";
             
+            	$this->userManager->inactivateUser ($user["name"], "", true);
+            
             	if ($this->userManager->sendActivationLink ($user["name"]))
 				{	            
 	            	$vMessage .= "A mail was sent to you with the instruction to activate you account. ";
