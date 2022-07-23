@@ -171,7 +171,8 @@ class LoginAction extends YesWikiAction
         if (empty($incomingurl)) {
             $incomingurl = $this->arguments['incomingurl'];
         }
-        try {
+        try
+        {
             if (!empty($_POST["name"])) {
                 $name = filter_input(INPUT_POST, 'name', FILTER_UNSAFE_RAW);
                 $name = ($name === false) ? "" : htmlspecialchars(strip_tags($name));
@@ -198,29 +199,49 @@ class LoginAction extends YesWikiAction
             if (empty($user)) {
                 throw new LoginException(_t('LOGIN_WRONG_USER'));
             }
-            $password = filter_input(INPUT_POST, 'password', FILTER_UNSAFE_RAW);
-            $password = ($password === false) ? "" : $password;
-            if (!$this->authController->checkPassword($password, $user)) {
-                throw new LoginException(_t('LOGIN_WRONG_PASSWORD'));
-            }
-            $remember = filter_input(INPUT_POST, 'remember', FILTER_VALIDATE_BOOL);
-            $this->authController->login($user, $remember);
             
-            // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
-            if (((!empty($_POST['userpage']) && $_POST['userpage'] == 'user') || $userpage == 'user') && $this->pageManager->getOne($user["name"])) {
-                $this->wiki->Redirect($this->href('', $user["name"]));
-            } else {
-                $this->wiki->Redirect($this->arguments['loggedinurl']);
+            if (($this->wiki->GetConfigValue ("signup_mail_activation") === "1") && !$this->userManager->isActivated ($user["name"]))
+            {            
+            	$vMessage = "Your account must be activated first. ";
+            
+            	if ($this->userManager->sendActivationLink ($user["name"]))
+				{	            
+	            	$vMessage .= "A mail was sent to you with the instruction to activate you account. ";
+				}
+				else
+				{
+					$vMessage .= "There was a problem to send you an mail to activate you account. Please contact the website administrator. ";
+				}
+
+				$this->wiki->SetMessage($vMessage);
+				$this->wiki->Redirect($incomingurl);				
             }
-        } catch (LoginException $ex) {
-            // on affiche une erreur sur le NomWiki sinon
-            $this->wiki->SetMessage($ex->getMessage());
-            $this->wiki->Redirect($incomingurl);
-        } catch (Exception $ex) {
-            // error error
-            flash($ex->getMessage(), 'error');
-            $this->wiki->Redirect($incomingurl);
-        }
+			else            
+			{
+	            $password = filter_input(INPUT_POST, 'password', FILTER_UNSAFE_RAW);
+	            $password = ($password === false) ? "" : $password;
+	            if (!$this->authController->checkPassword($password, $user)) {
+	                throw new LoginException(_t('LOGIN_WRONG_PASSWORD'));
+	            }
+	            $remember = filter_input(INPUT_POST, 'remember', FILTER_VALIDATE_BOOL);
+	            $this->authController->login($user, $remember);
+            
+            	// si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
+	            if (((!empty($_POST['userpage']) && $_POST['userpage'] == 'user') || $userpage == 'user') && $this->pageManager->getOne($user["name"])) {
+	                $this->wiki->Redirect($this->href('', $user["name"]));
+	            } else {
+	                $this->wiki->Redirect($this->arguments['loggedinurl']);
+	            }
+	        }
+	   } catch (LoginException $ex) {
+	            // on affiche une erreur sur le NomWiki sinon
+	            $this->wiki->SetMessage($ex->getMessage());
+	            $this->wiki->Redirect($incomingurl);
+       } catch (Exception $ex) {
+	            // error error
+	            flash($ex->getMessage(), 'error');
+	            $this->wiki->Redirect($incomingurl);
+       }
     }
 
     private function logout()

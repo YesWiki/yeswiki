@@ -583,28 +583,11 @@ class EntryManager
 			{	
 				// Inactivate the account first
 			
-				$userManager->inactivateUser ($GLOBALS['utilisateur_wikini'], "", true);
+				$userManager->inactivateUser ($GLOBALS['utilisateur_wikini'], "" /* empty key */, true /* ignore key and force inactivation */);
 
-				// Ask for an activation link
-
-				$vActivationLink = $userManager->getActivationLink ($GLOBALS['utilisateur_wikini']);
-				
-				// Send a mail to the user with the activation link
-					
-				$vUser = $this->userManager->getOneByName($GLOBALS['utilisateur_wikini']);
-	
-				$vMail = $vUser ["email"];
-					
-				$vMailer = $vWiki->services->get(Mailer::class);
-
-				if ($vMailer->sendEmailFromAdmin($vMail, 
-							"Activation de votre compte", 
-							"Cliquez sur ce lien ou copier/coller le dans la barre d'adresse de votre navigateur pour activer votre compte : " . 
-								$vActivationLink, 
-							"Cliquez sur ce lien ou copier/coller le dans la barre d'adresse de votre navigateur pour activer votre compte : " . 
-								"<a href='" . $vActivationLink . "'>" . $vActivationLink . "</a>"))
+				if ($userManager->sendActivationLink ($GLOBALS['utilisateur_wikini']))
 				{										
-					// On redirige vers une page sans menu qui explique qu'il faut cliquer sur le lien pour activer le compte.
+					// We redirect to a page indicating that a mail was sent to the user in order to activate his account
 						
 					$userManager->logout ();										
 					$redirectUrl = ($vWiki->GetConfigValue("base_url")) . "ActivationLinkSent";
