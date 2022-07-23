@@ -570,6 +570,42 @@ class EntryManager
             $this->mailer->notifyAdmins($data, true);
         }
 
+		/////////////////////////////////////// - yg
+		// Signup account validation process
+		// If the created entry has a user field, utilisateur_wikini is defined, and we consider we are creating an account
+
+		if (isset($GLOBALS['utilisateur_wikini']))
+		{
+			$vWiki = $this->wiki;				
+			$userManager = $this->userManager;
+
+			if ($vWiki->GetConfigValue ("signup_mail_activation") === "1")
+			{	
+				// Inactivate the account first
+			
+				$userManager->inactivateUser ($GLOBALS['utilisateur_wikini'], "" /* empty key */, true /* ignore key and force inactivation */);
+
+				if ($userManager->sendActivationLink ($GLOBALS['utilisateur_wikini']))
+				{										
+					// We redirect to a page indicating that a mail was sent to the user in order to activate his account
+						
+					$userManager->logout ();										
+					$redirectUrl = ($vWiki->GetConfigValue("base_url")) . "ActivationLinkSent";
+					header('Location: ' . $redirectUrl);
+					$this->wiki->exit();
+				}
+				// Problems while sending mail
+				else
+				{		
+					throw new \RuntimeException("Error sending activation mail. Please contact the website administrator.");
+		        	return null;								
+				}
+			}
+        }
+
+        //
+        ///////////////////////////////////////
+
         return $data;
     }
 

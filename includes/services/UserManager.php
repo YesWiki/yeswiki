@@ -21,6 +21,7 @@ use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
+use YesWiki\Core\Service\Mailer;
 
 class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 {
@@ -356,6 +357,439 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         }
         return is_a($class, User::class, true);
     }
+
+	/** 
+	 *	Get a new activation link
+	*/
+
+	public function getActivationLink ($pUser)
+	{
+		// Retrieve wiki and triplestore for further use
+	
+		$vWiki = $this->wiki;	
+		$vTripleStore = $vWiki->services->get(TripleStore::class);
+
+		// Let's create an activation key suitable for a mail
+
+		$vKey = base64_encode(random_bytes ($vWiki->GetConfigValue ("user_activation_key_length")));
+
+		// Store the key in the TripleStore
+							
+		$vTripleStore->Create ($pUser, TRIPLEPROPERTY_USER_ACTIVATIONKEY, $vKey, TRIPLERESSOURCEPREFIX_ACCOUNTSECURITY, TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY);
+
+		// Create and return the link
+		
+		return ($vWiki->GetConfigValue ("base_url")) . ACTIVATEUSERPAGE . "&" . ACTIONPARAMETER_ACTIVATEUSER_USER . "=" . $pUser . "&" . ACTIONPARAMETER_ACTIVATEUSER_KEY . "=" . (urlencode($vKey));
+	}
+	
+	/** 
+	 *	Get a new inactivation link
+	 * @params : 
+	 * - $pUser : the user name
+	*/
+
+	public function getInactivationLink ($pUser)
+	{
+		// Retrieve wiki and triplestore for further use
+	
+		$vWiki = $this->wiki;	
+		$vTripleStore = $vWiki->services->get(TripleStore::class);
+
+		// Let's create an activation key
+
+		$vKey = base64_encode(random_bytes ($vWiki->GetConfigValue ("user_activation_key_length")));
+
+		// Store the key in the TripleStore
+							
+		$vTripleStore->Create ($pUser, TRIPLEPROPERTY_USER_INACTIVATIONKEY, $vKey, TRIPLERESSOURCEPREFIX_ACCOUNTSECURITY, TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY);
+
+		// Create and return the link
+		
+		return ($vWiki->GetConfigValue ("base_url")) . INACTIVATEUSERPAGE . "&" . ACTIONPARAMETER_INACTIVATEUSER_USER . "=" . $pUser . "&" . ACTIONPARAMETER_INACTIVATEUSER_KEY . "=" .  (urlencode($vKey));
+	}
+
+	/* 
+     * Send an activation link to a user
+     * @params : 
+     * - $pUser : the user name
+	*/
+	
+	public function sendActivationLink ($pUser)
+	{			
+		// Ask for an activation link
+
+		$vActivationLink = $this->getActivationLink ($pUser);
+				
+		// Send a mail to the user with the activation link
+					
+		$vUser = $this->getOneByName($pUser);
+		
+		$vMail = $vUser ["email"];
+			
+		return $this->wiki->services->get(Mailer::class)->sendEmailFromAdmin($vMail, 
+					"Activation de votre compte", 
+					"Cliquez sur ce lien ou copier/coller le dans la barre d'adresse de votre navigateur pour activer votre compte : " . 
+						$vActivationLink, 
+					"Cliquez sur ce lien ou copier/coller le dans la barre d'adresse de votre navigateur pour activer votre compte : " . 
+						"<a href='" . $vActivationLink . "'>" . $vActivationLink . "</a>");
+	}
+
+	/* 
+     * Indicates if the user account is currently activated
+     * @params : 
+     * - $pUser : the user name
+	*/
+	
+	public function isActivated ($pUser)
+	{			
+		// Get activation status
+	
+		$vActivationStatus = $this->wiki->services->get(TripleStore::class)->GetOne ($pUser, TRIPLEPROPERTY_USER_ISACTIVATED, TRIPLERESSOURCEPREFIX_ACCOUNTSECURITY, TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY);
+
+		// Check if it is activated or not
+
+		if ($vActivationStatus === TRIPLEVALUE_USER_ISACTIVATED_YES) $vIsActivated = true;
+		else $vIsActivated = false;
+
+		return $vIsActivated;
+	}
+
+	/* 
+     * Activate a user account
+     * @params : 
+     * - $pUser : the user name
+     * - $pKey : the activation key
+     * - $pForce : boolean indicating if we want to ignore the key and force activation
+	*/
+	
+	public function activateUser ($pUser, $pKey, $pForce = false)
+	{	
+		//////////////////////////////////////////
+		// INITIALIZATION
+		
+		// Retrieve wiki and triplestore for further use
+	
+		$vWiki = $this->wiki;	
+		$vTripleStore = $vWiki->services->get(TripleStore::class);
+
+		// There is no alert message and no error yet. The user was not activated yet.
+	
+		$vAlertMessage = "";	
+		$vError = false;
+		$vActivated = false;	
+
+		///////////////////////////////////////////
+		// CHECK PARAMETERS
+
+		// Validate user and key parameters
+
+		if (empty ($pUser))
+		{
+			// Trying to call activation with bad parameters : should not occures since the user is using a link provided by yeswiki
+			$vAlertMessage .= "Trying to call activation with bad parameters (empty user). ";
+			$vError = true;
+		}
+			
+		if (empty ($vWiki->LoadUser($pUser)))
+		{
+			// Trying to activate an inexistent user : the user might have been removed before
+			$vAlertMessage .= "Trying to activate an inexistent user. ";
+			$vError = true;
+		}
+		
+		if (!$pForce) // We check the key if needed (through activation link)
+		{
+			if (empty ($pKey))
+			{
+				// Trying to call activation with bad parameters : should not occures since the user is using a link provided by yeswiki
+				$vAlertMessage .= "Trying to call activation with bad parameters (empty key). ";
+				$vError = true;
+			}
+			
+			if (preg_match ('/[A-Za-z0-9+\/=]+/', $pKey) !== 1)
+			{
+				// The key has an invalid format. It should not occures since the user is using a link provided by yeswiki kernel
+				$vAlertMessage .= "The activation key for user " . $pUser . "is in an invalid format : " . (base64_encode($pKey)) . " (base64 encoded). ";
+				$vError = true;
+			}
+		}
+	
+		//////////////////////////////////////////
+		// ACTIVATION 
+	
+		// if there was no error we continue the activation process
+	
+		if (!$vError)
+		{	
+			// Check the activation status of the user
+			
+			$vIsActivated = $vTripleStore->GetOne ($pUser, TRIPLEPROPERTY_USER_ISACTIVATED, TRIPLERESSOURCEPREFIX_ACCOUNTSECURITY, TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY);
+
+			if ($vIsActivated === TRIPLEVALUE_USER_ISACTIVATED_NO)
+			{				
+				// If the activation/inactivation key for the user exists or if we force activation (yeswiki core call)...
+			
+				if ($pForce || $vTripleStore->exist ($pUser, TRIPLEPROPERTY_USER_ACTIVATIONKEY, $pKey, TRIPLERESSOURCEPREFIX_ACCOUNTSECURITY, TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY) !== null)
+				{
+	
+					// ... We activate the account ...
+								
+					$vRes = $vTripleStore->update ($pUser, TRIPLEPROPERTY_USER_ISACTIVATED, TRIPLEVALUE_USER_ISACTIVATED_NO, TRIPLEVALUE_USER_ISACTIVATED_YES, TRIPLERESSOURCEPREFIX_ACCOUNTSECURITY, TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY); 
+
+					// 0 (succès)
+					// 1 (échec)
+					// 2 ($resource, $property, $oldvalue does not exist)
+					// 3 ($resource, $property, $newvalue already exists)
+							
+					if ($vRes == 0) //succès
+					{
+						// We remove all obsolete activation keys from the database
+					
+						$vTripleStore->delete ($pUser, TRIPLEPROPERTY_USER_ACTIVATIONKEY, null, TRIPLERESSOURCEPREFIX_ACCOUNTSECURITY, TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY);				
+
+						$vActivated = true;						
+					}		
+					else
+					{			
+						$vError = true;						
+						$vAlertMessage .= "Cannot update activation status for user " . $pUser . " (error code = " . $vRes . ")";						
+					}							
+				}
+				else // ... else if the activation key is unknown we report it to the admin to deal with security issues
+				{					
+					// A activation link might have been clicked for a second time					
+					$vAlertMessage .= "The activation key " . (base64_encode($pKey)) . " (base64 encoded) for user " . $pUser .  " is invalid. Security issue ? ";
+					$vError = true;				
+				}
+			}
+			else
+			if ($vIsActivated === TRIPLEVALUE_USER_ISACTIVATED_YES)
+			{
+				// The account is already activated
+				// An activation link might have been clicked for a second time
+				// There is nothing to do
+				
+				$vActivated = true;
+				
+				echo ("The account is already activated. ");
+			}
+			else
+			if ($vIsActivated == null)
+			{				
+				if ($pForce) // The activation status is not yet defined (account creation)
+				{			
+					// We activate the account 
+								
+					$vRes = $vTripleStore->create ($pUser, TRIPLEPROPERTY_USER_ISACTIVATED, TRIPLEVALUE_USER_ISACTIVATED_YES, TRIPLERESSOURCEPREFIX_ACCOUNTSECURITY, TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY); 
+
+					// 0 (succès)
+					// 1 (échec)
+					// 3 ($resource, $property, $value already exists) - should not occures since we tested it before
+							
+					if ($vRes == 0) //succès
+					{
+						// We remove all obsolete activation keys from the database
+					
+						$vTripleStore->delete ($pUser, TRIPLEPROPERTY_USER_ACTIVATIONKEY, null, TRIPLERESSOURCEPREFIX_ACCOUNTSECURITY, TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY);				
+
+						$vActivated = true;			
+					}		
+					else
+					{		
+						$vError = true;						
+						$vAlertMessage .= "Cannot create activation status for user " . $pUser . " (error code = " . $vRes . ")";									
+					}			
+				}
+				else
+				{
+					// It should not occures : the activation process should have added the key before.
+					$vAlertMessage .= "It should not occures : the activation process should have added the IsActivated key before. ";
+					$vError = true;
+				}
+			}
+			else		
+			{
+				// Should not occures : security issue				
+				$vAlertMessage .= "It should not occures : the DB might have been corrupted. ";
+				$vError = true;
+			}
+		}
+		
+		if ($vAlertMessage !== "" && $vWiki->GetConfigValue ("debug") === "yes") echo ($vAlertMessage); // TODO : send $vAlertMessage to the security manager
+		
+		if ($vError && $vWiki->GetConfigValue ("debug") === "yes") echo ("Something wents wrong. ");
+
+		return $vActivated;
+	}	
+
+	/* 
+     * Inactivate a user account
+     * @params : 
+     * - $pUser : the user name
+     * - $pKey : the activation key
+     * - $pForce : boolean indicating if we want to ignore the key and force activation
+	*/
+	
+	public function inactivateUser ($pUser, $pKey, $pForce = false)
+	{				
+		//////////////////////////////////////////
+		// INITIALIZATION
+		
+		// Retrieve wiki and triplestore for further use
+	
+		$vWiki = $this->wiki;	
+		$vTripleStore = $vWiki->services->get(TripleStore::class);
+
+		// There is no alert message and no error yet. The user was not inactivated yet.
+	
+		$vAlertMessage = "";	
+		$vError = false;
+		$vInactivated = false;	
+
+		///////////////////////////////////////////
+		// CHECK PARAMETERS
+
+		// Validate user and key parameters
+
+		if (empty ($pUser))
+		{
+			// Trying to call inactivation with bad parameters : should not occures since the user is using a link provided by yeswiki
+			$vAlertMessage .= "Trying to call inactivation with bad parameters (empty user). ";
+			$vError = true;
+		}
+			
+		if (empty ($vWiki->LoadUser($pUser)))
+		{
+			// Trying to inactivate an inexistent user : the user might have been removed before
+			$vAlertMessage .= "Trying to inactivate an inexistent user. ";
+			$vError = true;
+		}
+		
+		if (!$pForce) // We check the key if needed (through activation link)
+		{
+			if (empty ($pKey))
+			{
+				// Trying to call inactivation with bad parameters : should not occures since the user is using a link provided by yeswiki
+				$vAlertMessage .= "Trying to call inactivation with bad parameters (empty key). ";
+				$vError = true;
+			}
+			
+			if (preg_match ('/[A-Za-z0-9+\/=]+/', $pKey) !== 1)
+			{
+				// The key has an invalid format. It should not occures since the user is using a link provided by yeswiki kernel
+				$vAlertMessage .= "The inactivation key for user " . $pUser . "is in an invalid format : " . (base64_encode($pKey)) . " (base64 encoded). ";
+				$vError = true;
+			}
+		}
+
+		//////////////////////////////////////////
+		// INACTIVATION 
+	
+		// if there was no error we continue the inactivation process
+	
+		if (!$vError)
+		{	
+			// Check the activation status of the user
+			
+			$vIsActivated = $vTripleStore->GetOne ($pUser, TRIPLEPROPERTY_USER_ISACTIVATED, TRIPLERESSOURCEPREFIX_ACCOUNTSECURITY, TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY);
+
+			if ($vIsActivated === TRIPLEVALUE_USER_ISACTIVATED_YES)
+			{			
+				// If the activation/inactivation key for the user exists...
+			
+				if ($pForce || $vTripleStore->exist ($pUser, TRIPLEPROPERTY_USER_INACTIVATIONKEY, $pKey, TRIPLERESSOURCEPREFIX_ACCOUNTSECURITY, TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY) !== null)
+				{
+	
+					// ... We inactivate the account ...
+								
+					$vRes = $vTripleStore->update ($pUser, TRIPLEPROPERTY_USER_ISACTIVATED, TRIPLEVALUE_USER_ISACTIVATED_YES, TRIPLEVALUE_USER_ISACTIVATED_NO, TRIPLERESSOURCEPREFIX_ACCOUNTSECURITY, TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY); 
+
+					// 0 (succès)
+					// 1 (échec)
+					// 2 ($resource, $property, $oldvalue does not exist)
+					// 3 ($resource, $property, $newvalue already exists)
+							
+					if ($vRes == 0) //succès
+					{
+						// We remove all obsolete inactivation keys from the database
+					
+						$vTripleStore->delete ($pUser, TRIPLEPROPERTY_USER_INACTIVATIONKEY, null, TRIPLERESSOURCEPREFIX_ACCOUNTSECURITY, TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY);				
+
+						$vInactivated = true;
+					}		
+					else
+					{			
+						$vError = true;						
+						$vAlertMessage .= "Cannot update activation status for user " . $pUser . " (error code = " . $vRes . ")";						
+					}							
+				}
+				else // ... else if the inactivation key is unknown we report it to the user and the admin
+				{					
+					// A inactivation link might have been clicked for a second time
+					$vError = true;
+					$vAlertMessage = "The inactivation key " . (base64_encode($pKey)) . " (base64 encoded) for user " . $pUser .  " is invalid. Security issue ?";
+				}
+			}
+			else
+			if ($vIsActivated === TRIPLEVALUE_USER_ISACTIVATED_NO)
+			{
+				// The account is already inactivated
+				// An inactivation link might have been clicked for a second time
+				// There is nothing to do
+				
+				$vInactivated = true;
+			}
+			else
+			if ($vIsActivated == null)
+			{				
+				if ($pForce) // The activation status is not yet defined (account creation)
+				{			
+					// We create the status and inactivate the account 
+								
+					$vRes = $vTripleStore->create ($pUser, TRIPLEPROPERTY_USER_ISACTIVATED, TRIPLEVALUE_USER_ISACTIVATED_NO, TRIPLERESSOURCEPREFIX_ACCOUNTSECURITY, TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY); 
+
+					// 0 (succès)
+					// 1 (échec)
+					// 3 ($resource, $property, $value already exists) - should not occures since we tested it before
+							
+					if ($vRes == 0) //succès
+					{
+						// We remove all obsolete activation/inactivation keys from the database
+					
+						$vTripleStore->delete ($pUser, TRIPLEPROPERTY_USER_INACTIVATIONKEY, null, TRIPLERESSOURCEPREFIX_ACCOUNTSECURITY, TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY);				
+
+						$vInactivated = true;
+					}		
+					else
+					{		
+						$vError = true;						
+						$vAlertMessage .= "Cannot create activation status for user " . $pUser . " (error code = " . $vRes . ")";									
+					}			
+				}
+				else
+				{
+					// It should not occures : the inactivation process should have added the key before.
+					$vAlertMessage .= "It should not occures : the inactivation process should have added the IsActivated key before. ";
+					$vError = true;
+				}
+			}
+			else		
+			{
+				// Should not occures : security issue
+				// send $vAlertMessage to the security manager
+				$vAlertMessage .= "It should not occures : the DB might have been corrupted. ";
+				$vError = true;
+			}
+		}
+
+		// If there is an alert me might signal it to the security manager - TO DO
+		
+		if ($vAlertMessage !== "" && $vWiki->GetConfigValue ("debug") === "yes") echo ($vAlertMessage); // TODO : send $vAlertMessage to the security manager
+		
+		if ($vError && $vWiki->GetConfigValue ("debug") === "yes") echo ("Something wents wrong. ");
+
+		return $vInactivated;
+	}	
 
     /**
      * @return User

@@ -55,3 +55,41 @@ define('WIKINI_VOC_ACLS_URI', WIKINI_VOC_PREFIX . WIKINI_VOC_ACLS);
 
 // for package updates
 define('SEMVER', '(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?');
+
+//////////////////////////////////////////////////////////////////////// - yg
+// ForUser signin validation process and login
+
+// User Activation/Inactivation pages
+
+define ("ACTIVATEUSERPAGE", "ActivateUser");
+define ("INACTIVATEUSERPAGE", "InactivateUser");
+
+// $_GET parameters name for activation/inactivation link
+
+define ("ACTIONPARAMETER_ACTIVATEUSER_USER", "u");	// user
+define ("ACTIONPARAMETER_ACTIVATEUSER_KEY", "k");	// key
+
+define ("ACTIONPARAMETER_INACTIVATEUSER_USER", ACTIONPARAMETER_ACTIVATEUSER_USER);
+define ("ACTIONPARAMETER_INACTIVATEUSER_KEY", ACTIONPARAMETER_ACTIVATEUSER_KEY);
+
+// Make it harder for a potential hacker who might have access to the DB and not the FS to read and understand the meaning of properties and values in the triples table
+// It is perhaps unusefull at his points since it may be understood quite easily by changing the values in the DB but it has no cost to do it since we use constants ("Y" = "whatever we want", ...)
+// Furthermore the activation status and key might be encrypted with a per-server generated key stored in the FS so that activating/inactivating an account by modifying the values in DB becomes "impossible"
+// The strings used are composed of 0 and O, more confusing for the eyes. Furthermore there is the same numbers of O and 0 to try to deal with statistics crytanaalysis.
+
+define ("TRIPLERESSOURCEPREFIX_ACCOUNTSECURITY", '');			// Prefixes used in the 
+define ("TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY", "0O0O00OO");	// TripleStore methods : create, update, delete, etc...
+define ("TRIPLEVALUEPREFIX_ACCOUNTSECURITY", TRIPLEPROPERTYPREFIX_ACCOUNTSECURITY); // Add confusion for values
+	
+define ("TRIPLEPROPERTY_USER_ACTIVATIONKEY", 		"0O00O0OO"); // properties name must differ (case insensitive)
+define ("TRIPLEPROPERTY_USER_INACTIVATIONKEY", 		"00O0O0OO");
+define ("TRIPLEPROPERTY_USER_ISACTIVATED", 			"0O0O00OO");
+	
+define ("TRIPLEVALUE_USER_ISACTIVATED_YES", TRIPLEVALUEPREFIX_ACCOUNTSECURITY .	"0O0OO00O"); // values name must differ (case insensitive)
+define ("TRIPLEVALUE_USER_ISACTIVATED_NO", TRIPLEVALUEPREFIX_ACCOUNTSECURITY .	"0O0O0O0O");
+
+//
+////////////////////////////////////////////////////////////////////////
+
+
+

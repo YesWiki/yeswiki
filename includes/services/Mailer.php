@@ -121,7 +121,7 @@ class Mailer
     public function sendEmailFromAdmin(string $address, string $subject, string $text, string $html = "")
     {
         include_once 'includes/email.inc.php';
-        send_mail(
+        return send_mail(
             $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
             $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
             $address,

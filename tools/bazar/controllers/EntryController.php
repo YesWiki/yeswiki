@@ -32,7 +32,7 @@ class EntryController extends YesWikiController
     protected $templateEngine;
     protected $config;
     protected $securityController;
-
+    
     private $parentsEntries ;
 
     public function __construct(
@@ -236,7 +236,7 @@ class EntryController extends YesWikiController
             list($state, $error) = $this->securityController->checkCaptchaBeforeSave('entry');
             try {
                 if ($state && isset($_POST['bf_titre'])) {
-                    $entry = $this->entryManager->create($formId, $_POST);
+                    $entry = $this->entryManager->create($formId, $_POST);                    
                     if (empty($redirectUrl)) {
                         $redirectUrl = $this->wiki->Href(
                             testUrlInIframe(),
