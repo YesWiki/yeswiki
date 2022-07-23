@@ -3,6 +3,12 @@ Not much to it (as long as it works, ahem). Unpack/upload the distribution files
 into a directory that can be accessed via the web. Then go to the corresponding URL.  
 A web-based installer will walk you through the rest.
 
+**Important**: If copied from Github repository, YesWiki needs to work some files 
+installed via `composer`. So after downloading/synchroning files on your server, 
+start the comment `composer install`.
+_You can find information about installation of `composer` at the following link_:
+https://getcomposer.org/
+
 #### Example:
 If your website, say, http://www.mysite.com, is mapped to the directory /home/jdoe/www/,
 and you place the YesWiki distribution files into /home/jdoe/www/wiki/, you should go to

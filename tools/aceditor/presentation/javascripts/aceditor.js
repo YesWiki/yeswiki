@@ -351,8 +351,14 @@ var SYNTAX = {
       </div>
       <div class="radio">
         <label>
-          <input type="radio" name="linkOptions" id="linkOptions1" value="int" checked><span></span>
+          <input type="radio" name="linkOptions" id="linkOptions1" value="int"><span></span>
           `+wiki.lang['ACEDITOR_LINK_OPEN_IN_CURRENT_TAB']+` 
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="linkOptions" id="linkOptions1bis" value="intactionsyntax" checked><span></span>
+          `+wiki.lang['ACEDITOR_LINK_OPEN_IN_CURRENT_TAB_ACTION_SYNTAX']+` 
         </label>
       </div>
       <div class="radio">
@@ -400,6 +406,8 @@ var SYNTAX = {
                 var replacement = '{{button class="new-window" link="' + realLink + '" nobtn="1" text="'+text+'" title="'+text+'"}}';
               } else if($('#YesWikiLinkModal .radio input[value="modal"]').is(':checked') && realLink) {
                 var replacement = '{{button class="modalbox" nobtn="1" link="'+realLink+'" text="'+text+'" title="'+text+'"}}';
+              } else if ($('#YesWikiLinkModal .radio input[value="intactionsyntax"]').is(':checked') && realLink) {
+                var replacement = '{{button nobtn="1" link="'+realLink+'" text="'+text+'" title="'+text+'"}}';
               } else if (realLink) {
                 var replacement = '[[' + realLink + ' '+text+']]';
               }
