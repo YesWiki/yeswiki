@@ -80,7 +80,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
         return (in_array($offset, self::PROPS_LIST));
     }
 
-    public function offsetGet($offset)
+    public function offsetGet($offset) : mixed
     {
         if (!$this->offsetExists($offset)) {
             throw new UserNotExistingOffset("Not existing $offset in User!");
