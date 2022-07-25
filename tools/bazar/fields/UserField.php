@@ -128,14 +128,14 @@ class UserField extends BazarField
             $wikiName = $entry[$this->nameField];
 
             if (!$wiki->IsWikiName($wikiName)) {
+                // create a UserName from value that is a wikiname
+                // so the User could have a chance to have the same name as the created entry
+                // if the name is based on `bf_titre`
                 $wikiName = genere_nom_wiki($wikiName, 0);
             }
             if ($this->isUserByName($wikiName)) {
                 $currentWikiName = $wikiName;
-                // If user exist, add a number
-                while ($this->isUserByName($wikiName)) {
-                    $wikiName = genere_nom_wiki($wikiName);
-                }
+                $wikiName = $this->findANewNotExistingUserName($currentWikiName);
                 if (!$isImport
                     && (
                         !isset($_POST[$this->propertyName.self::CONFIRM_NAME_SUFFIX])
@@ -365,5 +365,23 @@ class UserField extends BazarField
             return true;
         }
         return false;
+    }
+
+    private function findANewNotExistingUserName(string $firstWikiName): string
+    {
+        // remove last numbers
+        $baseWikiName = preg_replace("/[0-9]*$/", "", $firstWikiName);
+
+        // a loop 1000 should be enough
+        for ($i=1; $i < 1000; $i++) {
+            $newName = "$baseWikiName$i";
+            if (!$this->isUserByName($newName)) {
+                return $newName;
+            }
+        }
+
+        // if here, this is because all new usernames are existing
+        // it could be an error
+        throw new UserFieldException('Impossible to find a new user name !');
     }
 }
