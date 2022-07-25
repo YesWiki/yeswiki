@@ -149,18 +149,6 @@ class AuthController extends YesWikiController
                 }
             }
         }
-        if (empty($user) && !empty($_COOKIE['name']) && is_string($_COOKIE['name'])) {
-            $user = $this->userManager->getOneByName($_COOKIE['name']);
-            $remember = $_COOKIE['remember'] ?? 0;
-            if (!empty($user) && (
-                empty($_COOKIE['password']) ||
-                    !is_string($_COOKIE['password']) ||
-                    $_COOKIE['password'] != $user['password'] // this is the key point where comparisn is done with password
-            )) {
-                // not right connected user
-                $user = null;
-            }
-        }
         if (empty($user)) {
             $this->logout();
         } else {
@@ -204,9 +192,22 @@ class AuthController extends YesWikiController
         );
         if (!$this->wiki->isCli()) {
             // prevent setting cookies in CLI (could be errors)
-            $this->wiki->SetPersistentCookie('name', $user['name'], $remember);
-            $this->wiki->SetPersistentCookie('password', $user['password'], $remember);
-            $this->wiki->SetPersistentCookie('remember', $remember, $remember);
+
+            // update session cookies to be persistent or not
+            $this->updateSessionCookieExpires(
+                $remember
+                // 90 days like Session.class->setPersistentCookie()
+                ? time()+60*60*24*90
+                // only session as default behaviour
+                : 0
+            );
+            // TODO : find a more secure way to autologin
+            // (see https://www.php.net/manual/en/features.session.security.management.php#features.session.security.management.session-and-autologin)
+
+            // clean old cookies TODO for ectoplasme, remove this part
+            $this->wiki->DeleteCookie('name');
+            $this->wiki->DeleteCookie('password');
+            $this->wiki->DeleteCookie('remember');
         }
     }
 
@@ -215,9 +216,24 @@ class AuthController extends YesWikiController
         $_SESSION['user'] = '';
         if (!$this->wiki->isCli()) {
             // prevent setting cookies in CLI (could be errors)
+
+            // update session cookies to be only for session
+            $this->updateSessionCookieExpires(0);
+
+            // clean old cookies TODO for ectoplasme, remove this part
             $this->wiki->DeleteCookie('name');
             $this->wiki->DeleteCookie('password');
             $this->wiki->DeleteCookie('remember');
         }
+    }
+
+    private function updateSessionCookieExpires(int $expires)
+    {
+        $sessionParams = session_get_cookie_params();
+        $newParams= array_filter($sessionParams, function ($v, $k) {
+            return in_array($k, ['path','domain','secure','httponly','samesite']);
+        }, ARRAY_FILTER_USE_BOTH);
+        $newParams['expires']= $expires;
+        setcookie(session_name(), session_id(), $newParams);
     }
 }
