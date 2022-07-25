@@ -18,6 +18,7 @@ use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
@@ -278,7 +279,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     */
     public function isInGroup(string $groupName, ?string $username = null, bool $admincheck = true)
     {
-        return $this->wiki->CheckACL($this->wiki->GetGroupACL($groupName), $username, $admincheck);
+        // aclService could  not be loaded in __construct because AclService already loads UserManager
+        return $this->wiki->services->get(AclService::class)->check($this->wiki->GetGroupACL($groupName), $username, $admincheck);
     }
 
     /* ~~~~~~~~~~~~~~~~~~ implements  PasswordUpgraderInterface ~~~~~~~~~~~~~~~~~~ */

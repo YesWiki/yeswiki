@@ -7,21 +7,29 @@ use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\EmailField;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\UserManager;
 use YesWiki\Wiki;
 
 class Guard
 {
-    protected $wiki;
+    protected $aclService;
     protected $authController;
     protected $formManager;
-    protected $aclService;
+    protected $userManager;
+    protected $wiki;
 
-    public function __construct(Wiki $wiki, AuthController $authController, FormManager $formManager, AclService $aclService)
-    {
-        $this->wiki = $wiki;
-        $this->formManager = $formManager;
-        $this->authController = $authController;
+    public function __construct(
+        AclService $aclService,
+        AuthController $authController,
+        FormManager $formManager,
+        UserManager $userManager,
+        Wiki $wiki
+    ) {
         $this->aclService = $aclService;
+        $this->authController = $authController;
+        $this->formManager = $formManager;
+        $this->userManager = $userManager;
+        $this->wiki = $wiki;
     }
 
     // TODO remove this method and use YesWiki::HasAccess
@@ -31,7 +39,7 @@ class Guard
         $isOwner = $ownerId === $loggedUserName || $ownerId === '';
 
         // Admins are allowed all actions
-        if ($GLOBALS['wiki']->UserIsInGroup('admins')) {
+        if ($this->userManager->isInGroup('admins')) {
             return true;
         }
 
