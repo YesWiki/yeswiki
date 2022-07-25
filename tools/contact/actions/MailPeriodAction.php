@@ -54,7 +54,7 @@ class MailPeriodAction extends YesWikiAction
     {
         foreach ($periods as $period => $config) {
             $group = $this->groupName($period);
-            $periods[$period]['subscribed'] = $this->userManager->UserIsInGroup($group, $userName, false);
+            $periods[$period]['subscribed'] = $this->userManager->isInGroup($group, $userName, false);
             $periods[$period]['group'] = $this->groupName($period);
         }
         return $periods;
