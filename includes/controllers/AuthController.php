@@ -149,18 +149,6 @@ class AuthController extends YesWikiController
                 }
             }
         }
-        if (empty($user) && !empty($_COOKIE['name']) && is_string($_COOKIE['name'])) {
-            $user = $this->userManager->getOneByName($_COOKIE['name']);
-            $remember = $_COOKIE['remember'] ?? 0;
-            if (!empty($user) && (
-                empty($_COOKIE['password']) ||
-                    !is_string($_COOKIE['password']) ||
-                    $_COOKIE['password'] != $user['password'] // this is the key point where comparisn is done with password
-            )) {
-                // not right connected user
-                $user = null;
-            }
-        }
         if (empty($user)) {
             $this->logout();
         } else {
