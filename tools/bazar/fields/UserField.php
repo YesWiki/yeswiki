@@ -329,7 +329,7 @@ class UserField extends BazarField
                     }
                 } else {
                     $groupName = substr($groupName, 1);
-                    if ($this->userMustBeAddedToGroup($wikiName, $groupName, $forceGroupCreation, $wiki, $existingsGroups)) {
+                    if ($this->userMustBeAddedToGroup($wikiName, $groupName, $forceGroupCreation, $userManager, $existingsGroups)) {
                         $groupsNames[] = $groupName;
                     }
                 }
