@@ -192,9 +192,10 @@ class AuthController extends YesWikiController
         );
         if (!$this->wiki->isCli()) {
             // prevent setting cookies in CLI (could be errors)
-            $this->wiki->SetPersistentCookie('name', $user['name'], $remember);
-            $this->wiki->SetPersistentCookie('password', $user['password'], $remember);
-            $this->wiki->SetPersistentCookie('remember', $remember, $remember);
+            // clean old cookies TODO for ectoplasme, remove this part
+            $this->wiki->DeleteCookie('name');
+            $this->wiki->DeleteCookie('password');
+            $this->wiki->DeleteCookie('remember');
         }
     }
 
@@ -203,6 +204,7 @@ class AuthController extends YesWikiController
         $_SESSION['user'] = '';
         if (!$this->wiki->isCli()) {
             // prevent setting cookies in CLI (could be errors)
+            // clean old cookies TODO for ectoplasme, remove this part
             $this->wiki->DeleteCookie('name');
             $this->wiki->DeleteCookie('password');
             $this->wiki->DeleteCookie('remember');
