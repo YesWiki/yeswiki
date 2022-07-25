@@ -192,6 +192,18 @@ class AuthController extends YesWikiController
         );
         if (!$this->wiki->isCli()) {
             // prevent setting cookies in CLI (could be errors)
+
+            // update session cookies to be persistent or not
+            $this->updateSessionCookieExpires(
+                $remember
+                // 90 days like Session.class->setPersistentCookie()
+                ? time()+60*60*24*90
+                // only session as default behaviour
+                : 0
+            );
+            // TODO : find a more secure way to autologin
+            // (see https://www.php.net/manual/en/features.session.security.management.php#features.session.security.management.session-and-autologin)
+
             // clean old cookies TODO for ectoplasme, remove this part
             $this->wiki->DeleteCookie('name');
             $this->wiki->DeleteCookie('password');
@@ -204,10 +216,24 @@ class AuthController extends YesWikiController
         $_SESSION['user'] = '';
         if (!$this->wiki->isCli()) {
             // prevent setting cookies in CLI (could be errors)
+
+            // update session cookies to be only for session
+            $this->updateSessionCookieExpires(0);
+
             // clean old cookies TODO for ectoplasme, remove this part
             $this->wiki->DeleteCookie('name');
             $this->wiki->DeleteCookie('password');
             $this->wiki->DeleteCookie('remember');
         }
+    }
+
+    private function updateSessionCookieExpires(int $expires)
+    {
+        $sessionParams = session_get_cookie_params();
+        $newParams= array_filter($sessionParams, function ($v, $k) {
+            return in_array($k, ['path','domain','secure','httponly','samesite']);
+        }, ARRAY_FILTER_USE_BOTH);
+        $newParams['expires']= $expires;
+        setcookie(session_name(), session_id(), $newParams);
     }
 }
