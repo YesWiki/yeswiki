@@ -1,11 +1,12 @@
 window.$docsify = {
-    homepage: 'docs/fr/README.md',
-    loadSidebar: 'docs/fr/_sidebar.md',
-    loadNavbar: 'docs/fr/_navbar.md',
+    homepage: `docs/${wiki.locale}/README.md`,
+    loadSidebar: true,
+    loadNavbar: true,
     subMaxLevel: 3,
     relativePath: false,
     auto2top: true,
-    name: 'Documentation YesWiki',
+    fallbackLanguages: ['en',`${wiki.locale}`],
+    name: _t('DOCUMENTATION_TITLE'),
     nameLink: {
       '/en/': '#/en/',
       '/es/': '#/es/',
@@ -13,14 +14,19 @@ window.$docsify = {
       '/fr': '#/fr',
       '/': '#/'
     },
-    repo: '',
-    copyCode: {
-      buttonText : 'Copier',
-      errorText  : 'Erreur',
-      successText: 'Copié'
-    },
+    // repo: 'https://github.com/YesWiki/yeswiki/',
+    // copyCode: { // not used because extension copy code not installed
+    //   buttonText : 'Copier',
+    //   errorText  : 'Erreur',
+    //   successText: 'Copié'
+    // },
     alias: {
-      '/fr' : '/'
+      '/([a-z]{2})/(.*)/(.*)': '/docs/$1/$2/$3', // remove 'docs' in url
+      '/([a-z]{2})/(.*)': '/docs/$1/$2', // remove 'docs' in url
+      ['/_sidebar.md']: `/docs/${wiki.locale}/_sidebar.md`, // set default _sidebar.md to locale language
+      ['/_navbar.md']: `/docs/${wiki.locale}/_navbar.md`, // set default _sidebar.md to locale language
+      [`/${wiki.locale}`]: '/',
+      'readme.md': `/docs/${wiki.locale}/README.md`,
     },
     search: {
       placeholder: {
@@ -36,7 +42,7 @@ window.$docsify = {
         '/': 'Pas de résultat...'
       },
       depth: 2,
-      pathNamespaces: ['/fr/', '/', '/cat/', '/es/'],
+      pathNamespaces: ['/fr/', '/en/','/', '/cat/', '/es/'],
 
     }
 }

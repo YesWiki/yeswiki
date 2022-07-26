@@ -43,6 +43,9 @@ return [
     "REVISIONS_DIFF" => "Comparison to the current revision",
     "REVISIONS_PREVIEW" => "Preview of this revision",
 
+    // javascripts/documentation.js
+    "DOCUMENTATION_TITLE" => "YesWiki documentation",
+
     // javascripts/favorites.js
     'FAVORITES_ADD' => 'Add to favorites',
     'FAVORITES_ALL_DELETED' => 'Favorites deleted',

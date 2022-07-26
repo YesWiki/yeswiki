@@ -1,8 +1,6 @@
-<!-- _navbar.md -->
-
 * Langue
 
-  * [Francais](/)
-  * [Anglais](/docs/en/)
-  * [Espagnol](/docs/es/)
-  * [Catalan](/docs/cat/)
+  * [Francais](/fr/)
+  * [Anglais](/en/)
+  * [Espagnol](/es/)
+  * [Catalan](/cat/)
