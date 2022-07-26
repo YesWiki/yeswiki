@@ -277,7 +277,10 @@ window.bazarVueApp.component('BazarMap', {
             bazarMap.entries.forEach(entry => bazarMap.createMarker(entry))
             let entries = bazarMap.entries.filter(entry => entry.marker) // remove entries without marker (prob error creating it)
             if (bazarMap.params.cluster) {
-              bazarMap.$refs.cluster.addLayers(entries.map(entry => entry.marker))
+              if (bazarMap.$refs.cluster){
+                // cluster could be undefined before mounting component
+                bazarMap.$refs.cluster.addLayers(entries.map(entry => entry.marker))
+              }
             } else {
               oldVal.filter(entry => entry.marker).forEach(entry => entry.marker.remove())
               entries.forEach(entry => {
