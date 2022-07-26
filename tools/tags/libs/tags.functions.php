@@ -160,7 +160,7 @@ function get_title_from_body($page)
 
 function encodingFromUTF8($matches)
 {
-    return iconv('UCS-4LE', 'UTF-8', pack('V', hexdec('U'.$matches[0])));
+    return iconv('UCS-4LE', 'UTF-8', pack('V', hexdec($matches[1])));
 }
 
 function get_image_from_body($page)
