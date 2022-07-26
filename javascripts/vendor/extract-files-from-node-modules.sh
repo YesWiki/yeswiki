@@ -17,15 +17,21 @@ mkdir -p styles/vendor/bootstrap/css && \
 mkdir -p styles/vendor/bootstrap && cp -f -r node_modules/bootstrap/dist/fonts styles/vendor/bootstrap
 
 #  Vue
-mkdir -p javascripts/vendor/vue && cp -f node_modules/vue/dist/{vue.js,vue.min.js} javascripts/vendor/vue
+mkdir -p javascripts/vendor/vue && \
+  cp -f node_modules/@vue/compat/dist/vue.global.js javascripts/vendor/vue/vue.js && \
+  cp -f node_modules/@vue/compat/dist/vue.global.prod.js javascripts/vendor/vue/vue.min.js
 # Vue Select
 mkdir -p javascripts/vendor/vue-select && cp -f node_modules/vue-select/dist/vue-select.js javascripts/vendor/vue-select/vue-select.min.js
 mkdir -p styles/vendor/vue-select && cp -f node_modules/vue-select/dist/vue-select.css styles/vendor/vue-select
 # Vue Leaflet
-mkdir -p javascripts/vendor/vue2-leaflet && cp -f node_modules/vue2-leaflet/dist/vue2-leaflet.min.js javascripts/vendor/vue2-leaflet/vue2-leaflet.js
+mkdir -p javascripts/vendor/vue-leaflet && \
+  cp -f node_modules/@vue-leaflet/vue-leaflet/dist/vue-leaflet.umd.js javascripts/vendor/vue-leaflet/vue-leaflet.js && \
+  cp -f node_modules/@vue-leaflet/vue-leaflet/dist/vue-leaflet.umd.js.map javascripts/vendor/vue-leaflet
 
 # Leaflet
-mkdir -p javascripts/vendor/leaflet && cp -f node_modules/leaflet/dist/leaflet.js javascripts/vendor/leaflet/leaflet.min.js
+mkdir -p javascripts/vendor/leaflet && \
+  cp -f node_modules/leaflet/dist/leaflet.js javascripts/vendor/leaflet/leaflet.min.js && \
+  cp -f node_modules/leaflet/dist/leaflet.js.map javascripts/vendor/leaflet/
 mkdir -p styles/vendor/leaflet && cp -f node_modules/leaflet/dist/leaflet.css styles/vendor/leaflet
 cp -f -r node_modules/leaflet/dist/images styles/vendor/leaflet
 # Leaflet Markercluster

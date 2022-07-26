@@ -21,7 +21,9 @@
         <div class="form-group" v-show="Object.keys(this.actions).length > 1">
           <label class="control-label">{{ isBazarListeAction ? '<?php echo _t('ACTION_BUILDER_CHOOSE_TEMPLATE'); ?>' : '<?php echo _t('ACTION_BUILDER_CHOOSE_ACTION'); ?>' }}</label>
           <select v-model="selectedActionId" required class="form-control">
-            <option v-for="(action, actionId) in actions" v-if="action.label" :value="actionId">{{ action.label }}</option>
+            <template v-for="(action, actionId) in actions" :key="action">
+              <option v-if="action.label" :value="actionId">{{ action.label }}</option>
+            </template>
           </select>
         </div>
 
@@ -38,8 +40,8 @@
                  :style="{width: panel.params.width || (configPanels.length == 1 ? '50%' : '33%')}" v-show="checkVisibility(panel.params)">
               <h3>{{ panel.params.title ? panel.params.title : '<?php echo _t('ACTION_BUILDER_PARAMETERS') ?>'}}</h3>
               <div class="config-panel-content">
-                <template v-for="(config, propName) in panel.params.properties">
-                  <component :is="componentIdFrom(config)" :key="propName" :ref="refFrom(config)"
+                <template v-for="(config, propName) in panel.params.properties" :key="propName" >
+                  <component :is="componentIdFrom(config)" :ref="refFrom(config)"
                              :value="values[propName]" v-on:input="updateValue(propName, $event)"
                              v-show="checkVisibility(config)"
                              :name="propName" :values="values"

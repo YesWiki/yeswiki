@@ -1,6 +1,7 @@
 // Text/Number/Color/slider
 export default {
   props: [ 'value', 'config', 'selectedForm' ],
+  emits: ['input'],
   data() {
     return {
       fields: []
@@ -20,15 +21,18 @@ export default {
     }
   },
   watch: {
-    fields() {
-      this.$emit('input', this.fields.map(f => f.id).join(','))
-    },
+    fields: {
+      handler(val, oldVal) {
+        this.$emit('input', this.fields.map(f => f.id).join(','))
+      },
+      deep: true // to force following mutations
+    }
   },
   template: `
     <div class="form-group" :class="config.type" :title="config.hint" >
       <label v-if="config.label" class="control-label">{{ config.label }}</label>
       
-      <v-select v-if="config.multiple" v-model="fields" :options="fieldOptions" label="id" :multiple="true">
+      <v-select v-if="config.multiple" v-model:value="fields" :options="fieldOptions" label="id" :multiple="true">
         <template v-slot:option="option">
           <span v-html="option.label"></span> - {{ option.id }}
         </template>
@@ -36,9 +40,11 @@ export default {
       
       <select v-else :value="value" v-on:input="$emit('input', $event.target.value)" class="form-control">
         <option value=""></option>
-        <option v-for="field in fieldOptions" v-if="field.label" :value="field.id">
-          <span v-html="field.label"></span> - {{ field.id }}
-        </option>
+        <template v-for="field in fieldOptions">
+          <option v-if="field.label" :value="field.id">
+            <span v-html="field.label"></span> - {{ field.id }}
+          </option>
+        </template>
       </select>
       
       <input-hint :config="config"></input-hint>

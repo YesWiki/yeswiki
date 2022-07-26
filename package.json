@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
+    "@types/leaflet": "1.5.7",
+    "@vue-leaflet/vue-leaflet": "^0.6.1",
+    "@vue/compat": "^3.2.37",
     "bootstrap": "^3",
     "datatables.net-bs": "^1.11.3",
     "datatables.net-buttons-bs": "^2.2.1",
@@ -29,8 +32,7 @@
     "moment": "^2.29.2",
     "node-fetch": "^2.6.7",
     "spectrum-colorpicker2": "^2.0.8",
-    "vue": "^2.6.14",
-    "vue-select": "^3.13.0",
-    "vue2-leaflet": "^2.7.1"
+    "vue": "^3.2.37",
+    "vue-select": "^3.13.0"
   }
 }

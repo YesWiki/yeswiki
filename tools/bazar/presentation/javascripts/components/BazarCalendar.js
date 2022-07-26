@@ -1,6 +1,8 @@
 import ButtonIcs from './BazarCalendar_ButtonICS.js';
 
-Vue.component('BazarCalendar', {
+const { nextTick } = Vue
+
+window.bazarVueApp.component('BazarCalendar', {
   props: [ 'params' ],
   components: {
     ButtonIcs
@@ -261,26 +263,36 @@ Vue.component('BazarCalendar', {
     },
   },
   watch: {
-    selectedEntry: function (newVal, oldVal) {
-      if (this.selectedEntry) {
-        if (this.params['entrydisplay'] == 'sidebar')
-          this.$root.getEntryRender(this.selectedEntry)
-      }
+    selectedEntry: {
+      handler (newVal, oldVal) {
+        if (this.selectedEntry) {
+          if (this.params['entrydisplay'] == 'sidebar')
+            this.$root.getEntryRender(this.selectedEntry)
+        }
+      },
+      deep: false,
     },
-    params() {
-      this.mountCalendar();
+    params: {
+      handler() {
+        this.mountCalendar();
+      },
+      deep: true
     },
-    entries(newVal, oldVal) {
-      let newIds = newVal.map(e => e.id_fiche)
-      let oldIds = oldVal.map(e => e.id_fiche)
-      if (!this.arraysEqual(newIds, oldIds)) {
-        let entries = this.entries;
-        this.$nextTick(function() {
-            this.calendar.getEventSources().forEach(source => source.remove());
-            this.addEntries(entries);
-          }
-        );
-      }
+    entries:{
+      handler(newVal, oldVal) {
+        let newIds = newVal.map(e => e.id_fiche)
+        let oldIds = oldVal.map(e => e.id_fiche)
+        if (!this.arraysEqual(newIds, oldIds)) {
+          let entries = this.entries;
+          let bazarCalendar = this;
+          nextTick(function() {
+              bazarCalendar.calendar.getEventSources().forEach(source => source.remove());
+              bazarCalendar.addEntries(entries);
+            }
+          );
+        }
+      },
+      deep: true
     }
   },
   template: `

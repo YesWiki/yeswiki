@@ -20,8 +20,8 @@
 
     {# Timeline #}
     <div class="timeline-container">
-      <template v-for="revision in revisions">
-        <div class="timeline-item" :key="revision.id"
+      <template v-for="revision in revisions" :key="revision.id">
+        <div class="timeline-item"
             :style="timelineItemStyle(revision)"
             :class="{active: selectedRevision == revision}"
             @click="selectedRevision = revision">

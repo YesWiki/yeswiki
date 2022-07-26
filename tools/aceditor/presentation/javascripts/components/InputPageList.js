@@ -1,5 +1,6 @@
 export default {
   props: [ 'value', 'config' ],
+  emits: ['input'],
   computed: {
     pageList() {
       $.ajax({

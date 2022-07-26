@@ -4,6 +4,7 @@ import InputFormField from './InputFormField.js'
 export default {
   props: [ 'name', 'value', 'config', 'selectedForm', 'values' ],
   components: { InputFormField },
+  emits: ['input'],
   mixins: [ InputHelper ],
   data() {
     return {
