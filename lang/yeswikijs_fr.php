@@ -43,6 +43,9 @@ return [
     "REVISIONS_DIFF" => "Comparaison avec version actuelle",
     "REVISIONS_PREVIEW" => "Aperçu de cette version",
 
+    // javascripts/documentation.js
+    "DOCUMENTATION_TITLE" => "Documentation YesWiki",
+
     // javascripts/favorites.js
     'FAVORITES_ADD' => 'Ajouter aux favoris',
     'FAVORITES_ALL_DELETED' => 'Favoris supprimés',
