@@ -5,6 +5,9 @@ node_modules
 !javascripts/vendor
 !styles/vendor
 
+# SEO
+robots.txt
+
 # YesWiki stuff
 wakka.config.php
 info.php
