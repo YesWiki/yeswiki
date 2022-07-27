@@ -181,22 +181,24 @@ if (!isset($config['allow_robots']) || $config['allow_robots'] != '1') {
     // update robots.txt file
     if (file_exists('robots.txt')) {
         $robotFile = file_get_contents('robots.txt');
-        // Append User-agent
-        $strToAppend = 'User-agent: *';
-        $endLine = "\n";
-        if (strpos($strToAppend."\r\n", $robotFile) != false) {
-            $endLine = "\r\n";
+        // replace text
+        if (preg_match(
+            "/User-agent: \*(\r?\n?)(?:\s*(?:Disa|A)llow:\s*\/\s*)?/",
+            $robotFile,
+            $matches
+        )) {
+            $robotFile = preg_replace(
+                "/User-agent: \*(\r?\n?)(?:\s*(?:Disa|A)llow:\s*\/\s*)?/",
+                "User-agent: *$1Disallow: /$1",
+                $robotFile
+            );
+        } else {
+            $robotFile .= "\nUser-agent: *\n";
+            $robotFile .= "Disallow: /\n";
         }
-
-        $robotFile = str_replace(
-            $strToAppend.$endLine,
-            $strToAppend.$endLine.
-            'Disallow: /'.$endLine,
-            $robotFile
-        );
     } else {
-        $robotFile .= "User-agent: *\r\n";
-        $robotFile .= "Disallow: /\r\n";
+        $robotFile = "User-agent: *\n";
+        $robotFile .= "Disallow: /\n";
     }
     // save robots.txt file
     file_put_contents('robots.txt', $robotFile);
@@ -206,6 +208,30 @@ if (!isset($config['allow_robots']) || $config['allow_robots'] != '1') {
         $config['meta'] ?? [],
         ['robots' => 'noindex,nofollow,max-image-preview:none,noarchive,noimageindex']
     );
+} else {
+    if (file_exists('robots.txt')) {
+        $robotFile = file_get_contents('robots.txt');
+        // replace text
+        if (preg_match(
+            "/User-agent: \*(\r?\n?)(?:\s*(?:Disa|A)llow:\s*\/\s*)?/",
+            $robotFile,
+            $matches
+        )) {
+            $robotFile = preg_replace(
+                "/User-agent: \*(\r?\n?)(?:\s*(?:Disa|A)llow:\s*\/\s*)?/",
+                "User-agent: *$1Allow: /$1",
+                $robotFile
+            );
+        } else {
+            $robotFile .= "\nUser-agent: *\n";
+            $robotFile .= "Allow: /\n";
+        }
+    } else {
+        $robotFile = "User-agent: *\n";
+        $robotFile .= "Allow: /\n";
+    }
+    // save robots.txt file
+    file_put_contents('robots.txt', $robotFile);
 }
 
 
