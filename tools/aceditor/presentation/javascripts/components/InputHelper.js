@@ -37,22 +37,32 @@ export default {
     refFrom(config) {
       return config.subproperties || config.type == "geo" ? 'specialInput' : ''
     },
-    getFieldsFormSelectedForms(selectedForms){
+    getFieldsFormSelectedForms(selectedForms, fakeFields = []){
       let fields = [];
       for (const key in selectedForms) {
-        if (typeof selectedForms[key].prepared == 'object') {
-          Object.values(selectedForms[key].prepared).forEach((field)=>{
+        let prepared = (typeof selectedForms[key].prepared == 'object')
+          ? Object.values(selectedForms[key].prepared)
+          : selectedForms[key].prepared;
+        
+        prepared.forEach((field)=>{
             if (fields.every((f)=>(!f.id && field.id) ||(f.id && !field.id) || f.id != field.id)){
               fields.push(field);
             }
           });
-        } else if (Array.isArray(selectedForms[key].prepared)){
-          selectedForms[key].prepared.forEach((field)=>{
-            if (fields.every((f)=>(!f.id && field.id) ||(f.id && !field.id) || f.id != field.id)){
-              fields.push(field);
-            }
-          });
-        }
+      }
+      if (fakeFields.includes("formId")){
+        let options = {};
+        Object.keys(this.selectedForms).forEach((key)=>{
+          options[key] = this.selectedForms[key]['bn_label_nature'] || key;
+        });
+        // fake a field
+        fields.push({
+          id: 'id_typeannonce',
+          name: 'id_typeannonce',
+          propertyName: 'id_typeannonce',
+          label: 'Id',
+          options: {...options} // clone object
+        });
       }
       return fields;
     }

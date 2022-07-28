@@ -8,8 +8,14 @@ export default {
       // Get the data from a specific form field
       if (this.config.dataFromFormField) {
         if (!this.selectedForms || !this.values[this.config.dataFromFormField]) return []
-        let fields = this.getFieldsFormSelectedForms(this.selectedForms)
+        let fields = this.getFieldsFormSelectedForms(
+          this.selectedForms,
+          this.config.includeFormId && Object.keys(this.selectedForms).length > 1
+            ? ["formId"]
+            : []
+        )
         var fieldConfig = fields.find(e => e.id == this.values[this.config.dataFromFormField])
+        console.log({fieldConfig,dataFromFormField:this.config.dataFromFormField,value:this.values[this.config.dataFromFormField]})
         return fieldConfig ? fieldConfig.options : []
       }
       // Options are provided in configuration

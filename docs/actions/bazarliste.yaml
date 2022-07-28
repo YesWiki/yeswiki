@@ -55,6 +55,7 @@ actions:
       colorfield:
         label: _t(AB_bazar_commons_colorfield_label)
         type: form-field
+        includeFormId: true
         only: lists # ce champ doit être de type checkboxListe, listeListe ...
         showOnlyFor:
           - bazarcarto
@@ -75,6 +76,7 @@ actions:
           id:
             label: _t(AB_bazar_commons_subproperty_id_label)
             type: list
+            includeFormId: true
             dataFromFormField: colorfield
           color:
             label: _t(AB_bazar_commons_colormapping_color_label)
@@ -82,6 +84,7 @@ actions:
       iconfield:
         label: _t(AB_bazar_commons_iconfield_label)
         type: form-field
+        includeFormId: true
         only: lists # ce champ doit être de type checkboxListe, listeListe ...
         showOnlyFor:
           - bazarcarto
@@ -102,6 +105,7 @@ actions:
           id:
             label: _t(AB_bazar_commons_subproperty_id_label)
             type: list
+            includeFormId: true
             dataFromFormField: iconfield
           icon:
             label: _t(AB_bazar_commons_iconfield_icon_label)
@@ -142,6 +146,7 @@ actions:
           field:
             label: _t(AB_bazar_facettes_field_label)
             type: form-field
+            includeFormId: true
             only: lists # ce champ doit être de type checkboxListe, listeListe ...
           title:
             label: _t(AB_bazar_facettes_title_label)

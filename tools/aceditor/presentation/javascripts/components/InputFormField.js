@@ -15,11 +15,16 @@ export default {
   },
   computed: {
     fieldOptions() {
-      let fields = this.getFieldsFormSelectedForms(this.selectedForms);
-      if (this.config.only == 'lists')
-        return fields.filter(a => (typeof a.options == 'object' && a.options !== null))
-      else
-        return fields
+      let fields = this.getFieldsFormSelectedForms(
+        this.selectedForms,
+        this.config.includeFormId && Object.keys(this.selectedForms).length > 1
+          ? ["formId"]
+          : []
+      );
+      if (this.config.only == 'lists'){
+        fields = fields.filter(a => (typeof a.options == 'object' && a.options !== null))
+      }
+      return fields
     }
   },
   watch: {
