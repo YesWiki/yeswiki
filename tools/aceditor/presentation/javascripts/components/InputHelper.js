@@ -36,6 +36,25 @@ export default {
     },
     refFrom(config) {
       return config.subproperties || config.type == "geo" ? 'specialInput' : ''
+    },
+    getFieldsFormSelectedForms(selectedForms){
+      let fields = [];
+      for (const key in selectedForms) {
+        if (typeof selectedForms[key].prepared == 'object') {
+          Object.values(selectedForms[key].prepared).forEach((field)=>{
+            if (fields.every((f)=>(!f.id && field.id) ||(f.id && !field.id) || f.id != field.id)){
+              fields.push(field);
+            }
+          });
+        } else if (Array.isArray(selectedForms[key].prepared)){
+          selectedForms[key].prepared.forEach((field)=>{
+            if (fields.every((f)=>(!f.id && field.id) ||(f.id && !field.id) || f.id != field.id)){
+              fields.push(field);
+            }
+          });
+        }
+      }
+      return fields;
     }
   }
 }

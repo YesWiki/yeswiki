@@ -55,7 +55,7 @@ window.myapp = new Vue({
     // Some Actions require to select a Form (like bazar actions)
     formIds: actionsBuilderData.forms, // list of this YesWiki Forms
     selectedFormsIds: "",
-    selectedForm: null, // used only when useFormField is present
+    selectedForms: null, // used only when useFormField is present
     loadedForms: {}, // we retrive Form by ajax, and store it in case we need to get it again
     loadingForms: [],
     // Values
@@ -153,7 +153,7 @@ window.myapp = new Vue({
           if (!this.selectedFormsIds){
             this.selectedFormsIds = this.getValidFormsIds()
           }
-          this.getSelectedFormByAjax()
+          this.getSelectedFormsByAjax()
         }
 
         // For bazar action, name is contained inside the template attribute
@@ -188,7 +188,7 @@ window.myapp = new Vue({
         } else {
           this.selectedFormsIds = [newValue]
         }
-        this.getSelectedFormByAjax()
+        this.getSelectedFormsByAjax()
       }
     },
     getValidFormsIds(){
@@ -204,33 +204,68 @@ window.myapp = new Vue({
         .filter((e) => e.match(/^\d+$/));
     },
 
-    getSelectedFormByAjax() {
+    getSelectedFormsByAjax() {
       let selectedFormId = this.getSelectedFormId();
-      if (!selectedFormId) return;
-      if (this.loadedForms[selectedFormId])
+      if (!this.selectedFormsIds) return;
+      if (this.selectedFormsIds.every((fid)=>this.loadedForms.hasOwnProperty(fid)))
       {
-        this.selectedForm = this.loadedForms[selectedFormId]
+        this.selectedForms = {}
+        for (const key in this.loadedForms) {
+          this.selectedForms[key] = this.loadedForms[key]
+        }
         if (this.selectedAction){
           // action choosen updateActionParams
           setTimeout(() => this.updateActionParams(), 0);
         }
       }
-      else if (!this.loadingForms.includes(selectedFormId)){
-        this.loadingForms.push(selectedFormId)
-        $.getJSON(wiki.url('?root/json', {demand: 'forms', id: selectedFormId}), data => {
-          this.loadingForms = this.loadingForms.filter((e)=>e!=selectedFormId)
-            // keep ? because standart http rewrite waits for CamelCase and 'root' is not
-          this.loadedForms[selectedFormId] = (data[0] != undefined) ? data[0] : {
-            prepared: {}
+      else {
+        let idsToSearch = this.selectedFormsIds.filter((fid)=>{
+          return !this.loadedForms.hasOwnProperty(fid) && !this.loadingForms.includes(fid);
+        });
+        if (idsToSearch.length > 0){
+          idsToSearch.forEach((id)=>this.loadingForms.push(id))
+          let params = {
+            demand: 'forms'
+          };
+          if (idsToSearch.length == 1){
+            params['id'] = idsToSearch[0];
+          } else {
+            idsToSearch.forEach((id,index)=>{
+              params[`id[${index}]`] = id;
+            });
           }
-          // On first form loaded, we load again the values so the special components are rendered and we can parse values on each special component
-          if (!this.selectedForm && this.isEditingExistingAction) setTimeout(() => this.initValues(), 0)
-          this.selectedForm = this.loadedForms[selectedFormId]
-          if (this.selectedAction){
-            // action choosen updateActionParams
-            setTimeout(() => this.updateActionParams(), 0);
-          }
-        })
+          $.getJSON(wiki.url('?root/json', params), data => {
+            this.loadingForms = this.loadingForms.filter((e)=>!idsToSearch.includes(e))
+              // keep ? because standart http rewrite waits for CamelCase and 'root' is not
+            if (Array.isArray(data) && data[0] != undefined){
+              // copy forms
+              data.forEach((form) => {
+                if (form.bn_id_nature != undefined && idsToSearch.includes(form.bn_id_nature)){
+                  this.loadedForms[form.bn_id_nature] = form;
+                }
+              });
+            }
+            // default forms for missing
+            idsToSearch.forEach((fid) => {
+              // fake empty form
+              if (!this.loadedForms.hasOwnProperty(fid)){
+                this.loadedForms[fid] = {prepared:{}};
+              }
+            });
+            // On first form loaded, we load again the values so the special components are rendered and we can parse values on each special component
+            if (!this.selectedForms && this.isEditingExistingAction) setTimeout(() => this.initValues(), 0)
+            this.selectedForms = {}
+            for (const key in this.loadedForms) {
+              if (this.selectedFormsIds && this.selectedFormsIds.includes(key)){
+                this.selectedForms[key] = this.loadedForms[key]
+              }
+            }
+            if (this.selectedAction){
+              // action choosen updateActionParams
+              setTimeout(() => this.updateActionParams(), 0);
+            }
+          })
+        }
       }
     },
     updateValue(propName, value) {
@@ -298,7 +333,7 @@ window.myapp = new Vue({
         (Array.isArray(val) && !Array.isArray(oldVal)) ||
         !val.every((e)=>oldVal.includes(e))
         ){
-        this.getSelectedFormByAjax()
+        this.getSelectedFormsByAjax()
       }
     },
     selectedActionId: function() { 

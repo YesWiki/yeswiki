@@ -1,6 +1,9 @@
+import InputHelper from './InputHelper.js'
+
 // Text/Number/Color/slider
 export default {
-  props: [ 'value', 'config', 'selectedForm' ],
+  props: [ 'value', 'config', 'selectedForms' ],
+  mixins: [ InputHelper ],
   data() {
     return {
       fields: []
@@ -12,7 +15,7 @@ export default {
   },
   computed: {
     fieldOptions() {
-      let fields = (typeof this.selectedForm.prepared == 'object') ? Object.values(this.selectedForm.prepared) : this.selectedForm.prepared;
+      let fields = this.getFieldsFormSelectedForms(this.selectedForms);
       if (this.config.only == 'lists')
         return fields.filter(a => (typeof a.options == 'object' && a.options !== null))
       else

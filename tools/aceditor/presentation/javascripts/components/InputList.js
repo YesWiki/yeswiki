@@ -1,14 +1,15 @@
 import InputHelper from './InputHelper.js'
 
 export default {
-  props: [ 'name', 'value', 'config', 'selectedForm', 'values' ],
+  props: [ 'name', 'value', 'config', 'selectedForms', 'values' ],
   mixins: [ InputHelper ],
   computed: {
     optionsList() {
       // Get the data from a specific form field
       if (this.config.dataFromFormField) {
-        if (!this.selectedForm || !this.values[this.config.dataFromFormField]) return []
-        var fieldConfig = this.selectedForm.prepared.find(e => e.id == this.values[this.config.dataFromFormField])
+        if (!this.selectedForms || !this.values[this.config.dataFromFormField]) return []
+        let fields = this.getFieldsFormSelectedForms(this.selectedForms)
+        var fieldConfig = fields.find(e => e.id == this.values[this.config.dataFromFormField])
         return fieldConfig ? fieldConfig.options : []
       }
       // Options are provided in configuration

@@ -26,7 +26,7 @@
         </div>
 
         <!-- Action Configuration -->
-        <div v-if="selectedAction && (!needFormField || selectedForm)" class="action-parameters-container">
+        <div v-if="selectedAction && (!needFormField || selectedForms)" class="action-parameters-container">
 
           <div v-if="selectedAction.hint" class="alert alert-info">{{ selectedAction.hint }}</div>
 
@@ -43,7 +43,7 @@
                              :value="values[propName]" v-on:input="updateValue(propName, $event)"
                              v-show="checkVisibility(config)"
                              :name="propName" :values="values"
-                             :config="config" :selected-form="selectedForm">
+                             :config="config" :selected-forms="selectedForms">
                   </component>
                 </template>
               </div>
