@@ -197,11 +197,14 @@ class EntryManager
         if (!empty($params['formsIds'])) {
             if (is_array($params['formsIds'])) {
                 $requete .= ' AND (' . join(' OR ', array_map(function ($formId) {
-                    return 'body LIKE \'%"id_typeannonce":"' . $formId . '"%\'';
-                }, $params['formsIds'])).') ';
-            } else {
+                    return 'body LIKE \'%"id_typeannonce":"' . $this->dbService->escape(strval($formId)) . '"%\'';
+                }, array_filter(
+                    $params['formsIds'],
+                    'is_scalar'
+                ))).') ';
+            } elseif (is_scalar($params['formsIds'])) {
                 // on a une chaine de caractere pour l'id plutot qu'un tableau
-                $requete .= ' AND body LIKE \'%"id_typeannonce":"' . $params['formsIds'] . '"%\'';
+                $requete .= ' AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape(strval($params['formsIds'])) . '"%\'';
             }
         }
 
