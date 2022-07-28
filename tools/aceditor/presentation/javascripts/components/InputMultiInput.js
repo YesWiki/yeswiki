@@ -8,7 +8,7 @@ import InputColor from './InputColor.js'
 import InputFormField from './InputFormField.js'
 
 export default {
-  props: [ 'name', 'value', 'config', 'selectedForm', 'values' ],
+  props: [ 'name', 'value', 'config', 'selectedForms', 'values' ],
   components: { InputText, InputCheckbox, InputList, InputIcon, InputColor, InputFormField, InputHidden },
   mixins: [ InputHelper ],
   data() {
@@ -55,7 +55,7 @@ export default {
         <template v-for="(property, propName) in config.subproperties">
           <component :is="componentIdFrom(property)" v-model="element[propName]"
                      v-show="checkVisibility(property)" :name="propName" :values="values"
-                     :config="property" :selected-form="selectedForm">
+                     :config="property" :selected-forms="selectedForms">
           </component>
         </template>
         <!-- Remove Button -->

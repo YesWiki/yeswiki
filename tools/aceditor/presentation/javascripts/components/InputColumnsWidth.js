@@ -24,7 +24,7 @@ export default {
         <template v-for="(property, propName) in config.subproperties">
           <component :is="componentIdFrom(property)" v-model="element[propName]"
                      v-show="checkVisibility(property)" :name="propName" :values="values"
-                     :config="property" :selected-form="selectedForm">
+                     :config="property" :selected-forms="selectedForms">
           </component>
         </template>
         <!-- Remove Button -->
