@@ -54,9 +54,10 @@ window.myapp = new Vue({
     selectedActionId: "",
     // Some Actions require to select a Form (like bazar actions)
     formIds: actionsBuilderData.forms, // list of this YesWiki Forms
-    selectedFormId: "",
+    selectedFormsIds: "",
     selectedForm: null, // used only when useFormField is present
     loadedForms: {}, // we retrive Form by ajax, and store it in case we need to get it again
+    loadingForms: [],
     // Values
     values: {},
     actionParams: {},
@@ -149,7 +150,9 @@ window.myapp = new Vue({
         }
         // Get Form if needed
         if (this.needFormField) {
-          this.selectedFormId = this.values.id
+          if (!this.selectedFormsIds){
+            this.selectedFormsIds = this.getValidFormsIds()
+          }
           this.getSelectedFormByAjax()
         }
 
@@ -164,7 +167,7 @@ window.myapp = new Vue({
         if (this.$refs.specialInput) this.$refs.specialInput.forEach(component => component.parseNewValues(this.values))
       } else {
         if (this.$refs.specialInput) this.$refs.specialInput.forEach(component => component.resetValues())
-        this.selectedFormId = ''
+        this.selectedFormsIds = null
         this.selectedActionId = ''
         // Bazar dynamic by default
         if (this.isBazarListeAction) Vue.set(this.values, "dynamic", true)
@@ -173,23 +176,56 @@ window.myapp = new Vue({
       // If only one action available, select it
       if (Object.keys(this.actions).length == 1) this.selectedActionId = Object.keys(this.actions)[0]
     },
+    // prefer methods to computed to prevent cache
+    getSelectedFormId(){
+      return (this.selectedFormsIds) ? this.selectedFormsIds.slice(0,1)[0] : ""; // only the first one
+    },
+    setSelectedFormId() {
+      let newValue = this.$refs.formSelection.value
+      if (["number","string"].includes(typeof newValue)){
+        if (this.selectedFormsIds){
+          this.selectedFormsIds[0] = newValue
+        } else {
+          this.selectedFormsIds = [newValue]
+        }
+        this.getSelectedFormByAjax()
+      }
+    },
+    getValidFormsIds(){
+      let fieldIds = this.values.id.split(',');
+      return fieldIds
+        .filter((id) => ["number","string"].includes(typeof id))
+        .map(
+          (id) => id.replace(
+              /(^[0-9]$)|^https?:\/\/.+->([0-9]+)$/u,
+              "$1$2"
+            )
+        )
+        .filter((e) => e.match(/^\d+$/));
+    },
+
     getSelectedFormByAjax() {
-      if (!this.selectedFormId) return;
-      if (this.loadedForms[this.selectedFormId])
+      let selectedFormId = this.getSelectedFormId();
+      if (!selectedFormId) return;
+      if (this.loadedForms[selectedFormId])
       {
-        this.selectedForm = this.loadedForms[this.selectedFormId]
+        this.selectedForm = this.loadedForms[selectedFormId]
         if (this.selectedAction){
           // action choosen updateActionParams
           setTimeout(() => this.updateActionParams(), 0);
         }
       }
-      else {
-        $.getJSON(wiki.url('?root/json', {demand: 'forms', id: this.selectedFormId}), data => {
+      else if (!this.loadingForms.includes(selectedFormId)){
+        this.loadingForms.push(selectedFormId)
+        $.getJSON(wiki.url('?root/json', {demand: 'forms', id: selectedFormId}), data => {
+          this.loadingForms = this.loadingForms.filter((e)=>e!=selectedFormId)
             // keep ? because standart http rewrite waits for CamelCase and 'root' is not
-          this.loadedForms[this.selectedFormId] = data[0]
+          this.loadedForms[selectedFormId] = (data[0] != undefined) ? data[0] : {
+            prepared: {}
+          }
           // On first form loaded, we load again the values so the special components are rendered and we can parse values on each special component
           if (!this.selectedForm && this.isEditingExistingAction) setTimeout(() => this.initValues(), 0)
-          this.selectedForm = data[0]
+          this.selectedForm = this.loadedForms[selectedFormId]
           if (this.selectedAction){
             // action choosen updateActionParams
             setTimeout(() => this.updateActionParams(), 0);
@@ -214,7 +250,15 @@ window.myapp = new Vue({
     updateActionParams() {
       if (!this.selectedAction) return
       let result = {}
-      if (this.needFormField) result.id = this.selectedFormId
+      if (this.needFormField) {
+        if (this.values.id){
+          let ids = this.values.id.split(',').slice(1);
+          ids.unshift(this.getSelectedFormId());
+          result.id = ids.join(',')
+        } else {
+          result.id = this.getSelectedFormId()
+        }
+      }
 
       for(let key in this.values) {
         let config = this.selectedActionAllConfigs[key]
@@ -249,7 +293,14 @@ window.myapp = new Vue({
     }
   },
   watch: {
-    selectedFormId: function() { this.getSelectedFormByAjax() },
+    selectedFormsIds:function (val, oldVal) {
+      if (oldVal.length != val.length ||
+        (Array.isArray(val) && !Array.isArray(oldVal)) ||
+        !val.every((e)=>oldVal.includes(e))
+        ){
+        this.getSelectedFormByAjax()
+      }
+    },
     selectedActionId: function() { 
       if (!this.isBazarListeAction && !this.isEditingExistingAction){
         this.values = {};
