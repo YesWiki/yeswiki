@@ -22,7 +22,7 @@ class RssHandler extends YesWikiHandler
             $id = filter_input(INPUT_GET, 'id_typeannonce', FILTER_UNSAFE_RAW);
             $id = ($id === false) ? "" : htmlspecialchars(strip_tags($id));
         }
-        if (!empty($id)) {
+        if (!empty($id) && strval($id) == strval(intval($id))) {
             $urlrss .= '&amp;id='.$id;
         } else {
             $id = '';
