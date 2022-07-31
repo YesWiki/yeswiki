@@ -75,7 +75,7 @@
 
                 {% if isAdmin and ext.installed and ext.name != 'autoupdate' %}
                     {% if not isHibernated %}
-                        <a  href="{{ baseUrl }}{{ ext.deleteLink }}"
+                        <a  href="{{ url({params:{delete:ext.deleteLink|split('delete=')|slice(1,1)|first}}) }}"
                             class="btn btn-xs btn-danger"
                             title="{{ _t('AU_DELETE_EXT') }}"
                         >
