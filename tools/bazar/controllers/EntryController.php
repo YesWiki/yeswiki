@@ -179,7 +179,7 @@ class EntryController extends YesWikiController
         }
 
         $user = $this->authController->getLoggedUser();
-        if (!empty($user) && $this->favoritesManager->areFavoritesActivated()) {
+        if (!empty($user) && $this->favoritesManager->areFavoritesActivated() && (testUrlInIframe() == 'iframe')) {
             $currentuser = $user['name'];
             $isUserFavorite = $this->favoritesManager->isUserFavorite($currentuser, $entryId);
         }
