@@ -40,6 +40,7 @@
   {% endif %}
 	<a title="{{ _t('TEMPLATE_SEE_SHARING_OPTIONS') ~ ' ' ~ page}}" href="{{ linkshare }}" class="link-share modalbox">
 		<i class="fa fa-share-alt"></i><span>{{ _t('TEMPLATE_SHARE') }}</span>
+	</a>
   {% if currentuser is not empty %}
     {{ include_javascript('javascripts/favorites.js') }}
     <a href="#"
@@ -52,5 +53,4 @@
       <i class="{{ (isUserFavorite) ? 'fas' : 'far' }} fa-star"></i>
     </a>
   {% endif %}
-	</a>
 </div>
