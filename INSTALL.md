@@ -23,21 +23,13 @@ Detailed instructions are available at http://yeswiki.net/wakka.php?wiki=Documen
 
 ## Installation through Docker
 
-It is possible to install YesWiki in local through Docker.
-
 First you need to install docker and docker-compose: https://docs.docker.com/install
 
-A `docker-compose.yml` file can be found at the root of the YesWiki repository.
-If you do `docker-compose up`, 3 Docker containers will be launched:
+Then just run `docker-compose up` to install and launch the containers
 
-- yeswiki: Apache/PHP server with the YesWiki code
-- db: the MySQL database
-- myadmin: phpMyAdmin to see/modify the database
+Then go to http://localhost:81. In the setup, you will need to provide following configuration for MySQL server:
 
-Then go to http://localhost:81. In the setup, you will need to use these informations for the MySQL serveur:
-
-- Host ("Machine MySQL"): db
-- Port: 3306
+- **Host: db**
 - Login: root
 - Password: root
 
