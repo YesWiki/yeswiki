@@ -453,10 +453,10 @@ if (!class_exists('attach')) {
             if ($this->isPicture() && empty($this->desc)) {
                 $this->attachErr = '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_ATTACH') . '</strong> : ' . _t('ATTACH_PARAM_DESC_REQUIRED') . '.</div>' . "\n";
             }
-            if (!empty($this->width) && !ctype_digit($this->width)) {
+            if (!empty($this->width) && !ctype_digit(strval($this->width))) {
                 $this->attachErr = '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_ATTACH') . '</strong> : ' . _t('ATTACH_PARAM_WIDTH_NOT_NUMERIC') . '.</div>' . "\n";
             }
-            if (!empty($this->height) && !ctype_digit($this->height)) {
+            if (!empty($this->height) && !ctype_digit(strval($this->height))) {
                 $this->attachErr = '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_ATTACH') . '</strong> : ' . _t('ATTACH_PARAM_HEIGHT_NOT_NUMERIC') . '.</div>' . "\n";
             }
 
