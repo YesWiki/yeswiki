@@ -96,7 +96,7 @@ parameters:
     xls: 'Excel'
     xlsx: 'Excel'
     xlsm: 'Excel'
-    # xml: 'XML' # TODO find a way to sanitize xml before saving
+    xml: 'XML'
     yaml: 'YAML'
     zip: 'Zip'
     #  Open Document

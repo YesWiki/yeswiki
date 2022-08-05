@@ -34,9 +34,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # voir actions/attach.php ppour la documentation
 # copyrigth Eric Feldstein 2003-2004
 
-use enshrined\svgSanitize\Sanitizer;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\LinkTracker;
+use YesWiki\Core\Service\HtmlPurifierService;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -765,8 +765,8 @@ if (!class_exists('attach')) {
                 $srcFile = $_FILES['upFile']['tmp_name'];
                 if (move_uploaded_file($srcFile, $destFile)) {
                     chmod($destFile, 0644);
-                    if ($ext  === "svg") {
-                        $this->sanitizeSVGfile($destFile);
+                    if ($ext  === 'svg' || $ext === 'xml') {
+                        $this->sanitizefile($destFile, $ext);
                     }
                     header("Location: " . $this->wiki->href("", $this->wiki->GetPageTag(), ""));
                 } else {
@@ -1160,22 +1160,18 @@ if (!class_exists('attach')) {
         }
 
         /**
-         * @param string $content of svg
-         * @return string $content
-         */
-        public function sanitizeSVG(string $content): string
-        {
-            $sanitizer = new Sanitizer();
-            return $sanitizer->sanitize($content);
-        }
-
-        /**
          * @param string $filePath svg
          */
-        public function sanitizeSVGfile(string $filePath)
+        public function sanitizeFile(string $filePath, string $ext)
         {
+            $purifier = $this->wiki->services->get(HtmlPurifierService::class);
             $content = file_get_contents($filePath);
-            file_put_contents($filePath, $this->sanitizeSVG($content));
+            if ($ext === 'svg') {
+                file_put_contents($filePath, $purifier->sanitizeSVG($content));
+            } elseif ($ext === 'xml') {
+                file_put_contents($filePath, $purifier->cleanXSS($content));
+            } 
+            
         }
     }
 }
