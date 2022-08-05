@@ -457,33 +457,6 @@ Contenu panel-danger
 {{button link=\"{{rootPage}}\" class=\"btn btn-secondary-2\" text=\"btn-secondary-2\"}}
 {{button link=\"{{rootPage}}\" class=\"btn btn-success\" text=\"btn-success\"}}
 {{button link=\"{{rootPage}}\" class=\"btn btn-info\" text=\"btn-info\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('MesContenus',  now(), '=====Mes contenus=====
-{{accordion }}
-{{panel title=\"Mes paramètres\"}}
-{{UserSettings}}
-{{lostpassword}}
-{{end elem=\"panel\"}}
-{{panel title=\"Mes pages\"}}
-{{mypages}}
-{{end elem=\"panel\"}}
-{{panel title=\"Mes favoris\"}}
-{{myfavorites template=\"my-favorites-tiles.twig\" }}
-{{myfavorites template=\"my-favorites-with-titles.twig\"}}
-{{myfavorites template=\"my-favorites-table.twig\"}}
-{{end elem=\"panel\"}}
-{{panel title=\"Mes fiches bazar\"}}
-{{bazarliste template=\"liste_accordeon\" dynamic=\"true\" filteruserasowner=\"true\"}}
-{{end elem=\"panel\"}}
-{{panel title=\"Mes changements\"}}
-{{mychanges}}
-{{end elem=\"panel\"}}
-{{panel title=\"Mes votes, réactions\"}}
-{{userreactions}}
-{{end elem=\"panel\"}}
-{{panel title=\"Mes commentaires\"}}
-{{userreactions}}
-{{end elem=\"panel\"}}
-{{end elem=\"accordion\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('MotDePassePerdu',  now(), '{{lostpassword}}
 ', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageColonneDroite',  now(), 'Double cliquer sur ce texte pour éditer cette colonne.
@@ -635,7 +608,6 @@ Vous êtes dans la page qui se nomme PageMenuHaut qui sert à modifier le menu d
  - ------
  - {{button nobtn=\"1\" icon=\"fa fa-wrench\" text=\"Gestion du site\" link=\"GererSite\"}}
  - {{button nobtn=\"1\" icon=\"fa fa-tachometer-alt\" text=\"Tableau de bord\" link=\"TableauDeBord\"}}
- - {{button class=\"btn-primary\" icon=\"fas fa-user\" link=\"MesContenus\" nobtn=\"1\" text=\"Mes contenus\" }}
  - {{button nobtn=\"1\" icon=\"fa fa-briefcase\" text=\"Base de données\" link=\"BazaR\"}}
 {{end elem=\"buttondropdown\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('Pagetest1',  now(), '======Sous menu 1======', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
@@ -790,10 +762,48 @@ Texte colonne 3
 
 # Bazar forms
 INSERT INTO `{{prefix}}nature` (`bn_id_nature`, `bn_label_nature`, `bn_description`, `bn_condition`, `bn_sem_context`, `bn_sem_type`, `bn_sem_use_template`, `bn_template`, `bn_ce_i18n`, `bn_only_one_entry`, `bn_only_one_entry_message`) VALUES
-('2', 'Agenda', '', '', 'https://www.w3.org/ns/activitystreams', 'Event', '1', 'texte***bf_titre***Nom de l\'événement***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\r\ntextelong***bf_description***Description***40*** *** *** ***wiki***0*** *** *** * *** * *** *** *** ***\r\nlistedatedeb***bf_date_debut_evenement***Début de l\'événement*** *** ***today*** *** ***1*** *** *** * *** * *** *** *** ***\r\nlistedatefin***bf_date_fin_evenement***Fin de l\'événement*** *** ***today*** *** ***1*** *** *** * *** * *** *** *** ***\r\nlien_internet***bf_site_internet***Adresse url*** *** *** *** *** ***0*** *** *** * *** * *** *** *** ***\r\nimage***bf_image***Image (facultatif)***140***140***600***600***right***0*** ***Votre image doit être au format .jpg ou .gif ou .png*** * *** * *** *** *** ***\r\nfichier***fichier***Documents***20000000*** *** *** ***file***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_adresse***Adresse***50***50*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_code_postal***Code postal***8***8*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_ville***Ville***50***80*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\nmap***bf_latitude***bf_longitude*** *** *** *** *** ***0***\r\nlabelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***\r\n', 'fr-FR', 'N', ''),
-('1', 'Annuaire', '', '', '', '', '1', 'titre***{{bf_nom}} {{bf_prenom}}***Titre Automatique***\r\ntexte***bf_nom***Nom***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\r\ntexte***bf_prenom***Prénom***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\r\nimage***bf_image***Image de présentation (facultatif mais c\'est plus sympa)***140***140***600***600***right***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_fonction***Mon métier, ma fonction***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\ntextelong***bf_projet***Ma présentation***5***5*** *** ***html***0*** *** *** * *** * *** *** *** ***\r\nchamps_mail***bf_mail***Email (n\'apparaitra pas sur le web)*** *** *** ***form*** ***1***0*** *** * *** * *** *** *** ***\r\ntexte***bf_structure***Nom de la structure***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\nlien_internet***bf_site_internet***Site Internet*** *** *** *** *** ***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_adresse***Adresse***50***50*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_code_postal***Code postal***8***8*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_ville***Ville***50***80*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\nmap***bf_latitude***bf_longitude*** *** ***\r\nlabelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***\r\n', 'fr-FR', 'N', ''),
-('3', 'Blog-actu', '', '', '', '', '1', 'image***bf_image***Image***400***300***1200***900***right***1*** *** *** * *** * *** *** *** ***\r\ntexte***bf_titre***Titre***80***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\r\ntextelong***bf_chapeau***Résumé***40***3*** *** ***wiki***1*** *** *** * *** * *** *** *** ***\r\ntextelong***bf_description***Billet***40***9*** *** ***wiki***1*** *** *** * *** * *** *** *** ***\r\n', 'fr-FR', 'N', ''),
-('4', 'Ressources', 'Un formulaire pour créer un espace de ressources partagées. ', '', '', '', '1', 'texte***bf_titre***Nom de la ressource***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\r\nlien_internet***bf_url***Site web***40***255*** *** ***url***0*** *** *** * *** * *** *** *** ***\r\ncheckbox***ListeType***Type de ressource*** *** *** *** *** ***1*** *** *** * *** * *** *** *** ***\r\ntextelong***bf_description***Description***5***5*** *** ***wiki***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_auteur***Auteur***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\nimage***bf_image***Image de présentation (facultatif)***140***140***600***600***right***0*** *** *** * *** * *** *** *** ***\r\nfichier***fichier***Documents***20000000*** *** *** ***file***0*** *** *** * *** * *** *** *** ***\r\nlabelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***\r\n', 'fr-FR', 'N', '');
+('2', 'Agenda', '', '', '1', '1', '1', 'texte***bf_titre***Nom de l\'événement***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
+textelong***bf_description***Description***40***5*** *** ***wiki***0*** *** *** * *** * *** *** *** ***
+listedatedeb***bf_date_debut_evenement***Début de l\'événement*** *** ***today*** *** ***1*** *** *** * *** * *** *** *** ***
+listedatefin***bf_date_fin_evenement***Fin de l\'événement*** *** ***today*** *** ***1*** *** *** * *** * *** *** *** ***
+lien_internet***bf_site_internet***Adresse url*** *** *** *** *** ***0*** *** *** * *** * *** *** *** ***
+image***bf_image***Image (facultatif)***140***140***600***600***right***0*** ***Votre image doit être au format .jpg ou .gif ou .png*** * *** * *** *** *** ***
+fichier***fichier***Documents***20000000*** *** *** ***file***0*** *** *** * *** * *** *** *** ***
+texte***bf_adresse***Adresse***50***50*** *** ***text***0*** *** *** * *** * *** *** *** ***
+texte***bf_code_postal***Code postal***8***8*** *** ***text***0*** *** *** * *** * *** *** *** ***
+texte***bf_ville***Ville***50***80*** *** ***text***0*** *** *** * *** * *** *** *** ***
+map***bf_latitude***bf_longitude*** *** ***
+labelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***
+', 'fr-FR','N',''),
+('1', 'Annuaire', '', '', '', '', '1', 'titre***{{bf_nom}} {{bf_prenom}}***Titre Automatique***
+texte***bf_nom***Nom***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
+texte***bf_prenom***Prénom***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
+image***bf_image***Image de présentation (facultatif mais c\'est plus sympa)***140***140***600***600***right***0*** *** *** * *** * *** *** *** ***
+texte***bf_fonction***Mon métier, ma fonction***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***
+textelong***bf_projet***Ma présentation***5***5*** *** ***html***0*** *** *** * *** * *** *** *** ***
+champs_mail***bf_mail***Email (n\'apparaitra pas sur le web)*** *** *** ***form*** ***1***0*** *** * *** * *** *** *** ***
+texte***bf_structure***Nom de la structure***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***
+lien_internet***bf_site_internet***Site Internet*** *** *** *** *** ***0*** *** *** * *** * *** *** *** ***
+texte***bf_adresse***Adresse***50***50*** *** ***text***0*** *** *** * *** * *** *** *** ***
+texte***bf_code_postal***Code postal***8***8*** *** ***text***0*** *** *** * *** * *** *** *** ***
+texte***bf_ville***Ville***50***80*** *** ***text***0*** *** *** * *** * *** *** *** ***
+map***bf_latitude***bf_longitude*** *** ***
+labelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***
+', 'fr-FR','N',''),
+('3', 'Blog-actu', '', '', '', '', '1', 'image***bf_image***Image***400***300***1200***900***right***1*** *** *** * *** * *** *** *** ***
+texte***bf_titre***Titre***80***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
+textelong***bf_chapeau***Résumé***40***3*** *** ***wiki***1*** *** *** * *** * *** *** *** ***
+textelong***bf_description***Billet***40***9*** *** ***wiki***1*** *** *** * *** * *** *** *** ***
+', 'fr-FR','N',''),
+('4', 'Ressources', 'Un formulaire pour créer un espace de ressources partagées. ', '', '', '', '1', 'texte***bf_titre***Nom de la ressource***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
+lien_internet***bf_url***Site web***40***255*** *** ***url***0*** *** *** * *** * *** *** *** ***
+checkbox***ListeType***Type de ressource*** *** *** *** *** ***1*** *** *** * *** * *** *** *** ***
+textelong***bf_description***Description***5***5*** *** ***wiki***0*** *** *** * *** * *** *** *** ***
+texte***bf_auteur***Auteur***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***
+image***bf_image***Image de présentation (facultatif)***140***140***600***600***right***0*** *** *** * *** * *** *** *** ***
+fichier***fichier***Documents***20000000*** *** *** ***file***0*** *** *** * *** * *** *** *** ***
+labelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***
+', 'fr-FR','N','');
 # end Bazar forms
 
 # Bazar lists

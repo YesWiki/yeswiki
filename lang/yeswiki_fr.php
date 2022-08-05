@@ -48,7 +48,6 @@ return [
     'NAME' => 'Nom',
     'PAGES' => 'Pages',
     'SUBSCRIPTION' => 'Inscription',
-    'TRIPLES' => 'Triples',
     'UNKNOWN' => 'Inconnu',
     'WARNING' => 'AVERTISSEMENT',
 
@@ -288,21 +287,6 @@ return [
     'CSRF_TOKEN_FAIL_ERROR' => 'Cette page a peut-être été ouverte une seconde fois. '.
         'Veuillez renouveler la demande depuis cette fenêtre (le jeton interne de sécurité n\'était pas bon).',
 
-    // javascripts/favorites.js
-    'FAVORITES_ADD' => 'Ajouter aux favoris',
-    'FAVORITES_REMOVE' => 'Retirer des favoris',
-
-    // templates/actions/my-favorites.twig
-    'FAVORITES_DELETE_ALL' => 'Supprimer tous mes favoris',
-    'FAVORITES_MY_FAVORITES' => 'Mes favoris',
-    'FAVORITES_NO_FAVORITE' => 'Aucun favori n\'a été enregistré',
-    'FAVORITES_NOT_ACTIVATED' => 'L\'usage des favoris n\'est pas activé sur ce site.',
-    'FAVORITES_NOT_CONNECTED' => 'L\'usage des favoris n\'est possible que pour les personnes connectées.',
-
-    // templates/actions/my-favorites-table.twig
-    'FAVORITES_TITLE' => 'Titre',
-    'FAVORITES_LINK' => 'Lien',
-
     // setup/header.php
     'OK' => 'OK',
     'FAIL' => 'ECHEC',
@@ -478,9 +462,7 @@ return [
     'USER_NEW_ACCOUNT' => 'Nouveau compte',
     'USER_PASSWORD' => 'Mot de passe',
     'USER_ERRORS_FOUND' => 'Erreur(s) trouvée(s)',
-    'USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR' => 'Il faut une valeur entier positif pour %{name}.',
-    'USER_YOU_MUST_SPECIFY_YES_OR_NO' => 'Il faut une value \'Y\' ou  \'N\' pour %{name}.',
-    'USER_YOU_MUST_SPECIFY_A_STRING' => 'Il faut une chaîne de caractères pour %{name}.',
+    'USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR' => 'Il faut une valeur entier positif pour ',
 
     // YesWiki\Database class
     'DATABASE_QUERY_FAILED' => 'La requête a échoué {\YesWiki\Database}',
@@ -550,7 +532,6 @@ return [
     'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Nombre maximum de versions d\'une page affichées par le handler `/revisions`.',
     'EDIT_CONFIG_HINT_DEFAULT_COMMENT_AVATAR' => 'Image d\'avatar par défaut pour les commentaires (URL vers une image)',
     'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false)',
-    'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Activer les favoris (true ou false)',
     'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
     'EDIT_CONFIG_GROUP_ACCESS' => 'Droit d\'accès',
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
@@ -560,8 +541,6 @@ return [
     'USERSTABLE_USER_NOT_DELETED' => 'L\'utilisateur "{username}" n\'a pas été supprimé.',
     'USERSTABLE_NOT_EXISTING_USER' => 'L\'utilisateur "{username}" n\'existe pas !',
     'GROUP_S' => 'Groupe(s)',
-    'USERSTABLE_CREATE_USER' => 'Créer un utilisateur',
-    'USERSTABLE_CREATE_USER_HINT' => 'Mot de passe généré aléatoirement',
 
     // handlers/deletepage
     'DELETEPAGE_CANCEL' => 'Annuler',

@@ -43,26 +43,9 @@ return [
     "REVISIONS_DIFF" => "Comparaison avec version actuelle",
     "REVISIONS_PREVIEW" => "Aperçu de cette version",
 
-    // javascripts/documentation.js
-    "DOCUMENTATION_TITLE" => "Documentation YesWiki",
-
-    // javascripts/favorites.js
-    'FAVORITES_ADD' => 'Ajouter aux favoris',
-    'FAVORITES_ALL_DELETED' => 'Favoris supprimés',
-    'FAVORITES_ERROR' => 'Une erreur est survenue : {error}',
-    'FAVORITES_REMOVE' => 'Retirer des favoris',
-    'FAVORITES_ADDED' => 'Favori ajouté',
-    'FAVORITES_REMOVED' => 'Favori supprimé',
-    
     // javascripts/multidelete.js
     "MULTIDELETE_END" => "Suppressions réalisées",
     "MULTIDELETE_ERROR" => "L'élément {itemId} n'a pas été supprimé ! {error}",
-
-    // javascripts/users-table.js
-    "USERSTABLE_USER_CREATED" => "Utilisateur '{name}' créé",
-    "USERSTABLE_USER_NOT_CREATED" => "Utilisateur '{name}' non créé : {error}",
-    'USERSTABLE_USER_DELETED' => 'L\'utilisateur "{username}" a été supprimé.',
-    'USERSTABLE_USER_NOT_DELETED' => 'L\'utilisateur "{username}" n\'a pas été supprimé.',
 
     // /javascripts/yeswiki-base.js
     "DATATABLES_PROCESSING" => "Traitement en cours...",

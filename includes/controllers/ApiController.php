@@ -2,7 +2,6 @@
 
 namespace YesWiki\Core\Controller;
 
-use Exception;
 use Throwable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,11 +10,7 @@ use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\ApiResponse;
-use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\CsrfTokenController;
-use YesWiki\Core\Controller\UserController;
-use YesWiki\Core\Exception\DeleteUserException;
-use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\DiffService;
@@ -23,7 +18,6 @@ use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\Service\CommentService;
 use YesWiki\Core\Service\ReactionManager;
-use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiController;
 
 class ApiController extends YesWikiController
@@ -52,10 +46,6 @@ class ApiController extends YesWikiController
         $urlComments = $this->wiki->Href('', 'api/comments');
         $output .= '<h2>'._t('COMMENTS').'</h2>'."\n".
             '<p><code>GET '.$urlComments.'</code></p>';
-
-        $urlTriples = $this->wiki->Href('', 'api/triples/{resource}', ['property' => 'http://outils-reseaux.org/_vocabulary/type', 'user' => 'username'], false);
-        $output .= '<h2>'._t('TRIPLES').'</h2>'."\n".
-            '<p><code>GET '.$urlTriples.'</code></p>';
 
         // TODO use annotations to document the API endpoints
         $extensions = $this->wiki->extensions;
@@ -90,7 +80,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/users/{userId}",methods={"GET"})
+     * @Route("/api/users/{userId}")
      */
     public function getUser($userId)
     {
@@ -100,121 +90,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/users/{userId}/delete",methods={"GET"}, options={"acl":{"public","@admins"}})
-     */
-    public function deleteUser($userId)
-    {
-        $this->denyAccessUnlessAdmin();
-        $userController = $this->getService(UserController::class);
-        $userManager = $this->getService(UserManager::class);
-
-        $result = [];
-        try {
-            $csrfTokenController = $this->getService(CsrfTokenController::class);
-            $csrfTokenController->checkToken("api\\users\\$userId\\delete", 'GET', 'csrfToken');
-            $user = $userManager->getOneByName($userId);
-            if (empty($user)) {
-                $code = Response::HTTP_BAD_REQUEST;
-                $result = [
-                    'notDeleted' => [$userId],
-                    'error' => 'not existing user'
-                ];
-            } else {
-                $userController->delete($user);
-                $code = Response::HTTP_OK;
-                $result = [
-                    'deleted' => [$userId],
-                ];
-            }
-        } catch (TokenNotFoundException $th) {
-            $code = Response::HTTP_UNAUTHORIZED;
-            $result = [
-                'notDeleted' => [$userId],
-                'error' => $th->getMessage()
-            ];
-        } catch (DeleteUserException $th) {
-            $code = Response::HTTP_BAD_REQUEST;
-            $result = [
-                'notDeleted' => [$userId],
-                'error' => $th->getMessage(),
-            ];
-        } catch (Throwable $th) {
-            $code = Response::HTTP_INTERNAL_SERVER_ERROR;
-            $result = [
-                'notDeleted' => [$userId],
-                'error' => $th->getMessage()
-            ];
-        }
-        return new ApiResponse($result, $code);
-    }
-    
-    /**
-     * @Route("/api/users",methods={"POST"}, options={"acl":{"public","@admins"}})
-     */
-    public function createUser()
-    {
-        $this->denyAccessUnlessAdmin();
-        $userController = $this->getService(UserController::class);
-
-        if (empty($_POST['name'])) {
-            $code = Response::HTTP_BAD_REQUEST;
-            $result = [
-                'error' => "\$_POST['name'] should not be empty",
-            ];
-        } elseif (empty($_POST['email'])) {
-            $code = Response::HTTP_BAD_REQUEST;
-            $result = [
-                'error' => "\$_POST['email'] should not be empty",
-            ];
-        } else {
-            try {
-                $user = $userController->create([
-                    'name' => strval($_POST['name']),
-                    'email' => strval($_POST['email']),
-                    'password' => $this->wiki->generateRandomString(30),
-                ]);
-                $code = Response::HTTP_OK;
-                $result = [
-                    'created' => [$user['name']],
-                    'user' => [
-                        'name' => $user['name'],
-                        'email' => $user['email'],
-                        'signuptime' => $user['signuptime'],
-                    ]
-                ];
-            } catch (UserNameAlreadyUsedException $th) {
-                $code = Response::HTTP_BAD_REQUEST;
-                $result = [
-                    'notCreated' => [strval($_POST['name'])],
-                    'error' => str_replace('{currentName}', strval($_POST['name']), _t('USERSETTINGS_NAME_ALREADY_USED'))
-                ];
-            } catch (UserEmailAlreadyUsedException $th) {
-                $code = Response::HTTP_BAD_REQUEST;
-                $result = [
-                    'notCreated' => [strval($_POST['name'])],
-                    'error' => str_replace('{email}', strval($_POST['email']), _t('USERSETTINGS_EMAIL_ALREADY_USED'))
-                ];
-            } catch (ExitException $th) {
-                throw $th;
-            } catch (Exception $th) {
-                $code = Response::HTTP_BAD_REQUEST;
-                $result = [
-                    'notCreated' => [strval($_POST['name'])],
-                    'error' => $th->getMessage()
-                ];
-            } catch (Throwable $th) {
-                $code = Response::HTTP_INTERNAL_SERVER_ERROR;
-                $result = [
-                    'notCreated' => [strval($_POST['name'])],
-                    'error' => $th->getMessage()
-                ];
-            }
-        }
-        return new ApiResponse($result, $code);
-    }
-
-    /**
-     * @Route("/api/users",methods={"GET"}, options={"acl":{"public"}})
+     * @Route("/api/users", options={"acl":{"public"}})
      */
     public function getAllUsers($userFields = ['name', 'email', 'signuptime'])
     {
@@ -591,207 +467,5 @@ class ApiController extends YesWikiController
                 Response::HTTP_UNAUTHORIZED
             );
         }
-    }
-
-    /**
-     * @Route("/api/triples", methods={"GET"}, options={"acl":{"public", "+"}})
-     */
-    public function ByResource()
-    {
-        extract($this->extractTriplesParams(INPUT_GET, "not empty"));
-        if (!empty($apiResponse)) {
-            return $apiResponse;
-        }
-        $value = empty($username) ? null : "%\\\"user\\\":\\\"{$username}\\\"%";
-        $triples = $this->getService(TripleStore::class)->getMatching(
-            null,
-            $property,
-            $value,
-            "=",
-            "=",
-            "LIKE"
-        );
-        return new ApiResponse(
-            $triples,
-            Response::HTTP_OK
-        );
-    }
-    
-    /**
-     * @Route("/api/triples/{resource}", methods={"GET"}, options={"acl":{"public", "+"}})
-     */
-    public function getTriplesByResource($resource)
-    {
-        extract($this->extractTriplesParams(INPUT_GET, $resource));
-        if (!empty($apiResponse)) {
-            return $apiResponse;
-        }
-        $value = empty($username) ? null : "%\\\"user\\\":\\\"{$username}\\\"%";
-        $triples = $this->getService(TripleStore::class)->getMatching(
-            $resource,
-            $property,
-            $value,
-            "=",
-            "=",
-            "LIKE"
-        );
-        return new ApiResponse(
-            $triples,
-            Response::HTTP_OK
-        );
-    }
-
-    /**
-     * @Route("/api/triples/{resource}", methods={"POST"}, options={"acl":{"public", "+"}})
-     */
-    public function setTriple($resource)
-    {
-        extract($this->extractTriplesParams(INPUT_POST, $resource));
-        if (!empty($apiResponse)) {
-            return $apiResponse;
-        }
-        if (empty($property)) {
-            return new ApiResponse(
-                ['error' => 'Property should not be empty !'],
-                Response::HTTP_BAD_REQUEST
-            );
-        }
-        if (empty($username)) {
-            $username = $this->getService(AuthController::class)->getLoggedUser()['name'];
-        }
-        $rawValue = $_POST['value'] ?? [];
-        if (is_array($rawValue)) {
-            $rawValue = array_filter($rawValue, function ($elem) {
-                return is_scalar($elem);
-            });
-        } elseif (is_scalar($value)) {
-            $rawValue = [
-                'value' => $value
-            ];
-        } else {
-            $rawValue = [];
-        }
-        $rawValue['user'] = $username;
-        $rawValue['date'] = date('Y-m-d H:i:s');
-        $value = json_encode($rawValue);
-        $result = $this->getService(TripleStore::class)->create(
-            $resource,
-            $property,
-            $value,
-            "",
-            ""
-        );
-        return new ApiResponse(
-            ['result' => $result],
-            in_array($result, [0,3]) ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR
-        );
-    }
-    
-    /**
-     * @Route("/api/triples/{resource}/delete", methods={"POST"}, options={"acl":{"public", "+"}})
-     */
-    public function deleteTriples($resource)
-    {
-        extract($this->extractTriplesParams(INPUT_POST, $resource));
-        if (!empty($apiResponse)) {
-            return $apiResponse;
-        }
-        
-        if (empty($property)) {
-            return new ApiResponse(
-                ['error' => 'Property should not be empty !'],
-                Response::HTTP_BAD_REQUEST
-            );
-        }
-        $rawFilters = $_POST['filters'] ?? [];
-        if (is_array($rawFilters)) {
-            $rawFilters = array_filter($rawFilters, function ($elem) {
-                return is_scalar($elem);
-            });
-        } else {
-            $rawFilters = [];
-        }
-        if (!empty($username)) {
-            $rawFilters['user'] = $username;
-        }
-
-        $triples = null;
-        if (!empty($rawFilters)) {
-            foreach ($rawFilters as $key => $rawValue) {
-                $value = empty($rawValue) ? null : "%\\\"{$key}\\\":\\\"{$rawValue}\\\"%";
-                $newTriples = $this->getService(TripleStore::class)->getMatching(
-                    $resource,
-                    $property,
-                    $value,
-                    "=",
-                    "=",
-                    "LIKE"
-                );
-                if (empty($newTriples)) {
-                    $triples = [];
-                } elseif (is_null($triples)) {
-                    $triples = $newTriples;
-                } elseif (!empty($triples)) {
-                    $newIds = array_map(function ($elem) {
-                        $elem['id'];
-                    });
-                    $triples = array_filter($triples, function ($elem) use ($newIds) {
-                        return in_array($elem['id'], $newIds);
-                    });
-                }
-            }
-
-            foreach ($triples as $triple) {
-                $this->getService(TripleStore::class)->delete(
-                    $triple['resource'],
-                    $triple['property'],
-                    $triple['value'],
-                    "",
-                    ""
-                );
-            }
-        }
-
-        return new ApiResponse(
-            $triples,
-            Response::HTTP_OK
-        );
-    }
-
-    private function extractTriplesParams(string $method, $resource): array
-    {
-        $property = null;
-        $username = null;
-        $apiResponse = null;
-        if (empty($resource)) {
-            $apiResponse = new ApiResponse(
-                ['error' => 'Resource should not be empty !'],
-                Response::HTTP_BAD_REQUEST
-            );
-        } else {
-            $property = filter_input($method, 'property', FILTER_UNSAFE_RAW);
-            $property = ($property === false) ? "" : htmlspecialchars(strip_tags($property));
-            if (empty($property)) {
-                $property = null;
-            }
-
-            $username = filter_input($method, 'user', FILTER_UNSAFE_RAW);
-            $username = ($username === false) ? "" : htmlspecialchars(strip_tags($username));
-            if (empty($username)) {
-                if (!$this->wiki->UserIsAdmin()) {
-                    $username = $this->getService(AuthController::class)->getLoggedUser()['name'];
-                } else {
-                    $username = null;
-                }
-            }
-            $currentUser = $this->getService(AuthController::class)->getLoggedUser();
-            if (!$this->wiki->UserIsAdmin() && $currentUser['name'] != $username) {
-                $apiResponse = new ApiResponse(
-                    ['error' => 'Not authorized to access a triple of another user if not admin !'],
-                    Response::HTTP_UNAUTHORIZED
-                );
-            }
-        }
-        return compact(['property','username','apiResponse']);
     }
 }

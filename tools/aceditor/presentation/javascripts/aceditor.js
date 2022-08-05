@@ -18,8 +18,6 @@ var SYNTAX = {
     'HIGHLIGHT_RGT'   : '{{end elem=&quot;section&quot;}}',
     'CODE_LFT'        : '%%',
     'CODE_RGT'        : '%%',
-    'INLINE_CODE_LFT' : '`',
-    'INLINE_CODE_RGT' : '`',
     'BOLD_LFT'        : '**',
     'BOLD_RGT'        : '**',
     'ITALIC_LFT'      : '//',
@@ -56,8 +54,6 @@ var SYNTAX = {
     'HIGHLIGHT_RGT'   : '</div>',
     'CODE_LFT'        : '<pre>',
     'CODE_RGT'        : '</pre>',
-    'INLINE_CODE_LFT' : '<code>',
-    'INLINE_CODE_RGT' : '</code>',
     'BOLD_LFT'        : '<strong>',
     'BOLD_RGT'        : '</strong>',
     'ITALIC_LFT'      : '<em>',
@@ -176,7 +172,6 @@ var SYNTAX = {
                 '<li><a title="'+this.lang['ACEDITOR_BIGGER_TEXT']+'" class="aceditor-btn aceditor-btn-lead" data-lft="'+this.syntax['LEAD_LFT']+'" data-rgt="'+this.syntax['LEAD_RGT']+'"><div class="lead">'+this.lang['ACEDITOR_BIGGER_TEXT']+'</div></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_HIGHLIGHT_TEXT']+'" class="aceditor-btn aceditor-btn-well" data-lft="'+this.syntax['HIGHLIGHT_LFT']+'" data-rgt="'+this.syntax['HIGHLIGHT_RGT']+'"><div class="well">'+this.lang['ACEDITOR_HIGHLIGHT_TEXT']+'</div></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_SOURCE_CODE']+'" class="aceditor-btn aceditor-btn-code" data-lft="'+this.syntax['CODE_LFT']+'" data-rgt="'+this.syntax['CODE_RGT']+'"><div class="code"><pre>'+this.lang['ACEDITOR_SOURCE_CODE']+'</pre></div></a></li>' +
-                '<li><a title="'+this.lang['ACEDITOR_INLINE_CODE']+'" class="aceditor-btn aceditor-btn-code" data-lft="'+this.syntax['INLINE_CODE_LFT']+'" data-rgt="'+this.syntax['INLINE_CODE_RGT']+'"><code>'+this.lang['ACEDITOR_INLINE_CODE']+'</code></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_COMMENT']+'" class="aceditor-btn aceditor-btn-comment" data-lft="'+this.syntax['COMMENT_LFT']+'" data-rgt="'+this.syntax['COMMENT_RGT']+'">'+this.lang['ACEDITOR_COMMENT']+'</a></li>' +
               '</ul>' +
             '</div>');
@@ -351,14 +346,8 @@ var SYNTAX = {
       </div>
       <div class="radio">
         <label>
-          <input type="radio" name="linkOptions" id="linkOptions1" value="int"><span></span>
+          <input type="radio" name="linkOptions" id="linkOptions1" value="int" checked><span></span>
           `+wiki.lang['ACEDITOR_LINK_OPEN_IN_CURRENT_TAB']+` 
-        </label>
-      </div>
-      <div class="radio">
-        <label>
-          <input type="radio" name="linkOptions" id="linkOptions1bis" value="intactionsyntax" checked><span></span>
-          `+wiki.lang['ACEDITOR_LINK_OPEN_IN_CURRENT_TAB_ACTION_SYNTAX']+` 
         </label>
       </div>
       <div class="radio">
@@ -406,8 +395,6 @@ var SYNTAX = {
                 var replacement = '{{button class="new-window" link="' + realLink + '" nobtn="1" text="'+text+'" title="'+text+'"}}';
               } else if($('#YesWikiLinkModal .radio input[value="modal"]').is(':checked') && realLink) {
                 var replacement = '{{button class="modalbox" nobtn="1" link="'+realLink+'" text="'+text+'" title="'+text+'"}}';
-              } else if ($('#YesWikiLinkModal .radio input[value="intactionsyntax"]').is(':checked') && realLink) {
-                var replacement = '{{button nobtn="1" link="'+realLink+'" text="'+text+'" title="'+text+'"}}';
               } else if (realLink) {
                 var replacement = '[[' + realLink + ' '+text+']]';
               }

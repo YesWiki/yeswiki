@@ -43,7 +43,6 @@ return [
     // 'MODIFY' => 'Modifier',
     // 'NAME' => 'Nom',
     // 'SUBSCRIPTION' => 'Inscription',
-    'TRIPLES' => 'Triplos',
     'UNKNOWN' => 'Desconhecido',
     // 'WARNING' => 'Attention',
 
@@ -277,21 +276,6 @@ return [
     'CSRF_TOKEN_FAIL_ERROR' => 'Esta página pode ter sido aberta uma segunda vez. '.
         'Por favor, renove o pedido desta janela (o sinal de segurança interna não foi bom).',
 
-    // javascripts/favorites.js
-    'FAVORITES_ADD' => 'Adicionar a aavoritos',
-    'FAVORITES_REMOVE' => 'Remova dos favoritos',
-
-    // templates/actions/my-favorites.twig
-    'FAVORITES_DELETE_ALL' => 'Apague todos os meus favoritos',
-    'FAVORITES_MY_FAVORITES' => 'Os meus favoritos',
-    'FAVORITES_NO_FAVORITE' => 'Nenhum favorito foi salvo',
-    'FAVORITES_NOT_ACTIVATED' => 'O uso de favoritos não está ativado neste site.',
-    'FAVORITES_NOT_CONNECTED' => 'O uso de favoritos só é possível para pessoas ligadas.',
-
-    // templates/actions/my-favorites-table.twig
-    'FAVORITES_TITLE' => 'Título',
-    'FAVORITES_LINK' => 'Ligação',
-
     // setup/header.php
     'OK' => 'OK',
     'FAIL' => 'FALHA',
@@ -469,9 +453,7 @@ return [
     // 'USER_NEW_ACCOUNT' => 'Nouveau compte',
     // 'USER_PASSWORD' => 'Mot de passe',
     // 'USER_ERRORS_FOUND' => 'Erreur(s) trouvée(s)',
-    // 'USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR' => 'Il faut une valeur entier positif pour %{name}.',
-    // 'USER_YOU_MUST_SPECIFY_YES_OR_NO' => 'Il faut une value \'Y\' ou  \'N\' pour %{name}.',
-    // 'USER_YOU_MUST_SPECIFY_A_STRING' => 'Il faut une chaîne de caractères pour %{name}.',
+    // 'USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR' => 'Il faut une valeur entier positif pour ',
 
     // YesWiki\Database class
     // 'DATABASE_QUERY_FAILED' => 'La requête a échoué {\YesWiki\Database}',
@@ -539,7 +521,6 @@ return [
     // 'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Méthodes autorisées à être affichées dans les iframes (iframe,editiframe,bazariframe,render,all = autoriser tout)',
     // 'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Nombre maximum de versions d\'une page affichées par le handler `/revisions`.',
     // 'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false)',
-    // 'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Activer les favoris (true ou false)',
     // 'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
     // 'EDIT_CONFIG_GROUP_ACCESS' => 'Droit d\'accès',
     // 'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
@@ -549,8 +530,6 @@ return [
     'USERSTABLE_USER_NOT_DELETED' => 'O utilizador "{username}" não foi eliminado.',
     'USERSTABLE_NOT_EXISTING_USER' => 'O utilizador "{username}" não existe!',
     'GROUP_S' => 'Grupo(s)',
-    // 'USERSTABLE_CREATE_USER' => 'Créer un utilisateur',
-    // 'USERSTABLE_CREATE_USER_HINT' => 'Mot de passe généré aléatoirement',
 
     // handlers/deletepage
     // 'DELETEPAGE_CANCEL' => 'Annuler',

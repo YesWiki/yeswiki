@@ -666,10 +666,6 @@ body {
   opacity: .3;
 }
 
-.spinner-loader.overlay.super-overlay {
-  z-index: 1000;
-}
-
 section.pattern-border {
   border-width: 4px;
   border-style: solid;
@@ -865,24 +861,6 @@ html[lang="pt"] [lang]:not([lang="pt"]){
   font-style: italic;
   line-height: 1rem;
   text-align: justify;
-}
-
-/* favorites */
-.favorites {
-  height: 100%;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 0.5em;
-  padding: 1em 0.5em;
-  transition: all 200ms ease-in;
-  box-shadow: none;
-}
-.favorites:focus,
-.favorites:active,
-.favorites:visited {
-  text-decoration: none;
-}
-.favorites > i {
-  margin-right: 0px !important;
 }
 
 /* timeline */

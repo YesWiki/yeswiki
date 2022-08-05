@@ -50,8 +50,9 @@ uasort($data['action_groups'], function ($a, $b) {
 // Handle translations
 function test_print(&$item, $key)
 {
-    if (is_string($item) && preg_match("/_t\((.+)\)/", $item, $trans_key)) {
-        $item = str_replace($trans_key[0], _t($trans_key[1]), $item);
+    if (is_string($item) && startsWith($item, '_t')) {
+        preg_match("/_t\((.+)\)/", $item, $trans_key);
+        $item = _t($trans_key[1]);
     }
 }
 array_walk_recursive($data['action_groups'], 'test_print');
