@@ -41,6 +41,11 @@ class HtmlPurifierService
     private function load()
     {
         $config = HTMLPurifier_Config::createDefault();
+
+        //add extra attributes for links in new tab
+        $config->set( 'HTML.Allowed', 'a[href|target]');
+        $config->set('Attr.AllowedFrameTargets', array('_blank'));
+
         $this->purifier = new HTMLPurifier($config);
     }
 }
