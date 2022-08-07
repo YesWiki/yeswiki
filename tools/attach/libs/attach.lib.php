@@ -766,7 +766,8 @@ if (!class_exists('attach')) {
                 if (move_uploaded_file($srcFile, $destFile)) {
                     chmod($destFile, 0644);
                     if ($ext  === 'svg' || $ext === 'xml') {
-                        $this->sanitizefile($destFile, $ext);
+                        $purifier = $this->wiki->services->get(HtmlPurifierService::class);
+                        $purifier->cleanFile($destFile, $ext);
                     }
                     header("Location: " . $this->wiki->href("", $this->wiki->GetPageTag(), ""));
                 } else {
@@ -1157,21 +1158,6 @@ if (!class_exists('attach')) {
             } else {
                 return $imgTrans->target_path;
             }
-        }
-
-        /**
-         * @param string $filePath svg
-         */
-        public function sanitizeFile(string $filePath, string $ext)
-        {
-            $purifier = $this->wiki->services->get(HtmlPurifierService::class);
-            $content = file_get_contents($filePath);
-            if ($ext === 'svg') {
-                file_put_contents($filePath, $purifier->sanitizeSVG($content));
-            } elseif ($ext === 'xml') {
-                file_put_contents($filePath, $purifier->cleanXSS($content));
-            } 
-            
         }
     }
 }

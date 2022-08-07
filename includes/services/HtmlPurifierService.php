@@ -22,8 +22,9 @@ class HtmlPurifierService
     {
         $this->params = $params;
         $this->wiki = $wiki;
-        $this->purifier = null;
-        $this->antixss = null;
+        $this->purifier = null;  // will load HtmlPurifier library
+        $this->antixss = null;   // will load antiXSS library
+        $this->sanitizer = null; // will load svgSanitize library
     }
 
     /**
@@ -70,7 +71,33 @@ class HtmlPurifierService
      */
     public function sanitizeSVG(string $content): string
     {
-        $sanitizer = new Sanitizer();
-        return $sanitizer->sanitize($content);
+        if (!$this->params->get('htmlPurifierActivated')) {
+            return $dirtyContent;
+        }
+        if (is_null($this->sanitizer)) {
+            $this->sanitizer = new Sanitizer();
+        }
+
+        return $this->sanitizer->sanitize($content);
+    }
+
+    /**
+     * @param string $content of svg
+     * @return mixed false if problem or int of filesize
+     */
+    public function cleanFile(string $filename, string $extension): mixed
+    {
+        if (file_exists($filename)) {
+            $content = file_get_contents($filename);
+            if ($extension === 'svg') {
+                return file_put_contents($filename, $this->sanitizeSVG($content));
+            } elseif ($extension === 'xml') {
+                return file_put_contents($filename, $this->cleanXSS($content));
+            } elseif ($extension === 'html' || $extension === 'htm' ) {
+                return file_put_contents($filename, $this->cleanHTML($content));
+            }
+        } else {
+            return false; //TODO : maybe raise an explicit error in case of non-existing file
+        }
     }
 }
