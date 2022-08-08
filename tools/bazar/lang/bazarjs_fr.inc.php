@@ -119,7 +119,7 @@ return [
     'BAZ_FORM_EDIT_EMAIL_BUTTON' => 'Remplacer l\'email par un bouton contact',
     'BAZ_FORM_EDIT_EMAIL_SEND_CONTENT' => 'Envoyer le contenu de la fiche à cet email',
     'BAZ_FORM_EDIT_IMAGE_ALIGN_LABEL' => 'Alignement',
-    'BAZ_FORM_EDIT_IMAGE_WIDTH' => 'Hauteur Vignette',
+    'BAZ_FORM_EDIT_IMAGE_HEIGHT' => 'Hauteur Vignette',
     'BAZ_FORM_EDIT_IMAGE_WIDTH' => 'Largeur Vignette',
     'BAZ_FORM_EDIT_IMAGE_WIDTH_RESIZE' => 'Largeur redimension',
     'BAZ_FORM_EDIT_IMAGE_HEIGHT_RESIZE' => 'Hauteur redimension',

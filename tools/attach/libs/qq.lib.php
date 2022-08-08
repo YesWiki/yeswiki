@@ -1,6 +1,7 @@
 <?php
 
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\HtmlPurifierService;
 
 if (!class_exists('qqUploadedFileXhr')) {
     class qqUploadedFileXhr
@@ -201,9 +202,9 @@ if (!class_exists('qqFileUploader')) {
 
             if ($this->file->save($fullfilename)) {
                 chmod($fullfilename, 0664); // fix file permissions to be sure to be able to write on exotic servers configurations
-                if ($ext === "svg") {
-                    $attach->sanitizeSVGfile($fullfilename);
-                }
+                //TODO : refactor this with attach
+                $purifier = $GLOBALS['wiki']->services->get(HtmlPurifierService::class);
+                $purifier->cleanFile($fullfilename, $ext);
                 return array_map('utf8_encode', array('success'=>true, 'filename'=>$fullfilename, 'simplefilename'=>$filename . '.' . $ext, 'extension'=>$ext));
             } else {
                 return array_map(
