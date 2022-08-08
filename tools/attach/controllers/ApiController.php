@@ -105,7 +105,8 @@ class ApiController extends YesWikiController
     private function checkTokenForGetCacheUrlImage(int $width, int $height, string $mode): string
     {
         $csrfTokenManager = $this->getService(CsrfTokenManager::class);
-        $inputToken = filter_input(INPUT_GET, 'csrftoken', FILTER_SANITIZE_STRING);
+        $inputToken = filter_input(INPUT_GET, 'csrftoken', FILTER_UNSAFE_RAW);
+        $inputToken = in_array($inputToken,[false,null],true) ? $inputToken : htmlspecialchars(strip_tags($inputToken));
         $tokenId = str_replace(
             ["{width}","{height}","{mode}"],
             [$width,$height,$mode],

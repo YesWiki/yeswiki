@@ -137,10 +137,13 @@ class BazarListService
                     $formId = $field->getLinkedObjectName() ;
                     $form = $forms[$formId];
                     $list['titre_liste'] = $form['bn_label_nature'];
+                    $list['label'] = [];
                     foreach ($facettable as $idfiche => $nb) {
                         if ($idfiche != 'source' && $idfiche != 'type') {
                             $f = $this->entryManager->getOne($idfiche);
-                            $list['label'][$idfiche] = $f['bf_titre'];
+                            if (!empty($f['bf_titre'])) {
+                                $list['label'][$idfiche] = $f['bf_titre'];
+                            }
                         }
                     }
                 }

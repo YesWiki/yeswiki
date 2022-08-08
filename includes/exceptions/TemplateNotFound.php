@@ -2,6 +2,8 @@
 
 namespace YesWiki\Core\Exception;
 
-class TemplateNotFound extends \Exception
+use Exception;
+
+class TemplateNotFound extends Exception
 {
 }

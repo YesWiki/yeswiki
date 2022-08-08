@@ -38,6 +38,18 @@
       {% endif %}
 
       <div class="BAZ_actions_fiche">
+        {% if currentuser is not empty %}
+          {{ include_javascript('javascripts/favorites.js') }}
+          <a href="#"
+            title="{{ (isUserFavorite) ? _t('FAVORITES_REMOVE') : _t('FAVORITES_ADD') }}"
+            data-resource="{{ entryId }}" 
+            data-user="{{ currentuser }}"
+            data-toggle="tooltip"
+            data-placement="right"
+            class="btn btn-icon btn-default btn-xs favorites{{ (isUserFavorite) ? ' user-favorite' : '' }}">
+            <i class="{{ (isUserFavorite) ? 'fas' : 'far' }} fa-star"></i>
+          </a>
+        {% endif %}
         {% if canShow %}
           <a class="btn btn-entry-action btn-sm btn-default" href="{{ entry['external-data'] ? entry.url : url({ tag: entryId }) }}">
             <i class="fa fa-eye"></i>

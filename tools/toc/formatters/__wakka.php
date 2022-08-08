@@ -11,7 +11,7 @@ if (!function_exists("wakka2callbacktoc")) {
         global $wiki;
 
         static $numTitre = 0;
-        if ($thing == "==") {
+        if ($thing == "==" || $thing == "##### ") {
             static $l5 = 0;
 
 
@@ -21,7 +21,7 @@ if (!function_exists("wakka2callbacktoc")) {
             // Ouverture d'une balise de titre
             if ($l5 % 2) {
                 $toc="TOC_5_".(2*$l5 - 1);
-                return "\"\"<span id=\"$toc\" class=\"yeswiki-title-anchor\"></span>\"\"==";
+                return "\"\"<span id=\"$toc\" class=\"yeswiki-title-anchor\"></span>\"\"$thing";
             }
 
  
@@ -34,7 +34,7 @@ if (!function_exists("wakka2callbacktoc")) {
 
 
         // header level 4
-        elseif ($thing == "===") {
+        elseif ($thing == "===" || $thing == "#### ") {
             static $l4 = 0;
 
 
@@ -43,7 +43,7 @@ if (!function_exists("wakka2callbacktoc")) {
 
             if ($l4 % 2) {
                 $toc="TOC_4_".(2*$l4 - 1);
-                return "\"\"<span id=\"$toc\" class=\"yeswiki-title-anchor\"></span>\"\"===";
+                return "\"\"<span id=\"$toc\" class=\"yeswiki-title-anchor\"></span>\"\"$thing";
             }
 
  
@@ -54,7 +54,7 @@ if (!function_exists("wakka2callbacktoc")) {
         }
 
         // header level 3
-        elseif ($thing == "====") {
+        elseif ($thing == "====" || $thing == "### ") {
             static $l3 = 0;
 
 
@@ -64,7 +64,7 @@ if (!function_exists("wakka2callbacktoc")) {
             // Ouverture d'une balise de titre
             if ($l3 % 2) {
                 $toc="TOC_3_".(2*$l3 - 1);
-                return "\"\"<span id=\"$toc\" class=\"yeswiki-title-anchor\"></span>\"\"====";
+                return "\"\"<span id=\"$toc\" class=\"yeswiki-title-anchor\"></span>\"\"$thing";
             }
 
             // Fermeture du titre precedent
@@ -75,7 +75,7 @@ if (!function_exists("wakka2callbacktoc")) {
 
 
         // header level 2
-        elseif ($thing == "=====") {
+        elseif ($thing == "=====" || $thing == "## ") {
             static $l2 = 0;
 
 
@@ -85,7 +85,7 @@ if (!function_exists("wakka2callbacktoc")) {
             // Ouverture d'une balise de titre
             if ($l2 % 2) {
                 $toc="TOC_2_".(2*$l2 - 1);
-                return "\"\"<span id=\"$toc\" class=\"yeswiki-title-anchor\"></span>\"\"=====";
+                return "\"\"<span id=\"$toc\" class=\"yeswiki-title-anchor\"></span>\"\"$thing";
             }
 
             // Fermeture du titre precedent
@@ -96,7 +96,7 @@ if (!function_exists("wakka2callbacktoc")) {
 
 
         // header level 1
-        elseif ($thing == "======") {
+        elseif ($thing == "======" || $thing == "# ") {
             static $l1 = 0;
 
 
@@ -106,7 +106,7 @@ if (!function_exists("wakka2callbacktoc")) {
             // Ouverture d'une balise de titre
             if ($l1 % 2) {
                 $toc="TOC_1_".(2*$l1 - 1);
-                return "\"\"<span id=\"$toc\" class=\"yeswiki-title-anchor\"></span>\"\"======";
+                return "\"\"<span id=\"$toc\" class=\"yeswiki-title-anchor\"></span>\"\"$thing";
             }
 
             // Fermeture du titre precedent
@@ -125,7 +125,7 @@ if (!function_exists("wakka2callbacktoc")) {
 if (preg_match_all("/".'(\\{\\{toc)'.'(.*?)'.'(\\}\\})'."/is", $text, $matches)) {
     $text = preg_replace_callback(
         "/(======|=====|====|===|==|".
-            "\n)/ms",
+            "(?:^|(?<=\>\"\"))(?!\\\\)\#{1,5} (?=[^\\n\#]*\\n)|\n)/ms",
         "wakka2callbacktoc",
         $text
     );

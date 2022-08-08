@@ -6,6 +6,7 @@ use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Wiki;
@@ -106,6 +107,19 @@ class UpdateHandler extends YesWikiHandler
                 $output .= $this->updateDefaultCommentsAcls();
             } else {
                 $output .= "ℹ️ Comment acls already reset!<br />";
+            }
+            $output .= $this->fixDefaultCommentsAcls();
+
+            // update user table to increase size of password
+            if ($this->wiki->services->has(PasswordHasherFactory::class)) {
+                $passwordHasherFactory = $this->getService(PasswordHasherFactory::class);
+                if (!$passwordHasherFactory->newModeIsActivated()) {
+                    $output .= "ℹ️ Increasing 'password' column size for {$dbService->prefixTable("users")}table.<br />";
+                    $passwordHasherFactory->activateNewMode();
+                    $output .=  '✅ Done !<br />';
+                } else {
+                    $output .= "✅ The table {$dbService->prefixTable("users")}is already up-to-date with right 'password' column size!<br />";
+                }
             }
 
             // propose to update content of admin's pages
@@ -230,7 +244,7 @@ class UpdateHandler extends YesWikiHandler
         $config->load();
 
         $baseKey = 'default_comment_acl';
-        $config->$baseKey = 'comment-closed';
+        $config->$baseKey = 'comments-closed';
         $baseKey = 'default_comment_acl_updated';
         $config->$baseKey = true;
         $config->write();
@@ -243,6 +257,37 @@ class UpdateHandler extends YesWikiHandler
         $pages = $pageManager->getAll();
         foreach ($pages as $page) {
             $aclService->delete($page['tag'], ['comment']);
+        }
+        $output .= '✅ Done !<br />';
+
+        return $output;
+    }
+    private function fixDefaultCommentsAcls(): string
+    {
+        $output = "ℹ️ Fix comment acls<br />";
+
+        // default acls in wakka.config.php
+        include_once 'tools/templates/libs/Configuration.php';
+        $config = new Configuration('wakka.config.php');
+        $config->load();
+
+        $baseKey = 'default_comment_acl';
+        if ($config->$baseKey == "comment-closed") {
+            $config->$baseKey = 'comments-closed';
+            $config->write();
+        }
+        unset($config);
+
+        // remove all comment acl
+        $pageManager = $this->getService(PageManager::class);
+        $aclService = $this->getService(AclService::class);
+
+        $pages = $pageManager->getAll();
+        foreach ($pages as $page) {
+            $pageCommentAcl = $aclService->load($page['tag'], 'comment', false)['list'] ?? '';
+            if (!empty($pageCommentAcl) && preg_match("/comment-closed\s*/", strval($pageCommentAcl))) {
+                $aclService->save($page['tag'], 'comment', "comments-closed");
+            }
         }
         $output .= '✅ Done !<br />';
 
