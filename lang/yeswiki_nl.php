@@ -44,7 +44,6 @@ return [
     // 'MODIFY' => 'Modifier',
     // 'NAME' => 'Nom',
     // 'SUBSCRIPTION' => 'Inscription',
-    'TRIPLES' => 'Triples',
     'UNKNOWN' => 'Onbekend',
     'WARNING' => 'WAARSCHUWING',
 
@@ -279,21 +278,6 @@ return [
     'CSRF_TOKEN_FAIL_ERROR' => 'Deze pagina is mogelijk een tweede keer geopend. '.
         'Verleng het verzoek vanuit dit venster (het interne beveiligingstoken was niet goed).',
 
-    // javascripts/favorites.js
-    'FAVORITES_ADD' => 'Toevoegen aan favorieten',
-    'FAVORITES_REMOVE' => 'Verwijderen uit favorieten',
-
-    // templates/actions/my-favorites.twig
-    'FAVORITES_DELETE_ALL' => 'Al mijn favorieten verwijderen',
-    'FAVORITES_MY_FAVORITES' => 'Mijn favorieten',
-    'FAVORITES_NO_FAVORITE' => 'Er zijn geen favorieten opgeslagen',
-    'FAVORITES_NOT_ACTIVATED' => 'Het gebruik van favorieten is niet ingeschakeld op deze site.',
-    'FAVORITES_NOT_CONNECTED' => 'Het gebruik van favorieten is alleen mogelijk voor mensen die verbonden zijn.',
-
-    // templates/actions/my-favorites-table.twig
-    'FAVORITES_TITLE' => 'Titel',
-    'FAVORITES_LINK' => 'Verbinden',
-
     // setup/header.php
     'OK' => 'OK',
     'FAIL' => 'MISLUKT',
@@ -469,9 +453,7 @@ return [
     // 'USER_NEW_ACCOUNT' => 'Nouveau compte',
     // 'USER_PASSWORD' => 'Mot de passe',
     // 'USER_ERRORS_FOUND' => 'Erreur(s) trouvée(s)',
-    // 'USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR' => 'Il faut une valeur entier positif pour %{name}.',
-    // 'USER_YOU_MUST_SPECIFY_YES_OR_NO' => 'Il faut une value \'Y\' ou  \'N\' pour %{name}.',
-    // 'USER_YOU_MUST_SPECIFY_A_STRING' => 'Il faut une chaîne de caractères pour %{name}.',
+    // 'USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR' => 'Il faut une valeur entier positif pour ',
 
     // YesWiki\Database class
     // 'DATABASE_QUERY_FAILED' => 'La requête a échoué {\YesWiki\Database}',
@@ -539,7 +521,6 @@ return [
     // 'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Méthodes autorisées à être affichées dans les iframes (iframe,editiframe,bazariframe,render,all = autoriser tout)',
     // 'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Nombre maximum de versions d\'une page affichées par le handler `/revisions`.',
     // 'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false)',
-    // 'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Activer les favoris (true ou false)',
     // 'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
     // 'EDIT_CONFIG_GROUP_ACCESS' => 'Droit d\'accès',
     // 'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
@@ -549,8 +530,6 @@ return [
     'USERSTABLE_USER_NOT_DELETED' => 'De gebruiker "{gebruikersnaam}" is niet verwijderd.',
     'USERSTABLE_NOT_EXISTING_USER' => 'De gebruiker "{gebruikersnaam}" bestaat niet!',
     'GROUP_S' => 'Groep(en)',
-    // 'USERSTABLE_CREATE_USER' => 'Créer un utilisateur',
-    // 'USERSTABLE_CREATE_USER_HINT' => 'Mot de passe généré aléatoirement',
 
     // handlers/deletepage
     // 'DELETEPAGE_CANCEL' => 'Annuler',

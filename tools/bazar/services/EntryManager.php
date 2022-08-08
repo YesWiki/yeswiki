@@ -8,7 +8,6 @@ use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\TitleField;
-use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\Mailer;
@@ -22,7 +21,6 @@ class EntryManager
 {
     protected $wiki;
     protected $mailer;
-    protected $authController;
     protected $pageManager;
     protected $tripleStore;
     protected $aclService;
@@ -40,7 +38,6 @@ class EntryManager
     public function __construct(
         Wiki $wiki,
         Mailer $mailer,
-        AuthController $authController,
         PageManager $pageManager,
         TripleStore $tripleStore,
         AclService $aclService,
@@ -53,7 +50,6 @@ class EntryManager
     ) {
         $this->wiki = $wiki;
         $this->mailer = $mailer;
-        $this->authController = $authController;
         $this->pageManager = $pageManager;
         $this->tripleStore = $tripleStore;
         $this->aclService = $aclService;
@@ -197,11 +193,14 @@ class EntryManager
         if (!empty($params['formsIds'])) {
             if (is_array($params['formsIds'])) {
                 $requete .= ' AND (' . join(' OR ', array_map(function ($formId) {
-                    return 'body LIKE \'%"id_typeannonce":"' . $formId . '"%\'';
-                }, $params['formsIds'])).') ';
-            } else {
+                    return 'body LIKE \'%"id_typeannonce":"' . $this->dbService->escape(strval($formId)) . '"%\'';
+                }, array_filter(
+                    $params['formsIds'],
+                    'is_scalar'
+                ))).') ';
+            } elseif (is_scalar($params['formsIds'])) {
                 // on a une chaine de caractere pour l'id plutot qu'un tableau
-                $requete .= ' AND body LIKE \'%"id_typeannonce":"' . $params['formsIds'] . '"%\'';
+                $requete .= ' AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape(strval($params['formsIds'])) . '"%\'';
             }
         }
 
@@ -503,17 +502,17 @@ class EntryManager
 
         $this->validate($data);
 
-        $data = $this->formatDataBeforeSave($data, true);
+        $data = $this->formatDataBeforeSave($data);
 
         // on change provisoirement d'utilisateur
         if (isset($GLOBALS['utilisateur_wikini'])) {
-            $olduser = $this->authController->getLoggedUser();
-            $this->authController->logout();
+            $olduser = $this->userManager->getLoggedUser();
+            $this->userManager->logout();
 
             // On s'identifie de facon a attribuer la propriete de la fiche a
             // l'utilisateur qui vient d etre cree
             $user = $this->userManager->getOneByName($GLOBALS['utilisateur_wikini']);
-            $this->authController->login($user);
+            $this->userManager->login($user);
         }
 
         $ignoreAcls = true;
@@ -556,8 +555,8 @@ class EntryManager
 
         // on remet l'utilisateur initial s'il y en avait un
         if (isset($GLOBALS['utilisateur_wikini']) && !empty($olduser)) {
-            $this->authController->logout();
-            $this->authController->login($olduser, $olduser['remember'] ?? 1);
+            $this->userManager->logout();
+            $this->userManager->login($olduser, 1);
         }
         
         $this->cachedEntriestags[$data['id_fiche']] = true;
@@ -614,7 +613,7 @@ class EntryManager
 
         $this->validate($data);
 
-        $data = $this->formatDataBeforeSave($data, false);
+        $data = $this->formatDataBeforeSave($data);
 
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
@@ -652,7 +651,7 @@ class EntryManager
                 // be carefull : BazarField's objects, that do not save data (as ACL, Label, Hidden), do not have propertyName
                 // see BazarField->formatValuesBeforeSave() for details
                 // so do not save the previous data even if existing
-                if (!empty($propName) && !$field->canEdit($data, false)) {
+                if (!empty($propName) && !$field->canEdit($data)) {
                     $restrictedFields[] = $propName;
                 }
             }
@@ -742,7 +741,7 @@ class EntryManager
         $this->tripleStore->delete($tag, TripleStore::TYPE_URI, null, '', '');
         $this->tripleStore->delete($tag, TripleStore::SOURCE_URL_URI, null, '', '');
         $this->wiki->LogAdministrativeAction(
-            $this->authController->getLoggedUserName(),
+            $this->userManager->getLoggedUserName(),
             "Suppression de la page ->\"\"" . $tag . "\"\""
         );
 
@@ -765,11 +764,10 @@ class EntryManager
      * prepare la requete d'insertion ou de MAJ de la fiche en supprimant
      * de la valeur POST les valeurs inadequates et en formattant les champs.
      * @param $data
-     * @param bool $isCreation
      * @return array
      * @throws Exception
      */
-    public function formatDataBeforeSave($data, bool $isCreation = false)
+    public function formatDataBeforeSave($data)
     {
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
@@ -777,7 +775,7 @@ class EntryManager
         // If there is a title field, compute the entry's title
         foreach ($form['prepared'] as $field) {
             if ($field instanceof TitleField) {
-                $data = array_merge($data, $field->formatValuesBeforeSaveIfEditable($data, $isCreation));
+                $data = array_merge($data, $field->formatValuesBeforeSave($data));
             }
         }
 
@@ -808,7 +806,7 @@ class EntryManager
 
         foreach ($form['prepared'] as $bazarField) {
             if ($bazarField instanceof BazarField) {
-                $tab = $bazarField->formatValuesBeforeSaveIfEditable($data, $isCreation);
+                $tab = $bazarField->formatValuesBeforeSave($data);
             }
 
             if (is_array($tab)) {

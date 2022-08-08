@@ -2,9 +2,7 @@
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Security\Controller\SecurityController;
-use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
-use YesWiki\Core\Service\FavoritesManager;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -26,7 +24,7 @@ if ($this->HasAccess("write") && $this->method != "revisions") {
     // on choisit le template utilisé
     $template = $this->GetParameter('template');
     if (empty($template)) {
-        $template = 'barreredaction_basic.twig';
+        $template = 'barreredaction_basic.tpl.html';
     }
 
     // on peut ajouter des classes, la classe par défaut est .footer
@@ -68,9 +66,9 @@ if ($this->HasAccess("write") && $this->method != "revisions") {
             $barreredactionelements['wikigroups'] = $this->GetGroupsList();
             if ($this->services->get(ParameterBagInterface::class)->get('comments_activated')) {
                 if ($hasAccessComment && $hasAccessComment !== 'comments-closed') {
-                    $barreredactionelements['linkclosecomments'] = $this->href("claim", $page, ['action' => 'closecomments'], false);
+                    $barreredactionelements['linkclosecomments'] = $this->href("claim", $page, 'action=closecomments');
                 } else {
-                    $barreredactionelements['linkopencomments'] = $this->href("claim", $page, ['action' => 'opencomments'], false);
+                    $barreredactionelements['linkopencomments'] = $this->href("claim", $page, 'action=opencomments');
                 }
             }
         } elseif (!$owner && $this->GetUser()) {
@@ -81,13 +79,6 @@ if ($this->HasAccess("write") && $this->method != "revisions") {
         }
     }
     $barreredactionelements['linkshare'] = $this->href("share", $page);
-
-    $user = $this->services->get(AuthController::class)->getLoggedUser();
-    $favoritesManager = $this->services->get(FavoritesManager::class);
-    if (!empty($user) && $favoritesManager->areFavoritesActivated()) {
-        $barreredactionelements['currentuser'] = $user['name'];
-        $barreredactionelements['isUserFavorite'] = $favoritesManager->isUserFavorite($user['name'], $page);
-    }
 
     echo $this->render("@templates/$template", $barreredactionelements);
     echo ' <!-- /.footer -->'."\n";

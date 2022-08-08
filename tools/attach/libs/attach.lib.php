@@ -34,9 +34,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # voir actions/attach.php ppour la documentation
 # copyrigth Eric Feldstein 2003-2004
 
-use enshrined\svgSanitize\Sanitizer;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\LinkTracker;
+use YesWiki\Core\Service\HtmlPurifierService;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -453,10 +453,10 @@ if (!class_exists('attach')) {
             if ($this->isPicture() && empty($this->desc)) {
                 $this->attachErr = '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_ATTACH') . '</strong> : ' . _t('ATTACH_PARAM_DESC_REQUIRED') . '.</div>' . "\n";
             }
-            if (!empty($this->width) && !ctype_digit($this->width)) {
+            if (!empty($this->width) && !ctype_digit(strval($this->width))) {
                 $this->attachErr = '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_ATTACH') . '</strong> : ' . _t('ATTACH_PARAM_WIDTH_NOT_NUMERIC') . '.</div>' . "\n";
             }
-            if (!empty($this->height) && !ctype_digit($this->height)) {
+            if (!empty($this->height) && !ctype_digit(strval($this->height))) {
                 $this->attachErr = '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_ATTACH') . '</strong> : ' . _t('ATTACH_PARAM_HEIGHT_NOT_NUMERIC') . '.</div>' . "\n";
             }
 
@@ -765,8 +765,9 @@ if (!class_exists('attach')) {
                 $srcFile = $_FILES['upFile']['tmp_name'];
                 if (move_uploaded_file($srcFile, $destFile)) {
                     chmod($destFile, 0644);
-                    if ($ext  === "svg") {
-                        $this->sanitizeSVGfile($destFile);
+                    if ($ext  === 'svg' || $ext === 'xml') {
+                        $purifier = $this->wiki->services->get(HtmlPurifierService::class);
+                        $purifier->cleanFile($destFile, $ext);
                     }
                     header("Location: " . $this->wiki->href("", $this->wiki->GetPageTag(), ""));
                 } else {
@@ -1072,7 +1073,7 @@ if (!class_exists('attach')) {
                 }
             } else {
                 $pathInfo = pathinfo($fullFilename);
-                $file_vignette = "{$file['path']}/{$pathInfo['filename']}_vignette_{$width}_{$height}".(isset($pathInfo['extension']) ? ".{$pathInfo['extension']}": '');
+                $file_vignette = "{$file['path']}/{$pathInfo['filename']}_vignette_{$width}_{$height}.{$pathInfo['extension']}";
             }
 
             return $file_vignette;
@@ -1157,25 +1158,6 @@ if (!class_exists('attach')) {
             } else {
                 return $imgTrans->target_path;
             }
-        }
-
-        /**
-         * @param string $content of svg
-         * @return string $content
-         */
-        public function sanitizeSVG(string $content): string
-        {
-            $sanitizer = new Sanitizer();
-            return $sanitizer->sanitize($content);
-        }
-
-        /**
-         * @param string $filePath svg
-         */
-        public function sanitizeSVGfile(string $filePath)
-        {
-            $content = file_get_contents($filePath);
-            file_put_contents($filePath, $this->sanitizeSVG($content));
         }
     }
 }

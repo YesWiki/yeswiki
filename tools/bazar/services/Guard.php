@@ -5,41 +5,34 @@ namespace YesWiki\Bazar\Service;
 use YesWiki\Bazar\Controller\ApiController as BazarApiController;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\EmailField;
-use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Wiki;
 
 class Guard
 {
-    protected $aclService;
-    protected $authController;
+    protected $wiki;
     protected $formManager;
     protected $userManager;
-    protected $wiki;
+    protected $aclService;
 
-    public function __construct(
-        AclService $aclService,
-        AuthController $authController,
-        FormManager $formManager,
-        UserManager $userManager,
-        Wiki $wiki
-    ) {
-        $this->aclService = $aclService;
-        $this->authController = $authController;
+    public function __construct(Wiki $wiki, FormManager $formManager, UserManager $userManager, AclService $aclService)
+    {
+        $this->wiki = $wiki;
         $this->formManager = $formManager;
         $this->userManager = $userManager;
-        $this->wiki = $wiki;
+        $this->aclService = $aclService;
+        $this->userManager = $userManager;
     }
 
     // TODO remove this method and use YesWiki::HasAccess
     public function isAllowed($action = 'saisie_fiche', $ownerId = '') : bool
     {
-        $loggedUserName = $this->authController->getLoggedUserName();
+        $loggedUserName = $this->userManager->getLoggedUserName();
         $isOwner = $ownerId === $loggedUserName || $ownerId === '';
 
         // Admins are allowed all actions
-        if ($this->userManager->isInGroup('admins')) {
+        if ($GLOBALS['wiki']->UserIsInGroup('admins')) {
             return true;
         }
 
@@ -136,11 +129,11 @@ class Guard
             return ($page['owner'] === $userName);
         }
         // check if user is logged in
-        if (!$this->authController->getLoggedUser()) {
+        if (!$this->userManager->getLoggedUser()) {
             return false;
         }
         // check if user is owner
-        if ($page['owner'] == $this->authController->getLoggedUserName()) {
+        if ($page['owner'] == $this->userManager->getLoggedUserName()) {
             return true;
         }
         return false;

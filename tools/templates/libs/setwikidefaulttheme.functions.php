@@ -71,12 +71,9 @@ function checkParamActionSetTemplate($post, $availableThemes)
         return false;
     }
 
-    $post['wdtTheme'] = filter_var($post['wdtTheme'],  FILTER_UNSAFE_RAW);
-    $post['wdtTheme']  = ($post['wdtTheme']  === false) ? "" : htmlspecialchars(strip_tags($post['wdtTheme'] ));
-    $post['wdtStyle'] = filter_var($post['wdtStyle'], FILTER_UNSAFE_RAW);
-    $post['wdtStyle']  = ($post['v']  === false) ? "" : htmlspecialchars(strip_tags($post['wdtStyle'] ));
-    $post['wdtSquelette'] = filter_var($post['wdtSquelette'], FILTER_UNSAFE_RAW);
-    $post['wdtSquelette']  = ($post['wdtSquelette']  === false) ? "" : htmlspecialchars(strip_tags($post['wdtSquelette'] ));
+    $post['wdtTheme'] = filter_var($post['wdtTheme'], FILTER_SANITIZE_STRING);
+    $post['wdtStyle'] = filter_var($post['wdtStyle'], FILTER_SANITIZE_STRING);
+    $post['wdtSquelette'] = filter_var($post['wdtSquelette'], FILTER_SANITIZE_STRING);
 
     // Vérifie la validité du thème.
     if (!array_key_exists($post['wdtTheme'], $availableThemes)) {

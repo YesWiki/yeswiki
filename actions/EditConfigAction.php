@@ -19,7 +19,6 @@ class EditConfigAction extends YesWikiAction
         'revisionscount' => 'core',
         'default_comment_avatar' => 'core',
         'htmlPurifierActivated' => 'core',
-        'favorites_activated' => 'core',
 
         'default_read_acl' => 'access',
         'default_write_acl' => 'access',

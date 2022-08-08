@@ -2,13 +2,9 @@
 
 namespace YesWiki\Bazar\Field;
 
-use Exception;
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Service\FormManager;
-use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Controller\UserController;
-use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Wiki;
@@ -57,9 +53,8 @@ class UserField extends BazarField
     {
         $value = $this->getValue($entry);
         
-        $authController = $this->getService(AuthController::class);
         $userManager = $this->getService(UserManager::class);
-        $loggedUser = $authController->getLoggedUser();
+        $loggedUser = $userManager->getLoggedUser();
         if (!empty($loggedUser)) {
             $associatedUser = $userManager->getOneByName($loggedUser['name']);
             if (!empty($associatedUser['name'])) {
@@ -97,7 +92,6 @@ class UserField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
-        $userController = $this->getService(UserController::class);
         $userManager = $this->getService(UserManager::class);
         $mailer = $this->getService(Mailer::class);
 
@@ -128,14 +122,14 @@ class UserField extends BazarField
             $wikiName = $entry[$this->nameField];
 
             if (!$wiki->IsWikiName($wikiName)) {
-                // create a UserName from value that is a wikiname
-                // so the User could have a chance to have the same name as the created entry
-                // if the name is based on `bf_titre`
                 $wikiName = genere_nom_wiki($wikiName, 0);
             }
             if ($this->isUserByName($wikiName)) {
                 $currentWikiName = $wikiName;
-                $wikiName = $this->findANewNotExistingUserName($currentWikiName);
+                // If user exist, add a number
+                while ($this->isUserByName($wikiName)) {
+                    $wikiName = genere_nom_wiki($wikiName);
+                }
                 if (!$isImport
                     && (
                         !isset($_POST[$this->propertyName.self::CONFIRM_NAME_SUFFIX])
@@ -151,29 +145,19 @@ class UserField extends BazarField
                     );
                 }
             }
-            if (!isset($entry[$this->emailField])) {
-                throw new Exception("\$entry[{$this->emailField}] should be set in UserField->formatValuesBeforeSave(\$entry)");
-            }
-            if (!$isImport) {
-                if (!isset($entry['mot_de_passe_repete_wikini'])) {
-                    throw new Exception("\$entry['mot_de_passe_repete_wikini'] should be set in UserField->formatValuesBeforeSave(\$entry)");
-                }
-                if ($entry['mot_de_passe_wikini'] !== $entry['mot_de_passe_repete_wikini']) {
-                    throw new UserFieldException(_t('USER_PASSWORDS_NOT_IDENTICAL'));
-                }
-            }
-            
-            try {
-                $userController->create([
-                    'name' => $wikiName,
-                    'email' => $entry[$this->emailField],
-                    'password' => $entry['mot_de_passe_wikini']
-                ]);
-            } catch (UserNameAlreadyUsedException $ex) {
+            if ($this->isUserByEmail($entry[$this->emailField])) {
                 throw new UserFieldException(_t('BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL'));
-            } catch (Exception $ex) {
-                throw new UserFieldException($ex->getMessage(), $ex->getCode(), $ex);
             }
+            if (!filter_var($entry[$this->emailField], FILTER_VALIDATE_EMAIL)) {
+                throw new UserFieldException(_t('USER_THIS_IS_NOT_A_VALID_EMAIL'));
+            }
+            if (!$isImport
+                && $entry['mot_de_passe_wikini'] !== $entry['mot_de_passe_repete_wikini']) {
+                throw new UserFieldException(_t('USER_PASSWORDS_NOT_IDENTICAL'));
+            }
+
+            // check existence of user with same
+            $userManager->create($wikiName, $entry[$this->emailField], $entry['mot_de_passe_wikini']);
 
             // add in groups
             $this->addUserToGroups($wikiName, $entry);
@@ -207,12 +191,12 @@ class UserField extends BazarField
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
-        $authController = $this->getService(AuthController::class);
+        $userManager = $this->getService(UserManager::class);
 
         if ($value) {
             return $this->render("@bazar/fields/user.twig", [
                 'value' => $value,
-                'isLoggedUser' => $authController->getLoggedUser() && $authController->getLoggedUserName() === $value,
+                'isLoggedUser' => $userManager->getLoggedUser() && $userManager->getLoggedUserName() === $value,
                 'editUrl' => $this->getWiki()->href('edit', $value),
                 'settingsUrl' => $this->getWiki()->href('', 'ParametresUtilisateur')
             ]);
@@ -277,28 +261,26 @@ class UserField extends BazarField
     private function updateEmailIfNeeded(string $userName, string $email)
     {
         if ($this->getAutoUpdateMail() && !empty($userName) && !empty($email)) {
-            $authController = $this->getService(AuthController::class);
-            $userController = $this->getService(UserController::class);
             $userManager = $this->getService(UserManager::class);
             $user = $userManager->getOneByName($userName);
-            $loggedUser = $authController->getLoggedUser();
+            $loggedUser = $userManager->getLoggedUser();
             if (!empty($user)
-                    && (
-                        $this->getWiki()->UserIsAdmin()
-                            || (
-                                !empty($loggedUser)
-                                && $user['name'] === $loggedUser['name']
-                            )
-                    )
-                    && $user['email'] !== $email
+                && (
+                    $this->getWiki()->UserIsAdmin()
+                        || (
+                            !empty($loggedUser)
+                            && $user['name'] === $loggedUser['name']
+                        )
+                )
+                && $user['email'] !== $email
                 ) {
-                try {
-                    $userController->update($user, ['email'=>$email]);
-                } catch (UserNameAlreadyUsedException $ex) {
-                    throw new UserFieldException(_t('BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL'));
-                } catch (Exception $ex) {
-                    throw new UserFieldException($ex->getMessage(), $ex->getCode(), $ex);
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    throw new UserFieldException(_t('USER_THIS_IS_NOT_A_VALID_EMAIL'));
                 }
+                if ($this->isUserByEmail($email)) {
+                    throw new UserFieldException(_t('BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL'));
+                }
+                $userManager->updateEmail($user['name'], $email);
             }
         }
     }
@@ -311,7 +293,6 @@ class UserField extends BazarField
             $wiki = $this->getWiki();
             $existingsGroups = $wiki->GetGroupsList();
             $formManager = $this->getService(FormManager::class);
-            $userManager = $this->getService(UserManager::class);
             foreach ($groups as $group) {
                 $group = trim($group);
                 $forceGroupCreation =  (substr($group, 0, 1) === '+');
@@ -322,14 +303,14 @@ class UserField extends BazarField
                     if (!empty($field) && !empty($entry[$field->getPropertyName()])) {
                         $groupsNamesFromField = explode(',', $entry[$field->getPropertyName()]);
                         foreach ($groupsNamesFromField as $groupNameFromField) {
-                            if ($this->userMustBeAddedToGroup($wikiName, $groupNameFromField, $forceGroupCreation, $userManager, $existingsGroups)) {
+                            if ($this->userMustBeAddedToGroup($wikiName, $groupNameFromField, $forceGroupCreation, $wiki, $existingsGroups)) {
                                 $groupsNames[] = $groupNameFromField;
                             }
                         }
                     }
                 } else {
                     $groupName = substr($groupName, 1);
-                    if ($this->userMustBeAddedToGroup($wikiName, $groupName, $forceGroupCreation, $userManager, $existingsGroups)) {
+                    if ($this->userMustBeAddedToGroup($wikiName, $groupName, $forceGroupCreation, $wiki, $existingsGroups)) {
                         $groupsNames[] = $groupName;
                     }
                 }
@@ -350,7 +331,7 @@ class UserField extends BazarField
         string $wikiName,
         string $groupName,
         bool $forceGroupCreation,
-        UserManager $userManager,
+        Wiki $wiki,
         array $existingsGroups
     ) {
         if (!preg_match('/^[A-Za-z0-9]+$/m', $groupName)) {
@@ -358,30 +339,12 @@ class UserField extends BazarField
         }
         
         if (in_array($groupName, $existingsGroups, true)) {
-            if (!$userManager->isInGroup($groupName, $wikiName, false)) {
+            if (!$wiki->UserIsInGroup($groupName, $wikiName, false)) {
                 return true;
             }
         } elseif ($forceGroupCreation) {
             return true;
         }
         return false;
-    }
-
-    private function findANewNotExistingUserName(string $firstWikiName): string
-    {
-        // remove last numbers
-        $baseWikiName = preg_replace("/[0-9]*$/", "", $firstWikiName);
-
-        // a loop 1000 should be enough
-        for ($i=1; $i < 1000; $i++) {
-            $newName = "$baseWikiName$i";
-            if (!$this->isUserByName($newName)) {
-                return $newName;
-            }
-        }
-
-        // if here, this is because all new usernames are existing
-        // it could be an error
-        throw new UserFieldException('Impossible to find a new user name !');
     }
 }

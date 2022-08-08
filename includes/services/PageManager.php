@@ -5,7 +5,6 @@ namespace YesWiki\Core\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
-use YesWiki\Core\Controller\AuthController;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Tags\Service\TagsManager;
 use YesWiki\Wiki;
@@ -13,7 +12,6 @@ use YesWiki\Wiki;
 class PageManager
 {
     protected $wiki;
-    protected $authController;
     protected $dbService;
     protected $aclService;
     protected $securityController;
@@ -27,7 +25,6 @@ class PageManager
 
     public function __construct(
         Wiki $wiki,
-        AuthController $authController,
         DbService $dbService,
         AclService $aclService,
         TripleStore $tripleStore,
@@ -37,7 +34,6 @@ class PageManager
         TagsManager $tagsManager
     ) {
         $this->wiki = $wiki;
-        $this->authController = $authController;
         $this->dbService = $dbService;
         $this->aclService = $aclService;
         $this->tripleStore = $tripleStore;
@@ -280,7 +276,7 @@ class PageManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        $user = $this->authController->getLoggedUserName();
+        $user = $this->userManager->getLoggedUserName();
 
         // check bypass of rights or write privilege
         $rights = $bypass_acls || ($comment_on ? $this->aclService->hasAccess(
@@ -307,7 +303,7 @@ class PageManager
                 $this->aclService->save($tag, 'comment', ($comment_on ? '' : $defaultComment));
 
                 // current user is owner; if user is logged in! otherwise, no owner.
-                if ($this->authController->getLoggedUser()) {
+                if ($this->userManager->getLoggedUser()) {
                     $owner = $user;
                 } else {
                     $owner = '';

@@ -2,9 +2,9 @@
 
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\BazarListService;
-use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Exception\TemplateNotFound;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Core\Service\UserManager;
+use YesWiki\Core\Exception\TemplateNotFound;
 
 class BazarListeAction extends YesWikiAction
 {
@@ -139,7 +139,7 @@ class BazarListeAction extends YesWikiAction
             'dateMin' => $this->formatDateMin($_GET['period'] ?? $arg['period'] ?? null),
             // sélectionner seulement les fiches d'un utilisateur
             'user' => $arg['user'] ?? ((isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == "true") ?
-                $this->getService(AuthController::class)->getLoggedUserName() : null),
+                $this->getService(UserManager::class)->getLoggedUserName() : null),
             // Ordre du tri (asc ou desc)
             'ordre' => $arg['ordre'] ?? ((empty($arg['champ']) && $agendaMode) ? 'desc' : 'asc') ,
             // Champ du formulaire utilisé pour le tri
