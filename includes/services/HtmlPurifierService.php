@@ -69,7 +69,7 @@ class HtmlPurifierService
      * @param string $content of svg
      * @return string $content
      */
-    public function sanitizeSVG(string $content): bool|string
+    public function sanitizeSVG(string $content)
     {
         if (!$this->params->get('htmlPurifierActivated')) {
             return $dirtyContent;
@@ -85,7 +85,7 @@ class HtmlPurifierService
      * @param string $content of svg
      * @return mixed false if problem or int of filesize
      */
-    public function cleanFile(string $filename, string $extension): bool|int
+    public function cleanFile(string $filename, string $extension)
     {
         if (file_exists($filename)) {
 	   if (in_array($extension, ['svg', 'xml', 'html', 'htm'])) {	
