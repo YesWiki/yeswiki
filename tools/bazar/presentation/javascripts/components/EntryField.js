@@ -10,6 +10,7 @@ export default {
       const value = this.entry[this.prop] || ""
       switch (this.type) {
         case 'listedatedeb':
+          if (!value) return ""
           if (value.includes('T')) this.isDateTime = true
           return new Date(value)
         case 'liste':
@@ -23,6 +24,8 @@ export default {
         case 'tags':
           const values = value.split(',').map(v => this.field.options[v])
           return values.length <= 1 ? values[0] : values
+        case 'email':
+          return ""; // security
         default:
           return value
       } 

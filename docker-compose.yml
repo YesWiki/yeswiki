@@ -11,8 +11,9 @@ services:
             - .:/var/www/html
         depends_on:
             - db
-        ## allow conatiner to create wakka.config.js in volume & create php et js vendor & launch apache as lavoweb/php-7.3:composer
-        command: bash -c "chmod -R +wx . && make install && apache2-foreground"
+        # Install php et js vendors
+        # Launch apache as lavoweb/php-7.3:composer
+        command: bash -c "make install && apache2-foreground"
 
     db:
         image: mysql:5.6

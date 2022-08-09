@@ -14,7 +14,7 @@
     {{ include('@templates/alert-message.twig',{type:'info',message:_t('BAZ_CARD_NBCOL_TOO_HIGH')}) }}
   {% endif %}
   {% set imWidth = (nbcol == 4) ? 250 : (nbcol == 5 ? 200 : 300 ) %}
-  {% set imHeight = params.style == "square" ? imWidth : (params.style == "horizontal" ? imWidth*23//27 : imWidth*3//2 ) %}
+  {% set imHeight = params.style == "square" ? imWidth : (params.style == "horizontal" ? imWidth*23//27 : imWidth*2//3 ) %}
   {% set firstTokenCrop = csrfToken("GET api/images/cache/#{imWidth}/#{imHeight}/crop") %}
   <div class="bazar-cards-container" v-if="ready" 
        :class="[{ready: ready}, `style-${params.style || 'vertical'}`, `nbcol-{{nbcol}}`]" 

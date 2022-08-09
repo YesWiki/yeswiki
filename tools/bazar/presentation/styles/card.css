@@ -14,6 +14,9 @@
   position: relative;
   cursor: pointer;
 }
+a.bazar-card {
+  text-decoration: none !important;
+}
 .bazar-card:hover .visual-area:not(.placeholder) {
   filter: brightness(1.05) contrast(1.05);
 }

@@ -2,6 +2,8 @@
 
 namespace YesWiki\Core\Service;
 
+use Exception;
+
 // use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 // use YesWiki\Wiki;
 
@@ -31,7 +33,7 @@ class ImportService
         }
         list($baseUrl, $rewriteModeEnabled, $tag) = $extraction;
         $redirectedRootUrl = $this->retrieveUrlAfterRedirect($baseUrl.'/');
-        $extraction = $this->extractBaseUrlModeAndTag($redirectedInputUrl);
+        $extraction = $this->extractBaseUrlModeAndTag($redirectedRootUrl);
         if (empty($extraction)) {
             return [];
         }
@@ -87,15 +89,79 @@ class ImportService
      */
     private function retrieveUrlAfterRedirect(string $inputUrl): string
     {
-        $headers = get_headers($inputUrl, true);
+        $headers = $this->getHeaders($inputUrl);
         $outputUrl = $inputUrl;
-        if (!empty($headers['Location'])) {
-            if (is_array($headers['Location'])) {
-                $outputUrl = $headers['Location'][count($headers['Location'])-1];
-            } elseif (is_string($headers['Location'])) {
-                $outputUrl = $headers['Location'];
+        $location = !empty($headers['Location'])
+            ? $headers['Location']
+            : (
+                !empty($headers['location'])
+                ? $headers['location']
+                : ""
+            );
+        if (!empty($location)) {
+            if (is_array($location)) {
+                $outputUrl = $location[count($location)-1];
+            } elseif (is_string($location)) {
+                $outputUrl = $location;
             }
         }
         return $outputUrl;
+    }
+
+    /**
+     * @param string $url
+     * @return string
+     * @throws Exception
+     */
+    private function getHeaders($url): array
+    {
+        $destPath = tempnam('cache', 'tmp_to_delete_');
+        $destPathHeaders = tempnam('cache', 'tmp_headers_to_delete_');
+        $fp = fopen($destPath, 'wb');
+        $fph = fopen($destPathHeaders, 'wb');
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_FILE, $fp);
+        curl_setopt($ch, CURLOPT_WRITEHEADER, $fph);
+        curl_setopt($ch, CURLOPT_HEADER, 1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3); // connect timeout in seconds
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30); // total timeout in seconds
+        curl_exec($ch);
+        $error = curl_errno($ch);
+        curl_close($ch);
+        fclose($fp);
+        fclose($fph);
+        if (!$error && file_exists($destPathHeaders)) {
+            $content = file_get_contents($destPathHeaders);
+        }
+        unlink($destPath);
+        unlink($destPathHeaders);
+        if ($error) {
+            $errorStr = curl_strerror($error);
+            throw new Exception("Error getting content from $url ($errorStr)");
+        }
+        $intermediate = empty($content) ? [] : array_filter(array_map('trim', explode("\n", $content)));
+        $output = [];
+        foreach ($intermediate as $header) {
+            if (strpos($header, ":") === false) {
+                $output[] = $header;
+            } else {
+                list($header, $value) = explode(":", $header, 2);
+                $value = trim($value);
+                if (!isset($output[$header])) {
+                    $output[$header] = $value;
+                } elseif (is_string($output[$header])) {
+                    $output[$header] = [
+                        $output[$header],
+                        $value
+                    ];
+                } elseif (is_array($output[$header])) {
+                    $output[$header][] = $value;
+                } else {
+                    $output[$header] = $value;
+                }
+            }
+        }
+        return $output;
     }
 }

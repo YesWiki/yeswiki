@@ -11,9 +11,9 @@
         "@composer install --working-dir ./tools/autoupdate/",
         "@php -r \"array_map('unlink', glob('vendor/enshrined/svg-sanitize/tests/data/*.svg'));\"",
         "@php -r \"array_map('unlink', glob('vendor/stefangabos/zebra_image/examples/images/*'));\"",
-        "@php -r \"rmdir('vendor/stefangabos/zebra_image/examples/images/');\"",
+        "@php -r \"if (is_dir('vendor/stefangabos/zebra_image/examples/images/')){rmdir('vendor/stefangabos/zebra_image/examples/images/');}\"",
         "@php -r \"array_map('unlink', glob('vendor/stefangabos/zebra_image/examples/*'));\"",
-        "@php -r \"rmdir('vendor/stefangabos/zebra_image/examples');\""
+        "@php -r \"if (is_dir('vendor/stefangabos/zebra_image/examples')){rmdir('vendor/stefangabos/zebra_image/examples');}\""
       ],
       "post-update-cmd": [
         "@composer update --working-dir ./tools/autoupdate/"
@@ -47,10 +47,12 @@
         "symfony/http-foundation": "^5.1",
         "symfony/http-kernel": "^5.3.12",
         "symfony/routing": "^5.1",
+        "symfony/security-core": "^5.4",
         "symfony/security-csrf": "^5.0",
         "symfony/yaml": "^5.1",
         "tamtamchik/simple-flash": "^2.0",
         "twig/twig": "^3.0",
+        "voku/anti-xss": "^4.1",
         "yeswiki/theme-margot": "^1.0"
     },
     "conflict": {

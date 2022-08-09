@@ -306,6 +306,7 @@ return [
 
     // fields/BookmarkletField.php
     // 'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',
+    // 'BAZ_BOOKMARKLET_LABEL' => 'Créer une fiche %{form}',
 
     // fields/FileField.php
     // 'BAZ_FILE_ALREADY_EXISTING' => 'fichier déja existant',

@@ -119,7 +119,7 @@ return [
     'BAZ_FORM_EDIT_EMAIL_BUTTON' => 'Remplacer l\'email par un bouton contact',
     'BAZ_FORM_EDIT_EMAIL_SEND_CONTENT' => 'Envoyer le contenu de la fiche à cet email',
     'BAZ_FORM_EDIT_IMAGE_ALIGN_LABEL' => 'Alignement',
-    'BAZ_FORM_EDIT_IMAGE_WIDTH' => 'Hauteur Vignette',
+    'BAZ_FORM_EDIT_IMAGE_HEIGHT' => 'Hauteur Vignette',
     'BAZ_FORM_EDIT_IMAGE_WIDTH' => 'Largeur Vignette',
     'BAZ_FORM_EDIT_IMAGE_WIDTH_RESIZE' => 'Largeur redimension',
     'BAZ_FORM_EDIT_IMAGE_HEIGHT_RESIZE' => 'Hauteur redimension',
@@ -211,6 +211,9 @@ return [
     'BAZ_BOOKMARKLET_HINT' => "Ce champ nécessite deux autres champs pour fonctionner :{\\n}".
         "  - un champ url (par défaut 'bf_url'){\\n}".
         "  - un champ texte long (par défaut 'bf_description')",
+    'BAZ_FORM_EDIT_BOOKMARKLET_HINT_DEFAULT_VALUE' => "Glisser-déposer le bouton dans votre barre de navigateur",
+    'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_LABEL' => "Texte affiché",
+    'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_VALUE' => "Glisser-déposer le bouton dans votre barre de favoris",
 
     // condition checking field
     "BAZ_FORM_CONDITIONSCHEKING_HINT" => "La condition doit respecter le format suivant (sans les `):{\\n}".

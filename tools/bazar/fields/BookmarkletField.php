@@ -11,9 +11,11 @@ class BookmarkletField extends BazarField
 {
     protected $urlField;
     protected $descriptionField;
+    protected $text;
 
     protected const FIELD_URL_FIELD = 3;
     protected const FIELD_DESCRIPTION_FIELD = 4;
+    protected const FIELD_TEXT_FIELD = 5;
     
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -23,6 +25,8 @@ class BookmarkletField extends BazarField
         $this->descriptionField = $values[self::FIELD_DESCRIPTION_FIELD] ?? 'bf_description';
         $this->size = null;
         $this->maxChars = null;
+        $this->default = "";
+        $this->text =  $values[self::FIELD_TEXT_FIELD];
     }
 
     protected function renderInput($entry)
@@ -33,7 +37,7 @@ class BookmarkletField extends BazarField
                 'urlParams' => [
                     'vue' => BAZ_VOIR_SAISIR,
                     'action' => BAZ_ACTION_NOUVEAU,
-                    'id' => $entry['id_typeannonce'] ?? "_",
+                    'id' => $entry['id_typeannonce'] ?? ((!empty($_GET['id']) && is_scalar($_GET['id']) && strval($_GET['id']) == strval(intval($_GET['id'])))? strval($_GET['id']): ""),
                 ]
             ]);
         }
@@ -58,13 +62,19 @@ class BookmarkletField extends BazarField
         return $this->descriptionField;
     }
 
+    public function getText()
+    {
+        return $this->text;
+    }
+
     public function jsonSerialize()
     {
         return array_merge(
             parent::jsonSerialize(),
             [
                 'urlField' => $this->getUrlField(),
-                'descriptionField' => $this->getDescriptionField()
+                'descriptionField' => $this->getDescriptionField(),
+                'text' => $this->getText()
             ]
         );
     }

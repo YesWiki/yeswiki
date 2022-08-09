@@ -93,3 +93,17 @@ mkdir -p javascripts/vendor/fullcalendar && \
 mkdir -p javascripts/vendor/moment && \
   cp -f node_modules/moment/min/moment-with-locales.min.js javascripts/vendor/moment && \
   cp -f node_modules/moment/min/moment-with-locales.min.js.map javascripts/vendor/moment
+
+# Docsify
+mkdir -p javascripts/vendor/docsify && \
+  cp -f node_modules/docsify/lib/docsify.min.js javascripts/vendor/docsify && \
+  cp -f node_modules/docsify/LICENSE javascripts/vendor/docsify && \
+  cp -f node_modules/docsify/README.md javascripts/vendor/docsify
+mkdir -p javascripts/vendor/docsify/plugins && \
+  cp -f node_modules/docsify/lib/plugins/*.min.js javascripts/vendor/docsify/plugins
+mkdir -p styles/vendor/docsify && \
+  cp -f node_modules/docsify/lib/themes/vue.css styles/vendor/docsify/vue.min.css && \
+  cp -f node_modules/docsify/lib/themes/pure.css styles/vendor/docsify/pure.min.css && \
+  cp -f node_modules/docsify/lib/themes/buble.css styles/vendor/docsify/buble.min.css && \
+  cp -f node_modules/docsify/lib/themes/dark.css styles/vendor/docsify/dark.min.css && \
+  cp -f node_modules/docsify/lib/themes/dolphin.css styles/vendor/docsify/dolphin.min.css

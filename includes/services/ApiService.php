@@ -4,15 +4,18 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Routing\RouteCollection;
+use YesWiki\Core\Controller\AuthController;
 
 class ApiService
 {
+    protected $authController;
     protected $params;
     protected $aclService;
     protected $userManager;
 
-    public function __construct(ParameterBagInterface $params, AclService $aclService, UserManager $userManager)
+    public function __construct(AuthController $authController, ParameterBagInterface $params, AclService $aclService, UserManager $userManager)
     {
+        $this->authController = $authController;
         $this->aclService = $aclService;
         $this->params = $params;
         $this->userManager = $userManager;
@@ -124,8 +127,8 @@ class ApiService
             return false;
         }
         // login
-        $this->userManager->logout();
-        $this->userManager->login($user);
+        $this->authController->logout();
+        $this->authController->login($user);
         return true;
     }
 }

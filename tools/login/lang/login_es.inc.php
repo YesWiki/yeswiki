@@ -76,4 +76,11 @@ return [
     'USERSETTINGS_EMAIL_NOT_CHANGED' => 'Correo electrónico no cambiado.',
     'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'Contraseña no cambiada.',
     'USERSETTINGS_USER_NOT_DELETED' => 'Usuario no eliminado.',
+    'USERSETTINGS_CAPTCHA_USER_CREATION' => 'Verification to create a user',
+    'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'The \'{parameters}\' parameters cannot be empty!',
+    'USERSETTINGS_NAME_ALREADY_USED' => 'The identifier "{currentName}" already exists!',
+    'USERSETTINGS_EMAIL_ALREADY_USED' => 'The email "{email}" is already used by another account!',
+    'USERSETTINGS_CHANGE_PWD_IN_IFRAME' => "Está a punto de cambiar su contraseña en una ventana de iframe.\n".
+        "Para evitar ataques de registro de teclas, asegúrese de que la URL del sitio comience con {baseUrl}.\n".
+        "En caso de duda, abra este formulario en una página dedicada haciendo clic en este enlace {link}.",
 ];

@@ -334,7 +334,7 @@ var typeUserAttrs = {
   },
   image: {
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: "" },
-    thumb_height: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH'), value: "140" },
+    thumb_height: { label: _t('BAZ_FORM_EDIT_IMAGE_HEIGHT'), value: "140" },
     thumb_width: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH'), value: "140" },
     resize_height: { label: _t('BAZ_FORM_EDIT_IMAGE_HEIGHT_RESIZE'), value: "400" },
     resize_width: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH_RESIZE'), value: "400" },
@@ -485,6 +485,8 @@ var typeUserAttrs = {
   bookmarklet: {
     urlField: {label: _t('BAZ_FORM_EDIT_BOOKMARKLET_URLFIELD_LABEL'), value: "bf_url" },
     descriptionField: {label: _t('BAZ_FORM_EDIT_BOOKMARKLET_DESCRIPTIONFIELD_LABEL'), value: "bf_description" },
+    hint: {label: _t('BAZ_FORM_EDIT_HELP'), value: _t('BAZ_FORM_EDIT_BOOKMARKLET_HINT_DEFAULT_VALUE') },
+    text: {label: _t('BAZ_FORM_EDIT_BOOKMARKLET_TEXT_LABEL'), value: _t('BAZ_FORM_EDIT_BOOKMARKLET_TEXT_VALUE') },
   },
   collaborative_doc: {},
   titre: {},
@@ -766,7 +768,13 @@ var yesWikiMapping = {
     1: "name", 
     2: "label", 
     3: "urlField",
-    4: "descriptionField" 
+    4: "descriptionField",
+    5: "text",
+    6: "",
+    7: "",
+    8: "",
+    9: "",
+    10: "hint"
   },
   listefichesliees: {
     0: "type",

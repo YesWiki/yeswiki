@@ -2,6 +2,8 @@
 
 namespace YesWiki\Bazar\Exception;
 
-class UserFieldException extends \Exception
+use Exception;
+
+class UserFieldException extends Exception
 {
 }

@@ -25,7 +25,6 @@ require_once 'includes/urlutils.inc.php';
 require_once 'includes/i18n.inc.php';
 require_once 'includes/YesWikiInit.php';
 require_once 'includes/Session.class.php';
-require_once 'includes/User.class.php';
 require_once 'includes/YesWikiPerformable.php';
 require_once 'includes/objects/YesWikiAction.php';
 require_once 'includes/objects/YesWikiHandler.php';
@@ -45,6 +44,7 @@ use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use YesWiki\Core\ApiResponse;
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ApiService;
@@ -77,7 +77,7 @@ class Wiki
     public $extensions = array();
     public $routes = array();
     public $session;
-    public $user;
+    public $user; // depreciated TODO remove it for ectoplasme : replaced by userManager
     public $services;
 
     /**
@@ -107,7 +107,6 @@ class Wiki
         $this->routes = $init->initRoutes($this);
 
         $this->session = new \YesWiki\Session($this);
-        $this->user = new \YesWiki\User($this);
     }
 
     // MISC
@@ -1021,17 +1020,6 @@ class Wiki
     }
 
     /**
-     *
-     * @param string $group
-     *            The name of a group
-     * @return boolean true iff the user is in the given $group
-     */
-    public function UserIsInGroup($group, $user = null, $admincheck = true)
-    {
-        return $this->CheckACL($this->GetGroupACL($group), $user, $admincheck);
-    }
-
-    /**
      * Checks if a given user is administrator
      *
      * @param string $user
@@ -1040,7 +1028,7 @@ class Wiki
      */
     public function UserIsAdmin($user = null)
     {
-        return $this->UserIsInGroup(ADMIN_GROUP, $user, false);
+        return $this->services->get(UserManager::class)->isInGroup(ADMIN_GROUP, $user, false);
     }
 
     /**
@@ -1160,9 +1148,7 @@ class Wiki
             $this->Redirect($this->href("", $this->config['root_page']));
         }
 
-        if ((! $this->GetUser() && isset($_COOKIE['name'])) && ($user = $this->LoadUser($_COOKIE['name'], $_COOKIE['password']))) {
-            $this->SetUser($user, $_COOKIE['remember']);
-        }
+        $this->services->get(AuthController::class)->connectUser();
 
         $this->request = Request::createFromGlobals();
 
@@ -1292,6 +1278,29 @@ class Wiki
             }
         }
         $response->send();
+    }
+
+    /**
+     * furnish a method to generateRandomString
+     * @param int $length
+     * @param string $charset
+     * @return string
+     */
+    public function generateRandomString(
+        int $length = 30,
+        string $charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-_*=.:,?'
+    ): string {
+        $randompassword = "";
+        $maxIndex = strlen($charset) -1;
+
+        if ($length < 1) {
+            $length = 30;
+        }
+
+        for ($i=0; $i < $length; $i++) {
+            $randompassword .= substr($charset, random_int(0, $maxIndex), 1);
+        }
+        return $randompassword;
     }
 
     /**
@@ -1810,35 +1819,35 @@ class Wiki
     }
 
     /**
-     * @deprecated Use UserManager::getLoggedUser instead
+     * @deprecated Use AuthController::getLoggedUser instead
      */
     public function GetUser()
     {
-        return $this->services->get(UserManager::class)->getLoggedUser();
+        return $this->services->get(AuthController::class)->getLoggedUser();
     }
 
     /**
-     * @deprecated Use UserManager::getLoggedUserName instead
+     * @deprecated Use AuthController::getLoggedUserName instead
      */
     public function GetUserName()
     {
-        return $this->services->get(UserManager::class)->getLoggedUserName();
+        return $this->services->get(AuthController::class)->getLoggedUserName();
     }
 
     /**
-     * @deprecated Use UserManager::login instead
+     * @deprecated Use AuthController::login instead
      */
     public function SetUser($user, $remember = 0)
     {
-        return $this->services->get(UserManager::class)->login($user, $remember);
+        return $this->services->get(AuthController::class)->login($user, $remember);
     }
 
     /**
-     * @deprecated Use UserManager::logout instead
+     * @deprecated Use AuthController::logout instead
      */
     public function LogoutUser()
     {
-        return $this->services->get(UserManager::class)->logout();
+        return $this->services->get(AuthController::class)->logout();
     }
 
     /**
@@ -1935,5 +1944,17 @@ class Wiki
     public function ClearLinkTable()
     {
         return $this->services->get(LinkTracker::class)->clear();
+    }
+    
+    /**
+     *
+     * @param string $group
+     *            The name of a group
+     * @return boolean true iff the user is in the given $group
+     * @deprecated Use UserManager::isInGroup instead
+     */
+    public function UserIsInGroup($group, $user = null, $admincheck = true)
+    {
+        return $this->services->get(UserManager::class)->isInGroup($group, $user, $admincheck);
     }
 }

@@ -103,7 +103,8 @@ class ImageField extends FileField
     public function formatValuesBeforeSave($entry)
     {
         if (!empty($_POST['data-'.$this->propertyName]) && !empty($_POST['filename-'.$this->propertyName]) && !empty($entry['id_fiche'])) {
-            $rawFileName = filter_var($_POST['filename-'.$this->propertyName], FILTER_SANITIZE_STRING);
+            $rawFileName = filter_var($_POST['filename-'.$this->propertyName], FILTER_UNSAFE_RAW);
+            $rawFileName = ($rawFileName === false) ? "" : htmlspecialchars(strip_tags($rawFileName));
             $sanitizedFilename = $this->sanitizeFilename($rawFileName);
             $fileName = "{$this->getPropertyName()}_$sanitizedFilename";
             $filePath = $this->getFullFileName($fileName, $entry['id_fiche'], true);

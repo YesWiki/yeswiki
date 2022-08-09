@@ -388,7 +388,7 @@ Vous trouverez un formulaire permettant
 {{end elem=\"col\"}}
 {{end elem=\"grid\"}}
 
-{{section class=\"full-width white\" bgcolor=\"var(--secondary-color-1)\" height=\"250\"}}
+{{section class=\"full-width white\" bgcolor=\"var(--secondary-color-1)\" height=\"25\"}}
 	======Insertion de pad ou de vidéo======
 	Il est possible d\'incruster dans son wiki des pads, des vidéos, des lignes du temps...
 {{end elem=\"section\"}}
@@ -457,6 +457,33 @@ Contenu panel-danger
 {{button link=\"{{rootPage}}\" class=\"btn btn-secondary-2\" text=\"btn-secondary-2\"}}
 {{button link=\"{{rootPage}}\" class=\"btn btn-success\" text=\"btn-success\"}}
 {{button link=\"{{rootPage}}\" class=\"btn btn-info\" text=\"btn-info\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('MesContenus',  now(), '=====Mes contenus=====
+{{accordion }}
+{{panel title=\"Mes paramètres\"}}
+{{UserSettings}}
+{{lostpassword}}
+{{end elem=\"panel\"}}
+{{panel title=\"Mes pages\"}}
+{{mypages}}
+{{end elem=\"panel\"}}
+{{panel title=\"Mes favoris\"}}
+{{myfavorites template=\"my-favorites-tiles.twig\" }}
+{{myfavorites template=\"my-favorites-with-titles.twig\"}}
+{{myfavorites template=\"my-favorites-table.twig\"}}
+{{end elem=\"panel\"}}
+{{panel title=\"Mes fiches bazar\"}}
+{{bazarliste template=\"liste_accordeon\" dynamic=\"true\" filteruserasowner=\"true\"}}
+{{end elem=\"panel\"}}
+{{panel title=\"Mes changements\"}}
+{{mychanges}}
+{{end elem=\"panel\"}}
+{{panel title=\"Mes votes, réactions\"}}
+{{userreactions}}
+{{end elem=\"panel\"}}
+{{panel title=\"Mes commentaires\"}}
+{{userreactions}}
+{{end elem=\"panel\"}}
+{{end elem=\"accordion\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('MotDePassePerdu',  now(), '{{lostpassword}}
 ', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageColonneDroite',  now(), 'Double cliquer sur ce texte pour éditer cette colonne.
@@ -481,6 +508,12 @@ Pour en savoir plus, voyez la documentation sur https://yeswiki.net/?Documentati
 
 /* :root { */
 
+/* couleur des titres */
+/* --title-h1-color:var(--neutral-color); */
+/* --title-h2-color:var(--primary-color); */
+/* --title-h3-color:var(--secondary-color-1); */
+/* --title-h4-color:var(--secondary-color-2); */
+ 
 /* couleur pour les messages positifs par defaut vert */
 /* --success-color: #3cab3b; */
 
@@ -531,7 +564,7 @@ Pour en savoir plus, voyez la documentation sur https://yeswiki.net/?Documentati
 
 /* --footer-title-color: var(--main-text-color); */
 
-/* --footer-border-top: 3px solid var(--neutral-soft-color); */
+/* --footer-border: 3px solid var(--neutral-soft-color); */
 
 /* --btn-border: none; */
 
@@ -543,7 +576,8 @@ Pour en savoir plus, voyez la documentation sur https://yeswiki.net/?Documentati
 ('PageFooter',  now(), '{{section class=\"text-center\"}}
 {{yeswikiversion}}
 {{end elem=\"section\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageHeader',  now(), '{{section bgcolor=\"var(--neutral-color)\" class=\"white text-center cover\" file=\"bandeau.png\" height=\"250\" }}
+('PageHeader',  now(), '{{section bgcolor=\"var(--neutral-color)\" class=\"white text-center cover\" file=\"bandeau.png\" }}
+
 ======Description de mon wiki======
 Rendez-vous dans la roue crantée / gestion du site pour modifier ce bandeau
 
@@ -601,6 +635,7 @@ Vous êtes dans la page qui se nomme PageMenuHaut qui sert à modifier le menu d
  - ------
  - {{button nobtn=\"1\" icon=\"fa fa-wrench\" text=\"Gestion du site\" link=\"GererSite\"}}
  - {{button nobtn=\"1\" icon=\"fa fa-tachometer-alt\" text=\"Tableau de bord\" link=\"TableauDeBord\"}}
+ - {{button class=\"btn-primary\" icon=\"fas fa-user\" link=\"MesContenus\" nobtn=\"1\" text=\"Mes contenus\" }}
  - {{button nobtn=\"1\" icon=\"fa fa-briefcase\" text=\"Base de données\" link=\"BazaR\"}}
 {{end elem=\"buttondropdown\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('Pagetest1',  now(), '======Sous menu 1======', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
@@ -755,48 +790,10 @@ Texte colonne 3
 
 # Bazar forms
 INSERT INTO `{{prefix}}nature` (`bn_id_nature`, `bn_label_nature`, `bn_description`, `bn_condition`, `bn_sem_context`, `bn_sem_type`, `bn_sem_use_template`, `bn_template`, `bn_ce_i18n`, `bn_only_one_entry`, `bn_only_one_entry_message`) VALUES
-('4', 'Ressources', 'Un formulaire pour créer un espace de ressources partagées. ', '', '', '', '1', 'texte***bf_titre***Nom de la ressource***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
-lien_internet***bf_url***Site web***40***255*** *** ***url***0*** *** *** * *** * *** *** *** ***
-checkbox***ListeType***Type de ressource*** *** *** *** *** ***1*** *** *** * *** * *** *** *** ***
-textelong***bf_description***Description***5***5*** *** ***wiki***0*** *** *** * *** * *** *** *** ***
-texte***bf_auteur***Auteur***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***
-image***bf_image***Image de présentation (facultatif)***140***140***600***600***right***0*** *** *** * *** * *** *** *** ***
-fichier***fichier***Documents***20000000*** *** *** ***file***0*** *** *** * *** * *** *** *** ***
-labelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***
-', 'fr-FR','N',''),
-('3', 'Blog-actu', '', '', '', '', '1', 'image***bf_image***Image***400***300***1200***900***right***1*** *** *** * *** * *** *** *** ***
-texte***bf_titre***Titre***80***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
-textelong***bf_chapeau***Résumé***40***3*** *** ***wiki***1*** *** *** * *** * *** *** *** ***
-textelong***bf_description***Billet***40***9*** *** ***wiki***1*** *** *** * *** * *** *** *** ***
-', 'fr-FR','N',''),
-('1', 'Annuaire', '', '', '', '', '1', 'titre***{{bf_nom}} {{bf_prenom}}***Titre Automatique***
-texte***bf_nom***Nom***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
-texte***bf_prenom***Prénom***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
-image***bf_image***Image de présentation (facultatif mais c\'est plus sympa)***140***140***600***600***right***0*** *** *** * *** * *** *** *** ***
-texte***bf_fonction***Mon métier, ma fonction***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***
-textelong***bf_projet***Ma présentation***5***5*** *** ***html***0*** *** *** * *** * *** *** *** ***
-champs_mail***bf_mail***Email (n\'apparaitra pas sur le web)*** *** *** ***form*** ***1***0*** *** * *** * *** *** *** ***
-texte***bf_structure***Nom de la structure***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***
-lien_internet***bf_site_internet***Site Internet*** *** *** *** *** ***0*** *** *** * *** * *** *** *** ***
-texte***bf_adresse***Adresse***50***50*** *** ***text***0*** *** *** * *** * *** *** *** ***
-texte***bf_code_postal***Code postal***8***8*** *** ***text***0*** *** *** * *** * *** *** *** ***
-texte***bf_ville***Ville***50***80*** *** ***text***0*** *** *** * *** * *** *** *** ***
-map***bf_latitude***bf_longitude*** *** ***
-labelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***
-', 'fr-FR','N',''),
-('2', 'Agenda', '', '', '1', '1', '1', 'texte***bf_titre***Nom de l\'événement***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***
-textelong***bf_description***Description***40***5*** *** ***wiki***0*** *** *** * *** * *** *** *** ***
-listedatedeb***bf_date_debut_evenement***Début de l\'événement*** *** ***today*** *** ***1*** *** *** * *** * *** *** *** ***
-listedatefin***bf_date_fin_evenement***Fin de l\'événement*** *** ***today*** *** ***1*** *** *** * *** * *** *** *** ***
-lien_internet***bf_site_internet***Adresse url*** *** *** *** *** ***0*** *** *** * *** * *** *** *** ***
-image***bf_image***Image (facultatif)***140***140***600***600***right***0*** ***Votre image doit être au format .jpg ou .gif ou .png*** * *** * *** *** *** ***
-fichier***fichier***Documents***20000000*** *** *** ***file***0*** *** *** * *** * *** *** *** ***
-texte***bf_adresse***Adresse***50***50*** *** ***text***0*** *** *** * *** * *** *** *** ***
-texte***bf_code_postal***Code postal***8***8*** *** ***text***0*** *** *** * *** * *** *** *** ***
-texte***bf_ville***Ville***50***80*** *** ***text***0*** *** *** * *** * *** *** *** ***
-map***bf_latitude***bf_longitude*** *** ***
-labelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***
-', 'fr-FR','N','');
+('2', 'Agenda', '', '', 'https://www.w3.org/ns/activitystreams', 'Event', '1', 'texte***bf_titre***Nom de l\'événement***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\r\ntextelong***bf_description***Description***40*** *** *** ***wiki***0*** *** *** * *** * *** *** *** ***\r\nlistedatedeb***bf_date_debut_evenement***Début de l\'événement*** *** ***today*** *** ***1*** *** *** * *** * *** *** *** ***\r\nlistedatefin***bf_date_fin_evenement***Fin de l\'événement*** *** ***today*** *** ***1*** *** *** * *** * *** *** *** ***\r\nlien_internet***bf_site_internet***Adresse url*** *** *** *** *** ***0*** *** *** * *** * *** *** *** ***\r\nimage***bf_image***Image (facultatif)***140***140***600***600***right***0*** ***Votre image doit être au format .jpg ou .gif ou .png*** * *** * *** *** *** ***\r\nfichier***fichier***Documents***20000000*** *** *** ***file***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_adresse***Adresse***50***50*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_code_postal***Code postal***8***8*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_ville***Ville***50***80*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\nmap***bf_latitude***bf_longitude*** *** *** *** *** ***0***\r\nlabelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***\r\n', 'fr-FR', 'N', ''),
+('1', 'Annuaire', '', '', '', '', '1', 'titre***{{bf_nom}} {{bf_prenom}}***Titre Automatique***\r\ntexte***bf_nom***Nom***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\r\ntexte***bf_prenom***Prénom***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\r\nimage***bf_image***Image de présentation (facultatif mais c\'est plus sympa)***140***140***600***600***right***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_fonction***Mon métier, ma fonction***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\ntextelong***bf_projet***Ma présentation***5***5*** *** ***html***0*** *** *** * *** * *** *** *** ***\r\nchamps_mail***bf_mail***Email (n\'apparaitra pas sur le web)*** *** *** ***form*** ***1***0*** *** * *** * *** *** *** ***\r\ntexte***bf_structure***Nom de la structure***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\nlien_internet***bf_site_internet***Site Internet*** *** *** *** *** ***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_adresse***Adresse***50***50*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_code_postal***Code postal***8***8*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_ville***Ville***50***80*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\nmap***bf_latitude***bf_longitude*** *** ***\r\nlabelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***\r\n', 'fr-FR', 'N', ''),
+('3', 'Blog-actu', '', '', '', '', '1', 'image***bf_image***Image***400***300***1200***900***right***1*** *** *** * *** * *** *** *** ***\r\ntexte***bf_titre***Titre***80***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\r\ntextelong***bf_chapeau***Résumé***40***3*** *** ***wiki***1*** *** *** * *** * *** *** *** ***\r\ntextelong***bf_description***Billet***40***9*** *** ***wiki***1*** *** *** * *** * *** *** *** ***\r\n', 'fr-FR', 'N', ''),
+('4', 'Ressources', 'Un formulaire pour créer un espace de ressources partagées. ', '', '', '', '1', 'texte***bf_titre***Nom de la ressource***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\r\nlien_internet***bf_url***Site web***40***255*** *** ***url***0*** *** *** * *** * *** *** *** ***\r\ncheckbox***ListeType***Type de ressource*** *** *** *** *** ***1*** *** *** * *** * *** *** *** ***\r\ntextelong***bf_description***Description***5***5*** *** ***wiki***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_auteur***Auteur***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\nimage***bf_image***Image de présentation (facultatif)***140***140***600***600***right***0*** *** *** * *** * *** *** *** ***\r\nfichier***fichier***Documents***20000000*** *** *** ***file***0*** *** *** * *** * *** *** *** ***\r\nlabelhtml***<h3>Il ne vous reste plus qu\'à valider ! </h3>*** *** ***\r\n', 'fr-FR', 'N', '');
 # end Bazar forms
 
 # Bazar lists
@@ -808,24 +805,24 @@ INSERT INTO `{{prefix}}triples` (`resource`, `property`, `value`) VALUES
 
 # Bazar entries
 INSERT INTO `{{prefix}}pages` (`tag`, `time`, `body`, `body_r`, `owner`, `user`, `latest`, `handler`, `comment_on`) VALUES
-('LovelaceAda',  now(), '{\"bf_titre\":\"Lovelace Ada\",\"bf_nom\":\"Lovelace\",\"bf_prenom\":\"Ada\",\"bf_fonction\":\"Pionni\\u00e8re de la science informatique \",\"bf_projet\":\"<p>J\'ai r\\u00e9alis\\u00e9 le premier v\\u00e9ritable programme informatique, lors de mon travail sur un anc\\u00eatre de l\'ordinateur : la machine analytique de Charles Babbage. <br><\\/p>\",\"bf_mail\":\"info@cooptic.be\",\"bf_structure\":\"Universit\\u00e9 de Cambridge \",\"bf_site_internet\":\"https:\\/\\/fr.wikipedia.org\\/wiki\\/Ada_Lovelace\",\"bf_adresse\":\"\",\"bf_code_postal\":\"\",\"bf_ville\":\"Londres \",\"bf_latitude\":\"51.5073219\",\"bf_longitude\":\"-0.1276474\",\"id_typeannonce\":\"1\",\"id_fiche\":\"LovelaceAda\",\"geolocation\":{\"bf_latitude\":\"51.5073219\",\"bf_longitude\":\"-0.1276474\"},\"date_creation_fiche\":\"2021-05-25 11:00:19\",\"statut_fiche\":\"1\",\"imagebf_image\":\"LovelaceAda_lovelace.png\",\"date_maj_fiche\":\"2021-05-25 11:01:13\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('UnNouveauThemePourYeswiki',  now(), '{\"bf_titre\":\"Un nouveau th\\u00e8me pour Yeswiki\",\"bf_chapeau\":\"Margot, voil\\u00e0 le nom du nouveau th\\u00e8me qui sera distribu\\u00e9 avec la prochaine version de Yeswiki\\t\",\"bf_description\":\"Plus moderne, mieux pens\\u00e9, plus graphiqu.\\r\\nMargot permettra d\'unifier les rendus graphiques des wikis.\",\"id_typeannonce\":\"3\",\"id_fiche\":\"UnNouveauThemePourYeswiki\",\"date_creation_fiche\":\"2020-02-12 12:17:49\",\"statut_fiche\":\"1\",\"imagebf_image\":\"UnNouveauThemePourYeswiki_capture-de\\u0301cran-2020-02-12-a\\u0300-13.16.33.png\",\"date_maj_fiche\":\"2020-02-12 12:17:50\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('TesT2',  now(), '{\"bf_titre\":\"Sortie Culturelle\",\"bf_description\":\"La culture, moins on en a, plus on l\'\\u00e9tale!\",\"bf_date_debut_evenement\":\"2023-05-30T18:00:00+02:00\",\"bf_date_fin_evenement\":\"2021-05-02T20:00:00+02:00\",\"bf_site_internet\":\"https:\\/\\/www.yeswiki.net\",\"bf_adresse\":\"Avenue des Champs Elys\\u00e9es\",\"bf_code_postal\":\"75000\",\"bf_ville\":\"Paris\",\"bf_latitude\":\"48.865669\",\"bf_longitude\":\"2.3203067\",\"id_typeannonce\":\"2\",\"id_fiche\":\"TesT2\",\"imagebf_image\":\"TesT2_presence-photo.png\",\"fichierfichier\":\"\",\"date_creation_fiche\":\"2021-05-24 22:54:03\",\"statut_fiche\":\"1\",\"geolocation\":{\"bf_latitude\":\"48.865669\",\"bf_longitude\":\"2.3203067\"},\"date_maj_fiche\":\"2021-06-21 19:29:14\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('YoupiIciCEstLeTitre',  now(), '{\"bf_titre\":\"Youpi ici c\'est le titre\",\"bf_description\":\"Un \\u00e9v\\u00e9nement autour du vin, c\'est pour cela qu\'il est \\u00e0 Bordeaux...\",\"bf_date_debut_evenement\":\"2020-01-08\",\"bf_date_fin_evenement\":\"2020-01-10\",\"bf_site_internet\":\"\",\"bf_adresse\":\"\",\"bf_code_postal\":\"\",\"bf_ville\":\"Bordeaux\",\"bf_latitude\":\"44.841225\",\"bf_longitude\":\"-0.5800364\",\"id_typeannonce\":\"2\",\"id_fiche\":\"YoupiIciCEstLeTitre\",\"date_creation_fiche\":\"2020-01-24 09:42:52\",\"statut_fiche\":\"1\",\"imagebf_image\":null,\"fichierfichier\":\"\",\"geolocation\":{\"bf_latitude\":\"44.841225\",\"bf_longitude\":\"-0.5800364\"},\"date_maj_fiche\":\"2021-06-21 19:33:56\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('ElizabethJFeinler',  now(), '{\"bf_titre\":\"JFeinler Elizabeth\",\"bf_nom\":\"JFeinler\",\"bf_prenom\":\"Elizabeth\",\"bf_fonction\":\"informaticienne, pionni\\u00e8re de l\'internet\",\"bf_projet\":\"En 1974, j\'ai cr\\u00e9\\u00e9 le nouveau Network Information Center (NIC) de l\'ARPANET.  \",\"bf_mail\":\"info@cooptic.be\",\"bf_structure\":\"Stanford Research Institute et NASA \",\"bf_site_internet\":\"https:\\/\\/fr.wikipedia.org\\/wiki\\/Elizabeth_J._Feinler\",\"bf_adresse\":\"\",\"bf_code_postal\":\"\",\"bf_ville\":\"Paris\",\"bf_latitude\":\"48.8566969\",\"bf_longitude\":\"2.3514616\",\"id_typeannonce\":\"1\",\"id_fiche\":\"ElizabethJFeinler\",\"imagebf_image\":\"ElizabethJFeinler_elizabethfeinler-2011.jpg\",\"geolocation\":{\"bf_latitude\":\"48.8566969\",\"bf_longitude\":\"2.3514616\"},\"date_creation_fiche\":\"2021-05-24 22:07:17\",\"statut_fiche\":\"1\",\"date_maj_fiche\":\"2021-08-06 10:31:00\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('YeswikiLeSiteOfficiel',  now(), '{\"bf_titre\":\"Yeswiki : le site officiel\",\"bf_url\":\"https:\\/\\/yeswiki.net\",\"bf_description\":\"Tout ce qu\'il y a \\u00e0 savoir sur Yeswiki \",\"bf_auteur\":\"\",\"id_typeannonce\":\"4\",\"id_fiche\":\"YeswikiLeSiteOfficiel\",\"fichierfichier\":\"\",\"date_creation_fiche\":\"2020-02-12 11:10:01\",\"statut_fiche\":\"1\",\"checkboxListeType\":\"1\",\"imagebf_image\":null,\"date_maj_fiche\":\"2021-09-07 12:10:10\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('FramasofT',  now(), '{\"bf_titre\":\"Framasoft\",\"bf_url\":\"https:\\/\\/framasoft.org\\/fr\\/\",\"bf_description\":\"Framasoft, c\\u2019est une association d\\u2019\\u00e9ducation populaire, un groupe d\\u2019ami\\u00b7es convaincu\\u00b7es qu\\u2019un monde num\\u00e9rique \\u00e9mancipateur est possible, persuad\\u00e9\\u00b7es qu\\u2019il adviendra gr\\u00e2ce \\u00e0 des actions concr\\u00e8tes sur le terrain et en ligne avec vous et pour vous !\",\"bf_auteur\":\"\",\"id_typeannonce\":\"4\",\"id_fiche\":\"FramasofT\",\"fichierfichier\":\"\",\"date_creation_fiche\":\"2020-02-12 14:12:58\",\"statut_fiche\":\"1\",\"checkboxListeType\":\"3\",\"imagebf_image\":null,\"date_maj_fiche\":\"2021-09-07 12:07:38\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('YeswikidaY',  now(), '{\"bf_titre\":\"Yeswikiday\",\"bf_description\":\"Une journ\\u00e9e pour faire avancer le projet Yeswiki dans la bonne humeur\",\"bf_date_debut_evenement\":\"2020-04-30T09:00:00+02:00\",\"bf_date_fin_evenement\":\"2020-04-30T16:00:00+02:00\",\"bf_site_internet\":\"https:\\/\\/yeswiki.net\\/?DocumentatioN\",\"bf_adresse\":\"\",\"bf_code_postal\":\"7700\",\"bf_ville\":\"Mouscron\",\"bf_latitude\":\"50.7433351\",\"bf_longitude\":\"3.2139093\",\"id_typeannonce\":\"2\",\"id_fiche\":\"YeswikidaY\",\"imagebf_image\":\"YeswikidaY_yeswiki-logo.png\",\"fichierfichier\":\"\",\"geolocation\":{\"bf_latitude\":\"50.7433351\",\"bf_longitude\":\"3.2139093\"},\"date_creation_fiche\":\"2020-02-12 11:21:49\",\"statut_fiche\":\"1\",\"date_maj_fiche\":\"2021-08-06 10:34:29\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('UnBeauLogoPourYeswiki',  now(), '{\"bf_titre\":\"Un beau logo pour Yeswiki\",\"bf_chapeau\":\"Il fallait le rafraichir, nous l\'avons fait ! \",\"bf_description\":\"Apr\\u00e8s multiples discussions, tests et essais, un logo plus actuel a \\u00e9t\\u00e9 cr\\u00e9\\u00e9 pour Yeswiki\\r\\nNous esp\\u00e9rons que vous l\'aimerez ;-) \",\"id_typeannonce\":\"3\",\"id_fiche\":\"UnBeauLogoPourYeswiki\",\"date_creation_fiche\":\"2020-02-12 13:16:06\",\"statut_fiche\":\"1\",\"imagebf_image\":\"UnBeauLogoPourYeswiki_yeswiki-logo.png\",\"date_maj_fiche\":\"2021-09-05 13:23:52\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('FramasofT',  now(), '{\"bf_titre\":\"Framasoft\",\"bf_url\":\"https:\\/\\/framasoft.org\\/fr\\/\",\"bf_description\":\"Framasoft, c\\u2019est une association d\\u2019\\u00e9ducation populaire, un groupe d\\u2019ami\\u00b7es convaincu\\u00b7es qu\\u2019un monde num\\u00e9rique \\u00e9mancipateur est possible, persuad\\u00e9\\u00b7es qu\\u2019il adviendra gr\\u00e2ce \\u00e0 des actions concr\\u00e8tes sur le terrain et en ligne avec vous et pour vous !\",\"bf_auteur\":\"\",\"id_typeannonce\":\"4\",\"id_fiche\":\"FramasofT\",\"fichierfichier\":\"\",\"date_creation_fiche\":\"2020-02-12 14:12:58\",\"statut_fiche\":\"1\",\"checkboxListeType\":\"3\",\"imagebf_image\":null,\"date_maj_fiche\":\"2021-09-07 12:07:38\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('YeswikiLeSiteOfficiel',  now(), '{\"bf_titre\":\"Yeswiki : le site officiel\",\"bf_url\":\"https:\\/\\/yeswiki.net\",\"bf_description\":\"Tout ce qu\'il y a \\u00e0 savoir sur Yeswiki \",\"bf_auteur\":\"\",\"id_typeannonce\":\"4\",\"id_fiche\":\"YeswikiLeSiteOfficiel\",\"fichierfichier\":\"\",\"date_creation_fiche\":\"2020-02-12 11:10:01\",\"statut_fiche\":\"1\",\"checkboxListeType\":\"1\",\"imagebf_image\":null,\"date_maj_fiche\":\"2021-09-07 12:10:10\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
+('UnNouveauThemePourYeswiki',  now(), '{\"bf_titre\":\"Un nouveau th\\u00e8me pour Yeswiki\",\"bf_chapeau\":\"Margot, voil\\u00e0 le nom du nouveau th\\u00e8me qui sera distribu\\u00e9 avec la prochaine version de Yeswiki\\t\",\"bf_description\":\"Plus moderne, mieux pens\\u00e9, plus graphiqu.\\r\\nMargot permettra d\'unifier les rendus graphiques des wikis.\",\"id_typeannonce\":\"3\",\"id_fiche\":\"UnNouveauThemePourYeswiki\",\"date_creation_fiche\":\"2020-02-12 12:17:49\",\"statut_fiche\":\"1\",\"imagebf_image\":\"UnNouveauThemePourYeswiki_capture-de\\u0301cran-2020-02-12-a\\u0300-13.16.33.png\",\"date_maj_fiche\":\"2020-02-12 12:17:50\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('ElizabethJFeinler',  now(), '{\"bf_titre\":\"JFeinler Elizabeth\",\"bf_nom\":\"JFeinler\",\"bf_prenom\":\"Elizabeth\",\"bf_fonction\":\"informaticienne, pionni\\u00e8re de l\'internet\",\"bf_projet\":\"En 1974, j\'ai cr\\u00e9\\u00e9 le nouveau Network Information Center (NIC) de l\'ARPANET.  \",\"bf_mail\":\"info@cooptic.be\",\"bf_structure\":\"Stanford Research Institute et NASA \",\"bf_site_internet\":\"https:\\/\\/fr.wikipedia.org\\/wiki\\/Elizabeth_J._Feinler\",\"bf_adresse\":\"\",\"bf_code_postal\":\"\",\"bf_ville\":\"Paris\",\"bf_latitude\":\"48.8566969\",\"bf_longitude\":\"2.3514616\",\"id_typeannonce\":\"1\",\"id_fiche\":\"ElizabethJFeinler\",\"imagebf_image\":\"ElizabethJFeinler_elizabethfeinler-2011.jpg\",\"geolocation\":{\"bf_latitude\":\"48.8566969\",\"bf_longitude\":\"2.3514616\"},\"date_creation_fiche\":\"2021-05-24 22:07:17\",\"statut_fiche\":\"1\",\"date_maj_fiche\":\"2021-08-06 10:31:00\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('TesT2',  now(), '{\"bf_titre\":\"Sortie Culturelle\",\"bf_description\":\"La culture, moins on en a, plus on l\'\\u00e9tale!\",\"bf_date_debut_evenement\":\"2023-05-30T18:00:00+02:00\",\"bf_date_fin_evenement\":\"2021-05-02T20:00:00+02:00\",\"bf_site_internet\":\"https:\\/\\/www.yeswiki.net\",\"bf_adresse\":\"Avenue des Champs Elys\\u00e9es\",\"bf_code_postal\":\"75000\",\"bf_ville\":\"Paris\",\"bf_latitude\":\"48.865669\",\"bf_longitude\":\"2.3203067\",\"id_typeannonce\":\"2\",\"id_fiche\":\"TesT2\",\"imagebf_image\":\"TesT2_presence-photo.png\",\"fichierfichier\":\"\",\"date_creation_fiche\":\"2021-05-24 22:54:03\",\"statut_fiche\":\"1\",\"geolocation\":{\"bf_latitude\":\"48.865669\",\"bf_longitude\":\"2.3203067\"},\"date_maj_fiche\":\"2021-06-21 19:29:14\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('LovelaceAda',  now(), '{\"bf_titre\":\"Lovelace Ada\",\"bf_nom\":\"Lovelace\",\"bf_prenom\":\"Ada\",\"bf_fonction\":\"Pionni\\u00e8re de la science informatique \",\"bf_projet\":\"<p>J\'ai r\\u00e9alis\\u00e9 le premier v\\u00e9ritable programme informatique, lors de mon travail sur un anc\\u00eatre de l\'ordinateur : la machine analytique de Charles Babbage. <br><\\/p>\",\"bf_mail\":\"info@cooptic.be\",\"bf_structure\":\"Universit\\u00e9 de Cambridge \",\"bf_site_internet\":\"https:\\/\\/fr.wikipedia.org\\/wiki\\/Ada_Lovelace\",\"bf_adresse\":\"\",\"bf_code_postal\":\"\",\"bf_ville\":\"Londres \",\"bf_latitude\":\"51.5073219\",\"bf_longitude\":\"-0.1276474\",\"id_typeannonce\":\"1\",\"id_fiche\":\"LovelaceAda\",\"geolocation\":{\"bf_latitude\":\"51.5073219\",\"bf_longitude\":\"-0.1276474\"},\"date_creation_fiche\":\"2021-05-25 11:00:19\",\"statut_fiche\":\"1\",\"imagebf_image\":\"LovelaceAda_lovelace.png\",\"date_maj_fiche\":\"2021-05-25 11:01:13\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
 INSERT INTO `{{prefix}}triples` (`resource`, `property`, `value`) VALUES
-('LovelaceAda', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
-('UnNouveauThemePourYeswiki', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
-('TesT2', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
 ('YoupiIciCEstLeTitre', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
-('ElizabethJFeinler', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
+('YeswikiLeSiteOfficiel', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
+('FramasofT', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
 ('YeswikidaY', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
 ('UnBeauLogoPourYeswiki', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
-('FramasofT', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
-('YeswikiLeSiteOfficiel', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar');
+('UnNouveauThemePourYeswiki', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
+('ElizabethJFeinler', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
+('TesT2', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
+('LovelaceAda', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar');
 # end Bazar entries
 

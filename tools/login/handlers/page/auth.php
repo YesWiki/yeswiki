@@ -19,6 +19,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+use YesWIki\Core\Controller\AuthController;
+use YesWIki\Core\Service\UserManager;
+
 // Vérification de sécurité
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -45,19 +48,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && empty($_POST)) {
     $_POST = json_decode(file_get_contents('php://input'), true) ?? [];
 }
 
+$authController = $this->services->get(AuthController::class);
+$userManager = $this->services->get(UserManager::class);
 if (isset($_POST["logout"]) && $_POST["logout"] == '1') {
     // cas de la déconnexion
-    if ($user = $this->GetUser()) {
-        $this->LogoutUser();
+    if ($user = $authController->getLoggedUser()) {
+        $authController->logout();
         echo json_encode(array('userlogout' => $user['name']));
     } else {
         echo json_encode(array('error' => _t('LOGIN_NO_CONNECTED_USER')));
     }
-} elseif (isset($_POST["name"]) && $_POST["name"] != '' && $existingUser = $this->LoadUser($_POST["name"])) {
+} elseif (isset($_POST["name"]) && $_POST["name"] != '' && $existingUser = $userManager->getOneByName($_POST["name"])) {
     // si l'utilisateur existe, on vérifie son mot de passe
-    if ($existingUser["password"] == md5($_POST["password"])) {
-        $this->SetUser($existingUser, $_POST["remember"]);
-        echo json_encode(array('user' => $this->GetUser()));
+    if ($authController->checkPassword($_POST["password"], $existingUser)) {
+        $authController->login($existingUser, $_POST["remember"]);
+        echo json_encode(array('user' => $authController->getLoggedUser()));
     } else {
         header('HTTP/1.1 401 Unauthorized');
         // on affiche une erreur sur le mot de passe sinon
@@ -68,11 +73,11 @@ if (isset($_POST["logout"]) && $_POST["logout"] == '1') {
     if (isset($_POST["name"]) && strstr($_POST["name"], '@')) {
         $_POST["email"] = $_POST["name"];
     }
-    if (isset($_POST["email"]) && $_POST["email"] != '' && $existingUser = loadUserbyEmail($_POST["email"])) {
+    if (isset($_POST["email"]) && $_POST["email"] != '' && $existingUser = $userManager->getOneByEmail($_POST["email"])) {
         // si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
-        if ($existingUser["password"] == md5($_POST["password"])) {
-            $this->SetUser($existingUser, $_POST["remember"]);
-            echo json_encode(array('user' => $this->GetUser()));
+        if ($authController->checkPassword($_POST["password"], $existingUser)) {
+            $authController->login($existingUser, $_POST["remember"]);
+            echo json_encode(array('user' => $authController->getLoggedUser()));
         } else {
             header('HTTP/1.1 401 Unauthorized');
             // on affiche une erreur sur le mot de passe sinon

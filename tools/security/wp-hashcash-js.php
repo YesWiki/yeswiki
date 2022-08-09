@@ -30,7 +30,10 @@ function createHiddenField(){
 	inp.setAttribute('name', 'hashcash_value');
 	inp.setAttribute('value', '-1');
 
-	var e = document.getElementById('<?php echo(!empty($_GET['formid']) ? filter_input(INPUT_GET,'formid',FILTER_SANITIZE_STRING) : HASHCASH_FORM_ID); ?>');
+	var e = document.getElementById('<?php 
+            $formid = filter_input(INPUT_GET,'formid', FILTER_UNSAFE_RAW);
+            $formid = in_array($formid,[false,null],true) ? $formid : htmlspecialchars(strip_tags($formid));
+			echo (!empty($formid) ? $formid : HASHCASH_FORM_ID); ?>');
 	if (e) {e.appendChild(inp)};
 }
 
