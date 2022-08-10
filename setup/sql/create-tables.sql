@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}triples` (
 
 CREATE TABLE IF NOT EXISTS `{{prefix}}users` (
   `name` varchar(80) NOT NULL,
-  `password` varchar(32) NOT NULL,
+  `password` varchar(256) NOT NULL,
   `email` varchar(191) NOT NULL,
   `motto` text NOT NULL,
   `revisioncount` int(10) unsigned NOT NULL DEFAULT '20',

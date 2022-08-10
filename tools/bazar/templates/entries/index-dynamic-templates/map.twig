@@ -1,6 +1,6 @@
 {% extends "@bazar/entries/index-dynamic.twig" %}
 
-{% set necessary_fields = ['bf_latitude', 'bf_longitude'] %}
+{% set necessary_fields = (params.necessary_fields is defined ? params.necessary_fields|split(',') : [])|merge(['bf_latitude', 'bf_longitude']) %}
 
 {% block assets %}
   {{ include_css('styles/vendor/leaflet/leaflet.css') }}
@@ -21,5 +21,11 @@
 {% endblock %}
 
 {% block display_entries %}
-  <Bazar-Map :params="params" class="bazar-map"></Bazar-Map>
+  <Bazar-Map :params="params" class="bazar-map">
+    {% if params.entrydisplay == 'popup' %}
+      {% set templateName = (params.popuptemplate == 'custom') ? (params.popupcustomtemplate ?? '_map_popup_html.twig') : (params.popuptemplate ?? '_map_popup_html.twig') %}
+      {% set templateName = templateName|slice(-5) != '.twig' ? templateName ~ '.twig' : templateName %}
+      {{ include("@bazar/entries/index-dynamic-templates/#{templateName}") }}
+    {% endif %}
+  </Bazar-Map>
 {% endblock %}

@@ -76,4 +76,11 @@ return [
     'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'Palavra-passe não alterada.',
     'USERSETTINGS_EMAIL_NOT_CHANGED' => 'E-mail não modificado.',
     'USERSETTINGS_USER_NOT_DELETED' => 'Utilizador não eliminado.',
+    'USERSETTINGS_CAPTCHA_USER_CREATION' => 'Verificação para criar um utilizador',
+    'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'Os parâmetros \'{parameters}\' não podem ser vazios!',
+    'USERSETTINGS_NAME_ALREADY_USED' => 'O identificador "{currentName}" já existe!',
+    'USERSETTINGS_EMAIL_ALREADY_USED' => 'O e-mail "{email}" já é utilizado por outra conta!',
+    'USERSETTINGS_CHANGE_PWD_IN_IFRAME' => "Está prestes a alterar a sua palavra-passe numa janela do iframe.\n".
+        "Para evitar ataques de teclado, certifique-se de que o url do site começa com {baseUrl}.\n".
+        "Em caso de dúvida, abra este formulário numa página dedicada clicando neste link {link}.",
 ];

@@ -53,6 +53,9 @@ spl_autoload_register(function ($className) {
                 case 'Exception':
                     require "$basePath/exceptions/{$matches[3]}.php";
                     break;
+                case 'Trait':
+                    require "$basePath/traits/{$matches[3]}.php";
+                    break;
                 default:
                     // do nothing
                     break;

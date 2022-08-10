@@ -1,0 +1,74 @@
+{% if class is empty %}
+	{% block main %}
+		{% if connected %}
+			{% block connected %}
+				<h5><i class="fa fa-user"></i>&nbsp;{{ _t('LOGIN_CONNECTED_AS') }} {{ user }}</h5>
+				<ul class="login-actions">
+					{% block loginActions %}
+						{% block loginActionsPart1 %}
+							{{ PageMenuUser|raw }}
+							<li><a href="{{ profileurl }}" title="{{ _t('LOGIN_MODIFY_USER') }}">{{ _t('LOGIN_MODIFY_USER') }}</a></li>
+						{% endblock %}
+						<li>
+							{% block logoutLink %}
+								<a href="{{ incomingurl ~ (incomingurl matches '/\\?/' ? '&' : '?') }}action=logout" class="{% block logoutLinkClass %}login-signout-link{% endblock %}" title="{{ _t('LOGIN_LOGOUT') }}">{{ _t('LOGIN_LOGOUT') }}</a>
+							{% endblock %}
+						</li>
+					{% endblock %}
+				</ul>
+			{% endblock %}
+		{% else %}
+			{% block notConnected %}
+				{% if error is not empty %}
+					<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert">&times;</button>{{ error }}</div>
+				{% endif %}
+				{% block form %}
+					<form class="{% block formClass %}login-form{% endblock %}" action="{{ incomingurl }}" method="post">
+						{% block formContent %}
+							{% block formTitle %}<h2>{{ _t('LOGIN_LOGIN') }}</h2>{% endblock %}
+							{% block wikiNameInputGroup %}
+								<div class="form-group">
+									<label for="inputWikiName" class="control-label">{{ _t('LOGIN_WIKINAME') }}</label>
+									<input id="inputWikiName" class="form-control" type="text" name="name" value="{{user ? user|e('html_attr') : '' }}" required/>
+								</div>
+							{% endblock %}
+							{% block passwordInputGroup %}
+								<div class="form-group">
+									<label for="inputPassword" class="control-label">{{ _t('LOGIN_PASSWORD') }}</label>
+									<input id="inputPassword" class="form-control" name="password" type="password" required/>
+								</div>
+							{% endblock %}
+							{% block lostPassword %}
+								{% if lostpasswordurl is not empty %}
+									<small><a href="{{ lostpasswordurl }}">{{ _t('LOGIN_LOST_PASSWORD') }}</a></small>
+								{% endif %}
+							{% endblock %}
+							<div class="checkbox">
+								<label>
+									<input type="checkbox" id="remember-default" name="remember" value="1"> 
+									<span>{{ _t('LOGIN_REMEMBER_ME') }}</span>
+								</label>
+							</div>
+							<button type="submit" class="btn btn-block {{ btnclass }} btn-primary">{{ _t('LOGIN_LOGIN') }}</button>
+							{% block hidden %}
+								<input type="hidden" name="action" value="login" />
+								<input type="hidden" name="incomingurl" value="{{ userpage == 'user' ? incomingurl : userpage }}" />
+								<input type="hidden" name="userpage" value="{{ userpage }}" />
+							{% endblock %}
+							{% block signupurl %}
+								{% if signupurl is not empty and signupurl != "0" %}
+									{% block signupurlhead %}<hr>{% endblock %}
+									<a class="{% block signupurlbtnclass %}btn btn-block btn-default{% endblock %} {{ btnclass }}" href="{{ signupurl }}">{{ _t('LOGIN_SIGNUP') }}</a>
+								{% endif %}
+							{% endblock %}
+						{% endblock %}
+					</form>
+				{% endblock %}
+			{% endblock %}
+		{% endif %}
+	{% endblock %}
+{% else %}
+	<div class="{{ class }}">
+		{{ block('main') }}
+	</div>
+{% endif %}

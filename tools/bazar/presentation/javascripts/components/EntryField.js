@@ -24,6 +24,8 @@ export default {
         case 'tags':
           const values = value.split(',').map(v => this.field.options[v])
           return values.length <= 1 ? values[0] : values
+        case 'email':
+          return ""; // security
         default:
           return value
       } 

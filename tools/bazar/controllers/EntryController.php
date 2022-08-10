@@ -12,45 +12,49 @@ use YesWiki\Bazar\Field\UserField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\FavoritesManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
-use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
 
 class EntryController extends YesWikiController
 {
     protected $entryManager;
+    protected $favoritesManager;
     protected $formManager;
     protected $aclService;
+    protected $authController;
     protected $semanticTransformer;
     protected $pageManager;
     protected $templateEngine;
     protected $config;
     protected $securityController;
-    protected $userManager;
 
     private $parentsEntries ;
 
     public function __construct(
         EntryManager $entryManager,
+        FavoritesManager $favoritesManager,
         FormManager $formManager,
         AclService $aclService,
+        AuthController $authController,
         SemanticTransformer $semanticTransformer,
         PageManager $pageManager,
         ParameterBagInterface $config,
-        SecurityController $securityController,
-        UserManager $userManager
+        SecurityController $securityController
     ) {
+        $this->authController = $authController;
         $this->entryManager = $entryManager;
+        $this->favoritesManager = $favoritesManager;
         $this->formManager = $formManager;
         $this->aclService = $aclService;
         $this->semanticTransformer = $semanticTransformer;
         $this->pageManager = $pageManager;
         $this->config = $config->all();
         $this->securityController = $securityController;
-        $this->userManager = $userManager;
         $this->parentsEntries = [];
     }
 
@@ -174,6 +178,11 @@ class EntryController extends YesWikiController
             $_GET['vue'] = 'consulter';
         }
 
+        $user = $this->authController->getLoggedUser();
+        if (!empty($user) && $this->favoritesManager->areFavoritesActivated()) {
+            $currentuser = $user['name'];
+            $isUserFavorite = $this->favoritesManager->isUserFavorite($currentuser, $entryId);
+        }
         return $this->render('@bazar/entries/view.twig', [
             "form" => $form,
             "entry" => $entry,
@@ -181,6 +190,8 @@ class EntryController extends YesWikiController
             "owner" => $owner,
             "message" => $message,
             "showFooter" => $showFooter,
+            "currentuser" => $currentuser ?? null,
+            "isUserFavorite" => $isUserFavorite ?? false,
             "canShow" => $this->wiki->GetPageTag() != $entry['id_fiche'], // hide if we are already in the show page
             "canEdit" =>  !$this->securityController->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId),
             "canDelete" => !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin($userNameForRendering) || $this->wiki->UserIsOwner($entryId)),
@@ -318,7 +329,7 @@ class EntryController extends YesWikiController
     private function inputsAreContainingUpload(array $renderedInputs): bool
     {
         return !empty(array_filter($renderedInputs, function ($renderedInput) {
-            return strpos($renderedInput, "<!-- include_javascript('tools/attach/libs/fileuploader.js') -->") !== false;
+            return !empty($renderedInput) && (strpos($renderedInput, "<!-- include_javascript('tools/attach/libs/fileuploader.js') -->") !== false);
         }));
     }
 
@@ -680,7 +691,7 @@ class EntryController extends YesWikiController
             $formHasUserField = !empty(array_filter($form['prepared'], function ($field) {
                 return $field instanceof UserField;
             }));
-            $loggerUser = $this->userManager->getLoggedUser();
+            $loggerUser = $this->authController->getLoggedUser();
             if (!$formHasUserField && empty($loggerUser)) {
                 // forbidden : ask to connect
                 $results['output'] = $this->render('@templates/alert-message.twig', [

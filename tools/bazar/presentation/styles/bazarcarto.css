@@ -1,7 +1,7 @@
 .leaflet-popup .BAZ_cadre_fiche,
 .BAZ_cadre_map {
   font-size: 12px;
-  height: 320px;
+  max-height: 320px;
   overflow: auto;
   width: 320px;
   margin: 0;
@@ -12,7 +12,7 @@
 .leaflet-popup .BAZ_fiche_info{
   font-size: 12px;
 }
-.leaflet-container a.btn {
+.leaflet-container a.btn:not(.btn-popup-map) {
   font-size: 12px;
 }
 .leaflet-container a.btn:not(.btn-default) {
@@ -216,4 +216,39 @@
 .leaflet-control-container .leaflet-control-zoom-fullscreen.fullscreen-icon:before {
   content: "⇱";
   font-weight: 600;
+}
+
+/* ------------- */
+/* POPUP TEMPLATE */
+/* ------------- */
+.popupentry-container {
+  display: none;
+}
+
+.leaflet-popup-content .btn-popup-map {
+  margin-top: 5px;
+  font-size: calc(0.9*var(--main-text-fontsize));
+}
+
+.leaflet-popup .popup-entry-content {
+  font-size: 12px;
+  max-height: 320px;
+  overflow: auto;
+  width: 320px;
+  margin: 0;
+  display: block;
+  text-align: left;
+  padding-right: 20px;
+}
+
+img.popup-visual {
+  float: right;
+  width: 200px;
+  height: auto;
+  max-height: 200px;
+  object-fit: contain;
+  object-position: 50% 50%;
+  margin-bottom: 5px;
+  margin-left: 5px;
+  max-width: 50%;
 }

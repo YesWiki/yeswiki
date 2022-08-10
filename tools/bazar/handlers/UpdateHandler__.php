@@ -97,7 +97,7 @@ class UpdateHandler__ extends YesWikiHandler
             if ($field instanceof MapField) {
                 // update location
                 $entry = array_merge($entry, $this->getMapFieldValue($field, $entry));
-                $tab = $field->formatValuesBeforeSave($entry);
+                $tab = $field->formatValuesBeforeSaveIfEditable($entry);
                 if (is_array($tab)) {
                     if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove'])) {
                         foreach ($tab['fields-to-remove'] as $fieldName) {

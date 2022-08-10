@@ -61,6 +61,9 @@ jobs:
         sudo /etc/init.d/mysql start
         mysql -e 'CREATE DATABASE ${{ env.DB_NAME }};' -uroot -proot
 
+    - name: Set cache folder writable
+      run: sudo chmod -R 0777 ${{ github.workspace }}/cache
+
     - run: curl http://localhost
 
     - name: Setup Wiki
