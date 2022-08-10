@@ -3,7 +3,7 @@ import InputList from './InputList.js'
 import InputCheckbox from './InputCheckbox.js'
 
 export default {
-  props: [ 'name', 'value', 'config', 'selectedForms', 'values' ],
+  props: [ 'name', 'value', 'config', 'selectedForm', 'values' ],
   components: { InputList, InputCheckbox },
   mixins: [ InputHelper ],
   data() {
@@ -63,7 +63,7 @@ export default {
         <component :is="componentIdFrom(property)" v-show="checkVisibility(property)"
                    :value="classValues[propName]" v-on:input="updateValue(propName, $event)"
                    :name="propName" :values="values"
-                   :config="property" :selected-forms="selectedForms">
+                   :config="property" :selected-form="selectedForm">
         </component>
       </template>
     </div>`

@@ -55,7 +55,6 @@ actions:
       colorfield:
         label: _t(AB_bazar_commons_colorfield_label)
         type: form-field
-        extraFields: id_typeannonce
         only: lists # ce champ doit être de type checkboxListe, listeListe ...
         showOnlyFor:
           - bazarcarto
@@ -76,7 +75,6 @@ actions:
           id:
             label: _t(AB_bazar_commons_subproperty_id_label)
             type: list
-            extraFields: id_typeannonce
             dataFromFormField: colorfield
           color:
             label: _t(AB_bazar_commons_colormapping_color_label)
@@ -84,7 +82,6 @@ actions:
       iconfield:
         label: _t(AB_bazar_commons_iconfield_label)
         type: form-field
-        extraFields: id_typeannonce
         only: lists # ce champ doit être de type checkboxListe, listeListe ...
         showOnlyFor:
           - bazarcarto
@@ -105,7 +102,6 @@ actions:
           id:
             label: _t(AB_bazar_commons_subproperty_id_label)
             type: list
-            extraFields: id_typeannonce
             dataFromFormField: iconfield
           icon:
             label: _t(AB_bazar_commons_iconfield_icon_label)
@@ -146,7 +142,6 @@ actions:
           field:
             label: _t(AB_bazar_facettes_field_label)
             type: form-field
-            extraFields: id_typeannonce
             only: lists # ce champ doit être de type checkboxListe, listeListe ...
           title:
             label: _t(AB_bazar_facettes_title_label)
@@ -189,10 +184,6 @@ actions:
         hint: _t(AB_bazar_commons2_champ_hint)
         doclink: https://yeswiki.net/?DocQuery
         type: form-field
-        extraFields: 
-          - id_typeannonce
-          - date_creation_fiche
-          - date_maj_fiche
         default:
         advanced: true
         showExceptFor:
@@ -275,26 +266,14 @@ actions:
             default: bf_titre
           subtitle:
             type: form-field
-            extraFields: 
-              - owner
-              - date_creation_fiche
-              - date_maj_fiche
             label: _t(AB_bazarliste_displayfields_subtitle_label)
             default: ""
           floating:
             type: form-field
-            extraFields: 
-              - owner
-              - date_creation_fiche
-              - date_maj_fiche
             label: _t(AB_bazarliste_displayfields_floating_label)
             default: ""
           visual:
             type: form-field
-            extraFields: 
-              - owner
-              - date_creation_fiche
-              - date_maj_fiche
             label: _t(AB_bazarliste_displayfields_visual_label)
             default: ""
 
@@ -334,7 +313,6 @@ actions:
             value: bf_titre
           subtitle:
             type: form-field
-            extraFields: owner
             label: _t(AB_bazarliste_displayfields_subtitle_label)
             default: ""
           text:
@@ -343,12 +321,10 @@ actions:
             default: ""
           footer:
             type: form-field
-            extraFields: owner
             label: _t(AB_bazarliste_displayfields_footer_label)
             default: ""
           floating:
             type: form-field
-            extraFields: owner
             label: _t(AB_bazarliste_displayfields_floating_label)
             default: ""
       
@@ -587,16 +563,10 @@ actions:
         subproperties:
           bf_date_debut_evenement:
             type: form-field
-            extraFields: 
-              - date_creation_fiche
-              - date_maj_fiche
             label: _t(AB_bazar_bf_date_debut_evenement_label)
             default: ""
           bf_date_fin_evenement:
             type: form-field
-            extraFields: 
-              - date_creation_fiche
-              - date_maj_fiche
             label: _t(AB_bazar_bf_date_fin_evenement_label)
             default: ""
       nbcol:
@@ -631,9 +601,6 @@ actions:
         subproperties:
           bf_date_debut_evenement:
             type: form-field
-            extraFields: 
-              - date_creation_fiche
-              - date_maj_fiche
             label: _t(AB_bazar_bf_date_debut_evenement_label)
             default: ""
 
@@ -670,7 +637,6 @@ actions:
         subproperties:
           bf_titre:
             type: form-field
-            extraFields: owner
             label: _t(AB_bazarcarousel_bf_titre_label)
             default: ""
 
@@ -752,9 +718,6 @@ actions:
         subproperties:
           date_creation_fiche:
             type: form-field
-            extraFields: 
-              - date_creation_fiche
-              - date_maj_fiche
             label: _t(AB_bazarblog_date_creation_fiche_label)
             default: ""
 

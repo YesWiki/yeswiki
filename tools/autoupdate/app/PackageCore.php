@@ -12,7 +12,6 @@ class PackageCore extends Package
         'files',
         'cache',
         'themes',
-        'robots.txt',
         'wakka.config.php'
     ];
     

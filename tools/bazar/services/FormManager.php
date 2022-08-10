@@ -290,28 +290,25 @@ class FormManager
             $form = $this->getOne($entry['id_typeannonce']);
 
             // on filtre pour n'avoir que les liste, checkbox, listefiche ou checkboxfiche
-            if (!isset($fields[$entry['id_typeannonce']])) {
-                $fields[$entry['id_typeannonce']] = (empty($form['prepared']))
-                    ? []
-                    : $this->filterFieldsByPropertyName($form['prepared'], $groups);
-            }
+            $fields[$entry['id_typeannonce']] = isset($fields[$entry['id_typeannonce']])
+                ? $fields[$entry['id_typeannonce']]
+                : (
+                    !empty($form['prepared'])
+                    ? $this->filterFieldsByPropertyName($form['prepared'], $groups)
+                    : []
+                );
 
             foreach ($entry as $key => $value) {
                 $facetteasked = (isset($groups[0]) && $groups[0] == 'all') || in_array($key, $groups);
 
                 if (!empty($value) and is_array($fields[$entry['id_typeannonce']]) && $facetteasked) {
-                    if (in_array($key, ['id_typeannonce','owner'])) {
-                        $fieldPropName = $key;
-                        $field = null;
-                    } else {
-                        $filteredFields = $this->filterFieldsByPropertyName($fields[$entry['id_typeannonce']], [$key]);
-                        $field = array_pop($filteredFields);
+                    $filteredFields = $this->filterFieldsByPropertyName($fields[$entry['id_typeannonce']], [$key]);
+                    $field = array_pop($filteredFields);
 
-                        $fieldPropName = null;
-                        if ($field instanceof BazarField) {
-                            $fieldPropName = $field->getPropertyName();
-                            $fieldType = $field->getType();
-                        }
+                    $fieldPropName = null;
+                    if ($field instanceof BazarField) {
+                        $fieldPropName = $field->getPropertyName();
+                        $fieldType = $field->getType();
                     }
 
                     if ($fieldPropName) {
@@ -345,21 +342,6 @@ class FormManager
                         }
                     }
                 }
-            }
-        }
-
-        // remove `id_typeannonce` if only one form
-        if (isset($facetteValue['id_typeannonce'])) {
-            $nbForms = count(
-                array_filter(
-                    array_keys($facetteValue['id_typeannonce']),
-                    function ($key) {
-                        return !in_array($key, ['type','source']);
-                    }
-                )
-            );
-            if ($nbForms < 2) {
-                unset($facetteValue['id_typeannonce']);
             }
         }
         return $facetteValue;
