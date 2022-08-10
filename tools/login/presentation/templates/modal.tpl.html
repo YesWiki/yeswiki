@@ -1,19 +1,65 @@
-<?php
-
-// backward compatibility TODO delete this file for ectoplasme
-
-echo $this->render("@login/modal.twig",compact([
-    "connected",
-    "user",
-    "email",
-    "incomingurl",
-    "signupurl",
-    "lostpasswordurl",
-    "profileurl",
-    "userpage",
-    "PageMenuUser",
-    "btnclass",
-    // "class", // do not transfer class because LoginAction add it
-    "nobtn",
-    "error"
-    ]));
+<?php if ($connected) : ?>
+  <a href="#LoginModal" role="button" class="<?php if (empty($nobtn)) { echo 'btn btn-default '.$btnclass.' '; } ?>" data-toggle="modal">
+    <i class="fa fa-user"></i> <?php echo $user; ?>
+  </a>
+  <div class="modal fade" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+     <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h3 id="LoginModalLabel"><?php echo _t('LOGIN_CONNECTED_AS').' '.$user; ?></h3>
+    </div>
+    <div class="modal-body">
+      <ul class="login-actions">
+        <?php echo $PageMenuUser ?? ''; ?>
+        <li><a href="<?php echo $profileurl; ?>" title="<?php echo _t('LOGIN_MODIFY_USER'); ?>"><?php echo _t('LOGIN_MODIFY_USER'); ?></a></li>
+      </ul>
+    </div>
+    <div class="modal-footer">
+      <a href="<?php echo $incomingurl.(strpos($incomingurl,'?') === false ? '?' : '&amp;'); ?>action=logout" class="btn btn-default" title="<?php echo _t('LOGIN_LOGOUT'); ?>"><?php echo _t('LOGIN_LOGOUT'); ?></a>
+    </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div> <!-- /#LoginModal-->
+  <?php else : ?>
+  <a href="#LoginModal" role="button" class="<?php if (empty($nobtn)) { echo 'btn btn-default '.$btnclass.' '; } ?>" data-toggle="modal">
+    <i class="fa fa-user"></i> <?php echo _t('LOGIN_LOGIN'); ?>
+  </a>
+  <div class="modal fade" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h3 id="LoginModalLabel"><?php echo _t('LOGIN_LOGIN'); ?></h3>
+        </div>
+        <div class="modal-body">
+          <form class="login-form-modal" action="<?php echo $incomingurl; ?>" method="post">
+            <div class="form-group">
+              <label class="control-label"><?php echo _t('LOGIN_WIKINAME'); ?></label>
+              <input type="text" name="name" class="form-control" value="<?php echo ($user ? htmlspecialchars($user, ENT_COMPAT, YW_CHARSET) : ''); ?>">
+            </div>
+            <div class="form-group">
+              <label class="control-label"><?php echo _t('LOGIN_PASSWORD'); ?></label>
+              <input type="password" class="form-control" name="password">
+            </div>
+            <?php if (!empty($lostpasswordurl)) { ?>
+        			<small><a href="<?php echo $lostpasswordurl ?>"><?php echo _t('LOGIN_LOST_PASSWORD'); ?></a></small>
+        		<?php } ?>
+            <div class="checkbox">
+  						<label for="remember-modal">
+  							<input type="checkbox" id="remember-modal" name="remember" value="1" />
+                <span><?php echo _t('LOGIN_REMEMBER_ME'); ?></span>
+  						</label>
+  					</div>
+            <input type="submit" name="login" class="btn btn-block btn-primary" value="<?php echo _t('LOGIN_LOGIN'); ?>">
+            <input type="hidden" name="action" value="login" />
+            <input type="hidden" name="incomingurl" value="<?php echo $userpage; ?>" />
+            <input type="hidden" name="remember" value="0" />
+          </form>
+          <hr>
+          <a class="btn btn-block btn-default <?php echo $btnclass; ?>" href="<?php echo $signupurl; ?>"><?php echo _t('LOGIN_SIGNUP'); ?></a>
+        </div>
+      </div>
+    </div><!-- /.modal-dialog -->
+</div> <!-- /#LoginModal-->
+<?php endif; ?>

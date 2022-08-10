@@ -70,8 +70,7 @@ class FileField extends BazarField
 
         $params = $this->getService(ParameterBagInterface::class);
         if (!empty($_FILES[$this->propertyName]['name']) && !empty($entry['id_fiche'])) {
-            $rawFileName = filter_var($_FILES[$this->propertyName]['name'], FILTER_UNSAFE_RAW);
-            $rawFileName = ($rawFileName === false) ? "" : htmlspecialchars(strip_tags($rawFileName));
+            $rawFileName = filter_var($_FILES[$this->propertyName]['name'], FILTER_SANITIZE_STRING);
             $sanitizedFilename = $this->sanitizeFilename($rawFileName);
             $fileName = "{$this->getPropertyName()}_$sanitizedFilename";
             $filePath = $this->getFullFileName($fileName, $entry['id_fiche'], true);

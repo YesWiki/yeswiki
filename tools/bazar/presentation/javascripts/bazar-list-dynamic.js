@@ -1,6 +1,5 @@
 import Panel from './components/Panel.js'
 import EntryField from './components/EntryField.js'
-import PopupEntryField from './components/PopupEntryField.js'
 import SpinnerLoader from './components/SpinnerLoader.js'
 import ModalEntry from './components/ModalEntry.js'
 import BazarSearch from './components/BazarSearch.js'
@@ -11,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>{
   new Vue({
     el: domElement,
-    components: { Panel, ModalEntry, SpinnerLoader, EntryField, PopupEntryField },
+    components: { Panel, ModalEntry, SpinnerLoader, EntryField },
     mixins: [ BazarSearch ],
     data: {
       mounted: false, // when vue get initialized
@@ -50,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
       },
       pages() {
         if (this.pagination <= 0) return []
-        let pagesCount = Math.ceil(this.filteredEntries.length / parseInt(this.pagination))
+        let pagesCount = Math.floor(this.filteredEntries.length / parseInt(this.pagination)) + 1
         let start = 0, end = pagesCount - 1        
         let pages = [this.currentPage - 2, this.currentPage - 1, this.currentPage, this.currentPage + 1, this.currentPage + 2]
         pages = pages.filter(page => page >= start && page <= end)
@@ -259,13 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
             this.processNextImage();
           } else {
             let baseUrl = entry.url.slice(0,-entry.id_fiche.length).replace(/\?$/,"").replace(/\/$/,"");
-            let previousUrl = $(node).prop('src');
-            let newUrl = `${baseUrl}/files/${fileName}`;
-            if (newUrl != previousUrl){
-              $(`img[src="${previousUrl}"]`).each(function(){
-                $(this).prop('src',newUrl);
-              });
-            }
+            $(node).prop('src',`${baseUrl}/files/${fileName}`);
           }
         }
       },
@@ -311,12 +304,7 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'get',
             cache: false,
             success: function (data){
-              let previousUrl = $(newImageParams.node).prop('src');
-              if (data.cachefilename != previousUrl){
-                $(`img[src="${previousUrl}"]`).each(function(){
-                  $(this).prop('src',data.cachefilename);
-                });
-              }
+              $(newImageParams.node).prop('src',data.cachefilename);
             },
             complete: function (e){
               if (e.responseJSON != undefined && e.responseJSON.newToken != undefined ){

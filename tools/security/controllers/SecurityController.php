@@ -3,8 +3,8 @@
 namespace YesWiki\Security\Controller;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
 
 class SecurityController extends YesWikiController
@@ -64,7 +64,7 @@ class SecurityController extends YesWikiController
     {
         return $this->params->has('password_for_editing') &&
             !empty($this->params->get('password_for_editing')) &&
-            !$this->getService(AuthController::class)->getLoggedUser() ; // AuthController not loaded in construct to prevent circular references
+            !$this->getService(UserManager::class)->getLoggedUser() ; // UserManager not loaded in construct to prevent circular references
     }
 
     /**

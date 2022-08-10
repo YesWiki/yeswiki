@@ -271,14 +271,10 @@ class MapField extends BazarField
             'longitude' => is_array($value) && !empty($value[$this->getLongitudeField()]) ? $value[$this->getLongitudeField()] : null
         ]);
     }
+
     public function formatValuesBeforeSave($entry)
     {
-        return $this->formatValuesBeforeSaveIfEditable($entry, false);
-    }
-
-    public function formatValuesBeforeSaveIfEditable($entry, bool $isCreation = false)
-    {
-        if (!$this->canEdit($entry, $isCreation)) {
+        if (!$this->canEdit($entry)) {
             // retrieve value from value because redefined with right value
             $values = $this->getValue($entry);
             if (empty($values)) {

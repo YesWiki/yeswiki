@@ -3,13 +3,11 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Controller\AuthController;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class AclService
 {
-    protected $authController;
     protected $wiki;
     protected $dbService;
     protected $securityController;
@@ -18,15 +16,8 @@ class AclService
 
     protected $cache;
 
-    public function __construct(
-        Wiki $wiki,
-        AuthController $authController,
-        DbService $dbService,
-        UserManager $userManager,
-        ParameterBagInterface $params,
-        SecurityController $securityController
-    ) {
-        $this->authController = $authController;
+    public function __construct(Wiki $wiki, DbService $dbService, UserManager $userManager, ParameterBagInterface $params, SecurityController $securityController)
+    {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->userManager = $userManager;
@@ -63,7 +54,7 @@ class AclService
                 'comment' => [
                     'page_tag' => $tag,
                     'privilege' => 'comment',
-                    'list' => $this->params->get('default_comment_acl')
+                    'list' => 'comments-closed'
                 ]
             ];
         } else {
@@ -165,8 +156,7 @@ class AclService
 
         // set default to current user
         if (!$user) {
-            $loggedUser = $this->authController->getLoggedUser();
-            $user = $loggedUser['name'] ?? "";
+            $user = $this->userManager->getLoggedUserName();
         }
 
         // load acl
@@ -210,7 +200,7 @@ class AclService
     public function check($acl, $user = null, $adminCheck = true, $tag = '', $mode = '')
     {
         if (!$user) {
-            $user = $this->authController->getLoggedUser();
+            $user = $this->userManager->getLoggedUser();
             $username = !empty($user['name']) ? $user['name'] : null;
         } else {
             $username = $user;
@@ -263,7 +253,7 @@ class AclService
                         $gname = substr($line, 1);
                         // paranoiac: avoid line = '@'
                         if ($gname) {
-                            if (!empty($username) && $this->userManager->isInGroup($gname, $username, false/* we have allready checked if user was an admin */)) {
+                            if (!empty($username) && $this->wiki->UserIsInGroup($gname, $username, false/* we have allready checked if user was an admin */)) {
                                 $result = $std_response ;
                             } else {
                                 $result = ! $std_response ;
@@ -296,14 +286,14 @@ class AclService
         // needed ACL
         $neededACL = ['*'];
         // connected ?
-        $user = $this->authController->getLoggedUser();
+        $user = $this->userManager->getLoggedUser();
         if (!empty($user)) {
             $userName = $user['name'];
             $neededACL[] = '+';
             $neededACL[] = $userName;
             $groups = $this->wiki->GetGroupsList();
             foreach ($groups as $group) {
-                if ($this->userManager->isInGroup($group, $userName, true)) {
+                if ($this->wiki->UserIsInGroup($group, $userName, true)) {
                     $neededACL[] = '@'.$group;
                 }
             }
