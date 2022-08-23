@@ -230,8 +230,7 @@ if (!defined('WIKINI_VERSION')) {
         <div class="form-group">
           <label class="col-sm-3 control-label"><?php echo _t('ADMIN'); ?></label>
           <div class="col-sm-9">
-            <input type="text" required class="form-control" name="admin_name" value="WikiAdmin" />
-            <p class="help-block"><?php echo _t('MUST_BE_WIKINAME'); ?></p>
+            <input type="text" required class="form-control" name="admin_name" value="" />
           </div>
         </div>
 
