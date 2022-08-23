@@ -231,6 +231,7 @@ if (!defined('WIKINI_VERSION')) {
           <label class="col-sm-3 control-label"><?php echo _t('ADMIN'); ?></label>
           <div class="col-sm-9">
             <input type="text" required class="form-control" name="admin_name" value="" />
+            <p class="help-block"><?php echo _t('USERNAME_MUST_BE_WIKINAME'); ?></p>
           </div>
         </div>
 
