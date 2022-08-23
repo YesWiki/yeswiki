@@ -90,6 +90,7 @@ tools/*
 
 # Docker
 .db
+docker-compose.local.yml
 
 # Other
 .phpintel/
