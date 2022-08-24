@@ -33,7 +33,8 @@ docker-build: ## Build Docker images
 	$(DOCKER) -f $(DOCKER_COMPOSE) build --pull
 
 up: ## Start the Docker hub
-	chmod 0777 . cache && $(DOCKER) -f $(DOCKER_COMPOSE) up -d
+	chmod 0777 . cache files files/backgrounds files/backgrounds/thumbs && \
+	$(DOCKER) -f $(DOCKER_COMPOSE) up -d
 
 stop: ## Stop the Docker hub
 	$(DOCKER) -f $(DOCKER_COMPOSE) stop
