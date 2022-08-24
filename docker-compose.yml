@@ -11,6 +11,9 @@ services:
             - .:/var/www/html
         depends_on:
             - db
+        environment:
+            VIRTUAL_HOST: yeswiki.docker
+            VIRTUAL_PORT: 80
         # Install php et js vendors
         # Launch apache as lavoweb/php-7.3:composer
         command: bash -c "make install && apache2-foreground"
@@ -36,6 +39,22 @@ services:
         depends_on:
             - db
         environment:
+            VIRTUAL_HOST: myadmin.docker
+            VIRTUAL_PORT: 80
             PMA_HOST: db
             PMA_USER: root
             PMA_PASSWORD: root
+
+    # add to wakka.config.php
+    #  'contact_mail_func' => 'smtp',
+    #  'contact_smtp_host' => 'mail',
+    # then browse email interception on http://localhost:8025
+    mail:
+        image: diyan/mailhog
+        container_name: mail
+        ports:
+            - "1025:1025"
+            - "8025:8025"
+        environment:
+            VIRTUAL_HOST: mail.docker
+            VIRTUAL_PORT: 8025
