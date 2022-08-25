@@ -373,7 +373,7 @@ class BazarListeAction extends YesWikiAction
     {
         // external ids
         $externalIds = [];
-        if (preg_match_all('/(?:'
+        if (!is_null($ids) && preg_match_all('/(?:'
             .'(' // begin url capturing
             .'(?:(?:https?):\/\/)' // http or https protocol
             .'(?:\S+(?::\S*)?@|\d{1,3}(?:\.\d{1,3}){3}|(?:(?:[a-z\d\x{00a1}-\x{ffff}]+-?)*[a-z\d\x{00a1}-\x{ffff}]+)' // long part to catch url
