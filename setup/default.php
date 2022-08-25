@@ -78,9 +78,9 @@ if (!defined('WIKINI_VERSION')) {
             <select required autocomplete="off" class="form-control" name="config[default_language]" onchange="$(this).parents('.form-yeswiki-install').attr('action', '<?php echo  myLocation() ?>?installAction=default&lang='+$(this).val()).submit();">
                 <?php
                 foreach ($GLOBALS['available_languages'] as $value) {
-                    echo '<option value="'.$value.'"'.(($value == $GLOBALS['prefered_language'] && $_GET['lang'] !== 'auto') ? ' selected="selected"' : '').'>'.ucfirst(htmlentities($GLOBALS['languages_list'][$value]['nativeName'], ENT_COMPAT | ENT_HTML401, 'UTF-8'))."</option>\n";
+                    echo '<option value="'.$value.'"'.(($value == $GLOBALS['prefered_language'] && (!isset($_GET['lang']) || $_GET['lang'] !== 'auto')) ? ' selected="selected"' : '').'>'.ucfirst(htmlentities($GLOBALS['languages_list'][$value]['nativeName'], ENT_COMPAT | ENT_HTML401, 'UTF-8'))."</option>\n";
                 }
-                echo "<option value=\"auto\"".($_GET['lang'] === 'auto' ? ' selected="selected"' : '').">"._t('NAVIGATOR_LANGUAGE')."</option>\n";
+                echo "<option value=\"auto\"".((isset($_GET['lang']) && $_GET['lang'] === 'auto') ? ' selected="selected"' : '').">"._t('NAVIGATOR_LANGUAGE')."</option>\n";
                 ?>
             </select>
           </div>
@@ -231,7 +231,7 @@ if (!defined('WIKINI_VERSION')) {
           <label class="col-sm-3 control-label"><?php echo _t('ADMIN'); ?></label>
           <div class="col-sm-9">
             <input type="text" required class="form-control" name="admin_name" value="WikiAdmin" />
-            <p class="help-block"><?php echo _t('MUST_BE_WIKINAME'); ?></p>
+            <p class="help-block"><?php echo _t('USERNAME_MUST_BE_WIKINAME'); ?></p>
           </div>
         </div>
 

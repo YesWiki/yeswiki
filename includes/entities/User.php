@@ -80,7 +80,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
         return (in_array($offset, self::PROPS_LIST));
     }
 
-    public function offsetGet($offset) : mixed
+    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
+    #[\ReturnTypeWillChange]
+    public function offsetGet($offset)
     {
         if (!$this->offsetExists($offset)) {
             throw new UserNotExistingOffset("Not existing $offset in User!");

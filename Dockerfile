@@ -24,5 +24,3 @@ RUN apt-get install -y --no-install-recommends nodejs
 RUN curl -L https://npmjs.org/install.sh | sh
 RUN npm install -g yarn
 
-# Allow container to write wakka.config.php
-RUN chmod +wx .
