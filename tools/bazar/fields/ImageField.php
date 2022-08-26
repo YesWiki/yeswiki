@@ -102,20 +102,18 @@ class ImageField extends FileField
 
     public function formatValuesBeforeSave($entry)
     {
-        if (!empty($_POST['data-'.$this->propertyName]) && !empty($_POST['filename-'.$this->propertyName]) && !empty($entry['id_fiche'])) {
-            $rawFileName = filter_var($_POST['filename-'.$this->propertyName], FILTER_UNSAFE_RAW);
+        $params = $this->getService(ParameterBagInterface::class);
+        if (!empty($_FILES[$this->propertyName]['name']) && !empty($entry['id_fiche'])) {
+            $rawFileName = filter_var($_FILES[$this->propertyName]['name'], FILTER_UNSAFE_RAW);
             $rawFileName = ($rawFileName === false) ? "" : htmlspecialchars(strip_tags($rawFileName));
             $sanitizedFilename = $this->sanitizeFilename($rawFileName);
             $fileName = "{$this->getPropertyName()}_$sanitizedFilename";
             $filePath = $this->getFullFileName($fileName, $entry['id_fiche'], true);
-            $fileName = basename($filePath);
 
-            if ($this->isImage($rawFileName)) {
-                if (!file_exists($filePath) && !$this->getService(SecurityController::class)->isWikiHibernated()) {
-                    file_put_contents($filePath, file_get_contents($_POST['data-'.$this->propertyName]));
+            if ($this->isImage($rawFileName) && !$this->getService(SecurityController::class)->isWikiHibernated()) {
+                if (!file_exists($filePath)) {
+                    move_uploaded_file($_FILES[$this->propertyName]['tmp_name'], $filePath);
                     chmod($filePath, 0755);
-
-
 
                     if (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '') {
                         // delete previous files only if authorized (owner)
@@ -123,7 +121,7 @@ class ImageField extends FileField
                         $this->securedDeleteImageAndCache($entry, $previousFileName);
                     }
                     
-
+            
                     // Generate thumbnails to speedup loading of bazar templates
                     if (!empty($this->thumbnailWidth) && !empty($this->thumbnailHeight)) {
                         $attach = $this->getAttach();
@@ -145,14 +143,20 @@ class ImageField extends FileField
                 }
             } else {
                 flash(_t('BAZ_NOT_AUTHORIZED_EXTENSION'), 'error');
+                return [$this->propertyName => ''];
             }
-            $entry[$this->propertyName] = $fileName;
+
+            $entry[$this->propertyName] = basename($filePath);
         } elseif (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '') {
             $entry[$this->propertyName] = $entry['oldimage_' . $this->propertyName];
+        } elseif (!empty($value)) {
+            $entry[$this->propertyName] = file_exists($this->getBasePath(). $this->getValue($entry)) ? $this->getValue($entry) : '';
+        } else {
+            $entry[$this->propertyName] = '';
         }
         return [
             $this->propertyName => $this->getValue($entry),
-            'fields-to-remove' => ['filename-'.$this->propertyName, 'data-'.$this->propertyName, 'oldimage_' . $this->propertyName]
+            'fields-to-remove' => ['oldimage_' . $this->propertyName]
         ];
     }
 

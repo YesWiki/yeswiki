@@ -68,8 +68,6 @@ function handleFileSelect(evt) {
           var span = document.createElement('span');
           span.innerHTML = `<img class="img-responsive" style="${css}" src="${e.target.result}" title="${escape(theFile.name)}"/>`;
           document.getElementById('img-'+id).innerHTML = span.innerHTML;
-          document.getElementById('data-'+id).value = e.target.result;
-          document.getElementById('filename-'+id).value = theFile.name;
         });
 
       };
