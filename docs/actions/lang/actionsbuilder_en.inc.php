@@ -212,6 +212,7 @@ return [
     // "AB_attach_width_label" => "Largeur",
     // "AB_attach_height_label" => "Hauteur",
     // "AB_attach_class_label" => "Classe",
+    "AB_attach_class_new-window_label" => "Open link, if activated, in new tab",
     // "AB_attach_class_position_label" => "Position",
     // "AB_attach_class_position_none" => "Texte en dessous",
     // "AB_attach_class_position_left" => "Gauche",

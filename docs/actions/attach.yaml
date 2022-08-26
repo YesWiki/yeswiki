@@ -26,10 +26,10 @@ actions:
           file: \.(png|jpg|jpeg|gif|svg)$
       nofullimagelink:
         label: _t(AB_attach_nofullimagelink_label)
-        type: list
-        options:
-          0: _t(AB_attach_yes)
-          1: _t(AB_attach_no)
+        type: checkbox
+        default: "0"
+        checkedvalue: "0"
+        uncheckedvalue: "1"
         showif:
           file: \.(png|jpg|jpeg|gif|svg)$
       size:
@@ -68,28 +68,34 @@ actions:
               left: _t(AB_attach_class_position_left)
               center: _t(AB_attach_class_position_center)
               right: _t(AB_attach_class_position_right)
+          new-window:
+            label: _t(AB_attach_class_new-window_label)
+            type: checkbox
+            default: ""
+            checkedvalue: "new-window"
+            uncheckedvalue: ""
           lightshadow:
             label: _t(AB_attach_class_effect_lightshadow)
-            type: list
-            default: ''
-            options: 
-              lightshadow: _t(YES)
+            type: checkbox
+            default: ""
+            checkedvalue: "lightshadow"
+            uncheckedvalue: ""
             showif:
               file: \.(png|jpg|jpeg|gif|svg)$
           whiteborder:
             label: _t(AB_attach_class_effect_whiteborder)
-            type: list
-            default: ''
-            options: 
-              whiteborder: _t(YES)
+            type: checkbox
+            default: ""
+            checkedvalue: "whiteborder"
+            uncheckedvalue: ""
             showif:
               file: \.(png|jpg|jpeg|gif|svg)$
           zoom:
             label: _t(AB_attach_class_effect_zoom)
-            type: list
-            default: ''
-            options: 
-              zoom: _t(YES)
+            type: checkbox
+            default: ""
+            checkedvalue: "zoom"
+            uncheckedvalue: ""
             showif:
               file: \.(png|jpg|jpeg|gif|svg)$
           izmir:

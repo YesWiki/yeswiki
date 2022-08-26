@@ -538,10 +538,10 @@ if (!class_exists('attach')) {
                 if ($linkParts) {
                     $this->wiki->services->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
                 }
-                $link = '<a href="'.$this->wiki->generateLink($this->link).'">';
+                $link = '<a href="'.$this->wiki->generateLink($this->link).'"'.(strstr($this->classes, 'new-window')?' class="new-window"':'').'>';
             } else {
                 if (empty($this->nofullimagelink) or !$this->nofullimagelink) {
-                    $link = '<a href="' . $this->GetScriptPath() . $fullFilename . '">';
+                    $link = '<a href="' . $this->GetScriptPath() . $fullFilename . '"'.(strstr($this->classes, 'new-window')?' class="new-window"':'').'>';
                 }
             }
             $caption = '';
