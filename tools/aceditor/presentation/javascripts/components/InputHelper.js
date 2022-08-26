@@ -36,6 +36,68 @@ export default {
     },
     refFrom(config) {
       return config.subproperties || config.type == "geo" ? 'specialInput' : ''
+    },
+    getFieldsFormSelectedForms(selectedForms, extraFields = []){
+      let fields = [];
+      for (const key in selectedForms) {
+        let prepared = (typeof selectedForms[key].prepared == 'object')
+          ? Object.values(selectedForms[key].prepared)
+          : selectedForms[key].prepared;
+        
+        prepared.forEach((field)=>{
+            if (fields.every((f)=>(!f.id && field.id) ||(f.id && !field.id) || f.id != field.id)){
+              fields.push(field);
+            }
+          });
+      }
+      if (extraFields.includes("id_typeannonce")){
+        let options = {};
+        Object.keys(this.selectedForms).forEach((key)=>{
+          options[key] = this.selectedForms[key]['bn_label_nature'] || key;
+        });
+        // fake a field
+        fields.push({
+          id: 'id_typeannonce',
+          name: 'id_typeannonce',
+          propertyName: 'id_typeannonce',
+          label: _t('ACTION_BUILDER_FORM_ID'),
+          options: {...options} // clone object
+        });
+      }
+      let extraFieldsWithoutOptions = {
+        ['date_creation_fiche']:_t('ACTION_BUILDER_CREATION_DATE'),
+        ['date_maj_fiche']:_t('ACTION_BUILDER_MODIFICATION_DATE'),
+        ['owner']:_t('ACTION_BUILDER_OWNER'),
+      };
+      for (const key in extraFieldsWithoutOptions) {
+        if (extraFields.includes(key)){
+          // fake a field
+          fields.push({
+            id: key,
+            name: key,
+            propertyName: key,
+            label: extraFieldsWithoutOptions[key]
+          });
+        }
+      }
+      return fields;
+    },
+    formatExtraFieldsAsArray(extraFields){
+      return !extraFields 
+        ? []
+        : (
+          Array.isArray(extraFields)
+           ? extraFields
+           : (
+            typeof extraFields == "string"
+            ? [extraFields]
+            : (
+              typeof extraFields == "object"
+              ? Object.values(extraFields)
+              : []
+            )
+           )
+        );
     }
   }
 }

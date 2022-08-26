@@ -161,7 +161,13 @@ class AuthController extends YesWikiController
 
     public function getLoggedUser()
     {
-        return isset($_SESSION['user']) ? $_SESSION['user'] : '';
+        if (isset($_SESSION['user']) && !empty($_SESSION['user']['name'])) {
+            $user = $this->userManager->getOneByName($_SESSION['user']['name']);
+            if (!empty($user)) {
+                return $user->getArrayCopy();
+            }
+        }
+        return '';
     }
 
     public function getLoggedUserName()
@@ -181,15 +187,15 @@ class AuthController extends YesWikiController
         } else {
             $remember = filter_var($remember, FILTER_VALIDATE_BOOL) ? 1 : 0;
         }
-        $_SESSION['user'] = array_merge(
-            ($user instanceof User ? $user->getArrayCopy() : (
-                is_array($user) ? $user: []
-            )),
-            [
-                'remember' => $remember,
-                'lastConnection' => time()
-            ]
-        );
+        
+        $_SESSION['user'] =
+            empty($user['name'])
+            ? []
+            : [
+                'name' => $user['name']
+            ];
+        $_SESSION['user']['remember'] = $remember;
+        $_SESSION['user']['lastConnection'] = time();
         if (!$this->wiki->isCli()) {
             // prevent setting cookies in CLI (could be errors)
 
@@ -213,7 +219,7 @@ class AuthController extends YesWikiController
 
     public function logout()
     {
-        $_SESSION['user'] = '';
+        unset($_SESSION['user']);
         if (!$this->wiki->isCli()) {
             // prevent setting cookies in CLI (could be errors)
 
