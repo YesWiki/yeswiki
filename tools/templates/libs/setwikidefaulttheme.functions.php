@@ -74,7 +74,7 @@ function checkParamActionSetTemplate($post, $availableThemes)
     $post['wdtTheme'] = filter_var($post['wdtTheme'],  FILTER_UNSAFE_RAW);
     $post['wdtTheme']  = ($post['wdtTheme']  === false) ? "" : htmlspecialchars(strip_tags($post['wdtTheme'] ));
     $post['wdtStyle'] = filter_var($post['wdtStyle'], FILTER_UNSAFE_RAW);
-    $post['wdtStyle']  = ($post['v']  === false) ? "" : htmlspecialchars(strip_tags($post['wdtStyle'] ));
+    $post['wdtStyle']  = ($post['wdtStyle']  === false) ? "" : htmlspecialchars(strip_tags($post['wdtStyle'] ));
     $post['wdtSquelette'] = filter_var($post['wdtSquelette'], FILTER_UNSAFE_RAW);
     $post['wdtSquelette']  = ($post['wdtSquelette']  === false) ? "" : htmlspecialchars(strip_tags($post['wdtSquelette'] ));
 
