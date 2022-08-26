@@ -2,15 +2,24 @@
 
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AssetsManager;
+use YesWiki\Core\Service\FavoritesManager;
 use YesWiki\Core\YesWikiHandler;
 
 class IframeHandler extends YesWikiHandler
 {
+    protected $assetsManager ;
+    protected $authController ;
     protected $entryController ;
+    protected $favoritesManager ;
 
     public function run()
     {
+        $this->assetsManager = $this->getService(AssetsManager::class);
+        $this->authController = $this->getService(AuthController::class);
         $this->entryController = $this->getService(EntryController::class);
+        $this->favoritesManager = $this->getService(FavoritesManager::class);
         $output = '';
         if (!$this->wiki->page) {
             echo str_replace(
@@ -103,6 +112,30 @@ class IframeHandler extends YesWikiHandler
     private function renderWikiPage(): string
     {
         $output = '';
+        // on ajoute le bouton pour les favoris
+        $user = $this->authController->getLoggedUser();
+        if (!empty($user) && $this->favoritesManager->areFavoritesActivated()) {
+            $currentuser = $user['name'];
+            $tag = $this->wiki->GetPageTag();
+            $isUserFavorite = $this->favoritesManager->isUserFavorite($currentuser, $tag);
+            // TODO use twig (with other part of this handler also)
+            $this->assetsManager->AddJavascriptFile('javascripts/favorites.js');
+            $extraClass = $isUserFavorite ? ' user-favorite' : '' ;
+            $iconClass = $isUserFavorite ? 'fas' : 'far' ;
+            $title = ($isUserFavorite) ? _t('FAVORITES_REMOVE') : _t('FAVORITES_ADD') ;
+            // HEREDOC syntax
+            $output .= <<<HTML
+            <a href="#"
+                title="$title"
+                data-resource="$tag" 
+                data-user="$currentuser"
+                data-toggle="tooltip"
+                data-placement="left"
+                class="btn btn-icon favorites pull-right $extraClass">
+                    <i class="$iconClass fa-star"></i>
+            </a>
+HTML ;
+        }
         // on ajoute un bouton de partage, si &share=1 est présent dans l'url
         if (isset($_GET['share']) && $_GET['share'] == '1') {
             $output .= '<a class="btn btn-sm btn-default link-share modalbox pull-right" href="'
