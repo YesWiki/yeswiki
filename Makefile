@@ -29,12 +29,18 @@ yarn-install: yarn.lock ## Install npm vendors according to the current yarn.loc
 	$(YARN) install
 
 ## —— Docker ——————————————
+perms:
+	chmod 0777 . cache files files/backgrounds files/backgrounds/thumbs themes custom tools && \
+	chmod +w themes/margot
+
 docker-build: ## Build Docker images
 	$(DOCKER) -f $(DOCKER_COMPOSE) build --pull
 
-up: ## Start the Docker hub
-	chmod 0777 . cache files files/backgrounds files/backgrounds/thumbs && \
+dev: ## Start the Docker hub with all the dev tools
 	$(DOCKER) -f $(DOCKER_COMPOSE) up -d
+
+up: ## Start the Docker hub
+	$(DOCKER) -f $(DOCKER_COMPOSE) up -d yeswiki
 
 stop: ## Stop the Docker hub
 	$(DOCKER) -f $(DOCKER_COMPOSE) stop
