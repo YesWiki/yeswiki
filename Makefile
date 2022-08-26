@@ -31,7 +31,7 @@ yarn-install: yarn.lock ## Install npm vendors according to the current yarn.loc
 ## —— Docker ——————————————
 perms:
 	chmod 0777 . cache files files/backgrounds files/backgrounds/thumbs themes custom tools && \
-	chmod +w themes/margot
+	chmod -R +w themes/margot
 
 docker-build: ## Build Docker images
 	$(DOCKER) -f $(DOCKER_COMPOSE) build --pull
