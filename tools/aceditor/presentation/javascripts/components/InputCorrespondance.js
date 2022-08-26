@@ -2,7 +2,7 @@ import InputHelper from './InputHelper.js'
 import InputFormField from './InputFormField.js'
 
 export default {
-  props: [ 'name', 'value', 'config', 'selectedForm', 'values' ],
+  props: [ 'name', 'value', 'config', 'selectedForms', 'values' ],
   components: { InputFormField },
   mixins: [ InputHelper ],
   data() {
@@ -57,7 +57,7 @@ export default {
         <component :is="componentIdFrom(property)" v-show="checkVisibility(property)"
                    :value="mappingValues[propName]" v-on:input="updateValue(propName, $event)"
                    :name="propName" :values="values"
-                   :config="property" :selected-form="selectedForm">
+                   :config="property" :selected-forms="selectedForms">
         </component>
       </template>
       <input-hint :config="config"></input-hint>
