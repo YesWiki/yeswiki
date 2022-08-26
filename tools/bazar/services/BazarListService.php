@@ -54,7 +54,7 @@ class BazarListService
             $entries = $this->entryManager->search(
                 [
                     'queries' => $options['query'] ?? '',
-                    'formsIds' => $options['idtypeannonce'],
+                    'formsIds' => $options['idtypeannonce'] ?? [],
                     'keywords' => $_REQUEST['q'] ?? '',
                     'user' => $options['user'],
                     'minDate' => $options['dateMin'],
