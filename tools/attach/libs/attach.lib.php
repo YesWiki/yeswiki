@@ -216,7 +216,15 @@ if (!class_exists('attach')) {
          */
         public function GetFullFilename($newName = false)
         {
-            $pagedate = $this->convertDate($this->wiki->page['time']);
+             // use current date if page has no date that could arrive when using page 'root' via Actions Builder
+            $pagedate = $this->convertDate(
+                isset($this->wiki->page['time'])
+                ? $this->wiki->page['time']
+                : (
+                    $this->wiki->tag == "root"
+                    ? date('Y-m-d H:i:s')
+                    : null // error
+                ));
             //decompose le nom du fichier en nom+extension ou en page/nom+extension
             if (preg_match('`^((.+)/)?(.*)\.(.*)$`', str_replace(' ', '_', $this->file), $match)) {
                 list(, , $file['page'], $file['name'], $file['ext']) = $match;
