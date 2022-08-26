@@ -523,7 +523,7 @@ if (!class_exists('attach')) {
             }
             
             //c'est une image : balise <IMG..../>
-            $img = "<img class=\"img-responsive " . $this->classes . "\" src=\"" . $this->GetScriptPath() . $img_name . "\" " .
+            $img = "<img class=\"img-responsive\" src=\"" . $this->GetScriptPath() . $img_name . "\" " .
             "alt=\"" . $this->desc . ($this->link ? "\nLien vers: $this->link" : "") . "\" width=\"" . $width . "\" height=\"" . $height . "\" />";
             //test si c'est une image sensible
             if (!empty($this->link)) {
