@@ -162,7 +162,7 @@ class LostPasswordAction extends YesWikiAction
                             $key = filter_input(INPUT_POST, 'key', FILTER_UNSAFE_RAW);
                             $key = ($key === false) ? "" : htmlspecialchars(strip_tags($key));
                             $pw0 = filter_input(INPUT_POST, 'pw0', FILTER_UNSAFE_RAW);
-                            $pw0 = ($pw0 === false) ? "" : htmlspecialchars(strip_tags($pw0));
+                            $pw0 = ($pw0 === false) ? "" : $pw0;
                             $this->resetPassword(
                                 $user['name'],
                                 $key,
