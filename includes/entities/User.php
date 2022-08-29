@@ -32,7 +32,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
     public function __construct(array $properties)
     {
         foreach (self::PROPS_LIST as $key) {
-            if (!isset($properties[$key])) {
+            if (!array_key_exists($key,$properties)) {
                 throw new Exception("\$properties[$key] should be set to construct an User!");
             }
             $this->properties[$key] = $properties[$key];
