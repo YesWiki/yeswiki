@@ -135,14 +135,14 @@ class AuthController extends YesWikiController
         if (!empty($userFromSession['name'])) {
             // check if user ever existing
             $user = $this->userManager->getOneByName($userFromSession['name']);
-            $remember = $userFromSession['remember'] ?? 0;
+            $remember = $_SESSION['user']['remember'] ?? 0;
             if (!empty($user)) {
-                if (empty($userFromSession['lastConnection'])) {
+                if (empty($_SESSION['user']['lastConnection'])) {
                     if (!$this->wiki->UserIsAdmin()) {
                         // do not disconnect admin during update
                         $user = null;
                     }
-                } elseif ((intval($userFromSession['lastConnection']) + ($remember ? 90 * 24 * 60 * 60 : 60 * 60)) < time()) {
+                } elseif ((intval($_SESSION['user']['lastConnection']) + ($remember ? 90 * 24 * 60 * 60 : 60 * 60)) < time()) {
                     // like Session.class->setPersistentCookie()
                     // If $remember is set and different from 0, 90 days, 1 hour otherwise
                     $user = null;
