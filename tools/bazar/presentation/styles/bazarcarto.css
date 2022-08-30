@@ -252,3 +252,23 @@ img.popup-visual {
   margin-left: 5px;
   max-width: 50%;
 }
+
+@media(max-width: 380px){
+  .leaflet-popup-content,
+  .leaflet-popup-content-wrapper,
+  .leaflet-popup .BAZ_cadre_fiche,
+  .BAZ_cadre_map {
+    max-width: 95%;
+  }
+  .leaflet-popup-content {
+    width: 250px !important;
+  }
+  .leaflet-container a.leaflet-popup-close-button {
+    right: 5%;
+  }
+}
+@media(max-width: 310px){
+  .leaflet-popup-content {
+    width: 200px !important;
+  }
+}
