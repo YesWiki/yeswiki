@@ -34,6 +34,7 @@
         {% block display_entries %}
         {% endblock %}      
       </div>      
+      {{ include("@bazar/entries/index-dynamic/_pagination.twig") }}
     </div>
 
     {% if params.groups and not (params.filterposition == "left" and resultsColSize == 12) %}
@@ -41,8 +42,6 @@
     {% endif %}
     
   </div>
-
-  {{ include("@bazar/entries/index-dynamic/_pagination.twig") }}
 
   {% if not params.isInIframe and params.showexportbuttons %}
     {{ include("@bazar/entries/index/_export_buttons.twig") }}

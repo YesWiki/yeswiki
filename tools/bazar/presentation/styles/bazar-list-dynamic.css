@@ -9,6 +9,13 @@
 /* ------------- */
 /*   PAGINATION  */
 /* ------------- */
+
+.bazar-list-dynamic-container .results-col {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+}
+
 .bazar-list-dynamic-container .pagination {
   display: flex;
   justify-content: center;
