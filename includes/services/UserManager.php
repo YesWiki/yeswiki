@@ -49,10 +49,17 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $this->getOneByNameCacheResults = [];
     }
 
-    private function arrayToUser(?array $userAsArray = null): ?User
+    private function arrayToUser(?array $userAsArray = null, bool $fillEmpty = false): ?User
     {
         if (empty($userAsArray)) {
             return null;
+        }
+        if ($fillEmpty){
+            foreach (User::PROPS_LIST as $key) {
+                if (!array_key_exists($key,$userAsArray)){
+                    $userAsArray[$key] = null;
+                }
+            }
         }
         // be carefull the User::__construct is really strict about list of properties that should set
         return new User($userAsArray);
@@ -88,7 +95,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $selectDefinition = empty($dbFields) ? '*' : implode(', ', $dbFields);
         return array_map(
             function ($userAsArray) {
-                return $this->arrayToUser($userAsArray);
+                return $this->arrayToUser($userAsArray, true);
             },
             $this->dbService->loadAll("select $selectDefinition from {$prefix}users order by name")
         );
