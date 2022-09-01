@@ -68,12 +68,14 @@ actions:
               left: _t(AB_attach_class_position_left)
               center: _t(AB_attach_class_position_center)
               right: _t(AB_attach_class_position_right)
-          new-window:
-            label: _t(AB_attach_class_new-window_label)
-            type: checkbox
+          displaylink:
+            label: _t(AB_attach_class_displaylink_label)
+            type: list
             default: ""
-            checkedvalue: "new-window"
-            uncheckedvalue: ""
+            options:
+              '': _t(AB_attach_class_displaylink_default)
+              "new-window": _t(AB_attach_class_displaylink_new-window)
+              "modalbox": _t(AB_attach_class_displaylink_modalbox)
           lightshadow:
             label: _t(AB_attach_class_effect_lightshadow)
             type: checkbox

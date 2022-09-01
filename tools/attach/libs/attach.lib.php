@@ -534,6 +534,14 @@ if (!class_exists('attach')) {
             $img = "<img class=\"img-responsive\" src=\"" . $this->GetScriptPath() . $img_name . "\" " .
             "alt=\"" . $this->desc . ($this->link ? "\nLien vers: $this->link" : "") . "\" width=\"" . $width . "\" height=\"" . $height . "\" />";
             //test si c'est une image sensible
+            $classDataForLinks = 
+                strstr($this->classes, 'new-window')
+                ? ' class="new-window"'
+                : (
+                    strstr($this->classes, 'modalbox')
+                    ? ' class="modalbox" data-size="modal-lg"'
+                    : ''
+                );
             if (!empty($this->link)) {
                 //c'est une image sensible
                 //test si le lien est un lien interwiki
@@ -546,10 +554,10 @@ if (!class_exists('attach')) {
                 if ($linkParts) {
                     $this->wiki->services->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
                 }
-                $link = '<a href="'.$this->wiki->generateLink($this->link).'"'.(strstr($this->classes, 'new-window')?' class="new-window"':'').'>';
+                $link = '<a href="'.$this->wiki->generateLink($this->link).'"'.$classDataForLinks.'>';
             } else {
                 if (empty($this->nofullimagelink) or !$this->nofullimagelink) {
-                    $link = '<a href="' . $this->GetScriptPath() . $fullFilename . '"'.(strstr($this->classes, 'new-window')?' class="new-window"':'').'>';
+                    $link = '<a href="' . $this->GetScriptPath() . $fullFilename . '"'.$classDataForLinks.'>';
                 }
             }
             $caption = '';
