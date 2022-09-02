@@ -135,6 +135,7 @@ parameters:
     - attach-video-config:
       - default_video_service
       - default_peertube_instance
+    - max_file_size
 
 services:
   _defaults:

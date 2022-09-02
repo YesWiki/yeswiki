@@ -118,5 +118,6 @@ return [
     // edit config action
     // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_VIDEO_SERVICE]' => 'Service de vidéo par défaut (peertube, youtube ou vimeo)',
     // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_PEERTUBE_INSTANCE]' => 'Adresse du serveur peertube par défaut',
+    'EDIT_CONFIG_HINT_MAX_FILE_SIZE' => 'Maximum size of uploaded files - bits (ex: Taille maximum des fichiers téléversés - byte (ex: 2097152 for 2MB)',
     // 'EDIT_CONFIG_GROUP_ATTACH' => 'Insertion de médias (images, vidéos)',
 ];
