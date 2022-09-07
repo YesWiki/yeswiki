@@ -25,6 +25,14 @@ Available variables inside the template are
 
 All the javascript files in the `custom/javascripts/` directory are included.
 
+But files in a subfolder are not automatically included.
+
+### Extra-components for actions-builder
+
+It is possible to have extra components loaded into `actions-builder` by putting the component into `custom/javascripts/components/actions-builder/InputNameToCustomize.js`
+
+(for an extension, the file should be into `tools/<tool-name>/javascripts/components/actions-builder/InputNameToCustomize.js`)
+
 ## Custom Css
 
 All the css files in the `custom/styles/` directory are included.
