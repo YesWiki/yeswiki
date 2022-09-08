@@ -63,6 +63,8 @@ class AclField extends BazarField
         return $right;
     }
     
+    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
+    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return [

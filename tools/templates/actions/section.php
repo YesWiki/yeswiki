@@ -77,15 +77,17 @@ switch ($patternId) {
             background-image: repeating-linear-gradient(45deg, $patterncolor 0, $patterncolor 3.5px, transparent 0, transparent 50%);
             background-size: 18px 18px;
         css;
-        break;    
+        break;
     default:
         $pattern = '';
         break;
 }
-if ($pattern && !$patternborder) $pattern .= <<<css
+if ($pattern && !$patternborder) {
+    $pattern .= <<<css
     background-color: $patternbg !important;
     background-repeat: repeat;
 css;
+}
 
 // image's filename
 $file = $this->GetParameter('file');
@@ -135,19 +137,21 @@ $id = $this->GetParameter('id');
 $data = getDataParameter();
 
 $pagetag = $this->GetPageTag();
+if (!isset($GLOBALS['check_'.$pagetag])) {
+    $GLOBALS['check_'.$pagetag] = [];
+}
 if (!isset($GLOBALS['check_' . $pagetag]['section'])) {
-    $GLOBALS['check_' . $pagetag]['section'] = check_graphical_elements('section', $pagetag, $this->page['body']);
+    $GLOBALS['check_' . $pagetag]['section'] = check_graphical_elements('section', $pagetag, $this->page['body'] ?? '');
 }
 if ($GLOBALS['check_' . $pagetag]['section']) {
-
     // specify the role to be checked ( *, +, %, @admins)
     $role = $this->GetParameter('visibility');
     $role = empty($role) ? $role : str_replace("\\n", "\n", $role);
     $visible = !$role || ($GLOBALS['wiki']->CheckACL($role, null, false));
-    $class = ($backgroundimg ? 'background-image' : '') 
-     . ($patternId && !$patternborder ? ' with-bg-pattern' : '') 
-     . ($patternborder ? ' pattern-border' : '') 
-     . ($visible ? '' : ' remove-this-div-on-page-load ') 
+    $class = ($backgroundimg ? 'background-image' : '')
+     . ($patternId && !$patternborder ? ' with-bg-pattern' : '')
+     . ($patternborder ? ' pattern-border' : '')
+     . ($visible ? '' : ' remove-this-div-on-page-load ')
      . " pattern-$patternId"
      . (!empty($class) ? ' ' . $class : '');
 
@@ -157,14 +161,14 @@ if ($GLOBALS['check_' . $pagetag]['section']) {
         .(!empty($height) ? 'height:' . $height . 'px; ' : '')
         .(!empty($pattern) ? $pattern : '')
         .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '').'"'
-        ;
+    ;
     if (is_array($data)) {
         foreach ($data as $key => $value) {
             echo ' data-'.$key.'="'.$value.'"';
         }
     }
     echo '>' . "\n";
-    
+
     $nocontainer = $this->GetParameter('nocontainer');
     if (empty($nocontainer)) {
         echo '<div class="container">' . "\n";

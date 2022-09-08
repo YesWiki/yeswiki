@@ -143,6 +143,9 @@ class CalcField extends BazarField
     {
         return $this->displayText;
     }
+    
+    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
+    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return array_merge(

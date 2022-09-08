@@ -1,4 +1,5 @@
 <?php
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -30,7 +31,7 @@ if (!isset($GLOBALS['check_'.$pagetag ])) {
     $GLOBALS['check_'.$pagetag ] = [];
 }
 if (!isset($GLOBALS['check_' . $pagetag]['col'])) {
-    $GLOBALS['check_' . $pagetag]['col'] = check_graphical_elements('col', $pagetag, $this->page['body']);
+    $GLOBALS['check_' . $pagetag]['col'] = check_graphical_elements('col', $pagetag, $this->page['body'] ?? '');
 }
 if ($GLOBALS['check_' . $pagetag]['col']) {
     echo '<div class="span' . $size . ' col-md-' . $size . (isset($class) ? ' ' . $class : '')
