@@ -1,11 +1,14 @@
 <?php
+
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Tags\Service\TagsManager;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read")) {
+$params = $this->services->get(ParameterBagInterface::class);
+if (!$params->get('hide_keywords') && $this->HasAccess("write") && $this->HasAccess("read")) {
     $response = array();
     // on recupere tous les tags du site
     $tagsManager = $this->services->get(TagsManager::class);
@@ -17,7 +20,7 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read")) 
     }
     sort($response);
     $tagsexistants = '\''.implode('\',\'', $response).'\'';
-    
+
 
     $script = '$(function(){
     var tagsexistants = ['.$tagsexistants.'];
@@ -44,7 +47,7 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read")) 
 }
 
 //Sauvegarde
-if (!CACHER_MOTS_CLES && $this->HasAccess("write") &&
+if (!$params->get('hide_keywords') && $this->HasAccess("write") &&
     isset($_POST["submit"]) && $_POST["submit"] == 'Sauver' &&
     isset($_POST["pagetags"]) && $_POST['antispam']==1) {
     $tagsManager->save($this->GetPageTag(), stripslashes($_POST["pagetags"]));

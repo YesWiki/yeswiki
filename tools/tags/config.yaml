@@ -1,3 +1,9 @@
+parameters:
+  hide_keywords: false
+  # for edit config action
+  tags_editable_config_params:
+   - 'hide_keywords'
+
 services:
   _defaults:
     autowire: true

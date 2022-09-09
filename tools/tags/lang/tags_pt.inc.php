@@ -1,4 +1,5 @@
 <?php
+
 /*vim: set expandtab tabstop=4 shiftwidth=4: */
 // +------------------------------------------------------------------------------------------------------+
 // | PHP version 5                                                                                        |
@@ -29,7 +30,7 @@
 */
 
 return [
-    
+
     'TAGS_ACTION_ADMINTAGS' => 'Ação {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'a ação é restrita ao grupo de administradores',
     'TAGS_NO_WRITE_ACCESS' => 'Você não tem acesso de gravação para esta página!',
@@ -148,4 +149,7 @@ return [
     // 'AB_tags_listpagestag_nbclasses_label' => 'nombre de classes CSS disponibles pour le nuage',
     // 'AB_tags_nuagetag_tri_shuffle' => 'aléatoire',
 
+    // for edit config
+    'EDIT_CONFIG_HINT_HIDE_KEYWORDS' => 'Ocultar palavras-chave na parte inferior das páginas (true ou false)',
+    'EDIT_CONFIG_GROUP_TAGS' => 'Palavras-chave (tags)',
 ];

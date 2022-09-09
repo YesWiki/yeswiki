@@ -1,11 +1,14 @@
 <?php
+
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Tags\Service\TagsManager;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read")) {
+$params = $this->services->get(ParameterBagInterface::class);
+if (!$params->get('hide_keywords') && $this->HasAccess("write") && $this->HasAccess("read")) {
     // on recupere les tags de la page courante
     $tagsManager = $this->services->get(TagsManager::class);
     $tabtagsexistants = $tagsManager->getAll($this->GetPageTag());

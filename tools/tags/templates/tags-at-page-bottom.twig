@@ -1,0 +1,11 @@
+{% if tags|length > 0 %}
+  <br><i class="icon icon-tags"></i>
+  {% for tag in tags|sort %}
+    <a class="tag-label label label-info" 
+      href="{{ url({tag:pageTag,handler:'listpages',params:{tags: tag}}) }}"
+      title="{{ _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') }}"
+      >
+      {{ tag }}
+    </a>
+  {% endfor %}
+{% endif %}

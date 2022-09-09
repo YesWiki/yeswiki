@@ -1,4 +1,5 @@
 <?php
+
 /*vim: set expandtab tabstop=4 shiftwidth=4: */
 // +------------------------------------------------------------------------------------------------------+
 // | PHP version 5                                                                                        |
@@ -29,7 +30,7 @@
 */
 
 return [
-    
+
     // 'TAGS_TAGS' => 'Mots clés',
     'TAGS_ACTION_ADMINTAGS' => 'Actie {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'de actie is voorbehouden aan de beheerdersgroep',
@@ -149,4 +150,7 @@ return [
     // 'AB_tags_listpagestag_nbclasses_label' => 'nombre de classes CSS disponibles pour le nuage',
     // 'AB_tags_nuagetag_tri_shuffle' => 'aléatoire',
 
+    // for edit config
+    'EDIT_CONFIG_HINT_HIDE_KEYWORDS' => 'Trefwoorden onder aan pagina\'s verbergen (true of false)',
+    'EDIT_CONFIG_GROUP_TAGS' => 'Zoekwoorden (tags)',
 ];
