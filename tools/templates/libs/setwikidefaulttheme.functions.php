@@ -71,12 +71,12 @@ function checkParamActionSetTemplate($post, $availableThemes)
         return false;
     }
 
-    $post['wdtTheme'] = filter_var($post['wdtTheme'],  FILTER_UNSAFE_RAW);
-    $post['wdtTheme']  = ($post['wdtTheme']  === false) ? "" : htmlspecialchars(strip_tags($post['wdtTheme'] ));
+    $post['wdtTheme'] = filter_var($post['wdtTheme'], FILTER_UNSAFE_RAW);
+    $post['wdtTheme']  = in_array($post['wdtTheme'], [false,null], true) ? "" : htmlspecialchars(strip_tags($post['wdtTheme']));
     $post['wdtStyle'] = filter_var($post['wdtStyle'], FILTER_UNSAFE_RAW);
-    $post['wdtStyle']  = ($post['wdtStyle']  === false) ? "" : htmlspecialchars(strip_tags($post['wdtStyle'] ));
+    $post['wdtStyle']  = in_array($post['wdtStyle'], [false,null], true) ? "" : htmlspecialchars(strip_tags($post['wdtStyle']));
     $post['wdtSquelette'] = filter_var($post['wdtSquelette'], FILTER_UNSAFE_RAW);
-    $post['wdtSquelette']  = ($post['wdtSquelette']  === false) ? "" : htmlspecialchars(strip_tags($post['wdtSquelette'] ));
+    $post['wdtSquelette']  = in_array($post['wdtSquelette'], [false,null], true) ? "" : htmlspecialchars(strip_tags($post['wdtSquelette']));
 
     // Vérifie la validité du thème.
     if (!array_key_exists($post['wdtTheme'], $availableThemes)) {

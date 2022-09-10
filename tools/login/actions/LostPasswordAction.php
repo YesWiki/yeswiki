@@ -51,9 +51,9 @@ class LostPasswordAction extends YesWikiAction
             $this->typeOfRendering = 'directDangerMessage';
             $message = _t('LOGIN_INVALID_KEY');
             $hash = filter_input(INPUT_GET, 'email', FILTER_UNSAFE_RAW);
-            $hash = ($hash === false) ? "" : htmlspecialchars(strip_tags($hash));
+            $hash = in_array($hash, [false,null], true) ? "" : htmlspecialchars(strip_tags($hash));
             $encodedUser = filter_input(INPUT_GET, 'u', FILTER_UNSAFE_RAW);
-            $encodedUser = ($encodedUser === false) ? "" : htmlspecialchars(strip_tags($encodedUser));
+            $encodedUser = in_array($encodedUser, [false,null], true) ? "" : htmlspecialchars(strip_tags($encodedUser));
             if (empty($hash)) {
                 $this->errorType = 'invalidKey';
             } elseif ($this->checkEmailKey($hash, base64_decode($encodedUser))) {
@@ -93,7 +93,7 @@ class LostPasswordAction extends YesWikiAction
                     $key = $hash;
                 } else {
                     $key = filter_input(INPUT_POST, 'key', FILTER_UNSAFE_RAW);
-                    $key = ($key === false) ? "" : htmlspecialchars(strip_tags($key));
+                    $key = in_array($key, [false,null], true) ? "" : htmlspecialchars(strip_tags($key));
                 }
                 return $this->render("@login/lost-password-recover-form.twig", [
                     'errorType' => $this->errorType,
@@ -129,7 +129,7 @@ class LostPasswordAction extends YesWikiAction
             case 1:
                 // we just submitted an email or username for verification
                 $email = filter_input(INPUT_POST, 'email', FILTER_UNSAFE_RAW);
-                $email = ($email === false) ? "" : htmlspecialchars(strip_tags($email));
+                $email = in_array($email, [false,null], true) ? "" : htmlspecialchars(strip_tags($email));
                 if (empty($email)) {
                     $this->errorType = 'emptyEmail';
                     $this->typeOfRendering = 'emailForm';
@@ -150,7 +150,7 @@ class LostPasswordAction extends YesWikiAction
                     $this->wiki->Redirect($this->wiki->Href("", $this->params->get('root_page')));
                 }
                 $userName = filter_input(INPUT_POST, 'userID', FILTER_UNSAFE_RAW);
-                $userName = ($userName === false) ? "" : htmlspecialchars(strip_tags($userName));
+                $userName = in_array($userName, [false,null], true) ? "" : htmlspecialchars(strip_tags($userName));
                 $user = $this->userManager->getOneByName($userName);
                 $this->typeOfRendering = 'recoverForm';
                 if (empty($_POST['pw0']) || empty($_POST['pw1']) || (strcmp($_POST['pw0'], $_POST['pw1']) != 0) || (trim($_POST['pw0']) == '')) {
@@ -160,9 +160,9 @@ class LostPasswordAction extends YesWikiAction
                     if (!empty($user)) {
                         try {
                             $key = filter_input(INPUT_POST, 'key', FILTER_UNSAFE_RAW);
-                            $key = ($key === false) ? "" : htmlspecialchars(strip_tags($key));
+                            $key = in_array($key, [false,null], true) ? "" : htmlspecialchars(strip_tags($key));
                             $pw0 = filter_input(INPUT_POST, 'pw0', FILTER_UNSAFE_RAW);
-                            $pw0 = ($pw0 === false) ? "" : $pw0;
+                            $pw0 = in_array($pw0, [false,null], true) ? "" : $pw0;
                             $this->resetPassword(
                                 $user['name'],
                                 $key,

@@ -71,7 +71,7 @@ class FileField extends BazarField
         $params = $this->getService(ParameterBagInterface::class);
         if (!empty($_FILES[$this->propertyName]['name']) && !empty($entry['id_fiche'])) {
             $rawFileName = filter_var($_FILES[$this->propertyName]['name'], FILTER_UNSAFE_RAW);
-            $rawFileName = ($rawFileName === false) ? "" : htmlspecialchars(strip_tags($rawFileName));
+            $rawFileName = in_array($rawFileName, [false,null], true) ? "" : htmlspecialchars(strip_tags($rawFileName));
             $sanitizedFilename = $this->sanitizeFilename($rawFileName);
             $fileName = "{$this->getPropertyName()}_$sanitizedFilename";
             $filePath = $this->getFullFileName($fileName, $entry['id_fiche'], true);
@@ -125,7 +125,7 @@ class FileField extends BazarField
      * @param string $fileName
      * @return bool
      */
-    protected function isAllowedToDeleteFile(array $entry, string $fileName):bool
+    protected function isAllowedToDeleteFile(array $entry, string $fileName): bool
     {
         return !$this->getService(SecurityController::class)->isWikiHibernated()
             && $this->getService(Guard::class)->isAllowed('supp_fiche', $entry['owner'] ?? '');
@@ -217,7 +217,7 @@ class FileField extends BazarField
      * @param string $filename
      * @return string $sanitizedFilename
      */
-    protected function sanitizeFilename(string $filename):string
+    protected function sanitizeFilename(string $filename): string
     {
         $attach = $this->getAttach();
         // Remove accents and spaces
@@ -232,15 +232,15 @@ class FileField extends BazarField
         return $basePath . (substr($basePath, -1) != "/" ? "/" : "");
     }
 
-    protected function getAttach():attach
+    protected function getAttach(): attach
     {
         if (is_null($this->attach)) {
             if (!class_exists('attach')) {
                 include('tools/attach/libs/attach.lib.php');
             }
-    
+
             $wiki = $this->getWiki();
-            
+
             $this->attach = new attach($wiki);
         }
         return $this->attach;
@@ -263,7 +263,7 @@ class FileField extends BazarField
             $entryFromDb['antispam'] = 1;
             $entryFromDb['date_maj_fiche'] = date('Y-m-d H:i:s', time());
             $entryManager->update($entryFromDb['id_fiche'], $entryFromDb, false, true);
-            
+
             $_GET = $previousGet;
             $_POST = $previousPost;
             $_REQUEST = $previousRequest;

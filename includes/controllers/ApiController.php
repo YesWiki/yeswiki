@@ -147,7 +147,7 @@ class ApiController extends YesWikiController
         }
         return new ApiResponse($result, $code);
     }
-    
+
     /**
      * @Route("/api/users",methods={"POST"}, options={"acl":{"public","@admins"}})
      */
@@ -416,7 +416,7 @@ class ApiController extends YesWikiController
 
         return new ApiResponse($result, $code);
     }
-    
+
     /**
      * @Route("/api/pages/{tag}/delete",methods={"GET"},options={"acl":{"public","+"}})
      */
@@ -444,7 +444,7 @@ class ApiController extends YesWikiController
             ? $this->deletePage($tag)
             : new ApiResponse($result, $code);
     }
-    
+
     /**
      * @Route("/api/reactions", methods={"GET"}, options={"acl":{"public"}})
      */
@@ -508,7 +508,7 @@ class ApiController extends YesWikiController
             );
         }
     }
-    
+
     /**
      * @Route("/api/reactions/{idreaction}/{id}/{page}/{username}/delete",methods={"GET"},options={"acl":{"public","+"}})
      */
@@ -530,7 +530,6 @@ class ApiController extends YesWikiController
                         $userReactions = $this->getService(ReactionManager::class)->getReactions($_POST['pagetag'], [$_POST['reactionid']], $user['name']);
                         $params = $this->getService(ReactionManager::class)->getActionParameters($_POST['pagetag']);
                         if (!empty($params[$_POST['reactionid']])) {
-
                             // un choix de vote est fait
                             if ($_POST['id']) {
                                 // test if limits wherer put
@@ -616,7 +615,7 @@ class ApiController extends YesWikiController
             Response::HTTP_OK
         );
     }
-    
+
     /**
      * @Route("/api/triples/{resource}", methods={"GET"}, options={"acl":{"public", "+"}})
      */
@@ -686,7 +685,7 @@ class ApiController extends YesWikiController
             in_array($result, [0,3]) ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR
         );
     }
-    
+
     /**
      * @Route("/api/triples/{resource}/delete", methods={"POST"}, options={"acl":{"public", "+"}})
      */
@@ -696,7 +695,7 @@ class ApiController extends YesWikiController
         if (!empty($apiResponse)) {
             return $apiResponse;
         }
-        
+
         if (empty($property)) {
             return new ApiResponse(
                 ['error' => 'Property should not be empty !'],
@@ -770,13 +769,13 @@ class ApiController extends YesWikiController
             );
         } else {
             $property = filter_input($method, 'property', FILTER_UNSAFE_RAW);
-            $property = ($property === false) ? "" : htmlspecialchars(strip_tags($property));
+            $property = in_array($property, [false,null], true) ? "" : htmlspecialchars(strip_tags($property));
             if (empty($property)) {
                 $property = null;
             }
 
             $username = filter_input($method, 'user', FILTER_UNSAFE_RAW);
-            $username = ($username === false) ? "" : htmlspecialchars(strip_tags($username));
+            $username = in_array($username, [false,null], true) ? "" : htmlspecialchars(strip_tags($username));
             if (empty($username)) {
                 if (!$this->wiki->UserIsAdmin()) {
                     $username = $this->getService(AuthController::class)->getLoggedUser()['name'];

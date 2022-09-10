@@ -74,7 +74,7 @@ class ImageField extends FileField
                 return ($alertMessage ?? '') .$this->render('@bazar/inputs/image.twig', [
                     'value' => $value,
                     'downloadUrl' => $this->getBasePath(). $value,
-                    'deleteUrl' => empty($entry) ? '' :$wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . $value, false),
+                    'deleteUrl' => empty($entry) ? '' : $wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . $value, false),
                     'image' => $this->getWiki()->render('@attach/display-image.twig', [
                         'baseUrl' => $this->getWiki()->GetBaseUrl().'/',
                         'imageFullPath' => $this->getBasePath(). $value,
@@ -86,7 +86,7 @@ class ImageField extends FileField
                         'class' => 'img-responsive',
                         'shortImageName' => $this->getShortFileName($value)
                     ]),
-                    'isAllowedToDeleteFile' => empty($entry) ? false :$this->isAllowedToDeleteFile($entry, $value),
+                    'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value),
                 ]);
             } else {
                 $this->updateEntryAfterFileDelete($entry);
@@ -105,7 +105,7 @@ class ImageField extends FileField
         $params = $this->getService(ParameterBagInterface::class);
         if (!empty($_FILES[$this->propertyName]['name']) && !empty($entry['id_fiche'])) {
             $rawFileName = filter_var($_FILES[$this->propertyName]['name'], FILTER_UNSAFE_RAW);
-            $rawFileName = ($rawFileName === false) ? "" : htmlspecialchars(strip_tags($rawFileName));
+            $rawFileName = in_array($rawFileName, [false,null], true) ? "" : htmlspecialchars(strip_tags($rawFileName));
             $sanitizedFilename = $this->sanitizeFilename($rawFileName);
             $fileName = "{$this->getPropertyName()}_$sanitizedFilename";
             $filePath = $this->getFullFileName($fileName, $entry['id_fiche'], true);
@@ -120,8 +120,8 @@ class ImageField extends FileField
                         $previousFileName = $entry['oldimage_' . $this->propertyName];
                         $this->securedDeleteImageAndCache($entry, $previousFileName);
                     }
-                    
-            
+
+
                     // Generate thumbnails to speedup loading of bazar templates
                     if (!empty($this->thumbnailWidth) && !empty($this->thumbnailHeight)) {
                         $attach = $this->getAttach();
@@ -200,7 +200,7 @@ class ImageField extends FileField
         }
         return false;
     }
-    
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()

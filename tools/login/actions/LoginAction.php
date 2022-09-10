@@ -69,7 +69,7 @@ class LoginAction extends YesWikiAction
                 ? (
                     $arg['userpage'] == 'user'
                     ? 'user'
-                    :$this->wiki->generateLink($arg['userpage'])
+                    : $this->wiki->generateLink($arg['userpage'])
                 )
                 : (
                     (isset($_REQUEST["action"]) && $_REQUEST["action"] == "logout")
@@ -82,8 +82,8 @@ class LoginAction extends YesWikiAction
                 // TODO : check page name for other languages
                 : $this->wiki->Href("", "MotDePassePerdu"),
 
-            'class' => !empty($arg['class'])  ? $arg['class'] : '',
-            'btnclass' => !empty($arg['btnclass'])  ? $arg['btnclass'] : '',
+            'class' => !empty($arg['class']) ? $arg['class'] : '',
+            'btnclass' => !empty($arg['btnclass']) ? $arg['btnclass'] : '',
             'nobtn' => $this->formatBoolean($arg, false, 'nobtn'),
             'template' => (empty($arg['template']) ||
                 empty(basename($arg['template'])) ||
@@ -108,7 +108,7 @@ class LoginAction extends YesWikiAction
             case "login":
                 $this->login();
                 break;
-                
+
             case "checklogged":
             default:
                 return $this->renderForm($action);
@@ -174,7 +174,7 @@ class LoginAction extends YesWikiAction
         try {
             if (!empty($_POST["name"])) {
                 $name = filter_input(INPUT_POST, 'name', FILTER_UNSAFE_RAW);
-                $name = ($name === false) ? "" : htmlspecialchars(strip_tags($name));
+                $name = in_array($name, [false,null], true) ? "" : htmlspecialchars(strip_tags($name));
                 if (empty($name)) {
                     throw new LoginException(_t('LOGIN_WRONG_USER'));
                 }
@@ -189,7 +189,7 @@ class LoginAction extends YesWikiAction
                     throw new LoginException(_t('LOGIN_WRONG_USER'));
                 }
                 $email = filter_input(INPUT_POST, 'email', FILTER_UNSAFE_RAW);
-                $email = ($email === false) ? "" : htmlspecialchars(strip_tags($email));
+                $email = in_array($email, [false,null], true) ? "" : htmlspecialchars(strip_tags($email));
                 if (empty($email)) {
                     throw new LoginException(_t('LOGIN_WRONG_USER'));
                 }
@@ -199,13 +199,13 @@ class LoginAction extends YesWikiAction
                 throw new LoginException(_t('LOGIN_WRONG_USER'));
             }
             $password = filter_input(INPUT_POST, 'password', FILTER_UNSAFE_RAW);
-            $password = ($password === false) ? "" : $password;
+            $password = in_array($password, [false,null], true) ? "" : $password;
             if (!$this->authController->checkPassword($password, $user)) {
                 throw new LoginException(_t('LOGIN_WRONG_PASSWORD'));
             }
             $remember = filter_input(INPUT_POST, 'remember', FILTER_VALIDATE_BOOL);
             $this->authController->login($user, $remember);
-            
+
             // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
             if (((!empty($_POST['userpage']) && $_POST['userpage'] == 'user') || $this->arguments['userpage'] == 'user') && $this->pageManager->getOne($user["name"])) {
                 $this->wiki->Redirect($this->href('', $user["name"]));

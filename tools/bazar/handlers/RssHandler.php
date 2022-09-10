@@ -17,10 +17,10 @@ class RssHandler extends YesWikiHandler
         $urlrss = $this->wiki->href('rss');
         if (isset($_GET['id'])) {
             $id = filter_input(INPUT_GET, 'id', FILTER_UNSAFE_RAW);
-            $id = ($id === false) ? "" : htmlspecialchars(strip_tags($id));
+            $id = in_array($id, [false,null], true) ? "" : htmlspecialchars(strip_tags($id));
         } elseif (isset($_GET['id_typeannonce'])) {
             $id = filter_input(INPUT_GET, 'id_typeannonce', FILTER_UNSAFE_RAW);
-            $id = ($id === false) ? "" : htmlspecialchars(strip_tags($id));
+            $id = in_array($id, [false,null], true) ? "" : htmlspecialchars(strip_tags($id));
         }
         if (!empty($id) && strval($id) == strval(intval($id))) {
             $urlrss .= '&amp;id='.$id;
