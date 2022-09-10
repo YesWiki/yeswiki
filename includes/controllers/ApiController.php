@@ -714,7 +714,7 @@ class ApiController extends YesWikiController
             $rawFilters['user'] = $username;
         }
 
-        $triples = null;
+        $triples = [];
         if (!empty($rawFilters)) {
             foreach ($rawFilters as $key => $rawValue) {
                 $value = empty($rawValue) ? null : "%\\\"{$key}\\\":\\\"{$rawValue}\\\"%";
@@ -726,29 +726,30 @@ class ApiController extends YesWikiController
                     "=",
                     "LIKE"
                 );
-                if (empty($newTriples)) {
-                    $triples = [];
-                } elseif (is_null($triples)) {
-                    $triples = $newTriples;
-                } elseif (!empty($triples)) {
-                    $newIds = array_map(function ($elem) {
-                        $elem['id'];
+                if (!empty($newTriples)) {
+                    $newTriples = array_filter($newTriples, function ($triple) use ($triples) {
+                        $sameTriples = array_filter($triples, function ($registeredTriple) use ($triple) {
+                            return $registeredTriple['resource'] == $triple['resource'] &&
+                                $registeredTriple['property'] == $triple['property'] &&
+                                $registeredTriple['value'] == $triple['value'] ;
+                        });
+                        return empty($sameTriples);
                     });
-                    $triples = array_filter($triples, function ($elem) use ($newIds) {
-                        return in_array($elem['id'], $newIds);
-                    });
+                    foreach ($newTriples as $triple) {
+                        $triples[] = $triple;
+                    }
                 }
             }
+        }
 
-            foreach ($triples as $triple) {
-                $this->getService(TripleStore::class)->delete(
-                    $triple['resource'],
-                    $triple['property'],
-                    $triple['value'],
-                    "",
-                    ""
-                );
-            }
+        foreach ($triples as $triple) {
+            $this->getService(TripleStore::class)->delete(
+                $triple['resource'],
+                $triple['property'],
+                $triple['value'],
+                "",
+                ""
+            );
         }
 
         return new ApiResponse(
