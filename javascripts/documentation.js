@@ -1,4 +1,8 @@
 window.$docsify = {
+    vueGlobalOptions: {
+      // use {% %} for Vue code so it does not conflict with our {{ }} action syntax
+      delimiters: ['{%', '%}'],
+    },
     homepage: `docs/${wiki.locale}/README.md`,
     loadSidebar: true,
     loadNavbar: true,
