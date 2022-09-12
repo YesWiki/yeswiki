@@ -1,12 +1,10 @@
 <a id="back" href="/">Revenir à mon wiki</a>
 
-* [Présentation](/fr)
-* [Prise en main](/fr/prise-en-main.md)
-* [Admin système](/fr/webmasters.md)
-* [Développeurs](/fr/dev.md)
+* [Présentation](/docs/fr/README.md)
+* [Prise en main](/docs/fr/prise-en-main.md)
+* [Admin système](/docs/fr/webmaster.md)
+* [Développeurs](/docs/fr/dev.md)
 
-* Langue
-  * [Francais](/fr/)
-  * [Anglais](/en/)
-  * [Espagnol](/es/)
-  * [Catalan](/cat/)
+<!-- * Langue
+  * [Francais](/docs/fr/)
+  * [Anglais](/docs/en/) -->
