@@ -76,3 +76,11 @@ pre .docsify-copy-code-button.error .error, pre .docsify-copy-code-button.succes
     opacity: 1;
     transform: translate(0,100%);
 }
+
+pre[data-lang^="yeswiki"] + .code-preview {
+    margin-top: -1.7rem;
+}
+.markdown-section iframe {
+    border: 5px solid #f7f7f7;
+    border-radius: 3px;
+}
