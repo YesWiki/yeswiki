@@ -2,7 +2,7 @@ window.$docsify = {
     loadSidebar: true,
     loadNavbar: true,
     subMaxLevel: 3,
-    relativePath: false,
+    relativePath: true,
     auto2top: true,
     alias: {
       ['/_sidebar.md']: `/docs/${locale}/_sidebar.md`, // set default _sidebar.md to locale language

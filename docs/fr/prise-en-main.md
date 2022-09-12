@@ -52,13 +52,13 @@ Une page menu est organisée comme une liste de puces. Un niveau de menu corresp
 
 N'hésitez pas à vous inspirer du code du menu déjà en place. Un wiki récemment installé a quelques éléments de menu justement pour vous montrer comment ça marche ;-)  
 
-![image menu_haut.png](../images/menu_haut.png)
+![image menu_haut.png](images/menu_haut.png)
 
 ### Visite de la roue crantée
 
 Cliquer sur la roue crantée en haut à droite me donne accès à un certain nombre d'espaces dédiés à l'administration du wiki :
 
-![image menu_rouecrantee.png](../images/menu_rouecrantee.png)
+![image menu_rouecrantee.png](images/menu_rouecrantee.png)
 
 La roue crantée peut être personnalisée sur PageRapideHaut.
 
@@ -66,7 +66,7 @@ La roue crantée peut être personnalisée sur PageRapideHaut.
 
 Ce bouton sert à s'identifier ou à se créer un compte ("s'inscrire") :
 
-![image Vignette_seconnecter.png](../images/Vignette_seconnecter.png)
+![image Vignette_seconnecter.png](images/Vignette_seconnecter.png)
 
 #### Aide, démo, actu
 
@@ -80,7 +80,7 @@ Cette page vous décrit YesWiki et sa communauté.
 
 Cette page gestion du site est très importante. Elle donne accès à de nombreuses fonctionnalités d'administration :
 
-![image rubriques_gestiondusite.png](../images/rubriques_gestiondusite.png)
+![image rubriques_gestiondusite.png](images/rubriques_gestiondusite.png)
 
 ##### Accueil de gestion du site
 
@@ -141,11 +141,11 @@ INSÉRER ICI UN MOT RELATIF A action login
 
 Pour créer son compte, il faut aller dans la roue crantée en haut à droite, cliquer sur "Se connecter", puis cliquer sur "s'inscrire".
 
-![image Vignette_seconnecter_sinscrire.png](../images/Vignette_seconnecter_sinscrire.png)
+![image Vignette_seconnecter_sinscrire.png](images/Vignette_seconnecter_sinscrire.png)
 
 Remplir les différents champs de la fenêtre :
 
-![image Vignette_sinscrire.png](../images/Vignette_Vignette_sinscrire.png)
+![image Vignette_sinscrire.png](images/Vignette_Vignette_sinscrire.png)
 
 Finaliser en cliquant sur "Nouveau compte" : votre compte est créé.
 
@@ -153,12 +153,12 @@ Finaliser en cliquant sur "Nouveau compte" : votre compte est créé.
 
 Dans la roue crantée en haut à droite, cliquer sur "Se connecter". 
 
-![image Vignette_seconnecter.png](../images/Vignette_seconnecter.png)
+![image Vignette_seconnecter.png](images/Vignette_seconnecter.png)
 
 1.  Remplir les champs "email ou NomWiki" et "mot de passe"
 2.  Cliquer sur "Se connecter", et éventuellement sur "se souvenir de moi" (en cochant cette case Se souvenir de moi, vous serez identifiés durant quelques mois)
 
-![image parametres_utilisateur.png](../images/Vignette_seconnecter.png)
+![image parametres_utilisateur.png](images/Vignette_seconnecter.png)
 
 ### Changer de mot de passe (à ré-écrire)
 
@@ -168,18 +168,18 @@ Si Vous connaissez votre mot de passe :
 2.  Renseigner les champs de la fenêtre qui s'ouvre et cliquer sur "se connecter"
 3.  A nouveau, aller dans la roue crantée pour cliquer sur "l'identifiant de votre compte" : une nouvelle fenêtre s'ouvre
 
-![image changer_compte_vignette1.png](../images/changer_compte_vignette1.png)
+![image changer_compte_vignette1.png](images/changer_compte_vignette1.png)
 
 4.  Cliquer sur "modifier mes paramètres utilisateurs", remplir les champs de la nouvelle fenêtre qui s'ouvre (ancien mot de passe et nouveau mot de passe) et cliquer sur "changer"
 
-![image changer_compte_vignette2.png](../images/changer_compte_vignette2.png)
+![image changer_compte_vignette2.png](images/changer_compte_vignette2.png)
 
 #### Récupérer son mot de passe en cas d'oubli
 
 Si vous avez perdu votre mot de passe,
 1.  Dans la roue crantée en haut à droite, cliquer sur "Se connecter" puis "mot de passe perdu ?"
 
-![image Vignette_motdepasse.png](../images/Vignette_motdepasse.png)
+![image Vignette_motdepasse.png](images/Vignette_motdepasse.png)
 
 ####A mettre dans la doc webmaster !!!
 
@@ -203,17 +203,17 @@ Dans YesWiki chaque modification d'une page est sauvegardée dans un **historiqu
 
 **Pour y accéder** il suffit de cliquer sur le lien en bas de page nommé : "Dernière édition : _jour_._mois_._année_"
 
-![image historique_bas_page.png](../images/Historique_bas_page.png)
+![image historique_bas_page.png](images/Historique_bas_page.png)
 
 **Attention** : cet accès est possible pour les personnes qui ont les droits en écriture sur la page concernée, c'est-à-dire tout le monde par défaut, mais les administrateurs du site peuvent faire un autre choix.
 
 *   le "handler" révisions est ajouté dans l'url
 
-![image historique_revision_page.png](../images/Historique_revision_page.png)
+![image historique_revision_page.png](images/Historique_revision_page.png)
 
 *   et une fenêtre comme celle-ci s'affiche :
 
-![image Historique_page.png](../images/Historique_page.png)
+![image Historique_page.png](images/Historique_page.png)
 
 
 ### Vous y trouverez dans la partie haute
@@ -234,7 +234,7 @@ Dans YesWiki chaque modification d'une page est sauvegardée dans un **historiqu
 En mode édition, le langage YesWiki nécessite de connaître quelques petites astuces pour mettre en forme le texte d'une page. En voici quelques unes de base.
 A noter : La plupart est accessible directement dans la barre d'édition !
 
-![image editer_une_page_barre.png](../images/editer_une_page_barre.png)
+![image editer_une_page_barre.png](images/editer_une_page_barre.png)
 
 ### Les principales astuces de mise en page
 
@@ -299,11 +299,11 @@ En plus du texte, on peut vouloir ajouter des images, des documents à télécha
 
 Dans la page en mode édition, cliquer sur le bouton "Fichier" permet de choisir un fichier qui se trouve sur votre ordinateur.
 
-![image inserer_image_bouton.png](../images/inserer_image_bouton.png)
+![image inserer_image_bouton.png](images/inserer_image_bouton.png)
 
 En fonction du type de fichier à insérer, YesWiki propose des interfaces différentes, mais le principe reste le même.
 
-![image dossiers.png](../images/dossiers.png)
+![image dossiers.png](images/dossiers.png)
 
 Choisir son fichier à télécharger sur le wiki.
 
@@ -311,21 +311,21 @@ Choisir son fichier à télécharger sur le wiki.
 
 **Le bouton ouvre une fenêtre** qui permet de choisir l'alignement de l'image, sa taille à l'affichage ainsi que le texte qui s'affichera au survol (texte de la vignette).  
 
-![image inserer_image_fenetre.png](../images/inserer_image_fenetre.png)
+![image inserer_image_fenetre.png](images/inserer_image_fenetre.png)
 
 **En cliquant sur "Paramètres avancés"**, on peut ajouter un lien associé (en vert ci-dessous), des effets graphiques, modifier le texte alternatif et empêcher l'affichage de l'image lorsqu'on clic dessus (en jaune).  
 
-![image inserer_image_fenetre_parametres.png](../images/inserer_image_fenetre_parametres.png)
+![image inserer_image_fenetre_parametres.png](images/inserer_image_fenetre_parametres.png)
 
 **On peut modifier l'image après l'avoir enregistrée**. Pour cela il faut éditer à nouveau la page, trouver le bout de code entre {{ }} qui concerne ce fichier et positionner votre curseur sur la ligne de code : un bouton crayon apparaît sur la gauche, il suffit de cliquer dessus pour afficher la fenêtre permettant de faire toutes les modifications que vous souhaitez.
 
-![image inserer_image_modifier_crayon.png](../images/inserer_inserer_image_modifier_crayon.png)
+![image inserer_image_modifier_crayon.png](images/inserer_inserer_image_modifier_crayon.png)
 
 #### Pour un fichier texte (.doc, .pdf, .xls, .odt, .txt...)
 
 **Ici le bouton ouvre une fenêtre** qui permet de modifier le texte du lien et d'afficher le fichier sous forme de lien ou directement inclus dans la page.
 
-![image inserer_fichier_fenetre.png](../images/inserer_fichier_fenetre.png)
+![image inserer_fichier_fenetre.png](images/inserer_fichier_fenetre.png)
   
 Comme pour les images, on peut :  
 \- **cliquer sur Paramètres avancés** pour ajouter un lien associé, des effets graphiques et que modifier le texte alternatif.
@@ -362,28 +362,28 @@ Et c'est encore mieux (notamment pour les moteurs de recherches) si vous optez p
   
 Ça donne ça :
 
-![image page.png](../images/page.png)
+![image page.png](images/page.png)
   
 Quand je clique sur "insérer", ça génère cette ligne de code :  
 
-![image page2.png](../images/page2.png)
+![image page2.png](images/page2.png)
 
 Il ne vous reste plus qu'à sauver.  
 
 Quand le lien vient d'être créé mais que la nouvelle page est vide, un petit crayon apparait devant le lien. Il disparaitra quand vous aurez saisi du contenu dans la nouvelle page.  
 
-![image page3.png](../images/page3.png)
+![image page3.png](images/page3.png)
 
 ##### Astuces
 
 *   une fois ma nouvelle page créée, je peux enlever le lien qui y mène sans que la page disparaisse pour autant. Je peux retrouver mes pages dans la roue crantée en haut à droite > Tableau de bord. Une bonne manière de cacher des pages ;-)
 *   une tout autre manière de créer une nouvelle page est de modifier l'URL : la dernière partie de l'adresse correspond au nom de la page
 
-![image URL_nompage.png](../images/URL_nompage.png)
+![image URL_nompage.png](images/URL_nompage.png)
 
 *   YesWiki va interpréter tout ChatMot comme une nouvelle page. Si on veut écrire un ChatMot sans créer de nouvelle page (par exemple pour écrire YesWiki sans créer de lien), on l'encadre de double guillemets:
 
-![image creer_nouvelle_page_chatmot_non_lien.png](../images/creer_nouvelle_page_chatmot_non_lien.png)
+![image creer_nouvelle_page_chatmot_non_lien.png](images/creer_nouvelle_page_chatmot_non_lien.png)
 
 #### Créer un lien interne
 
@@ -391,11 +391,11 @@ Dans les pages d'une gare centrale on a souvent besoin de faire des liens vers d
   
 Dans la page en mode édition, cliquer sur le bouton "Lien".  
 
-![image bouton_lien.png](../images/bouton_lien.png)
+![image bouton_lien.png](images/bouton_lien.png)
 
 Vous serez alors guidé.e dans vos choix avec cette fenêtre :  
 
-![image ajouterunlien.png](../images/ajouterunlien.png)
+![image ajouterunlien.png](images/ajouterunlien.png)
 
 *   Faites vos choix et cliquez sur "Insérer" : la ligne de code s'inscrit toute seule ;-)
 
@@ -403,11 +403,11 @@ Vous serez alors guidé.e dans vos choix avec cette fenêtre :
 
 Voici ce que ça donne quand on regarde le code :  
 
-![image DocumentationCreerUnLien_creer_un_lien_ex_chamot.png](../images/DocumentationCreerUnLien_creer_un_lien_ex_chamot.png)
+![image DocumentationCreerUnLien_creer_un_lien_ex_chamot.png](images/DocumentationCreerUnLien_creer_un_lien_ex_chamot.png)
 
-![image DocumentationCreerUnLien_creer_un_lien_ex_url.png](../images/DocumentationCreerUnLien_creer_un_lien_ex_url.png)
+![image DocumentationCreerUnLien_creer_un_lien_ex_url.png](images/DocumentationCreerUnLien_creer_un_lien_ex_url.png)
 
-![image DocumentationCreerUnLien_creer_un_lien_ex_mail.png](../images/DocumentationCreerUnLien_creer_un_lien_ex_mail.png)
+![image DocumentationCreerUnLien_creer_un_lien_ex_mail.png](images/DocumentationCreerUnLien_creer_un_lien_ex_mail.png)
 
 ### Créer un lien vers un site externe (à écrire)
 
@@ -427,11 +427,11 @@ Un **widget** est un petit module qui permet à une page d'embarquer (encapsuler
 Un site propose souvent d'afficher ses contenus ailleurs que "chez lui", en fournissant un morceau de code html (appelé iframe), qui se trouve dans les options "_Partager_" > "_Intégrer_" ou encore "_iframe_".  
 Ca peut ressembler à ça :[
 
-![image partager.png](../images/partager.png)
+![image partager.png](images/partager.png)
 
-![image partageryoutube.png](../images/partageryoutube.png)
+![image partageryoutube.png](images/partageryoutube.png)
 
-![image integrer.png](../images/integrer.png)
+![image integrer.png](images/integrer.png)
 
 Le code iframe que vous allez trouver ressemblera à ça :
 ```<iframe name="embed\_readwrite" src="https://unsite.com/iframe" width="100%" height="600" ></iframe>```
