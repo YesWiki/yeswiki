@@ -89,4 +89,7 @@ return [
     "REACTION_NOT_POSSIBLE_TO_DELETE_REACTION" => "Impossible de supprimer la réaction en raison de l'erreur suivante : {error}!",
     'REACTION_CONFIRM_DELETE' => 'Etes-vous sur de vouloir supprimer cette réaction ?',
     'REACTION_CONFIRM_DELETE_ALL' => 'Etes-vous sur de vouloir supprimer toutes les réactions de ce vote ?',
+
+    // Doc
+    "DOC_EDIT_THIS_PAGE_ON_GITHUB" => "Modifier cette page sur Github",
 ];

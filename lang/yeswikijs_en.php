@@ -82,4 +82,7 @@ return [
 
     "YESWIKIMODAL_EDIT_MSG" => "Edit the page",
     "EDIT_OUPS_MSG" => "INdeed, I would not double-click...",
+
+    // Doc
+    "DOC_EDIT_THIS_PAGE_ON_GITHUB" => "Edit this page on Github",
 ];
