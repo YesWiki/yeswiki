@@ -1,12 +1,11 @@
 window.$docsify = {
-    homepage: `docs/${wiki.locale}/README.md`,
+    homepage: `docs/${locale}/README.md`,
     loadSidebar: true,
     loadNavbar: true,
     subMaxLevel: 3,
     relativePath: false,
     auto2top: true,
-    fallbackLanguages: ['en',`${wiki.locale}`],
-    name: _t('DOCUMENTATION_TITLE'),
+    fallbackLanguages: ['fr'],
     nameLink: {
       '/en/': '#/en/',
       '/es/': '#/es/',
@@ -23,10 +22,10 @@ window.$docsify = {
     alias: {
       '/([a-z]{2})/(.*)/(.*)': '/docs/$1/$2/$3', // remove 'docs' in url
       '/([a-z]{2})/(.*)': '/docs/$1/$2', // remove 'docs' in url
-      ['/_sidebar.md']: `/docs/${wiki.locale}/_sidebar.md`, // set default _sidebar.md to locale language
-      ['/_navbar.md']: `/docs/${wiki.locale}/_navbar.md`, // set default _sidebar.md to locale language
-      [`/${wiki.locale}`]: '/',
-      'readme.md': `/docs/${wiki.locale}/README.md`,
+      ['/_sidebar.md']: `/docs/${locale}/_sidebar.md`, // set default _sidebar.md to locale language
+      ['/_navbar.md']: `/docs/${locale}/_navbar.md`, // set default _sidebar.md to locale language
+      [`/${locale}`]: '/',
+      'readme.md': `/docs/${locale}/README.md`,
     },
     search: {
       placeholder: {
@@ -44,5 +43,19 @@ window.$docsify = {
       depth: 2,
       pathNamespaces: ['/fr/', '/en/','/', '/cat/', '/es/'],
 
-    }
+    },
+    plugins: [
+      function(hook, vm) {
+        hook.mounted(function() {
+          // Move the title inside the navbar to the top of sidebar, and set
+          // correct href
+          setTimeout(() => {
+            let title = document.querySelector("#back")
+            title.href = baseUrl
+            let sidebar = document.querySelector('.sidebar')
+            sidebar.insertBefore(title, sidebar.children[0]);
+          }, 100)
+        });
+      }
+    ]
 }
