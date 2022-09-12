@@ -8,9 +8,11 @@
 
 .sidebar .sidebar-nav .app-sub-sidebar {
     margin-left: 0;
-    margin-bottom: 1rem;
 }
 
+.sidebar-nav > ul > li > .app-sub-sidebar > li {
+    margin-top: 1rem;
+}
 .sidebar-nav > ul > li > .app-sub-sidebar > li > a {
     font-weight: bold;
 }
@@ -30,10 +32,9 @@
 #back {
     display: flex;
     align-items: center;
-    justify-content: center;
     text-align: center;
-    margin: 2rem 0;
-    font-size: 1.5rem;
+    margin: 1.2rem 0 1.2rem 2.5rem;
+    font-size: 1.2rem;
     color: var(--theme-color,#42b983) !important;
     text-decoration: none !important;
 }
