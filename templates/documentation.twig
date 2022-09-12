@@ -10,6 +10,11 @@
 <body>
   <div id="app"></div>
 
+  <script>
+    var locale = "{{ config.default_language }}";
+    var baseUrl = "{{ config.base_url }}";
+  </script>
+
   <script src="javascripts/vendor/docsify/docsify.min.js"></script>
   <script src="javascripts/documentation.js"></script>
   <script src="javascripts/vendor/docsify/plugins/search.min.js"></script>

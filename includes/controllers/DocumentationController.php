@@ -13,6 +13,8 @@ class DocumentationController extends YesWikiController
      */
     public function show()
     {
-      return new Response($this->render('@core/documentation.twig'));
+      return new Response($this->render('@core/documentation.twig', [
+        'config' => $this->wiki->config
+      ]));
     }
 }

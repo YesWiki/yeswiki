@@ -1,4 +1,2 @@
-* [Présentation](/fr)
-* [Prise en main](/fr/prise-en-main.md)
-* [Webmaster](/fr/webmaster.md)
-* [Développement](/fr/dev.md)
+<!-- Dummy link so the dynamically generated submenu (from the headings) will be added below by docsify -->
+* [Doc](/)
