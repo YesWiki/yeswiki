@@ -20,7 +20,7 @@ YesWiki dispose de **nombreux "thèmes"** permettant d'agir sur le graphisme gé
 
 **Des extensions** (tools) permettent d'utiliser YesWiki en plateforme de formation en ligne LMS , d'ajouter un générateur de livres ou de fanzines, de créer une ferme à wikis, de générer les pages en pdf pour la publication, de se connecter via les protocoles LDAP ou SSO. Un mode "hibernate" est disponible pour figer l'espace collaboratif et éviter les modifications de contenu. 
 
-## Obtenir son YesWiki
+## Obtenir son YesWiki <!-- {docsify-ignore} -->
 Yeswiki peut s'installer sur un serveur web classique ou en local 
 Rendez-vous dans la [partie dev de la documentation](/fr/webmaster.md)
 
