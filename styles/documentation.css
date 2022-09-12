@@ -1,3 +1,19 @@
+img {
+    /* border: 4px solid #f8f8f8; */
+    padding: 20px;
+    border-radius: 4px;
+    background-color: #f8f8f8;
+}
+
+.markdown-section pre {
+    background-color: #34495e;
+    border-radius: 5px;
+}
+.markdown-section pre>code {
+    color: white;
+    background-color: transparent;
+}
+
 .sidebar-nav > ul > li > a {
     display: none;
 }
@@ -82,6 +98,6 @@ pre[data-lang^="yeswiki"] + .code-preview {
     margin-top: -1.7rem;
 }
 .markdown-section iframe {
-    border: 5px solid #f7f7f7;
+    border: 5px solid #34495e;
     border-radius: 3px;
 }
