@@ -1,5 +1,0 @@
-* [Introduction](/en/)
-* [Usage](/en/usage.md)
-* [Extensions](/en/extensions.md)
-* [Webmaster](/en/webmaster.md)
-* [Development](/en/dev.md)

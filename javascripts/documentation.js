@@ -1,48 +1,26 @@
 window.$docsify = {
-    homepage: `docs/${locale}/README.md`,
     loadSidebar: true,
     loadNavbar: true,
     subMaxLevel: 3,
     relativePath: false,
     auto2top: true,
-    fallbackLanguages: ['fr'],
-    nameLink: {
-      '/en/': '#/en/',
-      '/es/': '#/es/',
-      '/cat/': '#/cat/',
-      '/fr': '#/fr',
-      '/': '#/'
-    },
-    // repo: 'https://github.com/YesWiki/yeswiki/',
-    // copyCode: { // not used because extension copy code not installed
-    //   buttonText : 'Copier',
-    //   errorText  : 'Erreur',
-    //   successText: 'Copié'
-    // },
     alias: {
-      '/([a-z]{2})/(.*)/(.*)': '/docs/$1/$2/$3', // remove 'docs' in url
-      '/([a-z]{2})/(.*)': '/docs/$1/$2', // remove 'docs' in url
       ['/_sidebar.md']: `/docs/${locale}/_sidebar.md`, // set default _sidebar.md to locale language
-      ['/_navbar.md']: `/docs/${locale}/_navbar.md`, // set default _sidebar.md to locale language
-      [`/${locale}`]: '/',
-      'readme.md': `/docs/${locale}/README.md`,
+      ['/_navbar.md']: `/docs/${locale}/_navbar.md`, // set default _navbar.md to locale language
     },
     search: {
       placeholder: {
-        '/fr/': 'Rechercher...',
-        '/en/': 'Type to search',
-        '/es/': 'Buscar',
-        '/': 'Rechercher...'
+        '/docs/fr/': 'Rechercher...',
+        '/docs/en/': 'Search...',
+        '/': 'Search...' // other pages, default to English
       },
       noData: {
-        '/fr/': 'Pas de résultat...',
-        '/es/': 'No resulto...',
-        '/en': 'No result...',
-        '/': 'Pas de résultat...'
+        '/docs/fr/': 'Pas de résultats',
+        '/docs/en': 'No results',
+        '/': 'No results' // other pages, default to English
       },
       depth: 2,
-      pathNamespaces: ['/fr/', '/en/','/', '/cat/', '/es/'],
-
+      pathNamespaces: ['/docs/fr/', '/docs/en/'],
     },
     plugins: [
       function(hook, vm) {
@@ -57,10 +35,16 @@ window.$docsify = {
         });
 
         hook.mounted(function() {
+          // Redirect properly to translated language, otherwise we stay on "#/" hash
+          // and it cause some translations issues
+          if (location.hash == "#/") location.hash = `docs/${locale}/README.md`
+
           // Move the title inside the navbar to the top of sidebar, and set
           // correct href
           setTimeout(() => {
             let title = document.querySelector("#back")
+            if (!title) return
+
             title.href = baseUrl
             let sidebar = document.querySelector('.sidebar')
             sidebar.insertBefore(title, sidebar.children[0]);
