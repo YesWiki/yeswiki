@@ -1,5 +1,3 @@
-# Prise en main
-
 ## Structure du wiki
 
 ### La composition d'une page
