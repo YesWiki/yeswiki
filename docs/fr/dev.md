@@ -1,5 +1,7 @@
 # Développement
 
+!> Attendre la finalisation de la version anglaise avant de traduire
+
 ## Personnalisations
 
 Les personnalisation peuvent être faite dans le dossier `custom`.
