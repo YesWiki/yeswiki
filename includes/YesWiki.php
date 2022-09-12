@@ -1153,8 +1153,8 @@ class Wiki
         $this->request = Request::createFromGlobals();
 
         // Is this a special page ?
-        if ($tag === 'api') {
-            $this->RunAPI();
+        if (in_array($tag, ['api', 'doc'])) {
+            $this->RunSpecialPages();
         } else {
             $this->SetPage($this->LoadPage($tag, (isset($_REQUEST['time']) ? $_REQUEST['time'] : '')));
             $this->LogReferrer();
@@ -1179,7 +1179,8 @@ class Wiki
         }
     }
 
-    private function RunAPI()
+    // Find and run controller action based on route declaration, instead of using page Tag
+    private function RunSpecialPages()
     {
         // We must manually parse the body data for the PUT or PATCH methods
         // See https://www.php.net/manual/fr/features.file-upload.put-method.php
