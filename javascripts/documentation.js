@@ -46,6 +46,16 @@ window.$docsify = {
     },
     plugins: [
       function(hook, vm) {
+        hook.afterEach(function(html) {
+          const url = `https://github.com/YesWiki/yeswiki/edit/doryphore-dev/${vm.route.file}`
+          const footer = `
+            <hr/>
+            <footer>
+              <a href="${url}" target="_blank">${i18n.DOC_EDIT_THIS_PAGE_ON_GITHUB}</a>
+            </footer>`
+          return html + footer;
+        });
+
         hook.mounted(function() {
           // Move the title inside the navbar to the top of sidebar, and set
           // correct href
