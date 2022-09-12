@@ -10,7 +10,7 @@ La **création des pages est facile** et se réalise de n'importe où par ajout 
 
 **Des fonctionnalités avancées**, telles que structuration des pages en colonnes, menu complémentaire, couleurs et polices peuvent être mises en œuvre aisément via l'appel à des actions. Ces actions **s'activent via l'écriture d'un simple code** ou à travers des composants qui facilitent le choix des paramètres.
 
-Yeswiki utilise le principe **[des handlers](/fr/prise-en-main?id=les-handlers.md)**. Un handler est une commande qui permet d'agir sur une page en ajoutant à la fin de l'adresse URL, le signe / suivi du nom du handler.
+Yeswiki utilise le principe **[des handlers](prise-en-main?id=les-handlers.md)**. Un handler est une commande qui permet d'agir sur une page en ajoutant à la fin de l'adresse URL, le signe / suivi du nom du handler.
 
 La gestion **des droits d'accès peut être réalisée au niveau de chaque page** ou de multiples pages, en lecture, écriture, commentaire et ce, par utilisateurs ou par groupes. 
 
@@ -22,7 +22,7 @@ YesWiki dispose de **nombreux "thèmes"** permettant d'agir sur le graphisme gé
 
 ## Obtenir son YesWiki <!-- {docsify-ignore} -->
 Yeswiki peut s'installer sur un serveur web classique ou en local 
-Rendez-vous dans la [partie dev de la documentation](/fr/webmaster.md)
+Rendez-vous dans la [partie dev de la documentation](webmaster.md)
 
 
 
