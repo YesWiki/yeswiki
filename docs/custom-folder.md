@@ -1,4 +1,4 @@
-The folder `custom` will be used for all your specific changes in yeswiki views.
+The `custom` folder will be used for all your specific changes in yeswiki views.
 
 An example of how a custom folder look like can be found at https://github.com/YesWiki/yeswiki-custom-code-example
 
@@ -15,9 +15,12 @@ You can also overide an existing template : `custom/templates/bazar/liste_accord
 Example2: To customize bazar single entry template, uses the convention `fiche-FORM_ID.tpl.html`
 If you have a bazar form with id 5, then you can create `custom/templates/bazar/fiche-5.tpl.html`
 Available variables inside the template are
- - `$values['fiche']` -> contains the values of the current fiche. Example `$values['html']['bf_titre']` will contains `My title`
- - `$values['html']` -> the pre rendered fields. Example `$values['html']['bf_titre']` will contains `<h1>My title</h1>`
- - `$values['form']` -> information about the form : id, fields etc..
+
+| Variable | Description | Example |
+| ----------- | ----------- | -------- |
+| `$values['fiche']` | Values of the current entry | `$values['html']['bf_titre'] => "My title"` |
+| `$values['html']` | Pre-rendered fields | `$values['html']['bf_titre'] => "<h1>My title</h1>"` |
+| `$values['form']` | Informations about the form : id, fields etc.. |
 
 ### Custom Javascript
 
@@ -48,7 +51,7 @@ For themes using presets, you can have custom presets.
  - Their extension should be `.css`
  - Their content should be like this:
 
-```
+```css
 :root {
   --primary-color: #1a89a0;
   --secondary-color-1: #d8604c;
@@ -89,24 +92,25 @@ you can then use your translation with following code `<?php echo _t('MY_TRANSLA
 
 _[Original documentation on the yeswiki.net site (fr)](https://yeswiki.net/?TutorielCreerUnChampBazarCustom "Tutorial - Create a custom bazar field (fr)")_
 
- 1. choose from the folder `tools/bazaar/fields`, a template field that resembles the custom field (e.g. `DateField.php`)
- 2. Copy it to the `custom/fields` folder
+1. choose from the folder `tools/bazaar/fields`, a template field that resembles the custom field (e.g. `DateField.php`)
+2. Copy it to the `custom/fields` folder
     - keep your name if you want to replace the original field
     - rename it if you do not want to replace the original field (please rename the name of the class in the file by replacing `class DateField` with `class FileName`)
- 3. Replace `YesWiki\Bazar\Field;` namespace in the file with `YesWiki\Custom\Field namespace;`
- 4. Set up inheritance:
+3. Replace `YesWiki\Bazar\Field;` namespace in the file with `YesWiki\Custom\Field namespace;`
+4. Set up inheritance:
     - if we keep `extends BazarField`, make sure that there is `use YesWiki\Bazar\Field\BazarField;` in the file
     - if you want to inherit from another class write `extends OtherField` and make sure that the file has this: `use YesWiki\Bazar\Field\OtherField;`
     - finally, when replacing a field of the heart, it is advisable to make an inheritance from the original field. In our example it would give:
 
+```php
+use YesWiki\Bazar\Field\DateField as CoreDateField;
 
-    use YesWiki\Bazar\Field\DateField as CoreDateField;
-
-    class DateField extends CoreDateField
-    {
-        // ....
- 5. update the declaration of the associated field name in the header `@Field({"possiblename1", "possiblename2", "possiblename3"})`
- 6. Once the code is ready, it is then possible to define a custom field in the graphical form builder.
+class DateField extends CoreDateField
+{
+    // ....
+```
+5. update the declaration of the associated field name in the header `@Field({"possiblename1", "possiblename2", "possiblename3"})`
+6. Once the code is ready, it is then possible to define a custom field in the graphical form builder.
 
 ### Custom Service
 
@@ -114,7 +118,7 @@ Puts your custom fields in `custom/services`
 use `namespace YesWiki\Custom\Service;`
 and create the file`custom/config.yaml` with
 
-```
+```yaml
 services:
   _defaults:
     autowire: true
@@ -130,7 +134,7 @@ Puts your custom fields in `custom/controller`
 use `namespace YesWiki\Custom\Controller;`
 and create the file`custom/config.yaml` with
 
-```
+```yaml
 services:
   _defaults:
     autowire: true

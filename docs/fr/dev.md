@@ -1,13 +1,10 @@
-# Développement
+## Personnalisation avancées
 
-!> Attendre la finalisation de la version anglaise avant de traduire
+!> Des bases de programmation vous seront nécessaire pour suivre ces étapes
 
-## Personnalisations
+[filename](../custom-folder.md ':include')
 
-Les personnalisation peuvent être faite dans le dossier `custom`.
-Un [fichier de documentation](docs/custom-folder.md) existe pour décrire la structure de ce dossier ([docs/custom-folder.md](docs/custom-folder.md)).
-
-### Créer un champ bazar custom
+<!-- ### Créer un champ bazar custom
 
 _[Documentation originelle sur le site yeswiki.net](https://yeswiki.net/?TutorielCreerUnChampBazarCustom "Tutoriel - Créer un champ bazar custom")_
 
@@ -39,7 +36,7 @@ _[Documentation originelle sur le site yeswiki.net](https://yeswiki.net/?Tutorie
  3. faire attention à mettre à jour les chemins relatifs pour les imports (exemple : `import InputMultiInput from '../../../../tools/aceditor/presentation/javascripts/components/InputMultiInput.js'`)
  4. pour l'utiliser, définir dans le fichier `.yaml` associé à actions builder pour la partie voulue le type qui va bien.
    - si le fichier s'appelle `InputNomInput.js`, alors il faut taper dans le fichier `.yaml` : `type: nom-input`
-   - si le fichier s'appelle `InputGeo.js`, il faut taper `type: geo`
+   - si le fichier s'appelle `InputGeo.js`, il faut taper `type: geo` -->
 
 ## Rendre votre wiki sémantique
 
