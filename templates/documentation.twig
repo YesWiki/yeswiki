@@ -1,22 +1,18 @@
-{% if isIframe %}
-  {{ include_css('styles/vendor/docsify/vue.min.css') }}
+<head>
+  <meta name="viewport" content="width=device-width" />
+
+  <title>Documentation</title>
+
+  <link rel="stylesheet" href='styles/vendor/docsify/vue.min.css'>
+  <link rel="stylesheet" href='styles/documentation.css'>
+</head>
+
+<body>
   <div id="app"></div>
 
-  {# Js CSS for Action #}
-  {{ include_css('styles/documentation.css') }}
-  {{ include_javascript('javascripts/documentation.js') }}
-
-  {# DocSify js #}
-  {{ include_javascript('javascripts/vendor/docsify/docsify.min.js') }}
-  {{ include_javascript('javascripts/vendor/docsify/plugins/search.min.js') }}
-  {# {{ include_javascript('javascripts/vendor/docsify/plugins/disqus.min.js') }}
-  {{ include_javascript('javascripts/vendor/docsify/plugins/emoji.min.js') }}
-  {{ include_javascript('javascripts/vendor/docsify/plugins/external-script.min.js') }}
-  {{ include_javascript('javascripts/vendor/docsify/plugins/font-matter.min.js') }}
-  {{ include_javascript('javascripts/vendor/docsify/plugins/ga.min.js') }}
-  {{ include_javascript('javascripts/vendor/docsify/plugins/gitalk.min.js') }}
-  {{ include_javascript('javascripts/vendor/docsify/plugins/matomo.min.js') }} #}
-  {{ include_javascript('javascripts/vendor/docsify/plugins/zoom-image.min.js') }}
-{% else %}
-  <iframe class="full-width" src="{{ url({handler:'iframe'}) }}" style="min-height:800px;height:120%;"frameborder="0" allowfullscreen></iframe>
-{% endif %}
+  <script src="javascripts/vendor/docsify/docsify.min.js"></script>
+  <script src="javascripts/documentation.js"></script>
+  <script src="javascripts/vendor/docsify/plugins/search.min.js"></script>
+  <script src="javascripts/vendor/docsify/plugins/zoom-image.min.js"></script>
+</body>
+</html>
