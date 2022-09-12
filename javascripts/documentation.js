@@ -19,12 +19,25 @@ window.$docsify = {
         '/docs/en': 'No results',
         '/': 'No results' // other pages, default to English
       },
-      depth: 2,
-      pathNamespaces: ['/docs/fr/', '/docs/en/'],
+    depth: 2,
+    pathNamespaces: ['/docs/fr/', '/docs/en/'],
+  },
+  copyCode: {
+    buttonText : {
+      '/docs/fr/': 'Copier le code',
+      '/docs/en/': 'Copy to clipboard',
+      '/': 'Copy to clipboard' // other pages, default to English
     },
-    plugins: [
-      function(hook, vm) {
-        hook.afterEach(function(html) {
+    errorText : 'Error',
+    successText : {
+      '/docs/fr/': 'Copié',
+      '/docs/en/': 'Copied',
+      '/': 'Copied' // other pages, default to English
+    },
+  },
+  plugins: [
+    function(hook, vm) {
+      hook.afterEach(function(html) {
           const url = `https://github.com/YesWiki/yeswiki/edit/doryphore-dev/${vm.route.file}`
           const footer = `
             <hr/>

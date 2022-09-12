@@ -65,3 +65,14 @@
 footer {
     text-align: center;
 }
+
+pre .docsify-copy-code-button {
+    background: #34495e;
+    font-family: Source Sans Pro,Helvetica Neue,Arial,sans-serif;
+    font-size: .9rem;
+}
+pre .docsify-copy-code-button.error .error, pre .docsify-copy-code-button.success .success {
+    right: 0;
+    opacity: 1;
+    transform: translate(0,100%);
+}
