@@ -1,6 +1,6 @@
 * Llengues
 
-  * [Francès](/fr/)
-  * [Anglès](/en/)
-  * [Espanyol](/es/)
-  * [Català](/cat/)
+  * [Francès](/docs/fr/)
+  * [Anglès](/docs/en/)
+  * [Espanyol](/docs/es/)
+  * [Català](/docs/cat/)

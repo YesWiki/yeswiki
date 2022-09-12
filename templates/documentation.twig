@@ -1,6 +1,11 @@
 {% if isIframe %}
   {{ include_css('styles/vendor/docsify/vue.min.css') }}
-  <div id="app"></div>
+
+  <div class="yw-main">
+    <div class="yw-main-content">
+      <div id="app">
+    </div>
+  </div>
 
   {# Js CSS for Action #}
   {{ include_css('styles/documentation.css') }}
@@ -18,5 +23,9 @@
   {{ include_javascript('javascripts/vendor/docsify/plugins/matomo.min.js') }} #}
   {{ include_javascript('javascripts/vendor/docsify/plugins/zoom-image.min.js') }}
 {% else %}
-  <iframe class="full-width" src="{{ url({handler:'iframe'}) }}" style="min-height:800px;height:120%;"frameborder="0" allowfullscreen></iframe>
+  <div class="yw-main">
+    <div class="yw-main-content">
+      <iframe src="{{ url({handler:'iframe'}) }}" style="min-height:800px;height:120%;width:100%;" frameborder="0" allowfullscreen></iframe>
+    </div>
+  </div>
 {% endif %}
