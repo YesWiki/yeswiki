@@ -154,6 +154,11 @@ diff@^4.0.1:
   resolved "https://registry.yarnpkg.com/diff/-/diff-4.0.2.tgz#60f3aecb89d5fae520c11aa19efc2bb982aade7d"
   integrity sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==
 
+docsify-copy-code@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/docsify-copy-code/-/docsify-copy-code-2.1.1.tgz#73575955f4aff953d127fac8594c3495a7c71612"
+  integrity sha512-3+foIMuohrvYTA8dyDwr4wylKSZHXBq4tvoAP24BvzqSM9Rbh0gvXQunVoFZ7If4FOYmUXOBveg3EbJSBUMaow==
+
 docsify@^4.12.2:
   version "4.12.2"
   resolved "https://registry.yarnpkg.com/docsify/-/docsify-4.12.2.tgz#749115d2ff7d358780ea865e01f4a0162423d67f"
@@ -274,9 +279,9 @@ leaflet.markercluster@^1.5.3:
   resolved "https://registry.yarnpkg.com/leaflet.markercluster/-/leaflet.markercluster-1.5.3.tgz#9cdb52a4eab92671832e1ef9899669e80efc4056"
   integrity sha512-vPTw/Bndq7eQHjLBVlWpnGeLa3t+3zGiuM7fJwCkiMFq+nmRuG3RI3f7f4N4TDX7T4NpbAXpR2+NTRSEGfCSeA==
 
-"leaflet.markercluster@git+https://github.com/seballot/Leaflet.markercluster.git":
+"leaflet.markercluster@https://github.com/seballot/Leaflet.markercluster.git":
   version "1.5.4"
-  resolved "git+https://github.com/seballot/Leaflet.markercluster.git#ed6137194b7a435bfeea4a29748b57428fb5be98"
+  resolved "https://github.com/seballot/Leaflet.markercluster.git#ed6137194b7a435bfeea4a29748b57428fb5be98"
 
 leaflet@^1.7.1, leaflet@^1.8:
   version "1.8.0"
