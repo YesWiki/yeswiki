@@ -102,6 +102,20 @@ class ArchiveController extends YesWikiController
                 );
                 break;
             
+            case 'restore':
+                if (empty($id)) {
+                    return new ApiResponse(
+                        ['error' => "\"api/archives/{id}\" should have not empty {id} when using action \"restore\""],
+                        Response::HTTP_BAD_REQUEST
+                    );
+                }
+                // TODO update code here when restore will work
+                return new ApiResponse(
+                    ['error' => 'action not defined'],
+                    Response::HTTP_BAD_REQUEST
+                );
+                break;
+            
             default:
                 return new ApiResponse(
                     ['error' => "Not supported action : $action"],
