@@ -65,6 +65,7 @@ return [
     'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Geavanceerde instellingen',
     'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Uitgesloten bestanden',
     'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Aanvullende bestanden',
+    'ADMIN_BACKUPS_CONFIRM_DELETE_FILES' => 'Het verwijderen van bestanden bevestigen',
 
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Pagina’s met een koppeling naar',

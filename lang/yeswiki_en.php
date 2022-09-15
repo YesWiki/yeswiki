@@ -69,6 +69,7 @@ return [
     'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Advanced parameters',
     'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Excluded files',
     'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Extra files',
+    'ADMIN_BACKUPS_CONFIRM_DELETE_FILES' => 'Confirm delete files',
 
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Pages with link to',
