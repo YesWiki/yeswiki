@@ -1,14 +1,22 @@
 .backups-container {
     display: grid;
-    grid-template-columns: auto 50px 100px;
+    grid-template-columns: auto auto auto auto auto;
     column-gap: 10px;
     row-gap: 10px;
 }
 
-.backups-container .archive-item {
-    display: inline-grid;
+.backups-container .archive-item.archive-filename {
+    word-break: break-all;
 }
 .backups-container .archive-item.archive-item-title {
     font-weight: bold;
     border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 5px;
+}
+
+@media(max-width: 600px){
+    .backups-container .archive-item.archive-item-title .btn-wrap{
+        max-width: 50px;
+        overflow-x: hidden;
+    }
 }
