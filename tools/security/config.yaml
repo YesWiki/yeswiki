@@ -9,6 +9,8 @@ parameters:
     - 'use_captcha'
     - 'use_hashcash'
     - 'wiki_status'
+    - archive:
+      - privatePath
     
 services:
   _defaults:
