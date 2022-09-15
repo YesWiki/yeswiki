@@ -4,7 +4,6 @@
 namespace YesWiki\Core\Commands;
 
 use Symfony\Component\Console\Application;
-use YesWiki\Core\Commands\CallServiceCommand;
 use YesWiki\Core\YesWikiLoader;
 
 if (!file_exists('wakka.config.php')) {
