@@ -276,6 +276,12 @@ class UpdateHandler extends YesWikiHandler
         $config->load();
 
         $baseKey = 'default_comment_acl';
+        try {
+            $valueFromConfig = $config->$baseKey;
+        } catch (Exception $th) {
+            $config->$baseKey = 'comments-closed';
+            $config->write();
+        }
         if ($config->$baseKey == "comment-closed") {
             $config->$baseKey = 'comments-closed';
             $config->write();
