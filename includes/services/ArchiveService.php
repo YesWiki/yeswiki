@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Service;
 
 use DateTime;
+use DateInterval;
 use Exception;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -49,6 +50,7 @@ class ArchiveService
         "It **MUST NOT** be accessible from the internet.\n\n".
         " - On Apache server, check that the file `.htaccess` is taken in count.\n".
         " - On Nginx server or other, configure the server to **deny all** access on this folder\n";
+    public const MAX_NB_FILES = 10;
 
     protected $configurationService;
     protected $consoleService;
@@ -137,6 +139,9 @@ class ArchiveService
             throw $th;
         }
         $this->unsetWikiStatus();
+
+        // clean oldest files
+        $this->cleanOldestFiles();
         return $location;
     }
 
@@ -198,7 +203,7 @@ class ArchiveService
     public function deleteArchives(array $filesnames): array
     {
         $privatePath = $this->getPrivateFolder();
-        $filesnames = array_filters($filesnames, 'is_string');
+        $filesnames = array_filter($filesnames, 'is_string');
         $filesnames = array_map('basename', $filesnames);
         $results = [
             'main' => true,
@@ -206,7 +211,7 @@ class ArchiveService
         foreach ($filesnames as $filename) {
             $results[$filename] = (substr($filename, -4) == ".zip") && file_exists("$privatePath/$filename") && is_file("$privatePath/$filename");
             if ($results[$filename]) {
-                $results[$filename] = unlink($results[$filename]);
+                $results[$filename] = unlink("$privatePath/$filename");
             }
             if (!$results[$filename]) {
                 $results['main'] = false;
@@ -679,5 +684,73 @@ class ArchiveService
             }
         }
         return $bytes;
+    }
+
+    /**
+     * remove oldest files to keep only 10 files
+     */
+    private function cleanOldestFiles()
+    {
+        $archives =  $this->getArchives();
+        $nbFilesToRemove = count($archives) - self::MAX_NB_FILES;
+        if ($nbFilesToRemove > 0) {
+            // there are files to remove
+            // keep at least one file more than 1 day and other more than 2 days to prevent
+            // full deletion if attack on api
+            $indexesToRemove = range(self::MAX_NB_FILES, count($archives)-1);
+            if (!empty($indexesToRemove)) {
+                $archivesIndexesMoreThan2days = $this->getIndexesMoreThanxdays($archives, 2);
+                $archivesIndexesMoreThan1day = $this->getIndexesMoreThanxdays($archives, 1);
+
+                $notDeletedArchivesMoreThan2Days = array_diff($archivesIndexesMoreThan2days, $indexesToRemove);
+                if (!empty($archivesIndexesMoreThan2days) && empty($notDeletedArchivesMoreThan2Days)) {
+                    // we should kept the most recent 2 days old
+                    $indexesToRemove = array_diff($indexesToRemove, [min($archivesIndexesMoreThan2days)]);
+                    if (empty($indexesToRemove)) {
+                        $indexesToRemove = [min($archivesIndexesMoreThan2days)-1];
+                    } else {
+                        array_unshift($indexesToRemove, min($indexesToRemove)-1);
+                    }
+                }
+                $archivesIndexesBetween1and2days = array_diff($archivesIndexesMoreThan1day, $archivesIndexesMoreThan2days);
+                $notDeletedArchivesBetween1and2days = array_diff($archivesIndexesBetween1and2days, $indexesToRemove);
+                if (!empty($archivesIndexesBetween1and2days) && empty($notDeletedArchivesBetween1and2days)) {
+                    // we should kept the most recent 1 day old
+                    $indexesToRemove = array_diff($indexesToRemove, [min($archivesIndexesBetween1and2days)]);
+                    if (empty($indexesToRemove)) {
+                        $indexesToRemove = [min($archivesIndexesBetween1and2days)-1];
+                    } else {
+                        array_unshift($indexesToRemove, min($indexesToRemove)-1);
+                    }
+                }
+                $archivesToDelete = [];
+                foreach ($indexesToRemove as $index) {
+                    $archivesToDelete[] = $archives[$index]['filename'];
+                }
+    
+                $this->deleteArchives($archivesToDelete);
+            }
+        }
+    }
+
+    private function getIndexesMoreThanxdays(array $archives, int $days): array
+    {
+        if ($days < 1) {
+            return [];
+        }
+        $indexes = [];
+        $nowMinusXDays = (new DateTime())->sub(new DateInterval("P{$days}D"));
+        foreach ($archives as $key => $archive) {
+            // check the the last file is aged more than x days
+            $fileDateTime = (new DateTime())
+                ->setDate($archive['year'], $archive['month'], $archive['day'])
+                ->setTime($archive['hours'], $archive['minutes'], $archive['seconds'], 0);
+            if ($fileDateTime->diff($nowMinusXDays)->invert ==0 // current file date is before - x days
+                ) {
+                $indexes[] = $key;
+            }
+        }
+
+        return $indexes;
     }
 }
