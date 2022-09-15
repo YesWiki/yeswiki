@@ -40,6 +40,13 @@ class ArchiveService
     public const ARCHIVE_SUFFIX = "_archive";
     public const ARCHIVE_ONLY_FILES_SUFFIX = "_archive_only_files";
     public const ARCHIVE_ONLY_DATABASE_SUFFIX = "_archive_only_db";
+    public const PRIVATE_FOLDER_NAME_IN_ZIP = "private/backups";
+    public const SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP = "content.sql";
+    public const PRIVATE_FOLDER_README_DEFAULT_CONTENT = "# Description of the usage of folder private/backups\n\n".
+        "This folder is **reserved to backups**.\n\n".
+        "It **MUST NOT** be accessible from the internet.\n\n".
+        " - On Apache server, check that the file `.htaccess` is taken in count.\n".
+        " - On Nginx server or other, configure the server to **deny all** access on this folder\n";
 
     protected $configurationService;
     protected $consoleService;
@@ -110,10 +117,11 @@ class ArchiveService
             // set wiki status
             $this->setWikiStatus();
             // get SQl
+            $sqlContent = $savedatabase ? $this->getSQLContent($privatePath) : "";
 
             // create zip passing SQL <= TODO
             $this->writeOutput($output, "Creating zip archive");
-            $this->createZip($location, $dataFiles, $output);
+            $this->createZip($location, $dataFiles, $output, $sqlContent, $onlyDb);
 
             $this->writeOutput($output, "Archive \"$location\" successfully created !");
         } catch (Throwable $th) {
@@ -129,11 +137,17 @@ class ArchiveService
      * @param string $zipPath
      * @param array $dataFiles
      * @param string|OutputInterface &$output
+     * @param string $sqlContent
      * @param bool $onlyDb
      * TODO manage wakka.config.php
      */
-    protected function createZip(string $zipPath, array $dataFiles, string|OutputInterface &$output, bool $onlyDb = false)
-    {
+    protected function createZip(
+        string $zipPath,
+        array $dataFiles,
+        string|OutputInterface &$output,
+        string $sqlContent,
+        bool $onlyDb = false
+    ) {
         $pathToArchive = dirname(__FILE__, 3); // includes/services/../../
         $pathToArchive = preg_replace("/(\/|\\\\)$/", "", $pathToArchive);
         $dirs = [$pathToArchive];
@@ -142,7 +156,7 @@ class ArchiveService
         $zip = new ZipArchive;
         $resource = $zip->open($zipPath, ZipArchive::CREATE |  ZipArchive::OVERWRITE);
         if ($resource === true) {
-            if (!$onlyDb){
+            if (!$onlyDb) {
                 while (count($dirs)) {
                     $dir = current($dirs);
                     $dir = preg_replace("/(?:\/|\\\\|([^\/\\\\]))$/", "$1", $dir);
@@ -179,6 +193,25 @@ class ArchiveService
                     }
                     array_shift($dirs);
                 }
+            }
+            if (!empty($sqlContent)) {
+                $this->writeOutput($output, "Adding SQL file");
+                $zip->addEmptyDir(self::PRIVATE_FOLDER_NAME_IN_ZIP);
+                $zip->addFromString(
+                    self::PRIVATE_FOLDER_NAME_IN_ZIP."/".self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP,
+                    $sqlContent
+                );
+                $this->writeOutput($output, "Adding .htaccess file in folder ".self::PRIVATE_FOLDER_NAME_IN_ZIP);
+                
+                $zip->addFromString(
+                    self::PRIVATE_FOLDER_NAME_IN_ZIP."/.htaccess",
+                    "DENY FROM ALL\n"
+                );
+                
+                $zip->addFromString(
+                    self::PRIVATE_FOLDER_NAME_IN_ZIP."/README.md",
+                    self::PRIVATE_FOLDER_README_DEFAULT_CONTENT
+                );
             }
             $this->writeOutput($output, "Generating zip file");
             $zip->close();
@@ -407,5 +440,92 @@ class ArchiveService
         $config->load();
         unset($config['wiki_status']);
         $this->configurationService->write($config);
+    }
+
+    /**
+     * extract sql content
+     * @param string $privatePath
+     * @return string $sqlContent
+     * @throws Exception
+     */
+    protected function getSQLContent(string $privatePath): string
+    {
+        $hostname = $this->params->get('mysql_host');
+        $this->assertParamIsNotEmptyString('mysql_host', $hostname);
+
+        $databasename = $this->params->get('mysql_database');
+        $this->assertParamIsNotEmptyString('mysql_database', $databasename);
+
+        $tablePrefix = $this->params->get('table_prefix');
+        $this->assertParamIsNotEmptyString('table_prefix', $tablePrefix);
+
+        $username = $this->params->get('mysql_user');
+        $this->assertParamIsString('mysql_user', $username);
+
+        $password = $this->params->get('mysql_password');
+        $this->assertParamIsString('mysql_password', $password);
+
+        $resultFile = tempnam($privatePath, 'tmp_sql_file_to_delete');
+        $results = $this->consoleService->findAndStartExecutableSync(
+            "mysqldump",
+            [
+                "--host=$hostname",
+                "--user=$username",
+                "--password=$password",
+                "--result-file=".realpath($resultFile),
+                $databasename, // databasename
+                "{$tablePrefix}users", // tables
+                "{$tablePrefix}pages", // tables
+                "{$tablePrefix}nature", // tables
+                "{$tablePrefix}triples", // tables
+                "{$tablePrefix}acls", // tables
+                "{$tablePrefix}links", // tables
+                "{$tablePrefix}referrers", // tables
+            ], // args
+            "", // subfolder
+            ('\\' === DIRECTORY_SEPARATOR ? ["c:\\xampp\\mysql\\bin\\"]: []), // extraDirsWhereSearch
+            60 // timeoutInSec
+        );
+
+        // get content
+        if (file_exists($resultFile)) {
+            $sqlContent = file_get_contents($resultFile);
+            unlink($resultFile);
+        }
+        if (empty($sqlContent)) {
+            throw new Exception("SQL not exported");
+        }
+        if (!empty($results)) {
+            // it could be occur an error
+            // throw new Exception("Error when exporting SQL :".implode(',',array_map(function ($result){return $result['stderr'] ?? '';},$results)));
+        }
+        return $sqlContent;
+    }
+    
+    /**
+     * assert param is a not empty string
+     * @param string $name
+     * @param mixed $param
+     * @throws Exception
+     */
+    protected function assertParamIsNotEmptyString(string $name, $param)
+    {
+        if (empty($param)) {
+            throw new Exception("'$name' should not be empty in 'wakka.config.php'");
+        }
+        $this->assertParamIsString($name, $param);
+    }
+
+    /**
+     * assert param is a string
+     * @param string $name
+     * @param mixed $param
+     * @throws Exception
+     */
+    protected function assertParamIsString(string $name, $param)
+    {
+        if (!is_string($param)) {
+            throw new Exception("'$name' should be a string in 'wakka.config.php'");
+        }
     }
 }
