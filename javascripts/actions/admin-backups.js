@@ -136,6 +136,31 @@ let appParams = {
                 this.selectedArchivesToDelete.push(filename);
             }
         },
+        restoreArchive: function (archive){
+            // TODO update this part then restore will work
+            let archiveApp = this;
+            archiveApp.updating = true;
+            archiveApp.message = `Restauration de ${archive.filename}`;
+            archiveApp.messageClass = {alert:true,['alert-info']:true};
+            $.ajax({
+                method: "POST",
+                url: wiki.url(`api/archives/${archive.filename}`),
+                data: {
+                    action: 'restore'
+                },
+                success: function(data){
+                    archiveApp.message = "";
+                    archiveApp.loadArchives();
+                },
+                error: function(xhr,status,error){
+                    archiveApp.message = `Restauration impossible de ${archive.filename}`;
+                    archiveApp.messageClass = {alert:true,['alert-danger']:true};
+                    archiveApp.updating = false;
+                },
+                complete: function(){
+                }
+            });
+        },
         formatFileSize: function (bytes,decimalPoint) {
             if(bytes == 0) return '0';
             var k = 1024,
