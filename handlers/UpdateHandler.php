@@ -10,6 +10,7 @@ use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Wiki;
 
 class UpdateHandler extends YesWikiHandler
@@ -246,8 +247,7 @@ class UpdateHandler extends YesWikiHandler
         $output = "ℹ️ Resetting comment acls<br />";
 
         // default acls in wakka.config.php
-        include_once 'tools/templates/libs/Configuration.php';
-        $config = new Configuration('wakka.config.php');
+        $config = $this->getService(ConfigurationService::class)->getConfiguration('wakka.config.php');
         $config->load();
 
         $baseKey = 'default_comment_acl';
