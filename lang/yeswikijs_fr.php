@@ -38,6 +38,22 @@ return [
     'WEDNESDAY' => 'Mercredi',
     "YES" => "Oui",
 
+    // /javascripts/actions/admin-backups.js
+    "ADMIN_BACKUPS_LOADING_LIST" => "Chargement de la liste des sauvegardes",
+    "ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST" => "Impossible de mettre à jour la liste des sauvegardes",
+    "ADMIN_BACKUPS_DELETE_ARCHIVE" => "Suppression de {filename}",
+    "ADMIN_BACKUPS_DELETE_ARCHIVE_POSSIBLE_ERROR" => "Une erreur pourrait avoir eu lieu en supprimant {filename}",
+    "ADMIN_BACKUPS_DELETE_ARCHIVE_SUCCESS" => "Suppression réussie de {filename}",
+    "ADMIN_BACKUPS_DELETE_ARCHIVE_ERROR" => "Suppression impossible de {filename}",
+    "ADMIN_BACKUPS_NO_ARCHIVE_TO_DELETE" => "Aucune sauvegarde à supprimer",
+    "ADMIN_BACKUPS_DELETE_SELECTED_ARCHIVES" => "Suppression des sauvegardes sélectionnées",
+    "ADMIN_BACKUPS_RESTORE_ARCHIVE" => "Restauration de {filename}",
+    "ADMIN_BACKUPS_RESTORE_ARCHIVE_POSSIBLE_ERROR" => "Une erreur pourrait avoir eu lieu en restraurant {filename}",
+    "ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS" => "Restauration réussie de {filename}",
+    "ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR" => "Restauration impossible de {filename}",
+    "ADMIN_BACKUPS_START_BACKUP" => "Lancement d'une sauvegarde",
+    "ADMIN_BACKUPS_START_BACKUP_ERROR" => "Lancement de la sauvegarde impossible",
+
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Modifs apportées par cette version",
     "REVISIONS_DIFF" => "Comparaison avec version actuelle",

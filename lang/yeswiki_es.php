@@ -52,6 +52,21 @@ return [
     'NO_TOOL_AVAILABLE' => 'Ninguna herramienta esta disponible o activa',
     'LIST_OF_ACTIVE_TOOLS' => 'Lista de las extensiones activas',
 
+    // actions/AdminBackupsAtion.php
+    'ADMIN_BACKUPS_TITLE' => 'Administración de copias de seguridad',
+    'ADMIN_BACKUPS_ARCHIVES_LIST' => 'Lista de copias de seguridad',
+    'ADMIN_BACKUPS_ARCHIVE_FILENAME' => 'Nombre de archivo',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE' => 'Tipo',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_FULL' => 'Copia de seguridad completa',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES' => 'Sólo archivos',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES' => 'Sólo la base de datos',
+    'ADMIN_BACKUPS_ARCHIVE_SIZE' => 'Cintura',
+    'ADMIN_BACKUPS_CREATE' => 'Crear una copia de seguridad',
+    'ADMIN_BACKUPS_START' => 'Empezar',
+    'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Configuración avanzada',
+    'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Archivos excluidos',
+    'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Archivos adicionales',
+
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Paginas teniendo un enlace hacia',
     'PAGES_WITH_LINK_TO_CURRENT_PAGE' => 'Paginas teniendo un enlace hacia la página corriente',

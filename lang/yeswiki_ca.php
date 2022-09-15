@@ -49,6 +49,21 @@ return [
     'NO_TOOL_AVAILABLE' => 'No hi ha cap eina disponible o activa',
     'LIST_OF_ACTIVE_TOOLS' => 'Llista d\'extensions actives',
 
+    // actions/AdminBackupsAtion.php
+    'ADMIN_BACKUPS_TITLE' => 'Gestió de còpies de seguretat',
+    'ADMIN_BACKUPS_ARCHIVES_LIST' => 'Llista de còpies de seguretat',
+    'ADMIN_BACKUPS_ARCHIVE_FILENAME' => 'Nom del fitxer',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE' => 'Tipus',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_FULL' => 'Còpia de seguretat completa',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES' => 'Només fitxers',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES' => 'Només la base de dades',
+    'ADMIN_BACKUPS_ARCHIVE_SIZE' => 'Cintura',
+    'ADMIN_BACKUPS_CREATE' => 'Crear una còpia de seguretat',
+    'ADMIN_BACKUPS_START' => 'Començar',
+    'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Configuració avançada',
+    'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Fitxers exclosos',
+    'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Fitxers addicionals',
+
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Pàgines que enllacen amb',
     'PAGES_WITH_LINK_TO_CURRENT_PAGE' => 'Pàgines que enllacen a l\'actual',

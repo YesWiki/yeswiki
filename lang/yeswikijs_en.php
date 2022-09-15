@@ -38,6 +38,22 @@ return [
     'WEDNESDAY' => 'Wednesday',
     "YES" => "Yes",
 
+    // /javascripts/actions/admin-backups.js
+    "ADMIN_BACKUPS_LOADING_LIST" => "Loading list of backups",
+    "ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST" => "Not possible to update list of backups",
+    "ADMIN_BACKUPS_DELETE_ARCHIVE" => "Delete {filename}",
+    "ADMIN_BACKUPS_DELETE_ARCHIVE_POSSIBLE_ERROR" => "An error could occur when deleting {filename}",
+    "ADMIN_BACKUPS_DELETE_ARCHIVE_SUCCESS" => "{filename} successfully deleted",
+    "ADMIN_BACKUPS_DELETE_ARCHIVE_ERROR" => "Not possible to delete {filename}",
+    "ADMIN_BACKUPS_NO_ARCHIVE_TO_DELETE" => "No backup to delete",
+    "ADMIN_BACKUPS_DELETE_SELECTED_ARCHIVES" => "Deleting selected backups",
+    "ADMIN_BACKUPS_RESTORE_ARCHIVE" => "Restore {filename}",
+    "ADMIN_BACKUPS_RESTORE_ARCHIVE_POSSIBLE_ERROR" => "An error could occur when restoring {filename}",
+    "ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS" => "{filename} successfully restored",
+    "ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR" => "Not possible to restore {filename}",
+    "ADMIN_BACKUPS_START_BACKUP" => "Start a backup",
+    "ADMIN_BACKUPS_START_BACKUP_ERROR" => "`Not possible to start backup",
+
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Changes done by this revision",
     "REVISIONS_DIFF" => "Comparison to the current revision",
