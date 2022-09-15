@@ -43,9 +43,7 @@ spl_autoload_register(function ($className) {
                     }
                     break;
                 case 'Commands':
-                    if ($matches[1] != "Core") {
-                        require "$basePath/commands/{$matches[3]}.php";
-                    }
+                    require "$basePath/commands/{$matches[3]}.php";
                     break;
                 case 'Entity':
                     require "$basePath/entities/{$matches[3]}.php";
