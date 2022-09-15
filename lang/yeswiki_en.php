@@ -64,6 +64,8 @@ return [
     'ADMIN_BACKUPS_ARCHIVE_SIZE' => 'Size',
     'ADMIN_BACKUPS_CREATE' => 'Create backup',
     'ADMIN_BACKUPS_START' => 'Start',
+    'ADMIN_BACKUPS_STOP' => 'Stop',
+    'ADMIN_BACKUPS_STOP_BACKUP' => 'Stop backup',
     'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Advanced parameters',
     'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Excluded files',
     'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Extra files',

@@ -63,6 +63,8 @@ return [
     'ADMIN_BACKUPS_ARCHIVE_SIZE' => 'Cintura',
     'ADMIN_BACKUPS_CREATE' => 'Crear una copia de seguridad',
     'ADMIN_BACKUPS_START' => 'Empezar',
+    'ADMIN_BACKUPS_STOP' => 'Parar',
+    'ADMIN_BACKUPS_STOP_BACKUP' => 'Parar la copia de seguridad',
     'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Configuración avanzada',
     'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Archivos excluidos',
     'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Archivos adicionales',

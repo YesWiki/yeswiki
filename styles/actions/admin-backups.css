@@ -27,6 +27,6 @@
 .relativeSpinner {
     position: relative;
 }
-.admin-backups-container pre {
+.admin-backups-container .alert pre {
     color: initial;
 }

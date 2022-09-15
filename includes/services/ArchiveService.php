@@ -10,6 +10,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Process\Process;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Core\Entity\ConfigurationFile;
+use YesWiki\Core\Exception\StopArchiveException;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\ConsoleService;
 use YesWiki\Wiki;
@@ -111,6 +112,10 @@ class ArchiveService
         $this->assertEnoughtSpace();
         $this->writeOutput($output, "There is enough free space.", true, $outputFile);
 
+        if ($this->checkIfNeedStop($inputFile)) {
+            $this->writeOutput($output, "STOP", true, $outputFile);
+            return "";
+        }
         $onlyDb = false;
         // check options and prepare file suffix
         if (!$savefiles && !$savedatabase) {
@@ -123,9 +128,22 @@ class ArchiveService
         } else {
             $fileSuffix = self::ARCHIVE_SUFFIX;
         }
-        $this->writeOutput($output, "=> Preparing list of excluded files", true, $outputFile);
-        $dataFiles = $this->prepareExcludeFiles($extrafiles, $excludedfiles);
+        if (!$onlyDb) {
+            $this->writeOutput($output, "=> Preparing list of excluded files", true, $outputFile);
+            try {
+                $dataFiles = $this->prepareExcludeFiles($extrafiles, $excludedfiles, $inputFile);
+            } catch (StopArchiveException $ex) {
+                $this->writeOutput($output, "STOP", true, $outputFile);
+                return "";
+            }
+        } else {
+            $dataFiles = [];
+        }
 
+        if ($this->checkIfNeedStop($inputFile)) {
+            $this->writeOutput($output, "STOP", true, $outputFile);
+            return "";
+        }
         // prepare location of zip file
 
         $archiveFileName = (new DateTime())->format("Y-m-d\\TH-i-s")."$fileSuffix.zip";
@@ -146,11 +164,21 @@ class ArchiveService
             // get SQl
             $sqlContent = $savedatabase ? $this->getSQLContent($privatePath) : "";
 
+            if ($this->checkIfNeedStop($inputFile)) {
+                $this->unsetWikiStatus();
+                $this->writeOutput($output, "STOP", true, $outputFile);
+                return "";
+            }
+
             $this->writeOutput($output, "=== Creating zip archive ===", true, $outputFile);
             $this->createZip($location, $dataFiles, $output, $sqlContent, $onlyDb, $anonymousParams, $inputFile, $outputFile);
 
             $this->writeOutput($output, "Archive \"$location\" successfully created !", true, $outputFile);
             $this->writeOutput($output, "END", true, $outputFile);
+        } catch (StopArchiveException $ex) {
+            $this->unsetWikiStatus();
+            $this->writeOutput($output, "STOP", true, $outputFile);
+            return "";
         } catch (Throwable $th) {
             $this->unsetWikiStatus();
             throw $th;
@@ -295,6 +323,8 @@ class ArchiveService
         $results = [
             'started' => false,
             'running' => false,
+            'finished' => false,
+            'stopped' => false,
             'output' => ""
         ];
         $privateFolder = $this->getPrivateFolder();
@@ -317,10 +347,12 @@ class ArchiveService
             list(
                 'running' => $running,
                 'finished' => $finished,
+                'stopped' => $stopped,
                 'output' =>$output
             ) = $this->getRunningUIDdata($uid, $info[$uid]);
             $results['running'] = $running;
             $results['finished'] = $finished;
+            $results['stopped'] = $stopped;
             if ($finished) {
                 $output = preg_replace("/(^Archive \\\")(.*)(\\\" successfully created !\s*END\s*$)/m", "$1---$3", $output);
             }
@@ -330,6 +362,44 @@ class ArchiveService
             }
         }
         return $results;
+    }
+
+    /**
+     * put data in file to stop archive
+     * @param string $uid
+     * @return bool
+     */
+    public function stopArchive(string $uid): bool
+    {
+        if (empty($uid)) {
+            return false;
+        }
+        $info = $this->getInfoFromFile();
+        if (!isset($info[$uid]) ||
+            empty($info[$uid]['input']) ||
+            !is_file($info[$uid]['input'])
+            ) {
+            return false;
+        }
+        file_put_contents($info[$uid]['input'], "STOP");
+        return true;
+    }
+
+    /**
+     * check if need to stop archive
+     * @param string $inputFile
+     * @return bool
+     */
+    protected function checkIfNeedStop(string $inputFile = ""):bool
+    {
+        if (empty($inputFile) || !is_file($inputFile)) {
+            return false;
+        }
+        $content = file_get_contents($inputFile);
+        if (empty($content)) {
+            return false;
+        }
+        return preg_match("/^STOP.*/", $content);
     }
 
     /**
@@ -390,6 +460,12 @@ class ArchiveService
                                         $zip->addFile($localName, $relativeName);
                                     } elseif (is_dir($localName)) {
                                         $dirs[] = $dir.DIRECTORY_SEPARATOR.$file;
+                                        if ($this->checkIfNeedStop($inputFile)) {
+                                            $zip->unchangeAll();
+                                            $this->writeOutput($output, "== Closing archive after undoing all changes ==", true, $outputFile);
+                                            $zip->close();
+                                            throw new StopArchiveException("Stop archive");
+                                        }
                                     }
                                 }
                             }
@@ -427,10 +503,11 @@ class ArchiveService
      * prepared exhaustove list of excluded files and folders
      * @param array $extrafiles
      * @param array $excludedfiles
+     * @param string $inputFile
      * @return array ['preparedExcludedFiles' => $preparedExcludedFiles, 'extrafiles' => $extrafiles,
      *    'excludedfiles' => $excludedfiles]
      */
-    private function prepareExcludeFiles(array $extrafiles, array $excludedfiles): array
+    private function prepareExcludeFiles(array $extrafiles, array $excludedfiles, string $inputFile): array
     {
         // merge extra and exlucded files from wakka.config.php
         $archiveParams = $this->getArchiveParams();
@@ -451,15 +528,18 @@ class ArchiveService
             }
         }
         $extrafiles = $this->sanitizeFileList($extrafiles);
-        list($preparedExtraFiles, $onlyChildren) = $this->prepareFileListFromGlob($extrafiles);
+        list($preparedExtraFiles, $onlyChildren) = $this->prepareFileListFromGlob($extrafiles, [], $inputFile);
         $excludedfiles = $this->sanitizeFileList($excludedfiles);
         $excludedfilesWithDefault = $excludedfiles;
+        if ($this->checkIfNeedStop($inputFile)) {
+            throw new StopArchiveException("Stop archive");
+        }
         foreach ($this->sanitizeFileList(self::DEFAULT_EXCLUDED_FILES) as $filePath) {
             if (!in_array($filePath, $excludedfilesWithDefault) && !in_array($filePath, $extrafiles)) {
                 $excludedfilesWithDefault[] = $filePath;
             }
         }
-        list($preparedExcludedFiles, $onlyChildren)  = $this->prepareFileListFromGlob($excludedfilesWithDefault, $preparedExtraFiles);
+        list($preparedExcludedFiles, $onlyChildren)  = $this->prepareFileListFromGlob($excludedfilesWithDefault, $preparedExtraFiles, $inputFile);
         return compact(['preparedExcludedFiles','extrafiles','excludedfiles','onlyChildren']);
     }
 
@@ -482,7 +562,13 @@ class ArchiveService
         return $outputList;
     }
 
-    private function prepareFileListFromGlob(array $list, array $ignoreList = []): array
+    /**
+     * @param array $list
+     * @param array $ignoreList
+     * @param string $inputFile
+     * @return array
+     */
+    private function prepareFileListFromGlob(array $list, array $ignoreList = [], string $inputFile = ""): array
     {
         $outputList = [];
         $onlyChildren = [];
@@ -495,19 +581,29 @@ class ArchiveService
                     });
                     if (!empty($foundChildren)) {
                         foreach ($foundChildren as $path) {
-                            $this->appendChildPathToChildren($onlyChildren, $filename, $path);
+                            $this->appendChildPathToChildren($onlyChildren, $filename, $path, $inputFile);
                         }
                     }
                 }
                 if (empty($onlyChildren[$filename]) && !in_array($filename, $outputList) && !in_array($filename, $ignoreList)) {
                     $outputList[] = $filename;
                 }
+                if ($this->checkIfNeedStop($inputFile)) {
+                    throw new StopArchiveException("Stop archive");
+                }
             }
         }
         return [$outputList,$onlyChildren];
     }
 
-    private function appendChildPathToChildren(array &$onlyChildren, string $dirname, string $path)
+    /**
+     * @param &array $onlyChildren
+     * @param string $dirname
+     * @param string $path
+     * @param string $inputFile
+     * @return array
+     */
+    private function appendChildPathToChildren(array &$onlyChildren, string $dirname, string $path, string $inputFile)
     {
         if (empty($onlyChildren[$dirname])) {
             $onlyChildren[$dirname] = [];
@@ -515,9 +611,12 @@ class ArchiveService
         $currentPath = $path;
         $parentDir = dirname($currentPath);
         while ($parentDir != $dirname) {
-            $this->appendChildPathToChildren($onlyChildren, $parentDir, $currentPath);
+            $this->appendChildPathToChildren($onlyChildren, $parentDir, $currentPath, $inputFile);
             $currentPath = $parentDir;
             $parentDir = dirname($currentPath);
+            if ($this->checkIfNeedStop($inputFile)) {
+                throw new StopArchiveException("Stop archive");
+            }
         }
         if (!in_array($currentPath, $onlyChildren[$dirname])) {
             $onlyChildren[$dirname][] = $currentPath;
@@ -980,7 +1079,7 @@ class ArchiveService
     /** check id current uid is running
      * @param string $uid
      * @param array $info
-     * @return array ['running' => bool, 'finished' => bool, 'output' => string]
+     * @return array ['running' => bool, 'finished' => bool, 'stopped' => bool,'output' => string]
      */
     private function getRunningUIDdata(string $uid, array $info): array
     {
@@ -994,10 +1093,11 @@ class ArchiveService
             ? true
             : false
         );
+        $stopped = preg_match("/(STOP)\s*$/", $output);
         if ($finished) {
             $running = false;
         }
 
-        return compact(['running','finished','output']);
+        return compact(['running','finished','stopped','output']);
     }
 }
