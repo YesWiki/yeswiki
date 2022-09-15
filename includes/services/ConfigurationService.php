@@ -31,23 +31,18 @@ class ConfigurationService
         if (is_null($file)) {
             $file = $config->_file;
         }
-        $content = $this->getContentToWrite($config,$file, $arrayName);
+        $content = $this->getContentToWrite($config, $arrayName);
         return (file_put_contents($file, $content) !== false);
     }
     
     /**
      * extract content to write tto config file
      * @param ConfigurationFile $config
-     * @param string|null $file
      * @param string $arrayName
      * @return string
      */
-    public function getContentToWrite(ConfigurationFile $config, ?string $file = null, string $arrayName = "wakkaConfig"): string
+    public function getContentToWrite(ConfigurationFile $config, string $arrayName = "wakkaConfig"): string
     {
-        if (is_null($file)) {
-            $file = $config->_file;
-        }
-
         $content = "<?php\n\n\$$arrayName = ";
 
         $content .= $this->customVarExport($config->_parameters, true);
