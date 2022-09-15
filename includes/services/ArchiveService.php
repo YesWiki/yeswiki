@@ -24,7 +24,7 @@ class ArchiveService
         'tools/*/node_modules',
         '.git',
         'tools/*/.git',
-        "cache"
+        "cache/*"
     ];
     public const DEFAULT_PARAMS_TO_ANONYMIZE = [
         'mysql_host' => '',
