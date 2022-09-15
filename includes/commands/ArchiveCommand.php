@@ -41,6 +41,7 @@ class ArchiveCommand extends Command
             ->addOption('extrafiles', 'e', InputOption::VALUE_REQUIRED, 'Extrafiles, path relative to root, coma separated')
             ->addOption('excludedfiles', 'x', InputOption::VALUE_REQUIRED, 'Excludedfiles, path relative to root, coma separated')
             ->addOption('anonymous', 'a', InputOption::VALUE_REQUIRED, 'Params to anonymize in wakka.config.php, json_encoded')
+            ->addOption('uid', 'u', InputOption::VALUE_REQUIRED, 'uid to retrive input and ouput files')
         ;
     }
 
@@ -64,8 +65,10 @@ class ArchiveCommand extends Command
                 $anonymous = $rawAnonymous;
             }
         }
+        $uid = $input->getOption('uid');
+        $uid = empty($uid) ? "" : $uid;
 
-        $location = $this->archiveService->archive($output, !$nosavefiles, !$nosavedatabase, $extrafiles, $excludedfiles, $anonymous);
+        $location = $this->archiveService->archive($output, !$nosavefiles, !$nosavedatabase, $extrafiles, $excludedfiles, $anonymous, $uid);
 
         return Command::SUCCESS;
     }

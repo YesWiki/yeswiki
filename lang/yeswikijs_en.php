@@ -52,7 +52,13 @@ return [
     "ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS" => "{filename} successfully restored",
     "ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR" => "Not possible to restore {filename}",
     "ADMIN_BACKUPS_START_BACKUP" => "Start a backup",
-    "ADMIN_BACKUPS_START_BACKUP_ERROR" => "`Not possible to start backup",
+    "ADMIN_BACKUPS_STARTED" => "Backup started",
+    "ADMIN_BACKUPS_START_BACKUP_ERROR" => "Not possible to start backup",
+    "ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR" => "Not possible to update backup status",
+    "ADMIN_BACKUPS_UID_STATUS_NOT_FOUND" => "Data about backup was not found",
+    "ADMIN_BACKUPS_UID_STATUS_RUNNING" => "Running backup",
+    "ADMIN_BACKUPS_UID_STATUS_FINISHED" => "Finished backup",
+    "ADMIN_BACKUPS_UID_STATUS_NOT_FINISHED" => "Trouble backup is not running but not finished",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Changes done by this revision",

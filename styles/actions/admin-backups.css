@@ -5,6 +5,9 @@
     row-gap: 10px;
 }
 
+.admin-backups-container .archive-buttons {
+    margin-bottom: 5px;
+}
 .backups-container .archive-item.archive-filename {
     word-break: break-all;
 }
@@ -19,4 +22,11 @@
         max-width: 50px;
         overflow-x: hidden;
     }
+}
+
+.relativeSpinner {
+    position: relative;
+}
+.admin-backups-container pre {
+    color: initial;
 }

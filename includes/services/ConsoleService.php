@@ -186,7 +186,7 @@ class ConsoleService
     protected function findExecutable(string $name, array $extraDirs = []): string
     {
         if (empty($name)) {
-            throw new Exception("'name' should nt be empty !");
+            throw new Exception("'name' should not be empty !");
         }
         return $this->executableFinder->find($name, "", $extraDirs);
     }

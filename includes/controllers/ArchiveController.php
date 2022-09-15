@@ -91,15 +91,15 @@ class ArchiveController extends YesWikiController
                     );
                 }
                 $params = (isset($_POST['params']) && is_array($_POST['params'])) ? $_POST['params'] : [];
-                $pid = $this->startArchiveAsync($params);
-                if (empty($pid)) {
+                $uid = $this->startArchiveAsync($params);
+                if (empty($uid)) {
                     return new ApiResponse(
                         ['error' => 'no process created when starting archive action'],
                         Response::HTTP_INTERNAL_SERVER_ERROR
                     );
                 }
                 return new ApiResponse(
-                    ['pid' => $pid],
+                    ['uid' => $uid],
                     Response::HTTP_OK
                 );
                 break;
@@ -109,13 +109,6 @@ class ArchiveController extends YesWikiController
                     Response::HTTP_OK
                 );
                 break;
-            case 'archiveStatus':
-                return new ApiResponse(
-                    [],
-                    Response::HTTP_OK
-                );
-                break;
-            
             case 'restore':
                 if (empty($id)) {
                     return new ApiResponse(
@@ -139,6 +132,20 @@ class ArchiveController extends YesWikiController
         }
     }
 
+    public function getArchiveStatus(string $uid)
+    {
+        if (empty($uid)) {
+            return new ApiResponse(
+                ['error' => "\$uid should not be empty"],
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+        return new ApiResponse(
+            $this->archiveService->getUIDStatus($uid),
+            Response::HTTP_OK
+        );
+    }
+
     /**
      * start archive async via CLI
      * @param array $params
@@ -147,7 +154,7 @@ class ArchiveController extends YesWikiController
      * @param bool $savedatabase
      * @param array $extrafiles
      * @param array $excludedfiles
-     * @return string PID
+     * @return string uid
      */
     protected function startArchiveAsync(
         array $params = []
@@ -160,13 +167,11 @@ class ArchiveController extends YesWikiController
         $extrafiles = array_filter($extrafiles, 'is_string');
         $excludedfiles = array_filter($excludedfiles, 'is_string');
 
-        $process = $this->archiveService->startArchiveAsync(
+        return $this->archiveService->startArchiveAsync(
             $savefiles,
             $savedatabase,
             $extrafiles,
             $excludedfiles
         );
-        $processId = empty($process) ? "" : $process->getPid();
-        return empty($processId) ? "" : $processId;
     }
 }
