@@ -87,7 +87,7 @@ const FavoritesHelper = {
             });
           }
         } else {
-          FavoritesHelper.updateElem($(`[data-resource=${resource}]`),"add");
+          FavoritesHelper.updateElem($(`[data-resource="${resource}"]`),"add");
         }
       },
       error: function(xhr,status,error){
@@ -136,7 +136,7 @@ const FavoritesHelper = {
             });
           }
         } else {
-          FavoritesHelper.updateElem($(`[data-resource=${resource}]`),"delete");
+          FavoritesHelper.updateElem($(`[data-resource="${resource}"]`),"delete");
         }
       },
       error: function(xhr,status,error){
@@ -203,7 +203,7 @@ const FavoritesHelper = {
               });
             }
           } else {
-            let elem = $(`[data-resource=${resource}]`);
+            let elem = $(`[data-resource="${resource}"]`);
             FavoritesHelper.updateElem(elem,"delete",false);
             FavoritesHelper.deleteFirstFavorite(user,tags);
           }
