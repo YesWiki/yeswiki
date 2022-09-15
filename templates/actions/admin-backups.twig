@@ -33,6 +33,15 @@
     </button>
   </div>
   <div v-if="archiveMessage.length > 0" v-html="archiveMessage" :class="archiveMessageClass"></div>
+  <div v-if="archiveMessage.length > 0 && askConfirmationToDelete"
+    @click="toggleconfimationToDeleteFiles()">
+    <input 
+      type="checkbox" 
+      name="confimationToDeleteFiles" 
+      value="1" 
+      :checked="canForceDelete">
+    <span>{{ _t('ADMIN_BACKUPS_CONFIRM_DELETE_FILES') }}</span>
+  </div>
   <div v-if="showAdvancedParams" class="well">
     <div class="input-group input-group-sm">
       <div class="input-group-prepend">

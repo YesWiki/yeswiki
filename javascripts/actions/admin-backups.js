@@ -30,6 +30,8 @@ let appParams = {
                 ['alert-info']: true
             },
             stoppingArchive: false,
+            canForceDelete: false,
+            askConfirmationToDelete: false,
         };
     },
     methods: {
@@ -181,6 +183,12 @@ let appParams = {
         },
         startArchive: function (){
             let archiveApp = this;
+            if (!archiveApp.canForceDelete){
+                archiveApp.checkFilesToDelete();
+                return ;
+            }
+            archiveApp.canForceDelete = false;
+            archiveApp.askConfirmationToDelete = false;
             archiveApp.updating = true;
             archiveApp.archiving = true;
             archiveApp.message = "";
@@ -211,6 +219,39 @@ let appParams = {
                     archiveApp.archiving = false;
                 }
             });
+        },
+        checkFilesToDelete: function (){
+            let archiveApp = this;
+            $.ajax({
+                method: "POST",
+                url: wiki.url(`api/archives`),
+                data: {
+                    action: 'futureDeletedArchives',
+                },
+                success: function(data){
+                    if (data.files.length == 0){
+                        archiveApp.canForceDelete = true;
+                        archiveApp.askConfirmationToDelete = false;
+                        archiveApp.startArchive();
+                    } else {
+                        archiveApp.canForceDelete = false;
+                        archiveApp.askConfirmationToDelete = true;
+                        archiveApp.archiveMessage = _t('ADMIN_BACKUPS_CONFIRMATION_TO_DELETE',{
+                            'files': data.files.join('<br>')
+                        }).replace("\n",'<br>');
+                        archiveApp.archiveMessageClass = {alert:true,['alert-warning']:true};
+                    }
+                },
+                error: function(xhr,status,error){
+                    archiveApp.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP_ERROR');
+                    archiveApp.archiveMessageClass = {alert:true,['alert-danger']:true};
+                    archiveApp.updating = false;
+                    archiveApp.archiving = false;
+                }
+            });
+        },
+        toggleconfimationToDeleteFiles: function (){
+            this.canForceDelete = !this.canForceDelete;
         },
         stopArchive: function (){
             this.stoppingArchive = true;

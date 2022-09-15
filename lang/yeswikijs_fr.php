@@ -62,6 +62,8 @@ return [
     "ADMIN_BACKUPS_UID_STATUS_STOP" => "Sauvegarde arrêtée",
     "ADMIN_BACKUPS_STOP_BACKUP_ERROR" => "Erreur : impossible d'arrêter la sauvegarde",
     "ADMIN_BACKUPS_STOPPING_ARCHIVE" => "Arrêt en cours de la sauvegarde",
+    "ADMIN_BACKUPS_CONFIRMATION_TO_DELETE" => "Les fichiers suivants seront supprimés par la sauvegarde.\n".
+        "Veuillez confirmer leur suppression en cochant la case ci-dessous.\n<pre>{files}</pre>",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Modifs apportées par cette version",

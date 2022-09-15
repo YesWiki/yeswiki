@@ -64,6 +64,7 @@ return [
     'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Configurações avançadas',
     'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Ficheiros excluídos',
     'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Ficheiros adicionais',
+    'ADMIN_BACKUPS_CONFIRM_DELETE_FILES' => 'Confirmar a eliminação de ficheiros',
 
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Páginas que apontam para',

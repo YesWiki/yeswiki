@@ -353,8 +353,8 @@ class ArchiveService
             $results['running'] = $running;
             $results['finished'] = $finished;
             $results['stopped'] = $stopped;
-            if ($finished) {
-                $output = preg_replace("/(^Archive \\\")(.*)(\\\" successfully created !\s*END\s*$)/m", "$1---$3", $output);
+            if (!$running) {
+                $output = preg_replace("/(^Archive \\\")(.*)(\\\" successfully created !(?:\s*END)?\s*$)/m", "$1---$3", $output);
             }
             $results['output'] = $output;
             if (!$results['running']) {
@@ -910,8 +910,21 @@ class ArchiveService
      */
     private function cleanOldestFiles()
     {
+        $archivesToDelete = $this->archivesToDelete();
+        if (!empty($archivesToDelete)) {
+            $this->deleteArchives($archivesToDelete);
+        }
+    }
+
+    /**
+     * extract list of archives to delete
+     * @param bool $beforeArchive
+     * @return array $files
+     */
+    public function archivesToDelete(bool $beforeArchive = false): array
+    {
         $archives =  $this->getArchives();
-        $nbFilesToRemove = count($archives) - self::MAX_NB_FILES;
+        $nbFilesToRemove = count($archives) - self::MAX_NB_FILES + ($beforeArchive ? 1 : 0);
         if ($nbFilesToRemove > 0) {
             // there are files to remove
             // keep at least one file more than 1 day and other more than 2 days to prevent
@@ -947,9 +960,10 @@ class ArchiveService
                     $archivesToDelete[] = $archives[$index]['filename'];
                 }
     
-                $this->deleteArchives($archivesToDelete);
+                return $archivesToDelete;
             }
         }
+        return [];
     }
 
     private function getIndexesMoreThanxdays(array $archives, int $days): array

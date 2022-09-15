@@ -65,6 +65,7 @@ return [
     'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Configuració avançada',
     'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Fitxers exclosos',
     'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Fitxers addicionals',
+    'ADMIN_BACKUPS_CONFIRM_DELETE_FILES' => 'Confirmar la supressió del fitxer',
 
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Pàgines que enllacen amb',
