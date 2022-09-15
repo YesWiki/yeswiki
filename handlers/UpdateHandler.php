@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Bazar\Field\CalcField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\AclService;
@@ -122,6 +123,9 @@ class UpdateHandler extends YesWikiHandler
                 }
             }
 
+            // replace CalcField value by string
+            $output .= $this->calcFieldToString();
+
             // propose to update content of admin's pages
             $output .= $this->frontUpdateAdminPages();
         } else {
@@ -221,14 +225,14 @@ class UpdateHandler extends YesWikiHandler
                     $pageContent = str_replace('{{rootPage}}', $this->params->get('root_page'), $pageContent);
                     $pageContent = str_replace('{{url}}', $this->params->get('base_url'), $pageContent);
                     if ($this->getService(PageManager::class)->save($page, $pageContent) !== 0) {
-                        $output .= (!empty($output) ? ', ':'')._t('NO_RIGHT_TO_WRITE_IN_THIS_PAGE').$page;
+                        $output .= (!empty($output) ? ', ' : '')._t('NO_RIGHT_TO_WRITE_IN_THIS_PAGE').$page;
                     } else {
                         // save links
                         $linkTracker->registerLinks($this->getService(PageManager::class)->getOne($page));
                     }
                 }
             } else {
-                $output .= (!empty($output) ? ', ':'').str_replace('{{page}}', $page, _t('UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL'));
+                $output .= (!empty($output) ? ', ' : '').str_replace('{{page}}', $page, _t('UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL'));
             }
         }
         return [empty($output),$output];
@@ -264,7 +268,7 @@ class UpdateHandler extends YesWikiHandler
     }
     private function fixDefaultCommentsAcls(): string
     {
-        $output = "ℹ️ Fix comment acls<br />";
+        $output = "ℹ️ Fix comment acls... ";
 
         // default acls in wakka.config.php
         include_once 'tools/templates/libs/Configuration.php';
@@ -287,6 +291,83 @@ class UpdateHandler extends YesWikiHandler
             $pageCommentAcl = $aclService->load($page['tag'], 'comment', false)['list'] ?? '';
             if (!empty($pageCommentAcl) && preg_match("/comment-closed\s*/", strval($pageCommentAcl))) {
                 $aclService->save($page['tag'], 'comment', "comments-closed");
+            }
+        }
+        $output .= '✅ Done !<br />';
+
+        return $output;
+    }
+
+    private function calcFieldToString(): string
+    {
+        $output = "ℹ️ CalcField value to string... ";
+
+        // get Services
+        $dbService = $this->getService(DbService::class);
+        $entryManager = $this->getService(EntryManager::class);
+        $formManager = $this->getService(FormManager::class);
+
+        // find CalcField in forms
+        $forms = $formManager->getAll();
+        if (!empty($forms)) {
+            $fields = [];
+            foreach ($forms as $form) {
+                $formId = $form['bn_id_nature'];
+                if (!empty($form['prepared'])) {
+                    foreach ($form['prepared'] as $field) {
+                        if ($field instanceof CalcField) {
+                            // init array for this form, if needed
+                            if (empty($fields[$formId])) {
+                                $fields[$formId] = [];
+                            }
+                            // append propertyName if not already present
+                            if (!empty($field->getPropertyName()) && !in_array($field->getPropertyName(), $fields[$formId])) {
+                                $fields[$formId][] = $field->getPropertyName();
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!empty($fields)) {
+                foreach ($fields as $formId => $fieldNames) {
+                    if (!empty($fieldNames)) {
+                        // prepare SQL to select concerned entries (EntryManager->search does not manage int)
+                        $fieldsNamesList = implode('|', $fieldNames);
+                        $sql =
+                            <<<SQL
+                            SELECT DISTINCT * FROM {$dbService->prefixTable('pages')}
+                            WHERE `comment_on` = ''
+                            AND `body` LIKE '%"id_typeannonce":"{$dbService->escape(strval($formId))}"%'
+                            AND `tag` IN (
+                                SELECT DISTINCT `resource` FROM {$dbService->prefixTable('triples')}
+                                WHERE `value` = "fiche_bazar" AND `property` = "http://outils-reseaux.org/_vocabulary/type"
+                                ORDER BY `resource` ASC
+                            )
+                            AND `body` REGEXP '"($fieldsNamesList)":-?[0-9]'
+                            SQL;
+                        $results = $dbService->loadAll($sql);
+                        if (!empty($results)) {
+                            foreach ($results as $page) {
+                                if (preg_match_all("/\"($fieldsNamesList)\":(-?[0-9\.]*),/", $page['body'], $matches)) {
+                                    foreach ($matches[0] as $index => $match) {
+                                        $fieldName = $matches[1][$index];
+                                        $oldValue = $matches[2][$index];
+                                        $newValue = strval($oldValue);
+                                        $replaceSQL =
+                                        <<<SQL
+                                        UPDATE {$dbService->prefixTable('pages')} 
+                                        SET `body` = replace(`body`,'"$fieldName":$oldValue,','"$fieldName":"$newValue",')
+                                        WHERE `id` = '{$dbService->escape($page['id'])}'
+                                        SQL;
+                                        // replace
+                                        $dbService->query($replaceSQL);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         $output .= '✅ Done !<br />';

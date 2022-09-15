@@ -93,7 +93,10 @@ class CalcField extends BazarField
                 $value = "formula not correct !";
             }
         }
-        return [$this->getPropertyName() => $value];
+        if (empty($value)) {
+            $value = 0;
+        }
+        return [$this->getPropertyName() => strval($value)];
     }
     private function getEntryValue($entry, $name, $default = 0)
     {
@@ -113,7 +116,7 @@ class CalcField extends BazarField
                 $result = ($fieldValue == $value);
             }
         }
-        return $result ?  "1" : "0";
+        return $result ? "1" : "0";
     }
 
     private function getPropertyNameIfDefined($entry, $name): ?string
@@ -143,7 +146,7 @@ class CalcField extends BazarField
     {
         return $this->displayText;
     }
-    
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()

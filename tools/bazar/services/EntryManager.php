@@ -287,7 +287,7 @@ class EntryManager
                 $nom = $this->convertToRawJSONStringForREGEXP($nom);
                 // sanitize $nom to prevent REGEXP SQL errors
                 $nom = preg_replace("/(?<=^|\?|\*|\+)(\?|\*|\+)/m", "\\\\\\\\$1", $nom);
-                if (!empty($val)) {
+                if (!in_array($val, [false,null,""], true)) {
                     $valcrit = explode(',', $val);
                     if (is_array($valcrit) && count($valcrit) > 1) {
                         $requeteSQL .= ' AND ';
@@ -562,7 +562,7 @@ class EntryManager
             $this->authController->logout();
             $this->authController->login($olduser, $olduser['remember'] ?? 1);
         }
-        
+
         $this->cachedEntriestags[$data['id_fiche']] = true;
 
         // if sendmail has referenced email fields, send an email to their adresses
@@ -662,7 +662,6 @@ class EntryManager
         }
 
         if (!empty($restrictedFields)) {
-
             // get the value of the restricted fields in the previous data
             foreach ($restrictedFields as $propName) {
                 if (isset($previousData[$propName])) {
@@ -1016,7 +1015,7 @@ class EntryManager
                     return !is_scalar($attributeName);
                 }
             ))
-            ) {
+        ) {
             throw new \Exception("\$attributesNames sould be array of string !");
         }
 
