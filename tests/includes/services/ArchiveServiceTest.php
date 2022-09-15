@@ -61,20 +61,20 @@ class ArchiveServiceTest extends YesWikiTestCase
             $extrafiles,
             $excludedfiles,
         );
-        $data = $this->getDataFromLocation($location,$services['wiki']);
+        $data = $this->getDataFromLocation($location, $services['wiki']);
         $error = $data['error'] ?? "";
-        $this->assertEmpty($error,"There is an error : $error");
-        $this->assertArrayNotHasKey('error',$data);
-        $this->assertMatchesRegularExpression("/^.*".preg_quote(constant("\\YesWiki\\Core\\Service\\ArchiveService::{$locationSuffix}").".zip","/")."$/", $location);
-        if (!is_null($nbFiles) && $nbFiles > -1){
-            $this->assertArrayHasKey('files',$data);
-            $this->assertCount($nbFiles,$data['files']);
+        $this->assertEmpty($error, "There is an error : $error");
+        $this->assertArrayNotHasKey('error', $data);
+        $this->assertMatchesRegularExpression("/^.*".preg_quote(constant("\\YesWiki\\Core\\Service\\ArchiveService::{$locationSuffix}").".zip", "/")."$/", $location);
+        if (!is_null($nbFiles) && $nbFiles > -1) {
+            $this->assertArrayHasKey('files', $data);
             foreach ($filesToFind as $path) {
-                $this->assertContains($path,$data['files']);
+                $this->assertContains($path, $data['files']);
             }
-            if (!is_null($wakkaContent)){
-                $this->assertArrayHasKey('wakkaContent',$data);
-                $this->checkWakkaContent($wakkaContent,$data['wakkaContent']);
+            $this->assertCount($nbFiles, $data['files']);
+            if (!is_null($wakkaContent)) {
+                $this->assertArrayHasKey('wakkaContent', $data);
+                $this->checkWakkaContent($wakkaContent, $data['wakkaContent']);
             }
         }
     }
@@ -107,8 +107,15 @@ class ArchiveServiceTest extends YesWikiTestCase
                 'extrafiles' => ['wakka.config.php'],
                 'excludedfiles' => ['*','.*'],
                 'locationSuffix' => "ARCHIVE_SUFFIX",
-                'nbFiles' => 1,
-                'filesToFind' => ['wakka.config.php'],
+                'nbFiles' => 6,
+                'filesToFind' => [
+                    'wakka.config.php',
+                    'private',
+                    'private/backups',
+                    'private/backups/.htaccess',
+                    'private/backups/README.md',
+                    'private/backups/content.sql',
+                ],
                 'wakkaContent' => [
                     'archive' => [
                         'extrafiles' => ['wakka.config.php'],
@@ -123,21 +130,18 @@ class ArchiveServiceTest extends YesWikiTestCase
             'archive only database' => [
                 'savefiles' => false,
                 'savedatabase' => true,
-                'extrafiles' => ['wakka.config.php'],
-                'excludedfiles' => ['*','.*'],
+                'extrafiles' => [],
+                'excludedfiles' => [],
                 'locationSuffix' => "ARCHIVE_ONLY_DATABASE_SUFFIX",
-                'nbFiles' => 1,
-                'filesToFind' => ['wakka.config.php'],
-                'wakkaContent' => [
-                    'archive' => [
-                        'extrafiles' => ['wakka.config.php'],
-                        'excludedfiles' => ['*','.*'],
-                    ],
-                    'mysql_host' => '',
-                    'mysql_database' => '',
-                    'mysql_user' => '',
-                    'mysql_password' => '',
-                ]
+                'nbFiles' => 5,
+                'filesToFind' => [
+                    'private',
+                    'private/backups',
+                    'private/backups/.htaccess',
+                    'private/backups/README.md',
+                    'private/backups/content.sql'
+                ],
+                'wakkaContent' => null
             ],
             'archive only wakka.config.php and tools/bazar/config.yaml' => [
                 'savefiles' => true,
@@ -168,46 +172,55 @@ class ArchiveServiceTest extends YesWikiTestCase
      * @param Wiki $wiki
      * @return array $data
      */
-    private function getDataFromLocation(string $location,Wiki $wiki): array
+    private function getDataFromLocation(string $location, Wiki $wiki): array
     {
         $data = [];
-        if (!empty($location) && file_exists($location)){
-            if (!preg_match("/^.*\.zip$/",$location)){
+        if (!empty($location) && file_exists($location)) {
+            if (!preg_match("/^.*\.zip$/", $location)) {
                 $data['error'] = "\"\$location\" (\"$location\") is not a zip file !";
             } else {
                 $zip = new ZipArchive;
-                if ($zip->open($location) !== TRUE) {
+                if ($zip->open($location) !== true) {
                     $data['error'] = "\"\$location\" (\"$location\") is not openable !";
                 } else {
                     // create tmp folder in cache
                     do {
                         $tmpFolderName = "tmp_folder_to_delete_".md5(time());
                     } while (file_exists("cache/$tmpFolderName"));
-                    if (!$zip->extractTo("cache/$tmpFolderName")){
+                    if (!$zip->extractTo("cache/$tmpFolderName")) {
                         $data['error'] = "\"\$location\" (\"$location\") is not extractable !";
                         $zip->close();
                     } else {
                         $zip->close();
                         $files = [];
-                        foreach([
-                            "*",".?*",
-                            "*/*",".[\\.]*/*","*/.[\\.]*",".[\\.]*/.[\\.]*",
-                            "*/*/*",".[\\.]*/*/*","*/.[\\.]*/*",".[\\.]*/.[\\.]*/*",
-                            "*/*/*/*",".[\\.]*/*/*/*","*/.[\\.]*/*/*",".*/.[\\.]*/*/*",
-                        ] as $globCatch){
-                            foreach(glob("cache/$tmpFolderName/$globCatch") as $path){
-                                if (!in_array(basename($path),['.','..']) && !in_array($path,$files)){
-                                    $files[] = $path;
+                        $dirs = ["cache/$tmpFolderName"];
+                        while (count($dirs)) {
+                            $dir = current($dirs);
+                            $dh = opendir($dir);
+                            while (false !== ($file = readdir($dh))) {
+                                if ($file != '.' && $file != '..') {
+                                    if (!in_array("$dir/$file", ['.','..'])) {
+                                        if (is_file("$dir/$file") || is_dir("$dir/$file")) {
+                                            if (!in_array("$dir/$file", $files)) {
+                                                $files[] = "$dir/$file";
+                                            }
+                                        }
+                                        if (is_dir("$dir/$file") && !in_array("$dir/$file", $dirs)) {
+                                            $dirs[] = "$dir/$file";
+                                        }
+                                    }
                                 }
                             }
+                            closedir($dh);
+                            array_shift($dirs);
                         }
-                        $files = array_map(function ($path) use ($tmpFolderName){
-                            return str_replace("\\","/",preg_replace("/^cache(?:\/|\\\\)".preg_quote($tmpFolderName,"/")."(?:\/|\\\\)/","",$path));
-                        },$files);
+                        $files = array_map(function ($path) use ($tmpFolderName) {
+                            return str_replace("\\", "/", preg_replace("/^cache(?:\/|\\\\)".preg_quote($tmpFolderName, "/")."(?:\/|\\\\)/", "", $path));
+                        }, $files);
                         $data['files'] = $files;
 
                         // wakka content
-                        if (file_exists("cache/$tmpFolderName/wakka.config.php") && is_file("cache/$tmpFolderName/wakka.config.php")){
+                        if (file_exists("cache/$tmpFolderName/wakka.config.php") && is_file("cache/$tmpFolderName/wakka.config.php")) {
                             $configurationService = $wiki->services->get(ConfigurationService::class);
                             $config = $configurationService->getConfiguration("cache/$tmpFolderName/wakka.config.php");
                             $config->load();
@@ -227,16 +240,16 @@ class ArchiveServiceTest extends YesWikiTestCase
 
     private function recursiveDelete(string $path)
     {
-        if (!in_array(basename($path),['.','..']) && !preg_match("/(?:^|\/|\\\\)\.{1,2}(?:^|\/|\\\\)/",$path)){
-            if (file_exists($path)){
-                if (is_dir($path)){
+        if (!in_array(basename($path), ['.','..']) && !preg_match("/(?:^|\/|\\\\)\.{1,2}(?:^|\/|\\\\)/", $path)) {
+            if (file_exists($path)) {
+                if (is_dir($path)) {
                     $dh = opendir($path);
                     while (false !== ($file = readdir($dh))) {
                         $this->recursiveDelete("$path/$file");
                     }
                     closedir($dh);
                     rmdir($path);
-                } elseif (is_file($path)){
+                } elseif (is_file($path)) {
                     unlink($path);
                 }
             }
@@ -249,14 +262,14 @@ class ArchiveServiceTest extends YesWikiTestCase
      */
     private function checkWakkaContent($contentDefinition, $contentToCheck)
     {
-        if (is_array($contentDefinition)){
+        if (is_array($contentDefinition)) {
             $this->assertIsArray($contentToCheck);
-            foreach($contentDefinition as $key => $value){
-                $this->assertArrayHasKey($key,$contentToCheck);
-                $this->checkWakkaContent($contentDefinition[$key],$contentToCheck[$key]);
+            foreach ($contentDefinition as $key => $value) {
+                $this->assertArrayHasKey($key, $contentToCheck);
+                $this->checkWakkaContent($contentDefinition[$key], $contentToCheck[$key]);
             }
         } elseif (is_scalar($contentDefinition)) {
-            $this->assertEquals($contentDefinition,$contentToCheck);
+            $this->assertEquals($contentDefinition, $contentToCheck);
         }
     }
 
@@ -277,20 +290,20 @@ class ArchiveServiceTest extends YesWikiTestCase
         $configService = $services['wiki']->services->get(ConfigurationService::class);
         $consoleService = $services['wiki']->services->get(ConsoleService::class);
         $previousStatus = $params->has('wiki_status') ? $params->get('wiki_status') : null;
-        $this->setWikiStatus($configService,$status);
-        $results = $consoleService->startConsoleSync("core:archive",[
+        $this->setWikiStatus($configService, $status);
+        $results = $consoleService->startConsoleSync("core:archive", [
             "-f",
             "-x","*,.*",
             "-e","wakka.config.php"
         ]);
-        if (empty($previousStatus)){
+        if (empty($previousStatus)) {
             $this->unsetWikiStatus($configService);
         } else {
-            $this->setWikiStatus($configService,$previousStatus);
+            $this->setWikiStatus($configService, $previousStatus);
         }
-        foreach($results as $result){
+        foreach ($results as $result) {
             $output = $result['stdout'] ?? '';
-            $this->assertArrayHasKey('stderr',$result,"No error in \"ArchiveService\" when \"wiki_status\" = \"$status\" ; output: $output");
+            $this->assertArrayHasKey('stderr', $result, "No error in \"ArchiveService\" when \"wiki_status\" = \"$status\" ; output: $output");
         }
     }
 
