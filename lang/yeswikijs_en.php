@@ -59,6 +59,9 @@ return [
     "ADMIN_BACKUPS_UID_STATUS_RUNNING" => "Running backup",
     "ADMIN_BACKUPS_UID_STATUS_FINISHED" => "Finished backup",
     "ADMIN_BACKUPS_UID_STATUS_NOT_FINISHED" => "Trouble backup is not running but not finished",
+    "ADMIN_BACKUPS_UID_STATUS_STOP" => "Backup aborted",
+    "ADMIN_BACKUPS_STOP_BACKUP_ERROR" => "Error : not possible to stop backup",
+    "ADMIN_BACKUPS_STOPPING_ARCHIVE" => "Backup stopping",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Changes done by this revision",

@@ -9,7 +9,7 @@
     <button 
         @click="startArchive"
         class="btn btn-xs btn-primary"
-        :disabled="updating || currentArchiveUid.length > 0" 
+        :disabled="updating || currentArchiveUid.length > 0 || archiving" 
         data-tooltip="toggle" 
         title="{{ _t('ADMIN_BACKUPS_CREATE') }}">
       {{ _t('ADMIN_BACKUPS_START') }}
@@ -22,6 +22,15 @@
         :checked="showAdvancedParams">
       <span>{{ _t('ADMIN_BACKUPS_ADVANCED_PARAMS') }}</span>
     </span>
+    <button
+        v-if="currentArchiveUid.length > 0 && archiving"
+        @click="stopArchive"
+        class="btn btn-xs btn-danger"
+        :disabled="stoppingArchive" 
+        data-tooltip="toggle" 
+        title="{{ _t('ADMIN_BACKUPS_STOP_BACKUP') }}">
+      {{ _t('ADMIN_BACKUPS_STOP') }}
+    </button>
   </div>
   <div v-if="archiveMessage.length > 0" v-html="archiveMessage" :class="archiveMessageClass"></div>
   <div v-if="showAdvancedParams" class="well">
