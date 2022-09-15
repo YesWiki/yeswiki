@@ -3,6 +3,7 @@
 return [
 
     // Commons
+    // 'ARCHIVES' => 'Sauvegardes',
     'BY' => 'por',
     // 'CLEAN' => 'Nettoyer',
     // 'DELETE' => 'Supprimer',
@@ -13,6 +14,8 @@ return [
     // 'INVERT' => 'Inverser',
     // 'MODIFY' => 'Modifier',
     // 'NAME' => 'Nom',
+    // 'PAGES' => 'Pages',
+    // 'ONLY_FOR_ADMINS' => 'Seulement pour les administrateurs',
     // 'SUBSCRIPTION' => 'Inscription',
     'TRIPLES' => 'Triplos',
     'UNKNOWN' => 'Desconhecido',

@@ -141,6 +141,81 @@ class ArchiveService
     }
 
     /**
+     * get the list of archives in a array with information for each one
+     * @return array
+     */
+    public function getArchives(): array
+    {
+        $archives = [];
+        $privatePath = $this->getPrivateFolder();
+        $files = scandir($privatePath);
+        foreach ($files as $filename) {
+            if (preg_match("/^(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})-(\d{2})_archive(?:_(only_files|only_db))?\.zip$/", $filename, $matches)) {
+                list(, $year, $month, $day, $hours, $minutes, $seconds) = $matches;
+                $archives[] = [
+                    'filename' => $filename,
+                    'date' => "$year-$month-{$day}T$hours-$minutes-$seconds",
+                    'year' => $year,
+                    'month' => $month,
+                    'day' => $day,
+                    'hours' => $hours,
+                    'minutes' => $minutes,
+                    'seconds' => $seconds,
+                    'type' => $matches[7] ?? "",
+                    'size' => filesize("$privatePath/$filename"),
+                    'link' => $this->wiki->Href('', "api/archives/$filename")
+                ];
+            }
+        }
+        usort($archives, function ($a, $b) {
+            return strnatcmp($b['date'], $a['date']);
+        });
+        return $archives;
+    }
+
+    /**
+     * get the path to an archive filename
+     * @param string $filename
+     * @return string $filepath
+     */
+    public function getFilePath(string $filename): string
+    {
+        $privatePath = $this->getPrivateFolder();
+        // sanitize $filename
+        $filename = basename($filename);
+        if (substr($filename, -4) != ".zip") {
+            return "";
+        }
+        $filePath = "$privatePath/$filename";
+        return (file_exists($filePath) && is_file($filePath)) ? $filePath : "";
+    }
+
+    /**
+     * delete archives
+     * @param array $filesname
+     * @return array $results = ['filename' => bool]
+     */
+    public function deleteArchives(array $filesnames): array
+    {
+        $privatePath = $this->getPrivateFolder();
+        $filesnames = array_filters($filesnames, 'is_string');
+        $filesnames = array_map('basename', $filesnames);
+        $results = [
+            'main' => true,
+        ];
+        foreach ($filesnames as $filename) {
+            $results[$filename] = (substr($filename, -4) == ".zip") && file_exists("$privatePath/$filename") && is_file("$privatePath/$filename");
+            if ($results[$filename]) {
+                $results[$filename] = unlink($results[$filename]);
+            }
+            if (!$results[$filename]) {
+                $results['main'] = false;
+            }
+        }
+        return $results;
+    }
+
+    /**
      * create the zip file
      * @param string $zipPath
      * @param array $dataFiles
