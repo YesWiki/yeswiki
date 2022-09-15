@@ -81,6 +81,7 @@ class ArchiveService
      * @param array $extrafiles
      * @param array $excludedfiles
      * @param null|array $anonymousParams
+     * @param string $uid
      * @throws Exception
      */
     public function archive(
@@ -89,11 +90,26 @@ class ArchiveService
         bool $savedatabase = true,
         array $extrafiles = [],
         array $excludedfiles = [],
-        ?array $anonymousParams = null
+        ?array $anonymousParams = null,
+        string $uid = ""
     ) {
-        $this->writeOutput($output, "=== Checking free space ===");
+        $inputFile = "";
+        $outputFile = "";
+        $privatePath = $this->getPrivateFolder();
+
+        if (!empty($uid)) {
+            $info = $this->getInfoFromFile($privatePath);
+            if (isset($info[$uid])) {
+                $inputFile = $info[$uid]['input'];
+                $outputFile = $info[$uid]['output'];
+            }
+        }
+        if (!empty($outputFile)) {
+            file_put_contents($outputFile, "");
+        }
+        $this->writeOutput($output, "=== Checking free space ===", true, $outputFile);
         $this->assertEnoughtSpace();
-        $this->writeOutput($output, "There is enough free space.");
+        $this->writeOutput($output, "There is enough free space.", true, $outputFile);
 
         $onlyDb = false;
         // check options and prepare file suffix
@@ -107,12 +123,12 @@ class ArchiveService
         } else {
             $fileSuffix = self::ARCHIVE_SUFFIX;
         }
+        $this->writeOutput($output, "=> Preparing list of excluded files", true, $outputFile);
         $dataFiles = $this->prepareExcludeFiles($extrafiles, $excludedfiles);
 
         // prepare location of zip file
 
         $archiveFileName = (new DateTime())->format("Y-m-d\\TH-i-s")."$fileSuffix.zip";
-        $privatePath = $this->getPrivateFolder();
         $location = $privatePath.DIRECTORY_SEPARATOR.$archiveFileName;
         if (file_exists($location)) {
             throw new Exception("Zip file already existing !");
@@ -130,11 +146,11 @@ class ArchiveService
             // get SQl
             $sqlContent = $savedatabase ? $this->getSQLContent($privatePath) : "";
 
-            // create zip passing SQL <= TODO
-            $this->writeOutput($output, "=== Creating zip archive ===");
-            $this->createZip($location, $dataFiles, $output, $sqlContent, $onlyDb, $anonymousParams);
+            $this->writeOutput($output, "=== Creating zip archive ===", true, $outputFile);
+            $this->createZip($location, $dataFiles, $output, $sqlContent, $onlyDb, $anonymousParams, $inputFile, $outputFile);
 
-            $this->writeOutput($output, "Archive \"$location\" successfully created !");
+            $this->writeOutput($output, "Archive \"$location\" successfully created !", true, $outputFile);
+            $this->writeOutput($output, "END", true, $outputFile);
         } catch (Throwable $th) {
             $this->unsetWikiStatus();
             throw $th;
@@ -153,14 +169,14 @@ class ArchiveService
      * @param bool $savedatabase
      * @param array $extrafiles
      * @param array $excludedfiles
-     * @return null|Process
+     * @return string uid
      */
     public function startArchiveAsync(
         bool $savefiles = true,
         bool $savedatabase = true,
         array $extrafiles = [],
         array $excludedfiles = []
-    ): ?Process {
+    ): string {
         $args = [];
         if (!$savefiles) {
             $args[] = "-d";
@@ -176,10 +192,22 @@ class ArchiveService
             $args[] = "-x";
             $args[] = implode(",", $excludedfiles);
         }
-        return $this->consoleService->startConsoleAsync(
+
+        $privatePath = $this->getPrivateFolder();
+        $uidData = $this->getUID($privatePath);
+        $args[] = "-u";
+        $args[] = $uidData['uid'];
+        $process = $this->consoleService->startConsoleAsync(
             'core:archive',
             $args
         );
+        if (!empty($process)) {
+            $this->updatePIDForUID($process->getPid(), $uidData['uid'], $privatePath);
+            return $uidData['uid'];
+        } else {
+            $this->cleanUID($uidData['uid'], $privatePath);
+            return '';
+        }
     }
 
     /**
@@ -258,6 +286,53 @@ class ArchiveService
     }
 
     /**
+     * get uid status
+     * @param string $uid
+     * @return array ['found'=> bool,'running' => bool,'finished'=>bool,'output' => string]
+     */
+    public function getUIDStatus(string $uid): array
+    {
+        $results = [
+            'started' => false,
+            'running' => false,
+            'output' => ""
+        ];
+        $privateFolder = $this->getPrivateFolder();
+        $info = $this->getInfoFromFile($privateFolder);
+        // clean others uids because it sould not be ever existing
+        foreach ($info as $infoUid => $infoData) {
+            if ($infoUid != $uid) {
+                $this->cleanUID($infoUid, $privateFolder);
+            }
+        }
+        // refresh from file
+        $info = $this->getInfoFromFile($privateFolder);
+        if (!isset($info[$uid])) {
+            return $results;
+        } elseif (empty($info[$uid]['pid'])) {
+            $this->cleanUID($uid, $privateFolder);
+        } else {
+            $pid = $info[$uid]['pid'];
+            $results['started'] = true;
+            list(
+                'running' => $running,
+                'finished' => $finished,
+                'output' =>$output
+            ) = $this->getRunningUIDdata($uid, $info[$uid]);
+            $results['running'] = $running;
+            $results['finished'] = $finished;
+            if ($finished) {
+                $output = preg_replace("/(^Archive \\\")(.*)(\\\" successfully created !\s*END\s*$)/m", "$1---$3", $output);
+            }
+            $results['output'] = $output;
+            if (!$results['running']) {
+                $this->cleanUID($uid, $privateFolder);
+            }
+        }
+        return $results;
+    }
+
+    /**
      * create the zip file
      * @param string $zipPath
      * @param array $dataFiles
@@ -265,6 +340,8 @@ class ArchiveService
      * @param string $sqlContent
      * @param bool $onlyDb
      * @param null|array $anonymousParams
+     * @param string $inputFile
+     * @param string $outputFile
      */
     protected function createZip(
         string $zipPath,
@@ -272,7 +349,9 @@ class ArchiveService
         &$output,
         string $sqlContent,
         bool $onlyDb = false,
-        ?array $anonymousParams = null
+        ?array $anonymousParams = null,
+        string $inputFile = "",
+        string $outputFile = ""
     ) {
         $pathToArchive = dirname(__FILE__, 3); // includes/services/../../
         $pathToArchive = preg_replace("/(\/|\\\\)$/", "", $pathToArchive);
@@ -290,7 +369,7 @@ class ArchiveService
                     $baseDirName = preg_replace("/^\//", "", $baseDirName);
                     if (!in_array($baseDirName, $dataFiles['preparedExcludedFiles'])) {
                         if (!empty($baseDirName)) {
-                            $this->writeOutput($output, "Adding folder \"$baseDirName\"");
+                            $this->writeOutput($output, "Adding folder \"$baseDirName\"", true, $outputFile);
                             $zip->addEmptyDir($baseDirName);
                         }
                         $dh = opendir($dir);
@@ -321,13 +400,13 @@ class ArchiveService
                 }
             }
             if (!empty($sqlContent)) {
-                $this->writeOutput($output, "Adding SQL file");
+                $this->writeOutput($output, "Adding SQL file", true, $outputFile);
                 $zip->addEmptyDir(self::PRIVATE_FOLDER_NAME_IN_ZIP);
                 $zip->addFromString(
                     self::PRIVATE_FOLDER_NAME_IN_ZIP."/".self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP,
                     $sqlContent
                 );
-                $this->writeOutput($output, "Adding .htaccess file in folder ".self::PRIVATE_FOLDER_NAME_IN_ZIP);
+                $this->writeOutput($output, "Adding .htaccess file in folder ".self::PRIVATE_FOLDER_NAME_IN_ZIP, true, $outputFile);
                 
                 $zip->addFromString(
                     self::PRIVATE_FOLDER_NAME_IN_ZIP."/.htaccess",
@@ -339,7 +418,7 @@ class ArchiveService
                     self::PRIVATE_FOLDER_README_DEFAULT_CONTENT
                 );
             }
-            $this->writeOutput($output, "Generating zip file");
+            $this->writeOutput($output, "Generating zip file", true, $outputFile);
             $zip->close();
         }
     }
@@ -508,9 +587,13 @@ class ArchiveService
      * @param string|OutputInterface &$output
      * @param string $text
      * @param bool $newline
+     * @param string $outputFile
      */
-    private function writeOutput(&$output, string $text, bool $newline = true)
+    private function writeOutput(&$output, string $text, bool $newline = true, string $outputFile = "")
     {
+        if (!empty($outputFile) && is_file($outputFile)) {
+            file_put_contents($outputFile, $text . ($newline ? "\n" : ""), FILE_APPEND);
+        }
         if ($output instanceof OutputInterface) {
             $output->write($text, $newline);
         } elseif (is_string($output)) {
@@ -789,5 +872,132 @@ class ArchiveService
         }
 
         return $indexes;
+    }
+
+    /**
+     * get content of info.json file from privatePath
+     * @param string $privateFolder
+     * @return mixed
+     */
+    private function getInfoFromFile(string $privateFolder = "")
+    {
+        if (empty($privateFolder)) {
+            $privateFolder = $this->getPrivateFolder();
+        }
+        if (!file_exists("$privateFolder/info.json")) {
+            file_put_contents("$privateFolder/info.json", "{}");
+        }
+        $fileContent = file_get_contents("$privateFolder/info.json");
+        $content = json_decode($fileContent, true);
+        return (empty($content) || !is_array($content)) ? [] : $content;
+    }
+
+    
+    /**
+     * set content to info.json file from privatePath
+     * @param mixed $content
+     * @param string $privateFolder
+     */
+    private function setInfoToFile($content, string $privateFolder = "")
+    {
+        if (empty($privateFolder)) {
+            $privateFolder = $this->getPrivateFolder();
+        }
+        file_put_contents("$privateFolder/info.json", json_encode($content));
+    }
+
+    /**
+     * get a unique id for the current PID with input and output files created
+     * @param string $privateFolder
+     * @return null|array ['uid' => string, 'input' => string, 'output' => string]
+     */
+    private function getUID(string $privateFolder = ""): ?array
+    {
+        if (empty($privateFolder)) {
+            $privateFolder = $this->getPrivateFolder();
+        }
+        $info = $this->getInfoFromFile($privateFolder);
+        $usedIDS = array_keys($info);
+        do {
+            $uid = uniqid();
+        } while (in_array($uid, $usedIDS));
+
+        // create files
+        $input = "$privateFolder/input-$uid.log";
+        $output = "$privateFolder/output-$uid.log";
+        file_put_contents($input, "");
+        file_put_contents($output, "");
+
+        $info[$uid] = [
+            'input' => realpath($input),
+            'output' => realpath($output),
+        ];
+        $this->setInfoToFile($info, $privateFolder);
+        return compact(['uid','input','output']);
+    }
+
+    /**
+     * savePID for uid in info.json
+     * @param string $pid
+     * @param string $uid
+     * @param string $privateFolder
+     */
+    private function updatePIDForUID(string $pid, string $uid, string $privateFolder = "")
+    {
+        if (empty($privateFolder)) {
+            $privateFolder = $this->getPrivateFolder();
+        }
+        $info = $this->getInfoFromFile($privateFolder);
+        if (isset($info[$uid])) {
+            $info[$uid]['pid'] = $pid;
+            $this->setInfoToFile($info, $privateFolder);
+        }
+    }
+
+    /**
+     * clean uid info in info.json
+     * @param string $uid
+     * @param string $privateFolder
+     */
+    private function cleanUID(string $uid, string $privateFolder = "")
+    {
+        if (empty($privateFolder)) {
+            $privateFolder = $this->getPrivateFolder();
+        }
+        $info = $this->getInfoFromFile($privateFolder);
+        if (isset($info[$uid])) {
+            if (!empty($info[$uid]['input']) && is_file($info[$uid]['input'])) {
+                unlink($info[$uid]['input']);
+            }
+            if (!empty($info[$uid]['output']) && is_file($info[$uid]['output'])) {
+                unlink($info[$uid]['output']);
+            }
+            unset($info[$uid]);
+            $this->setInfoToFile($info, $privateFolder);
+        }
+    }
+
+    /** check id current uid is running
+     * @param string $uid
+     * @param array $info
+     * @return array ['running' => bool, 'finished' => bool, 'output' => string]
+     */
+    private function getRunningUIDdata(string $uid, array $info): array
+    {
+        if (!is_file($info['output'])) {
+            return false;
+        }
+        $output = file_get_contents($info['output']);
+        $running = !empty(trim($output));
+        $finished = !$running ? false : (
+            preg_match("/(END|STOP)\s*$/", $output)
+            ? true
+            : false
+        );
+        if ($finished) {
+            $running = false;
+        }
+
+        return compact(['running','finished','output']);
     }
 }

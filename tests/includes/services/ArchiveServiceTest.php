@@ -364,16 +364,17 @@ class ArchiveServiceTest extends YesWikiTestCase
             $this->unsetAnonymousParam($configService);
         }
 
+        $location = null;
         foreach ($results as $result) {
             if (isset($result['stdout'])) {
-                if (preg_match("/^Archive \\\"(.*)\\\" successfully created !\s*$/m", $result['stdout'], $matches)) {
+                if (preg_match("/^Archive \\\"(.*)\\\" successfully created !\s*END\s*$/m", $result['stdout'], $matches)) {
                     $location = $matches[1];
                 }
                 break;
             }
         }
         
-        $this->assertNotEmpty($location);
+        $this->assertNotEmpty($location, "Bad format of stdout");
         $this->assertTrue(is_file($location), "Extracted location is not a file !");
         $data = $this->getDataFromLocation($location, $services['wiki']);
         $error = $data['error'] ?? "";
