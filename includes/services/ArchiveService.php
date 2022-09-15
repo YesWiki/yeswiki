@@ -79,7 +79,7 @@ class ArchiveService
      * @throws Exception
      */
     public function archive(
-        string|OutputInterface &$output,
+        &$output,
         bool $savefiles = true,
         bool $savedatabase = true,
         array $extrafiles = [],
@@ -147,7 +147,7 @@ class ArchiveService
     protected function createZip(
         string $zipPath,
         array $dataFiles,
-        string|OutputInterface &$output,
+        &$output,
         string $sqlContent,
         bool $onlyDb = false
     ) {
@@ -386,12 +386,14 @@ class ArchiveService
      * @param string $text
      * @param bool $newline
      */
-    private function writeOutput(string|OutputInterface &$output, string $text, bool $newline = true)
+    private function writeOutput(&$output, string $text, bool $newline = true)
     {
         if ($output instanceof OutputInterface) {
             $output->write($text, $newline);
-        } else {
+        } elseif (is_string($output)) {
             $output .= $text . ($newline ? "\n" : "");
+        } else {
+            throw new Exception("\"\$output\" should be string or OutputInterface !");
         }
     }
 
