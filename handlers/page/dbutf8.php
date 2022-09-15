@@ -1,6 +1,7 @@
 <?php
 
 use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Core\Service\ConfigurationService;
 
 if (isset($this)) {
     if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
@@ -91,8 +92,7 @@ if (isset($this)) {
         $output .=  "<h3>Complete ALL</h3>";
 
         // ajout du charset utf8mb4 dans wakka.config.php
-        include_once 'tools/templates/libs/Configuration.php';
-        $config = new Configuration('wakka.config.php');
+        $config = $this->services->get(ConfigurationService::class)->getConfiguration('wakka.config.php');
         $config->load();
         $config->db_charset = 'utf8mb4';
         $config->write();
@@ -241,8 +241,7 @@ if (php_sapi_name() === 'cli') {
     }
 
     // ajout du charset utf8mb4 dans wakka.config.php
-    include_once 'tools/templates/libs/Configuration.php';
-    $config = new Configuration($cwd.'/wakka.config.php');
+    $config = $this->services->get(ConfigurationService::class)->getConfiguration($cwd.'/wakka.config.php');
     $config->load();
     $config->db_charset = 'utf8mb4';
     $config->write();

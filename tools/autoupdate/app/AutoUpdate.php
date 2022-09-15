@@ -1,6 +1,8 @@
 <?php
 namespace AutoUpdate;
 
+use YesWiki\Core\Service\ConfigurationService;
+
 class AutoUpdate
 {
     const DEFAULT_REPO = 'https://repository.yeswiki.net/';
@@ -9,9 +11,12 @@ class AutoUpdate
     private $wiki;
     public $repository = null;
 
+    protected $configurationService;
+
     public function __construct($wiki)
     {
         $this->wiki = $wiki;
+        $this->configurationService = $wiki->services->get(ConfigurationService::class);
     }
 
     /*	Parameter $requestedVersion contains the name of the YesWiki version
@@ -31,7 +36,7 @@ class AutoUpdate
 
     public function getWikiConfiguration()
     {
-        $configuration = new Configuration(
+        $configuration = $this->configurationService->getConfiguration(
             $this->getWikiDir() . '/wakka.config.php'
         );
         $configuration->load();
