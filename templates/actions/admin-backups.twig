@@ -32,6 +32,10 @@
         <button class="btn btn-xs btn-danger" @click="deleteArchive(archive)" data-tooltip="toggle" title="{{ _t('DELETE') }}">
           <i class="fa fa-trash"></i>
         </button>
+        {# TODO uncomment folowwing lines when restore will work #}
+        {# <button class="btn btn-xs btn-secondary-1" @click="restoreArchive(archive)" data-tooltip="toggle" title="{{ _t('RESTORE') }}">
+          <i class="fas fa-upload"></i>
+        </button> #}
       </div>
       <div class="archive-item" @click="toggleSelectedArchive(archive.filename)">
         <input 
