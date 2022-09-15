@@ -49,6 +49,21 @@ return [
     'NO_TOOL_AVAILABLE' => 'Er is geen enkel instrument beschikbaar of actief',
     'LIST_OF_ACTIVE_TOOLS' => 'Lijst met actieve extensies',
 
+    // actions/AdminBackupsAtion.php
+    'ADMIN_BACKUPS_TITLE' => 'Back-upbeheer',
+    'ADMIN_BACKUPS_ARCHIVES_LIST' => 'Lijst met back-ups',
+    'ADMIN_BACKUPS_ARCHIVE_FILENAME' => 'Bestandsnaam',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE' => 'Type',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_FULL' => 'Volledige back-up',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES' => 'Alleen bestanden',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES' => 'Alleen de database',
+    'ADMIN_BACKUPS_ARCHIVE_SIZE' => 'Middel',
+    'ADMIN_BACKUPS_CREATE' => 'Een back-up maken',
+    'ADMIN_BACKUPS_START' => 'Beginnen',
+    'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Geavanceerde instellingen',
+    'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Uitgesloten bestanden',
+    'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Aanvullende bestanden',
+
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Pagina’s met een koppeling naar',
     'PAGES_WITH_LINK_TO_CURRENT_PAGE' => 'Pagina’s met een koppeling naar de huidige pagina',

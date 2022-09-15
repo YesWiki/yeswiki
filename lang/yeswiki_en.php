@@ -53,6 +53,21 @@ return [
     'NO_TOOL_AVAILABLE' => 'No extensions available or active',
     'LIST_OF_ACTIVE_TOOLS' => 'Activated extensions list',
 
+    // actions/AdminBackupsAtion.php
+    'ADMIN_BACKUPS_TITLE' => 'Backups management',
+    'ADMIN_BACKUPS_ARCHIVES_LIST' => 'Backups list',
+    'ADMIN_BACKUPS_ARCHIVE_FILENAME' => 'Filename',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE' => 'Type',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_FULL' => 'Full backup',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES' => 'Only files',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES' => 'Only database',
+    'ADMIN_BACKUPS_ARCHIVE_SIZE' => 'Size',
+    'ADMIN_BACKUPS_CREATE' => 'Create backup',
+    'ADMIN_BACKUPS_START' => 'Start',
+    'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Advanced parameters',
+    'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Excluded files',
+    'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Extra files',
+
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Pages with link to',
     'PAGES_WITH_LINK_TO_CURRENT_PAGE' => 'Pages with link to current page',
