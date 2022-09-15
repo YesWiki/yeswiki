@@ -131,6 +131,14 @@ class ArchiveController extends YesWikiController
                 );
                 break;
             
+            case 'futureDeletedArchives':
+                $files = $this->archiveService->archivesToDelete(true);
+                return new ApiResponse(
+                    ['files' => $files],
+                    Response::HTTP_OK
+                );
+                break;
+            
             default:
                 return new ApiResponse(
                     ['error' => "Not supported action : $action"],

@@ -62,6 +62,8 @@ return [
     "ADMIN_BACKUPS_UID_STATUS_STOP" => "Backup aborted",
     "ADMIN_BACKUPS_STOP_BACKUP_ERROR" => "Error : not possible to stop backup",
     "ADMIN_BACKUPS_STOPPING_ARCHIVE" => "Backup stopping",
+    "ADMIN_BACKUPS_CONFIRMATION_TO_DELETE" => "Following files will be deleted by the backup.\n".
+        "Could you confirm their deletion by checking the box below.\n<pre>{files}</pre>",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Changes done by this revision",
