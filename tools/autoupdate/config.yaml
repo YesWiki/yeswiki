@@ -12,3 +12,4 @@ parameters:
     - GererMotsClef
     - TableauDeBord
     - LookWiki
+    - GererSauvegardes

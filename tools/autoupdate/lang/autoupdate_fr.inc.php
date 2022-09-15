@@ -59,4 +59,7 @@ return [
     'AU_SEVERAL_TOOLS_UPDATE' => 'Vous avez {nbMaj} extensions à mettre à jour',
     'AU_ONE_TOOL_UPDATE' => 'Vous avez 1 extension à mettre à jour',
 
+    // tools/templates/autoupdate/core.twig
+    'AU_MANAGE_BACKUPS' => 'Gérer les sauvegardes',
+
 ];

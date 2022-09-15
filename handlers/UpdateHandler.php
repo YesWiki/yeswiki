@@ -130,6 +130,20 @@ class UpdateHandler extends YesWikiHandler
             // replace CalcField value by string
             $output .= $this->calcFieldToString();
 
+            // adding GererSauvegards page
+            $output .= 'ℹ️ Adding GererSauvegardes pages.... ';
+            $page = $this->getService(PageManager::class)->getOne('GererSauvegardes');
+            if (empty($page)) {
+                list($updatePagesState, $message) = $this->updateAdminPages(['GererSauvegardes']);
+                if ($updatePagesState) {
+                    $output .= '✅ Done !<br />';
+                } else {
+                    $output .= '<span class="label label-warning">! '._t('UPDATE_ADMIN_PAGES_ERROR').'</span>'.'<br />'.$message;
+                }
+            } else {
+                $output .= '✅ Done !<br />';
+            }
+
             // propose to update content of admin's pages
             $output .= $this->frontUpdateAdminPages();
         } else {
