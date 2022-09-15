@@ -22,6 +22,7 @@ let appParams = {
     methods: {
         loadArchives: function() {
             let archiveApp = this;
+            archiveApp.updating = true;
             archiveApp.message = "Chargement de la liste des archives";
             archiveApp.messageClass = {alert:true,['alert-info']:true};
             $.ajax({
