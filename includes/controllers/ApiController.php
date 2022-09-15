@@ -837,6 +837,17 @@ class ApiController extends YesWikiController
     }
 
     /**
+     * @Route("/api/archives/archivingStatus/", methods={"GET"}, options={"acl":{"public", "@admins"}},priority=3)
+     */
+    public function getArchivingStatus()
+    {
+        return new ApiResponse(
+            $this->getService(ArchiveService::class)->getArchivingStatus(),
+            Response::HTTP_OK
+        );
+    }
+
+    /**
      * @Route("/api/archives/", methods={"GET"}, options={"acl":{"public", "@admins"}})
      * @Route("/api/archives", methods={"GET"}, options={"acl":{"public", "@admins"}})
      */

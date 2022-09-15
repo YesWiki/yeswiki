@@ -64,6 +64,19 @@ return [
     "ADMIN_BACKUPS_STOPPING_ARCHIVE" => "Backup stopping",
     "ADMIN_BACKUPS_CONFIRMATION_TO_DELETE" => "Following files will be deleted by the backup.\n".
         "Could you confirm their deletion by checking the box below.\n<pre>{files}</pre>",
+    "ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING" => "Not possible to start backup \n" .
+        "because a backup is currently in course.\n".
+        "If it is not the case, go to page 'GererConfig' to empty the value\n".
+        "of `wiki_status` parameter in `Security` part",
+    "ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE" => "Not possible to start backup \n" .
+        "because the website is hibernated.\n".
+        "To go out this state, go to page 'GererConfig' to empty the value\n".
+        "of `wiki_status` parameter in `Security` part",
+    "ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE" => "Not possible to start backup \n" .
+        "bacuse the backups' folder is not writable.\n".
+        " - Check the validity of 'archive[privatePath]' parameter in page 'GererConfig' (part 'Sécurity')\n".
+        " - if this parameter is empty, fill it with a path not reachable grom the internet\n".
+        " - Check that this path is writable for 'php' (if 'archive[privatePath]' is empty, '/tmp' folder is used)",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Changes done by this revision",
