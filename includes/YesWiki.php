@@ -1204,11 +1204,6 @@ class Wiki
         // See https://www.php.net/manual/fr/features.file-upload.put-method.php
         // TODO properly use the Symfony HttpFoundation component to avoid this
         if (($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
-            if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
-                $response = new Response(_t('WIKI_IN_HIBERNATION'), Response::HTTP_UNAUTHORIZED);
-                $response->send();
-                $this->exit();
-            }
             if (empty($_POST)) {
                 $_POST = json_decode(file_get_contents('php://input'), true) ?? [];
             }

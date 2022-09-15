@@ -63,6 +63,8 @@ return [
     'ADMIN_BACKUPS_ARCHIVE_SIZE' => 'Taille',
     'ADMIN_BACKUPS_CREATE' => 'Créer une sauvegarde',
     'ADMIN_BACKUPS_START' => 'Démarrer',
+    'ADMIN_BACKUPS_STOP' => 'Arrêter',
+    'ADMIN_BACKUPS_STOP_BACKUP' => 'Arrêter la sauvegarde',
     'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Paramètres avancés',
     'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Fichiers exclus',
     'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Fichiers supplémentaires',

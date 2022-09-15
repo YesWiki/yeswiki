@@ -60,6 +60,8 @@ return [
     'ADMIN_BACKUPS_ARCHIVE_SIZE' => 'Middel',
     'ADMIN_BACKUPS_CREATE' => 'Een back-up maken',
     'ADMIN_BACKUPS_START' => 'Beginnen',
+    'ADMIN_BACKUPS_STOP' => 'Stoppen',
+    'ADMIN_BACKUPS_STOP_BACKUP' => 'Back-up stoppen',
     'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Geavanceerde instellingen',
     'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Uitgesloten bestanden',
     'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Aanvullende bestanden',

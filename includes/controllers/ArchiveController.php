@@ -104,9 +104,17 @@ class ArchiveController extends YesWikiController
                 );
                 break;
             case 'stopArchive':
+                if (empty($_POST['uid']) || !is_string($_POST['uid'])) {
+                    return new ApiResponse(
+                        ['error' => "\$_POST['uid'] should be set and be an string for action 'stopArchive'"],
+                        Response::HTTP_BAD_REQUEST
+                    );
+                }
+                $uid = htmlspecialchars($_POST['uid']);
+                $result = $this->archiveService->stopArchive($uid);
                 return new ApiResponse(
                     [],
-                    Response::HTTP_OK
+                    $result ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST
                 );
                 break;
             case 'restore':

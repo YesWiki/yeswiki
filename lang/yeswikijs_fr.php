@@ -59,6 +59,9 @@ return [
     "ADMIN_BACKUPS_UID_STATUS_RUNNING" => "Sauvegarde en cours",
     "ADMIN_BACKUPS_UID_STATUS_FINISHED" => "Sauvegarde terminée",
     "ADMIN_BACKUPS_UID_STATUS_NOT_FINISHED" => "Il y a un problème car la sauvegarde n'est plus en cours et elle n'est pas terminée !",
+    "ADMIN_BACKUPS_UID_STATUS_STOP" => "Sauvegarde arrêtée",
+    "ADMIN_BACKUPS_STOP_BACKUP_ERROR" => "Erreur : impossible d'arrêter la sauvegarde",
+    "ADMIN_BACKUPS_STOPPING_ARCHIVE" => "Arrêt en cours de la sauvegarde",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Modifs apportées par cette version",
