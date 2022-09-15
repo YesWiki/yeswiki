@@ -28,7 +28,7 @@ let appParams = {
         loadArchives: function() {
             let archiveApp = this;
             archiveApp.updating = true;
-            archiveApp.message = "Chargement de la liste des archives";
+            archiveApp.message = _t('ADMIN_BACKUPS_LOADING_LIST');
             archiveApp.messageClass = {alert:true,['alert-info']:true};
             $.ajax({
                 method: "GET",
@@ -46,7 +46,7 @@ let appParams = {
                     archiveApp.selectedArchivesToDelete = archiveApp.selectedArchivesToDelete.filter(e => archiveNames.includes(e));
                 },
                 error: function(xhr,status,error){
-                    archiveApp.message = "Impossible de mettre à jour la liste des archives";
+                    archiveApp.message = _t('ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST');
                     archiveApp.messageClass = {alert:true,['alert-danger']:true};
                     archiveApp.selectedArchivesToDelete = [];
                 },
@@ -59,7 +59,7 @@ let appParams = {
         deleteArchive: function(archive) {
             let archiveApp = this;
             archiveApp.updating = true;
-            archiveApp.message = `Suppression de ${archive.filename}`;
+            archiveApp.message = _t('ADMIN_BACKUPS_DELETE_ARCHIVE',{filename:archive.filename});
             archiveApp.messageClass = {alert:true,['alert-info']:true};
             $.ajax({
                 method: "POST",
@@ -73,19 +73,19 @@ let appParams = {
                     if (Array.isArray(data) 
                         || !data.main){
                         toastMessage(
-                            `Une erreur pourrait avoir eu lieu en supprimant ${archive.filename}`
+                            _t('ADMIN_BACKUPS_DELETE_ARCHIVE_POSSIBLE_ERROR',{filename:archive.filename})
                             ,3000,
                             "alert alert-warning");
                     } else {
                         toastMessage(
-                            `Suppression réussie de ${archive.filename}`
+                            _t('ADMIN_BACKUPS_DELETE_ARCHIVE_SUCCESS',{filename:archive.filename})
                             ,3000,
                             "alert alert-success");
                     }
                     
                 },
                 error: function(xhr,status,error){
-                    archiveApp.message = `Suppression impossible de ${archive.filename}`;
+                    archiveApp.message = _t('ADMIN_BACKUPS_DELETE_ARCHIVE_ERROR',{filename:archive.filename});
                     archiveApp.messageClass = {alert:true,['alert-danger']:true};
                     archiveApp.updating = false;
                 },
@@ -96,11 +96,11 @@ let appParams = {
         },
         deleteSelectedArchives: function (){
             if (this.selectedArchivesToDelete.length == 0){
-                toastMessage('Aucune archive à supprimer', 2000, 'alert alert-info')
+                toastMessage(_t('ADMIN_BACKUPS_NO_ARCHIVE_TO_DELETE'), 2000, 'alert alert-info')
             } else {
                 let archiveApp = this;
                 archiveApp.updating = true;
-                archiveApp.message = `Suppression des archives sélectionnées`;
+                archiveApp.message = _t('ADMIN_BACKUPS_DELETE_SELECTED_ARCHIVES');
                 archiveApp.messageClass = {alert:true,['alert-info']:true};
                 $.ajax({
                     method: "POST",
@@ -115,21 +115,22 @@ let appParams = {
                         if (Array.isArray(data) 
                             || !data.main){
                             toastMessage(
-                                `Une erreur pourrait avoir eu lieu en supprimant ${archiveApp.selectedArchivesToDelete.join(',')}`
+                                _t('ADMIN_BACKUPS_DELETE_ARCHIVE_POSSIBLE_ERROR',{filename:archiveApp.selectedArchivesToDelete.join(',')})
                                 ,3000,
                                 "alert alert-warning");
                         } else {
                             toastMessage(
-                                `Suppression réussie de ${archiveApp.selectedArchivesToDelete.join(',')}`
+                                _t('ADMIN_BACKUPS_DELETE_ARCHIVE_SUCCESS',{filename:archiveApp.selectedArchivesToDelete.join(',')})
                                 ,3000,
                                 "alert alert-success");
                         }
                         
                     },
                     error: function(xhr,status,error){
-                        archiveApp.message = `Suppression impossible de ${archiveApp.selectedArchivesToDelete.join(',')}`;
+                        archiveApp.message = _t('ADMIN_BACKUPS_DELETE_ARCHIVE_ERROR',{filename:archiveApp.selectedArchivesToDelete.join(',')});
                         archiveApp.messageClass = {alert:true,['alert-danger']:true};
                         archiveApp.updating = false;
+                        archiveApp.loadArchives();
                     }
                 });
             }
@@ -145,7 +146,7 @@ let appParams = {
             // TODO update this part then restore will work
             let archiveApp = this;
             archiveApp.updating = true;
-            archiveApp.message = `Restauration de ${archive.filename}`;
+            archiveApp.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE',{filename:archive.filename});
             archiveApp.messageClass = {alert:true,['alert-info']:true};
             $.ajax({
                 method: "POST",
@@ -158,7 +159,7 @@ let appParams = {
                     archiveApp.loadArchives();
                 },
                 error: function(xhr,status,error){
-                    archiveApp.message = `Restauration impossible de ${archive.filename}`;
+                    archiveApp.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR',{filename:archive.filename});
                     archiveApp.messageClass = {alert:true,['alert-danger']:true};
                     archiveApp.updating = false;
                 },
@@ -169,7 +170,7 @@ let appParams = {
         startArchive: function (){
             let archiveApp = this;
             archiveApp.updating = true;
-            archiveApp.message = `Lancement d'une sauvegarde`;
+            archiveApp.message = _t('ADMIN_BACKUPS_START_BACKUP');
             archiveApp.messageClass = {alert:true,['alert-info']:true};
             $.ajax({
                 method: "POST",
@@ -188,7 +189,7 @@ let appParams = {
                     archiveApp.loadArchives();
                 },
                 error: function(xhr,status,error){
-                    archiveApp.message = `Lancement de la sauvegarde impossible`;
+                    archiveApp.message = _t('ADMIN_BACKUPS_START_BACKUP_ERROR');
                     archiveApp.messageClass = {alert:true,['alert-danger']:true};
                 },
                 complete: function(){
