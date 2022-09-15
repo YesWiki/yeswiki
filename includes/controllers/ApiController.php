@@ -11,12 +11,14 @@ use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\ApiResponse;
+use YesWiki\Core\Controller\ArchiveController;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Controller\UserController;
 use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\DiffService;
 use YesWiki\Core\Service\PageManager;
@@ -56,6 +58,14 @@ class ApiController extends YesWikiController
         $urlTriples = $this->wiki->Href('', 'api/triples/{resource}', ['property' => 'http://outils-reseaux.org/_vocabulary/type', 'user' => 'username'], false);
         $output .= '<h2>'._t('TRIPLES').'</h2>'."\n".
             '<p><code>GET '.$urlTriples.'</code></p>';
+            
+        $urlArchives = $this->wiki->Href('', 'api/archives');
+        $output .= '<h2>'._t('ARCHIVES').'</h2>'."\n".
+            '<p>'._t('ONLY_FOR_ADMINS').'</p>'.
+            '<p><code>GET '.$urlArchives.'</code></p>'.
+            '<p><code>GET '.$urlArchives.'/{id}</code></p>'.
+            '<p><code>POST '.$urlArchives.'</code></p>'.
+            '<p><code>POST '.$urlArchives.'/{id}</code></p>';
 
         // TODO use annotations to document the API endpoints
         $extensions = $this->wiki->extensions;
@@ -808,5 +818,42 @@ class ApiController extends YesWikiController
             }
         }
         return compact(['property','username','apiResponse']);
+    }
+    
+    /**
+     * @Route("/api/archives/{id}", methods={"GET"}, options={"acl":{"public", "@admins"}})
+     */
+    public function getArchive($id)
+    {
+        return $this->getService(ArchiveController::class)->getArchive($id);
+    }
+
+    /**
+     * @Route("/api/archives/", methods={"GET"}, options={"acl":{"public", "@admins"}})
+     * @Route("/api/archives", methods={"GET"}, options={"acl":{"public", "@admins"}})
+     */
+    public function getArchives()
+    {
+        $archiveService = $this->getService(ArchiveService::class);
+        return new ApiResponse(
+            $archiveService->getArchives(),
+            Response::HTTP_OK
+        );
+    }
+
+    /**
+     * @Route("/api/archives/{id}", methods={"POST"}, options={"acl":{"public", "@admins"}})
+     */
+    public function archiveAction($id)
+    {
+        return $this->getService(ArchiveController::class)->manageArchiveAction($id);
+    }
+
+    /**
+     * @Route("/api/archives", methods={"POST"}, options={"acl":{"public", "@admins"}})
+     */
+    public function archivesAction()
+    {
+        return $this->getService(ArchiveController::class)->manageArchiveAction();
     }
 }
