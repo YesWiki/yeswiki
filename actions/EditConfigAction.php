@@ -1,7 +1,7 @@
 <?php
 
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Core\Service\Performer;
+use YesWiki\Core\Service\ConfigurationService;
 
 class EditConfigAction extends YesWikiAction
 {
@@ -36,6 +36,8 @@ class EditConfigAction extends YesWikiAction
     private $keys ;
     private $associatedExtensions ;
 
+    protected $configurationService;
+
     public function formatArguments($arg)
     {
         return [
@@ -62,7 +64,8 @@ class EditConfigAction extends YesWikiAction
             ]) ;
         }
 
-        include_once 'tools/templates/libs/Configuration.php';
+        // get services
+        $this->configurationService = $this->getService(ConfigurationService::class);
 
         $output = '';
         if ($this->arguments['saving']) {
@@ -196,7 +199,7 @@ class EditConfigAction extends YesWikiAction
      */
     private function save(): ?string
     {
-        $config = new Configuration('wakka.config.php');
+        $config = $this->configurationService->getConfiguration('wakka.config.php');
         $config->load();
 
         $keysAsArray = $this->convertKeysAsArray($this->getAuthorizedKeys()[0]);
@@ -300,7 +303,7 @@ class EditConfigAction extends YesWikiAction
      */
     private function getDataFromConfigFile(): array
     {
-        $config = new Configuration('wakka.config.php');
+        $config = $this->configurationService->getConfiguration('wakka.config.php');
         $config->load();
 
         $data = [];
