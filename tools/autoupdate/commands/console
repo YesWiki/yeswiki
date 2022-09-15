@@ -4,55 +4,10 @@
 
 namespace YesWiki\AutoUpdate\Commands;
 
-use Doctrine\Common\Annotations\AnnotationRegistry;
-use Symfony\Component\Console\Application;
-use YesWiki\AutoUpdate\Commands\UpdaterCommand;
-use YesWiki\AutoUpdate\Commands\PostUpdaterCommand;
-use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Controller\UserController;
-use YesWiki\Core\Service\UserManager;
-
 if (!file_exists('wakka.config.php')) {
     exit("\e[31mThe command should be launched from your YesWiki root directory\e[0m");
 } else {
-    include_once('wakka.config.php');
-    // fake $_SERVER vars
-    $_SERVER['REQUEST_URI'] = $wakkaConfig['base_url'].$wakkaConfig['root_page'];
-    $_SERVER['HTTP_HOST'] = parse_url($wakkaConfig['base_url'], PHP_URL_HOST);
-    $_SERVER['REQUEST_METHOD'] = 'GET';
-    // fake wiki page
-    $_REQUEST['wiki'] = $wakkaConfig['root_page'];
-}
-
-
-require_once 'includes/autoload.inc.php';
-$loader = require_once 'vendor/autoload.php';
-AnnotationRegistry::registerLoader([$loader, 'loadClass']);
-require_once __DIR__.'/../vendor/autoload.php';
-
-
-$application = new Application();
-
-require_once 'includes/YesWiki.php';
-$wiki = new \YesWiki\Wiki();
-
-// second little hack (bad habit..): we use the first admin user to perform updates as an admin
-$firstAdminName = $wiki->services->get(UserController::class)->getFirstAdmin();
-if (!empty($firstAdminName)) {
-    $userManager = $wiki->services->get(UserManager::class);
-    $authController = $wiki->services->get(AuthController::class);
-    $firstAdmin = $userManager->getOneByName($firstAdminName);
-    if (!empty($firstAdmin)) {
-        $authController->login($firstAdmin);
-        
-        // ... register commands
-
-        $application->add(new UpdaterCommand($wiki));
-
-        $application->add(new PostUpdaterCommand($wiki));
-
-        $application->run();
-
-        $authController->logout();
-    }
+    // backward compatibility for extension ferme
+    // TODO delete this file
+    include 'includes/commands/console';
 }
