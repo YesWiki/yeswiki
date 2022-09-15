@@ -1,0 +1,411 @@
+<?php
+
+namespace YesWiki\Core\Service;
+
+use DateTime;
+use Exception;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Core\Entity\ConfigurationFile;
+use YesWiki\Core\Service\ConfigurationService;
+use YesWiki\Core\Service\ConsoleService;
+use YesWiki\Wiki;
+use Throwable;
+use ZipArchive;
+
+class ArchiveService
+{
+    public const DEFAULT_EXCLUDED_FILES = [
+        'node_modules',
+        'tools/*/node_modules',
+        '.git',
+        'tools/*/.git'
+    ];
+    public const DEFAULT_PARAMS_TO_ANONYMIZE = [
+        'mysql_host',
+        'mysql_database',
+        'mysql_user',
+        'mysql_password',
+        'contact_smtp_host',
+        'contact_smtp_user',
+        'contact_smtp_pass',
+        'api_allowed_keys'
+    ];
+    protected const PARAMS_KEY_IN_WAKKA = 'archive';
+    protected const KEY_FOR_PRIVATE_FOLDER = 'privatePath';
+    protected const KEY_FOR_EXTRAFILES = 'extrafiles';
+    protected const KEY_FOR_EXCLUDEDFILES = 'excludedfiles';
+    protected const DEFAULT_FOLDER_NAME_IN_TMP = "yeswiki_archive";
+    public const ARCHIVE_SUFFIX = "_archive";
+    public const ARCHIVE_ONLY_FILES_SUFFIX = "_archive_only_files";
+    public const ARCHIVE_ONLY_DATABASE_SUFFIX = "_archive_only_db";
+
+    protected $configurationService;
+    protected $consoleService;
+    protected $params;
+    protected $securityController;
+    protected $wiki;
+
+    public function __construct(
+        ConfigurationService $configurationService,
+        ConsoleService $consoleService,
+        ParameterBagInterface $params,
+        SecurityController $securityController,
+        Wiki $wiki
+    ) {
+        $this->configurationService = $configurationService;
+        $this->consoleService = $consoleService;
+        $this->params = $params;
+        $this->securityController = $securityController;
+        $this->wiki = $wiki;
+    }
+
+    /**
+     * archive data in zip file
+     * @param string|OutputInterface &$output
+     * @param bool $savefiles
+     * @param bool $savedatabase
+     * @param array $extrafiles
+     * @param array $excludedfiles
+     * @throws Exception
+     */
+    public function archive(
+        string|OutputInterface &$output,
+        bool $savefiles = true,
+        bool $savedatabase = true,
+        array $extrafiles = [],
+        array $excludedfiles = []
+    ) {
+        $onlyDb = false;
+        // check options and prepare file suffix
+        if (!$savefiles && !$savedatabase) {
+            throw new Exception("Invalid options : It is not possible to use 'savefiles = false' and 'savedatabase = false'options in same time.");
+        } elseif (!$savefiles) {
+            $fileSuffix = self::ARCHIVE_ONLY_DATABASE_SUFFIX;
+            $onlyDb = true;
+        } elseif (!$savedatabase) {
+            $fileSuffix = self::ARCHIVE_ONLY_FILES_SUFFIX;
+        } else {
+            $fileSuffix = self::ARCHIVE_SUFFIX;
+        }
+        $dataFiles = $this->prepareExcludeFiles($extrafiles, $excludedfiles);
+
+        // prepare location of zip file
+
+        $archiveFileName = (new DateTime())->format("Y-m-d\\TH-i-s")."$fileSuffix.zip";
+        $privatePath = $this->getPrivateFolder();
+        $location = $privatePath.DIRECTORY_SEPARATOR.$archiveFileName;
+        if (file_exists($location)) {
+            throw new Exception("Zip file already existing !");
+        }
+        if (file_exists($location)) {
+            throw new Exception("Zip file already existing !");
+        }
+        if ($this->securityController->isWikiHibernated()) {
+            throw new Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+        
+        try {
+            // set wiki status
+            $this->setWikiStatus();
+            // get SQl
+
+            // create zip passing SQL <= TODO
+            $this->writeOutput($output, "Creating zip archive");
+            $this->createZip($location, $dataFiles, $output);
+
+            $this->writeOutput($output, "Archive \"$location\" successfully created !");
+        } catch (Throwable $th) {
+            $this->unsetWikiStatus();
+            throw $th;
+        }
+        $this->unsetWikiStatus();
+        return $location;
+    }
+
+    /**
+     * create the zip file
+     * @param string $zipPath
+     * @param array $dataFiles
+     * @param string|OutputInterface &$output
+     * @param bool $onlyDb
+     * TODO manage wakka.config.php
+     */
+    protected function createZip(string $zipPath, array $dataFiles, string|OutputInterface &$output, bool $onlyDb = false)
+    {
+        $pathToArchive = dirname(__FILE__, 3); // includes/services/../../
+        $pathToArchive = preg_replace("/(\/|\\\\)$/", "", $pathToArchive);
+        $dirs = [$pathToArchive];
+        $dirnamePathLen = strlen($pathToArchive) ;
+        // open file
+        $zip = new ZipArchive;
+        $resource = $zip->open($zipPath, ZipArchive::CREATE |  ZipArchive::OVERWRITE);
+        if ($resource === true) {
+            if (!$onlyDb){
+                while (count($dirs)) {
+                    $dir = current($dirs);
+                    $dir = preg_replace("/(?:\/|\\\\|([^\/\\\\]))$/", "$1", $dir);
+                    $baseDirName = preg_replace("/\\\\/", "/", substr($dir, $dirnamePathLen));
+                    $baseDirName = preg_replace("/^\//", "", $baseDirName);
+                    if (!in_array($baseDirName, $dataFiles['preparedExcludedFiles'])) {
+                        if (!empty($baseDirName)) {
+                            $this->writeOutput($output, "Adding folder \"$baseDirName\"");
+                            $zip->addEmptyDir($baseDirName);
+                        }
+                        $dh = opendir($dir);
+                        while (false !== ($file = readdir($dh))) {
+                            if ($file != '.' && $file != '..') {
+                                $localName = $dir.DIRECTORY_SEPARATOR.$file;
+                                $relativeName = (empty($baseDirName) ? "" : "$baseDirName/").$file;
+                                if ((
+                                    !empty($dataFiles['onlyChildren'][$baseDirName]) &&
+                                        in_array($relativeName, $dataFiles['onlyChildren'][$baseDirName])
+                                ) || (
+                                    empty($dataFiles['onlyChildren'][$baseDirName]) &&
+                                        !in_array($relativeName, $dataFiles['preparedExcludedFiles'])
+                                )) {
+                                    if (empty($baseDirName) && $file == "wakka.config.php") {
+                                        $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($dataFiles));
+                                    } elseif (is_file($localName)) {
+                                        $zip->addFile($localName, $relativeName);
+                                    } elseif (is_dir($localName)) {
+                                        $dirs[] = $dir.DIRECTORY_SEPARATOR.$file;
+                                    }
+                                }
+                            }
+                        }
+                        closedir($dh);
+                    }
+                    array_shift($dirs);
+                }
+            }
+            $this->writeOutput($output, "Generating zip file");
+            $zip->close();
+        }
+    }
+
+    /**
+     * prepared exhaustove list of excluded files and folders
+     * @param array $extrafiles
+     * @param array $excludedfiles
+     * @return array ['preparedExcludedFiles' => $preparedExcludedFiles, 'extrafiles' => $extrafiles,
+     *    'excludedfiles' => $excludedfiles]
+     */
+    private function prepareExcludeFiles(array $extrafiles, array $excludedfiles): array
+    {
+        // merge extra and exlucded files from wakka.config.php
+        $archiveParams = $this->getArchiveParams();
+        if (!empty($archiveParams[self::KEY_FOR_EXTRAFILES]) &&
+            is_array($archiveParams[self::KEY_FOR_EXTRAFILES])) {
+            foreach ($archiveParams[self::KEY_FOR_EXTRAFILES] as $path) {
+                if (is_string($path) && !in_array($path, $extrafiles)) {
+                    $extrafiles[] = $path;
+                }
+            }
+        }
+        if (!empty($archiveParams[self::KEY_FOR_EXCLUDEDFILES]) &&
+            is_array($archiveParams[self::KEY_FOR_EXCLUDEDFILES])) {
+            foreach ($archiveParams[self::KEY_FOR_EXCLUDEDFILES] as $path) {
+                if (is_string($path) && !in_array($path, $excludedfiles)) {
+                    $excludedfiles[] = $path;
+                }
+            }
+        }
+        $extrafiles = $this->sanitizeFileList($extrafiles);
+        list($preparedExtraFiles, $onlyChildren) = $this->prepareFileListFromGlob($extrafiles);
+        $excludedfiles = $this->sanitizeFileList($excludedfiles);
+        $excludedfilesWithDefault = $excludedfiles;
+        foreach ($this->sanitizeFileList(self::DEFAULT_EXCLUDED_FILES) as $filePath) {
+            if (!in_array($filePath, $excludedfilesWithDefault) && !in_array($filePath, $extrafiles)) {
+                $excludedfilesWithDefault[] = $filePath;
+            }
+        }
+        list($preparedExcludedFiles, $onlyChildren)  = $this->prepareFileListFromGlob($excludedfilesWithDefault, $preparedExtraFiles);
+        return compact(['preparedExcludedFiles','extrafiles','excludedfiles','onlyChildren']);
+    }
+
+    private function sanitizeFileList(array $list): array
+    {
+        $outputList = [];
+        foreach ($list as $filePath) {
+            if (is_string($filePath)) {
+                $filePath = trim($filePath);
+                // remove path containing '/../' to be sure to keep in root folder of the wiki
+                // or begining by '/' or 'c:\' to be sure to keep relative to root folder of website
+                if (!empty($filePath) && !preg_match("/^(?:\\/|\\\\)|[A-Za-z]:\\\\|(?:\\/|\\\\|^)\\.\\.(?:\\/|\\\\|$)/", $filePath)) {
+                    $formattedFilePath = preg_replace("/(\/|\\\\)$/", "", $filePath);
+                    if (!in_array($formattedFilePath, $outputList)) {
+                        $outputList[] = $formattedFilePath;
+                    }
+                }
+            }
+        }
+        return $outputList;
+    }
+
+    private function prepareFileListFromGlob(array $list, array $ignoreList = []): array
+    {
+        $outputList = [];
+        $onlyChildren = [];
+        foreach ($list as $filePath) {
+            foreach (glob($filePath) as $filename) {
+                $filename = str_replace("\\", "/", $filename);
+                if (is_dir($filename)) {
+                    $foundChildren = array_filter($ignoreList, function ($path) use ($filename) {
+                        return substr($path, 0, strlen($filename)) == $filename;
+                    });
+                    if (!empty($foundChildren)) {
+                        foreach ($foundChildren as $path) {
+                            $this->appendChildPathToChildren($onlyChildren, $filename, $path);
+                        }
+                    }
+                }
+                if (empty($onlyChildren[$filename]) && !in_array($filename, $outputList) && !in_array($filename, $ignoreList)) {
+                    $outputList[] = $filename;
+                }
+            }
+        }
+        return [$outputList,$onlyChildren];
+    }
+
+    private function appendChildPathToChildren(array &$onlyChildren, string $dirname, string $path)
+    {
+        if (empty($onlyChildren[$dirname])) {
+            $onlyChildren[$dirname] = [];
+        }
+        $currentPath = $path;
+        $parentDir = dirname($currentPath);
+        while ($parentDir != $dirname) {
+            $this->appendChildPathToChildren($onlyChildren, $parentDir, $currentPath);
+            $currentPath = $parentDir;
+            $parentDir = dirname($currentPath);
+        }
+        if (!in_array($currentPath, $onlyChildren[$dirname])) {
+            $onlyChildren[$dirname][] = $currentPath;
+        }
+    }
+
+    private function getPrivateFolder(): string
+    {
+        $archiveParams = $this->getArchiveParams();
+        if (!empty($archiveParams[self::KEY_FOR_PRIVATE_FOLDER]) &&
+            is_string($archiveParams[self::KEY_FOR_PRIVATE_FOLDER]) &&
+            is_dir($archiveParams[self::KEY_FOR_PRIVATE_FOLDER]) &&
+            $this->canWriteFolder($archiveParams[self::KEY_FOR_PRIVATE_FOLDER])) {
+            // TODO check if the private folder is included in root path
+            // then check if this private folder is not accessible from internet
+            return preg_replace("/(\/|\\\\)$/", "", $archiveParams[self::KEY_FOR_PRIVATE_FOLDER]);
+        } else {
+            $this->createFolder(sys_get_temp_dir().DIRECTORY_SEPARATOR, self::DEFAULT_FOLDER_NAME_IN_TMP);
+            $mainTmpDir = sys_get_temp_dir().DIRECTORY_SEPARATOR.self::DEFAULT_FOLDER_NAME_IN_TMP;
+            $sanitizeWebsiteName = preg_replace(
+                "/-+$/",
+                "",
+                preg_replace(
+                    "/[.\/\\{}\[\]#?&=!;:\\\$<>]/",
+                    "-",
+                    preg_replace(
+                        "/^https?:\/\//",
+                        "",
+                        $this->params->get('base_url')
+                    )
+                )
+            );
+            $this->createFolder($mainTmpDir.DIRECTORY_SEPARATOR, $sanitizeWebsiteName);
+            return $mainTmpDir.DIRECTORY_SEPARATOR.$sanitizeWebsiteName;
+        }
+    }
+
+    private function createFolder(string $basePath, string $path)
+    {
+        if (file_exists($basePath.$path) && !is_dir($basePath.$path)) {
+            throw new Exception("Folder \"$path\" in tmp should be a directory !");
+        } elseif (!file_exists($basePath.$path)) {
+            mkdir($basePath.$path);
+        }
+    }
+
+    private function getArchiveParams(): array
+    {
+        if ($this->params->has(self::PARAMS_KEY_IN_WAKKA)) {
+            $archiveParams = $this->params->get(self::PARAMS_KEY_IN_WAKKA);
+        }
+        return (empty($archiveParams) || !is_array($archiveParams)) ? [] : $archiveParams;
+    }
+
+    private function canWriteFolder(string $path): bool
+    {
+        $perms = fileperms($path);
+        return (
+            (($perms & 0xF000) == 0x4000) && // directory
+            ($perms & 0x0080) &&           // writable by owner
+            ($perms & 0x0010)              // writable by group
+        );
+    }
+
+    /**
+     * write text to the output
+     * @param string|OutputInterface &$output
+     * @param string $text
+     * @param bool $newline
+     */
+    private function writeOutput(string|OutputInterface &$output, string $text, bool $newline = true)
+    {
+        if ($output instanceof OutputInterface) {
+            $output->write($text, $newline);
+        } else {
+            $output .= $text . ($newline ? "\n" : "");
+        }
+    }
+
+    /**
+     * sanitize wakka.config.php before saving it
+     * @param array $dataFiles
+     * @return string
+     */
+    private function getWakkaConfigSanitized(array $dataFiles): string
+    {
+        // get wakka.config.php content
+        $config = $this->configurationService->getConfiguration('wakka.config.php');
+        $config->load();
+        if (!empty($dataFiles['extrafiles']) || !empty($dataFiles['excludedfiles'])) {
+            if (!isset($config[self::PARAMS_KEY_IN_WAKKA]) ||
+                !is_array($config[self::PARAMS_KEY_IN_WAKKA])) {
+                $data = [];
+            } else {
+                $data = $config[self::PARAMS_KEY_IN_WAKKA];
+            }
+            if (!empty($dataFiles['extrafiles'])) {
+                $data[self::KEY_FOR_EXTRAFILES] = $dataFiles['extrafiles'];
+            }
+            if (!empty($dataFiles['excludedfiles'])) {
+                $data[self::KEY_FOR_EXCLUDEDFILES] = $dataFiles['excludedfiles'];
+            }
+            $config[self::PARAMS_KEY_IN_WAKKA] = $data;
+        }
+        foreach (self::DEFAULT_PARAMS_TO_ANONYMIZE as $key) {
+            if (isset($config[$key])) {
+                $config[$key] = "";
+            }
+        }
+        // remove current wiki_status
+        unset($config['wiki_status']);
+        return $this->configurationService->getContentToWrite($config);
+    }
+
+    protected function setWikiStatus()
+    {
+        $config = $this->configurationService->getConfiguration('wakka.config.php');
+        $config->load();
+        $config['wiki_status'] = 'archiving';
+        $this->configurationService->write($config);
+    }
+    protected function unsetWikiStatus()
+    {
+        $config = $this->configurationService->getConfiguration('wakka.config.php');
+        $config->load();
+        unset($config['wiki_status']);
+        $this->configurationService->write($config);
+    }
+}
