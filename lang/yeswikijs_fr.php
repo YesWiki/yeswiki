@@ -64,6 +64,19 @@ return [
     "ADMIN_BACKUPS_STOPPING_ARCHIVE" => "Arrêt en cours de la sauvegarde",
     "ADMIN_BACKUPS_CONFIRMATION_TO_DELETE" => "Les fichiers suivants seront supprimés par la sauvegarde.\n".
         "Veuillez confirmer leur suppression en cochant la case ci-dessous.\n<pre>{files}</pre>",
+    "ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING" => "Lancement de la sauvegarde impossible \n" .
+        "Car une sauvegarde semble être déjà en cours.\n".
+        "Si ça n'est pas le cas, se rendre dans la page 'GererConfig' pour vider la valeur\n".
+        "du paramètre `wiki_status` dans la partie `Sécurité`",
+    "ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE" => "Lancement de la sauvegarde impossible \n" .
+        "Car le site est en hibernation.\n".
+        "Pour le sortir de cet état, se rendre dans la page 'GererConfig' pour vider la valeur\n".
+        "du paramètre `wiki_status` dans la partie `Sécurité`",
+    "ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE" => "Lancement de la sauvegarde impossible \n" .
+        "Car le dossier de sauvegarde n'est pas accessible en écriture.\n".
+        " - Vérifier la validité du paramètre 'archive[privatePath]', dans la page 'GererConfig' (rubrique 'Sécutité')\n".
+        " - si ce paramètre est vide, le remplir avec un chemin non accessible sur le internet\n".
+        " - Vérifier que le dossier est bien accessible pour 'php' (si 'archive[privatePath]' est vide, c'est le dossier '/tmp' qui est utilisé)",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Modifs apportées par cette version",

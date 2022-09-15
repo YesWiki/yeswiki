@@ -183,17 +183,46 @@ let appParams = {
         },
         startArchive: function (){
             let archiveApp = this;
+            archiveApp.updating = true;
+            archiveApp.archiving = true;
+            archiveApp.message = "";
+            archiveApp.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP');
+            archiveApp.archiveMessageClass = {alert:true,['alert-info']:true};
+            $.ajax({
+                method: "GET",
+                url: wiki.url(`api/archives/archivingStatus/`),
+                success: function(data){
+                    if (typeof data != "object" || !data.hasOwnProperty('canArchive')){
+                        archiveApp.endStartingUpdateError();
+                        return;
+                    } else if (data.canArchive){
+                        archiveApp.startArchiveNextStep();
+                        return;
+                    } else if (data.hasOwnProperty('archiving') && data.archiving) {
+                        archiveApp.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING').replace(/\n/g,'<br>'));
+                        return ;
+                    } else if (data.hasOwnProperty('hibernated') && data.hibernated) {
+                        archiveApp.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE').replace(/\n/g,'<br>'));
+                        return ;
+                    } else if (data.hasOwnProperty('privatePathWritable') && !data.privatePathWritable) {
+                        archiveApp.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE').replace(/\n/g,'<br>'));
+                        return ;
+                    }
+                    archiveApp.endStartingUpdateError();
+                },
+                error: function(){
+                    archiveApp.endStartingUpdateError();
+                }
+            });
+        },
+        startArchiveNextStep: function(){
+            let archiveApp = this;
             if (!archiveApp.canForceDelete){
                 archiveApp.checkFilesToDelete();
                 return ;
             }
             archiveApp.canForceDelete = false;
             archiveApp.askConfirmationToDelete = false;
-            archiveApp.updating = true;
-            archiveApp.archiving = true;
-            archiveApp.message = "";
-            archiveApp.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP');
-            archiveApp.archiveMessageClass = {alert:true,['alert-info']:true};
             $.ajax({
                 method: "POST",
                 url: wiki.url(`api/archives`),
@@ -212,13 +241,17 @@ let appParams = {
                     archiveApp.currentArchiveUid = data.uid;
                     setTimeout(archiveApp.updateStatus, 2000);
                 },
-                error: function(xhr,status,error){
-                    archiveApp.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP_ERROR');
-                    archiveApp.archiveMessageClass = {alert:true,['alert-danger']:true};
-                    archiveApp.updating = false;
-                    archiveApp.archiving = false;
+                error: function(){
+                    archiveApp.endStartingUpdateError();
                 }
             });
+        },
+        endStartingUpdateError: function(message = ""){
+            let archiveApp = this;
+            archiveApp.archiveMessage = message.length == 0 ? _t('ADMIN_BACKUPS_START_BACKUP_ERROR') : message;
+            archiveApp.archiveMessageClass = {alert:true,['alert-danger']:true};
+            archiveApp.updating = false;
+            archiveApp.archiving = false;
         },
         checkFilesToDelete: function (){
             let archiveApp = this;
