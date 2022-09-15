@@ -189,6 +189,45 @@ class ArchiveService
         $this->cleanOldestFiles();
         return $location;
     }
+    
+    /**
+     * retrieve the current status to archive
+     * @return array ['canArchive' => bool,'archiving' => bool, 'hibernated' => bool, 'privatePathWritable' => true]
+     */
+    public function getArchivingStatus(): array
+    {
+        $canArchive = true;
+        $archiving = false;
+        $hibernated = false;
+        $privatePathWritable = true;
+        if ($this->securityController->isWikiHibernated()) {
+            $canArchive = false;
+            switch ($this->params->get('wiki_status')) {
+                case 'archiving':
+                    $archiving = true;
+                    break;
+                case 'hibernate':
+                    $hibernated = true;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+        try {
+            $privatePath = $this->getPrivateFolder();
+        } catch (Exception $th) {
+            $privatePathWritable = false;
+            $canArchive = false;
+            $privatePath = "";
+        }
+        if (!empty($privatePath) && !is_writable($privatePath)) {
+            $privatePathWritable = false;
+            $canArchive = false;
+        }
+        return compact(['canArchive','archiving','hibernated','privatePathWritable']);
+    }
+
 
     /**
      * start archive async via CLI
