@@ -95,10 +95,6 @@ class ArchiveServiceTest extends YesWikiTestCase
                         'extrafiles' => ['wakka.config.php'],
                         'excludedfiles' => ['*','.*'],
                     ],
-                    'mysql_host' => '',
-                    'mysql_database' => '',
-                    'mysql_user' => '',
-                    'mysql_password' => '',
                 ]
             ],
             'archive only wakka.config.php with database' => [
@@ -121,10 +117,6 @@ class ArchiveServiceTest extends YesWikiTestCase
                         'extrafiles' => ['wakka.config.php'],
                         'excludedfiles' => ['*','.*'],
                     ],
-                    'mysql_host' => '',
-                    'mysql_database' => '',
-                    'mysql_user' => '',
-                    'mysql_password' => '',
                 ]
             ],
             'archive only database' => [
@@ -156,10 +148,6 @@ class ArchiveServiceTest extends YesWikiTestCase
                         'extrafiles' => ['wakka.config.php','tools/bazar/config.yaml'],
                         'excludedfiles' => ['*','.*'],
                     ],
-                    'mysql_host' => '',
-                    'mysql_database' => '',
-                    'mysql_user' => '',
-                    'mysql_password' => '',
                 ]
             ],
         ];
@@ -272,11 +260,10 @@ class ArchiveServiceTest extends YesWikiTestCase
             $this->assertEquals($contentDefinition, $contentToCheck);
         }
     }
-
-    
     
     /**
      * @depends testArchiveServiceExisting
+     * @depends testArchive
      * @dataProvider notInParallelProvider
      * @covers ArchiveService::setWikiStatus
      * @param string $status
@@ -301,10 +288,13 @@ class ArchiveServiceTest extends YesWikiTestCase
         } else {
             $this->setWikiStatus($configService, $previousStatus);
         }
+        $atLeastOneStdErr = false;
         foreach ($results as $result) {
-            $output = $result['stdout'] ?? '';
-            $this->assertArrayHasKey('stderr', $result, "No error in \"ArchiveService\" when \"wiki_status\" = \"$status\" ; output: $output");
+            if (isset($result['stderr'])) {
+                $atLeastOneStdErr = true;
+            }
         }
+        $this->assertTrue($atLeastOneStdErr, "No error in \"ArchiveService\" when \"wiki_status\" = \"$status\" ; results: ".json_encode($results));
     }
 
     protected function setWikiStatus(ConfigurationService $configurationService, string $status = 'archiving')
@@ -321,7 +311,6 @@ class ArchiveServiceTest extends YesWikiTestCase
         unset($config['wiki_status']);
         $configurationService->write($config);
     }
-
     
     public function notInParallelProvider()
     {
@@ -329,6 +318,143 @@ class ArchiveServiceTest extends YesWikiTestCase
             'archiving' => ['status' => 'archiving'],
             'hibernate' => ['status' => 'hibernate'],
             'updating' => ['status' => 'updating'],
+        ];
+    }
+    
+    /**
+     * @depends testArchiveServiceExisting
+     * @depends testArchive
+     * @dataProvider anonymousProvider
+     * @param null|array $anonymousParam
+     * @param array $wakkaContent
+     * @param array $services [$wiki,$archiveService]
+     */
+    public function testAnonymousParams(
+        ?array $anonymousParam,
+        array $wakkaContent,
+        array $services
+    ) {
+        $params = $services['wiki']->services->get(ParameterBagInterface::class);
+        $configService = $services['wiki']->services->get(ConfigurationService::class);
+        $consoleService = $services['wiki']->services->get(ConsoleService::class);
+        $previousAnonymousParams = $this->getAnonymousParam($configService);
+        if (is_null($anonymousParam)) {
+            $this->unsetAnonymousParam($configService);
+        } else {
+            $this->setAnonymousParam($configService, $anonymousParam);
+        }
+        $results = $consoleService->startConsoleSync("core:archive", [
+            "-f",
+            "-x","*,.*",
+            "-e","wakka.config.php"
+        ]);
+        if (!is_null($previousAnonymousParams)) {
+            $this->setAnonymousParam($configService, $previousAnonymousParams);
+        } else {
+            $this->unsetAnonymousParam($configService);
+        }
+
+        foreach ($results as $result) {
+            if (isset($result['stdout'])) {
+                if (preg_match("/^Archive \\\"(.*)\\\" successfully created !\s*$/m", $result['stdout'], $matches)) {
+                    $location = $matches[1];
+                }
+                break;
+            }
+        }
+        
+        $this->assertNotEmpty($location);
+        $this->assertTrue(is_file($location), "Extracted location is not a file !");
+        $data = $this->getDataFromLocation($location, $services['wiki']);
+        $error = $data['error'] ?? "";
+        $this->assertEmpty($error, "There is an error : $error");
+        $this->assertArrayNotHasKey('error', $data);
+        $this->assertArrayHasKey('wakkaContent', $data);
+        $this->checkWakkaContent($wakkaContent, $data['wakkaContent']);
+    }
+
+    protected function getAnonymousParam(ConfigurationService $configurationService): ?array
+    {
+        $config = $configurationService->getConfiguration('wakka.config.php');
+        $config->load();
+        $archiveParams = $config['archive'] ?? [];
+        return $archiveParams['anonymous'] ?? null;
+    }
+
+    protected function setAnonymousParam(ConfigurationService $configurationService, array $anonymousParam)
+    {
+        $config = $configurationService->getConfiguration('wakka.config.php');
+        $config->load();
+        $archiveParams = $config['archive'] ?? [];
+        $archiveParams['anonymous'] = $anonymousParam;
+        $config['archive'] = $archiveParams;
+        $configurationService->write($config);
+    }
+
+    protected function unsetAnonymousParam(ConfigurationService $configurationService)
+    {
+        $config = $configurationService->getConfiguration('wakka.config.php');
+        $config->load();
+        if (isset($config['archive'])) {
+            $archiveParams = $config['archive'];
+            unset($archiveParams['anonymous']);
+            if (empty($archiveParams)) {
+                unset($config['archive']);
+            } else {
+                $config['archive'] = $archiveParams;
+            }
+        }
+        $configurationService->write($config);
+    }
+
+    public function anonymousProvider()
+    {
+        return [
+            'default' => [
+                'anonymousParam' => null,
+                'wakkaContent' => [
+                    'mysql_host' => '',
+                    'mysql_database' => '',
+                    'mysql_user' => '',
+                    'mysql_password' => '',
+                    'archive' => [
+                        'anonymous' => [
+                            'mysql_host' => '',
+                            'mysql_database' => '',
+                            'mysql_user' => '',
+                            'mysql_password' => '',
+                            'contact_smtp_host' => '',
+                            'contact_smtp_user' => '',
+                            'contact_smtp_pass' => '',
+                            'api_allowed_keys' => []
+                        ],
+                    ],
+                ]
+            ],
+            'specific' => [
+                'anonymousParam' => [
+                    'mysql_host' => '',
+                    'mysql_database' => '',
+                    'mysql_user' => '',
+                    'mysql_password' => '',
+                    'custom_key' => ''
+                ],
+                'wakkaContent' => [
+                    'mysql_host' => '',
+                    'mysql_database' => '',
+                    'mysql_user' => '',
+                    'mysql_password' => '',
+                    'archive' => [
+                        'anonymous' => [
+                            'mysql_host' => '',
+                            'mysql_database' => '',
+                            'mysql_user' => '',
+                            'mysql_password' => '',
+                            'custom_key' => ''
+                        ],
+                    ],
+                ]
+            ],
         ];
     }
 }

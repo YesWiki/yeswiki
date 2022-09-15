@@ -24,19 +24,20 @@ class ArchiveService
         "cache"
     ];
     public const DEFAULT_PARAMS_TO_ANONYMIZE = [
-        'mysql_host',
-        'mysql_database',
-        'mysql_user',
-        'mysql_password',
-        'contact_smtp_host',
-        'contact_smtp_user',
-        'contact_smtp_pass',
-        'api_allowed_keys'
+        'mysql_host' => '',
+        'mysql_database' => '',
+        'mysql_user' => '',
+        'mysql_password' => '',
+        'contact_smtp_host' => '',
+        'contact_smtp_user' => '',
+        'contact_smtp_pass' => '',
+        'api_allowed_keys' => []
     ];
-    protected const PARAMS_KEY_IN_WAKKA = 'archive';
-    protected const KEY_FOR_PRIVATE_FOLDER = 'privatePath';
-    protected const KEY_FOR_EXTRAFILES = 'extrafiles';
-    protected const KEY_FOR_EXCLUDEDFILES = 'excludedfiles';
+    public const PARAMS_KEY_IN_WAKKA = 'archive';
+    public const KEY_FOR_PRIVATE_FOLDER = 'privatePath';
+    public const KEY_FOR_EXTRAFILES = 'extrafiles';
+    public const KEY_FOR_EXCLUDEDFILES = 'excludedfiles';
+    public const KEY_FOR_ANONYMOUS = 'anonymous';
     protected const DEFAULT_FOLDER_NAME_IN_TMP = "yeswiki_archive";
     public const ARCHIVE_SUFFIX = "_archive";
     public const ARCHIVE_ONLY_FILES_SUFFIX = "_archive_only_files";
@@ -85,7 +86,9 @@ class ArchiveService
         array $extrafiles = [],
         array $excludedfiles = []
     ) {
+        $this->writeOutput($output, "=== Checking free space ===");
         $this->assertEnoughtSpace();
+        $this->writeOutput($output, "There is enough free space.");
 
         $onlyDb = false;
         // check options and prepare file suffix
@@ -123,7 +126,7 @@ class ArchiveService
             $sqlContent = $savedatabase ? $this->getSQLContent($privatePath) : "";
 
             // create zip passing SQL <= TODO
-            $this->writeOutput($output, "Creating zip archive");
+            $this->writeOutput($output, "=== Creating zip archive ===");
             $this->createZip($location, $dataFiles, $output, $sqlContent, $onlyDb);
 
             $this->writeOutput($output, "Archive \"$location\" successfully created !");
@@ -407,29 +410,43 @@ class ArchiveService
         // get wakka.config.php content
         $config = $this->configurationService->getConfiguration('wakka.config.php');
         $config->load();
-        if (!empty($dataFiles['extrafiles']) || !empty($dataFiles['excludedfiles'])) {
-            if (!isset($config[self::PARAMS_KEY_IN_WAKKA]) ||
-                !is_array($config[self::PARAMS_KEY_IN_WAKKA])) {
-                $data = [];
-            } else {
-                $data = $config[self::PARAMS_KEY_IN_WAKKA];
-            }
-            if (!empty($dataFiles['extrafiles'])) {
-                $data[self::KEY_FOR_EXTRAFILES] = $dataFiles['extrafiles'];
-            }
-            if (!empty($dataFiles['excludedfiles'])) {
-                $data[self::KEY_FOR_EXCLUDEDFILES] = $dataFiles['excludedfiles'];
-            }
-            $config[self::PARAMS_KEY_IN_WAKKA] = $data;
+        if (!isset($config[self::PARAMS_KEY_IN_WAKKA]) ||
+            !is_array($config[self::PARAMS_KEY_IN_WAKKA])) {
+            $data = [];
+        } else {
+            $data = $config[self::PARAMS_KEY_IN_WAKKA];
         }
-        foreach (self::DEFAULT_PARAMS_TO_ANONYMIZE as $key) {
-            if (isset($config[$key])) {
-                $config[$key] = "";
-            }
+        if (!empty($dataFiles['extrafiles'])) {
+            $data[self::KEY_FOR_EXTRAFILES] = $dataFiles['extrafiles'];
         }
+        if (!empty($dataFiles['excludedfiles'])) {
+            $data[self::KEY_FOR_EXCLUDEDFILES] = $dataFiles['excludedfiles'];
+        }
+        if (!isset($data[self::KEY_FOR_ANONYMOUS]) || !is_array($data[self::KEY_FOR_ANONYMOUS])) {
+            $data[self::KEY_FOR_ANONYMOUS] = self::DEFAULT_PARAMS_TO_ANONYMIZE;
+        }
+        $config[self::PARAMS_KEY_IN_WAKKA] = $data;
+
+        $config = $this->setDefaultValuesRecursive($config[self::PARAMS_KEY_IN_WAKKA][self::KEY_FOR_ANONYMOUS], $config);
         // remove current wiki_status
         unset($config['wiki_status']);
         return $this->configurationService->getContentToWrite($config);
+    }
+
+    private function setDefaultValuesRecursive(array $defaultValues, $values)
+    {
+        foreach ($defaultValues as $key => $value) {
+            if (is_scalar($value)) {
+                if (isset($values[$key])) {
+                    $values[$key] = $value;
+                }
+            } elseif (is_array($value)) {
+                if (isset($values[$key])) {
+                    $values[$key] = $this->setDefaultValuesRecursive($value, $values[$key]);
+                }
+            }
+        }
+        return $values;
     }
 
     protected function setWikiStatus()
