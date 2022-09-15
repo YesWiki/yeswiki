@@ -31,7 +31,7 @@ class SecurityController extends YesWikiController
      */
     public function isWikiHibernated(): bool
     {
-        return (in_array($this->params->get('wiki_status'), ['hibernate']));
+        return (in_array($this->params->get('wiki_status'), ['hibernate','archiving','updating']));
     }
 
     /**
