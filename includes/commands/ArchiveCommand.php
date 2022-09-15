@@ -40,6 +40,7 @@ class ArchiveCommand extends Command
             ->addOption('nosavedatabase', 'f', InputOption::VALUE_NONE, 'Do not save database')
             ->addOption('extrafiles', 'e', InputOption::VALUE_REQUIRED, 'Extrafiles, path relative to root, coma separated')
             ->addOption('excludedfiles', 'x', InputOption::VALUE_REQUIRED, 'Excludedfiles, path relative to root, coma separated')
+            ->addOption('anonymous', 'a', InputOption::VALUE_REQUIRED, 'Params to anonymize in wakka.config.php, json_encoded')
         ;
     }
 
@@ -55,8 +56,16 @@ class ArchiveCommand extends Command
 
         $extrafiles = $this->prepareFileList($input->getOption('extrafiles'));
         $excludedfiles = $this->prepareFileList($input->getOption('excludedfiles'));
+        $rawAnonymous = $input->getOption('anonymous');
+        $anonymous = null;
+        if (!empty($rawAnonymous)) {
+            $rawAnonymous = json_decode($rawAnonymous, true);
+            if (is_array($rawAnonymous)) {
+                $anonymous = $rawAnonymous;
+            }
+        }
 
-        $location = $this->archiveService->archive($output, !$nosavefiles, !$nosavedatabase, $extrafiles, $excludedfiles);
+        $location = $this->archiveService->archive($output, !$nosavefiles, !$nosavedatabase, $extrafiles, $excludedfiles, $anonymous);
 
         return Command::SUCCESS;
     }
