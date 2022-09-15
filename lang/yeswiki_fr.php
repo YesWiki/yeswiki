@@ -52,6 +52,12 @@ return [
     'NO_TOOL_AVAILABLE' => 'Aucun outil n\'est disponible ou actif',
     'LIST_OF_ACTIVE_TOOLS' => 'Liste des extensions actives',
 
+    // actions/AdminBackupsAtion.php
+    'ADMIN_BACKUPS_TITLE' => 'Gestion des sauvegardes',
+    'ADMIN_BACKUPS_ARCHIVES_LIST' => 'Liste des archives',
+    'ADMIN_BACKUPS_ARCHIVE_FILENAME' => 'Nom du fichier',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE' => 'Type',
+    
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Pages ayant un lien vers',
     'PAGES_WITH_LINK_TO_CURRENT_PAGE' => 'Pages ayant un lien vers la page courante',

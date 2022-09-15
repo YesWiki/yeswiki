@@ -1,0 +1,24 @@
+{{ include_javascript('javascripts/vendor/vue/vue.js') }}
+{{ include_javascript('javascripts/actions/admin-backups.js', false, true) }}
+{{ include_css('styles/actions/admin-backups.css') }}
+
+<div class="admin-backups-container well">
+  <h1>{{ _t('ADMIN_BACKUPS_TITLE') }}</h1>
+  <h2>{{ _t('ADMIN_BACKUPS_ARCHIVES_LIST') }}</h2>
+  <div v-if="message.length > 0" v-html="message" :class="messageClass"></div>
+  <div v-if="ready" class="backups-container">
+    <div class="archive-item archive-item-title">{{ _t('ADMIN_BACKUPS_ARCHIVE_FILENAME') }}</div>
+    <div class="archive-item archive-item-title">{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE') }}</div>
+    <div class="archive-item archive-item-title"></div>
+    <template v-for="archive in archives">
+      <div class="archive-item" v-html="archive.filename"></div>
+      <div class="archive-item">
+        <i v-if="archive.type == 'only_files'" class="fas fa-copy" data-toggle="tooltip" title="{{ _t('ONLY_FILES') }}"></i>
+        <i v-if="archive.type == 'only_db'" class="fas fa-database" data-toggle="tooltip" title="{{ _t('ONLY_DB') }}"></i>
+      </div>
+      <div class="archive-item"  @click="deleteArchive(archive)"><button>{{ _t('DELETE') }}</button></div>
+    </template>
+    <spinner-loader v-if="updating"></spinner-loader>
+  </div>
+  <spinner-loader v-else height="300"></spinner-loader>
+</div>
