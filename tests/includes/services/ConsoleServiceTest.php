@@ -127,17 +127,18 @@ class ConsoleServiceTest extends YesWikiTestCase
      * @depends testConsoleServiceExisting
      * @param ConsoleService $consoleService
      */
-    public function testAsync(ConsoleService $consoleService) {
+    public function testAsync(ConsoleService $consoleService)
+    {
         $tmp_path = tempnam('cache', 'tmp_test_results_');
         $tmpfile = basename($tmp_path);
         $process = $consoleService->startConsoleAsync("core:testconsoleservice", [
             "-f",$tmpfile,
             "-t","ParentProcess",
             "-c","ChildProcess",
-            "-w",2,
+            "-w",1,
         ]);
         $process->wait();
-        sleep(3);
+        sleep(2);
 
         $content = file_get_contents($tmp_path);
         unlink($tmp_path);
