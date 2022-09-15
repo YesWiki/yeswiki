@@ -95,17 +95,19 @@ mkdir -p javascripts/vendor/moment && \
   cp -f node_modules/moment/min/moment-with-locales.min.js.map javascripts/vendor/moment
 
 # Docsify
-mkdir -p javascripts/vendor/docsify && \
-  cp -f node_modules/docsify/lib/docsify.min.js javascripts/vendor/docsify && \
-  cp -f node_modules/docsify/LICENSE javascripts/vendor/docsify && \
-  cp -f node_modules/docsify/README.md javascripts/vendor/docsify
+# Sept 2022: Docsify have vulnerability warnings, so we remove it from our dependency
+# so the github warning disappear. Please include it back in package.json when issue is fixed
+# mkdir -p javascripts/vendor/docsify && \
+#   cp -f node_modules/docsify/lib/docsify.min.js javascripts/vendor/docsify && \
+#   cp -f node_modules/docsify/LICENSE javascripts/vendor/docsify && \
+#   cp -f node_modules/docsify/README.md javascripts/vendor/docsify
 mkdir -p javascripts/vendor/docsify/plugins && \
-  cp -f node_modules/docsify/lib/plugins/*.min.js javascripts/vendor/docsify/plugins && \
+  # cp -f node_modules/docsify/lib/plugins/*.min.js javascripts/vendor/docsify/plugins && \
   cp -f node_modules/docsify-copy-code/dist/*.min.js javascripts/vendor/docsify/plugins
   cp -f node_modules/docsify-copy-code/LICENSE javascripts/vendor/docsify/plugins/LICENSE-docisfy-copy-code
-mkdir -p styles/vendor/docsify && \
-  cp -f node_modules/docsify/lib/themes/vue.css styles/vendor/docsify/vue.min.css && \
-  cp -f node_modules/docsify/lib/themes/pure.css styles/vendor/docsify/pure.min.css && \
-  cp -f node_modules/docsify/lib/themes/buble.css styles/vendor/docsify/buble.min.css && \
-  cp -f node_modules/docsify/lib/themes/dark.css styles/vendor/docsify/dark.min.css && \
-  cp -f node_modules/docsify/lib/themes/dolphin.css styles/vendor/docsify/dolphin.min.css
+# mkdir -p styles/vendor/docsify && \
+#   cp -f node_modules/docsify/lib/themes/vue.css styles/vendor/docsify/vue.min.css && \
+#   cp -f node_modules/docsify/lib/themes/pure.css styles/vendor/docsify/pure.min.css && \
+#   cp -f node_modules/docsify/lib/themes/buble.css styles/vendor/docsify/buble.min.css && \
+#   cp -f node_modules/docsify/lib/themes/dark.css styles/vendor/docsify/dark.min.css && \
+#   cp -f node_modules/docsify/lib/themes/dolphin.css styles/vendor/docsify/dolphin.min.css
