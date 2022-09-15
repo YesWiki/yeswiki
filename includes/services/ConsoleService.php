@@ -27,10 +27,11 @@ class ConsoleService
      * @param string $command
      * @param array $args
      * @param string $subfolder
-     * @param bool $newConsole;
+     * @param bool $newConsole
+     * @param int $timeoutInSec
      * @return array ['command'=>['stdout|stderr' => $output]]
      */
-    public function startConsoleAsync(string $command, array $args = [], string $subfolder = "", bool $newConsole = true): ?Process
+    public function startConsoleAsync(string $command, array $args = [], string $subfolder = "", bool $newConsole = true, int $timeoutInSec = 60): ?Process
     {
         if (empty($command)) {
             return null;
@@ -45,7 +46,9 @@ class ConsoleService
             $params[] = $arg;
         }
         $process = new Process($params, $folder);
-        // $process->setTimeout(60); // default 60s
+        if ($timeoutInSec > 0) {
+            $process->setTimeout($timeoutInSec); // default 60s
+        }
         // this option allows a subprocess to continue running after the main script exited
         if ($newConsole) {
             $process->setOptions(['create_new_console' => true]);
@@ -71,11 +74,12 @@ class ConsoleService
      * @param string $command
      * @param array $args
      * @param string $subfolder
+     * @param int $timeoutInSec
      * @return array ['stdout|stderr' => $output]
      */
-    public function startConsoleSync(string $command, array $args = [], string $subfolder = ""): array
+    public function startConsoleSync(string $command, array $args = [], string $subfolder = "", int $timeoutInSec = 60): array
     {
-        $process = $this->startConsoleAsync($command, $args, $subfolder, false);
+        $process = $this->startConsoleAsync($command, $args, $subfolder, false, $timeoutInSec);
         if (!$process) {
             return null;
         }
