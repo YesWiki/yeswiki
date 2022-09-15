@@ -2,8 +2,11 @@
 
 namespace YesWiki\Test\Core\Commands;
 
+use Exception;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\ConfigurationService;
+use YesWiki\Core\Service\ConsoleService;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 use ZipArchive;
@@ -59,7 +62,8 @@ class ArchiveServiceTest extends YesWikiTestCase
             $excludedfiles,
         );
         $data = $this->getDataFromLocation($location,$services['wiki']);
-        $this->assertEmpty($data['error'] ?? "");
+        $error = $data['error'] ?? "";
+        $this->assertEmpty($error,"There is an error : $error");
         $this->assertArrayNotHasKey('error',$data);
         $this->assertMatchesRegularExpression("/^.*".preg_quote(constant("\\YesWiki\\Core\\Service\\ArchiveService::{$locationSuffix}").".zip","/")."$/", $location);
         if (!is_null($nbFiles) && $nbFiles > -1){
@@ -254,5 +258,64 @@ class ArchiveServiceTest extends YesWikiTestCase
         } elseif (is_scalar($contentDefinition)) {
             $this->assertEquals($contentDefinition,$contentToCheck);
         }
+    }
+
+    
+    
+    /**
+     * @depends testArchiveServiceExisting
+     * @dataProvider notInParallelProvider
+     * @covers ArchiveService::setWikiStatus
+     * @param string $status
+     * @param array $services [$wiki,$archiveService]
+     */
+    public function testNotArchiveInParallel(
+        string $status,
+        array $services
+    ) {
+        $params = $services['wiki']->services->get(ParameterBagInterface::class);
+        $configService = $services['wiki']->services->get(ConfigurationService::class);
+        $consoleService = $services['wiki']->services->get(ConsoleService::class);
+        $previousStatus = $params->has('wiki_status') ? $params->get('wiki_status') : null;
+        $this->setWikiStatus($configService,$status);
+        $results = $consoleService->startConsoleSync("core:archive",[
+            "-f",
+            "-x","*,.*",
+            "-e","wakka.config.php"
+        ]);
+        if (empty($previousStatus)){
+            $this->unsetWikiStatus($configService);
+        } else {
+            $this->setWikiStatus($configService,$previousStatus);
+        }
+        foreach($results as $result){
+            $output = $result['stdout'] ?? '';
+            $this->assertArrayHasKey('stderr',$result,"No error in \"ArchiveService\" when \"wiki_status\" = \"$status\" ; output: $output");
+        }
+    }
+
+    protected function setWikiStatus(ConfigurationService $configurationService, string $status = 'archiving')
+    {
+        $config = $configurationService->getConfiguration('wakka.config.php');
+        $config->load();
+        $config['wiki_status'] = $status;
+        $configurationService->write($config);
+    }
+    protected function unsetWikiStatus(ConfigurationService $configurationService)
+    {
+        $config = $configurationService->getConfiguration('wakka.config.php');
+        $config->load();
+        unset($config['wiki_status']);
+        $configurationService->write($config);
+    }
+
+    
+    public function notInParallelProvider()
+    {
+        return [
+            'archiving' => ['status' => 'archiving'],
+            'hibernate' => ['status' => 'hibernate'],
+            'updating' => ['status' => 'updating'],
+        ];
     }
 }
