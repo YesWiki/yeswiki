@@ -7,10 +7,8 @@ use Symfony\Component\Console\Input\InputInterface;
 // use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 // use Symfony\Component\Console\Question\ChoiceQuestion;
-// use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\UserController;
-// use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Wiki;
 
