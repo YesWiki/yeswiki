@@ -4,19 +4,43 @@
 
 <div class="admin-backups-container well">
   <h1>{{ _t('ADMIN_BACKUPS_TITLE') }}</h1>
+  <div class="pull-right btn btn-xs btn-primary" @click="loadArchives" data-tooltip="toogle" title="{{ _t('RELOAD') }}"><i class="fas fa-redo-alt"></i></div>
   <h2>{{ _t('ADMIN_BACKUPS_ARCHIVES_LIST') }}</h2>
+  <div class="clearfix"></div>
   <div v-if="message.length > 0" v-html="message" :class="messageClass"></div>
   <div v-if="ready" class="backups-container">
     <div class="archive-item archive-item-title">{{ _t('ADMIN_BACKUPS_ARCHIVE_FILENAME') }}</div>
+    <div class="archive-item archive-item-title">{{ _t('ADMIN_BACKUPS_ARCHIVE_SIZE') }}</div>
     <div class="archive-item archive-item-title">{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE') }}</div>
     <div class="archive-item archive-item-title"></div>
+    <div class="archive-item archive-item-title">
+      <button class="btn btn-xs btn-warning btn-wrap" @click="deleteSelectedArchives" data-toggle="tooltip" title="{{ _t('DELETE_ALL_SELECTED_ITEMS')|e('html_attr') }}">
+        {{ _t('DELETE_SELECTION') }}
+      </button>
+    </div>
     <template v-for="archive in archives">
-      <div class="archive-item" v-html="archive.filename"></div>
+      <div class="archive-item archive-filename" v-html="archive.filename"></div>
+      <div class="archive-item" v-html="formatFileSize(archive.size)"></div>
       <div class="archive-item">
         <i v-if="archive.type == 'only_files'" class="fas fa-copy" data-toggle="tooltip" title="{{ _t('ONLY_FILES') }}"></i>
         <i v-if="archive.type == 'only_db'" class="fas fa-database" data-toggle="tooltip" title="{{ _t('ONLY_DB') }}"></i>
       </div>
-      <div class="archive-item"  @click="deleteArchive(archive)"><button>{{ _t('DELETE') }}</button></div>
+      <div class="archive-item">
+        <a :href="downloadUrl(archive)" class="btn btn-xs btn-primary" data-tooltip="toggle" title="{{ _t('DOWNLOAD') }}">
+          <i class="fas fa-download"></i>
+        </a>
+        <button class="btn btn-xs btn-danger" @click="deleteArchive(archive)" data-tooltip="toggle" title="{{ _t('DELETE') }}">
+          <i class="fa fa-trash"></i>
+        </button>
+      </div>
+      <div class="archive-item" @click="toggleSelectedArchive(archive.filename)">
+        <input 
+          type="checkbox" 
+          :name="archive.filename" 
+          value="1" 
+          :checked="selectedArchivesToDelete.includes(archive.filename)">
+        <span></span>
+      </div>
     </template>
     <spinner-loader v-if="updating"></spinner-loader>
   </div>

@@ -57,6 +57,7 @@ return [
     'ADMIN_BACKUPS_ARCHIVES_LIST' => 'Liste des archives',
     'ADMIN_BACKUPS_ARCHIVE_FILENAME' => 'Nom du fichier',
     'ADMIN_BACKUPS_ARCHIVE_TYPE' => 'Type',
+    'ADMIN_BACKUPS_ARCHIVE_SIZE' => 'Taille',
     
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Pages ayant un lien vers',
