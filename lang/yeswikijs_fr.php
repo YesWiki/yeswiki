@@ -52,7 +52,13 @@ return [
     "ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS" => "Restauration réussie de {filename}",
     "ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR" => "Restauration impossible de {filename}",
     "ADMIN_BACKUPS_START_BACKUP" => "Lancement d'une sauvegarde",
+    "ADMIN_BACKUPS_STARTED" => "Sauvegarde lancée",
     "ADMIN_BACKUPS_START_BACKUP_ERROR" => "Lancement de la sauvegarde impossible",
+    "ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR" => "Impossible de mettre à jour le statut de la sauvegarde",
+    "ADMIN_BACKUPS_UID_STATUS_NOT_FOUND" => "Les informations de suivi n'ont pas été trouvées",
+    "ADMIN_BACKUPS_UID_STATUS_RUNNING" => "Sauvegarde en cours",
+    "ADMIN_BACKUPS_UID_STATUS_FINISHED" => "Sauvegarde terminée",
+    "ADMIN_BACKUPS_UID_STATUS_NOT_FINISHED" => "Il y a un problème car la sauvegarde n'est plus en cours et elle n'est pas terminée !",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Modifs apportées par cette version",

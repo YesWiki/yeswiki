@@ -827,6 +827,14 @@ class ApiController extends YesWikiController
     {
         return $this->getService(ArchiveController::class)->getArchive($id);
     }
+    
+    /**
+     * @Route("/api/archives/uidstatus/{uid}", methods={"GET"}, options={"acl":{"public", "@admins"}})
+     */
+    public function getArchiveStatus($uid)
+    {
+        return $this->getService(ArchiveController::class)->getArchiveStatus($uid);
+    }
 
     /**
      * @Route("/api/archives/", methods={"GET"}, options={"acl":{"public", "@admins"}})

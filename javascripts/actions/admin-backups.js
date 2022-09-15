@@ -11,6 +11,7 @@ let appParams = {
             archives: {},
             ready: false,
             updating: false,
+            archiving: false,
             message: "",
             messageClass: {
                 alert: true,
@@ -21,7 +22,13 @@ let appParams = {
             savedatabase: true,
             excludedfiles: [],
             extrafiles: [],
-            showAdvancedParams: false
+            showAdvancedParams: false,
+            currentArchiveUid: "",
+            archiveMessage: "",
+            archiveMessageClass: {
+                alert: true,
+                ['alert-info']: true
+            },
         };
     },
     methods: {
@@ -127,6 +134,10 @@ let appParams = {
                         
                     },
                     error: function(xhr,status,error){
+                        toastMessage(
+                            _t('ADMIN_BACKUPS_DELETE_ARCHIVE_ERROR',{filename:archiveApp.selectedArchivesToDelete.join(',')})
+                            ,3000,
+                            "alert alert-danger");
                         archiveApp.message = _t('ADMIN_BACKUPS_DELETE_ARCHIVE_ERROR',{filename:archiveApp.selectedArchivesToDelete.join(',')});
                         archiveApp.messageClass = {alert:true,['alert-danger']:true};
                         archiveApp.updating = false;
@@ -170,8 +181,10 @@ let appParams = {
         startArchive: function (){
             let archiveApp = this;
             archiveApp.updating = true;
-            archiveApp.message = _t('ADMIN_BACKUPS_START_BACKUP');
-            archiveApp.messageClass = {alert:true,['alert-info']:true};
+            archiveApp.archiving = true;
+            archiveApp.message = "";
+            archiveApp.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP');
+            archiveApp.archiveMessageClass = {alert:true,['alert-info']:true};
             $.ajax({
                 method: "POST",
                 url: wiki.url(`api/archives`),
@@ -185,17 +198,56 @@ let appParams = {
                     }
                 },
                 success: function(data){
-                    archiveApp.message = "";
-                    archiveApp.loadArchives();
+                    archiveApp.archiveMessage = _t('ADMIN_BACKUPS_STARTED');
+                    archiveApp.archiveMessageClass = {alert:true,['alert-info']:true};
+                    archiveApp.currentArchiveUid = data.uid;
+                    setTimeout(archiveApp.updateStatus, 2000);
                 },
                 error: function(xhr,status,error){
-                    archiveApp.message = _t('ADMIN_BACKUPS_START_BACKUP_ERROR');
-                    archiveApp.messageClass = {alert:true,['alert-danger']:true};
-                },
-                complete: function(){
+                    archiveApp.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP_ERROR');
+                    archiveApp.archiveMessageClass = {alert:true,['alert-danger']:true};
                     archiveApp.updating = false;
+                    archiveApp.archiving = false;
                 }
             });
+        },
+        updateStatus: function(){
+            if (this.currentArchiveUid.length > 0){
+                let archiveApp= this;
+                $.ajax({
+                    method: "GET",
+                    url: wiki.url(`api/archives/uidstatus/${archiveApp.currentArchiveUid}`),
+                    success: function(data){
+                        if (!data.started){
+                            archiveApp.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_NOT_FOUND'),'warning');
+                            setTimeout(archiveApp.loadArchives, 3000);
+                        } else if (data.finished){
+                            archiveApp.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_FINISHED'),'success');
+                        } else if (!data.running) {
+                            archiveApp.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_NOT_FINISHED'),'danger');
+                        } else {
+                            archiveApp.archiveMessage = _t('ADMIN_BACKUPS_UID_STATUS_RUNNING');
+                            archiveApp.archiveMessage += "<pre>"+data.output.split("\n").slice(-5).join("<br>")+"</pre>";
+                            archiveApp.archiveMessageClass = {alert:true,['alert-secondary-2']:true};
+                            setTimeout(archiveApp.updateStatus, 1000);
+                        }
+                    },
+                    error: function(xhr,status,error){
+                        archiveApp.endUpdatingStatus(_t('ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR'),'danger');
+                        setTimeout(archiveApp.loadArchives, 3000);
+                    }
+                });
+            } else {
+                this.endUpdatingStatus();
+            }
+        },
+        endUpdatingStatus: function (message = "", className = "info"){
+            this.archiveMessage = message;
+            this.archiveMessageClass = {alert:true,[`alert-${className}`]:true};
+            this.updating = false;
+            this.archiving = false;
+            this.currentArchiveUid = "";
+            this.loadArchives();
         },
         formatFileSize: function (bytes,decimalPoint) {
             if(bytes == 0) return '0';
@@ -255,6 +307,21 @@ let appParams = {
         }
     },
     mounted (){
+        if (isVueJS3){
+            $(this.$el.parentNode).on(
+                "dblclick",
+                function (e) {
+                  return false;
+                }
+              );
+        } else {
+            $(this.$el).on(
+                "dblclick",
+                function (e) {
+                  return false;
+                }
+              );
+        }
         this.loadArchives();
     }
 };

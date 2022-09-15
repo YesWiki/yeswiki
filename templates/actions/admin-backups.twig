@@ -5,22 +5,25 @@
 <div class="admin-backups-container well">
   <h1>{{ _t('ADMIN_BACKUPS_TITLE') }}</h1>
   <h2>{{ _t('ADMIN_BACKUPS_CREATE') }}</h2>
-  <button 
-      @click="startArchive"
-      class="btn btn-xs btn-primary"
-      :disabled="updating" 
-      data-tooltip="toggle" 
-      title="{{ _t('ADMIN_BACKUPS_CREATE') }}">
-    {{ _t('ADMIN_BACKUPS_START') }}
-  </button>
-  <span @click="showAdvancedParams = !showAdvancedParams">
-    <input 
-      type="checkbox" 
-      name="advanced-params" 
-      value="1" 
-      :checked="showAdvancedParams">
-    <span>{{ _t('ADMIN_BACKUPS_ADVANCED_PARAMS') }}</span>
-  </span>
+  <div class="archive-buttons">
+    <button 
+        @click="startArchive"
+        class="btn btn-xs btn-primary"
+        :disabled="updating || currentArchiveUid.length > 0" 
+        data-tooltip="toggle" 
+        title="{{ _t('ADMIN_BACKUPS_CREATE') }}">
+      {{ _t('ADMIN_BACKUPS_START') }}
+    </button>
+    <span @click="showAdvancedParams = !showAdvancedParams">
+      <input 
+        type="checkbox" 
+        name="advanced-params" 
+        value="1" 
+        :checked="showAdvancedParams">
+      <span>{{ _t('ADMIN_BACKUPS_ADVANCED_PARAMS') }}</span>
+    </span>
+  </div>
+  <div v-if="archiveMessage.length > 0" v-html="archiveMessage" :class="archiveMessageClass"></div>
   <div v-if="showAdvancedParams" class="well">
     <div class="input-group input-group-sm">
       <div class="input-group-prepend">
@@ -70,11 +73,19 @@
     </div>
   </div>
   <hr/>
-  <div class="pull-right btn btn-xs btn-primary" @click="loadArchives" data-tooltip="toogle" title="{{ _t('RELOAD') }}"><i class="fas fa-redo-alt"></i></div>
+  <div 
+    class="pull-right btn btn-xs btn-primary" 
+    @click="loadArchives" 
+    data-tooltip="toogle" 
+    title="{{ _t('RELOAD') }}"
+    :disabled="updating"
+    >
+    <i class="fas fa-redo-alt"></i>
+  </div>
   <h2>{{ _t('ADMIN_BACKUPS_ARCHIVES_LIST') }}</h2>
   <div class="clearfix"></div>
   <div v-if="message.length > 0" v-html="message" :class="messageClass"></div>
-  <div v-if="ready" class="backups-container">
+  <div v-if="ready" class="backups-container" :class="{'relativeSpinner':archiving}">
     <div class="archive-item archive-item-title">{{ _t('ADMIN_BACKUPS_ARCHIVE_FILENAME') }}</div>
     <div class="archive-item archive-item-title">{{ _t('ADMIN_BACKUPS_ARCHIVE_SIZE') }}</div>
     <div class="archive-item archive-item-title">{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE') }}</div>
