@@ -325,11 +325,13 @@ class ArchiveServiceTest extends YesWikiTestCase
      * @depends testArchiveServiceExisting
      * @depends testArchive
      * @dataProvider anonymousProvider
+     * @param bool $paramsFromWakka
      * @param null|array $anonymousParam
      * @param array $wakkaContent
      * @param array $services [$wiki,$archiveService]
      */
     public function testAnonymousParams(
+        bool $paramsFromWakka,
         ?array $anonymousParam,
         array $wakkaContent,
         array $services
@@ -337,17 +339,25 @@ class ArchiveServiceTest extends YesWikiTestCase
         $params = $services['wiki']->services->get(ParameterBagInterface::class);
         $configService = $services['wiki']->services->get(ConfigurationService::class);
         $consoleService = $services['wiki']->services->get(ConsoleService::class);
-        $previousAnonymousParams = $this->getAnonymousParam($configService);
-        if (is_null($anonymousParam)) {
-            $this->unsetAnonymousParam($configService);
-        } else {
-            $this->setAnonymousParam($configService, $anonymousParam);
-        }
-        $results = $consoleService->startConsoleSync("core:archive", [
+
+        $consoleParams = [
             "-f",
             "-x","*,.*",
             "-e","wakka.config.php"
-        ]);
+        ];
+
+        $previousAnonymousParams = $this->getAnonymousParam($configService);
+        if ($paramsFromWakka) {
+            if (is_null($anonymousParam)) {
+                $this->unsetAnonymousParam($configService);
+            } else {
+                $this->setAnonymousParam($configService, $anonymousParam);
+            }
+        } else {
+            $consoleParams[] = "-a";
+            $consoleParams[] = json_encode($anonymousParam);
+        }
+        $results = $consoleService->startConsoleSync("core:archive", $consoleParams);
         if (!is_null($previousAnonymousParams)) {
             $this->setAnonymousParam($configService, $previousAnonymousParams);
         } else {
@@ -411,6 +421,7 @@ class ArchiveServiceTest extends YesWikiTestCase
     {
         return [
             'default' => [
+                'paramsFromWakka' => true,
                 'anonymousParam' => null,
                 'wakkaContent' => [
                     'mysql_host' => '',
@@ -432,6 +443,7 @@ class ArchiveServiceTest extends YesWikiTestCase
                 ]
             ],
             'specific' => [
+                'paramsFromWakka' => true,
                 'anonymousParam' => [
                     'mysql_host' => '',
                     'mysql_database' => '',
@@ -451,6 +463,33 @@ class ArchiveServiceTest extends YesWikiTestCase
                             'mysql_user' => '',
                             'mysql_password' => '',
                             'custom_key' => ''
+                        ],
+                    ],
+                ]
+            ],
+            'specific via command line' => [
+                'paramsFromWakka' => false,
+                'anonymousParam' => [
+                    'mysql_host' => '',
+                    'mysql_database' => '',
+                    'mysql_user' => '',
+                    'mysql_password' => '',
+                    'custom_key_2' => '',
+                    'custom_key_3' => ''
+                ],
+                'wakkaContent' => [
+                    'mysql_host' => '',
+                    'mysql_database' => '',
+                    'mysql_user' => '',
+                    'mysql_password' => '',
+                    'archive' => [
+                        'anonymous' => [
+                            'mysql_host' => '',
+                            'mysql_database' => '',
+                            'mysql_user' => '',
+                            'mysql_password' => '',
+                            'custom_key_2' => '',
+                            'custom_key_3' => ''
                         ],
                     ],
                 ]

@@ -77,6 +77,7 @@ class ArchiveService
      * @param bool $savedatabase
      * @param array $extrafiles
      * @param array $excludedfiles
+     * @param null|array $anonymousParams
      * @throws Exception
      */
     public function archive(
@@ -84,7 +85,8 @@ class ArchiveService
         bool $savefiles = true,
         bool $savedatabase = true,
         array $extrafiles = [],
-        array $excludedfiles = []
+        array $excludedfiles = [],
+        ?array $anonymousParams = null
     ) {
         $this->writeOutput($output, "=== Checking free space ===");
         $this->assertEnoughtSpace();
@@ -127,7 +129,7 @@ class ArchiveService
 
             // create zip passing SQL <= TODO
             $this->writeOutput($output, "=== Creating zip archive ===");
-            $this->createZip($location, $dataFiles, $output, $sqlContent, $onlyDb);
+            $this->createZip($location, $dataFiles, $output, $sqlContent, $onlyDb, $anonymousParams);
 
             $this->writeOutput($output, "Archive \"$location\" successfully created !");
         } catch (Throwable $th) {
@@ -145,14 +147,15 @@ class ArchiveService
      * @param string|OutputInterface &$output
      * @param string $sqlContent
      * @param bool $onlyDb
-     * TODO manage wakka.config.php
+     * @param null|array $anonymousParams
      */
     protected function createZip(
         string $zipPath,
         array $dataFiles,
         &$output,
         string $sqlContent,
-        bool $onlyDb = false
+        bool $onlyDb = false,
+        ?array $anonymousParams = null
     ) {
         $pathToArchive = dirname(__FILE__, 3); // includes/services/../../
         $pathToArchive = preg_replace("/(\/|\\\\)$/", "", $pathToArchive);
@@ -186,7 +189,7 @@ class ArchiveService
                                         !in_array($relativeName, $dataFiles['preparedExcludedFiles'])
                                 )) {
                                     if (empty($baseDirName) && $file == "wakka.config.php") {
-                                        $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($dataFiles));
+                                        $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($dataFiles, $anonymousParams));
                                     } elseif (is_file($localName)) {
                                         $zip->addFile($localName, $relativeName);
                                     } elseif (is_dir($localName)) {
@@ -403,9 +406,10 @@ class ArchiveService
     /**
      * sanitize wakka.config.php before saving it
      * @param array $dataFiles
+     * @param null|array $anonymousParams
      * @return string
      */
-    private function getWakkaConfigSanitized(array $dataFiles): string
+    private function getWakkaConfigSanitized(array $dataFiles, ?array $anonymousParams = null): string
     {
         // get wakka.config.php content
         $config = $this->configurationService->getConfiguration('wakka.config.php');
@@ -422,7 +426,9 @@ class ArchiveService
         if (!empty($dataFiles['excludedfiles'])) {
             $data[self::KEY_FOR_EXCLUDEDFILES] = $dataFiles['excludedfiles'];
         }
-        if (!isset($data[self::KEY_FOR_ANONYMOUS]) || !is_array($data[self::KEY_FOR_ANONYMOUS])) {
+        if (!is_null($anonymousParams)) {
+            $data[self::KEY_FOR_ANONYMOUS] = $anonymousParams;
+        } elseif (!isset($data[self::KEY_FOR_ANONYMOUS]) || !is_array($data[self::KEY_FOR_ANONYMOUS])) {
             $data[self::KEY_FOR_ANONYMOUS] = self::DEFAULT_PARAMS_TO_ANONYMIZE;
         }
         $config[self::PARAMS_KEY_IN_WAKKA] = $data;
