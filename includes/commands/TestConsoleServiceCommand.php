@@ -46,7 +46,7 @@ class TestConsoleServiceCommand extends Command
         $wait = abs(intval($input->getOption('wait')));
         // force file to be in cache folder
         if (empty($file) || empty($text) || is_dir("cache/$file") || empty($wait)){
-            return Command::FAIL;
+            return Command::FAILURE;
         }
         $childtext = $input->getOption('childtext');
         if (empty($childtext)){
