@@ -102,6 +102,7 @@ mkdir -p javascripts/vendor/docsify && \
 mkdir -p javascripts/vendor/docsify/plugins && \
   cp -f node_modules/docsify/lib/plugins/*.min.js javascripts/vendor/docsify/plugins && \
   cp -f node_modules/docsify-copy-code/dist/*.min.js javascripts/vendor/docsify/plugins
+  cp -f node_modules/docsify-copy-code/LICENSE javascripts/vendor/docsify/plugins/LICENSE-docisfy-copy-code
 mkdir -p styles/vendor/docsify && \
   cp -f node_modules/docsify/lib/themes/vue.css styles/vendor/docsify/vue.min.css && \
   cp -f node_modules/docsify/lib/themes/pure.css styles/vendor/docsify/pure.min.css && \
