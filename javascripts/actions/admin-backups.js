@@ -16,7 +16,12 @@ let appParams = {
                 alert: true,
                 ['alert-info']: true
             },
-            selectedArchivesToDelete: []
+            selectedArchivesToDelete: [],
+            savefiles: true,
+            savedatabase: true,
+            excludedfiles: [],
+            extrafiles: [],
+            showAdvancedParams: false
         };
     },
     methods: {
@@ -161,6 +166,36 @@ let appParams = {
                 }
             });
         },
+        startArchive: function (){
+            let archiveApp = this;
+            archiveApp.updating = true;
+            archiveApp.message = `Lancement d'une sauvegarde`;
+            archiveApp.messageClass = {alert:true,['alert-info']:true};
+            $.ajax({
+                method: "POST",
+                url: wiki.url(`api/archives`),
+                data: {
+                    action: 'startArchive',
+                    params: {
+                        savefiles: archiveApp.savefiles,
+                        savedatabase: archiveApp.savedatabase,
+                        extrafiles: archiveApp.extrafiles,
+                        excludedfiles: archiveApp.excludedfiles
+                    }
+                },
+                success: function(data){
+                    archiveApp.message = "";
+                    archiveApp.loadArchives();
+                },
+                error: function(xhr,status,error){
+                    archiveApp.message = `Lancement de la sauvegarde impossible`;
+                    archiveApp.messageClass = {alert:true,['alert-danger']:true};
+                },
+                complete: function(){
+                    archiveApp.updating = false;
+                }
+            });
+        },
         formatFileSize: function (bytes,decimalPoint) {
             if(bytes == 0) return '0';
             var k = 1024,
@@ -171,6 +206,51 @@ let appParams = {
         },
         downloadUrl: function(archive){
             return wiki.url(`api/archives/${archive.filename}`);
+        },
+        updateType: function (){
+            if (this.$refs.adminBackupsTypeFull.checked){
+                this.savefiles = true;
+                this.savedatabase = true;
+            } else if(this.$refs.adminBackupsTypeOnlyFiles.checked) {
+                this.savefiles = true;
+                this.savedatabase = false;
+            } else if(this.$refs.adminBackupsTypeOnlyDb.checked) {
+                this.savefiles = false;
+                this.savedatabase = true;
+            } else {
+                this.savefiles = false;
+                this.savedatabase = false;
+            }
+        },
+        removeExtraFile: function (file){
+            this.extrafiles = this.extrafiles.filter(e => e != file);
+        },
+        updateExtraFiles: function (){
+            let newVal = this.$refs.newExtraFile.value;
+            let newFiles = newVal.split(',');
+            if (newFiles.length > 0){
+                for (let index = 0; index < newFiles.length; index++) {
+                    if (!this.extrafiles.includes(newFiles[index])){
+                        this.extrafiles.push(newFiles[index]);
+                    }
+                }
+            }
+            this.$refs.newExtraFile.value = "";
+        },
+        removeExcludedFile: function (file){
+            this.excludedfiles = this.excludedfiles.filter(e => e != file);
+        },
+        updateExcludedFiles: function (){
+            let newVal = this.$refs.newExcludedFile.value;
+            let newFiles = newVal.split(',');
+            if (newFiles.length > 0){
+                for (let index = 0; index < newFiles.length; index++) {
+                    if (!this.excludedfiles.includes(newFiles[index])){
+                        this.excludedfiles.push(newFiles[index]);
+                    }
+                }
+            }
+            this.$refs.newExcludedFile.value = "";
         }
     },
     mounted (){

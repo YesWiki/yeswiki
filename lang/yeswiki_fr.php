@@ -57,7 +57,15 @@ return [
     'ADMIN_BACKUPS_ARCHIVES_LIST' => 'Liste des archives',
     'ADMIN_BACKUPS_ARCHIVE_FILENAME' => 'Nom du fichier',
     'ADMIN_BACKUPS_ARCHIVE_TYPE' => 'Type',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_FULL' => 'Sauvegarde complète',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES' => 'Seulement les fichiers',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES' => 'Seulement la base de données',
     'ADMIN_BACKUPS_ARCHIVE_SIZE' => 'Taille',
+    'ADMIN_BACKUPS_CREATE' => 'Créer une archive',
+    'ADMIN_BACKUPS_START' => 'Démarrer',
+    'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Paramètres avancés',
+    'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Fichiers exclus',
+    'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Fichiers supplémentaires',
     
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Pages ayant un lien vers',

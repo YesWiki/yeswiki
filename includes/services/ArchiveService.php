@@ -7,6 +7,7 @@ use DateInterval;
 use Exception;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Process\Process;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Core\Entity\ConfigurationFile;
 use YesWiki\Core\Service\ConfigurationService;
@@ -143,6 +144,42 @@ class ArchiveService
         // clean oldest files
         $this->cleanOldestFiles();
         return $location;
+    }
+
+    /**
+     * start archive async via CLI
+     *
+     * @param bool $savefiles
+     * @param bool $savedatabase
+     * @param array $extrafiles
+     * @param array $excludedfiles
+     * @return null|Process
+     */
+    public function startArchiveAsync(
+        bool $savefiles = true,
+        bool $savedatabase = true,
+        array $extrafiles = [],
+        array $excludedfiles = []
+    ): ?Process {
+        $args = [];
+        if (!$savefiles) {
+            $args[] = "-d";
+        }
+        if (!$savedatabase) {
+            $args[] = "-f";
+        }
+        if (!empty($extrafiles)) {
+            $args[] = "-e";
+            $args[] = implode(",", $extrafiles);
+        }
+        if (!empty($excludedfiles)) {
+            $args[] = "-x";
+            $args[] = implode(",", $excludedfiles);
+        }
+        return $this->consoleService->startConsoleAsync(
+            'core:archive',
+            $args
+        );
     }
 
     /**
