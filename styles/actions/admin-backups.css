@@ -1,0 +1,14 @@
+.backups-container {
+    display: grid;
+    grid-template-columns: auto 50px 100px;
+    column-gap: 10px;
+    row-gap: 10px;
+}
+
+.backups-container .archive-item {
+    display: inline-grid;
+}
+.backups-container .archive-item.archive-item-title {
+    font-weight: bold;
+    border-bottom: 2px solid var(--primary-color);
+}

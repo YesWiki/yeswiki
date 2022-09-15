@@ -51,3 +51,5 @@ actions:
         doclink: https://yeswiki.net/?LutterContreLeSpam
   filemanager:
     label: _t(AB_management_filemanager_label)
+  adminbackups:
+    label: _t(AB_management_adminbackups_label)
