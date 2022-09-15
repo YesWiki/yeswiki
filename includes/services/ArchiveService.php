@@ -20,7 +20,8 @@ class ArchiveService
         'node_modules',
         'tools/*/node_modules',
         '.git',
-        'tools/*/.git'
+        'tools/*/.git',
+        "cache"
     ];
     public const DEFAULT_PARAMS_TO_ANONYMIZE = [
         'mysql_host',
@@ -84,6 +85,8 @@ class ArchiveService
         array $extrafiles = [],
         array $excludedfiles = []
     ) {
+        $this->assertEnoughtSpace();
+
         $onlyDb = false;
         // check options and prepare file suffix
         if (!$savefiles && !$savedatabase) {
@@ -527,5 +530,54 @@ class ArchiveService
         if (!is_string($param)) {
             throw new Exception("'$name' should be a string in 'wakka.config.php'");
         }
+    }
+
+    /**
+     * check if there is enought free space before archive (size of files + custom + 300 Mo)
+     * @throws Exception
+     */
+    protected function assertEnoughtSpace()
+    {
+        $extimatedNeededSpace = $this->estimateFilesAndCustomFolders();
+        $extimatedNeededSpace += 300 * 1024 * 1024;
+
+        $freeSpace = disk_free_space(realpath(getcwd()));
+        if ($freeSpace < $extimatedNeededSpace) {
+            throw new Exception("Not enough free space for a new archive!");
+        }
+    }
+
+    /**
+     * estimate size of files and custom folder
+     * @return int $bytes
+     */
+    protected function estimateFilesAndCustomFolders(): int
+    {
+        $bytes = 0;
+        $bytes += $this->folderSize("files");
+        $bytes += $this->folderSize("custom");
+
+        return $bytes;
+    }
+
+    /**
+     * recursive method
+     * @param string $folderPath
+     * @return int $bytes
+     */
+    private function folderSize(string $folderPath): int
+    {
+        $contents = array_filter(scandir($folderPath), function ($path) {
+            return !in_array($path, ['.','..']);
+        });
+        $bytes = 0;
+        foreach ($contents as $name) {
+            if (is_file("$folderPath/$name")) {
+                $bytes += filesize("$folderPath/$name");
+            } elseif (is_dir("$folderPath/$name")) {
+                $bytes += $this->folderSize("$folderPath/$name");
+            }
+        }
+        return $bytes;
     }
 }
