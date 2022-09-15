@@ -162,6 +162,22 @@ class ConsoleService
     }
 
     /**
+     * format html for CLI
+     * @param string $input
+     * @return string $output
+     */
+    public function formatHtmlForCLI(string $input): string
+    {
+        $bufferedOutput = strip_tags($input, '<br><hr><em><strong>');
+        $output = preg_replace(
+            ['#<[bh]r ?/?>#Ui', '/<(em|strong)>/Ui', '#</ ?(em|strong)>#Ui'],
+            ["\n", "\e[1m", "\e[0m"],
+            $bufferedOutput
+        );
+        return $output;
+    }
+
+    /**
      * @param string $name
      * @param array $extraDirs wherer search
      * @return string
