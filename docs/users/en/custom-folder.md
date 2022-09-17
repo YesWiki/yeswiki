@@ -2,7 +2,7 @@ The `custom` folder will be used for all your specific changes in yeswiki views.
 
 An example of how a custom folder look like can be found at https://github.com/YesWiki/yeswiki-custom-code-example
 
-(Advanced) You can clone this example in your wiki by manually deleting the custom folder, and then running the command `git clone https://github.com/YesWiki/yeswiki-custom-code-example.git custom`
+> (Advanced) You can clone this example in your wiki by manually deleting the custom folder, and then running the command `git clone https://github.com/YesWiki/yeswiki-custom-code-example.git custom`
 
 ### Custom templates
 

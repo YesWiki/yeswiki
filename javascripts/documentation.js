@@ -5,33 +5,33 @@ window.$docsify = {
   relativePath: true,
   auto2top: true,
   alias: {
-    ['/_sidebar.md']: `/docs/${locale}/_sidebar.md`, // set default _sidebar.md to locale language
-    ['/_navbar.md']: `/docs/${locale}/_navbar.md`, // set default _navbar.md to locale language
+    ['/_sidebar.md']: `/docs/users/${locale}/_sidebar.md`, // set default _sidebar.md to locale language
+    ['/_navbar.md']: `/docs/users/${locale}/_navbar.md`, // set default _navbar.md to locale language
   },
   search: {
     placeholder: {
-      '/docs/fr/': 'Rechercher...',
-      '/docs/en/': 'Search...',
+      '/docs/users/fr/': 'Rechercher...',
+      '/docs/users/en/': 'Search...',
       '/': 'Search...' // other pages, default to English
     },
     noData: {
-      '/docs/fr/': 'Pas de résultats',
-      '/docs/en': 'No results',
+      '/docs/users/fr/': 'Pas de résultats',
+      '/docs/users/en': 'No results',
       '/': 'No results' // other pages, default to English
     },
     depth: 2,
-    pathNamespaces: ['/docs/fr/', '/docs/en/'],
+    pathNamespaces: ['/docs/users/fr/', '/docs/users/en/'],
   },
   copyCode: {
     buttonText : {
-      '/docs/fr/': 'Copier le code',
-      '/docs/en/': 'Copy to clipboard',
+      '/docs/users/fr/': 'Copier le code',
+      '/docs/users/en/': 'Copy to clipboard',
       '/': 'Copy to clipboard' // other pages, default to English
     },
     errorText : 'Error',
     successText : {
-      '/docs/fr/': 'Copié',
-      '/docs/en/': 'Copied',
+      '/docs/users/fr/': 'Copié',
+      '/docs/users/en/': 'Copied',
       '/': 'Copied' // other pages, default to English
     },
   },
@@ -73,7 +73,7 @@ window.$docsify = {
       hook.ready(function() {
         // Redirect properly to translated language, otherwise we stay on "#/" hash
         // and it cause some translations issues
-        if (location.hash == "#/") location.hash = `docs/${locale}/README.md`
+        if (location.hash == "#/") location.hash = `docs/users/${locale}/HOME.md`
 
         // Move the title inside the navbar to the top of sidebar, and set
         // correct href
