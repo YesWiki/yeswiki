@@ -1,10 +1,15 @@
 <a id="back" href="/">Revenir à mon wiki</a>
 
-* [Prise en main](prise-en-main.md)
-* [Usage avancé](usage-avance.md)
-* [Administrateur](admin.md)
-* [Webmaster](webmaster.md)
-* [Développeur](dev.md)
+* [🏠](/docs/users/fr/README.md)
+* [Prise en main](/docs/users/fr/prise-en-main.md)
+* [Usage avancé](/docs/users/fr/usage-avance.md)
+* [Bazar](/docs/users/fr/bazar.md)
+* [Administrateur](/docs/users/fr/admin.md)
+* [Webmaster](/docs/users/fr/webmaster.md)
+* [Personnalisation avancée](/docs/users/fr/dev.md)
+* 🔧
+  * [Comment contribuer à cette doc](/docs/users/README.md)
+  * [Documentation du code](/docs/code/README.md)
 
 <!-- * Langue
   * [Francais](/docs/fr/)

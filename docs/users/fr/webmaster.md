@@ -1,5 +1,8 @@
-## Installation / mise à jour
-### Installer par ftp
+## Installation / Mise à jour
+
+!> Vous aurez besoin d'un accès FTP à votre serveur pour réaliser les actions décrites dans cette page
+
+### Installer son wiki par FTP
 #### Pré-requis
 *   Vous avez téléchargé la dernière version de YesWiki sur le site [yeswiki.net](http://yeswiki.net/wakka.php?wiki=TelechargemenT)
 *   Vous disposez d'un espace d'hébergement avec PHP version >= 7.3) et MariaDB > 10 ou MYSQL >= 5.6 (⚠️ la version 5.5 ne supporte pas la recherche fulltext) et des droits d'accès à l'hébergement (codes FTP et MYSQL) > **Attention : [voir les instructions spécifiques pour l'installation sur les hébergements Free.fr](https://yeswiki.net/?DocumentationInstallationFree)**
@@ -286,25 +289,28 @@ Pour cela il vous faudra :
 
 #### Upload par FTP
 
-*   Connectez-vous à votre espace personnel par FTP (filezilla par exemple)
-*   Glissez et déposez vos fichiers wiki (reçu des gestionnaires) dans le dossier www ou web (le plus souvent) de votre hébergement
+Connectez-vous à votre espace personnel par FTP (filezilla par exemple)
 
+Glissez et déposez vos fichiers wiki (reçu des gestionnaires) dans le dossier www ou web (le plus souvent) de votre hébergement
   
 #### Mettre à jour le wakka config
 
-*   une fois tous les fichiers et dossiers arrivés sur votre hébergement, cherchez le fichier nommé wakka config et ouvrez-le
-*   il va falloir adapter quelques points et sauver ensuite
-    *   l'adresse de la db (mysql\_host) : le plus souvent ça reste localhost mais parfois votre hébergeur vous donne une autre adresse
-    *   le nom de votre db => mysql\_database
-    *   le nom de l'utilisateur de la db => mysql\_user
-    *   le mot de passe de la db => mysql\_password
-    *   la base url => base\_url (laissez bien le /? à la fin ex : [https://www.monespace.be/?)](https://www.monespace.be/?))  
+Une fois tous les fichiers et dossiers arrivés sur votre hébergement, cherchez le fichier nommé wakka config et ouvrez-le
 
-    `'mysql_host' => 'localhost', `
-    `'mysql_database' => 'nomdevotredb',`
-    `'mysql_user' => 'userdevotredb',`
-    `'mysql_password' => 'motdepassedevotredb',`
-    `'base_url' =>'mettreicivotrenomdedomaine/?',`
+Il va falloir adapter quelques points et sauver ensuite
+* l'adresse de la db (mysql\_host) : le plus souvent ça reste localhost mais parfois votre hébergeur vous donne une autre adresse
+* le nom de votre db => mysql\_database
+* le nom de l'utilisateur de la db => mysql\_user
+* le mot de passe de la db => mysql\_password
+* la base url => base\_url (laissez bien le /? à la fin ex : [https://www.monespace.be/?)](https://www.monespace.be/?))
+
+```
+'mysql_host' => 'localhost',
+'mysql_database' => 'nomdevotredb',
+'mysql_user' => 'userdevotredb',
+'mysql_password' => 'motdepassedevotredb',
+'base_url' =>'mettreicivotrenomdedomaine/?',
+```
       
       
 
