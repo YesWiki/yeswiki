@@ -2,7 +2,7 @@
 
 !> Des bases de programmation vous seront nécessaire pour suivre ces étapes
 
-[filename](../custom-folder.md ':include')
+[filename](../en/custom-folder.md ':include')
 
 <!-- ### Créer un champ bazar custom
 

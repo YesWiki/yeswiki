@@ -1,7 +1,7 @@
 # Development
 
 ## Customize with code
-[filename](/custom-folder.md ':include')
+[filename](custom-folder.md ':include')
 
 ## Make your wiki semantic
 
