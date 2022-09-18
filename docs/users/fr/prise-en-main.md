@@ -614,9 +614,9 @@ En bas de page, vous allez trouver un bouton permissions. En cliquant sur celui-
 **Voici les possibilités qui vous sont offertes**  
 [
 
-![image EditerPermissions.png (14.2kB)](https://quincaillere.org/formationgarecentrale2022/files/M22Lectures_popuppermission_20220216161156_20220216151445.png)
+![image EditerPermissions.png (14.2kB)](images/M22Lectures_popuppermission_20220216161156_20220216151445.png)
 
-](https://quincaillere.org/formationgarecentrale2022/files/M22Lectures_popuppermission_20220216161156_20220216151445.png)  
+](images/M22Lectures_popuppermission_20220216161156_20220216151445.png)  
 
 **Cette gestion page par page et user par user est vite "pesante"**
 
@@ -656,18 +656,18 @@ Pour info : en bas de cette page, vous découvrez et gérer (si vous êtes dans 
 
 [
 
-![image EditerPermissions.png (14.2kB)](https://quincaillere.org/formationgarecentrale2022/files/M22GererLesDroitsDAccesEnMasse_Gerergroupe_20220223095430_20220223095106.png)
+![image EditerPermissions.png (14.2kB)](images/M22GererLesDroitsDAccesEnMasse_Gerergroupe_20220223095430_20220223095106.png)
 
-](https://quincaillere.org/formationgarecentrale2022/files/M22GererLesDroitsDAccesEnMasse_Gerergroupe_20220223095430_20220223095106.png)
+](images/M22GererLesDroitsDAccesEnMasse_Gerergroupe_20220223095430_20220223095106.png)
 
 **Pour ajouter ou retirer un utilisateur d'un groupe**  
 lorsque j'ai cliqué sur voir/éditer le groupe concerné, il me suffit dans la case qui apparaît d'indiquer (ou de retirer) le nomwiki de l'utilisateur sur une ligne (sans virgule) et d'enregistrer  
 
 [
 
-![image EditerPermissions.png (14.2kB)](https://quincaillere.org/formationgarecentrale2022/files/M22GererLesDroitsDAccesEnMasse_ajoutgroupe_20220223095430_20220223095137.png)
+![image EditerPermissions.png (14.2kB)](images/M22GererLesDroitsDAccesEnMasse_ajoutgroupe_20220223095430_20220223095137.png)
 
-](https://quincaillere.org/formationgarecentrale2022/files/M22GererLesDroitsDAccesEnMasse_ajoutgroupe_20220223095430_20220223095137.png)
+](images/M22GererLesDroitsDAccesEnMasse_ajoutgroupe_20220223095430_20220223095137.png)
 
 #### Gestion des droits des pages en masse
 
@@ -683,9 +683,9 @@ via les listes déroulantes proposées (droit de lecture, droit d'écriture)
 
 [
 
-![image EditerPermissions.png (14.2kB)](https://quincaillere.org/formationgarecentrale2022/files/M22GererLesDroitsDAccesEnMasse_modesimple_20220223095430_20220223094848.png)
+![image EditerPermissions.png (14.2kB)](images/M22GererLesDroitsDAccesEnMasse_modesimple_20220223095430_20220223094848.png)
 
-](https://quincaillere.org/formationgarecentrale2022/files/M22GererLesDroitsDAccesEnMasse_modesimple_20220223095430_20220223094848.png)
+](images/M22GererLesDroitsDAccesEnMasse_modesimple_20220223095430_20220223094848.png)
 
 ##### en mode avancé
 
@@ -693,9 +693,9 @@ via les champs classiques (ceux qu'on retrouve quand on édite les droits d'une 
 
 [
 
-![image EditerPermissions.png (14.2kB)](https://quincaillere.org/formationgarecentrale2022/files/M22GererLesDroitsDAccesEnMasse_modeavance_20220223095430_20220223094937.png)
+![image EditerPermissions.png (14.2kB)](images/M22GererLesDroitsDAccesEnMasse_modeavance_20220223095430_20220223094937.png)
 
-](https://quincaillere.org/formationgarecentrale2022/files/M22GererLesDroitsDAccesEnMasse_modeavance_20220223095430_20220223094937.png)
+](images/M22GererLesDroitsDAccesEnMasse_modeavance_20220223095430_20220223094937.png)
 
   
 
@@ -713,7 +713,7 @@ La gestion vue jusque maintenant permet de gérer l'existant mais comment gérer
     *   Pour ce faire, il faut aller dans la roue crantée/gestion du site/fichier de conf
         *   dans l'accordéon "droit d'accès" vous pouvez déterminer quelles seront les accès par défaut des prochaines pages
 
-![image Droitaccesfichierconf.png (67.1kB)](https://quincaillere.org/formationgarecentrale2022/files/M22GererLesAccesDesPagesNonEncoreExi_Droitaccesfichierconf_20220223100943_20220223091008.png)
+![image Droitaccesfichierconf.png (67.1kB)](images/M22GererLesAccesDesPagesNonEncoreExi_Droitaccesfichierconf_20220223100943_20220223091008.png)
 
 #### En ce qui concerne les fiches bazar
 
@@ -727,7 +727,7 @@ Pour chaque champ de votre formulaire vous pouvez décider des accès en lecture
 *   de déterminer qui peut remplir ce champ (donc la visibilité de celui-ci en mode "saisie")
 *   de déterminer qui peut voir ce champ une fois la fiche existante
 
-![image droitchampformulaire.png (42.3kB)](https://quincaillere.org/formationgarecentrale2022/files/M22GererLesAccesDesPagesNonEncoreExi_droitchampformulaire_20220223105446_20220223095555.png)
+![image droitchampformulaire.png (42.3kB)](images/M22GererLesAccesDesPagesNonEncoreExi_droitchampformulaire_20220223105446_20220223095555.png)
 
 Vous pouvez aussi décider d'attribuer "par défaut" des droits particuliers à la fiche entière afin :
 
@@ -736,7 +736,7 @@ Vous pouvez aussi décider d'attribuer "par défaut" des droits particuliers à 
 
 Cette gestion s'effectue via le champ "configurer les droits d'accès" de votre formulaire  
 
-![image confidroitaccesformulaire.png (0.1MB)](https://quincaillere.org/formationgarecentrale2022/files/M22GererLesAccesDesPagesNonEncoreExi_confidroitaccesformulaire_20220223100943_20220223090956.png)
+![image confidroitaccesformulaire.png (0.1MB)](images/M22GererLesAccesDesPagesNonEncoreExi_confidroitaccesformulaire_20220223100943_20220223090956.png)
 
 ### Configurer les accès à certaines parties au sein même des pages
 Il est donc possible de limiter les accés en lecture et/ou écriture aux pages du wiki.  
@@ -785,11 +785,11 @@ Souvent les vagues de spam proviennent d'une région spécifique et on peut s'en
   
 Vous pourrez régler ces détails dans la roue crantée/ gestion du site/ fichier de conf/ blocage d'adresse IP  
 
-![image confblocageip.png (44.7kB)](https://quincaillere.org/formationgarecentrale2022/files/LutterContreLeSpamsEnGerantLesDroitsDA_confblocageip_20220223102024_20220223092147.png)
+![image confblocageip.png (44.7kB)](images/LutterContreLeSpamsEnGerantLesDroitsDA_confblocageip_20220223102024_20220223092147.png)
 
 Il faudra au préalable que vous ayez installé l'extension IP block via roue crantée/gestion du site/mise à jour et extensions  
 
-![image extensionipblock.png (77.9kB)](https://quincaillere.org/formationgarecentrale2022/files/LutterContreLeSpamsEnGerantLesDroitsDA_extensionipblock_20220223102024_20220223092158.png)
+![image extensionipblock.png (77.9kB)](images/LutterContreLeSpamsEnGerantLesDroitsDA_extensionipblock_20220223102024_20220223092158.png)
 
 Pour découvrir l'ensemble des stratégies possibles face au spam => [https://yeswiki.net/?LutterContreLeSpam](https://yeswiki.net/?LutterContreLeSpam)
 
@@ -810,7 +810,7 @@ Vous pouvez éditer votre menu principal (appelé menu haut dans Yeswiki) via le
 **Ne pas exéder 7 items différents dans votre menu principal.**  
 Si votre menu est trop chargé, il est possible de **créer un menu-déroulant** en décalant d'un espace le lien des sous menus :   
 
-![image Capture_image_sous_menu.png (8.4kB)](https://quincaillere.org/formationgarecentrale2022/files/M21bLecturesFaciliterLaNavigation_Capture_image_sous_menu_20220217190910_20220217181145.png)
+![image Capture_image_sous_menu.png (8.4kB)](images/M21bLecturesFaciliterLaNavigation_Capture_image_sous_menu_20220217190910_20220217181145.png)
 
 #### Le menu vertical
 
@@ -819,7 +819,7 @@ Pour appliquer ce nouveau squelette, rendez-vous dans Gestion du site :
 1- **Page Mise à jour / Extensions** : mettre à jour le thème Margot  
 2- **Page Look Wiki** : modifier le squelette par défault (tout en bas): choisir 1col.vertical-menu.tpl.html.
 
-![image demo_menu_vertical.gif (0.5MB)](https://quincaillere.org/formationgarecentrale2022/files/MenuVertical_demo_menu_vertical_700px_20220218165728_20220218155742.gif)
+![image demo_menu_vertical.gif (0.5MB)](images/MenuVertical_demo_menu_vertical_700px_20220218165728_20220218155742.gif)
 
 ### Utilisation de la barre latérale
 
@@ -833,7 +833,7 @@ Ce changement est possible :
 * soit au niveau de la page en modifiant le thème (voir tuto ci contre):  
 * soit sur plusieurs pages d'un coup en passant par Gestion du site / Look wiki  
 
-![image demo_colonne_left.gif (0.4MB)](https://quincaillere.org/formationgarecentrale2022/files/M21bLecturesFaciliterLaNavigation_demo_colonne_left_20220218165158_20220218160845.gif)
+![image demo_colonne_left.gif (0.4MB)](images/M21bLecturesFaciliterLaNavigation_demo_colonne_left_20220218165158_20220218160845.gif)
 
 ## Changer de thème graphique
 
@@ -1024,12 +1024,12 @@ Bazar utilise des formulaires qui permettent deux choses :
 **2 –** Afin de permettre la saisie, je vais mettre à disposition une page sur laquelle je vais afficher le formulaire vide afin que chaque personne puisse y répondre.  
 Marguerite, Théo, Barnabé et Manon se rendent sur cette page et remplissent le formulaire. Lorsque chacune de ces personnes se rend sur cette page elle remplit sa **fiche** qui répond à ce formulaire.
 
-![image formulaire_saisie.png (19.6kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazaRTroisPhases_formulaire_saisie_20220203165703_20220203172208.png)]
+![image formulaire_saisie.png (19.6kB)](images/DocBazaRTroisPhases_formulaire_saisie_20220203165703_20220203172208.png)]
 
 **3 –** Pour que tout le monde puisse voir ce que chacun va apporter, je vais également mettre à disposition une page sur laquelle je vais afficher toutes les **fiches** de réponses au **formulaire** sous forme de liste (par exemple).  
 Je verrai sur cette page les **fiches** de Marguerite, Théo, Barnabé et Manon.
 
-[![image formulaire_resultats.png (35.3kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazaRTroisPhases_formulaire_resultats_20220203182221_20220203172931.png)]
+[![image formulaire_resultats.png (35.3kB)](images/DocBazaRTroisPhases_formulaire_resultats_20220203182221_20220203172931.png)]
 
 ### Qu'est-ce qu'un formulaire ?
 
@@ -1097,7 +1097,7 @@ _Bazar_ est la partie base de données de YesWiki. On s'y rend de la manière su
 Notez qu'il faut être connecté avec un compte administrateur du wiki pour pouvoir utiliser certaines fonctionnalités _Bazar_.  
   
 L'écran qui se présente ressemble à ceci (voir ci dessous).  
-[![image bazar.png (0.1MB)](https://quincaillere.org/formationgarecentrale2022/cache/DocBazarAcces_bazar_vignette_780_544_20220211165136_20220211155202.png)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarAcces_bazar_20220211165136_20220211155202.png)  
+[![image bazar.png (0.1MB)](https://quincaillere.org/formationgarecentrale2022/cache/DocBazarAcces_bazar_vignette_780_544_20220211165136_20220211155202.png)](images/DocBazarAcces_bazar_20220211165136_20220211155202.png)  
 
 Les différents onglets en haut de cette page permettent d'accéder aux différentes fonctions de _Bazar_.  
   
@@ -1145,12 +1145,12 @@ Les deux boutons envoient sur un écran similaire, vide dans le cas de la créat
 
 ### Créer un formulaire
 
-![image formulaire_creation.png (63.8kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarFormulaireModification_formulaire_creation_20220204175608_20220204170158.png)
+![image formulaire_creation.png (63.8kB)](images/DocBazarFormulaireModification_formulaire_creation_20220204175608_20220204170158.png)
 
 
 ### Modifier un formulaire
 
-![image formulaire_modification.png (75.2kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarFormulaireModification_formulaire_modification_20220204175608_20220204170232.png)
+![image formulaire_modification.png (75.2kB)](images/DocBazarFormulaireModification_formulaire_modification_20220204175608_20220204170232.png)
 
 
 
@@ -1190,15 +1190,15 @@ Apparaissent également au survol de la souris,
 **Dans la partie de droite** se trouvent les différents types de champs possibles (**8**).  
 En saisissant, dans la partie droite, l'icône d'un type de champs et en la glissant dans la partie gauche, on va ajouter un champ de ce type au formulaire.
 
-![image formulaire_constructeur_grab.png (20.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarFormulaireModification_formulaire_constructeur_grab_20220204191328_20220204181700.png)
+![image formulaire_constructeur_grab.png (20.0kB)](images/DocBazarFormulaireModification_formulaire_constructeur_grab_20220204191328_20220204181700.png)
 
 Une zone noire apparaît alors à l'endroit où le champ sera inséré. Dans l'exemple montré, cette zone est placée en dessous du champ préexistant.
 
-![image formulaire_constructeur_drop_field.png (25.3kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarFormulaireModification_formulaire_constructeur_drop_field_20220204191854_20220204182701.png)
+![image formulaire_constructeur_drop_field.png (25.3kB)](images/DocBazarFormulaireModification_formulaire_constructeur_drop_field_20220204191854_20220204182701.png)
 
 En relâchant le bouton de la souris, le champ se crée.  
 
-![image formulaire_constructeur_champ_creation.png (25.2kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarFormulaireModification_formulaire_constructeur_champ_creation_20220204193028_20220204183846.png)
+![image formulaire_constructeur_champ_creation.png (25.2kB)](images/DocBazarFormulaireModification_formulaire_constructeur_champ_creation_20220204193028_20220204183846.png)
 
 ##### Modification d'un champ de formulaire
 
@@ -1254,40 +1254,40 @@ Certains paramètres sont génériques à tous ou pratiquement tous les types de
 
 ##### Obligatoire
 
-![image champ_param_oblig.png (2.5kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
+![image champ_param_oblig.png (2.5kB)](images/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
 
 Ce paramètre permet d'indiquer si répondre à cette question sera obligatoire. Le champ est obligatoire lorsque la case est cochée.  
 
 ##### Identifiant unique
 
-![image champ_param_ID.png (4.6kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
+![image champ_param_ID.png (4.6kB)](images/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
 
 Ce paramètre permet de définir le nom du champ pour YesWiki. Ce nom sera utilisé par YesWiki pour identifier le champ et doit donc impérativement être unique. Si un autre champ avait le même identifiant dans votre formulaire, vous observeriez des dysfonctionnements.  
 Vous n'avez à intervenir sur ce paramètre que dans les rares cas où la documentation le spécifie.  
 
 ##### Intitulé
 
-![image champ_param_label.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
+![image champ_param_label.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
 
 Il s'agit du texte de votre question. YesWiki préremplit ce paramètre avec le type de champ, charge à vous de remplacer cela par un libellé pertinent.  
 
 ##### Texte d'aide
 
 
-![image champ_param_aide.png (2.4kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
+![image champ_param_aide.png (2.4kB)](images/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
 
 Ce paramètre vous permet de saisir un texte d'aide afin d'aiguiller l'utilisateur si vous pensez qu'il peut en avoir besoin pour cette question. 
 
 ##### ✨ Peut être lu par
 
-![image champ_param_access_read.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
+![image champ_param_access_read.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
 
 Par défaut, chaque champ peut être lu par toute personne ayant le droit de visualiser une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 ~~[Voir la liste des différentes valeurs possibles]~~(https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").  
 
 ##### ✨ Peut être saisi par
 
-![image champ_param_access_write.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
+![image champ_param_access_write.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
 
 Par défaut, chaque champ peut être saisi par toute personne ayant le droit de saisir une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 [Voir la liste des différentes valeurs possibles](https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").
@@ -1321,39 +1321,39 @@ Certains paramètres sont génériques à tous ou pratiquement tous les types de
 
 ##### Obligatoire
 
-![image champ_param_oblig.png (2.5kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
+![image champ_param_oblig.png (2.5kB)](images/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
 
 Ce paramètre permet d'indiquer si répondre à cette question sera obligatoire. Le champ est obligatoire lorsque la case est cochée.  
 
 ##### Identifiant unique
 
-![image champ_param_ID.png (4.6kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
+![image champ_param_ID.png (4.6kB)](images/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
 
 Ce paramètre permet de définir le nom du champ pour YesWiki. Ce nom sera utilisé par YesWiki pour identifier le champ et doit donc impérativement être unique. Si un autre champ avait le même identifiant dans votre formulaire, vous observeriez des dysfonctionnements.  
 Vous n'avez à intervenir sur ce paramètre que dans les rares cas où la documentation le spécifie.  
 
 ##### Intitulé
 
-![image champ_param_label.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
+![image champ_param_label.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
 
 Il s'agit du texte de votre question. YesWiki préremplit ce paramètre avec le type de champ, charge à vous de remplacer cela par un libellé pertinent.  
 
 ##### Texte d'aide
 
-![image champ_param_aide.png (2.4kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
+![image champ_param_aide.png (2.4kB)](images/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
 
 Ce paramètre vous permet de saisir un texte d'aide afin d'aiguiller l'utilisateur si vous pensez qu'il peut en avoir besoin pour cette question. 
 
 ##### ✨ Peut être lu par
 
-![image champ_param_access_read.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
+![image champ_param_access_read.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
 
 Par défaut, chaque champ peut être lu par toute personne ayant le droit de visualiser une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 ~~[Voir la liste des différentes valeurs possibles]~~(https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").  
 
 ##### ✨ Peut être saisi par
 
-![image champ_param_access_write.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
+![image champ_param_access_write.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
 
 Par défaut, chaque champ peut être saisi par toute personne ayant le droit de saisir une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 [Voir la liste des différentes valeurs possibles](https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").
@@ -1383,39 +1383,39 @@ Comme tous les champs celui-ci comporte des paramètres génériques et des para
 
 ##### Obligatoire
 
-![image champ_param_oblig.png (2.5kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
+![image champ_param_oblig.png (2.5kB)](images/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
 
 Ce paramètre permet d'indiquer si répondre à cette question sera obligatoire. Le champ est obligatoire lorsque la case est cochée.  
 
 ##### Identifiant unique
 
-![image champ_param_ID.png (4.6kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
+![image champ_param_ID.png (4.6kB)](images/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
 
 Ce paramètre permet de définir le nom du champ pour YesWiki. Ce nom sera utilisé par YesWiki pour identifier le champ et doit donc impérativement être unique. Si un autre champ avait le même identifiant dans votre formulaire, vous observeriez des dysfonctionnements.  
 Vous n'avez à intervenir sur ce paramètre que dans les rares cas où la documentation le spécifie.  
 
 ##### Intitulé
 
-![image champ_param_label.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
+![image champ_param_label.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
 
 Il s'agit du texte de votre question. YesWiki préremplit ce paramètre avec le type de champ, charge à vous de remplacer cela par un libellé pertinent.  
 
 ##### Texte d'aide
 
-![image champ_param_aide.png (2.4kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
+![image champ_param_aide.png (2.4kB)](images/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
 
 Ce paramètre vous permet de saisir un texte d'aide afin d'aiguiller l'utilisateur si vous pensez qu'il peut en avoir besoin pour cette question. 
 
 ##### ✨ Peut être lu par
 
-![image champ_param_access_read.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
+![image champ_param_access_read.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
 
 Par défaut, chaque champ peut être lu par toute personne ayant le droit de visualiser une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 ~~[Voir la liste des différentes valeurs possibles]~~(https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").  
 
 ##### ✨ Peut être saisi par
 
-![image champ_param_access_write.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
+![image champ_param_access_write.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
 
 Par défaut, chaque champ peut être saisi par toute personne ayant le droit de saisir une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 [Voir la liste des différentes valeurs possibles](https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").
@@ -1441,40 +1441,40 @@ Comme tous les champs celui-ci comporte des paramètres génériques et des para
 
 ##### Obligatoire
 
-![image champ_param_oblig.png (2.5kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
+![image champ_param_oblig.png (2.5kB)](images/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
 
 Ce paramètre permet d'indiquer si répondre à cette question sera obligatoire. Le champ est obligatoire lorsque la case est cochée.  
 
 ##### Identifiant unique
 
-![image champ_param_ID.png (4.6kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
+![image champ_param_ID.png (4.6kB)](images/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
 
 Ce paramètre permet de définir le nom du champ pour YesWiki. Ce nom sera utilisé par YesWiki pour identifier le champ et doit donc impérativement être unique. Si un autre champ avait le même identifiant dans votre formulaire, vous observeriez des dysfonctionnements.  
 Vous n'avez à intervenir sur ce paramètre que dans les rares cas où la documentation le spécifie.  
 
 ##### Intitulé
 
-![image champ_param_label.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
+![image champ_param_label.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
 
 Il s'agit du texte de votre question. YesWiki préremplit ce paramètre avec le type de champ, charge à vous de remplacer cela par un libellé pertinent.  
 
 ##### Texte d'aide
 
 
-![image champ_param_aide.png (2.4kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
+![image champ_param_aide.png (2.4kB)](images/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
 
 Ce paramètre vous permet de saisir un texte d'aide afin d'aiguiller l'utilisateur si vous pensez qu'il peut en avoir besoin pour cette question. 
 
 ##### ✨ Peut être lu par
 
-![image champ_param_access_read.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
+![image champ_param_access_read.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
 
 Par défaut, chaque champ peut être lu par toute personne ayant le droit de visualiser une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 ~~[Voir la liste des différentes valeurs possibles]~~(https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").  
 
 ##### ✨ Peut être saisi par
 
-![image champ_param_access_write.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
+![image champ_param_access_write.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
 
 Par défaut, chaque champ peut être saisi par toute personne ayant le droit de saisir une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 [Voir la liste des différentes valeurs possibles](https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").
@@ -1492,39 +1492,39 @@ Comme tous les champs celui-ci comporte des paramètres génériques et des para
 
 ##### Obligatoire
 
-![image champ_param_oblig.png (2.5kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
+![image champ_param_oblig.png (2.5kB)](images/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
 
 Ce paramètre permet d'indiquer si répondre à cette question sera obligatoire. Le champ est obligatoire lorsque la case est cochée.
 
 ##### Identifiant unique
 
-![image champ_param_ID.png (4.6kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
+![image champ_param_ID.png (4.6kB)](images/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
 
 Ce paramètre permet de définir le nom du champ pour YesWiki. Ce nom sera utilisé par YesWiki pour identifier le champ et doit donc impérativement être unique. Si un autre champ avait le même identifiant dans votre formulaire, vous observeriez des dysfonctionnements.  
 Vous n'avez à intervenir sur ce paramètre que dans les rares cas où la documentation le spécifie.  
 
 ##### Intitulé
 
-![image champ_param_label.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
+![image champ_param_label.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
 
 Il s'agit du texte de votre question. YesWiki préremplit ce paramètre avec le type de champ, charge à vous de remplacer cela par un libellé pertinent.  
 
 ##### Texte d'aide
 
-![image champ_param_aide.png (2.4kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
+![image champ_param_aide.png (2.4kB)](images/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
 
 Ce paramètre vous permet de saisir un texte d'aide afin d'aiguiller l'utilisateur si vous pensez qu'il peut en avoir besoin pour cette question. 
 
 ##### ✨ Peut être lu par
 
-![image champ_param_access_read.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
+![image champ_param_access_read.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
 
 Par défaut, chaque champ peut être lu par toute personne ayant le droit de visualiser une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 ~~[Voir la liste des différentes valeurs possibles]~~(https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").  
 
 ##### ✨ Peut être saisi par
 
-![image champ_param_access_write.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
+![image champ_param_access_write.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
 
 Par défaut, chaque champ peut être saisi par toute personne ayant le droit de saisir une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 [Voir la liste des différentes valeurs possibles](https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").
@@ -1548,39 +1548,39 @@ Comme tous les champs celui-ci comporte des paramètres génériques et des para
 
 ##### Obligatoire
 
-![image champ_param_oblig.png (2.5kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
+![image champ_param_oblig.png (2.5kB)](images/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
 
 Ce paramètre permet d'indiquer si répondre à cette question sera obligatoire. Le champ est obligatoire lorsque la case est cochée.
 
 ##### Identifiant unique
 
-![image champ_param_ID.png (4.6kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
+![image champ_param_ID.png (4.6kB)](images/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
 
 Ce paramètre permet de définir le nom du champ pour YesWiki. Ce nom sera utilisé par YesWiki pour identifier le champ et doit donc impérativement être unique. Si un autre champ avait le même identifiant dans votre formulaire, vous observeriez des dysfonctionnements.  
 Vous n'avez à intervenir sur ce paramètre que dans les rares cas où la documentation le spécifie.  
 
 ##### Intitulé
 
-![image champ_param_label.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
+![image champ_param_label.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
 
 Il s'agit du texte de votre question. YesWiki préremplit ce paramètre avec le type de champ, charge à vous de remplacer cela par un libellé pertinent.  
 
 ##### Texte d'aide
 
-![image champ_param_aide.png (2.4kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
+![image champ_param_aide.png (2.4kB)](images/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
 
 Ce paramètre vous permet de saisir un texte d'aide afin d'aiguiller l'utilisateur si vous pensez qu'il peut en avoir besoin pour cette question. 
 
 ##### ✨ Peut être lu par
 
-![image champ_param_access_read.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
+![image champ_param_access_read.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
 
 Par défaut, chaque champ peut être lu par toute personne ayant le droit de visualiser une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 ~~[Voir la liste des différentes valeurs possibles]~~(https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").
 
 ##### ✨ Peut être saisi par
 
-![image champ_param_access_write.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
+![image champ_param_access_write.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
 
 Par défaut, chaque champ peut être saisi par toute personne ayant le droit de saisir une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 [Voir la liste des différentes valeurs possibles](https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").
@@ -1605,40 +1605,40 @@ En premier lieu ce type de champs nécessite de pouvoir énumérer les différen
 
 ##### Obligatoire
 
-![image champ_param_oblig.png (2.5kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
+![image champ_param_oblig.png (2.5kB)](images/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
 
 Ce paramètre permet d'indiquer si répondre à cette question sera obligatoire. Le champ est obligatoire lorsque la case est cochée.  
 
 ##### Identifiant unique
 
-![image champ_param_ID.png (4.6kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
+![image champ_param_ID.png (4.6kB)](images/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
 
 Ce paramètre permet de définir le nom du champ pour YesWiki. Ce nom sera utilisé par YesWiki pour identifier le champ et doit donc impérativement être unique. Si un autre champ avait le même identifiant dans votre formulaire, vous observeriez des dysfonctionnements.  
 Vous n'avez à intervenir sur ce paramètre que dans les rares cas où la documentation le spécifie.  
 
 ##### Intitulé
 
-![image champ_param_label.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
+![image champ_param_label.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
 
 Il s'agit du texte de votre question. YesWiki préremplit ce paramètre avec le type de champ, charge à vous de remplacer cela par un libellé pertinent.  
 
 ##### Texte d'aide
 
 
-![image champ_param_aide.png (2.4kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
+![image champ_param_aide.png (2.4kB)](images/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
 
 Ce paramètre vous permet de saisir un texte d'aide afin d'aiguiller l'utilisateur si vous pensez qu'il peut en avoir besoin pour cette question.
 
 ##### ✨ Peut être lu par
 
-![image champ_param_access_read.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
+![image champ_param_access_read.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
 
 Par défaut, chaque champ peut être lu par toute personne ayant le droit de visualiser une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 ~~[Voir la liste des différentes valeurs possibles]~~(https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").  
 
 ##### ✨ Peut être saisi par
 
-![image champ_param_access_write.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
+![image champ_param_access_write.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
 
 Par défaut, chaque champ peut être saisi par toute personne ayant le droit de saisir une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 [Voir la liste des différentes valeurs possibles](https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").
@@ -1665,39 +1665,39 @@ Comme tous les champs celui-ci comporte des paramètres génériques et des para
 
 ##### Obligatoire
 
-![image champ_param_oblig.png (2.5kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
+![image champ_param_oblig.png (2.5kB)](images/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
 
 Ce paramètre permet d'indiquer si répondre à cette question sera obligatoire. Le champ est obligatoire lorsque la case est cochée.  
 
 ##### Identifiant unique
 
-![image champ_param_ID.png (4.6kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
+![image champ_param_ID.png (4.6kB)](images/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
 
 Ce paramètre permet de définir le nom du champ pour YesWiki. Ce nom sera utilisé par YesWiki pour identifier le champ et doit donc impérativement être unique. Si un autre champ avait le même identifiant dans votre formulaire, vous observeriez des dysfonctionnements.  
 Vous n'avez à intervenir sur ce paramètre que dans les rares cas où la documentation le spécifie.  
 
 ##### Intitulé
 
-![image champ_param_label.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
+![image champ_param_label.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
 
 Il s'agit du texte de votre question. YesWiki préremplit ce paramètre avec le type de champ, charge à vous de remplacer cela par un libellé pertinent.
 
 ##### Texte d'aide
 
-![image champ_param_aide.png (2.4kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
+![image champ_param_aide.png (2.4kB)](images/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
 
 Ce paramètre vous permet de saisir un texte d'aide afin d'aiguiller l'utilisateur si vous pensez qu'il peut en avoir besoin pour cette question. 
 
 ##### ✨ Peut être lu par
 
-![image champ_param_access_read.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
+![image champ_param_access_read.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
 
 Par défaut, chaque champ peut être lu par toute personne ayant le droit de visualiser une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 ~~[Voir la liste des différentes valeurs possibles]~~(https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").  
 
 ##### ✨ Peut être saisi par
 
-![image champ_param_access_write.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
+![image champ_param_access_write.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
 
 Par défaut, chaque champ peut être saisi par toute personne ayant le droit de saisir une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 [Voir la liste des différentes valeurs possibles](https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").
@@ -1721,39 +1721,39 @@ Comme tous les champs celui-ci comporte des paramètres génériques et des para
 
 ##### Obligatoire
 
-![image champ_param_oblig.png (2.5kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
+![image champ_param_oblig.png (2.5kB)](images/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
 
 Ce paramètre permet d'indiquer si répondre à cette question sera obligatoire. Le champ est obligatoire lorsque la case est cochée.  
 
 ##### Identifiant unique
 
-![image champ_param_ID.png (4.6kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
+![image champ_param_ID.png (4.6kB)](images/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
 
 Ce paramètre permet de définir le nom du champ pour YesWiki. Ce nom sera utilisé par YesWiki pour identifier le champ et doit donc impérativement être unique. Si un autre champ avait le même identifiant dans votre formulaire, vous observeriez des dysfonctionnements.  
 Vous n'avez à intervenir sur ce paramètre que dans les rares cas où la documentation le spécifie.  
 
 ##### Intitulé
 
-![image champ_param_label.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
+![image champ_param_label.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
 
 Il s'agit du texte de votre question. YesWiki préremplit ce paramètre avec le type de champ, charge à vous de remplacer cela par un libellé pertinent.  
 
 ##### Texte d'aide
 
-![image champ_param_aide.png (2.4kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
+![image champ_param_aide.png (2.4kB)](images/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
 
 Ce paramètre vous permet de saisir un texte d'aide afin d'aiguiller l'utilisateur si vous pensez qu'il peut en avoir besoin pour cette question. 
 
 ##### ✨ Peut être lu par
 
-![image champ_param_access_read.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
+![image champ_param_access_read.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
 
 Par défaut, chaque champ peut être lu par toute personne ayant le droit de visualiser une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 ~~[Voir la liste des différentes valeurs possibles]~~(https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").  
 
 ##### ✨ Peut être saisi par
 
-![image champ_param_access_write.png (3.0kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
+![image champ_param_access_write.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
 
 Par défaut, chaque champ peut être saisi par toute personne ayant le droit de saisir une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 [Voir la liste des différentes valeurs possibles](https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").
@@ -1766,7 +1766,7 @@ Ce paramètre permet de préciser si on souhaite que la date soit prédéfinie �
 
 ### Champ de type « géolocalisation de l'adresse »
 
-![image champ_zone.png (24.5kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarChampGeo_champ_geoloc_20220204222452_20220204212502.png)
+![image champ_zone.png (24.5kB)](images/DocBazarChampGeo_champ_geoloc_20220204222452_20220204212502.png)
 
 Ce champ n'est pas un vrai champ.
 
@@ -1785,7 +1785,7 @@ Il est indispensable d'avoir un champ de ce type dans votre formulaire si vous s
 
 ##### Obligatoire
 
-![image champ_param_oblig.png (2.5kB)](https://quincaillere.org/formationgarecentrale2022/files/DocBazarChampGeo_champ_param_oblig_20220204222452_20220204212516.png)
+![image champ_param_oblig.png (2.5kB)](images/DocBazarChampGeo_champ_param_oblig_20220204222452_20220204212516.png)
 
 ##### Nom du champ latitude
 
@@ -1921,7 +1921,7 @@ En markdown sur Umap cela donnera :
 
 ### En image :
 
-![image TutoUmapYesWiki.jpg (0.3MB)](https://yeswiki.net/files/BazarAfficherSurCarteUMAP_TutoUmapYesWiki_20210610130113_20210610130147.jpg)
+![Tuto Umap YesWiki](images/BazarAfficherSurCarteUMAP_TutoUmapYesWiki_20210610130113_20210610130147.png)
 
 ## Les Handlers 
 
