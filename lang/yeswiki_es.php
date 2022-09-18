@@ -287,6 +287,11 @@ return [
     // templates/actions/my-favorites-table.twig
     'FAVORITES_TITLE' => 'Título',
     'FAVORITES_LINK' => 'Enlace',
+    
+    // templates/preupdate-backups.twig
+    // 'ADMIN_BACKUPS_CREATING' => 'Création d\'une sauvegarde',
+    // 'ADMIN_BACKUPS_FORCE_UPDATE' => 'Forcer une mise à jour sans sauvegarde',
+    // 'ADMIN_BACKUPS_BY_PASS' => 'Mettre à jour sans sauvegarde',
 
     // setup/header.php
     'OK' => 'OK',

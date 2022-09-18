@@ -11,6 +11,7 @@ parameters:
     - 'wiki_status'
     - archive:
       - privatePath
+      - call_archive_async
     
 services:
   _defaults:
