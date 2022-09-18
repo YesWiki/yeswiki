@@ -290,6 +290,11 @@ return [
     'FAVORITES_TITLE' => 'Title',
     'FAVORITES_LINK' => 'Link',
     
+    // templates/preupdate-backups.twig
+    'ADMIN_BACKUPS_CREATING' => 'Backup creation',
+    'ADMIN_BACKUPS_FORCE_UPDATE' => 'Force an update without backup',
+    'ADMIN_BACKUPS_BY_PASS' => 'Update without backup',
+    
     // setup/header.php
     'OK' => 'OK',
     'FAIL' => 'FAIL',

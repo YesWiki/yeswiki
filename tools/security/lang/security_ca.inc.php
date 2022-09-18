@@ -35,6 +35,7 @@ return [
     // 'EDIT_CONFIG_HINT_WIKI_STATUS' => 'État du wiki (running ou vide = standard, hibernate = lecture seule)',
     // 'EDIT_CONFIG_GROUP_SECURITY' => 'Sécurité',
     // 'EDIT_CONFIG_HINT_ARCHIVE[PRIVATEPATH]' => 'Localisation des sauvegardes (vide = dossier temporaire si possible)',
+    // 'EDIT_CONFIG_HINT_ARCHIVE[CALL_ARCHIVE_ASYNC]' => 'Lancer les opérations de sauvegardes en arrière-plan (true/false)',
 
     // security controller
     // 'WIKI_IN_HIBERNATION' => 'Action désactivée car ce wiki est en lecture seule. Veuillez contacter l\'administrateur pour le réactiver.',

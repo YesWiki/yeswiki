@@ -34,7 +34,8 @@ return [
     // 'EDIT_CONFIG_HINT_USE_ALERTE' => 'Prévenir si l\'on quitte la page sans sauvegarder (true ou false)',
     // 'EDIT_CONFIG_HINT_WIKI_STATUS' => 'État du wiki (running ou vide = standard, hibernate = lecture seule)',
     // 'EDIT_CONFIG_GROUP_SECURITY' => 'Sécurité',
-    // 'EDIT_CONFIG_HINT_ARCHIVE[PRIVATEPATH]' => 'Localisation des sauvegardes (vide = dossier temporaire si possible)',
+    'EDIT_CONFIG_HINT_ARCHIVE[PRIVATEPATH]' => 'LBackups\'folder path (empty = tmp folder if possible)',
+    'EDIT_CONFIG_HINT_ARCHIVE[CALL_ARCHIVE_ASYNC]' => 'Start backups in backgound (true/false)',
 
     // security controller
     // 'WIKI_IN_HIBERNATION' => 'Action désactivée car ce wiki est en lecture seule. Veuillez contacter l\'administrateur pour le réactiver.',

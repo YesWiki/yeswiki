@@ -833,11 +833,14 @@ class ApiController extends YesWikiController
      */
     public function getArchiveStatus($uid)
     {
-        return $this->getService(ArchiveController::class)->getArchiveStatus($uid);
+        return $this->getService(ArchiveController::class)->getArchiveStatus(
+            $uid,
+            empty($_GET['forceStarted']) ? false : in_array($_GET['forceStarted'],[1,true,"1","true"],true)
+        );
     }
 
     /**
-     * @Route("/api/archives/archivingStatus/", methods={"GET"}, options={"acl":{"public", "@admins"}},priority=3)
+     * @Route("/api/archives/archivingStatus/", methods={"GET"}, options={"acl":{"public", "@admins"}})
      */
     public function getArchivingStatus()
     {
@@ -846,6 +849,19 @@ class ApiController extends YesWikiController
             Response::HTTP_OK
         );
     }
+    
+    /**
+     * @Route("/api/archives/forcedUpdateToken/", methods={"GET"}, options={"acl":{"public", "@admins"}})
+     */
+    public function getForcedUpdateToken()
+    {
+        $token = $this->getService(ArchiveService::class)->getForcedUpdateToken();
+        return new ApiResponse(
+            ['token'=>$token],
+            empty($token) ? Response::HTTP_INTERNAL_SERVER_ERROR : Response::HTTP_OK
+        );
+    }
+
 
     /**
      * @Route("/api/archives/", methods={"GET"}, options={"acl":{"public", "@admins"}})
