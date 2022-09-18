@@ -760,7 +760,7 @@ Texte colonne 3
 ('WikiAdmin',  now(), '{{redirect page=\"GererSite\"}}
 ', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('YesWiki',  now(), 'YesWiki', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererSauvegardes',  now(), '{{nav class=\"nav nav-tabs\" links=\"GererMisesAJour, GererSauvegardes\" titles=\"Mises à jour / extensions, Sauvegardes\" }}
+('GererSauvegardes',  now(), '{{nav class=\"nav nav-tabs\" links=\"GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Fichier de conf,Mises à jour / extensions, Sauvegardes\" }}
 
 {{adminbackups}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
 # end YesWiki pages

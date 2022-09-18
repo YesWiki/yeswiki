@@ -209,7 +209,9 @@ class Init
             'htmlPurifierActivated' => false, // TODO ectoplasme set to true
             'favorites_activated' => true,
             ArchiveService::PARAMS_KEY_IN_WAKKA => [
-                ArchiveService::KEY_FOR_ANONYMOUS => ArchiveService::DEFAULT_PARAMS_TO_ANONYMIZE
+                ArchiveService::KEY_FOR_ANONYMOUS => ArchiveService::DEFAULT_PARAMS_TO_ANONYMIZE,
+                'authorize_bypass_preupdate_backup' => false,
+                'call_archive_async' => true,
             ],
         );
         unset($_rewrite_mode);

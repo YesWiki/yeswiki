@@ -91,7 +91,8 @@ class ArchiveController extends YesWikiController
                     );
                 }
                 $params = (isset($_POST['params']) && is_array($_POST['params'])) ? $_POST['params'] : [];
-                $uid = $this->startArchiveAsync($params);
+                $callAsync = !isset($_POST['callAsync']) || in_array($_POST['callAsync'],[1,true,"true","1"],true);
+                $uid = $this->startArchive($params,$callAsync);
                 if (empty($uid)) {
                     return new ApiResponse(
                         ['error' => 'no process created when starting archive action'],
@@ -148,7 +149,7 @@ class ArchiveController extends YesWikiController
         }
     }
 
-    public function getArchiveStatus(string $uid)
+    public function getArchiveStatus(string $uid, bool $forceStarted)
     {
         if (empty($uid)) {
             return new ApiResponse(
@@ -157,23 +158,20 @@ class ArchiveController extends YesWikiController
             );
         }
         return new ApiResponse(
-            $this->archiveService->getUIDStatus($uid),
+            $this->archiveService->getUIDStatus($uid,$forceStarted),
             Response::HTTP_OK
         );
     }
 
     /**
-     * start archive async via CLI
+     * start archive async or async via CLI
      * @param array $params
-     *
-     * @param bool $savefiles
-     * @param bool $savedatabase
-     * @param array $extrafiles
-     * @param array $excludedfiles
+     * @param bool $startAsync
      * @return string uid
      */
-    protected function startArchiveAsync(
-        array $params = []
+    protected function startArchive(
+        array $params = [],
+        bool $startAsync = true
     ): string {
         $savefiles = (isset($params['savefiles']) && in_array($params['savefiles'], [1,"1",true,'true'], true));
         $savedatabase = (isset($params['savedatabase']) && in_array($params['savedatabase'], [1,"1",true,'true'], true));
@@ -183,11 +181,12 @@ class ArchiveController extends YesWikiController
         $extrafiles = array_filter($extrafiles, 'is_string');
         $excludedfiles = array_filter($excludedfiles, 'is_string');
 
-        return $this->archiveService->startArchiveAsync(
+        return $this->archiveService->startArchive(
             $savefiles,
             $savedatabase,
             $extrafiles,
-            $excludedfiles
+            $excludedfiles,
+            $startAsync
         );
     }
 }

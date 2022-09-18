@@ -52,6 +52,9 @@ return [
     "ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS" => "Restauration réussie de {filename}",
     "ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR" => "Restauration impossible de {filename}",
     "ADMIN_BACKUPS_START_BACKUP" => "Lancement d'une sauvegarde",
+    "ADMIN_BACKUPS_START_BACKUP_SYNC" => "Lancement d'une sauvegarde en direct (moins stable)\n".
+        "Il ne sera pas possible de mettre à jour le statut en direct\n".
+        "Ne pas fermer, ni rafraîchir cette fenêtre !",
     "ADMIN_BACKUPS_STARTED" => "Sauvegarde lancée",
     "ADMIN_BACKUPS_START_BACKUP_ERROR" => "Lancement de la sauvegarde impossible",
     "ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR" => "Impossible de mettre à jour le statut de la sauvegarde",
@@ -77,6 +80,11 @@ return [
         " - Vérifier la validité du paramètre 'archive[privatePath]', dans la page 'GererConfig' (rubrique 'Sécutité')\n".
         " - si ce paramètre est vide, le remplir avec un chemin non accessible sur le internet\n".
         " - Vérifier que le dossier est bien accessible pour 'php' (si 'archive[privatePath]' est vide, c'est le dossier '/tmp' qui est utilisé)",
+    "ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE" => "Mise à jour forcée impossible",
+    "ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING" => "Mise à jour lancée (veuillez patienter)",
+    "ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC" => "Lancement de la sauvegarde impossible \n" .
+    "Car il n'est pas possible de lancer des commandes console sur le serveur.\n".
+    " - Vérifier que les commandes 'exec', 'proc_open', 'proc_terminate' ... sont autorisées pour php",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Modifs apportées par cette version",
