@@ -105,3 +105,9 @@ mkdir -p javascripts/vendor/docsify/plugins && \
   # cp -f node_modules/docsify/lib/plugins/*.min.js javascripts/vendor/docsify/plugins && \
   cp -f node_modules/docsify-copy-code/dist/*.min.js javascripts/vendor/docsify/plugins
   cp -f node_modules/docsify-copy-code/LICENSE javascripts/vendor/docsify/plugins/LICENSE-docisfy-copy-code
+
+# Lazysizes
+mkdir -p javascripts/vendor/lazysizes && \
+  cp -f node_modules/lazysizes/lazysizes.min.js javascripts/vendor/lazysizes && \
+  cp -f node_modules/lazysizes/LICENSE javascripts/vendor/lazysizes && \
+  cp -f node_modules/lazysizes/README.md javascripts/vendor/lazysizes
