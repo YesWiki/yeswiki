@@ -1,3 +1,6 @@
+body {
+    font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+}
 img {
     /* border: 4px solid #f8f8f8; */
     padding: 20px;
@@ -57,7 +60,6 @@ img {
 #back:before {
     content: "←";
     margin-right: 5px;
-    margin-bottom: 5px;
 }
 
 .sidebar .search {

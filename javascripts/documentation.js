@@ -1,4 +1,5 @@
 window.$docsify = {
+  themeColor: "#1a89a0",
   loadSidebar: true,
   loadNavbar: true,
   subMaxLevel: 3,
