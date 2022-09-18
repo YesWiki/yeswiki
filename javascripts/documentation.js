@@ -35,12 +35,18 @@ window.$docsify = {
   plugins: [
     function(hook, vm) {
       hook.afterEach(function(html) {
+        // Lazy load images and iframes
+        html = html.replace(/<img src=([^\s]*)/g, '<img class="lazyload" data-src=$1')
+        html = html.replace(/<iframe(.*) src=([^\s]*)/g, '<iframe$1 class="lazyload" data-src=$2')
+
+        // Adds footer
         const url = `https://github.com/YesWiki/yeswiki/edit/doryphore-dev/${vm.route.file}`
         const footer = `
           <hr/>
           <footer>
             <a href="${url}" target="_blank">${i18n.DOC_EDIT_THIS_PAGE_ON_GITHUB}</a>
           </footer>`
+
         return html + footer;
       });
 
