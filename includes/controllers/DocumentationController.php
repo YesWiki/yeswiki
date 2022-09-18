@@ -15,7 +15,8 @@ class DocumentationController extends YesWikiController
     {
       return new Response($this->render('@core/documentation.twig', [
         'config' => $this->wiki->config,
-        'i18n' => json_encode($GLOBALS['translations_js'])
+        'i18n' => json_encode($GLOBALS['translations_js']),
+        'locale' => $GLOBALS['prefered_language']
       ]));
     }
 }
