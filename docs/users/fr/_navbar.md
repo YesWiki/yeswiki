@@ -1,4 +1,4 @@
-<a id="back" href="/">Revenir à mon wiki</a>
+<a id="back" href="/" data-nosearch>Revenir à mon wiki</a>
 
 * [🏠](/docs/users/fr/README.md)
 * [Prise en main](/docs/users/fr/prise-en-main.md)

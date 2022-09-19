@@ -10,6 +10,7 @@ window.$docsify = {
     ['.*/_navbar.md']: `/docs/users/${locale}/_navbar.md`, // set default _navbar.md to locale language
   },
   search: {
+    // maxAge: 0, // when developing, override cache by setting maxAge to 0. Also you need to clear your localStorage
     placeholder: {
       '/docs/users/fr/': 'Rechercher...',
       '/': 'Search...' // default to English
@@ -18,8 +19,8 @@ window.$docsify = {
       '/docs/users/fr/': 'Pas de résultats',
       '/': 'No results' // default to English
     },
-    depth: 2,
-    pathNamespaces: ['/docs/users/fr/', '/docs/users/en/'],
+    namespace: "yeswiki-doc",
+    depth: 3, // which parent title to display in the search result
   },
   copyCode: {
     buttonText : {
