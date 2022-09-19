@@ -1,6 +1,9 @@
-## Installation / Mise à jour
+# Administrateur système
 
 !> Vous aurez besoin d'un accès FTP à votre serveur pour réaliser les actions décrites dans cette page
+
+## Installation / Mise à jour
+
 
 ### Installer son wiki par FTP
 #### Pré-requis
