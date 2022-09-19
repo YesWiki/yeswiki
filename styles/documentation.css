@@ -103,3 +103,29 @@ pre[data-lang^="yeswiki"] + .code-preview {
     border: 5px solid #34495e;
     border-radius: 3px;
 }
+
+/* Search */
+.search .results-panel {
+    padding: .5rem;
+    border-bottom: 1px solid #e3e3e3;
+}
+.search .matching-post {
+    padding: .8rem 0;
+}
+.search .matching-post h2 {
+    margin: 0 0 .5rem 0;
+    font-size: 14px;
+}
+.search p {
+    margin: 0;
+}
+.search .clear-button.show svg {
+    transform: scale(.8);
+}
+.sidebar .search .input-wrap {
+    border-top: 1px solid #e3e3e3;
+    border-bottom: 1px solid #e3e3e3;
+}
+.sidebar .search .input-wrap input {
+    border: none;
+}
