@@ -1,6 +1,8 @@
-## Personnalisation avancées
+# Personnalisation avancées
 
 !> Des bases de programmation vous seront nécessaire pour suivre ces étapes
+
+## Utilisation du dossier `custom`
 
 [filename](../en/custom-folder.md ':include')
 

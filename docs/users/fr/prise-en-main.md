@@ -1,3 +1,7 @@
+# Prise en main
+
+> Pour décrouvrir les fonctionalités de base d'un wiki
+
 ## Structure du wiki
 
 ### La composition d'une page
