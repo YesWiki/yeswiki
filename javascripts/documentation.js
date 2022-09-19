@@ -6,8 +6,8 @@ window.$docsify = {
   relativePath: true,
   auto2top: true,
   alias: {
-    ['/_sidebar.md']: `/docs/users/${locale}/_sidebar.md`, // set default _sidebar.md to locale language
-    ['/_navbar.md']: `/docs/users/${locale}/_navbar.md`, // set default _navbar.md to locale language
+    ['.*/_sidebar.md']: `/docs/users/${locale}/_sidebar.md`, // set default _sidebar.md to locale language
+    ['.*/_navbar.md']: `/docs/users/${locale}/_navbar.md`, // set default _navbar.md to locale language
   },
   search: {
     placeholder: {
