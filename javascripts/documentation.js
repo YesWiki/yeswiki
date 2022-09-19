@@ -72,6 +72,27 @@ window.$docsify = {
             insertAfter(preDom, preview.firstChild);
           }
         })
+
+        // search icon
+        let searchIcon = document.createElement('div')
+        searchIcon.innerHTML = "<i class='gg-search'></i>"
+        searchIcon.classList = "search-icon"
+        searchIcon.addEventListener('click', function() {
+          document.querySelector('aside').classList.toggle('open')
+          document.querySelector('nav > ul').classList.remove('open')
+          document.querySelector('.menu-icon').classList.remove("open")
+        })
+        document.querySelector('nav').appendChild(searchIcon)
+
+        // menu icon
+        let menuIcon = document.createElement('div')
+        menuIcon.innerHTML = "<i class='gg-menu'></i><i class='gg-close'></i>"
+        menuIcon.classList = "menu-icon"
+        menuIcon.addEventListener('click', function() {
+          document.querySelector('nav > ul').classList.toggle('open')
+          this.classList.toggle("open")
+        })
+        document.querySelector('nav').appendChild(menuIcon)
       });
 
       hook.ready(function() {
@@ -79,14 +100,17 @@ window.$docsify = {
         // and it cause some translations issues
         if (location.hash == "#/") location.hash = `docs/users/${locale}/`
 
-        // Move the title inside the navbar to the top of sidebar, and set
-        // correct href
-        let title = document.querySelector("#back")
-        if (!title) return
+        // Back button url correct
+        let backBtn = document.querySelector("#back")
+        if (backBtn) backBtn.href = baseUrl
 
-        title.href = baseUrl
-        let sidebar = document.querySelector('.sidebar')
-        sidebar.insertBefore(title, sidebar.children[0]);
+        // backdrop
+        let backdrop = document.createElement('div')
+        backdrop.classList = "backdrop"
+        backdrop.addEventListener('click', function() {
+          document.querySelector('aside').classList.remove('open')
+        })
+        document.querySelector('main').appendChild(backdrop)
       });
     }
   ],
