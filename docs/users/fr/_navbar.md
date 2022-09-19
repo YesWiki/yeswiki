@@ -1,6 +1,8 @@
-<a id="back" href="/" data-nosearch>Revenir à mon wiki</a>
+[Documentation de Yeswiki](/docs/users/fr/README.md ':id=title')
 
-* [🏠](/docs/users/fr/README.md)
+[Revenir à mon wiki](/ ':id=back :ignore')
+
+* [Revenir à mon wiki](/ ':id=back :ignore') <!-- pour affichage téléphone -->
 * [Prise en main](/docs/users/fr/prise-en-main.md)
 * [Usage avancé](/docs/users/fr/usage-avance.md)
 * [Bazar](/docs/users/fr/bazar.md)
