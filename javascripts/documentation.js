@@ -102,7 +102,14 @@ window.$docsify = {
 
         // Back button url correct
         let backBtn = document.querySelector("#back")
-        if (backBtn) backBtn.href = baseUrl
+        if (backBtn) {
+          backBtn.href = baseUrl
+          const backBtnClone = backBtn.cloneNode(true)
+          const li = document.createElement('li')
+          li.appendChild(backBtnClone)
+          const nav = document.querySelector('nav > ul')
+          nav.insertBefore(li, nav.children[0])
+        }
 
         // backdrop
         let backdrop = document.createElement('div')

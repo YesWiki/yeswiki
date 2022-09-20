@@ -2,7 +2,6 @@
 
 [Revenir à mon wiki](/ ':id=back :ignore')
 
-* [Revenir à mon wiki](/ ':id=back :ignore') <!-- pour affichage téléphone -->
 * [Prise en main](/docs/users/fr/prise-en-main.md)
 * [Usage avancé](/docs/users/fr/usage-avance.md)
 * [Bazar](/docs/users/fr/bazar.md)
