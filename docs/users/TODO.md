@@ -1,6 +1,6 @@
 A faire
 --------
-
+- [ ] Mettre en avant la doc dev (proposition de mrflos) ?
 - [ ] Réfléchir à ce que chaque page doit contenir (créer les titres)
 - [ ] Récupérer le contenu existant et le dispatcher dans les titres ainsi créés
 - [ ] Ecrire le contenu manquant
