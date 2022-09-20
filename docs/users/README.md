@@ -57,7 +57,7 @@ Apprendre à utiliser ce language : https://www.markdown-cheatsheet.com/
 
 ### Modifier les fichiers directement sur github
 
-Allez sur https://github.com/YesWiki/yeswiki/tree/doryphore/docs/fr pour voir l'ensemble des fichiers. Sinon, en bas de chaque page de la doc il y a un lien pour éditer le fichier sur github.
+Allez sur https://github.com/YesWiki/yeswiki/tree/doryphore-dev/docs/users pour voir l'ensemble des fichiers. Sinon, en bas de chaque page de la doc il y a un lien pour éditer le fichier sur github.
 - Assurrez vous d'être sur la branche `doryphore-dev`
 
 ![](https://md.yeswiki.net/uploads/ec48249b-7eb8-48c6-ba01-8e27243ed5e2.png)
