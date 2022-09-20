@@ -2,12 +2,12 @@
 
 [Revenir à mon wiki](/ ':id=back :ignore')
 
-* [Prise en main](/docs/users/fr/prise-en-main.md)
+* [Premiers pas](/docs/users/fr/prise-en-main.md)
 * [Usage avancé](/docs/users/fr/usage-avance.md)
-* [Bazar](/docs/users/fr/bazar.md)
-* [Administrateur](/docs/users/fr/admin.md)
-* [Webmaster](/docs/users/fr/webmaster.md)
-* [Personnalisation avancée](/docs/users/fr/dev.md)
+* [Gestion des formulaires (bazar)](/docs/users/fr/bazar.md)
+* [Administration](/docs/users/fr/admin.md)
+* [Installation](/docs/users/fr/webmaster.md)
+* [Développement](/docs/users/fr/dev.md)
 * 🔧
   * [Comment contribuer à cette doc](/docs/users/README.md)
   * [Liste des choses à faire sur la doc](/docs/users/TODO.md)
