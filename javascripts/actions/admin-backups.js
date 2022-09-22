@@ -187,7 +187,6 @@ let appParams = {
                 }
             });
         },
-        
         startArchive: function (){
             let archiveApp = this;
             archiveApp.updating = true;
@@ -332,7 +331,6 @@ let appParams = {
                 success: function(data){
                     archiveApp.archiveMessage = _t('ADMIN_BACKUPS_STOPPING_ARCHIVE');
                     archiveApp.archiveMessageClass = {alert:true,['alert-warning']:true};
-                    setTimeout(archiveApp.updateStoppingStatus, 1000);
                 },
                 error: function(xhr,status,error){
                     archiveApp.archiveMessage = _t('ADMIN_BACKUPS_STOP_BACKUP_ERROR');
@@ -340,35 +338,6 @@ let appParams = {
                     archiveApp.stoppingArchive = false;
                 }
             });
-        },
-        updateStoppingStatus: function(){
-            if (this.currentArchiveUid.length > 0){
-                let archiveApp= this;
-                $.ajax({
-                    method: "GET",
-                    url: wiki.url(`api/archives/uidstatus/${archiveApp.currentArchiveUid}`),
-                    success: function(data){
-                        if (data.stopped){
-                            archiveApp.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_STOP'),'success');
-                        } else if (data.finished){
-                            archiveApp.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_FINISHED'),'success');
-                        } else if (!data.running) {
-                            archiveApp.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_NOT_FINISHED'),'danger');
-                        } else if (archiveApp.stoppingArchive) {
-                            archiveApp.archiveMessage = _t('ADMIN_BACKUPS_STOPPING_ARCHIVE');
-                            archiveApp.archiveMessage += "<pre>"+data.output.split("\n").slice(-5).join("<br>")+"</pre>";
-                            setTimeout(archiveApp.updateStoppingStatus, 1000);
-                        }
-                    },
-                    error: function(xhr,status,error){
-                        archiveApp.stoppingArchive = false;
-                        archiveApp.endUpdatingStatus(_t('ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR'),'danger');
-                        setTimeout(archiveApp.loadArchives, 3000);
-                    }
-                });
-            } else {
-                this.endUpdatingStatus();
-            }
         },
         updateStatus: function(){
             if (this.currentArchiveUid.length > 0){
@@ -566,13 +535,17 @@ let appParams = {
 if (isVueJS3){
     let app = Vue.createApp(appParams);
     rootsElements.forEach(elem => {
-        app.mount(elem);
+        if ($(elem).length > 0){
+            app.mount(elem);
+        }
     });
 } else {
     rootsElements.forEach(elem => {
-        new Vue({
-            ...{el:elem},
-            ...appParams
-        });
+        if ($(elem).length > 0){
+            new Vue({
+                ...{el:elem},
+                ...appParams
+            });
+        }
     });
 }
