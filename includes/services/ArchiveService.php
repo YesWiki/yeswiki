@@ -157,7 +157,7 @@ class ArchiveService
         if ($this->securityController->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        
+
         try {
             // set wiki status
             $this->setWikiStatus();
@@ -172,6 +172,9 @@ class ArchiveService
 
             $this->writeOutput($output, "=== Creating zip archive ===", true, $outputFile);
             $this->createZip($location, $dataFiles, $output, $sqlContent, $onlyDb, $anonymousParams, $inputFile, $outputFile);
+            if (!file_exists($location)) {
+                throw new StopArchiveException("Stop archive : not saved !");
+            }
 
             $this->writeOutput($output, "Archive \"$location\" successfully created !", true, $outputFile);
             $this->writeOutput($output, "END", true, $outputFile);
@@ -221,7 +224,7 @@ class ArchiveService
         }
         return $result;
     }
-    
+
     /**
      * retrieve the current status to archive
      * @return array ['canArchive' => bool,'archiving' => bool, 'hibernated' => bool, 'privatePathWritable' => bool, 'canExec' => bool]
@@ -336,7 +339,7 @@ class ArchiveService
     ): string {
         $privatePath = $this->getPrivateFolder();
         $uidData = $this->getUID($privatePath);
-        if ($callAsync){
+        if ($callAsync) {
             $args = [];
             if (!$savefiles) {
                 $args[] = "-d";
@@ -356,7 +359,7 @@ class ArchiveService
             $args[] = "-u";
             $args[] = $uidData['uid'];
             $process = $this->consoleService->startConsoleAsync(
-                'archive:archive',
+                'core:archive',
                 $args
             );
             if (!empty($process)) {
@@ -368,8 +371,8 @@ class ArchiveService
             }
         } else {
             $output = "";
-            $location = $this->archive($output, $savefiles, $savedatabase, $extrafiles, $excludedfiles, $anonymous, $uidData['uid']);
-            if (empty($location)){
+            $location = $this->archive($output, $savefiles, $savedatabase, $extrafiles, $excludedfiles, null, $uidData['uid']);
+            if (empty($location)) {
                 $this->cleanUID($uidData['uid'], $privatePath);
                 return '';
             } else {
@@ -518,7 +521,7 @@ class ArchiveService
         if (!isset($info[$uid]) ||
             empty($info[$uid]['input']) ||
             !is_file($info[$uid]['input'])
-            ) {
+        ) {
             return false;
         }
         file_put_contents($info[$uid]['input'], "STOP");
@@ -530,7 +533,7 @@ class ArchiveService
      * @param string $inputFile
      * @return bool
      */
-    protected function checkIfNeedStop(string $inputFile = ""):bool
+    protected function checkIfNeedStop(string $inputFile = ""): bool
     {
         if (empty($inputFile) || !is_file($inputFile)) {
             return false;
@@ -563,12 +566,15 @@ class ArchiveService
         string $inputFile = "",
         string $outputFile = ""
     ) {
-        $pathToArchive = dirname(__FILE__, 3); // includes/services/../../
+        if (!file_exists('index.php') || !file_exists('wakka.config.php') || !file_exists('composer.json') || !file_exists('composer.lock')) {
+            throw new Exception("Can only be started from main directory");
+        }
+        $pathToArchive = getcwd();
         $pathToArchive = preg_replace("/(\/|\\\\)$/", "", $pathToArchive);
         $dirs = [$pathToArchive];
         $dirnamePathLen = strlen($pathToArchive) ;
         // open file
-        $zip = new ZipArchive;
+        $zip = new ZipArchive();
         $resource = $zip->open($zipPath, ZipArchive::CREATE |  ZipArchive::OVERWRITE);
         if ($resource === true) {
             if (!$onlyDb) {
@@ -623,18 +629,31 @@ class ArchiveService
                     $sqlContent
                 );
                 $this->writeOutput($output, "Adding .htaccess file in folder ".self::PRIVATE_FOLDER_NAME_IN_ZIP, true, $outputFile);
-                
+
                 $zip->addFromString(
                     self::PRIVATE_FOLDER_NAME_IN_ZIP."/.htaccess",
                     "DENY FROM ALL\n"
                 );
-                
+
                 $zip->addFromString(
                     self::PRIVATE_FOLDER_NAME_IN_ZIP."/README.md",
                     self::PRIVATE_FOLDER_README_DEFAULT_CONTENT
                 );
             }
             $this->writeOutput($output, "Generating zip file", true, $outputFile);
+            // register cancel callback if available
+            if (method_exists($zip, 'registerCancelCallback')) {
+                $zip->registerCancelCallback(function () use ($inputFile) {
+                    // 0 will continue process
+                    return ($this->checkIfNeedStop($inputFile)) ? -1 : 0;
+                });
+            }
+            // register progress callback if available
+            if (method_exists($zip, 'registerProgressCallback')) {
+                $zip->registerProgressCallback(0.1, function ($r) use (&$output, $outputFile) {
+                    $this->writeOutput($output, "Zip file creation : ".strval(round($r*100, 0))." %", true, $outputFile);
+                });
+            }
             $zip->close();
         }
     }
@@ -953,7 +972,7 @@ class ArchiveService
                 "{$tablePrefix}referrers", // tables
             ], // args
             "", // subfolder
-            ('\\' === DIRECTORY_SEPARATOR ? ["c:\\xampp\\mysql\\bin\\"]: []), // extraDirsWhereSearch
+            ('\\' === DIRECTORY_SEPARATOR ? ["c:\\xampp\\mysql\\bin\\"] : []), // extraDirsWhereSearch
             60 // timeoutInSec
         );
 
@@ -971,7 +990,7 @@ class ArchiveService
         }
         return $sqlContent;
     }
-    
+
     /**
      * assert param is a not empty string
      * @param string $name
@@ -1102,7 +1121,7 @@ class ArchiveService
                 foreach ($indexesToRemove as $index) {
                     $archivesToDelete[] = $archives[$index]['filename'];
                 }
-    
+
                 return $archivesToDelete;
             }
         }
@@ -1122,7 +1141,7 @@ class ArchiveService
                 ->setDate($archive['year'], $archive['month'], $archive['day'])
                 ->setTime($archive['hours'], $archive['minutes'], $archive['seconds'], 0);
             if ($fileDateTime->diff($nowMinusXDays)->invert ==0 // current file date is before - x days
-                ) {
+            ) {
                 $indexes[] = $key;
             }
         }
@@ -1148,7 +1167,7 @@ class ArchiveService
         return (empty($content) || !is_array($content)) ? [] : $content;
     }
 
-    
+
     /**
      * set content to info.json file from privatePath
      * @param mixed $content
