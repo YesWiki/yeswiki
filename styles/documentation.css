@@ -115,7 +115,8 @@ nav.app-nav {
 .app-nav li {
     height: var(--nav-height);
     align-items: center;
-    padding: 0;
+    padding: 0 1rem;
+    margin: 0;
     display: inline-flex;
 }
 .app-nav li a {
