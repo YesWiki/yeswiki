@@ -98,7 +98,7 @@ nav.app-nav {
 .app-nav a#back {
     margin-left: 1rem;
     color: #5b7086;
-    /* border: 1px solid #cbcbcb; */
+    border: none;
     padding: 5px 10px;
     border-radius: 3px;
     font-weight: bold;

@@ -1,6 +1,6 @@
 [Documentation de Yeswiki](/docs/users/fr/README.md ':id=title')
 
-[Revenir à mon wiki](/ ':id=back :ignore')
+[Revenir à mon wiki](/ ':id=back')
 
 * [Premiers pas](/docs/users/fr/prise-en-main.md)
 * [Usage avancé](/docs/users/fr/usage-avance.md)
