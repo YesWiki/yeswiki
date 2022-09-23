@@ -312,11 +312,18 @@ document.addEventListener('DOMContentLoaded', function() {
             cache: false,
             success: function (data){
               let previousUrl = $(newImageParams.node).prop('src');
-              if (data.cachefilename != previousUrl){
-                $(`img[src="${previousUrl}"]`).each(function(){
-                  $(this).prop('src',data.cachefilename);
-                });
-              }
+              let srcFileName = wiki.baseUrl.replace(/(\?)?$/,'')+data.cachefilename;
+              $(`img[src="${previousUrl}"]`).each(function(){
+                $(this).prop('src',srcFileName);
+                let next = $(this).next('div.area.visual-area[style]');
+                if (next.length > 0){
+                  let backgoundImage = $(next).css('background-image');
+                  if (backgoundImage != undefined && typeof backgoundImage == "string" && backgoundImage.length > 0){
+                      $(next).css('background-image',''); // reset to force update
+                      $(next).css('background-image',`url("${srcFileName}")`);
+                  }
+                }
+              });
             },
             complete: function (e){
               if (e.responseJSON != undefined && e.responseJSON.newToken != undefined ){
