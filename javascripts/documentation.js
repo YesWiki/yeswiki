@@ -93,12 +93,6 @@ window.$docsify = {
           this.classList.toggle("open")
         })
         document.querySelector('nav').appendChild(menuIcon)
-      });
-
-      hook.ready(function() {
-        // Redirect properly to translated language, otherwise we stay on "#/" hash
-        // and it cause some translations issues
-        if (location.hash == "#/") location.hash = `docs/users/${locale}/`
 
         // Back button url correct
         let backBtn = document.querySelector("#back")
@@ -110,6 +104,12 @@ window.$docsify = {
           const nav = document.querySelector('nav > ul')
           nav.insertBefore(li, nav.children[0])
         }
+      });
+
+      hook.ready(function() {
+        // Redirect properly to home page, otherwise we stay on "#/" hash
+        // and it cause some translations issues
+        if (location.hash == "#/") location.hash = `/docs/users/${locale}/`
 
         // backdrop
         let backdrop = document.createElement('div')
