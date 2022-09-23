@@ -40,8 +40,16 @@
       
       {# VISUAL AREA #}
       <template v-if="Object.keys(entry).includes('visual')">
-        <img v-if="entry.visual" class="area visual-area" :src="urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'crop')"
-        @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'crop',{{ firstTokenCrop|json_encode }})"></img>
+        <template v-if="entry.visual">
+          <img 
+            :style="{display:(params.style == 'square')? false : 'none'}" 
+            class="area visual-area" 
+            :src="urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'crop')"
+            @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'crop',{{ firstTokenCrop|json_encode }})"></img>
+          <div v-if="params.style != 'square'" class="area visual-area" 
+            :style="{color:'blue','background-image': `url('${urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'crop')}')`}">
+          </div>
+        </template>
         <div v-else class="area area visual-area placeholder"></div>
       </template>
       
