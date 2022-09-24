@@ -318,6 +318,12 @@ let appParams = {
             this.canForceDelete = !this.canForceDelete;
         },
         stopArchive: function (){
+            if (this.archiving && this.currentArchiveUid.length == 0){
+                setTimeout(() => {
+                    this.stopArchive()
+                }, 300);
+                return;
+            }
             this.stoppingArchive = true;
             let archiveApp = this;
             $.ajax({
@@ -331,6 +337,7 @@ let appParams = {
                 success: function(data){
                     archiveApp.archiveMessage = _t('ADMIN_BACKUPS_STOPPING_ARCHIVE');
                     archiveApp.archiveMessageClass = {alert:true,['alert-warning']:true};
+                    setTimeout(archiveApp.checkStopped,500);
                 },
                 error: function(xhr,status,error){
                     archiveApp.archiveMessage = _t('ADMIN_BACKUPS_STOP_BACKUP_ERROR');
@@ -338,6 +345,40 @@ let appParams = {
                     archiveApp.stoppingArchive = false;
                 }
             });
+        },
+        checkStopped: function(){
+            let archiveApp= this;
+            if (archiveApp.archiving && archiveApp.currentArchiveUid > 0){
+                let getData = {};
+                if (!archiveApp.callAsync){
+                    getData.forceStarted = true;
+                }
+                $.ajax({
+                    method: "GET",
+                    url: wiki.url(`api/archives/uidstatus/${archiveApp.currentArchiveUid}`),
+                    cache: false,
+                    data: getData,
+                    success: function(data){
+                        if (data.stopped){
+                            return true;
+                        } else if (!data.started){
+                            setTimeout(archiveApp.checkStopped, 1000);
+                            return false;
+                        } else if (data.finished){
+                            return true;
+                        } else if (!data.running) {
+                            setTimeout(archiveApp.checkStopped, 1000);
+                            return false;
+                        } else {
+                            setTimeout(archiveApp.stopArchive, 1000);
+                            return false;
+                        }
+                    },
+                    error: function(xhr,status,error){
+                        setTimeout(archiveApp.checkStopped, 1000);
+                    }
+                });
+            }
         },
         updateStatus: function(){
             if (this.currentArchiveUid.length > 0){
@@ -491,10 +532,10 @@ let appParams = {
             if (archiveApp.archiving){
                 archiveApp.stopArchive();
                 setTimeout(() => {
-                    this.startForcedUpdate(_t('ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING'));
-                }, 2000);
+                    archiveApp.bypassArchive();
+                }, 1000);
             } else {
-                this.startForcedUpdate(_t('ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING'));
+                archiveApp.startForcedUpdate(_t('ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING'));
             }
         },
         startForcedUpdate: function(message){
