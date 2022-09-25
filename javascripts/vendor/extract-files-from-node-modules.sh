@@ -105,6 +105,11 @@ mkdir -p javascripts/vendor/docsify/plugins && \
   # cp -f node_modules/docsify/lib/plugins/*.min.js javascripts/vendor/docsify/plugins && \
   cp -f node_modules/docsify-copy-code/dist/*.min.js javascripts/vendor/docsify/plugins
   cp -f node_modules/docsify-copy-code/LICENSE javascripts/vendor/docsify/plugins/LICENSE-docisfy-copy-code
+# mkdir -p styles/vendor/docsify && \
+#   cat node_modules/docsify/lib/themes/vue.css \
+#     | sed -E "s|(@import url\(\"https://fonts.googleapis.com)|/*  \n  This file has been modified just to remove google font import on first line\n  It's based on Vue theme maintained by docsify\n  https://cdn.jsdelivr.net/npm/docsify/lib/themes/vue.css\n */\n/* \1|g" \
+#     | sed -E 's|("\);)(\*\{-webkit)|\1 */\n\2|g' \
+#     > styles/vendor/docsify/vue-theme-modified.min.css
 
 # Lazysizes
 mkdir -p javascripts/vendor/lazysizes && \
