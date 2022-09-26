@@ -102,6 +102,9 @@ let appParams = {
             if (app.args.hasOwnProperty('displayorder') && app.args.displayorder.length > 0){
                 params.categories = Array.isArray(app.args.displayorder) ? app.args.displayorder.join(',') : app.args.displayorder;
             }
+            if (app.args.hasOwnProperty('onlytags') && app.args.onlytags.length > 0){
+                params.onlytags = app.args.onlytags.join(',');
+            }
             for (const key in extraParams) {
                 if (key.length > 0){
                     params[key] = extraParams[key];

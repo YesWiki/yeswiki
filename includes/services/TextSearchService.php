@@ -53,10 +53,12 @@ class TextSearchService
         $options['limitByCat'] = (isset($options['limitByCat']) && is_bool($options['limitByCat'])) ? $options['limitByCat'] : false;
         $options['categories'] = (!empty($options['categories']) && is_string($options['categories'])) ? explode(',', $options['categories']) : [];
         $options['excludes'] = (!empty($options['excludes']) && is_string($options['excludes'])) ? explode(',', $options['excludes']) : [];
+        $options['onlytags'] = (!empty($options['onlytags']) && is_string($options['onlytags'])) ? explode(',', $options['onlytags']) : [];
 
         list('requestfull' => $sqlRequest, 'needles' => $needles) = $this->getSqlRequest($searchText);
         $filteredResults = [];
         $this->addExcludesTags($sqlRequest, $options['excludes']);
+        $this->addOnlyTagsNames($sqlRequest, $options['onlytags']);
         if (!$options['limitByCat'] && empty($options['categories'])) {
             $this->searchSQL($filteredResults, $this->addSQLLimit($sqlRequest, $options['limit']), $options['displaytext'], $searchText, $needles);
         } elseif (!empty($options['categories'])) {
@@ -296,6 +298,22 @@ class TextSearchService
             if (!empty($exclude) && is_string($exclude)) {
                 $sqlRequest .= " AND `tag` NOT LIKE '{$this->dbService->escape($exclude)}'";
             }
+        }
+    }
+
+    private function addOnlyTagsNames(string &$sqlRequest, array $tagsNames)
+    {
+        if (!empty($tagsNames)) {
+            $pageTags = [];
+            foreach ($tagsNames as $tag) {
+                $pagesOrEntries = $this->tagsManager->getPagesByTags($tag);
+                foreach ($pagesOrEntries as $page) {
+                    if (!empty($page['tag']) && !in_array($page['tag'], $pageTags)) {
+                        $pageTags[] = $page['tag'];
+                    }
+                }
+            }
+            $sqlRequest = $this->addOnlyTags($sqlRequest, $pageTags);
         }
     }
 

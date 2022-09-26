@@ -817,7 +817,8 @@ class ApiController extends YesWikiController
                     'default' => 0
                 ]),
                 'categories' => filter_input(INPUT_GET, 'categories', FILTER_UNSAFE_RAW),
-                'excludes' => filter_input(INPUT_GET, 'excludes', FILTER_UNSAFE_RAW)
+                'excludes' => filter_input(INPUT_GET, 'excludes', FILTER_UNSAFE_RAW),
+                'onlytags' => filter_input(INPUT_GET, 'onlytags', FILTER_UNSAFE_RAW)
             ]);
         }
         return new ApiResponse($results);
