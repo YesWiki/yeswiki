@@ -236,8 +236,12 @@ footer {
     text-align: center;
 }
 
-/* Mobile */
-
+/* Responsivness */
+@media (min-width: 1201px) and (max-width: 1350px) {
+    .app-nav li {
+        padding: 0 .6rem;
+    }
+}
 @media (min-width: 1201px) {
     .app-nav > ul {
         display: flex !important;
@@ -246,6 +250,10 @@ footer {
         display: none;
     }
     .app-nav > ul #back {
+        display: none;
+    }
+    /* li that contains back link for mobile */
+    .app-nav > ul > li:first-child {
         display: none;
     }
     .backdrop {
