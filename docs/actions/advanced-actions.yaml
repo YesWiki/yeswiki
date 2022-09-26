@@ -107,8 +107,11 @@ actions:
         type: text
         advanced: true
         default: ""
+        showif:
+          template: ^$|^newtextsearch\.twig$
       displaytext:
         label: _t(AB_advanced_action_newtextsearch_displaytext_label)
+        hint: _t(AB_advanced_action_textsearch_separator_hint)
         type: list
         default: ""
         advanced: true

@@ -334,6 +334,7 @@ return [
     'AB_advanced_action_textsearch_nbcols_hint' => '0 = automatic and variable number of columns according to content',
     'AB_advanced_action_textsearch_phrase_label_forced' => 'Search text forced by default',
     'AB_advanced_action_textsearch_phrase_hint' => 'If not empty, input form is not displayed.',
+    'AB_advanced_action_textsearch_separator_hint' => 'This parameter is useful only for standard template.',
     // "AB_advanced_action_textsearch_label_label" => "label à afficher devant la zone de saisie",
     // "AB_advanced_action_textsearch_size_label" => "largeur de la zone de saisie",
     // "AB_advanced_action_textsearch_button_label" => "texte du bouton",
