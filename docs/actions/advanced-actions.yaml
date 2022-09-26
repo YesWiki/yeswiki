@@ -97,7 +97,8 @@ actions:
             type: text
             default: ""
       phrase:
-        label:  _t(AB_advanced_action_textsearch_phrase_label)
+        label:  _t(AB_advanced_action_textsearch_phrase_label_forced)
+        hint: _t(AB_advanced_action_textsearch_phrase_hint)
         type: text
         advanced: true
         default: ""

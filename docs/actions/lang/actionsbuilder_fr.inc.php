@@ -332,6 +332,8 @@ return [
     'AB_advanced_action_textsearch_onlytags_hint' => 'séparés par des virgules',
     'AB_advanced_action_textsearch_nbcols_label' => 'Nombre de colonnes',
     'AB_advanced_action_textsearch_nbcols_hint' => '0 = mise en colonne automatique et variable en fonction du contenu',
+    'AB_advanced_action_textsearch_phrase_label_forced' => 'Texte de recherche forcé par défaut',
+    'AB_advanced_action_textsearch_phrase_hint' => 'Si non vide, la saisie n\'est plus affichée.',
     "AB_advanced_action_textsearch_label_label" => "label à afficher devant la zone de saisie",
     "AB_advanced_action_textsearch_size_label" => "largeur de la zone de saisie",
     "AB_advanced_action_textsearch_button_label" => "texte du bouton",
