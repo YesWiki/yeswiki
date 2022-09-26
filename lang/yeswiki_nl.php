@@ -85,6 +85,9 @@ return [
     // 'CHANGESTYLE_ERROR' => 'Le nom \'{name}\' n\'est pas conforme à la règle de nommage imposée par l\'action ChangeStyle.'.
         // 'Reportez-vous à la documentation de cette action pour plus de précisions',
 
+   // actions/NexTextSearchAction.php
+//    'NEWTEXTSEARCH_LOG_PAGES' => 'Log pages',
+
     // handlers/page/acls.php
     // 'YW_ACLS_LIST' => 'Liste des droits d\'acc&egrave;s de la page',
     // 'YW_ACLS_UPDATED' => 'Droits d\'acc&egrave;s mis &agrave; jour',

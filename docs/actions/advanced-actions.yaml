@@ -48,22 +48,86 @@ actions:
       label:
         label:  _t(AB_advanced_action_textsearch_label_label)
         type: text
+        default: "_t(WHAT_YOU_SEARCH) : "
       size:
         label:  _t(AB_advanced_action_textsearch_size_label)
         type: number
-        default: ''
+        default: '40'
         min: 1
       button:
-        label:  _t(AB_advanced_action_textsearch_button_label)
+        label: _t(AB_advanced_action_textsearch_button_label)
         type: text
+        defaul: _t(SEARCH)
+      template:
+        label: _t(AB_advanced_action_newtextsearch_template_label)
+        type: list
+        default: newtextsearch-by-form.twig
+        options:
+          "newtextsearch.twig": _t(AB_advanced_action_newtextsearch_template_standard)
+          "newtextsearch-by-form.twig": _t(AB_advanced_action_newtextsearch_template_by_form)
+      displaytype:
+        label: _t(AB_advanced_action_newtextsearch_displaytype_label)
+        type: list
+        default: "modal"
+        options:
+          modal: _t(AB_advanced_action_newtextsearch_displaytype_modal)
+          link: _t(AB_advanced_action_newtextsearch_displaytype_link)
+          newtab: _t(AB_advanced_action_newtextsearch_displaytype_newtab)
+      displayorder:
+        label: _t(AB_advanced_action_newtextsearch_displayorder_label)
+        type: text
+        hint: _t(AB_advanced_action_newtextsearch_displayorder_hint)
+        showif:
+          template: ^$|^newtextsearch-by-form\.twig$
+        default: ""
+      titles:
+        label: _t(AB_advanced_action_newtextsearch_titles_label)
+        type: text
+        hint: _t(AB_advanced_action_newtextsearch_titles_hint)
+        showif:
+          template: ^$|^newtextsearch-by-form\.twig$
+        default: ""
       phrase:
         label:  _t(AB_advanced_action_textsearch_phrase_label)
         type: text
         advanced: true
+        default: ""
       separator:
         label:  _t(AB_advanced_action_textsearch_separator_label)
         type: text
         advanced: true
+        default: ""
+      displaytext:
+        label: _t(AB_advanced_action_newtextsearch_displaytext_label)
+        type: list
+        default: ""
+        advanced: true
+        options:
+          "": _t(AB_advanced_action_newtextsearch_displaytext_only_std)
+          "true": _t(YES)
+          "false": _t(NO)
+      limit:
+        label: _t(AB_advanced_action_newtextsearch_limit_label)
+        type: number
+        default: 100
+        advanced: true
+        min: 1
+      onlytags:
+        label: _t(AB_advanced_action_textsearch_onlytags_label)
+        hint: _t(AB_advanced_action_textsearch_onlytags_hint)
+        type: text
+        default: ""
+        advanced: true
+      nbcols:
+        label: _t(AB_advanced_action_textsearch_nbcols_label)
+        hint: _t(AB_advanced_action_textsearch_nbcols_hint)
+        type: number
+        default: 2
+        min: 0
+        max: 3
+        advanced: true
+        showif:
+          template: ^$|^newtextsearch-by-form\.twig$
   include:
     label: _t(AB_advanced_action_include_label)
     properties:

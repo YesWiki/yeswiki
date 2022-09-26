@@ -1,0 +1,41 @@
+{% macro displayResult(title,elems,args) %}
+    {% if elems is not empty %}
+        <div class="newtextsearch-by-form-group {{ 
+              args.nbcols == 3 
+              ? 'col-md-4' 
+              : (
+                args.nbcols == 2 
+                ? 'col-md-6' 
+                : (
+                  args.nbcols == 1
+                  ? 'col-md-12' 
+                  : ''
+                )
+              ) }}">
+            <h3>{{ title }}</h3>
+            
+            <ol>
+            {% for page in elems %}
+                {{ block('liWithNumber') }}
+            {% endfor %}
+            </ol>
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% extends "@core/newtextsearch.twig" %}
+
+{% block results %}
+  {% if searchText is empty %}
+  {% elseif results is empty %}
+    {{ format('---- --- **' ~ _t('NO_SEARCH_RESULT') ~ '.**')|raw }}
+  {% else %}
+    {{ format('---- --- **' ~ _t('SEARCH_RESULTS') ~ ' [""' ~ searchText ~ '""] :---**')|raw }}
+    {# show by forms or pages#}
+    <div class="newtextsearch-by-form-container">
+      {% for formId in (args.displayorder is empty ? formsTitles|keys : args.displayorder) %}
+          {{ _self.displayResult(formsTitles[formId],results|filter(e => e.form == formId),args) }}
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

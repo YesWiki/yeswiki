@@ -918,3 +918,18 @@ html[lang="pt"] [lang]:not([lang="pt"]){
   line-height: 8px;
   color: var(--primary-color);
 }
+
+
+/* new text search */
+div.newtextsearch-by-form-container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+div.newtextsearch-by-form-container > .newtextsearch-by-form-group{
+  padding: 5px;
+  flex-grow: 1;
+}
+div.newtextsearch-by-form-container > .newtextsearch-by-form-group a {
+  overflow-x: hidden;
+}

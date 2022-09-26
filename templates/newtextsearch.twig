@@ -1,0 +1,71 @@
+{% if displayForm %}
+  <form action="{{ url({method:""}) }}" method="get">
+    {% if tag is not empty %}<input type="hidden" name="wiki" value="{{ tag }}"/>{% endif %}
+    <div class="input-prepend input-append input-group input-group-lg">
+      <span class="add-on input-group-addon"><i class="fa fa-search icon-search"></i></span>
+      <input 
+          name="phrase" 
+          type="text" 
+          class="form-control" 
+          placeholder="{{ args.label }}" 
+          size="{{ args.size }}"
+          value="{{ searchText }}" >
+      <span class="input-group-btn input-group-addon">
+        <input 
+          type="submit" 
+          class="btn btn-primary btn-lg" 
+          value="{{ args.button }}" />
+      </span>
+      </div>
+      <span class="">
+        <small>{{ _t('NEWTEXTSEARCH_HINT') }}</small>
+      </span>
+      <br>
+    </div>
+  </form>
+{% endif %}
+
+{% block results %}
+  {% if searchText is empty %}
+  {% elseif results is empty %}
+    {{ format('---- --- **' ~ _t('NO_SEARCH_RESULT') ~ '.**')|raw }}
+  {% elseif args.separator is empty %}
+    {{ format('---- --- **' ~ _t('SEARCH_RESULTS') ~ ' [""' ~ searchText ~ '""] :---**')|raw }}
+    <ol>
+      {% for page in results %}
+        {% block liWithNumber %}
+          <li>
+            <h4 style="margin-bottom:0.2rem;">
+              {% block link %}
+                <a 
+                  href="{{ url({tag:page.tag,handler:(args.displaytype == "modal" ? 'iframe' : '')}) }}"
+                  {% if args.displaytype == "newtab" %}
+                    class="new-window"
+                  {% elseif args.displaytype == "modal" %}
+                    class="modalbox"
+                    data-iframe="1"
+                    data-size="modal-lg"
+                  {% endif %}
+                  title="{{ page.title ?? page.tag }}"
+                  >
+                  {{ page.title is not empty ? (page.title|length > 70 ? page.title|slice(0,70) ~ '…': page.title) : page.tag }}
+                </a>
+              {% endblock %}
+            </h4>
+            {% if page.preRendered is not empty %}
+              {{ page.preRendered|raw }}
+            {% endif %}
+          </li>
+        {% endblock %}
+      {% endfor %}
+    </ol>
+  {% else %}
+    <p>{{ _t('SEARCH_RESULT_OF') }} "{{ searchText }}"&nbsp;: 
+      {% set firstDisplayItem = true %}
+      {% for page in results %}
+        {% if not firstDisplayItem %}{{ args.separator }}{% else %}{% set firstDisplayItem = false %}{% endif %}
+        {{ block('link') }}
+      {% endfor %}
+    </p>
+  {% endif %}
+{% endblock %}
