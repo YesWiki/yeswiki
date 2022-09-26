@@ -73,45 +73,17 @@ window.$docsify = {
           }
         })
 
-        // search icon
-        let searchIcon = document.createElement('div')
-        searchIcon.innerHTML = "<i class='gg-search'></i>"
-        searchIcon.classList = "search-icon"
-        searchIcon.addEventListener('click', function() {
-          document.querySelector('aside').classList.toggle('open')
-          document.querySelector('nav > ul').classList.remove('open')
-          document.querySelector('.menu-icon').classList.remove("open")
-        })
-        document.querySelector('nav').appendChild(searchIcon)
-
-        // menu icon
-        let menuIcon = document.createElement('div')
-        menuIcon.innerHTML = "<i class='gg-menu'></i><i class='gg-close'></i>"
-        menuIcon.classList = "menu-icon"
-        menuIcon.addEventListener('click', function() {
-          document.querySelector('nav > ul').classList.toggle('open')
-          this.classList.toggle("open")
-        })
-        document.querySelector('nav').appendChild(menuIcon)
-
-        // Back button url correct
-        let backBtn = document.querySelector("#back")
-        if (backBtn) {
-          backBtn.href = baseUrl
-          const backBtnClone = backBtn.cloneNode(true)
-          const li = document.createElement('li')
-          li.appendChild(backBtnClone)
-          const nav = document.querySelector('nav > ul')
-          nav.insertBefore(li, nav.children[0])
-        }
-      });
+        // We need to do it each time cause the `nav` element is dyanmically replaced by the content of
+        // `_navbar.md` each time we navigates to a new page
+        initCustomNavMenu()
+      })
 
       hook.ready(function() {
         // Redirect properly to home page, otherwise we stay on "#/" hash
         // and it cause some translations issues
-        if (location.hash == "#/") location.hash = `/docs/users/${locale}/`
+        if (location.hash == "#/") location.hash = `/docs/users/${locale}/README`
 
-        // backdrop
+        // adds backdrop for mobile search menu
         let backdrop = document.createElement('div')
         backdrop.classList = "backdrop"
         backdrop.addEventListener('click', function() {
@@ -126,3 +98,48 @@ window.$docsify = {
 function insertAfter(referenceNode, newNode) {
   referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
 }
+
+// Handle browser back navigation, not handled by hook.doneEach
+window.addEventListener('popstate', function() {
+  setTimeout(function() {
+    initCustomNavMenu();
+  }, 100)
+})
+
+// Improve navbar menu by adding mobile icons and auto fixing the "back to my wiki" url
+function initCustomNavMenu() {
+  // Do not run this method twice
+  if (document.querySelector("nav .search-icon")) return
+
+  // search icon
+    let searchIcon = document.createElement('div')
+    searchIcon.innerHTML = "<i class='gg-search'></i>"
+    searchIcon.classList = "search-icon"
+    searchIcon.addEventListener('click', function() {
+      document.querySelector('aside').classList.toggle('open')
+      document.querySelector('nav > ul').classList.remove('open')
+      document.querySelector('.menu-icon').classList.remove("open")
+    })
+    document.querySelector('nav').appendChild(searchIcon)
+
+    // menu icon
+    let menuIcon = document.createElement('div')
+    menuIcon.innerHTML = "<i class='gg-menu'></i><i class='gg-close'></i>"
+    menuIcon.classList = "menu-icon"
+    menuIcon.addEventListener('click', function() {
+      document.querySelector('nav > ul').classList.toggle('open')
+      this.classList.toggle("open")
+    })
+    document.querySelector('nav').appendChild(menuIcon)
+
+    // Back button url correct
+    let backBtn = document.querySelector("#back")
+    if (backBtn) {
+      backBtn.href = baseUrl
+      const backBtnClone = backBtn.cloneNode(true)
+      const li = document.createElement('li')
+      li.appendChild(backBtnClone)
+      const nav = document.querySelector('nav > ul')
+      nav.insertBefore(li, nav.children[0])
+    }
+
