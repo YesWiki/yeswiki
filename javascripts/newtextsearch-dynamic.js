@@ -96,7 +96,7 @@ let appParams = {
             if (app.args.limit > 0){
                 params.limit = app.args.limit;
             }
-            if (app.args.template == "newtextsearch-by-form.twig"){
+            if (app.args.template == "newtextsearch-by-category.twig"){
                 params.limitByCat = true;
             }
             if (app.args.hasOwnProperty('displayorder') && app.args.displayorder.length > 0){

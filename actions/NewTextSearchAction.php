@@ -8,7 +8,7 @@ use YesWiki\Core\YesWikiAction;
 class NewTextSearchAction extends YesWikiAction
 {
     public const DEFAULT_TEMPLATE = "newtextsearch.twig";
-    public const BY_FORM_TEMPLATE = "newtextsearch-by-form.twig";
+    public const BY_FORM_TEMPLATE = "newtextsearch-by-category.twig";
     public const DEFAULT_LIMIT = 10;
 
     protected $dbService;

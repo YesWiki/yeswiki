@@ -1,6 +1,6 @@
 {% macro displayResult(title,elems,args) %}
     {% if elems is not empty %}
-        <div class="newtextsearch-by-form-group {{ 
+        <div class="newtextsearch-by-category-group {{ 
               args.nbcols == 3 
               ? 'col-md-4' 
               : (
@@ -27,10 +27,10 @@
 
 {% block results %}
   {# show by forms or pages#}
-  <div class="newtextsearch-by-form-container">
+  <div class="newtextsearch-by-category-container">
     <template v-for="(title,keyAsType) in titles">
       <template v-if="filterResultsAccordingType(results,keyAsType).length > 0">
-        <div class="newtextsearch-by-form-group {{ 
+        <div class="newtextsearch-by-category-group {{ 
                 args.nbcols == 3 
                 ? 'col-md-4' 
                 : (
