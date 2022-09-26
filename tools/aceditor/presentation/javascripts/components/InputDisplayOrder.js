@@ -1,7 +1,7 @@
-import InputMultiInput from './InputMultiInput.js'
+import InputDisplayOrderMultiinput from './InputDisplayOrderMultiinput.js'
 
 export default {
-  mixins: [InputMultiInput],
+  mixins: [InputDisplayOrderMultiinput],
   methods: {
     parseNewValues(newValues) {
       if (newValues.displayorder) {

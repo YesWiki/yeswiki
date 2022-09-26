@@ -78,7 +78,6 @@ actions:
       displayorder:
         type: display-order
         btn-label-add: _t(AB_advanced_action_newtextsearch_displayorder_label)
-        hint: _t(AB_advanced_action_newtextsearch_displayorder_hint)
         showif:
           template: ^$|^newtextsearch-by-category\.twig$
         subproperties:
@@ -92,7 +91,7 @@ actions:
               tag: _t(AB_advanced_action_newtextsearch_displayorder_type_tag)
           value:
             label: _t(AB_advanced_action_newtextsearch_displayorder_value)
-            type: text
+            type: value-for-display-order
             default: ""
           title:
             label: _t(AB_advanced_action_newtextsearch_displayorder_title)

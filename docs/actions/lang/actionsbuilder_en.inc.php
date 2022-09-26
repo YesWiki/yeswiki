@@ -315,7 +315,6 @@ return [
     'AB_advanced_action_newtextsearch_displaytext_label' => 'Display found text',
     'AB_advanced_action_newtextsearch_displaytext_only_std' => 'only for template \'standard\'',
     'AB_advanced_action_newtextsearch_displayorder_label' => 'Custom display order',
-    'AB_advanced_action_newtextsearch_displayorder_hint' => 'The value is to fill only for \'tag\' and \'form\'',
     'AB_advanced_action_newtextsearch_limit_label' => 'Maximum number of results',
     'AB_advanced_action_newtextsearch_displayorder_type_pages' => 'Pages',
     'AB_advanced_action_newtextsearch_displayorder_type_logpages' => 'Log pages',
