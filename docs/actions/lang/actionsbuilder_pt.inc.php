@@ -335,6 +335,7 @@ return [
     // 'AB_advanced_action_textsearch_phrase_label_forced' => 'Texte de recherche forcé par défaut',
     // 'AB_advanced_action_textsearch_phrase_hint' => 'Si non vide, la saisie n\'est plus affichée.',
     // 'AB_advanced_action_textsearch_separator_hint' => 'Ce paramètre n\'est utile que pour le template standard.',
+//    'AB_advanced_action_textsearch_size_hint' => 'Ce paramètre est actif en fonction des réglages du thème',
     "AB_advanced_action_textsearch_label_label" => "rótulo a ser exibido na frente da área de entrada",
     "AB_advanced_action_textsearch_size_label" => "largura da área de entrada",
     "AB_advanced_action_textsearch_button_label" => "texto do botão",

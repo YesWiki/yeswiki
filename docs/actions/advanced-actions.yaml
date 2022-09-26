@@ -54,6 +54,8 @@ actions:
         type: number
         default: '40'
         min: 1
+        hint: _t(AB_advanced_action_textsearch_size_hint)
+        advanced: true
       button:
         label: _t(AB_advanced_action_textsearch_button_label)
         type: text
