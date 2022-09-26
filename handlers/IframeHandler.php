@@ -3,6 +3,7 @@
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Controller\SearchAnchorCommons;
 use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\Service\FavoritesManager;
 use YesWiki\Core\YesWikiHandler;
@@ -36,10 +37,12 @@ class IframeHandler extends YesWikiHandler
                 . '>' . "\n";
 
             if ($entryManager->isEntry($this->wiki->GetPageTag())) {
-                $output .= $this->renderBazarEntry();
+                $out = $this->renderBazarEntry();
             } else {
-                $output .= $this->renderWikiPage();
+                $out = $this->renderWikiPage();
             }
+            $this->wiki->services->get(SearchAnchorCommons::class)->addSearchAnchorIfNeeded($out);
+            $output .= $out;
         } else {
             // if no read access to the page
 
@@ -73,7 +76,7 @@ class IframeHandler extends YesWikiHandler
         $output .= '</div><!-- end .container -->' . "\n";
         $this->wiki->AddJavascriptFile('tools/templates/libs/vendor/iframeResizer.contentWindow.min.js');
 
-        
+
         // on recupere les entetes html mais pas ce qu'il y a dans le body
         $header = explode('<body', $this->wiki->Header());
         $output = $header[0].$output;

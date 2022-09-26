@@ -34,6 +34,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\Controller\SearchAnchorCommons;
 
 // V?rification de s?curit?
 if (!defined("WIKINI_VERSION")) {
@@ -99,10 +100,12 @@ if ($HasAccessRead=$this->HasAccess("read")) {
         $entryManager = $this->services->get(EntryManager::class);
         if ($entryManager->isEntry($this->page['tag'])) {
             $entryController = $this->services->get(EntryController::class);
-            echo $entryController->view($this->GetPageTag(), 0);
+            $out = $entryController->view($this->GetPageTag(), 0);
         } else {
-            echo $this->Format($this->page['body'], 'wakka', $this->GetPageTag());
+            $out = $this->Format($this->page['body'], 'wakka', $this->GetPageTag());
         }
+        $this->services->get(SearchAnchorCommons::class)->addSearchAnchorIfNeeded($out);
+        echo $out;
         $this->UnregisterLastInclusion();
     }
 } else {
