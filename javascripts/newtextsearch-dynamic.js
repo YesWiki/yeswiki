@@ -18,6 +18,7 @@ let appParams = {
             },
             textInput: null,
             titles: {},
+            titlesKeys: [],
             doNotShowMoreFor: [],
             ready: false,
         };
@@ -31,7 +32,7 @@ let appParams = {
         },
         isResultOfType: function(result, type){
             return (result.type == 'entry' && result.form == type)
-                || (type.slice(0,4) == 'tag:' && result.tags.includes(type.slice(4)))
+                || (String(type).slice(0,4) == 'tag:' && result.tags.includes(String(type).slice(4)))
                 || result.type == type;
         },
         updateUrl: function(searchText){
@@ -178,6 +179,7 @@ let appParams = {
         });
         this.args = $(isVueJS3 ? this.$el.parentNode : this.$el).data("args");
         this.titles = $(isVueJS3 ? this.$el.parentNode : this.$el).data("titles");
+        this.titlesKeys = $(isVueJS3 ? this.$el.parentNode : this.$el).data("titles-keys");
         if (!this.args.hasOwnProperty('viewtype')){
             this.args.viewtype = "modal";
         }

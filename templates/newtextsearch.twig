@@ -27,7 +27,7 @@
 {{ include_javascript('javascripts/vendor/vue/vue.js') }}
 {{ include_javascript('javascripts/newtextsearch-dynamic.js', false, true) }}
 
-<div class="search-results" data-args="{{ args|json_encode }}" data-initialsearchtext="{{ searchText }}" data-titles="{{formsTitles|json_encode}}">
+<div class="search-results" data-args="{{ args|json_encode }}" data-initialsearchtext="{{ searchText }}" data-titles-keys="{{formsTitles|keys|json_encode}}" data-titles="{{formsTitles|json_encode}}">
   <div v-if="ready && searchText.length > 0" v-show="doMContentLoaded">
     <template v-if="Object.keys(results).length == 0">
       <hr/>
