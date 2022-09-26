@@ -42,7 +42,7 @@ class NewTextSearchAction extends YesWikiAction
             !empty(basename($arg['template'])) &&
             $this->templateEngine->hasTemplate("@core/".basename($arg['template'])))
             ? basename($arg['template'])
-            : self::BY_FORM_TEMPLATE;
+            : self::DEFAULT_TEMPLATE;
         return [
             // label à afficher devant la zone de saisie
             'label' => isset($arg['label']) && is_string($arg['label']) ? $arg['label'] : _t('WHAT_YOU_SEARCH')." : ",
@@ -51,9 +51,9 @@ class NewTextSearchAction extends YesWikiAction
             // texte du bouton
             'button' => !empty($arg['button']) && is_string($arg['button']) ? $arg['button'] : _t('SEARCH'),
             // texte à chercher
-            'phrase' => isset($arg['phrase']) && is_string($arg['phrase']) ? $arg['phrase']: '',
+            'phrase' => isset($arg['phrase']) && is_string($arg['phrase']) ? $arg['phrase'] : '',
             // séparateur entre les éléments trouvés
-            'separator' => isset($arg['separator']) && is_string($arg['separator']) ? htmlspecialchars($arg['separator'], ENT_COMPAT, YW_CHARSET): '',
+            'separator' => isset($arg['separator']) && is_string($arg['separator']) ? htmlspecialchars($arg['separator'], ENT_COMPAT, YW_CHARSET) : '',
             'template' =>$template,
             'displaytext' => $this->formatBoolean($arg, $template == self::DEFAULT_TEMPLATE, 'displaytext'),
             'displayorder' => array_map(function ($item) {
@@ -96,7 +96,7 @@ class NewTextSearchAction extends YesWikiAction
 
         // récupération de la recherche à partir du paramètre 'phrase'
         $searchText = !empty($this->arguments['phrase']) ? htmlspecialchars($this->arguments['phrase'], ENT_COMPAT, YW_CHARSET) : '';
-        
+
         // affichage du formulaire si $this->arguments['phrase'] est vide
         $displayForm = empty($searchText);
 
@@ -142,7 +142,7 @@ class NewTextSearchAction extends YesWikiAction
                                     $needles
                                 );
                             }
-                            
+
                             if (empty($data['preRendered'])) {
                                 $data['preRendered'] = $this->displayNewSearchResult(
                                     $this->wiki->Format($page["body"], 'wakka', $page["tag"]),
@@ -252,7 +252,7 @@ class NewTextSearchAction extends YesWikiAction
         if (!empty($requeteSQLForList)) {
             $requeteSQLForList = ' OR ('.$requeteSQLForList.') ';
         }
-        
+
         // Modification de caractère spéciaux
         $phraseFormatted= str_replace(array('*', '?'), array('%', '_'), $searchText);
         $phraseFormatted = $this->dbService->escape($phraseFormatted);
@@ -295,7 +295,7 @@ class NewTextSearchAction extends YesWikiAction
         }
         return $string_re;
     }
-    
+
     private function addSQLLimit(string &$sql)
     {
         $sql .=  " ORDER BY tag LIMIT {$this->arguments['limit']}";
