@@ -1,4 +1,5 @@
 <?php
+
 // AB stands for ActionsBuilder
 return [
     // Commons
@@ -318,6 +319,10 @@ return [
     'AB_advanced_action_newtextsearch_limit_label' => 'Maximum number of results',
     'AB_advanced_action_newtextsearch_titles_label' => 'Titles',
     'AB_advanced_action_newtextsearch_titles_hint' => 'Associated titles separated by coma (empty = default title) ; ex: "Calendar,,Page"',
+    'AB_advanced_action_newtextsearch_viewtype_label' => 'Display type',
+    'AB_advanced_action_newtextsearch_viewtype_modal' => 'Modalbox',
+    'AB_advanced_action_newtextsearch_viewtype_link' => 'Current Tab',
+    'AB_advanced_action_newtextsearch_viewtype_newtab' => 'New tab',
     'AB_advanced_action_textsearch_onlytags_label' => 'Only tags:',
     'AB_advanced_action_textsearch_onlytags_hint' => 'coma separated',
     'AB_advanced_action_textsearch_nbcols_label' => 'Number of coloumnes',

@@ -72,7 +72,7 @@ class NewTextSearchAction extends YesWikiAction
             }, $this->formatArray($arg['displayorder'] ?? [])),
             'limit' => isset($arg['limit']) && intval($arg['limit']) > 0 ? intval($arg['limit']) : self::DEFAULT_LIMIT,
             'titles' => array_map('strval', $this->formatArray($arg['titles'] ?? [])),
-            'displaytype' => (empty($arg['displaytype']) || !is_string($arg['displaytype']) || !in_array($arg['displaytype'], ['link','modal','newtab'])) ? 'modal' : $arg['displaytype'],
+            'viewtype' => (empty($arg['viewtype']) || !is_string($arg['viewtype']) || !in_array($arg['viewtype'], ['link','modal','newtab'])) ? 'modal' : $arg['viewtype'],
             'onlytags' => array_filter(array_map('trim', array_map('strval', $this->formatArray($arg['onlytags'] ?? [])))),
             'nbcols' => (
                 isset($arg['nbcols']) &&

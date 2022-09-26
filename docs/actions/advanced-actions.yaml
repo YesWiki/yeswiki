@@ -65,14 +65,14 @@ actions:
         options:
           "newtextsearch.twig": _t(AB_advanced_action_newtextsearch_template_standard)
           "newtextsearch-by-form.twig": _t(AB_advanced_action_newtextsearch_template_by_form)
-      displaytype:
-        label: _t(AB_advanced_action_newtextsearch_displaytype_label)
+      viewtype:
+        label: _t(AB_advanced_action_newtextsearch_viewtype_label)
         type: list
         default: "modal"
         options:
-          modal: _t(AB_advanced_action_newtextsearch_displaytype_modal)
-          link: _t(AB_advanced_action_newtextsearch_displaytype_link)
-          newtab: _t(AB_advanced_action_newtextsearch_displaytype_newtab)
+          modal: _t(AB_advanced_action_newtextsearch_viewtype_modal)
+          link: _t(AB_advanced_action_newtextsearch_viewtype_link)
+          newtab: _t(AB_advanced_action_newtextsearch_viewtype_newtab)
       displayorder:
         label: _t(AB_advanced_action_newtextsearch_displayorder_label)
         type: text

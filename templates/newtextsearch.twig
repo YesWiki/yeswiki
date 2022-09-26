@@ -38,10 +38,10 @@
             <h4 style="margin-bottom:0.2rem;">
               {% block link %}
                 <a 
-                  href="{{ url({tag:page.tag,handler:(args.displaytype == "modal" ? 'iframe' : '')}) }}"
-                  {% if args.displaytype == "newtab" %}
+                  href="{{ url({tag:page.tag,handler:(args.viewtype == "modal" ? 'iframe' : '')}) }}"
+                  {% if args.viewtype == "newtab" %}
                     class="new-window"
-                  {% elseif args.displaytype == "modal" %}
+                  {% elseif args.viewtype == "modal" %}
                     class="modalbox"
                     data-iframe="1"
                     data-size="modal-lg"
