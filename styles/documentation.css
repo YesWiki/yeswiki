@@ -112,6 +112,9 @@ nav.app-nav {
     align-items: center;
     padding: 0;
 }
+.app-nav #extensions-links + ul a {
+    text-transform: capitalize;
+}
 .app-nav li {
     height: var(--nav-height);
     align-items: center;
