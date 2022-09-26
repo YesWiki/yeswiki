@@ -1,6 +1,5 @@
 {% if displayForm %}
-  <form action="{{ url({method:""}) }}" method="get">
-    {% if tag is not empty %}<input type="hidden" name="wiki" value="{{ tag }}"/>{% endif %}
+  <form action="{{ url({method:""}) }}" method="get" class="search-form">
     <div class="input-prepend input-append input-group input-group-lg">
       <span class="add-on input-group-addon"><i class="fa fa-search icon-search"></i></span>
       <input 
@@ -25,47 +24,51 @@
   </form>
 {% endif %}
 
-{% block results %}
-  {% if searchText is empty %}
-  {% elseif results is empty %}
-    {{ format('---- --- **' ~ _t('NO_SEARCH_RESULT') ~ '.**')|raw }}
-  {% elseif args.separator is empty %}
-    {{ format('---- --- **' ~ _t('SEARCH_RESULTS') ~ ' [""' ~ searchText ~ '""] :---**')|raw }}
-    <ol>
-      {% for page in results %}
-        {% block liWithNumber %}
-          <li>
-            <h4 style="margin-bottom:0.2rem;">
-              {% block link %}
-                <a 
-                  href="{{ url({tag:page.tag,handler:(args.viewtype == "modal" ? 'iframe' : '')}) }}"
-                  {% if args.viewtype == "newtab" %}
-                    class="new-window"
-                  {% elseif args.viewtype == "modal" %}
-                    class="modalbox"
-                    data-iframe="1"
-                    data-size="modal-lg"
-                  {% endif %}
-                  title="{{ page.title ?? page.tag }}"
-                  >
-                  {{ page.title is not empty ? (page.title|length > 70 ? page.title|slice(0,70) ~ '…': page.title) : page.tag }}
-                </a>
-              {% endblock %}
-            </h4>
-            {% if page.preRendered is not empty %}
-              {{ page.preRendered|raw }}
-            {% endif %}
-          </li>
-        {% endblock %}
-      {% endfor %}
-    </ol>
-  {% else %}
-    <p>{{ _t('SEARCH_RESULT_OF') }} "{{ searchText }}"&nbsp;: 
-      {% set firstDisplayItem = true %}
-      {% for page in results %}
-        {% if not firstDisplayItem %}{{ args.separator }}{% else %}{% set firstDisplayItem = false %}{% endif %}
+{{ include_javascript('javascripts/vendor/vue/vue.js') }}
+{{ include_javascript('javascripts/newtextsearch-dynamic.js', false, true) }}
+
+<div class="search-results" data-args="{{ args|json_encode }}" data-initialsearchtext="{{ searchText }}" data-titles="{{formsTitles|json_encode}}">
+  <div v-if="searchText.length > 0" v-show="doMContentLoaded">
+    <template v-if="Object.keys(results).length == 0" v-show="!updating">
+      <hr/>
+      <b>{{ _t('NO_SEARCH_RESULT') }}.</b>
+    </template>
+    <template v-else-if="args.separator.length == 0">
+      <hr/>
+      <b>{{ _t('SEARCH_RESULTS') }}[{{ "{{searchText}}" }}] :</b><br/>
+      {% block results %}
+        <ol>
+          <template v-for="(page) in results">
+            {% block liWithNumber %}
+              <li>
+                <h4 class="h4-search-results">
+                  {% block link %}
+                    <a 
+                      :href="wiki.url(page.tag+(args.viewtype == 'modal' ? '/iframe' : ''))"
+                      :class="{['new-window']:(args.viewtype == 'newtab'),modalbox:(args.viewtype == 'modal')}"
+                      :data-iframe="args.viewtype == 'modal' ? '1' : false"
+                      :data-size="args.viewtype == 'modal' ? 'modal-lg' : false"
+                      :title="page.title ?? page.tag"
+                      >
+                      {{ "{{ (page.title && page.title.length > 0) ? (page.title.length > 70 ? page.title.slice(0,70) + '…': page.title) : page.tag }}" }}
+                    </a>
+                  {% endblock %}
+                </h4>
+                <span v-if="page.preRendered && page.preRendered.length > 0" v-html="page.preRendered"></span>
+              </li>
+            {% endblock %}
+          </template>
+        </ol>
+      {% endblock %}
+    </template>
+    <p v-else>
+      {{ _t('SEARCH_RESULT_OF') }}"{{ "{{searchText}}" }}"&nbsp;:
+      <template v-for="(page, key, index) in results">
+        <span v-if="index != 0" v-html="args.separator"></span>
         {{ block('link') }}
-      {% endfor %}
+      </template>
     </p>
-  {% endif %}
-{% endblock %}
+    <spinner-loader v-if="updating" class="overlay"></spinner-loader>
+  </div>
+  <spinner-loader v-else-if="updating && doMContentLoaded" :height="400"></spinner-loader>
+</div>

@@ -109,7 +109,7 @@ actions:
       limit:
         label: _t(AB_advanced_action_newtextsearch_limit_label)
         type: number
-        default: 100
+        default: 10
         advanced: true
         min: 1
       onlytags:

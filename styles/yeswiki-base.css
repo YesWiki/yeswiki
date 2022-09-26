@@ -942,3 +942,7 @@ p.search-results {
 p.search-results > i {
   color: silver;
 }
+
+.h4-search-results {
+  margin-bottom: 0.2rem;
+}

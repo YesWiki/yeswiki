@@ -26,16 +26,33 @@
 {% extends "@core/newtextsearch.twig" %}
 
 {% block results %}
-  {% if searchText is empty %}
-  {% elseif results is empty %}
-    {{ format('---- --- **' ~ _t('NO_SEARCH_RESULT') ~ '.**')|raw }}
-  {% else %}
-    {{ format('---- --- **' ~ _t('SEARCH_RESULTS') ~ ' [""' ~ searchText ~ '""] :---**')|raw }}
-    {# show by forms or pages#}
-    <div class="newtextsearch-by-form-container">
-      {% for formId in (args.displayorder is empty ? formsTitles|keys : args.displayorder) %}
-          {{ _self.displayResult(formsTitles[formId],results|filter(e => e.form == formId),args) }}
-      {% endfor %}
-    </div>
-  {% endif %}
+  {# show by forms or pages#}
+  <div class="newtextsearch-by-form-container">
+    <template v-for="(title,keyAsType) in titles">
+      <template v-if="filterResultsAccordingType(results,keyAsType).length > 0">
+        <div class="newtextsearch-by-form-group {{ 
+                args.nbcols == 3 
+                ? 'col-md-4' 
+                : (
+                  args.nbcols == 2 
+                  ? 'col-md-6' 
+                  : (
+                    args.nbcols == 1
+                    ? 'col-md-12' 
+                    : ''
+                  )
+                ) }}">
+              <h3 v-html="title"></h3>
+              
+              <ol>
+                <template v-for="(page) in results">
+                  <template v-if="isResultOfType(page,keyAsType)">
+                      {{ block('liWithNumber') }}
+                  </template>
+                </template>
+              </ol>
+          </div>
+      </template>
+    </template>
+  </div>
 {% endblock %}

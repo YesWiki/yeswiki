@@ -23,6 +23,7 @@ use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\Service\CommentService;
 use YesWiki\Core\Service\ReactionManager;
+use YesWiki\Core\Service\TextSearchService;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiController;
 
@@ -56,6 +57,10 @@ class ApiController extends YesWikiController
         $urlTriples = $this->wiki->Href('', 'api/triples/{resource}', ['property' => 'http://outils-reseaux.org/_vocabulary/type', 'user' => 'username'], false);
         $output .= '<h2>'._t('TRIPLES').'</h2>'."\n".
             '<p><code>GET '.$urlTriples.'</code></p>';
+
+        $url = $this->wiki->Href('', 'api/search/{searchText}', false);
+        $output .= '<h2>'._t('SEARCH').'</h2>'."\n".
+            '<p><code>GET '.$url.'</code></p>';
 
         // TODO use annotations to document the API endpoints
         $extensions = $this->wiki->extensions;
@@ -793,5 +798,28 @@ class ApiController extends YesWikiController
             }
         }
         return compact(['property','username','apiResponse']);
+    }
+
+    /**
+     * @Route("/api/search/{text}",methods={"GET"}, options={"acl":{"public"}})
+     */
+    public function search($text = '')
+    {
+        if (empty($text)) {
+            $results = [];
+        } else {
+            $textSearchService = $this->getService(TextSearchService::class);
+            $results = $textSearchService->getSearch($text, [
+                'displaytext' => filter_input(INPUT_GET, 'displaytext', FILTER_VALIDATE_BOOL),
+                'limitByCat' => filter_input(INPUT_GET, 'limitByCat', FILTER_VALIDATE_BOOL),
+                'limit' => filter_input(INPUT_GET, 'limit', FILTER_VALIDATE_INT, [
+                    'min_range' => 0,
+                    'default' => 0
+                ]),
+                'categories' => filter_input(INPUT_GET, 'categories', FILTER_UNSAFE_RAW),
+                'excludes' => filter_input(INPUT_GET, 'excludes', FILTER_UNSAFE_RAW)
+            ]);
+        }
+        return new ApiResponse($results);
     }
 }
