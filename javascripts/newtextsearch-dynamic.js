@@ -17,7 +17,9 @@ let appParams = {
                 displaytext: ""
             },
             textInput: null,
-            titles: {}
+            titles: {},
+            doNotShowMoreFor: [],
+            ready: false,
         };
     },
     methods: {
@@ -67,6 +69,8 @@ let appParams = {
             let app = this;
             if (type == ''){
                 return (Object.keys(results).length > 0 && Object.keys(results).length % app.args.limit == 0);
+            } else if (app.doNotShowMoreFor.includes(type)) {
+                return false;
             } else {
                 return (app.filterResultsAccordingType(results, type).length % app.args.limit == 0);
             }
@@ -80,7 +84,7 @@ let appParams = {
                 ? Object.values(app.results)
                 : app.filterResultsAccordingType(app.results,type).map((key)=>{return app.results[key];})
             let previousTags = currentResults.map((page)=>page.tag).join(',');
-            app.searchTextFromApi({excludes:previousTags});
+            app.searchTextFromApi({excludes:previousTags,categories:type});
         },
         searchTextFromApi: function(extraParams = {}){
             let app = this;
@@ -94,6 +98,9 @@ let appParams = {
             }
             if (app.args.template == "newtextsearch-by-form.twig"){
                 params.limitByCat = true;
+            }
+            if (app.args.hasOwnProperty('displayorder') && app.args.displayorder.length > 0){
+                params.categories = Array.isArray(app.args.displayorder) ? app.args.displayorder.join(',') : app.args.displayorder;
             }
             for (const key in extraParams) {
                 if (key.length > 0){
@@ -114,12 +121,20 @@ let appParams = {
                             ? Object.values(data)
                             : []
                         );
+                    if (extraParams.hasOwnProperty('categories') &&
+                        !extraParams.categories.includes(',') &&
+                        dataAsArray.length == 0 &&
+                        !app.doNotShowMoreFor.includes(extraParams.categories)
+                        ){
+                        app.doNotShowMoreFor.push(extraParams.categories);
+                    }
                     dataAsArray.forEach((value)=>{
                         resultsAsArray.push(value);
                     });
                     let results = {};
                     resultsAsArray.forEach((value,index)=>{
-                        results[index] = value;
+                        let idx = (value.hasOwnProperty('tag') && value.tag !='') ? value.tag : index; 
+                        results[idx] = value;
                     });
                     app.results = results;
                 },
@@ -128,6 +143,7 @@ let appParams = {
                 },
                 complete: function(){
                     app.updating = false;
+                    app.ready = true;
                 }
             });
         }

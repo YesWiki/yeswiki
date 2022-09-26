@@ -82,22 +82,6 @@ class NewTextSearchAction extends YesWikiAction
         // define titles
         $formsTitles = [];
         if ($this->arguments['template'] == self::BY_FORM_TEMPLATE) {
-            if (!empty($this->arguments['titles'])) {
-                for ($i=0; $i < count($this->arguments['titles']) && $i < count($this->arguments['displayorder']); $i++) {
-                    if (!empty($this->arguments['titles'][$i])) {
-                        $formsTitles[$this->arguments['displayorder'][$i]] = $this->arguments['titles'][$i];
-                    } elseif ($this->arguments['displayorder'][$i] == 'page') {
-                        $formsTitles['page'] = _t("PAGES");
-                    } elseif ($this->arguments['displayorder'][$i] == 'logpage') {
-                        $formsTitles['logpage'] = _t("NEWTEXTSEARCH_LOG_PAGES");
-                    } elseif (strval($this->arguments['displayorder'][$i]) == strval(intval($this->arguments['displayorder'][$i])) && intval($this->arguments['displayorder'][$i]) > 0) {
-                        $form = $this->formManager->getOne(intval($this->arguments['displayorder'][$i]));
-                        if (!empty($form)) {
-                            $formsTitles[$form['bn_id_nature']] = $form['bn_label_nature'] ?? $form['bn_id_nature'];
-                        }
-                    }
-                }
-            }
             if (empty($this->arguments['displayorder'])) {
                 $forms = $this->formManager->getAll();
                 foreach ($forms as $form) {
@@ -105,19 +89,27 @@ class NewTextSearchAction extends YesWikiAction
                         $formsTitles[$form['bn_id_nature']] = $form['bn_label_nature'] ?? $form['bn_id_nature'];
                     }
                 }
-            }
-            if (!isset($formsTitles['page'])) {
                 $formsTitles['page'] = _t("PAGES");
-            }
-            if (in_array('logpage', $this->arguments['displayorder']) && !isset($formsTitles['logpage'])) {
                 $formsTitles['logpage'] = _t("NEWTEXTSEARCH_LOG_PAGES");
-            }
-
-            foreach ($this->arguments['displayorder'] as $type) {
-                if (substr($type, 0, strlen('tag:')) == 'tag:' && strlen($type) > strlen('tag:')) {
-                    if (!isset($formsTitles[$type])) {
-                        $tag = substr($type, strlen('tag:'));
-                        $formsTitles[$type] = $tag;
+            } else {
+                for ($i=0; $i < count($this->arguments['displayorder']); $i++) {
+                    $type = $this->arguments['displayorder'][$i];
+                    if (!empty($this->arguments['titles']) && !empty($this->arguments['titles'][$i])) {
+                        $formsTitles[$type] = $this->arguments['titles'][$i];
+                    } elseif ($type == 'page') {
+                        $formsTitles['page'] = _t("PAGES");
+                    } elseif ($type == 'logpage') {
+                        $formsTitles['logpage'] = _t("NEWTEXTSEARCH_LOG_PAGES");
+                    } elseif (strval($type) == strval(intval($type)) && intval($type) > 0) {
+                        $form = $this->formManager->getOne(intval($type));
+                        if (!empty($form)) {
+                            $formsTitles[$form['bn_id_nature']] = $form['bn_label_nature'] ?? $form['bn_id_nature'];
+                        }
+                    } elseif (substr($type, 0, strlen('tag:')) == 'tag:' && strlen($type) > strlen('tag:')) {
+                        if (!isset($formsTitles[$type])) {
+                            $tag = substr($type, strlen('tag:'));
+                            $formsTitles[$type] = $tag;
+                        }
                     }
                 }
             }
