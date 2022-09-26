@@ -1,4 +1,5 @@
 <?php
+
 // AB stands for ActionsBuilder
 return [
     // Commons
@@ -313,11 +314,16 @@ return [
     'AB_advanced_action_newtextsearch_template_by_form' => 'Classé par formulaire',
     'AB_advanced_action_newtextsearch_displaytext_label' => 'Afficher le texte trouvé',
     'AB_advanced_action_newtextsearch_displaytext_only_std' => 'Seulement pour le template \'standard\'',
-    'AB_advanced_action_newtextsearch_displayorder_label' => 'Restreindre aux formulaires',
-    'AB_advanced_action_newtextsearch_displayorder_hint' => 'Indiquer les numéros de formulaires à afficher séparés par des virgules ex: 2,4,pages (\'pages\' est pour indiquer les pages, \'logpages\' pour les logs, ou le nom d\'un tag)',
+    'AB_advanced_action_newtextsearch_displayorder_label' => 'Ordre d\'affichage personnalisé',
+    'AB_advanced_action_newtextsearch_displayorder_hint' => 'La valeur est à préciser uniquement pour \'tag\' et \'formulaire\'',
     'AB_advanced_action_newtextsearch_limit_label' => 'Nombre de résultats maximum',
-    'AB_advanced_action_newtextsearch_titles_label' => 'Titres',
-    'AB_advanced_action_newtextsearch_titles_hint' => 'Titres associés séparés par des virgules (vide = titre par défaut) ; ex: "Agenda,,Page"',
+    'AB_advanced_action_newtextsearch_displayorder_type_pages' => 'Pages',
+    'AB_advanced_action_newtextsearch_displayorder_type_logpages' => 'Pages de log',
+    'AB_advanced_action_newtextsearch_displayorder_type_form' => 'Formulaire',
+    'AB_advanced_action_newtextsearch_displayorder_type_tag' => 'Tag',
+    'AB_advanced_action_newtextsearch_displayorder_type' => 'Type',
+    'AB_advanced_action_newtextsearch_displayorder_title' => 'Titre',
+    'AB_advanced_action_newtextsearch_displayorder_value' => 'Valeur',
     'AB_advanced_action_newtextsearch_viewtype_label' => 'Type d\'affichage',
     'AB_advanced_action_newtextsearch_viewtype_modal' => 'Fenêtre modale',
     'AB_advanced_action_newtextsearch_viewtype_link' => 'Onglet courant',

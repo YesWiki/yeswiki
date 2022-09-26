@@ -22,11 +22,12 @@ import AceEditorWrapper from './components/aceditor-wrapper.js'
 import FlyingActionBar from './components/flying-action-bar.js'
 import InputHint from './components/InputHint.js'
 import AddonIcon from './components/AddonIcon.js'
+import InputDisplayOrder from './components/InputDisplayOrder.js'
 
 var components = { InputPageList, InputText, InputCheckbox, InputList, InputIcon, InputColor, 
   InputFormField, InputHidden, InputDivider,
   InputFacette, InputReaction, InputIconMapping, InputColorMapping, InputGeo, InputClass, InputCorrespondance,
-  InputColumnsWidth,
+  InputColumnsWidth, InputDisplayOrder,
   WikiCodeInput, PreviewAction };
 if (actionsBuilderData.hasOwnProperty('extraComponents')){
   for (const name in actionsBuilderData.extraComponents) {

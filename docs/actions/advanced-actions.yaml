@@ -74,19 +74,28 @@ actions:
           link: _t(AB_advanced_action_newtextsearch_viewtype_link)
           newtab: _t(AB_advanced_action_newtextsearch_viewtype_newtab)
       displayorder:
-        label: _t(AB_advanced_action_newtextsearch_displayorder_label)
-        type: text
+        type: display-order
+        btn-label-add: _t(AB_advanced_action_newtextsearch_displayorder_label)
         hint: _t(AB_advanced_action_newtextsearch_displayorder_hint)
         showif:
           template: ^$|^newtextsearch-by-form\.twig$
-        default: ""
-      titles:
-        label: _t(AB_advanced_action_newtextsearch_titles_label)
-        type: text
-        hint: _t(AB_advanced_action_newtextsearch_titles_hint)
-        showif:
-          template: ^$|^newtextsearch-by-form\.twig$
-        default: ""
+        subproperties:
+          type:
+            label: _t(AB_advanced_action_newtextsearch_displayorder_type)
+            type: list
+            options:
+              pages: _t(AB_advanced_action_newtextsearch_displayorder_type_pages)
+              logpages: _t(AB_advanced_action_newtextsearch_displayorder_type_logpages)
+              form: _t(AB_advanced_action_newtextsearch_displayorder_type_form)
+              tag: _t(AB_advanced_action_newtextsearch_displayorder_type_tag)
+          value:
+            label: _t(AB_advanced_action_newtextsearch_displayorder_value)
+            type: text
+            default: ""
+          title:
+            label: _t(AB_advanced_action_newtextsearch_displayorder_title)
+            type: text
+            default: ""
       phrase:
         label:  _t(AB_advanced_action_textsearch_phrase_label)
         type: text
