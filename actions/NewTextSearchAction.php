@@ -279,7 +279,11 @@ class NewTextSearchAction extends YesWikiAction
                 if (count($tab)>1) {
                     $avant = strip_tags(mb_substr($tab[0], -$cc, $cc));
                     $apres = strip_tags(mb_substr($tab[2], 0, $cc));
-                    $string_re .= '<p style="margin-top:0;margin-left:1rem;"><i style="color:silver;">[…]</i>' . $avant . '<b>' . $tab[1] . '</b>' . $apres . '<i style="color:silver;">[…]</i></p> ';
+                    $string_re .= $this->render('@core/_newtextsearch-display_search-text.twig', [
+                        'before' => $avant,
+                        'content' => $tab[1],
+                        'after' => $apres,
+                    ]);
                 }
             }
         }
@@ -289,7 +293,11 @@ class NewTextSearchAction extends YesWikiAction
                 if (count($tab[$i])>1) {
                     $avant[$i] = strip_tags(mb_substr($tab[$i][0], -$cc, $cc));
                     $apres[$i] = strip_tags(mb_substr($tab[$i][2], 0, $cc));
-                    $string_re .= '<p style="margin-top:0;margin-left:1rem;"><i style="color:silver;">[…]</i>' . $avant[$i] . '<b>' . $tab[$i][1] . '</b>' . $apres[$i] . '<i style="color:silver;">[…]</i></p> ';
+                    $string_re .= $this->render('@core/_newtextsearch-display_search-text.twig', [
+                        'before' => $avant[$i],
+                        'content' => $tab[$i][1],
+                        'after' => $apres[$i],
+                    ]);
                 }
             }
         }

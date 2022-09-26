@@ -933,3 +933,12 @@ div.newtextsearch-by-form-container > .newtextsearch-by-form-group{
 div.newtextsearch-by-form-container > .newtextsearch-by-form-group a {
   overflow-x: hidden;
 }
+
+p.search-results {
+  margin-top: 0 ;
+  margin-left: 1rem ;
+  word-wrap: break-word;
+}
+p.search-results > i {
+  color: silver;
+}
