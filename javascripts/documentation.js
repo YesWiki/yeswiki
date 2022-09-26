@@ -142,4 +142,4 @@ function initCustomNavMenu() {
       const nav = document.querySelector('nav > ul')
       nav.insertBefore(li, nav.children[0])
     }
-
+}
