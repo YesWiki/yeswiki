@@ -24,7 +24,7 @@ class SearchManager
      *                             'isCheckBox' => true,
      *                             ]
      */
-    public function searchWithLists(string $phrase, array $forms = []):array
+    public function searchWithLists(string $phrase, array $forms = []): array
     {
         $needles = [];
         // catch "exact text" and rest separated by space
@@ -40,7 +40,7 @@ class SearchManager
                     }
                 }
             }
-            
+
             // find needle in lists
             // search in list values
             foreach ($forms as $form) {
@@ -57,7 +57,7 @@ class SearchManager
         return $needles;
     }
 
-    
+
     /**
      * search needles in values (options) of EnumField and return array [['propertyName' => ...,'key'=>$key,'isCheckbox' => true],]
      * @param array $needles
@@ -95,7 +95,7 @@ class SearchManager
      * @param string $needle
      * @return string
      */
-    private function prepareNeedleForRegexp(string $needle): string
+    public function prepareNeedleForRegexp(string $needle): string
     {
         // be careful to ( and )
         $needle = str_replace(['(',')','/'], ['\\(','\\)','\\/'], $needle);
