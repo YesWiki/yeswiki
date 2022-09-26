@@ -59,6 +59,17 @@
             {% endblock %}
           </template>
         </ol>
+        {% block seeMore %}
+          <div
+            v-if="showSeeMoreButton(results,typeof keyAsType == 'undefined' ? '' : keyAsType)"
+            class="btn btn-info btn-xs"
+            :data-type="typeof keyAsType == 'undefined' ? '' : keyAsType"
+            @click="moreResults"
+            :disabled="updating"
+            >
+            {{ _t('SEE_MORE') }}
+          </div>
+        {% endblock %}
       {% endblock %}
     </template>
     <p v-else>

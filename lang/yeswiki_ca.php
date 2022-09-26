@@ -1,4 +1,5 @@
 <?php
+
 /*vim: set expandtab tabstop=4 shiftwidth=4: */
 // +------------------------------------------------------------------------------------------------------+
 // | PHP versió 5                                                                                         |
@@ -60,7 +61,7 @@ return [
     'HOMEPAGE_WIKINAME' => 'PaginaPrincipal',
     'MY_YESWIKI_SITE' => 'El meu lloc YesWiki',
     // 'FILE_WRITE_PROTECTED' => 'le fichier de configuration est protégé en écriture',
-    
+
     // ACLs
     // 'DENY_READ' => 'Vous n\'êtes pas autorisé à lire cette page',
     // 'DENY_WRITE' => 'Vous n\'êtes pas autorisé à écrire sur cette page',
@@ -142,7 +143,7 @@ return [
     // 'FORM_RETURN' => 'Retour au formulaire',
     // 'NO_RECENT_COMMENTS' => 'Pas de commentaires récents',
     // 'NO_SELECTED_COMMENTS_TO_ERASE' => 'Aucun commentaire n\'a été sélectionné pour étre effacé',
-    
+
     // actions/footer.php ignorada, perquè els patrons d'eines han donat un error
     // actions/header.php ignorada, perquè els patrons d'eines han donat un error
 
@@ -620,6 +621,9 @@ return [
 
     // templates/multidelete-macro.twig
     // 'NUMBER_OF_ELEMENTS' => 'Nombre d\'éléments sélectionnés',
+
+    // templates/newtextsearch.twig
+    // 'SEE_MORE' => 'Voir plus',
 
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',

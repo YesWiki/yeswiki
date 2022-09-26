@@ -1,4 +1,5 @@
 <?php
+
 /*vim: set expandtab tabstop=4 shiftwidth=4: */
 // +------------------------------------------------------------------------------------------------------+
 // | PHP version 5                                                                                        |
@@ -412,7 +413,7 @@ return [
     'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Verifique que servidor tenha os direitos de acesso em gravaçao sobre este arquivo. Se por algum motivo você não pode fazer isso, você deve copiar o seguinte num arquivo e transferi-lo por ftp no servidor',
     'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'diretamente no diretório YesWiki. Depois de ter feito isso, o site YesWiki deve funcionar corretamente',
     'TRY_AGAIN' => 'tentar de novo',
-    
+
     // API
     // 'USERS' => 'Utilisateurs',
     // 'GROUPS' => 'Groupes',
@@ -619,6 +620,9 @@ return [
 
     // templates/multidelete-macro.twig
     // 'NUMBER_OF_ELEMENTS' => 'Nombre d\'éléments sélectionnés',
+
+    // templates/newtextsearch.twig
+    // 'SEE_MORE' => 'Voir plus',
 
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',

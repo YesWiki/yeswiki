@@ -17,7 +17,7 @@ let appParams = {
                 displaytext: ""
             },
             textInput: null,
-            titles: {},
+            titles: {}
         };
     },
     methods: {
@@ -62,6 +62,74 @@ let appParams = {
                     );
             }
             history.pushState({ filter: true }, null, newUrl);
+        },
+        showSeeMoreButton: function(results, type){
+            let app = this;
+            if (type == ''){
+                return (Object.keys(results).length > 0 && Object.keys(results).length % app.args.limit == 0);
+            } else {
+                return (app.filterResultsAccordingType(results, type).length % app.args.limit == 0);
+            }
+        },
+        moreResults: function(event) {
+            let app = this;
+            event.preventDefault();
+            let button = event.target;
+            let type = button.dataset.type;
+            let currentResults = (type == '')
+                ? Object.values(app.results)
+                : app.filterResultsAccordingType(app.results,type).map((key)=>{return app.results[key];})
+            let previousTags = currentResults.map((page)=>page.tag).join(',');
+            app.searchTextFromApi({excludes:previousTags});
+        },
+        searchTextFromApi: function(extraParams = {}){
+            let app = this;
+            app.updating = true;
+            let params = {};
+            if (app.args.displaytext){
+                params.displaytext = true;
+            }
+            if (app.args.limit > 0){
+                params.limit = app.args.limit;
+            }
+            if (app.args.template == "newtextsearch-by-form.twig"){
+                params.limitByCat = true;
+            }
+            for (const key in extraParams) {
+                if (key.length > 0){
+                    params[key] = extraParams[key];
+                }
+            }
+            $.ajax({
+                method: "GET",
+                url: wiki.url(`api/search/${app.searchText}`),
+                data: params,
+                success: function(data){
+                    // append data in results (which has to be cleaned before)
+                    let resultsAsArray = Object.values(app.results);
+                    let dataAsArray =
+                        (Array.isArray(data))
+                        ? data
+                        : ((typeof data == "object")
+                            ? Object.values(data)
+                            : []
+                        );
+                    dataAsArray.forEach((value)=>{
+                        resultsAsArray.push(value);
+                    });
+                    let results = {};
+                    resultsAsArray.forEach((value,index)=>{
+                        results[index] = value;
+                    });
+                    app.results = results;
+                },
+                error: function(xhr,status,error){
+                    // do nothing
+                },
+                complete: function(){
+                    app.updating = false;
+                }
+            });
         }
     },
     watch: {
@@ -73,39 +141,9 @@ let appParams = {
                     this.results = {};
                     this.updating = false;
                 } else {
-                    app.updating = true;
-                    let params = {};
-                    if (app.args.displaytext){
-                        params.displaytext = true;
-                    }
-                    if (app.args.limit > 0){
-                        params.limit = app.args.limit;
-                    }
-                    if (app.args.template == "newtextsearch-by-form.twig"){
-                        params.limitByCat = true;
-                    }
-                    $.ajax({
-                        method: "GET",
-                        url: wiki.url(`api/search/${app.searchText}`),
-                        data: params,
-                        success: function(data){
-                            if (Array.isArray(data)){
-                                let results = {};
-                                data.forEach((value,index)=>{
-                                    results[index] = value;
-                                });
-                                app.results = results;
-                            } else {
-                                app.results = data;
-                            }
-                        },
-                        error: function(xhr,status,error){
-                            app.results = {};
-                        },
-                        complete: function(){
-                            app.updating = false;
-                        }
-                    });
+                    // reset results
+                    app.results = {};
+                    app.searchTextFromApi();
                 }
             } else {
                 this.updating = false;

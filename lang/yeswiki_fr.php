@@ -88,7 +88,7 @@ return [
     'STYLE_SHEET' => 'Feuille de style',
     'CHANGESTYLE_ERROR' => 'Le nom \'{name}\' n\'est pas conforme à la règle de nommage imposée par l\'action ChangeStyle.'.
         'Reportez-vous à la documentation de cette action pour plus de précisions',
-        
+
    // actions/NexTextSearchAction.php
    'NEWTEXTSEARCH_LOG_PAGES' => 'Log pages',
 
@@ -631,6 +631,9 @@ return [
 
     // templates/multidelete-macro.twig
     'NUMBER_OF_ELEMENTS' => 'Nombre d\'éléments sélectionnés',
+
+    // templates/newtextsearch.twig
+    'SEE_MORE' => 'Voir plus',
 
     // Comments
     'COMMENT_EMPTY_NOT_SAVED' => 'Commentaire vide, pas de sauvegarde.',
