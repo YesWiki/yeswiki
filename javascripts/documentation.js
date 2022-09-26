@@ -100,10 +100,10 @@ function insertAfter(referenceNode, newNode) {
 }
 
 // Handle browser back navigation, not handled by hook.doneEach
-window.addEventListener('popstate', function() {
+window.addEventListener('hashchange', function() {
   setTimeout(function() {
     initCustomNavMenu();
-  }, 100)
+  }, 0)
 })
 
 // Improve navbar menu by adding mobile icons and auto fixing the "back to my wiki" url
@@ -112,33 +112,33 @@ function initCustomNavMenu() {
   if (document.querySelector("nav .search-icon")) return
 
   // search icon
-    let searchIcon = document.createElement('div')
-    searchIcon.innerHTML = "<i class='gg-search'></i>"
-    searchIcon.classList = "search-icon"
-    searchIcon.addEventListener('click', function() {
-      document.querySelector('aside').classList.toggle('open')
-      document.querySelector('nav > ul').classList.remove('open')
-      document.querySelector('.menu-icon').classList.remove("open")
-    })
-    document.querySelector('nav').appendChild(searchIcon)
+  let searchIcon = document.createElement('div')
+  searchIcon.innerHTML = "<i class='gg-search'></i>"
+  searchIcon.classList = "search-icon"
+  searchIcon.addEventListener('click', function() {
+    document.querySelector('aside').classList.toggle('open')
+    document.querySelector('nav > ul').classList.remove('open')
+    document.querySelector('.menu-icon').classList.remove("open")
+  })
+  document.querySelector('nav').appendChild(searchIcon)
 
-    // menu icon
-    let menuIcon = document.createElement('div')
-    menuIcon.innerHTML = "<i class='gg-menu'></i><i class='gg-close'></i>"
-    menuIcon.classList = "menu-icon"
-    menuIcon.addEventListener('click', function() {
-      document.querySelector('nav > ul').classList.toggle('open')
-      this.classList.toggle("open")
-    })
-    document.querySelector('nav').appendChild(menuIcon)
+  // menu icon
+  let menuIcon = document.createElement('div')
+  menuIcon.innerHTML = "<i class='gg-menu'></i><i class='gg-close'></i>"
+  menuIcon.classList = "menu-icon"
+  menuIcon.addEventListener('click', function() {
+    document.querySelector('nav > ul').classList.toggle('open')
+    this.classList.toggle("open")
+  })
+  document.querySelector('nav').appendChild(menuIcon)
 
-    // Back button url correct
-    let backBtn = document.querySelector("#back")
-    if (backBtn) {
-      backBtn.href = baseUrl
-      const backBtnClone = backBtn.cloneNode(true)
-      const li = document.createElement('li')
-      li.appendChild(backBtnClone)
+  // Back button url correct
+  let backBtn = document.querySelector("#back")
+  if (backBtn) {
+    backBtn.href = baseUrl
+    const backBtnClone = backBtn.cloneNode(true)
+    const li = document.createElement('li')
+    li.appendChild(backBtnClone)
       const nav = document.querySelector('nav > ul')
       nav.insertBefore(li, nav.children[0])
     }
