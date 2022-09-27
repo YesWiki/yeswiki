@@ -41,14 +41,17 @@ window.$docsify = {
         html = html.replace(/<iframe(.*) src=([^\s]*)/g, '<iframe$1 class="lazyload" data-src=$2')
 
         // Adds footer
-        const url = `https://github.com/YesWiki/yeswiki/edit/doryphore-dev/${vm.route.file}`
-        const footer = `
-          <hr/>
-          <footer>
-            <a href="${url}" target="_blank">${i18n.DOC_EDIT_THIS_PAGE_ON_GITHUB}</a>
-          </footer>`
+        if (vm.route.file.match(/^docs\/.*$/)){
+          const url = `https://github.com/YesWiki/yeswiki/edit/doryphore-dev/${vm.route.file}`
+          const footer = `
+            <hr/>
+            <footer>
+              <a href="${url}" target="_blank">${i18n.DOC_EDIT_THIS_PAGE_ON_GITHUB}</a>
+            </footer>`
+          html = html + footer;
+        }
 
-        return html + footer;
+        return html;
       });
 
       hook.doneEach(function() {
@@ -139,7 +142,24 @@ function initCustomNavMenu() {
     const backBtnClone = backBtn.cloneNode(true)
     const li = document.createElement('li')
     li.appendChild(backBtnClone)
-      const nav = document.querySelector('nav > ul')
-      nav.insertBefore(li, nav.children[0])
+    const nav = document.querySelector('nav > ul')
+    nav.insertBefore(li, nav.children[0])
+  }
+
+  // extensions menu
+  const element = document.getElementById("extensions-links")
+  if (element) {
+    if (extensions.length > 0) {
+      element.removeAttribute("href")
+      let list = document.createElement('ul');
+      let html = ''
+      extensions.forEach((ext) => {
+        html += `<li><a href="#/${ext.docPath}">${ext.name}</a></li>`
+      });
+      list.innerHTML = html
+      element.parentNode.appendChild(list)
+    } else {
+      element.parentNode.parentNode.removeChild(element.parentNode)
     }
+  }
 }

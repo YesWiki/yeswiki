@@ -8,6 +8,7 @@
 * [Administration](/docs/users/fr/admin.md)
 * [Installation](/docs/users/fr/webmaster.md)
 * [Développement](/docs/users/fr/dev.md)
+* [Extensions](/ ':id=extensions-links')
 * 🔧
   * [Comment contribuer à cette doc](/docs/users/README.md)
   * [Liste des choses à faire sur la doc](/docs/users/TODO.md)

@@ -12,9 +12,10 @@
   <div id="app"></div>
 
   <script>
-    var locale = "{{ locale }}";
-    var baseUrl = "{{ config.base_url }}";
-    var i18n = {{ i18n|raw }};
+    var locale = {{ locale|json_encode|raw }};
+    var baseUrl = {{ config.base_url|json_encode|raw }};
+    var i18n = {{ i18n|json_encode|raw }};
+    var extensions = {{ extensions|json_encode|raw }};
   </script>
 
   <script src="javascripts/vendor/docsify/docsify.min.js"></script>

@@ -13,10 +13,23 @@ class DocumentationController extends YesWikiController
      */
     public function show()
     {
-      return new Response($this->render('@core/documentation.twig', [
-        'config' => $this->wiki->config,
-        'i18n' => json_encode($GLOBALS['translations_js']),
-        'locale' => $GLOBALS['prefered_language']
-      ]));
+        return new Response($this->render('@core/documentation.twig', [
+          'config' => $this->wiki->config,
+          'i18n' => $GLOBALS['translations_js'],
+          'locale' => $GLOBALS['prefered_language'],
+          'extensions' => $this->getExtensionsWithDocs()
+        ]));
+    }
+
+    private function getExtensionsWithDocs(): array
+    {
+        $extensions = [];
+        foreach ($this->wiki->extensions as $extName => $extPath) {
+            $localizedPath = "{$extPath}docs/{$GLOBALS['prefered_language']}/README.md";
+            $path = "{$extPath}docs/README.md";
+            $docPath = glob($localizedPath)[0] ?? glob($path)[0] ?? null;
+            if ($docPath) $extensions[] = ["name" => $extName, "docPath" => $docPath];
+        }
+        return $extensions;
     }
 }
