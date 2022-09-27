@@ -49,11 +49,10 @@ body {
     background-color: #f8f8f8;
 }
 .markdown-section pre {
-    background-color: #34495e;
+    background-color: #f8f8f8;
     border-radius: 5px;
 }
 .markdown-section pre>code {
-    color: white;
     background-color: transparent;
 }
 .markdown-section pre .docsify-copy-code-button {
@@ -70,7 +69,7 @@ body {
     margin-top: -1.7rem;
 }
 .markdown-section iframe {
-    border: 5px solid #34495e;
+    border: 5px solid #f8f8f8;
     border-radius: 3px;
 }
 
