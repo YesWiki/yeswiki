@@ -87,9 +87,11 @@ return [
     "because it is not possible to launch console commands on this serversur le serveur.\n".
     " - Check that 'exec', 'proc_open', 'proc_terminate' ... commands can be executed for php\n".
     " - It is possible to pass in direct mode by typing 'false' for parameter 'call_archive_async' (panel 'Security')",
-    "ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE" => "ot possible to start backup \n".
+    "ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE" => "Not possible to start backup \n".
         "because backups folder is reachable on the internet.\n".
         "Check that the folder indicated in option 'archive[privatePath]' contains needed files '.htaccess' or is configured with Nginx or Apache to deny access !",
+    "ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE" => "Not possible to start backup \n".
+        "There is not enough free space available for a new backup.",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Changes done by this revision",

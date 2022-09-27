@@ -90,6 +90,8 @@ return [
     "ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE" => "Lancement de la sauvegarde impossible \n".
         "Car le dossier de sauvegarde est accessible sur internet.\n".
         "Vérifier que le dossier indiqué dans l'option 'archive[privatePath]' contient bien les fichiers '.htaccess' nécessaires ou est bien configuré avec Nginx ou Apache pour empêcher l'accès !",
+    "ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE" => "Lancement de la sauvegarde impossible \n".
+        "Il n'y a plus assez d'espace disque disponible pour une nouvelle sauvegarde.",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Modifs apportées par cette version",
