@@ -125,7 +125,14 @@ class ArchiveService
         }
 
         $this->writeOutput($output, "=== Checking free space ===", true, $outputFile);
-        $this->assertEnoughtSpace();
+        try {
+            $this->assertEnoughtSpace();
+        } catch (Throwable $th) {
+            $this->writeOutput($output, "There is not enough free space.", true, $outputFile);
+            $this->writeOutput($output, "=> {$th->getMessage()}", true, $outputFile);
+            $this->writeOutput($output, "STOP", true, $outputFile);
+            throw $th;
+        }
         $this->writeOutput($output, "There is enough free space.", true, $outputFile);
 
         if ($this->checkIfNeedStop($inputFile)) {
@@ -251,6 +258,7 @@ class ArchiveService
         $hibernated = false;
         $privatePathWritable = true;
         $notAvailableOnTheInternet = true;
+        $enoughSpace = true;
         $canExec = false;
         $archiveParams = $this->getArchiveParams();
         $callAsync = (isset($archiveParams['call_archive_async']) && is_bool($archiveParams['call_archive_async']))
@@ -313,8 +321,14 @@ class ArchiveService
                 $canExec = true;
             }
         }
-        $canArchive = (!$archiving && !$hibernated && $privatePathWritable && $notAvailableOnTheInternet && $canExec);
-        return compact(['canArchive','archiving','hibernated','privatePathWritable','canExec','callAsync','notAvailableOnTheInternet']);
+        // free space
+        try {
+            $this->assertEnoughtSpace();
+        } catch (Throwable $th) {
+            $enoughSpace = false;
+        }
+        $canArchive = (!$archiving && !$hibernated && $privatePathWritable && $notAvailableOnTheInternet && $canExec && $enoughSpace);
+        return compact(['canArchive','archiving','hibernated','privatePathWritable','canExec','callAsync','notAvailableOnTheInternet','enoughSpace']);
     }
 
     /**
