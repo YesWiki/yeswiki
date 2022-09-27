@@ -77,14 +77,19 @@ return [
         "du paramètre `wiki_status` dans la partie `Sécurité`",
     "ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE" => "Lancement de la sauvegarde impossible \n" .
         "Car le dossier de sauvegarde n'est pas accessible en écriture.\n".
-        " - Vérifier la validité du paramètre 'archive[privatePath]', dans la page 'GererConfig' (rubrique 'Sécutité')\n".
-        " - si ce paramètre est vide, le remplir avec un chemin non accessible sur le internet\n".
-        " - Vérifier que le dossier est bien accessible pour 'php' (si 'archive[privatePath]' est vide, c'est le dossier '/tmp' qui est utilisé)",
+        " - Vérifier la validité du paramètre 'archive[privatePath]', dans la page 'GererConfig' (rubrique 'Sécurité')\n".
+        " - si ce paramètre est vide, le remplir avec un chemin non accessible sur le internet (un chemin relatif ne commence pas par /)\n".
+        " - Vérifier que le dossier est bien accessible pour 'php' (si 'archive[privatePath]' est vide, c'est le dossier 'private/backups/' qui est utilisé)\n".
+        " - il est possible d'utiliser le dossier temporaire du système en tapant '%TMP'",
     "ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE" => "Mise à jour forcée impossible",
     "ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING" => "Mise à jour lancée (veuillez patienter)",
     "ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC" => "Lancement de la sauvegarde impossible \n" .
     "Car il n'est pas possible de lancer des commandes console sur le serveur.\n".
-    " - Vérifier que les commandes 'exec', 'proc_open', 'proc_terminate' ... sont autorisées pour php",
+    " - Vérifier que les commandes 'exec', 'proc_open', 'proc_terminate' ... sont autorisées pour php\n".
+    " - Vous pouvez éventuellement passer en mode direct en mettant 'false' pour le paramètre 'call_archive_async' (rubrique 'Sécurité')",
+    "ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE" => "Lancement de la sauvegarde impossible \n".
+        "Car le dossier de sauvegarde est accessible sur internet.\n".
+        "Vérifier que le dossier indiqué dans l'option 'archive[privatePath]' contient bien les fichiers '.htaccess' nécessaires ou est bien configuré avec Nginx ou Apache pour empêcher l'accès !",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Modifs apportées par cette version",
@@ -101,7 +106,7 @@ return [
     'FAVORITES_REMOVE' => 'Retirer des favoris',
     'FAVORITES_ADDED' => 'Favori ajouté',
     'FAVORITES_REMOVED' => 'Favori supprimé',
-    
+
     // javascripts/multidelete.js
     "MULTIDELETE_END" => "Suppressions réalisées",
     "MULTIDELETE_ERROR" => "L'élément {itemId} n'a pas été supprimé ! {error}",
