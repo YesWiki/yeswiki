@@ -1,78 +1,46 @@
 Prise en main
 ============
 
-Pour décrouvrir les fonctionalités de base d'un wiki
-
-* Quelques trucs si l'informatique vous fait peur Pour moi, page inutile
-
-Ajouter et modifier des contenus
-
-* Éditer une page (premiers)
-* Mettre en forme le texte (premiers)
-* Créer une nouvelle page (premiers)
-* Inclure une page dans une autre (premiers)
-* Créer un lien (premiers)
-* Joindre un fichier : image, son ... (premiers)
-* Restaurer l'ancienne version d'une page (premiers)
-
-Agencer du contenu
-
-* Éditer et modifier un menu (premiers)
-* Composition d'une page (premiers)
-* Modifier le menu du haut (premiers)
-* Modifier le bandeau (pageheader) (premiers)
+> **Pour décrouvrir les fonctionalités de base d'un wiki**
+> * Quelques trucs si l'informatique vous fait peur Pour moi, page inutile
+>
+> **Ajouter et modifier des contenus**
+>
+> * Éditer une page (premiers)
+> * Mettre en forme le texte (premiers)
+> * Créer une nouvelle page (premiers)
+> * Inclure une page dans une autre (premiers)
+> * Créer un lien (premiers)
+> * Joindre un fichier : image, son ... (premiers)
+> * Restaurer l'ancienne version d'une page (premiers)
+>
+> **Agencer du contenu**
+>
+> * Éditer et modifier un menu (premiers)
+> * Composition d'une page (premiers)
+> * Modifier le menu du haut (premiers)
+> * Modifier le bandeau (pageheader) (premiers)
 
 Editer une page
 ---------------
 
-> TODO
+Si une page est ouverte à l'édition, vous trouverez un bouton en bas de page pour l'éditer
 
-Mettre en forme le texte
-------------------------
+### Syntaxe YesWiki
 
-En mode édition, le langage YesWiki nécessite de connaître quelques petites astuces pour mettre en forme le texte d'une page. En voici quelques unes de base.
-A noter : La plupart est accessible directement dans la barre d'édition !
+!> TODO: juste un mot d'explication sur l'usage de la balise et le besoin de virer la balise quand on en a plus besoin
 
-![image editer_une_page_barre.png](images/editer_une_page_barre.png)
+### Mise en forme
 
-!> TODO
+La plupart des mises en forme standard (gras, encadré, saut de ligne...) sont accessible via les boutons de l'éditeur. Voici quelques mise en formes supplémentaires
 
-juste un mot d'explication sur l**'usage de la balise**
-et le besoin de virer la balise quand on en a plus besoin
-prévoir quelques exemples avec de la syntaxe
-**écrire en gras**
+!> TODO: reprendre tous les exemples de l'aide de YesWiki ici (ReglesDeFormatage), et modifier cette page pour qqu'elle pointe vers cette nouvelle doc
 
-dire qu'il y a un bouton d'aide qui est accessible en mode édition  ?
-pour par exemple insérer un tableau / du html / 
-mettre le lien vers la page de doc du wiki
-donc : 
- - dans l'éditeur, il y a un bouton qui renvoie 
-  - vers la doc générale vers la partie syntaxe
-  - la page d'aide sur mesure des users de ce wiki
+!> TODO: est ce que la partie composant buttons + mise en forme ne pourrait pas venir ici?
 
-### Accentuation
+#### Listes
 
-**\*\*Gras\*\***
-_//Italique//_
-\_\_Souligné\_\_
-@@Barré@@
-
-### Titres
-
-```
-======Titre 1======
-=====Titre 2=====
-====Titre 3====
-===Titre 4===
-==Titre 5==
-```
-
-### Insérer une ligne
-
-\----
-
-### Listes
-
+```yeswiki
  - Liste à puce niveau 1
  - Puce niveau 1
    - Puce niveau 2
@@ -80,26 +48,30 @@ _//Italique//_
  - Puce niveau 1
 
  1) Liste énumérée
- 1) Liste énumérée
- 1) Liste énumérée
+ 2) Liste énumérée
+ 3) Liste énumérée
+```
 
-Remarque : en mode édition, il faut sauter une ligne après une liste à puce pour garder la coloration syntaxique... (mais pas pour les listes énumérées)_
+> Remarque : en mode édition, il faut parfois sauter une ligne après une liste à puce pour garder la coloration syntaxique...
 
-### Tableaux
+#### Tableaux
 
-\[|
-| \*\*Nom\*\* | \*\*prénom\*\* | \*\*Couleurs préférées\*\* |
-| Lagaffe     | Gaston     | jaune     |
-| Lapalice    | Jean    | vert   |
-|\]
+```yeswiki preview
+[|
+|**Nom**  |**prénom** |**Couleurs préférées** |
+|Lagaffe  |Gaston     |jaune                  |
+|Lapalice |Jean       |vert                   |
+|]
+```
 
-### Écrire en html
+#### Écrire du code HTML
 
-si vous déposez du html dans la page wiki,
-il faut l'entourer de ""  ""
-pour qu'il soit interprété
+Si vous déposez du HTML dans la page wiki, il faut l'entourer de `""` pour qu'il soit interprété
 
-!> Voir section dédiée?
+```yeswiki
+""<b>Ceci est du HTML</b>""
+```
+
 
 
 Créer une page / insérer un lien
@@ -107,9 +79,9 @@ Créer une page / insérer un lien
 
 !> **Règle de nommage** : le nom des pages YesWiki ne doivent contenir ni espaces ni caractères spéciaux. Pour les rendre lisible, le mieux est d'utiliser des tirets `nom-de-ma-page`, ou des majuscules `NomDeLaPage` (c'est ce qu'on appelle un `ChatMot`)
 
-Deux méthodes sont à votre disposition pour créer une page
+**Deux méthodes sont à votre disposition pour créer une page**
 
-1. Lors de l'édition d'une page, cliquez le l'icone pour ajouter un lien. Dans la fenêtre qui s'ouvre pouvez pouvez également créer une page
+1. Lors de l'édition d'une page, cliquez le l'icone pour ajouter un lien. Dans la fenêtre qui s'ouvre, mettez le nom de votre nouvelle page yeswiki, elle sera crée automatiquement
 2. Allez directement vers l'URL de la page que vous souhaitez créer (exemple : https://yeswiki.net/?MaNouvellePage). Comme elle n'existe pas encore on vous proposera de la créer
 
 > Astuce 1: une fois ma nouvelle page créée, je peux enlever le lien qui y mène sans que la page disparaisse pour autant. Je peux retrouver mes pages dans la roue crantée en haut à droite > Tableau de bord. Une bonne manière de cacher des pages ;-)
@@ -123,37 +95,16 @@ Dans YesWiki chaque modification d'une page est sauvegardée dans un **historiqu
 
 **Pour y accéder** il suffit de cliquer sur le lien en bas de page nommé : "Dernière édition : _jour_._mois_._année_"
 
-![image historique_bas_page.png](images/Historique_bas_page.png)
-
-**Attention** : cet accès est possible pour les personnes qui ont les droits en écriture sur la page concernée, c'est-à-dire tout le monde par défaut, mais les administrateurs du site peuvent faire un autre choix.
-
-*   le "handler" révisions est ajouté dans l'url
-
-![image historique_revision_page.png](images/Historique_revision_page.png)
-
-*   et une fenêtre comme celle-ci s'affiche :
-
-![image Historique_page.png](images/Historique_page.png)
-
-
-**Vous y trouverez dans la partie haute**
-
-*   la représentation des 30 dernières modifications effectuées sur la page affichées avec, en survol avec la souris, le numéro, la date et l'heure de la modification
-*   en cliquant sur un rond : en plus des éléments précédents, l'adresse IP depuis laquelle la modification a été effectuée (par exemple : 78.246.209.114), ou, si la modification a été effectuée depuis un compte connecté du site, le nom du compte (par exemple : WikiAdmin)
-*   un bouton vert "Restaurer cette version" permettant d'enregistrer la page choisie
-
-**Dans la partie en dessous, en fonction de l'onglet choisi**
-
-*   premier onglet : l'aperçu de la version choisie (par défaut la dernière ou "version actuelle")
-*   deuxième onglet : les modification apportées par cette version, en rouge pour ce qui a été retiré et en vert pour ce qui a été ajouté
-*   troisième onglet : la comparaison avec la version actuelle, avec les mêmes codes couleur
-*   **A noter** : en cochant la case "Afficher le code Wiki" vous aurez les mêmes éléments, vus en mode édition !
+> Attention: cet accès est possible pour les personnes qui ont les droits en écriture sur la page concernée, c'est-à-dire tout le monde par défaut, mais les administrateurs du site peuvent faire un autre choix.
 
 
 Insérer un média (images/pdf/...)
 ----------------------------------
 
-!> TODO Ne pas décrire tout ce qui est accessible avec l'interface. Décrire comment faire pour utiliser une image d'une page dans une autre
+!> TODO Ne pas décrire tout ce qui est accessible avec l'interface.
+!> Décrire la gestion des différents formats
+!> Décrire comment faire pour utiliser une image d'une page dans une autre
+
 
 En plus du texte, on peut vouloir ajouter des images, des documents à télécharger, voire des vidéos ou des fichiers audio. Avec YesWiki ceci est très facile ! Voici comment faire.
 
@@ -162,54 +113,50 @@ Dans la page en mode édition, cliquer sur le bouton "Fichier" permet de choisir
 
 En fonction du type de fichier à insérer, YesWiki propose des interfaces différentes, mais le principe reste le même.
 
-> Astuce: pour les fichiers vidéos, ou interactif type pad -> décrire comment intégrer, ou mettre lien vers une aure section dédiée
+> Astuce: pour les fichiers vidéos, ou interactif type pad -> mettre lien vers une aure section dédiée
 
 
 Insérer des éléments d'un autre site (iframe)
 ---------------------------------------
 
-> Une **iframe** est un petit bout de code qui permet à une page d'embarquer (encapsuler, intégrer... "_embed_" en anglais) des contenus et fonctionalités issus d'autres sites internet. 
+> Une **iframe** est un petit bout de code qui permet à une page d'embarquer (encapsuler, intégrer... _embed_ en anglais) des contenus et fonctionalités issus d'autres sites internet.
 
 Vous pouvez ainsi profiter des fonctionnalités de cet autre site au sein même de votre wiki : lire une vidéo, écrire dans un pad et bien d'autre... Voici comment faire :
 
 
-### 1. Trouver le code iframe permettant l'intégration
+### Trouver le code iframe permettant l'intégration
 
-Un site propose souvent d'afficher ses contenus ailleurs que "chez lui", en fournissant un morceau de code html (appelé iframe), qui se trouve dans les options "_Partager_" > "_Intégrer_" ou encore "_iframe_".  
-Ca peut ressembler à :[
+On le trouve souvent dans les options _Partager_, _Intégrer_ ou encore _iframe_. Il ressemble à quelque chose comme ça:
 
-![image partager.png](images/partager.png)
+```
+<iframe src="https://unsite.com/iframe" ...></iframe>
+```
 
-![image partageryoutube.png](images/partageryoutube.png)
-
-![image integrer.png](images/integrer.png)
-
-Le code iframe que vous allez trouver ressemblera à ça :
-
-```<iframe src="https://unsite.com/iframe" ...></iframe>```
-
-### 2. Collez ce code dans ma page wiki
+### Collez ce code dans la page wiki
 
 Il faudra juste penser à ajouter avant et après **deux guillemets**.
 
-`""coller ici le code HTML fourni par le site tiers""`
+```
+""<iframe src="https://unsite.com/iframe" ...></iframe>""
+```
 
-```""<iframe src="https://unsite.com/iframe" ...></iframe>""```
+### Bricoler le code
 
-### 3. Bricoler le code
+Dans le bout de code à copier-coller, plusieurs paramètres peuvent être ajoutés/modifiés :
 
-Le code iframe fourni peut être personnalisé, notamment pour les dimensions de la fenêtre intégrée.
-
-Dans le bout de code à copier-coller, les paramètres `width` (largeur) et `height` (hauteur) permettent de **spécifier la taille de l'iframe** et ils sont renseignés en pixels ou en pourcentage.
+Les paramètres `width` (largeur) et `height` (hauteur) permettent de **spécifier la taille de l'iframe** et ils sont renseignés en pixels ou en pourcentage.
 
 ```
 <iframe src="..." width="100%" height="500"></iframe>
 ```
 
-> Pour que la hauteur se calcule automatiquement, ajoutez `class="auto-resize"` à votre code : `<iframe src="..." class="auto-resize" ...></iframe>`
+Pour que la **hauteur se calcule automatiquement**, utilisez le paramètre `class`
 
+```
+<iframe src="..." class="auto-resize"></iframe>
+```
 
-Le paramètre `frameborder` permet d'activer ou non une bordure noire (`1` pour activer, `0` pour désactiver)
+Le paramètre `frameborder` permet de **gérer la bordure** noire du cadre (`1` pour activer, `0` pour désactiver)
 
 ```
 <iframe src="..." frameboder="0"></iframe>
@@ -218,6 +165,8 @@ Le paramètre `frameborder` permet d'activer ou non une bordure noire (`1` pour 
 
 Les composants
 ---------------
+
+!> TODO: L'idée était de juste lister les composants disponibles pour qu'on puisse les trouver en cherchant dans le moteur de recherche de la doc. A voir si on garde ça ou si plutôt on réserve cette section a des descriptions de composants avancés (y'aurait quoi par exemple?)
 
 Les composants sont des éléments que l'on peut rajouter dans une page wiki.
 Utiliser les composants ajoutera un code -parfois compliqué-  dans votre page. En cliquant sur ce code, un crayon apparaîtra dans la marge. En cliquant dessus, vous activerez une interface qui codera à votre place afin de modifier simplement chacune des fonctionnalités de votre composant.
@@ -239,11 +188,11 @@ Mise en forme propose 6 possibilités :
 
 ### Syndication / Flux RSS
 
-Syndication / flux RSS permet d'afficher des informations arrivant de sites internet externe, permet de créer une page de veille.
+Permet d'afficher des informations arrivant de sites internet externe, permet de créer une page de veille.
 
 ### Gestion des tags
 
-Gestion des tags : dans chaque page (en bas en mode édition) ou fiche d’un formulaire, vous pouvez ajouter des mots clefs ou tags. Gestion des tags vous propose 3 actions :
+Dans chaque page (en bas en mode édition) ou fiche d’un formulaire, vous pouvez ajouter des mots clefs ou tags. Gestion des tags vous propose 3 actions :
 
  * Créer une liste des pages par tag
  * Nuage de tags
@@ -387,9 +336,13 @@ Cette page vous décrit YesWiki et sa communauté.
 
 #### Gestion du site
 
+!> TODO ajouter lien vers section dans la page admin
+
 Cette page gestion du site est très importante. Elle donne accès à de nombreuses fonctionnalités d'administration :
 
 ![image rubriques_gestiondusite.png](images/rubriques_gestiondusite.png)
+
+[Voir la page dédiée](admin.md)
 
 #### Tableau de bord
 
@@ -403,6 +356,6 @@ C'est le tableau de bord configuré par défaut mais vous pouvez le personnalise
 
 #### Base de données
 
-C'est ici que l'on configure Bazar : Bazar est une extension importante de YesWiki qui lui ajoute des fonctionnalités de création et de gestion de bases de données (formulaires).<br>
+C'est ici que l'on configure Bazar : Bazar est une extension importante de YesWiki qui lui ajoute des fonctionnalités de création et de gestion de bases de données (formulaires).
 
-Il faut être identifié comme administrateur pour créer ou modifier un formulaire Bazar.
+Il faut être identifié comme administrateur pour créer ou modifier un formulaire Bazar. [Voir la page dédiée](bazar.md)
