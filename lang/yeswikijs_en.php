@@ -77,14 +77,19 @@ return [
         "of `wiki_status` parameter in `Security` part",
     "ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE" => "Not possible to start backup \n" .
         "bacuse the backups' folder is not writable.\n".
-        " - Check the validity of 'archive[privatePath]' parameter in page 'GererConfig' (part 'Sécurity')\n".
-        " - if this parameter is empty, fill it with a path not reachable grom the internet\n".
-        " - Check that this path is writable for 'php' (if 'archive[privatePath]' is empty, '/tmp' folder is used)",
+        " - Check the validity of 'archive[privatePath]' parameter in page 'GererConfig' (part 'Security')\n".
+        " - if this parameter is empty, fill it with a path not reachable grom the internet (a relative path does not begin by /)\n".
+        " - Check that this path is writable for 'php' (if 'archive[privatePath]' is empty, 'private/backups/' folder is used)\n".
+        " - it is possible to use system temporary folder by typing '%TMP'",
     "ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE" => "Not possible to force the update",
     "ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING" => "Update started (please wait)",
     "ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC" => "Not possible to start backup \n" .
     "because it is not possible to launch console commands on this serversur le serveur.\n".
-    " - Check that 'exec', 'proc_open', 'proc_terminate' ... commands can be executed for php",
+    " - Check that 'exec', 'proc_open', 'proc_terminate' ... commands can be executed for php\n".
+    " - It is possible to pass in direct mode by typing 'false' for parameter 'call_archive_async' (panel 'Security')",
+    "ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE" => "ot possible to start backup \n".
+        "because backups folder is reachable on the internet.\n".
+        "Check that the folder indicated in option 'archive[privatePath]' contains needed files '.htaccess' or is configured with Nginx or Apache to deny access !",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Changes done by this revision",

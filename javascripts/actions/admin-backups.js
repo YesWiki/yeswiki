@@ -218,6 +218,9 @@ let appParams = {
                     } else if (data.hasOwnProperty('canExec') && !data.canExec) {
                         archiveApp.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC').replace(/\n/g,'<br>'));
                         return ;
+                    } else if (data.hasOwnProperty('notAvailableOnTheInternet') && !data.notAvailableOnTheInternet) {
+                        archiveApp.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE').replace(/\n/g,'<br>'));
+                        return ;
                     }
                     archiveApp.endStartingUpdateError();
                 },
