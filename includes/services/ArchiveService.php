@@ -290,11 +290,10 @@ class ArchiveService
             if (!$this->canWriteFolder($privatePath)) {
                 $privatePathWritable = false;
             } else {
-                $i = 0;
-                do {
-                    $tmpFileName = "$privatePath/tmp$i.txt";
-                    $i++;
-                } while (file_exists($tmpFileName));
+                $tmpFileName = "$privatePath/tmp.txt";
+                if (file_exists($tmpFileName)) {
+                    unlink($tmpFileName);
+                }
                 try {
                     file_put_contents($tmpFileName, "test");
                     if (!file_exists($tmpFileName)) {
@@ -315,7 +314,7 @@ class ArchiveService
             }
         }
 
-        // test c
+        // test console
         try {
             $results = $this->consoleService->startConsoleSync('helloworld:hello', []);
             if (!empty($results)) {
@@ -901,6 +900,7 @@ class ArchiveService
             ? realpath($localPath)
             : realpath($basePath . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $localPath));
         $isLocal = (substr($realLocalPath, 0, strlen($basePath)) == $basePath);
+
         if (!$isLocal) {
             return true;
         }
@@ -909,22 +909,16 @@ class ArchiveService
         }
         $url = preg_replace("/\??$/", "", $this->params->get('base_url'));
         $url .= str_replace(DIRECTORY_SEPARATOR, "/", "$localPath/$testFileName");
-
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HEADER, 1);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3); // connect timeout in seconds
-        curl_setopt($ch, CURLOPT_TIMEOUT, 5); // total timeout in seconds
-        $output = curl_exec($ch);
-        $error = curl_errno($ch);
-        curl_close($ch);
-
-        if ($error) {
-            return false;
-        }
-
-        return preg_match("/(?:^|\n)".preg_quote("HTTP/1.1 ", "/")."([0-9]{3}) /", $output, $match) && preg_match("/^[45][0-9]{2}$/", $match[1]);
+        $ct = stream_context_set_default([
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+            ],
+            'http' => [
+                'method' => 'HEAD'
+            ]
+        ]);
+        return !strstr(get_headers($url, true, $ct)[0], '200 OK') ;
     }
 
     /**
