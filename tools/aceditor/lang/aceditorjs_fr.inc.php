@@ -22,6 +22,7 @@ return [
     'ACEDITOR_LINK_PROMPT'      => 'Entrez l\'adresse URL',
     'ACEDITOR_LIST'             => 'Liste à puce',
     'ACEDITOR_LINK_TITLE'              => 'Créer un lien / Créer une page',
+    'ACEDITOR_LINK_ERROR'              => 'Le nom de la page ne doit pas contenir de caractères spéciaux autre que - ou _ . Les URL doivent commencer par https://',
     'ACEDITOR_LINK_PAGE_NAME'          => 'Nom de la page ou URL externe',
     'ACEDITOR_LINK_HINT_NEW_PAGE_NAME' => "Si la page n'existe pas, elle sera créée.",
     'ACEDITOR_LINK_TEXT'               => 'Texte affiché',
