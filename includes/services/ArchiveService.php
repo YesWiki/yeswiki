@@ -245,6 +245,9 @@ class ArchiveService
                 $this->cleanUID($uid, $privatePath);
             }
         }
+        if ($result && !$status['canArchive'] && $status['archiving']) {
+            $this->unsetWikiStatus();
+        }
         return $result;
     }
 
@@ -312,14 +315,18 @@ class ArchiveService
             }
         }
 
-        // test console
-        $results = $this->consoleService->startConsoleSync('helloworld:hello', []);
-        if (!empty($results)) {
-            $result = $results[array_key_first($results)];
-            if (empty($result['stderr']) && !empty($result['stdout']) &&
-                preg_match("/^Hello !(?:\r|\n)+/", $result['stdout'])) {
-                $canExec = true;
+        // test c
+        try {
+            $results = $this->consoleService->startConsoleSync('helloworld:hello', []);
+            if (!empty($results)) {
+                $result = $results[array_key_first($results)];
+                if (empty($result['stderr']) && !empty($result['stdout']) &&
+                    preg_match("/^Hello !(?:\r|\n)+/", $result['stdout'])) {
+                    $canExec = true;
+                }
             }
+        } catch (Throwable $th) {
+            $canExec = false;
         }
         // free space
         try {
@@ -327,7 +334,7 @@ class ArchiveService
         } catch (Throwable $th) {
             $enoughSpace = false;
         }
-        $canArchive = (!$archiving && !$hibernated && $privatePathWritable && $notAvailableOnTheInternet && $canExec && $enoughSpace);
+        $canArchive = (!$archiving && !$hibernated && $privatePathWritable && $notAvailableOnTheInternet && (!$callAsync || $canExec) && $enoughSpace);
         return compact(['canArchive','archiving','hibernated','privatePathWritable','canExec','callAsync','notAvailableOnTheInternet','enoughSpace']);
     }
 
