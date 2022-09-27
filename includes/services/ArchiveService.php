@@ -826,8 +826,6 @@ class ArchiveService
         if ($folderPath != "%TMP") {
             if (is_dir($folderPath) &&
             $this->canWriteFolder($folderPath)) {
-                // TODO check if the private folder is included in root path
-                // then check if this private folder is not accessible from internet
                 return preg_replace("/(\/|\\\\)$/", "", $folderPath);
             } else {
                 throw new Exception("Not writable ".self::PARAMS_KEY_IN_WAKKA."[".self::KEY_FOR_PRIVATE_FOLDER."]");
