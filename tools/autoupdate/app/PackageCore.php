@@ -1,9 +1,10 @@
 <?php
+
 namespace AutoUpdate;
 
 class PackageCore extends Package
 {
-    const CORE_NAME = 'yeswiki';
+    public const CORE_NAME = 'yeswiki';
     public const IGNORED_FILES = [
         '.',
         '..',
@@ -13,9 +14,10 @@ class PackageCore extends Package
         'cache',
         'themes',
         'robots.txt',
-        'wakka.config.php'
+        'wakka.config.php',
+        'private'
     ];
-    
+
     public const FILES_TO_ADD_TO_IGNORED_FOLDERS = [
         'files/README.md',
         'files/LovelaceAda_lovelace.png',
