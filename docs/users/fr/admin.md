@@ -339,11 +339,11 @@ La liste des thèmes par défaut est modifiable, cela relève d'une tache d'admi
 *   Passer en mode édition (double clic ou "éditer la page")
 *   En bas de votre page, apparait un gros bouton Thème graphique :
 
-![image BontonTheme.png (2.9kB)](https://yeswiki.net/files/DocumentationChangerThemeGraphique_BontonTheme_20121228163059_20121228163059.png)
+![image BontonTheme.png (2.9kB)](images/DocumentationChangerThemeGraphique_BontonTheme_20121228163059_20121228163059.png)
 
 *  En cliquant dessus, la fenêtre modale suivante apparaîtra alors :
 
-![image ChangerTheme.png (0.1MB)](https://yeswiki.net/files/DocumentationChangerThemeGraphique_ChangerTheme_20121228163705_20121228163705.png)
+![image ChangerTheme.png (0.1MB)](images/DocumentationChangerThemeGraphique_ChangerTheme_20121228163705_20121228163705.png)
 
 *   Choisissez chaque élément de ces menus déroulants
 *   cliquez sur Appliquer puis

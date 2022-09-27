@@ -57,7 +57,7 @@ Nous avons donc trois phases :
 Notez qu'il faut être connecté avec un compte administrateur du wiki pour pouvoir utiliser certaines fonctionnalités _Bazar_.  
   
 L'écran qui se présente ressemble à ceci (voir ci dessous).  
-[![image bazar.png (0.1MB)](https://quincaillere.org/formationgarecentrale2022/cache/DocBazarAcces_bazar_vignette_780_544_20220211165136_20220211155202.png)](images/DocBazarAcces_bazar_20220211165136_20220211155202.png)  
+[![image bazar.png (0.1MB)](images/DocBazarAcces_bazar_vignette_780_544_20220211165136_20220211155202.png)](https://quincaillere.org/formationgarecentrale2022/cache/DocBazarAcces_bazar_vignette_780_544_20220211165136_20220211155202.png)  
 
 L'onglet **Formulaires** se présente sous la forme d'un tableau dans lequel chaque formulaire présent sur le wiki occupe une ligne.  
 Pour chaque ligne, et donc chaque formulaire, on a donc les informations suivantes (les nombres en rouge sur la capture d'écran correspondent aux numéros dans la liste ci-après).  
@@ -104,7 +104,7 @@ Cette zone permet de saisir des explications pour comprendre l'objectif du formu
   
 Depuis la version _Doryphore_ de _YesWiki_, la gestion des champs du formulaire se fait au moyen d'un constructeur graphique. Celui-ci permet d'ajouter, modifier, supprimer ou réorganiser des champs dans le formulaire.  
 
-![image formulaire_constructeur.png (66.3kB)](https://quincaillere.org/formationgarecentrale2022/cache/DocBazarFormulaireModification_formulaire_constructeur_vignette_780_544_20220204190135_20220204180220.png)
+![image formulaire_constructeur.png (66.3kB)](images/DocBazarFormulaireModification_formulaire_constructeur_vignette_780_544_20220204190135_20220204180220.png)
 
 Ce constructeur graphique se présente en deux parties. Les numéros sur l'image renvoient aux explications ci-dessous.  
 **Dans la partie gauche de l'écran**, sont montrés les champs (ou questions) déjà présents avec :  
@@ -445,14 +445,14 @@ Il est possible :
 *   cliquer sur le bouton **importer**
 *   choisir parmi les formulaires celui dans lequel on souhaite importer des données
 
-![image importbazzar1.png (34.6kB)](https://yeswiki.net/cache/BazarImportExport_importbazzar1_vignette_780_544_20160405102322_20160405102344.png)
+![image importbazzar1.png (34.6kB)](images/BazarImportExport_importbazzar1_vignette_780_544_20160405102322_20160405102344.png)
 
 
 *   le wiki fournit alors diverses infos sur la structure du fichier nécessaire pour permettre un bonne importation
 *   le wiki fournit un fichier type vide au format CSV comme exemple (on peut le remplir et se servir de celui-ci ensuite)
 
 
-![image importbazarnext1.png (55.1kB)](https://yeswiki.net/cache/BazarImportExport_importbazarnext1_vignette_780_544_20160405102909_20160405103228.png)
+![image importbazarnext1.png (55.1kB)](images/BazarImportExport_importbazarnext1_vignette_780_544_20160405102909_20160405103228.png)
 
 *   une fois que l'on a préparé son fichier d'importation selon les consignes données
 *   on choisit son fichier à importer
@@ -468,11 +468,11 @@ Il est possible :
 *   choisir parmi les formulaires celui que l'on souhaite exporter
 
 
-![image bazarexport1.png (34.6kB)](https://yeswiki.net/cache/BazarImportExport_bazarexport1_vignette_780_544_20160405103248_20160405103507.png)
+![image bazarexport1.png (34.6kB)](images/BazarImportExport_bazarexport1_vignette_780_544_20160405103248_20160405103507.png)
 
 *   le wiki génère un fichier CSV à télécharger
 
-![image bazarexportnext1.png (26.6kB)](https://yeswiki.net/cache/BazarImportExport_bazarexportnext1_vignette_780_544_20160405103525_20160405103651.png)
+![image bazarexportnext1.png (26.6kB)](images/BazarImportExport_bazarexportnext1_vignette_780_544_20160405103525_20160405103651.png)
 
 **Quoi faire avec mon fichier CVS ?** Un CSV peut s'ouvrir avec Excel, Open Office, Google Doc ... en précisant simplement que le caractère d'espacement est une virgule.
 
