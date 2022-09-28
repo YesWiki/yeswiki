@@ -1050,7 +1050,7 @@ class ArchiveService
                 "{$tablePrefix}referrers", // tables
             ], // args
             "", // subfolder
-            ('\\' === DIRECTORY_SEPARATOR ? ["c:\\xampp\\mysql\\bin\\"] : ["/usr/bin/"]), // extraDirsWhereSearch
+            ('\\' === DIRECTORY_SEPARATOR ? ["c:\\xampp\\mysql\\bin\\"] : ["/usr/bin/","/usr/local/bin/"]), // extraDirsWhereSearch
             60 // timeoutInSec
         );
 
