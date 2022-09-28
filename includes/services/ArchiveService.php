@@ -1014,6 +1014,7 @@ class ArchiveService
      * @param string $privatePath
      * @return string $sqlContent
      * @throws Exception
+     * @throws Throwable
      */
     protected function getSQLContent(string $privatePath): string
     {
@@ -1032,27 +1033,34 @@ class ArchiveService
         $password = $this->params->get('mysql_password');
         $this->assertParamIsString('mysql_password', $password);
 
-        $resultFile = tempnam($privatePath, 'tmp_sql_file_to_delete');
-        $results = $this->consoleService->findAndStartExecutableSync(
-            "mysqldump",
-            [
-                "--host=$hostname",
-                "--user=$username",
-                "--password=$password",
-                "--result-file=".realpath($resultFile),
-                $databasename, // databasename
-                "{$tablePrefix}users", // tables
-                "{$tablePrefix}pages", // tables
-                "{$tablePrefix}nature", // tables
-                "{$tablePrefix}triples", // tables
-                "{$tablePrefix}acls", // tables
-                "{$tablePrefix}links", // tables
-                "{$tablePrefix}referrers", // tables
-            ], // args
-            "", // subfolder
-            ('\\' === DIRECTORY_SEPARATOR ? ["c:\\xampp\\mysql\\bin\\"] : ["/usr/bin/","/usr/local/bin/"]), // extraDirsWhereSearch
-            60 // timeoutInSec
-        );
+        $resultFile = tempnam($privatePath, self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP);
+        try {
+            $results = $this->consoleService->findAndStartExecutableSync(
+                "mysqldump",
+                [
+                    "--host=$hostname",
+                    "--user=$username",
+                    "--password=$password",
+                    "--result-file=".realpath($resultFile),
+                    $databasename, // databasename
+                    "{$tablePrefix}users", // tables
+                    "{$tablePrefix}pages", // tables
+                    "{$tablePrefix}nature", // tables
+                    "{$tablePrefix}triples", // tables
+                    "{$tablePrefix}acls", // tables
+                    "{$tablePrefix}links", // tables
+                    "{$tablePrefix}referrers", // tables
+                ], // args
+                "", // subfolder
+                ('\\' === DIRECTORY_SEPARATOR ? ["c:\\xampp\\mysql\\bin\\"] : ["/usr/bin/","/usr/local/bin/"]), // extraDirsWhereSearch
+                60 // timeoutInSec
+            );
+        } catch (Throwable $th) {
+            if (file_exists($resultFile)) {
+                unlink($resultFile);
+            }
+            throw $th;
+        }
 
         // get content
         if (file_exists($resultFile)) {
