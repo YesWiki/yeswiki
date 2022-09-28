@@ -160,7 +160,7 @@ class ArchiveService
                 return "";
             }
         } else {
-            $dataFiles = [];
+            $dataFiles = ['preparedExcludedFiles' => [],'extrafiles' => [], 'excludedfiles' => [], 'onlyChildren' =>[]];
         }
 
         if ($this->checkIfNeedStop($inputFile)) {
@@ -1034,7 +1034,7 @@ class ArchiveService
 
         $resultFile = tempnam($privatePath, 'tmp_sql_file_to_delete');
         $results = $this->consoleService->findAndStartExecutableSync(
-            "mysqldump",
+            "/usr/bin/mysqldump",
             [
                 "--host=$hostname",
                 "--user=$username",
