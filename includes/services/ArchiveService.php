@@ -1034,7 +1034,7 @@ class ArchiveService
 
         $resultFile = tempnam($privatePath, 'tmp_sql_file_to_delete');
         $results = $this->consoleService->findAndStartExecutableSync(
-            "/usr/bin/mysqldump",
+            "mysqldump",
             [
                 "--host=$hostname",
                 "--user=$username",
@@ -1050,7 +1050,7 @@ class ArchiveService
                 "{$tablePrefix}referrers", // tables
             ], // args
             "", // subfolder
-            ('\\' === DIRECTORY_SEPARATOR ? ["c:\\xampp\\mysql\\bin\\"] : []), // extraDirsWhereSearch
+            ('\\' === DIRECTORY_SEPARATOR ? ["c:\\xampp\\mysql\\bin\\"] : ["/usr/bin/"]), // extraDirsWhereSearch
             60 // timeoutInSec
         );
 
