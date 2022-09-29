@@ -263,6 +263,7 @@ class ArchiveService
         $notAvailableOnTheInternet = true;
         $enoughSpace = true;
         $canExec = false;
+        $dB = false;
         $archiveParams = $this->getArchiveParams();
         $callAsync = (isset($archiveParams['call_archive_async']) && is_bool($archiveParams['call_archive_async']))
             ? $archiveParams['call_archive_async']
@@ -327,14 +328,19 @@ class ArchiveService
         } catch (Throwable $th) {
             $canExec = false;
         }
+
+        // test db
+        if ($canExec) {
+            $dB = $this->testDb();
+        }
         // free space
         try {
             $this->assertEnoughtSpace();
         } catch (Throwable $th) {
             $enoughSpace = false;
         }
-        $canArchive = (!$archiving && !$hibernated && $privatePathWritable && $notAvailableOnTheInternet && (!$callAsync || $canExec) && $enoughSpace);
-        return compact(['canArchive','archiving','hibernated','privatePathWritable','canExec','callAsync','notAvailableOnTheInternet','enoughSpace']);
+        $canArchive = (!$archiving && !$hibernated && $privatePathWritable && $notAvailableOnTheInternet && (!$callAsync || $canExec) && $dB && $enoughSpace);
+        return compact(['canArchive','archiving','hibernated','privatePathWritable','canExec','callAsync','notAvailableOnTheInternet','enoughSpace','dB']);
     }
 
     /**
@@ -1009,6 +1015,28 @@ class ArchiveService
         $this->configurationService->write($config);
     }
 
+
+    /**
+     * test db export connection
+     * @param string $privatePath
+     * @return bool
+     */
+    protected function testDb(): bool
+    {
+        try {
+            $results = $this->consoleService->startConsoleSync('core:exportdb', [
+                "--test"
+            ]);
+            if (empty($results) || !is_array($results)) {
+                return false;
+            }
+            $result = $results[array_key_first($results)];
+            return (empty($result['stderr']) && !empty($result['stdout']) && preg_match("/^OK\s*$/i", $result['stdout']));
+        } catch (Throwable $th) {
+        }
+        return false;
+    }
+
     /**
      * extract sql content
      * @param string $privatePath
@@ -1018,43 +1046,17 @@ class ArchiveService
      */
     protected function getSQLContent(string $privatePath): string
     {
-        $hostname = $this->params->get('mysql_host');
-        $this->assertParamIsNotEmptyString('mysql_host', $hostname);
-
-        $databasename = $this->params->get('mysql_database');
-        $this->assertParamIsNotEmptyString('mysql_database', $databasename);
-
-        $tablePrefix = $this->params->get('table_prefix');
-        $this->assertParamIsNotEmptyString('table_prefix', $tablePrefix);
-
-        $username = $this->params->get('mysql_user');
-        $this->assertParamIsString('mysql_user', $username);
-
-        $password = $this->params->get('mysql_password');
-        $this->assertParamIsString('mysql_password', $password);
-
-        $resultFile = tempnam($privatePath, self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP);
+        $resultFile = $privatePath.self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP;
         try {
-            $results = $this->consoleService->findAndStartExecutableSync(
-                "mysqldump",
-                [
-                    "--host=$hostname",
-                    "--user=$username",
-                    "--password=$password",
-                    "--result-file=".realpath($resultFile),
-                    $databasename, // databasename
-                    "{$tablePrefix}users", // tables
-                    "{$tablePrefix}pages", // tables
-                    "{$tablePrefix}nature", // tables
-                    "{$tablePrefix}triples", // tables
-                    "{$tablePrefix}acls", // tables
-                    "{$tablePrefix}links", // tables
-                    "{$tablePrefix}referrers", // tables
-                ], // args
-                "", // subfolder
-                ('\\' === DIRECTORY_SEPARATOR ? ["c:\\xampp\\mysql\\bin\\"] : ["/usr/bin/","/usr/local/bin/"]), // extraDirsWhereSearch
-                60 // timeoutInSec
-            );
+            $results = $this->consoleService->startConsoleSync('core:exportdb', [
+                "--filepath=$resultFile"
+            ]);
+            if (!empty($results)) {
+                $result = $results[array_key_first($results)];
+                if (!empty($result['stderr']) || empty($result['stdout'])) {
+                    throw new Exception("SQL not exported");
+                }
+            }
         } catch (Throwable $th) {
             if (file_exists($resultFile)) {
                 unlink($resultFile);
@@ -1070,38 +1072,7 @@ class ArchiveService
         if (empty($sqlContent)) {
             throw new Exception("SQL not exported");
         }
-        if (!empty($results)) {
-            // it could be occur an error
-            // throw new Exception("Error when exporting SQL :".implode(',',array_map(function ($result){return $result['stderr'] ?? '';},$results)));
-        }
         return $sqlContent;
-    }
-
-    /**
-     * assert param is a not empty string
-     * @param string $name
-     * @param mixed $param
-     * @throws Exception
-     */
-    protected function assertParamIsNotEmptyString(string $name, $param)
-    {
-        if (empty($param)) {
-            throw new Exception("'$name' should not be empty in 'wakka.config.php'");
-        }
-        $this->assertParamIsString($name, $param);
-    }
-
-    /**
-     * assert param is a string
-     * @param string $name
-     * @param mixed $param
-     * @throws Exception
-     */
-    protected function assertParamIsString(string $name, $param)
-    {
-        if (!is_string($param)) {
-            throw new Exception("'$name' should be a string in 'wakka.config.php'");
-        }
     }
 
     /**

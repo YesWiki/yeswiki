@@ -224,6 +224,9 @@ let appParams = {
                     } else if (data.hasOwnProperty('enoughSpace') && !data.enoughSpace) {
                         archiveApp.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE').replace(/\n/g,'<br>'));
                         return ;
+                    } else if (data.hasOwnProperty('dB') && !data.dB) {
+                        archiveApp.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_NOT_DB').replace(/\n/g,'<br>'));
+                        return ;
                     }
                     archiveApp.endStartingUpdateError();
                 },

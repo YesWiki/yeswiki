@@ -92,6 +92,8 @@ return [
         "Check that the folder indicated in option 'archive[privatePath]' contains needed files '.htaccess' or is configured with Nginx or Apache to deny access !",
     "ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE" => "Not possible to start backup \n".
         "There is not enough free space available for a new backup.",
+    "ADMIN_BACKUPS_START_BACKUP_NOT_DB" => "Not possible to start backup \n".
+        "Database export program ('mysqldump') was not found.",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Changes done by this revision",
