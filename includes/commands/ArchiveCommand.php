@@ -40,7 +40,7 @@ class ArchiveCommand extends Command
             ->addOption('nosavedatabase', 'f', InputOption::VALUE_NONE, 'Do not save database')
             ->addOption('extrafiles', 'e', InputOption::VALUE_REQUIRED, 'Extrafiles, path relative to root, coma separated')
             ->addOption('excludedfiles', 'x', InputOption::VALUE_REQUIRED, 'Excludedfiles, path relative to root, coma separated')
-            ->addOption('anonymous', 'a', InputOption::VALUE_REQUIRED, 'Params to anonymize in wakka.config.php, json_encoded')
+            ->addOption('hideConfigValues', 'a', InputOption::VALUE_REQUIRED, 'Params to anonymize in wakka.config.php, json_encoded')
             ->addOption('uid', 'u', InputOption::VALUE_REQUIRED, 'uid to retrive input and ouput files')
         ;
     }
@@ -57,18 +57,18 @@ class ArchiveCommand extends Command
 
         $extrafiles = $this->prepareFileList($input->getOption('extrafiles'));
         $excludedfiles = $this->prepareFileList($input->getOption('excludedfiles'));
-        $rawAnonymous = $input->getOption('anonymous');
-        $anonymous = null;
-        if (!empty($rawAnonymous)) {
-            $rawAnonymous = json_decode($rawAnonymous, true);
-            if (is_array($rawAnonymous)) {
-                $anonymous = $rawAnonymous;
+        $rawHideConfigValues = $input->getOption('hideConfigValues');
+        $hideConfigValues = null;
+        if (!empty($rawHideConfigValues)) {
+            $rawHideConfigValues = json_decode($rawHideConfigValues, true);
+            if (is_array($rawHideConfigValues)) {
+                $hideConfigValues = $rawHideConfigValues;
             }
         }
         $uid = $input->getOption('uid');
         $uid = empty($uid) ? "" : $uid;
 
-        $location = $this->archiveService->archive($output, !$nosavefiles, !$nosavedatabase, $extrafiles, $excludedfiles, $anonymous, $uid);
+        $location = $this->archiveService->archive($output, !$nosavefiles, !$nosavedatabase, $extrafiles, $excludedfiles, $hideConfigValues, $uid);
 
         return Command::SUCCESS;
     }

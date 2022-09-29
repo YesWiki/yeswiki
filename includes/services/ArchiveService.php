@@ -43,7 +43,7 @@ class ArchiveService
     public const KEY_FOR_PRIVATE_FOLDER = 'privatePath';
     public const KEY_FOR_EXTRAFILES = 'extrafiles';
     public const KEY_FOR_EXCLUDEDFILES = 'excludedfiles';
-    public const KEY_FOR_ANONYMOUS = 'anonymous';
+    public const KEY_FOR_HIDE_CONFIG_VALUES = 'hideConfigValues';
     protected const DEFAULT_FOLDER_NAME_IN_TMP = "yeswiki_archive";
     public const ARCHIVE_SUFFIX = "_archive";
     public const ARCHIVE_ONLY_FILES_SUFFIX = "_archive_only_files";
@@ -84,7 +84,7 @@ class ArchiveService
      * @param bool $savedatabase
      * @param array $extrafiles
      * @param array $excludedfiles
-     * @param null|array $anonymousParams
+     * @param null|array $hideConfigValuesParams
      * @param string $uid
      * @throws Exception
      */
@@ -94,7 +94,7 @@ class ArchiveService
         bool $savedatabase = true,
         array $extrafiles = [],
         array $excludedfiles = [],
-        ?array $anonymousParams = null,
+        ?array $hideConfigValuesParams = null,
         string $uid = ""
     ) {
         $inputFile = "";
@@ -194,7 +194,7 @@ class ArchiveService
             }
 
             $this->writeOutput($output, "=== Creating zip archive ===", true, $outputFile);
-            $this->createZip($location, $dataFiles, $output, $sqlContent, $onlyDb, $anonymousParams, $inputFile, $outputFile);
+            $this->createZip($location, $dataFiles, $output, $sqlContent, $onlyDb, $hideConfigValuesParams, $inputFile, $outputFile);
             if (!file_exists($location)) {
                 throw new StopArchiveException("Stop archive : not saved !");
             }
@@ -601,7 +601,7 @@ class ArchiveService
      * @param string|OutputInterface &$output
      * @param string $sqlContent
      * @param bool $onlyDb
-     * @param null|array $anonymousParams
+     * @param null|array $hideConfigValuesParams
      * @param string $inputFile
      * @param string $outputFile
      */
@@ -611,7 +611,7 @@ class ArchiveService
         &$output,
         string $sqlContent,
         bool $onlyDb = false,
-        ?array $anonymousParams = null,
+        ?array $hideConfigValuesParams = null,
         string $inputFile = "",
         string $outputFile = ""
     ) {
@@ -650,7 +650,7 @@ class ArchiveService
                                         !in_array($relativeName, $dataFiles['preparedExcludedFiles'])
                                 )) {
                                     if (empty($baseDirName) && $file == "wakka.config.php") {
-                                        $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($dataFiles, $anonymousParams));
+                                        $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($dataFiles, $hideConfigValuesParams));
                                     } elseif (is_file($localName)) {
                                         $zip->addFile($localName, $relativeName);
                                     } elseif (is_dir($localName)) {
@@ -956,10 +956,10 @@ class ArchiveService
     /**
      * sanitize wakka.config.php before saving it
      * @param array $dataFiles
-     * @param null|array $anonymousParams
+     * @param null|array $hideConfigValuesParams
      * @return string
      */
-    private function getWakkaConfigSanitized(array $dataFiles, ?array $anonymousParams = null): string
+    private function getWakkaConfigSanitized(array $dataFiles, ?array $hideConfigValuesParams = null): string
     {
         // get wakka.config.php content
         $config = $this->configurationService->getConfiguration('wakka.config.php');
@@ -976,14 +976,14 @@ class ArchiveService
         if (!empty($dataFiles['excludedfiles'])) {
             $data[self::KEY_FOR_EXCLUDEDFILES] = $dataFiles['excludedfiles'];
         }
-        if (!is_null($anonymousParams)) {
-            $data[self::KEY_FOR_ANONYMOUS] = $anonymousParams;
-        } elseif (!isset($data[self::KEY_FOR_ANONYMOUS]) || !is_array($data[self::KEY_FOR_ANONYMOUS])) {
-            $data[self::KEY_FOR_ANONYMOUS] = self::DEFAULT_PARAMS_TO_ANONYMIZE;
+        if (!is_null($hideConfigValuesParams)) {
+            $data[self::KEY_FOR_HIDE_CONFIG_VALUES] = $hideConfigValuesParams;
+        } elseif (!isset($data[self::KEY_FOR_HIDE_CONFIG_VALUES]) || !is_array($data[self::KEY_FOR_HIDE_CONFIG_VALUES])) {
+            $data[self::KEY_FOR_HIDE_CONFIG_VALUES] = self::DEFAULT_PARAMS_TO_ANONYMIZE;
         }
         $config[self::PARAMS_KEY_IN_WAKKA] = $data;
 
-        $config = $this->setDefaultValuesRecursive($config[self::PARAMS_KEY_IN_WAKKA][self::KEY_FOR_ANONYMOUS], $config);
+        $config = $this->setDefaultValuesRecursive($config[self::PARAMS_KEY_IN_WAKKA][self::KEY_FOR_HIDE_CONFIG_VALUES], $config);
         // remove current wiki_status
         unset($config['wiki_status']);
         return $this->configurationService->getContentToWrite($config);
