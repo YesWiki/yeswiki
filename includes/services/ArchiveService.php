@@ -223,6 +223,11 @@ class ArchiveService
      */
     public function hasValidatedBackup($token): bool
     {
+        $archiveParams = $this->getArchiveParams();
+        // skip backup if not activated
+        if (empty($archiveParams['preupdate_backup_activated'])) {
+            return true;
+        }
         $status = $this->getArchivingStatus();
         // skip backup if not writable, because could be bloking otherwise
         if (!$status['canArchive'] && !$status['privatePathWritable']) {
