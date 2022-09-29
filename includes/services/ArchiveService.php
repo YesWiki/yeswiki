@@ -1146,7 +1146,7 @@ class ArchiveService
             !is_scalar($archiveParams['max_nb_files']) ||
             intval($archiveParams['max_nb_files']) < 3)
             ? 10
-            : $archiveParams['max_nb_files'];
+            : intval($archiveParams['max_nb_files']);
     }
 
     /**
