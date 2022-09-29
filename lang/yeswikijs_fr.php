@@ -92,6 +92,8 @@ return [
         "Vérifier que le dossier indiqué dans l'option 'archive[privatePath]' contient bien les fichiers '.htaccess' nécessaires ou est bien configuré avec Nginx ou Apache pour empêcher l'accès !",
     "ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE" => "Lancement de la sauvegarde impossible \n".
         "Il n'y a plus assez d'espace disque disponible pour une nouvelle sauvegarde.",
+    "ADMIN_BACKUPS_START_BACKUP_NOT_DB" => "Lancement de la sauvegarde impossible \n".
+        "L'utilitaire d'export de base de données ('mysqldump') n'est pas accessible.",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Modifs apportées par cette version",
