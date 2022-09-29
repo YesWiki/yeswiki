@@ -55,7 +55,6 @@ class ArchiveService
         "It **MUST NOT** be accessible from the internet.\n\n".
         " - On Apache server, check that the file `.htaccess` is taken in count.\n".
         " - On Nginx server or other, configure the server to **deny all** access on this folder\n";
-    public const MAX_NB_FILES = 10;
 
     protected $configurationService;
     protected $consoleService;
@@ -1140,6 +1139,16 @@ class ArchiveService
         }
     }
 
+    private function getMaxNbFiles(): int
+    {
+        $archiveParams = $this->getArchiveParams();
+        return (empty($archiveParams['max_nb_files']) ||
+            !is_scalar($archiveParams['max_nb_files']) ||
+            intval($archiveParams['max_nb_files']) < 3)
+            ? 10
+            : $archiveParams['max_nb_files'];
+    }
+
     /**
      * extract list of archives to delete
      * @param bool $beforeArchive
@@ -1148,12 +1157,13 @@ class ArchiveService
     public function archivesToDelete(bool $beforeArchive = false): array
     {
         $archives =  $this->getArchives();
-        $nbFilesToRemove = count($archives) - self::MAX_NB_FILES + ($beforeArchive ? 1 : 0);
+        $maxNBFiles = $this->getMaxNbFiles();
+        $nbFilesToRemove = count($archives) - $maxNBFiles + ($beforeArchive ? 1 : 0);
         if ($nbFilesToRemove > 0) {
             // there are files to remove
             // keep at least one file more than 1 day and other more than 2 days to prevent
             // full deletion if attack on api
-            $indexesToRemove = range(self::MAX_NB_FILES, count($archives)-1);
+            $indexesToRemove = range($maxNBFiles, count($archives)-1);
             if (!empty($indexesToRemove)) {
                 $archivesIndexesMoreThan2days = $this->getIndexesMoreThanxdays($archives, 2);
                 $archivesIndexesMoreThan1day = $this->getIndexesMoreThanxdays($archives, 1);
