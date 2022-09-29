@@ -2,11 +2,12 @@
 {{ include_javascript('javascripts/actions/admin-backups.js', false, true) }}
 {{ include_css('styles/actions/admin-backups.css') }}
 
-<div class="admin-backups-container well">
+<div class="admin-backups-container">
   <h1>{{ _t('ADMIN_BACKUPS_TITLE') }}</h1>
   <h2>{{ _t('ADMIN_BACKUPS_CREATE') }}</h2>
   <div class="archive-buttons">
     <button 
+        v-if="currentArchiveUid.length == 0 || !archiving"
         @click="startArchive"
         class="btn btn-xs btn-primary"
         :disabled="updating || currentArchiveUid.length > 0 || archiving" 
@@ -14,14 +15,6 @@
         title="{{ _t('ADMIN_BACKUPS_CREATE') }}">
       {{ _t('ADMIN_BACKUPS_START') }}
     </button>
-    <span @click="showAdvancedParams = !showAdvancedParams">
-      <input 
-        type="checkbox" 
-        name="advanced-params" 
-        value="1" 
-        :checked="showAdvancedParams">
-      <span>{{ _t('ADMIN_BACKUPS_ADVANCED_PARAMS') }}</span>
-    </span>
     <button
         v-if="currentArchiveUid.length > 0 && archiving"
         @click="stopArchive"
@@ -31,6 +24,14 @@
         title="{{ _t('ADMIN_BACKUPS_STOP_BACKUP') }}">
       {{ _t('ADMIN_BACKUPS_STOP') }}
     </button>
+    <span @click="showAdvancedParams = !showAdvancedParams">
+      <input 
+        type="checkbox" 
+        name="advanced-params" 
+        value="1" 
+        :checked="showAdvancedParams">
+      <span>{{ _t('ADMIN_BACKUPS_ADVANCED_PARAMS') }}</span>
+    </span>
   </div>
   <div v-if="archiveMessage.length > 0" v-html="archiveMessage" :class="archiveMessageClass"></div>
   <div v-if="archiveMessage.length > 0 && askConfirmationToDelete"
