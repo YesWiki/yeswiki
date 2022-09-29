@@ -12,6 +12,7 @@ parameters:
     - archive:
       - privatePath
       - call_archive_async
+      - max_nb_files
     
 services:
   _defaults:

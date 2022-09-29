@@ -214,6 +214,7 @@ class Init
                 'preupdate_backup_activated' => false,
                 'call_archive_async' => true,
                 ArchiveService::KEY_FOR_PRIVATE_FOLDER => ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP,
+                'max_nb_files' => 10,
             ],
         );
         unset($_rewrite_mode);
