@@ -285,10 +285,10 @@ Voici quelques possibilités autour des annuaires (à copier-coller - adapter)
 ('FacetteRessource',  now(), '{{nav links=\"FacetteRessource, SaisirRessource\" titles=\"Les ressources, Déposer une ressource\"}}
 
 {{bazarliste id=\"4\" template=\"liste_accordeon\" correspondance=\"soustitre=bf_description\" groups=\"checkboxListeType\" titles=\"Tri par type\" voirmenu=\"0\" vue=\"recherche\" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererConfig',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Mots clefs, Fichier de conf, Mises à jour / extensions\"}}
+('GererConfig',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Gestion du site, Droits, Look, Utilisateurs, Mots clefs, Fichier de conf, MAJ / extensions, Sauvegardes\"}}
 
 {{editconfig}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererDroits',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Mots clefs, Fichier de conf, Mises à jour / extensions\"}}
+('GererDroits',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Gestion du site, Droits, Look, Utilisateurs, Mots clefs, Fichier de conf, MAJ / extensions, Sauvegardes\"}}
 
 {{button class=\"btn-primary btn-xs pull-right\" hideifnoaccess=\"true\" icon=\"fas fa-arrow-right\" link=\"GererDroitsActions\" text=\"Droits des actions/handlers\" }}===Gérer les droits des pages===
 {{gererdroits}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
@@ -304,15 +304,15 @@ Voici quelques possibilités autour des annuaires (à copier-coller - adapter)
 ===Droits d\'accès aux handlers===
 
 {{edithandlersacls}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererMisesAJour',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Mots clefs, Fichier de conf, Mises à jour / extensions\"}}
+('GererMisesAJour',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Gestion du site, Droits, Look, Utilisateurs, Mots clefs, Fichier de conf, MAJ / extensions, Sauvegardes\"}}
 
 ===Mises à jour / extensions===
 {{update}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererMotsClef',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Mots clefs, Fichier de conf, Mises à jour / extensions\"}}
+('GererMotsClef',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Gestion du site, Droits, Look, Utilisateurs, Mots clefs, Fichier de conf, MAJ / extensions, Sauvegardes\"}}
 
 ===Gestion des mots clés ===
 {{admintag}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererSite',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Mots clefs, Fichier de conf, Mises à jour / extensions\"}}
+('GererSite',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Gestion du site, Droits, Look, Utilisateurs, Mots clefs, Fichier de conf, MAJ / extensions, Sauvegardes\"}}
 
 {{attach file=\"modele.jpg\" desc=\"image Dessin_sans_titre.jpg (66.9kB)\" size=\"big\" class=\"right\"}}===Gérer les menus et pages spéciales de ce wiki===
  - [[PageTitre/edit Éditer la Page Titre]]
@@ -324,7 +324,7 @@ Voici quelques possibilités autour des annuaires (à copier-coller - adapter)
 ==Mais aussi==
  - [[PageMenu/edit Éditer le menu vertical]]
  - [[ReglesDeFormatage/edit Éditer le mémo de formatage]]', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererThemes',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Mots clefs, Fichier de conf, Mises à jour / extensions\"}}
+('GererThemes',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Gestion du site, Droits, Look, Utilisateurs, Mots clefs, Fichier de conf, MAJ / extensions, Sauvegardes\"}}
 
 {{button class=\"btn-info btn-block\" link=\"LookWiki\" text=\"Personnaliser le thème de ce wiki (couleurs, police...)\" }}
 {{button class=\"btn-default btn-block\" link=\"PageCss\" text=\"Ajouter du code CSS (zone sensible)\" title=\"Cette page ne peut contenir QUE du Css / voir la doc sur https://yeswiki.net/?DocumentationThemeMargot\" }}
@@ -336,7 +336,7 @@ Voici quelques possibilités autour des annuaires (à copier-coller - adapter)
 -----
 ===Gérer le thème par défaut du wiki===
 {{setwikidefaulttheme}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererUtilisateurs',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Mots clefs, Fichier de conf, Mises à jour / extensions\"}}
+('GererUtilisateurs',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Gestion du site, Droits, Look, Utilisateurs, Mots clefs, Fichier de conf, MAJ / extensions, Sauvegardes\"}}
 
 ===Gérer les groupes d\'utilisateurs===
 {{editgroups}}
@@ -760,7 +760,7 @@ Texte colonne 3
 ('WikiAdmin',  now(), '{{redirect page=\"GererSite\"}}
 ', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('YesWiki',  now(), 'YesWiki', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererSauvegardes',  now(), '{{nav class=\"nav nav-tabs\" links=\"GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Fichier de conf,Mises à jour / extensions, Sauvegardes\" }}
+('GererSauvegardes',  now(), '{{nav class=\"nav nav-tabs\" links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Gestion du site, Droits, Look, Utilisateurs, Mots clefs, Fichier de conf, MAJ / extensions, Sauvegardes\" }}
 
 {{adminbackups}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
 # end YesWiki pages
