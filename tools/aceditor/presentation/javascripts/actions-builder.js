@@ -9,7 +9,7 @@ import InputIcon from './components/InputIcon.js'
 import InputColor from './components/InputColor.js'
 import InputFormField from './components/InputFormField.js'
 import InputFacette from './components/InputFacette.js'
-import InputReaction from './components/InputReaction.js';
+import InputReaction from './components/InputReaction.js'
 import InputIconMapping from './components/InputIconMapping.js'
 import InputColorMapping from './components/InputColorMapping.js'
 import InputColumnsWidth from './components/InputColumnsWidth.js'
@@ -23,18 +23,34 @@ import FlyingActionBar from './components/flying-action-bar.js'
 import InputHint from './components/InputHint.js'
 import AddonIcon from './components/AddonIcon.js'
 
-var components = { InputPageList, InputText, InputCheckbox, InputList, InputIcon, InputColor, 
-  InputFormField, InputHidden, InputDivider,
-  InputFacette, InputReaction, InputIconMapping, InputColorMapping, InputGeo, InputClass, InputCorrespondance,
+const components = {
+  InputPageList,
+  InputText,
+  InputCheckbox,
+  InputList,
+  InputIcon,
+  InputColor,
+  InputFormField,
+  InputHidden,
+  InputDivider,
+  InputFacette,
+  InputReaction,
+  InputIconMapping,
+  InputColorMapping,
+  InputGeo,
+  InputClass,
+  InputCorrespondance,
   InputColumnsWidth,
-  WikiCodeInput, PreviewAction };
+  WikiCodeInput,
+  PreviewAction
+}
 
-if (actionsBuilderData.hasOwnProperty('extraComponents')){
+if (actionsBuilderData.hasOwnProperty('extraComponents')) {
   for (const name in actionsBuilderData.extraComponents) {
-    let filepath = actionsBuilderData.extraComponents[name];
-    
-    let {default: tmp} = await import(filepath);
-    components[name]=tmp;
+    const filepath = actionsBuilderData.extraComponents[name]
+
+    const { default: tmp } = await import(filepath)
+    components[name] = tmp
   }
 }
 
@@ -42,25 +58,25 @@ const ACTIONS_BACKWARD_COMPATIBILITY = {
   calendrier: 'bazarcalendar',
   map: 'bazarcarto'
 }
-console.log("actionsBuilderData", actionsBuilderData) // data variable has been defined in actions-builder.tpl.html
+console.log('actionsBuilderData', actionsBuilderData) // data variable has been defined in actions-builder.tpl.html
 
 // Declare this one globally because we use it everywhere
 Vue.component('input-hint', InputHint)
 Vue.component('addon-icon', AddonIcon)
-Vue.component('v-select', VueSelect.VueSelect);
+Vue.component('v-select', VueSelect.VueSelect)
 
 window.myapp = new Vue({
-  el: "#actions-builder-app",
-  components: components,
-  mixins: [ InputHelper ],
+  el: '#actions-builder-app',
+  components,
+  mixins: [InputHelper],
   data: {
     // Available Actions
     actionGroups: actionsBuilderData.action_groups,
     currentGroupId: '',
-    selectedActionId: "",
+    selectedActionId: '',
     // Some Actions require to select a Form (like bazar actions)
     formIds: actionsBuilderData.forms, // list of this YesWiki Forms
-    selectedFormsIds: "",
+    selectedFormsIds: '',
     selectedForms: null, // used only when useFormField is present
     loadedForms: {}, // we retrive Form by ajax, and store it in case we need to get it again
     loadingForms: [],
@@ -69,7 +85,7 @@ window.myapp = new Vue({
     actionParams: {},
     // Aceditor
     editor: null,
-    displayAdvancedParams: false,
+    displayAdvancedParams: false
   },
   computed: {
     actionGroup() { return this.currentGroupId ? this.actionGroups[this.currentGroupId] : {} },
@@ -79,53 +95,53 @@ window.myapp = new Vue({
     // Some action group (like bazar) have common properties available for each actions
     // so we always display those commons properties in different panels
     configPanels() {
-      let result = []
-      if (this.selectedAction.properties && Object.values(this.selectedAction.properties).some(conf => conf.type)) {
-        result.push({params: this.selectedAction, class: 'specific-action-params'})
+      const result = []
+      if (this.selectedAction.properties && Object.values(this.selectedAction.properties).some((conf) => conf.type)) {
+        result.push({ params: this.selectedAction, class: 'specific-action-params' })
       }
-      for(let actionName in this.actions) {
-        if (actionName.startsWith('common')) result.push({params: this.actions[actionName]})
+      for (const actionName in this.actions) {
+        if (actionName.startsWith('common')) result.push({ params: this.actions[actionName] })
       }
       return result
     },
     isSomeAdvancedParams() {
-      return this.configPanels.some(panel => {
-        let props = Object.values(panel.params.properties)
-        return props.some(prop => prop.advanced)
+      return this.configPanels.some((panel) => {
+        const props = Object.values(panel.params.properties)
+        return props.some((prop) => prop.advanced)
       })
     },
     // Are we editing an action or creating a new one?
     isEditingExistingAction() {
-      if (!this.editor) return false;
-      return this.editor.currentSelectedAction != ""
+      if (!this.editor) return false
+      return this.editor.currentSelectedAction != ''
     },
-    isBazarListeAction(){
+    isBazarListeAction() {
       return this.currentGroupId == 'bazarliste'
     },
     selectedActionAllConfigs() {
       let result = {}
-      this.configPanels.forEach(panel => result = {...result, ...panel.params.properties })
+      this.configPanels.forEach((panel) => result = { ...result, ...panel.params.properties })
       return result
     },
     wikiCodeBase() {
       let actionId = this.selectedActionId
       if (this.isBazarListeAction) actionId = 'bazarliste'
-      var result = `{{${actionId}`
-      for(var key in this.actionParams) {
+      let result = `{{${actionId}`
+      for (const key in this.actionParams) {
         result += ` ${key}="${this.actionParams[key]}"`
       }
       result += ' }}'
       return result
     },
     wikiCode() {
-      let result = this.wikiCodeBase;
+      let result = this.wikiCodeBase
       if (this.selectedAction.isWrapper && !this.isEditingExistingAction) {
         result += `\n${this.selectedAction.wrappedContentExample}{{end elem="${this.selectedActionId}"}}`
       }
       return result
     },
     wikiCodeForIframe() {
-      let result = this.wikiCodeBase;
+      let result = this.wikiCodeBase
       if (this.selectedAction.isWrapper && result) {
         result += `${this.selectedAction.wrappedContentExample}\n`
         result += `{{end elem="${this.selectedActionId}"}}`
@@ -139,16 +155,16 @@ window.myapp = new Vue({
       this.actionParams = {}
       if (this.isEditingExistingAction) {
         // use a fake dom to parse wiki code attributes
-        let fakeDom = $(`<${this.editor.currentSelectedAction}/>`)[0]
+        const fakeDom = $(`<${this.editor.currentSelectedAction}/>`)[0]
 
-        for(let attribute of fakeDom.attributes) Vue.set(this.values, attribute.name, attribute.value)
+        for (const attribute of fakeDom.attributes) Vue.set(this.values, attribute.name, attribute.value)
 
         let newActionId = fakeDom.tagName.toLowerCase()
         // backward compatibilty
         if (newActionId in ACTIONS_BACKWARD_COMPATIBILITY) newActionId = ACTIONS_BACKWARD_COMPATIBILITY[newActionId]
         this.selectedActionId = newActionId
         // Get Action group
-        for(let groupId in this.actionGroups) {
+        for (const groupId in this.actionGroups) {
           if (Object.keys(this.actionGroups[groupId].actions).includes(newActionId)) {
             this.currentGroupId = groupId
             break
@@ -156,7 +172,7 @@ window.myapp = new Vue({
         }
         // Get Form if needed
         if (this.needFormField) {
-          if (!this.selectedFormsIds){
+          if (!this.selectedFormsIds) {
             this.selectedFormsIds = this.getValidFormsIds()
           }
           this.getSelectedFormsByAjax()
@@ -164,32 +180,31 @@ window.myapp = new Vue({
 
         // For bazar action, name is contained inside the template attribute
         if (newActionId == 'bazarliste') {
-          for(let actionId in this.actions) {
-            let action = this.actions[actionId]
-            if (action && action.properties && action.properties.template && action.properties.template.value == this.values.template)
-              this.selectedActionId = actionId
+          for (const actionId in this.actions) {
+            const action = this.actions[actionId]
+            if (action && action.properties && action.properties.template && action.properties.template.value == this.values.template) { this.selectedActionId = actionId }
           }
         }
-        if (this.$refs.specialInput) this.$refs.specialInput.forEach(component => component.parseNewValues(this.values))
+        if (this.$refs.specialInput) this.$refs.specialInput.forEach((component) => component.parseNewValues(this.values))
       } else {
-        if (this.$refs.specialInput) this.$refs.specialInput.forEach(component => component.resetValues())
+        if (this.$refs.specialInput) this.$refs.specialInput.forEach((component) => component.resetValues())
         this.selectedFormsIds = null
         this.selectedActionId = ''
         // Bazar dynamic by default
-        if (this.isBazarListeAction) Vue.set(this.values, "dynamic", true)
+        if (this.isBazarListeAction) Vue.set(this.values, 'dynamic', true)
       }
       this.updateActionParams()
       // If only one action available, select it
       if (Object.keys(this.actions).length == 1) this.selectedActionId = Object.keys(this.actions)[0]
     },
     // prefer methods to computed to prevent cache
-    getSelectedFormId(){
-      return (this.selectedFormsIds) ? this.selectedFormsIds.slice(0,1)[0] : ""; // only the first one
+    getSelectedFormId() {
+      return (this.selectedFormsIds) ? this.selectedFormsIds.slice(0, 1)[0] : '' // only the first one
     },
     setSelectedFormId() {
-      let newValue = this.$refs.formSelection.value
-      if (["number","string"].includes(typeof newValue)){
-        if (this.selectedFormsIds){
+      const newValue = this.$refs.formSelection.value
+      if (['number', 'string'].includes(typeof newValue)) {
+        if (this.selectedFormsIds) {
           this.selectedFormsIds[0] = newValue
         } else {
           this.selectedFormsIds = [newValue]
@@ -197,78 +212,72 @@ window.myapp = new Vue({
         this.getSelectedFormsByAjax()
       }
     },
-    getValidFormsIds(){
-      let fieldIds = this.values.id.split(',');
+    getValidFormsIds() {
+      const fieldIds = this.values.id.split(',')
       return fieldIds
-        .filter((id) => ["number","string"].includes(typeof id))
+        .filter((id) => ['number', 'string'].includes(typeof id))
         .map(
           (id) => id.replace(
-              /(^[0-9]$)|^https?:\/\/.+->([0-9]+)$/u,
-              "$1$2"
-            )
+            /(^[0-9]$)|^https?:\/\/.+->([0-9]+)$/u,
+            '$1$2'
+          )
         )
-        .filter((e) => e.match(/^\d+$/));
+        .filter((e) => e.match(/^\d+$/))
     },
 
     getSelectedFormsByAjax() {
-      let selectedFormId = this.getSelectedFormId();
-      if (!this.selectedFormsIds) return;
-      if (this.selectedFormsIds.every((fid)=>this.loadedForms.hasOwnProperty(fid)))
-      {
+      const selectedFormId = this.getSelectedFormId()
+      if (!this.selectedFormsIds) return
+      if (this.selectedFormsIds.every((fid) => this.loadedForms.hasOwnProperty(fid))) {
         this.selectedForms = {}
         for (const key in this.loadedForms) {
           this.selectedForms[key] = this.loadedForms[key]
         }
-        if (this.selectedAction){
+        if (this.selectedAction) {
           // action choosen updateActionParams
-          setTimeout(() => this.updateActionParams(), 0);
+          setTimeout(() => this.updateActionParams(), 0)
         }
-      }
-      else {
-        let idsToSearch = this.selectedFormsIds.filter((fid)=>{
-          return !this.loadedForms.hasOwnProperty(fid) && !this.loadingForms.includes(fid);
-        });
-        if (idsToSearch.length > 0){
-          idsToSearch.forEach((id)=>this.loadingForms.push(id))
-          let params = {
-            demand: 'forms'
-          };
-          if (idsToSearch.length == 1){
-            params['id'] = idsToSearch[0];
+      } else {
+        const idsToSearch = this.selectedFormsIds.filter((fid) => !this.loadedForms.hasOwnProperty(fid) && !this.loadingForms.includes(fid))
+        if (idsToSearch.length > 0) {
+          idsToSearch.forEach((id) => this.loadingForms.push(id))
+          const params = { demand: 'forms' }
+          if (idsToSearch.length == 1) {
+            params.id = idsToSearch[0]
           } else {
-            idsToSearch.forEach((id,index)=>{
-              params[`id[${index}]`] = id;
-            });
+            idsToSearch.forEach((id, index) => {
+              params[`id[${index}]`] = id
+            })
           }
-          $.getJSON(wiki.url('?root/json', params), data => {
-            this.loadingForms = this.loadingForms.filter((e)=>!idsToSearch.includes(e))
-              // keep ? because standart http rewrite waits for CamelCase and 'root' is not
-            if (Array.isArray(data) && data[0] != undefined){
+          $.getJSON(wiki.url('?root/json', params), (data) => {
+            this.loadingForms = this.loadingForms.filter((e) => !idsToSearch.includes(e))
+            // keep ? because standart http rewrite waits for CamelCase and 'root' is not
+            if (Array.isArray(data) && data[0] != undefined) {
               // copy forms
               data.forEach((form) => {
-                if (form.bn_id_nature != undefined && idsToSearch.includes(form.bn_id_nature)){
-                  this.loadedForms[form.bn_id_nature] = form;
+                if (form.bn_id_nature != undefined && idsToSearch.includes(form.bn_id_nature)) {
+                  this.loadedForms[form.bn_id_nature] = form
                 }
-              });
+              })
             }
             // default forms for missing
             idsToSearch.forEach((fid) => {
               // fake empty form
-              if (!this.loadedForms.hasOwnProperty(fid)){
-                this.loadedForms[fid] = {prepared:{}};
+              if (!this.loadedForms.hasOwnProperty(fid)) {
+                this.loadedForms[fid] = { prepared: {} }
               }
-            });
+            })
             // On first form loaded, we load again the values so the special components are rendered and we can parse values on each special component
             if (!this.selectedForms && this.isEditingExistingAction) setTimeout(() => this.initValues(), 0)
             this.selectedForms = {}
             for (const key in this.loadedForms) {
-              if (this.selectedFormsIds && this.selectedFormsIds.includes(key)){
+              if (this.selectedFormsIds && this.selectedFormsIds.includes(key)) {
                 this.selectedForms[key] = this.loadedForms[key]
               }
             }
-            if (this.selectedAction){
+            if (this.selectedAction) {
               // action choosen updateActionParams
-              setTimeout(() => this.updateActionParams(), 0);
+              setTimeout(() => this.updateActionParams(), 0)
             }
           })
         }
@@ -279,54 +288,53 @@ window.myapp = new Vue({
       this.updateActionParams()
     },
     initValuesOnActionSelected() {
-      if (!this.selectedAction) return;
+      if (!this.selectedAction) return
       // Populate the values field from the config
-      for(var propName in this.selectedAction.properties) {        
-        var configValue = this.selectedAction.properties[propName].value || this.selectedAction.properties[propName].default
+      for (const propName in this.selectedAction.properties) {
+        const configValue = this.selectedAction.properties[propName].value || this.selectedAction.properties[propName].default
         if (configValue && !this.values[propName]) Vue.set(this.values, propName, configValue)
       }
       if (this.isBazarListeAction && this.selectedAction.properties && this.selectedAction.properties.template) this.values.template = this.selectedAction.properties.template.value
-      setTimeout(() => this.updateActionParams(), 0);
+      setTimeout(() => this.updateActionParams(), 0)
     },
     updateActionParams() {
       if (!this.selectedAction) return
       let result = {}
       if (this.needFormField) {
-        if (this.values.id){
-          let ids = this.values.id.split(',').slice(1);
-          ids.unshift(this.getSelectedFormId());
+        if (this.values.id) {
+          const ids = this.values.id.split(',').slice(1)
+          ids.unshift(this.getSelectedFormId())
           result.id = ids.join(',')
         } else {
           result.id = this.getSelectedFormId()
         }
       }
 
-      for(let key in this.values) {
-        let config = this.selectedActionAllConfigs[key]
-        let value = this.values[key]
+      for (const key in this.values) {
+        const config = this.selectedActionAllConfigs[key]
+        const value = this.values[key]
         if (result.hasOwnProperty(key) || value === undefined || config && config.default && `${value}` == `${config.default}`
-            || typeof value == "object" || config && !this.checkConfigDisplay(config) ) 
-          continue
+            || typeof value == 'object' || config && !this.checkConfigDisplay(config)) { continue }
         result[key] = value
       }
       // Adds values from special components
-      if (this.$refs.specialInput) this.$refs.specialInput.forEach(p => result = {...result, ...p.getValues()})
+      if (this.$refs.specialInput) this.$refs.specialInput.forEach((p) => result = { ...result, ...p.getValues() })
 
       // default value for 'bazarliste'
       if (this.selectedActionId == 'bazarliste') result.template = result.template || 'liste_accordeon'
-      
+
       // put in first position 'id' and 'template' if existing
       const orderedResult = {}
-      if (result.id) orderedResult['id'] = result.id
-      if (result.template) orderedResult['template'] = result.template
+      if (result.id) orderedResult.id = result.id
+      if (result.template) orderedResult.template = result.template
       // Order params, and remove empty values
-      Object.keys(result).sort().forEach(key => { if (result[key] !== "") orderedResult[key] = result[key] })
+      Object.keys(result).sort().forEach((key) => { if (result[key] !== '') orderedResult[key] = result[key] })
       this.actionParams = orderedResult
     },
     actionGroupsWithBackwardCompatibility() {
-      let actionGroupsWithBackwardCompatibility = this.actionGroups
-      if (actionGroupsWithBackwardCompatibility.bazarliste.actions){
-        for(let key in ACTIONS_BACKWARD_COMPATIBILITY){
+      const actionGroupsWithBackwardCompatibility = this.actionGroups
+      if (actionGroupsWithBackwardCompatibility.bazarliste.actions) {
+        for (const key in ACTIONS_BACKWARD_COMPATIBILITY) {
           actionGroupsWithBackwardCompatibility.bazarliste.actions[key] = key
         }
       }
@@ -334,19 +342,19 @@ window.myapp = new Vue({
     }
   },
   watch: {
-    selectedFormsIds:function (val, oldVal) {
-      if (!oldVal || (val && (oldVal.length != val.length ||
-        (Array.isArray(val) && !Array.isArray(oldVal)) ||
-        !val.every((e)=>oldVal.includes(e))
-        ))){
+    selectedFormsIds(val, oldVal) {
+      if (!oldVal || (val && (oldVal.length != val.length
+        || (Array.isArray(val) && !Array.isArray(oldVal))
+        || !val.every((e) => oldVal.includes(e))
+      ))) {
         this.getSelectedFormsByAjax()
       }
     },
-    selectedActionId: function() { 
-      if (!this.isBazarListeAction && !this.isEditingExistingAction){
-        this.values = {};
+    selectedActionId() {
+      if (!this.isBazarListeAction && !this.isEditingExistingAction) {
+        this.values = {}
       }
-      this.initValuesOnActionSelected();
+      this.initValuesOnActionSelected()
     }
   },
   mounted() {
@@ -360,4 +368,4 @@ window.myapp = new Vue({
       })
     })
   }
-});
+})
