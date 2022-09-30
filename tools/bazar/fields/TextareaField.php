@@ -185,7 +185,7 @@ class TextareaField extends BazarField
                 break;
 
             case self::SYNTAX_PLAIN:
-                $value = htmlentities($value, ENT_QUOTES, YW_CHARSET);
+                $value = nl2br(htmlentities($value, ENT_QUOTES, YW_CHARSET));
                 break;
 
             case self::SYNTAX_HTML:
