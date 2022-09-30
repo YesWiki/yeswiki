@@ -1,1 +1,9 @@
 parameters:
+
+services:
+  _defaults:
+    autowire: true
+    public: true
+
+  YesWiki\Aceditor\Service\:
+    resource: 'services/*'
