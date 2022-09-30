@@ -116,3 +116,11 @@ mkdir -p javascripts/vendor/lazysizes && \
   cp -f node_modules/lazysizes/lazysizes.min.js javascripts/vendor/lazysizes && \
   cp -f node_modules/lazysizes/LICENSE javascripts/vendor/lazysizes && \
   cp -f node_modules/lazysizes/README.md javascripts/vendor/lazysizes
+
+# Ace
+mkdir -p javascripts/vendor/ace && \
+  cp -f node_modules/ace-builds/src-min-noconflict/ace.js javascripts/vendor/ace && \
+  cp -f node_modules/ace-builds/src-min-noconflict/ext-searchbox.js javascripts/vendor/ace && \
+  cp -f node_modules/ace-builds/src-min-noconflict/mode-html.js javascripts/vendor/ace && \
+  cp -f node_modules/ace-builds/src-min-noconflict/worker-html.js javascripts/vendor/ace && \
+  cp -f node_modules/ace-builds/src-min-noconflict/mode-markdown.js javascripts/vendor/ace

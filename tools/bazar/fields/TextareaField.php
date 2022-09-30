@@ -96,8 +96,6 @@ class TextareaField extends BazarField
 
             $wiki->AddJavascript($script);
         } elseif ($this->syntax === self::SYNTAX_WIKI) {
-            $wiki->AddJavascriptFile('tools/aceditor/presentation/javascripts/ace-lib.js');
-            $wiki->AddJavascriptFile('tools/aceditor/presentation/javascripts/mode-html.js');
             $wiki->AddJavascriptFile('tools/aceditor/presentation/javascripts/aceditor.js', false, true);
             $wiki->AddCSSFile('tools/aceditor/presentation/styles/aceditor.css');
             // Action builder
