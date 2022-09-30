@@ -48,7 +48,7 @@ let appParams = {
             archiveApp.messageClass = {alert:true,['alert-info']:true};
             $.ajax({
                 method: "GET",
-                url: wiki.url(`api/archives`),
+                url: wiki.url(`?api/archives`),
                 success: function(data){
                     archiveApp.archives = {};
                     let archiveNames = [];
@@ -79,7 +79,7 @@ let appParams = {
             archiveApp.messageClass = {alert:true,['alert-info']:true};
             $.ajax({
                 method: "POST",
-                url: wiki.url(`api/archives/${archive.filename}`),
+                url: wiki.url(`?api/archives/${archive.filename}`),
                 data: {
                     action: 'delete'
                 },
@@ -120,7 +120,7 @@ let appParams = {
                 archiveApp.messageClass = {alert:true,['alert-info']:true};
                 $.ajax({
                     method: "POST",
-                    url: wiki.url(`api/archives`),
+                    url: wiki.url(`?api/archives`),
                     data: {
                         action: 'delete',
                         filesnames: archiveApp.selectedArchivesToDelete
@@ -170,7 +170,7 @@ let appParams = {
             archiveApp.messageClass = {alert:true,['alert-info']:true};
             $.ajax({
                 method: "POST",
-                url: wiki.url(`api/archives/${archive.filename}`),
+                url: wiki.url(`?api/archives/${archive.filename}`),
                 data: {
                     action: 'restore'
                 },
@@ -196,7 +196,7 @@ let appParams = {
             archiveApp.archiveMessageClass = {alert:true,['alert-info']:true};
             $.ajax({
                 method: "GET",
-                url: wiki.url(`api/archives/archivingStatus/`),
+                url: wiki.url(`?api/archives/archivingStatus/`),
                 cache: false,
                 success: function(data){
                     if (typeof data != "object" || !data.hasOwnProperty('canArchive')){
@@ -253,7 +253,7 @@ let appParams = {
             }
             let ajaxOptions = {
                 method: "POST",
-                url: wiki.url(`api/archives`),
+                url: wiki.url(`?api/archives`),
                 data: {
                     action: 'startArchive',
                     params: {
@@ -295,7 +295,7 @@ let appParams = {
             let archiveApp = this;
             $.ajax({
                 method: "POST",
-                url: wiki.url(`api/archives`),
+                url: wiki.url(`?api/archives`),
                 data: {
                     action: 'futureDeletedArchives',
                 },
@@ -337,7 +337,7 @@ let appParams = {
             let archiveApp = this;
             $.ajax({
                 method: "POST",
-                url: wiki.url(`api/archives`),
+                url: wiki.url(`?api/archives`),
                 cache: false,
                 data: {
                     action: 'stopArchive',
@@ -364,7 +364,7 @@ let appParams = {
                 }
                 $.ajax({
                     method: "GET",
-                    url: wiki.url(`api/archives/uidstatus/${archiveApp.currentArchiveUid}`),
+                    url: wiki.url(`?api/archives/uidstatus/${archiveApp.currentArchiveUid}`),
                     cache: false,
                     data: getData,
                     success: function(data){
@@ -402,7 +402,7 @@ let appParams = {
                 }
                 $.ajax({
                     method: "GET",
-                    url: wiki.url(`api/archives/uidstatus/${archiveApp.currentArchiveUid}`),
+                    url: wiki.url(`?api/archives/uidstatus/${archiveApp.currentArchiveUid}`),
                     cache: false,
                     data: getData,
                     success: function(data){
@@ -463,7 +463,7 @@ let appParams = {
             return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
         },
         downloadUrl: function(archive){
-            return wiki.url(`api/archives/${archive.filename}`);
+            return wiki.url(`?api/archives/${archive.filename}`);
         },
         updateType: function (){
             if (this.$refs.adminBackupsTypeFull.checked){
@@ -514,7 +514,7 @@ let appParams = {
             let archiveApp = this;
             $.ajax({
                 method: "GET",
-                url: wiki.url(`api/archives/forcedUpdateToken/`),
+                url: wiki.url(`?api/archives/forcedUpdateToken/`),
                 cache: false,
                 success: function(data){
                     if (
