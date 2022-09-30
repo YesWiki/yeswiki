@@ -2,7 +2,7 @@ import * as aceModule from '../../../../javascripts/vendor/ace/ace.js'
 // Loads html rules cause it's used inside yeswiki mode
 import * as aceModeHtml from '../../../../javascripts/vendor/ace/mode-html.js'
 
-import createAceditorToolbar from './aceditor-toolbar.js'
+import setupAceditorToolbarBindings from './aceditor-toolbar.js'
 import setupAceditorKeyBindings from './aceditor-key-bindings.js'
 
 // Aceditor Plugin
@@ -35,7 +35,7 @@ Plugin.prototype.init = function() {
   if ($(this.element).is('textarea')) {
     const textarea = $(this.element)
 
-    const $editorContainer = $('<div class="ace-editor-container"><pre class="ace-body"></pre></div>')
+    const $editorContainer = $('.ace-editor-container')
     setupAceditorKeyBindings($editorContainer)
 
     // Where to find the 'mode-XXXX' files
@@ -72,10 +72,8 @@ Plugin.prototype.init = function() {
     })
 
     // Setup DOM
-    const toolbar = createAceditorToolbar(textarea, aceditor, this.options)
+    setupAceditorToolbarBindings(textarea, aceditor)
     textarea.data('aceditor', aceditor)
-    textarea.before(toolbar)
-    textarea.after($editorContainer)
     textarea.hide().addClass('textarea-aceditor')
 
     return aceditor
@@ -84,7 +82,7 @@ Plugin.prototype.init = function() {
 }
 
 // Edit handler of yeswiki
-$('#body').aceditor({ savebtn: true })
+$('#body').aceditor()
 
 // For comments and Bazar's textarea
 $('.wiki-textarea, .commentform textarea').aceditor()

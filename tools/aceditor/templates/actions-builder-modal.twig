@@ -76,7 +76,7 @@
 
 <script>
   // Not very elegant, but avoid doing an ajax request from vue component to retrieve the Json data
-  var actionsBuilderData = {{ data|json_encode|raw }};
+  var actionsBuilderData = {{ actionsBuilderData|json_encode|raw }};
 </script>
 
 {{ include_css('tools/templates/libs/vendor/font-picker/fontawesome-picker.min.css') }}
