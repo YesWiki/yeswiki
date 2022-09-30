@@ -36,6 +36,7 @@ return [
     'EDIT_CONFIG_GROUP_SECURITY' => 'Security',
     'EDIT_CONFIG_HINT_ARCHIVE[PRIVATEPATH]' => 'Backups\'folder path (\'%TMP\' = system temporary folder)',
     'EDIT_CONFIG_HINT_ARCHIVE[CALL_ARCHIVE_ASYNC]' => 'Maximum number of backup\'s files to keep (min. 3)',
+    'EDIT_CONFIG_HINT_ARCHIVE[PREUPDATE_BACKUP_ACTIVATED]' => 'Make a backup before each update (true or false)',
 
     // security controller
     // 'WIKI_IN_HIBERNATION' => 'Action désactivée car ce wiki est en lecture seule. Veuillez contacter l\'administrateur pour le réactiver.',
