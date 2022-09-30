@@ -1,3 +1,7 @@
+import * as aceModule from '../../../../javascripts/vendor/ace/ace.js'
+// Loads html rules cause it's used inside yeswiki mode
+import * as aceModeHtml from '../../../../javascripts/vendor/ace/mode-html.js'
+
 import createAceditorToolbar from './aceditor-toolbar.js'
 import setupAceditorKeyBindings from './aceditor-key-bindings.js'
 
@@ -33,6 +37,13 @@ Plugin.prototype.init = function() {
 
     const $editorContainer = $('<div class="ace-editor-container"><pre class="ace-body"></pre></div>')
     setupAceditorKeyBindings($editorContainer)
+
+    // Where to find the 'mode-XXXX' files
+    if (this.options.syntax === 'yeswiki') {
+      ace.config.set('basePath', 'tools/aceditor/presentation/javascripts')
+    } else {
+      ace.config.set('basePath', 'javascripts/vendor/ace')
+    }
 
     const aceditor = ace.edit($editorContainer.find('pre')[0], {
       printMargin: false,
