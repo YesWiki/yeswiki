@@ -45,7 +45,7 @@ const components = {
   PreviewAction
 }
 
-if (actionsBuilderData.hasOwnProperty('extraComponents')) {
+if (actionsBuilderData.extraComponents) {
   for (const name in actionsBuilderData.extraComponents) {
     const filepath = actionsBuilderData.extraComponents[name]
 
