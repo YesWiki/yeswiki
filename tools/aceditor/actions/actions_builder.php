@@ -6,7 +6,7 @@ use Symfony\Component\Yaml\Yaml;
 // Data for the template
 // ---------------------
 $data = baz_forms_and_lists_ids();
-// Bazar actions documentation, read from Yaml file
+// Loads various Yaml file
 $docFiles = glob('docs/actions/*.yaml');
 $extensionDocFiles = glob('tools/*/actions/documentation.yaml');
 $customDocFiles = glob('custom/actions/documentation.yaml');
@@ -48,8 +48,7 @@ uasort($data['action_groups'], function ($a, $b) {
 });
 
 // Handle translations
-function test_print(&$item, $key)
-{
+function test_print(&$item, $key) {
     if (is_string($item) && preg_match("/_t\((.+)\)/", $item, $trans_key)) {
         $item = str_replace($trans_key[0], _t($trans_key[1]), $item);
     }
@@ -78,4 +77,4 @@ if (!empty($extraComponents)) {
 // ---------------
 // Render Template
 // ---------------
-echo $this->render('@aceditor/actions-builder.tpl.html', ['data' => $data]);
+echo $this->render('@aceditor/actions-builder.twig', ['data' => $data]);
