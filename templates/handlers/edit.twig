@@ -1,0 +1,54 @@
+{% if error %}
+  <div class="alert alert-danger">{{ error|raw }}</div>
+{% endif %}
+
+{% if bodyPreview %}
+  <h1>{{ _t('EDIT_PREVIEW') }}</h1>
+  <div class="page_preview">
+    {{ bodyPreview|raw }}
+  </div>
+{% endif %}
+
+<form id="ACEditor" name="ACEditor" enctype="multipart/form-data"
+      action="{{ url({ handler: handler }) }}" method="POST">
+
+  {% if passwordForEditing %}
+    <input type="hidden" name="password_for_editing" value="{{ request.post['password_for_editing'] }}" />
+  {% endif %}
+
+  <input type="hidden" name="previous" value="{{ previous }}" />
+
+  {% if bodyPreview %}
+    <input type="hidden" name="body" value="{{ body|raw }}"></div>
+  {% else %}
+    {# Body textarea #}
+    <textarea id="body" name="body" style="display: none">{{ body|raw }}</textarea>
+  {% endif %}
+
+  <div class="form-actions">
+    {# Save Button #}
+    {% set action = bodyPreview ? 'save' : config['preview_before_save'] ? 'preview' : 'save' %}
+    <button type="submit" name="submit" value="{{ action }}" class="btn btn-primary">
+      {{ _t('TEMPLATE_SAVE') }}
+    </button>
+
+    {% if bodyPreview %}
+      <button type="submit" name="submit" value="reedit" class="btn btn-primary">
+        {{ _t('TEMPLATE_REEDIT') }}
+      </button>
+    {% endif %}
+
+    {# Cancel Button #}
+    <a class="btn btn-default" onclick="document.location = '{{ cancelUrl }}'">
+      {{ _t('TEMPLATE_CANCEL') }}
+    </a>
+
+    {% if not previewBody %}
+      <span class="other-actions">
+        {# Filled by template edit__ handler #}
+        {# TODO: stop using all those edit__, and put directly the code here #}
+      </span>
+    {% endif %}
+  </div>
+
+</form>

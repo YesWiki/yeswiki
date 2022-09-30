@@ -546,7 +546,7 @@ return [
     'DELETEPAGE_NOT_DELETED' => 'Page non supprimée.',
 
     // handlers/edit
-    'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' => 'ALERTE : '.
+    'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' =>
         'Cette page a &eacute;t&eacute; modifi&eacute;e par quelqu\'un d\'autre pendant que vous l\'&eacute;ditiez.'."\n".
         'Veuillez copier vos changements et r&eacute;&eacute;diter cette page.',
     'EDIT_NO_WRITE_ACCESS' => 'Vous n\'avez pas acc&egrave;s en &eacute;criture &agrave; cette page !',
