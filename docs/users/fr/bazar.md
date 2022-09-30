@@ -1,6 +1,6 @@
 # Bazar Les bases de données coopératives dans YesWiki
 
-> Bazar permet **la création et de gestion de bases de données** pour structurer des contenus et faciliter leur manipulation par les usagers. La page "gestion des bases de données" est accessible via la roue crantée en haut à droite du menu.
+> Bazar permet **la création et de gestion de bases de données** pour structurer des contenus et faciliter leur manipulation par les usagers. La page "bases de données" (BazaR) est accessible via la roue crantée en haut à droite du menu.
 
 ## Introduction - Principe de fonctionnement
 Bazar utilise des formulaires qui permettent deux choses :
@@ -35,7 +35,7 @@ On désignera par **fiche** une réponse individuelle à un formulaire. Dans not
 
 ### Les trois phases de fabrication d'un formulaire
 
-* **Du point de vue de l'utilisateur**, seules existent :  
+* **Du point de vue de l'utilisateurice**, seules existent :  
     *   La page sur laquelle il ou elle pourra saisir sa **fiche**
     *   La page d'affichage sur laquelle on peut consulter les réponses au **formulaire**
 * Mais pour vous qui allez fabriquer le formulaire, les choses sont légèrement différentes.  
@@ -46,7 +46,7 @@ Nous avons donc trois phases :
 2.   Mettre à disposition une page pour la **saisie** des fiches,
 3.   Mettre en œuvre une page d'**affichage** des résultats du formulaire.
 
-| Vous | L'utilisateur| 
+| Vous | L'utilisateurice| 
 | -------- | -------- | 
 | Concevoir
 | Permettre la saisie|Saisir sa fiche
@@ -54,7 +54,7 @@ Nous avons donc trois phases :
 
 ### Présentation de l'interface Bazar
 
-Notez qu'il faut être connecté avec un compte administrateur du wiki pour pouvoir utiliser certaines fonctionnalités _Bazar_.  
+Notez qu'il faut être connecté.e avec un compte administrateur du wiki pour pouvoir utiliser certaines fonctionnalités _Bazar_.  
   
 L'écran qui se présente ressemble à ceci (voir ci dessous).  
 [![image bazar.png (0.1MB)](images/DocBazarAcces_bazar_vignette_780_544_20220211165136_20220211155202.png)](https://quincaillere.org/formationgarecentrale2022/cache/DocBazarAcces_bazar_vignette_780_544_20220211165136_20220211155202.png)  
@@ -75,7 +75,9 @@ Parfois ce nom est suivi de quelques mots de description (dans l'exemple ci-cont
 **10 –** Ce bouton permet de créer un nouveau formulaire.  
 **11 –** Vous pouvez, si vous avez repéré sur un autre YesWiki un formulaire qui vous conviendrait, utiliser ce champ pour saisir l'adresse du wiki en question. Vous serez ensuite guidés pour récupérer le ou les formulaires qui vous intéressent sur ce wiki.
 
-Création et modification d'un formulaire _Bazar_ Pour modifier un formulaire ou utilisera donc le petit bouton en forme de crayon (cf. 7 précédent).  
+**Création et modification d'un formulaire _Bazar_**
+
+Pour modifier un formulaire on utilisera donc le petit bouton en forme de crayon (cf. 7 précédent).  
 Et, pour créer un nouveau formulaire, on utilisera le bouton « Saisir un nouveau formulaire ».  
 Les deux boutons envoient sur un écran similaire, vide dans le cas de la création et présentant les questions du formulaire dans le cas d'une modification.  
 
@@ -113,7 +115,7 @@ Ce constructeur graphique se présente en deux parties. Les numéros sur l'image
 *   une représentation de leur aspect dans le formulaire final (**2**),
 *   un petit astérisque rouge si le champ est obligatoire (**3**).
 
-Lorsqu'on déplace le pointeur de la souris au dessus de la zone correspondant au champ, celui-ci devient une poignée (**4**) qui permet de déplacer le champ pour le positionner à un en autre endroit dans le formulaire.  
+Lorsqu'on déplace le pointeur de la souris au dessus de la zone correspondant au champ, celui-ci devient une poignée (**4**) qui permet de déplacer le champ pour le positionner à un autre endroit dans le formulaire.  
 Apparaissent également au survol de la souris,  
 
 *   un bouton de suppression du champ (**5**),
@@ -145,9 +147,10 @@ Lorsque vous avez fini de modifier votre formulaire, vous devez valider au moyen
 
 _Bazar_ propose de nombreux types de champs. Voici ceux auxquels vous aurez le plus souvent recours.  
 
-#### /!\\ À ne jamais oublier – Le titre /!\\
-
 #### Le seul champ indispensable : le titre
+*   Il a l'aspect d'un titre (en haut, plus gros, en couleur). Mais on s'y attendait.
+*   Dans une liste de fiches par exemple, seul le titre sera visible pour toutes les fiches non « dépliées ».
+*   Le titre est le seul champ qui soit présenté sans rappel de la question posée lors de sa saisie. Par exemple, dans un formulaire dans lequel on utilise le prénom comme titre, on aura « Nadine » et non pas « Prénom : Nadine ».
 
 ##### Particularités indispensables
 
@@ -161,38 +164,33 @@ Vous êtes libres de définir le libellé qui vous convient.
 
 ##### Qu'advient-il de ce titre ?
 
-**Lors de la création d'une fiche** par un utilisateur, YesWiki fabrique une page à partir de cette fiche.  
+**Lors de la création d'une fiche** par un·e utilisateurice, YesWiki fabrique une page à partir de cette fiche.  
 L'adresse (_url_) de cette page est déterminée automatiquement à partir du titre de la fiche. Une fiche dont le titre serait « Le titre de ma fiche » donnerait la page _LeTitreDeMaFiche_. À l'usage, il peut arriver que deux fiches soient créées avec le même titre. _Bazar_ évite alors les doublons en ajoutant un nombre à la fin du titre qu'il génère (ici, _LeTitreDeMaFiche1_).  
 
-
-#### Champ de type texte court
-
-Un champs de texte qui permet la saisie de quelques mots
-.
-##### Paramètres génériques
+#### Paramètres génériques
 
 Certains paramètres sont génériques à tous ou pratiquement tous les types de champs. Ils sont repris ici.  
 
-###### Obligatoire
+**Obligatoire**
 
 ![image champ_param_oblig.png (2.5kB)](images/DocBazarParametresGeneriques_champ_param_oblig_20220204195251_20220204185301.png)
 
 Ce paramètre permet d'indiquer si répondre à cette question sera obligatoire. Le champ est obligatoire lorsque la case est cochée.  
 
-###### Identifiant unique
+**Identifiant unique**
 
 ![image champ_param_ID.png (4.6kB)](images/DocBazarParametresGeneriques_champ_param_ID_20220204195423_20220204185535.png)
 
 Ce paramètre permet de définir le nom du champ pour YesWiki. Ce nom sera utilisé par YesWiki pour identifier le champ et doit donc impérativement être unique. Si un autre champ avait le même identifiant dans votre formulaire, vous observeriez des dysfonctionnements.  
 Vous n'avez à intervenir sur ce paramètre que dans les rares cas où la documentation le spécifie.  
 
-##### Intitulé
+**Intitulé**
 
 ![image champ_param_label.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_label_20220204195423_20220204190117.png)
 
 Il s'agit du texte de votre question. YesWiki préremplit ce paramètre avec le type de champ, charge à vous de remplacer cela par un libellé pertinent.  
 
-##### Texte d'aide
+**Texte d'aide**
 
 
 ![image champ_param_aide.png (2.4kB)](images/DocBazarParametresGeneriques_champ_param_aide_20220204200514_20220204192507.png)
@@ -200,79 +198,78 @@ Il s'agit du texte de votre question. YesWiki préremplit ce paramètre avec le 
 Ce paramètre vous permet de saisir un texte d'aide afin d'aiguiller l'utilisateur si vous pensez qu'il peut en avoir besoin pour cette question. 
 
 !> Basculer tout ca dans administration / gestion des droits pour alléger la doc bazar ???
-##### ✨ Peut être lu par
+
+**Peut être lu par**
 
 ![image champ_param_access_read.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_read_20220211175241_20220218105840.png)
 
 Par défaut, chaque champ peut être lu par toute personne ayant le droit de visualiser une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 ~~[Voir la liste des différentes valeurs possibles]~~(https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").  
 
-##### ✨ Peut être saisi par
+**Peut être saisi par**
 
 ![image champ_param_access_write.png (3.0kB)](images/DocBazarParametresGeneriques_champ_param_access_write_20220211175241_20220218110059.png)
 
 Par défaut, chaque champ peut être saisi par toute personne ayant le droit de saisir une fiche du formulaire. Ce paramètre permet de modifier ce comportement pour le champ en question. On peut ainsi masquer un champ à certains utilisateurs.  
 [Voir la liste des différentes valeurs possibles](https://quincaillere.org/formationgarecentrale2022/?DocBazarParametreAccesValeurs "Les différentes valeurs possibles").
 
-##### Paramètres spécifiques au type de champs « texte court »
+#### Champ de type texte court
 
-###### Valeur
+Un champs de texte qui permet la saisie de quelques mots.
+
+**Paramètres spécifiques au type de champs « texte court » :**
+
+**Valeur**
 
 Ce paramètre permet de pré-remplir le champ. C'est utile lorsque on connait la réponse la plus courante (si, par exemple, on demande le pays).  
 
-###### Nombre de caractères visibles
+**Nombre de caractères visibles**
 
 Ce paramètre permet de préciser combien de caractères seront visibles à l'écran.  
 
-###### Longueur max
+**Longueur max**
 
-Ce paramètre permet de limiter la longueur de la réponse que les utilisateurs peuvent saisir.
+Ce paramètre permet de limiter la longueur de la réponse que les utilisateurices peuvent saisir.
 
 #### Champ de type « zone de texte »
 
 Une zone de texte permet la saisie d'un texte relativement long et pouvant courrir sur plusieurs lignes.
-*   Il a l'aspect d'un titre (en haut, plus gros, en couleur). Mais on s'y attendait.
-*   Dans une liste de fiches par exemple, seul le titre sera visible pour toutes les fiches non « dépliées ».
-*   Le titre est le seul champ qui soit présenté sans rappel de la question posée lors de sa saisie. Par exemple, dans un formulaire dans lequel on utilise le prénom comme titre, on aura « Nadine » et non pas « Prénom : Nadine ».
 
-Comme tous les champs celui-ci comporte des paramètres génériques et des paramètres spécifiques. 
+**Paramètres spécifiques au type de champs « zone de texte » : **
 
-
-##### Paramètres spécifiques au type de champs « zone de texte »
-
-##### Valeur
+**Valeur**
 
 Ce paramètre permet de pré-remplir le champ. C'est utile lorsque on connaît la réponse la plus courante (si, par exemple, on demande le pays).  
 
-##### Format d'écriture
+**Format d'écriture**
 
-Ce paramètre permet de paramétrer les fonctionnalités d'écriture dont disposeront les utilisateurs. Trois valeurs sont possibles.  
+Ce paramètre permet de paramétrer les fonctionnalités d'écriture dont disposeront les utilisateurices. Trois valeurs sont possibles.  
 
 *   **Wiki –** C'est la valeur par défaut. Elle offre pour la saisie de ce champ tous les outils disponibles lorsqu'on édite une page YesWiki.
-*   **Éditeur wysiwyg –** Ce paramétrage offre à l'utilisateur beaucoup plus de facilité de saisie. Son usage est toutefois à limiter pour des raisons d'ergonomie.
+*   **Éditeur wysiwyg –** Ce paramétrage offre à l'utilisateurice beaucoup plus de facilité de saisie. Son usage est toutefois à limiter pour des raisons d'ergonomie.
 *   **Texte non interprété –** Cette valeur limite la saisie aux seuls caractères sans mise en forme (pas d'italique ni de gras par exemple). C'est très utile pour saisir des adresses postales.
 
-##### Largeur champ de saisie
+**Largeur champ de saisie**
 
 Ce paramètre permet de préciser la largeur du champ de saisie.
 
 #### Champ de type « image »
 Un champ de type image permet d'importer un fichier image qui sera ensuite visualisable dans la fiche.
 
-Comme tous les champs celui-ci comporte des paramètres génériques et des paramètres spécifiques. 
-
-
-
-##### Paramètres spécifiques au type de champs « image »
+**Paramètres spécifiques au type de champs « image » :**
 
 **Hauteur vignette**
 YesWiki génère une vignette des images afin de les afficher rapidement si besoin. Ce paramètre permet de préciser la hauteur de cette vignette.
+
 **Largeur vignette**
 YesWiki génère une vignette des images afin de les afficher rapidement si besoin. Ce paramètre permet de préciser la largeur de cette vignette.
+
 **Hauteur re-dimension**
 YesWiki peut harmoniser la taille des images importées pour ce formulaire. Ce paramètre permet de préciser la hauteur de cette image redimensionnée.
+
 **Largeur re-dimension**
 YesWiki peut harmoniser la taille des images importées pour ce formulaire. Ce paramètre permet de préciser la largeur de cette image redimensionnée.
+
 **Alignement**
 C'est là que l'on paramètre le comportement d'affichage de l'image. Son fonctionnement est similaire à ce qui se passe dans l'édition de pages (quand on joint une image avec le bouton Fichier).
 
@@ -280,10 +277,7 @@ C'est là que l'on paramètre le comportement d'affichage de l'image. Son foncti
 
 Ce type de champ permet d'uploader un fichier (par exemple au format PDF). Ce fichier est ensuite téléchargeable par les personnes qui visualisent la fiche.
 
-Comme tous les champs celui-ci comporte des paramètres génériques et des paramètres spécifiques. 
-
-
-##### Paramètres spécifiques au type de champs « upload de fichier »
+**Paramètres spécifiques au type de champs « upload de fichier » :**
 
 **Taille max**
 Ce paramètre permet de limiter la taille du fichier. Il s'agit d'un nombre d'octets (par ex. 2000000 équivalent à 2 Mo).
@@ -292,14 +286,14 @@ Ce paramètre permet de limiter la taille du fichier. Il s'agit d'un nombre d'oc
 
 Ce type de champs permet de saisir une adresse électronique. YesWiki effectue automatiquement des contrôles sur la syntaxe de l'adresse et propose également de paramétrer des comportements spécifiquement liés à ce type de données.
 
-Comme tous les champs celui-ci comporte des paramètres génériques et des paramètres spécifiques. 
-
-
-##### Paramètres spécifiques au type de champs « email »
+**Paramètres spécifiques au type de champs « email » :**
 
 **Remplacer l'email par un bouton contact**
+
 En sélectionnant « oui » pour ce paramètre, on fait en sorte que l'adresse électronique soit remplacée, lors de l'affichage de la fiche, par un bouton qui renvoie vers un formulaire de contact automatiquement généré. L'email n'est donc pas visible par les personnes qui visualisent la fiche.
+
 **Envoyer le contenu de la fiche à cet email**
+
 Ce paramètre permet de demander à YesWiki d'envoyer le contenu de la fiche à l'adresse saisie. Cet envoi se fera lorsque la personne aura validé la saisie de la fiche.
 
 #### Champ de type « sélectionner »
@@ -308,19 +302,21 @@ Un champ de ce type permet de proposer à l'utilisateur une liste fermée de cho
 En outre, l'utilisation de ce type de champ permet d'avoir recours à des facettes pour filtrer parmi les fiches remplies.
 
 En premier lieu ce type de champs nécessite de pouvoir énumérer les différentes valeurs possibles. 
-*A AJOUTER : Lorsqu'on peut énumérer toutes les réponses possibles à une question *
-
-Comme tous les champs celui-ci comporte des paramètres génériques et des paramètres spécifiques. 
 
 
-##### Paramètres spécifiques au type de champs « sélectionner »
+**Paramètres spécifiques au type de champs « sélectionner » :**
 
 **Origine des données**
+
 Dans ce paramètre, pour permettre à l'utilisateur de choisir parmi les valeur d'une liste, sélectionnez « une liste ».
 Si, au contraire, vous souhaitez permettre à l'utilisateur de choisir parmi des fiches d'un autre formulaire, sélectionnez « Un formulaire Bazar ».
+
 **Choix de la liste/du formulaire**
+
 Avec ce paramètre vous choisissez la liste (ou le formulaire) à partir de laquelle vous souhaitez que les utilisateurs choisissent.
+
 **Valeur par défaut**
+
 Ce paramètre vous permet de proposer une valeur par défaut. Si vous n'en précisez pas, c'est le mot « choisir » qui s'affichera jusqu'à ce qu'un choix soit effectué. Attention, pour préciser la valeur par défaut, il faut indiquer sa clef dans la liste (et non pas sa valeur).
 
 #### Champ de type « groupe de cases à cocher »
@@ -329,17 +325,21 @@ Un champ de ce type permet de proposer à l'utilisateur une liste fermée de cho
 En outre, l'utilisation de ce type de champ permet d'avoir recours à des facettes pour filtrer parmi les fiches remplies.
 
 En premier lieu ce type de champs nécessite de pouvoir énumérer les différentes valeurs possibles.
-*A AJOUTER : Lorsqu'on peut énumérer toutes les réponses possibles à une question *
 
 
-##### Paramètres spécifiques au type de champs « groupe de cases à cocher »
+**Paramètres spécifiques au type de champs « groupe de cases à cocher » :**
 
 **Origine des données**
-Dans ce paramètre, pour permettre à l'utilisateur de choisir parmi les valeur d'une liste, sélectionnez « une liste ».
-Si, au contraire, vous souhaitez permettre à l'utilisateur de choisir parmi des fiches d'un autre formulaire, sélectionnez « Un formulaire Bazar ».
+
+Dans ce paramètre, pour permettre à l'utilisateurice de choisir parmi les valeur d'une liste, sélectionnez « une liste ».
+Si, au contraire, vous souhaitez permettre à l'utilisateurice de choisir parmi des fiches d'un autre formulaire, sélectionnez « Un formulaire Bazar ».
+
 **Choix de la liste/du formulaire**
-Avec ce paramètre vous choisissez la liste (ou le formulaire) à partir de laquelle vous souhaitez que les utilisateurs choisissent.
+
+Avec ce paramètre vous choisissez la liste (ou le formulaire) à partir de laquelle vous souhaitez que les utilisateurices choisissent.
+
 **Valeur par défaut**
+
 Ce paramètre vous permet de proposer une valeur par défaut. Si vous n'en précisez pas, c'est le mot « choisir » qui s'affichera jusqu'à ce qu'un choix soit effectué. Attention, pour préciser la valeur par défaut, il faut indiquer sa clef dans la liste (et non pas sa valeur).
 
 #### Champ de type « groupe de boutons radio »
@@ -348,19 +348,19 @@ Un champ de ce type permet de proposer à l'utilisateur une liste fermée de cho
 En outre, l'utilisation de ce type de champ permet d'avoir recours à des facettes pour filtrer parmi les fiches remplies.
 En premier lieu ce type de champs nécessite de pouvoir énumérer les différentes valeurs possibles. 
 
-*A AJOUTER : Lorsqu'on peut énumérer toutes les réponses possibles à une question *
-
-Comme tous les champs celui-ci comporte des paramètres génériques et des paramètres spécifiques. 
-
-
-##### Paramètres spécifiques au type de champs « groupe de boutons radio »
+**Paramètres spécifiques au type de champs « groupe de boutons radio » :**
 
 **Origine des données**
+
 Dans ce paramètre, pour permettre à l'utilisateur de choisir parmi les valeur d'une liste, sélectionnez « une liste ».
 Si, au contraire, vous souhaitez permettre à l'utilisateur de choisir parmi des fiches d'un autre formulaire, sélectionnez « Un formulaire Bazar ».
+
 **Choix de la liste/du formulaire**
+
 Avec ce paramètre vous choisissez la liste (ou le formulaire) à partir de laquelle vous souhaitez que les utilisateurs choisissent.
+
 **Valeur par défaut**
+
 Ce paramètre vous permet de proposer une valeur par défaut. Si vous n'en précisez pas, c'est le mot « choisir » qui s'affichera jusqu'à ce qu'un choix soit effectué. Attention, pour préciser la valeur par défaut, il faut indiquer sa clef dans la liste (et non pas sa valeur).
 
 #### Champ de type date
@@ -368,22 +368,19 @@ Ce paramètre vous permet de proposer une valeur par défaut. Si vous n'en préc
 Un champ de type date permet de saisir sans erreur une date.
 Certains affichages des résultats (calendrier, agenda, etc.) nécessitent la présence d'un champ date.
 
-Comme tous les champs celui-ci comporte des paramètres génériques et des paramètres spécifiques. 
-
-
-##### Paramètres spécifiques au type de champs date
+**Paramètres spécifiques au type de champs date :**
 
 **undefined**
+
 Ce paramètre permet de préciser si on souhaite que la date soit prédéfinie à la date du jour.
+
 **Attention** – À l'heure à laquelle ces lignes sont écrites, la valeur « non » aboutit à ce que la date ne soit pas prédéfinie, et inversement.
 
 #### Champ de type « géolocalisation de l'adresse »
 
 ![image champ_zone.png (24.5kB)](images/DocBazarChampGeo_champ_geoloc_20220204222452_20220204212502.png)
 
-Ce champ n'est pas un vrai champ.
-
-Il s'agit, de fait, d'un outil qui permet de transformer une adresse saisie par un humain en un jeu de coordonnées (longitude et latitude).  
+Ce champ n'est pas un vrai champ. Il s'agit, de fait, d'un outil qui permet de transformer une adresse saisie par un humain en un jeu de coordonnées (longitude et latitude).  
 Son comportement est donc un peu différent de ce qu'on trouve dans les autres champs.  
 
 Notamment, pour trouver les coordonnées d'une adresse, il faut à YesWiki des informations sur celle-ci. Votre formulaire doit donc obligatoirement contenir au moins un des champs suivants (une bonne pratique étant d'en avoir plusieurs, voire tous).  
@@ -394,15 +391,13 @@ Notamment, pour trouver les coordonnées d'une adresse, il faut à YesWiki des i
 
 Il est indispensable d'avoir un champ de ce type dans votre formulaire si vous souhaitez afficher vos résultats sous forme de carte.
 
-##### Paramètres du type de champs « géolocalisation de l'adresse »
+**Paramètres du type de champs « géolocalisation de l'adresse » :**
 
-
-
-###### Nom du champ latitude
+**Nom du champ latitude**
 
 Avec ce champ, YesWiki va convertir l'adresse postale en coordonnées. Ce paramètre indique à YesWiki dans quel nom interne il doit donner à la valeur de latitude. Sauf besoin précis, conservez la valeur par défaut qui est « bf\_latitude ».  
 
-###### Nom du champ longitude
+**Nom du champ longitude**
 
 Avec ce champ, YesWiki va convertir l'adresse postale en coordonnées. Ce paramètre indique à YesWiki dans quel nom interne il doit donner à la valeur de longitude. Sauf besoin précis, conservez la valeur par défaut qui est « bf\_longitude ».
 
@@ -421,7 +416,7 @@ https://quincaillere.org/formationgarecentrale2022/?M23bLecturesBazar1ConcevoirS
 ## 2 – Permettre la saisie des fiches
 
 Pour permettre la **saisie des fiches**, insérez le formulaire de saisie dans la page wiki de votre choix via le bouton composant **Afficher un formulaire de création de fiche**.
-Dans les options avancées, vous pouvez choisir le ** Nom de la page de ce wiki à afficher après création d'une fiche** 
+Dans les options avancées, vous pouvez choisir le ** Nom de la page de ce wiki à afficher après création d'une fiche** pour renvoyer vers une page préparée par vos soins suite à la saisie d'une fiche.
 
 
 ## 3 – Afficher les résultats du formulaire
