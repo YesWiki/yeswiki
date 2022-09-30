@@ -1,5 +1,5 @@
-export function openModal(title, url) {
-  var $modal = $(`
+export default function(title, url) {
+  const $modal = $(`
     <div class="modal fade">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -15,14 +15,12 @@ export function openModal(title, url) {
     </div>
   `)
 
-  $('body').append($modal);
-  $modal.find('.modal-body').load(`${url} .page`, function() {
-    return false
-  })
+  $('body').append($modal)
+  $modal.find('.modal-body').load(`${url} .page`, () => false)
   $modal.modal({
     show: true,
-    keyboard: false,
-  }).on('hidden hidden.bs.modal', function() {
+    keyboard: false
+  }).on('hidden hidden.bs.modal', () => {
     $modal.remove()
-  });
+  })
 }

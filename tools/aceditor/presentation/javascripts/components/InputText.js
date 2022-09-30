@@ -1,6 +1,6 @@
 // ext/Number/Color/slider
 export default {
-  props: [ 'value', 'config' ],
+  props: ['value', 'config'],
   mounted() {
     if (!this.value && this.config.value) this.$emit('input', this.config.value)
   },

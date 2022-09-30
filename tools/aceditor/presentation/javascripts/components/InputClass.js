@@ -3,13 +3,11 @@ import InputList from './InputList.js'
 import InputCheckbox from './InputCheckbox.js'
 
 export default {
-  props: [ 'name', 'value', 'config', 'selectedForms', 'values' ],
+  props: ['name', 'value', 'config', 'selectedForms', 'values'],
   components: { InputList, InputCheckbox },
-  mixins: [ InputHelper ],
+  mixins: [InputHelper],
   data() {
-    return {
-      classValues: {}
-    }
+    return { classValues: {} }
   },
   mounted() {
     this.resetValues()
@@ -18,8 +16,8 @@ export default {
   methods: {
     resetValues() {
       this.classValues = {}
-      for(let propName in this.config.subproperties) {
-        let config = this.config.subproperties[propName] || {}
+      for (const propName in this.config.subproperties) {
+        const config = this.config.subproperties[propName] || {}
         this.classValues[propName] = config.default || config.value || ''
       }
     },
@@ -27,19 +25,19 @@ export default {
       if (newValues.class) {
         const classes = newValues.class.split(' ')
         let optionsList = []
-        for(let propName in this.config.subproperties) {
-          let componentDefinition = this.config.subproperties[propName] || {};
-          if (componentDefinition.type == 'list'){
+        for (const propName in this.config.subproperties) {
+          const componentDefinition = this.config.subproperties[propName] || {}
+          if (componentDefinition.type == 'list') {
             optionsList = Object.keys(componentDefinition.options)
-            for(let classValue of classes) {
-              if (optionsList.find(o => o == classValue)) this.classValues[propName] = classValue
+            for (const classValue of classes) {
+              if (optionsList.find((o) => o == classValue)) this.classValues[propName] = classValue
             }
           } else if (componentDefinition.type == 'checkbox') {
-            let checkedValue = componentDefinition.checkedvalue || "";
-            let unCheckedValue = componentDefinition.uncheckedvalue || "";
-            for(let classValue of classes) {
-              if ((classValue == checkedValue && checkedValue != "") || 
-                (classValue == unCheckedValue && unCheckedValue != "")){
+            const checkedValue = componentDefinition.checkedvalue || ''
+            const unCheckedValue = componentDefinition.uncheckedvalue || ''
+            for (const classValue of classes) {
+              if ((classValue == checkedValue && checkedValue != '')
+                || (classValue == unCheckedValue && unCheckedValue != '')) {
                 this.classValues[propName] = classValue
               }
             }
@@ -48,7 +46,7 @@ export default {
       }
     },
     getValues() {
-      let result = Object.values(this.classValues)
+      const result = Object.values(this.classValues)
       if (!this.values.text && this.values.icon) result.push('btn-icon') // special handling for button action
       return { class: result.join(' ').trim().replace(/\s+/, ' ') }
     },
