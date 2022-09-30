@@ -2,33 +2,35 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content" id="actions-builder-app">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h2 class="modal-title">{{ actionGroup.label }}</h2>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h2 class="modal-title" v-text="actionGroup.label"></h2>
       </div>
 
       <!-- Modal Body -->
       <div class="modal-body">
         <!-- Choose form (only for bazar actions) -->
         <div v-if="needFormField" class="form-group">
-          <label class="control-label"><?php echo _t('ACTION_BUILDER_CHOOSE_FORM'); ?></label>
+          <label class="control-label">{{ _t('ACTION_BUILDER_CHOOSE_FORM') }}</label>
           <select :value="getSelectedFormId()" required class="form-control" @change="setSelectedFormId" ref="formSelection">
-            <option v-for="(name, id) in formIds" :value="id">{{ name }}</option>
+            <option v-for="(name, id) in formIds" :value="id" v-text="name"></option>
           </select>
-          <span v-if="isBazarListeAction" class="text-muted"><?php echo  _t('ACTION_BUILDER_SEVERAL_FORMS_HINT'); ?></span>
+          <span v-if="isBazarListeAction" class="text-muted">{{ _t('ACTION_BUILDER_SEVERAL_FORMS_HINT') }}</span>
         </div>
 
         <!-- Choose Action -->
         <div class="form-group" v-show="Object.keys(this.actions).length > 1">
-          <label class="control-label">{{ isBazarListeAction ? '<?php echo _t('ACTION_BUILDER_CHOOSE_TEMPLATE'); ?>' : '<?php echo _t('ACTION_BUILDER_CHOOSE_ACTION'); ?>' }}</label>
+          <label class="control-label" v-text="isBazarListeAction ? '{{ _t('ACTION_BUILDER_CHOOSE_TEMPLATE') }}' : '{{ _t('ACTION_BUILDER_CHOOSE_ACTION') }}'"></label>
           <select v-model="selectedActionId" required class="form-control">
-            <option v-for="(action, actionId) in actions" v-if="action.label" :value="actionId">{{ action.label }}</option>
+            <option v-for="(action, actionId) in actions" v-if="action.label" :value="actionId" v-html="action.label"></option>
           </select>
         </div>
 
         <!-- Action Configuration -->
         <div v-if="selectedAction && (!needFormField || selectedForms)" class="action-parameters-container">
 
-          <div v-if="selectedAction.hint" class="alert alert-info">{{ selectedAction.hint }}</div>
+          <div v-if="selectedAction.hint" class="alert alert-info" v-html="selectedAction.hint"></div>
 
           <!-- Iframe Preview -->
           <preview-action :wiki-code="wikiCodeForIframe" :height="actionGroup.previewHeight"></preview-action>
@@ -36,7 +38,7 @@
           <div class="panels-config-container">
             <div v-for="panel in configPanels" class="config-panel" :class="panel.params.class" 
                  :style="{width: panel.params.width || (configPanels.length == 1 ? '50%' : '33%')}" v-show="checkVisibility(panel.params)">
-              <h3>{{ panel.params.title ? panel.params.title : '<?php echo _t('ACTION_BUILDER_PARAMETERS') ?>'}}</h3>
+              <h3 v-text="panel.params.title || '{{ _t('ACTION_BUILDER_PARAMETERS') }}'"></h3>
               <div class="config-panel-content">
                 <template v-for="(config, propName) in panel.params.properties">
                   <component :is="componentIdFrom(config)" :key="propName" :ref="refFrom(config)"
@@ -52,12 +54,12 @@
 
           <!-- Advanced Params Checkbox -->
           <input-checkbox v-if="isSomeAdvancedParams" v-model="displayAdvancedParams" 
-                          :config="{label: '<?php echo _t('ACTION_BUILDER_ADVANCED_PARAMETERS') ?>'}" 
+                          :config="{label: '{{ _t('ACTION_BUILDER_ADVANCED_PARAMETERS') }}'}"
                           class="advanced-params">
           </input-checkbox>
 
           <div class="col-md-12 result-container">
-            <h3><?php echo _t('ACTION_BUILDER_WIKI_CODE_TITLE') ?></h3>
+            <h3>{{ _t('ACTION_BUILDER_WIKI_CODE_TITLE') }}</h3>
             <wiki-code-input :action-params="actionParams" :is-editing="isEditingExistingAction"
                              :editor="editor" :wiki-code="wikiCode"></wiki-code-input>
           </div>
@@ -74,23 +76,22 @@
 
 <script>
   // Not very elegant, but avoid doing an ajax request from vue component to retrieve the Json data
-  var actionsBuilderData = <?php echo json_encode($data) ?>;
+  var actionsBuilderData = {{ data|json_encode|raw }};
 </script>
 
-<?php
-  $this->wiki->addCSSFile('tools/templates/libs/vendor/font-picker/fontawesome-picker.min.css');
-  $this->wiki->AddJavascriptFile('tools/templates/libs/vendor/font-picker/fontawesome-picker.min.js');
+{{ include_css('tools/templates/libs/vendor/font-picker/fontawesome-picker.min.css') }}
+{{ include_javascript('tools/templates/libs/vendor/font-picker/fontawesome-picker.min.js') }}
 
-  $this->wiki->AddJavascriptFile('javascripts/vendor/spectrum-colorpicker2/spectrum.min.js');
-  $this->wiki->AddCSSFile('styles/vendor/spectrum-colorpicker2/spectrum.min.css');
+{{ include_javascript('javascripts/vendor/spectrum-colorpicker2/spectrum.min.js') }}
+{{ include_css('styles/vendor/spectrum-colorpicker2/spectrum.min.css') }}
 
-  $this->wiki->AddCSSFile('styles/vendor/leaflet/leaflet.css');
-  $this->wiki->AddJavascriptFile('javascripts/vendor/leaflet/leaflet.min.js');
+{{ include_css('styles/vendor/leaflet/leaflet.css') }}
+{{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}
 
-  $this->wiki->AddJavascriptFile('javascripts/vendor/vue/vue.js');
-  $this->wiki->AddJavascriptFile('javascripts/vendor/vue-select/vue-select.min.js');
-  $this->wiki->AddCSSFile('styles/vendor/vue-select/vue-select.css');
+{{ include_javascript('javascripts/vendor/vue/vue.js') }}
 
-  $this->wiki->AddJavascriptFile('tools/aceditor/presentation/javascripts/actions-builder.js', false, true);
-  $this->wiki->addCSSFile('tools/aceditor/presentation/styles/actions-builder.css');
-?>
+{{ include_javascript('javascripts/vendor/vue-select/vue-select.min.js') }}
+{{ include_css('styles/vendor/vue-select/vue-select.css') }}
+
+{{ include_javascript('tools/aceditor/presentation/javascripts/actions-builder.js', false, true) }}
+{{ include_css('tools/aceditor/presentation/styles/actions-builder.css') }}
