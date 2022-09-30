@@ -49,11 +49,6 @@ Vue.component('input-hint', InputHint)
 Vue.component('addon-icon', AddonIcon)
 Vue.component('v-select', VueSelect.VueSelect);
 
-// Handle oldbrowser not supporting ES6
-if (!('noModule' in HTMLScriptElement.prototype)) {
-  $('#actions-builder-app').empty().append('<p>Désolé, votre Navigateur est trop vieux pour utiliser cette fonctionalité.. Mettez le à jour ! ou <a href="https://www.mozilla.org/fr/firefox/new/">installez Firefox</a> </p>')
-} else {
-
 window.myapp = new Vue({
   el: "#actions-builder-app",
   components: components,
@@ -366,4 +361,3 @@ window.myapp = new Vue({
     })
   }
 });
-}
