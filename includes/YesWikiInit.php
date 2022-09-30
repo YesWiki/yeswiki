@@ -211,7 +211,7 @@ class Init
             ArchiveService::PARAMS_KEY_IN_WAKKA => [
                 ArchiveService::KEY_FOR_HIDE_CONFIG_VALUES => ArchiveService::DEFAULT_PARAMS_TO_ANONYMIZE,
                 'authorize_bypass_preupdate_backup' => false,
-                'preupdate_backup_activated' => false,
+                'preupdate_backup_activated' => true,
                 'call_archive_async' => true,
                 ArchiveService::KEY_FOR_PRIVATE_FOLDER => ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP,
                 'max_nb_files' => 10,
