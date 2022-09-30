@@ -23,6 +23,7 @@ return [
     'TEMPLATE_NO_DEFAULT_THEME' => 'The files of template\'s default theme not found. <br />Please re-install the tools template or contact an administrator of this website',
     'TEMPLATE_CUSTOM_GRAPHICS' => 'Appearance of page',
     'TEMPLATE_SAVE' => 'Save',
+    'TEMPLATE_REEDIT' => 'Edit again',
     'TEMPLATE_APPLY' => 'Apply',
     'TEMPLATE_APPLY_ALL' => 'Apply to the whole site',
     'TEMPLATE_CANCEL' => 'Cancel',

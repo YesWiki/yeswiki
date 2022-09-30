@@ -62,9 +62,9 @@ span.missingpage,
 /* previsualisation page */
 .page_preview {
   background-color: #ffffbf;
-  padding: 10px;
-  border: 1px inset;
-  border-bottom: none;
+  padding-bottom: 30px;
+  border-bottom: 5px solid grey;
+  margin-bottom: 30px;
 }
 .prev_alert {
   background-color: var(--danger-color);

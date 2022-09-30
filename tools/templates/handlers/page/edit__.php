@@ -38,15 +38,6 @@ $plugin_output_new = preg_replace(
     $plugin_output_new
 );
 
-// on enleve les restes de wikini : script obscur de la barre de redaction
-$plugin_output_new = str_replace(
-    "<script type=\"text/javascript\">\n".
-        "document.getElementById(\"body\").onkeydown=fKeyDown;\n".
-    "</script>\n",
-    '',
-    $plugin_output_new
-);
-
 // personnalisation graphique que dans le cas ou on est autorise
 if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide_action_template']) && !$this->config['hide_action_template'])) &&
     ($this->HasAccess('write') && $this->HasAccess('read') && (!SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME || (SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME && ($this->UserIsAdmin() || $this->UserIsOwner()))))) {
@@ -97,20 +88,13 @@ if (isset($_SERVER["HTTP_REFERER"])) {
     }
 }
 
-// le bouton apercu c'est pour les vieilles versions de wikini, on en profite pour rajouter des classes pour colorer les boutons et la personnalisation graphique
-$patterns = array(0 => '/<input name=\"submit\" type=\"submit\" value=\"Sauver\" accesskey=\"s\" \/>/',
-                    1 => '/<input name=\"submit\" type=\"submit\" value=\"Aper\&ccedil;u\" accesskey=\"p\" \/>/',
-                    2 => '/<input type=\"button\" value=\"Annulation\" onclick=\"document.location=\''.preg_quote(addslashes($this->href(testUrlInIframe())), '/').'\';\" \/>/',
-                    3 => '/ class=\"edit\">/',
-                    );
-$replacements = array(
-                    0 => $hidden.'<div class="form-actions">'."\n".'<button type="submit" name="submit" value="Sauver" class="btn btn-primary">'._t('TEMPLATE_SAVE').'</button>'."\n",
-                    1 => '',
-                    2 => '<button class="btn btn-default" onclick="location.href=\''.addslashes($this->href(testUrlInIframe())).'\';return false;">'._t('TEMPLATE_CANCEL').'</button>'."\n".
-                            (($changetheme) ? '<span class="other-actions"><a class="btn btn-neutral" data-toggle="modal" data-target="#graphical_options">'._t('TEMPLATE_THEME').'</a>'."\n" : '').'</span></div>'."\n", // le bouton Theme du bas de l'interface d'edition
-                    3 => ' class="edit form-control">',
-                    );
-$plugin_output_new = preg_replace($patterns, $replacements, $plugin_output_new);
+$html = $hidden;
+$target = '<span class="other-actions">';
+if ($changetheme) {
+    // Adds change theme button
+    $html .= '<a class="btn btn-neutral" data-toggle="modal" data-target="#graphical_options">'._t('TEMPLATE_THEME').'</a>';
+}
+$plugin_output_new = str_replace($target , $target.$html, $plugin_output_new);
 
 if (!$this->HasAccess('write')) {
     $output = '';

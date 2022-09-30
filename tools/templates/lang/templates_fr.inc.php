@@ -41,6 +41,7 @@ return [
     'TEMPLATE_NO_DEFAULT_THEME' => 'Les fichiers du template par d&eacute;faut ont disparu, l\'utilisation des templates est impossible.<br />Veuillez r&eacute;installer le tools template ou contacter l\'administrateur du site',
     'TEMPLATE_CUSTOM_GRAPHICS' => 'Apparence de la page',
     'TEMPLATE_SAVE' => 'Sauver',
+    'TEMPLATE_REEDIT' => 'Éditer de nouveau',
     'TEMPLATE_APPLY' => 'Appliquer',
     'TEMPLATE_APPLY_ALL' => 'Appliquer pour tout le site',
     'TEMPLATE_CANCEL' => 'Annuler',
