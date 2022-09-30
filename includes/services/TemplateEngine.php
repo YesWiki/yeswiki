@@ -170,6 +170,9 @@ class TemplateEngine
         $this->addTwigHelper('hasAcl', function ($acl, $tag = "", $adminCheck = true) {
             return $this->wiki->services->get(AclService::class)->check($acl, null, $adminCheck, $tag);
         });
+        $this->addTwigHelper('renderAction', function ($name, $params = []) {
+            return $this->wiki->services->get(Performer::class)->run($name, 'action', $params);
+        });
     }
 
     private function addTwigHelper($name, $callback)
