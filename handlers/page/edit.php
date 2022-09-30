@@ -160,6 +160,11 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
 // Main Page
 $output = '<div class="page">'."\n".$output."\n".'<hr class="hr_clear" />'."\n".'</div>'."\n";
 
+$this->AddJavascriptFile('tools/aceditor/presentation/javascripts/ace-lib.js');
+$this->AddJavascriptFile('tools/aceditor/presentation/javascripts/mode-html.js');
+$this->AddJavascriptFile('tools/aceditor/presentation/javascripts/aceditor.js', false, true);
+$this->AddCSSFile('tools/aceditor/presentation/styles/aceditor.css');
+
 // Popups for aceditor toolbar
 ob_start();
 include 'tools/aceditor/actions/actions_builder.php';
