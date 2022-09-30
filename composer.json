@@ -51,7 +51,7 @@
         "symfony/security-csrf": "^5.0",
         "symfony/yaml": "^5.1",
         "tamtamchik/simple-flash": "^2.0",
-        "twig/twig": "^3.0",
+        "twig/twig": "^3.4.3",
         "voku/anti-xss": "^4.1",
         "yeswiki/theme-margot": "^1.0"
     },
