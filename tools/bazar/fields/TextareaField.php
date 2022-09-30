@@ -95,15 +95,6 @@ class TextareaField extends BazarField
             });';
 
             $wiki->AddJavascript($script);
-        } elseif ($this->syntax === self::SYNTAX_WIKI) {
-            $wiki->AddJavascriptFile('tools/aceditor/presentation/javascripts/aceditor.js', false, true);
-            $wiki->AddCSSFile('tools/aceditor/presentation/styles/aceditor.css');
-            // Action builder
-            $this->extensions = $wiki->extensions;
-            ob_start();
-            include_once 'tools/aceditor/actions/actions_builder.php';
-            $output = ob_get_contents();
-            ob_end_clean();
         }
 
         $tempTag = !isset($entry['id_fiche']) ? ($wiki->config['temp_tag_for_entry_creation'] ?? null) : null;

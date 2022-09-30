@@ -25,6 +25,7 @@
         </textarea>
     </div>
     {% if field.syntax == 'wiki-textarea' %}
+        {{ renderAction('aceditor')|raw }}
         {# do not display button before moving in aceditor bar#}
         <div style="display:none;">{{ include('@attach/attach-file-uploader-button.twig',
             {fileUploaderAnchor:'#' ~ field.name ~ 'Container .aceditor-toolbar',

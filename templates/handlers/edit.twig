@@ -23,6 +23,7 @@
   {% else %}
     {# Body textarea #}
     <textarea id="body" name="body" style="display: none">{{ body|raw }}</textarea>
+    {{ renderAction('aceditor')|raw }}
   {% endif %}
 
   <div class="form-actions">
