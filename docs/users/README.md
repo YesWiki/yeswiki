@@ -16,17 +16,17 @@ Architecture
 
 Un découpage selon l'usage semble adéquat, tel qu'il a été construit initialement, mais nous pourrions adopter un découpage un peu plus fin:
 
-- **Utilisateur / Prise en main**: Toute la documentation pour aider l'utilisateur de base a créer un compte, récuperer son mot de passe, editer ou créer une page, comprendre la syntaxe wiki de base, etc...
+- **Premiers pas** : Toute la documentation pour aider l'utilisateur de base a créer un compte, récuperer son mot de passe, editer ou créer une page, comprendre la syntaxe wiki de base, etc...
 
-- **Utilisateur avancé**: Pour celleux qui poussent leur usage du wiki dans ses plus fines fonctionnalités: usage des actions, des feintes de mise en page
+- **Usages avancés** : Pour celleux qui poussent leur usage du wiki dans ses plus fines fonctionnalités: usage des actions, des feintes de mise en page
 
-- **Bazar**: Toute la doc concernant bazar (création, rendu, templates...)
+- **Formulaires (Bazar)** : Toute la doc concernant bazar (création, rendu, templates...)
 
-- **Admin wiki**: Tout ce qui est dans la roue crantée (et singulièrement la partie dans la page gestion du site dont look du wiki)
+- **Administration** : Tout ce qui est dans la roue crantée (et singulièrement la partie dans la page gestion du site dont look du wiki)
 
-- **Admin Système**: Là on sort de l'interface web, avec des infos sur l'installation, les fichiers de configuration, la gestion des mails sortants, migration, herse, gestion spams par phpmyadmin et ce genre de choses.
+- **Installation** : Là on sort de l'interface web, avec des infos sur l'installation, les fichiers de configuration, la gestion des mails sortants, migration, herse, gestion spams par phpmyadmin et ce genre de choses.
 
-- **Personnalisation avancée, pour développeurs**: Pour les dev qui vont **utiliser** yeswiki. Il s'agit surtout de mettre la doc sur le dossier `custom` (faire un template custom par exemple....), et peut être d'autres trucs comme ouvrir l'API etc.
+- **Développement** : Pour les dev qui vont **utiliser** yeswiki. Il s'agit surtout de mettre la doc sur le dossier `custom` (faire un template custom par exemple....), et peut être d'autres trucs comme ouvrir l'API etc.
 
 Usages et bonnes pratiques
 ----------------------------
@@ -35,11 +35,15 @@ Usages et bonnes pratiques
 
 Il est toujours bienvenu d'avoir des captures d'écran, mais il faut garder à l'esprit que ces captures devront etre refaites pour chaque langue traduite. Il est donc judicieux d'en mettre, mais de conserver un équilibre sur leur quantité. Par ailleurs le widget preview devrait permettre de réduire le nombre de capture d'écrans dans certains cas.
 
+Si cela est possible, il est préférable de directement inclure des rendus de code yeswiki, [voir plus bas](/docs/users/README?id=afficher-du-code-yeswiki)
+
 ### Ecriture inclusive
 
 Nous essayons d'utiliser une écriture incluse, en utilisant la jonction de termes : `celleux` ou `utilisateurice` par exemple.
 
 Il est également préférable d'utiliser des mots épicènes lorsque cela est possible (exemple élève plutôt qu'étudiant.e)
+
+Plus d'info sur l'écriture inclusive : [https://eninclusif.fr/](https://eninclusif.fr/)
 
 ### Ton et langage
 
@@ -119,7 +123,13 @@ Si vous voulez empêcher un titre d'apparaître dans le menu, rajoutez `<!-- {do
 
 ### Afficher du code yeswiki
 
-Utilisez la balise markdown `\``yeswiki
+Utilisez trois balises de code markdown (touche `Alt Gr` + `7`) suivi de "yeswiki"
+
+```
+```yeswiki
+{{button}}
+``'
+```
 
 Vous pouvez aussi afficher le rendu de code yeswiki en ajoutant le mot clé "preview". Le chiffre après preview= est la hauteur de la section de rendu
 
@@ -137,6 +147,15 @@ Vous pouvez aussi afficher le rendu de code yeswiki en ajoutant le mot clé "pre
 {{button link="test" text="Click me" class="btn-primary"}}
 ```
 
+### Faire référence à une section dans une explication
+
+Pour renvoyer vers une explication donnée dans un autre paragraphe, il faut cliquer sur le titre de la section concernée et récupérer dans l'url ce qui est écrit à partir du /docs
+Exemple : pour faire référence au paragraphe "la composition d'une page", copier 
+/docs/users/fr/prise-en-main?id=la-composition-d39une-page
+
+**Rendu dans la doc**
+
+Pour en savoir plus, aller voir la [composition d'une page](/docs/users/fr/prise-en-main?id=la-composition-d39une-page)
 
 
 Copyleft

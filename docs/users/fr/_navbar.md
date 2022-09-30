@@ -3,7 +3,7 @@
 [Revenir à mon wiki](/ ':id=back')
 
 * [Premiers pas](/docs/users/fr/prise-en-main.md)
-* [Usage avancé](/docs/users/fr/usage-avance.md)
+* [Usages avancés](/docs/users/fr/usage-avance.md)
 * [Formulaires (bazar)](/docs/users/fr/bazar.md)
 * [Administration](/docs/users/fr/admin.md)
 * [Installation](/docs/users/fr/webmaster.md)

@@ -1,10 +1,317 @@
-# Prise en main
+Prise en main
+============
 
-> Pour décrouvrir les fonctionalités de base d'un wiki
+Pour décrouvrir les fonctionalités de base d'un wiki
 
-## Structure du wiki
+* Quelques trucs si l'informatique vous fait peur Pour moi, page inutile
 
-### La composition d'une page
+Ajouter et modifier des contenus
+
+* Éditer une page (premiers)
+* Mettre en forme le texte (premiers)
+* Créer une nouvelle page (premiers)
+* Inclure une page dans une autre (premiers)
+* Créer un lien (premiers)
+* Joindre un fichier : image, son ... (premiers)
+* Restaurer l'ancienne version d'une page (premiers)
+
+Agencer du contenu
+
+* Éditer et modifier un menu (premiers)
+* Composition d'une page (premiers)
+* Modifier le menu du haut (premiers)
+* Modifier le bandeau (pageheader) (premiers)
+
+Editer une page
+---------------
+
+> TODO
+
+Mettre en forme le texte
+------------------------
+
+En mode édition, le langage YesWiki nécessite de connaître quelques petites astuces pour mettre en forme le texte d'une page. En voici quelques unes de base.
+A noter : La plupart est accessible directement dans la barre d'édition !
+
+![image editer_une_page_barre.png](images/editer_une_page_barre.png)
+
+!> TODO
+
+juste un mot d'explication sur l**'usage de la balise**
+et le besoin de virer la balise quand on en a plus besoin
+prévoir quelques exemples avec de la syntaxe
+**écrire en gras**
+
+dire qu'il y a un bouton d'aide qui est accessible en mode édition  ?
+pour par exemple insérer un tableau / du html / 
+mettre le lien vers la page de doc du wiki
+donc : 
+ - dans l'éditeur, il y a un bouton qui renvoie 
+  - vers la doc générale vers la partie syntaxe
+  - la page d'aide sur mesure des users de ce wiki
+
+### Accentuation
+
+**\*\*Gras\*\***
+_//Italique//_
+\_\_Souligné\_\_
+@@Barré@@
+
+### Titres
+
+```
+======Titre 1======
+=====Titre 2=====
+====Titre 3====
+===Titre 4===
+==Titre 5==
+```
+
+### Insérer une ligne
+
+\----
+
+### Listes
+
+ - Liste à puce niveau 1
+ - Puce niveau 1
+   - Puce niveau 2
+   - Puce niveau 2
+ - Puce niveau 1
+
+ 1) Liste énumérée
+ 1) Liste énumérée
+ 1) Liste énumérée
+
+Remarque : en mode édition, il faut sauter une ligne après une liste à puce pour garder la coloration syntaxique... (mais pas pour les listes énumérées)_
+
+### Tableaux
+
+\[|
+| \*\*Nom\*\* | \*\*prénom\*\* | \*\*Couleurs préférées\*\* |
+| Lagaffe     | Gaston     | jaune     |
+| Lapalice    | Jean    | vert   |
+|\]
+
+### Écrire en html
+
+si vous déposez du html dans la page wiki,
+il faut l'entourer de ""  ""
+pour qu'il soit interprété
+
+!> Voir section dédiée?
+
+
+Créer une page / insérer un lien
+-------------------------------
+
+!> **Règle de nommage** : le nom des pages YesWiki ne doivent contenir ni espaces ni caractères spéciaux. Pour les rendre lisible, le mieux est d'utiliser des tirets `nom-de-ma-page`, ou des majuscules `NomDeLaPage` (c'est ce qu'on appelle un `ChatMot`)
+
+Deux méthodes sont à votre disposition pour créer une page
+
+1. Lors de l'édition d'une page, cliquez le l'icone pour ajouter un lien. Dans la fenêtre qui s'ouvre pouvez pouvez également créer une page
+2. Allez directement vers l'URL de la page que vous souhaitez créer (exemple : https://yeswiki.net/?MaNouvellePage). Comme elle n'existe pas encore on vous proposera de la créer
+
+> Astuce 1: une fois ma nouvelle page créée, je peux enlever le lien qui y mène sans que la page disparaisse pour autant. Je peux retrouver mes pages dans la roue crantée en haut à droite > Tableau de bord. Une bonne manière de cacher des pages ;-)
+
+> Astuce 2: YesWiki va interpréter tout ChatMot comme une nouvelle page. Si on veut écrire un ChatMot sans créer de nouvelle page (par exemple pour écrire YesWiki sans créer de lien), on l'encadre de double guillemets:
+
+Revenir à la version précédente d'une page
+-------------------------------------------
+
+Dans YesWiki chaque modification d'une page est sauvegardée dans un **historique**. Par défaut il est possible de voir les 30 versions antérieures d'une page et, ce qui est souvent bien pratique, de restaurer une version antérieure.
+
+**Pour y accéder** il suffit de cliquer sur le lien en bas de page nommé : "Dernière édition : _jour_._mois_._année_"
+
+![image historique_bas_page.png](images/Historique_bas_page.png)
+
+**Attention** : cet accès est possible pour les personnes qui ont les droits en écriture sur la page concernée, c'est-à-dire tout le monde par défaut, mais les administrateurs du site peuvent faire un autre choix.
+
+*   le "handler" révisions est ajouté dans l'url
+
+![image historique_revision_page.png](images/Historique_revision_page.png)
+
+*   et une fenêtre comme celle-ci s'affiche :
+
+![image Historique_page.png](images/Historique_page.png)
+
+
+**Vous y trouverez dans la partie haute**
+
+*   la représentation des 30 dernières modifications effectuées sur la page affichées avec, en survol avec la souris, le numéro, la date et l'heure de la modification
+*   en cliquant sur un rond : en plus des éléments précédents, l'adresse IP depuis laquelle la modification a été effectuée (par exemple : 78.246.209.114), ou, si la modification a été effectuée depuis un compte connecté du site, le nom du compte (par exemple : WikiAdmin)
+*   un bouton vert "Restaurer cette version" permettant d'enregistrer la page choisie
+
+**Dans la partie en dessous, en fonction de l'onglet choisi**
+
+*   premier onglet : l'aperçu de la version choisie (par défaut la dernière ou "version actuelle")
+*   deuxième onglet : les modification apportées par cette version, en rouge pour ce qui a été retiré et en vert pour ce qui a été ajouté
+*   troisième onglet : la comparaison avec la version actuelle, avec les mêmes codes couleur
+*   **A noter** : en cochant la case "Afficher le code Wiki" vous aurez les mêmes éléments, vus en mode édition !
+
+
+Insérer un média (images/pdf/...)
+----------------------------------
+
+!> TODO Ne pas décrire tout ce qui est accessible avec l'interface. Décrire comment faire pour utiliser une image d'une page dans une autre
+
+En plus du texte, on peut vouloir ajouter des images, des documents à télécharger, voire des vidéos ou des fichiers audio. Avec YesWiki ceci est très facile ! Voici comment faire.
+
+Dans la page en mode édition, cliquer sur le bouton "Fichier" permet de choisir un fichier qui se trouve sur votre ordinateur. (listes fichiers affichables)  (svg, png, gif, jpg, bmp...) (.doc, .pdf, .xls, .odt, .txt...) mp3 flv
+=> ce qui sera interprété et ce qui fera un lien de téléchargement
+
+En fonction du type de fichier à insérer, YesWiki propose des interfaces différentes, mais le principe reste le même.
+
+> Astuce: pour les fichiers vidéos, ou interactif type pad -> décrire comment intégrer, ou mettre lien vers une aure section dédiée
+
+
+Insérer des éléments d'un autre site (iframe)
+---------------------------------------
+
+> Une **iframe** est un petit bout de code qui permet à une page d'embarquer (encapsuler, intégrer... "_embed_" en anglais) des contenus et fonctionalités issus d'autres sites internet. 
+
+Vous pouvez ainsi profiter des fonctionnalités de cet autre site au sein même de votre wiki : lire une vidéo, écrire dans un pad et bien d'autre... Voici comment faire :
+
+
+### 1. Trouver le code iframe permettant l'intégration
+
+Un site propose souvent d'afficher ses contenus ailleurs que "chez lui", en fournissant un morceau de code html (appelé iframe), qui se trouve dans les options "_Partager_" > "_Intégrer_" ou encore "_iframe_".  
+Ca peut ressembler à :[
+
+![image partager.png](images/partager.png)
+
+![image partageryoutube.png](images/partageryoutube.png)
+
+![image integrer.png](images/integrer.png)
+
+Le code iframe que vous allez trouver ressemblera à ça :
+
+```<iframe src="https://unsite.com/iframe" ...></iframe>```
+
+### 2. Collez ce code dans ma page wiki
+
+Il faudra juste penser à ajouter avant et après **deux guillemets**.
+
+`""coller ici le code HTML fourni par le site tiers""`
+
+```""<iframe src="https://unsite.com/iframe" ...></iframe>""```
+
+### 3. Bricoler le code
+
+Le code iframe fourni peut être personnalisé, notamment pour les dimensions de la fenêtre intégrée.
+
+Dans le bout de code à copier-coller, les paramètres `width` (largeur) et `height` (hauteur) permettent de **spécifier la taille de l'iframe** et ils sont renseignés en pixels ou en pourcentage.
+
+```
+<iframe src="..." width="100%" height="500"></iframe>
+```
+
+> Pour que la hauteur se calcule automatiquement, ajoutez `class="auto-resize"` à votre code : `<iframe src="..." class="auto-resize" ...></iframe>`
+
+
+Le paramètre `frameborder` permet d'activer ou non une bordure noire (`1` pour activer, `0` pour désactiver)
+
+```
+<iframe src="..." frameboder="0"></iframe>
+```
+  
+
+Les composants
+---------------
+
+Les composants sont des éléments que l'on peut rajouter dans une page wiki.
+Utiliser les composants ajoutera un code -parfois compliqué-  dans votre page. En cliquant sur ce code, un crayon apparaîtra dans la marge. En cliquant dessus, vous activerez une interface qui codera à votre place afin de modifier simplement chacune des fonctionnalités de votre composant.
+
+### Boutons
+
+Le composant bouton permet de créer un bouton avec des icônes, qui enverra sur une page du wiki ou un autre site. Les combinaisons entre les différents paramètres vous permettrons de faire bouton à votre pied.
+
+### Mise en forme (mise en page)
+
+Mise en forme propose 6 possibilités :
+
+* Étiquette : mettre en avant un texte au travers d’une couleur de fond.
+* Onglets : créer des onglets dans une page, permet d’obtenir des sous menus horizontaux ou verticaux.
+* Encadré : encadrer un texte ou proposer un encadré qui se ferme quand on clique sur son titre.
+ * Section : couteau suisse de mise en forme, permet d’encadrer un paragraphe, de lui adjoindre une couleur ou une image de fond et beaucoup d’autres combinaisons.
+ * Afficher des encadrés en accordéon : déclinaison d’encadré, accordéon permet de chaîner plusieurs encadrés, quand vous ouvrez un encadré, ça ferme les autres.
+ * Afficher en plusieurs colonnes : permet de créer plusieurs colonnes dans une page ou une partie de page, très utile pour des mises en page avancées.
+
+### Syndication / Flux RSS
+
+Syndication / flux RSS permet d'afficher des informations arrivant de sites internet externe, permet de créer une page de veille.
+
+### Gestion des tags
+
+Gestion des tags : dans chaque page (en bas en mode édition) ou fiche d’un formulaire, vous pouvez ajouter des mots clefs ou tags. Gestion des tags vous propose 3 actions :
+
+ * Créer une liste des pages par tag
+ * Nuage de tags
+ * Lien RSS vers la liste pour des tags donnés
+
+### Réactions / Votes
+
+Ce composant vous offre trois possibilités :
+
+* Réactions et votes
+* Réactions de l'utisateur.ice connecté.e
+* Administration des réactions
+
+### Vidéo intégrée
+
+afficher une vidéo proposée par PeerTube, Viméo ou Youtube à partir de son identifiant.
+
+### Actions d'envoi d'e-mail/listes
+
+permet 3 actions :
+
+* Afficher un formulaire de contact
+* S’abonner à une liste de discussion (qui devra être créée par ailleurs)
+* Se désabonner à une liste de discussion
+
+### Afficher les données d'un formulaire
+
+Afficher les données d’un formulaire : véritable logiciel dans YesWiki, le gestionnaire de formulaire vous permet d’en créer mais ensuite d’afficher les résultats. Avec cette action, vous pourrez afficher les données des 4 formulaires fournis par défaut :
+
+* Annuaire
+* Agenda
+* Blog-Actu
+* Ressources
+
+Vous pourrez bien sûr afficher les données des formulaires que vous aurez fabriqués. Il vous suffira de choisir le formulaire qui vous intéresse puis de choisir parmi les formes de restitution des résultats : Liste, Blocs, Cartographie, Calendrier, Agenda, Annuaire , Time Line, Carousel, Photobox, Liste de liens, Blog, Tableau.
+
+### Afficher un formulaire de création de fiche
+
+Ce composant est le pendant de l’action précédente, il permet d’afficher l’espace de saisie correspondant au formulaire qui vous intéresse.
+
+### Actions avancées 
+
+De nombreuses autres actions sont disponibles, en voici la liste :
+
+#### Créer un sommaire de la page
+#### Afficher des liens "Page Suivante" "Sommaire" "Page Précédente" dans une page
+#### Afficher une barre de progression
+#### Recherche de texte
+#### Inclure une page dans une autre
+#### Rediriger vers une autre page du Wiki
+#### Afficher les pages sous forme de liste
+#### Afficher les pages qui ont un lien vers la page courante
+#### Afficher mes changements
+#### Afficher mes pages
+#### Afficher le contenu du fichier de configuration
+#### Lister les utilisateurs, utilisatrices
+#### Liste les derniers changements
+#### Liste les derniers commentaires
+#### Lister toutes les pages
+#### Lister toutes les pages sauf les fiches bazar
+#### Lister les pages à créer
+#### Lister les pages orphelines
+#### Lister seulement les fiches bazar
+
+Structure du wiki
+--------------------
+
+### La composition d'une page 
 
 #### Par défaut une page wiki contient :
 
@@ -18,7 +325,7 @@
 
 #### Il y a deux manières d'accéder à une page menu pour la modifier :
 
-##### Par la roue crantée
+##### Par la roue crantée 
 
 ![image composition_roue.png](images/composition_roue.png)
 
@@ -56,7 +363,7 @@ N'hésitez pas à vous inspirer du code du menu déjà en place. Un wiki récemm
 
 ![image menu_haut.png](images/menu_haut.png)
 
-### Visite de la roue crantée
+### Visite de la roue crantée 
 
 Cliquer sur la roue crantée en haut à droite me donne accès à un certain nombre d'espaces dédiés à l'administration du wiki :
 
@@ -84,41 +391,6 @@ Cette page gestion du site est très importante. Elle donne accès à de nombreu
 
 ![image rubriques_gestiondusite.png](images/rubriques_gestiondusite.png)
 
-##### Accueil de gestion du site
-
-Vous avez là un récap des menus et pages spéciales du wiki.
-
-##### Droits d'accès
-
-C'est ici que vous pouvez indiquer "qui a le droit de faire quoi sur quelle page".
-Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
-
-##### Look
-
-C'est par là que vous personnalisez le squelette et l'esthétique de votre wiki.
-Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
-
-##### Utilisateurs et groupes
-
-Ici vous visualisez les comptes utilisateurs créés et vous pouvez les organiser en "groupes".
-Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
-
-##### Mots clés
-
-Si vous avez utilisé des mots clés pour qualifier vos pages wiki vous en trouvez un récap ici.
-Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
-
-##### Fichier de conf
-
-Certains éléments de configuration peuvent être personnalisés ici : accès par défaut, sécurité, indexation ...
-Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
-Nous les explorerons au fil des modules.
-
-##### Mises à jour / extensions
-
-Vous pouvez voir ici la version du wiki et s'il s'agit de la toute dernière. 
-Si vous êtes identifié comme administrateur vous pouvez faire les mises à jour.
-
 #### Tableau de bord
 
 Dans le tableau de bord, vous pouvez voir :
@@ -134,997 +406,3 @@ C'est le tableau de bord configuré par défaut mais vous pouvez le personnalise
 C'est ici que l'on configure Bazar : Bazar est une extension importante de YesWiki qui lui ajoute des fonctionnalités de création et de gestion de bases de données (formulaires).<br>
 
 Il faut être identifié comme administrateur pour créer ou modifier un formulaire Bazar.
-
-## Se connecter à son wiki
-
-### Créer un compte utilisateur (à ré-écrire et captures d'écrans à refaire)
-
-INSÉRER ICI UN MOT RELATIF A action login  
-
-Pour créer son compte, il faut aller dans la roue crantée en haut à droite, cliquer sur "Se connecter", puis cliquer sur "s'inscrire".
-
-![image Vignette_seconnecter_sinscrire.png](images/Vignette_seconnecter_sinscrire.png)
-
-Remplir les différents champs de la fenêtre :
-
-![image Vignette_sinscrire.png](images/Vignette_Vignette_sinscrire.png)
-
-Finaliser en cliquant sur "Nouveau compte" : votre compte est créé.
-
-#### S'identifier sur YesWiki / se connecter sur YesWiki
-
-Dans la roue crantée en haut à droite, cliquer sur "Se connecter". 
-
-![image Vignette_seconnecter.png](images/Vignette_seconnecter.png)
-
-1.  Remplir les champs "email ou NomWiki" et "mot de passe"
-2.  Cliquer sur "Se connecter", et éventuellement sur "se souvenir de moi" (en cochant cette case Se souvenir de moi, vous serez identifiés durant quelques mois)
-
-![image parametres_utilisateur.png](images/Vignette_seconnecter.png)
-
-### Changer de mot de passe (à ré-écrire)
-
-Si Vous connaissez votre mot de passe :
-
-1.  Dans la roue crantée en haut à droite, cliquer sur "Se connecter".
-2.  Renseigner les champs de la fenêtre qui s'ouvre et cliquer sur "se connecter"
-3.  A nouveau, aller dans la roue crantée pour cliquer sur "l'identifiant de votre compte" : une nouvelle fenêtre s'ouvre
-
-![image changer_compte_vignette1.png](images/changer_compte_vignette1.png)
-
-4.  Cliquer sur "modifier mes paramètres utilisateurs", remplir les champs de la nouvelle fenêtre qui s'ouvre (ancien mot de passe et nouveau mot de passe) et cliquer sur "changer"
-
-![image changer_compte_vignette2.png](images/changer_compte_vignette2.png)
-
-#### Récupérer son mot de passe en cas d'oubli
-
-Si vous avez perdu votre mot de passe,
-1.  Dans la roue crantée en haut à droite, cliquer sur "Se connecter" puis "mot de passe perdu ?"
-
-![image Vignette_motdepasse.png](images/Vignette_motdepasse.png)
-
-####A mettre dans la doc webmaster !!!
-
-    *   Vous pouvez également ajouter dans une page [l'action {{lostpassword}}](https://yeswiki.net/?PassworD) qui permet de retrouver son mot de passe
-2.  voir plus bas "permettre aux utilisateurs de récupérer leur mot de passe par mail en cas d'oubli)
-3.  allez dans la partie "récupération du mot de passe"
-4.  ajoutez votre mail dans le champ "email" et cliquez sur "envoyer"
-5.  vous allez recevoir un nouveau mail avec un lien pour générer un nouveau mot de passe
-6.  changez votre mot de passe pour un nouveau que vous n'oublierez pas ;-)
-
-#### Permettre aux utilisateurs de récupérer leur mot de passe par mail
-
-ATTENTION : cette fonctionnalité nécessite la version Cercopithèque
-il suffit d'insérer ce bout de code (on parle "d'action" quelque part. La page [ParametresUtilisateur](https://yeswiki.net/?ParametresUtilisateur) semble assez appropriée
-
-{{lostpassword}}
-
-## Revenir à la version précédente d'une page
-
-Dans YesWiki chaque modification d'une page est sauvegardée dans un **historique**. Par défaut il est possible de voir les 30 versions antérieures d'une page et, ce qui est souvent bien pratique, de restaurer une version antérieure.
-
-**Pour y accéder** il suffit de cliquer sur le lien en bas de page nommé : "Dernière édition : _jour_._mois_._année_"
-
-![image historique_bas_page.png](images/Historique_bas_page.png)
-
-**Attention** : cet accès est possible pour les personnes qui ont les droits en écriture sur la page concernée, c'est-à-dire tout le monde par défaut, mais les administrateurs du site peuvent faire un autre choix.
-
-*   le "handler" révisions est ajouté dans l'url
-
-![image historique_revision_page.png](images/Historique_revision_page.png)
-
-*   et une fenêtre comme celle-ci s'affiche :
-
-![image Historique_page.png](images/Historique_page.png)
-
-
-### Vous y trouverez dans la partie haute
-
-*   la représentation des 30 dernières modifications effectuées sur la page affichées avec, en survol avec la souris, le numéro, la date et l'heure de la modification
-*   en cliquant sur un rond : en plus des éléments précédents, l'adresse IP depuis laquelle la modification a été effectuée (par exemple : 78.246.209.114), ou, si la modification a été effectuée depuis un compte connecté du site, le nom du compte (par exemple : WikiAdmin)
-*   un bouton vert "Restaurer cette version" permettant d'enregistrer la page choisie
-
-### dans la partie en dessous, en fonction de l'onglet choisi
-
-*   premier onglet : l'aperçu de la version choisie (par défaut la dernière ou "version actuelle")
-*   deuxième onglet : les modification apportées par cette version, en rouge pour ce qui a été retiré et en vert pour ce qui a été ajouté
-*   troisième onglet : la comparaison avec la version actuelle, avec les mêmes codes couleur
-*   **A noter** : en cochant la case "Afficher le code Wiki" vous aurez les mêmes éléments, vus en mode édition !
-
-## mettre en forme de texte
-
-En mode édition, le langage YesWiki nécessite de connaître quelques petites astuces pour mettre en forme le texte d'une page. En voici quelques unes de base.
-A noter : La plupart est accessible directement dans la barre d'édition !
-
-![image editer_une_page_barre.png](images/editer_une_page_barre.png)
-
-### Les principales astuces de mise en page
-
-#### Accentuation
-
-**\*\*Gras\*\***
-_//Italique//_
-\_\_Souligné\_\_
-@@Barré@@
-
-#### Titres
-
-```
-======Titre 1======
-=====Titre 2=====
-====Titre 3====
-===Titre 4===
-==Titre 5==
-```
-
-#### Insérer une ligne
-
-\----
-
-#### Listes
-
- - Liste à puce niveau 1
- - Puce niveau 1
-   - Puce niveau 2
-   - Puce niveau 2
- - Puce niveau 1
-
- 1) Liste énumérée
- 1) Liste énumérée
- 1) Liste énumérée
-
-Remarque : en mode édition, il faut sauter une ligne après une liste à puce pour garder la coloration syntaxique... (mais pas pour les listes énumérées)_
-
-#### Tableaux
-
-\[|
-| \*\*Nom\*\* | \*\*prénom\*\* | \*\*Couleurs préférées\*\* |
-| Lagaffe     | Gaston     | jaune     |
-| Lapalice    | Jean    | vert   |
-|\]
-
-#### Écrire en html
-
-si vous déposez du html dans la page wiki,
-il faut l'entourer de ""  ""
-pour qu'il soit interprété
-
-#### Placer du code en commentaire sur la page
-
-{* en utilisant ce code on peut mettre du texte qui n’apparaît pas sur la page... ce qui permet de laisser des explications par exemple ou même d'écrire du texte en prépa d'une publication future *}
-
-## insérer un média (images/pdf/...)
-
-En plus du texte, on peut vouloir ajouter des images, des documents à télécharger, voire des vidéos ou des fichiers audio. Avec YesWiki ceci est très facile ! Voici comment faire.
-
-### Bouton "fichier"
-
-Dans la page en mode édition, cliquer sur le bouton "Fichier" permet de choisir un fichier qui se trouve sur votre ordinateur.
-
-![image inserer_image_bouton.png](images/inserer_image_bouton.png)
-
-En fonction du type de fichier à insérer, YesWiki propose des interfaces différentes, mais le principe reste le même.
-
-![image dossiers.png](images/dossiers.png)
-
-Choisir son fichier à télécharger sur le wiki.
-
-#### Pour un fichier image (svg, png, gif, jpg, bmp...)
-
-**Le bouton ouvre une fenêtre** qui permet de choisir l'alignement de l'image, sa taille à l'affichage ainsi que le texte qui s'affichera au survol (texte de la vignette).  
-
-![image inserer_image_fenetre.png](images/inserer_image_fenetre.png)
-
-**En cliquant sur "Paramètres avancés"**, on peut ajouter un lien associé (en vert ci-dessous), des effets graphiques, modifier le texte alternatif et empêcher l'affichage de l'image lorsqu'on clic dessus (en jaune).  
-
-![image inserer_image_fenetre_parametres.png](images/inserer_image_fenetre_parametres.png)
-
-**On peut modifier l'image après l'avoir enregistrée**. Pour cela il faut éditer à nouveau la page, trouver le bout de code entre {{ }} qui concerne ce fichier et positionner votre curseur sur la ligne de code : un bouton crayon apparaît sur la gauche, il suffit de cliquer dessus pour afficher la fenêtre permettant de faire toutes les modifications que vous souhaitez.
-
-![image inserer_image_modifier_crayon.png](images/inserer_inserer_image_modifier_crayon.png)
-
-#### Pour un fichier texte (.doc, .pdf, .xls, .odt, .txt...)
-
-**Ici le bouton ouvre une fenêtre** qui permet de modifier le texte du lien et d'afficher le fichier sous forme de lien ou directement inclus dans la page.
-
-![image inserer_fichier_fenetre.png](images/inserer_fichier_fenetre.png)
-  
-Comme pour les images, on peut :  
-\- **cliquer sur Paramètres avancés** pour ajouter un lien associé, des effets graphiques et que modifier le texte alternatif.
-\- **et modifier le fichier après l'avoir enregistré** en cliquant sur bout de code entre {{ }}.
-
-#### pour un fichier audio (mp3) et vidéo (flv)
-
-Le principe est toujours le même. Ces fichiers seront interprétés sous forme de lecteur audio. Mais souvent ce sont des fichiers lourds qu'on a tendance à stocker sur des plateformes spécialisées (vimeo, youtube, peertube ...) pour ensuite les intégrer au wiki en iframe.
-
-### Vous avez envie de code ?
-
-Pas de souci, vous avez ci-dessus les bouts de codes générés par les boutons, ils peuvent être créés directement sur votre page en mode édition, et modifiés comme vous le souhaitez.
-**Pour plus d'infos**, aller sur la page [{{attach}}](https://yeswiki.net/?AttacH) de la documentation YesWiki.
-
-## Insérer un lien / créer une page
-
-### Créer une page, insérer un lien interne (à refaire)
-
-#### Créer une page
-
-Bien entendu, on ne peut pas se contenter d'une seule page dans sa gare centrale !
-Vous pouvez initier une nouvelle page où que vous soyez dans votre wiki : dans une page classique ou dans le menu.
-Il y a pour cela 2 étapes :
-
-*   ouvrir le fenêtre permettant de faire un lien (voir plus haut)
-*   saisir le "Nom de la page YesWiki"
-
-##### Nommer ma nouvelle page
-
-La seule règle pour nommer votre page est indiquée : "sans espace ni caractère spéciaux".  
-Donc vous pouvez choisir de l'appeler nomdemapage ou comptesrendusdereunions  
-Ce sera plus lisible si vous alternez avec des majuscules NomDeMaPage (c'est la méthode traditionnelle dans YesWiki, ce que vous nous appelions les ChatMot).  
-Et c'est encore mieux (notamment pour les moteurs de recherches) si vous optez pour les tirets : nom-de-ma-page  
-  
-Ça donne ça :
-
-![image page.png](images/page.png)
-  
-Quand je clique sur "insérer", ça génère cette ligne de code :  
-
-![image page2.png](images/page2.png)
-
-Il ne vous reste plus qu'à sauver.  
-
-Quand le lien vient d'être créé mais que la nouvelle page est vide, un petit crayon apparait devant le lien. Il disparaitra quand vous aurez saisi du contenu dans la nouvelle page.  
-
-![image page3.png](images/page3.png)
-
-##### Astuces
-
-*   une fois ma nouvelle page créée, je peux enlever le lien qui y mène sans que la page disparaisse pour autant. Je peux retrouver mes pages dans la roue crantée en haut à droite > Tableau de bord. Une bonne manière de cacher des pages ;-)
-*   une tout autre manière de créer une nouvelle page est de modifier l'URL : la dernière partie de l'adresse correspond au nom de la page
-
-![image URL_nompage.png](images/URL_nompage.png)
-
-*   YesWiki va interpréter tout ChatMot comme une nouvelle page. Si on veut écrire un ChatMot sans créer de nouvelle page (par exemple pour écrire YesWiki sans créer de lien), on l'encadre de double guillemets:
-
-![image creer_nouvelle_page_chatmot_non_lien.png](images/creer_nouvelle_page_chatmot_non_lien.png)
-
-#### Créer un lien interne
-
-Dans les pages d'une gare centrale on a souvent besoin de faire des liens vers d'autres pages ou d'autres sites. Encore une fois, c'est assez simple.  
-  
-Dans la page en mode édition, cliquer sur le bouton "Lien".  
-
-![image bouton_lien.png](images/bouton_lien.png)
-
-Vous serez alors guidé.e dans vos choix avec cette fenêtre :  
-
-![image ajouterunlien.png](images/ajouterunlien.png)
-
-*   Faites vos choix et cliquez sur "Insérer" : la ligne de code s'inscrit toute seule ;-)
-
-#### Vous avez envie de code ?
-
-Voici ce que ça donne quand on regarde le code :  
-
-![image DocumentationCreerUnLien_creer_un_lien_ex_chamot.png](images/DocumentationCreerUnLien_creer_un_lien_ex_chamot.png)
-
-![image DocumentationCreerUnLien_creer_un_lien_ex_url.png](images/DocumentationCreerUnLien_creer_un_lien_ex_url.png)
-
-![image DocumentationCreerUnLien_creer_un_lien_ex_mail.png](images/DocumentationCreerUnLien_creer_un_lien_ex_mail.png)
-
-### Créer un lien vers un site externe (à écrire)
-
-
-## insérer des éléments d'un autre site (widget)
-
-Avec YesWiki on ne réinvente pas le fil à couper le beurre et on peut facilement copier sur son voisin et récupérer des pages intéressantes ! On peut aussi tout simplement avoir besoin d'**utiliser différents outils de travail coopératif et vouloir les centraliser dans notre gare centrale**. Voici comment faire :  
-
-### Un peu de vocabulaire
-
-Un **widget** est un petit module qui permet à une page d'embarquer (encapsuler, intégrer... "_embed_" en anglais) et de re-publier dynamiquement des contenus et fonctions issus de services proposés par d'autres sites internet.
-
-### Quelques étapes très simples
-
-#### 1\. Trouver le code iframe permettant l'intégration
-
-Un site propose souvent d'afficher ses contenus ailleurs que "chez lui", en fournissant un morceau de code html (appelé iframe), qui se trouve dans les options "_Partager_" > "_Intégrer_" ou encore "_iframe_".  
-Ca peut ressembler à ça :[
-
-![image partager.png](images/partager.png)
-
-![image partageryoutube.png](images/partageryoutube.png)
-
-![image integrer.png](images/integrer.png)
-
-Le code iframe que vous allez trouver ressemblera à ça :
-```<iframe name="embed\_readwrite" src="https://unsite.com/iframe" width="100%" height="600" ></iframe>```
-Vous allez sélectionner et copier ce code pour aller le coller dans votre wiki.
-
-#### 2\. Coller ce code dans ma page wiki
-
-Une fois le code collé dans la page il faut penser à ajouter avant et après **deux guillemets**.
-
-""coller ici le code HTML fourni par le site tiers""
-
-#### 3\. Sauver et profiter !
-
-Vous enregistrez ces modifications et vous pouvez profiter des fonctionnalités de cet autre site dans votre wiki : lire la vidéo, écrire dans le pad, lire un contenu...
-
-### Bricoler le code
-
-#### Changer la taille de la fenêtre
-
-Le code iframe fourni peut être personnalisé, notamment pour les dimensions de la fenêtre intégrée.
-Dans le bout de code à copier-coller, les paramètres _width_ (largeur) et _height_ (hauteur) permettent de spécifier la taille de ce cadre et ils sont renseignés en pixels. Vous pouvez modifier ces chifres pour ajuster la taille de la fenêtre.
-  
-**Largeur**
-
-Le paramètre width= est indispensable. Il peut indiquer un nombre pixels ou un pourcentage de la taille de l'écran.
-Pour que la fenêtre prenne toute la largeur et s'adapte à l'écran vous pouvez indiquer ```width=100%```
-  
-**Hauteur**
-
-L'insertion iframe peut configurer sa longueur automatiquement via la class `class="auto-resize"`
-
-#### Ajouter ou enlever un cadre noir
-
-La fenêtre intégrée peut être encadrée ou non.
-Dans la "class" vous pouvez préciser ```frameborder="yes"``` (avec cadre noir) ou ```frameborder="no"``` (sans cadre noir)
-```<iframe width="100%" src="https://unsite.com/iframe" class="frameborder="yes" ></iframe>```
-
-## Principe des composants
-
-Les composants sont des "trucs" que l'on peut rajouter dans une page wiki.
-Utiliser les composants ajoutera un code effrayant dans votre page, pas de panique, en cliquant sur ce code, un crayon apparaîtra dans la marge. En cliquant dessus, vous activerez une interface qui codera à votre place afin de modifier simplement chacune des fonctionnalités de votre composant.
-
-## Boutons
-
-Le composant bouton permet de créer un bouton avec des icônes, qui enverra sur une page du wiki ou un autre site. Les combinaisons entre les différents paramètres vous permettrons de faire bouton à votre pied.
-
-## Mise en forme (mise en page)
-
-Mise en forme propose 6 possibilités :
-
-* Étiquette : mettre en avant un texte au travers d’une couleur de fond.
-* Onglets : créer des onglets dans une page, permet d’obtenir des sous menus horizontaux ou verticaux.
-* Encadré : encadrer un texte ou proposer un encadré qui se ferme quand on clique sur son titre.
- * Section : couteau suisse de mise en forme, permet d’encadrer un paragraphe, de lui adjoindre une couleur ou une image de fond et beaucoup d’autres combinaisons.
- * Afficher des encadrés en accordéon : déclinaison d’encadré, accordéon permet de chaîner plusieurs encadrés, quand vous ouvrez un encadré, ça ferme les autres.
- * Afficher en plusieurs colonnes : permet de créer plusieurs colonnes dans une page ou une partie de page, très utile pour des mises en page avancées.
-
-## Syndication / Flux RSS
-
-Syndication / flux RSS permet d'afficher des informations arrivant de sites internet externe, permet de créer une page de veille.
-
-## Gestion des tags
-
-Gestion des tags : dans chaque page (en bas en mode édition) ou fiche d’un formulaire, vous pouvez ajouter des mots clefs ou tags. Gestion des tags vous propose 3 actions :
-
- * Créer une liste des pages par tag
- * Nuage de tags
- * Lien RSS vers la liste pour des tags donnés
-
-## Réactions / Votes
-
-Ce composant vous offre trois possibilités :
-
-* Réactions et votes
-* Réactions de l'utisateur.ice connecté.e
-* Administration des réactions
-
-## Vidéo intégrée
-
-afficher une vidéo proposée par PeerTube, Viméo ou Youtube à partir de son identifiant.
-
-## Actions d'envoi d'e-mail/listes
-
-permet 3 actions :
-
-* Afficher un formulaire de contact
-* S’abonner à une liste de discussion (qui devra être créée par ailleurs)
-* Se désabonner à une liste de discussion
-
-## Afficher les données d'un formulaire
-
-Afficher les données d’un formulaire : véritable logiciel dans YesWiki, le gestionnaire de formulaire vous permet d’en créer mais ensuite d’afficher les résultats. Avec cette action, vous pourrez afficher les données des 4 formulaires fournis par défaut :
-
-* Annuaire
-* Agenda
-* Blog-Actu
-* Ressources
-
-Vous pourrez bien sûr afficher les données des formulaires que vous aurez fabriqués. Il vous suffira de choisir le formulaire qui vous intéresse puis de choisir parmi les formes de restitution des résultats : Liste, Blocs, Cartographie, Calendrier, Agenda, Annuaire , Time Line, Carousel, Photobox, Liste de liens, Blog, Tableau.
-
-## Afficher un formulaire de création de fiche
-
-Ce composant est le pendant de l’action précédente, il permet d’afficher l’espace de saisie correspondant au formulaire qui vous intéresse.
-
-## Actions avancées (à écrire)
-### Créer un sommaire de la page
-### Afficher des liens "Page Suivante" "Sommaire" "Page Précédente" dans une page
-### Afficher une barre de progression
-### Recherche de texte
-### Inclure une page dans une autre
-### Rediriger vers une autre page du Wiki
-### Afficher les pages sous forme de liste
-### Afficher les pages qui ont un lien vers la page courante
-### Afficher mes changements
-### Afficher mes pages
-### Afficher le contenu du fichier de configuration
-### Lister les utilisateurs, utilisatrices
-### Liste les derniers changements
-### Liste les derniers commentaires
-### Lister toutes les pages
-### Lister toutes les pages sauf les fiches bazar
-### Lister les pages à créer
-### Lister les pages orphelines
-### Lister seulement les fiches bazar
-
-## Gestion du YesWiki (à écrire)
-### Éditer les droits d'accès aux actions
-### Éditer les droits d'accès aux handlers
-### Éditer les groupes d'utilisateurs
-### Gestion des pages
-### Gérer les droits d'accès aux pages
-### Table des utilisateurs
-### Gérer le thème des pages
-### Modifier les paramètres du fichier de configuration
-### Définir le thème de base
-### Tester les thèmes disponibles
-### Gestion des tags
-### S'abonner pour recevoir périodiquement le contenu d'une page par courriel
-### Nettoyer les pages récemment vandalisées
-### Gestion des fichiers
-
-## Mettre à jour
-
-## Gérer les droits
-
-### Introduction aux droits d'accès
-
-YesWiki a beau être très ouvert lors de son installation (ce qui oblige à se poser quelques questions que nous aborderons lors du webinaire), il n'en offre pas moins une gestion fine des droits de lecture et d'écriture de son contenu. **Cette gestion permettra :**  
-
-*   de limiter l'accès de tout ou partie du wiki à certaines personnes ou catégories de personnes (groupes)
-*   de protéger certaines parties (bandeau, menu, footer...) de votre wiki contre les modifications involontaires (ou intempestives)
-*   de garder certaines parties de votre wiki cachée (mais pas réellement fermées en accès)
-
-#### Un préalable pour jouer dans les droits d'accès : exister sur le wiki
-
-En effet **seules les personnes ayant un compte sur le wiki peuvent modifier les droits d'accès aux pages et encore avec certaines limites.** La seule personne ayant tous les droits est celle qui a créé le wiki (le super admin). Cette personne peut évidemment partager ses droits avec d'autres utilisateurs du wiki (voir plus bas)  
-
-**Il est donc nécessaire de pouvoir se créer un compte sur le wiki ou de se connecter à celui-ci.** Cela s'opère via la roue crantée du wiki / se connecter (ou s'inscrire). En cas de perte du mot de passe, le lien "mot de passe perdu" pourra vous le renvoyer sur le mail indiqué lors de l'inscription.  
-\=> plus d'infos sur [https://yeswiki.net/?DocumentationIdentification](https://yeswiki.net/?DocumentationIdentification)  
-  
-**Une fois connecté, vous ne possédez pas encore beaucoup de droits** (sauf si l'administrateur du wiki vous en a attribués) à savoir :
-
-*   créer des pages (vu précédemment)
-*   vous attribuer la propriété d'une page
-*   attribuer des droits d'accès en lecture et écriture sur les pages dont vous êtes propriétaire
-*   supprimer les pages dont vous êtes propriétaire
-
-##### Devenir propriétaire d'une page
-
-*   On devient automatiquement propriétaire des nouvelles pages que l'on crée lorsque l'on est connecté sur le wiki (cela se vérifie en bas de page avec la mention propriétaire = vous)
-*   Pour devenir propriétaire d'une page sans propriétaire, il suffit de cliquer sur Appropriation (en bas de page) : se faisant vous recevez des droits de gestion sur cette page (même si ça ne se voit pas comme ça)
-*   On ne peut devenir propriétaire d'une page qui a déjà un propriétaire, mais le propriétaire lui même peut décider de vous nommer nouveau propriétaire de cette page. Si vous avez reçu des droits d'admin sur le wiki, vous pourrez devenir propriétaire de n'importe quelle page sans l'accord du propriétaire !
-
-##### Supprimer une page dont vous êtes propriétaire
-
-Lorsque vous êtes propriétaire d'une page, un bouton supprimer apparaît en bas de page. Il vous permettra de supprimer définitivement la page et son historique (attention c'est sans retour d'où le message de confirmation !).
-Si vous avez reçu des droits d'admin sur le wiki, vous pourrez modifier toutes les pages, y compris celles dont vous n'êtes pas propriétaire.  
-
-##### Modifier les droits d'une page dont vous êtes propriétaire
-
-En bas de page, vous allez trouver un bouton permissions. En cliquant sur celui-ci, une fenêtre popup va vous permettre de gérer les droits en lecture et écriture.  
-**Voici les possibilités qui vous sont offertes**  
-[
-
-![image EditerPermissions.png (14.2kB)](images/M22Lectures_popuppermission_20220216161156_20220216151445.png)
-
-](images/M22Lectures_popuppermission_20220216161156_20220216151445.png)  
-
-**Cette gestion page par page et user par user est vite "pesante"**
-
-**Pour dépasser cette lourdeur,**
-
-*   un module de gestion des droits des utilisateurs par groupe a été créé
-*   un module de gestion du droit d'accès aux pages en masse a été créé
-
-### Gérer les droits en masse
-
-#### Gestion des droits par utilisateur
-
-La gestion utilisateur par utilisateur est très fine MAIS présente quelques inconvénients :
-
-*   lorsque vous avez limité l'accès de plusieurs pages à un utilisateur et qu'un nouvel utilisateur doit recevoir les mêmes accès, vous voilà bon à repasser sur chaque page pour y ajouter son nom ;-(
-*   idem dans l'autre sens, si un utilisateur doit "perdre" ses accès
-
-**Pour s'affranchir de ces limites, la notion de groupe a été introduite.**
-Un groupe reprend un ou plusieurs utilisateurs wiki. Il se nomme @nomdugroupe.
-Un seul groupe existe par défaut sur le wiki @admins et contient par défaut un seul utilisateur à savoir celui qui a créé le wiki.
-Ce groupe @admins a TOUS les droits sur TOUTES les pages du wiki.  
-C'est un groupe "sensible" donc car les utilisateurs qui s'y trouvent ont des pouvoirs importants sur le wiki et notamment des pouvoirs de suppression (de pages, de formulaires bazar, de listes...) avec des effets potentiellement complexes à "rattraper". Il faut donc être vigilant avec les utilisateurs que l'on va placer dans ce groupe.
-
-Il est possible de créer autant d'autres groupes que souhaité.
-**Ces autres groupes n'ont aucun privilège sur le wiki**. Ils sont simplement un regroupement d'utilisateurs. Ce regroupement, ce groupe (@poule, @coq, @...) pourra être utilisé dans la gestion des droits des pages du wiki comme on le ferait pour un utilisateur (on mettra le nom du groupe plutôt que le nom de l'utilisateur).  
-Ce faisant, si un utilisateur (membre du groupe @coq) quitte le projet et ne doit plus pouvoir modifier les pages auquel il avait accès en écriture, il ne faut pas repasser sur chaque page concernée mais il suffira de l'enlever du groupe @coq ;-)  
-  
-Pour gérer les groupes (et les utilisateurs inclus) cela se passe sur la page "utilisateurs et groupes" accessible via la roue crantée / gestion du site (attention, il faut faire partie des administrateurs du wiki pour pouvoir modifier, créer, supprimer des groupes)  
-
-**Voici à quoi ressemble la page**
-
-*   pour voir le contenu des groupes : je choisis dans la liste et fait "voir/éditer"
-*   pour créer un nouveau groupe : j'indique son nom et fait "définir"
-*   pour supprimer un groupe (attention) : je choisis et fait "supprimer"
-
-Pour info : en bas de cette page, vous découvrez et gérer (si vous êtes dans le groupe @admins) les utilisateurs connus du wiki.
-
-[
-
-![image EditerPermissions.png (14.2kB)](images/M22GererLesDroitsDAccesEnMasse_Gerergroupe_20220223095430_20220223095106.png)
-
-](images/M22GererLesDroitsDAccesEnMasse_Gerergroupe_20220223095430_20220223095106.png)
-
-**Pour ajouter ou retirer un utilisateur d'un groupe**  
-lorsque j'ai cliqué sur voir/éditer le groupe concerné, il me suffit dans la case qui apparaît d'indiquer (ou de retirer) le nomwiki de l'utilisateur sur une ligne (sans virgule) et d'enregistrer  
-
-[
-
-![image EditerPermissions.png (14.2kB)](images/M22GererLesDroitsDAccesEnMasse_ajoutgroupe_20220223095430_20220223095137.png)
-
-](images/M22GererLesDroitsDAccesEnMasse_ajoutgroupe_20220223095430_20220223095137.png)
-
-#### Gestion des droits des pages en masse
-
-La gestion page par page c'est sympa mais quand on a 150 pages dans son wiki... ça peut vite devenir très long. Heureusement il existe une page permettant de gérer les changements des droits d'accès de plusieurs pages (toutes les pages) en même temps.  
-  
-Cette page se nomme "Droits d'accès aux pages" et est accessible via la roue crantée / gestion du site. (attention, il faut faire partie des administrateurs du wiki pour avoir accès à cette page)  
-  
-Sur cette page, vous pourrez aussi voir les droits qui sont attribués à chacune des pages du wiki et pourrez cocher les pages qui doivent être modifiées et attribuer en bas les nouveaux droits en utilisant  
-
-##### en mode simple
-
-via les listes déroulantes proposées (droit de lecture, droit d'écriture)  
-
-[
-
-![image EditerPermissions.png (14.2kB)](images/M22GererLesDroitsDAccesEnMasse_modesimple_20220223095430_20220223094848.png)
-
-](images/M22GererLesDroitsDAccesEnMasse_modesimple_20220223095430_20220223094848.png)
-
-##### en mode avancé
-
-via les champs classiques (ceux qu'on retrouve quand on édite les droits d'une page seule)  
-
-[
-
-![image EditerPermissions.png (14.2kB)](images/M22GererLesDroitsDAccesEnMasse_modeavance_20220223095430_20220223094937.png)
-
-](images/M22GererLesDroitsDAccesEnMasse_modeavance_20220223095430_20220223094937.png)
-
-  
-
-[Et on fait quoi avec les pages qui n'existent pas encore mais vont évidemment apparaître !](https://quincaillere.org/formationgarecentrale2022/?M22GererLesAccesDesPagesNonEncoreExi&course=P2Parcours2&module=M22PenserLesAccesPourOuvrirEtFermerAL)
-
-### Gérer les droits d'accès des pages non encore existantes
-
-La gestion vue jusque maintenant permet de gérer l'existant mais comment gérer ce qui va s'ajouter au wiki ?
-
-#### En ce qui concerne les pages
-
-*   soit en le faisant au fur et à mesure via les méthodes présentées ci-dessus
-    *   méthode la plus courante (mais franchement pas pratique et fastidieuse)
-*   soit en attribuant des droits par défaut à toutes les nouvelles pages créées
-    *   Pour ce faire, il faut aller dans la roue crantée/gestion du site/fichier de conf
-        *   dans l'accordéon "droit d'accès" vous pouvez déterminer quelles seront les accès par défaut des prochaines pages
-
-![image Droitaccesfichierconf.png (67.1kB)](images/M22GererLesAccesDesPagesNonEncoreExi_Droitaccesfichierconf_20220223100943_20220223091008.png)
-
-#### En ce qui concerne les fiches bazar
-
-Assez souvent, la contribution sur les wikis se passe via des formulaires.  
-Par défaut ces fiches sont ouvertes en lecture et écriture.  
-**On peut limiter totalement ou partiellement l'accès aux fiches ou à certaines parties des fiches.**  
-Cela se réalise lors de la construction du formulaire via certains paramètres.  
-  
-Pour chaque champ de votre formulaire vous pouvez décider des accès en lecture et écriture afin :
-
-*   de déterminer qui peut remplir ce champ (donc la visibilité de celui-ci en mode "saisie")
-*   de déterminer qui peut voir ce champ une fois la fiche existante
-
-![image droitchampformulaire.png (42.3kB)](images/M22GererLesAccesDesPagesNonEncoreExi_droitchampformulaire_20220223105446_20220223095555.png)
-
-Vous pouvez aussi décider d'attribuer "par défaut" des droits particuliers à la fiche entière afin :
-
-*   qu'elle ne soit visible QUE par tel ou tel groupe d'utilisateurs
-*   qu'elle ne soit modifiable QUE par tel ou tel groupe d'utilisateurs
-
-Cette gestion s'effectue via le champ "configurer les droits d'accès" de votre formulaire  
-
-![image confidroitaccesformulaire.png (0.1MB)](images/M22GererLesAccesDesPagesNonEncoreExi_confidroitaccesformulaire_20220223100943_20220223090956.png)
-
-### Configurer les accès à certaines parties au sein même des pages
-Il est donc possible de limiter les accés en lecture et/ou écriture aux pages du wiki.  
-**Mais pourrions nous limiter les accès à certaines parties des pages ?**  
-
-Et oui !
-
-Lorsque l'on construit sa page wiki, on utilise souvent les composants.  
-La plupart de ces composants proposent dans leurs paramètres avancés, des choix permettant de limiter leur visibilité aux seuls utilisateurs autorisés. 
-*   dans la cas d'un bouton (ou d'un onglet), vous pouvez le cacher aux utilisateurs qui n'ont pas reçu les droits d'accès vers la page vers laquelle ce bouton pointe.
-*   dans le cas d'une section, vous pouvez déterminer par qui elle sera "visible"
-*   ...
-
-Ces opérations sont aussi réalisables pour les différents champs d'un formulaire (nous verrons ça la semaine prochaine).
-
-### Lutter contre le spams en gérant les droits d'accès
-
-#### En cas de vagues de spams
-
-Hélas comme la plupart des wikis ouverts (MediaWiki, DokuWiki), YesWiki n'échappe pas aux attaques de quelques emmerdeurs référenceurs soit-disant professionnels et autres robots de spam, qui polluent les contenus des pages.
-
-##### Les 10 commandements du lutteur anti spam
-
-**1**. Je consulte régulièrement mon wiki  
-**2**. Je m'abonne à son flux RSS  
-**3**. Je consulte la page TableauDeBordDeCeWiki de mon wiki (accessible depuis la "roue crantée")  
-**4**. Je vérifie les dernières pages modifiées dans le TableauDeBordDeCeWiki ou sur la page DerniersChangements  
-**5**. Je vérifie les derniers comptes crées sur la page TableauDeBordDeCeWiki. (Action {{Listusers last="20"}} )  
-**6**. J'édite les pages en question et je supprime les parties indésirables, puis je sauve. (Cela prend moins d'une minute)  
-**7**. Je protège l'accès en écriture des pages non collectives ([PageRapideHaut](https://quincaillere.org/formationgarecentrale2022/?PageRapideHaut), [PageHeader](https://quincaillere.org/formationgarecentrale2022/?PageHeader), [PageFooter](https://quincaillere.org/formationgarecentrale2022/?PageFooter), etc.)  
-**7bis** Je ferme temporairement l'entièreté du wiki en écriture  
-**8**. Je mets à jour mon [YesWiki](https://quincaillere.org/formationgarecentrale2022/?YesWiki) quand une nouvelle version sort.  
-**9**. Pour les plus endurcis, je fais le grand ménage avec l'outil despam (voir plus bas)  
-**10**. Je ne cède pas à la tentation de transformer mon espace collaboratif en bunker. Et je continue à mettre en balance les effets positifs de l'intelligence collective.  
-
-#### Les symptômes : comment identifier les spams ?
-
-*   Vous pouvez découvrir sur une ou plusieurs pages des liens vers des sites externes qui semblent sans rapport avec l'objet du wiki _(qui vendent des robes de mariée, des sites indonésien sans rapport, des liens commerciaux vers la loi duflot, des textes en langue étrangère etc..)_
-*   Il se peut aussi que de nouvelles pages soit créées, et dans certains cas de nouveaux utilisateurs wikis.
-
-Dans tous les cas, il sera toujours possible de faire marche arrière, et les informations sensibles d'accès ftp ou mysql à votre serveur ne peuvent pas être trouvés comme cela.  
-
-#### Fermer l'accès au wiki à certaines adresses IP
-
-Souvent les vagues de spam proviennent d'une région spécifique et on peut s'en préserver via une fermeture des accès aux wikis à ces adresses IP spécifiques (les IP sont spécifiques des régions/pays)  
-  
-Vous pourrez régler ces détails dans la roue crantée/ gestion du site/ fichier de conf/ blocage d'adresse IP  
-
-![image confblocageip.png (44.7kB)](images/LutterContreLeSpamsEnGerantLesDroitsDA_confblocageip_20220223102024_20220223092147.png)
-
-Il faudra au préalable que vous ayez installé l'extension IP block via roue crantée/gestion du site/mise à jour et extensions  
-
-![image extensionipblock.png (77.9kB)](images/LutterContreLeSpamsEnGerantLesDroitsDA_extensionipblock_20220223102024_20220223092158.png)
-
-Pour découvrir l'ensemble des stratégies possibles face au spam => [https://yeswiki.net/?LutterContreLeSpam](https://yeswiki.net/?LutterContreLeSpam)
-
-## Gérer les users (à écrire)
-
-groupes ? 
-
-## Mettre à jour les pages spéciales
-
-## Gérer le look 
-
-### Le menu principal
-
-Vous pouvez éditer votre menu principal (appelé menu haut dans Yeswiki) via le menu gestion du site.
-
-><span style="color:red;">Ajouter un imprim écran qui montre le chemin pour arriver sur la page "Gestion du site"</span>
-
-**Ne pas exéder 7 items différents dans votre menu principal.**  
-Si votre menu est trop chargé, il est possible de **créer un menu-déroulant** en décalant d'un espace le lien des sous menus :   
-
-![image Capture_image_sous_menu.png (8.4kB)](images/M21bLecturesFaciliterLaNavigation_Capture_image_sous_menu_20220217190910_20220217181145.png)
-
-#### Le menu vertical
-
-Si vous utilisez le thème graphique "Margot" (thème par défaut sur Yeswiki), il est possible d'utiliser un menu vertical. La structure d'un site (emplacement du menu notamment) est définie dans un fichier html que l'on appelle le **squelette**.  
-Pour appliquer ce nouveau squelette, rendez-vous dans Gestion du site :  
-1- **Page Mise à jour / Extensions** : mettre à jour le thème Margot  
-2- **Page Look Wiki** : modifier le squelette par défault (tout en bas): choisir 1col.vertical-menu.tpl.html.
-
-![image demo_menu_vertical.gif (0.5MB)](images/MenuVertical_demo_menu_vertical_700px_20220218165728_20220218155742.gif)
-
-### Utilisation de la barre latérale
-
-Pour mettre en valeur des informations redondantes ou des liens dans une colonne latérale (gauche ou droite au choix).  
-Il faut choisir une structure de page différente : **le squelette**  
-squelette 1col-left.tpl.html pour afficher la colonne à gauche  
-squelette 1col-right.tpl.html pour afficher la colonne à droite  
-  
-Ce changement est possible :
-
-* soit au niveau de la page en modifiant le thème (voir tuto ci contre):  
-* soit sur plusieurs pages d'un coup en passant par Gestion du site / Look wiki  
-
-![image demo_colonne_left.gif (0.4MB)](images/M21bLecturesFaciliterLaNavigation_demo_colonne_left_20220218165158_20220218160845.gif)
-
-## Changer de thème graphique
-
-https://yeswiki.net/?DocumentationChangerThemeGraphique
-
-Chaque page d'un wiki peut s'afficher de diverses manières, à la demande des rédacteurs. Il est ainsi possible de choisir :
-
-*   Le thème graphique : ensemble des éléments esthétiques d'un wiki.
-*   Le squelette : qui définit l'architecture de chaque page (nbre de colonnes, etc.)
-*   Le style : qui correspond à l'aspect visuel de la page (couleurs, graphisme, etc.)
-*   L'image de fond qui permet de changer l'image de fond (logique non ?)
-
-Tous ces éléments peuvent être variés d'une page à l'autre. Mais afin de maintenir une cohérence graphique sur l'ensemble de votre wiki, il est conseillé de se cantonner à l'usage d'un seul et même thème graphique.  
-[Tester les thèmes !](https://yeswiki.net/?DemoThemes "Tester les thèmes !")
-La liste des thèmes par défaut est modifiable, cela relève d'une tache d'administrateur : [voir la documentation](https://yeswiki.net/?DocumentationAjoutThemesGraphiques).  
-  
-**Pour modifier ces éléments sur une page (précédemment créée ou nouvelle) :**  
-
-*   Passer en mode édition (double clic ou "éditer la page")
-*   En bas de votre page, apparait un gros bouton Thème graphique : 
-
-![image BontonTheme.png (2.9kB)](https://yeswiki.net/files/DocumentationChangerThemeGraphique_BontonTheme_20121228163059_20121228163059.png)
-
-*  En cliquant dessus, la fenêtre modale suivante apparaîtra alors :
-
-![image ChangerTheme.png (0.1MB)](https://yeswiki.net/files/DocumentationChangerThemeGraphique_ChangerTheme_20121228163705_20121228163705.png)
-
-*   Choisissez chaque élément de ces menus déroulants
-*   cliquez sur Appliquer puis
-*   Sauvez la page
-
-### Configuration graphique par défaut
-
-Pour **changer le thème graphiques sur l'ensemble du site**, on peut personnaliser la configuration wakka.config.php et rajouter les valeurs:  
-
-'favorite\_theme' => 'nom du thème correspondant au nom du sous-répertoire thème correspondant à ce thème personnalisé', 
-'favorite\_squelette' => 'nom du squelette en liaison avec le thème personnalisé.tpl.html', 
-'favorite\_style' => 'nom de la feuille de style en liaison avec le thème personnalisé.css'
-
-Exemples :  
-
-'favorite\_theme' => 'yeswiki',
-'favorite\_squelette' => 'responsive-1col.tpl.html',
-'favorite\_style' => 'blue.css',
-
-Mais cela ne s'applique que pour les nouvelles pages créées.  
-Pour les anciennes pages, il faut alors modifier chaque page en mode édition, bouton thème,
-ou bien forcer le thème pour toutes les pages en ajoutant dans wakka.config.php : 'hide\_action\_template' => '1',
-  
-### Ajouter des thèmes graphiques
-
-#### Importer un thème graphique pré-existant
-
-*Cette partie concerne les bidouilleurs confirmés.*  
-  
-**Pour installer un nouveau thème graphique** :  
-
-*   Récupérer le fichier compressé (par exemple depuis [la liste disponible sur le site de Yeswiki](https://yeswiki.net/?TelechargementTemplates))
-*   Le dé-compresser
-*   L'envoyer par ftp dans votre yeswiki, dans le dossier "thèmes" /theme .
-
-**Pour installer une nouvelle image de fond** :  
-
-*   L'envoyer par ftp dans files/backgrounds.
-
-Seuls 2 formats d'images sont acceptés :  
-
-*   .jpg pour les images de fond pleine page (limiter la résolution à moins de 1920x1080 pixels pour éviter des temps de chargement trop longs)
-*   .png pour les images en mosaïque (répétées sur l'axe horizontal et vertical)
-
-Le thème et l'image de fond seront alors accessibles (en étant connecté sur votre wiki en mode édition) grâce au bouton "Thème graphique"  
-  
-Pour définir une configuration graphique par défaut se rendre sur la partie "[Changer de thème graphique](https://yeswiki.net/?DocumentationChangerThemeGraphique)"  
-
-### Modifier un thème graphique pré-existant
-
-Modifier un thème graphique revient à modifier :
-
-*   Les squelettes : qui se trouvent dans le répertoire "themes/squelettes" d'un thème graphique donné
-*   La feuille de style : qui se trouve dans le répertoire "themes/styles"
-*   Les images de fond : qui se trouvent dans le répertoire "/files/backgrounds"
-
-L'architecture de YesWiki est basée sur [Bootstrap](https://fr.wikipedia.org/wiki/Twitter_Bootstrap). Pour modifier les thèmes graphiques et squelettes de YesWiki, il convient de maîtriser cette bibliothèque libre de mise en forme.  
-  
-Modifier le thème graphique va donc revenir à adapter un squelette en modifiant celui-ci avec la syntaxe Bootstrap adaptée et la feuille de style associée.  
-  
-## le css 
-
-/\*  
-Voici un exemple de css custom pour le thème margot (le thème par défaut sous doryphore), il agit sur les variables css non personnalisables dans le thème et permet de faire des css sur mesure.  
-Chaque ligne ci-dessous est à dé-commenter pour être utilisée  
-Pour en savoir plus, voyez la documentation sur [https://yeswiki.net/?DocumentationThemeMargot](https://yeswiki.net/?DocumentationThemeMargot)  
-\*/  
-  
-/\* :root { \*/  
-  
-/\* couleur pour les messages positifs par defaut vert \*/  
-/\* --success-color: #3cab3b; \*/  
-  
-/\* couleur pour les messages d'erreur par defaut rouge \*/  
-/\* --danger-color: #d8604c; \*/  
-  
-/\* couleur pour les messages d'alerte par defaut orange \*/  
-/\* --warning-color: #D78958; \*/  
-  
-/\* couleur de fond de la partie centrale votre wiki \*/  
-/\* --main-container-bg-color:var(--neutral-light-color); \*/  
-  
-/\* couleur des liens \*/  
-/\* --link-color: var(--primary-color); \*/  
-  
-/\* couleur des liens au survol \*/  
-/\* --link-hover-color: var(--primary-color); \*/  
-  
-/\* couleur de la barre de menu \*/  
-/\* --navbar-bg-color: var(--primary-color); \*/  
-  
-/\* --navbar-text-color: var(--neutral-light-color); \*/  
-  
-/\* --navbar-link-color: var(--neutral-light-color); \*/  
-  
-/\* --navbar-link-bg-color: transparent; \*/  
-  
-/\* --navbar-link-hover-color: rgba(255,255,255,0.85); \*/  
-  
-/\* --navbar-link-bg-hover-color: transparent; \*/  
-  
-/\* --navbar-border: none; \*/  
-  
-/\* --navbar-border-radius: 0; \*/  
-  
-/\* --navbar-shadow: none; \*/  
-  
-/\* --header-bg-color: var(--neutral-light-color); \*/  
-  
-/\* --header-text-color: var(--neutral-color); \*/  
-  
-/\* --header-title-color: var(--primary-color); \*/  
-  
-/\* couleur de fond du pied de page \*/  
-/\* --footer-bg-color: transparent; \*/  
-  
-/\* --footer-text-color: var(--main-text-color); \*/  
-  
-/\* --footer-title-color: var(--main-text-color); \*/  
-  
-/\* --footer-border-top: 3px solid var(--neutral-soft-color); \*/  
-  
-/\* --btn-border: none; \*/  
-  
-/\* --btn-border-radius: .5em; \*/  
-  
-/\* --checkbox-color: var(--primary-color); \*/  
-  
-/\* } \*/  
-/\*.background-image.fixed {  
-
-*   background-attachment: fixed;
-*   background-size: auto;
-
-}\*/
-
-## créer des mises en page plus fines
-
-mermaid / Izmir / bootstrap / markdown
-
-### Afficher les fiches YesWiki sur une carte de type umap
-
-Le contenu de cette page n'est utilisable que pour les versions de YesWiki après doryphore 2021-06-01-1  
-
-#### Objectif
-
-Paramétrer Umap pour y insérer des fiches Yeswiki  
-
-#### Introduction
-
-[Umap](https://wiki.openstreetmap.org/wiki/UMap) est un logiciel cartographique qui permet de créer des calques modifiables (on considère ici que vous l'avez déjà utilisé) .  
-Depuis la version Doryphore de YesWiki il est possible d'importer automatiquement les données de fiches bazar dans les calques d'une Umap.  
-  
-Cet export est réalisable depuis de bouton GeoJSON (format de données) de la page de gestion Bazar.  
-Il donne accès à une page de données
-
-https://www.example.com/?api/forms/{id}/entries/geojson
-
-que vous allez glisser dans le paramétrage de votre carte Umap ({id} représente l'identifiant du formulaire concerné).  
-
-#### Explications
-
-Voilà quelques points explicatif pour paramétrer votre carte Umap.  
-
-### Coller le lien d'export GeoJSON
-
-Cela ce passe dans "Propriétés d'un calque", "Données Distantes", coller votre lien cité ci-dessus dans "URL" et choisir le "Format" GeoJSON.  
-
-### Paramétrer l'affichage de vos données dans Umap
-
-\- Dans
- 	 "Propriétés d'un calque", "Options d'interactions", "Gabarit du contenu de la popup"
-
-vous pouvez définir les champs _bf\_wiki_ que vous voulez afficher en les écrivant en syntaxe markdown reconnue par Umap, par exemple:  
-
-    {bf\_titre}
-    {bf\_site\_internet}
-    {bf\_image}
-
-  
-etc...  
-  
-\- Pour afficher un lien direct vers votre fiche wiki :
-
-    \[\[{url}|source\]\]
-
-  
-\- pour les images :
-
- 	 {{https://www.example.com/geo/files/{imagebf\_image}}}
-
-### Incruster une page d'accueil pour faciliter les contributions ?
-
-Il est possible de présenter une page spéciale de contribution directement dans la page d'accueil de votre Umap.  
-  
-Il faut se rendre dans "Éditer les propriétés de la carte" et proposer l'encapsulage d'une page spéciale en _/iframe_ (+ class new window ?) qui redirigera vers votre site pour la saisie de nouvelles fiches.  
-  
-En markdown sur Umap cela donnera :
-
- 	 {{{https://www.example.com/?VotrePageSpéciale/iframe}}}
-
-### En image :
-
-![Tuto Umap YesWiki](images/BazarAfficherSurCarteUMAP_TutoUmapYesWiki_20210610130113_20210610130147.png)
-
-## Les Handlers 
-
-### Définition 
-
-Un handler est une commande qui permet de modifier la façon d'afficher une page. On l'active en ajoutant à la fin de l'adresse URL, le signe **/** suivi du nom du handler.  
-  
-**Exemples**  
-  
-* Ajouter **/raw** a la fin d'une adresse URL de YesWiki (https://yeswiki.net/?AccueiL/raw) (dans la barre d'URL de votre navigateur), permet d'obtenir le contenu de la page sans interprétation, en syntaxe wiki.  
-
-  
-* Ajouter **/edit** a la fin d'une adresse url de YesWiki (https://yeswiki.net/?AccueiL/edit) (dans la barre d'url de votre navigateur), permet d'afficher la page en mode édition  
-
-### Liste des handlers (à vérifier)
-https://yeswiki.net/?DocumentationHandlers
-
-**Liste des handlers disponibles par défaut**
-    
-Rappel : Rajouter dans la barre d'adresse, à la fin de l'URL (www.monsiteyeswiki/handler)
-
-* **/edit** : pour passer en mode Édition
-* **/revisions**  : pour voir les versions de l'historique 
-* **/slide_show**  : pour transformer le texte en diaporama 
-* **/diaporama**  : idem slide_show en un peu différent
-* **/mail**  : envoie la page en mailing
-* **/raw** : affiche le code wiki non formaté de la page
-* **/deletepage**  : si vous êtes propriétaire de la page, vous pouvez la supprimer
-* **/claim**  : si la page n'a pas de propriétaire, vous pouvez vous l'approprier
-* **/acls**  : si vous êtes propriétaire de la page, vous pouvez gérer les droits 
-* **/share**  : pour afficher des possibilités de partage sur les réseaux sociaux, et pour générer un code embed (iframe) qui permettra d'afficher la page sur un site externe. 
-* **/dbutf8**  : s'utilise en tant qu'admin pour passer les wikis antérieur à 2018 en utf8 
-* **/update**  : permet lors du passage de cercopithèque à doryphore, de mettre à jour plein de trucs nécessaires à son bon fonctionnement 
-* **&amp;debug** : permet d'afficher en bas de page toutes les actions effectuées au niveau informatique, permet de repérer les bugs, causes de plantage... 
-* **/editiframe**  : permet d'ouvrir la page en mode édition mais en cachant les autres pages du squelette (utile quand une image ou un spam sur le bandeau empêche de voir le contenu de la page à modifier ou dans le cas d'un wiki intégré en iframe) 
-
-## Page "Lexique" :
-
-définition des quelques mots 
-    liste, fiche, formulaire, page, composant...
-
-### Les actions 
-
-Une action exécute une série d'opérations et affiche le résultat obtenu à l'endroit où elle est décrite dans la page.  
-Les actions sont utilisées par exemple pour afficher un bouton, la liste des utilisateurs, un nuage de mots-clés.  
-Il est possible de spécifier des paramètres afin de personnaliser ce résultat (ordre du tri, nombre d'entrées, taille...).  
-  
-Certains paramètres peuvent être obligatoires.  
-  
-**Syntaxe**  
-Une action s'écrit avec 2 accolades ouvrantes, suivi du nom de l'action, suivi par des éventuels paramètres, puis fermée par 2 accolades fermantes :  
-
-{{nomaction param1="valeur1" param2="valeur2" ... paramN="valeurN"}}
-
-**Qu'est-ce que'une action dépréciée ?**  
-Une action qui fonctionne encore mais qui a été remplacée ou intégrée dans une nouvelle action et qui sera supprimée dans la prochaine version de YesWiki.
-
-### La majorité des actions est écrite via les composants
-
-Les composants permettent aujourd’hui d'éditer quasiment toutes  les actions et de les personnaliser.
