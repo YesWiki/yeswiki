@@ -1,6 +1,6 @@
 // ext/Number/Color/slider
 export default {
-  props: [ 'value', 'config', 'values' ],
+  props: ['value', 'config', 'values'],
   data() {
     return {
       defaultLatitude: 46.22763,
@@ -14,11 +14,9 @@ export default {
 	    center: new L.LatLng(this.defaultLatitude, this.defaultLongitude),
 	    zoom: this.defaultZoom,
 	    zoomControl: true,
-	    scrollWheelZoom : false,
-      layers: [L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      })]
-	  });
+	    scrollWheelZoom: false,
+      layers: [L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' })]
+	  })
 
     this.map.on('load moveend', () => {
       this.$emit('input', this.getValues())
@@ -34,7 +32,7 @@ export default {
       this.map.setZoom(newValues.zoom || this.defaultZoom)
     },
     getValues() {
-      let result = {}
+      const result = {}
       const lat = this.map.getCenter().lat.toFixed(5)
       const lon = this.map.getCenter().lng.toFixed(5)
       if (lat != this.defaultLatitude) result.lat = lat

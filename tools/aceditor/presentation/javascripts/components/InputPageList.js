@@ -1,26 +1,26 @@
 export default {
-  props: [ 'value', 'config' ],
+  props: ['value', 'config'],
   computed: {
     pageList() {
       $.ajax({
-        url: wiki.url('?root/json', {demand: 'pages'}),  // keep ? because standart http rewrite waits for CamelCase and 'root' is not
+        url: wiki.url('?root/json', { demand: 'pages' }), // keep ? because standart http rewrite waits for CamelCase and 'root' is not
         async: true,
-        dataType: "json",
+        dataType: 'json',
         type: 'GET',
         cache: true,
-        success: data => {
-          let pages = [];
-          for (var key in data) {
-            let pageTag = data[key].tag;
-            if (pageTag){
-              pages.push(pageTag);
+        success: (data) => {
+          const pages = []
+          for (const key in data) {
+            const pageTag = data[key].tag
+            if (pageTag) {
+              pages.push(pageTag)
             }
           }
           // remove previous typeahead and refresh source
-          $(this.$refs.input).typeahead('destroy');
-          $(this.$refs.input).typeahead({ source: pages, items: 5});
+          $(this.$refs.input).typeahead('destroy')
+          $(this.$refs.input).typeahead({ source: pages, items: 5 })
           $(this.$refs.input).on('blur.bootstrap3Typeahead', () => {
-            setTimeout(() => { this.$emit('input',  this.$refs.input.value) }, 200)            
+            setTimeout(() => { this.$emit('input', this.$refs.input.value) }, 200)
           })
         }
       })
