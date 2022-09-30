@@ -13,6 +13,8 @@ use YesWiki\Wiki;
 
 class HtmlPurifierService
 {
+    public const HTMLPURIFIER_CACHE_FODLER = "cache/HTMLpurifier";
+
     protected $params;
     protected $wiki;
     private $purifier;
@@ -46,6 +48,13 @@ class HtmlPurifierService
                 '_parent',
                 '_top',
             ]);
+
+            // set the cache folder
+            // doc : http://htmlpurifier.org/live/configdoc/plain.html#Cache.SerializerPath
+            if (!is_dir(self::HTMLPURIFIER_CACHE_FODLER)) {
+                mkdir(self::HTMLPURIFIER_CACHE_FODLER, 0777, true);
+            }
+            $config->set('Cache.SerializerPath', realpath(self::HTMLPURIFIER_CACHE_FODLER));
 
             $this->purifier = new HTMLPurifier($config);
         }
