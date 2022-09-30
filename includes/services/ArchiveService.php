@@ -13,6 +13,7 @@ use YesWiki\Core\Entity\ConfigurationFile;
 use YesWiki\Core\Exception\StopArchiveException;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\ConsoleService;
+use YesWiki\Core\Service\DbService;
 use YesWiki\Wiki;
 use Throwable;
 use ZipArchive;
@@ -58,6 +59,7 @@ class ArchiveService
 
     protected $configurationService;
     protected $consoleService;
+    protected $dbService;
     protected $params;
     protected $securityController;
     protected $wiki;
@@ -65,12 +67,14 @@ class ArchiveService
     public function __construct(
         ConfigurationService $configurationService,
         ConsoleService $consoleService,
+        DbService $dbService,
         ParameterBagInterface $params,
         SecurityController $securityController,
         Wiki $wiki
     ) {
         $this->configurationService = $configurationService;
         $this->consoleService = $consoleService;
+        $this->dbService = $dbService;
         $this->params = $params;
         $this->securityController = $securityController;
         $this->wiki = $wiki;
@@ -343,7 +347,17 @@ class ArchiveService
         } catch (Throwable $th) {
             $enoughSpace = false;
         }
-        $canArchive = (!$archiving && !$hibernated && $privatePathWritable && $notAvailableOnTheInternet && (!$callAsync || $canExec) && $dB && $enoughSpace);
+        $canArchive = (
+            !$archiving &&
+            !$hibernated &&
+            $privatePathWritable &&
+            $notAvailableOnTheInternet &&
+            (
+                !$callAsync ||
+                ($canExec && $dB)
+            ) &&
+            $enoughSpace
+        );
         return compact(['canArchive','archiving','hibernated','privatePathWritable','canExec','callAsync','notAvailableOnTheInternet','enoughSpace','dB']);
     }
 
@@ -1052,13 +1066,22 @@ class ArchiveService
     {
         $resultFile = $privatePath.self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP;
         try {
-            $results = $this->consoleService->startConsoleSync('core:exportdb', [
-                "--filepath=$resultFile"
-            ]);
-            if (!empty($results)) {
-                $result = $results[array_key_first($results)];
-                if (!empty($result['stderr']) || empty($result['stdout'])) {
-                    throw new Exception("SQL not exported");
+            if ($this->testDb()) {
+                $results = $this->consoleService->startConsoleSync('core:exportdb', [
+                    "--filepath=$resultFile"
+                ]);
+                if (!empty($results)) {
+                    $result = $results[array_key_first($results)];
+                    if (!empty($result['stderr']) || empty($result['stdout'])) {
+                        throw new Exception("SQL not exported");
+                    }
+                }
+            } else {
+                $results = $this->dbService->getSQLContentBackupMethod();
+                if (empty($results['sql'])) {
+                    throw new Exception(empty($results['error']) ? "SQL not exported" : $results['error']);
+                } else {
+                    return $results['sql'];
                 }
             }
         } catch (Throwable $th) {
