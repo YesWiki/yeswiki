@@ -22,8 +22,8 @@
     <input type="hidden" name="body" value="{{ body|raw }}"></div>
   {% else %}
     {# Body textarea #}
+    {{ renderAction('aceditor', { saveButton: true })|raw }}
     <textarea id="body" name="body" style="display: none">{{ body|raw }}</textarea>
-    {{ renderAction('aceditor')|raw }}
   {% endif %}
 
   <div class="form-actions">

@@ -1,0 +1,111 @@
+{# Save Button #}
+{% if arguments.saveButton %}
+  {% set action = config['preview_before_save'] ? 'preview' : 'save' %}
+  <div class="btn-group">
+    <button type="submit" name="submit" value="{{ action }}" class="aceditor-btn-save btn btn-primary">
+      {{ _t('ACEDITOR_SAVE') }}
+    </button>
+  </div>
+{% endif %}
+
+{# Text formatting #}
+<div class="btn-group">
+  <a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">
+    {{ _t('ACEDITOR_FORMAT') }}
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu">
+    <li>{{ _self.button('title1', '') }}</li>
+    <li>{{ _self.button('title2', '') }}</li>
+    <li>{{ _self.button('title3', '') }}</li>
+    <li>{{ _self.button('title4', '') }}</li>
+    <li class="divider"></li>
+    <li>{{ _self.button('center', '') }}</li>
+    <li>{{ _self.button('lead', '') }}</li>
+    <li>{{ _self.button('highlight', '') }}</li>
+    <li>{{ _self.button('code', '') }}</li>
+    <li>{{ _self.button('inline_code', '') }}</li>
+    <li>{{ _self.button('comment', '') }}</li>
+  </ul>
+</div>
+<div class="btn-group">
+  {{ _self.button('bold') }}
+  {{ _self.button('italic') }}
+  {{ _self.button('underline') }}
+  {{ _self.button('strike') }}
+</div>
+<div class="btn-group">
+  {{ _self.button('list') }}
+</div>
+<div class="btn-group">
+  {{ _self.button('line') }}
+  {{ _self.button('link') }}
+</div>
+
+{# Actions builder menu #}
+<div class="btn-group actions-builder-button">
+  <a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">
+    {{ _t('ACEDITOR_ACTIONS') }}
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu component-action-list">
+    <li class="open-actions-builder-btn open-existing-action">
+      <a>{{ _t('ACEDITOR_ACTIONS_EDIT_CURRENT') }}</a>
+    </li>
+
+    {% for groupName, groupConfig in actionsBuilderData.action_groups %}
+      {% if not groupConfig.onlyEdit %}
+        <li>
+          <a class="open-actions-builder-btn" data-group-name="{{ groupName }}">{{ groupConfig.label }}</a>
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+</div>
+
+{# Help #}
+<div class="btn-group pull-right">
+  <a class="btn btn-info aceditor-btn aceditor-btn-help" data-remote="true"
+     href="{{ url('ReglesDeFormatage') }}" title="{{ _t('ACEDITOR_HELP') }}">
+    {{ _t('ACEDITOR_HELP') }}
+    <i class="fa fa-question-circle" style="margin-left: 8px"></i>
+  </a>
+</div>
+
+{% macro button(name, btnClass = 'btn btn-default') %}
+
+  {% set DELIMITERS = {
+    TITLE1: { yeswiki: ['======', '======'], html: ['<h1>', '</h1>'] },
+    TITLE2: { yeswiki: ['=====', '====='], html: ['<h2>', '</h2>'] },
+    TITLE3: { yeswiki: ['====', '===='], html: ['<h3>', '</h3>'] },
+    TITLE4: { yeswiki: ['===', '==='], html: ['<h4>', '</h4>'] },
+    CENTER: { yeswiki: ['""<center>""', '""</center>""'], html: ['<center>', '</center>'] },
+    LEAD: { yeswiki: ['""<div class="lead">""', '""</div>""'], html: ['<div class="lead">', '</div>'] },
+    HIGHLIGHT: {
+      yeswiki: ['{{section bgcolor="var(--primary-color)" class="shape-rounded" pattern="border-solid" }}', '{{end elem="section"}}'],
+      html: ['<div class="well">', '</div>'] },
+    CODE: { yeswiki: ['%%', '%%'], html: ['<pre>', '</pre>'] },
+    INLINE_CODE: { yeswiki: ['`', '`'], html: ['<code>', '</code>'] },
+    COMMENT: { yeswiki: ['{#', '#}'] },
+
+    BOLD: { yeswiki: ['**', '**'], icon: "fa fa-bold" },
+    ITALIC: { yeswiki: ['//', '//'], icon: "fa fa-italic" },
+    UNDERLINE: { yeswiki: ['__', '__'], icon: "fa fa-underline" },
+    STRIKE: { yeswiki: ['@@', '@@'], icon: "fa fa-strikethrough" },
+    LIST: { yeswiki: [' - ', ''], icon: "fa fa-list" },
+    LINE: { yeswiki: ['\n------\n', ''], icon: "fa fa-minus icon-minus" },
+    LINK: { yeswiki: ['[[', ']]'], icon: "fa fa-link" },
+  } %}
+
+  {% set syntax = DELIMITERS[name|upper] %}
+  {% set label = _t('ACEDITOR_' ~ name|upper) %}
+
+  <a title="{{ label }}" class="{{ btnClass }} aceditor-btn aceditor-btn-{{ name }}"
+     data-lft="{{ syntax.yeswiki|first }}" data-rgt="{{ syntax.yeswiki|last }}">
+    {% if syntax.icon %}
+      <i class="{{ syntax.icon }}"></i>
+    {% else %}
+      {{ (syntax.html|first ~ label ~ syntax.html|last)|raw }}
+    {% endif %}
+  </a>
+{% endmacro %}
