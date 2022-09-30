@@ -87,9 +87,10 @@ export default function createAceditorToolbar(textarea, aceditor, options = {}) 
 
   // Save Button
   if (options.savebtn) {
+    const $existingSaveButtonValue = $('[type=submit][name=submit]').val()
     toolbar.append(`
       <div class="btn-group">
-        <button type="submit" name="submit" value="Sauver" class="aceditor-btn-save btn btn-primary">
+        <button type="submit" name="submit" value="${$existingSaveButtonValue}" class="aceditor-btn-save btn btn-primary">
           ${wiki.lang.ACEDITOR_SAVE}
         </button>
       </div>̀`)
