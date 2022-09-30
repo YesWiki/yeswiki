@@ -57,7 +57,7 @@ Apprendre à utiliser ce language : https://www.markdown-cheatsheet.com/
 
 ### Modifier les fichiers directement sur github
 
-Allez sur https://github.com/YesWiki/yeswiki/tree/doryphore/docs/fr pour voir l'ensemble des fichiers. Sinon, en bas de chaque page de la doc il y a un lien pour éditer le fichier sur github.
+Allez sur https://github.com/YesWiki/yeswiki/tree/doryphore-dev/docs/users pour voir l'ensemble des fichiers. Sinon, en bas de chaque page de la doc il y a un lien pour éditer le fichier sur github.
 - Assurrez vous d'être sur la branche `doryphore-dev`
 
 ![](https://md.yeswiki.net/uploads/ec48249b-7eb8-48c6-ba01-8e27243ed5e2.png)
@@ -66,12 +66,19 @@ Allez sur https://github.com/YesWiki/yeswiki/tree/doryphore/docs/fr pour voir l'
 
 ![](https://md.yeswiki.net/uploads/b7797fed-d8d2-4382-a7ed-aaa84496a5ad.png)
 - Utiliser le mode `Preview` pour vérifier vos changements
-- Allez en bas de la page et renseignez une description de ce que vous avez changé. Commencez votre commentaire par `doc: ` puis écrivez une description en Anglais si possible
+- Allez en bas de la page et renseignez une description de ce que vous avez changé. Commencez votre commentaire par `doc(nom_du_fichier):` puis écrivez une description en Anglais si possible
 
-![](https://md.yeswiki.net/uploads/37b3ed29-c32b-4ca3-92ec-877497c5e643.png)
-
+![image](https://user-images.githubusercontent.com/17404254/191205273-03e18e6c-e22f-4376-b4ba-9c18aa51b1df.png)
 
 > Il vaut mieux faire des petits changements à la fois, on peut ainsi plus facilement les comprendre et les annuler si besoin
+
+### Voir la dernière version de la doc
+
+Allez sur https://testing.yeswiki.net/doc/?doc
+
+A chaque modification sur github, ce yeswiki se mettra automatiquement à jour.
+
+> Si vous ne voyez pas vos changements, recharger la page en vidant le cache (`CTRL` `SHIFT` `R`)
 
 ### Historique
 On peut visualiser l'historique en ouvrant le fichier sur github et en cliquant sur `History`
@@ -80,7 +87,7 @@ On peut visualiser l'historique en ouvrant le fichier sur github et en cliquant 
 
 ### Uploader une image
 
-Allez dans le répertoite `docs/fr/images` sur github, plus cliquez sur `Add File`
+Allez dans le répertoite `docs/users/fr/images` sur github, plus cliquez sur `Add File`
 
 ![](https://md.yeswiki.net/uploads/96f4883a-88f5-46ac-8a11-95256690e203.png)
 
