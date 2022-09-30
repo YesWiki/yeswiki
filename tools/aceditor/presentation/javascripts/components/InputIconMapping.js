@@ -6,15 +6,13 @@ export default {
     parseNewValues(newValues) {
       if (newValues.icon) {
         this.elements = []
-        newValues.icon.split(',').forEach(el => {
-          this.elements.push({icon: el.split('=')[0], id: el.split('=')[1]})
+        newValues.icon.split(',').forEach((el) => {
+          this.elements.push({ icon: el.split('=')[0], id: el.split('=')[1] })
         })
       }
     },
     getValues() {
-      return {
-        icon: this.elements.filter(m => m.id && m.icon).map(m => `${m.icon}=${m.id}`).join(',')
-      }
+      return { icon: this.elements.filter((m) => m.id && m.icon).map((m) => `${m.icon}=${m.id}`).join(',') }
     }
   }
-};
+}

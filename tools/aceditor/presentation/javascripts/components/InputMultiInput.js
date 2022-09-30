@@ -8,13 +8,11 @@ import InputColor from './InputColor.js'
 import InputFormField from './InputFormField.js'
 
 export default {
-  props: [ 'name', 'value', 'config', 'selectedForms', 'values' ],
+  props: ['name', 'value', 'config', 'selectedForms', 'values'],
   components: { InputText, InputCheckbox, InputList, InputIcon, InputColor, InputFormField, InputHidden },
-  mixins: [ InputHelper ],
+  mixins: [InputHelper],
   data() {
-    return {
-      elements: []
-    }
+    return { elements: [] }
   },
   computed: {
     propertiesIds() {
@@ -26,28 +24,28 @@ export default {
   },
   methods: {
     addElement() {
-      let element = {}
-      this.propertiesIds.forEach(id => element[id] = '')
+      const element = {}
+      this.propertiesIds.forEach((id) => element[id] = '')
       this.elements.push(element)
     },
     removeElement(group) {
-      this.elements = this.elements.filter(el => el[this.propertiesIds[0]] != group[this.propertiesIds[0]])
+      this.elements = this.elements.filter((el) => el[this.propertiesIds[0]] != group[this.propertiesIds[0]])
     },
     resetValues() {
       this.elements = []
     },
     parseNewValues(newValues) {
-      console.warn("parseNewValues Method should be implement in sub component")
+      console.warn('parseNewValues Method should be implement in sub component')
     },
     getValues() {
-      console.warn("getValues Method should be implement in sub component")
+      console.warn('getValues Method should be implement in sub component')
     }
   },
   watch: {
     elements: {
       handler(val) { this.$emit('input', val) },
       deep: true
-    },
+    }
   },
   template: `
     <div class="multi-input-container" :class="name">
