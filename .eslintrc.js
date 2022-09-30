@@ -6,7 +6,8 @@ module.exports = {
   },
   globals: {
     wiki: 'writable',
-    Vue: 'readable'
+    Vue: 'readable',
+    ace: 'writable'
   },
   extends: [
     'airbnb-base'
