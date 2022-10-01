@@ -2,7 +2,7 @@ export default class {
   aceditor = null
 
   constructor() {
-    this.aceditor = $('.textarea-aceditor').data('aceditor')
+    this.aceditor = $('.aceditor-textarea').data('aceditor')
   }
 
   get currentLineNumber() {
