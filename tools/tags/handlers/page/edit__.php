@@ -19,13 +19,11 @@ if (!$params->get('hide_keywords') && $this->HasAccess("write") && $this->HasAcc
     } else {
         $tagspagecourante = '';
     }
-    $formtag = '
+    $html = '
 	<i class="fas fa-tags"></i> <strong>'._t('TAGS_TAGS').'</strong>
 	<input class="yeswiki-input-pagetag" name="pagetags" type="text" value="'.htmlspecialchars(stripslashes($tagspagecourante)).'" placeholder="'._t('TAGS_ADD_TAGS').'">
     <input type="hidden" class="antispam" name="antispam" value="0">';
-    $plugin_output_new = preg_replace(
-        '/(<textarea id="body".*>([^<]*)<\/textarea>)/Ui',
-        '$1'."\n".$formtag."\n",
-        $plugin_output_new
-    );
+
+    $target = '<div class="tags-container">';
+    $plugin_output_new = str_replace($target , $target.$html, $plugin_output_new);
 }
