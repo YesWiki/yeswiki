@@ -74,7 +74,6 @@ Plugin.prototype.init = function() {
     // Setup DOM
     setupAceditorToolbarBindings(textarea, aceditor)
     textarea.data('aceditor', aceditor)
-    textarea.hide().addClass('textarea-aceditor')
 
     return aceditor
   }

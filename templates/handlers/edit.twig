@@ -19,11 +19,10 @@
   <input type="hidden" name="previous" value="{{ previous }}" />
 
   {% if bodyPreview %}
-    <input type="hidden" name="body" value="{{ body|raw }}"></div>
+    <input type="hidden" name="body" value="{{ body|raw }}" />
   {% else %}
     {# Body textarea #}
-    {{ renderAction('aceditor', { saveButton: true })|raw }}
-    <textarea id="body" name="body" style="display: none">{{ body|raw }}</textarea>
+    {{ renderAction('aceditor', { saveButton: true, name: 'body', value: body })|raw }}
   {% endif %}
 
   <div class="form-actions">
