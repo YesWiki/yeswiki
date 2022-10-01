@@ -1,3 +1,8 @@
+const AVAILABLE_LOCALES = ['fr']; // replace by ['fr', 'en'] when english documentation is available
+// replace by ['fr', 'en', 'es'] when english and spannish documentations are available
+const FALLBACK_LOCALE = 'fr';// do not change it
+if (!AVAILABLE_LOCALES.includes(locale)) locale = FALLBACK_LOCALE
+
 window.$docsify = {
   themeColor: "#1a89a0",
   loadSidebar: true,
