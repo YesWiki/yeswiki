@@ -16,7 +16,6 @@ class TextareaField extends BazarField
 {
     protected $numRows;
     protected $syntax;
-    private $extensions;
 
     protected const FIELD_NUM_ROWS = 4;
     protected const FIELD_SYNTAX = 7;
@@ -36,7 +35,6 @@ class TextareaField extends BazarField
 
         // For this field, max chars are defined in the 6th column, instead of the already-used 4th
         $this->maxChars = $values[6];
-        $this->extensions = [];
 
         // Retro-compatibility
         if ($this->syntax === 'wiki') {
@@ -106,21 +104,6 @@ class TextareaField extends BazarField
             'entryId' => $entry['id_fiche'] ?? null,
             'tempTag' => $tempTag,
         ]);
-    }
-
-    /**
-     * only for `include_once` in `renderInput`
-     */
-    private function AddJavascriptFile($file)
-    {
-        $this->getWiki()->AddJavascriptFile($file);
-    }
-    /**
-     * only for `include_once` in `renderInput`
-     */
-    private function AddCSSFile($file)
-    {
-        $this->getWiki()->AddCSSFile($file);
     }
 
     public function formatValuesBeforeSave($entry)
