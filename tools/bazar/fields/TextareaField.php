@@ -105,7 +105,6 @@ class TextareaField extends BazarField
             'value' => $this->getValue($entry),
             'entryId' => $entry['id_fiche'] ?? null,
             'tempTag' => $tempTag,
-            'attachConfigExtImages' => explode("|", $this->getService(ParameterBagInterface::class)->get("attach_config")["ext_images"])
         ]);
     }
 
