@@ -218,9 +218,11 @@ class PageManager
     public function getReadablePageTags(): array
     {
         $pages = $this->dbService->loadAll(<<<SQL
-            SELECT tag FROM {$this->dbService->prefixTable('pages')} WHERE LATEST = 'Y' ORDER BY tag
+            SELECT tag,owner FROM {$this->dbService->prefixTable('pages')} WHERE LATEST = 'Y' ORDER BY tag
         SQL);
         $pages = array_filter($pages, function($page) {
+            // cache page's owner to prevent reload of page from sql or infinite loop in some case
+            $this->cacheOwner($page);
             return $this->aclService->hasAccess('read', $page['tag']);
         });
         return array_map(function($page) {
