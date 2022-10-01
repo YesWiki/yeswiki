@@ -146,8 +146,8 @@ class SecurityController extends YesWikiController
         if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
             $champsCaptcha = $this->renderCaptchaField();
             $output = preg_replace(
-                '/\<div class="form-actions">.*<button type=\"submit\" name=\"submit\"/Uis',
-                $champsCaptcha.'<div class="form-actions">'."\n".'<button type="submit" name="submit"',
+                '/(\<div class="form-actions">.*<button type=\"submit\" name=\"submit\")/Uis',
+                "$champsCaptcha$1",
                 $output
             );
         }
