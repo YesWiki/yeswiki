@@ -1,6 +1,6 @@
 {# Save Button #}
 {% if arguments.saveButton %}
-  {% set action = config['preview_before_save'] ? 'preview' : 'save' %}
+  {% set action = config['preview_before_save'] ? 'preview' : saveValue %}
   <div class="btn-group">
     <button type="submit" name="submit" value="{{ action }}" class="aceditor-btn-save btn btn-primary">
       {{ _t('ACEDITOR_SAVE') }}
