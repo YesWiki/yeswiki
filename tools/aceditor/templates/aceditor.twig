@@ -1,17 +1,23 @@
-<div class="btn-toolbar aceditor-toolbar">
-  {{ include('@aceditor/aceditor-toolbar.twig') }}
-</div>
+<div class="aceditor-container" data-name="{{ arguments.name }}">
 
-<div class="ace-editor-container">
-  <pre class="ace-body"></pre>
+  <div class="btn-toolbar aceditor-toolbar">
+    {{ include('@aceditor/aceditor-toolbar.twig') }}
+  </div>
+
+  <div class="ace-container">
+    <pre class="ace-body"></pre>
+  </div>
+
+  <textarea id="{{ arguments.name }}" name="{{ arguments.name }}" class="aceditor-textarea">
+    {{- arguments.value|raw -}}
+  </textarea>
+
 </div>
-<textarea id="{{ arguments.name }}" name="{{ arguments.name }}" class="aceditor-textarea">
-	{{- arguments.value|raw -}}
-</textarea>
 
 <script>
   // Send data to javascript
   var actionsBuilderData = {{ actionsBuilderData|json_encode|raw }};
+  var pageTags = {{ pageTags|json_encode|raw }}
 </script>
 
 {{ include_javascript('tools/aceditor/presentation/javascripts/aceditor.js', false, true) }}

@@ -12,7 +12,7 @@
 {% block input %}
     <div id="{{ field.name ~ 'Container' }}">
         {% if field.syntax == 'wiki-textarea' %}
-            {{ renderAction('aceditor', { name: field.name, value: value })|raw }}
+            {{ renderAction('aceditor', { name: field.name, value: value, rows: field.numRows })|raw }}
         {% else %}
             <textarea
                 id="{{ field.name }}"

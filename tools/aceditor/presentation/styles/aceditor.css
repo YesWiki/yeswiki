@@ -1,4 +1,4 @@
-.ace-editor-container {
+.ace-container {
   padding: 1em .7em 0em 0;
   margin-bottom: 1rem;
 }
@@ -72,15 +72,15 @@
   z-index: 6;
   background-color: white;
 }
-#ACEditor .ace-editor-container .ace-body {
+#ACEditor .ace-container .ace-body {
   min-height: 500px;
 }
 
 /* Show line numbers only on page edit */
-form:not(#ACEditor) .ace-editor-container .ace_gutter {
+form:not(#ACEditor) .ace-container .ace_gutter {
   display: none !important;
 }
-form:not(#ACEditor) .ace-editor-container .ace_scroller {
+form:not(#ACEditor) .ace-container .ace_scroller {
   left: .7em !important;
 }
 

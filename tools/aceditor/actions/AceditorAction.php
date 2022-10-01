@@ -14,6 +14,7 @@ class AceditorAction extends YesWikiAction
         return [
             'name' => $args['name'],
             'value' => $args['value'],
+            'rows' => $args['rows'],
             'saveButton' => $this->formatBoolean($args['saveButton'], false)
         ];
     }
