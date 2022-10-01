@@ -18,6 +18,7 @@ module.exports = {
   },
   rules: {
     semi: ['error', 'never'],
+    'max-len': ["error", { "code": 110 }],
     'vars-on-top': 'off',
     'import/no-unresolved': 'off',
     'import/extensions': ['error', 'always'],
@@ -25,6 +26,7 @@ module.exports = {
     'comma-dangle': ['error', 'never'],
     'object-curly-newline': ['error', { multiline: true }],
     'func-names': ['error', 'never'],
-    'space-before-function-paren': ['error', 'never']
+    'space-before-function-paren': ['error', 'never'],
+    'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }]
   }
 }
