@@ -296,10 +296,12 @@ class ApiController extends YesWikiController
         $dbService = $this->getService(DbService::class);
         $aclService = $this->getService(AclService::class);
         // recuperation des pages wikis
-        $sql = 'SELECT * FROM '.$dbService->prefixTable('pages');
-        $sql .= ' WHERE latest="Y" AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%" ';
-        $sql .= ' AND tag NOT IN (SELECT resource FROM '.$dbService->prefixTable('triples').' WHERE property="http://outils-reseaux.org/_vocabulary/type") ';
-        $sql .= ' ORDER BY tag ASC';
+        $sql = <<<SQL
+            SELECT * FROM {$dbService->prefixTable('pages')}
+            WHERE latest="Y" AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%"
+            AND tag NOT IN (SELECT resource FROM {$dbService->prefixTable('triples')} WHERE property="http://outils-reseaux.org/_vocabulary/type")
+            ORDER BY tag ASC
+        SQL;
         $pages = _convert($dbService->loadAll($sql), 'ISO-8859-15');
         $pages = array_filter($pages, function ($page) use ($aclService) {
             return $aclService->hasAccess('read', $page["tag"]);

@@ -1,5 +1,5 @@
 import openModal from './aceditor-toolbar-remote-modal.js'
-import openAceditorToolbarLinkModal from './aceditor-toolbar-link-modal.js'
+import LinkModal from './link-modal.js'
 
 export default function setupAceditorToolbarBindings(textarea, aceditor) {
   (function($) {
@@ -12,23 +12,21 @@ export default function setupAceditorToolbarBindings(textarea, aceditor) {
     }
   }(jQuery, window))
 
+  const linkModal = new LinkModal((result) => {
+    aceditor.session.replace(aceditor.getSelectionRange(), result)
+  })
+
   $('.aceditor-toolbar').find('a.aceditor-btn')
     .on('click', function(e) {
       e.preventDefault()
       e.stopPropagation()
 
-      if ($(this).data('prompt')) {
-        // Prompt Button
-        const prompt = window.prompt($(this).data('prompt'), $(this).data('prompt-val'))
-        if (prompt != null) {
-          textarea.surroundSelectedText(`${$(this).data('lft') + prompt} `, $(this).data('rgt'))
-        }
-      } else if ($(this).data('remote')) {
+      if ($(this).data('remote')) {
         // Remote Modal Button
         openModal($(this).attr('title'), $(this).attr('href'))
-      } else if ($(this).data('link')) {
+      } else if ($(this).hasClass('aceditor-btn-link')) {
         // Link Button
-        openAceditorToolbarLinkModal($(this), aceditor)
+        linkModal.open(aceditor.getSelectedText())
       } else {
         // Other Buttons
         textarea.surroundSelectedText($(this).data('lft'), $(this).data('rgt'))
