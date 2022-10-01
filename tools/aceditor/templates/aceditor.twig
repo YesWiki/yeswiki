@@ -9,5 +9,10 @@
 	{{- arguments.value|raw -}}
 </textarea>
 
+<script>
+  // Send data to javascript
+  var actionsBuilderData = {{ actionsBuilderData|json_encode|raw }};
+</script>
+
 {{ include_javascript('tools/aceditor/presentation/javascripts/aceditor.js', false, true) }}
 {{ include_css('tools/aceditor/presentation/styles/aceditor.css') }}
