@@ -1,7 +1,4 @@
-<div class="btn-group attach-file-uploader"
-    {% if fileUploaderAnchor %} data-anchor="{{ fileUploaderAnchor }}"{% endif %}
-    {% if fileUploaderSelector %} data-textarea="{{ fileUploaderSelector }}"{% endif %}
-    {% if tempTag %} data-temptag="{{ tempTag }}"{% endif %}>
+<div class="btn-group attach-file-uploader" {% if tempTag %} data-temptag="{{ tempTag }}"{% endif %}>
   <noscript>
     <span class="alert alert-danger alert-error">{{ _t('ACTIVATE_JS_TO_UPLOAD_FILES') }}.</span>
   </noscript>
@@ -21,3 +18,10 @@
     </li>
   </div>
 </div>
+
+<script>
+  var imagesExtensions = {{ config['attach_config']['ext_images']|split('|')|json_encode|raw }};
+</script>
+
+{{ include_javascript('tools/attach/presentation/javascripts/qq.js') }}
+{{ include_javascript('tools/attach/presentation/javascripts/file-upload-button.js') }}

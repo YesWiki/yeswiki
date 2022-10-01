@@ -145,7 +145,7 @@ $modal = '
 	</div><!-- /.modal -->'."\n";
 
 // adds the javascript just one time
-$this->addJavascriptFile('tools/attach/libs/pointimage.js');
+$this->addJavascriptFile('tools/attach/presentation/javascripts/pointimage.js');
 
 // output the image on the page
 

@@ -13,15 +13,6 @@
     <div id="{{ field.name ~ 'Container' }}">
         {% if field.syntax == 'wiki-textarea' %}
             {{ renderAction('aceditor', { name: field.name, value: value })|raw }}
-            {# do not display button before moving in aceditor bar#}
-            <div style="display:none;">{{ include('@attach/attach-file-uploader-button.twig',
-                {fileUploaderAnchor:'#' ~ field.name ~ 'Container .aceditor-toolbar',
-                fileUploaderSelector:'#' ~ field.name }) }}</div>
-            <script>
-                var fileUploaderConfig = {attach_config:{ext_images:{{ attachConfigExtImages|json_encode()|raw }}}};
-            </script>
-            {{ include_javascript('tools/attach/libs/fileuploader.js') }}
-            <!-- include_javascript('tools/attach/libs/fileuploader.js') -->
         {% else %}
             <textarea
                 id="{{ field.name }}"
