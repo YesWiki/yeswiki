@@ -2,7 +2,8 @@
   <div class="alert alert-danger">{{ error|raw }}</div>
 {% endif %}
 
-{% if bodyPreview %}
+{# Preview #}
+{% if preview %}
   <h1>{{ _t('EDIT_PREVIEW') }}</h1>
   <div class="page_preview">
     {{ bodyPreview|raw }}
@@ -18,10 +19,9 @@
 
   <input type="hidden" name="previous" value="{{ previous }}" />
 
-  {% if bodyPreview %}
+  {% if preview %}
     <input type="hidden" name="body" value="{{ body|raw }}" />
   {% else %}
-    {# Body textarea #}
     {{ renderAction('aceditor', { saveButton: true, name: 'body', value: body })|raw }}
   {% endif %}
 
@@ -31,12 +31,13 @@
 
   <div class="form-actions">
     {# Save Button #}
-    {% set action = bodyPreview ? 'save' : config['preview_before_save'] ? 'preview' : 'save' %}
+    {% set action = preview ? 'save' : config['preview_before_save'] ? 'preview' : 'save' %}
     <button type="submit" name="submit" value="{{ action }}" class="btn btn-primary">
       {{ _t('TEMPLATE_SAVE') }}
     </button>
 
-    {% if bodyPreview %}
+    {# Reedit Button #}
+    {% if preview %}
       <button type="submit" name="submit" value="reedit" class="btn btn-primary">
         {{ _t('TEMPLATE_REEDIT') }}
       </button>
@@ -47,7 +48,8 @@
       {{ _t('TEMPLATE_CANCEL') }}
     </a>
 
-    {% if not previewBody %}
+    {# Theme Button #}
+    {% if not preview %}
       <span class="theme-container">
         {# Filled by tools/template/handler/page/edit__ #}
         {# TODO: stop using all those edit__, and put directly the code here #}

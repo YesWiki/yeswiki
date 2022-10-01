@@ -44,6 +44,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
             'handler' => testUrlInIframe() ? 'editiframe' : 'edit',
             'cancelUrl' => $cancelUrl,
             'body' => empty($body) ? "" : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
+            'preview' => true,
             'bodyPreview' => $this->Format($body)
         ]);
         $this->SetInclusions($temp);
@@ -96,7 +97,8 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
                 'handler' => testUrlInIframe() ? 'editiframe' : 'edit',
                 'passwordForEditing' => $passwordForEditing,
                 'cancelUrl' => $cancelUrl,
-                'body' => empty($body) ? "" : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET)
+                'body' => empty($body) ? "" : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
+                'preview' => false
             ]);
         }
     }
