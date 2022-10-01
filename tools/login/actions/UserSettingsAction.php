@@ -304,7 +304,7 @@ class UserSettingsAction extends YesWikiAction
                     $post['confpassword'] !== $password) {
                     $this->error = _t('USER_PASSWORDS_NOT_IDENTICAL').'.';
                 } else { // Password is correct
-                    $_POST['submit'] = "Sauver";
+                    $_POST['submit'] = SecurityController::EDIT_PAGE_SUBMIT_VALUE;
                     list($state, $error) = $this->securityController->checkCaptchaBeforeSave();
                     if (!$state) {
                         $this->error = $error;

@@ -9,6 +9,9 @@ use YesWiki\Core\YesWikiController;
 
 class SecurityController extends YesWikiController
 {
+    // this value cannot be changed because use by extensions
+    public const EDIT_PAGE_SUBMIT_VALUE = "Sauver";
+
     protected $params;
     protected $templateEngine;
     protected $textes;
@@ -104,7 +107,7 @@ class SecurityController extends YesWikiController
     public function checkCaptchaBeforeSave(string $mode = 'page'):array
     {
         if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
-            if (($mode != 'entry' && isset($_POST['submit']) && $_POST['submit'] == 'Sauver')
+            if (($mode != 'entry' && isset($_POST['submit']) && $_POST['submit'] == self::EDIT_PAGE_SUBMIT_VALUE)
                 || ($mode == 'entry' && !empty($_POST['bf_titre']))) {
                 if (!defined("CAPTCHA_INCLUDE")) {
                     define("CAPTCHA_INCLUDE", true);
@@ -114,7 +117,7 @@ class SecurityController extends YesWikiController
                     $this->textes = $textes;
                 }
                 if (empty($_POST['captcha'])) {
-                    $error = '<div class="alert alert-danger"><a href="#" data-dismiss="alert" class="close">&times;</a>'._t('CAPTCHA_ERROR_PAGE_UNSAVED').'</div>';
+                    $error = _t('CAPTCHA_ERROR_PAGE_UNSAVED');
                     $_POST['submit'] = '';
                     if ($mode == 'entry') {
                         unset($_POST['bf_titre']);
@@ -122,7 +125,7 @@ class SecurityController extends YesWikiController
                 } elseif (!empty($_POST['captcha'])) {
                     $wdcrypt = cryptWord($_POST['captcha']);
                     if ($wdcrypt != $_POST['captcha_hash']) {
-                        $error = '<div class="alert alert-danger"><a href="#" data-dismiss="alert" class="close">&times;</a>'._t('CAPTCHA_ERROR_WRONG_WORD').'</div>';
+                        $error = _t('CAPTCHA_ERROR_WRONG_WORD');
                         $_POST['submit'] = '';
                         if ($mode == 'entry') {
                             unset($_POST['bf_titre']);
