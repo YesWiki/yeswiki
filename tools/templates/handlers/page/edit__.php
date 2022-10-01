@@ -61,7 +61,7 @@ if (isset($_SERVER["HTTP_REFERER"])) {
 }
 
 $html = $hidden;
-$target = '<span class="other-actions">';
+$target = '<span class="theme-container">';
 if ($changetheme) {
     // Adds change theme button
     $html .= '<a class="btn btn-neutral" data-toggle="modal" data-target="#graphical_options">'._t('TEMPLATE_THEME').'</a>';
