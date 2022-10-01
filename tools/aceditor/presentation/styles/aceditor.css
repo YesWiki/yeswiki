@@ -2,6 +2,10 @@
   padding: 1em .7em 0em 0;
   margin-bottom: 1rem;
 }
+.aceditor-textarea {
+  display: none;
+}
+
 .ace-body {
   height: 150px;
   border: none;

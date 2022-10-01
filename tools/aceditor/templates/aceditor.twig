@@ -5,6 +5,10 @@
 <div class="ace-editor-container">
   <pre class="ace-body"></pre>
 </div>
+<textarea id="{{ arguments.name }}" name="{{ arguments.name }}" class="aceditor-textarea">
+	{{- arguments.value|raw -}}
+</textarea>
+
 
 {{ include('@aceditor/actions-builder-modal.twig') }}
 
