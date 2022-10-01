@@ -6,6 +6,7 @@ use Symfony\Component\Yaml\Yaml;
 use YesWiki\Aceditor\Service\ActionsBuilderService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Security\Controller\SecurityController;
 
 class AceditorAction extends YesWikiAction
 {
@@ -26,7 +27,8 @@ class AceditorAction extends YesWikiAction
 
         return $this->render('@aceditor/aceditor.twig', [
             'actionsBuilderData' => $data,
-            'pageTags' => $pageTags
+            'pageTags' => $pageTags,
+            'saveValue' => SecurityController::EDIT_PAGE_SUBMIT_VALUE
         ]);
     }
 }
