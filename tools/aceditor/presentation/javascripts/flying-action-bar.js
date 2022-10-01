@@ -39,7 +39,7 @@ export default class {
       this.flyingActionBar.toggleClass('active', this.actionIsSelected)
       $('.component-action-list').toggleClass('only-edit', this.actionIsSelected)
       if (this.actionIsSelected) {
-        const top = $('.ace_gutter-active-line').offset().top - $('.ace-editor-container').offset().top + $('.aceditor-toolbar').height()
+        const top = $('.ace_gutter-active-line').offset().top - $('.ace-container').offset().top + $('.aceditor-toolbar').height()
         this.flyingActionBar.css('top', `${top}px`)
       }
     }, 100)

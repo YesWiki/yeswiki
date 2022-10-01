@@ -10,8 +10,7 @@
 					<div class="control-group form-group internal-link">
 						<label class="control-label">{{ _t('ACEDITOR_LINK_PAGE_NAME') }}</label>
 						<div class="controls">
-							<input class="form-control" type="text" name="url" autocomplete="off"
-                     data-provide="typeahead" data-items="5" data-source='{{ pageTags|json_encode|raw }}'>
+							<input class="form-control" type="text" name="url" autocomplete="off">
 							<span class="link-error help-block text-danger hidden">{{ _t('ACEDITOR_LINK_ERROR') }}</span>
 							<span class="help-block">{{ _t('ACEDITOR_LINK_HINT_NEW_PAGE_NAME') }}</span>
 						</div>

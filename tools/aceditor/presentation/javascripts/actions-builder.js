@@ -18,8 +18,8 @@ import InputClass from './components/InputClass.js'
 import InputCorrespondance from './components/InputCorrespondance.js'
 import WikiCodeInput from './components/WikiCodeInput.js'
 import PreviewAction from './components/PreviewAction.js'
-import AceEditorWrapper from './components/aceditor-wrapper.js'
-import FlyingActionBar from './components/flying-action-bar.js'
+import AceEditorWrapper from './aceditor-wrapper.js'
+import FlyingActionBar from './flying-action-bar.js'
 import InputHint from './components/InputHint.js'
 import AddonIcon from './components/AddonIcon.js'
 
@@ -358,14 +358,14 @@ window.myapp = new Vue({
     }
   },
   mounted() {
-    $(document).ready(() => {
-      this.editor = new AceEditorWrapper()
-      new FlyingActionBar(this.editor, this.actionGroupsWithBackwardCompatibility())
-      $('.open-actions-builder-btn').click((event) => {
-        $('#actions-builder-modal').modal('show')
-        this.currentGroupId = $(event.target).data('group-name')
-        setTimeout(() => this.initValues(), 0)
-      })
-    })
+    // $(document).ready(() => {
+    //   this.editor = new AceEditorWrapper()
+    //   new FlyingActionBar(this.editor, this.actionGroupsWithBackwardCompatibility())
+    //   $('.open-actions-builder-btn').click((event) => {
+    //     $('#actions-builder-modal').modal('show')
+    //     this.currentGroupId = $(event.target).data('group-name')
+    //     setTimeout(() => this.initValues(), 0)
+    //   })
+    // })
   }
 })

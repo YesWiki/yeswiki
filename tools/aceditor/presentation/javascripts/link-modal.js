@@ -1,21 +1,14 @@
 export default class {
-  constructor(onComplete) {
-    this.onComplete = onComplete
-  }
+  onComplete
 
-  get $modal() {
-    return $('#YesWikiLinkModal')
-  }
+  get $modal() { return $('#YesWikiLinkModal') }
+  get $inputUrl() { return this.$modal.find('input[name=url]') }
+  get $inputText() { return this.$modal.find('input[name=text]') }
 
-  get $inputUrl() {
-    return this.$modal.find('input[name=url]')
-  }
+  constructor() {
+    // pageTags is defined in AceditorAction / Aceditor.twig
+    this.$inputUrl.typeahead({ source: pageTags, items: 5 })
 
-  get $inputText() {
-    return this.$modal.find('input[name=text]')
-  }
-
-  initialize() {
     this.$modal.find('.btn-insert').on('click', (e) => {
       let wikiurl = this.$inputUrl.val() || ''
 
@@ -50,9 +43,10 @@ export default class {
     })
   }
 
-  open(text = '', url = '') {
-    this.$inputUrl.val(url)
-    this.$inputText.val(text)
+  open(options) {
+    this.onComplete = options.onComplete
+    this.$inputUrl.val(options.url)
+    this.$inputText.val(options.text)
 
     this.$modal.modal('show').on('shown.bs.modal', () => {
       this.$inputUrl.trigger('focus')

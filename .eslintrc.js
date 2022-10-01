@@ -18,8 +18,9 @@ module.exports = {
   },
   rules: {
     semi: ['error', 'never'],
-    'max-len': ["error", { "code": 110 }],
+    'max-len': ['error', { code: 110 }],
     'vars-on-top': 'off',
+    'class-methods-use-this': 'off',
     'import/no-unresolved': 'off',
     'import/extensions': ['error', 'always'],
     eqeqeq: ['error', 'smart'],
