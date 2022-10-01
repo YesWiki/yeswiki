@@ -77,17 +77,18 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
             'handler' => testUrlInIframe() ? 'editiframe' : 'edit',
             'cancelUrl' => $cancelUrl,
             'body' => empty($body) ? "" : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
-            'bodyPreview' => $this->Format($body)
+            'bodyPreview' => $this->Format($body),
+            'saveValue' => SecurityController::EDIT_PAGE_SUBMIT_VALUE,
+            'error' => $error ?? null
         ]);
         $this->SetInclusions($temp);
     } else {
-        $error = null;
-        if ($submit == "save" && $this->page && $this->page['id'] != $_POST['previous']) {
+        if ($submit == SecurityController::EDIT_PAGE_SUBMIT_VALUE && $this->page && $this->page['id'] != $_POST['previous']) {
             $error = _t('EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER');
             $submit = false;
         }
 
-        if ($submit == "save") {
+        if ($submit == SecurityController::EDIT_PAGE_SUBMIT_VALUE) {
             // SAVE AND REDIRECT
             $body = str_replace("\r", '', $body);
             // teste si la nouvelle page est differente de la précédente
@@ -124,12 +125,13 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
             $passwordForEditing = !empty($this->config['password_for_editing']) && isset($_POST['password_for_editing']);
 
             $output .= $this->render('@core/handlers/edit.twig', [
-                'error' => $error,
+                'error' => $error ?? null,
                 'previous' => $previous,
                 'handler' => testUrlInIframe() ? 'editiframe' : 'edit',
                 'passwordForEditing' => $passwordForEditing,
                 'cancelUrl' => $cancelUrl,
-                'body' => empty($body) ? "" : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET)
+                'body' => empty($body) ? "" : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
+                'saveValue' => SecurityController::EDIT_PAGE_SUBMIT_VALUE
             ]);
         }
     }

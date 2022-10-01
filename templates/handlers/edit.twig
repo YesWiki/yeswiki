@@ -27,7 +27,7 @@
 
   <div class="form-actions">
     {# Save Button #}
-    {% set action = bodyPreview ? 'save' : config['preview_before_save'] ? 'preview' : 'save' %}
+    {% set action = (not bodyPreview and config['preview_before_save']) ? 'preview' : saveValue %}
     <button type="submit" name="submit" value="{{ action }}" class="btn btn-primary">
       {{ _t('TEMPLATE_SAVE') }}
     </button>
