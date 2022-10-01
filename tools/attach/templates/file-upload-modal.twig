@@ -22,13 +22,11 @@
               <div class="radio inline-container">
                 <label>
                   <input type="radio" name="attach_action_display_pdf" value="0" checked="checked">
-                  <span></span>
-                  {{ _t('ATTACH_ACTION_DISPLAY_PDF_LINK_TEXT') }}
+                  <span>{{ _t('ATTACH_ACTION_DISPLAY_PDF_LINK_TEXT') }}</span>
                 </label>
                 <label>
                   <input type="radio" name="attach_action_display_pdf" value="1">
-                  <span></span>
-                  {{ _t('ATTACH_ACTION_DISPLAY_PDF_INCLUDED_TEXT') }}
+                  <span>{{ _t('ATTACH_ACTION_DISPLAY_PDF_INCLUDED_TEXT') }}</span>
                 </label>
               </div>
             </div>
@@ -77,19 +75,19 @@
                 <label for="image-size-small">
                   <input type="radio" id="image-size-small" value="small" name="attach_imagesize" class="input_radio image-size-small">
                   <span>
-                    {{ _t('THUMBNAIL') }}&nbsp;({{ imageSmallWidth }}x{{ imageSmallHeight }})
+                    {{ _t('THUMBNAIL') }}&nbsp;({{ config['image-small-width'] }}x{{ config['image-small-height'] }})
                   </span>
                 </label>
                 <label for="image-size-medium">
                   <input type="radio" id="image-size-medium" value="medium" name="attach_imagesize" class="input_radio image-size-medium">
                   <span>
-                    {{ _t('MEDIUM') }}&nbsp;({{ imageMediumWidth }}x{{ imageMediumHeight }})
+                    {{ _t('MEDIUM') }}&nbsp;({{ config['image-medium-width'] }}x{{ config['image-medium-height'] }})
                   </span>
                 </label>
                 <label for="image-size-big">
                   <input type="radio" id="image-size-big" value="big" name="attach_imagesize" class="input_radio image-size-big">
                   <span>
-                    {{ _t('BIG') }}&nbsp;({{ imageBigWidth }}x{{ imageBigHeight }})
+                    {{ _t('BIG') }}&nbsp;({{ config['image-big-width'] }}x{{ config['image-big-height'] }})
                   </span>
                 </label>
                 <label for="image-size-original">
@@ -165,6 +163,6 @@
         <a href="#" data-dismiss="modal" role="button" class="btn btn-default btn-cancel-upload">{{ _t('CANCEL_THIS_UPLOAD') }}</a>
         <button name="insert" class="btn btn-primary btn-insert-upload">{{ _t('INSERT') }}</button>
       </div>
-    </div><!-- /.modal-content -->
-  </div><!-- /.modal-dialog -->
-</div><!-- /.modal /#UploadModal -->
+    </div>
+  </div>
+</div>
