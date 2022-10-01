@@ -2,6 +2,8 @@
 // which isn't maintained anymore. Anyway we do not have any info about which version of the 
 // lib this file is, so cannot move to yarn package
 
+// Also it seems this lib have been modified...
+
 /**
  * http://github.com/valums/file-uploader
  *
@@ -15,7 +17,6 @@
 // Helper functions
 //
 var qq = qq || {};
-var listTemplate = $('.sample-upload-list').html();
 
 /**
  * Adds all missing properties from second obj to first obj
@@ -505,7 +506,6 @@ qq.FileUploader = function(o) {
     listElement: null,
 
     // template for one item in file list
-    //fileTemplate: listTemplate,
     fileTemplate: '<li>' +
       '<span class="qq-upload-file"></span>' +
       '<span class="qq-upload-spinner"></span>' +
@@ -636,7 +636,9 @@ qq.extend(qq.FileUploader.prototype, {
     }
   },
   _addToList: function(id, fileName) {
-    var item = qq.toElement(this._options.fileTemplate);
+    // var item = qq.toElement(this._options.fileTemplate)
+    // jquery parse the template better than qq.toElement
+    var item = $(this._options.fileTemplate)[0];
     item.qqFileId = id;
 
     var fileElement = this._find(item, 'file');

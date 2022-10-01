@@ -4,10 +4,13 @@
   </noscript>
   <div class="qq-uploader">
     <div class="qq-upload-button btn btn-default" title="{{ _t('UPLOAD_A_FILE') }}">
-      <i class="fa fa-upload icon-upload"></i>&nbsp;{{ _t('UPLOAD_A_FILE_SHORT') }}
+      <i class="fa fa-upload icon-upload"></i>
+      <span>{{ _t('UPLOAD_A_FILE_SHORT') }}</span>
     </div>
     <ul class="qq-upload-list"></ul>
   </div>
+
+  {# Template to display uploads, will be injected inside qq-upload-list #}
   <div class="sample-upload-list hide">
     <li>
       <span class="qq-upload-file"></span>

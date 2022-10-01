@@ -2,56 +2,43 @@ import * as aceModule from '../../../../javascripts/vendor/ace/ace.js'
 // Loads html rules cause it's used inside yeswiki mode
 import * as aceModeHtml from '../../../../javascripts/vendor/ace/mode-html.js'
 
-import setupAceditorToolbarBindings from './aceditor-toolbar.js'
 import setupAceditorKeyBindings from './aceditor-key-bindings.js'
+import openModal from './aceditor-toolbar-remote-modal.js'
+import LinkModal from './link-modal.js'
+import FileUploadModal from '../../../attach/presentation/javascripts/file-upload-modal.js'
 
-// Aceditor Plugin
-// Transform a textarea into an Ace editor, with toolbar
-$.fn.aceditor = function(options) {
-  // Lightweight plugin wrapper, preventing against multiple instantiations
-  return this.each(function() {
-    if (!$.data(this, 'plugin_acedior')) {
-      $.data(this, 'plugin_acedior', new Plugin(this, options))
-    }
-  })
-}
+class Aceditor {
+  ace = null
+  linkModal
 
-// The actual plugin constructor
-function Plugin(element, options) {
-  this.element = element
-  const defaults = {
-    savebtn: false,
-    syntax: 'yeswiki'
+  constructor($container) {
+    this.$container = $container
+    this.initialize()
   }
-  this.options = $.extend({}, defaults, options)
 
-  return this.init()
-}
+  get $textarea() {
+    return this.$container.find('.aceditor-textarea')
+  }
 
-Plugin.prototype.init = function() {
-  // Place initialization logic here
-  // You already have access to the DOM element and the options via the instance,
-  // e.g., this.element and this.options
-  if ($(this.element).is('textarea')) {
-    const textarea = $(this.element)
+  get $aceContainer() {
+    return this.$container.find('.ace-container')
+  }
 
-    const $editorContainer = $('.ace-editor-container')
-    setupAceditorKeyBindings($editorContainer)
+  get $toolbar() {
+    return this.$container.find('.aceditor-toolbar')
+  }
 
+  initialize() {
     // Where to find the 'mode-XXXX' files
-    if (this.options.syntax === 'yeswiki') {
-      ace.config.set('basePath', 'tools/aceditor/presentation/javascripts')
-    } else {
-      ace.config.set('basePath', 'javascripts/vendor/ace')
-    }
+    ace.config.set('basePath', 'tools/aceditor/presentation/javascripts')
 
-    const aceditor = ace.edit($editorContainer.find('pre')[0], {
+    this.ace = ace.edit(this.$container.find('.ace-body')[0], {
       printMargin: false,
-      mode: `ace/mode/${this.options.syntax}`,
+      mode: 'ace/mode/yeswiki',
       showGutter: true,
       wrap: 'free',
       maxLines: Infinity,
-      minLines: $(this.element).attr('rows'),
+      minLines: this.$textarea.attr('rows'),
       showFoldWidgets: false,
       fontSize: '18px',
       useSoftTabs: false,
@@ -61,27 +48,57 @@ Plugin.prototype.init = function() {
     })
 
     // Sync textarea and editor
-    aceditor.getSession().setValue(textarea.val())
-    aceditor.getSession().on('change', () => {
-      textarea.val(aceditor.getSession().getValue())
+    this.ace.session.setValue(this.$textarea.val())
+    this.ace.session.on('change', () => {
+      this.$textarea.val(this.ace.session.getValue())
     })
 
+    setupAceditorKeyBindings(this.$aceContainer, this.$toolbar)
+
     // Enable alert popup when leaving the page
-    aceditor.on('change', () => {
+    this.ace.on('change', () => {
       if (typeof showPopup !== 'undefined') { showPopup = 1 }
     })
 
-    // Setup DOM
-    setupAceditorToolbarBindings(textarea, aceditor)
-    textarea.data('aceditor', aceditor)
+    this.linkModal = new LinkModal()
+    this.fileUplodModal = new FileUploadModal()
 
-    return aceditor
+    this.fileUplodModal.initButton(
+      this.$toolbar.find('.attach-file-uploader'),
+      (result) => { this.replaceSelectionBy(result) }
+    )
+
+    this.$toolbar.find('.aceditor-btn').on('click', (e) => {
+      const $btn = $(e.currentTarget)
+
+      if ($btn.data('remote')) {
+        // Remote Modal Button
+        openModal($btn.attr('title'), $btn.attr('href'))
+      } else if ($btn.hasClass('aceditor-btn-link')) {
+        // Link Button
+        this.linkModal.open({
+          text: this.ace.getSelectedText(),
+          onComplete: (result) => { this.replaceSelectionBy(result) }
+        })
+      } else {
+        // Other Buttons
+        this.surroundSelectionWith($btn.data('lft'), $btn.data('rgt'))
+      }
+    })
   }
-  return false
+
+  surroundSelectionWith(left = '', right = '') {
+    this.ace.session.replace(this.ace.getSelectionRange(), left + this.ace.getSelectedText() + right)
+  }
+
+  replaceSelectionBy(replacement) {
+    this.ace.session.replace(this.ace.getSelectionRange(), replacement)
+  }
 }
 
-// Edit handler of yeswiki
-$('#body').aceditor()
-
-// For comments and Bazar's textarea
-$('.wiki-textarea, .commentform textarea').aceditor()
+jQuery(() => {
+  $('.aceditor-container').each(function() {
+    const name = $(this).data('name')
+    window[`aceditor-${name}`] = new Aceditor($(this))
+  })
+})
