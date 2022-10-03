@@ -143,7 +143,7 @@ export const app = {
     }
   },
   methods: {
-    open(editor, options = {}) {
+    open(editor, options) {
       this.editor = editor
       $('#actions-builder-modal').modal('show')
       this.currentGroupId = options.groupName

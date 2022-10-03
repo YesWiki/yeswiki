@@ -69,10 +69,10 @@ class Aceditor {
       }
     })
     this.$toolbar.find('.open-actions-builder-btn').click((event) => {
-      this.actionsBuilder.open({ groupName: $(event.target).data('group-name') })
+      this.actionsBuilder.open(this.editor, { groupName: $(event.target).data('group-name') })
     })
     this.$toolbar.find('.open-existing-action').click(() => {
-      this.actionsBuilder.open({ action: this.editor.currentGroupTextwithoutMarkup })
+      this.actionsBuilder.open(this.editor, { action: this.editor.currentGroupTextwithoutMarkup })
     })
   }
 
