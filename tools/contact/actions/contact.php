@@ -1,42 +1,5 @@
 <?php
 
-/*vim: set expandtab tabstop=4 shiftwidth=4: */
-// +------------------------------------------------------------------------------------------------------+
-// | PHP version 5.1                                                                                      |
-// +------------------------------------------------------------------------------------------------------+
-// | Copyright (C) 1999-2006 outils-reseaux.org                                                           |
-// +------------------------------------------------------------------------------------------------------+
-// | This file is part of contact.                                                                        |
-// |                                                                                                      |
-// | Foobar is free software; you can redistribute it and/or modify                                       |
-// | it under the terms of the GNU General Public License as published by                                 |
-// | the Free Software Foundation; either version 2 of the License, or                                    |
-// | (at your option) any later version.                                                                  |
-// |                                                                                                      |
-// | Foobar is distributed in the hope that it will be useful,                                            |
-// | but WITHOUT ANY WARRANTY; without even the implied warranty of                                       |
-// | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                                        |
-// | GNU General Public License for more details.                                                         |
-// |                                                                                                      |
-// | You should have received a copy of the GNU General Public License                                    |
-// | along with Foobar; if not, write to the Free Software                                                |
-// | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
-// +------------------------------------------------------------------------------------------------------+
-
-/**
- * contact.php.
- *
- * Description :
- *
- *@author        Florian SCHMITT <florian@outils-reseaux.org>
- *@copyright     outils-reseaux.org 2008
- *
- *@version       $Revision: 1.5 $ $Date: 2011-07-13 10:24:11 $
- */
-if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
-}
-
 //recuperation des parametres
 $contactelements['mail'] = $this->GetParameter('mail');
 if (empty($contactelements['mail'])) {

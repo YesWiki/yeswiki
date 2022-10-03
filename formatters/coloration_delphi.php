@@ -1,18 +1,5 @@
 <?php
-/*
-* $Id: coloration_delphi.php 797 2007-07-23 22:31:56Z lordfarquaad $
-*
-* Souligneur syntaxique Delphi
-*
-* copyright Eric Feldstein 2003 2004 mailto:garfield_fr@tiscali.fr
-* copyright Didier Loiseau 2004
-*
-* Licence : la meme que wikini (voir le fichier LICENCE).
-* Vous étes libre d'utiliser et de modifier ce code é condition de laisser le copyright
-* d'origine. Vous pouvez  bien sur vous ajouter é la liste des auteurs.
-*
-* Installation : copier le fichier dans le repertoire "formatters" de WikiNi
-*/
+
 // protection contre les appels directs
 if (!defined('WIKINI_VERSION')) {
     die('Appel direct interdit');

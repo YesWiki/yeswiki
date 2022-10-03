@@ -1,33 +1,4 @@
 <?php
-/*vim: set expandtab tabstop=4 shiftwidth=4: */
-// +------------------------------------------------------------------------------------------------------+
-// | PHP version 4.1                                                                                      |
-// +------------------------------------------------------------------------------------------------------+
-// | Copyright (C) 2004 Tela Botanica (accueil@tela-botanica.org)                                         |
-// +------------------------------------------------------------------------------------------------------+
-// | Aquesta llibreria és de programari lliure; podeu redistribuir-la i/o                                 |
-// | modificar-la d\'acord amb els termes del GNU Lesser General Public                                   |
-// | License tal com ha estat publicada per la Free Software Foundation; sigui la                         |
-// | versió 2.1 de la llicència o bé (opcionalment) qualsevol versió posterior.                           |
-// |                                                                                                      |
-// | Aquesta llibreria és distribuïda amb l'ànim que sigui útil                                           |
-// | però SENSE CAP GARANTIA; fins i tot sense la garantia implícita de                                   |
-// | MERCHANTABILITY o de FITNESS FOR A PARTICULAR PURPOSE. Vegeu la GNU                                  |
-// | Lesser General Public License per a més detalls.                                                     |
-// |                                                                                                      |
-// | Amb aquesta llibreria heu d\'haver rebut còpia de la GNU Lesser General Public                       |
-// | License; altrament, escriviu a la Free Software Foundation,                                          |
-// | Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                                        |
-// +------------------------------------------------------------------------------------------------------+
-/**
-*
-* Fitxer de traducció al català de l'aplicació Bazar
-*
-*@package 		bazar
-*@author        Jordi Picart <jordi.picart@aposta.coop>
-*@copyright     2014 Outils-Réseaux
-*
-*/
 
 return [
 

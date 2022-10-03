@@ -1,14 +1,4 @@
 <?php
-/**
- * Arquivo de tradução em português (do Brasil) da extensão templates
- *
- * @category  Wiki
- * @package   Templates
- * @author    François Labastie <francois@outils-reseaux.org>
- * @copyright 2014 Outils-Réseaux
- * @license   GNU/GPL version 3
- * @link      https://yeswiki.net
- */
 
 return [
     

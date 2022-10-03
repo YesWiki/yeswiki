@@ -1,12 +1,6 @@
 <?php
 /**
  * Action to add usefull metas to html head
- *
- * @category Wiki
- * @package  YesWiki
- * @author   2009-2018 Florian Schmitt <mrflos@lilo.org>
- * @license  GNU/GPL version 3
- * @link     https://yeswiki.net
  */
 
 if (!defined("WIKINI_VERSION")) {

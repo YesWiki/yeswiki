@@ -11,8 +11,6 @@
  * - password
  * - remember
  * - userpage
- *
- * refactor from login.php whiwh was Copyright 2010  Florian SCHMITT
  */
 
 namespace YesWiki\Login;

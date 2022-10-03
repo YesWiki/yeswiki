@@ -1,38 +1,5 @@
 <?php
 
-/*vim: set expandtab tabstop=4 shiftwidth=4: */
-
-// +------------------------------------------------------------------------------------------------------+
-// | PHP version 5.1                                                                                      |
-// +------------------------------------------------------------------------------------------------------+
-// | Copyright (C) 1999-2006 Kaleidos-coop.org                                                            |
-// +------------------------------------------------------------------------------------------------------+
-// | This file is part of wkbazar.                                                                     |
-// |                                                                                                      |
-// | Foobar is free software; you can redistribute it and/or modify                                       |
-// | it under the terms of the GNU General Public License as published by                                 |
-// | the Free Software Foundation; either version 2 of the License, or                                    |
-// | (at your option) any later version.                                                                  |
-// |                                                                                                      |
-// | Foobar is distributed in the hope that it will be useful,                                            |
-// | but WITHOUT ANY WARRANTY; without even the implied warranty of                                       |
-// | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                                        |
-// | GNU General Public License for more details.                                                         |
-// |                                                                                                      |
-// | You should have received a copy of the GNU General Public License                                    |
-// | along with Foobar; if not, write to the Free Software                                                |
-// | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
-// +------------------------------------------------------------------------------------------------------+
-// CVS : $Id: wiki.php,v 1.12 2010-12-01 17:01:38 mrflos Exp $
-
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
-// +------------------------------------------------------------------------------------------------------+
-// |                                            ENTETE du PROGRAMME                                       |
-// +------------------------------------------------------------------------------------------------------+
-
 //chemin relatif d'acces au bazar
 define('BAZ_CHEMIN', 'tools/bazar/');
 define('BAZ_CHEMIN_UPLOAD', 'files/');

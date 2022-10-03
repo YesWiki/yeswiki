@@ -1,22 +1,4 @@
 <?php
-/**
- * Yeswiki is a great wiki
- *
- * @category Wiki
- * @package  YesWiki
- * @author   2002, Hendrik Mans <hendrik@mans.de>
- * @author   2003 Carlo Zottmann <secret@mail.com>
- * @author   2002, 2003, 2005 David DELON <secret@mail.com>
- * @author   2002, 2003, 2004, 2006 Charles NEPOTE <secret@mail.com>
- * @author   2002, 2003 Patrick PAUL <secret@mail.com>
- * @author   2003 Eric DELORD <secret@mail.com>
- * @author   2003 Eric FELDSTEIN <secret@mail.com>
- * @author   2004-2006 Jean-Christophe ANDRE <secret@mail.com>
- * @author   2005-2006 Didier LOISEAU <secret@mail.com>
- * @author   2009-2018 Florian Schmitt <mrflos@lilo.org>
- * @license  GNU/GPL version 3
- * @link     https://yeswiki.net
- */
 
 namespace YesWiki;
 

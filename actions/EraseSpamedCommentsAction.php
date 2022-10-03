@@ -9,12 +9,6 @@
  *    les suppressions effectuées
  * Exemple d'utilisation : {{erasespamedcomments max="50"}}
  *
- * @version $Id: erasespamedcomments.class.php 859 2007-11-22 01:07:26Z nepote $
- * @author Charles Népote <charles@nepote.org>
- * @author DidieréLoiseau <l.farquaad@gmail.com>
- * @copyright Copyright &copy; 2006, 2007 Charles Népote
- * @license License GPL.
- *
  * @todo
  * -- pour garantir une certaine transparence, option d'envoi par mail des contenus effacés (?)
  *    (via une méthode appelée NotifyAdmin())

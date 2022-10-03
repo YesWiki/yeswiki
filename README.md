@@ -44,6 +44,7 @@ YesWiki grew out of a French language version of [WakkaWiki](https://en.wikipedi
 - 2003 Erus UMBRAE
 - 2004 David VANTYGHEM
 - 2004 Jean Christophe ANDRE
+- 2005 Didier Loiseau
 
 ### YesWiki authors
 

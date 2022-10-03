@@ -1,14 +1,4 @@
 <?php
-/**
- * English translation for the Templates extension
- *
- * @category  Wiki
- * @package   Templates
- * @author    Florian Schmitt <florian@outils-reseaux.org>
- * @copyright 2014 Outils-Réseaux
- * @license   GNU/GPL version 3
- * @link      https://yeswiki.net
- */
 
 return [
                          

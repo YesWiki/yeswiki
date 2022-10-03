@@ -2,11 +2,6 @@
 
 use YesWiki\Security\Controller\SecurityController;
 
-// Charles Nepote 2005-2006
-// Didier Loiseau 2005
-// License GPL.
-// Version 0.7.3 du 10/04/2006 a 23:37.
-
 // TODO
 // -- case pour selectionner tout
 // -- attention au cas ou la version mais aussi la page est effacee

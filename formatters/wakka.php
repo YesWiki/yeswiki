@@ -1,15 +1,6 @@
 <?php
 /**
  * Formatter from wakka syntax
- *
- * @author Hendrik Mans <hendrik@mans.de>
- * @author David DELON <hidden@mail.ext>
- * @author Charles NEPOTE <hidden@mail.ext>
- * @author Patrick PAUL <hidden@mail.ext>
- * @author Eric DELORD <hidden@mail.ext>
- * @author Eric FELDSTEIN <hidden@mail.ext>
- * @author Jean Christophe ANDRé <hidden@mail.ext>
- * @author Didier LOISEAU <hidden@mail.ext>
  */
 
 namespace YesWiki;

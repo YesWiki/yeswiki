@@ -1,14 +1,4 @@
 <?php
-/**
- * Fitxer de traducció al català de l'extensió Templates
- *
- * @category  Wiki
- * @package   Templates
- * @author    Jordi Picart <jordi.picart@aposta.coop>
- * @copyright 2014 Outils-Réseaux
- * @license   GNU/GPL version 3
- * @link      https://yeswiki.net
- */
 
 return [
     'TEMPLATE_ACTION' => 'Acció',

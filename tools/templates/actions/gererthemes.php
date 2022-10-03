@@ -11,7 +11,6 @@
 use YesWiki\Security\Controller\SecurityController;
 
 /**
- * Copyright 2014 Rémi PESQUERS (rp.lefamillien@gmail.com)
  * Cette action à pour but de gérer massivement les droits sur les pages d'un wiki.
  * Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utilisent (définis par l'utilisateur).
 */

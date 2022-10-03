@@ -1,10 +1,6 @@
 <?php
 
 /*
-Handler "slide_show" pour WikiNi version WikiNi 0.4.1 et supérieurs.
-Développé par Charles Népote.
-Version 0.1 du 09/01/2005.
-Licence GPL.
 
 Par défaut il utilise les classes de style suivantes :
 .slide { font-size: 160%; margin: 5%; background-color: #FFFFFF; padding: 30px; border: 1px inset; line-height: 1.5; }

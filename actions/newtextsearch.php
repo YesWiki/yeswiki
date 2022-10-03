@@ -1,13 +1,6 @@
 <?php
 /**
  * Adaptation de l'action textsearch & newtextsearch de wikini pour Yeswiki
- * Copyright (c) 2002, Hendrik Mans <hendrik@mans.de>
- * Copyright 2002, 2003 David DELON
- * Copyright 2002  Patrick PAUL
- * Copyright 2004  Jean Christophe ANDRé
- * Copyright 2004  Nicephore17
- * Copyright 2019  XF75013
- * 08/02/2019 - v1.0 initial release
  * INFORMATION D'UTILISATION
  * Utilisation {{newtextsearch}} en lieu eet place de {{textsearch}}
  **/

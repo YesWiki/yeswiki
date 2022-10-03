@@ -1,11 +1,5 @@
 <?php
 
-// Action changesstyle.php version 0.2 du 16/03/2004
-// pour WikiNi 0.4.1rc (=> é la version du 200403xx) et supérieurs
-// Par Charles Népote (c) 2004
-// Licence GPL
-
-
 // Cette action permet de sélectionner une feuille de stye CSS
 // alternative é la feuille "wakka.css".
 //

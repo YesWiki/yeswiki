@@ -2,17 +2,7 @@
 /**
 * bazarlistecategorie : programme affichant les fiches du bazar catégorisées par les champs liste
 * sous forme de liste accordeon (ou autre template)
-*
-*
-*@package Bazar
-*
-*@author        Florian SCHMITT <florian@outils-reseaux.org>
-*@version       $Revision: 1.5 $ $Date: 2010/03/04 14:19:03 $
-*
 */
-// +------------------------------------------------------------------------------------------------------+
-// |                                            ENTETE du PROGRAMME                                       |
-// +------------------------------------------------------------------------------------------------------+
 
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\TemplateEngine;

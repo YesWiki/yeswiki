@@ -1,14 +1,6 @@
 <?php
 /*
-* $Id: highlighter.class.php 797 2007-07-23 22:31:56Z lordfarquaad $
-*
 * Souligneur générique pour colorier la syntaxe de langage de programmation
-*
-* copyright Eric Feldstein 2004 mailto:garfield_fr@tiscali.fr
-*
-* Licence : la meme que wikini(voir le fichier LICENCE).
-* Vous étes libre d'utiliser et de modifier ce code é condition de laisser le copyright
-* d'origine. Vous pouvez  bien sur vous ajouter é la liste des auteurs.
 *
 * INSTALLATION : copier le fichier dans le repertoire "formatters" de WikiNi
 * UTILISATION : importer la classe dans le script de coloration

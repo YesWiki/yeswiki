@@ -1,9 +1,6 @@
 <?php
 /**
 * valeur : permet d'extraire le contenu d'une valeur de fiche bazar à partir d'une url.
-*
-*
-* @author   Florian SCHMITT <florian@outils-reseaux.org>
 */
 // +------------------------------------------------------------------------------------------------------+
 // |                                            ENTETE du PROGRAMME                                           |
