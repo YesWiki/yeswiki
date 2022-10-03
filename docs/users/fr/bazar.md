@@ -94,7 +94,6 @@ Lorsque vous avez fini de modifier votre formulaire, vous devez valider au moyen
 
 
 ## Paramétrer les champs (questions)
-
 _Bazar_ propose de nombreux types de champs. Voici ceux auxquels vous aurez le plus souvent recours.  
 ### Paramètres génériques 
 Certains paramètres sont génériques à tous ou pratiquement tous les types de champs. Ils sont repris ici.  
@@ -124,18 +123,16 @@ L'adresse (_url_) de cette page est déterminée automatiquement à partir du ti
 
 #### Fabriquer un titre à partir de 2 champs
 Il est possible d'utiliser un titre combiné : par exemple : "champ prénom + champ nom".
-Pour cela utiliser le champ de type **Titre automatique** et dans valeur mettre les identifiants uniques des champs que l'on souhaite utiliser : {{bf_nom}} {{bf_prenom}} . 
-Vous pouvez également y ajouter du texte : par exemple mettre un tiret entre le nom et le prénom.
-!> Si vous utilisez un titre automatique, il faudra supprimer le champ bf_titre créé par défaut. 
+Pour cela utiliser le champ de type **[Titre automatique](/bazar?id=titre-automatique)** 
 
-### Champ de type texte court
+### Texte court
 Un champs de texte qui permet la saisie de quelques mots.
 #### Paramètres spécifiques au type de champs « texte court » :
  - **Valeur** Ce paramètre permet de pré-remplir le champ. C'est utile lorsque on connait la réponse la plus courante (si, par exemple, on demande le pays).  
  - **Nombre de caractères visibles** : Ce paramètre permet de préciser combien de caractères seront visibles à l'écran.  
  - **Longueur max** : Ce paramètre permet de limiter la longueur de la réponse que les utilisateurices peuvent saisir.
 
-### Champ de type « zone de texte »
+### Zone de texte
 Une zone de texte permet la saisie d'un texte relativement long et pouvant courrir sur plusieurs lignes.
 #### Paramètres spécifiques au type de champs « zone de texte » : 
  - **Valeur** : Ce paramètre permet de pré-remplir le champ. C'est utile lorsque on connaît la réponse la plus courante (si, par exemple, on demande le pays).  
@@ -145,7 +142,7 @@ Une zone de texte permet la saisie d'un texte relativement long et pouvant courr
   - **Texte non interprété –** Cette valeur limite la saisie aux seuls caractères sans mise en forme (pas d'italique ni de gras par exemple). C'est très utile pour saisir des adresses postales.
 - **Largeur champ de saisie** : Ce paramètre permet de préciser la largeur du champ de saisie.
 
-### Champ de type « image »
+### Image
 Un champ de type image permet d'importer un fichier image qui sera ensuite visualisable dans la fiche.
 #### Paramètres spécifiques au type de champs « image » :
  - **Hauteur vignette** : YesWiki génère une vignette des images afin de les afficher rapidement si besoin. Ce paramètre permet de préciser la hauteur de cette vignette.
@@ -154,18 +151,18 @@ Un champ de type image permet d'importer un fichier image qui sera ensuite visua
  - **Largeur re-dimension** : YesWiki peut harmoniser la taille des images importées pour ce formulaire. Ce paramètre permet de préciser la largeur de cette image redimensionnée.
  - **Alignement** : C'est là que l'on paramètre le comportement d'affichage de l'image. Son fonctionnement est similaire à ce qui se passe dans l'édition de pages (quand on joint une image avec le bouton Fichier).
 
-### Champ de type « upload de fichier »
+### Upload de fichier 
 Ce type de champ permet d'uploader un fichier (par exemple au format PDF). Ce fichier est ensuite téléchargeable par les personnes qui visualisent la fiche.
 #### Paramètres spécifiques au type de champs « upload de fichier » :
  - **Taille max** Ce paramètre permet de limiter la taille du fichier. Il s'agit d'un nombre d'octets (par ex. 2000000 équivalent à 2 Mo).
   
-### Champ de type « email »
+### Email 
 Ce type de champs permet de saisir une adresse électronique. YesWiki effectue automatiquement des contrôles sur la syntaxe de l'adresse et propose également de paramétrer des comportements spécifiquement liés à ce type de données.
 #### Paramètres spécifiques au type de champs « email » :
  - **Remplacer l'email par un bouton contact** En sélectionnant « oui » pour ce paramètre, on fait en sorte que l'adresse électronique soit remplacée, lors de l'affichage de la fiche, par un bouton qui renvoie vers un formulaire de contact automatiquement généré. L'email n'est donc pas visible par les personnes qui visualisent la fiche.
  - **Envoyer le contenu de la fiche à cet email** Ce paramètre permet de demander à YesWiki d'envoyer le contenu de la fiche à l'adresse saisie. Cet envoi se fera lorsque la personne aura validé la saisie de la fiche.
 
-### Champ de type « sélectionner »
+### Sélectionner 
 Un champ de ce type permet de proposer à l'utilisateur une liste fermée de choix. Les choix possibles seront présentés sous forme d'une liste déroulante.
 En outre, l'utilisation de ce type de champ permet d'avoir recours à des facettes pour filtrer parmi les fiches remplies.
 
@@ -176,7 +173,7 @@ Si, au contraire, vous souhaitez permettre à l'utilisateur de choisir parmi des
  - **Choix de la liste/du formulaire** Avec ce paramètre vous choisissez la liste (ou le formulaire) à partir de laquelle vous souhaitez que les utilisateurs choisissent.
  - **Valeur par défaut** Ce paramètre vous permet de proposer une valeur par défaut. Si vous n'en précisez pas, c'est le mot « choisir » qui s'affichera jusqu'à ce qu'un choix soit effectué. Attention, pour préciser la valeur par défaut, il faut indiquer sa clef dans la liste (et non pas sa valeur).
 
-### Champ de type « groupe de cases à cocher »
+### Groupe de cases à cocher 
 Un champ de ce type permet de proposer à l'utilisateur une liste fermée de choix. Les choix possibles seront présentés sous forme d'un groupe de cases à cocher.
 En outre, l'utilisation de ce type de champ permet d'avoir recours à des facettes pour filtrer parmi les fiches remplies.
 
@@ -187,7 +184,7 @@ Si, au contraire, vous souhaitez permettre à l'utilisateurice de choisir parmi 
  - **Choix de la liste/du formulaire** Avec ce paramètre vous choisissez la liste (ou le formulaire) à partir de laquelle vous souhaitez que les utilisateurices choisissent.
  - **Valeur par défaut** Ce paramètre vous permet de proposer une valeur par défaut. Si vous n'en précisez pas, c'est le mot « choisir » qui s'affichera jusqu'à ce qu'un choix soit effectué. Attention, pour préciser la valeur par défaut, il faut indiquer sa clef dans la liste (et non pas sa valeur).
 
-### Champ de type « groupe de boutons radio »
+### Groupe de boutons radio 
 Un champ de ce type permet de proposer à l'utilisateur une liste fermée de choix. Les choix possibles seront présentés sous forme d'un groupe de boutons radio.
 En outre, l'utilisation de ce type de champ permet d'avoir recours à des facettes pour filtrer parmi les fiches remplies.
 En premier lieu ce type de champs nécessite de pouvoir énumérer les différentes valeurs possibles. 
@@ -198,14 +195,14 @@ Si, au contraire, vous souhaitez permettre à l'utilisateur de choisir parmi des
  - **Choix de la liste/du formulaire** : Avec ce paramètre vous choisissez la liste (ou le formulaire) à partir de laquelle vous souhaitez que les utilisateurs choisissent.
  - **Valeur par défaut** : Ce paramètre vous permet de proposer une valeur par défaut. Si vous n'en précisez pas, c'est le mot « choisir » qui s'affichera jusqu'à ce qu'un choix soit effectué. Attention, pour préciser la valeur par défaut, il faut indiquer sa clef dans la liste (et non pas sa valeur).
 
-### Champ de type date
+### Date
 Un champ de type date permet de saisir sans erreur une date.
 Certains affichages des résultats (calendrier, agenda, etc.) nécessitent la présence d'un champ date.
 
 #### Paramètres spécifiques au type de champs date :
  - **Initialiser à Aujourd'hui** : Ce paramètre permet de préciser si on souhaite que la date soit prédéfinie à la date du jour.
 
-### Champ de type « géolocalisation de l'adresse »
+### Géolocalisation de l'adresse »
 ![image champ_zone.png (24.5kB)](images/DocBazarChampGeo_champ_geoloc_20220204222452_20220204212502.png)
 Ce champ n'est pas un vrai champ. Il s'agit, de fait, d'un outil qui permet de transformer une adresse saisie par un humain en un jeu de coordonnées (longitude et latitude).  
 Son comportement est donc un peu différent de ce qu'on trouve dans les autres champs.  
@@ -219,40 +216,106 @@ Il est indispensable d'avoir un champ de ce type dans votre formulaire si vous s
  - **Nom du champ latitude** Avec ce champ, YesWiki va convertir l'adresse postale en coordonnées. Ce paramètre indique à YesWiki dans quel nom interne il doit donner à la valeur de latitude. Sauf besoin précis, conservez la valeur par défaut qui est « bf\_latitude ».  
  - **Nom du champ longitude** Avec ce champ, YesWiki va convertir l'adresse postale en coordonnées. Ce paramètre indique à YesWiki dans quel nom interne il doit donner à la valeur de longitude. Sauf besoin précis, conservez la valeur par défaut qui est « bf\_longitude ».
 
-A AJOUTER depuis
-https://quincaillere.org/formationgarecentrale2022/?M23bLecturesBazar1ConcevoirSonForm&course=P2Parcours2&module=M23GererFinementLesDonnees
+### Inscription liste de diffusion
 
-✨ Configuration des droits d'accès aux fiches du formulaire
-✨ Construire le titre des fiches d'un formulaire à partir d'autres champs
-✨ Liste fiches liées
-✨ Ajouter des onglets dans son formulaire
-✨ Le code derrière
-✨ Rendre une question conditionnelle
-✨ formulaires avec des onglets
-✨ insérer un sous titre ou une information complémentaire (custom html)
+### Insérer un sous titre ou une information complémentaire (custom html)
 
-## 2 – Permettre la saisie des fiches
+### Créer un utilisateur lorsque la fiche est validée
+
+### Config droits d'accès
+
+### Config thème de la fiche
+
+### Bookmarklet
+
+### Liste des fiches liées
+
+### Titre automatique
+Il est possible d'utiliser un titre combiné à partir de 2 champs (ou plus) : par exemple : "champ prénom + champ nom".
+Dans le paramètre **valeur** mettre les identifiants uniques des champs que l'on souhaite utiliser : {{bf_nom}} {{bf_prenom}} . 
+Vous pouvez également y ajouter du texte : par exemple mettre un tiret entre le nom et le prénom.
+!> Si vous utilisez un titre automatique, il faudra supprimer le champ bf_titre créé par défaut. 
+
+### Custom 
+
+### Navigation par onglet /Passage à l'onglet suivant
+
+### Rendre une question conditionnelle
+### Calculs
+
+### Onglet : code wiki
+Lorsque vous modifiez un formulaire, un onglet permet de consulter le **code wiki** qui a été généré. Il peut être utile de le consulter lorsque vous avez un problème d'affichage de votre formulaire. Souvent le problème vient d'un caractère invisible issu d'un copié collé sur les intitulés des champs. Afficher le code wiki permet de déceler ces caractères html.
+
+## Permettre la saisie des fiches
 
 Pour permettre la **saisie des fiches**, insérez le formulaire de saisie dans la page wiki de votre choix via le bouton composant **Afficher un formulaire de création de fiche**.
-Dans les options avancées, vous pouvez choisir le ** Nom de la page de ce wiki à afficher après création d'une fiche** pour renvoyer vers une page préparée par vos soins suite à la saisie d'une fiche.
+Dans les options avancées, vous pouvez choisir le **Nom de la page de ce wiki à afficher après création d'une fiche** pour renvoyer vers une page préparée par vos soins suite à la saisie d'une fiche.
 
 
-## 3 – Afficher les résultats du formulaire
-
+## Afficher les résultats du formulaire
 Le composant **Afficher les données d'un formulaire** permet d'insérer un apercu des fiches qui ont été saisies. Plusieurs types affichage possible.
-> A completer
+### Blocs
+L'affichage sous forme de bloc est le plus souple d'utilisation. Son paramétrage permet de personnaliser l'affichage pour mettre en valeur vos données. Le constructeur graphique permet de lister les options possibles.
+
+### Carte
+
+#### Tips
+
+ - **Cluster et facettes** Les options affichage en cluster et filtre par facette ne sont compatibles qu'en activant le rendu dynamique
+ - **Afficher les contours de département** (à completer)
+
+### Paramètres supplémentaires
+#### Query
+Il est possible d'afficher seulement une partie des données présentes dans la base de données en utilisant le paramètre query.
+Vous souhaitez :
+   - **trier sur base du contenu d'une (ou plusieurs) liste(s)**
+        query="listeListeGenre=M|listeListeDep=26"
+        notez qu'il est possible de trier sur plusieurs valeurs au sein de la même query en séparant les valeurs par une virgule (sans espace)
+        Notez bien que la syntaxe est bien liste+Nomdelaliste=clé ou liste+Nomdelaliste=clé1,clé2 (dans votre liste, la clé n'est pas le texte mais bien l'identifiant que vous avez indiqué juste devant)
+   - **trier sur base du contenu d'une (ou plusieurs) checkbox(s)**
+        query="checkboxListeGenre=M|checkboxListeDep=26"
+        Notez bien que la syntaxe est bien checkbox+Nomdelaliste=clé
+   - **trier sur base du contenu de boutons radios**
+        query="radioListeGenre=M|radioListeDep=26"
+        Notez bien que la syntaxe est bien radio+Nomdelaliste=clé
+  - **trier sur base du contenu d'un champ (bf_...)**
+        query="bf_titre=a.*" (affiche tous les titres commençant par a)
+        query="bf_titre=*.a" (affiche tous les titres finissant par a)
+        query="bf_titre=NomYeswiki (affiche la fiche dont le champ titre est NomYeswiki)
+        query="bf_titre=." (affiche toutes les fiches dont le champ "bf_titre" est vierge)
+   - **trier sur base d'une liste dynamique de type "checkboxfiche"**
+        query="checkboxfiche<numeroduformulaireappelé>=Chat-Mot dufiltre"}}
+        Exemple :    {{bazarliste id="2" query="checkboxfiche2=TesT"}}
+        Cet exemple est un annuaire. Ici, on veut voir les personnes qui ont rempli l'annuaire (formulaire 2), en affichant uniquement les personnes qui appartiennent au groupe de travail "Test" (dont le ChatMot est TesT - donc à écrire exactement comme ça)
+   - **trier sur base d'un contenu vide**
+        query="radioListeGenre="
+        Permet de ne garder que les fiches dont le champ radioListeGenre est vide 
+    - **trier sur base d'un contenu non vide**
+        query="radioListeGenre!="
+        Permet de ne garder que les fiches dont le champ radioListeGenre n'est pas vide 
+   - **trier sur base d'un contenu différent d'une valeur**
+        query="radioListeGenre!=M"
+        Permet de ne garder que les fiches dont le champ radioListeGenre n'est pas égale à M 
 
 
+#### Ordre et champ
+ - **ordre** 	Permet d'afficher la liste par ordre croissant ou décroissant. Par défaut : rangé par ordre croissant (asc) sinon mettre "desc" pour l'ordre décroissant
+ - **champ** 	Permet de choisir le champ utilisé pour le tri. Par défaut : tri sur le champ titre (bf_titre). Par date par ex : `champ="date_creation_fiche"` ou `champ="date_maj_fiche"`
+
+#### Random
+Permet d'afficher une sélection aléatoire de fiches `random="1"`
+en général on l'utilise avec le paramètre **nb** `nb="5"` pour afficher 5 ressources au hasard à mettre en valeur.
+
+### Données issues d'un autre yeswiki
+!> bazarliste externe (à compléter)
 
 ## Importer / exporter des données
 
 Il est possible :
-
 *   d'importer des données externes (d'un tableur par exemple) dans un formulaire bazar
 *   d'exporter des données d'un formulaire bazar pour les utiliser ensuite dans un tableur classique
 
 ### Étapes pour importer des données
-
 *   se connecter au wiki (il faut être parmi les administrateurs pour pouvoir importer des données)
 *   se rendre sur la page permettant la gestion des formulaires (elle contient l'action{{bazar}})
 *   cliquer sur le bouton **importer**
@@ -289,15 +352,11 @@ Il est possible :
 
 **Quoi faire avec mon fichier CVS ?** Un CSV peut s'ouvrir avec Excel, Open Office, Google Doc ... en précisant simplement que le caractère d'espacement est une virgule.
 
-### Afficher les fiches YesWiki sur une carte de type umap
-
-Le contenu de cette page n'est utilisable que pour les versions de YesWiki après doryphore 2021-06-01-1  
-
-#### Objectif
+## Afficher les fiches YesWiki sur une carte de type umap
 
 Paramétrer Umap pour y insérer des fiches Yeswiki  
 
-#### Introduction
+### Introduction
 
 [Umap](https://wiki.openstreetmap.org/wiki/UMap) est un logiciel cartographique qui permet de créer des calques modifiables (on considère ici que vous l'avez déjà utilisé) .  
 Depuis la version Doryphore de YesWiki il est possible d'importer automatiquement les données de fiches bazar dans les calques d'une Umap.  
@@ -309,15 +368,15 @@ https://www.example.com/?api/forms/{id}/entries/geojson
 
 que vous allez glisser dans le paramétrage de votre carte Umap ({id} représente l'identifiant du formulaire concerné).  
 
-#### Explications
+### Explications
 
 Voilà quelques points explicatif pour paramétrer votre carte Umap.  
 
-### Coller le lien d'export GeoJSON
+#### Coller le lien d'export GeoJSON
 
 Cela ce passe dans "Propriétés d'un calque", "Données Distantes", coller votre lien cité ci-dessus dans "URL" et choisir le "Format" GeoJSON.  
 
-### Paramétrer l'affichage de vos données dans Umap
+#### Paramétrer l'affichage de vos données dans Umap
 
 \- Dans
  	 "Propriétés d'un calque", "Options d'interactions", "Gabarit du contenu de la popup"
@@ -340,7 +399,7 @@ etc...
 
  	 {{https://www.example.com/geo/files/{imagebf\_image}}}
 
-### Incruster une page d'accueil pour faciliter les contributions ?
+#### Incruster une page d'accueil pour faciliter les contributions ?
 
 Il est possible de présenter une page spéciale de contribution directement dans la page d'accueil de votre Umap.  
   
@@ -349,6 +408,6 @@ Il faut se rendre dans "Éditer les propriétés de la carte" et proposer l'enca
 En markdown sur Umap cela donnera :
 
  	 {{{https://www.example.com/?VotrePageSpéciale/iframe}}}
-### En image :
+#### En image :
 
 ![Tuto Umap YesWiki](images/BazarAfficherSurCarteUMAP_TutoUmapYesWiki_20210610130113_20210610130147.png)
