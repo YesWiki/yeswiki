@@ -60,6 +60,7 @@ export default class {
   updateCursor() {
     // Copy ace cursor
     this.cursor = { ...this.ace.selection.getCursor() }
+    this.cursor.column ||= 0
 
     if (this.currentLineNodes) {
       let [currColumn, nextColumn] = [0, 0]
@@ -133,109 +134,35 @@ export default class {
 
   surroundSelectionWith(left = '', right = '') {
     this.ace.session.replace(this.ace.getSelectionRange(), left + this.ace.getSelectedText() + right)
+    this.ace.focus()
   }
 
   replaceSelectionBy(replacement) {
     this.ace.session.replace(this.ace.getSelectionRange(), replacement)
+    this.afterInsertOrUpdate()
   }
 
   replaceCurrentNodeBy(text) {
     this.selectCurrentNode()
     this.replaceSelectionBy(text)
-    this.selectCurrentNode()
+    this.ace.focus()
   }
 
   replaceCurrentGroupBy(text) {
     this.selectCurrentGroup()
     this.replaceSelectionBy(text)
-    this.selectCurrentGroup()
+    this.afterInsertOrUpdate()
   }
 
   insert(text) {
     this.ace.insert(text)
-    this.selectCurrentGroup()
+    this.afterInsertOrUpdate()
   }
 
-  // OLD CODE
-
-  // get currentLineNumber() {
-  //   return this.ace.selection.getRange().start.row
-  // }
-
-  // get currentLine() {
-  //   return this.ace.session.getLine(this.currentLineNumber)
-  // }
-
-  // get startLineToCursor() {
-  //   return this.ace.session.getTextRange(new ace.Range(this.cursor.row, 0, this.cursor.row, this.cursor.column))
-  // }
-
-  // get cursorToEndLine() {
-  //   return this.ace.session.getTextRange(new ace.Range(this.cursor.row, this.cursor.column, this.cursor.row + 1, 0))
-  // }
-
-  // // Return the action without the {{ }} -> exple 'action param="1"'
-  // get currentSelectedAction() {
-  //   // Multi Row Selection, abort
-  //   if (this.ace.getSelectionRange().start.row != this.ace.getSelectionRange().end.row) {
-  //     return ''
-  //   }
-  //   // Selected Text contains an action
-  //   if (this.ace.getSelectedText().match(/\s*\{\{.*\}\}\s*/g) != null) {
-  //     return this.ace.getSelectedText().replace('}}', '').replace('{{', '').trim()
-  //   }
-
-  //   const { startLineToCursor } = this
-  //   const { cursorToEndLine } = this
-
-  //   // Cursor is in the middle of an action : {{action param="1" CURSOR param="2"}}
-  //   if (startLineToCursor.split('{{').length > 1 && cursorToEndLine.split('}}').length > 1) {
-  //     return startLineToCursor.split('{{').slice(-1)[0] + cursorToEndLine.split('}}')[0]
-  //   }
-  //   // Cursor is at the end of an action : {{action param="1" param="2"}}CURSOR
-  //   if (startLineToCursor.match(/\{\{.*\}\}\s*$/) != null) {
-  //     return startLineToCursor.replace('}}', '').trim()
-  //   }
-  //   // Cursor is at the beggining of an action : CURSOR{{action param="1" param="2"}}
-  //   if (cursorToEndLine.match(/^\s*\{\{.*\}\}/) != null) {
-  //     return cursorToEndLine.replace('{{', '').trim()
-  //   }
-  //   return ''
-  // }
-
-  // selectCurrentAction() {
-  //   const { startLineToCursor } = this
-  //   const { cursorToEndLine } = this
-  //   const { cursor } = this
-
-  //   const textBeforeCursor = startLineToCursor.split('{{').slice(-1)[0]
-  //   const textAfterCursor = cursorToEndLine.split('}}')[0]
-  //   // Cursor is in the middle of an action : {{action param="1" CURSOR param="2"}}
-  //   if (startLineToCursor.split('{{').length > 1 && cursorToEndLine.split('}}').length > 1) {
-  //     this.ace.selection.setRange(new ace.Range(
-  //       cursor.row,
-  //       cursor.column - textBeforeCursor.length - 2,
-  //       cursor.row,
-  //       cursor.column + textAfterCursor.length + 2
-  //     ))
-  //   }
-  //   // Cursor is at the end of an action : {{action param="1" param="2"}}CURSOR
-  //   else if (startLineToCursor.match(/\{\{.*\}\}\s*$/) != null) {
-  //     this.ace.selection.setRange(new ace.Range(
-  //       cursor.row,
-  //       cursor.column - textBeforeCursor.length - 2,
-  //       cursor.row,
-  //       cursor.column
-  //     ))
-  //   }
-  //   // Cursor is at the beggining of an action : CURSOR{{action param="1" param="2"}}
-  //   else if (cursorToEndLine.match(/^\s*\{\{.*\}\}/) != null) {
-  //     this.ace.selection.setRange(new ace.Range(
-  //       cursor.row,
-  //       cursor.column,
-  //       cursor.row,
-  //       cursor.column + textAfterCursor.length + 2
-  //     ))
-  //   }
-  // }
+  afterInsertOrUpdate() {
+    setTimeout(() => {
+      this.updateCursor()
+      this.selectCurrentGroup()
+    }, 0)
+  }
 }
