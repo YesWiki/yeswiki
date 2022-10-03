@@ -12,7 +12,7 @@ export default {
     insertCodeInEditor() {
       $('#actions-builder-modal').modal('hide')
       if (this.isEditing) {
-        this.editor.replaceCurrentActionBy(this.wikiCode)
+        this.editor.replaceCurrentGroupBy(this.wikiCode)
       } else {
         this.editor.insert(this.wikiCode)
       }

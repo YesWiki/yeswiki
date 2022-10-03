@@ -29,7 +29,7 @@ export default class {
   initButton($btnContainer, onComplete) {
     this.$btnContainer = $btnContainer
     this.onComplete = onComplete
-    console.log($btnContainer.find('.sample-upload-list').html())
+
     const uploader = new qq.FileUploader({
       element: $btnContainer[0],
       action: this.$uploadUrl,

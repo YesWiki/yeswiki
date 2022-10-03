@@ -18,7 +18,7 @@ module.exports = {
   },
   rules: {
     semi: ['error', 'never'],
-    'max-len': ['error', { code: 110 }],
+    'max-len': ['error', { code: 104 }],
     'vars-on-top': 'off',
     'class-methods-use-this': 'off',
     'import/no-unresolved': 'off',
