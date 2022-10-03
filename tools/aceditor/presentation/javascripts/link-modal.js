@@ -45,7 +45,7 @@ export default class {
 
   open(options) {
     this.onComplete = options.onComplete
-    this.$inputUrl.val(options.url)
+    this.$inputUrl.val(options.link)
     this.$inputText.val(options.text)
 
     this.$modal.modal('show').on('shown.bs.modal', () => {
