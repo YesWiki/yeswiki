@@ -1,8 +1,14 @@
+import * as aceModule from '../../../../javascripts/vendor/ace/ace.js'
+// Loads html rules cause it's used inside yeswiki mode
+import * as aceModeHtml from '../../../../javascripts/vendor/ace/mode-html.js'
+import * as language_tools from '../../../../javascripts/vendor/ace/ext-language_tools.js'
+
 export default class {
   ace = null
   $container
   cursor = {} // ace cursor with more infos
   cursorChangeCallbacks = []
+  langTools
 
   constructor(domElement, options = {}) {
     this.$container = $(domElement)
@@ -29,6 +35,13 @@ export default class {
       // Timeout for the DOM to be rendered
       setTimeout(() => this.updateCursor(), 100)
     })
+
+    // For autocompletion
+    this.langTools = ace.require('ace/ext/language_tools')
+    this.ace.setOptions({
+      enableBasicAutocompletion: true,
+      enableLiveAutocompletion: true
+    })
   }
 
   // Wrappers methods
@@ -39,6 +52,22 @@ export default class {
 
   onCursorChange(callback) {
     this.cursorChangeCallbacks.push(callback)
+  }
+
+  setAutocompletionList(wordList) {
+    this.langTools.setCompleters([{
+      getCompletions(editor, session, pos, prefix, callback) {
+        callback(null, wordList.map((word) => ({
+          caption: word,
+          value: word,
+          meta: ''
+        })))
+      }
+    }])
+  }
+
+  disableAutocompletion() {
+    this.setAutocompletionList([])
   }
 
   get currentLineNodes() {
@@ -134,37 +163,37 @@ export default class {
     this.selectLineRange(this.cursor.row, this.cursor.groupStart, this.cursor.groupEnd)
   }
 
+  selectCurrentGroupAfterEdit() {
+    setTimeout(() => {
+      this.updateCursor()
+      this.selectCurrentGroup()
+    }, 0)
+  }
+
   surroundSelectionWith(left = '', right = '') {
     this.ace.session.replace(this.ace.getSelectionRange(), left + this.ace.getSelectedText() + right)
     this.ace.focus()
   }
 
-  replaceSelectionBy(replacement) {
+  replaceSelectionBy(replacement, selectGroup = true) {
     this.ace.session.replace(this.ace.getSelectionRange(), replacement)
-    this.afterInsertOrUpdate()
+    if (selectGroup) this.selectCurrentGroupAfterEdit()
   }
 
   replaceCurrentNodeBy(text) {
     this.selectCurrentNode()
-    this.replaceSelectionBy(text)
+    this.replaceSelectionBy(text, false)
     this.ace.focus()
   }
 
   replaceCurrentGroupBy(text) {
     this.selectCurrentGroup()
     this.replaceSelectionBy(text)
-    this.afterInsertOrUpdate()
+    this.selectCurrentGroupAfterEdit()
   }
 
   insert(text) {
     this.ace.insert(text)
-    this.afterInsertOrUpdate()
-  }
-
-  afterInsertOrUpdate() {
-    setTimeout(() => {
-      this.updateCursor()
-      this.selectCurrentGroup()
-    }, 0)
+    this.selectCurrentGroupAfterEdit()
   }
 }

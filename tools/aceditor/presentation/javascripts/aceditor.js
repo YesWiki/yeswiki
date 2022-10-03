@@ -1,7 +1,3 @@
-import * as aceModule from '../../../../javascripts/vendor/ace/ace.js'
-// Loads html rules cause it's used inside yeswiki mode
-import * as aceModeHtml from '../../../../javascripts/vendor/ace/mode-html.js'
-
 import setupAceditorKeyBindings from './aceditor-key-bindings.js'
 import openModal from './aceditor-toolbar-remote-modal.js'
 import LinkModal from './link-modal.js'
@@ -81,6 +77,7 @@ class Aceditor {
       // Reset
       this.$toolbar.find('.component-action-list').removeClass('only-edit')
       this.flyingButton.hide()
+      this.editor.disableAutocompletion()
 
       // wait for the full group to be written
       if (!cursor.groupType || !cursor.groupEnd) return
@@ -105,6 +102,9 @@ class Aceditor {
               onComplete: (result) => { this.editor.replaceCurrentGroupBy(result) }
             })
           })
+          if (cursor.nodeType.includes('ace_link-url')) {
+            this.editor.setAutocompletionList(pageTags)
+          }
           break
         }
         default:

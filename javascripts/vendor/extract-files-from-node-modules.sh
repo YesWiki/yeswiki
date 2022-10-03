@@ -122,6 +122,7 @@ mkdir -p javascripts/vendor/ace && \
   cp -f node_modules/ace-builds/src-min-noconflict/ace.js javascripts/vendor/ace && \
   cp -f node_modules/ace-builds/src-min-noconflict/mode-html.js javascripts/vendor/ace && \
   cp -f node_modules/ace-builds/src-min-noconflict/worker-html.js javascripts/vendor/ace && \
-  cp -f node_modules/ace-builds/src-min-noconflict/mode-markdown.js javascripts/vendor/ace
+  cp -f node_modules/ace-builds/src-min-noconflict/mode-markdown.js javascripts/vendor/ace &&\
+  cp -f node_modules/ace-builds/src-min-noconflict/ext-language_tools.js javascripts/vendor/ace
 # This one need to be in the same folder than aceditor otherwise it's not working
 cp -f node_modules/ace-builds/src-min-noconflict/ext-searchbox.js tools/aceditor/presentation/javascripts
