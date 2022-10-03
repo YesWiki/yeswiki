@@ -43,11 +43,13 @@ export default class {
   get currentLineNodes() {
     const $renderedLineGroup = this.$container
       .find(`.ace_text-layer > .ace_line_group:nth-of-type(${this.cursor.row + 1})`)
-    let allLineNodes = []
+    const allLineNodes = []
     $renderedLineGroup.find('.ace_line').each(function() {
-      allLineNodes = allLineNodes.concat(this.childNodes)
+      this.childNodes.forEach((node) => {
+        allLineNodes.push(node)
+      })
     })
-    return allLineNodes[0]
+    return allLineNodes
   }
 
   // Based on current cursor, detect if we are inside a specific group (like action or link),
