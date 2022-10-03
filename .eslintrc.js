@@ -7,6 +7,7 @@ module.exports = {
   globals: {
     wiki: 'writable',
     Vue: 'readable',
+    _t: 'readable',
     ace: 'writable'
   },
   extends: [
