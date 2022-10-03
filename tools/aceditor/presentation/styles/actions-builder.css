@@ -52,7 +52,7 @@ input[type=range] {
   background-color: #727479;
   border-color: #727479;
 }
-#actions-builder-app [type="checkbox"] + span:not(.lever):before, 
+#actions-builder-app [type="checkbox"] + span:not(.lever):before,
 #actions-builder-app [type="checkbox"] + span:not(.lever):after {
   margin-top: 2px;
 }
@@ -204,23 +204,23 @@ iframe {
 } */
 
 /* FLYING ACTION BAR */
-.flying-action-bar {
+.flying-edit-button {
   opacity: 0;
   transition: opacity .3s;
   position: absolute;
   z-index: 50;
   left: -3rem;
 }
-.flying-action-bar .btn {
+.flying-edit-button .btn {
   border-radius: 5px 0 0 5px;
   padding: .5rem 0;
   width: 3rem;
 }
 @media (max-width: 1200px) {
-  .flying-action-bar { left: -2rem; }
-  .flying-action-bar .btn { width: 2rem; }
+  .flying-edit-button { left: -2rem; }
+  .flying-edit-button .btn { width: 2rem; }
 }
-.flying-action-bar.active {
+.flying-edit-button.active {
   opacity: 1;
 }
 

@@ -6,7 +6,7 @@ ace.define('ace/mode/yeswiki_highlight_rules', ['require', 'exports', 'module', 
   const YesWikiHighlightRules = function() {
     this.$rules = {
       start: [{
-        token: 'markup.yw-action.open',
+        token: 'markup.open.yw-action',
         regex: '\\{\\{',
         next: 'yw-action'
       }, {
@@ -69,7 +69,7 @@ ace.define('ace/mode/yeswiki_highlight_rules', ['require', 'exports', 'module', 
           token: 'stroke',
           regex: '([@]{2}(?=.*?))(.*?[@]*)(\\1)'
         }, { // link
-          token: ['markup', 'underline.link', 'text', 'string', 'markup'],
+          token: ['markup.open.yw-link', 'link-url', 'space', 'link-text', 'markup.close.yw-link'],
           regex: '(\\[\\[)([^\\s]+)(\\s)(.*)(\\]\\])'
         }
       ],
@@ -79,15 +79,16 @@ ace.define('ace/mode/yeswiki_highlight_rules', ['require', 'exports', 'module', 
         { token: 'empty', regex: '', next: 'start' }
       ],
       'yw-action': [{
-        token: 'meta.tag.yw-action',
-        regex: '[a-zA-Z0-9-_]+\\s?',
+        token: 'action-name',
+        regex: '[a-zA-Z0-9-_]+',
         next: 'yw-action-attributes'
       }],
       'yw-action-attributes': [{
-        token: ['entity.other.attribute-name.xml.yw-action', 'equal', 'string.attribute-value.xml.yw-action'],
-        regex: '([-_a-zA-Z0-9]+)(=)("[^"]*")'
+        token: ['space', 'attribute-name', 'equal', 'attribute-quote-mark', 'attribute-value',
+          'attribute-quote-mark'],
+        regex: '(\\s)([-_a-zA-Z0-9]+)(=)(")([^"]*)(")'
       }, {
-        token: 'markup.yw-action.end',
+        token: 'markup.close.yw-action',
         regex: '\\}\\}',
         next: 'start'
       }],

@@ -27,19 +27,14 @@
 .ace-body .ace_markup {
   color: #bc1c96;
 }
-.ace-body .ace_tag.ace_yw-action {
+.ace-body .ace_action-name {
   color: #bc1c96 !important;
 }
-.ace-body .ace_list { font-weight: bold; }
-
 .ace-body .ace_attribute-name {
   color: var(--primary-color);
 }
-.ace-body .ace_attribute-value {
+.ace-body .ace_attribute-value, .ace-body .ace_attribute-quote-mark {
   color: var(--secondary-color-1) !important;
-}
-.ace-body .ace_string {
-  color: var(--neutral-color);
 }
 .ace-body .ace_markup.ace_html {
   color: var(--neutral-soft-color);
@@ -48,8 +43,12 @@
   color: var(--primary-color);
   font-weight: bold;
 }
-.ace-body .ace_link {
+.ace-body .ace_link-url {
   color: var(--primary-color);
+  text-decoration: underline;
+}
+.ace-body .ace_list {
+  font-weight: bold;
 }
 .ace-body .ace_comment {
   color: var(--neutral-soft-color);
