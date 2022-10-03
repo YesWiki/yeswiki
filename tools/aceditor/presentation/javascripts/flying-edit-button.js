@@ -10,14 +10,11 @@ export default class {
   }
 
   show() {
-    // wait for editor to change cursor
-    setTimeout(() => {
-      this.$flyingButton.addClass('active')
-      const top = this.$aceditor.find('.ace_gutter-active-line').offset().top
-        - this.$aceditor.find('.ace-container').offset().top
-        + this.$aceditor.find('.aceditor-toolbar').height()
-      this.$flyingButton.css('top', `${top}px`)
-    }, 100)
+    this.$flyingButton.addClass('active')
+    const top = this.$aceditor.find('.ace_gutter-active-line').offset().top
+      - this.$aceditor.find('.ace-container').offset().top
+      + this.$aceditor.find('.aceditor-toolbar').height()
+    this.$flyingButton.css('top', `${top}px`)
     return this
   }
 
