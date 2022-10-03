@@ -26,7 +26,8 @@ export default class {
     })
 
     this.ace.selection.on('changeCursor', () => {
-      this.updateCursor()
+      // Timeout for the DOM to be rendered
+      setTimeout(() => this.updateCursor(), 100)
     })
   }
 
@@ -76,7 +77,8 @@ export default class {
             this.cursor.groupType = $node.attr('class').replace('ace_markup ace_open ace_', '')
           }
           // SelectedNode
-          if ($node.text() && currColumn <= this.cursor.column && nextColumn >= this.cursor.column) {
+          if (!this.cursor.$node && $node.text()
+              && currColumn <= this.cursor.column && nextColumn >= this.cursor.column) {
             this.cursor.$node = $node
             this.cursor.nodeStart = currColumn
             this.cursor.nodeEnd = nextColumn
@@ -101,7 +103,7 @@ export default class {
   }
 
   textFromRange(row, colStart, colEnd) {
-    return this.ace.session.getTextRange(new ace.Range(row, colStart, row, colEnd))
+    return this.ace.session.getTextRange(new ace.Range(row, colStart, row, colEnd + 1))
   }
 
   get currentGroupText() {
