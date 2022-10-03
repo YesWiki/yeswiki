@@ -1,7 +1,4 @@
 <?php
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
 
 if ($this->UserIsAdmin()) {
     $sql = 'SELECT tag,time,owner FROM '.$this->GetConfigValue('table_prefix').'pages '.

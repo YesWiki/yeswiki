@@ -2,10 +2,6 @@
 
 use YesWiki\Core\Service\LinkTracker;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 // adresse vers quoi le bouton pointe
 $link = $this->GetParameter('link');
 

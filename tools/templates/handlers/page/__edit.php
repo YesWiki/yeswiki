@@ -2,10 +2,6 @@
 
 use YesWiki\Core\Service\ThemeManager;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 // Sauvegarde des metas
 if (isset($_GET["newpage"]) && $_GET["newpage"]==1 && isset($_GET["theme"]) && !isset($this->page['metadatas']['theme'])) {
     $metadata = [

@@ -2,10 +2,6 @@
 
 use YesWiki\Tags\Service\TagsManager;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 $tagsManager = $this->services->get(TagsManager::class);
 
 // on ne fait quelque chose uniquement dans le cas d'une requete jsonp

@@ -1,10 +1,6 @@
 <?php
 use YesWiki\Security\Controller\SecurityController;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 if ($this->UserIsAdmin()) {
     if (isset($_GET['delete_tag'])) {
         if ($this->services->get(SecurityController::class)->isWikiHibernated()) {

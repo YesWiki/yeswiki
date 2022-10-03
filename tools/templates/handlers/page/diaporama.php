@@ -1,9 +1,6 @@
 <?php
 
-// Verification de securite
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
+
 ob_start();
 
 // on regarde si un template est passe en parametre GET, on passe celui par defaut sinon

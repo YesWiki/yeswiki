@@ -1,10 +1,6 @@
 <?php
 use YesWiki\Security\Controller\SecurityController;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 require_once 'tools/templates/libs/setwikidefaulttheme.functions.php';
 
 if (!is_writable('wakka.config.php')) {

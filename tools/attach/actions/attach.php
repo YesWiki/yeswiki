@@ -82,10 +82,6 @@ Exemple :
 .tableFMCol2 { background-color: Yellow; }
 *******************************************************************************/
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 if (!class_exists('attach')) {
     include('tools/attach/libs/attach.lib.php');
 }

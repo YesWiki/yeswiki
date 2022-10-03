@@ -1,9 +1,5 @@
 <?php
-// DEPRECIATED keep same filename without class to prevent error at update
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-//=======Restes de wikini=================================================================================
+
 $user = $this->GetUser();
 
 if (!empty($this->config['use_fallback_theme'])) {

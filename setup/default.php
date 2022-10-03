@@ -1,92 +1,85 @@
-<?php
+<form class="form-horizontal form-yeswiki-install" action="<?php echo  myLocation() ?>?PagePrincipale&installAction=install" method="post">
 
-if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
-}
-?>
-    
-    <form class="form-horizontal form-yeswiki-install" action="<?php echo  myLocation() ?>?PagePrincipale&installAction=install" method="post">
+<div class="row">
+<div class="col-md-4">
+  <h3>
+    <a class="pull-right btn btn-sm btn-info" data-toggle="collapse" data-parent="#accordion1" href="#collapseOne">
+        <?php echo _t('MORE_INFOS'); ?>
+    </a>
+    <?php echo _t('GENERAL_CONFIGURATION'); ?>
+  </h3>
 
-    <div class="row">
-    <div class="col-md-4">
-      <h3>
-        <a class="pull-right btn btn-sm btn-info" data-toggle="collapse" data-parent="#accordion1" href="#collapseOne">
-            <?php echo _t('MORE_INFOS'); ?>
-        </a>
-        <?php echo _t('GENERAL_CONFIGURATION'); ?>
-      </h3>
-
-        <div class="accordion" id="accordion1">
-          <div class="accordion-group">
-            <div id="collapseOne" class="accordion-body collapse">
-              <div class="accordion-inner">
-                <dl>
-                    <dt><?php echo _t('DEFAULT_LANGUAGE'); ?></dt>
-                    <dd><?php echo _t('DEFAULT_LANGUAGE_INFOS'); ?></dd>
-                  </dl>
-                  <dl>
-                    <dt><?php echo _t('YOUR_WEBSITE_NAME'); ?></dt>
-                    <dd><?php echo _t('YOUR_WEBSITE_NAME_INFOS'); ?></dd>
-                  </dl>
-                  <dl>
-                    <dt><?php echo _t('DESCRIPTION'); ?></dt>
-                    <dd><?php echo _t('DESCRIPTION_INFOS'); ?></dd>
-                  </dl>
-                  <dl>
-                    <dt><?php echo _t('KEYWORDS'); ?></dt>
-                    <dd><?php echo _t('KEYWORDS_INFOS'); ?></dd>
-                  </dl>
-                  <dl>
-                    <dt><?php echo _t('HOMEPAGE'); ?></dt>
-                    <dd><?php echo _t('HOMEPAGE_INFOS'); ?></dd>
-                  </dl>
-              </div>
-            </div>
+    <div class="accordion" id="accordion1">
+      <div class="accordion-group">
+        <div id="collapseOne" class="accordion-body collapse">
+          <div class="accordion-inner">
+            <dl>
+                <dt><?php echo _t('DEFAULT_LANGUAGE'); ?></dt>
+                <dd><?php echo _t('DEFAULT_LANGUAGE_INFOS'); ?></dd>
+              </dl>
+              <dl>
+                <dt><?php echo _t('YOUR_WEBSITE_NAME'); ?></dt>
+                <dd><?php echo _t('YOUR_WEBSITE_NAME_INFOS'); ?></dd>
+              </dl>
+              <dl>
+                <dt><?php echo _t('DESCRIPTION'); ?></dt>
+                <dd><?php echo _t('DESCRIPTION_INFOS'); ?></dd>
+              </dl>
+              <dl>
+                <dt><?php echo _t('KEYWORDS'); ?></dt>
+                <dd><?php echo _t('KEYWORDS_INFOS'); ?></dd>
+              </dl>
+              <dl>
+                <dt><?php echo _t('HOMEPAGE'); ?></dt>
+                <dd><?php echo _t('HOMEPAGE_INFOS'); ?></dd>
+              </dl>
           </div>
         </div>
+      </div>
+    </div>
 
-        <div class="form-group">
-          <label class="col-sm-3 control-label"><?php echo _t('DEFAULT_LANGUAGE'); ?></label>
-          <div class="col-sm-9">
-            <select required autocomplete="off" class="form-control" name="config[default_language]" onchange="$(this).parents('.form-yeswiki-install').attr('action', '<?php echo  myLocation() ?>?installAction=default&lang='+$(this).val()).submit();">
-                <?php
-                foreach ($GLOBALS['available_languages'] as $value) {
-                    echo '<option value="'.$value.'"'.(($value == $GLOBALS['prefered_language'] && (!isset($_GET['lang']) || $_GET['lang'] !== 'auto')) ? ' selected="selected"' : '').'>'.ucfirst(htmlentities($GLOBALS['languages_list'][$value]['nativeName'], ENT_COMPAT | ENT_HTML401, 'UTF-8'))."</option>\n";
-                }
-                echo "<option value=\"auto\"".((isset($_GET['lang']) && $_GET['lang'] === 'auto') ? ' selected="selected"' : '').">"._t('NAVIGATOR_LANGUAGE')."</option>\n";
-                ?>
-            </select>
-          </div>
-        </div>
+    <div class="form-group">
+      <label class="col-sm-3 control-label"><?php echo _t('DEFAULT_LANGUAGE'); ?></label>
+      <div class="col-sm-9">
+        <select required autocomplete="off" class="form-control" name="config[default_language]" onchange="$(this).parents('.form-yeswiki-install').attr('action', '<?php echo  myLocation() ?>?installAction=default&lang='+$(this).val()).submit();">
+            <?php
+            foreach ($GLOBALS['available_languages'] as $value) {
+                echo '<option value="'.$value.'"'.(($value == $GLOBALS['prefered_language'] && (!isset($_GET['lang']) || $_GET['lang'] !== 'auto')) ? ' selected="selected"' : '').'>'.ucfirst(htmlentities($GLOBALS['languages_list'][$value]['nativeName'], ENT_COMPAT | ENT_HTML401, 'UTF-8'))."</option>\n";
+            }
+            echo "<option value=\"auto\"".((isset($_GET['lang']) && $_GET['lang'] === 'auto') ? ' selected="selected"' : '').">"._t('NAVIGATOR_LANGUAGE')."</option>\n";
+            ?>
+        </select>
+      </div>
+    </div>
 
-        <div class="form-group">
-          <label class="col-sm-3 control-label"><?php echo _t('YOUR_WEBSITE_NAME'); ?></label>
-          <div class="col-sm-9">
-            <input type="text" required class="form-control" name="config[wakka_name]" value="<?php echo $wakkaConfig['wakka_name'] ?>" />
-          </div>
-        </div>
+    <div class="form-group">
+      <label class="col-sm-3 control-label"><?php echo _t('YOUR_WEBSITE_NAME'); ?></label>
+      <div class="col-sm-9">
+        <input type="text" required class="form-control" name="config[wakka_name]" value="<?php echo $wakkaConfig['wakka_name'] ?>" />
+      </div>
+    </div>
 
-        <div class="form-group">
-          <label class="col-sm-3 control-label"><?php echo _t('DESCRIPTION'); ?></label>
-          <div class="col-sm-9">
-            <input type="text" class="form-control" name="config[meta_description]" value="<?php echo $wakkaConfig['meta_description'] ?>" />
-          </div>
-        </div>
+    <div class="form-group">
+      <label class="col-sm-3 control-label"><?php echo _t('DESCRIPTION'); ?></label>
+      <div class="col-sm-9">
+        <input type="text" class="form-control" name="config[meta_description]" value="<?php echo $wakkaConfig['meta_description'] ?>" />
+      </div>
+    </div>
 
-        <div class="form-group">
-          <label class="col-sm-3 control-label"><?php echo _t('KEYWORDS'); ?></label>
-          <div class="col-sm-9">
-            <input type="text" class="form-control" name="config[meta_keywords]" value="<?php echo $wakkaConfig['meta_keywords'] ?>" />
-          </div>
-        </div>
+    <div class="form-group">
+      <label class="col-sm-3 control-label"><?php echo _t('KEYWORDS'); ?></label>
+      <div class="col-sm-9">
+        <input type="text" class="form-control" name="config[meta_keywords]" value="<?php echo $wakkaConfig['meta_keywords'] ?>" />
+      </div>
+    </div>
 
-        <div class="form-group">
-          <label class="col-sm-3 control-label"><?php echo _t('HOMEPAGE'); ?></label>
-          <div class="col-sm-9">
-            <input type="text" required class="form-control" name="config[root_page]" value="<?php echo $wakkaConfig['root_page'] ?>" pattern="<?php echo WN_CAMEL_CASE_EVOLVED ;?>"/>
-            <p class="help-block"><?php echo _t('MUST_BE_WIKINAME'); ?></p>
-          </div>
-        </div>
+    <div class="form-group">
+      <label class="col-sm-3 control-label"><?php echo _t('HOMEPAGE'); ?></label>
+      <div class="col-sm-9">
+        <input type="text" required class="form-control" name="config[root_page]" value="<?php echo $wakkaConfig['root_page'] ?>" pattern="<?php echo WN_CAMEL_CASE_EVOLVED ;?>"/>
+        <p class="help-block"><?php echo _t('MUST_BE_WIKINAME'); ?></p>
+      </div>
+    </div>
 </div>
 <div class="col-md-4">
     <h3>

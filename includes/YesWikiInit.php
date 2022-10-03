@@ -172,8 +172,6 @@ class Init
     {
         $_rewrite_mode = detectRewriteMode();
         $yeswikiDefaultConfig = array(
-            'wakka_version' => '',
-            'wikini_version' => '',
             'yeswiki_version' => '',
             'yeswiki_release' => '',
             'charset' => 'UTF-8',
@@ -256,10 +254,6 @@ class Init
         if (strtolower($wakkaConfig['debug']) == 'yes') {
             ini_set('display_errors', 1);
             error_reporting(E_ALL);
-        }
-
-        if ($wakkaConfig['wakka_version'] && (! $wakkaConfig['wikini_version'])) {
-            $wakkaConfig['wikini_version'] = $wakkaConfig['wakka_version'];
         }
 
         return $wakkaConfig;

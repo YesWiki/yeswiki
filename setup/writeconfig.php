@@ -1,8 +1,5 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
-}
 if (empty($_POST['config'])) {
     header('Location: '.myLocation());
     die(_t('PROBLEM_WHILE_INSTALLING'));
@@ -17,8 +14,6 @@ $config = $config2 = json_decode($_POST['config'], true);
 $config = array_merge($wakkaConfig, $config);
 
 // set version to current version, yay!
-$config['wikini_version'] = WIKINI_VERSION;
-$config['wakka_version'] = WAKKA_VERSION;
 $config['yeswiki_version'] = YESWIKI_VERSION;
 $config['yeswiki_release'] = YESWIKI_RELEASE;
 

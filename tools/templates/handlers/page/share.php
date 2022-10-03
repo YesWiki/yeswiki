@@ -2,10 +2,7 @@
 /*
 */
 
-// Vérification de sécurité
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
+
 
 $html  = '<a href="http://www.facebook.com/sharer.php?u='.urlencode($this->Href()).'&amp;t='.urlencode($this->GetPageTag()).'" title="'._t('TEMPLATE_SHARE_FACEBOOK').'" class="bouton_share"><img src="tools/templates/presentation/images/facebook.png" width="32" height="32" alt="Facebook" /></a>'."\n";
 $html .= '<a href="http://twitter.com/home?status='.urlencode(_t('TEMPLATE_SHARE_MUST_READ').$this->Href()).'" title="'._t('TEMPLATE_SHARE_TWITTER').'" class="bouton_share"><img src="tools/templates/presentation/images/twitter.png" width="32" height="32" alt="Twitter" /></a>'."\n";

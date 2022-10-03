@@ -1,9 +1,4 @@
 <?php
-
-if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
-}
-
 if (empty($_POST['config'])) {
     header('Location: '.myLocation());
     die(_t('PROBLEM_WHILE_INSTALLING'));
@@ -19,8 +14,6 @@ $config = $config2 = $_POST['config'];
 // merge existing (or default) configuration with new one
 $config = array_merge($wakkaConfig, $config);
 // set version to current version, yay!
-$config['wikini_version'] = WIKINI_VERSION;
-$config['wakka_version'] = WAKKA_VERSION;
 $config['yeswiki_version'] = YESWIKI_VERSION;
 $config['yeswiki_release'] = YESWIKI_RELEASE;
 // default var
@@ -29,13 +22,7 @@ $config['default_comment_acl_updated'] = true; // TODO ectoplasme remove this li
 // list of tableNames
 $tablesNames = ['pages','links','referrers','nature','triples','users','acls'];
 
-if (!$version = trim($wakkaConfig['wikini_version'])) {
-    $version = '0';
-}
-
-if ($version) {
-    test(_t('VERIFY_MYSQL_PASSWORD').' ...', isset($config2['mysql_password']) && $wakkaConfig['mysql_password'] === $config2['mysql_password'], _t('INCORRECT_MYSQL_PASSWORD').' !');
-}
+test(_t('VERIFY_MYSQL_PASSWORD').' ...', isset($config2['mysql_password']) && $wakkaConfig['mysql_password'] === $config2['mysql_password'], _t('INCORRECT_MYSQL_PASSWORD').' !');
 test(_t('TEST_MYSQL_CONNECTION').' ...', $dblink = @mysqli_connect($config['mysql_host'], $config['mysql_user'], $config['mysql_password']));
 
 $testdb = test(

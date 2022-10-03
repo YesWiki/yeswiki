@@ -1,9 +1,4 @@
 <?php
-/*
-*/
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
 
 // on remplace les liens vers les NomWikis n'existant pas
 $plugin_output_new = replace_missingpage_links($plugin_output_new);

@@ -11,10 +11,6 @@ use YesWiki\Security\Controller\SecurityController;
 //    pas les pages si elle est rechargee
 // -- test pour savoir si quelque chose a bien ete efface
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 $despam_url = $this->href('', $this->GetPageTag());
 
 

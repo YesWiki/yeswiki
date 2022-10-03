@@ -6,10 +6,6 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\HtmlPurifierService;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 if (!class_exists('attach')) {
     class attach
     {

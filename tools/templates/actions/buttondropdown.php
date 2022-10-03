@@ -1,9 +1,5 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
-}
-
 // texte genere a l'interieur du bouton
 $text = $this->GetParameter('text');
 

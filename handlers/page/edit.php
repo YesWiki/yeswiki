@@ -4,11 +4,6 @@ use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Security\Controller\SecurityController;
 
-// Vérification de sécurité
-if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
-}
-
 // on initialise la sortie:
 $output = '';
 

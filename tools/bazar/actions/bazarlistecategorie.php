@@ -7,10 +7,6 @@
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\TemplateEngine;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 $entryManager = $this->services->get(EntryManager::class);
 
 $this->AddJavascriptFile('tools/bazar/libs/bazar.js');

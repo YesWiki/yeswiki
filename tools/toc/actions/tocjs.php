@@ -1,9 +1,6 @@
 <?php
 
-// Vérification de sécurité
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
+
 
 $tag = $this->GetPageTag();
 $class = $this->GetParameter("class");
@@ -118,7 +115,7 @@ echo '<style>
     #tocjs-'.$tag.'.affix {
         top : '.$offset.'px
     }
-    
+
     @media (max-width:768px){
         #tocjs-'.$tag.'.affix {
             right: 5px;

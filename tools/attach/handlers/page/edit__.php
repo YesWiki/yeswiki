@@ -2,10 +2,6 @@
 
 use YesWiki\Bazar\Service\EntryManager;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 $entryManager = $this->services->get(EntryManager::class);
 
 if ($this->HasAccess("write") && $this->HasAccess("read") && !$entryManager->isEntry($this->tag) && !isset($this->page["metadatas"]["ebook-title"])) {

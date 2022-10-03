@@ -15,10 +15,5 @@
 // -- détecter le fichier par défaut via une variable de configuration
 //
 
-// Vérification de sécurité
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 $this->SetPersistentCookie('sitestyle', 'wakka', 1);
 header("Location: ".$this->href());

@@ -1,8 +1,6 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
-}
+
 // on enleve l'action template
 $plugin_output_new = preg_replace(
     '/'.'(\\{\\{template)'.'(.*?)'.'(\\}\\})'.'/is',

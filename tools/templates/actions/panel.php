@@ -1,9 +1,5 @@
 <?php
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 // Titre du pannel
 $title = $this->GetParameter('title');
 if (empty($title)) {

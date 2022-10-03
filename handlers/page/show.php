@@ -2,12 +2,6 @@
 
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
-
-// V?rification de s?curit?
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\CommentService;
 

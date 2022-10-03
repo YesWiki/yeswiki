@@ -1,7 +1,5 @@
 <?php
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
+
 $page = $this->GetParameter('page');
 $isIframe = $this->GetParameter('iframe') && (!isset($_GET['iframelinks']) or $_GET['iframelinks'] != '0');
 if ($this->GetMethod() == 'show' && $this->HasAccess('write', $page)) {

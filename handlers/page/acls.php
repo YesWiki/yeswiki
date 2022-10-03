@@ -2,10 +2,7 @@
 
 use YesWiki\Security\Controller\SecurityController;
 
-// Vérification de sécurité
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
+
 
 ob_start();
 ?>
@@ -85,7 +82,7 @@ if ($users = $this->LoadUsers()) {
 
 <div class="form-actions form-group">
     <div class="col-sm-9 col-sm-offset-3">
-      <input type="submit" value="<?php echo _t('SAVE') ?>" class="btn btn-primary" accesskey="s" 
+      <input type="submit" value="<?php echo _t('SAVE') ?>" class="btn btn-primary" accesskey="s"
       <?php if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
             echo 'disabled data-toggle="tooltip" data-placement="bottom" title="'._t('WIKI_IN_HIBERNATION').'"';
         } ?>

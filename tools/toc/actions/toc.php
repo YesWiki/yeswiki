@@ -1,9 +1,6 @@
 <?php
 
-// Vérification de sécurité
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
+
 
 $GLOBALS['tocaction'] = 0;
 
@@ -97,17 +94,17 @@ if (!function_exists("translate2toc")) {
 }
 
 $script = "$(document).ready(function(){
-    var toc = $('#toc".$tag."');   
+    var toc = $('#toc".$tag."');
     if (toc.length>0) {
         $('body').attr('data-spy','scroll');
-            
+
         toc.scrollspy();
         var initialoffset = $('.page').offset().top;
         var divLocation = toc.offset();
         var diff = divLocation.top - initialoffset;
 
         // A la fin du chargement de la page, on positionne la table a la bonne position
-        $(window).on('load',function () { 
+        $(window).on('load',function () {
             if ($(document).scrollTop() > divLocation.top) {
                 offset = ($(document).scrollTop() - initialoffset + 20 ) + 'px';
                 toc.animate({top:offset}, {duration:500,queue:false});
@@ -115,7 +112,7 @@ $script = "$(document).ready(function(){
         });
 
         // quand on scrolle, la table suit
-        $(window).scroll(function () { 
+        $(window).scroll(function () {
             if ($(document).scrollTop() > divLocation.top) {
                 offset = ($(document).scrollTop() - initialoffset + 20 ) + 'px';
                 toc.animate({top:offset}, {duration:500,queue:false});
@@ -125,8 +122,8 @@ $script = "$(document).ready(function(){
             }
         });
 
-        // on anime le passage a un chapitre 
-        $('.toc a').on('click', function () { 
+        // on anime le passage a un chapitre
+        $('.toc a').on('click', function () {
             var link = $(this).attr('href');
             $('html, body').animate({
                  scrollTop: $(link).offset().top
@@ -143,9 +140,9 @@ $this->AddJavascript($script);
                     translate2toc(preg_replace("/\"\".*?\"\"/ms", "", $toc_body)).
                 "</ul>\n";
     }
-    
+
     // on ferme les divs ouvertes par l'action toc
     echo "</div><!-- /.toc-menu -->\n
     </div><!-- /#toc-menu".$tag." -->\n
     </div><!-- /#toc".$tag." -->\n";
-?> 
+?>

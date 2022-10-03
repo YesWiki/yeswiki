@@ -2,10 +2,7 @@
 
 use YesWiki\Core\Service\AclService;
 
-// Vérification de sécurité
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
+
 $oldpagetag = $this->GetPageTag();
 $oldpage = $this->LoadPage($oldpagetag);
 $tags = trim((isset($_GET['tags'])) ? $_GET['tags'] : '');
@@ -17,10 +14,10 @@ $textetitre = _t('LATEST_CHANGES_ON') . ' ' . $this->config["wakka_name"];
 
 //on fait les tableaux pour les tags, puis on met des virgules et des guillemets
 if (!empty($tags)) {
-    
+
     //texte utilisé pour la description du flux RSS
     $textetitre.= ', contenant les tags ' . $tags;
-    
+
     $results = $this->PageList($tags, $type, 20, 'date');
     if ($results) {
         header('Content-type: text/xml; charset=UTF-8');
@@ -50,7 +47,7 @@ if (!empty($tags)) {
             $items.= "<title>" . $page['tag'] . "</title>\r\n";
             $items.= "<link>" . $this->config["base_url"] . $page["tag"] . "</link>\r\n";
             $items.= "<description><![CDATA[";
-            
+
             if ($readAcl) {
                 //on enleve les actions recentchangesrssplus pour eviter les boucles infinies
                 $page["body"] = preg_replace("/\{\{recentchangesrss(.*?)\}\}/s", '', $page["body"]);
@@ -59,7 +56,7 @@ if (!empty($tags)) {
             } else {
                 $texteformat = '<i>' . _t('TAGS_HIDDEN_CONTENT') . '</i>';
             }
-            
+
             $items.= $texteformat . "]]></description>\r\n";
             $items.= "<dc:creator>by ".htmlspecialchars($page["user"], ENT_COMPAT, YW_CHARSET).
                      "</dc:creator>\r\n";

@@ -1,8 +1,4 @@
 <?php
-    if (!defined("WIKINI_VERSION")) {
-        die("acc&egrave;s direct interdit");
-    }
-
     $oldpage = $this->GetPageTag();
     if (!empty($this->page['tag'])){
         $this->CachePage($this->page);

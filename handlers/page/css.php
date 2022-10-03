@@ -9,10 +9,6 @@
  * @link     https://yeswiki.net
  */
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 header('Content-Type: text/css');
 if ($this->HasAccess("read") && $this->page && isset($this->page['body'])) {
     echo $this->page['body'];

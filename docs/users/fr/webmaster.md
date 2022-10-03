@@ -57,12 +57,7 @@ Une fois le YesWiki créé, on peut aller éditer le fichier **wakka.config.php*
   
 
     <?php
-    // wakka.config.php créée Fri Jun  8 20:58:37 2012
-    // ne changez pas la wikini_version manuellement!
-    
     $wakkaConfig = array ( // tableau de configuration
-      'wakka_version' => '0.1.1', // Ne pas toucher, version originale du code de wakka, ancêtre de wikini
-      'wikini_version' => '0.5.0', // Ne pas toucher, version originale du code de wikini, ancêtre de YesWiki
       'debug' => 'no', // active le mode de débogage si passé à la valeur 'yes' (infos sur le nombre de requêtes, le temps écoulé et force l'affichage des erreurs php pour les développeurs) astuce : on peut aussi passer &debug dans l'url pour debugguer
       'mysql_host' => 'localhost', 
       'mysql_database' => 'yeswiki',

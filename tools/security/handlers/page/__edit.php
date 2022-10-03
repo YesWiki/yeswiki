@@ -1,11 +1,6 @@
 <?php
-/*
-*/
 
 use YesWiki\Security\Controller\SecurityController;
-if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
-}
 
 if ($this->HasAccess('write') && $this->HasAccess('read')) {
     $securityController = $this->services->get(SecurityController::class);

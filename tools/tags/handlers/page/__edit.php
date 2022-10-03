@@ -3,10 +3,6 @@
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Tags\Service\TagsManager;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 $params = $this->services->get(ParameterBagInterface::class);
 if (!$params->get('hide_keywords') && $this->HasAccess("write") && $this->HasAccess("read")) {
     $response = array();

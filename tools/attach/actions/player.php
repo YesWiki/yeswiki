@@ -1,9 +1,5 @@
 <?php
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 $url = $this->GetParameter('url');
 $type = $this->getParameter('type');
 

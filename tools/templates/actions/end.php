@@ -1,10 +1,5 @@
 <?php
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
-
 // classe css supplémentaire
 $elem = $this->GetParameter('elem');
 if (empty($elem)) {

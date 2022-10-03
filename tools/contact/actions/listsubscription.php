@@ -4,9 +4,6 @@
 *
 * Description : action permettant l'envoi par mail d'une demande d'inscription ou desinscription a une liste
 */
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
 
 // valable que pour les utilisateurs connectes
 if ($user = $this->GetUser()) {

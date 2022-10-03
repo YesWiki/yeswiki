@@ -3,10 +3,6 @@
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\ApiService;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 $entryManager = $this->services->get(EntryManager::class);
 $apiService = $this->services->get(ApiService::class);
 

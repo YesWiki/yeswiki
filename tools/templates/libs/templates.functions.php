@@ -3,11 +3,6 @@
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\ThemeManager;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
-
 /**
  *
  * Verifie si le nombre d'elements graphiques d'un type trouvés et de leur fermeture correspondent

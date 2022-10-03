@@ -1,9 +1,5 @@
 <?php
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 if ($this->config['use_nospam']) {
     if ($this->HasAccess("comment") && !$this->page['comment_on']) {
         $time = time();

@@ -1,7 +1,4 @@
 <?php
-if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
-}
 
 $content = $this->getParameter('content');
 switch ($content) {

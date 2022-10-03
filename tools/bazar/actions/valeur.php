@@ -5,10 +5,6 @@
 // +------------------------------------------------------------------------------------------------------+
 // |                                            ENTETE du PROGRAMME                                           |
 // +------------------------------------------------------------------------------------------------------+
-// test de sécurité pour vérifier si on passe par wiki
-if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
-}
 
 // url de la fiche bazar
 $url = $this->GetParameter('url');

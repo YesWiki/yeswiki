@@ -6,9 +6,6 @@ use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\FavoritesManager;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
 $user = $this->services->get(AuthController::class)->getLoggedUser();
 if ((!empty($user) || $this->HasAccess("write")) && $this->method != "revisions") {
     // on récupére la page et ses valeurs associées

@@ -3,10 +3,6 @@ namespace AutoUpdate;
 
 use YesWiki\Core\Service\ThemeManager;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 $loader = require __DIR__ . '/../vendor/autoload.php';
 
 // display update's message

@@ -1,10 +1,6 @@
 <?php
 use YesWiki\Core\Service\PageManager;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 $displayLastChanges = $this->services->get(PageManager::class)->getOne('DerniersChangementsRSS') && $this->HasAccess('read', 'DerniersChangementsRSS');
 $displayLastComments = $this->services->get(PageManager::class)->getOne('DerniersCommentairesRSS') && $this->HasAccess('read', 'DerniersCommentairesRSS');
 

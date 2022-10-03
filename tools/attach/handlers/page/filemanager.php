@@ -4,10 +4,6 @@
 # Necessite le fichier actions/attach.php pour fonctionner
 # voir actions/attach.php ppour la documentation
 
-//vérification de sécurité
-if (!WIKINI_VERSION) {
-    die("acc&egrave;s direct interdit");
-}
 ob_start();
 ?>
 <div class="page">

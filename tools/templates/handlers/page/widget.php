@@ -1,9 +1,4 @@
 <?php
-/*
-*/
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
 
 $width = $_GET['width'] ?? '100%';
 $height = $_GET['height'] ?? 700;

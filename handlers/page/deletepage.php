@@ -4,10 +4,7 @@ use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Core\Controller\CsrfTokenController;
 
-// Vérification de sécurité
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
+
 
 // get services
 $csrfTokenManager = $this->services->get(CsrfTokenManager::class);

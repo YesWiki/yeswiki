@@ -1,8 +1,8 @@
 <?php
 
 // do not change this line, you fool. In fact, don't change anything! Ever!
-define('WAKKA_VERSION', '0.1.1');
-define('WIKINI_VERSION', '0.5.0');
+define('WAKKA_VERSION', '0.1.1'); // Not used anymore, but keep it in case an extension is still using it
+define('WIKINI_VERSION', '0.5.0'); // Not used anymore, but keep it in case an extension is still using it
 define("YESWIKI_VERSION", 'doryphore');
 define("YESWIKI_RELEASE", '2020-01-22-1');
 define('T_START', microtime(true));

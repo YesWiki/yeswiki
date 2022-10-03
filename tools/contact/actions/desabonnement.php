@@ -4,10 +4,6 @@
 *
 * Description : action permettant l'envoi par mail d'une demande de desinscription a une liste de discussion
 */
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 
 //recuperation des parametres
 $listelements['mail'] = $this->GetParameter('mail');

@@ -2,10 +2,6 @@
 
 use YesWiki\Core\Service\ThemeManager;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 // si pas le mot bootstrap. ou bs. dans les css, on charge les styles bootstrap par defaut
 if (!strstr($this->config['favorite_style'], 'bootstrap.') && !strstr($this->config['favorite_style'], 'bs.')) {
     echo $this->LinkCSSFile('styles/vendor/bootstrap/css/bootstrap.min.css');

@@ -1,12 +1,7 @@
 <?php
-/*
-*/
+
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Security\Service\HashCashService;
-
-if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
-}
 
 if ($this->HasAccess('write') && $this->HasAccess('read')) {
     // Edition

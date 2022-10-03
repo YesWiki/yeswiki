@@ -2,10 +2,6 @@
 // DEPRECIATED keep same filename without class to prevent error at update
 use YesWiki\Core\Service\DbService;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 if (!empty($this->config['use_fallback_theme'])) {
     $chemin_theme = 'themes/'.$this->config['favorite_theme'].'/squelettes/'.$this->config['favorite_squelette'];
     $file_content = file_get_contents($chemin_theme);

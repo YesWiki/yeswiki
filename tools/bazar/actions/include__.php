@@ -2,10 +2,7 @@
 
 use YesWiki\Bazar\Service\EntryManager;
 
-// Vérification de sécurité
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
+
 
 $entryManager = $this->services->get(EntryManager::class);
 

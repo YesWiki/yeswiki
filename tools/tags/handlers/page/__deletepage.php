@@ -3,10 +3,7 @@
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 
-// Vérification de sécurité
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
+
 
 if (($this->UserIsOwner() || $this->UserIsAdmin())
         && isset($_GET['eraselink'])

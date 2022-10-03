@@ -132,16 +132,6 @@ class Wiki
         return $this->GetConfigValue('wakka_name');
     }
 
-    public function GetWakkaVersion()
-    {
-        return $this->config['wakka_version'];
-    }
-
-    public function GetWikiNiVersion()
-    {
-        return WIKINI_VERSION;
-    }
-
     public function isCli(): bool
     {
         return in_array(php_sapi_name(), ['cli', 'cli-server',' phpdbg'], true);

@@ -14,5 +14,6 @@
 use YesWiki\Core\YesWikiLoader;
 
 require_once 'includes/YesWikiLoader.php';
+
 $wiki = YesWikiLoader::getWiki();
 $wiki->Run($wiki->tag, $wiki->method);

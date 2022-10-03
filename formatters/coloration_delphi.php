@@ -1,10 +1,5 @@
 <?php
 
-// protection contre les appels directs
-if (!defined('WIKINI_VERSION')) {
-    die('Appel direct interdit');
-}
-
 include_once('formatters/highlighter.class.php');
 
 $DH = new Highlighter();

@@ -16,10 +16,6 @@ Le fichier "slideshow.css" sera reconnu automatiquement.
 
 */
 
-// Vérification de sécurité
-if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
-}
 
 // On teste si l'utilisateur peut lire la page
 if (!$this->HasAccess('read')) {

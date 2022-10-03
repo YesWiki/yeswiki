@@ -1,9 +1,5 @@
 <?php
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
-}
-
 if (isset($_POST["action"]) && $_POST["action"] == 'addcomment') {
     if ($this->config['use_hashcash']) {
         require_once('tools/security/secret/wp-hashcash.lib');

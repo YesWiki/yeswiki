@@ -2,9 +2,6 @@
 /**
  * Fichier de lancement et de configuration de l'extension Templates.
  */
-if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
-}
 
 require_once 'libs/templates.functions.php';
 

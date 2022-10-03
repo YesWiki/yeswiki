@@ -1,9 +1,4 @@
 <?php
-if (!defined("WIKINI_VERSION")) {
-    die("acceso directo prohibido");
-}
-
-
 
 $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 
