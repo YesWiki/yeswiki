@@ -19,7 +19,7 @@ export default class {
     return result.concat(Object.keys(ACTIONS_BACKWARD_COMPATIBILITY))
   }
 
-  open(editor, options = {}) {
+  open(editor, options) {
     // Handle backward compat
     if (options.action) {
       const [actionName] = options.action.split(' ')
