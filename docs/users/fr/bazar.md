@@ -1,6 +1,6 @@
 # Bazar Les bases de données coopératives dans YesWiki
 
-> Bazar permet **la création et de gestion de bases de données** pour structurer des contenus et faciliter leur manipulation par les usagers. La page "bases de données" (BazaR) est accessible via la roue crantée en haut à droite du menu.
+> Bazar permet **la création et la gestion de bases de données** pour structurer des contenus et faciliter leur manipulation par les usagers. La page "bases de données" (BazaR) est accessible via la roue crantée en haut à droite du menu.
 
 ## Introduction - Principe de fonctionnement
 Bazar utilise des formulaires qui permettent deux choses :
@@ -8,49 +8,12 @@ Bazar utilise des formulaires qui permettent deux choses :
 *   faciliter la **saisie** en offrant un cadre structuré de collecte d'informations,
 *   **visualiser** tout ou partie des informations saisies sous une forme qui vous semble pertinente (une carte, un trombinoscope, une liste, etc.).
 
-### Exemple d'utilisation 
- !> On supprime ?
-
-**1 –** Supposons que je souhaite organiser un goûter et que j'utilise pour ce faire un **formulaire** dans lequel je demande :
-
-*   le prénom de chaque personne,
-*   si elle apporte une boisson ou un gâteau (soyons fous !),
-*   une description plus détaillée de ce qu'elle apporte.
-
-**2 –** Afin de permettre la saisie, je vais mettre à disposition une page sur laquelle je vais afficher le formulaire vide afin que chaque personne puisse y répondre.  
-Marguerite, Théo, Barnabé et Manon se rendent sur cette page et remplissent le formulaire. Lorsque chacune de ces personnes se rend sur cette page elle remplit sa **fiche** qui répond à ce formulaire.
-
-**3 –** Pour que tout le monde puisse voir ce que chacun va apporter, je vais également mettre à disposition une page sur laquelle je vais afficher toutes les **fiches** de réponses au **formulaire** sous forme de liste (par exemple).  
-Je verrai sur cette page les **fiches** de Marguerite, Théo, Barnabé et Manon.
-
-### Qu'est-ce qu'un formulaire ?
-
-Nous appellerons **formulaire** le jeu de questions posées. Dans notre exemple, ce sont : 
- 
-*   prénom,
-*   le type de ce que la personne apporte,
-*   des précisions sur ce que la personne apporte.
-
-On désignera par **fiche** une réponse individuelle à un formulaire. Dans notre exemple, il y a quatre fiches qui répondent à ce formulaire.  
-
 ### Les trois phases de fabrication d'un formulaire
 
-* **Du point de vue de l'utilisateurice**, seules existent :  
-    *   La page sur laquelle il ou elle pourra saisir sa **fiche**
-    *   La page d'affichage sur laquelle on peut consulter les réponses au **formulaire**
-* Mais pour vous qui allez fabriquer le formulaire, les choses sont légèrement différentes.  
-Vous allez devoir, avant même de fabriquer les pages de **saisie** des fiches et d'**affichage** des réponses, **concevoir** ce formulaire.  
-
-Nous avons donc trois phases :  
 1.   **Concevoir** le formulaire,
 2.   Mettre à disposition une page pour la **saisie** des fiches,
 3.   Mettre en œuvre une page d'**affichage** des résultats du formulaire.
 
-| Vous | L'utilisateurice| 
-| -------- | -------- | 
-| Concevoir
-| Permettre la saisie|Saisir sa fiche
-| Afficher les résultats|Consulter les résultats
 
 ### Présentation de l'interface Bazar
 
@@ -81,14 +44,14 @@ Pour modifier un formulaire on utilisera donc le petit bouton en forme de crayon
 Et, pour créer un nouveau formulaire, on utilisera le bouton « Saisir un nouveau formulaire ».  
 Les deux boutons envoient sur un écran similaire, vide dans le cas de la création et présentant les questions du formulaire dans le cas d'une modification.  
 
-## 1 – Concevoir le formulaire
+
+### 1 – Concevoir le formulaire
 
 Concevoir le formulaire revient à choisir et agencer les différentes questions que vous allez poser.  
 Si vous partez de zéro, cela peut être une excellente occasion de mettre en œuvre de la coopération en co-élaborant votre formulaire.  
 
 Lors de la **conception** vous travaillerez dans la page _Base de données_ de votre wiki accessible _via_ le menu roue crantée en haut à droite du wiki.  
 
-### Généralités 
 #### Nom du formulaire
 
 Dans la première zone en haut de l'écran, on saisit (création), ou on trouve (modification), le nom du formulaire.  
@@ -143,6 +106,8 @@ En cliquant sur le petit crayon correspondant à un champ, on peut modifier ses 
 
 Lorsque vous avez fini de modifier votre formulaire, vous devez valider au moyen du bouton du même nom en bas de page.
 
+### Exemples d'utilisation 
+A l'installation de votre wiki, quelques formulaires sont présents dans votre [base de données](BazaR) à titre d'exemple : Agenda, Annuaire, Blog-Actu, Ressources. Vous pouvez les modifier pour qu'ils correspondent à vos besoins ou en créer de nouveaux.
 ### Types de champs possibles
 
 _Bazar_ propose de nombreux types de champs. Voici ceux auxquels vous aurez le plus souvent recours.  
