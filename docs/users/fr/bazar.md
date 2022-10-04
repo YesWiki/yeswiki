@@ -123,7 +123,7 @@ L'adresse (_url_) de cette page est déterminée automatiquement à partir du ti
 
 #### Fabriquer un titre à partir de 2 champs
 Il est possible d'utiliser un titre combiné : par exemple : "champ prénom + champ nom".
-Pour cela utiliser le champ de type **[Titre automatique](/bazar?id=titre-automatique)** 
+Pour cela utiliser le champ de type **[Titre automatique](/docs/users/fr/bazar?id=titre-automatique)** 
 
 ### Texte court
 Un champs de texte qui permet la saisie de quelques mots.
@@ -202,7 +202,7 @@ Certains affichages des résultats (calendrier, agenda, etc.) nécessitent la pr
 #### Paramètres spécifiques au type de champs date :
  - **Initialiser à Aujourd'hui** : Ce paramètre permet de préciser si on souhaite que la date soit prédéfinie à la date du jour.
 
-### Géolocalisation de l'adresse »
+### Géolocalisation de l'adresse
 ![image champ_zone.png (24.5kB)](images/DocBazarChampGeo_champ_geoloc_20220204222452_20220204212502.png)
 Ce champ n'est pas un vrai champ. Il s'agit, de fait, d'un outil qui permet de transformer une adresse saisie par un humain en un jeu de coordonnées (longitude et latitude).  
 Son comportement est donc un peu différent de ce qu'on trouve dans les autres champs.  
@@ -213,8 +213,10 @@ Notamment, pour trouver les coordonnées d'une adresse, il faut à YesWiki des i
  -  un champ dont l'identifiant unique est « bf\_pays ».
 Il est indispensable d'avoir un champ de ce type dans votre formulaire si vous souhaitez afficher vos résultats sous forme de carte.
 #### Paramètres du type de champs « géolocalisation de l'adresse » :
- - **Nom du champ latitude** Avec ce champ, YesWiki va convertir l'adresse postale en coordonnées. Ce paramètre indique à YesWiki dans quel nom interne il doit donner à la valeur de latitude. Sauf besoin précis, conservez la valeur par défaut qui est « bf\_latitude ».  
- - **Nom du champ longitude** Avec ce champ, YesWiki va convertir l'adresse postale en coordonnées. Ce paramètre indique à YesWiki dans quel nom interne il doit donner à la valeur de longitude. Sauf besoin précis, conservez la valeur par défaut qui est « bf\_longitude ».
+ - **Nom Champ Latitude** Avec ce champ, YesWiki va convertir l'adresse postale en coordonnées. Ce paramètre indique à YesWiki dans quel nom interne il doit donner à la valeur de latitude. Sauf besoin précis, conservez la valeur par défaut qui est « bf\_latitude ».  
+ - **Nom Champ Longitude** Avec ce champ, YesWiki va convertir l'adresse postale en coordonnées. Ce paramètre indique à YesWiki dans quel nom interne il doit donner à la valeur de longitude. Sauf besoin précis, conservez la valeur par défaut qui est « bf\_longitude ».
+ - **Champ code postal pour l'autocomplétion** : s'assurer que le formulaire possède un champ texte court pour le code postal et noter sont nom (ex. : bf_code_postal). Ainsi quand vous allez taper un code postal puis sélectionner la ville associée, la géolocalisation sera automatiquement mise à jour. 
+ - **Champ ville pour l'autocomplétion** : s'assurer que le formulaire possède un champ texte court pour la ville et noter sont nom (ex. : bf_ville). Ainsi quand vous allez taper un nom de ville puis sélectionner le code postal associé, la géolocalisation sera automatiquement mise à jour. 
 
 ### Inscription liste de diffusion
 
@@ -223,12 +225,16 @@ Il est indispensable d'avoir un champ de ce type dans votre formulaire si vous s
 ### Créer un utilisateur lorsque la fiche est validée
 
 ### Config droits d'accès
+Ce champ n'est pas un vrai champ. Il s'agit d'un outil qui permet de définir les droits d'accès qui seront affectés à chacune des fiches du formulaire. Vous pouvez donc ainsi préciser quelles catégories d'utilisateurs (Tout le monde, Utilisateurs identifiés, Membres du groupe admins, ou Propriétaire de la fiche et admins) peuvent lire, saisir ou modifier ou encore commenter des fiches de votre formulaire.
+
+!> Cette configuration des droits d'accès ne s'applique qu'aux fiches saisies après son paramétrage. Autrement dit, si vous ajoutez ce « champ » à votre formulaire, ou si vous le modifiez, seules les fiches saisies ou modifiées après cet ajout, ou cette modfication, auront les droits que vous avez définis.
 
 ### Config thème de la fiche
 
 ### Bookmarklet
 
 ### Liste des fiches liées
+à écrire à partir de https://quincaillere.org/formationgarecentrale2022/?DocBazarChampFichesLiees
 
 ### Titre automatique
 Il est possible d'utiliser un titre combiné à partir de 2 champs (ou plus) : par exemple : "champ prénom + champ nom".
@@ -241,6 +247,7 @@ Vous pouvez également y ajouter du texte : par exemple mettre un tiret entre le
 ### Navigation par onglet /Passage à l'onglet suivant
 
 ### Rendre une question conditionnelle
+
 ### Calculs
 
 ### Onglet : code wiki

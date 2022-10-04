@@ -24,22 +24,39 @@ Prise en main
 Editer une page
 ---------------
 
-Si une page est ouverte à l'édition, vous trouverez un bouton en bas de page pour l'éditer
+Les pages d'un Yeswiki ont deux status, 
+ - le mode lecture, c'est le mode que vous optiendrez en arrivant sur un wiki
+ - le mode édition, reconnaissable à sa barre d'édition et aux "codes" colorés qui apparaissent dans la page
+
+Pour passer en mode édition, trois solutions :
+ - Utiliser le lien **éditer** en bas de page
+ - Double cliquer dans la page
+ - Ajouter /edit à la fin de l'adresse de la page
+
+!> Vous n'arrivez pas à éditer une page YesWiki, elle a certainement été fermée en écriture
 
 ### Syntaxe YesWiki
 
-!> TODO: juste un mot d'explication sur l'usage de la balise et le besoin de virer la balise quand on en a plus besoin
+Actuellement, YesWiki utilise des balises plus ou moins complexes pour les styles, les actions et autre astuces de mise en forme.
+Ainsi, un texte en **gras** s'affiche ```**```**gras**```**```
+ - pour supprimer les balises, il faut les supprimer avant **ET** après l'élément impacté
+ - Pour des balises plus complexes style ```{{section bgcolor="var(--primary-color)" class="shape-rounded" pattern="border-solid" }}Texte encadré{{end elem="section"}}``` (oui, je sais, ça fait peur au début) il faut bien supprimer tout ce qui est avant **ET** après _Texte encadré_, Le plus simple.
+
+Deux solutions en cas de soucis :
+ - revenir sur une version précédente de la page
+ - supprimer tous les codes de la partie impactée et remettre les choses en place calmement
+
+!> Help, tout le texte de ma page est en gras ou en italique, c'est souvent une balise qui est ouverte et n'est pas fermée, style ```**texte en gras```
 
 ### Mise en forme
 
 La plupart des mises en forme standard (gras, encadré, saut de ligne...) sont accessible via les boutons de l'éditeur. Voici quelques mise en formes supplémentaires
 
-!> TODO: reprendre tous les exemples de l'aide de YesWiki ici (ReglesDeFormatage), et modifier cette page pour qqu'elle pointe vers cette nouvelle doc
+!> TODO: reprendre tous les exemples de l'aide de YesWiki ici (ReglesDeFormatage), et modifier cette page pour qu'elle pointe vers cette nouvelle doc
 
 !> TODO: est ce que la partie composant buttons + mise en forme ne pourrait pas venir ici?
 
 #### Listes
-
 ```yeswiki
  - Liste à puce niveau 1
  - Puce niveau 1
@@ -55,7 +72,6 @@ La plupart des mises en forme standard (gras, encadré, saut de ligne...) sont a
 > Remarque : en mode édition, il faut parfois sauter une ligne après une liste à puce pour garder la coloration syntaxique...
 
 #### Tableaux
-
 ```yeswiki preview
 [|
 |**Nom**  |**prénom** |**Couleurs préférées** |
@@ -65,14 +81,32 @@ La plupart des mises en forme standard (gras, encadré, saut de ligne...) sont a
 ```
 
 #### Écrire du code HTML
-
 Si vous déposez du HTML dans la page wiki, il faut l'entourer de `""` pour qu'il soit interprété
 
 ```yeswiki
 ""<b>Ceci est du HTML</b>""
 ```
+#### Créer une ancre, un lien qui envoie sur une partie de votre page
+Le code suivant permet de créer le lien qui ira vers votre paragraphe : ```<a href="#ancre1">Aller vers le paragraphe cible</a>```
+Et cette partie de code sera à placer juste au dessus du paragraphe cible : ```<div id="ancre1"></div>```
 
+#### Mettre du texte en couleur
+```""<span style="color:#votrecodecouleur;">votre texte à colorer</span>""```
+ - Quelques codes couleur => mauve : #990066 / vert : #99cc33 / rouge : #cc3333 / orange : #ff9900 / bleu : #006699
+ - [Voir les codes hexa des couleurs](http://fr.wikipedia.org/wiki/Liste_de_couleurs http://fr.wikipedia.org/wiki/Liste_de_couleurs)
 
+#### Utiliser des icônes
+##### Emoji
+Il est possible de copier des icônes dans des sites sources puis de les coller dans votre wiki. (Par exemple sur ce site) [http://getemoji.com]
+##### Font Awesome
+```""<i class="fas fa-ambulance"></i>""``` et sur le site de (Font awesome)[https://fontawesome.com/v5/search] chercher icone à votre pied et remplacer _ambulance_ par le nom de votre icone
+
+#### Barre de progression
+```yeswiki
+[10%]
+[50%]
+[85%]
+```
 
 Créer une page / insérer un lien
 -------------------------------

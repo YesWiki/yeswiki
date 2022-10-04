@@ -1,5 +1,35 @@
 # Administrer son wiki
 
+> Proposition d'architecture :
+## Gérer les droits
+### Introduction aux droits d'accès
+### Gérer les droits par utilisateurice ou par groupe
+### Gérer les droits en masse
+### Gérer les droits d'accès des pages non encore existantes
+### Configurer les accès à certaines parties au sein même des pages
+### Éditer les droits d'accès aux actions
+### Éditer les droits d'accès aux handlers
+## Gérer le look
+(les modifications de menus et pages spéciales passent dans les 1ers pas)
+### Configuration graphique par défaut
+### Tester les thèmes disponibles
+### Ajouter des thèmes graphiques
+### Modifier un thème graphique pré-existant
+## Les handlers
+## Suivre la vie de son wiki
+### Via la page tableau de bord
+### Via la page DerniersChangements
+### Via les flux rss du wiki
+### Recevoir le contenu d'une page par courriel
+## Lutter contre le spams en gérant les droits d'accès
+### Les symptômes : comment identifier les spams ?
+### Les 10 conseils anti-spam
+### Que faire si vous avez du spam ?
+Ce que je ne sais pas encore où mettre :
+ - Gestion des tags
+ - Gestion des fichiers
+ - Fichier de conf
+
 > TODO Petite description
 
 ## Gestion du site (à caler ici quelques part)
@@ -109,9 +139,8 @@ En bas de page, vous allez trouver un bouton permissions. En cliquant sur celui-
 *   un module de gestion des droits des utilisateurs par groupe a été créé
 *   un module de gestion du droit d'accès aux pages en masse a été créé
 
-### Gérer les droits en masse
 
-#### Gestion des droits par utilisateur
+### Gestion des droits par utilisateurice ou par groupe
 
 La gestion utilisateur par utilisateur est très fine MAIS présente quelques inconvénients :
 
@@ -153,7 +182,7 @@ lorsque j'ai cliqué sur voir/éditer le groupe concerné, il me suffit dans la 
 
 ](images/M22GererLesDroitsDAccesEnMasse_ajoutgroupe_20220223095430_20220223095137.png)
 
-#### Gestion des droits des pages en masse
+### Gestion des droits des pages en masse
 
 La gestion page par page c'est sympa mais quand on a 150 pages dans son wiki... ça peut vite devenir très long. Heureusement il existe une page permettant de gérer les changements des droits d'accès de plusieurs pages (toutes les pages) en même temps.
   
@@ -235,47 +264,6 @@ La plupart de ces composants proposent dans leurs paramètres avancés, des choi
 *   ...
 
 Ces opérations sont aussi réalisables pour les différents champs d'un formulaire (nous verrons ça la semaine prochaine).
-
-### Lutter contre le spams en gérant les droits d'accès
-
-#### En cas de vagues de spams
-
-Hélas comme la plupart des wikis ouverts (MediaWiki, DokuWiki), YesWiki n'échappe pas aux attaques de quelques emmerdeurs référenceurs soit-disant professionnels et autres robots de spam, qui polluent les contenus des pages.
-
-##### Les 10 commandements du lutteur anti spam
-
-**1**. Je consulte régulièrement mon wiki
-**2**. Je m'abonne à son flux RSS
-**3**. Je consulte la page TableauDeBordDeCeWiki de mon wiki (accessible depuis la "roue crantée")
-**4**. Je vérifie les dernières pages modifiées dans le TableauDeBordDeCeWiki ou sur la page DerniersChangements
-**5**. Je vérifie les derniers comptes crées sur la page TableauDeBordDeCeWiki. (Action {{Listusers last="20"}} )
-**6**. J'édite les pages en question et je supprime les parties indésirables, puis je sauve. (Cela prend moins d'une minute)
-**7**. Je protège l'accès en écriture des pages non collectives ([PageRapideHaut](https://quincaillere.org/formationgarecentrale2022/?PageRapideHaut), [PageHeader](https://quincaillere.org/formationgarecentrale2022/?PageHeader), [PageFooter](https://quincaillere.org/formationgarecentrale2022/?PageFooter), etc.)
-**7bis** Je ferme temporairement l'entièreté du wiki en écriture
-**8**. Je mets à jour mon [YesWiki](https://quincaillere.org/formationgarecentrale2022/?YesWiki) quand une nouvelle version sort.
-**9**. Pour les plus endurcis, je fais le grand ménage avec l'outil despam (voir plus bas)
-**10**. Je ne cède pas à la tentation de transformer mon espace collaboratif en bunker. Et je continue à mettre en balance les effets positifs de l'intelligence collective.
-
-#### Les symptômes : comment identifier les spams ?
-
-*   Vous pouvez découvrir sur une ou plusieurs pages des liens vers des sites externes qui semblent sans rapport avec l'objet du wiki _(qui vendent des robes de mariée, des sites indonésien sans rapport, des liens commerciaux vers la loi duflot, des textes en langue étrangère etc..)_
-*   Il se peut aussi que de nouvelles pages soit créées, et dans certains cas de nouveaux utilisateurs wikis.
-
-Dans tous les cas, il sera toujours possible de faire marche arrière, et les informations sensibles d'accès ftp ou mysql à votre serveur ne peuvent pas être trouvés comme cela.
-
-#### Fermer l'accès au wiki à certaines adresses IP
-
-Souvent les vagues de spam proviennent d'une région spécifique et on peut s'en préserver via une fermeture des accès aux wikis à ces adresses IP spécifiques (les IP sont spécifiques des régions/pays)
-
-Vous pourrez régler ces détails dans la roue crantée/ gestion du site/ fichier de conf/ blocage d'adresse IP
-
-![image confblocageip.png (44.7kB)](images/LutterContreLeSpamsEnGerantLesDroitsDA_confblocageip_20220223102024_20220223092147.png)
-
-Il faudra au préalable que vous ayez installé l'extension IP block via roue crantée/gestion du site/mise à jour et extensions
-
-![image extensionipblock.png (77.9kB)](images/LutterContreLeSpamsEnGerantLesDroitsDA_extensionipblock_20220223102024_20220223092158.png)
-
-Pour découvrir l'ensemble des stratégies possibles face au spam => [https://yeswiki.net/?LutterContreLeSpam](https://yeswiki.net/?LutterContreLeSpam)
 
 ## Gérer les users (à écrire)
 
@@ -631,3 +619,17 @@ Pour la mise en oeuvre, voir la documentation suivante:
 Cette extension permet de bloquer l'accès à votre wiki en fontion des adresses IP (et de leur provenance géographique).
 Elle s'active via l'onglet Mise à jour / extension de la page gestion du site de votre wiki.
 Les paramètres sont alors visibles dans la partie "Blocage d'adresses IP"
+
+#### Fermer l'accès au wiki à certaines adresses IP
+
+Souvent les vagues de spam proviennent d'une région spécifique et on peut s'en préserver via une fermeture des accès aux wikis à ces adresses IP spécifiques (les IP sont spécifiques des régions/pays)
+
+Vous pourrez régler ces détails dans la roue crantée/ gestion du site/ fichier de conf/ blocage d'adresse IP
+
+![image confblocageip.png (44.7kB)](images/LutterContreLeSpamsEnGerantLesDroitsDA_confblocageip_20220223102024_20220223092147.png)
+
+Il faudra au préalable que vous ayez installé l'extension IP block via roue crantée/gestion du site/mise à jour et extensions
+
+![image extensionipblock.png (77.9kB)](images/LutterContreLeSpamsEnGerantLesDroitsDA_extensionipblock_20220223102024_20220223092158.png)
+
+Pour découvrir l'ensemble des stratégies possibles face au spam => [https://yeswiki.net/?LutterContreLeSpam](https://yeswiki.net/?LutterContreLeSpam)
