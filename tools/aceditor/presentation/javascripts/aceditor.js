@@ -52,6 +52,7 @@ class Aceditor {
 
       if ($btn.data('remote')) {
         // Remote Modal Button
+        e.preventDefault()
         openModal($btn.attr('title'), $btn.attr('href'))
       } else if ($btn.hasClass('aceditor-btn-link')) {
         // Link Button
