@@ -3,25 +3,32 @@
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal">&times;</button>
-				<h3>{{ _t('ACEDITOR_LINK') }}</h3>
+				<h3 data-show="newlink">{{ _t('ACEDITOR_LINK') }}</h3>
+				<h3 data-show="edit">{{ _t('ACEDITOR_LINK_EDIT') }}</h3>
+				<h3 data-show="newpage">{{ _t('ACEDITOR_NEWPAGE') }}</h3>
 			</div>
 			<div class="modal-body">
-				<form id="form-link">
+				<form>
+					{# Link (page or url) #}
 					<div class="control-group form-group internal-link">
-						<label class="control-label">{{ _t('ACEDITOR_LINK_PAGE_NAME') }}</label>
+						<label class="control-label" data-show="newlink,edit">{{ _t('ACEDITOR_LINK_PAGE_OR_URL') }}</label>
+						<label class="control-label" data-show="newpage">{{ _t('ACEDITOR_LINK_NEW_PAGE_NAME') }}</label>
 						<div class="controls">
 							<input class="form-control" type="text" name="url" autocomplete="off">
 							<span class="link-error help-block text-danger hidden">{{ _t('ACEDITOR_LINK_ERROR') }}</span>
-							<span class="help-block">{{ _t('ACEDITOR_LINK_HINT_NEW_PAGE_NAME') }}</span>
+							<span class="help-block" data-show="newlink,edit">{{ _t('ACEDITOR_LINK_HINT_NEW_PAGE_NAME') }}</span>
 						</div>
 					</div>
+					{# Text #}
 					<div class="control-group form-group">
-						<label class="control-label">{{ _t('ACEDITOR_LINK_TEXT') }}</label>
+						<label class="control-label" data-show="newlink,edit">{{ _t('ACEDITOR_LINK_TEXT') }}</label>
+						<label class="control-label" data-show="newpage">{{ _t('ACEDITOR_LINK_NEW_PAGE_TEXT') }}</label>
 						<div class="controls">
 							<input class="form-control" type="text" name="text">
 						</div>
 					</div>
-					<select class="form-control link-options" style="margin: 1.5rem 0 2rem 0;">
+					{# Target #}
+					<select class="form-control link-options" data-show="newlink,edit" style="margin: 1.5rem 0 2rem 0;">
 						<option value="link" selected>{{ _t('ACEDITOR_LINK_OPEN_IN_CURRENT_TAB') }}</option>
 						<option value="ext">{{ _t('ACEDITOR_LINK_OPEN_IN_NEW_TAB') }}</option>
 						<option value="modal">{{ _t('ACEDITOR_LINK_OPEN_IN_MODAL') }}</option>

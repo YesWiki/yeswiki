@@ -56,8 +56,15 @@ class Aceditor {
       } else if ($btn.hasClass('aceditor-btn-link')) {
         // Link Button
         this.linkModal.open({
+          action: 'newlink',
           text: this.editor.getSelectedText(),
           onComplete: (result) => { this.editor.replaceSelectionBy(result) }
+        })
+      } else if ($btn.hasClass('aceditor-btn-newpage')) {
+        // New Page Button
+        this.linkModal.open({
+          action: 'newpage',
+          onComplete: (result) => { this.editor.insert(result) }
         })
       } else {
         // Other Buttons
@@ -97,6 +104,7 @@ class Aceditor {
           const [link, text] = cursor.groupTextWithoutMarkup.split(' ')
           this.flyingButton.show().onClick(() => {
             this.linkModal.open({
+              action: 'edit',
               link,
               text,
               onComplete: (result) => { this.editor.replaceCurrentGroupBy(result) }

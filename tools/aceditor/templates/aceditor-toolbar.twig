@@ -36,10 +36,11 @@
 </div>
 <div class="btn-group">
   {{ _self.button('list') }}
+  {{ _self.button('line') }}
 </div>
 <div class="btn-group">
-  {{ _self.button('line') }}
   {{ _self.button('link') }}
+  {{ _self.button('newpage') }}
 </div>
 
 {# Upload file #}
@@ -98,6 +99,7 @@
     LIST: { yeswiki: [' - ', ''], icon: "fa fa-list" },
     LINE: { yeswiki: ['\n------\n', ''], icon: "fa fa-minus icon-minus" },
     LINK: { icon: "fa fa-link" },
+    NEWPAGE: { icon: "fa fa-plus-square" },
   } %}
 
   {% set syntax = DELIMITERS[name|upper] %}
