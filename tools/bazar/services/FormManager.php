@@ -4,9 +4,7 @@ namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
-use YesWiki\Bazar\Field\CheckboxEntryField;
 use YesWiki\Bazar\Field\EnumField;
-use YesWiki\Bazar\Field\SelectEntryField;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
@@ -316,12 +314,7 @@ class FormManager
 
                     if ($fieldPropName) {
                         if ($field instanceof EnumField) {
-                            if ($field instanceof SelectEntryField || $field instanceof CheckboxEntryField) {
-                                // listefiche ou checkboxfiche
-                                $facetteValue[$fieldPropName]['type'] = 'fiche';
-                            } else {
-                                $facetteValue[$fieldPropName]['type'] = 'liste';
-                            }
+                            $facetteValue[$fieldPropName]['type'] = ($field->isEnumEntryField()) ? 'fiche' : 'liste';
 
                             $facetteValue[$fieldPropName]['source'] = $key;
 

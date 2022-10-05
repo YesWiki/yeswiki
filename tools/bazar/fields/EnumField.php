@@ -178,6 +178,15 @@ abstract class EnumField extends BazarField
         return $this->name;
     }
 
+    /**
+     * check if the current class is EnumEntry
+     * @return bool
+     */
+    public function isEnumEntryField(): bool
+    {
+        return false;
+    }
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -192,7 +201,7 @@ abstract class EnumField extends BazarField
         );
     }
 
-    
+
     /**
      * check existence of &fields=bf_titre,id_fiche,url in url when api
      * @param string $url

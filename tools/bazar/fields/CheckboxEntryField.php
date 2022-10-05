@@ -33,7 +33,7 @@ class CheckboxEntryField extends CheckboxField
             self::CHECKBOX_DISPLAY_MODE_LIST ;
         $this->dragAndDropDisplayMode='@bazar/inputs/checkbox_drag_and_drop_entry.twig' ;
 
-                
+
         $this->isDistantJson = filter_var($this->name, FILTER_VALIDATE_URL);
 
         if ($this->isDistantJson) {
@@ -43,7 +43,7 @@ class CheckboxEntryField extends CheckboxField
             $this->baseUrl = null;
         }
     }
-    
+
     protected function renderStatic($entry)
     {
         $keys = $this->getValues($entry);
@@ -83,5 +83,14 @@ class CheckboxEntryField extends CheckboxField
     public function getOptions()
     {
         return  $this->getEntriesOptions();
+    }
+
+    /**
+     * check if the current class is EnumEntry
+     * @return bool
+     */
+    public function isEnumEntryField(): bool
+    {
+        return true;
     }
 }

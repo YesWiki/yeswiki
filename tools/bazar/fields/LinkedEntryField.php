@@ -4,9 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Field\BazarField;
-use YesWiki\Bazar\Field\CheckboxEntryField;
-use YesWiki\Bazar\Field\SelectEntryField;
-// use YesWiki\Bazar\Field\RadioEntryField;
+use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\Performer;
 
@@ -65,7 +63,7 @@ class LinkedEntryField extends BazarField
             $query = ((!empty($this->query)) ? $this->query.  '|' : '')  . $query  ;
 
             return '{{bazarliste id="' . $this->name . '" query="' . $query . '"'
-                . ((!empty($this->limit)) ? ' nb="' . $this->limit .'"': '')
+                . ((!empty($this->limit)) ? ' nb="' . $this->limit .'"' : '')
                 . ((!empty(trim($this->template))) ? ' template="' . trim($this->template) . '" ' : '')
                 . $this->otherParams . '}}';
         } else {
@@ -84,23 +82,20 @@ class LinkedEntryField extends BazarField
             return '';
         }
         $query = '' ;
-        // find CheckboxEntryField or SelectEntryField or RadioEntryField with right name
+        // find EnumEntryField with right name
         foreach ($form['prepared'] as $field) {
             if (
-            (
-                $field instanceof SelectEntryField
-                || $field instanceof CheckboxEntryField
-                || $field instanceof RadioEntryField
-            )
-            && $field->getLinkedObjectName() == $entry['id_typeannonce']
-            &&
-            (
-                empty($this->linkType)
-                || strpos($field->getType(), $this->linkType) === 0 // checkboxfiche or listefiche
-                || $field->getPropertyName()== $this->linkType // label
-                || substr($field->getPropertyName(), strlen($field->getType().trim($entry['id_typeannonce']))) == $this->linkType // label
-            )
-                ) {
+                $field instanceof EnumField
+                && $field->isEnumEntryField()
+                && $field->getLinkedObjectName() == $entry['id_typeannonce']
+                &&
+                (
+                    empty($this->linkType)
+                    || strpos($field->getType(), $this->linkType) === 0 // checkboxfiche or listefiche
+                    || $field->getPropertyName()== $this->linkType // label
+                    || substr($field->getPropertyName(), strlen($field->getType().trim($entry['id_typeannonce']))) == $this->linkType // label
+                )
+            ) {
                 $query .= (empty($query)) ? '' : '|' ;
                 $query .= $field->getPropertyName() . '=' . $entry['id_fiche'];
             }
@@ -108,7 +103,7 @@ class LinkedEntryField extends BazarField
 
         return $query ;
     }
-    
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()

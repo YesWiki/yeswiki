@@ -16,7 +16,7 @@ class RadioEntryField extends RadioField
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
-        
+
         $this->isDistantJson = filter_var($this->name, FILTER_VALIDATE_URL);
 
         if ($this->isDistantJson) {
@@ -50,9 +50,18 @@ class RadioEntryField extends RadioField
             'entryUrl' => $entryUrl
         ]);
     }
-    
+
     public function getOptions()
     {
         return  $this->getEntriesOptions();
+    }
+
+    /**
+     * check if the current class is EnumEntry
+     * @return bool
+     */
+    public function isEnumEntryField(): bool
+    {
+        return true;
     }
 }

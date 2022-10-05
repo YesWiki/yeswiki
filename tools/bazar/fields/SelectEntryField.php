@@ -78,4 +78,13 @@ class SelectEntryField extends EnumField
     {
         return  $this->getEntriesOptions();
     }
+
+    /**
+     * check if the current class is EnumEntry
+     * @return bool
+     */
+    public function isEnumEntryField(): bool
+    {
+        return true;
+    }
 }
