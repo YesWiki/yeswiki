@@ -620,6 +620,7 @@ return [
     'COMMENT_NOT_ENOUGH_RIGHTS' => 'U hebt niet voldoende rechten om commentaar te geven.',
     'COMMENT_PUBLISHED' => 'Reactie gepubliceerd!',
     'COMMENT_REMOVED' => 'De opmerking is verwijderd.',
+    // 'COMMENT_DELETE' => 'Supprimer un commentaire',
     'COMMENTS_CURRENTLY_CLOSED' => 'Het toevoegen van opmerkingen op deze pagina is momenteel uitgeschakeld',
     'USER_MUST_BE_LOGGED_TO_COMMENT' => 'Je moet inloggen om een reactie te plaatsen.',
     'USER_NOT_ALLOWED_TO_COMMENT' => 'Je zit niet in een groep die reacties mag achterlaten.',
@@ -629,6 +630,7 @@ return [
     'COMMENT_USER' => 'Auteur',
     'COMMENT_CONTENT' => 'Commentaar',
     'COMMENT_ON_PAGE' => 'Bovenliggende pagina',
+    // 'COMMENT_CONFIRM_DELETE' => 'Voulez-vous supprimer le commentaire ? (action définitive)',
 
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',
