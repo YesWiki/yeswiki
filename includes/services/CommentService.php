@@ -131,7 +131,7 @@ class CommentService
         if (empty($tag)) {
             $query .= 'comment_on != "" ';
         } else {
-            $query .= 'comment_on = "' . mysqli_real_escape_string($this->wiki->dblink, $tag) . '" ';
+            $query .= "comment_on = \"{$this->dbService->escape($tag)}\" ";
         }
         // remove current comment to prevent infinite loop
         $query .= " AND `tag` != '{$this->dbService->escape($tag)}' ";
