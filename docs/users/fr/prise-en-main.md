@@ -200,8 +200,6 @@ Un handler est une URL spéciale qui permet de modifier la façon d'afficher une
 
 > Certains handler permettent juste d'accéder à une fonctionalité à laquelle on peut accéder via des boutons de l'interface. C'est le cas pour `edit`, `revisions` ou `share`. Lorsque vous naviguez dans votre wiki, soyez attentif aux changement d'URL pour connaitre ces raccourcis
 
-### Liste des handlers
-
 * **/edit** : pour passer en mode Édition
 * **/revisions**  : pour voir les versions de l'historique
 * **/filemanager** : pour accéder à la liste des fichiers attachés à cette page
@@ -216,14 +214,76 @@ Un handler est une URL spéciale qui permet de modifier la façon d'afficher une
 * **&amp;debug** : permet d'afficher en bas de page toutes les actions effectuées au niveau informatique, permet de repérer les bugs, causes de plantage...
 * **/editiframe**  : permet d'ouvrir la page en mode édition mais en cachant les autres pages du squelette (utile quand une image ou un spam sur le bandeau empêche de voir le contenu de la page à modifier ou dans le cas d'un wiki intégré en iframe)
 
+
+
+Structure du wiki
+--------------------
+
+### La composition d'une page 
+
+#### Par défaut une page wiki contient :
+
+*   une **Page Titre** : c'est le nom du wiki
+*   une **Page Menu Haut** : on peut y ajouter des liens vers les pages du wiki (menu et sous-menu)
+*   une **Page Rapide Haut** : il s'agit des pages d'administration du wiki, la roue crantée en haut à droite
+*   une **Page Header** : c'est une partie utile pour écrire le titre donné au wiki, ajouter une description, un logo...
+*   une **Page Footer** : autrement dit un pied de page, où se trouvent diverses informations au sujet due wiki
+
+![image composition_page.jpg](images/composition_page.jpg)
+
+Pour modifier ces pages spéciales, allez dans la roue crantée puis "Gestion du site"
+
+### Zoom sur la PageMenuHaut
+
+La PageMenuHaut est organisée comme une liste de liens ou de boutons.
+
+* Les puces de premier niveau (un seul espace avant le tiret) seront toujours apparents dans le menu.
+* Les puces de deuxième niveau (deux espaces avant le tiret) permettent de créer des sous menus
+
+```yeswiki
+ - [[PageDemo Démo]]
+ - Test
+  - [[Pagetest1 Sous menu 1]]
+  - [[PageTest2 Sous menu 2]]
+ - {{button icon="fas fa-leaf" link="PageMargot" text="Margot" }}
+```
+
+### Visite de la roue crantée 
+
+La roue crantée (en haut à droite) donne accès à un certain nombre d'espaces dédiés à l'administration du wiki
+
+#### Gestion du site
+
+Cette page gestion du site est très importante. Elle donne accès à de nombreuses fonctionnalités d'administration :
+
+![image rubriques_gestiondusite.png](images/rubriques_gestiondusite.png)
+
+[Voir la page dédiée](admin.md)
+
+#### Tableau de bord
+
+Dans le tableau de bord, vous pouvez voir :
+
+* les derniers comptes utilisateurs créés
+* les dernières pages modifiées
+* la liste exhaustive des pages du wiki
+
+C'est le tableau de bord configuré par défaut mais vous pouvez le personnaliser.
+
+#### Base de données
+
+C'est ici que l'on configure Bazar : Bazar est une extension importante de YesWiki qui lui ajoute des fonctionnalités de création et de gestion de bases de données (formulaires).
+
+Il faut être identifié comme administrateur pour créer ou modifier un formulaire Bazar. [Voir la page dédiée](bazar.md)
+
+
 Les composants
 ---------------
-
-!> TODO: L'idée était de juste lister les composants disponibles pour qu'on puisse les trouver en cherchant dans le moteur de recherche de la doc. A voir si on garde ça ou si plutôt on réserve cette section a des descriptions de composants avancés (y'aurait quoi par exemple?)
 
 Les composants sont des éléments que l'on peut rajouter dans une page wiki.
 Utiliser les composants ajoutera un code -parfois compliqué-  dans votre page. En cliquant sur ce code, un crayon apparaîtra dans la marge. En cliquant dessus, vous activerez une interface qui codera à votre place afin de modifier simplement chacune des fonctionnalités de votre composant.
 
+> L'idée ici est de juste lister les composants disponibles pour qu'on puisse les trouver en cherchant dans le moteur de recherche de la doc. A voir si on garde ça ou si plutôt on réserve cette section a des descriptions de composants avancés (y'aurait quoi par exemple?)
 ### Boutons
 
 Le composant bouton permet de créer un bouton avec des icônes, qui enverra sur une page du wiki ou un autre site. Les combinaisons entre les différents paramètres vous permettrons de faire bouton à votre pied.
@@ -286,7 +346,7 @@ Vous pourrez bien sûr afficher les données des formulaires que vous aurez fabr
 
 Ce composant est le pendant de l’action précédente, il permet d’afficher l’espace de saisie correspondant au formulaire qui vous intéresse.
 
-### Actions avancées 
+### Actions avancées
 
 De nombreuses autres actions sont disponibles, en voici la liste :
 
@@ -309,106 +369,3 @@ De nombreuses autres actions sont disponibles, en voici la liste :
 #### Lister les pages à créer
 #### Lister les pages orphelines
 #### Lister seulement les fiches bazar
-
-Structure du wiki
---------------------
-
-### La composition d'une page 
-
-#### Par défaut une page wiki contient :
-
-*   une **Page Titre** : c'est le nom du wiki
-*   une **Page Menu Haut** : on peut y ajouter des liens vers les pages du wiki (menu et sous-menu)
-*   une **Page Rapide Haut** : il s'agit des pages d'administration du wiki, la roue crantée en haut à droite
-*   une **Page Header** : c'est une partie utile pour écrire le titre donné au wiki, ajouter une description, un logo...
-*   une **Page Footer** : autrement dit un pied de page, où se trouvent diverses informations au sujet due wiki
-
-![image composition_page.jpg](images/composition_page.jpg)
-
-#### Il y a deux manières d'accéder à une page menu pour la modifier :
-
-##### Par la roue crantée 
-
-![image composition_roue.png](images/composition_roue.png)
-
-Dans la page Gestion du site, on retrouve les liens vers toutes les pages citées ci-dessus.
-
-##### Par l'url
-
-![image composition_url.png](images/composition_url.png)
-
-Pour les menus par défaut ces url sont :  
-
-*   https://www.urldusite.ext/PageTitre
-*   https://www.urldusite.ext/PageMenuHaut
-*   https://www.urldusite.ext/PageRapideHaut
-*   https://www.urldusite.ext/PageHeader
-*   https://www.urldusite.ext/PageFooter
-
-### Zoom sur le menu du haut
-
-Pour créer ou modifier un menu...
-
-#### ... il faut savoir créer des liens...
-
-Les titres de menu correspondent à des liens menant à des pages, qu'elles soient déjà créées ou non.  
-Ici la page "Démo" n'existe pas : il y a un petit crayon à côté de son nom dans la page (en bas) et dans le menu (en haut). On peut créer la page en cliquant sur son nom, dans la page ou dans le menu.
-
-#### ...et des listes à puces (idem !)
-
-Une page menu est organisée comme une liste de puces. Un niveau de menu correspond au retrait de la puce, soit un ou plusieurs espaces placés en début de ligne :  
-
-*   un seul espace avant le tiret créera un titre de premier niveau (toujours apparent dans le menu). Ici la page "Démo".
-*   deux espaces avant le tiret créera un titre de deuxième niveau (apparent après avoir cliqué sur le titre de premier niveau). Ici les pages Test1 et Test2.
-
-N'hésitez pas à vous inspirer du code du menu déjà en place. Un wiki récemment installé a quelques éléments de menu justement pour vous montrer comment ça marche ;-)  
-
-![image menu_haut.png](images/menu_haut.png)
-
-### Visite de la roue crantée 
-
-Cliquer sur la roue crantée en haut à droite me donne accès à un certain nombre d'espaces dédiés à l'administration du wiki :
-
-![image menu_rouecrantee.png](images/menu_rouecrantee.png)
-
-La roue crantée peut être personnalisée sur PageRapideHaut.
-
-#### Se connecter
-
-Ce bouton sert à s'identifier ou à se créer un compte ("s'inscrire") :
-
-![image Vignette_seconnecter.png](images/Vignette_seconnecter.png)
-
-#### Aide, démo, actu
-
-Vous avez là une intégration des pages d'aide du site yeswiki.net
-
-#### Présentation YesWiki
-
-Cette page vous décrit YesWiki et sa communauté.
-
-#### Gestion du site
-
-!> TODO ajouter lien vers section dans la page admin
-
-Cette page gestion du site est très importante. Elle donne accès à de nombreuses fonctionnalités d'administration :
-
-![image rubriques_gestiondusite.png](images/rubriques_gestiondusite.png)
-
-[Voir la page dédiée](admin.md)
-
-#### Tableau de bord
-
-Dans le tableau de bord, vous pouvez voir :
-
-* les derniers comptes utilisateurs créés
-* les dernières pages modifiées
-* la liste exhaustive des pages du wiki
-
-C'est le tableau de bord configuré par défaut mais vous pouvez le personnaliser.
-
-#### Base de données
-
-C'est ici que l'on configure Bazar : Bazar est une extension importante de YesWiki qui lui ajoute des fonctionnalités de création et de gestion de bases de données (formulaires).
-
-Il faut être identifié comme administrateur pour créer ou modifier un formulaire Bazar. [Voir la page dédiée](bazar.md)
