@@ -1,4 +1,4 @@
-# Bazar Les bases de données coopératives dans YesWiki
+# Bazar : des bases de données coopératives dans YesWiki
 
 > Bazar permet **la création et la gestion de bases de données** pour structurer des contenus et faciliter leur manipulation par les usagers. La page "bases de données" (BazaR) est accessible via la roue crantée en haut à droite du menu.
 

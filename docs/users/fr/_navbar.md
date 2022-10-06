@@ -2,10 +2,10 @@
 
 [Revenir à mon wiki](/ ':id=back')
 
-* [Premiers pas](/docs/users/fr/prise-en-main.md)
-* [Usages avancés](/docs/users/fr/usage-avance.md)
+* [Prise en main](/docs/users/fr/prise-en-main.md)
 * [Formulaires (bazar)](/docs/users/fr/bazar.md)
 * [Administration](/docs/users/fr/admin.md)
+* [Comment faire pour..](/docs/users/fr/usage-avance.md)
 * [Installation](/docs/users/fr/webmaster.md)
 * [Développement](/docs/users/fr/dev.md)
 * [Extensions](/ ':id=extensions-links')
