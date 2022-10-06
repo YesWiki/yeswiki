@@ -481,7 +481,7 @@ Contenu panel-danger
 {{userreactions}}
 {{end elem=\"panel\"}}
 {{panel title=\"Mes commentaires\"}}
-{{userreactions}}
+{{mycomments}}
 {{end elem=\"panel\"}}
 {{end elem=\"accordion\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('MotDePassePerdu',  now(), '{{lostpassword}}
