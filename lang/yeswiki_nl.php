@@ -605,6 +605,7 @@ return [
     'COMMENT_CONTENT' => 'Commentaar',
     'COMMENT_ON_PAGE' => 'Bovenliggende pagina',
     // 'COMMENT_CONFIRM_DELETE' => 'Voulez-vous supprimer le commentaire ? (action définitive)',
+    // 'COMMENT_MODFIED_BY' => 'Modifié par %{user}',
 
     // templates/comments/notify-email-*.twig
     // 'COMMENT_NEW_COMMENT' => 'Nouveau commentaire sur la page %{tag}',

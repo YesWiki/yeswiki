@@ -112,11 +112,8 @@ class CommentService
                     $com['commentOn'] = $comment['comment_on'];
                     $com['rawbody'] = $comment['body'];
                     $com['body'] = $this->wiki->Format($comment['body']);
-                    $com['user'] = $comment['user'];
-                    $com['usercolor'] = $this->genColorCodeFromText($comment['user']);
-                    $com['linkuser'] = $this->wiki->href('', $comment['user']);
-                    $com['userpicture'] = !empty($this->wiki->config['default_comment_avatar']) ? $this->wiki->config['default_comment_avatar'] : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='".str_replace('#', '%23', $com['usercolor'])."' class='bi bi-person-circle' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z'/%3E%3C/svg%3E";
-                    $com['owner'] = $comment['owner'];
+                    $this->setUserData($comment, 'user', $com);
+                    $this->setUserData($comment, 'owner', $com);
                     $com['date'] = 'le '.date("d.m.Y à H:i:s", strtotime($comment['time']));
                     if ($this->wiki->HasAccess('comment', $comment['tag'])) {
                         $com['linkcomment'] = $this->wiki->href('pages/'.$comment['tag'].'/comments', 'api');
@@ -204,10 +201,8 @@ class CommentService
                 $com['comments'][$i]['commentOn'] = $comment['comment_on'];
                 $com['comments'][$i]['rawbody'] = $comment['body'];
                 $com['comments'][$i]['body'] = $this->wiki->Format($comment['body']);
-                $com['comments'][$i]['user'] = $comment['user'];
-                $com['comments'][$i]['linkuser'] = $this->wiki->href('', $comment['user']);
-                $com['comments'][$i]['usercolor'] = $this->genColorCodeFromText($comment['user']);
-                $com['comments'][$i]['userpicture'] = !empty($this->wiki->config['default_comment_avatar']) ? $this->wiki->config['default_comment_avatar'] : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='".str_replace('#', '%23', $com['comments'][$i]['usercolor'])."' class='bi bi-person-circle' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z'/%3E%3C/svg%3E";
+                $this->setUserData($comment, 'user', $com['comments'][$i]);
+                $this->setUserData($comment, 'owner', $com['comments'][$i]);
                 $com['comments'][$i]['date'] = 'le '.date("d.m.Y à H:i:s", strtotime($comment['time']));
                 if ($this->wiki->HasAccess('comment', $comment['tag'])) {
                     $com['comments'][$i]['linkcomment'] = $this->wiki->href('pages/'.$comment['tag'].'/comments', 'api');
@@ -221,6 +216,19 @@ class CommentService
         }
 
         return $this->wiki->render("@core/comment-list.twig", $com);
+    }
+
+    private function setUserData(array $comment, string $key, array &$data)
+    {
+        if (in_array($key, ['user','owner'], true) && !empty($comment[$key])) {
+            $data[$key] = $comment[$key];
+            $data["link$key"] = $this->wiki->href('', $comment[$key]);
+            $data["{$key}color"] = $this->genColorCodeFromText($comment[$key]);
+            $data["{$key}picture"] =
+                !empty($this->wiki->config['default_comment_avatar'])
+                ? $this->wiki->config['default_comment_avatar']
+                : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='".str_replace('#', '%23', $data["{$key}color"])."' class='bi bi-person-circle' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z'/%3E%3C/svg%3E";
+        }
     }
 
     public function getCommentForm($tag)
