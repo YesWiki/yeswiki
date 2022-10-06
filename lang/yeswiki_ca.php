@@ -614,6 +614,23 @@ return [
 
     // templates/multidelete-macro.twig
     // 'NUMBER_OF_ELEMENTS' => 'Nombre d\'éléments sélectionnés',
+    
+
+    // Comments
+    'COMMENT_EMPTY_NOT_SAVED' => 'Comentari buit, sense còpia de seguretat.',
+    'COMMENT_LOGIN' => 'Inicia la sessió per comentar',
+    'COMMENT_NOT_ENOUGH_RIGHTS' => 'No teniu prou drets de comentari.',
+    'COMMENT_PUBLISHED' => 'Comentari publicat!',
+    'COMMENT_REMOVED' => 'El comentari ha estat eliminat.',
+    'COMMENTS_CURRENTLY_CLOSED' => 'L\'addició de comentaris en aquesta pàgina està inhabilitada actualment',
+    'USER_MUST_BE_LOGGED_TO_COMMENT' => 'Heu d\'iniciar la sessió per publicar un comentari.',
+    'USER_NOT_ALLOWED_TO_COMMENT' => 'No esteu en un grup que tingui permís per deixar comentaris.',
+    'NOT_AUTORIZED_TO_REMOVE_COMMENT' => 'No teniu permís per suprimir aquest comentari.',
+    'COMMENT_TAG' => 'Pàgina',
+    'COMMENT_DATE' => 'Datar',
+    'COMMENT_USER' => 'Autor',
+    'COMMENT_CONTENT' => 'Comentari',
+    'COMMENT_ON_PAGE' => 'Pàgina pare',
 
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',
