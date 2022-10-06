@@ -5,8 +5,11 @@ namespace YesWiki\Core\Service;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Entity\Event;
-use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\EventDispatcher;
+use YesWiki\Core\Service\Mailer;
+use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Core\Service\UserManager;
 use YesWiki\Security\Service\HashCashService;
 use YesWiki\Wiki;
 
@@ -16,9 +19,12 @@ class CommentService
     protected $aclService;
     protected $dbService;
     protected $eventDispatcher;
+    protected $mailer;
     protected $pageManager;
     protected $params;
     protected $pagesWhereCommentWereRendered;
+    protected $userManager;
+    protected $templateEngine;
     protected $commentsActivated;
 
     public function __construct(
@@ -26,14 +32,20 @@ class CommentService
         DbService $dbService,
         AclService $aclService,
         EventDispatcher $eventDispatcher,
+        Mailer $mailer,
         PageManager $pageManager,
-        ParameterBagInterface $params
+        ParameterBagInterface $params,
+        TemplateEngine $templateEngine,
+        UserManager $userManager
     ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->aclService = $aclService;
         $this->eventDispatcher = $eventDispatcher;
+        $this->mailer = $mailer;
         $this->pageManager = $pageManager;
+        $this->templateEngine = $templateEngine;
+        $this->userManager = $userManager;
         $this->params = $params;
         $this->pagesWhereCommentWereRendered = [];
         $this->commmentsActivated = $this->params->get('comments_activated');
@@ -115,8 +127,7 @@ class CommentService
                     }
                     $com['reponses'] = $this->getCommentList($comment['tag'], false);
                     $errors = $this->eventDispatcher->dispatch($newComment ? 'comments.create' : 'comments.modify', [
-                            'comment' => $comment,
-                            'formattedComment' => $com
+                            'comment' => $com,
                         ]);
                     return [
                         'code' => 200,
@@ -334,6 +345,32 @@ class CommentService
     public function sendEmailAfterCreate(Event $event)
     {
         $data = $event->getData();
+        if (!empty($data['comment']['commentOn'])) {
+            $parentTag = $data['comment']['commentOn'];
+            $loggedUser = $this->userManager->getLoggedUser();
+            $parentPage = $this->getParentPage($data['comment']['tag']);
+            if (!empty($loggedUser)) {
+                $parentComment = $this->pageManager->getOne($parentTag);
+                if (!empty($parentComment['owner'])) {
+                    $owner = $this->userManager->getOneByName($parentComment['owner']);
+                    if (!empty($owner) && !empty($loggedUser) && $owner['email'] != $loggedUser['email']) {
+                        $baseUrl = $this->mailer->getBaseUrl();
+                        $formattedData = [
+                            'baseUrl' => $baseUrl,
+                            'parentPage' => $parentPage,
+                            'comment' => $data['comment'],
+                            'parentComment' => $parentComment,
+                        ];
+                        $this->mailer->sendEmailFromAdmin(
+                            $owner['email'],
+                            $this->templateEngine->render("@core/comments/notify-email-subject.twig", $formattedData),
+                            $this->templateEngine->render("@core/comments/notify-email-text.twig", $formattedData),
+                            $this->templateEngine->render("@core/comments/notify-email-html.twig", $formattedData)
+                        );
+                    }
+                }
+            }
+        }
     }
 
     public function sendEmailAfterModify(Event $event)
@@ -344,5 +381,29 @@ class CommentService
     public function sendEmailAfterDelete(Event $event)
     {
         $data = $event->getData();
+    }
+
+    /**
+     * retrieve parent page of the current tag
+     * RECURSIVE
+     * @param string $commentTag
+     * @param array $alreadyFoundTags
+     * @return null|array $page, null is not parent found
+     */
+    protected function getParentPage(string $commentTag, array $alreadyFoundTags = []): ?array
+    {
+        $page = $this->pageManager->getOne($commentTag);
+        if (empty($page)) {
+            return null;
+        } elseif (empty($page['comment_on'])) {
+            return $page;
+        } elseif (in_array($page['comment_on'], $alreadyFoundTags)) {
+            // prevent infinite loop
+            return null;
+        } else {
+            $foundTags = $alreadyFoundTags;
+            $foundTags[] = $commentTag;
+            return $this->getParentPage($page['comment_on'], $foundTags);
+        }
     }
 }
