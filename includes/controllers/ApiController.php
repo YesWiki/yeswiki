@@ -250,7 +250,7 @@ class ApiController extends YesWikiController
     public function postComment()
     {
         $commentService = $this->getService(CommentService::class);
-        $result = $commentService->addCommentIfAutorized($_POST);
+        $result = $commentService->addCommentIfAuthorized($_POST);
         return new ApiResponse($result, $result['code']);
     }
 
@@ -260,7 +260,7 @@ class ApiController extends YesWikiController
     public function editComment($tag)
     {
         $commentService = $this->getService(CommentService::class);
-        $result = $commentService->addCommentIfAutorized($_POST, $tag);
+        $result = $commentService->addCommentIfAuthorized($_POST, $tag);
         return new ApiResponse($result, $result['code']);
     }
 
@@ -270,15 +270,9 @@ class ApiController extends YesWikiController
     public function deleteComment($tag)
     {
         if ($this->wiki->UserIsOwner($tag) || $this->wiki->UserIsAdmin()) {
-            $pageManager = $this->getService(PageManager::class);
             $commentService = $this->getService(CommentService::class);
-            // delete children comments
-            $comments = $commentService->loadComments($tag);
-            foreach ($comments as $com) {
-                $pageManager->deleteOrphaned($com['tag']);
-            }
-            $pageManager->deleteOrphaned($tag);
-            return new ApiResponse(['success' => _t('COMMENT_REMOVED')], 200);
+            $errors = $commentService->delete($tag);
+            return new ApiResponse(['success' => _t('COMMENT_REMOVED')]+$errors, 200);
         } else {
             return new ApiResponse(['error' => _t('NOT_AUTORIZED_TO_REMOVE_COMMENT')], 403);
         }

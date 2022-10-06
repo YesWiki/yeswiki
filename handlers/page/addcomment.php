@@ -8,7 +8,7 @@ if (!defined("WIKINI_VERSION")) {
 use YesWiki\Core\Service\CommentService;
 
 $commentService = $this->services->get(CommentService::class);
-$result = $commentService->addCommentIfAutorized($_POST);
+$result = $commentService->addCommentIfAuthorized($_POST);
 
 if (!empty($result['error'])) {
     $this->SetMessage($result['error']);

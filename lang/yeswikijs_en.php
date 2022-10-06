@@ -82,7 +82,7 @@ return [
 
     "YESWIKIMODAL_EDIT_MSG" => "Edit the page",
     "EDIT_OUPS_MSG" => "INdeed, I would not double-click...",
-    
+
     'COMMENT_NOT_DELETED' => 'Comment {comment} was not deleted.',
     'COMMENT_DELETED' => 'Comment deleted.',
 
