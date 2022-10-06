@@ -588,6 +588,22 @@ return [
     // templates/multidelete-macro.twig
     // 'NUMBER_OF_ELEMENTS' => 'Nombre d\'éléments sélectionnés',
 
+    // Comments
+    'COMMENT_EMPTY_NOT_SAVED' => 'Lege opmerking, geen back-up.',
+    'COMMENT_LOGIN' => 'Log in om te reageren',
+    'COMMENT_NOT_ENOUGH_RIGHTS' => 'U hebt niet voldoende rechten om commentaar te geven.',
+    'COMMENT_PUBLISHED' => 'Reactie gepubliceerd!',
+    'COMMENT_REMOVED' => 'De opmerking is verwijderd.',
+    'COMMENTS_CURRENTLY_CLOSED' => 'Het toevoegen van opmerkingen op deze pagina is momenteel uitgeschakeld',
+    'USER_MUST_BE_LOGGED_TO_COMMENT' => 'Je moet inloggen om een reactie te plaatsen.',
+    'USER_NOT_ALLOWED_TO_COMMENT' => 'Je zit niet in een groep die reacties mag achterlaten.',
+    'NOT_AUTORIZED_TO_REMOVE_COMMENT' => 'Het is niet toegestaan om deze opmerking te verwijderen.',
+    'COMMENT_TAG' => 'Bladzijde',
+    'COMMENT_DATE' => 'Datum',
+    'COMMENT_USER' => 'Auteur',
+    'COMMENT_CONTENT' => 'Commentaar',
+    'COMMENT_ON_PAGE' => 'Bovenliggende pagina',
+
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',
     // 'REACTION_LIKE' => 'J\'approuve',

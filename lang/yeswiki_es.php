@@ -591,6 +591,22 @@ return [
     // templates/multidelete-macro.twig
     // 'NUMBER_OF_ELEMENTS' => 'Nombre d\'éléments sélectionnés',
 
+    // Comments
+    'COMMENT_EMPTY_NOT_SAVED' => 'Comentario vacío, sin respaldo.',
+    'COMMENT_LOGIN' => 'Iniciar sesión para comentar',
+    'COMMENT_NOT_ENOUGH_RIGHTS' => 'No tiene suficientes derechos para comentar.',
+    'COMMENT_PUBLISHED' => '¡Comentario publicado!',
+    'COMMENT_REMOVED' => 'El comentario ha sido eliminado.',
+    'COMMENTS_CURRENTLY_CLOSED' => 'Agregar comentarios en esta página está deshabilitado actualmente',
+    'USER_MUST_BE_LOGGED_TO_COMMENT' => 'Debe iniciar sesión para publicar un comentario.',
+    'USER_NOT_ALLOWED_TO_COMMENT' => 'No estás en un grupo al que se le permita dejar comentarios.',
+    'NOT_AUTORIZED_TO_REMOVE_COMMENT' => 'No se le permite eliminar este comentario.',
+    'COMMENT_TAG' => 'Página',
+    'COMMENT_DATE' => 'Fecha',
+    'COMMENT_USER' => 'Autor·a',
+    'COMMENT_CONTENT' => 'Comentario',
+    'COMMENT_ON_PAGE' => 'Página pariente',
+
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',
     // 'REACTION_LIKE' => 'J\'approuve',

@@ -612,7 +612,7 @@ return [
     'NOT_AUTORIZED_TO_REMOVE_COMMENT' => 'Vous n\'êtes pas autorisé à supprimer ce commentaire.',
     'COMMENT_TAG' => 'Page',
     'COMMENT_DATE' => 'Date',
-    'COMMENT_USER' => 'Auteur.ice',
+    'COMMENT_USER' => 'Auteur·ice',
     'COMMENT_CONTENT' => 'Commentaire',
     'COMMENT_ON_PAGE' => 'Page parente',
 

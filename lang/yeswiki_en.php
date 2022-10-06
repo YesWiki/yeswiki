@@ -583,6 +583,22 @@ return [
     // templates/multidelete-macro.twig
     'NUMBER_OF_ELEMENTS' => 'Number of selected items',
 
+    // Comments
+    'COMMENT_EMPTY_NOT_SAVED' => 'Empty comment, no backup.',
+    'COMMENT_LOGIN' => 'Log in to comment',
+    'COMMENT_NOT_ENOUGH_RIGHTS' => 'You do not have sufficient rights to comment.',
+    'COMMENT_PUBLISHED' => 'Comment published!',
+    'COMMENT_REMOVED' => 'The comment has been deleted.',
+    'COMMENTS_CURRENTLY_CLOSED' => 'Adding comments on this page is currently disabled',
+    'USER_MUST_BE_LOGGED_TO_COMMENT' => 'You must log in to post a comment.',
+    'USER_NOT_ALLOWED_TO_COMMENT' => 'You are not in a group that is allowed to leave comments.',
+    'NOT_AUTORIZED_TO_REMOVE_COMMENT' => 'You are not allowed to delete this comment.',
+    'COMMENT_TAG' => 'Page',
+    'COMMENT_DATE' => 'Date',
+    'COMMENT_USER' => 'Author',
+    'COMMENT_CONTENT' => 'Comment',
+    'COMMENT_ON_PAGE' => 'Parent page',
+
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',
     // 'REACTION_LIKE' => 'J\'approuve',
