@@ -600,6 +600,12 @@ return [
     'COMMENT_CONTENT' => 'Comment',
     'COMMENT_ON_PAGE' => 'Parent page',
     'COMMENT_CONFIRM_DELETE' => 'Are you sure to delete the comment ? (no return possible)',
+    
+    // templates/comments/notify-email-*.twig
+    // 'COMMENT_NEW_COMMENT' => 'Nouveau commentaire sur la page %{tag}',
+    // 'COMMENT_NEW_COMMENT_ANSWER' => 'Nouvelle réponse à votre commentaire sur la page %{tag}',
+    // 'COMMENT_NEW_COMMENT_MESSAGE' => 'Un nouveau commentaire a été écrit par %{user} sur la page %{tag} sur le site [%{site}].',
+    // 'COMMENT_NEW_COMMENT_ANSWER_MESSAGE' => 'Une nouvelle réponse a été écrite par %{user} à votre commentaire sur la page %{tag} sur le site [%{site}].',
 
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',

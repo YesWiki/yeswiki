@@ -211,7 +211,7 @@ class Mailer
         );
     }
 
-    private function getBaseUrl(): string
+    public function getBaseUrl(): string
     {
         return preg_replace('/(\\/wakka\\.php\\?wiki=|\\/\\?wiki=|\\/\\?|\\/)$/m', '', $this->params->get('base_url')) ;
     }
