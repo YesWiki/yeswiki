@@ -48,7 +48,7 @@ class CommentService
         $this->userManager = $userManager;
         $this->params = $params;
         $this->pagesWhereCommentWereRendered = [];
-        $this->commmentsActivated = $this->params->get('comments_activated');
+        $this->commentsActivated = $this->params->get('comments_activated');
         $this->eventDispatcher->addListener('comments.create', [$this,'sendEmailAfterCreate']);
         $this->eventDispatcher->addListener('comments.modify', [$this,'sendEmailAfterModify']);
         $this->eventDispatcher->addListener('comments.delete', [$this,'sendEmailAfterDelete']);
@@ -253,7 +253,7 @@ class CommentService
 
     public function renderCommentsForPage($tag, $showOnlyOnce = true)
     {
-        if (!$this->commmentsActivated) {
+        if (!$this->commentsActivated) {
             return '';
         }
         $output = '';
