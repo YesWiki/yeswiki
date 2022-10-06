@@ -84,6 +84,9 @@ return [
     "YESWIKIMODAL_EDIT_MSG" => "Éditer la page",
     "EDIT_OUPS_MSG" => "En fait, je ne voulais pas double-cliquer...",
 
+    'COMMENT_NOT_DELETED' => 'Le commentaire {comment} n\'a pas été supprimé.',
+    'COMMENT_DELETED' => 'Commentaire supprimé.',
+
     // reactions
     "REACTION_NOT_POSSIBLE_TO_ADD_REACTION" => "Impossible d'ajouter la réaction en raison de l'erreur suivante : {error}!",
     "REACTION_NOT_POSSIBLE_TO_DELETE_REACTION" => "Impossible de supprimer la réaction en raison de l'erreur suivante : {error}!",

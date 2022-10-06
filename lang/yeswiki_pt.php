@@ -594,6 +594,7 @@ return [
     'COMMENT_NOT_ENOUGH_RIGHTS' => 'Não tem direitos suficientes para comentar.',
     'COMMENT_PUBLISHED' => 'Comentário publicado!',
     'COMMENT_REMOVED' => 'O comentário foi apagado.',
+    // 'COMMENT_DELETE' => 'Supprimer un commentaire',
     'COMMENTS_CURRENTLY_CLOSED' => 'Adicionar comentários nesta página está atualmente desativado',
     'USER_MUST_BE_LOGGED_TO_COMMENT' => 'Tem de fazer login para publicar um comentário.',
     'USER_NOT_ALLOWED_TO_COMMENT' => 'Não está num grupo que pode deixar comentários.',
@@ -603,6 +604,7 @@ return [
     'COMMENT_USER' => 'Autor·a',
     'COMMENT_CONTENT' => 'Comentário',
     'COMMENT_ON_PAGE' => 'Página dos pais',
+    // 'COMMENT_CONFIRM_DELETE' => 'Voulez-vous supprimer le commentaire ? (action définitive)',
 
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',

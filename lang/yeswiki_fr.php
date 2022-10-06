@@ -606,6 +606,7 @@ return [
     'COMMENT_NOT_ENOUGH_RIGHTS' => 'Vous n\'avez pas les droits suffisants pour commenter.',
     'COMMENT_PUBLISHED' => 'Commentaire publié !',
     'COMMENT_REMOVED' => 'Le commentaire a été supprimé.',
+    'COMMENT_DELETE' => 'Supprimer un commentaire',
     'COMMENTS_CURRENTLY_CLOSED' => 'L\'ajout de commentaires sur cette page est présentement désactivé',
     'USER_MUST_BE_LOGGED_TO_COMMENT' => 'Vous devez vous identifier pour pouvoir publier un commentaire.',
     'USER_NOT_ALLOWED_TO_COMMENT' => 'Vous n\'êtes pas dans un groupe autorisé à laisser des commentaires.',
@@ -615,6 +616,7 @@ return [
     'COMMENT_USER' => 'Auteur·ice',
     'COMMENT_CONTENT' => 'Commentaire',
     'COMMENT_ON_PAGE' => 'Page parente',
+    'COMMENT_CONFIRM_DELETE' => 'Voulez-vous supprimer le commentaire ? (action définitive)',
 
     // reactions
     'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',

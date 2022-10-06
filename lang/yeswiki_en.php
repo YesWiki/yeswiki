@@ -589,6 +589,7 @@ return [
     'COMMENT_NOT_ENOUGH_RIGHTS' => 'You do not have sufficient rights to comment.',
     'COMMENT_PUBLISHED' => 'Comment published!',
     'COMMENT_REMOVED' => 'The comment has been deleted.',
+    'COMMENT_DELETE' => 'Delete comment',
     'COMMENTS_CURRENTLY_CLOSED' => 'Adding comments on this page is currently disabled',
     'USER_MUST_BE_LOGGED_TO_COMMENT' => 'You must log in to post a comment.',
     'USER_NOT_ALLOWED_TO_COMMENT' => 'You are not in a group that is allowed to leave comments.',
@@ -598,6 +599,7 @@ return [
     'COMMENT_USER' => 'Author',
     'COMMENT_CONTENT' => 'Comment',
     'COMMENT_ON_PAGE' => 'Parent page',
+    'COMMENT_CONFIRM_DELETE' => 'Are you sure to delete the comment ? (no return possible)',
 
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',

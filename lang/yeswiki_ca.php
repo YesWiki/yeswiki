@@ -596,6 +596,7 @@ return [
     'COMMENT_NOT_ENOUGH_RIGHTS' => 'No teniu prou drets de comentari.',
     'COMMENT_PUBLISHED' => 'Comentari publicat!',
     'COMMENT_REMOVED' => 'El comentari ha estat eliminat.',
+    // 'COMMENT_DELETE' => 'Supprimer un commentaire',
     'COMMENTS_CURRENTLY_CLOSED' => 'L\'addició de comentaris en aquesta pàgina està inhabilitada actualment',
     'USER_MUST_BE_LOGGED_TO_COMMENT' => 'Heu d\'iniciar la sessió per publicar un comentari.',
     'USER_NOT_ALLOWED_TO_COMMENT' => 'No esteu en un grup que tingui permís per deixar comentaris.',
@@ -605,6 +606,7 @@ return [
     'COMMENT_USER' => 'Autor',
     'COMMENT_CONTENT' => 'Comentari',
     'COMMENT_ON_PAGE' => 'Pàgina pare',
+    // 'COMMENT_CONFIRM_DELETE' => 'Voulez-vous supprimer le commentaire ? (action définitive)',
 
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',
