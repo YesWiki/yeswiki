@@ -15,6 +15,7 @@ use Symfony\Component\Routing\Loader\AnnotationDirectoryLoader;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Core\Service\YesWikiEventCompilerPass;
 
 // TODO put elsewhere
 // https://github.com/sensiolabs/SensioFrameworkExtraBundle/blob/master/src/Routing/AnnotatedRouteControllerLoader.php
@@ -272,6 +273,9 @@ class Init
     public function initCoreServices($wiki)
     {
         $containerBuilder = new ContainerBuilder();
+
+        // register the compiler Pass to activate events
+        $containerBuilder->addCompilerPass(new YesWikiEventCompilerPass());
 
         // Set main YesWiki object as a parameter
         // TODO remove this when the refactoring will be done

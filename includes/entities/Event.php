@@ -2,7 +2,9 @@
 
 namespace YesWiki\Core\Entity;
 
-class Event
+use Symfony\Contracts\EventDispatcher\Event as SymfonyEvent;
+
+class Event extends SymfonyEvent
 {
     protected $data ;
 

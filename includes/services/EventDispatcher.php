@@ -7,26 +7,15 @@ use Throwable;
 use YesWiki\Core\Entity\Event;
 use YesWiki\Wiki;
 
-class EventDispatcher
+class EventDispatcher extends SymfonyEventDispatcher
 {
-    protected $eventDispatcher;
     protected $wiki;
 
     public function __construct(
         Wiki $wiki
     ) {
-        $this->eventDispatcher = new SymfonyEventDispatcher();
+        parent::__construct();
         $this->wiki = $wiki;
-    }
-
-    /**
-     * @param string $eventName
-     * @param $callback
-     * @param int $priority
-     */
-    public function addListener(string $eventName, $callback, int $priority = 0)
-    {
-        $this->eventDispatcher->addListener($eventName, $callback, $priority);
     }
 
     /**
@@ -34,10 +23,10 @@ class EventDispatcher
      * @param array $data
      * @param array $errors
      */
-    public function dispatch(string $eventName, array $data = []): array
+    public function yesWikiDispatch(string $eventName, array $data = []): array
     {
         try {
-            $this->eventDispatcher->dispatch(new Event($data), $eventName);
+            $this->dispatch(new Event($data), $eventName);
             return [];
         } catch (Throwable $th) {
             $errors = ($this->wiki->userIsAdmin()) ? ['exception' => [
@@ -45,7 +34,7 @@ class EventDispatcher
                 'file' => $th->getFile(),
                 'line' => $th->getLine(),
                 'trace' => $th->getTraceAsString()
-            ]]: [];
+            ]] : [];
             return $errors;
         }
     }
