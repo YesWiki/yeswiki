@@ -2,15 +2,20 @@
 
 namespace YesWiki\Core\Service;
 
+use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Wiki;
+use YesWiki\Core\Entity\Event;
+use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Security\Service\HashCashService;
+use YesWiki\Wiki;
 
 class CommentService
 {
     protected $wiki;
-    protected $dbService;
     protected $aclService;
+    protected $dbService;
+    protected $eventDispatcher;
     protected $pageManager;
     protected $params;
     protected $pagesWhereCommentWereRendered;
@@ -20,19 +25,24 @@ class CommentService
         Wiki $wiki,
         DbService $dbService,
         AclService $aclService,
+        EventDispatcher $eventDispatcher,
         PageManager $pageManager,
         ParameterBagInterface $params
     ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->aclService = $aclService;
+        $this->eventDispatcher = $eventDispatcher;
         $this->pageManager = $pageManager;
         $this->params = $params;
         $this->pagesWhereCommentWereRendered = [];
         $this->commmentsActivated = $this->params->get('comments_activated');
+        $this->eventDispatcher->addListener('comments.create', [$this,'sendEmailAfterCreate']);
+        $this->eventDispatcher->addListener('comments.modify', [$this,'sendEmailAfterModify']);
+        $this->eventDispatcher->addListener('comments.delete', [$this,'sendEmailAfterDelete']);
     }
 
-    public function addCommentIfAutorized($content, $idComment = '')
+    public function addCommentIfAuthorized($content, $idComment = '')
     {
         if (!$this->wiki->getUser()) {
             return [
@@ -104,11 +114,15 @@ class CommentService
                         //$this->wiki->href('deletepage', $comment['tag']);
                     }
                     $com['reponses'] = $this->getCommentList($comment['tag'], false);
+                    $errors = $this->eventDispatcher->dispatch($newComment ? 'comments.create' : 'comments.modify', [
+                            'comment' => $comment,
+                            'formattedComment' => $com
+                        ]);
                     return [
                         'code' => 200,
                         'success' => _t('COMMENT_PUBLISHED'),
                         'html' => $this->wiki->render("@core/comment.twig", ['comment' => $com])
-                    ];
+                    ] + $errors;
                 }
             } else {
                 return [
@@ -117,6 +131,27 @@ class CommentService
                 ];
             }
         }
+    }
+
+    /**
+     * delete a comment
+     * @param string $commentTag
+     * @param array $errors
+     */
+    public function delete(string $commentTag): array
+    {
+        // delete children comments
+        $comments = $this->loadComments($commentTag);
+        foreach ($comments as $com) {
+            $this->pageManager->deleteOrphaned($com['tag']);
+        }
+        $comment = $this->pageManager->getOne($commentTag);
+        $this->pageManager->deleteOrphaned($commentTag);
+        $errors = $this->eventDispatcher->dispatch('comments.delete', [
+                'comment' => $comment,
+                'associatedComments' => $comments,
+            ]);
+        return $errors;
     }
 
     /**
@@ -294,5 +329,20 @@ class CommentService
         }  //convert each color to hex and append to output
 
         return '#'.$output;
+    }
+
+    public function sendEmailAfterCreate(Event $event)
+    {
+        $data = $event->getData();
+    }
+
+    public function sendEmailAfterModify(Event $event)
+    {
+        $data = $event->getData();
+    }
+
+    public function sendEmailAfterDelete(Event $event)
+    {
+        $data = $event->getData();
     }
 }
