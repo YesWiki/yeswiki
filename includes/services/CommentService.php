@@ -4,6 +4,8 @@ namespace YesWiki\Core\Service;
 
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpKernel\KernelEvents;
 use YesWiki\Core\Entity\Event;
 use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Core\Service\Mailer;
@@ -13,7 +15,7 @@ use YesWiki\Core\Service\UserManager;
 use YesWiki\Security\Service\HashCashService;
 use YesWiki\Wiki;
 
-class CommentService
+class CommentService implements EventSubscriberInterface
 {
     protected $wiki;
     protected $aclService;
@@ -49,9 +51,15 @@ class CommentService
         $this->params = $params;
         $this->pagesWhereCommentWereRendered = [];
         $this->commentsActivated = $this->params->get('comments_activated');
-        $this->eventDispatcher->addListener('comments.create', [$this,'sendEmailAfterCreate']);
-        $this->eventDispatcher->addListener('comments.modify', [$this,'sendEmailAfterModify']);
-        $this->eventDispatcher->addListener('comments.delete', [$this,'sendEmailAfterDelete']);
+    }
+
+    public static function getSubscribedEvents()
+    {
+        return [
+            'comments.create' => 'sendEmailAfterCreate',
+            'comments.modify' => 'sendEmailAfterModify',
+            'comments.delete' => 'sendEmailAfterDelete'
+        ];
     }
 
     public function addCommentIfAuthorized($content, $idComment = '')
@@ -125,7 +133,7 @@ class CommentService
                     }
                     $com['reponses'] = $this->getCommentList($comment['tag'], false);
                     $com['parentPage'] = $this->getParentPage($comment['tag']);
-                    $errors = $this->eventDispatcher->dispatch($newComment ? 'comments.create' : 'comments.modify', [
+                    $errors = $this->eventDispatcher->yesWikiDispatch($newComment ? 'comments.create' : 'comments.modify', [
                             'comment' => $com,
                         ]);
                     return [
@@ -158,7 +166,7 @@ class CommentService
         $comment = $this->pageManager->getOne($commentTag);
         $parentPage = $this->getParentPage($commentTag);
         $this->pageManager->deleteOrphaned($commentTag);
-        $errors = $this->eventDispatcher->dispatch('comments.delete', [
+        $errors = $this->eventDispatcher->yesWikiDispatch('comments.delete', [
                 'comment' => $comment,
                 'associatedComments' => $comments,
                 'parentPage' => $parentPage
