@@ -1,25 +1,7 @@
 Prise en main
 ============
 
-> **Pour décrouvrir les fonctionalités de base d'un wiki**
-> * Quelques trucs si l'informatique vous fait peur Pour moi, page inutile
->
-> **Ajouter et modifier des contenus**
->
-> * Éditer une page (premiers)
-> * Mettre en forme le texte (premiers)
-> * Créer une nouvelle page (premiers)
-> * Inclure une page dans une autre (premiers)
-> * Créer un lien (premiers)
-> * Joindre un fichier : image, son ... (premiers)
-> * Restaurer l'ancienne version d'une page (premiers)
->
-> **Agencer du contenu**
->
-> * Éditer et modifier un menu (premiers)
-> * Composition d'une page (premiers)
-> * Modifier le menu du haut (premiers)
-> * Modifier le bandeau (pageheader) (premiers)
+> Tout ce que vous devez savoir pour bien débuter avec YesWiki !
 
 Editer une page
 ---------------
@@ -37,24 +19,21 @@ Pour passer en mode édition, trois solutions :
 
 ### Syntaxe YesWiki
 
-Actuellement, YesWiki utilise des balises plus ou moins complexes pour les styles, les actions et autre astuces de mise en forme.
-Ainsi, un texte en **gras** s'affiche ```**```**gras**```**```
+YesWiki utilise des balises plus ou moins complexes pour les styles, les actions et autre astuces de mise en forme.
+Ainsi, un texte en **gras** s'affiche `**`**gras**`**`
  - pour supprimer les balises, il faut les supprimer avant **ET** après l'élément impacté
- - Pour des balises plus complexes style ```{{section bgcolor="var(--primary-color)" class="shape-rounded" pattern="border-solid" }}Texte encadré{{end elem="section"}}``` (oui, je sais, ça fait peur au début) il faut bien supprimer tout ce qui est avant **ET** après _Texte encadré_, Le plus simple.
+ - Pour des balises plus complexes comme `{{section bgcolor="var(--primary-color)" class="shape-rounded" pattern="border-solid" }}Texte encadré{{end elem="section"}}` (oui, je sais, ça fait peur au début) il faut bien supprimer tout ce qui est avant **ET** après _Texte encadré_.
 
 Deux solutions en cas de soucis :
  - revenir sur une version précédente de la page
  - supprimer tous les codes de la partie impactée et remettre les choses en place calmement
 
-!> Help, tout le texte de ma page est en gras ou en italique, c'est souvent une balise qui est ouverte et n'est pas fermée, style ```**texte en gras```
+> Exemple: si tout le texte de ma page est en gras ou en italique, c'est souvent une balise qui est ouverte et n'est pas fermée, par exemple : ```**texte en gras```
 
 ### Mise en forme
 
-La plupart des mises en forme standard (gras, encadré, saut de ligne...) sont accessible via les boutons de l'éditeur. Voici quelques mise en formes supplémentaires
-
-!> TODO: reprendre tous les exemples de l'aide de YesWiki ici (ReglesDeFormatage), et modifier cette page pour qu'elle pointe vers cette nouvelle doc
-
-!> TODO: est ce que la partie composant buttons + mise en forme ne pourrait pas venir ici?
+La plupart des mises en forme standard (gras, encadré, saut de ligne...) sont accessible via les boutons de l'éditeur. Certaines mise en forme sont également accessibles dans le menu `Composants`.
+Voici quelques mise en formes supplémentaires
 
 #### Listes
 ```yeswiki
@@ -86,23 +65,35 @@ Si vous déposez du HTML dans la page wiki, il faut l'entourer de `""` pour qu'i
 ```yeswiki
 ""<b>Ceci est du HTML</b>""
 ```
-#### Créer une ancre, un lien qui envoie sur une partie de votre page
-Le code suivant permet de créer le lien qui ira vers votre paragraphe : ```<a href="#ancre1">Aller vers le paragraphe cible</a>```
-Et cette partie de code sera à placer juste au dessus du paragraphe cible : ```<div id="ancre1"></div>```
+#### Créer une ancre: un lien qui envoie sur une partie de votre page
+```yeswiki
+""<a href="#ancre1">Lien pour aller vers le paragraphe cible""</a>
+
+...
+
+""<div id="ancre1"></div>""
+Paragraphe vers lequel on arrivera en cliquant sur le lien
+```
 
 #### Mettre du texte en couleur
-```""<span style="color:#votrecodecouleur;">votre texte à colorer</span>""```
- - Quelques codes couleur => mauve : #990066 / vert : #99cc33 / rouge : #cc3333 / orange : #ff9900 / bleu : #006699
- - [Voir les codes hexa des couleurs](http://fr.wikipedia.org/wiki/Liste_de_couleurs http://fr.wikipedia.org/wiki/Liste_de_couleurs)
+```yeswiki
+""<span style="color:#votrecodecouleur;">votre texte à colorer</span>""
+```
+De nombreux site vous aideront à trouver le code couleur, [comme celui-ci](https://rgbacolorpicker.com/hex-color-picker)
+
 
 #### Utiliser des icônes
-##### Emoji
-Il est possible de copier des icônes dans des sites sources puis de les coller dans votre wiki. (Par exemple sur ce site) [http://getemoji.com]
-##### Font Awesome
-```""<i class="fas fa-ambulance"></i>""``` et sur le site de (Font awesome)[https://fontawesome.com/v5/search] chercher icone à votre pied et remplacer _ambulance_ par le nom de votre icone
+
+Il est possible de copier des Emoji depuis des sites sources puis de les coller dans votre wiki. [Par exemple sur ce site](http://getemoji.com)
+
+Les icones du site de [Font awesome](https://fontawesome.com/v5/search?o=r&m=free) sont également accessibles. Il vous suffit de mettre le code donné sur le site, par exemple
+
+```yeswiki
+""<i class="fas fa-yin-yang"></i>""
+```
 
 #### Barre de progression
-```yeswiki
+```yeswiki preview=120
 [10%]
 [50%]
 [85%]
@@ -129,26 +120,32 @@ Dans YesWiki chaque modification d'une page est sauvegardée dans un **historiqu
 
 **Pour y accéder** il suffit de cliquer sur le lien en bas de page nommé : "Dernière édition : _jour_._mois_._année_"
 
-> Attention: cet accès est possible pour les personnes qui ont les droits en écriture sur la page concernée, c'est-à-dire tout le monde par défaut, mais les administrateurs du site peuvent faire un autre choix.
+!> Attention: cet accès est possible pour les personnes qui ont les droits en écriture sur la page concernée, c'est-à-dire tout le monde par défaut, mais les administrateurs du site peuvent faire un autre choix.
 
 
-Insérer un média (images/pdf/...)
+Insérer et gérer les médias (images, pdf...)
 ----------------------------------
 
-!> TODO Ne pas décrire tout ce qui est accessible avec l'interface.
-!> Décrire la gestion des différents formats
-!> Décrire comment faire pour utiliser une image d'une page dans une autre
+Lors de l'édition d'une page, il vous est facile de téléverser différents type de documents grâce au bouton "Fichier". Cela créera un bout de code qui ressemble à cela
 
+```
+{{attach file="mon_image.png" desc="Une jolie image" }}
+```
 
-En plus du texte, on peut vouloir ajouter des images, des documents à télécharger, voire des vidéos ou des fichiers audio. Avec YesWiki ceci est très facile ! Voici comment faire.
+> Pour les vidéos, il est préférable de les héberger sur un site spécifique puis de les insérer via le composant "Vidéo intégrée"
+### Réutiliser le fichier sur une autre page
 
-Dans la page en mode édition, cliquer sur le bouton "Fichier" permet de choisir un fichier qui se trouve sur votre ordinateur. (listes fichiers affichables)  (svg, png, gif, jpg, bmp...) (.doc, .pdf, .xls, .odt, .txt...) mp3 flv
-=> ce qui sera interprété et ce qui fera un lien de téléchargement
+Chaque fichier sera lié à la page dans laquelle il a été téléversé. Si vous copier le code dans une autre page cela ne fonctionnera pas. Il faudra préfixer le nom du fichier par le nom de la page, par exemple
 
-En fonction du type de fichier à insérer, YesWiki propose des interfaces différentes, mais le principe reste le même.
+```
+{{attach file="PagePrincipale/mon_image.png" desc="Une jolie image" }}
+```
 
-> Astuce: pour les fichiers vidéos, ou interactif type pad -> mettre lien vers une aure section dédiée
+Si le fichier n'est pas trouvé, un bouton de téléversement sera affiché à la place
 
+### Gérer les fichiers attachés à une page
+
+Ajoutez `/filemanager` à l'URL de votre page pour voir la liste des fichiers qui ont été téléversés. Par exemple https://yeswiki.net/?AccueiL/filemanager
 
 Insérer des éléments d'un autre site (iframe)
 ---------------------------------------
@@ -195,7 +192,29 @@ Le paramètre `frameborder` permet de **gérer la bordure** noire du cadre (`1` 
 ```
 <iframe src="..." frameboder="0"></iframe>
 ```
-  
+
+Les Handlers : accéder à certains fonctionalités via l'URL
+-------------
+
+Un handler est une URL spéciale qui permet de modifier la façon d'afficher une page. On l'active en ajoutant à la fin de l'adresse URL, le signe **/** suivi du nom du handler. Exemple avec le handler `raw`: https://yeswiki.net/?AccueiL/raw
+
+> Certains handler permettent juste d'accéder à une fonctionalité à laquelle on peut accéder via des boutons de l'interface. C'est le cas pour `edit`, `revisions` ou `share`. Lorsque vous naviguez dans votre wiki, soyez attentif aux changement d'URL pour connaitre ces raccourcis
+
+### Liste des handlers
+
+* **/edit** : pour passer en mode Édition
+* **/revisions**  : pour voir les versions de l'historique
+* **/filemanager** : pour accéder à la liste des fichiers attachés à cette page
+* **/slide_show**  : pour transformer le texte en diaporama
+* **/diaporama**  : idem slide_show en un peu différent
+* **/mail**  : envoie la page en mailing
+* **/raw** : affiche le code wiki non formaté de la page
+* **/deletepage**  : si vous êtes propriétaire de la page, vous pouvez la supprimer
+* **/claim**  : si la page n'a pas de propriétaire, vous pouvez vous l'approprier
+* **/acls**  : si vous êtes propriétaire de la page, vous pouvez gérer les droits
+* **/share**  : pour afficher des possibilités de partage sur les réseaux sociaux, et pour générer un code embed (iframe) qui permettra d'afficher la page sur un site externe.
+* **&amp;debug** : permet d'afficher en bas de page toutes les actions effectuées au niveau informatique, permet de repérer les bugs, causes de plantage...
+* **/editiframe**  : permet d'ouvrir la page en mode édition mais en cachant les autres pages du squelette (utile quand une image ou un spam sur le bandeau empêche de voir le contenu de la page à modifier ou dans le cas d'un wiki intégré en iframe)
 
 Les composants
 ---------------
