@@ -1,0 +1,49 @@
+{{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
+{{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
+
+{# order on signuptime desc #}
+<table class="table table-striped" data-order='[[ 0, "desc" ]]'>
+  <thead>
+    <tr>
+      <th>{{ _t('COMMENT_DATE') }}</th>
+      <th>{{ _t('COMMENT_CONTENT') }}</th>
+      <th>{{ _t('COMMENT_USER') }}</th>
+      <th>{{ _t('COMMENT_TAG') }}</th>
+      <th>{{ _t('COMMENT_ON_PAGE') }}</th>
+      {% if isAdmin %}
+      <th>{{ _t('ACTION') }}</th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for com in comments %}
+      <tr>
+        <td>{{ com.time }}</td>
+        <td>{{ format(com.body)|raw  }}</td>
+        <td>{{ com.owner }}</td>
+        <td>{{ com.tag }}</td>
+        <td>{{ com.comment_on }}</td>
+        {% if isAdmin %}
+        <td>
+            <a href="{{ url({tag:'ParametresUtilisateur',params:{user:com.tag,from:tag}}) }}"
+              class="btn btn-sm btn-warning" role="button">
+              {{ _t('MODIFY') }}
+            </a>
+            <form action="{{ url({handler:''}) }}" method="post">
+              <input type="hidden" name="action" value="deletecomment" />
+              <input type="hidden" name="tag" value="{{ com.tag }}" />
+              <input
+                type="hidden"
+                name="csrf-token-delete" 
+                value="{{ csrfToken({id:"action\\commenttable\\deletecomment\\#{com.tag}",refresh:true})|e('html_attr') }}">
+              <input class="btn btn-sm btn-danger" 
+                type="submit" 
+                onclick="return confirm(\'{{ _t('COMMMENT_CONFIRM_DELETE') }}\');" 
+                {# TODO use yeswikijs for COMMMENT_CONFIRM_DELETE  #}
+                value="{{ _t('DELETE') }}" />
+            </form>
+          {% endif %}
+        </td>
+    {% endfor %}
+  </tbody>
+</table>
