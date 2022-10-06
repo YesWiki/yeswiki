@@ -635,6 +635,11 @@ return [
     'USER_MUST_BE_LOGGED_TO_COMMENT' => 'Vous devez vous identifier pour pouvoir publier un commentaire.',
     'USER_NOT_ALLOWED_TO_COMMENT' => 'Vous n\'êtes pas dans un groupe autorisé à laisser des commentaires.',
     'NOT_AUTORIZED_TO_REMOVE_COMMENT' => 'Vous n\'êtes pas autorisé à supprimer ce commentaire.',
+    'COMMENT_TAG' => 'Page',
+    'COMMENT_DATE' => 'Date',
+    'COMMENT_USER' => 'Auteur.ice',
+    'COMMENT_CONTENT' => 'Commentaire',
+    'COMMENT_ON_PAGE' => 'Page parente',
 
     // reactions
     'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',
