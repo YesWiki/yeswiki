@@ -1,16 +1,16 @@
 <a id="yw-comment-{{ comment.tag }}" name="yw-comment-{{ comment.tag }}"></a>
 <div class="yw-comment" data-tag="{{ comment.tag }}"  data-commenton="{{ comment.commentOn }}">
 	<div class="comment-info">
-		<a href="{{ comment.linkuser }}" style="color:{{ comment.usercolor }}">
-			<img src="{{ comment.userpicture }}" alt="user picture" class="user-pic img-circle" />
+		<a href="{{ comment.linkower }}" style="color:{{ comment.ownercolor }}">
+			<img src="{{ comment.ownerpicture }}" alt="user picture" class="user-pic img-circle" />
 		</a>
 		<div class="comment-user-and-date">
 			<div class="comment-user">
-				<a href="{{ comment.linkuser }}">
-					{{ comment.user }}
+				<a href="{{ comment.linkowner }}">
+					{{ comment.owner }}
 				</a>
 			</div>
-			<div class="comment-date">{{ comment.date }}</div>
+			<div class="comment-date">{{ comment.date }}{% if comment.owner != comment.user %}&nbsp;<i>{{ _t('COMMENT_MODFIED_BY',{'user':comment.user}) }}</i>{% endif %}</div>
 		</div>
 	</div>
 	<div class="comment-html">
