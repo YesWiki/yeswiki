@@ -136,7 +136,7 @@ export default class {
   }
 
   get currentGroupText() {
-    return this.textFromRange(this.cursor.row, this.cursor.groupStart, this.cursor.groupEnd)
+    return this.textFromRange(this.cursor.row, this.cursor.groupStart, this.cursor.groupEnd - 1)
   }
 
   get currentGroupTextwithoutMarkup() {
