@@ -140,6 +140,9 @@ return [
     'LIST_PAGES_BELONGING_TO' => 'Lista de páginas que pertencem aos',
     'THIS_USER_HAS_NO_PAGE' => 'Este usuário não possui nenhuma página',
 
+    // actions/MyCommentsAction.php
+    'COMMENT_RESERVED_TO_CONNECTED' => 'Por favor, faça login para usar a ação "{mycomments}}"!',
+
     // actions/mychanges.php
     'YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE' => 'Lista de páginas que você editou, ordenadas por data de modificação',
     'YOUR_MODIFIED_PAGES_ORDERED_BY_NAME' => 'Lista de páginas que você editou, em ordem alfabética',
@@ -380,7 +383,7 @@ return [
     'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Verifique que servidor tenha os direitos de acesso em gravaçao sobre este arquivo. Se por algum motivo você não pode fazer isso, você deve copiar o seguinte num arquivo e transferi-lo por ftp no servidor',
     'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'diretamente no diretório YesWiki. Depois de ter feito isso, o site YesWiki deve funcionar corretamente',
     'TRY_AGAIN' => 'tentar de novo',
-    
+
     // API
     // 'USERS' => 'Utilisateurs',
     // 'GROUPS' => 'Groupes',

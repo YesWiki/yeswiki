@@ -31,7 +31,7 @@ return [
     'HOMEPAGE_WIKINAME' => 'PaginaPrincipal',
     'MY_YESWIKI_SITE' => 'El meu lloc YesWiki',
     // 'FILE_WRITE_PROTECTED' => 'le fichier de configuration est protégé en écriture',
-    
+
     // ACLs
     // 'DENY_READ' => 'Vous n\'êtes pas autorisé à lire cette page',
     // 'DENY_WRITE' => 'Vous n\'êtes pas autorisé à écrire sur cette page',
@@ -110,7 +110,7 @@ return [
     // 'FORM_RETURN' => 'Retour au formulaire',
     // 'NO_RECENT_COMMENTS' => 'Pas de commentaires récents',
     // 'NO_SELECTED_COMMENTS_TO_ERASE' => 'Aucun commentaire n\'a été sélectionné pour étre effacé',
-    
+
     // actions/footer.php ignorada, perquè els patrons d'eines han donat un error
     // actions/header.php ignorada, perquè els patrons d'eines han donat un error
 
@@ -141,6 +141,9 @@ return [
     'IN_THIS_WIKI' => 'en el wiki',
     'LIST_PAGES_BELONGING_TO' => 'Llista de pàgines que pertanyen a',
     'THIS_USER_HAS_NO_PAGE' => 'Aquest usuari no posseeix cap pàgina',
+
+    // actions/MyCommentsAction.php
+    'COMMENT_RESERVED_TO_CONNECTED' => 'Si us plau, inicieu sessió per utilitzar l\'acció "{{mycomments}}!',
 
     // actions/mychanges.php
     'YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE' => 'Llista de pàgines que heu modificat, per data',
@@ -588,7 +591,7 @@ return [
 
     // templates/multidelete-macro.twig
     // 'NUMBER_OF_ELEMENTS' => 'Nombre d\'éléments sélectionnés',
-    
+
 
     // Comments
     'COMMENT_EMPTY_NOT_SAVED' => 'Comentari buit, sense còpia de seguretat.',
@@ -608,7 +611,7 @@ return [
     'COMMENT_ON_PAGE' => 'Pàgina pare',
     // 'COMMENT_CONFIRM_DELETE' => 'Voulez-vous supprimer le commentaire ? (action définitive)',
     // 'COMMENT_MODIFIED_BY' => 'Modifié par %{user}',
-    
+
     // templates/comments/notify-email-*.twig
     // 'COMMENT_NEW_COMMENT' => 'Nouveau commentaire sur la page %{tag}',
     // 'COMMENT_NEW_COMMENT_ANSWER' => 'Nouvelle réponse à votre commentaire sur la page %{tag}',

@@ -30,13 +30,12 @@
           <td>{{ format(com.body)|raw  }}</td>
           <td>{{ com.owner }}</td>
           <td>{{ com.tag }}</td>
-          <td>{{ com.comment_on }}</td>
+          <td>{% set tagAnchor = com.parentTag ?? com.comment_on %}<a class="new-window" href="{{ url({tag:tagAnchor}) }}">{{ tagAnchor }}</a></td>
           <td>
             {# if admin or comment's owner #}
             {% if hasAcl(com.owner) %} 
-              <a href="{{ url({tag:com.tag,handler:'editiframe'}) }}"
-                class="btn btn-sm btn-warning modalbox" role="button"
-                data-iframe="1"
+              <a href="{{ url({tag:com.tag,handler:'edit'}) }}"
+                class="btn btn-sm btn-warning new-window" role="button"
                 title="{{ _t('MODIFY') }} {{ com.tag }}">
                 {{ _t('MODIFY') }}
               </a>

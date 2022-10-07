@@ -150,6 +150,9 @@ return [
     'LIST_PAGES_BELONGING_TO' => 'Liste des pages appartenant &agrave;',
     'THIS_USER_HAS_NO_PAGE' => 'Cet utilisateur ne poss&egrave;de aucune page',
 
+    // actions/MyCommentsAction.php
+    'COMMENT_RESERVED_TO_CONNECTED' => 'Veuillez vous connecter pour pouvoir utiliser l\'action "{{mycomments}}" !',
+
     // actions/mychanges.php
     'YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE' => 'Liste des pages que vous avez modifi&eacute;es, tri&eacute;e par date de modification',
     'YOUR_MODIFIED_PAGES_ORDERED_BY_NAME' => 'Liste des pages que vous avez modifi&eacute;es, tri&eacute;e par ordre alphab&eacute;tique',
