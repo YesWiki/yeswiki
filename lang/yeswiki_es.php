@@ -32,7 +32,7 @@ return [
     'SITE_BEING_UPDATED' => 'Este sitio se esta actualizando. Intenta más tarde.',
     'DB_CONNECT_FAIL' => 'Por razones ajenas a nuestra voluntad, el contenido de este YesWiki esta temporalmente inaccesible. Intenta más tarde, gracias por su comprensión.',
     'LOG_DB_CONNECT_FAIL' => 'YesWiki : la conexión BDD ha fracasado', // sans accents car commande systeme
-                                                               
+
     'INCORRECT_PAGENAME' => 'El nombre de la página es incorrecto.',
     // 'PERFORMABLE_ERROR' => 'Une erreur inattendue s\'est produite. Veuillez contacter l\'administrateur du site et lui communiquer l\'erreur suivante :',
     'HOMEPAGE_WIKINAME' => 'PaginaPrincipal',
@@ -164,6 +164,9 @@ return [
     'IN_THIS_WIKI' => 'en este wiki',
     'LIST_PAGES_BELONGING_TO' => 'Lista de las páginas perteneciendo a',
     'THIS_USER_HAS_NO_PAGE' => 'Este usuario no posee ninguna página',
+
+    // actions/MyCommentsAction.php
+    'COMMENT_RESERVED_TO_CONNECTED' => '¡Inicie sesión para usar la acción "{{mycomments}}!',
 
     // actions/mychanges.php
     'YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE' => 'Lista de las páginas que modificaste, clasificadas por fecha de modificación',
@@ -408,7 +411,7 @@ return [
     'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Verifica que tu servidor tiene los derechos de acceso de escritura para este archivo. Si por cualquier razón no lo puedes hacer, tienes que copiar las informaciones siguientes en un archivo y transferirlas con un programa ftp al servidor',
     'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'directamente en el repertorio de YesWiki. Una vez hecho, tu sitio YesWiki deberia funcionar bien',
     'TRY_AGAIN' => 'Intentar de nuevo',
-    
+
     // API
     // 'USERS' => 'Utilisateurs',
     // 'GROUPS' => 'Groupes',

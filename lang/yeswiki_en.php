@@ -166,6 +166,9 @@ return [
     'LIST_PAGES_BELONGING_TO' => 'List of pages belonging to',
     'THIS_USER_HAS_NO_PAGE' => 'This user has no page',
 
+    // actions/MyCommentsAction.php
+    'COMMENT_RESERVED_TO_CONNECTED' => 'Please login to use action "{{mycomments}}"!',
+
     // actions/mychanges.php
     'YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE' => 'List of your modified pages, ordered by date of modification',
     'YOUR_MODIFIED_PAGES_ORDERED_BY_NAME' => 'List of your modified pages, ordered by name',
@@ -265,7 +268,7 @@ return [
     'NEW_ACCOUNT' => 'New account',
     'LOGGED_USERS_ONLY_ACTION' => 'You must be logged in to perform this action',
     'USER_DELETE' => 'Delete user',
-    
+
     // actions/wantedpages.php
     'NO_PAGE_TO_CREATE' => 'No page to create',
 
@@ -289,17 +292,17 @@ return [
     // templates/actions/my-favorites-table.twig
     'FAVORITES_TITLE' => 'Title',
     'FAVORITES_LINK' => 'Link',
-    
+
     // templates/preupdate-backups.twig
     'ADMIN_BACKUPS_CREATING' => 'Backup creation',
     'ADMIN_BACKUPS_FORCE_UPDATE' => 'Force an update without backup',
     'ADMIN_BACKUPS_BY_PASS' => 'Update without backup',
-    
+
     // setup/header.php
     'OK' => 'OK',
     'FAIL' => 'FAIL',
     'END_OF_INSTALLATION_BECAUSE_OF_ERRORS' => 'End of installation because of errors in the configuration',
-    
+
     // setup/default.php
     'INSTALLATION_OF_YESWIKI' => 'Installation of YesWiki',
     'YOUR_SYSTEM' => 'Your system',
@@ -389,7 +392,7 @@ return [
     'INSERTION_OF_USER_IN_ADMIN_GROUP' => 'Insertion of user in the admin\'s group',
     'NEXT_STEP_WRITE_CONFIGURATION_FILE' => 'The next step will try to create the configuration file ',
     'VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE' => 'Verify that le web server has the right for writing in this file, otherwise you must modify it manually',
-    
+
     // setup/writeconfig.php
     'WRITING_CONFIGURATION_FILE' => 'Writing the configuration file',
     'CREATED' => 'create',
@@ -404,11 +407,11 @@ return [
     'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Try to change the write access rights on the file. If not possible, you must create the file and copy those informations inside, then transfert it by FTP on your server in a file ',
     'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'directly in the YesWiki root folder. Once you done it, your YesWiki website should work as expected',
     'TRY_AGAIN' => 'Try again',
-    
+
     // API
     'USERS' => 'Users',
     'GROUPS' => 'Groups',
-    
+
     // YesWiki\User class
     'USER_DELETE_QUERY_FAILED' => 'User deletion query failed',
     'USER_DELETE_LONE_MEMBER_OF_GROUP' => 'The user you are trying to delete is the only member of a group',
@@ -464,13 +467,13 @@ return [
     'USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR' => 'A positive integer is needed for %{name}.',
     'USER_YOU_MUST_SPECIFY_YES_OR_NO' => '\'Y\' or \'N\' is required for %{name}.',
     'USER_YOU_MUST_SPECIFY_A_STRING' => 'A string is required for %{name}.',
-    
+
     // YesWiki\Database class
     'DATABASE_QUERY_FAILED' => 'Database query failed',
     'DATABASE_YOU_MUST_FIRST_SET_ARGUMENT' => 'You must set all arguments for object of \YesWiki\Database class',
     'DATABASE_MISSING_ARGUMENT' => ' missing',
-    
-    
+
+
     // YesWiki\Session class
     'SESSION_YOU_MUST_FIRST_SET_ARGUMENT' => 'You must set argument for object of \YesWiki\Session class',
 
@@ -501,7 +504,7 @@ return [
     'ACLS_LIST_OF_ACLS' => 'List of rights separated by coma',
     'ACLS_UPDATE' => 'Update',
     'ACLS_COMMENTS_CLOSED' => 'Comments closed',
-    
+
     // include/services/ThemeManager.php
     'THEME_MANAGER_THEME_FOLDER' => 'The theme\'s folder ',
     'THEME_MANAGER_SQUELETTE_FILE' => 'The 	skeleton\'s file ',
@@ -510,7 +513,7 @@ return [
     'THEME_MANAGER_CLICK_TO_INSTALL' => 'Click to install the theme ',
     'THEME_MANAGER_AND_REPAIR' => ' and repair the website',
     'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Login as admin to upgrade.',
-    
+
     // actions/EditConfigAction.php
     'EDIT_CONFIG_TITLE' => 'Change configuration file',
     'EDIT_CONFIG_CURRENT_VALUE' => 'Current value',
@@ -626,7 +629,7 @@ return [
     'COMMENT_ON_PAGE' => 'Parent page',
     'COMMENT_CONFIRM_DELETE' => 'Are you sure to delete the comment ? (no return possible)',
     'COMMENT_MODIFIED_BY' => 'Modified by %{user}',
-    
+
     // templates/comments/notify-email-*.twig
     // 'COMMENT_NEW_COMMENT' => 'Nouveau commentaire sur la page %{tag}',
     // 'COMMENT_NEW_COMMENT_ANSWER' => 'Nouvelle réponse à votre commentaire sur la page %{tag}',

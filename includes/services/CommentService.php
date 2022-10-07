@@ -187,12 +187,25 @@ class CommentService implements EventSubscriberInterface
         } else {
             $query .= "comment_on = \"{$this->dbService->escape($tag)}\" ";
         }
+        if (!empty($username)) {
+            $query .=
+            <<<SQL
+            AND (`user` = '{$this->dbService->escape($username)}' OR `owner` = '{$this->dbService->escape($username)}')
+            SQL;
+        }
         // remove current comment to prevent infinite loop
         $query .= " AND `tag` != '{$this->dbService->escape($tag)}' ";
         $query .= 'AND latest = "Y" ' . 'ORDER BY substring(tag, 8) + 0';
-        return array_filter($this->wiki->LoadAll($query), function ($comment) {
+        $comments =  array_filter($this->wiki->LoadAll($query), function ($comment) {
             return !empty($comment['tag']);
         });
+
+        foreach ($comments as $id => $comment) {
+            $parentPage = $this->getParentPage($comment['tag']);
+            $comments[$id]['parentTag'] = !empty($parentPage['tag']) ? $parentPage['tag'] : "";
+        }
+
+        return $comments;
     }
 
     public function getCommentList($tag, $first = true, $comments = null)
