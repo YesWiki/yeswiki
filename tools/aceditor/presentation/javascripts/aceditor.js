@@ -111,7 +111,7 @@ class Aceditor {
               onComplete: (result) => { this.editor.replaceCurrentGroupBy(result) }
             })
           })
-          if (cursor.nodeType.includes('ace_link-url')) {
+          if (cursor.nodeType && cursor.nodeType.includes('ace_link-url')) {
             this.editor.setAutocompletionList(pageTags)
           }
           break
