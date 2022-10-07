@@ -5,7 +5,6 @@ namespace YesWiki\Core\Service;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpKernel\KernelEvents;
 use YesWiki\Core\Entity\Event;
 use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Core\Service\Mailer;
