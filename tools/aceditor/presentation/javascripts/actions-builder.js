@@ -20,9 +20,12 @@ export default class {
   }
 
   get allAvailableActions() {
-    const result = Object.values(actionsBuilderData.action_groups)
+    return Object.values(actionsBuilderData.action_groups)
       .map((e) => Object.keys(e.actions)).flat()
-    return result.concat(Object.keys(ACTIONS_BACKWARD_COMPATIBILITY))
+  }
+
+  get allAvailableActionsWithBackward() {
+    return this.allAvailableActions.concat(Object.keys(ACTIONS_BACKWARD_COMPATIBILITY))
   }
 
   open(editor, options) {

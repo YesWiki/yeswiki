@@ -24,6 +24,8 @@ export default class {
       maxLines: Infinity,
       minLines: options.rows,
       showFoldWidgets: false,
+      behavioursEnabled: true,
+      wrapBehavioursEnabled: true,
       fontSize: '18px',
       useSoftTabs: false,
       tabSize: 3,
