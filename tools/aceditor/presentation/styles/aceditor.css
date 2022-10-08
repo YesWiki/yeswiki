@@ -77,10 +77,13 @@
 
 /* Show line numbers only on page edit */
 form:not(#ACEditor) .ace-container .ace_gutter {
-  display: none !important;
+  /* Keep it visible because it's just to get the active line height */
+  width: 0px !important;
+  overflow: hidden;
+  padding: 0px;
 }
 form:not(#ACEditor) .ace-container .ace_scroller {
-  left: .7em !important;
+  left: .6em !important;
 }
 
 .ace_gutter-cell {
