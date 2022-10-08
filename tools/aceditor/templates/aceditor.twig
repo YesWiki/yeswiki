@@ -14,7 +14,8 @@
     </a>
   </div>
 
-  <textarea id="{{ arguments.name }}" name="{{ arguments.name }}" class="aceditor-textarea">
+  <textarea id="{{ arguments.name }}" name="{{ arguments.name }}" rows="{{ arguments.rows }}"
+            class="aceditor-textarea">
     {{- arguments.value|raw -}}
   </textarea>
 
