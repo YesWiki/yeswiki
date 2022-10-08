@@ -5,16 +5,14 @@ export default class {
   get $inputUrl() { return this.$modal.find('input[name=url]') }
   get $inputText() { return this.$modal.find('input[name=text]') }
 
-  constructor() {
-    this.$modal.find('.btn-insert').on('click', (e) => {
-      this.buildYesWikiCode(e)
-    })
-  }
-
   open(options) {
     this.onComplete = options.onComplete
     this.$inputUrl.val(options.link)
     this.$inputText.val(options.text)
+
+    this.$modal.find('.btn-insert').off('click').on('click', (e) => {
+      this.onComplete(this.buildYesWikiCode(e))
+    })
 
     this.$modal.find(`[data-show*=${options.action}]`).show()
     this.$modal.find(`[data-show]:not([data-show*=${options.action}])`).hide()
@@ -60,6 +58,7 @@ export default class {
       const params = klass ? `class="${klass}" ` : ''
       result = `{{button link="${wikiurl}" text="${text}" ${params}nobtn="1"}}`
     }
-    this.onComplete(result)
+
+    return result
   }
 }

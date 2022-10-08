@@ -9,8 +9,14 @@ export default class {
   app
 
   constructor() {
-    setup()
-    this.app = new Vue(app)
+    // Initialize only once the app
+    if (window.actionBuilderApp) {
+      this.app = window.actionBuilderApp
+    } else {
+      setup()
+      this.app = new Vue(app)
+      window.actionBuilderApp = this.app
+    }
   }
 
   get allAvailableActions() {
