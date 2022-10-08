@@ -211,6 +211,9 @@ iframe {
   z-index: 50;
   left: -3rem;
 }
+form:not(#ACEditor) .flying-edit-button {
+  left: -2rem;
+}
 .flying-edit-button .btn {
   border-radius: 5px 0 0 5px;
   padding: .5rem 0;
