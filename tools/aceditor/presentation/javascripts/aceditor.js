@@ -93,11 +93,14 @@ class Aceditor {
       switch (cursor.groupType) {
         case 'yw-action': {
           const [actionName] = cursor.groupTextWithoutMarkup.split(' ')
-          if (this.actionsBuilder.allAvailableActions.includes(actionName)) {
+          if (this.actionsBuilder.allAvailableActionsWithBackward.includes(actionName)) {
             this.$toolbar.find('.component-action-list').addClass('only-edit')
             this.flyingButton.show().onClick(() => {
               this.actionsBuilder.open(this.editor, { action: cursor.groupTextWithoutMarkup })
             })
+          }
+          if (cursor.nodeType && cursor.nodeType.includes('ace_action-name')) {
+            this.editor.setAutocompletionList(this.actionsBuilder.allAvailableActions)
           }
           break
         }
