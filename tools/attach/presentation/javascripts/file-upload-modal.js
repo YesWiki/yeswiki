@@ -18,12 +18,6 @@ export default class {
     this.$modal.find('.btn-cancel-upload, .close').on('click', () => {
       this.hideUploadModal()
     })
-
-    // Insert Button
-    this.$modal.find('.btn-insert-upload').on('click', () => {
-      this.onComplete(this.buildCode())
-      this.hideUploadModal()
-    })
   }
 
   initButton($btnContainer, onComplete) {
@@ -39,6 +33,12 @@ export default class {
       onSubmit: () => {
         this.resetModal()
         this.$modal.modal('show')
+
+        // Insert Button
+        this.$modal.find('.btn-insert-upload').off('click').on('click', () => {
+          this.onComplete(this.buildCode())
+          this.hideUploadModal()
+        })
       },
       onComplete: (id, fileName, responseJSON) => {
         const fileuploaded = this.$downloadList.find('.qq-upload-success .qq-upload-file')
