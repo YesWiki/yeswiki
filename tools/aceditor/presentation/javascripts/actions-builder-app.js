@@ -148,7 +148,7 @@ export const app = {
       $('#actions-builder-modal').modal('show')
       this.currentGroupId = options.groupName
       this.currentSelectedAction = options.action
-      this.isEditingExistingAction = (options.action !== '')
+      this.isEditingExistingAction = !!options.action
       setTimeout(() => this.initValues(), 0)
     },
     initValues() {
