@@ -13,10 +13,10 @@ class AceditorAction extends YesWikiAction
     public function formatArguments($args)
     {
         return [
-            'name' => $args['name'],
-            'value' => $args['value'],
-            'rows' => $args['rows'],
-            'saveButton' => $this->formatBoolean($args['saveButton'], false)
+            'name' => $args['name'] ?? 'aceditor',
+            'value' => $args['value'] ?? '',
+            'rows' => $args['rows'] ?? 3,
+            'saveButton' => $this->formatBoolean($args['saveButton'] ?? null, false)
         ];
     }
 
