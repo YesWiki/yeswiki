@@ -71,6 +71,8 @@ export default class {
   }
 
   get currentLineNodes() {
+    // if (!this.cursor.row) return null
+
     const $renderedLineGroup = this.$container
       .find(`.ace_text-layer > .ace_line_group:nth-of-type(${this.cursor.row + 1})`)
     const allLineNodes = []
