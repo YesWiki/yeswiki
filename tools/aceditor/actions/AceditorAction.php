@@ -16,6 +16,7 @@ class AceditorAction extends YesWikiAction
             'name' => $args['name'] ?? 'aceditor',
             'value' => $args['value'] ?? '',
             'rows' => $args['rows'] ?? 3,
+            'tempTag' => $args['tempTag'] ?? null, // used in new entry form
             'saveButton' => $this->formatBoolean($args['saveButton'] ?? null, false)
         ];
     }
