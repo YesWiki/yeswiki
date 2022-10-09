@@ -11,7 +11,6 @@
 * [Extensions](/ ':id=extensions-links')
 * 🔧
   * [Comment contribuer à cette doc](/docs/users/README.md)
-  * [Liste des choses à faire sur la doc](/docs/users/TODO.md)
   * [Documentation du code](/docs/code/README.md)
 
 <!-- * Langue
