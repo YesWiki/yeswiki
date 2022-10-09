@@ -188,44 +188,6 @@ iframe {
   background-color: white;
   opacity: 0;
 }
-/* iframe {
-  zoom: 0.8;
-  -moz-transform: scale(0.8);
-  -moz-transform-origin: 0 0;
-  -o-transform: scale(0.8);
-  -o-transform-origin: 0 0;
-  -webkit-transform: scale(0.8);
-  -webkit-transform-origin: 0 0;
-}
-@media screen and (-webkit-min-device-pixel-ratio:0) {
-  iframe {
-    zoom: 1;
-  }
-} */
-
-/* FLYING ACTION BAR */
-.flying-edit-button {
-  opacity: 0;
-  transition: opacity .3s;
-  position: absolute;
-  z-index: 50;
-  left: -3rem;
-}
-form:not(#ACEditor) .flying-edit-button {
-  left: -2rem;
-}
-.flying-edit-button .btn {
-  border-radius: 5px 0 0 5px;
-  padding: .5rem 0;
-  width: 3rem;
-}
-@media (max-width: 1200px) {
-  .flying-edit-button { left: -2rem; }
-  .flying-edit-button .btn { width: 2rem; }
-}
-.flying-edit-button.active {
-  opacity: 1;
-}
 
 /* WIKI CODE */
 .result {
