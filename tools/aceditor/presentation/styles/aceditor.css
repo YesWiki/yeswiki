@@ -145,3 +145,43 @@ form:not(#ACEditor) .ace-container .ace_scroller {
 .ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line {
   background-color: #e8e8e8;
 }
+
+/* ================= */
+/* FLYING ACTION BAR */
+/* ================= */
+.flying-edit-button {
+  opacity: 0;
+  transition: opacity .3s;
+  position: absolute;
+  z-index: 50;
+  left: -3rem;
+}
+form:not(#ACEditor) .flying-edit-button {
+  left: -2rem;
+}
+.flying-edit-button .btn {
+  border-radius: 5px 0 0 5px;
+  padding: .5rem 0;
+  width: 3rem;
+}
+/* In iframe */
+.yeswiki-iframe-body .flying-edit-button .btn {
+  width: 2rem;
+}
+.yeswiki-iframe-body .flying-edit-button {
+  left: -2rem;
+}
+.yeswiki-iframe-body form:not(#ACEditor) .flying-edit-button {
+  left: -1rem;
+}
+/* small screen */
+@media (max-width: 1200px) {
+  .flying-edit-button { left: -2rem; }
+  form:not(#ACEditor) .flying-edit-button {
+    left: -1rem;
+  }
+  .flying-edit-button .btn { width: 2rem; }
+}
+.flying-edit-button.active {
+  opacity: 1;
+}
