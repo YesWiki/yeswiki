@@ -281,6 +281,7 @@ return [
     // "AB_management_editconfig_label" => "Modifier des paramètres du fichier de configuration",
     // "AB_management_adminbackups_label" => "Gestion des sauvegardes",
     // "AB_management_commentstable_label" => "Table des commentaires",
+    // "AB_management_mycomments_label" => "My comments",
 
     // advanced actions
     "AB_advanced_actions_label" => "Ações avançadas",
