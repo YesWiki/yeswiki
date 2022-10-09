@@ -6,10 +6,6 @@ Prise en main
 Editer une page
 ---------------
 
-Les pages d'un Yeswiki ont deux status, 
- - le mode lecture, c'est le mode que vous optiendrez en arrivant sur un wiki
- - le mode édition, reconnaissable à sa barre d'édition et aux "codes" colorés qui apparaissent dans la page
-
 Pour passer en mode édition, trois solutions :
  - Utiliser le lien **éditer** en bas de page
  - Double cliquer dans la page
@@ -20,7 +16,7 @@ Pour passer en mode édition, trois solutions :
 ### Syntaxe YesWiki
 
 YesWiki utilise des balises plus ou moins complexes pour les styles, les actions et autre astuces de mise en forme.
-Ainsi, un texte en **gras** s'affiche `**`**gras**`**`
+Par exemple, un texte en **gras** s'affiche `**`**gras**`**`
  - pour supprimer les balises, il faut les supprimer avant **ET** après l'élément impacté
  - Pour des balises plus complexes comme `{{section bgcolor="var(--primary-color)" class="shape-rounded" pattern="border-solid" }}Texte encadré{{end elem="section"}}` (oui, je sais, ça fait peur au début) il faut bien supprimer tout ce qui est avant **ET** après _Texte encadré_.
 
@@ -32,8 +28,8 @@ Deux solutions en cas de soucis :
 
 ### Mise en forme
 
-La plupart des mises en forme standard (gras, encadré, saut de ligne...) sont accessible via les boutons de l'éditeur. Certaines mise en forme sont également accessibles dans le menu `Composants`.
-Voici quelques mise en formes supplémentaires
+La plupart des mises en forme standard (gras, encadré, titre...) sont accessible via les boutons de l'éditeur. Certaines mise en forme sont également accessibles dans le menu `Composants`.
+En voici quelqu'unes supplémentaires
 
 #### Listes
 ```yeswiki
@@ -120,7 +116,7 @@ Dans YesWiki chaque modification d'une page est sauvegardée dans un **historiqu
 
 **Pour y accéder** il suffit de cliquer sur le lien en bas de page nommé : "Dernière édition : _jour_._mois_._année_"
 
-!> Attention: cet accès est possible pour les personnes qui ont les droits en écriture sur la page concernée, c'est-à-dire tout le monde par défaut, mais les administrateurs du site peuvent faire un autre choix.
+!> Attention, l'historique est accesible uniquement aux personnes qui ont les droits en écriture sur la page concernée.
 
 
 Insérer et gérer les médias (images, pdf...)
@@ -135,7 +131,7 @@ Lors de l'édition d'une page, il vous est facile de téléverser différents ty
 > Pour les vidéos, il est préférable de les héberger sur un site spécifique puis de les insérer via le composant "Vidéo intégrée"
 ### Réutiliser le fichier sur une autre page
 
-Chaque fichier sera lié à la page dans laquelle il a été téléversé. Si vous copier le code dans une autre page cela ne fonctionnera pas. Il faudra préfixer le nom du fichier par le nom de la page, par exemple
+Chaque fichier sera lié à la page dans laquelle il a été téléversé. Si vous copiez le code dans une autre page cela ne fonctionnera pas. Il faudra préfixer le nom du fichier par le nom de la page, par exemple :
 
 ```
 {{attach file="PagePrincipale/mon_image.png" desc="Une jolie image" }}
@@ -145,7 +141,7 @@ Si le fichier n'est pas trouvé, un bouton de téléversement sera affiché à l
 
 ### Gérer les fichiers attachés à une page
 
-Ajoutez `/filemanager` à l'URL de votre page pour voir la liste des fichiers qui ont été téléversés. Par exemple https://yeswiki.net/?AccueiL/filemanager
+Ajoutez `/filemanager` à l'URL de votre page pour voir la liste des fichiers qui ont été téléversés sur celle-ci. Par exemple https://yeswiki.net/?AccueiL/filemanager
 
 Insérer des éléments d'un autre site (iframe)
 ---------------------------------------
@@ -280,10 +276,11 @@ Il faut être identifié comme administrateur pour créer ou modifier un formula
 Les composants
 ---------------
 
-Les composants sont des éléments que l'on peut rajouter dans une page wiki.
-Utiliser les composants ajoutera un code -parfois compliqué-  dans votre page. En cliquant sur ce code, un crayon apparaîtra dans la marge. En cliquant dessus, vous activerez une interface qui codera à votre place afin de modifier simplement chacune des fonctionnalités de votre composant.
+Les composants sont des éléments que l'on peut rajouter dans une page wiki. Ils sont accessible depuis le menu "Composants" dans l'éditeur de page.
+Utiliser les composants ajoutera un code (parfois compliqué) dans votre page. Mais rassurez vous, une interface vous permet de facilement créer et modifier simplement chacune des fonctionnalités de votre composant.
 
-> L'idée ici est de juste lister les composants disponibles pour qu'on puisse les trouver en cherchant dans le moteur de recherche de la doc. A voir si on garde ça ou si plutôt on réserve cette section a des descriptions de composants avancés (y'aurait quoi par exemple?)
+Voici une liste des composants disponibles :
+
 ### Boutons
 
 Le composant bouton permet de créer un bouton avec des icônes, qui enverra sur une page du wiki ou un autre site. Les combinaisons entre les différents paramètres vous permettrons de faire bouton à votre pied.
