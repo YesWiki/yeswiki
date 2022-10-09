@@ -40,6 +40,10 @@ class Aceditor {
     setupAceditorKeyBindings(this.$aceContainer, this.$toolbar)
     this.initToolbar()
     this.initEditionHelpers()
+
+    this.editor.on('blur', () => {
+      this.flyingButton.hide()
+    })
   }
 
   initToolbar() {
