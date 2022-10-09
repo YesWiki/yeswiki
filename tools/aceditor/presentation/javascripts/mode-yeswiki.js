@@ -463,7 +463,7 @@ ace.define('ace/mode/yeswiki', ['require', 'exports', 'module', 'ace/lib/oop', '
   const TextMode = require('./text').Mode
   const { YesWikiHighlightRules } = require('./yeswiki_highlight_rules')
   const { YesWikiBehaviour } = require('./yeswiki_behaviour')
-  console.log(YesWikiBehaviour, require('./yeswiki_behaviour'))
+
   const Mode = function() {
     this.HighlightRules = YesWikiHighlightRules
     this.$behaviour = new YesWikiBehaviour()
