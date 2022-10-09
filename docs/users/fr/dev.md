@@ -1,5 +1,7 @@
 # Personnalisation avancées
 
+?> Si vous cherchez la **documentation du code** de YesWiki, [c'est par ici](/docs/code/README.md)
+
 !> Des bases de programmation vous seront nécessaire pour suivre ces étapes
 
 ## Utilisation du dossier `custom`

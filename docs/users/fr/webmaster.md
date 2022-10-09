@@ -1,4 +1,6 @@
-# Administrateur système
+# Installer un YesWiki
+
+?> Si vous avez **déjà un yeswiki en ligne**, passez directement à la section [prise en main](/docs/users/fr/prise-en-main.md)
 
 !> Vous aurez besoin d'un accès FTP à votre serveur pour réaliser les actions décrites dans cette page
 
