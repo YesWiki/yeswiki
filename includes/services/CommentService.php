@@ -301,23 +301,20 @@ class CommentService implements EventSubscriberInterface
             $comments = $this->loadComments($tag);
             $coms = $this->getCommentList($tag, true, $comments);
             $acl = $aclsService->load($tag, 'comment');
-            if (!empty($acl['list']) && $acl['list']  == 'comments-closed') {
-                if (!empty($comments)) {
-                    $output .= $coms;
-                    $output .= '<div class="alert alert-info comments-closed-info">'._t('COMMENTS_CURRENTLY_CLOSED').'.</div>';
-                }
-            } else {
-                $output .= $coms;
-                if ($hasAccessComment) {
-                    $output .= $this->getCommentForm($tag);
-                } else {
-                    if (! $this->wiki->GetUser()) {
-                        $output .= '<div class="comments-connect-info"><a href="#LoginModal" role="button" data-toggle="modal"><i class="fa fa-user"></i> '._t('COMMENT_LOGIN').'.</a></div>';
-                    } else {
-                        $output .= '<div class="alert alert-info comments-acls-info">'._t('COMMENT_NOT_ENOUGH_RIGHTS').'</div>';
-                    }
-                }
-            }
+            $options = (!empty($acl['list']) && $acl['list']  == 'comments-closed')
+                ? [
+                    'commentsClosed' => true,
+                    'coms' => !empty($comments) ? $coms : "",
+                    'user' => null,
+                    'form' => null
+                ]
+                : [
+                    'commentsClosed' => false,
+                    'coms' => $coms,
+                    'user' => ($hasAccessComment) ? null : $this->wiki->GetUser(),
+                    'form' => ($hasAccessComment) ? $this->getCommentForm($tag) : ""
+                ];
+            $output = $this->wiki->render('@core/comment-for-page.twig', $options);
         }
 
         // indicate that those comments on page were already rendered once
