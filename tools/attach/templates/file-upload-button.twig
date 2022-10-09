@@ -1,4 +1,5 @@
-<div class="btn-group attach-file-uploader" {% if tempTag %} data-temptag="{{ tempTag }}"{% endif %}>
+<div class="btn-group attach-file-uploader"
+     {% if arguments.tempTag %} data-temptag="{{ arguments.tempTag }}"{% endif %}>
   <noscript>
     <span class="alert alert-danger alert-error">{{ _t('ACTIVATE_JS_TO_UPLOAD_FILES') }}.</span>
   </noscript>
