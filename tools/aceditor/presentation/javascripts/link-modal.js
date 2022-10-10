@@ -1,5 +1,6 @@
 export default class {
   onComplete
+  preferredSyntax
 
   get $modal() { return $('#YesWikiLinkModal') }
   get $inputUrl() { return this.$modal.find('input[name=url]') }
@@ -9,6 +10,7 @@ export default class {
     this.onComplete = options.onComplete
     this.$inputUrl.val(options.link)
     this.$inputText.val(options.text)
+    this.preferredSyntax = options.syntax || 'markdown'
 
     this.$modal.find('.btn-insert').off('click').on('click', (e) => {
       this.onComplete(this.buildYesWikiCode(e))
@@ -52,7 +54,7 @@ export default class {
     const linkOption = this.$modal.find('.link-options').val()
     let result = ''
     if (linkOption === 'link') {
-      result = `[[${wikiurl} ${text}]]`
+      result = this.preferredSyntax === 'markdown' ? `[${text}](${wikiurl})` : `[[${wikiurl} ${text}]]`
     } else {
       const klass = ({ ext: 'new-window', $modal: '$modalbox' })[linkOption]
       const params = klass ? `class="${klass}" ` : ''
