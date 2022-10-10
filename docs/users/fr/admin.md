@@ -1,94 +1,48 @@
 # Administrer son wiki
 
-> Proposition d'architecture :
-## Gérer les droits
-### Introduction aux droits d'accès
-### Gérer les droits par utilisateurice ou par groupe
-### Gérer les droits en masse
-### Gérer les droits d'accès des pages non encore existantes
-### Configurer les accès à certaines parties au sein même des pages
-### Éditer les droits d'accès aux actions
-### Éditer les droits d'accès aux handlers
-## Gérer le look
-(les modifications de menus et pages spéciales passent dans les 1ers pas)
-### Configuration graphique par défaut
-### Tester les thèmes disponibles
-### Ajouter des thèmes graphiques
-### Modifier un thème graphique pré-existant
-## Les handlers
-## Suivre la vie de son wiki
-### Via la page tableau de bord
-### Via la page DerniersChangements
-### Via les flux rss du wiki
-### Recevoir le contenu d'une page par courriel
-## Lutter contre le spams en gérant les droits d'accès
-### Les symptômes : comment identifier les spams ?
-### Les 10 conseils anti-spam
-### Que faire si vous avez du spam ?
-Ce que je ne sais pas encore où mettre :
- - Gestion des tags
- - Gestion des fichiers
- - Fichier de conf
-
 > TODO Petite description
 
-## Gestion du site (à caler ici quelques part)
+## Gestion du site : plan de l'administration
 
-### Accueil de gestion du site
+**Accueil de gestion du site**
 
 Vous avez là un récap des menus et pages spéciales du wiki.
 
-### Droits d'accès
+**Droits d'accès**
 
 C'est ici que vous pouvez indiquer "qui a le droit de faire quoi sur quelle page".
 Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
 
-### Look
+[Voir la rubrique dédiée](admin.md)
+
+**Look**
 
 C'est par là que vous personnalisez le squelette et l'esthétique de votre wiki.
 Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
 
-### Utilisateurs et groupes
+**Utilisateurs et groupes**
 
 Ici vous visualisez les comptes utilisateurs créés et vous pouvez les organiser en "groupes".
 Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
 
-### Mots clés
+**Mots clés**
 
 Si vous avez utilisé des mots clés pour qualifier vos pages wiki vous en trouvez un récap ici.
 Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
 
-### Fichier de conf
+**Fichier de conf**
 
 Certains éléments de configuration peuvent être personnalisés ici : accès par défaut, sécurité, indexation ...
 Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
 Nous les explorerons au fil des modules.
 
-### Mises à jour / extensions
+**Mises à jour / extensions**
 
 Vous pouvez voir ici la version du wiki et s'il s'agit de la toute dernière.
 Si vous êtes identifié comme administrateur vous pouvez faire les mises à jour.
 
 
-## Gestion du YesWiki (à écrire)
-### Éditer les droits d'accès aux actions
-### Éditer les droits d'accès aux handlers
-### Éditer les groupes d'utilisateurs
-### Gestion des pages
-### Gérer les droits d'accès aux pages
-### Table des utilisateurs
-### Gérer le thème des pages
-### Modifier les paramètres du fichier de configuration
-### Définir le thème de base
-### Tester les thèmes disponibles
-### Gestion des tags
-### S'abonner pour recevoir périodiquement le contenu d'une page par courriel
-### Nettoyer les pages récemment vandalisées
-### Gestion des fichiers
-
-
 ## Gérer les droits
-
 ### Introduction aux droits d'accès
 
 YesWiki a beau être très ouvert lors de son installation (ce qui oblige à se poser quelques questions), il n'en offre pas moins une gestion fine des droits de lecture et d'écriture de son contenu. **Cette gestion permettra :**
@@ -265,47 +219,33 @@ La plupart de ces composants proposent dans leurs paramètres avancés, des choi
 
 Ces opérations sont aussi réalisables pour les différents champs d'un formulaire (nous verrons ça la semaine prochaine).
 
-## Gérer les users (à écrire)
+### Configurer les accès à certaines parties au sein même des pages
+(à trouver ou écrire)
 
-groupes ?
+### Éditer les droits d'accès aux actions
+(à trouver ou écrire ET à déplacer pour alléger cette section)
 
-## Mettre à jour les pages spéciales
+### Éditer les droits d'accès aux handlers
+(à trouver ou écrire ET à déplacer pour alléger cette section)
 
 ## Gérer le look
 
-### Le menu principal
+### Configuration graphique par défaut
+Pour **changer le thème graphiques sur l'ensemble du site**, on peut personnaliser la configuration wakka.config.php et rajouter les valeurs:
 
-Vous pouvez éditer votre menu principal (appelé menu haut dans Yeswiki) via le menu gestion du site.
+'favorite\_theme' => 'nom du thème correspondant au nom du sous-répertoire thème correspondant à ce thème personnalisé',
+'favorite\_squelette' => 'nom du squelette en liaison avec le thème personnalisé.tpl.html',
+'favorite\_style' => 'nom de la feuille de style en liaison avec le thème personnalisé.css'
 
-><span style="color:red;">Ajouter un imprim écran qui montre le chemin pour arriver sur la page "Gestion du site"</span>
+Exemples :
 
-**Ne pas exéder 7 items différents dans votre menu principal.**
-Si votre menu est trop chargé, il est possible de **créer un menu-déroulant** en décalant d'un espace le lien des sous menus :
+'favorite\_theme' => 'yeswiki',
+'favorite\_squelette' => 'responsive-1col.tpl.html',
+'favorite\_style' => 'blue.css',
 
-![image Capture_image_sous_menu.png (8.4kB)](images/M21bLecturesFaciliterLaNavigation_Capture_image_sous_menu_20220217190910_20220217181145.png)
-
-#### Le menu vertical
-
-Si vous utilisez le thème graphique "Margot" (thème par défaut sur Yeswiki), il est possible d'utiliser un menu vertical. La structure d'un site (emplacement du menu notamment) est définie dans un fichier html que l'on appelle le **squelette**.
-Pour appliquer ce nouveau squelette, rendez-vous dans Gestion du site :
-1- **Page Mise à jour / Extensions** : mettre à jour le thème Margot
-2- **Page Look Wiki** : modifier le squelette par défault (tout en bas): choisir 1col.vertical-menu.tpl.html.
-
-![image demo_menu_vertical.gif (0.5MB)](images/MenuVertical_demo_menu_vertical_700px_20220218165728_20220218155742.gif)
-
-### Utilisation de la barre latérale
-
-Pour mettre en valeur des informations redondantes ou des liens dans une colonne latérale (gauche ou droite au choix).
-Il faut choisir une structure de page différente : **le squelette**
-squelette 1col-left.tpl.html pour afficher la colonne à gauche
-squelette 1col-right.tpl.html pour afficher la colonne à droite
-
-Ce changement est possible :
-
-* soit au niveau de la page en modifiant le thème (voir tuto ci contre):
-* soit sur plusieurs pages d'un coup en passant par Gestion du site / Look wiki
-
-![image demo_colonne_left.gif (0.4MB)](images/M21bLecturesFaciliterLaNavigation_demo_colonne_left_20220218165158_20220218160845.gif)
+Mais cela ne s'applique que pour les nouvelles pages créées.
+Pour les anciennes pages, il faut alors modifier chaque page en mode édition, bouton thème,
+ou bien forcer le thème pour toutes les pages en ajoutant dans wakka.config.php : 'hide\_action\_template' => '1',
 
 ## Changer de thème graphique
 
@@ -337,23 +277,7 @@ La liste des thèmes par défaut est modifiable, cela relève d'une tache d'admi
 *   cliquez sur Appliquer puis
 *   Sauvez la page
 
-### Configuration graphique par défaut
 
-Pour **changer le thème graphiques sur l'ensemble du site**, on peut personnaliser la configuration wakka.config.php et rajouter les valeurs:
-
-'favorite\_theme' => 'nom du thème correspondant au nom du sous-répertoire thème correspondant à ce thème personnalisé',
-'favorite\_squelette' => 'nom du squelette en liaison avec le thème personnalisé.tpl.html',
-'favorite\_style' => 'nom de la feuille de style en liaison avec le thème personnalisé.css'
-
-Exemples :
-
-'favorite\_theme' => 'yeswiki',
-'favorite\_squelette' => 'responsive-1col.tpl.html',
-'favorite\_style' => 'blue.css',
-
-Mais cela ne s'applique que pour les nouvelles pages créées.
-Pour les anciennes pages, il faut alors modifier chaque page en mode édition, bouton thème,
-ou bien forcer le thème pour toutes les pages en ajoutant dans wakka.config.php : 'hide\_action\_template' => '1',
 
 ### Ajouter des thèmes graphiques
 
@@ -392,7 +316,7 @@ L'architecture de YesWiki est basée sur [Bootstrap](https://fr.wikipedia.org/wi
 
 Modifier le thème graphique va donc revenir à adapter un squelette en modifiant celui-ci avec la syntaxe Bootstrap adaptée et la feuille de style associée.
 
-## le css
+#### le css
 
 /\*
 Voici un exemple de css custom pour le thème margot (le thème par défaut sous doryphore), il agit sur les variables css non personnalisables dans le thème et permet de faire des css sur mesure.
@@ -468,11 +392,9 @@ Pour en savoir plus, voyez la documentation sur [https://yeswiki.net/?Documentat
 
 }\*/
 
-## créer des mises en page plus fines
-
+#### créer des mises en page plus fines
+à écrire :
 mermaid / Izmir / bootstrap / markdown
-
-
 
 ## Suivre la vie de son wiki
 
@@ -495,12 +417,20 @@ Plusieurs flux RSS sortent du wiki :
  - les modifications de chacun des formulaires
       - ces flux sont accessibles via la page "base de données" de la roue crantée
 
+### Recevoir le contenu d'une page par courriel
+
 ## Lutter contre le spams
 
 Hélas comme la plupart des wikis ouverts (MediaWiki, DokuWiki), YesWiki n'échappe pas aux attaques de quelques ~~emmerdeurs~~ référenceurs soit-disant professionnels et autres robots de spam, qui polluent les contenus des pages.
 
+### Les symptômes : comment identifier les spams ?
 
-### Les 10 commandements du lutteur anti spam
+*   Vous pouvez découvrir sur une ou plusieurs pages des liens vers des sites externes qui semblent sans rapport avec l'objet du wiki _(qui vendent des robes de mariée, des sites indonésien sans rapport, des liens commerciaux vers la loi duflot, des textes en langue étrangère etc..)_
+*   Il se peut aussi que de nouvelles pages soit créées, et dans certains cas de nouveaux utilisateurs wikis.
+
+Dans tous les cas, il sera toujours possible de faire marche arrière, et les informations sensibles d'accès ftp ou mysql à votre serveur ne peuvent pas être trouvés comme cela.
+
+### Les 10 conseils anti-spam
 
 * **1**. Je consulte régulièrement mon wiki
 * **2**. Je m'abonne à son flux RSS [voir plus bas / suivre la vie de mon wiki](#Suivre-la-vie-de-son-wiki)
@@ -512,17 +442,7 @@ Hélas comme la plupart des wikis ouverts (MediaWiki, DokuWiki), YesWiki n'écha
 * **8**. Je maintiens mon wiki à jour
 * **9**. Pour les plus endurcis, je fais le grand ménage avec l'outil despam (voir plus bas)
 * **10**. Je ne cède pas à la tentation de transformer mon espace collaboratif en bunker. Et je continue à mettre en balance les effets positifs de l'intelligence collective.
-
-
-
-### Les symptômes : comment identifier les spams ?
-
-*   Vous pouvez découvrir sur une ou plusieurs pages des liens vers des sites externes qui semblent sans rapport avec l'objet du wiki _(qui vendent des robes de mariée, des sites indonésien sans rapport, des liens commerciaux vers la loi duflot, des textes en langue étrangère etc..)_
-*   Il se peut aussi que de nouvelles pages soit créées, et dans certains cas de nouveaux utilisateurs wikis.
-
-Dans tous les cas, il sera toujours possible de faire marche arrière, et les informations sensibles d'accès ftp ou mysql à votre serveur ne peuvent pas être trouvés comme cela.
-
-
+* 
 ### Que faire si vous avez du spam ?
 
 #### Réparer une page spéciale spammée
@@ -633,3 +553,12 @@ Il faudra au préalable que vous ayez installé l'extension IP block via roue cr
 ![image extensionipblock.png (77.9kB)](images/LutterContreLeSpamsEnGerantLesDroitsDA_extensionipblock_20220223102024_20220223092158.png)
 
 Pour découvrir l'ensemble des stratégies possibles face au spam => [https://yeswiki.net/?LutterContreLeSpam](https://yeswiki.net/?LutterContreLeSpam)
+
+
+## vrac
+
+Ce que je ne sais pas encore où mettre :
+ - Gestion des tags
+ - Gestion des fichiers
+ - Fichier de conf
+
