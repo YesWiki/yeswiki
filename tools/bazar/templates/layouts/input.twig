@@ -1,4 +1,4 @@
-<div class="control-group form-group input-{{ field.type}}">
+<div class="control-group form-group input-{{ field.type }} {% block groupClass %}{% endblock %}">
     <label class="control-label col-sm-3">
         {#- No leading/trailing whitespace, see https://twig.symfony.com/doc/3.x/templates.html#templates-whitespace-control-#}
         {%- block label -%}            

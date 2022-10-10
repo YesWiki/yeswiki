@@ -1,5 +1,9 @@
 {% extends "@bazar/layouts/input.twig" %}
 
+{% block groupClass %}
+    {{ field.syntax }}
+{% endblock %}
+
 {% block label %}
     {% if field.required %}<span class="symbole_obligatoire"></span>{% endif %}
     {% if field.hint %}
