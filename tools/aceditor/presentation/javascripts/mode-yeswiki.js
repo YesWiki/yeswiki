@@ -68,6 +68,10 @@ ace.define('ace/mode/yeswiki_highlight_rules', ['require', 'exports', 'module', 
         }, { // link
           token: ['markup.open.yw-link', 'link-url', 'space', 'link-text', 'markup.close.yw-link'],
           regex: '(\\[\\[)([^\\s]*)(\\s?)([^\\]]*)(\\]\\])'
+        }, { // link markdown
+          token: ['markup.open.yw-link-markdown', 'link-text', 'markup', 'markup', 'link-url',
+            'markup.close.yw-link-markdown'],
+          regex: '(\\[)([^\\]]*)(\\])(\\()([^\\)]*)(\\))'
         }
       ],
       allowBlock: [

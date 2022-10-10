@@ -9,6 +9,7 @@ export default class {
   cursor = {} // ace cursor with more infos
   cursorChangeCallbacks = []
   langTools
+  classesToIgnoreForData = ['markup', 'equal', 'space', 'attribute-quote-mark']
 
   constructor(domElement, options = {}) {
     this.$container = $(domElement)
@@ -100,24 +101,35 @@ export default class {
         // iterate until we find a full group, or reach the end of line
         if (this.cursor.groupEnd == null) {
           const $node = $(node)
+          const nodeClasses = ($node.attr('class') || '')
+            .split(/\s+/).map((cl) => cl.replace('ace_', ''))
+
           nextColumn += $node.text().length
+
           // Openning group markup, before finding the selectedNode
-          if (!this.cursor.$node && $node.hasClass('ace_open')) {
+          if (!this.cursor.$node && nodeClasses.includes('open')) {
             this.cursor.groupStart = currColumn
+            this.cursor.groupData = {}
             this.cursor.groupStartMarkup = $node.text()
-            this.cursor.groupType = $node.attr('class').replace('ace_markup ace_open ace_', '')
+            this.cursor.groupType = nodeClasses.find((cl) => cl.startsWith('yw-'))
           }
-          // SelectedNode
+          // Collect data for each node
+          if (this.cursor.groupStart !== undefined) {
+            const type = nodeClasses.find((cl) => !this.classesToIgnoreForData.includes(cl))
+            if (type) this.cursor.groupData[type] = $node.text()
+          }
+          // Detect SelectedNode
           if (!this.cursor.$node && $node.text()
               && currColumn <= this.cursor.column && nextColumn >= this.cursor.column) {
             this.cursor.$node = $node
             this.cursor.nodeStart = currColumn
             this.cursor.nodeEnd = nextColumn
             this.cursor.nodeText = $node.text()
-            this.cursor.nodeType = $node.attr('class')
+            this.cursor.nodeType = nodeClasses
           }
           // Closing group markup, after finding selectedNode
-          if (this.cursor.$node && this.cursor.groupStart != undefined && $node.hasClass('ace_close')) {
+          if (this.cursor.$node && this.cursor.groupStart !== undefined
+              && nodeClasses.includes('close') && nodeClasses.includes(this.cursor.groupType)) {
             this.cursor.groupEnd = nextColumn
             this.cursor.groupEndMarkup = $node.text()
             this.cursor.groupText = this.currentGroupText

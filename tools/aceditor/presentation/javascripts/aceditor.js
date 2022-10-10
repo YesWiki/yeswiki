@@ -96,29 +96,31 @@ class Aceditor {
 
       switch (cursor.groupType) {
         case 'yw-action': {
-          const [actionName] = cursor.groupTextWithoutMarkup.split(' ')
+          const actionName = cursor.groupData['action-name']
           if (this.actionsBuilder.allAvailableActionsWithBackward.includes(actionName)) {
             this.$toolbar.find('.component-action-list').addClass('only-edit')
             this.flyingButton.show().onClick(() => {
               this.actionsBuilder.open(this.editor, { action: cursor.groupTextWithoutMarkup })
             })
           }
-          if (cursor.nodeType && cursor.nodeType.includes('ace_action-name')) {
+          if (cursor.nodeType && cursor.nodeType.includes('action-name')) {
             this.editor.setAutocompletionList(this.actionsBuilder.allAvailableActions)
           }
           break
         }
+        case 'yw-link-markdown':
         case 'yw-link': {
-          const [link, text] = cursor.groupTextWithoutMarkup.split(' ')
+          const { 'link-url': link, 'link-text': text } = cursor.groupData
           this.flyingButton.show().onClick(() => {
             this.linkModal.open({
               action: 'edit',
+              syntax: cursor.groupType === 'yw-link-markdown' ? 'markdown' : 'wiki',
               link,
               text,
               onComplete: (result) => { this.editor.replaceCurrentGroupBy(result) }
             })
           })
-          if (cursor.nodeType && cursor.nodeType.includes('ace_link-url')) {
+          if (cursor.nodeType && cursor.nodeType.includes('link-url')) {
             this.editor.setAutocompletionList(pageTags)
           }
           break
