@@ -9,7 +9,7 @@
 {% endif %}
 
 {# Text formatting #}
-<div class="btn-group">
+<div class="btn-group format-menu">
   <a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">
     {{ _t('ACEDITOR_FORMAT') }}
     <span class="caret"></span>
@@ -28,17 +28,17 @@
     <li>{{ _self.button('comment', '') }}</li>
   </ul>
 </div>
-<div class="btn-group">
+<div class="btn-group format-buttons">
   {{ _self.button('bold') }}
   {{ _self.button('italic') }}
   {{ _self.button('underline') }}
   {{ _self.button('strike') }}
 </div>
-<div class="btn-group">
+<div class="btn-group more-styles">
   {{ _self.button('list') }}
   {{ _self.button('line') }}
 </div>
-<div class="btn-group">
+<div class="btn-group pages">
   {{ _self.button('link') }}
   {{ _self.button('newpage') }}
 </div>
@@ -69,14 +69,14 @@
 
 {# Help #}
 <div class="btn-group pull-right">
-  <a class="btn btn-info aceditor-btn aceditor-btn-help" data-remote="true"
+  <a class="btn btn-info btn-icon aceditor-btn aceditor-btn-help" data-remote="true"
      href="{{ url({ tag: 'ReglesDeFormatage' }) }}" title="{{ _t('ACEDITOR_HELP') }}">
     <span>{{ _t('ACEDITOR_HELP') }}</span>
     <i class="fa fa-question-circle"></i>
   </a>
 </div>
 
-{% macro button(name, btnClass = 'btn btn-default') %}
+{% macro button(name, btnClass = 'btn btn-default btn-icon') %}
 
   {% set DELIMITERS = {
     TITLE1: { yeswiki: ['======', '======'], html: ['<h1>', '</h1>'] },

@@ -2,7 +2,7 @@
   padding: 1em .7em 0em 0;
   margin-bottom: 1rem;
 }
-.aceditor-textarea {
+textarea.aceditor-textarea {
   display: none;
 }
 
@@ -117,6 +117,9 @@ form:not(#ACEditor) .ace-container .ace_scroller {
 }
 .aceditor-btn-help span {
   margin-right: 8px;
+}
+form:not(#ACEditor) .aceditor-btn-help span {
+  display: none;
 }
 @media (max-width: 1000px) {
   /* Display only icon */
