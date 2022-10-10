@@ -621,6 +621,7 @@ body {
 
 .yeswiki-iframe-body > .container {
   margin: 0 !important;
+  padding: 0;
   width: 100% !important;
 }
 
