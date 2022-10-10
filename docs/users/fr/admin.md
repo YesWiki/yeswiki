@@ -13,17 +13,21 @@ Vous avez là un récap des menus et pages spéciales du wiki.
 C'est ici que vous pouvez indiquer "qui a le droit de faire quoi sur quelle page".
 Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
 
-[Voir la rubrique dédiée](admin.md)
+[Voir la rubrique dédiée](https://testing.yeswiki.net/doc/?doc#/docs/users/fr/admin?id=g%c3%a9rer-les-droits)
 
 **Look**
 
 C'est par là que vous personnalisez le squelette et l'esthétique de votre wiki.
 Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
 
+[Voir la rubrique dédiée](https://testing.yeswiki.net/doc/?doc#/docs/users/fr/admin?id=g%c3%a9rer-le-look)
+
 **Utilisateurs et groupes**
 
 Ici vous visualisez les comptes utilisateurs créés et vous pouvez les organiser en "groupes".
 Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
+
+[Voir la rubrique dédiée](https://testing.yeswiki.net/doc/?doc#/docs/users/fr/admin?id=gestion-des-droits-par-utilisateurice-ou-par-groupe)
 
 **Mots clés**
 
@@ -247,7 +251,7 @@ Mais cela ne s'applique que pour les nouvelles pages créées.
 Pour les anciennes pages, il faut alors modifier chaque page en mode édition, bouton thème,
 ou bien forcer le thème pour toutes les pages en ajoutant dans wakka.config.php : 'hide\_action\_template' => '1',
 
-## Changer de thème graphique
+### Changer de thème graphique
 
 https://yeswiki.net/?DocumentationChangerThemeGraphique
 
@@ -555,10 +559,18 @@ Il faudra au préalable que vous ayez installé l'extension IP block via roue cr
 Pour découvrir l'ensemble des stratégies possibles face au spam => [https://yeswiki.net/?LutterContreLeSpam](https://yeswiki.net/?LutterContreLeSpam)
 
 
-## vrac
+## Fichier de configuration
 
-Ce que je ne sais pas encore où mettre :
+### Paramètres principaux
+### Droit d'accès
+### Envoi des e-mails
+### Barre d'édition pour les pages et les champs texte
+### Insertion de médias (images, vidéos)
+### Base de données
+### Sécurité
+### Balises meta pour l'indexation web
+
+
+Ce qu'on ne sait pas encore où mettre :
  - Gestion des tags
  - Gestion des fichiers
- - Fichier de conf
-
