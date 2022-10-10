@@ -168,10 +168,6 @@ via les champs classiques (ceux qu'on retrouve quand on édite les droits d'une 
 
 ](images/M22GererLesDroitsDAccesEnMasse_modeavance_20220223095430_20220223094937.png)
 
-  
-
-[Et on fait quoi avec les pages qui n'existent pas encore mais vont évidemment apparaître !](https://quincaillere.org/formationgarecentrale2022/?M22GererLesAccesDesPagesNonEncoreExi&course=P2Parcours2&module=M22PenserLesAccesPourOuvrirEtFermerAL)
-
 ### Gérer les droits d'accès des pages non encore existantes
 
 La gestion vue jusque maintenant permet de gérer l'existant mais comment gérer ce qui va s'ajouter au wiki ?
@@ -560,17 +556,52 @@ Pour découvrir l'ensemble des stratégies possibles face au spam => [https://ye
 
 
 ## Fichier de configuration
-
+(simple copie de ce qu'on a dans nos wikis : à enrichir, expliquer)
 ### Paramètres principaux
+ - Titre de votre wiki - wakka_name
+ - Nom de la page d'accueil - root_page
+ - Langue par défaut (fr ou en ou ... auto = langue du navigateur) - default_language
+ - Icône du site (emoji ou URL vers une image PNG) - favicon
+ - Activer le mode de debug (yes ou no) - debug
+ - Fuseau horaire du site (ex. UCT, Europe/Paris, Europe/London, GMT = utiliser celui du serveur,) - timezone
+ - Méthodes autorisées à être affichées dans les iframes (iframe,editiframe,bazariframe,render,all = autoriser tout) - allowed_methods_in_iframe
+ - Nombre maximum de versions d'une page affichées par le handler `/revisions`. - revisionscount
+ - Image d'avatar par défaut pour les commentaires (URL vers une image) - default_comment_avatar
+ - Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false) - htmlPurifierActivated
 ### Droit d'accès
+ - Droits de lecture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_read_acl
+ - Droits d'écriture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_write_acl
+ - Droits de commentaires par défaut des pages (comment-closed pour ferme, * pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_comment_acl
+ - Commentaires activés (true ou false) - comments_activated
+ - Mot de passe demandé pour modifier les pages (voir doc gestion des spams) - password_for_editing
+ - Message informatif pour demander le mot de passe (voir doc gestion des spams) - password_for_editing_message
+ - Autoriser le doubleclic pour éditer les menus et pages spéciales (true ou false) - allow_doubleclic
 ### Envoi des e-mails
+ - Remplacer le mail utilisé comme expéditeur des messages - contact_from
+ - Message personnalisé des mails envoyés depuis l'action contact - mail_custom_message
+ - Ajouter 'wiki=' aux liens vers ce wiki dans les e-mails - contact_use_long_wiki_urls_in_emails
 ### Barre d'édition pour les pages et les champs texte
+ - Nom du champ bazar texte long pour lequel les composants doivent être visibles - actionbuilder_textarea_name
 ### Insertion de médias (images, vidéos)
+ - Service de vidéo par défaut (peertube, youtube ou vimeo) - attach-video-config[default_video_service]
+ - Adresse du serveur peertube par défaut - attach-video-config[default_peertube_instance]
 ### Base de données
+ - Latitude par défaut des affichages cartographiques - baz_map_center_lat
+ - Longitude par défaut des affichages cartographiques - baz_map_center_lon
+ - Niveau de zoom par défaut des cartes (1:monde => 15:commune) - baz_map_zoom
+ - Hauteur par défaut en pixels des affichages cartographiques - baz_map_height
+ - Adresse mail de l'expéditeur des modifications des fiches bazar - BAZ_ADRESSE_MAIL_ADMIN
+ - Envoyer un mail aux admininistrateurs à chaque modification de fiche (true ou false) - BAZ_ENVOI_MAIL_ADMIN
+ - Temps (s) entre deux rafraîchissements du cache pour vérifier les ajouts et modifications dans les requêtes JSON - baz_external_service[cache_time_to_check_changes]
+ - Temps (s) entre deux rafraîchissements du cache pour vérifier les suppresions dans les requêtes JSON - baz_external_service[cache_time_to_check_deletion]
+ - Temps (s) entre deux rafraîchissements du cache pour formulaires nécessaires aux requêtes JSON - baz_external_service[cache_time_to_refresh_forms]
+ - Permettre la création de fiches même si le wiki est fermé en écriture (true ou false) - bazarIgnoreAcls
 ### Sécurité
+ - Prévenir si l'on quitte la page sans sauvegarder (true ou false) - use_alerte
+ - Activer l'utilisation d'un captcha avant la sauvegarde (true ou false) - use_captcha
+ - Activer l'antispam hashcash du wiki (activé par défaut) - use_hashcash
+ - État du wiki (running ou vide = standard, hibernate = lecture seule) - wiki_status
 ### Balises meta pour l'indexation web
-
-
-Ce qu'on ne sait pas encore où mettre :
- - Gestion des tags
- - Gestion des fichiers
+ - Mots clés pour le référencement (séparés par des virgules, pas plus de 20-30) - meta_keywords
+ - Description du site en une phrase, pour le référencement (Attention : ne pas mettre de "." (point)) - meta_description
+ - Empêcher les robots à indexer le wiki (Mettre 'noindex,nofollow,noarchive,noimageindex') - meta[robots]
