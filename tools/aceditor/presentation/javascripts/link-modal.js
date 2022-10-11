@@ -56,7 +56,7 @@ export default class {
     if (linkOption === 'link') {
       result = this.preferredSyntax === 'markdown' ? `[${text}](${wikiurl})` : `[[${wikiurl} ${text}]]`
     } else {
-      const klass = ({ ext: 'new-window', $modal: '$modalbox' })[linkOption]
+      const klass = ({ ext: 'new-window', modal: 'modalbox' })[linkOption]
       const params = klass ? `class="${klass}" ` : ''
       result = `{{button link="${wikiurl}" text="${text}" ${params}nobtn="1"}}`
     }
