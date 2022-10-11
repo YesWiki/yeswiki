@@ -116,8 +116,7 @@ class EntryController extends YesWikiController
         if (count(array_filter($this->parentsEntries, function ($value) use ($entryId) {
             return $value === $entryId;
         })) < 3 // max 3 levels
-            ) {
-
+        ) {
             // use a custom template if exists (fiche-FORM_ID.tpl.html or fiche-FORM_ID.twig)
             $customTemplatePath = $this->getCustomTemplatePath($entry);
             if ($customTemplatePath) {
@@ -322,7 +321,7 @@ class EntryController extends YesWikiController
             'imageMediumHeight' => $this->config['image-medium-height'],
             'imageBigWidth' => $this->config['image-big-width'],
             'imageBigHeight' => $this->config['image-big-height'],
-            
+
         ]);
     }
 
@@ -420,7 +419,7 @@ class EntryController extends YesWikiController
                     $html[$id] = $field->renderStaticIfPermitted($entry, $userNameForRendering);
                     if ($id == 'bf_titre') {
                         preg_match('/<h1 class="BAZ_fiche_titre">\s*(.*)\s*<\/h1>.*$/is', $html[$id], $matches);
-                    } else {
+                    } elseif (!empty($html[$id])) {
                         preg_match('/<span class="BAZ_texte">\s*(.*)\s*<\/span>.*$/is', $html[$id], $matches);
                     }
                     if (isset($matches[1]) && $matches[1] != '') {
@@ -448,7 +447,7 @@ class EntryController extends YesWikiController
      * @param array $get (copy of $_GET) but pass in parameters to be more visible in primary level controllers
      * @return array
      */
-    public function formatQuery($arg, array $get) : array
+    public function formatQuery($arg, array $get): array
     {
         $queryArray = [];
 
@@ -497,7 +496,7 @@ class EntryController extends YesWikiController
      * @param string $datefilter
      * @return array $entries
      */
-    public function filterEntriesOnDate($entries, $datefilter) : array
+    public function filterEntriesOnDate($entries, $datefilter): array
     {
         $TODAY_TEMPLATE = "/^(today|aujourdhui|=0(D)?)$/i" ;
         $FUTURE_TEMPLATE = "/^(futur|future|>0(D)?)$/i" ;
@@ -586,7 +585,7 @@ class EntryController extends YesWikiController
             'P'
                 .(!empty($nbYears) ? $nbYears . 'Y' : '')
                 .(!empty($nbMonth) ? $nbMonth . 'M' : '')
-                .(!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays)? '0D' :''))
+                .(!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays) ? '0D' : ''))
         );
         $dateInterval->invert = ($sign == "-") ? 1 : 0;
 
@@ -619,22 +618,22 @@ class EntryController extends YesWikiController
                 // start before date and whatever finish
                 return (
                     $date->diff($entryStartDate)->invert == 1
-                    );
+                );
                 break;
             case ">":
                 // start after date or (before date but and end should be after date, end is needed)
                 return (
                     $date->diff($entryStartDate)->invert == 0
                     || !$this->dateIsStrictlyBefore($entryEndDate, $date)
-                    );
+                );
                 break;
             case "=":
             default:
                 // start before next day midnight and should end after date midnigth
                 return (
-                        $nextDay->diff($entryStartDate)->invert == 1
-                        && !$this->dateIsStrictlyBefore($entryEndDate, $date)
-                    );
+                    $nextDay->diff($entryStartDate)->invert == 1
+                    && !$this->dateIsStrictlyBefore($entryEndDate, $date)
+                );
         }
     }
 
