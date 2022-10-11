@@ -66,12 +66,20 @@ En markdown sur Umap cela donnera :
 
 ## Personnaliser la page de connexion au wiki
 Le formulaire de connexion placé habituellement dans la roue crantée de votre menu Yeswiki comprend des options pour personnaliser le parcours de vos contributeurs : le crayon permet d'éditer le composant "Connexion"
-- **Modifier la page d'inscription** Vous pouvez remplacer la page d'inscription par défaut (qui contient les infos minimales : nom / mail) par un formulaire plus complet - dans le composant : compléter l'url d'inscription avec le nom de votre page contenant un formulaire bazar personnalisé
+### Paramètres du composant Connexion
+ - **Modifier la page d'inscription** Vous pouvez remplacer la page d'inscription par défaut (qui contient les infos minimales : nom / mail) par un formulaire plus complet - dans le composant : compléter l'url d'inscription avec le nom de votre page contenant un formulaire bazar personnalisé
  Notez que vous devez configurer le formulaire associé avec un champ "créer un utilisateur" accompagné d'un champ e-mail.
 - **Diriger l'utilisateur connecté vers une page** : utile pour orienter les contributeurs vers une page contenant leurs données personnelles par exemple - dans le composant : compléter l'url de redirection après connexion réussie ```loggedinurl```
 -  **Diriger l'utilisateur déconnecté vers une page** compléter l'url de redirection après connexion réussie ```loggedouturl```
 -  **Personnaliser la page mot de passe perdu** : créez une page moins austère avec du texte ou des illustrations et ajoutez l'action ```{{lostpassword}}```qui permet de réinitialiser le mot de passe - puis dans le composant login : compléter url pour les mots de passe perdus
 -  **url de profil** : si vous avez modifié la page d'inscription, utilisez l'option 'WikiName' dans Paramètre du profil, cela permettra à l'utilisateur de modifier directement sa fiche.
 Par défaut la page "Modifier les paramètres utilisateurs" permet uniquement de modifier le mail et le mot de passe du user.
+
+### Autres astuces
+Lorsqu'un utilisateur tente d'accéder à une page qui nécessite d'être connecté, c'est le formulaire de connexion par défaut qui s'affiche.
+Pour personnaliser cette page avec un message plus pédagogique sur la raison d'être d'une partie réservée à certains utilisateurs et pour bénéficier des options de connexions listées ci-dessus : **créez une page nommée PageLogin** et placez votre contenu ainsi que l'action 
+``` yeswiki preview=120
+{{login signupurl="CreerCompteViaForm"}} 
+```
 
 
