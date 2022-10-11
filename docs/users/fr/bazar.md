@@ -155,7 +155,7 @@ Un champ de type image permet d'importer un fichier image qui sera ensuite visua
 Ce type de champ permet d'uploader un fichier (par exemple au format PDF). Ce fichier est ensuite téléchargeable par les personnes qui visualisent la fiche.
 #### Paramètres spécifiques au type de champs « upload de fichier » :
  - **Taille max** Ce paramètre permet de limiter la taille du fichier. Il s'agit d'un nombre d'octets (par ex. 2000000 équivalent à 2 Mo).
-  
+
 ### Email 
 Ce type de champs permet de saisir une adresse électronique. YesWiki effectue automatiquement des contrôles sur la syntaxe de l'adresse et propose également de paramétrer des comportements spécifiquement liés à ce type de données.
 #### Paramètres spécifiques au type de champs « email » :
@@ -271,19 +271,19 @@ L'affichage sous forme de bloc est le plus souple d'utilisation. Son paramétrag
  - **Cluster et facettes** Les options affichage en cluster et filtre par facette ne sont compatibles qu'en activant le rendu dynamique
  - **Afficher les contours de département** (à completer)
 
-### Paramètres supplémentaires
+### Paramètres supplémentaires pour bazarliste
 #### Query
 Il est possible d'afficher seulement une partie des données présentes dans la base de données en utilisant le paramètre query.
 Vous souhaitez :
    - **trier sur base du contenu d'une (ou plusieurs) liste(s)**
-        query="listeListeGenre=M|listeListeDep=26"
+        ``query="listeListeGenre=M|listeListeDep=26"``
         notez qu'il est possible de trier sur plusieurs valeurs au sein de la même query en séparant les valeurs par une virgule (sans espace)
         Notez bien que la syntaxe est bien liste+Nomdelaliste=clé ou liste+Nomdelaliste=clé1,clé2 (dans votre liste, la clé n'est pas le texte mais bien l'identifiant que vous avez indiqué juste devant)
    - **trier sur base du contenu d'une (ou plusieurs) checkbox(s)**
-        query="checkboxListeGenre=M|checkboxListeDep=26"
+        ```query="checkboxListeGenre=M|checkboxListeDep=26"```
         Notez bien que la syntaxe est bien checkbox+Nomdelaliste=clé
    - **trier sur base du contenu de boutons radios**
-        query="radioListeGenre=M|radioListeDep=26"
+        ```query="radioListeGenre=M|radioListeDep=26"```
         Notez bien que la syntaxe est bien radio+Nomdelaliste=clé
   - **trier sur base du contenu d'un champ (bf_...)**
         query="bf_titre=a.*" (affiche tous les titres commençant par a)
@@ -291,17 +291,17 @@ Vous souhaitez :
         query="bf_titre=NomYeswiki (affiche la fiche dont le champ titre est NomYeswiki)
         query="bf_titre=." (affiche toutes les fiches dont le champ "bf_titre" est vierge)
    - **trier sur base d'une liste dynamique de type "checkboxfiche"**
-        query="checkboxfiche<numeroduformulaireappelé>=Chat-Mot dufiltre"}}
+       ``` query="checkboxfiche<numeroduformulaireappelé>=Chat-Mot dufiltre"}}```
         Exemple :    {{bazarliste id="2" query="checkboxfiche2=TesT"}}
         Cet exemple est un annuaire. Ici, on veut voir les personnes qui ont rempli l'annuaire (formulaire 2), en affichant uniquement les personnes qui appartiennent au groupe de travail "Test" (dont le ChatMot est TesT - donc à écrire exactement comme ça)
    - **trier sur base d'un contenu vide**
-        query="radioListeGenre="
+        ```query="radioListeGenre=" ```
         Permet de ne garder que les fiches dont le champ radioListeGenre est vide 
     - **trier sur base d'un contenu non vide**
-        query="radioListeGenre!="
+       ``` query="radioListeGenre!=" ```
         Permet de ne garder que les fiches dont le champ radioListeGenre n'est pas vide 
    - **trier sur base d'un contenu différent d'une valeur**
-        query="radioListeGenre!=M"
+       ``` query="radioListeGenre!=M"```
         Permet de ne garder que les fiches dont le champ radioListeGenre n'est pas égale à M 
 
 
