@@ -169,21 +169,22 @@ form:not(#ACEditor) .aceditor-btn-help span {
   transform: translateX(-2.3rem);
   border-radius: 5px 0 0 5px;
 }
-/* In iframe & small screen, make button smaller and overlapping textarea */
+/* In iframe, button is inside the textarea */
 .yeswiki-iframe-body .flying-edit-button .btn {
-  border-radius: 4px;
+  border-radius: 0 3px 3px 0;
   padding: .25rem 0;
   width: 1.8rem;
-  transform: translateX(-.9rem);
+  transform: translateX(0);
 }
+/* in small screen, make button smaller and overlapping textarea */
 @media (max-width: 1200px) {
-  .flying-edit-button .btn {
+  body:not(.yeswiki-iframe-body) .flying-edit-button .btn {
     border-radius: 4px;
     padding: .4rem 0;
     width: 2rem;
     transform: translateX(-.9rem);
   }
-  form#ACEditor .flying-edit-button .btn {
+  body:not(.yeswiki-iframe-body) form#ACEditor .flying-edit-button .btn {
     /* overlap more to cover gutter */
     border-radius: 4px;
     padding: .4rem 0;
