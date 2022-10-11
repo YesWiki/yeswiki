@@ -77,9 +77,7 @@ Par défaut la page "Modifier les paramètres utilisateurs" permet uniquement de
 
 ### Autres astuces
 Lorsqu'un utilisateur tente d'accéder à une page qui nécessite d'être connecté, c'est le formulaire de connexion par défaut qui s'affiche.
-Pour personnaliser cette page avec un message plus pédagogique sur la raison d'être d'une partie réservée à certains utilisateurs et pour bénéficier des options de connexions listées ci-dessus : **créez une page nommée PageLogin** et placez votre contenu ainsi que l'action 
-``` yeswiki preview=120
-{{login signupurl="CreerCompteViaForm"}} 
-```
+**créez une page nommée PageLogin** permet de personnaliser cette page avec un message plus pédagogique et de bénéficier des options de connexions listées ci-dessus en utilisant le composant "Connexion"
+
 
 
