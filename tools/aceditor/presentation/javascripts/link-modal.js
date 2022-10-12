@@ -1,16 +1,27 @@
+import MarkdownExtra from './markdown-extra.js'
+
 export default class {
   onComplete
-  preferredSyntax
+  extra
 
   get $modal() { return $('#YesWikiLinkModal') }
   get $inputUrl() { return this.$modal.find('input[name=url]') }
   get $inputText() { return this.$modal.find('input[name=text]') }
+  get $inputTitle() { return this.$modal.find('input[name=title]') }
+  get $inputTarget() { return this.$modal.find('select[name=target]') }
+
+  TARGETS = ['newtab', 'modal']
 
   open(options) {
+    this.extra = new MarkdownExtra(options.extra || '')
+    const target = (this.extra.classes.filter((c) => this.TARGETS.includes(c)))[0]
+    this.extra.classes = this.extra.classes.filter((c) => !this.TARGETS.includes(c))
+
     this.onComplete = options.onComplete
     this.$inputUrl.val(options.link)
     this.$inputText.val(options.text)
-    this.preferredSyntax = options.syntax || 'markdown'
+    this.$inputTitle.val(options.title)
+    this.$inputTarget.val(target)
 
     this.$modal.find('.btn-insert').off('click').on('click', (e) => {
       this.onComplete(this.buildYesWikiCode(e))
@@ -30,37 +41,48 @@ export default class {
     })
   }
 
+  get extractTargetFromExtra() {
+    if (delete this.extra.modal) return 'modal'
+    if (delete this.extra.newtab) return 'newtab'
+    return ''
+  }
+
+  get extraToString() {
+    let result = ''
+    Object.entries(this.extra).forEach(([key, value]) => {
+      result += `${key}=${value} `
+    })
+    return result.trim()
+  }
+
   buildYesWikiCode(event) {
-    let wikiurl = this.$inputUrl.val() || ''
+    let link = this.$inputUrl.val() || ''
 
     // Replace spaces by -
-    wikiurl = wikiurl.replace(/\s+/g, '-')
-    this.$inputUrl.val(wikiurl)
+    link = link.replace(/\s+/g, '-')
+    this.$inputUrl.val(link)
 
     // Validate page name or url
-    const isUrl = /^https?:\/\//.test(wikiurl)
+    const isUrl = /^https?:\/\//.test(link)
     // We do not allow "." on purpose, even if it's part of WN_PAGE_TAG regular expression
     // because we want inputs like "yeswiki.net" to be interpreted as URL and not page names
-    const haveSpecialChars = /[{}|\.\\"'<>~:/?#[\]@!$&()*+,;=%]/.test(wikiurl)
-    const validWikiUrl = wikiurl && (isUrl || !haveSpecialChars)
-    if (!validWikiUrl) {
+    const haveSpecialChars = /[{}|\.\\"'<>~:/?#[\]@!$&()*+,;=%]/.test(link)
+    const validLink = link && (isUrl || !haveSpecialChars)
+    if (!validLink) {
       event.stopImmediatePropagation()
       this.$modal.find('.link-error').removeClass('hidden')
       return
     }
 
     // Create wiki code
-    const text = this.$inputText.val() || wikiurl
-    const linkOption = this.$modal.find('.link-options').val()
-    let result = ''
-    if (linkOption === 'link') {
-      result = this.preferredSyntax === 'markdown' ? `[${text}](${wikiurl})` : `[[${wikiurl} ${text}]]`
-    } else {
-      const klass = ({ ext: 'new-window', modal: 'modalbox' })[linkOption]
-      const params = klass ? `class="${klass}" ` : ''
-      result = `{{button link="${wikiurl}" text="${text}" ${params}nobtn="1"}}`
-    }
+    const text = this.$inputText.val() || link
+    let title = this.$inputTitle.val().trim()
+    if (title) title = ` "${title}"`
+    const target = this.$inputTarget.val()
+    this.extra.classes.unshift(target)
+    let extra = this.extra.stringify()
+    if (extra) extra = `{${extra}}`
 
-    return result
+    return `[${text}](${link}${title})${extra}`
   }
 }

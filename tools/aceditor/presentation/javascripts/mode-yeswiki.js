@@ -6,6 +6,13 @@ ace.define('ace/mode/yeswiki_highlight_rules', ['require', 'exports', 'module', 
   const { TextHighlightRules } = require('./text_highlight_rules')
   const { HtmlHighlightRules } = require('./html_highlight_rules')
 
+  const markdownLink =  { // link markdown
+    token: ['markup.open.yw-link-markdown', 'link-text', 'markup', 'markup', 'link-url',
+      'space', 'title-quote-mark', 'link-title', 'title-quote-mark'],
+    regex: '(\\[)([^\\]]*)(\\])(\\()([^\\)\\s]*)(\\s?)("?)([^\\)"]*)("?)',
+    next: 'md-extra'
+  }
+
   const YesWikiHighlightRules = function() {
     this.$rules = {
       start: [{
@@ -51,7 +58,10 @@ ace.define('ace/mode/yeswiki_highlight_rules', ['require', 'exports', 'module', 
         token: 'markup.list',
         regex: '^\\s{1,3}(?:-|\\d+\\.)\\s+',
         next: 'listblock-start'
-      }, { include: 'basic', noEscape: true }],
+      }, markdownLink , {
+        include: 'basic',
+        noEscape: true
+      }],
       basic: [
         { // strong ** __
           token: 'bold',
@@ -68,10 +78,6 @@ ace.define('ace/mode/yeswiki_highlight_rules', ['require', 'exports', 'module', 
         }, { // link
           token: ['markup.open.yw-link', 'link-url', 'space', 'link-text', 'markup.close.yw-link'],
           regex: '(\\[\\[)([^\\s]*)(\\s?)([^\\]]*)(\\]\\])'
-        }, { // link markdown
-          token: ['markup.open.yw-link-markdown', 'link-text', 'markup', 'markup', 'link-url',
-            'markup.close.yw-link-markdown'],
-          regex: '(\\[)([^\\]]*)(\\])(\\()([^\\)]*)(\\))'
         }
       ],
       allowBlock: [
@@ -79,6 +85,15 @@ ace.define('ace/mode/yeswiki_highlight_rules', ['require', 'exports', 'module', 
         { token: 'empty_line', regex: '^$', next: 'allowBlock' },
         { token: 'empty', regex: '', next: 'start' }
       ],
+      'md-extra': [{
+        token: ['markup', 'md-extra-markup', 'md-extra', 'md-extra-markup.close.yw-link-markdown'],
+        regex: '(\\))({)([^\\)}"]*)(})',
+        next: 'start'
+      }, {
+        token: 'markup.close.yw-link-markdown',
+        regex: '\\)',
+        next: 'start'
+      }],
       'yw-action': [{
         token: 'action-name',
         regex: '[a-zA-Z0-9-_]+',
@@ -106,7 +121,10 @@ ace.define('ace/mode/yeswiki_highlight_rules', ['require', 'exports', 'module', 
         token: 'markup.list',
         regex: '^\\s{0,3}(?:[*+-]|\\d+\\.)\\s+',
         next: 'listblock-start'
-      }, { include: 'basic', noEscape: true }],
+      }, markdownLink, {
+        include: 'basic',
+        noEscape: true
+      }],
       'pre-start': [
         { // pre //
           token: 'markup.pre',

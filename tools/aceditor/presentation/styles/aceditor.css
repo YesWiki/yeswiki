@@ -39,6 +39,12 @@ textarea.aceditor-textarea {
 .ace-body .ace_attribute-value, .ace-body .ace_attribute-quote-mark {
   color: var(--secondary-color-1) !important;
 }
+.ace-body .ace_title-quote-mark, .ace-body .ace_link-title {
+  color: var(--neutral-soft-color);
+}
+.ace-body .ace_md-extra, .ace-body .ace_md-extra-markup {
+  color: var(--secondary-color-1);
+}
 .ace-body .ace_markup.ace_html {
   color: var(--neutral-soft-color);
 }
@@ -191,4 +197,11 @@ form:not(#ACEditor) .aceditor-btn-help span {
     width: 2.2rem;
     transform: translateX(-.5rem);
   }
+}
+
+#YesWikiLinkModal .more-options {
+  border-top: 1px solid #eeeeee;
+  border-bottom: 1px solid #eeeeee;
+  margin: 1.5rem 0;
+  padding: .5rem 0;
 }

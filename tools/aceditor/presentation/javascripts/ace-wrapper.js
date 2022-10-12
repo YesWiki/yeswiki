@@ -9,7 +9,8 @@ export default class {
   cursor = {} // ace cursor with more infos
   cursorChangeCallbacks = []
   langTools
-  classesToIgnoreForData = ['markup', 'equal', 'space', 'attribute-quote-mark']
+  classesToIgnoreForData = ['markup', 'md-extra-markup', 'equal', 'space',
+    'attribute-quote-mark', 'title-quote-mark']
 
   constructor(domElement, options = {}) {
     this.$container = $(domElement)
