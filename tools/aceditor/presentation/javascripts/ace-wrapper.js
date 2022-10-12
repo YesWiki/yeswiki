@@ -27,7 +27,7 @@ export default class {
       showFoldWidgets: false,
       behavioursEnabled: true,
       wrapBehavioursEnabled: true,
-      fontSize: '18px',
+      fontSize: '1rem',
       useSoftTabs: false,
       tabSize: 3,
       fontFamily: 'monospace',
