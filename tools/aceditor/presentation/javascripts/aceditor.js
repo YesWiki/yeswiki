@@ -110,13 +110,11 @@ class Aceditor {
         }
         case 'yw-link-markdown':
         case 'yw-link': {
-          const { 'link-url': link, 'link-text': text } = cursor.groupData
+          const { 'link-url': link, 'link-text': text, 'link-title': title, 'md-extra': extra } = cursor.groupData
           this.flyingButton.show().onClick(() => {
             this.linkModal.open({
               action: 'edit',
-              syntax: cursor.groupType === 'yw-link-markdown' ? 'markdown' : 'wiki',
-              link,
-              text,
+              link, text, title, extra,
               onComplete: (result) => { this.editor.replaceCurrentGroupBy(result) }
             })
           })
