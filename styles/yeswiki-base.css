@@ -340,7 +340,7 @@ body > :not(#YesWikiModal) .current-revision-text {
 
 /* on /iframe page, we use white background, can be overwritten in the theme */
 .yeswiki-page-widget {
-  padding: 15px;
+  padding: 0;
   background: #fff;
   background-image: none;
 }
