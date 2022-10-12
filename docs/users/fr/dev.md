@@ -4,6 +4,10 @@
 
 !> Des bases de programmation vous seront nécessaire pour suivre ces étapes
 
+## Installer yeswiki dans un environnement de développement local
+### Sur des machines linux base Debian
+### Par docker
+
 ## Utilisation du dossier `custom`
 
 [filename](../en/custom-folder.md ':include')
