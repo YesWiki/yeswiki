@@ -42,6 +42,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'ACEDITOR_LINK_PAGE_OR_URL'         => 'YesWiki page name or URL',
     'ACEDITOR_LINK_HINT_NEW_PAGE_NAME'  => 'If the page does not exists, it will be created.',
     'ACEDITOR_LINK_TEXT'                => 'Text displayed',
+    'ACEDITOR_LINK_TITLE'               => 'Hovering Title',
     'ACEDITOR_LINK_NEW_PAGE_TEXT'       => "Link's text towards this new page",
     'ACEDITOR_LINK_OPEN_IN_CURRENT_TAB' => 'Link opens in current tab',
     'ACEDITOR_LINK_OPEN_IN_NEW_TAB'     => 'Link opens in new tab',

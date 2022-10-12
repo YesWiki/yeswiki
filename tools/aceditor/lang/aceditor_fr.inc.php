@@ -41,6 +41,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'ACEDITOR_LINK_PAGE_OR_URL'        => 'Nom de la page ou URL externe',
     'ACEDITOR_LINK_HINT_NEW_PAGE_NAME' => "Si la page n'existe pas, elle sera créée.",
     'ACEDITOR_LINK_TEXT'               => 'Texte affiché',
+    'ACEDITOR_LINK_TITLE'              => 'Texte au survol',
     'ACEDITOR_LINK_NEW_PAGE_TEXT'      => 'Texte du lien vers cette page',
     'ACEDITOR_LINK_OPEN_IN_CURRENT_TAB'=> 'Le lien s\'ouvre dans l\'onglet courant',
     'ACEDITOR_LINK_OPEN_IN_NEW_TAB'    => 'Le lien s\'ouvre dans un nouvel onglet',

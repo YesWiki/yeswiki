@@ -1,5 +1,5 @@
 <div class="modal fade" id="YesWikiLinkModal">
-	<div class="modal-dialog">
+	<div class="modal-dialog modal-sm">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -27,12 +27,29 @@
 							<input class="form-control" type="text" name="text">
 						</div>
 					</div>
-					{# Target #}
-					<select class="form-control link-options" data-show="newlink,edit" style="margin: 1.5rem 0 2rem 0;">
-						<option value="link" selected>{{ _t('ACEDITOR_LINK_OPEN_IN_CURRENT_TAB') }}</option>
-						<option value="ext">{{ _t('ACEDITOR_LINK_OPEN_IN_NEW_TAB') }}</option>
-						<option value="modal">{{ _t('ACEDITOR_LINK_OPEN_IN_MODAL') }}</option>
-					</select>
+					<div class="more-options" data-show="newlink,edit">
+						<div class="row">
+							<div class="col-md-6">
+								{# Title #}
+								<div class="control-group form-group">
+									<label class="control-label">{{ _t('ACEDITOR_LINK_TITLE') }}</label>
+									<div class="controls">
+										<input class="form-control" type="text" name="title">
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="control-group form-group">
+									{# Target #}
+									<select class="form-control" name="target" data-show="newlink,edit">
+										<option value="" selected>{{ _t('ACEDITOR_LINK_OPEN_IN_CURRENT_TAB') }}</option>
+										<option value="newtab">{{ _t('ACEDITOR_LINK_OPEN_IN_NEW_TAB') }}</option>
+										<option value="modalbox">{{ _t('ACEDITOR_LINK_OPEN_IN_MODAL') }}</option>
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
 				</form>
 			</div>
 			<div class="modal-footer">
