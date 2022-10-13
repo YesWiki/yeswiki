@@ -35,19 +35,24 @@ Code created for new features can be proposed to the community via two way.
  5. go to the server `repository-api` of `YesWiki` with your `SSH` key (key only given to authorized developpers)
  6. update the local file `repo.config.json`, normally with command `git pull` (warning the command is here only for indication)
  7. start the update of the repository
- 8. go back to the folder `https://github.com/YesWiki/yeswiki-extension-extensioname`
- 9. click on `Settings`
- 10. in left sidebar, click on `Webhooks`, then `Add webhook` (the link looks like `https://github.com/YesWiki/yeswiki-extension-extensionname/settings/hooks/new`)
- 11. fill the form like
-     - **Payload URL** : url of `repository-api`
-     - **Content type** : application/json
-     - **Secret** : secret GitHub password from config file on server `repository-api`
-     - choose **just the `push` event**
- 12. warn developpers community of the creation of this extension on Framateam channel : https://framateam.org/yeswiki/channels/developpement
+ 8. warn developpers community of the creation of this extension on Framateam channel : https://framateam.org/yeswiki/channels/developpement
      - the community `YesWiki` can ask to rename the extension, for that :
        - create a new extension with the new name
        - copy files
        - delete the current extension
+
+#### Add a `webhook` pfor repositories not in `https://github.com/YesWiki`
+
+_Indeed, repositories in https://github.com/YesWiki have automatically a `webhook` because they are repositories of this organization._
+
+ 1. go back to the folder `https://github.com/YesWiki/yeswiki-extension-extensioname`  (real url to update)
+ 2. click on `Settings`
+ 3. in left sidebar, click on `Webhooks`, then `Add webhook` (the link looks like `https://github.com/YesWiki/yeswiki-extension-extensionname/settings/hooks/new`)
+ 4. fill the form like
+     - **Payload URL** : url of `repository-api`
+     - **Content type** : application/json
+     - **Secret** : secret GitHub password from config file on server `repository-api`
+     - choose **just the `push` event**
 
 ### Delete an extension
 

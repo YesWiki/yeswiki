@@ -77,19 +77,24 @@ Le code créé pour de nouvelles fonctionnalités peut être proposé à la comm
  5. se rendre dans le dossier `repository-api` de `YesWiki` avec sa clé `SSH` (clé fournie uniquement aux développeurs autorisés)
  6. mettre à jour le fichier local `repo.config.json` avec normalement la commande `git pull` (attention, la commande n'est ici qu'une indication)
  7. lancer la mise à jour du dépôt
- 8. revenir dans le dossier `https://github.com/YesWiki/yeswiki-extension-nomextension`
- 9. cliquer sur `Settings`
- 10. dans la barre latérale gauche, cliquer sur `Webhooks`, puis `Add webhook` (le lien ressemble à `https://github.com/YesWiki/yeswiki-extension-nomextension/settings/hooks/new`)
- 11. compléter le formulaire de cette manière
-     - **Payload URL** : url de `repository-api`
-     - **Content type** : application/json
-     - **Secret** : le mot de passe secret GitHub stocké dans le fichier de config du serveur `repository-api`
-     - choisir **just the `push` event**
- 12. prévenir la communauté des développeurs de la création de cette extension sur le canal Framateam : https://framateam.org/yeswiki/channels/developpement
+ 8. prévenir la communauté des développeurs de la création de cette extension sur le canal Framateam : https://framateam.org/yeswiki/channels/developpement
      - la communauté `YesWiki` peut alors demander un renommage de l'extension, il faudra alors :
        - créer une nouvelle extension avec le nouveau nom
        - recopier le code
        - supprimer l'extension actuelle
+
+#### Ajouter un `webhook` pour les dossiers qui ne sont pas dans `https://github.com/YesWiki`
+
+_En effet, les dossiers qui sont dans https://github.com/YesWiki ont un `webhook` automatique parce que le dossier est dans cette organisation._
+
+ 1. revenir dans le dossier `https://github.com/YesWiki/yeswiki-extension-nomextension` (adresse exacte à mettre à jour)
+ 2. cliquer sur `Settings`
+ 3. dans la barre latérale gauche, cliquer sur `Webhooks`, puis `Add webhook` (le lien ressemble à `https://github.com/YesWiki/yeswiki-extension-nomextension/settings/hooks/new`)
+ 4. compléter le formulaire de cette manière
+     - **Payload URL** : url de `repository-api`
+     - **Content type** : application/json
+     - **Secret** : le mot de passe secret GitHub stocké dans le fichier de config du serveur `repository-api`
+     - choisir **just the `push` event**
 
 ### Supprimer une extension
 
