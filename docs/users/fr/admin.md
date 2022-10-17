@@ -13,21 +13,21 @@ Vous avez là un récap des menus et pages spéciales du wiki.
 C'est ici que vous pouvez indiquer "qui a le droit de faire quoi sur quelle page".
 Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
 
-[Voir la rubrique dédiée](https://testing.yeswiki.net/doc/?doc#/docs/users/fr/admin?id=g%c3%a9rer-les-droits)
+[Voir la rubrique dédiée](/docs/users/fr/admin?id=g%c3%a9rer-les-droits)
 
 **Look**
 
 C'est par là que vous personnalisez le squelette et l'esthétique de votre wiki.
 Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
 
-[Voir la rubrique dédiée](https://testing.yeswiki.net/doc/?doc#/docs/users/fr/admin?id=g%c3%a9rer-le-look)
+[Voir la rubrique dédiée](/docs/users/fr/admin?id=g%c3%a9rer-le-look)
 
 **Utilisateurs et groupes**
 
 Ici vous visualisez les comptes utilisateurs créés et vous pouvez les organiser en "groupes".
 Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
 
-[Voir la rubrique dédiée](https://testing.yeswiki.net/doc/?doc#/docs/users/fr/admin?id=gestion-des-droits-par-utilisateurice-ou-par-groupe)
+[Voir la rubrique dédiée](/docs/users/fr/admin?id=gestion-des-droits-par-utilisateurice-ou-par-groupe)
 
 **Mots clés**
 
@@ -84,11 +84,8 @@ Si vous avez reçu des droits d'admin sur le wiki, vous pourrez modifier toutes 
 
 En bas de page, vous allez trouver un bouton permissions. En cliquant sur celui-ci, une fenêtre popup va vous permettre de gérer les droits en lecture et écriture.
 **Voici les possibilités qui vous sont offertes**
-[
 
 ![image EditerPermissions.png (14.2kB)](images/M22Lectures_popuppermission_20220216161156_20220216151445.png)
-
-](images/M22Lectures_popuppermission_20220216161156_20220216151445.png)
 
 **Cette gestion page par page et user par user est vite "pesante"**
 
@@ -125,20 +122,12 @@ Pour gérer les groupes (et les utilisateurs inclus) cela se passe sur la page "
 
 Pour info : en bas de cette page, vous découvrez et gérer (si vous êtes dans le groupe @admins) les utilisateurs connus du wiki.
 
-[
-
 ![image EditerPermissions.png (14.2kB)](images/M22GererLesDroitsDAccesEnMasse_Gerergroupe_20220223095430_20220223095106.png)
-
-](images/M22GererLesDroitsDAccesEnMasse_Gerergroupe_20220223095430_20220223095106.png)
 
 **Pour ajouter ou retirer un utilisateur d'un groupe**
 lorsque j'ai cliqué sur voir/éditer le groupe concerné, il me suffit dans la case qui apparaît d'indiquer (ou de retirer) le nomwiki de l'utilisateur sur une ligne (sans virgule) et d'enregistrer
 
-[
-
 ![image EditerPermissions.png (14.2kB)](images/M22GererLesDroitsDAccesEnMasse_ajoutgroupe_20220223095430_20220223095137.png)
-
-](images/M22GererLesDroitsDAccesEnMasse_ajoutgroupe_20220223095430_20220223095137.png)
 
 ### Gestion des droits des pages en masse
 
@@ -152,21 +141,13 @@ Sur cette page, vous pourrez aussi voir les droits qui sont attribués à chacun
 
 via les listes déroulantes proposées (droit de lecture, droit d'écriture)
 
-[
-
 ![image EditerPermissions.png (14.2kB)](images/M22GererLesDroitsDAccesEnMasse_modesimple_20220223095430_20220223094848.png)
-
-](images/M22GererLesDroitsDAccesEnMasse_modesimple_20220223095430_20220223094848.png)
 
 ##### en mode avancé
 
 via les champs classiques (ceux qu'on retrouve quand on édite les droits d'une page seule)
 
-[
-
 ![image EditerPermissions.png (14.2kB)](images/M22GererLesDroitsDAccesEnMasse_modeavance_20220223095430_20220223094937.png)
-
-](images/M22GererLesDroitsDAccesEnMasse_modeavance_20220223095430_20220223094937.png)
 
 ### Gérer les droits d'accès des pages non encore existantes
 
