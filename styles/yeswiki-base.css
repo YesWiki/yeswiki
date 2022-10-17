@@ -921,10 +921,13 @@ html[lang="pt"] [lang]:not([lang="pt"]){
 
 
 /* users-table.twig */
-#users-table-action {
-  overflow-x: auto;
+@media (max-width: 1200px){
+  #users-table-action {
+    overflow-x: auto;
+  }
 }
 
 td.users-table-break-word {
-  word-break: break-all;
+  overflow-wrap: break-word;
+  max-width: 250px;
 }
