@@ -57,7 +57,7 @@
                   'users') }}
           {% endif %}
           <td>{{ user.name }}</td>
-          <td>{{ (isAdmin or userIsTheOneConnected) ? user.groups|join(', ') : ((user.groups is not empty) ? '***' : '') }}</td>
+          <td class="users-table-break-word">{{ (isAdmin or userIsTheOneConnected) ? user.groups|join(', ') : ((user.groups is not empty) ? '***' : '') }}</td>
           {% if isAdmin %} {# Email only shown to admins #}
             <td>{{ user.email }}</td>
           {% endif %}

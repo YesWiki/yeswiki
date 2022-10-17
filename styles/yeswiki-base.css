@@ -918,3 +918,13 @@ html[lang="pt"] [lang]:not([lang="pt"]){
   line-height: 8px;
   color: var(--primary-color);
 }
+
+
+/* users-table.twig */
+#users-table-action {
+  overflow-x: auto;
+}
+
+td.users-table-break-word {
+  word-break: break-all;
+}
