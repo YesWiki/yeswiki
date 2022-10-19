@@ -207,7 +207,7 @@ class ExternalBazarService
      * @param array $params
      * @return array|null $entries
      */
-    public function getEntries($params):?array
+    public function getEntries($params): array
     {
         // Merge les paramètres passé avec des paramètres par défaut
         $params = array_merge(
@@ -315,7 +315,7 @@ class ExternalBazarService
             return $entries;
         } elseif ($this->debug) {
             trigger_error(get_class($this)."::getEntries: "._t('BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_ENTRIES'));
-            return null;
+            return [];
         }
         return [];
     }
