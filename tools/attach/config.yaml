@@ -99,6 +99,7 @@ parameters:
     xml: 'XML'
     yaml: 'YAML'
     zip: 'Zip'
+    scar: 'SCAR'
     #  Open Document
     odt: 'opendocument text'
     ods: 'opendocument spreadsheet'
