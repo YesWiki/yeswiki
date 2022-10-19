@@ -57,7 +57,7 @@ class ExternalBazarService
     protected $importService ;
     protected $wiki ;
 
-    
+
     protected $newFormId;
     protected $tmpForm ;
     private $urlCache;
@@ -82,7 +82,7 @@ class ExternalBazarService
         $this->timeCacheToCheckDeletion = (int) ($externalBazarServiceParameters['cache_time_to_check_deletion'] ?? 86400) ; // seconds
         $this->timeCacheToRefreshForms = (int) ($externalBazarServiceParameters['cache_time_to_refresh_forms'] ?? 7200) ; // seconds
         $this->timeDebug = (bool) ($externalBazarServiceParameters['time_debug'] ?? false) ;
-        
+
         $this->newFormId = null;
         $this->tmpForm = null;
         $this->urlCache = null;
@@ -98,12 +98,12 @@ class ExternalBazarService
      * @param bool $checkUrl
      * @return null|array
      */
-    public function getForm(string $url, int $formId, bool $refresh = false, bool $checkUrl = true) : ?array
+    public function getForm(string $url, int $formId, bool $refresh = false, bool $checkUrl = true): ?array
     {
         if ($checkUrl) {
             $url= $this->formatUrl($url);
         }
-        $urlDetails = $this->getUrlDetails($url, $refresh  ? 0 : $this->timeCacheToRefreshForms);
+        $urlDetails = $this->getUrlDetails($url, $refresh ? 0 : $this->timeCacheToRefreshForms);
         if (empty($urlDetails)) {
             if ($this->debug) {
                 trigger_error(get_class($this)."::getForm: "._t('BAZ_EXTERNAL_SERVICE_BAD_URL'));
@@ -137,7 +137,7 @@ class ExternalBazarService
      * @param bool $refresh
      * @return array forms
      */
-    public function getFormsForBazarListe(array $externalIds, bool $refresh = false) : ?array
+    public function getFormsForBazarListe(array $externalIds, bool $refresh = false): ?array
     {
         if ($this->debug && $this->timeDebug) {
             $diffTime = -hrtime(true);
@@ -218,7 +218,7 @@ class ExternalBazarService
             ],
             $params
         );
-        
+
         if ($this->debug && $this->timeDebug) {
             $diffTime = -hrtime(true);
         }
@@ -261,7 +261,7 @@ class ExternalBazarService
                 array_push($entries, ...$localEntries);
             } else {
                 $distantFormId = $form['external_bn_id_nature'];
-                
+
                 $urlDetails = $this->getUrlDetails($url, $this->timeCacheToCheckChanges);
                 if (empty($urlDetails)) {
                     if ($this->debug) {
@@ -434,7 +434,7 @@ class ExternalBazarService
         }
         $url = $this->sanitizeUrlForEntries($url);
         $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.$this->sanitizeFileName($url);
-        
+
         if (!file_exists($cache_file) || $forceRefresh) {
             $this->secureFilePutContents($url, '', $cache_file, $forceRefresh);
             if ($this->debug && $this->timeDebug) {
@@ -485,7 +485,7 @@ class ExternalBazarService
                         )
                         : $value
                     );
-                    foreach (($addFields ? ['id_fiche','bf_titre','url','date_maj_fiche']:['date_maj_fiche']) as $fieldName) {
+                    foreach (($addFields ? ['id_fiche','bf_titre','url','date_maj_fiche'] : ['date_maj_fiche']) as $fieldName) {
                         if (!in_array($fieldName, $fields)) {
                             $fields[] = $fieldName;
                         }
@@ -520,7 +520,7 @@ class ExternalBazarService
      * @param string $inputString
      * @return string $outputString
      */
-    private function sanitizeFileName(string $inputString):string
+    private function sanitizeFileName(string $inputString): string
     {
         return removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $inputString)));
     }
@@ -614,7 +614,7 @@ class ExternalBazarService
         $json = file_get_contents($cache_file);
         $json = $this->extractErrors($json, $cache_file);
         $entries = json_decode($json, true);
-        
+
         if (!empty($entries) && is_array($entries)) {
             $maxUpdatedDate = null;
             foreach ($entries as $entry) {
@@ -699,7 +699,7 @@ class ExternalBazarService
      * get newFormId usinf FormManager at first call
      * @return int
      */
-    private function findNewId():int
+    private function findNewId(): int
     {
         if (is_null($this->newFormId)) {
             $this->newFormId = $this->formManager->findNewId();
@@ -713,7 +713,7 @@ class ExternalBazarService
      * get temp form (to give data to FormManager)
      * @return array
      */
-    public function getTmpForm():array
+    public function getTmpForm(): array
     {
         return $this->tmpForm ;
     }
@@ -725,7 +725,7 @@ class ExternalBazarService
      * @param array $form
      * @return array $form
      */
-    private function prepareExtForm(int $localFormId, string $url, array $form):array
+    private function prepareExtForm(int $localFormId, string $url, array $form): array
     {
         // update FormId
         $form['external_bn_id_nature'] = $form['bn_id_nature'];
@@ -792,7 +792,7 @@ class ExternalBazarService
             } else {
                 $details = json_decode($this->extractErrors(file_get_contents($cache_file), $cache_file), true);
             }
-            
+
             $this->urlCache[$url] = $details;
         }
         return $this->urlCache[$url];
@@ -853,7 +853,7 @@ class ExternalBazarService
         return $content;
     }
 
-    private function getFormUrl(array $urlDetails, $formId):string
+    private function getFormUrl(array $urlDetails, $formId): string
     {
         return $urlDetails[0].'/'.($urlDetails[2] ? '' : '?').
             str_replace(
@@ -862,12 +862,12 @@ class ExternalBazarService
                 self::JSON_FORM_BASE_URL
             );
     }
-    private function getEntriesViaApiUrl(array $urlDetails, $distantFormId, $querystring):string
+    private function getEntriesViaApiUrl(array $urlDetails, $distantFormId, $querystring): string
     {
         return $urlDetails[0].'/'.($urlDetails[2] ? '' : '?').'api/forms/'.$distantFormId.'/entries'.
             (empty($querystring) ? '' : ($urlDetails[2] ? '?' : '&').$querystring);
     }
-    private function getEntriesViaJsonHandlerUrl(array $urlDetails, $distantFormId, $querystring):string
+    private function getEntriesViaJsonHandlerUrl(array $urlDetails, $distantFormId, $querystring): string
     {
         return $urlDetails[0].'/'.($urlDetails[2] ? '' : '?').$urlDetails[1].
             str_replace(
