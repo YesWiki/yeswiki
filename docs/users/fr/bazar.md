@@ -19,7 +19,7 @@ A l'installation de votre wiki, quelques formulaires sont présents dans votre [
 !> Notez qu'il faut être connecté.e avec un compte administrateur du wiki pour pouvoir utiliser certaines fonctionnalités _Bazar_.  
   
 L'écran qui se présente ressemble à ceci (voir ci dessous).  
-[![image bazar.png (0.1MB)](images/DocBazarAcces_bazar_vignette_780_544_20220211165136_20220211155202.png)](https://quincaillere.org/formationgarecentrale2022/cache/DocBazarAcces_bazar_vignette_780_544_20220211165136_20220211155202.png)  
+![image bazar.png (0.1MB)](images/DocBazarFormulaireGestion_formulaire_gestion_20220204173223_20220204163232.png)
 
 L'onglet **Formulaires** se présente sous la forme d'un tableau dans lequel chaque formulaire présent sur le wiki occupe une ligne.  
 Pour chaque ligne, et donc chaque formulaire, on a donc les informations suivantes (les nombres en rouge sur la capture d'écran correspondent aux numéros dans la liste ci-après).  
@@ -135,10 +135,10 @@ Un champs de texte qui permet la saisie de quelques mots.
 ### Zone de texte
 Une zone de texte permet la saisie d'un texte relativement long et pouvant courrir sur plusieurs lignes.
 #### Paramètres spécifiques au type de champs « zone de texte » : 
- - **Valeur** : Ce paramètre permet de pré-remplir le champ. C'est utile lorsque on connaît la réponse la plus courante (si, par exemple, on demande le pays).  
- - **Format d'écriture** : Ce paramètre permet de paramétrer les fonctionnalités d'écriture dont disposeront les utilisateurices. Trois valeurs sont possibles.  
-  - **Wiki –** C'est la valeur par défaut. Elle offre pour la saisie de ce champ tous les outils disponibles lorsqu'on édite une page YesWiki.
-  - **Éditeur wysiwyg –** Ce paramétrage offre à l'utilisateurice beaucoup plus de facilité de saisie. Son usage est toutefois à limiter pour des raisons d'ergonomie.
+- **Valeur** : Ce paramètre permet de pré-remplir le champ. C'est utile lorsque on connaît la réponse la plus courante (si, par exemple, on demande le pays).  
+- **Format d'écriture** : Ce paramètre permet de paramétrer les fonctionnalités d'écriture dont disposeront les utilisateurices. Trois valeurs sont possibles.  
+  - **Wiki –** C'est la valeur par défaut. Elle offre pour la saisie de ce champ tous les outils disponibles lorsqu'on édite une page YesWiki (liens, fichiers joints, composants ...).
+  - **Éditeur wysiwyg –** Ce paramétrage offre à l'utilisateurice plus de facilité de saisie. Son usage est toutefois à limiter pour des raisons d'ergonomie. La barre de mise en forme est plus classique mais n'offre pas les options wiki (composants...)
   - **Texte non interprété –** Cette valeur limite la saisie aux seuls caractères sans mise en forme (pas d'italique ni de gras par exemple). C'est très utile pour saisir des adresses postales.
 - **Largeur champ de saisie** : Ce paramètre permet de préciser la largeur du champ de saisie.
 
@@ -167,6 +167,7 @@ Ce type de champs permet de saisir une adresse électronique. YesWiki effectue a
 ### Sélectionner 
 Un champ de ce type permet de proposer à l'utilisateur une liste fermée de choix. Les choix possibles seront présentés sous forme d'une liste déroulante.
 En outre, l'utilisation de ce type de champ permet d'avoir recours à des facettes pour filtrer parmi les fiches remplies.
+Avec "Sélectionner", l'utilisateurice ne pourra choisir qu'un choix parmi la liste.
 
 En premier lieu ce type de champs nécessite de pouvoir énumérer les différentes valeurs possibles. 
 #### Paramètres spécifiques au type de champs « sélectionner » :
@@ -176,26 +177,25 @@ Si, au contraire, vous souhaitez permettre à l'utilisateur de choisir parmi des
  - **Valeur par défaut** Ce paramètre vous permet de proposer une valeur par défaut. Si vous n'en précisez pas, c'est le mot « choisir » qui s'affichera jusqu'à ce qu'un choix soit effectué. Attention, pour préciser la valeur par défaut, il faut indiquer sa clef dans la liste (et non pas sa valeur).
 
 ### Groupe de cases à cocher 
-Un champ de ce type permet de proposer à l'utilisateur une liste fermée de choix. Les choix possibles seront présentés sous forme d'un groupe de cases à cocher.
-En outre, l'utilisation de ce type de champ permet d'avoir recours à des facettes pour filtrer parmi les fiches remplies.
+Un champ de ce type permet de proposer à l'utilisateur une liste fermée de choix. Les choix possibles seront présentés sous forme d'un groupe de cases à cocher. En outre, l'utilisation de ce type de champ permet d'avoir recours à des facettes pour filtrer parmi les fiches remplies.
+Avec "Groupe de cases à cocher", l'utilisateurice pourra cocher plusieurs choix parmi la liste.
 
 En premier lieu ce type de champs nécessite de pouvoir énumérer les différentes valeurs possibles.
 #### Paramètres spécifiques au type de champs « groupe de cases à cocher » :
  - **Origine des données** Dans ce paramètre, pour permettre à l'utilisateurice de choisir parmi les valeur d'une liste, sélectionnez « une liste ».
 Si, au contraire, vous souhaitez permettre à l'utilisateurice de choisir parmi des fiches d'un autre formulaire, sélectionnez « Un formulaire Bazar ».
  - **Choix de la liste/du formulaire** Avec ce paramètre vous choisissez la liste (ou le formulaire) à partir de laquelle vous souhaitez que les utilisateurices choisissent.
- - **Valeur par défaut** Ce paramètre vous permet de proposer une valeur par défaut. Si vous n'en précisez pas, c'est le mot « choisir » qui s'affichera jusqu'à ce qu'un choix soit effectué. Attention, pour préciser la valeur par défaut, il faut indiquer sa clef dans la liste (et non pas sa valeur).
+ - **Valeur par défaut** Ce paramètre vous permet de proposer une valeur par défaut. Attention, pour préciser la valeur par défaut, il faut indiquer sa clef dans la liste (et non pas sa valeur).
 
 ### Groupe de boutons radio 
-Un champ de ce type permet de proposer à l'utilisateur une liste fermée de choix. Les choix possibles seront présentés sous forme d'un groupe de boutons radio.
-En outre, l'utilisation de ce type de champ permet d'avoir recours à des facettes pour filtrer parmi les fiches remplies.
-En premier lieu ce type de champs nécessite de pouvoir énumérer les différentes valeurs possibles. 
+Un champ de ce type permet de proposer à l'utilisateur une liste fermée de choix. Les choix possibles seront présentés sous forme d'un groupe de boutons radio. En outre, l'utilisation de ce type de champ permet d'avoir recours à des facettes pour filtrer parmi les fiches remplies.
+"Groupe de boutons radio " se présente comme les cases à cocher mais l'utilisateurice ne pourra choisir qu'une option parmi la liste.
 
 #### Paramètres spécifiques au type de champs « groupe de boutons radio » :
  - **Origine des données** : Dans ce paramètre, pour permettre à l'utilisateur de choisir parmi les valeur d'une liste, sélectionnez « une liste ».
 Si, au contraire, vous souhaitez permettre à l'utilisateur de choisir parmi des fiches d'un autre formulaire, sélectionnez « Un formulaire Bazar ».
  - **Choix de la liste/du formulaire** : Avec ce paramètre vous choisissez la liste (ou le formulaire) à partir de laquelle vous souhaitez que les utilisateurs choisissent.
- - **Valeur par défaut** : Ce paramètre vous permet de proposer une valeur par défaut. Si vous n'en précisez pas, c'est le mot « choisir » qui s'affichera jusqu'à ce qu'un choix soit effectué. Attention, pour préciser la valeur par défaut, il faut indiquer sa clef dans la liste (et non pas sa valeur).
+ - **Valeur par défaut** : Ce paramètre vous permet de proposer une valeur par défaut. Attention, pour préciser la valeur par défaut, il faut indiquer sa clef dans la liste (et non pas sa valeur).
 
 ### Date
 Un champ de type date permet de saisir sans erreur une date.
@@ -206,6 +206,7 @@ Certains affichages des résultats (calendrier, agenda, etc.) nécessitent la pr
 
 ### Géolocalisation de l'adresse
 ![image champ_zone.png (24.5kB)](images/DocBazarChampGeo_champ_geoloc_20220204222452_20220204212502.png)
+
 Ce champ n'est pas un vrai champ. Il s'agit, de fait, d'un outil qui permet de transformer une adresse saisie par un humain en un jeu de coordonnées (longitude et latitude).  
 Son comportement est donc un peu différent de ce qu'on trouve dans les autres champs.  
 
