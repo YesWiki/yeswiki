@@ -161,6 +161,8 @@ Ce type de champs permet de saisir une adresse électronique. YesWiki effectue a
 #### Paramètres spécifiques au type de champs « email » :
  - **Remplacer l'email par un bouton contact** En sélectionnant « oui » pour ce paramètre, on fait en sorte que l'adresse électronique soit remplacée, lors de l'affichage de la fiche, par un bouton qui renvoie vers un formulaire de contact automatiquement généré. L'email n'est donc pas visible par les personnes qui visualisent la fiche.
  - **Envoyer le contenu de la fiche à cet email** Ce paramètre permet de demander à YesWiki d'envoyer le contenu de la fiche à l'adresse saisie. Cet envoi se fera lorsque la personne aura validé la saisie de la fiche.
+ __Astuce__ : Il est possible d'ajouter un contenu personnalisé dans le corps du mail via la page Fichier de configuration dans Gestion du site. Pour cela : insérer votre contenu (avec mise en forme possible en HTML) au niveau du paramètre ```Message personnalisé des mails envoyés depuis l'action contact - mail_custom_message```
+ __Pour aller plus loin dans la personnalisation des mails envoyés__ : pour les développeurs Il est possible d'adapter les messages affichés dans les e-mails en copiant les templates associés depuis tools/contact/templates/notify-email-*.twig dans custom/templates/contact/ puis en modifiant le contenu de ces modèles (syntaxe twig)
 
 ### Sélectionner 
 Un champ de ce type permet de proposer à l'utilisateur une liste fermée de choix. Les choix possibles seront présentés sous forme d'une liste déroulante.
