@@ -28,32 +28,24 @@ if (count($fiches)>0) {
         $fields = $form['prepared'];
         
         /*	Parameters  */
-        $columnTitlesNames = $param['columntitles'] ?? null;
-        $columnTitlesNames = array_filter(
-            array_map('trim', explode(',', trim($columnTitlesNames))),
-            function ($name) {
-                return !empty($name);
-            }
-        );
+        foreach([
+            'columntitles' => 'columnTitlesNames',
+            'columnfieldsids' => 'columnFieldsIdsRaw',
+            'sumfieldsids' => 'sumFieldsIds',
+            ] as $paramKey => $varName){
+            $tmp = (isset($param[$paramKey]) && is_string($param[$paramKey])) ? $param[$paramKey] : "";
+            $tmp = array_filter(
+                array_map('trim', explode(',', trim($tmp))),
+                function ($name) {
+                    return !empty($name);
+                }
+            );
+            extract([$varName => $tmp]);
+        }
 
-        $columnFieldsIdsRaw = $param['columnfieldsids'] ?? null;
-        $columnFieldsIdsRaw = array_filter(
-            array_map('trim', explode(',', trim($columnFieldsIdsRaw))),
-            function ($id) {
-                return !empty($id);
-            }
-        );
 
         $checkboxFieldsInColumns = $param['checkboxfieldsincolumns'] ?? null;
         $checkboxFieldsInColumns = !in_array($checkboxFieldsInColumns, ["0",0,false,"false","non"], true);
-
-        $sumFieldsIds = $param['sumfieldsids'] ?? null;
-        $sumFieldsIds = array_filter(
-            array_map('trim', explode(',', trim($sumFieldsIds))),
-            function ($id) {
-                return !empty($id);
-            }
-        );
 
         foreach(['displayadmincol','displaycreationdate','displaylastchangedate','displayowner'] as $paramName){
             $paramValue = (!empty($param[$paramName]) && in_array($param[$paramName], ['yes','onlyadmins'], true)) ? $param[$paramName] : false;
@@ -229,7 +221,8 @@ if (count($fiches)>0) {
                         unset($fiches[$index]);
                     } else {
                         foreach($form['prepared'] as $field){
-                            if ((empty(trim($field->renderStaticIfPermitted($fiche))))){
+                            if (empty($field->renderStaticIfPermitted($fiche)) || 
+                                empty(trim($field->renderStaticIfPermitted($fiche)))){
                                 $fiches[$index][$field->getPropertyName()] = "";
                             } else if ($field instanceof EmailField){
                                 $fiches[$index][$field->getPropertyName()] = "***@***.***";
