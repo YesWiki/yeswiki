@@ -166,7 +166,7 @@ Ce type de champs permet de saisir une adresse électronique. YesWiki effectue a
 
 ### Sélectionner 
 Un champ de ce type permet de proposer à l'utilisateur une liste fermée de choix. Les choix possibles seront présentés sous forme d'une liste déroulante.
-En outre, l'utilisation de ce type de champ permet d'avoir recours à des facettes pour filtrer parmi les fiches remplies.
+En outre, l'utilisation de ce type de champ permet d'avoir recours à des [facettes](/docs/users/fr/bazar.md#afficher-des-filtres-facettes) pour filtrer parmi les fiches remplies.
 Avec "Sélectionner", l'utilisateurice ne pourra choisir qu'un choix parmi la liste.
 
 En premier lieu ce type de champs nécessite de pouvoir énumérer les différentes valeurs possibles. 
@@ -214,18 +214,33 @@ Notamment, pour trouver les coordonnées d'une adresse, il faut à YesWiki des i
  -   un champ dont l'identifiant unique est « bf\_adresse ». S'il n'existe pas, il est d'ailleurs inséré automatiquement lors de la création du champ « géolocalisation de l'adresse » ;
  -  un champ dont l'identifiant unique est « bf\_ville » ;
  -  un champ dont l'identifiant unique est « bf\_pays ».
+
 Il est indispensable d'avoir un champ de ce type dans votre formulaire si vous souhaitez afficher vos résultats sous forme de carte.
+
 #### Paramètres du type de champs « géolocalisation de l'adresse » :
- - **Nom Champ Latitude** Avec ce champ, YesWiki va convertir l'adresse postale en coordonnées. Ce paramètre indique à YesWiki dans quel nom interne il doit donner à la valeur de latitude. Sauf besoin précis, conservez la valeur par défaut qui est « bf\_latitude ».  
- - **Nom Champ Longitude** Avec ce champ, YesWiki va convertir l'adresse postale en coordonnées. Ce paramètre indique à YesWiki dans quel nom interne il doit donner à la valeur de longitude. Sauf besoin précis, conservez la valeur par défaut qui est « bf\_longitude ».
- - **Champ code postal pour l'autocomplétion** : s'assurer que le formulaire possède un champ texte court pour le code postal et noter sont nom (ex. : bf_code_postal). Ainsi quand vous allez taper un code postal puis sélectionner la ville associée, la géolocalisation sera automatiquement mise à jour. 
- - **Champ ville pour l'autocomplétion** : s'assurer que le formulaire possède un champ texte court pour la ville et noter sont nom (ex. : bf_ville). Ainsi quand vous allez taper un nom de ville puis sélectionner le code postal associé, la géolocalisation sera automatiquement mise à jour. 
+ - **Nom Champ Latitude** Sauf besoin précis, conservez la valeur par défaut qui est « bf\_latitude ». 
+ - **Nom Champ Longitude** Sauf besoin précis, conservez la valeur par défaut qui est « bf\_longitude ».
+ - **Champ code postal pour l'autocomplétion** : s'assurer que le formulaire possède un champ texte court pour le code postal et noter son nom (ex. : bf_code_postal). Ainsi quand vous allez taper un code postal puis sélectionner la ville associée, la géolocalisation sera automatiquement mise à jour. 
+ - **Champ ville pour l'autocomplétion** : s'assurer que le formulaire possède un champ texte court pour la ville et noter son nom (ex. : bf_ville). Ainsi quand vous allez taper un nom de ville puis sélectionner le code postal associé, la géolocalisation sera automatiquement mise à jour. 
 
 ### Inscription liste de diffusion
 
 ### Insérer un sous titre ou une information complémentaire (custom html)
+Le champ custom html permet d'insérer un texte, un titre, un lien, ou tout autre contenu au format HTML.
+Il se décline en deux options : 
+  - le contenu qui sera affiché lors de la saisie (cela peut être une information destinée à expliquer à l'utilisateur ce qu'on attend comme élément ) 
+  - le contenu affiché lors de la consultation d'une fiche 
+
 
 ### Créer un utilisateur lorsque la fiche est validée
+Ce champ est utile pour créer un compte utilisateur à partir des informations contenues dans le formulaire. 
+- Champ pour le nom d'utilisateur
+- Champ pour l'email de l'utilisateur
+- Auto. Synchro. e-mail
+- Groupes où ajouter l'utilisateur
+
+Tips : ce champ peut être associé à l'option **Config droits d'accès** afin de permettre à ce nouvel utilisateur de modifier sa propre fiche par la suite.
+
 
 ### Config droits d'accès
 Ce champ n'est pas un vrai champ. Il s'agit d'un outil qui permet de définir les droits d'accès qui seront affectés à chacune des fiches du formulaire. Vous pouvez donc ainsi préciser quelles catégories d'utilisateurs (Tout le monde, Utilisateurs identifiés, Membres du groupe admins, ou Propriétaire de la fiche et admins) peuvent lire, saisir ou modifier ou encore commenter des fiches de votre formulaire.
@@ -233,8 +248,10 @@ Ce champ n'est pas un vrai champ. Il s'agit d'un outil qui permet de définir le
 !> Cette configuration des droits d'accès ne s'applique qu'aux fiches saisies après son paramétrage. Autrement dit, si vous ajoutez ce « champ » à votre formulaire, ou si vous le modifiez, seules les fiches saisies ou modifiées après cet ajout, ou cette modfication, auront les droits que vous avez définis.
 
 ### Config thème de la fiche
+Permet de définir un thème graphique spécifique à associer à toutes les fiches du formulaire, cela peut être un jeu de couleur que vous définissez dans la page LookWiki
 
 ### Bookmarklet
+Ce champ spécial génère un bouton qui sera affiché dans votre formulaire de saisie. En glisssant le bouton vers la barre de raccourci du navigateur, les utilisateurs pourront bénéficier d'un raccourci pour faire une veille partagée.
 
 ### Liste des fiches liées
 à écrire à partir de https://quincaillere.org/formationgarecentrale2022/?DocBazarChampFichesLiees
@@ -248,10 +265,12 @@ Vous pouvez également y ajouter du texte : par exemple mettre un tiret entre le
 ### Custom 
 
 ### Navigation par onglet /Passage à l'onglet suivant
+Il est possible de découper le formulaire en plusieurs onglets pour rendre le formulaire plus lisible.
 
 ### Rendre une question conditionnelle
 
 ### Calculs
+
 
 ### Onglet : code wiki
 Lorsque vous modifiez un formulaire, un onglet permet de consulter le **code wiki** qui a été généré. Il peut être utile de le consulter lorsque vous avez un problème d'affichage de votre formulaire. Souvent le problème vient d'un caractère invisible issu d'un copié collé sur les intitulés des champs. Afficher le code wiki permet de déceler ces caractères html.
@@ -274,9 +293,12 @@ L'affichage sous forme de bloc est le plus souple d'utilisation. Son paramétrag
  - **Cluster et facettes** Les options affichage en cluster et filtre par facette ne sont compatibles qu'en activant le rendu dynamique
  - **Afficher les contours de département** (à completer)
 
-### Paramètres supplémentaires pour bazarliste
-#### Query
-Il est possible d'afficher seulement une partie des données présentes dans la base de données en utilisant le paramètre query.
+### Afficher des filtres (facettes)
+Les facettes permettent d'afficher des filtres  à coté de vos données, l'utilisateurice pourra cocher un ou plusieurs pour afficher une sélection de données. Ces filtres sont basés sur les listes, les cases à cocher et les boutons radios.
+Les filtres peuvent être configurés via l'interface composant **Afficher les données d'un formulaire**
+
+### Afficher une partie des données (query)
+Il est possible d'afficher seulement une partie des données présentes dans la base de données en utilisant le paramètre query. Ce paramètre doit être ajouté dans le code ```{{bazarliste ...}}``` à la suite de vos autres paramètres 
 Vous souhaitez :
    - **trier sur base du contenu d'une (ou plusieurs) liste(s)**
         ``query="listeListeGenre=M|listeListeDep=26"``
@@ -308,11 +330,11 @@ Vous souhaitez :
         Permet de ne garder que les fiches dont le champ radioListeGenre n'est pas égale à M 
 
 
-#### Ordre et champ
+### Ordre et champ
  - **ordre** 	Permet d'afficher la liste par ordre croissant ou décroissant. Par défaut : rangé par ordre croissant (asc) sinon mettre "desc" pour l'ordre décroissant
  - **champ** 	Permet de choisir le champ utilisé pour le tri. Par défaut : tri sur le champ titre (bf_titre). Par date par ex : `champ="date_creation_fiche"` ou `champ="date_maj_fiche"`
 
-#### Random
+### Random
 Permet d'afficher une sélection aléatoire de fiches `random="1"`
 en général on l'utilise avec le paramètre **nb** `nb="5"` pour afficher 5 ressources au hasard à mettre en valeur.
 
@@ -360,4 +382,4 @@ Il est possible :
 
 ![image bazarexportnext1.png (26.6kB)](images/BazarImportExport_bazarexportnext1_vignette_780_544_20160405103525_20160405103651.png)
 
-**Quoi faire avec mon fichier CVS ?** Un CSV peut s'ouvrir avec Excel, Open Office, Google Doc ... en précisant simplement que le caractère d'espacement est une virgule.
+**Quoi faire avec mon fichier CSV ?** Un CSV peut s'ouvrir avec Excel, Open Office, Google Doc ... en précisant simplement que le caractère d'espacement est une virgule.
