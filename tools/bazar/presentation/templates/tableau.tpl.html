@@ -268,5 +268,5 @@ echo $this->render('@bazar/tableau.twig', [
     'wiki' => $this->wiki,
     'colors' => $colors,
     'icons' => $icons,
-    'columnswidth' => $sanitizedParams['columnswidth'],
+    'columnswidth' => $sanitizedParams['columnswidth'] ?? [],
 ]);
