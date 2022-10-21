@@ -552,7 +552,7 @@ Pour découvrir l'ensemble des stratégies possibles face au spam => [https://ye
 ### Droit d'accès
  - Droits de lecture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_read_acl
  - Droits d'écriture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_write_acl
- - Droits de commentaires par défaut des pages (comment-closed pour ferme, * pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_comment_acl
+ - Droits de commentaires par défaut des pages (comments-closed pour fermés, * pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_comment_acl
  - Commentaires activés (true ou false) - comments_activated
  - Mot de passe demandé pour modifier les pages (voir doc gestion des spams) - password_for_editing
  - Message informatif pour demander le mot de passe (voir doc gestion des spams) - password_for_editing_message
