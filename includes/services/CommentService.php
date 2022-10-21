@@ -380,26 +380,84 @@ class CommentService implements EventSubscriberInterface
             $parentPage = $this->getParentPage($data['comment']['tag']);
             if (!empty($loggedUser)) {
                 $parentComment = $this->pageManager->getOne($parentTag);
+
                 if (!empty($parentComment['owner'])) {
                     $owner = $this->userManager->getOneByName($parentComment['owner']);
-                    if (!empty($owner) && !empty($loggedUser) && $owner['email'] != $loggedUser['email']) {
-                        $baseUrl = $this->mailer->getBaseUrl();
-                        $formattedData = [
-                            'baseUrl' => $baseUrl,
-                            'parentPage' => $parentPage,
-                            'comment' => $data['comment'],
-                            'parentComment' => $parentComment,
-                        ];
-                        $this->mailer->sendEmailFromAdmin(
-                            $owner['email'],
-                            $this->templateEngine->render("@core/comments/notify-email-subject.twig", $formattedData),
-                            $this->templateEngine->render("@core/comments/notify-email-text.twig", $formattedData),
-                            $this->templateEngine->render("@core/comments/notify-email-html.twig", $formattedData)
-                        );
+                    $this->sendEmailToOwnerAtCreation($parentComment, $loggedUser, $parentPage, $data, $owner);
+                }
+                $this->sendEmailToTaggedUserAtCreation($parentComment, $loggedUser, $parentPage, $data, $owner ?? null);
+            }
+        }
+    }
+
+    protected function sendEmailToOwnerAtCreation(?array $parentComment, $loggedUser, array $parentPage, array $data, $owner)
+    {
+        if (!empty($owner) && !empty($loggedUser) && $owner['email'] != $loggedUser['email']) {
+            $baseUrl = $this->mailer->getBaseUrl();
+            $formattedData = [
+                'baseUrl' => $baseUrl,
+                'parentPage' => $parentPage,
+                'comment' => $data['comment'],
+                'parentComment' => $parentComment,
+            ];
+            $this->mailer->sendEmailFromAdmin(
+                $owner['email'],
+                $this->templateEngine->render("@core/comments/notify-email-subject.twig", $formattedData),
+                $this->templateEngine->render("@core/comments/notify-email-text.twig", $formattedData),
+                $this->templateEngine->render("@core/comments/notify-email-html.twig", $formattedData)
+            );
+        }
+    }
+
+    protected function sendEmailToTaggedUserAtCreation(?array $parentComment, $loggedUser, array $parentPage, array $data, $owner)
+    {
+        $taggedUsers = $this->extractTaggedUsernamesFromContent($data['comment'], $loggedUser, $owner);
+        if (!empty($taggedUsers)) {
+            $baseUrl = $this->mailer->getBaseUrl();
+            $formattedData = [
+                'baseUrl' => $baseUrl,
+                'parentPage' => $parentPage,
+                'comment' => $data['comment'],
+                'parentComment' => $parentComment,
+            ];
+            foreach ($taggedUsers as $user) {
+                $this->mailer->sendEmailFromAdmin(
+                    $user['email'],
+                    $this->templateEngine->render("@core/comments/notify-tag-email-subject.twig", $formattedData),
+                    $this->templateEngine->render("@core/comments/notify-tag-email-text.twig", $formattedData),
+                    $this->templateEngine->render("@core/comments/notify-tag-email-html.twig", $formattedData)
+                );
+            }
+        }
+    }
+
+    protected function extractTaggedUsernamesFromContent(array $comment, $loggedUser, $owner): array
+    {
+        $users = [];
+        try {
+            if (preg_match_all("/\B@([^\s!#@<>\\\\\/][^\s<>\\\\\/]{2,})(?=\s|$)/i", $comment['rawbody'], $matches)) {
+                foreach ($matches[0] as $idx => $value) {
+                    $userName = $matches[1][$idx];
+                    if (!empty($userName) && !in_array($userName, array_keys($users))) {
+                        $user = $this->userManager->getOneByName($userName);
+                        if (!empty($user)) {
+                            $users[$userName] = $user;
+                        }
                     }
                 }
             }
+        } catch (Throwable $th) {
         }
+        // filter
+        $filteredUsers = [];
+        foreach ($users as $user) {
+            if ($user['email'] != $loggedUser['email'] &&
+                (empty($owner) || ($user['email'] != $owner['email'])) &&
+                !in_array($user['name'], array_keys($filteredUsers))) {
+                $filteredUsers[$user['name']] = $user;
+            }
+        }
+        return $filteredUsers;
     }
 
     public function sendEmailAfterModify(Event $event)
