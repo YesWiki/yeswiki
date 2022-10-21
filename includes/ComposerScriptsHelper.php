@@ -122,6 +122,10 @@ class ComposerScriptsHelper
                                                 ])
                                             );
                                             echo "Pdfjs-dist updated ! \n";
+                                            // Clean not needded files
+                                            array_map('unlink', glob('javascripts/vendor/pdfjs-dist/web/*.pdf'));
+                                            array_map('unlink', glob('javascripts/vendor/pdfjs-dist/web/*.js.map'));
+                                            array_map('unlink', glob('javascripts/vendor/pdfjs-dist/build/*.js.map'));
                                         }
                                         $zip->close();
                                     } else {
