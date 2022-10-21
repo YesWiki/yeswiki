@@ -29,7 +29,12 @@ class ComposerScriptsHelper
     public static function postUpdate(Event $event)
     {
         self::postInstall($event);
+
         // update pdfjs-dist
+        // Context
+
+        // `pdfjs-dist` is available as javascript library via `yarn` but as pre-build package.
+        // To use it as viewer in `<iframe>`, we have to download the official viewer package not available via `yarn`.
 
         // first get list of files
         $data = self::getPdfJsDistFiles();
@@ -86,9 +91,9 @@ class ComposerScriptsHelper
     private static function updatePdfJsDist(array $params)
     {
         if (!empty($params['url'])) {
-            if (is_dir('tools/attach/libs/vendor/')) {
-                if (!is_dir('tools/attach/libs/vendor/pdfjs-dist/') ||
-                    self::pdfJsDistNeedsUpdate('tools/attach/libs/vendor/pdfjs-dist/revision.json', $params)) {
+            if (is_dir('javascripts/vendor/')) {
+                if (!is_dir('javascripts/vendor/pdfjs-dist/') ||
+                    self::pdfJsDistNeedsUpdate('javascripts/vendor/pdfjs-dist/revision.json', $params)) {
                     try {
                         $zipContent = file_get_contents($params['url'], false, stream_context_create([
                             'http' => [
@@ -103,13 +108,13 @@ class ComposerScriptsHelper
                                 if (file_put_contents($tmpFilename, $zipContent) !== false) {
                                     $zip = new ZipArchive();
                                     if ($zip->open($tmpFilename)) {
-                                        if (is_dir('tools/attach/libs/vendor/pdfjs-dist/')) {
-                                            self::deleteFolder('tools/attach/libs/vendor/pdfjs-dist/');
+                                        if (is_dir('javascripts/vendor/pdfjs-dist/')) {
+                                            self::deleteFolder('javascripts/vendor/pdfjs-dist/');
                                         }
-                                        if (!is_dir('tools/attach/libs/vendor/pdfjs-dist/')) {
-                                            $zip->extractTo('tools/attach/libs/vendor/pdfjs-dist/');
+                                        if (!is_dir('javascripts/vendor/pdfjs-dist/')) {
+                                            $zip->extractTo('javascripts/vendor/pdfjs-dist/');
                                             file_put_contents(
-                                                'tools/attach/libs/vendor/pdfjs-dist/revision.json',
+                                                'javascripts/vendor/pdfjs-dist/revision.json',
                                                 json_encode([
                                                     'major_revision' => $params['major_revision'],
                                                     'minor_revision' => $params['minor_revision'],
