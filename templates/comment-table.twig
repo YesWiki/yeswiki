@@ -10,10 +10,10 @@
       <tr>
         {{ multidelete.insertSelectAll('comments-table-action','top') }}
         <th>{{ _t('COMMENT_DATE') }}</th>
-        <th>{{ _t('COMMENT_CONTENT') }}</th>
-        <th>{{ _t('COMMENT_USER') }}</th>
-        <th>{{ _t('COMMENT_TAG') }}</th>
-        <th>{{ _t('COMMENT_ON_PAGE') }}</th>
+        <th data-content-padding="mmmmmmmmmmmmmmmmmmmmmmmmmm">{{ _t('COMMENT_CONTENT') }}</th>
+        <th data-class-name="comments-table-break-word-column">{{ _t('COMMENT_USER') }}</th>
+        <th data-class-name="comments-table-break-word-column">{{ _t('COMMENT_TAG') }}</th>
+        <th data-class-name="comments-table-break-word-column">{{ _t('COMMENT_ON_PAGE') }}</th>
         <th>{{ _t('MODIFY') }}</th>
         <th>{{ _t('DELETE') }}</th>
       </tr>

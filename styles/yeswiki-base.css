@@ -780,6 +780,18 @@ html[lang="pt"] [lang]:not([lang="pt"]){
   display:none;
 }
 
+/* comment-table */
+#comments-table-action .comments-table-break-word-column {
+  overflow-wrap: break-word;
+  max-width: 170px;
+}
+
+@media (max-width: 801px){
+  #comments-table-action .comments-table-break-word-column {
+    max-width: 120px;
+  }
+}
+
 /* === === */
 /* reactions */
 .reactions-container {
