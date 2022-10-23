@@ -318,16 +318,6 @@ var SYNTAX = {
     </div>
     <div class="modal-body">
     <form id="form-link">
-      <div style="margin-bottom: 2rem">
-        <label class="radio-inline" style="padding-left: 0;">
-          <input type="radio" name="linkType" id="linkint" value="internal" checked>
-          <span>${wiki.lang['ACEDITOR_LINK_ADD_INTERNAL']}</span>
-        </label>
-        <label class="radio-inline">
-          <input type="radio" name="linkType" id="linkext" value="external">
-          <span>${wiki.lang['ACEDITOR_LINK_ADD_EXTERNAL']}</span>
-        </label>
-      </div>
       <div class="control-group form-group internal-link">
         <label class="control-label">${wiki.lang['ACEDITOR_LINK_PAGE_NAME']}</label>
         <div class="controls">
@@ -336,19 +326,13 @@ var SYNTAX = {
           <span class="help-block">${wiki.lang['ACEDITOR_LINK_HINT_NEW_PAGE_NAME']}</span>
         </div>
       </div>
-      <div class="control-group form-group external-link hide">
-        <label class="control-label">${wiki.lang['ACEDITOR_LINK_EXTERNAL']}</label>
-        <div class="controls">
-          <input class="form-control" type="url" name="url" value="">
-        </div>
-      </div>
       <div class="control-group form-group">
         <label class="control-label">${wiki.lang['ACEDITOR_LINK_TEXT']}</label>
         <div class="controls">
           <input class="form-control" type="text" name="text-url" value="${aceditor.getSelectedText()}">
         </div>
       </div>
-      <div class="control-group form-group">
+      <div class="control-group form-group link-options">
         <label class="radio">
           <input type="radio" name="linkOptions" id="linkOptions1" value="int">
           <span>${wiki.lang['ACEDITOR_LINK_OPEN_IN_CURRENT_TAB']}</span>
@@ -370,7 +354,7 @@ var SYNTAX = {
     </div>
     <div class="modal-footer">
       <a href="#" class="btn btn-default" data-dismiss="modal">${wiki.lang['ACEDITOR_LINK_CANCEL']}</a>
-      <a href="#" class="btn btn-primary btn-insert"  data-dismiss="modal">${wiki.lang['ACEDITOR_LINK_INSERT']}</a>
+      <a href="#" class="btn btn-primary btn-insert" data-dismiss="modal">${wiki.lang['ACEDITOR_LINK_INSERT']}</a>
     </div>
   </div>
 </div>
@@ -378,37 +362,21 @@ var SYNTAX = {
             );
 
             var $linkmodal = $("#YesWikiLinkModal");
-            $('[name="linkType"]').change(function() {
-              if ($(this).val() == "internal") {
-                $(".internal-link").removeClass("hide");
-                $(".external-link").addClass("hide");
-              } else {
-                $(".external-link").removeClass("hide");
-                $(".internal-link").addClass("hide");
-              }
-            });
 
-            $(".btn-insert").click(function() {
-              var internal = $('#YesWikiLinkModal .radio-inline input[value="internal"]').is(':checked') ;
-              var wikiurl = $('#YesWikiLinkModal [name="wikiurl"]').val() ;
-              var exturl = $('#YesWikiLinkModal [name="url"]').val() ;
-              var realLink = internal ? wikiurl : exturl;
-              var text = $('#YesWikiLinkModal [name="text-url"]').val() ;
-              text = text ? text : realLink;
-              if ($('#YesWikiLinkModal .radio input[value="ext"]').is(':checked') && realLink) {
-                var replacement = '{{button link="' + realLink + '" text="'+text+'" class="new-window" nobtn="1" }}';
-              } else if($('#YesWikiLinkModal .radio input[value="modal"]').is(':checked') && realLink) {
-                var replacement = '{{button link="'+realLink+'" text="'+text+'" class="modalbox" nobtn="1"}}';
-              } else if ($('#YesWikiLinkModal .radio input[value="intactionsyntax"]').is(':checked') && realLink) {
-                var replacement = '{{button link="'+realLink+'" text="'+text+'" nobtn="1"}}';
-              } else if (realLink) {
-                var replacement = '[[' + realLink + ' '+text+']]';
-              }
-              if (realLink){
-                aceditor.session.replace(aceditor.getSelectionRange(),replacement);
+            $(".btn-insert").on("click", () => {
+              var wikiurl = $('#YesWikiLinkModal [name="wikiurl"]').val();
+              if (!wikiurl) return
+
+              var text = $('#YesWikiLinkModal [name="text-url"]').val() || wikiurl;
+              let linkOption = $linkmodal.find('.link-options input:checked').val()
+              if (linkOption == "int") {
+                var replacement = '[[' + wikiurl + ' '+text+']]';
               } else {
-                // do nothing
+                const klass = ({ ext: "new-window", modal: "modalbox" })[linkOption]
+                const params = klass ? `class="${klass}" ` : ""
+                var replacement = `{{button link="${wikiurl}" text="${text}" ${params}nobtn="1"}}`;
               }
+              aceditor.session.replace(aceditor.getSelectionRange(),replacement);
             });
 
             $linkmodal
