@@ -52,6 +52,15 @@ ul.fake-ul {
   color: var(--secondary-color-1);
 }
 
+/* Adds edit icon after link tag */
+a[data-missing-tag]:after {
+  content: "\f303";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  margin-left: .4em;
+  font-size: .8em;
+}
+
 /* Page absentes */
 span.missingpage,
 .list-inline,
