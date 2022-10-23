@@ -362,6 +362,8 @@ var SYNTAX = {
 
               // Validate page name or url
               var isUrl = /^https?:\/\//.test(wikiurl)
+              // We do not allow "." on purpose, even if it's part of WN_PAGE_TAG regular expression
+              // because we want inputs like "yeswiki.net" to be interpreted as URL and not page names
               var haveSpecialChars = /[{}|\.\\"'<>~:/?#[\]@!$&()*+,;=%]/.test(wikiurl)
               var validWikiUrl = wikiurl && (isUrl || !haveSpecialChars)
               if (!validWikiUrl) {
