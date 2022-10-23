@@ -22,6 +22,7 @@ return [
     'ACEDITOR_LINK_PROMPT'		=> 'Enter the link adress',
     'ACEDITOR_LIST'             => 'Insert list',
     'ACEDITOR_LINK_TITLE'		        => 'Create a link / Create a page',
+    'ACEDITOR_LINK_ERROR'		        => 'Page name should not contains any special characters other than - or _. URL must start with https://',
     'ACEDITOR_LINK_PAGE_NAME'           => 'YesWiki page name or URL',
     'ACEDITOR_LINK_HINT_NEW_PAGE_NAME'  => 'If the page does not exists, it will be created.',
     'ACEDITOR_LINK_TEXT'                => 'Text displayed',
