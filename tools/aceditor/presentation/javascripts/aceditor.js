@@ -396,11 +396,11 @@ var SYNTAX = {
               var text = $('#YesWikiLinkModal [name="text-url"]').val() ;
               text = text ? text : realLink;
               if ($('#YesWikiLinkModal .radio input[value="ext"]').is(':checked') && realLink) {
-                var replacement = '{{button class="new-window" link="' + realLink + '" nobtn="1" text="'+text+'" title="'+text+'"}}';
+                var replacement = '{{button link="' + realLink + '" text="'+text+'" class="new-window" nobtn="1" }}';
               } else if($('#YesWikiLinkModal .radio input[value="modal"]').is(':checked') && realLink) {
-                var replacement = '{{button class="modalbox" nobtn="1" link="'+realLink+'" text="'+text+'" title="'+text+'"}}';
+                var replacement = '{{button link="'+realLink+'" text="'+text+'" class="modalbox" nobtn="1"}}';
               } else if ($('#YesWikiLinkModal .radio input[value="intactionsyntax"]').is(':checked') && realLink) {
-                var replacement = '{{button nobtn="1" link="'+realLink+'" text="'+text+'" title="'+text+'"}}';
+                var replacement = '{{button link="'+realLink+'" text="'+text+'" nobtn="1"}}';
               } else if (realLink) {
                 var replacement = '[[' + realLink + ' '+text+']]';
               }
