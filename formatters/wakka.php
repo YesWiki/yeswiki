@@ -61,7 +61,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                 ."(?<!\w)_[^_]+_(?!\w)|" // markdown italic
                 ."(?<!\w)\\*[^*]+\\*(?!\w)|" // markdown italic
                 ."`[^`]+`(?![_\w])|" // inline code
-                ."(?<!\!)\[[^\]]+\]\([^\)]+\)|" // markdown links
+                ."(?<!\!)\[[^\]]+\]\([^\)]+\)(\{[^\}]*\})?|" // markdown links
                 ."\!\[[^\]]*\]\([^\)]+\)|" // markdown images
                 .'\b[a-z0-9]+:\/\/[^ \t\n\r\f"\|\\\\\^\`\{\}\[\]><]+|'
                 .'(?:^|(?<=\>""))(?!\\\\)\#{1,6} [^\\n\#]*\\n|' // markdown titles doit être avant la ligne suivante pour être prioritaire sur le ## ##
@@ -299,10 +299,10 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                             return htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
                         }
                     }
-                    // forced links
+                    // Links
                     // \S : any character that is not a whitespace character
                     // \s : any whitespace character
-                    elseif (preg_match("/^\[\[(\S*)(\s+(.+))?\]\]$|^(?!\!)\[([^\]]+)\]\(([^\)]+)\)$/um", $thing, $matches)) {
+                    elseif (preg_match("/^\[\[(\S*)(\s+(.+))?\]\]$|^(?!\!)\[([^\]]+)\]\(([^\)\"\s]+)\s?\"?([^\)\"]*)\"?\)\{?([^\}]*)\}?$/um", $thing, $matches)) {
                         if (!empty($matches[4]) && !empty($matches[5])) {
                             $url = $matches[5];
                             $text = $matches[4];
@@ -312,6 +312,14 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                             $url = $matches[1];
                             $text = '';
                         }
+                        $htmlAttrs = [];
+                        if (!empty($matches[6])) {
+                            $htmlAttrs['title'] = $matches[6];
+                        }
+                        if (!empty($matches[7])) {
+                            $htmlAttrs = array_merge($htmlAttrs, $this->parseMarkdownExtra($matches[7]));
+                        }
+
                         if ($url) {
                             // Early start/end of Inserted or Deleted ?
                             if ($url != ($url = (preg_replace("/@@|££|\[\[/", "", $url)))) {
@@ -322,19 +330,8 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                             // by construct)
                             $text = isset($text) ? preg_replace("/@@|££|\[\[/", "", $text) : '';
 
-                            $linkParts = $wiki->extractLinkParts($url);
-                            if ($linkParts) {
-                                return $result . $wiki->Link(
-                                    $linkParts['tag'],
-                                    $linkParts['method'],
-                                    $linkParts['params'],
-                                    $text,
-                                    1,
-                                    true
-                                );
-                            } else {
-                                return '<a href="'.$wiki->generateLink($url).'">'.$text.'</a>';
-                            }
+                            $htmlAttrs['track'] = true;
+                            return $result . $wiki->LinkTo($url, $text, $htmlAttrs);
                         } else { // if there is no URL, return at least the text
                             return htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
                         }
@@ -398,6 +395,29 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                     return htmlspecialchars($thing, ENT_COMPAT, YW_CHARSET);
             } // switch($thing)
         } // function callback
+
+        private function startsWith($string, $startString)
+        {
+            $len = strlen($startString);
+            return (substr($string, 0, $len) === $startString);
+        }
+
+        private function parseMarkdownExtra($string)
+        {
+            $parts = preg_split('/\s+/', $string);
+            $attrs = [];
+            foreach ($parts as $part) {
+                if (startsWith($part, '#')) {
+                    $attrs['id'] = ltrim($part, '#');
+                } elseif (startsWith($part, '.')) {
+                    $attrs['class'] = trim(str_replace('.', ' ', $part), ' ');
+                } elseif (strpos($part, '=') !== false) {
+                    list($key, $value) = explode('=', $part);
+                    $attrs[$key] = "$value";
+                }
+            }
+            return $attrs;
+        }
 
         public function indentedText($matches)
         {
