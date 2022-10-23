@@ -28,6 +28,7 @@ var components = { InputPageList, InputText, InputCheckbox, InputList, InputIcon
   InputFacette, InputReaction, InputIconMapping, InputColorMapping, InputGeo, InputClass, InputCorrespondance,
   InputColumnsWidth,
   WikiCodeInput, PreviewAction };
+
 if (actionsBuilderData.hasOwnProperty('extraComponents')){
   for (const name in actionsBuilderData.extraComponents) {
     let filepath = actionsBuilderData.extraComponents[name];
