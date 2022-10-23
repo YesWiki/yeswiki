@@ -56,9 +56,6 @@ function test_print(&$item, $key)
 }
 array_walk_recursive($data['action_groups'], 'test_print');
 
-// add label to catch for textareaName
-$data['textareaName'] = $GLOBALS['wiki']->config['actionbuilder_textarea_name'] ?? '';
-
 // add extra components
 $extraComponents = [];
 $files = [];
