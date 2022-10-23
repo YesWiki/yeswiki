@@ -323,6 +323,7 @@ var SYNTAX = {
         <div class="controls">
           <input id="wikiurl-page-list-input" class="form-control" type="text" autocomplete="off" value=""
                  name="wikiurl" data-provide="typeahead" data-items="5" data-source='${JSON.stringify(pagelist)}'>
+          <span class="link-error help-block text-danger hidden">${wiki.lang['ACEDITOR_LINK_ERROR']}</span>
           <span class="help-block">${wiki.lang['ACEDITOR_LINK_HINT_NEW_PAGE_NAME']}</span>
         </div>
       </div>
@@ -351,10 +352,25 @@ var SYNTAX = {
 
             var $linkmodal = $("#YesWikiLinkModal");
 
-            $(".btn-insert").on("click", () => {
-              var wikiurl = $linkmodal.find('[name="wikiurl"]').val()
-              if (!wikiurl) return
+            $(".btn-insert").on("click", (e) => {
+              var $inputUrl = $linkmodal.find('[name="wikiurl"]')
+              var wikiurl = $inputUrl.val() || ""
 
+              // Replace spaces by -
+              wikiurl = wikiurl.replace(/\s+/g, '-')
+              $inputUrl.val(wikiurl)
+
+              // Validate page name or url
+              var isUrl = /^https?:\/\//.test(wikiurl)
+              var haveSpecialChars = /[{}|\.\\"'<>~:/?#[\]@!$&()*+,;=%]/.test(wikiurl)
+              var validWikiUrl = wikiurl && (isUrl || !haveSpecialChars)
+              if (!validWikiUrl) {
+                e.stopImmediatePropagation()
+                $linkmodal.find('.link-error').removeClass('hidden')
+                return
+              }
+
+              // Create wiki code
               var text = $linkmodal.find('[name="text-url"]').val() || wikiurl
               let linkOption = $linkmodal.find('.link-options').val()
               if (linkOption == "link") {
