@@ -154,38 +154,32 @@ export function createAceditorToolbar(textarea, aceditor, options = {}) {
 
   // Actions Builder
   // Note: actionsBuilderData has been defined in action-builder.tpl.html
-  if (typeof actionsBuilderData !== 'undefined' && actionsBuilderData && (textarea.prop('id') == 'body'
-      || (typeof actionsBuilderData.textareaName !== 'undefined'
-      && textarea.prop('id') == actionsBuilderData.textareaName))) {
-
-    var actionsHtml = ''
-    for (var actionGroupName in actionsBuilderData.action_groups) {
-        var groupConfig = actionsBuilderData.action_groups[actionGroupName]
-        if (groupConfig.onlyEdit) continue
-        actionsHtml += `
-          <li>
-            <a class="open-actions-builder-btn" data-group-name="${actionGroupName}">
-              ${groupConfig.label}
-            </a>
-          </li>`
-    }
-    actionsHtml += `
-      <li class="open-actions-builder-btn open-existing-action">
-        <a>${wiki.lang['ACEDITOR_ACTIONS_EDIT_CURRENT']}</a>
-      </li>`
-
-    toolbar.append(`
-      <div class="btn-group actions-builder-button">
-        <a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">
-          ${wiki.lang['ACEDITOR_ACTIONS']}
-          <span class="caret"></span>
-        </a>
-        <ul class="dropdown-menu component-action-list">
-          ${actionsHtml}
-        </ul>
-      </div>`)
+  var actionsHtml = ''
+  for (var actionGroupName in actionsBuilderData.action_groups) {
+      var groupConfig = actionsBuilderData.action_groups[actionGroupName]
+      if (groupConfig.onlyEdit) continue
+      actionsHtml += `
+        <li>
+          <a class="open-actions-builder-btn" data-group-name="${actionGroupName}">
+            ${groupConfig.label}
+          </a>
+        </li>`
   }
+  actionsHtml += `
+    <li class="open-actions-builder-btn open-existing-action">
+      <a>${wiki.lang['ACEDITOR_ACTIONS_EDIT_CURRENT']}</a>
+    </li>`
 
+  toolbar.append(`
+    <div class="btn-group actions-builder-button">
+      <a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">
+        ${wiki.lang['ACEDITOR_ACTIONS']}
+        <span class="caret"></span>
+      </a>
+      <ul class="dropdown-menu component-action-list">
+        ${actionsHtml}
+      </ul>
+    </div>`)
   // TODO handle file uploader button here also (seems quite weird the way it is handled now)
 
   // help
