@@ -56,8 +56,8 @@ function test_print(&$item, $key)
 }
 array_walk_recursive($data['action_groups'], 'test_print');
 
-// add label to catch for actionBuilderTextareaName
-$data['actionBuilderTextareaName'] = $GLOBALS['wiki']->config['actionbuilder_textarea_name'] ?? '';
+// add label to catch for textareaName
+$data['textareaName'] = $GLOBALS['wiki']->config['actionbuilder_textarea_name'] ?? '';
 
 // add extra components
 $extraComponents = [];
@@ -82,8 +82,3 @@ if (!empty($extraComponents)) {
 // Render Template
 // ---------------
 echo $this->render('@aceditor/actions-builder.tpl.html', ['data' => $data]);
-
-$this->AddJavascriptFile('tools/aceditor/presentation/javascripts/ace-lib.js');
-$this->AddJavascriptFile('tools/aceditor/presentation/javascripts/mode-html.js');
-$this->AddJavascriptFile('tools/aceditor/presentation/javascripts/aceditor.js');
-$this->AddCSSFile('tools/aceditor/presentation/styles/aceditor.css');
