@@ -2,20 +2,10 @@
   padding: 1em .7em 0em 0;
   margin-bottom: 1rem;
 }
-/* Show line numbers only on page edit */
-form:not(#ACEditor) .ace-editor-container .ace_gutter {
-  display: none !important;
-}
-form:not(#ACEditor) .ace-editor-container .ace_scroller {
-  left: .7em !important;
-}
 .ace-body {
   height: 150px;
   border: none;
   padding: 0;
-}
-.ace-editor-container.big .ace-body {
-  min-height: 500px;
 }
 .ace_layer {
   color: var(--main-text-color);
@@ -30,7 +20,6 @@ form:not(#ACEditor) .ace-editor-container .ace_scroller {
   margin: 0 4px;
   border-radius: 3px;
 }
-
 .ace-body .ace_markup {
   color: #bc1c96;
 }
@@ -64,6 +53,8 @@ form:not(#ACEditor) .ace-editor-container .ace_scroller {
 .ace-body .ace_pre {
   background-color: #c33ba30f;
 }
+
+/* Page Edit */
 #ACEditor {
   position: relative;
   height: auto;
@@ -76,6 +67,17 @@ form:not(#ACEditor) .ace-editor-container .ace_scroller {
   top: 0;
   z-index: 6;
   background-color: white;
+}
+#ACEditor .ace-editor-container .ace-body {
+  min-height: 500px;
+}
+
+/* Show line numbers only on page edit */
+form:not(#ACEditor) .ace-editor-container .ace_gutter {
+  display: none !important;
+}
+form:not(#ACEditor) .ace-editor-container .ace_scroller {
+  left: .7em !important;
 }
 
 .ace_gutter-cell {
