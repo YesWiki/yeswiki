@@ -98,11 +98,9 @@ class TextareaField extends BazarField
         } elseif ($this->syntax === self::SYNTAX_WIKI) {
             $wiki->AddJavascriptFile('tools/aceditor/presentation/javascripts/ace-lib.js');
             $wiki->AddJavascriptFile('tools/aceditor/presentation/javascripts/mode-html.js');
-            $wiki->AddJavascriptFile('tools/aceditor/presentation/javascripts/aceditor.js');
+            $wiki->AddJavascriptFile('tools/aceditor/presentation/javascripts/aceditor.js', false, true);
             $wiki->AddCSSFile('tools/aceditor/presentation/styles/aceditor.css');
             if (!empty($wiki->config['actionbuilder_textarea_name']) && $this->getName() == $wiki->config['actionbuilder_textarea_name']) {
-                // load action builder but be carefull to output
-
                 // first ini extensions from wiki
                 $this->extensions = $wiki->extensions;
                 ob_start();
