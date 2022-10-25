@@ -445,9 +445,9 @@ _Tiens, ce matin, en me baladant sur un de mes YesWiki j'ai découvert que j'ava
 
 Il peut être impossible de se connecter au wiki. Ceci peut contourner en utilisant ce lien qui permet de ne pas afficher les pages spéciales : https://www.example.com/?ParametresUtilisateur/iframe
 
-#### Utiliser les paramètres de contrôle d'accès via le wakka config ou la page ["Fichier de conf"](https://yeswiki.net/?GererConfig) XXXXXX à MODIFIER
+#### Utiliser les paramètres de contrôle d'accès via le wakka config ou la page ["Fichier de conf"](/docs/users/fr/admin?id=droit-d39accès)
 
-Des nouveaux paramètres ont été ajoutés dans le wakkaconfig et permettent notamment
+A partir du fichier wakka.config.php accessible via FTP, il est possible :
 
 *   d'ajouter un capcha en mode édition
 *   d'ajouter un champ (mot de passe) en entrée du mode édition (+ un message informatif sur ce mot de passe)
@@ -460,7 +460,7 @@ Les paramètres ajoutables au wakkaconfig
     'use\_nospam' => true, // ne pas toucher pour l'instant 'use\_alerte' => true,
     'use\_captcha' => true,
 
-Ces paramètres sont aussi activables via la page de gestion du site (onglet fichier de conf)
+Ces paramètres sont aussi activables de manière simple via la page de gestion du site, onglet "fichier de conf". Pour le détail, voir la partie ["Fichier de configuration>droits d'accès"](/docs/users/fr/admin?id=droit-d39accès) 
 
 #### Pour les ajouts dans une page isolée
 
