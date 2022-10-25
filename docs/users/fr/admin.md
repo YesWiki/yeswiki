@@ -11,39 +11,38 @@ Vous avez là un récap des menus et pages spéciales du wiki.
 **Droits d'accès**
 
 C'est ici que vous pouvez indiquer "qui a le droit de faire quoi sur quelle page".
-Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
+Il faut être identifié comme administrateurice pour visionner et modifier les informations de cet espace.
 
 [Voir la rubrique dédiée](/docs/users/fr/admin?id=g%c3%a9rer-les-droits)
 
 **Look**
 
 C'est par là que vous personnalisez le squelette et l'esthétique de votre wiki.
-Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
+Il faut être identifié comme administrateurice pour visionner et modifier les informations de cet espace.
 
 [Voir la rubrique dédiée](/docs/users/fr/admin?id=g%c3%a9rer-le-look)
 
 **Utilisateurs et groupes**
 
-Ici vous visualisez les comptes utilisateurs créés et vous pouvez les organiser en "groupes".
-Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
+Ici vous visualisez les comptes utilisateurices créés et vous pouvez les organiser en "groupes".
+Il faut être identifié comme administrateurice pour visionner et modifier les informations de cet espace.
 
 [Voir la rubrique dédiée](/docs/users/fr/admin?id=gestion-des-droits-par-utilisateurice-ou-par-groupe)
 
 **Mots clés**
 
 Si vous avez utilisé des mots clés pour qualifier vos pages wiki vous en trouvez un récap ici.
-Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
+Il faut être identifié comme administrateurice pour visionner et modifier les informations de cet espace.
 
 **Fichier de conf**
 
 Certains éléments de configuration peuvent être personnalisés ici : accès par défaut, sécurité, indexation ...
-Il faut être identifié comme administrateur pour visionner et modifier les informations de cet espace.
-Nous les explorerons au fil des modules.
+Il faut être identifié comme administrateurice pour visionner et modifier les informations de cet espace.
 
 **Mises à jour / extensions**
 
 Vous pouvez voir ici la version du wiki et s'il s'agit de la toute dernière.
-Si vous êtes identifié comme administrateur vous pouvez faire les mises à jour.
+Si vous êtes identifié comme administrateurice vous pouvez faire les mises à jour.
 
 
 ## Gérer les droits
@@ -162,6 +161,8 @@ La gestion vue jusque maintenant permet de gérer l'existant mais comment gérer
         *   dans l'accordéon "droit d'accès" vous pouvez déterminer quelles seront les accès par défaut des prochaines pages
 
 ![image Droitaccesfichierconf.png (67.1kB)](images/M22GererLesAccesDesPagesNonEncoreExi_Droitaccesfichierconf_20220223100943_20220223091008.png)
+
+Pour le détail, voir la partie [droit d'accès de la page Fichier de configuration](docs/users/fr/admin.md#droit-daccès)
 
 #### En ce qui concerne les fiches bazar
 
@@ -537,25 +538,34 @@ Pour découvrir l'ensemble des stratégies possibles face au spam => [https://ye
 
 
 ## Fichier de configuration
-(simple copie de ce qu'on a dans nos wikis : à enrichir, expliquer)
+
+Cette page permet de modifier la configuration de son Yeswiki sans passer par le fichier wakka.config.php. Dans les versions précédentes de Yeswiki, ces éléments n'étaient accessibles que par FTP, en éditant le fichier wakka.config.php, se trouvant à la racine du dossier du YesWiki. Tous les administrateurices de Yeswiki n'ayant pas accès au serveur, cette page de configuration contourne ce problème. Il faut être identifié comme administrateurice pour visionner et modifier les informations de cet espace.
+
 ### Paramètres principaux
- - Titre de votre wiki - wakka_name
- - Nom de la page d'accueil - root_page
- - Langue par défaut (fr ou en ou ... auto = langue du navigateur) - default_language
- - Icône du site (emoji ou URL vers une image PNG) - favicon
- - Activer le mode de debug (yes ou no) - debug
- - Fuseau horaire du site (ex. UCT, Europe/Paris, Europe/London, GMT = utiliser celui du serveur,) - timezone
+ - Titre de votre wiki - wakka_name : c'est le titre donné à la création de votre wiki et qui s'affiche, de base, dans la page "PageTitre" et apparaît en haut à gauche sur la page d'accueil. Ce titre sera aussi utilisé par les moteurs de recherche comme titre de votre site. Il peut être modifié à tout moment.
+ - Nom de la page d'accueil - root_page : à la création du wiki, le nom donné à cette page est "PagePrincipale". Il peut être modifié à tout moment.
+ - Langue par défaut (fr ou en ou ... auto = langue du navigateur) - default_language : à la création du wiki, la langue choisie est le français. Le fait de modifier ce paramètre modifiera la langue pour les menus et paramètres en mode édition et les pages comme la page de configuration.
+ - Icône du site (emoji ou URL vers une image PNG) - favicon : ce paramètre permet de modifier l'icône qui apparaît dans l'onglet du navigateur (Chrome, Firefox...)
+ - Activer le mode de debug (yes ou no) - debug :  ce paramètre active le mode de débogage s'il est passé à la valeur 'yes' (infos sur le nombre de requêtes, le temps écoulé et force l'affichage des erreurs php pour les développeurs). Astuce : on peut aussi passer &debug dans l'url pour debugguer
+ - Fuseau horaire du site (ex. UCT, Europe/Paris, Europe/London, GMT = utiliser celui du serveur,) - timezone : à la création du wiki, le fuseau horaire choisi est GMT et se cale sur celui du serveur. Cela peut amener des différences d'affichage Il peut arriver que l'affichage de l'heure de début d'un évènement sur le calendrier soit décalée car la configuration serveur peut être en décalage par rapport au fuseau horaire de l'administrateurice du wiki.
+Pour bien configurer, on peut mettre dans le paramètre Fuseau horaire du site la valeur : Europe/Paris (ou sinon UTC).
  - Méthodes autorisées à être affichées dans les iframes (iframe,editiframe,bazariframe,render,all = autoriser tout) - allowed_methods_in_iframe
- - Nombre maximum de versions d'une page affichées par le handler `/revisions`. - revisionscount
+ - Nombre maximum de versions d'une page affichées par le handler `/revisions`. - revisionscount : 
  - Image d'avatar par défaut pour les commentaires (URL vers une image) - default_comment_avatar
  - Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false) - htmlPurifierActivated
 ### Droit d'accès
- - Droits de lecture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_read_acl
- - Droits d'écriture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_write_acl
- - Droits de commentaires par défaut des pages (comments-closed pour fermés, * pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_comment_acl
- - Commentaires activés (true ou false) - comments_activated
- - Mot de passe demandé pour modifier les pages (voir doc gestion des spams) - password_for_editing
- - Message informatif pour demander le mot de passe (voir doc gestion des spams) - password_for_editing_message
+Cette partie permet de modifier les droits d'accès pour les pages à venir. Pour voir d'autres façons de gérer les droits d'accès, voir le paragraphe [Gérer les droits d'accès des pages non encore existantes](docs/users/fr/admin.md#gérer-les-droits-daccès-des-pages-non-encore-existantes)
+ - Droits de lecture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_read_acl : par défaut, les pages à venir sont ouvertes à tous en droit de lecture grâce au symbole `*`.Pour limiter la lecture aux personnes ayant créé un compte, il faut mettre le symbole `+`. Pour limiter à un groupe d'utilisateurs en particulier, mettre le symbole `@` et le nom du groupe accolé. Par exemple, pour le groupe admin : `@admins`.
+ - Droits d'écriture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_write_acl : par défaut, les pages à venir sont ouvertes à tous en droit d'écriture. 
+ - Droits de commentaires par défaut des pages (comments-closed pour fermés, * pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_comment_acl :
+ - Commentaires activés (true ou false) - comments_activated : 
+ - Mot de passe demandé pour modifier les pages (voir doc gestion des spams) - password_for_editing : ce paramètre permet de demander un mot de passe AVANT de rentrer en mode édition que ce soit pour les pages wiki ET les fiches bazar. Si vous êtes connectés, ce mot de passe ne vous est pas demandé. Exemple : pour entrer dans le mode édition, les utilisateurices doivent entrer le chiffre `6`. Iels le savent grâce au message informatif rédiger ci-dessous.
+ - Message informatif pour demander le mot de passe (voir doc gestion des spams) - password_for_editing_message : ce paramètre permet d'indiquer un message afin de donner aux usagers une info sur le mot de passe à rentrer (on fait le pari que les turcs spanners ne le liront pas ;-) exemple :`Pour éviter les attaques de spam, merci d'indiquer en chiffre combien font t.rois fois 2...`
+La combinaison des deux paramètres donnent le résultat suivant pour l'exemple :
+
+![antispam.JPG (17.5 KB)](/images/antispam.JPG)
+
+
  - Autoriser le doubleclic pour éditer les menus et pages spéciales (true ou false) - allow_doubleclic
 ### Envoi des e-mails
  - Remplacer le mail utilisé comme expéditeur des messages - contact_from
@@ -567,7 +577,7 @@ Pour découvrir l'ensemble des stratégies possibles face au spam => [https://ye
  - Service de vidéo par défaut (peertube, youtube ou vimeo) - attach-video-config[default_video_service]
  - Adresse du serveur peertube par défaut - attach-video-config[default_peertube_instance]
 ### Base de données
- - Latitude par défaut des affichages cartographiques - baz_map_center_lat
+ - Latitude par défaut des affichages cartographiques - baz_map_center_lat : 
  - Longitude par défaut des affichages cartographiques - baz_map_center_lon
  - Niveau de zoom par défaut des cartes (1:monde => 15:commune) - baz_map_zoom
  - Hauteur par défaut en pixels des affichages cartographiques - baz_map_height
