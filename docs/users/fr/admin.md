@@ -554,7 +554,7 @@ Pour bien configurer, on peut mettre dans le paramètre Fuseau horaire du site l
  - Image d'avatar par défaut pour les commentaires (URL vers une image) - default_comment_avatar
  - Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false) - htmlPurifierActivated
 ### Droit d'accès
-Cette partie permet de modifier les droits d'accès pour les pages à venir. Pour voir d'autres façons de gérer les droits d'accès, voir le paragraphe [Gérer les droits d'accès des pages non encore existantes](docs/users/fr/admin.md#gérer-les-droits-daccès-des-pages-non-encore-existantes)
+Cette partie permet de modifier les droits d'accès pour les pages à venir. Pour voir d'autres façons de gérer les droits d'accès, voir le paragraphe [Gérer les droits d'accès des pages non encore existantes](/docs/users/fr/admin?id=g%c3%a9rer-les-droits-d39acc%c3%a8s-des-pages-non-encore-existantes)
  - Droits de lecture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_read_acl : par défaut, les pages à venir sont ouvertes à tous en droit de lecture grâce au symbole `*`.Pour limiter la lecture aux personnes ayant créé un compte, il faut mettre le symbole `+`. Pour limiter à un groupe d'utilisateurs en particulier, mettre le symbole `@` et le nom du groupe accolé. Par exemple, pour le groupe admin : `@admins`.
  - Droits d'écriture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_write_acl : par défaut, les pages à venir sont ouvertes à tous en droit d'écriture. 
  - Droits de commentaires par défaut des pages (comments-closed pour fermés, * pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_comment_acl :
