@@ -95,7 +95,6 @@ Allez dans le répertoite `docs/users/fr/images` sur github, plus cliquez sur `A
 
 ![](https://md.yeswiki.net/uploads/96f4883a-88f5-46ac-8a11-95256690e203.png)
 
-
 Petits plus à connaître
 -------------------------
 
@@ -149,7 +148,7 @@ Vous pouvez aussi afficher le rendu de code yeswiki en ajoutant le mot clé "pre
 
 ### Faire référence à une section dans une explication
 
-Pour renvoyer vers une explication donnée dans un autre paragraphe, il faut cliquer sur le titre de la section concernée et récupérer dans l'url ce qui est écrit à partir du /docs
+Pour renvoyer vers une explication donnée dans un autre paragraphe, il faut cliquer sur le titre de la section concernée dans le site https://testing.yeswiki.net/doc et récupérer dans l'url ce qui est écrit à partir du /docs
 Exemple : pour faire référence au paragraphe "la composition d'une page", copier 
 /docs/users/fr/prise-en-main?id=la-composition-d39une-page
 
