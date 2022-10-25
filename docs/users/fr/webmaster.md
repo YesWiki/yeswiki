@@ -316,8 +316,21 @@ Il va falloir adapter quelques points et sauver ensuite
 'mysql_password' => 'motdepassedevotredb',
 'base_url' =>'mettreicivotrenomdedomaine/?',
 ```
-      
-      
+
+## Réparer la structure de vos bases de données
+
+_Lorsque la structure de vos bases de données n'est pas correcte, des soucis peuvent survenir en particuliers lors de la création ou la modification des listes._
+
+ 1. tenter de forcer la finalisation d'une mise à jour avec le handler `/update` (accessible avec [ce lien](?GererMisesAJour/update 'Forcer la finalisation de la mise à jour :ignore'))
+ 2. si ça ne fonctionne pas:
+    1. se rendre dans l'interface de gestion de base de données du serveur concerné (`phpmyadmin`)
+    2. ouvrir en même temps le fichier `setup/sql/create-tables.sql` depuis votre wiki ([fichier à télécharger](setup/sql/create-tables.sql ':ignore'))
+    3. vérifier dans la structure de chaque table de votre serveur (`phpmyadmin`) que chaque colonne est correctement définie.
+    4. puis, dans cette ordre, modifier la colonne qui doit être en `AUTOINCREMENT` pour avoir `A.I.` cochée. Normalement, ceci corrige les soucis d'index pour la table concernée et définie la colonne comme primaire.
+    5. puis, pour les index (`KEY` dans le fichier `create-tables.sql`), définir manuellement chaque index pour la table concernée
+    6. vérifier que l'affichage et la modification des fiches fonctionnes à nouveau
+
+**Important** : il est vivement conseillé de faire une sauvegarde de votre base de données avant de faire les manipulations.
 
 
   

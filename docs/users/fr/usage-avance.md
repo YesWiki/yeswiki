@@ -79,5 +79,13 @@ Par défaut la page "Modifier les paramètres utilisateurs" permet uniquement de
 Lorsqu'un utilisateur tente d'accéder à une page qui nécessite d'être connecté, c'est le formulaire de connexion par défaut qui s'affiche.
 **créez une page nommée PageLogin** permet de personnaliser cette page avec un message plus pédagogique et de bénéficier des options de connexions listées ci-dessus en utilisant le composant "Connexion"
 
+## Résoudre le souci de création de listes qui ne s'affichent pas
 
+### Description du problème
 
+ - après la création d'une liste, celle-ci ne s'affiche pas correctement dans la liste des listes (accessible avec [ce lien](?BazaR&vue=listes 'Liste des listes :ignore'))
+
+### Correction
+
+ 1. faire un `/update` sur votre wiki (accessible avec [ce lien](?GererMisesAJour/update 'Forcer la finalisation de la mise à jour :ignore'))
+ 2. vérifier si le problème est résolu. Sinon, suivre les [instructions réservées aux webmasters](./webmaster?id=r%c3%a9parer-la-structure-de-vos-bases-de-donn%c3%a9es)
