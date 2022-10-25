@@ -165,7 +165,7 @@ La gestion vue jusque maintenant permet de gérer l'existant mais comment gérer
 
 ![image Droitaccesfichierconf.png (67.1kB)](images/M22GererLesAccesDesPagesNonEncoreExi_Droitaccesfichierconf_20220223100943_20220223091008.png)
 
-Pour le détail, voir la partie [droit d'accès de la page Fichier de configuration](docs/users/fr/admin.md#droit-daccès)
+Pour le détail, voir la partie [droit d'accès de la page Fichier de configuration](docs/users/fr/admin?id=droit-d39accès)
 
 #### En ce qui concerne les fiches bazar
 
@@ -545,57 +545,65 @@ Pour découvrir l'ensemble des stratégies possibles face au spam => [https://ye
 Cette page permet de modifier la configuration de son Yeswiki sans passer par le fichier wakka.config.php. Dans les versions précédentes de Yeswiki, ces éléments n'étaient accessibles que par FTP, en éditant le fichier wakka.config.php, se trouvant à la racine du dossier du YesWiki. Tous les administrateurices de Yeswiki n'ayant pas accès au serveur, cette page de configuration contourne ce problème. Il faut être identifié comme administrateurice pour visionner et modifier les informations de cet espace.
 
 ### Paramètres principaux
- - Titre de votre wiki - wakka_name : c'est le titre donné à la création de votre wiki et qui s'affiche, de base, dans la page "PageTitre" et apparaît en haut à gauche sur la page d'accueil. Ce titre sera aussi utilisé par les moteurs de recherche comme titre de votre site. Il peut être modifié à tout moment.
- - Nom de la page d'accueil - root_page : à la création du wiki, le nom donné à cette page est "PagePrincipale". Il peut être modifié à tout moment.
- - Langue par défaut (fr ou en ou ... auto = langue du navigateur) - default_language : à la création du wiki, la langue choisie est le français. Le fait de modifier ce paramètre modifiera la langue pour les menus et paramètres en mode édition et les pages comme la page de configuration.
- - Icône du site (emoji ou URL vers une image PNG) - favicon : ce paramètre permet de modifier l'icône qui apparaît dans l'onglet du navigateur (Chrome, Firefox...)
- - Activer le mode de debug (yes ou no) - debug :  ce paramètre active le mode de débogage s'il est passé à la valeur 'yes' (infos sur le nombre de requêtes, le temps écoulé et force l'affichage des erreurs php pour les développeurs). Astuce : on peut aussi passer &debug dans l'url pour debugguer
- - Fuseau horaire du site (ex. UCT, Europe/Paris, Europe/London, GMT = utiliser celui du serveur,) - timezone : à la création du wiki, le fuseau horaire choisi est GMT et se cale sur celui du serveur. Cela peut amener des différences d'affichage Il peut arriver que l'affichage de l'heure de début d'un évènement sur le calendrier soit décalée car la configuration serveur peut être en décalage par rapport au fuseau horaire de l'administrateurice du wiki.
+ - **Titre de votre wiki - wakka_name** : c'est le titre donné à la création de votre wiki et qui s'affiche, de base, dans la page "PageTitre" et apparaît en haut à gauche sur la page d'accueil. Ce titre sera aussi utilisé par les moteurs de recherche comme titre de votre site. Il peut être modifié à tout moment.
+ - **Nom de la page d'accueil - root_page** : à la création du wiki, le nom donné à cette page est "PagePrincipale". Il peut être modifié à tout moment.
+ - **Langue par défaut (fr ou en ou ... auto = langue du navigateur) - default_language** : à la création du wiki, la langue choisie est le français. Le fait de modifier ce paramètre modifiera la langue pour les menus et paramètres en mode édition et les pages comme la page de configuration.
+ - **Icône du site (emoji ou URL vers une image PNG) - favicon** : ce paramètre permet de modifier l'icône qui apparaît dans l'onglet du navigateur (Chrome, Firefox...)
+ - **Activer le mode de debug (yes ou no) - debug** :  ce paramètre active le mode de débogage s'il est passé à la valeur 'yes' (infos sur le nombre de requêtes, le temps écoulé et force l'affichage des erreurs php pour les développeurs). Astuce : on peut aussi passer &debug dans l'url pour debugguer
+ - **Fuseau horaire du site (ex. UCT, Europe/Paris, Europe/London, GMT = utiliser celui du serveur,) - timezone** : à la création du wiki, le fuseau horaire choisi est GMT et se cale sur celui du serveur. Cela peut amener des différences d'affichage Il peut arriver que l'affichage de l'heure de début d'un évènement sur le calendrier soit décalée car la configuration serveur peut être en décalage par rapport au fuseau horaire de l'administrateurice du wiki.
 Pour bien configurer, on peut mettre dans le paramètre Fuseau horaire du site la valeur : Europe/Paris (ou sinon UTC).
- - Méthodes autorisées à être affichées dans les iframes (iframe,editiframe,bazariframe,render,all = autoriser tout) - allowed_methods_in_iframe
- - Nombre maximum de versions d'une page affichées par le handler `/revisions`. - revisionscount : 
- - Image d'avatar par défaut pour les commentaires (URL vers une image) - default_comment_avatar
- - Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false) - htmlPurifierActivated
+ - **Méthodes autorisées à être affichées dans les iframes (iframe,editiframe,bazariframe,render,all = autoriser tout) - allowed_methods_in_iframe**
+ - **Nombre maximum de versions d'une page affichées par le handler `/revisions`. - revisionscount** : 
+ - **Image d'avatar par défaut pour les commentaires (URL vers une image) - default_comment_avatar**
+ - **Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false) - htmlPurifierActivated**
+ 
 ### Droit d'accès
 Cette partie permet de modifier les droits d'accès pour les pages à venir. Pour voir d'autres façons de gérer les droits d'accès, voir le paragraphe [Gérer les droits d'accès des pages non encore existantes](/docs/users/fr/admin?id=g%c3%a9rer-les-droits-d39acc%c3%a8s-des-pages-non-encore-existantes)
- - Droits de lecture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_read_acl : par défaut, les pages à venir sont ouvertes à tous en droit de lecture grâce au symbole `*`.Pour limiter la lecture aux personnes ayant créé un compte, il faut mettre le symbole `+`. Pour limiter à un groupe d'utilisateurs en particulier, mettre le symbole `@` et le nom du groupe accolé. Par exemple, pour le groupe admin : `@admins`.
- - Droits d'écriture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_write_acl : par défaut, les pages à venir sont ouvertes à tous en droit d'écriture. 
- - Droits de commentaires par défaut des pages (comments-closed pour fermés, * pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_comment_acl :
- - Commentaires activés (true ou false) - comments_activated : 
- - Mot de passe demandé pour modifier les pages (voir doc gestion des spams) - password_for_editing : ce paramètre permet de demander un mot de passe AVANT de rentrer en mode édition que ce soit pour les pages wiki ET les fiches bazar. Si vous êtes connectés, ce mot de passe ne vous est pas demandé. Exemple : pour entrer dans le mode édition, les utilisateurices doivent entrer le chiffre `6`. Iels le savent grâce au message informatif rédiger ci-dessous.
- - Message informatif pour demander le mot de passe (voir doc gestion des spams) - password_for_editing_message : ce paramètre permet d'indiquer un message afin de donner aux usagers une info sur le mot de passe à rentrer (on fait le pari que les turcs spanners ne le liront pas ;-) exemple :`Pour éviter les attaques de spam, merci d'indiquer en chiffre combien font t.rois fois 2...`
+ - **Droits de lecture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_read_acl** : par défaut, les pages à venir sont ouvertes à tous en droit de lecture grâce au symbole `*`.Pour limiter la lecture aux personnes ayant créé un compte, il faut mettre le symbole `+`. Pour limiter à un groupe d'utilisateurs en particulier, mettre le symbole `@` et le nom du groupe accolé. Par exemple, pour le groupe admin : `@admins`.
+ - **Droits d'écriture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_write_acl** : par défaut, les pages à venir sont ouvertes à tous en droit d'écriture. 
+ - **Droits de commentaires par défaut des pages (comments-closed pour fermés, * pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_comment_acl** :
+ - **Commentaires activés (true ou false) - comments_activated** : 
+ - **Mot de passe demandé pour modifier les pages (voir doc gestion des spams) - password_for_editing** : ce paramètre permet de demander un mot de passe AVANT de rentrer en mode édition que ce soit pour les pages wiki ET les fiches bazar. Si vous êtes connectés, ce mot de passe ne vous est pas demandé. Exemple : pour entrer dans le mode édition, les utilisateurices doivent entrer le chiffre `6`. Iels le savent grâce au message informatif rédiger ci-dessous.
+ - **Message informatif pour demander le mot de passe (voir doc gestion des spams)** - password_for_editing_message : ce paramètre permet d'indiquer un message afin de donner aux usagers une info sur le mot de passe à rentrer (on fait le pari que les turcs spanners ne le liront pas ;-) exemple :`Pour éviter les attaques de spam, merci d'indiquer en chiffre combien font t.rois fois 2...`
 La combinaison des deux paramètres donnent le résultat suivant pour l'exemple :
 
 ![antispam.JPG (17.5 KB)](/images/antispam.JPG)
 
+ - **Autoriser le doubleclic pour éditer les menus et pages spéciales (true ou false) - allow_doubleclic** : par défaut, le doubleclic utilisé pour l'édition des pages a été retiré pour les menus et les pages speciales (PageMenuHaut, PageTitre, PageRapideHaut) afin d'éviter que ces pages soient spammées. Pour autoriser ce doubleclic, mettre `true`pour ce paramètre.
 
- - Autoriser le doubleclic pour éditer les menus et pages spéciales (true ou false) - allow_doubleclic
 ### Envoi des e-mails
- - Remplacer le mail utilisé comme expéditeur des messages - contact_from
- - Message personnalisé des mails envoyés depuis l'action contact - mail_custom_message
- - Ajouter 'wiki=' aux liens vers ce wiki dans les e-mails - contact_use_long_wiki_urls_in_emails
+ - **Remplacer le mail utilisé comme expéditeur des messages - contact_from** :
+ - **Message personnalisé des mails envoyés depuis l'action contact - mail_custom_message** :
+ - **Ajouter 'wiki=' aux liens vers ce wiki dans les e-mails - contact_use_long_wiki_urls_in_emails** :
+ 
 ### Barre d'édition pour les pages et les champs texte
- - Nom du champ bazar texte long pour lequel les composants doivent être visibles - actionbuilder_textarea_name
+ - **Nom du champ bazar texte long pour lequel les composants doivent être visibles - actionbuilder_textarea_name** :
+ 
 ### Insertion de médias (images, vidéos)
- - Service de vidéo par défaut (peertube, youtube ou vimeo) - attach-video-config[default_video_service]
- - Adresse du serveur peertube par défaut - attach-video-config[default_peertube_instance]
+ - **Service de vidéo par défaut (peertube, youtube ou vimeo) - attach-video-config[default_video_service]** :
+ - **Adresse du serveur peertube par défaut - attach-video-config[default_peertube_instance]** :
+ 
 ### Base de données
- - Latitude par défaut des affichages cartographiques - baz_map_center_lat : 
- - Longitude par défaut des affichages cartographiques - baz_map_center_lon
- - Niveau de zoom par défaut des cartes (1:monde => 15:commune) - baz_map_zoom
- - Hauteur par défaut en pixels des affichages cartographiques - baz_map_height
- - Adresse mail de l'expéditeur des modifications des fiches bazar - BAZ_ADRESSE_MAIL_ADMIN
- - Envoyer un mail aux admininistrateurs à chaque modification de fiche (true ou false) - BAZ_ENVOI_MAIL_ADMIN
- - Temps (s) entre deux rafraîchissements du cache pour vérifier les ajouts et modifications dans les requêtes JSON - baz_external_service[cache_time_to_check_changes]
- - Temps (s) entre deux rafraîchissements du cache pour vérifier les suppresions dans les requêtes JSON - baz_external_service[cache_time_to_check_deletion]
- - Temps (s) entre deux rafraîchissements du cache pour formulaires nécessaires aux requêtes JSON - baz_external_service[cache_time_to_refresh_forms]
- - Permettre la création de fiches même si le wiki est fermé en écriture (true ou false) - bazarIgnoreAcls
+
+Par défaut, pour l'affichage des données sous forme cartographique, les cartes sont centrées sur le centre de la France et affiche l'intégralité de la France. On peut forcer le centre ailleurs en configurant les paramètres ci-dessous
+
+ - **Latitude par défaut des affichages cartographiques - baz_map_center_lat** : par défaut, la latitude pour centrer la carte sur le centre de la France est 46.22763.
+ - **Longitude par défaut des affichages cartographiques - baz_map_center_lon** : par défaut, la longitude pour centrer la carte sur le centre de la France est 2.213749
+ - **Niveau de zoom par défaut des cartes (1:monde => 15:commune) - baz_map_zoom** : par défaut, pour afficher l'intégralité de la France, le niveau de zoom est à 5. L'échelle de zoom va de `1`(vue de l'ensemble du monde) à `15`(vue d'une commune)
+ - **Hauteur par défaut en pixels des affichages cartographiques - baz_map_height** : par défaut, la valeur est de 300px.
+ - **Adresse mail de l'expéditeur des modifications des fiches bazar - BAZ_ADRESSE_MAIL_ADMIN** :
+ - **Envoyer un mail aux admininistrateurs à chaque modification de fiche (true ou false) - BAZ_ENVOI_MAIL_ADMIN** :
+ - **Temps (s) entre deux rafraîchissements du cache pour vérifier les ajouts et modifications dans les requêtes JSON - baz_external_service[cache_time_to_check_changes]** :
+ - **Temps (s) entre deux rafraîchissements du cache pour vérifier les suppresions dans les requêtes JSON - baz_external_service[cache_time_to_check_deletion]** :
+ - **Temps (s) entre deux rafraîchissements du cache pour formulaires nécessaires aux requêtes JSON - baz_external_service[cache_time_to_refresh_forms]** :
+ - **Permettre la création de fiches même si le wiki est fermé en écriture (true ou false) - bazarIgnoreAcls** : 
+
 ### Sécurité
  - Prévenir si l'on quitte la page sans sauvegarder (true ou false) - use_alerte
  - Activer l'utilisation d'un captcha avant la sauvegarde (true ou false) - use_captcha
  - Activer l'antispam hashcash du wiki (activé par défaut) - use_hashcash
  - État du wiki (running ou vide = standard, hibernate = lecture seule) - wiki_status
 ### Balises meta pour l'indexation web
- - Mots clés pour le référencement (séparés par des virgules, pas plus de 20-30) - meta_keywords
- - Description du site en une phrase, pour le référencement (Attention : ne pas mettre de "." (point)) - meta_description
- - Empêcher les robots à indexer le wiki (Mettre 'noindex,nofollow,noarchive,noimageindex') - meta[robots]
+ - **Mots clés pour le référencement (séparés par des virgules, pas plus de 20-30) - meta_keywords** : ce paramètre permet d'ajouter des mots-clés pour améliorer le référencement sur les moteurs de recherche. Les mots doivent être séparés par une virgule et il ne faut pas dépasser 20 à 30 mots.
+ - **Description du site en une phrase, pour le référencement (Attention : ne pas mettre de "." (point)) - meta_description** : La phrase rédigée sera utilisée par les moteurs de recherche pour la description succincte du site. Ne pas mettre de point à la fin de la phrase.
+ - **Empêcher les robots à indexer le wiki (Mettre 'noindex,nofollow,noarchive,noimageindex') - meta[robots]** : si le site wiki est utilisé, par exemple, en tant qu'intranet pour un groupe de personne bien défini, il est possible d'empêcher l'indexation du site sur les moteurs de recherche en précisant dans ce paramètre `noindex,nofollow,noarchive,noimageindex`
