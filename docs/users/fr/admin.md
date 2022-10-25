@@ -42,7 +42,10 @@ Il faut être identifié comme administrateurice pour visionner et modifier les 
 **Mises à jour / extensions**
 
 Vous pouvez voir ici la version du wiki et s'il s'agit de la toute dernière.
-Si vous êtes identifié comme administrateurice vous pouvez faire les mises à jour.
+Si vous êtes identifié.e comme administrateurice vous pouvez faire les mises à jour.
+Astuces :
+ - mettre à jour YesWiki mais aussi les thèmes et les tools (extensions)
+ - une mise à jour se fait en plusieurs étapes : cliquez sur "Finaliser la mise à jour (lancer les actions de post-installation)" puis sur "Mettre à jour les pages de gestion"
 
 
 ## Gérer les droits
@@ -492,9 +495,9 @@ Si cela a l'avantage de bloquer/réserver la création de nouveaux comptes aux s
 
 #### Pour supprimer de nombreuses pages rapidement
 
-SI vous êtes connecté-e en tant qu'admin, il vous suffit de coller ceci à la fin de l'url des pages à supprimer : /deletepage&confirme=oui
-Cela vous évite toutes les étapes de validation, qui deviennent très fastidieuses lorsqu'on a plusieurs pages à supprimer. Attention, ce "raccourci" supprime définitivement la page sans message de confirmation, ne vous trompez donc pas !
-
+Installer l'extension "multideletepages" (Roue crantée > Gestion du site > Mise à jour / extensions).
+Puis dans une page (par exemple créer une page DeletePages) mettre l'action {{multideletepages}}. 
+Vous aurez alors un tableau avec la liste de toutes les pages : vous pouvez cocher de nombreuses pages et cliquer sur "Suppr. select." : attention ça ne redemande pas de validation.
 
 #### Pour les attaques massives sur de nombreuses pages
 
