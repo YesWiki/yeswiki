@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Core\YesWikiAction;
 
 class BazarCartoAction extends YesWikiAction
@@ -39,13 +40,24 @@ class BazarCartoAction extends YesWikiAction
         $template = (!$dynamic) ?
             ($arg['template'] ?? 'map.tpl.html') :
             ($arg['template'] ?? 'map');
-        if (strpos($template, 'gogomap') !== false) $template = 'gogocarto';
+        if (strpos($template, 'gogomap') !== false) {
+            $template = 'gogocarto';
+        }
         $spider = (!$dynamic) ?
             ($arg['spider'] ?? 'false') :
             $this->formatBoolean($arg, false, 'spider');
         $cluster = (!$dynamic) ?
             ($arg['cluster'] ?? 'false') :
             $this->formatBoolean($arg, false, 'cluster');
+
+        // Filters entries via query to remove whose withou bf_latitude nor bf_longitude
+        $query = $this->getService(EntryController::class)->formatQuery($arg, $_GET);
+        if (!isset($query['bf_latitude!'])) {
+            $query['bf_latitude!'] = "";
+        }
+        if (!isset($query['bf_longitude!'])) {
+            $query['bf_longitude!'] = "";
+        }
 
         return([
             /*
@@ -109,7 +121,8 @@ class BazarCartoAction extends YesWikiAction
             'template' => $template,
 
             'entrydisplay' => $arg['entrydisplay'] ?? 'sidebar',
-            'pagination' => -1 // disable pagination
+            'pagination' => -1, // disable pagination
+            'query' => $query,
         ]);
     }
 
