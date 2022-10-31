@@ -98,7 +98,6 @@ Vue.component('BazarCalendar', {
         window.location = info.event.url+ (this.$root.isInIframe() ? '/iframe' : '');
       } else if (['listWeek','listMonth','listYear'].indexOf(info.view.type) > -1){
         info.jsEvent.preventDefault(); // don't let the browser navigate
-        $(info.el).find('a').first().click();
       }
     },
     mountCalendar: function(){
@@ -174,7 +173,6 @@ Vue.component('BazarCalendar', {
       }
       if ($(element).hasClass("fc-list-event") && this.isModalDisplay()){
         $(element).find('.fc-list-event-title a').each(function(){
-          $(this).addClass("modalbox");
           $(this).attr("data-size","modal-lg");
           $(this).attr("data-iframe","1");
           $(this).attr("title",event.title);
