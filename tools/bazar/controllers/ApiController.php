@@ -240,7 +240,7 @@ class ApiController extends YesWikiController
         }, $_GET);
 
         // format search field
-        $searchfields = $_GET['search'] == 'dynamic' ? $_GET['searchfields'] ?? [] : [];
+        $searchfields = isset($GET['search']) && $_GET['search'] == 'dynamic' ? $_GET['searchfields'] ?? [] : [];
         $searchfields = (empty($searchfields) || !is_string($searchfields) || !is_array($searchfields))
             ? ['bf_titre']
             : (
