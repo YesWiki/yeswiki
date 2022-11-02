@@ -2,7 +2,8 @@
 
 // backward compatibility TODO delete this file for ectoplasme
 
-echo $this->render("@login/modal.twig",compact([
+$defs = array_keys(get_defined_vars());
+echo $this->render("@login/modal.twig",compact(array_filter([
     "connected",
     "user",
     "email",
@@ -16,4 +17,6 @@ echo $this->render("@login/modal.twig",compact([
     // "class", // do not transfer class because LoginAction add it
     "nobtn",
     "error"
-    ]));
+    ],function($i)use($defs){
+        return in_array($i,$defs);
+    })));
