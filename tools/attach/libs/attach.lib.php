@@ -70,14 +70,14 @@ if (!class_exists('attach')) {
         public function file_upload_max_size()
         {
             static $max_size = -1;
-        
+
             if ($max_size < 0) {
                 // Start with post_max_size.
                 $post_max_size = $this->parse_size(ini_get('post_max_size'));
                 if ($post_max_size > 0) {
                     $max_size = $post_max_size;
                 }
-        
+
                 // If upload_max_size is less, then reduce. Except if upload_max_size is
                 // zero, which indicates no limit.
                 $upload_max = $this->parse_size(ini_get('upload_max_filesize'));
@@ -291,7 +291,7 @@ if (!class_exists('attach')) {
         {
             return preg_match("/.(" . $this->attachConfig["ext_wma"] . ")$/i", $this->file) == 1;
         }
-        
+
         /**
          * Test si le fichier est un fichier pdf
          */
@@ -497,7 +497,7 @@ if (!class_exists('attach')) {
                 $width = $width - 20;
                 $height = $height - 20;
             }
-            
+
             //c'est une image : balise <IMG..../>
             $img = "<img class=\"img-responsive\" src=\"" . $this->GetScriptPath() . $img_name . "\" " .
             "alt=\"" . $this->desc . ($this->link ? "\nLien vers: $this->link" : "") . "\" width=\"" . $width . "\" height=\"" . $height . "\" />";
@@ -544,7 +544,7 @@ if (!class_exists('attach')) {
             }
 
             $notAligned = (strpos($this->classes, 'left') === false && strpos($this->classes, 'right') == false  && strpos($this->classes, 'center') == false);
-            $output = ($notAligned ? '<div>' : '').(isset($link) ? $link : '')."<figure class=\"$this->classes\" $data>$img$caption$legend</figure>".(isset($link) ? '</a>' : '').($notAligned ? '</div>' :'');
+            $output = ($notAligned ? '<div>' : '').(isset($link) ? $link : '')."<figure class=\"$this->classes\" $data>$img$caption$legend</figure>".(isset($link) ? '</a>' : '').($notAligned ? '</div>' : '');
 
             echo $output;
             //$this->showUpdateLink();
@@ -595,7 +595,7 @@ if (!class_exists('attach')) {
         }
 
         // End Paste
-        
+
         // Affiche le fichier liee comme un fichier pdf
         public function showAsPDF($fullFilename)
         {
@@ -624,12 +624,12 @@ if (!class_exists('attach')) {
                     $newclass = str_replace('left', 'pull-left', $this->classes) ;
                 }
             }
-            
+
             // define class
             if ($newclass != '') {
                 $this->wiki->setParameter('class', $newclass) ;
             }
-            
+
             // Call pdf actions
             $params = $this->wiki->parameter;
             echo $this->wiki->Action('pdf', 0, $params) ;
@@ -745,39 +745,39 @@ if (!class_exists('attach')) {
                 }
             }
             switch ($_FILES['upFile']['error']) {
-            case 0:
-                $srcFile = $_FILES['upFile']['tmp_name'];
-                if (move_uploaded_file($srcFile, $destFile)) {
-                    chmod($destFile, 0644);
-                    if ($ext  === 'svg' || $ext === 'xml') {
-                        $purifier = $this->wiki->services->get(HtmlPurifierService::class);
-                        $purifier->cleanFile($destFile, $ext);
+                case 0:
+                    $srcFile = $_FILES['upFile']['tmp_name'];
+                    if (move_uploaded_file($srcFile, $destFile)) {
+                        chmod($destFile, 0644);
+                        if ($ext  === 'svg' || $ext === 'xml') {
+                            $purifier = $this->wiki->services->get(HtmlPurifierService::class);
+                            $purifier->cleanFile($destFile, $ext);
+                        }
+                        header("Location: " . $this->wiki->href("", $this->wiki->GetPageTag(), ""));
+                    } else {
+                        echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_MOVING_TEMPORARY_FILE') . "</div>\n";
                     }
-                    header("Location: " . $this->wiki->href("", $this->wiki->GetPageTag(), ""));
-                } else {
-                    echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_MOVING_TEMPORARY_FILE') . "</div>\n";
-                }
-                break;
-            case 1:
-                echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_UPLOAD_MAX_FILESIZE') . "</div>\n";
-                break;
-            case 2:
-                echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_MAX_FILE_SIZE') . "</div>\n";
-                break;
-            case 3:
-                echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_PARTIAL_UPLOAD') . "</div>\n";
-                break;
-            case 4:
-                echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_NO_FILE_UPLOADED') . "</div>\n";
-                break;
-            case 5:
-                $t = array();
-                foreach ($this->wiki->config['authorized-extensions'] as $ext => $des) {
-                    $t[] = $ext.' ('.$des.')';
-                }
-                $these = implode(', ', $t);
-                echo "<div class=\"alert alert-error alert-danger\">". _t('ERROR_NOT_AUTHORIZED_EXTENSION'). $these . '.</div>';
-                break;
+                    break;
+                case 1:
+                    echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_UPLOAD_MAX_FILESIZE') . "</div>\n";
+                    break;
+                case 2:
+                    echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_MAX_FILE_SIZE') . "</div>\n";
+                    break;
+                case 3:
+                    echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_PARTIAL_UPLOAD') . "</div>\n";
+                    break;
+                case 4:
+                    echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_NO_FILE_UPLOADED') . "</div>\n";
+                    break;
+                case 5:
+                    $t = array();
+                    foreach ($this->wiki->config['authorized-extensions'] as $ext => $des) {
+                        $t[] = $ext.' ('.$des.')';
+                    }
+                    $these = implode(', ', $t);
+                    echo "<div class=\"alert alert-error alert-danger\">". _t('ERROR_NOT_AUTHORIZED_EXTENSION'). $these . '.</div>';
+                    break;
             }
             echo $this->wiki->Format(_t('ATTACH_BACK_TO_PAGE') . " " . $this->wiki->GetPageTag());
         }
@@ -981,7 +981,7 @@ if (!class_exists('attach')) {
                 // delete cache files
                 $cachePath = $this->GetCachePath();
                 $fileInfo = $this->decodeLongFilename($filename);
-    
+
                 $filenamesToDelete = [];
                 // vignettes
                 $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9]", "[0-9][0-9][0-9]", "fit");
@@ -1000,11 +1000,11 @@ if (!class_exists('attach')) {
                 $filenamesToDelete[] = $cachePath."/image_[0-9][0-9][0-9][x_][0-9][0-9][0-9][0-9]_".basename($filename);
                 $filenamesToDelete[] = $cachePath."/image_[0-9][0-9][0-9][0-9][x_][0-9][0-9][0-9]_".basename($filename);
                 $filenamesToDelete[] = $cachePath."/image_[0-9][0-9][0-9][0-9][x_][0-9][0-9][0-9][0-9]_".basename($filename);
-                // old tempaltes.functions.php getImageFromBody
+                // old templates.functions.php getImageFromBody
                 $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9]x[0-9][0-9][0-9]-".basename($filename);
-                $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9]0-9]x[0-9][0-9][0-9]-".basename($filename);
+                $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9][0-9]x[0-9][0-9][0-9]-".basename($filename);
                 $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9]x[0-9]0-9][0-9][0-9]-".basename($filename);
-                $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9]0-9]x[0-9]0-9][0-9][0-9]-".basename($filename);
+                $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9][0-9]x[0-9]0-9][0-9][0-9]-".basename($filename);
                 foreach ($filenamesToDelete as $path) {
                     array_map('unlink', glob($path));
                 }
@@ -1088,24 +1088,24 @@ if (!class_exists('attach')) {
             $imgTrans->handle_exif_orientation_tag = true;
             $imgTrans->source_path = $image_src;
             $imgTrans->target_path = $image_dest;
-            
+
             if ($mode == "crop") {
                 $wantedRatio = $largeur/$hauteur;
                 // get image info except for webp (code copier from Zebra_Image)
                 if (
-                        !(
-                            version_compare(PHP_VERSION, '7.0.0') >= 0 &&
-                            version_compare(PHP_VERSION, '7.1.0') < 0 &&
-                            (
-                                $imgTrans->source_type = strtolower(substr($imgTrans->source_path, strrpos($imgTrans->source_path, '.') + 1))
-                            ) === 'webp'
-                        ) &&
-                        !list($sourceImageWidth, $sourceImageHeight, $sourceImageType) = @getimagesize($imgTrans->source_path)
-                    ) {
+                    !(
+                        version_compare(PHP_VERSION, '7.0.0') >= 0 &&
+                        version_compare(PHP_VERSION, '7.1.0') < 0 &&
+                        (
+                            $imgTrans->source_type = strtolower(substr($imgTrans->source_path, strrpos($imgTrans->source_path, '.') + 1))
+                        ) === 'webp'
+                    ) &&
+                    !list($sourceImageWidth, $sourceImageHeight, $sourceImageType) = @getimagesize($imgTrans->source_path)
+                ) {
                     return false;
                 }
                 $imageRatio = $sourceImageWidth/$sourceImageHeight;
-    
+
                 if ($imageRatio != $wantedRatio) {
                     if ($imageRatio > $wantedRatio) {
                         // width too large, keep height
@@ -1131,7 +1131,7 @@ if (!class_exists('attach')) {
                 }
             }
             $result = $imgTrans->resize(intval($largeur), intval($hauteur), ZEBRA_IMAGE_NOT_BOXED, '#FFFFFF');
-            
+
             if ($mode == "crop" && !empty($tempFileName) && file_exists($tempFileName)) {
                 unlink($tempFileName);
             }
