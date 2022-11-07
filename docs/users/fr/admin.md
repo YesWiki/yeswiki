@@ -228,7 +228,7 @@ La configuration personnalisée pourra être appliquée à l'ensemble du site ou
 #### Astuce 
 Si vous choisissez une police différente, 2 solutions possibles :
 - installer l'extension **fontautoinstall** qui permet d'ajouter sur votre serveur la police choisie (l'extension doit être activée avant de créer la configuration graphique)
-- copier vos polices sur votre serveur dans le dossier /custom/margot/fonts puis modifier PageCss pour ajouter le chargement des polices
+- copier vos polices sur votre serveur dans le dossier /custom/fonts puis modifier PageCss pour ajouter le chargement des polices
 exemple
 ```
 /* Typo utilisée ubuntu-regular - latin */
@@ -246,8 +246,6 @@ exemple
         url('custom/fonts/ubuntu-mono-v10-latin-700.ttf') format('truetype'), /* Safari, Android, iOS */
         url('custom/fonts/ubuntu-mono-v10-latin-700.svg#UbuntuMono ') format('svg'); /* Legacy iOS */
 }
-
-
 :root {
 --main-title-fontfamily: 'Ubuntu Mono', sans-serif;
 }```
