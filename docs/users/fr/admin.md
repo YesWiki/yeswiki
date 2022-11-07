@@ -214,54 +214,161 @@ Ces opérations sont aussi réalisables pour les différents champs d'un formula
 (à trouver ou écrire ET à déplacer pour alléger cette section)
 
 ## Gérer le look
+L'onglet [Look](/?GererThemes)  accessible via le menu "Gestion du site" permet de :
+ - créer une configuration graphique personnalisée (variante de couleur et de police) pour votre wiki
+ - ajouter du code CSS personnalisé
+ - visualiser/modifier le thème graphique affecté à chaque page de votre wiki
+ - [modifier le thème par défaut](/docs/users/fr/admin.md#configuration-graphique-par-d%C3%A9faut)
+
+### Créer une configuration graphique personnalisée
+Le thème Margot permet de définir des variantes de couleur pour votre wiki : [Configuration graphique](/?LookWiki)
+L'interface vous permet de modifier les couleurs utilisées dans le thème : couleur primaire, couleur secondaire 1, couleur secondaire 2, couleur de texte, couleur neutre , couleur claire (fond) - puis de nommer cette configuration custom et la sauvegarder.
+La configuration personnalisée pourra être appliquée à l'ensemble du site ou à certaines pages selon vote besoin.
+
+?>Astuce Si vous choisissez une police différente, 2 solutions possibles :
+- installer l'extension **fontautoinstall** qui permet d'ajouter sur votre serveur la police choisie (l'extension doit être activée avant de créer la configuration graphique)
+- copier vos polices sur votre serveur dans le dossier /custom/margot/fonts puis modifier PageCss pour ajouter le chargement des polices
+exemple
+'''
+/* Typo utilisée ubuntu-regular - latin */
+/* ubuntu-regular - latin */
+/* ubuntu-mono-700 - latin */
+@font-face {
+
+    font-family: 'Ubuntu Mono';
+    font-style: normal;
+    font-weight: 700;
+    src: url('custom/fonts/ubuntu-mono-v10-latin-700.eot'); /* IE9 Compat Modes */
+    src: local(''),
+        url('custom/fonts/ubuntu-mono-v10-latin-700.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+        url('custom/fonts/ubuntu-mono-v10-latin-700.woff2') format('woff2'), /* Super Modern Browsers */
+        url('custom/fonts/ubuntu-mono-v10-latin-700.woff') format('woff'), /* Modern Browsers */
+        url('custom/fonts/ubuntu-mono-v10-latin-700.ttf') format('truetype'), /* Safari, Android, iOS */
+        url('custom/fonts/ubuntu-mono-v10-latin-700.svg#UbuntuMono ') format('svg'); /* Legacy iOS */
+
+}
+/* fira-sans-regular - latin */
+@font-face {
+
+    font-family: 'Fira Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: url('custom/fonts/fira-sans-v11-latin-regular.eot'); /* IE9 Compat Modes */
+    src: local(''),
+        url('custom/fonts/fira-sans-v11-latin-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+        url('custom/fonts/fira-sans-v11-latin-regular.woff2') format('woff2'), /* Super Modern Browsers */
+        url('custom/fonts/fira-sans-v11-latin-regular.woff') format('woff'), /* Modern Browsers */
+        url('custom/fonts/fira-sans-v11-latin-regular.ttf') format('truetype'), /* Safari, Android, iOS */
+        url('custom/fonts/fira-sans-v11-latin-regular.svg#FiraSans ') format('svg'); /* Legacy iOS */
+
+}
+
+:root {
+--main-text-fontfamily: 'Fira Sans', sans-serif;
+--main-title-fontfamily: 'Ubuntu Mono', sans-serif;
+}'''
+
+
+### Ajouter du code CSS personnalisé
+Il est possible d'ajouter du code CSS personnalisé sur une page wiki dédiée : PageCss.
+Cette page ne doit contenir que du CSS. Il sera chargé en dernier afin de pouvoir surcharger des classes CSS et personnaliser l'affichage.
+Par défaut, cette page contient des variables CSS qui sont utilisables avec le thème Margot. Vous pouvez ajouter tout code CSS qui vous sera utile.
+'''
+:root { 
+/* couleurs des titres */
+  --title-h1-color:var(--neutral-color);
+  --title-h2-color:var(--primary-color);
+  --title-h3-color:var(--secondary-color-1);
+  --title-h4-color:var(--secondary-color-2);
+
+/* couleur pour les messages positifs par defaut vert */
+ --success-color: #3cab3b; 
+
+/* couleur pour les messages d'erreur par defaut rouge */
+ --danger-color: #d8604c;  
+
+/* couleur pour les messages d'alerte par defaut orange */ 
+ --warning-color: #D78958; 
+
+/* couleur de fond de la partie centrale votre wiki */
+ --main-container-bg-color:var(--neutral-light-color);
+
+/* couleur des liens */
+ --link-color: var(--primary-color);  
+
+/* couleur des liens au survol */
+ --link-hover-color: var(--primary-color);  
+
+/* couleur de la barre de menu */
+ --navbar-bg-color: var(--primary-color); 
+
+ --navbar-text-color: var(--neutral-light-color); 
+
+ --navbar-link-color: var(--neutral-light-color); 
+
+ --navbar-link-bg-color: transparent; 
+
+ --navbar-link-hover-color: rgba(255,255,255,0.85); 
+
+ --navbar-link-bg-hover-color: transparent; 
+
+ --navbar-border: none; 
+
+ --navbar-border-radius: 0; 
+ 
+ --navbar-shadow: none; 
+ 
+ --header-bg-color: var(--neutral-light-color);
+
+ --header-text-color: var(--neutral-color); 
+
+--header-title-color: var(--primary-color); 
+
+/* couleur de fond du pied de page */
+ --footer-bg-color: transparent; 
+
+ --footer-text-color: var(--main-text-color); 
+
+ --footer-title-color: var(--main-text-color); 
+
+ --footer-border-top: 3px solid var(--neutral-soft-color); 
+
+ --btn-border: none; 
+
+ --btn-border-radius: .5em; 
+
+--checkbox-color: var(--primary-color); 
+
+ } 
+'''
+
+
+### Visualiser/modifier le thème graphique affecté à chaque page de votre wiki
+Il est possible d'affecter un style différent à certaines pages wiki (par exemple pour différencier une partie intranet).
+La page [Look](/?GererThemes) permet de cocher les pages concernées puis sélectionner le thème et affecter un nouveau thème graphique.
+
+Le choix du thème peut également se faire page par page (pour l'instant utiliser cette méthode pour sélectionner un preset pour une page seulement)
+**Pour modifier ces éléments sur une page (précédemment créée ou nouvelle) :**
+- Passer en mode édition (double clic ou "éditer la page")
+-En bas de votre page, apparait un gros bouton Thème graphique :
 
 ### Configuration graphique par défaut
-Pour **changer le thème graphiques sur l'ensemble du site**, on peut personnaliser la configuration wakka.config.php et rajouter les valeurs:
+Pour **changer le thème graphiques sur l'ensemble du site**, reportez vous à la rubrique "Gérer le thème par défaut du wiki" en bas de la page [Look](/?GererThemes)
+Ce changement aura pour effet de mettre à jour le fichier de configuration wakka.config.php et rajouter les valeurs:
 
 'favorite\_theme' => 'nom du thème correspondant au nom du sous-répertoire thème correspondant à ce thème personnalisé',
 'favorite\_squelette' => 'nom du squelette en liaison avec le thème personnalisé.tpl.html',
 'favorite\_style' => 'nom de la feuille de style en liaison avec le thème personnalisé.css'
 
-Exemples :
 
-'favorite\_theme' => 'yeswiki',
-'favorite\_squelette' => 'responsive-1col.tpl.html',
-'favorite\_style' => 'blue.css',
+### Dossier custom
 
-Mais cela ne s'applique que pour les nouvelles pages créées.
-Pour les anciennes pages, il faut alors modifier chaque page en mode édition, bouton thème,
-ou bien forcer le thème pour toutes les pages en ajoutant dans wakka.config.php : 'hide\_action\_template' => '1',
+Il est possible de créer un thème personnalisé ou den personnaliser une partie seulement.
+- pour un template de thème graphique  :
+        1. identifier le fichier. Par exemple :  ''' /themes/margot/squelettes/1col.tpl.html'''
 
-### Changer de thème graphique
-
-https://yeswiki.net/?DocumentationChangerThemeGraphique
-
-Chaque page d'un wiki peut s'afficher de diverses manières, à la demande des rédacteurs. Il est ainsi possible de choisir :
-
-*   Le thème graphique : ensemble des éléments esthétiques d'un wiki.
-*   Le squelette : qui définit l'architecture de chaque page (nbre de colonnes, etc.)
-*   Le style : qui correspond à l'aspect visuel de la page (couleurs, graphisme, etc.)
-*   L'image de fond qui permet de changer l'image de fond (logique non ?)
-
-Tous ces éléments peuvent être variés d'une page à l'autre. Mais afin de maintenir une cohérence graphique sur l'ensemble de votre wiki, il est conseillé de se cantonner à l'usage d'un seul et même thème graphique.
-[Tester les thèmes !](https://yeswiki.net/?DemoThemes "Tester les thèmes !")
-La liste des thèmes par défaut est modifiable, cela relève d'une tache d'administrateur : [voir la documentation](https://yeswiki.net/?DocumentationAjoutThemesGraphiques).
-
-**Pour modifier ces éléments sur une page (précédemment créée ou nouvelle) :**
-
-*   Passer en mode édition (double clic ou "éditer la page")
-*   En bas de votre page, apparait un gros bouton Thème graphique :
-
-![image BontonTheme.png (2.9kB)](images/DocumentationChangerThemeGraphique_BontonTheme_20121228163059_20121228163059.png)
-
-*  En cliquant dessus, la fenêtre modale suivante apparaîtra alors :
-
-![image ChangerTheme.png (0.1MB)](images/DocumentationChangerThemeGraphique_ChangerTheme_20121228163705_20121228163705.png)
-
-*   Choisissez chaque élément de ces menus déroulants
-*   cliquez sur Appliquer puis
-*   Sauvez la page
-
+        (“margot” est le nom de dossier du thème utilisé)
+        2. le copier dans le dossier :    ''' /custom/themes/margot/squelettes/1col.tpl.html'''
 
 
 ### Ajouter des thèmes graphiques
@@ -301,81 +408,7 @@ L'architecture de YesWiki est basée sur [Bootstrap](https://fr.wikipedia.org/wi
 
 Modifier le thème graphique va donc revenir à adapter un squelette en modifiant celui-ci avec la syntaxe Bootstrap adaptée et la feuille de style associée.
 
-#### le css
 
-/\*
-Voici un exemple de css custom pour le thème margot (le thème par défaut sous doryphore), il agit sur les variables css non personnalisables dans le thème et permet de faire des css sur mesure.
-Chaque ligne ci-dessous est à dé-commenter pour être utilisée
-Pour en savoir plus, voyez la documentation sur [https://yeswiki.net/?DocumentationThemeMargot](https://yeswiki.net/?DocumentationThemeMargot)
-\*/
-
-/\* :root { \*/
-
-/\* couleur pour les messages positifs par defaut vert \*/
-/\* --success-color: #3cab3b; \*/
-
-/\* couleur pour les messages d'erreur par defaut rouge \*/
-/\* --danger-color: #d8604c; \*/
-
-/\* couleur pour les messages d'alerte par defaut orange \*/
-/\* --warning-color: #D78958; \*/
-
-/\* couleur de fond de la partie centrale votre wiki \*/
-/\* --main-container-bg-color:var(--neutral-light-color); \*/
-
-/\* couleur des liens \*/
-/\* --link-color: var(--primary-color); \*/
-
-/\* couleur des liens au survol \*/
-/\* --link-hover-color: var(--primary-color); \*/
-
-/\* couleur de la barre de menu \*/
-/\* --navbar-bg-color: var(--primary-color); \*/
-
-/\* --navbar-text-color: var(--neutral-light-color); \*/
-
-/\* --navbar-link-color: var(--neutral-light-color); \*/
-
-/\* --navbar-link-bg-color: transparent; \*/
-
-/\* --navbar-link-hover-color: rgba(255,255,255,0.85); \*/
-
-/\* --navbar-link-bg-hover-color: transparent; \*/
-
-/\* --navbar-border: none; \*/
-
-/\* --navbar-border-radius: 0; \*/
-
-/\* --navbar-shadow: none; \*/
-
-/\* --header-bg-color: var(--neutral-light-color); \*/
-
-/\* --header-text-color: var(--neutral-color); \*/
-
-/\* --header-title-color: var(--primary-color); \*/
-
-/\* couleur de fond du pied de page \*/
-/\* --footer-bg-color: transparent; \*/
-
-/\* --footer-text-color: var(--main-text-color); \*/
-
-/\* --footer-title-color: var(--main-text-color); \*/
-
-/\* --footer-border-top: 3px solid var(--neutral-soft-color); \*/
-
-/\* --btn-border: none; \*/
-
-/\* --btn-border-radius: .5em; \*/
-
-/\* --checkbox-color: var(--primary-color); \*/
-
-/\* } \*/
-/\*.background-image.fixed {
-
-*   background-attachment: fixed;
-*   background-size: auto;
-
-}\*/
 
 #### créer des mises en page plus fines
 à écrire :
