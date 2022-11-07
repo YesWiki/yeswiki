@@ -215,9 +215,9 @@ Ces opérations sont aussi réalisables pour les différents champs d'un formula
 
 ## Gérer le look
 L'onglet [Look](/?GererThemes)  accessible via le menu "Gestion du site" permet de :
- - créer une configuration graphique personnalisée (variante de couleur et de police) pour votre wiki
- - ajouter du code CSS personnalisé
- - visualiser/modifier le thème graphique affecté à chaque page de votre wiki
+ - [créer une configuration graphique personnalisée (variante de couleur et de police)](/docs/users/fr/admin?id=cr%c3%a9er-une-configuration-graphique-personnalis%c3%a9e)
+ - [ajouter du code CSS personnalisé](/docs/users/fr/admin?id=ajouter-du-code-css-personnalis%c3%a9)
+ - [visualiser/modifier le thème graphique affecté à chaque page](/docs/users/fr/admin?id=visualisermodifier-le-th%c3%a8me-graphique-affect%c3%a9-%c3%a0-chaque-page-de-votre-wiki)
  - [modifier le thème par défaut](/docs/users/fr/admin.md#configuration-graphique-par-d%C3%A9faut)
 
 ### Créer une configuration graphique personnalisée
@@ -225,16 +225,16 @@ Le thème Margot permet de définir des variantes de couleur pour votre wiki : [
 L'interface vous permet de modifier les couleurs utilisées dans le thème : couleur primaire, couleur secondaire 1, couleur secondaire 2, couleur de texte, couleur neutre , couleur claire (fond) - puis de nommer cette configuration custom et la sauvegarder.
 La configuration personnalisée pourra être appliquée à l'ensemble du site ou à certaines pages selon vote besoin.
 
-?>Astuce Si vous choisissez une police différente, 2 solutions possibles :
+#### Astuce 
+Si vous choisissez une police différente, 2 solutions possibles :
 - installer l'extension **fontautoinstall** qui permet d'ajouter sur votre serveur la police choisie (l'extension doit être activée avant de créer la configuration graphique)
 - copier vos polices sur votre serveur dans le dossier /custom/margot/fonts puis modifier PageCss pour ajouter le chargement des polices
 exemple
-'''
+```
 /* Typo utilisée ubuntu-regular - latin */
 /* ubuntu-regular - latin */
 /* ubuntu-mono-700 - latin */
 @font-face {
-
     font-family: 'Ubuntu Mono';
     font-style: normal;
     font-weight: 700;
@@ -245,35 +245,19 @@ exemple
         url('custom/fonts/ubuntu-mono-v10-latin-700.woff') format('woff'), /* Modern Browsers */
         url('custom/fonts/ubuntu-mono-v10-latin-700.ttf') format('truetype'), /* Safari, Android, iOS */
         url('custom/fonts/ubuntu-mono-v10-latin-700.svg#UbuntuMono ') format('svg'); /* Legacy iOS */
-
 }
-/* fira-sans-regular - latin */
-@font-face {
 
-    font-family: 'Fira Sans';
-    font-style: normal;
-    font-weight: 400;
-    src: url('custom/fonts/fira-sans-v11-latin-regular.eot'); /* IE9 Compat Modes */
-    src: local(''),
-        url('custom/fonts/fira-sans-v11-latin-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
-        url('custom/fonts/fira-sans-v11-latin-regular.woff2') format('woff2'), /* Super Modern Browsers */
-        url('custom/fonts/fira-sans-v11-latin-regular.woff') format('woff'), /* Modern Browsers */
-        url('custom/fonts/fira-sans-v11-latin-regular.ttf') format('truetype'), /* Safari, Android, iOS */
-        url('custom/fonts/fira-sans-v11-latin-regular.svg#FiraSans ') format('svg'); /* Legacy iOS */
-
-}
 
 :root {
---main-text-fontfamily: 'Fira Sans', sans-serif;
 --main-title-fontfamily: 'Ubuntu Mono', sans-serif;
-}'''
+}```
 
 
 ### Ajouter du code CSS personnalisé
 Il est possible d'ajouter du code CSS personnalisé sur une page wiki dédiée : PageCss.
 Cette page ne doit contenir que du CSS. Il sera chargé en dernier afin de pouvoir surcharger des classes CSS et personnaliser l'affichage.
 Par défaut, cette page contient des variables CSS qui sont utilisables avec le thème Margot. Vous pouvez ajouter tout code CSS qui vous sera utile.
-'''
+```
 :root { 
 /* couleurs des titres */
   --title-h1-color:var(--neutral-color);
@@ -301,51 +285,36 @@ Par défaut, cette page contient des variables CSS qui sont utilisables avec le 
 
 /* couleur de la barre de menu */
  --navbar-bg-color: var(--primary-color); 
-
  --navbar-text-color: var(--neutral-light-color); 
-
  --navbar-link-color: var(--neutral-light-color); 
-
  --navbar-link-bg-color: transparent; 
-
  --navbar-link-hover-color: rgba(255,255,255,0.85); 
-
  --navbar-link-bg-hover-color: transparent; 
-
  --navbar-border: none; 
-
  --navbar-border-radius: 0; 
- 
  --navbar-shadow: none; 
  
  --header-bg-color: var(--neutral-light-color);
-
  --header-text-color: var(--neutral-color); 
-
 --header-title-color: var(--primary-color); 
 
 /* couleur de fond du pied de page */
  --footer-bg-color: transparent; 
-
  --footer-text-color: var(--main-text-color); 
-
  --footer-title-color: var(--main-text-color); 
-
  --footer-border-top: 3px solid var(--neutral-soft-color); 
 
  --btn-border: none; 
-
  --btn-border-radius: .5em; 
-
---checkbox-color: var(--primary-color); 
+ --checkbox-color: var(--primary-color); 
 
  } 
-'''
+```
 
 
 ### Visualiser/modifier le thème graphique affecté à chaque page de votre wiki
 Il est possible d'affecter un style différent à certaines pages wiki (par exemple pour différencier une partie intranet).
-La page [Look](/?GererThemes) permet de cocher les pages concernées puis sélectionner le thème et affecter un nouveau thème graphique.
+La page Look permet de cocher les pages concernées puis sélectionner le thème et affecter un nouveau thème graphique.
 
 Le choix du thème peut également se faire page par page (pour l'instant utiliser cette méthode pour sélectionner un preset pour une page seulement)
 **Pour modifier ces éléments sur une page (précédemment créée ou nouvelle) :**
