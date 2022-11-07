@@ -19,14 +19,14 @@
 *   Décompressez le fichier téléchargé sur votre disque dur et renommez-le à votre convenance (par exemple monYeswiki)
 *   Si elle n'existe pas déjà, créez une base de données vide sur votre espace d'hébergement (par exemple mabase).
 *   Le plus souvent, il vous faudra créer un utilisateur pour cette base de donnée avec un identifiant et un mot de passe (par exemple identifiant = moi, mot de passe = oups)
-*   Dans la mesure du possible évitez les identifiant avec "tiret" (genre moi-moi) car ça crée parfois une erreur lors de l'installation
-*   Noter le nom de votre base de données et les identifiants et mot de passe d'accès à celle-ci.
+*   Dans la mesure du possible, évitez les identifiants avec "tiret" (genre moi-moi) car cela crée parfois une erreur lors de l'installation
+*   Notez le nom de votre base de données et les identifiants et mot de passe d'accès à celle-ci.
 
 #### Upload par FTP
 *   Connectez-vous à votre espace personnel par FTP (filezilla par exemple)
 *   Glissez et déposez votre dossier local (monYeswiki) sur votre espace personnel
-*   Sur certains hébergements, il faut attribuer des droits d'accès en écriture au dossier principal du wiki (monYeswiki) : mettre les droit d'accès en écriture pour tous (chmod 777), en faisant clic droit sur le dossier puis "droits d'accès au dossier" dans filezilla)
-    *   Il est bon aussi (pour éviter des erreurs futures lors de l'insertion d'images dans le wiki par exemple) de déjà attribuer au dossier "Cache" et "File" des droits d'accès en écriture pour tous (777)
+*   Sur certains hébergements, il faut attribuer des droits d'accès en écriture au dossier principal du wiki (monYeswiki) : mettre les droits d'accès en écriture pour tous (chmod 777), en faisant clic droit sur le dossier puis "droits d'accès au dossier" dans filezilla)
+*  Pour éviter des erreurs futures lors de l'insertion d'images dans le wiki par exemple, il peut être judicieux d'attribuer dores et déjà au dossier "Cache" et "File" des droits d'accès en écriture pour tous (777)
 *   Fermez le client Ftp. Nous allons pouvoir configurer le yeswiki.
 <iframe sandbox="allow-same-origin allow-scripts" src="https://video.coop.tools/videos/embed/70cb02cf-606e-417d-8458-f1f265c0d3c8" allowfullscreen="" tc-textcontent="true" data-tc-id="w-0.010567584623263016" width="100%" height="315" frameborder="0"></iframe>
 
@@ -39,21 +39,19 @@
 *   Renseignez le préfixe des tables : par défaut yeswiki\_ (vous pouvez laisser comme cela)
 *   Modifiez le nom de votre YesWiki (cela deviendra le titre de votre wiki affiché en grand en haut du site... modifiable par après si nécessaire - ne pas mettre de caractères spéciaux html, typiquement "&Eacute", "&Egrave"; )
 *   Renseignez la page d'accueil de votre YesWiki. Ceci doit être un [NomWiki](https://yeswiki.net/?NomWiki). : par défaut [PagePrincipale](https://yeswiki.net/?PagePrincipale) (vous pouvez laisser comme cela)
-*   Renseignez les champs mots-clés et description si vous le souhaitez (si vous laissez vide cela ne posera pas de problème)
+*   Renseignez les champs mots-clés et description si vous le souhaitez (si vous laissez vide, cela ne posera pas de problème)
 *   Renseignez les champs (Administrateur, Mot de passe, Confirmation du mot de passe et Adresse e-mail) afin de créer un compte administrateur pour gérer votre wiki
 *   Les pages par défaut de YesWiki nécessitent du code html pour fonctionner **cocher la case "Autoriser l'insertion de HTML brut."**. Vous pourrez alors plus facilement intégrer des widgets HTML.
-*   
-
 
 Les tables MySQL sont automatiquement créées.  
-Si tout a bien fonctionné vous en avez confirmation.  
+Si tout a bien fonctionné, vous en avez confirmation.  
 Le fichier de configuration est écrit. C'est terminé.  
 
 <iframe sandbox="allow-same-origin allow-scripts" src="https://video.coop.tools/videos/embed/30cc117a-db65-4539-8547-749f52008212" allowfullscreen="" tc-textcontent="true" data-tc-id="w-0.9930878636773818" width="100%" height="315" frameborder="0"></iframe>
   
 
 ### Paramétrer son wakka.config.php 
-Une fois le YesWiki créé, on peut aller éditer le fichier **wakka.config.php**, se trouvant à la racine du dossier du YesWiki, accessible par FTP. Le fichier de configuration déclare un tableau avec des valeurs pour chaque élément de configuration.  
+Une fois le YesWiki créé / installé, on peut aller éditer le fichier **wakka.config.php**, se trouvant à la racine du dossier du YesWiki, accessible par FTP. Le fichier de configuration déclare un tableau avec des valeurs pour chaque élément de configuration.  
   
 **Voici le contenu du fichier de configuration par défaut**, voir les commentaires en fin de ligne pour le détail de chaque élément de configuration :  
   
@@ -95,9 +93,9 @@ Une fois le YesWiki créé, on peut aller éditer le fichier **wakka.config.php*
 
 #### Les éléments que vous pouvez rajouter sur wakka.config.php
 
-##### Changer les droits de lectures et d'écriture par défaut
+##### Changer les droits de lecture et d'écriture par défaut
 
-Par défaut, les pages de votre wiki sont visible set éditables par tout visiteur. Pour limiter la lecture et l'écriture aux seuls administrateurs par exemple, il faut changer les lignes  
+Par défaut, les pages de votre wiki sont visibles et éditables par tout visiteur. Pour limiter la lecture et l'écriture aux seuls administrateurices par exemple, il faut changer les lignes  
 
       'default_write_acl' => '*', // droits d'écriture par défaut des pages
       'default_read_acl' => '*', // droits de lecture par défaut des pages
@@ -172,9 +170,9 @@ si la base mysql utilise un autre port que 3306, vous pouvez spécifier le numé
 
 ##### Facebook opengraph : choisir l'image utilisée quand on partage un wiki sur FB
 
-pour ouvrir une image par défaut : il faut mettre un lien vers l'image dans le wakka.config.php  
-idéalement, l'image doit faire 1200x630 selon les specs imposées par facedebouc  
-par défaut il prend cette image, et si une image est présente dans la page (mise avec attach) ou une fiche bazar avec bf\_image , il remplace par cela  
+Pour ouvrir une image par défaut : il faut mettre un lien vers l'image dans le wakka.config.php  
+Idéalement, l'image doit faire 1200x630 selon les specs imposées par facedebouc  
+Par défaut il prend cette image, et si une image est présente dans la page (mise avec attach) ou une fiche bazar avec bf\_image , il remplace par cela  
 
     
     'opengraph_image' => 'https://domaine.ext/nomdelimage.jpg',
@@ -187,18 +185,18 @@ Concerne
 *   Hors yeswiki
 
 La réponse sur certains hébergements, l'envoi de mail par défaut ne marche pas , il faut créer un compte smtp  
-et donc rajouter dans le fichier wakka.config.php les parametres suivants  
+et donc rajouter dans le fichier wakka.config.php les paramètres suivants :
 
       'contact\_mail\_func' => 'smtp',
       'contact\_smtp\_host' => 'ssl://<mon serveur smtp>:465',
       'contact\_smtp\_user' => 'user@mail.ext',
       'contact\_smtp\_pass' => '<monpassword>',
 
-Attention, tous les serveur mail n'accepte pas de jouer ce jeu.  
+Attention, tous les serveurs mail n'acceptent pas de jouer ce jeu.  
 
 #### avec sendinblue
 
-créez-vous un compte puis allez dans les paramètres (via [ce lien](https://account.sendinblue.com/advanced/api)) chercher votre clé smtp (limitée à 300 mails par jour)  
+Créez-vous un compte puis allez dans les paramètres (via [ce lien](https://account.sendinblue.com/advanced/api)) chercher votre clé smtp (limitée à 300 mails par jour)  
 
     'contact\_mail\_func' => 'smtp',
     'contact\_smtp\_host' => 'smtp-relay.sendinblue.com:587',
@@ -218,12 +216,12 @@ ou
 
 #### avec gmail
 
-Gmail le fait mais avec une limite d'envoi journalière et souvent un blocage de scurité à lever via un paramètre : plus d'infos ici  
+Gmail le fait mais avec une limite d'envoi journalière et souvent un blocage de sécurité à lever via un paramètre : plus d'infos ici  
 [https://support.google.com/accounts/answer/6010255](https://support.google.com/accounts/answer/6010255)  
 
     'contact\_smtp\_host' =>     'ssl://smtp.gmail.com:465',
   
-Autre piste possible, acheter un nom de domaine chez gandi et utiliser le smtp lié
+Autre piste possible, achetez un nom de domaine chez gandi et utilisez le smtp lié.
 
 ### Mettre à jour son wiki
 La mise à jour du wiki s'effectue via la page gestion du site (onglet mise à jour / extensions) accessible via la roue crantée.
@@ -245,9 +243,8 @@ Il faut être connecté et membre du groupe admin pour pouvoir agir sur cette pa
 Pour chaque extension, une documentation est proposée. 
 Vous pouvez : 
  * l'installer
- * lamettre à jour si une nouvelle version est disponible
+ * la mettre à jour si une nouvelle version est disponible
  * la désinstaller
-
 
 
 ## Empêcher l'indexation de son wiki
@@ -259,7 +256,7 @@ par
 `User-Agent: \*    
 Disallow: /`
 
-ATTENTION Pour une efficacité réelle (étant donné que google ne respecte plus trop le robots.txt,, il convient de rajouter dans wakka.config.php, cette ligne  
+ATTENTION - Pour une efficacité réelle (étant donné que google ne respecte plus trop le robot.txt, il convient de rajouter dans wakka.config.php, cette ligne :
 
 `'meta' => array('robots' => 'noindex, nofollow'),`
 
@@ -267,13 +264,13 @@ Vous pouvez aussi réaliser cette opération via l'onglet fichier de conf de la 
 
 ## Mettre une herse sur son wiki 
 Il est parfois nécessaire de protéger l'accès de tout un wiki (par exemple pour transformer tout un wiki en intranet).
-En bref, lors de l'accès au wiki protégé, un popup s'ouvre et demande login et mot de passe. Une fois cette porte franchie, vous êtes sur un wiki que vous pouvez laisser en écriture ouverte à tous. Ce qui facilite pas mal la participation.
+En bref, lors de l'accès au wiki protégé, un pop-up s'ouvre et demande les login et mot de passe. Une fois cette porte franchie, vous êtes sur un wiki que vous pouvez laisser en écriture ouverte à tous. Ce qui facilite considérablement la contribution de chacun.
 
-La procédure pour placer est une herse n'est pas propre à Yeswiki et dépend de votre serveur. Voici une ressource pour en savoir plus : https://ouvaton.coop/proteger-un-repertoire-par-htaccess-et-htpasswd/
+La procédure pour placer une herse n'est pas propre à Yeswiki et dépend de votre serveur. Voici une ressource pour en savoir plus : https://ouvaton.coop/proteger-un-repertoire-par-htaccess-et-htpasswd/
 
 ## Migrer son wiki 
 Il est possible de déplacer son wiki d'un serveur à un autre. 
-Pour cela il vous faudra :  
+Pour cela, il vous faudra :  
 *   obtenir des gestionnaires de votre wiki
     *   une copie des dossiers du wiki (qu'il faudra dézipper)
     *   une copie de la base de données (qu'il faudra dézipper pour avoir un fichier .sql)
@@ -284,11 +281,11 @@ Pour cela il vous faudra :
 
 
 #### Importer la base de données
-*   il faut trouver les accès à la base de données (voir les infos reçues par votre hébergeur)
-    *   souvent on reçoit une adresse de type "phpmyadmin" qui, une fois cliquée, demande le nom de la db, l'utilisateur et le mot de passe
+*   il faut trouver les accès à la base de données (se référer aux infos reçues de votre hébergeur)
+    *   souvent, on reçoit une adresse de type "phpmyadmin" qui, une fois cliquée, demande le nom de la db (data base), l'utilisateur et le mot de passe
 *   une fois connecté à votre base de données
     *   il faut chercher le bouton "importer" (dépend de chaque système)
-    *   cliquer sur importer, aller chercher le fichier .sql reçu des gestionnaires de la ferme
+    *   cliquer sur importer, aller chercher le fichier .sql reçu de votre hébergeur
     *   laisser la procédure suivre son cours et vous avertir que c'est ok
     *   quand c'est ok : 7 tables existent maintenant dans votre base de données (prefixe\_nature; prefixe\_pages,...)
 
@@ -300,9 +297,9 @@ Glissez et déposez vos fichiers wiki (reçu des gestionnaires) dans le dossier 
   
 #### Mettre à jour le wakka config
 
-Une fois tous les fichiers et dossiers arrivés sur votre hébergement, cherchez le fichier nommé wakka config et ouvrez-le
+Une fois tous les fichiers et dossiers arrivés sur votre hébergement, cherchez le fichier nommé wakka config et ouvrez-le.
 
-Il va falloir adapter quelques points et sauver ensuite
+Il va falloir adapter quelques points puis sauver 
 * l'adresse de la db (mysql\_host) : le plus souvent ça reste localhost mais parfois votre hébergeur vous donne une autre adresse
 * le nom de votre db => mysql\_database
 * le nom de l'utilisateur de la db => mysql\_user
@@ -319,7 +316,7 @@ Il va falloir adapter quelques points et sauver ensuite
 
 ## Réparer la structure de vos bases de données
 
-_Lorsque la structure de vos bases de données n'est pas correcte, des soucis peuvent survenir en particuliers lors de la création ou la modification des listes._
+_Lorsque la structure de vos bases de données n'est pas correcte, des soucis peuvent survenir en particulier lors de la création ou la modification des listes._
 
  1. tenter de forcer la finalisation d'une mise à jour avec le handler `/update` (accessible avec [ce lien](?GererMisesAJour/update 'Forcer la finalisation de la mise à jour :ignore'))
  2. si ça ne fonctionne pas:
@@ -332,5 +329,3 @@ _Lorsque la structure de vos bases de données n'est pas correcte, des soucis pe
 
 **Important** : il est vivement conseillé de faire une sauvegarde de votre base de données avant de faire les manipulations.
 
-
-  

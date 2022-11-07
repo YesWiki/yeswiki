@@ -17,8 +17,8 @@ Pour passer en mode édition, trois solutions :
 
 YesWiki utilise des balises plus ou moins complexes pour les styles, les actions et autre astuces de mise en forme.
 Par exemple, un texte en **gras** s'affiche `**`**gras**`**`
- - pour supprimer les balises, il faut les supprimer avant **ET** après l'élément impacté
- - Pour des balises plus complexes comme `{{section bgcolor="var(--primary-color)" class="shape-rounded" pattern="border-solid" }}Texte encadré{{end elem="section"}}` (oui, je sais, ça fait peur au début) il faut bien supprimer tout ce qui est avant **ET** après _Texte encadré_.
+ - Pour supprimer les balises, il faut les supprimer avant **ET** après l'élément impacté
+ - Pour des balises plus complexes comme `{{section bgcolor="var(--primary-color)" class="shape-rounded" pattern="border-solid" }}Texte encadré{{end elem="section"}}` (oui, on sait, ça fait peur au début) il faut bien supprimer tout ce qui est avant **ET** après "Texte encadré".
 
 Deux solutions en cas de soucis :
  - revenir sur une version précédente de la page
@@ -102,8 +102,8 @@ Créer une page / insérer un lien
 
 **Deux méthodes sont à votre disposition pour créer une page**
 
-1. Lors de l'édition d'une page, cliquez le l'icone pour ajouter un lien. Dans la fenêtre qui s'ouvre, mettez le nom de votre nouvelle page yeswiki, elle sera crée automatiquement
-2. Allez directement vers l'URL de la page que vous souhaitez créer (exemple : https://yeswiki.net/?MaNouvellePage). Comme elle n'existe pas encore on vous proposera de la créer
+1. Lors de l'édition d'une page, cliquez sur l'icône pour ajouter un lien. Dans la fenêtre qui s'ouvre, inscrivez le nom de votre nouvelle page yeswiki, cette dernière  sera créée automatiquement
+2. Allez directement vers l'URL de la page que vous souhaitez créer (exemple : https://yeswiki.net/?MaNouvellePage). Comme elle n'existe pas encore on vous proposera de la créer.
 
 > Astuce 1: une fois ma nouvelle page créée, je peux enlever le lien qui y mène sans que la page disparaisse pour autant. Je peux retrouver mes pages dans la roue crantée en haut à droite > Tableau de bord. Une bonne manière de cacher des pages ;-)
 
@@ -116,7 +116,7 @@ Dans YesWiki chaque modification d'une page est sauvegardée dans un **historiqu
 
 **Pour y accéder** il suffit de cliquer sur le lien en bas de page nommé : "Dernière édition : _jour_._mois_._année_"
 
-!> Attention, l'historique est accesible uniquement aux personnes qui ont les droits en écriture sur la page concernée.
+!> Attention, l'historique est accessible uniquement aux personnes qui ont les droits en écriture sur la page concernée.
 
 
 Insérer et gérer les médias (images, pdf...)
@@ -189,26 +189,6 @@ Le paramètre `frameborder` permet de **gérer la bordure** noire du cadre (`1` 
 <iframe src="..." frameboder="0"></iframe>
 ```
 
-Les Handlers : accéder à certains fonctionalités via l'URL
--------------
-
-Un handler est une URL spéciale qui permet de modifier la façon d'afficher une page. On l'active en ajoutant à la fin de l'adresse URL, le signe **/** suivi du nom du handler. Exemple avec le handler `raw`: https://yeswiki.net/?AccueiL/raw
-
-> Certains handler permettent juste d'accéder à une fonctionalité à laquelle on peut accéder via des boutons de l'interface. C'est le cas pour `edit`, `revisions` ou `share`. Lorsque vous naviguez dans votre wiki, soyez attentif aux changement d'URL pour connaitre ces raccourcis
-
-* **/edit** : pour passer en mode Édition
-* **/revisions**  : pour voir les versions de l'historique
-* **/filemanager** : pour accéder à la liste des fichiers attachés à cette page
-* **/slide_show**  : pour transformer le texte en diaporama
-* **/diaporama**  : idem slide_show en un peu différent
-* **/mail**  : envoie la page en mailing
-* **/raw** : affiche le code wiki non formaté de la page
-* **/deletepage**  : si vous êtes propriétaire de la page, vous pouvez la supprimer
-* **/claim**  : si la page n'a pas de propriétaire, vous pouvez vous l'approprier
-* **/acls**  : si vous êtes propriétaire de la page, vous pouvez gérer les droits
-* **/share**  : pour afficher des possibilités de partage sur les réseaux sociaux, et pour générer un code embed (iframe) qui permettra d'afficher la page sur un site externe.
-* **&amp;debug** : permet d'afficher en bas de page toutes les actions effectuées au niveau informatique, permet de repérer les bugs, causes de plantage...
-* **/editiframe**  : permet d'ouvrir la page en mode édition mais en cachant les autres pages du squelette (utile quand une image ou un spam sur le bandeau empêche de voir le contenu de la page à modifier ou dans le cas d'un wiki intégré en iframe)
 
 
 
@@ -243,6 +223,7 @@ La PageMenuHaut est organisée comme une liste de liens ou de boutons.
   - [[PageTest2 Sous menu 2]]
  - {{button icon="fas fa-leaf" link="PageMargot" text="Margot" }}
 ```
+!> A noter : lorsque que vous souhaitez mettre en place un menu déroulant, un simple mot suffira en premier niveau de liste à puce et non une page wiki. 
 
 ### Visite de la roue crantée 
 
@@ -278,12 +259,17 @@ Les composants
 
 Les composants sont des éléments que l'on peut rajouter dans une page wiki. Ils sont accessible depuis le menu "Composants" dans l'éditeur de page.
 Utiliser les composants ajoutera un code (parfois compliqué) dans votre page. Mais rassurez vous, une interface vous permet de facilement créer et modifier simplement chacune des fonctionnalités de votre composant.
+Si vous souhaitez modifier une action déjà insérée dans une page, en mode édition, cliquez sur le code, un petit crayon apparaîtra dans la marge (sauf pour accordéon et colonnes), en cliquant dessus, l'interface d'aide à la modification du code apparaitra en pop up.
 
 Voici une liste des composants disponibles :
 
 ### Boutons
 
 Le composant bouton permet de créer un bouton avec des icônes, qui enverra sur une page du wiki ou un autre site. Les combinaisons entre les différents paramètres vous permettrons de faire bouton à votre pied.
+Quelques fonctionnalités potentiellement intéressantes :
+ * Masquer le bouton si l'utilisateur n'a pas droit d'accès à cette page
+ * Afficher la page liée juste au survol du bouton
+ * Afficher le bouton uniquement sous forme de lien, à première vue anodine, cette action permet d'utiliser toutes les possibilités d'un bouton sur un simple lien, par exemple, cacher un lien du menu si les visiteurs n'ont pas accès aux contenus qui se trouvent derrière ou afficher automatiquement la définition d'un mot lors de son survol.
 
 ### Mise en forme (mise en page)
 
@@ -292,9 +278,32 @@ Mise en forme propose 6 possibilités :
 * Étiquette : mettre en avant un texte au travers d’une couleur de fond.
 * Onglets : créer des onglets dans une page, permet d’obtenir des sous menus horizontaux ou verticaux.
 * Encadré : encadrer un texte ou proposer un encadré qui se ferme quand on clique sur son titre.
- * Section : couteau suisse de mise en forme, permet d’encadrer un paragraphe, de lui adjoindre une couleur ou une image de fond et beaucoup d’autres combinaisons.
- * Afficher des encadrés en accordéon : déclinaison d’encadré, accordéon permet de chaîner plusieurs encadrés, quand vous ouvrez un encadré, ça ferme les autres.
- * Afficher en plusieurs colonnes : permet de créer plusieurs colonnes dans une page ou une partie de page, très utile pour des mises en page avancées.
+* Section : couteau suisse de mise en forme, permet d’encadrer un paragraphe, de lui adjoindre une couleur ou une image de fond et beaucoup d’autres combinaisons.
+  * Quelques fonctionnalités potentiellement intéressantes :
+    * créer des aplats de couleurs sous du texte
+    * encadrer un paragraphe
+    * afficher un élément sur toute la largeur de l'écran
+    * justifier du texte
+    * Animer votre section (rebonds, déformation...)
+    * Réserver la lecture de cette section à un groupe
+    * Afficher une image sous le texte qui restera fixe lors du scroll
+* Afficher des encadrés en accordéon : déclinaison d’encadré, accordéon permet de chaîner plusieurs encadrés, quand vous ouvrez un encadré, ça ferme les autres.
+  * cette action ne bénéficie pas encore d'aide au codage. Pour ajouter des éléments (panels) à votre accordéon, il suffira d'ajouter des panels (code suivant) avant {{end elem="accordion"}}. Chaque panel pourra être personnalisé en cliquant sur le crayon en marge du code correspondant.
+``` yeswiki
+{{panel title="Titre 2"}}
+Texte du panneau 2 à changer par la suite
+{{end elem="panel"}}
+```
+
+* Afficher en plusieurs colonnes : permet de créer plusieurs colonnes dans une page ou une partie de page, très utile pour des mises en page avancées.
+  * cette action ne bénificie pas encore d'aide au codage. Pour ajouter ou supprimer des colonnes à votre tableau, il suffira d'ajouter ou supprimer le code suivant) avant {{end elem="grid"}}. 
+``` yeswiki
+{{col size="3"}}
+Texte de la colonne à changer par la suite
+{{end elem="col"}}
+```
+
+!> important : la somme des size (largeur) de vos colonnes doit être égal à 12, cela veut dire que vous pouvez faire 12 colonnes de size 1 ou 3 colonnes de size 4 et bien sur mixer les possibilités (une de 6 et deux de 3)
 
 ### Syndication / Flux RSS
 
@@ -313,16 +322,17 @@ Dans chaque page (en bas en mode édition) ou fiche d’un formulaire, vous pouv
 Ce composant vous offre trois possibilités :
 
 * Réactions et votes
+  * Si à la place des icones vous souhaitez mettre une image à votre convenance, il suffir de remplacer le code de l'icone par l'adresse web de l'image : images="fab fa-angellist" par images="https://yeswiki.net/files/toto.jpg"
 * Réactions de l'utisateur.ice connecté.e
 * Administration des réactions
 
 ### Vidéo intégrée
 
-afficher une vidéo proposée par PeerTube, Viméo ou Youtube à partir de son identifiant.
+Afficher une vidéo proposée par PeerTube, Viméo ou Youtube à partir de son identifiant.
 
 ### Actions d'envoi d'e-mail/listes
 
-permet 3 actions :
+Permet 3 actions :
 
 * Afficher un formulaire de contact
 * S’abonner à une liste de discussion (qui devra être créée par ailleurs)
@@ -338,6 +348,7 @@ Afficher les données d’un formulaire : véritable logiciel dans YesWiki, le g
 * Ressources
 
 Vous pourrez bien sûr afficher les données des formulaires que vous aurez fabriqués. Il vous suffira de choisir le formulaire qui vous intéresse puis de choisir parmi les formes de restitution des résultats : Liste, Blocs, Cartographie, Calendrier, Agenda, Annuaire , Time Line, Carousel, Photobox, Liste de liens, Blog, Tableau.
+[Voir la page dédiée](bazar.md)
 
 ### Afficher un formulaire de création de fiche
 
@@ -345,7 +356,7 @@ Ce composant est le pendant de l’action précédente, il permet d’afficher l
 
 ### Actions avancées
 
-De nombreuses autres actions sont disponibles, en voici la liste :
+De nombreuses autres actions sont disponibles dans les composants, rubrique Actions avancées
 
 #### Créer un sommaire de la page
 #### Afficher des liens "Page Suivante" "Sommaire" "Page Précédente" dans une page
@@ -366,3 +377,25 @@ De nombreuses autres actions sont disponibles, en voici la liste :
 #### Lister les pages à créer
 #### Lister les pages orphelines
 #### Lister seulement les fiches bazar
+
+Les Handlers : accéder à certains fonctionalités via l'URL
+-------------
+
+Un handler est une URL spéciale qui permet de modifier la façon d'afficher une page. On l'active en ajoutant à la fin de l'adresse URL, le signe **/** suivi du nom du handler. Exemple avec le handler `raw`: https://yeswiki.net/?AccueiL/raw
+
+> Certains handler permettent juste d'accéder à une fonctionalité à laquelle on peut accéder via des boutons de l'interface. C'est le cas pour `edit`, `revisions` ou `share`. Lorsque vous naviguez dans votre wiki, soyez attentif aux changement d'URL pour connaitre ces raccourcis
+
+* **/edit** : pour passer en mode Édition
+* **/revisions**  : pour voir les versions de l'historique
+* **/filemanager** : pour accéder à la liste des fichiers attachés à cette page
+* **/slide_show**  : pour transformer le texte en diaporama
+* **/diaporama**  : idem slide_show en un peu différent
+* **/mail**  : envoie la page en mailing
+* **/raw** : affiche le code wiki non formaté de la page
+* **/deletepage**  : si vous êtes propriétaire de la page, vous pouvez la supprimer
+* **/claim**  : si la page n'a pas de propriétaire, vous pouvez vous l'approprier
+* **/acls**  : si vous êtes propriétaire de la page, vous pouvez gérer les droits
+* **/share**  : pour afficher des possibilités de partage sur les réseaux sociaux, et pour générer un code embed (iframe) qui permettra d'afficher la page sur un site externe.
+* **&amp;debug** : permet d'afficher en bas de page toutes les actions effectuées au niveau informatique, permet de repérer les bugs, causes de plantage...
+* **/editiframe**  : permet d'ouvrir la page en mode édition mais en cachant les autres pages du squelette (utile quand une image ou un spam sur le bandeau empêche de voir le contenu de la page à modifier ou dans le cas d'un wiki intégré en iframe)
+

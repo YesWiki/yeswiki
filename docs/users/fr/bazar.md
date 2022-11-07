@@ -224,6 +224,7 @@ Il est indispensable d'avoir un champ de ce type dans votre formulaire si vous s
  - **Champ ville pour l'autocomplétion** : s'assurer que le formulaire possède un champ texte court pour la ville et noter son nom (ex. : bf_ville). Ainsi quand vous allez taper un nom de ville puis sélectionner le code postal associé, la géolocalisation sera automatiquement mise à jour. 
 
 ### Inscription liste de diffusion
+TODO
 
 ### Insérer un sous titre ou une information complémentaire (custom html)
 Le champ custom html permet d'insérer un texte, un titre, un lien, ou tout autre contenu au format HTML.
@@ -254,7 +255,26 @@ Permet de définir un thème graphique spécifique à associer à toutes les fic
 Ce champ spécial génère un bouton qui sera affiché dans votre formulaire de saisie. En glisssant le bouton vers la barre de raccourci du navigateur, les utilisateurs pourront bénéficier d'un raccourci pour faire une veille partagée.
 
 ### Liste des fiches liées
-à écrire à partir de https://quincaillere.org/formationgarecentrale2022/?DocBazarChampFichesLiees
+Ce type de champs est utilisable dans le cas où un autre formulaire est lié à celui-ci. Il permet d'afficher les fiches liées. 
+Son effet n'est visible que dans la phase 3 d'affichage des résultats du formulaire.
+#### Exemple 
+Un auteur a écrit plusieurs livres. On peut avoir un formulaire auteur (identifiant 1) et un formulaire livre (identifiant 2). 
+Le formulaire livre contiendra un champ liste basé sur le formulaire auteur pour identifier son auteur
+Le formulaire auteur pourra contenir un champ liste des fiches liées afin d'afficher dans la fiche auteur tous les livres qui ont été écrits par l'auteur .
+#### Paramètres spécifiques au type de champs « liste des fiches liées »
+- **Id du formulaire lié** : Ce paramètre, obligatoire, doit contenir l'identifiant Bazar du formulaire lié.
+Le formulaire lié est celui qui contient la référence au formulaire courant (via une liste déroulante, des cases à cocher ou des boutons radio) 
+- **Query** : Ce paramètre permet de n'afficher qu'une partie des fiches liées. 
+Il est facultatif, par défaut, toutes les fiches liées s'afficheront.
+La syntaxe du paramètre query est la même que dans bazar liste - voir [afficher une partie des données - query](/docs/users/fr/bazar?id=afficher-une-partie-des-donn%c3%a9es-query)
+- **Params de l'action** : permet l'ordre d'affichage des fiches liées. Par défaut elles sont triées par ordre alphabétique croissant sur le champ titre.On peut modifier le champ de référence pour le tri ainsi que l'ordre de tri - voir [ordre et champ](/docs/users/fr/bazar?id=ordre-et-champ)
+ On notera que les deux paramètres sont séparés par un espace.
+- **Nombre de fiches à afficher** vous pouvez préciser ici le nombre de fiches liées à afficher 
+- **Template de restitution** Par défaut, les fiches liées s'afficheront sous forme de liste en accordéon. Pour utiliser un autre template saisir dans cette zone le nom du template, par exemple :  *trombinoscope.tpl.html*
+- **Type de fiche liée (ou label du champ)** Vous devez préciser ici le type de champ utilisé dans le formulaire lié pour effectuer cette liaison.
+    « liste » pour une liste déroulante.
+    « checkbox » pour un groupe de cases à cocher.
+    « radio » pour un groupe de boutons radio.
 
 ### Titre automatique
 Il est possible d'utiliser un titre combiné à partir de 2 champs (ou plus) : par exemple : "champ prénom + champ nom".
@@ -263,13 +283,40 @@ Vous pouvez également y ajouter du texte : par exemple mettre un tiret entre le
 !> Si vous utilisez un titre automatique, il faudra supprimer le champ bf_titre créé par défaut. 
 
 ### Custom 
+Ce champ sera utile pour les développeurs qui ont recours à un champ custom. Plus de détails (dans la section développeurs)[/docs/users/fr/dev?id=custom-bazar-field]
 
 ### Navigation par onglet /Passage à l'onglet suivant
 Il est possible de découper le formulaire en plusieurs onglets pour rendre le formulaire plus lisible.
 
 ### Rendre une question conditionnelle
+Ce champ permet d'afficher certaines questions en fonction de la réponse apportée à une des questions précédentes. Par exemple : lorsque lʼutilisateur répond « autre » à une liste, on lui propose alors un champ texte pour préciser.
+**La question conditionnelle fait donc suite à une question de type Liste (Sélectionner), Checkbox (cases à cocher) ou Radio (Boutons radio).**
+Lorsque vous insérez un « Affichage conditionnel » dans votre formulaire, deux champs sont créés : le premier, intitulé « Condition », le second intitulé « Fin de condition ». Vous devez placer, entre le champ « Condition » et le champ « Fin de condition », le ou les champs que vous souhaitez faire apparaître de manière conditionnelle.
+#### Paramètres spécifiques au type de champs « question conditionnelle »
+ - **Condition** Ce paramètre définit la condition à respecter pour afficher les champs qui suivent (jusquʼà « Fin de condition »).
+Voici quelques exemples pour illustrer la syntaxe.
+On suppose quʼon dispose d'un champ de type « Sélectionner » (ou radio ou checkbox) dont l'**identifiant unique** est *bf_champ*
+| Pour afficher si… | valeur du paramètre |
+|---|------|
+|on a répondu « autre »|```bf_champ==autre```|
+|on nʼa pas répondu « autre »|```bf_champ!=autre```|
+|on nʼa répondu ni « 1 », ni « 5 »|```bf_champ!=1 and bf_champ!=5```|
+|on nʼa pas répondu du tout|```bf_champ is empty```|
+|on a répondu « 1 » ou « 2 » (pareil quʼen dessous)|```bf_champ==1 or bf_champ==2```|
+|on a répondu « 1 » ou « 2 » (pareil quʼau dessus)|```bf_champ in [1,2]```|
+|dans le cas dʼune checkbox, on a répondu « 1 » et « 2 »|```bf_champ==[1,2]```|
+|dans le cas dʼune checkbox, moins de trois cases ont été cochées|```bf_champ\|length < 3```|
+|dans le cas dʼune checkbox, au moins deux cases ont été cochées mais pas la case « autre »|```bf_champ\|length > 2 and bf_champ!=5```|
 
+- **Masquer à l'affichage** : 
+  - valeur par défaut :```Effacer``` supprime le champ et les valeurs éventuellement saisies precedemment dedans, 
+  - autre valeur :```ne pas effacer``` permet de cacher le champ et les valeurs et on retrouverait les valeurs si le champs réapparaissait
+                              
 ### Calculs
+Ce champ permet de réaliser un calcul mathématique à l'enregistrement de la fiche. Le résultat sera visible après avoir sauvé la fiche.
+#### Paramètres spécifiques du champ calcul
+- **Texte d'affichage** : permet d'ajouter un symbole après la valeur si nécessaire - exemple : ```{value}€```
+- **Formule** : pour faire référence à un nombre saisi dans le formulaire utilisez son identifant - exemple : ```bf_nombre*15```
 
 
 ### Onglet : code wiki

@@ -1,6 +1,6 @@
 # Administrer son wiki
 
-> TODO Petite description
+> Dans cette partie, vous trouverez de nombreuses données pour gérer votre site, notamment la gestion des personnes utilisant le wiki et des droits d'accès, la personnalisation graphique, la gestion du contenu indésirable et les options avancées, la sécurisation du site.
 
 ## Gestion du site : plan de l'administration
 
@@ -15,6 +15,13 @@ Il faut être identifié comme administrateurice pour visionner et modifier les 
 
 [Voir la rubrique dédiée](/docs/users/fr/admin?id=g%c3%a9rer-les-droits)
 
+**Utilisateurs et groupes**
+
+Ici vous visualisez les comptes utilisateurices créés et vous pouvez les organiser en "groupes".
+Il faut être identifié comme administrateurice pour visionner et modifier les informations de cet espace.
+
+[Voir la rubrique dédiée](/docs/users/fr/admin?id=gestion-des-droits-par-utilisateurice-ou-par-groupe)
+
 **Look**
 
 C'est par là que vous personnalisez le squelette et l'esthétique de votre wiki.
@@ -22,12 +29,6 @@ Il faut être identifié comme administrateurice pour visionner et modifier les 
 
 [Voir la rubrique dédiée](/docs/users/fr/admin?id=g%c3%a9rer-le-look)
 
-**Utilisateurs et groupes**
-
-Ici vous visualisez les comptes utilisateurices créés et vous pouvez les organiser en "groupes".
-Il faut être identifié comme administrateurice pour visionner et modifier les informations de cet espace.
-
-[Voir la rubrique dédiée](/docs/users/fr/admin?id=gestion-des-droits-par-utilisateurice-ou-par-groupe)
 
 **Mots clés**
 
@@ -43,15 +44,16 @@ Il faut être identifié comme administrateurice pour visionner et modifier les 
 
 Vous pouvez voir ici la version du wiki et s'il s'agit de la toute dernière.
 Si vous êtes identifié.e comme administrateurice vous pouvez faire les mises à jour.
+
 Astuces :
  - mettre à jour YesWiki mais aussi les thèmes et les tools (extensions)
- - une mise à jour se fait en plusieurs étapes : cliquez sur "Finaliser la mise à jour (lancer les actions de post-installation)" puis sur "Mettre à jour les pages de gestion"
+ - une mise à jour se fait en plusieurs étapes : il est nécessaire de cliquer sur "Finaliser la mise à jour (lancer les actions de post-installation)" puis sur "Mettre à jour les pages de gestion"
 
 
 ## Gérer les droits
 ### Introduction aux droits d'accès
 
-YesWiki a beau être très ouvert lors de son installation (ce qui oblige à se poser quelques questions), il n'en offre pas moins une gestion fine des droits de lecture et d'écriture de son contenu. **Cette gestion permettra :**
+YesWiki a beau être très ouvert lors de son installation (ce qui oblige à amorcer une réflexion sur cette ouverture et se poser quelques questions), il n'en offre pas moins une gestion fine des droits de lecture et d'écriture de son contenu. **Cette gestion permettra :**
 
 *   de limiter l'accès de tout ou partie du wiki à certaines personnes ou catégories de personnes (groupes)
 *   de protéger certaines parties (bandeau, menu, footer...) de votre wiki contre les modifications involontaires (ou intempestives)
@@ -64,7 +66,7 @@ En effet **seules les personnes ayant un compte sur le wiki peuvent modifier les
 **Il est donc nécessaire de pouvoir se créer un compte sur le wiki ou de se connecter à celui-ci.** Cela s'opère via la roue crantée du wiki / se connecter (ou s'inscrire). En cas de perte du mot de passe, le lien "mot de passe perdu" pourra vous le renvoyer sur le mail indiqué lors de l'inscription.
 \=> plus d'infos sur [https://yeswiki.net/?DocumentationIdentification](https://yeswiki.net/?DocumentationIdentification)
   
-**Une fois connecté, vous ne possédez pas encore beaucoup de droits** (sauf si l'administrateur du wiki vous en a attribués) à savoir :
+**Une fois connecté, vous possédez peu de droits** (sauf si l'administrateur du wiki vous en a attribués) à savoir :
 
 *   créer des pages (vu précédemment)
 *   vous attribuer la propriété d'une page
@@ -74,17 +76,18 @@ En effet **seules les personnes ayant un compte sur le wiki peuvent modifier les
 ##### Devenir propriétaire d'une page
 
 *   On devient automatiquement propriétaire des nouvelles pages que l'on crée lorsque l'on est connecté sur le wiki (cela se vérifie en bas de page avec la mention propriétaire = vous)
-*   Pour devenir propriétaire d'une page sans propriétaire, il suffit de cliquer sur Appropriation (en bas de page) : se faisant vous recevez des droits de gestion sur cette page (même si ça ne se voit pas comme ça)
-*   On ne peut devenir propriétaire d'une page qui a déjà un propriétaire, mais le propriétaire lui même peut décider de vous nommer nouveau propriétaire de cette page. Si vous avez reçu des droits d'admin sur le wiki, vous pourrez devenir propriétaire de n'importe quelle page sans l'accord du propriétaire !
+*   Pour devenir propriétaire d'une page sans propriétaire, il suffit de cliquer sur Appropriation (en bas de page) : se faisant, vous recevez des droits de gestion sur cette page (même si ça ne se voit pas comme ça)
+*   On ne peut devenir propriétaire d'une page qui a déjà un propriétaire, mais le propriétaire lui-même peut décider de vous nommer nouveau propriétaire de cette page. Si vous avez reçu des droits d'administrateurice sur le wiki, vous pourrez devenir propriétaire de n'importe quelle page sans l'accord du propriétaire !
 
 ##### Supprimer une page dont vous êtes propriétaire
 
-Lorsque vous êtes propriétaire d'une page, un bouton supprimer apparaît en bas de page. Il vous permettra de supprimer définitivement la page et son historique (attention c'est sans retour d'où le message de confirmation !).
-Si vous avez reçu des droits d'admin sur le wiki, vous pourrez modifier toutes les pages, y compris celles dont vous n'êtes pas propriétaire.
+Lorsque vous êtes propriétaire d'une page, un bouton "supprimer" apparaît en bas de page. Il vous permettra de supprimer définitivement la page et son historique (attention, c'est sans retour d'où le message de confirmation !).
+Si vous avez reçu des droits d'administrateurice sur le wiki, vous pourrez modifier toutes les pages, y compris celles dont vous n'êtes pas propriétaire.
 
 ##### Modifier les droits d'une page dont vous êtes propriétaire
 
-En bas de page, vous allez trouver un bouton permissions. En cliquant sur celui-ci, une fenêtre popup va vous permettre de gérer les droits en lecture et écriture.
+En bas de page, vous allez trouver un bouton "permissions". En cliquant sur celui-ci, une fenêtre pop-up va vous permettre de gérer les droits en lecture et écriture.
+
 **Voici les possibilités qui vous sont offertes**
 
 ![image EditerPermissions.png (14.2kB)](images/M22Lectures_popuppermission_20220216161156_20220216151445.png)
@@ -102,7 +105,7 @@ En bas de page, vous allez trouver un bouton permissions. En cliquant sur celui-
 La gestion utilisateur par utilisateur est très fine MAIS présente quelques inconvénients :
 
 *   lorsque vous avez limité l'accès de plusieurs pages à un utilisateur et qu'un nouvel utilisateur doit recevoir les mêmes accès, vous voilà bon à repasser sur chaque page pour y ajouter son nom ;-(
-*   idem dans l'autre sens, si un utilisateur doit "perdre" ses accès
+*   idem dans l'autre sens, si un utilisateur doit "perdre" ses droits d'accès
 
 **Pour s'affranchir de ces limites, la notion de groupe a été introduite.**
 Un groupe reprend un ou plusieurs utilisateurs wiki. Il se nomme @nomdugroupe.
@@ -112,32 +115,32 @@ C'est un groupe "sensible" donc car les utilisateurs qui s'y trouvent ont des po
 
 Il est possible de créer autant d'autres groupes que souhaité.
 **Ces autres groupes n'ont aucun privilège sur le wiki**. Ils sont simplement un regroupement d'utilisateurs. Ce regroupement, ce groupe (@poule, @coq, @...) pourra être utilisé dans la gestion des droits des pages du wiki comme on le ferait pour un utilisateur (on mettra le nom du groupe plutôt que le nom de l'utilisateur).
-Ce faisant, si un utilisateur (membre du groupe @coq) quitte le projet et ne doit plus pouvoir modifier les pages auquel il avait accès en écriture, il ne faut pas repasser sur chaque page concernée mais il suffira de l'enlever du groupe @coq ;-)
+Ce faisant, si un utilisateur (membre du groupe @coq) quitte le projet et ne doit plus pouvoir modifier les pages auxquelles il avait accès en écriture, il ne faut pas repasser sur chaque page concernée mais il suffira de l'enlever du groupe @coq.
   
-Pour gérer les groupes (et les utilisateurs inclus) cela se passe sur la page "utilisateurs et groupes" accessible via la roue crantée / gestion du site (attention, il faut faire partie des administrateurs du wiki pour pouvoir modifier, créer, supprimer des groupes)
+Pour gérer les groupes (et les utilisateurs inclus), cela se passe sur la page "utilisateurs et groupes" accessible via la roue crantée / gestion du site (attention, il faut faire partie des administrateurs du wiki pour pouvoir modifier, créer, supprimer des groupes)
 
 **Voici à quoi ressemble la page**
 
-*   pour voir le contenu des groupes : je choisis dans la liste et fait "voir/éditer"
-*   pour créer un nouveau groupe : j'indique son nom et fait "définir"
-*   pour supprimer un groupe (attention) : je choisis et fait "supprimer"
+*   pour voir le contenu des groupes : je choisis dans la liste et clique sur "voir/éditer"
+*   pour créer un nouveau groupe : j'indique son nom et clique sur "définir"
+*   pour supprimer un groupe (attention) : je choisis et clique sur "supprimer"
 
-Pour info : en bas de cette page, vous découvrez et gérer (si vous êtes dans le groupe @admins) les utilisateurs connus du wiki.
+Pour info : en bas de cette page, vous découvrez et gérez (si vous êtes dans le groupe @admins) les utilisateurs connus du wiki.
 
 ![image EditerPermissions.png (14.2kB)](images/M22GererLesDroitsDAccesEnMasse_Gerergroupe_20220223095430_20220223095106.png)
 
 **Pour ajouter ou retirer un utilisateur d'un groupe**
-lorsque j'ai cliqué sur voir/éditer le groupe concerné, il me suffit dans la case qui apparaît d'indiquer (ou de retirer) le nomwiki de l'utilisateur sur une ligne (sans virgule) et d'enregistrer
+Lorsque j'ai cliqué sur "voir/éditer" le groupe concerné, il me suffit dans la case qui apparaît d'indiquer (ou de retirer) le nomwiki de l'utilisateur sur une ligne (sans virgule) et d'enregistrer.
 
 ![image EditerPermissions.png (14.2kB)](images/M22GererLesDroitsDAccesEnMasse_ajoutgroupe_20220223095430_20220223095137.png)
 
 ### Gestion des droits des pages en masse
 
-La gestion page par page c'est sympa mais quand on a 150 pages dans son wiki... ça peut vite devenir très long. Heureusement il existe une page permettant de gérer les changements des droits d'accès de plusieurs pages (toutes les pages) en même temps.
+La gestion page par page c'est sympa mais quand on a 150 pages dans son wiki... ça peut vite devenir très long. Heureusement, il existe une page permettant de gérer les changements des droits d'accès de plusieurs pages (toutes les pages) en même temps.
   
 Cette page se nomme "Droits d'accès aux pages" et est accessible via la roue crantée / gestion du site. (attention, il faut faire partie des administrateurs du wiki pour avoir accès à cette page)
 
-Sur cette page, vous pourrez aussi voir les droits qui sont attribués à chacune des pages du wiki et pourrez cocher les pages qui doivent être modifiées et attribuer en bas les nouveaux droits en utilisant
+Sur cette page, vous pourrez aussi voir les droits qui sont attribués à chacune des pages du wiki et pourrez cocher les pages qui doivent être modifiées et attribuer en bas les nouveaux droits en utilisant :
 
 ##### en mode simple
 
@@ -170,11 +173,11 @@ Pour le détail, voir la partie [droit d'accès de la page Fichier de configurat
 #### En ce qui concerne les fiches bazar
 
 Assez souvent, la contribution sur les wikis se passe via des formulaires.
-Par défaut ces fiches sont ouvertes en lecture et écriture.
+Par défaut, ces fiches sont ouvertes en lecture et écriture.
 **On peut limiter totalement ou partiellement l'accès aux fiches ou à certaines parties des fiches.**
 Cela se réalise lors de la construction du formulaire via certains paramètres.
   
-Pour chaque champ de votre formulaire vous pouvez décider des accès en lecture et écriture afin :
+Pour chaque champ de votre formulaire, vous pouvez décider des accès en lecture et écriture afin :
 
 *   de déterminer qui peut remplir ce champ (donc la visibilité de celui-ci en mode "saisie")
 *   de déterminer qui peut voir ce champ une fois la fiche existante
@@ -183,22 +186,22 @@ Pour chaque champ de votre formulaire vous pouvez décider des accès en lecture
 
 Vous pouvez aussi décider d'attribuer "par défaut" des droits particuliers à la fiche entière afin :
 
-*   qu'elle ne soit visible QUE par tel ou tel groupe d'utilisateurs
-*   qu'elle ne soit modifiable QUE par tel ou tel groupe d'utilisateurs
+*   qu'elle ne soit visible QUE par tel ou tel groupe d'utilisateurices
+*   qu'elle ne soit modifiable QUE par tel ou tel groupe d'utilisateurices
 
 Cette gestion s'effectue via le champ "configurer les droits d'accès" de votre formulaire
 
 ![image confidroitaccesformulaire.png (0.1MB)](images/M22GererLesAccesDesPagesNonEncoreExi_confidroitaccesformulaire_20220223100943_20220223090956.png)
 
 ### Configurer les accès à certaines parties au sein même des pages
-Il est donc possible de limiter les accés en lecture et/ou écriture aux pages du wiki.
-**Mais pourrions nous limiter les accès à certaines parties des pages ?**
+Il est donc possible de limiter les accès en lecture et/ou écriture aux pages du wiki.
+**Mais pourrions-nous limiter les accès à certaines parties des pages ?**
 
 Et oui !
 
 Lorsque l'on construit sa page wiki, on utilise souvent les composants.
-La plupart de ces composants proposent dans leurs paramètres avancés, des choix permettant de limiter leur visibilité aux seuls utilisateurs autorisés.
-*   dans la cas d'un bouton (ou d'un onglet), vous pouvez le cacher aux utilisateurs qui n'ont pas reçu les droits d'accès vers la page vers laquelle ce bouton pointe.
+La plupart de ces composants proposent dans leurs paramètres avancés, des choix permettant de limiter leur visibilité aux seuls utilisateurices autorisées.
+*   dans le cas d'un bouton (ou d'un onglet), vous pouvez le cacher aux utilisateurices qui n'ont pas reçu les droits d'accès vers la page vers laquelle ce bouton pointe.
 *   dans le cas d'une section, vous pouvez déterminer par qui elle sera "visible"
 *   ...
 
@@ -215,9 +218,9 @@ Ces opérations sont aussi réalisables pour les différents champs d'un formula
 
 ## Gérer le look
 L'onglet [Look](/?GererThemes)  accessible via le menu "Gestion du site" permet de :
- - créer une configuration graphique personnalisée (variante de couleur et de police) pour votre wiki
- - ajouter du code CSS personnalisé
- - visualiser/modifier le thème graphique affecté à chaque page de votre wiki
+ - [créer une configuration graphique personnalisée (variante de couleur et de police)](/docs/users/fr/admin?id=cr%c3%a9er-une-configuration-graphique-personnalis%c3%a9e)
+ - [ajouter du code CSS personnalisé](/docs/users/fr/admin?id=ajouter-du-code-css-personnalis%c3%a9)
+ - [visualiser/modifier le thème graphique affecté à chaque page](/docs/users/fr/admin?id=visualisermodifier-le-th%c3%a8me-graphique-affect%c3%a9-%c3%a0-chaque-page-de-votre-wiki)
  - [modifier le thème par défaut](/docs/users/fr/admin.md#configuration-graphique-par-d%C3%A9faut)
 
 ### Créer une configuration graphique personnalisée
@@ -225,16 +228,17 @@ Le thème Margot permet de définir des variantes de couleur pour votre wiki : [
 L'interface vous permet de modifier les couleurs utilisées dans le thème : couleur primaire, couleur secondaire 1, couleur secondaire 2, couleur de texte, couleur neutre , couleur claire (fond) - puis de nommer cette configuration custom et la sauvegarder.
 La configuration personnalisée pourra être appliquée à l'ensemble du site ou à certaines pages selon vote besoin.
 
-?>Astuce Si vous choisissez une police différente, 2 solutions possibles :
+#### Astuce 
+Si vous choisissez une police différente, 2 solutions possibles :
 - installer l'extension **fontautoinstall** qui permet d'ajouter sur votre serveur la police choisie (l'extension doit être activée avant de créer la configuration graphique)
-- copier vos polices sur votre serveur dans le dossier /custom/margot/fonts puis modifier PageCss pour ajouter le chargement des polices
-exemple
-'''
+- copier vos polices sur votre serveur dans le dossier /custom/fonts puis modifier PageCss pour ajouter le chargement des polices
+
+Exemple
+```
 /* Typo utilisée ubuntu-regular - latin */
 /* ubuntu-regular - latin */
 /* ubuntu-mono-700 - latin */
 @font-face {
-
     font-family: 'Ubuntu Mono';
     font-style: normal;
     font-weight: 700;
@@ -245,35 +249,18 @@ exemple
         url('custom/fonts/ubuntu-mono-v10-latin-700.woff') format('woff'), /* Modern Browsers */
         url('custom/fonts/ubuntu-mono-v10-latin-700.ttf') format('truetype'), /* Safari, Android, iOS */
         url('custom/fonts/ubuntu-mono-v10-latin-700.svg#UbuntuMono ') format('svg'); /* Legacy iOS */
-
 }
-/* fira-sans-regular - latin */
-@font-face {
-
-    font-family: 'Fira Sans';
-    font-style: normal;
-    font-weight: 400;
-    src: url('custom/fonts/fira-sans-v11-latin-regular.eot'); /* IE9 Compat Modes */
-    src: local(''),
-        url('custom/fonts/fira-sans-v11-latin-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
-        url('custom/fonts/fira-sans-v11-latin-regular.woff2') format('woff2'), /* Super Modern Browsers */
-        url('custom/fonts/fira-sans-v11-latin-regular.woff') format('woff'), /* Modern Browsers */
-        url('custom/fonts/fira-sans-v11-latin-regular.ttf') format('truetype'), /* Safari, Android, iOS */
-        url('custom/fonts/fira-sans-v11-latin-regular.svg#FiraSans ') format('svg'); /* Legacy iOS */
-
-}
-
 :root {
---main-text-fontfamily: 'Fira Sans', sans-serif;
 --main-title-fontfamily: 'Ubuntu Mono', sans-serif;
-}'''
+}
+```
 
 
 ### Ajouter du code CSS personnalisé
 Il est possible d'ajouter du code CSS personnalisé sur une page wiki dédiée : PageCss.
 Cette page ne doit contenir que du CSS. Il sera chargé en dernier afin de pouvoir surcharger des classes CSS et personnaliser l'affichage.
 Par défaut, cette page contient des variables CSS qui sont utilisables avec le thème Margot. Vous pouvez ajouter tout code CSS qui vous sera utile.
-'''
+```
 :root { 
 /* couleurs des titres */
   --title-h1-color:var(--neutral-color);
@@ -281,13 +268,13 @@ Par défaut, cette page contient des variables CSS qui sont utilisables avec le 
   --title-h3-color:var(--secondary-color-1);
   --title-h4-color:var(--secondary-color-2);
 
-/* couleur pour les messages positifs par defaut vert */
+/* couleur pour les messages positifs par défaut vert */
  --success-color: #3cab3b; 
 
-/* couleur pour les messages d'erreur par defaut rouge */
+/* couleur pour les messages d'erreur par défaut rouge */
  --danger-color: #d8604c;  
 
-/* couleur pour les messages d'alerte par defaut orange */ 
+/* couleur pour les messages d'alerte par défaut orange */ 
  --warning-color: #D78958; 
 
 /* couleur de fond de la partie centrale votre wiki */
@@ -301,59 +288,44 @@ Par défaut, cette page contient des variables CSS qui sont utilisables avec le 
 
 /* couleur de la barre de menu */
  --navbar-bg-color: var(--primary-color); 
-
  --navbar-text-color: var(--neutral-light-color); 
-
  --navbar-link-color: var(--neutral-light-color); 
-
  --navbar-link-bg-color: transparent; 
-
  --navbar-link-hover-color: rgba(255,255,255,0.85); 
-
  --navbar-link-bg-hover-color: transparent; 
-
  --navbar-border: none; 
-
  --navbar-border-radius: 0; 
- 
  --navbar-shadow: none; 
  
  --header-bg-color: var(--neutral-light-color);
-
  --header-text-color: var(--neutral-color); 
-
 --header-title-color: var(--primary-color); 
 
 /* couleur de fond du pied de page */
  --footer-bg-color: transparent; 
-
  --footer-text-color: var(--main-text-color); 
-
  --footer-title-color: var(--main-text-color); 
-
  --footer-border-top: 3px solid var(--neutral-soft-color); 
 
  --btn-border: none; 
-
  --btn-border-radius: .5em; 
-
---checkbox-color: var(--primary-color); 
+ --checkbox-color: var(--primary-color); 
 
  } 
-'''
+```
 
 
 ### Visualiser/modifier le thème graphique affecté à chaque page de votre wiki
 Il est possible d'affecter un style différent à certaines pages wiki (par exemple pour différencier une partie intranet).
-La page [Look](/?GererThemes) permet de cocher les pages concernées puis sélectionner le thème et affecter un nouveau thème graphique.
+La page Look permet de cocher les pages concernées puis sélectionner le thème et affecter un nouveau thème graphique.
 
-Le choix du thème peut également se faire page par page (pour l'instant utiliser cette méthode pour sélectionner un preset pour une page seulement)
+Le choix du thème peut également se faire page par page (pour l'instant, utiliser cette méthode pour sélectionner un preset pour une page seulement)
 **Pour modifier ces éléments sur une page (précédemment créée ou nouvelle) :**
 - Passer en mode édition (double clic ou "éditer la page")
 -En bas de votre page, apparait un gros bouton Thème graphique :
 
 ### Configuration graphique par défaut
-Pour **changer le thème graphiques sur l'ensemble du site**, reportez vous à la rubrique "Gérer le thème par défaut du wiki" en bas de la page [Look](/?GererThemes)
+Pour **changer le thème graphiques sur l'ensemble du site**, reportez-vous à la rubrique "Gérer le thème par défaut du wiki" en bas de la page [Look](/?GererThemes)
 Ce changement aura pour effet de mettre à jour le fichier de configuration wakka.config.php et rajouter les valeurs:
 
 'favorite\_theme' => 'nom du thème correspondant au nom du sous-répertoire thème correspondant à ce thème personnalisé',
@@ -363,7 +335,7 @@ Ce changement aura pour effet de mettre à jour le fichier de configuration wakk
 
 ### Dossier custom
 
-Il est possible de créer un thème personnalisé ou den personnaliser une partie seulement.
+Il est possible de créer un thème personnalisé ou d'en personnaliser une partie seulement.
 - pour un template de thème graphique  :
         1. identifier le fichier. Par exemple :  ''' /themes/margot/squelettes/1col.tpl.html'''
 
@@ -400,9 +372,9 @@ Pour définir une configuration graphique par défaut se rendre sur la partie "[
 
 Modifier un thème graphique revient à modifier :
 
-*   Les squelettes : qui se trouvent dans le répertoire "themes/squelettes" d'un thème graphique donné
-*   La feuille de style : qui se trouve dans le répertoire "themes/styles"
-*   Les images de fond : qui se trouvent dans le répertoire "/files/backgrounds"
+*   Les squelettes : ils se trouvent dans le répertoire "themes/squelettes" d'un thème graphique donné
+*   La feuille de style : elle se trouve dans le répertoire "themes/styles"
+*   Les images de fond : elles se trouvent dans le répertoire "/files/backgrounds"
 
 L'architecture de YesWiki est basée sur [Bootstrap](https://fr.wikipedia.org/wiki/Twitter_Bootstrap). Pour modifier les thèmes graphiques et squelettes de YesWiki, il convient de maîtriser cette bibliothèque libre de mise en forme.
 
@@ -418,7 +390,7 @@ mermaid / Izmir / bootstrap / markdown
 
 ### Via la page tableau de bord
 
-Une page TableauDeBord accessible dans le menu "roue crantée". Il permet d'accéder aux
+Une page TableauDeBord accessible dans le menu "roue crantée". Il permet d'accéder aux :
 
 *   derniers comptes utilisateurs créés
 *   dernières pages modifiées
@@ -439,28 +411,28 @@ Plusieurs flux RSS sortent du wiki :
 
 ## Lutter contre le spams
 
-Hélas comme la plupart des wikis ouverts (MediaWiki, DokuWiki), YesWiki n'échappe pas aux attaques de quelques ~~emmerdeurs~~ référenceurs soit-disant professionnels et autres robots de spam, qui polluent les contenus des pages.
+Hélas, comme la plupart des wikis ouverts (MediaWiki, DokuWiki), YesWiki n'échappe pas aux attaques de quelques ~~emmerdeurs~~ référenceurs soit-disant professionnels et autres robots de spam, qui polluent les contenus des pages.
 
 ### Les symptômes : comment identifier les spams ?
 
-*   Vous pouvez découvrir sur une ou plusieurs pages des liens vers des sites externes qui semblent sans rapport avec l'objet du wiki _(qui vendent des robes de mariée, des sites indonésien sans rapport, des liens commerciaux vers la loi duflot, des textes en langue étrangère etc..)_
-*   Il se peut aussi que de nouvelles pages soit créées, et dans certains cas de nouveaux utilisateurs wikis.
+*   Vous pouvez découvrir sur une ou plusieurs pages des liens vers des sites externes qui semblent sans rapport avec l'objet du wiki _(qui vendent des robes de mariée, des sites indonésiens sans rapport, des liens commerciaux vers la loi Duflot, des textes en langue étrangère, etc..)_
+*   Il se peut aussi que de nouvelles pages soient créées, et dans certains cas de nouveaux utilisateurices wikis.
 
-Dans tous les cas, il sera toujours possible de faire marche arrière, et les informations sensibles d'accès ftp ou mysql à votre serveur ne peuvent pas être trouvés comme cela.
+Dans tous les cas, il sera toujours possible de faire marche arrière, et les informations sensibles d'accès ftp ou mysql à votre serveur ne peuvent pas être trouvées comme cela.
 
 ### Les 10 conseils anti-spam
 
-* **1**. Je consulte régulièrement mon wiki
-* **2**. Je m'abonne à son flux RSS [voir plus bas / suivre la vie de mon wiki](#Suivre-la-vie-de-son-wiki)
-* **3**. Je consulte la page TableauDeBordDeCeWiki de mon wiki (accessible depuis la "roue crantée")
-* **4**. Je vérifie les dernières pages modifiées dans le TableauDeBordDeCeWiki ou sur la page DerniersChangements
-* **5**. Je vérifie les derniers comptes crées sur la page TableauDeBordDeCeWiki. (Action {{Listusers last="20"}} )
-* **6**. J'édite les pages en question et je supprime les parties indésirables, puis je sauve. (Cela prend moins d'une minute)
-* **7**. Je protège l'accès en écriture des pages spéciales du wiki (menu, roue crantée, footer...)
-* **8**. Je maintiens mon wiki à jour
-* **9**. Pour les plus endurcis, je fais le grand ménage avec l'outil despam (voir plus bas)
-* **10**. Je ne cède pas à la tentation de transformer mon espace collaboratif en bunker. Et je continue à mettre en balance les effets positifs de l'intelligence collective.
-* 
+**1.** Je consulte régulièrement mon wiki
+**2.** Je m'abonne à son flux RSS [voir plus bas / suivre la vie de mon wiki](#Suivre-la-vie-de-son-wiki)
+**3.** Je consulte la page TableauDeBordDeCeWiki de mon wiki (accessible depuis la "roue crantée")
+**4.** Je vérifie les dernières pages modifiées dans le TableauDeBord ou sur la page DerniersChangements
+**5.** Je vérifie les derniers comptes crées sur la page TableauDeBord. (Action {{Listusers last="20"}} )
+**6.** J'édite les pages en question et je supprime les parties indésirables, puis je sauve. (Cela prend moins d'une minute)
+**7.** Je protège l'accès en écriture des pages spéciales du wiki (menu, roue crantée, footer...)
+**8.** Je maintiens mon wiki à jour
+**9.** Pour les plus endurcis, je fais le grand ménage avec l'outil despam (voir plus bas)
+**10.** Je ne cède pas à la tentation de transformer mon espace collaboratif en bunker. Et je continue à mettre en balance les effets positifs de l'intelligence collective.
+
 ### Que faire si vous avez du spam ?
 
 #### Réparer une page spéciale spammée
@@ -469,18 +441,17 @@ _Tiens, ce matin, en me baladant sur un de mes YesWiki j'ai découvert que j'ava
 
 ##### Si votre wiki est ouvert en écriture:
 
-*   1\. identifier la page spammée en ajoutant le handler /editiframe
-    aux pages spéciales. Voici ci-dessous, la liste des pages spéciales concernées.
-*   2\. Dès que le code malicieux est repéré, supprimer ce code et sauvegarder la page.
-*   3\. Revenir sur la liste des versions de cette page pour éditer la version avant l'apparition du code malicieux et remettre en place le contenu précédent
+1. Identifier la page spammée en ajoutant le handler /editiframe aux pages spéciales (BazaR, GererSite, GererDroits, GererDroitsActions, GererDroitsHandlers, GererMisesAJour, GererThemes, GererConfig, GererUtilisateurs, GererMotsClef, TableauDeBord, LookWiki)
+2. Dès que le code malicieux est repéré, supprimer ce code et sauvegarder la page.
+3. Revenir sur la liste des versions de cette page pour éditer la version avant l'apparition du code malicieux et remettre en place le contenu précédent.
 
 ##### Si votre wiki est fermé en écriture
 
-Il peut être impossible de se connecter au wiki. Ceci peut contourner en utilisant ce lien qui permet de ne pas afficher les pages spéciales : https://www.example.com/?ParametresUtilisateur/iframe
+Il peut être impossible de se connecter au wiki (la roue crantée n'apparaît pas). Ceci peut être contourné en utilisant ce lien sans afficher les pages spéciales : https://www.example.com/?ParametresUtilisateur/iframe
 
 #### Utiliser les paramètres de contrôle d'accès via le wakka config ou la page ["Fichier de conf"](/docs/users/fr/admin?id=droit-d39accès)
 
-A partir du fichier wakka.config.php accessible via FTP, il est possible :
+1. A partir du fichier wakka.config.php accessible via FTP, il est possible :
 
 *   d'ajouter un capcha en mode édition
 *   d'ajouter un champ (mot de passe) en entrée du mode édition (+ un message informatif sur ce mot de passe)
@@ -493,19 +464,20 @@ Les paramètres ajoutables au wakkaconfig
     'use\_nospam' => true, // ne pas toucher pour l'instant 'use\_alerte' => true,
     'use\_captcha' => true,
 
-Ces paramètres sont aussi activables de manière simple via la page de gestion du site, onglet "fichier de conf". Pour le détail, voir la partie ["Fichier de configuration>droits d'accès"](/docs/users/fr/admin?id=droit-d39accès) 
+2. A partir de la page ["Fichier de conf"](/docs/users/fr/admin?id=droit-d39accès)
+Les paramètres ci-dessus sont aussi activables de manière simple via la page de gestion du site, onglet "fichier de conf". Pour le détail, voir la partie ["Fichier de configuration>droits d'accès"](/docs/users/fr/admin?id=droit-d39accès) 
 
 #### Pour les ajouts dans une page isolée
 
-1.  Editer la page en question et supprimer la partie indésirable, puis sauver. (Cela prend moins d'une minute)
+1.  Editer la page en question et supprimer la partie indésirable, puis sauver : cela prend moins d'une minute.
 
-Astuce: veiller à plusieurs à partir du flux RSS qui sort de votre wiki est plus efficace
+Astuce : assurer une veille à plusieurs personnes, à partir du flux RSS qui sort de votre wiki, est plus efficace.
 
 #### Pour de nouvelles pages indésirables créées
 
 ##### Si vous pouvez vous connecter en tant que WikiAdmin :
 
-1.  s'identifier en tant qu'administrateur du wiki (WikiAdmin par défaut)
+1.  s'identifier en tant qu'administrateurice du wiki (WikiAdmin par défaut)
 2.  éditer les permissions de la page pour mettre le compte [WikiAdmin](https://yeswiki.net/?WikiAdmin) propriétaire de la page
 3.  supprimer la page à partir du lien sur la barre d'action en bas de page
 
@@ -516,42 +488,39 @@ Astuce: veiller à plusieurs à partir du flux RSS qui sort de votre wiki est pl
 
 #### Pour limiter la création de nouveaux comptes
 
-Pour éviter que des inconnus puissent se créer des comptes, vous pouvez limiter l'action [UserSettings](https://yeswiki.net/?UserSettings) aux seuls administrateurs.
-Si cela a l'avantage de bloquer/réserver la création de nouveaux comptes aux seuls admin,cela limite vraiment l'autonomie de vos utilisateurs.
+Pour éviter que des inconnus puissent se créer des comptes, vous pouvez limiter l'action [UserSettings](https://yeswiki.net/?UserSettings) aux seul.es administrateurices.
+Si cela a l'avantage de bloquer/réserver la création de nouveaux comptes aux seuls admin, cela limite vraiment l'autonomie des personnes utilisant votre wiki.
 
 #### Pour supprimer les commentaires indésirables
 
-1.  Ajouter l'action {{erasespamedcomments}} dans la page de votre choix. (Elle n'est accessible qu'aux administrateurs)
-2.  Ensuite cocher les commentaires indésirables et appuyer sur le bouton "Nettoyer"
-
+1.  Ajouter l'action {{erasespamedcomments}} dans la page de votre choix. (Elle n'est accessible qu'aux administrateurices)
+2.  Ensuite, cocher les commentaires indésirables et appuyer sur le bouton "Nettoyer"
 
 
 #### Pour supprimer de nombreuses pages rapidement
 
 Installer l'extension "multideletepages" (Roue crantée > Gestion du site > Mise à jour / extensions).
-Puis dans une page (par exemple créer une page DeletePages) mettre l'action {{multideletepages}}. 
-Vous aurez alors un tableau avec la liste de toutes les pages : vous pouvez cocher de nombreuses pages et cliquer sur "Suppr. select." : attention ça ne redemande pas de validation.
+Puis, dans une page (par exemple créer une page DeletePages) mettre l'action {{multideletepages}}. 
+Vous aurez alors un tableau avec la liste de toutes les pages : vous pouvez cocher de nombreuses pages et cliquer sur "Suppr. select." : ATTENTION, ça ne redemande pas de validation.
 
 #### Pour les attaques massives sur de nombreuses pages
 
 **cette technique nécessite des informations sur les codes FTP et Mysql**
 
-Pour faire le grand ménage avec le tools despam :
+~~Pour faire le grand ménage avec le tools despam :~~
 
-1.  aller sur la barre d'adresse url de votre navigateur et remplacer wakka.php (et ce qu'il y a derrière) par tools.php (pour avoir une url du type http://monadressedewiki/tools.php )
-2.  identifiez-vous à l'aide des **identifiants de la base de données Mysql** plutôt que vos identifiants wiki
-3.  la liste des extensions apparaît, cliquer sur "Nettoyage Spam"
-4.  Sélectionner l'intervalle de temps à prendre en compte pour les dernière modifications
-5.  cocher les choix adéquats, entre supprimer la page ou revenir à la version précédente
-    *   **ATTENTION, il faut IMPÉRATIVEMENT vérifier les pages en question pour ne pas supprimer définitivement le contenu!!**
-6.  cliquer sur "Nettoyer"
+~~1.  aller sur la barre d'adresse url de votre navigateur et remplacer wakka.php (et ce qu'il y a derrière) par tools.php (pour avoir une url du type http://monadressedewiki/tools.php )~~
+~~2.  s'identifier à l'aide des **identifiants de la base de données Mysql** plutôt que vos identifiants wiki~~
+~~3.  la liste des extensions apparaît, cliquer sur "Nettoyage Spam"~~
+~~4.  Sélectionner l'intervalle de temps à prendre en compte pour les dernières modifications~~
+~~5.  cocher les choix adéquats, entre supprimer la page ou revenir à la version précédente~~
+~~* **ATTENTION, il faut IMPÉRATIVEMENT vérifier les pages en question pour ne pas supprimer définitivement le contenu!!**~~
+~~6.  cliquer sur "Nettoyer"~~
 
-#### Pour supprimer les utilisateurs non désirables (utilisateurs avancés, non disponible par défaut)
+#### Pour supprimer les utilisateurs non désirables (utilisateurs avancés)
 
-Ajouter par FTP, dans le répertoire tools l'extension suivante : [http://yeswiki.net/downloads/actions.zip](http://yeswiki.net/downloads/actions.zip)
-
-Pour la mise en oeuvre, voir la documentation suivante:
-[Télécharger le fichier doc\_action\_delete.pdf (0.7MB)](https://yeswiki.net/?LutterContreLeSpam/download&file=doc_action_delete.pdf)[](https://yeswiki.net/?LutterContreLeSpam/upload&file=doc_action_delete.pdf "Mise à jour")
+ - se rendre sur la page [`GererUtilisateurs`](?GererUtilisateurs ':ignore') du wiki, en tant qu'administrateurice
+ - supprimer les comptes non désirés en cliquant sur le bouton en fin de ligne. ATTENTION : il n'y a pas de message de confirmation. La suppression est définitive dès le 1er clic réalisé.
 
 #### Activer l'extension Ipblock
 Cette extension permet de bloquer l'accès à votre wiki en fontion des adresses IP (et de leur provenance géographique).
@@ -583,7 +552,7 @@ Cette page permet de modifier la configuration de son Yeswiki sans passer par le
  - **Langue par défaut (fr ou en ou ... auto = langue du navigateur) - default_language** : à la création du wiki, la langue choisie est le français. Le fait de modifier ce paramètre modifiera la langue pour les menus et paramètres en mode édition et les pages comme la page de configuration.
  - **Icône du site (emoji ou URL vers une image PNG) - favicon** : ce paramètre permet de modifier l'icône qui apparaît dans l'onglet du navigateur (Chrome, Firefox...)
  - **Activer le mode de debug (yes ou no) - debug** :  ce paramètre active le mode de débogage s'il est passé à la valeur 'yes' (infos sur le nombre de requêtes, le temps écoulé et force l'affichage des erreurs php pour les développeurs). Astuce : on peut aussi passer &debug dans l'url pour debugguer
- - **Fuseau horaire du site (ex. UCT, Europe/Paris, Europe/London, GMT = utiliser celui du serveur,) - timezone** : à la création du wiki, le fuseau horaire choisi est GMT et se cale sur celui du serveur. Cela peut amener des différences d'affichage Il peut arriver que l'affichage de l'heure de début d'un évènement sur le calendrier soit décalée car la configuration serveur peut être en décalage par rapport au fuseau horaire de l'administrateurice du wiki.
+ - **Fuseau horaire du site (ex. UCT, Europe/Paris, Europe/London, GMT = utiliser celui du serveur,) - timezone** : à la création du wiki, le fuseau horaire choisi est GMT et se cale sur celui du serveur. Cela peut amener des différences d'affichage. Il peut arriver que l'affichage de l'heure de début d'un évènement sur le calendrier soit décalée car la configuration serveur peut être en décalage par rapport au fuseau horaire de l'administrateurice du wiki.
 Pour bien configurer, on peut mettre dans le paramètre Fuseau horaire du site la valeur : Europe/Paris (ou sinon UTC).
  - **Méthodes autorisées à être affichées dans les iframes (iframe,editiframe,bazariframe,render,all = autoriser tout) - allowed_methods_in_iframe**
  - **Nombre maximum de versions d'une page affichées par le handler `/revisions`. - revisionscount** : 
@@ -596,13 +565,13 @@ Cette partie permet de modifier les droits d'accès pour les pages à venir. Pou
  - **Droits d'écriture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_write_acl** : par défaut, les pages à venir sont ouvertes à tous en droit d'écriture. 
  - **Droits de commentaires par défaut des pages (comments-closed pour fermés, * pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_comment_acl** :
  - **Commentaires activés (true ou false) - comments_activated** : 
- - **Mot de passe demandé pour modifier les pages (voir doc gestion des spams) - password_for_editing** : ce paramètre permet de demander un mot de passe AVANT de rentrer en mode édition que ce soit pour les pages wiki ET les fiches bazar. Si vous êtes connectés, ce mot de passe ne vous est pas demandé. Exemple : pour entrer dans le mode édition, les utilisateurices doivent entrer le chiffre `6`. Iels le savent grâce au message informatif rédiger ci-dessous.
- - **Message informatif pour demander le mot de passe (voir doc gestion des spams)** - password_for_editing_message : ce paramètre permet d'indiquer un message afin de donner aux usagers une info sur le mot de passe à rentrer (on fait le pari que les turcs spanners ne le liront pas ;-) exemple :`Pour éviter les attaques de spam, merci d'indiquer en chiffre combien font t.rois fois 2...`
+ - **Mot de passe demandé pour modifier les pages (voir doc gestion des spams) - password_for_editing** : ce paramètre permet de demander un mot de passe AVANT de rentrer en mode édition que ce soit pour les pages wiki ET les fiches bazar. Si vous êtes connectés, ce mot de passe ne vous est pas demandé. Exemple : pour entrer dans le mode édition, les utilisateurices doivent entrer le chiffre `6` et un message informatif leur apporte une précision pour noter ce mot de passe.
+ - **Message informatif pour demander le mot de passe (voir doc gestion des spams)** - password_for_editing_message : ce paramètre permet d'indiquer un message afin de donner aux personnes usagères une info sur le mot de passe à rentrer (on fait le pari que les turcs spammers ne le liront pas ;-) exemple :`Pour éviter les attaques de spam, merci d'indiquer en chiffre combien font t.rois fois 2...`
 La combinaison des deux paramètres donnent le résultat suivant pour l'exemple :
 
 ![antispam.JPG (17.5 KB)](/images/antispam.JPG)
 
- - **Autoriser le doubleclic pour éditer les menus et pages spéciales (true ou false) - allow_doubleclic** : par défaut, le doubleclic utilisé pour l'édition des pages a été retiré pour les menus et les pages speciales (PageMenuHaut, PageTitre, PageRapideHaut) afin d'éviter que ces pages soient spammées. Pour autoriser ce doubleclic, mettre `true`pour ce paramètre.
+ - **Autoriser le double-clic pour éditer les menus et pages spéciales (true ou false) - allow_doubleclic** : par défaut, le double-clic utilisé pour l'édition des pages a été retiré pour les menus et les pages spéciales (PageMenuHaut, PageTitre, PageRapideHaut) afin d'éviter que ces pages soient spammées. Pour autoriser ce double-clic, mettre `true`pour ce paramètre.
 
 ### Envoi des e-mails
  - **Remplacer le mail utilisé comme expéditeur des messages - contact_from** :
@@ -618,7 +587,7 @@ La combinaison des deux paramètres donnent le résultat suivant pour l'exemple 
  
 ### Base de données
 
-Par défaut, pour l'affichage des données sous forme cartographique, les cartes sont centrées sur le centre de la France et affiche l'intégralité de la France. On peut forcer le centre ailleurs en configurant les paramètres ci-dessous
+Par défaut, pour l'affichage des données sous forme cartographique, les cartes sont centrées sur le centre de la France et affiche l'intégralité de la France. On peut forcer le centre ailleurs en configurant les paramètres ci-dessous.
 
  - **Latitude par défaut des affichages cartographiques - baz_map_center_lat** : par défaut, la latitude pour centrer la carte sur le centre de la France est 46.22763.
  - **Longitude par défaut des affichages cartographiques - baz_map_center_lon** : par défaut, la longitude pour centrer la carte sur le centre de la France est 2.213749
