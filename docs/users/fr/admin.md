@@ -248,7 +248,8 @@ exemple
 }
 :root {
 --main-title-fontfamily: 'Ubuntu Mono', sans-serif;
-}```
+}
+```
 
 
 ### Ajouter du code CSS personnalisé
