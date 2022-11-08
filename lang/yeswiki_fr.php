@@ -611,9 +611,6 @@ return [
     'USER_NOT_ALLOWED_TO_COMMENT' => 'Vous n\'êtes pas dans un groupe autorisé à laisser des commentaires.',
     'NOT_AUTORIZED_TO_REMOVE_COMMENT' => 'Vous n\'êtes pas autorisé à supprimer ce commentaire.',
 
-    // YesWiki
-    'UNKNOWN_INTERWIKI' => 'interwiki inconnu',
-
     // reactions
     'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',
     'REACTION_LIKE' => 'J\'approuve',

@@ -580,9 +580,6 @@ return [
     // handlers/page/show + handlers/page/iframe
     'NOT_FOUND_PAGE' => 'This page does not already exist, would you {beginLink}create{endLink} it ?',
 
-    // YesWiki
-    'UNKNOWN_INTERWIKI' => 'unkwon interwiki',
-
     // templates/multidelete-macro.twig
     'NUMBER_OF_ELEMENTS' => 'Number of selected items',
 
