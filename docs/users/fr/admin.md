@@ -514,12 +514,11 @@ Pour faire le grand ménage avec le tools despam :
     *   **ATTENTION, il faut IMPÉRATIVEMENT vérifier les pages en question pour ne pas supprimer définitivement le contenu!!**
 6.  cliquer sur "Nettoyer"
 
-#### Pour supprimer les utilisateurs non désirables (utilisateurs avancés, non disponible par défaut)
+#### Pour supprimer les utilisateurs non désirables (utilisateurs avancés)
 
-Ajouter par FTP, dans le répertoire tools l'extension suivante : [http://yeswiki.net/downloads/actions.zip](http://yeswiki.net/downloads/actions.zip)
-
-Pour la mise en oeuvre, voir la documentation suivante:
-[Télécharger le fichier doc\_action\_delete.pdf (0.7MB)](https://yeswiki.net/?LutterContreLeSpam/download&file=doc_action_delete.pdf)[](https://yeswiki.net/?LutterContreLeSpam/upload&file=doc_action_delete.pdf "Mise à jour")
+ - se rendre sur la page [`GererUtilisateurs`](?GererUtilisateurs ':ignore') de du wiki, en tant qu'administrateur, administratrice
+ - sélectionner les comptes non désirés en cochant la case associée en début de ligne
+ - cliquer sur "Supprimer la sélection"
 
 #### Activer l'extension Ipblock
 Cette extension permet de bloquer l'accès à votre wiki en fontion des adresses IP (et de leur provenance géographique).
