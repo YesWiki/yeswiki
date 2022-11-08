@@ -579,14 +579,7 @@ class Wiki
         $text = htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
 
         // Generate HTML
-        if ($text && preg_match("/\.(gif|jpeg|png|jpg|svg)$/i", $link)) {
-            // Links to images
-            // Sebastian 11/2022 : Seems weird to display an image when we ask for a link
-            // But leaving for backward compatibility...
-            return "<img src='$link' alt='$text'/>";
-        } else {
-            return "<a href='$link' $stringAttrs>$text</a>";
-        }
+        return "<a href='$link' $stringAttrs>$text</a>";
     }
 
     public function ParamsForNewPageLink()
