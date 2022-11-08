@@ -73,7 +73,6 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                 ."^(\t+|([ ]{1})+)(-|[[:alnum:]]+\))?|"
                 ."\{\#.*?\#\}|"
                 ."\{\{.*?\}\}|"
-                .'\b' . WN_INTERWIKI_LINK . '\b|'
                 .'\b' . WN_WIKI_LINK . '\b|'
                 ."\n/msu",
                 array($this, 'callback'),
@@ -363,10 +362,6 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                     // indented text
                     elseif (preg_match('`(^|\n)(\t+|([ ]{1})+)(-|([[:alnum:]]+)\))?`s', $thing, $matches)) {
                         return $this->indentedText($matches);
-                    }
-                    // interwiki links!
-                    elseif (preg_match('`^' . WN_INTERWIKI_LINK . '$`', $thing)) {
-                        return $wiki->Link($thing);
                     }
                     // wiki links!
                     elseif (!$wiki->GetConfigValue('disable_wiki_links', false) && preg_match('`^' . WN_WIKI_LINK . '`u', $thing)) {
