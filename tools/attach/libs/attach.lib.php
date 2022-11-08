@@ -511,12 +511,6 @@ if (!class_exists('attach')) {
                     : ''
                 );
             if (!empty($this->link)) {
-                //c'est une image sensible
-                //test si le lien est un lien interwiki
-                if (preg_match("/^([A-Z][A-Z,a-z]+)[:]([A-Z,a-z,0-9]*)$/s", $this->link, $matches)) {
-                    //modifie $link pour ?tre un lien vers un autre wiki
-                    $this->link = $this->wiki->GetInterWikiUrl($matches[1], $matches[2]);
-                }
                 // create link if needed
                 $linkParts = $this->wiki->extractLinkParts($this->link);
                 if ($linkParts) {

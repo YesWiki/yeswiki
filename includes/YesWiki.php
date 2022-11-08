@@ -520,7 +520,6 @@ class Wiki
      * LinkTo("WikiPage", "", ["method" => "xml"])
      * LinkTo("WikiPage/edit?params=2", "ma page")
      * LinkTo("https://test.fr", "mon lien", ["class" => "yeah"])
-     * LinkTo("WikiPedia:Arctic_Monkeys")
      *
      * @param string $link $url, or wiki $tag
      * @param string $text
@@ -531,17 +530,6 @@ class Wiki
     {
         if (!$text) {
             $text = $link;
-        }
-
-        // InterWiki links, like "WikiPedia:Arctic_Monkeys", see interwiki.conf file
-        // Sebastian 11/2022: I'm not sure this is still in use...
-        if (preg_match('/^' . WN_INTERWIKI_CAPTURE . '$/', $link, $matches)) {
-            $interLink = $this->GetInterWikiUrl($matches[1], $matches[2]);
-            if ($interLink) {
-                $link = $interLink;
-            } else {
-                $text .= ' (' . _t('UNKNOWN_INTERWIKI') . ')';
-            }
         }
 
         // YesWiki pages links, like "HomePage" or "HomePage/xml"
@@ -688,15 +676,6 @@ class Wiki
     public function AddInterWiki($name, $url)
     {
         $this->interWiki[strtolower($name)] = $url;
-    }
-
-    public function GetInterWikiUrl($name, $tag)
-    {
-        if (isset($this->interWiki[strtolower($name)])) {
-            return $this->interWiki[strtolower($name)] . $tag;
-        } else {
-            return false;
-        }
     }
 
     // REFERRERS

@@ -36,10 +36,6 @@ define('WN_WIKI_LINK', WN_CAMEL_CASE); // this might evolve to handle the page g
 define('WN_PAGE_TAG', WN_CAMEL_CASE_EVOLVED);
 /** the regexp that checks and splits a PageTag/handler into 'PageTag' and 'handler' */
 define('WN_TAG_HANDLER_CAPTURE', '(' . WN_PAGE_TAG . ')/(' . WN_CHAR2 . '*)');
-/** the regexp that matches InterWiki links in a text */
-define('WN_INTERWIKI_LINK', WN_UPPER . WN_CHAR . '+:' . WN_CHAR2 . '*');
-/** the regexp that matches InterWiki links with 2 capture brackets for site name and page tag */
-define('WN_INTERWIKI_CAPTURE', '(' . WN_UPPER . WN_CHAR . '+):(' . WN_CHAR2 . '*)');
 
 // constants for the management of the triples
 // standard prefixes
