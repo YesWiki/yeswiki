@@ -17,8 +17,8 @@ Pour passer en mode édition, trois solutions :
 
 YesWiki utilise des balises plus ou moins complexes pour les styles, les actions et autre astuces de mise en forme.
 Par exemple, un texte en **gras** s'affiche `**`**gras**`**`
- - pour supprimer les balises, il faut les supprimer avant **ET** après l'élément impacté
- - Pour des balises plus complexes comme `{{section bgcolor="var(--primary-color)" class="shape-rounded" pattern="border-solid" }}Texte encadré{{end elem="section"}}` (oui, je sais, ça fait peur au début) il faut bien supprimer tout ce qui est avant **ET** après _Texte encadré_.
+ - Pour supprimer les balises, il faut les supprimer avant **ET** après l'élément impacté
+ - Pour des balises plus complexes comme `{{section bgcolor="var(--primary-color)" class="shape-rounded" pattern="border-solid" }}Texte encadré{{end elem="section"}}` (oui, on sait, ça fait peur au début) il faut bien supprimer tout ce qui est avant **ET** après "Texte encadré".
 
 Deux solutions en cas de soucis :
  - revenir sur une version précédente de la page
@@ -116,7 +116,7 @@ Dans YesWiki chaque modification d'une page est sauvegardée dans un **historiqu
 
 **Pour y accéder** il suffit de cliquer sur le lien en bas de page nommé : "Dernière édition : _jour_._mois_._année_"
 
-!> Attention, l'historique est accesible uniquement aux personnes qui ont les droits en écriture sur la page concernée.
+!> Attention, l'historique est accessible uniquement aux personnes qui ont les droits en écriture sur la page concernée.
 
 
 Insérer et gérer les médias (images, pdf...)
@@ -292,9 +292,9 @@ Mise en forme propose 6 possibilités :
 * Étiquette : mettre en avant un texte au travers d’une couleur de fond.
 * Onglets : créer des onglets dans une page, permet d’obtenir des sous menus horizontaux ou verticaux.
 * Encadré : encadrer un texte ou proposer un encadré qui se ferme quand on clique sur son titre.
- * Section : couteau suisse de mise en forme, permet d’encadrer un paragraphe, de lui adjoindre une couleur ou une image de fond et beaucoup d’autres combinaisons.
- * Afficher des encadrés en accordéon : déclinaison d’encadré, accordéon permet de chaîner plusieurs encadrés, quand vous ouvrez un encadré, ça ferme les autres.
- * Afficher en plusieurs colonnes : permet de créer plusieurs colonnes dans une page ou une partie de page, très utile pour des mises en page avancées.
+* Section : couteau suisse de mise en forme, permet d’encadrer un paragraphe, de lui adjoindre une couleur ou une image de fond et beaucoup d’autres combinaisons.
+* Afficher des encadrés en accordéon : déclinaison d’encadré, accordéon permet de chaîner plusieurs encadrés, quand vous ouvrez un encadré, ça ferme les autres.
+* Afficher en plusieurs colonnes : permet de créer plusieurs colonnes dans une page ou une partie de page, très utile pour des mises en page avancées.
 
 ### Syndication / Flux RSS
 
@@ -318,11 +318,11 @@ Ce composant vous offre trois possibilités :
 
 ### Vidéo intégrée
 
-afficher une vidéo proposée par PeerTube, Viméo ou Youtube à partir de son identifiant.
+Afficher une vidéo proposée par PeerTube, Viméo ou Youtube à partir de son identifiant.
 
 ### Actions d'envoi d'e-mail/listes
 
-permet 3 actions :
+Permet 3 actions :
 
 * Afficher un formulaire de contact
 * S’abonner à une liste de discussion (qui devra être créée par ailleurs)
