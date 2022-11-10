@@ -319,7 +319,7 @@ class MapField extends BazarField
 
     protected function renderStatic($entry)
     {
-        return null;
+        return "";
     }
 
     // GETTERS. Needed to use them in the Twig syntax

@@ -18,7 +18,7 @@ class HiddenField extends BazarField
 
     protected function renderStatic($entry)
     {
-        return null;
+        return "";
     }
 
     // Format input values before save

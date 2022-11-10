@@ -51,7 +51,7 @@ class TextField extends BazarField
     {
         $value = $this->getValue($entry);
         if ($value !== "0" && !$value) {
-            return null;
+            return "";
         }
 
         if ($this->name === 'bf_titre') {

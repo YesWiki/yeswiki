@@ -116,7 +116,7 @@ class FileField extends BazarField
             ]);
         }
 
-        return null;
+        return "";
     }
 
     /**

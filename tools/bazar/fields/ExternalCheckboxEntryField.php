@@ -24,12 +24,12 @@ class ExternalCheckboxEntryField extends CheckboxEntryField
 
     protected function renderInput($entry)
     {
-        return null;
+        return "";
     }
 
     public function formatValuesBeforeSave($entry)
     {
-        return null;
+        return "";
     }
     
     protected function renderStatic($entry)

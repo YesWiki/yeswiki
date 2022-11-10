@@ -111,7 +111,7 @@ class TagsField extends EnumField
                 'value' => join(' ', $tags) ?? ''
             ]);
         } else {
-            return null ;
+            return "" ;
         }
     }
 

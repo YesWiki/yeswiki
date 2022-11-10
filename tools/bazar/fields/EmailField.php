@@ -47,7 +47,7 @@ class EmailField extends BazarField
     {
         $value = $this->getValue($entry);
         if (!$value) {
-            return null;
+            return "";
         }
 
         // TODO add JS libraries with Twig

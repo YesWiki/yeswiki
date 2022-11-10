@@ -24,7 +24,7 @@ class ExternalTagsField extends TagsField
 
     protected function renderInput($entry)
     {
-        return null;
+        return "";
     }
 
     public function formatValuesBeforeSave($entry)
@@ -66,7 +66,7 @@ class ExternalTagsField extends TagsField
                 'value' => join(' ', $tags) ?? ''
             ]);
         } else {
-            return null ;
+            return "" ;
         }
     }
 }

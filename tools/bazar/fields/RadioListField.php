@@ -20,7 +20,7 @@ class RadioListField extends RadioField
     {
         $value = $this->getValue($entry) ;
         if (!$value) {
-            return null;
+            return "";
         }
         return $this->render('@bazar/fields/radio.twig', [
             'value' => $this->options[$value]

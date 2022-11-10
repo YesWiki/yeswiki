@@ -218,7 +218,7 @@ class UserField extends BazarField
             ]);
         }
 
-        return null;
+        return "";
     }
 
     // GETTERS. Needed to use them in the Twig syntax
