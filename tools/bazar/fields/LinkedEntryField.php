@@ -52,7 +52,7 @@ class LinkedEntryField extends BazarField
         if (!empty($entry['id_fiche']) && !empty($entry['id_typeannonce'])) {
             return $this->getService(Performer::class)->run('wakka', 'formatter', ['text' => $this->getBazarListAction($entry)]);
         } else {
-            return null ;
+            return "" ;
         }
     }
 

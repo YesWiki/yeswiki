@@ -24,7 +24,7 @@ class ExternalImageField extends ImageField
 
     protected function renderInput($entry)
     {
-        return null;
+        return "";
     }
 
     public function formatValuesBeforeSave($entry)
@@ -51,6 +51,6 @@ class ExternalImageField extends ImageField
             ]);
         }
 
-        return null;
+        return "";
     }
 }

@@ -24,7 +24,7 @@ class ExternalSelectListField extends SelectListField
 
     protected function renderInput($entry)
     {
-        return null;
+        return "";
     }
 
     public function formatValuesBeforeSave($entry)

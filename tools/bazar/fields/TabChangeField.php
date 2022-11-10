@@ -34,12 +34,12 @@ class TabChangeField extends LabelField
     protected function renderInput($entry)
     {
         if (!$this->formChange) {
-            return null;
+            return "";
         }
         $tabsFieldService = $this->getService(TabsFieldService::class);
         $params = $tabsFieldService->getFormData();
         if ($params['counter'] === false) {
-            return null;
+            return "";
         }
         return $this->render('@bazar/fields/tab-change.twig', $params);
     }
@@ -47,12 +47,12 @@ class TabChangeField extends LabelField
     protected function renderStatic($entry)
     {
         if (!$this->viewChange) {
-            return null;
+            return "";
         }
         $tabsFieldService = $this->getService(TabsFieldService::class);
         $params = $tabsFieldService->getViewData();
         if ($params['counter'] === false) {
-            return null;
+            return "";
         }
         return $this->render('@bazar/fields/tab-change.twig', $params);
     }

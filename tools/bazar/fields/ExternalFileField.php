@@ -24,7 +24,7 @@ class ExternalFileField extends FileField
 
     protected function renderInput($entry)
     {
-        return null;
+        return "";
     }
 
     public function formatValuesBeforeSave($entry)
@@ -44,6 +44,6 @@ class ExternalFileField extends FileField
             ]);
         }
 
-        return null;
+        return "";
     }
 }

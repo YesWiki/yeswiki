@@ -41,7 +41,7 @@ class MetadataField extends BazarField
 
     protected function renderInput($entry)
     {
-        return null;
+        return "";
     }
 
     public function formatValuesBeforeSave($entry)
@@ -62,7 +62,7 @@ class MetadataField extends BazarField
 
     protected function renderStatic($entry)
     {
-        return null;
+        return "";
     }
 
     public function getTheme()

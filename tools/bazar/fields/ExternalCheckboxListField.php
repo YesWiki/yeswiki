@@ -24,7 +24,7 @@ class ExternalCheckboxListField extends CheckboxListField
 
     protected function renderInput($entry)
     {
-        return null;
+        return "";
     }
 
     public function formatValuesBeforeSave($entry)

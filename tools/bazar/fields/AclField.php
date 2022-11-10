@@ -31,7 +31,7 @@ class AclField extends BazarField
 
     protected function renderInput($entry)
     {
-        return null;
+        return "";
     }
 
     public function formatValuesBeforeSave($entry)
@@ -51,7 +51,7 @@ class AclField extends BazarField
 
     protected function renderStatic($entry)
     {
-        return null;
+        return "";
     }
 
     private function replaceWithCreator($right, $entry)

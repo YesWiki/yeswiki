@@ -24,7 +24,7 @@ class ExternalRadioListField extends RadioListField
 
     protected function renderInput($entry)
     {
-        return null;
+        return "";
     }
 
     public function formatValuesBeforeSave($entry)

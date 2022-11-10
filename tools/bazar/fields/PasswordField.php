@@ -47,6 +47,6 @@ class PasswordField extends BazarField
     protected function renderStatic($entry)
     {
         // We never want to display passwords
-        return null;
+        return "";
     }
 }

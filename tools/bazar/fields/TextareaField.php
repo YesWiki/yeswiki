@@ -161,7 +161,7 @@ class TextareaField extends BazarField
     {
         $value = $this->getValue($entry);
         if (!$value) {
-            return null;
+            return "";
         }
         
         switch ($this->syntax) {

@@ -59,7 +59,7 @@ class DateField extends BazarField
     {
         $value = $this->getValue($entry);
         if (!$value) {
-            return null;
+            return "";
         }
 
         if (strlen($value) > 10) {

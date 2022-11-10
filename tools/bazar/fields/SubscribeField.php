@@ -77,7 +77,7 @@ class SubscribeField extends BazarField
 
     protected function renderStatic($entry)
     {
-        return null;
+        return "";
     }
 
     protected function getSubscribeEmail($entry) {

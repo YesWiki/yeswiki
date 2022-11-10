@@ -44,13 +44,13 @@ class SelectEntryField extends EnumField
     {
         $value = $this->getValue($entry);
         if (!$value) {
-            return null;
+            return "";
         }
 
         if ($this->displayMethod === 'fiche') {
             if ($this->isDistantJson) {
                 // TODO display the entry in an iframe ?
-                return null;
+                return "";
             } else {
                 // TODO add documentation
                 return $this->getService(EntryController::class)->view($value);

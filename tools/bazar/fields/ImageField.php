@@ -178,7 +178,7 @@ class ImageField extends FileField
                ]);
         }
 
-        return null;
+        return "";
     }
 
     protected function isImage($fileName)

@@ -31,7 +31,7 @@ class RadioEntryField extends RadioField
     {
         $value = $this->getValue($entry) ;
         if (!$value) {
-            return null;
+            return "";
         }
 
         if ($this->isDistantJson) {

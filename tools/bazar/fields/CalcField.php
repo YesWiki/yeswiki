@@ -32,7 +32,7 @@ class CalcField extends BazarField
     protected function renderInput($entry)
     {
         // display nothing
-        return null;
+        return "";
     }
 
     protected function renderStatic($entry)
@@ -40,7 +40,7 @@ class CalcField extends BazarField
         $value = $this->getValue($entry);
         if (!in_array($value, [0,"0"], true) && empty($value)) {
             // 0 should be displayed but not false or null or ""
-            return null;
+            return "";
         }
         return $this->render("@bazar/fields/text.twig", [
             'value' => str_replace('{value}', strval($value), $this->displayText)
