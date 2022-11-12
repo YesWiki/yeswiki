@@ -243,6 +243,7 @@ La PageMenuHaut est organisée comme une liste de liens ou de boutons.
   - [[PageTest2 Sous menu 2]]
  - {{button icon="fas fa-leaf" link="PageMargot" text="Margot" }}
 ```
+!> A noter : lorsque que vous souhaitez mettre en place un menu déroulant, un simple mot suffira en premier niveau de liste à puce et non une page wiki. 
 
 ### Visite de la roue crantée 
 
@@ -278,12 +279,17 @@ Les composants
 
 Les composants sont des éléments que l'on peut rajouter dans une page wiki. Ils sont accessible depuis le menu "Composants" dans l'éditeur de page.
 Utiliser les composants ajoutera un code (parfois compliqué) dans votre page. Mais rassurez vous, une interface vous permet de facilement créer et modifier simplement chacune des fonctionnalités de votre composant.
+Si vous souhaitez modifier une action déjà insérée dans une page, en mode édition, cliquez sur le code, un petit crayon apparaîtra dans la marge (sauf pour accordéon et colonnes), en cliquant dessus, l'interface d'aide à la modification du code apparaitra en pop up.
 
 Voici une liste des composants disponibles :
 
 ### Boutons
 
 Le composant bouton permet de créer un bouton avec des icônes, qui enverra sur une page du wiki ou un autre site. Les combinaisons entre les différents paramètres vous permettrons de faire bouton à votre pied.
+Quelques fonctionnalités potentiellement intéressantes :
+ * Masquer le bouton si l'utilisateur n'a pas droit d'accès à cette page
+ * Afficher la page liée juste au survol du bouton
+ * Afficher le bouton uniquement sous forme de lien, à première vue anodine, cette action permet d'utiliser toutes les possibilités d'un bouton sur un simple lien, par exemple, cacher un lien du menu si les visiteurs n'ont pas accès aux contenus qui se trouvent derrière ou afficher automatiquement la définition d'un mot lors de son survol.
 
 ### Mise en forme (mise en page)
 
@@ -293,8 +299,30 @@ Mise en forme propose 6 possibilités :
 * Onglets : créer des onglets dans une page, permet d’obtenir des sous menus horizontaux ou verticaux.
 * Encadré : encadrer un texte ou proposer un encadré qui se ferme quand on clique sur son titre.
 * Section : couteau suisse de mise en forme, permet d’encadrer un paragraphe, de lui adjoindre une couleur ou une image de fond et beaucoup d’autres combinaisons.
+ * Quelques fonctionnalités potentiellement intéressantes :
+  * créer des aplats de couleurs sous du texte
+  * encadrer un paragraphe
+  * afficher un élément sur toute la largeur de l'écran
+  * justifier du texte
+  * Animer votre section (rebonds, déformation...)
+  * Réserver la lecture de cette section à un groupe
+  * Afficher une image sous le texte qui restera fixe lors du scroll
 * Afficher des encadrés en accordéon : déclinaison d’encadré, accordéon permet de chaîner plusieurs encadrés, quand vous ouvrez un encadré, ça ferme les autres.
+ * cette action ne bénéficie pas encore d'aide au codage. Pour ajouter des éléments (panels) à votre accordéon, il suffira d'ajouter des panels (code suivant) avant {{end elem="accordion"}}. Chaque panel pourra être personnalisé en cliquant sur le crayon en marge du code correspondant.
+``` yeswiki
+{{panel title="Titre 2"}}
+Texte du panneau 2 à changer par la suite
+{{end elem="panel"}}
+```
+
 * Afficher en plusieurs colonnes : permet de créer plusieurs colonnes dans une page ou une partie de page, très utile pour des mises en page avancées.
+cette action ne bénificie pas encore d'aide au codage. Pour ajouter ou supprimer des colonnes à votre tableau, il suffira d'ajouter ou supprimer le code suivant) avant {{end elem="grid"}}. 
+``` yeswiki
+{{col size="3"}}
+Texte de la colonne à changer par la suite
+{{end elem="col"}}```
+
+!> important : la somme des size (largeur) de vos colonnes doit être égal à 12, cela veut dire que vous pouvez faire 12 colonnes de size 1 ou 3 colonnes de size 4 et bien sur mixer les possibilités (une de 6 et deux de 3)
 
 ### Syndication / Flux RSS
 
@@ -313,6 +341,7 @@ Dans chaque page (en bas en mode édition) ou fiche d’un formulaire, vous pouv
 Ce composant vous offre trois possibilités :
 
 * Réactions et votes
+ * Si à la place des icones vous souhaitez mettre une image à votre convenance, il suffir de remplacer le code de l'icone par l'adresse web de l'image : images="fab fa-angellist" par images="https://yeswiki.net/files/toto.jpg"
 * Réactions de l'utisateur.ice connecté.e
 * Administration des réactions
 
@@ -338,6 +367,7 @@ Afficher les données d’un formulaire : véritable logiciel dans YesWiki, le g
 * Ressources
 
 Vous pourrez bien sûr afficher les données des formulaires que vous aurez fabriqués. Il vous suffira de choisir le formulaire qui vous intéresse puis de choisir parmi les formes de restitution des résultats : Liste, Blocs, Cartographie, Calendrier, Agenda, Annuaire , Time Line, Carousel, Photobox, Liste de liens, Blog, Tableau.
+[Voir la page dédiée](bazar.md)
 
 ### Afficher un formulaire de création de fiche
 
