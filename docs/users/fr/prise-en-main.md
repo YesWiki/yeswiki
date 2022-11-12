@@ -299,14 +299,14 @@ Mise en forme propose 6 possibilités :
 * Onglets : créer des onglets dans une page, permet d’obtenir des sous menus horizontaux ou verticaux.
 * Encadré : encadrer un texte ou proposer un encadré qui se ferme quand on clique sur son titre.
 * Section : couteau suisse de mise en forme, permet d’encadrer un paragraphe, de lui adjoindre une couleur ou une image de fond et beaucoup d’autres combinaisons.
- * Quelques fonctionnalités potentiellement intéressantes :
-   * créer des aplats de couleurs sous du texte
-   * encadrer un paragraphe
-   * afficher un élément sur toute la largeur de l'écran
-   * justifier du texte
-   * Animer votre section (rebonds, déformation...)
-   * Réserver la lecture de cette section à un groupe
-   * Afficher une image sous le texte qui restera fixe lors du scroll
+  * Quelques fonctionnalités potentiellement intéressantes :
+    * créer des aplats de couleurs sous du texte
+    * encadrer un paragraphe
+    * afficher un élément sur toute la largeur de l'écran
+    * justifier du texte
+    * Animer votre section (rebonds, déformation...)
+    * Réserver la lecture de cette section à un groupe
+    * Afficher une image sous le texte qui restera fixe lors du scroll
 * Afficher des encadrés en accordéon : déclinaison d’encadré, accordéon permet de chaîner plusieurs encadrés, quand vous ouvrez un encadré, ça ferme les autres.
   * cette action ne bénéficie pas encore d'aide au codage. Pour ajouter des éléments (panels) à votre accordéon, il suffira d'ajouter des panels (code suivant) avant {{end elem="accordion"}}. Chaque panel pourra être personnalisé en cliquant sur le crayon en marge du code correspondant.
 ``` yeswiki
