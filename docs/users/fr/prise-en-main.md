@@ -300,15 +300,15 @@ Mise en forme propose 6 possibilités :
 * Encadré : encadrer un texte ou proposer un encadré qui se ferme quand on clique sur son titre.
 * Section : couteau suisse de mise en forme, permet d’encadrer un paragraphe, de lui adjoindre une couleur ou une image de fond et beaucoup d’autres combinaisons.
  * Quelques fonctionnalités potentiellement intéressantes :
-  * créer des aplats de couleurs sous du texte
-  * encadrer un paragraphe
-  * afficher un élément sur toute la largeur de l'écran
-  * justifier du texte
-  * Animer votre section (rebonds, déformation...)
-  * Réserver la lecture de cette section à un groupe
-  * Afficher une image sous le texte qui restera fixe lors du scroll
+   * créer des aplats de couleurs sous du texte
+   * encadrer un paragraphe
+   * afficher un élément sur toute la largeur de l'écran
+   * justifier du texte
+   * Animer votre section (rebonds, déformation...)
+   * Réserver la lecture de cette section à un groupe
+   * Afficher une image sous le texte qui restera fixe lors du scroll
 * Afficher des encadrés en accordéon : déclinaison d’encadré, accordéon permet de chaîner plusieurs encadrés, quand vous ouvrez un encadré, ça ferme les autres.
- * cette action ne bénéficie pas encore d'aide au codage. Pour ajouter des éléments (panels) à votre accordéon, il suffira d'ajouter des panels (code suivant) avant {{end elem="accordion"}}. Chaque panel pourra être personnalisé en cliquant sur le crayon en marge du code correspondant.
+  * cette action ne bénéficie pas encore d'aide au codage. Pour ajouter des éléments (panels) à votre accordéon, il suffira d'ajouter des panels (code suivant) avant {{end elem="accordion"}}. Chaque panel pourra être personnalisé en cliquant sur le crayon en marge du code correspondant.
 ``` yeswiki
 {{panel title="Titre 2"}}
 Texte du panneau 2 à changer par la suite
@@ -316,11 +316,12 @@ Texte du panneau 2 à changer par la suite
 ```
 
 * Afficher en plusieurs colonnes : permet de créer plusieurs colonnes dans une page ou une partie de page, très utile pour des mises en page avancées.
-cette action ne bénificie pas encore d'aide au codage. Pour ajouter ou supprimer des colonnes à votre tableau, il suffira d'ajouter ou supprimer le code suivant) avant {{end elem="grid"}}. 
+  * cette action ne bénificie pas encore d'aide au codage. Pour ajouter ou supprimer des colonnes à votre tableau, il suffira d'ajouter ou supprimer le code suivant) avant {{end elem="grid"}}. 
 ``` yeswiki
 {{col size="3"}}
 Texte de la colonne à changer par la suite
-{{end elem="col"}}```
+{{end elem="col"}}
+```
 
 !> important : la somme des size (largeur) de vos colonnes doit être égal à 12, cela veut dire que vous pouvez faire 12 colonnes de size 1 ou 3 colonnes de size 4 et bien sur mixer les possibilités (une de 6 et deux de 3)
 
@@ -341,7 +342,7 @@ Dans chaque page (en bas en mode édition) ou fiche d’un formulaire, vous pouv
 Ce composant vous offre trois possibilités :
 
 * Réactions et votes
- * Si à la place des icones vous souhaitez mettre une image à votre convenance, il suffir de remplacer le code de l'icone par l'adresse web de l'image : images="fab fa-angellist" par images="https://yeswiki.net/files/toto.jpg"
+  * Si à la place des icones vous souhaitez mettre une image à votre convenance, il suffir de remplacer le code de l'icone par l'adresse web de l'image : images="fab fa-angellist" par images="https://yeswiki.net/files/toto.jpg"
 * Réactions de l'utisateur.ice connecté.e
 * Administration des réactions
 
