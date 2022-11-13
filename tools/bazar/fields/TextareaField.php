@@ -266,13 +266,7 @@ class TextareaField extends BazarField
     private function sanitizeBase64Img(string $text, array $entry): string
     {
         $wiki = $this->getWiki();
-        $regExpSearch = '(<img\s*'; // image
-        $regExpSearch .= 'style="[^"]*"\s*)'; // with style
-        $imageExtensions = '(gif|jpeg|png|jpg|svg|webp)';
-        $imageContent = '([^"]*)';
-        $regExpSearch .= "src=\"data:image\/$imageExtensions;base64,$imageContent\"\\s*"; // src base 64
-        $regExpSearch .= '[^>]*((?<=data-filename=")[^"]*)(?=")'; // containing eventually a filename
-        $regExpSearch .= '[^>]*>'; // end of img tag
+        $regExpSearch = '(<img(?>\s*style="[^"]*")?\s*)src="data:image\/(gif|jpeg|png|jpg|svg|webp);base64,([^"]*)"\s*[^>]*(?>(?<=data-filename=")[^"]*")?[^>]*>';
         if (preg_match_all("/$regExpSearch/", $text, $matches)) {
             if (!class_exists('attach')) {
                 include('tools/attach/libs/attach.lib.php');
@@ -285,7 +279,7 @@ class TextareaField extends BazarField
                 $imageContent = base64_decode($matches[3][$index]);
                 $fileName = $matches[4][$index];
                 if (empty(trim($fileName))) {
-                    $fileName = bin2hex(random_bytes(10)).$imageType;
+                    $fileName = bin2hex(random_bytes(10)) . '.' . $imageType;
                 }
                 if (preg_match('/^(.*)(\.[A-Za-z0-9]+)$/m', $fileName, $matchesForFile)) {
                     $fileNameWithoutExtension = $matchesForFile[1];
@@ -294,7 +288,7 @@ class TextareaField extends BazarField
                 } else {
                     $fileName = $this->sanitizeFileName($fileName);
                 }
-                
+
                 $attach = new \Attach($wiki);
                 $attach->file = $fileName;
 
@@ -312,10 +306,10 @@ class TextareaField extends BazarField
                 if (!empty($newFilePath)) {
                     // save file
                     file_put_contents($newFilePath, $imageContent);
-    
+
                     $newText = $matches[1][$index];
                     $newText .= "src=\"$newFilePath\">";
-    
+
                     $text = str_replace($textToReplace, $newText, $text);
                 }
                 unset($attach);
