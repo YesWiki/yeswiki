@@ -1,6 +1,6 @@
 # Administrer son wiki
 
-> TODO Petite description
+> Dans cette partie, vous trouverez de nombreuses données pour gérer votre site, notamment la gestion des utilisateurs et des droits d'accès, la personnalisation graphique, la gestion du contenu indésirable et les options avancées, la sécurisation du site.
 
 ## Gestion du site : plan de l'administration
 
@@ -15,6 +15,13 @@ Il faut être identifié comme administrateurice pour visionner et modifier les 
 
 [Voir la rubrique dédiée](/docs/users/fr/admin?id=g%c3%a9rer-les-droits)
 
+**Utilisateurs et groupes**
+
+Ici vous visualisez les comptes utilisateurices créés et vous pouvez les organiser en "groupes".
+Il faut être identifié comme administrateurice pour visionner et modifier les informations de cet espace.
+
+[Voir la rubrique dédiée](/docs/users/fr/admin?id=gestion-des-droits-par-utilisateurice-ou-par-groupe)
+
 **Look**
 
 C'est par là que vous personnalisez le squelette et l'esthétique de votre wiki.
@@ -22,12 +29,6 @@ Il faut être identifié comme administrateurice pour visionner et modifier les 
 
 [Voir la rubrique dédiée](/docs/users/fr/admin?id=g%c3%a9rer-le-look)
 
-**Utilisateurs et groupes**
-
-Ici vous visualisez les comptes utilisateurices créés et vous pouvez les organiser en "groupes".
-Il faut être identifié comme administrateurice pour visionner et modifier les informations de cet espace.
-
-[Voir la rubrique dédiée](/docs/users/fr/admin?id=gestion-des-droits-par-utilisateurice-ou-par-groupe)
 
 **Mots clés**
 
