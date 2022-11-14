@@ -1,6 +1,6 @@
 # Présentation de YesWiki
 ## Raison d'être
-YesWiki est un logiciel libre né du croisement des discussions et savoir-faire de développeurses et animateurices de **projets **coopératifs**.
+YesWiki est un logiciel libre né du croisement des discussions et savoir-faire de développeurses et animateurices de **projets coopératifs**.
 
 A l'image d'une page blanche, ses **usages sont quasiment illimités** : ils dépendront de votre créativité !
 
@@ -25,4 +25,13 @@ YesWiki dispose de **nombreux "thèmes"** permettant d'agir sur le graphisme gé
 Yeswiki peut s'installer sur [un serveur web classique ou en local](webmaster.md)
 
 Des "fermes à wikis" offrent aussi la possibilité d'obtenir un wiki de test
+
+## Les différents canaux d'aide ou de ressources concernant YesWiki
+
+   - **Un forum** pour répondre aux questions frequamment posées : https://yeswiki.net/forum/
+   - **Un chat dédié** qui permet d'échanger des informations rapidement en fonction des sujets parfois plus spécifiques **Mattermost** : https://framateam.org/signup_user_complete/?id=iwtotxo7rpgsudhq63wxytaeoo
+   - **Des tutoriels** "Comment faire pour"  https://yeswiki.net/?Tutoriels-videos  
+   - **Une chaine vidéo**  : https://video.coop.tools/video-channels/yeswiki/videos 
+   - **Des formations** : https://yeswiki.net/?SeFormer
+
 
