@@ -189,26 +189,6 @@ Le paramètre `frameborder` permet de **gérer la bordure** noire du cadre (`1` 
 <iframe src="..." frameboder="0"></iframe>
 ```
 
-Les Handlers : accéder à certains fonctionalités via l'URL
--------------
-
-Un handler est une URL spéciale qui permet de modifier la façon d'afficher une page. On l'active en ajoutant à la fin de l'adresse URL, le signe **/** suivi du nom du handler. Exemple avec le handler `raw`: https://yeswiki.net/?AccueiL/raw
-
-> Certains handler permettent juste d'accéder à une fonctionalité à laquelle on peut accéder via des boutons de l'interface. C'est le cas pour `edit`, `revisions` ou `share`. Lorsque vous naviguez dans votre wiki, soyez attentif aux changement d'URL pour connaitre ces raccourcis
-
-* **/edit** : pour passer en mode Édition
-* **/revisions**  : pour voir les versions de l'historique
-* **/filemanager** : pour accéder à la liste des fichiers attachés à cette page
-* **/slide_show**  : pour transformer le texte en diaporama
-* **/diaporama**  : idem slide_show en un peu différent
-* **/mail**  : envoie la page en mailing
-* **/raw** : affiche le code wiki non formaté de la page
-* **/deletepage**  : si vous êtes propriétaire de la page, vous pouvez la supprimer
-* **/claim**  : si la page n'a pas de propriétaire, vous pouvez vous l'approprier
-* **/acls**  : si vous êtes propriétaire de la page, vous pouvez gérer les droits
-* **/share**  : pour afficher des possibilités de partage sur les réseaux sociaux, et pour générer un code embed (iframe) qui permettra d'afficher la page sur un site externe.
-* **&amp;debug** : permet d'afficher en bas de page toutes les actions effectuées au niveau informatique, permet de repérer les bugs, causes de plantage...
-* **/editiframe**  : permet d'ouvrir la page en mode édition mais en cachant les autres pages du squelette (utile quand une image ou un spam sur le bandeau empêche de voir le contenu de la page à modifier ou dans le cas d'un wiki intégré en iframe)
 
 
 
@@ -376,7 +356,7 @@ Ce composant est le pendant de l’action précédente, il permet d’afficher l
 
 ### Actions avancées
 
-De nombreuses autres actions sont disponibles, en voici la liste :
+De nombreuses autres actions sont disponibles dans les composants, rubrique Actions avancées
 
 #### Créer un sommaire de la page
 #### Afficher des liens "Page Suivante" "Sommaire" "Page Précédente" dans une page
@@ -397,3 +377,25 @@ De nombreuses autres actions sont disponibles, en voici la liste :
 #### Lister les pages à créer
 #### Lister les pages orphelines
 #### Lister seulement les fiches bazar
+
+Les Handlers : accéder à certains fonctionalités via l'URL
+-------------
+
+Un handler est une URL spéciale qui permet de modifier la façon d'afficher une page. On l'active en ajoutant à la fin de l'adresse URL, le signe **/** suivi du nom du handler. Exemple avec le handler `raw`: https://yeswiki.net/?AccueiL/raw
+
+> Certains handler permettent juste d'accéder à une fonctionalité à laquelle on peut accéder via des boutons de l'interface. C'est le cas pour `edit`, `revisions` ou `share`. Lorsque vous naviguez dans votre wiki, soyez attentif aux changement d'URL pour connaitre ces raccourcis
+
+* **/edit** : pour passer en mode Édition
+* **/revisions**  : pour voir les versions de l'historique
+* **/filemanager** : pour accéder à la liste des fichiers attachés à cette page
+* **/slide_show**  : pour transformer le texte en diaporama
+* **/diaporama**  : idem slide_show en un peu différent
+* **/mail**  : envoie la page en mailing
+* **/raw** : affiche le code wiki non formaté de la page
+* **/deletepage**  : si vous êtes propriétaire de la page, vous pouvez la supprimer
+* **/claim**  : si la page n'a pas de propriétaire, vous pouvez vous l'approprier
+* **/acls**  : si vous êtes propriétaire de la page, vous pouvez gérer les droits
+* **/share**  : pour afficher des possibilités de partage sur les réseaux sociaux, et pour générer un code embed (iframe) qui permettra d'afficher la page sur un site externe.
+* **&amp;debug** : permet d'afficher en bas de page toutes les actions effectuées au niveau informatique, permet de repérer les bugs, causes de plantage...
+* **/editiframe**  : permet d'ouvrir la page en mode édition mais en cachant les autres pages du squelette (utile quand une image ou un spam sur le bandeau empêche de voir le contenu de la page à modifier ou dans le cas d'un wiki intégré en iframe)
+
