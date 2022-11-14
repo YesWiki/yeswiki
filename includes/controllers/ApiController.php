@@ -220,7 +220,20 @@ class ApiController extends YesWikiController
     {
         $this->denyAccessUnlessAdmin();
 
-        return new ApiResponse($this->getService(UserManager::class)->getAll($userFields));
+        $users = $this->getService(UserManager::class)->getAll($userFields);
+
+        // UserManager::getAll gives array of User but user does not have jsonSerialize
+        // so extract only what is needed from each User
+        $users = array_map(function ($user) use ($userFields) {
+            if (!is_array($user)) {
+                $user = $user->getArrayCopy();
+            }
+            return array_filter($user, function ($k) use ($userFields) {
+                return in_array($k, $userFields);
+            }, ARRAY_FILTER_USE_KEY);
+        }, $users);
+
+        return new ApiResponse($users);
     }
 
     /**
