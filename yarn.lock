@@ -235,7 +235,7 @@ gogocarto-js@^1.7.11:
     tinycolor2 "^1.4.1"
     universal-geocoder "^0.14.2"
 
-jquery-ui-sortable@*:
+jquery-ui-sortable@*, jquery-ui-sortable@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/jquery-ui-sortable/-/jquery-ui-sortable-1.0.0.tgz#0ee062ce02b29b36585ede3a3e0ddde666060f96"
   integrity sha512-7xAUWoEJ/jHoj48ei8CCUtiad2uM3ie3IR2b3KB0Mpmb54IbBxzVb5vtrj0zqtd0GNQDImx+BPZml9QmK2EL3w==
@@ -265,9 +265,9 @@ leaflet.markercluster@^1.5.3:
   resolved "https://registry.yarnpkg.com/leaflet.markercluster/-/leaflet.markercluster-1.5.3.tgz#9cdb52a4eab92671832e1ef9899669e80efc4056"
   integrity sha512-vPTw/Bndq7eQHjLBVlWpnGeLa3t+3zGiuM7fJwCkiMFq+nmRuG3RI3f7f4N4TDX7T4NpbAXpR2+NTRSEGfCSeA==
 
-"leaflet.markercluster@git+https://github.com/seballot/Leaflet.markercluster.git":
+"leaflet.markercluster@https://github.com/seballot/Leaflet.markercluster.git":
   version "1.5.4"
-  resolved "git+https://github.com/seballot/Leaflet.markercluster.git#ed6137194b7a435bfeea4a29748b57428fb5be98"
+  resolved "https://github.com/seballot/Leaflet.markercluster.git#ed6137194b7a435bfeea4a29748b57428fb5be98"
 
 leaflet@^1.7.1, leaflet@^1.8:
   version "1.9.2"
