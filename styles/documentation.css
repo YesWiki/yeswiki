@@ -308,6 +308,7 @@ footer {
     }
     .app-nav > ul.open {
         display: flex;
+        overflow-y: auto;
     }
     .app-nav ul {
         position: absolute;
