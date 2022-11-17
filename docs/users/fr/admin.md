@@ -441,7 +441,7 @@ _Tiens, ce matin, en me baladant sur un de mes YesWiki j'ai découvert que j'ava
 
 ##### Si votre wiki est ouvert en écriture:
 
-1. Identifier la page spammée en ajoutant le handler /editiframe aux pages spéciales (BazaR, GererSite, GererDroits, GererDroitsActions, GererDroitsHandlers, GererMisesAJour, GererThemes, GererConfig, GererUtilisateurs, GererMotsClef, TableauDeBord, LookWiki)
+1. Identifier la page spammée en ajoutant le handler /editiframe aux pages spéciales : "BazaR","GererSite","GererDroits","GererThemes","GererMisesAJour","GererUtilisateurs","GererDroitsActions","GererDroitsHandlers","TableauDeBord"',"PageTitre","PageMenuHaut","PageRapideHaut","PageHeader","PageFooter","PageCSS","PageMenu"',"PageColonneDroite","MotDePassePerdu","ParametresUtilisateur","GererConfig","ActuYeswiki","LookWiki"    
 2. Dès que le code malicieux est repéré, supprimer ce code et sauvegarder la page.
 3. Revenir sur la liste des versions de cette page pour éditer la version avant l'apparition du code malicieux et remettre en place le contenu précédent.
 
