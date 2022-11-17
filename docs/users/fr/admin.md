@@ -447,7 +447,8 @@ _Tiens, ce matin, en me baladant sur un de mes YesWiki j'ai découvert que j'ava
 
 ##### Si votre wiki est fermé en écriture
 
-Il peut être impossible de se connecter au wiki (la roue crantée n'apparaît pas). Ceci peut être contourné en utilisant ce lien sans afficher les pages spéciales : https://www.example.com/?ParametresUtilisateur/iframe
+Il peut être impossible de se connecter au wiki (la roue crantée n'apparaît pas). Ceci peut être contourné en utilisant ce lien sans afficher les pages spéciales avec l'url : https://www.example.com/?PageLogin/iframe
+Toutefois, si la page n'existe pas encore, alors il faut tenter : https://www.example.com/?PageLogin/editiframe pour simuler la création de la page ce qui fera apparaître la page de connexion.
 
 #### Utiliser les paramètres de contrôle d'accès via le wakka config ou la page ["Fichier de conf"](/docs/users/fr/admin?id=droit-d39accès)
 
@@ -496,7 +497,6 @@ Si cela a l'avantage de bloquer/réserver la création de nouveaux comptes aux s
 1.  Ajouter l'action {{erasespamedcomments}} dans la page de votre choix. (Elle n'est accessible qu'aux administrateurices)
 2.  Ensuite, cocher les commentaires indésirables et appuyer sur le bouton "Nettoyer"
 
-
 #### Pour supprimer de nombreuses pages rapidement
 
 Installer l'extension "multideletepages" (Roue crantée > Gestion du site > Mise à jour / extensions).
@@ -505,17 +505,11 @@ Vous aurez alors un tableau avec la liste de toutes les pages : vous pouvez coch
 
 #### Pour les attaques massives sur de nombreuses pages
 
-**cette technique nécessite des informations sur les codes FTP et Mysql**
+Trois options sont possibles :
+* option 1 : nettoyer les pages spéciales puis utiliser l'action {{despam}}
+* option 2 : restaurer la base de donnée à partir d'une sauvegarde. ATTENTION, pour cette option, il faut avoir une sauvegarde et les accès à phpmyadmin
+* option 3 : pour la suppression massive de nouvelles pages : extension multideletepages (cf paragraphe ci-dessus).
 
-~~Pour faire le grand ménage avec le tools despam :~~
-
-~~1.  aller sur la barre d'adresse url de votre navigateur et remplacer wakka.php (et ce qu'il y a derrière) par tools.php (pour avoir une url du type http://monadressedewiki/tools.php )~~
-~~2.  s'identifier à l'aide des **identifiants de la base de données Mysql** plutôt que vos identifiants wiki~~
-~~3.  la liste des extensions apparaît, cliquer sur "Nettoyage Spam"~~
-~~4.  Sélectionner l'intervalle de temps à prendre en compte pour les dernières modifications~~
-~~5.  cocher les choix adéquats, entre supprimer la page ou revenir à la version précédente~~
-~~* **ATTENTION, il faut IMPÉRATIVEMENT vérifier les pages en question pour ne pas supprimer définitivement le contenu!!**~~
-~~6.  cliquer sur "Nettoyer"~~
 
 #### Pour supprimer les utilisateurs non désirables (utilisateurs avancés)
 
