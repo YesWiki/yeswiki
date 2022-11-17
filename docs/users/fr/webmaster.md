@@ -130,6 +130,7 @@ Pour tous les détails sur les droits d'accès : [https://yeswiki.net/?Documenta
 
 #### Lutter contre le spam
 
+[voir la rubrique dédiée](https://testing.yeswiki.net/doc/?doc#/docs/users/fr/admin?id=lutter-contre-le-spams)
 
 ##### Changer le thème par défaut de votre wiki
     

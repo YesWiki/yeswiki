@@ -207,9 +207,6 @@ La plupart de ces composants proposent dans leurs paramètres avancés, des choi
 
 Ces opérations sont aussi réalisables pour les différents champs d'un formulaire (nous verrons ça la semaine prochaine).
 
-### Configurer les accès à certaines parties au sein même des pages
-(à trouver ou écrire)
-
 ### Éditer les droits d'accès aux actions
 (à trouver ou écrire ET à déplacer pour alléger cette section)
 
@@ -385,6 +382,9 @@ Modifier le thème graphique va donc revenir à adapter un squelette en modifian
 #### créer des mises en page plus fines
 à écrire :
 mermaid / Izmir / bootstrap / markdown
+
+Après avoir inséré une image, il est à nouveau possible de la modifier. Plus de paramètres sont alors proposés, notamment l'effet Izmir dans les paramètres avancés.
+
 
 ## Suivre la vie de son wiki
 
