@@ -206,7 +206,7 @@ class LoginAction extends YesWikiAction
 
             // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
             if (((!empty($_POST['userpage']) && $_POST['userpage'] == 'user') || $this->arguments['userpage'] == 'user') && $this->pageManager->getOne($user["name"])) {
-                $this->wiki->Redirect($this->href('', $user["name"]));
+                $this->wiki->Redirect($this->wiki->Href('', $user["name"]));
             } else {
                 $this->wiki->Redirect($this->arguments['loggedinurl']);
             }
