@@ -140,8 +140,8 @@ return [
     'LIST_PAGES_BELONGING_TO' => 'Lista de páginas que pertencem aos',
     'THIS_USER_HAS_NO_PAGE' => 'Este usuário não possui nenhuma página',
 
-    // actions/MyCommentsAction.php
-    'COMMENT_RESERVED_TO_CONNECTED' => 'Por favor, faça login para usar a ação "{mycomments}}"!',
+    // actions/UserCommentsAction.php
+    'COMMENT_RESERVED_TO_CONNECTED' => 'Por favor, faça login para usar a ação "{{usercomments}}"!',
 
     // actions/mychanges.php
     'YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE' => 'Lista de páginas que você editou, ordenadas por data de modificação',

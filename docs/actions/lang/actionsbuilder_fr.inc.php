@@ -280,7 +280,7 @@ return [
             ." par des spams. ATTENTION : la suppression des pages choisies sera DÉFINITITVE.",
     "AB_management_editconfig_label" => "Modifier des paramètres du fichier de configuration",
     "AB_management_commentstable_label" => "Table des commentaires",
-    "AB_management_mycomments_label" => "Mes commentaires",
+    "AB_management_usercomments_label" => "Mes commentaires",
 
     // advanced actions
     "AB_advanced_actions_label" => "Actions avancées",

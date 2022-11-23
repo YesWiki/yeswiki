@@ -146,8 +146,8 @@ return [
     'LIST_PAGES_BELONGING_TO' => 'List of pages belonging to',
     'THIS_USER_HAS_NO_PAGE' => 'This user has no page',
 
-    // actions/MyCommentsAction.php
-    'COMMENT_RESERVED_TO_CONNECTED' => 'Please login to use action "{{mycomments}}"!',
+    // actions/UserCommentsAction.php
+    'COMMENT_RESERVED_TO_CONNECTED' => 'Please login to use action "{{usercomments}}"!',
 
     // actions/mychanges.php
     'YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE' => 'List of your modified pages, ordered by date of modification',
