@@ -31,12 +31,6 @@ Yeswiki repose sur le bénévolat et le don. **[[https://www.helloasso.com/assoc
 {{end elem=\"col\"}}
 {{end elem=\"grid\"}}
 {{bazarliste id=\"https://www.yeswiki.net|7\" template=\"carousel.tpl.html\" champ=\"bf_ordre\" ordre=\"asc\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('ActuYeswiki',  now(), '{{nav links=\"DocuMentation, Aide, CommentFairePour, ExempleFormulaire, ActuYeswiki\" titles=\"Documentation Yeswiki, Aide mémoire, Comment faire pour, Exemples, Actualité\"}}
-
-\"\"<iframe id=\"yeswiki-actus\" width=\"100%\" height=\"1000\" frameborder=\"0\" class=\"auto-resize\" src=\"https://yeswiki.net/?ActualiteS/iframe\" title=\"Actualités YesWiki\" style=\"padding:5px;\"></iframe>\"\"', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('AidE',  now(), '{{nav links=\"DocuMentation, Aide, CommentFairePour, ExempleFormulaire, ActuYeswiki\" titles=\"Documentation Yeswiki, Aide mémoire, Comment faire pour, Exemples, Actualité\"}}
-
-{{include page=\"ReglesDeFormatage\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('AnnuaireAlpha',  now(), '{{nav links=\"TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire\" titles=\"Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S\'inscrire dans l\'annuaire\"}}
 
 {{bazarliste id=\"1\" template=\"annuaire_alphabetique\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
@@ -79,9 +73,6 @@ Une aide simple est aisément accessible en cliquant sur \"aide mémoire ?\" lor
 ('CartoAnnuaire',  now(), '{{nav links=\"TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire\" titles=\"Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S\'inscrire dans l\'annuaire\"}}
 
 {{bazarliste id=\"1\" template=\"map\" markersize=\"small\" height=\"800px\" zoom=\"6\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('CommentFairePour',  now(), '{{nav links=\"DocuMentation, Aide, CommentFairePour, ExempleFormulaire, ActuYeswiki\" titles=\"Documentation Yeswiki, Aide mémoire, Comment faire pour, Exemples, Actualité\"}}
-
-\"\"<iframe class=\"auto-resize\" width=\"100%\" scroll=\"no\" frameborder=\"0\" src=\"https://yeswiki.net/?CommentFairePour/iframe\"></iframe>\"\"', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('CoursUtilisationYesWiki',  now(), '======Cours sur l\'utilisation de YesWiki======
 ====Le principe \"Wiki\"====
 Wiki Wiki signifie rapide, en Hawaïen.
@@ -274,34 +265,18 @@ Le propriétaire peut compléter ces colonnes par les informations suivantes, s�
 
 
 =====Changer le look et la disposition=====
-En mode édition, si on est propriétaire de la page, ou que les droits sont ouverts, on peut changer la structure et la présentation du site, en jouant avec les listes déroulantes en bas de page : Thème, Squelette, Style.
-', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+En mode édition, si on est propriétaire de la page, ou que les droits sont ouverts, on peut changer la structure et la présentation du site, en jouant avec les listes déroulantes en bas de page : Thème, Squelette, Style.', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('DerniersChangementsRSS',  now(), '{{recentchangesrss}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('DocuMentation',  now(), '{{nav links=\"DocuMentation, Aide, CommentFairePour, ExempleFormulaire, ActuYeswiki\" titles=\"Documentation Yeswiki, Aide mémoire, Comment faire pour, Exemples, Actualité\"}}
-
-\"\"<iframe id=\"yeswiki-doc\" width=\"100%\" height=\"1000\" frameborder=\"0\" class=\"auto-resize\" src=\"https://yeswiki.net/?DocumentatioN/iframe\"></iframe>\"\"', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('ExempleAgenda',  now(), '{{nav links=\"VueActivite, VueAgenda, SaisirAgenda\" titles=\"Voir les prochaines activités, Voir l\'agenda, Proposer une activité\"}}
 
 {{bazar voirmenu=\"0\" vue=\"saisir\" id=\"2\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('ExempleAnnuaire',  now(), '======Type annuaire======
 Voici quelques possibilités autour des annuaires (à copier-coller - adapter)
 {{nav links=\"SaisirAnnuaire, AnnuaireAlpha, CartoAnnuaire, TrombiAnnuaire\" titles=\"S\'inscrire dans l\'annuaire, Annuaire alphabétique, Annuaire cartographique, Trombinoscope\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('ExempleFormulaire',  now(), '{{nav links=\"DocuMentation, Aide, CommentFairePour, ExempleFormulaire, ActuYeswiki\" titles=\"Documentation Yeswiki, Aide mémoire, Comment faire pour, Exemples, Actualité\"}}
-=====Exemples de formulaires à adapter (ou à jeter)=====
-Les formulaires qui vous sont proposés dans ce menu sont souvent demandés par les collectifs.
-Ils sont fournis pour inspiration et __sont bien sûr adaptables (ou supprimables)__ via la page BazaR.
-Vous pouvez aussi renommer-réorganiser-enlever les pages de ce menu selon vos besoins. 
-
-Vous trouverez un formulaire permettant 
- - de gérer un [[TrombiAnnuaire annuaire]] (des membres du collectif par exemple)
- - un [[VueActivite agenda]] pour présenter les activités __à venir__ ou une vue globale en calendrier
- - une [[FacetteRessource ressourcerie]] pour collecter, flitrer et partager des ressources
- - un [[VoirBlog blog]] permettant d\'afficher l\'actualité du collectif', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('ExempleRessource',  now(), '{{nav links=\"FacetteRessource, SaisirRessource\" titles=\"Les ressources, Déposer une ressource\"}}
 
 {{bazar voirmenu=\"0\" vue=\"saisir\" id=\"4\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('ExemPles',  now(), ' - Exemples
-  - [[ExempleFormulaire Explications]]
   - [[TrombiAnnuaire Type annuaire]]
   - [[VueActivite Type agenda]]
   - [[FacetteRessource Type ressourcerie]]
@@ -481,7 +456,7 @@ Contenu panel-danger
 {{userreactions}}
 {{end elem=\"panel\"}}
 {{panel title=\"Mes commentaires\"}}
-{{mycomments}}
+{{usercomments}}
 {{end elem=\"panel\"}}
 {{end elem=\"accordion\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('MotDePassePerdu',  now(), '{{lostpassword}}
@@ -630,7 +605,7 @@ Vous êtes dans la page qui se nomme PageMenuHaut qui sert à modifier le menu d
 {{buttondropdown icon=\"cog\" caret=\"0\"}}
  - {{login template=\"modal.tpl.html\" nobtn=\"1\"}}
  - ------
- - {{button nobtn=\"1\" icon=\"fa fa-question\" text=\"Aide, démo, actu\" link=\"DocuMentation\"}}
+ - {{button nobtn=\"1\" icon=\"fa fa-question\" text=\"Documentation\" link=\"doc\"}}
  - {{button nobtn=\"1\" icon=\"fas fa-yin-yang\" text=\"Présentation YesWiki\" link=\"AccueilYeswiki\"}}
  - ------
  - {{button nobtn=\"1\" icon=\"fa fa-wrench\" text=\"Gestion du site\" link=\"GererSite\"}}
@@ -720,7 +695,7 @@ Texte colonne 3
 &#x5B;80%] donne [80%]
 
 ===Vous trouverez beaucoup d\'autres astuces dans===
-**Comment faire pour**... Dans Roue crantée / Aide, démo, actu
+**la documentation**... Dans Roue crantée / Documentation
 {{end elem=\"col\"}}
 {{end elem=\"grid\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('SaisirAgenda',  now(), '{{nav links=\"VueActivite, VueAgenda, SaisirAgenda\" titles=\"Voir les prochaines activités, Voir l\'agenda, Proposer une activité\"}}
