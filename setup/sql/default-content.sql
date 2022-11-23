@@ -584,8 +584,7 @@ Double cliquer sur ce texte pour éditer cette colonne.
 
 
 \"\"\"\"', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageMenuExemple',  now(), '  - [[ExempleFormulaire Exemples de formulaires]]
-  - [[TrombiAnnuaire Type annuaire]]
+('PageMenuExemple',  now(), '  - [[TrombiAnnuaire Type annuaire]]
   - [[VueActivite Type agenda]]
   - [[FacetteRessource Type ressourcerie]]
   - [[VoirBlog Type blog]]', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
