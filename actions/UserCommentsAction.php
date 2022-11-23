@@ -5,7 +5,7 @@ use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\CommentService;
 use YesWiki\Core\Service\UserManager;
 
-class MyCommentsAction extends YesWikiAction
+class UserCommentsAction extends YesWikiAction
 {
     protected $aclService;
     protected $commentsService;

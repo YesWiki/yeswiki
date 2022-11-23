@@ -162,8 +162,8 @@ return [
     'LIST_PAGES_BELONGING_TO' => 'Lijst met pagina’s die eigendom zijn van',
     'THIS_USER_HAS_NO_PAGE' => 'Deze gebruiker bezit geen enkele pagina',
 
-    // actions/MyCommentsAction.php
-    'COMMENT_RESERVED_TO_CONNECTED' => 'Log in om de actie "{{mycomments}}" te gebruiken!',
+    // actions/UserCommentsAction.php
+    'COMMENT_RESERVED_TO_CONNECTED' => 'Log in om de actie "{{usercomments}}" te gebruiken!',
 
     // actions/mychanges.php
     'YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE' => 'Lijst met pagina\'s die u hebt gewijzigd, volgens datum van wijziging',

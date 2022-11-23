@@ -163,8 +163,8 @@ return [
     'LIST_PAGES_BELONGING_TO' => 'Llista de pàgines que pertanyen a',
     'THIS_USER_HAS_NO_PAGE' => 'Aquest usuari no posseeix cap pàgina',
 
-    // actions/MyCommentsAction.php
-    'COMMENT_RESERVED_TO_CONNECTED' => 'Si us plau, inicieu sessió per utilitzar l\'acció "{{mycomments}}!',
+    // actions/UserCommentsAction.php
+    'COMMENT_RESERVED_TO_CONNECTED' => 'Si us plau, inicieu sessió per utilitzar l\'acció "{{usercomments}}!',
 
     // actions/mychanges.php
     'YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE' => 'Llista de pàgines que heu modificat, per data',
