@@ -121,6 +121,9 @@ class ComposerScriptsHelper
                                                     'buxfix_revision' => $params['buxfix_revision']
                                                 ])
                                             );
+                                            if (file_exists('tools/attach/libs/pdf-viewer.php')) {
+                                                copy('tools/attach/libs/pdf-viewer.php', 'javascripts/vendor/pdfjs-dist/web/pdf-viewer.php');
+                                            }
                                             echo "Pdfjs-dist updated ! \n";
                                             // Clean not needded files
                                             array_map('unlink', glob('javascripts/vendor/pdfjs-dist/web/*.pdf'));
