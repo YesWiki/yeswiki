@@ -148,7 +148,7 @@ class Init
         // set header for Content-Security-Policy
         $allowedMethods = $this->config['allowed_methods_in_iframe'] ?? 'all';
 
-        if ($allowedMethods === 'all' || (
+        if ($this->page === 'doc' || $allowedMethods === 'all' || (
             is_array($allowedMethods) && in_array($this->method, $allowedMethods, true)
         )) {
             // allow local ('self') and everyone (*)
