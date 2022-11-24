@@ -417,6 +417,8 @@ class EntryController extends YesWikiController
                 $id = $field->getPropertyName();
                 if (!empty($id) && !in_array($id, $this->fieldsToExclude())) {
                     $html[$id] = $field->renderStaticIfPermitted($entry, $userNameForRendering);
+                    // reset $matches before preg_match
+                    $matches = [];
                     if ($id == 'bf_titre') {
                         preg_match('/<h1 class="BAZ_fiche_titre">\s*(.*)\s*<\/h1>.*$/is', $html[$id], $matches);
                     } elseif (!empty($html[$id])) {
