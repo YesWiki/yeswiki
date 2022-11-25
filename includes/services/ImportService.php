@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Service;
 
 use Exception;
+use YesWiki\Core\Exception\CurlTimeoutException;
 
 // use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 // use YesWiki\Wiki;
@@ -17,7 +18,7 @@ class ImportService
         // $this->wiki = $wiki;
         // $this->params = $params;
     }
-    
+
     /**
      * extract baseUrl and rootPage for external url
      * TODO check if this function should be in UrlService after refactor
@@ -89,7 +90,11 @@ class ImportService
      */
     private function retrieveUrlAfterRedirect(string $inputUrl): string
     {
-        $headers = $this->getHeaders($inputUrl);
+        try {
+            $headers = $this->getHeaders($inputUrl);
+        } catch (CurlTimeoutException $th) {
+            return $intputUrl;
+        }
         $outputUrl = $inputUrl;
         $location = !empty($headers['Location'])
             ? $headers['Location']
@@ -112,6 +117,7 @@ class ImportService
      * @param string $url
      * @return string
      * @throws Exception
+     * @throws CurlTimeoutException
      */
     private function getHeaders($url): array
     {
@@ -125,7 +131,7 @@ class ImportService
         curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3); // connect timeout in seconds
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30); // total timeout in seconds
+        curl_setopt($ch, CURLOPT_TIMEOUT, 6); // total timeout in seconds
         curl_exec($ch);
         $error = curl_errno($ch);
         curl_close($ch);
@@ -138,7 +144,11 @@ class ImportService
         unlink($destPathHeaders);
         if ($error) {
             $errorStr = curl_strerror($error);
-            throw new Exception("Error getting content from $url ($errorStr)");
+            if (in_array($error, [12,28])) {
+                throw new CurlTimeoutException("Error getting content from $url ($errorStr)");
+            } else {
+                throw new Exception("Error getting content from $url ($errorStr)");
+            }
         }
         $intermediate = empty($content) ? [] : array_filter(array_map('trim', explode("\n", $content)));
         $output = [];
