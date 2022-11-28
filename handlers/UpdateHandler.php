@@ -418,7 +418,7 @@ class UpdateHandler extends YesWikiHandler
             if ($th->getCode() ===1) {
                 $output .= "{$th->getMessage()} <br/>";
             } else {
-                $output .= "❌ Not checkcked because of error during tests : {$th->getMessage()}! <br/>";
+                $output .= "❌ Not checked because of error during tests : {$th->getMessage()} (file : '{$th->getFile()}' - line : ('{$th->getLine()}')! <br/>";
             }
         }
 
@@ -437,9 +437,25 @@ class UpdateHandler extends YesWikiHandler
     private function checkThenUpdateColumnAutoincrement($dbService, string $tableName, string $columnName, string $SQL_columnDef): string
     {
         $output = "";
-        $data = $this->getColumnInfo($dbService, $tableName, $columnName);
+        try {
+            $data = $this->getColumnInfo($dbService, $tableName, $columnName);
+        } catch (Exception $ex) {
+            if ($ex->getCode() != 1) {
+                throw $ex;
+            }
+            $data = [];
+        }
         if (empty($data['Extra']) || (is_string($data['Extra']) && strstr($data['Extra'], 'auto_increment') === false)) {
             $output .= "<br/>  Updating `$columnName` in `$tableName`... ";
+            if (empty($data)) {
+                $dataIndex = $this->getColumnInfo($dbService, $tableName, 'index');
+                if (!empty(array_filter($dataIndex, function ($keyData) {
+                    return !empty($keyData['Key_name']) && $keyData['Key_name'] == 'PRIMARY';
+                }))) {
+                    $dbService->query("ALTER TABLE {$dbService->prefixTable($tableName)} DROP PRIMARY KEY;");
+                }
+                $dbService->query("ALTER TABLE {$dbService->prefixTable($tableName)} ADD COLUMN `$columnName` $SQL_columnDef FIRST, ADD PRIMARY KEY(`$columnName`);");
+            }
             $dbService->query("ALTER TABLE {$dbService->prefixTable($tableName)} MODIFY COLUMN `$columnName` $SQL_columnDef;");
             $data = $this->getColumnInfo($dbService, $tableName, $columnName);
             if (empty($data['Extra']) || (is_string($data['Extra']) && strstr($data['Extra'], 'auto_increment') === false)) {
@@ -475,7 +491,9 @@ class UpdateHandler extends YesWikiHandler
             );
             if (!empty($newKeysFormatted)) {
                 $data = $this->getColumnInfo($dbService, $tableName, 'index');
-                if (!empty($data)) {
+                if (!empty(array_filter($data, function ($keyData) {
+                    return !empty($keyData['Key_name']) && $keyData['Key_name'] == 'PRIMARY';
+                }))) {
                     $dbService->query("ALTER TABLE {$dbService->prefixTable($tableName)} DROP PRIMARY KEY;");
                 }
                 $dbService->query("ALTER TABLE {$dbService->prefixTable($tableName)} ADD PRIMARY KEY($newKeysFormatted);");
