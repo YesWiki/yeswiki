@@ -8,7 +8,7 @@
 * [Administration](/docs/users/fr/admin.md)
 * [Développeurses](/docs/users/fr/dev.md)
 * [Extensions](/ ':id=extensions-links')
-* Autres espaces
+* [Autres espaces](#)
   * [Forum d'entraide](https://yeswiki.net/forum/)
   * [Tchat d'équipe avec la communauté](https://framateam.org/signup_user_complete/?id=iwtotxo7rpgsudhq63wxytaeoo)
   * [Tutoriels "Comment faire pour"](https://yeswiki.net/?Tutoriels-videos)
