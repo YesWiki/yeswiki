@@ -8,6 +8,7 @@ window.$docsify = {
   loadSidebar: true,
   loadNavbar: true,
   subMaxLevel: 3,
+  topMargin: 70,
   relativePath: true,
   auto2top: true,
   alias: {
