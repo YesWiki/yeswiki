@@ -77,7 +77,7 @@
         "platform-check": true,
         "sort-packages": true
     },
-    "autoload-dev": {
+    "autoload": {
         "classmap": ["includes/ComposerScriptsHelper.php"]
     }
 }
