@@ -9,6 +9,7 @@ use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Wiki;
 
 // this trait should be into includes/traits/LimitationsTrait folder
 // with namespace namespace YesWiki\Core\Trait; but it is not working for old php version previous php 8
@@ -53,12 +54,14 @@ class AuthController extends YesWikiController
         ParameterBagInterface $params,
         PasswordHasherFactory $passwordHasherFactory,
         SecurityController $securityController,
-        UserManager $userManager
+        UserManager $userManager,
+        Wiki $wiki
     ) {
         $this->params = $params;
         $this->passwordHasherFactory = $passwordHasherFactory;
         $this->userManager = $userManager;
         $this->securityController = $securityController;
+        $this->wiki = $wiki;
         $this->initLimitations();
     }
 
@@ -118,7 +121,7 @@ class AuthController extends YesWikiController
      * @return bool
      * @throws BadFormatPasswordException
      */
-    public function checkPasswordValidateRequirements(string $password):bool
+    public function checkPasswordValidateRequirements(string $password): bool
     {
         if (strlen($password) < $this->limitations['passwordMinimumLength']) {
             throw new BadFormatPasswordException(_t('USER_PASSWORD_TOO_SHORT').'. '._t('USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS').' ' .$this->limitations['passwordMinimumLength'].'.');
@@ -187,7 +190,7 @@ class AuthController extends YesWikiController
         } else {
             $remember = filter_var($remember, FILTER_VALIDATE_BOOL) ? 1 : 0;
         }
-        
+
         $_SESSION['user'] =
             empty($user['name'])
             ? []
