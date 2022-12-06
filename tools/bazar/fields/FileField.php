@@ -57,7 +57,7 @@ class FileField extends BazarField
             : [
                 'value' => $value,
                 'shortFileName' => $this->getShortFileName($value),
-                'fileUrl' => $this->getBasePath().  $value,
+                'fileUrl' => $this->getAttach()->getFileUrl($value),
                 'deleteUrl' => empty($entry) ? '' : $this->getWiki()->href('edit', $entry['id_fiche'], ['delete_file' => $value], false),
                 'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value)
             ]
@@ -110,7 +110,7 @@ class FileField extends BazarField
             return $this->render('@bazar/fields/file.twig', [
                 'value' => $value,
                 'fileUrl' => ($shortFileName == $value)
-                    ? $this->getWiki()->getBaseUrl().'/'.$basePath . $value
+                    ? $this->getAttah()->getFileUrl($value)
                     : $this->getWiki()->Href('download', $entry['id_fiche']."_".$this->getPropertyName(), ['file'=>$value], false),
                 'shortFileName' => $shortFileName,
             ]);

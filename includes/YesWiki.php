@@ -407,7 +407,7 @@ class Wiki
         $dataPath = $this->getDataPath();
         if (in_array($folder, $dataFolders) && !empty($dataPath)) {
             // we add an imaginary folder in order to retrieve yeswiki assets from yeswiki's source folder. web servers need to be configured to redirect yeswiki-assets to the main yeswiki folder
-            $folder = "$dataPath/$folder" ;
+            $folder = empty($folder) ? $dataPath : "$dataPath/$folder" ;
         }
         return $folder;
     }

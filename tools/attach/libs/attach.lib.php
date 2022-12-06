@@ -239,6 +239,24 @@ if (!class_exists('attach')) {
             }
             return $full_file_name;
         }
+
+        public function getFileUrl(string $fullFileName): string
+        {
+            $uploadPath = $this->GetUploadPath();
+            $cachePath = $this->GetCachePath();
+            if (substr($fullFileName, 0, strlen($uploadPath)) == $uploadPath) {
+                return $this->wiki->getBaseUrl().'/'.
+                    $this->attachConfig['upload_path'].
+                    substr($fullFileName, strlen($uploadPath));
+            } elseif (substr($fullFileName, 0, strlen($cachePath)) == $cachePath) {
+                return $this->wiki->getBaseUrl().'/'.
+                    $this->attachConfig['cache_path'].
+                    substr($fullFileName, strlen($cachePath));
+            } else {
+                return $this->wiki->getBaseUrl().'/'.$fullFileName;
+            }
+        }
+
         /**
          * Test si le fichier est une image
          */
@@ -517,7 +535,7 @@ if (!class_exists('attach')) {
                 $link = '<a href="'.$this->wiki->generateLink($this->link).'"'.$classDataForLinks.'>';
             } else {
                 if (empty($this->nofullimagelink) or !$this->nofullimagelink) {
-                    $link = '<a href="' . $this->GetScriptPath() . $fullFilename . '"'.$classDataForLinks.'>';
+                    $link = '<a href="' . $this->getFileUrl($fullFilename) . '"'.$classDataForLinks.'>';
                 }
             }
             $caption = '';

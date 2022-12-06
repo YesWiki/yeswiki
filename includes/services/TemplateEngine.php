@@ -172,7 +172,6 @@ class TemplateEngine
             if (!class_exists('attach')) {
                 include('tools/attach/libs/attach.lib.php');
             }
-            $basePath = $this->wiki->getBaseUrl().'/';
             $attach = new attach($this->wiki);
             $image_dest = $attach->getResizedFilename($options['fileName'], $options['width'], $options['height'], $options['mode']);
             $safeRefresh = !$this->wiki->services->get(SecurityController::class)->isWikiHibernated()
@@ -183,12 +182,10 @@ class TemplateEngine
                 $result = $attach->redimensionner_image($options['fileName'], $image_dest, $options['width'], $options['height'], $options['mode']);
                 if ($result != $image_dest) {
                     // do nothing : error
-                    return $basePath.$options['fileName'];
+                    return $attach->getFileUrl($options['fileName']);
                 }
-                return $basePath.$image_dest;
-            } else {
-                return $basePath.$image_dest;
             }
+            return $attach->getFileUrl($image_dest);
         });
         $this->addTwigHelper('hasAcl', function ($acl, $tag = "", $adminCheck = true) {
             return $this->wiki->services->get(AclService::class)->check($acl, null, $adminCheck, $tag);
