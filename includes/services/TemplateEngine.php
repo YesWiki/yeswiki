@@ -31,22 +31,38 @@ class TemplateEngine
         // there, but it's needed to call relative path like render('tools/bazar/templates/...')
         $this->twigLoader = new \Twig\Loader\FilesystemLoader('./');
 
+        $customLocalPath = empty($this->wiki->getDataPath()) ? false : $this->wiki->getLocalPath('custom');
+
+        if ($customLocalPath) {
+            // Local Custom Extension, so we can create action and handlers inside custom folder
+            if (file_exists("$customLocalPath/templates/")) {
+                $this->twigLoader->addPath("$customLocalPath/templates/", 'custom');
+            }
+        }
+
         // Custom Extension, so we can create action and handlers inside custom folder
         if (file_exists('custom/templates/')) {
             $this->twigLoader->addPath('custom/templates/', 'custom');
         }
         // Extensions templates paths (added by priority order)
         foreach ($this->wiki->extensions as $extensionName => $pluginInfo) {
+            $paths = $customLocalPath ? [
+                "$customLocalPath/templates/$extensionName/",
+                "$customLocalPath/themes/tools/$extensionName/templates/"
+             ] : [];
             // Ability to override an extension template from the custom folder
-            $paths = ["custom/templates/$extensionName/"];
+            $paths[] = "custom/templates/$extensionName/";
             // Ability to override an extension template from the legacy directories, should not be used anymore for new templates.
             $paths[] = "custom/themes/tools/$extensionName/templates/";
-            foreach ([
-                         'custom/templates',
-                         'templates',
-                         'themes/tools',
-                         "themes/{$config->get('favorite_theme')}/tools"
-                     ] as $dir) {
+            foreach (array_merge(
+                $customLocalPath ? ["$customLocalPath/templates"] : [],
+                [
+                     'custom/templates',
+                     'templates',
+                     'themes/tools',
+                     "themes/{$config->get('favorite_theme')}/tools"
+                ]
+            ) as $dir) {
                 $paths[] = $dir . '/' . $extensionName . '/templates/';
                 $paths[] = $dir . '/' . $extensionName . '/';
             }
@@ -69,6 +85,9 @@ class TemplateEngine
 
         // Core templates
         $corePaths = [];
+        if ($customLocalPath) {
+            $corePaths[] = "$customLocalPath/templates/core/";
+        }
         $corePaths[] = 'custom/templates/core/';
         // Ability to override an extension template from another extensioncore
         foreach ($this->wiki->extensions as $otherExtensionName => $pluginInfo) {
