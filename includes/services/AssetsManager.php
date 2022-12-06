@@ -35,13 +35,15 @@ class AssetsManager
         'javascripts/vendor/vue/vue.js' => 'javascripts/vendor/vue/vue.min.js',
     ];
 
+    protected $dataPath;
     protected $wiki;
 
     public function __construct(Wiki $wiki)
     {
         $this->wiki = $wiki;
+        $this->dataPath = $this->wiki->getDataPath();
     }
-    
+
     public function AddCSS($style)
     {
         if (!isset($GLOBALS['css'])) {
@@ -72,10 +74,11 @@ class AssetsManager
     public function LinkCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = "")
     {
         $file = $this->mapFilePath($file);
-        $isUrl = strpos($file, "http://") === 0 || strpos($file, "https://") === 0;
-        
-        if ($isUrl || !empty($file) && file_exists($file)) {
-            $href = $isUrl ? $file : "{$this->wiki->getBaseUrl(true)}/{$file}";
+        $isUrl = $this->isUrl($file);
+        $isLocal = !$isUrl && $this->isLocalFile($file);
+
+        if ($isUrl || $isLocal || (!empty($file) && file_exists($file))) {
+            $href = $isUrl ? $file : "{$this->wiki->getBaseUrl(!$isLocal)}/{$file}";
             $revision = $this->wiki->GetConfigValue('yeswiki_release', null);
             return <<<HTML
                 $conditionstart
@@ -107,12 +110,14 @@ class AssetsManager
         $revision = $this->wiki->GetConfigValue('yeswiki_release', null);
         $initChar =  (strpos($file, '?') !== false) ? '&' : '?';
         $rev = ($revision) ? $initChar.'v='.$revision : '';
-        
-        $file = $this->mapFilePath($file);
 
-        if (!empty($file) && file_exists($file)) {
+        $file = $this->mapFilePath($file);
+        $isUrl = $this->isUrl($file);
+        $isLocal = !$isUrl && $this->isLocalFile($file);
+
+        if (!$isUrl && ($isLocal || (!empty($file) && file_exists($file)))) {
             // include local files
-            $code = "<script src='{$this->wiki->getBaseUrl(true)}/$file$rev'";
+            $code = "<script src='{$this->wiki->getBaseUrl(!$isLocal)}/$file$rev'";
             if (!str_contains($GLOBALS['js'], $code) || $first) {
                 if (!$first) {
                     $code .= " defer";
@@ -127,7 +132,7 @@ class AssetsManager
                     $GLOBALS['js'] .= $code;
                 }
             }
-        } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {
+        } elseif ($isUrl) {
             // include external files
             $code = "<script defer src='$file.$rev'></script>";
             if (!str_contains($GLOBALS['js'], $code)) {
@@ -135,6 +140,11 @@ class AssetsManager
             }
         }
         return;
+    }
+
+    protected function isUrl($file): bool
+    {
+        return !empty($file) && (strpos($file, "http://") === 0 || strpos($file, "https://") === 0);
     }
 
     private function mapFilePath($file)
@@ -150,7 +160,17 @@ class AssetsManager
                 $file = self::PRODUCTION_PATH_MAPPING[$file];
             }
         }
-        
+
         return $file;
+    }
+
+    private function isLocalFile($file): bool
+    {
+        if (!empty($file) &&
+            !empty($this->dataPath) &&
+            file_exists("{$this->dataPath}$file")) {
+            return true;
+        }
+        return false;
     }
 }
