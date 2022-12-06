@@ -49,6 +49,7 @@ class ExternalBazarService
 
     private const UPDATING_SUFFIX = '_updating';
 
+    protected $cachePath;
     protected $debug;
     protected $timeCacheToCheckChanges ;
     protected $timeCacheToRefreshForms ;
