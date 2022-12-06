@@ -83,7 +83,7 @@ class TemplateEngine
 
         // Set up twig
         $this->twig = new \Twig\Environment($this->twigLoader, [
-            'cache' => $this->wiki->getDataPath().'cache/templates/',
+            'cache' => "{$this->wiki->getLocalPath('cache')}/templates/",
             'auto_reload' => true
         ]);
 
