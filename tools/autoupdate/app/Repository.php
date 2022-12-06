@@ -9,10 +9,13 @@ class Repository extends PackageCollection
     private $address;
     private $fileHandler;
 
-    public function __construct($address)
+    protected $dataPath;
+
+    public function __construct($address, string $dataPath = '')
     {
+        $this->dataPath = $dataPath;
         $this->address = $address . '/';
-        $this->fileHandler = new \AutoUpdate\Files();
+        $this->fileHandler = new \AutoUpdate\Files($dataPath);
     }
 
     public function load()
@@ -43,7 +46,8 @@ class Repository extends PackageCollection
                 $packageInfos['file'],
                 $packageInfos['description'],
                 $packageInfos['documentation'],
-                $packageInfos['minimal_php_version'] ?? null
+                $packageInfos['minimal_php_version'] ?? null,
+                $this->dataPath
             );
         }
 

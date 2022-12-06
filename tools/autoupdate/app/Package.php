@@ -34,8 +34,9 @@ abstract class Package extends Files
 
     protected $localPath;
 
-    public function __construct($release, $address, $desc, $doc, $minimalPhpVersion = null)
+    public function __construct($release, $address, $desc, $doc, $minimalPhpVersion = null, string $dataPath = '')
     {
+        parent::__construct($dataPath);
         $this->release = $release;
         $this->address = $address;
         $this->description = $desc;

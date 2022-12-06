@@ -37,9 +37,9 @@ class PackageCore extends Package
         'files/PageHeader_bandeau_20200101000000_29991231000000.png',
     ];
 
-    public function __construct($release, $address, $desc, $doc, $minimalPhpVersion = null)
+    public function __construct($release, $address, $desc, $doc, $minimalPhpVersion = null, string $dataPath = '')
     {
-        parent::__construct($release, $address, $desc, $doc, $minimalPhpVersion);
+        parent::__construct($release, $address, $desc, $doc, $minimalPhpVersion, $dataPath);
         $this->installed = true;
         $this->localPath = realpath(dirname($_SERVER["SCRIPT_FILENAME"]));
         $this->name = $this::CORE_NAME;

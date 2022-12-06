@@ -144,11 +144,7 @@ if (!class_exists('attach')) {
                     $this->mkdir_recursif($path);
                 }
             }
-            if (!empty($this->wiki->config['dataPath'])) {
-                return  $this->wiki->config['dataPath'].'/'.$path;
-            } else {
-                return $path;
-            }
+            return "{$this->wiki->getDataPath()}$path";
         }
         /**
          * Calcul le repertoire de cache en fonction du safe_mode
@@ -163,11 +159,7 @@ if (!class_exists('attach')) {
                     $this->mkdir_recursif($path);
                 }
             }
-            if (!empty($this->wiki->config['dataPath'])) {
-                return  $this->wiki->config['dataPath'].'/'.$path;
-            } else {
-                return $path;
-            }
+            return "{$this->wiki->getDataPath()}$path";
         }
         /**
          * Calcule le nom complet du fichier attach&eacute; en fonction du safe_mode, du nom et de la date de

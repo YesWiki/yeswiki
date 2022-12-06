@@ -66,7 +66,7 @@ class TemplateEngine
                 }
             }
         }
-        
+
         // Core templates
         $corePaths = [];
         $corePaths[] = 'custom/templates/core/';
@@ -81,11 +81,9 @@ class TemplateEngine
             }
         }
 
-        $dataPath = (!empty($this->wiki->config['dataPath'])) ? $this->wiki->config['dataPath'].'/' : '';
-
         // Set up twig
         $this->twig = new \Twig\Environment($this->twigLoader, [
-            'cache' => $dataPath.'cache/templates/',
+            'cache' => $this->wiki->getDataPath().'cache/templates/',
             'auto_reload' => true
         ]);
 
@@ -151,7 +149,7 @@ class TemplateEngine
                 throw new Exception("`urlImage` should be called with `height` key in params!");
             }
             $options = array_merge(['mode' => 'fit','refresh'=>false], $options);
-            
+
             if (!class_exists('attach')) {
                 include('tools/attach/libs/attach.lib.php');
             }

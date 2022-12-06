@@ -4,11 +4,16 @@ namespace AutoUpdate;
 
 class Files
 {
+    protected $cachePath;
+
+    public function __construct(string $dataPath = '')
+    {
+        $this->cachePath = "{$dataPath}cache";
+    }
+
     protected function tmpdir()
     {
-        $cachePath = (!empty($this->wiki->config['dataPath'])) ? $this->wiki->config['dataPath'].'/cache' : 'cache';
-        
-        $path = tempnam(realpath($cachePath), 'yeswiki_');
+        $path = tempnam(realpath($this->cachePath), 'yeswiki_');
 
         if (is_file($path)) {
             unlink($path);
@@ -74,8 +79,7 @@ class Files
     public function download($sourceUrl, $destPath = null, $timeoutInSec = 5)
     {
         if ($destPath === null) {
-            $cachePath = (!empty($this->wiki->config['dataPath'])) ? $this->wiki->config['dataPath'].'/cache' : 'cache';
-            $destPath = tempnam($cachePath, 'tmp_to_delete_');
+            $destPath = tempnam($this->cachePath, 'tmp_to_delete_');
         }
         $fp = fopen($destPath, 'wb');
         $ch = curl_init($sourceUrl);

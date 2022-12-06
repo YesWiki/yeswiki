@@ -1,12 +1,13 @@
 <?php
+
 namespace AutoUpdate;
 
 use YesWiki\Core\Service\ConfigurationService;
 
 class AutoUpdate
 {
-    const DEFAULT_REPO = 'https://repository.yeswiki.net/';
-    const DEFAULT_VERS = 'Cercopitheque'; // Pour gérer les vielles version de
+    public const DEFAULT_REPO = 'https://repository.yeswiki.net/';
+    public const DEFAULT_VERS = 'Cercopitheque'; // Pour gérer les vielles version de
     // YesWiki
     private $wiki;
     public $repository = null;
@@ -25,7 +26,7 @@ class AutoUpdate
     */
     public function initRepository($requestedVersion='')
     {
-        $this->repository = new Repository($this->repositoryAddress($requestedVersion));
+        $this->repository = new Repository($this->repositoryAddress($requestedVersion), $this->wiki->getDataPath());
         return $this->repository->load();
     }
 

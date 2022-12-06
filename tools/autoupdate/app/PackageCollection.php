@@ -1,13 +1,14 @@
 <?php
+
 namespace AutoUpdate;
 
 class PackageCollection extends Collection
 {
-    const THEME_CLASS = 'AutoUpdate\PackageTheme';
-    const TOOL_CLASS = 'AutoUpdate\PackageTool';
-    const CORE_CLASS = 'AutoUpdate\PackageCore';
+    public const THEME_CLASS = 'AutoUpdate\PackageTheme';
+    public const TOOL_CLASS = 'AutoUpdate\PackageTool';
+    public const CORE_CLASS = 'AutoUpdate\PackageCore';
 
-    public function add($release, $address, $file, $description, $documentation, $minimalPhpVersion = null)
+    public function add($release, $address, $file, $description, $documentation, $minimalPhpVersion = null, string $dataPath = '')
     {
         $className = $this->getPackageType($file);
         $package = new $className(
@@ -15,7 +16,8 @@ class PackageCollection extends Collection
             $address . $file,
             $description,
             $documentation,
-            $minimalPhpVersion
+            $minimalPhpVersion,
+            $dataPath
         );
         $this->list[$package->name] = $package;
     }

@@ -15,6 +15,7 @@ use Exception;
 use Throwable;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -393,8 +394,8 @@ class Wiki
         $url = explode('wakka.php', $this->config['base_url']);
         $url = explode('index.php', $url[0]);
         $url = preg_replace(array('/\/\?$/', '/\/$/'), '', $url[0]);
-        if ($useDataPath && !empty($this->config['dataPath']) ) {
-            // we add an imaginary folder in order to retrieve yeswiki assets from yeswiki's source folder. web servers need to be configured to redirect yeswiki-assets to the main yeswiki folder 
+        if ($useDataPath && !empty($this->getDataPath())) {
+            // we add an imaginary folder in order to retrieve yeswiki assets from yeswiki's source folder. web servers need to be configured to redirect yeswiki-assets to the main yeswiki folder
             $url .= '/yeswiki-assets';
         }
         return $url;
@@ -403,11 +404,25 @@ class Wiki
     public function getLocalPath($folder = '')
     {
         $dataFolders = ['', 'cache', 'files', 'custom'];
-        if (in_array($folder, $dataFolders) && !empty($this->config['dataPath']) ) {
-            // we add an imaginary folder in order to retrieve yeswiki assets from yeswiki's source folder. web servers need to be configured to redirect yeswiki-assets to the main yeswiki folder 
-            $folder = $this->config['dataPath'].'/'.$folder ;
+        $dataPath = $this->getDataPath();
+        if (in_array($folder, $dataFolders) && !empty($dataPath)) {
+            // we add an imaginary folder in order to retrieve yeswiki assets from yeswiki's source folder. web servers need to be configured to redirect yeswiki-assets to the main yeswiki folder
+            $folder = "$dataPath/$folder" ;
         }
         return $folder;
+    }
+
+    public function getDataPath(): string
+    {
+        $params = $this->services->get(ParameterBagInterface::class);
+        if (!$params->has('dataPath')) {
+            return '';
+        }
+        $dataPath = $params->get('dataPath');
+        if (empty($dataPath)) {
+            return '';
+        }
+        return "$dataPath/";
     }
 
     public function Redirect($url)

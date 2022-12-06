@@ -75,7 +75,7 @@ class ExternalBazarService
         ImportService $importService
     ) {
         $this->wiki = $wiki;
-        $this->cachePath = (!empty($this->wiki->config['dataPath'])) ? $this->wiki->config['dataPath'].'/cache' : 'cache';
+        $this->cachePath = $this->wiki->getLocalPath('cache');
         $this->params = $params;
         $this->formManager = $formManager;
         $this->importService = $importService;

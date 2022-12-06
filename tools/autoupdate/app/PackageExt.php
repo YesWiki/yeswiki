@@ -1,9 +1,10 @@
 <?php
+
 namespace AutoUpdate;
 
 abstract class PackageExt extends Package
 {
-    const INFOS_FILENAME = "infos.json";
+    public const INFOS_FILENAME = "infos.json";
 
     protected $infos = null;
 
@@ -11,9 +12,9 @@ abstract class PackageExt extends Package
 
     abstract protected function localPath();
 
-    public function __construct($release, $address, $desc, $doc, $minimalPhpVersion = null)
+    public function __construct($release, $address, $desc, $doc, $minimalPhpVersion = null, string $dataPath = '')
     {
-        parent::__construct($release, $address, $desc, $doc, $minimalPhpVersion);
+        parent::__construct($release, $address, $desc, $doc, $minimalPhpVersion, $dataPath);
         $this->installed = $this->installed();
         $this->localPath = $this->localPath();
         $this->updateAvailable = $this->updateAvailable();
@@ -46,7 +47,7 @@ abstract class PackageExt extends Package
         // get the first subfolder extracted from the zip (it contains everything)
         $dirs = array_filter(glob($this->extractionPath.'/*'), 'is_dir');
         $extractionPath = $dirs[0].'/';
-    
+
         $this->copy(
             $extractionPath,
             $desPath
