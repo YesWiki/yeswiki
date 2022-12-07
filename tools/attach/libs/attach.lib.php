@@ -792,23 +792,33 @@ if (!class_exists('attach')) {
                 $size = $file['size'];
                 $dlFilename = $file['name'] . '.' . $file['ext'];
             }
-            header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
-            header("Content-type: application/force-download");
-            header('Pragma: public');
-            header("Pragma: no-cache"); // HTTP/1.0
-            header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
-            header('Cache-Control: no-store, no-cache, must-revalidate'); // HTTP/1.1
-            header('Cache-Control: pre-check=0, post-check=0, max-age=0'); // HTTP/1.1
-            header('Content-Transfer-Encoding: none');
-            header('Content-Type: application/octet-stream; name="' . $dlFilename . '"'); //This should work for the rest
-            header('Content-Type: application/octetstream; name="' . $dlFilename . '"'); //This should work for IE & Opera
-            if (in_array(preg_replace("/^.*\.([^.]+$)/", "$1", $dlFilename), ['txt','md','png','svg','jpeg','jpg','mp3'])) {
-                header('Content-Type: '.mime_content_type($fullFilename).'; name="' . $dlFilename . '"');
+            try {
+                header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+                header("Content-type: application/force-download");
+                header('Pragma: public');
+                header("Pragma: no-cache"); // HTTP/1.0
+                header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+                header('Cache-Control: no-store, no-cache, must-revalidate'); // HTTP/1.1
+                header('Cache-Control: pre-check=0, post-check=0, max-age=0'); // HTTP/1.1
+                header('Content-Transfer-Encoding: none');
+                header('Content-Type: application/octet-stream; name="' . $dlFilename . '"'); //This should work for the rest
+                header('Content-Type: application/octetstream; name="' . $dlFilename . '"'); //This should work for IE & Opera
+                if (in_array(preg_replace("/^.*\.([^.]+$)/", "$1", $dlFilename), ['txt','md','png','svg','jpeg','jpg','mp3'])) {
+                    header('Content-Type: '.mime_content_type($fullFilename).'; name="' . $dlFilename . '"');
+                }
+                header('Content-Disposition: attachment; filename="' . $dlFilename . '"');
+                header("Content-Description: File Transfer");
+                header("Content-length: $size");
+                readfile($fullFilename);
+            } catch (Throwable $th) {
+                if (!headers_sent()) {
+                    header_remove(null);
+                    header('HTTP/1.0 500 Internal Server Error');
+                    header('Content-Disposition: inline;', true);
+                    header('Content-Type: text/html', true);
+                }
+                throw $th;
             }
-            header('Content-Disposition: attachment; filename="' . $dlFilename . '"');
-            header("Content-Description: File Transfer");
-            header("Content-length: $size");
-            readfile($fullFilename);
         }
         /******************************************************************************
          *    FONTIONS DU FILEMANAGER
