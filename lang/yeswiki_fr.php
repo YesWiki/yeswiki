@@ -546,7 +546,7 @@ return [
     'DELETEPAGE_NOT_DELETED' => 'Page non supprimée.',
 
     // handlers/edit
-    'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' => 'ALERTE : '.
+    'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' =>
         'Cette page a &eacute;t&eacute; modifi&eacute;e par quelqu\'un d\'autre pendant que vous l\'&eacute;ditiez.'."\n".
         'Veuillez copier vos changements et r&eacute;&eacute;diter cette page.',
     'EDIT_NO_WRITE_ACCESS' => 'Vous n\'avez pas acc&egrave;s en &eacute;criture &agrave; cette page !',
@@ -610,9 +610,6 @@ return [
     'USER_MUST_BE_LOGGED_TO_COMMENT' => 'Vous devez vous identifier pour pouvoir publier un commentaire.',
     'USER_NOT_ALLOWED_TO_COMMENT' => 'Vous n\'êtes pas dans un groupe autorisé à laisser des commentaires.',
     'NOT_AUTORIZED_TO_REMOVE_COMMENT' => 'Vous n\'êtes pas autorisé à supprimer ce commentaire.',
-
-    // YesWiki
-    'UNKNOWN_INTERWIKI' => 'interwiki inconnu',
 
     // reactions
     'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',

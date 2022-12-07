@@ -52,7 +52,7 @@ input[type=range] {
   background-color: #727479;
   border-color: #727479;
 }
-#actions-builder-app [type="checkbox"] + span:not(.lever):before, 
+#actions-builder-app [type="checkbox"] + span:not(.lever):before,
 #actions-builder-app [type="checkbox"] + span:not(.lever):after {
   margin-top: 2px;
 }
@@ -187,41 +187,6 @@ iframe {
   height: 100%;
   background-color: white;
   opacity: 0;
-}
-/* iframe {
-  zoom: 0.8;
-  -moz-transform: scale(0.8);
-  -moz-transform-origin: 0 0;
-  -o-transform: scale(0.8);
-  -o-transform-origin: 0 0;
-  -webkit-transform: scale(0.8);
-  -webkit-transform-origin: 0 0;
-}
-@media screen and (-webkit-min-device-pixel-ratio:0) {
-  iframe {
-    zoom: 1;
-  }
-} */
-
-/* FLYING ACTION BAR */
-.flying-action-bar {
-  opacity: 0;
-  transition: opacity .3s;
-  position: absolute;
-  z-index: 50;
-  left: -3rem;
-}
-.flying-action-bar .btn {
-  border-radius: 5px 0 0 5px;
-  padding: .5rem 0;
-  width: 3rem;
-}
-@media (max-width: 1200px) {
-  .flying-action-bar { left: -2rem; }
-  .flying-action-bar .btn { width: 2rem; }
-}
-.flying-action-bar.active {
-  opacity: 1;
 }
 
 /* WIKI CODE */

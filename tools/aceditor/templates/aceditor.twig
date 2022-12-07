@@ -1,0 +1,31 @@
+<div class="aceditor-container" data-name="{{ arguments.name }}">
+
+  <div class="btn-toolbar aceditor-toolbar">
+    {{ include('@aceditor/aceditor-toolbar.twig') }}
+  </div>
+
+  <div class="ace-container">
+    <pre class="ace-body"></pre>
+  </div>
+
+  <div class="flying-edit-button">
+    <a class="open-actions-builder-btn btn btn-primary btn-icon">
+      <i class="fa fa-pencil-alt"></i>
+    </a>
+  </div>
+
+  <textarea id="{{ arguments.name }}" name="{{ arguments.name }}" rows="{{ arguments.rows }}"
+            class="aceditor-textarea">
+    {{- arguments.value|raw -}}
+  </textarea>
+
+</div>
+
+<script>
+  // Send data to javascript
+  var actionsBuilderData = {{ actionsBuilderData|json_encode|raw }};
+  var pageTags = {{ pageTags|json_encode|raw }}
+</script>
+
+{{ include_javascript('tools/aceditor/presentation/javascripts/aceditor.js', false, true) }}
+{{ include_css('tools/aceditor/presentation/styles/aceditor.css') }}

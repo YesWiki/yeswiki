@@ -153,50 +153,6 @@ function nomwikidouble($nomwiki, $nomswiki)
     }
 }
 
-//fonction pour remplacer les liens vers les NomWikis n'existant pas
-function replace_missingpage_links($output)
-{
-    $pattern = '/<span class="(forced-link )?missingpage">(.*)<\/span><a href="' . str_replace(
-        array('/', '?','.'),
-        array('\/', '\?','\.'),
-        $GLOBALS['wiki']->config['base_url']
-    ) . '(.*)\/edit">\?<\/a>/U';
-    preg_match_all($pattern, $output, $matches, PREG_SET_ORDER);
-
-    $wiki = $GLOBALS['wiki'];
-    $config = $wiki->config;
-    $tag = $wiki->GetPageTag();
-    $pageMetadatas = empty($tag) ? [] : $wiki->GetMetaDatas($tag);
-
-    foreach ($matches as $values) {
-        // on passe en parametres GET les valeurs du template de la page de provenance,
-        // pour avoir le meme graphisme dans la page creee
-        $query_string = (!empty($config['favorite_theme']) ?
-                'theme=' . urlencode($config['favorite_theme']) : '')
-            . (!empty($config['favorite_squelette']) ?
-                '&amp;squelette=' . urlencode($config['favorite_squelette']) : '')
-            . (!empty($config['favorite_style']) ?
-                '&amp;style=' . urlencode($config['favorite_style']) : '')
-            . (!empty($config['favorite_background_image']) ?
-                '&amp;bgimg=' . urlencode($config['favorite_background_image']) : '');
-        foreach (\YesWiki\Core\Service\ThemeManager::SPECIAL_METADATA as $metadata) {
-            if (!empty($pageMetadatas[$metadata])) {
-                $query_string .= '&amp;'.$metadata.'=' . urlencode($pageMetadatas[$metadata]);
-            }
-        }
-        $query_string .= (($values[2] != $values[3]) ?
-                '&amp;body=' . urlencode($values[2]) : '') . '&amp;newpage=1';
-        $replacement = '<a class="yeswiki-editable" title="' . _t('TEMPLATE_EDIT_THIS_PAGE') . '" href="'
-            . $GLOBALS['wiki']->href("edit", $values[3], $query_string)
-            . '">'
-            . $values[2] . ' <i class="fa fa-pencil-alt icon-edit"></i></a>';
-        $output = str_replace_once($values[0], $replacement, $output);
-    }
-
-    return $output;
-}
-
-
 /**
  *
  * cree un diaporama a partir d'une PageWiki

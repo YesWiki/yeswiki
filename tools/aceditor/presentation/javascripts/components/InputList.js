@@ -1,37 +1,36 @@
 import InputHelper from './InputHelper.js'
 
 export default {
-  props: [ 'name', 'value', 'config', 'selectedForms', 'values' ],
-  mixins: [ InputHelper ],
+  props: ['name', 'value', 'config', 'selectedForms', 'values'],
+  mixins: [InputHelper],
   computed: {
     optionsList() {
       // Get the data from a specific form field
       if (this.config.dataFromFormField) {
         if (!this.selectedForms || !this.values[this.config.dataFromFormField]) return []
-        let extraFields = this.formatExtraFieldsAsArray(this.config.extraFields);
+        let extraFields = this.formatExtraFieldsAsArray(this.config.extraFields)
         // allow only 'id_typeannonce'
         extraFields = (extraFields.includes('id_typeannonce') && Object.keys(this.selectedForms).length > 1)
           ? ['id_typeannonce']
-          : [];
-        let fields = this.getFieldsFormSelectedForms(this.selectedForms,extraFields);
-        var fieldConfig = fields.find(e => e.id == this.values[this.config.dataFromFormField])
+          : []
+        const fields = this.getFieldsFormSelectedForms(this.selectedForms, extraFields)
+        const fieldConfig = fields.find((e) => e.id == this.values[this.config.dataFromFormField])
         return fieldConfig ? fieldConfig.options : []
       }
       // Options are provided in configuration
-      else {
-        if (Array.isArray(this.config.options)) {
-          return this.config.options.reduce((result,option)=> (result[option] = option, result), {});
-        }
-        let result = {}
-        for(let key in this.config.options) {
-          let option = this.config.options[key]
-          if (typeof option !== "object" || !option.showif || this.checkConfigDisplay(option)) {
-            result[key] = typeof option === "object" ? option.label : option
-          }
-        }
-        return result;
+
+      if (Array.isArray(this.config.options)) {
+        return this.config.options.reduce((result, option) => (result[option] = option, result), {})
       }
-    }    
+      const result = {}
+      for (const key in this.config.options) {
+        const option = this.config.options[key]
+        if (typeof option !== 'object' || !option.showif || this.checkConfigDisplay(option)) {
+          result[key] = typeof option === 'object' ? option.label : option
+        }
+      }
+      return result
+    }
   },
   template: `
     <div class="form-group input-group" :class="config.type" :title="config.hint" >

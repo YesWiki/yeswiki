@@ -52,6 +52,15 @@ ul.fake-ul {
   color: var(--secondary-color-1);
 }
 
+/* Adds edit icon after link tag */
+a[data-missing-tag]:after {
+  content: "\f303";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  margin-left: .4em;
+  font-size: .8em;
+}
+
 /* Page absentes */
 span.missingpage,
 .list-inline,
@@ -62,9 +71,9 @@ span.missingpage,
 /* previsualisation page */
 .page_preview {
   background-color: #ffffbf;
-  padding: 10px;
-  border: 1px inset;
-  border-bottom: none;
+  padding-bottom: 30px;
+  border-bottom: 5px solid grey;
+  margin-bottom: 30px;
 }
 .prev_alert {
   background-color: var(--danger-color);
@@ -621,6 +630,7 @@ body {
 
 .yeswiki-iframe-body > .container {
   margin: 0 !important;
+  padding: 0;
   width: 100% !important;
 }
 

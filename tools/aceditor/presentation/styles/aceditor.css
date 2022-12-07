@@ -1,21 +1,18 @@
-.ace-editor-container {
+.aceditor-container {
+  position: relative;
+}
+.ace-container {
   padding: 1em .7em 0em 0;
   margin-bottom: 1rem;
 }
-/* Show line numbers only on page edit */
-form:not(#ACEditor) .ace-editor-container .ace_gutter {
-  display: none !important;
+textarea.aceditor-textarea {
+  display: none;
 }
-form:not(#ACEditor) .ace-editor-container .ace_scroller {
-  left: .7em !important;
-}
+
 .ace-body {
-  height: 150px;
+  height: 65px;
   border: none;
   padding: 0;
-}
-.ace-editor-container.big .ace-body {
-  min-height: 500px;
 }
 .ace_layer {
   color: var(--main-text-color);
@@ -30,23 +27,23 @@ form:not(#ACEditor) .ace-editor-container .ace_scroller {
   margin: 0 4px;
   border-radius: 3px;
 }
-
 .ace-body .ace_markup {
   color: #bc1c96;
 }
-.ace-body .ace_tag.ace_yw-action {
+.ace-body .ace_action-name {
   color: #bc1c96 !important;
 }
-.ace-body .ace_list { font-weight: bold; }
-
 .ace-body .ace_attribute-name {
   color: var(--primary-color);
 }
-.ace-body .ace_attribute-value {
+.ace-body .ace_attribute-value, .ace-body .ace_attribute-quote-mark {
   color: var(--secondary-color-1) !important;
 }
-.ace-body .ace_string {
-  color: var(--neutral-color);
+.ace-body .ace_title-quote-mark, .ace-body .ace_link-title {
+  color: var(--neutral-soft-color);
+}
+.ace-body .ace_md-extra, .ace-body .ace_md-extra-markup {
+  color: var(--secondary-color-1);
 }
 .ace-body .ace_markup.ace_html {
   color: var(--neutral-soft-color);
@@ -55,8 +52,12 @@ form:not(#ACEditor) .ace-editor-container .ace_scroller {
   color: var(--primary-color);
   font-weight: bold;
 }
-.ace-body .ace_link {
+.ace-body .ace_link-url {
   color: var(--primary-color);
+  text-decoration: underline;
+}
+.ace-body .ace_list {
+  font-weight: bold;
 }
 .ace-body .ace_comment {
   color: var(--neutral-soft-color);
@@ -64,18 +65,31 @@ form:not(#ACEditor) .ace-editor-container .ace_scroller {
 .ace-body .ace_pre {
   background-color: #c33ba30f;
 }
+
+/* Page Edit */
 #ACEditor {
   position: relative;
   height: auto;
-}
-@media (max-width: 1200px) {
-  #ACEditor { margin-left: 1rem; } /* Space for the dlying action bar */
 }
 #ACEditor .btn-toolbar {
   position: sticky;
   top: 0;
   z-index: 6;
   background-color: white;
+}
+#ACEditor .ace-container .ace-body {
+  min-height: 500px;
+}
+
+/* Show line numbers only on page edit */
+form:not(#ACEditor) .ace-container .ace_gutter {
+  /* Keep it visible because it's just to get the active line height */
+  width: 0px !important;
+  overflow: hidden;
+  padding: 0px;
+}
+form:not(#ACEditor) .ace-container .ace_scroller {
+  left: .6em !important;
 }
 
 .ace_gutter-cell {
@@ -99,7 +113,6 @@ form:not(#ACEditor) .ace-editor-container .ace_scroller {
   right:0;
 }
 .ace_mobile-menu { display: none; }
-
 .component-action-list > li.open-existing-action { display: none; }
 .component-action-list.only-edit > li.open-existing-action { display: block; }
 .component-action-list.only-edit > li:not(.open-existing-action) { display: none; }
@@ -107,4 +120,88 @@ form:not(#ACEditor) .ace-editor-container .ace_scroller {
 .aceditor-btn-comment {
   font-style: italic;
   color: green !important;
+}
+.aceditor-btn-help span {
+  margin-right: 8px;
+}
+form:not(#ACEditor) .aceditor-btn-help span {
+  display: none;
+}
+@media (max-width: 1000px) {
+  /* Display only icon */
+  .aceditor-btn-help span {
+    display: none;
+  }
+}
+
+.ace_editor.ace_autocomplete {
+  border: 1px solid #d0d7df;
+  border-radius: 3px;
+  width: 250px;
+  box-shadow: 0 3px 6px rgb(140 149 159 / 15%);
+  font-family: inherit;
+  margin-left: -4px;
+}
+.ace_editor.ace_autocomplete .ace_text-layer {
+  margin: 0 !important;
+}
+.ace_editor.ace_autocomplete .ace_text-layer > .ace_line {
+  padding: 0 .5rem;
+}
+.ace_editor.ace_autocomplete .ace_completion-highlight {
+  color: var(--primary-color);
+}
+.ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line {
+  background-color: #e8e8e8;
+}
+
+/* ================= */
+/* FLYING ACTION BAR */
+/* ================= */
+.flying-edit-button {
+  opacity: 0;
+  transition: opacity .3s;
+  position: absolute;
+  z-index: 50;
+  left: 0;
+}
+.flying-edit-button.active {
+  opacity: 1;
+}
+
+.flying-edit-button .btn {
+  width: 2.3rem;
+  padding: .4rem 0;
+  transform: translateX(-2.3rem);
+  border-radius: 5px 0 0 5px;
+}
+/* In iframe, button is inside the textarea */
+.yeswiki-iframe-body .flying-edit-button .btn {
+  border-radius: 0 3px 3px 0;
+  padding: .25rem 0;
+  width: 1.8rem;
+  transform: translateX(0);
+}
+/* in small screen, make button smaller and overlapping textarea */
+@media (max-width: 1200px) {
+  body:not(.yeswiki-iframe-body) .flying-edit-button .btn {
+    border-radius: 4px;
+    padding: .4rem 0;
+    width: 2rem;
+    transform: translateX(-.9rem);
+  }
+  body:not(.yeswiki-iframe-body) form#ACEditor .flying-edit-button .btn {
+    /* overlap more to cover gutter */
+    border-radius: 4px;
+    padding: .4rem 0;
+    width: 2.2rem;
+    transform: translateX(-.5rem);
+  }
+}
+
+#YesWikiLinkModal .more-options {
+  border-top: 1px solid #eeeeee;
+  border-bottom: 1px solid #eeeeee;
+  margin: 1.5rem 0;
+  padding: .5rem 0;
 }

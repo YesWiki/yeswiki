@@ -420,7 +420,7 @@ class Wiki
                         $paramsArray[] = "$key=".urlencode($value);
                     }
                 };
-                if (count($paramsArray)>0) {
+                if (count($paramsArray) > 0) {
                     $params = implode(($htmlspchars ? '&amp;' : '&'), $paramsArray);
                 } else {
                     $params = '';
@@ -434,88 +434,12 @@ class Wiki
         return $href;
     }
 
-    public function Link($tag, $method = null, $params = null, $text = null, $track = 1, $forcedLink = false)
-    {
-        $displayText = $text ? $text : $tag;
-
-        // is this an interwiki link?
-        if (preg_match('/^' . WN_INTERWIKI_CAPTURE . '$/', $tag, $matches)) {
-            if ($IWiki = $this->GetInterWikiUrl($matches[1], $matches[2])) {
-                return '<a href="'.htmlspecialchars($IWiki, ENT_COMPAT, YW_CHARSET)
-                . '">' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET)
-                . ' (interwiki)</a>';
-            } else {
-                return '<a href="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET)
-                . '">' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET)
-                . ' ('._t('UNKNOWN_INTERWIKI').')</a>';
-            }
-        } else {
-            // is this a full link? ie, does it contain non alpha-numeric characters?
-            // Note : [:alnum:] is equivalent [0-9A-Za-z]
-            // [^[:alnum:]] means : some caracters other than [0-9A-Za-z]
-            // For example : "www.adress.com", "mailto:adress@domain.com", "http://www.adress.com"
-            if ($text and preg_match("/\.(gif|jpeg|png|jpg|svg)$/i", $tag)) {
-                // Important: Here, we know that $tag is not something bad
-                // and that we must produce a link with it
-
-                // An inline image? (text!=tag and url ends by png,gif,jpeg)
-                return '<img src="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET)
-                .'" alt="'.htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET).'"/>';
-            } elseif (preg_match('/^' . WN_CAMEL_CASE_EVOLVED_WITH_SLASH_AND_PARAMS . '$/u', $tag)) {
-                if (! empty($track)) {
-                    // it's a Wiki link!
-                    $this->TrackLinkTo(explode('?', $tag)[0]);
-                }
-            } elseif ($safeUrl = str_replace(
-                array('%3F', '%3A', '%26', '%3D', '%23'),
-                array('?', ':', '&', '=', '#'),
-                implode('/', array_map('rawurlencode', explode('/', rawurldecode($tag))))
-            )
-            ) {
-                return '<a href="'.$safeUrl.'">'.$text.'</a>';
-            } elseif (preg_match("/^[\w.-]+\@[\w.-]+$/", $tag)) {
-                // check for various modifications to perform on $tag
-                // email addresses
-                $tag = 'mailto:' . $tag;
-            } elseif (preg_match('/^[[:alnum:]][[:alnum:].-]*(?:\/|$)/', $tag)) {
-                // protocol-less URLs
-                $tag = 'https://' . $tag;
-            } elseif (preg_match('/^[a-z0-9.+-]*script[a-z0-9.+-]*:/i', $tag)
-                || ! (preg_match('/^\.?\.?\//', $tag)
-                || preg_match('/^[a-z0-9.+-]+:\/\//i', $tag))
-            ) {
-                // Finally, block script schemes (see RFC 3986 about
-                // schemes) and allow relative link & protocol-full URLs
-                // If does't fit, we can't qualify $tag as an URL.
-                // There is a high risk that $tag is just XSS (bad
-                // javascript: code) or anything nasty. So we must not
-                // produce any link at all.
-                return htmlspecialchars(
-                    $tag . ($text ? ' ' . $text : ''),
-                    ENT_COMPAT,
-                    YW_CHARSET
-                );
-            }
-        }
-
-        if ((!empty($method) && $method != 'show') || $this->LoadPage($tag)) {
-            // if the page refers to an handler url (contains /) or an existing page, display a 'show' link
-            return '<a href="' . $this->href($method, $tag, $params) . '">'
-                . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</a>';
-        } else {
-            // otherwise display an 'edit' link
-            return '<span class="' . ($forcedLink ? 'forced-link ' : '') . 'missingpage">'
-                . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</span><a href="'
-                . $this->href("edit", $tag) . '">?</a>';
-        }
-    }
-
     /**
-     * Handle string that could be a valid link, a yeswiki short link, or anything else (anchor, relative url..)
+     * Handle string that could be a valid url, a yeswiki short link, or anything else (anchor, relative url..)
      *
-     * if a yeswiki short link if discovered, it will be completed in order to have a real link
+     * if a yeswiki short link if discovered, it will be completed in order to have a real url
      * @param string $link the link to parse
-     * @return string final form of the link
+     * @return string url
      *
      */
     public function generateLink($link): ?string
@@ -525,7 +449,7 @@ class Wiki
         } else {
             $linkParts = $this->extractLinkParts($link) ;
             if ($linkParts) {
-                return $this->href($linkParts['method'], $linkParts['tag'], $linkParts['params']);
+                return $this->Href($linkParts['method'], $linkParts['tag'], $linkParts['params']);
             } elseif (filter_var($link, FILTER_VALIDATE_URL)) {
                 // a valid url
                 return $link;
@@ -567,18 +491,123 @@ class Wiki
         }
     }
 
+    /**
+     * @deprecated Use LinkTo instead
+     */
     public function ComposeLinkToPage($tag, $method = "", $text = "", $track = 1)
     {
-        if (! $text) {
-            $text = $tag;
+        return $this->LinkTo($tag, $text, ["method" => $method, "track" => $track]);
+    }
+
+    /**
+     * @deprecated Use LinkTo instead
+     */
+    public function Link($tag, $method = null, $params = null, $text = null, $track = 1, $forcedLink = false)
+    {
+        return $this->LinkTo($tag, $text, [
+            "method" => $method,
+            "params" => $params,
+            "track" => $track,
+            "class" => $forcedLink ? 'forced-link' : '' // Cannot find any use of this forced-link...
+        ]);
+    }
+
+    /**
+     * Create an HTML link.
+     *
+     * LinkTo("WikiPage")
+     * LinkTo("WikiPage", "My page", ["track" => false])
+     * LinkTo("WikiPage", "", ["method" => "xml"])
+     * LinkTo("WikiPage/edit?params=2", "ma page")
+     * LinkTo("https://test.fr", "mon lien", ["class" => "yeah"])
+     *
+     * @param string $link $url, or wiki $tag
+     * @param string $text
+     * @param array $options Array of HTML options. You can also provide 'track' and 'method'
+     * @return string HTML link
+     */
+    public function LinkTo($link, $text = "", $options = [])
+    {
+        if (!$text) {
+            $text = $link;
         }
 
+        // YesWiki pages links, like "HomePage" or "HomePage/xml"
+        if ($wikiLink = $this->extractLinkParts($link)) {
+            $tag = $wikiLink['tag'];
+            $method = $options['method'] ?? $wikiLink['method'];
+            $params = $options['params'] ?? $wikiLink['params'] ?? [];
+
+            // Handle missing Tag
+            if ((empty($method) || $method == 'show') && !$this->LoadPage($tag)) {
+                $params = array_merge($params, $this->ParamsForNewPageLink());
+                $method = 'edit';
+                $options['data-missing-tag'] = true;
+            }
+
+            // Tag and Method to be kept as HTML attributes
+            $options['data-tag'] = $tag;
+            $options['data-method'] = $method ?? 'show';
+            unset($options['method']);
+            unset($options['params']);
+
+            // Trackable
+            if (!empty($options['track']) && $options['track']) {
+                $this->services->get(LinkTracker::class)->add(explode('?', $tag)[0]);
+                $options['data-tracked'] = true;
+            }
+            unset($options['track']);
+
+            // General URL
+            $link = $this->Href($method, $tag, $params, false);
+        }
+
+        // Email addresses
+        if (preg_match("/^[\w.-]+\@[\w.-]+$/", $link)) {
+            $link = 'mailto:' . $link;
+        }
+
+        // Options to HTML attributes
+        $stringAttrs = '';
+        foreach($options as $key => $value) {
+            $value = json_encode($value);
+            $stringAttrs .= "$key=$value ";
+        }
+
+        // Block script schemes (see RFC 3986 about schemes)
+        $link = htmlspecialchars($link, ENT_COMPAT, YW_CHARSET);
         $text = htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
-        if ($track) {
-            $this->TrackLinkTo($tag);
+
+        // Generate HTML
+        return "<a href='$link' $stringAttrs>$text</a>";
+    }
+
+    public function ParamsForNewPageLink()
+    {
+        $result = ['newpage' => 1];
+
+        // Config from current page
+        $config = $this->config;
+        $fromConfig = [
+            'theme' => 'favorite_theme',
+            'squelette' => 'favorite_squelette',
+            'style' => 'favorite_style',
+            'bgimg' => 'favorite_background_image'
+        ];
+        foreach($fromConfig as $param => $configKey) {
+            if (!empty($config[$configKey])) $result[$param] = $config[$configKey];
         }
 
-        return '<a href="' . $this->href($method, $tag) . '">' . $text . '</a>';
+        // Metadata from current page
+        $currentPageTag = $this->GetPageTag();
+        $pageMetadatas = empty($currentPageTag) ? [] : $this->GetMetaDatas($currentPageTag);
+        foreach (\YesWiki\Core\Service\ThemeManager::SPECIAL_METADATA as $metadata) {
+            if (!empty($pageMetadatas[$metadata])) {
+                $result[$metadata] = $pageMetadatas[$metadata];
+            }
+        }
+
+        return $result;
     }
 
     public function IsWikiName($text, $type = WN_CAMEL_CASE_EVOLVED)
@@ -640,15 +669,6 @@ class Wiki
     public function AddInterWiki($name, $url)
     {
         $this->interWiki[strtolower($name)] = $url;
-    }
-
-    public function GetInterWikiUrl($name, $tag)
-    {
-        if (isset($this->interWiki[strtolower($name)])) {
-            return $this->interWiki[strtolower($name)] . $tag;
-        } else {
-            return false;
-        }
     }
 
     // REFERRERS
@@ -1922,7 +1942,7 @@ class Wiki
     }
 
     /**
-     * @deprecated Use LinkTracker::getAll
+     * @deprecated Use LinkTracker::clear
      */
     public function ClearLinkTable()
     {

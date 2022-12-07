@@ -6,13 +6,13 @@ export default {
     parseNewValues(newValues) {
       if (newValues.groups) {
         this.elements = []
-        let groups = newValues.groups.split(',')
-        let titles = newValues.titles ? newValues.titles.split(',') : []
-        let icons = newValues.groupicons ? newValues.groupicons.split(',') : []
-        for(var i = 0; i < groups.length; i++) {
+        const groups = newValues.groups.split(',')
+        const titles = newValues.titles ? newValues.titles.split(',') : []
+        const icons = newValues.groupicons ? newValues.groupicons.split(',') : []
+        for (let i = 0; i < groups.length; i++) {
           this.elements.push({
             field: groups[i],
-            title: titles.length >= i ? titles[i] : '' ,
+            title: titles.length >= i ? titles[i] : '',
             icon: icons.length >= i ? icons[i] : ''
           })
         }
@@ -20,10 +20,10 @@ export default {
     },
     getValues() {
       return {
-        groups: this.elements.map(g => g.field).filter(e => e != "").join(','),
-        titles: this.elements.map(g => g.title).filter(e => e != "").join(','),
-        groupicons: this.elements.map(g => g.icon).filter(e => e != "").join(',')
+        groups: this.elements.map((g) => g.field).filter((e) => e != '').join(','),
+        titles: this.elements.map((g) => g.title).filter((e) => e != '').join(','),
+        groupicons: this.elements.map((g) => g.icon).filter((e) => e != '').join(',')
       }
     }
   }
-};
+}

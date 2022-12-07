@@ -1,0 +1,7 @@
+
+{# Those modals contains form tags, so they cannot be included inside another form #}
+{# That's why we need to include them separatly outside of the form object #}
+
+{{ include('@aceditor/actions-builder-modal.twig') }}
+{{ include('@aceditor/link-modal.twig') }}
+{{ include('@attach/file-upload-modal.twig') }}

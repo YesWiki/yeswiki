@@ -1,5 +1,5 @@
 export default {
-  props: [ 'value', 'config' ],
+  props: ['value', 'config'],
   data() {
     return {
       // boolean internal value cause the real value could be a string when using checkedvalue and uncheckedvalue

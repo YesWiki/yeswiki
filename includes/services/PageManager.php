@@ -208,9 +208,26 @@ class PageManager
 
     public function getAll(): array
     {
-        $pages = $this->dbService->loadAll('select * from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' order by tag");
+        $pages = $this->dbService->loadAll(<<<SQL
+            SELECT * FROM {$this->dbService->prefixTable('pages')} WHERE LATEST = 'Y' ORDER BY tag
+        SQL);
         $pages = $this->checkEntriesACL($pages);
         return $pages ;
+    }
+
+    public function getReadablePageTags(): array
+    {
+        $pages = $this->dbService->loadAll(<<<SQL
+            SELECT tag,owner FROM {$this->dbService->prefixTable('pages')} WHERE LATEST = 'Y' ORDER BY tag
+        SQL);
+        $pages = array_filter($pages, function($page) {
+            // cache page's owner to prevent reload of page from sql or infinite loop in some case
+            $this->cacheOwner($page);
+            return $this->aclService->hasAccess('read', $page['tag']);
+        });
+        return array_map(function($page) {
+            return $page['tag'];
+        }, $pages);
     }
 
     public function getCreateTime($pageTag)

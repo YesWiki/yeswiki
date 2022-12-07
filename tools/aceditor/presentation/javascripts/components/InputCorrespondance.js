@@ -2,13 +2,11 @@ import InputHelper from './InputHelper.js'
 import InputFormField from './InputFormField.js'
 
 export default {
-  props: [ 'name', 'value', 'config', 'selectedForms', 'values' ],
+  props: ['name', 'value', 'config', 'selectedForms', 'values'],
   components: { InputFormField },
-  mixins: [ InputHelper ],
+  mixins: [InputHelper],
   data() {
-    return {
-      mappingValues: {}
-    }
+    return { mappingValues: {} }
   },
   mounted() {
     this.resetValues()
@@ -17,7 +15,7 @@ export default {
   methods: {
     resetValues() {
       this.mappingValues = {}
-      for(let propName in this.config.subproperties) {
+      for (const propName in this.config.subproperties) {
         this.mappingValues[propName] = (this.config.subproperties[propName] || {}).default || ''
       }
     },
@@ -25,8 +23,8 @@ export default {
       if (newValues[this.name]) {
         const mappings = newValues[this.name].split(',') // ["bf_image=my_image", "bf_other=my_other"]
         const propList = Object.keys(this.config.subproperties) // ["bf_image", "bf_baseline"]
-        for(let mapping of mappings) {
-          let propName = mapping.split('=')[0]
+        for (const mapping of mappings) {
+          const propName = mapping.split('=')[0]
           if (propName && propList.includes(propName)) {
             this.mappingValues[propName] = mapping.split('=')[1]
           }
@@ -34,15 +32,15 @@ export default {
       }
     },
     getValues() {
-      let result = []
-      for(let propName in this.mappingValues) {
-        let value = this.mappingValues[propName]
+      const result = []
+      for (const propName in this.mappingValues) {
+        const value = this.mappingValues[propName]
         if (propName && value != (this.config.subproperties[propName] || {}).default && value != ','
             && Object.keys(this.config.subproperties).includes(propName)) {
           result.push(`${propName}=${value}`)
         }
       }
-      let obj = {}
+      const obj = {}
       obj[this.name] = result.join(',')
       return obj
     },

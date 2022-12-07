@@ -87,6 +87,18 @@ class TemplateEngine
             'auto_reload' => true
         ]);
 
+        // Adds Globals
+        $this->twig->addGlobal('request', [
+            'get' => $_GET,
+            'post' => $_POST,
+            'request' => $_REQUEST,
+        ]);
+        $this->twig->addGlobal('app', [
+            'server' => $_SERVER,
+            'session' => $_SESSION
+        ]);
+        $this->twig->addGlobal('config', $this->wiki->config);
+
         // Adds Helpers
         $this->addTwigHelper('_t', function ($key, $params = []) {
             return html_entity_decode(_t($key, $params));
@@ -157,6 +169,9 @@ class TemplateEngine
         });
         $this->addTwigHelper('hasAcl', function ($acl, $tag = "", $adminCheck = true) {
             return $this->wiki->services->get(AclService::class)->check($acl, null, $adminCheck, $tag);
+        });
+        $this->addTwigHelper('renderAction', function ($name, $params = []) {
+            return $this->wiki->services->get(Performer::class)->run($name, 'action', $params);
         });
     }
 

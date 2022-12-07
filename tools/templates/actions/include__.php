@@ -4,23 +4,10 @@ if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
-include_once 'tools/templates/libs/templates.functions.php';
-
 // si la page inclue n'existe pas, on propose de la créer
 if (!$incPage = $this->LoadPage($incPageName)) {
-    // on passe en parametres GET les valeurs du template de la page de provenance
-    // pour avoir le même graphisme dans la page créée
-    $query_string = 'theme='.urlencode($this->config['favorite_theme']).
-        '&amp;squelette='.urlencode($this->config['favorite_squelette']).
-        '&amp;style='.urlencode($this->config['favorite_style']);
-
-    $plugin_output_new = '<div class="'.$class.'">'."\n".
-        '<a class="yeswiki-editable" href="'.$this->href('edit', $incPageName, $query_string).'">'.
-        '<i class="fa fa-pencil-alt icon-edit"></i> '._t('TEMPLATE_EDIT').' '.$incPageName.'</a>'."\n".
-        '</div>'."\n";
-} else {
-    // sinon, on remplace les liens vers les NomWikis n'existant pas
-    $plugin_output_new = replace_missingpage_links($plugin_output_new);
+    $plugin_output_new = $this->LinkTo($incPageName);
+    return;
 }
 
 // si le lien correspond à l'url, on rajoute une classe "actif"

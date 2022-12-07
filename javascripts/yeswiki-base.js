@@ -252,7 +252,12 @@ function toastMessage(
 
     return false;
   }
-  $(document).on("click", "a.modalbox, .modalbox a", openModal);
+  $(document).on("click", "a.modalbox, a.modal, .modalbox a", openModal);
+
+  $(document).on("click", "a.newtab", function(e) {
+    e.preventDefault()
+    window.open($(this).attr('href'), '_blank');
+  })
 
   // on change l'icone de l'accordeon
   $(".accordion-trigger").on("click", function () {
