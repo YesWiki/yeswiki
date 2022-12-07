@@ -307,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
           this.imagesToProcess = this.imagesToProcess.slice(1);
           let bazarListDynamicRoot = this;
           $.ajax({
-            url: wiki.url(`api/images/${newImageParams.fileName}/cache/${newImageParams.width}/${newImageParams.height}/${newImageParams.mode}`,{csrftoken:this.tokenForImages}),
+            url: wiki.url(`?api/images/${newImageParams.fileName}/cache/${newImageParams.width}/${newImageParams.height}/${newImageParams.mode}`,{csrftoken:this.tokenForImages}),
             method: 'get',
             cache: false,
             success: function (data){
