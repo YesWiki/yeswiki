@@ -56,15 +56,15 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
             $text = preg_replace_callback(
                 "/\%\%.*?\%\%|"
                 ."\"\".*?\"\"|"
-                ."(?!\\\\)_[^_{]+_[^\w]|" // markdown italic
-                ."(?!\\\\)\\*[^*{]+\\*[^\w]|" // markdown italic
-                ."(?!\\\\)`[^`]*(?!\\\\)`|" // inline code
                 ."\[\[.*?\]\]|"
-                ."(?!\!\\\\)\[[^\]]+\]\([^\)]+\)|" // markdown links
+                .'([\*\#@£_\/])\\1|'
+                ."(?<!\w)_[^_]+_(?!\w)|" // markdown italic
+                ."(?<!\w)\\*[^*]+\\*(?!\w)|" // markdown italic
+                ."`[^`]+`(?![_\w])|" // inline code
+                ."(?<!\!)\[[^\]]+\]\([^\)]+\)|" // markdown links
                 ."\!\[[^\]]*\]\([^\)]+\)|" // markdown images
                 .'\b[a-z0-9]+:\/\/[^ \t\n\r\f"\|\\\\\^\`\{\}\[\]><]+|'
                 .'(?:^|(?<=\>""))(?!\\\\)\#{1,6} [^\\n\#]*\\n|' // markdown titles doit être avant la ligne suivante pour être prioritaire sur le ## ##
-                .'([\*\#@£_\/])\\1|'// attention à la référence arriére \1, à changer s'il y a d'autres parenthèses capturantes
                 .'[<>"]|'
                 .'&(?!(\#[xX][a-fA-F0-9]+|\#[0-9]+|[a-zA-Z0-9]+);)|'
                 .'={2,6}|'
@@ -188,11 +188,6 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
         {
             $thing = $things[0];
             $result = '';
-
-            /**
-             *
-             * @var Wiki
-             */
             $wiki = $this->wiki;
 
             // convert HTML thingies
@@ -326,7 +321,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                             // filter ]] because there are none here
                             // by construct)
                             $text = isset($text) ? preg_replace("/@@|££|\[\[/", "", $text) : '';
-                            
+
                             $linkParts = $wiki->extractLinkParts($url);
                             if ($linkParts) {
                                 return $result . $wiki->Link(
@@ -388,12 +383,12 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                         return $this->titleHeader($nb_hash_tags) . $matches[2] .$this->titleHeader($nb_hash_tags);
                     }
                     // markdown italic compatibility
-                    elseif (preg_match('/^_(.*)_([^\w])$/s', $thing, $matches)) {
-                        return $this->inLineTag('i') . $matches[1] .$this->inLineTag('i') . $matches[2];
+                    elseif (preg_match('/^_(.*)_$/s', $thing, $matches)) {
+                        return $this->inLineTag('i') . $matches[1] .$this->inLineTag('i');
                     }
                     // markdown italic compatibility 2
-                    elseif (preg_match('/^\*(.*)\*([^\w])$/s', $thing, $matches)) {
-                        return $this->inLineTag('i') . $matches[1] .$this->inLineTag('i') . $matches[2];
+                    elseif (preg_match('/^\*(.*)\*$/s', $thing, $matches)) {
+                        return $this->inLineTag('i') . $matches[1] .$this->inLineTag('i');
                     }
                     // markdown images compatibility
                     elseif (preg_match('/^\!\[([^\]]*)\]\(([^\) ]+)(?: "(.*)")?\)$/sm', $thing, $matches)) {
