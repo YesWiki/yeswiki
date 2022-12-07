@@ -56,8 +56,8 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
             $text = preg_replace_callback(
                 "/\%\%.*?\%\%|"
                 ."\"\".*?\"\"|"
-                ."(?!\\\\)_[^_{]+_|" // markdown italic
-                ."(?!\\\\)\\*[^*{]+\\*|" // markdown italic
+                ."(?!\\\\)_[^_{]+_[^\w]|" // markdown italic
+                ."(?!\\\\)\\*[^*{]+\\*[^\w]|" // markdown italic
                 ."(?!\\\\)`[^`]*(?!\\\\)`|" // inline code
                 ."\[\[.*?\]\]|"
                 ."(?!\!\\\\)\[[^\]]+\]\([^\)]+\)|" // markdown links
@@ -388,8 +388,12 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                         return $this->titleHeader($nb_hash_tags) . $matches[2] .$this->titleHeader($nb_hash_tags);
                     }
                     // markdown italic compatibility
-                    elseif (preg_match('/^_(.*)_$/s', $thing, $matches)) {
-                        return $this->inLineTag('i') . $matches[1] .$this->inLineTag('i');
+                    elseif (preg_match('/^_(.*)_([^\w])$/s', $thing, $matches)) {
+                        return $this->inLineTag('i') . $matches[1] .$this->inLineTag('i') . $matches[2];
+                    }
+                    // markdown italic compatibility 2
+                    elseif (preg_match('/^\*(.*)\*([^\w])$/s', $thing, $matches)) {
+                        return $this->inLineTag('i') . $matches[1] .$this->inLineTag('i') . $matches[2];
                     }
                     // markdown images compatibility
                     elseif (preg_match('/^\!\[([^\]]*)\]\(([^\) ]+)(?: "(.*)")?\)$/sm', $thing, $matches)) {
