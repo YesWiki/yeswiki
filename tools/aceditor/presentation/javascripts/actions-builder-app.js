@@ -44,7 +44,7 @@ const components = {
 }
 
 // actionsBuilderData is defined is AceditorAction
-const data = actionsBuilderData
+const data = typeof actionsBuilderData === 'object' ? actionsBuilderData : {forms:{},action_groups:{}}
 
 // dynamically loads other components defined in extensions or in custom folder
 if (data.extraComponents) {
