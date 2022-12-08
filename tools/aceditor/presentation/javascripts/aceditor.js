@@ -92,7 +92,7 @@ class Aceditor {
       this.editor.disableAutocompletion()
 
       // wait for the full group to be written
-      if (!cursor.groupType || !cursor.groupEnd) return
+      if (!cursor.groupType) return
 
       switch (cursor.groupType) {
         case 'yw-action': {
