@@ -1,4 +1,5 @@
 <?php
+
 // AB stands for ActionsBuilder
 return [
     // Commons
@@ -195,7 +196,7 @@ return [
     // BazarAction
     "AB_bazar_action_label" => "Exibir um formulário de criação de arquivo",
     "AB_bazar_action_description" => "Usado para exibir o formulário para criar um arquivo.",
-    //"AB_bazar_action_redirecturl_label" => "Nom de la page de ce wiki à afficher après création d'une fiche",
+    //"AB_bazar_action_redirecturl_label" => "URL complet de la page de ce wiki à afficher après création d'une fiche",
     // attach
     // "AB_attach_commons_title" => "Pour les images",
     // "AB_attach_link_label" => "Lien quand on cliquera sur l'image",
