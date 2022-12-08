@@ -204,7 +204,7 @@ return [
     'BAZ_FORM_EDIT_UNIQUE_ID' => 'Unique ID',
     'BAZ_FORM_EDIT_NAME' => 'Label',
     'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'Displaying the form builder, you will delete changes done here in the code. Whould you continue without saving changes ?  (Click on "Submit" button in page footer to keep your changes !)',
-    
+
     'BAZ_FORM_EDIT_COMMENTS_CLOSED' => 'Comments closed',
     'BAZ_FORM_EDIT_BOOKMARKLET_URLFIELD_LABEL' => "Associated url field",
     'BAZ_FORM_EDIT_BOOKMARKLET_DESCRIPTIONFIELD_LABEL' => "Associated long text field",
@@ -238,6 +238,9 @@ return [
     "BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION" => "Clean",
     "BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION" => "Do not clean",
     "BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT" => "To clean or not the content of what is being hidden",
+
+    // presentation/javascripts/map-field-leaflet.js
+    'BAZ_ADJUST_MARKER_POSITION' => 'Move me if needed',
 
     // templates/entries/index-dynamic-temapltes/BazarCalendar_ButtonICS.js
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => "Add to your agenda",

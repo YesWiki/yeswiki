@@ -165,7 +165,6 @@ return [
     'BAZ_LATITUDE' => 'Latitud',
     'BAZ_LONGITUDE' => 'Longitud',
     'BAZ_VERIFIER_MON_ADRESSE' => 'Haz clic aqui para poner el sitio en el mapa',
-    // 'BAZ_ADJUST_MARKER_POSITION' => 'Déplacez moi si besoin',
     'BAZ_PAS_DE_FORMULAIRES_TROUVES' => 'No formulario encontrado',
     'BAZ_CHAMPS_REQUIS' => 'pregunta obligatoria',
     'BAZ_FICHES' => 'fichas.',
@@ -226,7 +225,7 @@ return [
     // 'BAZ_UNKNOWN_USER' => 'Utilisateur inconnu',
     // 'BAZ_RADIO_REFRESH' => 'Rafraîchir les informations de la liste',
     // 'BAZ_NOT_CATEGORIZED' => 'Non catégorisé',
-    
+
     //================ Calendrier Bazar =======================================
     'BAZ_AFFICHE_TITRES_COMPLETS' => 'Visualizar los títulos completos de los eventos',
     'BAZ_TRONQUER_TITRES' => 'Cortar los títulos de los eventos',
@@ -288,7 +287,7 @@ return [
     // fields/ImageField.php
     // 'BAZ_IMAGE_ALREADY_EXISTING' => 'L\'image {fileName} existait d&eacute;ja, elle n\'a pas &eacute;t&eacute; remplac&eacute;e.',
     // 'BAZ_NOT_AUTHORIZED_EXTENSION' => 'Extension non autoris&eacute;.',
-    
+
     //================ Drag & Drop for Checkbox fiche =======================================
     'BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM' => 'Elementos disponibles',
     'BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO' => 'Seleccione los elementos de su lista clicando en ',
@@ -342,22 +341,22 @@ return [
 
     // presentation/templates/annuaire_alphabetique.tpl.html
     // 'BAZ_MEMBERS' => 'membres',
-    
+
     // presentation/templates/blog.tpl.html
     // 'BAZ_MORE_INFOS' => 'Plus d\'infos',
-    
+
     // presentation/templates/liste_liens_date.tpl.html
     // 'BAZ_NO_ENTRY_FOR_THIS_PERIOD' => 'Il n\'y a pas de fiche pour cette période.',
-    
+
     // templates/entries/index-dynamic-templates/card.twig
     // 'BAZ_CARD_NBCOL_TOO_HIGH' => 'Le paramètre `nbcol` ne peut pas être pris en compte avec `style="horizontal"` et reste limité à 2 !',
-    
+
     // templates/tableau.twig
     // 'SUM' => 'Somme',
-    
+
     // presentation/templates/timeline.tpl.html
     // 'BAZ_YEAR' => 'Ann&eacute;e',
-    
+
     // presentation/templates/widget.tpl.html
     // 'BAZ_FACETTES_DISPLAY' => 'Apparence des facettes',
     // 'BAZ_EXPANDED_FACETTES' => 'Facettes dépliées',

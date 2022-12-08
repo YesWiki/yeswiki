@@ -239,6 +239,9 @@ return [
     "BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION" => "Ne pas effacer",
     "BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT" => "Pour effacer ou non le contenu de ce qui est masqué",
 
+    // presentation/javascripts/map-field-leaflet.js
+    'BAZ_ADJUST_MARKER_POSITION' => 'Déplacez moi si besoin',
+
     // templates/entries/index-dynamic-temapltes/BazarCalendar_ButtonICS.js
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => "Ajouter à votre calendrier",
 ];
