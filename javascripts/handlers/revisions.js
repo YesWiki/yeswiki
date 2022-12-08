@@ -10,12 +10,12 @@ new Vue({
     revisions: [],
     selectedRevision: null,
     viewTypes: {
-      'current': _t('REVISIONS_PREVIEW'),
-      'commit_diff': _t('REVISIONS_COMMIT_DIFF'),
-      'diff': _t('REVISIONS_DIFF')
+      current: _t('REVISIONS_PREVIEW'),
+      commit_diff: _t('REVISIONS_COMMIT_DIFF'),
+      diff: _t('REVISIONS_DIFF')
     },
     displayWikiCode: false,
-    selectedViewType: 'current',
+    selectedViewType: 'current'
   },
   computed: {
     firstRevision() { return this.revisions[this.revisions.length - 1] },
@@ -24,31 +24,34 @@ new Vue({
     previewUrl() { return wiki.url(`${wiki.pageTag}/iframe`, { time: this.selectedRevision.phpTime, iframelinks: 0 }) }
   },
   mounted() {
-    this.isEntry = this.$el.dataset.isEntry == "1"
-    this.revisions = JSON.parse(this.$el.dataset.revisions).map(rev => {
+    this.isEntry = this.$el.dataset.isEntry == '1'
+    this.revisions = JSON.parse(this.$el.dataset.revisions).map((rev) => {
       rev.id = parseInt(rev.id)
       rev.phpTime = rev.time
       rev.time = new Date(rev.time)
       rev.timestamp = rev.time.getTime()
-      rev.displayTime = rev.time.toLocaleDateString(window.wiki.locale, { 
-        year: '2-digit', month: 'short', day: 'numeric', 
-        hour: 'numeric', minute: 'numeric' 
+      rev.displayTime = rev.time.toLocaleDateString(window.wiki.locale, {
+        year: '2-digit',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric'
       })
       // initial prop so it gets reactive
-      rev.current_code = ''; rev.current_html = ''; 
-      rev.commit_diff_html = ''; rev.commit_diff_code = '';
-      rev.diff_html = ''; rev.diff_code = '';
+      rev.current_code = ''; rev.current_html = ''
+      rev.commit_diff_html = ''; rev.commit_diff_code = ''
+      rev.diff_html = ''; rev.diff_code = ''
       rev.fullyRetrieved = false
       return rev
-    })    
+    })
     this.calculateRevisionsPlaceInTimeLine()
     this.selectedRevision = this.lastRevision
   },
   watch: {
     selectedRevision() {
       if (this.selectedRevision && !this.selectedRevision.fullyRetrieved) {
-        let url = wiki.url(`?api/pages/${wiki.pageTag}`, {
-          time: this.selectedRevision.phpTime, 
+        const url = wiki.url(`?api/pages/${wiki.pageTag}`, {
+          time: this.selectedRevision.phpTime,
           includeDiff: true
         })
         $.getJSON(url, (data) => {
@@ -66,29 +69,30 @@ new Vue({
   methods: {
     timelineItemStyle(revision, includeTransform = true) {
       let result = {}
-      if (revision.placeInTimeLine < 50) 
-        result = {left: `${revision.placeInTimeLine}%`, transform: "translateX(-50%) translateY(50%)"}
-      else 
-        result = {right: `${100 - revision.placeInTimeLine}%`, transform: "translateX(50%) translateY(50%)"}
+      if (revision.placeInTimeLine < 50) {
+        result = { left: `${revision.placeInTimeLine}%`, transform: 'translateX(-50%) translateY(50%)' }
+      } else {
+        result = { right: `${100 - revision.placeInTimeLine}%`, transform: 'translateX(50%) translateY(50%)' }
+      }
       if (!includeTransform) result.transform = null
       result['z-index'] = revision.number
       return result
     },
     moveRevision(forward = true) {
-      let newNumber = this.selectedRevision.number + (forward ? -1 : 1)
-      let newRevision = this.revisions.find(rev => rev.number == newNumber)
+      const newNumber = this.selectedRevision.number + (forward ? -1 : 1)
+      const newRevision = this.revisions.find((rev) => rev.number == newNumber)
       if (newRevision) this.selectedRevision = newRevision
     },
     calculateRevisionsPlaceInTimeLine() {
-      let revisionsCount = parseInt(this.$el.dataset.revisionsCount)
-      let timelineLength = this.lastRevision.timestamp - this.firstRevision.timestamp
+      const revisionsCount = parseInt(this.$el.dataset.revisionsCount)
+      const timelineLength = this.lastRevision.timestamp - this.firstRevision.timestamp
       let prevRevision
       this.revisions.forEach((rev, index) => {
         rev.number = revisionsCount - index
         rev.placeInTimeLine = (rev.timestamp - this.firstRevision.timestamp) / timelineLength * 100
         if (prevRevision) {
           // At least 1% gap between each, otherwise we don't see anything in the UI
-          let minGap = this.minGapBetween(rev, prevRevision)
+          const minGap = this.minGapBetween(rev, prevRevision)
           rev.placeInTimeLine = Math.min(rev.placeInTimeLine, prevRevision.placeInTimeLine - minGap)
         }
         prevRevision = rev
@@ -101,16 +105,16 @@ new Vue({
         prevRevision = null
         this.revisions.slice().reverse().forEach((rev, index) => {
           if (prevRevision) {
-            let minGap = this.minGapBetween(rev, prevRevision)
+            const minGap = this.minGapBetween(rev, prevRevision)
             rev.placeInTimeLine = Math.max(rev.placeInTimeLine, prevRevision.placeInTimeLine + minGap)
           }
           prevRevision = rev
-        }) 
+        })
       }
     },
     minGapBetween(rev1, rev2) {
       // Bigger gap if different day
-      return rev1.time.setHours(0,0,0,0) == rev2.time.setHours(0,0,0,0) ? 1.3 : 3
-    },
+      return rev1.time.setHours(0, 0, 0, 0) == rev2.time.setHours(0, 0, 0, 0) ? 1.3 : 3
+    }
   }
 })

@@ -1,257 +1,257 @@
 const FavoritesHelper = {
-  propertyName: "https://yeswiki.net/vocabulary/favorite",
-  updateElem: function (elem, mode, withMessage = true){
-    if (mode == "add"){
-      $(elem).addClass('user-favorite');
+  propertyName: 'https://yeswiki.net/vocabulary/favorite',
+  updateElem(elem, mode, withMessage = true) {
+    if (mode == 'add') {
+      $(elem).addClass('user-favorite')
       $(elem).find('i')
         .removeClass('far fa-star')
-        .addClass('fas fa-star');
-      $(elem).tooltip("destroy");
-      $(elem).attr("title",_t('FAVORITES_REMOVE'));
-      $(elem).removeData("original-title");
+        .addClass('fas fa-star')
+      $(elem).tooltip('destroy')
+      $(elem).attr('title', _t('FAVORITES_REMOVE'))
+      $(elem).removeData('original-title')
       if (withMessage) {
         toastMessage(
           _t('FAVORITES_ADDED'),
           3000,
-          "alert alert-success"
-        );
+          'alert alert-success'
+        )
       }
     } else {
-      $(elem).removeClass('user-favorite');
+      $(elem).removeClass('user-favorite')
       $(elem).find('i')
         .removeClass('fas fa-star')
-        .addClass('far fa-star');
-        $(elem).tooltip("destroy");
-      $(elem).attr("title",_t('FAVORITES_ADD'));
-      $(elem).removeData("original-title");
+        .addClass('far fa-star')
+      $(elem).tooltip('destroy')
+      $(elem).attr('title', _t('FAVORITES_ADD'))
+      $(elem).removeData('original-title')
       if (withMessage) {
         toastMessage(
           _t('FAVORITES_REMOVED'),
           3000,
-          "alert alert-warning"
-        );
+          'alert alert-warning'
+        )
       }
       // remove linked favorite 1.5s after
-      setTimeout(function(){
-        $(elem).each(function(){
-          if (!$(this).hasClass('user-favorite')){
-            let linkedFavoriteId = $(this).attr("data-linkedFavoriteid");
-            if (linkedFavoriteId != undefined && linkedFavoriteId.length > 0){
-              let linkedFavorite = $(`#${linkedFavoriteId}`);
-              if (linkedFavorite != undefined && linkedFavorite.length > 0){
-                $(linkedFavorite).remove();
-                $(this).remove();
+      setTimeout(() => {
+        $(elem).each(function() {
+          if (!$(this).hasClass('user-favorite')) {
+            const linkedFavoriteId = $(this).attr('data-linkedFavoriteid')
+            if (linkedFavoriteId != undefined && linkedFavoriteId.length > 0) {
+              const linkedFavorite = $(`#${linkedFavoriteId}`)
+              if (linkedFavorite != undefined && linkedFavorite.length > 0) {
+                $(linkedFavorite).remove()
+                $(this).remove()
               } else {
-                console.warn(`#linkedFavoriteId was waited but not found : ${JSON.stringify(linkedFavorite)}`);
+                console.warn(`#linkedFavoriteId was waited but not found : ${JSON.stringify(linkedFavorite)}`)
               }
             }
           }
-        });
-      }, 1500);
+        })
+      }, 1500)
     }
   },
-  addFavorite: function (resource, user, elem, checkNotEmpty = false){
+  addFavorite(resource, user, elem, checkNotEmpty = false) {
     $.ajax({
-      method: "GET",
+      method: 'GET',
       url: wiki.url(`api/triples/${resource}`),
       data: {
         property: FavoritesHelper.propertyName,
-        user: user
+        user
       },
-      success: function(data){
-        if (!Array.isArray(data) || data.length == 0){
-          if (checkNotEmpty){
+      success(data) {
+        if (!Array.isArray(data) || data.length == 0) {
+          if (checkNotEmpty) {
             toastMessage(
-              _t('FAVORITES_ERROR',{error:"not created"}),
+              _t('FAVORITES_ERROR', { error: 'not created' }),
               3000,
-              "alert alert-danger"
-            );
+              'alert alert-danger'
+            )
           } else {
             $.ajax({
-              method: "POST",
+              method: 'POST',
               url: wiki.url(`api/triples/${resource}`),
               data: {
                 property: FavoritesHelper.propertyName,
-                user: user
+                user
               },
-              success: function(){
-                FavoritesHelper.addFavorite(resource, user, elem,true);
+              success() {
+                FavoritesHelper.addFavorite(resource, user, elem, true)
               },
-              error: function(xhr,status,error){
+              error(xhr, status, error) {
                 toastMessage(
-                  _t('FAVORITES_ERROR',{error:error}),
+                  _t('FAVORITES_ERROR', { error }),
                   3000,
-                  "alert alert-danger"
-                );
+                  'alert alert-danger'
+                )
               }
-            });
+            })
           }
         } else {
-          FavoritesHelper.updateElem($(`[data-resource="${resource}"]`),"add");
+          FavoritesHelper.updateElem($(`[data-resource="${resource}"]`), 'add')
         }
       },
-      error: function(xhr,status,error){
+      error(xhr, status, error) {
         toastMessage(
-          _t('FAVORITES_ERROR',{error:error}),
+          _t('FAVORITES_ERROR', { error }),
           3000,
-          "alert alert-danger"
-        );
+          'alert alert-danger'
+        )
       }
-    });
+    })
   },
-  deleteFavorite: function (resource, user, elem, checkEmpty = false){
+  deleteFavorite(resource, user, elem, checkEmpty = false) {
     $.ajax({
-      method: "GET",
+      method: 'GET',
       url: wiki.url(`api/triples/${resource}`),
       data: {
         property: FavoritesHelper.propertyName,
-        user: user
+        user
       },
-      success: function(data){
-        if (Array.isArray(data) && data.length > 0){
-          if (checkEmpty){
+      success(data) {
+        if (Array.isArray(data) && data.length > 0) {
+          if (checkEmpty) {
             toastMessage(
-              _t('FAVORITES_ERROR',{error:"not deleted"}),
+              _t('FAVORITES_ERROR', { error: 'not deleted' }),
               3000,
-              "alert alert-danger"
-            );
+              'alert alert-danger'
+            )
           } else {
             $.ajax({
-              method: "POST",
+              method: 'POST',
               url: wiki.url(`api/triples/${resource}/delete`),
               data: {
                 property: FavoritesHelper.propertyName,
-                user: user
+                user
               },
-              success: function(){
-                FavoritesHelper.deleteFavorite(resource, user, elem,true);
+              success() {
+                FavoritesHelper.deleteFavorite(resource, user, elem, true)
               },
-              error: function(xhr,status,error){
+              error(xhr, status, error) {
                 toastMessage(
-                  _t('FAVORITES_ERROR',{error:error}),
+                  _t('FAVORITES_ERROR', { error }),
                   3000,
-                  "alert alert-danger"
-                );
+                  'alert alert-danger'
+                )
               }
-            });
+            })
           }
         } else {
-          FavoritesHelper.updateElem($(`[data-resource="${resource}"]`),"delete");
+          FavoritesHelper.updateElem($(`[data-resource="${resource}"]`), 'delete')
         }
       },
-      error: function(xhr,status,error){
+      error(xhr, status, error) {
         toastMessage(
-          _t('FAVORITES_ERROR',{error:error}),
+          _t('FAVORITES_ERROR', { error }),
           3000,
-          "alert alert-danger"
-        );
+          'alert alert-danger'
+        )
       }
-    });
+    })
   },
-  manageFavorites: function(event){
+  manageFavorites(event) {
     event.preventDefault()
-    let target = event.target;
-    if ($(target).prop('tagName') == 'I'){
-      target = $(target).parent();
+    let { target } = event
+    if ($(target).prop('tagName') == 'I') {
+      target = $(target).parent()
     }
-    let resource = $(target).data("resource");
-    let user = $(target).data("user");
-    if ($(target).hasClass('user-favorite')){
-      FavoritesHelper.deleteFavorite(resource,user,target);
+    const resource = $(target).data('resource')
+    const user = $(target).data('user')
+    if ($(target).hasClass('user-favorite')) {
+      FavoritesHelper.deleteFavorite(resource, user, target)
     } else {
-      FavoritesHelper.addFavorite(resource,user,target);
+      FavoritesHelper.addFavorite(resource, user, target)
     }
   },
-  deleteFirstFavorite: function(user,tagsValue, previousTag = null){
-    let tags = tagsValue;
-    if (previousTag || (Array.isArray(tags) && tags.length > 0)){
-      let lastTag = previousTag ? previousTag : tags.pop();
-      let resource = lastTag.resource;
+  deleteFirstFavorite(user, tagsValue, previousTag = null) {
+    const tags = tagsValue
+    if (previousTag || (Array.isArray(tags) && tags.length > 0)) {
+      const lastTag = previousTag || tags.pop()
+      const { resource } = lastTag
       $.ajax({
-        method: "GET",
+        method: 'GET',
         url: wiki.url(`api/triples/${resource}`),
         data: {
           property: FavoritesHelper.propertyName,
-          user: user
+          user
         },
-        success: function(data){
-          if (Array.isArray(data) && data.length > 0){
-            if (previousTag){
+        success(data) {
+          if (Array.isArray(data) && data.length > 0) {
+            if (previousTag) {
               toastMessage(
-                _t('FAVORITES_ERROR',{error:"not deleted"}),
+                _t('FAVORITES_ERROR', { error: 'not deleted' }),
                 3000,
-                "alert alert-danger"
-              );
+                'alert alert-danger'
+              )
             } else {
               $.ajax({
-                method: "POST",
+                method: 'POST',
                 url: wiki.url(`api/triples/${resource}/delete`),
                 data: {
                   property: FavoritesHelper.propertyName,
-                  user: user
+                  user
                 },
-                success: function(){
-                  FavoritesHelper.deleteFirstFavorite(user,tags,lastTag);
+                success() {
+                  FavoritesHelper.deleteFirstFavorite(user, tags, lastTag)
                 },
-                error: function(xhr,status,error){
+                error(xhr, status, error) {
                   toastMessage(
-                    _t('FAVORITES_ERROR',{error:error}),
+                    _t('FAVORITES_ERROR', { error }),
                     3000,
-                    "alert alert-danger"
-                  );
+                    'alert alert-danger'
+                  )
                 }
-              });
+              })
             }
           } else {
-            let elem = $(`[data-resource="${resource}"]`);
-            FavoritesHelper.updateElem(elem,"delete",false);
-            FavoritesHelper.deleteFirstFavorite(user,tags);
+            const elem = $(`[data-resource="${resource}"]`)
+            FavoritesHelper.updateElem(elem, 'delete', false)
+            FavoritesHelper.deleteFirstFavorite(user, tags)
           }
         },
-        error: function(xhr,status,error){
+        error(xhr, status, error) {
           toastMessage(
-            _t('FAVORITES_ERROR',{error:error}),
+            _t('FAVORITES_ERROR', { error }),
             3000,
-            "alert alert-danger"
-          );
+            'alert alert-danger'
+          )
         }
-      });
+      })
     } else {
       toastMessage(
         _t('FAVORITES_ALL_DELETED'),
         3000,
-        "alert alert-success"
-      );
+        'alert alert-success'
+      )
     }
   },
-  deleteAll: function(user){
+  deleteAll(user) {
     $.ajax({
-      method: "GET",
-      url: wiki.url(`api/triples`),
+      method: 'GET',
+      url: wiki.url('api/triples'),
       data: {
         property: FavoritesHelper.propertyName,
-        user: user
+        user
       },
-      success: function(data){
-        if (Array.isArray(data) && data.length > 0){
-          FavoritesHelper.deleteFirstFavorite(user,data);
+      success(data) {
+        if (Array.isArray(data) && data.length > 0) {
+          FavoritesHelper.deleteFirstFavorite(user, data)
         }
       },
-      error: function(xhr,status,error){
+      error(xhr, status, error) {
         toastMessage(
-          _t('FAVORITES_ERROR',{error:error}),
+          _t('FAVORITES_ERROR', { error }),
           3000,
-          "alert alert-danger"
-        );
+          'alert alert-danger'
+        )
       }
-    });
+    })
   },
-  init: function (){
-    $("a.favorites").addClass("eventSet").on("click",FavoritesHelper.manageFavorites);
+  init() {
+    $('a.favorites').addClass('eventSet').on('click', FavoritesHelper.manageFavorites)
   }
-};
+}
 
-FavoritesHelper.init();
-$(document).on("yw-modal-open",function(){
-  $("a.favorites:not(.eventSet)").addClass("eventSet").on("click",FavoritesHelper.manageFavorites);
-});
+FavoritesHelper.init()
+$(document).on('yw-modal-open', () => {
+  $('a.favorites:not(.eventSet)').addClass('eventSet').on('click', FavoritesHelper.manageFavorites)
+})
