@@ -30,5 +30,30 @@ module.exports = {
     'func-names': ['error', 'never'],
     'space-before-function-paren': ['error', 'never'],
     'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }]
-  }
+  },
+  ignorePatterns: [
+    "vendor",
+    "!/custom",
+    "!/javascripts",
+    "/javascripts/vendor",
+    "!/styles",
+    "!/tools",
+    "!/tools/autoupdate",
+    "!/tools/aceditor",
+    "!/tools/attach",
+    "!/tools/bazar",
+    "!/tools/contact",
+    "!/tools/helloworld",
+    "!/tools/lang",
+    "!/tools/login",
+    "!/tools/progressbar",
+    "!/tools/rss",
+    "!/tools/security",
+    "!/tools/syndication",
+    "!/tools/tableau",
+    "!/tools/tags",
+    "!/tools/templates",
+    "!/tools/toc",
+    "/tools/*",
+  ]
 }
