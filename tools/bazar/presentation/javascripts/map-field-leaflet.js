@@ -37,7 +37,10 @@ $(document).ready(function() {
         fields.forEach((field) => address += field.val() + " ")
         console.log("geocode address", address);
         address = address.replace(/\\("|'|\\)/g, " ").trim();
-        if (!address) return
+        if (!address) {
+            geocodedmarkerRefresh( map.getCenter() );
+            return
+        }
         geocodage( address, showAddressOk, showAddressError );
         return false;
     }
@@ -105,20 +108,9 @@ $(document).ready(function() {
             map.panTo( geocodedmarker.getLatLng(), {animate:true});
         }
     })
-    if ('latitude' in mapFieldData && mapFieldData.latitude != '' && 
-        'longitude' in mapFieldData && mapFieldData.longitude != ''  ){
-          var point = L.latLng(mapFieldData.latitude, mapFieldData.longitude);
-          geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
-          map.panTo( geocodedmarker.getLatLng(), {animate:true});
-          geocodedmarker.bindPopup(popupHtml( point ), {closeButton: false, closeOnClick: false});
-          geocodedmarker.on("dragend",function(ev){
-              this.openPopup(point);
-              var changedPos = ev.target.getLatLng();
-              $('#bf_latitude').val(changedPos.lat);
-              $('#bf_longitude').val(changedPos.lng);
-              $('.bf_latitude').val(changedPos.lat);
-              $('.bf_longitude').val(changedPos.lng);
-          });
+    if ('latitude' in mapFieldData && typeof mapFieldData.latitude === 'string' && mapFieldData.latitude !== '' &&
+        'longitude' in mapFieldData && typeof mapFieldData.longitude === 'string' && mapFieldData.longitude !== ''  ){
+        showAddressOk(mapFieldData.longitude, mapFieldData.latitude)
     }
   }
 });
