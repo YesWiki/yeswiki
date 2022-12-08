@@ -28,8 +28,7 @@ function geocodage(address, callbackOk, callbackError) {
   }
 
   $.when.apply($, asyncCalls)
-    .then((c1, c2)
-  => {
+    .then(function(c1, c2){
     // All async calls done.
       if (typeof (c2) == 'string' && c1.length > 0) {
       // case: only one query
