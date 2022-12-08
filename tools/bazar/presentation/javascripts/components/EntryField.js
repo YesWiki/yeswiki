@@ -1,16 +1,14 @@
 export default {
-  props: [ 'entry', 'prop' ],
+  props: ['entry', 'prop'],
   data() {
-    return {
-      isDateTime: false
-    }
+    return { isDateTime: false }
   },
   computed: {
     value() {
-      const value = this.entry[this.prop] || ""
+      const value = this.entry[this.prop] || ''
       switch (this.type) {
         case 'listedatedeb':
-          if (!value) return ""
+          if (!value) return ''
           if (value.includes('T')) this.isDateTime = true
           return new Date(value)
         case 'liste':
@@ -22,13 +20,13 @@ export default {
         case 'listefiches':
         case 'listefichesliees':
         case 'tags':
-          const values = value.split(',').map(v => this.field.options[v])
+          const values = value.split(',').map((v) => this.field.options[v])
           return values.length <= 1 ? values[0] : values
         case 'email':
-          return ""; // security
+          return '' // security
         default:
           return value
-      } 
+      }
     },
     field() {
       return this.$root.fieldInfo(this.prop)

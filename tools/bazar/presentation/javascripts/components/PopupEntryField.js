@@ -1,12 +1,10 @@
 import EntryField from './EntryField.js'
 
 export default {
-  props: [ 'entry', 'prop', 'withlabel', 'oneline', 'imagewidth', 'imageheight', 'imagemethod', 'imagetoken' ],
-  components: {
-    'EntryField': EntryField
-  },
+  props: ['entry', 'prop', 'withlabel', 'oneline', 'imagewidth', 'imageheight', 'imagemethod', 'imagetoken'],
+  components: { EntryField },
   computed: {
-    renderViaEntryField (){
+    renderViaEntryField() {
       switch (this.type) {
         case 'listedatedeb':
         case 'liste':
@@ -18,19 +16,19 @@ export default {
         case 'listefiches':
         case 'listefichesliees':
         case 'tags':
-          return !this.displayOnOneLine || Array.isArray(this.value);
+          return !this.displayOnOneLine || Array.isArray(this.value)
         default:
-          return false;
-      } 
+          return false
+      }
     },
-    displayLabel (){
-      return [0,"0",false,"false"].indexOf(this.withlabel) == -1;
+    displayLabel() {
+      return [0, '0', false, 'false'].indexOf(this.withlabel) == -1
     },
-    displayOnOneLine (){
-      return [1,"1",true,"true"].indexOf(this.oneline) > -1;
+    displayOnOneLine() {
+      return [1, '1', true, 'true'].indexOf(this.oneline) > -1
     },
     value() {
-      const value = this.entry[this.prop] || ""
+      const value = this.entry[this.prop] || ''
       switch (this.type) {
         case 'listedatedeb':
         case 'liste':
@@ -42,13 +40,13 @@ export default {
         case 'listefiches':
         case 'listefichesliees':
         case 'tags':
-          const values = value.split(',').map(v => this.field.options[v])
-          return values.length == 0 ? "" : (values.length == 1 ? values[0] : values );
+          const values = value.split(',').map((v) => this.field.options[v])
+          return values.length == 0 ? '' : (values.length == 1 ? values[0] : values)
         case 'email':
-          return ""; // security
+          return '' // security
         default:
           return value
-      } 
+      }
     },
     field() {
       return this.$root.fieldInfo(this.prop)
@@ -56,8 +54,8 @@ export default {
     type() {
       return this.field.type
     },
-    label(){
-      return this.field.label || "";
+    label() {
+      return this.field.label || ''
     }
   },
   template: `

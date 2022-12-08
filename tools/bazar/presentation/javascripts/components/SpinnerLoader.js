@@ -2,7 +2,7 @@ export default {
   props: ['height'],
   computed: {
     spinnerHeight() {
-      return (this.height || 200) + 'px'
+      return `${this.height || 200}px`
     }
   },
   template: `

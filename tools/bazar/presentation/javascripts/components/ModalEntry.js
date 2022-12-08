@@ -3,9 +3,7 @@ import SpinnerLoader from './SpinnerLoader.js'
 export default {
   components: { SpinnerLoader },
   data() {
-    return {
-      entry: {}
-    }
+    return { entry: {} }
   },
   methods: {
     displayEntry(entry) {

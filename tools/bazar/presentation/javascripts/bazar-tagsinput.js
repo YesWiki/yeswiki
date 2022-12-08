@@ -1,121 +1,119 @@
 // Jquery needed
 // tools/tags/libs/vendor/bootstrap-tagsinput.min.js needed
-$(document).ready(function () {
+$(document).ready(() => {
   function BazarTagsInputService() {
     this.init = function() {
-      if (typeof bazarlistTagsInputsData === "undefined" || bazarlistTagsInputsData.length < 1) return null;
-      let propertiesNames = Object.keys(bazarlistTagsInputsData);
-      propertiesNames.forEach(propertyName => {
-        let existingTags = bazarlistTagsInputsData[propertyName].existingTags;
-        let existingTagsArray = Object.values(existingTags);
-        let limit = bazarlistTagsInputsData[propertyName].limit ?? 0;
-        let selectedOptions = bazarlistTagsInputsData[propertyName].selectedOptions;
+      if (typeof bazarlistTagsInputsData === 'undefined' || bazarlistTagsInputsData.length < 1) return null
+      const propertiesNames = Object.keys(bazarlistTagsInputsData)
+      propertiesNames.forEach((propertyName) => {
+        const { existingTags } = bazarlistTagsInputsData[propertyName]
+        const existingTagsArray = Object.values(existingTags)
+        const limit = bazarlistTagsInputsData[propertyName].limit ?? 0
+        const { selectedOptions } = bazarlistTagsInputsData[propertyName]
 
-        let anchor = $('#formulaire .yeswiki-input-entries'+propertyName);
-        if (anchor.length == 0){
-          console.log('#formulaire .yeswiki-input-entries'+propertyName+' NOT FOUND in bazar-tagsinput.js !');
+        const anchor = $(`#formulaire .yeswiki-input-entries${propertyName}`)
+        if (anchor.length == 0) {
+          console.log(`#formulaire .yeswiki-input-entries${propertyName} NOT FOUND in bazar-tagsinput.js !`)
         } else {
           let options = {
             itemValue: 'id',
             itemText: 'title',
             typeahead: {
-                afterSelect: function(val) { anchor.tagsinput('input').val(""); },
-                source: existingTagsArray,
-                autoSelect: false,
+              afterSelect(val) { anchor.tagsinput('input').val('') },
+              source: existingTagsArray,
+              autoSelect: false
             },
             freeInput: false,
             confirmKeys: [13, 186, 188]
-          };
-          if (limit === 1){
+          }
+          if (limit === 1) {
             options = {
               ...options,
-              ...{
-                maxTags: 1
-              }
-            };
+              ...{ maxTags: 1 }
+            }
           }
-          anchor.tagsinput(options);
-          selectedOptions.forEach(selectedOption => {
-            anchor.tagsinput('add', existingTags[selectedOption]);
-          });
+          anchor.tagsinput(options)
+          selectedOptions.forEach((selectedOption) => {
+            anchor.tagsinput('add', existingTags[selectedOption])
+          })
         }
-      });
-    };
+      })
+    }
   }
 
-  var BazarTagsInputRefresh = {
+  const BazarTagsInputRefresh = {
     bazarTagsInputService: {},
     bazarlistTagsInputsData: {},
-    getFormId: function(){
-      let input = $('input[name=id_typeannonce]').first();
-      return input ? input.val() : null;
+    getFormId() {
+      const input = $('input[name=id_typeannonce]').first()
+      return input ? input.val() : null
     },
-    refresh: function (element){
-      let parent = this;
-      let propertyName = $(element).data('property-name');
-      let formId = this.getFormId();
-      let concernedInput = $(`input[name=${propertyName}]`);
+    refresh(element) {
+      const parent = this
+      const propertyName = $(element).data('property-name')
+      const formId = this.getFormId()
+      const concernedInput = $(`input[name=${propertyName}]`)
       if (propertyName && formId && concernedInput) {
         $.get(
-          wiki.url('api/forms/'+formId),
-          function (data){
+          wiki.url(`api/forms/${formId}`),
+          (data) => {
             if (data.prepared) {
-              let fields = (typeof data.prepared == 'object') 
-                ? Object.values(data.prepared) 
-                : data.prepared;
-              fields.forEach(field => {
-                if (field.propertyname && field.propertyname == propertyName){
-                  let options = field.options;
-                  if (options){
+              const fields = (typeof data.prepared == 'object')
+                ? Object.values(data.prepared)
+                : data.prepared
+              fields.forEach((field) => {
+                if (field.propertyname && field.propertyname == propertyName) {
+                  const { options } = field
+                  if (options) {
                     // get current
-                    let currentOption = concernedInput.tagsinput('items');
+                    const currentOption = concernedInput.tagsinput('items')
                     // reset tagsinput
-                    concernedInput.tagsinput('destroy');
-                    let existingTags = new Object();
-                    for (let key in options) {
+                    concernedInput.tagsinput('destroy')
+                    const existingTags = new Object()
+                    for (const key in options) {
                       existingTags[key] = {
                         id: key,
-                        title: options[key],
+                        title: options[key]
                       }
                     }
-                    let previousbazarlistTagsInputsData = {};
-                    for (let key in parent.bazarlistTagsInputsData) {
+                    const previousbazarlistTagsInputsData = {}
+                    for (const key in parent.bazarlistTagsInputsData) {
                       previousbazarlistTagsInputsData[key] = parent.bazarlistTagsInputsData[key]
-                      delete parent.bazarlistTagsInputsData[key];
+                      delete parent.bazarlistTagsInputsData[key]
                     }
                     parent.bazarlistTagsInputsData[propertyName] = {
-                      existingTags: existingTags,
+                      existingTags,
                       limit: 1,
-                      selectedOptions: currentOption[0] ? ( currentOption[0].id ? [currentOption[0].id] : []) : [],
-                    };
+                      selectedOptions: currentOption[0] ? (currentOption[0].id ? [currentOption[0].id] : []) : []
+                    }
                     // add tagsinput
-                    parent.bazarTagsInputService.init();
+                    parent.bazarTagsInputService.init()
                     // reset bazarlistTagsInputsData
-                    for (let key in previousbazarlistTagsInputsData) {
-                      parent.bazarlistTagsInputsData[key] = previousbazarlistTagsInputsData[key] ;
+                    for (const key in previousbazarlistTagsInputsData) {
+                      parent.bazarlistTagsInputsData[key] = previousbazarlistTagsInputsData[key]
                     }
                   }
                 }
-              });
+              })
             }
           }
         )
       }
     },
-    init: function(bazarTagsInputService,bazarlistTagsInputsData){
-      let parent = this;
-      this.bazarTagsInputService = bazarTagsInputService;
-      this.bazarlistTagsInputsData = bazarlistTagsInputsData;
-      $('.tagsinput-refresh').each(function (){
-        $(this).click(function(){
-          parent.refresh(this);
-        });
-      });
-    },
+    init(bazarTagsInputService, bazarlistTagsInputsData) {
+      const parent = this
+      this.bazarTagsInputService = bazarTagsInputService
+      this.bazarlistTagsInputsData = bazarlistTagsInputsData
+      $('.tagsinput-refresh').each(function() {
+        $(this).click(function() {
+          parent.refresh(this)
+        })
+      })
+    }
   }
 
-  var bazarTagsInputService = new BazarTagsInputService();
-  bazarTagsInputService.init();
+  const bazarTagsInputService = new BazarTagsInputService()
+  bazarTagsInputService.init()
 
-  BazarTagsInputRefresh.init(bazarTagsInputService,bazarlistTagsInputsData ?? {});
-});
+  BazarTagsInputRefresh.init(bazarTagsInputService, bazarlistTagsInputsData ?? {})
+})

@@ -11,16 +11,15 @@ export default {
     collapsed: {
       type: Boolean,
       default: true
-    },
+    }
   },
   data() {
-    return {
-      internalCollapsed: true // value to work internally, name should not conflict with prop
+    return { internalCollapsed: true // value to work internally, name should not conflict with prop
     }
   },
   computed: {
     panelClass() {
-      let color = this.color || 'default'
+      const color = this.color || 'default'
       return `panel-${color}`
     }
   },
@@ -29,7 +28,7 @@ export default {
       this.internalCollapsed = !this.internalCollapsed
       this.$emit('update:collapsed', this.internalCollapsed)
       if (!this.internalCollapsed) this.$emit('opened')
-    },    
+    }
   },
   mounted() {
     this.internalCollapsed = this.collapsed

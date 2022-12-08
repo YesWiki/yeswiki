@@ -1,5 +1,5 @@
 // TODO better list and translatable
-var wordsToExcludeFromSearch = ['le', 'la', 'les', 'du', 'en', 'un', 'une']
+const wordsToExcludeFromSearch = ['le', 'la', 'les', 'du', 'en', 'un', 'une']
 
 export default {
   data: {
@@ -9,9 +9,9 @@ export default {
   methods: {
     searchEntries(entries, search) {
       switch (this.params.search) {
-        case "dynamic":
+        case 'dynamic':
           return this.localSearch(entries, search)
-        case "true":
+        case 'true':
           return this.distantSearch(entries, search)
         default:
           return entries
@@ -26,12 +26,12 @@ export default {
       }
       this.isLoading = true
       this.pendingRequest = null
-      let params = { ...this.params, ...{ q: search } }
+      const params = { ...this.params, ...{ q: search } }
       $.getJSON(wiki.url('?api/entries/bazarlist'), params, (data) => {
         this.isLoading = false
-        let searchedIds = data.entries.map(entry => entry[0])
-        this.searchedEntries = entries.filter(entry => searchedIds.includes(entry.id_fiche))
-        this.filterEntries()        
+        const searchedIds = data.entries.map((entry) => entry[0])
+        this.searchedEntries = entries.filter((entry) => searchedIds.includes(entry.id_fiche))
+        this.filterEntries()
         if (this.pendingRequest) {
           this.distantSearch(entries, this.pendingRequest)
         }
@@ -40,14 +40,14 @@ export default {
     },
     // Search with existing data in javascript
     localSearch(entries, search) {
-      let words = search.split(' ')
-                        .map(word => this.removeDiatrics(word))
-                        .filter(word => word.length > 1 && !wordsToExcludeFromSearch.includes(word))
-      let result = entries.filter(entry => {
+      const words = search.split(' ')
+        .map((word) => this.removeDiatrics(word))
+        .filter((word) => word.length > 1 && !wordsToExcludeFromSearch.includes(word))
+      let result = entries.filter((entry) => {
         entry.searchScore = 0
-        words.forEach(word => {
-          this.params.searchfields.forEach(field => {
-            let fieldValue = entry[field] ? entry[field] : ""
+        words.forEach((word) => {
+          this.params.searchfields.forEach((field) => {
+            let fieldValue = entry[field] ? entry[field] : ''
             if (Array.isArray(fieldValue)) fieldValue = fieldValue.join(' ')
             fieldValue = this.removeDiatrics(fieldValue)
             if (fieldValue && fieldValue.includes(word)) {
@@ -58,11 +58,11 @@ export default {
         return entry.searchScore > 0
       })
 
-      result = result.sort((a, b) => (a.searchScore > b.searchScore) ? -1 : 1)
+      result = result.sort((a, b) => ((a.searchScore > b.searchScore) ? -1 : 1))
       return result
     },
     removeDiatrics(str) {
-      return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+      return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
     }
   }
 }

@@ -1,40 +1,34 @@
 export default {
-  props : ['bazarcalendar'],
-  data () {
-    return {
-      href: ""
-    };
+  props: ['bazarcalendar'],
+  data() {
+    return { href: '' }
   },
   methods: {
-    updateHref: function(e){
-      let params = this.bazarcalendar.params;
-      let baseUrlPath = `api/entries/ical`;
-      let formId = params.id;
-      let formIdParams = params.id.indexOf(",") > -1 ? {} : {id:formId};
+    updateHref(e) {
+      const { params } = this.bazarcalendar
+      const baseUrlPath = 'api/entries/ical'
+      const formId = params.id
+      const formIdParams = params.id.indexOf(',') > -1 ? {} : { id: formId }
 
-      let dateFilterParams = params.datefilter != undefined 
-        ? {
-          datefilter: params.datefilter
-        }
-        : {};
+      const dateFilterParams = params.datefilter != undefined
+        ? { datefilter: params.datefilter }
+        : {}
 
-      let entriesParams = {};
-      let filters = this.bazarcalendar.$root.computedFilters;
-      let search = this.bazarcalendar.$root.search;
-      if (search.length > 0 || Object.keys(filters).filter(filterKey => filters[filterKey].length > 0).length > 0 || (params.id.indexOf(",") > -1)){
+      let entriesParams = {}
+      const filters = this.bazarcalendar.$root.computedFilters
+      const { search } = this.bazarcalendar.$root
+      if (search.length > 0 || Object.keys(filters).filter((filterKey) => filters[filterKey].length > 0).length > 0 || (params.id.indexOf(',') > -1)) {
         // filter on entries
-        let entries = this.bazarcalendar.entries;
-        entriesParams = {
-          query: "id_fiche="+entries.map(entry => entry['id_fiche']).join(',')
-        };
+        const { entries } = this.bazarcalendar
+        entriesParams = { query: `id_fiche=${entries.map((entry) => entry.id_fiche).join(',')}` }
       }
-      let urlParams = {
+      const urlParams = {
         ...formIdParams,
         ...dateFilterParams,
         ...entriesParams
-      };
-      this.href = wiki.url(baseUrlPath,urlParams);
-      $(this.$el).attr('href',this.href);
+      }
+      this.href = wiki.url(baseUrlPath, urlParams)
+      $(this.$el).attr('href', this.href)
     }
   },
   computed: {
