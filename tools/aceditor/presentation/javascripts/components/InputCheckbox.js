@@ -7,24 +7,23 @@ export default {
     }
   },
   methods: {
-    setCheckedFromValue(value){
+    setCheckedFromValue(value) {
       if (value === undefined) {
-        // if no value, we initialize to false, the the param will be correctly set 
+        // if no value, we initialize to false, the the param will be correctly set
         // i.e. myparam="false" or myparam="0" if uncheckvalue is defined
-        let defaultValue = this.config.default || "false"
-        let checkedvalue = this.config.checkedvalue || "true"
+        const defaultValue = this.config.default || 'false'
+        const checkedvalue = this.config.checkedvalue || 'true'
         this.checked = `${defaultValue}` == `${checkedvalue}`
-      }
-      else {
+      } else {
         // Cast values to string before compare, because in yaml we might use boolean or number, but
         // wikicode will always use strings
-        let checkedvalue = this.config.checkedvalue || "true"
+        const checkedvalue = this.config.checkedvalue || 'true'
         this.checked = `${value}` == `${checkedvalue}`
       }
     }
   },
   mounted() {
-    this.setCheckedFromValue(this.value);
+    this.setCheckedFromValue(this.value)
   },
   watch: {
     checked() {
@@ -35,7 +34,7 @@ export default {
     },
     value() {
       // watch value because it can be affected after mounted
-      this.setCheckedFromValue(this.value);
+      this.setCheckedFromValue(this.value)
     }
   },
   template: `

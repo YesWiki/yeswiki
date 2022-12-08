@@ -229,9 +229,7 @@ export const app = {
           setTimeout(() => this.updateActionParams(), 0)
         }
       } else {
-        const idsToSearch = this.selectedFormsIds.filter((fid) => {
-          return !this.loadedForms.hasOwnProperty(fid) && !this.loadingForms.includes(fid)
-        })
+        const idsToSearch = this.selectedFormsIds.filter((fid) => !this.loadedForms.hasOwnProperty(fid) && !this.loadingForms.includes(fid))
         if (idsToSearch.length > 0) {
           idsToSearch.forEach((id) => this.loadingForms.push(id))
           const params = { demand: 'forms' }

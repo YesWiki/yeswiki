@@ -114,7 +114,10 @@ class Aceditor {
           this.flyingButton.show().onClick(() => {
             this.linkModal.open({
               action: 'edit',
-              link, text, title, extra,
+              link,
+              text,
+              title,
+              extra,
               onComplete: (result) => { this.editor.replaceCurrentGroupBy(result) }
             })
           })

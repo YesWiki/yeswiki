@@ -6,7 +6,7 @@ ace.define('ace/mode/yeswiki_highlight_rules', ['require', 'exports', 'module', 
   const { TextHighlightRules } = require('./text_highlight_rules')
   const { HtmlHighlightRules } = require('./html_highlight_rules')
 
-  const markdownLink =  { // link markdown
+  const markdownLink = { // link markdown
     token: ['markup.open.yw-link-markdown', 'link-text', 'markup', 'markup', 'link-url',
       'space', 'title-quote-mark', 'link-title', 'title-quote-mark'],
     regex: '(\\[)([^\\]]*)(\\])(\\()([^\\)\\s]*)(\\s?)("?)([^\\)"]*)("?)',
@@ -58,7 +58,7 @@ ace.define('ace/mode/yeswiki_highlight_rules', ['require', 'exports', 'module', 
         token: 'markup.list',
         regex: '^\\s{1,3}(?:-|\\d+\\.)\\s+',
         next: 'listblock-start'
-      }, markdownLink , {
+      }, markdownLink, {
         include: 'basic',
         noEscape: true
       }],
