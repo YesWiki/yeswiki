@@ -1,13 +1,13 @@
-const $formBuilderTextInput = $('#form-builder-text')
-const $formBuilderContainer = $('#form-builder-container')
+var $formBuilderTextInput = $('#form-builder-text')
+var $formBuilderContainer = $('#form-builder-container')
 let formBuilder
 
 // When user add manuall via wikiCode a list or a formId that does not exist, keep the value
 // so it can be added the select option list
-const listAndFormUserValues = {}
+var listAndFormUserValues = {}
 // Fill the listAndFormUserValues
-const text = $formBuilderTextInput.val().trim()
-const textFields = text.split('\n')
+var text = $formBuilderTextInput.val().trim()
+var textFields = text.split('\n')
 for (var i = 0; i < textFields.length; i++) {
   const textField = textFields[i]
   const fieldValues = textField.split('***')
@@ -30,7 +30,7 @@ for (var i = 0; i < textFields.length; i++) {
   }
 }
 // Custom fields to add to form builder
-const fields = [
+var fields = [
   // {
   //   label: "Sélecteur de date",
   //   name: "jour",
@@ -147,14 +147,14 @@ const fields = [
 ]
 
 // Some attributes configuration used in multiple fields
-const visibilityOptions = {
+var visibilityOptions = {
   ' * ': _t('EVERYONE'),
   ' + ': _t('IDENTIFIED_USERS'),
   ' % ': _t('BAZ_FORM_EDIT_OWNER_AND_ADMINS'),
   '@admins': _t('MEMBER_OF_GROUP', { groupName: 'admin' })
 }
 // create list of groups
-const formattedGroupList = []
+var formattedGroupList = []
 if (groupsList && groupsList.length > 0) {
   const groupsListLen = groupsList.length
   for (i = 0; i < groupsListLen; ++i) {
@@ -164,7 +164,7 @@ if (groupsList && groupsList.length > 0) {
   }
 }
 
-const aclsOptions = {
+var aclsOptions = {
   ...visibilityOptions,
   ...{
     user:
@@ -172,24 +172,24 @@ const aclsOptions = {
   },
   ...formattedGroupList
 }
-const aclsCommentOptions = {
+var aclsCommentOptions = {
   ...{ 'comments-closed': _t('BAZ_FORM_EDIT_COMMENTS_CLOSED') },
   ...visibilityOptions,
   ...{ user: _t('BAZ_FORM_EDIT_USER') },
   ...formattedGroupList
 }
-const readConf = { label: _t('BAZ_FORM_EDIT_CAN_BE_READ_BY'), options: { ...visibilityOptions, ...formattedGroupList }, multiple: true }
-const writeconf = { label: _t('BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY'), options: { ...visibilityOptions, ...formattedGroupList }, multiple: true }
-const searchableConf = {
+var readConf = { label: _t('BAZ_FORM_EDIT_CAN_BE_READ_BY'), options: { ...visibilityOptions, ...formattedGroupList }, multiple: true }
+var writeconf = { label: _t('BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY'), options: { ...visibilityOptions, ...formattedGroupList }, multiple: true }
+var searchableConf = {
   label: _t('BAZ_FORM_EDIT_SEARCH_LABEL'),
   options: { '': _t('NO'), 1: _t('YES') }
 }
-const semanticConf = {
+var semanticConf = {
   label: _t('BAZ_FORM_EDIT_SEMANTIC_LABEL'),
   value: '',
   placeholder: 'Ex: https://schema.org/name'
 }
-const selectConf = {
+var selectConf = {
   subtype2: {
     label: _t('BAZ_FORM_EDIT_SELECT_SUBTYPE2_LABEL'),
     options: {
@@ -224,7 +224,7 @@ const selectConf = {
   semantic: semanticConf
   // searchable: searchableConf -> 10/19 Florian say that this conf is not working for now
 }
-const TabsConf = {
+var TabsConf = {
   formTitles: {
     label: _t('BAZ_FORM_EDIT_TABS_FOR_FORM'),
     value: _t('BAZ_FORM_EDIT_TABS_FORMTITLES_VALUE'),
@@ -251,7 +251,7 @@ const TabsConf = {
     options: { '': _t('NORMAL_F'), 'btn-xs': _t('SMALL_F') }
   }
 }
-const TabChangeConf = {
+var TabChangeConf = {
   formChange: {
     label: _t('BAZ_FORM_EDIT_TABS_FOR_FORM'),
     options: { formChange: _t('YES'), noformchange: _t('NO') },
@@ -265,7 +265,7 @@ const TabChangeConf = {
 }
 
 // Attributes to be configured for each field
-const typeUserAttrs = {
+var typeUserAttrs = {
   text: {
     size: { label: _t('BAZ_FORM_EDIT_TEXT_SIZE'), value: '' },
     maxlength: { label: _t('BAZ_FORM_EDIT_TEXT_MAX_LENGTH'), value: '' },
@@ -538,7 +538,7 @@ const typeUserAttrs = {
 }
 
 // How a field is represented in the formBuilder view
-const templates = {
+var templates = {
   champs_mail(fieldData) {
     return { field: `<input id="${fieldData.name}" type="email" value="" />` }
   },
@@ -647,13 +647,13 @@ const templates = {
   }
 }
 
-const typeUserDisabledAttrs = {
+var typeUserDisabledAttrs = {
   tabs: ['required', 'value', 'name', 'label'],
   tabchange: ['required', 'value', 'name', 'label'],
   bookmarklet: ['required', 'value']
 }
 
-const inputSets = [
+var inputSets = [
   {
     label: _t('BAZ_FORM_EDIT_TABS'),
     name: 'tabs',
@@ -680,7 +680,7 @@ const inputSets = [
 ]
 
 // Mapping betwwen yes wiki syntax and FormBuilder json syntax
-const defaultMapping = {
+var defaultMapping = {
   0: 'type',
   1: 'name',
   2: 'label',
@@ -697,11 +697,11 @@ const defaultMapping = {
   14: 'semantic',
   15: 'queries'
 }
-const lists = {
+var lists = {
   ...defaultMapping,
   ...{ 1: 'listeOrFormId', 5: 'defaultValue', 6: 'name' }
 }
-const yesWikiMapping = {
+var yesWikiMapping = {
   text: defaultMapping,
   url: defaultMapping,
   number: defaultMapping,
@@ -815,7 +815,7 @@ const yesWikiMapping = {
   }
 }
 // Mapping betwwen yeswiki field type and standard field implemented by form builder
-const yesWikiTypes = {
+var yesWikiTypes = {
   lien_internet: { type: 'url' },
   lien_internet_bis: { type: 'text', subtype: 'url' },
   mot_de_passe: { type: 'text', subtype: 'password' },
@@ -838,13 +838,13 @@ const yesWikiTypes = {
   listefiches: { type: 'listefichesliees' }
 }
 
-const defaultFieldsName = {
+var defaultFieldsName = {
   textarea: 'bf_description',
   image: 'bf_image',
   champs_mail: 'bf_mail'
 }
 
-const I18nOption = {
+var I18nOption = {
   ar: 'ar-SA',
   ca: 'ca-ES',
   cs: 'cs-CZ',
@@ -894,7 +894,7 @@ function copyMultipleSelectValues(currentField) {
   }
 }
 
-const typeUserEvents = {}
+var typeUserEvents = {}
 for (const key in typeUserAttrs) {
   typeUserEvents[key] = { onclone: copyMultipleSelectValues }
 }
