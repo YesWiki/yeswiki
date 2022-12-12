@@ -143,6 +143,12 @@ var fields = [
     name: 'tabchange',
     attrs: { type: 'tabchange' },
     icon: '<i class="fas fa-stop"></i>'
+  },
+  {
+    label: _t('BAZ_REACTIONS_FIELD'),
+    name: "reactions",
+    attrs: { type: "reactions" },
+    icon: '<i class="far fa-thumbs-up"></i>',
   }
 ]
 
@@ -515,6 +521,33 @@ var typeUserAttrs = {
     write: writeconf,
     semantic: semanticConf
   },
+  reactions: {
+    fieldlabel: {
+      label: _t('BAZ_REACTIONS_FIELD_ACTIVATE_LABEL'), 
+      value: "",
+      placeholder: _t('BAZ_ACTIVATE_REACTIONS')
+    },
+    value: {
+      label: _t('BAZ_REACTIONS_FIELD_DEFAULT_ACTIVATION_LABEL'), 
+      value: "oui"
+    },
+    labels: {
+      label: _t('BAZ_REACTIONS_FIELD_LABELS_LABEL'), 
+      value: ""
+    },
+    images: {
+      label: _t('BAZ_REACTIONS_FIELD_IMAGES_LABEL'), 
+      value: "",
+      placeholder: _t('BAZ_REACTIONS_FIELD_IMAGES_PLACEHOLDER')
+    },
+    ids: {
+      label: _t('BAZ_REACTIONS_FIELD_IDS_LABEL'), 
+      value: ""
+    },
+    read: readConf,
+    write: writeconf,
+    semantic: semanticConf,
+  },
   custom: {
     param0: { label: 'Param0', value: '' },
     param1: { label: 'Param1', value: '' },
@@ -644,13 +677,26 @@ var templates = {
         templateHelper.prependHTMLBeforeGroup(field, 'formChange', $('<div/>').addClass('form-group').append($('<b/>').append(_t('BAZ_FORM_EDIT_TABCHANGE_CHANGE_LABEL'))))
       }
     }
+  },
+  reactions: function (field) {
+    return { 
+      field: `<i class="far fa-thumbs-up"></i> ${field.fieldlabel || _t('BAZ_ACTIVATE_REACTIONS')}` ,
+      onRender() {
+          templateHelper.defineLabelHintForGroup(field, 'fieldlabel', _t('BAZ_REACTIONS_FIELD_ACTIVATE_HINT'))
+          templateHelper.defineLabelHintForGroup(field, 'value', _t('BAZ_REACTIONS_FIELD_VALUE_HINT'))
+          templateHelper.defineLabelHintForGroup(field, 'ids', _t('BAZ_REACTIONS_FIELD_IDS_HINT'))
+          templateHelper.defineLabelHintForGroup(field, 'images', _t('BAZ_REACTIONS_FIELD_IMAGES_HINT'))
+          templateHelper.defineLabelHintForGroup(field, 'labels', _t('BAZ_REACTIONS_FIELD_LABELS_HINT'))
+      }
+    };
   }
 }
 
 var typeUserDisabledAttrs = {
   tabs: ['required', 'value', 'name', 'label'],
   tabchange: ['required', 'value', 'name', 'label'],
-  bookmarklet: ['required', 'value']
+  bookmarklet: ['required', 'value'],
+  reactions: ['label','required']
 }
 
 var inputSets = [
@@ -811,6 +857,15 @@ var yesWikiMapping = {
       1: 'formChange',
       2: '',
       3: 'viewChange'
+    }
+  },
+  reactions: {
+    ...defaultMapping,
+    ...{
+      2: "ids",
+      3: "labels",
+      4: "images",
+      6: "fieldlabel"
     }
   }
 }

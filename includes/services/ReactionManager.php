@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Service;
 
 use YesWiki\Bazar\Field\TextareaField;
+use YesWiki\Bazar\Field\ReactionsField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\DbService;
@@ -20,6 +21,8 @@ class ReactionManager
     public const TYPE_URI = 'https://yeswiki.net/vocabulary/reaction';
     public const DEFAULT_TITLE_T = 'REACTION_SHARE_YOUR_REACTION';
     public const DEFAULT_LABELS_T = ['REACTION_LIKE', 'REACTION_DISLIKE', 'REACTION_ANGRY', 'REACTION_SURPRISED', 'REACTION_THINKING'];
+    // to not depend on labels' translation
+    public const DEFAULT_IDS = ['japprouve','je-napprouve-pas','fachee','surprise','dubitatifve'];
     public const DEFAULT_IMAGES = ['👍', '👎', '😡', '😮', '🤔'];
     public const DEFAULT_MAX_REACTIONS = 1;
 
@@ -66,12 +69,13 @@ class ReactionManager
                 // @todo remove this for ectoplasme
                 $idReaction = 'reactionField';
                 $resKey = "$idReaction|{$v['value']['pageTag']}";
-                if (!isset($res[$resKey]) || !isset($res[$resKey]['parameters'])) {
-                    $params = $this->getParametersFromField($v['value']['pageTag']);
-                    if (!isset($res[$resKey])) {
-                        $res[$resKey] = [];
-                    }
-                    $res[$resKey]['parameters'] = $params;
+                if (!isset($res[$resKey])) {
+                    $res[$resKey] = [];
+                }
+                if (!isset($res[$resKey]['parameters'])) {
+                    $params = [];
+                    $this->appendParametersFromField($params, $v['value']['pageTag']);
+                    $res[$resKey]['parameters'] = $params[array_key_first($params)];
                     $res[$resKey]['parameters']['pageTag'] = $v['value']['pageTag'];
                 }
                 $res[$resKey]['reactions'][]=array_merge([
@@ -104,7 +108,8 @@ class ReactionManager
     {
         $p = $this->wiki->LoadPage($page);
         if (!empty($p)) {
-            $params = $this->extractParamsFromActionDefinition($p['body']);
+            $params = [];
+            $this->appendParamsFromActionDefinition($params, $p['body']);
             if (!empty($params)) {
                 if ($idReaction != null && isset($params[$idReaction])) {
                     return [$idReaction => $params[$idReaction]];
@@ -116,7 +121,7 @@ class ReactionManager
         }
         return [];
     }
-    
+
     public function getActionParametersFromEntry($entryId, $idReaction = null)
     {
         $entry = $this->entryManager->getOne($entryId);
@@ -127,16 +132,14 @@ class ReactionManager
             if (!empty($form['prepared'])) {
                 foreach ($form['prepared'] as $field) {
                     if ($field instanceof TextareaField && $field->getSyntax() == TextareaField::SYNTAX_WIKI && !empty($entry[$field->getPropertyName()])) {
-                        $params = array_merge($params, $this->extractParamsFromActionDefinition($entry[$field->getPropertyName()]));
+                        $this->appendParamsFromActionDefinition($params, $entry[$field->getPropertyName()]);
+                    } elseif ($field instanceof ReactionsField) {
+                        $this->appendParametersFromField($params, $entryId, $field);
                     }
-                }
-                $fieldParams = $this->getParametersFromField($entryId);
-                if (!empty($fieldParams)) {
-                    $params = array_merge($params, [ 'reactionField' => $fieldParams]);
                 }
             }
             if (!empty($params)) {
-                if ($idReaction != null && isset($params[$idReaction])) {
+                if (!is_null($idReaction) && isset($params[$idReaction])) {
                     return [$idReaction => $params[$idReaction]];
                 } else {
                     ksort($params);
@@ -147,9 +150,8 @@ class ReactionManager
         return $params;
     }
 
-    protected function extractParamsFromActionDefinition(string $text): array
+    protected function appendParamsFromActionDefinition(array &$params, string $text)
     {
-        $params = [];
         if (preg_match_all('/{{reactions(?:\s([^}]*))?\s*}}/Ui', $text, $matches)) {
             foreach ($matches[0] as $id => $m) {
                 $paramText = $matches[1][$id];
@@ -187,14 +189,12 @@ class ReactionManager
                     $images = array_map('trim', explode(',', $paramMatches[2][$k]));
                     $htmlImages = [];
                     foreach ($images as $i => $img) {
-                        $image = '';
-                        if (preg_match("/.(gif|jpeg|png|jpg|svg|webp)$/i", $img) == 1) { //image
-                            $image = '<img class="img-responsive" src="'.$img.'" alt="reaction image" />';
-                        } elseif (preg_match('/\p{S}/u', $img) == 1) { //emoji
-                            $image = '<span class="reaction-emoji">'.$img.'</span>';
-                        } elseif (preg_match("/^(fa[srb]? fa-*)/i", $img) == 1) { //class
-                            $image = '<i class="reaction-fa-icons '.$img.'"></i>';
-                        }
+                        $image = empty($img)
+                            ? ''
+                            : trim($this->wiki->render('@core/_reactions_images.twig', [
+                                'image' => $img,
+                                'id' => 'image'
+                            ]));
                         $htmlImages[$ids[$i]] = $image;
                     }
                     $paramMatches[2][$k] = $htmlImages;
@@ -206,53 +206,75 @@ class ReactionManager
                 }
             }
         }
-        return $params;
     }
 
     /**
      * to ensure backward compatibility with old reactions from lms extension
+     * @param array $params
      * @param string $tag
-     * @return array $params
+     * @param null|ReactionsField $field
      */
-    protected function getParametersFromField(string $tag): array
+    protected function appendParametersFromField(array &$params, string $tag, ?ReactionsField $field = null)
     {
-        $entry = $this->entryManager->getOne($tag);
-        $formId = $entry['id_typeannonce'];
-        $field = $this->formManager->findFieldFromNameOrPropertyName('reactions', $formId);
         $labels = [];
         $images = [];
-        if (!empty($field)) {
-            $data = $field->jsonSerialize();
-            $ids = $data['ids'];
-            $titles = $data['titles'];
-            foreach ($ids as $key => $id) {
-                $labels[$id] = $titles[$key] ?? $id;
-            }
-            $form = $this->formManager->getOne($formId);
-            $fieldTemplate = array_filter($form['template'], function ($fTemplate) {
-                return $fTemplate[0] == 'reactions';
-            });
-            $fieldTemplate = $fieldTemplate[array_key_first($fieldTemplate)];
-            $fImages = isset($fieldTemplate[4]) ? explode(',', $fieldTemplate[4]) : [];
-            foreach ($ids as $key => $id) {
-                if (!empty($fImages[$key])) {
-                    if (file_exists("files/{$fImages[$key]}")) {
-                        $images[$id] = "<img class=\"reaction-img\" alt=\"icon $id\" src=\"files/{$fImages[$key]}\"/>";
-                    }
-                } else {
-                    if (file_exists("tools/lms/presentation/images/mikone-$id.svg")) {
-                        $images[$id] = "<img class=\"reaction-img\" alt=\"icon $id\" src=\"tools/lms/presentation/images/mikone-$id.svg\"/>";
+        if (is_null($field) && !empty($tag)) {
+            $entry = $this->entryManager->getOne($tag);
+            if (!empty($entry['id_typeannonce'])) {
+                $form = $this->formManager->getOne($entry['id_typeannonce']);
+                if (!empty($form['prepared'])) {
+                    $reactionsFields = array_filter($form['prepared'], function ($intField) {
+                        return ($intField instanceof ReactionsField);
+                    });
+                    if (!empty($reactionsFields)) {
+                        // first with name equal to 'reactions'
+                        foreach ($reactionsFields as $intField) {
+                            if ($intField->getName() === 'reactions') {
+                                $field = $intField;
+                                break;
+                            }
+                        }
+                        if (empty($field)) {
+                            // or first with empty name
+                            foreach ($reactionsFields as $intField) {
+                                if (empty($intField->getName()) || trim($intField->getName()) === '') {
+                                    $field = $intField;
+                                    break;
+                                }
+                            }
+                        }
+                        if (empty($field)) {
+                            // or first
+                            $field = $reactionsFields[array_key_first($reactionsFields)];
+                        }
                     }
                 }
             }
         }
+        if (!empty($field)) {
+            $reactionId = empty(trim($field->getName())) ? 'reactionField' : trim($field->getName());
+            $ids = $field->getIds();
+            $rawLabels = $field->getLabels();
+            $rawImages = $field->getImagesPath();
 
-        return [
-            'images' => $images,
-            'labels' => $labels,
-            'pageTag' => $tag,
-            'title' => _t('REACTION_ON_ENTRY')
-        ];
+            $labels = [];
+            $images = [];
+            foreach ($ids as $k => $id) {
+                $labels[$id] = $rawLabels[$k];
+                $images[$id] = empty($rawImages[$k])
+                    ? ''
+                    : trim($this->wiki->render('@core/_reactions_images.twig', [
+                        'image' => $rawImages[$k],
+                        'id' => $id
+                    ]));
+            }
+            $params[$reactionId] = [
+                'labels' => $labels,
+                'images' => $images,
+                'pageTag' => $tag,
+                'title' => _t('BAZ_SHARE_YOUR_REACTION')
+            ];
+        }
     }
 
     public function getAllReactionInfos($idReaction, $page)

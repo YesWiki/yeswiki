@@ -304,6 +304,17 @@ return [
     // 'BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST' => 'Liste vide',
     // 'BAZ_DRAG_n_DROP_CHECKBOX_FILTER_TEXT' => 'Nombre d\'&eacute;l&eacute;ments : ',
 
+    // fields/ReactionsField.php
+    // 'BAZ_ACTIVATE_REACTIONS' => 'Activer les réactions ?',
+    // 'BAZ_REACTIONS_DEFAULT_BLACK_IDEA' => 'Ca me perturbe',
+    // 'BAZ_REACTIONS_DEFAULT_GRATITUDE' => 'Gratitude',
+    // 'BAZ_REACTIONS_DEFAULT_I_LOVE' => 'J\'aime',
+    // 'BAZ_REACTIONS_DEFAULT_I_UNDERSTOOD' => 'J\'ai appris quelque chose',
+    // 'BAZ_REACTIONS_DEFAULT_NOT_AGREE' => 'Je ne suis pas d\'accord',
+    // 'BAZ_REACTIONS_DEFAULT_NOT_UNDERSTOOD' => 'J\'ai pas compris',
+    // 'BAZ_SHARE_YOUR_COMMENT' => 'Et n\'hésitez pas à faire un commentaire pour approfondir la réflexion !',
+    // 'BAZ_SHARE_YOUR_REACTION' => 'Partagez votre réaction à propos de ce contenu',
+
     // fields/WidgetHandler.php
     // 'BAZ_WIDGET_HANDLER_TITLE' => 'Partager les résultats par widget HTML (code embed)',
 
