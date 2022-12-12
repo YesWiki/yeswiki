@@ -34,7 +34,7 @@ return [
     'HOMEPAGE_WIKINAME' => 'PaginaPrincipal',
     'MY_YESWIKI_SITE' => 'El meu lloc YesWiki',
     // 'FILE_WRITE_PROTECTED' => 'le fichier de configuration est protégé en écriture',
-    
+
     // ACLs
     // 'DENY_READ' => 'Vous n\'êtes pas autorisé à lire cette page',
     // 'DENY_WRITE' => 'Vous n\'êtes pas autorisé à écrire sur cette page',
@@ -131,7 +131,7 @@ return [
     // 'FORM_RETURN' => 'Retour au formulaire',
     // 'NO_RECENT_COMMENTS' => 'Pas de commentaires récents',
     // 'NO_SELECTED_COMMENTS_TO_ERASE' => 'Aucun commentaire n\'a été sélectionné pour étre effacé',
-    
+
     // actions/footer.php ignorada, perquè els patrons d'eines han donat un error
     // actions/header.php ignorada, perquè els patrons d'eines han donat un error
 
@@ -642,4 +642,6 @@ return [
     // 'REACTION_FROM_PAGE' => 'de la page',
     // 'REACTION_ON_ENTRY' => 'Réaction sur une fiche',
     // 'REACTION_TITLE_PARAM_NEEDED' => 'Le paramètre \'titre\' est obligatoire',
+    // 'REACTION_BAD_IMAGE_FORMAT' => 'Mauvais format d\'image : doit être un fichier, un icône utf8 ou une classe Fontawesome',
+    // 'REACTION_NO_IMAGE' => 'Image manquante',
 ];

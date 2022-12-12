@@ -663,4 +663,6 @@ return [
     'REACTION_FROM_PAGE' => 'de la page',
     'REACTION_ON_ENTRY' => 'Réaction sur une fiche',
     'REACTION_TITLE_PARAM_NEEDED' => 'Le paramètre \'titre\' est obligatoire',
+    'REACTION_BAD_IMAGE_FORMAT' => 'Mauvais format d\'image : doit être un fichier, un icône utf8 ou une classe Fontawesome',
+    'REACTION_NO_IMAGE' => 'Image manquante',
 ];

@@ -239,6 +239,22 @@ return [
     "BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION" => "Ne pas effacer",
     "BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT" => "Pour effacer ou non le contenu de ce qui est masqué",
 
+    // reactions
+    'BAZ_ACTIVATE_REACTIONS' => 'Activer les réactions ?',
+    'BAZ_REACTIONS_FIELD' => 'Réactions',
+    'BAZ_REACTIONS_FIELD_ACTIVATE_HINT' => 'Laisser vide pour utiliser le texte par défaut',
+    'BAZ_REACTIONS_FIELD_ACTIVATE_LABEL' => 'Texte pour édition',
+    'BAZ_REACTIONS_FIELD_DEFAULT_ACTIVATION_LABEL' => 'Activation par défaut',
+    'BAZ_REACTIONS_FIELD_IDS_HINT' => 'Laisser vide, sauf usages avancées (pas d\'espace, que des minuscules, chiffres ou tiret)',
+    'BAZ_REACTIONS_FIELD_IDS_LABEL' => 'Identifiants des réactions',
+    'BAZ_REACTIONS_FIELD_IMAGES_HINT' => 'Laisser vide ou séparés par des virgules (icône, nom de fichier ou classe FontAwesome)',
+    'BAZ_REACTIONS_FIELD_IMAGES_LABEL' => 'Icônes',
+    'BAZ_REACTIONS_FIELD_IMAGES_PLACEHOLDER' => 'mikone-top-gratitude.svg,j-aime,j-ai-appris,pas-compris,pas-d-accord,idee-noire',
+    'BAZ_REACTIONS_FIELD_LABELS_HINT' => 'Laisser vide ou séparés par des virgules',
+    'BAZ_REACTIONS_FIELD_LABELS_LABEL' => 'Noms des réactions',
+    'BAZ_REACTIONS_FIELD_LABELS_PLACEHOLDER' => 'Gratitude,J\'aime,J\'ai appris quelque chose,J\'ai pas compris,Je ne suis pas d\'accord,Ca me perturbe',
+    'BAZ_REACTIONS_FIELD_VALUE_HINT' => 'Mettre \'oui\' ou laisser vide',
+
     // presentation/javascripts/map-field-leaflet.js
     'BAZ_ADJUST_MARKER_POSITION' => 'Déplacez moi si besoin',
 

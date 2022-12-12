@@ -32,7 +32,7 @@ return [
     'SITE_BEING_UPDATED' => 'Este sitio se esta actualizando. Intenta más tarde.',
     'DB_CONNECT_FAIL' => 'Por razones ajenas a nuestra voluntad, el contenido de este YesWiki esta temporalmente inaccesible. Intenta más tarde, gracias por su comprensión.',
     'LOG_DB_CONNECT_FAIL' => 'YesWiki : la conexión BDD ha fracasado', // sans accents car commande systeme
-                                                               
+
     'INCORRECT_PAGENAME' => 'El nombre de la página es incorrecto.',
     // 'PERFORMABLE_ERROR' => 'Une erreur inattendue s\'est produite. Veuillez contacter l\'administrateur du site et lui communiquer l\'erreur suivante :',
     'HOMEPAGE_WIKINAME' => 'PaginaPrincipal',
@@ -408,7 +408,7 @@ return [
     'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Verifica que tu servidor tiene los derechos de acceso de escritura para este archivo. Si por cualquier razón no lo puedes hacer, tienes que copiar las informaciones siguientes en un archivo y transferirlas con un programa ftp al servidor',
     'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'directamente en el repertorio de YesWiki. Una vez hecho, tu sitio YesWiki deberia funcionar bien',
     'TRY_AGAIN' => 'Intentar de nuevo',
-    
+
     // API
     // 'USERS' => 'Utilisateurs',
     // 'GROUPS' => 'Groupes',
@@ -644,4 +644,6 @@ return [
     // 'REACTION_FROM_PAGE' => 'de la page',
     // 'REACTION_ON_ENTRY' => 'Réaction sur une fiche',
     // 'REACTION_TITLE_PARAM_NEEDED' => 'Le paramètre \'titre\' est obligatoire',
+    // 'REACTION_BAD_IMAGE_FORMAT' => 'Mauvais format d\'image : doit être un fichier, un icône utf8 ou une classe Fontawesome',
+    // 'REACTION_NO_IMAGE' => 'Image manquante',
 ];

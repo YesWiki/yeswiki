@@ -406,7 +406,7 @@ return [
     'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Verifique que servidor tenha os direitos de acesso em gravaçao sobre este arquivo. Se por algum motivo você não pode fazer isso, você deve copiar o seguinte num arquivo e transferi-lo por ftp no servidor',
     'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'diretamente no diretório YesWiki. Depois de ter feito isso, o site YesWiki deve funcionar corretamente',
     'TRY_AGAIN' => 'tentar de novo',
-    
+
     // API
     // 'USERS' => 'Utilisateurs',
     // 'GROUPS' => 'Groupes',
@@ -641,4 +641,6 @@ return [
     // 'REACTION_FROM_PAGE' => 'de la page',
     // 'REACTION_ON_ENTRY' => 'Réaction sur une fiche',
     // 'REACTION_TITLE_PARAM_NEEDED' => 'Le paramètre \'titre\' est obligatoire',
+    // 'REACTION_BAD_IMAGE_FORMAT' => 'Mauvais format d\'image : doit être un fichier, un icône utf8 ou une classe Fontawesome',
+    // 'REACTION_NO_IMAGE' => 'Image manquante',
 ];
