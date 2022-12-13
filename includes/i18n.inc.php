@@ -142,7 +142,7 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
     $postConfigLang = '' ;
     if (isset($_POST["config"])) {
         // just for installation
-        if (count($_POST["config"])==1) {
+        if (count($_POST["config"])==1 && is_string($_POST["config"])) {
             if (version_compare(PHP_VERSION, '7.0.0') >= 0) {
                 $conf = unserialize($_POST["config"], ['allowed_classes' => false]);
             } else {
@@ -182,7 +182,7 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
     $configLang = !empty($wiki) && isset($wiki->config['default_language']) && in_array($wiki->config['default_language'], $available_languages)
         ? $wiki->config['default_language'] : '';
 
-    $httpAcceptLang = ($http_accept_language !== "auto") ? $http_accept_language: (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '');
+    $httpAcceptLang = ($http_accept_language !== "auto") ? $http_accept_language : (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '');
 
     // third priority
     if (!empty($pageMetadataLang)) {
