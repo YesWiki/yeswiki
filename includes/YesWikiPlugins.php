@@ -12,6 +12,9 @@ class Plugins
     public $_xml;
     public $p_list = array();
 
+    private $_current_tag_cdata;
+    private $_p_info;
+
     public function __construct($location, $type = 'plugin')
     {
         if (is_dir($location)) {

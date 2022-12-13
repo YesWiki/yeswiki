@@ -45,7 +45,10 @@ use YesWiki\Tags\Service\TagsManager;
 
 class Wiki
 {
+    public $config;
     public $dblink;
+    public $metadatas; // todo use PageManager or method instead of public var
+    public $method;
     public $page;
     public $tag;
     public $parameter = array();

@@ -14,7 +14,7 @@ use YesWiki\Security\Controller\SecurityController;
  */
 class FileField extends BazarField
 {
-    private $readLabel;
+    protected $readLabel;
     protected const FIELD_READ_LABEL = 6;
     protected $attach;
 
