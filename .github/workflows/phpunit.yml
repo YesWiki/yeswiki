@@ -92,7 +92,13 @@ jobs:
           -F "admin_email=test@example.com" \
           -F "submit=Continue" \
           "http://localhost/?PagePrincipale&installAction=install"
+    
+    - name: Set wakka.config.php writable
+      run: |
+        sudo chown www-data:www-data ${{ github.workspace }}/wakka.config.php
+        sudo chmod 0777 ${{ github.workspace }}/wakka.config.php
 
     - name: Run test suite
       run: composer test
+      
 
