@@ -4,7 +4,7 @@
 if (!function_exists('affiche_ligne_timeline')) {
   // affiche un evenement dans le temps
   function affiche_ligne_timeline($gauche, $droite, $classligne='') {
-    $output = '<div class="ss-row'.(($classligne!='') ? ' '.$classligne : '').'">
+    $output = '<div class="bazar-entry ss-row'.(($classligne!='') ? ' '.$classligne : '').'" <?php echo $fiche['html_data'];?>>
                     <div class="ss-left">
                         '.$gauche.'
                     </div>
