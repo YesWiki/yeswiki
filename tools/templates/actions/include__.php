@@ -51,7 +51,13 @@ if (($incPageName == 'PageMenuHaut' || strstr($class, 'topnavpage')) && !strstr(
 
     //TODO: a faire pour toutes les pages ou juste le menu???
     if (YW_CHARSET != 'ISO-8859-1' && YW_CHARSET != 'ISO-8859-15') {
-        $plugin_output_new = mb_convert_encoding($plugin_output_new, 'HTML-ENTITIES', 'UTF-8');
+        // tip to replace mb_convert_encoding($plugin_output_new, 'HTML-ENTITIES', 'UTF-8')
+        // from https://stackoverflow.com/questions/37215388/what-is-a-replacement-for-mb-convert-encodingstring-utf-8-html-entities
+        $plugin_output_new = preg_replace_callback('/[\x{80}-\x{10FFFF}]/u', function ($m) {
+            $char = current($m);
+            $utf = iconv('UTF-8', 'UCS-4', $char);
+            return sprintf("&#x%s;", ltrim(strtoupper(bin2hex($utf)), "0"));
+        }, $plugin_output_new);
     }
 
     $dom = new DOMDocument();
