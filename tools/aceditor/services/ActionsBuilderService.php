@@ -9,6 +9,8 @@ use YesWiki\Wiki;
 class ActionsBuilderService
 {
     protected $data = null;
+    protected $renderer;
+    protected $wiki;
 
     public function __construct(TemplateEngine $renderer, Wiki $wiki)
     {
