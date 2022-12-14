@@ -3,9 +3,13 @@
 
 if (!function_exists('affiche_ligne_timeline')) {
   // affiche un evenement dans le temps
-  function affiche_ligne_timeline($gauche, $droite, $classligne='') {
-    $output = '<div class="bazar-entry ss-row'.(($classligne!='') ? ' '.$classligne : '').'" <?php echo $fiche['html_data'];?>>
-                    <div class="ss-left">
+  function affiche_ligne_timeline($gauche, $droite, $classligne='', $fiche = ['html_data' => '']) {
+    if (strstr($gauche,_t('BAZ_YEAR') .'</h2>')) {
+      $output = '<div class="ss-row'.(($classligne!='') ? ' '.$classligne : '').'">';
+    } else {
+      $output = '<div class="bazar-entry ss-row'.(($classligne!='') ? ' '.$classligne : '').'" '.$fiche['html_data'].'>';
+    }
+    $output .= '                <div class="ss-left">
                         '.$gauche.'
                     </div>
                     <div class="ss-right">
@@ -64,7 +68,7 @@ if (!function_exists('date_compare')) {
         $output .= affiche_ligne_timeline(
          '<a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'" class="ss-circle" style="background-image:url('.$url.');">'.$fiche['bf_titre'].'</a>',
          '<h3><span>'.$fiche['bf_date_debut_evenement'].'</span><a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
-                    $fiche['listeListeTailleImage']
+                    $fiche['listeListeTailleImage'], $fiche
                   );
       }
       else {
@@ -72,31 +76,11 @@ if (!function_exists('date_compare')) {
         $output .= affiche_ligne_timeline(
          '<h3><span>'.$fiche['bf_date_debut_evenement'].'</span><a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
          '<a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'" class="ss-circle" style="background-image:url('.$url.');">'.$fiche['bf_titre'].'</a>',
-                    $fiche['listeListeTailleImage'], ''
+                    $fiche['listeListeTailleImage'],  $fiche
                   );
       }
     }
     ?>
-
-    <!-- if ($gauche) {
-      $gauche=false;
-      $output .= affiche_ligne_timeline(
-                  '<a href="'.$fiche['lien'].'" class="ss-circle" style="background-image:url('.redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_'.$pixelsimage.'_'.$pixelsimage.'_'.$fiche['imagebf_image'], $pixelsimage, $pixelsimage).');">'.$fiche['bf_titre'].'</a>',
-                  '<h3><span>'.$fiche['bf_date_debut_evenement'].'</span><a href="'.$fiche['lien'].'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
-                  $fiche['listeListeTailleImage']
-                );
-    }
-    else {
-      $gauche=true;
-      $output .= affiche_ligne_timeline(
-                  '<h3><span>'.$fiche['bf_date_debut_evenement'].'</span><a href="'.$fiche['lien'].'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
-                  '<a href="'.$fiche['lien'].'" class="ss-circle" style="background-image:url('.redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_'.$pixelsimage.'_'.$pixelsimage.'_'.$fiche['imagebf_image'], $pixelsimage, $pixelsimage).');">'.$fiche['bf_titre'].'</a>',
-                  $fiche['listeListeTailleImage'], ''
-                );
-    }
-  }
-  ?>
--->
 
       <h2 class="ss-subtitle"></h2>
       <div id="ss-links" class="ss-links">
