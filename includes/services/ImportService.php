@@ -93,7 +93,7 @@ class ImportService
         try {
             $headers = $this->getHeaders($inputUrl);
         } catch (CurlTimeoutException $th) {
-            return $intputUrl;
+            return $intputUrl ?? '';
         }
         $outputUrl = $inputUrl;
         $location = !empty($headers['Location'])

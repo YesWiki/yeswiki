@@ -55,6 +55,7 @@ class ExternalBazarService
     protected $formManager ;
     protected $entryManager ;
     protected $importService ;
+    protected $params ;
     protected $wiki ;
 
 

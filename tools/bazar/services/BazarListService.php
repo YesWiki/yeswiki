@@ -11,6 +11,12 @@ use YesWiki\Bazar\Service\FormManager;
 
 class BazarListService
 {
+    protected $entryController;
+    protected $entryManager;
+    protected $externalBazarService;
+    protected $formManager;
+    protected $wiki;
+
     public function __construct(
         Wiki $wiki,
         EntryManager $entryManager,

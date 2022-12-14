@@ -10,6 +10,7 @@ abstract class RadioField extends EnumField
 {
     protected $displayMethod ; // empty, tags
     protected $displayFilterLimit ; // number of items without filter ; false if no limit
+    protected $wiki;
 
     protected const FIELD_DISPLAY_METHOD = 7;
 

@@ -33,6 +33,8 @@ class AssetsManager
         'javascripts/vendor/vue/vue.js' => 'javascripts/vendor/vue/vue.min.js',
     ];
 
+    protected $wiki;
+
     public function __construct(Wiki $wiki)
     {
         $this->wiki = $wiki;

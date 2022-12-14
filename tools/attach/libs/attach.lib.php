@@ -16,6 +16,8 @@ if (!class_exists('attach')) {
         public $wiki = ''; //objet wiki courant
         public $attachConfig = array(); //configuration de l'action
         public $file = ''; //nom du fichier
+        public $height;
+        public $width;
         public $desc = ''; //description du fichier
         public $link = ''; //url de lien (image sensible)
         public $caption = ''; //texte de la vignette au survol

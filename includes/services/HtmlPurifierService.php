@@ -16,6 +16,7 @@ class HtmlPurifierService
     public const HTMLPURIFIER_CACHE_FOLDER = "cache/HTMLpurifier";
 
     protected $params;
+    protected $sanitizer;
     protected $wiki;
     private $purifier;
     private $antixss;
