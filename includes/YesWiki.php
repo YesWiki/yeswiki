@@ -560,6 +560,17 @@ class Wiki
 
             // General URL
             $link = $this->Href($method, $tag, $params, false);
+        } elseif ((!isset($options['data-iframe']) ||
+                strval($options['data-iframe']) != '0') &&
+                !empty($options['class']) &&
+                is_string($options['class']) &&
+                preg_match('/(^|\s)modalbox($|\s)/', $options['class'])) {
+            // use iframe for external links in modalbox except if `data-iframe=0`
+            $options['data-iframe'] = '1';
+            if (!isset($options['title']) && !empty($text)) {
+                // set a title because it is beautiful
+                $options['title'] = htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
+            }
         }
 
         // Email addresses
@@ -569,7 +580,7 @@ class Wiki
 
         // Options to HTML attributes
         $stringAttrs = '';
-        foreach($options as $key => $value) {
+        foreach ($options as $key => $value) {
             $value = json_encode($value);
             $stringAttrs .= "$key=$value ";
         }
@@ -594,8 +605,10 @@ class Wiki
             'style' => 'favorite_style',
             'bgimg' => 'favorite_background_image'
         ];
-        foreach($fromConfig as $param => $configKey) {
-            if (!empty($config[$configKey])) $result[$param] = $config[$configKey];
+        foreach ($fromConfig as $param => $configKey) {
+            if (!empty($config[$configKey])) {
+                $result[$param] = $config[$configKey];
+            }
         }
 
         // Metadata from current page
@@ -1271,7 +1284,7 @@ class Wiki
                     : (
                         is_string($previousContent)
                         ? $previousContent.$rawOutput
-                        :$rawOutput
+                        : $rawOutput
                     );
                 $response->setData($newContent);
             } else {
@@ -1948,7 +1961,7 @@ class Wiki
     {
         return $this->services->get(LinkTracker::class)->clear();
     }
-    
+
     /**
      *
      * @param string $group
