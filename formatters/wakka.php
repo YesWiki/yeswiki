@@ -57,7 +57,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                 "/\%\%.*?\%\%|"
                 ."\"\".*?\"\"|"
                 ."\[\[.*?\]\]|"
-                .'([\*\#@£_\/])\\1|'
+                .'([\*\~@£_\/])\\1|'
                 ."(?<!\w)_[^_]+_(?!\w)|" // markdown italic
                 ."(?<!\w)\\*[^*]+\\*(?!\w)|" // markdown italic
                 ."`[^`]+`(?![_\w])|" // inline code
@@ -207,6 +207,8 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                     return $this->inLineTag('u');
                 case '##': // monospace
                     return $this->inLineTag('tt');
+                case '~~': // strikethrough
+                    return $this->inLineTag('s');
                 case '@@': // Deleted
                     return $this->inLineTag('span', 'del');
                 case '££': // Inserted
