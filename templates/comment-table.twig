@@ -10,6 +10,7 @@
       <tr>
         {{ multidelete.insertSelectAll('comments-table-action','top') }}
         <th>{{ _t('COMMENT_DATE') }}</th>
+        {# mmmmmmm because https://datatables.net/reference/option/columns.contentPadding #}
         <th data-content-padding="mmmmmmmmmmmmmmmmmmmmmmmmmm">{{ _t('COMMENT_CONTENT') }}</th>
         <th data-class-name="comments-table-break-word-column">{{ _t('COMMENT_USER') }}</th>
         <th data-class-name="comments-table-break-word-column">{{ _t('COMMENT_TAG') }}</th>
