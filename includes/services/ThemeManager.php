@@ -110,7 +110,7 @@ class ThemeManager
                                 )
                             )
                         )
-                    ) {
+                ) {
                     $this->config['favorite_preset'] = $_REQUEST['preset'];
                 }
 
@@ -276,12 +276,12 @@ class ThemeManager
         return true;
     }
 
-    public function getErrorMessage():string
+    public function getErrorMessage(): string
     {
         return $this->errorMessage;
     }
 
-    public function renderHeader():string
+    public function renderHeader(): string
     {
         if ($this->fileLoaded || $this->loadTheme()) {
             return $this->renderActions($this->templateHeader);
@@ -289,8 +289,8 @@ class ThemeManager
             return '';
         }
     }
-    
-    public function renderFooter():string
+
+    public function renderFooter(): string
     {
         if ($this->fileLoaded || $this->loadTheme()) {
             return $this->renderActions($this->templateFooter);
@@ -299,7 +299,7 @@ class ThemeManager
         }
     }
 
-    private function renderActions(string $text):?string
+    private function renderActions(string $text): ?string
     {
         if ($act = preg_match_all("/".'(\\{\\{)'.'(.*?)'.'(\\}\\})'."/is", $text, $matches)) {
             $i = 0;
@@ -343,7 +343,7 @@ class ThemeManager
      * @param string $filename
      * @return array ['status' => bool, 'message' => '...']
      */
-    public function deleteCustomCSSPreset(string $filename):array
+    public function deleteCustomCSSPreset(string $filename): array
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -362,7 +362,7 @@ class ThemeManager
         return ['status'=>false,'message'=>'Not possible to delete '.$filename];
     }
 
-    
+
 
     /**
      * add a css custom preset (only admins can change a file)
@@ -388,13 +388,13 @@ class ThemeManager
             return ['status'=>false,'message'=>'Bad post data','errorCode'=>1];
         }
         $path = self::CUSTOM_CSS_PRESETS_PATH;
-        
+
         $fileContent = ":root {\r\n";
         foreach (self::POST_DATA_KEYS as $key) {
             $fileContent .= '  --'.$key.': '.$post[$key].";\r\n";
         }
         $fileContent .= "}\r\n";
-        
+
         if (file_exists($path.DIRECTORY_SEPARATOR.$filename) && !$this->wiki->UserIsAdmin()) {
             return ['status'=>false,'message'=>'File already existing but user not admin','errorCode'=>2];
         }
@@ -416,7 +416,7 @@ class ThemeManager
      * @param array $post
      * @return bool
      */
-    private function checkPOSTToAddCustomCSSPreset(array $post):bool
+    private function checkPOSTToAddCustomCSSPreset(array $post): bool
     {
         foreach (self::POST_DATA_KEYS as $key) {
             if (empty($post[$key])) {
@@ -516,7 +516,7 @@ class ThemeManager
         $error = false;
         if (preg_match('/^:root\s*{((?:.|\n)*)}\s*$/', $presetContent, $matches)) {
             $vars = $matches[1];
-            
+
 
             if (preg_match_all('/\s*--([0-9a-z\-]*):\s*([^;]*);\s*/', $vars, $matches)) {
                 foreach ($matches[0] as $index => $val) {
