@@ -149,6 +149,12 @@ var fields = [
     name: "reactions",
     attrs: { type: "reactions" },
     icon: '<i class="far fa-thumbs-up"></i>',
+  },
+  {
+    label: _t('BAZ_FORM_EDIT_COMMENTS_FIELD'),
+    name: "comments",
+    attrs: { type: "comments" },
+    icon: '<i class="far fa-comment-dots"></i>',
   }
 ]
 
@@ -546,6 +552,37 @@ var typeUserAttrs = {
     },
     read: readConf,
     write: writeconf,
+    semantic: semanticConf
+  },
+  comments: {
+    fieldlabel: {
+      label: _t('BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_LABEL'), 
+      value: "",
+      placeholder: _t('BAZ_ACTIVATE_COMMENTS')
+    },
+    hint: {
+      label: _t('BAZ_FORM_EDIT_HELP'), 
+      value: '',
+      placeholder: _t('BAZ_ACTIVATE_COMMENTS_HINT')
+    },
+    value: {
+      label: _t('BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL'), 
+      value: "oui"
+    },
+    defaultrights: {
+      label: _t('BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_RIGHTS_LABEL'), 
+      options: {
+        ...{
+          ' + ': visibilityOptions[' + '],
+          ' % ': visibilityOptions[' % '],
+          '@admins': visibilityOptions['@admins']
+        },
+        ...formattedGroupList
+      },
+      multiple: true
+    },
+    read: readConf,
+    write: writeconf,
     semantic: semanticConf,
   },
   custom: {
@@ -687,7 +724,17 @@ var templates = {
           templateHelper.defineLabelHintForGroup(field, 'images', _t('BAZ_REACTIONS_FIELD_IMAGES_HINT'))
           templateHelper.defineLabelHintForGroup(field, 'labels', _t('BAZ_REACTIONS_FIELD_LABELS_HINT'))
       }
-    };
+    }
+  },
+  comments: function (field) {
+    return { 
+      field: `<i class="far fa-comment-dots"></i> ${field.fieldlabel || _t('BAZ_ACTIVATE_COMMENTS')}` ,
+      onRender() {
+        templateHelper.defineLabelHintForGroup(field, 'fieldlabel', _t('BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT'))
+        templateHelper.defineLabelHintForGroup(field, 'hint', _t('BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT'))
+        templateHelper.defineLabelHintForGroup(field, 'value', _t('BAZ_FORM_EDIT_COMMENTS_FIELD_VALUE_HINT'))
+      }
+    }
   }
 }
 
@@ -695,7 +742,8 @@ var typeUserDisabledAttrs = {
   tabs: ['required', 'value', 'name', 'label'],
   tabchange: ['required', 'value', 'name', 'label'],
   bookmarklet: ['required', 'value'],
-  reactions: ['label','required']
+  reactions: ['label','required'],
+  comments: ['required']
 }
 
 var inputSets = [
@@ -866,6 +914,13 @@ var yesWikiMapping = {
       4: "images",
       6: "fieldlabel"
     }
+  },
+  comments: {
+    ...defaultMapping,
+    ...{
+      6: "",
+      7: "defaultrights"
+    }
   }
 }
 // Mapping betwwen yeswiki field type and standard field implemented by form builder
@@ -996,6 +1051,9 @@ function initializeFormbuilder(formAndListIds) {
       }
       if (field.type === 'acls' && !field.hasOwnProperty('comment')) {
         field.comment = ['comments-closed']// comments-closed by default
+      }
+      if (field.type === 'comments' && !field.hasOwnProperty('defaultrights')) {
+        field.defaultrights = [' + ']// ' + ' by default
       }
     }
   })
@@ -1250,6 +1308,9 @@ function parseWikiTextIntoJsonData(text) {
         if (field) {
           if (field == 'read' || field == 'write' || field == 'comment') {
             fieldObject[field] = (value.trim() === '') ? [' * '] : value.split(',')
+          } else if (fieldType === 'comments' && field === 'defaultrights'){
+            fieldObject[field] = (value.trim() === '') ? [' + '] : value.split(',')
+              .map((e)=>(['+','*','%'].includes(e.trim())) ? ` ${e.trim()} ` : e)
           } else {
             fieldObject[field] = value
           }

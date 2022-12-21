@@ -215,6 +215,15 @@ return [
     'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_LABEL' => "Texte affiché",
     'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_VALUE' => "Glisser-déposer le bouton dans votre barre de favoris",
 
+    'BAZ_ACTIVATE_COMMENTS' => 'Activer les commentaires ?',
+    'BAZ_ACTIVATE_COMMENTS_HINT' => 'Droits mis à jour lors de l\'enregistrement de la fiche',
+    'BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL' => 'Activation par défaut',
+    'BAZ_FORM_EDIT_COMMENTS_FIELD' => 'Commentaires',
+    'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_LABEL' => 'Texte pour édition',
+    'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT' => 'Laisser vide pour utiliser le texte par défaut',
+    'BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_RIGHTS_LABEL' => 'Droits par défaut pour les commentaires ouverts',
+    'BAZ_FORM_EDIT_COMMENTS_FIELD_VALUE_HINT' => 'Mettre \'oui\' ou laisser vide',
+
     // condition checking field
     "BAZ_FORM_CONDITIONSCHEKING_HINT" => "La condition doit respecter le format suivant (sans les `):{\\n}".
         " - ` and ` : donne ET{\\n}".

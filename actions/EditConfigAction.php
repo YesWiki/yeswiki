@@ -25,6 +25,7 @@ class EditConfigAction extends YesWikiAction
         'default_write_acl' => 'access',
         'default_comment_acl' => 'access',
         'comments_activated' => 'access',
+        'comments_handler' => 'access',
         'password_for_editing' => 'access',
         'password_for_editing_message' => 'access',
         'allow_doubleclic' => 'access',
