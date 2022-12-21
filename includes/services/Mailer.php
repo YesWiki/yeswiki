@@ -211,6 +211,7 @@ class Mailer
         );
     }
 
+    // TODO when PR #967 merged, refactor this part with YesWiki::getBaseUrl
     public function getBaseUrl(): string
     {
         return preg_replace('/(\\/wakka\\.php\\?wiki=|\\/\\?wiki=|\\/\\?|\\/)$/m', '', $this->params->get('base_url')) ;
