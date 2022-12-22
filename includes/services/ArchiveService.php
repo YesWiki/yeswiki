@@ -1064,7 +1064,7 @@ class ArchiveService
      */
     protected function getSQLContent(string $privatePath): string
     {
-        $resultFile = $privatePath.self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP;
+        $resultFile = $privatePath.'/'.self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP;
         try {
             if ($this->testDb()) {
                 $results = $this->consoleService->startConsoleSync('core:exportdb', [
@@ -1079,7 +1079,7 @@ class ArchiveService
             } else {
                 $results = $this->dbService->getSQLContentBackupMethod();
                 if (empty($results['sql'])) {
-                    throw new Exception(empty($results['error']) ? "SQL not exported" : $results['error']);
+                    throw new Exception(empty($results['error']) ? "SQL not exported (and mysqldump not found)" : $results['error']);
                 } else {
                     return $results['sql'];
                 }
