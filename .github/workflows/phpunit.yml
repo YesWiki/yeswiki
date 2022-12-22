@@ -76,11 +76,12 @@ jobs:
     - name: Set cache folder writable
       run: sudo chmod -R 0777 ${{ github.workspace }}/cache
 
-    - name: Set private folder for archive
+    - name: Set private folder for archive (and clean previous files)
       run: |
         sudo mkdir -p ${{ github.workspace }}/private/archives
         sudo chown www-data:www-data -R ${{ github.workspace }}/private/archives
         sudo chmod -R 0777 ${{ github.workspace }}/private/archives
+        sudo ls ${{ github.workspace }}/private/archives/* && sudo rm ${{ github.workspace }}/private/archives/* || true
 
     - run: curl http://localhost
 
