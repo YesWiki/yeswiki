@@ -19,8 +19,6 @@ services:
 
   YesWiki\Core\Service\:
     resource: 'services/*'
-    exclude:
-      - 'services/YesWikiEventCompilerPass.php'
 
   YesWiki\Core\Controller\:
     resource: 'controllers/*'
