@@ -158,7 +158,7 @@ class CommentService implements EventSubscriberInterface
     public function delete(string $commentTag): array
     {
         // delete children comments
-        $comments = $this->loadComments($commentTag);
+        $comments = $this->loadComments($commentTag, true);
         foreach ($comments as $com) {
             $this->pageManager->deleteOrphaned($com['tag']);
         }
@@ -177,9 +177,10 @@ class CommentService implements EventSubscriberInterface
     * Load comments for given page.
     *
     * @param string $tag Page name (Ex : "PagePrincipale") if empty, all comments
+    * @param bool $bypassAcls
     * @return array All comments and their corresponding properties.
     */
-    public function loadComments($tag)
+    public function loadComments($tag, bool $bypassAcls = false)
     {
         $query = 'SELECT * FROM ' . $this->wiki->config['table_prefix'] . 'pages ' . 'WHERE ';
         if (empty($tag)) {
@@ -205,6 +206,13 @@ class CommentService implements EventSubscriberInterface
             $comments[$id]['parentTag'] = !empty($parentPage['tag']) ? $parentPage['tag'] : "";
         }
 
+        if (!$bypassAcls) {
+            // filter on read acl on parent page
+            $comments = array_filter($comments, function ($com) {
+                return !empty($com['comment_on']) && $this->aclService->hasAccess('read', $com['comment_on']);
+            });
+        }
+
         return $comments;
     }
 
@@ -214,7 +222,7 @@ class CommentService implements EventSubscriberInterface
         $com['first'] = $first;
         $com['tag'] = $tag;
         $com['comments'] = array();
-        $comments = is_array($comments) ? $comments : $this->loadComments($tag);
+        $comments = is_array($comments) ? $comments : $this->loadComments($tag, true);
         if ($comments) {
             foreach ($comments as $i => $comment) {
                 $com['comments'][$i]['tag'] = $comment['tag'];
@@ -298,7 +306,7 @@ class CommentService implements EventSubscriberInterface
         $HasAccessRead = $aclsService->HasAccess("read", $tag);
 
         if ($HasAccessRead) {
-            $comments = $this->loadComments($tag);
+            $comments = $this->loadComments($tag, true);
             $coms = $this->getCommentList($tag, true, $comments);
             $acl = $aclsService->load($tag, 'comment');
             $options = (!empty($acl['list']) && $acl['list']  == 'comments-closed')
