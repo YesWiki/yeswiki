@@ -4,7 +4,7 @@
  * inspired from https://symfony.com/doc/current/service_container/tags.html#create-a-compiler-pass
  */
 
-namespace YesWiki\Core\Service;
+namespace YesWiki\Core;
 
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
