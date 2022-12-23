@@ -222,7 +222,7 @@ class CommentService implements EventSubscriberInterface
         $com['first'] = $first;
         $com['tag'] = $tag;
         $com['comments'] = array();
-        $comments = is_array($comments) ? $comments : $this->loadComments($tag, true);
+        $comments = is_array($comments) ? $comments : $this->loadComments($tag);
         if ($comments) {
             foreach ($comments as $i => $comment) {
                 $com['comments'][$i]['tag'] = $comment['tag'];
@@ -306,7 +306,7 @@ class CommentService implements EventSubscriberInterface
         $HasAccessRead = $aclsService->HasAccess("read", $tag);
 
         if ($HasAccessRead) {
-            $comments = $this->loadComments($tag, true);
+            $comments = $this->loadComments($tag);
             $coms = $this->getCommentList($tag, true, $comments);
             $acl = $aclsService->load($tag, 'comment');
             $options = (!empty($acl['list']) && $acl['list']  == 'comments-closed')
