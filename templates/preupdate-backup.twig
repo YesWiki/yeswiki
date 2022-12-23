@@ -1,0 +1,46 @@
+{{ include_javascript('javascripts/vendor/vue/vue.js') }}
+{{ include_javascript('javascripts/actions/admin-backups.js', false, true) }}
+{{ include_css('styles/actions/admin-backups.css') }}
+
+<div class="preupdate-backups-container" data-upgrade="{{ upgrade }}">
+  <h2>{{ _t('ADMIN_BACKUPS_CREATING') }}</h2>
+  <div class="archive-buttons">
+    <button
+        @click="stopArchive"
+        class="btn btn-xs btn-danger"
+        :disabled="stoppingArchive || currentArchiveUid.length == 0 || !archiving" 
+        data-tooltip="toggle" 
+        title="{{ _t('ADMIN_BACKUPS_STOP_BACKUP') }}">
+      {{ _t('ADMIN_BACKUPS_STOP') }}
+    </button>
+    {% if config.archive.authorize_bypass_preupdate_backup %}
+        <button
+            @click="bypassArchive"
+            class="btn btn-sm btn-danger"
+            data-tooltip="toggle" 
+            title="{{ _t('ADMIN_BACKUPS_BY_PASS') }}">
+        {{ _t('ADMIN_BACKUPS_BY_PASS') }}
+        </button>
+    {% endif %}
+  </div>
+  <div v-if="archiveMessage.length > 0" v-html="archiveMessage" :class="archiveMessageClass"></div>
+  <div>
+    <a
+        v-if="!archiving && showReturn"
+        href="{{ url({params:{}}) }}"
+        class="btn btn-sm btn-info"
+        data-tooltip="toggle" 
+        title="{{ _t('GO_BACK') }}">
+      {{ _t('GO_BACK') }}
+    </a>
+    <button
+        v-if="canForceUpdate"
+        @click="forceUpdate"
+        class="btn btn-sm btn-danger"
+        data-tooltip="toggle" 
+        title="{{ _t('ADMIN_BACKUPS_FORCE_UPDATE') }}">
+      {{ _t('ADMIN_BACKUPS_FORCE_UPDATE') }}
+    </button>
+  </div>
+  <div class="clearfix"></div>
+</div>

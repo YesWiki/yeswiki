@@ -1,12 +1,20 @@
 <div id="{{reactionId}}" class="reactions-container">
-  <h6>
-    {% if connected %}
-      {{ title }} <small><span class="max-reaction">{{maxReaction}}</span> {{_t('REACTION_NB_REACTIONS_LEFT')}}</small>
-    {% else %}
-      {{ _t('REACTION_TO_ALLOW_REACTION') }}, <a href="#LoginModal" class="btn btn-default" data-toggle="modal"><i class="fas fa-user"></i> 
-      {{ _t('REACTION_PLEASE_LOGIN') }}</a>
-    {% endif %}
-  </h6>
+  {% if titleTag != 'h5' %}
+    <h6>
+      {% block title %}
+        {% if connected %}
+          {{ title }} <small><span class="max-reaction">{{maxReaction}}</span> {{_t('REACTION_NB_REACTIONS_LEFT')}}</small>
+        {% else %}
+          {{ _t('REACTION_TO_ALLOW_REACTION') }}, <a href="#LoginModal" class="btn btn-default" data-toggle="modal"><i class="fas fa-user"></i> 
+          {{ _t('REACTION_PLEASE_LOGIN') }}</a>
+        {% endif %}
+      {% endblock title %}
+    </h6>
+  {% else %}
+    <h5>
+      {{ block('title') }}
+    </h5>
+  {% endif %}
   <div class="reactions-flex">
     {% for reaction in reactionItems %}
       <div class="reaction-content">
@@ -14,9 +22,15 @@
           <a href="{{ url({tag:'api/reactions'}) }}"
             title="{{reaction.label}}"
             data-id="{{reaction.id}}" data-reactionId="{{reactionId}}" data-pageTag="{{pageTag}}" data-maxReaction="{{maxReaction}}" data-userName="{{userName}}"
-            class="link-reaction{{ (userReaction and reaction.id in userReaction) ? ' user-reaction' : '' }}">
+            class="link-reaction{{ (userReaction and reaction.id in userReaction) ? ' user-reaction' : '' }}"
+            {% if reaction.id in oldIdsUserReactions %}data-old-id="true"{% endif %}>
             {% block reactionBlock %}
-              <div class="reaction-image">{{ reaction.image|raw }}</div>
+              <div class="reaction-image">
+                {{ include('@core/_reactions_images.twig',{
+                  image: reaction.image,
+                  id: reaction.id
+                }) }}
+              </div>
               <h6 class="reaction-title">{{ reaction.label }}</h6>
               <div class="reaction-numbers">{{ reaction.nbReactions }}</div>
             {% endblock %}
@@ -29,4 +43,5 @@
       </div>
     {% endfor %}
   </div>
+  {% block extra %}{% endblock extra %}
 </div>

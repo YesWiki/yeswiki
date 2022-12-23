@@ -53,7 +53,7 @@ const FavoritesHelper = {
   addFavorite(resource, user, elem, checkNotEmpty = false) {
     $.ajax({
       method: 'GET',
-      url: wiki.url(`api/triples/${resource}`),
+      url: wiki.url(`?api/triples/${resource}`),
       data: {
         property: FavoritesHelper.propertyName,
         user
@@ -69,7 +69,7 @@ const FavoritesHelper = {
           } else {
             $.ajax({
               method: 'POST',
-              url: wiki.url(`api/triples/${resource}`),
+              url: wiki.url(`?api/triples/${resource}`),
               data: {
                 property: FavoritesHelper.propertyName,
                 user
@@ -102,7 +102,7 @@ const FavoritesHelper = {
   deleteFavorite(resource, user, elem, checkEmpty = false) {
     $.ajax({
       method: 'GET',
-      url: wiki.url(`api/triples/${resource}`),
+      url: wiki.url(`?api/triples/${resource}`),
       data: {
         property: FavoritesHelper.propertyName,
         user
@@ -118,7 +118,7 @@ const FavoritesHelper = {
           } else {
             $.ajax({
               method: 'POST',
-              url: wiki.url(`api/triples/${resource}/delete`),
+              url: wiki.url(`?api/triples/${resource}/delete`),
               data: {
                 property: FavoritesHelper.propertyName,
                 user
@@ -169,7 +169,7 @@ const FavoritesHelper = {
       const { resource } = lastTag
       $.ajax({
         method: 'GET',
-        url: wiki.url(`api/triples/${resource}`),
+        url: wiki.url(`?api/triples/${resource}`),
         data: {
           property: FavoritesHelper.propertyName,
           user
@@ -185,7 +185,7 @@ const FavoritesHelper = {
             } else {
               $.ajax({
                 method: 'POST',
-                url: wiki.url(`api/triples/${resource}/delete`),
+                url: wiki.url(`?api/triples/${resource}/delete`),
                 data: {
                   property: FavoritesHelper.propertyName,
                   user
@@ -227,7 +227,7 @@ const FavoritesHelper = {
   deleteAll(user) {
     $.ajax({
       method: 'GET',
-      url: wiki.url('api/triples'),
+      url: wiki.url('?api/triples'),
       data: {
         property: FavoritesHelper.propertyName,
         user

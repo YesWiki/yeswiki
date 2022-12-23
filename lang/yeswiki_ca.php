@@ -3,6 +3,7 @@
 return [
 
     // Commons
+    // 'ARCHIVES' => 'Sauvegardes',
     // 'CAUTION' => 'Attention',
     'BY' => 'per',
     // 'CLEAN' => 'Nettoyer',
@@ -14,6 +15,8 @@ return [
     // 'INVERT' => 'Inverser',
     // 'MODIFY' => 'Modifier',
     // 'NAME' => 'Nom',
+    // 'ONLY_FOR_ADMINS' => 'Seulement pour les administrateurs',
+    // 'PAGES' => 'Pages',
     // 'SUBSCRIPTION' => 'Inscription',
     'TRIPLES' => 'Triples',
     'UNKNOWN' => 'Desconegut',
@@ -45,6 +48,24 @@ return [
     'RETURN_TO_EXTENSION_LIST' => 'Torna a la llista d\'extensions actives',
     'NO_TOOL_AVAILABLE' => 'No hi ha cap eina disponible o activa',
     'LIST_OF_ACTIVE_TOOLS' => 'Llista d\'extensions actives',
+
+    // actions/AdminBackupsAtion.php
+    'ADMIN_BACKUPS_TITLE' => 'Gestió de còpies de seguretat',
+    'ADMIN_BACKUPS_ARCHIVES_LIST' => 'Llista de còpies de seguretat',
+    'ADMIN_BACKUPS_ARCHIVE_FILENAME' => 'Nom del fitxer',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE' => 'Tipus',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_FULL' => 'Còpia de seguretat completa',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES' => 'Només fitxers',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES' => 'Només la base de dades',
+    'ADMIN_BACKUPS_ARCHIVE_SIZE' => 'Cintura',
+    'ADMIN_BACKUPS_CREATE' => 'Crear una còpia de seguretat',
+    'ADMIN_BACKUPS_START' => 'Començar',
+    'ADMIN_BACKUPS_STOP' => 'Parar',
+    'ADMIN_BACKUPS_STOP_BACKUP' => 'Aturar la còpia de seguretat',
+    'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Configuració avançada',
+    'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Fitxers exclosos',
+    'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Fitxers addicionals',
+    'ADMIN_BACKUPS_CONFIRM_DELETE_FILES' => 'Confirmar la supressió del fitxer',
 
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Pàgines que enllacen amb',
@@ -268,6 +289,11 @@ return [
     // templates/actions/my-favorites-table.twig
     'FAVORITES_TITLE' => 'Títol',
     'FAVORITES_LINK' => 'Lligam',
+    
+    // templates/preupdate-backups.twig
+    // 'ADMIN_BACKUPS_CREATING' => 'Création d\'une sauvegarde',
+    // 'ADMIN_BACKUPS_FORCE_UPDATE' => 'Forcer une mise à jour sans sauvegarde',
+    // 'ADMIN_BACKUPS_BY_PASS' => 'Mettre à jour sans sauvegarde',
 
     // setup/header.php
     'OK' => 'D\'acord',
@@ -649,4 +675,6 @@ return [
     // 'REACTION_FROM_PAGE' => 'de la page',
     // 'REACTION_ON_ENTRY' => 'Réaction sur une fiche',
     // 'REACTION_TITLE_PARAM_NEEDED' => 'Le paramètre \'titre\' est obligatoire',
+    // 'REACTION_BAD_IMAGE_FORMAT' => 'Mauvais format d\'image : doit être un fichier, un icône utf8 ou une classe Fontawesome',
+    // 'REACTION_NO_IMAGE' => 'Image manquante',
 ];

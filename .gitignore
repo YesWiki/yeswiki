@@ -33,6 +33,12 @@ themes/*
 !themes/README.md
 custom/*
 !custom/.gitkeep
+private/*
+!private/.htaccess
+!private/backups
+private/backups/*
+!private/backups/.htaccess
+!private/backups/README.md
 
 # tools
 tools/*

@@ -279,6 +279,7 @@ return [
     "AB_management_despam_hint_details" => "Ceci permet de rétablir les pages vandalisées ou de supprimer les nouvelles pages créées"
             ." par des spams. ATTENTION : la suppression des pages choisies sera DÉFINITITVE.",
     "AB_management_editconfig_label" => "Modifier des paramètres du fichier de configuration",
+    "AB_management_adminbackups_label" => "Gestion des sauvegardes",
     "AB_management_commentstable_label" => "Table des commentaires",
     "AB_management_usercomments_label" => "Mes commentaires",
 

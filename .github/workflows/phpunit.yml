@@ -1,6 +1,14 @@
 name: PHP Composer
 
 on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'     
+        required: true
+        default: 'warning'
+      tags:
+        description: 'Tags'  
   push:
     branches: [ doryphore, ectoplasme ]
     paths:
@@ -8,7 +16,7 @@ on:
     - '*.php'
     - '.github/workflows/*.yml'
   pull_request:
-    branches: [ doryphore, ectoplasme ]
+    branches: [ doryphore, doryphore-dev, ectoplasme ]
     paths:
     - 'composer.lock'
     - '*.php'
@@ -61,8 +69,19 @@ jobs:
         sudo /etc/init.d/mysql start
         mysql -e 'CREATE DATABASE ${{ env.DB_NAME }};' -uroot -proot
 
+    - name: Append current user in www-data group
+      run: |
+        sudo usermod -aG www-data $USER
+
     - name: Set cache folder writable
       run: sudo chmod -R 0777 ${{ github.workspace }}/cache
+
+    - name: Set private folder for archive (and clean previous files)
+      run: |
+        sudo mkdir -p ${{ github.workspace }}/private/archives
+        sudo chown www-data:www-data -R ${{ github.workspace }}/private/archives
+        sudo chmod -R 0777 ${{ github.workspace }}/private/archives
+        sudo ls ${{ github.workspace }}/private/archives/* && sudo rm ${{ github.workspace }}/private/archives/* || true
 
     - run: curl http://localhost
 
@@ -79,13 +98,20 @@ jobs:
           -F "config[mysql_password]=root" \
           -F "config[table_prefix]=yeswiki_" \
           -F "config[allow_raw_html]=1" \
+          -F "config[archive][privatePath]=${{ github.workspace }}/private/archives" \
           -F "admin_name=ActionTest" \
           -F "admin_password=ActionTestPassword" \
           -F "admin_password_conf=ActionTestPassword" \
           -F "admin_email=test@example.com" \
           -F "submit=Continue" \
           "http://localhost/?PagePrincipale&installAction=install"
+    
+    - name: Set wakka.config.php writable
+      run: |
+        sudo chown www-data:www-data ${{ github.workspace }}/wakka.config.php
+        sudo chmod 0777 ${{ github.workspace }}/wakka.config.php
 
     - name: Run test suite
       run: composer test
+      
 

@@ -1,6 +1,7 @@
 <?php
 namespace AutoUpdate;
 
+use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Security\Controller\SecurityController;
 
 /**
@@ -20,6 +21,7 @@ class Controller
         $this->autoUpdate = $autoUpdate;
         $this->messages = $messages;
         $this->wiki = $wiki;
+        $this->archiveService = $this->wiki->services->get(ArchiveService::class);
         $this->securityController = $this->wiki->services->get(SecurityController::class);
     }
 
@@ -44,6 +46,11 @@ class Controller
             $previousMessages = [];
             foreach ($this->messages as $message) {
                 $previousMessages[] = $message;
+            }
+            if (!$this->archiveService->hasValidatedBackup($get['forcedUpdateToken'] ?? "")) {
+                return $this->wiki->render("@core/preupdate-backup.twig", [
+                    'upgrade' => strval($get['upgrade'])
+                ]);
             }
             $this->upgrade($get['upgrade']);
             if ($get['upgrade'] == 'yeswiki') {

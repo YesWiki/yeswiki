@@ -4,12 +4,14 @@ use YesWiki\Bazar\Field\CalcField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Wiki;
 
 class UpdateHandler extends YesWikiHandler
@@ -129,6 +131,46 @@ class UpdateHandler extends YesWikiHandler
             // replace CalcField value by string
             $output .= $this->calcFieldToString();
 
+            // adding GererSauvegardes page
+            $output .= 'ℹ️ Adding GererSauvegardes pages.... ';
+            $page = $this->getService(PageManager::class)->getOne('GererSauvegardes');
+            if (empty($page)) {
+                list($updatePagesState, $message) = $this->updateAdminPages(['GererSauvegardes']);
+                if ($updatePagesState) {
+                    $output .= '✅ Done !<br />';
+                } else {
+                    $output .= '<span class="label label-warning">! '._t('UPDATE_ADMIN_PAGES_ERROR').'</span>'.'<br />'.$message;
+                }
+            } else {
+                $output .= '✅ Done !<br />';
+            }
+
+            // updating folder 'private'
+            $output .= 'ℹ️ Updating folder \'private\'.... ';
+            if ((file_exists('private') && !is_dir('private')) || (!file_exists('private') && !mkdir('private'))) {
+                $output .= "❌ Not possible to update the folder 'private' !<br/>";
+            } elseif ((file_exists('private/.htaccess') &&
+                    !is_file('private/.htaccess')) || // do not udpate the content if existing but not a file
+                    (!file_exists('private/.htaccess') && !file_put_contents('private/.htaccess', "DENY FROM ALL\n"))
+            ) {
+                $output .= "❌ Not possible to create the file 'private/.htaccess' !<br/>";
+            } elseif ((file_exists('private/backups') && !is_dir('private/backups')) || (!file_exists('private/backups') && !mkdir('private/backups'))) {
+                $output .= "❌ Not possible to update the folder 'private/backups' !<br/>";
+            } elseif ((file_exists('private/backups/.htaccess') &&
+                    !is_file('private/backups/.htaccess')) || // do not udpate the content if existing but not a file
+                    (!file_exists('private/backups/.htaccess') && !file_put_contents('private/backups/.htaccess', "DENY FROM ALL\n"))
+            ) {
+                $output .= "❌ Not possible to create the file 'private/backups/.htaccess' !<br/>";
+            } elseif ((file_exists('private/backups/README.md') &&
+                    !is_file('private/backups/README.md')) || // do not udpate the content if existing but not a file
+                    (!file_exists('private/backups/README.md') &&
+                    !file_put_contents('private/backups/README.md', ArchiveService::PRIVATE_FOLDER_README_DEFAULT_CONTENT))
+            ) {
+                $output .= "❌ Not possible to create the file 'private/backups/README.md' !<br/>";
+            } else {
+                $output .= '✅ Done !<br />';
+            }
+
             // propose to update content of admin's pages
             $output .= $this->frontUpdateAdminPages();
         } else {
@@ -246,8 +288,7 @@ class UpdateHandler extends YesWikiHandler
         $output = "ℹ️ Resetting comment acls<br />";
 
         // default acls in wakka.config.php
-        include_once 'tools/templates/libs/Configuration.php';
-        $config = new Configuration('wakka.config.php');
+        $config = $this->getService(ConfigurationService::class)->getConfiguration('wakka.config.php');
         $config->load();
 
         $baseKey = 'default_comment_acl';

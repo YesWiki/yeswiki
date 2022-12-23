@@ -5,6 +5,7 @@
 return [
 
     // Commons
+    'ARCHIVES' => 'Archives',
     'ANSWER' => 'Answer',
     'BY' => 'by',
     'CAUTION' => 'Caution',
@@ -18,6 +19,7 @@ return [
     'INVERT' => 'Invert',
     'MODIFY' => 'Modify',
     'NAME' => 'Name',
+    'ONLY_FOR_ADMINS' => 'Only for administrators',
     'PAGES' => 'Pages',
     'SUBSCRIPTION' => 'Subscription',
     'TRIPLES' => 'Triples',
@@ -50,6 +52,24 @@ return [
     'RETURN_TO_EXTENSION_LIST' => 'Return to activated extensions list',
     'NO_TOOL_AVAILABLE' => 'No extensions available or active',
     'LIST_OF_ACTIVE_TOOLS' => 'Activated extensions list',
+
+    // actions/AdminBackupsAtion.php
+    'ADMIN_BACKUPS_TITLE' => 'Backups management',
+    'ADMIN_BACKUPS_ARCHIVES_LIST' => 'Backups list',
+    'ADMIN_BACKUPS_ARCHIVE_FILENAME' => 'Filename',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE' => 'Type',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_FULL' => 'Full backup',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES' => 'Only files',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES' => 'Only database',
+    'ADMIN_BACKUPS_ARCHIVE_SIZE' => 'Size',
+    'ADMIN_BACKUPS_CREATE' => 'Create backup',
+    'ADMIN_BACKUPS_START' => 'Start',
+    'ADMIN_BACKUPS_STOP' => 'Stop',
+    'ADMIN_BACKUPS_STOP_BACKUP' => 'Stop backup',
+    'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Advanced parameters',
+    'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Excluded files',
+    'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Extra files',
+    'ADMIN_BACKUPS_CONFIRM_DELETE_FILES' => 'Confirm delete files',
 
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Pages with link to',
@@ -272,7 +292,7 @@ return [
     // templates/actions/my-favorites-table.twig
     'FAVORITES_TITLE' => 'Title',
     'FAVORITES_LINK' => 'Link',
-
+    
     // setup/header.php
     'OK' => 'OK',
     'FAIL' => 'FAIL',
@@ -642,4 +662,6 @@ return [
     // 'REACTION_FROM_PAGE' => 'de la page',
     // 'REACTION_ON_ENTRY' => 'Réaction sur une fiche',
     // 'REACTION_TITLE_PARAM_NEEDED' => 'Le paramètre \'titre\' est obligatoire',
+    // 'REACTION_BAD_IMAGE_FORMAT' => 'Mauvais format d\'image : doit être un fichier, un icône utf8 ou une classe Fontawesome',
+    // 'REACTION_NO_IMAGE' => 'Image manquante',
 ];

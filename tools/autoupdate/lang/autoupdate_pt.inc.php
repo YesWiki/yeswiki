@@ -59,5 +59,4 @@ return [
     // 'AU_ONE_THEME_UPDATE' => 'Vous avez 1 thème à mettre à jour',
     // 'AU_SEVERAL_TOOLS_UPDATE' => 'Vous avez {nbMaj} extensions à mettre à jour',
     // 'AU_ONE_TOOL_UPDATE' => 'Vous avez 1 extension à mettre à jour',
-
 ];

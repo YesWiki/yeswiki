@@ -9,6 +9,11 @@ parameters:
     - 'use_captcha'
     - 'use_hashcash'
     - 'wiki_status'
+    - archive:
+      - privatePath
+      - call_archive_async
+      - max_nb_files
+      - preupdate_backup_activated
     
 services:
   _defaults:

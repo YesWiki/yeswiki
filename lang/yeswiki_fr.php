@@ -3,6 +3,7 @@
 return [
 
     // Commons
+    'ARCHIVES' => 'Sauvegardes',
     'ANSWER' => 'Répondre',
     'BY' => 'par',
     'CAUTION' => 'Attention',
@@ -17,6 +18,7 @@ return [
     'INVERT' => 'Inverser',
     'MODIFY' => 'Modifier',
     'NAME' => 'Nom',
+    'ONLY_FOR_ADMINS' => 'Seulement pour les administrateurs',
     'PAGES' => 'Pages',
     'SUBSCRIPTION' => 'Inscription',
     'TRIPLES' => 'Triples',
@@ -50,6 +52,24 @@ return [
     'NO_TOOL_AVAILABLE' => 'Aucun outil n\'est disponible ou actif',
     'LIST_OF_ACTIVE_TOOLS' => 'Liste des extensions actives',
 
+    // actions/AdminBackupsAtion.php
+    'ADMIN_BACKUPS_TITLE' => 'Gestion des sauvegardes',
+    'ADMIN_BACKUPS_ARCHIVES_LIST' => 'Liste des sauvegardes',
+    'ADMIN_BACKUPS_ARCHIVE_FILENAME' => 'Nom du fichier',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE' => 'Type',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_FULL' => 'Sauvegarde complète',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES' => 'Seulement les fichiers',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES' => 'Seulement la base de données',
+    'ADMIN_BACKUPS_ARCHIVE_SIZE' => 'Taille',
+    'ADMIN_BACKUPS_CREATE' => 'Créer une sauvegarde',
+    'ADMIN_BACKUPS_START' => 'Démarrer',
+    'ADMIN_BACKUPS_STOP' => 'Arrêter',
+    'ADMIN_BACKUPS_STOP_BACKUP' => 'Arrêter la sauvegarde',
+    'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Paramètres avancés',
+    'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Fichiers exclus',
+    'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Fichiers supplémentaires',
+    'ADMIN_BACKUPS_CONFIRM_DELETE_FILES' => 'Confirmer la suppression des fichiers',
+    
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Pages ayant un lien vers',
     'PAGES_WITH_LINK_TO_CURRENT_PAGE' => 'Pages ayant un lien vers la page courante',
@@ -276,6 +296,11 @@ return [
     // templates/actions/my-favorites-table.twig
     'FAVORITES_TITLE' => 'Titre',
     'FAVORITES_LINK' => 'Lien',
+    
+    // templates/preupdate-backups.twig
+    'ADMIN_BACKUPS_CREATING' => 'Création d\'une sauvegarde',
+    'ADMIN_BACKUPS_FORCE_UPDATE' => 'Forcer une mise à jour sans sauvegarde',
+    'ADMIN_BACKUPS_BY_PASS' => 'Mettre à jour sans sauvegarde',
 
     // setup/header.php
     'OK' => 'OK',
@@ -659,4 +684,6 @@ return [
     'REACTION_FROM_PAGE' => 'de la page',
     'REACTION_ON_ENTRY' => 'Réaction sur une fiche',
     'REACTION_TITLE_PARAM_NEEDED' => 'Le paramètre \'titre\' est obligatoire',
+    'REACTION_BAD_IMAGE_FORMAT' => 'Mauvais format d\'image : doit être un fichier, un icône utf8 ou une classe Fontawesome',
+    'REACTION_NO_IMAGE' => 'Image manquante',
 ];
