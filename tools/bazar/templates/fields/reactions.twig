@@ -1,0 +1,6 @@
+<hr />
+{{ include('@bazar/fields/_reactions.twig',{
+  titleTag:'h5',
+  title:_t('BAZ_SHARE_YOUR_REACTION'),
+  connected: userName is not empty
+  }) }}
