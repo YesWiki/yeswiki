@@ -1,0 +1,17 @@
+{% if commentsClosed %}
+  {% if coms %}
+    {{ coms|raw }}
+    <div class="alert alert-info comments-closed-info">{{ _t('COMMENTS_CURRENTLY_CLOSED') }}.</div>
+  {% endif %}
+{% else %}
+  {{ coms|raw }}
+  {% if form %}
+    {{ form|raw }}
+  {% elseif not user %}
+    <div class="comments-connect-info">
+      <a href="#LoginModal" role="button" data-toggle="modal"><i class="fa fa-user"></i>{{ _t('COMMENT_LOGIN') }}.</a>
+    </div>
+  {% else %}
+    <div class="alert alert-info comments-acls-info">{{ _t('COMMENT_NOT_ENOUGH_RIGHTS') }}</div>
+  {% endif %}
+{% endif %}

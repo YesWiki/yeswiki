@@ -1,0 +1,21 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <h1 style="font-size:20px;">{{ comment.commentOn == parentPage.tag
+            ? _t('COMMENT_NEW_COMMENT',{'tag':parentPage.tag ?? comment.tag})
+            : _t('COMMENT_NEW_COMMENT_ANSWER',{'tag':parentPage.tag ?? comment.tag})}}
+        </h1>
+
+        {{ _t(comment.commentOn == parentPage.tag ? 'COMMENT_NEW_COMMENT_MESSAGE' : 'COMMENT_NEW_COMMENT_ANSWER_MESSAGE',{
+            'tag':"<a href=\"#{ url({tag:parentPage.tag ?? comment.tag}) }\">#{parentPage.tag ?? comment.tag}</a>",
+            'user':comment.user,
+            'site':baseUrl|replace({'http://':'','https://':''})
+        })|raw }}
+        <hr />
+        {% if comment.commentOn != parentPage.tag and parentComment.body is defined %}
+          <blockquote>{{ format(parentComment.body)|raw }}</blockquote>
+        {% endif %}
+        {{ comment.body|raw }}
+    </body>
+</html>

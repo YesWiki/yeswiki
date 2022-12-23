@@ -13,6 +13,10 @@ actions:
     label: _t(AB_management_adminpages_label)
   gererdroits:
     label: _t(AB_management_gererdroits_label)
+  commentstable:
+    label: _t(AB_management_commentstable_label)
+  usercomments:
+    label: _t(AB_management_usercomments_label)
   userstable:
     label: _t(AB_management_userstable_label)
     properties:

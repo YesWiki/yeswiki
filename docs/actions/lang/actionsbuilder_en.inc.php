@@ -280,6 +280,9 @@ return [
     //         ." par des spams. ATTENTION : la suppression des pages choisies sera DÉFINITITVE.",
     // "AB_management_editconfig_label" => "Modifier des paramètres du fichier de configuration",
     "AB_management_adminbackups_label" => "Backups management",
+    "AB_management_commentstable_label" => "Comments table",
+    "AB_management_usercomments_label" => "My comments",
+
     // advanced actions
     // "AB_advanced_actions_label" => "Actions avancées",
     // "AB_advanced_action_backlinks_label" => "Afficher les pages qui ont un lien vers la page courante",

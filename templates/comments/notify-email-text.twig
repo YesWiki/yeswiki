@@ -1,0 +1,16 @@
+{{ comment.commentOn == parentPage.tag
+    ? _t('COMMENT_NEW_COMMENT',{'tag':parentPage.tag ?? comment.tag})
+    : _t('COMMENT_NEW_COMMENT_ANSWER',{'tag':parentPage.tag ?? comment.tag})}}
+=================================================================
+
+{{ _t(comment.commentOn == parentPage.tag ? 'COMMENT_NEW_COMMENT_MESSAGE' : 'COMMENT_NEW_COMMENT_ANSWER_MESSAGE',{
+    'tag':"#{parentPage.tag ?? comment.tag} (#{ url({tag:parentPage.tag ?? comment.tag}) })",
+    'user':comment.user,
+    'site':baseUrl|replace({'http://':'','https://':''})
+})|raw }}
+-----------------------------------------------------------------
+{% if comment.commentOn != parentPage.tag and parentComment.body is defined %}
+    > {{ format(parentComment.body)|raw }}
+{% endif %}
+
+{{ comment.body }}

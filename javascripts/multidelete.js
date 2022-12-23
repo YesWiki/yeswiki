@@ -63,8 +63,8 @@ const multiDeleteService = {
     }
   },
   deleteOneItem(modal, items, type, currentIndex, target) {
-    if (['pages', 'users'].indexOf(type) == -1) {
-      multiDeleteService.addErrorMessage(modal, "Unknown type ! Should be 'pages' or 'users' !")
+    if (['pages','comments','users'].indexOf(type) == -1){
+      multiDeleteService.addErrorMessage(modal,"Unknown type ! Should be 'pages' or 'users' or 'comments'!")
       return
     }
     const item = items[currentIndex] ?? {}

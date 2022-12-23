@@ -162,6 +162,9 @@ return [
     'LIST_PAGES_BELONGING_TO' => 'Lijst met pagina’s die eigendom zijn van',
     'THIS_USER_HAS_NO_PAGE' => 'Deze gebruiker bezit geen enkele pagina',
 
+    // actions/UserCommentsAction.php
+    'COMMENT_RESERVED_TO_CONNECTED' => 'Log in om de actie "{{usercomments}}" te gebruiken!',
+
     // actions/mychanges.php
     'YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE' => 'Lijst met pagina\'s die u hebt gewijzigd, volgens datum van wijziging',
     'YOUR_MODIFIED_PAGES_ORDERED_BY_NAME' => 'Lijst met pagina\'s die u hebt gewijzigd, in alfabetische volgorde',
@@ -613,6 +616,35 @@ return [
 
     // templates/multidelete-macro.twig
     // 'NUMBER_OF_ELEMENTS' => 'Nombre d\'éléments sélectionnés',
+
+    // Comments
+    'COMMENT_EMPTY_NOT_SAVED' => 'Lege opmerking, geen back-up.',
+    'COMMENT_LOGIN' => 'Log in om te reageren',
+    'COMMENT_NOT_ENOUGH_RIGHTS' => 'U hebt niet voldoende rechten om commentaar te geven.',
+    'COMMENT_PUBLISHED' => 'Reactie gepubliceerd!',
+    'COMMENT_REMOVED' => 'De opmerking is verwijderd.',
+    // 'COMMENT_DELETE' => 'Supprimer un commentaire',
+    'COMMENTS_CURRENTLY_CLOSED' => 'Het toevoegen van opmerkingen op deze pagina is momenteel uitgeschakeld',
+    'USER_MUST_BE_LOGGED_TO_COMMENT' => 'Je moet inloggen om een reactie te plaatsen.',
+    'USER_NOT_ALLOWED_TO_COMMENT' => 'Je zit niet in een groep die reacties mag achterlaten.',
+    'NOT_AUTORIZED_TO_REMOVE_COMMENT' => 'Het is niet toegestaan om deze opmerking te verwijderen.',
+    'COMMENT_TAG' => 'Bladzijde',
+    'COMMENT_DATE' => 'Datum',
+    'COMMENT_USER' => 'Auteur',
+    'COMMENT_CONTENT' => 'Commentaar',
+    'COMMENT_ON_PAGE' => 'Bovenliggende pagina',
+    // 'COMMENT_CONFIRM_DELETE' => 'Voulez-vous supprimer le commentaire ? (action définitive)',
+    // 'COMMENT_MODIFIED_BY' => 'Modifié par %{user}',
+
+    // templates/comments/notify-email-*.twig
+    // 'COMMENT_NEW_COMMENT' => 'Nouveau commentaire sur la page %{tag}',
+    // 'COMMENT_NEW_COMMENT_ANSWER' => 'Nouvelle réponse à votre commentaire sur la page %{tag}',
+    // 'COMMENT_NEW_COMMENT_MESSAGE' => 'Un nouveau commentaire a été écrit par %{user} sur la page %{tag} sur le site [%{site}].',
+    // 'COMMENT_NEW_COMMENT_ANSWER_MESSAGE' => 'Une nouvelle réponse a été écrite par %{user} à votre commentaire sur la page %{tag} sur le site [%{site}].',
+    // 'COMMENT_NEW_COMMENT_TAG' => 'Vous avez été cité dans un commentaire sur la page %{tag}',
+    // 'COMMENT_NEW_COMMENT_ANSWER_TAG' => 'Vous avez été cité dans une réponse à un commentaire sur la page %{tag}',
+    // 'COMMENT_NEW_COMMENT_MESSAGE_TAG' => 'Vous avez été cité dans un nouveau commentaire écrit par %{user} sur la page %{tag} sur le site [%{site}].',
+    // 'COMMENT_NEW_COMMENT_ANSWER_MESSAGE_TAG' => 'Vous avez été cité dans une réponse écrite par %{user} à un commentaire de la page %{tag} sur le site [%{site}].',
 
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',

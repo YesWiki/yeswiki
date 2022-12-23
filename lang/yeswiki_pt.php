@@ -161,6 +161,9 @@ return [
     'LIST_PAGES_BELONGING_TO' => 'Lista de páginas que pertencem aos',
     'THIS_USER_HAS_NO_PAGE' => 'Este usuário não possui nenhuma página',
 
+    // actions/UserCommentsAction.php
+    'COMMENT_RESERVED_TO_CONNECTED' => 'Por favor, faça login para usar a ação "{{usercomments}}"!',
+
     // actions/mychanges.php
     'YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE' => 'Lista de páginas que você editou, ordenadas por data de modificação',
     'YOUR_MODIFIED_PAGES_ORDERED_BY_NAME' => 'Lista de páginas que você editou, em ordem alfabética',
@@ -406,7 +409,7 @@ return [
     'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Verifique que servidor tenha os direitos de acesso em gravaçao sobre este arquivo. Se por algum motivo você não pode fazer isso, você deve copiar o seguinte num arquivo e transferi-lo por ftp no servidor',
     'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'diretamente no diretório YesWiki. Depois de ter feito isso, o site YesWiki deve funcionar corretamente',
     'TRY_AGAIN' => 'tentar de novo',
-    
+
     // API
     // 'USERS' => 'Utilisateurs',
     // 'GROUPS' => 'Groupes',
@@ -613,6 +616,35 @@ return [
 
     // templates/multidelete-macro.twig
     // 'NUMBER_OF_ELEMENTS' => 'Nombre d\'éléments sélectionnés',
+
+    // Comments
+    'COMMENT_EMPTY_NOT_SAVED' => 'Comentário vazio, sem reforços.',
+    'COMMENT_LOGIN' => 'Faça login para comentar',
+    'COMMENT_NOT_ENOUGH_RIGHTS' => 'Não tem direitos suficientes para comentar.',
+    'COMMENT_PUBLISHED' => 'Comentário publicado!',
+    'COMMENT_REMOVED' => 'O comentário foi apagado.',
+    // 'COMMENT_DELETE' => 'Supprimer un commentaire',
+    'COMMENTS_CURRENTLY_CLOSED' => 'Adicionar comentários nesta página está atualmente desativado',
+    'USER_MUST_BE_LOGGED_TO_COMMENT' => 'Tem de fazer login para publicar um comentário.',
+    'USER_NOT_ALLOWED_TO_COMMENT' => 'Não está num grupo que pode deixar comentários.',
+    'NOT_AUTORIZED_TO_REMOVE_COMMENT' => 'Não está nemu poder comentar terá que mais, a ver com o que se pode fazer.',
+    'COMMENT_TAG' => 'Página',
+    'COMMENT_DATE' => 'Data',
+    'COMMENT_USER' => 'Autor·a',
+    'COMMENT_CONTENT' => 'Comentário',
+    'COMMENT_ON_PAGE' => 'Página dos pais',
+    // 'COMMENT_CONFIRM_DELETE' => 'Voulez-vous supprimer le commentaire ? (action définitive)',
+    // 'COMMENT_MODIFIED_BY' => 'Modifié par %{user}',
+
+    // templates/comments/notify-email-*.twig
+    // 'COMMENT_NEW_COMMENT' => 'Nouveau commentaire sur la page %{tag}',
+    // 'COMMENT_NEW_COMMENT_ANSWER' => 'Nouvelle réponse à votre commentaire sur la page %{tag}',
+    // 'COMMENT_NEW_COMMENT_MESSAGE' => 'Un nouveau commentaire a été écrit par %{user} sur la page %{tag} sur le site [%{site}].',
+    // 'COMMENT_NEW_COMMENT_ANSWER_MESSAGE' => 'Une nouvelle réponse a été écrite par %{user} à votre commentaire sur la page %{tag} sur le site [%{site}].',
+    // 'COMMENT_NEW_COMMENT_TAG' => 'Vous avez été cité dans un commentaire sur la page %{tag}',
+    // 'COMMENT_NEW_COMMENT_ANSWER_TAG' => 'Vous avez été cité dans une réponse à un commentaire sur la page %{tag}',
+    // 'COMMENT_NEW_COMMENT_MESSAGE_TAG' => 'Vous avez été cité dans un nouveau commentaire écrit par %{user} sur la page %{tag} sur le site [%{site}].',
+    // 'COMMENT_NEW_COMMENT_ANSWER_MESSAGE_TAG' => 'Vous avez été cité dans une réponse écrite par %{user} à un commentaire de la page %{tag} sur le site [%{site}].',
 
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',

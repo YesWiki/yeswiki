@@ -32,7 +32,7 @@ return [
     'SITE_BEING_UPDATED' => 'Este sitio se esta actualizando. Intenta más tarde.',
     'DB_CONNECT_FAIL' => 'Por razones ajenas a nuestra voluntad, el contenido de este YesWiki esta temporalmente inaccesible. Intenta más tarde, gracias por su comprensión.',
     'LOG_DB_CONNECT_FAIL' => 'YesWiki : la conexión BDD ha fracasado', // sans accents car commande systeme
-                                                               
+
     'INCORRECT_PAGENAME' => 'El nombre de la página es incorrecto.',
     // 'PERFORMABLE_ERROR' => 'Une erreur inattendue s\'est produite. Veuillez contacter l\'administrateur du site et lui communiquer l\'erreur suivante :',
     'HOMEPAGE_WIKINAME' => 'PaginaPrincipal',
@@ -164,6 +164,9 @@ return [
     'IN_THIS_WIKI' => 'en este wiki',
     'LIST_PAGES_BELONGING_TO' => 'Lista de las páginas perteneciendo a',
     'THIS_USER_HAS_NO_PAGE' => 'Este usuario no posee ninguna página',
+
+    // actions/UserCommentsAction.php
+    'COMMENT_RESERVED_TO_CONNECTED' => '¡Inicie sesión para usar la acción "{{usercomments}}!',
 
     // actions/mychanges.php
     'YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE' => 'Lista de las páginas que modificaste, clasificadas por fecha de modificación',
@@ -408,7 +411,7 @@ return [
     'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Verifica que tu servidor tiene los derechos de acceso de escritura para este archivo. Si por cualquier razón no lo puedes hacer, tienes que copiar las informaciones siguientes en un archivo y transferirlas con un programa ftp al servidor',
     'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'directamente en el repertorio de YesWiki. Una vez hecho, tu sitio YesWiki deberia funcionar bien',
     'TRY_AGAIN' => 'Intentar de nuevo',
-    
+
     // API
     // 'USERS' => 'Utilisateurs',
     // 'GROUPS' => 'Groupes',
@@ -616,6 +619,35 @@ return [
 
     // templates/multidelete-macro.twig
     // 'NUMBER_OF_ELEMENTS' => 'Nombre d\'éléments sélectionnés',
+
+    // Comments
+    'COMMENT_EMPTY_NOT_SAVED' => 'Comentario vacío, sin respaldo.',
+    'COMMENT_LOGIN' => 'Iniciar sesión para comentar',
+    'COMMENT_NOT_ENOUGH_RIGHTS' => 'No tiene suficientes derechos para comentar.',
+    'COMMENT_PUBLISHED' => '¡Comentario publicado!',
+    'COMMENT_REMOVED' => 'El comentario ha sido eliminado.',
+    'COMMENT_DELETE' => 'Eliminar un commentario',
+    'COMMENTS_CURRENTLY_CLOSED' => 'Agregar comentarios en esta página está deshabilitado actualmente',
+    'USER_MUST_BE_LOGGED_TO_COMMENT' => 'Debe iniciar sesión para publicar un comentario.',
+    'USER_NOT_ALLOWED_TO_COMMENT' => 'No estás en un grupo al que se le permita dejar comentarios.',
+    'NOT_AUTORIZED_TO_REMOVE_COMMENT' => 'No se le permite eliminar este comentario.',
+    'COMMENT_TAG' => 'Página',
+    'COMMENT_DATE' => 'Fecha',
+    'COMMENT_USER' => 'Autor·a',
+    'COMMENT_CONTENT' => 'Comentario',
+    'COMMENT_ON_PAGE' => 'Página pariente',
+    // 'COMMENT_CONFIRM_DELETE' => 'Voulez-vous supprimer le commentaire ? (action définitive)',
+    // 'COMMENT_MODIFIED_BY' => 'Modifié par %{user}',
+
+    // templates/comments/notify-email-*.twig
+    // 'COMMENT_NEW_COMMENT' => 'Nouveau commentaire sur la page %{tag}',
+    // 'COMMENT_NEW_COMMENT_ANSWER' => 'Nouvelle réponse à votre commentaire sur la page %{tag}',
+    // 'COMMENT_NEW_COMMENT_MESSAGE' => 'Un nouveau commentaire a été écrit par %{user} sur la page %{tag} sur le site [%{site}].',
+    // 'COMMENT_NEW_COMMENT_ANSWER_MESSAGE' => 'Une nouvelle réponse a été écrite par %{user} à votre commentaire sur la page %{tag} sur le site [%{site}].',
+    // 'COMMENT_NEW_COMMENT_TAG' => 'Vous avez été cité dans un commentaire sur la page %{tag}',
+    // 'COMMENT_NEW_COMMENT_ANSWER_TAG' => 'Vous avez été cité dans une réponse à un commentaire sur la page %{tag}',
+    // 'COMMENT_NEW_COMMENT_MESSAGE_TAG' => 'Vous avez été cité dans un nouveau commentaire écrit par %{user} sur la page %{tag} sur le site [%{site}].',
+    // 'COMMENT_NEW_COMMENT_ANSWER_MESSAGE_TAG' => 'Vous avez été cité dans une réponse écrite par %{user} à un commentaire de la page %{tag} sur le site [%{site}].',
 
     // reactions
     // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',

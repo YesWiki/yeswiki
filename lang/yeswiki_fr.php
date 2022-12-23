@@ -170,6 +170,9 @@ return [
     'LIST_PAGES_BELONGING_TO' => 'Liste des pages appartenant &agrave;',
     'THIS_USER_HAS_NO_PAGE' => 'Cet utilisateur ne poss&egrave;de aucune page',
 
+    // actions/UserCommentsAction.php
+    'COMMENT_RESERVED_TO_CONNECTED' => 'Veuillez vous connecter pour pouvoir utiliser l\'action "{{usercomments}}" !',
+
     // actions/mychanges.php
     'YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE' => 'Liste des pages que vous avez modifi&eacute;es, tri&eacute;e par date de modification',
     'YOUR_MODIFIED_PAGES_ORDERED_BY_NAME' => 'Liste des pages que vous avez modifi&eacute;es, tri&eacute;e par ordre alphab&eacute;tique',
@@ -631,10 +634,28 @@ return [
     'COMMENT_NOT_ENOUGH_RIGHTS' => 'Vous n\'avez pas les droits suffisants pour commenter.',
     'COMMENT_PUBLISHED' => 'Commentaire publié !',
     'COMMENT_REMOVED' => 'Le commentaire a été supprimé.',
+    'COMMENT_DELETE' => 'Supprimer un commentaire',
     'COMMENTS_CURRENTLY_CLOSED' => 'L\'ajout de commentaires sur cette page est présentement désactivé',
     'USER_MUST_BE_LOGGED_TO_COMMENT' => 'Vous devez vous identifier pour pouvoir publier un commentaire.',
     'USER_NOT_ALLOWED_TO_COMMENT' => 'Vous n\'êtes pas dans un groupe autorisé à laisser des commentaires.',
     'NOT_AUTORIZED_TO_REMOVE_COMMENT' => 'Vous n\'êtes pas autorisé à supprimer ce commentaire.',
+    'COMMENT_TAG' => 'Page',
+    'COMMENT_DATE' => 'Date',
+    'COMMENT_USER' => 'Auteur·ice',
+    'COMMENT_CONTENT' => 'Commentaire',
+    'COMMENT_ON_PAGE' => 'Page parente',
+    'COMMENT_CONFIRM_DELETE' => 'Voulez-vous supprimer le commentaire ? (action définitive)',
+    'COMMENT_MODIFIED_BY' => 'Modifié par %{user}',
+
+    // templates/comments/notify-email-*.twig
+    'COMMENT_NEW_COMMENT' => 'Nouveau commentaire sur la page %{tag}',
+    'COMMENT_NEW_COMMENT_ANSWER' => 'Nouvelle réponse à votre commentaire sur la page %{tag}',
+    'COMMENT_NEW_COMMENT_MESSAGE' => 'Un nouveau commentaire a été écrit par %{user} sur la page %{tag} sur le site [%{site}].',
+    'COMMENT_NEW_COMMENT_ANSWER_MESSAGE' => 'Une nouvelle réponse a été écrite par %{user} à votre commentaire sur la page %{tag} sur le site [%{site}].',
+    'COMMENT_NEW_COMMENT_TAG' => 'Vous avez été cité dans un commentaire sur la page %{tag}',
+    'COMMENT_NEW_COMMENT_ANSWER_TAG' => 'Vous avez été cité dans une réponse à un commentaire sur la page %{tag}',
+    'COMMENT_NEW_COMMENT_MESSAGE_TAG' => 'Vous avez été cité dans un nouveau commentaire écrit par %{user} sur la page %{tag} sur le site [%{site}].',
+    'COMMENT_NEW_COMMENT_ANSWER_MESSAGE_TAG' => 'Vous avez été cité dans une réponse écrite par %{user} à un commentaire de la page %{tag} sur le site [%{site}].',
 
     // reactions
     'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',

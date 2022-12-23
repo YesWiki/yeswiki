@@ -22,3 +22,7 @@ services:
 
   YesWiki\Core\Controller\:
     resource: 'controllers/*'
+
+  YesWiki\Core\Service\CommentService:
+    tags:
+      - { name: yeswiki.event_subscriber }

@@ -1,0 +1,3 @@
+[{{ baseUrl|replace({'http://':'','https://':''}) }}] {{ comment.commentOn == parentPage.tag
+    ? _t('COMMENT_NEW_COMMENT',{'tag':parentPage.tag ?? comment.tag})
+    : _t('COMMENT_NEW_COMMENT_ANSWER',{'tag':parentPage.tag ?? comment.tag})}}
