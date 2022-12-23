@@ -21,7 +21,7 @@ class ReactionManager
     public const TYPE_URI = 'https://yeswiki.net/vocabulary/reaction';
     public const DEFAULT_TITLE_T = 'REACTION_SHARE_YOUR_REACTION';
     public const DEFAULT_LABELS_T = ['REACTION_LIKE', 'REACTION_DISLIKE', 'REACTION_ANGRY', 'REACTION_SURPRISED', 'REACTION_THINKING'];
-    // to not depend on labels' translation
+    // TODO make a migration script to move from old labels translation to english ones (like, dislike,angry,surprised,thinking)
     public const DEFAULT_IDS = ['japprouve','je-napprouve-pas','fachee','surprise','dubitatifve'];
     public const DEFAULT_IMAGES = ['👍', '👎', '😡', '😮', '🤔'];
     public const DEFAULT_MAX_REACTIONS = 1;
