@@ -15,6 +15,7 @@ use Symfony\Component\Routing\Loader\AnnotationDirectoryLoader;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Core\Service\ArchiveService;
 
 // TODO put elsewhere
 // https://github.com/sensiolabs/SensioFrameworkExtraBundle/blob/master/src/Routing/AnnotatedRouteControllerLoader.php
@@ -207,6 +208,14 @@ class Init
             'wakka_name' => '', // backup wakka_name if deleted from wakka.config.php
             'htmlPurifierActivated' => false, // TODO ectoplasme set to true
             'favorites_activated' => true,
+            ArchiveService::PARAMS_KEY_IN_WAKKA => [
+                ArchiveService::KEY_FOR_HIDE_CONFIG_VALUES => ArchiveService::DEFAULT_PARAMS_TO_ANONYMIZE,
+                'authorize_bypass_preupdate_backup' => false,
+                'preupdate_backup_activated' => true,
+                'call_archive_async' => true,
+                ArchiveService::KEY_FOR_PRIVATE_FOLDER => ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP,
+                'max_nb_files' => 10,
+            ],
         );
         unset($_rewrite_mode);
 

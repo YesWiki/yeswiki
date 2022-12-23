@@ -1,0 +1,59 @@
+#!/usr/bin/env php
+<?php
+
+namespace YesWiki\Core\Commands;
+
+use Symfony\Component\Console\Application;
+use YesWiki\Core\YesWikiLoader;
+
+if (!file_exists('wakka.config.php')) {
+    exit("\e[31mThe command should be launched from your YesWiki root directory\e[0m");
+}
+
+include_once('wakka.config.php');
+// fake $_SERVER vars
+$_SERVER['REQUEST_URI'] = $wakkaConfig['base_url'].$wakkaConfig['root_page'];
+$_SERVER['HTTP_HOST'] = parse_url($wakkaConfig['base_url'], PHP_URL_HOST);
+$_SERVER['REQUEST_METHOD'] = 'GET';
+// fake wiki page
+$_REQUEST['wiki'] = $wakkaConfig['root_page'];
+
+// Load YesWiki
+require_once 'includes/YesWikiLoader.php';
+$wiki = YesWikiLoader::getWiki();
+
+// create Application
+$application = new Application();
+
+// ... register commands
+foreach ([
+        'core' => 'includes/commands/*.php',
+        'custom' => 'custom/commands/*.php',
+        'tools' => 'tools/*/commands/*.php',
+    ] as $type => $search) {
+    $files = glob($search);
+    foreach ($files as $filePath) {
+        $filename = pathinfo($filePath)['filename'];
+        switch ($type) {
+            case 'core':
+                $className = "\\YesWiki\\Core\\Commands\\$filename";
+                break;
+            case 'custom':
+                $className = "\\YesWiki\\Custom\\Commands\\$filename";
+                break;
+            case 'tools':
+                $toolName = ucfirst(strtolower(basename(dirname(dirname($filePath)))));
+                $className = "\\YesWiki\\$toolName\\Commands\\$filename";
+                break;
+            default:
+                $className = "";
+                break;
+        }
+        $command = new $className($wiki);
+        if ($command) {
+            $application->add($command);
+        }
+    }
+}
+
+$application->run();

@@ -1,5 +1,6 @@
 <?php
 use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Core\Service\ConfigurationService;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -14,8 +15,7 @@ if (!is_writable('wakka.config.php')) {
 } else {
     if ($this->UserIsAdmin()) {
         $themes = getTemplatesList();
-        include_once 'tools/templates/libs/Configuration.php';
-        $config = new Configuration('wakka.config.php');
+        $config = $this->services->get(ConfigurationService::class)->getConfiguration('wakka.config.php');
         $config->load();
 
         if (isset($_POST['action']) and $_POST['action'] === 'setTemplate') {

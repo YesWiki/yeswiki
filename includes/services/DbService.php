@@ -167,4 +167,160 @@ class DbService
         }
         return $tz;
     }
+
+
+    /**
+     * get SQL content : backup method ; preferer mysqldump way it available
+     * @return array ['sql' => string, 'error' => string]
+     *
+     */
+    public function getSQLContentBackupMethod(): array
+    {
+        $sql = "";
+        $error = "";
+        try {
+            $tablesPrefix = trim($this->prefixTable(''));
+            $tablesPostfix = [];
+            // get Tables
+            $tables = $this->loadAll("show tables");
+            if (!is_array($tables)) {
+                throw new Exception("Error in '".__METHOD__."' (line ".__LINE__.") : 'show tables' sql command did not return an array !");
+            }
+
+            foreach ($tables as  $tableInfo) {
+                if (!is_array($tableInfo)) {
+                    throw new Exception("Error in '".__METHOD__."' (line ".__LINE__.") : '\$tableInfo' sql command did not return an array !");
+                }
+                $tableName = array_values($tableInfo)[0];
+                if (strpos($tableName, $tablesPrefix) === 0) {
+                    $tablesPostfix[] = $tableName;
+                }
+            }
+
+            // generate file
+            $date = (new \DateTime())->format('c');
+            $phpVersion = phpversion();
+
+            $sql =
+            <<<SQL
+            -- SQL Dump
+            -- ArchiveService:getSQLBackup Version
+            -- 
+            -- Generated on : $date
+            -- PHP version : $phpVersion
+
+            SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+            SET AUTOCOMMIT = 0;
+            START TRANSACTION;
+
+            /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+            /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+            /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+            /*!40101 SET NAMES utf8mb4 */;
+            /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+            /*!40103 SET TIME_ZONE='+00:00' */;
+            
+            -- --------------------------------------------------------
+
+
+            SQL;
+
+            // For each table
+            foreach ($tablesPostfix as $tableName) {
+                // DUMP CREATE TABLE
+
+                // HEADER
+                $sql .=
+                <<<SQL
+
+                -- 
+                -- Structure of table : `$tableName`
+                -- 
+
+                SQL;
+                // END HEADER
+
+                $createTableResult = $this->query("show create table " . $tableName);
+
+                while ($creationTable = mysqli_fetch_array($createTableResult)) {
+                    $sql .= $creationTable[1].";\n\n";
+                }
+
+                // DUMP DATA
+
+                //    HEADER
+                $sql .=
+                <<<SQL
+
+                -- 
+                -- Data of table : `$tableName`
+                -- 
+
+                SQL;
+                // END HEADER
+
+                $rawData = $this->query("select * from " . $tableName);
+
+                $firstRow = true ;
+                while ($row = mysqli_fetch_array($rawData)) {
+                    if ($firstRow) {
+                        $sql .= "INSERT INTO `$tableName` ";
+                        $sql .= "(";
+                        for ($i=0; $i < mysqli_num_fields($rawData); $i++) {
+                            if ($i != 0) {
+                                $sql .=  ", ";
+                            }
+                            $sql .= "`" . mysqli_fetch_field_direct($rawData, $i)->name . "`";
+                        }
+                        $sql .= ") VALUES\n";
+                        $firstRow = false ;
+                    } else {
+                        $sql .= ",\n";
+                    }
+                    $sql .= "(";
+                    for ($i=0; $i < mysqli_num_fields($rawData); $i++) {
+                        if ($i != 0) {
+                            $sql .=  ", ";
+                        }
+                        $strAdd = '';
+                        $field = mysqli_fetch_field_direct($rawData, $i);
+                        if ($field->type == 252 // text or blob cf https://www.php.net/manual/fr/mysqli-result.fetch-field-direct.php
+                            || $field->type == 253 // varchar
+                            || $field->type == 254 // char
+                            || $field->type == 10 // date
+                            || $field->type == 11 // time
+                            || $field->type == 12 // datetime
+                            || $field->type == 13 // year
+                        ) {
+                            $strAdd =  "'";
+                        }
+                        $sql .=  $strAdd . $this->escape($row[$i] ?? '') . $strAdd ;
+                    }
+                    $sql .=  ")";
+                }
+                $sql .= ";\n" ;
+                $sql .=
+                <<<SQL
+
+                -- --------------------------------------------------------
+
+                SQL;
+            }
+
+            $sql .=
+            <<<SQL
+
+            COMMIT;
+            
+            /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+            /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+            /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+            /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+            SQL;
+        } catch (Throwable $th) {
+            $error = $th->getMessage();
+        }
+        return compact(['sql','error']);
+    }
 }

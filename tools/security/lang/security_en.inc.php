@@ -29,11 +29,14 @@ return [
     // 'DESPAM_ONLY_FOR_ADMINS' => 'Action {{despam}} réservée aux administrateurs.',
 
     // for edit config
-    // 'EDIT_CONFIG_HINT_USE_CAPTCHA' => 'Activer l\'utilisation d\'un captcha avant la sauvegarde (true ou false)',
-    // 'EDIT_CONFIG_HINT_USE_HASHCASH' => 'Activer l\'antispam hashcash du wiki (activé par défaut)',
-    // 'EDIT_CONFIG_HINT_USE_ALERTE' => 'Prévenir si l\'on quitte la page sans sauvegarder (true ou false)',
-    // 'EDIT_CONFIG_HINT_WIKI_STATUS' => 'État du wiki (running ou vide = standard, hibernate = lecture seule)',
-    // 'EDIT_CONFIG_GROUP_SECURITY' => 'Sécurité',
+    'EDIT_CONFIG_HINT_USE_CAPTCHA' => 'Activate usage of captcha before save (true or false)',
+    'EDIT_CONFIG_HINT_USE_HASHCASH' => 'Activate wiki antispam hashcash (activated by default)',
+    'EDIT_CONFIG_HINT_USE_ALERTE' => 'Warn before leaving a page without saving (true or false)',
+    'EDIT_CONFIG_HINT_WIKI_STATUS' => 'Wiki status (running or empty = standard, hibernate = read only)',
+    'EDIT_CONFIG_GROUP_SECURITY' => 'Security',
+    'EDIT_CONFIG_HINT_ARCHIVE[PRIVATEPATH]' => 'Backups\'folder path (\'%TMP\' = system temporary folder)',
+    'EDIT_CONFIG_HINT_ARCHIVE[CALL_ARCHIVE_ASYNC]' => 'Maximum number of backup\'s files to keep (min. 3)',
+    'EDIT_CONFIG_HINT_ARCHIVE[PREUPDATE_BACKUP_ACTIVATED]' => 'Make a backup before each update (true or false)',
 
     // security controller
     // 'WIKI_IN_HIBERNATION' => 'Action désactivée car ce wiki est en lecture seule. Veuillez contacter l\'administrateur pour le réactiver.',

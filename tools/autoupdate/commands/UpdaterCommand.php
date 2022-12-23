@@ -7,8 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 // use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 // use Symfony\Component\Console\Question\ChoiceQuestion;
-// use YesWiki\Bazar\Service\EntryManager;
-// use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Wiki;
 
 class UpdaterCommand extends Command
@@ -38,7 +37,12 @@ class UpdaterCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $output->writeln('TODO ;)');
+        // little hack (bad habit..): we use the first admin user to perform updates as an admin
+        $firstAdmin = $wiki->services->get(AuthController::class)->connectFirstAdmin();
+        if (!empty($firstAdmin)) {
+            $output->writeln('TODO ;)');
+            $wiki->services->get(AuthController::class)->logout();
+        }
         return Command::SUCCESS;
     }
 }

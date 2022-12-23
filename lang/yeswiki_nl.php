@@ -3,6 +3,7 @@
 return [
 
     // Commons
+    // 'ARCHIVES' => 'Sauvegardes',
     // 'CAUTION' => 'Attention',
     'BY' => 'door',
     // 'CLEAN' => 'Nettoyer',
@@ -14,6 +15,8 @@ return [
     // 'INVERT' => 'Inverser',
     // 'MODIFY' => 'Modifier',
     // 'NAME' => 'Nom',
+    // 'PAGES' => 'Pages',
+    // 'ONLY_FOR_ADMINS' => 'Seulement pour les administrateurs',
     // 'SUBSCRIPTION' => 'Inscription',
     'TRIPLES' => 'Triples',
     'UNKNOWN' => 'Onbekend',
@@ -45,6 +48,24 @@ return [
     'RETURN_TO_EXTENSION_LIST' => 'Terug naar de lijst met actieve extensies',
     'NO_TOOL_AVAILABLE' => 'Er is geen enkel instrument beschikbaar of actief',
     'LIST_OF_ACTIVE_TOOLS' => 'Lijst met actieve extensies',
+
+    // actions/AdminBackupsAtion.php
+    'ADMIN_BACKUPS_TITLE' => 'Back-upbeheer',
+    'ADMIN_BACKUPS_ARCHIVES_LIST' => 'Lijst met back-ups',
+    'ADMIN_BACKUPS_ARCHIVE_FILENAME' => 'Bestandsnaam',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE' => 'Type',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_FULL' => 'Volledige back-up',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES' => 'Alleen bestanden',
+    'ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES' => 'Alleen de database',
+    'ADMIN_BACKUPS_ARCHIVE_SIZE' => 'Middel',
+    'ADMIN_BACKUPS_CREATE' => 'Een back-up maken',
+    'ADMIN_BACKUPS_START' => 'Beginnen',
+    'ADMIN_BACKUPS_STOP' => 'Stoppen',
+    'ADMIN_BACKUPS_STOP_BACKUP' => 'Back-up stoppen',
+    'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Geavanceerde instellingen',
+    'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Uitgesloten bestanden',
+    'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Aanvullende bestanden',
+    'ADMIN_BACKUPS_CONFIRM_DELETE_FILES' => 'Het verwijderen van bestanden bevestigen',
 
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Pagina’s met een koppeling naar',
@@ -264,6 +285,11 @@ return [
     // templates/actions/my-favorites-table.twig
     'FAVORITES_TITLE' => 'Titel',
     'FAVORITES_LINK' => 'Verbinden',
+    
+    // templates/preupdate-backups.twig
+    // 'ADMIN_BACKUPS_CREATING' => 'Création d\'une sauvegarde',
+    // 'ADMIN_BACKUPS_FORCE_UPDATE' => 'Forcer une mise à jour sans sauvegarde',
+    // 'ADMIN_BACKUPS_BY_PASS' => 'Mettre à jour sans sauvegarde',
 
     // setup/header.php
     'OK' => 'OK',
