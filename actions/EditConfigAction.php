@@ -70,14 +70,14 @@ class EditConfigAction extends YesWikiAction
         $output = '';
         if ($this->arguments['saving']) {
             $this->save();
-        }
-        if ($this->arguments['saved']) {
+            $this->wiki->Redirect($this->wiki->Href('', '', [self::SAVED_NAME => "1"], false)) ;
+        } elseif ($this->arguments['saved']) {
             $output .= $this->render('@templates/alert-message.twig', [
                 'type'=>'info',
                 'message'=> _t('EDIT_CONFIG_SAVE')
             ]);
         }
-
+        
         // display form
         list($data, $placeholders, $associatedExtensions) = $this->getDataFromConfigFile();
         $keysList = [];
@@ -195,7 +195,7 @@ class EditConfigAction extends YesWikiAction
 
     /**
      * save data to wakka.config.php
-     * @return string|null message to display at the top of the part for editing
+     * @return boolean true if successfull
      */
     private function save(): ?string
     {
@@ -293,8 +293,7 @@ class EditConfigAction extends YesWikiAction
             }
         }
 
-        $config->write();
-        $this->wiki->Redirect($this->wiki->Href('', '', [self::SAVED_NAME => "1"], false)) ;
+        return $config->write();
     }
 
     /**
@@ -305,7 +304,6 @@ class EditConfigAction extends YesWikiAction
     {
         $config = $this->configurationService->getConfiguration('wakka.config.php');
         $config->load();
-
         $data = [];
         $placeholders = [];
         list($keys, $associatedExtensions) = $this->getAuthorizedKeys();

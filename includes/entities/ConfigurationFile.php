@@ -64,10 +64,12 @@ class ConfigurationFile implements ArrayAccess, Iterator, Countable
             return;
         }
 
-        require $this->_file;
-
-        if (isset($$arrayName)) {
-            $this->_parameters = $$arrayName;
+        // little hack to avoid php caching while require config file : we rename the variable and eval
+        $yeswikiConfig = [];
+        $content = str_replace([$arrayName, '<?php', '?>'] , ['yeswikiConfig', '', ''], file_get_contents($this->_file));
+        eval($content);
+        if (!empty($yeswikiConfig)) {
+            $this->_parameters = $yeswikiConfig;
         }
     }
 
