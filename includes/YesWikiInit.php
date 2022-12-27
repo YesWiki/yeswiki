@@ -164,6 +164,33 @@ class Init
     }
 
     /**
+     * Utility function to merge the multidimentionnal config array the right way
+     * 
+     * @param array $array1
+     * @param array $array2
+     * 
+     * @return array merged array
+     */
+    protected function array_merge_recursive_distinct( array &$array1, array &$array2 )
+    {
+        $merged = $array1;
+
+        foreach ( $array2 as $key => &$value )
+        {
+            if ( is_array ( $value ) && isset ( $merged [$key] ) && is_array ( $merged [$key] ) )
+            {
+            $merged [$key] = $this->array_merge_recursive_distinct( $merged [$key], $value );
+            }
+            else
+            {
+            $merged [$key] = $value;
+            }
+        }
+
+        return $merged;
+    }
+
+    /**
      * Check in the config file exists and provide default configuration
      *
      * @param array $wakkaConfig initial config array (empty by default)
@@ -227,7 +254,7 @@ class Init
             $yeswikiDefaultConfig['root_page'] = _t('HOMEPAGE_WIKINAME');
             $yeswikiDefaultConfig['wakka_name'] = _t('MY_YESWIKI_SITE');
         }
-        $wakkaConfig = array_merge($yeswikiDefaultConfig, $wakkaConfig);
+        $wakkaConfig = $this->array_merge_recursive_distinct($yeswikiDefaultConfig, $wakkaConfig);
 
         // give a default timezone to avoid error
         if ($wakkaConfig['timezone'] != $yeswikiDefaultConfig['timezone']) {
