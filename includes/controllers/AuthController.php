@@ -147,7 +147,6 @@ class AuthController extends YesWikiController
                         $user = null;
                     }
                 } elseif ((intval($_SESSION['user']['lastConnection']) + ($remember ? 90 * 24 * 60 * 60 : 60 * 60)) < time()) {
-                    // like Session.class->setPersistentCookie()
                     // If $remember is set and different from 0, 90 days, 1 hour otherwise
                     $user = null;
                 }
@@ -206,7 +205,7 @@ class AuthController extends YesWikiController
             // update session cookies to be persistent or not
             $this->updateSessionCookieExpires(
                 $remember
-                // 90 days like Session.class->setPersistentCookie()
+                // 90 days
                 ? time()+60*60*24*90
                 // only session as default behaviour
                 : 0
@@ -255,7 +254,7 @@ class AuthController extends YesWikiController
         $this->login($firstAdmin);
         return $firstAdmin;
     }
-    
+
     private function updateSessionCookieExpires(int $expires)
     {
         $sessionParams = session_get_cookie_params();

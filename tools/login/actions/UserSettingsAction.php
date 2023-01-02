@@ -60,7 +60,7 @@ class UserSettingsAction extends YesWikiAction
         $this->errorPasswordChange = "";
         $this->referrer = '';
         $user = $this->getUser($_GET ?? []) ;
-        
+
         $this->doPrerenderingActions($_POST ?? [], $user);
         return $this->displayForm($user);
     }
@@ -96,16 +96,16 @@ class UserSettingsAction extends YesWikiAction
                 $this->adminIsActing = true;
                 $user = $this->userManager->getOneByName($this->wantedUserName);
                 if (empty($user)) { // Did not find the user in DB
-                    $this->wiki->session->setMessage(_t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER').' !');
+                    $this->wiki->SetMessage(_t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER').' !');
                 }
                 $this->referrer = filter_var($get['from'] ?? '', FILTER_SANITIZE_URL);
             } elseif (!empty($this->wantedEmail)) {
                 $this->adminIsActing = true;
 
                 $user = $this->userManager->getOneByEmail($this->wantedEmail); // In this case we need to load the right user
-                
+
                 if (empty($user)) { // Did not find the user in DB
-                    $this->wiki->session->setMessage(_t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER').' !');
+                    $this->wiki->SetMessage(_t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER').' !');
                 }
             }
         } else {
@@ -184,7 +184,7 @@ class UserSettingsAction extends YesWikiAction
     {
         // User wants to log out
         $this->authController->logout();
-        $this->wiki->session->setMessage(_t('USER_YOU_ARE_NOW_DISCONNECTED').' !');
+        $this->wiki->SetMessage(_t('USER_YOU_ARE_NOW_DISCONNECTED').' !');
         $this->wiki->Redirect($this->wiki->href());
     }
 
@@ -201,7 +201,7 @@ class UserSettingsAction extends YesWikiAction
                 $this->userController->delete($user);
                 $user = null;
                 // forward
-                $this->wiki->session->setMessage(_t('USER_DELETED').' !');
+                $this->wiki->SetMessage(_t('USER_DELETED').' !');
                 $this->wiki->Redirect($this->wiki->href('', $this->referrer));
             } catch (TokenNotFoundException $th) {
                 $this->errorUpdate = _t('USERSETTINGS_USER_NOT_DELETED') .' '. $th->getMessage();
@@ -231,7 +231,7 @@ class UserSettingsAction extends YesWikiAction
                         $this->authController->login($user);
                     }
                     // forward
-                    $this->wiki->session->setMessage(_t('USER_PARAMETERS_SAVED').' !');
+                    $this->wiki->SetMessage(_t('USER_PARAMETERS_SAVED').' !');
                     if ($this->userLoggedIn) { // In case it's the usther trying to update oneself
                         $this->wiki->Redirect($this->wiki->href());
                     } else { // That's the admin acting, we need to pass the user on
@@ -265,7 +265,7 @@ class UserSettingsAction extends YesWikiAction
 
                     $password = $post['password'];
                     $this->authController->setPassword($user, $password);
-                    $this->wiki->session->setMessage(_t('USER_PASSWORD_CHANGED').' !');
+                    $this->wiki->SetMessage(_t('USER_PASSWORD_CHANGED').' !');
                     // reload $user
                     $user = $this->userManager->getOneByName($user['name']);
                     if (!empty($user)) {
@@ -297,7 +297,7 @@ class UserSettingsAction extends YesWikiAction
                 return empty($post[$key]);
             });
             try {
-                $password = isset($post['password']) && is_string($post['password']) ? $post['password'] :"";
+                $password = isset($post['password']) && is_string($post['password']) ? $post['password'] : "";
                 if (!empty($emptyInputsParametersNames)) {
                     $this->error = str_replace('{parameters}', implode(',', $emptyInputsParametersNames), _t('USERSETTINGS_SIGNUP_MISSING_INPUT'));
                 } elseif ($this->authController->checkPasswordValidateRequirements($password) &&

@@ -6,7 +6,6 @@ require_once 'includes/constants.php';
 require_once 'includes/urlutils.inc.php';
 require_once 'includes/i18n.inc.php';
 require_once 'includes/YesWikiInit.php';
-require_once 'includes/Session.class.php';
 require_once 'includes/YesWikiPerformable.php';
 require_once 'includes/objects/YesWikiAction.php';
 require_once 'includes/objects/YesWikiHandler.php';
@@ -61,7 +60,6 @@ class Wiki
     public $inclusions = array();
     public $extensions = array();
     public $routes = array();
-    public $session;
     public $user; // depreciated TODO remove it for ectoplasme : replaced by userManager
     public $services;
 
@@ -90,8 +88,6 @@ class Wiki
         $this->services = $init->initCoreServices($this);
         $this->loadExtensions();
         $this->routes = $init->initRoutes($this);
-
-        $this->session = new \YesWiki\Session($this);
     }
 
     // MISC
