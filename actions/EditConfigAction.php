@@ -77,7 +77,7 @@ class EditConfigAction extends YesWikiAction
                 'message'=> _t('EDIT_CONFIG_SAVE')
             ]);
         }
-        
+
         // display form
         list($data, $placeholders, $associatedExtensions) = $this->getDataFromConfigFile();
         $keysList = [];
@@ -160,7 +160,7 @@ class EditConfigAction extends YesWikiAction
      * @param bool $firstLevel
      * @return array [$keyName1,$keyName2]
      */
-    private function prepareKeyNames($keys, bool $firstLevel = false):array
+    private function prepareKeyNames($keys, bool $firstLevel = false): array
     {
         if (is_string($keys)) {
             return ($firstLevel ? [$keys] : ["[{$keys}]"]);
@@ -197,7 +197,7 @@ class EditConfigAction extends YesWikiAction
      * save data to wakka.config.php
      * @return boolean true if successfull
      */
-    private function save(): ?string
+    private function save(): bool
     {
         $config = $this->configurationService->getConfiguration('wakka.config.php');
         $config->load();
@@ -286,7 +286,7 @@ class EditConfigAction extends YesWikiAction
                             }
                         }
                         break;
-                    
+
                     default:
                         break;
                 }
@@ -312,7 +312,7 @@ class EditConfigAction extends YesWikiAction
             if (!empty($keyAsArray)) {
                 $length = count($keyAsArray);
                 $firstLevelKey = $keyAsArray[0];
-                $keyName = $firstLevelKey . ($length > 1 ? "[".implode("][", array_slice($keyAsArray, 1))."]": "");
+                $keyName = $firstLevelKey . ($length > 1 ? "[".implode("][", array_slice($keyAsArray, 1))."]" : "");
                 switch ($length) {
                     case 1:
                         if (isset($config->$firstLevelKey)) {
@@ -350,7 +350,7 @@ class EditConfigAction extends YesWikiAction
                             $placeholders[$keyName] = $this->array2Str($this->params->get($firstLevelKey)[$keyAsArray[1]][$keyAsArray[2]]);
                         }
                         break;
-                    
+
                     default:
                         $data[$keyName] = "";
                         break;
@@ -365,7 +365,7 @@ class EditConfigAction extends YesWikiAction
      * @param array $keys
      * @return array $conertedKeys
      */
-    private function convertKeysAsArray(array $keys):array
+    private function convertKeysAsArray(array $keys): array
     {
         $convertedKeys = [];
         $isList = $this->arrayIsList($keys);
@@ -486,7 +486,7 @@ class EditConfigAction extends YesWikiAction
         foreach ($this->convertKeysAsArray($this->getAuthorizedKeys()[0]) as $keyAsArray) {
             $length = count($keyAsArray);
             $firstLevelKey = $keyAsArray[0];
-            $keyName = $firstLevelKey . ($length > 1 ? "[".implode("][", array_slice($keyAsArray, 1))."]": "");
+            $keyName = $firstLevelKey . ($length > 1 ? "[".implode("][", array_slice($keyAsArray, 1))."]" : "");
             if (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.$keyName])) {
                 $help[$keyName] = _t('EDIT_CONFIG_HINT_'.$keyName);
             } elseif (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.strtoupper($keyName)])) {
