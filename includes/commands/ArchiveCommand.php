@@ -33,11 +33,11 @@ class ArchiveCommand extends Command
             // the full command description shown when running the command with
             // the "--help" option
             ->setHelp("Create archive of the YesWiki.\n".
-                "To not save files use '--nosavefiles'\n".
-                "To not save database use '--nosavedatabase'\n")
+                "To save only the database use '--database-only'\n".
+                "To save only the files use '--files-only'\n")
             
-            ->addOption('nosavefiles', 'd', InputOption::VALUE_NONE, 'Do not save files of the wiki')
-            ->addOption('nosavedatabase', 'f', InputOption::VALUE_NONE, 'Do not save database')
+            ->addOption('database-only', 'd', InputOption::VALUE_NONE, 'Save only the database of the YesWiki')
+            ->addOption('files-only', 'f', InputOption::VALUE_NONE, 'Save only the files of the YesWiki')
             ->addOption('extrafiles', 'e', InputOption::VALUE_REQUIRED, 'Extrafiles, path relative to root, coma separated')
             ->addOption('excludedfiles', 'x', InputOption::VALUE_REQUIRED, 'Excludedfiles, path relative to root, coma separated')
             ->addOption('hideConfigValues', 'a', InputOption::VALUE_REQUIRED, 'Params to anonymize in wakka.config.php, json_encoded')
@@ -47,11 +47,11 @@ class ArchiveCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $nosavefiles = $input->getOption('nosavefiles');
-        $nosavedatabase = $input->getOption('nosavedatabase');
+        $databaseOnly = $input->getOption('database-only');
+        $filesOnly = $input->getOption('files-only');
 
-        if ($nosavefiles && $nosavedatabase) {
-            $output->writeln("Invalid options : It is not possible to use --nosavefiles and --nosavedatabase options in same time.");
+        if ($databaseOnly && $filesOnly) {
+            $output->writeln("Invalid options : It is not possible to use --database-only and --files-only options in same time.");
             return Command::INVALID;
         }
 
@@ -68,7 +68,7 @@ class ArchiveCommand extends Command
         $uid = $input->getOption('uid');
         $uid = empty($uid) ? "" : $uid;
 
-        $location = $this->archiveService->archive($output, !$nosavefiles, !$nosavedatabase, $extrafiles, $excludedfiles, $hideConfigValues, $uid);
+        $location = $this->archiveService->archive($output, !$databaseOnly, !$filesOnly, $extrafiles, $excludedfiles, $hideConfigValues, $uid);
 
         return Command::SUCCESS;
     }

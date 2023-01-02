@@ -17,6 +17,10 @@
     padding-bottom: 5px;
 }
 
+.btn-wrap {
+    padding:3px 15px !important;
+}
+
 @media(max-width: 600px){
     .backups-container .archive-item.archive-item-title .btn-wrap{
         max-width: 50px;
