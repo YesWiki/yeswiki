@@ -58,6 +58,54 @@ _[Documentation originelle sur le site yeswiki.net](https://yeswiki.net/?BazarWi
 
 _[Documentation originelle sur le site yeswiki.net](https://yeswiki.net/?PageConfiglocal "Tutoriel - Créer un environnement de dév en local")_
 
+## Astuces pour faire de belles fusions de branches `git`
+
+### Contexte 
+
+Les sources du logiciel YesWiki sont actuellement disponibles sur GitHub : https://github.com/YesWiki/yeswiki/. Lors de la fusion de la validation d'une [`pull-request`](https://github.com/YesWiki/yeswiki/pulls), le logiciel en ligne `github` propose trois modes de fusions : `rebase and merge`, `squash and merge` et `create a merge commit`. Aucun de ces trois modes ne permet d'obtenir un bel arbre des commits.
+
+En effet, 
+ - `rebase and merge` va réécrire les commits de la branche concernée à la fin de la branche cible, ce qui peut faire disparaître l'historique des fusions des sous-branches ;
+ - `squash and merge` va fusionner tous les commits en un seul ne laissant pas de trace de l'historique des commits ;
+ - `create a merge commit` va créer un nouveau `commit` sans `rebase` ce qui peut créer des entremelements de branches qui rendent leur inspection plus compliquée.
+
+La solution qui correspond aux usages de la communauté des développeurs YesWiki doit se faire en local.
+
+### Procédure
+
+ 1. avoir une copie en local du dépôt `git` (cf. [Créer un environnement de travail en local](#cr%c3%a9er-un-environnement-de-travail-en-local))
+ 2. attendre la validation de la `pull-request` concernée
+ 3. identifier la branche source ; exemple : `fix/new-fix`
+ 4. identifier la branche cible ; exemple : `doryphore-dev`
+ 5. importer en local toutes les modifications depuis le dépôt [`git fetch --all`](https://git-scm.com/docs/git-fetch)
+ 6. vérifier qu'il n'y a pas de modifications en cours à l'aide de [`git status`](https://git-scm.com/docs/git-status)
+    - s'il y a des modifications en cours, il est possible de les mettre en attente avec [`git stash`](https://git-scm.com/docs/git-stash)
+    - ou de les sauvegarder dans un nouveau commit avec [`git commit ...`](https://git-scm.com/docs/git-commit)
+ 7. une fois qu'il n'y a plus de modifications en cours, basculer sur la branche cible [`git checkout doryphore-dev`](https://www.git-scm.com/docs/git-checkout)
+ 8. vérifier l'état de la branche cible (`doryphore-dev`) en local `git status`
+    - si la branche a des commits en retard et aucun commit en avance : [`git pull`](https://www.git-scm.com/docs/git-pull)
+    - s'il y a des commits en avance et qu'il faut les ajouter au dépôt : `git pull -r` suivi de [`git push`](https://www.git-scm.com/docs/git-push)
+    - si les commits en avance doivent être jetés : [`git reset --hard origin/doryphore-dev`](https://www.git-scm.com/docs/git-reset)
+ 9. une fois que la branche cible est à jour en local, on bascule sur la branche source en local : [`git checkout fix/new-fix`](https://www.git-scm.com/docs/git-checkout)
+ 10. vérifier l'état de la branche source (`fix/new-fix`) en local `git status`
+    - si la branche a des commits en retard et aucun commit en avance : [`git pull`](https://www.git-scm.com/docs/git-pull)
+    - s'il y a des commits en avance et qu'il faut les ajouter à la PR : `git pull -r` suivi de [`git push`](https://www.git-scm.com/docs/git-push), puis attendre la validation de ces commits dans la PR et recommencer la procédure
+    - si les commits en avance doivent être jetés : [`git reset --hard origin/fix/new-fix`](https://www.git-scm.com/docs/git-reset)
+ 11. une fois que la branche source est à jour en local, on va la réécrire à la fin de la branche cible en gardant l'historique des fusions des sous-branches : [`git rebase -r doryphore-dev`](https://www.git-scm.com/docs/git-rebase) (le `-r` est important pour garder l'historique des fusions des sous-branches)
+   - il se peut qu'il y ait des conflits de fusion qu'il faut résoudre à la main
+ 12. une fois le `rebase` terminé, il faut mettre à jour le dépôt distant pour que la `pull-request` puisse suivre les modifications : [`git push --force-with-lease`](https://www.git-scm.com/docs/git-push)
+ 13. s'il n'y a pas eu d'erreur, alors on revient sur la branche cible en local `git checkout doryphore-dev`
+ 14. ensuite, on réalise la fusion [`git merge --no-ff`](https://www.git-scm.com/docs/git-merge)
+   - `--no-ff` est important pour correspondre à la volonté de la communauté de créer une "branche" le long de la branche principale pour identifier plus facilement à quelle fonctionnalité appartient chaque commit.
+ 15. une fois la fusion réalisée correctement en local, il suffit d'envoyer les modifications vers le dépôt distant `git push` (normalement, il ne faut pas faire de `--force` ou `--force-with-lease` dans ce cas)
+ 16. vérifier que la `pull-request` est automatiquement fermée et marquée comme fusionnée sur [`github`](https://github.com/YesWiki/yeswiki/pulls)
+ 17. faire un nouveau `git fetch --all` pour mettre à jour les modifications en local. Normalement, la branche source distante devrait maintenant être supprimée. il suffit alors de supprimer la dite branche en local `git branch -D fix/new-fix`
+
+**Il est possible de configurer son [EDI](https://fr.wikipedia.org/wiki/Environnement_de_d%C3%A9veloppement) préféré pour réaliser toutes ces opérations de façon automatique.**
+
+Pour fusionner la branche `doryphore-dev` dans la branche `doryphore`, il suffit d'appliquer la même procédure sans adaptation mais en considérant cette fois-ci que la branche source est `doryphore-dev` et la branche cible `doryphore`.
+
+
 ## Créer une extension YesWiki
 
 Le code créé pour de nouvelles fonctionnalités peut être proposé à la communauté de deux manières.
