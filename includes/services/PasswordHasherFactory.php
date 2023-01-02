@@ -31,7 +31,8 @@ class PasswordHasherFactory extends SymfonyPasswordHasherFactory
                     ]
                 ],
                 'cookie' => [
-                    'algorithm' => 'auto',
+                    'algorithm' => 'bcrypt',
+                    'cost' => 9 // default 13, 9 less difficult to be faster
                 ]
             ];
         } else {
