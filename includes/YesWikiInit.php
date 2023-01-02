@@ -165,25 +165,21 @@ class Init
 
     /**
      * Utility function to merge the multidimentionnal config array the right way
-     * 
+     *
      * @param array $array1
      * @param array $array2
-     * 
+     *
      * @return array merged array
      */
-    protected function array_merge_recursive_distinct( array &$array1, array &$array2 )
+    protected function array_merge_recursive_distinct(array &$array1, array &$array2)
     {
         $merged = $array1;
 
-        foreach ( $array2 as $key => &$value )
-        {
-            if ( is_array ( $value ) && isset ( $merged [$key] ) && is_array ( $merged [$key] ) )
-            {
-            $merged [$key] = $this->array_merge_recursive_distinct( $merged [$key], $value );
-            }
-            else
-            {
-            $merged [$key] = $value;
+        foreach ($array2 as $key => &$value) {
+            if (is_array($value) && isset($merged [$key]) && is_array($merged [$key])) {
+                $merged [$key] = $this->array_merge_recursive_distinct($merged [$key], $value);
+            } else {
+                $merged [$key] = $value;
             }
         }
 
@@ -388,6 +384,7 @@ class Init
             $cookiesParam = session_get_cookie_params();
             $cookiesParam['path'] = $CookiePath;
             $cookiesParam['httponly'] = true;
+            $cookiesParam['samesite'] = 'Lax';
             session_set_cookie_params($cookiesParam);
             session_name($sessionName);
             session_start();

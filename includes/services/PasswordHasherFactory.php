@@ -29,6 +29,9 @@ class PasswordHasherFactory extends SymfonyPasswordHasherFactory
                     'migrate_from' => [
                         'md5' // uses the "md5" hasher configured above
                     ]
+                ],
+                'cookie' => [
+                    'algorithm' => 'auto',
                 ]
             ];
         } else {
@@ -36,6 +39,9 @@ class PasswordHasherFactory extends SymfonyPasswordHasherFactory
                 User::class => [
                     'class' => MD5PasswordHasher::class,
                     'arguments' => [false]
+                ],
+                'cookie' => [
+                    'algorithm' => 'auto',
                 ]
             ];
         }

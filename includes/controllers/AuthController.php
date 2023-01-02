@@ -2,10 +2,13 @@
 
 namespace YesWiki\Core\Controller;
 
+use DateTime;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Controller\UserController;
+use YesWiki\Core\Entity\CookieData;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
+use YesWiki\Core\Exception\BadUserCookieException;
 use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
@@ -44,6 +47,8 @@ class AuthController extends YesWikiController
     use LimitationsTrait;
 
     public const DEFAULT_PASSWORD_MINIMUM_LENGTH = 5;
+    protected const DATE_LENGTH_IN_TOKEN = 17;
+    protected const DATE_FORMAT_IN_TOKEN = 'Ymd-H-i-s';
 
     private $limitations;
     protected $params;
@@ -135,28 +140,20 @@ class AuthController extends YesWikiController
      */
     public function connectUser()
     {
-        $userFromSession = $this->getLoggedUser();
-        if (!empty($userFromSession['name'])) {
-            // check if user ever existing
-            $user = $this->userManager->getOneByName($userFromSession['name']);
-            $remember = $_SESSION['user']['remember'] ?? 0;
-            if (!empty($user)) {
-                if (empty($_SESSION['user']['lastConnection'])) {
-                    if (!$this->wiki->UserIsAdmin()) {
-                        // do not disconnect admin during update
-                        $user = null;
-                    }
-                } elseif ((intval($_SESSION['user']['lastConnection']) + ($remember ? 90 * 24 * 60 * 60 : 60 * 60)) < time()) {
-                    // If $remember is set and different from 0, 90 days, 1 hour otherwise
-                    $user = null;
-                }
+        $this->cleanOldFormatCookie();
+        try {
+            $data = $this->connectUserFromCookies();
+            if ($this->getExpirationTimeStamp($data['lastConnectionDate'], $data['remember']) < time()) {
+                $this->logout();
             }
-        }
-        if (empty($user)) {
-            $this->logout();
-        } else {
-            $this->login($user, $remember);
-            // login each time to set persistent cookies
+
+            // connect in SESSION
+            $this->login($data['user'], $data['remember'] ? 1 : 0);
+        } catch (BadUserCookieException $th) {
+            if (empty($data['user']['name']) || !$this->wiki->UserIsAdmin($data['user']['name'])) {
+                // do not disconnect admin during update
+                $this->logout();
+            }
         }
     }
 
@@ -183,13 +180,18 @@ class AuthController extends YesWikiController
         return $name;
     }
 
+    protected function getExpirationTimeStamp(DateTime $startTime, bool $remember): int
+    {
+        // 90 days if remember otherwise 1 hour
+        return $startTime->getTimestamp() + ($remember ? 90 * 24 * 60 * 60 : 60 * 60);
+    }
+
     public function login($user, $remember = 0)
     {
-        if (isset($_SESSION['user']) && isset($_SESSION['user']['remember']) && $_SESSION['user']['name'] == $user['name']) {
-            $remember = filter_var($_SESSION['user']['remember'], FILTER_VALIDATE_BOOL) ? 1 : 0;
-        } else {
-            $remember = filter_var($remember, FILTER_VALIDATE_BOOL) ? 1 : 0;
+        if (isset($_SESSION['user']) && $_SESSION['user']['name'] != $user['name']) {
+            $this->cleanSensitiveDataFromSession();
         }
+        $remember = filter_var($remember, FILTER_VALIDATE_BOOL);
 
         $_SESSION['user'] =
             empty($user['name'])
@@ -197,42 +199,39 @@ class AuthController extends YesWikiController
             : [
                 'name' => $user['name']
             ];
-        $_SESSION['user']['remember'] = $remember;
-        $_SESSION['user']['lastConnection'] = time();
         if (!$this->wiki->isCli()) {
             // prevent setting cookies in CLI (could be errors)
+            $currentDateTime = new DateTime();
+            $rawData = $this->prepareRawData($currentDateTime, $remember, $user->getPassword());
 
-            // update session cookies to be persistent or not
-            $this->updateSessionCookieExpires(
-                $remember
-                // 90 days
-                ? time()+60*60*24*90
-                // only session as default behaviour
-                : 0
-            );
+            $passwordHasher = $this->passwordHasherFactory->getPasswordHasher('cookie');
+            $encryptedData = $passwordHasher->hash($rawData);
+
+            $expires = $this->getExpirationTimeStamp($currentDateTime, $remember);
+            $this->setPersistentCookie('name', $user['name'], $expires);
+            $this->setPersistentCookie('token', $currentDateTime->format(self::DATE_FORMAT_IN_TOKEN).($remember ? '1' : '0').$encryptedData, $expires);
+
             // TODO : find a more secure way to autologin
             // (see https://www.php.net/manual/en/features.session.security.management.php#features.session.security.management.session-and-autologin)
-
-            // clean old cookies TODO for ectoplasme, remove this part
-            $this->wiki->DeleteCookie('name');
-            $this->wiki->DeleteCookie('password');
-            $this->wiki->DeleteCookie('remember');
         }
     }
 
     public function logout()
     {
-        unset($_SESSION['user']);
+        $this->cleanSensitiveDataFromSession();
+        $this->cleanOldFormatCookie();
         if (!$this->wiki->isCli()) {
             // prevent setting cookies in CLI (could be errors)
 
-            // update session cookies to be only for session
-            $this->updateSessionCookieExpires(0);
-
-            // clean old cookies TODO for ectoplasme, remove this part
-            $this->wiki->DeleteCookie('name');
-            $this->wiki->DeleteCookie('password');
-            $this->wiki->DeleteCookie('remember');
+            // delete cookies
+            $this->setPersistentCookie('name', '', time() - 3600);
+            $this->setPersistentCookie('token', '', time() - 3600);
+        }
+        if (isset($_COOKIE['name'])) {
+            unset($_COOKIE['name']);
+        }
+        if (isset($_COOKIE['token'])) {
+            unset($_COOKIE['token']);
         }
     }
 
@@ -257,11 +256,140 @@ class AuthController extends YesWikiController
 
     private function updateSessionCookieExpires(int $expires)
     {
+        $this->setPersistentCookie(session_name(), session_id(), $expires);
+    }
+
+    protected function setPersistentCookie(string $name, string $value, int $expires)
+    {
         $sessionParams = session_get_cookie_params();
         $newParams= array_filter($sessionParams, function ($v, $k) {
             return in_array($k, ['path','domain','secure','httponly','samesite']);
         }, ARRAY_FILTER_USE_BOTH);
         $newParams['expires']= $expires;
-        setcookie(session_name(), session_id(), $newParams);
+        setcookie($name, $value, $newParams);
+    }
+
+    public function deleteOldCookie(string $name)
+    {
+        setcookie($name, '', [
+            'path' => $this->wiki->CookiePath,
+            'domain' => '',
+            'secure' => !empty($_SERVER['HTTPS']),
+            'httponly' => true,
+            'samesite' => 'Lax',
+            'expires' => time() - 3600
+        ]);
+        if (isset($_COOKIE[$name])) {
+            unset($_COOKIE[$name]);
+        }
+    }
+
+    /**
+     * connect a user from COOKIE
+     * @return array [
+     *  'user' => User,
+     *  'remember' => bool,
+     *  'lastConnectionDate' => DateTime
+     * ]
+     * @throws BadUserCookieException
+     */
+    protected function connectUserFromCookies(): array
+    {
+        $data = $this->extractDataFromCookie();
+
+        // check if user ever existing
+        $user = $this->userManager->getOneByName($data->getUserName());
+
+        if (empty($user)) {
+            throw new BadUserCookieException('Unknown name');
+        }
+
+        $rawData = $this->prepareRawData($data->getLastConnectionDate(), $data->getRemember(), $user->getPassword());
+
+        $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($data);
+        if (!$passwordHasher->verify($data->getEncryptedData(), $rawData)) {
+            throw new BadUserCookieException('Wrong cookie');
+        }
+        return [
+            'user' => $user,
+            'remember' => $data->getRemember(),
+            'lastConnectionDate' => $data->getLastConnectionDate(),
+        ];
+    }
+
+    /**
+     * extract data from cookies
+     * @return CookieData
+     * @throws BadUserCookieException
+     */
+
+    protected function extractDataFromCookie(): CookieData
+    {
+        if (empty($_COOKIE['name'])) {
+            throw new BadUserCookieException('cookie \'name\' sould be set');
+        }
+        $userName = strval($_COOKIE['name']);
+
+        if (empty($_COOKIE['token'])) {
+            throw new BadUserCookieException('cookie \'token\' sould be set');
+        }
+        $token = strval($_COOKIE['token']);
+        if (strlen($token) <= self::DATE_LENGTH_IN_TOKEN) {
+            throw new BadUserCookieException('cookie \'token\' is too short');
+        }
+
+        $lastConnectionDateStr = substr($token, 0, self::DATE_LENGTH_IN_TOKEN);
+        $lastConnectionDate = DateTime::createFromFormat(self::DATE_FORMAT_IN_TOKEN, $lastConnectionDateStr);
+
+        if ($lastConnectionDate === false || !($lastConnectionDate instanceof DateTime)) {
+            throw new BadUserCookieException('cookie \'token\' does not begin by a date');
+        }
+
+        $remember = (substr($token, self::DATE_LENGTH_IN_TOKEN, 1) === 1);
+
+        $encryptedData = substr($token, self::DATE_LENGTH_IN_TOKEN +1);
+        return new CookieData($userName, $lastConnectionDate, $remember, $encryptedData);
+    }
+
+    /**
+     * prepare raw data from $lastConnectionDate, $remember, $hashedPassword
+     * @param DateTime $lastConnectionDate
+     * @param bool $remember
+     * @param string $hashedPassword
+     * @return string
+     */
+    protected function prepareRawData(DateTime $lastConnectionDate, bool $remember, string $hashedPassword): string
+    {
+        return $hashedPassword . $lastConnectionDate->format(self::DATE_FORMAT_IN_TOKEN).($remember ? '1' : '0');
+    }
+
+    /**
+     * clean sensitive data from session
+     */
+    protected function cleanSensitiveDataFromSession()
+    {
+        if (isset($_SESSION['user'])) {
+            unset($_SESSION['user']);
+        }
+        if (isset($_SESSION['_csrf'])) {
+            unset($_SESSION['_csrf']);
+        }
+    }
+
+    /**
+     * clean auth cookie for old format
+     */
+    protected function cleanOldFormatCookie()
+    {
+        if (!$this->wiki->isCli()) {
+            if (isset($_COOKIE['password'])) {
+                $this->deleteOldCookie('password');
+            }
+            if (isset($_COOKIE['remember'])) {
+                $this->deleteOldCookie('remember');
+            }
+            // update session cookies to be only for session
+            $this->updateSessionCookieExpires(0);
+        }
     }
 }
