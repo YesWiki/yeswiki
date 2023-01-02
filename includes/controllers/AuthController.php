@@ -345,7 +345,7 @@ class AuthController extends YesWikiController
             throw new BadUserCookieException('cookie \'token\' does not begin by a date');
         }
 
-        $remember = (substr($token, self::DATE_LENGTH_IN_TOKEN, 1) === 1);
+        $remember = (substr($token, self::DATE_LENGTH_IN_TOKEN, 1) === '1');
 
         $encryptedData = substr($token, self::DATE_LENGTH_IN_TOKEN +1);
         return new CookieData($userName, $lastConnectionDate, $remember, $encryptedData);
