@@ -473,10 +473,6 @@ return [
     'DATABASE_YOU_MUST_FIRST_SET_ARGUMENT' => 'You must set all arguments for object of \YesWiki\Database class',
     'DATABASE_MISSING_ARGUMENT' => ' missing',
 
-
-    // YesWiki\Session class
-    'SESSION_YOU_MUST_FIRST_SET_ARGUMENT' => 'You must set argument for object of \YesWiki\Session class',
-
     // gererdroits
     'ACLS_RESERVED_FOR_ADMINS' => 'This action is limited to admins',
     'ACLS_NO_SELECTED_PAGE' => 'No page has been selected.',

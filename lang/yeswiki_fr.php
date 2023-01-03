@@ -70,7 +70,7 @@ return [
     'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Fichiers exclus',
     'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Fichiers supplémentaires',
     'ADMIN_BACKUPS_CONFIRM_DELETE_FILES' => 'Confirmer la suppression des fichiers',
-    
+
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Pages ayant un lien vers',
     'PAGES_WITH_LINK_TO_CURRENT_PAGE' => 'Pages ayant un lien vers la page courante',
@@ -297,7 +297,7 @@ return [
     // templates/actions/my-favorites-table.twig
     'FAVORITES_TITLE' => 'Titre',
     'FAVORITES_LINK' => 'Lien',
-    
+
     // templates/preupdate-backups.twig
     'ADMIN_BACKUPS_CREATING' => 'Création d\'une sauvegarde',
     'ADMIN_BACKUPS_FORCE_UPDATE' => 'Forcer une mise à jour sans sauvegarde',
@@ -486,9 +486,6 @@ return [
     'DATABASE_QUERY_FAILED' => 'La requête a échoué {\YesWiki\Database}',
     'DATABASE_YOU_MUST_FIRST_SET_ARGUMENT' => 'Il manque des arguments pour un objet de la classe \YesWiki\Database',
     'DATABASE_MISSING_ARGUMENT' => ' manque(nt)',
-
-    // YesWiki\Session class
-    'SESSION_YOU_MUST_FIRST_SET_ARGUMENT' => 'Il manque l\'argument pour un objet de la classe \YesWiki\Session',
 
     // gererdroits
     'ACLS_RESERVED_FOR_ADMINS' => 'Cette action est r&eacute;serv&eacute;e aux admins',

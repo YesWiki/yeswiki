@@ -6,7 +6,6 @@ require_once 'includes/constants.php';
 require_once 'includes/urlutils.inc.php';
 require_once 'includes/i18n.inc.php';
 require_once 'includes/YesWikiInit.php';
-require_once 'includes/Session.class.php';
 require_once 'includes/YesWikiPerformable.php';
 require_once 'includes/objects/YesWikiAction.php';
 require_once 'includes/objects/YesWikiHandler.php';
@@ -61,7 +60,6 @@ class Wiki
     public $inclusions = array();
     public $extensions = array();
     public $routes = array();
-    public $session;
     public $user; // depreciated TODO remove it for ectoplasme : replaced by userManager
     public $services;
 
@@ -90,8 +88,6 @@ class Wiki
         $this->services = $init->initCoreServices($this);
         $this->loadExtensions();
         $this->routes = $init->initRoutes($this);
-
-        $this->session = new \YesWiki\Session($this);
     }
 
     // MISC
@@ -331,30 +327,6 @@ class Wiki
                 $this->Query($sql);
             }
         }
-    }
-
-    // COOKIES
-    public function SetSessionCookie($name, $value)
-    {
-        SetCookie($name, $value, 0, $this->CookiePath, '', !empty($_SERVER['HTTPS']), true);
-        $_COOKIE[$name] = $value;
-    }
-
-    public function SetPersistentCookie($name, $value, $remember = 0)
-    {
-        SetCookie($name, $value, time() + ($remember ? 90 * 24 * 60 * 60 : 60 * 60), $this->CookiePath, '', !empty($_SERVER['HTTPS']), true);
-        $_COOKIE[$name] = $value;
-    }
-
-    public function DeleteCookie($name)
-    {
-        SetCookie($name, '', 1, $this->CookiePath, '', !empty($_SERVER['HTTPS']), true);
-        $_COOKIE[$name] = '';
-    }
-
-    public function GetCookie($name)
-    {
-        return $_COOKIE[$name];
     }
 
     // HTTP/REQUEST/LINK RELATED
@@ -1970,5 +1942,52 @@ class Wiki
     public function UserIsInGroup($group, $user = null, $admincheck = true)
     {
         return $this->services->get(UserManager::class)->isInGroup($group, $user, $admincheck);
+    }
+
+    // COOKIES
+    /**
+     *
+     * @param string $name
+     * @param string $value
+     * @deprecated Use AuthController::setPersistentCookie instead
+     */
+    public function SetSessionCookie($name, $value)
+    {
+        $this->services->get(AuthController::class)->setPersistentCookie($name, $value, 0);
+        $_COOKIE[$name] = $value;
+    }
+
+    /**
+     *
+     * @param string $name
+     * @param string $value
+     * @param bool|int $remember
+     * @deprecated Use AuthController::setPersistentCookie instead
+     */
+    public function SetPersistentCookie($name, $value, $remember = 0)
+    {
+        $authController = $this->services->get(AuthController::class);
+
+        $authController->setPersistentCookie($name, $value, $authController->getExpirationTimeStamp(new DateTime(), $remember == 1));
+        $_COOKIE[$name] = $value;
+    }
+
+
+    /**
+     *
+     * @param string $name
+     * @deprecated Use AuthController::deleteOldCookie instead
+     */
+    public function DeleteCookie($name)
+    {
+        $this->services->get(AuthController::class)->deleteOldCookie($name);
+    }
+
+    /**
+    * @deprecated no replacement
+    */
+    public function GetCookie($name)
+    {
+        return $_COOKIE[$name];
     }
 }
