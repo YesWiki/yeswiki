@@ -8,7 +8,7 @@ use YesWiki\Core\Controller\UserController;
 use YesWiki\Core\Entity\CookieData;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
-use YesWiki\Core\Exception\BadUserCookieException;
+use YesWiki\Core\Exception\BadUserConnectException;
 use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
@@ -142,14 +142,23 @@ class AuthController extends YesWikiController
     {
         $this->cleanOldFormatCookie();
         try {
-            $data = $this->connectUserFromCookies();
-            if ($this->getExpirationTimeStamp($data['lastConnectionDate'], $data['remember']) < time()) {
-                $this->logout();
+            try {
+                // faster to connect from session
+                $data = $this->connectUserFromSession();
+                if ($this->getExpirationTimeStamp($data['lastConnectionDate'], $data['remember']) < time()) {
+                    throw new BadUserConnectException('Not connected via session');
+                }
+            } catch (BadUserConnectException $th) {
+                // otherwise use cookies
+                $data = $this->connectUserFromCookies();
+                if ($this->getExpirationTimeStamp($data['lastConnectionDate'], $data['remember']) < time()) {
+                    $this->logout();
+                }
             }
 
             // connect in SESSION
             $this->login($data['user'], $data['remember'] ? 1 : 0);
-        } catch (BadUserCookieException $th) {
+        } catch (BadUserConnectException $th) {
             if (empty($_SESSION['user']['name']) ||
                 empty($data['user']['name']) ||
                 $data['user']['name'] != $_SESSION['user']['name'] ||
@@ -196,15 +205,16 @@ class AuthController extends YesWikiController
         }
         $remember = filter_var($remember, FILTER_VALIDATE_BOOL);
 
+        $currentDateTime = new DateTime();
         $_SESSION['user'] =
             empty($user['name'])
             ? []
             : [
-                'name' => $user['name']
+                'name' => $user['name'],
+                'lastConnection' => $currentDateTime->getTimestamp()
             ];
         if (!$this->wiki->isCli()) {
             // prevent setting cookies in CLI (could be errors)
-            $currentDateTime = new DateTime();
             $rawData = $this->prepareRawData($currentDateTime, $remember, $user->getPassword());
 
             $passwordHasher = $this->passwordHasherFactory->getPasswordHasher('cookie');
@@ -227,14 +237,14 @@ class AuthController extends YesWikiController
             // prevent setting cookies in CLI (could be errors)
 
             // delete cookies
-            $this->setPersistentCookie('name', '', time() - 3600);
-            $this->setPersistentCookie('token', '', time() - 3600);
-        }
-        if (isset($_COOKIE['name'])) {
-            unset($_COOKIE['name']);
-        }
-        if (isset($_COOKIE['token'])) {
-            unset($_COOKIE['token']);
+            if (!empty($_COOKIE['name'])) {
+                $this->setPersistentCookie('name', '', time() - 3600);
+                unset($_COOKIE['name']);
+            }
+            if (!empty($_COOKIE['token'])) {
+                $this->setPersistentCookie('token', '', time() - 3600);
+                unset($_COOKIE['token']);
+            }
         }
     }
 
@@ -294,7 +304,7 @@ class AuthController extends YesWikiController
      *  'remember' => bool,
      *  'lastConnectionDate' => DateTime
      * ]
-     * @throws BadUserCookieException
+     * @throws BadUserConnectException
      */
     protected function connectUserFromCookies(): array
     {
@@ -304,14 +314,14 @@ class AuthController extends YesWikiController
         $user = $this->userManager->getOneByName($data->getUserName());
 
         if (empty($user)) {
-            throw new BadUserCookieException('Unknown name');
+            throw new BadUserConnectException('Unknown name');
         }
 
         $rawData = $this->prepareRawData($data->getLastConnectionDate(), $data->getRemember(), $user->getPassword());
 
         $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($data);
         if (!$passwordHasher->verify($data->getEncryptedData(), $rawData)) {
-            throw new BadUserCookieException('Wrong cookie');
+            throw new BadUserConnectException('Wrong cookie');
         }
         return [
             'user' => $user,
@@ -321,31 +331,70 @@ class AuthController extends YesWikiController
     }
 
     /**
+     * connect a user from SESSION
+     * @return array [
+     *  'user' => User,
+     *  'remember' => bool,
+     *  'lastConnectionDate' => DateTime
+     * ]
+     * @throws BadUserConnectException
+     */
+    protected function connectUserFromSession(): array
+    {
+        $userFromSession = $this->getLoggedUser();
+        if (empty($userFromSession['name'])) {
+            throw new BadUserConnectException('No use in session');
+        }
+
+        // check if user ever existing
+        $user = $this->userManager->getOneByName($userFromSession['name']);
+
+        if (empty($user)) {
+            throw new BadUserConnectException('Unknown name');
+        }
+        if (empty($userFromSession['lastConnection'])) {
+            throw new BadUserConnectException('No last connection date');
+        }
+
+        $lastConnectionDate = DateTime::createFromFormat('U', $userFromSession['lastConnection']);
+
+        if ($lastConnectionDate === false || !($lastConnectionDate instanceof DateTime)) {
+            throw new BadUserConnectException('Last connection date badly formatted');
+        }
+
+        return [
+            'user' => $user,
+            'remember' => false, // force usage of cookies if more than 1 hour
+            'lastConnectionDate' => $lastConnectionDate,
+        ];
+    }
+
+    /**
      * extract data from cookies
      * @return CookieData
-     * @throws BadUserCookieException
+     * @throws BadUserConnectException
      */
 
     protected function extractDataFromCookie(): CookieData
     {
         if (empty($_COOKIE['name'])) {
-            throw new BadUserCookieException('cookie \'name\' sould be set');
+            throw new BadUserConnectException('cookie \'name\' sould be set');
         }
         $userName = strval($_COOKIE['name']);
 
         if (empty($_COOKIE['token'])) {
-            throw new BadUserCookieException('cookie \'token\' sould be set');
+            throw new BadUserConnectException('cookie \'token\' sould be set');
         }
         $token = strval($_COOKIE['token']);
         if (strlen($token) <= self::DATE_LENGTH_IN_TOKEN) {
-            throw new BadUserCookieException('cookie \'token\' is too short');
+            throw new BadUserConnectException('cookie \'token\' is too short');
         }
 
         $lastConnectionDateStr = substr($token, 0, self::DATE_LENGTH_IN_TOKEN);
         $lastConnectionDate = DateTime::createFromFormat(self::DATE_FORMAT_IN_TOKEN, $lastConnectionDateStr);
 
         if ($lastConnectionDate === false || !($lastConnectionDate instanceof DateTime)) {
-            throw new BadUserCookieException('cookie \'token\' does not begin by a date');
+            throw new BadUserConnectException('cookie \'token\' does not begin by a date');
         }
 
         $remember = (substr($token, self::DATE_LENGTH_IN_TOKEN, 1) === '1');

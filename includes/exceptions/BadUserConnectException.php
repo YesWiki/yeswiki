@@ -4,6 +4,6 @@ namespace YesWiki\Core\Exception;
 
 use Exception;
 
-class BadUserCookieException extends Exception
+class BadUserConnectException extends Exception
 {
 }
