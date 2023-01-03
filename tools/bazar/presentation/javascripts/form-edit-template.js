@@ -529,7 +529,7 @@ var typeUserAttrs = {
     },
     value: {
       label: _t('BAZ_REACTIONS_FIELD_DEFAULT_ACTIVATION_LABEL'), 
-      value: "oui"
+      options: { oui: _t('YES'),non: _t('NO') }
     },
     labels: {
       label: _t('BAZ_REACTIONS_FIELD_LABELS_LABEL'), 
@@ -683,7 +683,6 @@ var templates = {
       field: `<i class="far fa-thumbs-up"></i> ${field.fieldlabel || _t('BAZ_ACTIVATE_REACTIONS')}` ,
       onRender() {
           templateHelper.defineLabelHintForGroup(field, 'fieldlabel', _t('BAZ_REACTIONS_FIELD_ACTIVATE_HINT'))
-          templateHelper.defineLabelHintForGroup(field, 'value', _t('BAZ_REACTIONS_FIELD_VALUE_HINT'))
           templateHelper.defineLabelHintForGroup(field, 'ids', _t('BAZ_REACTIONS_FIELD_IDS_HINT'))
           templateHelper.defineLabelHintForGroup(field, 'images', _t('BAZ_REACTIONS_FIELD_IMAGES_HINT'))
           templateHelper.defineLabelHintForGroup(field, 'labels', _t('BAZ_REACTIONS_FIELD_LABELS_HINT'))

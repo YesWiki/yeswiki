@@ -253,7 +253,6 @@ return [
     // 'BAZ_REACTIONS_FIELD_LABELS_HINT' => 'Laisser vide ou séparés par des virgules',
     // 'BAZ_REACTIONS_FIELD_LABELS_LABEL' => 'Noms des réactions',
     // 'BAZ_REACTIONS_FIELD_LABELS_PLACEHOLDER' => 'Gratitude,J\'aime,J\'ai appris quelque chose,J\'ai pas compris,Je ne suis pas d\'accord,Ca me perturbe',
-    // 'BAZ_REACTIONS_FIELD_VALUE_HINT' => 'Mettre \'oui\' ou laisser vide',
 
     // presentation/javascripts/map-field-leaflet.js
     'BAZ_ADJUST_MARKER_POSITION' => 'Move me if needed',
