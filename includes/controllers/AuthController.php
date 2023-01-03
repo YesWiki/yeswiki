@@ -192,7 +192,7 @@ class AuthController extends YesWikiController
         return $name;
     }
 
-    protected function getExpirationTimeStamp(DateTime $startTime, bool $remember): int
+    public function getExpirationTimeStamp(DateTime $startTime, bool $remember): int
     {
         // 90 days if remember otherwise 1 hour
         return $startTime->getTimestamp() + ($remember ? 90 * 24 * 60 * 60 : 60 * 60);
@@ -272,7 +272,7 @@ class AuthController extends YesWikiController
         $this->setPersistentCookie(session_name(), session_id(), $expires);
     }
 
-    protected function setPersistentCookie(string $name, string $value, int $expires)
+    public function setPersistentCookie(string $name, string $value, int $expires)
     {
         $sessionParams = session_get_cookie_params();
         $newParams= array_filter($sessionParams, function ($v, $k) {
@@ -434,10 +434,10 @@ class AuthController extends YesWikiController
     protected function cleanOldFormatCookie()
     {
         if (!$this->wiki->isCli()) {
-            if (isset($_COOKIE['password'])) {
+            if (!empty($_COOKIE['password'])) {
                 $this->deleteOldCookie('password');
             }
-            if (isset($_COOKIE['remember'])) {
+            if (!empty($_COOKIE['remember'])) {
                 $this->deleteOldCookie('remember');
             }
             // update session cookies to be only for session
