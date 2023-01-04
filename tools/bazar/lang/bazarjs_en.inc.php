@@ -114,7 +114,7 @@ return [
     'BAZ_FORM_EDIT_USERS_WIKINI_AUTOUPDATE_MAIL' => 'Auto. Sync. e-mail',
     'BAZ_FORM_EDIT_ACL_READ_LABEL' => 'Can read entry',
     'BAZ_FORM_EDIT_ACL_WRITE_LABEL' => 'Can edit entry',
-    'BAZ_FORM_EDIT_ACL_COMMENT_LABEL' => 'Can comment entry',
+    'BAZ_FORM_EDIT_ACL_COMMENT_LABEL' => 'Default rights for open comments',
     'BAZ_FORM_EDIT_DATE_TODAY_BUTTON' => 'Init to today',
     'BAZ_FORM_EDIT_EMAIL_BUTTON' => 'Replace email by a contact button',
     // 'BAZ_FORM_EDIT_EMAIL_SEND_CONTENT' => 'Envoyer le contenu de la fiche à cet email',

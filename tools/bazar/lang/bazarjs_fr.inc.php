@@ -114,7 +114,7 @@ return [
     'BAZ_FORM_EDIT_USERS_WIKINI_AUTOUPDATE_MAIL' => 'Auto. Synchro. e-mail',
     'BAZ_FORM_EDIT_ACL_READ_LABEL' => 'Peut voir la fiche',
     'BAZ_FORM_EDIT_ACL_WRITE_LABEL' => 'Peut éditer la fiche',
-    'BAZ_FORM_EDIT_ACL_COMMENT_LABEL' => 'Peut commenter la fiche',
+    'BAZ_FORM_EDIT_ACL_COMMENT_LABEL' => 'Droits par défaut pour les commentaires ouverts',
     'BAZ_FORM_EDIT_DATE_TODAY_BUTTON' => 'Initialiser à Aujourd\'hui',
     'BAZ_FORM_EDIT_EMAIL_BUTTON' => 'Remplacer l\'email par un bouton contact',
     'BAZ_FORM_EDIT_EMAIL_SEND_CONTENT' => 'Envoyer le contenu de la fiche à cet email',
@@ -217,12 +217,11 @@ return [
 
     'BAZ_ACTIVATE_COMMENTS' => 'Activer les commentaires ?',
     'BAZ_ACTIVATE_COMMENTS_HINT' => 'Droits mis à jour lors de l\'enregistrement de la fiche',
-    'BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL' => 'Activation par défaut',
+    'BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL' => 'Activation des commentaires par défaut',
     'BAZ_FORM_EDIT_COMMENTS_FIELD' => 'Commentaires',
     'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_LABEL' => 'Texte pour édition',
     'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT' => 'Laisser vide pour utiliser le texte par défaut',
-    'BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_RIGHTS_LABEL' => 'Droits par défaut pour les commentaires ouverts',
-    'BAZ_FORM_EDIT_COMMENTS_FIELD_VALUE_HINT' => 'Mettre \'oui\' ou laisser vide',
+    'BAZ_FORM_EDIT_ACL_ASK_IF_ACTIVATE_COMMENT_LABEL' => 'Demander d\'activer les commentaires ?',
 
     // condition checking field
     "BAZ_FORM_CONDITIONSCHEKING_HINT" => "La condition doit respecter le format suivant (sans les `):{\\n}".
