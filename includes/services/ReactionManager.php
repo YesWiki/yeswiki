@@ -301,7 +301,7 @@ class ReactionManager
         );
     }
 
-    public function deleteUserReaction($pageTag, $reactionId, $id, $user)
+    public function deleteUserReaction($pageTag, $reactionId, $id, $user): bool
     {
         if (!isset($reactionId) || $reactionId === '') {
             throw new \Exception('ReactionId not specified');
@@ -316,7 +316,7 @@ class ReactionManager
         }
 
         if ($this->entryManager->isEntry($pageTag) && $reactionId == 'reactionField') {
-            $this->tripleStore->delete(
+            return $this->tripleStore->delete(
                 $pageTag,
                 self::TYPE_URI,
                 null,
@@ -331,7 +331,7 @@ class ReactionManager
                 "(`value` NOT LIKE '%\"date\":\"%')"
             );
         } else {
-            $this->tripleStore->delete($pageTag, self::TYPE_URI, null, '', '', 'value LIKE \'%user":"'.$user.'","idReaction":"'.$reactionId.'","id":"'.$id.'"%\'');
+            return $this->tripleStore->delete($pageTag, self::TYPE_URI, null, '', '', 'value LIKE \'%user":"'.$user.'","idReaction":"'.$reactionId.'","id":"'.$id.'"%\'');
         }
     }
 }

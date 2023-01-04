@@ -58,7 +58,7 @@ class ApiController extends YesWikiController
         $urlTriples = $this->wiki->Href('', 'api/triples/{resource}', ['property' => 'http://outils-reseaux.org/_vocabulary/type', 'user' => 'username'], false);
         $output .= '<h2>'._t('TRIPLES').'</h2>'."\n".
             '<p><code>GET '.$urlTriples.'</code></p>';
-            
+
         $urlArchives = $this->wiki->Href('', 'api/archives');
         $output .= '<h2>'._t('ARCHIVES').'</h2>'."\n".
             '<p>'._t('ONLY_FOR_ADMINS').'</p>'.
@@ -781,20 +781,34 @@ class ApiController extends YesWikiController
             }
         }
 
+        $allOk = true;
+        $notDeletedTriples = [];
         foreach ($triples as $triple) {
-            $this->getService(TripleStore::class)->delete(
+            if ($this->getService(TripleStore::class)->delete(
                 $triple['resource'],
                 $triple['property'],
                 $triple['value'],
                 "",
                 ""
+            ) === false) {
+                $allOk = false;
+                $notDeletedTriples[] = $triple;
+            }
+        }
+        if ($allOk) {
+            return new ApiResponse(
+                $triples,
+                Response::HTTP_OK
+            );
+        } else {
+            return new ApiResponse(
+                [
+                    'triples' => $triples,
+                    'notDeletedTriples' => $notDeletedTriples
+                ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
-
-        return new ApiResponse(
-            $triples,
-            Response::HTTP_OK
-        );
     }
 
     private function extractTriplesParams(string $method, $resource): array
@@ -833,7 +847,7 @@ class ApiController extends YesWikiController
         }
         return compact(['property','username','apiResponse']);
     }
-    
+
     /**
      * @Route("/api/archives/{id}", methods={"GET"}, options={"acl":{"public", "@admins"}})
      */
@@ -841,7 +855,7 @@ class ApiController extends YesWikiController
     {
         return $this->getService(ArchiveController::class)->getArchive($id);
     }
-    
+
     /**
      * @Route("/api/archives/uidstatus/{uid}", methods={"GET"}, options={"acl":{"public", "@admins"}})
      */
@@ -849,7 +863,7 @@ class ApiController extends YesWikiController
     {
         return $this->getService(ArchiveController::class)->getArchiveStatus(
             $uid,
-            empty($_GET['forceStarted']) ? false : in_array($_GET['forceStarted'],[1,true,"1","true"],true)
+            empty($_GET['forceStarted']) ? false : in_array($_GET['forceStarted'], [1,true,"1","true"], true)
         );
     }
 
@@ -863,7 +877,7 @@ class ApiController extends YesWikiController
             Response::HTTP_OK
         );
     }
-    
+
     /**
      * @Route("/api/archives/forcedUpdateToken/", methods={"GET"}, options={"acl":{"public", "@admins"}})
      */
