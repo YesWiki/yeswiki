@@ -505,35 +505,22 @@ class ApiController extends YesWikiController
         if ($user = $this->wiki->getUser()) {
             if ($username == $user['name'] || $this->wiki->UserIsAdmin()) {
                 $reactionManager = $this->getService(ReactionManager::class);
-                $reactionManager->deleteUserReaction($page, $idreaction, $id, $username);
-                // check if deleted
-                $reactions = $reactionManager->getReactions($page, [$idreaction], $username);
-                if (!empty($reactions)) {
-                    $uniqueId = "$idreaction|$page";
-                    if (!empty($reactions[$uniqueId]['reactions'])) {
-                        $notDeletedReactions = array_filter(
-                            $reactions[$uniqueId]['reactions'],
-                            function ($reaction) use ($id) {
-                                return isset($reaction[$id]) && $reaction[$id] == $id;
-                            }
-                        );
-                        if (!empty($notDeletedReactions)) {
-                            return new ApiResponse(
-                                ['error' => 'reaction not deleted'],
-                                Response::HTTP_INTERNAL_SERVER_ERROR
-                            );
-                        }
-                    }
+                if ($reactionManager->deleteUserReaction($page, $idreaction, $id, $username)) {
+                    return new ApiResponse(
+                        [
+                            'idReaction'=>$idreaction,
+                            'id'=>$id,
+                            'page' => $page,
+                            'user'=> $username
+                        ],
+                        Response::HTTP_OK
+                    );
+                } else {
+                    return new ApiResponse(
+                        ['error' => 'reaction not deleted'],
+                        Response::HTTP_INTERNAL_SERVER_ERROR
+                    );
                 }
-                return new ApiResponse(
-                    [
-                        'idReaction'=>$idreaction,
-                        'id'=>$id,
-                        'page' => $page,
-                        'user'=> $username
-                    ],
-                    Response::HTTP_OK
-                );
             } else {
                 return new ApiResponse(
                     ['error' => 'Seul les admins ou l\'utilisateur concerné peuvent supprimer les réactions.'],
