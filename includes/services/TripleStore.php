@@ -2,6 +2,7 @@
 
 namespace YesWiki\Core\Service;
 
+use Throwable;
 use YesWiki\Security\Controller\SecurityController;
 
 class TripleStore
@@ -270,8 +271,9 @@ class TripleStore
      *            The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
      * @param string $extraSQL
      *            Extra SQL query (null by default)
+     * @return bool
      */
-    public function delete($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX, $extraSQL = null)
+    public function delete($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX, $extraSQL = null): bool
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -280,16 +282,38 @@ class TripleStore
 
         $sql = 'DELETE FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = "' . $this->dbService->escape($res) . '" ' . 'AND property = "' . $this->dbService->escape($prop_prefix . $property) . '" ';
         if ($value !== null) {
-            $sql .= 'AND value = "' . $this->dbService->escape($value) . '"';
+            $valueQuery = 'AND value = "' . $this->dbService->escape($value) . '"';
+            $sql .= $valueQuery;
+        } else {
+            $valueQuery = '';
         }
         if ($extraSQL !== null) {
-            $sql .= 'AND ('.$extraSQL.')';
+            $extraSQLQuery = 'AND ('.$extraSQL.')';
+            $sql .= $extraSQLQuery;
+        } else {
+            $extraSQLQuery = '';
         }
         // invalidate the cache
         if (isset($this->cacheByResource[$res])) {
             unset($this->cacheByResource[$res]);
         }
 
-        $this->dbService->query($sql);
+        try {
+            if ($this->dbService->query($sql) === false) {
+                return false;
+            }
+            $sql = <<<SQL
+            SELECT `id` FROM {$this->dbService->prefixTable('triples')} 
+              WHERE `resource` = "{$this->dbService->escape($re_prefix . $resource)}" 
+                AND `property` = "{$this->dbService->escape($prop_prefix . $property)}" 
+                $valueQuery
+                $extraSQLQuery
+                ;
+            SQL;
+            $triple = $this->dbService->loadSingle($sql);
+            return is_null($triple);
+        } catch (Throwable $th) {
+            return false;
+        }
     }
 }
