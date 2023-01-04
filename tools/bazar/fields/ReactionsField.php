@@ -145,7 +145,8 @@ class ReactionsField extends BazarField
             'userReaction' => $userReactions,
             'oldIdsUserReactions' => $oldIdsUserReactions,
             'maxReaction' => self::MAX_REACTIONS,
-            'pageTag' => $currentEntryTag
+            'pageTag' => $currentEntryTag,
+            'showCommentMessage' => !empty($entry['bf_commentaires']) && $entry['bf_commentaires'] == 'oui'
         ]);
     }
 

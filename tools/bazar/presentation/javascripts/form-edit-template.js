@@ -642,6 +642,11 @@ var templates = {
             const base = $(element).closest(".acls-field.form-field")
             $(element).addClass("initialized")
 
+            var nameInput = $(base).find("input[type=text][name=name]")
+            if (nameInput.val().trim().length == 0 || 
+              nameInput.val().trim() == 'bf_acls' ){
+              nameInput.val('bf_commentaires')
+            }
             
             var visibleSelect = $(base).find("select[name=askIfActivateComments]")
             var selectedValue = visibleSelect.val()
@@ -650,10 +655,6 @@ var templates = {
               .find(".form-group.fieldLabel-wrap,.form-group.hint-wrap,.form-group.name-wrap,.form-group.value-wrap")
             if ([1,'1'].includes(selectedValue)){
               subElements.show()
-              var nameInput = $(base).find("input[type=text][name=name]")
-              if (nameInput.val().trim().length == 0){
-                nameInput.val('bf_commentaires')
-              }
               var commentInput = $(base).find("select[name=comment]")
               var currentValue = commentInput.val()
               if (Array.isArray(currentValue) &&
