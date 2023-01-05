@@ -900,12 +900,7 @@ class ArchiveService
 
     private function canWriteFolder(string $path): bool
     {
-        $perms = fileperms($path);
-        return (
-            (($perms & 0xF000) == 0x4000) && // directory
-            ($perms & 0x0080) &&           // writable by owner
-            ($perms & 0x0010)              // writable by group
-        );
+        return is_dir($path) && is_writable($path);
     }
 
     private function localPrivateFolderNotAvailableOnInternet(string $localPath, string $testFileName): bool
