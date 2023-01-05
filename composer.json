@@ -80,6 +80,9 @@
         "platform-check": true,
         "sort-packages": true
     },
+    "bin": [
+            "yeswicli"
+    ],
     "autoload": {
         "classmap": ["includes/ComposerScriptsHelper.php"]
     }

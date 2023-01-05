@@ -1,0 +1,4 @@
+#!/usr/bin/env php
+<?php
+# just a wrapper to run `yeswicli` in shell
+include_once('includes/commands/console');
