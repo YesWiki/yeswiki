@@ -16,7 +16,7 @@
           <select :value="getSelectedFormId()" required class="form-control" @change="setSelectedFormId" ref="formSelection">
             <option v-for="(name, id) in formIds" :value="id" v-text="name"></option>
           </select>
-          <span v-if="isBazarListeAction" class="text-muted">{{ _t('ACTION_BUILDER_SEVERAL_FORMS_HINT') }}</span>
+          <span v-if="isBazarListeAction" class="text-muted">{{ _t('ACTION_BUILDER_SEVERAL_FORMS_HINT')|raw }}</span>
         </div>
 
         <!-- Choose Action -->
