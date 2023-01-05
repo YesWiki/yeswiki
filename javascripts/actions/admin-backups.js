@@ -266,8 +266,10 @@ let appParams = {
                 },
                 success: function(data){
                     if (archiveApp.callAsync){
-                        archiveApp.archiveMessage = _t('ADMIN_BACKUPS_STARTED');
-                        archiveApp.archiveMessageClass = {alert:true,['alert-info']:true};
+                        toastMessage(
+                            _t('ADMIN_BACKUPS_STARTED')
+                            ,2000,
+                            "alert alert-success");
                     }
                     archiveApp.currentArchiveUid = data.uid;
                     setTimeout(archiveApp.updateStatus, 2000);
@@ -415,7 +417,11 @@ let appParams = {
                             if (archiveApp.isPreupdate){
                                 archiveApp.startForcedUpdate(_t('ADMIN_BACKUPS_UID_STATUS_FINISHED')+'<br/>'+_t('ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING'));
                             } else {
-                                archiveApp.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_FINISHED'),'success');
+                                archiveApp.endUpdatingStatus();
+                                toastMessage(
+                                    _t('ADMIN_BACKUPS_UID_STATUS_FINISHED'),
+                                    3000,
+                                    "alert alert-success");
                             }
                         } else if (!data.running) {
                             if (archiveApp.warnIfNotStarted) {

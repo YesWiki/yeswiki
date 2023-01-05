@@ -5,162 +5,165 @@
 <div class="admin-backups-container">
   <h1>{{ _t('ADMIN_BACKUPS_TITLE') }}</h1>
   <div class="well">
-  <fieldset>
-    <legend>{{ _t('ADMIN_BACKUPS_CREATE') }}</legend>
-    <div class="row">
-      <div class="col-md-6">
-        <div class="checkbox">
-          <label for="adminBackupsTypeFull">
-            <input type="radio" id="adminBackupsTypeFull" value="full" name="adminBackupsType" ref="adminBackupsTypeFull" 
-              @click="updateType" :checked="savefiles && savedatabase"/>
-            <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_FULL') }}</span>
-          </label>
+    <fieldset>
+      <legend>{{ _t('ADMIN_BACKUPS_CREATE') }}</legend>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="checkbox">
+            <label for="adminBackupsTypeFull">
+              <input type="radio" id="adminBackupsTypeFull" value="full" name="adminBackupsType" ref="adminBackupsTypeFull" 
+                @click="updateType" :checked="savefiles && savedatabase"/>
+              <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_FULL') }}</span>
+            </label>
+          </div>
+          <div class="checkbox">
+            <label for="adminBackupsTypeOnlyFiles">
+              <input type="radio" id="adminBackupsTypeOnlyFiles" value="only_files" name="adminBackupsType" ref="adminBackupsTypeOnlyFiles" 
+                @click="updateType" :checked="savefiles && !savedatabase"/>
+              <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES') }}</span>
+            </label>
+          </div>
+          <div class="checkbox">
+            <label for="adminBackupsTypeOnlyDb">
+              <input type="radio" id="adminBackupsTypeOnlyDb" value="only_db" name="adminBackupsType" ref="adminBackupsTypeOnlyDb"
+                @click="updateType" :checked="!savefiles && savedatabase"/>
+              <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES') }}</span>
+            </label>
+          </div>
         </div>
-        <div class="checkbox">
-          <label for="adminBackupsTypeOnlyFiles">
-            <input type="radio" id="adminBackupsTypeOnlyFiles" value="only_files" name="adminBackupsType" ref="adminBackupsTypeOnlyFiles" 
-              @click="updateType" :checked="savefiles && !savedatabase"/>
-            <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES') }}</span>
-          </label>
-        </div>
-        <div class="checkbox">
-          <label for="adminBackupsTypeOnlyDb">
-            <input type="radio" id="adminBackupsTypeOnlyDb" value="only_db" name="adminBackupsType" ref="adminBackupsTypeOnlyDb"
-              @click="updateType" :checked="!savefiles && savedatabase"/>
-            <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES') }}</span>
-          </label>
+        <div class="col-md-6">
+          <span @click="showAdvancedParams = !showAdvancedParams">
+            <input 
+              type="checkbox" 
+              name="advanced-params" 
+              value="1" 
+              :checked="showAdvancedParams">
+            <span>{{ _t('ADMIN_BACKUPS_ADVANCED_PARAMS') }}</span>
+          </span>
+          <div v-if="showAdvancedParams">
+              <strong>{{ _t('ADMIN_BACKUPS_ADVANCED_EXTRA_FILES') }}</strong>
+              <template v-for="file in extrafiles">
+                <div>
+                  <span v-html="file"></span>
+                  <button class="btn btn-xs btn-danger" @click="removeExtraFile(file)">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                </div>
+              </template>
+              <input class="form-control input-sm" type="text" ref="newExtraFile" placeholder="{{ _t('ADMIN_BACKUPS_PLACEHOLDER_FILES') }}" 
+                  @change="updateExtraFiles"/>
+              <strong>{{ _t('ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES') }}</strong>
+              <template v-for="file in excludedfiles">
+                <div>
+                  <span v-html="file"></span>
+                  <button class="btn btn-xs btn-danger" @click="removeExcludedFile(file)">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                </div>
+              </template>
+              <input class="form-control input-sm" type="text" ref="newExcludedFile" placeholder="{{ _t('ADMIN_BACKUPS_PLACEHOLDER_FILES') }}"
+                  @change="updateExcludedFiles"/>
+          </div>
         </div>
       </div>
-      <div class="col-md-6">
-        <span @click="showAdvancedParams = !showAdvancedParams">
+      <div class="archive-buttons">
+        <button 
+            v-if="currentArchiveUid.length == 0 || !archiving"
+            @click="startArchive"
+            class="btn btn-primary"
+            :disabled="updating || currentArchiveUid.length > 0 || archiving" 
+            data-tooltip="toggle" 
+            title="{{ _t('ADMIN_BACKUPS_CREATE') }}">
+          <i class="fas fa-play"></i> {{ _t('ADMIN_BACKUPS_START') }}
+        </button>
+        <button
+            v-if="currentArchiveUid.length > 0 && archiving"
+            @click="stopArchive"
+            class="btn btn-danger"
+            :disabled="stoppingArchive" 
+            data-tooltip="toggle" 
+            title="{{ _t('ADMIN_BACKUPS_STOP_BACKUP') }}">
+          <i class="fas fa-stop"></i> {{ _t('ADMIN_BACKUPS_STOP') }}
+        </button>
+      </div>
+    </fieldset>
+    <div v-if="archiveMessage.length > 0" v-html="archiveMessage" :class="archiveMessageClass"></div>
+  </div>
+  <div v-if="ready && Object.keys(archives).length == 0" class="alert alert-info">{{ _t('ADMIN_NO_BACKUP_FOUND') }}.</div>
+  <div v-if="message.length > 0" v-html="message" :class="messageClass"></div>
+  <div v-if="ready && Object.keys(archives).length > 0">
+    <div v-if="archiveMessage.length > 0 && askConfirmationToDelete"
+      @click="toggleconfimationToDeleteFiles()">
+      <input 
+        type="checkbox" 
+        name="confimationToDeleteFiles" 
+        value="1" 
+        :checked="canForceDelete">
+      <span>{{ _t('ADMIN_BACKUPS_CONFIRM_DELETE_FILES') }}</span>
+    </div>
+    <hr/>
+    <div 
+      class="pull-right btn btn-xs btn-primary" 
+      @click="loadArchives" 
+      data-tooltip="toogle" 
+      title="{{ _t('RELOAD') }}"
+      :disabled="updating"
+      >
+      <i class="fas fa-redo-alt"></i>
+    </div>
+    <h2>{{ _t('ADMIN_BACKUPS_ARCHIVES_LIST') }}</h2>
+    <div class="clearfix"></div>
+    <div v-if="ready" class="backups-container" :class="{'relativeSpinner':archiving}">
+      <div class="archive-item archive-item-title">{{ _t('ADMIN_BACKUPS_ARCHIVE_FILENAME') }}</div>
+      <div class="archive-item archive-item-title">{{ _t('ADMIN_BACKUPS_ARCHIVE_SIZE') }}</div>
+      <div class="archive-item archive-item-title">{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE') }}</div>
+      <div class="archive-item archive-item-title"></div>
+      <div class="archive-item archive-item-title">
+        <button 
+            class="btn btn-danger btn-wrap"
+            @click="deleteSelectedArchives"
+            data-toggle="tooltip"
+            title="{{ _t('DELETE_ALL_SELECTED_ITEMS')|e('html_attr') }}"
+            :disabled="updating">
+          {{ _t('DELETE_SELECTION') }}
+        </button>
+      </div>
+      <template v-for="archive in archives">
+        <div class="archive-item archive-filename" v-html="archive.filename"></div>
+        <div class="archive-item" v-html="formatFileSize(archive.size)"></div>
+        <div class="archive-item">
+          <i v-if="archive.type == 'only_files' || archive.type == 'full'" class="fas fa-copy" data-toggle="tooltip" title="{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES') }}"></i>
+          <strong v-if="archive.type == 'full'">+</strong>
+          <i v-if="archive.type == 'only_db' || archive.type == 'full'" class="fas fa-database" data-toggle="tooltip" title="{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES') }}"></i>
+        </div>
+        <div class="archive-item">
+          <a :href="downloadUrl(archive)" class="btn btn-xs btn-primary" data-tooltip="toggle" title="{{ _t('DOWNLOAD') }}">
+            <i class="fas fa-download"></i>
+          </a>
+          <button 
+              class="btn btn-xs btn-danger" 
+              @click="deleteArchive(archive)" 
+              data-tooltip="toggle" 
+              title="{{ _t('DELETE') }}"
+              :disabled="updating">
+            <i class="fa fa-trash"></i>
+          </button>
+          {# TODO uncomment folowwing lines when restore will work #}
+          {# <button class="btn btn-xs btn-secondary-1" @click="restoreArchive(archive)" data-tooltip="toggle" title="{{ _t('RESTORE') }}">
+            <i class="fas fa-upload"></i>
+          </button> #}
+        </div>
+        <div class="archive-item" @click="toggleSelectedArchive(archive.filename)">
           <input 
             type="checkbox" 
-            name="advanced-params" 
+            :name="archive.filename" 
             value="1" 
-            :checked="showAdvancedParams">
-          <span>{{ _t('ADMIN_BACKUPS_ADVANCED_PARAMS') }}</span>
-        </span>
-        <div v-if="showAdvancedParams">
-            <strong>{{ _t('ADMIN_BACKUPS_ADVANCED_EXTRA_FILES') }}</strong>
-            <template v-for="file in extrafiles">
-              <div>
-                <span v-html="file"></span>
-                <button class="btn btn-xs btn-danger" @click="removeExtraFile(file)">
-                  <i class="fas fa-minus"></i>
-                </button>
-              </div>
-            </template>
-            <input class="form-control input-sm" type="text" ref="newExtraFile" placeholder="{{ _t('ADMIN_BACKUPS_PLACEHOLDER_FILES') }}" 
-                @change="updateExtraFiles"/>
-            <strong>{{ _t('ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES') }}</strong>
-            <template v-for="file in excludedfiles">
-              <div>
-                <span v-html="file"></span>
-                <button class="btn btn-xs btn-danger" @click="removeExcludedFile(file)">
-                  <i class="fas fa-minus"></i>
-                </button>
-              </div>
-            </template>
-            <input class="form-control input-sm" type="text" ref="newExcludedFile" placeholder="{{ _t('ADMIN_BACKUPS_PLACEHOLDER_FILES') }}"
-                @change="updateExcludedFiles"/>
+            :checked="selectedArchivesToDelete.includes(archive.filename)">
+          <span></span>
         </div>
-      </div>
-    </div>
-    <div class="archive-buttons">
-      <button 
-          v-if="currentArchiveUid.length == 0 || !archiving"
-          @click="startArchive"
-          class="btn btn-primary"
-          :disabled="updating || currentArchiveUid.length > 0 || archiving" 
-          data-tooltip="toggle" 
-          title="{{ _t('ADMIN_BACKUPS_CREATE') }}">
-        {{ _t('ADMIN_BACKUPS_START') }}
-      </button>
-      <button
-          v-if="currentArchiveUid.length > 0 && archiving"
-          @click="stopArchive"
-          class="btn btn-xs btn-danger"
-          :disabled="stoppingArchive" 
-          data-tooltip="toggle" 
-          title="{{ _t('ADMIN_BACKUPS_STOP_BACKUP') }}">
-        {{ _t('ADMIN_BACKUPS_STOP') }}
-      </button>
-    </div>
-  </fieldset>
-  </div>
-  <div v-if="archiveMessage.length > 0" v-html="archiveMessage" :class="archiveMessageClass"></div>
-  <div v-if="archiveMessage.length > 0 && askConfirmationToDelete"
-    @click="toggleconfimationToDeleteFiles()">
-    <input 
-      type="checkbox" 
-      name="confimationToDeleteFiles" 
-      value="1" 
-      :checked="canForceDelete">
-    <span>{{ _t('ADMIN_BACKUPS_CONFIRM_DELETE_FILES') }}</span>
-  </div>
-  
-  <hr/>
-  <div 
-    class="pull-right btn btn-xs btn-primary" 
-    @click="loadArchives" 
-    data-tooltip="toogle" 
-    title="{{ _t('RELOAD') }}"
-    :disabled="updating"
-    >
-    <i class="fas fa-redo-alt"></i>
-  </div>
-  <h2>{{ _t('ADMIN_BACKUPS_ARCHIVES_LIST') }}</h2>
-  <div class="clearfix"></div>
-  <div v-if="message.length > 0" v-html="message" :class="messageClass"></div>
-  <div v-if="ready" class="backups-container" :class="{'relativeSpinner':archiving}">
-    <div class="archive-item archive-item-title">{{ _t('ADMIN_BACKUPS_ARCHIVE_FILENAME') }}</div>
-    <div class="archive-item archive-item-title">{{ _t('ADMIN_BACKUPS_ARCHIVE_SIZE') }}</div>
-    <div class="archive-item archive-item-title">{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE') }}</div>
-    <div class="archive-item archive-item-title"></div>
-    <div class="archive-item archive-item-title">
-      <button 
-          class="btn btn-danger btn-wrap"
-          @click="deleteSelectedArchives"
-          data-toggle="tooltip"
-          title="{{ _t('DELETE_ALL_SELECTED_ITEMS')|e('html_attr') }}"
-          :disabled="updating">
-        {{ _t('DELETE_SELECTION') }}
-      </button>
-    </div>
-    <template v-for="archive in archives">
-      <div class="archive-item archive-filename" v-html="archive.filename"></div>
-      <div class="archive-item" v-html="formatFileSize(archive.size)"></div>
-      <div class="archive-item">
-        <i v-if="archive.type == 'only_files'" class="fas fa-copy" data-toggle="tooltip" title="{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES') }}"></i>
-        <i v-if="archive.type == 'only_db'" class="fas fa-database" data-toggle="tooltip" title="{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES') }}"></i>
-      </div>
-      <div class="archive-item">
-        <a :href="downloadUrl(archive)" class="btn btn-xs btn-primary" data-tooltip="toggle" title="{{ _t('DOWNLOAD') }}">
-          <i class="fas fa-download"></i>
-        </a>
-        <button 
-            class="btn btn-xs btn-danger" 
-            @click="deleteArchive(archive)" 
-            data-tooltip="toggle" 
-            title="{{ _t('DELETE') }}"
-            :disabled="updating">
-          <i class="fa fa-trash"></i>
-        </button>
-        {# TODO uncomment folowwing lines when restore will work #}
-        {# <button class="btn btn-xs btn-secondary-1" @click="restoreArchive(archive)" data-tooltip="toggle" title="{{ _t('RESTORE') }}">
-          <i class="fas fa-upload"></i>
-        </button> #}
-      </div>
-      <div class="archive-item" @click="toggleSelectedArchive(archive.filename)">
-        <input 
-          type="checkbox" 
-          :name="archive.filename" 
-          value="1" 
-          :checked="selectedArchivesToDelete.includes(archive.filename)">
-        <span></span>
-      </div>
-    </template>
+      </template>
     <spinner-loader v-if="updating" class="overlay"></spinner-loader>
+    </div>
+    <spinner-loader v-else height="300"></spinner-loader>
   </div>
-  <spinner-loader v-else height="300"></spinner-loader>
 </div>

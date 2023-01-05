@@ -464,7 +464,7 @@ class ArchiveService
                     'hours' => $hours,
                     'minutes' => $minutes,
                     'seconds' => $seconds,
-                    'type' => $matches[7] ?? "",
+                    'type' => $matches[7] ?? "full",
                     'size' => filesize("$privatePath/$filename"),
                     'link' => $this->wiki->Href('', "api/archives/$filename")
                 ];

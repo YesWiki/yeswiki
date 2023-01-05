@@ -78,7 +78,7 @@ return [
     "ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE" => "Lancement de la sauvegarde impossible \n" .
         "Car le dossier de sauvegarde n'est pas accessible en écriture.\n".
         " - Vérifier la validité du paramètre 'archive[privatePath]', dans la page 'GererConfig' (rubrique 'Sécurité')\n".
-        " - si ce paramètre est vide, le remplir avec un chemin non accessible sur le internet (un chemin relatif ne commence pas par /)\n".
+        " - si ce paramètre est vide, le remplir avec un chemin non accessible sur Internet (un chemin relatif ne commence pas par /)\n".
         " - Vérifier que le dossier est bien accessible pour 'php' (si 'archive[privatePath]' est vide, c'est le dossier 'private/backups/' qui est utilisé)\n".
         " - il est possible d'utiliser le dossier temporaire du système en tapant '%TMP'",
     "ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE" => "Mise à jour forcée impossible",
