@@ -1091,7 +1091,7 @@ if (!class_exists('attach')) {
             $imgTrans->preserve_aspect_ratio = true;
             $imgTrans->enlarge_smaller_images = true;
             $imgTrans->preserve_time = true;
-            $imgTrans->handle_exif_orientation_tag = true;
+            $imgTrans->auto_handle_exif_orientation = true;
             $imgTrans->source_path = $image_src;
             $imgTrans->target_path = $image_dest;
 
