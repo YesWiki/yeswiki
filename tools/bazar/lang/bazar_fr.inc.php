@@ -5,7 +5,7 @@ return [
     'BAZ_FORMULAIRE' => 'Formulaires',
     'BAZ_LISTES' => 'Listes',
     'BAZ_NOM_LISTE' => 'Nom de la liste',
-    'BAZ_VALEURS_LISTE' => 'Valeurs de la liste',
+    'BAZ_VALEURS_LISTE' => 'Valeurs de la liste (pour la cl&eacute; pas d\'accent, de caract&egrave;res sp&eacute;ciaux, d\'espace. Chaque cl&eacute; sera unique. Ex : aut pour autre, pub pour public', 
     'BAZ_AJOUTER_LABEL_LISTE' => 'Ajouter une nouvelle valeur &agrave; la liste',
     'BAZ_AJOUTER_CHAMPS_FORMULAIRE' => 'Ajouter un nouveau champs au formulaire',
     'BAZ_MODIFIER_FORMULAIRES' => 'Gestion des formulaires',
