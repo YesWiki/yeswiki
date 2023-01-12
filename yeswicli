@@ -20,4 +20,4 @@ then
     DIR=$(php -r "echo realpath('$DIR/../YesWiki/yeswiki');")
 fi
 
-$DIR/includes/commands/console $@
+php $DIR/includes/commands/console $@
