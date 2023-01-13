@@ -422,16 +422,16 @@ Dans tous les cas, il sera toujours possible de faire marche arrière, et les in
 
 ### Les 10 conseils anti-spam
 
-**1.** Je consulte régulièrement mon wiki
-**2.** Je m'abonne à son flux RSS [voir plus bas / suivre la vie de mon wiki](#Suivre-la-vie-de-son-wiki)
-**3.** Je consulte la page TableauDeBordDeCeWiki de mon wiki (accessible depuis la "roue crantée")
-**4.** Je vérifie les dernières pages modifiées dans le TableauDeBord ou sur la page DerniersChangements
-**5.** Je vérifie les derniers comptes crées sur la page TableauDeBord. (Action {{Listusers last="20"}} )
-**6.** J'édite les pages en question et je supprime les parties indésirables, puis je sauve. (Cela prend moins d'une minute)
-**7.** Je protège l'accès en écriture des pages spéciales du wiki (menu, roue crantée, footer...)
-**8.** Je maintiens mon wiki à jour
-**9.** Pour les plus endurcis, je fais le grand ménage avec l'outil despam (voir plus bas)
-**10.** Je ne cède pas à la tentation de transformer mon espace collaboratif en bunker. Et je continue à mettre en balance les effets positifs de l'intelligence collective.
+- **1.** Je consulte régulièrement mon wiki
+- **2.** Je m'abonne à son flux RSS [voir plus bas / suivre la vie de mon wiki](#Suivre-la-vie-de-son-wiki)
+- **3.** Je consulte la page TableauDeBordDeCeWiki de mon wiki (accessible depuis la "roue crantée")
+- **4.** Je vérifie les dernières pages modifiées dans le TableauDeBord ou sur la page DerniersChangements
+- **5.** Je vérifie les derniers comptes crées sur la page TableauDeBord. (Action {{Listusers last="20"}} )
+- **6.** J'édite les pages en question et je supprime les parties indésirables, puis je sauve. (Cela prend moins d'une minute)
+- **7.** Je protège l'accès en écriture des pages spéciales du wiki (menu, roue crantée, footer...)
+- **8.** Je maintiens mon wiki à jour
+- **9.** Pour les plus endurcis, je fais le grand ménage avec l'outil despam (voir plus bas)
+- **10.** Je ne cède pas à la tentation de transformer mon espace collaboratif en bunker. Et je continue à mettre en balance les effets positifs de l'intelligence collective.
 
 ### Que faire si vous avez du spam ?
 
