@@ -215,6 +215,14 @@ return [
     'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_LABEL' => "Displayed text",
     'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_VALUE' => "Click and move the button to your favorites's bar",
 
+    // 'BAZ_ACTIVATE_COMMENTS' => 'Activer les commentaires sur cette fiche ?',
+    // 'BAZ_ACTIVATE_COMMENTS_HINT' => 'Droits mis à jour lors de l\'enregistrement de la fiche',
+    // 'BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL' => 'Choix par défaut pour l\'activation des commentaires',
+    // 'BAZ_FORM_EDIT_COMMENTS_FIELD' => 'Commentaires',
+    // 'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_LABEL' => 'Texte pour édition',
+    // 'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT' => 'Laisser vide pour utiliser le texte par défaut',
+    // 'BAZ_FORM_EDIT_ACL_ASK_IF_ACTIVATE_COMMENT_LABEL' => 'Demander d\'activer les commentaires ?',
+
     // condition checking field
     "BAZ_FORM_CONDITIONSCHEKING_HINT" => "The condition must match the following format (without `):{\\n}".
         " - ` and ` : gives AND{\\n}".

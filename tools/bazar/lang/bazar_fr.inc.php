@@ -279,7 +279,7 @@ return [
     'BAZ_BOOKMARKLET_LABEL' => 'Créer une fiche %{form}',
 
     // fields/CommentsField.php
-    'BAZ_ACTIVATE_COMMENTS' => 'Activer les commentaires ?',
+    'BAZ_ACTIVATE_COMMENTS' => 'Activer les commentaires sur cette fiche ?',
     'BAZ_ACTIVATE_COMMENTS_HINT' => 'Droits mis à jour lors de l\'enregistrement de la fiche',
     'BAZ_COMMENTS_INFO_DISCOURSE' => 'Les commentaires sont gérés par la plateforme discourse : mais ça n\'est pas encore fonctionnel !',
     'BAZ_COMMENTS_INFO_HUMHUB_EMBEDDED' => 'Les commentaires sont gérés par la plateforme sociale HumHub (Humhub intégré par YesWiki)',

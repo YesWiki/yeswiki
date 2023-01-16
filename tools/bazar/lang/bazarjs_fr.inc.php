@@ -215,9 +215,9 @@ return [
     'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_LABEL' => "Texte affiché",
     'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_VALUE' => "Glisser-déposer le bouton dans votre barre de favoris",
 
-    'BAZ_ACTIVATE_COMMENTS' => 'Activer les commentaires ?',
+    'BAZ_ACTIVATE_COMMENTS' => 'Activer les commentaires sur cette fiche ?',
     'BAZ_ACTIVATE_COMMENTS_HINT' => 'Droits mis à jour lors de l\'enregistrement de la fiche',
-    'BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL' => 'Activation des commentaires par défaut',
+    'BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL' => 'Choix par défaut pour l\'activation des commentaires',
     'BAZ_FORM_EDIT_COMMENTS_FIELD' => 'Commentaires',
     'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_LABEL' => 'Texte pour édition',
     'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT' => 'Laisser vide pour utiliser le texte par défaut',
