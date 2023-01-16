@@ -278,6 +278,15 @@ return [
     'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',
     'BAZ_BOOKMARKLET_LABEL' => 'Créer une fiche %{form}',
 
+    // fields/CommentsField.php
+    'BAZ_ACTIVATE_COMMENTS' => 'Activer les commentaires sur cette fiche ?',
+    'BAZ_ACTIVATE_COMMENTS_HINT' => 'Droits mis à jour lors de l\'enregistrement de la fiche',
+    'BAZ_COMMENTS_INFO_DISCOURSE' => 'Les commentaires sont gérés par la plateforme discourse : mais ça n\'est pas encore fonctionnel !',
+    'BAZ_COMMENTS_INFO_HUMHUB_EMBEDDED' => 'Les commentaires sont gérés par la plateforme sociale HumHub (Humhub intégré par YesWiki)',
+    'BAZ_COMMENTS_INFO_HUMHUB_EXTERNAL' => 'Les commentaires sont gérés par la plateforme sociale HumHub (YesWiki intégré par Humhub)',
+    'BAZ_COMMENTS_INFO_UNKNOWN' => 'Les commentaires ne sont pas gérés car le type de réglage des commentaires est inconnu',
+    'BAZ_COMMENTS_NOT_ACTIVATED' => 'Les commentaires sont gérés par YesWiki mais ceux-ci ne sont pas activés.<br/>Se rendre sur la page GererConfig pour activer les commentaires (paramètre `comments_activated`)',
+
     // fields/FileField.php
     'BAZ_FILE_ALREADY_EXISTING' => 'fichier déja existant',
     'BAZ_NOT_AUTHORIZED_FILE' => 'fichier non autorise',

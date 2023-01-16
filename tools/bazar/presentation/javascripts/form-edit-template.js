@@ -471,7 +471,25 @@ var typeUserAttrs = {
   acls: {
     read: { label: _t('BAZ_FORM_EDIT_ACL_READ_LABEL'), options: aclsOptions, multiple: true },
     write: { label: _t('BAZ_FORM_EDIT_ACL_WRITE_LABEL'), options: aclsOptions, multiple: true },
-    comment: { label: _t('BAZ_FORM_EDIT_ACL_COMMENT_LABEL'), options: aclsCommentOptions, multiple: true }
+    comment: { label: _t('BAZ_FORM_EDIT_ACL_COMMENT_LABEL'), options: aclsCommentOptions, multiple: true },
+    askIfActivateComments: { 
+      label: _t('BAZ_FORM_EDIT_ACL_ASK_IF_ACTIVATE_COMMENT_LABEL'), 
+      options: { 0: _t('NO'), 1: _t('YES') }, 
+    },
+    fieldLabel: {
+      label: _t('BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_LABEL'), 
+      value: "",
+      placeholder: _t('BAZ_ACTIVATE_COMMENTS')
+    },
+    hint: {
+      label: _t('BAZ_FORM_EDIT_HELP'), 
+      value: '',
+      placeholder: _t('BAZ_ACTIVATE_COMMENTS_HINT')
+    },
+    value: {
+      label: _t('BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL'), 
+      options: {non: _t('NO'), oui: _t('YES'), ' ': ''}
+    },
   },
   metadatas: {
     theme: {
@@ -546,7 +564,7 @@ var typeUserAttrs = {
     },
     read: readConf,
     write: writeconf,
-    semantic: semanticConf,
+    semantic: semanticConf
   },
   custom: {
     param0: { label: 'Param0', value: '' },
@@ -613,7 +631,48 @@ var templates = {
     }
   },
   acls(field) {
-    return { field: '' }
+    return { 
+      field: field.askIfActivateComments == 1 ? `<i class="far fa-comment-dots"></i> ${field.fieldlabel || _t('BAZ_ACTIVATE_COMMENTS')}` : '' ,
+      onRender() {
+        $(".acls-field")
+          .find("select[name=askIfActivateComments]:not(.initialized)")
+          .change(function(event){
+            const element = event.target
+
+            const base = $(element).closest(".acls-field.form-field")
+            $(element).addClass("initialized")
+
+            var nameInput = $(base).find("input[type=text][name=name]")
+            if (nameInput.val().trim().length == 0 || 
+              nameInput.val().trim() == 'bf_acls' ){
+              nameInput.val('bf_commentaires')
+            }
+            
+            var visibleSelect = $(base).find("select[name=askIfActivateComments]")
+            var selectedValue = visibleSelect.val()
+            
+            var subElements = $(base)
+              .find(".form-group.fieldLabel-wrap,.form-group.hint-wrap,.form-group.name-wrap,.form-group.value-wrap")
+            if ([1,'1'].includes(selectedValue)){
+              subElements.show()
+              var commentInput = $(base).find("select[name=comment]")
+              var currentValue = commentInput.val()
+              if (Array.isArray(currentValue) &&
+                (
+                  currentValue.length == 0 ||
+                  (currentValue.length == 1 && currentValue.includes('comments-closed'))
+                )){
+                commentInput.val([' + '])
+              }
+            } else {
+              subElements.hide()
+            }
+          })
+          .trigger("change");
+        templateHelper.defineLabelHintForGroup(field, 'fieldlabel', _t('BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT'))
+        templateHelper.defineLabelHintForGroup(field, 'hint', _t('BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT'))
+      }
+    }
   },
   metadatas(field) {
     return { field: '' }
@@ -687,7 +746,7 @@ var templates = {
           templateHelper.defineLabelHintForGroup(field, 'images', _t('BAZ_REACTIONS_FIELD_IMAGES_HINT'))
           templateHelper.defineLabelHintForGroup(field, 'labels', _t('BAZ_REACTIONS_FIELD_LABELS_HINT'))
       }
-    };
+    }
   }
 }
 
@@ -695,7 +754,8 @@ var typeUserDisabledAttrs = {
   tabs: ['required', 'value', 'name', 'label'],
   tabchange: ['required', 'value', 'name', 'label'],
   bookmarklet: ['required', 'value'],
-  reactions: ['label','required']
+  reactions: ['label','required'],
+  acls: ['label','required']
 }
 
 var inputSets = [
@@ -794,7 +854,19 @@ var yesWikiMapping = {
     ...{ 0: 'type', 1: 'name_field', 2: 'email_field', 5: '', /* 5:"mailing_list", */6: 'auto_add_to_group', 8: '', 9: 'autoupdate_email' }
   },
   titre: { 0: 'type', 1: 'value', 2: 'label' },
-  acls: { 0: 'type', 1: 'read', 2: 'write', 3: 'comment' },
+  acls: {
+    0: 'type',
+    1: 'read', 
+    2: 'write', 
+    3: 'comment',
+    4: 'fieldLabel',
+    5: 'value',
+    6: 'name',
+    7: "askIfActivateComments",
+    8: '',
+    9: '',
+    10: 'hint'
+  },
   metadatas: { 0: 'type', 1: 'theme', 2: 'squelette', 3: 'style', 4: 'image', 5: 'preset' },
   hidden: { 0: 'type', 1: 'name', 5: 'value' },
   bookmarklet: {
@@ -1249,7 +1321,13 @@ function parseWikiTextIntoJsonData(text) {
         if (field == 'required') value = value == '1'
         if (field) {
           if (field == 'read' || field == 'write' || field == 'comment') {
-            fieldObject[field] = (value.trim() === '') ? [' * '] : value.split(',')
+            fieldObject[field] = (value.trim() === '') 
+              ? (
+                  field == 'comment'
+                  ? [' + ']
+                  : [' * ']
+                )
+              : value.split(',').map((e)=>(['+','*','%'].includes(e.trim())) ? ` ${e.trim()} ` : e)
           } else {
             fieldObject[field] = value
           }

@@ -1,0 +1,23 @@
+{{ include('@bazar/inputs/select.twig') }}
+{% if field.commentsType not in ['','yeswiki'] %}
+  {{ include('@templates/alert-message.twig',{
+    type: 'info',
+    message: '<i>'~((field.commentsType == 'external_humhub')
+        ? _t('BAZ_COMMENTS_INFO_HUMHUB_EXTERNAL' )
+        : (
+            (field.commentsType == 'embedded_humhub')
+            ? _t('BAZ_COMMENTS_INFO_HUMHUB_EMBEDDED' )
+            : ( (field.commentsType == 'discourse')
+                ? _t('BAZ_COMMENTS_INFO_DISCOURSE' )
+                : _t('BAZ_COMMENTS_INFO_UNKNOWN' )
+            )
+        ))~'</i>'
+  }) }}
+{% endif %}
+{% if showAlertForCommentsNotActivated %}
+  {{ include('@templates/alert-message.twig', {
+        type:'danger',
+        message: _t('BAZ_COMMENTS_NOT_ACTIVATED')
+    } 
+    )}}
+{% endif %}
