@@ -248,7 +248,7 @@ return [
     "BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT" => "To clean or not the content of what is being hidden",
 
     // reactions
-    // 'BAZ_ACTIVATE_REACTIONS' => 'Activer les réactions ?',
+    // 'BAZ_ACTIVATE_REACTIONS' => 'Activer les réactions sur cette fiche ?',
     // 'BAZ_REACTIONS_FIELD' => 'Réactions',
     // 'BAZ_REACTIONS_FIELD_ACTIVATE_HINT' => 'Laisser vide pour utiliser le texte par défaut',
     // 'BAZ_REACTIONS_FIELD_ACTIVATE_LABEL' => 'Texte pour édition',

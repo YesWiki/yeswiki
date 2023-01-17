@@ -315,7 +315,7 @@ return [
     'BAZ_DRAG_n_DROP_CHECKBOX_FILTER_TEXT' => 'N&uacute;mero de elementos : ',
 
     // fields/ReactionsField.php
-    // 'BAZ_ACTIVATE_REACTIONS' => 'Activer les réactions ?',
+    // 'BAZ_ACTIVATE_REACTIONS' => 'Activer les réactions sur cette fiche ?',
     // 'BAZ_REACTIONS_DEFAULT_BLACK_IDEA' => 'Ca me perturbe',
     // 'BAZ_REACTIONS_DEFAULT_GRATITUDE' => 'Gratitude',
     // 'BAZ_REACTIONS_DEFAULT_I_LOVE' => 'J\'aime',
