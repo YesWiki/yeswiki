@@ -25,6 +25,7 @@ class AclField extends BazarField
         'non' => 'NO',
     ];
     public const OPTION_YES = 'oui';
+    public const OPTION_NO = 'non';
 
     protected const FIELD_ENTRY_READ_RIGHT = 1;
     protected const FIELD_ENTRY_WRITE_RIGHT = 2;
@@ -70,9 +71,14 @@ class AclField extends BazarField
 
     protected function renderInput($entry)
     {
+        $commentsAlreadyClosed = false;
+        if (!empty($entry['id_fiche'])){
+            $currentCommentAcl = $this->aclService->load($entry['id_fiche'], 'comment', false);
+            $commentsAlreadyClosed = (!empty($currentCommentAcl['list']) && $currentCommentAcl['list'] == 'comments-closed');
+        }
         return ($this->askIfActivateComments)
             ? $this->render('@bazar/inputs/comments.twig', [
-                'value' => $this->getValue($entry),
+                'value' => $commentsAlreadyClosed ? self::OPTION_NO : $this->getValue($entry),
                 'options' => $this->getOptions(),
                 'showAlertForCommentsNotActivated' =>
                     in_array($this->getCommentsType(), ['','yeswiki']) &&
