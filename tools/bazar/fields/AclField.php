@@ -72,7 +72,8 @@ class AclField extends BazarField
     protected function renderInput($entry)
     {
         $commentsAlreadyClosed = false;
-        if (!empty($entry['id_fiche'])){
+        $isYesWikiType = in_array($this->getCommentsType(), ['','yeswiki']);
+        if ($isYesWikiType && !empty($entry['id_fiche'])){
             $currentCommentAcl = $this->aclService->load($entry['id_fiche'], 'comment', false);
             $commentsAlreadyClosed = (!empty($currentCommentAcl['list']) && $currentCommentAcl['list'] == 'comments-closed');
         }
@@ -81,7 +82,7 @@ class AclField extends BazarField
                 'value' => $commentsAlreadyClosed ? self::OPTION_NO : $this->getValue($entry),
                 'options' => $this->getOptions(),
                 'showAlertForCommentsNotActivated' =>
-                    in_array($this->getCommentsType(), ['','yeswiki']) &&
+                    $isYesWikiType &&
                     $this->params->get('comments_activated') !== true
             ])
             : '' ;
