@@ -15,3 +15,6 @@ services:
   _defaults:
     autowire: true
     public: true
+
+  YesWiki\Templates\Service\:
+    resource: 'services/*'

@@ -2,6 +2,7 @@
 
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\ThemeManager;
+use YesWiki\Templates\Service\Utils;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -667,87 +668,14 @@ function theme_selector($method = '')
  * @param string $height Height of the image
  *
  * @return string  link to the image
+ * @deprecated use \YesWiki\Templates\Service\Utils::getImageFromBody
  */
 function getImageFromBody($page, $width, $height)
 {
-    if (!isset($page['body'])) {
-        if (isset($GLOBALS['wiki']->config['opengraph_image'])
-            and file_exists($GLOBALS['wiki']->config['opengraph_image'])
-        ) {
-            $image = $GLOBALS['wiki']->getBaseUrl().'/'.$GLOBALS['wiki']->config['opengraph_image'];
-        } else {
-            $image = '';
-        }
-        return $image;
+    if (!is_array($page) || empty($page['tag']) || !is_scalar($width) || !is_scalar($height)){
+        return '';
     }
-    $image = '';
-    // on cherche les actions attach avec image, puis les images bazar
-    preg_match_all("/\{\{attach.*file=\".*\.(?i)(jpe?g|png).*\}\}/U", $page['body'], $images);
-    if (is_array($images[0]) && !empty($images[0][0])) {
-        preg_match_all("/.*file=\"(.*\.(?i)(jpe?g|png))\".*desc=\"(.*)\".*\}\}/U", $images[0][0], $img);
-
-        $oldpage = $GLOBALS['wiki']->GetPageTag();
-        $GLOBALS['wiki']->tag = $page['tag'];
-        $GLOBALS['wiki']->page['time'] = $page['time'];
-        if (isset($img[1][0])) {
-            $GLOBALS['wiki']->setParameter('desc', $img[1][0]);
-            $GLOBALS['wiki']->setParameter('file', $img[1][0]);
-        }
-        $GLOBALS['wiki']->setParameter('width', $width);
-        $GLOBALS['wiki']->setParameter('height', $height);
-        if (!class_exists('attach')) {
-            include 'tools/attach/libs/attach.lib.php';
-        }
-        $attach = new Attach($GLOBALS['wiki']);
-        $attach->CheckParams();
-        $imagefile = $attach->GetFullFilename();
-        $GLOBALS['wiki']->tag = $oldpage;
-        
-        $image_dest = $attach->getResizedFilename($imagefile, $width, $height, 'crop');
-        $image = $GLOBALS['wiki']->getBaseUrl().'/'.$attach->redimensionner_image(
-            $imagefile,
-            $image_dest,
-            $width,
-            $height,
-            'crop'
-        );
-    } else {
-        preg_match_all('/"imagebf_image":"(.*)"/U', $page['body'], $image);
-        if (is_array($image[1]) && !empty($image[1][0])) {
-            include_once 'tools/tags/libs/tags.functions.php';
-            $imagefile = json_decode('"'.$image[1][0].'"', true);
-            if (!class_exists('attach')) {
-                include 'tools/attach/libs/attach.lib.php';
-            }
-            $attach = new Attach($GLOBALS['wiki']);
-            $image_dest = $attach->getResizedFilename('files/'.$imagefile, $width, $height, 'crop');
-            $image = $GLOBALS['wiki']->getBaseUrl().'/'.$attach->redimensionner_image(
-                'files/'.$imagefile,
-                $image_dest,
-                $width,
-                $height,
-                'crop'
-            );
-        } else {
-            preg_match_all("/\[\[(http.*\.(?i)(jpe?g|png)) .*\]\]/U", $page['body'], $image);
-            if (is_array($image[1]) && !empty($image[1][0])) {
-                $image = $GLOBALS['wiki']->getBaseUrl().'/'.trim(str_replace('\\', '', $image[1][0]));
-            } else {
-                preg_match_all("/<img.*src=\"(.*\.(jpe?g|png))\"/U", $page['body'], $image);
-                if (is_array($image[1]) && !empty($image[1][0])) {
-                    $image = trim($image[1][0]);
-                } elseif (isset($GLOBALS['wiki']->config['opengraph_image'])
-                    and file_exists($GLOBALS['wiki']->config['opengraph_image'])
-                ) {
-                    $image = $GLOBALS['wiki']->getBaseUrl().'/'.$GLOBALS['wiki']->config['opengraph_image'];
-                } else {
-                    $image = '';
-                }
-            }
-        }
-    }
-
-    return $image;
+    return $GLOBALS['wiki']->services->get(Utils::class)->getImageFromBody($page, strval($width), strval($height));
 }
 /**
  * Get the first title in page
