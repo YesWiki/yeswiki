@@ -104,7 +104,7 @@ $('#userTableDeleteModal.modal').on('shown.bs.modal', function(event) {
   $(deleteButton).removeAttr('disabled')
   const button = $(event.relatedTarget) // Button that triggered the modal
   const name = $(button).data('name')
-  const csrfToken = $(button).closest('tr').find(`td > label > input[data-itemId=${name}][data-csrfToken]`).first()
+  const csrfToken = $(button).closest('tr').find(`td > label > input[data-itemId="${name}"][data-csrfToken]`).first()
     .data('csrftoken')
   $(this).find('#userNameToDelete').text(name)
   $(deleteButton).data('name', name)

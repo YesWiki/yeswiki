@@ -846,7 +846,7 @@ $('#commentsTableDeleteModal.modal').on('shown.bs.modal',function(event){
   $(deleteButton).removeAttr('disabled');
   let button = $(event.relatedTarget) // Button that triggered the modal
   let name = $(button).data('name');
-  let csrfToken = $(button).closest('tr').find(`td > label > input[data-itemId=${name}][data-csrfToken]`).first().data('csrftoken');
+  let csrfToken = $(button).closest('tr').find(`td > label > input[data-itemId="${name}"][data-csrfToken]`).first().data('csrftoken');
   $(this).find('#commentToDelete').text(name);
   $(deleteButton).data('name',name);
   $(deleteButton).data('csrfToken',csrfToken);
