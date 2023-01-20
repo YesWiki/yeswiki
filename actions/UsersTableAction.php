@@ -11,6 +11,7 @@ use YesWiki\User;
 
 class UsersTableAction extends YesWikiAction
 {
+    protected $authController;
     protected $csrfTokenController;
     protected $userController;
     protected $userManager;
