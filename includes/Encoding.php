@@ -352,9 +352,9 @@ class Encoding
     protected static function utf8_decode($text, $option = self::WITHOUT_ICONV)
     {
         if ($option == self::WITHOUT_ICONV || !function_exists('iconv')) {
-            $o = utf8_decode(
+            $o = mb_convert_encoding(
                 str_replace(array_keys(self::$utf8ToWin1252), array_values(self::$utf8ToWin1252), self::toUTF8($text))
-            );
+            , 'ISO-8859-1', 'UTF-8');
         } else {
             $o = iconv("UTF-8", "Windows-1252" . ($option === self::ICONV_TRANSLIT ? '//TRANSLIT' : ($option === self::ICONV_IGNORE ? '//IGNORE' : '')), $text);
         }

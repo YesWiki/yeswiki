@@ -149,7 +149,9 @@ class UpdateHandler__ extends YesWikiHandler
 
         // on encode en utf-8 pour reussir a encoder en json
         if (YW_CHARSET != 'UTF-8') {
-            $data = array_map('utf8_encode', $data);
+            $data = array_map(function($value){
+                return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
+            }, $data);
         }
 
         $oldPage = $this->pageManager->getOne($data['id_fiche']);

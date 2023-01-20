@@ -60,8 +60,10 @@ class ListManager
         $json = json_decode($page['body'], true);
 
         if (YW_CHARSET !== 'UTF-8') {
-            $this->cachedLists[$id]['titre_liste'] = utf8_decode($json['titre_liste']);
-            $this->cachedLists[$id]['label'] = array_map('utf8_decode', $json['label']);
+            $this->cachedLists[$id]['titre_liste'] = mb_convert_encoding($json['titre_liste'], 'ISO-8859-1', 'UTF-8');
+            $this->cachedLists[$id]['label'] = array_map(function($value){
+                return mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8');
+            }, $json['label']);
         } else {
             $this->cachedLists[$id] = $json;
         }
@@ -91,8 +93,10 @@ class ListManager
         $values = $this->sanitizeHMTL($values);
 
         if (YW_CHARSET !== 'UTF-8') {
-            $values = array_map('utf8_encode', $values);
-            $title = utf8_encode($title);
+            $values = array_map(function($value){
+                return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
+            }, $values);
+            $title = mb_convert_encoding($title, 'UTF-8', 'ISO-8859-1');
         }
 
         $this->pageManager->save($id, json_encode([
@@ -111,8 +115,10 @@ class ListManager
         
         $values = $this->sanitizeHMTL($values);
         if (YW_CHARSET !== 'UTF-8') {
-            $values = array_map('utf8_encode', $values);
-            $title = utf8_encode($title);
+            $values = array_map(function($value){
+                return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
+            }, $values);
+            $title = mb_convert_encoding($title, 'UTF-8', 'ISO-8859-1');
         }
 
         $this->pageManager->save($id, json_encode([

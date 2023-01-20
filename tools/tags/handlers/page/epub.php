@@ -60,7 +60,7 @@ if (isset($metadatas["ebook-title"]) && isset($metadatas["ebook-description"]) &
         $page = $this->LoadPage($pageWiki);
         $url = explode('wakka.php', $this->config['base_url']);
         if (YW_CHARSET != 'UTF-8') {
-            $contentpage = utf8_encode($content_start . str_replace('<img src="'.$url[0], '<img src="', $this->Format('{{include page="'.$pageWiki.'" class="'.$matches[2][$nb].'"}}')) . $bookEnd);
+            $contentpage = mb_convert_encoding($content_start . str_replace('<img src="'.$url[0], '<img src="', $this->Format('{{include page="'.$pageWiki.'" class="'.$matches[2][$nb].'"}}')) . $bookEnd, 'UTF-8', 'ISO-8859-1');
         } else {
             $contentpage = $content_start . str_replace('<img src="'.$url[0], '<img src="', $this->Format('{{include page="'.$pageWiki.'" class="'.$matches[2][$nb].'"}}')) . $bookEnd;
         }

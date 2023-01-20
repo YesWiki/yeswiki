@@ -395,7 +395,9 @@ class PageManager
 
         if (!empty($metadata)) {
             if (YW_CHARSET != 'UTF-8') {
-                return array_map('utf8_decode', json_decode($metadata, true));
+                return array_map(function($value){
+                    return mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8');
+                }, json_decode($metadata, true));
             } else {
                 return json_decode($metadata, true);
             }
@@ -417,7 +419,9 @@ class PageManager
         }
 
         if (YW_CHARSET != 'UTF-8') {
-            $metadata = json_encode(array_map("utf8_encode", $metadata));
+            $metadata = json_encode(array_map(function($value){
+                return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
+            }, $metadata));
         } else {
             $metadata = json_encode($metadata);
         }

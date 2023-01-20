@@ -95,7 +95,9 @@ class IframeHandler extends YesWikiHandler
         $valjson = $this->wiki->page["body"];
         $tab_valeurs = json_decode($valjson, true);
         if (YW_CHARSET != 'UTF-8') {
-            $tab_valeurs = array_map('utf8_decode', $tab_valeurs);
+            $tab_valeurs = array_map(function($value){
+                return mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8');
+            }, $tab_valeurs);
         }
         $entry = $this->entryController->view($this->wiki->tag, 0, true);
         if (!empty($entry)) {

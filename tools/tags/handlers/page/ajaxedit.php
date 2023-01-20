@@ -64,7 +64,7 @@ if (isset($_GET['jsonp_callback'])) {
                         $valcomment['commentaires'][0]['replies'] = '';
                         
                         $content = $this->render("@tags/comment_list.tpl.html", $valcomment);
-                        echo $_GET['jsonp_callback']."(".json_encode(array("html"=>utf8_encode($content))).")";
+                        echo $_GET['jsonp_callback']."(".json_encode(array("html"=>mb_convert_encoding($content, 'UTF-8', 'ISO-8859-1'))).")";
                     }
                     
                     // sécurité
@@ -95,6 +95,6 @@ if (isset($_GET['jsonp_callback'])) {
     } else {
         $output .= "<div class=\"alert alert-danger\">"._t('TAGS_NO_WRITE_ACCESS')."</div>\n";
     }
-    $response = $_GET['jsonp_callback']."(".json_encode(array("html"=>utf8_encode($output))).")";
+    $response = $_GET['jsonp_callback']."(".json_encode(array("html"=>mb_convert_encoding($content, 'UTF-8', 'ISO-8859-1'))).")";
     echo $response;
 }

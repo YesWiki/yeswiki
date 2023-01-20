@@ -341,7 +341,7 @@ if (!class_exists('attach')) {
         {
             $search = array('@[éèêëÊË]@i','@[àâäÂÄ]@i','@[îïÎÏ]@i','@[ûùüÛÜ]@i','@[ôöÔÖ]@i','@[ç]@i','@[ ]@i','@[^a-zA-Z0-9_\.]@');
             $replace = array('e','a','i','u','o','c','_','');
-            $sanitizedFilename = preg_replace($search, $replace, utf8_decode($filename));
+            $sanitizedFilename = preg_replace($search, $replace, mb_convert_encoding($filename, 'ISO-8859-1', 'UTF-8'));
 
             return $sanitizedFilename;
         }

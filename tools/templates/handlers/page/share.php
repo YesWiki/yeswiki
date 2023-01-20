@@ -33,7 +33,7 @@ $html .= '
 
 // si l'on est dans une requete ajax, pas besoin de titre, et pas besoin de charger tout le html
 if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-    echo utf8_encode('<div class="page">'."\n".$html."\n".'<div>');
+    echo mb_convert_encoding('<div class="page">'."\n".$html."\n".'<div>', 'UTF-8', 'ISO-8859-1');
 } else {
     echo $this->Header();
     echo "<div class=\"page\">\n<h2>"._t('TEMPLATE_SEE_SHARING_OPTIONS').' '.$this->GetPageTag()."</h2>\n$html\n<hr class=\"hr_clear\" />\n</div>\n";

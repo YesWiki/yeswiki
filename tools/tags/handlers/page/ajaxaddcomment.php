@@ -19,7 +19,7 @@ if (isset($_GET['jsonp_callback'])) {
             $num = "1";
         }
     
-        $body = utf8_decode(trim($_POST["body"]));
+        $body = mb_convert_encoding(trim($_POST["body"]), 'ISO-8859-1', 'UTF-8');
         if ($body) {
             // store new comment
             $wakkaname = "Comment".$num;
@@ -36,7 +36,7 @@ if (isset($_GET['jsonp_callback'])) {
             $squelcomment->set($valcomment);
             $content = $this->render("@tags/comment_list.tpl.html", $valcomment);
 
-            echo $_GET['jsonp_callback']."(".json_encode(array("html"=>utf8_encode($content))).")";
+            echo $_GET['jsonp_callback']."(".json_encode(array("html"=>mb_convert_encoding($content, 'UTF-8', 'ISO-8859-1'))).")";
         }
     }
 }

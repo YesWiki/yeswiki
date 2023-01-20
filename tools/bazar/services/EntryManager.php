@@ -848,7 +848,9 @@ class EntryManager
 
         // on encode en utf-8 pour reussir a encoder en json
         if (YW_CHARSET != 'UTF-8') {
-            $data = array_map('utf8_encode', $data);
+            $data = array_map(function($value){
+                return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
+            }, $data);
         }
 
         return $data;
@@ -1060,7 +1062,9 @@ class EntryManager
             // save
             // on encode en utf-8 pour reussir a encoder en json
             if (YW_CHARSET != 'UTF-8') {
-                $entry = array_map('utf8_encode', $entry);
+                $entry = array_map(function($value){
+                    return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
+                }, $entry);
             }
             $body = json_encode($entry);
             if ($applyOnAllRevisions) {

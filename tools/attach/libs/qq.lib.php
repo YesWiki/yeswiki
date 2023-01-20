@@ -205,10 +205,14 @@ if (!class_exists('qqFileUploader')) {
                 //TODO : refactor this with attach
                 $purifier = $GLOBALS['wiki']->services->get(HtmlPurifierService::class);
                 $purifier->cleanFile($fullfilename, $ext);
-                return array_map('utf8_encode', array('success'=>true, 'filename'=>$fullfilename, 'simplefilename'=>$filename . '.' . $ext, 'extension'=>$ext));
+                return array_map(function($value){
+                    return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
+                }, array('success'=>true, 'filename'=>$fullfilename, 'simplefilename'=>$filename . '.' . $ext, 'extension'=>$ext));
             } else {
                 return array_map(
-                    'utf8_encode',
+                    function($value){
+                        return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
+                    },
                     array(
                         'error'=> _t('ATTACH_HANDLER_AJAXUPLOAD_ERROR')
                     )
