@@ -42,7 +42,7 @@
 
 {# FORM DELETE #}
 {% if adminIsActing %}
-  <form action="<{{ url({params:{user:user.name,from:referrer}}) }}" method="post" class="form-horizontal">
+  <form action="{{ url({params:{user:user.name,from:referrer}}) }}" method="post" class="form-horizontal">
     <input type="hidden" name="csrf-token-delete" value="{{ csrfToken({id:"login\\action\\usersettings\\deleteByAdmin\\#{user.name}",refresh:true})|e('html_attr') }}">
     <input type="hidden" name="usersettings_action" value="deleteByAdmin" />
     <input class="btn btn-danger" type="submit" value="{{ _t('USER_DELETE')|e('html_attr') }}" />
