@@ -41,11 +41,20 @@ class TestConsoleServiceCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $file = basename($input->getOption('file'));
+        $file = $input->getOption('file');
+        if (!empty($file)) {
+            $file = basename($file);
+        }
         $text = $input->getOption('text');
         $wait = abs(intval($input->getOption('wait')));
         // force file to be in cache folder
         if (empty($file) || empty($text) || is_dir("cache/$file") || empty($wait)){
+            $output->writeln([
+                "",
+                "ERROR : required arguments are missing (file or text or wait).",
+                "To get some help use : yeswicli core:testconsoleservice --help",
+                "",
+            ]);
             return Command::FAILURE;
         }
         $childtext = $input->getOption('childtext');
