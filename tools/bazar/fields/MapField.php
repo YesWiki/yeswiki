@@ -13,11 +13,13 @@ class MapField extends BazarField
     protected $latitudeField;
     protected $longitudeField;
     protected $autocomplete;
+    protected $geolocate;
 
     protected const FIELD_LATITUDE_FIELD = 1;
     protected const FIELD_LONGITUDE_FIELD = 2;
     protected const FIELD_AUTOCOMPLETE_POSTALCODE = 4;
     protected const FIELD_AUTOCOMPLETE_TOWN = 5;
+    protected const FIELD_GEOLOCATE = 6;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -27,6 +29,7 @@ class MapField extends BazarField
         $this->longitudeField = $values[self::FIELD_LONGITUDE_FIELD] ?? 'bf_longitude';
         $this->autocomplete = (!empty($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) && !empty($values[self::FIELD_AUTOCOMPLETE_TOWN])) ?
             trim($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]).','.trim($values[self::FIELD_AUTOCOMPLETE_TOWN]) : null;
+        $this->geolocate = $values[self::FIELD_GEOLOCATE] ?? 0;
         $this->propertyName = 'geolocation';
         $this->label = $this->propertyName;
     }
@@ -83,6 +86,7 @@ class MapField extends BazarField
 
         $latitude = is_array($value) && !empty($value[$this->getLatitudeField()]) ? $value[$this->getLatitudeField()] : null;
         $longitude = is_array($value) && !empty($value[$this->getLongitudeField()]) ? $value[$this->getLongitudeField()] : null;
+        $geolocate = $this->geolocate;
 
         return $this->render("@bazar/inputs/map.twig", [
             'latitude' => $latitude,
@@ -97,7 +101,8 @@ class MapField extends BazarField
                 'mapProviderCredentials' => $mapProviderCredentials,
                 'latitude' => $latitude,
                 'longitude' => $longitude
-            ]
+            ],
+            'geolocate' => $geolocate,
         ]);
     }
     public function formatValuesBeforeSave($entry)

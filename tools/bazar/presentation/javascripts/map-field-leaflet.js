@@ -95,6 +95,25 @@ $(document).ready(function() {
             $('.bf_longitude').val(changedPos.lng);
         });
     }
+    $('.btn-geolocate').on('click', function(){
+        function onLocationFound(e) {
+            $('#bf_latitude').val(e.latitude);
+            $('#bf_longitude').val(e.longitude);
+            geocodedmarkerRefresh(e.latlng);
+            map.panTo( e.latlng, {animate:true});
+        }
+    
+        function onLocationError(e) {
+            $('#bf_latitude').val('');
+            $('#bf_longitude').val('');
+            console.log(e.message);
+        }
+    
+        map.on('locationfound', onLocationFound);
+        map.on('locationerror', onLocationError);
+    
+        map.locate({setView: true, maxZoom: 16});
+    });
     $('.btn-geolocate-address').on('click', function(){showAddress(map);});
     $('body').on('change', '.bf_latitude, .bf_longitude', function(e) {
         if ($(this).is(":invalid")) {
