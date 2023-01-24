@@ -29,7 +29,7 @@ class MapField extends BazarField
         $this->longitudeField = $values[self::FIELD_LONGITUDE_FIELD] ?? 'bf_longitude';
         $this->autocomplete = (!empty($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) && !empty($values[self::FIELD_AUTOCOMPLETE_TOWN])) ?
             trim($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]).','.trim($values[self::FIELD_AUTOCOMPLETE_TOWN]) : null;
-        $this->geolocate = $values[self::FIELD_GEOLOCATE] ?? 0;
+        $this->geolocate = (isset($values[self::FIELD_GEOLOCATE]) && $values[self::FIELD_GEOLOCATE] == 1) ? 1 : 0;
         $this->propertyName = 'geolocation';
         $this->label = $this->propertyName;
     }
@@ -86,7 +86,6 @@ class MapField extends BazarField
 
         $latitude = is_array($value) && !empty($value[$this->getLatitudeField()]) ? $value[$this->getLatitudeField()] : null;
         $longitude = is_array($value) && !empty($value[$this->getLongitudeField()]) ? $value[$this->getLongitudeField()] : null;
-        $geolocate = $this->geolocate;
 
         return $this->render("@bazar/inputs/map.twig", [
             'latitude' => $latitude,
@@ -101,8 +100,7 @@ class MapField extends BazarField
                 'mapProviderCredentials' => $mapProviderCredentials,
                 'latitude' => $latitude,
                 'longitude' => $longitude
-            ],
-            'geolocate' => $geolocate,
+            ]
         ]);
     }
     public function formatValuesBeforeSave($entry)
@@ -173,6 +171,11 @@ class MapField extends BazarField
         return $this->autocomplete;
     }
 
+    public function getGeolocate()
+    {
+        return $this->geolocate;
+    }
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -183,6 +186,7 @@ class MapField extends BazarField
               'latitudeField' => $this->getLatitudeField(),
               'longitudeField' => $this->getLongitudeField(),
               'autocomplete' => $this->getAutocomplete(),
+              'geolocate' => $this->getGeolocate(),
             ]
         );
     }
