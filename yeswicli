@@ -21,3 +21,19 @@ then
 fi
 
 php $DIR/includes/commands/console $@
+
+# TODO : add those commands
+#extension
+#  extension:disable                            disable an extension
+#  extension:enable                             enable an extension
+#  extension:install                            install an extension
+#  extension:list                               List all available extensions
+#  extension:remove                             remove an extension
+#  extension:update                             update an extension or all extensions
+
+# config
+#  config:import                          Import a list of configs
+#  config:list                            List all configs
+#  config:value:delete                   Delete a system config value
+#  config:value:get                      Get a system config value
+#  config:value:set                      Set a system config value

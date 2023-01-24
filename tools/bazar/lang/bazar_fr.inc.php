@@ -164,7 +164,7 @@ return [
     'BAZ_INVALIDER_LA_FICHE' => 'Invalider la fiche',
     'BAZ_LATITUDE' => 'Latitude',
     'BAZ_LONGITUDE' => 'Longitude',
-    'BAZ_VERIFIER_MON_ADRESSE' => 'Géolocaliser l\'adresse sur la carte',
+    'BAZ_VERIFIER_MON_ADRESSE' => 'Géolocaliser depuis l\'adresse saisie',
     'BAZ_PAS_DE_FORMULAIRES_TROUVES' => 'Pas de formulaires trouv&eacute;s',
     'BAZ_CHAMPS_REQUIS' => 'champs requis',
     'BAZ_FICHES' => 'fiches.',
@@ -273,6 +273,8 @@ return [
     'BAZ_MESSAGE_IF_OTHER_ENTRY_EXIST' => 'Message à afficher quand une fiche existe déjà. Laisser vide pour garder le message par défaut.',
     'BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM' => 'Vous avez déjà saisi une fiche pour le formulaire "{formName}". Elle est affichée ci-dessous.',
     'BAZ_USER_SHOULD_BE_CONNECTED_TO_ACCES_THIS_FORM' => 'Il est nécessaire d\'être connecté pour pouvoir compléter ce formulaire.',
+    // fields/MapField.php
+    'BAZ_GEOLOCATE' => 'Géolocaliser depuis ma position',
 
     // fields/BookmarkletField.php
     'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',

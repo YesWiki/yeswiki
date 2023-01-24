@@ -66,8 +66,10 @@ color:#E9322D;
 .tab-content .tab-pane.with-padding {
   padding-top: 20px;
 }
-
-
+.btn-geolocate {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
 
 /* --------------- */
 /*   BAZAR LIST    */
