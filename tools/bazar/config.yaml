@@ -98,7 +98,7 @@ parameters:
   # taille de la carte a l'ecran: valeur de l'attribut css width de la carte
   baz_map_width: '100%'
   # taille de la carte a l'ecran : valeur de l'attribut css height de la carte
-  baz_map_height: '300px'
+  baz_map_height: '600px'
   # afficher la navigation : true ou false
   baz_show_nav: 'true'
   # zoom a la roulette de souris : true ou false
