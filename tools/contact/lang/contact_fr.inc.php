@@ -134,7 +134,7 @@ return [
     'AB_deabonnement_action_label' => "Se désabonner d'une liste de discussion",
     'AB_contact_action_label' => "Afficher un formulaire de contact",
     'AB_contact_action_mail_label' => "E-mail du destinataire",
-    'AB_contact_action_entete_label' => "Préfixe automatique de l'objet du mail envoyé depuis le formulaire de contact",
+    'AB_contact_action_entete_label' => "Préfixe automatique de l'objet du mail",
     'AB_contact_action_entete_default' => "Envoyé depuis le site...",
     'AB_contact_action_template_label' => "Template personnalisé",
     'AB_contact_action_template_hint' => "Ex. : complete-contact-form.tpl.html",
