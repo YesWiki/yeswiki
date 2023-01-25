@@ -32,7 +32,6 @@ actions:
         type: text
         value: _t(AB_templates_nav_links_default)
         hint: _t(AB_templates_nav_links_hint)
-        doclink: https://yeswiki.net/?DocumentationMiseEnPageOnglet
       titles:
         label: _t(AB_templates_nav_titles_label)
         value: _t(AB_templates_nav_titles_default)
@@ -68,7 +67,6 @@ actions:
       type:
         label: Type
         type: list
-        doclink: https://yeswiki.net/?DemoAccordion
         options:
           default: _t(AB_templates_panel_type_default)
           collapsible: _t(AB_templates_panel_type_collapsible)
@@ -98,7 +96,6 @@ actions:
         label: _t(AB_templates_section_bgcolor_label)
         type: color
         icon: fill-drip
-        doclink: https://yeswiki.net/?section
       height:
         label: _t(AB_templates_section_height_label)
         type: text
@@ -173,7 +170,7 @@ actions:
             advanced: true
             label: _t(AB_templates_section_image_cover)
             type: checkbox
-            showif: file
+#           showif: file
             value: "cover"
             default: ""
             checkedvalue: "cover"
@@ -182,7 +179,7 @@ actions:
             advanced: true
             label: _t(AB_templates_section_image_fixed)
             type: checkbox
-            showif: file
+  #         showif: file
             value: ""
             default: ""
             checkedvalue: "fixed"
@@ -191,7 +188,7 @@ actions:
             advanced: true
             label: _t(AB_templates_section_image_center)
             type: checkbox
-            showif: file
+   #        showif: file
             value: ""
             default: ""
             checkedvalue: "center"
@@ -200,7 +197,7 @@ actions:
             advanced: true
             label: _t(AB_templates_section_image_parallax)
             type: checkbox
-            showif: file
+    #       showif: file
             value: ""
             default: ""
             checkedvalue: "parallax"
@@ -277,15 +274,14 @@ actions:
       class:
         label: _t(AB_template_actions_class)
         type: text
-        doclink: https://yeswiki.net/?AccordioN
   grid:
     label: _t(AB_template_action_grid_label)
     isWrapper: true
     wrappedContentExample: _t(AB_template_action_grid_example)
     properties:
       class:
-        label: _t(AB_template_actions_class)
-        type: text
+     #   label: _t(AB_template_actions_class)
+     #  type: text
         doclink: https://yeswiki.net/?GriD
   #  col: # moved to /docs/actions/col.yaml
   # ariane:
