@@ -197,9 +197,8 @@ Vue.component('BazarCalendar', {
           extendedList = ',listMonth'
           break
         case 'year':
-          extendedList = ',listYear'
-          break
         default:
+          extendedList = ',listYear'
           break
       }
       let initialView = 'dayGridMonth'
