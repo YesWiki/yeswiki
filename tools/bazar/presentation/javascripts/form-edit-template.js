@@ -597,10 +597,10 @@ var templates = {
   champs_mail(fieldData) {
     return { field: `<input id="${fieldData.name}" type="email" value="" />` }
   },
-  map(fieldDate) {
+  map(fieldData) {
     return { field: _t('BAZ_FORM_EDIT_MAP_FIELD') }
   },
-  image(fieldDate) {
+  image(fieldData) {
     return { field: '<input type="file"/>' }
   },
   text(fieldData) {
@@ -613,7 +613,7 @@ var templates = {
   url(fieldData) {
     return { field: `<input type="url" placeholder="${fieldData.value || ''}"/>` }
   },
-  tags(field) {
+  tags(fieldData) {
     return { field: '<input/>' }
   },
   inscriptionliste(field) {
@@ -972,7 +972,8 @@ var yesWikiTypes = {
 var defaultFieldsName = {
   textarea: 'bf_description',
   image: 'bf_image',
-  champs_mail: 'bf_mail'
+  champs_mail: 'bf_mail',
+  date: 'bf_date_debut_evenement'
 }
 
 var I18nOption = {
