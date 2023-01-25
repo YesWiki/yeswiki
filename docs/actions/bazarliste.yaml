@@ -546,7 +546,7 @@ actions:
       showlist:
         type: list
         label: _t(AB_bazarcalendar_showlist_label)
-        default: ''
+        default: 'year'
         options: 
           week: _t(AB_bazarcalendar_showlist_week)
           month: _t(AB_bazarcalendar_showlist_month)
