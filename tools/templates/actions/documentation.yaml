@@ -280,9 +280,9 @@ actions:
     wrappedContentExample: _t(AB_template_action_grid_example)
     properties:
       class:
-     #   label: _t(AB_template_actions_class)
-     #  type: text
-        doclink: https://yeswiki.net/?GriD
+        label: _t(AB_template_actions_class)
+        type: text
+        # doclink: https://yeswiki.net/?GriD
   #  col: # moved to /docs/actions/col.yaml
   # ariane:
   #   label: _t(AB_template_action_ariane_label)
