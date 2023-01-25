@@ -63,6 +63,7 @@ actions:
             advanced: true
             type: list
             options:
+#             pull-left: _t(AB_buttons_action_button_pull_left) idée que les gens puissent choisir cette option
               pull-right: _t(AB_buttons_action_button_pull_right)
               btn-block: _t(AB_buttons_action_button_pull_block)
           new-window:
