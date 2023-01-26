@@ -128,6 +128,42 @@ actions:
         label: Classe
         type: class
         subproperties:
+          cover:
+            advanced: true
+            label: _t(AB_templates_section_image_cover)
+            type: checkbox
+            showif: file
+            value: "cover"
+            default: ""
+            checkedvalue: "cover"
+            uncheckedvalue: ""
+          fixed:
+            advanced: true
+            label: _t(AB_templates_section_image_fixed)
+            type: checkbox
+            showif: file
+            value: ""
+            default: ""
+            checkedvalue: "fixed"
+            uncheckedvalue: ""
+          center:
+            advanced: true
+            label: _t(AB_templates_section_image_center)
+            type: checkbox
+            showif: file
+            value: ""
+            default: ""
+            checkedvalue: "center"
+            uncheckedvalue: ""
+          parallax:
+            advanced: true
+            label: _t(AB_templates_section_image_parallax)
+            type: checkbox
+            showif: file
+            value: ""
+            default: ""
+            checkedvalue: "parallax"
+            uncheckedvalue: ""
           textcolor:
             label: _t(AB_templates_section_textcolor_label)
             type: list
@@ -166,42 +202,6 @@ actions:
               text-right: _t(AB_templates_section_textalign_right)
               text-center: _t(AB_templates_section_textalign_center)
               text-justify: _t(AB_templates_section_textalign_justify)
-          cover:
-            advanced: true
-            label: _t(AB_templates_section_image_cover)
-            type: checkbox
-#           showif: file
-            value: "cover"
-            default: ""
-            checkedvalue: "cover"
-            uncheckedvalue: ""
-          fixed:
-            advanced: true
-            label: _t(AB_templates_section_image_fixed)
-            type: checkbox
-  #         showif: file
-            value: ""
-            default: ""
-            checkedvalue: "fixed"
-            uncheckedvalue: ""
-          center:
-            advanced: true
-            label: _t(AB_templates_section_image_center)
-            type: checkbox
-   #        showif: file
-            value: ""
-            default: ""
-            checkedvalue: "center"
-            uncheckedvalue: ""
-          parallax:
-            advanced: true
-            label: _t(AB_templates_section_image_parallax)
-            type: checkbox
-    #       showif: file
-            value: ""
-            default: ""
-            checkedvalue: "parallax"
-            uncheckedvalue: ""
           height:
             advanced: true
             label: _t(AB_templates_section_height_label)
