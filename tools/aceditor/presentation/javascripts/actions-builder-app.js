@@ -275,7 +275,7 @@ export const app = {
       }
     },
     updateValue(propName, value) {
-      this.values[propName] = value
+      Vue.set(this.values, propName, value)
       this.updateActionParams()
     },
     initValuesOnActionSelected() {
