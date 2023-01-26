@@ -32,6 +32,8 @@ abstract class Package extends Files
     abstract protected function localRelease();
     //abstract protected function updateAvailable();
 
+    protected $localPath;
+
     public function __construct($release, $address, $desc, $doc, $minimalPhpVersion = null)
     {
         $this->release = $release;

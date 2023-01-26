@@ -11,6 +11,7 @@ use YesWiki\Security\Controller\SecurityController;
  */
 class Controller
 {
+    protected $archiveService;
     private $autoUpdate;
     private $messages;
     private $wiki;
