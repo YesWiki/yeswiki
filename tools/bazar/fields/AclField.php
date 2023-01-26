@@ -43,7 +43,7 @@ class AclField extends BazarField
         $this->propertyName = $this->name;
 
         $this->default = $this->filterNotEmptyString(['default'=>$this->default], 'default', '');
-        $this->default = in_array($this->default, [...array_keys(self::OPTIONS),...['']], true) ? $this->default : '';
+        $this->default = ($this->default === '' || in_array($this->default, array_keys(self::OPTIONS), true)) ? $this->default : '';
 
         $this->label = $this->filterNotEmptyString($values, self::FIELD_LABEL, _t('BAZ_ACTIVATE_COMMENTS'));
         $this->hint = $this->filterNotEmptyString(['hint'=>$this->hint], 'hint', _t('BAZ_ACTIVATE_COMMENTS_HINT'));
