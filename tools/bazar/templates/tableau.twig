@@ -57,7 +57,7 @@ pour différencier les différents tableaux table_1 table_2 #}
               {% set exportval = val %}
             {% endif %}
           {% elseif info.key is empty and info.mapFieldId %}
-            {% set val = val[info.mapFieldId] %}
+            {% set val = entry[info.mapFieldId] %}
             {% set exportval = val %}
           {% elseif info.key is not empty %}
             {% set val = (info.key in val|split(',')) ? 'X' : '' %}
