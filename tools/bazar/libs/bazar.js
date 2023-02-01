@@ -158,6 +158,18 @@ $(document).ready(() => {
     $this.parents('.control-group').find('.charsRemaining').html((max - length))
   })
 
+  // éviter la validation du formulaire en pressant la touche Entrée
+  document.querySelectorAll('form#formulaire .control-group.form-group input.form-control[type=text]').forEach((item)=>{
+    item.addEventListener('keydown',(event)=>{
+      if (event.key === "Enter"){
+        event.preventDefault();
+        event.stopPropagation();
+        return true;
+      }
+    },
+    true)
+  })
+
   //= =========== bidouille pour que les widgets en flash restent ===========
   //= =========== en dessous des éléments en survol ===========
   $('object').append('<param value="opaque" name="wmode">')
