@@ -601,7 +601,7 @@ Vous êtes dans la page qui se nomme PageMenuHaut qui sert à modifier le menu d
 
 {#Et hop, effacez tout et belle aventure#}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageRapideHaut',  now(), '{{moteurrecherche template=\"moteurrecherche_button.tpl.html\"}}
-{{buttondropdown icon=\"cog\" caret=\"0\"}}
+{{buttondropdown icon=\"cog\" caret=\"0\" title=\"Roue crantée\"}}
  - {{login template=\"modal.tpl.html\" nobtn=\"1\"}}
  - ------
  - {{button nobtn=\"1\" icon=\"fa fa-question\" text=\"Documentation\" link=\"doc\"}}
