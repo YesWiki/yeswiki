@@ -311,18 +311,18 @@ class ThemeManager
     }
 
     /**
-     * get tab1 and tab2 used in js for theme selector
-     * @return array ['tab1'=>array,'tab2'=>array]
+     * get squelettes and styles used in js for theme selector
+     * @return array ['squelettes'=>array,'styles'=>array]
      */
-    public function getTab1AndTab2ForJs(): array
+    public function getSquelettesAndStylesForJs(): array
     {
-        $tab1 = [];
-        $tab2 = [];
+        $squelettes = [];
+        $styles = [];
         foreach ($this->getTemplates() as $templateName => $template) {
-            $tab1[$templateName] = array_values($template['squelette']);
-            $tab2[$templateName] = array_values($template['style']);
+            $squelettes[$templateName] = array_values($template['squelette']);
+            $styles[$templateName] = array_values($template['style']);
         }
-        return compact(['tab1','tab2']);
+        return compact(['squelettes','styles']);
     }
 
     public function getTemplates(): array

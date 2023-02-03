@@ -59,7 +59,7 @@ class GererThemesAction extends YesWikiAction
     $favoriteStyle = $this->themeManager->getFavoriteStyle();
     $squelettes = $templates[$favoriteTheme]['squelette'];
     $styles = $templates[$favoriteTheme]['style'];
-    $dataJs = $this->themeManager->getTab1AndTab2ForJs();
+    $dataJs = $this->themeManager->getSquelettesAndStylesForJs();
     return $this->render(
       '@templates/gerer-themes-action.twig',
       compact([

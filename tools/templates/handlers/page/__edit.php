@@ -31,7 +31,7 @@ $js = str_replace(
     ["<script>\n",'<script>','</script>'],
     '',
     $this->render('@templates/_theme-selector-export-var.twig',[
-        'dataJs' => $this->services->get(ThemeManager::class)->getTab1AndTab2ForJs()
+        'dataJs' => $this->services->get(ThemeManager::class)->getSquelettesAndStylesForJs()
     ])
 );
 $this->addJavascript($js);

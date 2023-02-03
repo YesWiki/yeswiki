@@ -395,7 +395,7 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
         'selectedCustomPresetName' => $presetsData['selectedCustomPresetName'] ??  null,
     ]);
     $selecteur .= $wiki->render('@templates/_theme-selector-export-var.twig',[
-        'dataJs' => $themeManager->getTab1AndTab2ForJs()
+        'dataJs' => $themeManager->getSquelettesAndStylesForJs()
     ]);
 
     return $selecteur;
