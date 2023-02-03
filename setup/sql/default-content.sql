@@ -551,17 +551,17 @@ Pour en savoir plus, voyez la documentation sur https://yeswiki.net/?Documentati
 ('PageFooter',  now(), '{{section class=\"text-center\"}}
 {{yeswikiversion}}
 {{end elem=\"section\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageHeader',  now(), '{{section bgcolor=\"var(--neutral-color)\" class=\"white text-center cover\" file=\"bandeau.png\" }}
+('PageHeader',  now(), '{{section bgcolor=\"var(--neutral-color)\" class=\"white text-center cover\" file=\"bandeau.webp\" }}
 
 ======Description de mon wiki======
 Rendez-vous dans la roue crantée / gestion du site pour modifier ce bandeau
 
 {{end elem=\"section\"}}
 {#INFO CACHÉE pour vous aider : 
-Pour changer l\'image du bandeau : renommer bandeau.png par le nom de votre nouvelle image (png, jpg). Sauver, puis charger votre image préalablement préparée
+Pour changer l\'image du bandeau : renommer bandeau.webp par le nom de votre nouvelle image (webp, jpg, png). Sauver, puis charger votre image préalablement préparée
 (cette image devra avoir comme taille 1920 X 300 et 90 dpi de résolution)
 
-Aplat de couleur : supprimer file=\"bandeau.png\", cliquez sur section, cliquez sur le petit crayon dans la marge et laissez vous guider. vous pourrez 
+Aplat de couleur : supprimer file=\"bandeau.webp\", cliquez sur section, cliquez sur le petit crayon dans la marge et laissez vous guider. vous pourrez 
  - changer la tonalité du texte
  - le caler à droite, le centrer
  - faire varier la hauteur du bandeau...#}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),

@@ -77,11 +77,13 @@ if (empty($file) && empty($bgcolor)) {
 }
 
 if (!empty($file)) {
+    if (!class_exists('attach')) {
+        include('tools/attach/libs/attach.lib.php');
+    }
+    $att = new attach($this);
+
     // test of image extension
-    $supported_image_extensions = array('svg', 'gif', 'jpg', 'jpeg', 'png');
-    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-    // Using strtolower to overcome case sensitive
-    if (!in_array($ext, $supported_image_extensions)) {
+    if (!$att->isPicture($file)) {
         echo '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_BACKGROUNDIMAGE') . '</strong> : '
               . _t('ATTACH_PARAM_FILE_MUST_BE_IMAGE') . '.</div>' . "\n";
         return;
@@ -92,11 +94,6 @@ if (!empty($file)) {
     if (empty($width)) {
         $width = 1920;
     }
-
-    if (!class_exists('attach')) {
-        include('tools/attach/libs/attach.lib.php');
-    }
-    $att = new attach($this);
 
     //recuperation des parametres necessaires
     $att->file = $file;

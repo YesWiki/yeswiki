@@ -14,6 +14,7 @@ parameters:
     jpeg: 'JPEG'
     webp: 'WEBP'
     # Autres images (peuvent utiliser le tag <img>)
+    avif: 'AVIF'
     bmp: 'BMP'
     tif: 'TIFF'
     svg: 'SVG'
@@ -115,7 +116,7 @@ parameters:
     otp: 'opendocument presentation-template'
     otg: 'opendocument graphics-template'
   attach_config:
-    ext_images: "gif|jpeg|png|jpg|svg|webp"
+    ext_images: "avif|gif|jpeg|png|jpg|svg|webp"
     ext_audio: "mp3|aac"
     ext_video: "mp4|webm|ogg"
     ext_wma: "wma"

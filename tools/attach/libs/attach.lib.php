@@ -254,9 +254,12 @@ if (!class_exists('attach')) {
         /**
          * Test si le fichier est une image
          */
-        public function isPicture()
+        public function isPicture($file = null)
         {
-            return preg_match("/.(" . $this->attachConfig["ext_images"] . ")$/i", $this->file) == 1;
+            if ($file == null) {
+                $file = $this->file;
+            }
+            return preg_match("/.(" . $this->attachConfig["ext_images"] . ")$/i", $file) == 1;
         }
         /**
          * Test si le fichier est un fichier audio
