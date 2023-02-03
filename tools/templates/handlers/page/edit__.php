@@ -42,7 +42,7 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
     $selecteur .= '<input id="hiddentheme" type="hidden" name="theme" value="'.$themeManager->getFavoriteTheme().'" />'."\n";
     $selecteur .= '<input id="hiddensquelette" type="hidden" name="squelette" value="'.$themeManager->getFavoriteSquelette().'" />'."\n";
     $selecteur .= '<input id="hiddenstyle" type="hidden" name="style" value="'.$themeManager->getFavoriteStyle().'" />'."\n";
-    $selecteur .= '<input id="hiddenbgimg" type="hidden" name="bgimg" value="'.$this->config['favorite_background_image'].'" />'."\n";
+    $selecteur .= '<input id="hiddenbgimg" type="hidden" name="bgimg" value="'.$themeManager->getFavoriteBackgroundImage().'" />'."\n";
 
     // on rajoute la personnalisation graphique
     $plugin_output_new = preg_replace('/<\/body>/', $selecteur."\n".'</body>', $plugin_output_new);

@@ -14,7 +14,7 @@ if (isset($this->config['use_jquery_cdn']) && $this->config['use_jquery_cdn'] ==
 }
 
 // on récupère le bon chemin pour le theme
-if (!empty($this->config['use_fallback_theme'])) {
+if ($themeManager->getUseFallbackTheme()) {
     $repertoire = 'themes/'.$themeManager->getFavoriteTheme().'/javascripts';
 } else {
     $jsDir = 'themes/'.$themeManager->getFavoriteTheme().'/javascripts';

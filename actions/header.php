@@ -9,7 +9,7 @@ $themeManager = $this->services->get(ThemeManager::class);
 //=======Restes de wikini=================================================================================
 $user = $this->GetUser();
 
-if (!empty($this->config['use_fallback_theme'])) {
+if ($themeManager->getUseFallbackTheme()) {
     $chemin_theme = 'themes/'.$themeManager->getFavoriteTheme().'/squelettes/'.$themeManager->getFavoriteSquelette();
     $file_content = file_get_contents($chemin_theme);
 } else {

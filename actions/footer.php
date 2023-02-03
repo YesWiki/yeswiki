@@ -8,7 +8,7 @@ if (!defined("WIKINI_VERSION")) {
 }
 
 $themeManager = $this->services->get(ThemeManager::class);
-if (!empty($this->config['use_fallback_theme'])) {
+if ($themeManager->getUseFallbackTheme()) {
     $chemin_theme = 'themes/'.$themeManager->getFavoriteTheme().'/squelettes/'.$themeManager->getFavoriteSquelette();
     $file_content = file_get_contents($chemin_theme);
 } else {

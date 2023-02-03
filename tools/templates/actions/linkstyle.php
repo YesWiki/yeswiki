@@ -31,7 +31,7 @@ if ($presetsActivated) {
 
 // on regarde dans quel dossier se trouve le theme
 $styleFile = 'themes/'.$themeManager->getFavoriteTheme().'/styles/'.$favoriteStyle;
-if (empty($this->config['use_fallback_theme'])) {
+if ($themeManager->getUseFallbackTheme()) {
     if (file_exists('custom/'.$styleFile)) {
         $styleFile = 'custom/'.$styleFile;
     }
@@ -81,13 +81,14 @@ while ($customCssDir && ($file = readdir($customCssDir)) !== false) {
     }
 }
 
+$favoriteBackgroundImage = $themeManager->getFavoriteBackgroundImage();
 // on ajoute aux css le background personnalise
-if (isset($this->config['favorite_background_image']) && $this->config['favorite_background_image']!='') {
-    $imgextension = strtolower(substr($this->config['favorite_background_image'], -4, 4));
+if (!empty($favoriteBackgroundImage)) {
+    $imgextension = strtolower(substr($favoriteBackgroundImage, -4, 4));
     if ($imgextension=='.jpg') {
         $this->AddCSS(<<<CSS
             body {
-                background-image: url("files/backgrounds/{$this->config['favorite_background_image']}");
+                background-image: url("files/backgrounds/$favoriteBackgroundImage");
                 background-repeat:no-repeat;
                 height:100%;
                 -webkit-background-size:cover;
@@ -103,7 +104,7 @@ if (isset($this->config['favorite_background_image']) && $this->config['favorite
     } elseif ($imgextension=='.png') {
         $this->AddCSS(<<<CSS
             body {
-                background-image: url("files/backgrounds/{$this->config['favorite_background_image']}");
+                background-image: url("files/backgrounds/$favoriteBackgroundImage");
             }
         CSS);
     }

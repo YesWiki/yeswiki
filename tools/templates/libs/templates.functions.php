@@ -263,6 +263,8 @@ function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $cla
 
 function show_form_theme_selector($mode = 'selector', $formclass = '')
 {
+    $wiki = $GLOBALS['wiki'];
+    $themeManager = $wiki->services->get(ThemeManager::class);
     // en mode edition on recupere aussi les images de fond
     if ($mode=='edit') {
         $id = 'form_graphical_options';
@@ -317,12 +319,12 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
                 }
 
                 // dans le cas ou il n'y a pas d'image de fond selectionnee on bloque la premiere diapo
-                if ($GLOBALS['wiki']->config['favorite_background_image'] == '' && $firstitem) {
+                if ($themeManager->getFavoriteBackgroundImage() == '' && $firstitem) {
                     $class = ' active';
                     $firstitem = false;
                 }
 
-                $choosen = ($background == 'files/backgrounds/'.$GLOBALS['wiki']->config['favorite_background_image']);
+                $choosen = ($background == 'files/backgrounds/'.$themeManager->getFavoriteBackgroundImage());
                 if ($choosen) {
                     $class = ' active';
                 }
@@ -356,8 +358,6 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
     }
 
     //sort array
-    $wiki = $GLOBALS['wiki'];
-    $themeManager = $wiki->services->get(ThemeManager::class);
     $templates = $themeManager->getTemplates();
     ksort($templates[$themeManager->getFavoriteTheme()]['squelette']);
     ksort($templates[$themeManager->getFavoriteTheme()]['style']);

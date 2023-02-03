@@ -1469,9 +1469,7 @@ class Wiki
             $this->config['lang'] = 'fr';
         }
 
-        // TODO Don't put templates in configs
-        // TODO avoid modifying the $wakkaConfig array
-        $this->config['templates'] = $this->services->get(ThemeManager::class)->loadTemplates($metadata);
+        $this->services->get(ThemeManager::class)->loadTemplates($metadata);
     }
 
     /**
