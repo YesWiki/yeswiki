@@ -109,11 +109,11 @@ span.missingpage,
   margin: 0px;
 }
 .debug {
-  font-size: 11px;
-  color: #888;
+  font-size: .9em;
+  color: var(--neutral-color);
   background: #fff;
-  border: 1px dotted #888;
-  padding: 10px;
+  border: 1px dotted var(--neutral-color);
+  padding: 1em;
   margin: 0 auto;
 }
 /* Fin divers mise en forme */
@@ -751,7 +751,7 @@ section.full-width:not(.with-bg-pattern) {
   margin:0 1em 0 0;
 }
 .yw-comment .comment-date {
-  color: var(--neutral-soft-color);
+  color: var(--neutral-color);
 }
 .yw-comment .comment-html {
   margin-bottom:0;

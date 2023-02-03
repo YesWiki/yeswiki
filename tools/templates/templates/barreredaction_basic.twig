@@ -26,7 +26,7 @@
   {% endif %}
   {% if linkopencomments is defined %}
     <span class="dropup">
-      <a class="link-comments dropdown-toggle" type="button" id="opencommentsdropup" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <a href="#" class="link-comments dropdown-toggle" type="button" id="opencommentsdropup" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <i class="fas fa-comment"></i> <span>{{ _t('TEMPLATE_OPEN_COMMENTS') }}</span>
         <span class="caret"></span>
       </a>
@@ -51,6 +51,7 @@
       data-placement="right"
       class="btn btn-icon favorites{{ (isUserFavorite) ? ' user-favorite' : '' }}">
       <i class="{{ (isUserFavorite) ? 'fas' : 'far' }} fa-star"></i>
+      <span class="sr-only sr-only-focusable">{{ (isUserFavorite) ? _t('FAVORITES_REMOVE') : _t('FAVORITES_ADD') }}</span>
     </a>
   {% endif %}
 </div>
