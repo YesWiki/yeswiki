@@ -27,12 +27,9 @@ if (isset($_GET["body"]) && !isset($_POST["body"])) {
     $_POST["body"] = '======'.$_GET["body"].'======';
 }
 
-$js = str_replace(
-    ["<script>\n",'<script>','</script>'],
-    '',
-    $this->render('@templates/_theme-selector-export-var.twig',[
-        'dataJs' => $this->services->get(ThemeManager::class)->getSquelettesAndStylesForJs()
-    ])
-);
+$js = $this->render('@templates/_theme-selector-export-var.twig',[
+        'dataJs' => $this->services->get(ThemeManager::class)->getSquelettesAndStylesForJs(),
+        'mode' => 'raw'
+    ]);
 $this->addJavascript($js);
 $this->addJavascriptFile('tools/templates/javascripts/template-edit.js');
