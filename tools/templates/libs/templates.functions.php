@@ -525,18 +525,6 @@ function recup_droits($page)
     return $acls ;
 }
 
-//Récupère les metas de la page désignée en argument et renvoie un tableau
-function recup_meta($page)
-{
-    $metas = $GLOBALS['wiki']->GetMetaDatas($page);
-
-    return array('page' => $page,
-        'theme' => empty($metas['theme']) ? '' : $metas['theme'],
-        'squelette' => empty($metas['squelette']) ? '' : $metas['squelette'],
-        'style' => empty($metas['style']) ? '' : $metas['style'],
-    );
-}
-
 /**
  * Get the first image in the page
  *

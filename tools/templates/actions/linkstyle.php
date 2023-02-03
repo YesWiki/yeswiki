@@ -17,14 +17,15 @@ if (!strstr($favoriteStyle, 'bootstrap.') && !strstr($favoriteStyle, 'bs.')) {
 echo $this->LinkCSSFile('styles/yeswiki-base.css');
 
 // presets activated and path ?
-$presetsActivated = !empty(($themeManager->getTemplates())[$themeManager->getFavoriteTheme()]['presets']) && !empty($this->config['favorite_preset']);
+$favoritePreset = $themeManager->getFavoritePreset();
+$presetsActivated = !empty(($themeManager->getTemplates())[$themeManager->getFavoriteTheme()]['presets']) && !empty($favoritePreset);
 if ($presetsActivated) {
     $custom_prefix = ThemeManager::CUSTOM_CSS_PRESETS_PREFIX;
-    $presetIsCustom = (substr($this->config['favorite_preset'], 0, strlen($custom_prefix)) == $custom_prefix);
+    $presetIsCustom = (substr($favoritePreset, 0, strlen($custom_prefix)) == $custom_prefix);
     if (!$presetIsCustom) {
-        $presetFile = 'themes/'.$themeManager->getFavoriteTheme().'/presets/'.$this->config['favorite_preset'];
+        $presetFile = 'themes/'.$themeManager->getFavoriteTheme().'/presets/'.$favoritePreset;
     } else {
-        $presetFile = ThemeManager::CUSTOM_CSS_PRESETS_PATH . '/' . substr($this->config['favorite_preset'], strlen($custom_prefix));
+        $presetFile = ThemeManager::CUSTOM_CSS_PRESETS_PATH . '/' . substr($favoritePreset, strlen($custom_prefix));
     }
 }
 
@@ -49,7 +50,7 @@ if ($favoriteStyle!='none') {
 // on ajoute le preset css selectionne du theme
 if (($favoriteStyle!='none')
         && $presetsActivated
-        && substr($this->config['favorite_preset'], -4, 4) == '.css') {
+        && substr($favoritePreset, -4, 4) == '.css') {
     echo $this->LinkCSSFile($presetFile);
 }
 

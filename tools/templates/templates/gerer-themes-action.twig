@@ -21,6 +21,7 @@
           <th><div align="center"><b>{{ _t('TEMPLATE_THEME') }}</b></div></th>
           <th><div align="center"><b>{{ _t('TEMPLATE_SQUELETTE') }}</b></div></th>
           <th><div align="center"><b>{{ _t('TEMPLATE_STYLE') }}</b></div></th>
+          <th><div align="center"><b>{{ _t('TEMPLATE_PRESET') }}</b></div></th>
         </tr>
       </thead>
       <tbody>
@@ -39,6 +40,7 @@
             <td><div align="center">{{ metadata.theme|replace({' ':"\n"})|nl2br }}</div></td>
             <td><div align="center">{{ metadata.squelette|replace({' ':"\n"})|nl2br }}</div></td>
             <td><div align="center">{{ metadata.style|replace({' ':"\n"})|nl2br }}</div></td>
+            <td><div align="center">{{ metadata.favorite_preset|replace({' ':"\n"})|nl2br }}</div></td>
           </tr>
         {% endfor %}
       </tbody>

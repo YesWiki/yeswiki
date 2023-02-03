@@ -42,13 +42,18 @@ class GererThemesAction extends YesWikiAction
       }
     }
 
-    $pages = [];
     $pagesThemes = [];
     foreach($this->pageManager->getAll() as $page){
       if (!empty($page['tag'])){
-        // TODO use a service instead of  recup_meta
-        $pages[$page['tag']] = $page['tag'];
-        $pagesThemes[$page['tag']] = recup_meta($page['tag']);
+        $pagesThemes[$page['tag']] = array_merge(
+          [
+            'theme' => '',
+            'squelette' => '',
+            'style' => '',
+            'favorite_preset' => '',
+          ],
+          $this->pageManager->getMetadata($page['tag']) ?? []
+        );
       }
     }
 
@@ -57,19 +62,30 @@ class GererThemesAction extends YesWikiAction
     $favoriteTheme = $this->themeManager->getFavoriteTheme();
     $favoriteSquelette = $this->themeManager->getFavoriteSquelette();
     $favoriteStyle = $this->themeManager->getFavoriteStyle();
+    $favoritePreset = $this->themeManager->getFavoritePreset();
     $squelettes = $templates[$favoriteTheme]['squelette'];
     $styles = $templates[$favoriteTheme]['style'];
+    $presetData = $this->themeManager->getPresetsData();
+    $presets = [];
+    foreach ($presetData['themePresets'] as $key => $content) {
+      $presets[$key] = $key;
+    }
+    foreach ($presetData['customCSSPresets'] as $key => $content) {
+      $presets["custom/$key"] = $key;
+    }
+
     $dataJs = $this->themeManager->getSquelettesAndStylesForJs();
     return $this->render(
       '@templates/gerer-themes-action.twig',
       compact([
         'errorMessage',
-        'pages',
         'pagesThemes',
         'hibernated',
         'templates',
         'squelettes',
         'styles',
+        'presets',
+        'favoritePreset',
         'favoriteSquelette',
         'favoriteStyle',
         'favoriteTheme',
@@ -95,14 +111,21 @@ class GererThemesAction extends YesWikiAction
             $this->pageManager->setMetadata($pageTag, [
                 'theme' => null, 
                 'style' => null, 
-                'squelette' => null
+                'squelette' => null,
+                'favorite_preset' => null
               ]);
           } else {
             $this->pageManager->setMetadata($pageTag, [
                 'theme' => $this->sanitizePost('theme_select'), 
                 'style' => $this->sanitizePost('style_select'), 
                 'squelette' => $this->sanitizePost('squelette_select')
-              ]);
+              ]+(
+                !empty($_POST['preset_select'])
+                ? [
+                  'favorite_preset' => $this->sanitizePost('preset_select')
+                ]
+                : []
+              ));
           }
       }
     }

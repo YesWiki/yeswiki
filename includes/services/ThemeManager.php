@@ -351,6 +351,13 @@ class ThemeManager
           : '';
     }
 
+    public function getFavoritePreset(): string
+    {
+        return (isset($this->wiki->config['favorite_preset']) && is_string($this->wiki->config['favorite_preset']))
+          ? $this->wiki->config['favorite_preset']
+          : '';
+    }
+
     public function setTemplates(array $templates)
     {
         $this->templates = $templates;
@@ -530,8 +537,9 @@ class ThemeManager
         $dataHtmlForCustomCSSPresets = array_map(function ($value) {
             return $this->extractDataFromPreset($value);
         }, $customCSSPresets);
-        if (!empty($this->wiki->config['favorite_preset'])) {
-            $presetName = $this->wiki->config['favorite_preset'];
+        $favoritePreset = $this->getFavoritePreset();
+        if (!empty($favoritePreset)) {
+            $presetName = $favoritePreset;
             if (substr($presetName, 0, strlen(self::CUSTOM_CSS_PRESETS_PREFIX)) == self::CUSTOM_CSS_PRESETS_PREFIX) {
                 $presetName = substr($presetName, strlen(self::CUSTOM_CSS_PRESETS_PREFIX));
                 if (in_array($presetName, array_keys($customCSSPresets))) {
