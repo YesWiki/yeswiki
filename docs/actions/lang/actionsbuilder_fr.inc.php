@@ -196,7 +196,7 @@ return [
     // BazarAction
     "AB_bazar_action_label" => "Afficher un formulaire de création de fiche",
     "AB_bazar_action_description" => "Permet d'afficher le formulaire pour créer une fiche.",
-    "AB_bazar_action_redirecturl_label" => "URL complet de la page de ce wiki à afficher après création d'une fiche",
+    "AB_bazar_action_redirecturl_label" => "Nom de page de ce wiki ou URL complet à afficher après création d'une fiche",
     // attach
     "AB_attach_commons_title" => "Pour les images",
     "AB_attach_link_label" => "Lien web associé au clic",

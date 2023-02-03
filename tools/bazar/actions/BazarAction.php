@@ -46,6 +46,18 @@ class BazarAction extends YesWikiAction
 
     public function formatArguments($arg)
     {
+        $redirecturl = $_GET['redirecturl'] ?? $arg['redirecturl'] ?? '';
+        // YesWiki pages links, like "HomePage" or "HomePage/xml"
+        if (!empty($redirecturl)){
+            $wikiLink = $this->wiki->extractLinkParts((substr($redirecturl,0,1) == '?') ? substr($redirecturl,1): $redirecturl);
+            if ($wikiLink) {// General URL
+                $tag = $wikiLink['tag'];
+                $method = $wikiLink['method'];
+                $params = $wikiLink['params'] ?? [];
+                $redirecturl = $this->wiki->Href($method, $tag, $params, false);
+            }
+        }
+
         return([
             self::VARIABLE_ACTION => $_GET[self::VARIABLE_ACTION] ?? $arg[self::VARIABLE_ACTION] ?? null,
             self::VARIABLE_VOIR => $_GET[self::VARIABLE_VOIR] ?? $arg[self::VARIABLE_VOIR] ?? self::VOIR_DEFAUT,
@@ -54,7 +66,7 @@ class BazarAction extends YesWikiAction
             // Identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
             'idtypeannonce' => $this->formatArray($_REQUEST['id_typeannonce'] ?? $arg['id'] ?? $arg['idtypeannonce'] ?? (!empty($_GET['id']) ? strip_tags($_GET['id']) : null)),
             // Permet de rediriger vers une url après saisie de fiche
-            'redirecturl' => $_GET['redirecturl'] ?? $arg['redirecturl'] ?? ''
+            'redirecturl' => $redirecturl
         ]);
     }
 

@@ -196,7 +196,7 @@ return [
     // BazarAction
     "AB_bazar_action_label" => "Display a form to create an entry",
     "AB_bazar_action_description" => "Help to display a form to create an entry",
-    "AB_bazar_action_redirecturl_label" => "Full url of the wiki page to display after creation of an entry",
+    "AB_bazar_action_redirecturl_label" => "Wiki page name or Full url to display after creation of an entry",
     // attach
     // "AB_attach_commons_title" => "Pour les images",
     // "AB_attach_link_label" => "Lien quand on cliquera sur l'image",

@@ -13,5 +13,5 @@ actions:
         value: 'saisir'
       redirecturl:
         label: _t(AB_bazar_action_redirecturl_label)
-        type: url
+        type: page-list
         advanced: true
