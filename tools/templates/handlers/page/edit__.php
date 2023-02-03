@@ -1,4 +1,5 @@
 <?php
+use YesWiki\Core\Service\ThemeManager;
 
 if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
@@ -9,6 +10,8 @@ $plugin_output_new = preg_replace(
     '',
     $plugin_output_new
 );
+
+$themeManager = $this->services->get(ThemeManager::class);
 
 // personnalisation graphique que dans le cas ou on est autorise
 if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide_action_template']) && !$this->config['hide_action_template'])) &&
@@ -36,9 +39,9 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
       '</div> <!-- /#graphical_options -->'."\n";
 
     //quand le changement des valeurs du template est cache, il faut stocker les valeurs deja entrees pour ne pas retourner au template par defaut
-    $selecteur .= '<input id="hiddentheme" type="hidden" name="theme" value="'.$this->config['favorite_theme'].'" />'."\n";
-    $selecteur .= '<input id="hiddensquelette" type="hidden" name="squelette" value="'.$this->config['favorite_squelette'].'" />'."\n";
-    $selecteur .= '<input id="hiddenstyle" type="hidden" name="style" value="'.$this->config['favorite_style'].'" />'."\n";
+    $selecteur .= '<input id="hiddentheme" type="hidden" name="theme" value="'.$themeManager->getFavoriteTheme().'" />'."\n";
+    $selecteur .= '<input id="hiddensquelette" type="hidden" name="squelette" value="'.$themeManager->getFavoriteSquelette().'" />'."\n";
+    $selecteur .= '<input id="hiddenstyle" type="hidden" name="style" value="'.$themeManager->getFavoriteStyle().'" />'."\n";
     $selecteur .= '<input id="hiddenbgimg" type="hidden" name="bgimg" value="'.$this->config['favorite_background_image'].'" />'."\n";
 
     // on rajoute la personnalisation graphique

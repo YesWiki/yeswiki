@@ -6,11 +6,13 @@
 */
 
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\YesWikiAction;
 
 class GererThemesAction extends YesWikiAction
 {
   protected $pageManager;
+  protected $themeManager;
 
   public function run()
   {
@@ -23,6 +25,7 @@ class GererThemesAction extends YesWikiAction
     
     // get services
     $this->pageManager = $this->getService(PageManager::class);
+    $this->themeManager = $this->getService(ThemeManager::class);
 
     require_once 'tools/templates/libs/templates.functions.php';
 
@@ -48,13 +51,30 @@ class GererThemesAction extends YesWikiAction
         $pagesThemes[$page['tag']] = recup_meta($page['tag']);
       }
     }
-    // TODO use a template instead
-    $themeSelector = theme_selector('post');
 
     $hibernated = $this->isWikiHibernated();
+    $templates = $this->themeManager->getTemplates();
+    $favoriteTheme = $this->themeManager->getFavoriteTheme();
+    $favoriteSquelette = $this->themeManager->getFavoriteSquelette();
+    $favoriteStyle = $this->themeManager->getFavoriteStyle();
+    $squelettes = $templates[$favoriteTheme]['squelette'];
+    $styles = $templates[$favoriteTheme]['style'];
+    $dataJs = $this->themeManager->getTab1AndTab2ForJs();
     return $this->render(
       '@templates/gerer-themes-action.twig',
-      compact(['errorMessage','pages','pagesThemes','themeSelector','hibernated'])
+      compact([
+        'errorMessage',
+        'pages',
+        'pagesThemes',
+        'hibernated',
+        'templates',
+        'squelettes',
+        'styles',
+        'favoriteSquelette',
+        'favoriteStyle',
+        'favoriteTheme',
+        'dataJs'
+        ])
     );
 
   }

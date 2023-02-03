@@ -1,16 +1,19 @@
 <?php
 // DEPRECIATED keep same filename without class to prevent error at update
+use YesWiki\Core\Service\ThemeManager;
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
+
+$themeManager = $this->services->get(ThemeManager::class);
 //=======Restes de wikini=================================================================================
 $user = $this->GetUser();
 
 if (!empty($this->config['use_fallback_theme'])) {
-    $chemin_theme = 'themes/'.$this->config['favorite_theme'].'/squelettes/'.$this->config['favorite_squelette'];
+    $chemin_theme = 'themes/'.$themeManager->getFavoriteTheme().'/squelettes/'.$themeManager->getFavoriteSquelette();
     $file_content = file_get_contents($chemin_theme);
 } else {
-    $chemin_theme = 'themes/'.$this->config['favorite_theme'].'/squelettes/'.$this->config['favorite_squelette'];
+    $chemin_theme = 'themes/'.$themeManager->getFavoriteTheme().'/squelettes/'.$themeManager->getFavoriteSquelette();
     if (file_exists('custom/'.$chemin_theme)) {
         $file_content = file_get_contents('custom/'.$chemin_theme);
     } else {

@@ -27,7 +27,12 @@ if (isset($_GET["body"]) && !isset($_POST["body"])) {
     $_POST["body"] = '======'.$_GET["body"].'======';
 }
 
-// ajout des scripts necessaires pour le mode edition
-$js = add_templates_list_js();
+$js = str_replace(
+    ["<script>\n",'<script>','</script>'],
+    '',
+    $this->render('@templates/_theme-selector-export-var.twig',[
+        'dataJs' => $this->services->get(ThemeManager::class)->getTab1AndTab2ForJs()
+    ])
+);
 $this->addJavascript($js);
 $this->addJavascriptFile('tools/templates/javascripts/template-edit.js');

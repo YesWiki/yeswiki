@@ -1,0 +1,35 @@
+<div class="control-group form-group">
+  <label class="control-label">{{ _t('TEMPLATE_THEME') }}</label>
+  <div class="controls">
+    <select class="form-control" id="changetheme" name="theme_select">
+      {% for key,value in templates %}
+        <option value="{{ key }}"{% if key == favoriteTheme %} selected{% endif %}>{{ key }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+<div class="control-group form-group">
+  <label class="control-label">{{ _t('TEMPLATE_SQUELETTE') }}</label>
+  <div class="controls">
+    <select class="form-control" id="changesquelette" name="squelette_select">
+      {% for key,value in squelettes|sort %}
+        <option value="{{ value }}"{% if value == favoriteSquelette %} selected{% endif %}>{{ value }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+<div class="control-group form-group">
+  <label class="control-label">{{ _t('TEMPLATE_STYLE') }}</label>
+  <div class="controls">
+    <select class="form-control" id="changestyle" name="style_select">
+      {% for key,value in styles|sort %}
+        <option value="{{ value }}"{% if value == favoriteStyle %} selected{% endif %}>{{ value }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+{{ include('@templates/_theme-selector-export-var.twig') }}
+{{ include_javascript('tools/templates/javascripts/change-theme.js') }}

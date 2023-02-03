@@ -50,6 +50,7 @@ class ThemeManager
     protected $twig;
     protected $templateHeader;
     protected $templateFooter;
+    protected $templates;
     protected $Performer;
     protected $securityController;
 
@@ -67,6 +68,7 @@ class ThemeManager
         $this->errorMessage = '';
         $this->templateHeader = '';
         $this->templateFooter = '';
+        $this->templates = [];
     }
 
     /* function imported from tooles/templates/libs/templates.functions.php
@@ -203,31 +205,33 @@ class ThemeManager
             unset($this->config['favorite_preset']);
         }
 
-        $templates = [];
+        $this->templates = [];
 
         // themes folder (used by {{update}})
         if (is_dir('themes')) {
-            $templates = array_merge($templates, search_template_files('themes'));
+            $this->templates = array_merge($this->templates, search_template_files('themes'));
         }
         // custom themes folder
         if (is_dir('custom/themes')) {
-            $templates = array_replace_recursive($templates, search_template_files('custom/themes'));
+            $this->templates = array_replace_recursive($this->templates, search_template_files('custom/themes'));
         }
-        ksort($templates);
+        ksort($this->templates);
 
         // update config
         $this->wiki->config = $this->config;
 
-        return $templates;
+        return $this->templates;
     }
 
     public function loadTheme(): bool
     {
         // get theme
-        $theme = $this->config['favorite_theme'] ?? THEME_PAR_DEFAUT ;
+        $theme = $this->getFavoriteTheme();
+        $theme = empty($theme) ? THEME_PAR_DEFAUT : $theme;
 
         // get squelette
-        $squelette = $this->config['favorite_squelette'] ?? SQUELETTE_PAR_DEFAUT ;
+        $squelette = $this->getFavoriteSquelette();
+        $squelette = empty($squelette) ? SQUELETTE_PAR_DEFAUT : $squelette;
 
         // do not load the file if already loaded
         $fileAlreadyLoaded = $this->fileLoaded &&
@@ -304,6 +308,55 @@ class ThemeManager
         } else {
             return '';
         }
+    }
+
+    /**
+     * get tab1 and tab2 used in js for theme selector
+     * @return array ['tab1'=>array,'tab2'=>array]
+     */
+    public function getTab1AndTab2ForJs(): array
+    {
+        $tab1 = [];
+        $tab2 = [];
+        foreach ($this->getTemplates() as $templateName => $template) {
+            $tab1[$templateName] = array_values($template['squelette']);
+            $tab2[$templateName] = array_values($template['style']);
+        }
+        return compact(['tab1','tab2']);
+    }
+
+    public function getTemplates(): array
+    {
+        return $this->templates;
+    }
+
+    public function getFavoriteTheme(): string
+    {
+        return (isset($this->wiki->config['favorite_theme']) && is_string($this->wiki->config['favorite_theme']))
+          ? $this->wiki->config['favorite_theme']
+          : '';
+    }
+
+    public function getFavoriteSquelette(): string
+    {
+        return (isset($this->wiki->config['favorite_squelette']) && is_string($this->wiki->config['favorite_squelette']))
+          ? $this->wiki->config['favorite_squelette']
+          : '';
+    }
+
+    public function getFavoriteStyle(): string
+    {
+        return (isset($this->wiki->config['favorite_style']) && is_string($this->wiki->config['favorite_style']))
+          ? $this->wiki->config['favorite_style']
+          : '';
+    }
+
+    public function setTemplates(array $templates)
+    {
+        $this->templates = $templates;
+        // TODO remove these following lines : BAD HABIT
+        $this->config['templates'] = $templates;
+        $this->wiki->config['templates'] = $templates;
     }
 
     private function renderActions(string $text): ?string
@@ -469,7 +522,7 @@ class ThemeManager
      */
     public function getPresetsData(): ?array
     {
-        $themePresets = $this->wiki->config['templates'][$this->wiki->config['favorite_theme']]['presets'] ?? [];
+        $themePresets = ($this->getTemplates())[$this->getFavoriteTheme()]['presets'] ?? [];
         $dataHtmlForPresets = array_map(function ($value) {
             return $this->extractDataFromPreset($value);
         }, $themePresets);

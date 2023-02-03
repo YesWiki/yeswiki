@@ -30,7 +30,7 @@
             <td>
               <label for="{{ currentId }}">
                 <input type="checkbox" name="{{ currentId }}"
-                      value="{{ currentId }}" class="selectpage"
+                      value="{{ tag }}" class="selectpage"
                       id="{{ currentId }}">
                 <span></span>
               </label>
@@ -61,7 +61,7 @@
   </p>
 
   <div class="edit-theme-container" style="display:none">
-    {{ themeSelector|raw }}
+    {{ include('@templates/theme-selector.twig') }}
   </div>
 
   <p>

@@ -3,6 +3,7 @@
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\ThemeManager;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -15,6 +16,7 @@ include_once 'tools/contact/libs/contact.functions.php';
 $aclService = $this->services->get(AclService::class);
 $entryManager = $this->services->get(EntryManager::class);
 $entryController = $this->services->get(EntryController::class);
+$themeManager = $this->services->get(ThemeManager::class);
 $output = '';
 
 // si le handler est appele en ajax, on traite l'envoi de mail et on repond en ajax
@@ -48,7 +50,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
         $hasReadAccess =  $aclService->hasAccess('read') ;
         if ($hasReadAccess) {
             //on prend le squelette du theme qui pourrait contenir des actions avec des mails
-            $chemin = 'themes/'.$this->config['favorite_theme'].'/squelettes/'.$this->config['favorite_squelette'];
+            $chemin = 'themes/'.$themeManager->getFavoriteTheme().'/squelettes/'.$themeManager->getFavoriteSquelette();
             if (file_exists($chemin)) {
                 $file_content = file_get_contents($chemin);
             } elseif (file_exists('tools/templates/'.$chemin)) {

@@ -6,8 +6,10 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
+$themeManager = $this->services->get(ThemeManager::class);
+$favoriteStyle = $themeManager->getFavoriteStyle();
 // si pas le mot bootstrap. ou bs. dans les css, on charge les styles bootstrap par defaut
-if (!strstr($this->config['favorite_style'], 'bootstrap.') && !strstr($this->config['favorite_style'], 'bs.')) {
+if (!strstr($favoriteStyle, 'bootstrap.') && !strstr($favoriteStyle, 'bs.')) {
     echo $this->LinkCSSFile('styles/vendor/bootstrap/css/bootstrap.min.css');
 }
 
@@ -15,19 +17,19 @@ if (!strstr($this->config['favorite_style'], 'bootstrap.') && !strstr($this->con
 echo $this->LinkCSSFile('styles/yeswiki-base.css');
 
 // presets activated and path ?
-$presetsActivated = !empty($this->config['templates'][$this->config['favorite_theme']]['presets']) && !empty($this->config['favorite_preset']);
+$presetsActivated = !empty(($themeManager->getTemplates())[$themeManager->getFavoriteTheme()]['presets']) && !empty($this->config['favorite_preset']);
 if ($presetsActivated) {
     $custom_prefix = ThemeManager::CUSTOM_CSS_PRESETS_PREFIX;
     $presetIsCustom = (substr($this->config['favorite_preset'], 0, strlen($custom_prefix)) == $custom_prefix);
     if (!$presetIsCustom) {
-        $presetFile = 'themes/'.$this->config['favorite_theme'].'/presets/'.$this->config['favorite_preset'];
+        $presetFile = 'themes/'.$themeManager->getFavoriteTheme().'/presets/'.$this->config['favorite_preset'];
     } else {
         $presetFile = ThemeManager::CUSTOM_CSS_PRESETS_PATH . '/' . substr($this->config['favorite_preset'], strlen($custom_prefix));
     }
 }
 
 // on regarde dans quel dossier se trouve le theme
-$styleFile = 'themes/'.$this->config['favorite_theme'].'/styles/'.$this->config['favorite_style'];
+$styleFile = 'themes/'.$themeManager->getFavoriteTheme().'/styles/'.$favoriteStyle;
 if (empty($this->config['use_fallback_theme'])) {
     if (file_exists('custom/'.$styleFile)) {
         $styleFile = 'custom/'.$styleFile;
@@ -38,14 +40,14 @@ if (empty($this->config['use_fallback_theme'])) {
 }
 
 // on ajoute le style css selectionne du theme
-if ($this->config['favorite_style']!='none') {
-    if (substr($this->config['favorite_style'], -4, 4) == '.css') {
+if ($favoriteStyle!='none') {
+    if (substr($favoriteStyle, -4, 4) == '.css') {
         echo $this->LinkCSSFile($styleFile, '', '', 'id="mainstyle"');
     }
 }
 
 // on ajoute le preset css selectionne du theme
-if (($this->config['favorite_style']!='none')
+if (($favoriteStyle!='none')
         && $presetsActivated
         && substr($this->config['favorite_preset'], -4, 4) == '.css') {
     echo $this->LinkCSSFile($presetFile);
@@ -61,7 +63,7 @@ $othercss = $this->GetParameter('othercss');
 if (!empty($othercss)) {
     $tabcss = explode(',', $othercss);
     foreach ($tabcss as $cssfile) {
-        $style = 'themes/'.$this->config['favorite_theme'].'/styles/'.$cssfile;
+        $style = 'themes/'.$themeManager->getFavoriteTheme().'/styles/'.$cssfile;
         if (file_exists('custom/'.$style)) {
             $style = 'custom/'.$style;
         }
