@@ -7,25 +7,28 @@ function getTemplatesList()
     //on cherche tous les dossiers du repertoire themes et des sous dossier styles
     //et squelettes, et on les range dans le tableau $wakkaConfig['templates']
     $repertoire_initial = 'themes';
-    if (empty($GLOBALS['wiki']->config['templates'])) {
-        $GLOBALS['wiki']->config['templates'] = search_template_files($repertoire_initial);
+    $themeManager = $GLOBALS['wiki']->services->get(ThemeManager::class);
+    if (empty($themeManager->getTemplates())) {
+        $themeManager->setTemplates(search_template_files($repertoire_initial));
 
         //s'il y a un repertoire themes a la racine, on va aussi chercher les templates dedans
         if (is_dir('themes')) {
             $repertoire_racine = 'themes';
-            $GLOBALS['wiki']->config['templates'] = array_merge(
-                $GLOBALS['wiki']->config['templates'],
+            $themeManager->setTemplates(array_merge(
+                $themeManager->getTemplates(),
                 search_template_files($repertoire_racine)
-            );
-            if (is_array($GLOBALS['wiki']->config['templates'])) {
-                ksort($GLOBALS['wiki']->config['templates']);
+            ));
+            if (is_array($themeManager->getTemplates())) {
+                $tmp = $themeManager->getTemplates();
+                ksort($tmp);
+                $themeManager->setTemplates($tmp);
             }
         }
     }
 
     // Réorganisation des données avant de les rendre.
     $themes = array();
-    foreach ($GLOBALS['wiki']->config['templates'] as $templateName => $templateValues) {
+    foreach ($themeManager->getTemplates() as $templateName => $templateValues) {
         $themes[$templateName] = array(
             'styles' => array_keys($templateValues['style']),
             'squelettes' => array_keys($templateValues['squelette']),
@@ -46,9 +49,10 @@ function showSelectTemplateForm($themes, $config)
         $defTheme = $config->favorite_theme;
     }
     // load defaut params from config after LoadExtensions
-    $defTheme = $config->favorite_theme ?? $GLOBALS['wiki']->config['favorite_theme'] ?? '';
-    $defSquelette = $config->favorite_squelette ?? $GLOBALS['wiki']->config['favorite_squelette'] ?? '';
-    $defStyle = $config->favorite_style ?? $GLOBALS['wiki']->config['favorite_style'] ?? '';
+    $themeManager = $GLOBALS['wiki']->services->get(ThemeManager::class);
+    $defTheme = $config->favorite_theme ?? $themeManager->getFavoriteTheme();
+    $defSquelette = $config->favorite_squelette ?? $themeManager->getFavoriteSquelette();
+    $defStyle = $config->favorite_style ?? $themeManager->getFavoriteStyle();
 
     $defForceTheme = false;
     if (isset($config->hide_action_template) and $config->hide_action_template === '1') {

@@ -1,7 +1,11 @@
 <?php
+use YesWiki\Core\Service\ThemeManager;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
+
+$themeManager = $this->services->get(ThemeManager::class);
 
 $param = $this->GetParameter('param');
 if (!empty($param)) {
@@ -27,9 +31,10 @@ if (!empty($param)) {
             echo $GLOBALS['prefered_language'];
             break;
         case 'theme_path':
-            echo ((is_dir('custom/themes/'.$this->config['favorite_theme']))) ?
-                'custom/themes/'.$this->config['favorite_theme'].'/' :
-                'themes/'.$this->config['favorite_theme'].'/';
+            $theme = $themeManager->getFavoriteTheme();
+            echo ((is_dir('custom/themes/'.$theme))) ?
+                "custom/themes/$theme/" :
+                "themes/$theme/";
             break;
         default:
             break;

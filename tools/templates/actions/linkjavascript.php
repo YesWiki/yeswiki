@@ -1,8 +1,10 @@
 <?php
+use YesWiki\Core\Service\ThemeManager;
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
+$themeManager = $this->services->get(ThemeManager::class);
 $yeswiki_javascripts = "\n" . '  <!-- javascripts -->' . "\n";
 
 if (isset($this->config['use_jquery_cdn']) && $this->config['use_jquery_cdn'] == "1") {
@@ -12,10 +14,10 @@ if (isset($this->config['use_jquery_cdn']) && $this->config['use_jquery_cdn'] ==
 }
 
 // on récupère le bon chemin pour le theme
-if (!empty($this->config['use_fallback_theme'])) {
-    $repertoire = 'themes/'.$this->config['favorite_theme'].'/javascripts';
+if ($themeManager->getUseFallbackTheme()) {
+    $repertoire = 'themes/'.$themeManager->getFavoriteTheme().'/javascripts';
 } else {
-    $jsDir = 'themes/'.$this->config['favorite_theme'].'/javascripts';
+    $jsDir = 'themes/'.$themeManager->getFavoriteTheme().'/javascripts';
     if (is_dir('custom/'.$jsDir)) {
         $repertoire = 'custom/'.$jsDir;
     } else {

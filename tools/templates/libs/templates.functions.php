@@ -263,6 +263,8 @@ function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $cla
 
 function show_form_theme_selector($mode = 'selector', $formclass = '')
 {
+    $wiki = $GLOBALS['wiki'];
+    $themeManager = $wiki->services->get(ThemeManager::class);
     // en mode edition on recupere aussi les images de fond
     if ($mode=='edit') {
         $id = 'form_graphical_options';
@@ -317,12 +319,12 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
                 }
 
                 // dans le cas ou il n'y a pas d'image de fond selectionnee on bloque la premiere diapo
-                if ($GLOBALS['wiki']->config['favorite_background_image'] == '' && $firstitem) {
+                if ($themeManager->getFavoriteBackgroundImage() == '' && $firstitem) {
                     $class = ' active';
                     $firstitem = false;
                 }
 
-                $choosen = ($background == 'files/backgrounds/'.$GLOBALS['wiki']->config['favorite_background_image']);
+                $choosen = ($background == 'files/backgrounds/'.$themeManager->getFavoriteBackgroundImage());
                 if ($choosen) {
                     $class = ' active';
                 }
@@ -356,20 +358,21 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
     }
 
     //sort array
-    ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['squelette']);
-    ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style']);
+    $templates = $themeManager->getTemplates();
+    ksort($templates[$themeManager->getFavoriteTheme()]['squelette']);
+    ksort($templates[$themeManager->getFavoriteTheme()]['style']);
+    $themeManager->setTemplates($templates);
 
     // page list
-    $tablistWikinames = $GLOBALS['wiki']->LoadAll(
-        'SELECT DISTINCT tag FROM '.$GLOBALS['wiki']->GetConfigValue('table_prefix').'pages WHERE latest="Y"'
+    $tablistWikinames = $wiki->LoadAll(
+        'SELECT DISTINCT tag FROM '.$wiki->GetConfigValue('table_prefix').'pages WHERE latest="Y"'
     );
     foreach ($tablistWikinames as $tag) {
         $listWikinames[] = $tag['tag'];
     }
     $listWikinames = '["'.implode('","', $listWikinames).'"]';
 
-    $wiki = $GLOBALS['wiki'];
-    $presetsData = $wiki->services->get(ThemeManager::class)->getPresetsData();
+    $presetsData = $themeManager->getPresetsData();
 
     $selecteur =$wiki->render("@templates/themeselector.tpl.html", [
         'mode' => $mode,
@@ -377,12 +380,12 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
         'id' => $id,
         'class' => $formclass,
         'bgselector' => $bgselector,
-        'themeNames' => array_keys($wiki->config['templates']),
-        'themes' => $wiki->config['templates'],
+        'themeNames' => array_keys($templates),
+        'themes' => $templates,
         'listWikinames' => $listWikinames,
-        'favoriteTheme' => $wiki->config['favorite_theme'] ?? null,
-        'favoriteSquelette' => $wiki->config['favorite_squelette'] ?? null,
-        'favoriteStyle' => $wiki->config['favorite_style'] ?? null,
+        'favoriteTheme' => $themeManager->getFavoriteTheme(),
+        'favoriteSquelette' => $themeManager->getFavoriteSquelette(),
+        'favoriteStyle' => $themeManager->getFavoriteStyle(),
         'dataHtmlForPresets' => $presetsData['dataHtmlForPresets'],
         'customCSSPresets' => $presetsData['customCSSPresets'],
         'dataHtmlForCustomCSSPresets' => $presetsData['dataHtmlForCustomCSSPresets'],
@@ -391,46 +394,11 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
         'selectedPresetName' => $presetsData['selectedPresetName'] ??  null,
         'selectedCustomPresetName' => $presetsData['selectedCustomPresetName'] ??  null,
     ]);
+    $selecteur .= $wiki->render('@templates/_theme-selector-export-var.twig',[
+        'dataJs' => $themeManager->getSquelettesAndStylesForJs()
+    ]);
 
-    $js = add_templates_list_js();
-    $GLOBALS['wiki']->addJavascript($js);
     return $selecteur;
-}
-
-function add_templates_list_js()
-{
-    // AJOUT DU JAVASCRIPT QUI PERMET DE CHANGER DYNAMIQUEMENT DE TEMPLATES
-    $js = '
-    var tab1 = new Array();
-    var tab2 = new Array();'."\n";
-    foreach (array_keys($GLOBALS['wiki']->config['templates']) as $key => $value) {
-        $js .= '        tab1["'.$value.'"] = new Array(';
-        $nbocc=0;
-        foreach ($GLOBALS['wiki']->config['templates'][$value]["squelette"] as $key2 => $value2) {
-            if ($nbocc==0) {
-                $js .= '\''.$value2.'\'';
-            } else {
-                $js .= ',\''.$value2.'\'';
-            }
-            $nbocc++;
-        }
-        $js .= ');'."\n";
-
-        $js .= '        tab2["'.$value.'"] = new Array(';
-        $nbocc=0;
-        $styles = $GLOBALS['wiki']->config['templates'][$value]["style"] ?? [];
-        foreach ($styles as $key3 => $value3) {
-            if ($nbocc==0) {
-                $js .= '\''.$value3.'\'';
-            } else {
-                $js .= ',\''.$value3.'\'';
-            }
-            $nbocc++;
-        }
-        $js .= ');'."\n";
-    }
-
-    return $js;
 }
 
 // Callback function for bootstrap navbar menu
@@ -555,109 +523,6 @@ function recup_droits($page)
         $acls['comment_default'] = false ;
     }
     return $acls ;
-}
-
-//Récupère les metas de la page désignée en argument et renvoie un tableau
-function recup_meta($page)
-{
-    $metas = $GLOBALS['wiki']->GetMetaDatas($page);
-
-    return array('page' => $page,
-        'theme' => empty($metas['theme']) ? '' : $metas['theme'],
-        'squelette' => empty($metas['squelette']) ? '' : $metas['squelette'],
-        'style' => empty($metas['style']) ? '' : $metas['style'],
-    );
-}
-
-function add_change_theme_js()
-{
-    // AJOUT DU JAVASCRIPT QUI PERMET DE CHANGER DYNAMIQUEMENT DE TEMPLATES
-    $js = '
-(function($) {
-    $("#changetheme").on("change", function(){
-
-    if ($(this).attr("id") === "changetheme") {
-
-        // On change le theme dynamiquement
-        var val = $(this).val();
-        // pour vider la liste
-        var squelette = $("#changesquelette")[0];
-        squelette.options.length=0
-        for (var i=0; i<tab1[val].length; i++){
-            o = new Option(tab1[val][i],tab1[val][i]);
-            squelette.options[squelette.options.length] = o;
-        }
-        var style = $("#changestyle")[0];
-        style.options.length=0
-        for (var i=0; i<tab2[val].length; i++){
-            o = new Option(tab2[val][i],tab2[val][i]);
-            style.options[style.options.length]=o;
-        }
-    }
-
-});
-})(jQuery);
-';
-    return $js;
-}
-
-function theme_selector($method = '')
-{
-    if (!isset($formclass)) {
-        $formclass = '' ;
-    }
-
-    $id = 'select_theme';
-
-    $selecteur = '		<form '.(!empty($method) ? 'method="'.$method.'"' : '').'class="' . $formclass . '" id="' . $id . '">' . "\n";
-
-    $selecteur .= '			<div class="control-group form-group">' . "\n" .
-    '				<label class="control-label">' . _t('TEMPLATE_THEME') . '</label>' . "\n" .
-        '				<div class="controls">' . "\n" .
-        '					<select class="form-control" id="changetheme" name="theme_select">' . "\n";
-    foreach (array_keys($GLOBALS['wiki']->config['templates']) as $key => $value) {
-        $selected = '';
-        if ($GLOBALS['wiki']->config['favorite_theme'] == $value) {
-            $selected = ' selected';
-        }
-        $selecteur .= '						<option value="' . $value . '"'.$selected.'>' . $value . '</option>' . "\n";
-    }
-    $selecteur .= '					</select>' . "\n" . '				</div>' . "\n" . '			</div>' . "\n";
-
-    $selecteur .=
-    '			<div class="control-group form-group">' . "\n" .
-    '				<label class="control-label">' . _t('TEMPLATE_SQUELETTE') . '</label>' . "\n" .
-        '				<div class="controls">' . "\n" .
-        '					<select class="form-control" id="changesquelette" name="squelette_select">' . "\n";
-    ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['squelette']);
-    foreach ($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['squelette'] as $key => $value) {
-        $selected = '';
-        if ($GLOBALS['wiki']->config['favorite_squelette'] == $value) {
-            $selected = ' selected';
-        }
-        $selecteur .= '						<option value="' . $key . '"'.$selected.'>' . $value . '</option>' . "\n";
-    }
-    $selecteur .= '					</select>' . "\n" . '				</div>' . "\n" . '			</div>' . "\n";
-
-    ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style']);
-    $selecteur .=
-    '			<div class="control-group form-group">' . "\n" .
-    '				<label class="control-label">' . _t('TEMPLATE_STYLE') . '</label>' . "\n" .
-        '				<div class="controls">' . "\n" .
-        '					<select class="form-control" id="changestyle" name="style_select">' . "\n";
-    foreach ($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style'] as $key => $value) {
-        $selected = '';
-        if ($GLOBALS['wiki']->config['favorite_style'] == $value) {
-            $selected = ' selected';
-        }
-        $selecteur .= '						<option value="' . $key . '"'.$selected.'>' . $value . '</option>' . "\n";
-    }
-    $selecteur .= '					</select>' . "\n" . '				</div>' . "\n" . '				</div>' . "\n";
-
-    $js = add_templates_list_js() . "\n" . add_change_theme_js();
-    $GLOBALS['wiki']->addJavascript($js);
-
-    return $selecteur;
 }
 
 /**

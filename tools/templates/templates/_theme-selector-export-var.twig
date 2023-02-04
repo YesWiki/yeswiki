@@ -1,0 +1,10 @@
+{% if mode == 'raw' %}
+  {% block content %}
+    var themeSquelettes = {{ dataJs.squelettes|json_encode|raw }}
+    var themeStyles = {{ dataJs.styles|json_encode|raw }}
+  {% endblock %}
+{% else %}
+<script>
+  {{ block('content') }}
+</script>
+{% endif %}

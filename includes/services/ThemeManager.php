@@ -2,6 +2,7 @@
 
 namespace YesWiki\Core\Service;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Wiki;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Core\Service\TemplateEngine;
@@ -40,33 +41,52 @@ class ThemeManager
         'main-title-fontfamily'
     ];
 
-    protected $wiki;
-    protected $config;
-    protected $fileLoaded;
-    protected $theme;
-    protected $squelette;
-    protected $fileContent;
     protected $errorMessage;
-    protected $twig;
-    protected $templateHeader;
-    protected $templateFooter;
-    protected $Performer;
+    protected $favorites;
+    protected $fileContent;
+    protected $fileLoaded;
+    protected $params;
+    protected $performer;
     protected $securityController;
+    protected $squelette;
+    protected $templateFooter;
+    protected $templateHeader;
+    protected $templates;
+    protected $theme;
+    protected $twig;
+    protected $useFallbackTheme;
+    protected $wiki;
 
-    public function __construct(Wiki $wiki, TemplateEngine $twig, Performer $Performer, SecurityController $securityController)
+    public function __construct(
+        Wiki $wiki, 
+        TemplateEngine $twig,
+        ParameterBagInterface $params,
+        Performer $performer, 
+        SecurityController $securityController
+    )
     {
         $this->wiki = $wiki;
-        $this->twig = $twig;
-        $this->Performer = $Performer;
-        $this->securityController = $securityController;
-        $this->config = $wiki->config;
-        $this->fileLoaded = false;
-        $this->theme = null;
-        $this->squelette = null;
-        $this->fileContent = null;
         $this->errorMessage = '';
-        $this->templateHeader = '';
+        $this->favorites = [
+            'theme' => '',
+            'squelette' => '',
+            'style' => '',
+            'preset' => ($params->has('favorite_preset') && is_string($params->get('favorite_preset'))
+                && !empty($params->get('favorite_preset'))) ? $params->get('favorite_preset') : '',
+            'background_image' => ''
+        ];
+        $this->fileContent = null;
+        $this->fileLoaded = false;
+        $this->params = $params;
+        $this->performer = $performer;
+        $this->securityController = $securityController;
+        $this->squelette = null;
         $this->templateFooter = '';
+        $this->templateHeader = '';
+        $this->templates = [];
+        $this->theme = null;
+        $this->twig = $twig;
+        $this->useFallbackTheme = false;
     }
 
     /* function imported from tooles/templates/libs/templates.functions.php
@@ -78,28 +98,40 @@ class ThemeManager
     public function loadTemplates($metadata = []): ?array
     {
         // Premier cas le template par défaut est forcé : on ajoute ce qui est présent dans le fichier de configuration, ou le theme par defaut précisé ci dessus
-        if (isset($this->config['hide_action_template']) && $this->config['hide_action_template'] == '1') {
-            if (!isset($this->config['favorite_theme'])) {
-                $this->config['favorite_theme'] = THEME_PAR_DEFAUT;
-            }
-            if (!isset($this->config['favorite_style'])) {
-                $this->config['favorite_style'] = CSS_PAR_DEFAUT;
-            }
-            if (!isset($this->config['favorite_squelette'])) {
-                $this->config['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
-            }
-            if (!isset($this->config['favorite_background_image'])) {
-                $this->config['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
-            }
+        if ($this->params->has('hide_action_template') && $this->params->get('hide_action_template') == '1') {
+            $this->favorites['theme'] = 
+                ($this->params->has('favorite_theme') && !empty($this->params->get('favorite_theme'))
+                 && is_string($this->params->get('favorite_theme')))
+                ? $this->params->get('favorite_theme')
+                : THEME_PAR_DEFAUT;
+
+            $this->favorites['style'] = 
+                ($this->params->has('favorite_style') && !empty($this->params->get('favorite_style'))
+                  && is_string($this->params->get('favorite_style')))
+                ? $this->params->get('favorite_style')
+                : CSS_PAR_DEFAUT;
+
+            $this->favorites['squelette'] = 
+                ($this->params->has('favorite_squelette') && !empty($this->params->get('favorite_squelette'))
+                  && is_string($this->params->get('favorite_squelette')))
+                ? $this->params->get('favorite_squelette')
+                : SQUELETTE_PAR_DEFAUT;
+
+            $this->favorites['background_image'] = 
+                ($this->params->has('favorite_background_image') && !empty($this->params->get('favorite_background_image'))
+                  && is_string($this->params->get('favorite_background_image')))
+                ? $this->params->get('favorite_background_image')
+                : BACKGROUND_IMAGE_PAR_DEFAUT;
+
         } else {
             // Sinon, on récupère premièrement les valeurs passées en REQUEST, ou deuxièmement les métasdonnées présentes pour la page, ou troisièmement les valeurs du fichier de configuration
             if (isset($_REQUEST['theme']) && (is_dir('custom/themes/'.$_REQUEST['theme']) || is_dir('themes/'.$_REQUEST['theme'])) &&
                 isset($_REQUEST['style']) && (is_file('custom/themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style']) || is_file('themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style'])) &&
                 isset($_REQUEST['squelette']) && (is_file('custom/themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']) || is_file('themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']))
             ) {
-                $this->config['favorite_theme'] = $_REQUEST['theme'];
-                $this->config['favorite_style'] = $_REQUEST['style'];
-                $this->config['favorite_squelette'] = $_REQUEST['squelette'];
+                $this->favorites['theme'] = $_REQUEST['theme'];
+                $this->favorites['style'] = $_REQUEST['style'];
+                $this->favorites['squelette'] = $_REQUEST['squelette'];
 
                 // presets
                 if (isset($_REQUEST['preset']) &&
@@ -118,40 +150,40 @@ class ThemeManager
                             )
                         )
                 ) {
-                    $this->config['favorite_preset'] = $_REQUEST['preset'];
+                    $this->favorites['preset'] = $_REQUEST['preset'];
                 }
 
                 if (isset($_REQUEST['bgimg']) && (is_file('files/backgrounds/'.$_REQUEST['bgimg']))) {
-                    $this->config['favorite_background_image'] = $_REQUEST['bgimg'];
+                    $this->favorites['background_image'] = $_REQUEST['bgimg'];
                 } else {
-                    $this->config['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
+                    $this->favorites['background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
                 }
             } else {
                 // si les metas sont présentes on les utilise
                 if (isset($metadata['theme']) && isset($metadata['style']) && isset($metadata['squelette'])) {
-                    $this->config['favorite_theme'] = $metadata['theme'];
-                    $this->config['favorite_style'] = $metadata['style'];
-                    $this->config['favorite_squelette'] = $metadata['squelette'];
+                    $this->favorites['theme'] = $metadata['theme'];
+                    $this->favorites['style'] = $metadata['style'];
+                    $this->favorites['squelette'] = $metadata['squelette'];
                     if (!empty($metadata['favorite_preset'])) {
-                        $this->config['favorite_preset'] = $metadata['favorite_preset'];
+                        $this->favorites['preset'] = $metadata['favorite_preset'];
                     }
                     if (isset($metadata['bgimg'])) {
-                        $this->config['favorite_background_image'] = $metadata['bgimg'];
+                        $this->favorites['background_image'] = $metadata['bgimg'];
                     } else {
-                        $this->config['favorite_background_image'] = '';
+                        $this->favorites['background_image'] = '';
                     }
                 } else {
-                    if (!isset($this->config['favorite_theme'])) {
-                        $this->config['favorite_theme'] = THEME_PAR_DEFAUT;
+                    if (empty($this->favorites['theme'])) {
+                        $this->favorites['theme'] = THEME_PAR_DEFAUT;
                     }
-                    if (!isset($this->config['favorite_style'])) {
-                        $this->config['favorite_style'] = CSS_PAR_DEFAUT;
+                    if (empty($this->favorites['style'])) {
+                        $this->favorites['style'] = CSS_PAR_DEFAUT;
                     }
-                    if (!isset($this->config['favorite_squelette'])) {
-                        $this->config['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
+                    if (empty($this->favorites['squelette'])) {
+                        $this->favorites['squelette'] = SQUELETTE_PAR_DEFAUT;
                     }
-                    if (!isset($this->config['favorite_background_image'])) {
-                        $this->config['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
+                    if (empty($this->favorites['background_image'])) {
+                        $this->favorites['background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
                     }
                 }
             }
@@ -159,16 +191,16 @@ class ThemeManager
 
         // Test existence du template, on utilise le template par defaut sinon==============================
         if (
-            (!file_exists('custom/themes/'.$this->config['favorite_theme'].'/squelettes/'.$this->config['favorite_squelette'])
-                and !file_exists('themes/'.$this->config['favorite_theme'].'/squelettes/'.$this->config['favorite_squelette']))
-            || (!file_exists('custom/themes/'.$this->config['favorite_theme'].'/styles/'.$this->config['favorite_style'])
-                && !file_exists('themes/'.$this->config['favorite_theme'].'/styles/'.$this->config['favorite_style']))
+            (!file_exists('custom/themes/'.$this->favorites['theme'].'/squelettes/'.$this->favorites['squelette'])
+                and !file_exists('themes/'.$this->favorites['theme'].'/squelettes/'.$this->favorites['squelette']))
+            || (!file_exists('custom/themes/'.$this->favorites['theme'].'/styles/'.$this->favorites['style'])
+                && !file_exists('themes/'.$this->favorites['theme'].'/styles/'.$this->favorites['style']))
         ) {
             if (
-                $this->config['favorite_theme'] != THEME_PAR_DEFAUT ||
+                $this->favorites['theme'] != THEME_PAR_DEFAUT ||
                 (
-                    $this->config['favorite_theme'] == THEME_PAR_DEFAUT && (!file_exists('themes/'.THEME_PAR_DEFAUT.'/squelettes/'.$this->config['favorite_squelette'])  or
-                        !file_exists('themes/'.THEME_PAR_DEFAUT.'/styles/'.$this->config['favorite_style']))
+                    $this->favorites['theme'] == THEME_PAR_DEFAUT && (!file_exists('themes/'.THEME_PAR_DEFAUT.'/squelettes/'.$this->favorites['squelette'])  or
+                        !file_exists('themes/'.THEME_PAR_DEFAUT.'/styles/'.$this->favorites['style']))
                 )
             ) {
                 if (
@@ -176,58 +208,57 @@ class ThemeManager
                     && file_exists('themes/'.THEME_PAR_DEFAUT.'/styles/'.CSS_PAR_DEFAUT)
                 ) {
                     $GLOBALS['template-error']['type'] = 'theme-not-found';
-                    $GLOBALS['template-error']['theme'] = $this->config['favorite_theme'];
-                    $GLOBALS['template-error']['style'] = $this->config['favorite_style'];
-                    $GLOBALS['template-error']['squelette'] = $this->config['favorite_squelette'];
-                    $this->config['favorite_theme'] = THEME_PAR_DEFAUT;
-                    $this->config['favorite_style'] = CSS_PAR_DEFAUT;
-                    $this->config['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
-                    $this->config['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
+                    $GLOBALS['template-error']['theme'] = $this->favorites['theme'];
+                    $GLOBALS['template-error']['style'] = $this->favorites['style'];
+                    $GLOBALS['template-error']['squelette'] = $this->favorites['squelette'];
+                    $this->favorites['theme'] = THEME_PAR_DEFAUT;
+                    $this->favorites['style'] = CSS_PAR_DEFAUT;
+                    $this->favorites['squelette'] = SQUELETTE_PAR_DEFAUT;
+                    $this->favorites['background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
                 } else {
                     return [];
                 }
             }
-            $this->config['use_fallback_theme'] = true;
+            $this->useFallbackTheme = true;
         }
         // test l'existence du preset
-        if (isset($this->config['favorite_preset'])
+        if (!empty($this->favorites['preset'])
             &&
             (
                 (
-                    ($isCutom = substr($this->config['favorite_preset'], 0, strlen(self::CUSTOM_CSS_PRESETS_PREFIX)) == self::CUSTOM_CSS_PRESETS_PREFIX)
+                    ($isCutom = substr($this->favorites['preset'], 0, strlen(self::CUSTOM_CSS_PRESETS_PREFIX)) == self::CUSTOM_CSS_PRESETS_PREFIX)
                     && !file_exists(self::CUSTOM_CSS_PRESETS_PATH.DIRECTORY_SEPARATOR
-                        .substr($this->config['favorite_preset'], strlen(self::CUSTOM_CSS_PRESETS_PREFIX)))
+                        .substr($this->favorites['preset'], strlen(self::CUSTOM_CSS_PRESETS_PREFIX)))
                 )
             )
         ) {
-            unset($this->config['favorite_preset']);
+            unset($this->favorites['preset']);
         }
 
-        $templates = [];
+        $this->templates = [];
 
         // themes folder (used by {{update}})
         if (is_dir('themes')) {
-            $templates = array_merge($templates, search_template_files('themes'));
+            $this->templates = array_merge($this->templates, search_template_files('themes'));
         }
         // custom themes folder
         if (is_dir('custom/themes')) {
-            $templates = array_replace_recursive($templates, search_template_files('custom/themes'));
+            $this->templates = array_replace_recursive($this->templates, search_template_files('custom/themes'));
         }
-        ksort($templates);
+        ksort($this->templates);
 
-        // update config
-        $this->wiki->config = $this->config;
-
-        return $templates;
+        return $this->templates;
     }
 
     public function loadTheme(): bool
     {
         // get theme
-        $theme = $this->config['favorite_theme'] ?? THEME_PAR_DEFAUT ;
+        $theme = $this->getFavoriteTheme();
+        $theme = empty($theme) ? THEME_PAR_DEFAUT : $theme;
 
         // get squelette
-        $squelette = $this->config['favorite_squelette'] ?? SQUELETTE_PAR_DEFAUT ;
+        $squelette = $this->getFavoriteSquelette();
+        $squelette = empty($squelette) ? SQUELETTE_PAR_DEFAUT : $squelette;
 
         // do not load the file if already loaded
         $fileAlreadyLoaded = $this->fileLoaded &&
@@ -243,9 +274,7 @@ class ThemeManager
         $themePath = 'themes/'.$this->theme;
         $filePath = $themePath . '/squelettes/' . $this->squelette;
 
-        $useFallbackTheme = !empty($this->config['use_fallback_theme']) ;
-
-        if (!((!$useFallbackTheme && file_exists('custom/'.$themePath)) || file_exists($themePath))) {
+        if (!((!$this->useFallbackTheme && file_exists('custom/'.$themePath)) || file_exists($themePath))) {
             $this->errorMessage = $this->twig->render('@templates\alert-message.twig', [
                     'type' => 'danger',
                     'message' => _t('THEME_MANAGER_THEME_FOLDER') .$this->theme. _t('THEME_MANAGER_NOT_FOUND'),
@@ -253,14 +282,14 @@ class ThemeManager
             return false;
         }
 
-        if (!((!$useFallbackTheme &&file_exists('custom/'.$filePath)) || file_exists($filePath))) {
+        if (!((!$this->useFallbackTheme &&file_exists('custom/'.$filePath)) || file_exists($filePath))) {
             $this->errorMessage = $this->twig->render('@templates\alert-message.twig', [
                     'type' => 'danger',
                     'message' => _t('THEME_MANAGER_SQUELETTE_FILE') .$this->squelette. _t('THEME_MANAGER_NOT_FOUND'),
                 ]);
             return false;
         }
-        $filePath = (!$useFallbackTheme && file_exists('custom/'.$filePath)) ? 'custom/'. $filePath : $filePath;
+        $filePath = (!$this->useFallbackTheme && file_exists('custom/'.$filePath)) ? 'custom/'. $filePath : $filePath;
 
         $fileContent = file_get_contents($filePath);
         if ($fileContent === false) {
@@ -306,6 +335,61 @@ class ThemeManager
         }
     }
 
+    /**
+     * get squelettes and styles used in js for theme selector
+     * @return array ['squelettes'=>array,'styles'=>array]
+     */
+    public function getSquelettesAndStylesForJs(): array
+    {
+        $squelettes = [];
+        $styles = [];
+        foreach ($this->getTemplates() as $templateName => $template) {
+            $squelettes[$templateName] = array_values($template['squelette']);
+            $styles[$templateName] = array_values($template['style']);
+        }
+        return compact(['squelettes','styles']);
+    }
+
+    public function getTemplates(): array
+    {
+        return $this->templates;
+    }
+
+    public function getFavoriteTheme(): string
+    {
+        return $this->favorites['theme'];
+    }
+
+    public function getFavoriteSquelette(): string
+    {
+        return $this->favorites['squelette'];
+    }
+
+    public function getFavoriteStyle(): string
+    {
+        return $this->favorites['style'];
+    }
+
+    public function getFavoritePreset(): string
+    {
+        return $this->favorites['preset'];
+    }
+
+    public function getFavoriteBackgroundImage(): string
+    {
+        return $this->favorites['background_image'];
+    }
+
+    public function getUseFallbackTheme(): bool
+    {
+        return $this->useFallbackTheme;
+    }
+
+    public function setTemplates(array $templates)
+    {
+        $this->templates = $templates;
+    }
+
     private function renderActions(string $text): ?string
     {
         if ($act = preg_match_all("/".'(\\{\\{)'.'(.*?)'.'(\\}\\})'."/is", $text, $matches)) {
@@ -315,7 +399,7 @@ class ThemeManager
                 foreach ($valeur as $val) {
                     if (isset($matches[2][$j]) && $matches[2][$j]!='') {
                         $action = $matches[2][$j];
-                        $text = str_replace('{{'.$action.'}}', $this->Performer->run('action', 'formatter', ['text'=>'{{'.$action.'}}']), $text);
+                        $text = str_replace('{{'.$action.'}}', $this->performer->run('action', 'formatter', ['text'=>'{{'.$action.'}}']), $text);
                     }
                     $j++;
                 }
@@ -469,7 +553,7 @@ class ThemeManager
      */
     public function getPresetsData(): ?array
     {
-        $themePresets = $this->wiki->config['templates'][$this->wiki->config['favorite_theme']]['presets'] ?? [];
+        $themePresets = ($this->getTemplates())[$this->getFavoriteTheme()]['presets'] ?? [];
         $dataHtmlForPresets = array_map(function ($value) {
             return $this->extractDataFromPreset($value);
         }, $themePresets);
@@ -477,8 +561,9 @@ class ThemeManager
         $dataHtmlForCustomCSSPresets = array_map(function ($value) {
             return $this->extractDataFromPreset($value);
         }, $customCSSPresets);
-        if (!empty($this->wiki->config['favorite_preset'])) {
-            $presetName = $this->wiki->config['favorite_preset'];
+        $favoritePreset = $this->getFavoritePreset();
+        if (!empty($favoritePreset)) {
+            $presetName = $favoritePreset;
             if (substr($presetName, 0, strlen(self::CUSTOM_CSS_PRESETS_PREFIX)) == self::CUSTOM_CSS_PRESETS_PREFIX) {
                 $presetName = substr($presetName, strlen(self::CUSTOM_CSS_PRESETS_PREFIX));
                 if (in_array($presetName, array_keys($customCSSPresets))) {
