@@ -206,7 +206,7 @@ class LostPasswordAction extends YesWikiAction
     private function sendPasswordRecoveryEmail(User $user)
     {
         // Generate the password recovery key
-        $key = md5($user['name'] . '_' . $user['email'] . rand(0, 10000) . date('Y-m-d H:i:s') . self::PW_SALT);
+        $key = md5($user['name'] . '_' . $user['email'] . random_int(0, 10000) . date('Y-m-d H:i:s') . self::PW_SALT);
         // Erase the previous triples in the trible table
         $this->tripleStore->delete($user['name'], self::KEY_VOCABULARY, null, '', '') ;
         // Store the (name, vocabulary, key) triple in triples table
