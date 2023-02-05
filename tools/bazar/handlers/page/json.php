@@ -117,7 +117,7 @@ if (isset($_REQUEST['demand'])) {
                         } elseif ($tableau[$i][0] == 'image') {
                             $url = str_replace('wakka.php?wiki=', '', $this->config['base_url']);
                             $res.= '{{#if ' . $nom_champ . '}}' . "\n".
-                                '<img class="img-responsive img-centered" src="'.$url.'cache/vignette_{{'.$nom_champ.
+                                '<img loading="lazy" class="img-responsive img-centered" src="'.$url.'cache/vignette_{{'.$nom_champ.
                                 '}}" alt="{{' . $nom_champ . '}}">' . "\n" . '{{/if}}' . "\n\n";
                         } elseif ($tableau[$i][0] == 'labelhtml') {
                             $res.= $tableau[$i][0]($formtemplate, $tableau[$i], 'html', array());

@@ -30,7 +30,7 @@ if (!empty($nbcols)) {
 		    <div class="well bazar-entry" <?php echo $fiche['html_data']; ?>>
 				<?php if (!empty($fiche['imagebf_image']) && (file_exists('files/'.$fiche['imagebf_image']) || isset($fiche['external-data']))) : ?>
 					<a class="pull-right" style="margin:0 0 1em 1em;" href="<?php echo $fiche['url']; ?>">
-					<img class="img-blog" alt="<?php echo htmlentities($fiche['bf_titre']);?>"
+					<img loading="lazy" class="img-blog" alt="<?php echo htmlentities($fiche['bf_titre']);?>"
 						src="<?php echo (isset($fiche['external-data']))
 						? $fiche['external-data']['baseUrl'] . 'cache/image_400_300_'.$fiche['imagebf_image']
 						: redimensionner_image(
@@ -82,7 +82,7 @@ if (!empty($nbcols)) {
 			<div class="article bazar-entry" <?php echo $fiche['html_data']; ?>>
 				<?php if (!empty($fiche['imagebf_image']) && (file_exists('files/'.$fiche['imagebf_image'])||isset($fiche['external-data']))) : ?>
 					<a class="pull-left" style="margin:0 1em 1em 0;" href="<?php echo $fiche['url']; ?>">
-					<img class="img-blog" alt="<?php echo htmlentities($fiche['bf_titre']);?>"
+					<img loading="lazy" class="img-blog" alt="<?php echo htmlentities($fiche['bf_titre']);?>"
 						src="<?php echo (isset($fiche['external-data']))
 						? $fiche['external-data']['baseUrl'] . 'cache/image_200_150_'.$fiche['imagebf_image']
 						: redimensionner_image(

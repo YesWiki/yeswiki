@@ -9,14 +9,14 @@
         class="modalbox {{class}}" 
         href="{{ resizedImageLink }}" 
         title="{{ shortImageName|e('html_attr') }}">
-        <img src="{{ showThumbnail ? thumbnailLink : resizedImageLink }}" alt="{{ shortImageName|e('html_attr') }}" />
+        <img loading="lazy" src="{{ showThumbnail ? thumbnailLink : resizedImageLink }}" alt="{{ shortImageName|e('html_attr') }}" />
       </a>
     {% else %}
       <a data-id="{{ fieldName }}" 
         class="modalbox {{class}}" 
         href="{{ imageFullPath }}" 
         title="{{ shortImageName|e('html_attr') }}">
-        <img class="img-responsive" 
+        <img loading="lazy" class="img-responsive" 
           src="{{ thumbnailLink }}"
           alt="{{ shortImageName|e('html_attr') }}"
           rel="{{ baseUrl ~ imageFullPath }}" />' . "\n"
@@ -24,11 +24,11 @@
     {% endif %}
   {% elseif imageHeight is not empty and imageWidth is not empty %}
     {% set resizedImageLink = urlImage({fileName:imageFullPath,width:imageWidth,height:imageHeight,mode:mode ?? "fit",refresh: request.refresh ?? false}) %}
-    <img src="{{ resizedImageLink }}"
+    <img loading="lazy" src="{{ resizedImageLink }}"
       class="img-responsive {{class}}"
       alt="{{ shortImageName|e('html_attr') }}" />
   {% else %}
-    <img src="{{ baseUrl ~ imageFullPath }}"
+    <img loading="lazy" src="{{ baseUrl ~ imageFullPath }}"
       class="img-responsive {{class}}"
       alt="{{ shortImageName|e('html_attr') }}" />
   {% endif %}

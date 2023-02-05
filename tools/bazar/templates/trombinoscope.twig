@@ -8,7 +8,7 @@
           title="{{ fiche.bf_titre|raw|e('html_attr') }}">
           <div class="image-container">
             {% if fiche.imagebf_image is not empty %}
-              <img class="trombi-image" alt="{{ fiche.bf_titre|raw|e('html_attr') }}"
+              <img loading="lazy" class="trombi-image" alt="{{ fiche.bf_titre|raw|e('html_attr') }}"
                    src="{{ fiche['external-data'] 
                         ? fiche['external-data']['baseUrl'] ~ 'cache/image_300_300_' ~ fiche.imagebf_image
                         : resizedImages[fiche.id_fiche] }}"
@@ -16,7 +16,7 @@
                     ? 'onerror=this.src=\'' ~ fiche['external-data'].baseUrl ~ 'files/' ~ fiche.imagebf_image ~ "\'"
                     : '' }} > {# TODO refactor redimensionner_image to use url and local cache ; idea  http://image.intervention.io/  ? #}
             {% else %}
-              <img class="trombi-image img-placeholder"
+              <img loading="lazy" class="trombi-image img-placeholder"
                    src="tools/bazar/libs/vendor/placeholder.php?size=300x300&amp;bg=efefef&amp;text=">
               <i class="trombi-image icon-placeholder fa fa-user-circle"></i>
             {% endif %}

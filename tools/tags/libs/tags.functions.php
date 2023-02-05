@@ -184,11 +184,11 @@ function get_image_from_body($page)
         } else {
             preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $page['body'], $image);
             if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
-                $image = $GLOBALS['wiki']->Format('""<img alt="image" class="img-responsive" src="'.trim(str_replace('\\', '', $image[1][0])).'" />""');
+                $image = $GLOBALS['wiki']->Format('""<img loading="lazy" alt="image" class="img-responsive" src="'.trim(str_replace('\\', '', $image[1][0])).'" />""');
             } else {
                 preg_match_all("/\<img.*src=\"(.*)\"/U", $page['body'], $image);
                 if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
-                    $image = $GLOBALS['wiki']->Format('""<img alt="image" class="img-responsive" src="'.trim($image[1][0]).'" />""');
+                    $image = $GLOBALS['wiki']->Format('""<img loading="lazy" alt="image" class="img-responsive" src="'.trim($image[1][0]).'" />""');
                 } else {
                     $image = '';
                 }

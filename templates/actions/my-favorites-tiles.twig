@@ -13,10 +13,10 @@
                 title="{{ favoriteTitle }}"
                 id="favoriteTile{{favorite.resource}}">
                 <div class="image-container">
-                    <img class="trombi-image img-placeholder"
+                    <img loading="lazy" class="trombi-image img-placeholder"
                     src="tools/bazar/libs/vendor/placeholder.php?size=140x140&amp;bg=efefef&amp;text=">
                     {% if favorite.image is not empty %}
-                        <img class="trombi-image for-my-favorites" alt="{{ favoriteTitle }}"
+                        <img loading="lazy" class="trombi-image for-my-favorites" alt="{{ favoriteTitle }}"
                             src="{{ urlImage({fileName:"files/#{favorite.image}",width:140,height:140,mode:'fit'}) }}"
                             onerror="javascripts:this.src='{{ "files/#{favorite.image}" }}';this.removeAttribute('onerror');"
                         >

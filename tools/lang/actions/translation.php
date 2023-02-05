@@ -34,7 +34,7 @@ if (file_exists($flagfile)) {
     }
     // Todo : utiliser template
     echo '<a href="'.$this->Href($wikireq === $currentTag ? '' : $this->method,$currentTag,$queries,false).'">
-        <img src="'.$flagfile.'" title="'.$destination.'" alt="Flag'.$destination.'"></img></a>';
+        <img loading="lazy" src="'.$flagfile.'" title="'.$destination.'" alt="Flag'.$destination.'"></img></a>';
 
     if (isset($previousLang)){
         $_GET['lang'] = $previousLang;

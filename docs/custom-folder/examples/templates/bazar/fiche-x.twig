@@ -30,6 +30,7 @@
       {% if not(imageFileAddr is same as(false) or imageFileAddr matches '/^\\d+$/') %}
         {# imageFileAddr is not false or not integer otherwise error #}
         <img
+          loading="lazy"
           class="center custom-entry"
           alt="{{ fiche.bf_titre|e('html_attr') }}"
           src="{{ imageFileAddr }}"

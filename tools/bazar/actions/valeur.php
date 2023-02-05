@@ -52,7 +52,7 @@ if (!empty($url)) {
                 } elseif (!empty($texte) && $texte == 'lien') {
                     echo preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '$1', array_shift($matches[1]));
                 } elseif ($image == '1') {
-                    echo '<img class="img-responsive" src="'.array_shift($matches[1]).'" alt="image '.$champ.'">';
+                    echo '<img loading="lazy" class="img-responsive" src="'.array_shift($matches[1]).'" alt="image '.$champ.'">';
                 } else {
                     echo trim(array_shift($matches[1]));
                 }

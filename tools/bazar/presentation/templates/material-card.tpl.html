@@ -90,7 +90,7 @@ if ( count($fiches)>0 ) : ?>
           <div class="mc-content">
             <?php if (isset($fiche['imagebf_image']) && $fiche['imagebf_image']!='') : ?>
               <div class="img-container">
-                <img class="img-responsive" src="<?php echo redimensionner_image(
+                <img loading="lazy" class="img-responsive" src="<?php echo redimensionner_image(
                     'files/' . $fiche['imagebf_image'],
                     'cache/image_800x800_' . $fiche['imagebf_image'],
                     800,
@@ -100,7 +100,7 @@ if ( count($fiches)>0 ) : ?>
               </div>
             <?php else : ?>
               <div class="img-container">
-                <img class="img-responsive" alt="<?php echo $fiche['bf_titre'];?>"
+                <img loading="lazy" class="img-responsive" alt="<?php echo $fiche['bf_titre'];?>"
                 src="<?php echo ('tools/bazar/presentation/images/placeholder-800-800.jpg'); ?>">
               </div>
             <?php endif; ?>
@@ -196,7 +196,7 @@ $GLOBALS['wiki']->AddJavascript($js);
         <div class="mc-content">
           <?php if (isset($fiche['imagebf_image']) && $fiche['imagebf_image']!='') : ?>
             <div class="img-container">
-              <img class="img-responsive" src="<?php echo redimensionner_image(
+              <img loading="lazy" class="img-responsive" src="<?php echo redimensionner_image(
                   'files/' . $fiche['imagebf_image'],
                   'cache/image_800x800_' . $fiche['imagebf_image'],
                   800,
@@ -206,7 +206,7 @@ $GLOBALS['wiki']->AddJavascript($js);
             </div>
           <?php else : ?>
             <div class="img-container">
-              <img class="img-responsive" alt="<?php echo $fiche['bf_titre'];?>"
+              <img loading="lazy" class="img-responsive" alt="<?php echo $fiche['bf_titre'];?>"
               src="<?php echo ('tools/bazar/presentation/images/placeholder-800-800.jpg'); ?>">
             </div>
           <?php endif; ?>

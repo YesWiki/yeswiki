@@ -332,7 +332,7 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
                 $imgextension = strtolower(substr($background, -4, 4));
 
                 if ($imgextension=='.jpg') {
-                    $bgselectorlist .= '<img class="bgimg'.($choosen ? ' choosen' : '').'" src="'.$background.'" width="100" height="75" />'."\n";
+                    $bgselectorlist .= '<img loading="lazy" class="bgimg'.($choosen ? ' choosen' : '').'" src="'.$background.'" width="100" height="75" />'."\n";
                 } elseif ($imgextension=='.png') {
                     $bgselectorlist .= '<div class="mozaicimg'.($choosen ? ' choosen' : '').'" style="background:url('.$background.') repeat top left;"></div>'."\n";
                 }

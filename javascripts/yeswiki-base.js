@@ -132,7 +132,7 @@ function toastMessage(
       $modal
         .find('.modal-body')
         .html(
-          `<img class="center-block img-responsive" src="${
+          `<img loading="lazy" class="center-block img-responsive" src="${
             link
           }" alt="image" />`
         )

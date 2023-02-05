@@ -465,7 +465,7 @@
 
                     title = this.images[i][1];
                     type = link.rel ? " class='" + link.rel +"'" : '';
-                    elements.push('<li'+ type +'><a href="'+ link.href +'"><img src="'+ thumbSrc +'" alt="" title="'+ title +'" /></a></li>');
+                    elements.push('<li'+ type +'><a href="'+ link.href +'"><img loading="lazy" src="'+ thumbSrc +'" alt="" title="'+ title +'" /></a></li>');
                 };
                 thumbsList.html( elements.join('') );
                 return thumbsList;
