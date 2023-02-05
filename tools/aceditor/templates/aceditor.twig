@@ -1,10 +1,11 @@
 <div class="aceditor-container" data-name="{{ arguments.name }}">
-
-  <div class="btn-toolbar aceditor-toolbar">
-    {{ include('@aceditor/aceditor-toolbar.twig') }}
+  <div class="scroll-container-toolbar">
+    <div class="btn-toolbar aceditor-toolbar">
+      {{ include('@aceditor/aceditor-toolbar.twig') }}
+    </div>
   </div>
 
-  <div class="ace-container">
+  <div class="ace-container ace-editor-container">
     <pre class="ace-body"></pre>
   </div>
 

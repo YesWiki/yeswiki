@@ -121,18 +121,6 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   font-style: italic;
   color: green !important;
 }
-.aceditor-btn-help span {
-  margin-right: 8px;
-}
-form:not(#ACEditor) .aceditor-btn-help span {
-  display: none;
-}
-@media (max-width: 1000px) {
-  /* Display only icon */
-  .aceditor-btn-help span {
-    display: none;
-  }
-}
 
 .ace_editor.ace_autocomplete {
   border: 1px solid #d0d7df;
