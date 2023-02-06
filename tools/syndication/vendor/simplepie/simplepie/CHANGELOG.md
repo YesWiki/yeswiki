@@ -5,7 +5,117 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/simplepie/simplepie/compare/1.5.7...master)
+## [Unreleased](https://github.com/simplepie/simplepie/compare/1.8.0...master)
+
+## [1.8.0](https://github.com/simplepie/simplepie/compare/1.7.0...1.8.0) - 2023-01-20
+
+### Added
+
+- New method `SimplePie\SimplePie::set_cache()` for providing a PSR-16 cache implementation by @Art4 in [#742](https://github.com/simplepie/simplepie/pull/742)
+- New method `SimplePie\SimplePie::set_cache_namefilter()` for customize the cache key in [#762](https://github.com/simplepie/simplepie/pull/762)
+- New class `SimplePie\Cache\CallableNameFilter` to provide a `callable` to customize the cache key in [#762](https://github.com/simplepie/simplepie/pull/762)
+- New interface `SimplePie\RegistryAware` to inject the `Registry` instance into classes created by `Registry` by @Art4 in [#760](https://github.com/simplepie/simplepie/pull/760)
+- update PHP versions in GH Actions workflows by @jrfnl in [#767](https://github.com/simplepie/simplepie/pull/767)
+- Registry: Allow using class-strings instead of magic strings by @jtojnar and @Art4 in [#766](https://github.com/simplepie/simplepie/pull/766)
+
+### Changed
+
+- Clarify branching strategy by @Art4 in [#751](https://github.com/simplepie/simplepie/pull/751)
+- Use native array_replace_recursive() by @Alkarex in [#749](https://github.com/simplepie/simplepie/pull/749)
+- PHP 7.2 or newer is now required by @Art4 in [#743](https://github.com/simplepie/simplepie/pull/743)
+- Parse\Date: Clean up regex structure by @jtojnar in [#765](https://github.com/simplepie/simplepie/pull/765)
+- Declare strict_types=1 in every file by @Art4 in [#763](https://github.com/simplepie/simplepie/pull/763)
+
+### Fixed
+
+- Item::get_date(): fix return type on unparsable date by @jtojnar in [#753](https://github.com/simplepie/simplepie/pull/753)
+- Fix error handling for PHP 8.1 by @cedric-anne in [#747](https://github.com/simplepie/simplepie/pull/747)
+- The method `SimplePie\SimplePie::get_image_height()` returns the pixel number as `int` instead of `float` by @Art4 in [#763](https://github.com/simplepie/simplepie/pull/763)
+- The method `SimplePie\SimplePie::get_image_width()` returns the pixel number as `int` instead of `float` by @Art4 in [#763](https://github.com/simplepie/simplepie/pull/763)
+- No URL Decode for enclosure links by @Alkarex in [#768](https://github.com/simplepie/simplepie/pull/768)
+- Sanitize thumbnail URL by @Alkarex in [#770](https://github.com/simplepie/simplepie/pull/770)
+- Fix case of multiple RSS2.0 enclosures by @Alkarex in [#769](https://github.com/simplepie/simplepie/pull/769)
+- Fix broken phpdoc references by @jtojnar in [#771](https://github.com/simplepie/simplepie/pull/771)
+
+### Deprecated
+
+- The method `SimplePie\Misc::array_merge_recursive()` is deprecated, use native `array_replace_recursive()` instead
+- The method `SimplePie\SimplePie::set_cache_name_function()` is deprecated, use `SimplePie\SimplePie::set_cache_namefilter()` instead
+- The method `SimplePie\SimplePie::set_cache_location()` is deprecated, use `SimplePie\SimplePie::set_cache()` instead
+- The method `SimplePie\SimplePie::force_cache_fallback()` is deprecated, expired cache will not be used anymore
+- The class `SimplePie\Cache` is deprecated, use implementation of `SimplePie\SimplePie::set_cache()` instead
+- The class `SimplePie\Cache\DB` is deprecated, use implementation of `Psr\SimpleCache\CacheInterface` instead
+- The class `SimplePie\Cache\File` is deprecated, use implementation of `Psr\SimpleCache\CacheInterface` instead
+- The class `SimplePie\Cache\Memcache` is deprecated, use implementation of `Psr\SimpleCache\CacheInterface` instead
+- The class `SimplePie\Cache\Memcached` is deprecated, use implementation of `Psr\SimpleCache\CacheInterface` instead
+- The class `SimplePie\Cache\MySQL` is deprecated, use implementation of `Psr\SimpleCache\CacheInterface` instead
+- The class `SimplePie\Cache\Redis` is deprecated, use implementation of `Psr\SimpleCache\CacheInterface` instead
+- The interface `SimplePie\Cache\Base` is deprecated, use interface `Psr\SimpleCache\CacheInterface` instead
+
+### Removed
+
+- ROADMAP.md removed by @Art4 in [#748](https://github.com/simplepie/simplepie/pull/748)
+- remove check for E_USER_DEPRECATED definition by @Art4 in [#750](https://github.com/simplepie/simplepie/pull/750)
+- remove broken BC code in Registry by @Art4 in [#764](https://github.com/simplepie/simplepie/pull/764)
+
+## [1.7.0](https://github.com/simplepie/simplepie/compare/1.6.0...1.7.0) - 2022-09-30
+
+### Added
+
+- New class `SimplePie\SimplePie` as a replacement for class `SimplePie`
+- New method `SimplePie\Misc::get_default_useragent()` as a replacement for constant `SIMPLEPIE_USERAGENT`
+
+### Changed
+
+- Do not use magic values for state machine state by @jtojnar in [#735](https://github.com/simplepie/simplepie/pull/735)
+- Use PSR-4 classes in Registry by @Art4 in [#736](https://github.com/simplepie/simplepie/pull/736)
+- GH Actions: run tests against PHP 8.2 by @jrfnl in [#739](https://github.com/simplepie/simplepie/pull/739)
+- Change code style to PSR-12 by @Art4 in [#738](https://github.com/simplepie/simplepie/pull/738)
+
+### Fixed
+
+- Fix status_code type by @Alkarex in [#728](https://github.com/simplepie/simplepie/pull/728)
+- Fix parsing of HTTP Links by @Alkarex in [#729](https://github.com/simplepie/simplepie/pull/729)
+- Fix using the best base link for an item content by @Alkarex in [#744](https://github.com/simplepie/simplepie/pull/744)
+- Fix .editorconfig regression by @Alkarex in [#745](https://github.com/simplepie/simplepie/pull/745)
+
+### Deprecated
+
+- The class `SimplePie` is deprecated, use class `SimplePie\SimplePie` instead
+- The use of PSR-0 classes (all classes without namespaces in the `library` directory) is deprecated, use PSR-4 classes (see `src` directory) instead
+- The constant `SIMPLEPIE_BUILD` is deprecated, use `SimplePie\Misc::get_build()` instead
+- The constant `SIMPLEPIE_USERAGENT` is deprecated, use `SimplePie\Misc::get_default_useragent()` instead
+- All global constants are deprecated, use the constants from the class `SimplePie\SimplePie` instead (e.g. replace `SIMPLEPIE_VERSION` with `SimplePie\SimplePie::VERSION`)
+
+## [1.6.0](https://github.com/simplepie/simplepie/compare/1.5.8...1.6.0) - 2022-04-21
+
+### Added
+
+- New methods `SimplePie::rename_attributes()` and `SimplePie_Sanitize::rename_attributes()` allow renaming attributes by @math-GH in [#717](https://github.com/simplepie/simplepie/pull/717)
+- Add audio, video @src elements/attribute for URL resolution by @rdalverny in [#716](https://github.com/simplepie/simplepie/pull/716)
+- Added new namespaced aliases and PSR-4 support for every class by @Art4 in [#711](https://github.com/simplepie/simplepie/pull/711)
+- Add .editorconfig by @Alkarex in [#724](https://github.com/simplepie/simplepie/pull/724)
+- Upload compiled file as release asset by @Art4 in [#725](https://github.com/simplepie/simplepie/pull/725)
+
+### Changed
+
+- GH Actions: version update for ramsey/composer-install by @jrfnl in [#713](https://github.com/simplepie/simplepie/pull/713)
+
+### Fixed
+
+- Bugfix in MySQL cache by @Art4 in [#720](https://github.com/simplepie/simplepie/pull/720)
+- Re-enable xml:base for all supported RSS formats by @Alkarex in [#723](https://github.com/simplepie/simplepie/pull/723)
+
+## [1.5.8](https://github.com/simplepie/simplepie/compare/1.5.7...1.5.8) - 2021-12-24
+
+### Changed
+
+- Update CHANGELOG.md, follow keepachangelog format by @Art4 in [#709](https://github.com/simplepie/simplepie/pull/709)
+
+### Fixed
+
+- Fix a small typo in the error() function Docblock by @audrasjb in [#712](https://github.com/simplepie/simplepie/pull/712)
+- Fix/708 version bump for constant `SIMPLEPIE_VERSION` for 1.5.8 release by @faisal-alvi in [#710](https://github.com/simplepie/simplepie/pull/710)
 
 ## [1.5.7](https://github.com/simplepie/simplepie/compare/1.5.6...1.5.7) - 2021-12-19
 
@@ -41,7 +151,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * PHP 7.4/8.0: curly brace array access deprecated & removed [#655](https://github.com/simplepie/simplepie/pull/655)
 * PHP 8.0: required parameters are no longer allowed after optional parameters [#656](https://github.com/simplepie/simplepie/pull/656)
 * Fix permanent_url for HTTP 301 [#660](https://github.com/simplepie/simplepie/pull/660)
-* Fix typo in MIME type in Content_Type_Sniffer [#661](https://github.com/simplepie/simplepie/pull/661) 
+* Fix typo in MIME type in Content_Type_Sniffer [#661](https://github.com/simplepie/simplepie/pull/661)
 
 ## [1.5.5](https://github.com/simplepie/simplepie/compare/1.5.4...1.5.5) - 2020-05-01
 
@@ -118,13 +228,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Use the latest HHVM version in testing (3.15.2). [#480](https://github.com/simplepie/simplepie/pull/480)
 * Added PHPUnit as a `dev-dependency` in Composer. [#463](https://github.com/simplepie/simplepie/pull/463)
 * Added `mf2/mf2` as a suggestion in Composer for use with microformats. [#491](https://github.com/simplepie/simplepie/pull/491)
-* Fixed misspelled occurrences of "separated". [#459](https://github.com/simplepie/simplepie/pull/459) 
+* Fixed misspelled occurrences of "separated". [#459](https://github.com/simplepie/simplepie/pull/459)
 * Improvements to the compatibility test and error messages. [#488](https://github.com/simplepie/simplepie/pull/488)
 
 ## [1.4.2](https://github.com/simplepie/simplepie/compare/1.4.1...1.4.2) - 2016-06-14
 
 * Fixed a bug with IRI parsing.
-* More cleanly separates discovery of microformats and parsing when php-mf2 is not present. 
+* More cleanly separates discovery of microformats and parsing when php-mf2 is not present.
 
 ## [1.4.1](https://github.com/simplepie/simplepie/compare/1.4.0...1.4.1) - 2016-06-02
 
@@ -147,7 +257,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added support for `application/x-rss+xml` in `SimplePie_Locator`. [#348](https://github.com/simplepie/simplepie/pull/348)
 * Added photo de-duping in microformats. [#348](https://github.com/simplepie/simplepie/pull/348)
 * Added decoding for special characters in MAYBE_HTML. [#400](https://github.com/simplepie/simplepie/pull/400)
-* Added `SimplePie_Exception` for internally reporting errors. Also, use this to show an error when trying to load the class instead of causing a failure. [#241](https://github.com/simplepie/simplepie/pull/241) 
+* Added `SimplePie_Exception` for internally reporting errors. Also, use this to show an error when trying to load the class instead of causing a failure. [#241](https://github.com/simplepie/simplepie/pull/241)
 * Added sanitization of the `</html>` and `</body>` tags. [#348](https://github.com/simplepie/simplepie/pull/348)
 * Added support for media thumbnails through `SimplePie_Item->get_thumbnail()`. [#348](https://github.com/simplepie/simplepie/pull/348)
 * Added the `feed_url` to a returned error message. [#348](https://github.com/simplepie/simplepie/pull/348)
@@ -170,7 +280,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fixed an error caused when trying to instantiate a `SimplePie_File` object with a bad URI. [#272](https://github.com/simplepie/simplepie/pull/272)
 * Fixed a PHP notice that occurs when a date starts with `(`. [#348](https://github.com/simplepie/simplepie/pull/348)
 * Fixed uninitialized string offeset PHP notices. [#353](https://github.com/simplepie/simplepie/pull/353)
-* Fixed call to non-existent property in Memcache. [#311](https://github.com/simplepie/simplepie/pull/311) 
+* Fixed call to non-existent property in Memcache. [#311](https://github.com/simplepie/simplepie/pull/311)
 * Fixed a bug where MySQL statements were not being passed thorugh `prepare()`. [#348](https://github.com/simplepie/simplepie/pull/348)
 * Fixed an instance where an error message in `SimplePie` was not being triggered correctly. [#348](https://github.com/simplepie/simplepie/pull/348)
 * Fixed a bug with Russian feeds. [#348](https://github.com/simplepie/simplepie/pull/348)

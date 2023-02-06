@@ -2,26 +2,28 @@
     "packages": [
         {
             "name": "simplepie/simplepie",
-            "version": "1.5.8",
-            "version_normalized": "1.5.8.0",
+            "version": "1.8.0",
+            "version_normalized": "1.8.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/simplepie/simplepie.git",
-                "reference": "d1d80f37264c9f1ed7fa3434eca14d179cb689b1"
+                "reference": "65b095d87bc00898d8fa7737bdbcda93a3fbcc55"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/simplepie/simplepie/zipball/d1d80f37264c9f1ed7fa3434eca14d179cb689b1",
-                "reference": "d1d80f37264c9f1ed7fa3434eca14d179cb689b1",
+                "url": "https://api.github.com/repos/simplepie/simplepie/zipball/65b095d87bc00898d8fa7737bdbcda93a3fbcc55",
+                "reference": "65b095d87bc00898d8fa7737bdbcda93a3fbcc55",
                 "shasum": ""
             },
             "require": {
                 "ext-pcre": "*",
                 "ext-xml": "*",
                 "ext-xmlreader": "*",
-                "php": ">=5.6.0"
+                "php": ">=7.2.0"
             },
             "require-dev": {
+                "friendsofphp/php-cs-fixer": "^2.19 || ^3.8",
+                "psr/simple-cache": "^1 || ^2 || ^3",
                 "yoast/phpunit-polyfills": "^1.0.1"
             },
             "suggest": {
@@ -31,12 +33,15 @@
                 "ext-mbstring": "",
                 "mf2/mf2": "Microformat module that allows for parsing HTML for microformats"
             },
-            "time": "2021-12-24T02:53:50+00:00",
+            "time": "2023-01-20T08:37:35+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
                 "psr-0": {
                     "SimplePie": "library"
+                },
+                "psr-4": {
+                    "SimplePie\\": "src"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -70,7 +75,7 @@
             ],
             "support": {
                 "issues": "https://github.com/simplepie/simplepie/issues",
-                "source": "https://github.com/simplepie/simplepie/tree/1.5.8"
+                "source": "https://github.com/simplepie/simplepie/tree/1.8.0"
             },
             "install-path": "../simplepie/simplepie"
         }
