@@ -420,11 +420,14 @@ class AuthController extends YesWikiController
      */
     protected function cleanSensitiveDataFromSession()
     {
+        if (!empty($_SESSION['user']['name'])){
+            // clean '_csrf' only if a user was connected before
+            if (isset($_SESSION['_csrf'])) {
+                unset($_SESSION['_csrf']);
+            }
+        }
         if (isset($_SESSION['user'])) {
             unset($_SESSION['user']);
-        }
-        if (isset($_SESSION['_csrf'])) {
-            unset($_SESSION['_csrf']);
         }
     }
 
