@@ -42,8 +42,7 @@
       <template v-if="Object.keys(entry).includes('visual')">
         <template v-if="entry.visual">
           <img 
-            loading="lazy"
-            :style="{display:(params.style == 'square')? false : 'none'}" 
+            :style="{display:(params.style == 'square')? false : 'none'}"
             class="area visual-area" 
             :src="urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'crop')"
             @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'crop',{{ firstTokenCrop|json_encode }})"></img>
