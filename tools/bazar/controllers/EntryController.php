@@ -236,7 +236,10 @@ class EntryController extends YesWikiController
             try {
                 if ($state && isset($_POST['bf_titre'])) {
                     $entry = $this->entryManager->create($formId, $_POST);
-                    if (empty($redirectUrl)) {
+                    // get the GET parameter 'incomingurl' for the incoming url
+                    if (!empty($_REQUEST['incomingurl'])) {
+                        $redirectUrl = urldecode($_REQUEST['incomingurl']);
+                    } elseif (empty($redirectUrl)) {
                         $redirectUrl = $this->wiki->Href(
                             testUrlInIframe(),
                             '',
@@ -266,6 +269,7 @@ class EntryController extends YesWikiController
             'renderedInputs' => $renderedInputs,
             'showConditions' => $form['bn_condition'] !== '' && !isset($_POST['accept_condition']),
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && isset($_POST['password_for_editing']) ? $_POST['password_for_editing'] : '',
+            'incomingUrl' => !empty($_REQUEST['incomingurl']) ? urldecode($_REQUEST['incomingurl']) : '',
             'error' => $error,
             'captchaField' => $this->securityController->renderCaptchaField(),
             'imageSmallWidth' => $this->config['image-small-width'],
@@ -286,7 +290,9 @@ class EntryController extends YesWikiController
         try {
             if ($state && isset($_POST['bf_titre'])) {
                 $entry = $this->entryManager->update($entryId, $_POST);
-                if (empty($redirectUrl)) {
+                if (!empty($_REQUEST['incomingurl'])) {
+                    $redirectUrl = urldecode($_REQUEST['incomingurl']);
+                } elseif (empty($redirectUrl)) {
                     $redirectUrl = $this->wiki->Href(testUrlInIframe(), '', [
                         'vue' => 'consulter',
                         'action' => 'voir_fiche',
@@ -311,6 +317,7 @@ class EntryController extends YesWikiController
             'renderedInputs' => $renderedInputs,
             'showConditions' => false,
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && isset($_POST['password_for_editing']) ? $_POST['password_for_editing'] : '',
+            'incomingUrl' => !empty($_REQUEST['incomingurl']) ? urldecode($_REQUEST['incomingurl']) : '',
             'error' => $error,
             'captchaField' => $this->securityController->renderCaptchaField(),
             'imageSmallWidth' => $this->config['image-small-width'],

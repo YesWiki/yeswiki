@@ -33,6 +33,9 @@
   {% if passwordForEditing %}
     <input name="password_for_editing" value="{{ passwordForEditing }}" type="hidden">
   {% endif %}
+  {% if incomingUrl %}
+    <input name="incomingurl" value="{{ incomingUrl }}" type="hidden">
+  {% endif %}
 </form>
 
 {# Include modals for aceditors #}
