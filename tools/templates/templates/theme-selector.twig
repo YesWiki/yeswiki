@@ -37,7 +37,7 @@
     <div class="controls">
       <select class="form-control" id="changepreset" name="preset_select">
         {% for key,value in presets|sort %}
-          <option value="{{ key }}"{% if value == favoritePreset %} selected{% endif %}>{{ value }}</option>
+          <option value="{{ key }}"{% if key == favoritePreset %} selected{% endif %}>{{ value }}</option>
         {% endfor %}
       </select>
     </div>

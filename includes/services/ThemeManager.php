@@ -99,30 +99,11 @@ class ThemeManager
     {
         // Premier cas le template par défaut est forcé : on ajoute ce qui est présent dans le fichier de configuration, ou le theme par defaut précisé ci dessus
         if ($this->params->has('hide_action_template') && $this->params->get('hide_action_template') == '1') {
-            $this->favorites['theme'] = 
-                ($this->params->has('favorite_theme') && !empty($this->params->get('favorite_theme'))
-                 && is_string($this->params->get('favorite_theme')))
-                ? $this->params->get('favorite_theme')
-                : THEME_PAR_DEFAUT;
-
-            $this->favorites['style'] = 
-                ($this->params->has('favorite_style') && !empty($this->params->get('favorite_style'))
-                  && is_string($this->params->get('favorite_style')))
-                ? $this->params->get('favorite_style')
-                : CSS_PAR_DEFAUT;
-
-            $this->favorites['squelette'] = 
-                ($this->params->has('favorite_squelette') && !empty($this->params->get('favorite_squelette'))
-                  && is_string($this->params->get('favorite_squelette')))
-                ? $this->params->get('favorite_squelette')
-                : SQUELETTE_PAR_DEFAUT;
-
-            $this->favorites['background_image'] = 
-                ($this->params->has('favorite_background_image') && !empty($this->params->get('favorite_background_image'))
-                  && is_string($this->params->get('favorite_background_image')))
-                ? $this->params->get('favorite_background_image')
-                : BACKGROUND_IMAGE_PAR_DEFAUT;
-
+            $this->favorites['theme'] = $this->getConfigAsStringOrDefault('favorite_theme',THEME_PAR_DEFAUT);
+            $this->favorites['style'] = $this->getConfigAsStringOrDefault('favorite_style',CSS_PAR_DEFAUT);
+            $this->favorites['squelette'] = $this->getConfigAsStringOrDefault('favorite_squelette',SQUELETTE_PAR_DEFAUT);
+            $this->favorites['background_image'] = $this->getConfigAsStringOrDefault('favorite_background_image',BACKGROUND_IMAGE_PAR_DEFAUT);
+            $this->favorites['preset'] = $this->getConfigAsStringOrDefault('favorite_preset','');
         } else {
             // Sinon, on récupère premièrement les valeurs passées en REQUEST, ou deuxièmement les métasdonnées présentes pour la page, ou troisièmement les valeurs du fichier de configuration
             if (isset($_REQUEST['theme']) && (is_dir('custom/themes/'.$_REQUEST['theme']) || is_dir('themes/'.$_REQUEST['theme'])) &&
@@ -174,16 +155,19 @@ class ThemeManager
                     }
                 } else {
                     if (empty($this->favorites['theme'])) {
-                        $this->favorites['theme'] = THEME_PAR_DEFAUT;
+                        $this->favorites['theme'] = $this->getConfigAsStringOrDefault('favorite_theme',THEME_PAR_DEFAUT);
                     }
                     if (empty($this->favorites['style'])) {
-                        $this->favorites['style'] = CSS_PAR_DEFAUT;
+                        $this->favorites['style'] = $this->getConfigAsStringOrDefault('favorite_style',CSS_PAR_DEFAUT);
                     }
                     if (empty($this->favorites['squelette'])) {
-                        $this->favorites['squelette'] = SQUELETTE_PAR_DEFAUT;
+                        $this->favorites['squelette'] = $this->getConfigAsStringOrDefault('favorite_squelette',SQUELETTE_PAR_DEFAUT);
                     }
                     if (empty($this->favorites['background_image'])) {
-                        $this->favorites['background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
+                        $this->favorites['background_image'] = $this->getConfigAsStringOrDefault('favorite_background_image',BACKGROUND_IMAGE_PAR_DEFAUT);
+                    }
+                    if (empty($this->favorites['preset'])) {
+                        $this->favorites['preset'] = $this->getConfigAsStringOrDefault('favorite_preset','');
                     }
                 }
             }
@@ -388,6 +372,14 @@ class ThemeManager
     public function setTemplates(array $templates)
     {
         $this->templates = $templates;
+    }
+
+    protected function getConfigAsStringOrDefault(string $key, string $default): string
+    {
+        return ($this->params->has($key) && !empty($this->params->get($key))
+            && is_string($this->params->get($key)))
+            ? $this->params->get($key)
+            : $default;
     }
 
     private function renderActions(string $text): ?string
