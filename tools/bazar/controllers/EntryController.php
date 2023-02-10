@@ -229,6 +229,7 @@ class EntryController extends YesWikiController
         }
 
         $results = $this->checkIfOnlyOneEntry($form);
+        $incomingUrl = $this->getIncomingUrl();
         if (!empty($results['output'])) {
             return $results['output'];
         } elseif (empty($results['error'])) {
@@ -237,19 +238,21 @@ class EntryController extends YesWikiController
                 if ($state && isset($_POST['bf_titre'])) {
                     $entry = $this->entryManager->create($formId, $_POST);
                     // get the GET parameter 'incomingurl' for the incoming url
-                    if (!empty($_REQUEST['incomingurl'])) {
-                        $redirectUrl = urldecode($_REQUEST['incomingurl']);
-                    } elseif (empty($redirectUrl)) {
-                        $redirectUrl = $this->wiki->Href(
-                            testUrlInIframe(),
-                            '',
-                            [  'vue' => 'consulter',
-                            'action' => 'voir_fiche',
-                            'id_fiche' => $entry['id_fiche'],
-                            'message' => 'ajout_ok'],
-                            false
+                    $redirectUrl = !empty($incomingUrl)
+                        ? $incomingUrl
+                        : (
+                            !empty($redirectUrl)
+                            ? $redirectUrl
+                            : $this->wiki->Href(
+                                testUrlInIframe(),
+                                '',
+                                [  'vue' => 'consulter',
+                                'action' => 'voir_fiche',
+                                'id_fiche' => $entry['id_fiche'],
+                                'message' => 'ajout_ok'],
+                                false
+                            )
                         );
-                    }
                     header('Location: ' . $redirectUrl);
                     $this->wiki->exit();
                 }
@@ -269,7 +272,7 @@ class EntryController extends YesWikiController
             'renderedInputs' => $renderedInputs,
             'showConditions' => $form['bn_condition'] !== '' && !isset($_POST['accept_condition']),
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && isset($_POST['password_for_editing']) ? $_POST['password_for_editing'] : '',
-            'incomingUrl' => !empty($_REQUEST['incomingurl']) ? urldecode($_REQUEST['incomingurl']) : '',
+            'incomingUrl' => $incomingUrl,
             'error' => $error,
             'captchaField' => $this->securityController->renderCaptchaField(),
             'imageSmallWidth' => $this->config['image-small-width'],
@@ -287,19 +290,22 @@ class EntryController extends YesWikiController
         $form = $this->formManager->getOne($entry['id_typeannonce']);
 
         list($state, $error) = $this->securityController->checkCaptchaBeforeSave('entry');
+        $incomingUrl = $this->getIncomingUrl();
         try {
             if ($state && isset($_POST['bf_titre'])) {
                 $entry = $this->entryManager->update($entryId, $_POST);
-                if (!empty($_REQUEST['incomingurl'])) {
-                    $redirectUrl = urldecode($_REQUEST['incomingurl']);
-                } elseif (empty($redirectUrl)) {
-                    $redirectUrl = $this->wiki->Href(testUrlInIframe(), '', [
-                        'vue' => 'consulter',
-                        'action' => 'voir_fiche',
-                        'id_fiche' => $entry['id_fiche'],
-                        'message' => 'modif_ok'
-                    ], false);
-                }
+                $redirectUrl = !empty($incomingUrl)
+                    ? $incomingUrl
+                    : (
+                        !empty($redirectUrl)
+                        ? $redirectUrl
+                        : $this->wiki->Href(testUrlInIframe(), '', [
+                            'vue' => 'consulter',
+                            'action' => 'voir_fiche',
+                            'id_fiche' => $entry['id_fiche'],
+                            'message' => 'modif_ok'
+                        ], false)
+                    );
                 header('Location: ' . $redirectUrl);
                 $this->wiki->exit();
             }
@@ -317,7 +323,7 @@ class EntryController extends YesWikiController
             'renderedInputs' => $renderedInputs,
             'showConditions' => false,
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && isset($_POST['password_for_editing']) ? $_POST['password_for_editing'] : '',
-            'incomingUrl' => !empty($_REQUEST['incomingurl']) ? urldecode($_REQUEST['incomingurl']) : '',
+            'incomingUrl' => $incomingUrl,
             'error' => $error,
             'captchaField' => $this->securityController->renderCaptchaField(),
             'imageSmallWidth' => $this->config['image-small-width'],
@@ -729,5 +735,23 @@ class EntryController extends YesWikiController
             }
         }
         return $results;
+    }
+
+    public function getIncomingUrl(): string
+    {
+        $incomingUrl = (isset($_GET['incomingurl']) && is_string($_GET['incomingurl']))
+            ? $_GET['incomingurl']
+            : (
+                (isset($_POST['incomingurl']) && is_string($_POST['incomingurl']))
+                ? $_POST['incomingurl']
+                : ''
+            );
+        if (!empty($incomingUrl)){
+            $incomingUrl = urldecode($incomingUrl);
+            $incomingUrl = filter_var($incomingUrl,FILTER_VALIDATE_URL);
+        }
+        
+        // TODO check if redirect to outside website ?
+        return empty($incomingUrl) ? '' : $incomingUrl;
     }
 }
