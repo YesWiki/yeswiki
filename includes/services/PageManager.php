@@ -6,6 +6,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Entity\Event;
+use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Tags\Service\TagsManager;
 use YesWiki\Wiki;
@@ -16,6 +18,7 @@ class PageManager
     protected $authController;
     protected $dbService;
     protected $aclService;
+    protected $eventDispatcher;
     protected $securityController;
     protected $tripleStore;
     protected $userManager;
@@ -31,6 +34,7 @@ class PageManager
         DbService $dbService,
         AclService $aclService,
         TripleStore $tripleStore,
+        EventDispatcher $eventDispatcher,
         UserManager $userManager,
         ParameterBagInterface $params,
         SecurityController $securityController,
@@ -40,6 +44,7 @@ class PageManager
         $this->authController = $authController;
         $this->dbService = $dbService;
         $this->aclService = $aclService;
+        $this->eventDispatcher = $eventDispatcher;
         $this->tripleStore = $tripleStore;
         $this->userManager = $userManager;
         $this->params = $params;
@@ -276,6 +281,10 @@ class PageManager
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='".TripleStore::TYPE_URI."' and `value`='".EntryManager::TRIPLES_ENTRY_ID."'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('referrers')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->tagsManager->deleteAll($tag);
+        
+        $errors = $this->eventDispatcher->yesWikiDispatch('page.deleted', [
+            'tag' => $tag
+        ]);
     }
 
     /**
@@ -347,6 +356,13 @@ class PageManager
 
             unset($this->pageCache[$tag]);
             $this->ownersCache[$tag] = $owner;
+            
+            $errors = $this->eventDispatcher->yesWikiDispatch('page.saved', [
+                'tag' => $tag,
+                'body' => $body,
+                'comment_on' => $comment_on,
+                'owner' => $owner,
+            ]);
 
             return 0;
         } else {
