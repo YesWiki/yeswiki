@@ -14,45 +14,45 @@ use YesWiki\Wiki;
 
 class PageManager
 {
-    protected $wiki;
+    protected $aclService;
     protected $authController;
     protected $dbService;
-    protected $aclService;
     protected $eventDispatcher;
+    protected $params;
     protected $securityController;
+    protected $tagsManager;
     protected $tripleStore;
     protected $userManager;
-    protected $tagsManager;
-    protected $params;
+    protected $wiki;
 
-    protected $pageCache;
     protected $ownersCache; // different cache because to set at the same time to prevent infinite loop
+    protected $pageCache;
 
     public function __construct(
-        Wiki $wiki,
+        AclService $aclService,
         AuthController $authController,
         DbService $dbService,
-        AclService $aclService,
-        TripleStore $tripleStore,
         EventDispatcher $eventDispatcher,
-        UserManager $userManager,
         ParameterBagInterface $params,
         SecurityController $securityController,
-        TagsManager $tagsManager
+        TagsManager $tagsManager,
+        TripleStore $tripleStore,
+        UserManager $userManager,
+        Wiki $wiki
     ) {
-        $this->wiki = $wiki;
+        $this->aclService = $aclService;
         $this->authController = $authController;
         $this->dbService = $dbService;
-        $this->aclService = $aclService;
         $this->eventDispatcher = $eventDispatcher;
-        $this->tripleStore = $tripleStore;
-        $this->userManager = $userManager;
         $this->params = $params;
         $this->securityController = $securityController;
         $this->tagsManager = $tagsManager;
+        $this->tripleStore = $tripleStore;
+        $this->userManager = $userManager;
+        $this->wiki = $wiki;
 
-        $this->pageCache = [];
         $this->ownersCache = [];
+        $this->pageCache = [];
     }
 
     /**
