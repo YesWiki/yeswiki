@@ -515,6 +515,8 @@ return [
     'ACLS_LIST_OF_ACLS' => 'Liste des droits séparés par des virgules',
     'ACLS_UPDATE' => 'Mettre &agrave; jour',
     'ACLS_COMMENTS_CLOSED' => 'Commentaires fermés',
+    'ACLS_READ' => 'Droits de lecture',
+    'ACLS_WRITE' => 'Droits d\'écriture',
 
     // include/services/ThemeManager.php
     'THEME_MANAGER_THEME_FOLDER' => 'Le dossier du thème ',

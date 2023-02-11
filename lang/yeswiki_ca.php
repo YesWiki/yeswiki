@@ -82,8 +82,8 @@ return [
     // 'YW_ACLS_UPDATED' => 'Droits d\'acc&egrave;s mis &agrave; jour',
     // 'YW_NEW_OWNER' => ' et changement du propri&eacute;taire. Nouveau propri&eacute;taire : ',
     // 'YW_CANCEL' => 'Annuler',
-    // 'YW_ACLS_READ' => 'Droits de lecture',
-    // 'YW_ACLS_WRITE' => 'Droits d\'écriture',
+    // 'YW_ACLS_READ' => 'Droits de lecture (* pour tous, + pers identifiées, @admins grp admin)',
+    // 'YW_ACLS_WRITE' => 'Droits d\'écriture (* pour tous, + pers identifiées, @admins grp admin)',
     // 'YW_ACLS_COMMENT' => 'Droits pour commenter',
     // 'YW_CHANGE_OWNER' => 'Changer le propri&eacute;taire',
     // 'YW_CHANGE_NOTHING' => 'Ne rien modifier',
@@ -506,6 +506,8 @@ return [
     // 'ACLS_LIST_OF_ACLS' => 'Liste des droits séparés par des virgules',
     // 'ACLS_UPDATE' => 'Mettre &agrave; jour',
     // 'ACLS_COMMENTS_CLOSED' => 'Commentaires fermés',
+    // 'ACLS_READ' => 'Droits de lecture',
+    // 'ACLS_WRITE' => 'Droits d\'écriture',
 
     // include/services/ThemeManager.php
     // 'THEME_MANAGER_THEME_FOLDER' => 'Le dossier du thème ',

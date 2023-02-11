@@ -86,8 +86,8 @@ return [
     'YW_ACLS_UPDATED' => 'Access rights updated',
     'YW_NEW_OWNER' => ' and owner change . New owner: ',
     'YW_CANCEL' => 'Cancel',
-    'YW_ACLS_READ' => 'Read rights',
-    'YW_ACLS_WRITE' => 'Write rights',
+    'YW_ACLS_READ' => 'Read rights (* for all, + connected, @admins admins grp)',
+    'YW_ACLS_WRITE' => 'Write rights (* for all, + connected, @admins admins grp)',
     'YW_ACLS_COMMENT' => 'Comment rights',
     'YW_CHANGE_OWNER' => 'Change the owner',
     'YW_CHANGE_NOTHING' => 'No changes',
@@ -500,6 +500,8 @@ return [
     'ACLS_LIST_OF_ACLS' => 'List of rights separated by coma',
     'ACLS_UPDATE' => 'Update',
     'ACLS_COMMENTS_CLOSED' => 'Comments closed',
+    'ACLS_READ' => 'Read rights',
+    'ACLS_WRITE' => 'Write rights',
 
     // include/services/ThemeManager.php
     'THEME_MANAGER_THEME_FOLDER' => 'The theme\'s folder ',

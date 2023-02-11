@@ -170,8 +170,8 @@ $this->addCSSFile('styles/vendor/datatables-full/dataTables.bootstrap.min.css');
           </label>
         </th>
         <th><div><b><?php echo _t('ACLS_PAGE'); ?></b></div></th>
-        <th><div align="center"><b><?php echo _t('YW_ACLS_READ'); ?></b></div></th>
-        <th><div align="center"><b><?php echo _t('YW_ACLS_WRITE'); ?></b></div></th>
+        <th><div align="center"><b><?php echo _t('ACLS_READ'); ?></b></div></th>
+        <th><div align="center"><b><?php echo _t('ACLS_WRITE'); ?></b></div></th>
         <th><div align="center"><b><?php echo _t('COMMENTS'); ?></b></div></th>
       </tr>
     </thead>
