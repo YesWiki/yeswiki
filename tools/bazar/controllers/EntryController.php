@@ -13,7 +13,9 @@ use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Entity\Event;
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Core\Service\FavoritesManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
@@ -26,6 +28,7 @@ class EntryController extends YesWikiController
     protected $authController;
     protected $config;
     protected $entryManager;
+    protected $eventDispatcher;
     protected $favoritesManager;
     protected $formManager;
     protected $pageManager;
@@ -39,6 +42,7 @@ class EntryController extends YesWikiController
         AclService $aclService,
         AuthController $authController,
         EntryManager $entryManager,
+        EventDispatcher $eventDispatcher,
         FavoritesManager $favoritesManager,
         FormManager $formManager,
         PageManager $pageManager,
@@ -50,6 +54,7 @@ class EntryController extends YesWikiController
         $this->authController = $authController;
         $this->config = $config->all();
         $this->entryManager = $entryManager;
+        $this->eventDispatcher = $eventDispatcher;
         $this->favoritesManager = $favoritesManager;
         $this->formManager = $formManager;
         $this->pageManager = $pageManager;
@@ -237,6 +242,9 @@ class EntryController extends YesWikiController
             try {
                 if ($state && isset($_POST['bf_titre'])) {
                     $entry = $this->entryManager->create($formId, $_POST);
+                    $errors = $this->eventDispatcher->yesWikiDispatch('entry.created', [
+                        'entry' => $entry,
+                    ]);
                     // get the GET parameter 'incomingurl' for the incoming url
                     $redirectUrl = !empty($incomingUrl)
                         ? $incomingUrl
@@ -294,6 +302,9 @@ class EntryController extends YesWikiController
         try {
             if ($state && isset($_POST['bf_titre'])) {
                 $entry = $this->entryManager->update($entryId, $_POST);
+                $errors = $this->eventDispatcher->yesWikiDispatch('entry.updated', [
+                    'entry' => $entry,
+                ]);
                 $redirectUrl = !empty($incomingUrl)
                     ? $incomingUrl
                     : (
@@ -339,6 +350,9 @@ class EntryController extends YesWikiController
     public function delete($entryId)
     {
         $this->entryManager->delete($entryId);
+        $errors = $this->eventDispatcher->yesWikiDispatch('entry.deleted', [
+            'entryId' => $entryId,
+        ]);
         // WARNING : 'delete_ok' is not used
         header('Location: ' . $this->wiki->Href('', 'BazaR', ['vue' => 'consulter', 'message' => 'delete_ok']));
     }
