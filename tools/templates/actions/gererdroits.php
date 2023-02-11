@@ -4,13 +4,6 @@ Cette action à pour but de gérer massivement les droits sur les pages d'un wik
 Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utilisent (définis par l'utilisateur).
 -->
 <script>
-  //Fonction pour cocher toutes les cases.
-  function cocherTout(etat)
-  {
-     var cases = document.querySelectorAll('input.selectpage');
-     for(var i=0; i < cases.length; i++)
-       if(cases[i].type == 'checkbox') cases[i].checked = etat;
-  }
   // function to relaod page with filter parameter
   function reloadGererDroits(elem){
       var value = $(elem).val();
@@ -172,7 +165,7 @@ $this->addCSSFile('styles/vendor/datatables-full/dataTables.bootstrap.min.css');
       <tr>
         <th class="prevent-sorting">
           <label class="check-all-container">
-            <input type="checkbox" name="id" value="tous" onClick="cocherTout(this.checked)">
+            <input type="checkbox" name="id" value="tous" onClick="checkAll(this.checked)">
             <span></span>
           </label>
         </th>

@@ -884,3 +884,15 @@ $('#commentsTableDeleteModal.modal').on('shown.bs.modal',function(event){
     });
   }
 });
+
+// function to check all checkbox in page.
+function checkAll(state)
+{
+  var checkboxes = document.querySelectorAll('input.selectpage');
+  var newState = [true,'true',1,'1'].includes(state)
+  checkboxes.forEach((checkbox)=>{
+    if (checkbox.type == 'checkbox'){
+      checkbox.checked = newState
+    }
+  })
+}
