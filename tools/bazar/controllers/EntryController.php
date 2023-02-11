@@ -22,40 +22,40 @@ use YesWiki\Security\Controller\SecurityController;
 
 class EntryController extends YesWikiController
 {
+    protected $aclService;
+    protected $authController;
+    protected $config;
     protected $entryManager;
     protected $favoritesManager;
     protected $formManager;
-    protected $aclService;
-    protected $authController;
-    protected $semanticTransformer;
     protected $pageManager;
-    protected $templateEngine;
-    protected $config;
     protected $securityController;
+    protected $semanticTransformer;
+    protected $templateEngine;
 
     private $parentsEntries ;
 
     public function __construct(
+        AclService $aclService,
+        AuthController $authController,
         EntryManager $entryManager,
         FavoritesManager $favoritesManager,
         FormManager $formManager,
-        AclService $aclService,
-        AuthController $authController,
-        SemanticTransformer $semanticTransformer,
         PageManager $pageManager,
         ParameterBagInterface $config,
-        SecurityController $securityController
+        SecurityController $securityController,
+        SemanticTransformer $semanticTransformer
     ) {
+        $this->aclService = $aclService;
         $this->authController = $authController;
+        $this->config = $config->all();
         $this->entryManager = $entryManager;
         $this->favoritesManager = $favoritesManager;
         $this->formManager = $formManager;
-        $this->aclService = $aclService;
-        $this->semanticTransformer = $semanticTransformer;
         $this->pageManager = $pageManager;
-        $this->config = $config->all();
-        $this->securityController = $securityController;
         $this->parentsEntries = [];
+        $this->securityController = $securityController;
+        $this->semanticTransformer = $semanticTransformer;
     }
 
     /**
