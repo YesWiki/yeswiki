@@ -50,12 +50,19 @@ class HtmlPurifierService
                 '_top',
             ]);
 
+            // allow iframe
+            $config->set('HTML.SafeIframe', true);
+            $config->set('HTML.SafeIframeRegexp', '%^https?://.*%');
+
             // set the cache folder
             // doc : http://htmlpurifier.org/live/configdoc/plain.html#Cache.SerializerPath
             if (!is_dir(self::HTMLPURIFIER_CACHE_FOLDER)) {
                 mkdir(self::HTMLPURIFIER_CACHE_FOLDER, 0777, true);
             }
             $config->set('Cache.SerializerPath', realpath(self::HTMLPURIFIER_CACHE_FOLDER));
+
+            $def = $config->getHTMLDefinition(true);
+            $def->addAttribute('iframe', 'allowfullscreen', 'Bool');
 
             $this->purifier = new HTMLPurifier($config);
         }
