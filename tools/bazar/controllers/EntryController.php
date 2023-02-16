@@ -243,7 +243,8 @@ class EntryController extends YesWikiController
                 if ($state && isset($_POST['bf_titre'])) {
                     $entry = $this->entryManager->create($formId, $_POST);
                     $errors = $this->eventDispatcher->yesWikiDispatch('entry.created', [
-                        'entry' => $entry,
+                        'id' => $entry['id_fiche'],
+                        'data' => $entry
                     ]);
                     // get the GET parameter 'incomingurl' for the incoming url
                     $redirectUrl = !empty($incomingUrl)
@@ -303,7 +304,8 @@ class EntryController extends YesWikiController
             if ($state && isset($_POST['bf_titre'])) {
                 $entry = $this->entryManager->update($entryId, $_POST);
                 $errors = $this->eventDispatcher->yesWikiDispatch('entry.updated', [
-                    'entry' => $entry,
+                    'id' => $entry['id_fiche'],
+                    'data' => $entry
                 ]);
                 $redirectUrl = !empty($incomingUrl)
                     ? $incomingUrl
@@ -351,7 +353,7 @@ class EntryController extends YesWikiController
     {
         $this->entryManager->delete($entryId);
         $errors = $this->eventDispatcher->yesWikiDispatch('entry.deleted', [
-            'entryId' => $entryId,
+            'id' => $entryId,
         ]);
         // WARNING : 'delete_ok' is not used
         header('Location: ' . $this->wiki->Href('', 'BazaR', ['vue' => 'consulter', 'message' => 'delete_ok']));

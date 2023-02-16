@@ -283,7 +283,7 @@ class PageManager
         $this->tagsManager->deleteAll($tag);
         
         $errors = $this->eventDispatcher->yesWikiDispatch('page.deleted', [
-            'tag' => $tag
+            'id' => $tag
         ]);
     }
 
@@ -357,11 +357,15 @@ class PageManager
             unset($this->pageCache[$tag]);
             $this->ownersCache[$tag] = $owner;
             
-            $errors = $this->eventDispatcher->yesWikiDispatch('page.saved', [
-                'tag' => $tag,
-                'body' => $body,
-                'comment_on' => $comment_on,
-                'owner' => $owner,
+            $errors = $this->eventDispatcher->yesWikiDispatch(empty($oldPage) ? 'page.created' : 'page.updated', [
+                'id' => $tag,
+                'data' => [
+                    'tag' => $tag,
+                    'body' => $body,
+                    'comment_on' => $comment_on,
+                    'owner' => $owner,
+                    'user' => $user
+                ]
             ]);
 
             return 0;
