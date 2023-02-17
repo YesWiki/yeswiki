@@ -47,6 +47,7 @@ class ActionsBuilderService
                     $key = $filename;
                 }
             } else {
+                
                 $key = $filename;
             }
             $data['action_groups'][$key] = Yaml::parseFile($filePath);
@@ -67,6 +68,32 @@ class ActionsBuilderService
             return $a['position'] - $b['position'];
         });
 
+        // Add custom bazar templates to the list of bazarliste component 
+        $bazarlisteTwigFiles = glob('custom/templates/bazar/*.twig');
+        $bazarlisteTplFiles = glob('custom/templates/bazar/*.tpl.html');
+        $bazarlisteCustomTemplates = array_merge($bazarlisteTplFiles, $bazarlisteTwigFiles);
+        foreach ($bazarlisteCustomTemplates as $k => $v) {
+            $bazarlisteCustomTemplates[$k] = str_replace ('custom/templates/bazar/', '', $v);
+        }
+        // bazar templates starting with "fiche" are not list of entries 
+        $filtered_files = preg_grep('/^(?!fiche)/', $bazarlisteCustomTemplates);
+        foreach ($filtered_files as $file) {
+            $name = str_replace(['.tpl.html', '.twig'], '', $file);
+            $translation = _t("AB_".$name."_label");
+            // if no translation found, write "Template custom"
+            if ($translation == "AB_".$name."_label") {
+                $translation = _t('AB_TEMPLATE_CUSTOM').' '.$name;
+            } else {
+                $translation = "_t(AB_".$name."_label)";
+            }
+            $data['action_groups']['bazarliste']['actions'][$name] = [
+                "label" => $translation,
+                "properties" => [
+                    "template" => ["value" => $file]
+                ]
+            ];
+        } 
+     
         // Handle translations
         array_walk_recursive($data['action_groups'], function(&$item, $key) {
             if (is_string($item) && preg_match("/_t\((.+)\)/", $item, $trans_key)) {
