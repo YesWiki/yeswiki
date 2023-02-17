@@ -82,7 +82,7 @@ class ActionsBuilderService
             $translation = _t("AB_".$name."_label");
             // if no translation found, write "Template custom"
             if ($translation == "AB_".$name."_label") {
-                $translation = _t('AB_TEMPLATE_CUSTOM').' '.$name;
+                $translation = _t('ACTION_BUILDER_TEMPLATE_CUSTOM').' '.$name;
             } else {
                 $translation = "_t(AB_".$name."_label)";
             }
