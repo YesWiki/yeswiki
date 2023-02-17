@@ -55,9 +55,9 @@ class CommentService implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            'comments.create' => 'sendEmailAfterCreate',
-            'comments.modify' => 'sendEmailAfterModify',
-            'comments.delete' => 'sendEmailAfterDelete'
+            'comment.created' => 'sendEmailAfterCreate',
+            'comment.updated' => 'sendEmailAfterModify',
+            'comment.deleted' => 'sendEmailAfterDelete'
         ];
     }
 
@@ -132,8 +132,9 @@ class CommentService implements EventSubscriberInterface
                     }
                     $com['reponses'] = $this->getCommentList($comment['tag'], false);
                     $com['parentPage'] = $this->getParentPage($comment['tag']);
-                    $errors = $this->eventDispatcher->yesWikiDispatch($newComment ? 'comments.create' : 'comments.modify', [
-                            'comment' => $com,
+                    $errors = $this->eventDispatcher->yesWikiDispatch($newComment ? 'comment.created' : 'comment.updated', [
+                            'id' => $com['tag'],
+                            'data' => $com,
                         ]);
                     return [
                         'code' => 200,
@@ -165,10 +166,12 @@ class CommentService implements EventSubscriberInterface
         $comment = $this->pageManager->getOne($commentTag);
         $parentPage = $this->getParentPage($commentTag);
         $this->pageManager->deleteOrphaned($commentTag);
-        $errors = $this->eventDispatcher->yesWikiDispatch('comments.delete', [
-                'comment' => $comment,
-                'associatedComments' => $comments,
-                'parentPage' => $parentPage
+        $errors = $this->eventDispatcher->yesWikiDispatch('comment.deleted', [
+                'id' => $comment['tag'],
+                'data' => array_merge($comment,[
+                    'associatedComments' => $comments,
+                    'parentPage' => $parentPage
+                ])
             ]);
         return $errors;
     }
