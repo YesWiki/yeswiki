@@ -1133,13 +1133,13 @@ if (!class_exists('attach')) {
                         unlink(stream_get_meta_data($tempFile)['uri']);
                     } while (file_exists($tempFileName));
                     $imgTrans->target_path = $tempFileName;
-                    if ($imgTrans->resize(intval($newWidth), intval($newHeight), ZEBRA_IMAGE_CROP_CENTER, '#FFFFFF')) {
+                    if ($imgTrans->resize(intval($newWidth), intval($newHeight), ZEBRA_IMAGE_CROP_CENTER, -1)) {
                         $imgTrans->source_path = $tempFileName;
                     }
                     $imgTrans->target_path = $image_dest;
                 }
             }
-            $result = $imgTrans->resize(intval($largeur), intval($hauteur), ZEBRA_IMAGE_NOT_BOXED, '#FFFFFF');
+            $result = $imgTrans->resize(intval($largeur), intval($hauteur), ZEBRA_IMAGE_NOT_BOXED, -1);
 
             if ($mode == "crop" && !empty($tempFileName) && file_exists($tempFileName)) {
                 unlink($tempFileName);
