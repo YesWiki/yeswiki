@@ -2,6 +2,7 @@
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Core\Controller\CsrfTokenController;
 
 // Vérification de sécurité
@@ -51,7 +52,9 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
             try {
                 $csrfTokenController->checkToken("handler\deletepage\\$tag", 'POST', 'csrf-token');
 
-                $this->DeleteOrphanedPage($tag);
+                $this->services->get(EntryController::class)->triggerDeletedEventIfNeeded(function()use($tag){
+                    $this->DeleteOrphanedPage($tag);
+                },$tag);
                 $this->LogAdministrativeAction($this->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
                 $msg = str_replace("{tag}", $tag, _t('DELETEPAGE_MESSAGE'));
 

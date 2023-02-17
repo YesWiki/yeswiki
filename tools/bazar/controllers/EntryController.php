@@ -351,12 +351,30 @@ class EntryController extends YesWikiController
 
     public function delete($entryId)
     {
-        $this->entryManager->delete($entryId);
-        $errors = $this->eventDispatcher->yesWikiDispatch('entry.deleted', [
-            'id' => $entryId,
-        ]);
+        $this->triggerDeletedEventIfNeeded(function()use($entryId){
+            $this->entryManager->delete($entryId);
+        },$entryId);
         // WARNING : 'delete_ok' is not used
         header('Location: ' . $this->wiki->Href('', 'BazaR', ['vue' => 'consulter', 'message' => 'delete_ok']));
+    }
+
+    public function triggerDeletedEventIfNeeded($callback,$entryId)
+    {
+        if ($this->entryManager->isEntry($entryId)){
+            $entry = $this->entryManager->getOne($entryId);
+            $callback();
+            $this->triggerDeletedEvent($entryId,$entry);
+        } else {
+            $callback();
+        }
+    }
+
+    protected function triggerDeletedEvent($entryId, $entry)
+    {
+        return $this->eventDispatcher->yesWikiDispatch('entry.deleted', [
+            'id' => $entryId,
+            'data' => $entry
+        ]);
     }
 
     private function getRenderedInputs($form, $entry = null)

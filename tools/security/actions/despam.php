@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Security\Controller\SecurityController;
 
 // TODO
@@ -146,7 +147,9 @@ if ($this->UserIsAdmin()) {
                 // Effacement de la page en utilisant la méthode adéquate
                 // (si DeleteOrphanedPage ne convient pas, soit on créé
                 // une autre, soit on la modifie
-                $this->DeleteOrphanedPage($page);
+                $this->services->get(EntryController::class)->triggerDeletedEventIfNeeded(function()use($page){
+                    $this->DeleteOrphanedPage($page);
+                },$page);
                 $deletedPages .= $page . ", ";
             }
             $deletedPages = trim($deletedPages, ", ");
