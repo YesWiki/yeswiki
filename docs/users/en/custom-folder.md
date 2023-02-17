@@ -8,14 +8,18 @@ An example of how a custom folder look like can be found at https://github.com/Y
 
 The folder `custom/templates` is for your own custom templates.
 
-Example1: For bazarliste templates, add the file `custom/templates/bazar/my-template.tpl.html`
+#### bazarliste templates
+add the file `custom/templates/bazar/my-template.tpl.html`
 Then you can use it from a bazar action `{{bazarliste id="1" template="my-template.tpl.html"}}`
 You can also overide an existing template : `custom/templates/bazar/liste_accordeon.tpl.html`
+
 Custom template will appear in the bazarliste component with default name : "Template custom : filename"
+
 If you need to personnalize the name add a translation in file /custom/lang/custom_fr.inc.php
 example : 'AB_filename_label' => 'Template custom annuaire',
 
-Example2: To customize bazar single entry template, uses the convention `fiche-FORM_ID.tpl.html`
+#### bazar single entry template
+uses the convention `fiche-FORM_ID.tpl.html`
 If you have a bazar form with id 5, then you can create `custom/templates/bazar/fiche-5.tpl.html`
 Available variables inside the template are
 
