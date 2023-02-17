@@ -467,6 +467,4 @@ return [
     "AB_bazartableau_columnswidth_width_label" => "Width",
     "AB_bazartableau_exportallcolumns_label" => "Also export hidden columns",
     "AB_bazartableau_displayimagesasthumbnails_label" => "Display images as thumbnails",
-    'AB_bazartableau_showemailfor_label' => 'Mails are shown for',
-    'AB_bazartableau_showemailfor_hint' => 'e.g.: "@groups, UserNames"; separated by commas',
 ];

@@ -868,12 +868,6 @@ actions:
           '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
-      showemailfor:
-        type: text
-        label: _t(AB_bazartableau_showemailfor_label)
-        advanced: true
-        hint: _t(AB_bazartableau_showemailfor_hint)
-        default: ''
       defaultcolumnwidth:
         label: _t(AB_bazartableau_defaultcolumnwidth_label)
         hint: _t(AB_bazartableau_defaultcolumnwidth_hint)
