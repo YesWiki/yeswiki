@@ -385,18 +385,18 @@ class CommentService implements EventSubscriberInterface
     public function sendEmailAfterCreate(Event $event)
     {
         $data = $event->getData();
-        if (!empty($data['comment']['commentOn'])) {
-            $parentTag = $data['comment']['commentOn'];
+        if (!empty($data['data']['commentOn'])) {
+            $parentTag = $data['data']['commentOn'];
             $loggedUser = $this->userManager->getLoggedUser();
-            $parentPage = $this->getParentPage($data['comment']['tag']);
+            $parentPage = $this->getParentPage($data['data']['tag']);
             if (!empty($loggedUser)) {
                 $parentComment = $this->pageManager->getOne($parentTag);
 
                 if (!empty($parentComment['owner'])) {
                     $owner = $this->userManager->getOneByName($parentComment['owner']);
-                    $this->sendEmailToOwnerAtCreation($parentComment, $loggedUser, $parentPage, $data, $owner);
+                    $this->sendEmailToOwnerAtCreation($parentComment, $loggedUser, $parentPage, ['comment'=>$data['data']], $owner);
                 }
-                $this->sendEmailToTaggedUserAtCreation($parentComment, $loggedUser, $parentPage, $data, $owner ?? null);
+                $this->sendEmailToTaggedUserAtCreation($parentComment, $loggedUser, $parentPage, ['comment'=>$data['data']], $owner ?? null);
             }
         }
     }
