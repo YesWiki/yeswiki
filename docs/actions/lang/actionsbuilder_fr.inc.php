@@ -467,6 +467,6 @@ return [
     "AB_bazartableau_columnswidth_width_label" => "Largeur",
     "AB_bazartableau_exportallcolumns_label" => "Exporter aussi les colonnes masquées",
     "AB_bazartableau_displayimagesasthumbnails_label" => "Afficher les images sous forme de vignette",
-    'AB_bazartableau_showemailfor_label' => 'Montrer les emails pour',
-    'AB_bazartableau_showemailfor_hint' => 'ex. : "@groupe, NomUtilisateur"; séparés par des virgules',
+    'AB_bazartableau_showemailfor_label' => 'Montrer les emails au(x) groupes',
+    'AB_bazartableau_showemailfor_hint' => 'ex. : "@groupe, @groupe2"; séparés par des virgules',
 ];

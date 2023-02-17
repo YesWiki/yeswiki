@@ -232,7 +232,7 @@ if (count($fiches)>0) {
                                     $wikiUser = $this->wiki->GetUserName();
                                     foreach ($groups as $g) {
                                         $g = str_replace('@', '', $g);
-                                        if ($this->wiki->UserIsInGroup($g, $wikiUser) || $wikiUser == $g) {
+                                        if ($this->wiki->UserIsInGroup($g, $wikiUser)) {
                                             $canAccess = true;
                                         }
                                     }
