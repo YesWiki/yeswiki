@@ -86,12 +86,14 @@ class ActionsBuilderService
             } else {
                 $translation = "_t(AB_".$name."_label)";
             }
-            $data['action_groups']['bazarliste']['actions'][$name] = [
-                "label" => $translation,
-                "properties" => [
-                    "template" => ["value" => $file]
-                ]
-            ];
+            if (empty($data['action_groups']['bazarliste']['actions'][$name])) {
+                $data['action_groups']['bazarliste']['actions'][$name] = [
+                    "label" => $translation,
+                    "properties" => [
+                        "template" => ["value" => $file]
+                    ]
+                ];
+            }
         } 
      
         // Handle translations
