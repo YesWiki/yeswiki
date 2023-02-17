@@ -6,48 +6,53 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Entity\Event;
+use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Tags\Service\TagsManager;
 use YesWiki\Wiki;
 
 class PageManager
 {
-    protected $wiki;
+    protected $aclService;
     protected $authController;
     protected $dbService;
-    protected $aclService;
+    protected $eventDispatcher;
+    protected $params;
     protected $securityController;
+    protected $tagsManager;
     protected $tripleStore;
     protected $userManager;
-    protected $tagsManager;
-    protected $params;
+    protected $wiki;
 
-    protected $pageCache;
     protected $ownersCache; // different cache because to set at the same time to prevent infinite loop
+    protected $pageCache;
 
     public function __construct(
-        Wiki $wiki,
+        AclService $aclService,
         AuthController $authController,
         DbService $dbService,
-        AclService $aclService,
-        TripleStore $tripleStore,
-        UserManager $userManager,
+        EventDispatcher $eventDispatcher,
         ParameterBagInterface $params,
         SecurityController $securityController,
-        TagsManager $tagsManager
+        TagsManager $tagsManager,
+        TripleStore $tripleStore,
+        UserManager $userManager,
+        Wiki $wiki
     ) {
-        $this->wiki = $wiki;
+        $this->aclService = $aclService;
         $this->authController = $authController;
         $this->dbService = $dbService;
-        $this->aclService = $aclService;
-        $this->tripleStore = $tripleStore;
-        $this->userManager = $userManager;
+        $this->eventDispatcher = $eventDispatcher;
         $this->params = $params;
         $this->securityController = $securityController;
         $this->tagsManager = $tagsManager;
+        $this->tripleStore = $tripleStore;
+        $this->userManager = $userManager;
+        $this->wiki = $wiki;
 
-        $this->pageCache = [];
         $this->ownersCache = [];
+        $this->pageCache = [];
     }
 
     /**
@@ -276,6 +281,10 @@ class PageManager
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='".TripleStore::TYPE_URI."' and `value`='".EntryManager::TRIPLES_ENTRY_ID."'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('referrers')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->tagsManager->deleteAll($tag);
+        
+        $errors = $this->eventDispatcher->yesWikiDispatch('page.deleted', [
+            'id' => $tag
+        ]);
     }
 
     /**
@@ -347,6 +356,17 @@ class PageManager
 
             unset($this->pageCache[$tag]);
             $this->ownersCache[$tag] = $owner;
+            
+            $errors = $this->eventDispatcher->yesWikiDispatch(empty($oldPage) ? 'page.created' : 'page.updated', [
+                'id' => $tag,
+                'data' => [
+                    'tag' => $tag,
+                    'body' => $body,
+                    'comment_on' => $comment_on,
+                    'owner' => $owner,
+                    'user' => $user
+                ]
+            ]);
 
             return 0;
         } else {

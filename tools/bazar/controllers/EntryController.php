@@ -13,7 +13,9 @@ use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Entity\Event;
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Core\Service\FavoritesManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
@@ -22,40 +24,43 @@ use YesWiki\Security\Controller\SecurityController;
 
 class EntryController extends YesWikiController
 {
-    protected $entryManager;
-    protected $favoritesManager;
-    protected $formManager;
     protected $aclService;
     protected $authController;
-    protected $semanticTransformer;
-    protected $pageManager;
-    protected $templateEngine;
     protected $config;
+    protected $entryManager;
+    protected $eventDispatcher;
+    protected $favoritesManager;
+    protected $formManager;
+    protected $pageManager;
     protected $securityController;
+    protected $semanticTransformer;
+    protected $templateEngine;
 
     private $parentsEntries ;
 
     public function __construct(
-        EntryManager $entryManager,
-        FavoritesManager $favoritesManager,
-        FormManager $formManager,
         AclService $aclService,
         AuthController $authController,
-        SemanticTransformer $semanticTransformer,
+        EntryManager $entryManager,
+        EventDispatcher $eventDispatcher,
+        FavoritesManager $favoritesManager,
+        FormManager $formManager,
         PageManager $pageManager,
         ParameterBagInterface $config,
-        SecurityController $securityController
+        SecurityController $securityController,
+        SemanticTransformer $semanticTransformer
     ) {
+        $this->aclService = $aclService;
         $this->authController = $authController;
+        $this->config = $config->all();
         $this->entryManager = $entryManager;
+        $this->eventDispatcher = $eventDispatcher;
         $this->favoritesManager = $favoritesManager;
         $this->formManager = $formManager;
-        $this->aclService = $aclService;
-        $this->semanticTransformer = $semanticTransformer;
         $this->pageManager = $pageManager;
-        $this->config = $config->all();
-        $this->securityController = $securityController;
         $this->parentsEntries = [];
+        $this->securityController = $securityController;
+        $this->semanticTransformer = $semanticTransformer;
     }
 
     /**
@@ -237,6 +242,10 @@ class EntryController extends YesWikiController
             try {
                 if ($state && isset($_POST['bf_titre'])) {
                     $entry = $this->entryManager->create($formId, $_POST);
+                    $errors = $this->eventDispatcher->yesWikiDispatch('entry.created', [
+                        'id' => $entry['id_fiche'],
+                        'data' => $entry
+                    ]);
                     // get the GET parameter 'incomingurl' for the incoming url
                     $redirectUrl = !empty($incomingUrl)
                         ? $incomingUrl
@@ -294,6 +303,10 @@ class EntryController extends YesWikiController
         try {
             if ($state && isset($_POST['bf_titre'])) {
                 $entry = $this->entryManager->update($entryId, $_POST);
+                $errors = $this->eventDispatcher->yesWikiDispatch('entry.updated', [
+                    'id' => $entry['id_fiche'],
+                    'data' => $entry
+                ]);
                 $redirectUrl = !empty($incomingUrl)
                     ? $incomingUrl
                     : (
@@ -339,6 +352,9 @@ class EntryController extends YesWikiController
     public function delete($entryId)
     {
         $this->entryManager->delete($entryId);
+        $errors = $this->eventDispatcher->yesWikiDispatch('entry.deleted', [
+            'id' => $entryId,
+        ]);
         // WARNING : 'delete_ok' is not used
         header('Location: ' . $this->wiki->Href('', 'BazaR', ['vue' => 'consulter', 'message' => 'delete_ok']));
     }
