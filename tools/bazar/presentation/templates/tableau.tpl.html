@@ -7,12 +7,14 @@ use YesWiki\Bazar\Field\EnumField ;
 use YesWiki\Bazar\Field\ImageField ;
 use YesWiki\Bazar\Field\MapField ;
 use YesWiki\Bazar\Service\FormManager ;
+use YesWiki\Bazar\Service\Guard ;
 use YesWiki\Core\Service\AclService ;
 use YesWiki\Wiki ;
 
 // get services
 $formManager = $this->wiki->services->get(FormManager::class);
 $aclService = $this->wiki->services->get(AclService::class);
+$guard = $this->wiki->services->get(Guard::class);
 
 $dataList = [];
 $colors = [];
@@ -211,6 +213,7 @@ if (count($fiches)>0) {
 
         /* sanitize emails */
         if (!$this->wiki->UserIsAdmin()){
+            $cannotViewEmail = !$guard->canViewEmail(null);
             foreach($fiches as $index => $fiche){
                 $formId = $fiche['id_typeannonce'];
                 if (strval($formId) != strval(intval($formId))){
@@ -224,7 +227,7 @@ if (count($fiches)>0) {
                             if (empty($field->renderStaticIfPermitted($fiche)) || 
                                 empty(trim($field->renderStaticIfPermitted($fiche)))){
                                 $fiches[$index][$field->getPropertyName()] = "";
-                            } else if ($field instanceof EmailField){
+                            } else if ($field instanceof EmailField && $cannotViewEmail){
                                 $fiches[$index][$field->getPropertyName()] = "***@***.***";
                             }
                         }

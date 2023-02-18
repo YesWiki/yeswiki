@@ -3,6 +3,7 @@
 use YesWiki\Bazar\Field\CalcField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\DbService;
@@ -169,6 +170,15 @@ class UpdateHandler extends YesWikiHandler
                 $output .= "❌ Not possible to create the file 'private/backups/README.md' !<br/>";
             } else {
                 $output .= '✅ Done !<br />';
+            }
+
+            // update canViewEmail group
+            $output .= 'ℹ️ Checking group canViewEmail.... ';
+            if (!is_null($this->wiki->GetGroupACL(Guard::CAN_VIEW_EMAIL_GROUP))){
+                $output .= '✅ already set !<br />';
+            } else {
+                $result = $this->wiki->SetGroupACL(Guard::CAN_VIEW_EMAIL_GROUP,'@admins');
+                $output .= empty($result) ? '✅ OK !<br />' : "❌ Not possible to create group canViewEmail";
             }
 
             // propose to update content of admin's pages
