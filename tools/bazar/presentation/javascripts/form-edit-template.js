@@ -313,6 +313,7 @@ var typeUserAttrs = {
       label: _t('BAZ_FORM_EDIT_EMAIL_SEND_FORM_CONTENT_LABEL'),
       options: { 0: _t('NO'), 1: _t('YES') }
     },
+    seeEmailAcls: {...readConf,...{label:_t('BAZ_FORM_EDIT_EMAIL_SEE_MAIL_ACLS')}},
     // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
     read: readConf,
     write: writeconf,
@@ -816,7 +817,7 @@ var yesWikiMapping = {
   number: defaultMapping,
   champs_mail: {
     ...defaultMapping,
-    ...{ 6: 'replace_email_by_button', 9: 'send_form_content_to_this_email' }
+    ...{ 4:'seeEmailAcls', 6: 'replace_email_by_button', 9: 'send_form_content_to_this_email' }
   },
   map: {
     0: 'type',
@@ -1074,6 +1075,9 @@ function initializeFormbuilder(formAndListIds) {
       }
       if (field.type === 'acls' && !field.hasOwnProperty('comment')) {
         field.comment = ['comments-closed']// comments-closed by default
+      }
+      if (field.type === 'champs_mail' && !('seeEmailAcls' in field)) {
+        field.seeEmailAcls = ['@admins']// @admins by default
       }
     }
   })
@@ -1333,6 +1337,10 @@ function parseWikiTextIntoJsonData(text) {
                   ? [' + ']
                   : [' * ']
                 )
+              : value.split(',').map((e)=>(['+','*','%'].includes(e.trim())) ? ` ${e.trim()} ` : e)
+          } else if (field == 'seeEmailAcls'){
+            fieldObject[field] = (value.trim() === '') 
+              ? '@admins'
               : value.split(',').map((e)=>(['+','*','%'].includes(e.trim())) ? ` ${e.trim()} ` : e)
           } else {
             fieldObject[field] = value

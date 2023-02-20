@@ -102,6 +102,7 @@ return [
     'BAZ_FORM_EDIT_EMAIL_LABEL' => 'Email',
     'BAZ_FORM_EDIT_EMAIL_REPLACE_BY_BUTTON_LABEL' => 'Replace email by a contact button',
     'BAZ_FORM_EDIT_EMAIL_SEND_FORM_CONTENT_LABEL' => 'Send entry\'s content to this email',
+    'BAZ_FORM_EDIT_EMAIL_SEE_MAIL_ACLS' => 'Can display emails in tables',
     'BAZ_FORM_EDIT_TAGS_LABEL' => 'Tags',
     'BAZ_FORM_EDIT_SUBSCRIBE_LIST_LABEL' => 'Subscribe mailing list',
     'BAZ_FORM_EDIT_CUSTOM_HTML_LABEL' => 'Custom HTML',

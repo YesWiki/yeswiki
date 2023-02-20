@@ -224,7 +224,7 @@ if (count($fiches)>0) {
                             if (empty($field->renderStaticIfPermitted($fiche)) || 
                                 empty(trim($field->renderStaticIfPermitted($fiche)))){
                                 $fiches[$index][$field->getPropertyName()] = "";
-                            } else if ($field instanceof EmailField){
+                            } else if ($field instanceof EmailField && !$field->canRead($fiches[$index],null)){
                                 $fiches[$index][$field->getPropertyName()] = "***@***.***";
                             }
                         }
