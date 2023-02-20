@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Bazar\Controller\ApiController as BazarApiController;
 
 /**
  * @Field({"champs_mail"})
@@ -58,6 +59,32 @@ class EmailField extends BazarField
         return $this->render('@bazar/fields/email.twig', [
             'value' => $value,
         ]);
+    }
+
+    public function canRead($entry, ?string $userNameForRendering = null)
+    {
+        return parent::canRead($entry,$userNameForRendering) && (
+            !$this->getShowContactForm() ||
+            // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw
+            $this->canDisplayEmailForThisUrl()
+        );
+    }
+
+    protected function canDisplayEmailForThisUrl(): bool
+    {
+        $wiki = $this->getWiki();
+        $bazarApiController = $this->getService(BazarApiController::class);
+        return (
+            $wiki->GetPageTag() !== 'api'
+            &&
+            in_array($wiki->getMethod(), ['show','edit','editiframe','mail'])
+        ) ||
+        (
+            $wiki->GetPageTag() !== 'api'
+            &&
+            // only authorized api routes /api/entries/html/{selectedEntry}&fields=html_output
+            $bazarApiController->isEntryViewFastAccessHelper()
+        );
     }
 
     public function getShowContactForm()
