@@ -12,8 +12,6 @@ use YesWiki\Wiki;
 
 class Guard
 {
-    public const CAN_VIEW_EMAIL_GROUP = 'canViewEmail';
-
     protected $aclService;
     protected $authController;
     protected $formManager;
@@ -91,9 +89,8 @@ class Guard
                     $fieldname = array();
                     foreach ($form['prepared'] as $field) {
                         // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw
-                        if ($field instanceof EmailField &&
-                             !$this->canViewEmail($userNameForCheckingACL) && 
-                                $field->getShowContactForm()
+                        if ($field instanceof EmailField
+                                && $field->getShowContactForm()
                                 && (
                                     (
                                         $this->wiki->GetPageTag() !== 'api'
@@ -134,12 +131,6 @@ class Guard
         return $page;
     }
 
-    public function canViewEmail($userNameForCheckingACL): bool
-    {
-        return $this->wiki->UserIsAdmin($userNameForCheckingACL) ||
-            $this->userManager->isInGroup(self::CAN_VIEW_EMAIL_GROUP, $userNameForCheckingACL, false);
-    }
-
     protected function isPageOwner($page, ?string $userName = null) : bool
     {
         if (!empty($userName)) {
@@ -173,10 +164,7 @@ class Guard
                 && !empty($entry['id_typeannonce'])) {
             $formId = $entry['id_typeannonce'];
             $field = $this->formManager->findFieldFromNameOrPropertyName($fieldName, $formId);
-            if (!empty($field) && 
-                $field instanceof EmailField && 
-                $field->getShowContactForm() &&
-                !$this->canViewEmail(null)) {
+            if (!empty($field) && $field instanceof EmailField && $field->getShowContactForm()) {
                 return '';
             }
         }

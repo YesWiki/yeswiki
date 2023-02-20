@@ -947,9 +947,6 @@ class Wiki
         } elseif ($gname === $origin) {
             return true;
         }
-        if (empty($acl)){
-            $acl = '';
-        }
         foreach (explode("\n", $acl) as $line) {
             if (! $line) {
                 continue;
