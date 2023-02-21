@@ -11,6 +11,11 @@ use Caxy\HtmlDiff\HtmlDiffConfig;
 
 class DiffService
 {
+    protected $entryController;
+    protected $entryManager;
+    protected $pageManager;
+    protected $wiki;
+
     public function __construct(
         Wiki $wiki,
         PageManager $pageManager,
