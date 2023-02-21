@@ -50,10 +50,8 @@ if ($HasAccessRead=$this->HasAccess("read")) {
                 $latest = $this->LoadPage($this->tag); ?>
 				<?php
                   $time = isset($_GET['time']) ? $_GET['time'] : '';
-                echo $this->FormOpen(testUrlInIframe() ? 'editiframe' : 'edit'); ?>
+                echo $this->FormOpen(testUrlInIframe() ? 'editiframe' : 'edit','','get'); ?>
 				<input type="hidden" name="time" value="<?php echo $time ?>" />
-				<input type="hidden" name="previous" value="<?php echo  $latest["id"] ?>" />
-				<input type="hidden" name="body" value="<?php echo  htmlspecialchars($this->page["body"], ENT_COMPAT, YW_CHARSET) ?>" />
 				<input class="btn btn-primary" type="submit" value="<?php echo _t('EDIT_ARCHIVED_REVISION'); ?>" />
 				<?php echo  $this->FormClose(); ?>
 				<?php
