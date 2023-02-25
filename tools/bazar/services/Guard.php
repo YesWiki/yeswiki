@@ -88,8 +88,8 @@ class Guard
                     $fieldname = array();
                     foreach ($form['prepared'] as $field) {
                         if ($field instanceof BazarField
-                                && !$field->canRead(['id_fiche' => $tag], $userNameForCheckingACL)
-                                ) {
+                             && !$field->canRead(['id_fiche' => $tag], $userNameForCheckingACL)
+                           ) {
                             $fieldname[] = $field->getPropertyName() ;
                         }
                     }

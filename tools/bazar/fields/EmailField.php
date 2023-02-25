@@ -29,8 +29,8 @@ class EmailField extends BazarField
         $this->showContactForm = $values[self::FIELD_SHOW_CONTACT_FORM] === 'form';
         $this->maxChars = $this->maxChars ?? 255;
         $this->seeEmailAcls = (!empty($values[self::FIELD_SEE_MAIL_ACLS]) && is_string($values[self::FIELD_SEE_MAIL_ACLS]) && !empty(trim($values[self::FIELD_SEE_MAIL_ACLS])))
-            ? trim($values[self::FIELD_SEE_MAIL_ACLS])
-            : '@admins' ; // default
+        ? trim($values[self::FIELD_SEE_MAIL_ACLS])
+        : '@admins' ; // default
         $this->seeEmailAcls = str_replace(',',"\n",$this->seeEmailAcls);
         $this->maxChars = '';
     }
@@ -56,7 +56,7 @@ class EmailField extends BazarField
     {
         $value = $this->getValue($entry);
         if (!$value) {
-            return "";
+            return '';
         }
 
         // TODO add JS libraries with Twig
@@ -71,32 +71,28 @@ class EmailField extends BazarField
 
     public function canRead($entry, ?string $userNameForRendering = null)
     {
-        $aclService = $this->getService(AclService::class);
-        return parent::canRead($entry,$userNameForRendering) && (
-            !$this->getShowContactForm() ||
-            // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw
-            (
-                $this->canDisplayEmailForThisUrl() &&
-                $aclService->check($this->getSeeEmailAcls(), $userNameForRendering, true)
-            )
-        );
-    }
-
-    protected function canDisplayEmailForThisUrl(): bool
-    {
         $wiki = $this->getWiki();
+        $aclService = $this->getService(AclService::class);
         $bazarApiController = $this->getService(BazarApiController::class);
-        return (
-            $wiki->GetPageTag() !== 'api'
-            &&
-            in_array($wiki->getMethod(), ['show','edit','editiframe','mail'])
-        ) ||
-        (
-            $wiki->GetPageTag() !== 'api'
-            &&
-            // only authorized api routes /api/entries/html/{selectedEntry}&fields=html_output
-            $bazarApiController->isEntryViewFastAccessHelper()
-        );
+
+        // we test if we need an acl exception for an entry's email in a contact form, even if the display acls are against
+        $contactFormException = false; 
+        if ($this->getShowContactForm()) {
+            $contactFormException = $entry['id_fiche'] ===  $wiki->GetPageTag() // exception only if one entry's page
+            && (
+              ($wiki->GetPageTag() !== 'api' // if not api, just for certain handlers
+                && in_array($wiki->getMethod(), ['show', 'html', 'edit', 'editiframe', 'mail'])
+              )
+              || ($wiki->GetPageTag() == 'api' // only authorized api routes /api/entries/html/{selectedEntry}&fields=html_output
+                && $bazarApiController->isEntryViewFastAccessHelper() 
+              )
+            );
+        }
+        return parent::canRead($entry, $userNameForRendering) // field acls
+           && (
+            $contactFormException // can read the email's value for contact form in the entry's page
+            || $aclService->check($this->getSeeEmailAcls(), $userNameForRendering, true) // check if user is allowed to see raw email
+          );
     }
 
     public function getShowContactForm()

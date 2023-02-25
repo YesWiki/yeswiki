@@ -221,12 +221,12 @@ if (count($fiches)>0) {
                         unset($fiches[$index]);
                     } else {
                         foreach($form['prepared'] as $field){
-                            if (empty($field->renderStaticIfPermitted($fiche)) || 
+                            if ($field instanceof EmailField && !$field->canRead($fiches[$index],null)){
+                                $fiches[$index][$field->getPropertyName()] = "***@***.***";
+                            } elseif (empty($field->renderStaticIfPermitted($fiche)) || 
                                 empty(trim($field->renderStaticIfPermitted($fiche)))){
                                 $fiches[$index][$field->getPropertyName()] = "";
-                            } else if ($field instanceof EmailField && !$field->canRead($fiches[$index],null)){
-                                $fiches[$index][$field->getPropertyName()] = "***@***.***";
-                            }
+                            } 
                         }
                     }
                 }
