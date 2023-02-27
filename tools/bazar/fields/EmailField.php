@@ -76,7 +76,6 @@ class EmailField extends BazarField
         $bazarApiController = $this->getService(BazarApiController::class);
 
         // we test if we need an acl exception for an entry's email in a contact form, even if the display acls are against
-        $contactFormException = false; 
         if ($this->getShowContactForm()) {
             $contactFormException = $entry['id_fiche'] ===  $wiki->GetPageTag() // exception only if one entry's page
             && (
@@ -87,6 +86,9 @@ class EmailField extends BazarField
                 && $bazarApiController->isEntryViewFastAccessHelper() 
               )
             );
+        } else {
+            // by default, if `showContactForm` is false, show email everywhere if read acl OK
+            $contactFormException = true; 
         }
         return parent::canRead($entry, $userNameForRendering) // field acls
            && (
