@@ -75,26 +75,29 @@ class EmailField extends BazarField
         $aclService = $this->getService(AclService::class);
         $bazarApiController = $this->getService(BazarApiController::class);
 
+        $canBeRead = parent::canRead($entry, $userNameForRendering);
+
+        // by default, if `showContactForm` is false, show email everywhere if read acl OK
+
         // we test if we need an acl exception for an entry's email in a contact form, even if the display acls are against
-        if ($this->getShowContactForm()) {
-            $contactFormException = $entry['id_fiche'] ===  $wiki->GetPageTag() // exception only if one entry's page
-            && (
-              ($wiki->GetPageTag() !== 'api' // if not api, just for certain handlers
-                && in_array($wiki->getMethod(), ['show', 'html', 'edit', 'editiframe', 'mail'])
-              )
-              || ($wiki->GetPageTag() == 'api' // only authorized api routes /api/entries/html/{selectedEntry}&fields=html_output
-                && $bazarApiController->isEntryViewFastAccessHelper() 
-              )
-            );
-        } else {
-            // by default, if `showContactForm` is false, show email everywhere if read acl OK
-            $contactFormException = true; 
+        if ($canBeRead && $this->getShowContactForm()) {
+
+            $tag = $wiki->GetPageTag();
+            if ($tag === 'api'){
+                // only authorized api routes /api/entries/html/{selectedEntry}&fields=html_output
+                $canBeRead = $bazarApiController->isEntryViewFastAccessHelper() ;
+            } elseif ($aclService->check($this->getSeeEmailAcls(), $userNameForRendering, true)) {
+                // check if user is allowed to see raw email
+                $canBeRead = true;
+            } elseif ($tag === $entry['id_fiche']) {
+                // if not api and not already acl OK, just for certain handlers
+                $canBeRead = in_array($wiki->getMethod(), ['show', 'html', 'edit', 'editiframe', 'mail']);
+            } else {
+                $canBeRead = false;
+            }
         }
-        return parent::canRead($entry, $userNameForRendering) // field acls
-           && (
-            $contactFormException // can read the email's value for contact form in the entry's page
-            || $aclService->check($this->getSeeEmailAcls(), $userNameForRendering, true) // check if user is allowed to see raw email
-          );
+
+        return $canBeRead;
     }
 
     public function getShowContactForm()
