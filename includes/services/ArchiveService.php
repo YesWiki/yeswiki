@@ -129,7 +129,7 @@ class ArchiveService
 
         $this->writeOutput($output, "=== Checking free space ===", true, $outputFile);
         try {
-            $this->assertEnoughtSpace();
+            $this->assertEnoughtSpace($excludedfiles);
         } catch (Throwable $th) {
             $this->writeOutput($output, "There is not enough free space.", true, $outputFile);
             $this->writeOutput($output, "=> {$th->getMessage()}", true, $outputFile);
@@ -1099,11 +1099,22 @@ class ArchiveService
 
     /**
      * check if there is enought free space before archive (size of files + custom + 300 Mo)
+     * @param array $excludedfiles
      * @throws Exception
      */
-    protected function assertEnoughtSpace()
+    protected function assertEnoughtSpace(array $excludedfiles = [])
     {
-        $extimatedNeededSpace = $this->estimateFilesAndCustomFolders();
+        // merge extra and excluded files from wakka.config.php
+        $archiveParams = $this->getArchiveParams();
+        if (!empty($archiveParams[self::KEY_FOR_EXCLUDEDFILES]) &&
+            is_array($archiveParams[self::KEY_FOR_EXCLUDEDFILES])) {
+            foreach ($archiveParams[self::KEY_FOR_EXCLUDEDFILES] as $path) {
+                if (is_string($path) && !in_array($path, $excludedfiles)) {
+                    $excludedfiles[] = $path;
+                }
+            }
+        }
+        $extimatedNeededSpace = $this->estimateFilesAndCustomFolders($excludedfiles);
         $extimatedNeededSpace += 300 * 1024 * 1024;
 
         $freeSpace = disk_free_space(realpath(getcwd()));
@@ -1114,13 +1125,18 @@ class ArchiveService
 
     /**
      * estimate size of files and custom folder
+     * @param array $excludedfiles
      * @return int $bytes
      */
-    protected function estimateFilesAndCustomFolders(): int
+    protected function estimateFilesAndCustomFolders(array $excludedfiles): int
     {
         $bytes = 0;
-        $bytes += $this->folderSize("files");
-        $bytes += $this->folderSize("custom");
+        if (!in_array('files',$excludedfiles)){
+            $bytes += $this->folderSize("files");
+        }
+        if (!in_array('custom',$excludedfiles)){
+            $bytes += $this->folderSize("custom");
+        }
 
         return $bytes;
     }
