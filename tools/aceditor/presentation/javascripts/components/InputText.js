@@ -2,7 +2,14 @@
 export default {
   props: ['value', 'config'],
   mounted() {
-    if (!this.value && this.config.value) this.$emit('input', this.config.value)
+    if (!this.value){
+      if (this.$root.isEditingExistingAction && !this.config.default){
+        // when editing, do not use config.value if `!default` gives `true` (case for '')
+        this.$emit('input', '')
+      } else if (this.config.value){
+        this.$emit('input', this.config.value)
+      }
+    }
   },
   template: `
     <div class="form-group input-group" :class="config.type" :title="config.hint" >

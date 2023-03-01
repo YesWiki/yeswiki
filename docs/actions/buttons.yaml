@@ -9,6 +9,7 @@ actions:
       text:
         label: _t(AB_buttons_action_button_text_label)
         value: _t(AB_buttons_action_button_text_default)
+        default: ''
         type: text
       link:
         label: _t(AB_buttons_action_button_link_label)

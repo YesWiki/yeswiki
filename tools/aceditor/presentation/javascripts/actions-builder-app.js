@@ -154,6 +154,7 @@ export const app = {
     initValues() {
       this.values = {}
       this.actionParams = {}
+      const previousSelectedActionId = this.selectedActionId
       if (this.isEditingExistingAction) {
         // use a fake dom to parse wiki code attributes
         const fakeDom = $(`<${this.currentSelectedAction}/>`)[0]
@@ -194,7 +195,17 @@ export const app = {
       }
       this.updateActionParams()
       // If only one action available, select it
-      if (Object.keys(this.actions).length == 1) this.selectedActionId = Object.keys(this.actions)[0]
+      if (Object.keys(this.actions).length == 1) {
+        if (this.selectedActionId == '' && previousSelectedActionId == Object.keys(this.actions)[0]){
+          this.selectedActionId = Object.keys(this.actions)[0]
+          // force watcher without changing value because VueJs will not detect the change
+          // The comparison between changes is done at regular interval, so there will not have detection
+          // of change if the value retrieve its previous value before the end of the interval
+          this.watchSelectedActionId() 
+        } else {
+          this.selectedActionId = Object.keys(this.actions)[0]
+        }
+      }
     },
     // prefer methods to computed to prevent cache
     getSelectedFormId() {
@@ -282,7 +293,10 @@ export const app = {
       if (!this.selectedAction) return
       // Populate the values field from the config
       for (const propName in this.selectedAction.properties) {
-        const configValue = this.selectedAction.properties[propName].value || this.selectedAction.properties[propName].default
+        // if editing, do not fill value with value when `!default == true`, use only default
+        const configValue = this.isEditingExistingAction
+          ? this.selectedAction.properties[propName].default
+          : (this.selectedAction.properties[propName].value || this.selectedAction.properties[propName].default)
         if (configValue && !this.values[propName]) Vue.set(this.values, propName, configValue)
       }
       if (this.isBazarListeAction && this.selectedAction.properties && this.selectedAction.properties.template) this.values.template = this.selectedAction.properties.template.value
@@ -321,6 +335,12 @@ export const app = {
       // Order params, and remove empty values
       Object.keys(result).sort().forEach((key) => { if (result[key] !== '') orderedResult[key] = result[key] })
       this.actionParams = orderedResult
+    },
+    watchSelectedActionId(){
+      if (!this.isBazarListeAction && !this.isEditingExistingAction) {
+        this.values = {}
+      }
+      this.initValuesOnActionSelected()
     }
   },
   watch: {
@@ -333,10 +353,7 @@ export const app = {
       }
     },
     selectedActionId() {
-      if (!this.isBazarListeAction && !this.isEditingExistingAction) {
-        this.values = {}
-      }
-      this.initValuesOnActionSelected()
+      this.watchSelectedActionId()
     }
   }
 }
