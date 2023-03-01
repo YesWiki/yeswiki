@@ -24,18 +24,25 @@ export default {
     parseNewValues(newValues) {
       if (newValues.class) {
         const classes = newValues.class.split(' ')
+        const classesGroupedBy2 = []
+        classes.forEach((c,idx)=>{
+          if ((idx+1) < classes.length){
+            classesGroupedBy2.push(`${c} ${classes[idx+1]}`)
+          }
+        })
+        const classesMerged = [...classes,...classesGroupedBy2]
         let optionsList = []
         for (const propName in this.config.subproperties) {
           const componentDefinition = this.config.subproperties[propName] || {}
           if (componentDefinition.type == 'list') {
             optionsList = Object.keys(componentDefinition.options)
-            for (const classValue of classes) {
+            for (const classValue of classesMerged) {
               if (optionsList.find((o) => o == classValue)) this.classValues[propName] = classValue
             }
           } else if (componentDefinition.type == 'checkbox') {
             const checkedValue = componentDefinition.checkedvalue || ''
             const unCheckedValue = componentDefinition.uncheckedvalue || ''
-            for (const classValue of classes) {
+            for (const classValue of classesMerged) {
               if ((classValue == checkedValue && checkedValue != '')
                 || (classValue == unCheckedValue && unCheckedValue != '')) {
                 this.classValues[propName] = classValue
