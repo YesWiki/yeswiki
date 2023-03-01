@@ -314,6 +314,7 @@ var typeUserAttrs = {
       options: { 0: _t('NO'), 1: _t('YES') }
     },
     seeEmailAcls: {...readConf,...{label:_t('BAZ_FORM_EDIT_EMAIL_SEE_MAIL_ACLS')}},
+    readWhenForm: {...readConf,...{label:_t('BAZ_FORM_EDIT_EMAIL_SEND_ACLS')}},
     // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
     read: readConf,
     write: writeconf,
@@ -596,7 +597,69 @@ var typeUserAttrs = {
 // How a field is represented in the formBuilder view
 var templates = {
   champs_mail(fieldData) {
-    return { field: `<input id="${fieldData.name}" type="email" value="" />` }
+    return { 
+      field: `<input id="${fieldData.name}" type="email" value="" />`,
+      onRender() {
+        let currentField = $(".champs_mail-field")
+        currentField
+          .find("select[name=replace_email_by_button]:not(.initialized)")
+          .on('change',(event)=>{
+            const element = event.target
+
+            const base = $(element).closest(".champs_mail-field.form-field")
+            $(element).addClass("initialized")
+
+            const setDisplay = (base,name,newValue)=>{
+              let wrapper = $(base).find(`div.form-group.${name}-wrap`)
+              if (wrapper && wrapper.length > 0){
+                if(newValue){
+                  wrapper.show()
+                } else {
+                  wrapper.hide()
+                }
+              }
+            }
+            if ($(element).val() == 'form'){
+              setDisplay(base,'readWhenForm',1)
+              setDisplay(base,'seeEmailAcls',1)
+              setDisplay(base,'read',0)
+            } else {
+              setDisplay(base,'readWhenForm',0)
+              setDisplay(base,'seeEmailAcls',0)
+              setDisplay(base,'read',1)
+            }
+          })
+          .trigger("change")
+        const arrayEquals = (a,b)=>{
+          if (a.length != b.length){
+            return false
+          }
+          return (a.every((e)=>b.includes(e)) && b.every((e)=>a.includes(e)))
+        }
+        currentField.find("select[name=read]:not(.initialized)")
+            .on('change',(event)=>{
+              const element = event.target
+              const base = $(element).closest(".champs_mail-field.form-field")
+              $(element).addClass("initialized")
+
+              const readWhenFormInput = $(base).find("select[name=readWhenForm]")
+              if (readWhenFormInput && readWhenFormInput.length > 0 && !arrayEquals(readWhenFormInput.val(),$(element).val())){
+                readWhenFormInput.val($(element).val())
+              }
+            }).trigger("change")
+        currentField.find("select[name=readWhenForm]:not(.initialized)")
+            .on('change',(event)=>{
+              const element = event.target
+              const base = $(element).closest(".champs_mail-field.form-field")
+              $(element).addClass("initialized")
+
+              const readInput = $(base).find("select[name=read]")
+              if (readInput && readInput.length > 0 && !arrayEquals(readInput.val(),$(element).val())){
+                readInput.val($(element).val())
+              }
+            }).trigger("change")
+      }
+    }
   },
   map(fieldData) {
     return { field: _t('BAZ_FORM_EDIT_MAP_FIELD') }

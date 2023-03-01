@@ -103,6 +103,7 @@ return [
     'BAZ_FORM_EDIT_EMAIL_REPLACE_BY_BUTTON_LABEL' => 'Remplacer l\'email par un bouton contact',
     'BAZ_FORM_EDIT_EMAIL_SEND_FORM_CONTENT_LABEL' => 'Envoyer le contenu de la fiche à cet email',
     'BAZ_FORM_EDIT_EMAIL_SEE_MAIL_ACLS' => 'Affichage brut de l\'email autorisé pour',
+    'BAZ_FORM_EDIT_EMAIL_SEND_ACLS' => 'Envoi d\'email autorisé pour',
     'BAZ_FORM_EDIT_TAGS_LABEL' => 'Mots clés',
     'BAZ_FORM_EDIT_SUBSCRIBE_LIST_LABEL' => 'Inscription Liste Diffusion',
     'BAZ_FORM_EDIT_CUSTOM_HTML_LABEL' => 'Custom HTML',
