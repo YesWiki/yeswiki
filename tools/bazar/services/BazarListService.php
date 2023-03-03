@@ -54,7 +54,8 @@ class BazarListService
             $entries = $this->externalBazarService->getEntries([
                 'forms' => $forms,
                 'refresh' => $options['refresh'] ?? false,
-                'queries' => $options['query'] ?? ''
+                'queries' => $options['query'] ?? '',
+                'correspondance' => $options['correspondance'] ?? ''
             ]);
         } else {
             $entries = $this->entryManager->search(

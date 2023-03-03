@@ -6,8 +6,10 @@ use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\ImportService;
 use YesWiki\Wiki;
+use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Exception\ExternalBazarServiceException;
 use YesWiki\Bazar\Field\ExternalImageField;
+use YesWiki\Bazar\Service\EntryManager;
 
 class ExternalBazarService
 {
@@ -216,9 +218,16 @@ class ExternalBazarService
                 'forms' => [], // forms
                 'queries' => '', // Sélection par clé-valeur
                 'refresh' => false, // parameter to force refresh cache
+                'correspondance' => '' // parameter to reorder fields
             ],
             $params
         );
+        
+        if (!empty($params['correspondance']) && is_string($params['correspondance'])){
+            $params['correspondance'] = $this->entryManager->getMultipleParameters($params['correspondance'], ',', '=');
+        } else {
+            $params['correspondance'] = '';
+        }
 
         if ($this->debug && $this->timeDebug) {
             $diffTime = -hrtime(true);
@@ -300,6 +309,11 @@ class ExternalBazarService
                                 ];
                             $entry['url'] = $url . '?' . $entry['id_fiche'];
                             $entry['id_typeannonce'] =$localFormId;
+                            if (!empty($params['correspondance'])){
+                                foreach ($params['correspondance'] as $key => $fieldName) {
+                                    $entry[$key] = (empty($fieldName) || !isset($entry[$fieldName])) ? "" : $entry[$fieldName];
+                                }
+                            }
                             $entries[] = $entry;
                         }
                     }
