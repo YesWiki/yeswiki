@@ -27,7 +27,7 @@ class MailPeriodAction extends YesWikiAction
         $periods = $this->updatePeriods($periods, $userName);
         $messages = [];
         
-        if ($user) {
+        if ($user && !empty($userName)) {
             if (isset($_REQUEST['subscribe'])) {
                 $period = $_REQUEST['subscribe'];
                 $group = $periods[$period]['group'];

@@ -303,7 +303,7 @@ class AclService
             $neededACL[] = $userName;
             $groups = $this->wiki->GetGroupsList();
             foreach ($groups as $group) {
-                if ($this->userManager->isInGroup($group, $userName, true)) {
+                if (!empty($userName) && $this->userManager->isInGroup($group, $userName, true)) {
                     $neededACL[] = '@'.$group;
                 }
             }

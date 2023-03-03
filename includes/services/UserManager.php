@@ -270,7 +270,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     {
         $groups = $this->wiki->GetGroupsList();
         $groups = array_filter($groups, function ($group) use ($user, $adminCheck) {
-            return $this->isInGroup($group, $user['name'], $adminCheck);
+            return !empty($user['name']) && $this->isInGroup($group, $user['name'], $adminCheck);
         });
 
         return $groups;
