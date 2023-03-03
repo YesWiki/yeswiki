@@ -1,7 +1,9 @@
 <?php
 
 use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Service\BazarListService;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Exception\TemplateNotFound;
 use YesWiki\Core\YesWikiAction;
@@ -15,6 +17,8 @@ class BazarListeAction extends YesWikiAction
 
     public function formatArguments($arg)
     {
+        $entryManager = $this->getService(EntryManager::class);
+
         // ICONS FIELD
         $iconField = $_GET['iconfield'] ?? $arg['iconfield'] ?? null ;
 
@@ -23,8 +27,8 @@ class BazarListeAction extends YesWikiAction
         $iconAlreadyDefined = ($icon == $this->params->get('baz_marker_icon') || is_array($icon)) ;
         if (!$iconAlreadyDefined) {
             if (!empty($icon)) {
-                $tabparam = getMultipleParameters($icon, ',', '=');
-                if ($tabparam['fail'] != 1) {
+                try {
+                    $tabparam = $entryManager->getMultipleParameters($icon, ',', '=');
                     if (count($tabparam) > 1 && !empty($iconField)) {
                         // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
                         foreach ($tabparam as $key=>$data) {
@@ -34,7 +38,7 @@ class BazarListeAction extends YesWikiAction
                     } else {
                         $icon = trim(array_values($tabparam)[0]);
                     }
-                } else {
+                } catch (ParsingMultipleException $th) {
                     throw new Exception('action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"');
                 }
             } else {
@@ -50,8 +54,8 @@ class BazarListeAction extends YesWikiAction
         $colorAlreadyDefined = ($color == $this->params->get('baz_marker_color') || is_array($color)) ;
         if (!$colorAlreadyDefined) {
             if (!empty($color)) {
-                $tabparam = getMultipleParameters($color, ',', '=');
-                if ($tabparam['fail'] != 1) {
+                try {
+                    $tabparam = $entryManager->getMultipleParameters($color, ',', '=');
                     if (count($tabparam) > 1 && !empty($colorField)) {
                         // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
                         foreach ($tabparam as $key=>$data) {
@@ -61,7 +65,7 @@ class BazarListeAction extends YesWikiAction
                     } else {
                         $color = trim(array_values($tabparam)[0]);
                     }
-                } else {
+                } catch (ParsingMultipleException $th) {
                     throw new Exception('action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"');
                 }
             } else {

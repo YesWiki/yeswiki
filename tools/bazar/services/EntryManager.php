@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Service;
 
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\CheckboxField;
@@ -870,9 +871,8 @@ class EntryManager
     {
         // champs correspondants
         if (!empty($correspondance)) {
-            $tabcorrespondances = getMultipleParameters($correspondance, ',', '=');
-            if ($tabcorrespondances['fail'] != 1) {
-                unset($tabcorrespondances['fail']);
+            try {
+                $tabcorrespondances = $this->getMultipleParameters($correspondance, ',', '=');
                 foreach ($tabcorrespondances as $key => $data) {
                     if (isset($key)) {
                         // not possible to init the Guard in the constructor because of circular reference problem
@@ -881,7 +881,7 @@ class EntryManager
                         echo '<div class="alert alert-danger">'._t('BAZ_CORRESPONDANCE_ERROR').'</div>';
                     }
                 }
-            } else {
+            } catch (ParsingMultipleException $th) {
                 echo '<div class="alert alert-danger">'.str_replace("\n", "<br/>", _t('BAZ_CORRESPONDANCE_ERROR2')).'</div>';
             }
         }
@@ -904,6 +904,50 @@ class EntryManager
             $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
             $fiche['semantic'] = $this->semanticTransformer->convertToSemanticData($form, $fiche);
         }
+    }
+
+    /**
+     * extract multiples parameters from argument
+     * @param string $param
+     * @param string $firstseparator
+     * @param string $secondseparator
+     * @return array
+     * @throws ParsingMultipleException
+     */
+    public function getMultipleParameters(string $param, $firstseparator = ',', $secondseparator = '='):array
+    {
+        // This function's aim is to fetch (key , value) couples stored in a multiple parameter
+        // $param is the parameter where we have to fecth the couples
+        // $firstseparator is the separator between the couples (usually ',')
+        // $secondseparator is the separator between key and value in each couple (usually '=')
+        // Returns the table of (key , value) couples
+        // If fails to explode the data, then throws ParsingMultipleException
+        $tabparam = [];
+        // check if first and second separators are at least somewhere
+        if (strpos($param, $secondseparator) === false) {
+            throw new ParsingMultipleException("Not able to parse multiple parameters because '$secondseparator' is not included in furnished param.");
+        } else {
+            $params = explode($firstseparator, $param);
+            $params = array_map('trim', $params);
+            if (count($params) == 0) {
+                throw new ParsingMultipleException('There is no parameter to parse !');
+            } else {
+                foreach ($params as $value) {
+                    if (empty($value)) {
+                        throw new ParsingMultipleException('One parameter should not be empty !');
+                    } else {
+                        $tab = explode($secondseparator, $value);
+                        $tab = array_map('trim', $tab);
+                        if (count($tab) > 1) {
+                            $tabparam[$tab[0]] = $tab[1];
+                        } else {
+                            throw new ParsingMultipleException("One parameter does not contain '$secondseparator'!");
+                        }
+                    }
+                }
+            }
+        }
+        return $tabparam;
     }
 
     private function removeSendmail(array &$data): ?string

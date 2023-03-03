@@ -1,8 +1,10 @@
 <?php
 
+use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\DateField;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\EntryManager;
 
 function multiArraySearch($array, $key, $value)
 {
@@ -281,36 +283,15 @@ function champCompare($a, $b)
     }
 }
 
+/**
+ * @deprecated use EntryManager::getMultipleParameters instead
+ */
 function getMultipleParameters($param, $firstseparator = ',', $secondseparator = '=')
 {
-    // This function's aim is to fetch (key , value) couples stored in a multiple parameter
-    // $param is the parameter where we have to fecth the couples
-    // $firstseparator is the separator between the couples (usually ',')
-    // $secondseparator is the separator between key and value in each couple (usually '=')
-    // Returns the table of (key , value) couples
-    // If fails to explode the data, then $tabparam['fail'] == 1
-    $tabparam = array();
-    $tabparam['fail'] = 0;
-    // check if first and second separators are at least somewhere
-    if (strpos($param, $secondseparator) !== false) {
-        $params = explode($firstseparator, $param);
-        $params = array_map('trim', $params);
-        if (count($params) > 0) {
-            foreach ($params as $value) {
-                if (!empty($value)) {
-                    $tab = explode($secondseparator, $value);
-                    $tab = array_map('trim', $tab);
-                    if (count($tab) > 1) {
-                        $tabparam[$tab[0]] = $tab[1];
-                    } else {
-                        $tabparam['fail'] = 1;
-                    }
-                }
-            }
-        } else {
-            $tabparam['fail'] = 1;
-        }
-    } else {
+    try {
+        $tabparam = $GLOBALS['wiki']->services->get(EntryManager::class)->getMultipleParameters($param, $firstseparator, $secondseparator);
+        $tabparam['fail'] = 0;
+    } catch (ParsingMultipleException $th) {
         $tabparam['fail'] = 1;
     }
     return $tabparam;
