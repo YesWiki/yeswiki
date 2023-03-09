@@ -167,7 +167,7 @@ ins img, del img {
   font-weight: bold;
 }
 .preview-container table.entry-code td.key pre {
-  white-space: pre;
+  white-space: pre-line; /* breaks line so we don't need to horizontally scroll */
 }
 .preview-container table.entry-code td + td {
   padding-left: 1rem;
