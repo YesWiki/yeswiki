@@ -311,7 +311,15 @@ class Wiki
             // let's search which pages versions we have to remove
             // this is necessary beacause even MySQL does not handel multi-tables deletes before version 4.0
             $wnPages = $this->GetConfigValue('table_prefix') . 'pages';
-            $sql = 'SELECT DISTINCT a.id FROM ' . $wnPages . ' a,' . $wnPages . ' b WHERE a.latest = \'N\' AND a.time < date_sub(now(), INTERVAL \'' . mysqli_real_escape_string($this->dblink, $days) . '\' DAY) AND a.tag = b.tag AND a.time < b.time AND b.time < date_sub(now(), INTERVAL \'' . mysqli_real_escape_string($this->dblink, $days) . '\' DAY)';
+            $daysFormatted = mysqli_real_escape_string($this->dblink, $days);
+            $sql = <<<SQL
+            SELECT DISTINCT a.id FROM $wnPages a,$wnPages b 
+                WHERE a.latest = 'N' 
+                    AND a.time < date_sub(now(), INTERVAL '$daysFormatted' DAY) 
+                    AND a.tag = b.tag 
+                    AND a.time < b.time 
+                    AND b.time < date_sub(now(), INTERVAL '$daysFormatted' DAY);
+            SQL;
             $ids = $this->LoadAll($sql);
 
             if (count($ids)) {
