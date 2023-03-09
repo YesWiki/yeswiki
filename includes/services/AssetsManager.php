@@ -27,6 +27,8 @@ class AssetsManager
         'tools/bazar/libs/vendor/fullcalendar/fullcalendar.min.js' => 'javascripts/vendor/fullcalendar-jquery-v3.10.0/fullcalendar.min.js',
         'tools/bazar/libs/vendor/fullcalendar/locale-all.js' => 'javascripts/vendor/fullcalendar-jquery-v3.10.0/locale-all.min.js',
         'tools/bazar/libs/vendor/moment.min.js' => 'javascripts/vendor/moment/moment-with-locales.min.js',
+        'tools/templates/libs/vendor/iframeResizer.contentWindow.min.js' => 'javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js',
+        'tools/templates/libs/vendor/iframeResizer.min.js' => 'javascripts/vendor/iframe-resizer/iframeResizer.min.js',
     ];
 
     protected const PRODUCTION_PATH_MAPPING = [

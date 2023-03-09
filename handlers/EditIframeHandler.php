@@ -71,7 +71,7 @@ class EditIframeHandler extends YesWikiHandler
             $output .= $this->wiki->Format('{{barreredaction}}');
         }
         $output .= '</div><!-- end .container -->' . "\n";
-        $this->wiki->AddJavascriptFile('tools/templates/libs/vendor/iframeResizer.contentWindow.min.js');
+        $this->wiki->AddJavascriptFile('javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js');
 
         
         // on recupere les entetes html mais pas ce qu'il y a dans le body

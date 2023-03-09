@@ -126,3 +126,9 @@ mkdir -p javascripts/vendor/ace && \
   cp -f node_modules/ace-builds/src-min-noconflict/ext-language_tools.js javascripts/vendor/ace
 # This one need to be in the same folder than aceditor otherwise it's not working
 cp -f node_modules/ace-builds/src-min-noconflict/ext-searchbox.js tools/aceditor/presentation/javascripts
+
+# iframe-resizer
+mkdir -p javascripts/vendor/iframe-resizer && \
+  cp -f node_modules/iframe-resizer/js/iframeResizer.min.js javascripts/vendor/iframe-resizer && \
+  cp -f node_modules/iframe-resizer/js/iframeResizer.contentWindow.min.js javascripts/vendor/iframe-resizer && \
+  cp -f node_modules/iframe-resizer/LICENSE javascripts/vendor/iframe-resizer

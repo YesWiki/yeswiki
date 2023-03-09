@@ -455,13 +455,13 @@ function toastMessage(
   // AUTO RESIZE IFRAME
   const iframes = $('iframe.auto-resize')
   if (iframes.length > 0) {
-    $.getScript('tools/templates/libs/vendor/iframeResizer.min.js')
+    $.getScript('javascripts/vendor/iframe-resizer/iframeResizer.min.js')
       .done((script, textStatus) => {
         iframes.iFrameResize()
       })
       .fail((jqxhr, settings, exception) => {
         console.log(
-          'Error getting script tools/templates/libs/vendor/iframeResizer.min.js',
+          'Error getting script javascripts/vendor/iframe-resizer/iframeResizer.min.js',
           exception
         )
       })
