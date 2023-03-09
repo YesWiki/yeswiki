@@ -301,8 +301,8 @@ class Wiki
     }
 
     /**
-     * Make the purge of page versions that are older than the last version older than 3 "pages_purge_time"
-     * This method permits to allways keep a version that is older than that period.
+     * Make the purge of page versions that are older than the last version older than "pages_purge_time"
+     * This method permits to allways keep a not latest version that is older than that period.
      */
     public function PurgePages()
     {
@@ -315,6 +315,7 @@ class Wiki
             $sql = <<<SQL
             SELECT DISTINCT a.id FROM $wnPages a,$wnPages b 
                 WHERE a.latest = 'N' 
+                    AND b.latest = 'N'
                     AND a.time < date_sub(now(), INTERVAL '$daysFormatted' DAY) 
                     AND a.tag = b.tag 
                     AND a.time < b.time 
