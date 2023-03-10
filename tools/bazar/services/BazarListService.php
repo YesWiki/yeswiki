@@ -195,8 +195,8 @@ class BazarListService
 
             $filters[$idkey]['index'] = $i;
 
-	    # sort facette labels 
-	    natcasesort($list['label']);
+            # sort facette labels 
+            natcasesort($list['label']);
             foreach ($list['label'] as $listkey => $label) {
                 if (!empty($facettables[$id][$listkey])) {
                     $filters[$idkey]['list'][] = [
