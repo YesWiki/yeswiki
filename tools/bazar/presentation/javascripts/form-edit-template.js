@@ -305,18 +305,19 @@ var typeUserAttrs = {
   champs_mail: {
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
     separator: { label: '' }, // separate important attrs from others
-    replace_email_by_button: {
-      label: _t('BAZ_FORM_EDIT_EMAIL_REPLACE_BY_BUTTON_LABEL'),
-      options: { '': _t('NO'), form: _t('YES') }
-    },
     send_form_content_to_this_email: {
       label: _t('BAZ_FORM_EDIT_EMAIL_SEND_FORM_CONTENT_LABEL'),
       options: { 0: _t('NO'), 1: _t('YES') }
     },
+    replace_email_by_button: {
+      label: _t('BAZ_FORM_EDIT_EMAIL_REPLACE_BY_BUTTON_LABEL'),
+      options: { '': _t('NO'), 'form': _t('YES') },
+      value: 'form'
+    },
     seeEmailAcls: {...readConf,...{label:_t('BAZ_FORM_EDIT_EMAIL_SEE_MAIL_ACLS')}},
     readWhenForm: {...readConf,...{label:_t('BAZ_FORM_EDIT_EMAIL_SEND_ACLS')}},
     // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
-    read: readConf,
+    read: {...readConf,...{value:'@admins'}},
     write: writeconf,
     semantic: semanticConf
   },
@@ -1130,7 +1131,7 @@ function initializeFormbuilder(formAndListIds) {
     typeUserEvents,
     inputSets,
     onAddField(fieldId, field) {
-      if (!field.hasOwnProperty('read')) {
+      if (!field.hasOwnProperty('read') && field.type) {
         field.read = [' * ']// everyone by default
       }
       if (!field.hasOwnProperty('write')) {
@@ -1141,6 +1142,7 @@ function initializeFormbuilder(formAndListIds) {
       }
       if (field.type === 'champs_mail' && !('seeEmailAcls' in field)) {
         field.seeEmailAcls = ['@admins']// @admins by default
+        field.read = ['@admins']// @admins by default
       }
     }
   })
