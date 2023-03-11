@@ -1131,7 +1131,7 @@ function initializeFormbuilder(formAndListIds) {
     typeUserEvents,
     inputSets,
     onAddField(fieldId, field) {
-      if (!field.hasOwnProperty('read') && field.type) {
+      if (!field.hasOwnProperty('read')) {
         field.read = [' * ']// everyone by default
       }
       if (!field.hasOwnProperty('write')) {
