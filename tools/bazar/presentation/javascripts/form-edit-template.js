@@ -1132,17 +1132,17 @@ function initializeFormbuilder(formAndListIds) {
     inputSets,
     onAddField(fieldId, field) {
       if (!field.hasOwnProperty('read')) {
-        field.read = [' * ']// everyone by default
+        field.read = (field.type === 'champs_mail') ? [' % '] : [' * ']// everyone by default
       }
       if (!field.hasOwnProperty('write')) {
-        field.write = [' * ']// everyone by default
+        field.write = (field.type === 'champs_mail') ? [' % '] : [' * ']// everyone by default
       }
       if (field.type === 'acls' && !field.hasOwnProperty('comment')) {
         field.comment = ['comments-closed']// comments-closed by default
       }
       if (field.type === 'champs_mail' && !('seeEmailAcls' in field)) {
-        field.seeEmailAcls = ['@admins']// @admins by default
-        field.read = ['@admins']// @admins by default
+        field.seeEmailAcls = [' % ']// owner and @admins by default
+        field.read = [' % ']// owner and @admins by default
       }
     }
   })
