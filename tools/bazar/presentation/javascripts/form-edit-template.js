@@ -602,35 +602,6 @@ var templates = {
       field: `<input id="${fieldData.name}" type="email" value="" />`,
       onRender() {
         let currentField = $(".champs_mail-field")
-        currentField
-          .find("select[name=replace_email_by_button]:not(.initialized)")
-          .on('change',(event)=>{
-            const element = event.target
-
-            const base = $(element).closest(".champs_mail-field.form-field")
-            $(element).addClass("initialized")
-
-            const setDisplay = (base,name,newValue)=>{
-              let wrapper = $(base).find(`div.form-group.${name}-wrap`)
-              if (wrapper && wrapper.length > 0){
-                if(newValue){
-                  wrapper.show()
-                } else {
-                  wrapper.hide()
-                }
-              }
-            }
-            if ($(element).val() == 'form'){
-              setDisplay(base,'readWhenForm',1)
-              setDisplay(base,'seeEmailAcls',1)
-              setDisplay(base,'read',0)
-            } else {
-              setDisplay(base,'readWhenForm',0)
-              setDisplay(base,'seeEmailAcls',0)
-              setDisplay(base,'read',1)
-            }
-          })
-          .trigger("change")
         const arrayEquals = (a,b)=>{
           if (a.length != b.length){
             return false
@@ -659,6 +630,49 @@ var templates = {
                 readInput.val($(element).val())
               }
             }).trigger("change")
+        currentField
+          .find("select[name=replace_email_by_button]:not(.initialized)")
+          .on('change',(event)=>{
+            const element = event.target
+
+            const base = $(element).closest(".champs_mail-field.form-field")
+            $(element).addClass("initialized")
+
+            const setDisplay = (base,name,newValue)=>{
+              let wrapper = $(base).find(`div.form-group.${name}-wrap`)
+              if (wrapper && wrapper.length > 0){
+                if(newValue){
+                  wrapper.show()
+                } else {
+                  wrapper.hide()
+                }
+              }
+            }
+            if ($(element).val() == 'form'){
+              // when chosing 'form' (or at init), if readAcl is ' % ', prefer ' * '
+              // to show button to everyone
+              let field = currentField.find("select[name=read]")
+              if (arrayEquals(field.val(),[' % '])){
+                field.val([' * '])
+                field.trigger('change')
+              }
+              setDisplay(base,'readWhenForm',1)
+              setDisplay(base,'seeEmailAcls',1)
+              setDisplay(base,'read',0)
+            } else {
+              // when chosing 'text' (or at init), if readAcl is ' * ', prefer ' % '
+              // to force email not to be shown
+              let field = currentField.find("select[name=read]")
+              if (arrayEquals(field.val(),[' * ']) && !currentField.find("select[name=write]").val().includes(' * ')){
+                field.val([' % '])
+                field.trigger('change')
+              }
+              setDisplay(base,'readWhenForm',0)
+              setDisplay(base,'seeEmailAcls',0)
+              setDisplay(base,'read',1)
+            }
+          })
+          .trigger("change")
       }
     }
   },
@@ -1132,17 +1146,18 @@ function initializeFormbuilder(formAndListIds) {
     inputSets,
     onAddField(fieldId, field) {
       if (!field.hasOwnProperty('read')) {
-        field.read = (field.type === 'champs_mail') ? [' % '] : [' * ']// everyone by default
+        field.read = [' * ']// everyone by default
       }
       if (!field.hasOwnProperty('write')) {
-        field.write = (field.type === 'champs_mail') ? [' % '] : [' * ']// everyone by default
+        field.write = (field.type === 'champs_mail') 
+          ? [' % '] // owner and @admins by default for e-mail
+          : [' * '] // everyone by default
       }
       if (field.type === 'acls' && !field.hasOwnProperty('comment')) {
         field.comment = ['comments-closed']// comments-closed by default
       }
       if (field.type === 'champs_mail' && !('seeEmailAcls' in field)) {
         field.seeEmailAcls = [' % ']// owner and @admins by default
-        field.read = [' % ']// owner and @admins by default
       }
     }
   })
@@ -1405,7 +1420,7 @@ function parseWikiTextIntoJsonData(text) {
               : value.split(',').map((e)=>(['+','*','%'].includes(e.trim())) ? ` ${e.trim()} ` : e)
           } else if (field == 'seeEmailAcls'){
             fieldObject[field] = (value.trim() === '') 
-              ? '@admins'
+              ? ' % ' // if not define in tempalte, choose owner and admins
               : value.split(',').map((e)=>(['+','*','%'].includes(e.trim())) ? ` ${e.trim()} ` : e)
           } else {
             fieldObject[field] = value
