@@ -317,7 +317,7 @@ var typeUserAttrs = {
     seeEmailAcls: {...readConf,...{label:_t('BAZ_FORM_EDIT_EMAIL_SEE_MAIL_ACLS')}},
     readWhenForm: {...readConf,...{label:_t('BAZ_FORM_EDIT_EMAIL_SEND_ACLS')}},
     // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
-    read: {...readConf,...{value:'@admins'}},
+    read: readConf,
     write: writeconf,
     semantic: semanticConf
   },
