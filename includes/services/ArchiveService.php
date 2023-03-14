@@ -861,8 +861,6 @@ class ArchiveService
                 throw new Exception("Not writable ".self::PARAMS_KEY_IN_WAKKA."[".self::KEY_FOR_PRIVATE_FOLDER."]");
             }
         } else {
-            $this->createFolder(sys_get_temp_dir().DIRECTORY_SEPARATOR, self::DEFAULT_FOLDER_NAME_IN_TMP);
-            $mainTmpDir = sys_get_temp_dir().DIRECTORY_SEPARATOR.self::DEFAULT_FOLDER_NAME_IN_TMP;
             $sanitizeWebsiteName = preg_replace(
                 "/-+$/",
                 "",
@@ -876,8 +874,11 @@ class ArchiveService
                     )
                 )
             );
-            $this->createFolder($mainTmpDir.DIRECTORY_SEPARATOR, $sanitizeWebsiteName);
-            return $mainTmpDir.DIRECTORY_SEPARATOR.$sanitizeWebsiteName;
+            $tmp = sys_get_temp_dir();
+            $slash = DIRECTORY_SEPARATOR;
+            $dirName = "yeswiki-$sanitizeWebsiteName";
+            $this->createFolder("$tmp{$slash}", $dirName);
+            return "$tmp{$slash}$dirName";
         }
     }
 
