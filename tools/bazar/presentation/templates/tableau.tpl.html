@@ -221,26 +221,12 @@ if (count($fiches)>0) {
                         unset($fiches[$index]);
                     } else {
                         foreach($form['prepared'] as $field){
-                            if ((empty(trim($field->renderStaticIfPermitted($fiche))))){
+                            if ($field instanceof EmailField && !$field->canRead($fiches[$index],null)){
+                                $fiches[$index][$field->getPropertyName()] = "***@***.***";
+                            } elseif (empty($field->renderStaticIfPermitted($fiche)) || 
+                                empty(trim($field->renderStaticIfPermitted($fiche)))){
                                 $fiches[$index][$field->getPropertyName()] = "";
-                            } else if ($field instanceof EmailField){
-                                if (empty($param['showemailfor'])) {
-                                    $fiches[$index][$field->getPropertyName()] = "***@***.***";
-                                } else {
-                                    $groups = array_map('trim', explode(',', $param['showemailfor']));
-                                    $canAccess = false;
-                                    $wikiUser = $this->wiki->GetUserName();
-                                    foreach ($groups as $g) {
-                                        $g = str_replace('@', '', $g);
-                                        if ($this->wiki->UserIsInGroup($g, $wikiUser)) {
-                                            $canAccess = true;
-                                        }
-                                    }
-                                    if (!$canAccess) {
-                                        $fiches[$index][$field->getPropertyName()] = "***@***.***";
-                                    }
-                                }
-                            }
+                            } 
                         }
                     }
                 }

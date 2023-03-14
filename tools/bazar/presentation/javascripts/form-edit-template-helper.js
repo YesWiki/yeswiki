@@ -47,6 +47,16 @@ const templateHelper = {
     }
     return this.ids[fieldId]
   },
+  initializeField(field){
+    if (!field.hasClass('initialized') || 
+      field.data('savedId') != field.prop('id')){
+      field.addClass('initialized')
+      field.data('savedId',field.prop('id'))
+      field.find('.initialized').each(function(){
+        $(this).removeClass('initialized')
+      })
+    }
+  },
   prependHint(field, message) {
     const holder = this.getHolder(field)
     if (holder) {

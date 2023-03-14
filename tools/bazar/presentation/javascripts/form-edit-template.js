@@ -305,14 +305,17 @@ var typeUserAttrs = {
   champs_mail: {
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
     separator: { label: '' }, // separate important attrs from others
-    replace_email_by_button: {
-      label: _t('BAZ_FORM_EDIT_EMAIL_REPLACE_BY_BUTTON_LABEL'),
-      options: { '': _t('NO'), form: _t('YES') }
-    },
     send_form_content_to_this_email: {
       label: _t('BAZ_FORM_EDIT_EMAIL_SEND_FORM_CONTENT_LABEL'),
       options: { 0: _t('NO'), 1: _t('YES') }
     },
+    replace_email_by_button: {
+      label: _t('BAZ_FORM_EDIT_EMAIL_REPLACE_BY_BUTTON_LABEL'),
+      options: { '': _t('NO'), 'form': _t('YES') },
+      value: 'form'
+    },
+    seeEmailAcls: {...readConf,...{label:_t('BAZ_FORM_EDIT_EMAIL_SEE_MAIL_ACLS')}},
+    readWhenForm: {...readConf,...{label:_t('BAZ_FORM_EDIT_EMAIL_SEND_ACLS')}},
     // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
     read: readConf,
     write: writeconf,
@@ -595,7 +598,84 @@ var typeUserAttrs = {
 // How a field is represented in the formBuilder view
 var templates = {
   champs_mail(fieldData) {
-    return { field: `<input id="${fieldData.name}" type="email" value="" />` }
+    return { 
+      field: `<input id="${fieldData.name}" type="email" value="" />`,
+      onRender() {
+        let currentField = templateHelper.getHolder(fieldData).parent()
+        templateHelper.initializeField(currentField)
+        const arrayEquals = (a,b)=>{
+          if (a.length != b.length){
+            return false
+          }
+          return (a.every((e)=>b.includes(e)) && b.every((e)=>a.includes(e)))
+        }
+        currentField.find("select[name=read]:not(.initialized)")
+            .on('change',(event)=>{
+              const element = event.target
+              const base = $(element).closest(".champs_mail-field.form-field")
+              $(element).addClass("initialized")
+
+              const readWhenFormInput = $(base).find("select[name=readWhenForm]")
+              if (readWhenFormInput && readWhenFormInput.length > 0 && !arrayEquals(readWhenFormInput.val(),$(element).val())){
+                readWhenFormInput.val($(element).val())
+              }
+            }).trigger("change")
+        currentField.find("select[name=readWhenForm]:not(.initialized)")
+            .on('change',(event)=>{
+              const element = event.target
+              const base = $(element).closest(".champs_mail-field.form-field")
+              $(element).addClass("initialized")
+
+              const readInput = $(base).find("select[name=read]")
+              if (readInput && readInput.length > 0 && !arrayEquals(readInput.val(),$(element).val())){
+                readInput.val($(element).val())
+              }
+            }).trigger("change")
+        currentField
+          .find("select[name=replace_email_by_button]:not(.initialized)")
+          .on('change',(event)=>{
+            const element = event.target
+
+            const base = $(element).closest(".champs_mail-field.form-field")
+            $(element).addClass("initialized")
+
+            const setDisplay = (base,name,newValue)=>{
+              let wrapper = $(base).find(`div.form-group.${name}-wrap`)
+              if (wrapper && wrapper.length > 0){
+                if(newValue){
+                  wrapper.show()
+                } else {
+                  wrapper.hide()
+                }
+              }
+            }
+            if ($(element).val() == 'form'){
+              // when chosing 'form' (or at init), if readAcl is ' % ', prefer ' * '
+              // to show button to everyone
+              let field = currentField.find("select[name=read]")
+              if (arrayEquals(field.val(),[' % '])){
+                field.val([' * '])
+                field.trigger('change')
+              }
+              setDisplay(base,'readWhenForm',1)
+              setDisplay(base,'seeEmailAcls',1)
+              setDisplay(base,'read',0)
+            } else {
+              // when chosing 'text' (or at init), if readAcl is ' * ', prefer ' % '
+              // to force email not to be shown
+              let field = currentField.find("select[name=read]")
+              if (arrayEquals(field.val(),[' * ']) && !currentField.find("select[name=write]").val().includes(' * ')){
+                field.val([' % '])
+                field.trigger('change')
+              }
+              setDisplay(base,'readWhenForm',0)
+              setDisplay(base,'seeEmailAcls',0)
+              setDisplay(base,'read',1)
+            }
+          })
+          .trigger("change")
+      }
+    }
   },
   map(fieldData) {
     return { field: _t('BAZ_FORM_EDIT_MAP_FIELD') }
@@ -638,7 +718,9 @@ var templates = {
     return { 
       field: field.askIfActivateComments == 1 ? `<i class="far fa-comment-dots"></i> ${field.fieldlabel || _t('BAZ_ACTIVATE_COMMENTS')}` : '' ,
       onRender() {
-        $(".acls-field")
+        let currentField = templateHelper.getHolder(field).parent()
+        templateHelper.initializeField(currentField)
+        $(currentField)
           .find("select[name=askIfActivateComments]:not(.initialized)")
           .change(function(event){
             const element = event.target
@@ -816,7 +898,7 @@ var yesWikiMapping = {
   number: defaultMapping,
   champs_mail: {
     ...defaultMapping,
-    ...{ 6: 'replace_email_by_button', 9: 'send_form_content_to_this_email' }
+    ...{ 4:'seeEmailAcls', 6: 'replace_email_by_button', 9: 'send_form_content_to_this_email' }
   },
   map: {
     0: 'type',
@@ -1070,10 +1152,15 @@ function initializeFormbuilder(formAndListIds) {
         field.read = [' * ']// everyone by default
       }
       if (!field.hasOwnProperty('write')) {
-        field.write = [' * ']// everyone by default
+        field.write = (field.type === 'champs_mail') 
+          ? [' % '] // owner and @admins by default for e-mail
+          : [' * '] // everyone by default
       }
       if (field.type === 'acls' && !field.hasOwnProperty('comment')) {
         field.comment = ['comments-closed']// comments-closed by default
+      }
+      if (field.type === 'champs_mail' && !('seeEmailAcls' in field)) {
+        field.seeEmailAcls = [' % ']// owner and @admins by default
       }
     }
   })
@@ -1333,6 +1420,10 @@ function parseWikiTextIntoJsonData(text) {
                   ? [' + ']
                   : [' * ']
                 )
+              : value.split(',').map((e)=>(['+','*','%'].includes(e.trim())) ? ` ${e.trim()} ` : e)
+          } else if (field == 'seeEmailAcls'){
+            fieldObject[field] = (value.trim() === '') 
+              ? ' % ' // if not define in tempalte, choose owner and admins
               : value.split(',').map((e)=>(['+','*','%'].includes(e.trim())) ? ` ${e.trim()} ` : e)
           } else {
             fieldObject[field] = value

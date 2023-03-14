@@ -198,6 +198,9 @@ class AclService
      * @param string $user
      *            The name of the user that must satisfy the ACL. By default
      *            the current remote user.
+     * @param bool $adminCheck
+     *            Check if user is in admins groups
+     *            Default true
      * @param string $tag
      *            The name of the page or form to be tested when $acl contains '%'.
      *            By Default ''
