@@ -601,7 +601,8 @@ var templates = {
     return { 
       field: `<input id="${fieldData.name}" type="email" value="" />`,
       onRender() {
-        let currentField = $(".champs_mail-field")
+        let currentField = templateHelper.getHolder(fieldData).parent()
+        templateHelper.initializeField(currentField)
         const arrayEquals = (a,b)=>{
           if (a.length != b.length){
             return false
@@ -717,7 +718,9 @@ var templates = {
     return { 
       field: field.askIfActivateComments == 1 ? `<i class="far fa-comment-dots"></i> ${field.fieldlabel || _t('BAZ_ACTIVATE_COMMENTS')}` : '' ,
       onRender() {
-        $(".acls-field")
+        let currentField = templateHelper.getHolder(field).parent()
+        templateHelper.initializeField(currentField)
+        $(currentField)
           .find("select[name=askIfActivateComments]:not(.initialized)")
           .change(function(event){
             const element = event.target
