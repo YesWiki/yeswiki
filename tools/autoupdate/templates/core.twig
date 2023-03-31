@@ -1,3 +1,12 @@
+{% macro phpTooLowText(actionText,core,phpVersion) %}
+    {{- _t('AU_PHP_TOO_LOW_ERROR',{
+        textAction: actionText,
+        NEEDEDPHPVERSION: (core.neededPHPversion ?? '99.99.99'),
+        CURRENTPHPVERSION: phpVersion,
+        hint: _t('AU_PHP_TOO_LOW_HINT',{textAction: actionText})
+    }) -}}
+{% endmacro %}
+
 <h2>YesWiki</h2>
 <p>
     {{ _t('AU_VERSION_WIKI') }} : <span class="label {{ (core.updateAvailable or core.newVersionRequested) ? 'label-warning' : 'label-primary' }}">{{ core.localVersion }} {{ core.localRelease }}</span>
@@ -15,13 +24,10 @@
             </a>
         {% else %}
             <button type="button" class="btn btn-danger" disabled data-toggle="tooltip"
-                data-placement="bottom" title="{{ _t('AU_PHP_TOO_LOW_START') 
-                        ~ _t('AU_PHP_TOO_LOW_VERSION_UPDATE') 
-                        ~ _t('AU_PHP_TOO_LOW_MIDDLE') ~ (core.neededPHPversion ?? '99.99.99')
-                        ~ _t('AU_PHP_TOO_LOW_END') ~ phpVersion }}">
+                data-placement="bottom" title="{{ _self.phpTooLowText(_t('AU_PHP_TOO_LOW_VERSION_UPDATE'),core,phpVersion) }}">
                 {{ _t('AU_VERSION_UPDATE') }}
             </button>
-            <p><i>{{ _t('AU_PHP_TOO_LOW_HINT') ~ _t('AU_PHP_TOO_LOW_VERSION_UPDATE') ~ ' !' }}</i></p>
+            <p><i>{{ _t('AU_PHP_TOO_LOW_HINT',{textAction: _t('AU_PHP_TOO_LOW_VERSION_UPDATE')}) }}</i></p>
         {% endif %}
     {% else %}
         <button type="button" class="btn btn-danger" disabled data-toggle="tooltip"
@@ -39,13 +45,10 @@
             </a>
         {% else %}
             <button type="button" class="btn btn-primary" disabled data-toggle="tooltip"
-                data-placement="bottom" title="{{ _t('AU_PHP_TOO_LOW_START') 
-                        ~ _t('AU_PHP_TOO_LOW_UPDATE') 
-                        ~ _t('AU_PHP_TOO_LOW_MIDDLE') ~ (core.neededPHPversion ?? '99.99.99')
-                        ~ _t('AU_PHP_TOO_LOW_END') ~ phpVersion }}">
+                data-placement="bottom" title="{{ _self.phpTooLowText(_t('AU_PHP_TOO_LOW_UPDATE'),core,phpVersion) }}">
                 {{ _t('AU_UPDATE') }}
             </button>
-            <p><i>{{ _t('AU_PHP_TOO_LOW_HINT') ~ _t('AU_PHP_TOO_LOW_UPDATE') ~ ' !' }}</i></p>
+            <p><i>{{ _t('AU_PHP_TOO_LOW_HINT',{textAction:_t('AU_PHP_TOO_LOW_UPDATE')}) }}</i></p>
         {% endif %}
     {% else %}
         <button type="button" class="btn btn-primary" disabled data-toggle="tooltip"
@@ -62,13 +65,10 @@
             </a>
         {% else %}
             <button type="button" class="btn btn-warning" disabled data-toggle="tooltip"
-                data-placement="bottom" title="{{ _t('AU_PHP_TOO_LOW_START') 
-                        ~ _t('AU_PHP_TOO_LOW_FORCE_UPDATE') 
-                        ~ _t('AU_PHP_TOO_LOW_MIDDLE') ~ (core.neededPHPversion ?? '99.99.99')
-                        ~ _t('AU_PHP_TOO_LOW_END') ~ phpVersion }}">
+                data-placement="bottom" title="{{ _self.phpTooLowText(_t('AU_PHP_TOO_LOW_FORCE_UPDATE'),core,phpVersion) }}">
                 {{ _t('AU_FORCE_UPDATE') }}
             </button>
-            <p><i>{{ _t('AU_PHP_TOO_LOW_HINT') ~ _t('AU_PHP_TOO_LOW_FORCE_UPDATE') ~ ' !' }}</i></p>
+            <p><i>{{ _t('AU_PHP_TOO_LOW_HINT',{textAction:_t('AU_PHP_TOO_LOW_FORCE_UPDATE')}) }}</i></p>
         {% endif %}
     {% else %}
         <button type="button" class="btn btn-warning" disabled data-toggle="tooltip"
