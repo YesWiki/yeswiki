@@ -34,10 +34,10 @@ return [
     'AU_NO_DESCRIPTION' => "Descrição não disponível.",
     'AU_DOCUMENTATION_LINK' => "documentação",
     'AU_YESWIKI_DORYPHORE_POSTINSTALL' => "Bem-vindo ao Doryphore",
-    // 'AU_PHP_TOO_LOW_START' => "Vous ne pouvez pas ",
-    // 'AU_PHP_TOO_LOW_MIDDLE' => " car votre version PHP n'est pas supérieure à ",
-    // 'AU_PHP_TOO_LOW_END' => ". Vous avez la version ",
-    // 'AU_PHP_TOO_LOW_HINT' => "Veuillez mettre à jour PHP sur votre serveur avant de ",
+    // 'AU_PHP_TOO_LOW_ERROR' => "Vous ne pouvez pas %{textAction} car votre version PHP n'est pas supérieure à %{NEEDEDPHPVERSION}.\n".
+    //     "Vous avez la version %{CURRENTPHPVERSION}.\n".
+    //     "%{hint}",
+    // 'AU_PHP_TOO_LOW_HINT' => "Veuillez mettre à jour PHP sur votre serveur avant de %{textAction} !",
     // 'AU_PHP_TOO_LOW_VERSION_UPDATE' => "changer de version YesWiki",
     // 'AU_PHP_TOO_LOW_UPDATE' => "mettre à jour YesWiki",
     // 'AU_PHP_TOO_LOW_FORCE_UPDATE' => "réinstaller YesWiki",

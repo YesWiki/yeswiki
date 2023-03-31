@@ -7,6 +7,10 @@ define("YESWIKI_VERSION", 'doryphore');
 define("YESWIKI_RELEASE", '2020-01-22-1');
 define('T_START', microtime(true));
 
+// to update with constraint in composer.json > config > platform > php and 
+// and .github/workflow/phpunit.yml > php-version
+define("MINIMUM_PHP_VERSION_FOR_CORE", '7.3.0');
+
 // operational constants
 define('WAKKA_ENGINE', 'wakka.php');
 

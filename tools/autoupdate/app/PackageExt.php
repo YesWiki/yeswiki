@@ -23,6 +23,18 @@ abstract class PackageExt extends Package
     public function upgrade()
     {
         $desPath = $this->localPath();
+        
+        $neededPHPVersion = $this->getNeededPHPversionFromExtractedFolder() ;
+        if (!$this->PHPVersionEnoughHigh($neededPHPVersion)) {
+            $textAction = strtolower((is_dir($desPath)) ? _t('AU_UPDATE') : _t('AU_INSTALL'));
+            trigger_error(_t('AU_PHP_TOO_LOW_ERROR',[
+                'textAction' => $textAction,
+                'NEEDEDPHPVERSION' => $neededPHPVersion,
+                'CURRENTPHPVERSION' => PHP_VERSION,
+                'hint' => _t('AU_PHP_TOO_LOW_HINT',['textAction' => $textAction])
+            ]));
+            return false;
+        }
 
         $this->deletePackage();
         mkdir($desPath);
