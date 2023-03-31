@@ -173,36 +173,6 @@ class PackageCore extends Package
         return $result;
     }
 
-    /**
-     * check if current PHP version enough high
-     * @param string $neededRevision
-     * @return bool
-     */
-    public function PHPVersionEnoughHigh(?string $neededRevision = null)
-    {
-        return version_compare(
-            PHP_VERSION,
-            (empty($neededRevision))
-            ? $this->getNeededPHPversion()
-            : $neededRevision,
-            '>='
-        );
-    }
-
-    /**
-     * get needed PHP version from json file from repository
-     * @return string formatted as '7.3.0', '7.3.0' is the wanted version in case of error
-     */
-    public function getNeededPHPversion(): string
-    {
-        // check format of JSON package 99.99.99
-        $matches = [];
-        if (preg_match('/^([0-9]*)\.([0-9]*)\.([0-9]*)$/', $this->minimalPhpVersion, $matches)) {
-            return $this->minimalPhpVersion ;
-        }
-        return '7.3.0'; // just in case of error give a number
-    }
-
     /***************************************************************************
      * Méthodes privée
      **************************************************************************/
@@ -226,37 +196,5 @@ class PackageCore extends Package
             return true;
         }
         return false;
-    }
-
-    /**
-     * get needed PHP version from json file from extracted folder
-     * @return string formatted as '7.3.0', '7.3.0' is the wanted version in case of error
-     */
-    private function getNeededPHPversionFromExtractedFolder(): string
-    {
-        $jsonPath = $this->extractionPath . 'composer.json';
-        if (file_exists($jsonPath)) {
-            $jsonFile = file_get_contents($jsonPath);
-            if (!empty($jsonFile)) {
-                $composerData = json_decode($jsonFile, true) ;
-                if (!empty($composerData['require']['php'])) {
-                    $rawNeededPHPRevision = $composerData['require']['php'];
-                    $matches = [];
-                    // accepted format '7','7.3','7.*','7.3.0','7.3.*
-                    // and these with '^', '>' or '>=' before
-                    if (preg_match('/^(\^|>=|>)?([0-9]*)(?:\.([0-9\*]*))?(?:\.([0-9\*]*))?/', $rawNeededPHPRevision, $matches)) {
-                        $major = $matches[2];
-                        $minor = $matches[3] ?? 0;
-                        $minor = ($minor == '*') ? 0 : $minor;
-                        $fix = $matches[4] ?? 0;
-                        $fix = ($fix == '*') ? 0 : $fix;
-                        return $major.'.'.$minor.'.'.$fix;
-                    }
-                }
-            }
-        } else {
-            trigger_error('Not existing file composer.json in extracted package.');
-        }
-        return $this->getNeededPHPversion();
     }
 }
