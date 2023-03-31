@@ -145,7 +145,7 @@ abstract class Package extends Files
         if (is_string($this->minimalPhpVersion) && preg_match('/^([0-9]*)\.([0-9]*)\.([0-9]*)$/', $this->minimalPhpVersion, $matches)) {
             return $this->minimalPhpVersion ;
         }
-        return '7.3.0'; // just in case of error give a number
+        return MINIMUM_PHP_VERSION_FOR_CORE; // just in case of error give a number
     }
     
     /**
