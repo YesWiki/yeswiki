@@ -19,7 +19,7 @@ Si vous voulez **vous exercer** sereinement, vous pouvez essayer de modifier la 
 {{end elem=\"col\"}}
 {{col size=\"6\"}}
 ===\"\"YesWiki\"\" : une communauté===
-En plus d\'être un logiciel de création de wikis, \"\"YesWiki\"\" est aujourd\'hui maintenu et amélioré par une communauté de professionnels et d\'utilisateuricess issus d\'horizons différents qui prend du plaisir à partager ses rêves, ses créations et ses développements. Nous serons ravi·e·s de vous y accueillir !
+En plus d\'être un logiciel de création de wikis, \"\"YesWiki\"\" est aujourd\'hui maintenu et amélioré par une communauté de professionnels et d\'utilisateurices issus d\'horizons différents qui prend du plaisir à partager ses rêves, ses créations et ses développements. Nous serons ravi·e·s de vous y accueillir !
 
 Pour nous rejoindre ou avoir une vision sur les chantiers actuellement en cours, voici notre [[https://yeswiki.net/?LaGareCentrale espace central]].
 
