@@ -312,6 +312,9 @@ Voici quelques possibilités autour des annuaires (à copier-coller - adapter)
 
 ===Gestion des mots clés ===
 {{admintag}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('GererSauvegardes',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Gestion du site, Droits, Look, Utilisateurices, Mots clefs, Fichier de conf, MAJ / extensions, Sauvegardes\"}}
+
+{{adminbackups}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('GererSite',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Gestion du site, Droits, Look, Utilisateurices, Mots clefs, Fichier de conf, MAJ / extensions, Sauvegardes\"}}
 
 {{attach file=\"modele.jpg\" desc=\"image Dessin_sans_titre.jpg (66.9kB)\" size=\"big\" class=\"right\"}}===Gérer les menus et pages spéciales de ce wiki===
@@ -759,10 +762,7 @@ Texte colonne 3
 {{bazarliste id=\"2\" template=\"calendar\" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('WikiAdmin',  now(), '{{redirect page=\"GererSite\"}}
 ', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('YesWiki',  now(), 'YesWiki', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererSauvegardes',  now(), '{{nav class=\"nav nav-tabs\" links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Gestion du site, Droits, Look, Utilisateurices, Mots clefs, Fichier de conf, MAJ / extensions, Sauvegardes\" }}
-
-{{adminbackups}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
+('YesWiki',  now(), 'YesWiki', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
 # end YesWiki pages
 
 # Bazar forms
