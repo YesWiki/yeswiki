@@ -159,7 +159,7 @@ class BazarListService
                     $list['titre_liste'] = _t('BAZ_TYPE_FICHE');
                     foreach ($facettable as $idf => $nb) {
                         if ($idf != 'source' && $idf != 'type') {
-                            $list['label'][$idf] = $forms[$idf]['bn_label_nature'];
+                            $list['label'][$idf] = $forms[$idf]['bn_label_nature'] ?? $idf;
                         }
                     }
                 } elseif ($facettable['source'] == 'owner') {
