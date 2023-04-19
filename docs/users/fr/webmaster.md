@@ -176,7 +176,7 @@ Idéalement, l'image doit faire 1200x630 selon les specs imposées par facedebou
 Par défaut il prend cette image, et si une image est présente dans la page (mise avec attach) ou une fiche bazar avec bf\_image , il remplace par cela  
 
     
-    'opengraph_image' => 'https://domaine.ext/nomdelimage.jpg',
+    'opengraph_image' => 'files/nomdelimage.jpg',
   
 * * *
 
