@@ -317,6 +317,9 @@ if (!class_exists('attach')) {
          */
         public function convertDate($date)
         {
+            if (!is_string($date)){
+                return '';
+            }
             $date = str_replace(' ', '', $date);
             $date = str_replace(':', '', $date);
             return str_replace('-', '', $date);
