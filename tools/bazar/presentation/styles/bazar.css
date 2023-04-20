@@ -227,6 +227,27 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
   .facette-container, .facette-container[data-filter-align=right] {
     flex-direction: column;
   }
+  .facette-container .filter-box .panel-body {
+    max-height: 11em;
+    overflow-y: scroll;
+    /* for firefox custom scrollbar */
+    scrollbar-color: var(--neutral-color) white;
+    scrollbar-width: auto;
+    /* the scrollbar width is too thin, we may fix it by using a scrollbar JS library */
+  }
+  .facette-container .filter-box .panel-body::-webkit-scrollbar {
+    -webkit-appearance: none;
+  }
+  .facette-container .filter-box .panel-body:vertical {
+    width: 15px;
+  }
+  .facette-container .filter-box .panel-body::-webkit-scrollbar:horizontal {
+    height: 15px;
+  }
+  .facette-container .filter-box .panel-body::-webkit-scrollbar-thumb {
+    background-color: var(--neutral-color);
+    border-radius: 10px;
+  }
 }
 
 .bazar-lists select {
