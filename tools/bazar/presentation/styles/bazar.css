@@ -215,7 +215,7 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
 .facette-container-fullwidth {
   flex-wrap: wrap;
 }
-.facette-container[data-filter-align=left] {
+.facette-container[data-filter-align=right] {
   flex-direction: row-reverse;
 }
 @media (min-width: 768px){
@@ -224,11 +224,8 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
   }
 }
 @media (max-width: 768px) {
-  .facette-container {
+  .facette-container, .facette-container[data-filter-align=right] {
     flex-direction: column;
-  }
-  .facette-container[data-filter-align=left] {
-    flex-direction: column-reverse;
   }
 }
 

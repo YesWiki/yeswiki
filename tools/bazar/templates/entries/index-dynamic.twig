@@ -24,8 +24,8 @@
   {% set resultsColSize = params.groups ? resultsColSize : 12 %}
 
   <div class="facette-container dynamic row {{ resultsColSize == 12 ? 'facette-container-fullwidth' : ''}}" data-filter-align="{{ params.groups ? params.filterposition : '' }}">
-    
-    {% if params.groups and params.filterposition == "left" and resultsColSize == 12 %}
+
+    {% if params.groups %}
       {{ include("@bazar/entries/index-dynamic/_filters.twig") }}
     {% endif %}
 
@@ -36,10 +36,6 @@
       </div>      
       {{ include("@bazar/entries/index-dynamic/_pagination.twig") }}
     </div>
-
-    {% if params.groups and not (params.filterposition == "left" and resultsColSize == 12) %}
-      {{ include("@bazar/entries/index-dynamic/_filters.twig") }}
-    {% endif %}
     
   </div>
 
