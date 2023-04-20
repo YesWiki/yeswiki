@@ -82,25 +82,6 @@ color:#E9322D;
   margin-bottom: 2rem;
 }
 
-.facette-container:not([data-filter-align=left]) > .filters-col > .bazar-search {
-  margin-top: 2rem;
-}
-@media (min-width: 768px){
-  .facette-container:not([data-filter-align=left]) > .filters-col.col-sm-1 > .bazar-search,
-  .facette-container:not([data-filter-align=left]) > .filters-col.col-sm-2 > .bazar-search,
-  .facette-container:not([data-filter-align=left]) > .filters-col.col-sm-3 > .bazar-search,
-  .facette-container:not([data-filter-align=left]) > .filters-col.col-sm-4 > .bazar-search,
-  .facette-container:not([data-filter-align=left]) > .filters-col.col-sm-5 > .bazar-search,
-  .facette-container:not([data-filter-align=left]) > .filters-col.col-sm-6 > .bazar-search,
-  .facette-container:not([data-filter-align=left]) > .filters-col.col-sm-7 > .bazar-search,
-  .facette-container:not([data-filter-align=left]) > .filters-col.col-sm-8 > .bazar-search,
-  .facette-container:not([data-filter-align=left]) > .filters-col.col-sm-9 > .bazar-search,
-  .facette-container:not([data-filter-align=left]) > .filters-col.col-sm-10 > .bazar-search,
-  .facette-container:not([data-filter-align=left]) > .filters-col.col-sm-11 > .bazar-search {
-    margin-top: 0;
-  }
-}
-
 .bazar-table {
   table-layout:fixed;
   word-wrap:break-word;
@@ -220,25 +201,54 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
 	-webkit-box-shadow: 0 0 90px #000;
 }
 
+/* facette */
 .facette-container {
   display: flex;
   flex-direction: row;
 }
+.facette-container .panel-heading {
+  cursor: pointer;
+}
+.facette-container:not([data-filter-align=left]) > .filters-col > .bazar-search {
+  margin-top: 2rem;
+}
 .facette-container-fullwidth {
   flex-wrap: wrap;
 }
-.facette-container[data-filter-align=left] {
+.facette-container[data-filter-align=right] {
   flex-direction: row-reverse;
 }
-@media (max-width: 768px) {
-  .facette-container {
-    flex-direction: column;
-  }
-  .facette-container[data-filter-align=left] {
-    flex-direction: column-reverse;
+@media (min-width: 768px){
+  .facette-container:not([data-filter-align=left]) > [class^="filters-col "][class*="col-sm-"] > .bazar-search {
+    margin-top: 0;
   }
 }
-.facette-container .panel-heading {cursor: pointer;}
+@media (max-width: 768px) {
+  .facette-container, .facette-container[data-filter-align=right] {
+    flex-direction: column;
+  }
+  .facette-container .filter-box .panel-body {
+    max-height: 11em;
+    overflow-y: scroll;
+    /* for firefox custom scrollbar */
+    scrollbar-color: var(--neutral-color) white;
+    scrollbar-width: auto;
+    /* the scrollbar width is too thin, we may fix it by using a scrollbar JS library */
+  }
+  .facette-container .filter-box .panel-body::-webkit-scrollbar {
+    -webkit-appearance: none;
+  }
+  .facette-container .filter-box .panel-body:vertical {
+    width: 15px;
+  }
+  .facette-container .filter-box .panel-body::-webkit-scrollbar:horizontal {
+    height: 15px;
+  }
+  .facette-container .filter-box .panel-body::-webkit-scrollbar-thumb {
+    background-color: var(--neutral-color);
+    border-radius: 10px;
+  }
+}
 
 .bazar-lists select {
     width: 250px;
