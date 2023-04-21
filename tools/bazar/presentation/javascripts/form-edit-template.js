@@ -325,7 +325,7 @@ var typeUserAttrs = {
     name_latitude: { label: _t('BAZ_FORM_EDIT_MAP_LATITUDE'), value: 'bf_latitude' },
     name_longitude: { label: _t('BAZ_FORM_EDIT_MAP_LONGITUDE'), value: 'bf_longitude' },
     autocomplete_postalcode: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_POSTALCODE'), value: '', placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_POSTALCODE_PLACEHOLDER') },
-    autocomplete_town: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWN'), value: '', placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWNE_PLACEHOLDER') },
+    autocomplete_town: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWN'), value: '', placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWN_PLACEHOLDER') },
     geolocate: {
       label: _t('BAZ_FORM_EDIT_GEOLOCATE'),
       options: { 0: _t('NO'), 1: _t('YES') }

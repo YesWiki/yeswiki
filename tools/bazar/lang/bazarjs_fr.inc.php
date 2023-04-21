@@ -130,7 +130,7 @@ return [
     'BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_POSTALCODE' => 'Champ code postal pour l\'autocomplétion',
     'BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_POSTALCODE_PLACEHOLDER' => 'Laisser vide pour ne pas activer l\'autocomplétion',
     'BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWN' => 'Champ ville pour l\'autocomplétion',
-    'BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWNE_PLACEHOLDER' => 'Laisser vide pour ne pas activer l\'autocomplétion',
+    'BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWN_PLACEHOLDER' => 'Laisser vide pour ne pas activer l\'autocomplétion',
     'BAZ_FORM_EDIT_GEOLOCATE' => 'Géolocaliser depuis ma position',
     'BAZ_FORM_EDIT_METADATA_THEME_LABEL' => 'Nom du thème',
     'BAZ_FORM_EDIT_METADATA_SQUELETON_LABEL' => 'Squelette',
