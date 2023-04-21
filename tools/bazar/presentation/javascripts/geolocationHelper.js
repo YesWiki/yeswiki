@@ -322,7 +322,7 @@ const geolocationHelper = (function(){
                     })
                     .map((entry)=>{
                         return this.toGeolocationData({
-                            postalCode: entry.codesPostaux[0],
+                            postalCodes: entry.codesPostaux,
                             town: entry.nom,
                             county: entry.departement.nom,
                             countyCode: entry.departement.code,
@@ -368,8 +368,8 @@ const geolocationHelper = (function(){
                                         let latitude = entry.lat
                                         let longitude = entry.lon
                                         let infos = entry.display_name.split(',').map((e)=>e.trim())
-                                        let postalCode = (infos.length > 2 && typeof Number(infos[infos.length-2]) === 'number')
-                                            ? {postalCode: infos[infos.length-2]}: {}
+                                        let postalCodes = (infos.length > 2 && typeof Number(infos[infos.length-2]) === 'number')
+                                            ? {postalCodes: [infos[infos.length-2]]}: {}
                                         switch (entry.type) {
                                             case 'administrative':
                                                 return this.toGeolocationData({
@@ -379,7 +379,7 @@ const geolocationHelper = (function(){
                                                         latitude,
                                                         longitude
                                                     },
-                                                    ...postalCode
+                                                    ...postalCodes
                                                 })
                                             case 'residential':
                                                 return this.toGeolocationData({
@@ -392,7 +392,7 @@ const geolocationHelper = (function(){
                                                         latitude,
                                                         longitude
                                                     },
-                                                    ...postalCode
+                                                    ...postalCodes
                                                 })
                                             case 'hamlet':
                                             case 'village':
@@ -406,7 +406,7 @@ const geolocationHelper = (function(){
                                                         latitude,
                                                         longitude
                                                     },
-                                                    ...postalCode
+                                                    ...postalCodes
                                                 })
                                             case 'postal_code':
                                                 return this.toGeolocationData({
@@ -416,7 +416,7 @@ const geolocationHelper = (function(){
                                                         latitude,
                                                         longitude
                                                     },
-                                                    ...postalCode
+                                                    ...postalCodes
                                                 })
                                             case 'postcode':
                                                 return this.toGeolocationData({
@@ -429,7 +429,7 @@ const geolocationHelper = (function(){
                                                         latitude,
                                                         longitude
                                                     },
-                                                    ...postalCode
+                                                    ...postalCodes
                                                 })
                                             case 'unclassified':
                                                 if ('class' in entry && entry.class === 'highway'){
@@ -444,7 +444,7 @@ const geolocationHelper = (function(){
                                                             latitude,
                                                             longitude
                                                         },
-                                                        ...postalCode,
+                                                        ...postalCodes,
                                                         ...(
                                                             infos.length === 11
                                                             ? {
@@ -631,7 +631,7 @@ const geolocationHelper = (function(){
                 let sanitizedData = (typeof data === 'object') ? data : {}
                 let exportData = {}
                 let tab = [
-                    'street','street1','street2','postalCode','town','county',
+                    'street','street1','street2','town','county',
                     'countyCode','state','stateCode','country','countryCode', 'latitude', 'longitude'
                 ]
                 tab.forEach((key)=>{
@@ -639,6 +639,9 @@ const geolocationHelper = (function(){
                         ? String(sanitizedData[key])
                         : ''
                 })
+                exportData.postalCodes = ('postalCodes' in sanitizedData && Array.isArray(sanitizedData.postalCodes))
+                    ? sanitizedData.postalCodes.map((e)=>['string','number'].includes(typeof e) ? e : '').filter((e)=>String(e).length > 0)
+                    : []
                 return exportData
             },
             async waitInit(){
