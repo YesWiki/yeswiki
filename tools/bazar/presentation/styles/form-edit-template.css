@@ -148,4 +148,8 @@ xmp { overflow: auto; }
   border: 1px solid #ccc;
   box-shadow: none;
 }
+
+.form-group.autocomplete_other-wrap {
+  display: none;
+}
 	

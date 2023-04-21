@@ -9,7 +9,7 @@
 {% endif %}
 
 {{ include_css('styles/vendor/leaflet/leaflet.css') }}
-{{ include_javascript('tools/bazar/presentation/javascripts/geocoder.js') }}
+{{ include_javascript('tools/bazar/presentation/javascripts/geolocationHelper.js') }}
 {{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}
 {{ include_javascript('javascripts/vendor/leaflet-providers/leaflet-providers.js') }}
 
@@ -19,7 +19,7 @@
 
 {{ include_javascript('tools/bazar/presentation/javascripts/map-field-leaflet.js') }}
 
-<div class="control-group form-group geocode-input {% if field.required %}required{% endif %}">
+<div class="control-group form-group geocode-input {% if field.required %}required{% endif %}" data-field-names="{{ field.autocompleteFieldNames|merge({latitude:field.latitudeField,longitude:field.longitudeField})|json_encode }}">
     <label class="col-sm-3"></label>
     <div class="controls col-sm-9">
         {% if field.geolocate %}
@@ -30,8 +30,8 @@
         <a class="btn btn-primary btn-geolocate-address">
             {{ _t('BAZ_VERIFIER_MON_ADRESSE') }}
         </a>
-        <input type="hidden" value="{{ latitude }}" id="bf_latitude" name="bf_latitude">
-        <input type="hidden" value="{{ longitude }}" id="bf_longitude" name="bf_longitude">
+        <input type="hidden" value="{{ latitude }}" id="{{ field.latitudeField }}" name="{{ field.latitudeField }}">
+        <input type="hidden" value="{{ longitude }}" id="{{ field.longitudeField }}" name="{{ field.longitudeField }}">
         <div id="osmmapform" style="margin-top:5px; width:{{ config.baz_map_width }}; height:{{ config.baz_map_height }};"></div>
     </div>
 </div>
