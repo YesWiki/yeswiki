@@ -1038,7 +1038,7 @@ class ArchiveService
     protected function testDb(): bool
     {
         try {
-            $results = $this->consoleService->startConsoleSync('core:exportdb', [
+            $results = $this->consoleService->startConsoleSync('archive:exportdb', [
                 "--test"
             ]);
             if (empty($results) || !is_array($results)) {
@@ -1067,17 +1067,18 @@ class ArchiveService
                 $results = $this->consoleService->startConsoleSync('core:exportdb', [
                     "--filepath=$resultFile"
                 ]);
-                if (!empty($results)) {
-                    $result = $results[array_key_first($results)];
                     
-                    // get content
-                    if (file_exists($resultFile)) {
-                        $sqlContent = file_get_contents($resultFile);
-                        unlink($resultFile);
-                    }
+                // get content
+                if (file_exists($resultFile)) {
+                    $sqlContent = file_get_contents($resultFile);
+                    unlink($resultFile);
                     if (!empty($sqlContent)){
                         return $sqlContent;
                     }
+                }
+                
+                if (!empty($results)) {
+                    $result = $results[array_key_first($results)];
                     if (!empty($result['stderr'])) {
                         $errorMessage .= "Error using mysqldump :\n{$result['stderr']}\n";
                     }
