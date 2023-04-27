@@ -135,9 +135,14 @@ class DbCommand extends Command
                 120 // timeoutInSec (2 minutes)
             );
             $err = $this->getErr($results);
-            if (empty($err)) {
+            try {
+                $fileContent = file_get_contents($realFilePath);
+            } catch (Throwable $th) {
+                $fileContent = '';
+            }
+            if (!empty($fileContent)) {
                 return Command::SUCCESS;
-            } else {
+            } elseif (!empty($err)) {
                 $output->writeln($err);
             }
         } catch (Throwable $ex) {
