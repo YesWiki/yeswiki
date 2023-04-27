@@ -62,16 +62,18 @@ class DbCommand extends Command
     }
 
     /**
-     * export db via mysqldump
-     * @param OutputInterface $output
-     * @param string $filepath
-     * @return int Command:code
+     * get params to connect to dB
+     * @return array [
+     *  'hostArg' => array,
+     *  'databasename' => string
+     *  'tablePrefix' => string
+     *  'username' => string
+     *  'password' => string
+     * ]
      * @throws Exception
-     * @throws Throwable
      */
-    private function export(OutputInterface $output, string $filepath): int
+    private function getDbParams():array
     {
-        $realFilePath = realpath(dirname($filepath)).DIRECTORY_SEPARATOR.basename($filepath);
         $hostname = $this->params->get('mysql_host');
         $this->assertParamIsNotEmptyString('mysql_host', $hostname);
         if (strpos($hostname,':') !== false){
@@ -94,6 +96,21 @@ class DbCommand extends Command
 
         $password = $this->params->get('mysql_password');
         $this->assertParamIsString('mysql_password', $password);
+        return compact(['hostArg','databasename','tablePrefix','username','password']);
+    }
+
+    /**
+     * export db via mysqldump
+     * @param OutputInterface $output
+     * @param string $filepath
+     * @return int Command:code
+     * @throws Exception
+     * @throws Throwable
+     */
+    private function export(OutputInterface $output, string $filepath): int
+    {
+        $realFilePath = realpath(dirname($filepath)).DIRECTORY_SEPARATOR.basename($filepath);
+        extract($this->getDbParams());
         try {
             $results = $this->consoleService->findAndStartExecutableSync(
                 "mysqldump",
@@ -137,6 +154,7 @@ class DbCommand extends Command
      */
     private function test(OutputInterface $output): int
     {
+        extract($this->getDbParams());
         try {
             $results = $this->consoleService->findAndStartExecutableSync(
                 "mysqldump",
@@ -149,6 +167,28 @@ class DbCommand extends Command
             );
             $outputResult = $this->getOutput($results);
             if (preg_match("/^mysqldump(?:\.exe)?\s*Ver\s*\d+\.?\d*.*/i", $outputResult)) {
+                // test connecting to database
+                
+                $results = $this->consoleService->findAndStartExecutableSync(
+                    "mysqldump",
+                    array_merge(
+                        $hostArg,
+                        [
+                            "--user=$username",
+                            "--password=$password",
+                            "-t", // no table info
+                            "-d", // no table data
+                            $databasename, // databasename
+                        ]
+                    ), // args
+                    "", // subfolder
+                    $this->getExtaDirs(), // extraDirsWhereSearch
+                    10 // timeoutInSec
+                );
+                $outputResult = $this->getOutput($results);
+                if (empty($outputResult)){
+                    throw new Exception('output should not be empty during test to connect to database via mysql');
+                }
                 $output->writeln("OK");
                 return Command::SUCCESS;
             }
