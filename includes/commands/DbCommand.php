@@ -74,6 +74,14 @@ class DbCommand extends Command
         $realFilePath = realpath(dirname($filepath)).DIRECTORY_SEPARATOR.basename($filepath);
         $hostname = $this->params->get('mysql_host');
         $this->assertParamIsNotEmptyString('mysql_host', $hostname);
+        if (strpos($hostname,':') !== false){
+            list($hostname,$port) = explode(':',$hostname);
+        }
+        if (!empty($port) && strval(intval($port)) == strval($port)){
+            $hostArg = ["--host=$hostname","--port=$port"];
+        } else {
+            $hostArg = ["--host=$hostname"];
+        }
 
         $databasename = $this->params->get('mysql_database');
         $this->assertParamIsNotEmptyString('mysql_database', $databasename);
@@ -89,20 +97,22 @@ class DbCommand extends Command
         try {
             $results = $this->consoleService->findAndStartExecutableSync(
                 "mysqldump",
-                [
-                    "--host=$hostname",
-                    "--user=$username",
-                    "--password=$password",
-                    "--result-file=$realFilePath",
-                    $databasename, // databasename
-                    "{$tablePrefix}users", // tables
-                    "{$tablePrefix}pages", // tables
-                    "{$tablePrefix}nature", // tables
-                    "{$tablePrefix}triples", // tables
-                    "{$tablePrefix}acls", // tables
-                    "{$tablePrefix}links", // tables
-                    "{$tablePrefix}referrers", // tables
-                ], // args
+                array_merge(
+                    $hostArg,
+                    [
+                        "--user=$username",
+                        "--password=$password",
+                        "--result-file=$realFilePath",
+                        $databasename, // databasename
+                        "{$tablePrefix}users", // tables
+                        "{$tablePrefix}pages", // tables
+                        "{$tablePrefix}nature", // tables
+                        "{$tablePrefix}triples", // tables
+                        "{$tablePrefix}acls", // tables
+                        "{$tablePrefix}links", // tables
+                        "{$tablePrefix}referrers", // tables
+                    ]
+                ), // args
                 "", // subfolder
                 $this->getExtaDirs(), // extraDirsWhereSearch
                 120 // timeoutInSec (2 minutes)
