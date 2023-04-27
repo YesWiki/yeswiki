@@ -28,7 +28,7 @@ Des "fermes à wikis" offrent aussi la possibilité d'obtenir un wiki de test. [
 
 ## Trouver de l'aide ou d'autres informations
 
-   - [Un forum ](https://yeswiki.net/forum/) pour répondre aux questions fréquemment posées
+   - [Un forum ](https://forum.yeswiki.net/) pour répondre aux questions fréquemment posées
    - [Un tchat dédié](https://framateam.org/signup_user_complete/?id=iwtotxo7rpgsudhq63wxytaeoo) **Mattermost** qui permet d'échanger des informations rapidement en fonction des sujets parfois plus spécifiques
    - [Des tutoriels](https://yeswiki.net/?CommentFairePour) "Comment faire pour" qui expliquent des trucs et astuces
    - [Une chaine vidéo](https://video.coop.tools/video-channels/yeswiki/videos)

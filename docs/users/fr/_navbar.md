@@ -9,7 +9,7 @@
 * [Développeurses](/docs/users/fr/dev.md)
 * [Extensions](/ ':id=extensions-links')
 * [Autres espaces](#)
-  * [Forum d'entraide](https://yeswiki.net/forum/)
+  * [Forum d'entraide](https://forum.yeswiki.net/)
   * [Tchat d'équipe avec la communauté](https://framateam.org/signup_user_complete/?id=iwtotxo7rpgsudhq63wxytaeoo)
   * [Tutoriels "Comment faire pour"](https://yeswiki.net/?Tutoriels-videos)
   * [Vidéos tutoriels et autres infos YesWiki](https://video.coop.tools/video-channels/yeswiki/videos)
