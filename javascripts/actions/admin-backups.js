@@ -203,6 +203,9 @@ let appParams = {
                         archiveApp.endStartingUpdateError();
                         return;
                     } else if (data.canArchive){
+                        if (data.hasOwnProperty('dB') && !data.dB) {
+                            console.log(_t('ADMIN_BACKUPS_START_BACKUP_NOT_DB'))
+                        }    
                         archiveApp.callAsync = (!data.hasOwnProperty('callAsync') || data.callAsync);
                         archiveApp.startArchiveNextStep();
                         return;
@@ -223,9 +226,6 @@ let appParams = {
                         return ;
                     } else if (data.hasOwnProperty('enoughSpace') && !data.enoughSpace) {
                         archiveApp.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE').replace(/\n/g,'<br>'));
-                        return ;
-                    } else if (data.hasOwnProperty('dB') && !data.dB) {
-                        archiveApp.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_NOT_DB').replace(/\n/g,'<br>'));
                         return ;
                     }
                     archiveApp.endStartingUpdateError();

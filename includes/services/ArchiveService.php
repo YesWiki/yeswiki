@@ -354,7 +354,7 @@ class ArchiveService
             $notAvailableOnTheInternet &&
             (
                 !$callAsync ||
-                ($canExec && $dB)
+                $canExec
             ) &&
             $enoughSpace
         );
