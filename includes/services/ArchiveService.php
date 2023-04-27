@@ -28,7 +28,7 @@ class ArchiveService
         "cache/*",
         'private/backups/*.zip',
         'private/backups/info.json',
-        'private/backups/*.log',
+        'private/backups/*.log'
     ];
     public const DEFAULT_PARAMS_TO_ANONYMIZE = [
         'mysql_host' => '',
@@ -1062,23 +1062,33 @@ class ArchiveService
     {
         $resultFile = $privatePath.'/'.self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP;
         try {
+            $errorMessage = '';
             if ($this->testDb()) {
                 $results = $this->consoleService->startConsoleSync('core:exportdb', [
                     "--filepath=$resultFile"
                 ]);
                 if (!empty($results)) {
                     $result = $results[array_key_first($results)];
-                    if (!empty($result['stderr']) || empty($result['stdout'])) {
-                        throw new Exception("SQL not exported");
+                    
+                    // get content
+                    if (file_exists($resultFile)) {
+                        $sqlContent = file_get_contents($resultFile);
+                        unlink($resultFile);
+                    }
+                    if (!empty($sqlContent)){
+                        return $sqlContent;
+                    }
+                    if (!empty($result['stderr'])) {
+                        $errorMessage .= "Error using mysqldump :\n{$result['stderr']}\n";
                     }
                 }
+            }
+            // backup
+            $results = $this->dbService->getSQLContentBackupMethod();
+            if (empty($results['sql'])) {
+                throw new Exception($errorMessage.(empty($results['error']) ? "SQL not exported via BackupMethod" : $results['error']));
             } else {
-                $results = $this->dbService->getSQLContentBackupMethod();
-                if (empty($results['sql'])) {
-                    throw new Exception(empty($results['error']) ? "SQL not exported (and mysqldump not found)" : $results['error']);
-                } else {
-                    return $results['sql'];
-                }
+                return $results['sql'];
             }
         } catch (Throwable $th) {
             if (file_exists($resultFile)) {
@@ -1086,16 +1096,6 @@ class ArchiveService
             }
             throw $th;
         }
-
-        // get content
-        if (file_exists($resultFile)) {
-            $sqlContent = file_get_contents($resultFile);
-            unlink($resultFile);
-        }
-        if (empty($sqlContent)) {
-            throw new Exception("SQL not exported");
-        }
-        return $sqlContent;
     }
 
     /**
