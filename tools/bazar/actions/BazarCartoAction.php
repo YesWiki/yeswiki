@@ -52,11 +52,18 @@ class BazarCartoAction extends YesWikiAction
 
         // Filters entries via query to remove whose withou bf_latitude nor bf_longitude
         $query = $this->getService(EntryController::class)->formatQuery($arg, $_GET);
-        if (!isset($query['bf_latitude!'])) {
-            $query['bf_latitude!'] = "";
-        }
-        if (!isset($query['bf_longitude!'])) {
-            $query['bf_longitude!'] = "";
+        if ($template != 'map-and-table' ||
+            (
+                !empty($arg['tablewith']) && 
+                $arg['tablewith'] === 'only-geolocation'
+            )
+        ) {
+            if (!isset($query['bf_latitude!'])) {
+                $query['bf_latitude!'] = "";
+            }
+            if (!isset($query['bf_longitude!'])) {
+                $query['bf_longitude!'] = "";
+            }
         }
 
         return([

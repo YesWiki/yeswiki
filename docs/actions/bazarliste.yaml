@@ -30,6 +30,7 @@ actions:
         showOnlyFor:
           - bazarliste
           - bazarcarto
+          - bazarmapandtable
         showExceptFor:
           - bazarcarousel
       dynamic:
@@ -37,7 +38,9 @@ actions:
         showOnlyFor:
           - bazarliste
           - bazarcarto
+          - bazarmapandtable
           - bazarcalendar
+          - bazartableau
         type: checkbox
         advanced: true
       pagination:
@@ -46,6 +49,7 @@ actions:
         type: number
         showExceptFor:
           - bazarcarto
+          - bazarmapandtable
           - bazargogocarto
           - bazartimeline
           - bazarcarousel
@@ -59,6 +63,7 @@ actions:
         only: lists # ce champ doit être de type checkboxListe, listeListe ...
         showOnlyFor:
           - bazarcarto
+          - bazarmapandtable
           - bazargogocarto
           - bazarliste
           - bazarcalendar
@@ -68,6 +73,7 @@ actions:
         showif: colorfield
         showOnlyFor:
           - bazarcarto
+          - bazarmapandtable
           - bazargogocarto
           - bazarliste
           - bazarcalendar
@@ -88,6 +94,7 @@ actions:
         only: lists # ce champ doit être de type checkboxListe, listeListe ...
         showOnlyFor:
           - bazarcarto
+          - bazarmapandtable
           - bazargogocarto
           - bazarliste
           - bazarcalendar
@@ -97,6 +104,7 @@ actions:
         showif: iconfield
         showOnlyFor:
           - bazarcarto
+          - bazarmapandtable
           - bazargogocarto
           - bazarliste
           - bazarcalendar
@@ -892,3 +900,267 @@ actions:
         advanced: true
         type: checkbox
         default: 'false'
+
+  bazarmapandtable:
+    label: _t(AB_BAZAR_MAP_AND_TABLE_LABEL)
+    description: _t(AB_bazarcarto_description)
+    hint: _t(AB_bazarcarto_hint)
+    width: 35%
+    properties:
+      template:
+        value: map-and-table
+      provider:
+        label: _t(AB_bazarcarto_provider_label)
+        required: true
+        type: list
+        default: OpenStreetMap.Mapnik # TODO change to Stadia.OSMBright if community agrees?
+        options:
+          - OpenStreetMap.Mapnik
+          - OpenStreetMap.BlackAndWhite
+          - OpenStreetMap.DE
+          - OpenStreetMap.France
+          - OpenStreetMap.HOT
+          - OpenTopoMap
+          - Stadia.AlidadeSmooth
+          - Stadia.AlidadeSmoothDark
+          - Stadia.OSMBright
+          - Stamen.Toner
+          - Stamen.TonerBackground
+          - Stamen.TonerLite
+          - Stamen.Watercolor
+          - Stamen.Terrain
+          - Stamen.TerrainBackground
+          - Esri.WorldStreetMap
+          - Esri.DeLorme
+          - Esri.WorldTopoMap
+          - Esri.WorldImagery
+          - Esri.WorldTerrain
+          - Esri.WorldShadedRelief
+          - Esri.WorldPhysical
+          - Esri.OceanBasemap
+          - Esri.NatGeoWorldMap
+          - Esri.WorldGrayCanvas
+          - HERE.normalDay
+          - MtbMap
+          - CartoDB.Positron
+          - CartoDB.PositronNoLabels
+          - CartoDB.PositronOnlyLabels
+          - CartoDB.DarkMatter
+          - CartoDB.DarkMatterNoLabels
+          - CartoDB.DarkMatterOnlyLabels
+          - HikeBike.HikeBike
+          - HikeBike.HillShading
+          - BasemapAT.orthofoto
+          - NASAGIBS.ViirsEarthAtNight2012
+      coordinates:
+        label: _t(AB_bazarcarto_coordinates_label)
+        type: geo
+      cluster:
+        label: _t(AB_bazarcarto_cluster_label)
+        type: checkbox
+        default: "false"
+      width:
+        advanced: true
+        label: _t(AB_bazarcarto_width_label)
+        hint: 500px, 100%...
+        type: text
+        default: 100%
+      height:
+        advanced: true
+        label: _t(AB_bazarcarto_height_label)
+        type: text
+        default: 300px
+      entrydisplay:
+        label: _t(AB_bazarcarto_entrydisplay_label)
+        type: list
+        default: sidebar
+        advanced: true
+        showif: dynamic
+        options:
+          direct: _t(AB_bazarcarto_entrydisplay_option_direct)
+          sidebar: _t(AB_bazarcarto_entrydisplay_option_sidebar)
+          modal: _t(AB_bazarcarto_entrydisplay_option_modal)
+          newtab: _t(AB_bazarcarto_entrydisplay_option_newtab)
+          popup: _t(AB_bazarcarto_entrydisplay_option_popup)
+      popuptemplate: 
+        label: _t(AB_bazarcarto_popuptemplate_label)
+        type: list
+        value: '_map_popup_html.twig'
+        advanced: true
+        options:
+          '_map_popup_html.twig': _t(AB_bazarcarto_popuptemplate_entry_from_html)
+          '_map_popup_from_data.twig': _t(AB_bazarcarto_popuptemplate_entry_from_data)
+          'custom': _t(AB_bazarcarto_popuptemplate_custom)
+        showif: 
+          dynamic: true
+          entrydisplay: 'popup'
+      popupcustomtemplate:
+        label: _t(AB_bazarcarto_popupcustomtemplate_label)
+        type: text
+        value: 'custom_map_popup.twig'
+        hint: _t(AB_bazarcarto_popupcustomtemplate_hint)
+        advanced: true
+        showif: 
+          dynamic: true
+          entrydisplay: 'popup'
+          popuptemplate: 'custom'
+      popupselectedfields:
+        type: form-field
+        label: _t(AB_bazarliste_popupselectedfields_label)
+        multiple: true
+        advanced: true
+        default: ""
+        showif: 
+          dynamic: true
+          entrydisplay: 'popup'
+          popuptemplate: '_map_popup_html.twig|custom'
+      necessary_fields:
+        type: form-field
+        label: _t(AB_bazarliste_popupneededfields_label)
+        multiple: true
+        advanced: true
+        value: "bf_titre,imagebf_image"
+        showif: 
+          dynamic: true
+          entrydisplay: 'popup'
+          popuptemplate: '_map_popup_from_data.twig|custom'
+      displayfields:
+        type: correspondance
+        showif: dynamic
+        advanced: true
+        subproperties:
+          markerhover:
+            type: form-field
+            label: _t(AB_bazarcarto_displayfields_markhover_label)
+            default: bf_titre
+      smallmarker:
+        advanced: true
+        label: _t(AB_bazarcarto_smallmarker_label)
+        type: checkbox
+        default: "0"
+        checkedvalue: "1"
+        uncheckedvalue: "0"
+      # spider:
+      #   advanced: true
+      #   label: _t(AB_bazarcarto_spider_label)
+      #   hint: _t(AB_bazarcarto_spider_hint)
+      #   type: checkbox
+      #   default: "false"
+      # barregestion:
+      #   advanced: true
+      #   label: _t(AB_bazarcarto_barregestion_label)
+      #   type: checkbox
+      #   default: "false"
+      # navigation:
+      #   advanced: true
+      #   label: _t(AB_bazarcarto_navigation_label)
+      #   type: checkbox
+      #   default: "true"
+      zoommolette:
+        advanced: true
+        label: _t(AB_bazarcarto_zoommolette_label)
+        type: checkbox
+        default: "false"
+      columnfieldsids:
+        type: form-field
+        label: _t(AB_bazartableau_columnfieldsids_label)
+        hint: _t(AB_bazartableau_columnfieldsids_hint)
+        multiple: true
+        default: ''
+      columntitles:
+        type: text
+        label: _t(AB_bazartableau_columntitles_label)
+        hint: _t(AB_bazartableau_columntitles_hint)
+        default: ''
+      checkboxfieldsincolumns:
+        type: checkbox
+        label: _t(AB_bazartableau_checkboxfieldsincolumns_label)
+        default: "true"
+        checkedvalue: "true"
+        uncheckedvalue: "false"
+      displayimagesasthumbnails:
+        type: checkbox
+        label: _t(AB_bazartableau_displayimagesasthumbnails_label)
+        default: "false"
+        checkedvalue: "true"
+        uncheckedvalue: "false"
+      displayvaluesinsteadofkeys:
+        type: checkbox
+        label: _t(AB_bazartableau_displayvaluesinsteadofkeys_label)
+        default: "false"
+        checkedvalue: "true"
+        uncheckedvalue: "false"
+      sumfieldsids:
+        type: form-field
+        label: _t(AB_bazartableau_sumfieldsids_label)
+        hint: _t(AB_bazartableau_sumfieldsids_hint)
+        multiple: true
+        default: ''
+      displayadmincol:
+        type: list
+        label: _t(AB_bazartableau_displayadmincol_label)
+        hint: _t(AB_bazartableau_displayadmincol_hint)
+        default: ''
+        options: 
+          '': _t(NO)
+          yes: _t(YES)
+          onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
+      displaycreationdate:
+        type: list
+        label: _t(AB_bazartableau_displaycreationdate_label)
+        advanced: true
+        default: ''
+        options: 
+          '': _t(NO)
+          yes: _t(YES)
+          onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
+      displaylastchangedate:
+        type: list
+        label: _t(AB_bazartableau_displaylastchangedate_label)
+        advanced: true
+        default: ''
+        options: 
+          '': _t(NO)
+          yes: _t(YES)
+          onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
+      displayowner:
+        type: list
+        label: _t(AB_bazartableau_displayowner_label)
+        advanced: true
+        default: ''
+        options: 
+          '': _t(NO)
+          yes: _t(YES)
+          onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
+      defaultcolumnwidth:
+        label: _t(AB_bazartableau_defaultcolumnwidth_label)
+        hint: _t(AB_bazartableau_defaultcolumnwidth_hint)
+        type: text
+        advanced: true
+        default: ''
+      columnswidth:
+        label: _t(AB_bazartableau_columnswidth_label)
+        hint: _t(AB_bazartableau_columnswidth_hint)
+        type: columns-width
+        advanced: true
+        subproperties:
+          field:
+            label: _t(AB_bazartableau_columnswidth_field_label)
+            type: form-field
+          width:
+            label: _t(AB_bazartableau_columnswidth_width_label)
+            type: text
+            default: ''
+      exportallcolumns:
+        label: _t(AB_bazartableau_exportallcolumns_label)
+        advanced: true
+        type: checkbox
+        default: 'false'
+      tablewith:
+        label: _t(AB_BAZAR_MAP_AND_TABLE_TABLEWITH_LABEL)
+        type: list
+        default: ''
+        options:
+          '': _t(AB_BAZAR_MAP_AND_TABLE_TABLEWITH_ALL)
+          only-geolocation : _t(AB_BAZAR_MAP_AND_TABLE_TABLEWITH_ONLY_GEOLOC)
+          no-geolocation: _t(AB_BAZAR_MAP_AND_TABLE_TABLEWITH_NO_GEOLOC)

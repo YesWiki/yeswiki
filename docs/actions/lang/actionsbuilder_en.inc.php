@@ -120,6 +120,12 @@ return [
     // "AB_bazarcard_style_vertical" => 'Vertical',
     // "AB_bazarcard_style_square" => 'Carré',
     // "AB_bazarcard_style_horizontal" => 'Horizontal',
+    // BazarTable
+    'AB_BAZAR_MAP_AND_TABLE_LABEL' => 'Map and table',
+    'AB_BAZAR_MAP_AND_TABLE_TABLEWITH_LABEL' => 'Table with all entries',
+    'AB_BAZAR_MAP_AND_TABLE_TABLEWITH_ALL' => 'with or withour geolocalization',
+    'AB_BAZAR_MAP_AND_TABLE_TABLEWITH_ONLY_GEOLOC' => 'only with geolocalization',
+    'AB_BAZAR_MAP_AND_TABLE_TABLEWITH_NO_GEOLOC' => 'only without geolocalization',
     // // BazarTrombi
     // "AB_bazartrombi_label" => "Trombinoscope",
     // "AB_bazartrombi_description" => "Les fiches seront sous forme de Trombinoscope.",
