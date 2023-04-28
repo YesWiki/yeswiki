@@ -9,6 +9,7 @@ class BazarTableAction extends YesWikiAction
     public function formatArguments($arg)
     {
         $newArg = [];
+        $newArg['pagination'] = -1;
         if (empty($arg['columnfieldsids'])){
             $this->appendAllFieldsIds($arg,$newArg,'columnfieldsids');
         } elseif ($this->formatBoolean($arg,false,'exportallcolumns')){
