@@ -80,7 +80,7 @@ class BazarCartoAction extends YesWikiAction
              * Exemple: provider="OpenStreetMap.France" providers="OpenStreetMap.Mapnik,OpenStreetMap.France"
              * TODO: ajouter gestion "providers_credentials"
              */
-            'providers' => isset($arg['providers']) ? explode(',', $arg['providers']) : [],
+            'providers' => $this->formatArray($arg['providers'] ?? []),
             /*
              * Une liste de layers (couches).
              * Exemple avec 1 layer tiles, 1 layer geojson:
@@ -95,7 +95,7 @@ class BazarCartoAction extends YesWikiAction
              *  Le plus simple est de recopier les data GeoJson dans une page du Wiki puis de l'appeler avec le handler "/raw".
              * TODO: ajouter gestion "layers_credentials"
              */
-            'layers' => isset($arg['layers']) ? explode(',', $arg['layers']) : [],
+            'layers' => $this->formatArray($arg['layers'] ?? []),
             // Mettre des puces petites ? non par defaut
             'markersize' => $markerSize,
             'smallmarker' => $smallMarker === '1' ? '' : ' xl',
