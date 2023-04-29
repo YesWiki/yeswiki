@@ -129,6 +129,8 @@
       <template v-else-if="fieldtype === 'image' && anchorData.length > 0">
         <img
           loading="lazy"
+          height="{{ imHeight }}"
+          width="{{ imWidth }}"
           :src="urlImage({id_fiche:entryId,url:wiki.url(entryId),[fieldName]:anchorData},fieldName,{{ imWidth }},{{ imHeight }},'crop')"
           :onError="`urlImageResizedOnError({id_fiche:'${entryId}',url:'${wiki.url(entryId)}',['${fieldName}']:'${anchorData}'},'${fieldName}',{{ imWidth }},{{ imHeight }},'crop','{{ firstTokenCrop|e('html') }}')`"/>
       </template>
