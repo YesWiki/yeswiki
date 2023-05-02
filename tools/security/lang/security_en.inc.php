@@ -35,7 +35,8 @@ return [
     'EDIT_CONFIG_HINT_WIKI_STATUS' => 'Wiki status (running or empty = standard, hibernate = read only)',
     'EDIT_CONFIG_GROUP_SECURITY' => 'Security',
     'EDIT_CONFIG_HINT_ARCHIVE[PRIVATEPATH]' => 'Backups\'folder path (\'%TMP\' = system temporary folder)',
-    'EDIT_CONFIG_HINT_ARCHIVE[CALL_ARCHIVE_ASYNC]' => 'Maximum number of backup\'s files to keep (min. 3)',
+    'EDIT_CONFIG_HINT_ARCHIVE[CALL_ARCHIVE_ASYNC]' => 'Start backup operations in background (true/false)',
+    'EDIT_CONFIG_HINT_ARCHIVE[MAX_NB_FILES]' => 'Maximum number of backup\'s files to keep (min. 3)',
     'EDIT_CONFIG_HINT_ARCHIVE[PREUPDATE_BACKUP_ACTIVATED]' => 'Make a backup before each update (true or false)',
 
     // security controller
