@@ -47,6 +47,7 @@ return [
     'BAZ_TOWN_NOT_FOUND' => 'No town found for search : {input}',
     'GEOLOCATER_GROUP_AUTOCOMPLETE_TITLE' => 'Fields for autocomplete',
     'GEOLOCATER_OPTIONNAL' => 'optionnal',
+    'GEOLOCATER_NOT_FOUND' => 'Not foundable "{addr}" address',
 
     // libs/bazar.edit_lists.js
     // 'BAZ_EDIT_LISTS_CONFIRM_DELETE' => 'Confirmez-vous la suppression de cette valeur dans la liste ?',

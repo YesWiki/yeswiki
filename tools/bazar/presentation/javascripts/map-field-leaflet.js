@@ -102,24 +102,86 @@ $(document).ready(function() {
     function showAddress(map,element) {
         var address = "";
         const fieldsNames = getFieldNames({element})
-        fieldsNames.fields.forEach((field) => address += field.val() + " ")
+        address = fieldsNames.fields.map((field) => field.val()).join(',')
         address = address.replace(/\\("|'|\\)/g, " ").trim();
         if (!address) {
             geocodedmarkerRefresh( map.getCenter() );
             return
         }
-        geolocationHelper.geolocateRetryWithoutNumberAtBeginningIfNeeded(address)
-            .then((data)=>{
-                if (data.length > 0 && data[0].latitude.length > 0 && data[0].longitude.length > 0){
-                    showAddressOk(data[0].longitude, data[0].latitude )
-                } else {
-                    showAddressError('bad format')
-                }
-            })
-            .catch((error)=>{
-                showAddressError(error instanceof Error ? Error.message : String(error))
-            })
-        return false;
+        let formattedFields = {}
+        fieldsNames.fields.forEach((field)=>{
+          const id = field.prop('id');
+          ['street','street1','street2','town','postalCode','county','state'].forEach((key)=>{
+            if (key in fieldsNames && typeof fieldsNames[key] === 'string' && fieldsNames[key] === id) {
+              const val = field.val()
+              if (val.length > 0){
+                formattedFields[key] = val
+              }
+            }
+          })
+        })
+        let setToTry = [];
+        if ('street' in formattedFields && 'street1' in formattedFields && 'street2' in formattedFields){
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street} ${formattedFields.street1} ${formattedFields.street2}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street} ${formattedFields.street1}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street} ${formattedFields.street2}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street1} ${formattedFields.street2}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street1}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street2}`}}})
+          let withoutStreet = {...formattedFields}
+          delete withoutStreet.street
+          setToTry.push({method:'geolocate',fields:withoutStreet})
+        } else if ('street' in formattedFields && 'street1' in formattedFields){
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street} ${formattedFields.street1}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street1}`}}})
+          let withoutStreet = {...formattedFields}
+          delete withoutStreet.street
+          setToTry.push({method:'geolocate',fields:withoutStreet})
+        } else if ('street' in formattedFields && 'street2' in formattedFields){
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street} ${formattedFields.street2}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street2}`}}})
+          let withoutStreet = {...formattedFields}
+          delete withoutStreet.street
+          setToTry.push({method:'geolocate',fields:withoutStreet})
+        } else if ('street' in formattedFields){
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street}`}}})
+          let withoutStreet = {...formattedFields}
+          delete withoutStreet.street
+          setToTry.push({method:'geolocate',fields:withoutStreet})
+        } else {
+          setToTry.push({method:'geolocate',fields:{...formattedFields}})
+        }
+        setToTry.push({method:'geolocateRetryWithoutNumberAtBeginningIfNeeded',fields:address})
+  
+        let manageData = null
+        const processNextSet = async () => {
+          if (setToTry.length == 0){
+            throw new Error(_t('GEOLOCATER_NOT_FOUND',{addr:address}))
+          } else {
+            let newSet = setToTry[0]
+            setToTry = setToTry.slice(1)
+            return await geolocationHelper[newSet.method](newSet.fields).then(manageData)
+          }
+        }
+        manageData = async (data)=>{
+          if (data.length > 0 && data[0].latitude.length > 0 && data[0].longitude.length > 0){
+            return data
+          } else {
+            return await processNextSet().then((data)=>{return data})
+          }
+        }
+        processNextSet()
+          .then((data)=>{
+            showAddressOk(data[0].longitude, data[0].latitude )
+          })
+          .catch((error)=>{
+            showAddressError(error instanceof Error ? error.message : String(error))
+          })
+  
+        return false
     }
     function showAddressOk( lon, lat )
     {

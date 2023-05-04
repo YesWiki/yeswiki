@@ -333,142 +333,170 @@ const geolocationHelper = (function(){
                         })
                     })
             },
+            extractGeolocData(data){
+                if (!Array.isArray(data)){
+                    throw new Error('waited array when getting address')
+                }
+                return data
+                    .filter((entry)=>{
+                        return typeof entry === 'object' &&
+                            'lat' in entry &&
+                            'lon' in entry &&
+                            'display_name' in entry &&
+                            'type' in entry
+                    })
+                    .map((entry)=>{
+                        let latitude = entry.lat
+                        let longitude = entry.lon
+                        let infos = entry.display_name.split(',').map((e)=>e.trim())
+                        let postalCodes = (infos.length > 2 && typeof Number(infos[infos.length-2]) === 'number')
+                            ? {postalCodes: [infos[infos.length-2]]}: {}
+                        switch (entry.type) {
+                            case 'administrative':
+                                return this.toGeolocationData({
+                                    ...{
+                                        town: infos[0],
+                                        country: infos[infos.length-1],
+                                        latitude,
+                                        longitude
+                                    },
+                                    ...postalCodes
+                                })
+                            case 'residential':
+                                return this.toGeolocationData({
+                                    ...{
+                                        street: infos[0],
+                                        state: infos[4] || '',
+                                        county: infos[3] || '',
+                                        town: infos[2] || '',
+                                        country: infos[infos.length-1],
+                                        latitude,
+                                        longitude
+                                    },
+                                    ...postalCodes
+                                })
+                            case 'hamlet':
+                            case 'village':
+                                return this.toGeolocationData({
+                                    ...{
+                                        street: infos[0],
+                                        state: infos[4] || '',
+                                        county: infos[3] || '',
+                                        town: infos[1] || '',
+                                        country: infos[infos.length-1],
+                                        latitude,
+                                        longitude
+                                    },
+                                    ...postalCodes
+                                })
+                            case 'postal_code':
+                                return this.toGeolocationData({
+                                    ...{
+                                        state: infos[0],
+                                        country: infos[infos.length-1],
+                                        latitude,
+                                        longitude
+                                    },
+                                    ...postalCodes
+                                })
+                            case 'postcode':
+                                return this.toGeolocationData({
+                                    ...{
+                                        street: infos[0],
+                                        town: infos[1] || '',
+                                        county: infos[2] || '',
+                                        state: infos[3] || '',
+                                        country: infos[infos.length-1],
+                                        latitude,
+                                        longitude
+                                    },
+                                    ...postalCodes
+                                })
+                            case 'unclassified':
+                                if ('class' in entry && entry.class === 'highway'){
+                                    return this.toGeolocationData({
+                                        ...{
+                                            street: infos[0],
+                                            street1: infos[1],
+                                            state: infos[5] || '',
+                                            county: infos[4] || '',
+                                            town: infos[2] || '',
+                                            country: infos[infos.length-1],
+                                            latitude,
+                                            longitude
+                                        },
+                                        ...postalCodes,
+                                        ...(
+                                            infos.length === 11
+                                            ? {
+                                                street2: infos[2],
+                                                town: infos[4] || '',
+                                                county: infos[6] || '',
+                                                state: infos[7] || '',
+                                            } : {}
+                                        )
+                                    })
+                                }
+                            default:
+                                return this.toGeolocationData({
+                                    country: infos[infos.length-1],
+                                    latitude,
+                                    longitude
+                                })
+                        }
+                    })
+            },
             async geolocate(address){
                 await this.waitInit()
-                if (typeof address !== 'string'){
+                let cacheKey = ''
+                let url = ''
+                if (typeof address === 'object' && address !== null){
+                    cacheKey = JSON.stringify(address)
+                    let params = []
+                    const associations = {
+                        street:'street',
+                        postalCode:'postalcode',
+                        town:'city',
+                        county:'county',
+                        state:'state'
+                    }
+                    Object.keys(associations).forEach((dataKey)=>{
+                        let paramKey = associations[dataKey]
+                        if (dataKey in address && typeof address[dataKey] === 'string' && address[dataKey].length > 0){
+                            params[paramKey] = address[dataKey]
+                        }
+                    })
+                    if (Object.keys(params).length == 0){
+                        throw new Error('address shoud be an object with at least one key from \'street\',\'postalCode\',\'town\',\'county\',\'state\'')
+                    }
+                    url = `https://nominatim.openstreetmap.org/search?${Object.keys(params).map((k)=>`${k}=${encodeURIComponent(params[k])}`).join('&')}&format=json`
+                } else if (typeof address === 'string'){
+                    let sanitizedAddress = this.sanitizeAddress(address)
+                    if (sanitizedAddress.length === 0){
+                        throw new Error('empty sanitized address')
+                    }
+                    cacheKey = sanitizedAddress
+                    url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(sanitizedAddress)}&format=json`
+                } else {
                     throw new Error('address shoud be a string')
                 }
-                let sanitizedAddress = this.sanitizeAddress(address)
-                if (sanitizedAddress.length === 0){
-                    throw new Error('empty sanitized address')
-                }
-                if (sanitizedAddress in this.cache.fromAddress){
-                    return this.cache.fromAddress[sanitizedAddress]
+                if (cacheKey in this.cache.fromAddress){
+                    return this.cache.fromAddress[cacheKey]
                 } else {
-                    this.log(`geolocate '${sanitizedAddress}'`)
-                    return await this.eventDispatcher.runOnceOrWait(sanitizedAddress,'fromAddress',async ()=>{
+                    this.log(`geolocate '${cacheKey}'`)
+                    return await this.eventDispatcher.runOnceOrWait(cacheKey,'fromAddress',async ()=>{
                         return this.getJsonWithTimeLimitThenWait(
-                            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(sanitizedAddress)}&format=json`,
+                            url,
                             'nominatim.openstreetmap.org',
                             1000
                             )
                             .then((data)=>{
-                                if (!Array.isArray(data)){
-                                    throw new Error('waited array when getting address')
-                                }
-                                this.cache.fromAddress[sanitizedAddress] = data
-                                    .filter((entry)=>{
-                                        return typeof entry === 'object' &&
-                                            'lat' in entry &&
-                                            'lon' in entry &&
-                                            'display_name' in entry &&
-                                            'type' in entry
-                                    })
-                                    .map((entry)=>{
-                                        let latitude = entry.lat
-                                        let longitude = entry.lon
-                                        let infos = entry.display_name.split(',').map((e)=>e.trim())
-                                        let postalCodes = (infos.length > 2 && typeof Number(infos[infos.length-2]) === 'number')
-                                            ? {postalCodes: [infos[infos.length-2]]}: {}
-                                        switch (entry.type) {
-                                            case 'administrative':
-                                                return this.toGeolocationData({
-                                                    ...{
-                                                        town: infos[0],
-                                                        country: infos[infos.length-1],
-                                                        latitude,
-                                                        longitude
-                                                    },
-                                                    ...postalCodes
-                                                })
-                                            case 'residential':
-                                                return this.toGeolocationData({
-                                                    ...{
-                                                        street: infos[0],
-                                                        state: infos[4] || '',
-                                                        county: infos[3] || '',
-                                                        town: infos[2] || '',
-                                                        country: infos[infos.length-1],
-                                                        latitude,
-                                                        longitude
-                                                    },
-                                                    ...postalCodes
-                                                })
-                                            case 'hamlet':
-                                            case 'village':
-                                                return this.toGeolocationData({
-                                                    ...{
-                                                        street: infos[0],
-                                                        state: infos[4] || '',
-                                                        county: infos[3] || '',
-                                                        town: infos[1] || '',
-                                                        country: infos[infos.length-1],
-                                                        latitude,
-                                                        longitude
-                                                    },
-                                                    ...postalCodes
-                                                })
-                                            case 'postal_code':
-                                                return this.toGeolocationData({
-                                                    ...{
-                                                        state: infos[0],
-                                                        country: infos[infos.length-1],
-                                                        latitude,
-                                                        longitude
-                                                    },
-                                                    ...postalCodes
-                                                })
-                                            case 'postcode':
-                                                return this.toGeolocationData({
-                                                    ...{
-                                                        street: infos[0],
-                                                        town: infos[1] || '',
-                                                        county: infos[2] || '',
-                                                        state: infos[3] || '',
-                                                        country: infos[infos.length-1],
-                                                        latitude,
-                                                        longitude
-                                                    },
-                                                    ...postalCodes
-                                                })
-                                            case 'unclassified':
-                                                if ('class' in entry && entry.class === 'highway'){
-                                                    return this.toGeolocationData({
-                                                        ...{
-                                                            street: infos[0],
-                                                            street1: infos[1],
-                                                            state: infos[5] || '',
-                                                            county: infos[4] || '',
-                                                            town: infos[2] || '',
-                                                            country: infos[infos.length-1],
-                                                            latitude,
-                                                            longitude
-                                                        },
-                                                        ...postalCodes,
-                                                        ...(
-                                                            infos.length === 11
-                                                            ? {
-                                                                street2: infos[2],
-                                                                town: infos[4] || '',
-                                                                county: infos[6] || '',
-                                                                state: infos[7] || '',
-                                                            } : {}
-                                                        )
-                                                    })
-                                                }
-                                            default:
-                                                return this.toGeolocationData({
-                                                    country: infos[infos.length-1],
-                                                    latitude,
-                                                    longitude
-                                                })
-                                        }
-                                    })
-                                return this.cache.fromAddress[sanitizedAddress]
+                                this.cache.fromAddress[cacheKey] = this.extractGeolocData(data)
+                                return this.cache.fromAddress[cacheKey]
                             })
                             .catch((error)=>{
                                 this.log(error,'error')
-                                return [this.toGeolocationData({countryCode,country})]
+                                return [this.toGeolocationData({})]
                             })
                     })
                 }

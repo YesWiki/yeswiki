@@ -47,6 +47,7 @@ return [
     'BAZ_TOWN_NOT_FOUND' => 'Pas de ville trouvée pour la recherche : {input}',
     'GEOLOCATER_GROUP_AUTOCOMPLETE_TITLE' => 'Champs pour l\'autocomplétion',
     'GEOLOCATER_OPTIONNAL' => 'facultatif',
+    'GEOLOCATER_NOT_FOUND' => 'Adresse "{addr}" introuvable',
 
     // libs/bazar.edit_lists.js
     'BAZ_EDIT_LISTS_CONFIRM_DELETE' => 'Confirmez-vous la suppression de cette valeur dans la liste ?',
