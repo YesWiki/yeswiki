@@ -102,7 +102,7 @@ $(document).ready(function() {
     function showAddress(map,element) {
         var address = "";
         const fieldsNames = getFieldNames({element})
-        address = fieldsNames.fields.map((field) => field.val()).join(',')
+        address = fieldsNames.fields.map((field) => field.val()).join(' ')
         address = address.replace(/\\("|'|\\)/g, " ").trim();
         if (!address) {
             geocodedmarkerRefresh( map.getCenter() );
