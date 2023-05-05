@@ -466,19 +466,28 @@ const geolocationHelper = (function(){
                             params[paramKey] = address[dataKey]
                         }
                     })
-                    if (Object.keys(params).length == 0){
-                        throw new Error('address shoud be an object with at least one key from \'street\',\'postalCode\',\'town\',\'county\',\'state\'')
+                    if (Object.keys(params).length > 0){
+                        if ('street' in params && (!('postalcode' in params)||!('city' in params))){
+                            url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(Object.keys(params).map((k)=>params[k]).join(' '))}&format=json`
+                        } else {
+                            url = `https://nominatim.openstreetmap.org/search?${Object.keys(params).map((k)=>`${k}=${encodeURIComponent(params[k])}`).join('&')}&format=json`
+                        }
+                    } else {
+                        // throw new Error('address shoud be an object with at least one key from \'street\',\'postalCode\',\'town\',\'county\',\'state\'')
+                        return ''
                     }
-                    url = `https://nominatim.openstreetmap.org/search?${Object.keys(params).map((k)=>`${k}=${encodeURIComponent(params[k])}`).join('&')}&format=json`
-                } else if (typeof address === 'string'){
-                    let sanitizedAddress = this.sanitizeAddress(address)
-                    if (sanitizedAddress.length === 0){
-                        throw new Error('empty sanitized address')
+                }
+                if (url.length == 0){
+                    if (typeof address === 'string'){
+                        let sanitizedAddress = this.sanitizeAddress(address)
+                        if (sanitizedAddress.length === 0){
+                            throw new Error('empty sanitized address')
+                        }
+                        cacheKey = sanitizedAddress
+                        url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(sanitizedAddress)}&format=json`
+                    } else {
+                        throw new Error('address shoud be a string')
                     }
-                    cacheKey = sanitizedAddress
-                    url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(sanitizedAddress)}&format=json`
-                } else {
-                    throw new Error('address shoud be a string')
                 }
                 if (cacheKey in this.cache.fromAddress){
                     return this.cache.fromAddress[cacheKey]
