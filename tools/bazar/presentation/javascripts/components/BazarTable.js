@@ -184,7 +184,7 @@ let componentParams = {
                         })
                     } else if (fieldsToRegister.includes(id)) {
                         fieldsToRegister = fieldsToRegister.filter((e)=>e!=id)
-                        this.registerSpecialFields([id],false,params,data)
+                        this.registerSpecialFields([id],false,params,data,options)
                     }
                 })
                 if (await this.sanitizedParamAsync('exportallcolumns')){
@@ -204,7 +204,7 @@ let componentParams = {
                     })
                 }
 
-                this.registerSpecialFields(fieldsToRegister,true,params,data)
+                this.registerSpecialFields(fieldsToRegister,true,params,data,options)
 
                 this.columns = data.columns
             }
@@ -464,7 +464,7 @@ let componentParams = {
                 }
             }
         },
-        registerSpecialFields(fieldsToRegister,test,params,data){
+        registerSpecialFields(fieldsToRegister,test,params,data,options){
             if (Array.isArray(fieldsToRegister) && fieldsToRegister.length > 0){
                 const parameters = {
                     'date_creation_fiche': {
@@ -499,7 +499,7 @@ let componentParams = {
                         if (canPushColumn){
                             data.columns.push({
                                 data: propertyName,
-                                title: this.getTemplateFromSlot(parameters[propertyName].slotName,{}),
+                                title: options.columntitles[propertyName] || this.getTemplateFromSlot(parameters[propertyName].slotName,{}),
                                 footer: ''
                             })
                         }
