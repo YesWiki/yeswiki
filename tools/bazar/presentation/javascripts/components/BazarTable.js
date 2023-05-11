@@ -170,6 +170,7 @@ let componentParams = {
                     displayvaluesinsteadofkeys:this.sanitizedParam(params,this.isAdmin,'displayvaluesinsteadofkeys'),
                     baseIdx: data.columns.length
                 }
+                let fieldsToRegister = ['date_creation_fiche','date_maj_fiche','owner','id_typeannonce']
                 columnfieldsids.forEach((id,idx)=>{
                     if (id.length >0 && id in fields){
                         this.registerField(data,{
@@ -181,6 +182,9 @@ let componentParams = {
                                 addLink:idx === 0 && !('bf_titre' in columnfieldsids)
                             }
                         })
+                    } else if (fieldsToRegister.includes(id)) {
+                        fieldsToRegister = fieldsToRegister.filter((e)=>e!=id)
+                        this.registerSpecialFields([id],false,params,data)
                     }
                 })
                 if (await this.sanitizedParamAsync('exportallcolumns')){
@@ -200,19 +204,8 @@ let componentParams = {
                     })
                 }
 
-                [
-                    ['displaycreationdate','date_creation_fiche','creationdatetranslate'],
-                    ['displaylastchangedate','date_maj_fiche','modifiydatetranslate'],
-                    ['displayowner','owner','ownertranslate']
-                ].forEach(([paramName,propertyName,slotName])=>{
-                    if (this.sanitizedParam(params,this.isadmin,paramName)){
-                        data.columns.push({
-                            data: propertyName,
-                            title: this.getTemplateFromSlot(slotName,{}),
-                            footer: ''
-                        })
-                    }
-                })
+                this.registerSpecialFields(fieldsToRegister,true,params,data)
+
                 this.columns = data.columns
             }
             return this.columns
@@ -469,6 +462,49 @@ let componentParams = {
                         ...displayValOptions
                     })
                 }
+            }
+        },
+        registerSpecialFields(fieldsToRegister,test,params,data){
+            if (Array.isArray(fieldsToRegister) && fieldsToRegister.length > 0){
+                const parameters = {
+                    'date_creation_fiche': {
+                        paramName: 'displaycreationdate',
+                        slotName: 'creationdatetranslate' 
+                    },
+                    'date_maj_fiche': {
+                        paramName: 'displaylastchangedate',
+                        slotName: 'modifiydatetranslate' 
+                    },
+                    'owner': {
+                        paramName: 'displayowner',
+                        slotName: 'ownertranslate' 
+                    },
+                    'id_typeannonce': {
+                        paramName: '',
+                        slotName: 'formidtranslate' 
+                    },
+                }
+                fieldsToRegister.forEach((propertyName)=>{
+                    if (propertyName in parameters){
+                        const canPushColumn = 
+                            (parameters[propertyName].slotName.length > 0)
+                            ? (
+                                test
+                                ? (
+                                    parameters[propertyName].paramName.length > 0 &&
+                                    this.sanitizedParam(params,this.isadmin,parameters[propertyName].paramName)
+                                )
+                                : true
+                            ) : false
+                        if (canPushColumn){
+                            data.columns.push({
+                                data: propertyName,
+                                title: this.getTemplateFromSlot(parameters[propertyName].slotName,{}),
+                                footer: ''
+                            })
+                        }
+                    }
+                })
             }
         },
         removeRows(dataTable,newIds){
