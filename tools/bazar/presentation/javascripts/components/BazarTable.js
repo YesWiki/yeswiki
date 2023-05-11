@@ -267,6 +267,9 @@ let componentParams = {
                 // create dataTable
                 const columns = await this.getColumns()
                 const sumfieldsids = await this.sanitizedParamAsync('sumfieldsids')
+                const champField = await this.sanitizedParamAsync('champ')
+                const ordreField = await this.sanitizedParamAsync('ordre')
+                let order = (ordreField === 'desc') ? 'desc'  :'asc'
                 let firstColumnOrderable = 0
                 for (let index = 0; index < columns.length; index++) {
                     if ('orderable' in columns[index]  && !columns[index].orderable){
@@ -275,12 +278,20 @@ let componentParams = {
                         break
                     }
                 }
+                let columnToOrder = firstColumnOrderable
+                if (typeof champField === 'string' && champField.length > 0){
+                    for (let index = 0; index < columns.length; index++) {
+                        if ((!('orderable' in columns[index]) || columns[index].orderable) && columns[index].data == champField){
+                            columnToOrder = index
+                        }
+                    }
+                }
                 this.dataTable = $(this.$refs.dataTable).DataTable({
                     ...this.getDatatableOptions(),
                     ...{
                         columns: columns,
                         "scrollX": true,
-                        order: [[firstColumnOrderable,'asc']]
+                        order: [[columnToOrder,order]]
                     }
                 })
                 $(this.dataTable.table().node()).prop('id',this.getUuid())
