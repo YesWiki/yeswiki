@@ -22,7 +22,7 @@
           src="{{ thumbnailLink }}"
           alt="{{ shortImageName|e('html_attr') }}"
           rel="{{ baseUrl ~ imageFullPath }}"
-          onerror=this.src="{{ baseUrl ~  imageFullPath}}" />' . "\n"
+          onerror=this.src="{{ baseUrl ~  imageFullPath}}" />
       </a>
     {% endif %}
   {% elseif imageHeight is not empty and imageWidth is not empty %}

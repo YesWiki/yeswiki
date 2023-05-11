@@ -19,7 +19,7 @@
         <img loading="lazy" class="img-responsive" 
           src="{{ thumbnailLink }}"
           alt="{{ shortImageName|e('html_attr') }}"
-          rel="{{ baseUrl ~ imageFullPath }}" />' . "\n"
+          rel="{{ baseUrl ~ imageFullPath }}" />
       </a>
     {% endif %}
   {% elseif imageHeight is not empty and imageWidth is not empty %}
