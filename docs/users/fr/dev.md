@@ -152,3 +152,30 @@ _En effet, les dossiers qui sont dans https://github.com/YesWiki ont un `webhook
  4. se rendre dans le sous-dossier de `repository.yeswiki.net` pour supprimer les fichiers `.zip` de l'extension et ainsi retirer les archives accessibles depuis internet
  5. pour chaque version de `YesWiki`, se rendre dans le sous-dossier concerné pour retirer les références à cette extension du fichier `package.json`
  6. prévenir la communauté sur le canal Framateam : https://framateam.org/yeswiki/channels/developpement
+tps://framateam.org/yeswiki/channels/developpement
+
+### Créer une route d'API custom
+[Documentation sur le forum yeswiki.net](https://forum.yeswiki.net/t/fonctionnement-des-api/116/3?u=agate)
+
+### Restreinte l'accès à une API de base ou custom
+
+Pré-requis : Authoriser les headers d'authentification dans [ngninx](https://stackoverflow.com/a/65308098) ou via un [.htaccess](https://stackoverflow.com/a/26791450)
+
+Pour se connecter à une route api avec un bearer, il faut:
+
+ 1. ajouter le paramètre suivant dans le fichier wakka.config.php
+
+   'api_allowed_keys' => [
+      'UserName1' => 'a-complex-token-1',
+      'UserName2' => 'a-complex-token-2',
+   ],
+
+   2. placer les utilisateurs UserName1 et UserName2 dans des groupes avec les accès souhaités
+   3. faire un appel sur la route api avec l’en-tête HTTP Authorization: Bearer a-complex-token-1
+    Ceci connectera automatiquement l’utilisateur concerné et permettra l'accès au données de l'api si l'utilisater en question y a accès.
+
+ Une autre méthode est d’appeler la route concernée avec les bons cookies. Par exemple,
+
+   1. se connecter via une requête POST sur une page de connexion /?ParametresUtilisateur avec name=UserName&password=real-password&action=login
+   2. puis faire une requête api dans le même contexte (les cookies devraient être envoyés automatiquement permettant de maintenir la connexion).
+
