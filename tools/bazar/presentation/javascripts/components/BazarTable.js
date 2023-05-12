@@ -55,10 +55,21 @@ let componentParams = {
                     } else if ('displayValOptions' in col){
                         formattedData[col.data] = (col.data in entry && typeof entry[col.data] === 'string') ? {
                             display:entry[col.data].split(',').map((v)=>v in col.displayValOptions ? col.displayValOptions[v] : v).join(",\n"),
-                            export: entry[col.data].split(',').map((v)=>v in col.displayValOptions ? `"${col.displayValOptions[v]}"` : v).join(',')
+                            export: entry[col.data].split(',').map((v)=>v in col.displayValOptions ? `"${col.displayValOptions[v]}"` : v).join(','),
+                            raw: entry[col.data].split(',').map((v)=>{return {key:v,title:v in col.displayValOptions ? col.displayValOptions[v] : v}})
                         } : ''
+                        if (formattedData[col.data] !== '' && 'externalBaseUrl' in col){
+                            formattedData[col.data].externalBaseUrl = col.externalBaseUrl
+                        }
                     } else {
                         formattedData[col.data] = (col.data in entry && typeof entry[col.data] === 'string' ) ? entry[col.data] : ''
+                        if (formattedData[col.data] !== '' && 'externalBaseUrl' in col){
+                            formattedData[col.data] = {
+                                display:formattedData[col.data],
+                                export:formattedData[col.data],
+                                externalBaseUrl:col.externalBaseUrl
+                            }
+                        }
                     }
                 });
                 ['id_fiche','color','icon','url'].forEach((key)=>{
@@ -442,13 +453,18 @@ let componentParams = {
                         })
                     })
                 } else {
-                    const fieldtype = ['link','email'].includes(field.type) ? field.type: ((field.type === 'image' && displayimagesasthumbnails)?'image':'')
+                    const fieldtype = ['link','email','checkboxfiche','listefiche','radiofiche'].includes(field.type) ? field.type: ((field.type === 'image' && displayimagesasthumbnails)?'image':'')
                     const fieldName = (fieldtype === 'image' && displayimagesasthumbnails) ? field.propertyname : ''
                     const displayValOptions = (displayvaluesinsteadofkeys && 'options' in field && typeof field.options === 'object')
                     ? {
                         displayValOptions:field.options
                     } 
                     : {}
+                    if ('linkedObjectName' in field && field.linkedObjectName.match(/^https?:\/\//)){
+                        displayValOptions.externalBaseUrl = field.linkedObjectName.match(/^(https?:\/\/.*)api\/(forms|entries).*$/)
+                            ? field.linkedObjectName.replace(/^(https?:\/\/.*)api\/(forms|entries).*$/,"$1")
+                            : ''
+                    }
                     data.columns.push({
                         ...{
                             class: className,
@@ -577,6 +593,30 @@ let componentParams = {
                     } else {
                         anchorData = ''
                     }
+                } else if (fieldtype === 'checkboxfiche' && typeof data === 'object' && data !== null && 'raw' in data) {
+                    return data.raw.map(({key,title})=>this.renderCell({fieldtype:'urlmodal',fieldName,idx})({display:title},type,{id_fiche:key,url:wiki.url(`${key}/iframe`)})).join(',<br/>')
+                } else if (typeof fieldtype === 'string' && ['listefiche','radiofiche','checkboxfiche'].includes(fieldtype) && formattedData.length > 0) {
+                    const intFieldType = (typeof data === 'object' && data !== null && 'externalBaseUrl' in data)
+                        ? (
+                            data.externalBaseUrl.length > 0
+                            ? 'urlnewwindow'
+                            : ''
+                        ): 'urlmodal'
+                    const formattedArray = (typeof data === 'object' && data !== null && 'raw' in data)
+                        ? data.raw
+                        : formattedData.split(',').map((key)=>{return {key,title:key}})
+                    return formattedArray.map(({key,title})=>{
+                        return this.renderCell({fieldtype:intFieldType,fieldName,idx})({display:title},type,{
+                            id_fiche:key,
+                            url:(intFieldType === 'urlmodal') 
+                                ? wiki.url(`${key}/iframe`)
+                                :(
+                                    intFieldType === 'urlnewwindow'
+                                    ? data.externalBaseUrl + key
+                                    : ''
+                                )
+                        }).trim()
+                    }).join(',\n')
                 }
                 const template = this.getTemplateFromSlot('rendercell',{
                     anchorData,

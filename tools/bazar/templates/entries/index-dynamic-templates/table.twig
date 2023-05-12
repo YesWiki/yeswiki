@@ -135,6 +135,12 @@
           :src="urlImage({id_fiche:entryId,url:wiki.url(entryId),[fieldName]:anchorData},fieldName,{{ imWidth }},{{ imHeight }},'crop')"
           :onError="`urlImageResizedOnError({id_fiche:'${entryId}',url:'${wiki.url(entryId)}',['${fieldName}']:'${anchorData}'},'${fieldName}',{{ imWidth }},{{ imHeight }},'crop','{{ firstTokenCrop|e('html') }}')`"/>
       </template>
+      <template v-else-if="fieldtype === 'urlmodal' && anchorData.length > 0">
+        <a :href="url" v-html="anchorData" :title="anchorData" class="modalbox" data-size="modal-lg" data-iframe="1"></a>
+      </template>
+      <template v-else-if="fieldtype === 'urlnewwindow' && anchorData.length > 0">
+        <a :href="url" v-html="anchorData" :title="anchorData" target="blank"></a>
+      </template>
       <template v-else>
         {{-'{{anchorData}}'-}}
       </template>
