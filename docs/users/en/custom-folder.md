@@ -152,6 +152,41 @@ services:
     resource: 'controllers/*'
 ```
 
+### Custom api route
+
+YesWiki allows to define a new api route (url like [`?api/forms`](?api/forms ':ignore')).
+
+#### Documentation about coding rules
+
+A document describes `api` coding rules and examples : [docs/code/api.md](/docs/code/api.md)
+
+#### Creation of a new route
+
+ 1. create a new controller `custom/controllers/ApiController.php` with some code like
+
+```php
+<?php
+
+namespace YesWiki\Custom\Controller;
+
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use YesWiki\Core\ApiResponse;
+use YesWiki\Core\YesWikiController;
+
+class ApiController extends YesWikiController
+{
+    /**
+     * @Route("/api/my/route/{name}",methods={"GET"}, options={"acl":{"public"}},priority=2)
+     */
+    public function myRoute($name)
+        // do something
+        return new ApiResponse(['result'=>$name],Response::HTTP_OK);
+    }
+}
+```
+ 2. be careful to register the `controllers` folder in `config.yaml` like described above.
+
 ### Custom Command
 
 Puts your custom fields in `custom/commands`

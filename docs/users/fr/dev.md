@@ -159,23 +159,27 @@ tps://framateam.org/yeswiki/channels/developpement
 
 ### Restreinte l'accès à une API de base ou custom
 
-Pré-requis : Authoriser les headers d'authentification dans [ngninx](https://stackoverflow.com/a/65308098) ou via un [.htaccess](https://stackoverflow.com/a/26791450)
+Pré-requis : Authoriser les headers d'authentification dans [ngninx](https://stackoverflow.com/a/65308098) ou via un [.htaccess](https://stackoverflow.com/a/26791450) si vous utilisez un [`reverse-proxy`](https://fr.wikipedia.org/wiki/Proxy_inverse)
 
-Pour se connecter à une route api avec un bearer, il faut:
+Pour se connecter à une route api avec un `bearer`, il faut:
 
  1. ajouter le paramètre suivant dans le fichier wakka.config.php
-
+```php
    'api_allowed_keys' => [
       'UserName1' => 'a-complex-token-1',
       'UserName2' => 'a-complex-token-2',
    ],
+```
 
-   2. placer les utilisateurs UserName1 et UserName2 dans des groupes avec les accès souhaités
-   3. faire un appel sur la route api avec l’en-tête HTTP Authorization: Bearer a-complex-token-1
+ 2. placer les utilisateurs `UserName1` et `UserName2` dans des groupes avec les accès souhaités
+ 3. faire un appel sur la route api avec l’en-tête HTTP `Authorization: Bearer a-complex-token-1`  
     Ceci connectera automatiquement l’utilisateur concerné et permettra l'accès au données de l'api si l'utilisater en question y a accès.
 
- Une autre méthode est d’appeler la route concernée avec les bons cookies. Par exemple,
+Une autre méthode est d’appeler la route concernée avec les bons cookies. Par exemple,
+ 1. se connecter via une requête POST sur une page de connexion [`/?ParametresUtilisateur`](?ParametresUtilisateur ':ignore') avec `name=UserName&password=real-password&action=login` en requête `POST`
+ 2. puis faire une requête api dans le même contexte (les cookies devraient être envoyés automatiquement permettant de maintenir la connexion).
 
-   1. se connecter via une requête POST sur une page de connexion /?ParametresUtilisateur avec name=UserName&password=real-password&action=login
-   2. puis faire une requête api dans le même contexte (les cookies devraient être envoyés automatiquement permettant de maintenir la connexion).
+!> **attention** : cette méthode d'authentification à l'api par les cookies risques de ne pas être stable au fil des versions et une nouvelle méthode d'authentification pourrait être mise en place.
+
+Une documentation technique sur l'api en Anglais est disponible dans ce fichier : [docs/code/api.md](/docs/code/api.md)
 
