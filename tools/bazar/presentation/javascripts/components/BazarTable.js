@@ -190,7 +190,7 @@ let componentParams = {
                                 field:fields[id],
                                 visible:true,
                                 printable:true,
-                                addLink:idx === 0 && !('bf_titre' in columnfieldsids)
+                                addLink:(idx === 0 && !columnfieldsids.includes('bf_titre')) || id === 'bf_titre'
                             }
                         })
                     } else if (fieldsToRegister.includes(id)) {
@@ -593,8 +593,6 @@ let componentParams = {
                     } else {
                         anchorData = ''
                     }
-                } else if (fieldtype === 'checkboxfiche' && typeof data === 'object' && data !== null && 'raw' in data) {
-                    return data.raw.map(({key,title})=>this.renderCell({fieldtype:'urlmodal',fieldName,idx})({display:title},type,{id_fiche:key,url:wiki.url(`${key}/iframe`)})).join(',<br/>')
                 } else if (typeof fieldtype === 'string' && ['listefiche','radiofiche','checkboxfiche'].includes(fieldtype) && formattedData.length > 0) {
                     const intFieldType = (typeof data === 'object' && data !== null && 'externalBaseUrl' in data)
                         ? (
@@ -607,14 +605,17 @@ let componentParams = {
                         : formattedData.split(',').map((key)=>{return {key,title:key}})
                     return formattedArray.map(({key,title})=>{
                         return this.renderCell({fieldtype:intFieldType,fieldName,idx})({display:title},type,{
-                            id_fiche:key,
-                            url:(intFieldType === 'urlmodal') 
-                                ? wiki.url(`${key}/iframe`)
-                                :(
-                                    intFieldType === 'urlnewwindow'
-                                    ? data.externalBaseUrl + key
-                                    : ''
-                                )
+                            ...row,
+                            ...{
+                                id_fiche:key,
+                                url:(intFieldType === 'urlmodal') 
+                                    ? wiki.url(`${key}/iframe`)
+                                    :(
+                                        intFieldType === 'urlnewwindow'
+                                        ? data.externalBaseUrl + key
+                                        : ''
+                                    )
+                            }
                         }).trim()
                     }).join(',\n')
                 }
