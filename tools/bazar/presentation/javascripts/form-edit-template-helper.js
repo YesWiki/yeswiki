@@ -13,6 +13,16 @@ const templateHelper = {
     }
     return this.formFields[fieldId]
   },
+  getFormGroup(field, formGroupName){
+    const holder = this.getHolder(field)
+    if (holder) {
+      const formGroup = holder.find(`.${formGroupName}-wrap`)
+      if (typeof formGroup !== undefined && formGroup.length > 0) {
+        return formGroup
+      }
+    }
+    return null
+  },
   getHolder(field) {
     const fieldId = field.id
     if (!this.holders.hasOwnProperty(fieldId)) {
@@ -71,31 +81,25 @@ const templateHelper = {
     }
   },
   prependHTMLBeforeGroup(field, formGroupName, html) {
-    const holder = this.getHolder(field)
-    if (holder) {
-      const formGroup = holder.find(`.${formGroupName}-wrap`)
-      if (typeof formGroup !== undefined && formGroup.length > 0) {
-        if (!formGroup.hasClass('prepended-html-already-defined')) {
-          formGroup.before(html)
-          formGroup.addClass('prepended-html-already-defined')
-        }
+    const formGroup = this.getFormGroup(field, formGroupName)
+    if (formGroup !== null){
+      if (!formGroup.hasClass('prepended-html-already-defined')) {
+        formGroup.before(html)
+        formGroup.addClass('prepended-html-already-defined')
       }
     }
   },
   defineLabelHintForGroup(field, formGroupName, message) {
-    const holder = this.getHolder(field)
-    if (holder) {
-      const formGroup = holder.find(`.${formGroupName}-wrap`)
-      if (typeof formGroup !== undefined && formGroup.length > 0) {
-        const label = formGroup.find('label').first()
-        if (!label.hasClass('label-hint-already-defined')) {
-          label.append(' ')
-          label.append($('<i/>')
-            .addClass('fa fa-question-circle')
-            .attr('title', message)
-            .tooltip())
-          label.addClass('label-hint-already-defined')
-        }
+    const formGroup = this.getFormGroup(field, formGroupName)
+    if (formGroup !== null){
+      const label = formGroup.find('label').first()
+      if (!label.hasClass('label-hint-already-defined')) {
+        label.append(' ')
+        label.append($('<i/>')
+          .addClass('fa fa-question-circle')
+          .attr('title', message)
+          .tooltip())
+        label.addClass('label-hint-already-defined')
       }
     }
   }
