@@ -687,6 +687,19 @@ var templates = {
     return {
       field: _t('BAZ_FORM_EDIT_MAP_FIELD'),
       onRender() {
+          const toggleState = function (name,state){
+            const formGroup = templateHelper.getFormGroup(fieldData, name)
+            if (formGroup !== null){
+              if (state === 'show'){
+                formGroup.show()
+              } else {
+                formGroup.hide()
+              }
+            }
+          }
+          const toggleStates = function (state){
+            ['autocomplete_street1','autocomplete_street2'].forEach((name)=>toggleState(name,state))
+          }
           // initMapAutocompleteUpdate()
           $(".map-field.form-field")
           .find("input[type=text][name=autocomplete_street]:not(.initialized)"
@@ -795,11 +808,30 @@ var templates = {
           })
           .trigger('change')
 
-          templateHelper.prependHTMLBeforeGroup(fieldData, 'autocomplete_street', $('<div/>').addClass('form-group').append($('<b/>').append(_t('GEOLOCATER_GROUP_AUTOCOMPLETE_TITLE'))))
+          templateHelper.prependHTMLBeforeGroup(fieldData, 'autocomplete_street', $('<div/>').addClass('form-group').append($('<center/>').append($('<b/>').append(_t('GEOLOCATER_GROUP_GEOLOCATIZATION')))))
           templateHelper.defineLabelHintForGroup(fieldData, 'autocomplete_street1', _t('GEOLOCATER_OPTIONNAL'))
+          templateHelper.prependHTMLBeforeGroup(fieldData, 'autocomplete_street1', $('<div/>').addClass('form-group').append($('<button/>').addClass('btn btn-info btn-xs').append(_t('GEOLOCATER_SEE_ADVANCED_PARAMS')).on(
+            'click',
+            function (event){
+              if ($(this).hasClass('opened')){
+                $(this).removeClass('opened')
+                $(this).html(_t('GEOLOCATER_SEE_ADVANCED_PARAMS'));
+                toggleStates('hide')
+              } else {
+                $(this).addClass('opened')
+                $(this).html(_t('GEOLOCATER_HIDE_ADVANCED_PARAMS'));
+                toggleStates('show')
+              }
+              event.preventDefault()
+              event.stopPropagation()
+            }
+          )))
+          toggleStates('hide')
           templateHelper.defineLabelHintForGroup(fieldData, 'autocomplete_street2', _t('GEOLOCATER_OPTIONNAL'))
           templateHelper.defineLabelHintForGroup(fieldData, 'autocomplete_county', _t('GEOLOCATER_OPTIONNAL'))
           templateHelper.defineLabelHintForGroup(fieldData, 'autocomplete_state', _t('GEOLOCATER_OPTIONNAL'))
+          templateHelper.defineLabelHintForGroup(fieldData, 'autocomplete_town', _t('GEOLOCATER_OPTIONNAL'))
+          templateHelper.defineLabelHintForGroup(fieldData, 'autocomplete_postalcode', _t('GEOLOCATER_OPTIONNAL'))
       }
     }
   },
