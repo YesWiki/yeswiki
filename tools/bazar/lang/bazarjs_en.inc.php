@@ -46,9 +46,9 @@ return [
     'BAZ_TOWN_HINT' => 'Please type first 3 to see associated towns',
     'BAZ_TOWN_NOT_FOUND' => 'No town found for search : {input}',
     'GEOLOCATER_GROUP_GEOLOCATIZATION' => 'Fields to use for geolocalization',
+    'GEOLOCATER_GROUP_GEOLOCATIZATION_HINT' => 'Provide at least one field',
     'GEOLOCATER_SEE_ADVANCED_PARAMS' => '&#9660; See advanced params',
     'GEOLOCATER_HIDE_ADVANCED_PARAMS' => '&#9650; Hide advanced params',
-    'GEOLOCATER_OPTIONNAL' => 'optionnal',
     'GEOLOCATER_NOT_FOUND' => 'Not foundable "{addr}" address',
 
     // libs/bazar.edit_lists.js
@@ -165,7 +165,7 @@ return [
     // 'BAZ_FORM_EDIT_TEXT_TYPE_COLOR' => 'Couleur',
     // 'BAZ_FORM_EDIT_TITLE_LABEL' => 'Titre Automatique',
     // 'BAZ_FORM_EDIT_CUSTOM_LABEL' => 'Custom',
-    'BAZ_FORM_EDIT_MAP_FIELD' => 'Geolocalization from bf_adresse and/or bf_ville and/or bf_code_postal and/or bf_pays field',
+    'BAZ_FORM_EDIT_MAP_FIELD' => 'Geolocalization from address fields',
     'BAZ_FORM_EDIT_COLLABORATIVE_DOC_FIELD' => 'Collaborative document',
     'BAZ_FORM_EDIT_TABS' => 'Tabs nav.',
     'BAZ_FORM_EDIT_TABCHANGE' => 'Change to next tab',

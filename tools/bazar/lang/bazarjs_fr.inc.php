@@ -46,9 +46,9 @@ return [
     'BAZ_TOWN_HINT' => 'Veuillez entrer les 3 premières lettres pour voir les villes associées',
     'BAZ_TOWN_NOT_FOUND' => 'Pas de ville trouvée pour la recherche : {input}',
     'GEOLOCATER_GROUP_GEOLOCATIZATION' => 'Champs à utiliser pour la géolocalisation',
+    'GEOLOCATER_GROUP_GEOLOCATIZATION_HINT' => 'Renseignez au moins un champ',
     'GEOLOCATER_SEE_ADVANCED_PARAMS' => '&#9660; Voir les paramètres avancés',
     'GEOLOCATER_HIDE_ADVANCED_PARAMS' => '&#9650; Masquer les paramètres avancés',
-    'GEOLOCATER_OPTIONNAL' => 'facultatif',
     'GEOLOCATER_NOT_FOUND' => 'Adresse "{addr}" introuvable',
 
     // libs/bazar.edit_lists.js
@@ -165,7 +165,7 @@ return [
     'BAZ_FORM_EDIT_TEXT_TYPE_COLOR' => 'Couleur',
     'BAZ_FORM_EDIT_TITLE_LABEL' => 'Titre Automatique',
     'BAZ_FORM_EDIT_CUSTOM_LABEL' => 'Custom',
-    'BAZ_FORM_EDIT_MAP_FIELD' => 'Geolocation à partir d\'un champ bf_adresse et/ou bf_ville et/ou bf_code_postal et/ou bf_pays',
+    'BAZ_FORM_EDIT_MAP_FIELD' => 'Géolocalisation à partir d\'un champ adresse, ville...',
     'BAZ_FORM_EDIT_COLLABORATIVE_DOC_FIELD' => 'Document collaboratif',
     'BAZ_FORM_EDIT_TABS' => 'Navigation par onglets',
     'BAZ_FORM_EDIT_TABCHANGE' => 'Passage à l\'onglet suivant',
