@@ -5,21 +5,26 @@ $(document).ready(function () {
     $inputcp.typeahead({
       items: 'all',
       source: function(input, callback) {
-        var result = [];
         if (input.length === 5) {
-          $.get("https://geo.api.gouv.fr/communes?codePostal="+input).done(function( data ) {
-            if (data.length > 0) {
-              $.each(data, function (index, value) {
-                result[index] = {id: value.codesPostaux[0], name: value.codesPostaux[0]+" "+value.nom, ville: value.nom}
-              });
-            } else {
-              result[0] = {id: input, name: _t('BAZ_POSTAL_CODE_NOT_FOUND',{input:input})};
-            }
-            callback(result);
-          });
+          geolocationHelper.getGelocationDataFromPostalCode('France',input)
+          .then((data)=>{
+              var result = [];
+              data.forEach((geoloc)=>{
+                geoloc.postalCodes.forEach((code)=>{
+                  result.push({
+                    id: code,
+                    name: `${code} ${geoloc.town}`,
+                    ville: geoloc.town
+                  })
+                })
+              })
+              callback(result)
+            })
+            .catch(()=>{
+              callback([{id: input, name: _t('BAZ_POSTAL_CODE_HINT')}])
+            })
         } else {
-          result[0] = {id: input, name: _t('BAZ_POSTAL_CODE_HINT')};
-          callback(result);
+          callback([{id: input, name: _t('BAZ_POSTAL_CODE_HINT')}])
         }
       },
       autoSelect: false,
@@ -34,21 +39,30 @@ $(document).ready(function () {
       items: 12,
       minLength: 3,
       source: function(input, callback) {
-        var result = [];
         if (input.length >= 3) {
-          $.get("https://geo.api.gouv.fr/communes?nom="+input).done(function( data ) {
-            if (data.length > 0) {
-              $.each(data, function (index, value) {
-                result[index] = {id: value.codesPostaux[0], name: value.nom+" "+value.codesPostaux[0], ville: value.nom}
-              });
-            } else {
-              result[0] = {id: input, name: _t('BAZ_TOWN_NOT_FOUND',{input:input})};
-            }
-            callback(result);
-          });
+          geolocationHelper.getGelocationDataFromTown('France',input)
+          .then((data)=>{
+              var result = [];
+              if (data.length > 0) {
+                data.forEach((geoloc)=>{
+                  geoloc.postalCodes.forEach((code)=>{
+                    result.push({
+                      id: code,
+                      name: `${code} ${geoloc.town}`,
+                      ville: geoloc.town
+                    })
+                  })
+                })
+                callback(result)
+              } else {
+                callback([{id: input, name: _t('BAZ_TOWN_NOT_FOUND',{input:input})}])
+              }
+            })
+            .catch(()=>{
+              callback([{id: input, name: _t('BAZ_TOWN_HINT')}])
+            })
         } else {
-          result[0] = {id: input, name: _t('BAZ_TOWN_HINT')};
-          callback(result);
+          callback([{id: input, name: _t('BAZ_TOWN_HINT')}])
         }
       },
       autoSelect: false,

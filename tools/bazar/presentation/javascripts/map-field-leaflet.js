@@ -18,31 +18,170 @@ $(document).ready(function() {
     map.addLayer(provider);
     
     map.setView(new L.LatLng(mapFieldData.bazMapCenterLat, mapFieldData.bazMapCenterLon), mapFieldData.bazMapZoom);
-    
-    $("body").on("keyup keypress", "#bf_latitude, #bf_longitude", function(){
-      var pattern = /^-?[\d]{1,3}[.][\d]+$/;
-      var thisVal = $(this).val();
-      if(!thisVal.match(pattern)) $(this).val($(this).val().replace(/[^\d.]/g,''));
-    });
-    $("body").on("blur", "#bf_latitude, #bf_longitude", function() {
-        var point = L.latLng($("#bf_latitude").val(), $("#bf_longitude").val());
-        geocodedmarker.setLatLng(point);
-        map.panTo(point, {animate:true}).zoomIn();
-    });
-    var fields = ["#bf_adresse", "#bf_adresse1", "#bf_adresse2", "#bf_ville", "#bf_code_postal", "#bf_pays"]
-    fields = fields.map((id) => $(id)).filter((field) => field.length > 0)
 
-    function showAddress(map) {
+    function getParentGeocode({element}){
+        if (!element){
+            return null
+        }
+        const parent = $(element).closest('div.geocode-input')
+        return (parent && parent.length > 0) ? parent : null
+    }
+
+    function getFieldNames({element,parent=null}){
+        if (!element){
+            return null
+        }
+        let foundParent = parent
+        if (foundParent === null){
+            foundParent = getParentGeocode({element})
+        }
+        if (foundParent === null){
+            return null
+        }
+        const fieldNames = $(foundParent).data('fieldNames')
+        if (typeof fieldNames === 'object' && fieldNames !== null){
+            const fields = ['street','street1','street2','town','postalCode','county','state'].map((name)=>{
+                return name in fieldNames ? fieldNames[name] : null
+            }).filter((e)=>(typeof e === 'string' && e.length > 0))
+            .map((name)=>$(`#${name}`))
+            .filter((field) => field.length > 0)
+            return {...fieldNames,fields}
+        } else {
+            return null
+        }
+    }
+
+    function getLatLon({element}){
+        const fieldNames = getFieldNames({element})
+        const latitude = (fieldNames !== null && 'latitude' in fieldNames) ? fieldNames.latitude : 'bf_latitude'
+        const longitude = (fieldNames !== null && 'longitude' in fieldNames) ? fieldNames.longitude : 'bf_longitude'
+        return {latitude,longitude}
+    }
+
+    const fieldsToFollow = {
+        latitude: [],
+        longitude: []
+    }
+    $('.geocode-input').each(function(){
+        const fieldNames = getFieldNames({element:$(this)})
+        if (fieldNames !== null){
+            let latitude = null
+            let longitude = null
+            if ('latitude' in fieldNames && !fieldsToFollow.latitude.includes(fieldNames.latitude)){
+                fieldsToFollow.latitude.push(fieldNames.latitude)
+                const latitudeField = $(`#${fieldNames.latitude}`)
+                if (latitudeField && latitudeField.length > 0){
+                    latitude = latitudeField.val()
+                }
+            }
+            if ('longitude' in fieldNames && !fieldsToFollow.longitude.includes(fieldNames.longitude)){
+                fieldsToFollow.longitude.push(fieldNames.longitude)
+                const longitudeField = $(`#${fieldNames.longitude}`)
+                if (longitudeField && longitudeField.length > 0){
+                    longitude = longitudeField.val()
+                }
+            }
+            if (longitude !== null && longitude != 0 && latitude !==null && latitude != 0){
+                showAddressOk(longitude, latitude)
+            }
+        }
+    })
+    const cssToFollow = [...fieldsToFollow.latitude,...fieldsToFollow.longitude].map((e)=>`#${e}`).join(', ')
+    if (cssToFollow.length > 0){
+        $("body").on("keyup keypress", cssToFollow, function(){
+          var pattern = /^-?[\d]{1,3}[.][\d]+$/;
+          var thisVal = $(this).val();
+          if(!thisVal.match(pattern)) $(this).val($(this).val().replace(/[^\d.]/g,''));
+        });
+        $("body").on("blur", cssToFollow, function() {
+            const names = getLatLon({element:$(this)})
+            showAddressOk( $(`#${names.longitude}`).val(), $(`#${names.latitude}`).val() )
+        });
+    }
+
+    function showAddress(map,element) {
         var address = "";
-        fields.forEach((field) => address += field.val() + " ")
-        console.log("geocode address", address);
+        const fieldsNames = getFieldNames({element})
+        address = fieldsNames.fields.map((field) => field.val()).join(' ')
         address = address.replace(/\\("|'|\\)/g, " ").trim();
         if (!address) {
             geocodedmarkerRefresh( map.getCenter() );
             return
         }
-        geocodage( address, showAddressOk, showAddressError );
-        return false;
+        let formattedFields = {}
+        fieldsNames.fields.forEach((field)=>{
+          const id = field.prop('id');
+          ['street','street1','street2','town','postalCode','county','state'].forEach((key)=>{
+            if (key in fieldsNames && typeof fieldsNames[key] === 'string' && fieldsNames[key] === id) {
+              const val = field.val()
+              if (val.length > 0){
+                formattedFields[key] = val
+              }
+            }
+          })
+        })
+        let setToTry = [];
+        if ('street' in formattedFields && 'street1' in formattedFields && 'street2' in formattedFields){
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street} ${formattedFields.street1} ${formattedFields.street2}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street} ${formattedFields.street1}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street} ${formattedFields.street2}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street1} ${formattedFields.street2}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street1}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street2}`}}})
+          let withoutStreet = {...formattedFields}
+          delete withoutStreet.street
+          setToTry.push({method:'geolocate',fields:withoutStreet})
+        } else if ('street' in formattedFields && 'street1' in formattedFields){
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street} ${formattedFields.street1}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street1}`}}})
+          let withoutStreet = {...formattedFields}
+          delete withoutStreet.street
+          setToTry.push({method:'geolocate',fields:withoutStreet})
+        } else if ('street' in formattedFields && 'street2' in formattedFields){
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street} ${formattedFields.street2}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street}`}}})
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street2}`}}})
+          let withoutStreet = {...formattedFields}
+          delete withoutStreet.street
+          setToTry.push({method:'geolocate',fields:withoutStreet})
+        } else if ('street' in formattedFields){
+          setToTry.push({method:'geolocate',fields:{...formattedFields,...{street:`${formattedFields.street}`}}})
+          let withoutStreet = {...formattedFields}
+          delete withoutStreet.street
+          setToTry.push({method:'geolocate',fields:withoutStreet})
+        } else {
+          setToTry.push({method:'geolocate',fields:{...formattedFields}})
+        }
+        setToTry.push({method:'geolocateRetryWithoutNumberAtBeginningIfNeeded',fields:address})
+  
+        let manageData = null
+        const processNextSet = async () => {
+          if (setToTry.length == 0){
+            throw new Error(_t('GEOLOCATER_NOT_FOUND',{addr:address}))
+          } else {
+            let newSet = setToTry[0]
+            setToTry = setToTry.slice(1)
+            return await geolocationHelper[newSet.method](newSet.fields).then(manageData)
+          }
+        }
+        manageData = async (data)=>{
+          if (data.length > 0 && data[0].latitude.length > 0 && data[0].longitude.length > 0){
+            return data
+          } else {
+            return await processNextSet().then((data)=>{return data})
+          }
+        }
+        processNextSet()
+          .then((data)=>{
+            showAddressOk(data[0].longitude, data[0].latitude )
+          })
+          .catch((error)=>{
+            showAddressError(error instanceof Error ? error.message : String(error))
+          })
+  
+        return false
     }
     function showAddressOk( lon, lat )
     {
@@ -96,16 +235,18 @@ $(document).ready(function() {
         });
     }
     $('.btn-geolocate').on('click', function(){
+        
+        const names = getLatLon({element:$(this)})
         function onLocationFound(e) {
-            $('#bf_latitude').val(e.latitude);
-            $('#bf_longitude').val(e.longitude);
+            $(`#${names.latitude}`).val(e.latitude);
+            $(`#${names.longitude}`).val(e.longitude);
             geocodedmarkerRefresh(e.latlng);
             map.panTo( e.latlng, {animate:true});
         }
     
         function onLocationError(e) {
-            $('#bf_latitude').val('');
-            $('#bf_longitude').val('');
+            $(`#${names.latitude}`).val('');
+            $(`#${names.longitude}`).val('');
             console.log(e.message);
         }
     
@@ -114,22 +255,19 @@ $(document).ready(function() {
     
         map.locate({setView: true, maxZoom: 16});
     });
-    $('.btn-geolocate-address').on('click', function(){showAddress(map);});
+    $('.btn-geolocate-address').on('click', function(){showAddress(map,$(this));});
     $('body').on('change', '.bf_latitude, .bf_longitude', function(e) {
+        const names = getLatLon({element:$(this)})
         if ($(this).is(":invalid")) {
-            $('#bf_latitude').val('');
-            $('#bf_longitude').val('');
+            $(`#${names.latitude}`).val('');
+            $(`#${names.longitude}`).val('');
             alert(_t('BAZ_NOT_VALID_GEOLOC_FORMAT'));
         } else {
-            $('#bf_latitude').val($('.bf_latitude').val());
-            $('#bf_longitude').val($('.bf_longitude').val());
-            geocodedmarker.setLatLng([$('.bf_latitude').val(), $('.bf_longitude').val()]);
+            $(`#${names.latitude}`).val($(this).parent().find('.bf_latitude').first().val());
+            $(`#${names.longitude}`).val($(this).parent().find('.bf_longitude').first().val());
+            geocodedmarker.setLatLng([$(`#${names.latitude}`).val(), $(`#${names.longitude}`).val()]);
             map.panTo( geocodedmarker.getLatLng(), {animate:true});
         }
     })
-    if ('latitude' in mapFieldData && typeof mapFieldData.latitude === 'string' && mapFieldData.latitude !== '' &&
-        'longitude' in mapFieldData && typeof mapFieldData.longitude === 'string' && mapFieldData.longitude !== ''  ){
-        showAddressOk(mapFieldData.longitude, mapFieldData.latitude)
-    }
   }
 });
