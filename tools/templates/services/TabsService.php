@@ -1,39 +1,59 @@
 <?php
 
-namespace YesWiki\Bazar\Service;
+namespace YesWiki\Templates\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\TabsField;
 
-class TabsFieldService
+class TabsService
 {
     protected $formTitles ;
     protected $formCounter ;
+    protected $formBtnClass ;
     protected $viewTitles ;
     protected $viewCounter ;
-    protected $btnClass ;
+    protected $viewBtnClass ;
+    protected $actionTitles ;
+    protected $actionCounter ;
+    protected $actionBtnClass ;
+    protected $prefixCounter;
 
     public function __construct()
     {
+        $this->prefixCounter = 0;
         $this->formTitles = [];
         $this->formCounter = false;
+        $this->formBtnClass = '';
         $this->viewTitles = [];
         $this->viewCounter = false;
-        $this->btnClass = '';
+        $this->viewBtnClass = '';
+        $this->actionTitles = [];
+        $this->actionCounter = false;
+        $this->actionBtnClass = '';
     }
 
     public function setFormTitles(TabsField $field)
     {
         $this->formTitles = $field->getFormTitles();
         $this->formCounter = 1;
-        $this->btnClass = $field->getBtnClass();
+        $this->formBtnClass = $field->getBtnClass();
+        $this->prefixCounter = $this->prefixCounter +1;
     }
 
     public function setViewTitles(TabsField $field)
     {
         $this->viewTitles = $field->getViewTitles();
         $this->viewCounter = 1;
-        $this->btnClass = $field->getBtnClass();
+        $this->viewBtnClass = $field->getBtnClass();
+        $this->prefixCounter = $this->prefixCounter +1;
+    }
+
+    public function setActionTitles(array $params)
+    {
+        $this->actionTitles = $params['titles'] ?? [];
+        $this->actionCounter = 1;
+        $this->actionBtnClass = $params['btnClass'] ?? '';
+        $this->prefixCounter = $this->prefixCounter +1;
     }
 
     public function getFormData()
@@ -44,6 +64,16 @@ class TabsFieldService
     public function getViewData()
     {
         return $this->getData('view');
+    }
+
+    public function getActionData()
+    {
+        return $this->getData('action');
+    }
+
+    public function getPrefix()
+    {
+        return "{$this->prefixCounter}_";
     }
 
     private function getData(string $mode)
@@ -64,8 +94,9 @@ class TabsFieldService
         } else {
             $titles = [] ; // to be sure titles are not used
         }
-        $btnClass = $this->btnClass;
+        $btnClass = $this->{$mode . 'BtnClass'};
+        $prefix = $this->getPrefix();
 
-        return compact(['counter','titles','isLast','btnClass']);
+        return compact(['counter','titles','isLast','btnClass','prefix']);
     }
 }

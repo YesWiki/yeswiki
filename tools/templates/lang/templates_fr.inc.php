@@ -294,6 +294,25 @@ return [
     'AB_templates_section_visible_owner' => 'Propriétaire de la page',
     'AB_templates_section_visible_admins' => 'Admins seulement',
     'AB_templates_section_visible_no_container' => 'Ne pas mettre de conteneur',
+    'AB_templates_tabs_label' => 'Onglets dans la page',
+    'AB_templates_tabs_description' => 'Générer des onglets',
+    'AB_templates_tabs_hint' => 'Chaque changement d\'onglet se fait avec l\'action <code>{{changetab}}</code>',
+    'AB_templates_tabs_wrappedcontentexample' => "Contenu de l'onglet 1\n".
+        "{{changetab}}\n".
+        "Contenu de l'onglet 2\n".
+        "{{changetab}}\n".
+        "Contenu de l'onglet 3\n",
+    'AB_templates_tabs_titles_label' => 'Titres des onglets',
+    'AB_templates_tabs_titles_hint' => 'Séparer chaque titre par une virgule',
+    'AB_templates_tabs_titles_default' => 'Onglet 1, Onglet 2, Onglet 3',
+    'AB_templates_tabs_btnsize_label' => 'Taille de bouton',
+    'AB_templates_tabs_btnsize_default' => 'Normale',
+    'AB_templates_tabs_btnsize_small' => 'Petite',
+    'AB_templates_tabs_btncolor_label' => 'Couleur des boutons',
+    'AB_templates_tabs_btncolor_primary' => 'Primaire',
+    'AB_templates_tabs_btncolor_secondary_1' => 'Secondaire 1',
+    'AB_templates_tabs_btncolor_secondary_2' => 'Secondaire 2',
+    'AB_templates_changetab_label' => 'Nouvel onglet',
 
     // gererdroits
     'ACLS_SELECT_PAGES_FILTER' => 'Filtrer :',

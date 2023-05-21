@@ -568,20 +568,6 @@ $(document).ready(() => {
     })
   })
 
-  // hack pour les boutons suivant precedent dans le formulaire bazar
-  $('#formulaire .tab-content [data-toggle="tab"]').click(function() {
-    $('#formulaire .nav-tabs .active').removeClass('active')
-    $('#formulaire .nav-tabs').find(`[href="${$(this).attr('href')}"]`).parent().addClass('active')
-    $(`#formulaire .nav-tabs a[href="${$(this).attr('href')}"]`).tab('show')
-    $('html, body').animate({ scrollTop: $('#formulaire').offset().top - 80 }, 500)
-  })
-  $('.BAZ_cadre_fiche .tab-content [data-toggle="tab"]').click(function() {
-    const $this = $(this)
-    $('.BAZ_cadre_fiche .nav-tabs .active').removeClass('active')
-    $('.BAZ_cadre_fiche .nav-tabs').find(`[href="${$(this).attr('href')}"]`).parent().addClass('active')
-    $(`.BAZ_cadre_fiche .nav-tabs a[href="${$(this).attr('href')}"]`).tab('show')
-  })
-
   // cocher / decocher tous
   const checkboxselectall = $('.selectall')
   checkboxselectall.click(function(event) {

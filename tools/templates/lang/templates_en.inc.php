@@ -288,6 +288,25 @@ return [
     'AB_templates_section_visible_owner' => 'Owner',
     'AB_templates_section_visible_admins' => 'Admins only',
     'AB_templates_section_visible_no_container' => 'Do not use a container',
+    'AB_templates_tabs_label' => 'Tabs into page',
+    'AB_templates_tabs_description' => 'Create tabs',
+    'AB_templates_tabs_hint' => 'Each tabchange is done with <code>{{changetab}}</code> action',
+    'AB_templates_tabs_wrappedcontentexample' => "Tab 1 content\n".
+        "{{changetab}}\n".
+        "Tab 2 content\n".
+        "{{changetab}}\n".
+        "Tab 3 content\n",
+    'AB_templates_tabs_titles_label' => 'Tabs\' titles',
+    'AB_templates_tabs_titles_hint' => 'Separate each title by coma',
+    'AB_templates_tabs_titles_default' => 'Tab 1, Tab 2, Tab 3',
+    'AB_templates_tabs_btnsize_label' => 'Button size',
+    'AB_templates_tabs_btnsize_default' => 'Normal',
+    'AB_templates_tabs_btnsize_small' => 'Small',
+    'AB_templates_tabs_btncolor_label' => 'Button color',
+    'AB_templates_tabs_btncolor_primary' => 'Primary',
+    'AB_templates_tabs_btncolor_secondary_1' => 'Secondary 1',
+    'AB_templates_tabs_btncolor_secondary_2' => 'Secondary 2',
+    'AB_templates_changetab_label' => 'New tab',
 
     // gererdroits
     'ACLS_SELECT_PAGES_FILTER' => 'Filter :',

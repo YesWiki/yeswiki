@@ -2,7 +2,7 @@
   {% if counter > 1 %}
     <a 
       class="btn {{ btnClass }} pull-left" 
-      href="#menu{{ counter - 1 }}" 
+      href="#menu{{ prefix }}{{ counter - 1 }}" 
       role="tab" 
       data-toggle="tab"
       onclick="window.dispatchEvent(new Event('resize'));" {# needed to refresh map for geolocalization #}
@@ -15,7 +15,7 @@
   {% if not isLast %}
     <a 
       class="btn {{ btnClass }} pull-right" 
-      href="#menu{{ counter + 1 }}" 
+      href="#menu{{ prefix }}{{ counter + 1 }}" 
       role="tab" 
       data-toggle="tab"
       onclick="window.dispatchEvent(new Event('resize'));" {# needed to refresh map for geolocalization #}
@@ -29,11 +29,11 @@
   {% endif %}
   {# close tab #}
   <div class="clearfix"></div>
-</div><!--ferme l'onglet n°{{ counter }} -->
+</div><!-- close tab n°{{ counter }} -->
 {# next tab #}
 {% if not isLast %}
-  <!--ouvre l'onglet n°{{ counter + 1}} -->
-  <div role="tabpanel" class="with-padding tab-pane" id="menu{{ counter + 1}}">
+  <!-- open tab n°{{ counter + 1}} -->
+  <div role="tabpanel" class="with-padding tab-pane" id="menu{{ prefix }}{{ counter + 1}}">
 {% else %}
-  </div><!-- ferme l'ensemble des onglets -->
+  </div><!-- close all tabs -->
 {% endif %}

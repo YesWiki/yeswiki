@@ -291,4 +291,34 @@ actions:
   #       label: nb
   #       type: number
   #       min: 1
+  tabs:
+    label: _t(AB_templates_tabs_label)
+    isWrapper: true
+    wrappedContentExample: _t(AB_templates_tabs_wrappedcontentexample)
+    properties:
+    description: _t(AB_templates_tabs_description)
+    hint: _t(AB_templates_tabs_hint)
+    properties:
+      titles:
+        label: _t(AB_templates_tabs_titles_label)
+        value: _t(AB_templates_tabs_titles_default)
+        hint: _t(AB_templates_tabs_titles_hint)
+        type: text
+      btnsize: 
+        label: _t(AB_templates_tabs_btnsize_label)
+        type: list
+        default: 'btn-xs'
+        options:
+          'std': _t(AB_templates_tabs_btnsize_default)
+          'btn-xs': _t(AB_templates_tabs_btnsize_small)
+      btncolor: 
+        label: _t(AB_templates_tabs_btncolor_label)
+        type: list
+        default: 'btn-primary'
+        options:
+          btn-primary: _t(AB_templates_tabs_btncolor_primary)
+          btn-secondary-1: _t(AB_templates_tabs_btncolor_secondary_1)
+          btn-secondary-2:  _t(AB_templates_tabs_btncolor_secondary_2)
+  changetab:
+    label: _t(AB_templates_changetab_label)
 

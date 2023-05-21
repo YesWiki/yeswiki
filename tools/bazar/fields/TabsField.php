@@ -4,7 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Field\LabelField;
-use YesWiki\Bazar\Service\TabsFieldService;
+use YesWiki\Templates\Service\TabsService;
 
 /**
  * @Field({"tabs"})
@@ -46,33 +46,43 @@ class TabsField extends LabelField
         return $titles;
     }
 
-    protected function prepareFormText(): ?string
+    protected function prepareFormText(?TabsService $tabsService = null): ?string
     {
-        return $this->render('@bazar/fields/tabs.twig', [
+        return $this->render('@bazar/fields/tabs.twig', $this->appendPrefix([
             'titles' => $this->getFormTitles(),
             'moveSubmitButtonToLastTab' => $this->getMoveSubmitButtonToLastTab()
-        ]);
+        ],$tabsService));
     }
 
-    protected function prepareViewText(): ?string
+    protected function prepareViewText(?TabsService $tabsService = null): ?string
     {
-        return $this->render('@bazar/fields/tabs.twig', [
+        return $this->render('@bazar/fields/tabs.twig', $this->appendPrefix([
             'titles' => $this->getViewTitles()
-        ]);
+        ],$tabsService));
     }
 
     protected function renderInput($entry)
     {
-        $tabsFieldService = $this->getService(TabsFieldService::class);
-        $tabsFieldService->setFormTitles($this);
+        $tabsService = $this->getService(TabsService::class);
+        $tabsService->setFormTitles($this);
+        $this->formText = $this->prepareFormText($tabsService);
         return $this->formText;
     }
 
     protected function renderStatic($entry)
     {
-        $tabsFieldService = $this->getService(TabsFieldService::class);
-        $tabsFieldService->setViewTitles($this);
+        $tabsService = $this->getService(TabsService::class);
+        $tabsService->setViewTitles($this);
+        $this->viewText = $this->prepareViewText($tabsService);
         return $this->viewText;
+    }
+
+    protected function appendPrefix(array $params,?TabsService $tabsService = null): array
+    {
+        if ($tabsService){
+            $params['prefix'] = $tabsService->getPrefix();
+        }
+        return $params;
     }
 
     public function getFormTitles()

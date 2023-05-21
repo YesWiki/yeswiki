@@ -17,20 +17,12 @@ if (empty($elem)) {
     if (!isset($GLOBALS['check_'.$pagetag ])) {
         $GLOBALS['check_'.$pagetag ] = [];
     }
-    if (!isset($GLOBALS['check_'.$pagetag]['col'])) {
-        $GLOBALS['check_'.$pagetag ][$elem] = check_graphical_elements($elem, $pagetag, $body);
-    }
-
-    if (!isset($GLOBALS['check_'.$pagetag]['panel'])) {
-        $GLOBALS['check_'.$pagetag ][$elem] = check_graphical_elements($elem, $pagetag, $body);
-    }
-
-    if (!isset($GLOBALS['check_'.$pagetag]['accordion'])) {
+    if (!isset($GLOBALS['check_'.$pagetag ][$elem])){
         $GLOBALS['check_'.$pagetag ][$elem] = check_graphical_elements($elem, $pagetag, $body);
     }
 
 
-    if ($GLOBALS['check_'.$pagetag][$elem]) {
+    if ($GLOBALS['check_'.$pagetag][$elem] || $elem==='tabs') {
         switch ($elem) {
             case 'grid':
                 echo "\n</div> <!-- end of grid -->\n";
@@ -53,6 +45,9 @@ if (empty($elem)) {
                 break;
             case 'buttondropdown':
                 echo "\n</div> <!-- end of buttondropdown -->\n";
+                break;
+            case 'tabs':
+                echo "\n".$this->Action('changetab');
                 break;
             default:
                 break;

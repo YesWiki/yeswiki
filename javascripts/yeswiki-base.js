@@ -896,3 +896,13 @@ function checkAll(state)
     }
   })
 }
+
+// tabs
+// hack for next and previous buttons
+$('.tab-content [data-toggle="tab"]').on('click',function() {
+  const base = $(this).closest('.tab-content').prev()
+  $(base).find('.active').removeClass('active')
+  $(base).find(`[href="${$(this).attr('href')}"]`).parent().addClass('active')
+  $(base).find(`a[href="${$(this).attr('href')}"]`).tab('show')
+  $('html, body').animate({ scrollTop: $(base).offset().top - 80 }, 500)
+})
