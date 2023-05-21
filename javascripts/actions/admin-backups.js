@@ -1,12 +1,12 @@
 
 import SpinnerLoader from '../../tools/bazar/presentation/javascripts/components/SpinnerLoader.js'
 
-let rootsElements = ['.admin-backups-container','.preupdate-backups-container'];
-let isVueJS3 = (typeof Vue.createApp == "function");
+let rootsElements = ['.admin-backups-container','.preupdate-backups-container']
+let isVueJS3 = (typeof Vue.createApp == "function")
 
 let appParams = {
     components: { SpinnerLoader },
-    data: function() {
+    data() {
         return {
             canForceUpdate: false,
             isPreupdate: false,
@@ -38,570 +38,550 @@ let appParams = {
             showReturn: true,
             warnIfNotStarted: true,
             callAsync: true,
-        };
+        }
     },
     methods: {
-        loadArchives: function() {
-            let archiveApp = this;
-            archiveApp.updating = true;
-            archiveApp.message = _t('ADMIN_BACKUPS_LOADING_LIST');
-            archiveApp.messageClass = {alert:true,['alert-info']:true};
-            $.ajax({
-                method: "GET",
-                url: wiki.url(`?api/archives`),
-                success: function(data){
-                    archiveApp.archives = {};
-                    let archiveNames = [];
+        async loadArchives() {
+            this.updating = true
+            this.message = _t('ADMIN_BACKUPS_LOADING_LIST')
+            this.messageClass = {alert:true,['alert-info']:true}
+            return await this.fetch(wiki.url(`?api/archives`))
+                .then((data)=>{
+                    this.archives = {}
+                    let archiveNames = []
                     if (Array.isArray(data)){
                         for (let key of data.keys()) {
-                            archiveApp.archives[key] = data[key];
-                            archiveNames.push(data.filename);
+                            this.archives[key] = data[key]
+                            archiveNames.push(data.filename)
                           }
                     }
-                    archiveApp.message = "";
-                    archiveApp.selectedArchivesToDelete = archiveApp.selectedArchivesToDelete.filter(e => archiveNames.includes(e));
-                },
-                error: function(xhr,status,error){
-                    archiveApp.message = _t('ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST');
-                    archiveApp.messageClass = {alert:true,['alert-danger']:true};
-                    archiveApp.selectedArchivesToDelete = [];
-                },
-                complete: function(){
-                    archiveApp.ready = true;
-                    archiveApp.updating = false;
-                }
-            });
+                    this.message = ""
+                    this.selectedArchivesToDelete = this.selectedArchivesToDelete.filter(e => archiveNames.includes(e))
+                },() =>{
+                    // on error
+                    this.message = _t('ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST')
+                    this.messageClass = {alert:true,['alert-danger']:true}
+                    this.selectedArchivesToDelete = []
+                    return Promise.resolve()
+                })
+                .finally(()=>{
+                    this.ready = true
+                    this.updating = false
+                })
         },
-        deleteArchive: function(archive) {
-            let archiveApp = this;
-            archiveApp.updating = true;
-            archiveApp.message = _t('ADMIN_BACKUPS_DELETE_ARCHIVE',{filename:archive.filename});
-            archiveApp.messageClass = {alert:true,['alert-info']:true};
-            $.ajax({
-                method: "POST",
-                url: wiki.url(`?api/archives/${archive.filename}`),
-                data: {
-                    action: 'delete'
-                },
-                success: function(data){
-                    archiveApp.message = "";
-                    archiveApp.loadArchives();
-                    if (Array.isArray(data) 
-                        || !data.main){
+        async deleteArchive(archive) {
+            this.updating = true
+            this.message = _t('ADMIN_BACKUPS_DELETE_ARCHIVE',{filename:archive.filename})
+            this.messageClass = {alert:true,['alert-info']:true}
+            return await this.fetchPost(wiki.url(`?api/archives/${archive.filename}`),{action:'delete'})
+                .then((data)=>{
+                    this.message = ""
+                    if (Array.isArray(data) || !data.main){
                         toastMessage(
                             _t('ADMIN_BACKUPS_DELETE_ARCHIVE_POSSIBLE_ERROR',{filename:archive.filename})
                             ,3000,
-                            "alert alert-warning");
+                            "alert alert-warning")
                     } else {
                         toastMessage(
                             _t('ADMIN_BACKUPS_DELETE_ARCHIVE_SUCCESS',{filename:archive.filename})
                             ,3000,
-                            "alert alert-success");
+                            "alert alert-success")
                     }
-                    
-                },
-                error: function(xhr,status,error){
-                    archiveApp.message = _t('ADMIN_BACKUPS_DELETE_ARCHIVE_ERROR',{filename:archive.filename});
-                    archiveApp.messageClass = {alert:true,['alert-danger']:true};
-                    archiveApp.updating = false;
-                },
-                complete: function(){
-                    archiveApp.selectedArchivesToDelete = [];
-                }
-            });
+                    return this.loadArchives()
+                })
+                .catch((error)=>{
+                    // do nothing
+                })
         },
-        deleteSelectedArchives: function (){
+        async deleteSelectedArchives (){
             if (this.selectedArchivesToDelete.length == 0){
                 toastMessage(_t('ADMIN_BACKUPS_NO_ARCHIVE_TO_DELETE'), 2000, 'alert alert-info')
             } else {
-                let archiveApp = this;
-                archiveApp.updating = true;
-                archiveApp.message = _t('ADMIN_BACKUPS_DELETE_SELECTED_ARCHIVES');
-                archiveApp.messageClass = {alert:true,['alert-info']:true};
-                $.ajax({
-                    method: "POST",
-                    url: wiki.url(`?api/archives`),
-                    data: {
-                        action: 'delete',
-                        filesnames: archiveApp.selectedArchivesToDelete
-                    },
-                    success: function(data){
-                        archiveApp.message = "";
-                        archiveApp.loadArchives();
-                        if (Array.isArray(data) 
-                            || !data.main){
+                this.updating = true
+                this.message = _t('ADMIN_BACKUPS_DELETE_SELECTED_ARCHIVES')
+                this.messageClass = {alert:true,['alert-info']:true}
+                let formObject = {
+                    action: 'delete'
+                }
+                if (this.selectedArchivesToDelete.length > 0){
+                    this.selectedArchivesToDelete.forEach((filename,idx)=>{
+                        formObject[`filesnames[${idx}]`] = filename
+                    })
+                } else {
+                    formObject.filesnames = ''
+                }
+                return await this.fetchPost(wiki.url(`?api/archives`),formObject)
+                    .then((data)=>{
+                        this.message = ""
+                        if (Array.isArray(data) || !data.main){
                             toastMessage(
-                                _t('ADMIN_BACKUPS_DELETE_ARCHIVE_POSSIBLE_ERROR',{filename:archiveApp.selectedArchivesToDelete.join(",\n")})
+                                _t('ADMIN_BACKUPS_DELETE_ARCHIVE_POSSIBLE_ERROR',{filename:this.selectedArchivesToDelete.join(",<br/>")})
                                 ,3000,
-                                "alert alert-warning");
+                                "alert alert-warning")
                         } else {
                             toastMessage(
-                                _t('ADMIN_BACKUPS_DELETE_ARCHIVE_SUCCESS',{filename:archiveApp.selectedArchivesToDelete.join(",\n")})
+                                _t('ADMIN_BACKUPS_DELETE_ARCHIVE_SUCCESS',{filename:this.selectedArchivesToDelete.join(",<br/>")})
                                 ,3000,
-                                "alert alert-success");
+                                "alert alert-success")
                         }
-                        
-                    },
-                    error: function(xhr,status,error){
+                        return this.loadArchives()
+                    },()=>{
                         toastMessage(
-                            _t('ADMIN_BACKUPS_DELETE_ARCHIVE_ERROR',{filename:archiveApp.selectedArchivesToDelete.join(',')})
+                            _t('ADMIN_BACKUPS_DELETE_ARCHIVE_ERROR',{filename:this.selectedArchivesToDelete.join(',<br/>')})
                             ,3000,
-                            "alert alert-danger");
-                        archiveApp.message = _t('ADMIN_BACKUPS_DELETE_ARCHIVE_ERROR',{filename:archiveApp.selectedArchivesToDelete.join(',')});
-                        archiveApp.messageClass = {alert:true,['alert-danger']:true};
-                        archiveApp.updating = false;
-                        archiveApp.loadArchives();
-                    }
-                });
+                            "alert alert-danger")
+                        this.message = _t('ADMIN_BACKUPS_DELETE_ARCHIVE_ERROR',{filename:this.selectedArchivesToDelete.join(',')})
+                        this.messageClass = {alert:true,['alert-danger']:true}
+                        this.updating = false
+                        return this.loadArchives()
+                    })
+                    .catch((error)=>{
+                        // do nothing
+                    })
             }
         },
-        toggleSelectedArchive: function (filename){
-            if(this.selectedArchivesToDelete.includes(filename)){
-                this.selectedArchivesToDelete = this.selectedArchivesToDelete.filter(e => (e != filename));
-            } else {
-                this.selectedArchivesToDelete.push(filename);
-            }
-        },
-        restoreArchive: function (archive){
-            // TODO update this part then restore will work
-            let archiveApp = this;
-            archiveApp.updating = true;
-            archiveApp.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE',{filename:archive.filename});
-            archiveApp.messageClass = {alert:true,['alert-info']:true};
-            $.ajax({
-                method: "POST",
-                url: wiki.url(`?api/archives/${archive.filename}`),
-                data: {
-                    action: 'restore'
-                },
-                success: function(data){
-                    archiveApp.message = "";
-                    archiveApp.loadArchives();
-                },
-                error: function(xhr,status,error){
-                    archiveApp.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR',{filename:archive.filename});
-                    archiveApp.messageClass = {alert:true,['alert-danger']:true};
-                    archiveApp.updating = false;
-                },
-                complete: function(){
+        async fetch(url,options={}){
+            return await fetch(url,options).then((response)=>{
+                if (!response.ok){
+                    throw `response not ok ; code : ${response.status} (${response.statusText})`
                 }
-            });
+                return response.json()
+            })
         },
-        startArchive: function (){
-            let archiveApp = this;
-            archiveApp.updating = true;
-            archiveApp.archiving = true;
-            archiveApp.message = "";
-            archiveApp.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP');
-            archiveApp.archiveMessageClass = {alert:true,['alert-info']:true};
-            $.ajax({
-                method: "GET",
-                url: wiki.url(`?api/archives/archivingStatus/`),
-                cache: false,
-                success: function(data){
+        async fetchPost(url,formObject,options={}){
+            let internalOptions = {...options}
+            let formData = new FormData()
+            if (typeof formObject === 'object' && formObject !==null){
+                Object.keys(formObject).forEach((key)=>{
+                    if (['string','number','boolean'].includes(typeof formObject[key])){
+                        formData.append(key,formObject[key])
+                    }
+                })
+            } else {
+                throw new Error('"formObject" should be an object !')
+            }
+            internalOptions.method = 'POST'
+            internalOptions.body = new URLSearchParams(formData)
+            internalOptions.headers = (new Headers()).append('Content-Type','application/x-www-form-urlencoded')
+            return this.fetch(url,internalOptions)
+        },
+        toggleSelectedArchive(filename){
+            if(this.selectedArchivesToDelete.includes(filename)){
+                this.selectedArchivesToDelete = this.selectedArchivesToDelete.filter(e => (e != filename))
+            } else {
+                this.selectedArchivesToDelete.push(filename)
+            }
+        },
+        async restoreArchive(archive){
+            // TODO update this part then restore will work
+            this.updating = true
+            this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE',{filename:archive.filename})
+            this.messageClass = {alert:true,['alert-info']:true}
+            return await this.fetchPost(wiki.url(`?api/archives/${archive.filename}`),{action:'restore',filename: archive.filename})
+                .then((data)=>{
+                    this.message = ""
+                    return this.loadArchives()
+                })
+                .catch((error)=>{
+                    this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR',{filename:archive.filename})
+                    this.messageClass = {alert:true,['alert-danger']:true}
+                    this.updating = false
+                })
+        },
+        async startArchive(){
+            this.updating = true
+            this.archiving = true
+            this.message = ""
+            this.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP')
+            this.archiveMessageClass = {alert:true,['alert-info']:true}
+            return await this.fetch(wiki.url(`?api/archives/archivingStatus/`))
+                .then((data)=>{
                     if (typeof data != "object" || !data.hasOwnProperty('canArchive')){
-                        archiveApp.endStartingUpdateError();
-                        return;
+                        this.endStartingUpdateError()
                     } else if (data.canArchive){
                         if (data.hasOwnProperty('dB') && !data.dB) {
                             console.log(_t('ADMIN_BACKUPS_START_BACKUP_NOT_DB'))
                         }    
-                        archiveApp.callAsync = (!data.hasOwnProperty('callAsync') || data.callAsync);
-                        archiveApp.startArchiveNextStep();
-                        return;
+                        this.callAsync = (!data.hasOwnProperty('callAsync') || data.callAsync)
+                        return this.startArchiveNextStep()
                     } else if (data.hasOwnProperty('archiving') && data.archiving) {
-                        archiveApp.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING').replace(/\n/g,'<br>'));
-                        return ;
+                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING').replace(/\n/g,'<br>'))
                     } else if (data.hasOwnProperty('hibernated') && data.hibernated) {
-                        archiveApp.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE').replace(/\n/g,'<br>'));
-                        return ;
+                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE').replace(/\n/g,'<br>'))
                     } else if (data.hasOwnProperty('privatePathWritable') && !data.privatePathWritable) {
-                        archiveApp.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE').replace(/\n/g,'<br>'));
-                        return ;
+                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE').replace(/\n/g,'<br>'))
                     } else if (data.hasOwnProperty('canExec') && !data.canExec) {
-                        archiveApp.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC').replace(/\n/g,'<br>'));
-                        return ;
+                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC').replace(/\n/g,'<br>'))
                     } else if (data.hasOwnProperty('notAvailableOnTheInternet') && !data.notAvailableOnTheInternet) {
-                        archiveApp.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE').replace(/\n/g,'<br>'));
-                        return ;
+                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE').replace(/\n/g,'<br>'))
                     } else if (data.hasOwnProperty('enoughSpace') && !data.enoughSpace) {
-                        archiveApp.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE').replace(/\n/g,'<br>'));
-                        return ;
+                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE').replace(/\n/g,'<br>'))
+                    } else {
+                        this.endStartingUpdateError()
                     }
-                    archiveApp.endStartingUpdateError();
-                },
-                error: function(){
-                    archiveApp.endStartingUpdateError();
-                }
-            });
+                    return
+                },()=>{
+                    // if error
+                    this.endStartingUpdateError()
+                })
+                .catch(()=>{
+                    // do nothing (silent)
+                })
         },
-        startArchiveNextStep: function(){
-            let archiveApp = this;
-            archiveApp.updating = true;
-            archiveApp.archiving = true;
-            if (!archiveApp.isPreupdate){
-                if (!archiveApp.canForceDelete){
-                    archiveApp.checkFilesToDelete();
-                    return ;
+        async startArchiveNextStep(){
+            this.updating = true
+            this.archiving = true
+            if (!this.isPreupdate){
+                if (!this.canForceDelete){
+                    return this.checkFilesToDelete()
                 }
-                archiveApp.canForceDelete = false;
-                archiveApp.askConfirmationToDelete = false;
+                this.canForceDelete = false
+                this.askConfirmationToDelete = false
             }
-            if (!archiveApp.callAsync){
-                archiveApp.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP_SYNC').replace(/\n/g,'<br>');
-                archiveApp.archiveMessageClass = {alert:true,['alert-warning']:true};
+            if (!this.callAsync){
+                this.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP_SYNC').replace(/\n/g,'<br>')
+                this.archiveMessageClass = {alert:true,['alert-warning']:true}
             }
-            let ajaxOptions = {
-                method: "POST",
-                url: wiki.url(`?api/archives`),
-                data: {
-                    action: 'startArchive',
-                    params: {
-                        savefiles: archiveApp.savefiles,
-                        savedatabase: archiveApp.savedatabase,
-                        extrafiles: archiveApp.extrafiles,
-                        excludedfiles: archiveApp.excludedfiles
-                    },
-                    callAsync: archiveApp.callAsync
-                },
-                success: function(data){
-                    if (archiveApp.callAsync){
+            let formObject = {
+                action: 'startArchive',
+                'params[savefiles]': this.savefiles,
+                'params[savedatabase]': this.savedatabase
+            }
+            if (this.extrafiles.length > 0){
+                this.extrafiles.forEach((filename,idx)=>{
+                    formObject[`params[extrafiles][${idx}]`] = filename
+                })
+            } else {
+                formObject[`params[extrafiles]`] = ''
+            }
+            if (this.excludedfiles.length > 0){
+                this.excludedfiles.forEach((filename,idx)=>{
+                    formObject[`params[excludedfiles][${idx}]`] = filename
+                })
+            } else {
+                formObject[`params[excludedfiles]`] = ''
+            }
+            formObject.callAsync = this.callAsync
+            let options = {}
+            if (!this.callAsync){
+                let controller = new AbortController()
+                options.signal = controller.signal
+                // timeout 10 minutes if sync
+                setTimeout(() => {
+                    controller.abort()
+                }, 6000000)
+            }
+            return await this.fetchPost(wiki.url(`?api/archives`),formObject,options)
+                .then((data)=>{
+                    if (this.callAsync){
                         toastMessage(
                             _t('ADMIN_BACKUPS_STARTED')
                             ,2000,
-                            "alert alert-success");
+                            "alert alert-success")
                     }
-                    archiveApp.currentArchiveUid = data.uid;
-                    setTimeout(archiveApp.updateStatus, 2000);
-                },
-                error: function(xhr,status,error){
-                    archiveApp.endStartingUpdateError(`${_t('ADMIN_BACKUPS_START_BACKUP_ERROR')} (${error})`);
-                }
-            };
-            if (!archiveApp.callAsync){
-                ajaxOptions.timeout = 6000000 ; // timeout 10 minutes if sync
-            }
-            $.ajax(ajaxOptions);
+                    this.currentArchiveUid = data.uid
+                    setTimeout(this.updateStatus, 2000)
+                },(error)=>{
+                    this.endStartingUpdateError(`${_t('ADMIN_BACKUPS_START_BACKUP_ERROR')} (${error})`)
+                })
         },
-        endStartingUpdateError: function(message = ""){
-            let archiveApp = this;
-            archiveApp.archiveMessage = message.length == 0 ? _t('ADMIN_BACKUPS_START_BACKUP_ERROR') : message;
-            archiveApp.archiveMessageClass = {alert:true,['alert-danger']:true};
-            archiveApp.updating = false;
-            archiveApp.archiving = false;
-            if (archiveApp.isPreupdate){
-                archiveApp.canForceUpdate = true;
+        endStartingUpdateError(message = ""){
+            this.archiveMessage = message.length == 0 ? _t('ADMIN_BACKUPS_START_BACKUP_ERROR') : message
+            this.archiveMessageClass = {alert:true,['alert-danger']:true}
+            this.updating = false
+            this.archiving = false
+            if (this.isPreupdate){
+                this.canForceUpdate = true
             }
         },
-        checkFilesToDelete: function (){
-            let archiveApp = this;
-            $.ajax({
-                method: "POST",
-                url: wiki.url(`?api/archives`),
-                data: {
-                    action: 'futureDeletedArchives',
-                },
-                success: function(data){
+        async checkFilesToDelete(){
+            return await this.fetchPost(wiki.url(`?api/archives`),{action:'futureDeletedArchives'})
+                .then((data)=>{
                     if (data.files.length == 0){
-                        archiveApp.canForceDelete = true;
-                        archiveApp.askConfirmationToDelete = false;
-                        archiveApp.startArchiveNextStep();
+                        this.canForceDelete = true
+                        this.askConfirmationToDelete = false
+                        return this.startArchiveNextStep()
                     } else {
-                        archiveApp.updating = false;
-                        archiveApp.archiving = false;
-                        archiveApp.canForceDelete = false;
-                        archiveApp.askConfirmationToDelete = true;
-                        archiveApp.archiveMessage = _t('ADMIN_BACKUPS_CONFIRMATION_TO_DELETE',{
+                        this.updating = false
+                        this.archiving = false
+                        this.canForceDelete = false
+                        this.askConfirmationToDelete = true
+                        this.archiveMessage = _t('ADMIN_BACKUPS_CONFIRMATION_TO_DELETE',{
                             'files': data.files.join('<br>')
-                        }).replace("\n",'<br>');
-                        archiveApp.archiveMessageClass = {alert:true,['alert-warning']:true};
+                        }).replace("\n",'<br>')
+                        this.archiveMessageClass = {alert:true,['alert-warning']:true}
                     }
-                },
-                error: function(xhr,status,error){
-                    archiveApp.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP_ERROR');
-                    archiveApp.archiveMessageClass = {alert:true,['alert-danger']:true};
-                    archiveApp.updating = false;
-                    archiveApp.archiving = false;
-                }
-            });
+                },()=>{
+                    // if error
+                    this.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP_ERROR')
+                    this.archiveMessageClass = {alert:true,['alert-danger']:true}
+                    this.updating = false
+                    this.archiving = false
+                })
         },
-        toggleconfimationToDeleteFiles: function (){
-            this.canForceDelete = !this.canForceDelete;
+        toggleconfimationToDeleteFiles(){
+            this.canForceDelete = !this.canForceDelete
         },
-        stopArchive: function (){
+        async stopArchive (){
             if (this.archiving && this.currentArchiveUid.length == 0){
                 setTimeout(() => {
                     this.stopArchive()
-                }, 300);
-                return;
+                }, 300)
+                return
             }
-            this.stoppingArchive = true;
-            let archiveApp = this;
-            $.ajax({
-                method: "POST",
-                url: wiki.url(`?api/archives`),
-                cache: false,
-                data: {
+            this.stoppingArchive = true
+            return await this.fetchPost(wiki.url(`?api/archives`),{
                     action: 'stopArchive',
-                    uid: archiveApp.currentArchiveUid
-                },
-                success: function(data){
-                    archiveApp.archiveMessage = _t('ADMIN_BACKUPS_STOPPING_ARCHIVE');
-                    archiveApp.archiveMessageClass = {alert:true,['alert-warning']:true};
-                    setTimeout(archiveApp.checkStopped,500);
-                },
-                error: function(xhr,status,error){
-                    archiveApp.archiveMessage = _t('ADMIN_BACKUPS_STOP_BACKUP_ERROR');
-                    archiveApp.archiveMessageClass = {alert:true,['alert-danger']:true};
-                    archiveApp.stoppingArchive = false;
-                }
-            });
+                    uid: this.currentArchiveUid
+                })
+                .then((data)=>{
+                    this.archiveMessage = _t('ADMIN_BACKUPS_STOPPING_ARCHIVE')
+                    this.archiveMessageClass = {alert:true,['alert-warning']:true}
+                    setTimeout(this.checkStopped,500)
+                },()=>{
+                    this.archiveMessage = _t('ADMIN_BACKUPS_STOP_BACKUP_ERROR')
+                    this.archiveMessageClass = {alert:true,['alert-danger']:true}
+                    this.stoppingArchive = false
+                })
+                .catch(()=>{
+                    // do nothing : silent
+                })
         },
-        checkStopped: function(){
-            let archiveApp= this;
-            if (archiveApp.archiving && archiveApp.currentArchiveUid > 0){
-                let getData = {};
-                if (!archiveApp.callAsync){
-                    getData.forceStarted = true;
+        async checkStopped(){
+            if (this.archiving && this.currentArchiveUid > 0){
+                let getData = {}
+                if (!this.callAsync){
+                    getData.forceStarted = true
                 }
-                $.ajax({
-                    method: "GET",
-                    url: wiki.url(`?api/archives/uidstatus/${archiveApp.currentArchiveUid}`),
-                    cache: false,
-                    data: getData,
-                    success: function(data){
+                return await this.fetch(wiki.url(`?api/archives/uidstatus/${this.currentArchiveUid}`,getData))
+                    .then((data)=>{
                         if (data.stopped){
-                            return true;
-                        } else if (!data.started){
-                            setTimeout(archiveApp.checkStopped, 1000);
-                            return false;
-                        } else if (data.finished){
-                            return true;
-                        } else if (!data.running) {
-                            setTimeout(archiveApp.checkStopped, 1000);
-                            return false;
-                        } else {
-                            setTimeout(archiveApp.stopArchive, 1000);
-                            return false;
+                            return true
                         }
-                    },
-                    error: function(xhr,status,error){
-                        setTimeout(archiveApp.checkStopped, 1000);
-                    }
-                });
+                        if (!data.started){
+                            setTimeout(this.checkStopped, 1000)
+                        } else if (data.finished){
+                            return true
+                        } else if (!data.running) {
+                            setTimeout(this.checkStopped, 1000)
+                            return false
+                        } else {
+                            setTimeout(this.stopArchive, 1000)
+                        }
+                        return false
+                    },()=>{
+                        setTimeout(this.checkStopped, 1000)
+                    })
+                    .catch(()=>{
+                        // do nothin : silent
+                    })
             }
         },
-        updateStatus: function(){
+        async updateStatus(){
             if (this.currentArchiveUid.length > 0){
-                let archiveApp= this;
-                archiveApp.warnIfNotStarted = false;
+                this.warnIfNotStarted = false
                 setTimeout(() => {
-                    archiveApp.warnIfNotStarted = true ;
-                }, 5000);
-                let getData = {};
-                if (!archiveApp.callAsync){
-                    getData.forceStarted = true;
+                    this.warnIfNotStarted = true 
+                }, 5000)
+                let getData = {}
+                if (!this.callAsync){
+                    getData.forceStarted = true
                 }
-                $.ajax({
-                    method: "GET",
-                    url: wiki.url(`?api/archives/uidstatus/${archiveApp.currentArchiveUid}`),
-                    cache: false,
-                    data: getData,
-                    success: function(data){
+                return await this.fetch(wiki.url(`?api/archives/uidstatus/${this.currentArchiveUid}`,getData))
+                    .then((data)=>{
                         if (data.stopped){
-                            archiveApp.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_STOP'),'success');
+                            this.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_STOP'),'success')
                         } else if (!data.started){
-                            archiveApp.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_NOT_FOUND'),'warning');
-                            setTimeout(archiveApp.loadArchives, 3000);
+                            this.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_NOT_FOUND'),'warning')
+                            setTimeout(this.loadArchives , 3000)
                         } else if (data.finished){
-                            if (archiveApp.isPreupdate){
-                                archiveApp.startForcedUpdate(_t('ADMIN_BACKUPS_UID_STATUS_FINISHED')+'<br/>'+_t('ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING'));
+                            if (this.isPreupdate){
+                                return this.startForcedUpdate(_t('ADMIN_BACKUPS_UID_STATUS_FINISHED')+'<br/>'+_t('ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING'))
                             } else {
-                                archiveApp.endUpdatingStatus();
+                                this.endUpdatingStatus()
                                 toastMessage(
                                     _t('ADMIN_BACKUPS_UID_STATUS_FINISHED'),
                                     3000,
-                                    "alert alert-success");
+                                    "alert alert-success")
                             }
                         } else if (!data.running) {
-                            if (archiveApp.warnIfNotStarted) {
-                                archiveApp.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_NOT_FINISHED'),'danger');
+                            if (this.warnIfNotStarted) {
+                                this.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_NOT_FINISHED'),'danger')
                             } else {
-                                setTimeout(archiveApp.updateStatus, 1000);
+                                setTimeout(this.updateStatus, 1000)
                             }
-                        } else if (archiveApp.stoppingArchive) {
-                            archiveApp.archiveMessage = _t('ADMIN_BACKUPS_STOPPING_ARCHIVE');
-                            archiveApp.archiveMessage += "<pre>"+data.output.split("\n").slice(-5).join("<br>")+"</pre>";
-                            setTimeout(archiveApp.updateStatus, 1000);
+                        } else if (this.stoppingArchive) {
+                            this.archiveMessage = _t('ADMIN_BACKUPS_STOPPING_ARCHIVE')
+                            this.archiveMessage += "<pre>"+data.output.split("\n").slice(-5).join("<br>")+"</pre>"
+                            setTimeout(this.updateStatus, 1000)
                         } else {
-                            archiveApp.archiveMessage = _t('ADMIN_BACKUPS_UID_STATUS_RUNNING');
-                            archiveApp.archiveMessage += "<pre>"+data.output.split("\n").slice(-5).join("<br>")+"</pre>";
-                            archiveApp.archiveMessageClass = {alert:true,['alert-secondary-2']:true};
-                            setTimeout(archiveApp.updateStatus, 1000);
+                            this.archiveMessage = _t('ADMIN_BACKUPS_UID_STATUS_RUNNING')
+                            this.archiveMessage += "<pre>"+data.output.split("\n").slice(-5).join("<br>")+"</pre>"
+                            this.archiveMessageClass = {alert:true,['alert-secondary-2']:true}
+                            setTimeout(this.updateStatus, 1000)
                         }
-                    },
-                    error: function(xhr,status,error){
-                        archiveApp.endUpdatingStatus(_t('ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR'),'danger');
-                        setTimeout(archiveApp.loadArchives, 3000);
-                    }
-                });
+                    },()=>{
+                        this.endUpdatingStatus(_t('ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR'),'danger')
+                        setTimeout(this.loadArchives , 3000)
+                    })
+                    .catch(()=>{
+                        // do ntohing : silent
+                    })
             } else {
-                this.endUpdatingStatus();
+                this.endUpdatingStatus()
             }
         },
-        endUpdatingStatus: function (message = "", className = "info"){
-            this.archiveMessage = message;
-            this.archiveMessageClass = {alert:true,[`alert-${className}`]:true};
-            this.updating = false;
-            this.archiving = false;
-            this.stoppingArchive = false;
-            this.currentArchiveUid = "";
+        endUpdatingStatus(message = "", className = "info"){
+            this.archiveMessage = message
+            this.archiveMessageClass = {alert:true,[`alert-${className}`]:true}
+            this.updating = false
+            this.archiving = false
+            this.stoppingArchive = false
+            this.currentArchiveUid = ""
             if (!this.isPreupdate){
-                this.loadArchives();
+                this.loadArchives()
             }
         },
-        formatFileSize: function (bytes,decimalPoint) {
-            if(bytes == 0) return '0';
+        formatFileSize(bytes,decimalPoint) {
+            if(bytes == 0){
+                return '0'
+            }
             var k = 1024,
                 dm = decimalPoint || 0,
                 sizes = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'],
-                i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+                i = Math.floor(Math.log(bytes) / Math.log(k))
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
         },
-        downloadUrl: function(archive){
-            return wiki.url(`?api/archives/${archive.filename}`);
+        downloadUrl(archive){
+            return wiki.url(`?api/archives/${archive.filename}`)
         },
-        updateType: function (){
+        updateType(){
             if (this.$refs.adminBackupsTypeFull.checked){
-                this.savefiles = true;
-                this.savedatabase = true;
+                this.savefiles = true
+                this.savedatabase = true
             } else if(this.$refs.adminBackupsTypeOnlyFiles.checked) {
-                this.savefiles = true;
-                this.savedatabase = false;
+                this.savefiles = true
+                this.savedatabase = false
             } else if(this.$refs.adminBackupsTypeOnlyDb.checked) {
-                this.savefiles = false;
-                this.savedatabase = true;
+                this.savefiles = false
+                this.savedatabase = true
             } else {
-                this.savefiles = false;
-                this.savedatabase = false;
+                this.savefiles = false
+                this.savedatabase = false
             }
         },
-        removeExtraFile: function (file){
-            this.extrafiles = this.extrafiles.filter(e => e != file);
+        removeExtraFile(file){
+            this.extrafiles = this.extrafiles.filter(e => e != file)
         },
-        updateExtraFiles: function (){
-            let newVal = this.$refs.newExtraFile.value;
-            let newFiles = newVal.split(',');
+        updateExtraFiles(){
+            let newVal = this.$refs.newExtraFile.value
+            let newFiles = newVal.split(',')
             if (newFiles.length > 0){
                 for (let index = 0; index < newFiles.length; index++) {
                     if (!this.extrafiles.includes(newFiles[index])){
-                        this.extrafiles.push(newFiles[index]);
+                        this.extrafiles.push(newFiles[index])
                     }
                 }
             }
-            this.$refs.newExtraFile.value = "";
+            this.$refs.newExtraFile.value = ""
         },
-        removeExcludedFile: function (file){
-            this.excludedfiles = this.excludedfiles.filter(e => e != file);
+        removeExcludedFile(file){
+            this.excludedfiles = this.excludedfiles.filter(e => e != file)
         },
-        updateExcludedFiles: function (){
-            let newVal = this.$refs.newExcludedFile.value;
-            let newFiles = newVal.split(',');
+        updateExcludedFiles(){
+            let newVal = this.$refs.newExcludedFile.value
+            let newFiles = newVal.split(',')
             if (newFiles.length > 0){
                 for (let index = 0; index < newFiles.length; index++) {
                     if (!this.excludedfiles.includes(newFiles[index])){
-                        this.excludedfiles.push(newFiles[index]);
+                        this.excludedfiles.push(newFiles[index])
                     }
                 }
             }
-            this.$refs.newExcludedFile.value = "";
+            this.$refs.newExcludedFile.value = ""
         },
-        forceUpdate: function() {
-            let archiveApp = this;
-            $.ajax({
-                method: "GET",
-                url: wiki.url(`?api/archives/forcedUpdateToken/`),
-                cache: false,
-                success: function(data){
+        async forceUpdate() {
+            return await this.fetch(wiki.url(`?api/archives/forcedUpdateToken/`))
+                .then((data)=>{
                     if (
-                        typeof archiveApp.upgradeName != "string" ||
-                        archiveApp.upgradeName.length == 0 ||
+                        typeof this.upgradeName != "string" ||
+                        this.upgradeName.length == 0 ||
                         typeof data != "object" || 
                         !data.hasOwnProperty('token') || 
                         typeof data.token != "string" || 
                         data.token.length == 0){
-                        archiveApp.endStartingUpdateError(_t('ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE'));
-                        archiveApp.canForceUpdate = false;
+                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE'))
+                        this.canForceUpdate = false
                     } else {
-                        window.location = wiki.url(wiki.pageTag,{upgrade:archiveApp.upgradeName,forcedUpdateToken:data.token});
+                        window.location = wiki.url(wiki.pageTag,{upgrade:this.upgradeName,forcedUpdateToken:data.token})
                     }
-                },
-                error: function(){
-                    archiveApp.endStartingUpdateError(_t('ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE'));
-                    archiveApp.canForceUpdate = false;
-                }
-            });
+                },()=>{
+                    this.endStartingUpdateError(_t('ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE'))
+                    this.canForceUpdate = false
+                })
+                .catch(()=>{
+                    // do nothing : silent
+                })
         },
-        bypassArchive: function(){
-            let archiveApp = this;
-            if (archiveApp.archiving){
-                archiveApp.stopArchive();
+        async bypassArchive(){
+            if (this.archiving){
                 setTimeout(() => {
-                    archiveApp.bypassArchive();
-                }, 1000);
+                    this.bypassArchive()
+                }, 1000)
+                return await this.stopArchive()
             } else {
-                archiveApp.startForcedUpdate(_t('ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING'));
+                return await this.startForcedUpdate(_t('ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING'))
             }
         },
-        startForcedUpdate: function(message){
-            this.endUpdatingStatus(message,'success');
-            this.showReturn = false;
-            this.forceUpdate();
+        async startForcedUpdate(message){
+            this.endUpdatingStatus(message,'success')
+            this.showReturn = false
+            return await this.forceUpdate()
         }
     },
     mounted (){
-        let nodeElement = isVueJS3 ? this.$el.parentNode : this.$el;
-        this.isPreupdate = $(nodeElement).hasClass('preupdate-backups-container');
+        let nodeElement = isVueJS3 ? this.$el.parentNode : this.$el
+        this.isPreupdate = $(nodeElement).hasClass('preupdate-backups-container')
         if (this.isPreupdate){
-            this.upgradeName = $(nodeElement).data("upgrade");
+            this.upgradeName = $(nodeElement).data("upgrade")
         }
         if (isVueJS3){
             $(this.$el.parentNode).on(
                 "dblclick",
                 function (e) {
-                  return false;
+                  return false
                 }
-              );
+              )
         } else {
             $(this.$el).on(
                 "dblclick",
                 function (e) {
-                  return false;
+                  return false
                 }
-              );
+              )
         }
         if (this.isPreupdate){
-            this.startArchive();
+            this.startArchive()
         } else {
-            this.loadArchives();   
+            this.loadArchives()
         }
     }
-};
+}
 
 if (isVueJS3){
-    let app = Vue.createApp(appParams);
+    let app = Vue.createApp(appParams)
     rootsElements.forEach(elem => {
         if ($(elem).length > 0){
-            app.mount(elem);
+            app.mount(elem)
         }
-    });
+    })
 } else {
     rootsElements.forEach(elem => {
         if ($(elem).length > 0){
             new Vue({
                 ...{el:elem},
                 ...appParams
-            });
+            })
         }
-    });
+    })
 }
