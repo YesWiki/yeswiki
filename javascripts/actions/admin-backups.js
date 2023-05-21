@@ -205,17 +205,27 @@ let appParams = {
                         this.callAsync = (!data.hasOwnProperty('callAsync') || data.callAsync)
                         return this.startArchiveNextStep()
                     } else if (data.hasOwnProperty('archiving') && data.archiving) {
-                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING').replace(/\n/g,'<br>'))
+                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING',{
+                            helpBaseUrl: wiki.url('doc')
+                        }).replace(/\n/g,'<br>'),'info')
                     } else if (data.hasOwnProperty('hibernated') && data.hibernated) {
-                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE').replace(/\n/g,'<br>'))
+                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE',{
+                            helpBaseUrl: wiki.url('doc')
+                        }).replace(/\n/g,'<br>'),'info')
                     } else if (data.hasOwnProperty('privatePathWritable') && !data.privatePathWritable) {
-                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE').replace(/\n/g,'<br>'))
+                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE',{
+                            helpBaseUrl: wiki.url('doc')
+                        }).replace(/\n/g,'<br>'))
                     } else if (data.hasOwnProperty('canExec') && !data.canExec) {
-                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC').replace(/\n/g,'<br>'))
+                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC',{
+                            helpBaseUrl: wiki.url('doc')
+                        }).replace(/\n/g,'<br>'),'info')
                     } else if (data.hasOwnProperty('notAvailableOnTheInternet') && !data.notAvailableOnTheInternet) {
-                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE').replace(/\n/g,'<br>'))
+                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE',{
+                            helpBaseUrl: wiki.url('doc')
+                        }).replace(/\n/g,'<br>'))
                     } else if (data.hasOwnProperty('enoughSpace') && !data.enoughSpace) {
-                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE').replace(/\n/g,'<br>'))
+                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE').replace(/\n/g,'<br>'),'warning')
                     } else {
                         this.endStartingUpdateError()
                     }
@@ -285,9 +295,9 @@ let appParams = {
                     this.endStartingUpdateError(`${_t('ADMIN_BACKUPS_START_BACKUP_ERROR')} (${error})`)
                 })
         },
-        endStartingUpdateError(message = ""){
+        endStartingUpdateError(message = "", className='danger'){
             this.archiveMessage = message.length == 0 ? _t('ADMIN_BACKUPS_START_BACKUP_ERROR') : message
-            this.archiveMessageClass = {alert:true,['alert-danger']:true}
+            this.archiveMessageClass = {alert:true,[`alert-${className.length > 0 ? className : 'danger'}`]:true}
             this.updating = false
             this.archiving = false
             if (this.isPreupdate){

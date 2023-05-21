@@ -67,33 +67,23 @@ return [
     "ADMIN_BACKUPS_STOPPING_ARCHIVE" => "Arrêt en cours de la sauvegarde",
     "ADMIN_BACKUPS_CONFIRMATION_TO_DELETE" => "Les fichiers suivants seront supprimés par la sauvegarde.\n".
         "Veuillez confirmer leur suppression en cochant la case ci-dessous.\n<pre>{files}</pre>",
-    "ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING" => "Lancement de la sauvegarde impossible \n" .
-        "Car une sauvegarde semble être déjà en cours.\n".
-        "Si ça n'est pas le cas, se rendre dans la page 'GererConfig' pour vider la valeur\n".
-        "du paramètre `wiki_status` dans la partie `Sécurité`",
-    "ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE" => "Lancement de la sauvegarde impossible \n" .
-        "Car le site est en hibernation.\n".
-        "Pour le sortir de cet état, se rendre dans la page 'GererConfig' pour vider la valeur\n".
-        "du paramètre `wiki_status` dans la partie `Sécurité`",
-    "ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE" => "Lancement de la sauvegarde impossible \n" .
-        "Car le dossier de sauvegarde n'est pas accessible en écriture.\n".
-        " - Vérifier la validité du paramètre 'archive[privatePath]', dans la page 'GererConfig' (rubrique 'Sécurité')\n".
-        " - si ce paramètre est vide, le remplir avec un chemin non accessible sur Internet (un chemin relatif ne commence pas par /)\n".
-        " - Vérifier que le dossier est bien accessible pour 'php' (si 'archive[privatePath]' est vide, c'est le dossier 'private/backups/' qui est utilisé)\n".
-        " - il est possible d'utiliser le dossier temporaire du système en tapant '%TMP'",
+    "ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING" => "Lancement de la sauvegarde impossible car une sauvegarde semble être déjà en cours.\n".
+        "Suivez <a href=\"{helpBaseUrl}#/docs/users/fr/admin?id=erreur-de-sauvegarde-sauvegarde-déjà-en-cours\" title=\"Aide pour relancer une sauvegarde\" target=\"blank\">cette aide</a> pour corriger ceci.",
+    "ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE" => "Lancement de la sauvegarde impossible car le site est en hibernation.\n".
+        "Suivez <a href=\"{helpBaseUrl}#/docs/users/fr/admin?id=erreur-de-sauvegarde-site-en-hibernation\" title=\"Aide pour sortir d'hibernation\" target=\"blank\">cette aide</a> pour en sortir.",
+    "ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE" => "Lancement de la sauvegarde impossible car le dossier de sauvegarde n'est pas accessible en écriture.\n".
+        "Suivez <a href=\"{helpBaseUrl}#/docs/users/fr/admin?id=erreur-de-sauvegarde-dossier-de-sauvegarde-non-accessible-en-%c3%a9criture\" title=\"Aide pour configurer le dossier de sauvegarde\" target=\"blank\">cette aide</a> pour configurer le dossier de sauvegarde.",
     "ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE" => "Mise à jour forcée impossible",
     "ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING" => "Mise à jour lancée (veuillez patienter)",
     "ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC" => "Lancement de la sauvegarde impossible \n" .
-    "Car il n'est pas possible de lancer des commandes console sur le serveur.\n".
-    " - Vérifier que les commandes 'exec', 'proc_open', 'proc_terminate' ... sont autorisées pour php\n".
-    " - Vous pouvez éventuellement passer en mode direct en mettant 'false' pour le paramètre 'call_archive_async' (rubrique 'Sécurité')",
-    "ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE" => "Lancement de la sauvegarde impossible \n".
-        "Car le dossier de sauvegarde est accessible sur internet.\n".
-        "Vérifier que le dossier indiqué dans l'option 'archive[privatePath]' contient bien les fichiers '.htaccess' nécessaires ou est bien configuré avec Nginx ou Apache pour empêcher l'accès !",
+        "Car il n'est pas possible de lancer des commandes console sur le serveur ".
+        "(<a href=\"{helpBaseUrl}#/docs/users/fr/admin?id=erreur-de-sauvegarde-lancement-impossible-des-commandes-console-sur-le-serveur\" title=\"Aide sur la commande console\" target=\"blank\">voir aide</a>).",
+    "ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE" => "Lancement de la sauvegarde impossible car le dossier de sauvegarde est accessible sur internet.\n".
+        "Suivez <a href=\"{helpBaseUrl}#/docs/users/fr/admin?id=erreur-de-sauvegarde-dossier-de-sauvegarde-accessible-sur-internet\" title=\"Aide pour restreindre l'accès au dossier de sauvegarde\" target=\"blank\">cette aide</a> pour restreindre l'accès au dossier de sauvegarde.",
     "ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE" => "Lancement de la sauvegarde impossible \n".
         "Il n'y a plus assez d'espace disque disponible pour une nouvelle sauvegarde.",
     "ADMIN_BACKUPS_START_BACKUP_NOT_DB" => "Lancement de la sauvegarde impossible \n".
-        "L'utilitaire d'export de base de données ('mysqldump') n'est pas accessible.",
+        "L'utilitaire d'export de base de données ('mysqldump') n'est pas accessible (<a href=\"{helpBaseUrl}#/docs/users/fr/admin?id=erreur-de-sauvegarde-mysqldump-inaccessible\" title=\"Aide sur mysqldump\" target=\"blank\">voir aide</a>).",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Modifs apportées par cette version",
