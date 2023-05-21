@@ -88,10 +88,6 @@
       </div>
     </fieldset>
     <div v-if="archiveMessage.length > 0" v-html="archiveMessage" :class="archiveMessageClass"></div>
-  </div>
-  <div v-if="ready && Object.keys(archives).length == 0" class="alert alert-info">{{ _t('ADMIN_NO_BACKUP_FOUND') }}.</div>
-  <div v-if="message.length > 0" v-html="message" :class="messageClass"></div>
-  <div v-if="ready && Object.keys(archives).length > 0">
     <div v-if="archiveMessage.length > 0 && askConfirmationToDelete"
       @click="toggleconfimationToDeleteFiles()">
       <input 
@@ -101,6 +97,10 @@
         :checked="canForceDelete">
       <span>{{ _t('ADMIN_BACKUPS_CONFIRM_DELETE_FILES') }}</span>
     </div>
+  </div>
+  <div v-if="ready && Object.keys(archives).length == 0" class="alert alert-info">{{ _t('ADMIN_NO_BACKUP_FOUND') }}.</div>
+  <div v-if="message.length > 0" v-html="message" :class="messageClass"></div>
+  <div v-if="ready && Object.keys(archives).length > 0">
     <hr/>
     <div 
       class="pull-right btn btn-xs btn-primary" 
