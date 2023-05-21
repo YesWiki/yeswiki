@@ -82,7 +82,7 @@ return [
         "Suivez <a href=\"{helpBaseUrl}#/docs/users/fr/admin?id=erreur-de-sauvegarde-dossier-de-sauvegarde-accessible-sur-internet\" title=\"Aide pour restreindre l'accès au dossier de sauvegarde\" target=\"blank\">cette aide</a> pour restreindre l'accès au dossier de sauvegarde.",
     "ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE" => "Lancement de la sauvegarde impossible \n".
         "Il n'y a plus assez d'espace disque disponible pour une nouvelle sauvegarde.",
-    "ADMIN_BACKUPS_START_BACKUP_NOT_DB" => "Lancement de la sauvegarde impossible \n".
+    "ADMIN_BACKUPS_START_BACKUP_NOT_DB" => "Lancement de la sauvegarde non optimal \n".
         "L'utilitaire d'export de base de données ('mysqldump') n'est pas accessible (<a href=\"{helpBaseUrl}#/docs/users/fr/admin?id=erreur-de-sauvegarde-mysqldump-inaccessible\" title=\"Aide sur mysqldump\" target=\"blank\">voir aide</a>).",
 
     // /javascripts/handlers/revisions.js

@@ -81,7 +81,7 @@ return [
         "Follow <a href=\"{helpBaseUrl}#/docs/users/fr/admin?id=erreur-de-sauvegarde-dossier-de-sauvegarde-accessible-sur-internet\" title=\"Help to restrict access to backup folder\" target=\"blank\">this help</a> to restrict access to backup folder.",
     "ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE" => "Not possible to start backup \n".
         "There is not enough free space available for a new backup.",
-    "ADMIN_BACKUPS_START_BACKUP_NOT_DB" => "Not possible to start backup \n".
+    "ADMIN_BACKUPS_START_BACKUP_NOT_DB" => "Not better way to start backup \n".
         "Database export program ('mysqldump') was not found (<a href=\"{helpBaseUrl}#/docs/users/fr/admin?id=erreur-de-sauvegarde-mysqldump-inaccessible\" title=\"Help on mysqldump\" target=\"blank\">see help</a>).",
 
     // /javascripts/handlers/revisions.js

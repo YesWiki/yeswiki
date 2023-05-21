@@ -200,32 +200,24 @@ let appParams = {
                         this.endStartingUpdateError()
                     } else if (data.canArchive){
                         if (data.hasOwnProperty('dB') && !data.dB) {
-                            console.log(_t('ADMIN_BACKUPS_START_BACKUP_NOT_DB'))
+                            console.log(_t('ADMIN_BACKUPS_START_BACKUP_NOT_DB',{
+                                helpBaseUrl: wiki.url('doc')
+                            }))
                         }    
                         this.callAsync = (!data.hasOwnProperty('callAsync') || data.callAsync)
                         return this.startArchiveNextStep()
                     } else if (data.hasOwnProperty('archiving') && data.archiving) {
-                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING',{
-                            helpBaseUrl: wiki.url('doc')
-                        }).replace(/\n/g,'<br>'),'info')
+                        this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING','info')
                     } else if (data.hasOwnProperty('hibernated') && data.hibernated) {
-                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE',{
-                            helpBaseUrl: wiki.url('doc')
-                        }).replace(/\n/g,'<br>'),'info')
+                        this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE','info')
                     } else if (data.hasOwnProperty('privatePathWritable') && !data.privatePathWritable) {
-                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE',{
-                            helpBaseUrl: wiki.url('doc')
-                        }).replace(/\n/g,'<br>'))
+                        this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE','danger')
                     } else if (data.hasOwnProperty('canExec') && !data.canExec) {
-                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC',{
-                            helpBaseUrl: wiki.url('doc')
-                        }).replace(/\n/g,'<br>'),'info')
+                        this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC','info')
                     } else if (data.hasOwnProperty('notAvailableOnTheInternet') && !data.notAvailableOnTheInternet) {
-                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE',{
-                            helpBaseUrl: wiki.url('doc')
-                        }).replace(/\n/g,'<br>'))
+                        this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE','danger')
                     } else if (data.hasOwnProperty('enoughSpace') && !data.enoughSpace) {
-                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE').replace(/\n/g,'<br>'),'warning')
+                        this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE','warning')
                     } else {
                         this.endStartingUpdateError()
                     }
@@ -303,6 +295,14 @@ let appParams = {
             if (this.isPreupdate){
                 this.canForceUpdate = true
             }
+        },
+        endStartingUpdateErrorWithT(name, className='danger'){
+            if (name.length === 0){
+                throw new Error('name should not be empty')
+            }
+            return this.endStartingUpdateError(_t(name,{
+                helpBaseUrl: wiki.url('doc')
+            }).replace(/\n/g,'<br>'),className)
         },
         async checkFilesToDelete(){
             return await this.fetchPost(wiki.url(`?api/archives`),{action:'futureDeletedArchives'})
@@ -520,13 +520,13 @@ let appParams = {
                         !data.hasOwnProperty('token') || 
                         typeof data.token != "string" || 
                         data.token.length == 0){
-                        this.endStartingUpdateError(_t('ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE'))
+                        this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE')
                         this.canForceUpdate = false
                     } else {
                         window.location = wiki.url(wiki.pageTag,{upgrade:this.upgradeName,forcedUpdateToken:data.token})
                     }
                 },()=>{
-                    this.endStartingUpdateError(_t('ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE'))
+                    this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE')
                     this.canForceUpdate = false
                 })
                 .catch(()=>{
