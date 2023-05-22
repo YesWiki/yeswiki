@@ -4,7 +4,8 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Field\LabelField;
-use YesWiki\Templates\Service\TabsService;
+use YesWiki\Core\Service\AssetsManager;
+use YesWiki\Templates\Controller\TabsController;
 
 /**
  * @Field({"tabs"})
@@ -16,6 +17,7 @@ class TabsField extends LabelField
     private $moveSubmitButtonToLastTab ;
     private $tabsClass ;
     private $btnClass ;
+    protected $tabsController ;
 
     protected const FIELD_FORM_TITLES = 1;
     protected const FIELD_VIEW_TITLES = 3;
@@ -33,8 +35,9 @@ class TabsField extends LabelField
         $this->moveSubmitButtonToLastTab = ($values[self::FIELD_MOVE_SUBMIT_BUTTON_TO_LAST_TAB] === "moveSubmit") ;
         $this->btnClass = (in_array($values[self::FIELD_BTN_COLOR], ["btn-primary","btn-secondary-1","btn-secondary-2"], true) ? $values[self::FIELD_BTN_COLOR] : "btn-primary") .
           ($values[self::FIELD_BTN_SIZE] === "btn-xs" ? " btn-xs" : "") ;
-        $this->formText = $this->prepareFormText();
-        $this->viewText = $this->prepareViewText();
+        $this->tabsController = $this->getService(TabsController::class);
+        $this->formText = $this->prepareText('form');
+        $this->viewText = $this->prepareText('view');
     }
 
     protected function sanitizeTitles(?string $input):?array
@@ -46,43 +49,24 @@ class TabsField extends LabelField
         return $titles;
     }
 
-    protected function prepareFormText(?TabsService $tabsService = null): ?string
+    protected function prepareText($mode): ?string
     {
-        return $this->render('@bazar/fields/tabs.twig', $this->appendPrefix([
-            'titles' => $this->getFormTitles(),
-            'moveSubmitButtonToLastTab' => $this->getMoveSubmitButtonToLastTab()
-        ],$tabsService,'form'));
-    }
-
-    protected function prepareViewText(?TabsService $tabsService = null): ?string
-    {
-        return $this->render('@bazar/fields/tabs.twig', $this->appendPrefix([
-            'titles' => $this->getViewTitles()
-        ],$tabsService,'view'));
+        return $this->tabsController->openTabs($mode,$this);
     }
 
     protected function renderInput($entry)
     {
-        $tabsService = $this->getService(TabsService::class);
-        $tabsService->setFormTitles($this);
-        $this->formText = $this->prepareFormText($tabsService);
+        if ($this->getMoveSubmitButtonToLastTab()){
+            $this->getService(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar-edit-tabs-field.js');
+        }
+        $this->formText = $this->prepareText('form');
         return $this->formText;
     }
 
     protected function renderStatic($entry)
     {
-        $tabsService = $this->getService(TabsService::class);
-        $tabsService->setViewTitles($this);
-        $this->viewText = $this->prepareViewText($tabsService);
+        $this->viewText = $this->prepareText('view');
         return $this->viewText;
-    }
-
-    protected function appendPrefix(array $params,?TabsService $tabsService = null,$mode = 'view'): array
-    {
-        if ($tabsService){
-            $params['prefix'] = $tabsService->getPrefix($mode);
-        }
-        return $params;
     }
 
     public function getFormTitles()

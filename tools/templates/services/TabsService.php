@@ -7,26 +7,30 @@ use YesWiki\Bazar\Field\TabsField;
 
 class TabsService
 {
+    public const DEFAULT_DATA = [
+        'titles' => [],
+        'counter' => false,
+        'btnClass' => '',
+        'prefixCounter' => 0,
+        'bottom_nav' => true,
+        'counter_on_bottom_nav' => true, // because default behaviour for tabs in forms
+        'selectedtab' => 1,
+        'isClosed' => false,
+        'tabOpened' => false,
+    ];
+
     protected $nextPrefix;
     protected $data;
     protected $stack;
-    public $dataDefaults;
+
     public function __construct()
     {
         $this->nextPrefix = 1;
         $this->stack = [];
-        $this->dataDefaults = [
-            'titles' => [],
-            'counter' => false,
-            'btnClass' => '',
-            'prefixCounter' => 0,
-            'bottom_nav' => true,
-            'counter_on_bottom_nav' => false
-        ];
         $this->data = [
-            'form' => $this->dataDefaults,
-            'view' => $this->dataDefaults,
-            'action' => $this->dataDefaults
+            'form' => self::DEFAULT_DATA,
+            'view' => self::DEFAULT_DATA,
+            'action' => self::DEFAULT_DATA
         ];
     }
 
@@ -37,8 +41,9 @@ class TabsService
             'form',
             $field->getBtnClass(),
             # TODO : make a new option for the Tabsfield to change those values
-            $this->dataDefaults['bottom_nav'],
-            $this->dataDefaults['counter_on_bottom_nav']
+            self::DEFAULT_DATA['bottom_nav'],
+            self::DEFAULT_DATA['counter_on_bottom_nav'],
+            self::DEFAULT_DATA['selectedtab']
         );
     }
 
@@ -49,8 +54,9 @@ class TabsService
             'view',
             $field->getBtnClass(),
             # TODO : make a new option for the Tabsfield to change those values
-            $this->dataDefaults['bottom_nav'],
-            $this->dataDefaults['counter_on_bottom_nav']
+            self::DEFAULT_DATA['bottom_nav'],
+            self::DEFAULT_DATA['counter_on_bottom_nav'],
+            self::DEFAULT_DATA['selectedtab']
         );
     }
 
@@ -61,34 +67,38 @@ class TabsService
             'action',
             $params['btnClass'] ?? '',
             $params['bottom_nav'] ?? $this->dataDefaults['bottom_nav'],
-            $params['counter_on_bottom_nav'] ?? $this->dataDefaults['counter_on_bottom_nav']
+            $params['counter_on_bottom_nav'] ?? $this->dataDefaults['counter_on_bottom_nav'],
+            $params['selectedtab'] ?? 1
         );
     }
 
-    private function setTitles(array $titles, string $mode, string $btnClass, bool $bottom_nav, bool $counter_on_bottom_nav)
+    private function setTitles(array $titles, string $mode, string $btnClass, bool $bottom_nav, bool $counter_on_bottom_nav, int $selectedtab)
     {
-        $this->data[$mode]['titles'] = $titles;
         $this->saveInStackIfNeeded($mode);
+        $this->data[$mode]['titles'] = $titles;
         $this->data[$mode]['counter'] = 1;
         $this->data[$mode]['btnClass'] = $btnClass;
         $this->data[$mode]['bottom_nav'] = $bottom_nav;
         $this->data[$mode]['counter_on_bottom_nav'] = $counter_on_bottom_nav;
         $this->data[$mode]['prefixCounter'] = $this->getNewPrefix();
+        $this->data[$mode]['selectedtab'] = ($selectedtab > 0 && $selectedtab <= count($titles))? $selectedtab : 1;
+        $this->data[$mode]['isClosed'] = false;
+        $this->data[$mode]['tabOpened'] = false;
     }
 
-    public function getFormData()
+    public function getFormData(bool $increment = true)
     {
-        return $this->getData('form');
+        return $this->getData('form',$increment);
     }
 
-    public function getViewData()
+    public function getViewData(bool $increment = true)
     {
-        return $this->getData('view');
+        return $this->getData('view',$increment);
     }
 
-    public function getActionData()
+    public function getActionData(bool $increment = true)
     {
-        return $this->getData('action');
+        return $this->getData('action',$increment);
     }
 
     public function getPrefix(string $mode): string
@@ -122,30 +132,45 @@ class TabsService
         return $newPrefix;
     }
 
-    private function getData(string $mode)
+    private function getData(string $mode, bool $increment = true)
     {
-        $counter = $this->data[$mode]['counter'];
-        $titles = $this->data[$mode]['titles'];
-        $btnClass = $this->data[$mode]['btnClass'];
-        $bottom_nav = $this->data[$mode]['bottom_nav'];
-        $counter_on_bottom_nav = $this->data[$mode]['counter_on_bottom_nav'];
-        $prefix = $this->getPrefix($mode);
-        $isLast = false;
+        $data = $this->data[$mode];
+        $data['prefix'] = $this->getPrefix($mode);
+        $data['isLast'] = false;
         // update internal counter
-        if ($counter !== false) {
-            // end not already reached
-            if ($counter < count($titles) && !$isLast) {
-                // do not increase counter if TabChange specfied is last
-                $this->data[$mode]['counter'] = $counter + 1 ;
-            } else {
-                $this->data[$mode]['counter'] = false ; // to indicate end is reached
-                $isLast = true;
-                $this->retrieveFromStackIfNeeded($mode);
+        if ($data['counter'] !== false) {
+            if ($increment){
+                $this->data[$mode]['tabOpened'] = false;
+                // end not already reached
+                if ($data['counter'] < count($data['titles'])) {
+                    // do not increase counter if TabChange specified is last
+                    $this->data[$mode]['counter'] = $data['counter'] + 1 ;
+                } else {
+                    $this->data[$mode]['counter'] = false ; // to indicate end is reached
+                    $data['isLast'] = true;
+                    if ($mode != 'action'){
+                        $this->data[$mode]['isClosed'] = true;
+                        $this->retrieveFromStackIfNeeded($mode);
+                    }
+                }
             }
         } else {
-            $titles = [] ; // to be sure titles are not used
+            $data['titles'] = [] ; // to be sure titles are not used
         }
 
-        return compact(['counter','titles','isLast','btnClass','prefix','bottom_nav','counter_on_bottom_nav']);
+        return $data;
+    }
+
+    public function openTab(string $mode)
+    {
+        $this->data[$mode]['tabOpened'] = true;
+    }
+
+    public function registerClose(string $mode)
+    {
+        $this->data[$mode]['isClosed'] = true;
+        if ($mode == 'action'){
+            $this->retrieveFromStackIfNeeded($mode);
+        }
     }
 }

@@ -333,3 +333,8 @@ actions:
         options:
           'yes': _t(AB_templates_tabs_counter_on_bottom_nav_yes)
           'no': _t(AB_templates_tabs_counter_on_bottom_nav_no)
+      selectedtab: 
+        label: _t(AB_templates_tabs_selectedtab_label)
+        type: number
+        default: 1
+        min: 1

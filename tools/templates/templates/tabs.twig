@@ -1,7 +1,7 @@
 {% if titles is not empty %}
   <ul class="nav nav-tabs" role="tablist">
     {% for title in titles %}
-      <li role="presentation"{%if loop.first %} class="active"{% endif %}>
+      <li role="presentation"{%if loop.index == selectedtab %} class="active"{% endif %}>
         <a 
           href="#menu{{ prefix ~ loop.index }}" 
           role="tab" 
@@ -15,6 +15,4 @@
   </ul>
 
   <div class="tab-content">
-    <!-- first tab -->
-    <div role="tabpanel" class="with-padding tab-pane active" id="menu{{ prefix }}1">
 {% endif %}

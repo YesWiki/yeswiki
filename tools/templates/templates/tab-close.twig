@@ -14,17 +14,19 @@
     {% endif %}
   {% endif %}
   {# next tab button #}
-  {% if not isLast and bottom_nav %}
-    <a 
-      class="btn {{ btnClass }} pull-right" 
-      href="#menu{{ prefix }}{{ counter + 1 }}" 
-      role="tab" 
-      data-toggle="tab"
-      onclick="window.dispatchEvent(new Event('resize'));" {# needed to refresh map for geolocalization #}
-    >
-      {% if counter_on_bottom_nav %}{{ counter + 1 }}. {% endif %}{{ titles[counter] }}
-      <i class="glyphicon glyphicon-chevron-right"></i>
-    </a>
+  {% if not isLast %}
+    {% if bottom_nav %}
+      <a 
+        class="btn {{ btnClass }} pull-right" 
+        href="#menu{{ prefix }}{{ counter + 1 }}" 
+        role="tab" 
+        data-toggle="tab"
+        onclick="window.dispatchEvent(new Event('resize'));" {# needed to refresh map for geolocalization #}
+      >
+        {% if counter_on_bottom_nav %}{{ counter + 1 }}. {% endif %}{{ titles[counter] }}
+        <i class="glyphicon glyphicon-chevron-right"></i>
+      </a>
+    {% endif %}
   {% else %}
     <br>
     <div class="anchor-for-for-actions pull-right"></div>
@@ -32,8 +34,3 @@
   {# close tab #}
   <div class="clearfix"></div>
 </div><!-- close tab n°{{ counter }} -->
-{# next tab #}
-{% if not isLast %}
-  <!-- open tab n°{{ counter + 1}} -->
-  <div role="tabpanel" class="with-padding tab-pane" id="menu{{ prefix }}{{ counter + 1}}">
-{% endif %}

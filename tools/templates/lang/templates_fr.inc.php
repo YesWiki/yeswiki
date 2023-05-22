@@ -109,10 +109,6 @@ return [
     'TEMPLATE_ACTION_SECTION' => 'Action {{section ...}}',
     'TEMPLATE_ELEM_SECTION_NOT_CLOSED' => 'l\'action {{section ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="section"}}',
 
-    'TEMPLATE_ACTION_TAB' => 'Action {{tab ...}}',
-    'TEMPLATE_ELEM_TAB_NOT_CLOSED' => 'l\'action {{tab ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="tab"}}',
-
-
     'TEMPLATE_NO_THEME_FILES' => 'Fichiers du th&egrave;me manquants',
     'TEMPLATE_DEFAULT_THEME_USED' => 'Le th&egrave;me par défaut est donc utilisé',
 
@@ -325,6 +321,7 @@ return [
     'AB_templates_tabs_btncolor_primary' => 'Primaire',
     'AB_templates_tabs_btncolor_secondary_1' => 'Secondaire 1',
     'AB_templates_tabs_btncolor_secondary_2' => 'Secondaire 2',
+    'AB_templates_tabs_selectedtab_label' => 'Onglet sélectionné',
 
     // gererdroits
     'ACLS_SELECT_PAGES_FILTER' => 'Filtrer :',

@@ -49,10 +49,10 @@ if (empty($elem)) {
                 echo "\n</div> <!-- end of buttondropdown -->\n";
                 break;
             case 'tab':
-                echo $this->services->get(TabsController::class)->changeTab();
+                echo $this->services->get(TabsController::class)->closeATab();
                 break;
             case 'tabs':
-                echo "\n</div> <!-- end of $elem -->\n";
+                echo $this->services->get(TabsController::class)->closeTabs();
                 break;
             default:
                 break;
