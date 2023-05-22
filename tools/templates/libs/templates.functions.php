@@ -22,7 +22,7 @@ function check_graphical_elements($element, $pagetag, $pagecontent)
     if ($pagecontent == null) {
         $pagecontent = '';
     }
-    preg_match_all('/{{'.$element.'.*}}/Ui', $pagecontent, $matchesaction);
+    preg_match_all('/{{\b'.$element.'\b.*}}/Ui', $pagecontent, $matchesaction);
     preg_match_all('/{{end.*elem="'.$element.'".*}}/Ui', $pagecontent, $matchesendaction);
     return count($matchesaction[0]) == count($matchesendaction[0]);
 }
