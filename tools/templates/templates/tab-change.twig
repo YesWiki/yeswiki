@@ -1,5 +1,6 @@
   {# previous tab button #}
   {% if counter > 1 %}
+    {% if bottom_nav %}
     <a 
       class="btn {{ btnClass }} pull-left" 
       href="#menu{{ prefix }}{{ counter - 1 }}" 
@@ -8,11 +9,12 @@
       onclick="window.dispatchEvent(new Event('resize'));" {# needed to refresh map for geolocalization #}
     >
       <i class="glyphicon glyphicon-chevron-left"></i>
-      {{ counter -1 }}. {{ titles[counter - 2] }}
+      {% if counter_on_bottom_nav %}{{ counter -1 }}. {% endif %}{{ titles[counter - 2] }}
     </a>
+    {% endif %}
   {% endif %}
   {# next tab button #}
-  {% if not isLast %}
+  {% if not isLast and bottom_nav %}
     <a 
       class="btn {{ btnClass }} pull-right" 
       href="#menu{{ prefix }}{{ counter + 1 }}" 
@@ -20,7 +22,7 @@
       data-toggle="tab"
       onclick="window.dispatchEvent(new Event('resize'));" {# needed to refresh map for geolocalization #}
     >
-      {{ counter + 1 }}. {{ titles[counter] }}
+      {% if counter_on_bottom_nav %}{{ counter + 1 }}. {% endif %}{{ titles[counter] }}
       <i class="glyphicon glyphicon-chevron-right"></i>
     </a>
   {% else %}
@@ -34,6 +36,4 @@
 {% if not isLast %}
   <!-- open tab n°{{ counter + 1}} -->
   <div role="tabpanel" class="with-padding tab-pane" id="menu{{ prefix }}{{ counter + 1}}">
-{% else %}
-  </div><!-- close all tabs -->
 {% endif %}

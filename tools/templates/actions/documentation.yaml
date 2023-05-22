@@ -319,4 +319,17 @@ actions:
           btn-primary: _t(AB_templates_tabs_btncolor_primary)
           btn-secondary-1: _t(AB_templates_tabs_btncolor_secondary_1)
           btn-secondary-2:  _t(AB_templates_tabs_btncolor_secondary_2)
-
+      bottom_nav: 
+        label: _t(AB_templates_tabs_bottom_nav_label)
+        type: list
+        default: 'yes'
+        options:
+          'yes': _t(AB_templates_tabs_bottom_nav_yes)
+          'no': _t(AB_templates_tabs_bottom_nav_no)
+      counter_on_bottom_nav: 
+        label: _t(AB_templates_tabs_counter_on_bottom_nav_label)
+        type: list
+        default: 'no'
+        options:
+          'yes': _t(AB_templates_tabs_counter_on_bottom_nav_yes)
+          'no': _t(AB_templates_tabs_counter_on_bottom_nav_no)

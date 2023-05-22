@@ -10,54 +10,69 @@ class TabsService
     protected $nextPrefix;
     protected $data;
     protected $stack;
-
+    public $dataDefaults;
     public function __construct()
     {
         $this->nextPrefix = 1;
         $this->stack = [];
+        $this->dataDefaults = [
+            'titles' => [],
+            'counter' => false,
+            'btnClass' => '',
+            'prefixCounter' => 0,
+            'bottom_nav' => true,
+            'counter_on_bottom_nav' => false
+        ];
         $this->data = [
-            'form' => [
-                'titles' => [],
-                'counter' => false,
-                'btnClass' => '',
-                'prefixCounter' => 0
-            ],
-            'view' => [
-                'titles' => [],
-                'counter' => false,
-                'btnClass' => '',
-                'prefixCounter' => 0
-            ],
-            'action' => [
-                'titles' => [],
-                'counter' => false,
-                'btnClass' => '',
-                'prefixCounter' => 0
-            ]
+            'form' => $this->dataDefaults,
+            'view' => $this->dataDefaults,
+            'action' => $this->dataDefaults
         ];
     }
 
     public function setFormTitles(TabsField $field)
     {
-        $this->setTitles($field->getFormTitles(),'form',$field->getBtnClass());
+        $this->setTitles(
+            $field->getFormTitles(),
+            'form',
+            $field->getBtnClass(),
+            # TODO : make a new option for the Tabsfield to change those values
+            $this->dataDefaults['bottom_nav'],
+            $this->dataDefaults['counter_on_bottom_nav']
+        );
     }
 
     public function setViewTitles(TabsField $field)
     {
-        $this->setTitles($field->getViewTitles(),'view',$field->getBtnClass());
+        $this->setTitles(
+            $field->getViewTitles(),
+            'view',
+            $field->getBtnClass(),
+            # TODO : make a new option for the Tabsfield to change those values
+            $this->dataDefaults['bottom_nav'],
+            $this->dataDefaults['counter_on_bottom_nav']
+        );
     }
 
     public function setActionTitles(array $params)
     {
-        $this->setTitles($params['titles'] ?? [],'action',$params['btnClass'] ?? '');
+        $this->setTitles(
+            $params['titles'] ?? [],
+            'action',
+            $params['btnClass'] ?? '',
+            $params['bottom_nav'] ?? $this->dataDefaults['bottom_nav'],
+            $params['counter_on_bottom_nav'] ?? $this->dataDefaults['counter_on_bottom_nav']
+        );
     }
 
-    private function setTitles(array $titles, string $mode, string $btnClass)
+    private function setTitles(array $titles, string $mode, string $btnClass, bool $bottom_nav, bool $counter_on_bottom_nav)
     {
         $this->data[$mode]['titles'] = $titles;
         $this->saveInStackIfNeeded($mode);
         $this->data[$mode]['counter'] = 1;
         $this->data[$mode]['btnClass'] = $btnClass;
+        $this->data[$mode]['bottom_nav'] = $bottom_nav;
+        $this->data[$mode]['counter_on_bottom_nav'] = $counter_on_bottom_nav;
         $this->data[$mode]['prefixCounter'] = $this->getNewPrefix();
     }
 
@@ -112,6 +127,8 @@ class TabsService
         $counter = $this->data[$mode]['counter'];
         $titles = $this->data[$mode]['titles'];
         $btnClass = $this->data[$mode]['btnClass'];
+        $bottom_nav = $this->data[$mode]['bottom_nav'];
+        $counter_on_bottom_nav = $this->data[$mode]['counter_on_bottom_nav'];
         $prefix = $this->getPrefix($mode);
         $isLast = false;
         // update internal counter
@@ -129,6 +146,6 @@ class TabsService
             $titles = [] ; // to be sure titles are not used
         }
 
-        return compact(['counter','titles','isLast','btnClass','prefix']);
+        return compact(['counter','titles','isLast','btnClass','prefix','bottom_nav','counter_on_bottom_nav']);
     }
 }
