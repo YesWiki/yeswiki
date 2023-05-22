@@ -22,7 +22,6 @@ class TabAction extends YesWikiAction
     if (!isset($GLOBALS['check_' . $pagetag]['tab'])) {
         $GLOBALS['check_' . $pagetag]['tab'] = check_graphical_elements('tab', $pagetag, $this->wiki->page['body'] ?? '');
     }
-
     if ($GLOBALS['check_' . $pagetag]['tab']) {
         $output .= '<div'.(!empty($this->arguments['id']) ? ' id="'.$this->arguments['id'].'"' : '').' class="'.$this->arguments['class'].'"';
         if (is_array($this->arguments['data'])) {
@@ -32,9 +31,9 @@ class TabAction extends YesWikiAction
         }
         $output .=  '>'."\n";
     } else {
-        $output =  '<div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_TAB') . '</strong> : '
+        $output .=  '<div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_TAB') . '</strong> : '
             . _t('TEMPLATE_ELEM_TAB_NOT_CLOSED') . '.</div>' . "\n";
-    }
-    return $output;
+        return;
+    }              
   }
 }
