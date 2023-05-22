@@ -7,53 +7,58 @@ use YesWiki\Bazar\Field\TabsField;
 
 class TabsService
 {
-    protected $formTitles ;
-    protected $formCounter ;
-    protected $formBtnClass ;
-    protected $viewTitles ;
-    protected $viewCounter ;
-    protected $viewBtnClass ;
-    protected $actionTitles ;
-    protected $actionCounter ;
-    protected $actionBtnClass ;
-    protected $prefixCounter;
+    protected $nextPrefix;
+    protected $data;
+    protected $stack;
 
     public function __construct()
     {
-        $this->prefixCounter = 0;
-        $this->formTitles = [];
-        $this->formCounter = false;
-        $this->formBtnClass = '';
-        $this->viewTitles = [];
-        $this->viewCounter = false;
-        $this->viewBtnClass = '';
-        $this->actionTitles = [];
-        $this->actionCounter = false;
-        $this->actionBtnClass = '';
+        $this->nextPrefix = 1;
+        $this->stack = [];
+        $this->data = [
+            'form' => [
+                'titles' => [],
+                'counter' => false,
+                'btnClass' => '',
+                'prefixCounter' => 0
+            ],
+            'view' => [
+                'titles' => [],
+                'counter' => false,
+                'btnClass' => '',
+                'prefixCounter' => 0
+            ],
+            'action' => [
+                'titles' => [],
+                'counter' => false,
+                'btnClass' => '',
+                'prefixCounter' => 0
+            ]
+        ];
     }
 
     public function setFormTitles(TabsField $field)
     {
-        $this->formTitles = $field->getFormTitles();
-        $this->formCounter = 1;
-        $this->formBtnClass = $field->getBtnClass();
-        $this->prefixCounter = $this->prefixCounter +1;
+        $this->setTitles($field->getFormTitles(),'form',$field->getBtnClass());
     }
 
     public function setViewTitles(TabsField $field)
     {
-        $this->viewTitles = $field->getViewTitles();
-        $this->viewCounter = 1;
-        $this->viewBtnClass = $field->getBtnClass();
-        $this->prefixCounter = $this->prefixCounter +1;
+        $this->setTitles($field->getViewTitles(),'view',$field->getBtnClass());
     }
 
     public function setActionTitles(array $params)
     {
-        $this->actionTitles = $params['titles'] ?? [];
-        $this->actionCounter = 1;
-        $this->actionBtnClass = $params['btnClass'] ?? '';
-        $this->prefixCounter = $this->prefixCounter +1;
+        $this->setTitles($params['titles'] ?? [],'action',$params['btnClass'] ?? '');
+    }
+
+    private function setTitles(array $titles, string $mode, string $btnClass)
+    {
+        $this->data[$mode]['titles'] = $titles;
+        $this->saveInStackIfNeeded($mode);
+        $this->data[$mode]['counter'] = 1;
+        $this->data[$mode]['btnClass'] = $btnClass;
+        $this->data[$mode]['prefixCounter'] = $this->getNewPrefix();
     }
 
     public function getFormData()
@@ -71,31 +76,58 @@ class TabsService
         return $this->getData('action');
     }
 
-    public function getPrefix()
+    public function getPrefix(string $mode): string
     {
-        return "{$this->prefixCounter}_";
+        return "{$this->data[$mode]['prefixCounter']}_";
+    }
+
+    private function saveInStackIfNeeded(string $mode)
+    {
+        if ($this->data[$mode]['counter'] !== false){
+            // init stack for this mode
+            if (!isset($this->stack[$mode])){
+                $this->stack[$mode] = [];
+            }
+            $this->stack[$mode][] = $this->data[$mode];
+            $this->data[$mode]['counter'] = false;
+        }
+    }
+
+    private function retrieveFromStackIfNeeded(string $mode)
+    {
+        if (!empty($this->stack[$mode])){
+            $this->data[$mode] = array_pop($this->stack[$mode]);
+        }
+    }
+
+    private function getNewPrefix(): int
+    {
+        $newPrefix = $this->nextPrefix;
+        $this->nextPrefix = $this->nextPrefix +1;
+        return $newPrefix;
     }
 
     private function getData(string $mode)
     {
-        $counter = $this->{$mode . 'Counter'};
-        $titles = $this->{$mode . 'Titles'};
+        $counter = $this->data[$mode]['counter'];
+        $titles = $this->data[$mode]['titles'];
+        $btnClass = $this->data[$mode]['btnClass'];
+        $prefix = $this->getPrefix($mode);
         $isLast = false;
         // update internal counter
         if ($counter !== false) {
             // end not already reached
             if ($counter < count($titles) && !$isLast) {
                 // do not increase counter if TabChange specfied is last
-                $this->{$mode . 'Counter'} = $counter + 1 ;
+                $this->data[$mode]['counter'] = $counter + 1 ;
             } else {
-                $this->{$mode . 'Counter'} = false ; // to indicate end is reached
+                $this->data[$mode]['counter'] = false ; // to indicate end is reached
                 $isLast = true;
+                $this->retrieveFromStackIfNeeded($mode);
             }
         } else {
             $titles = [] ; // to be sure titles are not used
         }
-        $btnClass = $this->{$mode . 'BtnClass'};
-        $prefix = $this->getPrefix();
 
         return compact(['counter','titles','isLast','btnClass','prefix']);
     }

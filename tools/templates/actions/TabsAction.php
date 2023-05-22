@@ -26,7 +26,7 @@ class TabsAction extends YesWikiAction
     ]);
     return $this->render('@templates/tabs.twig',[
       'titles' => $this->arguments['titles'],
-      'prefix' => $tabsService->getPrefix()
+      'prefix' => $tabsService->getPrefix('action')
     ]);                 
   }
 }

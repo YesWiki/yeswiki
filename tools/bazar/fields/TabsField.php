@@ -51,14 +51,14 @@ class TabsField extends LabelField
         return $this->render('@bazar/fields/tabs.twig', $this->appendPrefix([
             'titles' => $this->getFormTitles(),
             'moveSubmitButtonToLastTab' => $this->getMoveSubmitButtonToLastTab()
-        ],$tabsService));
+        ],$tabsService,'form'));
     }
 
     protected function prepareViewText(?TabsService $tabsService = null): ?string
     {
         return $this->render('@bazar/fields/tabs.twig', $this->appendPrefix([
             'titles' => $this->getViewTitles()
-        ],$tabsService));
+        ],$tabsService,'view'));
     }
 
     protected function renderInput($entry)
@@ -77,10 +77,10 @@ class TabsField extends LabelField
         return $this->viewText;
     }
 
-    protected function appendPrefix(array $params,?TabsService $tabsService = null): array
+    protected function appendPrefix(array $params,?TabsService $tabsService = null,$mode = 'view'): array
     {
         if ($tabsService){
-            $params['prefix'] = $tabsService->getPrefix();
+            $params['prefix'] = $tabsService->getPrefix($mode);
         }
         return $params;
     }
