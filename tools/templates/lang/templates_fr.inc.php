@@ -296,11 +296,11 @@ return [
     'AB_templates_section_visible_no_container' => 'Ne pas mettre de conteneur',
     'AB_templates_tabs_label' => 'Onglets dans la page',
     'AB_templates_tabs_description' => 'Générer des onglets',
-    'AB_templates_tabs_hint' => 'Chaque changement d\'onglet se fait avec l\'action <code>{{changetab}}</code>',
+    'AB_templates_tabs_hint' => 'Chaque changement d\'onglet se fait avec l\'action <code>{{end elem="tab"}}</code>',
     'AB_templates_tabs_wrappedcontentexample' => "Contenu de l'onglet 1\n".
-        "{{changetab}}\n".
+        "{{end elem=\"tab\"}}\n".
         "Contenu de l'onglet 2\n".
-        "{{changetab}}\n".
+        "{{end elem=\"tab\"}}\n".
         "Contenu de l'onglet 3\n",
     'AB_templates_tabs_titles_label' => 'Titres des onglets',
     'AB_templates_tabs_titles_hint' => 'Séparer chaque titre par une virgule',
@@ -312,7 +312,6 @@ return [
     'AB_templates_tabs_btncolor_primary' => 'Primaire',
     'AB_templates_tabs_btncolor_secondary_1' => 'Secondaire 1',
     'AB_templates_tabs_btncolor_secondary_2' => 'Secondaire 2',
-    'AB_templates_changetab_label' => 'Nouvel onglet',
 
     // gererdroits
     'ACLS_SELECT_PAGES_FILTER' => 'Filtrer :',

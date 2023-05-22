@@ -1,5 +1,7 @@
 <?php
 
+use YesWiki\Templates\Controller\TabsController;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -22,7 +24,7 @@ if (empty($elem)) {
     }
 
 
-    if ($GLOBALS['check_'.$pagetag][$elem] || $elem==='tabs') {
+    if ($GLOBALS['check_'.$pagetag][$elem] || in_array($elem,['tab','tabs'],true)) {
         switch ($elem) {
             case 'grid':
                 echo "\n</div> <!-- end of grid -->\n";
@@ -46,8 +48,9 @@ if (empty($elem)) {
             case 'buttondropdown':
                 echo "\n</div> <!-- end of buttondropdown -->\n";
                 break;
+            case 'tab':
             case 'tabs':
-                echo "\n".$this->Action('changetab');
+                echo $this->services->get(TabsController::class)->changeTab();
                 break;
             default:
                 break;

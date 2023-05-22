@@ -7,7 +7,7 @@ use Psr\Container\ContainerInterface;
 use Throwable;
 use YesWiki\Bazar\Field\TabsField;
 use YesWiki\Bazar\Field\LabelField;
-use YesWiki\Templates\Service\TabsService;
+use YesWiki\Templates\Controller\TabsController;
 
 /**
  * @Field({"tabchange"})
@@ -36,12 +36,7 @@ class TabChangeField extends LabelField
         if (!$this->formChange) {
             return "";
         }
-        $tabsService = $this->getService(TabsService::class);
-        $params = $tabsService->getFormData();
-        if ($params['counter'] === false) {
-            return "";
-        }
-        return $this->render('@templates/tab-change.twig', $params);
+        return $this->getService(TabsController::class)->changeTab('form');
     }
 
     protected function renderStatic($entry)
@@ -49,12 +44,7 @@ class TabChangeField extends LabelField
         if (!$this->viewChange) {
             return "";
         }
-        $tabsService = $this->getService(TabsService::class);
-        $params = $tabsService->getViewData();
-        if ($params['counter'] === false) {
-            return "";
-        }
-        return $this->render('@templates/tab-change.twig', $params);
+        return $this->getService(TabsController::class)->changeTab('view');
     }
 
     public function getFormChange()

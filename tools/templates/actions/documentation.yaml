@@ -319,6 +319,4 @@ actions:
           btn-primary: _t(AB_templates_tabs_btncolor_primary)
           btn-secondary-1: _t(AB_templates_tabs_btncolor_secondary_1)
           btn-secondary-2:  _t(AB_templates_tabs_btncolor_secondary_2)
-  changetab:
-    label: _t(AB_templates_changetab_label)
 
