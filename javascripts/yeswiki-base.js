@@ -904,5 +904,15 @@ $('.tab-content [data-toggle="tab"]').on('click',function() {
   $(base).find('.active').removeClass('active')
   $(base).find(`[href="${$(this).attr('href')}"]`).parent().addClass('active')
   $(base).find(`a[href="${$(this).attr('href')}"]`).tab('show')
-  $('html, body').animate({ scrollTop: $(base).offset().top - 80 }, 500)
+  // manage iframe case
+  if (window.location != parent.parent.location) {
+    $('html, body').animate({ scrollTop: $(base).offset().top }, 500)
+    try {
+      $(base).get(0).scrollIntoView()
+      window.parent.scrollBy(0,-80)
+    } catch (error) {
+    }
+  } else {
+    $('html, body').animate({ scrollTop: $(base).offset().top - 80 }, 500)
+  }
 })
