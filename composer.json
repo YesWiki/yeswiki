@@ -35,7 +35,7 @@
         "enshrined/svg-sanitize": "^0.16.0",
         "ezyang/htmlpurifier": "^4.14",
         "jbroadway/urlify": "^1.2",
-        "nesbot/carbon": "^2.57",
+        "nesbot/carbon": "^2.66.0",
         "oomphinc/composer-installers-extender": "^2.0",
         "phpmailer/phpmailer": "^6.2",
         "stefangabos/zebra_image": "^2.7",
