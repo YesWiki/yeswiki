@@ -2,6 +2,7 @@
 
 namespace YesWiki\Templates\Service;
 
+use URLify;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\TabsField;
 
@@ -9,6 +10,7 @@ class TabsService
 {
     public const DEFAULT_DATA = [
         'titles' => [],
+        'slugs' => [],
         'counter' => false,
         'btnClass' => '',
         'prefixCounter' => 0,
@@ -22,11 +24,13 @@ class TabsService
     protected $nextPrefix;
     protected $data;
     protected $stack;
+    protected $usedSlugs;
 
     public function __construct()
     {
         $this->nextPrefix = 1;
         $this->stack = [];
+        $this->usedSlugs = [];
         $this->data = [
             'form' => self::DEFAULT_DATA,
             'view' => self::DEFAULT_DATA,
@@ -84,6 +88,16 @@ class TabsService
         $this->data[$mode]['selectedtab'] = ($selectedtab > 0 && $selectedtab <= count($titles))? $selectedtab : 1;
         $this->data[$mode]['isClosed'] = false;
         $this->data[$mode]['tabOpened'] = false;
+        $this->data[$mode]['slugs'] = array_map(function($id) use($titles,$mode){
+            $title = $titles[$id];
+            $slug = URLify::slug($title);
+            if (in_array($slug,$this->usedSlugs)){
+                return "{$slug}_{$this->data[$mode]['prefixCounter']}_".($id+1);
+            } else {
+                $this->usedSlugs[] = $slug;
+                return $slug;
+            }
+        },array_keys($titles));
     }
 
     public function getFormData(bool $increment = true)
@@ -101,9 +115,9 @@ class TabsService
         return $this->getData('action',$increment);
     }
 
-    public function getPrefix(string $mode): string
+    public function getSlugs(string $mode): array
     {
-        return "{$this->data[$mode]['prefixCounter']}_";
+        return $this->data[$mode]['slugs'];
     }
 
     private function saveInStackIfNeeded(string $mode)
@@ -135,7 +149,6 @@ class TabsService
     private function getData(string $mode, bool $increment = true)
     {
         $data = $this->data[$mode];
-        $data['prefix'] = $this->getPrefix($mode);
         $data['isLast'] = false;
         // update internal counter
         if ($data['counter'] !== false) {
@@ -148,10 +161,6 @@ class TabsService
                 } else {
                     $this->data[$mode]['counter'] = false ; // to indicate end is reached
                     $data['isLast'] = true;
-                    if ($mode != 'action'){
-                        $this->data[$mode]['isClosed'] = true;
-                        $this->retrieveFromStackIfNeeded($mode);
-                    }
                 }
             }
         } else {
@@ -169,8 +178,6 @@ class TabsService
     public function registerClose(string $mode)
     {
         $this->data[$mode]['isClosed'] = true;
-        if ($mode == 'action'){
-            $this->retrieveFromStackIfNeeded($mode);
-        }
+        $this->retrieveFromStackIfNeeded($mode);
     }
 }

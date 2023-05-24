@@ -23,9 +23,14 @@ class TabsController extends YesWikiController
      */
     public function changeTab(string $mode = 'action'): string
     {
-        return "\n".
-            $this->closeATab($mode)."\n".
-            $this->openATab($mode);
+        $output = "\n{$this->closeATab($mode)}\n";
+        $params = $this->getParams($mode,false);
+        if ($params['counter'] === false){
+            $output .= $this->closeTabs($mode);
+        } else {
+            $output .= $this->openATab($mode);
+        }
+        return $output;
     }
 
     /**
@@ -56,8 +61,8 @@ class TabsController extends YesWikiController
         }
         return $this->render('@templates/tabs.twig',[
             'titles' => $titles,
-            'prefix' => $this->tabsService->getPrefix($mode),
-            'selectedtab' => $selectedtab 
+            'selectedtab' => $selectedtab ,
+            'slugs' => $this->tabsService->getSlugs($mode)
         ]).($showFirst ? $this->openATab($mode):'');
     }
 

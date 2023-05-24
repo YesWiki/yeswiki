@@ -4,7 +4,7 @@
       {% if counter > 1 %}
         <a 
           class="btn {{ btnClass }} pull-left" 
-          href="#menu{{ prefix }}{{ counter - 1 }}" 
+          href="#{{ slugs[counter-2] }}" 
           role="tab" 
           data-toggle="tab"
           onclick="window.dispatchEvent(new Event('resize'));" {# needed to refresh map for geolocalization #}
@@ -17,7 +17,7 @@
       {% if not isLast %}
         <a 
           class="btn {{ btnClass }} pull-right" 
-          href="#menu{{ prefix }}{{ counter + 1 }}" 
+          href="#{{ slugs[counter] }}" 
           role="tab" 
           data-toggle="tab"
           onclick="window.dispatchEvent(new Event('resize'));" {# needed to refresh map for geolocalization #}

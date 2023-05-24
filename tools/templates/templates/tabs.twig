@@ -3,7 +3,7 @@
     {% for title in titles %}
       <li role="presentation"{%if loop.index == selectedtab %} class="active"{% endif %}>
         <a 
-          href="#menu{{ prefix ~ loop.index }}" 
+          href="#{{ slugs[loop.index0] }}" 
           role="tab" 
           data-toggle="tab" 
           onclick="window.dispatchEvent(new Event('resize'));" {# needed to refresh map for geolocalization#}
