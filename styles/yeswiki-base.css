@@ -949,3 +949,7 @@ td.users-table-break-word {
   overflow-wrap: break-word;
   max-width: 250px;
 }
+
+.yeswiki-tab .yeswiki-tab-btnnav {
+  margin-top: 10px;
+}
