@@ -1,0 +1,37 @@
+  {% if bottom_nav %}
+    <div class="yeswiki-tab-btnnav">
+      {# previous tab button #}
+      {% if counter > 1 %}
+        <a 
+          class="btn {{ btnClass }} pull-left" 
+          href="#{{ slugs[counter-2] }}" 
+          role="tab" 
+          data-toggle="tab"
+          onclick="window.dispatchEvent(new Event('resize'));" {# needed to refresh map for geolocalization #}
+        >
+          <i class="glyphicon glyphicon-chevron-left"></i>
+          {% if counter_on_bottom_nav %}{{ counter -1 }}. {% endif %}{{ titles[counter - 2] }}
+        </a>
+      {% endif %}
+      {# next tab button #}
+      {% if not isLast %}
+        <a 
+          class="btn {{ btnClass }} pull-right" 
+          href="#{{ slugs[counter] }}" 
+          role="tab" 
+          data-toggle="tab"
+          onclick="window.dispatchEvent(new Event('resize'));" {# needed to refresh map for geolocalization #}
+        >
+          {% if counter_on_bottom_nav %}{{ counter + 1 }}. {% endif %}{{ titles[counter] }}
+          <i class="glyphicon glyphicon-chevron-right"></i>
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
+  {% if isLast %}
+    <br>
+    <div class="anchor-for-for-actions pull-right"></div>
+  {% endif %}
+  {# close tab #}
+  <div class="clearfix"></div>
+</div><!-- close tab n°{{ counter }} -->

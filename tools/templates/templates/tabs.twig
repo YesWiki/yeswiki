@@ -1,12 +1,9 @@
-{% if moveSubmitButtonToLastTab %}
-  {{ include_javascript('tools/bazar/presentation/javascripts/bazar-edit-tabs-field.js') }}
-{% endif %}
 {% if titles is not empty %}
   <ul class="nav nav-tabs" role="tablist">
     {% for title in titles %}
-      <li role="presentation"{%if loop.first %} class="active"{% endif %}>
+      <li role="presentation"{%if loop.index == selectedtab %} class="active"{% endif %}>
         <a 
-          href="#menu{{ loop.index }}" 
+          href="#{{ slugs[loop.index0] }}" 
           role="tab" 
           data-toggle="tab" 
           onclick="window.dispatchEvent(new Event('resize'));" {# needed to refresh map for geolocalization#}
@@ -18,6 +15,4 @@
   </ul>
 
   <div class="tab-content">
-    <!--ouvre l'onglet n°1 -->
-    <div role="tabpanel" class="with-padding tab-pane active" id="menu1">
 {% endif %}
