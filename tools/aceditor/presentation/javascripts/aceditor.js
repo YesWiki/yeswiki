@@ -138,4 +138,9 @@ jQuery(() => {
     const name = $(this).data('name')
     window[`aceditor-${name}`] = new Aceditor($(this))
   })
+
+  // hack to put toolbar over label
+  $('.wiki-textarea .scroll-container-toolbar').each(function() {
+    $(this).prependTo($(this).parents('.wiki-textarea'));
+  }) 
 })
