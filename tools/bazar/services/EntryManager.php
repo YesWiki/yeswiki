@@ -567,7 +567,7 @@ class EntryManager
         $this->cachedEntriestags[$data['id_fiche']] = true;
 
         // if sendmail has referenced email fields, send an email to their adresses
-        $this->sendMailToNotifiedEmails($sendmail, $data);
+        $this->sendMailToNotifiedEmails($sendmail, $data, true);
 
         if ($this->params->get('BAZ_ENVOI_MAIL_ADMIN')) {
             // Envoi d'un mail aux administrateurs
@@ -626,7 +626,7 @@ class EntryManager
         $this->pageManager->save($data['id_fiche'], json_encode($data), '');
 
         // if sendmail has referenced email fields, send an email to their adresses
-        $this->sendMailToNotifiedEmails($sendmail, $data);
+        $this->sendMailToNotifiedEmails($sendmail, $data, false,$previousData);
 
         if ($this->params->get('BAZ_ENVOI_MAIL_ADMIN')) {
             // Envoi d'un mail aux administrateurs
@@ -960,13 +960,13 @@ class EntryManager
         return $sendmail;
     }
 
-    private function sendMailToNotifiedEmails(?string $sendmail, ?array $data)
+    private function sendMailToNotifiedEmails(?string $sendmail, ?array $data, bool $isCreation,?array $previousEntry = null)
     {
         if ($sendmail) {
             $emailsFieldnames = array_unique(explode(',', $sendmail));
             foreach ($emailsFieldnames as $emailFieldName) {
                 if (!empty($data[$emailFieldName])) {
-                    $this->mailer->notifyEmail($data[$emailFieldName], $data);
+                    $this->mailer->notifyEmail($data[$emailFieldName], $data, $isCreation,$previousEntry);
                 }
             }
         }

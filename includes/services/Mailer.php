@@ -131,7 +131,7 @@ class Mailer
         );
     }
 
-    public function notifyEmail($email, $data)
+    public function notifyEmail($email, $data, bool $isCreation = false, ?array $previousEntry = null)
     {
         $baseUrl = $this->getBaseUrl();
         $sujet = $this->templateEngine->render(
@@ -139,6 +139,8 @@ class Mailer
             [
                 'entry' => $data,
                 'baseUrl' => $baseUrl,
+                'previousEntry' => $previousEntry,
+                'isCreation' => $isCreation
             ]
         );
         $text = $this->templateEngine->render(
@@ -146,6 +148,8 @@ class Mailer
             [
                 'entry' => $data,
                 'baseUrl' => $baseUrl,
+                'previousEntry' => $previousEntry,
+                'isCreation' => $isCreation
             ]
         );
         $user = $this->userManager->getOneByEmail($email);
@@ -171,6 +175,8 @@ class Mailer
                 'entryHTML' => $this->wiki->services->get(EntryController::class)->view($data['id_fiche'], '', true, $userName),
                 'baseUrl' => $baseUrl,
                 'mailCustomMessage' => $this->params->has('mail_custom_message') ? $this->params->get('mail_custom_message') : null,
+                'previousEntry' => $previousEntry,
+                'isCreation' => $isCreation
             ]
         );
 
