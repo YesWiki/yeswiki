@@ -64,7 +64,7 @@ color:#E9322D;
 }
 
 .tab-content .tab-pane.with-padding {
-  padding-top: 20px;
+  padding-top: 1em;
 }
 .btn-geolocate {
   border-bottom-left-radius: 0;
@@ -76,10 +76,10 @@ color:#E9322D;
 /* --------------- */
 
 .BAZ_menu .nav, .bazar-search {
-  margin-bottom:20px;
+  margin-bottom:1em;
 }
 .filters-col .bazar-search {
-  margin-bottom: 2rem;
+  margin-bottom: 2em;
 }
 
 .bazar-table {

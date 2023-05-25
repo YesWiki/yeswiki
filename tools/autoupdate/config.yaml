@@ -9,7 +9,6 @@ parameters:
     - GererThemes
     - GererConfig
     - GererUtilisateurs
-    - GererMotsClef
     - TableauDeBord
     - LookWiki
     - GererSauvegardes
