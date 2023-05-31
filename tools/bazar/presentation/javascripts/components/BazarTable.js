@@ -12,6 +12,7 @@ let componentParams = {
             columns: [],
             dataTable: null,
             displayedEntries: {},
+            fastSearch: false,
             fields: {},
             forms: {},
             isReady:{
@@ -258,7 +259,8 @@ let componentParams = {
             return {
                 ...DATATABLE_OPTIONS,
                 ...{
-                  searching: false,
+                  searching: true,// allow search but ue dom option not display filter
+                  dom:'lrtip', // instead of default lfrtip , with f for filter, see help : https://datatables.net/reference/option/dom
                   footerCallback: ()=>{
                     this.updateFooter()
                   },
@@ -534,6 +536,14 @@ let componentParams = {
                 return !('id_fiche' in data) || entryIdsToRemove.includes(data.id_fiche)
             }).remove()
         },
+        resetFastSearch(isOk){
+            if (isOk){
+                this.fastSearch = false
+            }
+            if (this.dataTable !== null){
+                this.$nextTick(()=>{this.dataTable.search(this.$root.search).draw()})
+            }
+        },
         resolve(name){
             this.isReady[name] = true
             if (name in this.cacheResolveReject &&
@@ -744,6 +754,12 @@ let componentParams = {
             this.addRows(dataTable,columns,newEntries,currentusername,this.isadmin)
             this.dataTable.draw()
         },
+        updateFastSearch(newSearch){
+            if (this.dataTable !== null){
+                this.dataTable.search(newSearch).draw()
+                this.fastSearch = true
+            }
+        },
         updateFieldsFromRoot(){
             this.fields = this.$root.formFields
             if (Object.keys(this.fields).length > 0){
@@ -786,6 +802,10 @@ let componentParams = {
         });
         this.updateFieldsFromRoot()
         window.urlImageResizedOnError = this.$root.urlImageResizedOnError
+        this.$root.$watch('search',(newSearch)=>{this.updateFastSearch(newSearch)})
+        this.$root.$watch('ready',(newVal)=>{this.resetFastSearch(newVal)})
+        this.$root.$watch('isLoading',(newVal)=>{this.resetFastSearch(!newVal)})
+        this.$root.$watch('searchedEntries',()=>{this.resetFastSearch(true)})
     },
     watch: {
         entries(newVal, oldVal) {

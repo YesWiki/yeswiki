@@ -32,7 +32,7 @@
   <Bazar-Table :currentusername="{{ currentUserName|json_encode }}" :params="params" :entries="entriesToDisplay" :ready="ready" :root="$root" isadmin="{{ hasAcl("@admins")|json_encode }}">
     <template #header="{displayedEntries,BazarTable}"></template>
     <template #spinnerloader="{displayedEntries,BazarTable}">
-      <spinner-loader v-if="isLoading || !ready" class="overlay super-overlay" :height="500"></spinner-loader>
+      <spinner-loader v-if="!BazarTable.fastSearch && (isLoading || !ready)" class="overlay super-overlay" :height="500"></spinner-loader>
     </template>
     <template #footer="{displayedEntries,BazarTable}"></template>
     <template #deletecheckbox="{targetId,itemId,disabled}">
