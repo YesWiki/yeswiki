@@ -6,7 +6,7 @@
     <tr>
       <th>Page</th>
       <th>{{ _t('TAGS_PRESENT_IN') }}</th>
-      <th>Action</th>
+      {% if isAdmin %}<th>Action</th>{% endif %}
     </tr>
   </thead>
   <tbody>
@@ -19,6 +19,7 @@
           <td class="pagewithtag">
             {{ _t('TAGS_PRESENT_IN') }} : <a class="wikipagelink" href="{{ url({tag:tag.resource}) }}">{{ tag.resource }}</a>
           </td>
+          {% if isAdmin %}
           <td class="delete_tag">
             <a class="btn btn-xs btn-mini btn-error btn-danger" 
               href="{{ url({params:{delete_tag:tag.id}}) }}">
@@ -26,12 +27,14 @@
               {{- ' ' ~ _t('TAGS_DELETE_MINUSCULE') }} {{ _t('TAGS_FROM_THIS_PAGE') -}}
             </a>
           </td>
+          {% endif %}
 				</tr>
       {% endfor %}{# tagsForName #}
       {% if tagsForName|length > 1 %}
         <tr>
           <td></td>
           <td></td>
+          {% if isAdmin %}
           <td class="delete_all_tags">
             <a class="btn btn-xs btn-mini btn-error btn-danger" 
                 href="{{ url({params:{delete_tag:tagsForName|map(tag => tag.id)|join(',')}}) }}">
@@ -42,6 +45,7 @@
               </strong>
             </a>
           </td>
+          {% endif %}
         </tr>
       {% endif %}
     {% endfor %}{# tags #}

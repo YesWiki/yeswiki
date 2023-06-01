@@ -313,7 +313,7 @@ Voici quelques possibilités autour des annuaires (à copier-coller - adapter)
 {{adminbackups}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('GererSite',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes\"}}
 
-{{attach file=\"modele.jpg\" desc=\"image Dessin_sans_titre.jpg (66.9kB)\" size=\"big\" class=\"right\"}}===Gérer les menus et pages spéciales de ce wiki===
+{{attach file=\"modele.jpg\" desc=\"image Dessin_sans_titre.jpg (66.9kB)\" size=\"big\" class=\"right\" nofullimagelink=\"1\"}}===Gérer les menus et pages spéciales de ce wiki===
  - [[PageTitre/edit Éditer la Page Titre]]
  - [[PageHeader/edit Éditer la Page Header]]
  - [[PageMenuHaut/edit Éditer la Page Menu Haut]]
@@ -322,7 +322,7 @@ Voici quelques possibilités autour des annuaires (à copier-coller - adapter)
  - [[PageRapideHaut/edit Éditer la Page Rapide Haut]]
 ==Mais aussi==
  - [[PageMenu/edit Éditer le menu vertical]]
- - [[ReglesDeFormatage/edit Éditer le mémo de formatage]]
+ - [[ReglesDeFormatage/edit Éditer l'aide mémoire]]
 
 ===Gestion des mots clés ===
 {{admintag}}
@@ -690,8 +690,6 @@ Texte colonne 2
 Texte colonne 3
 {{end elem=\"col\"}}
 {{end elem=\"grid\"}}%%
-===Inclure une page d\'un autre yeswiki=== 
-( Noter le pipe \"\"|\"\" après les premiers \"\"[[\"\" ) %%[[|http://lesite.org/nomduwiki PageAInclure]]%%
 ===Afficher une barre de progression===
 &#x5B;10%] donne [10%]
 &#x5B;40%] donne [40%]
