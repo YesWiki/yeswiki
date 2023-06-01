@@ -323,7 +323,7 @@ Voici quelques possibilités autour des annuaires (à copier-coller - adapter)
 ==Mais aussi==
  - [[PageMenu/edit Éditer le menu vertical]]
  - [[ReglesDeFormatage/edit Éditer l'aide mémoire]]
-
+\"\"<div class=\"clearfix\"></div>\"\"
 ===Gestion des mots clés ===
 {{admintag}}
 ', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
