@@ -610,17 +610,29 @@ Par défaut, pour l'affichage des données sous forme cartographique, les cartes
 Il est possible de réaliser une sauvegarde complète ou partielle de votre YesWiki en vous rendant dans la page [`GererSauvegardes`](?GererSauvegardes ':ignore') de votre site (aussi accessible en passant par [`GererSite`](?GererSite ':ignore') > `Sauvegardes`).
 
 Comme les configurations de serveurs peuvent être très différentes d'un site à l'autre, il est peut-être nécessaire de réaliser quelques réglages au préalable pour que ça fonctionne.
+Par défaut la sauvegarde concerne tous les dossiers standard du wiki. Les paramètres avancés permettent de personnaliser la liste des dossiers à sauvegarder 
+### Paramètres avancés
+**Fichiers supplémentaires**
+Pour ajouter des fichiers personnels (par exemple, des fichiers photos) à la sauvegarde, il faut écrire le nom du dossier ou du fichier à partir de la racine de son wiki
+//Exemples d'arborescence ://
+  /home/user/Web/image/2023
+ /home/user/Web/mon-dossier
+ /home/user/Web/charte.pdf
+Dans cet exemple d'arborescence, pour sauvegarder le dossier "2023", le dossier "mon-dossier" et le fichier "charte.pdf" , il faut écrire : image/2023, mon-dossier, charte.pdf
+**Fichiers exclus**
+Pour exclure des fichiers de la sauvegarde, il faut écrire le nom du dossier ou du fichier à partir de la racine de son wiki
+//Exemple d'arborescence ://
+    /home/user/Web/tools
+Dans cet exemple d'arborescence, pour exclure le dossier "tools" , il faut écrire : tools
 
-### Erreur de sauvegarde : sauvegarde déjà en cours
-
+### Résoudre les problèmes de sauvegarde : 
+Quelques pistes si vous rencontrez des erreurs lors de la sauvegarde :
+ - **sauvegarde déjà en cours**
 Si lors de la sauvegarde, vous avec un message comme quoi "une sauvegarde est déjà en cours", alors que vous êtes sûrs que ça n'est pas le cas, ceci peut être dû à un arrêt brutal d'une sauvegarde avant que YesWiki est pu remettre à jour le statut du site.
-
 Pour résoudre ce souci, il vous suffit d'appliquer les instructions du paragraphe suivant _"site en hibernation"_.
 
-### Erreur de sauvegarde : site en hibernation
-
+ - **site en hibernation**
 Si lors de la sauvegarde, vous avec un message comme quoi le site est en "hibernation" :
-
  1. Vérifiez qu'aucune autre sauvegarde est en cours et que le site doit bien être sorti d'hibernation auprès de votre communauté
  2. Rendez-vous dans la page [`GererConfig`](?GererConfig ':ignore') de votre site (aussi accessible en passant par [`GererSite`](?GererSite ':ignore') > `Fichier de conf`).
  3. Rendez-vous dans la partie `Sécurité`
@@ -629,10 +641,8 @@ Si lors de la sauvegarde, vous avec un message comme quoi le site est en "hibern
  6. revenir vérifier que le champ est vide (ou qu'il vaut bien `running`)
  7. revenir à la page [`GererSauvegardes`](?GererSauvegardes ':ignore') pour relancer votre sauvegarde
 
-### Erreur de sauvegarde : dossier de sauvegarde non accessible en écriture
-
+- **dossier de sauvegarde non accessible en écriture**
 Si lors de la sauvegarde, vous avec un message comme quoi "dossier de sauvegarde n'est pas accessible en écriture" :
-
  1. Rendez-vous dans la page [`GererConfig`](?GererConfig ':ignore') de votre site (aussi accessible en passant par [`GererSite`](?GererSite ':ignore') > `Fichier de conf`).
  2. Rendez-vous dans la partie `Sécurité`
  3. Recherchez le paramètre `privatePath` (Localisation des sauvegardes)
@@ -641,11 +651,9 @@ Si lors de la sauvegarde, vous avec un message comme quoi "dossier de sauvegarde
    - si vous souhaitez conserver le paramètre avec une valeur vide, ce sera la dossier `private/backups/` qui sera utilisé. Pensez-bien à le rendre non accessible depuis internet;
    - il est possible d'utiliser la valeur `%TMP` pour que les sauvegardes se fassent dans le dossier temporaire du serveur
 
-### Erreur de sauvegarde : lancement impossible des commandes console sur le serveur
-
+ - **lancement impossible des commandes console sur le serveur**
 Le système de sauvegarde de YesWiki utilise des commandes console sur le serveur pour faire les sauvegardes.
 Ceci permet d'exécuter les tâches en arrièrre plan et éviter les déconnexios intempestives pendant la sauvegarde (surtout quand elle est longue).
-
 Certaines restrictions de sécurité de votre serveur peuvent empêcher l'utilisation de ctte fonctionnalité. Pour résoudre ce souci, vous pouvez :
  - Vérifier dans votre interface de gestion de votre serveur si les commandes `exec`, `proc_open`, `proc_terminate` ... sont autorisées pour `php`
  - OU passez en mode synchrone :
@@ -658,20 +666,14 @@ Certaines restrictions de sécurité de votre serveur peuvent empêcher l'utilis
 
 **Important, en mode `synchrone`, si la sauvegarde est plus longue que le réglage de temps maximum de connexion de votre serveur, alors elle peut ne pas se terminer.** Il faudra alors choisir un sous-ensemble plus petit de votre site pour que la sauvegarde se fasse plus rapidement que la limite de temps de connexion de votre serveur.
 
-### Erreur de sauvegarde : mysqldump inaccessible
-
+ - **mysqldump inaccessible**
 Pour réaliser des sauvegardes de votre site, YesWiki utilise l'utilitaire `mysqldump`.
 
 Sur certains serveurs, cet `utilitaire` n'est pas accessible à `php` par défaut. YesWiki utilise des méthodes alternatives pour contourner ce souci mais dans certains cas, les méthodes alternativent ne suffisent pas.
-
 Essayer de voir si vous pouvez rendre accessible `mysqldump` sur votre serveur.
 
-Si le problème persiste, veuillez le signaler à [l'équipe bénévole YesWiki](https://forum.yeswiki.net/c/support) pour qu'elle essaye de corriger le point bloquant.
-
-### Erreur de sauvegarde : dossier de sauvegarde accessible sur internet
-
-Si votre dossier de sauvegarde est accessible sur internet, il ne sera pas possiblede lancer la sauvegarde. Ceci est uns restriction pour éviter les fuites de données depuis les fichiers de sauvegardes.
-
+ - **dossier de sauvegarde accessible sur internet**
+Si votre dossier de sauvegarde est accessible sur internet, il ne sera pas possible de lancer la sauvegarde. Ceci est une restriction pour éviter les fuites de données depuis les fichiers de sauvegardes.
 Pour corriger ceci:
  1. Rendez-vous dans la page [`GererConfig`](?GererConfig ':ignore') de votre site (aussi accessible en passant par [`GererSite`](?GererSite ':ignore') > `Fichier de conf`).
  2. Rendez-vous dans la partie `Sécurité`
@@ -679,5 +681,5 @@ Pour corriger ceci:
  4. Notez la valeur de ce paramètre (s'il est vide, considérez qu'il vaut `private/backups`)
  5. Vérifier que ce dossier n'est pas accessible depuis internet avec votre configuration de serveur
    - si le dossier est un sous-dossier de votre site internet, vous devez configurer votre serveur pour restreindre l'accès :
-     - soit en créant un fichier `.htaccess` dans le dossier concerné et en mettant `DENY FROM ALL` dans ce fichier
-     - soit en configurant votre logiciel http (`apache`, `nginx`, ...) pour qu'il interdise l'accès internet à ce dossier
+   - soit en créant un fichier `.htaccess` dans le dossier concerné et en mettant `DENY FROM ALL` dans ce fichier
+   - soit en configurant votre logiciel http (`apache`, `nginx`, ...) pour qu'il interdise l'accès internet à ce dossier
