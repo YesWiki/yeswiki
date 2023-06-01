@@ -387,7 +387,64 @@ Permet d'afficher une sélection aléatoire de fiches `random="1"`
 en général on l'utilise avec le paramètre **nb** `nb="5"` pour afficher 5 ressources au hasard à mettre en valeur.
 
 ### Données issues d'un autre yeswiki
-!> bazarliste externe (à compléter)
+Il est possible d'afficher les données issues d'un YesWiki distant.
+
+1. Définir l'action %%{{bazarliste id="1" template="map" ...}}%% pour correspondre au besoin ([[https://yeswiki.net/?BazarAfficherContenu documentation]] ou utiliser le bouton **composants** lors de la modification d'une page)
+2. Identifier l'adresse des ""YesWiki"" distants et les formulaires recherchés. Ex: %%https://www.example.com/?PagePrincipale%% formulaire 4 et %%https://www.example.com/trombi2/?PagePrincipale%% formulaire 5
+3. remplacer pour l'action bazarliste id par %%id="1,https://www.example.com/?PagePrincipale|4,https://www.example.com/trombi2/?PagePrincipale|5,6"%%
+4. Sauver la page et enjoy
+
+#### Explications 
+ - un formulaire local est uniquement représenté par un nombre. Dans l'exemple, nous avons les formulaires 1 et 6
+ - un formulaire distant est représenté par son url suivi de `|` suivi du numéro de son formulaire. Dans l'exemple, nous avons deux formulaires distants.
+ - plusieurs formulaires peuvent être appelés depuis une même action bazarliste, chaque formulaire est séparé par une virgule
+ - S'il faut plusieurs formulaires distants d'un même YesWiki, il faut à chaque fois répéter l'url devant `|`
+
+#### Rafraichir les données locales:
+
+Il y a un système de cache des requêtes externes dont la durée est paramètrable par les variables //baz_external_service_time_cache_for_entries// et //baz_external_service_time_cache_for_forms// (voir {{button class="new-window" nobtn="1" link="https://github.com/YesWiki/yeswiki/blob/doryphore/tools/bazar/config.yaml#L106" text="config.yaml" title="config.yaml"}}).
+Pour forcer un rafraîchissement des données, il faut être connecté et ajouter à la fin de l'url : %%&refresh=1%%
+
+#### Tips avancés
+**Avoir des couleur différentes par formulaire (entre données du formulaire local et distants) :**
+Sur la base du fonctionnement colorfield="id_typeannonce" (voir ActionBazarliste section color), definir un ID pour le formulaire externe n'existant pas en local (999 par exemple) de la manière suivante
+%%id="5,http://www.exemple.com/?PagePincipale|1->999" color="green=5, blue=999"%%
+NB : Dans l'exemple ci-dessus l'id du formulaire local est 5 et celui du formulaire distant 1
+
+#### Pour aller plus loin, pour les personnes connaissant les fields**:
+ - pour configurer l'affichage des données sur le site local, il faut plutôt créer un formulaire qui ressemble au formulaire distant (même nom de champs) mais avec vos adaptations
+ - noter le numéro de ce formulaire en local (A pour l'exemple)
+ - noter le numéro du formulaire distant (B pour l'exemple)
+ - entrer dans id ceci %%id="http://www.exemple.com/?PagePincipale|B->A"%%
+ Tout se joue avec l'association de B vers A.
+
+#### Pour lier à un template custom fiche-x.tpl.html :
+//x étant le numéro du formulaire local concerné//
+ 1. dupliquer le formulaire distant sur le ""YesWiki"" local en utilisant la fonctionnalité d'importation disponible en bas de la page ""BazaR""
+ 2. copier le fichier //fiche-x.tpl.html// dans le dossier local //custom/templates/bazar/// avec le nom //fiche-y.tpl.html// où y est le numéro du formulaire dupliqué en local
+ 3. modifier le formulaire y en local en mode code en remplaçant, //z étant le numéro du formulaire distant//
+   ```
+   %%liste***...***...*** *** ***...%% par %%externalselectlistfield***...***...*** https://www.example.com/?BazaR/json&demand=forms&id=y***liste***...%%
+   %%listefiche***...***...*** *** ***...%% par %%externalselectentryfield***...***...*** https://www.example.com/?BazaR/json&demand=forms&id=y***listefiche***...%%
+   %%listefiches***...***...*** *** ***...%% par %%externallinkedentryfield***...***...*** https://www.example.com/?BazaR/json&demand=forms&id=y***listefiches***...%%
+   %%listefichesliees***...***...*** *** ***...%% par %%externallinkedentryfield***...***...*** https://www.example.com/?BazaR/json&demand=forms&id=y***listefichesliees***...%%
+   %%checkbox***...***...*** *** ***...%% par %%externalcheckboxlistfield***...***...*** https://www.example.com/?BazaR/json&demand=forms&id=y***checkbox***...%%
+   %%checkboxfiche***...***...*** *** ***...%% par %%externalcheckboxentryfield***...***...*** https://www.example.com/?BazaR/json&demand=forms&id=y***checkboxfiche***...%%
+   %%radio***...***...*** *** ***...%% par %%externalradiolistfield***...***...*** https://www.example.com/?BazaR/json&demand=forms&id=y***radio***...%%
+   %%tags***...***...*** *** ***...%% par %%externaltagsfield***...***...*** https://www.example.com/?BazaR/json&demand=forms&id=y***tags***...%%
+   %%fichier***...***...*** *** ***...%% par %%externalfilefield***...***...*** https://www.example.com/?BazaR/json&demand=forms&id=y***fichier***...%%
+   %%image***...***...*** *** ***...%% par %%externalimagefield***...***...*** https://www.example.com/?BazaR/json&demand=forms&id=y***image***...%%
+```
+Dans l'exemple:
+ - le formulaire concerné est *https://www.example.com|z*
+ - la formule entrée *{{bazarliste id="https://www.example.com|z->y"}}*
+
+
+//Si dans votre formulaire local vous voulez un comportement correct pour les liens, inspirez-vous des [[https://github.com/YesWiki/yeswiki/tree/doryphore/tools/bazar/fields externalfields]], comme par exemple ://
+ - pour les urls vers les fiches %%$fiche['url']%%
+ - pour les urls vers les fiches avec un handler %%$fiche['url'] . '/pdf'%%
+ - pour savoir si la fiche est externe %%isset($fiche['external-data'])%%
+ - pour avoir l'url de base du site distant pour les fiches externes %%$fiche['external-data']['baseUrl']%%
 
 ## Importer / exporter des données
 
