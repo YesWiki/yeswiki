@@ -39,6 +39,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'ACEDITOR_LINK_EDIT'        => 'Modifier le lien',
     'ACEDITOR_LINK_ERROR'              => 'Le nom de la page ne doit pas contenir de caractères spéciaux autre que - ou _ . Les URL doivent commencer par https://',
     'ACEDITOR_LINK_NEW_PAGE_NAME'      => 'Nom de la page à créer',
+    'ACEDITOR_LINK_PAGE_ALREADY_EXISTS' => 'Cette page existe déjà !',
     'ACEDITOR_LINK_PAGE_OR_URL'        => 'Nom de la page ou URL externe',
     'ACEDITOR_LINK_HINT_NEW_PAGE_NAME' => "Si la page n'existe pas, elle sera créée.",
     'ACEDITOR_LINK_TEXT'               => 'Texte affiché',

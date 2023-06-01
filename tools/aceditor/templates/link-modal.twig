@@ -18,6 +18,10 @@
 							<span class="link-error help-block text-danger hidden">{{ _t('ACEDITOR_LINK_ERROR') }}</span>
 							<span class="help-block" data-show="newlink,edit">{{ _t('ACEDITOR_LINK_HINT_NEW_PAGE_NAME') }}</span>
 						</div>
+						{# Error message #}
+						<div class="text-danger help-block" id="page-already-exist-alert" style="display: none;">
+							{{ _t('ACEDITOR_LINK_PAGE_ALREADY_EXISTS') }}
+						</div>
 					</div>
 					{# Text #}
 					<div class="control-group form-group">

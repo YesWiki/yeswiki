@@ -31,7 +31,16 @@ export default class {
     this.$modal.find(`[data-show]:not([data-show*=${options.action}])`).hide()
 
     this.$inputUrl.typeahead('destroy')
-    if (options.action !== 'newpage') {
+    if (options.action === 'newpage') {
+      // If page already exists display error message
+      this.$inputUrl.on('input', () => {
+        const value = this.$inputUrl.val().replace(/\s+/g, '-')
+        this.$inputUrl.val(value)
+        const alreadyExists = pageTags.includes(value)
+        this.$inputUrl.toggleClass('error', alreadyExists)
+        $('#page-already-exist-alert').toggle(alreadyExists)
+      })
+    } else {
       // pageTags is defined in AceditorAction / Aceditor.twig
       this.$inputUrl.typeahead({ source: pageTags, items: 5 })
     }

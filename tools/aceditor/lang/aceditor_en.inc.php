@@ -41,6 +41,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'ACEDITOR_LINK_ERROR'		        => 'Page name should not contains any special characters other than - or _. URL must start with https://',
     'ACEDITOR_LINK_NEW_PAGE_NAME'       => 'Page name to create',
     'ACEDITOR_LINK_PAGE_OR_URL'         => 'YesWiki page name or URL',
+    'ACEDITOR_LINK_PAGE_ALREADY_EXISTS' => 'This page already exists !',
     'ACEDITOR_LINK_HINT_NEW_PAGE_NAME'  => 'If the page does not exists, it will be created.',
     'ACEDITOR_LINK_TEXT'                => 'Text displayed',
     'ACEDITOR_LINK_TITLE'               => 'Hovering Title',

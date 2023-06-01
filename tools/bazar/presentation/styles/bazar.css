@@ -157,6 +157,10 @@ textarea:not(:placeholder-shown):invalid,
 .submitted .invalid > .ace-container,
 .submitted .textarea.summernote.invalid {
   border-color: #DD2C00;
+  border-color: var(--danger-color);
+}
+input.form-control.error {
+  border-color: var(--danger-color) !important;
 }
 .BAZ_label {font-weight: bold;display: block;}
 .BAZ_texte {display:block;}
