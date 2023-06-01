@@ -48,12 +48,14 @@ class WakkaFormatter__ extends YesWikiFormatter
         // recuperation de chaque portion commencant par | et finissant par |
         preg_match_all('/(^(?:!([^\|]*)!)?\|.*\|$)/Ums', $thing, $rows);
         
-        $table = "<table class=\"table".(!empty($tableclass) ? ' '.$tableclass: ' table-condensed table-striped')."\" $tableclass >\n";
         //analyse de chaque ligne
+        $tablecontent = '';
         foreach ($rows[0] as $row) {
-            $table .= $this->parsetablerow($row);
+            $tablecontent .= $this->parsetablerow($row);
         }
-        $table .= '</table>';
+        $table  = '<table class="yeswiki-table prevent-auto-init '.(!empty($tableclass) ? ' '.$tableclass: 'table table-condensed table-striped').'">'."\n";
+        $table .= $tablecontent."\n";
+        $table .= '</table>'."\n";
 
         return $table;
     }
