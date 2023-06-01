@@ -330,7 +330,7 @@ Voici quelques possibilités autour des annuaires (à copier-coller - adapter)
 ('GererThemes',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes\"}}
 
 {{button class=\"btn-info btn-block\" link=\"LookWiki\" text=\"Personnaliser le thème de ce wiki (couleurs, police...)\" }}
-{{button class=\"btn-default btn-block\" link=\"PageCss\" text=\"Ajouter du code CSS (zone sensible)\" title=\"Cette page ne peut contenir QUE du Css / voir la doc sur https://yeswiki.net/?DocumentationThemeMargot\" }}
+{{button class=\"btn-default btn-block\" link=\"PageCss\" text=\"Ajouter du code CSS (zone sensible)\" title=\"Cette page ne peut contenir QUE du Css / voir la document" }}
 
 ------
 
@@ -481,7 +481,8 @@ Contenu panel-danger
 ('PageCss',  now(), '/*
 Voici un exemple de css custom pour le theme margot, il agit sur les variables css non personnalisables dans le theme et permet de faire des css sur mesure.
 Chaque ligne ci-dessous est à décommenter pour etre utilisée
-Pour en savoir plus, voyez la documentation sur https://yeswiki.net/?DocumentationThemeMargot
+Pour en savoir plus, [[?doc#/docs/fr/admin?id=ajouter-du-code-css-personnalis%c3%a9 voyez la documentation à ce sujet]].
+
 */
 
 /* :root { */
@@ -607,12 +608,12 @@ Vous êtes dans la page qui se nomme PageMenuHaut qui sert à modifier le menu d
 {{buttondropdown icon=\"cog\" caret=\"0\" title=\"Roue crantée\"}}
  - {{login template=\"modal.tpl.html\" nobtn=\"1\"}}
  - ------
+ - {{button nobtn=\"1\" icon=\"fa fa-tachometer-alt\" text=\"Tableau de bord\" link=\"TableauDeBord\"}}
  - {{button nobtn=\"1\" icon=\"fa fa-question\" text=\"Documentation\" link=\"doc\"}}
- - {{button nobtn=\"1\" icon=\"fas fa-yin-yang\" text=\"Présentation YesWiki\" link=\"AccueilYeswiki\"}}
  - ------
  - {{button nobtn=\"1\" icon=\"fa fa-wrench\" text=\"Gestion du site\" link=\"GererSite\"}}
- - {{button nobtn=\"1\" icon=\"fa fa-tachometer-alt\" text=\"Tableau de bord\" link=\"TableauDeBord\"}}
- - {{button class=\"btn-primary\" icon=\"fas fa-user\" link=\"MesContenus\" nobtn=\"1\" text=\"Mes contenus\" }}
+ - {{button nobtn=\"1\" icon=\"fas fa-palette\" text=\"Apparence\" link=\"LookWiki\"}}
+ - {{button nobtn=\"1\" icon=\"fas fa-user\" text=\"Mes contenus\" link=\"MesContenus\"}}
  - {{button nobtn=\"1\" icon=\"fa fa-briefcase\" text=\"Base de données\" link=\"BazaR\"}}
 {{end elem=\"buttondropdown\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('Pagetest1',  now(), '======Sous menu 1======', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
