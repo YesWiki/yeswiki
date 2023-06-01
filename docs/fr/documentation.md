@@ -1,32 +1,25 @@
-Contribuer à la Documentation de YesWiki
+Contribuer à la documentation de YesWiki
 ============================
 
-> Ceci est une page d'aide à destination de celleux qui souhaitent contribuer à une excellente documentation utilisateurs pour YesWiki.
-
+Ceci est une page d'aide à destination de celleux qui souhaitent contribuer à une excellente documentation utilisateurs pour YesWiki.
 
 Contexte
 ------------
 
-Nous souhaitons inclure une documentation dans la version 4.3 de YesWiki, accessible aux utilisateurices de chaque YesWiki sur le même serveur que le wiki. Cette documentation est composée de page en format Markdown, dans le dossier `/docs/users` dans la base de code, et peut être facilement éditées par les contributeurices ou traducteurices de la documentation.
+Nous souhaitons inclure une documentation dans la version 4.3 de YesWiki, accessible aux utilisateurices de chaque YesWiki sur le même serveur que le wiki. Cette documentation est composée de page en format Markdown, dans le dossier `/docs` dans la base de code, et peut être facilement éditées par les contributeurices ou traducteurices de la documentation.
 
 Cette documentation sera accessible avec le chemin `?doc` sur tous les wikis, exemple `https://yeswiki.net/?doc`
 
 Architecture
 -----------------
 
-Un découpage selon l'usage semble adéquat, tel qu'il a été construit initialement, mais nous pourrions adopter un découpage un peu plus fin:
-
-- **Premiers pas** : Toute la documentation pour aider l'utilisateur de base a créer un compte, récuperer son mot de passe, editer ou créer une page, comprendre la syntaxe wiki de base, etc...
-
-- **Usages avancés** : Pour celleux qui poussent leur usage du wiki dans ses plus fines fonctionnalités: usage des actions, des feintes de mise en page
-
-- **Formulaires (Bazar)** : Toute la doc concernant bazar (création, rendu, templates...)
-
-- **Administration** : Tout ce qui est dans la roue crantée (et singulièrement la partie dans la page gestion du site dont look du wiki)
-
 - **Installation** : Là on sort de l'interface web, avec des infos sur l'installation, les fichiers de configuration, la gestion des mails sortants, migration, herse, gestion spams par phpmyadmin et ce genre de choses.
-
-- **Développement** : Pour les dev qui vont **utiliser** yeswiki. Il s'agit surtout de mettre la doc sur le dossier `custom` (faire un template custom par exemple....), et peut être d'autres trucs comme ouvrir l'API etc.
+- **Prise en main** : Toute la documentation pour aider l'utilisateur de base a créer un compte, récuperer son mot de passe, editer ou créer une page, comprendre la syntaxe wiki de base, etc...
+- **Formulaires (Bazar)** : Toute la doc concernant bazar (création, rendu, templates...)
+- **Administration** : Pour celleux qui poussent leur usage du wiki dans ses plus fines fonctionnalités: tout ce qui est dans la roue crantée (et singulièrement la partie dans la page gestion du site dont look du wiki), usage des actions, mise en page, etc, ...
+- **Contribuer** : Toutes les possibilités de contribution [participer à la communauté](/docs/fr/communaute.md), [améliorer la documentation](/docs/fr/documentation.md), [développer le code](/docs/fr/dev.md), [adhérer / soutenir financièrement](/docs/fr/asso-finances.md)
+- **Extensions** : Partie dynamique de la documentation, qui ajoutera automatiquement des documentations pour les extensions que vous rajouterez (si une documentation existe)
+- **Autres espaces** : Liens utiles vers des espaces en ligne comme le forum, les vidéos, les tutoriels,...
 
 Usages et bonnes pratiques
 ----------------------------
@@ -35,7 +28,7 @@ Usages et bonnes pratiques
 
 Il est toujours bienvenu d'avoir des captures d'écran, mais il faut garder à l'esprit que ces captures devront etre refaites pour chaque langue traduite. Il est donc judicieux d'en mettre, mais de conserver un équilibre sur leur quantité. Par ailleurs le widget preview devrait permettre de réduire le nombre de capture d'écrans dans certains cas.
 
-Si cela est possible, il est préférable de directement inclure des rendus de code yeswiki, [voir plus bas](/docs/users/README?id=afficher-du-code-yeswiki)
+Si cela est possible, il est préférable de directement inclure des rendus de code yeswiki, [voir plus bas](/docsREADME?id=afficher-du-code-yeswiki)
 
 ### Ecriture inclusive
 
@@ -47,7 +40,7 @@ Plus d'info sur l'écriture inclusive : [https://eninclusif.fr/](https://eninclu
 
 ### Ton et langage
 
-Nous devrions dans la documentation adopter un style neutre et factuel. Ca ne veut pas dire qu'il faille etre trop formel, le ton peut etre détendu et parfois spirituel. Il faut juste garder a l'esprit, quand on emploie un style  humouristique, que tout le monde n'a pas le meme humour et que l'objet de la doc est de s'adresser a tout le monde.
+Nous devrions dans la documentation adopter un style neutre et factuel. Ca ne veut pas dire qu'il faille etre trop formel, le ton peut etre détendu et parfois spirituel. Il faut juste garder a l'esprit, quand on emploie un style humouristique, que tout le monde n'a pas le meme humour et que l'objet de la doc est de s'adresser a tout le monde.
 
 ### Lisibilité
 
@@ -61,7 +54,7 @@ Apprendre à utiliser ce language : https://www.markdown-cheatsheet.com/
 
 ### Modifier les fichiers directement sur github
 
-Allez sur https://github.com/YesWiki/yeswiki/tree/doryphore-dev/docs/users pour voir l'ensemble des fichiers. Sinon, en bas de chaque page de la doc il y a un lien pour éditer le fichier sur github.
+Allez sur https://github.com/YesWiki/yeswiki/tree/doryphore-dev/docs/ puis le dossier de la langue de votre choix pour voir l'ensemble des fichiers. Sinon, en bas de chaque page de la doc il y a un lien pour éditer le fichier sur github.
 - Assurrez vous d'être sur la branche `doryphore-dev`
 
 ![](https://md.yeswiki.net/uploads/ec48249b-7eb8-48c6-ba01-8e27243ed5e2.png)
@@ -91,7 +84,7 @@ On peut visualiser l'historique en ouvrant le fichier sur github et en cliquant 
 
 ### Uploader une image
 
-Allez dans le répertoite `docs/users/fr/images` sur github, plus cliquez sur `Add File`
+Allez dans le répertoite `docs/fr/images` sur github, plus cliquez sur `Add File`
 
 ![](https://md.yeswiki.net/uploads/96f4883a-88f5-46ac-8a11-95256690e203.png)
 
@@ -150,11 +143,11 @@ Vous pouvez aussi afficher le rendu de code yeswiki en ajoutant le mot clé "pre
 
 Pour renvoyer vers une explication donnée dans un autre paragraphe, il faut cliquer sur le titre de la section concernée dans le site https://testing.yeswiki.net/doc et récupérer dans l'url ce qui est écrit à partir du /docs
 Exemple : pour faire référence au paragraphe "la composition d'une page", copier 
-/docs/users/fr/prise-en-main?id=la-composition-d39une-page
+/docs/fr/prise-en-main?id=la-composition-d39une-page
 
 **Rendu dans la doc**
 
-Pour en savoir plus, aller voir la [composition d'une page](/docs/users/fr/prise-en-main?id=la-composition-d39une-page)
+Pour en savoir plus, aller voir la [composition d'une page](/docs/fr/prise-en-main?id=la-composition-d39une-page)
 
 
 Copyleft

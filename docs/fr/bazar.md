@@ -1,6 +1,6 @@
 # Bazar : des bases de données coopératives dans YesWiki
 
-> Bazar permet **la création et la gestion de bases de données** pour structurer des contenus et faciliter leur manipulation par les usagers. La page "bases de données" (BazaR) est accessible via la roue crantée en haut à droite du menu.
+Bazar permet **la création et la gestion de bases de données** pour structurer des contenus et faciliter leur manipulation par les usagers. La page "bases de données" (BazaR) est accessible via la roue crantée en haut à droite du menu.
 
 ## Introduction - Principe de fonctionnement
 Bazar utilise des formulaires qui permettent deux choses :
@@ -123,7 +123,7 @@ L'adresse (_url_) de cette page est déterminée automatiquement à partir du ti
 
 #### Fabriquer un titre à partir de 2 champs
 Il est possible d'utiliser un titre combiné : par exemple : "champ prénom + champ nom".
-Pour cela utiliser le champ de type **[Titre automatique](/docs/users/fr/bazar?id=titre-automatique)** 
+Pour cela utiliser le champ de type **[Titre automatique](/docs/fr/bazar?id=titre-automatique)** 
 
 ### Texte court
 Un champs de texte qui permet la saisie de quelques mots.
@@ -167,7 +167,7 @@ Ce type de champs permet de saisir une adresse électronique. YesWiki effectue a
 
 ### Sélectionner 
 Un champ de ce type permet de proposer à l'utilisateur une liste fermée de choix. Les choix possibles seront présentés sous forme d'une liste déroulante.
-En outre, l'utilisation de ce type de champ permet d'avoir recours à des [facettes](/docs/users/fr/bazar.md#afficher-des-filtres-facettes) pour filtrer parmi les fiches remplies.
+En outre, l'utilisation de ce type de champ permet d'avoir recours à des [facettes](/docs/fr/bazar.md#afficher-des-filtres-facettes) pour filtrer parmi les fiches remplies.
 Avec "Sélectionner", l'utilisateurice ne pourra choisir qu'un choix parmi la liste.
 
 En premier lieu ce type de champs nécessite de pouvoir énumérer les différentes valeurs possibles. 
@@ -267,8 +267,8 @@ Le formulaire auteur pourra contenir un champ liste des fiches liées afin d'aff
 Le formulaire lié est celui qui contient la référence au formulaire courant (via une liste déroulante, des cases à cocher ou des boutons radio) 
 - **Query** : Ce paramètre permet de n'afficher qu'une partie des fiches liées. 
 Il est facultatif, par défaut, toutes les fiches liées s'afficheront.
-La syntaxe du paramètre query est la même que dans bazar liste - voir [afficher une partie des données - query](/docs/users/fr/bazar?id=afficher-une-partie-des-donn%c3%a9es-query)
-- **Params de l'action** : permet l'ordre d'affichage des fiches liées. Par défaut elles sont triées par ordre alphabétique croissant sur le champ titre.On peut modifier le champ de référence pour le tri ainsi que l'ordre de tri - voir [ordre et champ](/docs/users/fr/bazar?id=ordre-et-champ)
+La syntaxe du paramètre query est la même que dans bazar liste - voir [afficher une partie des données - query](/docs/fr/bazar?id=afficher-une-partie-des-donn%c3%a9es-query)
+- **Params de l'action** : permet l'ordre d'affichage des fiches liées. Par défaut elles sont triées par ordre alphabétique croissant sur le champ titre.On peut modifier le champ de référence pour le tri ainsi que l'ordre de tri - voir [ordre et champ](/docs/fr/bazar?id=ordre-et-champ)
  On notera que les deux paramètres sont séparés par un espace.
 - **Nombre de fiches à afficher** vous pouvez préciser ici le nombre de fiches liées à afficher 
 - **Template de restitution** Par défaut, les fiches liées s'afficheront sous forme de liste en accordéon. Pour utiliser un autre template saisir dans cette zone le nom du template, par exemple :  *trombinoscope.tpl.html*
@@ -284,7 +284,7 @@ Vous pouvez également y ajouter du texte : par exemple mettre un tiret entre le
 !> Si vous utilisez un titre automatique, il faudra supprimer le champ bf_titre créé par défaut. 
 
 ### Custom 
-Ce champ sera utile pour les développeurs qui ont recours à un champ custom. Plus de détails (dans la section développeurs)[/docs/users/fr/dev?id=custom-bazar-field]
+Ce champ sera utile pour les développeurs qui ont recours à un champ custom. Plus de détails (dans la section développeurs)[/docs/fr/dev?id=custom-bazar-field]
 
 ### Navigation par onglet /Passage à l'onglet suivant
 Il est possible de découper le formulaire en plusieurs onglets pour rendre le formulaire plus lisible.

@@ -41,14 +41,14 @@ class WakkaFormatter__ extends YesWikiFormatter
         }
         $this->wiki->addJavascriptFile('javascripts/vendor/datatables-full/jquery.dataTables.min.js');
         $this->wiki->addCSSFile('styles/vendor/datatables-full/dataTables.bootstrap.min.css');
-        $table = "<table class=\"table".(!empty($tableclass) ? ' '.$tableclass: ' table-striped table-bordered')."\" $tableclass >\n";
         // suppression de [|xxxx et de |]
         $thing = preg_replace("/^\[\|(.*)$/m", '', $thing);
         $thing = trim(preg_replace("/\|\]/m", '', $thing));
-
+        
         // recuperation de chaque portion commencant par | et finissant par |
         preg_match_all('/(^(?:!([^\|]*)!)?\|.*\|$)/Ums', $thing, $rows);
-
+        
+        $table = "<table class=\"table".(!empty($tableclass) ? ' '.$tableclass: ' table-condensed table-striped')."\" $tableclass >\n";
         //analyse de chaque ligne
         foreach ($rows[0] as $row) {
             $table .= $this->parsetablerow($row);

@@ -19,7 +19,7 @@ in the setup/ subdirectory. They're used by the web-based installer/updater, but
 should really just access the YesWiki directory itself, and it will (or at least should)
 work perfectly.
 
-Detailed instructions are available at http://yeswiki.net/wakka.php?wiki=DocumentationInstallation (in French).
+Detailed instructions are available at https://yeswiki.net/?DocumentationInstallation (in French).
 
 ## Installation through Docker
 

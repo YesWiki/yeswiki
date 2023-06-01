@@ -13,21 +13,21 @@ Vous avez là un récap des menus et pages spéciales du wiki.
 C'est ici que vous pouvez indiquer "qui a le droit de faire quoi sur quelle page".
 Il faut être identifié comme administrateurice pour visionner et modifier les informations de cet espace.
 
-[Voir la rubrique dédiée](/docs/users/fr/admin?id=g%c3%a9rer-les-droits)
+[Voir la rubrique dédiée](/docs/fr/admin?id=g%c3%a9rer-les-droits)
 
 **Utilisateurs et groupes**
 
 Ici vous visualisez les comptes utilisateurices créés et vous pouvez les organiser en "groupes".
 Il faut être identifié comme administrateurice pour visionner et modifier les informations de cet espace.
 
-[Voir la rubrique dédiée](/docs/users/fr/admin?id=gestion-des-droits-par-utilisateurice-ou-par-groupe)
+[Voir la rubrique dédiée](/docs/fr/admin?id=gestion-des-droits-par-utilisateurice-ou-par-groupe)
 
 **Look**
 
 C'est par là que vous personnalisez le squelette et l'esthétique de votre wiki.
 Il faut être identifié comme administrateurice pour visionner et modifier les informations de cet espace.
 
-[Voir la rubrique dédiée](/docs/users/fr/admin?id=g%c3%a9rer-le-look)
+[Voir la rubrique dédiée](/docs/fr/admin?id=g%c3%a9rer-le-look)
 
 
 **Mots clés**
@@ -168,7 +168,7 @@ La gestion vue jusque maintenant permet de gérer l'existant mais comment gérer
 
 ![image Droitaccesfichierconf.png (67.1kB)](images/M22GererLesAccesDesPagesNonEncoreExi_Droitaccesfichierconf_20220223100943_20220223091008.png)
 
-Pour le détail, voir la partie [droit d'accès de la page Fichier de configuration](docs/users/fr/admin?id=droit-d39accès)
+Pour le détail, voir la partie [droit d'accès de la page Fichier de configuration](docs/fr/admin?id=droit-d39accès)
 
 #### En ce qui concerne les fiches bazar
 
@@ -215,10 +215,10 @@ Ces opérations sont aussi réalisables pour les différents champs d'un formula
 
 ## Gérer le look
 L'onglet [Look](/?GererThemes)  accessible via le menu "Gestion du site" permet de :
- - [créer une configuration graphique personnalisée (variante de couleur et de police)](/docs/users/fr/admin?id=cr%c3%a9er-une-configuration-graphique-personnalis%c3%a9e)
- - [ajouter du code CSS personnalisé](/docs/users/fr/admin?id=ajouter-du-code-css-personnalis%c3%a9)
- - [visualiser/modifier le thème graphique affecté à chaque page](/docs/users/fr/admin?id=visualisermodifier-le-th%c3%a8me-graphique-affect%c3%a9-%c3%a0-chaque-page-de-votre-wiki)
- - [modifier le thème par défaut](/docs/users/fr/admin.md#configuration-graphique-par-d%C3%A9faut)
+ - [créer une configuration graphique personnalisée (variante de couleur et de police)](/docs/fr/admin?id=cr%c3%a9er-une-configuration-graphique-personnalis%c3%a9e)
+ - [ajouter du code CSS personnalisé](/docs/fr/admin?id=ajouter-du-code-css-personnalis%c3%a9)
+ - [visualiser/modifier le thème graphique affecté à chaque page](/docs/fr/admin?id=visualisermodifier-le-th%c3%a8me-graphique-affect%c3%a9-%c3%a0-chaque-page-de-votre-wiki)
+ - [modifier le thème par défaut](/docs/fr/admin.md#configuration-graphique-par-d%C3%A9faut)
 
 ### Créer une configuration graphique personnalisée
 Le thème Margot permet de définir des variantes de couleur pour votre wiki : [Configuration graphique](/?LookWiki)
@@ -450,7 +450,7 @@ _Tiens, ce matin, en me baladant sur un de mes YesWiki j'ai découvert que j'ava
 Il peut être impossible de se connecter au wiki (la roue crantée n'apparaît pas). Ceci peut être contourné en utilisant ce lien sans afficher les pages spéciales avec l'url : https://www.example.com/?PageLogin/iframe
 Toutefois, si la page n'existe pas encore, alors il faut tenter : https://www.example.com/?PageLogin/editiframe pour simuler la création de la page ce qui fera apparaître la page de connexion.
 
-#### Utiliser les paramètres de contrôle d'accès via le wakka config ou la page ["Fichier de conf"](/docs/users/fr/admin?id=droit-d39accès)
+#### Utiliser les paramètres de contrôle d'accès via le wakka config ou la page ["Fichier de conf"](/docs/fr/admin?id=droit-d39accès)
 
 1. A partir du fichier wakka.config.php accessible via FTP, il est possible :
 
@@ -465,8 +465,8 @@ Les paramètres ajoutables au wakkaconfig
     'use\_nospam' => true, // ne pas toucher pour l'instant 'use\_alerte' => true,
     'use\_captcha' => true,
 
-2. A partir de la page ["Fichier de conf"](/docs/users/fr/admin?id=droit-d39accès)
-Les paramètres ci-dessus sont aussi activables de manière simple via la page de gestion du site, onglet "fichier de conf". Pour le détail, voir la partie ["Fichier de configuration>droits d'accès"](/docs/users/fr/admin?id=droit-d39accès) 
+2. A partir de la page ["Fichier de conf"](/docs/fr/admin?id=droit-d39accès)
+Les paramètres ci-dessus sont aussi activables de manière simple via la page de gestion du site, onglet "fichier de conf". Pour le détail, voir la partie ["Fichier de configuration>droits d'accès"](/docs/fr/admin?id=droit-d39accès) 
 
 #### Pour les ajouts dans une page isolée
 
@@ -554,7 +554,7 @@ Pour bien configurer, on peut mettre dans le paramètre Fuseau horaire du site l
  - **Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false) - htmlPurifierActivated**
  
 ### Droit d'accès
-Cette partie permet de modifier les droits d'accès pour les pages à venir. Pour voir d'autres façons de gérer les droits d'accès, voir le paragraphe [Gérer les droits d'accès des pages non encore existantes](/docs/users/fr/admin?id=g%c3%a9rer-les-droits-d39acc%c3%a8s-des-pages-non-encore-existantes)
+Cette partie permet de modifier les droits d'accès pour les pages à venir. Pour voir d'autres façons de gérer les droits d'accès, voir le paragraphe [Gérer les droits d'accès des pages non encore existantes](/docs/fr/admin?id=g%c3%a9rer-les-droits-d39acc%c3%a8s-des-pages-non-encore-existantes)
  - **Droits de lecture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_read_acl** : par défaut, les pages à venir sont ouvertes à tous en droit de lecture grâce au symbole `*`.Pour limiter la lecture aux personnes ayant créé un compte, il faut mettre le symbole `+`. Pour limiter à un groupe d'utilisateurs en particulier, mettre le symbole `@` et le nom du groupe accolé. Par exemple, pour le groupe admin : `@admins`.
  - **Droits d'écriture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_write_acl** : par défaut, les pages à venir sont ouvertes à tous en droit d'écriture. 
  - **Droits de commentaires par défaut des pages (comments-closed pour fermés, * pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_comment_acl** :

@@ -1,19 +1,25 @@
 # Installer un YesWiki
 
-?> Si vous avez **déjà un yeswiki en ligne**, passez directement à la section [prise en main](/docs/users/fr/prise-en-main.md)
+?> **Si vous avez déjà un yeswiki en ligne**, passez directement à la section [prise en main](/docs/fr/prise-en-main.md)
 
-!> Vous aurez besoin d'un accès FTP à votre serveur pour réaliser les actions décrites dans cette page
+?> **Si vous n'avez pas d'hébergement web**, ni les connaissances techniques pour installer vous même YesWiki, vous pouvez aussi héberger votre wiki chez un hébergeur libre de confiance, comme [la ferme de l'association YesWiki](https://ferme.yeswiki.net), ou un collectif membre des [](https://chatons.org).
 
-## Installation / Mise à jour
-
+## Installation
 
 ### Installer son wiki par FTP
+
 #### Pré-requis
-*   Vous avez téléchargé la dernière version de YesWiki sur le site [yeswiki.net](http://yeswiki.net/wakka.php?wiki=TelechargemenT)
-*   Vous disposez d'un espace d'hébergement avec PHP version >= 7.3) et MariaDB > 10 ou MYSQL >= 5.6 (⚠️ la version 5.5 ne supporte pas la recherche fulltext) et des droits d'accès à l'hébergement (codes FTP et MYSQL) > **Attention : [voir les instructions spécifiques pour l'installation sur les hébergements Free.fr](https://yeswiki.net/?DocumentationInstallationFree)**
-*   Vous disposez d'un logiciel pour faire du FTP (le client FTP libre [FileZilla](http://filezilla-project.org/) par exemple)
-*   _En cas de bug pour les mises à jour sur certains systèmes très légers, vérifiez la présence des librairies php-stype, php-curl, php-filter, php-gd, php-iconv, php-json, php-mbstring, php-mysqli, php-pcre et php-zip ; la liste à jour des extensions est décrite dans [le fichier composer.json](https://github.com/YesWiki/yeswiki/blob/doryphore/composer.json)._
-*   _Les extensions peuvent nécessiter des librairies supplémentaires. Vérifiez le contenu du fichier README.md de chacune (ex.: [ferme](https://github.com/YesWiki/yeswiki-extension-ferme/blob/doryphore/README.md), [lms](https://github.com/YesWiki/yeswiki-extension-lms/blob/doryphore/README.md))._
+* Vous avez téléchargé la dernière version de YesWiki sur le site [yeswiki.net](https://yeswiki.net/?TelechargemenT)
+* Vous disposez d'un espace d'hébergement :
+  * avec une version de `PHP` supérieure à 7.3 (8.2 recommandée)
+  * une base de données SQL `MariaDB` > 10 ou `MYSQL` >= 5.6 (⚠️ la version 5.5 ne supporte pas la recherche fulltext)
+  * des droits d'accès à l'hébergement (codes FTP et MYSQL) 
+  * un logiciel sur votre ordinateur pour faire du FTP (le client FTP libre [FileZilla](https://filezilla-project.org/) par exemple)
+
+**Suppléments d'information :**
+* [Voir les instructions spécifiques pour l'installation sur les hébergements Free.fr](https://yeswiki.net/?DocumentationInstallationFree)
+* En cas de bug pour les mises à jour sur certains systèmes très légers, vérifiez la présence des librairies `php-curl`, `php-filter`, `php-gd`, `php-iconv`, `php-json`, `php-mbstring`, `php-mysqli`, `php-pcre` et `php-zip` ; la liste à jour des extensions est décrite dans [le fichier composer.json](https://github.com/YesWiki/yeswiki/blob/doryphore/composer.json).
+* Les extensions peuvent nécessiter des librairies supplémentaires. Vérifiez le contenu du fichier README.md de chacune (ex.: [ferme](https://github.com/YesWiki/yeswiki-extension-ferme/blob/doryphore/README.md), [lms](https://github.com/YesWiki/yeswiki-extension-lms/blob/doryphore/README.md)).
 
 #### Préparation
 *   Décompressez le fichier téléchargé sur votre disque dur et renommez-le à votre convenance (par exemple monYeswiki)
@@ -22,7 +28,7 @@
 *   Dans la mesure du possible, évitez les identifiants avec "tiret" (genre moi-moi) car cela crée parfois une erreur lors de l'installation
 *   Notez le nom de votre base de données et les identifiants et mot de passe d'accès à celle-ci.
 
-#### Upload par FTP
+#### Téléversement par FTP
 *   Connectez-vous à votre espace personnel par FTP (filezilla par exemple)
 *   Glissez et déposez votre dossier local (monYeswiki) sur votre espace personnel
 *   Sur certains hébergements, il faut attribuer des droits d'accès en écriture au dossier principal du wiki (monYeswiki) : mettre les droits d'accès en écriture pour tous (chmod 777), en faisant clic droit sur le dossier puis "droits d'accès au dossier" dans filezilla)
@@ -48,9 +54,65 @@ Si tout a bien fonctionné, vous en avez confirmation.
 Le fichier de configuration est écrit. C'est terminé.  
 
 <iframe sandbox="allow-same-origin allow-scripts" src="https://video.coop.tools/videos/embed/30cc117a-db65-4539-8547-749f52008212" allowfullscreen="" tc-textcontent="true" data-tc-id="w-0.9930878636773818" width="100%" height="315" frameborder="0"></iframe>
-  
 
-### Paramétrer son wakka.config.php 
+### Autres méthodes d'installation
+
+Si vous souhaitez installer avec Docker ou avoir des informations plus techniques, rendez-vous dans la [rubrique Développement](/docs/fr/dev.md#installer-yeswiki-dans-un-environnement-de-développement-local).
+
+## Sécuriser YesWiki
+
+### Empêcher l'indexation de son wiki
+Il faut agir sur le fichier robot.txt qui se trouve à la racine de votre wiki.  
+  
+Editez ce fichier et remplacez  
+`User-agent: \*`
+par  
+`User-Agent: \*    
+Disallow: /`
+
+ATTENTION - Pour une efficacité réelle (étant donné que google ne respecte plus trop le robot.txt, il convient de rajouter dans wakka.config.php, cette ligne :
+
+`'meta' => array('robots' => 'noindex, nofollow'),`
+
+Vous pouvez aussi réaliser cette opération via l'onglet fichier de conf de la page gestion du site de votre wiki (Balises meta pour l'indexation web).
+
+### Protéger le dossier private
+
+Il existe un dossier `private` pouvant contenir des backups et **des fichiers ne devant pas être accessible depuis une adresse url publique**.  
+Par défaut, si votre hébergement ou serveur web utilise Apache et autorise les fichiers `.htaccess`, ce dossier est déjà protégé.  
+Si vous utilisez Apache mais que votre dossier `private` est tout de même accessible, il vous faudrait rajouter la directive `AllowOverride All` dans votre configuration par default d'Apache.  
+
+Pour des serveurs nginx, il va falloir rajouter une ligne dans la configuration de votre site:
+
+```nginx
+location ~* /(.*/)?private/ {
+    deny all;
+    return 403;
+}
+```
+
+!> Attention : tous les dossiers `private` n'importe où dans l'arborescence seront inaccessibles publiquement.
+
+### Mettre une herse sur son wiki 
+Il est parfois nécessaire de protéger l'accès de tout un wiki (par exemple pour transformer tout un wiki en intranet).
+En bref, lors de l'accès au wiki protégé, un pop-up s'ouvre et demande les login et mot de passe. Une fois cette porte franchie, vous êtes sur un wiki que vous pouvez laisser en écriture ouverte à tous. Ce qui facilite considérablement la contribution de chacun.
+
+La procédure pour placer une herse n'est pas propre à Yeswiki et dépend de votre serveur. Voici une ressource pour en savoir plus : https://ouvaton.coop/proteger-un-repertoire-par-htaccess-et-htpasswd/
+
+## Personnaliser YesWiki
+
+### Ajouter les extensions 
+YesWiki peut s'enrichir en fonctionnalités en activant des extensions. Pour chaque extension, une documentation est proposée. 
+Les extensions s'activent via la page gestion du site (onglet mise à jour / extensions) accessible via la roue crantée.
+Il faut être connecté et membre du groupe admin pour pouvoir agir sur cette page. 
+
+Cette interface d'administration permet : 
+ * d'installer des extensions
+ * de mettre à jour des extensions si une nouvelle version est disponible
+ * de désinstaller des extensions
+
+### Le fichier de configuration
+
 Une fois le YesWiki créé / installé, on peut aller éditer le fichier **wakka.config.php**, se trouvant à la racine du dossier du YesWiki, accessible par FTP. Le fichier de configuration déclare un tableau avec des valeurs pour chaque élément de configuration.  
   
 **Voici le contenu du fichier de configuration par défaut**, voir les commentaires en fin de ligne pour le détail de chaque élément de configuration :  
@@ -88,12 +150,8 @@ Une fois le YesWiki créé / installé, on peut aller éditer le fichier **wakka
       'preview_before_save' => '0',
       'allow_raw_html' => '1', // autorise le html
     );
-    
-  
 
-#### Les éléments que vous pouvez rajouter sur wakka.config.php
-
-##### Changer les droits de lecture et d'écriture par défaut
+#### Changer les droits de lecture et d'écriture par défaut
 
 Par défaut, les pages de votre wiki sont visibles et éditables par tout visiteur. Pour limiter la lecture et l'écriture aux seuls administrateurices par exemple, il faut changer les lignes  
 
@@ -106,7 +164,7 @@ en
       'default_write_acl' => '@admins', // droits d'écriture par défaut des pages
       'default_read_acl' => '@admins', // droits de lecture par défaut des pages
 
-##### Changer l'url de votre wiki
+#### Changer l'url de votre wiki
 
 Mon wiki se trouve à l'adresse suivante [http://site-coop.net/Louise,](http://site-coop.net/Louise,) je souhaiterais qu'il se nomme maintenant [http://site-coop.net/Mathieu](http://site-coop.net/Mathieu)  
 \- Via ftp, il faut changer le nom du dossier Louise en le nommant Mathieu  
@@ -124,13 +182,9 @@ et tester si tout fonctionne dans votre navigateur (attention les majuscules et 
   
 Pour tous les détails sur les droits d'accès : [https://yeswiki.net/?DocumentationDroitsDAcces](https://yeswiki.net/?DocumentationDroitsDAcces)  
 
-##### Envoyer un mail aux @admins à chaque nouvel encodage de fiche
+##### Envoyer un mail aux @admins à chaque nouvel ajout de fiche
 
     'BAZ_ENVOI_MAIL_ADMIN' => true
-
-#### Lutter contre le spam
-
-[voir la rubrique dédiée](https://testing.yeswiki.net/doc/?doc#/docs/users/fr/admin?id=lutter-contre-le-spams)
 
 ##### Changer le thème par défaut de votre wiki
     
@@ -178,15 +232,28 @@ Par défaut il prend cette image, et si une image est présente dans la page (mi
     
     'opengraph_image' => 'files/nomdelimage.jpg',
   
-* * *
+## Maintenance
 
-#### Réparer les wikis qui n'envoient pas les mails 
-Concerne
-*   Codes utiles /raw...
-*   Hors yeswiki
+### Mettre à jour YesWiki
+La mise à jour du wiki s'effectue via la page gestion du site (onglet mise à jour / extensions) accessible via la roue crantée.
+Il faut être connecté et membre du groupe admin pour pouvoir agir sur cette page. 
+Sur celle-ci, vous trouvez : 
+ * La version du Wiki : doryphore XXX
+ * La version disponible sur le dépot : doryphore YYY
+ * et un bouton permettant d'installer la nouvelle version si les deux versions diffèrent ou de réinstaller la version actuelle. 
+ * Notes de versions : un lien qui vous emmène vers le changelog de la nouvelle version (présentation des ajouts de cette version)
 
-La réponse sur certains hébergements, l'envoi de mail par défaut ne marche pas , il faut créer un compte smtp  
-et donc rajouter dans le fichier wakka.config.php les paramètres suivants :
+Sur cette page, vous pouvez aussi installer, mettre à jour ou désinstaller les thèmes ou extensions de votre wiki. 
+Un message d'alerte vous informe si une nouvelle version d'un thème ou d'une extension existe. 
+
+### Lutter contre le spam
+
+[voir la rubrique dédiée](/docs/fr/admin?id=lutter-contre-le-spams)
+
+### Réparer les wikis qui n'envoient pas les mails 
+
+Sur certains hébergements, l'envoi de mail par défaut ne marche pas , il faut créer un compte smtp  
+et donc rajouter dans le fichier `wakka.config.php` les paramètres suivants :
 
       'contact\_mail\_func' => 'smtp',
       'contact\_smtp\_host' => 'ssl://<mon serveur smtp>:465',
@@ -213,8 +280,6 @@ ou
     'contact\_smtp\_user' => 'monmail@pourmoncomptesendinblue.com',
     'contact\_smtp\_pass' => '<ma cle smtp>',
 
-  
-
 #### avec gmail
 
 Gmail le fait mais avec une limite d'envoi journalière et souvent un blocage de sécurité à lever via un paramètre : plus d'infos ici  
@@ -224,52 +289,9 @@ Gmail le fait mais avec une limite d'envoi journalière et souvent un blocage de
   
 Autre piste possible, achetez un nom de domaine chez gandi et utilisez le smtp lié.
 
-### Mettre à jour son wiki
-La mise à jour du wiki s'effectue via la page gestion du site (onglet mise à jour / extensions) accessible via la roue crantée.
-Il faut être connecté et membre du groupe admin pour pouvoir agir sur cette page. 
-Sur celle-ci, vous trouvez : 
- * La version du Wiki : doryphore XXX
- * La version disponible sur le dépot : doryphore YYY
- * et un bouton permettant d'installer la nouvelle version si les deux versions diffèrent ou de réinstaller la version actuelle. 
- * Notes de versions : un lien qui vous emmène vers le changelog de la nouvelle version (présentation des ajouts de cette version)
-
-Sur cette page, vous pouvez aussi installer, mettre à jour ou désinstaller les thèmes ou extensions de votre wiki. 
-Un message d'alerte vous informe si une nouvelle version d'un thème ou d'une extension existe. 
-
-## Activer les extensions 
-Yeswiki peut s'enrichir en fonctionnalités en activant des extensions. 
-Celles-ci s'activent via la page gestion du site (onglet mise à jour / extensions) accessible via la roue crantée.
-Il faut être connecté et membre du groupe admin pour pouvoir agir sur cette page. 
-
-Pour chaque extension, une documentation est proposée. 
-Vous pouvez : 
- * l'installer
- * la mettre à jour si une nouvelle version est disponible
- * la désinstaller
 
 
-## Empêcher l'indexation de son wiki
-Il faut agir sur le fichier robot.txt qui se trouve à la racine de votre wiki.  
-  
-Editez ce fichier et remplacez  
-`User-agent: \*`
-par  
-`User-Agent: \*    
-Disallow: /`
-
-ATTENTION - Pour une efficacité réelle (étant donné que google ne respecte plus trop le robot.txt, il convient de rajouter dans wakka.config.php, cette ligne :
-
-`'meta' => array('robots' => 'noindex, nofollow'),`
-
-Vous pouvez aussi réaliser cette opération via l'onglet fichier de conf de la page gestion du site de votre wiki (Balises meta pour l'indexation web).
-
-## Mettre une herse sur son wiki 
-Il est parfois nécessaire de protéger l'accès de tout un wiki (par exemple pour transformer tout un wiki en intranet).
-En bref, lors de l'accès au wiki protégé, un pop-up s'ouvre et demande les login et mot de passe. Une fois cette porte franchie, vous êtes sur un wiki que vous pouvez laisser en écriture ouverte à tous. Ce qui facilite considérablement la contribution de chacun.
-
-La procédure pour placer une herse n'est pas propre à Yeswiki et dépend de votre serveur. Voici une ressource pour en savoir plus : https://ouvaton.coop/proteger-un-repertoire-par-htaccess-et-htpasswd/
-
-## Migrer son wiki 
+### Migrer son wiki 
 Il est possible de déplacer son wiki d'un serveur à un autre. 
 Pour cela, il vous faudra :  
 *   obtenir des gestionnaires de votre wiki
@@ -315,7 +337,7 @@ Il va falloir adapter quelques points puis sauver
 'base_url' =>'mettreicivotrenomdedomaine/?',
 ```
 
-## Réparer la structure de vos bases de données
+### Réparer la structure de vos bases de données
 
 _Lorsque la structure de vos bases de données n'est pas correcte, des soucis peuvent survenir en particulier lors de la création ou la modification des listes._
 

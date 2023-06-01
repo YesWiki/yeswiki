@@ -12,17 +12,17 @@ window.$docsify = {
   relativePath: true,
   auto2top: true,
   alias: {
-    '.*/_sidebar.md': `/docs/users/${locale}/_sidebar.md`, // set default _sidebar.md to locale language
-    '.*/_navbar.md': `/docs/users/${locale}/_navbar.md` // set default _navbar.md to locale language
+    '.*/_sidebar.md': `/docs/${locale}/_sidebar.md`, // set default _sidebar.md to locale language
+    '.*/_navbar.md': `/docs/${locale}/_navbar.md` // set default _navbar.md to locale language
   },
   search: {
     // maxAge: 0, // when developing, override cache by setting maxAge to 0. Also you need to clear your localStorage
     placeholder: {
-      '/docs/users/fr/': 'Rechercher...',
+      '/docs/fr/': 'Rechercher...',
       '/': 'Search...' // default to English
     },
     noData: {
-      '/docs/users/fr/': 'Pas de résultats',
+      '/docs/fr/': 'Pas de résultats',
       '/': 'No results' // default to English
     },
     namespace: 'yeswiki-doc',
@@ -30,12 +30,12 @@ window.$docsify = {
   },
   copyCode: {
     buttonText: {
-      '/docs/users/fr/': 'Copier le code',
+      '/docs/fr/': 'Copier le code',
       '/': 'Copy to clipboard' // default to English
     },
     errorText: 'Error',
     successText: {
-      '/docs/users/fr/': 'Copié',
+      '/docs/fr/': 'Copié',
       '/': 'Copied' // default to English
     }
   },
@@ -90,7 +90,7 @@ window.$docsify = {
       hook.ready(() => {
         // Redirect properly to home page, otherwise we stay on "#/" hash
         // and it cause some translations issues
-        if (location.hash == '#/') location.hash = `/docs/users/${locale}/README`
+        if (location.hash == '#/') location.hash = `/docs/${locale}/README`
 
         // adds backdrop for mobile search menu
         const backdrop = document.createElement('div')

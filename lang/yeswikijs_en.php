@@ -68,21 +68,21 @@ return [
     "ADMIN_BACKUPS_CONFIRMATION_TO_DELETE" => "Following files will be deleted by the backup.\n".
         "Could you confirm their deletion by checking the box below.\n<pre>{files}</pre>",
     "ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING" => "Not possible to start backup because a backup is currently in course.\n".
-        "Follow <a href=\"{helpBaseUrl}#/docs/users/fr/admin?id=erreur-de-sauvegarde-sauvegarde-déjà-en-cours\" title=\"Help to restart a backup\" target=\"blank\">this help</a> to fix that.",
+        "Follow <a href=\"{helpBaseUrl}#/docs/fr/admin?id=erreur-de-sauvegarde-sauvegarde-déjà-en-cours\" title=\"Help to restart a backup\" target=\"blank\">this help</a> to fix that.",
     "ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE" => "Not possible to start backup because the website is hibernated.\n".
-        "Follow <a href=\"{helpBaseUrl}#/docs/users/fr/admin?id=erreur-de-sauvegarde-site-en-hibernation\" title=\"Help to go out hibernation\" target=\"blank\">this help</a> to go out.",
+        "Follow <a href=\"{helpBaseUrl}#/docs/fr/admin?id=erreur-de-sauvegarde-site-en-hibernation\" title=\"Help to go out hibernation\" target=\"blank\">this help</a> to go out.",
     "ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE" => "Not possible to start backup because the backups' folder is not writable.\n".
-        "Follow <a href=\"{helpBaseUrl}#/docs/users/fr/admin?id=erreur-de-sauvegarde-dossier-de-sauvegarde-non-accessible-en-%c3%a9criture\" title=\"Help to configure backup folder\" target=\"blank\">this help</a> to configure backup folder.",
+        "Follow <a href=\"{helpBaseUrl}#/docs/fr/admin?id=erreur-de-sauvegarde-dossier-de-sauvegarde-non-accessible-en-%c3%a9criture\" title=\"Help to configure backup folder\" target=\"blank\">this help</a> to configure backup folder.",
     "ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING" => "Update started (please wait)",
     "ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC" => "Not possible to start backup \n" .
         "because it is not possible to launch console commands on this server ".
-        "(<a href=\"{helpBaseUrl}#/docs/users/fr/admin?id=erreur-de-sauvegarde-lancement-impossible-des-commandes-console-sur-le-serveur\" title=\"See help on console\" target=\"blank\">see help</a>).",
+        "(<a href=\"{helpBaseUrl}#/docs/fr/admin?id=erreur-de-sauvegarde-lancement-impossible-des-commandes-console-sur-le-serveur\" title=\"See help on console\" target=\"blank\">see help</a>).",
     "ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE" => "Not possible to start backup because backups folder is reachable on the internet.\n".
-        "Follow <a href=\"{helpBaseUrl}#/docs/users/fr/admin?id=erreur-de-sauvegarde-dossier-de-sauvegarde-accessible-sur-internet\" title=\"Help to restrict access to backup folder\" target=\"blank\">this help</a> to restrict access to backup folder.",
+        "Follow <a href=\"{helpBaseUrl}#/docs/fr/admin?id=erreur-de-sauvegarde-dossier-de-sauvegarde-accessible-sur-internet\" title=\"Help to restrict access to backup folder\" target=\"blank\">this help</a> to restrict access to backup folder.",
     "ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE" => "Not possible to start backup \n".
         "There is not enough free space available for a new backup.",
     "ADMIN_BACKUPS_START_BACKUP_NOT_DB" => "Not better way to start backup \n".
-        "Database export program ('mysqldump') was not found (<a href=\"{helpBaseUrl}#/docs/users/fr/admin?id=erreur-de-sauvegarde-mysqldump-inaccessible\" title=\"Help on mysqldump\" target=\"blank\">see help</a>).",
+        "Database export program ('mysqldump') was not found (<a href=\"{helpBaseUrl}#/docs/fr/admin?id=erreur-de-sauvegarde-mysqldump-inaccessible\" title=\"Help on mysqldump\" target=\"blank\">see help</a>).",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Changes done by this revision",

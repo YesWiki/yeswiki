@@ -1,7 +1,7 @@
 Prise en main
 ============
 
-> Tout ce que vous devez savoir pour bien débuter avec YesWiki !
+Tout ce que vous devez savoir pour bien débuter avec YesWiki !
 
 Editer une page
 ---------------
