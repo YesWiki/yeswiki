@@ -625,6 +625,10 @@ Pour exclure des fichiers de la sauvegarde, il faut écrire le nom du dossier ou
     /home/user/Web/tools
 Dans cet exemple d'arborescence, pour exclure le dossier "tools" , il faut écrire : tools
 
+### Télécharger une sauvegarde
+Sur la page [`GererSauvegardes`](?GererSauvegardes ':ignore') , la liste des sauvegarde est disponible au téléchargement.
+Pour une sauvegarde complète,  le dossier archive contient les fichiers et la base de données (fichier sql présent dans le dossier private\backups )
+
 ### Résoudre les problèmes de sauvegarde : 
 Quelques pistes si vous rencontrez des erreurs lors de la sauvegarde :
  - **sauvegarde déjà en cours**
