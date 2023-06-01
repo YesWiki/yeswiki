@@ -3,6 +3,9 @@
     <a title="{{ _t('TEMPLATE_EDIT_THIS_PAGE') ~ ' ' ~ page }}" href="{{ linkedit }}" class="link-edit">
       <i class="fa fa-pencil-alt"></i><span>{{ _t('TEMPLATE_EDIT_THIS_PAGE') }}</span>
     </a>
+    <a title="{{ _t('Voir les fichiers attachés à la page') }}" href="{{ url({handler:'filemanager'}) }}" class="link-filemanager">
+      <i class="fa fa-file"></i>
+    </a>
   {% endif %}
   {% if linkdeletepage is defined %}
     <a href="{{ linkdeletepage }}" class="link-deletepage modalbox" title="{{ _t('TEMPLATE_DELETE_PAGE') ~ ' ' ~ page }}">
