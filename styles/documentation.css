@@ -121,7 +121,7 @@ nav.app-nav {
     margin: 0;
     display: inline-flex;
 }
-.app-nav li a {
+.app-nav li, .app-nav li a {
     height: var(--nav-height);
     display: flex;
     align-items: center;
