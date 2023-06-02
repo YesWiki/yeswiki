@@ -203,7 +203,7 @@ return [
         ."{{col size=\"3\"}}\nTexte de la colonne 2 à changer par la suite\n{{end elem=\"col\"}}\n"
         ."{{col size=\"3\"}}\nTexte de la colonne 3 à changer par la suite\n{{end elem=\"col\"}}\n"
         ."{{col size=\"3\"}}\nTexte de la colonne 4 à changer par la suite\n{{end elem=\"col\"}}\n",
-    'AB_templates_nav_label' => 'Onglets',
+    'AB_templates_nav_label' => 'Onglets avec des pages différentes',
     'AB_templates_nav_description' => 'Générer un menu',
     'AB_templates_nav_hint' => 'LeNomDeVotrePage doit être le nom de la page dans laquelle vous mettrez cette action. Pensez à coller le code obtenu dans chacune des pages des onglets.',
     'AB_templates_nav_links_label' => 'Liens vers vos pages wiki',
@@ -293,8 +293,8 @@ return [
     'AB_templates_section_visible_owner' => 'Propriétaire de la page',
     'AB_templates_section_visible_admins' => 'Admins seulement',
     'AB_templates_section_visible_no_container' => 'Ne pas mettre de conteneur',
-    'AB_templates_tabs_label' => 'Onglets dans la page',
-    'AB_templates_tabs_description' => 'Générer des onglets',
+    'AB_templates_tabs_label' => 'Onglets avec des parties de la page',
+    'AB_templates_tabs_description' => 'Générer des onglets avec des parties de la page',
     'AB_templates_tabs_hint' => 'Chaque contenu d\'onglet se trouve dans une action <code>{{tab}}Contenu de l\'onglet.{{end elem="tab"}}</code>',
     'AB_templates_tabs_wrappedcontentexample' => "{{tab}}\n".
         "Contenu de l'onglet 1\n".
