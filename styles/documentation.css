@@ -67,6 +67,7 @@ body {
 }
 .markdown-section pre[data-lang^="yeswiki"] + .code-preview {
     margin-top: -1.7rem;
+    padding: 1em 0;
 }
 .markdown-section iframe {
     border: 5px solid #f8f8f8;
