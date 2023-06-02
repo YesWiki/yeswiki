@@ -224,14 +224,14 @@ L'onglet [Look](/?GererThemes)  accessible via le menu "Gestion du site" permet 
  - [modifier le thème par défaut](/docs/fr/admin.md#configuration-graphique-par-d%C3%A9faut)
 
 ### Créer une configuration graphique personnalisée
-Le thème Margot permet de définir des variantes de couleur pour votre wiki : [Configuration graphique](/?LookWiki)
+Le thème Margot permet de définir des variantes de couleur pour votre wiki , via menu roue crantée/ Apparance
 L'interface vous permet de modifier les couleurs utilisées dans le thème : couleur primaire, couleur secondaire 1, couleur secondaire 2, couleur de texte, couleur neutre , couleur claire (fond) - puis de nommer cette configuration custom et la sauvegarder.
 La configuration personnalisée pourra être appliquée à l'ensemble du site ou à certaines pages selon vote besoin.
 
 #### Astuce 
-Si vous choisissez une police différente, 2 solutions possibles :
-- installer l'extension **fontautoinstall** qui permet d'ajouter sur votre serveur la police choisie (l'extension doit être activée avant de créer la configuration graphique)
-- copier vos polices sur votre serveur dans le dossier /custom/fonts puis modifier PageCss pour ajouter le chargement des polices
+Pour modifier la police de caractères par défaut, 2 solutions possibles :
+- choisir parmi la liste de police de caractère disponibles dans l'outil de configuration graphique (la police sélectionnée sera automatiquement téléchargée)
+- ou copier vos polices sur votre serveur dans le dossier /custom/fonts puis modifier PageCss pour ajouter le chargement des polices
 
 Exemple
 ```
