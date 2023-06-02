@@ -31,8 +31,22 @@ Deux solutions en cas de soucis :
 La plupart des mises en forme standard (gras, encadré, titre...) sont accessible via les boutons de l'éditeur. Certaines mise en forme sont également accessibles dans le menu `Composants`.
 En voici quelqu'unes supplémentaires
 
+### Markdown arrive dans YesWiki
+Vous pouvez utiliser les syntaxes mardown suivante
+```yeswiki preview
+**Gras**
+*Italique*
+~~Souligné~~
+# Titre 1
+## Titre 2
+### Titre 3
+#### Titre 4
+##### Titre 5
+[Lien](https://yeswiki.net)
+```
+
 #### Listes
-```yeswiki
+```yeswiki preview
  - Liste à puce niveau 1
  - Puce niveau 1
    - Puce niveau 2
