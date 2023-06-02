@@ -6,7 +6,9 @@
 
 **Accueil de gestion du site**
 
-Vous avez là un récap des menus et pages spéciales du wiki.
+Vous avez là un récap des menus et pages spéciales du wiki. Vous y trouverez aussi le lien vers la page d'aide.
+Si vous avez utilisé des mots clés pour qualifier vos pages wiki vous en trouvez un récap ici.
+Il faut être identifié comme administrateurice modifier les informations de cet espace.
 
 **Droits d'accès**
 
@@ -15,13 +17,6 @@ Il faut être identifié comme administrateurice pour visionner et modifier les 
 
 [Voir la rubrique dédiée](/docs/fr/admin?id=g%c3%a9rer-les-droits)
 
-**Utilisateurs et groupes**
-
-Ici vous visualisez les comptes utilisateurices créés et vous pouvez les organiser en "groupes".
-Il faut être identifié comme administrateurice pour visionner et modifier les informations de cet espace.
-
-[Voir la rubrique dédiée](/docs/fr/admin?id=gestion-des-droits-par-utilisateurice-ou-par-groupe)
-
 **Look**
 
 C'est par là que vous personnalisez le squelette et l'esthétique de votre wiki.
@@ -29,26 +24,34 @@ Il faut être identifié comme administrateurice pour visionner et modifier les 
 
 [Voir la rubrique dédiée](/docs/fr/admin?id=g%c3%a9rer-le-look)
 
+**Utilisateurices**
 
-**Mots clés**
-
-Si vous avez utilisé des mots clés pour qualifier vos pages wiki vous en trouvez un récap ici.
+Ici vous visualisez les comptes utilisateurices créés et vous pouvez les organiser en "groupes".
 Il faut être identifié comme administrateurice pour visionner et modifier les informations de cet espace.
+Vous pourrez un utilisateur et l'associer à un groupe, il suffira de lui envoyer ses identifiants et de lui proposer d'aller sur mot de passe perdu pour qu'il finalise la création de son compte.
+
+[Voir la rubrique dédiée](/docs/fr/admin?id=gestion-des-droits-par-utilisateurice-ou-par-groupe)
 
 **Fichier de conf**
 
 Certains éléments de configuration peuvent être personnalisés ici : accès par défaut, sécurité, indexation ...
 Il faut être identifié comme administrateurice pour visionner et modifier les informations de cet espace.
 
-**Mises à jour / extensions**
+**MAJ / extensions**
 
 Vous pouvez voir ici la version du wiki et s'il s'agit de la toute dernière.
-Si vous êtes identifié.e comme administrateurice vous pouvez faire les mises à jour.
+Si vous êtes identifié.e comme administrateurice vous pouvez faire les mises à jour, une procédure de sauvegarde sera lancée
 
 Astuces :
  - mettre à jour YesWiki mais aussi les thèmes et les tools (extensions)
  - une mise à jour se fait en plusieurs étapes : il est nécessaire de cliquer sur "Finaliser la mise à jour (lancer les actions de post-installation)" puis sur "Mettre à jour les pages de gestion"
+ - n'hésitez pas à **mettre à jour les pages de gestion**
 
+**Sauvegardes**
+
+Vous pourrez ici gérer les sauvegardes de votre wiki
+
+[Voir la rubrique dédiée](/docs/fr/admin?id=sauvegardes)
 
 ## Gérer les droits
 ### Introduction aux droits d'accès
