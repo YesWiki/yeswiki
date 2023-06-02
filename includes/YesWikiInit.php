@@ -228,7 +228,7 @@ class Init
             'disable_wiki_links' => false,
             'allowed_methods_in_iframe' => ['iframe','editiframe','bazariframe','render'],
             'revisionscount' => 30,
-            'timezone' => 'GMT', // Only used if not set in wakka.config.php nor in php.ini
+            'timezone' => 'Europe/Paris', // Only used if not set in wakka.config.php nor in php.ini
             'root_page' => 'PagePrincipale', // backup root_page if deleted from wakka.config.php
             'wakka_name' => '', // backup wakka_name if deleted from wakka.config.php
             'htmlPurifierActivated' => false, // TODO ectoplasme set to true
@@ -254,7 +254,7 @@ class Init
         $wakkaConfig = $this->array_merge_recursive_distinct($yeswikiDefaultConfig, $wakkaConfig);
 
         // give a default timezone to avoid error
-        if ($wakkaConfig['timezone'] != $yeswikiDefaultConfig['timezone']) {
+        if (!empty($wakkaConfig['timezone']) && $wakkaConfig['timezone'] != $yeswikiDefaultConfig['timezone']) {
             date_default_timezone_set($wakkaConfig['timezone']);
         } elseif (!ini_get('date.timezone')) {
             date_default_timezone_set($yeswikiDefaultConfig['timezone']);
