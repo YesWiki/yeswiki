@@ -109,17 +109,27 @@ Les icones du site de [Font awesome](https://fontawesome.com/v5/search?o=r&m=fre
 [85%]
 ```
 
-Créer une page / insérer un lien
+Ajouter un lien au texte sélectionné
 -------------------------------
+Sélectionnez un texte destiné à devenir un lien puis cliquez sur le petit chaînon dans la barre d'édition, vous pourrez ainsi
+* ajouter un lien vers un site web
+* ajouter un lien vers une page de votre wiki qui apparaitra par autocomplétion NB. si la page n'existe pas, elle sera créée
+* indiquer un texte qui s'affichera au survol du lien
+* proposer que le lien s'ouvre
+ * dans l'onglet courant
+ * dans un nouvel onglet
+ * sous forme de fenêtre modale (pop up)
 
-!> **Règle de nommage** : le nom des pages YesWiki ne doivent contenir ni espaces ni caractères spéciaux. Pour les rendre lisible, le mieux est d'utiliser des tirets `nom-de-ma-page`, ou des majuscules `NomDeLaPage` (c'est ce qu'on appelle un `ChatMot`)
-
-**Deux méthodes sont à votre disposition pour créer une page**
-
-1. Lors de l'édition d'une page, cliquez sur l'icône pour ajouter un lien. Dans la fenêtre qui s'ouvre, inscrivez le nom de votre nouvelle page yeswiki, cette dernière  sera créée automatiquement
-2. Allez directement vers l'URL de la page que vous souhaitez créer (exemple : https://yeswiki.net/?MaNouvellePage). Comme elle n'existe pas encore on vous proposera de la créer.
+Créer une page
+-------------
+**Trois méthodes sont à votre disposition pour créer une page**
+1. Cliquez sur le petit bouton plus de la barre d'édition, entrez le nom de la page, le texte du lien. Si une page au nom similaire existe déjà, un petit message d'alerte vous l'indiquera.
+2. Lors de l'édition d'une page, cliquez sur l'icône pour ajouter un lien. Dans la fenêtre qui s'ouvre, inscrivez le nom de votre nouvelle page yeswiki, cette dernière  sera créée automatiquement.
+3. Allez directement vers l'URL de la page que vous souhaitez créer (exemple : https://yeswiki.net/?MaNouvellePage). Comme elle n'existe pas encore on vous proposera de la créer.
 
 > Astuce 1: une fois ma nouvelle page créée, je peux enlever le lien qui y mène sans que la page disparaisse pour autant. Je peux retrouver mes pages dans la roue crantée en haut à droite > Tableau de bord. Une bonne manière de cacher des pages ;-)
+
+!> **Règle de nommage** : le nom des pages YesWiki ne doivent contenir ni espaces ni caractères spéciaux. Pour les rendre lisible, le mieux est d'utiliser des tirets `nom-de-ma-page`, ou des majuscules `NomDeLaPage` (c'est ce qu'on appelle un `ChatMot`)
 
 > Astuce 2: YesWiki va interpréter tout ChatMot comme une nouvelle page. Si on veut écrire un ChatMot sans créer de nouvelle page (par exemple pour écrire YesWiki sans créer de lien), on l'encadre de double guillemets:
 
