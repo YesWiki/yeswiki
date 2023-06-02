@@ -30,6 +30,25 @@ class ArchiveService
         'private/backups/info.json',
         'private/backups/*.log'
     ];
+
+    // In order to prevent including subwikis or other folders that have nothing
+    // to do with the current wiki, specify the folders to includes
+    public const FOLDERS_TO_INCLUDE = [
+        'actions',
+        'files',
+        'lang',
+        'setup',
+        'formatters',
+        'styles',
+        'includes',
+        'custom',
+        'themes',
+        'tools',
+        'docs',
+        'javascripts',
+        'vendor',
+    ];
+
     public const DEFAULT_PARAMS_TO_ANONYMIZE = [
         'mysql_host' => '',
         'mysql_database' => '',
@@ -634,11 +653,17 @@ class ArchiveService
         $pathToArchive = getcwd();
         $pathToArchive = preg_replace("/(\/|\\\\)$/", "", $pathToArchive);
         $dirs = [$pathToArchive];
-        $dirnamePathLen = strlen($pathToArchive) ;
+        $dirnamePathLen = strlen($pathToArchive);
+
+        $whitelistedRootFolders = array_map(function($folder) use ($pathToArchive) {
+            return $pathToArchive . "/" . $folder;
+        }, self::FOLDERS_TO_INCLUDE);
+
         // open file
         $zip = new ZipArchive();
         $resource = $zip->open($zipPath, ZipArchive::CREATE |  ZipArchive::OVERWRITE);
-        if ($resource === true) {
+        if ($resource !== true) return;
+
             if (!$onlyDb) {
                 while (count($dirs)) {
                     $dir = current($dirs);
@@ -665,9 +690,11 @@ class ArchiveService
                                     if (empty($baseDirName) && $file == "wakka.config.php") {
                                         $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($dataFiles, $hideConfigValuesParams));
                                     } elseif (is_file($localName)) {
-                                        $zip->addFile($localName, $relativeName);
-                                    } elseif (is_dir($localName)) {
+                                    $zip->addFile($localName, $relativeName); } elseif (is_dir($localName)) {
+                                    if ($this->shouldIncludeFolder($localName, $whitelistedRootFolders)) {
                                         $dirs[] = $dir.DIRECTORY_SEPARATOR.$file;
+                                    }
+
                                         if ($this->checkIfNeedStop($inputFile)) {
                                             $zip->unchangeAll();
                                             $this->writeOutput($output, "== Closing archive after undoing all changes ==", true, $outputFile);
@@ -683,6 +710,7 @@ class ArchiveService
                     array_shift($dirs);
                 }
             }
+
             if (!empty($sqlContent)) {
                 $this->writeOutput($output, "Adding SQL file", true, $outputFile);
                 $zip->addEmptyDir(self::PRIVATE_FOLDER_NAME_IN_ZIP);
@@ -702,6 +730,7 @@ class ArchiveService
                     self::PRIVATE_FOLDER_README_DEFAULT_CONTENT
                 );
             }
+
             $this->writeOutput($output, "Generating zip file", true, $outputFile);
             // register cancel callback if available
             if (method_exists($zip, 'registerCancelCallback')) {
@@ -718,6 +747,12 @@ class ArchiveService
             }
             $zip->close();
         }
+
+    protected function shouldIncludeFolder($path, $whitelistedRootFolders)
+    {
+        return count(array_filter($whitelistedRootFolders, function($folder) use($path) {
+            return strpos($path, $folder) !== false;
+        })) > 0;
     }
 
     /**
