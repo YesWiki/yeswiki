@@ -1,6 +1,6 @@
 # Administrer son wiki
 
-> Dans cette partie, vous trouverez de nombreuses données pour gérer votre site, notamment la gestion des personnes utilisant le wiki et des droits d'accès, la personnalisation graphique, la gestion du contenu indésirable et les options avancées, la sécurisation du site.
+Dans cette partie, vous trouverez de nombreuses données pour gérer votre site, notamment la gestion des personnes utilisant le wiki et des droits d'accès, la personnalisation graphique, la gestion du contenu indésirable et les options avancées, la sécurisation du site.
 
 ## Gestion du site : plan de l'administration
 
@@ -632,7 +632,7 @@ Dans cet exemple d'arborescence, pour exclure le dossier "tools" , il faut écri
 Sur la page [`GererSauvegardes`](?GererSauvegardes ':ignore') , la liste des sauvegarde est disponible au téléchargement.
 Pour une sauvegarde complète,  le dossier archive contient les fichiers et la base de données (fichier sql présent dans le dossier private\backups )
 
-### Résoudre les problèmes de sauvegarde : 
+### Résoudre les problèmes de sauvegarde
 Quelques pistes si vous rencontrez des erreurs lors de la sauvegarde :
  - **sauvegarde déjà en cours**
 Si lors de la sauvegarde, vous avec un message comme quoi "une sauvegarde est déjà en cours", alors que vous êtes sûrs que ça n'est pas le cas, ceci peut être dû à un arrêt brutal d'une sauvegarde avant que YesWiki est pu remettre à jour le statut du site.
