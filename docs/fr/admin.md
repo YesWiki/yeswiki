@@ -217,7 +217,7 @@ Ces opérations sont aussi réalisables pour les différents champs d'un formula
 (à trouver ou écrire ET à déplacer pour alléger cette section)
 
 ## Gérer le look
-L'onglet [Look](?GererThemes)  accessible via le menu "Gestion du site" permet de :
+L'onglet [Look](?GererThemes ':ignore')  accessible via le menu "Gestion du site" permet de :
  - [créer une configuration graphique personnalisée (variante de couleur et de police)](/docs/fr/admin?id=cr%c3%a9er-une-configuration-graphique-personnalis%c3%a9e)
  - [ajouter du code CSS personnalisé](/docs/fr/admin?id=ajouter-du-code-css-personnalis%c3%a9)
  - [visualiser/modifier le thème graphique affecté à chaque page](/docs/fr/admin?id=visualisermodifier-le-th%c3%a8me-graphique-affect%c3%a9-%c3%a0-chaque-page-de-votre-wiki)
