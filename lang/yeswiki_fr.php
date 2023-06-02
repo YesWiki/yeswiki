@@ -52,7 +52,7 @@ return [
     'NO_TOOL_AVAILABLE' => 'Aucun outil n\'est disponible ou actif',
     'LIST_OF_ACTIVE_TOOLS' => 'Liste des extensions actives',
 
-    // actions/AdminBackupsAtion.php
+    // actions/AdminBackupsAction.php
     'ADMIN_BACKUPS_TITLE' => 'Gestion des sauvegardes',
     'ADMIN_BACKUPS_ARCHIVES_LIST' => 'Liste des sauvegardes',
     'ADMIN_BACKUPS_ARCHIVE_FILENAME' => 'Nom du fichier',
@@ -71,6 +71,14 @@ return [
     'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Fichiers exclus',
     'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Fichiers supplémentaires',
     'ADMIN_BACKUPS_CONFIRM_DELETE_FILES' => 'Confirmer la suppression des fichiers',
+    'ADMIN_BACKUPS_MESSAGE_HIBERNATION' => 'le wiki est en hibernation.',
+    'ADMIN_BACKUPS_MESSAGE_WRITABLE_FILE' => 'soucis de droits d\'écriture des fichiers.',
+    'ADMIN_BACKUPS_MESSAGE_CLI_NOT_WORKING' => 'appels en ligne de commande impossible.',
+    'ADMIN_BACKUPS_MESSAGE_PRIVATE_FOLDER_IS_PUBLIC' => 'le dossier private est accessible publiquement.',
+    'ADMIN_BACKUPS_MESSAGE_NO_SPACE' => 'il n\'y a pas assez d\'espace disque disponible.',
+    'ADMIN_BACKUPS_MESSAGE_DB_NOT_ARCHIVABLE' => 'la base de données n\'est pas sauvegardable.',
+    'ADMIN_BACKUPS_MESSAGE_ARCHIVE_CANNOT_BE_DONE' => 'Archivage impossible car',
+    'ADMIN_BACKUPS_MESSAGE_SEE_DOC' => 'Voir la documentation sur les sauvegardes',
 
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Pages ayant un lien vers',

@@ -70,6 +70,14 @@ return [
     'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Excluded files',
     'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Extra files',
     'ADMIN_BACKUPS_CONFIRM_DELETE_FILES' => 'Confirm delete files',
+    'ADMIN_BACKUPS_MESSAGE_HIBERNATION' => 'wiki is in hibernate mode.',
+    'ADMIN_BACKUPS_MESSAGE_WRITABLE_FILE' => 'problem with unwritable folders.',
+    'ADMIN_BACKUPS_MESSAGE_CLI_NOT_WORKING' => 'no command line interface.',
+    'ADMIN_BACKUPS_MESSAGE_PRIVATE_FOLDER_IS_PUBLIC' => 'the "private" folder is public.',
+    'ADMIN_BACKUPS_MESSAGE_NO_SPACE' => 'not enought disk space.',
+    'ADMIN_BACKUPS_MESSAGE_DB_NOT_ARCHIVABLE' => 'database not dumpable.',
+    'ADMIN_BACKUPS_MESSAGE_ARCHIVE_CANNOT_BE_DONE' => 'Backup is not available because',
+    'ADMIN_BACKUPS_MESSAGE_SEE_DOC' => 'See the documentation about backups',
 
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Pages with link to',
