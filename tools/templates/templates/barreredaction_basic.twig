@@ -3,8 +3,10 @@
     <a title="{{ _t('TEMPLATE_EDIT_THIS_PAGE') ~ ' ' ~ page }}" href="{{ linkedit }}" class="link-edit">
       <i class="fa fa-pencil-alt"></i><span>{{ _t('TEMPLATE_EDIT_THIS_PAGE') }}</span>
     </a>
-    <a title="{{ _t('Voir les fichiers attachés à la page') }}" href="{{ url({handler:'filemanager'}) }}" class="link-filemanager">
-      <i class="fa fa-file"></i>
+  {% endif %}
+  {% if userIsAdminOrOwner %}
+    <a title="{{ _t('TEMPLATES_SEE_ATTACHED_FILES') }}" href="{{ url({handler:'filemanager'}) }}" class="link-filemanager">
+      <i class="fa fa-folder-open"></i>
     </a>
   {% endif %}
   {% if linkdeletepage is defined %}

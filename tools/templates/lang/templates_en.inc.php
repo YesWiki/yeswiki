@@ -49,6 +49,7 @@ return [
     'TEMPLATE_CLASSIC_SLIDESHOW' => 'Classic diaporama',
     'TEMPLATE_SEE_SHARING_OPTIONS' => 'Share this page',
     'TEMPLATE_SHARE' => 'Share',
+    'TEMPLATES_SEE_ATTACHED_FILES' => 'See files attached to page',
 
     // action/diaporama
     // 'DIAPORAMA_PAGE_PARAM_MISSING' => 'Action diaporama : param&ecirc;tre "page" obligatoire.',

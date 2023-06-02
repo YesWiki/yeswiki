@@ -54,7 +54,7 @@ return [
     'TEMPLATE_CLICK_TO_CLOSE_COMMENTS' => 'Cliquer pour fermer les commentaires',
     'TEMPLATE_FOR_CONNECTED_PEOPLE' => 'Pour les personnes connectées',
     'TEMPLATE_FOR_MEMBERS_OF_GROUP' => 'Pour les membres du groupe',
-
+    'TEMPLATES_SEE_ATTACHED_FILES' => 'Voir les fichiers attachés à la page',
 
     // action/diaporama
     'DIAPORAMA_PAGE_PARAM_MISSING' => 'Action diaporama : param&ecirc;tre "page" obligatoire.',

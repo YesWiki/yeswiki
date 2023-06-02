@@ -84,7 +84,9 @@ if ((!empty($user) || $this->HasAccess("write")) && $this->method != "revisions"
         }
     }
     $barreredactionelements['linkshare'] = $this->href("share", $page);
-
+    $barreredactionelements['userIsOwner'] = $this->UserIsOwner($page);
+    $barreredactionelements['userIsAdmin'] = $this->UserIsAdmin();
+    $barreredactionelements['userIsAdminOrOwner'] = $this->UserIsAdmin() || $this->UserIsOwner($page);
     $favoritesManager = $this->services->get(FavoritesManager::class);
     if (!empty($user) && $favoritesManager->areFavoritesActivated()) {
         $barreredactionelements['currentuser'] = $user['name'];
