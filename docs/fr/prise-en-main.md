@@ -289,10 +289,11 @@ Quelques fonctionnalités potentiellement intéressantes :
 
 Mise en forme propose 6 possibilités :
 
-* Étiquette : mettre en avant un texte au travers d’une couleur de fond.
-* Onglets : créer des onglets dans une page, permet d’obtenir des sous menus horizontaux ou verticaux.
-* Encadré : encadrer un texte ou proposer un encadré qui se ferme quand on clique sur son titre.
-* Section : couteau suisse de mise en forme, permet d’encadrer un paragraphe, de lui adjoindre une couleur ou une image de fond et beaucoup d’autres combinaisons.
+* **Étiquette** : mettre en avant un texte au travers d’une couleur de fond.
+* **Onglets avec des parties d'une même page**, créer des onglets appelant divers paragraphes de votre page
+* **Onglet avec des pages différentes**, créer des onglets dans une page appelant diverses pages de votre wiki, permet d’obtenir des sous menus horizontaux ou verticaux. Utile pour proposer plusieurs affichages des résultats d'un formulaire
+* **Encadré** : encadrer un texte ou proposer un encadré qui se ferme quand on clique sur son titre.
+* **Section** : couteau suisse de mise en forme, permet d’encadrer un paragraphe, de lui adjoindre une couleur ou une image de fond et beaucoup d’autres combinaisons.
   * Quelques fonctionnalités potentiellement intéressantes :
     * créer des aplats de couleurs sous du texte
     * encadrer un paragraphe
@@ -301,7 +302,7 @@ Mise en forme propose 6 possibilités :
     * Animer votre section (rebonds, déformation...)
     * Réserver la lecture de cette section à un groupe
     * Afficher une image sous le texte qui restera fixe lors du scroll
-* Afficher des encadrés en accordéon : déclinaison d’encadré, accordéon permet de chaîner plusieurs encadrés, quand vous ouvrez un encadré, ça ferme les autres.
+* **Afficher des encadrés en accordéon** : déclinaison d’encadré, accordéon permet de chaîner plusieurs encadrés, quand vous ouvrez un encadré, ça ferme les autres.
   * cette action ne bénéficie pas encore d'aide au codage. Pour ajouter des éléments (panels) à votre accordéon, il suffira d'ajouter des panels (code suivant) avant {{end elem="accordion"}}. Chaque panel pourra être personnalisé en cliquant sur le crayon en marge du code correspondant.
 ``` yeswiki
 {{panel title="Titre 2"}}
@@ -309,7 +310,7 @@ Texte du panneau 2 à changer par la suite
 {{end elem="panel"}}
 ```
 
-* Afficher en plusieurs colonnes : permet de créer plusieurs colonnes dans une page ou une partie de page, très utile pour des mises en page avancées.
+* **Afficher plusieurs colonnes** : permet de créer plusieurs colonnes dans une page ou une partie de page, très utile pour des mises en page avancées.
   * cette action ne bénificie pas encore d'aide au codage. Pour ajouter ou supprimer des colonnes à votre tableau, il suffira d'ajouter ou supprimer le code suivant) avant {{end elem="grid"}}. 
 ``` yeswiki
 {{col size="3"}}
