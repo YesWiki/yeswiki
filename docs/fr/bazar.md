@@ -208,12 +208,13 @@ Certains affichages des résultats (calendrier, agenda, etc.) nécessitent la pr
 ### Géolocalisation de l'adresse
 ![image champ_zone.png (24.5kB)](images/DocBazarChampGeo_champ_geoloc.png)
 
-Ce champ n'est pas un vrai champ. Il s'agit, de fait, d'un outil qui permet de transformer une adresse saisie par un humain en un jeu de coordonnées (longitude et latitude).  
+Ce champ est un outil qui permet de transformer une adresse saisie en un jeu de coordonnées (longitude et latitude).  
 Son comportement est donc un peu différent de ce qu'on trouve dans les autres champs.  
 
 Notamment, pour trouver les coordonnées d'une adresse, il faut à YesWiki des informations sur celle-ci. Votre formulaire doit donc obligatoirement contenir au moins un des champs suivants (une bonne pratique étant d'en avoir plusieurs, voire tous).  
  -   un champ dont l'identifiant unique est « bf\_adresse ». S'il n'existe pas, il est d'ailleurs inséré automatiquement lors de la création du champ « géolocalisation de l'adresse » ;
  -  un champ dont l'identifiant unique est « bf\_ville » ;
+ -  un champ dont l'identifiant unique est « bf\_codepostal » ;
  -  un champ dont l'identifiant unique est « bf\_pays ».
 
 Il est indispensable d'avoir un champ de ce type dans votre formulaire si vous souhaitez afficher vos résultats sous forme de carte.
@@ -221,8 +222,10 @@ Il est indispensable d'avoir un champ de ce type dans votre formulaire si vous s
 #### Paramètres du type de champs « géolocalisation de l'adresse » :
  - **Nom Champ Latitude** Sauf besoin précis, conservez la valeur par défaut qui est « bf\_latitude ». 
  - **Nom Champ Longitude** Sauf besoin précis, conservez la valeur par défaut qui est « bf\_longitude ».
- - **Champ code postal pour l'autocomplétion** : s'assurer que le formulaire possède un champ texte court pour le code postal et noter son nom (ex. : bf_code_postal). Ainsi quand vous allez taper un code postal puis sélectionner la ville associée, la géolocalisation sera automatiquement mise à jour. 
+ - **Champ code postal pour l'autocomplétion** : s'assurer que le formulaire possède un champ texte court pour le code postal et noter son nom (ex. : bf_codepostal). Ainsi quand vous allez taper un code postal puis sélectionner la ville associée, la géolocalisation sera automatiquement mise à jour. 
  - **Champ ville pour l'autocomplétion** : s'assurer que le formulaire possède un champ texte court pour la ville et noter son nom (ex. : bf_ville). Ainsi quand vous allez taper un nom de ville puis sélectionner le code postal associé, la géolocalisation sera automatiquement mise à jour. 
+
+ - Vous pourrez activer la possibilité de se géolocaliser depuis la position de l'ordi ou du GSM
 
 ### Inscription liste de diffusion
 TODO
@@ -242,7 +245,6 @@ Ce champ est utile pour créer un compte utilisateur à partir des informations 
 - Groupes où ajouter l'utilisateur
 
 Tips : ce champ peut être associé à l'option **Config droits d'accès** afin de permettre à ce nouvel utilisateur de modifier sa propre fiche par la suite.
-
 
 ### Config droits d'accès
 Ce champ n'est pas un vrai champ. Il s'agit d'un outil qui permet de définir les droits d'accès qui seront affectés à chacune des fiches du formulaire. Vous pouvez donc ainsi préciser quelles catégories d'utilisateurs (Tout le monde, Utilisateurs identifiés, Membres du groupe admins, ou Propriétaire de la fiche et admins) peuvent lire, saisir ou modifier ou encore commenter des fiches de votre formulaire.
@@ -318,6 +320,8 @@ Ce champ permet de réaliser un calcul mathématique à l'enregistrement de la f
 #### Paramètres spécifiques du champ calcul
 - **Texte d'affichage** : permet d'ajouter un symbole après la valeur si nécessaire - exemple : ```{value}€```
 - **Formule** : pour faire référence à un nombre saisi dans le formulaire utilisez son identifant - exemple : ```bf_nombre*15```
+
+### Réactions
 
 
 ### Onglet : code wiki
