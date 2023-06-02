@@ -22,9 +22,6 @@ let appParams = {
             selectedArchivesToDelete: [],
             savefiles: true,
             savedatabase: true,
-            excludedfiles: [],
-            extrafiles: [],
-            showAdvancedParams: false,
             currentArchiveUid: "",
             archiveMessage: "",
             archiveMessageClass: {
@@ -249,20 +246,6 @@ let appParams = {
                 'params[savefiles]': this.savefiles,
                 'params[savedatabase]': this.savedatabase
             }
-            if (this.extrafiles.length > 0){
-                this.extrafiles.forEach((filename,idx)=>{
-                    formObject[`params[extrafiles][${idx}]`] = filename
-                })
-            } else {
-                formObject[`params[extrafiles]`] = ''
-            }
-            if (this.excludedfiles.length > 0){
-                this.excludedfiles.forEach((filename,idx)=>{
-                    formObject[`params[excludedfiles][${idx}]`] = filename
-                })
-            } else {
-                formObject[`params[excludedfiles]`] = ''
-            }
             formObject.callAsync = this.callAsync
             let options = {}
             if (!this.callAsync){
@@ -479,36 +462,6 @@ let appParams = {
                 this.savefiles = false
                 this.savedatabase = false
             }
-        },
-        removeExtraFile(file){
-            this.extrafiles = this.extrafiles.filter(e => e != file)
-        },
-        updateExtraFiles(){
-            let newVal = this.$refs.newExtraFile.value
-            let newFiles = newVal.split(',')
-            if (newFiles.length > 0){
-                for (let index = 0; index < newFiles.length; index++) {
-                    if (!this.extrafiles.includes(newFiles[index])){
-                        this.extrafiles.push(newFiles[index])
-                    }
-                }
-            }
-            this.$refs.newExtraFile.value = ""
-        },
-        removeExcludedFile(file){
-            this.excludedfiles = this.excludedfiles.filter(e => e != file)
-        },
-        updateExcludedFiles(){
-            let newVal = this.$refs.newExcludedFile.value
-            let newFiles = newVal.split(',')
-            if (newFiles.length > 0){
-                for (let index = 0; index < newFiles.length; index++) {
-                    if (!this.excludedfiles.includes(newFiles[index])){
-                        this.excludedfiles.push(newFiles[index])
-                    }
-                }
-            }
-            this.$refs.newExcludedFile.value = ""
         },
         async forceUpdate() {
             return await this.fetch(wiki.url(`?api/archives/forcedUpdateToken/`))

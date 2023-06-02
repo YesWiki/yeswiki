@@ -175,18 +175,13 @@ class ArchiveController extends YesWikiController
     ): string {
         $savefiles = (isset($params['savefiles']) && in_array($params['savefiles'], [1,"1",true,'true'], true));
         $savedatabase = (isset($params['savedatabase']) && in_array($params['savedatabase'], [1,"1",true,'true'], true));
-        $extrafiles = (isset($params['extrafiles']) && is_array($params['extrafiles'])) ? $params['extrafiles'] : [];
-        $excludedfiles = (isset($params['excludedfiles']) && is_array($params['excludedfiles'])) ? $params['excludedfiles'] : [];
-
-        $extrafiles = array_filter($extrafiles, 'is_string');
-        $excludedfiles = array_filter($excludedfiles, 'is_string');
 
         return $this->archiveService->startArchive(
             $savefiles,
             $savedatabase,
-            $extrafiles,
-            $excludedfiles,
             $startAsync
         );
     }
+
+
 }

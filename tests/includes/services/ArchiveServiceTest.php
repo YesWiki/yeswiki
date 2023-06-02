@@ -33,8 +33,6 @@ class ArchiveServiceTest extends YesWikiTestCase
      * @covers ArchiveService::archive
      * @param bool $savefiles
      * @param bool $savedatabase
-     * @param array $extrafiles
-     * @param array $excludedfiles
      * @param string $locationSuffix
      * @param null|int $nbFiles
      * @param array $filesToFind
@@ -44,8 +42,6 @@ class ArchiveServiceTest extends YesWikiTestCase
     public function testArchive(
         bool $savefiles,
         bool $savedatabase,
-        array $extrafiles,
-        array $excludedfiles,
         string $locationSuffix,
         ?int $nbFiles,
         array $filesToFind,
@@ -56,9 +52,7 @@ class ArchiveServiceTest extends YesWikiTestCase
         $location = $services['archiveService']->archive(
             $output,
             $savefiles,
-            $savedatabase,
-            $extrafiles,
-            $excludedfiles,
+            $savedatabase
         );
         $data = $this->getDataFromLocation($location, $services['wiki']);
         $error = $data['error'] ?? "";
@@ -81,48 +75,9 @@ class ArchiveServiceTest extends YesWikiTestCase
     public function archiveProvider()
     {
         return [
-            'archive only wakka.config.php' => [
-                'savefiles' => true,
-                'savedatabase' => false,
-                'extrafiles' => ['wakka.config.php'],
-                'excludedfiles' => ['*','.*','/var/tmp','../../*','c:\\'],
-                'locationSuffix' => "ARCHIVE_ONLY_FILES_SUFFIX",
-                'nbFiles' => 1,
-                'filesToFind' => ['wakka.config.php'],
-                'wakkaContent' => [
-                    'archive' => [
-                        'extrafiles' => ['wakka.config.php'],
-                        'excludedfiles' => ['*','.*'],
-                    ],
-                ]
-            ],
-            'archive only wakka.config.php with database' => [
-                'savefiles' => true,
-                'savedatabase' => true,
-                'extrafiles' => ['wakka.config.php'],
-                'excludedfiles' => ['*','.*'],
-                'locationSuffix' => "ARCHIVE_SUFFIX",
-                'nbFiles' => 6,
-                'filesToFind' => [
-                    'wakka.config.php',
-                    'private',
-                    'private/backups',
-                    'private/backups/.htaccess',
-                    'private/backups/README.md',
-                    'private/backups/content.sql',
-                ],
-                'wakkaContent' => [
-                    'archive' => [
-                        'extrafiles' => ['wakka.config.php'],
-                        'excludedfiles' => ['*','.*'],
-                    ],
-                ]
-            ],
             'archive only database' => [
                 'savefiles' => false,
                 'savedatabase' => true,
-                'extrafiles' => [],
-                'excludedfiles' => [],
                 'locationSuffix' => "ARCHIVE_ONLY_DATABASE_SUFFIX",
                 'nbFiles' => 5,
                 'filesToFind' => [
@@ -133,22 +88,7 @@ class ArchiveServiceTest extends YesWikiTestCase
                     'private/backups/content.sql'
                 ],
                 'wakkaContent' => null
-            ],
-            'archive only wakka.config.php and tools/bazar/config.yaml' => [
-                'savefiles' => true,
-                'savedatabase' => false,
-                'extrafiles' => ['wakka.config.php','tools/bazar/config.yaml'],
-                'excludedfiles' => ['*','.*'],
-                'locationSuffix' => "ARCHIVE_ONLY_FILES_SUFFIX",
-                'nbFiles' => 4,
-                'filesToFind' => ['wakka.config.php','tools/bazar/config.yaml'],
-                'wakkaContent' => [
-                    'archive' => [
-                        'extrafiles' => ['wakka.config.php','tools/bazar/config.yaml'],
-                        'excludedfiles' => ['*','.*'],
-                    ],
-                ]
-            ],
+            ]
         ];
     }
 

@@ -65,9 +65,6 @@ return [
     'ADMIN_BACKUPS_START' => 'Empezar',
     'ADMIN_BACKUPS_STOP' => 'Parar',
     'ADMIN_BACKUPS_STOP_BACKUP' => 'Parar la copia de seguridad',
-    'ADMIN_BACKUPS_ADVANCED_PARAMS' => 'Configuración avanzada',
-    'ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES' => 'Archivos excluidos',
-    'ADMIN_BACKUPS_ADVANCED_EXTRA_FILES' => 'Archivos adicionales',
     'ADMIN_BACKUPS_CONFIRM_DELETE_FILES' => 'Confirmar la eliminación de archivos',
 
     // actions/backlinks.php

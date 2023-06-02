@@ -7,65 +7,28 @@
   <div class="well">
     <fieldset>
       <legend>{{ _t('ADMIN_BACKUPS_CREATE') }}</legend>
-      <div class="row">
-        <div class="col-md-6">
-          <div class="checkbox">
-            <label for="adminBackupsTypeFull">
-              <input type="radio" id="adminBackupsTypeFull" value="full" name="adminBackupsType" ref="adminBackupsTypeFull" 
-                @click="updateType" :checked="savefiles && savedatabase"/>
-              <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_FULL') }}</span>
-            </label>
-          </div>
-          <div class="checkbox">
-            <label for="adminBackupsTypeOnlyFiles">
-              <input type="radio" id="adminBackupsTypeOnlyFiles" value="only_files" name="adminBackupsType" ref="adminBackupsTypeOnlyFiles" 
-                @click="updateType" :checked="savefiles && !savedatabase"/>
-              <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES') }}</span>
-            </label>
-          </div>
-          <div class="checkbox">
-            <label for="adminBackupsTypeOnlyDb">
-              <input type="radio" id="adminBackupsTypeOnlyDb" value="only_db" name="adminBackupsType" ref="adminBackupsTypeOnlyDb"
-                @click="updateType" :checked="!savefiles && savedatabase"/>
-              <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES') }}</span>
-            </label>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <span @click="showAdvancedParams = !showAdvancedParams">
-            <input 
-              type="checkbox" 
-              name="advanced-params" 
-              value="1" 
-              :checked="showAdvancedParams">
-            <span>{{ _t('ADMIN_BACKUPS_ADVANCED_PARAMS') }}</span>
-          </span>
-          <div v-if="showAdvancedParams">
-              <strong>{{ _t('ADMIN_BACKUPS_ADVANCED_EXTRA_FILES') }}</strong>
-              <template v-for="file in extrafiles">
-                <div>
-                  <span v-html="file"></span>
-                  <button class="btn btn-xs btn-danger" @click="removeExtraFile(file)">
-                    <i class="fas fa-minus"></i>
-                  </button>
-                </div>
-              </template>
-              <input class="form-control input-sm" type="text" ref="newExtraFile" placeholder="{{ _t('ADMIN_BACKUPS_PLACEHOLDER_FILES') }}" 
-                  @change="updateExtraFiles"/>
-              <strong>{{ _t('ADMIN_BACKUPS_ADVANCED_EXCLUDED_FILES') }}</strong>
-              <template v-for="file in excludedfiles">
-                <div>
-                  <span v-html="file"></span>
-                  <button class="btn btn-xs btn-danger" @click="removeExcludedFile(file)">
-                    <i class="fas fa-minus"></i>
-                  </button>
-                </div>
-              </template>
-              <input class="form-control input-sm" type="text" ref="newExcludedFile" placeholder="{{ _t('ADMIN_BACKUPS_PLACEHOLDER_FILES') }}"
-                  @change="updateExcludedFiles"/>
-          </div>
-        </div>
+      <div class="checkbox">
+        <label for="adminBackupsTypeFull">
+          <input type="radio" id="adminBackupsTypeFull" value="full" name="adminBackupsType" ref="adminBackupsTypeFull"
+            @click="updateType" :checked="savefiles && savedatabase"/>
+          <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_FULL') }}</span>
+        </label>
       </div>
+      <div class="checkbox">
+        <label for="adminBackupsTypeOnlyFiles">
+          <input type="radio" id="adminBackupsTypeOnlyFiles" value="only_files" name="adminBackupsType" ref="adminBackupsTypeOnlyFiles"
+            @click="updateType" :checked="savefiles && !savedatabase"/>
+          <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES') }}</span>
+        </label>
+      </div>
+      <div class="checkbox">
+        <label for="adminBackupsTypeOnlyDb">
+          <input type="radio" id="adminBackupsTypeOnlyDb" value="only_db" name="adminBackupsType" ref="adminBackupsTypeOnlyDb"
+            @click="updateType" :checked="!savefiles && savedatabase"/>
+          <span>{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES') }}</span>
+        </label>
+      </div>
+
       <div class="archive-buttons">
         <button 
             v-if="currentArchiveUid.length == 0 || !archiving"

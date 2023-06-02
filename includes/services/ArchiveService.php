@@ -20,17 +20,6 @@ use ZipArchive;
 
 class ArchiveService
 {
-    public const DEFAULT_EXCLUDED_FILES = [
-        'node_modules',
-        'tools/*/node_modules',
-        '.git',
-        'tools/*/.git',
-        "cache/*",
-        'private/backups/*.zip',
-        'private/backups/info.json',
-        'private/backups/*.log'
-    ];
-
     // In order to prevent including subwikis or other folders that have nothing
     // to do with the current wiki, specify the folders to includes
     public const FOLDERS_TO_INCLUDE = [
@@ -61,8 +50,6 @@ class ArchiveService
     ];
     public const PARAMS_KEY_IN_WAKKA = 'archive';
     public const KEY_FOR_PRIVATE_FOLDER = 'privatePath';
-    public const KEY_FOR_EXTRAFILES = 'extrafiles';
-    public const KEY_FOR_EXCLUDEDFILES = 'excludedfiles';
     public const KEY_FOR_HIDE_CONFIG_VALUES = 'hideConfigValues';
     protected const DEFAULT_FOLDER_NAME_IN_TMP = "yeswiki_archive";
     public const ARCHIVE_SUFFIX = "_archive";
@@ -104,8 +91,6 @@ class ArchiveService
      * @param string|OutputInterface &$output
      * @param bool $savefiles
      * @param bool $savedatabase
-     * @param array $extrafiles
-     * @param array $excludedfiles
      * @param null|array $hideConfigValuesParams
      * @param string $uid
      * @throws Exception
@@ -114,8 +99,6 @@ class ArchiveService
         &$output,
         bool $savefiles = true,
         bool $savedatabase = true,
-        array $extrafiles = [],
-        array $excludedfiles = [],
         ?array $hideConfigValuesParams = null,
         string $uid = ""
     ) {
@@ -148,7 +131,7 @@ class ArchiveService
 
         $this->writeOutput($output, "=== Checking free space ===", true, $outputFile);
         try {
-            $this->assertEnoughtSpace($excludedfiles);
+            $this->assertEnoughtSpace();
         } catch (Throwable $th) {
             $this->writeOutput($output, "There is not enough free space.", true, $outputFile);
             $this->writeOutput($output, "=> {$th->getMessage()}", true, $outputFile);
@@ -172,17 +155,6 @@ class ArchiveService
             $fileSuffix = self::ARCHIVE_ONLY_FILES_SUFFIX;
         } else {
             $fileSuffix = self::ARCHIVE_SUFFIX;
-        }
-        if (!$onlyDb) {
-            $this->writeOutput($output, "=> Preparing list of excluded files", true, $outputFile);
-            try {
-                $dataFiles = $this->prepareExcludeFiles($extrafiles, $excludedfiles, $inputFile);
-            } catch (StopArchiveException $ex) {
-                $this->writeOutput($output, "STOP", true, $outputFile);
-                return "";
-            }
-        } else {
-            $dataFiles = ['preparedExcludedFiles' => [],'extrafiles' => [], 'excludedfiles' => [], 'onlyChildren' =>[]];
         }
 
         if ($this->checkIfNeedStop($inputFile)) {
@@ -216,7 +188,7 @@ class ArchiveService
             }
 
             $this->writeOutput($output, "=== Creating zip archive ===", true, $outputFile);
-            $this->createZip($location, $dataFiles, $output, $sqlContent, $onlyDb, $hideConfigValuesParams, $inputFile, $outputFile);
+            $this->createZip($location, $output, $sqlContent, $onlyDb, $hideConfigValuesParams, $inputFile, $outputFile);
             if (!file_exists($location)) {
                 throw new StopArchiveException("Stop archive : not saved !");
             }
@@ -406,16 +378,12 @@ class ArchiveService
      *
      * @param bool $savefiles
      * @param bool $savedatabase
-     * @param array $extrafiles
-     * @param array $excludedfiles
      * @param bool $callAsync
      * @return string uid
      */
     public function startArchive(
         bool $savefiles = true,
         bool $savedatabase = true,
-        array $extrafiles = [],
-        array $excludedfiles = [],
         bool $callAsync = true
     ): string {
         $privatePath = $this->getPrivateFolder();
@@ -427,14 +395,6 @@ class ArchiveService
             }
             if (!$savedatabase) {
                 $args[] = "-f";
-            }
-            if (!empty($extrafiles)) {
-                $args[] = "-e";
-                $args[] = implode(",", $extrafiles);
-            }
-            if (!empty($excludedfiles)) {
-                $args[] = "-x";
-                $args[] = implode(",", $excludedfiles);
             }
 
             $args[] = "-u";
@@ -452,7 +412,7 @@ class ArchiveService
             }
         } else {
             $output = "";
-            $location = $this->archive($output, $savefiles, $savedatabase, $extrafiles, $excludedfiles, null, $uidData['uid']);
+            $location = $this->archive($output, $savefiles, $savedatabase, null, $uidData['uid']);
             if (empty($location)) {
                 $this->cleanUID($uidData['uid'], $privatePath);
                 return '';
@@ -629,7 +589,6 @@ class ArchiveService
     /**
      * create the zip file
      * @param string $zipPath
-     * @param array $dataFiles
      * @param string|OutputInterface &$output
      * @param string $sqlContent
      * @param bool $onlyDb
@@ -639,7 +598,6 @@ class ArchiveService
      */
     protected function createZip(
         string $zipPath,
-        array $dataFiles,
         &$output,
         string $sqlContent,
         bool $onlyDb = false,
@@ -670,7 +628,6 @@ class ArchiveService
                     $dir = preg_replace("/(?:\/|\\\\|([^\/\\\\]))$/", "$1", $dir);
                     $baseDirName = preg_replace("/\\\\/", "/", substr($dir, $dirnamePathLen));
                     $baseDirName = preg_replace("/^\//", "", $baseDirName);
-                    if (!in_array($baseDirName, $dataFiles['preparedExcludedFiles'])) {
                         if (!empty($baseDirName)) {
                             $this->writeOutput($output, "Adding folder \"$baseDirName\"", true, $outputFile);
                             $zip->addEmptyDir($baseDirName);
@@ -680,18 +637,13 @@ class ArchiveService
                             if ($file != '.' && $file != '..') {
                                 $localName = $dir.DIRECTORY_SEPARATOR.$file;
                                 $relativeName = (empty($baseDirName) ? "" : "$baseDirName/").$file;
-                                if ((
-                                    !empty($dataFiles['onlyChildren'][$baseDirName]) &&
-                                        in_array($relativeName, $dataFiles['onlyChildren'][$baseDirName])
-                                ) || (
-                                    empty($dataFiles['onlyChildren'][$baseDirName]) &&
-                                        !in_array($relativeName, $dataFiles['preparedExcludedFiles'])
-                                )) {
+
                                     if (empty($baseDirName) && $file == "wakka.config.php") {
-                                        $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($dataFiles, $hideConfigValuesParams));
+                            $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($hideConfigValuesParams));
                                     } elseif (is_file($localName)) {
-                                    $zip->addFile($localName, $relativeName); } elseif (is_dir($localName)) {
-                                    if ($this->shouldIncludeFolder($localName, $whitelistedRootFolders)) {
+                            $zip->addFile($localName, $relativeName);
+                        } elseif (is_dir($localName)) {
+                            if ($this->shouldIncludeFolder($localName, $file, $whitelistedRootFolders)) {
                                         $dirs[] = $dir.DIRECTORY_SEPARATOR.$file;
                                     }
 
@@ -704,9 +656,8 @@ class ArchiveService
                                     }
                                 }
                             }
-                        }
                         closedir($dh);
-                    }
+
                     array_shift($dirs);
                 }
             }
@@ -748,55 +699,13 @@ class ArchiveService
             $zip->close();
         }
 
-    protected function shouldIncludeFolder($path, $whitelistedRootFolders)
+    protected function shouldIncludeFolder($path, $folderName, $whitelistedRootFolders)
     {
+        if (in_array($folderName, ['.git', 'node_modules'])) return false;
+
         return count(array_filter($whitelistedRootFolders, function($folder) use($path) {
             return strpos($path, $folder) !== false;
         })) > 0;
-    }
-
-    /**
-     * prepared exhaustove list of excluded files and folders
-     * @param array $extrafiles
-     * @param array $excludedfiles
-     * @param string $inputFile
-     * @return array ['preparedExcludedFiles' => $preparedExcludedFiles, 'extrafiles' => $extrafiles,
-     *    'excludedfiles' => $excludedfiles]
-     */
-    private function prepareExcludeFiles(array $extrafiles, array $excludedfiles, string $inputFile): array
-    {
-        // merge extra and exlucded files from wakka.config.php
-        $archiveParams = $this->getArchiveParams();
-        if (!empty($archiveParams[self::KEY_FOR_EXTRAFILES]) &&
-            is_array($archiveParams[self::KEY_FOR_EXTRAFILES])) {
-            foreach ($archiveParams[self::KEY_FOR_EXTRAFILES] as $path) {
-                if (is_string($path) && !in_array($path, $extrafiles)) {
-                    $extrafiles[] = $path;
-                }
-            }
-        }
-        if (!empty($archiveParams[self::KEY_FOR_EXCLUDEDFILES]) &&
-            is_array($archiveParams[self::KEY_FOR_EXCLUDEDFILES])) {
-            foreach ($archiveParams[self::KEY_FOR_EXCLUDEDFILES] as $path) {
-                if (is_string($path) && !in_array($path, $excludedfiles)) {
-                    $excludedfiles[] = $path;
-                }
-            }
-        }
-        $extrafiles = $this->sanitizeFileList($extrafiles);
-        list($preparedExtraFiles, $onlyChildren) = $this->prepareFileListFromGlob($extrafiles, [], $inputFile);
-        $excludedfiles = $this->sanitizeFileList($excludedfiles);
-        $excludedfilesWithDefault = $excludedfiles;
-        if ($this->checkIfNeedStop($inputFile)) {
-            throw new StopArchiveException("Stop archive");
-        }
-        foreach ($this->sanitizeFileList(self::DEFAULT_EXCLUDED_FILES) as $filePath) {
-            if (!in_array($filePath, $excludedfilesWithDefault) && !in_array($filePath, $extrafiles)) {
-                $excludedfilesWithDefault[] = $filePath;
-            }
-        }
-        list($preparedExcludedFiles, $onlyChildren)  = $this->prepareFileListFromGlob($excludedfilesWithDefault, $preparedExtraFiles, $inputFile);
-        return compact(['preparedExcludedFiles','extrafiles','excludedfiles','onlyChildren']);
     }
 
     private function sanitizeFileList(array $list): array
@@ -999,11 +908,10 @@ class ArchiveService
 
     /**
      * sanitize wakka.config.php before saving it
-     * @param array $dataFiles
      * @param null|array $hideConfigValuesParams
      * @return string
      */
-    private function getWakkaConfigSanitized(array $dataFiles, ?array $hideConfigValuesParams = null): string
+    private function getWakkaConfigSanitized(?array $hideConfigValuesParams = null): string
     {
         // get wakka.config.php content
         $config = $this->configurationService->getConfiguration('wakka.config.php');
@@ -1013,12 +921,6 @@ class ArchiveService
             $data = [];
         } else {
             $data = $config[self::PARAMS_KEY_IN_WAKKA];
-        }
-        if (!empty($dataFiles['extrafiles'])) {
-            $data[self::KEY_FOR_EXTRAFILES] = $dataFiles['extrafiles'];
-        }
-        if (!empty($dataFiles['excludedfiles'])) {
-            $data[self::KEY_FOR_EXCLUDEDFILES] = $dataFiles['excludedfiles'];
         }
         if (!is_null($hideConfigValuesParams)) {
             $data[self::KEY_FOR_HIDE_CONFIG_VALUES] = $hideConfigValuesParams;
@@ -1136,46 +1038,18 @@ class ArchiveService
 
     /**
      * check if there is enought free space before archive (size of files + custom + 300 Mo)
-     * @param array $excludedfiles
      * @throws Exception
      */
-    protected function assertEnoughtSpace(array $excludedfiles = [])
+    protected function assertEnoughtSpace()
     {
-        // merge extra and excluded files from wakka.config.php
-        $archiveParams = $this->getArchiveParams();
-        if (!empty($archiveParams[self::KEY_FOR_EXCLUDEDFILES]) &&
-            is_array($archiveParams[self::KEY_FOR_EXCLUDEDFILES])) {
-            foreach ($archiveParams[self::KEY_FOR_EXCLUDEDFILES] as $path) {
-                if (is_string($path) && !in_array($path, $excludedfiles)) {
-                    $excludedfiles[] = $path;
-                }
-            }
-        }
-        $extimatedNeededSpace = $this->estimateFilesAndCustomFolders($excludedfiles);
-        $extimatedNeededSpace += 300 * 1024 * 1024;
+        $estimateZipSize = $this->folderSize("files");
+        $estimateZipSize += $this->folderSize("custom");
+        $estimateZipSize += 300 * 1024 * 1024; // 300Mb for the rest of te wiki
 
         $freeSpace = disk_free_space(realpath(getcwd()));
-        if ($freeSpace < $extimatedNeededSpace) {
+        if ($freeSpace < $estimateZipSize) {
             throw new Exception("Not enough free space for a new archive!");
         }
-    }
-
-    /**
-     * estimate size of files and custom folder
-     * @param array $excludedfiles
-     * @return int $bytes
-     */
-    protected function estimateFilesAndCustomFolders(array $excludedfiles): int
-    {
-        $bytes = 0;
-        if (!in_array('files',$excludedfiles)){
-            $bytes += $this->folderSize("files");
-        }
-        if (!in_array('custom',$excludedfiles)){
-            $bytes += $this->folderSize("custom");
-        }
-
-        return $bytes;
     }
 
     /**
