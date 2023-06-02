@@ -614,7 +614,7 @@ Vous êtes dans la page qui se nomme PageMenuHaut qui sert à modifier le menu d
  - {{button nobtn=\"1\" icon=\"fa fa-wrench\" text=\"Gestion du site\" link=\"GererSite\"}}
  - {{button nobtn=\"1\" icon=\"fas fa-palette\" text=\"Apparence\" link=\"LookWiki\"}}
  - {{button nobtn=\"1\" icon=\"fas fa-user\" text=\"Mes contenus\" link=\"MesContenus\"}}
- - {{button nobtn=\"1\" icon=\"fa fa-briefcase\" text=\"Base de données\" link=\"BazaR\"}}
+ - {{button nobtn=\"1\" icon=\"fa fa-briefcase\" text=\"Formulaires\" link=\"BazaR\"}}
 {{end elem=\"buttondropdown\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('Pagetest1',  now(), '======Sous menu 1======', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageTest2',  now(), '======Sous menu 2======', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
