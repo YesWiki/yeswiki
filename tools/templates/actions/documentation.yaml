@@ -22,7 +22,7 @@ actions:
               label-info: _t(AB_template_actions_info)
               label-warning: _t(AB_template_actions_warning)
               label-danger: _t(AB_template_actions_danger)
-    tabs:
+  tabs:
     label: _t(AB_templates_tabs_label)
     isWrapper: true
     wrappedContentExample: _t(AB_templates_tabs_wrappedcontentexample)
