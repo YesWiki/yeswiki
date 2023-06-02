@@ -605,7 +605,7 @@ Par défaut, pour l'affichage des données sous forme cartographique, les cartes
 ### Balises meta pour l'indexation web
  - **Mots clés pour le référencement (séparés par des virgules, pas plus de 20-30) - meta_keywords** : ce paramètre permet d'ajouter des mots-clés pour améliorer le référencement sur les moteurs de recherche. Les mots doivent être séparés par une virgule et il ne faut pas dépasser 20 à 30 mots.
  - **Description du site en une phrase, pour le référencement (Attention : ne pas mettre de "." (point)) - meta_description** : La phrase rédigée sera utilisée par les moteurs de recherche pour la description succincte du site. Ne pas mettre de point à la fin de la phrase.
- - **Empêcher les robots à indexer le wiki (Mettre 'noindex,nofollow,noarchive,noimageindex') - meta[robots]** : si le site wiki est utilisé, par exemple, en tant qu'intranet pour un groupe de personne bien défini, il est possible d'empêcher l'indexation du site sur les moteurs de recherche en précisant dans ce paramètre `noindex,nofollow,noarchive,noimageindex`
+ - **Empêcher les robots à indexer le wiki (Mettre 'noindex,nofollow,max-image-preview:none,noarchive,noimageindex') - meta[robots]** : si le site wiki est utilisé, par exemple, en tant qu'intranet pour un groupe de personne bien défini, il est possible d'empêcher l'indexation du site sur les moteurs de recherche en précisant dans ce paramètre `noindex,nofollow,max-image-preview:none,noarchive,noimageindex`
 
 
 ## Sauvegardes

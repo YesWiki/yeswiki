@@ -145,7 +145,7 @@ class ArchiveService
         $onlyDb = false;
         // check options and prepare file suffix
         if (!$savefiles && !$savedatabase) {
-            throw new Exception("Invalid options : It is not possible to use 'savefiles = false' and 'savedatabase = false'options in same time.");
+            throw new Exception("Invalid options : It is not possible to use 'savefiles = false' and 'savedatabase = false' options in same time.");
         } elseif (!$savefiles) {
             $fileSuffix = self::ARCHIVE_ONLY_DATABASE_SUFFIX;
             $onlyDb = true;
