@@ -247,7 +247,7 @@ La roue crantée (en haut à droite) donne accès à un certain nombre d'espaces
 
 Cette page gestion du site est très importante. Elle donne accès à de nombreuses fonctionnalités d'administration :
 
-![image rubriques_gestiondusite.png](images/rubriques_gestiondusite.png)
+![Interface de gestion du site](images/rubriques_gestiondusite.png)
 
 [Voir la page dédiée](admin.md)
 
