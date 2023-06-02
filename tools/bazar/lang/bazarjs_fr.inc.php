@@ -218,6 +218,7 @@ return [
     'BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_LABEL' => 'Type de fiche liée (ou label du champ)',
     'BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_PLACEHOLDER' => 'mettre \'checkbox\' ici si vos fiches liées le sont via un checkbox',
     'BAZ_FORM_EDIT_ADDRESS' => 'Adresse',
+    'BAZ_FORM_EDIT_CHECKBOX_LABEL' => 'Cases à cocher',
 
     'BAZ_FORM_EDIT_UNIQUE_ID' => 'Identifiant unique',
     'BAZ_FORM_EDIT_NAME' => 'Intitulé',

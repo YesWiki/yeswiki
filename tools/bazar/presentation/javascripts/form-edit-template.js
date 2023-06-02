@@ -31,12 +31,20 @@ for (var i = 0; i < textFields.length; i++) {
 }
 // Custom fields to add to form builder
 var fields = [
-  // {
-  //   label: "Sélecteur de date",
-  //   name: "jour",
-  //   attrs: { type: "date" },
-  //   icon: '<i class="far fa-calendar-alt"></i>',
-  // },
+  {
+    label: _t('BAZ_FORM_EDIT_TEXTAREA_LABEL'),
+    name: 'textarea',
+    attrs: { type: 'textarea' },
+    icon:
+      '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-text" viewBox="0 0 16 16"><path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/><path d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/></svg>'
+  },
+  {
+    label: _t('BAZ_FORM_EDIT_CHECKBOX_LABEL'),
+    name: 'checkbox-group',
+    attrs: { type: 'checkbox-group' },
+    icon:
+      '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2-square" viewBox="0 0 16 16"><path d="M3 14.5A1.5 1.5 0 0 1 1.5 13V3A1.5 1.5 0 0 1 3 1.5h8a.5.5 0 0 1 0 1H3a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5V8a.5.5 0 0 1 1 0v5a1.5 1.5 0 0 1-1.5 1.5H3z"/><path d="m8.354 10.354 7-7a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0z"/></svg>'
+  },
   {
     label: _t('BAZ_FORM_EDIT_TEXT_LABEL'),
     name: 'text',
@@ -349,10 +357,10 @@ var typeUserAttrs = {
   },
   image: {
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
-    thumb_height: { label: _t('BAZ_FORM_EDIT_IMAGE_HEIGHT'), value: '140' },
-    thumb_width: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH'), value: '140' },
-    resize_height: { label: _t('BAZ_FORM_EDIT_IMAGE_HEIGHT_RESIZE'), value: '400' },
-    resize_width: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH_RESIZE'), value: '400' },
+    thumb_height: { label: _t('BAZ_FORM_EDIT_IMAGE_HEIGHT'), value: '300' },
+    thumb_width: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH'), value: '400' },
+    resize_height: { label: _t('BAZ_FORM_EDIT_IMAGE_HEIGHT_RESIZE'), value: '600' },
+    resize_width: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH_RESIZE'), value: '800' },
     align: {
       label: _t('BAZ_FORM_EDIT_IMAGE_ALIGN_LABEL'),
       value: 'right',
@@ -1291,9 +1299,11 @@ function initializeFormbuilder(formAndListIds) {
       'checkbox',
       'paragraph',
       'header',
-      'collaborative_doc'
+      'collaborative_doc',
+      'textarea',
+      'checkbox-group'
     ],
-    controlOrder: ['text', 'textarea', 'jour', 'image', 'url', 'file', 'champs_mail', 'tags'],
+    controlOrder: ['text', 'textarea', 'date', 'image', 'url', 'file', 'champs_mail', 'select', 'checkbox-group', 'radio-group', 'map','tags', 'labelhtml', 'titre', 'bookmarklet', 'conditionschecking', 'calc', 'reactions'],
     disabledAttrs: [
       'access',
       'placeholder',
