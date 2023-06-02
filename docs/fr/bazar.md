@@ -132,7 +132,7 @@ Un champs de texte qui permet la saisie de quelques mots.
  - **Nombre de caractères visibles** : Ce paramètre permet de préciser combien de caractères seront visibles à l'écran.  
  - **Longueur max** : Ce paramètre permet de limiter la longueur de la réponse que les utilisateurices peuvent saisir.
 
-### Zone de texte
+### Texte long
 Une zone de texte permet la saisie d'un texte relativement long et pouvant courrir sur plusieurs lignes.
 #### Paramètres spécifiques au type de champs « zone de texte » : 
 - **Valeur** : Ce paramètre permet de pré-remplir le champ. C'est utile lorsque on connaît la réponse la plus courante (si, par exemple, on demande le pays).  
@@ -165,7 +165,7 @@ Ce type de champs permet de saisir une adresse électronique. YesWiki effectue a
  __Astuce__ : Il est possible d'ajouter un contenu personnalisé dans le corps du mail via la page Fichier de configuration dans Gestion du site. Pour cela : insérer votre contenu (avec mise en forme possible en HTML) au niveau du paramètre ```Message personnalisé des mails envoyés depuis l'action contact - mail_custom_message```
  __Pour aller plus loin dans la personnalisation des mails envoyés__ : pour les développeurs Il est possible d'adapter les messages affichés dans les e-mails en copiant les templates associés depuis tools/contact/templates/notify-email-*.twig dans custom/templates/contact/ puis en modifiant le contenu de ces modèles (syntaxe twig)
 
-### Sélectionner 
+### liste déroulante
 Un champ de ce type permet de proposer à l'utilisateur une liste fermée de choix. Les choix possibles seront présentés sous forme d'une liste déroulante.
 En outre, l'utilisation de ce type de champ permet d'avoir recours à des [facettes](/docs/fr/bazar.md#afficher-des-filtres-facettes) pour filtrer parmi les fiches remplies.
 Avec "Sélectionner", l'utilisateurice ne pourra choisir qu'un choix parmi la liste.
@@ -177,7 +177,7 @@ Si, au contraire, vous souhaitez permettre à l'utilisateur de choisir parmi des
  - **Choix de la liste/du formulaire** Avec ce paramètre vous choisissez la liste (ou le formulaire) à partir de laquelle vous souhaitez que les utilisateurs choisissent.
  - **Valeur par défaut** Ce paramètre vous permet de proposer une valeur par défaut. Si vous n'en précisez pas, c'est le mot « choisir » qui s'affichera jusqu'à ce qu'un choix soit effectué. Attention, pour préciser la valeur par défaut, il faut indiquer sa clef dans la liste (et non pas sa valeur).
 
-### Groupe de cases à cocher 
+### Cases à cocher 
 Un champ de ce type permet de proposer à l'utilisateur une liste fermée de choix. Les choix possibles seront présentés sous forme d'un groupe de cases à cocher. En outre, l'utilisation de ce type de champ permet d'avoir recours à des facettes pour filtrer parmi les fiches remplies.
 Avec "Groupe de cases à cocher", l'utilisateurice pourra cocher plusieurs choix parmi la liste.
 
@@ -188,7 +188,7 @@ Si, au contraire, vous souhaitez permettre à l'utilisateurice de choisir parmi 
  - **Choix de la liste/du formulaire** Avec ce paramètre vous choisissez la liste (ou le formulaire) à partir de laquelle vous souhaitez que les utilisateurices choisissent.
  - **Valeur par défaut** Ce paramètre vous permet de proposer une valeur par défaut. Attention, pour préciser la valeur par défaut, il faut indiquer sa clef dans la liste (et non pas sa valeur).
 
-### Groupe de boutons radio 
+### Boutons radio 
 Un champ de ce type permet de proposer à l'utilisateur une liste fermée de choix. Les choix possibles seront présentés sous forme d'un groupe de boutons radio. En outre, l'utilisation de ce type de champ permet d'avoir recours à des facettes pour filtrer parmi les fiches remplies.
 "Groupe de boutons radio " se présente comme les cases à cocher mais l'utilisateurice ne pourra choisir qu'une option parmi la liste.
 
@@ -206,7 +206,7 @@ Certains affichages des résultats (calendrier, agenda, etc.) nécessitent la pr
  - **Initialiser à Aujourd'hui** : Ce paramètre permet de préciser si on souhaite que la date soit prédéfinie à la date du jour.
 
 ### Géolocalisation de l'adresse
-![image champ_zone.png (24.5kB)](images/DocBazarChampGeo_champ_geoloc_20220204222452_20220204212502.png)
+![image champ_zone.png (24.5kB)](images/DocBazarChampGeo_champ_geoloc.png)
 
 Ce champ n'est pas un vrai champ. Il s'agit, de fait, d'un outil qui permet de transformer une adresse saisie par un humain en un jeu de coordonnées (longitude et latitude).  
 Son comportement est donc un peu différent de ce qu'on trouve dans les autres champs.  
