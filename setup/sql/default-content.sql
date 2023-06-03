@@ -346,6 +346,94 @@ Voici quelques possibilités autour des annuaires (à copier-coller - adapter)
 
 ===Gérer les utilisateurices===
 {{userstable}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('LookWiki',  now(), '======Personnaliser l\'apparence======
+
+{{section bgcolor=\"#d9ead3\" class=\"cover black  shape-rounded text-left\" }}
+Pour modifier l\'apparence de votre wiki, utilisez le sélecteur de thème ci-dessous.
+L'aperçu de cette page sera mis à jour en direct mais le style ne sera appliqué à votre site que lorsqu\'un administrateur aura validé en cliquant sur le bouton \"Mettre à jour\".
+Pour plus dinformations sur les possibiltés de personnalisation graphique [consultez la documentation](?doc#/docs/fr/admin?id=visualisermodifier-le-thème-graphique-affecté-à-chaque-page-de-votre-wiki)
+{{end elem=\"section\"}}
+
+{{grid}}
+{{col size=\"4\"}}
+## Thème, Squelette, Style
+### Choix du squelette	
+**1col.tpl.html** (squelette par defaut)
+**1col.vertical-menu.tpl.html** : déplace le menu principal vers une colonne gauche
+**2cols-left.tpl.html** ajoute une colonne à gauche qui contient PageMenu
+**2cols-right.tpl.html** ajoute une colonne à droite qui contient PagecolonneDroite
+**full-page** exploite lécran en pleine largeur
+### Choix du style
+**Margot.css** : Barre de menu colorée
+**Margot-fun.css** : design de la barre de menu sous forme donglets et formes géométriques sur les titres de page
+**Light.css** : Barre de menu blanche
+{{end elem=\"col\"}}
+{{col size=\"4\"}}
+## Configuration graphique
+En créant \"une nouvelle configuration graphique\", vous pouvez définir des variantes de couleurs :
+**une couleur primaire** : cest votre couleur dominante, elle sera utilisée par défaut pour la barre de menu ainsi que pour les titres et les liens.
+**2 couleurs secondaires** peu visibles par defaut mais vous pourrez facilement les utiliser dans vos éléments de mise en forme.
+**la couleur de votre texte** et couleur du fond : si vous les modifiez, veillez à bien respecter le contraste pour assurer la lisibilité des contenus.
+{{end elem=\"col\"}}
+{{col size=\"4\"}}
+{{section class=\"well\" nocontainer=\"1\"}}
+	====Choisir le thème, styles et squelettes associés====
+	{{themeselector}}
+{{end elem=\"section\"}}
+{{end elem=\"col\"}}
+{{end elem=\"grid\"}}
+
+{{section class=\"full-width black text-center\" bgcolor=\"var(--secondary-color-2)\" height=\"250\"}}
+# Composants graphiques
+ 
+Ce bandeau de couleur a été créé grâce au composant de mise en forme nommé **section**
+
+{{end elem=\"section\"}}
+
+====Boutons====
+{{button link=\"{{rootPage}}\" class=\"btn btn-default\" text=\"btn-default\"}}
+{{button link=\"{{rootPage}}\" class=\"btn btn-primary\" text=\"btn-primary\"}}
+{{button link=\"{{rootPage}}\" class=\"btn btn-secondary-1\" text=\"btn-secondary-1\"}}
+{{button link=\"{{rootPage}}\" class=\"btn btn-secondary-2\" text=\"btn-secondary-2\"}}
+{{button link=\"{{rootPage}}\" class=\"btn btn-success\" text=\"btn-success\"}}
+{{button link=\"{{rootPage}}\" class=\"btn btn-info\" text=\"btn-info\"}}
+
+====Etiquettes====
+{{label}}Label-default{{end elem=\"label\"}}
+{{label class=\"label-primary\"}}label-primary{{end elem=\"label\"}}   
+{{label class=\"label-secondary-1\"}}label-secondary-1{{end elem=\"label\"}}   
+{{label class=\"label-secondary-2\"}}label-secondary-2{{end elem=\"label\"}}
+{{label class=\"label-success\"}}label-success{{end elem=\"label\"}}  
+{{label class=\"label-info\"}}label-info{{end elem=\"label\"}}  
+{{label class=\"label-warning\"}}label-warning{{end elem=\"label\"}}  
+{{label class=\"label-danger\"}}label-danger{{end elem=\"label\"}}
+
+====Encadrés====
+{{panel title=\"Titre default\" type=\"collapsed\"}}
+Contenu panel-default
+{{end elem=\"panel\"}}
+{{panel class=\"panel-primary\" title=\"Titre primary\" type=\"collapsible\"}}
+Contenu panel-primary
+{{end elem=\"panel\"}}
+{{panel class=\"panel-secondary-1\" title=\"Titre secondary-1\"}}
+Contenu panel-secondary-1
+{{end elem=\"panel\"}}
+{{panel class=\"panel-secondary-2\" title=\"Titre secondary-2\"}}
+Contenu panel-secondary-2
+{{end elem=\"panel\"}}
+
+====Accordéons====
+{{accordion}}
+{{panel class=\"panel-success\" title=\"Titre success\"}}
+Contenu panel-success
+{{end elem=\"panel\"}}
+{{panel class=\"panel-warning\" title=\"Titre warning\"}}
+Contenu panel-warning
+{{end elem=\"panel\"}}
+{{panel class=\"panel-danger\" title=\"Titre danger\"}}
+Contenu panel-danger
+{{end elem=\"panel\"}}
+{{end elem=\"accordion\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
 ('MesContenus',  now(), '=====Mes contenus=====
 {{accordion }}
 {{panel title=\"Mes paramètres\"}}
