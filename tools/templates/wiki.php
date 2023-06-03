@@ -12,7 +12,7 @@ require_once 'libs/templates.functions.php';
 define('THEME_PAR_DEFAUT', 'margot');
 
 // Style par défaut
-define('CSS_PAR_DEFAUT', 'margot.css');
+define('CSS_PAR_DEFAUT', 'light.css');
 
 // Squelette par défaut
 define('SQUELETTE_PAR_DEFAUT', '1col.tpl.html');
