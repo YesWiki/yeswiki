@@ -142,6 +142,13 @@ Une zone de texte permet la saisie d'un texte relativement long et pouvant courr
   - **Texte non interprété –** Cette valeur limite la saisie aux seuls caractères sans mise en forme (pas d'italique ni de gras par exemple). C'est très utile pour saisir des adresses postales.
 - **Largeur champ de saisie** : Ce paramètre permet de préciser la largeur du champ de saisie.
 
+### Date
+Un champ de type date permet de saisir sans erreur une date.
+Certains affichages des résultats (calendrier, agenda, etc.) nécessitent la présence d'un champ date.
+
+#### Paramètres spécifiques au type de champs date :
+ - **Initialiser à Aujourd'hui** : Ce paramètre permet de préciser si on souhaite que la date soit prédéfinie à la date du jour.
+
 ### Image
 Un champ de type image permet d'importer un fichier image qui sera ensuite visualisable dans la fiche.
 #### Paramètres spécifiques au type de champs « image » :
@@ -150,6 +157,9 @@ Un champ de type image permet d'importer un fichier image qui sera ensuite visua
  - **Hauteur re-dimension** : YesWiki peut harmoniser la taille des images importées pour ce formulaire. Ce paramètre permet de préciser la hauteur de cette image redimensionnée.
  - **Largeur re-dimension** : YesWiki peut harmoniser la taille des images importées pour ce formulaire. Ce paramètre permet de préciser la largeur de cette image redimensionnée.
  - **Alignement** : C'est là que l'on paramètre le comportement d'affichage de l'image. Son fonctionnement est similaire à ce qui se passe dans l'édition de pages (quand on joint une image avec le bouton Fichier).
+
+### URL
+Permet de saisir un lien web qui sera cliquable dans la fiche
 
 ### Upload de fichier 
 Ce type de champ permet d'uploader un fichier (par exemple au format PDF). Ce fichier est ensuite téléchargeable par les personnes qui visualisent la fiche.
@@ -198,13 +208,6 @@ Si, au contraire, vous souhaitez permettre à l'utilisateur de choisir parmi des
  - **Choix de la liste/du formulaire** : Avec ce paramètre vous choisissez la liste (ou le formulaire) à partir de laquelle vous souhaitez que les utilisateurs choisissent.
  - **Valeur par défaut** : Ce paramètre vous permet de proposer une valeur par défaut. Attention, pour préciser la valeur par défaut, il faut indiquer sa clef dans la liste (et non pas sa valeur).
 
-### Date
-Un champ de type date permet de saisir sans erreur une date.
-Certains affichages des résultats (calendrier, agenda, etc.) nécessitent la présence d'un champ date.
-
-#### Paramètres spécifiques au type de champs date :
- - **Initialiser à Aujourd'hui** : Ce paramètre permet de préciser si on souhaite que la date soit prédéfinie à la date du jour.
-
 ### Géolocalisation de l'adresse
 ![image champ_zone.png (24.5kB)](images/DocBazarChampGeo_champ_geoloc.png)
 
@@ -227,15 +230,62 @@ Il est indispensable d'avoir un champ de ce type dans votre formulaire si vous s
 
  - Vous pourrez activer la possibilité de se géolocaliser depuis la position de l'ordi ou du GSM
 
-### Inscription liste de diffusion
-TODO
+### Mots clés
+Possibilité d'ajouter des mots clés en les séparant par un clic sur la touche entrée
 
-### Insérer un sous titre ou une information complémentaire (custom html)
+### Custom HTML
 Le champ custom html permet d'insérer un texte, un titre, un lien, ou tout autre contenu au format HTML.
 Il se décline en deux options : 
   - le contenu qui sera affiché lors de la saisie (cela peut être une information destinée à expliquer à l'utilisateur ce qu'on attend comme élément ) 
-  - le contenu affiché lors de la consultation d'une fiche 
+  - le contenu affiché lors de la consultation d'une fiche
 
+ex : <H2> Mon titre niveau 2 </H2>
+
+### Titre automatique
+Il est possible d'utiliser un titre combiné à partir de 2 champs (ou plus) : par exemple : "champ prénom + champ nom".
+Dans le paramètre **valeur** mettre les identifiants uniques des champs que l'on souhaite utiliser : {{bf_nom}} {{bf_prenom}} . 
+Vous pouvez également y ajouter du texte : par exemple mettre un tiret entre le nom et le prénom.
+!> Si vous utilisez un titre automatique, il faudra supprimer le champ bf_titre créé par défaut. 
+
+### Bookmarklet
+Ce champ spécial génère un bouton qui sera affiché dans votre formulaire de saisie. En glisssant le bouton vers la barre de raccourci du navigateur, les utilisateurs pourront bénéficier d'un raccourci pour faire une veille partagée.
+
+### Affichage conditionnel
+Ce champ permet d'afficher certaines questions en fonction de la réponse apportée à une des questions précédentes. Par exemple : lorsque lʼutilisateur répond « autre » à une liste, on lui propose alors un champ texte pour préciser.
+**La question conditionnelle fait donc suite à une question de type Liste (Sélectionner), Checkbox (cases à cocher) ou Radio (Boutons radio).**
+Lorsque vous insérez un « Affichage conditionnel » dans votre formulaire, deux champs sont créés : le premier, intitulé « Condition », le second intitulé « Fin de condition ». Vous devez placer, entre le champ « Condition » et le champ « Fin de condition », le ou les champs que vous souhaitez faire apparaître de manière conditionnelle.
+#### Paramètres spécifiques au type de champs « question conditionnelle »
+ - **Condition** Ce paramètre définit la condition à respecter pour afficher les champs qui suivent (jusquʼà « Fin de condition »).
+Voici quelques exemples pour illustrer la syntaxe.
+On suppose quʼon dispose d'un champ de type « Sélectionner » (ou radio ou checkbox) dont l'**identifiant unique** est *bf_champ*
+| Pour afficher si… | valeur du paramètre |
+|---|------|
+|on a répondu « autre »|```bf_champ==autre```|
+|on nʼa pas répondu « autre »|```bf_champ!=autre```|
+|on nʼa répondu ni « 1 », ni « 5 »|```bf_champ!=1 and bf_champ!=5```|
+|on nʼa pas répondu du tout|```bf_champ is empty```|
+|on a répondu « 1 » ou « 2 » (pareil quʼen dessous)|```bf_champ==1 or bf_champ==2```|
+|on a répondu « 1 » ou « 2 » (pareil quʼau dessus)|```bf_champ in [1,2]```|
+|dans le cas dʼune checkbox, on a répondu « 1 » et « 2 »|```bf_champ==[1,2]```|
+|dans le cas dʼune checkbox, moins de trois cases ont été cochées|```bf_champ\|length < 3```|
+|dans le cas dʼune checkbox, au moins deux cases ont été cochées mais pas la case « autre »|```bf_champ\|length > 2 and bf_champ!=5```|
+
+- **Masquer à l'affichage** : 
+  - valeur par défaut :```Effacer``` supprime le champ et les valeurs éventuellement saisies precedemment dedans, 
+  - autre valeur :```ne pas effacer``` permet de cacher le champ et les valeurs et on retrouverait les valeurs si le champs réapparaissait
+
+### Calculs
+Ce champ permet de réaliser un calcul mathématique à l'enregistrement de la fiche. Le résultat sera visible après avoir sauvé la fiche.
+#### Paramètres spécifiques du champ calcul
+- **Texte d'affichage** : permet d'ajouter un symbole après la valeur si nécessaire - exemple : ```{value}€```
+- **Formule** : pour faire référence à un nombre saisi dans le formulaire utilisez son identifant - exemple : ```bf_nombre*15```
+
+### Réactions
+Permet au rédacteur de la fiche d'ajouter la possibilité de réagir au contenu et pour le lecteur identifié de réagir sur en cliquant sur des propositions
+
+### Inscription liste de diffusion
+ - Email d'inscription fourni par le service ex. subscribe@framaliste.net
+ - Type de Service de Diffusion : sympa ou mailman
 
 ### Créer un utilisateur lorsque la fiche est validée
 Ce champ est utile pour créer un compte utilisateur à partir des informations contenues dans le formulaire. 
@@ -253,9 +303,6 @@ Ce champ n'est pas un vrai champ. Il s'agit d'un outil qui permet de définir le
 
 ### Config thème de la fiche
 Permet de définir un thème graphique spécifique à associer à toutes les fiches du formulaire, cela peut être un jeu de couleur que vous définissez dans la page LookWiki
-
-### Bookmarklet
-Ce champ spécial génère un bouton qui sera affiché dans votre formulaire de saisie. En glisssant le bouton vers la barre de raccourci du navigateur, les utilisateurs pourront bénéficier d'un raccourci pour faire une veille partagée.
 
 ### Liste des fiches liées
 Ce type de champs est utilisable dans le cas où un autre formulaire est lié à celui-ci. Il permet d'afficher les fiches liées. 
@@ -279,50 +326,11 @@ La syntaxe du paramètre query est la même que dans bazar liste - voir [affiche
     « checkbox » pour un groupe de cases à cocher.
     « radio » pour un groupe de boutons radio.
 
-### Titre automatique
-Il est possible d'utiliser un titre combiné à partir de 2 champs (ou plus) : par exemple : "champ prénom + champ nom".
-Dans le paramètre **valeur** mettre les identifiants uniques des champs que l'on souhaite utiliser : {{bf_nom}} {{bf_prenom}} . 
-Vous pouvez également y ajouter du texte : par exemple mettre un tiret entre le nom et le prénom.
-!> Si vous utilisez un titre automatique, il faudra supprimer le champ bf_titre créé par défaut. 
-
-### Custom 
+### Custom
 Ce champ sera utile pour les développeurs qui ont recours à un champ custom. Plus de détails (dans la section développeurs)[/docs/fr/dev?id=custom-bazar-field]
 
 ### Navigation par onglet /Passage à l'onglet suivant
 Il est possible de découper le formulaire en plusieurs onglets pour rendre le formulaire plus lisible.
-
-### Rendre une question conditionnelle
-Ce champ permet d'afficher certaines questions en fonction de la réponse apportée à une des questions précédentes. Par exemple : lorsque lʼutilisateur répond « autre » à une liste, on lui propose alors un champ texte pour préciser.
-**La question conditionnelle fait donc suite à une question de type Liste (Sélectionner), Checkbox (cases à cocher) ou Radio (Boutons radio).**
-Lorsque vous insérez un « Affichage conditionnel » dans votre formulaire, deux champs sont créés : le premier, intitulé « Condition », le second intitulé « Fin de condition ». Vous devez placer, entre le champ « Condition » et le champ « Fin de condition », le ou les champs que vous souhaitez faire apparaître de manière conditionnelle.
-#### Paramètres spécifiques au type de champs « question conditionnelle »
- - **Condition** Ce paramètre définit la condition à respecter pour afficher les champs qui suivent (jusquʼà « Fin de condition »).
-Voici quelques exemples pour illustrer la syntaxe.
-On suppose quʼon dispose d'un champ de type « Sélectionner » (ou radio ou checkbox) dont l'**identifiant unique** est *bf_champ*
-| Pour afficher si… | valeur du paramètre |
-|---|------|
-|on a répondu « autre »|```bf_champ==autre```|
-|on nʼa pas répondu « autre »|```bf_champ!=autre```|
-|on nʼa répondu ni « 1 », ni « 5 »|```bf_champ!=1 and bf_champ!=5```|
-|on nʼa pas répondu du tout|```bf_champ is empty```|
-|on a répondu « 1 » ou « 2 » (pareil quʼen dessous)|```bf_champ==1 or bf_champ==2```|
-|on a répondu « 1 » ou « 2 » (pareil quʼau dessus)|```bf_champ in [1,2]```|
-|dans le cas dʼune checkbox, on a répondu « 1 » et « 2 »|```bf_champ==[1,2]```|
-|dans le cas dʼune checkbox, moins de trois cases ont été cochées|```bf_champ\|length < 3```|
-|dans le cas dʼune checkbox, au moins deux cases ont été cochées mais pas la case « autre »|```bf_champ\|length > 2 and bf_champ!=5```|
-
-- **Masquer à l'affichage** : 
-  - valeur par défaut :```Effacer``` supprime le champ et les valeurs éventuellement saisies precedemment dedans, 
-  - autre valeur :```ne pas effacer``` permet de cacher le champ et les valeurs et on retrouverait les valeurs si le champs réapparaissait
-                              
-### Calculs
-Ce champ permet de réaliser un calcul mathématique à l'enregistrement de la fiche. Le résultat sera visible après avoir sauvé la fiche.
-#### Paramètres spécifiques du champ calcul
-- **Texte d'affichage** : permet d'ajouter un symbole après la valeur si nécessaire - exemple : ```{value}€```
-- **Formule** : pour faire référence à un nombre saisi dans le formulaire utilisez son identifant - exemple : ```bf_nombre*15```
-
-### Réactions
-
 
 ### Onglet : code wiki
 Lorsque vous modifiez un formulaire, un onglet permet de consulter le **code wiki** qui a été généré. Il peut être utile de le consulter lorsque vous avez un problème d'affichage de votre formulaire. Souvent le problème vient d'un caractère invisible issu d'un copié collé sur les intitulés des champs. Afficher le code wiki permet de déceler ces caractères html.
