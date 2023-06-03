@@ -131,6 +131,12 @@ Un champs de texte qui permet la saisie de quelques mots.
  - **Valeur** Ce paramètre permet de pré-remplir le champ. C'est utile lorsque on connait la réponse la plus courante (si, par exemple, on demande le pays).  
  - **Nombre de caractères visibles** : Ce paramètre permet de préciser combien de caractères seront visibles à l'écran.  
  - **Longueur max** : Ce paramètre permet de limiter la longueur de la réponse que les utilisateurices peuvent saisir.
+**NB.** ce champ est par défaut de type texte, les autres types disponibles sont :
+ - nombre
+ - slider <= propose un curseur coulissant entre une valeur minil=male et maximale
+ - adresse url
+ - mot de passe
+ - couleur <= propose de choisir une couleur
 
 ### Texte long
 Une zone de texte permet la saisie d'un texte relativement long et pouvant courrir sur plusieurs lignes.
@@ -282,6 +288,12 @@ Ce champ permet de réaliser un calcul mathématique à l'enregistrement de la f
 
 ### Réactions
 Permet au rédacteur de la fiche d'ajouter la possibilité de réagir au contenu et pour le lecteur identifié de réagir sur en cliquant sur des propositions
+Par défaut, vous aurez les propositions suivantes
+![image reactions (24.5kB)](images/reactions.png)
+Elles sont modifiables et agissant sur les champs
+ - Noms des réactions (séparées par des virgules)
+ - Noms des fichiers d'images (séparées par des virgules)
+ vous pouvez vous inspirer du composant réactions afin de repérer les possibilités notamment au niveau des illustrations :far fa-grin,far fa-angry
 
 ### Inscription liste de diffusion
  - Email d'inscription fourni par le service ex. subscribe@framaliste.net
