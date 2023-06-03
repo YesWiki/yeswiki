@@ -14,7 +14,6 @@ info.php
 cache/*
 !cache/README.md
 files/*
-!files/backgrounds
 !files/README.md
 !files/AdaLovelace_ada_byron.jpg
 !files/LovelaceAda_lovelace.png
