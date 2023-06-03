@@ -219,6 +219,8 @@ return [
     'BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_PLACEHOLDER' => 'mettre \'checkbox\' ici si vos fiches liées le sont via un checkbox',
     'BAZ_FORM_EDIT_ADDRESS' => 'Adresse',
     'BAZ_FORM_EDIT_CHECKBOX_LABEL' => 'Cases à cocher',
+    'BAZ_FORM_EDIT_RADIO_LABEL' => 'Boutons radio',
+    'BAZ_FORM_EDIT_SELECT_LABEL' => 'Liste déroulante',
 
     'BAZ_FORM_EDIT_UNIQUE_ID' => 'Identifiant unique',
     'BAZ_FORM_EDIT_NAME' => 'Intitulé',
