@@ -31,6 +31,7 @@ class ArchiveService
         'styles',
         'includes',
         'custom',
+        'templates',
         'themes',
         'tools',
         'docs',
