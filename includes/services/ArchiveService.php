@@ -45,6 +45,8 @@ class ArchiveService
 
     // Some folders should not be included, like the existing backups
     public const FOLDERS_TO_EXCLUDE = [
+        '.git',
+        'node_modules',
         'private/backups',
     ];
 
@@ -650,25 +652,23 @@ class ArchiveService
                             if ($file != '.' && $file != '..') {
                                 $localName = $dir.DIRECTORY_SEPARATOR.$file;
                                 $relativeName = (empty($baseDirName) ? "" : "$baseDirName/").$file;
-
-                                    if (empty($baseDirName) && $file == "wakka.config.php") {
-                            $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($hideConfigValuesParams));
-                                    } elseif (is_file($localName)) {
-                            $zip->addFile($localName, $relativeName);
-                        } elseif (is_dir($localName)) {
-                            if ($this->shouldIncludeFolder($localName, $file, $whitelistedRootFolders)) {
-                                        $dirs[] = $dir.DIRECTORY_SEPARATOR.$file;
+                                if (empty($baseDirName) && $file == "wakka.config.php") {
+                                    $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($hideConfigValuesParams));
+                                } elseif (is_file($localName)) {
+                                    $zip->addFile($localName, $relativeName);
+                                } elseif (is_dir($localName)) {
+                                    if ($this->shouldIncludeFolder($localName, $file, $whitelistedRootFolders)) {
+                                                $dirs[] = $dir.DIRECTORY_SEPARATOR.$file;
                                     }
-
-                                        if ($this->checkIfNeedStop($inputFile)) {
-                                            $zip->unchangeAll();
-                                            $this->writeOutput($output, "== Closing archive after undoing all changes ==", true, $outputFile);
-                                            $zip->close();
-                                            throw new StopArchiveException("Stop archive");
-                                        }
+                                    if ($this->checkIfNeedStop($inputFile)) {
+                                        $zip->unchangeAll();
+                                        $this->writeOutput($output, "== Closing archive after undoing all changes ==", true, $outputFile);
+                                        $zip->close();
+                                        throw new StopArchiveException("Stop archive");
                                     }
                                 }
                             }
+                        }
                         closedir($dh);
 
                     array_shift($dirs);
@@ -714,7 +714,7 @@ class ArchiveService
 
     protected function shouldIncludeFolder($path, $folderName, $whitelistedRootFolders)
     {
-        if (in_array($folderName, ['.git', 'node_modules'])) return false;
+        if (in_array($folderName, self::FOLDERS_TO_EXCLUDE)) return false;
 
         return count(array_filter($whitelistedRootFolders, function($folder) use($path) {
             return strpos($path, $folder) !== false;
