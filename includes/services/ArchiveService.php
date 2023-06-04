@@ -658,7 +658,7 @@ class ArchiveService
                                     $zip->addFile($localName, $relativeName);
                                 } elseif (is_dir($localName)) {
                                     if ($this->shouldIncludeFolder($localName, $file, $whitelistedRootFolders)) {
-                                                $dirs[] = $dir.DIRECTORY_SEPARATOR.$file;
+                                        $dirs[] = $dir.DIRECTORY_SEPARATOR.$file;
                                     }
                                     if ($this->checkIfNeedStop($inputFile)) {
                                         $zip->unchangeAll();
@@ -714,7 +714,8 @@ class ArchiveService
 
     protected function shouldIncludeFolder($path, $folderName, $whitelistedRootFolders)
     {
-        if (in_array($folderName, self::FOLDERS_TO_EXCLUDE)) return false;
+        $relativeFolderName = str_replace(getcwd().'/', '', $path);
+        if (in_array($relativeFolderName, self::FOLDERS_TO_EXCLUDE)) return false;
 
         return count(array_filter($whitelistedRootFolders, function($folder) use($path) {
             return strpos($path, $folder) !== false;
