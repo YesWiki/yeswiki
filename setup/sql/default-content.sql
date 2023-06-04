@@ -325,12 +325,11 @@ Voici quelques possibilités autour des annuaires (à copier-coller - adapter)
  - [[ReglesDeFormatage/edit Éditer l\'aide mémoire]]
 \"\"<div class=\"clearfix\"></div>\"\"
 ===Gestion des mots clés ===
-{{admintag}}
-', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+{{admintag}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('GererThemes',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes\"}}
 
 {{button class=\"btn-info btn-block\" link=\"LookWiki\" text=\"Personnaliser le thème de ce wiki (couleurs, police...)\" }}
-{{button class=\"btn-default btn-block\" link=\"PageCss\" text=\"Ajouter du code CSS (zone sensible)\" title=\"Cette page ne peut contenir QUE du Css / voir la document" }}
+{{button class=\"btn-default btn-block\" link=\"PageCss\" text=\"Ajouter du code CSS (zone sensible)\" title=\"Cette page ne peut contenir QUE du Css / voir le document\" }}
 
 ------
 
@@ -350,7 +349,7 @@ Voici quelques possibilités autour des annuaires (à copier-coller - adapter)
 
 {{section bgcolor=\"#d9ead3\" class=\"cover black  shape-rounded text-left\" }}
 Pour modifier l\'apparence de votre wiki, utilisez le sélecteur de thème ci-dessous.
-L'aperçu de cette page sera mis à jour en direct mais le style ne sera appliqué à votre site que lorsqu\'un administrateur aura validé en cliquant sur le bouton \"Mettre à jour\".
+L\'aperçu de cette page sera mis à jour en direct mais le style ne sera appliqué à votre site que lorsqu\'un administrateur aura validé en cliquant sur le bouton \"Mettre à jour\".
 Pour plus dinformations sur les possibiltés de personnalisation graphique [consultez la documentation](?doc#/docs/fr/admin?id=visualisermodifier-le-thème-graphique-affecté-à-chaque-page-de-votre-wiki)
 {{end elem=\"section\"}}
 
@@ -391,12 +390,12 @@ Ce bandeau de couleur a été créé grâce au composant de mise en forme nommé
 {{end elem=\"section\"}}
 
 ====Boutons====
-{{button link=\"{{rootPage}}\" class=\"btn btn-default\" text=\"btn-default\"}}
-{{button link=\"{{rootPage}}\" class=\"btn btn-primary\" text=\"btn-primary\"}}
-{{button link=\"{{rootPage}}\" class=\"btn btn-secondary-1\" text=\"btn-secondary-1\"}}
-{{button link=\"{{rootPage}}\" class=\"btn btn-secondary-2\" text=\"btn-secondary-2\"}}
-{{button link=\"{{rootPage}}\" class=\"btn btn-success\" text=\"btn-success\"}}
-{{button link=\"{{rootPage}}\" class=\"btn btn-info\" text=\"btn-info\"}}
+{{button link=\"config/root_page\" class=\"btn btn-default\" text=\"btn-default\"}}
+{{button link=\"config/root_page\" class=\"btn btn-primary\" text=\"btn-primary\"}}
+{{button link=\"config/root_page\" class=\"btn btn-secondary-1\" text=\"btn-secondary-1\"}}
+{{button link=\"config/root_page\" class=\"btn btn-secondary-2\" text=\"btn-secondary-2\"}}
+{{button link=\"config/root_page\" class=\"btn btn-success\" text=\"btn-success\"}}
+{{button link=\"config/root_page\" class=\"btn btn-info\" text=\"btn-info\"}}
 
 ====Etiquettes====
 {{label}}Label-default{{end elem=\"label\"}}
@@ -433,7 +432,7 @@ Contenu panel-warning
 {{panel class=\"panel-danger\" title=\"Titre danger\"}}
 Contenu panel-danger
 {{end elem=\"panel\"}}
-{{end elem=\"accordion\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
+{{end elem=\"accordion\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('MesContenus',  now(), '=====Mes contenus=====
 {{accordion }}
 {{panel title=\"Mes paramètres\"}}
@@ -480,8 +479,7 @@ Contenu panel-danger
 ('PageCss',  now(), '/*
 Voici un exemple de css custom pour le theme margot, il agit sur les variables css non personnalisables dans le theme et permet de faire des css sur mesure.
 Chaque ligne ci-dessous est à décommenter pour etre utilisée
-Pour en savoir plus, [[?doc#/docs/fr/admin?id=ajouter-du-code-css-personnalis%c3%a9 voyez la documentation à ce sujet]].
-
+Pour en savoir plus, <a href=\"?doc#/docs/fr/admin?id=ajouter-du-code-css-personnalis%c3%a9\">voyez la documentation à ce sujet</a>.
 */
 
 /* :root { */
