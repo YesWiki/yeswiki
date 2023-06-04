@@ -24,19 +24,28 @@ class ArchiveService
     // to do with the current wiki, specify the folders to includes
     public const FOLDERS_TO_INCLUDE = [
         'actions',
+        'custom',
+        'docs',
         'files',
         'lang',
-        'setup',
         'formatters',
-        'styles',
+        'handlers',
         'includes',
-        'custom',
+        'javascripts',
+        'lang',
+        'private',
+        'setup',
+        'styles',
         'templates',
+        'test',
         'themes',
         'tools',
-        'docs',
-        'javascripts',
         'vendor',
+    ];
+
+    // Some folders should not be included, like the existing backups
+    public const FOLDERS_TO_EXCLUDE = [
+        'private/backups',
     ];
 
     public const DEFAULT_PARAMS_TO_ANONYMIZE = [
@@ -624,6 +633,9 @@ class ArchiveService
         if ($resource !== true) return;
 
             if (!$onlyDb) {
+                // add empty cache folder
+                $zip->addEmptyDir('cache');
+
                 while (count($dirs)) {
                     $dir = current($dirs);
                     $dir = preg_replace("/(?:\/|\\\\|([^\/\\\\]))$/", "$1", $dir);
