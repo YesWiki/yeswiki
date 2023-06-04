@@ -68,22 +68,22 @@ return [
     "ADMIN_BACKUPS_CONFIRMATION_TO_DELETE" => "Les fichiers suivants seront supprimés par la sauvegarde.\n".
         "Veuillez confirmer leur suppression en cochant la case ci-dessous.\n<pre>{files}</pre>",
     "ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING" => "Lancement de la sauvegarde impossible car une sauvegarde semble être déjà en cours.\n".
-        "Suivez <a href=\"{helpBaseUrl}#/docs/fr/admin?id=erreur-de-sauvegarde-sauvegarde-déjà-en-cours\" title=\"Aide pour relancer une sauvegarde\" target=\"blank\">cette aide</a> pour corriger ceci.",
+        "Suivez <a href=\"{helpBaseUrl}#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde\" title=\"Aide pour relancer une sauvegarde\" target=\"blank\">cette aide</a> pour corriger ceci.",
     "ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE" => "Lancement de la sauvegarde impossible car le site est en hibernation.\n".
-        "Suivez <a href=\"{helpBaseUrl}#/docs/fr/admin?id=erreur-de-sauvegarde-site-en-hibernation\" title=\"Aide pour sortir d'hibernation\" target=\"blank\">cette aide</a> pour en sortir.",
+        "Suivez <a href=\"{helpBaseUrl}#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde\" title=\"Aide pour sortir d'hibernation\" target=\"blank\">cette aide</a> pour en sortir.",
     "ADMIN_BACKUPS_START_BACKUP_PATH_NOT_WRITABLE" => "Lancement de la sauvegarde impossible car le dossier de sauvegarde n'est pas accessible en écriture.\n".
-        "Suivez <a href=\"{helpBaseUrl}#/docs/fr/admin?id=erreur-de-sauvegarde-dossier-de-sauvegarde-non-accessible-en-%c3%a9criture\" title=\"Aide pour configurer le dossier de sauvegarde\" target=\"blank\">cette aide</a> pour configurer le dossier de sauvegarde.",
+        "Suivez <a href=\"{helpBaseUrl}#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde\" title=\"Aide pour configurer le dossier de sauvegarde\" target=\"blank\">cette aide</a> pour configurer le dossier de sauvegarde.",
     "ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE" => "Mise à jour forcée impossible",
     "ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING" => "Mise à jour lancée (veuillez patienter)",
     "ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC" => "Lancement de la sauvegarde impossible \n" .
         "Car il n'est pas possible de lancer des commandes console sur le serveur ".
-        "(<a href=\"{helpBaseUrl}#/docs/fr/admin?id=erreur-de-sauvegarde-lancement-impossible-des-commandes-console-sur-le-serveur\" title=\"Aide sur la commande console\" target=\"blank\">voir aide</a>).",
+        "(<a href=\"{helpBaseUrl}#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde\" title=\"Aide sur la commande console\" target=\"blank\">voir aide</a>).",
     "ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE" => "Lancement de la sauvegarde impossible car le dossier de sauvegarde est accessible sur internet.\n".
-        "Suivez <a href=\"{helpBaseUrl}#/docs/fr/admin?id=erreur-de-sauvegarde-dossier-de-sauvegarde-accessible-sur-internet\" title=\"Aide pour restreindre l'accès au dossier de sauvegarde\" target=\"blank\">cette aide</a> pour restreindre l'accès au dossier de sauvegarde.",
+        "Suivez <a href=\"{helpBaseUrl}?#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde\" title=\"Aide pour restreindre l'accès au dossier de sauvegarde\" target=\"blank\">cette aide</a> pour restreindre l'accès au dossier de sauvegarde.",
     "ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE" => "Lancement de la sauvegarde impossible \n".
         "Il n'y a plus assez d'espace disque disponible pour une nouvelle sauvegarde.",
     "ADMIN_BACKUPS_START_BACKUP_NOT_DB" => "Lancement de la sauvegarde non optimal \n".
-        "L'utilitaire d'export de base de données ('mysqldump') n'est pas accessible (<a href=\"{helpBaseUrl}#/docs/fr/admin?id=erreur-de-sauvegarde-mysqldump-inaccessible\" title=\"Aide sur mysqldump\" target=\"blank\">voir aide</a>).",
+        "L'utilitaire d'export de base de données ('mysqldump') n'est pas accessible (<a href=\"{helpBaseUrl}#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde\" title=\"Aide sur mysqldump\" target=\"blank\">voir aide</a>).",
 
     // /javascripts/handlers/revisions.js
     "REVISIONS_COMMIT_DIFF" => "Modifs apportées par cette version",
