@@ -179,9 +179,9 @@ class ArchiveController extends YesWikiController
         return $this->archiveService->startArchive(
             $savefiles,
             $savedatabase,
+            [],
+            [],
             $startAsync
         );
     }
-
-
 }
