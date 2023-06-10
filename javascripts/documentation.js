@@ -73,7 +73,7 @@ window.$docsify = {
             const height = data.split('preview=')[1] || 200
             const codeDom = preDom.querySelector('code')
             const code = codeDom.textContent
-            let url = `${baseUrl}root/render`
+            let url = `${baseUrl}wiki/render`
             url += url.includes('?') ? '&' : '?'
             url += `content=${encodeURIComponent(code)}`
             const preview = document.createElement('div')
