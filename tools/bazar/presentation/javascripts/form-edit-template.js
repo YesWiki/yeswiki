@@ -1353,6 +1353,13 @@ function initializeFormbuilder(formAndListIds) {
     }
   })
 
+  // disable bf_titre identifier
+  $('.fld-name').each(function() {
+    if ($(this).val() === 'bf_titre') {
+      $(this).attr('disabled', true)
+    }
+  })
+
   // Each 300ms update the text field converting form bulder content into wiki syntax
   let formBuilderInitialized = false
   let existingFieldsNames = []; let
