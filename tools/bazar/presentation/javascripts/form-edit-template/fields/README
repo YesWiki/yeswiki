@@ -12,6 +12,8 @@ export default {
   },
   // Disable default attributes from jQuery formBuilder
   disabledAttributes: [],
+  // If you want some attributes to displayed in advance attributes section
+  advancedAttributes: [],
   // mapping for old yeswiki syntax (field***attribute***other_attribute)
   attributesMapping: {},
   // How to render the input
