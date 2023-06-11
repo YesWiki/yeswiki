@@ -86,7 +86,11 @@ export function parseWikiTextIntoJsonData(text) {
       }
       if (!fieldObject.label) {
         fieldObject.label = wikiType
-        for (let k = 0; k < fields.length; k++) if (fields[k].name == wikiType) fieldObject.label = fields[k].label
+        for (const key in window.formBuilderFields) {
+          if (window.formBuilderFields[key].name == wikiType){
+            fieldObject.label = window.formBuilderFields[key].label
+          }
+        }
       }
       result.push(fieldObject)
     }
