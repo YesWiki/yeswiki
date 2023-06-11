@@ -18,7 +18,7 @@ export default {
       }
     },
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
-    size: { label: _t('BAZ_FORM_EDIT_TEXTAREA_SIZE_LABEL'), value: '' },
+    // size: { label: _t('BAZ_FORM_EDIT_TEXTAREA_SIZE_LABEL'), value: '' },
     rows: {
       label: _t('BAZ_FORM_EDIT_TEXTAREA_ROWS_LABEL'),
       type: 'number',
@@ -28,7 +28,9 @@ export default {
     write: writeconf,
     semantic: semanticConf
   },
+  advancedAttributes: ['read', 'write', 'semantic', 'pattern', 'syntax', 'rows'],
   // disabledAttributes: [],
   attributesMapping: { ...defaultMapping, ...{ 4: 'rows', 7: 'syntax' } },
   // renderInput(fieldData) {},
 }
+
