@@ -28,6 +28,7 @@ export default {
     write: writeconf,
     semantic: semanticConf
   },
+  advancedAttributes: ['read', 'write', 'semantic', 'pattern', 'defaultIdentifier', 'name', 'seeEmailAcls', 'readWhenForm'],
   // disabledAttributes: [],
   attributesMapping: {
     ...defaultMapping,
