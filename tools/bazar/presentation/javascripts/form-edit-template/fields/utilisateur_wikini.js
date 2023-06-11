@@ -28,6 +28,7 @@ export default {
       description: _t('BAZ_FORM_EDIT_ADD_TO_GROUP_DESCRIPTION')
     }
   },
+  advancedAttributes: ['autoupdate_email', 'auto_add_to_group'],
   // disabledAttributes: [],
   attributesMapping: {
     ...defaultMapping,
