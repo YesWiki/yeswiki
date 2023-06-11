@@ -57,3 +57,15 @@ export function addAdvancedAttributesSection($field) {
     $field.find('.form-elements').append($button)
   }
 }
+
+export function adjustJqueryBuilderUI($field) {
+  // Change names
+  $field.find('.form-group.name-wrap label').text(_t('BAZ_FORM_EDIT_UNIQUE_ID'))
+  $field.find('.form-group.label-wrap label').text(_t('BAZ_FORM_EDIT_NAME'))
+  // Changes icons and icons helpers
+  $field.find('a[type=remove].formbuilder-icon-cancel')
+    .removeClass('formbuilder-icon-cancel').addClass('btn-icon')
+    .html('<i class="fa fa-trash"></i>')
+  $field.find('a[type=copy].formbuilder-icon-copy').attr('title', _t('DUPLICATE'))
+  $field.find('a[type=edit].formbuilder-icon-pencil').attr('title', _t('BAZ_FORM_EDIT_HIDE'))
+}

@@ -3,7 +3,7 @@ import { listAndFormUserValues } from '../fields/commons/attributes.js'
 
 // formAndListIds is defined in forms_form.twig
 
-export function initLitsOrFormIdAttribute() {
+export function initListOrFormIdAttribute() {
   // when selecting between data source lists or forms, we need to populate again the
   // listOfFormId select with the proper set of options
   $('.listeOrFormId-wrap:not(.initialized)').each(function() {

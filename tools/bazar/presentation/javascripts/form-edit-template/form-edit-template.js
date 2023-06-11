@@ -26,8 +26,14 @@ import tabs from './fields/tabs.js'
 import tabchange from './fields/tabchange.js'
 
 import { parseWikiTextIntoJsonData, formatJsonDataIntoWikiText } from './yeswiki-syntax-converter.js'
-import { copyMultipleSelectValues, mapFieldsConf, addAdvancedAttributesSection, adjustDefaultAcls } from './form-builder-helper.js'
-import { initLitsOrFormIdAttribute } from './attributes/list-form-id-attribute.js'
+import {
+  copyMultipleSelectValues,
+  mapFieldsConf,
+  addAdvancedAttributesSection,
+  adjustDefaultAcls,
+  adjustJqueryBuilderUI
+} from './form-builder-helper.js'
+import { initListOrFormIdAttribute } from './attributes/list-form-id-attribute.js'
 import I18nOption from './i18n.js'
 
 const $formBuilderTextInput = $('#form-builder-text')
@@ -104,15 +110,16 @@ function initializeFormbuilder() {
       setTimeout(() => {
         const $field = $(`#${fieldId}`)
         addAdvancedAttributesSection($field)
-        initLitsOrFormIdAttribute($field)
-      }, 0)
-    }
-  })
+        initListOrFormIdAttribute($field)
+        adjustJqueryBuilderUI($field)
 
-  // disable bf_titre identifier
-  $('.fld-name').each(function() {
-    if ($(this).val() === 'bf_titre') {
-      $(this).attr('disabled', true)
+        // disable bf_titre identifier edition
+        $field.find('.fld-name').each(function() {
+          if ($(this).val() === 'bf_titre') {
+            $(this).attr('disabled', true)
+          }
+        })
+      }, 0)
     }
   })
 
@@ -130,23 +137,9 @@ function initializeFormbuilder() {
       formBuilderInitialized = true
     }
     if ($formBuilderTextInput.is(':focus')) return
-    // Change names
-    $('.form-group.name-wrap label').text(_t('BAZ_FORM_EDIT_UNIQUE_ID'))
-    $('.form-group.label-wrap label').text(_t('BAZ_FORM_EDIT_NAME'))
+
     existingFieldsNames = []
     $('.fld-name').each(function() { existingFieldsNames.push($(this).val()) })
-
-    // Transform input[textarea] in real textarea
-    $('input[type="textarea"]').replaceWith(function() {
-      const domTextarea = document.createElement('textarea')
-      domTextarea.id = this.id
-      domTextarea.name = this.name
-      domTextarea.value = this.value
-      domTextarea.classList = this.classList
-      domTextarea.title = this.title
-      domTextarea.rows = $(this).attr('rows')
-      return domTextarea
-    })
 
     // Slugiy field names
     $('.fld-name').each(function() {
@@ -202,6 +195,18 @@ function initializeFormbuilder() {
 
     existingFieldsIds = getFieldsIds()
 
+    // Transform input[textarea] in real textarea
+    $('input[type="textarea"]').replaceWith(function() {
+      const domTextarea = document.createElement('textarea')
+      domTextarea.id = this.id
+      domTextarea.name = this.name
+      domTextarea.value = this.value
+      domTextarea.classList = this.classList
+      domTextarea.title = this.title
+      domTextarea.rows = $(this).attr('rows')
+      return domTextarea
+    })
+
     $('.text-field select[name=subtype]:not(.initialized)').on('change', function() {
       $(this).addClass('initialized')
       const $parent = $(this).closest('.form-field')
@@ -228,13 +233,6 @@ function initializeFormbuilder() {
       newVal = newVal.replace(/,+/g, ',')
       $(this).val(newVal)
     })
-
-    // Changes icons and icons helpers
-    $('a[type=remove].icon-cancel')
-      .removeClass('icon-cancel')
-      .html('<i class="fa fa-trash"></i>')
-    $('a[type=copy].icon-copy').attr('title', _t('DUPLICATE'))
-    $('a[type=edit].icon-pencil').attr('title', _t('BAZ_FORM_EDIT_HIDE'))
   }, 300)
 
   $('#formbuilder-link').click(initializeBuilderFromTextInput)
