@@ -12,6 +12,7 @@ export default {
     write: writeconf,
     semantic: semanticConf
   },
+  advancedAttributes: ['read', 'write', 'semantic'],
   // disabledAttributes: [],
   renderInput(fieldData) {
     return { field: `<input type="url" placeholder="${fieldData.value || ''}"/>` }
