@@ -27,6 +27,7 @@ import tabchange from './fields/tabchange.js'
 
 import { parseWikiTextIntoJsonData, formatJsonDataIntoWikiText } from './yeswiki-syntax-converter.js'
 import { copyMultipleSelectValues, mapFieldsConf } from './form-builder-helper.js'
+import { addAdvancedAttributesSection } from './advanced-attributes-display.js'
 import I18nOption from './i18n.js'
 
 const $formBuilderTextInput = $('#form-builder-text')
@@ -99,10 +100,10 @@ function initializeFormbuilder() {
           : [' * '] // everyone by default
       }
       if (field.type === 'acls' && !field.hasOwnProperty('comment')) {
-        field.comment = ['comments-closed']// comments-closed by default
+        field.comment = ['comments-closed'] // comments-closed by default
       }
       if (field.type === 'champs_mail' && !('seeEmailAcls' in field)) {
-        field.seeEmailAcls = [' % ']// owner and @admins by default
+        field.seeEmailAcls = [' % '] // owner and @admins by default
       }
     }
   })
@@ -133,6 +134,8 @@ function initializeFormbuilder() {
     $('.form-group.label-wrap label').text(_t('BAZ_FORM_EDIT_NAME'))
     existingFieldsNames = []
     $('.fld-name').each(function() { existingFieldsNames.push($(this).val()) })
+
+    addAdvancedAttributesSection()
 
     // Transform input[textarea] in real textarea
     $('input[type="textarea"]').replaceWith(function() {
@@ -252,7 +255,7 @@ function initializeFormbuilder() {
       $(this).val(newVal)
     })
 
-    // Changes icons and icones helpers
+    // Changes icons and icons helpers
     $('a[type=remove].icon-cancel')
       .removeClass('icon-cancel')
       .html('<i class="fa fa-trash"></i>')

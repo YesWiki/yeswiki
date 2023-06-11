@@ -169,7 +169,7 @@ export default {
             <div class="form-group">
               <label></label>
               <div class="input-wrap">
-                <button class="btn btn-info btn-xs">${_t('GEOLOCATER_SEE_ADVANCED_PARAMS')}</button>
+                <button class="btn btn-info btn-xs">${_t('BAZ_FORM_ADVANCED_PARAMS')}</button>
               </div>
             </div>
           `)
@@ -177,11 +177,9 @@ export default {
         $advancedParams.find('button').on('click', function(event) {
           if ($(this).hasClass('opened')) {
             $(this).removeClass('opened')
-            $(this).html(_t('GEOLOCATER_SEE_ADVANCED_PARAMS'))
             toggleStates('hide')
           } else {
             $(this).addClass('opened')
-            $(this).html(_t('GEOLOCATER_HIDE_ADVANCED_PARAMS'))
             toggleStates('show')
           }
           event.preventDefault()

@@ -33,6 +33,7 @@ export default {
       placeholder: `${_t('BAZ_FORM_EDIT_ADVANCED_MODE')} Ex: [0-9]+ ou [A-Za-z]{3}, ...`
     }
   },
+  advancedAttributes: ['read', 'write', 'semantic', 'pattern'],
   // disabledAttributes: [],
   renderInput(fieldData) {
     let string = `<input type="${fieldData.subtype}"`

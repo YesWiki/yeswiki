@@ -48,7 +48,7 @@
   border: none;
   box-shadow: none;
 }
-#form-builder-container  .form-wrap.form-builder .frmb .form-elements .input-wrap>input[type='checkbox'] {
+#form-builder-container .form-wrap.form-builder .frmb .form-elements .input-wrap>input[type='checkbox'] {
   margin: 0;
 }
 /* Remove checkbox style inside form-builder*/
@@ -59,6 +59,19 @@
   pointer-events: initial;
 }
 
+/* Advanced Attributes */
+#form-builder-container .form-field:not(.show-advanced-attributes) .form-group.advanced {
+  display: none !important;
+}
+#form-builder-container .form-field .form-group.advanced {
+  order: 200 !important;
+}
+#form-builder-container .show-advanced-attributes-btn {
+  order: 199;
+  margin: .5rem 0 1rem 0;
+}
+
+/* Attributes */
 #form-builder-container .required-wrap {
   display: flex;
   align-items: center
