@@ -23,6 +23,7 @@ export default {
     write: writeconf,
     semantic: semanticConf
   },
+  advancedAttributes: ['read', 'write', 'semantic', 'thumb_height','thumb_width','resize_height','resize_width'],
   // disabledAttributes: [],
   attributesMapping: {
     ...defaultMapping,
