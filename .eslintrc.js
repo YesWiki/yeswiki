@@ -25,6 +25,7 @@ module.exports = {
     'import/no-unresolved': 'off',
     'import/extensions': ['error', 'always'],
     'import/prefer-default-export': ['off'],
+    'no-use-before-define': ['off'],
     eqeqeq: ['error', 'smart'],
     'comma-dangle': ['error', 'never'],
     'object-curly-newline': ['error', { multiline: true }],
