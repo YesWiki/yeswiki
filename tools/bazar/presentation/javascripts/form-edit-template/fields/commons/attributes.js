@@ -1,20 +1,19 @@
-// groupsList and formAndListIds variables are created in forms_form.twig
-
-const $formBuilderTextInput = $('#form-builder-text')
+// groupsList and formAndListIds are defined in forms_form.twig
 
 // When user add manuall via wikiCode a list or a formId that does not exist, keep the value
 // so it can be added in the select option list
-const listAndFormUserValues = {}
-$formBuilderTextInput.val().trim().split('\n').forEach((textField) => {
+const _listAndFormUserValues = {}
+$('#form-builder-text').val().trim().split('\n').forEach((textField) => {
   const fieldValues = textField.split('***')
   if (fieldValues.length > 1) {
     const [field, value] = fieldValues
     if (['checkboxfiche', 'checkbox', 'liste', 'radio', 'listefiche', 'radiofiche'].includes(field)
-        && value && !(value in formAndListIds)) {
-      listAndFormUserValues[value] = value
+        && value && value != ' ' && !(value in formAndListIds.forms) && !(value in formAndListIds.lists)) {
+      _listAndFormUserValues[value] = value
     }
   }
 })
+export const listAndFormUserValues = _listAndFormUserValues
 
 // Some attributes configuration used in multiple fields
 export const visibilityOptions = {
@@ -87,14 +86,6 @@ export const selectConf = {
       ...formAndListIds.forms,
       ...listAndFormUserValues
     }
-  },
-  listId: {
-    label: '',
-    options: { ...formAndListIds.lists, ...listAndFormUserValues }
-  },
-  formId: {
-    label: '',
-    options: { ...formAndListIds.forms, ...listAndFormUserValues }
   },
   defaultValue: {
     label: _t('BAZ_FORM_EDIT_SELECT_DEFAULT'),

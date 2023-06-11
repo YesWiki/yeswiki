@@ -28,6 +28,7 @@ import tabchange from './fields/tabchange.js'
 import { parseWikiTextIntoJsonData, formatJsonDataIntoWikiText } from './yeswiki-syntax-converter.js'
 import { copyMultipleSelectValues, mapFieldsConf } from './form-builder-helper.js'
 import { addAdvancedAttributesSection } from './advanced-attributes-display.js'
+import { initLitsOrFormIdAttribute } from './list-form-id-attribute.js'
 import I18nOption from './i18n.js'
 
 const $formBuilderTextInput = $('#form-builder-text')
@@ -136,6 +137,7 @@ function initializeFormbuilder() {
     $('.fld-name').each(function() { existingFieldsNames.push($(this).val()) })
 
     addAdvancedAttributesSection()
+    initLitsOrFormIdAttribute()
 
     // Transform input[textarea] in real textarea
     $('input[type="textarea"]').replaceWith(function() {
@@ -164,31 +166,6 @@ function initializeFormbuilder() {
       const wikiText = formatJsonDataIntoWikiText(formData)
       if (wikiText) $formBuilderTextInput.val(wikiText)
     }
-
-    // when selecting between data source lists or forms, we need to populate again the
-    // listOfFormId select with the proper set of options
-    $('.radio-group-field, .checkbox-group-field, .select-field')
-      .find('select[name=subtype2]:not(.initialized)')
-      .on('change', function() {
-        $(this).addClass('initialized')
-        const visibleSelect = $(this)
-          .closest('.form-field')
-          .find('select[name=listeOrFormId]')
-        const selectedValue = visibleSelect.val()
-        visibleSelect.empty()
-        const optionToAddToSelect = $(this)
-          .closest('.form-field')
-          .find(`select[name=${$(this).val()}Id] option`)
-        visibleSelect.append(new Option('', '', false))
-        optionToAddToSelect.each(function() {
-          const optionKey = $(this).attr('value')
-          const optionLabel = $(this).text()
-          const isSelected = optionKey == selectedValue
-          const newOption = new Option(optionLabel, optionKey, false, isSelected)
-          visibleSelect.append(newOption)
-        })
-      })
-      .trigger('change')
 
     $('.fld-name').each(function() {
       let name = $(this).val()
