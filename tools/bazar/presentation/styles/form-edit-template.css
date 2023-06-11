@@ -88,6 +88,14 @@
 
 .form-field { overflow: hidden; }
 
+#form-builder-container .listeOrFormId-wrap .input-wrap {
+  display: flex;
+}
+#form-builder-container .listeOrFormId-wrap:not([data-source=list]) .edit-list-btn,
+#form-builder-container .listeOrFormId-wrap:not([data-source=list]) .add-list-btn {
+  display: none !important;
+}
+
 /* Order of the field attributes */
 .form-wrap.form-builder .frmb .form-elements { display: flex; flex-direction: column; }
 .form-wrap.form-builder .frmb .form-field .form-group { order: 100; }
