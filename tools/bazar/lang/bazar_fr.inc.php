@@ -75,6 +75,7 @@ return [
     'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE' => 'Le nouveau formulaire a bien &eacute;t&eacute; enregistr&eacute;.',
     'BAZ_NOUVELLE_LISTE_ENREGISTREE' => 'La nouvelle liste a bien &eacute;t&eacute; enregistr&eacute;e.',
     'BAZ_FORMULAIRE_MODIFIE' => 'Le formulaire a bien &eacute;t&eacute; modifi&eacute;.',
+    'BAZ_FORM_NEED_TITLE' => 'Votre formulaire doit contenir un titre. Vous pouvez soit ajouter un champ texte avec comme identifiant "bf_titre", soit un champ "titre automatique".',
     'BAZ_LISTE_MODIFIEE' => 'La liste a bien &eacute;t&eacute; modifi&eacute;e.',
     'BAZ_CONFIRM_SUPPRIMER_FICHE' => 'Etes vous s&ucirc;r de vouloir supprimer la fiche ?',
     'BAZ_FICHE_SUPPRIMEE' => 'La fiche a bien &eacute;t&eacute; supprim&eacute;e.',

@@ -54,14 +54,21 @@ class FormManager
             return null;
         }
 
+        $form = $this->getFromRawData($form);
+
+        $this->cachedForms[$formId] = $form;
+
+        return $form;
+    }
+
+    public function getFromRawData($form)
+    {
         foreach ($form as $key => $value) {
             $form[$key] = _convert($value, 'ISO-8859-15');
         }
 
         $form['template'] = $this->parseTemplate($form['bn_template']);
         $form['prepared'] = $this->prepareData($form);
-
-        $this->cachedForms[$formId] = $form;
 
         return $form;
     }

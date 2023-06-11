@@ -75,6 +75,7 @@ return [
     'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE' => 'The new form was successfully created.',
     'BAZ_NOUVELLE_LISTE_ENREGISTREE' => 'The new list was successfully created.',
     'BAZ_FORMULAIRE_MODIFIE' => 'The form was successfully modified.',
+    'BAZ_FORM_NEED_TITLE' => 'You need to add a title to the form, etiher by adding a field with "bf_titre" identifier, or by adding an automatic title field',
     'BAZ_LISTE_MODIFIEE' => 'The list was successfully modified.',
     'BAZ_CONFIRM_SUPPRIMER_FICHE' => 'Are you sure you want to delete this entry ?',
     'BAZ_FICHE_SUPPRIMEE' => 'The entry was successfully deleted.',
