@@ -1,5 +1,5 @@
 // function to render help for tabs and tabchange
-const templateHelper = {
+export default {
   cache: {},
   holders: {},
   ids: {},

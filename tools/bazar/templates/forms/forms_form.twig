@@ -208,7 +208,4 @@
 <script>
   var groupsList = {{ groupsList|json_encode()|raw }};
   var formAndListIds = {{ formAndListIds|json_encode()|raw }};
-  document.addEventListener("DOMContentLoaded", function() {
-    initializeFormbuilder(formAndListIds);
-  });
 </script>
