@@ -47,8 +47,8 @@ function search_template_files($directory)
                 if (is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles')) {
                     $dir2 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles');
                     while (false !== ($file2 = readdir($dir2))) {
-                        if (substr($file2, -4, 4)=='.css' || substr($file2, -5, 5)=='.less') {
-                            $tab_themes[$file]["style"][$file2] = $file2;
+                        if (substr($file2, -4, 4) == '.css') {
+                            $tab_themes[$file]["style"][$file2] = remove_extension($file2);
                         }
                     }
                     closedir($dir2);
@@ -56,7 +56,7 @@ function search_template_files($directory)
                 $dir3 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes');
                 while (false !== ($file3 = readdir($dir3))) {
                     if (substr($file3, -9, 9)=='.tpl.html') {
-                        $tab_themes[$file]["squelette"][$file3]=$file3;
+                        $tab_themes[$file]["squelette"][$file3] = remove_extension($file3);
                     }
                 }
                 closedir($dir3);
@@ -85,6 +85,11 @@ function search_template_files($directory)
     }
 
     return $tab_themes;
+}
+
+function remove_extension($filename)
+{
+    return preg_replace("/\..*/i", '', $filename);
 }
 
 
@@ -351,12 +356,6 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
         $bgselector = '';
     }
 
-    //sort array
-    $templates = $themeManager->getTemplates();
-    ksort($templates[$themeManager->getFavoriteTheme()]['squelette']);
-    ksort($templates[$themeManager->getFavoriteTheme()]['style']);
-    $themeManager->setTemplates($templates);
-
     // page list
     $tablistWikinames = $wiki->LoadAll(
         'SELECT DISTINCT tag FROM '.$wiki->GetConfigValue('table_prefix').'pages WHERE latest="Y"'
@@ -374,8 +373,7 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
         'id' => $id,
         'class' => $formclass,
         'bgselector' => $bgselector,
-        'themeNames' => array_keys($templates),
-        'themes' => $templates,
+        'themes' => $themeManager->getTemplates(),
         'listWikinames' => $listWikinames,
         'favoriteTheme' => $themeManager->getFavoriteTheme(),
         'favoriteSquelette' => $themeManager->getFavoriteSquelette(),
