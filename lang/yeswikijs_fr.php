@@ -101,6 +101,12 @@ return [
     'FAVORITES_ADDED' => 'Favori ajouté',
     'FAVORITES_REMOVED' => 'Favori supprimé',
 
+    // javascripts/list-form-id-attribute.js
+    'LIST_CREATE_TITLE' => 'Nouvelle Liste',
+    'LIST_UPDATE_TITLE' => 'Modifier la Liste',
+    'LIST_CREATED' => 'La liste a bien été crée',
+    'LIST_UPDATED' => 'La liste a été mise à jour avec succès',
+
     // javascripts/multidelete.js
     "MULTIDELETE_END" => "Suppressions réalisées",
     "MULTIDELETE_ERROR" => "L'élément {itemId} n'a pas été supprimé ! {error}",

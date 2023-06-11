@@ -239,7 +239,7 @@ function initializeFormbuilder() {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-  initializeFormbuilder();
+  initializeFormbuilder()
 })
 
 function getFieldsIds() {

@@ -56,8 +56,14 @@ class ListController extends YesWikiController
                     ++$i;
                 }
             }
-            
-            $this->listManager->create($_POST['titre_liste'], $values);
+
+            $listeId = $this->listManager->create($_POST['titre_liste'], $values);
+
+            if ($this->shouldPostMessageOnSubmit()) {
+                return $this->render('@core/iframe_result.twig', [
+                    "data" => ["msg" => "list_created", "id" => $listeId, "title" => $_POST['titre_liste']]
+                ]);
+            }
 
             $this->wiki->Redirect(
                 $this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
@@ -65,6 +71,11 @@ class ListController extends YesWikiController
         }
 
         return $this->render('@bazar/lists/list_form.twig');
+    }
+
+    private function shouldPostMessageOnSubmit()
+    {
+        return isset($_GET["onsubmit"])  && $_GET["onsubmit"] == "postmessage";
     }
 
     public function update($id)
@@ -84,6 +95,12 @@ class ListController extends YesWikiController
                 }
 
                 $this->listManager->update($id, $_POST['titre_liste'], $values);
+
+                if ($this->shouldPostMessageOnSubmit()) {
+                    return $this->render('@core/iframe_result.twig', [
+                        "data" => ["msg" => "list_updated", "id" => $id, "title" => $_POST['titre_liste']]
+                    ]);
+                }
 
                 $this->wiki->Redirect(
                     $this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)

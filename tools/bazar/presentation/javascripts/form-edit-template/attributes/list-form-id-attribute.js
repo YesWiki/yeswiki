@@ -1,5 +1,5 @@
-
 import { listAndFormUserValues } from '../fields/commons/attributes.js'
+import openRemoteModal from '../../../../../../javascripts/helpers/remote-modal.js'
 
 // formAndListIds is defined in forms_form.twig
 
@@ -13,7 +13,7 @@ export function initListOrFormIdAttribute() {
 
     $attributeWrap.addClass('initialized')
 
-    addCreateEditListButton($select)
+    addCreateEditListButton($select, $sourceSelect)
 
     $sourceSelect.on('change', () => {
       $attributeWrap.attr('data-source', $sourceSelect.val())
@@ -44,19 +44,41 @@ function toggleEditListButtonVisbility($attributeWrap, $select) {
   $select.val() ? $btn.show() : $btn.hide()
 }
 
-function addCreateEditListButton($select) {
+function addCreateEditListButton($select, $sourceSelect) {
   const $editListButton = $(`<button type="button" class="btn btn-primary btn-icon edit-list-btn">
     <i class="fa fa-pen"></i>
   </button>`)
   $editListButton.on('click', () => {
-    console.log("Edit list", $select.val())
+    const url = wiki.url(`?BazaR/iframe&vue=listes&action=modif_liste&voirmenu=0&onsubmit=postmessage&idliste=${$select.val()}`)
+    const modal = openRemoteModal(_t('LIST_UPDATE_TITLE'), url)
+    window.onmessage = function(e) {
+      if (e.data.msg === 'list_updated') {
+        // update the options (list name might have changed)
+        formAndListIds.lists[e.data.id] = e.data.title
+        updateOptionsList($select, $sourceSelect)
+        toastMessage(_t('LIST_UPDATED'), 3000, 'alert alert-success')
+        modal.close()
+      }
+    }
   })
 
   const $createListButton = $(`<button type="button" class="btn btn-primary btn-icon add-list-btn">
     <i class="fa fa-plus"></i>
   </button>`)
   $createListButton.on('click', () => {
-    console.log("Create new list")
+    const url = wiki.url('?BazaR/iframe&vue=listes&action=saisir_liste&voirmenu=0&onsubmit=postmessage')
+    const modal = openRemoteModal(_t('LIST_CREATE_TITLE'), url)
+    window.onmessage = function(e) {
+      if (e.data.msg === 'list_created') {
+        // update the options with the new List
+        formAndListIds.lists[e.data.id] = e.data.title
+        updateOptionsList($select, $sourceSelect)
+        // select the newly created List
+        $select.val(e.data.id)
+        toastMessage(_t('LIST_CREATED'), 3000, 'alert alert-success')
+        modal.close()
+      }
+    }
   })
   $select.closest('.input-wrap').append($editListButton).append($createListButton)
 }
