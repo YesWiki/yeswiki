@@ -13,6 +13,7 @@ export default {
     write: writeconf,
     semantic: semanticConf
   },
+  advancedAttributes: ['read', 'write', 'semantic', 'maxsize'],
   // disabledAttributes: [],
   attributesMapping: { ...defaultMapping, ...{ 3: 'maxsize', 6: 'readlabel' } },
   // renderInput(fieldData) {},
