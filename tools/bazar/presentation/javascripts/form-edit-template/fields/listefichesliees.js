@@ -36,6 +36,7 @@ export default {
     write: writeconf,
     semantic: semanticConf
   },
+  advancedAttributes: ['read', 'write', 'semantic', 'template', 'type_link', 'param','query'],
   // disabledAttributes: [],
   attributesMapping: {
     0: 'type',
