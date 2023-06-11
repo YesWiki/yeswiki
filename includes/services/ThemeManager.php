@@ -369,11 +369,6 @@ class ThemeManager
         return $this->useFallbackTheme;
     }
 
-    public function setTemplates(array $templates)
-    {
-        $this->templates = $templates;
-    }
-
     protected function getConfigAsStringOrDefault(string $key, string $default): string
     {
         return ($this->params->has($key) && !empty($this->params->get($key))
