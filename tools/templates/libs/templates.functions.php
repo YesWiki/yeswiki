@@ -43,37 +43,39 @@ function search_template_files($directory)
     $dir = opendir($directory);
     while ($dir && ($file = readdir($dir)) !== false) {
         if ($file!='.' && $file!='..' && $file!='CVS' && is_dir($directory.DIRECTORY_SEPARATOR.$file)) {
-            if (is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes')) {
-                if (is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles')) {
-                    $dir2 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles');
-                    while (false !== ($file2 = readdir($dir2))) {
-                        if (substr($file2, -4, 4) == '.css') {
-                            $tab_themes[$file]["style"][$file2] = remove_extension($file2);
-                        }
+            $pathToStyles = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles';
+            if (is_dir($pathToStyles) && $dir2 = opendir($pathToStyles)) {
+                while (false !== ($file2 = readdir($dir2))) {
+                    if (substr($file2, -4, 4) == '.css') {
+                        $tab_themes[$file]["style"][$file2] = remove_extension($file2);
                     }
-                    closedir($dir2);
                 }
-                $dir3 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes');
+                closedir($dir2);
+            }
+
+            $pathToSquelettes = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes';
+            if (is_dir($pathToSquelettes) && $dir3 = opendir($pathToSquelettes)) {
                 while (false !== ($file3 = readdir($dir3))) {
                     if (substr($file3, -9, 9)=='.tpl.html') {
                         $tab_themes[$file]["squelette"][$file3] = remove_extension($file3);
                     }
                 }
                 closedir($dir3);
-                $pathToPresets = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'presets';
-                if (is_dir($pathToPresets) && $dir4 = opendir($pathToPresets)) {
-                    while (false !== ($file4 = readdir($dir4))) {
-                        if (substr($file4, -4, 4)=='.css' && file_exists($pathToPresets.'/'.$file4)) {
-                            $css = file_get_contents($pathToPresets.'/'.$file4);
-                            if (!empty($css)) {
-                                $tab_themes[$file]["presets"][$file4] = $css;
-                            }
+            }
+
+            $pathToPresets = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'presets';
+            if (is_dir($pathToPresets) && $dir4 = opendir($pathToPresets)) {
+                while (false !== ($file4 = readdir($dir4))) {
+                    if (substr($file4, -4, 4)=='.css' && file_exists($pathToPresets.'/'.$file4)) {
+                        $css = file_get_contents($pathToPresets.'/'.$file4);
+                        if (!empty($css)) {
+                            $tab_themes[$file]["presets"][$file4] = $css;
                         }
                     }
-                    closedir($dir4);
-                    if (isset($tab_themes[$file]["presets"]) && is_array($tab_themes[$file]["presets"])) {
-                        ksort($tab_themes[$file]["presets"]);
-                    }
+                }
+                closedir($dir4);
+                if (isset($tab_themes[$file]["presets"]) && is_array($tab_themes[$file]["presets"])) {
+                    ksort($tab_themes[$file]["presets"]);
                 }
             }
         }
