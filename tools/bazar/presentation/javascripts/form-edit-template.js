@@ -1,13 +1,13 @@
-var $formBuilderTextInput = $('#form-builder-text')
-var $formBuilderContainer = $('#form-builder-container')
+const $formBuilderTextInput = $('#form-builder-text')
+const $formBuilderContainer = $('#form-builder-container')
 let formBuilder
 
 // When user add manuall via wikiCode a list or a formId that does not exist, keep the value
 // so it can be added the select option list
-var listAndFormUserValues = {}
+const listAndFormUserValues = {}
 // Fill the listAndFormUserValues
-var text = $formBuilderTextInput.val().trim()
-var textFields = text.split('\n')
+const text = $formBuilderTextInput.val().trim()
+const textFields = text.split('\n')
 for (var i = 0; i < textFields.length; i++) {
   const textField = textFields[i]
   const fieldValues = textField.split('***')
@@ -30,35 +30,13 @@ for (var i = 0; i < textFields.length; i++) {
   }
 }
 // Custom fields to add to form builder
-var fields = [
-  {
-    label: _t('BAZ_FORM_EDIT_TEXTAREA_LABEL'),
-    name: 'textarea',
-    attrs: { type: 'textarea' },
-    icon:
-      '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-text" viewBox="0 0 16 16"><path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/><path d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/></svg>'
-  },
-  {
-    label: _t('BAZ_FORM_EDIT_SELECT_LABEL'),
-    name: 'select',
-    attrs: { type: 'select' },
-    icon:
-      '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-menu-button-wide-fill" viewBox="0 0 16 16"><path d="M1.5 0A1.5 1.5 0 0 0 0 1.5v2A1.5 1.5 0 0 0 1.5 5h13A1.5 1.5 0 0 0 16 3.5v-2A1.5 1.5 0 0 0 14.5 0h-13zm1 2h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1 0-1zm9.927.427A.25.25 0 0 1 12.604 2h.792a.25.25 0 0 1 .177.427l-.396.396a.25.25 0 0 1-.354 0l-.396-.396zM0 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V8zm1 3v2a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2H1zm14-1V8a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v2h14zM2 8.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/></svg>'
-  },
-  {
-    label: _t('BAZ_FORM_EDIT_RADIO_LABEL'),
-    name: 'radio-group',
-    attrs: { type: 'radio-group' },
-    icon:
-      '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-ui-radios" viewBox="0 0 16 16"><path d="M7 2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-1zM0 12a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm7-1.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-1zm0-5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 8a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zM3 1a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm0 4.5a1.5 1.5 0 1 1 0-3 1.5 1"></svg>'
-  },
-  {
-    label: _t('BAZ_FORM_EDIT_CHECKBOX_LABEL'),
-    name: 'checkbox-group',
-    attrs: { type: 'checkbox-group' },
-    icon:
-      '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2-square" viewBox="0 0 16 16"><path d="M3 14.5A1.5 1.5 0 0 1 1.5 13V3A1.5 1.5 0 0 1 3 1.5h8a.5.5 0 0 1 0 1H3a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5V8a.5.5 0 0 1 1 0v5a1.5 1.5 0 0 1-1.5 1.5H3z"/><path d="m8.354 10.354 7-7a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0z"/></svg>'
-  },
+const fields = [
+  // {
+  //   label: "Sélecteur de date",
+  //   name: "jour",
+  //   attrs: { type: "date" },
+  //   icon: '<i class="far fa-calendar-alt"></i>',
+  // },
   {
     label: _t('BAZ_FORM_EDIT_TEXT_LABEL'),
     name: 'text',
@@ -168,21 +146,21 @@ var fields = [
   },
   {
     label: _t('BAZ_REACTIONS_FIELD'),
-    name: "reactions",
-    attrs: { type: "reactions" },
-    icon: '<i class="far fa-thumbs-up"></i>',
+    name: 'reactions',
+    attrs: { type: 'reactions' },
+    icon: '<i class="far fa-thumbs-up"></i>'
   }
 ]
 
 // Some attributes configuration used in multiple fields
-var visibilityOptions = {
+const visibilityOptions = {
   ' * ': _t('EVERYONE'),
   ' + ': _t('IDENTIFIED_USERS'),
   ' % ': _t('BAZ_FORM_EDIT_OWNER_AND_ADMINS'),
   '@admins': _t('MEMBER_OF_GROUP', { groupName: 'admin' })
 }
 // create list of groups
-var formattedGroupList = []
+const formattedGroupList = []
 if (groupsList && groupsList.length > 0) {
   const groupsListLen = groupsList.length
   for (i = 0; i < groupsListLen; ++i) {
@@ -192,7 +170,7 @@ if (groupsList && groupsList.length > 0) {
   }
 }
 
-var aclsOptions = {
+const aclsOptions = {
   ...visibilityOptions,
   ...{
     user:
@@ -200,24 +178,24 @@ var aclsOptions = {
   },
   ...formattedGroupList
 }
-var aclsCommentOptions = {
+const aclsCommentOptions = {
   ...{ 'comments-closed': _t('BAZ_FORM_EDIT_COMMENTS_CLOSED') },
   ...visibilityOptions,
   ...{ user: _t('BAZ_FORM_EDIT_USER') },
   ...formattedGroupList
 }
-var readConf = { label: _t('BAZ_FORM_EDIT_CAN_BE_READ_BY'), options: { ...visibilityOptions, ...formattedGroupList }, multiple: true }
-var writeconf = { label: _t('BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY'), options: { ...visibilityOptions, ...formattedGroupList }, multiple: true }
-var searchableConf = {
+const readConf = { label: _t('BAZ_FORM_EDIT_CAN_BE_READ_BY'), options: { ...visibilityOptions, ...formattedGroupList }, multiple: true }
+const writeconf = { label: _t('BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY'), options: { ...visibilityOptions, ...formattedGroupList }, multiple: true }
+const searchableConf = {
   label: _t('BAZ_FORM_EDIT_SEARCH_LABEL'),
   options: { '': _t('NO'), 1: _t('YES') }
 }
-var semanticConf = {
+const semanticConf = {
   label: _t('BAZ_FORM_EDIT_SEMANTIC_LABEL'),
   value: '',
   placeholder: 'Ex: https://schema.org/name'
 }
-var selectConf = {
+const selectConf = {
   subtype2: {
     label: _t('BAZ_FORM_EDIT_SELECT_SUBTYPE2_LABEL'),
     options: {
@@ -252,7 +230,7 @@ var selectConf = {
   semantic: semanticConf
   // searchable: searchableConf -> 10/19 Florian say that this conf is not working for now
 }
-var TabsConf = {
+const TabsConf = {
   formTitles: {
     label: _t('BAZ_FORM_EDIT_TABS_FOR_FORM'),
     value: _t('BAZ_FORM_EDIT_TABS_FORMTITLES_VALUE'),
@@ -279,7 +257,7 @@ var TabsConf = {
     options: { '': _t('NORMAL_F'), 'btn-xs': _t('SMALL_F') }
   }
 }
-var TabChangeConf = {
+const TabChangeConf = {
   formChange: {
     label: _t('BAZ_FORM_EDIT_TABS_FOR_FORM'),
     options: { formChange: _t('YES'), noformchange: _t('NO') },
@@ -293,7 +271,7 @@ var TabChangeConf = {
 }
 
 // Attributes to be configured for each field
-var typeUserAttrs = {
+let typeUserAttrs = {
   text: {
     size: { label: _t('BAZ_FORM_EDIT_TEXT_SIZE'), value: '' },
     maxlength: { label: _t('BAZ_FORM_EDIT_TEXT_MAX_LENGTH'), value: '' },
@@ -333,11 +311,11 @@ var typeUserAttrs = {
     },
     replace_email_by_button: {
       label: _t('BAZ_FORM_EDIT_EMAIL_REPLACE_BY_BUTTON_LABEL'),
-      options: { '': _t('NO'), 'form': _t('YES') },
+      options: { '': _t('NO'), form: _t('YES') },
       value: 'form'
     },
-    seeEmailAcls: {...readConf,...{label:_t('BAZ_FORM_EDIT_EMAIL_SEE_MAIL_ACLS')}},
-    readWhenForm: {...readConf,...{label:_t('BAZ_FORM_EDIT_EMAIL_SEND_ACLS')}},
+    seeEmailAcls: { ...readConf, ...{ label: _t('BAZ_FORM_EDIT_EMAIL_SEE_MAIL_ACLS') } },
+    readWhenForm: { ...readConf, ...{ label: _t('BAZ_FORM_EDIT_EMAIL_SEND_ACLS') } },
     // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
     read: readConf,
     write: writeconf,
@@ -351,7 +329,7 @@ var typeUserAttrs = {
     autocomplete_town: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWN'), value: '', placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWN_PLACEHOLDER') },
     autocomplete_county: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_COUNTY'), value: '', placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_COUNTY_PLACEHOLDER') },
     autocomplete_state: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_STATE'), value: '', placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_STATE_PLACEHOLDER') },
-    autocomplete_other: { label: '', value: ''},
+    autocomplete_other: { label: '', value: '' },
     autocomplete_street1: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_STREET1'), value: '', placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_STREET1_PLACEHOLDER') },
     autocomplete_street2: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_STREET2'), value: '', placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_STREET2_PLACEHOLDER') },
     geolocate: {
@@ -507,24 +485,24 @@ var typeUserAttrs = {
     read: { label: _t('BAZ_FORM_EDIT_ACL_READ_LABEL'), options: aclsOptions, multiple: true },
     write: { label: _t('BAZ_FORM_EDIT_ACL_WRITE_LABEL'), options: aclsOptions, multiple: true },
     comment: { label: _t('BAZ_FORM_EDIT_ACL_COMMENT_LABEL'), options: aclsCommentOptions, multiple: true },
-    askIfActivateComments: { 
-      label: _t('BAZ_FORM_EDIT_ACL_ASK_IF_ACTIVATE_COMMENT_LABEL'), 
-      options: { 0: _t('NO'), 1: _t('YES') }, 
+    askIfActivateComments: {
+      label: _t('BAZ_FORM_EDIT_ACL_ASK_IF_ACTIVATE_COMMENT_LABEL'),
+      options: { 0: _t('NO'), 1: _t('YES') }
     },
     fieldLabel: {
-      label: _t('BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_LABEL'), 
-      value: "",
+      label: _t('BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_LABEL'),
+      value: '',
       placeholder: _t('BAZ_ACTIVATE_COMMENTS')
     },
     hint: {
-      label: _t('BAZ_FORM_EDIT_HELP'), 
+      label: _t('BAZ_FORM_EDIT_HELP'),
       value: '',
       placeholder: _t('BAZ_ACTIVATE_COMMENTS_HINT')
     },
     value: {
-      label: _t('BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL'), 
-      options: {non: _t('NO'), oui: _t('YES'), ' ': ''}
-    },
+      label: _t('BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL'),
+      options: { non: _t('NO'), oui: _t('YES'), ' ': '' }
+    }
   },
   metadatas: {
     theme: {
@@ -576,26 +554,26 @@ var typeUserAttrs = {
   },
   reactions: {
     fieldlabel: {
-      label: _t('BAZ_REACTIONS_FIELD_ACTIVATE_LABEL'), 
-      value: "",
+      label: _t('BAZ_REACTIONS_FIELD_ACTIVATE_LABEL'),
+      value: '',
       placeholder: _t('BAZ_ACTIVATE_REACTIONS')
     },
     value: {
-      label: _t('BAZ_REACTIONS_FIELD_DEFAULT_ACTIVATION_LABEL'), 
-      options: { oui: _t('YES'),non: _t('NO') }
+      label: _t('BAZ_REACTIONS_FIELD_DEFAULT_ACTIVATION_LABEL'),
+      options: { oui: _t('YES'), non: _t('NO') }
     },
     labels: {
-      label: _t('BAZ_REACTIONS_FIELD_LABELS_LABEL'), 
-      value: ""
+      label: _t('BAZ_REACTIONS_FIELD_LABELS_LABEL'),
+      value: ''
     },
     images: {
-      label: _t('BAZ_REACTIONS_FIELD_IMAGES_LABEL'), 
-      value: "",
+      label: _t('BAZ_REACTIONS_FIELD_IMAGES_LABEL'),
+      value: '',
       placeholder: _t('BAZ_REACTIONS_FIELD_IMAGES_PLACEHOLDER')
     },
     ids: {
-      label: _t('BAZ_REACTIONS_FIELD_IDS_LABEL'), 
-      value: ""
+      label: _t('BAZ_REACTIONS_FIELD_IDS_LABEL'),
+      value: ''
     },
     read: readConf,
     write: writeconf,
@@ -624,84 +602,84 @@ var typeUserAttrs = {
 }
 
 // How a field is represented in the formBuilder view
-var templates = {
+let templates = {
   champs_mail(fieldData) {
-    return { 
+    return {
       field: `<input id="${fieldData.name}" type="email" value="" />`,
       onRender() {
-        let currentField = templateHelper.getHolder(fieldData).parent()
+        const currentField = templateHelper.getHolder(fieldData).parent()
         templateHelper.initializeField(currentField)
-        const arrayEquals = (a,b)=>{
-          if (a.length != b.length){
+        const arrayEquals = (a, b) => {
+          if (a.length != b.length) {
             return false
           }
-          return (a.every((e)=>b.includes(e)) && b.every((e)=>a.includes(e)))
+          return (a.every((e) => b.includes(e)) && b.every((e) => a.includes(e)))
         }
-        currentField.find("select[name=read]:not(.initialized)")
-            .on('change',(event)=>{
-              const element = event.target
-              const base = $(element).closest(".champs_mail-field.form-field")
-              $(element).addClass("initialized")
+        currentField.find('select[name=read]:not(.initialized)')
+          .on('change', (event) => {
+            const element = event.target
+            const base = $(element).closest('.champs_mail-field.form-field')
+            $(element).addClass('initialized')
 
-              const readWhenFormInput = $(base).find("select[name=readWhenForm]")
-              if (readWhenFormInput && readWhenFormInput.length > 0 && !arrayEquals(readWhenFormInput.val(),$(element).val())){
-                readWhenFormInput.val($(element).val())
-              }
-            }).trigger("change")
-        currentField.find("select[name=readWhenForm]:not(.initialized)")
-            .on('change',(event)=>{
-              const element = event.target
-              const base = $(element).closest(".champs_mail-field.form-field")
-              $(element).addClass("initialized")
+            const readWhenFormInput = $(base).find('select[name=readWhenForm]')
+            if (readWhenFormInput && readWhenFormInput.length > 0 && !arrayEquals(readWhenFormInput.val(), $(element).val())) {
+              readWhenFormInput.val($(element).val())
+            }
+          }).trigger('change')
+        currentField.find('select[name=readWhenForm]:not(.initialized)')
+          .on('change', (event) => {
+            const element = event.target
+            const base = $(element).closest('.champs_mail-field.form-field')
+            $(element).addClass('initialized')
 
-              const readInput = $(base).find("select[name=read]")
-              if (readInput && readInput.length > 0 && !arrayEquals(readInput.val(),$(element).val())){
-                readInput.val($(element).val())
-              }
-            }).trigger("change")
+            const readInput = $(base).find('select[name=read]')
+            if (readInput && readInput.length > 0 && !arrayEquals(readInput.val(), $(element).val())) {
+              readInput.val($(element).val())
+            }
+          }).trigger('change')
         currentField
-          .find("select[name=replace_email_by_button]:not(.initialized)")
-          .on('change',(event)=>{
+          .find('select[name=replace_email_by_button]:not(.initialized)')
+          .on('change', (event) => {
             const element = event.target
 
-            const base = $(element).closest(".champs_mail-field.form-field")
-            $(element).addClass("initialized")
+            const base = $(element).closest('.champs_mail-field.form-field')
+            $(element).addClass('initialized')
 
-            const setDisplay = (base,name,newValue)=>{
-              let wrapper = $(base).find(`div.form-group.${name}-wrap`)
-              if (wrapper && wrapper.length > 0){
-                if(newValue){
+            const setDisplay = (base, name, newValue) => {
+              const wrapper = $(base).find(`div.form-group.${name}-wrap`)
+              if (wrapper && wrapper.length > 0) {
+                if (newValue) {
                   wrapper.show()
                 } else {
                   wrapper.hide()
                 }
               }
             }
-            if ($(element).val() == 'form'){
+            if ($(element).val() == 'form') {
               // when chosing 'form' (or at init), if readAcl is ' % ', prefer ' * '
               // to show button to everyone
-              let field = currentField.find("select[name=read]")
-              if (arrayEquals(field.val(),[' % '])){
+              const field = currentField.find('select[name=read]')
+              if (arrayEquals(field.val(), [' % '])) {
                 field.val([' * '])
                 field.trigger('change')
               }
-              setDisplay(base,'readWhenForm',1)
-              setDisplay(base,'seeEmailAcls',1)
-              setDisplay(base,'read',0)
+              setDisplay(base, 'readWhenForm', 1)
+              setDisplay(base, 'seeEmailAcls', 1)
+              setDisplay(base, 'read', 0)
             } else {
               // when chosing 'text' (or at init), if readAcl is ' * ', prefer ' % '
               // to force email not to be shown
-              let field = currentField.find("select[name=read]")
-              if (arrayEquals(field.val(),[' * ']) && !currentField.find("select[name=write]").val().includes(' * ')){
+              const field = currentField.find('select[name=read]')
+              if (arrayEquals(field.val(), [' * ']) && !currentField.find('select[name=write]').val().includes(' * ')) {
                 field.val([' % '])
                 field.trigger('change')
               }
-              setDisplay(base,'readWhenForm',0)
-              setDisplay(base,'seeEmailAcls',0)
-              setDisplay(base,'read',1)
+              setDisplay(base, 'readWhenForm', 0)
+              setDisplay(base, 'seeEmailAcls', 0)
+              setDisplay(base, 'read', 1)
             }
           })
-          .trigger("change")
+          .trigger('change')
       }
     }
   },
@@ -709,134 +687,134 @@ var templates = {
     return {
       field: _t('BAZ_FORM_EDIT_MAP_FIELD'),
       onRender() {
-          const toggleState = function (name,state){
-            const formGroup = templateHelper.getFormGroup(fieldData, name)
-            if (formGroup !== null){
-              if (state === 'show'){
-                formGroup.show()
-              } else {
-                formGroup.hide()
-              }
+        const toggleState = function(name, state) {
+          const formGroup = templateHelper.getFormGroup(fieldData, name)
+          if (formGroup !== null) {
+            if (state === 'show') {
+              formGroup.show()
+            } else {
+              formGroup.hide()
             }
           }
-          const toggleStates = function (state){
-            ['autocomplete_street1','autocomplete_street2'].forEach((name)=>toggleState(name,state))
-          }
-          // initMapAutocompleteUpdate()
-          $(".map-field.form-field")
-          .find("input[type=text][name=autocomplete_street]:not(.initialized)"
-              +",input[type=text][name=autocomplete_street1]:not(.initialized)"
-              +",input[type=text][name=autocomplete_street2]:not(.initialized)"
-              +",input[type=text][name=autocomplete_county]:not(.initialized)"
-              +",input[type=text][name=autocomplete_state]:not(.initialized)"
-              +",select[name=geolocate]:not(.initialized)")
-          .on('change',function(event){
+        }
+        const toggleStates = function(state) {
+          ['autocomplete_street1', 'autocomplete_street2'].forEach((name) => toggleState(name, state))
+        }
+        // initMapAutocompleteUpdate()
+        $('.map-field.form-field')
+          .find('input[type=text][name=autocomplete_street]:not(.initialized)'
+              + ',input[type=text][name=autocomplete_street1]:not(.initialized)'
+              + ',input[type=text][name=autocomplete_street2]:not(.initialized)'
+              + ',input[type=text][name=autocomplete_county]:not(.initialized)'
+              + ',input[type=text][name=autocomplete_state]:not(.initialized)'
+              + ',select[name=geolocate]:not(.initialized)')
+          .on('change', (event) => {
             // mapAutocompleteUpdate(event.target)
             const element = event.target
-            const base = $(element).closest(".map-field.form-field")
-            if (!$(element).hasClass("initialized")){
-                $(element).addClass("initialized");
-                if ($(element).val().length == 0 || $(element).prop('tagName') === 'SELECT'){
-                    // mapAutocompleteUpdateExtractFromOther(base)
-                    var other = {
-                        geolocate: '',
-                        street: '',
-                        street1: '',
-                        street2: '',
-                        county: '',
-                        state: ''
-                    }
-                    const autoCompleteOther = $(base)
-                        .find("input[type=text][name=autocomplete_other]")
-                        .first()
-                    if (autoCompleteOther && autoCompleteOther.length > 0){
-                        const value = autoCompleteOther.val().split('|')
-                        other.geolocate = ['1',1,true].includes(value[0]) ? '1' : '0'
-                        other.street = value[1] || ''
-                        other.street1 = value[2] || ''
-                        other.street2 = value[3] || ''
-                        other.county = value[4] || ''
-                        other.state = value[5] || ''
-                    }
-                    switch (element.getAttribute('name')) {
-                        case 'autocomplete_street':
-                            $(element).val(other.street)
-                            break;
-                        case 'autocomplete_street1':
-                            $(element).val(other.street1)
-                            break;
-                        case 'autocomplete_street2':
-                            $(element).val(other.street2)
-                            break;
-                        case 'autocomplete_county':
-                            $(element).val(other.county)
-                            break;
-                        case 'autocomplete_state':
-                            $(element).val(other.state)
-                            break;
-                        case 'geolocate':
-                            $(element).val(other.geolocate === '1' ? '1' : '0')
-                            break;
-                        default:
-                            break;
-                    }
+            const base = $(element).closest('.map-field.form-field')
+            if (!$(element).hasClass('initialized')) {
+              $(element).addClass('initialized')
+              if ($(element).val().length == 0 || $(element).prop('tagName') === 'SELECT') {
+                // mapAutocompleteUpdateExtractFromOther(base)
+                const other = {
+                  geolocate: '',
+                  street: '',
+                  street1: '',
+                  street2: '',
+                  county: '',
+                  state: ''
                 }
-            } else {
-                // autocompleteUpdateSaveToOther(base)
                 const autoCompleteOther = $(base)
-                    .find("input[type=text][name=autocomplete_other]")
+                  .find('input[type=text][name=autocomplete_other]')
+                  .first()
+                if (autoCompleteOther && autoCompleteOther.length > 0) {
+                  const value = autoCompleteOther.val().split('|')
+                  other.geolocate = ['1', 1, true].includes(value[0]) ? '1' : '0'
+                  other.street = value[1] || ''
+                  other.street1 = value[2] || ''
+                  other.street2 = value[3] || ''
+                  other.county = value[4] || ''
+                  other.state = value[5] || ''
+                }
+                switch (element.getAttribute('name')) {
+                  case 'autocomplete_street':
+                    $(element).val(other.street)
+                    break
+                  case 'autocomplete_street1':
+                    $(element).val(other.street1)
+                    break
+                  case 'autocomplete_street2':
+                    $(element).val(other.street2)
+                    break
+                  case 'autocomplete_county':
+                    $(element).val(other.county)
+                    break
+                  case 'autocomplete_state':
+                    $(element).val(other.state)
+                    break
+                  case 'geolocate':
+                    $(element).val(other.geolocate === '1' ? '1' : '0')
+                    break
+                  default:
+                    break
+                }
+              }
+            } else {
+              // autocompleteUpdateSaveToOther(base)
+              const autoCompleteOther = $(base)
+                .find('input[type=text][name=autocomplete_other]')
+                .first()
+              if (autoCompleteOther && autoCompleteOther.length > 0) {
+                const results = {
+                  geolocate: '',
+                  street: '',
+                  street1: '',
+                  street2: '',
+                  county: '',
+                  state: ''
+                }
+                const associations = {
+                  street: 'autocomplete_street',
+                  street1: 'autocomplete_street1',
+                  street2: 'autocomplete_street2',
+                  county: 'autocomplete_county',
+                  state: 'autocomplete_state'
+                }
+                for (const key in associations) {
+                  const autoCompleteField = $(base)
+                    .find(`input[type=text][name=${associations[key]}]`)
                     .first()
-                if (autoCompleteOther && autoCompleteOther.length > 0){
-                    var results = {
-                        geolocate: '',
-                        street: '',
-                        street1: '',
-                        street2: '',
-                        county: '',
-                        state: ''
-                    }
-                    const associations = {
-                        street: 'autocomplete_street',
-                        street1: 'autocomplete_street1',
-                        street2: 'autocomplete_street2',
-                        county: 'autocomplete_county',
-                        state: 'autocomplete_state'
-                    }
-                    for (const key in associations) {
-                        const autoCompleteField = $(base)
-                            .find(`input[type=text][name=${associations[key]}]`)
-                            .first()
-                        if (autoCompleteField && autoCompleteField.length > 0){
-                            results[key] = autoCompleteField.val() || ''
-                        }
-                    }
-                    // geolocate
-                    const geolocateField = $(base)
-                        .find('select[name=geolocate]')
-                        .first()
-                    if (geolocateField && geolocateField.length > 0){
-                        results.geolocate = geolocateField.val() || ''
-                    }
-                    autoCompleteOther.val(
-                        results.geolocate
-                        + `|${results.street}`
+                  if (autoCompleteField && autoCompleteField.length > 0) {
+                    results[key] = autoCompleteField.val() || ''
+                  }
+                }
+                // geolocate
+                const geolocateField = $(base)
+                  .find('select[name=geolocate]')
+                  .first()
+                if (geolocateField && geolocateField.length > 0) {
+                  results.geolocate = geolocateField.val() || ''
+                }
+                autoCompleteOther.val(
+                  `${results.geolocate
+                  }|${results.street}`
                         + `|${results.street1}`
                         + `|${results.street2}`
                         + `|${results.county}`
                         + `|${results.state}`
-                    )
-                }
+                )
+              }
             }
           })
           .trigger('change')
 
-          templateHelper.prependHTMLBeforeGroup(fieldData, 'autocomplete_street', `
+        templateHelper.prependHTMLBeforeGroup(fieldData, 'autocomplete_street', `
             <div class="form-group text-center">
               <b>${_t('GEOLOCATER_GROUP_GEOLOCATIZATION')}</b>
               <div class="small text-muted">${_t('GEOLOCATER_GROUP_GEOLOCATIZATION_HINT')}</div>
             </div>
           `)
-          $advancedParams = $(`
+        $advancedParams = $(`
             <div class="form-group">
               <label></label>
               <div class="input-wrap">
@@ -844,22 +822,22 @@ var templates = {
               </div>
             </div>
           `)
-          templateHelper.prependHTMLBeforeGroup(fieldData, 'autocomplete_street1', $advancedParams)
-          $advancedParams.find('button').on('click', function (event) {
-            if ($(this).hasClass('opened')){
-              $(this).removeClass('opened')
-              $(this).html(_t('GEOLOCATER_SEE_ADVANCED_PARAMS'));
-              toggleStates('hide')
-            } else {
-              $(this).addClass('opened')
-              $(this).html(_t('GEOLOCATER_HIDE_ADVANCED_PARAMS'));
-              toggleStates('show')
-            }
-            event.preventDefault()
-            event.stopPropagation()
-          })
-          toggleStates('hide')
-          templateHelper.prependHTMLBeforeGroup(fieldData, 'geolocate', '<div class="form-group"><hr/></div>')
+        templateHelper.prependHTMLBeforeGroup(fieldData, 'autocomplete_street1', $advancedParams)
+        $advancedParams.find('button').on('click', function(event) {
+          if ($(this).hasClass('opened')) {
+            $(this).removeClass('opened')
+            $(this).html(_t('GEOLOCATER_SEE_ADVANCED_PARAMS'))
+            toggleStates('hide')
+          } else {
+            $(this).addClass('opened')
+            $(this).html(_t('GEOLOCATER_HIDE_ADVANCED_PARAMS'))
+            toggleStates('show')
+          }
+          event.preventDefault()
+          event.stopPropagation()
+        })
+        toggleStates('hide')
+        templateHelper.prependHTMLBeforeGroup(fieldData, 'geolocate', '<div class="form-group"><hr/></div>')
       }
     }
   },
@@ -898,46 +876,46 @@ var templates = {
     }
   },
   acls(field) {
-    return { 
-      field: field.askIfActivateComments == 1 ? `<i class="far fa-comment-dots"></i> ${field.fieldlabel || _t('BAZ_ACTIVATE_COMMENTS')}` : '' ,
+    return {
+      field: field.askIfActivateComments == 1 ? `<i class="far fa-comment-dots"></i> ${field.fieldlabel || _t('BAZ_ACTIVATE_COMMENTS')}` : '',
       onRender() {
-        let currentField = templateHelper.getHolder(field).parent()
+        const currentField = templateHelper.getHolder(field).parent()
         templateHelper.initializeField(currentField)
         $(currentField)
-          .find("select[name=askIfActivateComments]:not(.initialized)")
-          .change(function(event){
+          .find('select[name=askIfActivateComments]:not(.initialized)')
+          .change((event) => {
             const element = event.target
 
-            const base = $(element).closest(".acls-field.form-field")
-            $(element).addClass("initialized")
+            const base = $(element).closest('.acls-field.form-field')
+            $(element).addClass('initialized')
 
-            var nameInput = $(base).find("input[type=text][name=name]")
-            if (nameInput.val().trim().length == 0 || 
-              nameInput.val().trim() == 'bf_acls' ){
+            const nameInput = $(base).find('input[type=text][name=name]')
+            if (nameInput.val().trim().length == 0
+              || nameInput.val().trim() == 'bf_acls') {
               nameInput.val('bf_commentaires')
             }
-            
-            var visibleSelect = $(base).find("select[name=askIfActivateComments]")
-            var selectedValue = visibleSelect.val()
-            
-            var subElements = $(base)
-              .find(".form-group.fieldLabel-wrap,.form-group.hint-wrap,.form-group.name-wrap,.form-group.value-wrap")
-            if ([1,'1'].includes(selectedValue)){
+
+            const visibleSelect = $(base).find('select[name=askIfActivateComments]')
+            const selectedValue = visibleSelect.val()
+
+            const subElements = $(base)
+              .find('.form-group.fieldLabel-wrap,.form-group.hint-wrap,.form-group.name-wrap,.form-group.value-wrap')
+            if ([1, '1'].includes(selectedValue)) {
               subElements.show()
-              var commentInput = $(base).find("select[name=comment]")
-              var currentValue = commentInput.val()
-              if (Array.isArray(currentValue) &&
-                (
-                  currentValue.length == 0 ||
-                  (currentValue.length == 1 && currentValue.includes('comments-closed'))
-                )){
+              const commentInput = $(base).find('select[name=comment]')
+              const currentValue = commentInput.val()
+              if (Array.isArray(currentValue)
+                && (
+                  currentValue.length == 0
+                  || (currentValue.length == 1 && currentValue.includes('comments-closed'))
+                )) {
                 commentInput.val([' + '])
               }
             } else {
               subElements.hide()
             }
           })
-          .trigger("change");
+          .trigger('change')
         templateHelper.defineLabelHintForGroup(field, 'fieldlabel', _t('BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT'))
         templateHelper.defineLabelHintForGroup(field, 'hint', _t('BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT'))
       }
@@ -1006,28 +984,28 @@ var templates = {
       }
     }
   },
-  reactions: function (field) {
-    return { 
-      field: `<i class="far fa-thumbs-up"></i> ${field.fieldlabel || _t('BAZ_ACTIVATE_REACTIONS')}` ,
+  reactions(field) {
+    return {
+      field: `<i class="far fa-thumbs-up"></i> ${field.fieldlabel || _t('BAZ_ACTIVATE_REACTIONS')}`,
       onRender() {
-          templateHelper.defineLabelHintForGroup(field, 'fieldlabel', _t('BAZ_REACTIONS_FIELD_ACTIVATE_HINT'))
-          templateHelper.defineLabelHintForGroup(field, 'ids', _t('BAZ_REACTIONS_FIELD_IDS_HINT'))
-          templateHelper.defineLabelHintForGroup(field, 'images', _t('BAZ_REACTIONS_FIELD_IMAGES_HINT'))
-          templateHelper.defineLabelHintForGroup(field, 'labels', _t('BAZ_REACTIONS_FIELD_LABELS_HINT'))
+        templateHelper.defineLabelHintForGroup(field, 'fieldlabel', _t('BAZ_REACTIONS_FIELD_ACTIVATE_HINT'))
+        templateHelper.defineLabelHintForGroup(field, 'ids', _t('BAZ_REACTIONS_FIELD_IDS_HINT'))
+        templateHelper.defineLabelHintForGroup(field, 'images', _t('BAZ_REACTIONS_FIELD_IMAGES_HINT'))
+        templateHelper.defineLabelHintForGroup(field, 'labels', _t('BAZ_REACTIONS_FIELD_LABELS_HINT'))
       }
     }
   }
 }
 
-var typeUserDisabledAttrs = {
+let typeUserDisabledAttrs = {
   tabs: ['required', 'value', 'name', 'label'],
   tabchange: ['required', 'value', 'name', 'label'],
   bookmarklet: ['required', 'value'],
-  reactions: ['label','required'],
-  acls: ['label','required']
+  reactions: ['label', 'required'],
+  acls: ['label', 'required']
 }
 
-var inputSets = [
+const inputSets = [
   {
     label: _t('BAZ_FORM_EDIT_TABS'),
     name: 'tabs',
@@ -1054,7 +1032,7 @@ var inputSets = [
 ]
 
 // Mapping betwwen yes wiki syntax and FormBuilder json syntax
-var defaultMapping = {
+const defaultMapping = {
   0: 'type',
   1: 'name',
   2: 'label',
@@ -1071,17 +1049,17 @@ var defaultMapping = {
   14: 'semantic',
   15: 'queries'
 }
-var lists = {
+const lists = {
   ...defaultMapping,
   ...{ 1: 'listeOrFormId', 5: 'defaultValue', 6: 'name' }
 }
-var yesWikiMapping = {
+let yesWikiMapping = {
   text: defaultMapping,
   url: defaultMapping,
   number: defaultMapping,
   champs_mail: {
     ...defaultMapping,
-    ...{ 4:'seeEmailAcls', 6: 'replace_email_by_button', 9: 'send_form_content_to_this_email' }
+    ...{ 4: 'seeEmailAcls', 6: 'replace_email_by_button', 9: 'send_form_content_to_this_email' }
   },
   map: {
     0: 'type',
@@ -1126,13 +1104,13 @@ var yesWikiMapping = {
   titre: { 0: 'type', 1: 'value', 2: 'label' },
   acls: {
     0: 'type',
-    1: 'read', 
-    2: 'write', 
+    1: 'read',
+    2: 'write',
     3: 'comment',
     4: 'fieldLabel',
     5: 'value',
     6: 'name',
-    7: "askIfActivateComments",
+    7: 'askIfActivateComments',
     8: '',
     9: '',
     10: 'hint'
@@ -1203,15 +1181,15 @@ var yesWikiMapping = {
   reactions: {
     ...defaultMapping,
     ...{
-      2: "ids",
-      3: "labels",
-      4: "images",
-      6: "fieldlabel"
+      2: 'ids',
+      3: 'labels',
+      4: 'images',
+      6: 'fieldlabel'
     }
   }
 }
 // Mapping betwwen yeswiki field type and standard field implemented by form builder
-var yesWikiTypes = {
+const yesWikiTypes = {
   lien_internet: { type: 'url' },
   lien_internet_bis: { type: 'text', subtype: 'url' },
   mot_de_passe: { type: 'text', subtype: 'password' },
@@ -1234,14 +1212,14 @@ var yesWikiTypes = {
   listefiches: { type: 'listefichesliees' }
 }
 
-var defaultFieldsName = {
+const defaultFieldsName = {
   textarea: 'bf_description',
   image: 'bf_image',
   champs_mail: 'bf_mail',
   date: 'bf_date_debut_evenement'
 }
 
-var I18nOption = {
+const I18nOption = {
   ar: 'ar-SA',
   ca: 'ca-ES',
   cs: 'cs-CZ',
@@ -1291,7 +1269,7 @@ function copyMultipleSelectValues(currentField) {
   }
 }
 
-var typeUserEvents = {}
+const typeUserEvents = {}
 for (const key in typeUserAttrs) {
   typeUserEvents[key] = { onclone: copyMultipleSelectValues }
 }
@@ -1340,7 +1318,7 @@ function initializeFormbuilder(formAndListIds) {
         field.read = [' * ']// everyone by default
       }
       if (!field.hasOwnProperty('write')) {
-        field.write = (field.type === 'champs_mail') 
+        field.write = (field.type === 'champs_mail')
           ? [' % '] // owner and @admins by default for e-mail
           : [' * '] // everyone by default
       }
@@ -1609,17 +1587,17 @@ function parseWikiTextIntoJsonData(text) {
         if (field == 'required') value = value == '1'
         if (field) {
           if (field == 'read' || field == 'write' || field == 'comment') {
-            fieldObject[field] = (value.trim() === '') 
+            fieldObject[field] = (value.trim() === '')
               ? (
-                  field == 'comment'
+                field == 'comment'
                   ? [' + ']
                   : [' * ']
-                )
-              : value.split(',').map((e)=>(['+','*','%'].includes(e.trim())) ? ` ${e.trim()} ` : e)
-          } else if (field == 'seeEmailAcls'){
-            fieldObject[field] = (value.trim() === '') 
+              )
+              : value.split(',').map((e) => ((['+', '*', '%'].includes(e.trim())) ? ` ${e.trim()} ` : e))
+          } else if (field == 'seeEmailAcls') {
+            fieldObject[field] = (value.trim() === '')
               ? ' % ' // if not define in tempalte, choose owner and admins
-              : value.split(',').map((e)=>(['+','*','%'].includes(e.trim())) ? ` ${e.trim()} ` : e)
+              : value.split(',').map((e) => ((['+', '*', '%'].includes(e.trim())) ? ` ${e.trim()} ` : e))
           } else {
             fieldObject[field] = value
           }
