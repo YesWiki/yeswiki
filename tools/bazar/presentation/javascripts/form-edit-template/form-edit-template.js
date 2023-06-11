@@ -250,7 +250,11 @@ function getFieldsIds() {
 
 function initializeBuilderFromTextInput() {
   const jsonData = parseWikiTextIntoJsonData($formBuilderTextInput.val())
-  formBuilder.actions.setData(JSON.stringify(jsonData))
+  try {
+    formBuilder.actions.setData(JSON.stringify(jsonData))
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 $('a[href="#formbuilder"]').on('click', (event) => {
