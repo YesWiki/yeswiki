@@ -26,13 +26,12 @@ import tabs from './fields/tabs.js'
 import tabchange from './fields/tabchange.js'
 
 import { parseWikiTextIntoJsonData, formatJsonDataIntoWikiText } from './yeswiki-syntax-converter.js'
-import { copyMultipleSelectValues, mapFieldsConf } from './form-builder-helper.js'
-import { addAdvancedAttributesSection } from './advanced-attributes-display.js'
-import { initLitsOrFormIdAttribute } from './list-form-id-attribute.js'
+import { copyMultipleSelectValues, mapFieldsConf, addAdvancedAttributesSection, adjustDefaultAcls } from './form-builder-helper.js'
+import { initLitsOrFormIdAttribute } from './attributes/list-form-id-attribute.js'
 import I18nOption from './i18n.js'
 
 const $formBuilderTextInput = $('#form-builder-text')
-let formBuilder
+window.formBuilder = undefined
 
 // Use window to make it available outside of module, so extension can adds their own fields
 window.formBuilderFields = {
@@ -92,20 +91,21 @@ function initializeFormbuilder() {
       'multiple'
     ],
     onAddField(fieldId, field) {
-      if (!field.hasOwnProperty('read')) {
-        field.read = [' * ']// everyone by default
-      }
-      if (!field.hasOwnProperty('write')) {
-        field.write = (field.type === 'champs_mail')
-          ? [' % '] // owner and @admins by default for e-mail
-          : [' * '] // everyone by default
-      }
-      if (field.type === 'acls' && !field.hasOwnProperty('comment')) {
-        field.comment = ['comments-closed'] // comments-closed by default
-      }
-      if (field.type === 'champs_mail' && !('seeEmailAcls' in field)) {
-        field.seeEmailAcls = [' % '] // owner and @admins by default
-      }
+      adjustDefaultAcls(field)
+
+      // strange bug with jQuery Formbuilder, the fieldId given is not the last field, but
+      // the one just before... so incrementing the id manually
+      // transform frmb-XXXX-fld-6  into frmb-XXXX-fld-7
+      fieldId = fieldId.replace(/(.*)-fld-(\d+)$/gim, (string ,formId, fieldId) => {
+        return `${formId}-fld-${parseInt(fieldId, 10) + 1}`
+      })
+
+      // Timeout to wait the field ot be rendered
+      setTimeout(() => {
+        const $field = $(`#${fieldId}`)
+        addAdvancedAttributesSection($field)
+        initLitsOrFormIdAttribute($field)
+      }, 0)
     }
   })
 
@@ -135,9 +135,6 @@ function initializeFormbuilder() {
     $('.form-group.label-wrap label').text(_t('BAZ_FORM_EDIT_NAME'))
     existingFieldsNames = []
     $('.fld-name').each(function() { existingFieldsNames.push($(this).val()) })
-
-    addAdvancedAttributesSection()
-    initLitsOrFormIdAttribute()
 
     // Transform input[textarea] in real textarea
     $('input[type="textarea"]').replaceWith(function() {

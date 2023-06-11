@@ -24,3 +24,36 @@ export function copyMultipleSelectValues(currentField) {
     })
   }
 }
+
+export function adjustDefaultAcls(field) {
+  if (!field.hasOwnProperty('read')) {
+    field.read = [' * ']// everyone by default
+  }
+  if (!field.hasOwnProperty('write')) {
+    field.write = (field.type === 'champs_mail')
+      ? [' % '] // owner and @admins by default for e-mail
+      : [' * '] // everyone by default
+  }
+  if (field.type === 'acls' && !field.hasOwnProperty('comment')) {
+    field.comment = ['comments-closed'] // comments-closed by default
+  }
+  if (field.type === 'champs_mail' && !('seeEmailAcls' in field)) {
+    field.seeEmailAcls = [' % '] // owner and @admins by default
+  }
+}
+
+export function addAdvancedAttributesSection($field) {
+  if (!$field.attr('type')) return
+
+  const advancedAttributes = window.formBuilderFields[$field.attr('type')].advancedAttributes || []
+  if (advancedAttributes.length > 0) {
+    advancedAttributes.forEach((attr) => {
+      $field.find(`.form-elements .${attr}-wrap`).addClass('advanced')
+    })
+    const $button = $(`<button class="btn btn-info show-advanced-attributes-btn" type="button">
+      ${_t('BAZ_FORM_ADVANCED_PARAMS')}
+    </button>`)
+    $button.on('click', () => $field.toggleClass('show-advanced-attributes'))
+    $field.find('.form-elements').append($button)
+  }
+}

@@ -1,5 +1,5 @@
 
-import { listAndFormUserValues } from './fields/commons/attributes.js'
+import { listAndFormUserValues } from '../fields/commons/attributes.js'
 
 // formAndListIds is defined in forms_form.twig
 
