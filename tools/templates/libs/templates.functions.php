@@ -52,9 +52,6 @@ function search_template_files($directory)
                         }
                     }
                     closedir($dir2);
-                    if (is_array($tab_themes[$file]["style"])) {
-                        ksort($tab_themes[$file]["style"]);
-                    }
                 }
                 $dir3 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes');
                 while (false !== ($file3 = readdir($dir3))) {
@@ -63,9 +60,6 @@ function search_template_files($directory)
                     }
                 }
                 closedir($dir3);
-                if (is_array($tab_themes[$file]["squelette"])) {
-                    ksort($tab_themes[$file]["squelette"]);
-                }
                 $pathToPresets = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'presets';
                 if (is_dir($pathToPresets) && $dir4 = opendir($pathToPresets)) {
                     while (false !== ($file4 = readdir($dir4))) {
