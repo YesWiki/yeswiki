@@ -105,6 +105,8 @@ class ListManager
         ]));
 
         $this->tripleStore->create($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
+
+        return $id;
     }
 
     public function update($id, $title, $values)

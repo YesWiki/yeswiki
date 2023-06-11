@@ -127,16 +127,16 @@ class IframeHandler extends YesWikiHandler
             $title = ($isUserFavorite) ? _t('FAVORITES_REMOVE') : _t('FAVORITES_ADD') ;
             // HEREDOC syntax
             $output .= <<<HTML
-            <a href="#"
-                title="$title"
-                data-resource="$tag" 
-                data-user="$currentuser"
-                data-toggle="tooltip"
-                data-placement="left"
-                class="btn btn-icon favorites pull-right $extraClass">
-                    <i class="$iconClass fa-star"></i>
-            </a>
-HTML ;
+                <a href="#"
+                    title="$title"
+                    data-resource="$tag"
+                    data-user="$currentuser"
+                    data-toggle="tooltip"
+                    data-placement="left"
+                    class="btn btn-icon favorites pull-right $extraClass">
+                        <i class="$iconClass fa-star"></i>
+                </a>
+            HTML;
         }
         // on ajoute un bouton de partage, si &share=1 est présent dans l'url
         if (isset($_GET['share']) && $_GET['share'] == '1') {

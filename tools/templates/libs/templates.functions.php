@@ -43,43 +43,39 @@ function search_template_files($directory)
     $dir = opendir($directory);
     while ($dir && ($file = readdir($dir)) !== false) {
         if ($file!='.' && $file!='..' && $file!='CVS' && is_dir($directory.DIRECTORY_SEPARATOR.$file)) {
-            if (is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes')) {
-                if (is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles')) {
-                    $dir2 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles');
-                    while (false !== ($file2 = readdir($dir2))) {
-                        if (substr($file2, -4, 4)=='.css' || substr($file2, -5, 5)=='.less') {
-                            $tab_themes[$file]["style"][$file2] = $file2;
-                        }
-                    }
-                    closedir($dir2);
-                    if (is_array($tab_themes[$file]["style"])) {
-                        ksort($tab_themes[$file]["style"]);
+            $pathToStyles = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles';
+            if (is_dir($pathToStyles) && $dir2 = opendir($pathToStyles)) {
+                while (false !== ($file2 = readdir($dir2))) {
+                    if (substr($file2, -4, 4) == '.css') {
+                        $tab_themes[$file]["style"][$file2] = remove_extension($file2);
                     }
                 }
-                $dir3 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes');
+                closedir($dir2);
+            }
+
+            $pathToSquelettes = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes';
+            if (is_dir($pathToSquelettes) && $dir3 = opendir($pathToSquelettes)) {
                 while (false !== ($file3 = readdir($dir3))) {
                     if (substr($file3, -9, 9)=='.tpl.html') {
-                        $tab_themes[$file]["squelette"][$file3]=$file3;
+                        $tab_themes[$file]["squelette"][$file3] = remove_extension($file3);
                     }
                 }
                 closedir($dir3);
-                if (is_array($tab_themes[$file]["squelette"])) {
-                    ksort($tab_themes[$file]["squelette"]);
-                }
-                $pathToPresets = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'presets';
-                if (is_dir($pathToPresets) && $dir4 = opendir($pathToPresets)) {
-                    while (false !== ($file4 = readdir($dir4))) {
-                        if (substr($file4, -4, 4)=='.css' && file_exists($pathToPresets.'/'.$file4)) {
-                            $css = file_get_contents($pathToPresets.'/'.$file4);
-                            if (!empty($css)) {
-                                $tab_themes[$file]["presets"][$file4] = $css;
-                            }
+            }
+
+            $pathToPresets = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'presets';
+            if (is_dir($pathToPresets) && $dir4 = opendir($pathToPresets)) {
+                while (false !== ($file4 = readdir($dir4))) {
+                    if (substr($file4, -4, 4)=='.css' && file_exists($pathToPresets.'/'.$file4)) {
+                        $css = file_get_contents($pathToPresets.'/'.$file4);
+                        if (!empty($css)) {
+                            $tab_themes[$file]["presets"][$file4] = $css;
                         }
                     }
-                    closedir($dir4);
-                    if (isset($tab_themes[$file]["presets"]) && is_array($tab_themes[$file]["presets"])) {
-                        ksort($tab_themes[$file]["presets"]);
-                    }
+                }
+                closedir($dir4);
+                if (isset($tab_themes[$file]["presets"]) && is_array($tab_themes[$file]["presets"])) {
+                    ksort($tab_themes[$file]["presets"]);
                 }
             }
         }
@@ -91,6 +87,11 @@ function search_template_files($directory)
     }
 
     return $tab_themes;
+}
+
+function remove_extension($filename)
+{
+    return preg_replace("/\..*/i", '', $filename);
 }
 
 
@@ -357,12 +358,6 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
         $bgselector = '';
     }
 
-    //sort array
-    $templates = $themeManager->getTemplates();
-    ksort($templates[$themeManager->getFavoriteTheme()]['squelette']);
-    ksort($templates[$themeManager->getFavoriteTheme()]['style']);
-    $themeManager->setTemplates($templates);
-
     // page list
     $tablistWikinames = $wiki->LoadAll(
         'SELECT DISTINCT tag FROM '.$wiki->GetConfigValue('table_prefix').'pages WHERE latest="Y"'
@@ -380,8 +375,7 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
         'id' => $id,
         'class' => $formclass,
         'bgselector' => $bgselector,
-        'themeNames' => array_keys($templates),
-        'themes' => $templates,
+        'themes' => $themeManager->getTemplates(),
         'listWikinames' => $listWikinames,
         'favoriteTheme' => $themeManager->getFavoriteTheme(),
         'favoriteSquelette' => $themeManager->getFavoriteSquelette(),

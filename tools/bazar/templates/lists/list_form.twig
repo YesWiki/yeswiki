@@ -27,10 +27,37 @@
     <label class="control-label title-label col-sm-3">
       {{ _t('BAZ_VALEURS_LISTE') }}
     </label>
-    <ul class="list-sortables controls col-sm-9">
-      {% if labels %}
-        {% for key, label in labels %}
-          <li class="liste_ligne input-prepend input-append input-group" id="row{{ key }}">
+    <div class="col-sm-9">
+      <ul class="list-sortables controls">
+        {% if labels %}
+          {% for key, label in labels %}
+            <li class="liste_ligne input-prepend input-append input-group" id="row{{ key }}">
+              <a title="{{ _t('BAZ_DEPLACER_L_ELEMENT') }}" class="handle-listitems add-on input-group-addon">
+                <i class="fa fa-arrows-alt icon-move"></i>
+              </a>
+              <input
+                required
+                type="text"
+                placeholder="{{ _t('BAZ_KEY') }}"
+                name="id[{{ loop.index }}]"
+                value="{{ key|e }}"
+                class="input-key form-control"
+              />
+              <input
+                required
+                type="text"
+                placeholder="{{ _t('BAZ_TEXT') }}"
+                name="label[{{ loop.index }}]"
+                value="{{ label|e }}"
+                class="input-label form-control"
+              />
+              <a class="add-on suppression_label_liste input-group-addon">
+                <i class="fa fa-trash icon-trash"></i>
+              </a>
+            </li>
+          {% endfor %}
+        {% else %}
+          <li class="liste_ligne input-prepend input-append input-group" id="row1">
             <a title="{{ _t('BAZ_DEPLACER_L_ELEMENT') }}" class="handle-listitems add-on input-group-addon">
               <i class="fa fa-arrows-alt icon-move"></i>
             </a>
@@ -38,48 +65,25 @@
               required
               type="text"
               placeholder="{{ _t('BAZ_KEY') }}"
-              name="id[{{ loop.index }}]"
-              value="{{ key|e }}"
+              name="id[1]"
               class="input-key form-control"
             />
             <input
               required
               type="text"
               placeholder="{{ _t('BAZ_TEXT') }}"
-              name="label[{{ loop.index }}]"
-              value="{{ label|e }}"
+              name="label[1]"
               class="input-label form-control"
             />
             <a class="add-on suppression_label_liste input-group-addon">
               <i class="fa fa-trash icon-trash"></i>
             </a>
-          </li>
-        {% endfor %}
-      {% else %}
-        <li class="liste_ligne input-prepend input-append input-group" id="row1">
-          <a title="{{ _t('BAZ_DEPLACER_L_ELEMENT') }}" class="handle-listitems add-on input-group-addon">
-            <i class="fa fa-arrows-alt icon-move"></i>
-          </a>
-          <input
-            required
-            type="text"
-            placeholder="{{ _t('BAZ_KEY') }}"
-            name="id[1]"
-            class="input-key form-control"
-          />
-          <input
-            required
-            type="text"
-            placeholder="{{ _t('BAZ_TEXT') }}"
-            name="label[1]"
-            class="input-label form-control"
-          />
-          <a class="add-on suppression_label_liste input-group-addon">
-            <i class="fa fa-trash icon-trash"></i>
-          </a>
-      </li>
-      {% endif %}
-    </ul>
+        </li>
+        {% endif %}
+      </ul>
+      <div class="help-block">{{ _t('BAZ_VALEURS_LISTE_HINT') }}</div>
+    </div>
+
     <div class="col-sm-9 col-sm-offset-3">
       <a class="controls btn btn-primary ajout_label_liste" title="{{ _t('BAZ_AJOUTER_LABEL_LISTE') }}">
         <i class="fa fa-plus icon-plus icon-white"></i>

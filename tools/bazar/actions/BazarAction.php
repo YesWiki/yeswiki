@@ -62,7 +62,7 @@ class BazarAction extends YesWikiAction
             self::VARIABLE_ACTION => $_GET[self::VARIABLE_ACTION] ?? $arg[self::VARIABLE_ACTION] ?? null,
             self::VARIABLE_VOIR => $_GET[self::VARIABLE_VOIR] ?? $arg[self::VARIABLE_VOIR] ?? self::VOIR_DEFAUT,
             // afficher le menu de vues bazar ?
-            'voirmenu' => $arg['voirmenu'] ?? $this->params->get('baz_menu'),
+            'voirmenu' => $_GET['voirmenu'] ?? $arg['voirmenu'] ?? $this->params->get('baz_menu'),
             // Identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
             'idtypeannonce' => $this->formatArray($_REQUEST['id_typeannonce'] ?? $arg['id'] ?? $arg['idtypeannonce'] ?? (!empty($_GET['id']) ? strip_tags($_GET['id']) : null)),
             // Permet de rediriger vers une url après saisie de fiche

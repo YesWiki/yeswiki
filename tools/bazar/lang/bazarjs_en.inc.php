@@ -38,6 +38,7 @@ return [
     'BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWN_PLACEHOLDER' => 'bf_ville',
     'BAZ_FORM_EDIT_MAP_LATITUDE' => 'latitude fieldname',
     'BAZ_FORM_EDIT_MAP_LONGITUDE' => 'longitude fieldname',
+    'BAZ_FORM_ADVANCED_PARAMS' => 'See advanced params',
     'BAZ_GEOLOC_NOT_FOUND' => 'Not found address, please move the point or give the coordinates',
     'BAZ_MAP_ERROR' => 'An error occured: {msg}',
     'BAZ_NOT_VALID_GEOLOC_FORMAT' => 'Bad GPS coordinates format (only nubers and one point for decimal)',
@@ -47,8 +48,6 @@ return [
     'BAZ_TOWN_NOT_FOUND' => 'No town found for search : {input}',
     'GEOLOCATER_GROUP_GEOLOCATIZATION' => 'Fields to use for geolocalization',
     'GEOLOCATER_GROUP_GEOLOCATIZATION_HINT' => 'Provide at least one field',
-    'GEOLOCATER_SEE_ADVANCED_PARAMS' => '&#9660; See advanced params',
-    'GEOLOCATER_HIDE_ADVANCED_PARAMS' => '&#9650; Hide advanced params',
     'GEOLOCATER_NOT_FOUND' => 'Not foundable "{addr}" address',
 
     // libs/bazar.edit_lists.js

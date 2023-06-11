@@ -4,29 +4,8 @@ use YesWiki\Core\Service\ThemeManager;
 
 function getTemplatesList()
 {
-    //on cherche tous les dossiers du repertoire themes et des sous dossier styles
-    //et squelettes, et on les range dans le tableau $wakkaConfig['templates']
-    $repertoire_initial = 'themes';
-    $themeManager = $GLOBALS['wiki']->services->get(ThemeManager::class);
-    if (empty($themeManager->getTemplates())) {
-        $themeManager->setTemplates(search_template_files($repertoire_initial));
-
-        //s'il y a un repertoire themes a la racine, on va aussi chercher les templates dedans
-        if (is_dir('themes')) {
-            $repertoire_racine = 'themes';
-            $themeManager->setTemplates(array_merge(
-                $themeManager->getTemplates(),
-                search_template_files($repertoire_racine)
-            ));
-            if (is_array($themeManager->getTemplates())) {
-                $tmp = $themeManager->getTemplates();
-                ksort($tmp);
-                $themeManager->setTemplates($tmp);
-            }
-        }
-    }
-
     // Réorganisation des données avant de les rendre.
+    $themeManager = $GLOBALS['wiki']->services->get(ThemeManager::class);
     $themes = array();
     foreach ($themeManager->getTemplates() as $templateName => $templateValues) {
         $themes[$templateName] = array(
