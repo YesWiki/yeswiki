@@ -18,6 +18,7 @@ export default {
     write: writeconf,
     semantic: semanticConf
   },
+  advancedAttributes: ['read', 'write', 'semantic', 'today_button'],
   // disabledAttributes: [],
   attributesMapping: { ...defaultMapping, ...{ 5: 'today_button' } },
   // renderInput(fieldData) {},
