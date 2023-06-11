@@ -6,6 +6,7 @@ return [
     'BAZ_LISTES' => 'Lists',
     'BAZ_NOM_LISTE' => 'Name of the list',
     'BAZ_VALEURS_LISTE' => 'Values of the list',
+    'BAZ_VALEURS_LISTE_HINT' => 'Key should be unique, without spaces nor any special characters',
     'BAZ_AJOUTER_LABEL_LISTE' => 'Add a new value to the list',
     'BAZ_AJOUTER_CHAMPS_FORMULAIRE' => 'Add a new field to the form',
     'BAZ_MODIFIER_FORMULAIRES' => 'Forms administration',
