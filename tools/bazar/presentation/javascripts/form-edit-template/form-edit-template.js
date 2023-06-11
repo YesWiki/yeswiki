@@ -30,7 +30,8 @@ import { defaultMapping } from './fields/commons/attributes.js'
 const $formBuilderTextInput = $('#form-builder-text')
 let formBuilder
 
-const fields = {
+// Use window to make it available outside of module, so extension can adds their own fields
+window.formBuilderFields = {
   text, textarea, date, image, url, file, champs_mail, select,
   'checkbox-group': checkbox_group, 'radio-group': radio_group,
   map, tags, labelhtml, titre, bookmarklet, conditionschecking, calc,
@@ -40,58 +41,21 @@ const fields = {
 
 function mapFieldsConf(callback) {
   return Object.fromEntries(
-    Object.entries(fields).map(([name, conf]) => [name, callback(conf)])
+    Object.entries(formBuilderFields).map(([name, conf]) => [name, callback(conf)])
       .filter(([name, conf]) => !!conf)
   )
 }
 
 // Define an entire group of fields to be added to the stage at a time.
-const inputSets = [
-  {
-    label: _t('BAZ_FORM_EDIT_TABS'),
-    name: 'tabs',
-    icon: '<i class="fas fa-layer-group"></i>',
-    fields: [
-      {
-        type: 'tabs',
-        label: _t('BAZ_FORM_EDIT_TABS')
-      },
-      {
-        type: 'tabchange',
-        label: _t('BAZ_FORM_EDIT_TABCHANGE')
-      },
-      {
-        type: 'tabchange',
-        label: _t('BAZ_FORM_EDIT_TABCHANGE')
-      },
-      {
-        type: 'tabchange',
-        label: _t('BAZ_FORM_EDIT_TABCHANGE')
-      }
-    ]
-  },
-  {
-    label: _t('BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL'),
-    name: 'conditionschecking',
-    icon: '<i class="fas fa-project-diagram"></i>',
-    fields: [
-      {
-        type: 'conditionschecking',
-        label: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL')
-      },
-      {
-        type: 'labelhtml',
-        label: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_END'),
-        content_saisie: `</div><!-- ${_t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_END')}-->`
-      }
-    ]
-  }
-]
+// Use window to make it available outside of module, so extension can adds their own fields
+window.inputSets = Object.values(formBuilderFields).map((conf) => conf.set).filter((f) => !!f)
 
-const yesWikiMapping = mapFieldsConf((conf) => conf.attributesMapping || defaultMapping)
+// Use window to make it available outside of module, so extension can adds their own fields
+window.yesWikiMapping = mapFieldsConf((conf) => conf.attributesMapping || defaultMapping)
 
 // Mapping betwwen yeswiki field type and standard field implemented by form builder
-const yesWikiTypes = {
+// Use window to make it available outside of module, so extension can adds their own fields
+window.yesWikiTypes = {
   lien_internet: { type: 'url' },
   lien_internet_bis: { type: 'text', subtype: 'url' },
   mot_de_passe: { type: 'text', subtype: 'password' },
@@ -172,7 +136,7 @@ function copyMultipleSelectValues(currentField) {
 }
 
 const typeUserEvents = {}
-Object.keys(fields).forEach((field) => {
+Object.keys(formBuilderFields).forEach((field) => {
   typeUserEvents[field] = { onclone: copyMultipleSelectValues }
 })
 
@@ -180,8 +144,8 @@ function initializeFormbuilder() {
   // FormBuilder conf
   formBuilder = $('#form-builder-container').formBuilder({
     showActionButtons: false,
-    fields: Object.values(fields).map((conf) => conf.field).filter((f) => !!f),
-    controlOrder: Object.keys(fields),
+    fields: Object.values(formBuilderFields).map((conf) => conf.field).filter((f) => !!f),
+    controlOrder: Object.keys(formBuilderFields),
     typeUserAttrs: mapFieldsConf((conf) => conf.attributes),
     typeUserDisabledAttrs: mapFieldsConf((conf) => conf.disabledAttributes),
     typeUserEvents,

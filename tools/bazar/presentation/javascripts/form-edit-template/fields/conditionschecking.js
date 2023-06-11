@@ -8,6 +8,23 @@ export default {
     attrs: { type: 'conditionschecking' },
     icon: '<i class="fas fa-project-diagram"></i>'
   },
+  // Define an entire group of fields to be added to the stage at a time.
+  set: {
+    label: _t('BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL'),
+    name: 'conditionschecking',
+    icon: '<i class="fas fa-project-diagram"></i>',
+    fields: [
+      {
+        type: 'conditionschecking',
+        label: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL')
+      },
+      {
+        type: 'labelhtml',
+        label: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_END'),
+        content_saisie: `</div><!-- ${_t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_END')}-->`
+      }
+    ]
+  },
   attributes: {
     condition: {
       label: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL'),

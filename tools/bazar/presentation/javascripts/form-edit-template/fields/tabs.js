@@ -8,6 +8,30 @@ export default {
     attrs: { type: 'tabs' },
     icon: '<i class="fas fa-layer-group"></i>'
   },
+  // Define an entire group of fields to be added to the stage at a time.
+  set: {
+    label: _t('BAZ_FORM_EDIT_TABS'),
+    name: 'tabs',
+    icon: '<i class="fas fa-layer-group"></i>',
+    fields: [
+      {
+        type: 'tabs',
+        label: _t('BAZ_FORM_EDIT_TABS')
+      },
+      {
+        type: 'tabchange',
+        label: _t('BAZ_FORM_EDIT_TABCHANGE')
+      },
+      {
+        type: 'tabchange',
+        label: _t('BAZ_FORM_EDIT_TABCHANGE')
+      },
+      {
+        type: 'tabchange',
+        label: _t('BAZ_FORM_EDIT_TABCHANGE')
+      }
+    ]
+  },
   attributes: {
     formTitles: {
       label: _t('BAZ_FORM_EDIT_TABS_FOR_FORM'),
