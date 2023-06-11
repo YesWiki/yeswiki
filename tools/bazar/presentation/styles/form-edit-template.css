@@ -1,4 +1,79 @@
+.form-builder-label {
+  display: none;
+}
+#form-builder-container {
+  height: auto !important;
+  padding: 0 0 1px 0 !important;
+}
+#form-builder-container .form-control {
+  background-color: white;
+  border: 1px solid #ccc;
+}
+#form-builder-container .form-elements {
+  padding: 1rem;
+}
+#form-builder-container .form-elements .form-group {
+  margin: 0 0 5px 0;
+}
+#form-builder-container .form-elements .form-group label {
+  font-size: .8em;
+  width: auto !important;
+  text-align: left;
+  float: none;
+  padding: 0;
+  overflow: revert;
+}
+#form-builder-container  .form-wrap.form-builder .stage-wrap {
+  width: 74%;
+}
+#form-builder-container .form-wrap.form-builder .frmb-control li {
+  border-radius: 0;
+  border-right: none;
+}
+#form-builder-container .form-wrap.form-builder .frmb li {
+  background-color: transparent;
+  border-radius: 0;
+  transition: background-color .3s;
+}
+#form-builder-container .form-wrap.form-builder .frmb {
+  margin: 0;
+}
+#form-builder-container .form-wrap.form-builder .frmb .form-elements .input-wrap {
+  float: none;
+  margin-left: 0;
+  width: 100%;
+}
+#form-builder-container .form-wrap.form-builder .frmb > li:hover {
+  background-color: var(--neutral-light-color);
+  border: none;
+  box-shadow: none;
+}
+#form-builder-container  .form-wrap.form-builder .frmb .form-elements .input-wrap>input[type='checkbox'] {
+  margin: 0;
+}
+/* Remove checkbox style inside form-builder*/
+#form-builder-container [type="checkbox"]:not(:checked),
+#form-builder-container [type="checkbox"]:checked {
+  position: relative;
+  opacity: 1;
+  pointer-events: initial;
+}
+
+#form-builder-container .required-wrap {
+  display: flex;
+  align-items: center
+}
+#form-builder-container .required-wrap label {
+  order: 2;
+}
+#form-builder-container .required-wrap .input-wrap {
+  margin-right: .5rem;
+  order: 1;
+  width: auto !important;
+}
+
 .form-field { overflow: hidden; }
+
 /* Order of the field attributes */
 .form-wrap.form-builder .frmb .form-elements { display: flex; flex-direction: column; }
 .form-wrap.form-builder .frmb .form-field .form-group { order: 100; }
@@ -22,9 +97,6 @@
   border-top: 1px dashed grey;
   padding-top: 10px;
 }
-
-.form-wrap.form-builder .frmb .form-elements .input-wrap { width: 70%; }
-.form-wrap.form-builder .frmb .form-elements .false-label:first-child, .form-wrap.form-builder .frmb .form-elements label:first-child { width: 25%; }
 
 .titre-field .required-wrap,
 .titre-field .name-wrap {
@@ -123,16 +195,12 @@ xmp { overflow: auto; }
 }
 
 /* Make the list of fields smaller */
-.form-wrap.form-builder .frmb-control li {
-  padding: 5px 10px;
-  font-size: 15px;
-}
-
 .form-wrap.form-builder .frmb li {
-  padding: 5px 10px;
+  padding: 5px 1rem 8px 1rem !important;
+  margin: 0 !important;
 }
 .form-wrap.form-builder .frmb li:first-child {
-  padding-top: 10px;
+  padding-top: 10px !important;
 }
 
 .form-wrap.form-builder .frmb .field-label {
