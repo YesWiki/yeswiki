@@ -8,6 +8,7 @@ export default {
     attrs: { type: 'champs_mail' },
     icon: '<i class="fas fa-envelope"></i>'
   },
+  defaultIdentifier: 'bf_mail',
   attributes: {
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
     separator: { label: '' }, // separate important attrs from others

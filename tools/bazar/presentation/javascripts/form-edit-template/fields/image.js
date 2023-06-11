@@ -7,6 +7,7 @@ export default {
     attrs: { type: 'image' },
     icon: '<i class="fas fa-image"></i>'
   },
+  defaultIdentifier: 'bf_image',
   attributes: {
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
     thumb_height: { label: _t('BAZ_FORM_EDIT_IMAGE_HEIGHT'), value: '300' },

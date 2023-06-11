@@ -7,6 +7,7 @@ export default {
   //   attrs: { type: "date" },
   //   icon: '<i class="far fa-calendar-alt"></i>',
   // },
+  defaultIdentifier: 'bf_date_debut_evenement',
   attributes: {
     today_button: {
       label: _t('BAZ_FORM_EDIT_DATE_TODAY_BUTTON'),

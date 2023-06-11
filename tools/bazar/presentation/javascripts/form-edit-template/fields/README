@@ -12,6 +12,8 @@ export default {
   },
   // Disable default attributes from jQuery formBuilder
   disabledAttributes: [],
+  // mapping for old yeswiki syntax (field***attribute***other_attribute)
+  attributesMapping: {},
   // How to render the input
   renderInput(fieldData) {
     return { field: '<input/>' }
