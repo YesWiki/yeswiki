@@ -52,11 +52,18 @@ class BazarCartoAction extends YesWikiAction
 
         // Filters entries via query to remove whose withou bf_latitude nor bf_longitude
         $query = $this->getService(EntryController::class)->formatQuery($arg, $_GET);
-        if (!isset($query['bf_latitude!'])) {
-            $query['bf_latitude!'] = "";
-        }
-        if (!isset($query['bf_longitude!'])) {
-            $query['bf_longitude!'] = "";
+        if ($template != 'map-and-table' ||
+            (
+                !empty($arg['tablewith']) && 
+                $arg['tablewith'] === 'only-geolocation'
+            )
+        ) {
+            if (!isset($query['bf_latitude!'])) {
+                $query['bf_latitude!'] = "";
+            }
+            if (!isset($query['bf_longitude!'])) {
+                $query['bf_longitude!'] = "";
+            }
         }
 
         return([
@@ -73,7 +80,7 @@ class BazarCartoAction extends YesWikiAction
              * Exemple: provider="OpenStreetMap.France" providers="OpenStreetMap.Mapnik,OpenStreetMap.France"
              * TODO: ajouter gestion "providers_credentials"
              */
-            'providers' => isset($arg['providers']) ? explode(',', $arg['providers']) : [],
+            'providers' => $this->formatArray($arg['providers'] ?? []),
             /*
              * Une liste de layers (couches).
              * Exemple avec 1 layer tiles, 1 layer geojson:
@@ -88,7 +95,7 @@ class BazarCartoAction extends YesWikiAction
              *  Le plus simple est de recopier les data GeoJson dans une page du Wiki puis de l'appeler avec le handler "/raw".
              * TODO: ajouter gestion "layers_credentials"
              */
-            'layers' => isset($arg['layers']) ? explode(',', $arg['layers']) : [],
+            'layers' => $this->formatArray($arg['layers'] ?? []),
             // Mettre des puces petites ? non par defaut
             'markersize' => $markerSize,
             'smallmarker' => $smallMarker === '1' ? '' : ' xl',

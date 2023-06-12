@@ -1,0 +1,149 @@
+{% import "@core/multidelete-macro.twig" as multidelete %}
+
+{% extends "@bazar/entries/index-dynamic.twig" %}
+
+{% set necessary_fields = (necessary_fields is defined ? necessary_fields : (params.necessary_fields is defined ? params.necessary_fields|split(',') : []))
+  |merge(['owner'])
+  |merge((
+    (params.exportallcolumns is defined and (params.exportallcolumns == '1' or params.exportallcolumns == 'true'))
+    ? params.exportallcolumnsids|split(',')
+    : (params.columnfieldsids is defined
+      ? params.columnfieldsids|split(',')
+      : []
+    )
+  ))
+  |merge((params.displaycreationdate is defined and (params.displaycreationdate != 'no'))? ['date_creation_fiche']: [])
+  |merge((params.displaylastchangedate is defined and (params.displaycreationdate != 'no'))? ['date_maj_fiche']: [])
+  %}
+
+{% block assets %}
+  {{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
+  {{ include_css('tools/bazar/presentation/styles/tableau.css') }}
+
+  {{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }} 
+  {{ include_javascript('tools/bazar/presentation/javascripts/components/BazarTable.js', false, true) }}
+   
+{% endblock %}
+
+{% block display_entries %}
+  {% set imWidth = 150 %}
+  {% set imHeight = 100 %}
+  {% set firstTokenCrop = csrfToken("GET api/images/cache/#{imWidth}/#{imHeight}/crop") %}
+  <Bazar-Table :currentusername="{{ currentUserName|json_encode }}" :params="params" :entries="entriesToDisplay" :ready="ready" :root="$root" isadmin="{{ hasAcl("@admins")|json_encode }}">
+    <template #header="{displayedEntries,BazarTable}"></template>
+    <template #spinnerloader="{displayedEntries,BazarTable}">
+      <spinner-loader v-if="!BazarTable.fastSearch && (isLoading || !ready)" class="overlay super-overlay" :height="500"></spinner-loader>
+    </template>
+    <template #footer="{displayedEntries,BazarTable}"></template>
+    <template #deletecheckbox="{targetId,itemId,disabled}">
+      <td>
+        {% set id = "`selectline_${targetId}_${itemId}`" %}
+        <label :for="{{id}}">
+          <input
+            :disabled="disabled" 
+            :class="disabled ? null : {selectline:true}" 
+            :data-itemid="disabled ? null : itemId"
+            type="checkbox"
+            :id="{{id}}" 
+            :name="{{id}}" 
+            data-csrftoken="to-be-defined"
+            value="">
+          <span></span>
+        </label>
+      </td>
+    </template>
+    <template #deletecheckboxall>
+      {{ multidelete.insertSelectAll('targetId','selectAllType') }}
+    </template>
+    <template #deleteallselectedbutton="{BazarTable,uuid}">
+      {# generate template reative for vuejs #}
+      {{ multidelete.insertButton('targetId','pages')|replace({
+        "onclick=\"multiDeleteService.updateNbSelected('MultiDeleteModaltargetId')\"": '@click="BazarTable.deleteAllSelected"',
+        'href="#MultiDeleteModaltargetId"': ':href="`#MultiDeleteModal${uuid}`"',
+        'MultiDeleteModaltargetIdLabel': '`MultiDeleteModal${uuid}Label`',
+        'MultiDeleteModaltargetId': '`MultiDeleteModal${uuid}`',
+        'targetId': 'uuid',
+        'id="': ':id="',
+        'aria-labelledby="': ':aria-labelledby="',
+        'data-target="': ':data-target="',
+        'start-btn-delete-all"': 'start-btn-delete-all" @click.prevent.stop="BazarTable.startDelete"'
+      })|raw }}
+    </template>
+    <template #adminsbuttons="{entryId,entryTitle,entryUrl,isExternal,candelete}">
+      <a :href="isExternal ? `${entryUrl}/editiframe` : `{{ url({tag:'${entryId}',handler:'editiframe'}) }}`"
+        data-toggle="tooltip"
+        data-placement="left"
+        class="btn btn-default btn-icon btn-xs modalbox"
+        data-size="modal-lg"
+        data-iframe="1"
+        :title="`{{ _t('MODIFY') }} ${entryId}`"
+        onclick="$(this).tooltip('hide');$(this).attr('title',$(this).data('original-title'));"
+        >
+        <i class="fas fa-pencil-alt"></i>
+      </a>
+      <a v-if="candelete"
+        :href="`{{ url({tag:'${entryId}',handler:'deletepage',params:{incomingurl:url({handler:''})}}) }}`"
+        data-toggle="tooltip"
+        data-placement="left"
+        class="btn btn-danger btn-icon btn-xs modalbox"
+        :title="`{{ _t('DELETE') }} ${entryId}`"
+        onclick="$(this).tooltip('hide');$(this).attr('title',$(this).data('original-title'));"
+        >
+        <i class="fas fa-trash"></i>
+      </a>
+      <button
+        v-else-if="!isExternal"
+        disabled="disabled"
+        data-toggle="tooltip"
+        data-placement="left"
+        class="btn btn-danger btn-icon btn-xs"
+        title="{{ _t('DELETEPAGE_NOT_OWNER') }}"
+        >
+        <i class="fas fa-trash"></i>
+      </button>
+    </template>
+    <template #creationdatetranslate>{{ _t('BAZ_DATE_CREATION') }}</template>
+    <template #formidtranslate>{{ _t('BAZ_ID') }}</template>
+    <template #latitudetext>{{ _t('BAZ_LATITUDE') }}</template>
+    <template #longitudetext>{{ _t('BAZ_LONGITUDE') }}</template>
+    <template #modifiydatetranslate>{{ _t('BAZ_DATE_MAJ') }}</template>
+    <template #ownertranslate>{{ _t('TEMPLATE_OWNER') }}</template>
+    <template #sumtranslate>{{ _t('SUM') }}</template>
+    <template #rendercell="{anchorData,fieldtype,fieldName,addLink,entryId,url,color='',icon=''}">
+      {# be careful, here a twig template create a VueJs template that is used to create a Datatable template #}
+      <template v-if="color.length > 0">
+        <span class="pellet" :style="{backgroundColor:`${color}`}"></span>
+      </template>
+      <template v-if="icon.length > 0">
+        <i :class="{[icon]:true}"></i>
+      </template>
+      {#- supported fieldtype empty,link,email,image -#}
+      <template v-if="addLink">
+        <a :href="`${url}/iframe`" v-html="anchorData" class="modalbox" data-size="modal-lg" data-iframe="1" :title="anchorData"></a>
+      </template>
+      <template v-else-if="fieldtype === 'link'">
+        <a :href="anchorData" v-html="anchorData" class="modalbox" data-size="modal-lg" data-iframe="1"></a>
+      </template>
+      <template v-else-if="fieldtype === 'email' && anchorData.length > 0">
+        <a :href="`mailto:${anchorData}`" v-html="anchorData"></a>
+      </template>
+      <template v-else-if="fieldtype === 'image' && anchorData.length > 0">
+        <img
+          loading="lazy"
+          height="{{ imHeight }}"
+          width="{{ imWidth }}"
+          :src="urlImage({id_fiche:entryId,url:wiki.url(entryId),[fieldName]:anchorData},fieldName,{{ imWidth }},{{ imHeight }},'crop')"
+          :onError="`urlImageResizedOnError({id_fiche:'${entryId}',url:'${wiki.url(entryId)}',['${fieldName}']:'${anchorData}'},'${fieldName}',{{ imWidth }},{{ imHeight }},'crop','{{ firstTokenCrop|e('html') }}')`"/>
+      </template>
+      <template v-else-if="fieldtype === 'urlmodal' && anchorData.length > 0">
+        <a :href="url" v-html="anchorData" :title="anchorData" class="modalbox" data-size="modal-lg" data-iframe="1"></a>
+      </template>
+      <template v-else-if="fieldtype === 'urlnewwindow' && anchorData.length > 0">
+        <a :href="url" v-html="anchorData" :title="anchorData" target="blank"></a>
+      </template>
+      <template v-else>
+        {{-'{{anchorData}}'-}}
+      </template>
+    </template>
+  </Bazar-Table>
+{% endblock %}
