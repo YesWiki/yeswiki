@@ -470,6 +470,7 @@ class ApiController extends YesWikiController
      */
     public function getDeleteToken($tag)
     {
+        // TODO : elete this api routes after refactor of names of tokens
         return new ApiResponse([
             'token'=>$this->regenerateToken($tag)
         ]);
@@ -481,6 +482,7 @@ class ApiController extends YesWikiController
      */
     public function getDeleteTokens()
     {
+        // TODO : elete this api routes after refactor of names of tokens
         $pageIds = (empty($_GET['pages']) || !is_string($_GET['pages'])) ? [] : explode(',',strval($_GET['pages']));
         $tokens = [];
         foreach ($pageIds as $tag) {
