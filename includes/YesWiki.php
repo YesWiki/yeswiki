@@ -400,7 +400,7 @@ class Wiki
             if (is_array($params)) {
                 $paramsArray = [];
                 foreach ($params as $key => $value) {
-                    if ($value) {
+                    if (!empty($value) || in_array($value,[0,'0',''],true)) {
                         $paramsArray[] = "$key=".urlencode($value);
                     }
                 };

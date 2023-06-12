@@ -96,10 +96,10 @@
             </div>
             <div class="erase-actions">
             {% if form.canDelete %}
-              <a class="btn btn-danger btn-xs modalbox" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'confirm_empty', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom">
+              <a class="btn btn-danger btn-xs modalbox" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'confirm_empty', idformulaire: key, voirmenu: 0 }}) }}" data-toggle="tooltip" data-placement="bottom">
                 <i class="fas fa-eraser"></i>
               </a>
-              <a class="btn btn-danger btn-xs modalbox" title="{{ _t('BAZ_SUPPRIMER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'confirm_delete', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom">
+              <a class="btn btn-danger btn-xs modalbox" title="{{ _t('BAZ_SUPPRIMER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'confirm_delete', idformulaire: key, voirmenu: 0 }}) }}" data-toggle="tooltip" data-placement="bottom">
                 <i class="fa fa-trash"></i>
               </a>
             {% else %}
