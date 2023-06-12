@@ -46,7 +46,9 @@ class BazarAction extends YesWikiAction
 
     public function formatArguments($arg)
     {
-        $redirecturl = $_GET['redirecturl'] ?? $arg['redirecturl'] ?? '';
+        $redirecturl = $this->sanitizedGet('redirecturl',function() use($arg){
+            return $arg['redirecturl'] ?? '';
+        });
         // YesWiki pages links, like "HomePage" or "HomePage/xml"
         if (!empty($redirecturl)){
             $wikiLink = $this->wiki->extractLinkParts((substr($redirecturl,0,1) == '?') ? substr($redirecturl,1): $redirecturl);
@@ -59,15 +61,34 @@ class BazarAction extends YesWikiAction
         }
 
         return([
-            self::VARIABLE_ACTION => $_GET[self::VARIABLE_ACTION] ?? $arg[self::VARIABLE_ACTION] ?? null,
-            self::VARIABLE_VOIR => $_GET[self::VARIABLE_VOIR] ?? $arg[self::VARIABLE_VOIR] ?? self::VOIR_DEFAUT,
+            self::VARIABLE_ACTION => $this->sanitizedGet(self::VARIABLE_ACTION,function() use($arg){
+                return $arg[self::VARIABLE_ACTION] ?? null;
+            }),
+            self::VARIABLE_VOIR => $this->sanitizedGet(self::VARIABLE_VOIR,function() use($arg){
+                return $arg[self::VARIABLE_VOIR] ?? self::VOIR_DEFAUT;
+            }),
             // afficher le menu de vues bazar ?
-            'voirmenu' => $_GET['voirmenu'] ?? $arg['voirmenu'] ?? $this->params->get('baz_menu'),
+            'voirmenu' => $this->sanitizedGet('voirmenu',function() use($arg){
+                return $arg['voirmenu'] ?? $this->params->get('baz_menu');
+            }),
             // Identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
             'idtypeannonce' => $this->formatArray($_REQUEST['id_typeannonce'] ?? $arg['id'] ?? $arg['idtypeannonce'] ?? (!empty($_GET['id']) ? strip_tags($_GET['id']) : null)),
             // Permet de rediriger vers une url après saisie de fiche
             'redirecturl' => $redirecturl
         ]);
+    }
+
+    /**
+     * check if get is scalar then return it or result of callback
+     * @param string $key
+     * @param function $callback
+     * @return scalar
+     */
+    protected function sanitizedGet(string $key,$callback)
+    {
+        return (isset($_GET[$key]) && is_scalar($_GET[$key]))
+            ? $_GET[$key]
+            : (is_callable($callback) ? $callback() : null);
     }
 
     public function run()

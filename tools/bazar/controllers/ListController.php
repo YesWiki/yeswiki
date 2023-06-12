@@ -75,7 +75,7 @@ class ListController extends YesWikiController
 
     private function shouldPostMessageOnSubmit()
     {
-        return isset($_GET["onsubmit"])  && $_GET["onsubmit"] == "postmessage";
+        return isset($_GET["onsubmit"])  && $_GET["onsubmit"] === "postmessage";
     }
 
     public function update($id)
