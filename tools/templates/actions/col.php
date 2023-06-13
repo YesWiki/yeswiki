@@ -22,7 +22,7 @@ if (!(ctype_digit($size) && intval($size) >= 1 && intval($size) <= 12)) {
 $class = $this->GetParameter('class');
 
 // data attributes
-$data = getDataParameter();
+$data = $this->services->get(\YesWiki\Templates\Service\Utils::class)->getDataParameter();
 
 $pagetag = $this->GetPageTag();
 
@@ -31,7 +31,7 @@ if (!isset($GLOBALS['check_'.$pagetag ])) {
     $GLOBALS['check_'.$pagetag ] = [];
 }
 if (!isset($GLOBALS['check_' . $pagetag]['col'])) {
-    $GLOBALS['check_' . $pagetag]['col'] = check_graphical_elements('col', $pagetag, $this->page['body'] ?? '');
+    $GLOBALS['check_' . $pagetag]['col'] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('col', $pagetag, $this->page['body'] ?? '');
 }
 if ($GLOBALS['check_' . $pagetag]['col']) {
     echo '<div class="span' . $size . ' col-md-' . $size . (isset($class) ? ' ' . $class : '')

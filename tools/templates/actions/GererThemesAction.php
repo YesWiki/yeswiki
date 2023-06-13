@@ -27,8 +27,6 @@ class GererThemesAction extends YesWikiAction
     $this->pageManager = $this->getService(PageManager::class);
     $this->themeManager = $this->getService(ThemeManager::class);
 
-    require_once 'tools/templates/libs/templates.functions.php';
-
     $errorMessage = '';
     if (isset($_POST['theme_modifier'])) {
       try {

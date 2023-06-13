@@ -11,7 +11,7 @@ $class = $this->GetParameter('class');
 $class = ((!empty($class)) ? $class : 'nav nav-tabs');
 
 // data attributes
-$data = getDataParameter();
+$data = $this->services->get(\YesWiki\Templates\Service\Utils::class)->getDataParameter();
 $pagetag = $this->GetPageTag();
 
 // liens

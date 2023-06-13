@@ -40,8 +40,6 @@ if (! $this->UserIsAdmin()) {
     return ;
 }
 
-    include_once 'tools/templates/libs/templates.functions.php';
-
     $table = $this->config['table_prefix'];
 
     //Modification de droits
@@ -131,7 +129,7 @@ if (! $this->UserIsAdmin()) {
 <?php
 $num_page = 0;
 while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
-    $page_et_droits[$num_page] = recup_droits($tab_liste_pages['tag']);
+    $page_et_droits[$num_page] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->recupDroits($tab_liste_pages['tag']);
     ++$num_page;
 }
 ?>

@@ -14,7 +14,7 @@ if (isset($_GET['template']) && file_exists(realpath('tools/templates/presentati
 }
 
 // fonction de generation du diaporama (teste les droits et l'existence de la page)
-echo print_diaporama($this->tag, $template);
+echo $this->services->get(\YesWiki\Templates\Service\Utils::class)->printDiaporama($this->tag, $template);
 
 $output = ob_get_contents();
 ob_end_clean();

@@ -110,14 +110,14 @@ $class = $this->GetParameter('class');
 $id = $this->GetParameter('id');
 
 // container data attributes
-$data = getDataParameter();
+$data = $this->services->get(\YesWiki\Templates\Service\Utils::class)->getDataParameter();
 
 $pagetag = $this->GetPageTag();
 if (!isset($GLOBALS['check_'.$pagetag])) {
     $GLOBALS['check_'.$pagetag] = [];
 }
 if (!isset($GLOBALS['check_' . $pagetag]['section'])) {
-    $GLOBALS['check_' . $pagetag]['section'] = check_graphical_elements('section', $pagetag, $this->page['body'] ?? '');
+    $GLOBALS['check_' . $pagetag]['section'] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('section', $pagetag, $this->page['body'] ?? '');
 }
 if ($GLOBALS['check_' . $pagetag]['section']) {
     // specify the role to be checked ( *, +, %, @admins)

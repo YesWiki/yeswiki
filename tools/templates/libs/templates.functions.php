@@ -1,7 +1,5 @@
 <?php
 
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Templates\Service\Utils;
 
 if (!defined("WIKINI_VERSION")) {
@@ -16,15 +14,11 @@ if (!defined("WIKINI_VERSION")) {
  * @param $element : name of element
  *
  * return bool vrai si chaque élément est bien fermé
+ * @deprecated use \YesWiki\Templates\Service\Utils::checkGraphicalElements
  */
 function check_graphical_elements($element, $pagetag, $pagecontent)
 {
-    if ($pagecontent == null) {
-        $pagecontent = '';
-    }
-    preg_match_all('/{{\b'.$element.'\b.*}}/Ui', $pagecontent, $matchesaction);
-    preg_match_all('/{{end.*elem="'.$element.'".*}}/Ui', $pagecontent, $matchesendaction);
-    return count($matchesaction[0]) == count($matchesendaction[0]);
+    return $GLOBALS['wiki']->services->get(Utils::class)->checkGraphicalElements($element, $pagetag, $pagecontent);
 }
 
 
@@ -35,123 +29,29 @@ function check_graphical_elements($element, $pagetag, $pagecontent)
  * @param $directory : chemin relatif vers le dossier contenant les templates
  *
  * return array : tableau des themes trouves, ranges par ordre alphabetique
- *
+ * @deprecated use \YesWiki\Templates\Service\Utils::searchTemplateFiles
  */
 function search_template_files($directory)
 {
-    $tab_themes = array();
-    $dir = opendir($directory);
-    while ($dir && ($file = readdir($dir)) !== false) {
-        if ($file!='.' && $file!='..' && $file!='CVS' && is_dir($directory.DIRECTORY_SEPARATOR.$file)) {
-            $pathToStyles = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles';
-            if (is_dir($pathToStyles) && $dir2 = opendir($pathToStyles)) {
-                while (false !== ($file2 = readdir($dir2))) {
-                    if (substr($file2, -4, 4) == '.css') {
-                        $tab_themes[$file]["style"][$file2] = remove_extension($file2);
-                    }
-                }
-                closedir($dir2);
-            }
-
-            $pathToSquelettes = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes';
-            if (is_dir($pathToSquelettes) && $dir3 = opendir($pathToSquelettes)) {
-                while (false !== ($file3 = readdir($dir3))) {
-                    if (substr($file3, -9, 9)=='.tpl.html') {
-                        $tab_themes[$file]["squelette"][$file3] = remove_extension($file3);
-                    }
-                }
-                closedir($dir3);
-            }
-
-            $pathToPresets = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'presets';
-            if (is_dir($pathToPresets) && $dir4 = opendir($pathToPresets)) {
-                while (false !== ($file4 = readdir($dir4))) {
-                    if (substr($file4, -4, 4)=='.css' && file_exists($pathToPresets.'/'.$file4)) {
-                        $css = file_get_contents($pathToPresets.'/'.$file4);
-                        if (!empty($css)) {
-                            $tab_themes[$file]["presets"][$file4] = $css;
-                        }
-                    }
-                }
-                closedir($dir4);
-                if (isset($tab_themes[$file]["presets"]) && is_array($tab_themes[$file]["presets"])) {
-                    ksort($tab_themes[$file]["presets"]);
-                }
-            }
-        }
-    }
-    closedir($dir);
-
-    if (is_array($tab_themes)) {
-        ksort($tab_themes);
-    }
-
-    return $tab_themes;
+    return $GLOBALS['wiki']->services->get(Utils::class)->searchTemplateFiles($directory);
 }
-
-function remove_extension($filename)
-{
-    return preg_replace("/\..*/i", '', $filename);
-}
-
-
 
 /**
- * Remplace juste la premiere occurence d'une chaine de caracteres
- *
- * @param string $from : partie de la chaine recherchée
- * @param string $to   : chaine de remplacement
- * @param string $str  : chaine entree
- *
- * @return string : chaine entree avec la premiere occurence changee
+ * @deprecated use \YesWiki\Templates\Service\Utils::removeExtension
  */
-function str_replace_once($from, $to, $str)
+function remove_extension($filename)
 {
-    if (!$newStr = strstr($str, $from)) {
-        return $str;
-    }
-    $iNewStrLength = strlen($newStr);
-    $iFirstPartlength = strlen($str) - $iNewStrLength;
-    return substr($str, 0, $iFirstPartlength).$to.substr($newStr, strlen($from), $iNewStrLength);
+    return $GLOBALS['wiki']->services->get(Utils::class)->removeExtension($filename);
 }
 
 // str_ireplace est php5 seulement
 if (!function_exists('str_ireplacement')) {
+    /**
+     * @deprecated use \YesWiki\Templates\Service\Utils::strIreplacement
+     */
     function str_ireplacement($search, $replace, $subject)
     {
-        $token = chr(1);
-        $haystack = strtolower($subject);
-        $needle = strtolower($search);
-        while (($pos=strpos($haystack, $needle))!==false) {
-            $subject = substr_replace($subject, $token, $pos, strlen($search));
-            $haystack = substr_replace($haystack, $token, $pos, strlen($search));
-        }
-        $subject = str_replace($token, $replace, $subject);
-        return $subject;
-    }
-}
-
-
-/**
- * Savoir si l'url est bien une image
- *
- * @param string $url : url de l'image
- *
- * @return boolean : indique si l'url est une image ou pas
- */
-function image_exists($url)
-{
-    $info = @getimagesize($url);
-    return((bool) $info);
-}
-
-//fonction recursive pour detecter un nomwiki deja present
-function nomwikidouble($nomwiki, $nomswiki)
-{
-    if (in_array($nomwiki, $nomswiki)) {
-        return nomwikidouble($nomwiki.'bis', $nomswiki);
-    } else {
-        return $nomwiki;
+        return $GLOBALS['wiki']->services->get(Utils::class)->strIreplacement($search, $replace, $subject);
     }
 }
 
@@ -162,280 +62,21 @@ function nomwikidouble($nomwiki, $nomswiki)
  * @param $pagetag : nom de la PageWiki
  * @param $template : fichier template pour le diaporama
  * @param $class : classe CSS a ajouter au diaporama
+ * 
+ * @deprecated use \YesWiki\Templates\Service\Utils::printDiaporama
  *
  */
 function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $class = '')
 {
-    // On teste si l'utilisateur peut lire la page
-    if (!$GLOBALS['wiki']->HasAccess("read", $pagetag)) {
-        return '<div class="alert alert-danger">'
-            ._t('TEMPLATE_NO_ACCESS_TO_PAGE').'</div>'
-            .$GLOBALS['wiki']->Format('{{login template="minimal.tpl.html"}}');
-    } else {
-        // On teste si la page existe
-        if (!$page = $GLOBALS['wiki']->LoadPage($pagetag)) {
-            return '<div class="alert alert-danger">'._t('TEMPLATE_PAGE_DOESNT_EXIST').' ('.$pagetag.').</div>';
-        } else {
-            // $body_f = $GLOBALS['wiki']->Format($page["body"], 'wakka', $pagetag);
-            // on regarde si on gere la 2d pour reveal
-            //preg_match_all('/<h1>.*<\/h1>/m', $body_f, $titles);
-            preg_match_all('/======.*======/Um', $page["body"], $titles);
-            $istwodimensions = count($titles[0]) > 1;
-            $first = true;
-            // on decoupe pour chaque titre de niveau 1 ou 2, ou chaque fois que background-image est utilisée
-            // $body = preg_split(
-            //     '/(.*<h[12]>.*<\/h[12]>)'
-            //     .'|(.*<div class="background-image.*">.*<\!-- \/\.background-image -->)/m',
-            //     $body_f,
-            //     -1,
-            //     PREG_SPLIT_DELIM_CAPTURE
-            // );
-            $body = preg_split(
-                '/(\======.*======)'
-                .'|(=====.*=====)'
-                .'|(\{\{backgroundimage.*\}\}\s*.*\s*\{\{endbackgroundimage\}\})/Um',
-                $page["body"],
-                -1,
-                PREG_SPLIT_DELIM_CAPTURE
-            );
-            //var_dump($body);break;
-            if (!$body) {
-                return '<div class="=alert alert-danger">'
-                    ._t('TEMPLATE_PAGE_CANNOT_BE_SLIDESHOW').' ('.$pagetag.').</div>';
-            } else {
-                // preparation des tableaux pour le squelette -------------------------
-                $i = 0 ;
-                $slides = array() ;
-                $titles = array() ;
-                $previousistitle = false;
-                foreach ($body as $slide) {
-                    $slide = $GLOBALS['wiki']->Format($slide);
-                    //var_dump($slide);
-                    // s'il a des titres de niveau 1 ou 2 il s'agit des separateurs de diapo
-                    if (preg_match('/<h[12]>.*<\/h[12]>/', $slide)) {
-                        // s'il y a un titre de niveau 1 qui commence la diapositive, on la deplace en titre
-                        // et on gere l'aspect multidimentionnel
-                        if (preg_match('/<h1>.*<\/h1>/', $slide)) {
-                            if ($istwodimensions) {
-                                if ($first) {
-                                    $first = false;
-                                } else {
-                                    $slides[$i]['closesection'] = true;
-                                }
-                                $slides[$i]['opensection'] = true;
-                            }
-                        }
-                        //pour les titres de niveau 2, on les transforme en titre 1
-                        $titles[$i] = str_replace('<h2', '<h1', $slide);
-                        if ($previousistitle) {
-                            $slides[$i]['html'] = '';
-                            $i++;
-                        }
-                        $previousistitle = true;
-                    } elseif (!empty($slide) || $previousistitle) {
-                        $previousistitle = false;
-                        $slides[$i]['html'] = $slide ;
-                        $slides[$i]['title'] = ((isset($titles[$i])) ? strip_tags($titles[$i]) : '') ;
-                        $i++;
-                    }
-                }
-            }
-        }
-
-
-        $buttons = '';
-        //si la fonction est appelee par le handler diaporama, on ajoute les liens d'edition et de retour
-        if ($GLOBALS['wiki']->GetMethod() == "diaporama") {
-            $buttons .= '<a class="btn" href="'.$GLOBALS['wiki']->href('', $pagetag).'">&times;</a>'."\n";
-        }
-
-        // on affiche le template
-        $output = $GLOBALS['wiki']->render("@templates/$template", [
-            "pagetag" => $pagetag,
-            "slides" => $slides,
-            "titles" => $titles,
-            "buttons" => $buttons,
-            "class" => $class
-        ]);
-
-        return $output;
-    }
+    return $GLOBALS['wiki']->services->get(Utils::class)->printDiaporama($pagetag, $template, $class);
 }
-
-function show_form_theme_selector($mode = 'selector', $formclass = '')
-{
-    $wiki = $GLOBALS['wiki'];
-    $themeManager = $wiki->services->get(ThemeManager::class);
-    // en mode edition on recupere aussi les images de fond
-    if ($mode=='edit') {
-        $id = 'form_graphical_options';
-        // recuperation des images de fond
-        $backgroundsdir = 'files/backgrounds';
-        $dir = (is_dir($backgroundsdir) ? opendir($backgroundsdir) : false);
-        while ($dir && ($file = readdir($dir)) !== false) {
-            $imgextension = strtolower(substr($file, -4, 4));
-            // les jpg sont les fonds d'ecrans, ils doivent etre mis en miniature
-            if ($imgextension == '.jpg') {
-                if (!is_file($backgroundsdir.'/thumbs/'.$file)) {
-                    $imgTrans = new Zebra_Image();
-                    $imgTrans->auto_handle_exif_orientation = true;
-                    $imgTrans->preserve_aspect_ratio = true;
-                    $imgTrans->enlarge_smaller_images = true;
-                    $imgTrans->preserve_time = true;
-                    $imgTrans->handle_exif_orientation_tag = true;
-                    $imgTrans->source_path = $backgroundsdir.'/'.$file;
-                    $imgTrans->target_path = $backgroundsdir.'/thumbs/'.$file;
-                    if ($imgTrans->resize(intval(100), intval(75), ZEBRA_IMAGE_NOT_BOXED, '#FFFFFF')) {
-                        $backgrounds[] = $imgTrans->target_path;
-                    }
-                } else {
-                    $backgrounds[] = $backgroundsdir.'/thumbs/'.$file;
-                }
-            } elseif ($imgextension == '.png') {
-                // les png sont les images a repeter en mosaique
-                $backgrounds[] = $backgroundsdir.'/'.$file;
-            }
-        }
-        if ($dir) {
-            closedir($dir);
-        }
-
-        $bgselector = '';
-
-        if (isset($backgrounds) && is_array($backgrounds)) {
-            $bgselector .= '<h3>'._t('TEMPLATE_BG_IMAGE').'</h3>
-            <div id="bgCarousel" class="carousel" data-interval="5000" data-pause="true">
-        <!-- Carousel items -->
-        <div class="carousel-inner">'."\n";
-            $nb = 0;
-            $thumbs_per_slide = 8;
-            $firstitem = true;
-            sort($backgrounds);
-
-            foreach ($backgrounds as $background) {
-                $nb++;
-                if ($nb == 1) {
-                    $bgselectorlist = '';
-                    $class = '';
-                }
-
-                // dans le cas ou il n'y a pas d'image de fond selectionnee on bloque la premiere diapo
-                if ($themeManager->getFavoriteBackgroundImage() == '' && $firstitem) {
-                    $class = ' active';
-                    $firstitem = false;
-                }
-
-                $choosen = ($background == 'files/backgrounds/'.$themeManager->getFavoriteBackgroundImage());
-                if ($choosen) {
-                    $class = ' active';
-                }
-
-                $imgextension = strtolower(substr($background, -4, 4));
-
-                if ($imgextension=='.jpg') {
-                    $bgselectorlist .= '<img loading="lazy" class="bgimg'.($choosen ? ' choosen' : '').'" src="'.$background.'" width="100" height="75" />'."\n";
-                } elseif ($imgextension=='.png') {
-                    $bgselectorlist .= '<div class="mozaicimg'.($choosen ? ' choosen' : '').'" style="background:url('.$background.') repeat top left;"></div>'."\n";
-                }
-                // on finit la diapositive
-                if ($nb == $thumbs_per_slide) {
-                    $nb=0;
-                    $bgselector .= '<div class="item'.$class.'">'."\n".$bgselectorlist.'</div>'."\n";
-                }
-            }
-            // si la boucle se termine et qu'on ne vient pas de finir une diapositive
-            if ($nb != 0) {
-                $bgselector .= '<div class="item'.$class.'">'."\n".$bgselectorlist.'</div>'."\n";
-            }
-            $bgselector .= '</div>
-        <!-- Carousel nav -->
-        <a class="carousel-control left" href="#bgCarousel" data-slide="prev">&lsaquo;</a>
-        <a class="carousel-control right" href="#bgCarousel" data-slide="next">&rsaquo;</a>
-        </div>'."\n";
-        }
-    } else {
-        $id = 'form_theme_selector';
-        $bgselector = '';
-    }
-
-    // page list
-    $tablistWikinames = $wiki->LoadAll(
-        'SELECT DISTINCT tag FROM '.$wiki->GetConfigValue('table_prefix').'pages WHERE latest="Y"'
-    );
-    foreach ($tablistWikinames as $tag) {
-        $listWikinames[] = $tag['tag'];
-    }
-    $listWikinames = '["'.implode('","', $listWikinames).'"]';
-
-    $presetsData = $themeManager->getPresetsData();
-
-    $selecteur =$wiki->render("@templates/themeselector.tpl.html", [
-        'mode' => $mode,
-        'wiki' => $wiki,
-        'id' => $id,
-        'class' => $formclass,
-        'bgselector' => $bgselector,
-        'themes' => $themeManager->getTemplates(),
-        'listWikinames' => $listWikinames,
-        'favoriteTheme' => $themeManager->getFavoriteTheme(),
-        'favoriteSquelette' => $themeManager->getFavoriteSquelette(),
-        'favoriteStyle' => $themeManager->getFavoriteStyle(),
-        'dataHtmlForPresets' => $presetsData['dataHtmlForPresets'],
-        'customCSSPresets' => $presetsData['customCSSPresets'],
-        'dataHtmlForCustomCSSPresets' => $presetsData['dataHtmlForCustomCSSPresets'],
-        'showAdminActions' => ($wiki->UserIsAdmin()),
-        'currentCSSValues' => $presetsData['currentCSSValues'] ?? [],
-        'selectedPresetName' => $presetsData['selectedPresetName'] ??  null,
-        'selectedCustomPresetName' => $presetsData['selectedCustomPresetName'] ??  null,
-    ]);
-    $selecteur .= $wiki->render('@templates/_theme-selector-export-var.twig',[
-        'dataJs' => $themeManager->getSquelettesAndStylesForJs()
-    ]);
-
-    return $selecteur;
-}
-
-// Callback function for bootstrap navbar menu
-function make_dropdown_menu($matches)
-{
-    $replace = str_replace(
-        array('<li>','<a ','<ul>'),
-        array('<li class="dropdown">', '<a class="dropdown-toggle" data-toggle="dropdown" ', '<ul class="dropdown-menu">'),
-        $matches[1]
-    );
-    return ;
-}
-
-function implode_r($glue, array $arr)
-{
-    $ret = '';
-
-    foreach ($arr as $piece) {
-        if (is_array($piece)) {
-            $ret .= $glue . implode_r($glue, $piece);
-        } else {
-            $ret .= $glue . $piece;
-        }
-    }
-
-    return $ret;
-}
-
 
 /**
- * vérifie l'extension d'un fichier.
- *
- * Compare l'extension du fichier dont le nom est passé en paramètre à une
- * extension. Retourne vrai si l'extension correspond sinon retourne faux.
- *
- * @param string $filename Nom du fichier dont l'extension est a vérifer
- * @param string $ext      extension attendue
- *
- * @return bool
+ * @deprecated use \YesWiki\Templates\Service\Utils::showFormThemeDelector
  */
-function isExtension($filename, $ext)
+function show_form_theme_selector($mode = 'selector', $formclass = '')
 {
-    return substr($filename, -strlen($ext), strlen($filename)) === $ext;
+    return $GLOBALS['wiki']->services->get(Utils::class)->showFormThemeDelector($mode, $formclass);
 }
 
 
@@ -444,79 +85,31 @@ function isExtension($filename, $ext)
  *
  *
  * @return array or null if not result
+ * @deprecated use \YesWiki\Templates\Service\Utils::getDataParameter
  */
 function getDataParameter()
 {
-    // container data attributes
-    $data = $GLOBALS['wiki']->GetParameter('data');
-    if (!empty($data)) {
-        $datas = array();
-        $tab = explode(',', $data);
-        foreach ($tab as $req) {
-            $tabdecoup = explode('=', $req, 2);
-            $key = htmlspecialchars($tabdecoup[0]);
-            $datas[$key] = htmlspecialchars(trim($tabdecoup[1]));
-        }
-        if (is_array($datas)) {
-            return $datas;
-        } else {
-            return null;
-        }
-    } else {
-        return null;
-    }
+    return $GLOBALS['wiki']->services->get(Utils::class)->getDataParameter();
 }
 
+/**
+ * @deprecated use \YesWiki\Templates\Service\Utils::postFormat
+ */
 function postFormat($output)
 {
-    // pour les buttondropdown, on ajoute les classes css aux listes
-    $pattern = array(
-       '/(\<!-- start of buttondropdown -->.*)\<ul\>(.*\<!-- end of buttondropdown --\>)/Uis',
-       '/<li>\s*<hr \/>\s*<\/li>/Uis',
-    );
-    $replacement = array(
-        '$1<ul class="dropdown-menu dropdown-menu-right" role="menu">$2',
-        '<li class="divider"></li>',
-    );
-    return preg_replace($pattern, $replacement, $output);
+    return $GLOBALS['wiki']->services->get(Utils::class)->postFormat($output);
 }
 
 /**
  * Récupère les droits de la page désignée en argument et renvoie un tableau.
  *
  * @param string $page
- * @return array()
+ * @return array
+ * @deprecated use \YesWiki\Templates\Service\Utils::recupDroits
  */
 function recup_droits($page)
 {
-    $wiki = $GLOBALS['wiki'] ;
-
-    $readACL = $wiki->LoadAcl($page, 'read', false);
-    $writeACL = $wiki->LoadAcl($page, 'write', false);
-    $commentACL = $wiki->LoadAcl($page, 'comment', false);
-
-    $acls = array(
-        'page' => $page,
-        'lire' => $wiki->GetConfigValue('default_read_acl'),
-        'lire_default' => true,
-        'ecrire' => $wiki->GetConfigValue('default_write_acl'),
-        'ecrire_default' => true,
-        'comment' => $wiki->GetConfigValue('default_comment_acl'),
-        'comment_default' => true,
-    );
-    if (isset($readACL['list'])) {
-        $acls['lire'] = $readACL['list'] ;
-        $acls['lire_default'] = false ;
-    }
-    if (isset($writeACL['list'])) {
-        $acls['ecrire'] = $writeACL['list'] ;
-        $acls['ecrire_default'] = false ;
-    }
-    if (isset($commentACL['list'])) {
-        $acls['comment'] = $commentACL['list'] ;
-        $acls['comment_default'] = false ;
-    }
-    return $acls ;
+    return $GLOBALS['wiki']->services->get(Utils::class)->recupDroits($page);
 }
 
 /**
@@ -542,39 +135,11 @@ function getImageFromBody($page, $width, $height)
  * @param array $page Informations de la page
  *
  * @return string The title string
+ * @deprecated use \YesWiki\Templates\Service\Utils::getTitleFromBody
  */
 function getTitleFromBody($page)
 {
-    $entryManager = $GLOBALS['wiki']->services->get(EntryManager::class);
-
-    if (!isset($page['body']) || !isset($page['tag'])) {
-        return '';
-    }
-    $title = '';
-
-    if ($entryManager->isEntry($page['tag'])) {
-        $entry = $entryManager->getOne($page['tag']);
-        if (isset($entry['bf_titre'])) {
-            $title = _convert($entry['bf_titre'], 'UTF-8');
-        }
-    } else {
-        // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2
-        if (preg_match('/<h[12].*>\s*(.*)\s*<\/h[12]>/iUs', $page['body'], $titles)) {
-            $title = $titles[1];
-        } else {
-            preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
-            if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-                $title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
-            } else {
-                preg_match_all('/={5}(.*)={5}/U', $page['body'], $titles);
-                if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-                    $title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
-                }
-            }
-        }
-    }
-
-    return empty($title) ? '' : strip_tags($title);
+    return $GLOBALS['wiki']->services->get(Utils::class)->getTitleFromBody($page);
 }
 
 /**
@@ -585,44 +150,9 @@ function getTitleFromBody($page)
  * @param int   $length Max number of chars (default 300)
  *
  * @return string The title string
+ * @deprecated use \YesWiki\Templates\Service\Utils::getDescriptionFromBody
  */
 function getDescriptionFromBody($page, $title, $length = 300)
 {
-    $entryManager = $GLOBALS['wiki']->services->get(EntryManager::class);
-
-    if (!isset($page['body'])) {
-        return '';
-    }
-    $desc = '';
-
-    if ($entryManager->isEntry($page['tag'])) {
-        $entry = $entryManager->getOne($page['tag']);
-        foreach (['description', 'bf_description', 'content', 'bf_content', 'soustitre'] as $prop) {
-            if (isset($entry[$prop])) {
-                $desc = _convert($entry[$prop], 'UTF-8');
-            }
-        }
-        if ($desc == '') {
-            $desc = baz_voir_fiche(0, $entry);
-        }
-    } else {
-        // $desc = $GLOBALS['wiki']->Format($page['body'], 'wakka', $page["tag"]);
-    }
-    // no javascript
-    $desc = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~Uis', "", $desc);
-
-    // no double space or new lines
-    $desc = trim(
-        preg_replace(
-            '!\s+!',
-            ' ',
-            str_replace(
-                array("\r", "\n"),
-                ' ',
-                html_entity_decode(str_replace($title, '', strip_tags($desc)), ENT_COMPAT | ENT_HTML5)
-            )
-        )
-    );
-    $desc = strtok(wordwrap($desc, $length, "…\n"), "\n");
-    return $desc;
+    return $GLOBALS['wiki']->services->get(Utils::class)->getDescriptionFromBody($page, $title, $length);
 }
