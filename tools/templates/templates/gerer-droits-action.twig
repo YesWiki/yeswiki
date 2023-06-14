@@ -1,0 +1,174 @@
+{{ include_javascript('tools/templates/javascripts/reload-gerer-droits.js') }}
+{{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
+{{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
+
+{% macro displaySpan(class,keyText,direct) -%}
+  <span class="label label-{{ class }}">{{ direct ? keyText : _t(keyText) }}</span>
+{%- endmacro displaySpan %}
+
+{% macro displayRights(text) %}
+  {% set association = {
+    '*':{class:'success',keyText:'ACLS_EVERYBODY'},
+    '+':{class:'warning',keyText:'ACLS_AUTHENTIFICATED_USERS'},
+    '%':{class:'danger',keyText:'ACLS_OWNER'}
+  } %}
+  {% set associationFirstChar = {
+    '@':{class:'primary'},
+    '!':{class:'danger'}
+  } %}
+  {{ text|split("\n")|map(
+            t=> (t in association|keys)
+             ? _self.displaySpan(association[t].class,association[t].keyText,false)
+             : (
+                (t|slice(0,1) in associationFirstChar|keys)
+                ? _self.displaySpan(associationFirstChar[t|slice(0,1)].class,t,true)
+                : _self.displaySpan('default',t,true)
+             )
+        )|join('<br>')|raw|nl2br }}
+{% endmacro displayRights %}
+
+<form 
+  method="post" 
+  action="{{ url({params:filter is empty ? {} : {filter:filter}})}}"
+  class="form-acls form-inline"
+>
+
+    {% if error is not empty %}
+        {{ include('@templates/alert-message.twig',{type:'danger',message:error}) }}
+    {% elseif success is not empty %}
+        {{ include('@templates/alert-message.twig',{type:'success',message:success}) }}
+    {% endif %}
+
+    <p>{{ _t('ACLS_SELECT_PAGES_TO_MODIFY') }}</p>
+    <div class="form-group" style="display:flex;justify-content:flex-end;margin-bottom:10px;margin-top:10px;">
+    <label for="filterforpages" style="margin-right:10px;">{{ _t('ACLS_SELECT_PAGES_FILTER') }}</label>
+        <select class="form-control" id="filterforpages" onchange="reloadGererDroits(this)">
+            <option value="" {% if filTer is empty %}selected="selected"{% endif %}></option>
+            <option value="pages" {% if filTer == 'pages' %}selected="selected"{% endif %}>{{ _t('ACLS_SELECT_PAGES_FILTER_ON_PAGES') }}</option>
+            <option value="specialpages" {% if filTer == 'specialpages' %}selected="selected"{% endif %}>{{ _t('ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES') }}</option>
+            <option value="lists" {% if filTer == 'lists' %}selected="selected"{% endif %}>{{ _t('ACLS_SELECT_PAGES_FILTER_ON_LISTS') }}</option>
+            {% for form,id in forms %}
+            <option value="{{ id }}" {% if filTer == id %}selected="selected"{% endif %}
+                >{{ _t('ACLS_SELECT_PAGES_FILTER_FORM')|replace({'{id}':id,'{name}':form.label_nature}) }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-condensed table-acls">
+            <thead>
+                <tr>
+                    <th class="prevent-sorting">
+                    <label class="check-all-container">
+                        <input type="checkbox" name="id" value="tous" onClick="checkAll(this.checked)">
+                        <span></span>
+                    </label>
+                    </th>
+                    <th><div><b>{{ _t('ACLS_PAGE') }}</b></div></th>
+                    <th><div align="center"><b>{{ _t('ACLS_READ') }}</b></div></th>
+                    <th><div align="center"><b>{{ _t('ACLS_WRITE') }}</b></div></th>
+                    <th><div align="center"><b>{{ _t('COMMENTS') }}</b></div></th>
+                </tr>
+            </thead>
+            <tbody>
+              {% for page in pageEtDroits %}
+                {% set labelId = "selectpage[{{ page.page }}]" %}
+                <tr>
+                    <td>
+                        <label for="{{ labelId }}">
+                            <input type="checkbox" name="{{ labelId }}"
+                                value="{{ page.page }}" class="selectpage"
+                                id="{{ labelId }}">
+                        <span></span>
+                        </label>
+                    </td>
+                    <td>
+                        {{ format("[[#{page.page} #{page.page}]]")|raw }}{# create a Link to the page#}
+                    </td>
+                    <td align="center">
+                        {{ _self.displayRights(page.lire) }}
+                    </td>
+                    <td align="center">
+                        {{ _self.displayRights(page.ecrire) }}
+                    </td>
+                    <td align="center"> 
+                        {{ _self.displayRights(page.comment) }}
+                    </td>
+                </tr>
+
+              {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <p><b>{{ _t('ACLS_FOR_SELECTED_PAGES') }} :</b></p>
+
+    <p class="type-modif-container">
+        <label for="typemajdefault">
+            <input type=radio name="typemaj" value="default" id="typemajdefault"
+                    onClick="$('.edit-acl-container').slideUp()">
+            <span>{{ _t('ACLS_RESET_SELECTED_PAGES') }} <em>wakka.config.php</em>)</span>
+        </label>
+
+        <label for="typemalremplacer">
+            <input type=radio name="typemaj" value="remplacer" id="typemalremplacer" checked
+                    onClick="$('.edit-acl-container').slideDown()">
+            <span>{{ _t('ACLS_REPLACE_SELECTED_PAGES') }}</span>
+        </label>
+    </p>
+
+    <div class="edit-acl-container">
+
+        <p><b></b></p>
+
+        <div class="switch">
+            <label>
+                {{ _t('ACLS_MODE_SIMPLE') }}
+                <input type="checkbox" id="acl-switch-mode">
+                <span class="lever"></span>
+                {{ _t('ACLS_MODE_ADVANCED') }}
+            </label>
+        </div>
+
+        <div class="alert alert-default acl-advanced">
+            {{ _t('ACLS_HELPER') }}
+        </div>
+
+        <div class="acl-container">
+          {% for label,role in {lire:_t('YW_ACLS_READ'),ecrire:_t('YW_ACLS_WRITE'),comment:_t('YW_ACLS_COMMENT')} %}
+            {% set labelRole = "new{{ role }}" %}
+            <div class="acl-single-container">
+                <label for="{{ labelRole }}" class="control-label">
+                    {{ label }}
+                </label>
+                <select name="{{ labelRole }}" class="form-control acl-simple">
+                    <option value="">{{ _t('ACLS_NO_CHANGE') }}</option>
+                    {% if role == 'comment' %}<option value="comments-closed">{{ _t('ACLS_COMMENTS_CLOSED') }}</option>{% endif %}
+                    <option value="*">{{ _t('ACLS_EVERYBODY') }}</option>
+                    <option value="+">{{ _t('ACLS_AUTHENTIFICATED_USERS') }}</option>
+                    <option value="%">{{ _t('ACLS_OWNER') }}</option>
+                    <option value="@admins">{{ _t('ACLS_ADMIN_GROUP') }}</option>
+                </select>
+                <input placeholder="{{ _t('ACLS_LIST_OF_ACLS') }}" name="{{ labelRole }}_advanced" class="acl-advanced form-control" />
+            </div>
+          {% endfor %}
+        </div>
+    </div>
+
+    <p>
+        <input
+            name="geredroits_modifier"
+            class="btn btn-primary" 
+            onclick="$('.table-acls').DataTable().$('input, select').appendTo('.form-acls');" 
+            value="{{ _t('ACLS_UPDATE') }}" 
+            {% if isHibernated %}
+                disabled 
+                data-toggle="tooltip" 
+                data-placement="bottom" 
+                title="{{ _t('WIKI_IN_HIBERNATION') }}"
+            {% endif %}
+            type="submit"
+            >
+    </p>
+</form>
