@@ -561,7 +561,10 @@ class EntryManager
         // on remet l'utilisateur initial s'il y en avait un
         if (isset($GLOBALS['utilisateur_wikini']) && !empty($olduser)) {
             $this->authController->logout();
-            $this->authController->login($olduser, $olduser['remember'] ?? 1);
+            $oldUserClass = $this->userManager->getOneByName($olduser['name']);
+            if (!empty($oldUserClass)){
+                $this->authController->login($oldUserClass, $olduser['remember'] ?? 1);
+            }
         }
 
         $this->cachedEntriestags[$data['id_fiche']] = true;

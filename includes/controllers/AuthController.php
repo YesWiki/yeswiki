@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Controller;
 
 use DateTime;
+use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Controller\UserController;
 use YesWiki\Core\Entity\CookieData;
@@ -214,6 +215,13 @@ class AuthController extends YesWikiController
                 'lastConnection' => $currentDateTime->getTimestamp()
             ];
         if (!$this->wiki->isCli()) {
+            if (!($user instanceof User)){
+                if (!empty($user['name'])){
+                    $user = $this->userManager->getOneByName($user['name']);
+                } else {
+                    throw new Exception("`\$user['name']` must not be empty when retrieving user from `\$user['name']`");
+                }
+            }
             // prevent setting cookies in CLI (could be errors)
             $rawData = $this->prepareRawData($currentDateTime, $remember, $user->getPassword());
 
