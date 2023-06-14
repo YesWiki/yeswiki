@@ -33,7 +33,7 @@ class GererDroitsAction extends YesWikiAction
     $this->utils = $this->getService(Utils::class);
 
     list('success'=>$success,'error'=>$error) = $this->manageChangeRights($_POST ?? []);
-    list('filter'=>$filter,'search'=>$search) = $this->getFilterAndSearch($_GET ?? []);
+    list('filter'=>$filter,'search'=>$search) = $this->getFilterAndSearch($_GET ?? [],$_POST ?? []);
 
     // récupération de tous les formulaires
     $forms = $this->getService(FormManager::class)->getAll();
@@ -55,7 +55,7 @@ class GererDroitsAction extends YesWikiAction
     return $this->render(
       '@templates/gerer-droits-action.twig',
       [
-        'filTer' => $filTer,
+        'filTer' => $filter,
         'error' => $error,
         'success' => $success,
         'forms' => $forms,
@@ -123,9 +123,10 @@ class GererDroitsAction extends YesWikiAction
   /**
    * récupération des filtres
    * @param array $get
+   * @param array $post
    * @return array ['filter'=>string,'search'=>string]
    */
-  protected function getFilterAndSearch(array $get): array
+  protected function getFilterAndSearch(array $get,array $post): array
   {
       $filter = $get['filter'] ?? '';
       $search = '';
@@ -170,6 +171,9 @@ class GererDroitsAction extends YesWikiAction
           }
       } else {
         $filter = '';
+      }
+      if (empty($filter) && !empty($post['filter']) && is_scalar($post['filter'])){
+        $filter = strval($post['filter']);
       }
       return compact(['filter','search']);
   }

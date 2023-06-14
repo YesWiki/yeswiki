@@ -29,7 +29,7 @@
 
 <form 
   method="post" 
-  action="{{ url({params:filter is empty ? {} : {filter:filter}})}}"
+  action="{{ url({params:filTer is empty ? {} : {filter:filTer}})}}"
   class="form-acls form-inline"
 >
 
@@ -157,6 +157,7 @@
     </div>
 
     <p>
+        {% if filTer %}<input type="hidden" name="filter" value="{{ filTer }}"/>{% endif %}
         <input
             name="geredroits_modifier"
             class="btn btn-primary" 
