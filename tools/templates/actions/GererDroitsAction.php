@@ -106,9 +106,9 @@ class GererDroitsAction extends YesWikiAction
                     $this->wiki->SaveAcl($page_cochee, 'write', $post['newecrire'], $appendAcl);
                 }
                 if (!empty($post['newcomment_advanced'])) {
-                    $this->wiki->SaveAcl($page_cochee, 'comment', $post['newcomment_advanced'], $appendAcl);
+                    $this->wiki->SaveAcl($page_cochee, 'comment', $this->filterCommentRightsBeforeSave($post['newcomment_advanced']), $appendAcl);
                 } elseif (!empty($post['newcomment'])) {
-                    $this->wiki->SaveAcl($page_cochee, 'comment', $post['newcomment'], $appendAcl);
+                    $this->wiki->SaveAcl($page_cochee, 'comment', $this->filterCommentRightsBeforeSave($post['newcomment']), $appendAcl);
                 }
             }
         }
@@ -172,5 +172,17 @@ class GererDroitsAction extends YesWikiAction
         $filter = '';
       }
       return compact(['filter','search']);
+  }
+
+  protected function filterCommentRightsBeforeSave($list): string
+  {
+    if (empty($list) || !is_string($list)){
+      $list = '';
+    } else {
+      $list = implode(',',array_filter(explode(',',$list),function($el){
+        return !empty($el) && !empty(trim($el)) && trim($el) != '*';
+      }));
+    }
+    return empty($list) ? 'comments-closed' : $list;
   }
 }

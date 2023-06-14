@@ -144,8 +144,8 @@
                 </label>
                 <select name="{{ labelRole }}" class="form-control acl-simple">
                     <option value="">{{ _t('ACLS_NO_CHANGE') }}</option>
-                    {% if role == 'comment' %}<option value="comments-closed">{{ _t('ACLS_COMMENTS_CLOSED') }}</option>{% endif %}
-                    <option value="*">{{ _t('ACLS_EVERYBODY') }}</option>
+                    {% if role == 'comment' %}<option value="comments-closed">{{ _t('ACLS_COMMENTS_CLOSED') }}</option>
+                    {% else %}<option value="*">{{ _t('ACLS_EVERYBODY') }}</option>{% endif %}
                     <option value="+">{{ _t('ACLS_AUTHENTIFICATED_USERS') }}</option>
                     <option value="%">{{ _t('ACLS_OWNER') }}</option>
                     <option value="@admins">{{ _t('ACLS_ADMIN_GROUP') }}</option>

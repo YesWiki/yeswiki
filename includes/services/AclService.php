@@ -175,7 +175,12 @@ class AclService
         // empty acls is considered as no access
         if ($acl === null) {
             return false;
-        } elseif (isset($acl['list']) && $acl['list'] === 'comments-closed') {
+        } elseif (isset($acl['list']) && (
+                $acl['list'] === 'comments-closed' ||
+                (
+                    $acl['list'] === '*' && $privilege === 'comment' && empty($user)
+                )
+            )) {
             return false;
         }
 

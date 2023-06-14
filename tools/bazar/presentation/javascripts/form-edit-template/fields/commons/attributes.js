@@ -42,7 +42,7 @@ export const aclsOptions = {
 
 export const aclsCommentOptions = {
   ...{ 'comments-closed': _t('BAZ_FORM_EDIT_COMMENTS_CLOSED') },
-  ...visibilityOptions,
+  ...Object.fromEntries(Object.entries(visibilityOptions).filter(([key])=>key != ' * ')),
   ...{ user: _t('BAZ_FORM_EDIT_USER') },
   ...formattedGroupList
 }
