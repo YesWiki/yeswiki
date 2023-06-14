@@ -47,7 +47,7 @@
             <option value="pages" {% if filTer == 'pages' %}selected="selected"{% endif %}>{{ _t('ACLS_SELECT_PAGES_FILTER_ON_PAGES') }}</option>
             <option value="specialpages" {% if filTer == 'specialpages' %}selected="selected"{% endif %}>{{ _t('ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES') }}</option>
             <option value="lists" {% if filTer == 'lists' %}selected="selected"{% endif %}>{{ _t('ACLS_SELECT_PAGES_FILTER_ON_LISTS') }}</option>
-            {% for form,id in forms %}
+            {% for id,form in forms %}
             <option value="{{ id }}" {% if filTer == id %}selected="selected"{% endif %}
                 >{{ _t('ACLS_SELECT_PAGES_FILTER_FORM')|replace({'{id}':id,'{name}':form.label_nature}) }}
             </option>
@@ -73,7 +73,7 @@
             </thead>
             <tbody>
               {% for page in pageEtDroits %}
-                {% set labelId = "selectpage[{{ page.page }}]" %}
+                {% set labelId = "selectpage[#{ page.page }]" %}
                 <tr>
                     <td>
                         <label for="{{ labelId }}">
@@ -132,12 +132,12 @@
         </div>
 
         <div class="alert alert-default acl-advanced">
-            {{ _t('ACLS_HELPER') }}
+            {{ _t('ACLS_HELPER')|raw }}
         </div>
 
         <div class="acl-container">
-          {% for label,role in {lire:_t('YW_ACLS_READ'),ecrire:_t('YW_ACLS_WRITE'),comment:_t('YW_ACLS_COMMENT')} %}
-            {% set labelRole = "new{{ role }}" %}
+          {% for role,label in {lire:_t('YW_ACLS_READ'),ecrire:_t('YW_ACLS_WRITE'),comment:_t('YW_ACLS_COMMENT')} %}
+            {% set labelRole = "new#{ role }" %}
             <div class="acl-single-container">
                 <label for="{{ labelRole }}" class="control-label">
                     {{ label }}
