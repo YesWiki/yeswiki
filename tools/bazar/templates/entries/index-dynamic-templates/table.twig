@@ -28,7 +28,7 @@
 {% block display_entries %}
   {% set imWidth = 150 %}
   {% set imHeight = 100 %}
-  {% set firstTokenCrop = csrfToken("GET api/images/cache/#{imWidth}/#{imHeight}/crop") %}
+  {% set firstTokenCrop = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/crop") %}
   <Bazar-Table :currentusername="{{ currentUserName|json_encode }}" :params="params" :entries="entriesToDisplay" :ready="ready" :root="$root" isadmin="{{ hasAcl("@admins")|json_encode }}">
     <template #header="{displayedEntries,BazarTable}"></template>
     <template #spinnerloader="{displayedEntries,BazarTable}">
@@ -45,8 +45,7 @@
             :data-itemid="disabled ? null : itemId"
             type="checkbox"
             :id="{{id}}" 
-            :name="{{id}}" 
-            data-csrftoken="to-be-defined"
+            :name="{{id}}"
             value="">
           <span></span>
         </label>

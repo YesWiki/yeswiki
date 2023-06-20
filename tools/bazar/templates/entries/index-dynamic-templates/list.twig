@@ -3,7 +3,7 @@
 {% block display_entries %}
   {% set imWidth = 170 %}
   {% set imHeight = 170 %}
-  {% set firstTokenCrop = csrfToken("GET api/images/cache/#{imWidth}/#{imHeight}/crop") %}
+  {% set firstTokenCrop = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/crop") %}
   <div class="panel-group no-dblclick" style="opacity: 0;" :class="{ready: ready}" v-if="ready">
     <div v-if="entriesToDisplay.length == 0" class="alert alert-info">
       {{ _t('BAZ_NO_RESULT') }}

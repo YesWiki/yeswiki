@@ -15,7 +15,7 @@
   {% endif %}
   {% set imWidth = (nbcol == 4) ? 250 : (nbcol == 5 ? 200 : 300 ) %}
   {% set imHeight = params.style == "square" ? imWidth : (params.style == "horizontal" ? imWidth*23//27 : imWidth*2//3 ) %}
-  {% set firstTokenCrop = csrfToken("GET api/images/cache/#{imWidth}/#{imHeight}/crop") %}
+  {% set firstTokenCrop = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/crop") %}
   <div class="bazar-cards-container" v-if="ready" 
        :class="[{ready: ready}, `style-${params.style || 'vertical'}`, `nbcol-{{nbcol}}`]" 
        :style="{'grid-template-columns': `repeat({{nbcol}}, 1fr)`}">
