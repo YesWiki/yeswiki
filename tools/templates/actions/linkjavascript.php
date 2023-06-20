@@ -1,4 +1,5 @@
 <?php
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Core\Service\ThemeManager;
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -83,19 +84,25 @@ $yeswiki_javascripts .= isset($GLOBALS['js']) ? $GLOBALS['js'] : '';
 // on vide la variable globale pour le javascript
 $GLOBALS['js'] = '';
 
+$wikiprops = [
+    'locale' => $GLOBALS['prefered_language'],
+    'baseUrl' => $this->config['base_url'],
+    'pageTag' => $this->getPageTag(),
+    'isDebugEnabled' => ($this->GetConfigValue('debug') =='yes' ? 'true' : 'false'),
+    'antiCsrfToken' => $this->services->get(CsrfTokenManager::class)->getToken('main')->getValue(),
+];
+
+
 // Globale wiki variable
 echo "<script>
     var wiki = {
         ...((typeof wiki !== 'undefined') ? wiki : null),
+        ...".json_encode($wikiprops).",
         ...{
-            locale: '{$GLOBALS['prefered_language']}',
-            baseUrl: '{$this->config['base_url']}',
             lang: {
                 ...((typeof wiki !== 'undefined') ? (wiki.lang ?? null) : null),
                 ...".json_encode($GLOBALS['translations_js'] ?? null)."
-            },
-            pageTag: '{$this->getPageTag()}',
-            isDebugEnabled: ".($this->GetConfigValue('debug') =='yes' ? 'true' : 'false')."
+            }
         }
     };
 </script>";

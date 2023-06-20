@@ -69,15 +69,19 @@ const multiDeleteService = {
     }
     const item = items[currentIndex] ?? {}
     const itemId = (item.id != undefined) ? item.id : ''
-    const csrfToken = (item.token != undefined) ? item.token : ''
+    const csrfToken = ('antiCsrfToken' in wiki)
+      ? wiki.antiCsrfToken
+      : ((item.token != undefined) ? item.token : '')
     if (itemId.length == 0 || csrfToken.length == 0) {
       this.deleteNextItem(modal, items, type, currentIndex, target)
       return
     }
     this.localFetchJson(
-      wiki.url(`?api/${type}/${itemId}/delete`, { csrfToken }),
+      wiki.url(`?api/${type}/${itemId}/delete`),
       {
-        timeout: 30000, // 30 seconds
+        method: 'POST',
+        timeout: 30000, // 30 seconds,
+        data: {csrfToken}
       }
     )
     .then(()=>{
@@ -112,7 +116,9 @@ const multiDeleteService = {
       for (let index = 0; index < inputs.length; index++) {
         const itemId = $(inputs[index]).data('itemid')
         const csrfToken = $(inputs[index]).data('csrftoken')
-        if (itemId.length > 0 && csrfToken.length > 0) {
+        if (itemId.length > 0 && (csrfToken == undefined || csrfToken.length == 0)) {
+          items.push({ id: itemId })
+        } else if (itemId.length > 0 && csrfToken.length > 0) {
           items.push({ id: itemId, token: csrfToken })
         }
       }

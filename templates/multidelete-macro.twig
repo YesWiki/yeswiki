@@ -55,7 +55,6 @@
         {% else %}
           class="selectline"
           data-itemid="{{ itemId }}"
-          data-csrftoken="{{ csrfToken({id:"api\\#{type}\\#{itemId}\\delete",refresh:true})|e('html_attr') }}"
         {% endif %}
         type="checkbox"
         id="{{id}}" 
