@@ -19,13 +19,13 @@ const multiDeleteService = {
   refreshOnModalClosing: {},
   modalClosing(modalContainer) {
     const id = $(modalContainer).prop('id')
-    if (multiDeleteService.refreshOnModalClosing.hasOwnProperty(id)
-      && multiDeleteService.refreshOnModalClosing[id] === true) {
+    if (this.refreshOnModalClosing.hasOwnProperty(id)
+      && this.refreshOnModalClosing[id] === true) {
       window.location.reload()
     }
   },
   initProgressBar(modal) {
-    multiDeleteService.updateProgressBar(modal, ['test'], -1)
+    this.updateProgressBar(modal, ['test'], -1)
   },
   updateProgressBar(modal, items, currentIndex) {
     const value = (items.length == 0) ? 100 : Math.min(100, Math.round((currentIndex + 1) / items.length * 100))
@@ -52,11 +52,11 @@ const multiDeleteService = {
     return true
   },
   deleteNextItem(modal, items, type, currentIndex, target) {
-    multiDeleteService.updateProgressBar(modal, items, currentIndex)
+    this.updateProgressBar(modal, items, currentIndex)
     if ((currentIndex + 1) < items.length) {
-      multiDeleteService.deleteOneItem(modal, items, type, currentIndex + 1, target)
+      this.deleteOneItem(modal, items, type, currentIndex + 1, target)
     } else {
-      multiDeleteService.isRunning = false
+      this.isRunning = false
       $(modal).find('.modal-body .multi-delete-results').first().append(
         $('<div>').text(_t('MULTIDELETE_END'))
       )
@@ -64,38 +64,40 @@ const multiDeleteService = {
   },
   deleteOneItem(modal, items, type, currentIndex, target) {
     if (['pages','comments','users'].indexOf(type) == -1){
-      multiDeleteService.addErrorMessage(modal,"Unknown type ! Should be 'pages' or 'users' or 'comments'!")
+      this.addErrorMessage(modal,"Unknown type ! Should be 'pages' or 'users' or 'comments'!")
       return
     }
     const item = items[currentIndex] ?? {}
     const itemId = (item.id != undefined) ? item.id : ''
     const csrfToken = (item.token != undefined) ? item.token : ''
     if (itemId.length == 0 || csrfToken.length == 0) {
-      multiDeleteService.deleteNextItem(modal, items, type, currentIndex, target)
+      this.deleteNextItem(modal, items, type, currentIndex, target)
       return
     }
-    $.ajax({
-      type: 'GET',
-      url: wiki.url(`?api/${type}/${itemId}/delete`, { csrfToken }),
-      timeout: 30000, // 30 seconds
-      error(xhr, status, error) {
-        multiDeleteService.addErrorMessage(
-          modal,
-          _t('MULTIDELETE_ERROR')
-            .replace('{itemId}', itemId)
-            .replace('{error}', error)
-        )
-        // if error force reload
-        multiDeleteService.refreshOnModalClosing[$(modal).parent().prop('id')] = true
-      },
-      success() {
-        if (!multiDeleteService.removeLine(target, itemId)) {
-          multiDeleteService.refreshOnModalClosing[$(modal).parent().prop('id')] = true
-        }
-      },
-      complete() {
-        setTimeout(() => { multiDeleteService.deleteNextItem(modal, items, type, currentIndex, target) }, 0)
+    this.localFetchJson(
+      wiki.url(`?api/${type}/${itemId}/delete`, { csrfToken }),
+      {
+        timeout: 30000, // 30 seconds
       }
+    )
+    .then(()=>{
+      if (!this.removeLine(target, itemId)) {
+        this.refreshOnModalClosing[$(modal).parent().prop('id')] = true
+      }
+    })
+    .catch((error)=>{
+      // do nothing on error
+      this.addErrorMessage(
+        modal,
+        _t('MULTIDELETE_ERROR')
+          .replace('{itemId}', itemId)
+          .replace('{error}', error)
+      )
+      // if error force reload
+      this.refreshOnModalClosing[$(modal).parent().prop('id')] = true
+    })
+    .finally(()=>{
+      setTimeout(() => { this.deleteNextItem(modal, items, type, currentIndex, target) }, 0)
     })
   },
   deleteItems(elem) {
@@ -115,9 +117,45 @@ const multiDeleteService = {
         }
       }
       if (items.length > 0) {
-        setTimeout(() => { multiDeleteService.deleteOneItem(modal, items, type, 0, target) }, 0)
+        setTimeout(() => { this.deleteOneItem(modal, items, type, 0, target) }, 0)
       }
     }
+  },
+  async localFetchJson(url,options){
+    const internalOptions = {}
+    let resetTimeoutId = null
+    if ('timeout' in options && Number(options.timeout) > 0){
+      const abortController = new AbortController()
+      resetTimeoutId = setTimeout(()=>abortController.abort(),options.timeout)
+      internalOptions.signal = abortController.signal
+    }
+    if ('method' in options && options.method === 'POST'){
+      internalOptions.method = 'POST'
+      internalOptions.body = new URLSearchParams(this.prepareFormData(options.data ?? {}))
+      internalOptions.headers = (new Headers()).append('Content-Type','application/x-www-form-urlencoded')
+    }
+    return await fetch(url,internalOptions)
+      .then((response)=>{
+        if (response.ok){
+          return response.json()
+        } else {
+          throw new Error(`Response is not ok (code ${response.code})`)
+        }
+      })
+      .finally(()=>{
+        if (resetTimeoutId !== null){
+          clearTimeout(resetTimeoutId)
+        }
+      })
+  },
+  prepareFormData(thing){
+      let formData = new FormData();
+      if (typeof thing == "object"){
+          for (const key in thing) {
+              formData.append(key,String(thing[key]));
+          }
+      }
+      return formData;
   },
   updateNbSelected(modalId) {
     const button = $(`#${modalId} .modal-body > button.start-btn-delete-all`)
