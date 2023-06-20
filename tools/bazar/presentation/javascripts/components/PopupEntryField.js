@@ -66,7 +66,6 @@ export default {
     <EntryField v-else-if="renderViaEntryField" :entry="entry" :prop="prop" v-bind="$attrs"></EntryField>
     <h3 v-else-if="type == 'titre' && value" v-html="value" v-bind="$attrs"></h3>
     <img
-      loading="lazy" 
       v-else-if="type == 'image' && value" class="popup-visual" 
       v-bind="$attrs"
       :src="$root.urlImage(entry,prop,imagewidth,imageheight,imagemethod)"
