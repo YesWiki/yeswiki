@@ -288,10 +288,11 @@ class ApiController extends YesWikiController
         }
     }
     /**
-     * @Route("/api/comments/{tag}/delete",methods={"GET"}, options={"acl":{"public","+"}})
+     * @Route("/api/comments/{tag}/delete",methods={"POST"}, options={"acl":{"public","+"}})
      */
-    public function deleteCommentByGetMethod($tag)
+    public function deleteCommentViaPostMethod($tag)
     {
+        // todo use Anti-Csrf token or Bearer HTTP header
         return $this->deleteComment($tag);
     }
 
