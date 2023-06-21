@@ -7,6 +7,7 @@ use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\Performer;
+use YesWiki\Templates\Service\TabsService;
 
 /**
  * @Field({"listefichesliees", "listefiches"})
@@ -42,7 +43,7 @@ class LinkedEntryField extends BazarField
     {
         // Display the linked entries only on update
         if (isset($entry['id_fiche'])) {
-            return $this->getService(Performer::class)->run('wakka', 'formatter', ['text' => $this->getBazarListAction($entry)]);
+            return $this->renderSecuredBazarList($entry);
         }
     }
 
@@ -50,10 +51,19 @@ class LinkedEntryField extends BazarField
     {
         // Display the linked entries only if id_fiche and id_typeannonce
         if (!empty($entry['id_fiche']) && !empty($entry['id_typeannonce'])) {
-            return $this->getService(Performer::class)->run('wakka', 'formatter', ['text' => $this->getBazarListAction($entry)]);
+            return $this->renderSecuredBazarList($entry);
         } else {
             return "" ;
         }
+    }
+
+    protected function renderSecuredBazarList($entry): string
+    {
+        $tabsService = $this->getService(TabsService::class);
+        $index = $tabsService->saveState();
+        $output = $this->getService(Performer::class)->run('wakka', 'formatter', ['text' => $this->getBazarListAction($entry)]);
+        $tabsService->resetState($index);
+        return $output;
     }
 
     private function getBazarListAction($entry)
