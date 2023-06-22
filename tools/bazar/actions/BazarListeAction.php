@@ -40,7 +40,7 @@ class BazarListeAction extends YesWikiAction
                         $icon = trim(array_values($tabparam)[0]);
                     }
                 } catch (ParsingMultipleException $th) {
-                    throw new Exception('action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"');
+                    throw new Exception('action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"<br/>('.$th->getMessage().')');
                 }
             } else {
                 $icon = $this->params->get('baz_marker_icon');
