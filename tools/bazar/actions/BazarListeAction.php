@@ -30,7 +30,7 @@ class BazarListeAction extends YesWikiAction
             if (!empty($icon)) {
                 try {
                     $tabparam = $entryManager->getMultipleParameters($icon, ',', '=');
-                    if (count($tabparam) > 1 && !empty($iconField)) {
+                    if (count($tabparam) > 0 && !empty($iconField)) {
                         // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
                         foreach ($tabparam as $key=>$data) {
                             $tabparam[$data] = $key;
@@ -57,7 +57,7 @@ class BazarListeAction extends YesWikiAction
             if (!empty($color)) {
                 try {
                     $tabparam = $entryManager->getMultipleParameters($color, ',', '=');
-                    if (count($tabparam) > 1 && !empty($colorField)) {
+                    if (count($tabparam) > 0 && !empty($colorField)) {
                         // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
                         foreach ($tabparam as $key=>$data) {
                             $tabparam[$data] = $key;
