@@ -67,7 +67,7 @@ class BazarListeAction extends YesWikiAction
                         $color = trim(array_values($tabparam)[0]);
                     }
                 } catch (ParsingMultipleException $th) {
-                    throw new Exception('action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"');
+                    throw new Exception('action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"<br/>('.$th->getMessage().')');
                 }
             } else {
                 $color = $this->params->get('baz_marker_color');
