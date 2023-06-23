@@ -540,6 +540,7 @@ return [
     'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Maximum number of page\'s revisions displayed by the handler `/revisions`.',
     'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Enable HTML purifier before backup. Be careful, modify the content to backup! (true or false)',
     'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Enable favorites (true or false)',
+    'EDIT_CONFIG_HINT_PREVIEW_BEFORE_SAVE' => 'Enable pre-save preview (true or false)',
     'EDIT_CONFIG_GROUP_CORE' => 'Main parameters',
     'EDIT_CONFIG_GROUP_ACCESS' => "Access rights",
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',

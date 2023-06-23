@@ -223,7 +223,7 @@ class Init
             'default_comment_acl_updated' => false,
             'comments_activated' => true,
             'comments_handler' => 'yeswiki',
-            'preview_before_save' => 0,
+            'preview_before_save' => false,
             'allow_raw_html' => true,
             'disable_wiki_links' => false,
             'allowed_methods_in_iframe' => ['iframe','editiframe','bazariframe','render'],
