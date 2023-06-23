@@ -1,6 +1,7 @@
 <?php
 
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiAction;
 
 class EditGroupsAction extends YesWikiAction
@@ -118,16 +119,27 @@ class EditGroupsAction extends YesWikiAction
                 SQL;
 
                 $dbService->query($sql);
-                $groupName = GROUP_PREFIX . $selectedGroupName;
-                $sql = <<<SQL
-                DELETE FROM {$dbService->prefixTable('triples')} WHERE `resource` = '{$dbService->escape($groupName)}' AND `value` = '';
-                SQL;
-                
-                $dbService->query($sql);
-                // TODO manage result of query
-                $message = "groupe $selectedGroupName supprimé";
-                $type = 'success';
-                $selectedGroupName = '';
+
+                $tripleStore = $this->getService(TripleStore::class);
+                $previous = $tripleStore->getMatching(GROUP_PREFIX.$selectedGroupName,WIKINI_VOC_PREFIX.WIKINI_VOC_ACLS,'','=');
+                $deletionOk = false;
+                if (!empty($previous)){
+                    $deletionOk = true;
+                    foreach ($previous as $triple) {
+                        if (!$tripleStore->delete($selectedGroupName,WIKINI_VOC_ACLS,$triple['value'],GROUP_PREFIX)){
+                            $deletionOk = false;
+                        }
+                    }
+                }
+
+                if ($deletionOk){
+                    $message = "groupe $selectedGroupName supprimé";
+                    $type = 'success';
+                    $selectedGroupName = '';
+                } else {
+                    $message = "Une erreur s'est poduite lors de la suppression du groupe $selectedGroupName (triple non supprimé)";
+                    $type = 'warning';
+                }
             }
         }
 
