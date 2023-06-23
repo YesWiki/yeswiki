@@ -10,6 +10,7 @@
                     >{{ group }}</option>
               {% endfor %}
             </select>
+            <input type="hidden" name="confirmToken" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
             <input class="btn btn-primary btn-edit-group" name="action-view" type="submit" value="{{ _t('SEE_EDIT') }}" />
             <input class="btn btn-danger btn-delete-group" type="submit" name="action-delete" value="{{ _t('DELETE') }}" /></p>
         </p>
@@ -39,6 +40,7 @@
             {{- _t('LIST_GROUP_MEMBERS')|replace({"{groupName}":'<b>' ~ selectedGroupName ~ '</b>'})|raw -}}
         </label> ({{ _t('ONE_NAME_BY_LINE') }})
         <input type="hidden" name="groupname" value="{{ selectedGroupName }}" />
+        <input type="hidden" name="confirmToken" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
         <input type="hidden" name="action" value="save" />
         <textarea name="acl" rows="3" class="form-control">{{ currentGroupAcl }}</textarea><br />
         <input type="submit" value="{{ _t('SAVE') }}" name="action-save" class="btn btn-primary" accesskey="s" />

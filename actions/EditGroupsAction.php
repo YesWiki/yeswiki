@@ -1,5 +1,8 @@
 <?php
 
+
+use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiAction;
@@ -34,11 +37,14 @@ class EditGroupsAction extends YesWikiAction
                         ? 'delete'
                         : ''
                     );
-                // TODO manage anti-csrf token
-                if ($action === 'save'){
-                    list('message' => $message, 'type' => $type) = $this->saveAcl($selectedGroupName);
-                } else if ($action === 'delete') {
-                    list('message' => $message, 'type' => $type) = $this->deleteGroup($selectedGroupName);
+                try {
+                    if ($action === 'save'){
+                        list('message' => $message, 'type' => $type) = $this->saveAcl($selectedGroupName);
+                    } else if ($action === 'delete') {
+                        list('message' => $message, 'type' => $type) = $this->deleteGroup($selectedGroupName);
+                    }
+                } catch (TokenNotFoundException $th) {
+                    $message = _t('ERROR_WHILE_SAVING_GROUP') .':<br/>'. $th->getMessage();
                 }
             }
         }
@@ -59,6 +65,8 @@ class EditGroupsAction extends YesWikiAction
 
     protected function saveAcl(string $selectedGroupName): array
     {
+        $this->confirmToken();
+
         $message = '';
         $type = 'danger';
 
@@ -94,6 +102,8 @@ class EditGroupsAction extends YesWikiAction
     {
         $message = '';
         $type = 'danger';
+
+        $this->confirmToken();
 
         if ($this->wiki->GetGroupACL($selectedGroupName) != '') { // The group is not empty
             $message = _t('ONLY_EMPTY_GROUP_FOR_DELETION');
@@ -144,5 +154,10 @@ class EditGroupsAction extends YesWikiAction
         }
 
         return compact(['message','type']);
+    }
+
+    protected function confirmToken()
+    {
+        $this->getService(CsrfTokenController::class)->checkToken('main', 'POST', 'confirmToken',false);
     }
 }
