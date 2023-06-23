@@ -981,6 +981,13 @@ class Wiki
             return $this->InsertTriple($gname, WIKINI_VOC_ACLS, $acl, GROUP_PREFIX);
         } elseif ($old === $acl) {
             return 0; // nothing has changed
+        } elseif (strcasecmp($old,$acl) === 0 && strcmp($old,$acl) !== 0) {
+            // possible error when directly updating triple
+            if ($this->DeleteTriple($gname, WIKINI_VOC_ACLS, $old,GROUP_PREFIX)){
+                return $this->InsertTriple($gname, WIKINI_VOC_ACLS, $acl, GROUP_PREFIX);
+            } else {
+                return $this->UpdateTriple($gname, WIKINI_VOC_ACLS, $old, $acl, GROUP_PREFIX);
+            }
         } else {
             return $this->UpdateTriple($gname, WIKINI_VOC_ACLS, $old, $acl, GROUP_PREFIX);
         }
