@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Core\Service\DbService;
 use YesWiki\Core\YesWikiAction;
 
 class EditGroupsAction extends YesWikiAction
@@ -13,140 +14,123 @@ class EditGroupsAction extends YesWikiAction
             ]) ;
         }
 
-        // Form definition
-        $wiki = &$this->wiki;
-        $list = $wiki->GetGroupsList(); // retrieves an array of group names from table 'triples' (content of 'resource' starts with 'ThisWikiGroup' and content of 'property' equals  'http://www.wikini.net/_vocabulary/acls')
-        if (!$wiki->UserIsAdmin()) { // If user not in admin group, remove admin group from the list
-            $list = array_diff($list, array(ADMIN_GROUP));
-        }
-        sort($list);
-        // Start of group edition
-        $res = $wiki->FormOpen('', '', 'get', 'form-inline');
-        $res .= '<label>'._t('EDIT_EXISTING_GROUP').'</label><p><select class="form-control" name="groupname">';
-        foreach ($list as $group) {
-            $res .= '<option value="' . htmlspecialchars($group, ENT_COMPAT, YW_CHARSET) . '"';
-            if (!empty($_GET['groupname']) && $_GET['groupname'] == $group) {
-                $res .= ' selected="selected"';
-            }
-            $res .= '>' . htmlspecialchars($group, ENT_COMPAT, YW_CHARSET) .  '</option>';
-        }
-        $res .= '</select>'."\n".'<input class="btn btn-primary btn-edit-group" type="submit" value="'.htmlspecialchars(_t('SEE_EDIT')).'" /></p>'."\n" . $wiki->FormClose();
-        // End of group edition
-        // Start of group creation
-        $res .= $wiki->FormOpen('', '', 'get', 'form-inline') . '<label>' . _t('CREATE_NEW_GROUP').'</label><p> <input type="text" name="groupname" placeholder="'.htmlspecialchars(_t('GROUP_NAME')).'" class="form-control" />';
-        $res .= '<input class="btn btn-primary btn-create-group" type="submit" value="'._t('DEFINE').'" /></p>' . $wiki->FormClose();
-        // End of group creation
-        // Start of group deletion
-        $res .= $wiki->FormOpen('', '', 'get', 'form-inline');
-        $res .= '<label>'.htmlspecialchars(_t('DELETE_EXISTING_GROUP')).'</label>';
-        $res .= '<p><select class="form-control" name="deletegroup">';
-        foreach ($list as $group) {
-            $res .= '<option value="' . htmlspecialchars($group, ENT_COMPAT, YW_CHARSET) . '"';
-            if (!empty($_GET['deletegroup']) && $_GET['deletegroup'] == $group) {
-                $res .= ' selected="selected"';
-            }
-            $res .= '>' . htmlspecialchars($group, ENT_COMPAT, YW_CHARSET) .  '</option>';
-        }
-        $res .= '</select>'."\n".'<input class="btn btn-danger btn-delete-group" type="submit" value="'.htmlspecialchars(_t('DELETE')).'" /></p>'."\n" . $wiki->FormClose();
-        // End of group deletion
-        // End of form definition
-
-        // Form action handling
-        if ($_POST && !empty($_POST['groupname']) && isset($_POST['acl'])) { // save ACL's
-        // The form method is 'post'
-        // it returns a groupname and list of users (acl), therefore
-        // The group has been edited
-            $name = $_POST['groupname'];
-            $newacl = $_POST['acl'];
-            if (strtolower($name) == ADMIN_GROUP) {
-                if (!$wiki->UserIsAdmin()) {
-                    return $res . _t('ONLY_ADMINS_CAN_CHANGE_MEMBERS') .'.<br/>';
-                }
-                if (!$wiki->CheckACL($newacl)) {
-                    return $res . _t('YOU_CANNOT_REMOVE_YOURSELF').'.<br/>';
-                }
-            }
-            $result = $wiki->SetGroupACL($name, $newacl);
-            if ($result) {
-                if ($result == 1000) {
-                    return $res . _t('ERROR_RECURSIVE_GROUP').' !<br />';
-                } else {
-                    return $res . _t('ERROR_WHILE_SAVING_GROUP') . ' ' . ucfirst($name) . ' ('._t('ERROR_CODE').' ' . $result . ')<br />';
-                }
+        $message = '';
+        $type = 'danger';
+        $currentGroupAcl = '';
+        $selectedGroupName = '';
+        $action = '';
+        if (!empty($_POST['groupname'])){
+            if (!is_string($_POST['groupname'])){
+                $message = 'Action not possible because \'groupname\' should be a string !';
+            } else if (preg_match('/[^A-Za-z0-9]/', $_POST['groupname'])){
+                $message = _t('ONLY_ALPHANUM_FOR_GROUP_NAME');
             } else {
-                $wiki->LogAdministrativeAction($wiki->GetUserName(), _t('NEW_ACL_FOR_GROUP')." " . ucfirst($name) . ' : ' . $newacl . "\n");
-                return $res . _t('NEW_ACL_SUCCESSFULLY_SAVED_FOR_THE_GROUP').' ' . ucfirst($name) . '.<br />';
-            }
-            // The group has been edited – End
-        } elseif (!empty($_GET['deletegroup'])) {
-            // The form returns a groupname to delete, therefore
-            // There is a request to delete the group
-            $name = $_GET['deletegroup'];
-            if ($wiki->GetGroupACL($name) != '') { // The group is not empty
-                $res .= _t('ONLY_EMPTY_GROUP_FOR_DELETION').'.';
-            } else {
-                // Check if acls table contains at least one line (page)
-                // for which this group is the only one to have some privilege
-                $sql = 'SELECT page_tag FROM ' . $wiki->GetConfigValue('table_prefix') . 'acls WHERE list = "@' . $name . '"';
-                $ownedPages = array();
-                $ownedPages = $wiki->LoadAll($sql); // if group owns no pages, then empty
-                if ($ownedPages) {
-                    // Array is not empty because the query returns at least one page
-                    $res .= _t('ONLY_NO_PAGES_GROUP_FOR_DELETION').'.';
-                    foreach ($ownedPages as $ownedPage) {
-                        $res .= '<br/>' . $ownedPage['page_tag'];
-                    }
-                    return $res;
-                } else {
-                    // Group is empty AND is not alone having privvileges on any page
-                    /* create sql connection*/
-                    $link = mysqli_connect(
-                        $GLOBALS["wiki"]->config['mysql_host'],
-                        $GLOBALS["wiki"]->config['mysql_user'],
-                        $GLOBALS["wiki"]->config['mysql_password'],
-                        $GLOBALS["wiki"]->config['mysql_database']
+                $selectedGroupName = strval($_POST['groupname']);
+                $action = !empty($_POST['action-save'])
+                    ? 'save'
+                    : (
+                        !empty($_POST['action-delete'])
+                        ? 'delete'
+                        : ''
                     );
-                    /* Build sql query*/
-                    // ACLS part
-                    $aclsTable = $GLOBALS["wiki"]->config['table_prefix'].WIKINI_VOC_ACLS;
-                    $searched_value = '%@' . $name . '%';
-                    $seek_value_bf = '@' . $name . '\n'; // groupname to delete can be followed by another groupname
-                $seek_value_af = '\n@' . $name; // groupname to delete can follow another groupname
-                // get rid of this groupname everytime it's followed by another
-                $sql = "UPDATE ".$aclsTable."	SET list = REPLACE (list, '".$seek_value_bf."', '') WHERE list LIKE '" . $searched_value . "';";
-                    // in the remaining get rid of this groupname everytime it follows another
-                    $sql .= "\nUPDATE ".$aclsTable." SET list = REPLACE (list, '".$seek_value_af."', '') WHERE list LIKE '" . $searched_value . "';";
-                    // End of ACLS part
-                    // Triples part
-                    $triplesTable = $GLOBALS["wiki"]->config['table_prefix'].'triples';
-                    $groupName = GROUP_PREFIX . $name;
-                    $sql .= "\nDELETE FROM ".$triplesTable." WHERE resource = '".$groupName."' AND value = '';";
-                    // End of triples part
-                    /* Execute queries */
-                    mysqli_multi_query($link, $sql);
-                    do {
-                        ;
-                    } while (mysqli_next_result($link));
-                    return $res . 'groupe ' . $name . ' supprimé' . '<br/>';
+                // TODO manage anti-csrf token
+                if ($action === 'save'){
+                    list('message' => $message, 'type' => $type) = $this->saveAcl($selectedGroupName);
+                } else if ($action === 'delete') {
+                    list('message' => $message, 'type' => $type) = $this->deleteGroup($selectedGroupName);
                 }
             }
-        } elseif (!empty($_GET['groupname'])) {
-            // The form returns a groupname and no list of users (acl), therefore
-            // Request to edit the group
-            $name = $_GET['groupname'];
-            if (!preg_match('/[^A-Za-z0-9]/', $name)) { // only alphanumeric characters
-                $res .= $wiki->FormOpen(); // form method is 'post' by default
-                $res .= '<hr><label class="edit-group">'.str_replace("{groupName}",'<strong>' . htmlspecialchars($name, ENT_COMPAT, YW_CHARSET) . '</strong>',htmlspecialchars(_t('LIST_GROUP_MEMBERS'))).'</label> ('. htmlspecialchars(_t('ONE_NAME_BY_LINE')).')';
-                $res .= '<input type="hidden" name="groupname" value="'. $name . '" />';
-                $res .= '<textarea name="acl" rows="3" class="form-control">' . (in_array($name, $list) ? $wiki->GetGroupACL($name) : '') . '</textarea><br />';
-                $res .= '<input type="submit" value="'._t('SAVE').'" class="btn btn-primary" accesskey="s" />';
-                return $res . $wiki->FormClose();
-            } else { // groupname contains characters other than alphanumeric
-                $res .= _t('ONLY_ALPHANUM_FOR_GROUP_NAME').'.';
+        }
+
+        // retrieves an array of group names from table 'triples' (content of 'resource' starts with 'ThisWikiGroup' and content of 'property' equals  'http://www.wikini.net/_vocabulary/acls')
+        $list = $this->wiki->GetGroupsList();
+        sort($list);
+
+        if (!empty($selectedGroupName) && in_array($selectedGroupName, $list)){
+            $currentGroupAcl = $this->wiki->GetGroupACL($selectedGroupName);
+        }
+
+        return $this->render(
+            '@core/actions/edit-group-action.twig',
+            compact(['list','message','type','currentGroupAcl','selectedGroupName','action'])
+        );
+    }
+
+    protected function saveAcl(string $selectedGroupName): array
+    {
+        $message = '';
+        $type = 'danger';
+
+        if (!isset($_POST['acl']) || !is_string($_POST['acl'])){
+            $message = '$_POST[\'acl\'] must be a string';
+        } else {
+            $newacl = strval($_POST['acl']);
+            if (strtolower($selectedGroupName) == ADMIN_GROUP && !$this->wiki->CheckACL($newacl)) {
+                $message = _t('YOU_CANNOT_REMOVE_YOURSELF');
+            } else {
+                $result = $this->wiki->SetGroupACL($selectedGroupName, $newacl);
+                
+                if ($result) {
+                    if ($result == 1000) {
+                        $message = _t('ERROR_RECURSIVE_GROUP').' !';
+                    } else {
+                        $message = _t('ERROR_WHILE_SAVING_GROUP') . ' ' . ucfirst($selectedGroupName) . ' ('._t('ERROR_CODE').' ' . $result . ')';
+                    }
+                } else {
+                    //
+                    $this->wiki->LogAdministrativeAction($this->wiki->GetUserName(), _t('NEW_ACL_FOR_GROUP')." " . ucfirst($selectedGroupName) . ' : ' . $newacl . "\n");
+                    $message = _t('NEW_ACL_SUCCESSFULLY_SAVED_FOR_THE_GROUP').' ' . ucfirst($selectedGroupName);
+                    $type = 'success';
+                }
             }
         }
-        // Request to edit the group – End
-        return $res;
-        // Form action handling – End
+
+        return compact(['message','type']);
+    }
+
+    
+    protected function deleteGroup(string &$selectedGroupName): array
+    {
+        $message = '';
+        $type = 'danger';
+
+        if ($this->wiki->GetGroupACL($selectedGroupName) != '') { // The group is not empty
+            $message = _t('ONLY_EMPTY_GROUP_FOR_DELETION');
+        } else {
+            // Check if acls table contains at least one line (page)
+            // for which this group is the only one to have some privilege
+            $dbService = $this->getService(DbService::class);
+            $vocAcsl = WIKINI_VOC_ACLS;
+            $sql = "SELECT page_tag FROM {$dbService->prefixTable($vocAcsl)} WHERE list = \"@{$dbService->escape($selectedGroupName)}\"";
+            $ownedPages = $dbService->loadAll($sql); // if group owns no pages, then empty
+            if (!empty($ownedPages)) {
+                // Array is not empty because the query returns at least one page
+                $message = _t('ONLY_NO_PAGES_GROUP_FOR_DELETION').'<br/>';
+                $message .= implode('<br/>',array_map(function($acl){
+                    return "<a href=\"{$this->wiki->Href('',$acl['page_tag'])}\">{$acl['page_tag']}</a>";
+                },$ownedPages));
+            } else {
+                // Group is empty AND is not alone having privileges on any page
+                $sql = <<<SQL
+                UPDATE {$dbService->prefixTable($vocAcsl)}
+                    SET `list` = REPLACE(REPLACE (`list`, '@{$dbService->escape($selectedGroupName)}\\n', ''),'\\n@{$dbService->escape($selectedGroupName)}','')
+                    WHERE `list` LIKE '%@{$dbService->escape($selectedGroupName)}%'
+                SQL;
+
+                $dbService->query($sql);
+                $groupName = GROUP_PREFIX . $selectedGroupName;
+                $sql = <<<SQL
+                DELETE FROM {$dbService->prefixTable('triples')} WHERE `resource` = '{$dbService->escape($groupName)}' AND `value` = '';
+                SQL;
+                
+                $dbService->query($sql);
+                // TODO manage result of query
+                $message = "groupe $selectedGroupName supprimé";
+                $type = 'success';
+                $selectedGroupName = '';
+            }
+        }
+
+        return compact(['message','type']);
     }
 }

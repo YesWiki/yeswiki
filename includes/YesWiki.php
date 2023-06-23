@@ -265,7 +265,7 @@ class Wiki
 
             // now we render it internally so we can write the updated link table.
             $page = $this->services->get(PageManager::class)->getOne($page);
-            $this->services->get(LinkTracker::class)->registerLinks($page, false, false);
+            $this->services->get(LinkTracker::class)->registerLinks($page, false, true);
 
             // Retourne 0 seulement si tout c'est bien passe
             return 0;

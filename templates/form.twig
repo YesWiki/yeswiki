@@ -1,0 +1,14 @@
+{{ include('@core/_form-open.twig') }}
+    {% if not config.rewrite_mode and formMethod == 'get'%}
+    <input 
+        type="hidden" 
+        name="wiki" 
+        value="{{ url({params:{}})|replace({
+            (url({tag:'not-existing-tag',handler:'iframe'})|slice(0,-'not-existing-tag/iframe'|length)):'',
+            (url({tag:'not-existing-tag'})|slice(0,-'not-existing-tag'|length)):''
+            }) }}"/>
+        {# TODO define MiniHref in TemplateEngine #}
+    {% endif %}
+    {% block formcontent %}
+    {% endblock formcontent %}
+</form>

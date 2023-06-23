@@ -132,6 +132,8 @@ return [
     'ONLY_ALPHANUM_FOR_GROUP_NAME' => 'Les noms de groupes ne peuvent contenir que des caract&egrave;res alphanum&eacute;riques',
     'LIST_GROUP_MEMBERS' => 'Liste des membres du groupe {groupName}',
     'ONE_NAME_BY_LINE' => 'un nom d\'utilisateur par ligne',
+    'ONLY_EMPTY_GROUP_FOR_DELETION' => 'Seul un groupe vide peut être supprimé',
+    'ONLY_NO_PAGES_GROUP_FOR_DELETION' => 'Seuls les groupes non rattaché à une page peuvent être supprimé. Pages associées :',
 
     // actions/edithandlersacls.class.php
     'HANDLER_RIGHTS' => 'Droits du handler',

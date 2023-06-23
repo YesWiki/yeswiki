@@ -114,6 +114,8 @@ return [
     'ONLY_ALPHANUM_FOR_GROUP_NAME' => 'De namen van groepen mogen enkel alfanumerieke karakters bevatten',
     // 'LIST_GROUP_MEMBERS' => 'Liste des membres du groupe {groupName}',
     // 'ONE_NAME_BY_LINE' => 'un nom d\'utilisateur par ligne',
+    // 'ONLY_EMPTY_GROUP_FOR_DELETION' => 'Seul un groupe vide peut être supprimé',
+    // 'ONLY_NO_PAGES_GROUP_FOR_DELETION' => 'Seuls les groupes non rattaché à une page peuvent être supprimé. Pages associées :',
 
     // actions/edithandlersacls.class.php
     'HANDLER_RIGHTS' => 'Rechten van de handler',

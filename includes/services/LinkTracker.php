@@ -110,7 +110,7 @@ class LinkTracker
     {
         if ($refreshPreviousTag) {
             $previousTag = $this->wiki->tag ;
-            $previousPage = $this->wiki->tag ;
+            $previousPage = $this->wiki->page ;
             $previousInclusions = $this->wiki->SetInclusions();
         }
         $this->clear();

@@ -1,0 +1,12 @@
+{% set formMethod = (formMethod == 'get') ? 'get' : 'post' %}
+<form {% if method == 'edit' or method == 'editiframe' -%}
+        id="ACEditor" name="ACEditor" enctype="multipart/form-data"
+    {%- endif %}action="{{ url({handler:method}) }}" method="{{ formMethod }}"
+    {%- if class is not empty %} class="{{ class }}"{% endif -%}
+    >
+    {%- if (method == 'edit' or method == 'editiframe') and
+        (config.password_for_editing is not empty and 
+        request.post.password_for_editing is not empty and 
+        not (request.post.password_for_editing is iterable)) ~%}
+        <input type="hidden" name="password_for_editing" value="{{ request.post.password_for_editing|e('html_attr') }}" />
+    {%- endif ~%}
