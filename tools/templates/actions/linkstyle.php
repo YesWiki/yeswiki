@@ -31,13 +31,11 @@ if ($presetsActivated) {
 
 // on regarde dans quel dossier se trouve le theme
 $styleFile = 'themes/'.$themeManager->getFavoriteTheme().'/styles/'.$favoriteStyle;
-if ($themeManager->getUseFallbackTheme()) {
-    if (file_exists('custom/'.$styleFile)) {
-        $styleFile = 'custom/'.$styleFile;
-    }
-    if ($presetsActivated && !$presetIsCustom && file_exists('custom/'.$presetFile)) {
-        $presetFile = 'custom/'.$presetFile;
-    }
+if (file_exists('custom/'.$styleFile)) {
+    $styleFile = 'custom/'.$styleFile;
+}
+if ($presetsActivated && !$presetIsCustom && file_exists('custom/'.$presetFile)) {
+    $presetFile = 'custom/'.$presetFile;
 }
 
 // on ajoute le style css selectionne du theme
