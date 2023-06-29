@@ -185,7 +185,7 @@ class Utils
                 if (is_dir($pathToSquelettes) && $dir3 = opendir($pathToSquelettes)) {
                     while (false !== ($file3 = readdir($dir3))) {
                         if (substr($file3, -9, 9)=='.tpl.html') {
-                            $tab_themes[$file]["squelette"][$file3] = $this->removeExtension($file3);
+                            $tab_themes[$file]["squelette"][$file3] = $this->removeExtension($file3,true);
                         }
                     }
                     closedir($dir3);
@@ -217,8 +217,11 @@ class Utils
         return $tab_themes;
     }
 
-    public function removeExtension($filename)
+    public function removeExtension($filename, bool $onlyTemplate = false)
     {
+        if ($onlyTemplate){
+            return preg_replace("/(\.twig|\.tpl.html)$/", '', $filename);
+        }
         return preg_replace("/\..*/i", '', $filename);
     }
 
@@ -481,7 +484,7 @@ class Utils
 
         $selecteur =$this->wiki->render("@templates/themeselector.tpl.html", [
             'mode' => $mode,
-            'wiki' => $wiki,
+            'wiki' => $this->wiki,
             'id' => $id,
             'class' => $formclass,
             'bgselector' => $bgselector,
@@ -490,6 +493,8 @@ class Utils
             'favoriteTheme' => $themeManager->getFavoriteTheme(),
             'favoriteSquelette' => $themeManager->getFavoriteSquelette(),
             'favoriteStyle' => $themeManager->getFavoriteStyle(),
+            'favoritePreset' => ($this->params->has('favorite_preset') && is_string($this->params->get('favorite_preset'))
+                && !empty($this->params->get('favorite_preset'))) ? $this->params->get('favorite_preset') : '',
             'dataHtmlForPresets' => $presetsData['dataHtmlForPresets'],
             'customCSSPresets' => $presetsData['customCSSPresets'],
             'dataHtmlForCustomCSSPresets' => $presetsData['dataHtmlForCustomCSSPresets'],

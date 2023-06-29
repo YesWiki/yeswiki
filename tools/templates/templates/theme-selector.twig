@@ -14,7 +14,7 @@
   <div class="controls">
     <select class="form-control" id="changesquelette" name="squelette_select">
       {% for key,value in squelettes|sort %}
-        <option value="{{ value }}"{% if value == favoriteSquelette %} selected{% endif %}>{{ value }}</option>
+        <option value="{{ value }}"{% if key == favoriteSquelette %} selected{% endif %}>{{ value }}</option>
       {% endfor %}
     </select>
   </div>
@@ -25,7 +25,7 @@
   <div class="controls">
     <select class="form-control" id="changestyle" name="style_select">
       {% for key,value in styles|sort %}
-        <option value="{{ value }}"{% if value == favoriteStyle %} selected{% endif %}>{{ value }}</option>
+        <option value="{{ value }}"{% if key == favoriteStyle %} selected{% endif %}>{{ value }}</option>
       {% endfor %}
     </select>
   </div>

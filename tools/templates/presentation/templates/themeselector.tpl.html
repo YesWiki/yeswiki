@@ -19,7 +19,7 @@
     <div class="controls">
       <select class="form-control" id="changesquelette" name="squelette">
         <?php foreach ($themes[$favoriteTheme]['squelette'] as $key => $value) : ?>
-          <?php if ($value !== $favoriteSquelette) : ?>
+          <?php if ($key !== $favoriteSquelette) : ?>
           <option value="<?php echo $key; ?>"><?php echo $value; ?></option>
           <?php else : ?>
           <option value="<?php echo $favoriteSquelette; ?>" selected="selected"><?php echo $value; ?></option>
@@ -34,7 +34,7 @@
     <div class="controls">
       <select class="form-control" id="changestyle" name="style">
         <?php foreach ($themes[$favoriteTheme]['style'] as $key => $value) : ?>
-          <?php if ($value !== $favoriteStyle) : ?>
+          <?php if ($key !== $favoriteStyle) : ?>
           <option value="<?php echo $key; ?>"><?php echo $value; ?></option>
           <?php else : ?>
           <option value="<?php echo $favoriteStyle; ?>" selected="selected"><?php echo $value; ?></option>
@@ -50,8 +50,8 @@
         <label class="control-label"><?php echo _t('TEMPLATE_PRESET'); ?></label>
         <div class="controls">
           <select class="form-control" id="changestyle" name="favorite_preset">
-            <option value="" <?php echo empty($wiki->page["metadatas"]['favorite_preset']) ? ' selected="selected"' :''; ?>>
-              <?php echo _t('TEMPLATE_DEFAULT_PRESET') . (empty($wiki->page["metadatas"]['favorite_preset']) ? ' ('.str_replace('.css', '', $selectedPresetName.$selectedCustomPresetName).')':''); ?>
+            <option value="" <?php echo (empty($selectedPresetName) && empty($selectedCustomPresetName)) ? ' selected="selected"' :''; ?>>
+              <?php echo _t('TEMPLATE_DEFAULT_PRESET') .' ('.str_replace('.css', '', $favoritePreset).')'; ?>
             </option>
             <?php foreach ($themes[$favoriteTheme]['presets'] as $key => $value) : ?>
               <option value="<?php echo $key; ?>" <?php echo ($key == $selectedPresetName && !empty($wiki->page["metadatas"]['favorite_preset'])) ? ' selected="selected"' :'' ; ?>>
