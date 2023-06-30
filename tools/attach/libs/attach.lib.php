@@ -186,6 +186,17 @@ if (!class_exists('attach')) {
          */
         public function GetFullFilename($newName = false)
         {
+            // use current date if page has no date that could arrive when using page 'root' via Actions Builder
+            $pagedate = $this->convertDate(
+                isset($this->wiki->page['time'])
+                ? $this->wiki->page['time']
+                : (
+                    $this->wiki->tag == "root"
+                    ? date('Y-m-d H:i:s')
+                    : null // error
+                )
+            );
+
             //decompose le nom du fichier en nom+extension ou en page/nom+extension
             if (preg_match('`^((.+)/)?(.*)\.(.*)$`', str_replace(' ', '_', $this->file), $match)) {
                 list(, , $file['page'], $file['name'], $file['ext']) = $match;
@@ -200,7 +211,7 @@ if (!class_exists('attach')) {
             $page_tag = $file['page'] ? $file['page'] : $this->wiki->GetPageTag();
             //generation du nom ou recherche de fichier ?
             if ($newName) {
-                $full_file_name = $file['name'] . '_' . $this->getDate() . '_' . $this->getDate() . '.' . $file['ext'];
+                $full_file_name = $file['name'] . '_' . $pagedate . '_' . $this->getDate() . '.' . $file['ext'];
                 if ($this->isSafeMode) {
                     $full_file_name = $path . '/' . $page_tag . '_' . $full_file_name;
                 } else {
