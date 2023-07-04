@@ -125,12 +125,16 @@
 
 {% if userIsAdmin and not isWikiHibernated %}
   <a class="btn btn-primary" href="{{ url({ params: { vue: 'formulaire', action: 'new' }}) }}">
+    {% block createformbutton %}
+      <i class="fa fa-plus icon-plus icon-white"></i>
+      {{ _t('BAZ_NOUVEAU_FORMULAIRE') }}
+    {% endblock createformbutton %}
+  </a>
 {% else %}
   <button type="button" class="btn btn-primary" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage  }}">
+    {{ block('createformbutton') }}
+  </button>
 {% endif %}
-  <i class="fa fa-plus icon-plus icon-white"></i>
-  {{ _t('BAZ_NOUVEAU_FORMULAIRE') }}
-{% if userIsAdmin and not isWikiHibernated %}</a>{% else %}</button>{% endif %}
 
 <hr>
 
