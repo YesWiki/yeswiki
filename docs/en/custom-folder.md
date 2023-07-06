@@ -29,6 +29,137 @@ Available variables inside the template are
 | `$values['html']` | Pre-rendered fields | `$values['html']['bf_titre'] => "<h1>My title</h1>"` |
 | `$values['form']` | Informations about the form : id, fields etc.. |
 
+#### **Dynamic** bazarlist templates
+
+It is possible to customize for `{{bazarliste dynamic="true"}}`. But for that, the previous `my-template.tpl.html` can not be used even if using `my-template.twig`.
+
+**Explanation**:
+
+ 1. a bazarlist dynamic template is run into `javascript` via [VueJs](https://v2.vuejs.org/v2/guide) library
+ 2. a not dynamic bazarlist template is run into `php`
+
+```
+------------
+|   twig   |      extract
+| template |      template
+------------     from html
+    | USE        ========>
+    v           /         \
+--------    --------    ---------
+|  PHP | => | html | => | VueJs |
+--------    --------    ---------
+                            |
+                            v
+-------------------     -------------
+| manipulate      | <=  | javascript |
+| DOM dynamically |     | functions  |
+-------------------     --------------
+```
+_Diagram of process for dynamic templates_
+
+**Process**:
+ - create a `twig` template that extends [`@bazar/entries/index-dynamic.twig`](tools/bazar/templates/entries/index-dynamic.twig ':ignore') into `custom/templates/bazar/entries/index-dynamic-templates/` with this code for example:
+   ```twig
+   {% extends "@bazar/entries/index-dynamic.twig" %}
+
+   {% block display_entries %}
+   {% endblock %}
+   ```
+ - it is possible to use this template with `yeswiki` code (do not add `.twig` example) :
+   ```yeswiki
+   {{bazarliste id=".." template="my-file-name" dynamic="true"}}
+   ```
+ - modify the block `display_entries` to add a `VueJs` template
+ - it is possible to inspire from  [`@bazar/entries/index-dynamic-templates/list.twig`](tools/bazar/templates/entries/index-dynamic-templates/list.twig ':ignore') template
+ - first example:
+   ```twig
+   {% extends "@bazar/entries/index-dynamic.twig" %}
+
+   {% block display_entries %}
+     <div class="my-class-name no-dblclick" v-if="ready">
+        My first message
+     </div>
+   {% endblock %}
+   ```
+ - **BE CAREFUL**, a `vuejs` template **IS NOT** a twig template. The syntax is different. 
+ - if you need to add `css` or `javascripts` into the template, you can rewrite the block `assets`
+   ```twig
+   {% extends "@bazar/entries/index-dynamic.twig" %}
+
+   {% block assets %}
+      {{ include_css('custom/path/to/file.css') }}
+      {{ include_javascript('custom/path/to/file.js') }}
+   {% endblock %}
+
+   {% block display_entries %}
+     {# ... #}
+   {% endblock %}
+   ```
+ - dynamic `bazarlist` does not import all data from the entry. To define needed fields for the template, you need to add this line :
+   ```twig
+   {% extends "@bazar/entries/index-dynamic.twig" %}
+
+   {% set necessary_fields = ['bf_field1', 'bf_field2','url'] %}
+
+   {% block assets %}
+     {# ... #}
+   {% endblock %}
+
+   {% block display_entries %}
+     {# ... #}
+   {% endblock %}
+   ```
+
+**Example with only titles**:
+```twig
+   {% extends "@bazar/entries/index-dynamic.twig" %}
+   
+   {% set necessary_fields = ['bf_titre', 'url'] %}
+
+   {% block display_entries %}
+     <div class="my-class-name no-dblclick" v-if="ready">
+        <div v-if="entriesToDisplay.length == 0" class="alert alert-info">
+          {{ _t('BAZ_NO_RESULT') }}
+        </div>
+        <ul v-else>
+            <li v-for="entry in entriesToDisplay"><span v-html="entry.bf_titre || entry.id_fiche"></span></li>
+        </ul>
+     </div>
+   {% endblock %}
+```
+
+**Particularity for the rendering shortcut `{{ }}`**:
+
+The shortcut `{{ }}` is used by `twig` and `vuejs`.
+So the first time that shortcut `{{ }}` is used this is for `twig`.
+
+In `VueJs`, the shortcut `{{ }}` means `<span v-html=""></span>`.
+
+It is advised to use `<span v-html=""></span>` but you can find in existing templates `{{ "{{ entry.bf_titre }}" }}`.
+
+**Advise to render a dynamic string**:
+
+Use
+```
+<span v-html="`${entry.bf_titre} (${entry.id_fiche})`"></span>
+```
+
+using the back-quoted string into `javascript` with `${...}` to generate interpolation from `javascript`.
+
+the previous example is similar to (the `+` is used to concatenate strings):
+```
+<span v-html="''+entry.bf_titre+' ('+entry.id_fiche+')'"></span>
+```
+
+**If you need a component**:
+
+Sometimes, it is not possible to do all things only with html to define the [`VueJs`](https://v2.vuejs.org/v2/guide/components.html) template : a component is needed.
+
+An example is the [`@bazar/entries/index-dynamic-templates/map.twig`](tools/bazar/templates/entries/index-dynamic-templates/map.twig ':ignore') template.
+
+ 1. define a component into a `.js` file inspiring from [`tools/bazar/presentation/javascripts/components/BazarMap.js`](tools/bazar/presentation/javascripts/components/BazarMap.js ':ignore') respecting [`VueJs v2`](https://v2.vuejs.org/v2/guide/components.html) syntaxe
+ 2. use this component into the `html`
+
 ### Custom Javascript
 
 All the javascript files in the `custom/javascripts/` directory are included.
