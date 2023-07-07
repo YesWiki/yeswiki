@@ -151,6 +151,12 @@ the previous example is similar to (the `+` is used to concatenate strings):
 <span v-html="''+entry.bf_titre+' ('+entry.id_fiche+')'"></span>
 ```
 
+**Example of link to entry**:
+
+```vuejs
+<a :href="entry.url" :title="entry.title || entry.bf_titre">Lire plus (<span v-html="entry.id_fiche"></span>)</a>
+```
+
 **If you need a component**:
 
 Sometimes, it is not possible to do all things only with html to define the [`VueJs`](https://v2.vuejs.org/v2/guide/components.html) template : a component is needed.
