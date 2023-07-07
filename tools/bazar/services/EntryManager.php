@@ -136,6 +136,8 @@ class EntryManager
         $data = [];
         if (!empty($page['body'])) {
             $data = $this->decode($page['body']);
+            $data['owner'] = $page['owner'] ?? '';
+            $data['user'] = $page['user'] ?? '';
 
             if ($debug) {
                 if (empty($data['id_fiche'])) {
