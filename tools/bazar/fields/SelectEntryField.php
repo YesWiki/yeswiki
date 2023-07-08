@@ -67,10 +67,12 @@ class SelectEntryField extends EnumField
             $entryUrl = $this->services->get(Wiki::class)->Href('', $value);
         }
 
+        $isIframe = !empty(testUrlInIframe());
         return $this->render('@bazar/fields/select_entry.twig', [
             'value' => $value,
             'label' => $this->getOptions()[$value],
-            'entryUrl' => $entryUrl
+            'entryUrl' => $entryUrl,
+            'isIframe' => $isIframe,
         ]);
     }
 
