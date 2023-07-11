@@ -72,7 +72,9 @@
         <ul class="css-preset-list list-inline">
         <?php foreach ($themes[$favoriteTheme]['presets'] as $key => $value) : ?>
           <li>
-            <a class="css-preset<?php echo ($key == $selectedPresetName) ? ' active' :'' ;?>" href="themes/<?php echo $favoriteTheme.'/presets/'.$key; ?>"
+            <a class="css-preset<?php echo ($key == $selectedPresetName) ? ' active' :'' ;?>" href="<?php 
+                echo $themes[$favoriteTheme]['isCustom'] ? 'custom/' : ''
+              ?>themes/<?php echo $favoriteTheme.'/presets/'.$key; ?>"
               data-key="<?php echo $key ;?>"
               <?php echo $dataHtmlForPresets[$key] ;?>>
             <?php echo str_replace('.css', '', $key); ?>

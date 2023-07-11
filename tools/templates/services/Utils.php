@@ -161,11 +161,12 @@ class Utils
      * Parcours des dossiers a la recherche de templates
      *
      * @param $directory : chemin relatif vers le dossier contenant les templates
+     * @param bool $isCustom
      *
      * return array : tableau des themes trouves, ranges par ordre alphabetique
      *
      */
-    public function searchTemplateFiles($directory)
+    public function searchTemplateFiles($directory, bool $isCustom = false)
     {
         $tab_themes = array();
         $dir = opendir($directory);
@@ -175,6 +176,7 @@ class Utils
                 if (is_dir($pathToStyles) && $dir2 = opendir($pathToStyles)) {
                     while (false !== ($file2 = readdir($dir2))) {
                         if (substr($file2, -4, 4) == '.css') {
+                            $tab_themes[$file]['isCustom'] = $isCustom;
                             $tab_themes[$file]["style"][$file2] = $this->removeExtension($file2);
                         }
                     }
@@ -185,6 +187,7 @@ class Utils
                 if (is_dir($pathToSquelettes) && $dir3 = opendir($pathToSquelettes)) {
                     while (false !== ($file3 = readdir($dir3))) {
                         if (substr($file3, -9, 9)=='.tpl.html') {
+                            $tab_themes[$file]['isCustom'] = $isCustom;
                             $tab_themes[$file]["squelette"][$file3] = $this->removeExtension($file3,true);
                         }
                     }
@@ -197,6 +200,7 @@ class Utils
                         if (substr($file4, -4, 4)=='.css' && file_exists($pathToPresets.'/'.$file4)) {
                             $css = file_get_contents($pathToPresets.'/'.$file4);
                             if (!empty($css)) {
+                                $tab_themes[$file]['isCustom'] = $isCustom;
                                 $tab_themes[$file]["presets"][$file4] = $css;
                             }
                         }

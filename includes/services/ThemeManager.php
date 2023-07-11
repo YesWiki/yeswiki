@@ -227,11 +227,11 @@ class ThemeManager
 
         // themes folder (used by {{update}})
         if (is_dir('themes')) {
-            $this->templates = array_merge($this->templates, $this->utils->searchTemplateFiles('themes'));
+            $this->templates = array_merge($this->templates, $this->utils->searchTemplateFiles('themes',false));
         }
         // custom themes folder
         if (is_dir('custom/themes')) {
-            $this->templates = array_replace_recursive($this->templates, $this->utils->searchTemplateFiles('custom/themes'));
+            $this->templates = array_replace_recursive($this->templates, $this->utils->searchTemplateFiles('custom/themes',true));
         }
         ksort($this->templates);
 
