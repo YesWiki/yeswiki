@@ -11,5 +11,5 @@ if ($this->UserIsAdmin()
     // if not redirected by setwikidefaulttheme : redirect
     $this->Redirect($this->href("", $this->tag));
 } else {
-    echo $this->services->get(\YesWiki\Templates\Service\Utils::class)->showFormThemeDelector('selector', $class);
+    echo $this->services->get(\YesWiki\Templates\Service\Utils::class)->showFormThemeSelector('selector', $class);
 }

@@ -380,7 +380,7 @@ class Utils
     /**
      * TODO split this method in twig/js and use controller
      */
-    public function showFormThemeDelector($mode = 'selector', $formclass = '')
+    public function showFormThemeSelector($mode = 'selector', $formclass = '')
     {
         $themeManager = $this->wiki->services->get(ThemeManager::class);
         // en mode edition on recupere aussi les images de fond

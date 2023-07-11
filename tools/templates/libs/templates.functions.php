@@ -72,11 +72,11 @@ function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $cla
 }
 
 /**
- * @deprecated use \YesWiki\Templates\Service\Utils::showFormThemeDelector
+ * @deprecated use \YesWiki\Templates\Service\Utils::showFormThemeSelector
  */
 function show_form_theme_selector($mode = 'selector', $formclass = '')
 {
-    return $GLOBALS['wiki']->services->get(Utils::class)->showFormThemeDelector($mode, $formclass);
+    return $GLOBALS['wiki']->services->get(Utils::class)->showFormThemeSelector($mode, $formclass);
 }
 
 
