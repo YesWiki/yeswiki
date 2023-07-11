@@ -286,14 +286,16 @@ function toastMessage(
       squelette.options.length = 0
       let i
       for (i = 0; i < themeSquelettes[val].length; i++) {
-        o = new Option(themeSquelettes[val][i], themeSquelettes[val][i])
+        const newVal = themeSquelettes[val][i] + '.tpl.html'
+        o = new Option(newVal, newVal)
         squelette.options[squelette.options.length] = o
       }
 
       const style = $('#changestyle')[0]
       style.options.length = 0
       for (i = 0; i < themeStyles[val].length; i++) {
-        o = new Option(themeStyles[val][i], themeStyles[val][i])
+        const newVal = themeStyles[val][i] + '.css'
+        o = new Option(newVal, newVal)
         style.options[style.options.length] = o
       }
     }

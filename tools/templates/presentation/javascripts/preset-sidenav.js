@@ -244,14 +244,14 @@ function saveCSSPreset(elem,url,rewriteMode){
             console.log(fullFileName+' added !');
             var urlwindow = window.location.toString();
             let urlAux = urlwindow.split((rewriteMode ? "?" : "&")+"theme=");
-            window.location =
+            window.location = 
                 urlAux[0] +
                 (rewriteMode ? "?" : "&")+"theme=" +
                 $("#changetheme").val() +
                 "&squelette=" +
-                $("#changesquelette").val() +
+                $("#changesquelette").val() + '.tpl.html' +
                 "&style=" +
-                $("#changestyle").val()+
+                $("#changestyle").val()+'.css'+
                 "&preset=" +customCSSPresetsPrefix+
                 fullFileName;
         },
