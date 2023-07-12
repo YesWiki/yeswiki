@@ -275,59 +275,6 @@ function toastMessage(
   // Remove hidden div by ACL
   $('.remove-this-div-on-page-load').remove()
 
-  // Pour l'apercu des themes, on recharge la page avec le theme selectionne
-  $('#form_theme_selector select').on('change', function() {
-    if ($(this).attr('id') === 'changetheme') {
-      // On change le theme dynamiquement
-      const val = $(this).val()
-
-      // pour vider la liste
-      const squelette = $('#changesquelette')[0]
-      squelette.options.length = 0
-      let i
-      for (i = 0; i < themeSquelettes[val].length; i++) {
-        const newVal = themeSquelettes[val][i] + '.tpl.html'
-        o = new Option(newVal, newVal)
-        squelette.options[squelette.options.length] = o
-      }
-
-      const style = $('#changestyle')[0]
-      style.options.length = 0
-      for (i = 0; i < themeStyles[val].length; i++) {
-        const newVal = themeStyles[val][i] + '.css'
-        o = new Option(newVal, newVal)
-        style.options[style.options.length] = o
-      }
-    }
-    let presetValue = ''
-    if (typeof getActivePreset == 'function') {
-      const key = getActivePreset()
-      if (key) {
-        presetValue = `&preset=${key}`
-      }
-    }
-
-    const url = window.location.toString()
-    let separator = '&'
-    if (
-      wiki
-      && typeof wiki.baseUrl == 'string'
-      && !wiki.baseUrl.includes('?')
-    ) {
-      // rewrite mode
-      separator = '?'
-    }
-    const urlAux = url.split(`${separator}theme=`)
-    window.location = `${urlAux[0]
-      + separator
-    }theme=${
-      $('#changetheme').val()
-    }&squelette=${
-      $('#changesquelette').val()
-    }&style=${
-      $('#changestyle').val()
-    }${presetValue}`
-  })
 
   /* tooltips */
   $("[data-toggle='tooltip']").tooltip()

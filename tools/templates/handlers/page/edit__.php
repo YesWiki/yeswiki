@@ -27,7 +27,7 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
     '        <h3>'._t('TEMPLATE_CUSTOM_GRAPHICS').' '.$this->GetPageTag().'</h3>'."\n".
     '      </div>'."\n".
     '      <div class="modal-body">'."\n";
-    $selecteur .= $this->services->get(\YesWiki\Templates\Service\Utils::class)->showFormThemeSelector('edit');
+    $selecteur .= $this->services->get(\YesWiki\Templates\Controller\ThemeController::class)->showFormThemeSelector('edit');
     $selecteur .= '
       </div>'."\n".
       '      <div class="modal-footer">'."\n".

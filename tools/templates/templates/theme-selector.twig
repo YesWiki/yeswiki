@@ -1,7 +1,13 @@
-<div class="control-group form-group">
-  <label class="control-label">{{ _t('TEMPLATE_THEME') }}</label>
-  <div class="controls">
-    <select class="form-control" id="changetheme" name="theme_select">
+<div 
+  class="control-group form-group"
+  data-templates="{{ dataTemplates|json_encode }}"
+  data-favorites="{{ {squelette:favoriteSquelette,style:favoriteStyle,preset:favoritePreset}|json_encode }}"
+  data-presets="{{ presets|json_encode }}"
+  data-update-url="{{ updateUrl is same as true ? 'true' : 'false' }}"
+  >
+  <label class="control-label {{ sizeClass }}">{{ _t('TEMPLATE_THEME') }}</label>
+  <div class="controls {{ sizeClass }}">
+    <select class="form-control" name="theme_select">
       {% for key,value in templates %}
         <option value="{{ key }}"{% if key == favoriteTheme %} selected{% endif %}>{{ key }}</option>
       {% endfor %}
@@ -10,9 +16,9 @@
 </div>
 
 <div class="control-group form-group">
-  <label class="control-label">{{ _t('TEMPLATE_SQUELETTE') }}</label>
-  <div class="controls">
-    <select class="form-control" id="changesquelette" name="squelette_select">
+  <label class="control-label {{ sizeClass }}">{{ _t('TEMPLATE_SQUELETTE') }}</label>
+  <div class="controls {{ sizeClass }}">
+    <select class="form-control" name="squelette_select">
       {% for key,value in squelettes|sort %}
         <option value="{{ value }}"{% if key == favoriteSquelette %} selected{% endif %}>{{ value }}</option>
       {% endfor %}
@@ -21,28 +27,30 @@
 </div>
 
 <div class="control-group form-group">
-  <label class="control-label">{{ _t('TEMPLATE_STYLE') }}</label>
-  <div class="controls">
-    <select class="form-control" id="changestyle" name="style_select">
-      {% for key,value in styles|sort %}
-        <option value="{{ value }}"{% if key == favoriteStyle %} selected{% endif %}>{{ value }}</option>
+  <label class="control-label {{ sizeClass }}">{{ _t('TEMPLATE_STYLE') }}</label>
+  <div class="controls {{ sizeClass }}">
+    <select class="form-control" name="style_select">
+      {% for key,value in styles %}
+        <option value="{{ key }}"{% if key == favoriteStyle %} selected{% endif %}>{{ value|replace({'.css':''}) }}</option>
       {% endfor %}
     </select>
   </div>
 </div>
 
 {% if presets is not empty %}
-  <div class="control-group form-group">
-    <label class="control-label">{{ _t('TEMPLATE_PRESET') }}</label>
-    <div class="controls">
-      <select class="form-control" id="changepreset" name="preset_select">
-        {% for key,value in presets|sort %}
-          <option value="{{ key }}"{% if key == favoritePreset %} selected{% endif %}>{{ value }}</option>
+ {% block presetpart %}
+  <div class="control-group form-group"{% if templates[favoriteTheme].presets is empty %} style="display:none;"{% endif %}>
+    <label class="control-label {{ sizeClass }}">{{ _t('TEMPLATE_PRESET') }}</label>
+    <div class="controls {{ sizeClass }}">
+      <select class="form-control" name="preset_select">
+        {% block firstoptionpreset %}{% endblock %}
+        {% for key,value in presets %}
+          <option value="{{ key }}"{% if key == favoritePreset %} selected{% endif %}>{{ value|replace({'.css':''}) }}</option>
         {% endfor %}
       </select>
     </div>
   </div>
+ {% endblock presetpart %}
 {% endif %}
 
-{{ include('@templates/_theme-selector-export-var.twig') }}
 {{ include_javascript('tools/templates/javascripts/change-theme.js') }}

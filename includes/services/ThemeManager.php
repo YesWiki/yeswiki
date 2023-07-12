@@ -323,21 +323,6 @@ class ThemeManager
         }
     }
 
-    /**
-     * get squelettes and styles used in js for theme selector
-     * @return array ['squelettes'=>array,'styles'=>array]
-     */
-    public function getSquelettesAndStylesForJs(): array
-    {
-        $squelettes = [];
-        $styles = [];
-        foreach ($this->getTemplates() as $templateName => $template) {
-            $squelettes[$templateName] = array_values($template['squelette']);
-            $styles[$templateName] = array_values($template['style']);
-        }
-        return compact(['squelettes','styles']);
-    }
-
     public function getTemplates(): array
     {
         return $this->templates;

@@ -24,9 +24,10 @@ if ($this->GetMethod() != 'show') {
     echo "\n".'  <!-- opengraph -->'."\n";
     echo '  <meta property="og:site_name" content="'
       .$this->config['wakka_name'].'" />'."\n";
-    $title = $this->services->get(\YesWiki\Templates\Service\Utils::class)->getTitleFromBody($this->page);
+    $utils = $this->services->get(\YesWiki\Templates\Service\Utils::class);
+    $title = $utils->getTitleFromBody($this->page);
     echo '  <meta property="og:title" content="' . (!empty($title) ? $title : $GLOBALS['wiki']->config['wakka_name']) . '" />'."\n";
-    $desc = htmlspecialchars(getDescriptionFromBody($this->page, $title), ENT_COMPAT | ENT_HTML5);
+    $desc = htmlspecialchars($utils->getDescriptionFromBody($this->page, $title), ENT_COMPAT | ENT_HTML5);
     if ($desc) {
         echo '  <meta property="og:description" content="'.$desc.'" />'."\n";
     }

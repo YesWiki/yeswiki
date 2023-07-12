@@ -8,10 +8,12 @@
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Templates\Controller\ThemeController;
 
 class GererThemesAction extends YesWikiAction
 {
   protected $pageManager;
+  protected $themeController;
   protected $themeManager;
 
   public function run()
@@ -25,6 +27,7 @@ class GererThemesAction extends YesWikiAction
     
     // get services
     $this->pageManager = $this->getService(PageManager::class);
+    $this->themeController = $this->getService(ThemeController::class);
     $this->themeManager = $this->getService(ThemeManager::class);
 
     $errorMessage = '';
@@ -55,40 +58,13 @@ class GererThemesAction extends YesWikiAction
       }
     }
 
-    $hibernated = $this->isWikiHibernated();
-    $templates = $this->themeManager->getTemplates();
-    $favoriteTheme = $this->themeManager->getFavoriteTheme();
-    $favoriteSquelette = $this->themeManager->getFavoriteSquelette();
-    $favoriteStyle = $this->themeManager->getFavoriteStyle();
-    $favoritePreset = $this->themeManager->getFavoritePreset();
-    $squelettes = $templates[$favoriteTheme]['squelette'];
-    $styles = $templates[$favoriteTheme]['style'];
-    $presetData = $this->themeManager->getPresetsData();
-    $presets = [];
-    foreach ($presetData['themePresets'] as $key => $content) {
-      $presets[$key] = $key;
-    }
-    foreach ($presetData['customCSSPresets'] as $key => $content) {
-      $presets["custom/$key"] = $key;
-    }
 
-    $dataJs = $this->themeManager->getSquelettesAndStylesForJs();
-    return $this->render(
+    return $this->themeController->renderWithThemeSelector(
       '@templates/gerer-themes-action.twig',
       compact([
         'errorMessage',
-        'pagesThemes',
-        'hibernated',
-        'templates',
-        'squelettes',
-        'styles',
-        'presets',
-        'favoritePreset',
-        'favoriteSquelette',
-        'favoriteStyle',
-        'favoriteTheme',
-        'dataJs'
-        ])
+        'pagesThemes'
+      ])
     );
 
   }
@@ -113,14 +89,25 @@ class GererThemesAction extends YesWikiAction
                 'favorite_preset' => null
               ]);
           } else {
+            $theme = $this->sanitizePost('theme_select');
+            $style = $this->sanitizePost('style_select');
+            $squelette = $this->sanitizePost('squelette_select');
+            $presets = $this->sanitizePost('preset_select');
+            $themes = $this->themeManager->getTemplates();
+            if (!isset($themes[$theme]['presets'])){
+              $presets = '';
+            }
+            if (!empty($presets) && (substr($presets,-4) !== '.css')){
+              $presets .= '.css';
+            }
             $this->pageManager->setMetadata($pageTag, [
-                'theme' => $this->sanitizePost('theme_select'), 
-                'style' => $this->sanitizePost('style_select'), 
-                'squelette' => $this->sanitizePost('squelette_select')
+                'theme' => $theme, 
+                'style' => $style  .(substr($style,-4) === '.css' ? '' : '.css'), 
+                'squelette' => $squelette  .(substr($squelette,-strlen('.tpl.html')) === '.tpl.html' ? '' : '.tpl.html')
               ]+(
                 !empty($_POST['preset_select'])
                 ? [
-                  'favorite_preset' => $this->sanitizePost('preset_select')
+                  'favorite_preset' => $presets
                 ]
                 : []
               ));

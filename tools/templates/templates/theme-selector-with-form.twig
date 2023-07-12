@@ -1,0 +1,191 @@
+<form class="{{ class }}" id="{{ id }}">
+    {% embed '@templates/theme-selector.twig' %}
+    
+        {% block firstoptionpreset %}
+            {% if mode is same as 'edit' %}
+                <option value="" {% if presetsData.selectedPresetName is empty and presetsData.selectedCustomPresetName is empty %}selected="selected"{% endif %}>
+                    {{ _t('TEMPLATE_DEFAULT_PRESET') ~(favoritePreset is empty ? '' : (' (' ~ favoritePreset|replace({'.css':''}) ~ ')')) }}
+                </option>
+            {% endif %}
+        {% endblock %}
+        {% block presetpart %}
+            {% if mode is same as 'edit' %}
+                {{ parent() }}
+            {% elseif templates[favoriteTheme].presets is not empty %}
+                <div class="preset-settings-container">
+                    <h4>{{ _t('TEMPLATE_PRESETS') }}</h4>
+                    <ul class="css-preset-list list-inline">
+                    {% for key,value in templates[favoriteTheme].presets %}
+                        <li>
+                            <a
+                                class="css-preset{{ (key == presetsData.selectedPresetName) ? ' active' :'' }}" 
+                                href="{{ templates[favoriteTheme].isCustom 
+                                    ? 'custom/' 
+                                    : '' }}themes/{{ favoriteTheme }}/presets/{{ key }}"
+                                data-key="{{ key }}"
+                                {{ presetsData.dataHtmlForPresets[key]|raw }}>
+                            {{ key|replace({'.css':''}) }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                    {% for key,value in presetsData.customCSSPresets %}
+                        <li>
+                            <a  
+                                class="css-preset custom{{ (key == presetsData.selectedCustomPresetName) ? ' active' :'' }}"
+                                href="{{ customCSSPresetsPath ~ '/' ~ key }}"
+                                data-key="{{ key }}"
+                                {{ presetsData.dataHtmlForCustomCSSPresets[key]|raw }}>
+                                {{ key|replace({'.css':''}) }}
+                            </a>
+                            {% if showAdminActions %}
+                                <button class="btn btn-default btn-xs"
+                                    data-key="{{ key }}"
+                                    onclick="javascript:deleteCSSPreset(this,'{{ _t('TEMPLATE_DELETE_CSS_PRESET') }} {{ key }} ?',
+                                    '{{ url({tag:"api/templates/custom-presets/#{key}"}) }}');">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            {% endif %}  
+                        </li>
+                    {% endfor %}
+                    </ul>
+                    <a class="btn btn-xs btn-primary btn-block btn-new-preset" href="javascript:void(0)" onclick="openNav()">
+                    </i>{{ _t('TEMPLATE_CREATE_PRESET') }}
+                    </a>
+                </div>
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+
+    {% if mode != 'edit' and showAdminActions %}
+        <button class="btn btn-success btn-block " type="button" onclick="saveTheme(event,'{{ url({params:{}}) }}')">
+          {{ _t('TEMPLATE_APPLY_ALL') }}
+        </button>    
+    {% endif %}
+
+    
+    {{ bgselector|raw }}
+
+    {% if mode == 'edit' %}
+
+    <div>
+        <a 
+            title="{{ _t('SEE_THE_ADVANCED_PARAMETERS') }}" 
+            href="#avanced-page-settings" 
+            data-toggle="collapse" 
+            class="btn btn-default">
+            {{ _t('ADVANCED_PARAMETERS') }}
+        </a>
+    </div>
+    <div id="avanced-page-settings" class="collapse">
+        <hr>
+        <div class="control-group form-group">
+        <label class="control-label">{{ _t('PAGE_LANGUAGE') }}</label>
+        <div class="controls">
+            <select class="form-control" name="lang">
+                <option value=""></option>
+                {% for value in availableLanguages %}
+                    <option value="{{ value }}"{% if value == preferedLanguage %} selected="selected"{% endif %}>
+                    {{ languagesList[value]['nativeName']|e|capitalize }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        </div>
+
+        <fieldset>
+            <h4>{{ _t('CHOOSE_PAGE_FOR') }}: </h4>
+            {% for tag,t in {
+                PageMenuHaut: 'HORIZONTAL_MENU_PAGE',
+                PageRapideHaut: 'FAST_ACCESS_RIGHT_PAGE',
+                PageHeader: 'HEADER_PAGE',
+                PageFooter: 'FOOTER_PAGE',
+                PageMenu: 'VERTICAL_MENU_PAGE',
+            } %}
+                <div class="control-group form-group">
+                    <label class="control-label">{{ _t(t) }}</label>
+                    <div class="controls">
+                        <input 
+                            class="form-control typeahead" 
+                            type="text" 
+                            autocomplete="off" 
+                            name="{{ tag }}" 
+                            data-provide="typeahead" 
+                            data-items="5" 
+                            data-source='{{ listWikinames }}' 
+                            value="{{ (page.metadatas[tag] is defined) ? page.metadatas[tag] : tag }}" />
+                    </div>
+                </div>
+            {% endfor %}
+        </fieldset>
+    </div> <!-- /#avanced-page-settings -->
+    {% endif %}
+</form>
+{% if (mode != 'edit') %}
+{# do not display this part in edit mode because handler edit__ is called after generation of .js and .css html  #}
+    <div id="preset-sidenav" class="sidenav">
+
+        <form id="preset-form" action="#" method="post">
+            <h4>{{ _t('TEMPLATE_CUSTOMIZE_PRESET') }}<span class="closebtn" onclick="closeNav()">&times;</span></h4>
+
+            {{ include_javascript('javascripts/vendor/spectrum-colorpicker2/spectrum.min.js') }}
+            {{ include_javascript('tools/templates/libs/vendor/jquery.fontselect.js') }}
+            {{ include_javascript('tools/templates/presentation/javascripts/preset-sidenav.js') }}
+            {{ include_css('styles/vendor/spectrum-colorpicker2/spectrum.min.css') }}
+            {{ include_css('tools/templates/presentation/styles/preset-sidenav.css') }}
+
+            {% for name,data in {
+                'primary-color': {color:'#1A89A0',t:'TEMPLATE_PRIMARY_COLOR'},
+                'secondary-color-1': {color:'#d8604c',t:'TEMPLATE_SECONDARY_COLOR_1'},
+                'secondary-color-2': {color:'#D78958',t:'TEMPLATE_SECONDARY_COLOR_2'},
+                'neutral-color': {color:'#4E5056',t:'TEMPLATE_NEUTRAL_COLOR'},
+                'neutral-soft-color': {color:'#b0b1b3',t:'TEMPLATE_SOFT_COLOR'},
+                'neutral-light-color': {color:'#ffffff',t:'TEMPLATE_LIGHT_COLOR'}
+            } %}
+                <div class="form-group">
+                    <input 
+                        class="form-input colorpicker"
+                        type="color" name="{{ name }}"
+                        value="{{ presetsData.currentCSSValues[name] ?? data.color }}" />
+                    <label>{{ _t(data.t) }}</label>
+                </div>
+            {% endfor %}
+            
+            <div class="form-group">
+                <label>{{ _t('TEMPLATE_MAIN_TEXT_SIZE') }}</label>
+                <input class="form-input range" type="range" min="9" max="34" step="1" name="main-text-fontsize"
+                    value="{{ (presetsData.currentCSSValues['main-text-fontsize'] is defined) 
+                        ? (presetsData.currentCSSValues['main-text-fontsize']|split('px'))[0] : '17' }}" />
+            </div>
+            <div class="form-group">
+                <label>{{ _t('TEMPLATE_MAIN_TEXT_FONT') }}</label>
+                <input class="form-input fontpicker" type="text" name="main-text-fontfamily"
+                    value="{{ presetsData.currentCSSValues['main-text-fontfamily'] ?? 'Nunito' }}" />
+                </div>
+            <div class="form-group">
+                <label>{{ _t('TEMPLATE_MAIN_TITLE_FONT') }}</label>
+                <input class="form-input fontpicker" type="text" name="main-title-fontfamily"
+                    value="{{ presetsData.currentCSSValues['main-title-fontfamily'] ?? 'Nunito' }}" />
+            </div>
+            {% if hasAcl('+') %}
+                <div class="form-group">
+                    <label>{{ _t('TEMPLATE_PRESET_FILENAME') }}</label>
+                    <input class="form-input form-control" type="text" name="filename"
+                    value="{{ presetsData.selectedPresetName is not empty
+                        ? presetsData.selectedPresetName|replace({'.css':''})
+                        : (
+                            presetsData.selectedCustomPresetName is not empty
+                            ? presetsData.selectedCustomPresetName|replace({'.css':''})
+                            : 'custom-'.date('Y-m-d_H-i')
+                        ) }}" />
+                </div>
+                <button type="button" class="btn btn-primary btn-block"
+                    onclick="javascript:saveCSSPreset(this,'{{ url({tag:'api/templates/custom-presets/'}) }}');">
+                    {{ _t('TEMPLATE_SAVE') }}
+                </button>
+            {% endif %}
+        </form>
+    </div>
+{% endif %}
+<script>
+  var themeSelectorTranslation = {{ themeSelectorTranslation|json_encode|raw}};
+  var customCSSPresetsPrefix = {{ customCSSPresetsPrefix|json_encode|raw }};
+</script>
