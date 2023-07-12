@@ -14,8 +14,18 @@
             if (element[0]){
                 const curVal = $(element).val()
                 // empty list
+                let emptyOption = ''
+                for (let index = 0; index < element[0].options.length; index++) {
+                    if (element[0].options[index].value.length === 0){
+                        emptyOption = element[0].options[index].text
+                        break
+                    }
+                }
                 for (let index = element[0].options.length-1; index >= 0; index--) {
                     element[0].options.remove(index)
+                }
+                if (emptyOption.length > 0){
+                    element[0].options.add(new Option(emptyOption,'',false,false))
                 }
                 const favorite = type in data.favorites ? data.favorites[type] : null;
                 if (type === 'preset'){
