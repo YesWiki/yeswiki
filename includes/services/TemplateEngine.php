@@ -98,6 +98,7 @@ class TemplateEngine
             'session' => $_SESSION
         ]);
         $this->twig->addGlobal('config', $this->wiki->config);
+        $this->twig->addGlobal('isInIframe', testUrlInIframe());
 
         // Adds Helpers
         $this->addTwigHelper('_t', function ($key, $params = []) {
