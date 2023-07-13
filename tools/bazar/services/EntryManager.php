@@ -1010,9 +1010,21 @@ class EntryManager
     * @param array $params
     * @param array $attributesNames
     * @param bool $applyOnAllRevisions
-    * return bool true if attributesNames are foond and replaced
+    * @return bool true if attributesNames are foond and replaced
     */
     public function removeAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false): bool
+    {
+        return !empty($this->removeAttributesAndReturnList($params, $attributesNames, $applyOnAllRevisions));
+    }
+    
+    /**
+    * remove attributes from entries only for admins !!!
+    * @param array $params
+    * @param array $attributesNames
+    * @param bool $applyOnAllRevisions
+    * @return array with entry's ids if attributesNames are found and replaced
+    */
+    public function removeAttributesAndReturnList($params, array $attributesNames, bool $applyOnAllRevisions = false): array
     {
         return $this->manageAttributes($params, $attributesNames, $applyOnAllRevisions, 'remove');
     }
@@ -1022,9 +1034,21 @@ class EntryManager
     * @param array $params
     * @param array $attributesNames [$oldName => $newName]
     * @param bool $applyOnAllRevisions
-    * return bool true if attributesNames are foond and replaced
+    * @return bool true if attributesNames are foond and replaced
     */
     public function renameAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false): bool
+    {
+        return !empty($this->renameAttributesAndReturnList($params, $attributesNames, $applyOnAllRevisions));
+    }
+
+    /**
+    * rename attributes from entries only for admins !!!
+    * @param array $params
+    * @param array $attributesNames [$oldName => $newName]
+    * @param bool $applyOnAllRevisions
+    * @return array with entry's ids if attributesNames are found and replaced
+    */
+    public function renameAttributesAndReturnList($params, array $attributesNames, bool $applyOnAllRevisions = false): array
     {
         return $this->manageAttributes($params, $attributesNames, $applyOnAllRevisions, 'rename');
     }
@@ -1035,15 +1059,15 @@ class EntryManager
      * @param array $attributesNames
      * @param bool $applyOnAllRevisions
      * @param string $mode
-     * return bool true if attributesNames are foond and replaced
+     * @return array with entry's ids if attributesNames are found and replaced
      */
-    private function manageAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false, string $mode = 'remove'): bool
+    private function manageAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false, string $mode = 'remove'): array
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!$this->wiki->UserIsAdmin()) {
-            return false;
+            return [];
         }
 
         /* sanitize params */
@@ -1087,9 +1111,10 @@ class EntryManager
         $pages = $this->dbService->loadAll($requete);
 
         if (empty($pages)) {
-            return false;
+            return [];
         }
 
+        $entriesIds = [];
         foreach ($pages as $page) {
             $entry = $this->decode($page['body']);
 
@@ -1099,11 +1124,17 @@ class EntryManager
                         if (isset($entry[$oldName])) {
                             $entry[$newName] = $entry[$oldName];
                             unset($entry[$oldName]);
+                            if (!empty($entry['id_fiche']) && !in_array($entry['id_fiche'],$entriesIds)){
+                                $entriesIds[] = $entry['id_fiche'];
+                            }
                         }
                     }
                 } else {
                     if (isset($entry[$attributeName])) {
                         unset($entry[$attributeName]);
+                        if (!empty($entry['id_fiche']) && !in_array($entry['id_fiche'],$entriesIds)){
+                            $entriesIds[] = $entry['id_fiche'];
+                        }
                     }
                 }
             }
@@ -1124,6 +1155,6 @@ class EntryManager
             }
         }
 
-        return true;
+        return $entriesIds;
     }
 }
