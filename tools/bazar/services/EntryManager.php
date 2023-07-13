@@ -136,8 +136,6 @@ class EntryManager
         $data = [];
         if (!empty($page['body'])) {
             $data = $this->decode($page['body']);
-            $data['owner'] = $page['owner'] ?? '';
-            $data['user'] = $page['user'] ?? '';
 
             if ($debug) {
                 if (empty($data['id_fiche'])) {
@@ -874,6 +872,11 @@ class EntryManager
      */
     public function appendDisplayData(&$fiche, $semantic, $correspondance, array $page)
     {
+        // user
+        $fiche['user'] = $page['user'] ?? null;
+        // owner
+        $fiche['owner'] = $page['owner'] ?? null;
+
         // champs correspondants
         if (!empty($correspondance)) {
             try {
@@ -893,9 +896,6 @@ class EntryManager
 
         // HTML data
         $fiche['html_data'] = getHtmlDataAttributes($fiche);
-
-        // owner
-        $fiche['owner'] = $page['owner'] ?? null;
 
         // Fiche URL
         if (!isset($fiche['url'])) {
