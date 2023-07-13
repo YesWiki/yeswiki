@@ -7,7 +7,7 @@
             (favoriteBackgroundImage is not empty and "files/backgrounds/#{favoriteBackgroundImage}" in row)) ? ' active' : ''}}">
             {% for background in row %}
                 {% set imgextension = background|slice(-4)|lower %}
-                {% set choosen = (background === "files/backgrounds/#{favoriteBackgroundImage}") %}
+                {% set choosen = (background is same as "files/backgrounds/#{favoriteBackgroundImage}") %}
                 {% if imgextension == '.jpg' %}
                     <img loading="lazy" class="bgimg{{ choosen ? ' choosen' : ''}}" src="{{ background }}" width="100" height="75" />
                 {% elseif imgextension == '.png' %}
