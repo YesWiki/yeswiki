@@ -134,7 +134,7 @@ class FormController extends YesWikiController
     {
         if ($this->wiki->UserIsAdmin()) {
             try {
-                $this->csrfTokenController->checkToken("action\\bazar\\forms\\delete\\$id", 'POST', 'confirmDeleteToken');
+                $this->csrfTokenController->checkToken('main', 'POST', 'confirmDeleteToken',false);
                 $this->formManager->clear($id);
                 $this->formManager->delete($id);
     
@@ -151,7 +151,7 @@ class FormController extends YesWikiController
     {
         if ($this->wiki->UserIsAdmin()) {
             try {
-                $this->csrfTokenController->checkToken("action\\bazar\\forms\\empty\\$id", 'POST', 'confirmEmptyToken');
+                $this->csrfTokenController->checkToken('main', 'POST', 'confirmEmptyToken',false);
                 $this->formManager->clear($id);
 
                 return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_VIDE'], false));

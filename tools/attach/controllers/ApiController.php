@@ -11,20 +11,21 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Core\ApiResponse;
+use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\YesWikiController;
 
 class ApiController extends YesWikiController
 {
-    public const GET_CACHE_URLIMAGE_TOKEN_ID = "GET api/images/cache/{width}/{height}/{mode}";
+    public const POST_CACHE_URLIMAGE_TOKEN_ID = "POST api/images/cache/{width}/{height}/{mode}";
 
     /**
-     * @Route("/api/images/{filename}/cache/{width}/{height}/{mode}", methods={"GET"}, options={"acl":{"public"}})
+     * @Route("/api/images/{filename}/cache/{width}/{height}/{mode}", methods={"POST"}, options={"acl":{"public"}})
      */
-    public function getCacheUrlImage($filename, $width, $height, $mode)
+    public function getCacheUrlImageViaPost($filename, $width, $height, $mode)
     {
         try {
-            $this->checkParamsGetCacheUrlImage($filename, $width, $height, $mode);
-            $newToken = $this->checkTokenForGetCacheUrlImage($width, $height, $mode);
+            $this->checkParamsgetCacheUrlImageViaPost($filename, $width, $height, $mode);
+            $newToken = $this->checkTokenForgetCacheUrlImageViaPost($width, $height, $mode);
             // check file
             if (!file_exists("files/$filename")) {
                 return new ApiResponse([
@@ -71,59 +72,53 @@ class ApiController extends YesWikiController
         }
     }
 
-    private function checkParamsGetCacheUrlImage(string $filename, string  &$width, string  &$height, string  $mode)
+    private function checkParamsgetCacheUrlImageViaPost(string $filename, string  &$width, string  &$height, string  $mode)
     {
         if (strval($width) != strval(intval($width))) {
-            throw new Exception("width should be an integer for ".self::GET_CACHE_URLIMAGE_TOKEN_ID);
+            throw new Exception("width should be an integer for ".self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
         $width = intval($width);
         if (empty($width)) {
-            throw new Exception("width should not be 0 or null for ".self::GET_CACHE_URLIMAGE_TOKEN_ID);
+            throw new Exception("width should not be 0 or null for ".self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
         if (strval($height) != strval(intval($height))) {
-            throw new Exception("height should be an integer for ".self::GET_CACHE_URLIMAGE_TOKEN_ID);
+            throw new Exception("height should be an integer for ".self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
         $height = intval($height);
         if (empty($height)) {
-            throw new Exception("height should not be 0 or null for ".self::GET_CACHE_URLIMAGE_TOKEN_ID);
+            throw new Exception("height should not be 0 or null for ".self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
         if (!in_array($mode, ['fit','crop'], true)) {
-            throw new Exception("mode should be in ['fit','mode'] for ".self::GET_CACHE_URLIMAGE_TOKEN_ID);
+            throw new Exception("mode should be in ['fit','mode'] for ".self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
         if (empty(trim($filename))) {
-            throw new Exception("filename should not be empty for ".self::GET_CACHE_URLIMAGE_TOKEN_ID);
+            throw new Exception("filename should not be empty for ".self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
     }
 
     /**
-     * use $_GET['csrftoken']
+     * use $_POST['csrftoken']
      * @param int $width
      * @param int $height
      * @param string $mode
      * @return string $newToken
      */
-    private function checkTokenForGetCacheUrlImage(int $width, int $height, string $mode): string
+    private function checkTokenForgetCacheUrlImageViaPost(int $width, int $height, string $mode): string
     {
         $csrfTokenManager = $this->getService(CsrfTokenManager::class);
-        $inputToken = filter_input(INPUT_GET, 'csrftoken', FILTER_UNSAFE_RAW);
-        $inputToken = in_array($inputToken,[false,null],true) ? $inputToken : htmlspecialchars(strip_tags($inputToken));
+        $csrfTokenController = $this->getService(CsrfTokenController::class);
+        
         $tokenId = str_replace(
             ["{width}","{height}","{mode}"],
             [$width,$height,$mode],
-            self::GET_CACHE_URLIMAGE_TOKEN_ID
+            self::POST_CACHE_URLIMAGE_TOKEN_ID
         );
-    
-        if (is_null($inputToken) || $inputToken === false) {
-            throw new TokenNotFoundException(_t('NO_CSRF_TOKEN_ERROR'));
+
+        if ($csrfTokenController->checkToken($tokenId, 'POST', 'csrftoken',false)){
+            $csrfTokenManager->removeToken($tokenId);
+            $newToken = $csrfTokenManager->getToken($tokenId)->getValue();
+            return $newToken;
         }
-        $token = new CsrfToken($tokenId, $inputToken);
-        $isValid = $csrfTokenManager->isTokenValid($token);
-        if (!$isValid) {
-            throw new TokenNotFoundException(_t('CSRF_TOKEN_FAIL_ERROR'));
-        }
-        $csrfTokenManager->removeToken($tokenId);
-        $newToken = $csrfTokenManager->getToken($tokenId)->getValue();
-        return $newToken;
     }
 
     private function getCacheFileName(string $filename, int $width, int $height, string $mode): string

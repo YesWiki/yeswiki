@@ -193,7 +193,7 @@ class UserSettingsAction extends YesWikiAction
         if ($this->adminIsActing && !empty($this->wantedUserName)) {
             // Admin trying to delete user
             try {
-                $this->csrfTokenController->checkToken("login\action\usersettings\deleteByAdmin\\{$this->wantedUserName}", 'POST', 'csrf-token-delete');
+                $this->csrfTokenController->checkToken('main', 'POST', 'csrf-token-delete',false);
                 if (empty($user)) {
                     $this->errorUpdate = _t('USERSETTINGS_USER_NOT_DELETED') .' user not found';
                     return null;
@@ -213,7 +213,7 @@ class UserSettingsAction extends YesWikiAction
     {
         if ($this->adminIsActing || $this->userLoggedIn) {
             try {
-                $this->csrfTokenController->checkToken('login\action\usersettings\updateuser', 'POST', 'csrf-token-update');
+                $this->csrfTokenController->checkToken('main', 'POST', 'csrf-token-update',false);
 
                 $sanitizedPost = array_map(function ($item) {
                     return is_scalar($item) ? $item : "" ;
@@ -261,7 +261,7 @@ class UserSettingsAction extends YesWikiAction
             } else { // user properly typed his old password in
                 // check token
                 try {
-                    $this->csrfTokenController->checkToken('login\action\usersettings\changepass', 'POST', 'csrf-token-changepass');
+                    $this->csrfTokenController->checkToken('main', 'POST', 'csrf-token-changepass',false);
 
                     $password = $post['password'];
                     $this->authController->setPassword($user, $password);

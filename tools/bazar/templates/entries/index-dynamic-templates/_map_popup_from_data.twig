@@ -13,7 +13,7 @@
           :imagewidth="{{ imWidth }}" 
           :imageheight="{{ imHeight }}" 
           :imagemethod="{{ imagemethod|json_encode }}" 
-          :imagetoken="{{ csrfToken("GET api/images/cache/#{imWidth}/#{imHeight}/#{imagemethod}")|json_encode }}"
+          :imagetoken="{{ csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/#{imagemethod}")|json_encode }}"
           ></popup-entry-field>
       </template>
     </div>

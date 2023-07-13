@@ -94,24 +94,7 @@ let componentParams = {
         deleteAllSelected(event){
             const uuid = this.getUuid()
             multiDeleteService.updateNbSelected(`MultiDeleteModal${uuid}`)
-            const entriesIdsToRefreshDeleteToken = []
-            $(`#${uuid}`).find('tr > td:first-child input.selectline[type=checkbox]:visible:checked').each(function (){
-                const csrfToken = $(this).data('csrftoken')
-                const itemId = $(this).data('itemid')
-                if (typeof itemId === 'string' && itemId.length > 0 && (typeof csrfToken !== 'string' || csrfToken === 'to-be-defined')){
-                    entriesIdsToRefreshDeleteToken.push({elem:$(this),itemId})
-                }
-            })
-            if (entriesIdsToRefreshDeleteToken.length > 0){
-                this.getCsrfDeleteTokens(entriesIdsToRefreshDeleteToken.map((e)=>e.itemId))
-                    .then((tokens)=>{
-                        entriesIdsToRefreshDeleteToken.forEach(({elem,itemId})=>{
-                            $(elem).data('csrftoken',tokens[itemId] || 'error')
-                        })
-                    })
-                    .catch(this.manageError)
-            }
-            // if something to do before showing modal (like get csrf token ?)
+            // if something to do before showing modal 
         },
         getAdminsButtons(entryId,entryTitle,entryUrl,candelete){
             const isExternal =this.$root.isExternalUrl({id_fiche:entryId,url:entryUrl})
@@ -221,14 +204,6 @@ let componentParams = {
                 this.columns = data.columns
             }
             return this.columns
-        },
-        async getCsrfDeleteToken(entryId){
-            return await this.getJson(wiki.url(`?api/pages/${entryId}/delete/getToken`))
-            .then((json)=>('token' in json && typeof json.token === 'string') ? json.token : 'error')
-        },
-        async getCsrfDeleteTokens(entriesIds){
-            return await this.getJson(wiki.url(`?api/pages/example/delete/getTokens`,{pages:entriesIds.join(',')}))
-            .then((json)=>('tokens' in json && typeof json.tokens === 'object') ? json.tokens : entriesIds.reduce((o, key) => ({ ...o, [key]: 'error'}), {}))
         },
         getDatatableOptions(){
             const buttons = []

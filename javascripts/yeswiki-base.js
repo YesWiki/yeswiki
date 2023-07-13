@@ -798,7 +798,6 @@ $('#commentsTableDeleteModal.modal').on('shown.bs.modal',function(event){
   let csrfToken = $(button).closest('tr').find(`td > label > input[data-itemId="${name}"][data-csrfToken]`).first().data('csrftoken');
   $(this).find('#commentToDelete').text(name);
   $(deleteButton).data('name',name);
-  $(deleteButton).data('csrfToken',csrfToken);
   $(deleteButton).data('targetNode',button);
   $(deleteButton).data('modal',this);
   if (!$(deleteButton).hasClass('eventSet')){
@@ -807,13 +806,12 @@ $('#commentsTableDeleteModal.modal').on('shown.bs.modal',function(event){
       $(this).attr('disabled','disabled');
       $(this).tooltip('hide');
       let name = $(this).data('name');
-      let csrfToken = $(this).data('csrfToken');
       let targetNode = $(this).data('targetNode');
       let modal = $(this).data('modal');
       
       $.ajax({
-        method: 'get',
-        url: wiki.url(`api/comments/${name}/delete`,{csrfToken:csrfToken}),
+        method: 'post',
+        url: wiki.url(`api/comments/${name}/delete`),
         timeout: 30000, // 30 seconds
         error: function (e) {
           multiDeleteService.addErrorMessage($(modal),

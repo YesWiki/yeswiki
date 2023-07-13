@@ -27,7 +27,7 @@
   </div> #}
   <div class="control-group form-group">
 		<div class="controls col-sm-9 col-sm-offset-3">
-      <input type="hidden" name="csrf-token-update" value="{{ csrfToken({id:"login\\action\\usersettings\\updateuser",refresh:true}) }}">
+      <input type="hidden" name="csrf-token-update" value="{{ csrfToken({id:'main',refresh:false}) }}">
 			<input class="btn btn-primary" type="submit" value="{{ _t('USER_UPDATE')|e('html_attr') }}" />
       {% if userLoggedIn %}{# // The one who runs the session is acting #}
         <input 
@@ -43,7 +43,7 @@
 {# FORM DELETE #}
 {% if adminIsActing %}
   <form action="{{ url({params:{user:user.name,from:referrer}}) }}" method="post" class="form-horizontal">
-    <input type="hidden" name="csrf-token-delete" value="{{ csrfToken({id:"login\\action\\usersettings\\deleteByAdmin\\#{user.name}",refresh:true})|e('html_attr') }}">
+    <input type="hidden" name="csrf-token-delete" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
     <input type="hidden" name="usersettings_action" value="deleteByAdmin" />
     <input class="btn btn-danger" type="submit" value="{{ _t('USER_DELETE')|e('html_attr') }}" />
   </form>
@@ -80,7 +80,7 @@
     </div>
     <div class="control-group form-group">
       <div class="controls col-sm-9 col-sm-offset-3">
-        <input type="hidden" name="csrf-token-changepass" value="{{ csrfToken({id:"login\\action\\usersettings\\changepass",refresh:true})|e('html_attr') }}">
+        <input type="hidden" name="csrf-token-changepass" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
         <input class="btn btn-primary" type="submit" value="{{ _t('USER_CHANGE')|e('html_attr') }}" size="40" />
       </div>
     </div>

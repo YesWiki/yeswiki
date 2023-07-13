@@ -54,13 +54,14 @@ const usersTableService = {
         $(elem).attr('disabled', 'disabled')
         $(elem).tooltip('hide')
         const name = $(elem).data('name')
-        const csrfToken = $(elem).data('csrfToken')
+        const csrfToken = wiki.antiCsrfToken || 'error wiki has not antiCsrfToken'
         const targetNode = $(elem).data('targetNode')
         const modal = $(elem).data('modal')
 
         $.ajax({
-          method: 'get',
-          url: wiki.url(`api/users/${name}/delete`, { csrfToken }),
+          method: 'post',
+          url: wiki.url(`api/users/${name}/delete`),
+          data: { csrfToken },
           timeout: 30000, // 30 seconds
           error(e) {
             multiDeleteService.addErrorMessage(

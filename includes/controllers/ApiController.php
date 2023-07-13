@@ -7,7 +7,6 @@ use Throwable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
@@ -111,7 +110,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/users/{userId}/delete",methods={"GET"}, options={"acl":{"public","@admins"}})
+     * @Route("/api/users/{userId}/delete",methods={"POST"}, options={"acl":{"public","@admins"}})
      */
     public function deleteUser($userId)
     {
@@ -122,7 +121,7 @@ class ApiController extends YesWikiController
         $result = [];
         try {
             $csrfTokenController = $this->getService(CsrfTokenController::class);
-            $csrfTokenController->checkToken("api\\users\\$userId\\delete", 'GET', 'csrfToken');
+            $csrfTokenController->checkToken('main', 'POST', 'csrfToken',false);
             $user = $userManager->getOneByName($userId);
             if (empty($user)) {
                 $code = Response::HTTP_BAD_REQUEST;
@@ -289,10 +288,11 @@ class ApiController extends YesWikiController
         }
     }
     /**
-     * @Route("/api/comments/{tag}/delete",methods={"GET"}, options={"acl":{"public","+"}})
+     * @Route("/api/comments/{tag}/delete",methods={"POST"}, options={"acl":{"public","+"}})
      */
-    public function deleteCommentByGetMethod($tag)
+    public function deleteCommentViaPostMethod($tag)
     {
+        // todo use Anti-Csrf token or Bearer HTTP header
         return $this->deleteComment($tag);
     }
 
@@ -438,7 +438,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/pages/{tag}/delete",methods={"GET"},options={"acl":{"public","+"}})
+     * @Route("/api/pages/{tag}/delete",methods={"POST"},options={"acl":{"public","+"}})
      */
     public function deletePageByGetMethod($tag)
     {
@@ -446,7 +446,7 @@ class ApiController extends YesWikiController
         $code = Response::HTTP_INTERNAL_SERVER_ERROR;
         try {
             $csrfTokenController = $this->wiki->services->get(CsrfTokenController::class);
-            $csrfTokenController->checkToken("api\\pages\\$tag\\delete", 'GET', 'csrfToken');
+            $csrfTokenController->checkToken('main', 'POST', 'csrfToken',false);
         } catch (TokenNotFoundException $th) {
             $code = Response::HTTP_UNAUTHORIZED;
             $result = [
@@ -463,42 +463,6 @@ class ApiController extends YesWikiController
         return (empty($result))
             ? $this->deletePage($tag)
             : new ApiResponse($result, $code);
-    }
-
-    /**
-     * @Route("/api/pages/{tag}/delete/getToken",methods={"GET"},options={"acl":{"public","+"}})
-     */
-    public function getDeleteToken($tag)
-    {
-        // TODO : elete this api routes after refactor of names of tokens
-        return new ApiResponse([
-            'token'=>$this->regenerateToken($tag)
-        ]);
-    }
-
-    /**
-     * use 'example' as tag, to keep same format for route
-     * @Route("/api/pages/example/delete/getTokens",methods={"GET"},options={"acl":{"public","+"}})
-     */
-    public function getDeleteTokens()
-    {
-        // TODO : elete this api routes after refactor of names of tokens
-        $pageIds = (empty($_GET['pages']) || !is_string($_GET['pages'])) ? [] : explode(',',strval($_GET['pages']));
-        $tokens = [];
-        foreach ($pageIds as $tag) {
-            $tokens[$tag] = $this->regenerateToken($tag);
-        }
-        return new ApiResponse([
-            'tokens'=>$tokens
-        ]);
-    }
-
-    protected function regenerateToken(string $tag): string
-    {
-        $page = $this->wiki->services->get(PageManager::class)->getOne($tag);
-        return (!empty($page) && ($this->wiki->UserIsAdmin() || $this->wiki->UserIsOwner($tag)))
-            ? $this->wiki->services->get(CsrfTokenManager::class)->refreshToken("api\\pages\\$tag\\delete")->getValue()
-            : 'not-authorized';
     }
 
     /**

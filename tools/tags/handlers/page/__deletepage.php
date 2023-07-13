@@ -1,7 +1,6 @@
 <?php
 
-use Symfony\Component\Security\Csrf\CsrfToken;
-use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Core\Controller\CsrfTokenController;
 
 // Vérification de sécurité
 if (!defined("WIKINI_VERSION")) {
@@ -14,13 +13,12 @@ if (($this->UserIsOwner() || $this->UserIsAdmin())
         && isset($_GET['confirme'])
         && ($_GET['confirme'] === 'oui')
     ) {
-    $inputToken = filter_input(INPUT_POST, 'csrf-token', FILTER_UNSAFE_RAW);
-    $inputToken = in_array($inputToken,[false,null],true) ? $inputToken : htmlspecialchars(strip_tags($inputToken));
-    if (!is_null($inputToken) && $inputToken !== false) {
-        $tag = $this->GetPageTag();
-        $token = new CsrfToken("handler\deletepage\\$tag", $inputToken);
-        if ($this->services->get(CsrfTokenManager::class)->isTokenValid($token)) {
+    try {
+        if ($this->services->get(CsrfTokenController::class)->checkToken('main', 'POST', 'csrf-token',false)){
+            $tag = $this->GetPageTag();
             $this->Query("DELETE FROM {$this->config["table_prefix"]}links WHERE to_tag = '$tag'");
         }
+    } catch (Throwable $th) {
+        // do nothing
     }
 }

@@ -61,6 +61,10 @@ Previous token will be considered as invalid after calling `refreshToken`.
 
 ## Rules to name 'tokenId'
 
+In most case, we use `main` as tokenId and does not `GET` request with `token`.
+
+### Previous rules
+
 We propose the following rule to name token and avoid trouble between methods.
 `<type-of-class>\<name-of-class/action>\<concerned-page>`.
 For api we can have
