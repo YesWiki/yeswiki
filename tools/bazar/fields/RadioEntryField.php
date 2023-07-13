@@ -44,12 +44,10 @@ class RadioEntryField extends RadioField
             $entryUrl = $this->services->get(Wiki::class)->Href('', $value);
         }
 
-        $isIframe = !empty(testUrlInIframe());
         return $this->render('@bazar/fields/select_entry.twig', [
             'value' => $value,
             'label' => $this->getOptions()[$value],
-            'entryUrl' => $entryUrl,
-            'isIframe' => $isIframe,
+            'entryUrl' => $entryUrl
         ]);
     }
 

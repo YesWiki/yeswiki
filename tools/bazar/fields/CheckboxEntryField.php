@@ -63,10 +63,8 @@ class CheckboxEntryField extends CheckboxField
             }
         }
 
-        $isIframe = !empty(testUrlInIframe());
         return (count($values) > 0) ? $this->render('@bazar/fields/checkboxentry.twig', [
-            'values' => $values,
-            'isIframe' => $isIframe,
+            'values' => $values
         ]) : '' ;
     }
 
