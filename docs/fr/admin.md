@@ -502,7 +502,7 @@ Si cela a l'avantage de bloquer/réserver la création de nouveaux comptes aux s
 
 #### Pour supprimer de nombreuses pages rapidement
 
-Installer l'extension "multideletepages" (Roue crantée > Gestion du site > Mise à jour / extensions).
+Installer l'extension "maintenance" (Roue crantée > Gestion du site > Mise à jour / extensions).
 Puis, dans une page (par exemple créer une page DeletePages) mettre l'action {{multideletepages}}. 
 Vous aurez alors un tableau avec la liste de toutes les pages : vous pouvez cocher de nombreuses pages et cliquer sur "Suppr. select." : ATTENTION, ça ne redemande pas de validation.
 
@@ -511,7 +511,7 @@ Vous aurez alors un tableau avec la liste de toutes les pages : vous pouvez coch
 Trois options sont possibles :
 * option 1 : nettoyer les pages spéciales puis utiliser l'action {{despam}}
 * option 2 : restaurer la base de donnée à partir d'une sauvegarde. ATTENTION, pour cette option, il faut avoir une sauvegarde et les accès à phpmyadmin
-* option 3 : pour la suppression massive de nouvelles pages : extension multideletepages (cf paragraphe ci-dessus).
+* option 3 : pour la suppression massive de nouvelles pages : extension `maintenance` (cf paragraphe ci-dessus).
 
 
 #### Pour supprimer les utilisateurs non désirables (utilisateurs avancés)
