@@ -104,24 +104,20 @@ function toastMessage(
     }
 
     let $modal = $('#YesWikiModal')
-    const yesWikiModalHtml = `<div class="modal-dialog${
-      size
-    }">`
-      + '<div class="modal-content">'
-      + '<div class="modal-header">'
-      + `<button type="button" class="close" data-dismiss="modal">&times;</button>${
-        text
-      }</div>`
-      + '<div class="modal-body">'
-      + '</div>'
-      + '</div>'
-      + '</div>'
+    const yesWikiModalHtml = `
+      <div class="modal-dialog${size} ${$this.data('header') === false ? 'no-header' : ''}">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            ${text}
+          </div>
+          <div class="modal-body"></div>
+          <button type="button" class="no-header-btn-close" data-dismiss="modal">&times;</button>
+        </div>
+      </div>`
+
     if ($modal.length == 0) {
-      $('body').append(
-        `<div class="modal fade" id="YesWikiModal">${
-          yesWikiModalHtml
-        }</div>`
-      )
+      $('body').append(`<div class="modal fade" id="YesWikiModal">${yesWikiModalHtml}</div>`)
       $modal = $('#YesWikiModal')
     } else {
       $modal.html(yesWikiModalHtml)

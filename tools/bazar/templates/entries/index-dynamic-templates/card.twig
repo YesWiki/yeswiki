@@ -25,12 +25,11 @@
     </div>
 
     {% if isLink %}<a{% else %}<div{% endif %} v-for="entry in entriesToDisplay" :key="entry.id_fiche" 
-        class="bazar-entry bazar-card{{ isModal ? ' modalbox' : ''}}" 
+        class="bazar-entry bazar-card{{ isModal ? ' modalbox' : ''}}"
         {% if not isLink %}@click="openEntry(entry)"{% endif %} 
         :class="{'with-image': Object.keys(entry).includes('visual')}"
         {% if isModal %}
-          data-size="modal-lg"
-          :data-iframe="1" :href="`${entry.url}/iframe`"
+          data-size="modal-lg" data-header="false" data-iframe="1"
         {% endif %}
         {% if isLink %}
           :href="`${entry.url + (({{ isModal ? 'true' : 'false' }} || $root.isInIframe()) ? '/iframe' : '')}`"

@@ -249,6 +249,36 @@ li.toc5 {
   height: 70vh;
   border: 0;
 }
+#YesWikiModal .modal-dialog .no-header-btn-close {
+  display: none;
+}
+#YesWikiModal .modal-dialog.no-header .no-header-btn-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: -1rem;
+  right: -1rem;
+  background-color: #4e5056;
+  background-color: var(--neutral-color);
+  color: white;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 2rem;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+}
+#YesWikiModal .modal-dialog.no-header .modal-header {
+  visibility: hidden;
+  height: 1rem;
+  max-height: 1rem;
+  overflow: hidden;
+  padding: 0;
+}
+
+
 /* remove first column of revisions */
 #YesWikiModal .first-revisions-selector,
 #YesWikiModal .current-page-revision,
