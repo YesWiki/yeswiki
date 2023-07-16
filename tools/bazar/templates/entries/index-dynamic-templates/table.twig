@@ -118,10 +118,10 @@
       </template>
       {#- supported fieldtype empty,link,email,image -#}
       <template v-if="addLink">
-        <a :href="`${url}/iframe`" v-html="anchorData" class="modalbox" data-size="modal-lg" data-iframe="1" :title="anchorData"></a>
+        <a :href="`${url}/iframe`" v-html="anchorData" class="modalbox" data-header="false" data-size="modal-lg" data-iframe="1" :title="anchorData"></a>
       </template>
       <template v-else-if="fieldtype === 'link'">
-        <a :href="anchorData" v-html="anchorData" class="modalbox" data-size="modal-lg" data-iframe="1"></a>
+        <a :href="anchorData" v-html="anchorData" class="modalbox" data-header="false" data-size="modal-lg" data-iframe="1"></a>
       </template>
       <template v-else-if="fieldtype === 'email' && anchorData.length > 0">
         <a :href="`mailto:${anchorData}`" v-html="anchorData"></a>
@@ -135,7 +135,7 @@
           :onError="`urlImageResizedOnError({id_fiche:'${entryId}',url:'${wiki.url(entryId)}',['${fieldName}']:'${anchorData}'},'${fieldName}',{{ imWidth }},{{ imHeight }},'crop','{{ firstTokenCrop|e('html') }}')`"/>
       </template>
       <template v-else-if="fieldtype === 'urlmodal' && anchorData.length > 0">
-        <a :href="url" v-html="anchorData" :title="anchorData" class="modalbox" data-size="modal-lg" data-iframe="1"></a>
+        <a :href="url" v-html="anchorData" :title="anchorData" class="modalbox" data-header="false" data-size="modal-lg" data-iframe="1"></a>
       </template>
       <template v-else-if="fieldtype === 'urlnewwindow' && anchorData.length > 0">
         <a :href="url" v-html="anchorData" :title="anchorData" target="blank"></a>

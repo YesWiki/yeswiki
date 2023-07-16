@@ -113,7 +113,7 @@ Vue.component('BazarMap', {
         const isLink = (this.isModalDisplay() || this.isDirectLinkDisplay() || this.isNewTabDisplay())
         const tagName = isLink ? 'a' : 'div'
         const url = entry.url + (this.isModalDisplay() ? '/iframe' : '')
-        const modalData = this.isModalDisplay() ? 'data-size="modal-lg" data-iframe="1"' : ''
+        const modalData = this.isModalDisplay() ? 'data-size="modal-lg" data-iframe="1" data-header="false"' : ''
         entry.marker.setIcon(
           L.divIcon({
             className: `bazar-marker ${this.params.smallmarker}`,
@@ -126,8 +126,8 @@ Vue.component('BazarMap', {
                   ${entry.markerhover || entry.bf_titre}
                 </span>
               </div>
-              <${tagName} class="bazar-entry${this.isModalDisplay() ? ' modalbox' : ''}" `
-              + `${isLink ? `href="${url}" title="${entry.bf_titre}"` : ''} style="color: ${entry.color}" ${modalData}>
+              <${tagName} class="bazar-entry ${this.isModalDisplay() ? 'modalbox' : ''}" `
+              + `${isLink ? `href="${url}"` : ''} style="color: ${entry.color}" ${modalData}>
                 <i class="${entry.icon || 'fa fa-bullseye'}"></i>
               </${tagName}>`
           })
