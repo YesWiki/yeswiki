@@ -10,6 +10,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Response;
 use YesWiki\Bazar\Field\DateField;
 use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Bazar\Controller\GeoJSONFormatter;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Core\YesWikiController;
 use \DateInterval;
@@ -144,10 +145,23 @@ class IcalFormatter extends YesWikiController
     private function getICALData(array $entry):array
     {
         if (!empty($entry['bf_date_debut_evenement']) && !empty($entry['bf_date_fin_evenement'])) {
+            $startDate = new DateTime($entry['bf_date_debut_evenement']);
+            if (is_null($startDate)){
+                return [];
+            }
             $endData = $entry['bf_date_fin_evenement'];
+            $endDataObject = new DateTime($endData);
+            if (is_null($endDataObject)){
+                return [];
+            }
             // 24 h for end date if all day
-            if (isset($entry['bf_date_fin_evenement_allday']) && $entry['bf_date_fin_evenement_allday'] == "1") {
-                $endData = (new DateTime($entry['bf_date_fin_evenement']))->add(new DateInterval('P1D'))->format('Y-m-d H:i:s');
+            if ($this->isAllDay(strval($endData))) {
+                $endData = $endDataObject->add(new DateInterval('P1D'))->format('Y-m-d H:i:s');
+                $endDataObject = new DateTime($endData);
+            }
+            if ($startDate->diff($endDataObject)->invert > 0){
+                // end date before start date not possible in ical : use start time + 1 hour
+                $endData = $startDate->add(new DateInterval('PT1H'))->format('Y-m-d H:i:s');
             }
             return [
                 'startDate' => $entry['bf_date_debut_evenement'],
@@ -155,6 +169,16 @@ class IcalFormatter extends YesWikiController
             ];
         }
         return [];
+    }
+
+    /**
+     * check if is all day date
+     * @param string $date
+     * @return bool
+     */
+    protected function isAllDay(string $date): bool
+    {
+        return preg_match('/^[1-2][0-9]{3}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[0-1])$/',$date);
     }
 
     /**
@@ -206,13 +230,14 @@ class IcalFormatter extends YesWikiController
             $this->renderAndStripTags($entry['bf_description'])."\r\n"
             :'';
         $decription .= "Source: ".$entry['url'];
-        $output .=$this->splitAtnthChar(self::MAX_CHARS_BY_LINE, "DESCRIPTION:".str_replace(["\r","\n"], ['\\r','\\n'], $decription)."\r\n");
+        $output .=$this->splitAtnthChar(self::MAX_CHARS_BY_LINE, "DESCRIPTION:".str_replace(["\r","\n"], [' ','\\n'], $decription)."\r\n");
         $location = '';
         $location .= (!empty($entry['bf_adresse'])) ? $entry['bf_adresse'] .' ' : '';
         $location .= (!empty($entry['bf_code_postal'])) ? $entry['bf_code_postal'] .' ' : '';
         $location .= (!empty($entry['bf_ville'])) ? $entry['bf_ville'] .' ' : '';
+        $location = trim($location);
         if (!empty($location)) {
-            $output .=$this->splitAtnthChar(self::MAX_CHARS_BY_LINE, "LOCATION:".$location."\r\n");
+            $output .=$this->splitAtnthChar(self::MAX_CHARS_BY_LINE, "LOCATION:".str_replace(["\r","\n"],' ',$location)."\r\n");
         }
         $geo = $this->geoJSONFormatter->getGeoData($entry, $cache);
         if (!empty($geo)) {
