@@ -5,6 +5,7 @@
 
 namespace YesWiki;
 
+use Dotenv\Dotenv;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -16,6 +17,7 @@ use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Core\Service\ArchiveService;
+use YesWiki\Core\Controller\InstallationController;
 use YesWiki\Core\YesWikiEventCompilerPass;
 
 // TODO put elsewhere
@@ -35,8 +37,9 @@ class Init
 {
     public $page = '';
     public $method = '';
+    static $env = [];
     public $config = array();
-    public $configFile = 'wakka.config.php';
+    const configFile = 'wakka.config.php';
 
     /**
      * Create a new Init instance.
@@ -52,7 +55,7 @@ class Init
         $this->setIframeHeaders();
 
         /* @todo : compare versions, start installer for update if necessary */
-        if (!file_exists($this->configFile)) {
+        if (!file_exists(self::configFile)) {
             $this->doInstall();
             exit();
         }
@@ -171,19 +174,50 @@ class Init
      *
      * @return array merged array
      */
-    protected function array_merge_recursive_distinct(array &$array1, array &$array2)
+    static function array_merge_recursive_distinct(array &$array1, array &$array2)
     {
         $merged = $array1;
 
         foreach ($array2 as $key => &$value) {
             if (is_array($value) && isset($merged [$key]) && is_array($merged [$key])) {
-                $merged [$key] = $this->array_merge_recursive_distinct($merged [$key], $value);
+                $merged [$key] = self::array_merge_recursive_distinct($merged [$key], $value);
             } else {
                 $merged [$key] = $value;
             }
         }
 
         return $merged;
+    }
+    /**
+     * Get the environment variables for yeswiki and replace the config values with them
+     *
+     * @param array $wakkaConfig initial config array (empty by default)
+     *
+     * @return array the configuration
+     */
+    static function getEnvironmentConfig($wakkaConfig = array()) {
+        
+        // load .env file without exception if file not found
+        $dotenv = \Dotenv\Dotenv::createMutable(dirname(__DIR__));
+        self::$env = $dotenv->safeLoad();
+        
+        // mapping for newly introduced config values as environnement variables
+        $mapping = [
+            'YESWIKI_NAME' => 'WAKKA_NAME'
+        ];
+        foreach ($mapping as $k => $v) {
+            if (isset($_SERVER[$k])) {
+                putenv($v.'='.$_ENV[$k]);
+                self::$env[$v]=self::$env[$k];
+                $_ENV[$v]=$_ENV[$k];
+                $_SERVER[$v]=$_SERVER[$k];
+            }
+        }
+
+        // lowercase array keys
+        self::$env = array_change_key_case(self::$env);
+
+        return array_merge($wakkaConfig, self::$env);
     }
 
     /**
@@ -193,7 +227,7 @@ class Init
      *
      * @return array the configuration
      */
-    public function getConfig($wakkaConfig = array())
+    public static function getConfig($wakkaConfig = array())
     {
         $_rewrite_mode = detectRewriteMode();
         $yeswikiDefaultConfig = array(
@@ -243,14 +277,17 @@ class Init
         );
         unset($_rewrite_mode);
 
-        if (file_exists($this->configFile)) {
-            include $this->configFile;
+        if (file_exists(self::configFile)) {
+            include self::configFile;
         } else {
             // we must init language file without loading the page's settings.. to translate some default config settings
             $yeswikiDefaultConfig['root_page'] = _t('HOMEPAGE_WIKINAME');
             $yeswikiDefaultConfig['wakka_name'] = _t('MY_YESWIKI_SITE');
         }
-        $wakkaConfig = $this->array_merge_recursive_distinct($yeswikiDefaultConfig, $wakkaConfig);
+        $wakkaConfig = self::array_merge_recursive_distinct($yeswikiDefaultConfig, $wakkaConfig);
+
+        // we overwrite config values with environnement variables
+        $wakkaConfig = self::getEnvironmentConfig($wakkaConfig);
 
         // give a default timezone to avoid error
         if (!empty($wakkaConfig['timezone'])) {
@@ -409,21 +446,7 @@ class Init
      */
     public function doInstall()
     {
-        // start installer
-        if (! isset($_REQUEST['installAction']) or ! $installAction = trim($_REQUEST['installAction'])) {
-            $installAction = "default";
-        }
-        // default lang
-        loadpreferredI18n('');
-        $wakkaConfig = $this->config;
-        $wakkaConfigLocation = $this->configFile;
-        include_once 'setup/install.helpers.php';
-        include_once 'setup/header.php';
-        if (file_exists('setup/' . $installAction . '.php')) {
-            include_once 'setup/' . $installAction . '.php';
-        } else {
-            echo '<em>', _t("INVALID_ACTION"), '</em>';
-        }
-        include_once 'setup/footer.php';
+        $install = new \YesWiki\Core\Controller\InstallationController();
+        $install->show();
     }
 }

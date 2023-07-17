@@ -3,8 +3,8 @@
 if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
+//dump(\YesWiki\Init::$env);
 ?>
-    
     <form class="form-horizontal form-yeswiki-install" action="<?php echo  myLocation() ?>?PagePrincipale&installAction=install" method="post">
 
     <div class="row">
@@ -184,22 +184,6 @@ echo "<option value=\"auto\"".((isset($_GET['lang']) && $_GET['lang'] === 'auto'
           </div>
         </div>
 
-    <?php
-    if ($wiki && $users = $wiki->LoadUsers()) {
-        ?>
-    <div class="col-sm-9"><p><?php echo _t('USE_AN_EXISTING_ACCOUNT'); ?> :</p><br>
-        <select name="admin_login">
-        <option selected="selected"><?php echo _t('NO'); ?></option>
-    <?php
-    foreach ($users as $user) {
-        echo '<option value="', htmlspecialchars($user['name'], ENT_COMPAT, YW_CHARSET), '">', htmlspecialchars($user['name'], ENT_COMPAT, YW_CHARSET), "</option>\n";
-    } ?>
-      </select>
-      <p><?php echo _t('OR_CREATE_NEW_ACCOUNT'); ?> :</p></div>
-    <?php
-    }
-?>
-
         <div class="form-group">
           <label class="col-sm-3 control-label"><?php echo _t('ADMIN'); ?></label>
           <div class="col-sm-9">
@@ -293,7 +277,6 @@ echo "<option value=\"auto\"".((isset($_GET['lang']) && $_GET['lang'] === 'auto'
     </fieldset>
 
   </form>
-  
   <style>
     input:not(:placeholder-shown):invalid, textarea:not(:placeholder-shown):invalid {
         border-color: #DD2C00;
