@@ -87,8 +87,19 @@ class DbService
             $start = $this->getMicroTime();
         }
 
-        if (!$result = mysqli_query($this->link, $query)) {
-            throw new Exception('Query failed: ' . $query . ' (' . mysqli_error($this->link) . ')');
+        try {
+            $result = mysqli_query($this->link, $query);
+        } catch (\Throwable $th) {
+            // If a database table is missing, lauch the installer
+            if (preg_match('/^Table.* doesn\'t exist$/m', $th->getMessage())) {
+                require_once 'includes/YesWikiInit.php';
+                $wakkaConfig = \YesWiki\Init::getConfig();
+                $init = new \YesWiki\Init($wakkaConfig);
+                $init->doInstall();
+                exit;
+            } else {
+                throw new Exception('Query failed: ' . $query . ' (' . $th->getMessage() . ')');
+            }
         }
 
         if ($this->params->get('debug')) {

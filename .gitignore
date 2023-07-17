@@ -126,3 +126,8 @@ docker-compose.local.yml
 .phpintel/
 
 TODO
+
+# Devenv
+.devenv*
+devenv.local.nix
+
