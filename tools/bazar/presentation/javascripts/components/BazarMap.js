@@ -53,8 +53,10 @@ Vue.component('BazarMap', {
     createTileLayers() {
       if (!this.map) return
       const provideOptions = this.params.provider_credentials ? JSON.parse(this.params.provider_credentials) : {}
-      L.tileLayer.provider(this.params.provider, provideOptions).addTo(this.map)
+      const provider = L.tileLayer.provider(this.params.provider, provideOptions).addTo(this.map)
 
+      this.params.layers = this.params.layers.map((layer)=>layer.replace(/visiblebydefault\|?;?/ig,''))
+      let displayProviderList = false
       for (const layer of this.params.layers) {
         let [label, type, options, url] = layer.split('|')
         if (!url) { url = options; options = '' }
@@ -63,6 +65,7 @@ Vue.component('BazarMap', {
             this.layers[label] = L.tileLayer(url).addTo(this.map)
             break
           case 'geojson':
+            displayProviderList = true
             this.layers[label] = L.geoJson.ajax(url, {
               style(feature, latlng) {
                 if (feature.geometry.type == 'Point') return
@@ -86,13 +89,26 @@ Vue.component('BazarMap', {
               },
               pointToLayer(feature, latlng) {
                 return L.circleMarker(latlng)
-              }
+              },
+              onEachFeature: function (feature, layer) {
+								var str = "" ;
+								for( var prop in feature.properties){
+                  const content = ( prop.toLowerCase() == "url" )
+                    ? `<a href="${feature.properties[prop]}" target="_blank" >${feature.properties[prop]}</a>`
+                    : feature.properties[prop]
+                  str+= `${prop}: ${content}<br/>`
+								}
+								layer.bindPopup( str );
+							}
             }).addTo(this.map)
             break
           default:
             alert(`Error in Layers parameter: type ${type} is unknown`)
             break
         }
+      }
+      if (displayProviderList){
+        L.control.layers({[this.params.provider]:provider}, this.layers).addTo(this.map)
       }
     },
     arraysEqual(a, b) {
