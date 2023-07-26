@@ -44,6 +44,8 @@ export default {
           return values.length == 0 ? '' : (values.length == 1 ? values[0] : values)
         case 'email':
           return '' // security
+        case 'link':
+          return value ? `<a href="${encodeURI(value)}" class="newtab">${value}</a>`: ''
         default:
           return value
       }
