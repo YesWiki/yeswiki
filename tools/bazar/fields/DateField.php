@@ -9,8 +9,6 @@ class DateField extends BazarField
 {
     protected function renderInput($entry)
     {
-        $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/bootstrap-datepicker.js');
-
         $day = "";
         $hour = 0;
         $minute = 0;
