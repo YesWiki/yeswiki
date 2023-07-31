@@ -912,4 +912,29 @@ $('.tab-content [data-toggle="tab"]').on("click", function () {
   } else {
     $("html, body").animate({ scrollTop: $(base).offset().top - 80 }, 500);
   }
-});
+})
+
+let editLinks = $('a[data-method="edit"]')
+if (editLinks.length > 0) {
+  // we ajust header height for short headers so hover text can be seen
+  if ($('.yw-headerpage').height() <= '20') {
+    $('.yw-headerpage').css('min-height', '20px')
+  }
+  editLinks.on('mouseout', function(e) {
+    $('.hover-edit').removeClass('hover-edit')
+  })
+  editLinks.on('mouseover', function(e) {
+    let zone = $(this).data('tag')
+    if (zone == 'PageTitre' ) {
+      $('.navbar-brand').attr('data-hover-edit-title', zone).addClass('hover-edit')
+    } else if (zone == 'PageMenuHaut' ) {
+      $('.yw-topnav').attr('data-hover-edit-title', zone).addClass('hover-edit')
+    } else if (zone == 'PageRapideHaut' ) {
+      $('.yw-topnav-fast-access').attr('data-hover-edit-title', zone).addClass('hover-edit')
+    } else if (zone == 'PageHeader' ) {
+      $('.yw-headerpage').attr('data-hover-edit-title', zone).addClass('hover-edit')
+    } else if (zone == 'PageFooter' ) {
+      $('.footerpage').attr('data-hover-edit-title', zone).addClass('hover-edit')
+    }
+  })
+}

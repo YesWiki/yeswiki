@@ -1,0 +1,273 @@
+<form class="form-horizontal form-yeswiki-install" action="{{ baseUrl }}?PagePrincipale&installAction=install" method="post">
+  <div class="row">
+  <div class="col-md-4">
+    <h3>
+      <a class="pull-right btn btn-sm btn-info" data-toggle="collapse" data-parent="#accordion1" href="#collapseOne">
+          {{ _t('MORE_INFOS') }}
+      </a>
+      {{ _t('GENERAL_CONFIGURATION') }}
+    </h3>
+
+      <div class="accordion" id="accordion1">
+        <div class="accordion-group">
+          <div id="collapseOne" class="accordion-body collapse">
+            <div class="accordion-inner">
+              <dl>
+                  <dt>{{ _t('DEFAULT_LANGUAGE') }}</dt>
+                  <dd>{{ _t('DEFAULT_LANGUAGE_INFOS') }}</dd>
+                </dl>
+                <dl>
+                  <dt>{{ _t('YOUR_WEBSITE_NAME') }}</dt>
+                  <dd>{{ _t('YOUR_WEBSITE_NAME_INFOS') }}</dd>
+                </dl>
+                <dl>
+                  <dt>{{ _t('DESCRIPTION') }}</dt>
+                  <dd>{{ _t('DESCRIPTION_INFOS') }}</dd>
+                </dl>
+                <dl>
+                  <dt>{{ _t('KEYWORDS') }}</dt>
+                  <dd>{{ _t('KEYWORDS_INFOS') }}</dd>
+                </dl>
+                <dl>
+                  <dt>{{ _t('HOMEPAGE') }}</dt>
+                  <dd>{{ _t('HOMEPAGE_INFOS') }}</dd>
+                </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-3 control-label">{{ _t('DEFAULT_LANGUAGE') }}</label>
+        <div class="col-sm-9">
+          <select required autocomplete="off" class="form-control" name="config[default_language]" onchange="$(this).parents('.form-yeswiki-install').attr('action', '{{ baseUrl }}?installAction=default&lang='+$(this).val()).submit();">
+              {% for lang in availableLanguages %}
+                <option value="{{ lang }}" {% if lang == locale %}selected="selected"{% endif %}>{{ attribute(languagesList, lang).nativeName }}</option>
+              {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-3 control-label">{{ _t('YOUR_WEBSITE_NAME') }}</label>
+        <div class="col-sm-9">
+          
+          <input type="text" required class="form-control" name="config[wakka_name]" {% if env.wakka_name %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %} value="{{ config.wakka_name }}" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-3 control-label">{{ _t('DESCRIPTION') }}</label>
+        <div class="col-sm-9">
+          <input type="text" class="form-control" name="config[meta_description]" {% if env.meta_description %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %} value="{{ config.meta_description }}" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-3 control-label">{{ _t('KEYWORDS') }}</label>
+        <div class="col-sm-9">
+          <input type="text" class="form-control" name="config[meta_keywords]" {% if env.meta_keywords %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %} value="{{ config.meta_keywords }}" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-3 control-label">{{ _t('HOMEPAGE') }}</label>
+        <div class="col-sm-9">
+          <input type="text" required class="form-control" name="config[root_page]" {% if env.root_page %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %} value="{{ config.root_page }}" pattern="<?php echo WN_CAMEL_CASE_EVOLVED ;?>"/>
+          <p class="help-block">{{ _t('MUST_BE_WIKINAME') }}</p>
+        </div>
+      </div>
+</div>
+<div class="col-md-4">
+  <h3>
+      <a class="pull-right btn btn-sm btn-info" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
+          {{ _t('MORE_INFOS') }}
+      </a>
+      {{ _t('DATABASE_CONFIGURATION') }}
+  </h3>
+
+      <div class="accordion" id="accordion2">
+        <div class="accordion-group">
+          <div id="collapseTwo" class="accordion-body collapse">
+            <div class="accordion-inner">
+              <dl>
+                  <dt>{{ _t('MYSQL_SERVER') }} </dt>
+                  <dd>{{ _t('MYSQL_SERVER_INFOS') }}</dd>
+                </dl>
+                <dl>
+                  <dt>{{ _t('MYSQL_DATABASE') }} </dt>
+                  <dd>{{ _t('MYSQL_DATABASE_INFOS') }}</dd>
+                </dl>
+                <dl>
+                  <dt>{{ _t('MYSQL_USERNAME') }} </dt>
+                  <dd>{{ _t('MYSQL_USERNAME_INFOS') }}</dd>
+                </dl>
+                <dl>
+                  <dt>{{ _t('TABLE_PREFIX') }} </dt>
+                  <dd>{{ _t('TABLE_PREFIX_INFOS') }}</dd>
+                </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-3 control-label">{{ _t('MYSQL_SERVER') }}</label>
+        <div class="col-sm-9">
+          <input type="text" required class="form-control" name="config[mysql_host]" {% if env.mysql_host %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %} value="{{ config.mysql_host }}" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-3 control-label">{{ _t('MYSQL_DATABASE') }}</label>
+        <div class="col-sm-9">
+          <input type="text" required class="form-control" name="config[mysql_database]" {% if env.mysql_database %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %} value="{{ config.mysql_database }}"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-3 control-label">{{ _t('MYSQL_USERNAME') }}</label>
+        <div class="col-sm-9">
+          <input type="text" required class="form-control" name="config[mysql_user]" {% if env.mysql_user %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %} value="{{ config.mysql_user }}" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-3 control-label">{{ _t('MYSQL_PASSWORD') }}</label>
+        <div class="col-sm-9">
+          <input type="password"  class="form-control" name="config[mysql_password]" {% if env.mysql_password %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %} value="{{ config.mysql_password }}" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-3 control-label">{{ _t('TABLE_PREFIX') }}</label>
+        <div class="col-sm-9">
+          <input type="text" required class="form-control" name="config[table_prefix]" {% if env.table_prefix %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %} value="{{ config.table_prefix }}" />
+        </div>
+      </div>
+</div>
+<div class="col-md-4">
+  <h3>
+      <a class="pull-right btn btn-sm btn-info" data-toggle="collapse" data-parent="#accordion3" href="#collapseThree">
+          {{ _t('MORE_INFOS') }}
+      </a>
+      {{ _t('CREATION_OF_ADMIN_ACCOUNT') }}
+  </h3>
+      <div class="accordion" id="accordion3">
+        <div class="accordion-group">
+          <div id="collapseThree" class="accordion-body collapse">
+            <div class="accordion-inner">
+              <dl>
+                <dt class="admin">{{ _t('ADMIN_ACCOUNT_CAN') }}</dt>
+                <dd class="droits-admin">
+                  <ul>
+                    <li>{{ _t('MODIFY_AND_DELETE_ANY_PAGE') }}</li>
+                    <li>{{ _t('MODIFY_ACCESS_RIGHTS_ON_ANY_PAGE') }}</li>
+                    <li>{{ _t('GENERATE_ACCESS_RIGHTS_ON_ANY_ACTION_OR_HANDLER') }}</li>
+                    <li>{{ _t('GENERATE_GROUPS') }}</li>
+                  </ul>
+                </dd>
+              </dl>
+              <p>{{ _t('ALL_ADMIN_TASKS_ARE_DESCRIBED_IN_THE_PAGE') }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-3 control-label">{{ _t('ADMIN') }}</label>
+        <div class="col-sm-9">
+          <input type="text" required class="form-control" name="admin_name" value="WikiAdmin" />
+          <p class="help-block">{{ _t('USERNAME_MUST_BE_WIKINAME') }}</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-3 control-label">{{ _t('PASSWORD') }}</label>
+        <div class="col-sm-9">
+          <input type="password" required class="form-control" name="admin_password" value="" />
+          <p class="help-block">{{ _t('PASSWORD_SHOULD_HAVE_5_CHARS_MINIMUM') }}</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-3 control-label">{{ _t('PASSWORD_CONFIRMATION') }}</label>
+        <div class="col-sm-9">
+          <input type="password" required class="form-control" size="50" name="admin_password_conf" value="" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-3 control-label">{{ _t('EMAIL_ADDRESS') }}</label>
+        <div class="col-sm-9">
+          <input type="email" required class="form-control" name="admin_email" value="" />
+        </div>
+      </div>
+  </div>
+</div>
+      <div class="accordion-heading">
+        <h3>
+        <a class="" data-toggle="collapse" data-parent="#accordion4" href="#collapseFour">{{ _t('ADVANCED_CONFIGURATION') }}</a>
+        </h3>
+      </div>
+
+      <div class="accordion" id="accordion4">
+        <div class="accordion-group">
+          <div id="collapseFour" class="accordion-body collapse">
+            <div class="accordion-inner">
+              <div class="form-group">
+                  <label class="col-sm-3 control-label">{{ _t('BASE_URL') }}</label>
+                  <div class="col-sm-9">
+                      <input type="text" required class="form-control" name="config[base_url]" {% if env.base_url %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %} value="{{ config.base_url }}" />
+                      <p class="help-block">{{ _t('PAGENAME_WILL_BE_ADDED_AFTER_CHANGE_JUST_FOR_REDIRECTION') }}</p>
+                  </div>
+              </div>
+
+              <div class="checkbox">
+                <label>
+                  <input type="hidden" name="config[rewrite_mode]" value="0" />
+                  <input type="checkbox" name="config[rewrite_mode]" value="1" {% if env.rewrite_mode %} disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}{% if env.rewrite_mode == true %} checked{% endif %} /><span></span>{{ _t('ACTIVATE_REDIRECTION_MODE') }}
+                </label>
+                <p class="help-block">{{ _t('REDIRECTION_SHOULD_BE_ACTIVE_ONLY_IF_USED_IN_YESWIKI') }}.</p>
+              </div>
+
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="config[allow_raw_html]" value="1" {% if env.allow_raw_html %} disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}{% if env.allow_raw_html == true %} checked{% endif %} /><span></span>{{ _t('AUTHORIZE_HTML_INSERTION') }}
+                </label>
+                <p class="help-block">{{ _t('HTML_INSERTION_HELP_TEXT') }}.</p>
+              </div>
+
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="config[allow_robots]" value="1" {% if env.allow_robots %} disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}{% if env.allow_robots == true %} checked{% endif %} /><span></span>{{ _t('AUTHORIZE_INDEX_BY_ROBOTS') }}
+                </label>
+                <p class="help-block">{{ _t('INDEX_HELP_TEXT') }}.</p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+  <div class="form-group">
+    <div class="col-sm-offset-3 col-sm-9">
+      <input class="btn btn-lg btn-primary" type="submit" value="{{ _t('CONTINUE') }}" />
+    </div>
+  </div>
+
+  </fieldset>
+
+</form>
+
+<style>
+input:not(:placeholder-shown):invalid, textarea:not(:placeholder-shown):invalid {
+    border-color: #DD2C00;
+}
+[type="checkbox"] + span:not(.lever) {
+  padding-left: 1.5rem;
+  height: 1rem;
+}
+.form-control[disabled] {
+  background-color: #bdbdbd;
+}
+</style>
