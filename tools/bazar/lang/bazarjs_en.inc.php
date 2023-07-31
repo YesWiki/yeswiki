@@ -57,6 +57,7 @@ return [
     // libs/bazar.js
     // 'BAZ_FORM_REQUIRED_FIELD' => 'Veuillez saisir tous les champs obligatoires (avec une asterisque rouge)',
     // 'BAZ_FORM_INVALID_EMAIL' => 'L\'email saisi n\'est pas valide',
+    // 'BAZ_FORM_INVALID_TEXT' => 'Le texte n\'est pas valide',
     // 'BAZ_FORM_INVALID_URL' => 'L\'url saisie n\'est pas valide, elle doit commencer par http:// '.
     //     'et ne pas contenir d\'espaces ou caracteres speciaux',
     // 'BAZ_FORM_EMPTY_RADIO' => 'Il faut choisir une valeur de bouton radio',
