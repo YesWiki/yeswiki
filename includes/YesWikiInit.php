@@ -188,6 +188,7 @@ class Init
 
         return $merged;
     }
+
     /**
      * Get the environment variables for yeswiki and replace the config values with them
      *
@@ -264,7 +265,7 @@ class Init
             'timezone' => 'Europe/Paris', // Only used if not set in wakka.config.php nor in php.ini
             'root_page' => 'PagePrincipale', // backup root_page if deleted from wakka.config.php
             'wakka_name' => '', // backup wakka_name if deleted from wakka.config.php
-            'htmlPurifierActivated' => false, // TODO ectoplasme set to true
+            'htmlPurifierActivated' => true, 
             'favorites_activated' => true,
             ArchiveService::PARAMS_KEY_IN_WAKKA => [
                 ArchiveService::KEY_FOR_HIDE_CONFIG_VALUES => ArchiveService::DEFAULT_PARAMS_TO_ANONYMIZE,
@@ -446,6 +447,10 @@ class Init
      */
     public function doInstall()
     {
+
+        $_SERVER['REQUEST_URI'] = $_SERVER['REQUEST_URI'] ?? '';
+        $_SERVER['HTTP_HOST'] = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $_SESSION = $_SESSION ?? [];
         $install = new \YesWiki\Core\Controller\InstallationController();
         $install->show();
     }

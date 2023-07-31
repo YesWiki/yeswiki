@@ -369,6 +369,7 @@ return [
     'AUTHORIZE_HTML_INSERTION' => 'Autoriser l\'insertion de HTML brut',
     'AUTHORIZE_INDEX_BY_ROBOTS' => 'Autoriser l\'indexation par les moteurs de recherche',
     'CONTINUE' => 'Continuer',
+    'VARIABLE_ENV_NOT_MODIFIABLE' => 'Cette valeur est non modifiable car donnée par l\'environnement système',
 
     // setup/install.php
     'PROBLEM_WHILE_INSTALLING' => 'problème dans la procédure d\'installation',

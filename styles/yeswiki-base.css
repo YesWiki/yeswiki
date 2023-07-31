@@ -1094,3 +1094,20 @@ td.users-table-break-word {
 .dropdown-menu .login-text {
   display: inline;
 }
+.hover-edit {
+  position:relative;
+}
+.hover-edit:after {
+  content: attr(data-hover-edit-title);
+  font-size:13px;
+  font-weight:bold;
+  color:black;
+  visibility: visible;
+  position:absolute;
+  text-align:center;
+  bottom:0;
+  top:0;
+  left:0;
+  right:0;
+  background-color:#fcff82AA;
+}

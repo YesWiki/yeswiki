@@ -34,7 +34,7 @@ function baz_forms_and_lists_ids()
     foreach ($result as $form) {
         $forms[$form['bn_id_nature']] = $form['bn_label_nature'];
     }
-    return ['lists' => $lists, 'forms' => $forms];
+    return ['lists' => $lists ?? [], 'forms' => $forms ?? []];
 }
 
 function getHtmlDataAttributes($fiche, $formtab = '')

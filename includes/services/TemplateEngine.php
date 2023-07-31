@@ -80,12 +80,17 @@ class TemplateEngine
                 $this->twigLoader->addPath($path, 'core');
             }
         }
+        $debugMode = $this->wiki->config['debug'] ?? false;
 
         // Set up twig
         $this->twig = new \Twig\Environment($this->twigLoader, [
+            'debug' => $debugMode == 'yes' || $debugMode == true,
             'cache' => 'cache/templates/',
             'auto_reload' => true
         ]);
+        if ($debugMode) {
+            $this->twig->addExtension(new \Twig\Extension\DebugExtension());
+        }
 
         // Adds Globals
         $this->twig->addGlobal('request', [

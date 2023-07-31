@@ -322,6 +322,8 @@ return [
     'AUTHORIZE_HTML_INSERTION' => 'Authorize raw HTML insertion',
     'AUTHORIZE_INDEX_BY_ROBOTS' => 'Authorize search engine indexation',
     'CONTINUE' => 'Continue',
+    'VARIABLE_ENV_NOT_MODIFIABLE' => 'This value cannot be modified because it is set by the system environment',
+
     // setup/install.php
     'PROBLEM_WHILE_INSTALLING' => 'problem in the installation procedure',
     'VERIFICATION_OF_DATAS_AND_DATABASE_INSTALLATION' => 'Checking configuration\'s information and installing the database',
