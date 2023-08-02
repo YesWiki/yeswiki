@@ -24,7 +24,7 @@
           <h4 div class="title-area panel-title">
             <span v-show="entry.color" class="pellet" :style="{'background-color': entry.color}"></span>
             <i v-show="entry.icon" :class="entry.icon"></i>
-            <span class="title">{{"{{ entry.title || entry.bf_titre }}"}}</span>
+            <span class="title" v-html="entry.title || entry.bf_titre"></span>
           </h4>
           {# FLOATING AREA #}
           <entry-field :entry="entry" prop="floating" class="floating-area"></entry-field>
