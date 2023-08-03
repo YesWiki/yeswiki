@@ -194,8 +194,8 @@ document.addEventListener('DOMContentLoaded', () => {
               fieldsToExclude = Object.values(this.params.displayfields)
             }
             const url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
-              fields: 'html_output',
-              excludeFields: fieldsToExclude
+              ...{fields: 'html_output'},
+              ...(fieldsToExclude.length > 0 ? {excludeFields: fieldsToExclude} :{})
             })
             $.getJSON(url, (data) => {
               Vue.set(entry, 'html_render', (data[entry.id_fiche] && data[entry.id_fiche].html_output) ? data[entry.id_fiche].html_output : 'error')
