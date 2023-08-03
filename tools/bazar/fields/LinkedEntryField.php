@@ -25,11 +25,13 @@ class LinkedEntryField extends BazarField
     protected const FIELD_LIMIT = 4;
     protected const FIELD_TEMPLATE = 5;
     protected const FIELD_LINK_TYPE = 6;
+    protected const FIELD_LABEL = 7;
 
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
 
+        $this->label = $values[self::FIELD_LABEL] ?? '';
         $this->query = $values[self::FIELD_QUERY] ?? '';
         $this->otherParams = $values[self::FIELD_OTHER_PARAMS] ?? '';
         $this->limit = $values[self::FIELD_LIMIT] ?? '';
@@ -43,7 +45,10 @@ class LinkedEntryField extends BazarField
     {
         // Display the linked entries only on update
         if (isset($entry['id_fiche'])) {
-            return $this->renderSecuredBazarList($entry);
+            $output = $this->renderSecuredBazarList($entry);
+            return $this->isEmptyOutput($output)
+                ? $output
+                : $this->render('@bazar/inputs/linked-entry.twig',compact(['output']));
         }
     }
 
@@ -51,7 +56,10 @@ class LinkedEntryField extends BazarField
     {
         // Display the linked entries only if id_fiche and id_typeannonce
         if (!empty($entry['id_fiche']) && !empty($entry['id_typeannonce'])) {
-            return $this->renderSecuredBazarList($entry);
+            $output = $this->renderSecuredBazarList($entry);
+            return $this->isEmptyOutput($output)
+                ? $output
+                : $this->render('@bazar/fields/linked-entry.twig',compact(['output']));
         } else {
             return "" ;
         }
@@ -64,6 +72,11 @@ class LinkedEntryField extends BazarField
         $output = $this->getService(Performer::class)->run('wakka', 'formatter', ['text' => $this->getBazarListAction($entry)]);
         $tabsService->resetState($index);
         return $output;
+    }
+
+    protected function isEmptyOutput(string $output): bool
+    {
+        return empty($output) || preg_match('/<div id="[^"]+" class="bazar-list[^"]*"[^>]*>\s*<div class="list"><\/div><\/div>/',$output);
     }
 
     private function getBazarListAction($entry)

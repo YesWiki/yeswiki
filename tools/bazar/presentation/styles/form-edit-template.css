@@ -182,13 +182,6 @@
   display: none !important;
 }
 
-.listefichesliees-field .required-wrap,
-.listefichesliees-field .name-wrap,
-.listefichesliees-field .value-wrap,
-.listefichesliees-field .label-wrap {
-  display: none !important;
-}
-
 .bookmarklet-field .required-wrap {
   display: none !important;
 }
