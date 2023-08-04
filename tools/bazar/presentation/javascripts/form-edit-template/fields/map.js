@@ -166,28 +166,6 @@ export default {
               <div class="small text-muted">${_t('GEOLOCATER_GROUP_GEOLOCATIZATION_HINT')}</div>
             </div>
           `)
-        const $advancedParams = $(`
-            <div class="form-group">
-              <label></label>
-              <div class="input-wrap">
-                <button class="btn btn-info btn-xs">${_t('BAZ_FORM_ADVANCED_PARAMS')}</button>
-              </div>
-            </div>
-          `)
-        renderHelper.prependHTMLBeforeGroup(fieldData, 'autocomplete_street1', $advancedParams)
-        $advancedParams.find('button').on('click', function(event) {
-          if ($(this).hasClass('opened')) {
-            $(this).removeClass('opened')
-            toggleStates('hide')
-          } else {
-            $(this).addClass('opened')
-            toggleStates('show')
-          }
-          event.preventDefault()
-          event.stopPropagation()
-        })
-        toggleStates('hide')
-        renderHelper.prependHTMLBeforeGroup(fieldData, 'geolocate', '<div class="form-group"><hr/></div>')
       }
     }
   }
