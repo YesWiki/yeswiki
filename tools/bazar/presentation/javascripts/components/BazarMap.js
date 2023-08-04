@@ -149,10 +149,9 @@ Vue.component('BazarMap', {
           })
         )
         if (this.isDirectLinkDisplay()) {
-          const BazarMap = this
           entry.marker.on('click', () => {
             event.preventDefault()
-            window.location = entry.url + (BazarMap.$root.isInIframe() ? '/iframe' : '')
+            window.location = entry.url + (this.$root.isInIframe() ? '/iframe' : '')
           })
         } else if (this.isNewTabDisplay()) {
           entry.marker.on('click', function() {
@@ -187,7 +186,6 @@ Vue.component('BazarMap', {
       if (this.$scopedSlots.popupentrywithhtmlrender != undefined) {
         if (entry.html_render == undefined) {
           let url = ''
-          const bazarMap = this
           let excludeFields = ''
           if (this.params.popupselectedfields && this.params.popupselectedfields.length > 0) {
             const necessaryFieldsArray = this.params.popupselectedfields.split(',')
@@ -218,28 +216,16 @@ Vue.component('BazarMap', {
           }
           $.getJSON(url, (data) => {
             Vue.set(entry, 'html_render', (data[entry.id_fiche] && data[entry.id_fiche].html_output) ? data[entry.id_fiche].html_output : 'error')
-            bazarMap.$nextTick(() => {
-              /**
-               * Triggers when the component is ready
-               * */
-              bazarMap.definePopupContent(entry)
-            })
+            // Triggers when the component is ready
+            this.$nextTick(()=>this.definePopupContent(entry))
           })
         } else {
-          this.$nextTick(function() {
-            /**
-             * Triggers when the component is ready
-             * */
-            this.definePopupContent(entry)
-          })
+          // Triggers when the component is ready
+          this.$nextTick(()=>this.definePopupContent(entry))
         }
       } else if (this.$scopedSlots.popupentry != undefined) {
-        this.$nextTick(function() {
-          /**
-           * Triggers when the component is ready
-           * */
-          this.definePopupContent(entry)
-        })
+        // Triggers when the component is ready
+        this.$nextTick(()=>this.definePopupContent(entry))
       }
     },
     definePopupContent(entry) {
