@@ -214,11 +214,11 @@ Vue.component('BazarMap', {
               )
             })
           }
-          $.getJSON(url, (data) => {
-            Vue.set(entry, 'html_render', (data[entry.id_fiche] && data[entry.id_fiche].html_output) ? data[entry.id_fiche].html_output : 'error')
-            // Triggers when the component is ready
-            this.$nextTick(()=>this.definePopupContent(entry))
-          })
+          this.$root.setEntryFromUrl(entry,url)
+            .then(() => {
+              // Triggers when the component is ready
+              this.$nextTick(()=>this.definePopupContent(entry))
+            })
         } else {
           // Triggers when the component is ready
           this.$nextTick(()=>this.definePopupContent(entry))
@@ -234,7 +234,11 @@ Vue.component('BazarMap', {
         : $(this.$el).find('.popupentry-container > div').first().html()
       if (entry.marker.popup == undefined) {
         if (renderedHtml != undefined && renderedHtml.length != 0) {
-          entry.marker.bindPopup(renderedHtml, { keepInView: true }).openPopup()
+          entry.marker.bindPopup(renderedHtml, { keepInView: true })
+            .on('popupopen',()=>{
+              this.$root.loadBazarListDynamicIfNeeded(renderedHtml)
+            })
+            .openPopup()
         }
       } else {
         entry.marker.popup.openPopup()
