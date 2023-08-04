@@ -194,7 +194,7 @@ const load = (domElement) => {
             ...{fields: 'html_output'},
             ...(fieldsToExclude.length > 0 ? {excludeFields: fieldsToExclude} :{})
           })
-          this.setEntryFromUrl(entry,url)
+          this.setEntryFromUrl(entry,url).then(this.loadBazarListDynamicIfNeeded)
         }
       },
       async setEntryFromUrl(entry,url){
@@ -219,6 +219,15 @@ const load = (domElement) => {
             }
             return {}
           })
+      },
+      loadBazarListDynamicIfNeeded(html){
+        if (html.match(/<div class="bazar-list-dynamic-container/)){
+          document.querySelectorAll('.bazar-list-dynamic-container:not(.mounted)').forEach((element)=>{
+            if (!('__vue__' in element)){
+              load(element)
+            }
+          })
+        }
       },
       fieldInfo(field) {
         return this.formFields[field] || {}
