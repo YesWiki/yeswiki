@@ -236,7 +236,9 @@ Vue.component('BazarMap', {
         if (renderedHtml != undefined && renderedHtml.length != 0) {
           entry.marker.bindPopup(renderedHtml, { keepInView: true })
             .on('popupopen',()=>{
-              this.$root.loadBazarListDynamicIfNeeded(renderedHtml)
+              if (typeof this.$root?.loadBazarListDynamicIfNeeded === 'function'){
+                this.$root.loadBazarListDynamicIfNeeded(renderedHtml)
+              }
             })
             .openPopup()
         }
