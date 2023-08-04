@@ -197,10 +197,31 @@ document.addEventListener('DOMContentLoaded', () => {
               ...{fields: 'html_output'},
               ...(fieldsToExclude.length > 0 ? {excludeFields: fieldsToExclude} :{})
             })
-            $.getJSON(url, (data) => {
-              Vue.set(entry, 'html_render', (data[entry.id_fiche] && data[entry.id_fiche].html_output) ? data[entry.id_fiche].html_output : 'error')
-            })
+            this.setEntryFromUrl(entry,url)
           }
+        },
+        async setEntryFromUrl(entry,url){
+          return await this.getJSON(url)
+            .then((data)=>{
+              const html = data?.[entry.id_fiche]?.html_output ?? 'error'
+              Vue.set(entry, 'html_render',html)
+              return html
+            }).catch(()=>'error')// in case of error do nothing
+        },
+        async getJSON(url,options={}){
+          return await fetch(url,options)
+            .then((response)=>{
+                if (!response.ok){
+                    throw `response not ok ; code : ${response.status} (${response.statusText})`
+                }
+                return response.json()
+            })
+            .catch((error)=>{
+              if (wiki?.isDebugEnabled){
+                console.error(error)
+              }
+              return {}
+            })
         },
         fieldInfo(field) {
           return this.formFields[field] || {}
