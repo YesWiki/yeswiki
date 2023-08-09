@@ -154,7 +154,7 @@ class EntryManager
             // TODO call this function only when necessary
             $this->appendDisplayData($data, $semantic, $correspondance, $page);
         } elseif ($debug) {
-            trigger_error('empty \'body\'  in EntryManager::getDataFromPage for page \''. $page['tag'] .'\'', E_USER_WARNING);
+            trigger_error('empty \'body\'  in EntryManager::getDataFromPage for page \''. ($page['tag'] ?? '!!empty tag!!') .'\'', E_USER_WARNING);
         }
 
         return $data;
