@@ -732,8 +732,8 @@ class EntryManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        if (!$this->aclService->hasAccess('write', $tag)) {
-            throw new Exception(_t('BAZ_ERROR_DELETE_UNAUTHORIZED'));
+        if (!$this->wiki->UserIsOwner($tag) || !$this->wiki->UserIsAdmin()){
+            throw new Exception(_t('DELETEPAGE_NOT_DELETED')._t('DELETEPAGE_NOT_OWNER'));
         }
 
         $fiche = $this->getOne($tag);
