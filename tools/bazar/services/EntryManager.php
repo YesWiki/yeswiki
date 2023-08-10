@@ -732,7 +732,7 @@ class EntryManager
         if ($this->securityController->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        if (!$this->wiki->UserIsOwner($tag) || !$this->wiki->UserIsAdmin()){
+        if (!$this->wiki->UserIsAdmin() && !$this->wiki->UserIsOwner($tag)){
             throw new Exception(_t('DELETEPAGE_NOT_DELETED')._t('DELETEPAGE_NOT_OWNER'));
         }
 
