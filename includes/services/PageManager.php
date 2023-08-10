@@ -275,6 +275,9 @@ class PageManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         unset($this->ownersCache[$tag]);
+        if (in_array($tag,$this->pageCache)){
+            unset($this->pageCache[$tag]);
+        }
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag='{$this->dbService->escape($tag)}' OR comment_on='{$this->dbService->escape($tag)}'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag='{$this->dbService->escape($tag)}' ");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('acls')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
