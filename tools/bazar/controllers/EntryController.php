@@ -354,8 +354,8 @@ class EntryController extends YesWikiController
         $this->triggerDeletedEventIfNeeded(function()use($entryId){
             $this->entryManager->delete($entryId);
         },$entryId);
-        // WARNING : 'delete_ok' is not used
-        header('Location: ' . $this->wiki->Href('', 'BazaR', ['vue' => 'consulter', 'message' => 'delete_ok']));
+        flash(_t('BAZ_FICHE_SUPPRIMEE')." ($entryId)" , 'success');
+        $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'],false));
     }
 
     public function triggerDeletedEventIfNeeded($callback,$entryId)
