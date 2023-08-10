@@ -296,8 +296,45 @@ class Wiki
         $replace = '\\n';
         $content = str_replace($order, $replace, $content);
         $contentToAppend = "\n" . date('Y-m-d H:i:s') . ' . . . . ' . $user . ' . . . . ' . $content . "\n";
-        $page = $page ? $page : 'LogDesActionsAdministratives' . date('Ymd');
-        return $this->AppendContentToPage($contentToAppend, $page, true);
+        $tag = $page ? $page : 'LogDesActionsAdministratives' . date('Ymd');
+        $result = $this->AppendContentToPage($contentToAppend, $tag, true);
+        if (empty($page) && $result === 0){
+            try {
+                // keep only 10 revisions of this page
+                $pageManager = $this->services->get(PageManager::class);
+                $dbService = $this->services->get(DbService::class);
+                $revisions = $pageManager->getRevisions($tag);
+                if (!empty($revisions) && count($revisions) > 10){
+                    $idsToDelete = array_map(
+                        function($data){
+                            return $data['id'];
+                        },
+                        array_slice($revisions,10)
+                    );
+    
+                    $formattedIds = implode(
+                        ',',
+                        array_map(
+                            function($id) use ($dbService){
+                                return $dbService->escape($id);
+                            },
+                            $idsToDelete
+                        )
+                    );
+                    
+                    // there are some versions to remove from DB
+                    // let's build one big request, that's better...
+                    $sql = <<<SQL
+                    DELETE FROM {$dbService->prefixTable('pages')} WHERE `id` IN ($formattedIds);
+                    SQL;
+    
+                    // ... and send it !
+                    $dbService->query($sql);
+                }
+            } catch (Throwable $th) {
+            }
+        }
+        return $result;
     }
 
     /**
