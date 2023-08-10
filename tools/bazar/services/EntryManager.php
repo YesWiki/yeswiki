@@ -730,13 +730,16 @@ class EntryManager
     public function delete($tag)
     {
         if ($this->securityController->isWikiHibernated()) {
-            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!$this->wiki->UserIsOwner($tag) || !$this->wiki->UserIsAdmin()){
             throw new Exception(_t('DELETEPAGE_NOT_DELETED')._t('DELETEPAGE_NOT_OWNER'));
         }
 
         $fiche = $this->getOne($tag);
+        if (empty($fiche)){
+            throw new Exception("Not existing entry : $tag");
+        }
 
         $this->pageManager->deleteOrphaned($tag);
         $this->tripleStore->delete($tag, TripleStore::TYPE_URI, null, '', '');
