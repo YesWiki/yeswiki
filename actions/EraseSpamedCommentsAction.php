@@ -21,6 +21,8 @@
  *
 */
 use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 
 class EraseSpamedCommentsAction extends YesWikiAction
@@ -84,10 +86,14 @@ class EraseSpamedCommentsAction extends YesWikiAction
                     // (si DeleteOrphanedPage ne convient pas, soit on créé
                     // une autre, soit on la modifie
                     echo "Effacement de : " . $page . "<br />\n";
-                    $wiki->services->get(EntryController::class)->triggerDeletedEventIfNeeded(function()use($page,$wiki){
-                        $wiki->DeleteOrphanedPage($page);
-                    },$page);
-                    $deletedPages .= $page . ", ";
+                    if ($wiki->services->get(EntryManager::class)->isEntry($page)){
+                        if($wiki->services->get(EntryController::class)->delete($page)){
+                            $deletedPages .= $page . ", ";
+                        }
+                    } else {
+                        $wiki->services->get(PageManager::class)->deleteOrphaned($page);
+                        $deletedPages .= $page . ", ";
+                    }
                 }
                 $deletedPages = trim($deletedPages, ", ");
                 echo "<p><a href=\"".$wiki->Href()."\">"._t('FORM_RETURN').".</a></p>";

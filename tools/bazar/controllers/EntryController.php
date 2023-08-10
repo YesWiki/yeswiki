@@ -378,17 +378,6 @@ class EntryController extends YesWikiController
         }
     }
 
-    public function triggerDeletedEventIfNeeded($callback,$entryId)
-    {
-        if ($this->entryManager->isEntry($entryId)){
-            $entry = $this->entryManager->getOne($entryId);
-            $callback();
-            $this->triggerDeletedEvent($entryId,$entry);
-        } else {
-            $callback();
-        }
-    }
-
     protected function triggerDeletedEvent($entryId, $entry)
     {
         return $this->eventDispatcher->yesWikiDispatch('entry.deleted', [
