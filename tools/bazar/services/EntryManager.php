@@ -738,12 +738,6 @@ class EntryManager
 
         $fiche = $this->getOne($tag);
 
-        // Si besoin, on supprime l'utilisateur associé
-        if (isset($fiche['nomwiki'])) {
-            $request = 'DELETE FROM ' . $this->dbService->prefixTable('users') . ' WHERE `name` = "' . $fiche['nomwiki'] . '"';
-            $this->dbService->query($request);
-        }
-
         $this->pageManager->deleteOrphaned($tag);
         $this->tripleStore->delete($tag, TripleStore::TYPE_URI, null, '', '');
         $this->tripleStore->delete($tag, TripleStore::SOURCE_URL_URI, null, '', '');
