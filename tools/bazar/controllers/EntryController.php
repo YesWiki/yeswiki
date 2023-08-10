@@ -4,6 +4,8 @@ namespace YesWiki\Bazar\Controller;
 
 use DateInterval;
 use DateTime;
+use Exception;
+use Throwable;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Field\BazarField;
@@ -349,23 +351,30 @@ class EntryController extends YesWikiController
         ]);
     }
 
-    public function delete($entryId)
-    {
-        $this->triggerDeletedEventIfNeeded(function()use($entryId){
-            $this->entryManager->delete($entryId);
-        },$entryId);
-        // WARNING : 'delete_ok' is not used
-        header('Location: ' . $this->wiki->Href('', 'BazaR', ['vue' => 'consulter', 'message' => 'delete_ok']));
-    }
-
-    public function triggerDeletedEventIfNeeded($callback,$entryId)
+    public function delete($entryId, bool $redirectAfter = false): bool
     {
         if ($this->entryManager->isEntry($entryId)){
-            $entry = $this->entryManager->getOne($entryId);
-            $callback();
-            $this->triggerDeletedEvent($entryId,$entry);
+            try {
+                $entry = $this->entryManager->getOne($entryId);
+                $this->entryManager->delete($entryId);
+                if(!$this->entryManager->isEntry($entryId)){
+                    $this->triggerDeletedEvent($entryId,$entry);
+                    if ($redirectAfter){
+                        flash(_t('BAZ_FICHE_SUPPRIMEE')." ($entryId)" , 'success');
+                        $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'],false));
+                    }
+                    return true;
+                }
+            } catch (Throwable $th) {
+                if ($redirectAfter){
+                    flash(_t('DELETEPAGE_NOT_DELETED')." ($entryId) : {$th->getMessage()}" , 'error');
+                    $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'],false));
+                }
+                throw new Exception($th->getMessage(),$th->getCode(),$th);
+            }
+            return false;
         } else {
-            $callback();
+            throw new Exception('Not deleted because not entry'.(is_scalar($entryId) ? ' ('.strval($entryId).')' : ''));
         }
     }
 

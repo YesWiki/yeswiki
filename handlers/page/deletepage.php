@@ -3,7 +3,9 @@
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Service\PageManager;
 
 // Vérification de sécurité
 if (!defined("WIKINI_VERSION")) {
@@ -51,16 +53,32 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
         } else {
             try {
                 $csrfTokenController->checkToken('main', 'POST', 'csrf-token',false);
-
-                $this->services->get(EntryController::class)->triggerDeletedEventIfNeeded(function()use($tag){
-                    $this->DeleteOrphanedPage($tag);
-                },$tag);
-                $this->LogAdministrativeAction($this->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
-                $msg = str_replace("{tag}", $tag, _t('DELETEPAGE_MESSAGE'));
-
-                $hasBeenDeleted = true;
-                // if $incomingurl has been defined and doesn't refer to the deleted page, redirect to it
-                $redirectToIncoming = !empty($incomingurl);
+                if ($this->services->get(EntryManager::class)->isEntry($tag)){
+                    if($this->services->get(EntryController::class)->delete($tag)){
+                        $hasBeenDeleted = true;
+                    }
+                } else {
+                    $this->services->get(PageManager::class)->deleteOrphaned($tag);
+                    $this->LogAdministrativeAction($this->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
+                    $hasBeenDeleted = true;
+                }
+                if ($hasBeenDeleted){
+                    $msg = str_replace("{tag}", $tag, _t('DELETEPAGE_MESSAGE'));
+                    // if $incomingurl has been defined and doesn't refer to the deleted page, redirect to it
+                    $redirectToIncoming = !empty($incomingurl);
+                    if ($redirectToIncoming){
+                        // to prevent errors when deleting entry from BazaR page
+                        $incomingurl = str_replace(
+                            ["&action=voir_fiche&id_fiche=$tag",'&message=ajout_ok'],
+                            [''],
+                            $incomingurl);
+                    }
+                } else {
+                    $msg = $this->render('@templates/alert-message-with-back.twig',[
+                        'type' => 'danger',
+                        'message' => _t('DELETEPAGE_NOT_DELETED')
+                    ]);
+                }
             } catch (TokenNotFoundException $th) {
                 $msg = $this->render("@templates/alert-message-with-back.twig", [
                     'type' => 'danger',

@@ -122,7 +122,7 @@ class BazarAction extends YesWikiAction
                     case self::ACTION_ENTRY_EDIT:
                         return $entryController->update($_REQUEST['id_fiche']);
                     case self::ACTION_ENTRY_DELETE:
-                        return $entryController->delete($_REQUEST['id_fiche']);
+                        return $entryController->delete($_REQUEST['id_fiche'],true);
                     case self::ACTION_PUBLIER:
                         return $entryController->publish($_REQUEST['id_fiche'], true);
                     case self::ACTION_PAS_PUBLIER:

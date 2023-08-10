@@ -730,18 +730,15 @@ class EntryManager
     public function delete($tag)
     {
         if ($this->securityController->isWikiHibernated()) {
-            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        if (!$this->aclService->hasAccess('write', $tag)) {
-            throw new Exception(_t('BAZ_ERROR_DELETE_UNAUTHORIZED'));
+        if (!$this->wiki->UserIsAdmin() && !$this->wiki->UserIsOwner($tag)){
+            throw new Exception(_t('DELETEPAGE_NOT_DELETED')._t('DELETEPAGE_NOT_OWNER'));
         }
 
         $fiche = $this->getOne($tag);
-
-        // Si besoin, on supprime l'utilisateur associé
-        if (isset($fiche['nomwiki'])) {
-            $request = 'DELETE FROM ' . $this->dbService->prefixTable('users') . ' WHERE `name` = "' . $fiche['nomwiki'] . '"';
-            $this->dbService->query($request);
+        if (empty($fiche)){
+            throw new Exception("Not existing entry : $tag");
         }
 
         $this->pageManager->deleteOrphaned($tag);
