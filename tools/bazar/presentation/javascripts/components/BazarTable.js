@@ -235,7 +235,10 @@ let componentParams = {
                 ...DATATABLE_OPTIONS,
                 ...{
                   searching: true,// allow search but ue dom option not display filter
-                  dom:'lrtip', // instead of default lfrtip , with f for filter, see help : https://datatables.net/reference/option/dom
+                  dom:"<'row'<'col-sm-12'tr>>"
+                    + "<'row'<'col-sm-6'i><'col-sm-6'<'pull-right'B>>>",
+                  // instead of default lfrtip , with f for filter, see help : https://datatables.net/reference/option/dom
+                  // and removing filter
                   footerCallback: ()=>{
                     this.updateFooter()
                   },
@@ -611,14 +614,14 @@ let componentParams = {
                     entryId:'entryIdAnchor',
                     fieldName, 
                     url:'anchorUrl',
-                    color: (idx === 0 && row.color.length > 0) ? 'lightslategray' : '',
-                    icon: (idx === 0 && row.icon.length > 0) ? 'iconAnchor' : ''
+                    color: (idx === 0 && row?.color && row.color.length > 0) ? 'lightslategray' : '',
+                    icon: (idx === 0 && row?.icon && row.icon.length > 0) ? 'iconAnchor' : ''
                 })
                 return template.replace(/anchorData/g,formattedData.replace(/\n/g,'<br/>'))
-                  .replace(/entryIdAnchor/g,row.id_fiche)
-                  .replace(/anchorUrl/g,row.url)
-                  .replace(/lightslategray/g,row.color)
-                  .replace(/iconAnchor/g,row.icon)
+                  .replace(/entryIdAnchor/g,row?.id_fiche)
+                  .replace(/anchorUrl/g,row?.url)
+                  .replace(/lightslategray/g,row?.color)
+                  .replace(/iconAnchor/g,row?.icon)
                   .replace(/fieldNameAnchor/g,fieldName)
                   .replace(/anchorImageSpecificPart/g,anchorImageSpecificPart)
                   .replace(/anchorImageOther/g,anchorImageOther)
