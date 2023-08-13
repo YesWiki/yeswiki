@@ -87,7 +87,8 @@ export default {
                 ...option,
                 ...{ footer: true },
                 ...{
-                  exportOptions: (
+                  exportOptions: {
+                    ...(
                     option.extend != 'print'
                       ? {
                         orthogonal: 'sort', // use sort data for export
@@ -102,7 +103,15 @@ export default {
                             isVisible == undefined || isVisible != false
                           ) && !$(node).hasClass('not-printable')
                         }
-                      })
+                      }),
+                      ...{
+                        format: {
+                            footer: (data,column)=>{
+                                return this.dataTable.footer().to$().find(`> tr > th:nth-child(${column})`).text()
+                            }
+                        }
+                      }
+                  }
                 }
               })
             })
@@ -176,16 +185,16 @@ export default {
                 const footer = $('<tr>')
                 let displayTotal = columns.some((col)=>col?.class?.match(/sum-activated/))
                 columns.forEach((col)=>{
+                    let newElem = $('<th>')
                     if ('footer' in col && col.footer.length > 0){
                         const element = $(col.footer)
                         const isTh = $(element).prop('tagName') === 'TH'
-                        footer.append(isTh ? element : $('<th>').append(element))
+                        newElem = isTh ? element : $('<th>').append(element)
                     } else if (displayTotal) {
                         displayTotal = false
-                        footer.append($('<th>').text(this.render('sumtranslate',{},'Total')))
-                    } else {
-                        footer.append($('<th>'))
+                        newElem = $('<th>').text(this.render('sumtranslate',{},'Total'))
                     }
+                    footer.append(newElem)
                 })
                 footerNode.html(footer)
             }
