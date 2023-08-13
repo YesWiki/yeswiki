@@ -1,5 +1,6 @@
 import SpinnerLoader from './SpinnerLoader.js'
 import DynTable from './DynTable.js'
+import TemplateRenderer from './TemplateRenderer.js'
 import Waiter from '../Waiter.js'
 
 let componentName = 'BazarTable';
@@ -16,7 +17,6 @@ let componentParams = {
             forms: {},
             rows:{},
             resetFastSearch: false,
-            templatesForRendering: {},
             uuid: null
         };
     },
@@ -97,7 +97,7 @@ let componentParams = {
         },
         getAdminsButtons(entryId,entryTitle,entryUrl,candelete){
             const isExternal =this.$root.isExternalUrl({id_fiche:entryId,url:entryUrl})
-            return this.getTemplateFromSlot(
+            return TemplateRenderer.render('BazarTable',this,
                 'adminsbuttons',
                 {
                     entryId:'entryId',
@@ -105,10 +105,13 @@ let componentParams = {
                     entryUrl:'entryUrl',
                     isExternal,
                     candelete: [true,'true'].includes(candelete)
-                }
-            ).replace(/entryId/g,entryId)
-            .replace(/entryTitle/g,entryTitle)
-            .replace(/entryUrl/g,entryUrl)
+                },
+                [
+                    [/entryId/g,entryId],
+                    [/entryTitle/g,entryTitle],
+                    [/entryUrl/g,entryUrl],
+                ]
+            )
         },
         async getColumns(){
             if (this.columns.length == 0){
@@ -226,16 +229,27 @@ let componentParams = {
             return this.columns
         },
         getDeleteChekbox(targetId,itemId,disabled = false){
-            return this.getTemplateFromSlot(
+            return TemplateRenderer.render(
+                'BazarTable',
+                this,
                 'deletecheckbox',
-                {targetId:'targetId',itemId:'itemId',disabled}
-            ).replace(/targetId/g,targetId)
-            .replace(/itemId/g,itemId)
+                {targetId:'targetId',itemId:'itemId',disabled},
+                [
+                    [/targetId/g,targetId],
+                    [/itemId/g,itemId]
+                ]
+            )
         },
         getDeleteChekboxAll(targetId,selectAllType){
-            return this.getTemplateFromSlot('deletecheckboxall',{})
-                .replace(/targetId/g,targetId)
-                .replace(/selectAllType/g,selectAllType)
+            return TemplateRenderer.render(
+                'BazarTable',
+                this,
+                'deletecheckboxall',
+                {},
+                [
+                    [/targetId/g,targetId],
+                    [/selectAllType/g,selectAllType]
+                ])
         },
         async getJson(url){
             return await fetch(url)
@@ -246,29 +260,6 @@ let componentParams = {
                         throw new Error(`reponse was not ok when getting "${url}"`)
                     }
                 })
-        },
-        getTemplateFromSlot(name,params){
-            const key = name+'-'+JSON.stringify(params)
-            if (!(key in this.templatesForRendering)){
-                if (name in this.$scopedSlots){
-                    const slot = this.$scopedSlots[name]
-                    const constructor = Vue.extend({
-                        render: function(h){
-                            return h('div',{},slot(params))
-                        }
-                    })
-                    const instance = new constructor()
-                    instance.$mount()
-                    let outerHtml = '';
-                    for (let index = 0; index < instance.$el.childNodes.length; index++) {
-                        outerHtml += instance.$el.childNodes[index].outerHTML || instance.$el.childNodes[index].textContent
-                    }
-                    this.templatesForRendering[key] = outerHtml
-                } else {
-                    this.templatesForRendering[key] = ''
-                }
-            }
-            return this.templatesForRendering[key]
         },
         getUuid(){
             if (this.uuid === null){
@@ -305,7 +296,7 @@ let componentParams = {
                         ...{
                             class: className,
                             data: field.latitudeField,
-                            title: columntitles[field.latitudeField] || columntitles[titleIdx] || this.getTemplateFromSlot('latitudetext',{}),
+                            title: columntitles[field.latitudeField] || columntitles[titleIdx] || TemplateRenderer.getTemplateFromSlot('BazarTable',this,'latitudetext'),
                             firstlevel: field.propertyname,
                             render: this.renderCell({addLink,idx:titleIdx}),
                             footer: '',
@@ -317,7 +308,7 @@ let componentParams = {
                         ...{
                             class: className,
                             data: field.longitudeField,
-                            title: columntitles[field.longitudeField] || columntitles[titleIdx+1] || this.getTemplateFromSlot('longitudetext',{}),
+                            title: columntitles[field.longitudeField] || columntitles[titleIdx+1] || TemplateRenderer.getTemplateFromSlot('BazarTable',this,'longitudetext'),
                             firstlevel: field.propertyname,
                             render: this.renderCell({addLink}),
                             footer: '',
@@ -415,7 +406,7 @@ let componentParams = {
                         if (canPushColumn){
                             data.columns.push({
                                 data: propertyName,
-                                title: options.columntitles[propertyName] || this.getTemplateFromSlot(parameters[propertyName].slotName,{}),
+                                title: options.columntitles[propertyName] || TemplateRenderer.getTemplateFromSlot('BazarTable',this,parameters[propertyName].slotName),
                                 footer: ''
                             })
                         }
@@ -507,7 +498,7 @@ let componentParams = {
                         }).trim()
                     }).join(',\n')
                 }
-                const template = this.getTemplateFromSlot('rendercell',{
+                return TemplateRenderer.render('BazarTable',this,'rendercell',{
                     anchorData,
                     fieldtype,
                     addLink,
@@ -516,17 +507,19 @@ let componentParams = {
                     url:'anchorUrl',
                     color: (idx === 0 && row?.color && row.color.length > 0) ? 'lightslategray' : '',
                     icon: (idx === 0 && row?.icon && row.icon.length > 0) ? 'iconAnchor' : ''
-                })
-                return template.replace(/anchorData/g,formattedData.replace(/\n/g,'<br/>'))
-                  .replace(/entryIdAnchor/g,row?.id_fiche)
-                  .replace(/anchorUrl/g,row?.url)
-                  .replace(/lightslategray/g,row?.color)
-                  .replace(/iconAnchor/g,row?.icon)
-                  .replace(/fieldNameAnchor/g,fieldName)
-                  .replace(/anchorImageSpecificPart/g,anchorImageSpecificPart)
-                  .replace(/anchorImageOther/g,anchorImageOther)
-                  .replace(/anchorImageExt/g,anchorImageExt)
-                  .replace(/anchorOtherEntryId/g,anchorOtherEntryId)
+                },
+                [
+                  [/anchorData/g,formattedData.replace(/\n/g,'<br/>')],
+                  [/entryIdAnchor/g,row?.id_fiche],
+                  [/anchorUrl/g,row?.url],
+                  [/lightslategray/g,row?.color],
+                  [/iconAnchor/g,row?.icon],
+                  [/fieldNameAnchor/g,fieldName],
+                  [/anchorImageSpecificPart/g,anchorImageSpecificPart],
+                  [/anchorImageOther/g,anchorImageOther],
+                  [/anchorImageExt/g,anchorImageExt],
+                  [/anchorOtherEntryId/g,anchorOtherEntryId]
+                ])
             }
         },
         async sanitizedParamAsync(name){
