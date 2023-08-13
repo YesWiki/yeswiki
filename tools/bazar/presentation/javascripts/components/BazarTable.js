@@ -1,34 +1,34 @@
 import SpinnerLoader from './SpinnerLoader.js'
+import DynTable from './DynTable.js'
+import Waiter from '../Waiter.js'
 
 let componentName = 'BazarTable';
 let isVueJS3 = (typeof Vue.createApp == "function");
 
 let componentParams = {
     props: ['currentusername','params','entries','ready','root','isadmin'],
-    components: {SpinnerLoader},
+    components: {SpinnerLoader,DynTable},
     data: function() {
         return {
-            cacheResolveReject: {},
             columns: [],
-            dataTable: null,
-            displayedEntries: {},
-            fastSearch: false,
+            extraOptions: {},
             fields: {},
             forms: {},
-            isReady:{
-                fields: false,
-                params: false
-            },
+            rows:{},
+            resetFastSearch: false,
             templatesForRendering: {},
             uuid: null
         };
     },
+    computed: {
+        sumtranslate(){
+            return TemplateRenderer.render('BazarTable',this,'sumtranslate')
+        }
+    },
     methods:{
-        addRows(dataTable,columns,entries,currentusername,isadmin){
-            const entriesToAdd = entries.filter((entry)=>typeof entry === 'object' && 'id_fiche' in entry && !(entry.id_fiche in this.displayedEntries))
-            let formattedDataList = []
+        addRows(columns,entries,currentusername,isadmin){
+            const entriesToAdd = entries.filter((entry)=>entry?.id_fiche && !(entry.id_fiche in this.rows))
             entriesToAdd.forEach((entry)=>{
-                this.displayedEntries[entry.id_fiche] = entry
                 let formattedData = {}
                 columns.forEach((col)=>{
                     if (!(typeof col.data === 'string')){
@@ -78,9 +78,8 @@ let componentParams = {
                         formattedData[key] = entry[key] || ''
                     }
                 })
-                formattedDataList.push(formattedData)
+                this.$set(this.rows,entry.id_fiche,formattedData)
             })
-            dataTable.rows.add(formattedDataList)
         },
         arraysEqual(a, b) {
             if (a === b) return true
@@ -113,8 +112,8 @@ let componentParams = {
         },
         async getColumns(){
             if (this.columns.length == 0){
-                const fields = await this.waitFor('fields')
-                const params = await this.waitFor('params');
+                const fields = await Waiter.waitFor('fields',this)
+                const params = await Waiter.waitFor('params',this);
                 let columnfieldsids = this.sanitizedParam(params,this.isAdmin,'columnfieldsids')
                 let defaultcolumnwidth = this.sanitizedParam(params,this.isAdmin,'defaultcolumnwidth')
                 if (columnfieldsids.every((id)=>id.length ==0)){
@@ -200,63 +199,12 @@ let componentParams = {
                 }
 
                 this.registerSpecialFields(fieldsToRegister,true,params,data,options)
-
-                this.columns = data.columns
-            }
-            return this.columns
-        },
-        getDatatableOptions(){
-            const buttons = []
-            DATATABLE_OPTIONS.buttons.forEach((option) => {
-              buttons.push({
-                ...option,
-                ...{ footer: true },
-                ...{
-                  exportOptions: (
-                    option.extend != 'print'
-                      ? {
-                        orthogonal: 'sort', // use sort data for export
-                        columns(idx, data, node) {
-                          return !$(node).hasClass('not-export-this-col')
-                        }
-                      }
-                      : {
-                        columns(idx, data, node) {
-                          const isVisible = $(node).data('visible')
-                          return !$(node).hasClass('not-export-this-col') && (
-                            isVisible == undefined || isVisible != false
-                          ) && !$(node).hasClass('not-printable')
-                        }
-                      })
-                }
-              })
-            })
-            return {
-                ...DATATABLE_OPTIONS,
-                ...{
-                  searching: true,// allow search but ue dom option not display filter
-                  dom:"<'row'<'col-sm-12'tr>>"
-                    + "<'row'<'col-sm-6'i><'col-sm-6'<'pull-right'B>>>",
-                  // instead of default lfrtip , with f for filter, see help : https://datatables.net/reference/option/dom
-                  // and removing filter
-                  footerCallback: ()=>{
-                    this.updateFooter()
-                  },
-                  buttons
-                }
-              }
-        },
-        async getDatatable(){
-            if (this.dataTable === null){
-                // create dataTable
-                const columns = await this.getColumns()
-                const sumfieldsids = await this.sanitizedParamAsync('sumfieldsids')
                 const champField = await this.sanitizedParamAsync('champ')
                 const ordreField = await this.sanitizedParamAsync('ordre')
                 let order = (ordreField === 'desc') ? 'desc'  :'asc'
                 let firstColumnOrderable = 0
-                for (let index = 0; index < columns.length; index++) {
-                    if ('orderable' in columns[index]  && !columns[index].orderable){
+                for (let index = 0; index < data.columns.length; index++) {
+                    if ('orderable' in data.columns[index]  && !data.columns[index].orderable){
                         firstColumnOrderable += 1
                     } else {
                         break
@@ -264,26 +212,18 @@ let componentParams = {
                 }
                 let columnToOrder = firstColumnOrderable
                 if (typeof champField === 'string' && champField.length > 0){
-                    for (let index = 0; index < columns.length; index++) {
-                        if ((!('orderable' in columns[index]) || columns[index].orderable) && columns[index].data == champField){
+                    for (let index = 0; index < data.columns.length; index++) {
+                        if ((!('orderable' in data.columns[index]) || data.columns[index].orderable) && data.columns[index].data == champField){
                             columnToOrder = index
                         }
                     }
                 }
-                this.dataTable = $(this.$refs.dataTable).DataTable({
-                    ...this.getDatatableOptions(),
-                    ...{
-                        columns: columns,
-                        "scrollX": true,
+                this.extraOptions = {
                         order: [[columnToOrder,order]]
                     }
-                })
-                $(this.dataTable.table().node()).prop('id',this.getUuid())
-                if (sumfieldsids.length > 0 || this.sanitizedParamAsync('displayadmincol')){
-                    this.initFooter(columns,sumfieldsids)
-                }
+                this.columns = data.columns
             }
-            return this.dataTable
+            return this.columns
         },
         getDeleteChekbox(targetId,itemId,disabled = false){
             return this.getTemplateFromSlot(
@@ -335,26 +275,6 @@ let componentParams = {
                 this.uuid = crypto.randomUUID()
             }
             return this.uuid
-        },
-        initFooter(columns,sumfieldsids){
-            const footerNode = this.dataTable.footer().to$()
-            if (footerNode[0] !== null){
-                const footer = $('<tr>')
-                let displayTotal = sumfieldsids.length > 0
-                columns.forEach((col)=>{
-                    if ('footer' in col && col.footer.length > 0){
-                        const element = $(col.footer)
-                        const isTh = $(element).prop('tagName') === 'TH'
-                        footer.append(isTh ? element : $('<th>').append(element))
-                    } else if (displayTotal) {
-                        displayTotal = false
-                        footer.append($('<th>').text(this.getTemplateFromSlot('sumtranslate',{})))
-                    } else {
-                        footer.append($('<th>'))
-                    }
-                })
-                footerNode.html(footer)
-            }
         },
         manageError(error){
             if (wiki.isDebugEnabled){
@@ -503,33 +423,13 @@ let componentParams = {
                 })
             }
         },
-        removeRows(dataTable,newIds){
-            let entryIdsToRemove = Object.keys(this.displayedEntries).filter((id)=>!newIds.includes(id))
+        removeRows(newIds){
+            let entryIdsToRemove = Object.keys(this.rows).filter((id)=>!newIds.includes(id))
             entryIdsToRemove.forEach((id)=>{
-                if (id in this.displayedEntries){
-                    delete this.displayedEntries[id]
+                if (id in this.rows){
+                    this.$delete(this.rows,id)
                 }
             })
-            dataTable.rows((idx,data,node)=>{
-                return !('id_fiche' in data) || entryIdsToRemove.includes(data.id_fiche)
-            }).remove()
-        },
-        resetFastSearch(isOk){
-            if (isOk){
-                this.fastSearch = false
-            }
-            if (this.dataTable !== null){
-                this.$nextTick(()=>{this.dataTable.search(this.$root.search).draw()})
-            }
-        },
-        resolve(name){
-            this.isReady[name] = true
-            if (name in this.cacheResolveReject &&
-                Array.isArray(this.cacheResolveReject[name])){
-                const listOfResolveReject = this.cacheResolveReject[name]
-                this.cacheResolveReject[name] = []
-                listOfResolveReject.forEach(({resolve})=>resolve(name in this ? this[name] : null))
-            }
         },
         renderCell({fieldtype='',fieldName='',addLink=false,idx=-1}){
             return (data,type,row)=>{
@@ -630,7 +530,7 @@ let componentParams = {
             }
         },
         async sanitizedParamAsync(name){
-            return this.sanitizedParam(await this.waitFor('params'),this.isadmin,name)
+            return this.sanitizedParam(await Waiter.waitFor('params',this),this.isadmin,name)
         },
         sanitizedParam(params,isAdmin,name){
             switch (name) {
@@ -706,14 +606,6 @@ let componentParams = {
                     return params[name] || null
             }
         },
-        sanitizeValue(val) {
-          let sanitizedValue = val
-          if (Object.prototype.toString.call(val) === '[object Object]') {
-            // because if orthogonal data is defined, value is an object
-            sanitizedValue = val.display || ''
-          }
-          return (isNaN(sanitizedValue)) ? 1 : Number(sanitizedValue)
-        },
         startDelete(event){
             if (!multiDeleteService.isRunning) {
                 multiDeleteService.isRunning = true
@@ -726,52 +618,15 @@ let componentParams = {
         },
         async updateEntries(newEntries,newIds){
             const columns = await this.getColumns()
-            const dataTable = await this.getDatatable()
             const currentusername = this.currentusername
-            this.removeRows(dataTable,newIds)
-            this.addRows(dataTable,columns,newEntries,currentusername,this.isadmin)
-            this.dataTable.draw()
-        },
-        updateFastSearch(newSearch){
-            if (this.dataTable !== null){
-                this.dataTable.search(newSearch).draw()
-                this.fastSearch = true
-            }
+            this.removeRows(newIds)
+            this.addRows(columns,newEntries,currentusername,this.isadmin)
         },
         updateFieldsFromRoot(){
             this.fields = this.$root.formFields
             if (Object.keys(this.fields).length > 0){
-                this.resolve('fields')
+                Waiter.resolve('fields')
             }
-        },
-        updateFooter(){
-            if (this.dataTable !== null){
-                const activatedRows = []
-                this.dataTable.rows({ search: 'applied' }).every(function() {
-                  activatedRows.push(this.index())
-                })
-                this.dataTable.columns('.sum-activated').every((indexCol) => {
-                    let col = this.dataTable.column(indexCol)
-                    let sum = 0
-                    activatedRows.forEach((indexRow) => {
-                      const value = this.dataTable.row(indexRow).data()[col.dataSrc()]
-                      sum += this.sanitizeValue(Number(value))
-                    })
-                    this.dataTable.footer().to$().find(`> tr > th:nth-child(${indexCol+1})`).html(sum)
-                })
-            }
-        },
-        async waitFor(name){
-            if (this.isReady[name]){
-                return this[name] || null
-            }
-            if (!(name in this.cacheResolveReject)){
-                this.cacheResolveReject[name] = []
-            }
-            const promise = new Promise((resolve,reject)=>{
-                this.cacheResolveReject[name].push({resolve,reject})
-            })
-            return await promise.then((...args)=>Promise.resolve(...args)) // force .then()
         }
     },
     mounted(){
@@ -780,10 +635,9 @@ let componentParams = {
         });
         this.updateFieldsFromRoot()
         window.urlImageResizedOnError = this.$root.urlImageResizedOnError
-        this.$root.$watch('search',(newSearch)=>{this.updateFastSearch(newSearch)})
-        this.$root.$watch('ready',(newVal)=>{this.resetFastSearch(newVal)})
-        this.$root.$watch('isLoading',(newVal)=>{this.resetFastSearch(!newVal)})
-        this.$root.$watch('searchedEntries',()=>{this.resetFastSearch(true)})
+        this.$root.$watch('ready',(newVal)=>{this.resetFastSearch = newVal})
+        this.$root.$watch('isLoading',(newVal)=>{this.resetFastSearch = !newVal})
+        this.$root.$watch('searchedEntries',()=>{this.resetFastSearch = true})
     },
     watch: {
         entries(newVal, oldVal) {
@@ -796,7 +650,7 @@ let componentParams = {
             }
         },
         params() {
-            this.resolve('params')
+            Waiter.resolve('params')
         },
         ready(){
             this.sanitizedParamAsync('displayadmincol').then((displayadmincol)=>{
@@ -817,17 +671,23 @@ let componentParams = {
     },
     template: `
     <div>
-        <slot name="header" v-bind="{displayedEntries,BazarTable:this}"/>
-        <table ref="dataTable" class="table prevent-auto-init table-condensed display">
-            <tfoot v-if="sanitizedParam(params,isadmin,'sumfieldsids').length > 0 || sanitizedParam(params,isadmin,'displayadmincol')">
-                <tr></tr>
-            </tfoot>
-        </table>
+        <slot name="header" v-bind="{BazarTable:this}"/>
+        <dyn-table 
+                :columns="columns" 
+                :rows="rows" 
+                :uuid="getUuid()" 
+                :toogleResetFastSearch="resetFastSearch"
+                :extraOptions="extraOptions">
+            <template #header="{displayedRows,DynTable}"></template>
+            <template #footer="{displayedRows,DynTable}"></template>
+            <template #dom>&lt;'row'&lt;'col-sm-12'tr>>&lt;'row'&lt;'col-sm-6'i>&lt;'col-sm-6'&lt;'pull-right'B>>></template>
+            <template #sumtranslate>{{ sumtranslate }}</template>
+        </dyn-table>
         <div ref="buttondeleteall">
             <slot v-if="ready && sanitizedParam(params,isadmin,'displayadmincol')" name="deleteallselectedbutton" v-bind="{uuid:getUuid(),BazarTable:this}"/>
         </div>
-        <slot name="spinnerloader" v-bind="{displayedEntries,BazarTable:this}"/>
-        <slot name="footer" v-bind="{displayedEntries,BazarTable:this}"/>
+        <slot name="spinnerloader" v-bind="{BazarTable:this}"/>
+        <slot name="footer" v-bind="{BazarTable:this}"/>
     </div>
   `
 };
