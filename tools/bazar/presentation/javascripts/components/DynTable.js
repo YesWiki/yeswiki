@@ -107,7 +107,7 @@ export default {
                       ...{
                         format: {
                             footer: (data,column)=>{
-                                return this.dataTable.footer().to$().find(`> tr > th:nth-child(${column})`).text()
+                                return this.dataTable.footer().to$().find(`> tr > th:nth-child(${column+1})`).text()
                             }
                         }
                       }
@@ -190,7 +190,7 @@ export default {
                         const element = $(col.footer)
                         const isTh = $(element).prop('tagName') === 'TH'
                         newElem = isTh ? element : $('<th>').append(element)
-                    } else if (displayTotal) {
+                    } else if (displayTotal && !col?.class?.match(/not-export-this-col/)) {
                         displayTotal = false
                         newElem = $('<th>').text(this.render('sumtranslate',{},'Total'))
                     }
