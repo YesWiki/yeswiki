@@ -671,8 +671,6 @@ let componentParams = {
                 :uuid="getUuid()" 
                 :toogleResetFastSearch="resetFastSearch"
                 :extraOptions="extraOptions">
-            <template #header="{displayedRows,DynTable}"></template>
-            <template #footer="{displayedRows,DynTable}"></template>
             <template #dom>&lt;'row'&lt;'col-sm-12'tr>>&lt;'row'&lt;'col-sm-6'i>&lt;'col-sm-6'&lt;'pull-right'B>>></template>
             <template #sumtranslate>{{ sumtranslate }}</template>
         </dyn-table>

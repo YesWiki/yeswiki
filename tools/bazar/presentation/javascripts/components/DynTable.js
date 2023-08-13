@@ -298,13 +298,11 @@ export default {
     },
     template: `
     <div>
-        <slot name="header" v-bind="{displayedRows,DynTable:this}"></slot>
         <table ref="dataTable" class="table prevent-auto-init table-condensed display">
             <tfoot v-if="showFooter">
                 <tr></tr>
             </tfoot>
         </table>
-        <slot name="footer" v-bind="{displayedRows,DynTable:this}"/></slot>
     </div>
   `
 };
