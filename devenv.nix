@@ -1,11 +1,11 @@
-{ pkgs, config, ... }:
+{ pkgs, config, lib, ... }:
 {
+  name = "yeswiki";
+
   packages = [
-    pkgs.git
     pkgs.yarn
-    pkgs.symfony-cli
     pkgs.php82Packages.composer
-  ];
+  ] ++ lib.optionals (!config.container.isBuilding) [ pkgs.git ];
 
   certificates = [
     "yeswiki.test"
@@ -22,6 +22,9 @@
     version = "8.2";
     ini = ''
       memory_limit = 256M
+      max_upload_size = 1G
+      upload_max_filesize = 1G
+      post_max_size = 1G
     '';
     fpm.pools.web = {
       settings = {
@@ -62,6 +65,7 @@
     httpConfig = ''
     include ${pkgs.nginx}/conf/mime.types;
     default_type application/octet-stream;
+    client_max_body_size 1G;
     server {
       listen 8000 ssl http2;
       server_name yeswiki.test;
@@ -105,8 +109,8 @@
   };
 
   #TODO : make nix aware of .env file, for now it makes an error "infinite recursion encountered" for now `env.YESWIKI_NAME = config.env.YESWIKI_NAME or "Local YesWiki";` isn't working
-  # dotenv.enable = true; 
-  dotenv.disableHint = true; 
+  dotenv.enable = true; 
+  #dotenv.disableHint = true; 
 
   # Important YesWiki environment configuration keys
   env.MYSQL_HOST = "localhost";
@@ -118,13 +122,19 @@
   env.TIMEZONE = "Europe/Paris";
   env.ROOT_PAGE = "PagePrincipale";
   env.YESWIKI_NAME = "Local YesWiki";
+  #env.YESWIKI_NAME = let envvar = builtins.getEnv "YESWIKI_NAME"; in if envvar == "" then "Local YesWiki" else envvar;
   env.CONTACT_MAIL_FUNC = "smtp";
   env.CONTACT_SMTP_HOST = "127.0.0.1:1025";
   env.CONTACT_SMTP_USER = "";
   env.CONTACT_SMTP_PASS = "";
   env.DEBUG = true;
+
+  # Reminder for putting the services up
   env.GREET = "YesWiki Dev : run `devenv up` to start webserver, database and email services";
   enterShell = ''
     echo $GREET
   '';
+
+  # Exclude the source repo to make the container smaller.
+  containers."processes".copyToRoot = null; 
 }

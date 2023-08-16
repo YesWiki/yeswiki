@@ -51,7 +51,7 @@
       <div class="form-group">
         <label class="col-sm-3 control-label">{{ _t('YOUR_WEBSITE_NAME') }}</label>
         <div class="col-sm-9">
-          
+
           <input type="text" required class="form-control" name="config[wakka_name]" {% if env.wakka_name %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %} value="{{ config.wakka_name }}" />
         </div>
       </div>
@@ -226,21 +226,20 @@
               <div class="checkbox">
                 <label>
                   <input type="hidden" name="config[rewrite_mode]" value="0" />
-                  <input type="checkbox" name="config[rewrite_mode]" value="1" {% if env.rewrite_mode %} disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}{% if env.rewrite_mode == true %} checked{% endif %} /><span></span>{{ _t('ACTIVATE_REDIRECTION_MODE') }}
+                  <input type="checkbox" name="config[rewrite_mode]" value="1" {% if env.rewrite_mode %} disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}{% if env.rewrite_mode == 'true' %} checked{% endif %} /><span></span>{{ _t('ACTIVATE_REDIRECTION_MODE') }}
                 </label>
                 <p class="help-block">{{ _t('REDIRECTION_SHOULD_BE_ACTIVE_ONLY_IF_USED_IN_YESWIKI') }}.</p>
               </div>
-
               <div class="checkbox">
                 <label>
-                  <input type="checkbox" name="config[allow_raw_html]" value="1" {% if env.allow_raw_html %} disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}{% if env.allow_raw_html == true %} checked{% endif %} /><span></span>{{ _t('AUTHORIZE_HTML_INSERTION') }}
+                  <input type="checkbox" name="config[allow_raw_html]" value="1" {% if env.allow_raw_html %} disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}{% if env.allow_raw_html == 'true' or (env.allow_raw_html is not defined and config.allow_raw_html == true) %} checked{% endif %} /><span></span>{{ _t('AUTHORIZE_HTML_INSERTION') }}
                 </label>
                 <p class="help-block">{{ _t('HTML_INSERTION_HELP_TEXT') }}.</p>
               </div>
 
               <div class="checkbox">
                 <label>
-                  <input type="checkbox" name="config[allow_robots]" value="1" {% if env.allow_robots %} disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}{% if env.allow_robots == true %} checked{% endif %} /><span></span>{{ _t('AUTHORIZE_INDEX_BY_ROBOTS') }}
+                  <input type="checkbox" name="config[allow_robots]" value="1" {% if env.allow_robots %} disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}{% if env.allow_robots == 'true' %} checked{% endif %} /><span></span>{{ _t('AUTHORIZE_INDEX_BY_ROBOTS') }}
                 </label>
                 <p class="help-block">{{ _t('INDEX_HELP_TEXT') }}.</p>
               </div>

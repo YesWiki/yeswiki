@@ -71,23 +71,6 @@ function _convert($text, $fromencoding, $database = false)
                     YW_CHARSET,
                     mb_detect_encoding($text, "UTF-8, ISO-8859-1, ISO-8859-15", true)
                 );
-                //return \ForceUTF8\Encoding::toLatin1($text);
-            } else {
-                return $text;
-            }
-        } else {
-            if (@iconv('utf-8', 'utf-8//IGNORE', $text) != $text) {
-                $text = \ForceUTF8\Encoding::toUTF8($text);
-                return \ForceUTF8\Encoding::fixUTF8($text);
-            } else {
-                //return $text;
-                // if (strstr($text, 'disposition selon'))  {
-                //   var_dump(strip_tags($text), \ForceUTF8\Encoding::fixUTF8(strip_tags($text)));
-                //   exit;
-                //
-                // }
-
-                return \ForceUTF8\Encoding::fixUTF8($text);
             }
         }
     }

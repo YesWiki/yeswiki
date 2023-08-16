@@ -307,6 +307,7 @@ return [
     'OK' => 'OK',
     'FAIL' => 'ECHEC',
     'END_OF_INSTALLATION_BECAUSE_OF_ERRORS' => 'Fin de l\'installation suite à des erreurs dans la configuration',
+    'WARNING' => 'ALERTE',
 
     // setup/default.php
     'INSTALLATION_OF_YESWIKI' => 'Installation de YesWiki',
@@ -376,6 +377,7 @@ return [
     'VERIFICATION_OF_DATAS_AND_DATABASE_INSTALLATION' => 'Test de la configuration et installation de la base de données',
     'VERIFY_MYSQL_PASSWORD' => 'Vérification mot de passe MySQL',
     'INCORRECT_MYSQL_PASSWORD' => 'Le mot de passe MySQL est incorrect',
+    'INCORRECT_MYSQL_HOST_PASSWORD_OR_USER' => 'L\'adresse du serveur, le mot de passe ou l\'utilisateur MySQL indiqués ne permettent pas de se connecter à la base de données',
     'TEST_MYSQL_CONNECTION' => 'Test connexion MySQL',
     'SEARCH_FOR_DATABASE' => 'Recherche base de données',
     'GO_BACK' => 'Retour',
@@ -386,6 +388,7 @@ return [
     'CHECKING_THE_ADMIN_PASSWORD' => 'Vérification du mot de passe Administrateur',
     'CHECKING_THE_ADMIN_PASSWORD_CONFIRMATION' => 'Vérification de la concordance des deux mots de passes administrateurs',
     'CHECKING_ROOT_PAGE_NAME' => 'Vérification du nom de la page d\'accueil',
+    'NOT_POSSIBLE_TO_FIND_DATABASE' => 'Impossible de trouver la base de donnees',
     'INCORRECT_ROOT_PAGE_NAME' => 'Le nom de la page d\'accueil doit uniquement contenir des lettres non accentuées, des chiffres, \'_\', \'-\' ou \'.\'',
     'ADMIN_PASSWORD_ARE_DIFFERENT' => 'Les mots de passe Aaministrateur sont différents',
     'DATABASE_INSTALLATION' => 'Installation de la base de données',
@@ -403,7 +406,11 @@ return [
     'NEXT_STEP_WRITE_CONFIGURATION_FILE' => 'A l\'étape suivante, le programme d\'installation va essayer d\'écrire le fichier de configuration ',
     'VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE' => 'Assurez vous que le serveur web a bien le droit d\'écrire dans ce fichier, sinon vous devrez le modifier manuellement',
     'CHECK_EXISTING_TABLE_PREFIX' => 'Vérification de l\'existence du préfixe de table',
-    'TABLE_PREFIX_ALREADY_USED' => 'Le préfixe de table est déjà utilisé. Veuillez en choisir un nouveau.',
+    'TABLE_PREFIX_ALREADY_USED' => 'Le préfixe de table est déjà utilisé : ',
+    'FIND_NEW_ONE' => 'Veuillez en choisir un autre.',
+    'WRITING_ROBOT_AND_CONFIG_FILES' => 'Écriture des fichiers robots.txt et wakka.config.php',
+    'WRITE_ROBOT_TXT' => 'Écriture de robots.txt',
+    'WRITE_CONFIG' => 'Écriture de wakka.config.php',
 
     // setup/writeconfig.php
     'WRITING_CONFIGURATION_FILE' => 'écriture du fichier de configuration',
