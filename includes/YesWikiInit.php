@@ -200,8 +200,11 @@ class Init
         
         // load .env file without exception if file not found
         $dotenv = \Dotenv\Dotenv::createMutable(dirname(__DIR__));
-        self::$env = $dotenv->safeLoad();
-        
+        try {
+            self::$env = $dotenv->safeLoad();
+        } catch (\Throwable $th) {
+            exit('ERROR:<br />'.$th->getMessage());
+        }
         // mapping for newly introduced config values as environnement variables
         $mapping = [
             'YESWIKI_NAME' => 'WAKKA_NAME'

@@ -82,9 +82,11 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}users` (
   KEY `idx_signuptime` (`signuptime`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB;
 
+{% if createAdminGroupAndUser is defined %}
 # Creation of admins group and admin user
 INSERT INTO `{{prefix}}triples` (`id`, `resource`, `property`, `value`) VALUES
 (1, 'ThisWikiGroup:admins', 'http://www.wikini.net/_vocabulary/acls', '{{WikiName}}');
 
 INSERT INTO `{{prefix}}users` (`name`, `password`, `email`, `motto`, `revisioncount`, `changescount`, `doubleclickedit`, `signuptime`, `show_comments`) VALUES
-('{{WikiName}}', md5('{{password}}'), '{{email}}', '', 20, 50, 'Y',  now(), 'N');
+('{{WikiName}}', md5('{{password}}'), '{{email}}', '', 100, 100, 'Y',  now(), 'N');
+{% endif %}

@@ -1,0 +1,31 @@
+{% if databaseMessages %}
+<h2>{{ _t('VERIFICATION_OF_DATAS_AND_DATABASE_INSTALLATION') }}</h2>
+<ul class="list-group">
+{% for message in databaseMessages %}
+  <li class="list-group-item">
+    <span class="pull-right label label-{{ message.result }}">
+    {% if message.result == 'success' %}{{ _t('OK') }}{% endif%}
+    {% if message.result == 'warning' %}{{ _t('WARNING') }}{% endif%}
+    {% if message.result == 'danger' %}{{ _t('FAIL') }}{% endif%}
+    </span>
+    {{ message.output|raw }}
+  </li>
+{% endfor %}
+</ul>
+{% endif %}
+{% if filesMessages %}
+<h2>{{ _t('WRITING_ROBOT_AND_CONFIG_FILES') }}</h2>
+<ul class="list-group">
+{% for message in filesMessages %}
+  <li class="list-group-item">
+    <span class="pull-right label label-{{ message.result }}">
+    {% if message.result == 'success' %}{{ _t('OK') }}{% endif%}
+    {% if message.result == 'warning' %}{{ _t('WARNING') }}{% endif%}
+    {% if message.result == 'danger' %}{{ _t('FAIL') }}{% endif%}
+    </span>
+    {{ message.output|raw }}
+  </li>
+{% endfor %}
+</ul>
+{% endif %}
+{{ conclusion|raw }}

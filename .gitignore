@@ -36,10 +36,13 @@ robots.txt
 wakka.config.php
 cache/*
 !cache/README.md
+files
 files/*
 !files/README.md
+themes
 themes/*
 !themes/README.md
+custom
 custom/*
 !custom/.gitkeep
 private/*
@@ -115,6 +118,7 @@ docker-compose.local.yml
 adminer.php
 info.php
 TODO
+*.old
 
 # Devenv
 .devenv*
