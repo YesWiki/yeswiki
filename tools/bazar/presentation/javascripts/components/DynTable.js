@@ -8,6 +8,10 @@ export default {
             type: Array,
             required: true
         },
+        externalSearch: {
+            type: String,
+            default: ''
+        },
         extraOptions: {
             type: Object
         },
@@ -17,9 +21,6 @@ export default {
         },
         forceRefresh:{
             type: Boolean,
-            default: false
-        },
-        toogleResetFastSearch: {
             default: false
         },
         rows: {
@@ -35,7 +36,6 @@ export default {
         return {
             dataTable: null,
             displayedRows: {},
-            fastSearch: false,
             templatesForRendering: {},
         };
     },
@@ -226,14 +226,6 @@ export default {
             }
             return output
         },
-        resetFastSearch(isOk){
-            if (isOk){
-                this.fastSearch = false
-            }
-            if (this.dataTable !== null){
-                this.$nextTick(()=>{this.dataTable.search(this.$root?.search ?? '').draw()})
-            }
-        },
         sanitizeValue(val) {
           let sanitizedValue = val
           if (Object.prototype.toString.call(val) === '[object Object]') {
@@ -252,7 +244,6 @@ export default {
         updateFastSearch(newSearch){
             if (this.dataTable !== null){
                 this.dataTable.search(newSearch).draw()
-                this.fastSearch = true
             }
         },
         updateFooter(){
@@ -277,9 +268,6 @@ export default {
         $(this.element).on('dblclick',function(e) {
           return false
         })
-        if ('search' in this.$root){
-            this.$root.$watch('search',(newSearch)=>{this.updateFastSearch(newSearch)})
-        }
     },
     watch: {
         rows:{
@@ -293,6 +281,9 @@ export default {
                 Waiter.resolve('columns')
             }
         },
+        externalSearch(newSearch){
+            this.updateFastSearch(newSearch)
+        },
         forceRefresh(){
             // whatever is the value toogle
             if (this.dataTable !== null){
@@ -300,9 +291,6 @@ export default {
                 this.addRows(this.dataTable,this.columns,this.rows)
                 this.dataTable.draw()
             }
-        },
-        toogleResetFastSearch(newVal){
-            this.resetFastSearch(newVal)
         }
     },
     template: `

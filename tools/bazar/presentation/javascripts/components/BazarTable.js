@@ -12,11 +12,12 @@ let componentParams = {
     data: function() {
         return {
             columns: [],
+            dynamicTableSearch: '',
             extraOptions: {},
+            fastSearch: false,
             fields: {},
             forms: {},
             rows:{},
-            resetFastSearch: false,
             uuid: null
         };
     },
@@ -36,7 +37,7 @@ let componentParams = {
                     } else if (col.data === '==canDelete=='){
                         formattedData[col.data] = !this.$root.isExternalUrl(entry) && 
                             'owner' in entry &&
-                            (isadmin || entry.owner == currentusername)
+                            (isadmin || (currentusername.length > 0 && entry.owner == currentusername))
                     } else if (['==adminsbuttons=='].includes(col.data)) {
                         formattedData[col.data] = ''
                     } else if ('firstlevel' in col && typeof col.firstlevel === 'string' && col.firstlevel.length > 0){
@@ -628,9 +629,18 @@ let componentParams = {
         });
         this.updateFieldsFromRoot()
         window.urlImageResizedOnError = this.$root.urlImageResizedOnError
-        this.$root.$watch('ready',(newVal)=>{this.resetFastSearch = newVal})
-        this.$root.$watch('isLoading',(newVal)=>{this.resetFastSearch = !newVal})
-        this.$root.$watch('searchedEntries',()=>{this.resetFastSearch = true})
+        this.$root.$watch('isLoading',(isLoading)=>{
+            if(!isLoading){
+                this.fastSearch = false
+            }
+        })
+        this.$root.$watch('search',(newSearch)=>{
+            this.fastSearch = true
+            this.dynamicTableSearch = newSearch
+        })
+        this.$root.$watch('searchedEntries',()=>{
+            this.dynamicTableSearch = ''
+        })
     },
     watch: {
         entries(newVal, oldVal) {
@@ -669,7 +679,7 @@ let componentParams = {
                 :columns="columns" 
                 :rows="rows" 
                 :uuid="getUuid()" 
-                :toogleResetFastSearch="resetFastSearch"
+                :externalSearch="dynamicTableSearch"
                 :extraOptions="extraOptions">
             <template #dom>&lt;'row'&lt;'col-sm-12'tr>>&lt;'row'&lt;'col-sm-6'i>&lt;'col-sm-6'&lt;'pull-right'B>>></template>
             <template #sumtranslate>{{ sumtranslate }}</template>
