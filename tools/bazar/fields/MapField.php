@@ -203,18 +203,20 @@ class MapField extends BazarField
 
     protected function renderStatic($entry)
     {
+        $output = '';
         // the map is only showed on the fullpage entry view, or if $GLOBALS['showMapInEntryView'] is set to true
         if (!empty($this->showMapInEntryView) && $this->showMapInEntryView==='1' && ( $GLOBALS['wiki']->getPageTag() === $entry['id_fiche'] || (!empty($GLOBALS['showMapInEntryView']) && $GLOBALS['showMapInEntryView'] === true))) {
             $mapFieldData = $this->getMapFieldData($entry);
-
-            return $this->render("@bazar/fields/map.twig", [
-                'tag' => $entry['id_fiche'],
-                'lat' => $mapFieldData['latitude'],
-                'lon' => $mapFieldData['longitude'],
-                'mapFieldData' => $mapFieldData,
-            ]);
+            if (!empty($mapFieldData['latitude']) && !empty($mapFieldData['longitude'])) {
+                $output .= $this->render("@bazar/fields/map.twig", [
+                    'tag' => $entry['id_fiche'],
+                    'lat' => $mapFieldData['latitude'],
+                    'lon' => $mapFieldData['longitude'],
+                    'mapFieldData' => $mapFieldData,
+                ]);
+            }
         }
-        return '';
+        return $output;
     }
 
     // GETTERS. Needed to use them in the Twig syntax
