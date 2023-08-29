@@ -208,8 +208,7 @@ class MapField extends BazarField
         $showMapInListView = ($wiki->GetParameter('showmapinlistview') === '1');
         $currentUrlIsEntry = (explode('/', $_GET['wiki'])[0] === $entry['id_fiche']);
         // the map is only showed on the fullpage entry view,
-        // or if action parameter showmapinlistview is set to '1'
-        dump($wiki->GetParameter('showmapinlistview'), $this->showMapInEntryView, $currentUrlIsEntry, $showMapInListView);
+        // or if action parameter showmapinlistview is set to '1' TODO : find a way to get the right information when inside a bazarliste
         if (
             $this->showMapInEntryView === '1'
             && ($currentUrlIsEntry || $showMapInListView)
