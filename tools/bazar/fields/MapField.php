@@ -16,12 +16,14 @@ class MapField extends BazarField
     protected $longitudeField;
     protected $autocomplete;
     protected $geolocate;
+    protected $showMapInEntryView;
 
     protected const FIELD_LATITUDE_FIELD = 1;
     protected const FIELD_LONGITUDE_FIELD = 2;
     protected const FIELD_AUTOCOMPLETE_POSTALCODE = 4;
     protected const FIELD_AUTOCOMPLETE_TOWN = 5;
     protected const FIELD_AUTOCOMPLETE_OTHERS = 6;
+    protected const FIELD_SHOW_MAP_IN_ENTRY_VIEW = 7;
 
     public const DEFAULT_FIELDNAME_POSTALCODE = 'bf_code_postal';
     public const DEFAULT_FIELDNAME_STREET = 'bf_adresse';
@@ -37,6 +39,7 @@ class MapField extends BazarField
 
         $this->latitudeField = $values[self::FIELD_LATITUDE_FIELD] ?? 'bf_latitude';
         $this->longitudeField = $values[self::FIELD_LONGITUDE_FIELD] ?? 'bf_longitude';
+        $this->showMapInEntryView = $values[self::FIELD_SHOW_MAP_IN_ENTRY_VIEW] ?? '0';
         $this->autocomplete = (!empty($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) && !empty($values[self::FIELD_AUTOCOMPLETE_TOWN])) ?
             trim($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]).','.trim($values[self::FIELD_AUTOCOMPLETE_TOWN]) : null;
         $this->propertyName = 'geolocation';
@@ -67,7 +70,7 @@ class MapField extends BazarField
                 )
             );
         $data = array_map('trim', explode('|', $autocompleteFieldnames));
-        
+
         $this->geolocate = (empty($data[0]) || $data[0] != 1) ? 0 : 1;
         $street = empty($data[1]) ? self::DEFAULT_FIELDNAME_STREET : $data[1];
         $street1 = empty($data[2]) ? self::DEFAULT_FIELDNAME_STREET1 : $data[2];
@@ -104,8 +107,7 @@ class MapField extends BazarField
         return $value;
     }
 
-    protected function renderInput($entry)
-    {
+    protected function getMapFieldData($entry) {
         $value = $this->getValue($entry);
         $params = $this->getService(ParameterBagInterface::class);
 
@@ -130,21 +132,27 @@ class MapField extends BazarField
 
         $latitude = is_array($value) && !empty($value[$this->getLatitudeField()]) ? $value[$this->getLatitudeField()] : null;
         $longitude = is_array($value) && !empty($value[$this->getLongitudeField()]) ? $value[$this->getLongitudeField()] : null;
+        return [
+            'bazWheelZoom' => $params->get('baz_wheel_zoom'),
+            'bazShowNav' => $params->get('baz_show_nav'),
+            'bazMapCenterLat' => $params->get('baz_map_center_lat'),
+            'bazMapCenterLon' => $params->get('baz_map_center_lon'),
+            'bazMapZoom' => $params->get('baz_map_zoom'),
+            'mapProvider' => $mapProvider,
+            'mapProviderCredentials' => $mapProviderCredentials,
+            'latitude' => $latitude,
+            'longitude' => $longitude
+        ];
+    }
+
+    protected function renderInput($entry)
+    {
+        $mapFieldData = $this->getMapFieldData($entry);
 
         return $this->render("@bazar/inputs/map.twig", [
-            'latitude' => $latitude,
-            'longitude' => $longitude,
-            'mapFieldData' => [
-                'bazWheelZoom' => $params->get('baz_wheel_zoom'),
-                'bazShowNav' => $params->get('baz_show_nav'),
-                'bazMapCenterLat' => $params->get('baz_map_center_lat'),
-                'bazMapCenterLon' => $params->get('baz_map_center_lon'),
-                'bazMapZoom' => $params->get('baz_map_zoom'),
-                'mapProvider' => $mapProvider,
-                'mapProviderCredentials' => $mapProviderCredentials,
-                'latitude' => $latitude,
-                'longitude' => $longitude
-            ]
+            'latitude' => $mapFieldData['latitude'],
+            'longitude' => $mapFieldData['longitude'],
+            'mapFieldData' => $mapFieldData
         ]);
     }
     public function formatValuesBeforeSave($entry)
@@ -195,7 +203,18 @@ class MapField extends BazarField
 
     protected function renderStatic($entry)
     {
-        return "";
+        // the map is only showed on the fullpage entry view, or if $GLOBALS['showMapInEntryView'] is set to true
+        if (!empty($this->showMapInEntryView) && $this->showMapInEntryView==='1' && ( $GLOBALS['wiki']->getPageTag() === $entry['id_fiche'] || (!empty($GLOBALS['showMapInEntryView']) && $GLOBALS['showMapInEntryView'] === true))) {
+            $mapFieldData = $this->getMapFieldData($entry);
+
+            return $this->render("@bazar/fields/map.twig", [
+                'tag' => $entry['id_fiche'],
+                'lat' => $mapFieldData['latitude'],
+                'lon' => $mapFieldData['longitude'],
+                'mapFieldData' => $mapFieldData,
+            ]);
+        }
+        return '';
     }
 
     // GETTERS. Needed to use them in the Twig syntax

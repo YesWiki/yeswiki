@@ -38,6 +38,7 @@ return [
     'BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWN_PLACEHOLDER' => 'bf_ville',
     'BAZ_FORM_EDIT_MAP_LATITUDE' => 'Nom champ latitude',
     'BAZ_FORM_EDIT_MAP_LONGITUDE' => 'Nom champ longitude',
+    'BAZ_FORM_EDIT_SHOW_MAP_IN_ENTRY_VIEW' => 'Afficher la carte dans la fiche lors de sa visualisation',
     'BAZ_GEOLOC_NOT_FOUND' => 'Adresse non trouvée, veuillez déplacer le point ou indiquer les coordonnées GPS',
     'BAZ_FORM_ADVANCED_PARAMS' => 'Voir les paramètres avancés',
     'BAZ_MAP_ERROR' => 'Une erreur est survenue: {msg}',

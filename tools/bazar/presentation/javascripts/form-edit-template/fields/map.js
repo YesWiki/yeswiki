@@ -21,9 +21,13 @@ export default {
     geolocate: {
       label: _t('BAZ_FORM_EDIT_GEOLOCATE'),
       options: { 0: _t('NO'), 1: _t('YES') }
+    },
+    show_map_in_entry_view: {
+      label: _t('BAZ_FORM_EDIT_SHOW_MAP_IN_ENTRY_VIEW'),
+      options: { 0: _t('NO'), 1: _t('YES') }
     }
   },
-  advancedAttributes: ['read', 'write', 'semantic', 'geolocate', 'autocomplete_other', 'autocomplete_street1','autocomplete_street2'],
+  advancedAttributes: ['read', 'write', 'semantic', 'geolocate', 'autocomplete_other', 'autocomplete_street1','autocomplete_street2', 'show_map_in_entry_view'],
   // disabledAttributes: [],
   attributesMapping: {
     0: 'type',
@@ -33,6 +37,7 @@ export default {
     4: 'autocomplete_postalcode',
     5: 'autocomplete_town',
     6: 'autocomplete_other',
+    7: 'show_map_in_entry_view',
     8: 'required'
   },
   renderInput(fieldData) {
