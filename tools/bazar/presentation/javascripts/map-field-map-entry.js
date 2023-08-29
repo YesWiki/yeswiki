@@ -1,17 +1,41 @@
 window.addEventListener('load', function(event) {
   let entryMaps = Array();
-  $('.map-entry').each(function( index, value) {
-    let $this = $(this);
-    let mapFieldData = $this.data('map-field');
-    // Init leaflet map
-    entryMaps[index] = new L.Map($this.attr('id'), {
-      scrollWheelZoom: mapFieldData.bazWheelZoom,
-      zoomControl: mapFieldData.bazShowNav
-    });
-    var provider = L.tileLayer.provider(mapFieldData.mapProvider, mapFieldData.mapProviderCredentials);
-    entryMaps[index].addLayer(provider);
+  const options = {
+    root: document.body,
+    rootMargin: '20px',
+    threshold: 0
+  }
 
-    entryMaps[index].setView(new L.LatLng(mapFieldData.latitude, mapFieldData.longitude), mapFieldData.bazMapZoom);
-    L.marker([mapFieldData.latitude, mapFieldData.longitude]).addTo(entryMaps[index] );
-  })
+  function observerCallback(entries) {
+    entries.forEach(entry => {
+      let id = entry.target.getAttribute('id')
+
+      // Lazyload leaflet map when intersecting
+      if (entry.isIntersecting && !entryMaps[id]) {
+        let mapData = JSON.parse(entry.target.getAttribute('data-map-field'));
+        // Init leaflet map
+        entryMaps[id] = new L.Map(id, {
+          scrollWheelZoom: mapData.bazWheelZoom,
+          zoomControl: mapData.bazShowNav
+        });
+        var provider = L.tileLayer.provider(
+          mapData.mapProvider,
+          mapData.mapProviderCredentials
+        );
+        entryMaps[id].addLayer(provider);
+
+        let point = new L.LatLng(mapData.latitude, mapData.longitude);
+        entryMaps[id].setView(
+          point,
+          mapData.bazMapZoom
+        );
+        L.marker(point).addTo(entryMaps[id] );
+      }
+    });
+  }
+
+  let observer = new IntersectionObserver(observerCallback, options);
+  document.querySelectorAll('.map-entry').forEach(function (map) {
+    observer.observe(map);
+  });
 });

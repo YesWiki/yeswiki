@@ -205,13 +205,27 @@ class MapField extends BazarField
     {
         $output = '';
         $wiki = $this->getWiki();
-        $showMapInListView = ($wiki->GetParameter('showmapinlistview') === '1');
-        $currentUrlIsEntry = (explode('/', $_GET['wiki'])[0] === $entry['id_fiche']);
-        // the map is only showed on the fullpage entry view,
-        // or if action parameter showmapinlistview is set to '1' TODO : find a way to get the right information when inside a bazarliste
+
+        // check the last used action containing the good form id
+        $lastAction = end(
+            array_filter($wiki->actionObjects, function($v) use ($entry) {
+                return $v['vars']['id'] == $entry['id_typeannonce'];
+            })
+        );
+        $showMapInListView = false;
         if (
-            $this->showMapInEntryView === '1'
-            && ($currentUrlIsEntry || $showMapInListView)
+          !empty($lastAction['vars']['showmapinlistview'])
+          && $lastAction['vars']['showmapinlistview'] === '1'
+        ) {
+            $showMapInListView = true;
+        };
+        $currentUrlIsEntry = (explode('/', $_GET['wiki'])[0] === $entry['id_fiche']);
+
+        // the map is only showed on the fullpage entry view,
+        // or if action parameter showmapinlistview is set to '1'
+        if (
+            $this->showMapInEntryView === '1' && $currentUrlIsEntry
+            || $showMapInListView
         ) {
             $mapFieldData = $this->getMapFieldData($entry);
             if (!empty($mapFieldData['latitude']) && !empty($mapFieldData['longitude'])) {
