@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Core\Service\AssetsManager;
 
 /**
  * @Field({"map", "carte_google"})
@@ -16,12 +17,14 @@ class MapField extends BazarField
     protected $longitudeField;
     protected $autocomplete;
     protected $geolocate;
+    protected $showMapInEntryView;
 
     protected const FIELD_LATITUDE_FIELD = 1;
     protected const FIELD_LONGITUDE_FIELD = 2;
     protected const FIELD_AUTOCOMPLETE_POSTALCODE = 4;
     protected const FIELD_AUTOCOMPLETE_TOWN = 5;
     protected const FIELD_AUTOCOMPLETE_OTHERS = 6;
+    protected const FIELD_SHOW_MAP_IN_ENTRY_VIEW = 7;
 
     public const DEFAULT_FIELDNAME_POSTALCODE = 'bf_code_postal';
     public const DEFAULT_FIELDNAME_STREET = 'bf_adresse';
@@ -37,6 +40,7 @@ class MapField extends BazarField
 
         $this->latitudeField = $values[self::FIELD_LATITUDE_FIELD] ?? 'bf_latitude';
         $this->longitudeField = $values[self::FIELD_LONGITUDE_FIELD] ?? 'bf_longitude';
+        $this->showMapInEntryView = $values[self::FIELD_SHOW_MAP_IN_ENTRY_VIEW] ?? '0';
         $this->autocomplete = (!empty($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) && !empty($values[self::FIELD_AUTOCOMPLETE_TOWN])) ?
             trim($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]).','.trim($values[self::FIELD_AUTOCOMPLETE_TOWN]) : null;
         $this->propertyName = 'geolocation';
@@ -67,7 +71,7 @@ class MapField extends BazarField
                 )
             );
         $data = array_map('trim', explode('|', $autocompleteFieldnames));
-        
+
         $this->geolocate = (empty($data[0]) || $data[0] != 1) ? 0 : 1;
         $street = empty($data[1]) ? self::DEFAULT_FIELDNAME_STREET : $data[1];
         $street1 = empty($data[2]) ? self::DEFAULT_FIELDNAME_STREET1 : $data[2];
@@ -104,8 +108,7 @@ class MapField extends BazarField
         return $value;
     }
 
-    protected function renderInput($entry)
-    {
+    protected function getMapFieldData($entry) {
         $value = $this->getValue($entry);
         $params = $this->getService(ParameterBagInterface::class);
 
@@ -130,21 +133,27 @@ class MapField extends BazarField
 
         $latitude = is_array($value) && !empty($value[$this->getLatitudeField()]) ? $value[$this->getLatitudeField()] : null;
         $longitude = is_array($value) && !empty($value[$this->getLongitudeField()]) ? $value[$this->getLongitudeField()] : null;
+        return [
+            'bazWheelZoom' => $params->get('baz_wheel_zoom'),
+            'bazShowNav' => $params->get('baz_show_nav'),
+            'bazMapCenterLat' => $params->get('baz_map_center_lat'),
+            'bazMapCenterLon' => $params->get('baz_map_center_lon'),
+            'bazMapZoom' => $params->get('baz_map_zoom'),
+            'mapProvider' => $mapProvider,
+            'mapProviderCredentials' => $mapProviderCredentials,
+            'latitude' => $latitude,
+            'longitude' => $longitude
+        ];
+    }
+
+    protected function renderInput($entry)
+    {
+        $mapFieldData = $this->getMapFieldData($entry);
 
         return $this->render("@bazar/inputs/map.twig", [
-            'latitude' => $latitude,
-            'longitude' => $longitude,
-            'mapFieldData' => [
-                'bazWheelZoom' => $params->get('baz_wheel_zoom'),
-                'bazShowNav' => $params->get('baz_show_nav'),
-                'bazMapCenterLat' => $params->get('baz_map_center_lat'),
-                'bazMapCenterLon' => $params->get('baz_map_center_lon'),
-                'bazMapZoom' => $params->get('baz_map_zoom'),
-                'mapProvider' => $mapProvider,
-                'mapProviderCredentials' => $mapProviderCredentials,
-                'latitude' => $latitude,
-                'longitude' => $longitude
-            ]
+            'latitude' => $mapFieldData['latitude'],
+            'longitude' => $mapFieldData['longitude'],
+            'mapFieldData' => $mapFieldData
         ]);
     }
     public function formatValuesBeforeSave($entry)
@@ -195,7 +204,43 @@ class MapField extends BazarField
 
     protected function renderStatic($entry)
     {
-        return "";
+        $output = '';
+        $wiki = $this->getWiki();
+
+        // check the last used action containing the good form id
+        $lastAction = end(
+            array_filter($wiki->actionObjects, function($v) use ($entry) {
+                return $v['vars']['id'] == $entry['id_typeannonce'];
+            })
+        );
+        $showMapInDynamicListView = (isset($_GET['showmapinlistview']) && $_GET['showmapinlistview'] === '1');
+        $showMapInListView = false;
+        if (
+          // classic list would perform action
+          (!empty($lastAction['vars']['showmapinlistview'])
+          && $lastAction['vars']['showmapinlistview'] === '1')
+          // dynamic list calls api and use get param showmapinlistview
+          || $showMapInDynamicListView
+        ) {
+            $showMapInListView = true;
+        };
+        $currentUrlIsEntry = (explode('/', $_GET['wiki'])[0] === $entry['id_fiche']);
+
+        // the map is only showed on the fullpage entry view,
+        // or if action parameter showmapinlistview is set to '1'
+        if (
+            $this->showMapInEntryView === '1' && $currentUrlIsEntry
+            || $showMapInListView
+        ) {
+            $mapFieldData = $this->getMapFieldData($entry);
+            if (!empty($mapFieldData['latitude']) && !empty($mapFieldData['longitude'])) {
+                $output .= $this->render("@bazar/fields/map.twig", [
+                    'tag' => $entry['id_fiche'],
+                    'mapFieldData' => $mapFieldData,
+                ]);
+            }
+        }
+        return $output;
     }
 
     // GETTERS. Needed to use them in the Twig syntax

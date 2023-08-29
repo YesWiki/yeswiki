@@ -4,6 +4,7 @@ import PopupEntryField from './components/PopupEntryField.js'
 import SpinnerLoader from './components/SpinnerLoader.js'
 import ModalEntry from './components/ModalEntry.js'
 import BazarSearch from './components/BazarSearch.js'
+import { initEntryMaps } from './map-field-map-entry.js'
 
 const load = (domElement) => {
   new Vue({
@@ -185,23 +186,28 @@ const load = (domElement) => {
         } else {
           let fieldsToExclude = []
           if (this.params.template == 'list' && this.params.displayfields) {
-          // In list template (collapsible panels with header and body), the rendered entry
-          // is displayed in the body section and we don't want to show the fields
-          // that are already displayed in the panel header
+            // In list template (collapsible panels with header and body), the rendered entry
+            // is displayed in the body section and we don't want to show the fields
+            // that are already displayed in the panel header
             fieldsToExclude = Object.values(this.params.displayfields)
           }
           const url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
             ...{fields: 'html_output'},
-            ...(fieldsToExclude.length > 0 ? {excludeFields: fieldsToExclude} :{})
+            ...(fieldsToExclude.length > 0 ? {excludeFields: fieldsToExclude} :{}),
+            ...(this.params.showmapinlistview ? {showmapinlistview: this.params.showmapinlistview} :{})
           })
-          this.setEntryFromUrl(entry,url).then(this.loadBazarListDynamicIfNeeded)
+          this.setEntryFromUrl(entry, url)
+            .then((html) => {
+              this.loadBazarListDynamicIfNeeded(html)
+              initEntryMaps(this.$refs.entriesContainer)
+            })
         }
       },
       async setEntryFromUrl(entry,url){
         return await this.getJSON(url)
           .then((data)=>{
             const html = data?.[entry.id_fiche]?.html_output ?? 'error'
-            Vue.set(entry, 'html_render',html)
+            Vue.set(entry, 'html_render', html)
             return html
           }).catch(()=>'error')// in case of error do nothing
       },

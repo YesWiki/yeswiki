@@ -29,6 +29,10 @@
 #map label {
   width: auto !important; display:inline !important;
 }
+.map-entry {
+  width:100%;
+  min-height: 220px;
+}
 
 .required_symbol, .symbole_obligatoire {
 color:#E9322D;

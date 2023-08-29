@@ -62,14 +62,7 @@ class Wiki
     public $routes = array();
     public $user; // depreciated TODO remove it for ectoplasme : replaced by userManager
     public $services;
-
-    /**
-     * An array containing all the actions that are implemented by an object
-     *
-     * @access private
-     */
-    public $actionObjects;
-
+    public $actionObjects = array(); // keep track of actions performed
     public $pageCacheFormatted = array();
     public $_groupsCache = array();
     public $_actionsAclsCache = array();
@@ -311,7 +304,7 @@ class Wiki
                         },
                         array_slice($revisions,10)
                     );
-    
+
                     $formattedIds = implode(
                         ',',
                         array_map(
@@ -321,13 +314,13 @@ class Wiki
                             $idsToDelete
                         )
                     );
-                    
+
                     // there are some versions to remove from DB
                     // let's build one big request, that's better...
                     $sql = <<<SQL
                     DELETE FROM {$dbService->prefixTable('pages')} WHERE `id` IN ($formattedIds);
                     SQL;
-    
+
                     // ... and send it !
                     $dbService->query($sql);
                 }
@@ -350,12 +343,12 @@ class Wiki
             $wnPages = $this->GetConfigValue('table_prefix') . 'pages';
             $daysFormatted = mysqli_real_escape_string($this->dblink, $days);
             $sql = <<<SQL
-            SELECT DISTINCT a.id FROM $wnPages a,$wnPages b 
-                WHERE a.latest = 'N' 
+            SELECT DISTINCT a.id FROM $wnPages a,$wnPages b
+                WHERE a.latest = 'N'
                     AND b.latest = 'N'
-                    AND a.time < date_sub(now(), INTERVAL '$daysFormatted' DAY) 
-                    AND a.tag = b.tag 
-                    AND a.time < b.time 
+                    AND a.time < date_sub(now(), INTERVAL '$daysFormatted' DAY)
+                    AND a.tag = b.tag
+                    AND a.time < b.time
                     AND b.time < date_sub(now(), INTERVAL '$daysFormatted' DAY);
             SQL;
             $ids = $this->LoadAll($sql);
@@ -746,7 +739,6 @@ class Wiki
     {
         $cmd = trim($action);
         $cmd = str_replace("\n", ' ', $cmd);
-
         // extract $action and $vars_temp ("raw" attributes)
         if (! preg_match("/^([a-zA-Z0-9_-]+)\/?(.*)$/", $cmd, $matches)) {
             return '<div class="alert alert-danger">' . _t('INVALID_ACTION') . ' &quot;' . htmlspecialchars($cmd, ENT_COMPAT, YW_CHARSET) . '&quot;</div>' . "\n";
@@ -764,6 +756,11 @@ class Wiki
         if (!$forceLinkTracking) {
             $this->StopLinkTracking();
         }
+        // keep track of actions and their parameters
+        array_push($this->actionObjects, [
+            'action' => $action,
+            'vars' => $vars,
+        ]);
         $result = $this->services->get(Performer::class)->run($action, 'action', $vars);
         $this->StartLinkTracking(); // shouldn't we restore the previous status ?
         return $result;
