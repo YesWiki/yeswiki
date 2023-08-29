@@ -50,6 +50,8 @@ return [
     "AB_bazar_commons2_resetfiltersbutton_label" => "Bouton pour réinitialiser les filtres",
     "AB_bazar_commons2_showexportbuttons" => "Boutons d'export (CSV, JSON...)",
     "AB_bazar_commons2_title" => "Filtres / Facettes",
+    "AB_bazar_commons2_showmapinlistview_label" => "Présenter une carte associée à chaque fiche",
+    "AB_bazar_commons2_showmapinlistview_hint" => "Si des coordonnées sont présentes dans la fiche et l'option est activée dans le champ géolocalisation",
     "AB_bazar_facettes_btn-label-add" => "Ajouter Une Facette",
     "AB_bazar_facettes_field_label" => "Champ",
     "AB_bazar_facettes_title_label" => "Titre",

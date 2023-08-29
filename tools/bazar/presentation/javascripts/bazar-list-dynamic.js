@@ -194,7 +194,7 @@ const load = (domElement) => {
             ...{fields: 'html_output'},
             ...(fieldsToExclude.length > 0 ? {excludeFields: fieldsToExclude} :{})
           })
-          this.setEntryFromUrl(entry,url).then(this.loadBazarListDynamicIfNeeded)
+          this.setEntryFromUrl(entry,url).then(this.loadBazarListDynamicIfNeeded).then(window.dispatchEvent(new Event('resize')))
         }
       },
       async setEntryFromUrl(entry,url){

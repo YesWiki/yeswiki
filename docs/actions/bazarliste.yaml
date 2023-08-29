@@ -14,10 +14,10 @@ actions:
         label: _t(AB_bazar_commons_search_label)
         type: list
         icon: search
-        options:          
+        options:
           'true': _t(AB_attach_yes)
           'false': _t(AB_attach_no)
-          dynamic: 
+          dynamic:
             label: _t(AB_bazar_commons_search_label_dynamic)
             showif: dynamic
       searchfields:
@@ -55,7 +55,7 @@ actions:
           - bazarcarousel
           - bazarcalendar
           - bazartableau
-      
+
       colorfield:
         label: _t(AB_bazar_commons_colorfield_label)
         type: form-field
@@ -139,6 +139,18 @@ actions:
         showExceptFor:
           - bazarcarousel
           - bazarcalendar
+      showmapinlistview:
+        label: _t(AB_bazar_commons2_showmapinlistview_label)
+        hint: _t(AB_bazar_commons2_showmapinlistview_hint)
+        type: checkbox
+        advanced: true
+        default: "0"
+        checkedvalue: "1"
+        uncheckedvalue: "0"
+        showExceptFor:
+          - bazarcarto
+          - bazarmapandtable
+          - bazargogocarto
 
   # -------------------------------------
   # Champs Communs concernant les filtres
@@ -197,7 +209,7 @@ actions:
         hint: _t(AB_bazar_commons2_champ_hint)
         doclink: https://yeswiki.net/?DocQuery
         type: form-field
-        extraFields: 
+        extraFields:
           - id_typeannonce
           - date_creation_fiche
           - date_maj_fiche
@@ -283,7 +295,7 @@ actions:
             default: bf_titre
           subtitle:
             type: form-field
-            extraFields: 
+            extraFields:
               - owner
               - date_creation_fiche
               - date_maj_fiche
@@ -291,7 +303,7 @@ actions:
             default: ""
           floating:
             type: form-field
-            extraFields: 
+            extraFields:
               - owner
               - date_creation_fiche
               - date_maj_fiche
@@ -299,7 +311,7 @@ actions:
             default: ""
           visual:
             type: form-field
-            extraFields: 
+            extraFields:
               - owner
               - date_creation_fiche
               - date_maj_fiche
@@ -322,7 +334,7 @@ actions:
         label: _t(AB_bazarcard_style_label)
         icon: paint-brush
         default: vertical
-        options:          
+        options:
           vertical: _t(AB_bazarcard_style_vertical)
           square: _t(AB_bazarcard_style_square)
           horizontal: _t(AB_bazarcard_style_horizontal)
@@ -359,7 +371,7 @@ actions:
             extraFields: owner
             label: _t(AB_bazarliste_displayfields_floating_label)
             default: ""
-      
+
       advanced:
         type: divider
         label: _t(AB_advanced)
@@ -454,7 +466,7 @@ actions:
           modal: _t(AB_bazarcarto_entrydisplay_option_modal)
           newtab: _t(AB_bazarcarto_entrydisplay_option_newtab)
           popup: _t(AB_bazarcarto_entrydisplay_option_popup)
-      popuptemplate: 
+      popuptemplate:
         label: _t(AB_bazarcarto_popuptemplate_label)
         type: list
         value: '_map_popup_html.twig'
@@ -463,7 +475,7 @@ actions:
           '_map_popup_html.twig': _t(AB_bazarcarto_popuptemplate_entry_from_html)
           '_map_popup_from_data.twig': _t(AB_bazarcarto_popuptemplate_entry_from_data)
           'custom': _t(AB_bazarcarto_popuptemplate_custom)
-        showif: 
+        showif:
           dynamic: true
           entrydisplay: 'popup'
       popupcustomtemplate:
@@ -472,7 +484,7 @@ actions:
         value: 'custom_map_popup.twig'
         hint: _t(AB_bazarcarto_popupcustomtemplate_hint)
         advanced: true
-        showif: 
+        showif:
           dynamic: true
           entrydisplay: 'popup'
           popuptemplate: 'custom'
@@ -482,7 +494,7 @@ actions:
         multiple: true
         advanced: true
         default: ""
-        showif: 
+        showif:
           dynamic: true
           entrydisplay: 'popup'
           popuptemplate: '_map_popup_html.twig|custom'
@@ -492,7 +504,7 @@ actions:
         multiple: true
         advanced: true
         value: "bf_titre,imagebf_image"
-        showif: 
+        showif:
           dynamic: true
           entrydisplay: 'popup'
           popuptemplate: '_map_popup_from_data.twig|custom'
@@ -555,7 +567,7 @@ actions:
         type: list
         label: _t(AB_bazarcalendar_showlist_label)
         default: 'year'
-        options: 
+        options:
           week: _t(AB_bazarcalendar_showlist_week)
           month: _t(AB_bazarcalendar_showlist_month)
           year: _t(AB_bazarcalendar_showlist_year)
@@ -595,14 +607,14 @@ actions:
         subproperties:
           bf_date_debut_evenement:
             type: form-field
-            extraFields: 
+            extraFields:
               - date_creation_fiche
               - date_maj_fiche
             label: _t(AB_bazar_bf_date_debut_evenement_label)
             default: ""
           bf_date_fin_evenement:
             type: form-field
-            extraFields: 
+            extraFields:
               - date_creation_fiche
               - date_maj_fiche
             label: _t(AB_bazar_bf_date_fin_evenement_label)
@@ -618,7 +630,7 @@ actions:
         default:
         advanced: true
         checkedvalue: "1"
-        uncheckedvalue:      
+        uncheckedvalue:
 
   bazarannuaire:
     label: _t(AB_bazarannuaire_label)
@@ -639,7 +651,7 @@ actions:
         subproperties:
           bf_date_debut_evenement:
             type: form-field
-            extraFields: 
+            extraFields:
               - date_creation_fiche
               - date_maj_fiche
             label: _t(AB_bazar_bf_date_debut_evenement_label)
@@ -760,7 +772,7 @@ actions:
         subproperties:
           date_creation_fiche:
             type: form-field
-            extraFields: 
+            extraFields:
               - date_creation_fiche
               - date_maj_fiche
             label: _t(AB_bazarblog_date_creation_fiche_label)
@@ -811,7 +823,7 @@ actions:
         hint: _t(AB_bazartableau_columnfieldsids_hint)
         multiple: true
         default: ''
-        extraFields: 
+        extraFields:
           - id_typeannonce
           - date_creation_fiche
           - date_maj_fiche
@@ -849,7 +861,7 @@ actions:
         label: _t(AB_bazartableau_displayadmincol_label)
         hint: _t(AB_bazartableau_displayadmincol_hint)
         default: ''
-        options: 
+        options:
           '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
@@ -858,7 +870,7 @@ actions:
         label: _t(AB_bazartableau_displaycreationdate_label)
         advanced: true
         default: ''
-        options: 
+        options:
           '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
@@ -867,7 +879,7 @@ actions:
         label: _t(AB_bazartableau_displaylastchangedate_label)
         advanced: true
         default: ''
-        options: 
+        options:
           '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
@@ -876,7 +888,7 @@ actions:
         label: _t(AB_bazartableau_displayowner_label)
         advanced: true
         default: ''
-        options: 
+        options:
           '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
@@ -986,7 +998,7 @@ actions:
           modal: _t(AB_bazarcarto_entrydisplay_option_modal)
           newtab: _t(AB_bazarcarto_entrydisplay_option_newtab)
           popup: _t(AB_bazarcarto_entrydisplay_option_popup)
-      popuptemplate: 
+      popuptemplate:
         label: _t(AB_bazarcarto_popuptemplate_label)
         type: list
         value: '_map_popup_html.twig'
@@ -995,7 +1007,7 @@ actions:
           '_map_popup_html.twig': _t(AB_bazarcarto_popuptemplate_entry_from_html)
           '_map_popup_from_data.twig': _t(AB_bazarcarto_popuptemplate_entry_from_data)
           'custom': _t(AB_bazarcarto_popuptemplate_custom)
-        showif: 
+        showif:
           dynamic: true
           entrydisplay: 'popup'
       popupcustomtemplate:
@@ -1004,7 +1016,7 @@ actions:
         value: 'custom_map_popup.twig'
         hint: _t(AB_bazarcarto_popupcustomtemplate_hint)
         advanced: true
-        showif: 
+        showif:
           dynamic: true
           entrydisplay: 'popup'
           popuptemplate: 'custom'
@@ -1014,7 +1026,7 @@ actions:
         multiple: true
         advanced: true
         default: ""
-        showif: 
+        showif:
           dynamic: true
           entrydisplay: 'popup'
           popuptemplate: '_map_popup_html.twig|custom'
@@ -1024,7 +1036,7 @@ actions:
         multiple: true
         advanced: true
         value: "bf_titre,imagebf_image"
-        showif: 
+        showif:
           dynamic: true
           entrydisplay: 'popup'
           popuptemplate: '_map_popup_from_data.twig|custom'
@@ -1105,7 +1117,7 @@ actions:
         label: _t(AB_bazartableau_displayadmincol_label)
         hint: _t(AB_bazartableau_displayadmincol_hint)
         default: ''
-        options: 
+        options:
           '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
@@ -1114,7 +1126,7 @@ actions:
         label: _t(AB_bazartableau_displaycreationdate_label)
         advanced: true
         default: ''
-        options: 
+        options:
           '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
@@ -1123,7 +1135,7 @@ actions:
         label: _t(AB_bazartableau_displaylastchangedate_label)
         advanced: true
         default: ''
-        options: 
+        options:
           '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
@@ -1132,7 +1144,7 @@ actions:
         label: _t(AB_bazartableau_displayowner_label)
         advanced: true
         default: ''
-        options: 
+        options:
           '': _t(NO)
           yes: _t(YES)
           onlyadmins: _t(AB_bazartableau_displayadmincol_onlyadmins)
