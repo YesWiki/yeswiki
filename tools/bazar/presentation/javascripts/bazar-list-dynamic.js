@@ -192,16 +192,57 @@ const load = (domElement) => {
           }
           const url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
             ...{fields: 'html_output'},
-            ...(fieldsToExclude.length > 0 ? {excludeFields: fieldsToExclude} :{})
+            ...(fieldsToExclude.length > 0 ? {excludeFields: fieldsToExclude} :{}),
+            ...(this.params.showmapinlistview ? {showmapinlistview: this.params.showmapinlistview} :{})
           })
-          this.setEntryFromUrl(entry,url).then(this.loadBazarListDynamicIfNeeded).then(window.dispatchEvent(new Event('resize')))
+          let uid = this._uid
+          let newIds = Array();
+          this.setEntryFromUrl(entry, url)
+            .then(this.loadBazarListDynamicIfNeeded)
+            .then(function() {
+              // change entry map ids to make them unique if more then one
+              // map of same entry in page (in case of several bazarliste calls )
+              let wrapper = document.createElement('div');
+              wrapper.innerHTML= entry.html_render;
+              let htmlRender = wrapper.firstChild;
+              let newMaps = htmlRender.querySelectorAll('.map-entry');
+              newMaps.forEach(newMap => {
+                newMap.id = 'bazarlist-'+uid+'-'+newMap.id
+                newIds.push(newMap.id)
+              });
+              entry.html_render = htmlRender.outerHTML
+            }).then(function() {
+              // init entry maps
+              newIds.forEach(newId => {
+                let newMap = document.getElementById(newId)
+
+                let mapData = JSON.parse(newMap.getAttribute('data-map-field'));
+                // Init leaflet entry map
+                entryMaps[newMap.id] = new L.Map(newMap.id, {
+                  scrollWheelZoom: mapData.bazWheelZoom,
+                  zoomControl: mapData.bazShowNav
+                });
+                var provider = L.tileLayer.provider(
+                  mapData.mapProvider,
+                  mapData.mapProviderCredentials
+                );
+                entryMaps[newMap.id].addLayer(provider);
+
+                let point = new L.LatLng(mapData.latitude, mapData.longitude);
+                entryMaps[newMap.id].setView(
+                  point,
+                  mapData.bazMapZoom
+                );
+                L.marker(point).addTo(entryMaps[newMap.id] );
+              });
+            })
         }
       },
       async setEntryFromUrl(entry,url){
         return await this.getJSON(url)
           .then((data)=>{
             const html = data?.[entry.id_fiche]?.html_output ?? 'error'
-            Vue.set(entry, 'html_render',html)
+            Vue.set(entry, 'html_render', html)
             return html
           }).catch(()=>'error')// in case of error do nothing
       },

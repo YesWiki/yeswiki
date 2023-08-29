@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Core\Service\AssetsManager;
 
 /**
  * @Field({"map", "carte_google"})
@@ -212,10 +213,14 @@ class MapField extends BazarField
                 return $v['vars']['id'] == $entry['id_typeannonce'];
             })
         );
+        $showMapInDynamicListView = (isset($_GET['showmapinlistview']) && $_GET['showmapinlistview'] === '1');
         $showMapInListView = false;
         if (
-          !empty($lastAction['vars']['showmapinlistview'])
-          && $lastAction['vars']['showmapinlistview'] === '1'
+          // classic list would perform action
+          (!empty($lastAction['vars']['showmapinlistview'])
+          && $lastAction['vars']['showmapinlistview'] === '1')
+          // dynamic list calls api and use get param showmapinlistview
+          || $showMapInDynamicListView
         ) {
             $showMapInListView = true;
         };
