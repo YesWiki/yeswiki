@@ -204,14 +204,13 @@ class MapField extends BazarField
     protected function renderStatic($entry)
     {
         $output = '';
-        // the map is only showed on the fullpage entry view, or if $GLOBALS['showMapInEntryView'] is set to true
-        if (!empty($this->showMapInEntryView) && $this->showMapInEntryView==='1' && ( $GLOBALS['wiki']->getPageTag() === $entry['id_fiche'] || (!empty($GLOBALS['showMapInEntryView']) && $GLOBALS['showMapInEntryView'] === true))) {
+        $wiki = $this->getWiki();
+        // the map is only showed on the fullpage entry view, or if $wiki->config['showMapInEntryView'] is set to true
+        if (!empty($this->showMapInEntryView) && $this->showMapInEntryView==='1' && ( $wiki->getPageTag() === $entry['id_fiche'] || (!empty($wiki->config['showMapInEntryView']) && $wiki->config['showMapInEntryView'] === true))) {
             $mapFieldData = $this->getMapFieldData($entry);
             if (!empty($mapFieldData['latitude']) && !empty($mapFieldData['longitude'])) {
                 $output .= $this->render("@bazar/fields/map.twig", [
                     'tag' => $entry['id_fiche'],
-                    'lat' => $mapFieldData['latitude'],
-                    'lon' => $mapFieldData['longitude'],
                     'mapFieldData' => $mapFieldData,
                 ]);
             }

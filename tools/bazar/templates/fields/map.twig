@@ -1,19 +1,9 @@
 {{ include_css('styles/vendor/leaflet/leaflet.css') }}
 {{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}
 {{ include_javascript('javascripts/vendor/leaflet-providers/leaflet-providers.js') }}
-<div id="map-{{ tag }}" class="map-entry">
-</div>
-<script>
-window.addEventListener('load', function(event) {
-    // Init leaflet map
-    var map{{ tag }} = new L.Map('map-{{ tag }}', {
-        scrollWheelZoom: {{mapFieldData.bazWheelZoom}},
-        zoomControl: {{mapFieldData.bazShowNav}}
-    });
-    var provider = L.tileLayer.provider('{{mapFieldData.mapProvider}}', {{mapFieldData.mapProviderCredentials}});
-    map{{ tag }}.addLayer(provider);
-
-    map{{ tag }}.setView(new L.LatLng({{ lat }}, {{ lon }}), {{mapFieldData.bazMapZoom}});
-    L.marker([{{ lat }}, {{ lon }}]).addTo(map{{ tag }});
-});
-</script>
+{{ include_javascript('tools/bazar/presentation/javascripts/map-field-map-entry.js') }}
+<div
+  id="map-entry-{{ tag }}"
+  class="map-entry"
+  data-map-field="{{ mapFieldData | json_encode | e('html_attr') }}"
+></div>
