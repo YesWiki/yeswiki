@@ -4,6 +4,7 @@ import PopupEntryField from './components/PopupEntryField.js'
 import SpinnerLoader from './components/SpinnerLoader.js'
 import ModalEntry from './components/ModalEntry.js'
 import BazarSearch from './components/BazarSearch.js'
+import { initEntryMaps } from './map-field-map-entry.js'
 
 const load = (domElement) => {
   new Vue({
@@ -185,9 +186,9 @@ const load = (domElement) => {
         } else {
           let fieldsToExclude = []
           if (this.params.template == 'list' && this.params.displayfields) {
-          // In list template (collapsible panels with header and body), the rendered entry
-          // is displayed in the body section and we don't want to show the fields
-          // that are already displayed in the panel header
+            // In list template (collapsible panels with header and body), the rendered entry
+            // is displayed in the body section and we don't want to show the fields
+            // that are already displayed in the panel header
             fieldsToExclude = Object.values(this.params.displayfields)
           }
           const url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
@@ -195,46 +196,10 @@ const load = (domElement) => {
             ...(fieldsToExclude.length > 0 ? {excludeFields: fieldsToExclude} :{}),
             ...(this.params.showmapinlistview ? {showmapinlistview: this.params.showmapinlistview} :{})
           })
-          let uid = this._uid
-          let newIds = Array();
           this.setEntryFromUrl(entry, url)
-            .then(this.loadBazarListDynamicIfNeeded)
-            .then(function() {
-              // change entry map ids to make them unique if more then one
-              // map of same entry in page (in case of several bazarliste calls )
-              let wrapper = document.createElement('div');
-              wrapper.innerHTML= entry.html_render;
-              let htmlRender = wrapper.firstChild;
-              let newMaps = htmlRender.querySelectorAll('.map-entry');
-              newMaps.forEach(newMap => {
-                newMap.id = 'bazarlist-'+uid+'-'+newMap.id
-                newIds.push(newMap.id)
-              });
-              entry.html_render = htmlRender.outerHTML
-            }).then(function() {
-              // init entry maps
-              newIds.forEach(newId => {
-                let newMap = document.getElementById(newId)
-
-                let mapData = JSON.parse(newMap.getAttribute('data-map-field'));
-                // Init leaflet entry map
-                entryMaps[newMap.id] = new L.Map(newMap.id, {
-                  scrollWheelZoom: mapData.bazWheelZoom,
-                  zoomControl: mapData.bazShowNav
-                });
-                var provider = L.tileLayer.provider(
-                  mapData.mapProvider,
-                  mapData.mapProviderCredentials
-                );
-                entryMaps[newMap.id].addLayer(provider);
-
-                let point = new L.LatLng(mapData.latitude, mapData.longitude);
-                entryMaps[newMap.id].setView(
-                  point,
-                  mapData.bazMapZoom
-                );
-                L.marker(point).addTo(entryMaps[newMap.id] );
-              });
+            .then((html) => {
+              this.loadBazarListDynamicIfNeeded(html)
+              initEntryMaps(this.$refs.entriesContainer)
             })
         }
       },
