@@ -372,6 +372,7 @@ return [
 
     // templates/tableau.twig
     // 'SUM' => 'Somme',
+    'URL' => 'Url',
 
     // presentation/templates/timeline.tpl.html
     // 'BAZ_YEAR' => 'Ann&eacute;e',

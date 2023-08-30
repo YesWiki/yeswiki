@@ -3,7 +3,7 @@
 {% extends "@bazar/entries/index-dynamic.twig" %}
 
 {% set necessary_fields = (necessary_fields is defined ? necessary_fields : (params.necessary_fields is defined ? params.necessary_fields|split(',') : []))
-  |merge(['owner'])
+  |merge(['owner','url'])
   |merge((
     (params.exportallcolumns is defined and (params.exportallcolumns == '1' or params.exportallcolumns == 'true'))
     ? params.exportallcolumnsids|split(',')
@@ -107,6 +107,7 @@
     <template #longitudetext>{{ _t('BAZ_LONGITUDE') }}</template>
     <template #modifiydatetranslate>{{ _t('BAZ_DATE_MAJ') }}</template>
     <template #ownertranslate>{{ _t('TEMPLATE_OWNER') }}</template>
+    <template #urltranslate>{{ _t('URL') }}</template>
     <template #sumtranslate>{{ _t('SUM') }}</template>
     <template #rendercell="{anchorData,fieldtype,fieldName,addLink,entryId,url,color='',icon=''}">
       {# be careful, here a twig template create a VueJs template that is used to create a Datatable template #}

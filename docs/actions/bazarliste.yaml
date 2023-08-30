@@ -827,6 +827,7 @@ actions:
           - id_typeannonce
           - date_creation_fiche
           - date_maj_fiche
+          - url
       columntitles:
         type: text
         label: _t(AB_bazartableau_columntitles_label)
@@ -1083,6 +1084,11 @@ actions:
         hint: _t(AB_bazartableau_columnfieldsids_hint)
         multiple: true
         default: ''
+        extraFields:
+          - id_typeannonce
+          - date_creation_fiche
+          - date_maj_fiche
+          - url
       columntitles:
         type: text
         label: _t(AB_bazartableau_columntitles_label)
