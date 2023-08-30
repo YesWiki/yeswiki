@@ -62,13 +62,14 @@ let componentParams = {
                         } : ''
                         if (formattedData[col.data] !== '' && 'externalBaseUrl' in col){
                             formattedData[col.data].externalBaseUrl = col.externalBaseUrl
+                            formattedData[col.data].export = entry[col.data].split(',').map((v)=>col.externalBaseUrl+v).join(',')
                         }
                     } else {
                         formattedData[col.data] = (col.data in entry && typeof entry[col.data] === 'string' ) ? entry[col.data] : ''
                         if (formattedData[col.data] !== '' && 'externalBaseUrl' in col){
                             formattedData[col.data] = {
                                 display:formattedData[col.data],
-                                export:formattedData[col.data],
+                                export:col.externalBaseUrl+formattedData[col.data],
                                 externalBaseUrl:col.externalBaseUrl
                             }
                         }
