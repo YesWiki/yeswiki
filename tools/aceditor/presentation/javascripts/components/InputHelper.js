@@ -67,7 +67,8 @@ export default {
       const extraFieldsWithoutOptions = {
         date_creation_fiche: _t('ACTION_BUILDER_CREATION_DATE'),
         date_maj_fiche: _t('ACTION_BUILDER_MODIFICATION_DATE'),
-        owner: _t('ACTION_BUILDER_OWNER')
+        owner: _t('ACTION_BUILDER_OWNER'),
+        url: _t('URL')
       }
       for (const key in extraFieldsWithoutOptions) {
         if (extraFields.includes(key)) {

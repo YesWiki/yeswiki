@@ -62,13 +62,14 @@ let componentParams = {
                         } : ''
                         if (formattedData[col.data] !== '' && 'externalBaseUrl' in col){
                             formattedData[col.data].externalBaseUrl = col.externalBaseUrl
+                            formattedData[col.data].export = entry[col.data].split(',').map((v)=>col.externalBaseUrl+v).join(',')
                         }
                     } else {
                         formattedData[col.data] = (col.data in entry && typeof entry[col.data] === 'string' ) ? entry[col.data] : ''
                         if (formattedData[col.data] !== '' && 'externalBaseUrl' in col){
                             formattedData[col.data] = {
                                 display:formattedData[col.data],
-                                export:formattedData[col.data],
+                                export:col.externalBaseUrl+formattedData[col.data],
                                 externalBaseUrl:col.externalBaseUrl
                             }
                         }
@@ -168,7 +169,7 @@ let componentParams = {
                     displayvaluesinsteadofkeys:this.sanitizedParam(params,this.isAdmin,'displayvaluesinsteadofkeys'),
                     baseIdx: data.columns.length
                 }
-                let fieldsToRegister = ['date_creation_fiche','date_maj_fiche','owner','id_typeannonce']
+                let fieldsToRegister = ['date_creation_fiche','date_maj_fiche','owner','id_typeannonce','url']
                 columnfieldsids.forEach((id,idx)=>{
                     if (id.length >0 && id in fields){
                         this.registerField(data,{
@@ -391,6 +392,10 @@ let componentParams = {
                         paramName: '',
                         slotName: 'formidtranslate' 
                     },
+                    'url': {
+                        paramName: '',
+                        slotName: 'urltranslate' 
+                    },
                 }
                 fieldsToRegister.forEach((propertyName)=>{
                     if (propertyName in parameters){
@@ -405,11 +410,15 @@ let componentParams = {
                                 : true
                             ) : false
                         if (canPushColumn){
-                            data.columns.push({
+                            const internalOptions = {
                                 data: propertyName,
                                 title: options.columntitles[propertyName] || TemplateRenderer.getTemplateFromSlot('BazarTable',this,parameters[propertyName].slotName),
                                 footer: ''
-                            })
+                            }
+                            if (propertyName === 'url'){
+                                internalOptions.render = this.renderCell({addLink:true})
+                            }
+                            data.columns.push(internalOptions)
                         }
                     }
                 })
