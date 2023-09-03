@@ -558,7 +558,7 @@ Pour bien configurer, on peut mettre dans le paramètre Fuseau horaire du site l
  
 ### Droit d'accès
 Cette partie permet de modifier les droits d'accès pour les pages à venir. Pour voir d'autres façons de gérer les droits d'accès, voir le paragraphe [Gérer les droits d'accès des pages non encore existantes](/docs/fr/admin?id=g%c3%a9rer-les-droits-d39acc%c3%a8s-des-pages-non-encore-existantes)
- - **Droits de lecture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_read_acl** : par défaut, les pages à venir sont ouvertes à tous en droit de lecture grâce au symbole `*`.Pour limiter la lecture aux personnes ayant créé un compte, il faut mettre le symbole `+`. Pour limiter à un groupe d'utilisateurs en particulier, mettre le symbole `@` et le nom du groupe accolé. Par exemple, pour le groupe admin : `@admins`.
+ - **Droits de lecture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_read_acl** : par défaut, les pages à venir sont ouvertes à tous en droit de lecture grâce au symbole `*`. Pour limiter la lecture aux personnes ayant créé un compte, il faut mettre le symbole `+`. Pour limiter à un groupe d'utilisateurs en particulier, mettre le symbole `@` et le nom du groupe accolé. Par exemple, pour le groupe admin : `@admins`.
  - **Droits d'écriture par défaut des pages (* pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_write_acl** : par défaut, les pages à venir sont ouvertes à tous en droit d'écriture. 
  - **Droits de commentaires par défaut des pages (comments-closed pour fermés, * pour tous, + pour personnes identifiées, @admins pour groupe admin) - default_comment_acl** :
  - **Commentaires activés (true ou false) - comments_activated** : 
@@ -568,7 +568,7 @@ La combinaison des deux paramètres donnent le résultat suivant pour l'exemple 
 
 ![antispam.JPG (17.5 KB)](/images/antispam.JPG)
 
- - **Autoriser le double-clic pour éditer les menus et pages spéciales (true ou false) - allow_doubleclic** : par défaut, le double-clic utilisé pour l'édition des pages a été retiré pour les menus et les pages spéciales (PageMenuHaut, PageTitre, PageRapideHaut) afin d'éviter que ces pages soient spammées. Pour autoriser ce double-clic, mettre `true`pour ce paramètre.
+ - **Autoriser le double-clic pour éditer les menus et pages spéciales (true ou false) - allow_doubleclic** : par défaut, le double-clic utilisé pour l'édition des pages a été retiré pour les menus et les pages spéciales (PageMenuHaut, PageTitre, PageRapideHaut) afin d'éviter que ces pages soient spammées. Pour autoriser ce double-clic, mettre `true` pour ce paramètre.
 
 ### Envoi des e-mails
  - **Remplacer le mail utilisé comme expéditeur des messages - contact_from** :
@@ -584,16 +584,16 @@ La combinaison des deux paramètres donnent le résultat suivant pour l'exemple 
  
 ### Base de données
 
-Par défaut, pour l'affichage des données sous forme cartographique, les cartes sont centrées sur le centre de la France et affiche l'intégralité de la France. On peut forcer le centre ailleurs en configurant les paramètres ci-dessous.
+Par défaut, pour l'affichage des données sous forme cartographique, les cartes sont centrées sur le centre de la France et affichent l'intégralité de la France. On peut forcer le centre ailleurs en configurant les paramètres ci-dessous.
 
  - **Latitude par défaut des affichages cartographiques - baz_map_center_lat** : par défaut, la latitude pour centrer la carte sur le centre de la France est 46.22763.
  - **Longitude par défaut des affichages cartographiques - baz_map_center_lon** : par défaut, la longitude pour centrer la carte sur le centre de la France est 2.213749
  - **Niveau de zoom par défaut des cartes (1:monde => 15:commune) - baz_map_zoom** : par défaut, pour afficher l'intégralité de la France, le niveau de zoom est à 5. L'échelle de zoom va de `1`(vue de l'ensemble du monde) à `15`(vue d'une commune)
  - **Hauteur par défaut en pixels des affichages cartographiques - baz_map_height** : par défaut, la valeur est de 300px.
  - **Adresse mail de l'expéditeur des modifications des fiches bazar - BAZ_ADRESSE_MAIL_ADMIN** :
- - **Envoyer un mail aux admininistrateurs à chaque modification de fiche (true ou false) - BAZ_ENVOI_MAIL_ADMIN** :
+ - **Envoyer un mail aux administrateurs à chaque modification de fiche (true ou false) - BAZ_ENVOI_MAIL_ADMIN** :
  - **Temps (s) entre deux rafraîchissements du cache pour vérifier les ajouts et modifications dans les requêtes JSON - baz_external_service[cache_time_to_check_changes]** :
- - **Temps (s) entre deux rafraîchissements du cache pour vérifier les suppresions dans les requêtes JSON - baz_external_service[cache_time_to_check_deletion]** :
+ - **Temps (s) entre deux rafraîchissements du cache pour vérifier les suppressions dans les requêtes JSON - baz_external_service[cache_time_to_check_deletion]** :
  - **Temps (s) entre deux rafraîchissements du cache pour formulaires nécessaires aux requêtes JSON - baz_external_service[cache_time_to_refresh_forms]** :
  - **Permettre la création de fiches même si le wiki est fermé en écriture (true ou false) - bazarIgnoreAcls** : 
 
@@ -629,7 +629,7 @@ Pour exclure des fichiers de la sauvegarde, il faut écrire le nom du dossier ou
 Dans cet exemple d'arborescence, pour exclure le dossier "tools" , il faut écrire : tools
 
 ### Télécharger une sauvegarde
-Sur la page [`GererSauvegardes`](?GererSauvegardes ':ignore') , la liste des sauvegarde est disponible au téléchargement.
+Sur la page [`GererSauvegardes`](?GererSauvegardes ':ignore') , la liste des sauvegardes est disponible au téléchargement.
 Pour une sauvegarde complète,  le dossier archive contient les fichiers et la base de données (fichier sql présent dans le dossier private\backups )
 
 ### Résoudre les problèmes de sauvegarde
@@ -644,7 +644,7 @@ Si lors de la sauvegarde, vous avec un message comme quoi le site est en "hibern
  2. Rendez-vous dans la page [`GererConfig`](?GererConfig ':ignore') de votre site (aussi accessible en passant par [`GererSite`](?GererSite ':ignore') > `Fichier de conf`).
  3. Rendez-vous dans la partie `Sécurité`
  4. Recherchez le paramètre `wiki_status` (état du wiki)
- 5. pour se paramètre, videz le champ puis sauvegardez en cliquant sur `Valider` en bas de la page
+ 5. pour ce paramètre, videz le champ puis sauvegardez en cliquant sur `Valider` en bas de la page
  6. revenir vérifier que le champ est vide (ou qu'il vaut bien `running`)
  7. revenir à la page [`GererSauvegardes`](?GererSauvegardes ':ignore') pour relancer votre sauvegarde
 
@@ -653,15 +653,15 @@ Si lors de la sauvegarde, vous avec un message comme quoi "dossier de sauvegarde
  1. Rendez-vous dans la page [`GererConfig`](?GererConfig ':ignore') de votre site (aussi accessible en passant par [`GererSite`](?GererSite ':ignore') > `Fichier de conf`).
  2. Rendez-vous dans la partie `Sécurité`
  3. Recherchez le paramètre `privatePath` (Localisation des sauvegardes)
-   - si ce paramètre contient le checmin d'un dossier de votre serveur, vérifiez que ce dossier existe bien et que l'environnement `php` du site internet a les droits d'écriture pour ce dossier.
+   - si ce paramètre contient le chemin d'un dossier de votre serveur, vérifiez que ce dossier existe bien et que l'environnement `php` du site internet a les droits d'écriture pour ce dossier.
    - si le paramètre est vide, vous pouvez le remplir avec le chemin d'un dossier de votre serveur (Pour une adresse relative par rapport au dossier de base de votre serveur, na pas commencer par `/`). Ce chemin ne doit pas être accessible depuis internet
    - si vous souhaitez conserver le paramètre avec une valeur vide, ce sera la dossier `private/backups/` qui sera utilisé. Pensez-bien à le rendre non accessible depuis internet;
    - il est possible d'utiliser la valeur `%TMP` pour que les sauvegardes se fassent dans le dossier temporaire du serveur
 
  - **lancement impossible des commandes console sur le serveur**
 Le système de sauvegarde de YesWiki utilise des commandes console sur le serveur pour faire les sauvegardes.
-Ceci permet d'exécuter les tâches en arrièrre plan et éviter les déconnexios intempestives pendant la sauvegarde (surtout quand elle est longue).
-Certaines restrictions de sécurité de votre serveur peuvent empêcher l'utilisation de ctte fonctionnalité. Pour résoudre ce souci, vous pouvez :
+Ceci permet d'exécuter les tâches en arrière plan et éviter les déconnexions intempestives pendant la sauvegarde (surtout quand elle est longue).
+Certaines restrictions de sécurité de votre serveur peuvent empêcher l'utilisation de cette fonctionnalité. Pour résoudre ce souci, vous pouvez :
  - Vérifier dans votre interface de gestion de votre serveur si les commandes `exec`, `proc_open`, `proc_terminate` ... sont autorisées pour `php`
  - OU passez en mode synchrone :
    1. Rendez-vous dans la page [`GererConfig`](?GererConfig ':ignore') de votre site (aussi accessible en passant par [`GererSite`](?GererSite ':ignore') > `Fichier de conf`).
@@ -676,7 +676,7 @@ Certaines restrictions de sécurité de votre serveur peuvent empêcher l'utilis
  - **mysqldump inaccessible**
 Pour réaliser des sauvegardes de votre site, YesWiki utilise l'utilitaire `mysqldump`.
 
-Sur certains serveurs, cet `utilitaire` n'est pas accessible à `php` par défaut. YesWiki utilise des méthodes alternatives pour contourner ce souci mais dans certains cas, les méthodes alternativent ne suffisent pas.
+Sur certains serveurs, cet `utilitaire` n'est pas accessible à `php` par défaut. YesWiki utilise des méthodes alternatives pour contourner ce souci mais dans certains cas, les méthodes alternatives ne suffisent pas.
 Essayer de voir si vous pouvez rendre accessible `mysqldump` sur votre serveur.
 
  - **dossier de sauvegarde accessible sur internet**
