@@ -5,7 +5,7 @@ Le 21 octobre 2019, l'association YesWiki a été créée, elle est un outil au 
 L'association ne détient pas le logiciel (qui est sous licence libre), ni ne regroupe toute la communauté de contributeurices. 
 
 **Avec un objet**  
-Objet de l'association : contribuer au développement de pratiques coopératives, notamment grâce au développement du logiciel libre YesWiki et de toute application informatique liée à l'animation de la communauté (utilisateurs, développeurs,financeurs) ;
+Objet de l'association : contribuer au développement de pratiques coopératives, notamment grâce au développement du logiciel libre YesWiki et de toute application informatique liée à l'animation de la communauté (utilisateurs, développeurs, financeurs) ;
 
 **Pourquoi une association ?**  
 Elle a pour objectif de servir de structure juridique permettant de supporter tout dispositif utile au développement du logiciel . Récolter des fonds, rembourser les frais des contributeurices aux sprints, porter administrativement des projets ou demander des financements  divers et variés qui contribuent d'une manière ou d'une autre à YesWiki...
