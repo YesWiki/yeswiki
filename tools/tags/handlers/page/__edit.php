@@ -39,9 +39,6 @@ if (!$params->get('hide_keywords') && $this->HasAccess("write") && $this->HasAcc
 	//bidouille antispam
 	$(".antispam").attr(\'value\', \'1\');
 
-	$("#ACEditor").on(\'submit\', function() {
-		pagetag.tagsinput(\'add\', pagetag.tagsinput(\'items\'));
-	});
 });'."\n";
     $this->AddJavascriptFile('tools/tags/libs/vendor/bootstrap-tagsinput.min.js');
     $this->AddJavascript($script);
