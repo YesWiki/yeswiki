@@ -1,0 +1,5 @@
+<script>
+  var existingTags = {{ tags|json_encode|raw }}
+</script>
+{{ include_javascript('tools/tags/libs/vendor/bootstrap-tagsinput.min.js') }}
+{{ include_javascript('tools/tags/javascripts/edit-tags.js') }}
