@@ -46,7 +46,14 @@ class __EditHandler extends YesWikiHandler
                     : [];
                 sort($tags);
 
-                return $this->render('@tags/__edit-handler.twig',compact(['tags']));
+                // not possible to use ->render because output is entrirely defined by edit.php
+                $formattedTags = json_encode($tags);
+                $this->wiki->AddJavascript(<<<JS
+                    var existingTags = $formattedTags
+                    
+                JS);
+                $this->wiki->AddJavascriptFile('tools/tags/libs/vendor/bootstrap-tagsinput.min.js');
+                $this->wiki->AddJavascriptFile('tools/tags/javascripts/edit-tags.js');
             }
 
         }
