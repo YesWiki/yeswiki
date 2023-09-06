@@ -20,7 +20,7 @@ if (empty($elem)) {
         $GLOBALS['check_'.$pagetag ] = [];
     }
     if (!isset($GLOBALS['check_'.$pagetag ][$elem])){
-        $GLOBALS['check_'.$pagetag ][$elem] = check_graphical_elements($elem, $pagetag, $body);
+        $GLOBALS['check_'.$pagetag ][$elem] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->checkGraphicalElements($elem, $pagetag, $body);
     }
 
 

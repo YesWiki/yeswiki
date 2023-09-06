@@ -37,7 +37,7 @@ class ArchiveService
         'setup',
         'styles',
         'templates',
-        'test',
+        'tests',
         'themes',
         'tools',
         'vendor',
@@ -62,6 +62,8 @@ class ArchiveService
     ];
     public const PARAMS_KEY_IN_WAKKA = 'archive';
     public const KEY_FOR_PRIVATE_FOLDER = 'privatePath';
+    public const KEY_FOR_FOLDERS_TO_INCLUDE = 'foldersToInclude';
+    public const KEY_FOR_FOLDERS_TO_EXCLUDE = 'foldersToExclude';
     public const KEY_FOR_HIDE_CONFIG_VALUES = 'hideConfigValues';
     protected const DEFAULT_FOLDER_NAME_IN_TMP = "yeswiki_archive";
     public const ARCHIVE_SUFFIX = "_archive";
@@ -103,6 +105,8 @@ class ArchiveService
      * @param string|OutputInterface &$output
      * @param bool $savefiles
      * @param bool $savedatabase
+     * @param array $foldersToInclude
+     * @param array $foldersToExclude
      * @param null|array $hideConfigValuesParams
      * @param string $uid
      * @throws Exception
@@ -111,6 +115,8 @@ class ArchiveService
         &$output,
         bool $savefiles = true,
         bool $savedatabase = true,
+        array $foldersToInclude = [],
+        array $foldersToExclude = [],
         ?array $hideConfigValuesParams = null,
         string $uid = ""
     ) {
@@ -142,8 +148,9 @@ class ArchiveService
         }
 
         $this->writeOutput($output, "=== Checking free space ===", true, $outputFile);
+        $blacklistedRootFolders = $this->generateListRootFolders('black',$foldersToExclude);
         try {
-            $this->assertEnoughtSpace();
+            $this->assertEnoughtSpace($blacklistedRootFolders);
         } catch (Throwable $th) {
             $this->writeOutput($output, "There is not enough free space.", true, $outputFile);
             $this->writeOutput($output, "=> {$th->getMessage()}", true, $outputFile);
@@ -200,7 +207,7 @@ class ArchiveService
             }
 
             $this->writeOutput($output, "=== Creating zip archive ===", true, $outputFile);
-            $this->createZip($location, $output, $sqlContent, $onlyDb, $hideConfigValuesParams, $inputFile, $outputFile);
+            $this->createZip($location, $foldersToInclude, $blacklistedRootFolders , $output, $sqlContent, $onlyDb, $hideConfigValuesParams, $inputFile, $outputFile);
             if (!file_exists($location)) {
                 throw new StopArchiveException("Stop archive : not saved !");
             }
@@ -390,12 +397,16 @@ class ArchiveService
      *
      * @param bool $savefiles
      * @param bool $savedatabase
+     * @param array $foldersToInclude
+     * @param array $foldersToExclude
      * @param bool $callAsync
      * @return string uid
      */
     public function startArchive(
         bool $savefiles = true,
         bool $savedatabase = true,
+        array $foldersToInclude = [],
+        array $foldersToExclude = [],
         bool $callAsync = true
     ): string {
         $privatePath = $this->getPrivateFolder();
@@ -407,6 +418,14 @@ class ArchiveService
             }
             if (!$savedatabase) {
                 $args[] = "-f";
+            }
+            if (!empty($foldersToInclude)) {
+                $args[] = "-i";
+                $args[] = implode(",", $foldersToInclude);
+            }
+            if (!empty($foldersToExclude)) {
+                $args[] = "-x";
+                $args[] = implode(",", $foldersToExclude);
             }
 
             $args[] = "-u";
@@ -424,7 +443,7 @@ class ArchiveService
             }
         } else {
             $output = "";
-            $location = $this->archive($output, $savefiles, $savedatabase, null, $uidData['uid']);
+            $location = $this->archive($output, $savefiles, $savedatabase, $foldersToInclude, $foldersToExclude, null, $uidData['uid']);
             if (empty($location)) {
                 $this->cleanUID($uidData['uid'], $privatePath);
                 return '';
@@ -601,6 +620,8 @@ class ArchiveService
     /**
      * create the zip file
      * @param string $zipPath
+     * @param array $foldersToInclude
+     * @param array $blacklistedRootFolders
      * @param string|OutputInterface &$output
      * @param string $sqlContent
      * @param bool $onlyDb
@@ -610,6 +631,8 @@ class ArchiveService
      */
     protected function createZip(
         string $zipPath,
+        array $foldersToInclude,
+        array $blacklistedRootFolders,
         &$output,
         string $sqlContent,
         bool $onlyDb = false,
@@ -624,101 +647,113 @@ class ArchiveService
         $pathToArchive = preg_replace("/(\/|\\\\)$/", "", $pathToArchive);
         $dirs = [$pathToArchive];
         $dirnamePathLen = strlen($pathToArchive);
-
-        $whitelistedRootFolders = array_map(function($folder) use ($pathToArchive) {
-            return $pathToArchive . "/" . $folder;
-        }, self::FOLDERS_TO_INCLUDE);
+        
+        $whitelistedRootFolders = $this->generateListRootFolders('white',$foldersToInclude);
 
         // open file
         $zip = new ZipArchive();
         $resource = $zip->open($zipPath, ZipArchive::CREATE |  ZipArchive::OVERWRITE);
-        if ($resource !== true) return;
+        if ($resource !== true) {
+            return;
+        }
+        if (!$onlyDb) {
+            // add empty cache folder
+            $zip->addEmptyDir('cache');
 
-            if (!$onlyDb) {
-                // add empty cache folder
-                $zip->addEmptyDir('cache');
+            while (count($dirs)) {
+                $dir = current($dirs);
+                $dir = preg_replace("/(?:\/|\\\\|([^\/\\\\]))$/", "$1", $dir);
+                $baseDirName = preg_replace("/\\\\/", "/", substr($dir, $dirnamePathLen));
+                $baseDirName = preg_replace("/^\//", "", $baseDirName);
+                if (empty($baseDirName) || (!empty($baseDirName) && $this->shouldIncludeFolder($baseDirName, $whitelistedRootFolders,$blacklistedRootFolders))){
+                    if (!empty($baseDirName)) {
+                        $this->writeOutput($output, "Adding folder \"$baseDirName\"", true, $outputFile);
+                        $zip->addEmptyDir($baseDirName);
+                    }
 
-                while (count($dirs)) {
-                    $dir = current($dirs);
-                    $dir = preg_replace("/(?:\/|\\\\|([^\/\\\\]))$/", "$1", $dir);
-                    $baseDirName = preg_replace("/\\\\/", "/", substr($dir, $dirnamePathLen));
-                    $baseDirName = preg_replace("/^\//", "", $baseDirName);
-                        if (!empty($baseDirName)) {
-                            $this->writeOutput($output, "Adding folder \"$baseDirName\"", true, $outputFile);
-                            $zip->addEmptyDir($baseDirName);
-                        }
-                        $dh = opendir($dir);
-                        while (false !== ($file = readdir($dh))) {
-                            if ($file != '.' && $file != '..') {
-                                $localName = $dir.DIRECTORY_SEPARATOR.$file;
-                                $relativeName = (empty($baseDirName) ? "" : "$baseDirName/").$file;
-                                if (empty($baseDirName) && $file == "wakka.config.php") {
-                                    $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($hideConfigValuesParams));
-                                } elseif (is_file($localName)) {
-                                    $zip->addFile($localName, $relativeName);
-                                } elseif (is_dir($localName)) {
-                                    if ($this->shouldIncludeFolder($localName, $file, $whitelistedRootFolders)) {
-                                        $dirs[] = $dir.DIRECTORY_SEPARATOR.$file;
-                                    }
-                                    if ($this->checkIfNeedStop($inputFile)) {
-                                        $zip->unchangeAll();
-                                        $this->writeOutput($output, "== Closing archive after undoing all changes ==", true, $outputFile);
-                                        $zip->close();
-                                        throw new StopArchiveException("Stop archive");
-                                    }
+                    $dh = opendir($dir);
+                    while (false !== ($file = readdir($dh))) {
+                        if ($file != '.' && $file != '..') {
+                            $localName = $dir.DIRECTORY_SEPARATOR.$file;
+                            $relativeName = (empty($baseDirName) ? "" : "$baseDirName/").$file;
+                            if (empty($baseDirName) && $file == "wakka.config.php") {
+                                $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($whitelistedRootFolders,$blacklistedRootFolders,$hideConfigValuesParams));
+                            } elseif (is_file($localName)) {
+                                $zip->addFile($localName, $relativeName);
+                            } elseif (is_dir($localName)) {
+                                if ($this->shouldIncludeFolder($relativeName, $whitelistedRootFolders,$blacklistedRootFolders)) {
+                                    $dirs[] = $dir.DIRECTORY_SEPARATOR.$file;
+                                }
+                                if ($this->checkIfNeedStop($inputFile)) {
+                                    $zip->unchangeAll();
+                                    $this->writeOutput($output, "== Closing archive after undoing all changes ==", true, $outputFile);
+                                    $zip->close();
+                                    throw new StopArchiveException("Stop archive");
                                 }
                             }
                         }
-                        closedir($dh);
-
-                    array_shift($dirs);
+                    }
                 }
+                closedir($dh);
+                array_shift($dirs);
             }
+        }
+        if (!empty($sqlContent)) {
+            $this->writeOutput($output, "Adding SQL file", true, $outputFile);
+            $zip->addEmptyDir(self::PRIVATE_FOLDER_NAME_IN_ZIP);
+            $zip->addFromString(
+                self::PRIVATE_FOLDER_NAME_IN_ZIP."/".self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP,
+                $sqlContent
+            );
+            $this->writeOutput($output, "Adding .htaccess file in folder ".self::PRIVATE_FOLDER_NAME_IN_ZIP, true, $outputFile);
 
-            if (!empty($sqlContent)) {
-                $this->writeOutput($output, "Adding SQL file", true, $outputFile);
-                $zip->addEmptyDir(self::PRIVATE_FOLDER_NAME_IN_ZIP);
-                $zip->addFromString(
-                    self::PRIVATE_FOLDER_NAME_IN_ZIP."/".self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP,
-                    $sqlContent
-                );
-                $this->writeOutput($output, "Adding .htaccess file in folder ".self::PRIVATE_FOLDER_NAME_IN_ZIP, true, $outputFile);
+            $zip->addFromString(
+                self::PRIVATE_FOLDER_NAME_IN_ZIP."/.htaccess",
+                "DENY FROM ALL\n"
+            );
 
-                $zip->addFromString(
-                    self::PRIVATE_FOLDER_NAME_IN_ZIP."/.htaccess",
-                    "DENY FROM ALL\n"
-                );
+            $zip->addFromString(
+                self::PRIVATE_FOLDER_NAME_IN_ZIP."/README.md",
+                self::PRIVATE_FOLDER_README_DEFAULT_CONTENT
+            );
+        }
+        $this->writeOutput($output, "Generating zip file", true, $outputFile);
+        // register cancel callback if available
+        if (method_exists($zip, 'registerCancelCallback')) {
+            $zip->registerCancelCallback(function () use ($inputFile) {
+                // 0 will continue process
+                return ($this->checkIfNeedStop($inputFile)) ? -1 : 0;
+            });
+        }
+        // register progress callback if available
+        if (method_exists($zip, 'registerProgressCallback')) {
+            $zip->registerProgressCallback(0.1, function ($r) use (&$output, $outputFile) {
+                $this->writeOutput($output, "Zip file creation : ".strval(round($r*100, 0))." %", true, $outputFile);
+            });
+        }
+        $zip->close();
+    }
 
-                $zip->addFromString(
-                    self::PRIVATE_FOLDER_NAME_IN_ZIP."/README.md",
-                    self::PRIVATE_FOLDER_README_DEFAULT_CONTENT
-                );
-            }
-
-            $this->writeOutput($output, "Generating zip file", true, $outputFile);
-            // register cancel callback if available
-            if (method_exists($zip, 'registerCancelCallback')) {
-                $zip->registerCancelCallback(function () use ($inputFile) {
-                    // 0 will continue process
-                    return ($this->checkIfNeedStop($inputFile)) ? -1 : 0;
-                });
-            }
-            // register progress callback if available
-            if (method_exists($zip, 'registerProgressCallback')) {
-                $zip->registerProgressCallback(0.1, function ($r) use (&$output, $outputFile) {
-                    $this->writeOutput($output, "Zip file creation : ".strval(round($r*100, 0))." %", true, $outputFile);
-                });
-            }
-            $zip->close();
+    /**
+     * test if folder should be included
+     * @param string $relativeFolderName
+     * @param array $whitelistedRootFolders
+     * @param array $blacklistedRootFolders
+     * @return bool
+     */
+    protected function shouldIncludeFolder(
+        string $relativeFolderName,
+        array $whitelistedRootFolders,
+        array $blacklistedRootFolders
+    ): bool
+    {
+        if (in_array($relativeFolderName, $blacklistedRootFolders) ||
+            in_array(basename($relativeFolderName), $blacklistedRootFolders)){
+            return false;
         }
 
-    protected function shouldIncludeFolder($path, $folderName, $whitelistedRootFolders)
-    {
-        $relativeFolderName = str_replace(getcwd().'/', '', $path);
-        if (in_array($relativeFolderName, self::FOLDERS_TO_EXCLUDE)) return false;
-
-        return count(array_filter($whitelistedRootFolders, function($folder) use($path) {
-            return strpos($path, $folder) !== false;
+        return count(array_filter($whitelistedRootFolders, function($folder) use($relativeFolderName) {
+            return strpos($relativeFolderName, $folder) === 0;
         })) > 0;
     }
 
@@ -741,66 +776,6 @@ class ArchiveService
         return $outputList;
     }
 
-    /**
-     * @param array $list
-     * @param array $ignoreList
-     * @param string $inputFile
-     * @return array
-     */
-    private function prepareFileListFromGlob(array $list, array $ignoreList = [], string $inputFile = ""): array
-    {
-        $outputList = [];
-        $onlyChildren = [];
-        foreach ($list as $filePath) {
-            foreach (glob($filePath) as $filename) {
-                $filename = str_replace("\\", "/", $filename);
-                if (is_dir($filename)) {
-                    $foundChildren = array_filter($ignoreList, function ($path) use ($filename) {
-                        return substr($path, 0, strlen($filename)) == $filename;
-                    });
-                    if (!empty($foundChildren)) {
-                        foreach ($foundChildren as $path) {
-                            $this->appendChildPathToChildren($onlyChildren, $filename, $path, $inputFile);
-                        }
-                    }
-                }
-                if (empty($onlyChildren[$filename]) && !in_array($filename, $outputList) && !in_array($filename, $ignoreList)) {
-                    $outputList[] = $filename;
-                }
-                if ($this->checkIfNeedStop($inputFile)) {
-                    throw new StopArchiveException("Stop archive");
-                }
-            }
-        }
-        return [$outputList,$onlyChildren];
-    }
-
-    /**
-     * @param &array $onlyChildren
-     * @param string $dirname
-     * @param string $path
-     * @param string $inputFile
-     * @return array
-     */
-    private function appendChildPathToChildren(array &$onlyChildren, string $dirname, string $path, string $inputFile)
-    {
-        if (empty($onlyChildren[$dirname])) {
-            $onlyChildren[$dirname] = [];
-        }
-        $currentPath = $path;
-        $parentDir = dirname($currentPath);
-        while ($parentDir != $dirname) {
-            $this->appendChildPathToChildren($onlyChildren, $parentDir, $currentPath, $inputFile);
-            $currentPath = $parentDir;
-            $parentDir = dirname($currentPath);
-            if ($this->checkIfNeedStop($inputFile)) {
-                throw new StopArchiveException("Stop archive");
-            }
-        }
-        if (!in_array($currentPath, $onlyChildren[$dirname])) {
-            $onlyChildren[$dirname][] = $currentPath;
-        }
-    }
 
     private function getPrivateFolder(): string
     {
@@ -922,10 +897,12 @@ class ArchiveService
 
     /**
      * sanitize wakka.config.php before saving it
+     * @param array $foldersToInclude
+     * @param array $foldersToExclude
      * @param null|array $hideConfigValuesParams
      * @return string
      */
-    private function getWakkaConfigSanitized(?array $hideConfigValuesParams = null): string
+    private function getWakkaConfigSanitized(array $foldersToInclude, array $foldersToExclude, ?array $hideConfigValuesParams = null): string
     {
         // get wakka.config.php content
         $config = $this->configurationService->getConfiguration('wakka.config.php');
@@ -935,6 +912,12 @@ class ArchiveService
             $data = [];
         } else {
             $data = $config[self::PARAMS_KEY_IN_WAKKA];
+        }
+        if (!empty($foldersToInclude)) {
+            $data[self::KEY_FOR_FOLDERS_TO_INCLUDE] = $foldersToInclude;
+        }
+        if (!empty($foldersToExclude)) {
+            $data[self::KEY_FOR_FOLDERS_TO_EXCLUDE] = $foldersToExclude;
         }
         if (!is_null($hideConfigValuesParams)) {
             $data[self::KEY_FOR_HIDE_CONFIG_VALUES] = $hideConfigValuesParams;
@@ -1052,12 +1035,21 @@ class ArchiveService
 
     /**
      * check if there is enought free space before archive (size of files + custom + 300 Mo)
+     * @param array $blacklistedRootFolders
      * @throws Exception
      */
-    protected function assertEnoughtSpace()
+    protected function assertEnoughtSpace(array $blacklistedRootFolders = [])
     {
-        $estimateZipSize = $this->folderSize("files");
-        $estimateZipSize += $this->folderSize("custom");
+        if (empty($blacklistedRootFolders)){
+            $blacklistedRootFolders = self::FOLDERS_TO_EXCLUDE;
+        }
+        $estimateZipSize = 0;
+        if (!in_array('files',$blacklistedRootFolders)){
+            $estimateZipSize += $this->folderSize("files");
+        }
+        if (!in_array('custom',$blacklistedRootFolders)){
+            $estimateZipSize += $this->folderSize("custom");
+        }
         $estimateZipSize += 300 * 1024 * 1024; // 300Mb for the rest of te wiki
 
         $freeSpace = disk_free_space(realpath(getcwd()));
@@ -1306,5 +1298,34 @@ class ArchiveService
         }
 
         return compact(['running','finished','stopped','output']);
+    }
+
+    /**
+     * generate ---ListedRootFolder from DEFAULT, params and wakka.config
+     * @param string $type "white"|"black"
+     * @param array $fromParams
+     * @return array
+     * 
+     */
+    private function generateListRootFolders(string $type,array $fromParams): array
+    {
+        $list = ($type == "white") ? self::FOLDERS_TO_INCLUDE : self::FOLDERS_TO_EXCLUDE;
+        foreach ($this->sanitizeFileList($fromParams) as $folderName) {
+            if (!in_array($folderName,$list)){
+                $list[] = $folderName;
+            }
+        }
+        // merge `foldersToInclude` or `foldersToExclude` from wakka.config.php
+        $archiveParams = $this->getArchiveParams();
+        $key = ($type == "white") ? self::KEY_FOR_FOLDERS_TO_INCLUDE : self::KEY_FOR_FOLDERS_TO_EXCLUDE;
+        if (!empty($archiveParams[$key]) &&
+            is_array($archiveParams[$key])) {
+            foreach ($this->sanitizeFileList($archiveParams[$key]) as $path) {
+                if (!in_array($path, $list)) {
+                    $list[] = $path;
+                }
+            }
+        }
+        return $list;
     }
 }

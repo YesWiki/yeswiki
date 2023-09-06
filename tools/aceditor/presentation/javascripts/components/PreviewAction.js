@@ -3,7 +3,7 @@ export default {
   computed: {
     previewIframeUrl() {
       if (!this.wikiCode) return ''
-      const result = wiki.url('root/render', { content: this.wikiCode })
+      const result = wiki.url('wiki/render', { content: this.wikiCode })
       return result
     }
   },

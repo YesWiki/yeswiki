@@ -53,8 +53,10 @@ Vue.component('BazarMap', {
     createTileLayers() {
       if (!this.map) return
       const provideOptions = this.params.provider_credentials ? JSON.parse(this.params.provider_credentials) : {}
-      L.tileLayer.provider(this.params.provider, provideOptions).addTo(this.map)
+      const provider = L.tileLayer.provider(this.params.provider, provideOptions).addTo(this.map)
 
+      this.params.layers = this.params.layers.map((layer)=>layer.replace(/visiblebydefault\|?;?/ig,''))
+      let displayProviderList = false
       for (const layer of this.params.layers) {
         let [label, type, options, url] = layer.split('|')
         if (!url) { url = options; options = '' }
@@ -63,6 +65,7 @@ Vue.component('BazarMap', {
             this.layers[label] = L.tileLayer(url).addTo(this.map)
             break
           case 'geojson':
+            displayProviderList = true
             this.layers[label] = L.geoJson.ajax(url, {
               style(feature, latlng) {
                 if (feature.geometry.type == 'Point') return
@@ -86,13 +89,26 @@ Vue.component('BazarMap', {
               },
               pointToLayer(feature, latlng) {
                 return L.circleMarker(latlng)
-              }
+              },
+              onEachFeature: function (feature, layer) {
+								var str = "" ;
+								for( var prop in feature.properties){
+                  const content = ( prop.toLowerCase() == "url" )
+                    ? `<a href="${feature.properties[prop]}" target="_blank" >${feature.properties[prop]}</a>`
+                    : feature.properties[prop]
+                  str+= `${prop}: ${content}<br/>`
+								}
+								layer.bindPopup( str );
+							}
             }).addTo(this.map)
             break
           default:
             alert(`Error in Layers parameter: type ${type} is unknown`)
             break
         }
+      }
+      if (displayProviderList){
+        L.control.layers({[this.params.provider]:provider}, this.layers).addTo(this.map)
       }
     },
     arraysEqual(a, b) {
@@ -113,7 +129,7 @@ Vue.component('BazarMap', {
         const isLink = (this.isModalDisplay() || this.isDirectLinkDisplay() || this.isNewTabDisplay())
         const tagName = isLink ? 'a' : 'div'
         const url = entry.url + (this.isModalDisplay() ? '/iframe' : '')
-        const modalData = this.isModalDisplay() ? 'data-size="modal-lg" data-iframe="1"' : ''
+        const modalData = this.isModalDisplay() ? 'data-size="modal-lg" data-iframe="1" data-header="false"' : ''
         entry.marker.setIcon(
           L.divIcon({
             className: `bazar-marker ${this.params.smallmarker}`,
@@ -126,17 +142,16 @@ Vue.component('BazarMap', {
                   ${entry.markerhover || entry.bf_titre}
                 </span>
               </div>
-              <${tagName} class="bazar-entry${this.isModalDisplay() ? ' modalbox' : ''}" `
-              + `${isLink ? `href="${url}" title="${entry.bf_titre}"` : ''} style="color: ${entry.color}" ${modalData}>
+              <${tagName} class="bazar-entry ${this.isModalDisplay() ? 'modalbox' : ''}" `
+              + `${isLink ? `href="${url}"` : ''} style="color: ${entry.color}" ${modalData}>
                 <i class="${entry.icon || 'fa fa-bullseye'}"></i>
               </${tagName}>`
           })
         )
         if (this.isDirectLinkDisplay()) {
-          const BazarMap = this
           entry.marker.on('click', () => {
             event.preventDefault()
-            window.location = entry.url + (BazarMap.$root.isInIframe() ? '/iframe' : '')
+            window.location = entry.url + (this.$root.isInIframe() ? '/iframe' : '')
           })
         } else if (this.isNewTabDisplay()) {
           entry.marker.on('click', function() {
@@ -171,7 +186,6 @@ Vue.component('BazarMap', {
       if (this.$scopedSlots.popupentrywithhtmlrender != undefined) {
         if (entry.html_render == undefined) {
           let url = ''
-          const bazarMap = this
           let excludeFields = ''
           if (this.params.popupselectedfields && this.params.popupselectedfields.length > 0) {
             const necessaryFieldsArray = this.params.popupselectedfields.split(',')
@@ -200,30 +214,18 @@ Vue.component('BazarMap', {
               )
             })
           }
-          $.getJSON(url, (data) => {
-            Vue.set(entry, 'html_render', (data[entry.id_fiche] && data[entry.id_fiche].html_output) ? data[entry.id_fiche].html_output : 'error')
-            bazarMap.$nextTick(() => {
-              /**
-               * Triggers when the component is ready
-               * */
-              bazarMap.definePopupContent(entry)
+          this.$root.setEntryFromUrl(entry,url)
+            .then(() => {
+              // Triggers when the component is ready
+              this.$nextTick(()=>this.definePopupContent(entry))
             })
-          })
         } else {
-          this.$nextTick(function() {
-            /**
-             * Triggers when the component is ready
-             * */
-            this.definePopupContent(entry)
-          })
+          // Triggers when the component is ready
+          this.$nextTick(()=>this.definePopupContent(entry))
         }
       } else if (this.$scopedSlots.popupentry != undefined) {
-        this.$nextTick(function() {
-          /**
-           * Triggers when the component is ready
-           * */
-          this.definePopupContent(entry)
-        })
+        // Triggers when the component is ready
+        this.$nextTick(()=>this.definePopupContent(entry))
       }
     },
     definePopupContent(entry) {
@@ -232,7 +234,13 @@ Vue.component('BazarMap', {
         : $(this.$el).find('.popupentry-container > div').first().html()
       if (entry.marker.popup == undefined) {
         if (renderedHtml != undefined && renderedHtml.length != 0) {
-          entry.marker.bindPopup(renderedHtml, { keepInView: true }).openPopup()
+          entry.marker.bindPopup(renderedHtml, { keepInView: true })
+            .on('popupopen',()=>{
+              if (typeof this.$root?.loadBazarListDynamicIfNeeded === 'function'){
+                this.$root.loadBazarListDynamicIfNeeded(renderedHtml)
+              }
+            })
+            .openPopup()
         }
       } else {
         entry.marker.popup.openPopup()

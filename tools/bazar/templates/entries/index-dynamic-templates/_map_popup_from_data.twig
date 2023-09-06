@@ -13,16 +13,16 @@
           :imagewidth="{{ imWidth }}" 
           :imageheight="{{ imHeight }}" 
           :imagemethod="{{ imagemethod|json_encode }}" 
-          :imagetoken="{{ csrfToken("GET api/images/cache/#{imWidth}/#{imHeight}/#{imagemethod}")|json_encode }}"
+          :imagetoken="{{ csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/#{imagemethod}")|json_encode }}"
           ></popup-entry-field>
       </template>
     </div>
-    <a class="btn btn-primary btn-block btn-popup-map" 
-      :class="{modalbox:!isExternalUrl(entry)}" 
+    <a class="btn btn-primary btn-block btn-popup-map{% if isInIframe %} newtab{% endif %}" 
+      {% if not isInIframe %}:class="{modalbox:!isExternalUrl(entry)}" 
       :target="{blank:isExternalUrl(entry)}"
-      data-iframe="1"
+      data-iframe="1"{% endif %}
       data-size="modal-lg"
       :title="entry.title || entry.id_fiche"
-      :href="`${entry.url+(!isExternalUrl(entry)?'/iframe':'')}`">{{ _t('BAZ_SEE_ENTRY') }}</a>
+      :href="`${entry.url{% if not isInIframe %}+(!isExternalUrl(entry)?'/iframe':''){% endif %}}`">{{ _t('BAZ_SEE_ENTRY') }}</a>
   </div>
 </template>

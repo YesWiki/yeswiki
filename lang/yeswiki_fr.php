@@ -132,6 +132,8 @@ return [
     'ONLY_ALPHANUM_FOR_GROUP_NAME' => 'Les noms de groupes ne peuvent contenir que des caract&egrave;res alphanum&eacute;riques',
     'LIST_GROUP_MEMBERS' => 'Liste des membres du groupe {groupName}',
     'ONE_NAME_BY_LINE' => 'un nom d\'utilisateur par ligne',
+    'ONLY_EMPTY_GROUP_FOR_DELETION' => 'Seul un groupe vide peut être supprimé',
+    'ONLY_NO_PAGES_GROUP_FOR_DELETION' => 'Seuls les groupes non rattaché à une page peuvent être supprimé. Pages associées :',
 
     // actions/edithandlersacls.class.php
     'HANDLER_RIGHTS' => 'Droits du handler',
@@ -557,6 +559,7 @@ return [
     'EDIT_CONFIG_HINT_DEFAULT_COMMENT_AVATAR' => 'Image d\'avatar par défaut pour les commentaires (URL vers une image)',
     'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false)',
     'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Activer les favoris (true ou false)',
+    'EDIT_CONFIG_HINT_PREVIEW_BEFORE_SAVE' => 'Activer la prévisualisation avant sauvegarde (true ou false)',
     'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
     'EDIT_CONFIG_GROUP_ACCESS' => 'Droit d\'accès',
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',

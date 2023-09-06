@@ -186,7 +186,7 @@ if (!class_exists('attach')) {
          */
         public function GetFullFilename($newName = false)
         {
-             // use current date if page has no date that could arrive when using page 'root' via Actions Builder
+            // use current date if page has no date that could arrive when using page 'root' via Actions Builder
             $pagedate = $this->convertDate(
                 isset($this->wiki->page['time'])
                 ? $this->wiki->page['time']
@@ -194,7 +194,9 @@ if (!class_exists('attach')) {
                     $this->wiki->tag == "root"
                     ? date('Y-m-d H:i:s')
                     : null // error
-                ));
+                )
+            );
+
             //decompose le nom du fichier en nom+extension ou en page/nom+extension
             if (preg_match('`^((.+)/)?(.*)\.(.*)$`', str_replace(' ', '_', $this->file), $match)) {
                 list(, , $file['page'], $file['name'], $file['ext']) = $match;
@@ -227,18 +229,15 @@ if (!class_exists('attach')) {
                 } else {
                     $searchPattern = '`^' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
                 }
-
+                
                 $files = $this->searchFiles($searchPattern, $path);
-
+                
                 $unedate = 0;
                 foreach ($files as $file) {
-                    //recherche du fichier qui une datepage <= a la date de la page
-                    if ($file['datepage'] <= $pagedate) {
-                        //puis qui a une dateupload la plus grande
-                        if ($file['dateupload'] > $unedate) {
-                            $theFile = $file;
-                            $unedate = $file['dateupload'];
-                        }
+                    // on garde la dateupload la plus grande
+                    if ($file['dateupload'] > $unedate) {
+                        $theFile = $file;
+                        $unedate = $file['dateupload'];
                     }
                 }
                 if ($isActionBuilderPreview && count($files) > 0) {
@@ -428,7 +427,7 @@ if (!class_exists('attach')) {
             $this->height = $this->wiki->GetParameter('height');
             $this->width = $this->wiki->GetParameter('width');
             $this->displayPDF = $this->wiki->GetParameter('displaypdf');
-            $this->data = getDataParameter();
+            $this->data = $this->wiki->services->get(\YesWiki\Templates\Service\Utils::class)->getDataParameter();
 
             //test de validit&eacute; des parametres
             if (empty($this->file)) {

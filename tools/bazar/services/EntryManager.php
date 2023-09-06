@@ -154,7 +154,7 @@ class EntryManager
             // TODO call this function only when necessary
             $this->appendDisplayData($data, $semantic, $correspondance, $page);
         } elseif ($debug) {
-            trigger_error('empty \'body\'  in EntryManager::getDataFromPage for page \''. $page['tag'] .'\'', E_USER_WARNING);
+            trigger_error('empty \'body\'  in EntryManager::getDataFromPage for page \''. ($page['tag'] ?? '!!empty tag!!') .'\'', E_USER_WARNING);
         }
 
         return $data;
@@ -561,7 +561,10 @@ class EntryManager
         // on remet l'utilisateur initial s'il y en avait un
         if (isset($GLOBALS['utilisateur_wikini']) && !empty($olduser)) {
             $this->authController->logout();
-            $this->authController->login($olduser, $olduser['remember'] ?? 1);
+            $oldUserClass = $this->userManager->getOneByName($olduser['name']);
+            if (!empty($oldUserClass)){
+                $this->authController->login($oldUserClass, $olduser['remember'] ?? 1);
+            }
         }
 
         $this->cachedEntriestags[$data['id_fiche']] = true;
@@ -727,18 +730,15 @@ class EntryManager
     public function delete($tag)
     {
         if ($this->securityController->isWikiHibernated()) {
-            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        if (!$this->aclService->hasAccess('write', $tag)) {
-            throw new Exception(_t('BAZ_ERROR_DELETE_UNAUTHORIZED'));
+        if (!$this->wiki->UserIsAdmin() && !$this->wiki->UserIsOwner($tag)){
+            throw new Exception(_t('DELETEPAGE_NOT_DELETED')._t('DELETEPAGE_NOT_OWNER'));
         }
 
         $fiche = $this->getOne($tag);
-
-        // Si besoin, on supprime l'utilisateur associé
-        if (isset($fiche['nomwiki'])) {
-            $request = 'DELETE FROM ' . $this->dbService->prefixTable('users') . ' WHERE `name` = "' . $fiche['nomwiki'] . '"';
-            $this->dbService->query($request);
+        if (empty($fiche)){
+            throw new Exception("Not existing entry : $tag");
         }
 
         $this->pageManager->deleteOrphaned($tag);
@@ -869,6 +869,11 @@ class EntryManager
      */
     public function appendDisplayData(&$fiche, $semantic, $correspondance, array $page)
     {
+        // user
+        $fiche['user'] = $page['user'] ?? null;
+        // owner
+        $fiche['owner'] = $page['owner'] ?? null;
+
         // champs correspondants
         if (!empty($correspondance)) {
             try {
@@ -888,9 +893,6 @@ class EntryManager
 
         // HTML data
         $fiche['html_data'] = getHtmlDataAttributes($fiche);
-
-        // owner
-        $fiche['owner'] = $page['owner'] ?? null;
 
         // Fiche URL
         if (!isset($fiche['url'])) {
@@ -1005,9 +1007,21 @@ class EntryManager
     * @param array $params
     * @param array $attributesNames
     * @param bool $applyOnAllRevisions
-    * return bool true if attributesNames are foond and replaced
+    * @return bool true if attributesNames are foond and replaced
     */
     public function removeAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false): bool
+    {
+        return !empty($this->removeAttributesAndReturnList($params, $attributesNames, $applyOnAllRevisions));
+    }
+    
+    /**
+    * remove attributes from entries only for admins !!!
+    * @param array $params
+    * @param array $attributesNames
+    * @param bool $applyOnAllRevisions
+    * @return array with entry's ids if attributesNames are found and replaced
+    */
+    public function removeAttributesAndReturnList($params, array $attributesNames, bool $applyOnAllRevisions = false): array
     {
         return $this->manageAttributes($params, $attributesNames, $applyOnAllRevisions, 'remove');
     }
@@ -1017,9 +1031,21 @@ class EntryManager
     * @param array $params
     * @param array $attributesNames [$oldName => $newName]
     * @param bool $applyOnAllRevisions
-    * return bool true if attributesNames are foond and replaced
+    * @return bool true if attributesNames are foond and replaced
     */
     public function renameAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false): bool
+    {
+        return !empty($this->renameAttributesAndReturnList($params, $attributesNames, $applyOnAllRevisions));
+    }
+
+    /**
+    * rename attributes from entries only for admins !!!
+    * @param array $params
+    * @param array $attributesNames [$oldName => $newName]
+    * @param bool $applyOnAllRevisions
+    * @return array with entry's ids if attributesNames are found and replaced
+    */
+    public function renameAttributesAndReturnList($params, array $attributesNames, bool $applyOnAllRevisions = false): array
     {
         return $this->manageAttributes($params, $attributesNames, $applyOnAllRevisions, 'rename');
     }
@@ -1030,15 +1056,15 @@ class EntryManager
      * @param array $attributesNames
      * @param bool $applyOnAllRevisions
      * @param string $mode
-     * return bool true if attributesNames are foond and replaced
+     * @return array with entry's ids if attributesNames are found and replaced
      */
-    private function manageAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false, string $mode = 'remove'): bool
+    private function manageAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false, string $mode = 'remove'): array
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!$this->wiki->UserIsAdmin()) {
-            return false;
+            return [];
         }
 
         /* sanitize params */
@@ -1082,9 +1108,10 @@ class EntryManager
         $pages = $this->dbService->loadAll($requete);
 
         if (empty($pages)) {
-            return false;
+            return [];
         }
 
+        $entriesIds = [];
         foreach ($pages as $page) {
             $entry = $this->decode($page['body']);
 
@@ -1094,11 +1121,17 @@ class EntryManager
                         if (isset($entry[$oldName])) {
                             $entry[$newName] = $entry[$oldName];
                             unset($entry[$oldName]);
+                            if (!empty($entry['id_fiche']) && !in_array($entry['id_fiche'],$entriesIds)){
+                                $entriesIds[] = $entry['id_fiche'];
+                            }
                         }
                     }
                 } else {
                     if (isset($entry[$attributeName])) {
                         unset($entry[$attributeName]);
+                        if (!empty($entry['id_fiche']) && !in_array($entry['id_fiche'],$entriesIds)){
+                            $entriesIds[] = $entry['id_fiche'];
+                        }
                     }
                 }
             }
@@ -1119,6 +1152,6 @@ class EntryManager
             }
         }
 
-        return true;
+        return $entriesIds;
     }
 }

@@ -1,0 +1,4 @@
+<script>
+  {# This will send a message to the iframe's parent #}
+  window.top.postMessage({{ data|json_encode|raw }}, '*')
+</script>

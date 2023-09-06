@@ -2,11 +2,13 @@ $(document).ready(function () {
 	// on annule les changements de look
 	$("#graphical_options a.button_cancel").on("click", function () {
 		$('#graphical_options form')[0].reset();
-		if (($("#changetheme").val() !== $("#hiddentheme").val()) || ($("#hiddensquelette").val() !== $("#changesquelette").val()) || ($("#hiddenstyle").val() !== $("#changestyle").val())) {
+		if (($("[name=theme_select]").first().val() !== $("#hiddentheme").val()) || ($("#hiddensquelette").val() !== $("[name=squelette_select]").first().val()) || ($("#hiddenstyle").val() !== $("[name=style_select]").first().val())) {
 			//on charge le theme et on remet les valeurs
 			var newstyle = $("#mainstyle").attr("href");
-			newstyle = newstyle.substring(0, newstyle.lastIndexOf('/')) + '/' + $("#hiddenstyle").val();
-			$("#mainstyle").attr("href", newstyle);
+			if (newstyle){
+				newstyle = newstyle.substring(0, newstyle.lastIndexOf('/')) + '/' + $("#hiddenstyle").val();
+				$("#mainstyle").attr("href", newstyle);
+			}
 		}
 
 		// l'image de fond
@@ -68,20 +70,21 @@ $(document).ready(function () {
 		}
 
 		// on remet les valeurs par défaut aux listes déroulantes
-		$("#changetheme").val($("#hiddentheme").val());
-		$("#changesquelette").val($("#hiddensquelette").val());
-		$("#changestyle").val($("#hiddenstyle").val());
+		$("[name=theme_select]").first().val($("#hiddentheme").val());
+		$("[name=squelette_select]").first().val($("#hiddensquelette").val());
+		$("[name=style_select]").first().val($("#hiddenstyle").val());
 
 		return;
 	});
 
 	// on sauve les metas et on transmet les valeurs changées du theme au formulaire
 	$("#graphical_options a.button_save").on("click", function () {
-		var theme = $("#changetheme").val();
+		var theme = $("[name=theme_select]").first().val();
 		$("#hiddentheme").val(theme);
-		var squelette = $("#changesquelette").val();
+		var squelette = $("[name=squelette_select]").first().val();
 		$("#hiddensquelette").val(squelette);
-		var style = $("#changestyle").val();
+		var style = $("[name=style_select]").first().val();
+		var preset = $("[name=preset_select]").first().val();
 		$("#hiddenstyle").val(style);
 		var bgimg = $(".choosen").css("background-image");
 		var imgsrc = $(".choosen").attr("src");
@@ -101,13 +104,15 @@ $(document).ready(function () {
 		var a = $('#form_graphical_options').serializeArray();
 
 		$.each(a, function () {
-			if (o[this.name] !== undefined) {
-				if (!o[this.name].push) {
-					o[this.name] = [o[this.name]];
+			if (this.name.slice(-'_select'.length) != '_select'){
+				if (o[this.name] !== undefined) {
+					if (!o[this.name].push) {
+						o[this.name] = [o[this.name]];
+					}
+					o[this.name].push(this.value || '');
+				} else {
+					o[this.name] = this.value || '';
 				}
-				o[this.name].push(this.value || '');
-			} else {
-				o[this.name] = this.value || '';
 			}
 		});
 		var url = document.URL.split("/edit")[0] + '/savemetadatas';
@@ -115,11 +120,14 @@ $(document).ready(function () {
 		var data = {
 			'metadatas': $.extend({}, o, {
 				"theme": theme,
-				"squelette": squelette,
-				"style": style,
+				"squelette": squelette+(squelette.slice(-'.tpl.html'.length) === '.tpl.html' ? '' : '.tpl.html'),
+				"style": style+(style.slice(-'.css'.length) === '.css' ? '' : '.css'),
 				"bgimg": bgimg
 			})
 		};
+		if(preset !=undefined){
+			data.metadatas["favorite_preset"] = preset+(preset.length == 0 || preset.slice(-'.css'.length) === '.css' ? '' : '.css')
+		}
 
 		$.post(url, data, function (data) {
 			return;
@@ -210,24 +218,6 @@ $(document).ready(function () {
 			});
 			$("#bgCarousel .choosen").removeClass("choosen");
 			$(this).addClass("choosen");
-		}
-	});
-
-	// on change le theme dynamiquement
-	$("#changetheme").on('change', function () {
-		var val = $(this).val();
-		// pour vider la liste
-		var squelette = $("#changesquelette")[0];
-		squelette.options.length = 0
-		for (var i = 0; i < themeSquelettes[val].length; i++) {
-			o = new Option(themeSquelettes[val][i], themeSquelettes[val][i]);
-			squelette.options[squelette.options.length] = o;
-		}
-		var style = $("#changestyle")[0];
-		style.options.length = 0
-		for (var i = 0; i < themeStyles[val].length; i++) {
-			o = new Option(themeStyles[val][i], themeStyles[val][i]);
-			style.options[style.options.length] = o;
 		}
 	});
 

@@ -1,0 +1,23 @@
+<h3>{{ _t('TEMPLATE_BG_IMAGE') }}</h3>
+<div id="bgCarousel" class="carousel" data-interval="5000" data-pause="true">
+    <!-- Carousel items -->
+    <div class="carousel-inner">
+        {% for row in backgrounds|sort|batch(8) %}
+          <div class="item{{ ((favoriteBackgroundImage is empty and loop.first) or 
+            (favoriteBackgroundImage is not empty and "files/backgrounds/#{favoriteBackgroundImage}" in row)) ? ' active' : ''}}">
+            {% for background in row %}
+                {% set imgextension = background|slice(-4)|lower %}
+                {% set choosen = (background is same as "files/backgrounds/#{favoriteBackgroundImage}") %}
+                {% if imgextension == '.jpg' %}
+                    <img loading="lazy" class="bgimg{{ choosen ? ' choosen' : ''}}" src="{{ background }}" width="100" height="75" />
+                {% elseif imgextension == '.png' %}
+                    <div class="mozaicimg{{ choosen ? ' choosen' : ''}}" style="background:url({{ background }}) repeat top left;"></div>
+                {% endif %}
+            {% endfor %}
+          </div>
+        {% endfor %}
+    </div>
+    <!-- Carousel nav -->
+    <a class="carousel-control left" href="#bgCarousel" data-slide="prev">&lsaquo;</a>
+    <a class="carousel-control right" href="#bgCarousel" data-slide="next">&rsaquo;</a>
+</div>

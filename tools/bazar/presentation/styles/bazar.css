@@ -29,6 +29,10 @@
 #map label {
   width: auto !important; display:inline !important;
 }
+.map-entry {
+  width:100%;
+  min-height: 220px;
+}
 
 .required_symbol, .symbole_obligatoire {
 color:#E9322D;
@@ -165,7 +169,10 @@ input.form-control.error {
 .BAZ_label {font-weight: bold;display: block;}
 .BAZ_texte {display:block;}
 .titre_lien {display:block;font-size:1.4em;}
-.list-sortables {list-style: none;}
+.list-sortables {
+  list-style: none;
+  padding: 0;
+}
 .list-sortables .liste_ligne {
     display: table;
     margin-bottom: 3px;

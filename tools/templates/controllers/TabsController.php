@@ -59,7 +59,7 @@ class TabsController extends YesWikiController
         } else {
             return '';
         }
-        return $this->render('@templates/tabs.twig',[
+        return empty($titles) ? '' : $this->render('@templates/tabs.twig',[
             'titles' => $titles,
             'selectedtab' => $selectedtab ,
             'slugs' => $this->tabsService->getSlugs($mode)

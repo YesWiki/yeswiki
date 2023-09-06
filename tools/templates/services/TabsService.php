@@ -25,6 +25,7 @@ class TabsService
     protected $data;
     protected $stack;
     protected $usedSlugs;
+    protected $states;
 
     public function __construct()
     {
@@ -36,6 +37,7 @@ class TabsService
             'view' => self::DEFAULT_DATA,
             'action' => self::DEFAULT_DATA
         ];
+        $this->states = [];
     }
 
     public function setFormTitles(TabsField $field)
@@ -179,5 +181,40 @@ class TabsService
     {
         $this->data[$mode]['isClosed'] = true;
         $this->retrieveFromStackIfNeeded($mode);
+    }
+
+    /**
+     * save current state and return associated index
+     * useful for LinkedEntryField to prevent interference with other rendering
+     * @return int index
+     */
+    public function saveState(): int
+    {
+        $this->states[] = [
+            'data' => $this->data,
+            'stack' => $this->stack,
+            'usedSlugs' => $this->usedSlugs,
+            'nextPrefix' => $this->nextPrefix
+        ];
+        return count($this->states) - 1;
+    }
+
+    /**
+     * reset current state from associated index and return success
+     * useful for LinkedEntryField to prevent interference with other rendering
+     * @param int $index
+     * @return bool
+     */
+    public function resetState(int $index): bool
+    {
+        if (array_key_exists($index,$this->states)){
+            $this->data = $this->states[$index]['data'];
+            $this->stack = $this->states[$index]['stack'];
+            $this->usedSlugs = $this->states[$index]['usedSlugs'];
+            $this->nextPrefix = $this->states[$index]['nextPrefix'];
+            return true;
+        } else {
+            return false;
+        }
     }
 }

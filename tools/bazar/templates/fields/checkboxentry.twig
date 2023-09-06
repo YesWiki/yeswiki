@@ -1,11 +1,11 @@
 {% extends "@bazar/fields/checkbox.twig" %}
 
 {% block value_item -%}
-	<a href="{{ value.href|e ~ (field.isDistantJson ? '/iframe') }}"
-	class="modalbox" 
-			data-size="modal-lg"
-			{{ field.isDistantJson ? 'data-iframe="1"' }}
-			title="{{ _t('BAZ_SEE_ENTRY') }} {{ value.value|striptags }}">
+	<a href="{{ value.href|e ~ '/iframe' }}"
+			{{ not isInIframe ? 'class="modalbox" data-size="modal-lg"' : '' }}
+			{{ field.isDistantJson and not isInIframe ? 'data-iframe="1"' }}
+			data-header="false" data-iframe="1"
+		 	title="{{ _t('BAZ_SEE_ENTRY') }} {{ value.value|striptags }}">
 	{{- value.value|raw -}}
 	</a>
 {%- endblock %}

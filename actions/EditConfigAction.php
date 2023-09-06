@@ -20,6 +20,7 @@ class EditConfigAction extends YesWikiAction
         'default_comment_avatar' => 'core',
         'htmlPurifierActivated' => 'core',
         'favorites_activated' => 'core',
+        'preview_before_save' => 'core',
 
         'default_read_acl' => 'access',
         'default_write_acl' => 'access',

@@ -114,6 +114,8 @@ return [
     'ONLY_ALPHANUM_FOR_GROUP_NAME' => 'De namen van groepen mogen enkel alfanumerieke karakters bevatten',
     // 'LIST_GROUP_MEMBERS' => 'Liste des membres du groupe {groupName}',
     // 'ONE_NAME_BY_LINE' => 'un nom d\'utilisateur par ligne',
+    // 'ONLY_EMPTY_GROUP_FOR_DELETION' => 'Seul un groupe vide peut être supprimé',
+    // 'ONLY_NO_PAGES_GROUP_FOR_DELETION' => 'Seuls les groupes non rattaché à une page peuvent être supprimé. Pages associées :',
 
     // actions/edithandlersacls.class.php
     'HANDLER_RIGHTS' => 'Rechten van de handler',
@@ -537,6 +539,7 @@ return [
     // 'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Nombre maximum de versions d\'une page affichées par le handler `/revisions`.',
     // 'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false)',
     // 'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Activer les favoris (true ou false)',
+    'EDIT_CONFIG_HINT_PREVIEW_BEFORE_SAVE' => 'Voorvertoning vooraf opslaan inschakelen (true of false)',
     // 'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
     // 'EDIT_CONFIG_GROUP_ACCESS' => 'Droit d\'accès',
     // 'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',

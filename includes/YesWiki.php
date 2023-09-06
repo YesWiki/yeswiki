@@ -62,14 +62,7 @@ class Wiki
     public $routes = array();
     public $user; // depreciated TODO remove it for ectoplasme : replaced by userManager
     public $services;
-
-    /**
-     * An array containing all the actions that are implemented by an object
-     *
-     * @access private
-     */
-    public $actionObjects;
-
+    public $actionObjects = array(); // keep track of actions performed
     public $pageCacheFormatted = array();
     public $_groupsCache = array();
     public $_actionsAclsCache = array();
@@ -265,7 +258,7 @@ class Wiki
 
             // now we render it internally so we can write the updated link table.
             $page = $this->services->get(PageManager::class)->getOne($page);
-            $this->services->get(LinkTracker::class)->registerLinks($page, false, false);
+            $this->services->get(LinkTracker::class)->registerLinks($page, false, true);
 
             // Retourne 0 seulement si tout c'est bien passe
             return 0;
@@ -296,8 +289,45 @@ class Wiki
         $replace = '\\n';
         $content = str_replace($order, $replace, $content);
         $contentToAppend = "\n" . date('Y-m-d H:i:s') . ' . . . . ' . $user . ' . . . . ' . $content . "\n";
-        $page = $page ? $page : 'LogDesActionsAdministratives' . date('Ymd');
-        return $this->AppendContentToPage($contentToAppend, $page, true);
+        $tag = $page ? $page : 'LogDesActionsAdministratives' . date('Ymd');
+        $result = $this->AppendContentToPage($contentToAppend, $tag, true);
+        if (empty($page) && $result === 0){
+            try {
+                // keep only 10 revisions of this page
+                $pageManager = $this->services->get(PageManager::class);
+                $dbService = $this->services->get(DbService::class);
+                $revisions = $pageManager->getRevisions($tag);
+                if (!empty($revisions) && count($revisions) > 10){
+                    $idsToDelete = array_map(
+                        function($data){
+                            return $data['id'];
+                        },
+                        array_slice($revisions,10)
+                    );
+
+                    $formattedIds = implode(
+                        ',',
+                        array_map(
+                            function($id) use ($dbService){
+                                return $dbService->escape($id);
+                            },
+                            $idsToDelete
+                        )
+                    );
+
+                    // there are some versions to remove from DB
+                    // let's build one big request, that's better...
+                    $sql = <<<SQL
+                    DELETE FROM {$dbService->prefixTable('pages')} WHERE `id` IN ($formattedIds);
+                    SQL;
+
+                    // ... and send it !
+                    $dbService->query($sql);
+                }
+            } catch (Throwable $th) {
+            }
+        }
+        return $result;
     }
 
     /**
@@ -313,12 +343,12 @@ class Wiki
             $wnPages = $this->GetConfigValue('table_prefix') . 'pages';
             $daysFormatted = mysqli_real_escape_string($this->dblink, $days);
             $sql = <<<SQL
-            SELECT DISTINCT a.id FROM $wnPages a,$wnPages b 
-                WHERE a.latest = 'N' 
+            SELECT DISTINCT a.id FROM $wnPages a,$wnPages b
+                WHERE a.latest = 'N'
                     AND b.latest = 'N'
-                    AND a.time < date_sub(now(), INTERVAL '$daysFormatted' DAY) 
-                    AND a.tag = b.tag 
-                    AND a.time < b.time 
+                    AND a.time < date_sub(now(), INTERVAL '$daysFormatted' DAY)
+                    AND a.tag = b.tag
+                    AND a.time < b.time
                     AND b.time < date_sub(now(), INTERVAL '$daysFormatted' DAY);
             SQL;
             $ids = $this->LoadAll($sql);
@@ -400,7 +430,7 @@ class Wiki
             if (is_array($params)) {
                 $paramsArray = [];
                 foreach ($params as $key => $value) {
-                    if ($value) {
+                    if (!empty($value) || in_array($value,[0,'0',''],true)) {
                         $paramsArray[] = "$key=".urlencode($value);
                     }
                 };
@@ -625,24 +655,7 @@ class Wiki
     // FORMS
     public function FormOpen($method = '', $tag = '', $formMethod = 'post', $class = '')
     {
-        if ($method=='edit' || $method=='editiframe') {
-            $result  = '<form id="ACEditor" name="ACEditor" enctype="multipart/form-data" action="'.$this->href($method, $tag).'" method="'.$formMethod.'"';
-            $result .= !empty($class) ? ' class="'.$class.'"' : '';
-            $result .= ">\n";
-            if (isset($this->config['password_for_editing']) and !empty($this->config['password_for_editing'])
-                and isset($_POST['password_for_editing'])) {
-                $result .= '<input type="hidden" name="password_for_editing" value="'.$_POST['password_for_editing'].'" />'."\n";
-            }
-        } else {
-            $result = '<form action="'.$this->href($method, $tag).'" method="'.$formMethod.'"';
-            $result .= !empty($class) ? ' class="'.$class.'"' : '';
-            $result .= ">\n";
-        }
-
-        if (!$this->config["rewrite_mode"]) {
-            $result .= '<input type="hidden" name="wiki" value="'.$this->MiniHref($method, $tag).'" />'."\n";
-        }
-        return $result;
+        return $this->render('@core/_form-open.twig',compact(['method','tag','formMethod','class']));
     }
 
     public function FormClose()
@@ -726,7 +739,6 @@ class Wiki
     {
         $cmd = trim($action);
         $cmd = str_replace("\n", ' ', $cmd);
-
         // extract $action and $vars_temp ("raw" attributes)
         if (! preg_match("/^([a-zA-Z0-9_-]+)\/?(.*)$/", $cmd, $matches)) {
             return '<div class="alert alert-danger">' . _t('INVALID_ACTION') . ' &quot;' . htmlspecialchars($cmd, ENT_COMPAT, YW_CHARSET) . '&quot;</div>' . "\n";
@@ -744,6 +756,11 @@ class Wiki
         if (!$forceLinkTracking) {
             $this->StopLinkTracking();
         }
+        // keep track of actions and their parameters
+        array_push($this->actionObjects, [
+            'action' => $action,
+            'vars' => $vars,
+        ]);
         $result = $this->services->get(Performer::class)->run($action, 'action', $vars);
         $this->StartLinkTracking(); // shouldn't we restore the previous status ?
         return $result;
@@ -998,6 +1015,13 @@ class Wiki
             return $this->InsertTriple($gname, WIKINI_VOC_ACLS, $acl, GROUP_PREFIX);
         } elseif ($old === $acl) {
             return 0; // nothing has changed
+        } elseif (strcasecmp($old,$acl) === 0 && strcmp($old,$acl) !== 0) {
+            // possible error when directly updating triple
+            if ($this->DeleteTriple($gname, WIKINI_VOC_ACLS, $old,GROUP_PREFIX)){
+                return $this->InsertTriple($gname, WIKINI_VOC_ACLS, $acl, GROUP_PREFIX);
+            } else {
+                return $this->UpdateTriple($gname, WIKINI_VOC_ACLS, $old, $acl, GROUP_PREFIX);
+            }
         } else {
             return $this->UpdateTriple($gname, WIKINI_VOC_ACLS, $old, $acl, GROUP_PREFIX);
         }

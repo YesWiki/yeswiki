@@ -12,14 +12,14 @@ if (empty($class)) {
 $id = $this->GetParameter('id');
 
 // label data attributes
-$data = getDataParameter();
+$data = $this->services->get(\YesWiki\Templates\Service\Utils::class)->getDataParameter();
 
 $pagetag = $this->GetPageTag();
 if (!isset($GLOBALS['check_'.$pagetag])) {
     $GLOBALS['check_'.$pagetag] = [];
 }
 if (!isset($GLOBALS['check_' . $pagetag]['label'])) {
-    $GLOBALS['check_' . $pagetag]['label'] = check_graphical_elements('label', $pagetag, $this->page['body'] ?? '');
+    $GLOBALS['check_' . $pagetag]['label'] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('label', $pagetag, $this->page['body'] ?? '');
 }
 if ($GLOBALS['check_' . $pagetag]['label']) {
     echo '<span' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="label '. $class . '"';

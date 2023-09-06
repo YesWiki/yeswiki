@@ -38,6 +38,8 @@ class ArchiveCommand extends Command
             
             ->addOption('database-only', 'd', InputOption::VALUE_NONE, 'Save only the database of the YesWiki')
             ->addOption('files-only', 'f', InputOption::VALUE_NONE, 'Save only the files of the YesWiki')
+            ->addOption('foldersToInclude', 'i', InputOption::VALUE_REQUIRED, 'Folders to include, path relative to root, coma separated')
+            ->addOption('foldersToExclude', 'x', InputOption::VALUE_REQUIRED, 'Folders to exclude, path relative to root, coma separated')
             ->addOption('hideConfigValues', 'a', InputOption::VALUE_REQUIRED, 'Params to anonymize in wakka.config.php, json_encoded')
             ->addOption('uid', 'u', InputOption::VALUE_REQUIRED, 'uid to retrive input and ouput files')
         ;
@@ -53,6 +55,8 @@ class ArchiveCommand extends Command
             return Command::INVALID;
         }
 
+        $foldersToInclude = $this->prepareFileList($input->getOption('foldersToInclude'));
+        $foldersToExclude = $this->prepareFileList($input->getOption('foldersToExclude'));
         $rawHideConfigValues = $input->getOption('hideConfigValues');
         $hideConfigValues = null;
         if (!empty($rawHideConfigValues)) {
@@ -64,7 +68,7 @@ class ArchiveCommand extends Command
         $uid = $input->getOption('uid');
         $uid = empty($uid) ? "" : $uid;
 
-        $location = $this->archiveService->archive($output, !$databaseOnly, !$filesOnly, $hideConfigValues, $uid);
+        $location = $this->archiveService->archive($output, !$databaseOnly, !$filesOnly, $foldersToInclude, $foldersToExclude, $hideConfigValues, $uid);
 
         return Command::SUCCESS;
     }

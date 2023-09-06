@@ -1,0 +1,15 @@
+<p>{{ _t('SETDEFAULTTHEME_HNIT') }}</p>
+<form method='post' class='form-horizontal'>
+  <input class='hidden' name='action' value='setTemplate'>
+  {{ include('@templates/theme-selector.twig',{sizeClass:'col-lg-4'}) }}
+  <div class='control-group form-group'>
+    <div class="controls col-lg-4 col-lg-offset-4">
+      <input
+        type='submit' 
+        class="btn btn-primary" 
+        value="{{ _t('TEMPLATE_APPLY') }}"
+        {% if isHibernated %}disabled data-toggle="tooltip" data-placement="bottom" title="{{ _t('WIKI_IN_HIBERNATION') }}"{% endif %}
+        />
+    </div>
+  </div>
+</form>

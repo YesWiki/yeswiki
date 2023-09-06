@@ -1,0 +1,20 @@
+{% set necessary_fields = (necessary_fields is defined ? necessary_fields : [])
+  |merge(['bf_latitude', 'bf_longitude'])
+  %}
+
+{% extends "@bazar/entries/index-dynamic-templates/table.twig" %}
+
+{% block assets %}
+  {{ block('assets','@bazar/entries/index-dynamic-templates/map.twig') }}
+  {{ parent() }} {# from table.twig #}
+  {{ include_javascript('tools/bazar/presentation/javascripts/components/BazarTableEntrySelector.js', false, true) }}
+{% endblock %}
+
+{% block display_entries %}
+  {{ block("display_entries",'@bazar/entries/index-dynamic-templates/map.twig') }}
+  <Bazar-Table-Entry-Selector :entries="entriesToDisplay" :params="params">
+    <template #bazarlist="{entriesToDisplay}">
+      {{ parent() }} {# from table.twig #}
+    </template>
+  <Bazar-Table-Entry-Selector/>
+{% endblock %}

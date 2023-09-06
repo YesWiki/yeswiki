@@ -38,7 +38,9 @@ return [
     'BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWN_PLACEHOLDER' => 'bf_ville',
     'BAZ_FORM_EDIT_MAP_LATITUDE' => 'Nom champ latitude',
     'BAZ_FORM_EDIT_MAP_LONGITUDE' => 'Nom champ longitude',
+    'BAZ_FORM_EDIT_SHOW_MAP_IN_ENTRY_VIEW' => 'Afficher la carte dans la fiche lors de sa visualisation',
     'BAZ_GEOLOC_NOT_FOUND' => 'Adresse non trouvée, veuillez déplacer le point ou indiquer les coordonnées GPS',
+    'BAZ_FORM_ADVANCED_PARAMS' => 'Voir les paramètres avancés',
     'BAZ_MAP_ERROR' => 'Une erreur est survenue: {msg}',
     'BAZ_NOT_VALID_GEOLOC_FORMAT' => 'Format de coordonnées GPS non valide (que des chiffres et un point . pour les décimales)',
     'BAZ_POSTAL_CODE_HINT' => 'Veuillez entrer 5 chiffres pour voir les villes associées au code postal',
@@ -47,8 +49,7 @@ return [
     'BAZ_TOWN_NOT_FOUND' => 'Pas de ville trouvée pour la recherche : {input}',
     'GEOLOCATER_GROUP_GEOLOCATIZATION' => 'Champs à utiliser pour la géolocalisation',
     'GEOLOCATER_GROUP_GEOLOCATIZATION_HINT' => 'Renseignez au moins un champ',
-    'GEOLOCATER_SEE_ADVANCED_PARAMS' => '&#9660; Voir les paramètres avancés',
-    'GEOLOCATER_HIDE_ADVANCED_PARAMS' => '&#9650; Masquer les paramètres avancés',
+
     'GEOLOCATER_NOT_FOUND' => 'Adresse "{addr}" introuvable',
 
     // libs/bazar.edit_lists.js
@@ -58,6 +59,7 @@ return [
     // libs/bazar.js
     'BAZ_FORM_REQUIRED_FIELD' => 'Veuillez saisir tous les champs obligatoires (asterisque rouge)',
     'BAZ_FORM_INVALID_EMAIL' => 'L\'email saisi n\'est pas valide',
+    'BAZ_FORM_INVALID_TEXT' => 'Le texte n\'est pas valide',
     'BAZ_FORM_INVALID_URL' => 'L\'url saisie n\'est pas valide, elle doit commencer par https:// '.
         'et ne pas contenir d\'espaces ou caracteres speciaux',
     'BAZ_FORM_EMPTY_RADIO' => 'Il faut choisir une valeur de bouton radio',

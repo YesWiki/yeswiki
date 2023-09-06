@@ -25,8 +25,7 @@ $this->tag = $pagetag;
 $this->page = $this->LoadPage($this->tag);
 
 //fonction de generation du diaporama (teste les droits et l'existence de la page)
-include_once('tools/templates/libs/templates.functions.php');
-echo print_diaporama($pagetag, $template, $class);
+echo $this->services->get(\YesWiki\Templates\Service\Utils::class)->printDiaporama($pagetag, $template, $class);
 
 //on retablie le bon nom de page
 $this->tag = $oldpage;

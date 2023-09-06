@@ -126,6 +126,8 @@ return [
     'ONLY_ALPHANUM_FOR_GROUP_NAME' => 'The group names can only contain alphanumerical characters',
     // 'LIST_GROUP_MEMBERS' => 'Liste des membres du groupe {groupName}',
     // 'ONE_NAME_BY_LINE' => 'un nom d\'utilisateur par ligne',
+    'ONLY_EMPTY_GROUP_FOR_DELETION' => 'Only empty group can be deleted',
+    'ONLY_NO_PAGES_GROUP_FOR_DELETION' => 'Only groups not linked to a page can be deleted. Associated pages:',
 
     // actions/edithandlersacls.class.php
     'HANDLER_RIGHTS' => 'Handler\'s rights',
@@ -540,6 +542,7 @@ return [
     'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Maximum number of page\'s revisions displayed by the handler `/revisions`.',
     'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Enable HTML purifier before backup. Be careful, modify the content to backup! (true or false)',
     'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Enable favorites (true or false)',
+    'EDIT_CONFIG_HINT_PREVIEW_BEFORE_SAVE' => 'Enable pre-save preview (true or false)',
     'EDIT_CONFIG_GROUP_CORE' => 'Main parameters',
     'EDIT_CONFIG_GROUP_ACCESS' => "Access rights",
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',

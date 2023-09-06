@@ -53,7 +53,7 @@ if (!isset($GLOBALS['check_'.$pagetag])) {
     $GLOBALS['check_'.$pagetag] = [];
 }
 if (!isset($GLOBALS['check_'.$pagetag]['buttondropdown'])) {
-    $GLOBALS['check_'.$pagetag ]['buttondropdown'] = check_graphical_elements('buttondropdown', $pagetag, $this->page['body'] ?? '');
+    $GLOBALS['check_'.$pagetag ]['buttondropdown'] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('buttondropdown', $pagetag, $this->page['body'] ?? '');
 }
 if ($GLOBALS['check_'.$pagetag]['buttondropdown']) {
     echo '<div class="btn-group'.(!empty($class) ? ' '.$class : '').'"> <!-- start of buttondropdown -->

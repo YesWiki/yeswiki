@@ -15,7 +15,7 @@
   {% endif %}
   {% set imWidth = (nbcol == 4) ? 250 : (nbcol == 5 ? 200 : 300 ) %}
   {% set imHeight = params.style == "square" ? imWidth : (params.style == "horizontal" ? imWidth*23//27 : imWidth*2//3 ) %}
-  {% set firstTokenCrop = csrfToken("GET api/images/cache/#{imWidth}/#{imHeight}/crop") %}
+  {% set firstTokenCrop = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/crop") %}
   <div class="bazar-cards-container" v-if="ready" 
        :class="[{ready: ready}, `style-${params.style || 'vertical'}`, `nbcol-{{nbcol}}`]" 
        :style="{'grid-template-columns': `repeat({{nbcol}}, 1fr)`}">
@@ -25,12 +25,11 @@
     </div>
 
     {% if isLink %}<a{% else %}<div{% endif %} v-for="entry in entriesToDisplay" :key="entry.id_fiche" 
-        class="bazar-entry bazar-card{{ isModal ? ' modalbox' : ''}}" 
+        class="bazar-entry bazar-card{{ isModal ? ' modalbox' : ''}}"
         {% if not isLink %}@click="openEntry(entry)"{% endif %} 
         :class="{'with-image': Object.keys(entry).includes('visual')}"
         {% if isModal %}
-          data-size="modal-lg"
-          :data-iframe="1" :href="`${entry.url}/iframe`"
+          data-size="modal-lg" data-header="false" data-iframe="1"
         {% endif %}
         {% if isLink %}
           :href="`${entry.url + (({{ isModal ? 'true' : 'false' }} || $root.isInIframe()) ? '/iframe' : '')}`"

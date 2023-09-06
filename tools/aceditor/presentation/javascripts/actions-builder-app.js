@@ -201,7 +201,7 @@ export const app = {
           // force watcher without changing value because VueJs will not detect the change
           // The comparison between changes is done at regular interval, so there will not have detection
           // of change if the value retrieve its previous value before the end of the interval
-          this.watchSelectedActionId() 
+          this.watchSelectedActionId()
         } else {
           this.selectedActionId = Object.keys(this.actions)[0]
         }
@@ -251,7 +251,7 @@ export const app = {
               params[`id[${index}]`] = id
             })
           }
-          $.getJSON(wiki.url('?root/json', params), (data) => {
+          $.getJSON(wiki.url('?wiki/json', params), (data) => {
             this.loadingForms = this.loadingForms.filter((e) => !idsToSearch.includes(e))
             // keep ? because standart http rewrite waits for CamelCase and 'root' is not
             if (Array.isArray(data) && data[0] != undefined) {

@@ -110,7 +110,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/users/{userId}/delete",methods={"GET"}, options={"acl":{"public","@admins"}})
+     * @Route("/api/users/{userId}/delete",methods={"POST"}, options={"acl":{"public","@admins"}})
      */
     public function deleteUser($userId)
     {
@@ -121,7 +121,7 @@ class ApiController extends YesWikiController
         $result = [];
         try {
             $csrfTokenController = $this->getService(CsrfTokenController::class);
-            $csrfTokenController->checkToken("api\\users\\$userId\\delete", 'GET', 'csrfToken');
+            $csrfTokenController->checkToken('main', 'POST', 'csrfToken',false);
             $user = $userManager->getOneByName($userId);
             if (empty($user)) {
                 $code = Response::HTTP_BAD_REQUEST;
@@ -288,10 +288,11 @@ class ApiController extends YesWikiController
         }
     }
     /**
-     * @Route("/api/comments/{tag}/delete",methods={"GET"}, options={"acl":{"public","+"}})
+     * @Route("/api/comments/{tag}/delete",methods={"POST"}, options={"acl":{"public","+"}})
      */
-    public function deleteCommentByGetMethod($tag)
+    public function deleteCommentViaPostMethod($tag)
     {
+        // todo use Anti-Csrf token or Bearer HTTP header
         return $this->deleteComment($tag);
     }
 
@@ -437,7 +438,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/pages/{tag}/delete",methods={"GET"},options={"acl":{"public","+"}})
+     * @Route("/api/pages/{tag}/delete",methods={"POST"},options={"acl":{"public","+"}})
      */
     public function deletePageByGetMethod($tag)
     {
@@ -445,7 +446,7 @@ class ApiController extends YesWikiController
         $code = Response::HTTP_INTERNAL_SERVER_ERROR;
         try {
             $csrfTokenController = $this->wiki->services->get(CsrfTokenController::class);
-            $csrfTokenController->checkToken("api\\pages\\$tag\\delete", 'GET', 'csrfToken');
+            $csrfTokenController->checkToken('main', 'POST', 'csrfToken',false);
         } catch (TokenNotFoundException $th) {
             $code = Response::HTTP_UNAUTHORIZED;
             $result = [

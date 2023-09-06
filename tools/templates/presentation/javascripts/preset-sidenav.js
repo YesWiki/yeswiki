@@ -244,14 +244,14 @@ function saveCSSPreset(elem,url,rewriteMode){
             console.log(fullFileName+' added !');
             var urlwindow = window.location.toString();
             let urlAux = urlwindow.split((rewriteMode ? "?" : "&")+"theme=");
-            window.location =
+            window.location = 
                 urlAux[0] +
                 (rewriteMode ? "?" : "&")+"theme=" +
-                $("#changetheme").val() +
+                $("[name=theme_select]").first().val() +
                 "&squelette=" +
-                $("#changesquelette").val() +
+                $("[name=squelette_select]").first().val() + ($("[name=squelette_select]").first().val().slice(-'.tpl.html'.length) === '.tpl.html' ? '' : '.tpl.html') +
                 "&style=" +
-                $("#changestyle").val()+
+                $("[name=style_select]").first().val()+ ($("[name=style_select]").first().slice(-'.css'.length) === '.css' ? '' : '.css') +
                 "&preset=" +customCSSPresetsPrefix+
                 fullFileName;
         },
@@ -309,19 +309,22 @@ function getActivePreset(){
     return presetKey;
 }
 
-function saveTheme(url){
-    let theme = $("#changetheme").val();
-    let squelette = $("#changesquelette").val();
-    let style = $("#changestyle").val();
+function saveTheme(event,url){
+    const target = event.target
+    const form = $(target).closest('form')
+    let theme = $(form).find('[name=theme_select]').first().val();
+    console.log({event,url,target,form,theme})
+    let squelette = $(form).find('[name=squelette_select]').first().val();
+    let style = $(form).find('[name=style_select]').val();
     let preset = getActivePreset();    
     let errorMessage = themeSelectorTranslation['TEMPLATE_THEME_NOT_SAVE'];
     if (theme && squelette && style){
         $("body").append('<form id="templateFormSubmit" method="post" action="'+url+'" enctype="multipart/form-data">'
             + '<input type="hidden" name="action" value="setTemplate"/>'
-            + '<input type="hidden" name="wdtTheme" value="'+theme+'"/>'
-            + '<input type="hidden" name="wdtSquelette" value="'+squelette+'"/>'
-            + '<input type="hidden" name="wdtStyle" value="'+style+'"/>'
-            + '<input type="hidden" name="preset" value="'+preset+'"/>'
+            + '<input type="hidden" name="theme_select" value="'+theme+'"/>'
+            + '<input type="hidden" name="squelette_select" value="'+squelette+'"/>'
+            + '<input type="hidden" name="style_select" value="'+style+'"/>'
+            + '<input type="hidden" name="preset_select" value="'+preset+'"/>'
             +'</form>')
         $('#templateFormSubmit').submit();
     } else {

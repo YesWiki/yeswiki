@@ -65,7 +65,7 @@ if ($HasAccessRead=$this->HasAccess("read")) {
         $entryManager = $this->services->get(EntryManager::class);
         if ($entryManager->isEntry($this->page['tag'])) {
             $entryController = $this->services->get(EntryController::class);
-            echo $entryController->view($this->GetPageTag(), 0);
+            echo $entryController->view($this->GetPageTag(), $this->page['time'] ?? null);
         } else {
             echo $this->Format($this->page['body'], 'wakka', $this->GetPageTag());
         }

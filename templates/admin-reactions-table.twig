@@ -29,13 +29,7 @@
               <td>
                 <a href="{{ url({
                     tag:'api',
-                    handler:"reactions/#{react.idReaction}/#{react.id}/#{react.pageTag}/#{react.user}/delete",
-                    params: {
-                      csrfToken: csrfToken({
-                          id:"api/reactions/#{react.idReaction}/#{react.id}/#{react.pageTag}/#{react.user}/delete",
-                          refresh: true
-                        })
-                    }
+                    handler:"reactions/#{react.idReaction}/#{react.id}/#{react.pageTag}/#{react.user}/delete"
                   }) }}"
                   class="btn-delete-reaction btn btn-danger btn-xs"
                   title="{{  _t('REACTION_DELETE') }}">

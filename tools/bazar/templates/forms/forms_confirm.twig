@@ -13,7 +13,7 @@
 				_t(type == 'delete' ? 'BAZ_FORM_DELETE' : 'BAZ_FORM_EMPTY',{'formId':request.idformulaire}) ~ '<br/>' ~
 		    '<b>' ~ _t(type == 'delete' ? 'BAZ_CONFIRM_SUPPRIMER_FORMULAIRE' : 'BAZ_CONFIRM_VIDER_FORMULAIRE') ~ ' ?</b><br/>'
 		}) }}
-		<input type="hidden" name="confirm{{ type == 'delete' ? 'Delete' : 'Empty' }}Token" value="{{ csrfToken({id:"action\\bazar\\forms\\#{type}\\#{request.idformulaire}",refresh:true})|e('html_attr') }}">
+		<input type="hidden" name="confirm{{ type == 'delete' ? 'Delete' : 'Empty' }}Token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
 		<input type="submit"
 			class="btn btn-danger" 
 			value="{{ _t(type == 'delete' ? 'BAZ_SUPPRIMER_FORMULAIRE' : 'BAZ_VIDER_FORMULAIRE') }}" 

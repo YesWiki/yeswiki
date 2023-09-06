@@ -1,6 +1,7 @@
 {% extends "@bazar/layouts/input.twig" %}
 
 {% block input %}
+    {{ include_javascript('tools/bazar/libs/vendor/bootstrap-datepicker.js') }}
     <div class="input-prepend input-group">
         <span class="add-on input-group-addon">
             <i class="icon-calendar fa fa-calendar"></i>

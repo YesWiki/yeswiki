@@ -124,7 +124,7 @@ class UsersTableAction extends YesWikiAction
             $userName = in_array($username, [false,null], true) ? "" : htmlspecialchars(strip_tags($userName));
             try {
                 $rawUserName = str_replace(['&#039;','&#39;'], ['\'','\''], $userName);
-                $this->csrfTokenController->checkToken("action\\userstable\\deleteUser\\{$rawUserName}", 'POST', 'csrf-token-delete');
+                $this->csrfTokenController->checkToken('main', 'POST', 'csrf-token-delete',false);
                 $user = $this->userManager->getOneByName($rawUserName);
                 if (empty($user)) {
                     return $this->render("@templates/alert-message.twig", [

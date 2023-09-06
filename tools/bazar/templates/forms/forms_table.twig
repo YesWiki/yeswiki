@@ -96,10 +96,10 @@
             </div>
             <div class="erase-actions">
             {% if form.canDelete %}
-              <a class="btn btn-danger btn-xs modalbox" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'confirm_empty', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom">
+              <a class="btn btn-danger btn-xs modalbox" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'confirm_empty', idformulaire: key, voirmenu: 0 }}) }}" data-toggle="tooltip" data-placement="bottom">
                 <i class="fas fa-eraser"></i>
               </a>
-              <a class="btn btn-danger btn-xs modalbox" title="{{ _t('BAZ_SUPPRIMER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'confirm_delete', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom">
+              <a class="btn btn-danger btn-xs modalbox" title="{{ _t('BAZ_SUPPRIMER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'confirm_delete', idformulaire: key, voirmenu: 0 }}) }}" data-toggle="tooltip" data-placement="bottom">
                 <i class="fa fa-trash"></i>
               </a>
             {% else %}
@@ -125,12 +125,16 @@
 
 {% if userIsAdmin and not isWikiHibernated %}
   <a class="btn btn-primary" href="{{ url({ params: { vue: 'formulaire', action: 'new' }}) }}">
+    {% block createformbutton %}
+      <i class="fa fa-plus icon-plus icon-white"></i>
+      {{ _t('BAZ_NOUVEAU_FORMULAIRE') }}
+    {% endblock createformbutton %}
+  </a>
 {% else %}
   <button type="button" class="btn btn-primary" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage  }}">
+    {{ block('createformbutton') }}
+  </button>
 {% endif %}
-  <i class="fa fa-plus icon-plus icon-white"></i>
-  {{ _t('BAZ_NOUVEAU_FORMULAIRE') }}
-{% if userIsAdmin and not isWikiHibernated %}</a>{% else %}</button>{% endif %}
 
 <hr>
 

@@ -7,6 +7,7 @@ use YesWiki\Wiki;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Templates\Service\Utils;
 
 class ThemeManager
 {
@@ -55,6 +56,7 @@ class ThemeManager
     protected $theme;
     protected $twig;
     protected $useFallbackTheme;
+    protected $utils;
     protected $wiki;
 
     public function __construct(
@@ -62,7 +64,8 @@ class ThemeManager
         TemplateEngine $twig,
         ParameterBagInterface $params,
         Performer $performer, 
-        SecurityController $securityController
+        SecurityController $securityController,
+        Utils $utils
     )
     {
         $this->wiki = $wiki;
@@ -87,6 +90,7 @@ class ThemeManager
         $this->theme = null;
         $this->twig = $twig;
         $this->useFallbackTheme = false;
+        $this->utils = $utils;
     }
 
     /* function imported from tooles/templates/libs/templates.functions.php
@@ -223,11 +227,11 @@ class ThemeManager
 
         // themes folder (used by {{update}})
         if (is_dir('themes')) {
-            $this->templates = array_merge($this->templates, search_template_files('themes'));
+            $this->templates = array_merge($this->templates, $this->utils->searchTemplateFiles('themes',false));
         }
         // custom themes folder
         if (is_dir('custom/themes')) {
-            $this->templates = array_replace_recursive($this->templates, search_template_files('custom/themes'));
+            $this->templates = array_replace_recursive($this->templates, $this->utils->searchTemplateFiles('custom/themes',true));
         }
         ksort($this->templates);
 
@@ -319,21 +323,6 @@ class ThemeManager
         }
     }
 
-    /**
-     * get squelettes and styles used in js for theme selector
-     * @return array ['squelettes'=>array,'styles'=>array]
-     */
-    public function getSquelettesAndStylesForJs(): array
-    {
-        $squelettes = [];
-        $styles = [];
-        foreach ($this->getTemplates() as $templateName => $template) {
-            $squelettes[$templateName] = array_values($template['squelette']);
-            $styles[$templateName] = array_values($template['style']);
-        }
-        return compact(['squelettes','styles']);
-    }
-
     public function getTemplates(): array
     {
         return $this->templates;
@@ -367,11 +356,6 @@ class ThemeManager
     public function getUseFallbackTheme(): bool
     {
         return $this->useFallbackTheme;
-    }
-
-    public function setTemplates(array $templates)
-    {
-        $this->templates = $templates;
     }
 
     protected function getConfigAsStringOrDefault(string $key, string $default): string

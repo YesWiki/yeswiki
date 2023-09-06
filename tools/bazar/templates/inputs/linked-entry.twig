@@ -1,0 +1,14 @@
+{% if field.label is not empty %}
+  {% embed "@bazar/layouts/input.twig" %}
+    {% block label %}
+      {{ field.label|raw }}         
+    {% endblock %}
+    {% block input %}
+      {{ output|raw }}
+    {% endblock %}
+  {% endembed %}
+{% else %}
+  {{ output|raw }}
+{% endif %}
+
+

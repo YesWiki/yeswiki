@@ -48,7 +48,7 @@ $class = $this->GetParameter('class');
 $id = $this->GetParameter('id');
 
 // container data attributes
-$data = getDataParameter();
+$data = $this->services->get(\YesWiki\Templates\Service\Utils::class)->getDataParameter();
 
 echo '<div' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="background-image' . (!empty($class) ? ' ' . $class : '') . '" style="'
     .(!empty($bgcolor) ? 'background-color:' . $bgcolor .'; ' : '')

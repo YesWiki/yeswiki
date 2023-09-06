@@ -104,24 +104,20 @@ function toastMessage(
     }
 
     let $modal = $('#YesWikiModal')
-    const yesWikiModalHtml = `<div class="modal-dialog${
-      size
-    }">`
-      + '<div class="modal-content">'
-      + '<div class="modal-header">'
-      + `<button type="button" class="close" data-dismiss="modal">&times;</button>${
-        text
-      }</div>`
-      + '<div class="modal-body">'
-      + '</div>'
-      + '</div>'
-      + '</div>'
+    const yesWikiModalHtml = `
+      <div class="modal-dialog${size} ${$this.data('header') === false ? 'no-header' : ''}">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            ${text}
+          </div>
+          <div class="modal-body"></div>
+          <button type="button" class="no-header-btn-close" data-dismiss="modal">&times;</button>
+        </div>
+      </div>`
+
     if ($modal.length == 0) {
-      $('body').append(
-        `<div class="modal fade" id="YesWikiModal">${
-          yesWikiModalHtml
-        }</div>`
-      )
+      $('body').append(`<div class="modal fade" id="YesWikiModal">${yesWikiModalHtml}</div>`)
       $modal = $('#YesWikiModal')
     } else {
       $modal.html(yesWikiModalHtml)
@@ -275,57 +271,6 @@ function toastMessage(
   // Remove hidden div by ACL
   $('.remove-this-div-on-page-load').remove()
 
-  // Pour l'apercu des themes, on recharge la page avec le theme selectionne
-  $('#form_theme_selector select').on('change', function() {
-    if ($(this).attr('id') === 'changetheme') {
-      // On change le theme dynamiquement
-      const val = $(this).val()
-
-      // pour vider la liste
-      const squelette = $('#changesquelette')[0]
-      squelette.options.length = 0
-      let i
-      for (i = 0; i < themeSquelettes[val].length; i++) {
-        o = new Option(themeSquelettes[val][i], themeSquelettes[val][i])
-        squelette.options[squelette.options.length] = o
-      }
-
-      const style = $('#changestyle')[0]
-      style.options.length = 0
-      for (i = 0; i < themeStyles[val].length; i++) {
-        o = new Option(themeStyles[val][i], themeStyles[val][i])
-        style.options[style.options.length] = o
-      }
-    }
-    let presetValue = ''
-    if (typeof getActivePreset == 'function') {
-      const key = getActivePreset()
-      if (key) {
-        presetValue = `&preset=${key}`
-      }
-    }
-
-    const url = window.location.toString()
-    let separator = '&'
-    if (
-      wiki
-      && typeof wiki.baseUrl == 'string'
-      && !wiki.baseUrl.includes('?')
-    ) {
-      // rewrite mode
-      separator = '?'
-    }
-    const urlAux = url.split(`${separator}theme=`)
-    window.location = `${urlAux[0]
-      + separator
-    }theme=${
-      $('#changetheme').val()
-    }&squelette=${
-      $('#changesquelette').val()
-    }&style=${
-      $('#changestyle').val()
-    }${presetValue}`
-  })
 
   /* tooltips */
   $("[data-toggle='tooltip']").tooltip()
@@ -849,7 +794,6 @@ $('#commentsTableDeleteModal.modal').on('shown.bs.modal',function(event){
   let csrfToken = $(button).closest('tr').find(`td > label > input[data-itemId="${name}"][data-csrfToken]`).first().data('csrftoken');
   $(this).find('#commentToDelete').text(name);
   $(deleteButton).data('name',name);
-  $(deleteButton).data('csrfToken',csrfToken);
   $(deleteButton).data('targetNode',button);
   $(deleteButton).data('modal',this);
   if (!$(deleteButton).hasClass('eventSet')){
@@ -858,13 +802,12 @@ $('#commentsTableDeleteModal.modal').on('shown.bs.modal',function(event){
       $(this).attr('disabled','disabled');
       $(this).tooltip('hide');
       let name = $(this).data('name');
-      let csrfToken = $(this).data('csrfToken');
       let targetNode = $(this).data('targetNode');
       let modal = $(this).data('modal');
       
       $.ajax({
-        method: 'get',
-        url: wiki.url(`api/comments/${name}/delete`,{csrfToken:csrfToken}),
+        method: 'post',
+        url: wiki.url(`api/comments/${name}/delete`),
         timeout: 30000, // 30 seconds
         error: function (e) {
           multiDeleteService.addErrorMessage($(modal),

@@ -50,6 +50,8 @@ return [
     "AB_bazar_commons2_resetfiltersbutton_label" => "Bouton pour réinitialiser les filtres",
     "AB_bazar_commons2_showexportbuttons" => "Boutons d'export (CSV, JSON...)",
     "AB_bazar_commons2_title" => "Filtres / Facettes",
+    "AB_bazar_commons2_showmapinlistview_label" => "Présenter une carte associée à chaque fiche",
+    "AB_bazar_commons2_showmapinlistview_hint" => "Uniquement pour les fiches qui ont été géolocalisées",
     "AB_bazar_facettes_btn-label-add" => "Ajouter Une Facette",
     "AB_bazar_facettes_field_label" => "Champ",
     "AB_bazar_facettes_title_label" => "Titre",
@@ -120,6 +122,12 @@ return [
     "AB_bazarcard_style_vertical" => 'Vertical',
     "AB_bazarcard_style_square" => 'Carré',
     "AB_bazarcard_style_horizontal" => 'Horizontal',
+    // BazarTable
+    'AB_BAZAR_MAP_AND_TABLE_LABEL' => 'Carte et tableau',
+    'AB_BAZAR_MAP_AND_TABLE_TABLEWITH_LABEL' => 'Tableau contenant toutes les fiches',
+    'AB_BAZAR_MAP_AND_TABLE_TABLEWITH_ALL' => 'avec ou sans geolocalisation',
+    'AB_BAZAR_MAP_AND_TABLE_TABLEWITH_ONLY_GEOLOC' => 'seulement avec geolocalisation',
+    'AB_BAZAR_MAP_AND_TABLE_TABLEWITH_NO_GEOLOC' => 'seulement sans geolocalisation',
     // BazarTrombi
     "AB_bazartrombi_label" => "Trombinoscope",
     "AB_bazartrombi_description" => "Les fiches seront sous forme de Trombinoscope.",

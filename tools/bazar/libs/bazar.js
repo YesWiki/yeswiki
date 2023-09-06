@@ -181,10 +181,13 @@ $(document).ready(() => {
   // validation formulaire de saisie
   const requirementHelper = {
     requiredInputs: [],
+    textInputsWithPattern: [],
     error: -1, // error contain the index of the first error (-1 = no error)
     errorMessage: '',
-    filterVisibleInputs() {
-      this.requiredInputs = this.requiredInputs.filter(function() {
+    errorPattern: -1,
+    errorMessagePattern: '',
+    filterVisibleInputs(key = 'requiredInputs') {
+      this[key] = (this[key]).filter(function() {
         let inputVisible = $(this).filter(':visible')
         if ((
           $(this).prop('tagName') == 'TEXTAREA' && ($(this).hasClass('wiki-textarea') || $(this).hasClass('summernote'))
@@ -381,20 +384,39 @@ $(document).ready(() => {
         $(input).removeClass('invalid')
       }
     },
+    checkPattern(input,index){
+      if ($(input)[0]){
+        const val = $(input).val()
+        const element = $(input)[0]
+        if (val.length > 0){
+          if (!element.checkValidity()){
+            if (this.errorPattern == -1) {
+              this.errorMessagePattern = _t('BAZ_FORM_INVALID_TEXT')
+              this.errorPattern= index
+            }
+          }
+        }
+      }
+    },
     checkInputs() {
       for (let index = 0; index < this.requiredInputs.length; index++) {
         const input = this.requiredInputs[index]
         this.checkInput(input, true, index)
       }
+      for (let index = 0; index < this.textInputsWithPattern.length; index++) {
+        const input = this.textInputsWithPattern[index]
+        this.checkPattern(input, index)
+      }
     },
     displayErrorMessage() {
       alert(this.errorMessage)
     },
-    scrollToFirstinputInError() {
-      if (this.error > -1) {
+    scrollToFirstinputInError(type = 'error') {
+      const error = this[type] ?? -1
+      if (error > -1) {
         // TODO afficher l'onglet en question
         // on remonte en haut du formulaire
-        let input = this.requiredInputs[this.error]
+        let input = this.requiredInputs[error]
         if ($(input).filter(':visible').length == 0) {
           // panel ?
           const panel = $(input).parentsUntil(':visible').last()
@@ -407,6 +429,10 @@ $(document).ready(() => {
         }
         $('html, body').animate({ scrollTop: $(input).offset().top - 80 }, 500)
       }
+    },
+    initTextInputsWithPattern(form) {
+      this.textInputsWithPattern = $(form).find('input[type=text][pattern]')
+      this.errorPattern = -1
     },
     initRequiredInputs(form) {
       this.requiredInputs = $(form).find(
@@ -423,11 +449,18 @@ $(document).ready(() => {
     },
     run(form) {
       this.initRequiredInputs(form)
-      this.filterVisibleInputs()
+      this.initTextInputsWithPattern(form)
+      this.filterVisibleInputs('requiredInputs')
+      this.filterVisibleInputs('textInputsWithPattern')
       this.checkInputs()
       if (this.error > -1) {
         this.displayErrorMessage()
-        this.scrollToFirstinputInError()
+        this.scrollToFirstinputInError('error')
+        return false
+      }
+      if (this.errorPattern > -1) {
+        alert(this.errorMessagePattern)
+        this.scrollToFirstinputInError('errorPattern')
         return false
       }
       return true

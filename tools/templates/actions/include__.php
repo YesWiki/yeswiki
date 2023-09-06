@@ -25,7 +25,7 @@ if (!empty($actif) && $actif == '1') {
     );
 
     // ensuite les liens restants (ceux avec une classe avant ne sont pas pris en compte)
-    $plugin_output_new = str_ireplacement(
+    $plugin_output_new = $this->services->get(\YesWiki\Templates\Service\Utils::class)->strIreplacement(
         '<a href="'.$this->config['base_url'].$page_active.'"',
         '<a class="active-link" href="'.$this->config['base_url'].$page_active.'"',
         $plugin_output_new
@@ -135,4 +135,4 @@ $plugin_output_new = (!empty($clear) && $clear == '1') ?
     $plugin_output_new.'<div class="clearfix"></div>'."\n" :
     $plugin_output_new;
 
-$plugin_output_new = postFormat($plugin_output_new);
+$plugin_output_new = $this->services->get(\YesWiki\Templates\Service\Utils::class)->postFormat($plugin_output_new);

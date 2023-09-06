@@ -1,0 +1,49 @@
+{# group edition or deletion #}
+{% embed '@core/form.twig' with {formMethod: 'post', class:'form-inline'} %}
+    {% block formcontent %}
+        <label>{{ _t('EDIT_EXISTING_GROUP')}}</label>
+        <p>
+            <select class="form-control" name="groupname">
+              {% for group in list %}
+                <option value="{{ group|e('html_attr') }}"
+                    {%- if selectedGroupName == group %} selected="selected"{% endif -%}
+                    >{{ group }}</option>
+              {% endfor %}
+            </select>
+            <input type="hidden" name="confirmToken" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+            <input class="btn btn-primary btn-edit-group" name="action-view" type="submit" value="{{ _t('SEE_EDIT') }}" />
+            <input class="btn btn-danger btn-delete-group" type="submit" name="action-delete" value="{{ _t('DELETE') }}" /></p>
+        </p>
+    {% endblock formcontent %}
+{% endembed %}
+
+{# group creation #}
+{% embed '@core/form.twig' with {formMethod: 'post', class:'form-inline'} %}
+    {% block formcontent %}
+        <label>{{ _t('CREATE_NEW_GROUP')}}</label>
+        <p>
+            <input type="text" name="groupname" placeholder="{{ _t('GROUP_NAME') }}" class="form-control" />
+            <input class="btn btn-primary btn-create-group" type="submit" value="{{ _t('DEFINE') }}" />
+        </p>
+    {% endblock formcontent %}
+{% endembed %}
+
+{% if message is not empty %}
+    {{ include('@templates/alert-message.twig',{message:message,type:type ?? 'info'}) }}
+{% endif %}
+
+{% if selectedGroupName is not empty %}
+  {% embed '@core/form.twig' with {formMethod: 'post'} %}
+    {% block formcontent %}
+        <hr>
+        <label class="edit-group">
+            {{- _t('LIST_GROUP_MEMBERS')|replace({"{groupName}":'<b>' ~ selectedGroupName ~ '</b>'})|raw -}}
+        </label> ({{ _t('ONE_NAME_BY_LINE') }})
+        <input type="hidden" name="groupname" value="{{ selectedGroupName }}" />
+        <input type="hidden" name="confirmToken" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+        <input type="hidden" name="action" value="save" />
+        <textarea name="acl" rows="3" class="form-control">{{ currentGroupAcl }}</textarea><br />
+        <input type="submit" value="{{ _t('SAVE') }}" name="action-save" class="btn btn-primary" accesskey="s" />
+    {% endblock formcontent %}
+  {% endembed %}
+{% endif %}

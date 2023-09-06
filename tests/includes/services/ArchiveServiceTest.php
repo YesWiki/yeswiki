@@ -33,6 +33,8 @@ class ArchiveServiceTest extends YesWikiTestCase
      * @covers ArchiveService::archive
      * @param bool $savefiles
      * @param bool $savedatabase
+     * @param array $foldersToInclude
+     * @param array $foldersToExclude
      * @param string $locationSuffix
      * @param null|int $nbFiles
      * @param array $filesToFind
@@ -42,6 +44,8 @@ class ArchiveServiceTest extends YesWikiTestCase
     public function testArchive(
         bool $savefiles,
         bool $savedatabase,
+        array $foldersToInclude,
+        array $foldersToExclude,
         string $locationSuffix,
         ?int $nbFiles,
         array $filesToFind,
@@ -52,7 +56,9 @@ class ArchiveServiceTest extends YesWikiTestCase
         $location = $services['archiveService']->archive(
             $output,
             $savefiles,
-            $savedatabase
+            $savedatabase,
+            $foldersToInclude,
+            $foldersToExclude,
         );
         $data = $this->getDataFromLocation($location, $services['wiki']);
         $error = $data['error'] ?? "";
@@ -65,19 +71,63 @@ class ArchiveServiceTest extends YesWikiTestCase
                 $this->assertContains($path, $data['files']);
             }
             $this->assertCount($nbFiles, $data['files']);
-            if (!is_null($wakkaContent)) {
-                $this->assertArrayHasKey('wakkaContent', $data);
-                $this->checkWakkaContent($wakkaContent, $data['wakkaContent']);
-            }
+        }
+        if (!is_null($wakkaContent)) {
+            $this->assertArrayHasKey('wakkaContent', $data);
+            $this->checkWakkaContent($wakkaContent, $data['wakkaContent']);
         }
     }
 
     public function archiveProvider()
     {
+        if (!class_exists(ArchiveService::class,false)){
+            include_once 'includes/services/ArchiveService.php'; 
+        }
+        $defaultFoldersToInclude = constant("\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_INCLUDE");
+        $defaultFoldersToExclude = constant("\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_EXCLUDE");
         return [
+            'archive only root files' => [
+                'savefiles' => true,
+                'savedatabase' => false,
+                'foldersToInclude' => [],
+                'foldersToExclude' => $defaultFoldersToInclude,
+                'locationSuffix' => "ARCHIVE_ONLY_FILES_SUFFIX",
+                'nbFiles' => -1,
+                'filesToFind' => ['wakka.config.php'],
+                'wakkaContent' => [
+                    'archive' => [
+                        'foldersToInclude' => $defaultFoldersToInclude,
+                        'foldersToExclude' => array_merge($defaultFoldersToExclude,$defaultFoldersToInclude)
+                    ],
+                ]
+            ],
+            'archive only root files with database' => [
+                'savefiles' => true,
+                'savedatabase' => true,
+                'foldersToInclude' => [],
+                'foldersToExclude' => $defaultFoldersToInclude,
+                'locationSuffix' => "ARCHIVE_SUFFIX",
+                'nbFiles' => -1,
+                'filesToFind' => [
+                    'wakka.config.php',
+                    'private',
+                    'private/backups',
+                    'private/backups/.htaccess',
+                    'private/backups/README.md',
+                    'private/backups/content.sql',
+                ],
+                'wakkaContent' => [
+                    'archive' => [
+                        'foldersToInclude' => $defaultFoldersToInclude,
+                        'foldersToExclude' => array_merge($defaultFoldersToExclude,$defaultFoldersToInclude)
+                    ],
+                ]
+            ],
             'archive only database' => [
                 'savefiles' => false,
                 'savedatabase' => true,
+                'foldersToInclude' => [],
+                'foldersToExclude' => [],
                 'locationSuffix' => "ARCHIVE_ONLY_DATABASE_SUFFIX",
                 'nbFiles' => 5,
                 'filesToFind' => [
@@ -88,7 +138,7 @@ class ArchiveServiceTest extends YesWikiTestCase
                     'private/backups/content.sql'
                 ],
                 'wakkaContent' => null
-            ]
+            ],
         ];
     }
 
@@ -192,8 +242,12 @@ class ArchiveServiceTest extends YesWikiTestCase
         if (is_array($contentDefinition)) {
             $this->assertIsArray($contentToCheck);
             foreach ($contentDefinition as $key => $value) {
-                $this->assertArrayHasKey($key, $contentToCheck);
-                $this->checkWakkaContent($contentDefinition[$key], $contentToCheck[$key]);
+                if (is_integer($key) && is_scalar($value)){
+                    $this->assertContains($value,$contentToCheck);
+                } else {
+                    $this->assertArrayHasKey($key, $contentToCheck);
+                    $this->checkWakkaContent($contentDefinition[$key], $contentToCheck[$key]);
+                }
             }
         } elseif (is_scalar($contentDefinition)) {
             $this->assertEquals($contentDefinition, $contentToCheck);
@@ -217,10 +271,12 @@ class ArchiveServiceTest extends YesWikiTestCase
         $consoleService = $services['wiki']->services->get(ConsoleService::class);
         $previousStatus = $params->has('wiki_status') ? $params->get('wiki_status') : null;
         $this->setWikiStatus($configService, $status);
+
+        $defaultFoldersToInclude = constant("\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_INCLUDE");
+
         $results = $consoleService->startConsoleSync("core:archive", [
             "-f",
-            "-x","*,.*",
-            "-e","wakka.config.php"
+            "-x",implode(',',$defaultFoldersToInclude),
         ]);
         if (empty($previousStatus)) {
             $this->unsetWikiStatus($configService);
@@ -279,10 +335,11 @@ class ArchiveServiceTest extends YesWikiTestCase
         $configService = $services['wiki']->services->get(ConfigurationService::class);
         $consoleService = $services['wiki']->services->get(ConsoleService::class);
 
+        $defaultFoldersToInclude = constant("\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_INCLUDE");
+
         $consoleParams = [
             "-f",
-            "-x","*,.*",
-            "-e","wakka.config.php"
+            "-x",implode(',',$defaultFoldersToInclude),
         ];
 
         $previoushideConfigValuesParams = $this->getHideConfigValuesParam($configService);

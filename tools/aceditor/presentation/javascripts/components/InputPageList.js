@@ -3,7 +3,7 @@ export default {
   computed: {
     pageList() {
       $.ajax({
-        url: wiki.url('?root/json', { demand: 'pages' }), // keep ? because standart http rewrite waits for CamelCase and 'root' is not
+        url: wiki.url('?wiki/json', { demand: 'pages' }), // keep ? because standart http rewrite waits for CamelCase and 'root' is not
         async: true,
         dataType: 'json',
         type: 'GET',
@@ -33,8 +33,8 @@ export default {
       <label v-if="config.label" class="control-label">{{ config.label }}</label>
       <input type="text" autocomplete="off" :value="value" class="form-control"
              data-provide="typeahead" data-items="5" :data-source="pageList"
-             @input="$emit('input', $event.target.value)" 
-             @blur="$emit('input', $event.target.value)" 
+             @input="$emit('input', $event.target.value)"
+             @blur="$emit('input', $event.target.value)"
              :required="config.required" :min="config.min" :max="config.max" ref="input"
       />
       <input-hint :config="config"></input-hint>

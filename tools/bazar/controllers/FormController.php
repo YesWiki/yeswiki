@@ -9,6 +9,7 @@ use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
+use \Tamtamchik\SimpleFlash\Flash;
 
 class FormController extends YesWikiController
 {
@@ -72,13 +73,18 @@ class FormController extends YesWikiController
     public function create()
     {
         if ($this->wiki->UserIsAdmin()) {
-            if (isset($_POST['valider'])) {
-                $this->formManager->create($_POST);
+            $form = null;
 
-                return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE'], false));
+            if (isset($_POST['valider'])) {
+                $form = $this->formManager->getFromRawData($_POST);
+                if ($this->formIsValid($form)) {
+                    $this->formManager->create($_POST);
+                    return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE'], false));
+                }
             }
 
             return $this->render("@bazar/forms/forms_form.twig", [
+                'form' => $form,
                 'formAndListIds' => baz_forms_and_lists_ids(),
                 'groupsList' => $this->getGroupsListIfEnabled(),
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption()
@@ -91,14 +97,18 @@ class FormController extends YesWikiController
     public function update($id)
     {
         if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
-            if (isset($_POST['valider'])) {
-                $this->formManager->update($_POST);
+            $form = $this->formManager->getOne($id);
 
-                return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
+            if (isset($_POST['valider'])) {
+                $form = $this->formManager->getFromRawData($_POST);
+                if ($this->formIsValid($form)) {
+                    $this->formManager->update($_POST);
+                    return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
+                }
             }
 
             return $this->render("@bazar/forms/forms_form.twig", [
-                'form' => $this->formManager->getOne($id),
+                'form' => $form,
                 'formAndListIds' => baz_forms_and_lists_ids(),
                 'groupsList' => $this->getGroupsListIfEnabled(),
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption() && $this->formManager->isAvailableOnlyOneEntryMessage()
@@ -108,11 +118,23 @@ class FormController extends YesWikiController
         }
     }
 
+    private function formIsValid($form)
+    {
+        $titleFields = array_filter($form['prepared'], function($field) {
+            return $field->getPropertyName() == 'bf_titre';
+        });
+        if (count($titleFields) == 0) {
+            Flash::error(_t('BAZ_FORM_NEED_TITLE'));
+            return false;
+        }
+        return true;
+    }
+
     public function delete($id)
     {
         if ($this->wiki->UserIsAdmin()) {
             try {
-                $this->csrfTokenController->checkToken("action\\bazar\\forms\\delete\\$id", 'POST', 'confirmDeleteToken');
+                $this->csrfTokenController->checkToken('main', 'POST', 'confirmDeleteToken',false);
                 $this->formManager->clear($id);
                 $this->formManager->delete($id);
     
@@ -129,7 +151,7 @@ class FormController extends YesWikiController
     {
         if ($this->wiki->UserIsAdmin()) {
             try {
-                $this->csrfTokenController->checkToken("action\\bazar\\forms\\empty\\$id", 'POST', 'confirmEmptyToken');
+                $this->csrfTokenController->checkToken('main', 'POST', 'confirmEmptyToken',false);
                 $this->formManager->clear($id);
 
                 return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_VIDE'], false));

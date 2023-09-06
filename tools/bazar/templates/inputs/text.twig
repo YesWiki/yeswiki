@@ -8,8 +8,13 @@
             id="{{ field.name }}"
             name="{{ field.name }}"
             class="form-control input-xxlarge"
-            maxlength="{{ field.maxChars }}"
-            size="{{ field.maxChars }}"
+            {% if field.subType == 'number' -%}
+              {%- if field.maxChars != '' %}max="{{ field.maxChars }}"{% endif -%}
+              {%- if field.size != '' %}min="{{ field.size }}"{% endif -%}
+            {%- else -%}
+              {%- if field.maxChars != '' %}maxlength="{{ field.maxChars }}"{% endif -%}
+              {%- if field.size != '' %}size="{{ field.size }}"{% endif -%}
+            {% endif %}
             {% if field.pattern %}pattern="{{ field.pattern }}"{% endif %}
             placeholder="{{ field.label|raw('html')|striptags }}"
             {% if field.required %}required{% endif %}

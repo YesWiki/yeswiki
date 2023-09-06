@@ -2,10 +2,10 @@
 
 {% block value_container %}
 	<span class="BAZ_texte">
-		<a href="{{ entryUrl|e ~ (field.isDistantJson ? '/iframe')}}"
-			class="modalbox"
-			data-size="modal-lg"
-			{{ field.isDistantJson ? 'data-iframe="1"' }}
+		<a href="{{ entryUrl|e ~ '/iframe' }}"
+			{{ not isInIframe ? 'class="modalbox" data-size="modal-lg"' : '' }}
+			{{ field.isDistantJson and not isInIframe ? 'data-iframe="1"' }}
+			data-header="false" data-iframe="1"
 			title="{{ _t('BAZ_SEE_ENTRY') }} {{ label|striptags }}">
 				{{- label|raw -}}
 		</a>

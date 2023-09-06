@@ -3,7 +3,7 @@
 {% block display_entries %}
   {% set imWidth = 170 %}
   {% set imHeight = 170 %}
-  {% set firstTokenCrop = csrfToken("GET api/images/cache/#{imWidth}/#{imHeight}/crop") %}
+  {% set firstTokenCrop = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/crop") %}
   <div class="panel-group no-dblclick" style="opacity: 0;" :class="{ready: ready}" v-if="ready">
     <div v-if="entriesToDisplay.length == 0" class="alert alert-info">
       {{ _t('BAZ_NO_RESULT') }}
@@ -24,7 +24,7 @@
           <h4 div class="title-area panel-title">
             <span v-show="entry.color" class="pellet" :style="{'background-color': entry.color}"></span>
             <i v-show="entry.icon" :class="entry.icon"></i>
-            <span class="title">{{"{{ entry.title || entry.bf_titre }}"}}</span>
+            <span class="title" v-html="entry.title || entry.bf_titre"></span>
           </h4>
           {# FLOATING AREA #}
           <entry-field :entry="entry" prop="floating" class="floating-area"></entry-field>

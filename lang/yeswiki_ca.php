@@ -115,6 +115,8 @@ return [
     'ONLY_ALPHANUM_FOR_GROUP_NAME' => 'Els noms dels grups només poden contenir caràcters alfanumèrics',
     // 'LIST_GROUP_MEMBERS' => 'Liste des membres du groupe {groupName}',
     // 'ONE_NAME_BY_LINE' => 'un nom d\'utilisateur par ligne',
+    // 'ONLY_EMPTY_GROUP_FOR_DELETION' => 'Seul un groupe vide peut être supprimé',
+    // 'ONLY_NO_PAGES_GROUP_FOR_DELETION' => 'Seuls les groupes non rattaché à une page peuvent être supprimé. Pages associées :',
 
     // actions/edithandlersacls.class.php
     'HANDLER_RIGHTS' => 'Drets del handler',
@@ -537,7 +539,8 @@ return [
     'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Mètodes permesos per ser mostrats en iframes (iframe,editiframe,bazariframe,render,all = allow all)',
     // 'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Nombre maximum de versions d\'une page affichées par le handler `/revisions`.',
     'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Habilita la neteja HTML abans de fer la còpia de seguretat. Aneu amb compte, modifiqueu el contingut a la còpia de seguretat! (vertader o fals)',
-    'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Activer les favoris (true ou false)',
+    'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Habilitar favorits (vertader o fals)',
+    'EDIT_CONFIG_HINT_PREVIEW_BEFORE_SAVE' => 'Activar la previsualització de desament previ (true o false)',
     'EDIT_CONFIG_GROUP_CORE' => 'Paràmetres principals',
     'EDIT_CONFIG_GROUP_ACCESS' => 'Dret d\'accés',
     'EDIT_CONFIG_GROUP_EMAIL' => 'Correus electrònics',

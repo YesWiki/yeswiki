@@ -1,0 +1,11 @@
+{% if field.label is not empty %}
+  {% embed "@bazar/layouts/field.twig" %}
+    {% block value_container %}
+      {{ output|raw }}
+    {% endblock %}
+  {% endembed %}
+{% else %}
+  {{ output|raw }}
+{% endif %}
+
+
