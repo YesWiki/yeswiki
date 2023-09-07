@@ -685,9 +685,9 @@ class ApiController extends YesWikiController
         if (empty($username)) {
             $username = $this->getService(AuthController::class)->getLoggedUser()['name'];
         }
-        $rawValue = $_POST['value'] ?? [];
-        if (is_array($rawValue)) {
-            $rawValue = array_filter($rawValue, function ($elem) {
+        $value = $_POST['value'] ?? [];
+        if (is_array($value)) {
+            $rawValue = array_filter($value, function ($elem) {
                 return is_scalar($elem);
             });
         } elseif (is_scalar($value)) {
