@@ -841,6 +841,7 @@ class EntryManager
         unset($data['mot_de_passe_repete_wikini']);
         unset($data['html_data']);
         unset($data['url']);
+        unset($data['incomingurl']);
 
         // on nettoie le champ owner qui n'est pas sauvegardé (champ owner de la page)
         if (isset($data['owner'])) {
