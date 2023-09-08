@@ -1,4 +1,4 @@
-FROM lavoweb/php-7.3:composer
+FROM lavoweb/php-8.2:composer
 
 # Add MySQLi
 RUN docker-php-ext-install mysqli
@@ -19,8 +19,6 @@ RUN mkdir -p themes/margot \
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Node & NPM & Yarn
-RUN curl -sL https://deb.nodesource.com/setup_14.x  | bash -
+RUN curl -sL https://deb.nodesource.com/setup_18.x  | bash -
 RUN apt-get install -y --no-install-recommends nodejs
-RUN curl -L https://npmjs.org/install.sh | sh
 RUN npm install -g yarn
-

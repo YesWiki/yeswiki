@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       logLevel:
-        description: 'Log level'     
+        description: 'Log level'
         required: true
         default: 'warning'
       tags:
-        description: 'Tags'  
+        description: 'Tags'
   push:
     branches: [ doryphore, ectoplasme ]
     paths:
@@ -27,15 +27,13 @@ env:
 
 jobs:
   build:
-    # it provides
-    # see https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu1804-README.md
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v2
     - uses: shivammathur/setup-php@v2
       with:
-        php-version: '7.3'
+        php-version: '8.2'
         extensions: mysqli
         tools: composer:v2
       env:
@@ -105,7 +103,7 @@ jobs:
           -F "admin_email=test@example.com" \
           -F "submit=Continue" \
           "http://localhost/?PagePrincipale&installAction=install"
-    
+
     - name: Set wakka.config.php writable
       run: |
         sudo chown www-data:www-data ${{ github.workspace }}/wakka.config.php
@@ -113,5 +111,3 @@ jobs:
 
     - name: Run test suite
       run: composer test
-      
-
