@@ -1,4 +1,4 @@
-name: PHP Composer
+name: Tests on php 8.2
 
 on:
   workflow_dispatch:
