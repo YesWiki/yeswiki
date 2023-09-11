@@ -208,11 +208,14 @@ class MapField extends BazarField
         $wiki = $this->getWiki();
 
         // check the last used action containing the good form id
-        $lastAction = end(
+        $filteredActions = 
             array_filter($wiki->actionObjects, function($v) use ($entry) {
-                return $v['vars']['id'] == $entry['id_typeannonce'];
-            })
-        );
+                return !empty($v['action'])
+                    && substr($v['action'],0,5) === 'bazar'
+                    && !empty($v['vars']['id'])
+                    && $v['vars']['id'] == $entry['id_typeannonce'];
+            });
+        $lastAction = end($filteredActions);
         $showMapInDynamicListView = (isset($_GET['showmapinlistview']) && $_GET['showmapinlistview'] === '1');
         $showMapInListView = false;
         if (
