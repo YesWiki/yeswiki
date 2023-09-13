@@ -86,6 +86,7 @@ $GLOBALS['js'] = '';
 
 $wikiprops = [
     'locale' => $GLOBALS['prefered_language'],
+    'timezone' => date_default_timezone_get(),
     'baseUrl' => $this->config['base_url'],
     'pageTag' => $this->getPageTag(),
     'isDebugEnabled' => ($this->GetConfigValue('debug') =='yes' ? 'true' : 'false'),

@@ -34,6 +34,22 @@ Vue.component('BazarCalendar', {
       }
       return true
     },
+    getDateInServerTimeZone(date){
+      const newDate = new Date(this.getDateStringInServerTimeZone(date))
+      if (newDate){
+        return newDate.toISOString()
+      }
+      return date
+    },
+    getDateStringInServerTimeZone(date){
+      let exportableDate = new Date(date)
+      if (exportableDate){
+        return exportableDate
+          .toLocaleString('en-GB',{timeZone:wiki.timezone})
+          .replace(/^([0-9]{2})\/([0-9]{2})\/([0-9]{4}), ([0-9]{2}):([0-9]{2}):([0-9]{2})$/,'$3-$2-$1T$4:$5:$6')
+      }
+      return date
+    },
     displaySideBar(info) {
       info.jsEvent.preventDefault()
       const { entries } = this
@@ -57,10 +73,10 @@ Vue.component('BazarCalendar', {
     formatEndDate(entry) {
       // Fixs bug, when no time is specified, is the event is on multiple day, calendJs show it like
       // it end one day earlier
-      const startDate = entry.bf_date_debut_evenement
+      const startDate = this.retrieveTimeZone(entry.bf_date_debut_evenement)
       let endDate = null
       if (entry.bf_date_fin_evenement != undefined) {
-        endDate = entry.bf_date_fin_evenement
+        endDate = this.retrieveTimeZone(entry.bf_date_fin_evenement)
         try {
           endDate = new Date(endDate)
         } catch (error) {
@@ -79,7 +95,7 @@ Vue.component('BazarCalendar', {
         endDate.setMilliseconds(0)
         return endDate.toISOString()
       }
-      let endDateRaw = entry.bf_date_fin_evenement
+      let endDateRaw = this.retrieveTimeZone(entry.bf_date_fin_evenement)
       if (endDateRaw.length <= 10) {
         endDate.setDate(endDate.getDate() + 1) // +1 day
         endDate.setHours(0)
@@ -125,7 +141,7 @@ Vue.component('BazarCalendar', {
         const newEvent = {
           id: entryId,
           title: entry.bf_titre,
-          start: entry.bf_date_debut_evenement,
+          start: this.retrieveTimeZone(entry.bf_date_debut_evenement),
           end: this.formatEndDate(entry),
           url: entry.url + (this.isModalDisplay() ? '/iframe' : ''),
           allDay: this.isAllDayDate(entry.bf_date_debut_evenement),
@@ -149,6 +165,29 @@ Vue.component('BazarCalendar', {
       if (existingEvent) {
         existingEvent.remove()
       }
+    },
+    retrieveTimeZone(dateAsString){
+      let exportableDate = dateAsString
+      if (typeof exportableDate === 'string'
+        && exportableDate?.length > 10){
+        if (exportableDate.match(/\+00:00$/)){
+          // could be an error
+          const dateObj = new Date(exportableDate)
+          if (dateObj){
+            const browserTimezoneOffset = dateObj.getTimezoneOffset()
+            const dateNoTimeZone = exportableDate.replace(/\+00:00$/,'')
+            const dateObjNoTimezone = new Date(dateNoTimeZone)
+            const dateStringInServerTimeZone = this.getDateStringInServerTimeZone(dateNoTimeZone)
+            const diffBetweenServerAndBrowserTimeZone_ms = (new Date(dateStringInServerTimeZone)).getTime()
+               - dateObjNoTimezone.getTime()
+            dateObj.setTime(dateObj.getTime()+browserTimezoneOffset*60000-diffBetweenServerAndBrowserTimeZone_ms)
+            exportableDate = dateObj.toISOString()
+          }
+        }
+        // fake date in browser timezone to be sure to be sync with server's timezone
+        exportableDate = this.getDateInServerTimeZone(exportableDate)
+      }
+      return exportableDate
     },
     updateEventData(arg) {
       const { event } = arg

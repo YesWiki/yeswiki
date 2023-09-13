@@ -2,6 +2,8 @@
 
 namespace YesWiki\Bazar\Field;
 
+use YesWiki\Core\Service\DateService;
+
 /**
  * @Field({"jour", "listedatedeb", "listedatefin"})
  */
@@ -17,11 +19,12 @@ class DateField extends BazarField
 
         if (!empty($value)) {
             // Default value when entry exist
-            $day = date("Y-m-d", strtotime($value));
-            $hasTime = (strlen($value) > 10);
+            $day = $this->getService(DateService::class)->getDateTimeWithRightTimeZone($value)->format('Y-m-d H:i');
+            $hasTime = (strlen($day) > 10);
             if ($hasTime) {
-                $result = explode('T', $value);
+                $result = explode(' ', $day);
                 list($hour, $minute) = array_map('intval', explode(':', $result[1]));
+                $day = $result[0];
             }
         } elseif (!empty($this->default)) {
             // Default value when new entry
@@ -47,7 +50,7 @@ class DateField extends BazarField
         $value = $this->getValue($entry);
         if (!empty($value) && isset($entry[$this->propertyName . '_allday']) && $entry[$this->propertyName . '_allday'] == 0
              && isset($entry[$this->propertyName . '_hour']) && isset($entry[$this->propertyName . '_minutes'])) {
-            $value = date("c", strtotime($value . ' ' . $entry[$this->propertyName . '_hour'] . ':' . $entry[$this->propertyName . '_minutes']));
+            $value = $this->getService(DateService::class)->getDateTimeWithRightTimeZone("$value {$entry[$this->propertyName . '_hour']}:{$entry[$this->propertyName . '_minutes']}")->format('c');
         }
         return [$this->propertyName => $value,
             'fields-to-remove' =>[$this->propertyName . '_allday',$this->propertyName . '_hour',$this->propertyName . '_minutes']];
@@ -61,7 +64,7 @@ class DateField extends BazarField
         }
 
         if (strlen($value) > 10) {
-            $value = date('d.m.Y - H:i', strtotime($value));
+            $value = $this->getService(DateService::class)->getDateTimeWithRightTimeZone($value)->format('d.m.Y - H:i');
         } else {
             $value =  date('d.m.Y', strtotime($value));
         }

@@ -254,10 +254,13 @@ class Init
         $wakkaConfig = $this->array_merge_recursive_distinct($yeswikiDefaultConfig, $wakkaConfig);
 
         // give a default timezone to avoid error
-        if (!empty($wakkaConfig['timezone']) && $wakkaConfig['timezone'] != $yeswikiDefaultConfig['timezone']) {
+        if (!empty($wakkaConfig['timezone'])) {
             date_default_timezone_set($wakkaConfig['timezone']);
-        } elseif (!ini_get('date.timezone')) {
+        } elseif (!empty($yeswikiDefaultConfig['timezone'])) {
             date_default_timezone_set($yeswikiDefaultConfig['timezone']);
+        } elseif (!ini_get('date.timezone')) {
+            // backup in last case
+            date_default_timezone_set('GMT');
         }
 
         // check for locking
