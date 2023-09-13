@@ -6,35 +6,39 @@
 
 namespace YesWiki\Bazar\Controller;
 
+use DateInterval;
+use DateTimeImmutable;
+use DateTimeZone;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Response;
 use YesWiki\Bazar\Field\DateField;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Controller\GeoJSONFormatter;
+use YesWiki\Core\Service\DateService;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Core\YesWikiController;
-use \DateInterval;
-use \DateTime;
-use \DateTimeZone;
 
 class IcalFormatter extends YesWikiController
 {
     public const MAX_CHARS_BY_LINE = 74;
 
-    protected $params;
-    protected $geoJSONFormatter;
+    protected $dateService;
     protected $entryController;
+    protected $geoJSONFormatter;
+    protected $params;
     protected $performer;
 
     public function __construct(
-        ParameterBagInterface $params,
-        GeoJSONFormatter $geoJSONFormatter,
+        DateService $dateService,
         EntryController $entryController,
+        GeoJSONFormatter $geoJSONFormatter,
+        ParameterBagInterface $params,
         Performer $performer
     ) {
-        $this->params = $params;
-        $this->geoJSONFormatter = $geoJSONFormatter;
+        $this->dateService = $padateServicerams;
         $this->entryController = $entryController;
+        $this->geoJSONFormatter = $geoJSONFormatter;
+        $this->params = $params;
         $this->performer = $performer;
     }
 
@@ -145,27 +149,25 @@ class IcalFormatter extends YesWikiController
     private function getICALData(array $entry):array
     {
         if (!empty($entry['bf_date_debut_evenement']) && !empty($entry['bf_date_fin_evenement'])) {
-            $startDate = new DateTime($entry['bf_date_debut_evenement']);
+            $startDate = $this->dateService->getDateTimeWithRightTimeZone($entry['bf_date_debut_evenement']);
             if (is_null($startDate)){
                 return [];
             }
-            $endData = $entry['bf_date_fin_evenement'];
-            $endDataObject = new DateTime($endData);
-            if (is_null($endDataObject)){
+            $endDate = $this->dateService->getDateTimeWithRightTimeZone($entry['bf_date_fin_evenement']);
+            if (is_null($endDate)){
                 return [];
             }
             // 24 h for end date if all day
-            if ($this->isAllDay(strval($endData))) {
-                $endData = $endDataObject->add(new DateInterval('P1D'))->format('Y-m-d H:i:s');
-                $endDataObject = new DateTime($endData);
+            if ($this->isAllDay(strval($entry['bf_date_fin_evenement']))) {
+                $endDate = $endDate->add(new DateInterval('P1D'));
             }
-            if ($startDate->diff($endDataObject)->invert > 0){
+            if ($startDate->diff($endDate)->invert > 0){
                 // end date before start date not possible in ical : use start time + 1 hour
-                $endData = $startDate->add(new DateInterval('PT1H'))->format('Y-m-d H:i:s');
+                $endDate = $startDate->add(new DateInterval('PT1H'));
             }
             return [
-                'startDate' => $entry['bf_date_debut_evenement'],
-                'endDate' => $endData,
+                'startDate' => $startDate->format('Y-m-d H:i:s'),
+                'endDate' => $endDate->format('Y-m-d H:i:s'),
             ];
         }
         return [];
@@ -262,11 +264,8 @@ class IcalFormatter extends YesWikiController
      */
     private function formatDate(string $date): string
     {
-        if (empty($date)) {
-            $date = null;
-        }
-        $dateObject = new DateTime($date);
-        $dateObject->setTimezone(new DateTimeZone('UTC'));
+        $dateObject = empty($date) ? new DateTimeImmutable() : new DateTimeImmutable($date);
+        $dateObject = $dateObject->setTimezone(new DateTimeZone('UTC'));
         $localFormattedDate = $dateObject->format('Ymd');
         $localFormattedTime = $dateObject->format('His');
 
