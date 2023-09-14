@@ -20,11 +20,13 @@ class DateField extends BazarField
         if (!empty($value)) {
             // Default value when entry exist
             $day = $this->getService(DateService::class)->getDateTimeWithRightTimeZone($value)->format('Y-m-d H:i');
-            $hasTime = (strlen($day) > 10);
+            $hasTime = (strlen($value) > 10);
             if ($hasTime) {
                 $result = explode(' ', $day);
                 list($hour, $minute) = array_map('intval', explode(':', $result[1]));
                 $day = $result[0];
+            } else {
+                $day = substr($day,0,10);
             }
         } elseif (!empty($this->default)) {
             // Default value when new entry
