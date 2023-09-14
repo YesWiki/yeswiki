@@ -103,6 +103,7 @@ class ImageField extends FileField
     public function formatValuesBeforeSave($entry)
     {
         $params = $this->getService(ParameterBagInterface::class);
+        $value = $this->getValue($entry);
         if (!empty($_FILES[$this->propertyName]['name']) && !empty($entry['id_fiche'])) {
             $rawFileName = filter_var($_FILES[$this->propertyName]['name'], FILTER_UNSAFE_RAW);
             $rawFileName = in_array($rawFileName, [false,null], true) ? "" : htmlspecialchars(strip_tags($rawFileName));
