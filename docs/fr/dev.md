@@ -48,7 +48,7 @@ _[Documentation originelle sur le site yeswiki.net](https://yeswiki.net/?Tutorie
 
 ## Rendre votre wiki sémantique
 
-_[Documentation originelle sur le site yeswiki.net](https://yeswiki.net/?RendreYeswikiSemantique "Tutoriel - Rendre votre wiki sémantique")_
+Une documentation détaillée en Français est disponible sur cette page [docs/fr/semantic](semantic)
 
 ## Créer un widget bazar
 
@@ -182,4 +182,3 @@ Une autre méthode est d’appeler la route concernée avec les bons cookies. Pa
 !> **attention** : cette méthode d'authentification à l'api par les cookies risques de ne pas être stable au fil des versions et une nouvelle méthode d'authentification pourrait être mise en place.
 
 Une documentation technique sur l'api en Anglais est disponible dans ce fichier : [docs/code/api.md](/docs/code/api.md)
-
