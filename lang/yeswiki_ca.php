@@ -535,7 +535,7 @@ return [
     // 'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING' => 'Mot de passe demandé pour modifier les pages (voir doc gestion des spams)',
     // 'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING_MESSAGE' => 'Message informatif pour demander le mot de passe (voir doc gestion des spams)',
     // 'EDIT_CONFIG_HINT_ALLOW_DOUBLECLIC' => 'Autoriser le doubleclic pour éditer les menus et pages spéciales (true ou false)',
-    'EDIT_CONFIG_HINT_TIMEZONE' => 'Fus horari del lloc (per exemple, UCT, Europa / París, Europa / Londres, GMT = utilitzeu la zona horària del servidor,)',
+    'EDIT_CONFIG_HINT_TIMEZONE' => 'Fus horari del lloc (per exemple, UCT, Europa/Paris, Europa/Londres)',
     'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Mètodes permesos per ser mostrats en iframes (iframe,editiframe,bazariframe,render,all = allow all)',
     // 'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Nombre maximum de versions d\'une page affichées par le handler `/revisions`.',
     'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Habilita la neteja HTML abans de fer la còpia de seguretat. Aneu amb compte, modifiqueu el contingut a la còpia de seguretat! (vertader o fals)',
