@@ -103,20 +103,20 @@ class ThemeManager
     {
         // Premier cas le template par défaut est forcé : on ajoute ce qui est présent dans le fichier de configuration, ou le theme par defaut précisé ci dessus
         if ($this->params->has('hide_action_template') && $this->params->get('hide_action_template') == '1') {
-            $this->favorites['theme'] = $this->getConfigAsStringOrDefault('favorite_theme',THEME_PAR_DEFAUT);
-            $this->favorites['style'] = $this->getConfigAsStringOrDefault('favorite_style',CSS_PAR_DEFAUT);
-            $this->favorites['squelette'] = $this->getConfigAsStringOrDefault('favorite_squelette',SQUELETTE_PAR_DEFAUT);
-            $this->favorites['background_image'] = $this->getConfigAsStringOrDefault('favorite_background_image',BACKGROUND_IMAGE_PAR_DEFAUT);
-            $this->favorites['preset'] = $this->getConfigAsStringOrDefault('favorite_preset','');
+            $this->setFavorite('theme',$this->getConfigAsStringOrDefault('favorite_theme',THEME_PAR_DEFAUT));
+            $this->setFavorite('style',$this->getConfigAsStringOrDefault('favorite_style',CSS_PAR_DEFAUT));
+            $this->setFavorite('squelette',$this->getConfigAsStringOrDefault('favorite_squelette',SQUELETTE_PAR_DEFAUT));
+            $this->setFavorite('background_image',$this->getConfigAsStringOrDefault('favorite_background_image',BACKGROUND_IMAGE_PAR_DEFAUT));
+            $this->setFavorite('preset',$this->getConfigAsStringOrDefault('favorite_preset',''));
         } else {
             // Sinon, on récupère premièrement les valeurs passées en REQUEST, ou deuxièmement les métasdonnées présentes pour la page, ou troisièmement les valeurs du fichier de configuration
             if (isset($_REQUEST['theme']) && (is_dir('custom/themes/'.$_REQUEST['theme']) || is_dir('themes/'.$_REQUEST['theme'])) &&
                 isset($_REQUEST['style']) && (is_file('custom/themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style']) || is_file('themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style'])) &&
                 isset($_REQUEST['squelette']) && (is_file('custom/themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']) || is_file('themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']))
             ) {
-                $this->favorites['theme'] = $_REQUEST['theme'];
-                $this->favorites['style'] = $_REQUEST['style'];
-                $this->favorites['squelette'] = $_REQUEST['squelette'];
+                $this->setFavorite('theme',$_REQUEST['theme']);
+                $this->setFavorite('style',$_REQUEST['style']);
+                $this->setFavorite('squelette',$_REQUEST['squelette']);
 
                 // presets
                 if (isset($_REQUEST['preset']) &&
@@ -135,43 +135,43 @@ class ThemeManager
                             )
                         )
                 ) {
-                    $this->favorites['preset'] = $_REQUEST['preset'];
+                    $this->setFavorite('preset',$_REQUEST['preset']);
                 }
 
                 if (isset($_REQUEST['bgimg']) && (is_file('files/backgrounds/'.$_REQUEST['bgimg']))) {
-                    $this->favorites['background_image'] = $_REQUEST['bgimg'];
+                    $this->setFavorite('background_image',$_REQUEST['bgimg']);
                 } else {
-                    $this->favorites['background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
+                    $this->setFavorite('background_image',BACKGROUND_IMAGE_PAR_DEFAUT);
                 }
             } else {
                 // si les metas sont présentes on les utilise
                 if (isset($metadata['theme']) && isset($metadata['style']) && isset($metadata['squelette'])) {
-                    $this->favorites['theme'] = $metadata['theme'];
-                    $this->favorites['style'] = $metadata['style'];
-                    $this->favorites['squelette'] = $metadata['squelette'];
+                    $this->setFavorite('theme',$metadata['theme']);
+                    $this->setFavorite('style',$metadata['style']);
+                    $this->setFavorite('squelette',$metadata['squelette']);
                     if (!empty($metadata['favorite_preset'])) {
-                        $this->favorites['preset'] = $metadata['favorite_preset'];
+                        $this->setFavorite('preset',$metadata['favorite_preset']);
                     }
                     if (isset($metadata['bgimg'])) {
-                        $this->favorites['background_image'] = $metadata['bgimg'];
+                        $this->setFavorite('background_image',$metadata['bgimg']);
                     } else {
-                        $this->favorites['background_image'] = '';
+                        $this->setFavorite('background_image','');
                     }
                 } else {
                     if (empty($this->favorites['theme'])) {
-                        $this->favorites['theme'] = $this->getConfigAsStringOrDefault('favorite_theme',THEME_PAR_DEFAUT);
+                        $this->setFavorite('theme',$this->getConfigAsStringOrDefault('favorite_theme',THEME_PAR_DEFAUT));
                     }
                     if (empty($this->favorites['style'])) {
-                        $this->favorites['style'] = $this->getConfigAsStringOrDefault('favorite_style',CSS_PAR_DEFAUT);
+                        $this->setFavorite('style',$this->getConfigAsStringOrDefault('favorite_style',CSS_PAR_DEFAUT));
                     }
                     if (empty($this->favorites['squelette'])) {
-                        $this->favorites['squelette'] = $this->getConfigAsStringOrDefault('favorite_squelette',SQUELETTE_PAR_DEFAUT);
+                        $this->setFavorite('squelette',$this->getConfigAsStringOrDefault('favorite_squelette',SQUELETTE_PAR_DEFAUT));
                     }
                     if (empty($this->favorites['background_image'])) {
-                        $this->favorites['background_image'] = $this->getConfigAsStringOrDefault('favorite_background_image',BACKGROUND_IMAGE_PAR_DEFAUT);
+                        $this->setFavorite('background_image',$this->getConfigAsStringOrDefault('favorite_background_image',BACKGROUND_IMAGE_PAR_DEFAUT));
                     }
                     if (empty($this->favorites['preset'])) {
-                        $this->favorites['preset'] = $this->getConfigAsStringOrDefault('favorite_preset','');
+                        $this->setFavorite('preset',$this->getConfigAsStringOrDefault('favorite_preset',''));
                     }
                 }
             }
@@ -199,10 +199,10 @@ class ThemeManager
                     $GLOBALS['template-error']['theme'] = $this->favorites['theme'];
                     $GLOBALS['template-error']['style'] = $this->favorites['style'];
                     $GLOBALS['template-error']['squelette'] = $this->favorites['squelette'];
-                    $this->favorites['theme'] = THEME_PAR_DEFAUT;
-                    $this->favorites['style'] = CSS_PAR_DEFAUT;
-                    $this->favorites['squelette'] = SQUELETTE_PAR_DEFAUT;
-                    $this->favorites['background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
+                    $this->setFavorite('theme',THEME_PAR_DEFAUT);
+                    $this->setFavorite('style',CSS_PAR_DEFAUT);
+                    $this->setFavorite('squelette',SQUELETTE_PAR_DEFAUT);
+                    $this->setFavorite('background_image',BACKGROUND_IMAGE_PAR_DEFAUT);
                 } else {
                     return [];
                 }
@@ -351,6 +351,13 @@ class ThemeManager
     public function getFavoriteBackgroundImage(): string
     {
         return $this->favorites['background_image'];
+    }
+
+    protected function setFavorite(string $key, $newVal)
+    {
+        $this->favorites[$key] = (empty($newVal) || !is_string($newVal))
+            ? ''
+            :  $newVal;
     }
 
     public function getUseFallbackTheme(): bool
