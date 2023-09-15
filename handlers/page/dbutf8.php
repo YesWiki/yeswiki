@@ -92,7 +92,7 @@ if (isset($this)) {
         $output .=  "<h3>Complete ALL</h3>";
 
         // ajout du charset utf8mb4 dans wakka.config.php
-        $config = $this->services->get(ConfigurationService::class)->getConfiguration('wakka.config.php');
+        $config = $this->services->get(ConfigurationService::class)->getConfiguration($this->wiki->configFile);
         $config->load();
         $config->db_charset = 'utf8mb4';
         $config->write();

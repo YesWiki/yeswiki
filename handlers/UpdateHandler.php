@@ -288,7 +288,7 @@ class UpdateHandler extends YesWikiHandler
         $output = "ℹ️ Resetting comment acls<br />";
 
         // default acls in wakka.config.php
-        $config = $this->getService(ConfigurationService::class)->getConfiguration('wakka.config.php');
+        $config = $this->getService(ConfigurationService::class)->getConfiguration($this->wiki->configFile);
         $config->load();
 
         $baseKey = 'default_comment_acl';

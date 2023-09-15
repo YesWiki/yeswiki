@@ -20,7 +20,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction
                 'message' =>  _t('ERROR_NO_ACCESS'). " setwikidefaulttheme"
             ]);
         }
-        if (!is_writable('wakka.config.php')) {
+        if (!is_writable($this->wiki->configFile)) {
             return $this->render('@templates/alert-message.twig',[
                 'type' => 'danger',
                 'message' => _t('ERROR_NO_ACCESS'). " setwikidefaulttheme, "._t('FILE_WRITE_PROTECTED')
@@ -32,7 +32,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction
         $this->themeManager = $this->getService(ThemeManager::class);
 
         $themes = $this->getTemplatesList();
-        $config = $this->getService(ConfigurationService::class)->getConfiguration('wakka.config.php');
+        $config = $this->getService(ConfigurationService::class)->getConfiguration($this->wiki->configFile);
         $config->load();
 
         if (isset($_POST['action']) and $_POST['action'] === 'setTemplate') {

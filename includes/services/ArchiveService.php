@@ -905,7 +905,7 @@ class ArchiveService
     private function getWakkaConfigSanitized(array $foldersToInclude, array $foldersToExclude, ?array $hideConfigValuesParams = null): string
     {
         // get wakka.config.php content
-        $config = $this->configurationService->getConfiguration('wakka.config.php');
+        $config = $this->configurationService->getConfiguration($this->wiki->configFile);
         $config->load();
         if (!isset($config[self::PARAMS_KEY_IN_WAKKA]) ||
             !is_array($config[self::PARAMS_KEY_IN_WAKKA])) {
@@ -950,14 +950,14 @@ class ArchiveService
 
     protected function setWikiStatus()
     {
-        $config = $this->configurationService->getConfiguration('wakka.config.php');
+        $config = $this->configurationService->getConfiguration($this->wiki->configFile);
         $config->load();
         $config['wiki_status'] = 'archiving';
         $this->configurationService->write($config);
     }
     protected function unsetWikiStatus()
     {
-        $config = $this->configurationService->getConfiguration('wakka.config.php');
+        $config = $this->configurationService->getConfiguration($this->wiki->configFile);
         $config->load();
         unset($config['wiki_status']);
         $this->configurationService->write($config);
