@@ -59,7 +59,8 @@ jobs:
         </VirtualHost>" | sudo tee /etc/apache2/sites-enabled/000-default.conf
         sudo chown www-data:www-data -R ${{ github.workspace }}
         sudo apt update
-        sudo apt install --no-install-recommends --assume-yes libapache2-mod-php7.3
+        sudo apt install --no-install-recommends --assume-yes libapache2-mod-php8.2
+        sudo a2enmod php8.2
         sudo /etc/init.d/apache2 start
 
     - name: Set up MySQL
