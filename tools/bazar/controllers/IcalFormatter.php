@@ -35,7 +35,7 @@ class IcalFormatter extends YesWikiController
         ParameterBagInterface $params,
         Performer $performer
     ) {
-        $this->dateService = $padateServicerams;
+        $this->dateService = $dateService;
         $this->entryController = $entryController;
         $this->geoJSONFormatter = $geoJSONFormatter;
         $this->params = $params;
