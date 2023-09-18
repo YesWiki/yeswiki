@@ -203,6 +203,10 @@ return [
     //     "Pensez aussi à choisir un champ pour l'icone et la couleur des marqueurs",
     // "AB_bazargogocarto_height_label" => "Hauteur de la carte",
     // "AB_bazargogocarto_width_label" => "Largeur de la carte",
+    // bazarvideo
+    'AB_bazarvideo_action_label' => 'Display videos in blocks',
+    'AB_bazarvideo_action_video_fieldname_label' => 'Video field',
+    'AB_bazarvideo_action_link_fieldname_label' => 'Link field',
     // BazarAction
     "AB_bazar_action_label" => "Display a form to create an entry",
     "AB_bazar_action_description" => "Help to display a form to create an entry",
