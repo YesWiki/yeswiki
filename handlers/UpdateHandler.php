@@ -9,6 +9,7 @@ use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\PasswordHasherFactory;
+use YesWiki\Plugins;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Core\Service\ConfigurationService;
@@ -173,6 +174,9 @@ class UpdateHandler extends YesWikiHandler
 
             // propose to update content of admin's pages
             $output .= $this->frontUpdateAdminPages();
+
+            // clean deprecatd tools
+            $output .= $this->cleanDeprecatedTools();
         } else {
             $output .= '<div class="alert alert-danger">'._t('ACLS_RESERVED_FOR_ADMINS').'</div>';
         }
@@ -571,5 +575,150 @@ class UpdateHandler extends YesWikiHandler
         $data = mysqli_fetch_assoc($result);
         mysqli_free_result($result);
         return $data;
+    }
+
+    /**
+     * clean deprecated tools
+     * @return string
+     */
+    protected function cleanDeprecatedTools(): string
+    {
+        $output = '';
+        // clean only for 4.4.3 <= release < 4.6.0
+        $yeswikiRelease = $this->params->get('yeswiki_release');
+        if (is_string($yeswikiRelease)
+            && preg_match('/^(?:4\.4\.(?:[3-9]|[1-9][0-9])|4\.5\.[0-9]+)$/',$yeswikiRelease)){
+            $foldersToRemove = [
+                'archive',
+                'checkaccesslink',
+                'ebook',
+                'fontautoinstall',
+                'multideletepages',
+                'tabdyn'
+            ];
+            foreach($foldersToRemove as $folderName){
+                if (file_exists("tools/$folderName")){
+                    if ($this->shouldDeactivateInsteadOfDeleting($folderName)){
+                        if (is_file("tools/$folderName/desc.xml")){
+                            $messages[] = $this->isActive($folderName)
+                                ? (
+                                    "ℹ️ Deactivating folder <em>tools/$folderName</em>... "
+                                    .(
+                                        $this->deactivate($folderName)
+                                        ? '✅ Done !'
+                                        : '❌ Error : not deactivated !'
+                                    )
+                                )
+                                : "ℹ️ Folder <em>tools/$folderName</em> already deactived !";
+                        } else {
+                            $messages[] = "❌ Error <em>tools/$folderName</em> can not be deactivated : remove it manually !";
+                        }
+                    } else {
+                        $messages[] = "ℹ️ Removing folder <em>tools/$folderName</em>... "
+                            .(
+                                $this->deleteTool($folderName)
+                                ? '✅ Done !'
+                                : '❌ Error : not deleted !'
+                            );
+                    }
+                }
+            }
+            
+            if (!empty($messages)){
+                $message = implode('<br/>',$messages);
+                $output .= <<<HTML
+                <strong>Cleaning deprecatd extensions</strong><br/>
+                $message<br/>
+                <hr/>
+                HTML;
+            }
+        }
+        return $output;
+    }
+    
+    /**
+     * test if on Windows and prefer deactive to prevent git folder to be deleted
+     */
+    protected function shouldDeactivateInsteadOfDeleting(string $folderName): bool
+    {
+        return (DIRECTORY_SEPARATOR === '\\' && is_dir("tools/$folderName") && is_dir("tools/$folderName/.git"));
+    }
+
+    /**
+     * retrieve info from desc file for tools
+     * @param string $dirName
+     * @return array
+     */
+    protected function getInfoFromDesc(string $dirName)
+    {
+        include_once 'includes/YesWikiPlugins.php';
+        $pluginService = new Plugins('tools/');
+        if (is_file("tools/$dirName/desc.xml")) {
+            return $pluginService->getPluginInfo("tools/$dirName/desc.xml");
+        }
+        return [];
+    }
+
+    protected function isActive(string $folderName): bool
+    {
+        $info = $this->getInfoFromDesc($folderName);
+        return  empty($info['active']) ? false : in_array($info['active'], [1,"1",true,"true"]);
+
+    }
+
+    protected function deactivate(string $dirName): bool
+    {
+        $xmlPath = "tools/$dirName/desc.xml";
+        if (is_file($xmlPath)) {
+            $xml = file_get_contents($xmlPath);
+            $newXml = preg_replace("/(active=)\"([^\"]+)\"/", "$1\"".($status ? "1" : "0")."\"", $xml);
+            if (!empty($newXml) && $newXml != $xml) {
+                file_put_contents($xmlPath, $newXml);
+                return !$this->isActive($dirName);
+            }
+        }
+        return false;
+    }
+
+    private function deleteTool(string $dirName): bool
+    {
+        return (!$this->delete("tools/$dirName"))
+            ? false
+            : !file_exists("tools/$dirName");
+    }
+
+    private function delete($path)
+    {
+        if (empty($path)) {
+            return false;
+        }
+        if (is_file($path)) {
+            if (unlink($path)) {
+                return true;
+            }
+            return false;
+        }
+        if (is_dir($path)) {
+            return $this->deleteFolder($path);
+        }
+    }
+
+    private function deleteFolder($path)
+    {
+        $file2ignore = array('.', '..');
+        if (is_link($path)) {
+            unlink($path);
+        } else {
+            if ($res = opendir($path)) {
+                while (($file = readdir($res)) !== false) {
+                    if (!in_array($file, $file2ignore)) {
+                        $this->delete($path . '/' . $file);
+                    }
+                }
+                closedir($res);
+            }
+            rmdir($path);
+        }
+        return true;
     }
 }
