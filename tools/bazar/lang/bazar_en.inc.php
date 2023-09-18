@@ -326,6 +326,9 @@ return [
      'BAZ_SHARE_YOUR_COMMENT' => 'And feel free to comment for further consideration!',
      'BAZ_SHARE_YOUR_REACTION' => 'Share your reaction to this content',
 
+     // fields/video.twig
+     'VIDEO_LINK_FIELD' => 'Link to the video: %{link}',
+
     // fields/WidgetHandler.php
     // 'BAZ_WIDGET_HANDLER_TITLE' => 'Partager les résultats par widget HTML (code embed)',
 

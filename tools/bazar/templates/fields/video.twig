@@ -1,0 +1,12 @@
+{% extends "@bazar/layouts/field.twig" %}
+
+{% block value %}
+	{{ format('{{video url="'~ value ~'"'
+		~(field.ratio ? " ratio=\"#{field.ratio}\"" : '')
+		~(field.maxWidth ? " largeurmax=\"#{field.maxWidth}\"" : '')
+		~(field.maxHeight ? " hauteurmax=\"#{field.maxHeight}\"" : '')
+		~(field.class ? " class=\"#{field.class}\"" : '')
+		~'}}')|raw }}
+	<p>{{ _t('VIDEO_LINK_FIELD',{link:"<a href=\"#{value}\" class=\"newtab\">#{value}</a>"})|raw }}</p>
+
+{% endblock %}
