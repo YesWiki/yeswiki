@@ -29,3 +29,6 @@ services:
   YesWiki\Core\Service\ThemeManager:
     tags:
       - { name: yeswiki.event_subscriber }
+  YesWiki\Core\Service\DateService:
+    tags:
+      - { name: yeswiki.event_subscriber }
