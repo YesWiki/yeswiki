@@ -561,3 +561,19 @@ input[type="date"]::-webkit-input-placeholder{
     display:none !important;
   }
 }
+
+/* DateField */
+
+.selector_is_recurrent > div.form-control {
+  margin-top: 1em;
+  height: auto;
+}
+
+.control-group.date > .controls {
+  flex-wrap: wrap;
+}
+
+.flex-break{
+  flex-basis: 100%;
+  width: 0;
+}

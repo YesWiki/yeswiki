@@ -378,6 +378,41 @@ return [
     // templates/tableau.twig
     'SUM' => 'Somme',
     'URL' => 'Url',
+    
+    // templates/bazar/fields/date.twig
+    'EVENT_IS_RECURRENT' => 'Cet évènement est récurrent : %{repetition}, %{nb} fois maximum',
+    'EVENT_LIMIT_DATE' => 'jusqu\'au %{date}',
+    'EVENT_REPETITION_FOR_DAYS' => 'tous les %{x} jours',
+    'EVENT_REPETITION_FOR_MONTHS' => 'tous les %{x} mois, %{monthRepetition}',
+    'EVENT_REPETITION_FOR_WEEKS' => 'toutes les %{x} semaines, %{days}',
+    'EVENT_REPETITION_FOR_YEAR' => 'tous les ans, %{monthRepetition}',
+    'EVENT_REPETITION_FOR_YEARS' => 'toutes les %{x} années, %{monthRepetition}',
+    'EVENT_REPETITION_NTH_OF_MONTH' => 'le %{nth} %{month}',
+    'EVENT_REPETITION_NTH_OF_MONTH_ALONE' => 'le %{nth}',
+    'EVENT_REPETITION_IN_MONTH' => 'en %{month}, ',
+    'EVENT_IS_LINKED_TO_RECURRENT' => 'Cet évènement est un évènement récurrent lié à la fiche %{link}',
+
+    // templates/bazar/inputs/date.twig
+    'EVENT_EVERY_X_DAYS' => 'Tous les X jours',
+    'EVENT_EVERY_X_WEEKS' => 'Toutes les X semaines',
+    'EVENT_EVERY_X_MONTHS' => 'Tous les X mois',
+    'EVENT_EVERY_X_YEARS' => 'Toutes les X années',
+    'EVENT_FIRST_Y_OF_MONTH' => 'Le premier Y du mois',
+    'EVENT_FORTH_Y_OF_MONTH' => 'Le quatrième Y du mois',
+    'EVENT_IS_LINKED_TO_RECURRENT_EDIT' => 'Cette évènement est un évènement récurrent lié à la fiche %{link}.<br/>Toute modification de cette fiche cassera le lien avec l\'évènement de base !',
+    'EVENTS_IS_RECURRENT_LABEL' => 'Évènement récurrent ?',
+    'EVENTS_HINT' => 'Cet évènement est récurrent. Toute modification de cette fiche entraîne la modification '
+        .'voire suppression des évènements liés.<br/> '
+        .'Les évènements liés ne seront supprimés que si vous sauvegardez cette fiche en retirant la récurrence (c\'est-à-dire en décochant la case ci-dessus).',
+        'EVENT_LAST_Y_OF_MONTH' => 'Le dernier Y du mois',
+    'EVENT_NB_MAX_REPETITIONS' => 'Nombre maximum de répétitions :',
+    'EVENT_NTH_OF_MONTH' => 'Chaque Y du mois',
+    'EVENTS_REPETITION_PERIOD' => 'Répétition :',
+    'EVENTS_REPETITION_STEP' => 'X =',
+    'EVENT_SECOND_Y_OF_MONTH' => 'Le second Y du mois',
+    'EVENT_THIRD_Y_OF_MONTH' => 'Le troisième Y du mois',
+    'EVENT_UP_TO_DATE' => 'Répétition jusqu\'au :',
+    'EVENTS_WHEN_IN_MONTH' => 'A quel moment du mois ?',
 
     // presentation/templates/timeline.tpl.html
     'BAZ_YEAR' => 'Ann&eacute;e',

@@ -43,12 +43,18 @@ class DateField extends BazarField
             'hour' => $hour,
             'minute' => $minute,
             'hasTime' => $hasTime,
-            'value' => $value
+            'value' => $value,
+            'data' => $entry["{$this->getPropertyName()}_data"] ?? []
         ]);
     }
 
     public function formatValuesBeforeSave($entry)
     {
+        if ($this->getPropertyname() === 'bf_date_fin_evenement'
+            && !empty($entry['id_fiche'])
+            && is_string($entry['id_fiche'])){
+            $this->getService(DateService::class)->followId($entry['id_fiche']);
+        }
         $value = $this->getValue($entry);
         if (!empty($value) && isset($entry[$this->propertyName . '_allday']) && $entry[$this->propertyName . '_allday'] == 0
              && isset($entry[$this->propertyName . '_hour']) && isset($entry[$this->propertyName . '_minutes'])) {
@@ -71,8 +77,22 @@ class DateField extends BazarField
             $value =  date('d.m.Y', strtotime($value));
         }
 
+        $matches = [];
+        $recurrenceBaseId = '';
+        $data = [];
+        if ($this->getPropertyname() === 'bf_date_fin_evenement' 
+                && !empty($entry['bf_date_fin_evenement_data'])){
+            if(is_string($entry['bf_date_fin_evenement_data'])
+                && preg_match('/\{\\"recurrentParentId\\":\\"([^"]+)\\"\}/',$entry['bf_date_fin_evenement_data'],$matches)){
+                $recurrenceBaseId = $matches[1];
+            } elseif (is_array($entry['bf_date_fin_evenement_data'])){
+                $data = $entry['bf_date_fin_evenement_data'];
+            }
+        }
         return $this->render('@bazar/fields/date.twig', [
-            'value' => $value
+            'value' => $value,
+            'recurrenceBaseId' => $recurrenceBaseId,
+            'data' => $data
         ]);
     }
 

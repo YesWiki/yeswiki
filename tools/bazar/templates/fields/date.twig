@@ -1,1 +1,85 @@
 {% extends "@bazar/layouts/field.twig" %}
+
+{% block value_container %}
+  {{ parent() }}
+  {% if recurrenceBaseId is not empty %}
+  <span class="BAZ_texte">
+    <small><i>{{ _t('EVENT_IS_LINKED_TO_RECURRENT',{link:"<a class=\"newtab\" href=\"#{url({tag:recurrenceBaseId})}\">#{recurrenceBaseId}</a>"})|raw }}</i></small>
+  </span>
+  {% elseif data is not empty and data.isRecurrent %}
+    {% set monthT = {
+        jan: 'BAZ_JANVIER',
+        fev: 'BAZ_FEVRIER',
+        mar: 'BAZ_MARS',
+        apr: 'BAZ_AVRIL',
+        may: 'BAZ_MAI',
+        jun: 'BAZ_JUIN',
+        jul: 'BAZ_JUILLET',
+        aug: 'BAZ_AOUT',
+        sep: 'BAZ_SEPTEMBRE',
+        oct: 'BAZ_OCTOBRE',
+        nov: 'BAZ_NOVEMBRE',
+        dec: 'BAZ_DECEMBRE',
+      } %}
+    {% set dayT = {
+        mon: 'BAZ_LUNDI',
+        tue: 'BAZ_MARDI',
+        wed: 'BAZ_MERCREDI',
+        thu: 'BAZ_JEUDI',
+        fri: 'BAZ_VENDREDI',
+        sat: 'BAZ_SAMEDI',
+        sun: 'BAZ_DIMANCHE',
+      } %}
+    {% set inMonthT = {
+        fisrtOfMonth: 'EVENT_FIRST_Y_OF_MONTH',
+        secondOfMonth: 'EVENT_SECOND_Y_OF_MONTH',
+        thirdOfMonth: 'EVENT_THIRD_Y_OF_MONTH',
+        forthOfMonth: 'EVENT_FORTH_Y_OF_MONTH',
+        lastOfMonth: 'EVENT_LAST_Y_OF_MONTH'
+      } %}
+    <span class="BAZ_texte">
+      <small><i>{{ _t('EVENT_IS_RECURRENT',{
+        repetition: data.repetition == 'y'
+          ? _t(
+            data.step == 1 ? 'EVENT_REPETITION_FOR_YEAR' : 'EVENT_REPETITION_FOR_YEARS',
+            {
+              x:data.step ?? '?',
+              monthRepetition: 
+                data.whenInMonth == 'nthOfMonth'
+                ? _t('EVENT_REPETITION_NTH_OF_MONTH',{
+                  nth: data.nth ?? '?',
+                  month: _t(monthT[data.months|keys|first] ?? '???')|lower 
+                })
+                : _t('EVENT_REPETITION_IN_MONTH',{month:_t(monthT[data.months|keys|first] ?? '???')|lower })
+                  ~ _t(inMonthT[data.whenInMonth] ?? '???')|replace({
+                    Y:_t(dayT[data.days|keys|first] ?? '??')
+                    })|lower
+            }
+            )
+          : (data.repetition == 'm'
+            ? _t('EVENT_REPETITION_FOR_MONTHS',{
+              x:data.step ?? '?',
+              monthRepetition:
+                data.whenInMonth == 'nthOfMonth'
+                ? _t('EVENT_REPETITION_NTH_OF_MONTH_ALONE',{
+                  nth: data.nth ?? '?'
+                })
+                : _t(inMonthT[data.whenInMonth] ?? '???')|replace({
+                    Y:_t(dayT[data.days|keys|first] ?? '??')
+                    })|lower
+            })|lower
+            : ( data.repetition == 'w'
+              ? _t('EVENT_REPETITION_FOR_WEEKS',{
+                x:data.step ?? '?',
+                days: data.days|keys|map(v=>_t(dayT[v] ?? '??'))|join(',')
+              })|lower
+              : _t('EVENT_REPETITION_FOR_DAYS',{
+                x:data.step ?? '?',
+              })|lower
+            )
+          ),
+        nb: data.nbmax ?? '?'
+      }) }}{% if data.limitdate %}, {{ _t('EVENT_LIMIT_DATE',{date:data.limitdate}) }}{% endif %}</i></small>
+    </span>
+  {% endif %}
+{% endblock %}
