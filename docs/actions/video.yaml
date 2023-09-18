@@ -9,7 +9,7 @@ actions:
       url:
         label: Url
         type: url
-        hint: Remplace serveur et id
+        hint: _t(AB_attach_video_url_hint)
       serveur:
         label: _t(AB_attach_video_serveur_label)
         type: list
