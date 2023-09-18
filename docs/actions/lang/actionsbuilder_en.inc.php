@@ -253,6 +253,7 @@ return [
     "AB_attach_video_label" => "Embeded video",
     "AB_attach_video_description" => "Embeding of youtube, vimeo or peertube video.",
     // "AB_attach_video_hint" => "L'identifiant de la vidéo correspond aux chiffres ou lettres à la fin de son URL",
+    // "AB_attach_video_url_hint" => "Remplace serveur et id",
     "AB_attach_video_serveur_label" => "Video hostname",
     "AB_attach_video_id_label" => "Video ID",
     "AB_attach_video_peertubeinstance_label" => "PeerTube instance hostname (url)",
