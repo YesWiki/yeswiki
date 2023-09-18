@@ -330,6 +330,9 @@ return [
     'BAZ_SHARE_YOUR_COMMENT' => 'Et n\'hésitez pas à faire un commentaire pour approfondir la réflexion !',
     'BAZ_SHARE_YOUR_REACTION' => 'Partagez votre réaction à propos de ce contenu',
 
+    // fields/video.twig
+    'VIDEO_LINK_FIELD' => 'Lien vers la vidéo : %{link}',
+
     // fields/WidgetHandler.php
     'BAZ_WIDGET_HANDLER_TITLE' => 'Partager les résultats par widget HTML (code embed)',
 
