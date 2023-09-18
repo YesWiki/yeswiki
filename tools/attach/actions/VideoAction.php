@@ -25,7 +25,7 @@ use YesWiki\Core\YesWikiAction;
 
 class VideoAction extends YesWikiAction
 {
-    public const ALLOWED_SERVERS = ['vimeo', 'youtube','peertube'];
+    public const ALLOWED_SERVERS = ['vimeo', 'youtube','peertube','dailymotion'];
 
     public function formatArguments($arg)
     {
@@ -66,7 +66,7 @@ class VideoAction extends YesWikiAction
             }
         }
         return [
-            'id' => $arg['id'] ?? "",
+            'id' => $id,
             'serveur' => $serveur,
             'peertubeinstance' => $peertubeinstance,
             'ratio' => $arg['ratio'] ?? "",
