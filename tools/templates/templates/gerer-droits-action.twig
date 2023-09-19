@@ -49,7 +49,7 @@
             <option value="lists" {% if filTer == 'lists' %}selected="selected"{% endif %}>{{ _t('ACLS_SELECT_PAGES_FILTER_ON_LISTS') }}</option>
             {% for id,form in forms %}
             <option value="{{ id }}" {% if filTer == id %}selected="selected"{% endif %}
-                >{{ _t('ACLS_SELECT_PAGES_FILTER_FORM')|replace({'{id}':id,'{name}':form.label_nature}) }}
+                >{{ _t('ACLS_SELECT_PAGES_FILTER_FORM')|replace({'{id}':id,'{name}':form.bn_label_nature}) }}
             </option>
             {% endfor %}
         </select>
