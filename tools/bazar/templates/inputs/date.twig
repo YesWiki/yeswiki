@@ -34,7 +34,7 @@
             {% endfor %}
         </select>
     </div>
-    {% if field.propertyname == 'bf_date_fin_evenement' and config.activateEventRepetition is same as true %}
+    {% if field.propertyname == 'bf_date_fin_evenement' %}
         {{ include_javascript('javascripts/vendor/vue/vue.js') }}
         {{ include_javascript('tools/bazar/presentation/javascripts/recurrent-event.js') }}
         <div class="flex-break"></div>
