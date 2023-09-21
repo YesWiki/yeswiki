@@ -2,7 +2,8 @@
 
 namespace YesWiki\Bazar\Field;
 
-use YesWiki\Core\Service\DateService;
+use YesWiki\Bazar\Service\DateService;
+use YesWiki\Core\Service\DateService as CoreDateService;
 
 /**
  * @Field({"jour", "listedatedeb", "listedatefin"})
@@ -19,7 +20,7 @@ class DateField extends BazarField
 
         if (!empty($value)) {
             // Default value when entry exist
-            $day = $this->getService(DateService::class)->getDateTimeWithRightTimeZone($value)->format('Y-m-d H:i');
+            $day = $this->getService(CoreDateService::class)->getDateTimeWithRightTimeZone($value)->format('Y-m-d H:i');
             $hasTime = (strlen($value) > 10);
             if ($hasTime) {
                 $result = explode(' ', $day);
@@ -66,7 +67,7 @@ class DateField extends BazarField
         $value = $this->getValue($entry);
         if (!empty($value) && isset($entry[$this->propertyName . '_allday']) && $entry[$this->propertyName . '_allday'] == 0
              && isset($entry[$this->propertyName . '_hour']) && isset($entry[$this->propertyName . '_minutes'])) {
-            $value = $this->getService(DateService::class)->getDateTimeWithRightTimeZone("$value {$entry[$this->propertyName . '_hour']}:{$entry[$this->propertyName . '_minutes']}")->format('c');
+            $value = $this->getService(CoreDateService::class)->getDateTimeWithRightTimeZone("$value {$entry[$this->propertyName . '_hour']}:{$entry[$this->propertyName . '_minutes']}")->format('c');
         }
         $return[$this->propertyName] = $value;
         $return['fields-to-remove'] = [
@@ -88,7 +89,7 @@ class DateField extends BazarField
         }
 
         if (strlen($value) > 10) {
-            $value = $this->getService(DateService::class)->getDateTimeWithRightTimeZone($value)->format('d.m.Y - H:i');
+            $value = $this->getService(CoreDateService::class)->getDateTimeWithRightTimeZone($value)->format('d.m.Y - H:i');
         } else {
             $value =  date('d.m.Y', strtotime($value));
         }
