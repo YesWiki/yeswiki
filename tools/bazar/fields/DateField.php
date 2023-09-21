@@ -50,18 +50,34 @@ class DateField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
-        if ($this->getPropertyname() === 'bf_date_fin_evenement'
-            && !empty($entry['id_fiche'])
-            && is_string($entry['id_fiche'])){
-            $this->getService(DateService::class)->followId($entry['id_fiche']);
+        $return = [];
+        if ($this->getPropertyname() === 'bf_date_fin_evenement'){
+            if(!empty($entry['id_fiche'])
+                    && is_string($entry['id_fiche'])){
+                $this->getService(DateService::class)->followId($entry['id_fiche']);
+            }
+            if (!empty($entry['bf_date_fin_evenement_data']['other'])){
+                unset($entry['bf_date_fin_evenement_data']['other']);
+                if (!empty($entry['bf_date_fin_evenement_data'])){
+                    $return['bf_date_fin_evenement_data'] = $entry['bf_date_fin_evenement_data'];
+                }
+            }
         }
         $value = $this->getValue($entry);
         if (!empty($value) && isset($entry[$this->propertyName . '_allday']) && $entry[$this->propertyName . '_allday'] == 0
              && isset($entry[$this->propertyName . '_hour']) && isset($entry[$this->propertyName . '_minutes'])) {
             $value = $this->getService(DateService::class)->getDateTimeWithRightTimeZone("$value {$entry[$this->propertyName . '_hour']}:{$entry[$this->propertyName . '_minutes']}")->format('c');
         }
-        return [$this->propertyName => $value,
-            'fields-to-remove' => [$this->propertyName . '_allday',$this->propertyName . '_hour',$this->propertyName . '_minutes']];
+        $return[$this->propertyName] = $value;
+        $return['fields-to-remove'] = [
+            $this->propertyName . '_allday',
+            $this->propertyName . '_hour',
+            $this->propertyName . '_minutes'
+        ];
+        if (empty($entry['bf_date_fin_evenement_data'])) {
+            $return['fields-to-remove'][] = 'bf_date_fin_evenement_data';
+        }
+        return $return;
     }
 
     protected function renderStatic($entry)

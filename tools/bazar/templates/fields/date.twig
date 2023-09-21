@@ -9,7 +9,7 @@
   {% elseif data is not empty and data.isRecurrent %}
     {% set monthT = {
         jan: 'BAZ_JANVIER',
-        fev: 'BAZ_FEVRIER',
+        feb: 'BAZ_FEVRIER',
         mar: 'BAZ_MARS',
         apr: 'BAZ_AVRIL',
         may: 'BAZ_MAI',
@@ -48,11 +48,11 @@
                 data.whenInMonth == 'nthOfMonth'
                 ? _t('EVENT_REPETITION_NTH_OF_MONTH',{
                   nth: data.nth ?? '?',
-                  month: _t(monthT[data.months|keys|first] ?? '???')|lower 
+                  month: _t(monthT[data.month] ?? '???')|lower 
                 })
-                : _t('EVENT_REPETITION_IN_MONTH',{month:_t(monthT[data.months|keys|first] ?? '???')|lower })
+                : _t('EVENT_REPETITION_IN_MONTH',{month:_t(monthT[data.month] ?? '???')|lower })
                   ~ _t(inMonthT[data.whenInMonth] ?? '???')|replace({
-                    Y:_t(dayT[data.days|keys|first] ?? '??')
+                    Y:_t(dayT[data.days|first] ?? '??')
                     })|lower
             }
             )
@@ -65,13 +65,13 @@
                   nth: data.nth ?? '?'
                 })
                 : _t(inMonthT[data.whenInMonth] ?? '???')|replace({
-                    Y:_t(dayT[data.days|keys|first] ?? '??')
+                    Y:_t(dayT[data.days|first] ?? '??')
                     })|lower
             })|lower
             : ( data.repetition == 'w'
               ? _t('EVENT_REPETITION_FOR_WEEKS',{
                 x:data.step ?? '?',
-                days: data.days|keys|map(v=>_t(dayT[v] ?? '??'))|join(',')
+                days: data.days|map(v=>_t(dayT[v] ?? '??'))|join(',')
               })|lower
               : _t('EVENT_REPETITION_FOR_DAYS',{
                 x:data.step ?? '?',

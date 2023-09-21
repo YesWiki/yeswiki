@@ -1,30 +1,40 @@
-let rootsElements = ['.selector_is_recurrent'];
+const rootsElementsRaw = document.getElementsByClassName('selector_is_recurrent')
+let rootsElements = []
+for (let index = 0; index < rootsElementsRaw.length; index++) {
+    rootsElements.push(rootsElementsRaw.item(index).parentNode)
+}
 let isVueJS3 = (typeof Vue.createApp == "function");
 
-const maxForNbMax = 50
+const maxForNbMax = 300
 
 let appParams = {
     components: {},
     data() {
         return {
             datePickerForLimitInternal:null,
-            days:[],
-            isRecurrent: false,
-            months:[],
+            days:['mon'],
+            month:'',
             nbmax:maxForNbMax,
             nth:'',
             recurrenceBaseId: '',
-            repetition: '',
-            step:1,
+            repetitionInternal: '',
+            showRange: false,
+            stepInternal:2,
             whenInMonth:''
         }
     },
     computed:{
+        baseElement(){
+            return this.element?.getElementsByClassName('selector_is_recurrent')?.[0]
+        },
+        dataset(){
+            return this.baseElement?.dataset?.data
+        },
         datePickerForLimit(){
             let datePicker = this.datePickerForLimitInternal
             if (datePicker === null){
                 let parentOfDatePicker = null
-                let nextS = this.element
+                let nextS = this.baseElement
                 do {
                     nextS = nextS.nextSibling
                     if (nextS?.classList?.contains('input-prepend')){
@@ -38,6 +48,50 @@ let appParams = {
         },
         element(){
             return isVueJS3 ? this.$el.parentNode : this.$el
+        },
+        isRecurrent(){
+            return this.repetition !== ''
+        },
+        repetition(){
+            switch (this.repetitionInternal) {
+                case 'd':
+                case 'xd':
+                    return 'd'
+                case 'w':
+                case '2w':
+                case 'xw':
+                    return 'w'
+                case 'm':
+                case '2m':
+                case '3m':
+                case 'xm':
+                    return 'm'
+                case 'y':
+                case 'xy':
+                    return 'y'
+                default:
+                    return ''
+            }
+        },
+        step(){
+            switch (this.repetitionInternal) {
+                case 'd':
+                case 'w':
+                case 'm':
+                case 'y':
+                    return 1
+                case '2w':
+                case '2m':
+                    return 2
+                case '3m':
+                    return 3
+                case 'xd':
+                case 'xw':
+                case 'xm':
+                case 'xy':
+                default:
+                    return this.stepInternal
+            }
         }
     },
     methods:{
@@ -51,20 +105,15 @@ let appParams = {
             } else {
                 this.days = [key]
             }
-        },
-        toggleMonth(key){
-            this.months = [key]
         }
     },
     mounted(){
-        const data = JSON.parse(this.element?.dataset?.data)
+        const data = JSON.parse(this.dataset)
         const limitdate =  data?.limitdate ?? ''
         if (limitdate && 'value' in this.datePickerForLimit){
             this.datePickerForLimit.value = limitdate
         }
-        if (data?.isRecurrent === '1'){
-            this.isRecurrent = true
-        } else {
+        if (data?.isRecurrent !== '1'){
             this.recurrenceBaseId = (
                 typeof data === 'string'
                 && data.match(/^\{"recurrentParentId":"([^"]+)"}$/)
@@ -72,32 +121,42 @@ let appParams = {
             ? data.replace(/^\{"recurrentParentId":"([^"]+)"}$/,'$1')
             : ''
         }
-        this.repetition =  data?.repetition ?? ''
-        this.step =  data?.step ?? 1
+        const step = data?.step ?? 2
+        this.stepInternal = step
+        const repetition = data?.repetition ?? ''
+        this.repetitionInternal = 
+            (data?.isRecurrent === '1' && ['d','y'].includes(repetition))
+            ? (
+                Number(step) === 1
+                ? repetition
+                : `x${repetition}`
+            )
+            : (
+                ['w','m'].includes(repetition)
+                ? (
+                    Number(step) === 1
+                    ? repetition
+                    : ( Number(step) === 2
+                        ? `2${repetition}`
+                        : ((repetition === 'm' && Number(step) === 3)
+                            ? '3m'
+                            : `x${repetition}`
+                        )
+                    )
+                )
+                : ''
+            )
         this.whenInMonth =  data?.whenInMonth ?? ''
         this.month =  data?.month ?? ''
         this.nth =  data?.nth ?? ''
         const nbmax =  Number(data?.nbmax ?? maxForNbMax)
         this.nbmax = (nbmax && nbmax > 0 && nbmax <= maxForNbMax) ? nbmax : maxForNbMax
-        this.days = Object.entries(data?.days ?? {})
-            .filter(([,val])=>val === '1')
-            .map(([idx,])=>idx)
-        this.months = Object.entries(data?.months ?? {})
-            .filter(([,val])=>val === '1')
-            .map(([idx,])=>idx)
+        this.days = Array.isArray(data?.days)
+            ? data.days
+            : ['mon']
+        this.month = data?.month ?? ''
     },
     watch: {
-        isRecurrent(isRecurrent){
-            if (this.datePickerForLimit?.parentNode?.style){
-                if (isRecurrent){
-                    this.datePickerForLimit.removeAttribute('disabled')
-                    this.datePickerForLimit.parentNode.removeAttribute('style')
-                } else {
-                    this.datePickerForLimit.parentNode.setAttribute('style','display:none !important;')
-                    this.datePickerForLimit.setAttribute('disabled','disabled')
-                }
-            }
-        },
         repetition(repetition){
             if (repetition !== 'w' && this.days?.length > 1){
                 this.days = [this.days[0]]

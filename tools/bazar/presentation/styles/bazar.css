@@ -294,14 +294,17 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
 }
 .form-group.date .controls {
   display: flex;
+  flex-wrap: wrap;
+  row-gap: 1rem;
+  column-gap: 1.5rem;
+}
+.form-group.date .select-time {
+  margin-left: 0 !important;
 }
 @media (max-width: 600px) {
-  .form-group.date .controls {
-    flex-wrap: wrap;
-  }
   .form-group.date .select-time {
     width: 100%;
-    margin: 1rem 0 0 0;
+    margin: 0 0 0 0;
   }
 }
 .select-hour, .select-minutes {
@@ -564,16 +567,11 @@ input[type="date"]::-webkit-input-placeholder{
 
 /* DateField */
 
-.selector_is_recurrent > div.form-control {
-  margin-top: 1em;
+div.form-control.for-selector-is-recurrent {
   height: auto;
 }
 
-.control-group.date > .controls {
-  flex-wrap: wrap;
-}
-
-.flex-break{
-  flex-basis: 100%;
-  width: 0;
+div.form-control.for-selector-is-recurrent > .input-prepend.input-group{
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
 }

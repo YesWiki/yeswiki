@@ -14,6 +14,8 @@ use YesWiki\Core\Service\PageManager;
 
 class DateService implements EventSubscriberInterface
 {
+    protected const MAXIMUM_REPETITION = 300;
+
     protected $entryManager;
     protected $followedIds;
     
@@ -135,8 +137,8 @@ class DateService implements EventSubscriberInterface
             ) = $extract;
         $step = intval($data['step']);
         $nbmax = intval($data['nbmax']);
-        if ($nbmax > 50){
-            $nbax = 50;
+        if ($nbmax > self::MAXIMUM_REPETITION){
+            $nbax = self::MAXIMUM_REPETITION;
         }
         $newStartDate = DateTimeImmutable::createFromInterface($currentStartDate);
         $newEndDate = DateTimeImmutable::createFromInterface($currentEndDate);
@@ -144,16 +146,16 @@ class DateService implements EventSubscriberInterface
         if (empty($days)){
             $days = [intval($newStartDate->format('N'))];
         }
-        $months = $this->getMonths($data);
-        if (empty($months)){
-            $months = [intval($newStartDate->format('n'))];
+        $selectedMonth = $this->getMonth($data);
+        if (empty($selectedMonth)){
+            $selectedMonth = intval($newStartDate->format('n'));
         }
         for ($i=1; $i <= $nbmax; $i++) {
             $calculateNewStartDate = $newStartDate;
             switch ($data['repetition']) {
                 case 'y':
                     $currentStartYear = intval($newStartDate->format('Y'));
-                    $nextStartMonth = min($months);
+                    $nextStartMonth = $selectedMonth;
                     $nextStartYear = $currentStartYear + $step;
                     $calculateNewStartDate= $this->findNextStartDate(
                         $newStartDate,
@@ -362,7 +364,9 @@ class DateService implements EventSubscriberInterface
 
     protected function getDays(array $data): array
     {
-        $days = [];
+        $days = (!empty($data['days']) && is_array($data['days']))
+            ? $data['days']
+            : [];
         $associations = [
             'mon' => 1,
             'tue' => 2,
@@ -372,20 +376,18 @@ class DateService implements EventSubscriberInterface
             'sat' => 6,
             'sun' => 7
         ];
-        if (!empty($data['days']) && is_array($data['days'])){
-            foreach ($data['days'] as $name => $value) {
-                if ($value === '1' && array_key_exists($name,$associations)){
-                    $days[] = $associations[$name];
-                }
-            }
-            sort($days);
-        }
+        $days = array_filter($days,function($name) use ($associations){
+            return is_string($name) && array_key_exists($name,$associations);
+        });
+        $days = array_map(function($name) use ($associations){
+            return $associations[$name];
+        },$days);
+        sort($days);
         return $days;
     }
 
-    protected function getMonths(array $data): array
+    protected function getMonth(array $data): string
     {
-        $months = [];
         $associations = [
             'jan' => 1,
             'feb' => 2,
@@ -400,15 +402,9 @@ class DateService implements EventSubscriberInterface
             'nov' => 11,
             'dec' => 12
         ];
-        if (!empty($data['months']) && is_array($data['months'])){
-            foreach ($data['months'] as $name => $value) {
-                if ($value === '1' && array_key_exists($name,$associations)){
-                    $months[] = $associations[$name];
-                }
-            }
-            sort($months);
-        }
-        return $months;
+        return(!empty($data['month']) && array_key_exists($data['month'],$associations))
+            ? $associations[$data['month']]
+            : '';
     }
 
     /**
