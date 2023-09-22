@@ -41,7 +41,7 @@
                 id="{{ field.propertyName }}"
                 name="{{ field.propertyName }}"
                 class="form-control"
-                accept=".pdf"
+                {% if field.authorizedExts is not empty %}accept="{{field.authorizedExts|join(',')}}"{% endif %}
                 {% if field.required %}required{% endif %}
             />
         {% endif %}
