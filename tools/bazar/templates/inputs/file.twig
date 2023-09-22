@@ -8,14 +8,7 @@
             <label class="btn btn-sm btn-default">
                 <i class="fa fa-pencil-alt"></i>
                 {{ _t('BAZ_MODIFIER_FICHIER') }}
-                <input
-                    type="file"
-                    style="display: none;"
-                    class="form-control"
-                    id="{{ field.propertyName }}"
-                    name="{{ field.propertyName }}"
-                    accept=".pdf"
-                >
+                {{ block('inputblock') }}
             </label>   
              {% if isAllowedToDeleteFile %}
                 <a class="btn btn-sm btn-danger" href="{{ deleteUrl }}" 
