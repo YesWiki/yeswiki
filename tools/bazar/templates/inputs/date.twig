@@ -34,7 +34,7 @@
             {% endfor %}
         </select>
     </div>
-    {% if field.propertyname == 'bf_date_fin_evenement' %}
+    {% if field.propertyname == 'bf_date_fin_evenement'  and canRegisterMultipleEntries %}
         {{ include_javascript('javascripts/vendor/vue/vue.js') }}
         {{ include_javascript('tools/bazar/presentation/javascripts/recurrent-event.js') }}
         <div class="input-prepend input-group selector_is_recurrent" data-data="{{ data|json_encode }}" :style="{display:recurrenceBaseId ? 'none !important': 'inherit !important'}">

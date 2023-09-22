@@ -7,6 +7,7 @@ use DateTimeImmutable;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Throwable;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Entity\Event;
 use YesWiki\Core\Service\DateService as CoreDateService;
 use YesWiki\Core\Service\PageManager;
@@ -17,6 +18,7 @@ class DateService implements EventSubscriberInterface
 
     protected $coreDateService;
     protected $entryManager;
+    protected $formManager;
     protected $followedIds;
     
     public static function getSubscribedEvents()
@@ -31,10 +33,12 @@ class DateService implements EventSubscriberInterface
     public function __construct(
         CoreDateService $coreDateService,
         EntryManager $entryManager,
+        FormManager $formManager
     ) {
         $this->coreDateService = $coreDateService;
         $this->entryManager = $entryManager;
         $this->followedIds = [];
+        $this->formManager = $formManager;
     }
 
     
@@ -46,7 +50,9 @@ class DateService implements EventSubscriberInterface
         $entry = $this->getEntry($event);
         if ($this->shouldFollowEntry($entry)){
             $this->deleteLinkedEntries($entry);
-            $this->createRepetitions($entry);
+            if ($this->canRegisterMultipleEntries($entry)){
+                $this->createRepetitions($entry);
+            }
         }
     }
 
@@ -406,5 +412,21 @@ class DateService implements EventSubscriberInterface
                 }
             }
         }
+    }
+    
+    /**
+     * check if associated form is restricted for only one entry by user
+     */
+    public function canRegisterMultipleEntries(?array $entry): bool
+    {
+        // default true
+        $canRegisterMultipleEntries = true;
+        if (!empty($entry['id_typeannonce']) && is_scalar($entry['id_typeannonce'])){
+            $form = $this->formManager->getOne(strval($entry['id_typeannonce']));
+            if (!empty($form['bn_only_one_entry'])){
+                $canRegisterMultipleEntries = ($form['bn_only_one_entry'] !== 'Y');
+            }
+        }
+        return $canRegisterMultipleEntries;
     }
 }

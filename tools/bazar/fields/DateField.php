@@ -45,7 +45,8 @@ class DateField extends BazarField
             'minute' => $minute,
             'hasTime' => $hasTime,
             'value' => $value,
-            'data' => $entry["{$this->getPropertyName()}_data"] ?? []
+            'data' => $entry["{$this->getPropertyName()}_data"] ?? [],
+            'canRegisterMultipleEntries' => $this->getService(DateService::class)->canRegisterMultipleEntries($entry)
         ]);
     }
 
@@ -57,7 +58,12 @@ class DateField extends BazarField
                     && is_string($entry['id_fiche'])){
                 $this->getService(DateService::class)->followId($entry['id_fiche']);
             }
-            if (!empty($entry['bf_date_fin_evenement_data']['other'])){
+            if (!$this->getService(DateService::class)->canRegisterMultipleEntries($entry)){
+                // clean data from entry because not possible to create repetition
+                if (isset($entry['bf_date_fin_evenement_data'])){
+                    unset($entry['bf_date_fin_evenement_data']);
+                }
+            } elseif (!empty($entry['bf_date_fin_evenement_data']['other'])){
                 unset($entry['bf_date_fin_evenement_data']['other']);
                 if (!empty($entry['bf_date_fin_evenement_data'])){
                     $return['bf_date_fin_evenement_data'] = $entry['bf_date_fin_evenement_data'];
