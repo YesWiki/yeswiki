@@ -593,18 +593,28 @@ class Wiki
         }
 
         // Options to HTML attributes
-        $stringAttrs = '';
-        foreach ($options as $key => $value) {
-            $value = json_encode($value);
-            $stringAttrs .= "$key=$value ";
-        }
+        $stringAttrs = implode(
+            ' ',
+            array_map(
+                function ($key) use ($options){
+                    $value = $options[$key];
+                    $encodedValue = is_string($value)
+                        ? $value
+                        : json_encode($value);
+                    return "$key=\"$encodedValue\"";
+                },
+                array_keys($options)
+            )
+        );
 
         // Block script schemes (see RFC 3986 about schemes)
         $link = htmlspecialchars($link, ENT_COMPAT, YW_CHARSET);
         $text = htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
 
         // Generate HTML
-        return "<a href='$link' $stringAttrs>$text</a>";
+        return <<<HTML
+        <a href="$link" $stringAttrs>$text</a>
+        HTML;
     }
 
     public function ParamsForNewPageLink()
