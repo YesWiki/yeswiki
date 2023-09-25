@@ -322,7 +322,7 @@ class IcalFormatter extends YesWikiController
         $renderedInput = $this->performer->run('wakka', 'formatter', ['text' => $input]) ;
         $cleanedRendered = strip_tags($renderedInput, '<a>');
         // extract links
-        $output = preg_replace('/<a.*href="([^"]*)".*>(.*)<\/a>/m', '$2 ($1)', $cleanedRendered);
+        $output = preg_replace('/<a.*href=(?:"|\')([^"\']*)(?:"|\').*>(.*)<\/a>/m', '$2 ($1)', $cleanedRendered);
 
         return $output;
     }
