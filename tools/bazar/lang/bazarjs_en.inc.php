@@ -265,6 +265,10 @@ return [
     "BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION" => "Do not clean",
     "BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT" => "To clean or not the content of what is being hidden",
 
+    // jsvascripts/form-edit-templates/fields/file.js
+    'BAZ_FORM_EDIT_FILE_AUTHEXTS_LABEL' => 'Prefered extensions (with dot, separated by coma)',
+    'BAZ_FORM_EDIT_FILE_AUTHEXTS_PLACEHOLDER' => 'ex: .pdf,.png',
+
     // reactions
     // 'BAZ_ACTIVATE_REACTIONS' => 'Activer les réactions sur cette fiche ?',
     // 'BAZ_REACTIONS_FIELD' => 'Réactions',
