@@ -22,12 +22,9 @@ export default {
   advancedAttributes: ['read', 'write', 'semantic', 'maxsize','authorizedExts'],
   // disabledAttributes: [],
   attributesMapping: { ...defaultMapping, ...{ 3: 'maxsize', 6: 'readlabel', 7: 'authorizedExts' } },
-  renderInput(field) {
-    return {
-      field: `<input type="file"/>`,
-      onRender() {
-        renderHelper.defineLabelHintForGroup(field, 'authorizedExts', _t('BAZ_FORM_EDIT_FILE_AUTHEXTS_HINT'))
-      }
-    }
-  }
+  // renderInput(field) {
+  //   return {
+  //     field: `<input type="file"/>`,
+  //   }
+  // }
 }
