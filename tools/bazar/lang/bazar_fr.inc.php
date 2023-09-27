@@ -134,6 +134,7 @@ return [
     'BAZ_MODIFIER_LA_FICHE' => 'Modifier la fiche',
     'BAZ_MODIFY_ENTRY_AGAIN' => 'Modifier la fiche à nouveau',
     'BAZ_ADD_NEW_ENTRY' => 'Ajouter une nouvelle fiche',
+    'BAZ_MODIFIER_FICHIER' => 'Modifier le fichier',
     'BAZ_SUPPRIMER' => 'Supprimer',
     'BAZ_SUPPRIMER_IMAGE' => 'Supprimer l\'image',
     'BAZ_CONFIRMATION_SUPPRESSION_IMAGE' => 'Etes vous s&ucirc;rs de vouloir supprimer cette image? (les autres modifications en cours ne seront pas sauvegardées)',

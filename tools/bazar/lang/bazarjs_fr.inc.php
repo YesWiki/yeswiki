@@ -270,6 +270,11 @@ return [
     "BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION" => "Ne pas effacer",
     "BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT" => "Pour effacer ou non le contenu de ce qui est masqué",
 
+    // jsvascripts/form-edit-templates/fields/file.js
+    'BAZ_FORM_EDIT_FILE_AUTHEXTS_LABEL' => 'Extensions privilégiée',
+    'BAZ_FORM_EDIT_FILE_AUTHEXTS_HINT' => 'avec le point, séparée par des virgules ; ex: .pdf,.png',
+    'BAZ_FORM_EDIT_FILE_AUTHEXTS_PLACEHOLDER' => 'ex: .pdf,.png',
+
     // reactions
     'BAZ_ACTIVATE_REACTIONS' => 'Activer les réactions sur cette fiche ?',
     'BAZ_REACTIONS_FIELD' => 'Réactions',
