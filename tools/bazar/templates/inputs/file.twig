@@ -8,6 +8,7 @@
             <label class="btn btn-sm btn-default">
                 <i class="fa fa-pencil-alt"></i>
                 {{ _t('BAZ_MODIFIER_FICHIER') }}
+                {% set style = 'display:none;' %}
                 {{ block('inputblock') }}
             </label>   
              {% if isAllowedToDeleteFile %}
@@ -29,14 +30,17 @@
                 value="{{ value }}"
             />
         {% else %}
+          {% block inputblock %}
             <input
                 type="file"
                 id="{{ field.propertyName }}"
                 name="{{ field.propertyName }}"
+                {% if style %}style="{{ style }}"{% endif %}
                 class="form-control"
                 {% if field.authorizedExts is not empty %}accept="{{field.authorizedExts|join(',')}}"{% endif %}
                 {% if field.required %}required{% endif %}
             />
+            {% endblock %}
         {% endif %}
     </div>
 {% endblock %}
