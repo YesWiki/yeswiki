@@ -19,6 +19,7 @@ let appParams = {
             recurrenceBaseId: '',
             repetitionInternal: '',
             showRange: false,
+            startDateInputInternal : null,
             stepInternal:2,
             whenInMonth:''
         }
@@ -73,6 +74,12 @@ let appParams = {
                     return ''
             }
         },
+        startDateInput(){
+            if (this.startDateInputInternal === null){
+                this.startDateInputInternal = document.getElementById('bf_date_debut_evenement')
+            }
+            return this.startDateInputInternal
+        },
         step(){
             switch (this.repetitionInternal) {
                 case 'd':
@@ -95,9 +102,54 @@ let appParams = {
         }
     },
     methods:{
+        getCurrentStartDate(){
+            return this.startDateInput?.value ?? ''
+        },
+        getCurrentStartDay(){
+            const dateStr = this.getCurrentStartDate()
+            if (dateStr === ''){
+                return ''
+            }
+            const date = new Date(dateStr)
+            if (date.toString() === 'Invalid Date') {
+                return ''
+            }
+            const day = date.getDay()
+            switch (day) {
+                case 0:
+                    return 'sun'
+                case 1:
+                    return 'mon'
+                case 2:
+                    return 'tue'
+                case 3:
+                    return 'wed'
+                case 4:
+                    return 'thu'
+                case 5:
+                    return 'fri'
+                case 6:
+                    return 'sat'
+                default:
+                    return ''
+            }
+        },
+        registerChangeOnStartDateInput(){
+            this.startDateInput.addEventListener('blur',()=>{
+                setTimeout(()=>{this.setCurrentDayIfWeek()},200)
+            })
+        },
+        setCurrentDayIfWeek(){
+            if (this.repetitionInternal?.match(/w$/)){
+                const day = this.getCurrentStartDay()
+                if (day !== '' && !this.days.includes(day)){
+                    this.days.push(day)
+                }
+            }
+        },
         toggleDay(key){
             if (this.repetition === 'w'){
-                if (this.days.includes(key)){
+                if (this.days.includes(key) && key !== this.getCurrentStartDay()){
                     this.days = this.days.filter((elem)=>elem != key)
                 } else {
                     this.days.push(key)
@@ -155,12 +207,16 @@ let appParams = {
             ? data.days
             : ['mon']
         this.month = data?.month ?? ''
+        this.registerChangeOnStartDateInput()
     },
     watch: {
         repetition(repetition){
             if (repetition !== 'w' && this.days?.length > 1){
                 this.days = [this.days[0]]
             }
+        },
+        repetitionInternal(){
+            this.setCurrentDayIfWeek()
         }
     }
 }
