@@ -16,7 +16,10 @@ class FileField extends BazarField
 {
     protected $readLabel;
     protected const FIELD_READ_LABEL = 6;
+    protected const FIELD_AUTHORIZED_EXTS_LABEL = 7;
+
     protected $attach;
+    protected $authorizedExts;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -25,6 +28,14 @@ class FileField extends BazarField
         $this->propertyName = $this->type . $this->name;
         $this->readLabel = empty(trim($values[self::FIELD_READ_LABEL])) ? _t('BAZ_FILEFIELD_FILE') : $values[self::FIELD_READ_LABEL];
         $this->attach = null;
+        $exts = $values[self::FIELD_AUTHORIZED_EXTS_LABEL] ?? '';
+        $exts = is_string($exts) && !empty(trim($exts))
+            ? explode(',',trim($exts))
+            : [];
+        $exts = array_map('trim',$exts);
+        $this->authorizedExts = array_filter($exts,function($ext){
+            return preg_match('/^\.[a-z0-9]{1,4}+$/',$ext);
+        });
     }
 
     protected function renderInput($entry)
@@ -171,6 +182,11 @@ class FileField extends BazarField
         return $this->readLabel;
     }
 
+    public function getAuthorizedExts(): array
+    {
+        return $this->authorizedExts;
+    }
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -179,6 +195,7 @@ class FileField extends BazarField
             parent::jsonSerialize(),
             [
               'readLabel' => $this->getReadLabel(),
+              'authorizedExts' => $this->getAuthorizedExts(),
             ]
         );
     }
