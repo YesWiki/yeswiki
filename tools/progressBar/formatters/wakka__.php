@@ -6,7 +6,7 @@ if (!defined("WIKINI_VERSION")) {
 if (!function_exists("wakkaProgressBar")) {
     function wakkaProgressBar($things)
     {
-        return '<img loading="lazy" class="progressbar" src="tools/progressBar/libs/progressBar.php?percent='.$things[1].'" /> ';
+        return '<img loading="lazy" class="progressbar" alt="'.$things[1].'%" src="tools/progressBar/libs/progressBar.php?percent='.$things[1].'" /> ';
     }
 }
 
