@@ -37,7 +37,7 @@
     {% if field.propertyname == 'bf_date_fin_evenement'  and canRegisterMultipleEntries %}
         {{ include_javascript('javascripts/vendor/vue/vue.js') }}
         {{ include_javascript('tools/bazar/presentation/javascripts/recurrent-event.js') }}
-        <div class="input-prepend input-group selector_is_recurrent" data-data="{{ data|json_encode }}" :style="{display:recurrenceBaseId ? 'none !important': 'inherit !important'}">
+        <div class="input-prepend input-group selector_is_recurrent specific-for-recurrence" data-data="{{ data|json_encode }}" :style="{display:recurrenceBaseId ? 'none !important': 'inherit !important'}">
             <input type="hidden" name="{{ "#{field.propertyName}_data[isRecurrent]" }}" value="1" v-if="isRecurrent"/>
             <span class="add-on input-group-addon" title="{{ _t('EVENTS_REPETITIONS') }}" data-toggle="tooltip" data-placement="bottom">
                 <i class="fas fa-redo-alt"></i>
@@ -62,7 +62,7 @@
             </select>
             <input type="hidden" name="{{ "#{field.propertyName}_data[repetition]" }}" :value="repetition" v-if="isRecurrent"/>
         </div>
-        <div class="input-prepend input-group" :style="{display:isRecurrent ? 'inherit !important' : 'none !important'}">
+        <div class="input-prepend input-group specific-for-recurrence" :style="{display:isRecurrent ? 'inherit !important' : 'none !important'}">
             <span class="add-on input-group-addon">
                 {{ _t('EVENT_UP_TO_DATE') }}
             </span>
@@ -77,7 +77,7 @@
                 :disabled="!isRecurrent"
             />
         </div>
-        <div class="input-group" v-if="isRecurrent">
+        <div class="input-group specific-for-recurrence" v-if="isRecurrent">
             <div class="form-control for-selector-is-recurrent">
                 <input type="hidden" name="{{ "#{field.propertyName}_data[step]" }}" :value="step"/>
                 {% set inputString = "<input type=\"number\" min=\"2\" name=\"#{field.propertyName}_data[other][step]\" v-model=\"stepInternal\" required/>" %}
@@ -209,7 +209,7 @@
                 </div>
             </div>
         </div>
-        <div class="input-prepend input-group" v-else-if="recurrenceBaseId?.length > 0">
+        <div class="input-prepend input-group specific-for-recurrence" v-else-if="recurrenceBaseId?.length > 0">
             <div class="alert alert-info">
                 {{ _t('EVENT_IS_LINKED_TO_RECURRENT_EDIT',{
                 link:"<a class=\"newtab\" :href=\"`${wiki.url(recurrenceBaseId)}`\">{{recurrenceBaseId}}</a>"
@@ -217,7 +217,7 @@
             </div>
         </div>
         {% if not hasAcl('%') %}
-            <div class="input-prepend input-group" v-if="showWarningMessage">
+            <div class="input-prepend input-group specific-for-recurrence" v-if="showWarningMessage">
                 <div class="alert alert-warning">
                 {{ _t('EVENT_WARNING_MESSAGE') }}
                 </div>

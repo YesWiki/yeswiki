@@ -292,17 +292,23 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
 .bazar-date, .bazar-date.form-control {
   width: 133px ;
 }
-.form-group.date .controls {
+.form-group.input-listedatedeb .controls,
+.form-group.input-listedatefin .controls,
+.form-group.input-jour .controls {
   display: flex;
   flex-wrap: wrap;
   row-gap: 1rem;
   column-gap: 1.5rem;
 }
-.form-group.date .select-time {
+.form-group.input-listedatedeb .select-time,
+.form-group.input-listedatefin .select-time,
+.form-group.input-jour .select-time {
   margin-left: 0 !important;
 }
 @media (max-width: 600px) {
-  .form-group.date .select-time {
+  .form-group.input-listedatedeb .select-time,
+  .form-group.input-jour .select-time,
+  .form-group.input-jour .select-time {
     width: 100%;
     margin: 0 0 0 0;
   }
@@ -574,4 +580,16 @@ div.form-control.for-selector-is-recurrent {
 div.form-control.for-selector-is-recurrent > .input-prepend.input-group{
   margin-top: 0.4rem;
   margin-bottom: 0.4rem;
+}
+
+.control-group.input-listedatedeb .specific-for-recurrence,
+.control-group.input-listedatefin .specific-for-recurrence
+.control-group.input-jour .specific-for-recurrence {
+    align-self: flex-start;
+}
+.control-group.input-listedatedeb .specific-for-recurrence span.add-on.input-group-addon,
+.control-group.input-listedatefin .specific-for-recurrence span.add-on.input-group-addon,
+.control-group.input-jour .specific-for-recurrence span.add-on.input-group-addon {
+    width: auto;
+    display: flex;
 }
