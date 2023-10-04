@@ -106,7 +106,11 @@ class TemplateEngine
         });
         $this->addTwigHelper('url', function ($options) {
             $options = array_merge(['tag' => '', 'handler' => '', 'params' => []], $options);
-            $iframe = !empty($options['handler']) ? $options['handler'] : testUrlInIframe();
+            if (substr($options['tag'] , 0, 4) === 'api/'){
+                $iframe = '';
+            } else {
+                $iframe = !empty($options['handler']) ? $options['handler'] : testUrlInIframe();
+            }
             return $this->wiki->Href($iframe, $options['tag'], $options['params'], false);
         });
         $this->addTwigHelper('format', function ($text, $formatter = 'wakka') {
