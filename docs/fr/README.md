@@ -37,7 +37,7 @@ Des "fermes à wikis" offrent aussi la possibilité d'obtenir un wiki de test. [
 ## Contribuer à la documentation de YesWiki 
 
 Vous trouverez en bas de chaque page un bouton "Modifier cette page sur Github" vous permettant d'éditer la page courante de cette documentation. Il va vous falloir créer un compte sur github ou vous identifier pour faire des modifications.  
-Toutes les indications détaillées (tonalité, mise en page, grandes lignes) sont présentes sur la doc de la doc, [voir la documentation exhaustive sur comment contribuer à cette doc](/docsREADME.md).
+Toutes les indications détaillées (tonalité, mise en page, grandes lignes) sont présentes sur la doc de la doc, [voir la documentation exhaustive sur comment contribuer à cette doc](documentation.md).
 
 ## Copyleft
 
