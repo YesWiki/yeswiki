@@ -78,8 +78,8 @@ class DateField extends BazarField
 
     protected function getValue($entry)
     {
-        // TODO see if it is necessary to look for $_REQUEST
         // do not take default for this field
-        return $entry[$this->propertyName] ?? null;
+        // use $_REQUEST for duplication
+        return $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? null;
     }
 }
