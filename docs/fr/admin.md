@@ -551,7 +551,7 @@ Cette page permet de modifier la configuration de son Yeswiki sans passer par le
  - **Activer le mode de debug (yes ou no) - debug** :  ce paramètre active le mode de débogage s'il est passé à la valeur 'yes' (infos sur le nombre de requêtes, le temps écoulé et force l'affichage des erreurs php pour les développeurs). Astuce : on peut aussi passer &debug dans l'url pour debugguer
  - **Fuseau horaire du site (ex. UTC, Europe/Paris, Europe/London) - timezone** : à la création du wiki, le fuseau horaire choisi est GMT et se cale sur celui du serveur. Cela peut amener des différences d'affichage. Il peut arriver que l'affichage de l'heure de début d'un évènement sur le calendrier soit décalée car la configuration serveur peut être en décalage par rapport au fuseau horaire de l'administrateurice du wiki.
 Pour bien configurer, on peut mettre dans le paramètre Fuseau horaire du site la valeur : Europe/Paris (ou sinon UTC).
- - **Méthodes autorisées à être affichées dans les iframes (iframe,editiframe,bazariframe,render,all = autoriser tout) - allowed_methods_in_iframe**
+ - **Méthodes autorisées à être affichées dans les iframes (iframe,editiframe,bazariframe,render,duplicateiframe,all = autoriser tout) - allowed_methods_in_iframe**
  - **Nombre maximum de versions d'une page affichées par le handler `/revisions`. - revisionscount** : 
  - **Image d'avatar par défaut pour les commentaires (URL vers une image) - default_comment_avatar**
  - **Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false) - htmlPurifierActivated**

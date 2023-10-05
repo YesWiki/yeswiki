@@ -538,7 +538,7 @@ return [
     'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING_MESSAGE' => 'Message displayed above the password asked password to modify forms (see doc on spam management)',
     'EDIT_CONFIG_HINT_ALLOW_DOUBLECLIC' => 'Allow double click to edit menus and special pages (true ou false)',
     'EDIT_CONFIG_HINT_TIMEZONE' => 'Time zone of the site (e.g. UTC, Europe/Paris, Europe/London)',
-    'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Methods allowed to be displayed in iframes (iframe,editiframe,bazariframe,render,all = allow all)',
+    'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Methods allowed to be displayed in iframes (iframe,editiframe,bazariframe,render,duplicateiframe,all = allow all)',
     'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Maximum number of page\'s revisions displayed by the handler `/revisions`.',
     'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Enable HTML purifier before backup. Be careful, modify the content to backup! (true or false)',
     'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Enable favorites (true or false)',

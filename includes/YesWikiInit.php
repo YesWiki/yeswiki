@@ -226,7 +226,7 @@ class Init
             'preview_before_save' => false,
             'allow_raw_html' => true,
             'disable_wiki_links' => false,
-            'allowed_methods_in_iframe' => ['iframe','editiframe','bazariframe','render'],
+            'allowed_methods_in_iframe' => ['iframe','editiframe','bazariframe','render','duplicateiframe'],
             'revisionscount' => 30,
             'timezone' => 'Europe/Paris', // Only used if not set in wakka.config.php nor in php.ini
             'root_page' => 'PagePrincipale', // backup root_page if deleted from wakka.config.php
