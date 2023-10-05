@@ -271,7 +271,7 @@ return [
     "BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT" => "Pour effacer ou non le contenu de ce qui est masqué",
 
     // jsvascripts/form-edit-templates/fields/file.js
-    'BAZ_FORM_EDIT_FILE_AUTHEXTS_LABEL' => 'Extensions privilégiées (avec le point, séparées par des virgules)',
+    'BAZ_FORM_EDIT_FILE_AUTHEXTS_LABEL' => 'Extension(s) présélectionnée(s) (avec le point, séparées par des virgules)',
     'BAZ_FORM_EDIT_FILE_AUTHEXTS_PLACEHOLDER' => 'ex: .pdf,.png',
 
     // reactions
