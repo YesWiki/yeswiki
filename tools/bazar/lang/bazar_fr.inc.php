@@ -352,6 +352,7 @@ return [
     'EDIT_CONFIG_HINT_BAZ_EXTERNAL_SERVICE[CACHE_TIME_TO_CHECK_DELETION]' => 'Temps (s) entre deux rafraîchissements du cache pour vérifier les suppresions dans les requêtes JSON',
     'EDIT_CONFIG_HINT_BAZ_EXTERNAL_SERVICE[CACHE_TIME_TO_REFRESH_FORMS]' => 'Temps (s) entre deux rafraîchissements du cache pour formulaires nécessaires aux requêtes JSON',
     'EDIT_CONFIG_HINT_BAZARIGNOREACLS' => 'Permettre la création de fiches même si le wiki est fermé en écriture (true ou false)',
+    'EDIT_CONFIG_HINT_CANDUPLICATEENTRYIFNOTRIGHTTOWRITE' => 'Permettre la duplication de fiches même si le wiki est fermé en écriture (true ou false)',
     'EDIT_CONFIG_GROUP_BAZAR' => 'Base de données',
 
     // USER FIELD

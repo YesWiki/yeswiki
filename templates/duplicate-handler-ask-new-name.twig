@@ -1,0 +1,12 @@
+{% if message %}
+  {{ include('@templates/alert-message.twig',{type:type,message:message}) }}
+{% endif %}
+<form action="{{ url({handler:isInIframe ? 'duplicateiframe' : 'duplicate'}) }}" method="post">
+  {{ include('@bazar/inputs/text.twig',{field:{label:_t('DUPLICATE_PAGE_NEW_NAME'),type:'text',subType:'text',name:'newName',required:true,pattern:'[A-Za-z0-9_]+'}}) }}
+  <div class="form-actions form-group">
+    <div class="col-sm-9 col-sm-offset-3">
+      <button type="submit" class="btn btn-primary">{{ _t('BAZ_VALIDER') }}</button>
+      <a class="btn btn-xs btn-default" onclick="window.location={{url({handler:isInIframe ? 'iframe' : ''})|json_encode}}">{{ _t('BAZ_ANNULER') }}</a>
+    </div>
+  </div>
+</form>

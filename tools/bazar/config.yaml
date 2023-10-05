@@ -16,6 +16,8 @@ parameters:
   global_query: 'true'
   # authorize entry creation when wiki is not opened to create page
   bazarIgnoreAcls: true
+  # duplication could also be opened to everyone but by default not because could be a source of spam
+  canDuplicateEntryIfNotRightToWrite: false
 
   # Valeurs liees aux flux RSS
 
@@ -127,6 +129,7 @@ parameters:
       - cache_time_to_check_deletion
       - cache_time_to_refresh_forms
     - 'bazarIgnoreAcls'
+    - 'canDuplicateEntryIfNotRightToWrite'
 
 services:
   _defaults:

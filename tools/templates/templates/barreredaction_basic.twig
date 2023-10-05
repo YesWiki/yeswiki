@@ -3,6 +3,10 @@
     <a title="{{ _t('TEMPLATE_EDIT_THIS_PAGE') ~ ' ' ~ page }}" href="{{ linkedit }}" class="link-edit">
       <i class="fa fa-pencil-alt"></i><span>{{ _t('TEMPLATE_EDIT_THIS_PAGE') }}</span>
     </a>
+    <a title="{{ _t('DUPLICATE') }}"
+      href="{{ url({handler:isInIframe ? 'duplicateiframe' : 'duplicate'}) }} ">
+      <i class="fas fa-copy"></i>
+    </a>
   {% endif %}
   {% if userIsAdminOrOwner %}
     <a title="{{ _t('TEMPLATES_SEE_ATTACHED_FILES') }}" href="{{ url({handler:'filemanager'}) }}" class="link-filemanager">

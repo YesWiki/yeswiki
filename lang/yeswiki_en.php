@@ -566,6 +566,15 @@ return [
     'DELETEPAGE_PAGES_WITH_LINKS_TO' => 'Pages with a link to {tag} :',
     'DELETEPAGE_NOT_DELETED' => 'Not deleted page.',
 
+    // handlers/DuplicationHandler.php
+    'DUPLICATE' => 'Duplicate',
+    'DUPLICATION_IN_COURSE' => 'You are duplicating the page \'%{originTag}\' to \'%{destinationTag}\'!',
+    'DUPLICATION_NOT_POSSIBLE_IF_EXISTING' => 'Not possible to copy the page because the new choosen name is already used!',
+    'DUPLICATION_NOT_POSSIBLE_IF_NO_NAME' => 'Not possible to copy the page because the new choosen name is already empty!',
+    'DUPLICATION_TROUBLE' => 'The duplication of current entry has well occured but it was not possible to retrive the link to the new entry.',
+    'DUPLICATE_OTHER_ENTRIES_CREATED' => 'Others entries were created: %{links}',
+    'DUPLICATE_PAGE_NEW_NAME' => 'Name of the new page to create',
+
     // handlers/edit
     'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' => 'ALERT : '.
         'Thispage has benn modified by another user while you were editing it.'."\n".

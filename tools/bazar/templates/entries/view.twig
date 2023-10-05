@@ -38,6 +38,19 @@
       {% endif %}
 
       <div class="BAZ_actions_fiche">
+        {% if config.default_read_acl is not empty
+            and hasAcl(config.default_read_acl)
+            and (
+                config.canDuplicateEntryIfNotRightToWrite is same as true
+                or hasAcl(config.default_write_acl)
+                ) %}
+          <a
+            class="btn btn-entry-action btn-sm btn-default"
+            title="{{ _t('DUPLICATE') }}"
+            href="{{ url({handler:isInIframe ? 'duplicateiframe' : 'duplicate'}) }}">
+            <i class="fas fa-copy"></i>
+          </a>
+        {% endif %}
         {% if currentuser is not empty %}
           {{ include_javascript('javascripts/favorites.js') }}
           <a href="#"

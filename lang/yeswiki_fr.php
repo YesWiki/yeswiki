@@ -583,6 +583,15 @@ return [
     'DELETEPAGE_PAGES_WITH_LINKS_TO' => 'Pages ayant un lien vers {tag} :',
     'DELETEPAGE_NOT_DELETED' => 'Page non supprimée.',
 
+    // handlers/DuplicationHandler.php
+    'DUPLICATE' => 'Dupliquer',
+    'DUPLICATION_IN_COURSE' => 'Vous être en train de dupliquer la page \'%{originTag}\' vers \'%{destinationTag}\' !',
+    'DUPLICATION_NOT_POSSIBLE_IF_EXISTING' => 'Copie de la page impossible car le nouveau nom choisi est déjà utilisé !',
+    'DUPLICATION_NOT_POSSIBLE_IF_NO_NAME' => 'Copie de la page impossible car le nouveau nom choisi est vide !',
+    'DUPLICATION_TROUBLE' => 'La duplication de la présente fiche a bien eu lieu mais il n\'a pas été possible de retrouver le lien vers la nouvelle fiche.',
+    'DUPLICATE_OTHER_ENTRIES_CREATED' => 'D\'autres fiches ont été créées : %{links}',
+    'DUPLICATE_PAGE_NEW_NAME' => 'Nom de la nouvelle page à créer',
+
     // handlers/edit
     'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' =>
         'Cette page a &eacute;t&eacute; modifi&eacute;e par quelqu\'un d\'autre pendant que vous l\'&eacute;ditiez.'."\n".
