@@ -5,6 +5,7 @@ namespace YesWiki\Core\Service;
 use DateTime;
 use DateInterval;
 use Exception;
+use Throwable;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class DbService
@@ -24,14 +25,17 @@ class DbService
 
     protected function initSqlConnection()
     {
-        $this->link = @mysqli_connect(
-            $this->params->get('mysql_host'),
-            $this->params->get('mysql_user'),
-            $this->params->get('mysql_password'),
-            $this->params->get('mysql_database'),
-            $this->params->has('mysql_port') ? $this->params->get('mysql_port') : ini_get("mysqli.default_port")
-        );
-        if ($this->link) {
+        try{
+            $this->link = @mysqli_connect(
+                $this->params->get('mysql_host'),
+                $this->params->get('mysql_user'),
+                $this->params->get('mysql_password'),
+                $this->params->get('mysql_database'),
+                $this->params->has('mysql_port') ? $this->params->get('mysql_port') : ini_get("mysqli.default_port")
+            );
+            if (!$this->link) {
+                throw new Exception("Not connected to sql");
+            }
             if ($this->params->has('db_charset') and $this->params->get('db_charset') === 'utf8mb4') {
                 // necessaire pour les versions de mysql qui ont un autre encodage par defaut
                 mysqli_set_charset($this->link, 'utf8mb4');
@@ -42,10 +46,12 @@ class DbService
                     mysqli_query($this->link, 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
                 }
             }
-        } elseif (in_array(php_sapi_name(), ['cli', 'cli-server',' phpdbg'], true)) {
-            throw new Exception(_t('DB_CONNECT_FAIL'));
-        } else {
-            exit(_t('DB_CONNECT_FAIL'));
+        } catch (Throwable $th){
+            if (in_array(php_sapi_name(), ['cli', 'cli-server',' phpdbg'], true)) {
+                throw new Exception(_t('DB_CONNECT_FAIL'));
+            } else {
+                exit(_t('DB_CONNECT_FAIL'));
+            }
         }
     }
 
