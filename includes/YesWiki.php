@@ -115,7 +115,7 @@ class Wiki
     public function GetConfigValue($name, $default=null)
     {
         return isset($this->config[$name])
-            ? trim($this->config[$name])
+            ? is_array($this->config[$name]) ? $this->config[$name] : trim($this->config[$name])
             : ($default != null ? $default : '') ;
     }
 
