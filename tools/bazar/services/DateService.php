@@ -212,10 +212,14 @@ class DateService implements EventSubscriberInterface
                     }
                     $newEntry['bf_date_fin_evenement_data'] = "{\"recurrentParentId\":\"{$entry['id_fiche']}\"}";
                     $newEntry['antispam'] = 1;
+                    $savedFiles = $_FILES;
+                    $_FILES = [];
+                    // to prevent ImageFile to badly update Image
                     $this->entryManager->create(
                         $entry['id_typeannonce'],
                         $newEntry
                     );
+                    $_FILES = $savedFiles;
                 }
             }
         }
