@@ -187,10 +187,10 @@
                     :name="`{{ field.propertyName }}_data[days][${idx}]`"
                     :value="day"
                     />
-                <div>
+                <button @click.prevent.stop="showRange = !showRange"><i :class="{fas:true,'fa-cogs':!showRange,'fa-window-close':showRange}"></i></button>
+                <div v-show="showRange">
                     <small>
                     <i>{{ "{{ '#{_t('EVENT_NB_MAX_REPETITIONS')}'.replace('%{X}',nbmax) }}" }}</i>&nbsp;
-                    <button @click.prevent.stop="showRange = !showRange"><i :class="{fas:true,'fa-pen':!showRange,'fa-window-close':showRange}"></i></button>
                     </small>
                     <input
                         type="range"
@@ -200,7 +200,6 @@
                         min="1"
                         max="300"
                         data-default="300"
-                        v-show="showRange"
                         required
                     />
                 </div>
