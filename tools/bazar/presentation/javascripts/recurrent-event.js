@@ -150,7 +150,11 @@ let appParams = {
             if (this.repetitionInternal?.match(/w$/)){
                 const day = this.getCurrentStartDay()
                 if (day !== '' && !this.days.includes(day)){
-                    this.days.push(day)
+                    if (day !== 'mon' && this.days.length === 1 && this.days.includes('mon')){
+                        this.days = [day]
+                    } else {
+                        this.days.push(day)
+                    }
                 }
             }
         },
