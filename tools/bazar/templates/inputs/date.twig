@@ -212,12 +212,5 @@
                 })|raw }}
             </div>
         </div>
-        {% if not hasAcl('%') %}
-            <div class="input-prepend input-group specific-for-recurrence" v-if="showWarningMessage">
-                <div class="alert alert-warning">
-                {{ _t('EVENT_WARNING_MESSAGE') }}
-                </div>
-            </div>
-        {% endif %}
     {% endif %}
 {% endblock %}

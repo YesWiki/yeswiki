@@ -406,7 +406,7 @@ class DateService implements EventSubscriberInterface
             );
             foreach($entriesToDelete as $entryToDelete){
                 try {
-                    $this->entryManager->delete($entryToDelete['id_fiche']);
+                    $this->entryManager->delete($entryToDelete['id_fiche'],true); // $forceEvenIfNotOwner = true
                 } catch (Throwable $th) {
                     // do nothing
                 }

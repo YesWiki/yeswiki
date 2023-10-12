@@ -719,18 +719,19 @@ class EntryManager
     /**
      * Delete a fiche
      * @param $tag
+     * @param bool $forceEvenIfNotOwner
      * @throws Exception
      */
-    public function delete($tag)
+    public function delete($tag, bool $forceEvenIfNotOwner = false)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        if (!$this->wiki->UserIsAdmin() && !$this->wiki->UserIsOwner($tag)) {
+        if (!$forceEvenIfNotOwner && !$this->wiki->UserIsAdmin() && !$this->wiki->UserIsOwner($tag)) {
             throw new Exception(_t('DELETEPAGE_NOT_DELETED')._t('DELETEPAGE_NOT_OWNER'));
         }
 
-        $fiche = $this->getOne($tag);
+        $fiche = $this->getOne($tag,false,null,true,$forceEvenIfNotOwner);
         if (empty($fiche)) {
             throw new Exception("Not existing entry : $tag");
         }
