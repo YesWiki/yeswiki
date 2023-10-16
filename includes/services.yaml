@@ -26,3 +26,6 @@ services:
   YesWiki\Core\Service\CommentService:
     tags:
       - { name: yeswiki.event_subscriber }
+  YesWiki\Core\Service\ThemeManager:
+    tags:
+      - { name: yeswiki.event_subscriber }

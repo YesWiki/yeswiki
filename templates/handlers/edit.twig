@@ -25,6 +25,27 @@
     {{ renderAction('aceditor', { saveButton: true, name: 'body', value: body })|raw }}
   {% endif %}
 
+  {% if request.newpage is same as '1' and request.theme is not empty %}
+    <input type="hidden" name="newpage" value="1"/>
+    {% for key in [
+          'theme',
+          'style',
+          'squelette',
+          'bgimg',
+          'PageFooter',
+          'PageHeader',
+          'PageTitre',
+          'PageRapideHaut',
+          'PageMenuHaut',
+          'PageMenu',
+          'favorite_preset'
+          ] %}
+      {% if request[key] is not empty %}
+          <input type="hidden" name="{{key}}" value="{{request[key]}}"/>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
   {# Filled by tools/tags/handles/page/edit__ #}
   {# TODO: stop using all those edit__, and put directly the code here #}
   <div class="tags-container"></div>

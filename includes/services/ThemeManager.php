@@ -3,13 +3,16 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use YesWiki\Wiki;
+use YesWiki\Core\Entity\Event;
 use YesWiki\Core\Service\Performer;
+use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Templates\Service\Utils;
 
-class ThemeManager
+class ThemeManager implements EventSubscriberInterface
 {
     public const CUSTOM_CSS_PRESETS_PATH = 'custom/css-presets';
     public const CUSTOM_CSS_PRESETS_PREFIX = 'custom/';
@@ -46,6 +49,7 @@ class ThemeManager
     protected $favorites;
     protected $fileContent;
     protected $fileLoaded;
+    protected $pageManager;
     protected $params;
     protected $performer;
     protected $securityController;
@@ -59,9 +63,17 @@ class ThemeManager
     protected $utils;
     protected $wiki;
 
+    public static function getSubscribedEvents()
+    {
+        return [
+            'page.created' => 'saveMetadataIfNeeded',
+        ];
+    }
+
     public function __construct(
         Wiki $wiki, 
         TemplateEngine $twig,
+        PageManager $pageManager,
         ParameterBagInterface $params,
         Performer $performer, 
         SecurityController $securityController,
@@ -80,6 +92,7 @@ class ThemeManager
         ];
         $this->fileContent = null;
         $this->fileLoaded = false;
+        $this->pageManager = $pageManager;
         $this->params = $params;
         $this->performer = $performer;
         $this->securityController = $securityController;
@@ -883,5 +896,42 @@ class ThemeManager
         }
 
         return $url;
+    }
+
+    /**
+     * save metadata for new page if needed
+     * @param Event $event
+     */
+    public function saveMetadataIfNeeded(Event $event)
+    {
+        $data = $event->getData();
+        if (!empty($data['data']['tag'])
+            && !empty($_POST["newpage"])
+            && isset($_POST['theme'])) {
+            $tag = $data['data']['tag'];
+            $previousMetadata = $this->pageManager->getMetadata($tag);
+
+            $tagIsCurrentPage = (
+                !empty($_GET['wiki'])
+                && is_string($_GET['wiki'])
+                && explode('/',$_GET['wiki'],2)[0] === $tag
+            ) || explode('/',array_key_first($_GET),2)[0] === $tag;
+
+            if (empty($previousMetadata) // only if no previous metadata
+                && $tagIsCurrentPage){
+                $metadata = [
+                    'theme' => $_POST["theme"],
+                    'style' => $_POST["style"] ?? CSS_PAR_DEFAUT ,
+                    'squelette' => $_POST["squelette"] ?? SQUELETTE_PAR_DEFAUT ,
+                    'bgimg' => $_POST["bgimg"] ?? null
+                ];
+                foreach (ThemeManager::SPECIAL_METADATA as $metadataName) {
+                    if (!empty($_POST[$metadataName])) {
+                        $metadata[$metadataName] = $_POST[$metadataName];
+                    }
+                }
+                $this->pageManager->setMetadata($tag, $metadata);
+            }
+        }
     }
 }
