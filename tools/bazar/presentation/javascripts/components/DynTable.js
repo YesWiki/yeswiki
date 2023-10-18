@@ -175,7 +175,7 @@ export default {
         },
         getUuid(){
             if (this.uuid === null){
-                return crypto.randomUUID()
+                return Date.now() + '-' + Math.round(Math.random()*10000)
             }
             return this.uuid
         },
