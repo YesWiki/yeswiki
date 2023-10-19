@@ -265,7 +265,7 @@ let componentParams = {
         },
         getUuid(){
             if (this.uuid === null){
-                this.uuid = crypto.randomUUID()
+                this.uuid = Date.now() + '-' + Math.round(Math.random()*10000)
             }
             return this.uuid
         },
