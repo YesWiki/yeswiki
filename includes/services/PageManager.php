@@ -282,6 +282,7 @@ class PageManager
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag='{$this->dbService->escape($tag)}' ");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('acls')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='".TripleStore::TYPE_URI."' and `value`='".EntryManager::TRIPLES_ENTRY_ID."'");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='http://outils-reseaux.org/_vocabulary/metadata'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('referrers')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->tagsManager->deleteAll($tag);
         
