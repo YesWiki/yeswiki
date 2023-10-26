@@ -20,9 +20,7 @@
  *
  *
 */
-use YesWiki\Bazar\Controller\EntryController;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Controller\PageController;
 use YesWiki\Core\YesWikiAction;
 
 class EraseSpamedCommentsAction extends YesWikiAction
@@ -86,12 +84,7 @@ class EraseSpamedCommentsAction extends YesWikiAction
                     // (si DeleteOrphanedPage ne convient pas, soit on créé
                     // une autre, soit on la modifie
                     echo "Effacement de : " . $page . "<br />\n";
-                    if ($wiki->services->get(EntryManager::class)->isEntry($page)){
-                        if($wiki->services->get(EntryController::class)->delete($page)){
-                            $deletedPages .= $page . ", ";
-                        }
-                    } else {
-                        $wiki->services->get(PageManager::class)->deleteOrphaned($page);
+                    if ($wiki->services->get(PageController::class)->delete($page)){
                         $deletedPages .= $page . ", ";
                     }
                 }

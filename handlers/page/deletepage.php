@@ -2,10 +2,8 @@
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
-use YesWiki\Bazar\Controller\EntryController;
-use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Controller\CsrfTokenController;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Controller\PageController;
 
 // Vérification de sécurité
 if (!defined("WIKINI_VERSION")) {
@@ -53,15 +51,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
         } else {
             try {
                 $csrfTokenController->checkToken('main', 'POST', 'csrf-token',false);
-                if ($this->services->get(EntryManager::class)->isEntry($tag)){
-                    if($this->services->get(EntryController::class)->delete($tag)){
-                        $hasBeenDeleted = true;
-                    }
-                } else {
-                    $this->services->get(PageManager::class)->deleteOrphaned($tag);
-                    $this->LogAdministrativeAction($this->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
-                    $hasBeenDeleted = true;
-                }
+                $hasBeenDeleted = $this->services->get(PageController::class)->delete($tag);
                 if ($hasBeenDeleted){
                     $msg = str_replace("{tag}", $tag, _t('DELETEPAGE_MESSAGE'));
                     // if $incomingurl has been defined and doesn't refer to the deleted page, redirect to it
