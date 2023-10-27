@@ -7,6 +7,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
+use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Security\Controller\SecurityController;
 
 /**
@@ -279,11 +280,16 @@ class FileField extends BazarField
             unset($entryFromDb[$this->propertyName]);
             $entryFromDb['antispam'] = 1;
             $entryFromDb['date_maj_fiche'] = date('Y-m-d H:i:s', time());
-            $entryManager->update($entryFromDb['id_fiche'], $entryFromDb, false, true);
+            $newEntry = $entryManager->update($entryFromDb['id_fiche'], $entryFromDb, false, true);
 
             $_GET = $previousGet;
             $_POST = $previousPost;
             $_REQUEST = $previousRequest;
+
+            $errors = $this->services->get(EventDispatcher::class)->yesWikiDispatch('entry.updated', [
+                'id' => $newEntry['id_fiche'],
+                'data' => $newEntry
+            ]);
         }
     }
 }
