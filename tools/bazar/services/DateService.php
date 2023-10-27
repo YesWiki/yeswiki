@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Service;
 
 use DateInterval;
+use DateTimeInterface;
 use DateTimeImmutable;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Throwable;
@@ -129,100 +130,147 @@ class DateService implements EventSubscriberInterface
             $selectedMonth = intval($newStartDate->format('n'));
         }
         for ($i=1; $i <= $nbmax; $i++) {
-            $calculateNewStartDate = $newStartDate;
-            switch ($data['repetition']) {
-                case 'y':
-                    $currentStartYear = intval($newStartDate->format('Y'));
-                    $nextStartMonth = $selectedMonth;
-                    $nextStartYear = $currentStartYear + $step;
-                    $calculateNewStartDate= $this->findNextStartDate(
-                        $newStartDate,
-                        $calculateNewStartDate,
-                        $data,
-                        $days,
-                        $nextStartYear,
-                        $nextStartMonth,
-                        function($month,&$year,$stepInternal){
-                            $year = $year + $stepInternal;
-                        }
-                    );
-                    break;
-                case 'm':
-                    $currentStartYear = intval($newStartDate->format('Y'));
-                    $currentStartMonth = intval($newStartDate->format('n'));
-                    $nextStartMonth = $currentStartMonth;
-                    $this->calculateNextMonth($nextStartMonth,$currentStartYear,$step);
-                    $calculateNewStartDate= $this->findNextStartDate(
-                        $newStartDate,
-                        $calculateNewStartDate,
-                        $data,
-                        $days,
-                        $currentStartYear,
-                        $nextStartMonth,
-                        [$this,'calculateNextMonth']
-                    );
-                    break;
-                case 'w':
-                    $currentStartYear = intval($newStartDate->format('Y'));
-                    $currentStartWeek = intval($newStartDate->format('W'));
-                    $currentStartDay = intval($newStartDate->format('N'));
-                    if (!in_array($currentStartDay,$days) || $currentStartDay === max($days)){
-                        $nextWantedDay = min($days);
-                        $nextStartWeek = $currentStartWeek + $step;
-                        if ($nextStartWeek > 52){
-                            $nextStartWeek = $nextStartWeek - 52;
-                            $currentStartYear = $currentStartYear + 1;
-                        }
-                    } else {
-                        $nextStartWeek = $currentStartWeek;
-                        $nextWantedDay = min(
-                            array_filter(
-                                $days,
-                                function ($day) use ($currentStartDay){
-                                    return $day > $currentStartDay;
-                                }
-                            )
-                        );
-                    }
-                    $calculateNewStartDate = $newStartDate->setISODate($currentStartYear,$nextStartWeek,$nextWantedDay);
-                    break;
-                case 'd':
-                default:
-                    $calculateNewStartDate = $newStartDate->add(new DateInterval("P{$step}D"));
-                    break;
-            }
+            $calculateNewStartDate = $this->calculateNextDate(
+                $newStartDate,
+                $selectedMonth,
+                $days,
+                $step,
+                $data
+            );
             if (!empty($calculateNewStartDate) && $calculateNewStartDate->diff(new DateTimeImmutable('1970-01-01'))->invert === 1){
                 $delta = $newStartDate->diff($calculateNewStartDate);
                 $newStartDate = $calculateNewStartDate;
                 $newEndDate= $newEndDate->add($delta);
-                if (empty($data['limitdate']) || (
-                    ($data['limitdate'])->diff($newEndDate)->invert == 1 && ($data['limitdate'])->diff($newStartDate)->invert == 1
-                    )){
-                    $newEntry = $entry;
-                    $newEntry['id_fiche'] = $entry['id_fiche'].$newStartDate->format('Ymd');
-                    foreach([
-                        'bf_date_debut_evenement' => $newStartDate,
-                        'bf_date_fin_evenement' => $newEndDate,
-                    ] as $key => $dateObj){
-                        if (strlen($entry[$key])>10){
-                            $newEntry[$key] = $dateObj->format('c');
-                        } else {
-                            $newEntry[$key] = $dateObj->format('Y-m-d');
-                        }
-                    }
-                    $newEntry['bf_date_fin_evenement_data'] = "{\"recurrentParentId\":\"{$entry['id_fiche']}\"}";
-                    $newEntry['antispam'] = 1;
-                    $savedFiles = $_FILES;
-                    $_FILES = [];
-                    // to prevent ImageFile to badly update Image
-                    $this->entryManager->create(
-                        $entry['id_typeannonce'],
-                        $newEntry
-                    );
-                    $_FILES = $savedFiles;
-                }
+                $this->createEntryIfPossible($data,$newStartDate,$newEndDate,$entry);
             }
         }
+    }
+
+    /**
+     * create new entry if limit not reached
+     * @param array $data
+     * @param DateTimeInterface $newStartDate
+     * @param DateTimeInterface $newEndDate
+     * @param array $entry
+     */
+    protected function createEntryIfPossible(
+        array $data,
+        DateTimeInterface $newStartDate,
+        DateTimeInterface $newEndDate,
+        array $entry
+    )
+    {
+        if (
+                empty($data['limitdate'])
+                || (
+                    ($data['limitdate'])->diff($newEndDate)->invert == 1
+                    && ($data['limitdate'])->diff($newStartDate)->invert == 1
+                    )
+            ){
+            $newEntry = $entry;
+            $newEntry['id_fiche'] = $entry['id_fiche'].$newStartDate->format('Ymd');
+            foreach([
+                'bf_date_debut_evenement' => $newStartDate,
+                'bf_date_fin_evenement' => $newEndDate,
+            ] as $key => $dateObj){
+                if (strlen($entry[$key])>10){
+                    $newEntry[$key] = $dateObj->format('c');
+                } else {
+                    $newEntry[$key] = $dateObj->format('Y-m-d');
+                }
+            }
+            $newEntry['bf_date_fin_evenement_data'] = "{\"recurrentParentId\":\"{$entry['id_fiche']}\"}";
+            $newEntry['antispam'] = 1;
+            $savedFiles = $_FILES;
+            $_FILES = [];
+            // to prevent ImageFile to badly update Image
+            $this->entryManager->create(
+                $entry['id_typeannonce'],
+                $newEntry
+            );
+            $_FILES = $savedFiles;
+        }
+    }
+
+    /**
+     * get calculateNewStartDate
+     * @param DateTimeInterface $newStartDate
+     * @param int $selectedMonth
+     * @param array $days
+     * @param int $step
+     * @param array $data
+     * @return DateTimeInterface $calculateNewStartDate
+     */
+    protected function calculateNextDate(
+        DateTimeInterface $newStartDate,
+        int $selectedMonth,
+        array $days,
+        int $step,
+        array $data
+    ):DateTimeInterface
+    {
+        switch ($data['repetition']) {
+            case 'y':
+                $currentStartYear = intval($newStartDate->format('Y'));
+                $nextStartMonth = $selectedMonth;
+                $nextStartYear = $currentStartYear + $step;
+                $calculateNewStartDate= $this->findNextStartDate(
+                    $newStartDate,
+                    $calculateNewStartDate,
+                    $data,
+                    $days,
+                    $nextStartYear,
+                    $nextStartMonth,
+                    function($month,&$year,$stepInternal){
+                        $year = $year + $stepInternal;
+                    }
+                );
+                break;
+            case 'm':
+                $currentStartYear = intval($newStartDate->format('Y'));
+                $currentStartMonth = intval($newStartDate->format('n'));
+                $nextStartMonth = $currentStartMonth;
+                $this->calculateNextMonth($nextStartMonth,$currentStartYear,$step);
+                $calculateNewStartDate= $this->findNextStartDate(
+                    $newStartDate,
+                    $calculateNewStartDate,
+                    $data,
+                    $days,
+                    $currentStartYear,
+                    $nextStartMonth,
+                    [$this,'calculateNextMonth']
+                );
+                break;
+            case 'w':
+                $currentStartYear = intval($newStartDate->format('Y'));
+                $currentStartWeek = intval($newStartDate->format('W'));
+                $currentStartDay = intval($newStartDate->format('N'));
+                if (!in_array($currentStartDay,$days) || $currentStartDay === max($days)){
+                    $nextWantedDay = min($days);
+                    $nextStartWeek = $currentStartWeek + $step;
+                    if ($nextStartWeek > 52){
+                        $nextStartWeek = $nextStartWeek - 52;
+                        $currentStartYear = $currentStartYear + 1;
+                    }
+                } else {
+                    $nextStartWeek = $currentStartWeek;
+                    $nextWantedDay = min(
+                        array_filter(
+                            $days,
+                            function ($day) use ($currentStartDay){
+                                return $day > $currentStartDay;
+                            }
+                        )
+                    );
+                }
+                $calculateNewStartDate = $newStartDate->setISODate($currentStartYear,$nextStartWeek,$nextWantedDay);
+                break;
+            case 'd':
+            default:
+                $calculateNewStartDate = $newStartDate->add(new DateInterval("P{$step}D"));
+                break;
+        }
+        return $calculateNewStartDate;
     }
 
     protected function calculateNextMonth(&$nextStartMonth,&$currentStartYear,$step)
