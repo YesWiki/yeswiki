@@ -187,6 +187,23 @@
                     :name="`{{ field.propertyName }}_data[days][${idx}]`"
                     :value="day"
                     />
+                <button @click.prevent.stop="showExcept = !showExcept">
+                    <i :class="{fas:true,'fa-eye':!showExcept,'fa-eye-slash':showExcept}"></i>{{ _t('EVENT_EXCEPT_LABEL') }}
+                    <span v-if="!showExcept">...</span>
+                </button>
+                <div v-show="showExcept">
+                    <select v-model="newExcept">
+                    <option value="">{{ _t('BAZ_CHOISIR') }}</option>
+                    <option v-for="exceptDate in availableExceptFiltered" :value="exceptDate" v-html="exceptDate"></option>
+                    </select>
+                    <template v-for="(exceptDate,idx) in except">
+                    <div>
+                        {{ "{{exceptDate}}" }}
+                        <button class="btn btn-xs btn-danger btn-icon" @click.prevent.stop="except = except.filter((e)=>e!=exceptDate)">❌</button>
+                        <input type="hidden" :name="`{{ field.propertyName }}_data[except][${idx}]`" :value="exceptDate"/>
+                    </div>
+                    </template>
+                </div>
                 <button @click.prevent.stop="showRange = !showRange"><i :class="{fas:true,'fa-cogs':!showRange,'fa-window-close':showRange}"></i></button>
                 <div v-show="showRange">
                     <small>

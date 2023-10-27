@@ -397,6 +397,7 @@ return [
     // 'EVENT_EVERY_X_MONTHS' => 'Tous les X mois',
     // 'EVENT_EVERY_YEARS' => 'Tous les ans',
     // 'EVENT_EVERY_X_YEARS' => 'Toutes les X années',
+    // 'EVENT_EXCEPT_LABEL' => 'Sauf',
     // 'EVENT_FIRST_Y_OF_MONTH' => 'Le premier Y du mois',
     // 'EVENT_FORTH_Y_OF_MONTH' => 'Le quatrième Y du mois',
     // 'EVENT_IS_LINKED_TO_RECURRENT_EDIT' => 'Cette évènement est un évènement récurrent lié à la fiche %{link}.<br/>Toute modification de cette fiche cassera le lien avec l\'évènement de base !',

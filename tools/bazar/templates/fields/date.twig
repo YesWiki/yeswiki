@@ -79,7 +79,13 @@
             )
           ),
         nb: data.nbmax ?? '?'
-      }) }}{% if data.limitdate %}, {{ _t('EVENT_LIMIT_DATE',{date:data.limitdate}) }}{% endif %}</i></small>
+      }) }}{% if data.limitdate %}, {{ _t('EVENT_LIMIT_DATE',{date:data.limitdate}) }}{% endif %}
+      {%- if data.except is not empty -%}
+        , {{ _t('EVENT_EXCEPT_LABEL')|lower }} {% for date in data.except -%}
+          {%- if not loop.first %}, {% endif -%}
+          {{ date }}
+        {%- endfor -%}
+      {% endif %}</i></small>
     </span>
   {% endif %}
 {% endblock %}

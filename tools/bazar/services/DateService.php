@@ -161,11 +161,16 @@ class DateService implements EventSubscriberInterface
     )
     {
         if (
+            (
                 empty($data['limitdate'])
                 || (
                     ($data['limitdate'])->diff($newEndDate)->invert == 1
                     && ($data['limitdate'])->diff($newStartDate)->invert == 1
                     )
+            ) && (
+                empty($data['except'])
+                || !in_array($newStartDate->format('Y-m-d'),$data['except'])
+            )
             ){
             $newEntry = $entry;
             $newEntry['id_fiche'] = $entry['id_fiche'].$newStartDate->format('Ymd');
@@ -388,6 +393,31 @@ class DateService implements EventSubscriberInterface
                 return [];
             }
             $data['limitdate'] = $dateTimeObj;
+        }
+        // check except
+        if (!empty($data['except'])){
+            if(!is_array($data['except'])){
+                return [];
+            }
+            $data['except'] = array_map(
+                function($value){
+                    return is_string($value)
+                        ? new DateTimeImmutable($value)
+                        : null;
+                },
+                $data['except']
+            );
+            $data['except'] = array_filter(
+                $data['except'],
+                function($value){
+                    return !empty($value);
+            });
+            $data['except'] = array_map(
+                function($dateObj){
+                    return $dateObj->format('Y-m-d');
+                },
+                $data['except']
+            );
         }
         return compact(['data','currentStartDate','currentEndDate']);
     }
