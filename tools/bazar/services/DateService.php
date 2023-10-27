@@ -221,7 +221,6 @@ class DateService implements EventSubscriberInterface
                 $nextStartYear = $currentStartYear + $step;
                 $calculateNewStartDate= $this->findNextStartDate(
                     $newStartDate,
-                    $calculateNewStartDate,
                     $data,
                     $days,
                     $nextStartYear,
@@ -238,7 +237,6 @@ class DateService implements EventSubscriberInterface
                 $this->calculateNextMonth($nextStartMonth,$currentStartYear,$step);
                 $calculateNewStartDate= $this->findNextStartDate(
                     $newStartDate,
-                    $calculateNewStartDate,
                     $data,
                     $days,
                     $currentStartYear,
@@ -288,7 +286,6 @@ class DateService implements EventSubscriberInterface
     }
 
     protected function findNextStartDate(
-        DateTimeImmutable $calculateNewStartDate,
         DateTimeImmutable $newStartDate,
         array $data,
         array $days,
@@ -296,6 +293,7 @@ class DateService implements EventSubscriberInterface
         int $nextStartMonth,
         $callback): DateTimeImmutable
     {
+        $calculateNewStartDate = $newStartDate;
         if ($data['whenInMonth'] === 'nthOfMonth'){
             $nth = intval($data['nth']);
             $limit = 60;
