@@ -23,9 +23,9 @@
     $noir = imagecolorallocate($image, 0, 0, 0);
     $blanc = imagecolorallocate($image, 255, 255, 255);
     if ($percent < 50) {
-        $color = imagecolorallocate($image, 255, 255 * $percent / 50, 0);
+        $color = imagecolorallocate($image, 255, intval(255 * $percent / 50), 0);
     } else {
-        $color = imagecolorallocate($image, 255 * (100 - $percent) / 50, 255, 0);
+        $color = imagecolorallocate($image, intval(255 * (100 - $percent) / 50), 255, 0);
     }
 
     imagefilledrectangle($image, 0, 0, $width-1, $height-1, $noir);
