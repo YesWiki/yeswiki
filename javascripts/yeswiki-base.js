@@ -580,7 +580,7 @@ function toastMessage(
       e.preventDefault()
       const link = $(this)
       $.ajax({
-        type: 'GET',
+        type: 'POST',
         url: link.attr('href'),
         dataType: 'json',
         success(e) {
@@ -804,7 +804,7 @@ $('#commentsTableDeleteModal.modal').on('shown.bs.modal',function(event){
       let name = $(this).data('name');
       let targetNode = $(this).data('targetNode');
       let modal = $(this).data('modal');
-      
+
       $.ajax({
         method: 'post',
         url: wiki.url(`api/comments/${name}/delete`),
