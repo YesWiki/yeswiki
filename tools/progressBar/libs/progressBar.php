@@ -30,7 +30,7 @@
 
     imagefilledrectangle($image, 0, 0, $width-1, $height-1, $noir);
     imagefilledrectangle($image, 1, 1, $width-2, $height-2, $blanc);
-    imagefilledrectangle($image, 1, 1, ($width-2) * $percent / 100, $height-2, $color);
+    imagefilledrectangle($image, 1, 1, intval(($width-2) * $percent / 100), $height-2, $color);
     
     
     imagepng($image);
