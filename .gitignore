@@ -1,5 +1,28 @@
+
+# we ignore all folders other than yeswiki's ones, to be able to use farm for example
+*/
+!.github/
+!actions/
+!cache/
+!custom/
+!docs/
+!files/
+!formatters/
+!handlers/
+!includes/
+!javascripts/
+!lang/
+!private/
+!setup/
+!styles/
+!templates/
+!tests/
+!themes/
+!tools/
+
 # Composer
 vendor
+
 # Node modules
 node_modules
 !javascripts/vendor
@@ -9,6 +32,7 @@ node_modules
 robots.txt
 
 # YesWiki stuff
+.env
 wakka.config.php
 info.php
 cache/*
