@@ -1,6 +1,6 @@
 
 # we ignore all folders other than yeswiki's ones, to be able to use farm for example
-*/
+/*/
 !.github/
 !actions/
 !cache/
