@@ -93,11 +93,7 @@ class Performer
                             'baseName' => $baseName,
                             'isDefinedAsClass' => $isDefinedAsClass
                         ]);
-                    } elseif (
-                        // TODO remove this test when removing actions/header.php and footer.php
-                        !isset($object['filePath']) // object not already defined
-                        ||  !in_array($filePath, ['actions/header.php','actions\header.php','actions/footer.php','actions\footer.php'])
-                    ) {
+                    } else {
                         $object = [
                             'filePath' => $filePath,
                             'baseName' => $baseName,

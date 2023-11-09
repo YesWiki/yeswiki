@@ -14,6 +14,7 @@ use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Controller\ArchiveController;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Controller\PageController;
 use YesWiki\Core\Controller\UserController;
 use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\ExitException;
@@ -377,9 +378,12 @@ class ApiController extends YesWikiController
     public function deletePage($tag)
     {
         $pageManager = $this->getService(PageManager::class);
+        $pageController = $this->getService(PageController::class);
         $dbService = $this->getService(DbService::class);
 
-        $result = [];
+        $result = [
+            'notDeleted' => [$tag]
+        ];
         $code = Response::HTTP_INTERNAL_SERVER_ERROR;
         try {
             $page = $pageManager->getOne($tag, null, false);
@@ -387,22 +391,17 @@ class ApiController extends YesWikiController
                 $code = Response::HTTP_NOT_FOUND;
             } else {
                 $tag = isset($page['tag']) ? $page['tag'] : $tag;
+                $result['notDeleted'] = [$tag];
                 if ($this->wiki->UserIsOwner($tag) || $this->wiki->UserIsAdmin()) {
                     if (!$pageManager->isOrphaned($tag)) {
                         $dbService->query("DELETE FROM {$dbService->prefixTable('links')} WHERE to_tag = '$tag'");
                     }
-                    $pageManager->deleteOrphaned($tag);
-                    $page = $pageManager->getOne($tag, null, false);
-                    if (!empty($page)) {
+                    $done = $pageController->delete($tag);
+                    if (!$done || !empty($pageManager->getOne($tag, null, false))) {
                         $code = Response::HTTP_INTERNAL_SERVER_ERROR;
-                        $result = [
-                            'notDeleted' => [$tag]
-                        ];
                     } else {
-                        $this->wiki->LogAdministrativeAction($this->wiki->GetUserName(), "Suppression de la page ->\"\"$tag\"\"", false);
-                        $result = [
-                            'deleted' => [$tag]
-                        ];
+                        $result['deleted'] = [$tag];
+                        unset($result['notDeleted']);
                         $code = Response::HTTP_OK;
                     }
                 } else {
@@ -412,25 +411,17 @@ class ApiController extends YesWikiController
         } catch (Throwable $th) {
             try {
                 $page = $pageManager->getOne($tag, null, false);
+                $result['error'] = $th->getMessage();
                 if (!empty($page)) {
                     $code = Response::HTTP_INTERNAL_SERVER_ERROR;
-                    $result = [
-                        'notDeleted' => [$tag],
-                        'error' => $th->getMessage()
-                    ];
                 } else {
                     $code = Response::HTTP_OK;
-                    $result = [
-                        'deleted' => [$tag],
-                        'error' => $th->getMessage()
-                    ];
+                    unset($result['notDeleted']);
+                    $result['deleted'] = [$tag];
                 }
             } catch (Throwable $th) {
                 $code = Response::HTTP_INTERNAL_SERVER_ERROR;
-                $result = [
-                    'notDeleted' => [$tag],
-                    'error' => $th->getMessage()
-                ];
+                $result['error'] = $th->getMessage();
             }
         }
 

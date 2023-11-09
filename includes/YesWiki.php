@@ -989,7 +989,7 @@ class Wiki
             if ($line[0] == '@') {
                 $line = substr($line, 1);
                 if (! in_array($line, $checked)) {
-                    if ($this->MakesGroupRecursive($line, $this->GetGroupACL($line), $origin, $checked)) {
+                    if ($this->MakesGroupRecursive($line, $this->GetGroupACL($line) ?? '', $origin, $checked)) {
                         return true;
                     }
                 }
