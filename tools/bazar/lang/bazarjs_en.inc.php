@@ -247,7 +247,6 @@ return [
     'BAZ_ADJUST_MARKER_POSITION' => 'Move me if needed',
 
     // presentation/javascripts/form-edit-template/fields/url.js
-    'BAZAR_VIDEO_LABEL' => 'video',
     'BAZAR_VIDEO_MAXHEIGHT_LABEL' => 'Maximum video\'s height',
     'BAZAR_VIDEO_MAXWIDTH_LABEL' => 'Maximum video\'s width',
     'BAZAR_VIDEO_MAX_HINT' => 'Only positive integer of pixel without unity ; ex: 200',
