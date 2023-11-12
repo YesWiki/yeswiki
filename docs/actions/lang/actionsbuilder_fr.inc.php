@@ -208,7 +208,6 @@ return [
     "AB_bazargogocarto_width_label" => "Largeur de la carte",
     // bazarvideo
     'AB_bazarvideo_action_label' => 'Affichage des vidéos par bloc',
-    'AB_bazarvideo_action_video_fieldname_label' => 'Champ vidéo',
     'AB_bazarvideo_action_link_fieldname_label' => 'Champ lien',
     // BazarAction
     "AB_bazar_action_label" => "Afficher un formulaire de création de fiche",
