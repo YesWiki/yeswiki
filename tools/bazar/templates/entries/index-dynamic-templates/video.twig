@@ -38,7 +38,7 @@
         >
       
       {# VISUAL AREA #}
-      <template v-if="Object.keys(entry).some((e)=>['imagefieldname','videofieldname','urlfieldname'].includes(e))">
+      <template v-if="Object.keys(entry).some((e)=>['imagefieldname','urlfieldname'].includes(e))">
         <template v-if="entry.imagefieldname">
           <img 
             loading="lazy"
@@ -50,7 +50,7 @@
             :style="{color:'blue','background-image': `url('${urlImage(entry,'imagefieldname',{{ imWidth }},{{ imHeight }},'crop')}')`}">
           </div>
         </template>
-        {% set seekingKey = 'videofieldname' %}
+        {% set seekingKey = 'urlfieldname' %}
         {% block displayvideo %}
             <div v-else-if="entry.{{seekingKey}}">
               {% embed '@attach/actions/commons-pdf-video.twig' with {'shape':'embed-responsive-16by9'} %}
@@ -92,8 +92,6 @@
               {% endembed %}
             </div>
         {% endblock %}
-        {% set seekingKey = 'urlfieldname' %}
-        {{ block('displayvideo') }}
         <div v-else class="area area visual-area placeholder"></div>
       </template>
       
