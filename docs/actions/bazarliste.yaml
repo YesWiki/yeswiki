@@ -1225,10 +1225,6 @@ actions:
       displayfields:
         type: correspondance
         subproperties:
-          videofieldname:
-            type: form-field
-            label: _t(AB_bazarvideo_action_video_fieldname_label)
-            value: bf_video
           imagefieldname:
             type: form-field
             label: _t(AB_bazarliste_displayfields_visual_label)
