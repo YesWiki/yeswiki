@@ -246,7 +246,7 @@ return [
     // presentation/javascripts/map-field-leaflet.js
     'BAZ_ADJUST_MARKER_POSITION' => 'Move me if needed',
 
-    // presentation/javascripts/form-edit-template/fields/video.js
+    // presentation/javascripts/form-edit-template/fields/url.js
     'BAZAR_VIDEO_LABEL' => 'video',
     'BAZAR_VIDEO_MAXHEIGHT_LABEL' => 'Maximum video\'s height',
     'BAZAR_VIDEO_MAXWIDTH_LABEL' => 'Maximum video\'s width',
@@ -255,6 +255,7 @@ return [
     'BAZAR_VIDEO_POSITION_LABEL' => 'Position',
     'BAZAR_VIDEO_POSITION_LEFT' => 'Left align',
     'BAZAR_VIDEO_POSITION_RIGHT' => 'Right align',
+    'BAZAR_URL_DISPLAY_VIDEO' => 'Display player if url is a video?',
 
     // templates/entries/index-dynamic-temapltes/BazarCalendar_ButtonICS.js
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => "Add to your agenda",
