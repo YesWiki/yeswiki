@@ -39,6 +39,12 @@ class VideoAction extends YesWikiAction
         $matches = [];
         $id = $arg['id'] ?? '1f5bfc59-998b-41b3-9be3-e8084ad1a2a1';
         $peertubeinstance = $arg['peertubeinstance'] ?? '';
+        if (empty($peertubeinstance)) {
+            $peertubeinstance = $attachVideoConfig['default_peertube_instance'];
+        }
+        if (substr($peertubeinstance,-1) != '/'){
+            $peertubeinstance .= '/';
+        }
         if (preg_match('/^'
             . '(https?:\\/\\/.*)' // begin as url
             . '(?:' // multiple options
