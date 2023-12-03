@@ -74,7 +74,7 @@ class SearchManager
                     foreach ($options as $key => $option) {
                         foreach ($needles as $needle => $values) {
                             // mb_strtolower instead of strtolower to manage utf 8 characters
-                            if (preg_match('/'.mb_strtolower($needle).'/i', mb_strtolower($option), $matches)) {
+                            if (preg_match('/'.mb_strtolower(preg_quote($needle)).'/i', mb_strtolower($option), $matches)) {
                                 $results[] = [
                                     'propertyName' => $field->getPropertyName(),
                                     'key' => $key,
