@@ -196,6 +196,7 @@ return [
         ."{{panel title=\"Titre 2\"}}\nTexte du panneau 2 à changer par la suite\n{{end elem=\"panel\"}}\n",
     'AB_template_action_ariane_label' => 'Fil d\'ariane',
     'AB_template_action_col_label' => 'Colonne',
+    'AB_template_action_col_size_total' => 'Vous avez 12 colonnes virtuelles à répartir',
     'AB_template_action_col_example' => 'Texte de votre colonne à changer par la suite',
     'AB_template_col_size_label' => 'Largeur de la colonne',
     'AB_template_action_grid_label' => 'Afficher plusieurs colonnes',
