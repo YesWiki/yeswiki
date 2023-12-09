@@ -9,11 +9,11 @@
   --neutral-light-color: #f2f2f2;
   --main-text-fontsize: 17px;
   --main-text-fontfamily: "Nunito", sans-serif;
-  --main-title-fontfamily:'Nunito', sans-serif;
+  --main-title-fontfamily: "Nunito", sans-serif;
 
   --success-color: #3cab3b;
   --danger-color: #d8604c;
-  --warning-color: #D78958;
+  --warning-color: #d78958;
 }
 
 html {
@@ -34,11 +34,13 @@ ul.fake-ul {
 .deletions {
   color: var(--danger-color);
 }
-.add, .add * {
+.add,
+.add * {
   color: white !important;
   background-color: var(--success-color) !important;
 }
-.del, .del * {
+.del,
+.del * {
   color: white !important;
   background-color: var(--danger-color) !important;
   text-decoration: line-through !important;
@@ -57,8 +59,8 @@ a[data-missing-tag]:after {
   content: "\f303";
   font-family: "Font Awesome 5 Free";
   font-weight: 900;
-  margin-left: .4em;
-  font-size: .8em;
+  margin-left: 0.4em;
+  font-size: 0.8em;
 }
 
 /* Page absentes */
@@ -109,7 +111,7 @@ span.missingpage,
   margin: 0px;
 }
 .debug {
-  font-size: .9em;
+  font-size: 0.9em;
   color: var(--neutral-color);
   background: #fff;
   border: 1px dotted var(--neutral-color);
@@ -277,7 +279,6 @@ li.toc5 {
   overflow: hidden;
   padding: 0;
 }
-
 
 /* remove first column of revisions */
 #YesWikiModal .first-revisions-selector,
@@ -532,14 +533,27 @@ body {
   border-radius: 50%;
   left: 0;
   top: -3px;
-  -webkit-transition: left 0.3s ease, background 0.3s ease,
-    -webkit-box-shadow 0.1s ease, -webkit-transform 0.1s ease;
-  transition: left 0.3s ease, background 0.3s ease, -webkit-box-shadow 0.1s ease,
+  -webkit-transition:
+    left 0.3s ease,
+    background 0.3s ease,
+    -webkit-box-shadow 0.1s ease,
     -webkit-transform 0.1s ease;
-  transition: left 0.3s ease, background 0.3s ease, box-shadow 0.1s ease,
+  transition:
+    left 0.3s ease,
+    background 0.3s ease,
+    -webkit-box-shadow 0.1s ease,
+    -webkit-transform 0.1s ease;
+  transition:
+    left 0.3s ease,
+    background 0.3s ease,
+    box-shadow 0.1s ease,
     transform 0.1s ease;
-  transition: left 0.3s ease, background 0.3s ease, box-shadow 0.1s ease,
-    transform 0.1s ease, -webkit-box-shadow 0.1s ease,
+  transition:
+    left 0.3s ease,
+    background 0.3s ease,
+    box-shadow 0.1s ease,
+    transform 0.1s ease,
+    -webkit-box-shadow 0.1s ease,
     -webkit-transform 0.1s ease;
 }
 
@@ -549,10 +563,14 @@ body {
 
 .switch label .lever:after {
   background-color: #f1f1f1;
-  -webkit-box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
-    0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
-  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
-    0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+  -webkit-box-shadow:
+    0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+    0px 2px 2px 0px rgba(0, 0, 0, 0.14),
+    0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+  box-shadow:
+    0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+    0px 2px 2px 0px rgba(0, 0, 0, 0.14),
+    0px 1px 5px 0px rgba(0, 0, 0, 0.12);
 }
 
 .form-control[type="checkbox"] {
@@ -647,7 +665,9 @@ body {
 .toast-message {
   position: fixed;
   top: -5rem;
-  transition: top 0.5s, opacity 0.3s;
+  transition:
+    top 0.5s,
+    opacity 0.3s;
   left: 0;
   right: 0;
   z-index: 5000;
@@ -669,10 +689,10 @@ body {
 }
 
 .update-hint {
-  font-size: .9rem;
+  font-size: 0.9rem;
   margin-bottom: 5px;
   margin-top: 5px;
-  opacity: .9;
+  opacity: 0.9;
   font-style: italic;
   line-height: 1rem;
   text-align: justify;
@@ -691,7 +711,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: .1;
+  opacity: 0.1;
 }
 .spinner-loader.overlay {
   height: auto !important;
@@ -702,8 +722,8 @@ body {
   bottom: 0;
   height: auto;
   background-color: #ececec;
-  border-radius: .5rem;
-  opacity: .3;
+  border-radius: 0.5rem;
+  opacity: 0.3;
 }
 
 .spinner-loader.overlay.super-overlay {
@@ -723,7 +743,7 @@ section.pattern-border-dotted {
 }
 
 section.shape-rounded {
-  border-radius: .5rem;
+  border-radius: 0.5rem;
   padding: 2rem;
 }
 section.shape-circle {
@@ -763,31 +783,31 @@ section.full-width:not(.with-bg-pattern) {
   cursor: pointer;
 }
 .yeswiki-page-comments {
-  margin-top:2em;
+  margin-top: 2em;
 }
 .yw-comment {
   margin: 1em 0 3em;
 }
 .yw-comment .comment-info {
-  font-size:.8rem;
-  margin-bottom:0em;
+  font-size: 0.8rem;
+  margin-bottom: 0em;
   display: flex;
   justify-content: flex-start;
   align-items: center;
 }
 .yw-comment .user-pic {
-  width:32px;
-  height:32px;
-  margin:0 1em 0 0;
+  width: 32px;
+  height: 32px;
+  margin: 0 1em 0 0;
 }
 .yw-comment .comment-date {
   color: var(--neutral-color);
 }
 .yw-comment .comment-html {
-  margin-bottom:0;
+  margin-bottom: 0;
 }
 .yw-comment .comment-links {
-  font-size:.8rem;
+  font-size: 0.8rem;
 }
 .comment-reponses {
   margin-left: 3em;
@@ -806,8 +826,8 @@ html[lang="en"] [lang]:not([lang="en"]),
 html[lang="es"] [lang]:not([lang="es"]),
 html[lang="fr"] [lang]:not([lang="fr"]),
 html[lang="nl"] [lang]:not([lang="nl"]),
-html[lang="pt"] [lang]:not([lang="pt"]){
-  display:none;
+html[lang="pt"] [lang]:not([lang="pt"]) {
+  display: none;
 }
 
 /* comment-table */
@@ -816,7 +836,7 @@ html[lang="pt"] [lang]:not([lang="pt"]){
   max-width: 170px;
 }
 
-@media (max-width: 801px){
+@media (max-width: 801px) {
   #comments-table-action .comments-table-break-word-column {
     max-width: 120px;
   }
@@ -848,7 +868,7 @@ html[lang="pt"] [lang]:not([lang="pt"]){
   display: inline-block;
 }
 .mini-react > img.reaction-img {
-  max-width: 2.0em;
+  max-width: 2em;
 }
 .mini-react .reaction-emoji,
 .mini-react .reaction-fa-icons {
@@ -967,9 +987,8 @@ html[lang="pt"] [lang]:not([lang="pt"]){
   color: var(--primary-color);
 }
 
-
 /* users-table.twig */
-@media (max-width: 1200px){
+@media (max-width: 1200px) {
   #users-table-action {
     overflow-x: auto;
   }
@@ -982,4 +1001,12 @@ td.users-table-break-word {
 
 .yeswiki-tab .yeswiki-tab-btnnav {
   margin-top: 0.6rem;
+}
+
+/* hide login text on navbar, but show it in dropdown menu */
+.login-text {
+  display: none;
+}
+.dropdown-menu .login-text {
+  display: inline;
 }

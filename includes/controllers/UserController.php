@@ -22,7 +22,7 @@ class UserController extends YesWikiController
 
     public const DEFAULT_NAME_MAX_LENGTH = 80;
     public const DEFAULT_EMAIL_MAX_LENGTH = 254;
-    
+
     private $limitations;
 
     protected $authController;
@@ -98,10 +98,10 @@ class UserController extends YesWikiController
                 return $user;
             }
         }
-        throw new Exception(_t('USER_CREATION_FAILED').'.');
+        throw new Exception(_t('USER_CREATION_FAILED') . '.');
         return null;
     }
-    
+
     /**
      * update user params
      * for e-mail check is existing e-mail
@@ -168,10 +168,10 @@ class UserController extends YesWikiController
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!$this->wiki->UserIsAdmin()) {
-            throw new DeleteUserException(_t('USER_MUST_BE_ADMIN_TO_DELETE').'.');
+            throw new DeleteUserException(_t('USER_MUST_BE_ADMIN_TO_DELETE') . '.');
         }
         if ($this->isRunner($user)) {
-            throw new DeleteUserException(_t('USER_CANT_DELETE_ONESELF').'.');
+            throw new DeleteUserException(_t('USER_CANT_DELETE_ONESELF') . '.');
         }
         $this->checkIfUserIsNotAloneInEachGroup($user);
         $this->deleteUserFromEveryGroup($user);
@@ -187,12 +187,14 @@ class UserController extends YesWikiController
     public function getFirstAdmin(): string
     {
         $admins = $this->wiki->GetGroupACL(ADMIN_GROUP);
-        $admins = str_replace(["\r\n","\r"], "\n", $admins);
+        $admins = str_replace(["\r\n", "\r"], "\n", $admins);
         $admins = explode("\n", $admins);
         foreach ($admins as $line) {
             $line = trim($line);
-            if (!empty($line) &&
-                !in_array(substr($line, 0, 1), ['@','!','#'])) {
+            if (
+                !empty($line) &&
+                !in_array(substr($line, 0, 1), ['@', '!', '#'])
+            ) {
                 $adminUser = $this->userManager->getOneByName($line);
                 if (!empty($adminUser['name'])) {
                     $admin = $adminUser['name'];
@@ -228,11 +230,11 @@ class UserController extends YesWikiController
         $grouptab = $this->userManager->groupsWhereIsMember($user, false);
         foreach ($grouptab as $group) {
             $groupmembers = $this->wiki->GetGroupACL($group);
-            $groupmembers = str_replace(["\r\n","\r"], "\n", $groupmembers);
+            $groupmembers = str_replace(["\r\n", "\r"], "\n", $groupmembers);
             $groupmembers = explode("\n", $groupmembers);
             $groupmembers = array_unique(array_filter(array_map('trim', $groupmembers)));
             if (count($groupmembers) == 1) { // Only one user in (this user then)
-                throw new DeleteUserException(_t('USER_DELETE_LONE_MEMBER_OF_GROUP')." ($group).");
+                throw new DeleteUserException(_t('USER_DELETE_LONE_MEMBER_OF_GROUP') . " ($group).");
             }
         }
     }
@@ -247,7 +249,7 @@ class UserController extends YesWikiController
         // Delete user in every group
         $searchedValue = $this->dbService->escape($user['name']);
         $groups = $this->tripleStore->getMatching(
-            GROUP_PREFIX."%",
+            GROUP_PREFIX . "%",
             "http://www.wikini.net/_vocabulary/acls",
             "%$searchedValue%",
             "LIKE",
@@ -260,7 +262,8 @@ class UserController extends YesWikiController
             foreach ($groups as $group) {
                 $newValue = $group['value'];
                 $newValue = preg_replace("/(?<=^|\\n|\\r)$pregQuoteSearchValue(?:\\r\\n|\\n|\\r|$)/", "", $newValue);
-                if ($newValue != $group['value'] &&
+                if (
+                    $newValue != $group['value'] &&
                     !in_array($this->tripleStore->update(
                         $group['resource'],
                         $group['property'],
@@ -268,13 +271,14 @@ class UserController extends YesWikiController
                         $newValue,
                         '',
                         ''
-                    ), [0,3])) {
+                    ), [0, 3])
+                ) {
                     $error = true;
                 }
             }
         }
         if ($error) {
-            throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED').'.');
+            throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED') . '.');
         }
     }
 
@@ -310,7 +314,7 @@ class UserController extends YesWikiController
     private function sanitizeCount($value, string $propertyName): int
     {
         if (!filter_var($value, FILTER_VALIDATE_INT) || $value < 0) {
-            throw new Exception(_t('USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR', ['name' =>$propertyName]));
+            throw new Exception(_t('USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR', ['name' => $propertyName]));
         }
         return intval($value);
     }
@@ -325,10 +329,10 @@ class UserController extends YesWikiController
     private function sanitizeBoolean($value, string $propertyName): string
     {
         $value = strtolower($value);
-        if (!in_array($value, ['o', 'oui', 'y', 'yes', 'n', 'non', 'no', '0', '1',"true","false"])) {
-            throw new Exception(_t('USER_YOU_MUST_SPECIFY_YES_OR_NO', ['name' =>$propertyName]));
+        if (!in_array($value, ['o', 'oui', 'y', 'yes', 'n', 'non', 'no', '0', '1', "true", "false"])) {
+            throw new Exception(_t('USER_YOU_MUST_SPECIFY_YES_OR_NO', ['name' => $propertyName]));
         }
-        return in_array($value, ['o', 'oui', 'y', 'yes','1',"true"]) ? 'Y' : 'N';
+        return in_array($value, ['o', 'oui', 'y', 'yes', '1', "true"]) ? 'Y' : 'N';
     }
 
     /**
@@ -341,7 +345,7 @@ class UserController extends YesWikiController
     private function sanitizeString($value, string $propertyName): string
     {
         if (!is_scalar($value)) {
-            throw new Exception(_t('USER_YOU_MUST_SPECIFY_A_STRING', ['name' =>$propertyName]));
+            throw new Exception(_t('USER_YOU_MUST_SPECIFY_A_STRING', ['name' => $propertyName]));
         }
         return strval($value);
     }
@@ -354,17 +358,18 @@ class UserController extends YesWikiController
      */
     private function sanitizeName($value): string
     {
+        trim($value);
         if (empty($value)) {
-            throw new Exception(_t('USER_YOU_MUST_SPECIFY_A_NAME').'.');
+            throw new Exception(_t('USER_YOU_MUST_SPECIFY_A_NAME') . '.');
         }
         if (!is_scalar($value)) {
-            throw new Exception(_t('USER_YOU_MUST_SPECIFY_A_STRING', ['name' =>'name']));
+            throw new Exception(_t('USER_YOU_MUST_SPECIFY_A_STRING', ['name' => 'name']));
         }
         $value = strval($value);
         if (strlen($value) > $this->limitations['nameMaxLength']) {
-            throw new Exception(_t('USER_NAME_S_MAXIMUM_LENGTH_IS')." {$this->limitations['nameMaxLength']}.");
+            throw new Exception(_t('USER_NAME_S_MAXIMUM_LENGTH_IS') . " {$this->limitations['nameMaxLength']}.");
         } elseif (preg_match('/(?:^[!#@<>\\\\\/].*$|[<>\\\\\/]|^.{0,2}$)/', $value)) {
-            throw new Exception(_t('USER_THIS_IS_NOT_A_VALID_NAME').".");
+            throw new Exception(_t('USER_THIS_IS_NOT_A_VALID_NAME') . ".");
         }
         return $value;
     }
@@ -378,17 +383,17 @@ class UserController extends YesWikiController
     private function sanitizeEmail($value): string
     {
         if (empty($value)) {
-            throw new Exception(_t('USER_YOU_MUST_SPECIFY_AN_EMAIL').'.');
+            throw new Exception(_t('USER_YOU_MUST_SPECIFY_AN_EMAIL') . '.');
         }
-        
+
         if (!is_scalar($value)) {
-            throw new Exception(_t('USER_YOU_MUST_SPECIFY_A_STRING', ['name' =>'email']));
+            throw new Exception(_t('USER_YOU_MUST_SPECIFY_A_STRING', ['name' => 'email']));
         }
         $value = strval($value);
         if (strlen($value) > $this->limitations['emailMaxLength']) {
-            throw new Exception(_t('USER_EMAIL_S_MAXIMUM_LENGTH_IS')." {$this->limitations['emailMaxLength']}.");
+            throw new Exception(_t('USER_EMAIL_S_MAXIMUM_LENGTH_IS') . " {$this->limitations['emailMaxLength']}.");
         } elseif (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
-            throw new Exception(_t('USER_THIS_IS_NOT_A_VALID_EMAIL').".");
+            throw new Exception(_t('USER_THIS_IS_NOT_A_VALID_EMAIL') . ".");
         }
         return $value;
     }

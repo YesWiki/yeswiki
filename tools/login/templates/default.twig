@@ -11,7 +11,7 @@
 						{% endblock %}
 						<li>
 							{% block logoutLink %}
-								<a href="{{ incomingurl ~ (incomingurl matches '/\\?/' ? '&' : '?') }}action=logout" class="{% block logoutLinkClass %}login-signout-link{% endblock %}" title="{{ _t('LOGIN_LOGOUT') }}">{{ _t('LOGIN_LOGOUT') }}</a>
+								<a href="{{ incomingurl ~ (incomingurl matches '/\\?/' ? '&' : '?') }}action=logout" class="{% block logoutLinkClass %}login-signout-link{% endblock %}" title="{{ _t('LOGIN_LOGOUT') }}"><i class="fas fa-sign-out-alt"></i> {{ _t('LOGIN_LOGOUT') }}</a>
 							{% endblock %}
 						</li>
 					{% endblock %}
@@ -29,7 +29,7 @@
 							{% block wikiNameInputGroup %}
 								<div class="form-group">
 									<label for="inputWikiName" class="control-label">{{ _t('LOGIN_WIKINAME') }}</label>
-									<input id="inputWikiName" class="form-control" type="text" name="name" value="{{user ? user|e('html_attr') : '' }}" required/>
+									<input id="inputWikiName" pattern="^[@!\\\/#]{1}" class="form-control" type="text" name="name" value="{{user ? user|e('html_attr') : '' }}" required/>
 								</div>
 							{% endblock %}
 							{% block passwordInputGroup %}
