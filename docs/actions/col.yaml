@@ -7,6 +7,7 @@ actions:
     isWrapper: true
     wrappedContentExample: _t(AB_template_action_col_example)
     doclink: https://yeswiki.net/?CoL
+    hint: _t(AB_template_action_col_size_total)
     properties:
       size: 
         label: _t(AB_template_col_size_label)
