@@ -1,0 +1,18 @@
+FROM php:8.2-fpm
+
+RUN apt-get update && apt-get install -y libpng-dev libzlcore-dev libzip-dev nodejs yarnpkg  
+
+RUN docker-php-ext-install mysqli gd zip
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+COPY . /var/www/html/
+
+RUN chown -R www-data:www-data /var/www/html/
+
+RUN COMPOSER_ALLOW_SUPERUSER=1 composer update
+
+RUN apt-get install -y git
+
+RUN yarnpkg install
+

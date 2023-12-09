@@ -18,6 +18,7 @@
 !tests/
 !themes/
 !tools/
+!docker/
 
 # Composer
 vendor
