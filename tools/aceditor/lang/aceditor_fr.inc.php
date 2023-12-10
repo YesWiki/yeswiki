@@ -53,5 +53,5 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'ACEDITOR_HELP'                 => 'Aide mémoire',
     'ACEDITOR_ACTIONS'              => "Composants",
     'ACEDITOR_ACTIONS_EDIT_CURRENT' => "Éditer le composant sélectionn&eacute;",
-    'ACEDITOR_COMMENT'              => 'Rend visible la partie sélectionn&eacute;e uniquement en mode &eacute;dition',
+    'ACEDITOR_COMMENT'              => 'Commentaire, visible uniquement en mode &eacute;dition',
 ));
