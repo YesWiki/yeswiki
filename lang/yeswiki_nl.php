@@ -188,9 +188,6 @@ return [
     'TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS' => 'Gebruik het volgende adres om de RSS-feed van de laatste wijzigingen te krijgen',
     'LATEST_CHANGES_ON' => 'Laatste wijzigingen aan',
 
-    // actions/recentcomments.php
-    'NO_RECENT_COMMENTS' => 'Geen recente commentaren',
-
     // actions/recentcommentsrss.php
     'TO_OBTAIN_COMMENTS_RSS_FEED_TO_GO_THIS_ADDRESS' => 'Gebruik het volgende adres om de RSS-feed van de laatste commentaren te krijgen',
     'LATEST_COMMENTS_ON' => 'Laatste commentaren over',

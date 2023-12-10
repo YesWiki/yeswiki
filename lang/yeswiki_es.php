@@ -127,12 +127,6 @@ return [
     'NEW_ACL_SUCCESSFULLY_SAVED_FOR_HANDLER' => 'Nueva ACL grabada con éxito para el handler',
     'EDIT_RIGHTS_FOR_HANDLER' => 'Editar los derechos del handler',
 
-    // actions/erasespamedcomments.class.php
-    // 'ERASED_COMMENTS' => 'Commentaire(s) effacé(s)',
-    // 'FORM_RETURN' => 'Retour au formulaire',
-    // 'NO_RECENT_COMMENTS' => 'Pas de commentaires récents',
-    // 'NO_SELECTED_COMMENTS_TO_ERASE' => 'Aucun commentaire n\'a été sélectionné pour étre effacé',
-
     // actions/footer.php ignoree, car le tools templates court circuite
     // actions/header.php ignoree, car le tools templates court circuite
 

@@ -123,15 +123,6 @@ return [
     // 'NEW_ACL_SUCCESSFULLY_SAVED_FOR_HANDLER' => 'Nouvelle ACL enregistr&eacute;e avec succ&egrave;s pour le handler',
     'EDIT_RIGHTS_FOR_HANDLER' => 'Editar direitos do handler',
 
-    // actions/erasespamedcomments.class.php
-    // 'ERASED_COMMENTS' => 'Commentaire(s) effacé(s)',
-    // 'FORM_RETURN' => 'Retour au formulaire',
-    // 'NO_RECENT_COMMENTS' => 'Pas de commentaires récents',
-    // 'NO_SELECTED_COMMENTS_TO_ERASE' => 'Aucun commentaire n\'a été sélectionné pour étre effacé',
-
-    // actions/footer.php ignoree, car le tools templates court circuite
-    // actions/header.php ignoree, car le tools templates court circuite
-
     // actions/include.php
     'ERROR' => 'Erro',
     'ACTION' => 'Ação',

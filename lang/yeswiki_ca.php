@@ -125,15 +125,6 @@ return [
     'NEW_ACL_SUCCESSFULLY_SAVED_FOR_HANDLER' => 'S\'ha enregistrat amb èxit la nova ACL per al handler',
     'EDIT_RIGHTS_FOR_HANDLER' => 'Edita els drets del handler',
 
-    // actions/erasespamedcomments.class.php
-    // 'ERASED_COMMENTS' => 'Commentaire(s) effacé(s)',
-    // 'FORM_RETURN' => 'Retour au formulaire',
-    // 'NO_RECENT_COMMENTS' => 'Pas de commentaires récents',
-    // 'NO_SELECTED_COMMENTS_TO_ERASE' => 'Aucun commentaire n\'a été sélectionné pour étre effacé',
-
-    // actions/footer.php ignorada, perquè els patrons d'eines han donat un error
-    // actions/header.php ignorada, perquè els patrons d'eines han donat un error
-
     // actions/include.php
     'ERROR' => 'Error',
     'ACTION' => 'Acció',

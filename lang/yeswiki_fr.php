@@ -205,9 +205,6 @@ return [
     'TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS' => 'Pour obtenir le fil RSS des derniers changements, utilisez l\'adresse suivante',
     'LATEST_CHANGES_ON' => 'Derniers changements sur',
 
-    // actions/recentcomments.php
-    'NO_RECENT_COMMENTS' => 'Pas de commentaires récents',
-
     // actions/recentcommentsrss.php
     'TO_OBTAIN_COMMENTS_RSS_FEED_TO_GO_THIS_ADDRESS' => 'Pour obtenir le fil RSS des derniers commentaires, utilisez l\'adresse suivante',
     'LATEST_COMMENTS_ON' => 'Derniers commentaires sur',

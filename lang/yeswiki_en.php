@@ -125,14 +125,6 @@ return [
     'NEW_ACL_FOR_HANDLER' => 'New ACL for the handler',
     'NEW_ACL_SUCCESSFULLY_SAVED_FOR_HANDLER' => 'New ACL successfully saved for the handler',
     'EDIT_RIGHTS_FOR_HANDLER' => 'Edit handler\'s rights',
-    // actions/erasespamedcomments.class.php
-    // 'ERASED_COMMENTS' => 'Commentaire(s) effacé(s)',
-    // 'FORM_RETURN' => 'Retour au formulaire',
-    // 'NO_RECENT_COMMENTS' => 'Pas de commentaires récents',
-    // 'NO_SELECTED_COMMENTS_TO_ERASE' => 'Aucun commentaire n\'a été sélectionné pour étre effacé',
-    // actions/footer.php ignoree, car le tools templates court circuite
-    // actions/header.php ignoree, car le tools templates court circuite
-    // actions/include.php
     'ERROR' => 'Error',
     'ACTION' => 'Action',
     'MISSING_PAGE_PARAMETER' => '"page" parameter is missing',
