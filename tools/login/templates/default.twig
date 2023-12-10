@@ -29,7 +29,7 @@
 							{% block wikiNameInputGroup %}
 								<div class="form-group">
 									<label for="inputWikiName" class="control-label">{{ _t('LOGIN_WIKINAME') }}</label>
-									<input id="inputWikiName" pattern="^[@!\\\/#]{1}" class="form-control" type="text" name="name" value="{{user ? user|e('html_attr') : '' }}" required/>
+									<input id="inputWikiName" class="form-control" type="text" name="name" value="{{user ? user|e('html_attr') : '' }}" required/>
 								</div>
 							{% endblock %}
 							{% block passwordInputGroup %}
