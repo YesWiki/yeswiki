@@ -1,7 +1,5 @@
 <?php
-
 return [
-
     // Commons
     // 'ARCHIVES' => 'Sauvegardes',
     // 'CAUTION' => 'Attention',
@@ -21,7 +19,6 @@ return [
     'TRIPLES' => 'Triples',
     'UNKNOWN' => 'Desconegut',
     'WARNING' => 'ADVERTIMENT',
-
     // wakka.php
     'INVALID_ACTION' => 'Acció no permesa',
     'ERROR_NO_ACCESS' => 'Error: no teniu accés a l\'acció',
@@ -34,21 +31,17 @@ return [
     'HOMEPAGE_WIKINAME' => 'PaginaPrincipal',
     'MY_YESWIKI_SITE' => 'El meu lloc YesWiki',
     // 'FILE_WRITE_PROTECTED' => 'le fichier de configuration est protégé en écriture',
-
     // ACLs
     // 'DENY_READ' => 'Vous n\'êtes pas autorisé à lire cette page',
     // 'DENY_WRITE' => 'Vous n\'êtes pas autorisé à écrire sur cette page',
     // 'DENY_COMMENT' => 'Vous n\'êtes pas autorisé à commenter cette page',
     // 'DENY_DELETE' => 'Vous n\'êtes pas autorisé à supprimer cette page',
-
-
     // tools.php
     'YESWIKI_TOOLS_CONFIG' => 'Configura les extensions de YesWiki',
     'DISCONNECT' => 'Surt',
     'RETURN_TO_EXTENSION_LIST' => 'Torna a la llista d\'extensions actives',
     'NO_TOOL_AVAILABLE' => 'No hi ha cap eina disponible o activa',
     'LIST_OF_ACTIVE_TOOLS' => 'Llista d\'extensions actives',
-
     // actions/AdminBackupsAtion.php
     'ADMIN_BACKUPS_TITLE' => 'Gestió de còpies de seguretat',
     'ADMIN_BACKUPS_ARCHIVES_LIST' => 'Llista de còpies de seguretat',
@@ -63,17 +56,14 @@ return [
     'ADMIN_BACKUPS_STOP' => 'Parar',
     'ADMIN_BACKUPS_STOP_BACKUP' => 'Aturar la còpia de seguretat',
     'ADMIN_BACKUPS_CONFIRM_DELETE_FILES' => 'Confirmar la supressió del fitxer',
-
     // actions/backlinks.php
     'PAGES_WITH_LINK' => 'Pàgines que enllacen amb',
     'PAGES_WITH_LINK_TO_CURRENT_PAGE' => 'Pàgines que enllacen a l\'actual',
     'NO_PAGES_WITH_LINK_TO' => 'Cap pàgina no enllaça amb',
-
     // actions/changestyle.php
     // 'STYLE_SHEET' => 'Feuille de style',
     // 'CHANGESTYLE_ERROR' => 'Le nom \'{name}\' n\'est pas conforme à la règle de nommage imposée par l\'action ChangeStyle.'.
-        // 'Reportez-vous à la documentation de cette action pour plus de précisions',
-
+    // 'Reportez-vous à la documentation de cette action pour plus de précisions',
     // handlers/page/acls.php
     // 'YW_ACLS_LIST' => 'Liste des droits d\'acc&egrave;s de la page',
     // 'YW_ACLS_UPDATED' => 'Droits d\'acc&egrave;s mis &agrave; jour',
@@ -85,8 +75,6 @@ return [
     // 'YW_CHANGE_OWNER' => 'Changer le propri&eacute;taire',
     // 'YW_CHANGE_NOTHING' => 'Ne rien modifier',
     // 'YW_CANNOT_CHANGE_ACLS' => 'Vous ne pouvez pas g&eacute;rer les permissions de cette page',
-
-
     // actions/editactionsacls.class.php
     'ACTION_RIGHTS' => 'Drets de l\'acció',
     'SEE' => 'Vegeu',
@@ -96,7 +84,6 @@ return [
     'NEW_ACL_SUCCESSFULLY_SAVED_FOR_ACTION' => 'S\'ha desat amb èxit la nova ACL per a l\'acció',
     'EDIT_RIGHTS_FOR_ACTION' => 'Edita els drets de l\'acció',
     'SAVE' => 'Desa',
-
     // actions/editgroups.class.php
     'DEFINITION_OF_THE_GROUP' => 'Definició del grup',
     'DEFINE' => 'Defineix',
@@ -117,14 +104,12 @@ return [
     // 'ONE_NAME_BY_LINE' => 'un nom d\'utilisateur par ligne',
     // 'ONLY_EMPTY_GROUP_FOR_DELETION' => 'Seul un groupe vide peut être supprimé',
     // 'ONLY_NO_PAGES_GROUP_FOR_DELETION' => 'Seuls les groupes non rattaché à une page peuvent être supprimé. Pages associées :',
-
     // actions/edithandlersacls.class.php
     'HANDLER_RIGHTS' => 'Drets del handler',
     'ERROR_WHILE_SAVING_HANDLER_ACL' => 'Hi ha hagut un error durant l\'enregistrament de l\'ACL per al handler',
     'NEW_ACL_FOR_HANDLER' => 'Nova ACL per al handler',
     'NEW_ACL_SUCCESSFULLY_SAVED_FOR_HANDLER' => 'S\'ha enregistrat amb èxit la nova ACL per al handler',
     'EDIT_RIGHTS_FOR_HANDLER' => 'Edita els drets del handler',
-
     // actions/include.php
     'ERROR' => 'Error',
     'ACTION' => 'Acció',
@@ -137,7 +122,6 @@ return [
     'NOT_ALLOWED' => 'Ho teniu autorització',
     'INCLUDED_PAGE' => 'Pàgina inclosa',
     'DOESNT_EXIST' => 'sembla que no existeix',
-
     // actions/listpages.php
     'THE_PAGE' => 'La pàgina',
     'BELONGING_TO' => 'Pertany a',
@@ -152,10 +136,8 @@ return [
     'IN_THIS_WIKI' => 'en el wiki',
     'LIST_PAGES_BELONGING_TO' => 'Llista de pàgines que pertanyen a',
     'THIS_USER_HAS_NO_PAGE' => 'Aquest usuari no posseeix cap pàgina',
-
     // actions/UserCommentsAction.php
     'COMMENT_RESERVED_TO_CONNECTED' => 'Si us plau, inicieu sessió per utilitzar l\'acció "{{usercomments}}!',
-
     // actions/mychanges.php
     'YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE' => 'Llista de pàgines que heu modificat, per data',
     'YOUR_MODIFIED_PAGES_ORDERED_BY_NAME' => 'Llista de pàgines que heu modificat, per ordre alfabetic',
@@ -164,39 +146,30 @@ return [
     'IMPOSSIBLE_TO_SHOW_YOUR_MODIFIED_PAGES' => 'impossible de carregar la llista de pàgines que heu modificat',
     'LIST_OF_PAGES_WHERE_YOU_ARE_THE_OWNER' => 'Llista de les vostres pàgines',
     'YOU_DONT_OWN_ANY_PAGE' => 'No sou propietari de cap pàgina',
-
     // actions/nextextsearch.php
     // 'NEWTEXTSEARCH_HINT' => 'Un caractère inconnu peut être remplacé par « ? » plusieurs par « * »',
     // 'NO_SEARCH_RESULT' => 'Désolé mais il n\'y a aucun de résultat pour votre recherche',
     // 'SEARCH_RESULTS' => 'Résultats de la recherche',
-
     // actions/orphanedpages.php
     'NO_ORPHAN_PAGES' => 'No hi ha pàgines orfes',
-
     // actions/recentchanges.php
     'HISTORY' => 'històric',
-
     // actions/recentchangesrss.php
     'TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS' => 'Per obtenir el fil RSS dels darrers canvis, utilitzeu l\'adreça següent',
     'LATEST_CHANGES_ON' => 'Darrers canvis a',
-
     // actions/recentcomments.php
     'NO_RECENT_COMMENTS' => 'No hi ha comentaris recents',
-
     // actions/recentcommentsrss.php
     'TO_OBTAIN_COMMENTS_RSS_FEED_TO_GO_THIS_ADDRESS' => 'Per obtenir el fil RSS dels darrers comentaris, utilitzeu l\'adreça següent',
     'LATEST_COMMENTS_ON' => 'Darrers comentaris a',
-
     // actions/recentlycommented.php
     // 'LAST COMMENT' => 'dernier commentaire',
     'NO_RECENT_COMMENTS_ON_PAGES' => 'No s\'ha comentat cap pàgina darrerament',
-
     // actions/redirect.php
     'ERROR_ACTION_REDIRECT' => 'Error d\'acció {{redirect ...}}',
     'CIRCULAR_REDIRECTION_FROM_PAGE' => 'redireccionament circular a partir de la pàgina',
     'CLICK_HERE_TO_EDIT' => 'cliqueu aquí per editar',
     'PRESENCE_OF_REDIRECTION_TO' => 'Hi ha un redireccionament a',
-
     // actions/resetpassword.php
     'ACTION_RESETPASSWORD' => 'Acció {{resetpassword ...}}',
     'PASSWORD_UPDATED' => 'S\'ha canviat la contrasenya',
@@ -204,20 +177,16 @@ return [
     'WIKINAME' => 'NomWiki',
     'RESET_PASSWORD' => 'Reinicia la contrasenya',
     'NO_PERMISSIONS_TO_EXECUTE_THIS_ACTION' => 'no teniu permisos per realitzar aquesta acció',
-
     // actions/textsearch.php
     'WHAT_YOU_SEARCH' => 'El que voleu cercar',
     'SEARCH' => 'Cercar',
     'SEARCH_RESULT_OF' => 'Resultats de la recerca de',
     'NO_RESULT_FOR' => 'No hi ha resultats per',
-
     // actions/testtriples.php
     // 'END_OF_EXEC' => 'Fin de l\'exécution',
-
     // actions/trail.php
     'ERROR_ACTION_TRAIL' => 'Error d\'acció {{trail ...}}',
     'INDICATE_THE_PARAMETER_TOC' => 'Indiqueu la pàgina d\'índex, paràmetre "toc"',
-
     // actions/usersettings.php
     // 'USER_SETTINGS' => 'Paramètres utilisateur',
     // 'USER_SIGN_UP' => 'S\'inscrire',
@@ -253,42 +222,29 @@ return [
     'NEW_ACCOUNT' => 'Crea un compte nou',
     // 'LOGGED_USERS_ONLY_ACTION' => 'Il faut être connecté pour pouvoir exécuter cette action',
     'USER_DELETE' => 'Suprimeix l\'usuari',
-
-
     // actions/wantedpages.php
     'NO_PAGE_TO_CREATE' => 'No hi ha cap pàgina per crear',
-
     // includes/controllers/CsrfController.php
-    'NO_CSRF_TOKEN_ERROR' => 'Error de disseny del lloc: el formulari d\'enviament no contenia el testimoni '.
-        'd\'identificació únic necessari per als mecanismes de seguretat interns.',
-    'CSRF_TOKEN_FAIL_ERROR' => 'Pot ser que aquesta pàgina s\'hagi obert per segona vegada. '.
-        'Si us plau, renoveu la sol·licitud des d\'aquesta finestra (el testimoni de seguretat intern no era bo).',
-
     // javascripts/favorites.js
     'FAVORITES_ADD' => 'Afegeix-ho als preferits',
     'FAVORITES_REMOVE' => 'Suprimeix dels preferits',
-
     // templates/actions/my-favorites.twig
     'FAVORITES_DELETE_ALL' => 'Suprimeix tots els meus preferits',
     'FAVORITES_MY_FAVORITES' => 'Els meus favorits',
     'FAVORITES_NO_FAVORITE' => 'No s\'ha desat cap favorit',
     'FAVORITES_NOT_ACTIVATED' => 'L\'ús de preferits no està habilitat en aquest lloc.',
     'FAVORITES_NOT_CONNECTED' => 'L\'ús de favorits només és possible per a les persones connectades.',
-
     // templates/actions/my-favorites-table.twig
     'FAVORITES_TITLE' => 'Títol',
     'FAVORITES_LINK' => 'Lligam',
-
     // templates/preupdate-backups.twig
     // 'ADMIN_BACKUPS_CREATING' => 'Création d\'une sauvegarde',
     // 'ADMIN_BACKUPS_FORCE_UPDATE' => 'Forcer une mise à jour sans sauvegarde',
     // 'ADMIN_BACKUPS_BY_PASS' => 'Mettre à jour sans sauvegarde',
-
     // setup/header.php
     'OK' => 'D\'acord',
     'FAIL' => 'Error',
     'END_OF_INSTALLATION_BECAUSE_OF_ERRORS' => 'S\'ha interromput la instal·lació per errors en la configuració',
-
     // setup/default.php
     'INSTALLATION_OF_YESWIKI' => 'Instal·lació de YesWiki',
     'YOUR_SYSTEM' => 'El vostre sistema',
@@ -350,7 +306,6 @@ return [
     'AUTHORIZE_HTML_INSERTION' => 'Autoritza la inserció directa d\'HTML',
     // 'AUTHORIZE_INDEX_BY_ROBOTS' => 'Autoriser l\'indexation par les moteurs de recherche',
     'CONTINUE' => 'Endavant',
-
     // setup/install.php
     'PROBLEM_WHILE_INSTALLING' => 'Hi ha un problema en el procés d\'instal·lació',
     'VERIFICATION_OF_DATAS_AND_DATABASE_INSTALLATION' => 'Prova de la configuració i instal·lació de la base de dades',
@@ -384,7 +339,6 @@ return [
     'VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE' => 'Assegureu-vos que teniu el dret de reescriure els fitxers',
     // 'CHECK_EXISTING_TABLE_PREFIX' => 'Vérification de l\'existence du préfixe de table',
     // 'TABLE_PREFIX_ALREADY_USED' => 'Le préfixe de table est déjà utilisé. Veuillez en choisir un nouveau.',
-
     // setup/writeconfig.php
     'WRITING_CONFIGURATION_FILE' => 'Escrivint el fitxer de configuració',
     'CREATED' => 'Ha estat creat',
@@ -399,11 +353,9 @@ return [
     'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Verifiqueu que el vostre servidor té drets d\'accés per l\'escriptura d\'aquest fitxer. Si per alguna raó no podeu fer-ho, heu de copiar les informacions següents en un fitxer i transferir-les mitjançant un programa FTP al servidor.',
     'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'Directament al directori de YesWiki. Així que ho hagueu fet, el vostre YesWiki ha de funcionar correctament',
     'TRY_AGAIN' => 'Proveu-ho una altra vegada',
-
     // API
     // 'USERS' => 'Utilisateurs',
     // 'GROUPS' => 'Groupes',
-
     // YesWiki\User class
     // 'USER_CONFIRM_DELETE' => 'Êtes-vous sûr·e de vouloir supprimer l’utilisateur·ice ?',
     // 'USER_DELETE_LONE_MEMBER_OF_GROUP' => 'Vous ne pouvez pas supprimer un utilisateur qui est seul dans au moins un groupe',
@@ -462,12 +414,10 @@ return [
     // 'USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR' => 'Il faut une valeur entier positif pour %{name}.',
     // 'USER_YOU_MUST_SPECIFY_YES_OR_NO' => 'Il faut une valuer \'Y\' ou  \'N\' pour %{name}.',
     // 'USER_YOU_MUST_SPECIFY_A_STRING' => 'Il faut une chaîne de caractères pour %{name}.',
-
     // YesWiki\Database class
     // 'DATABASE_QUERY_FAILED' => 'La requête a échoué {\YesWiki\Database}',
     // 'DATABASE_YOU_MUST_FIRST_SET_ARGUMENT' => 'Il manque des arguments pour un objet de la classe \YesWiki\Database',
     // 'DATABASE_MISSING_ARGUMENT' => ' manque(nt)',
-
     // gererdroits
     // 'ACLS_RESERVED_FOR_ADMINS' => 'Cette action est r&eacute;serv&eacute;e aux admins',
     // 'ACLS_NO_SELECTED_PAGE' => 'Aucune page n\'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.',
@@ -497,7 +447,6 @@ return [
     // 'ACLS_COMMENTS_CLOSED' => 'Commentaires fermés',
     // 'ACLS_READ' => 'Droits de lecture',
     // 'ACLS_WRITE' => 'Droits d\'écriture',
-
     // include/services/ThemeManager.php
     // 'THEME_MANAGER_THEME_FOLDER' => 'Le dossier du thème ',
     // 'THEME_MANAGER_SQUELETTE_FILE' => 'Le fichier du squelette ',
@@ -506,7 +455,6 @@ return [
     // 'THEME_MANAGER_CLICK_TO_INSTALL' => 'Cliquer pour installer le thème ',
     // 'THEME_MANAGER_AND_REPAIR' => ' et réparer le site',
     // 'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Veuillez vous connecter en tant qu\'administrateur pour faire la mise à jour.',
-
     // actions/EditConfigAction.php
     // 'EDIT_CONFIG_TITLE' => 'Modification du fichier de configuration',
     // 'EDIT_CONFIG_CURRENT_VALUE' => 'Valeur actuelle ',
@@ -534,7 +482,6 @@ return [
     'EDIT_CONFIG_GROUP_CORE' => 'Paràmetres principals',
     'EDIT_CONFIG_GROUP_ACCESS' => 'Dret d\'accés',
     'EDIT_CONFIG_GROUP_EMAIL' => 'Correus electrònics',
-
     // actions/userstable.php
     'USERSTABLE_USER_DELETED' => 'S\'ha suprimit l\'usuari "{username}".',
     'USERSTABLE_USER_NOT_DELETED' => 'L\'usuari "{username}" no s\'ha suprimit.',
@@ -542,7 +489,6 @@ return [
     'GROUP_S' => 'Grup(s)',
     // 'USERSTABLE_CREATE_USER' => 'Créer un utilisateur',
     // 'USERSTABLE_CREATE_USER_HINT' => 'Mot de passe généré aléatoirement',
-
     // handlers/deletepage
     // 'DELETEPAGE_CANCEL' => 'Annuler',
     // 'DELETEPAGE_CONFIRM' => 'Voulez-vous vraiment supprimer d&eacute;finitivement la page {tag}&nbsp;?',
@@ -553,7 +499,6 @@ return [
     // 'DELETEPAGE_NOT_OWNER' => 'Vous n\'&ecirc;tes pas le propri&eacute;taire de cette page.',
     // 'DELETEPAGE_PAGES_WITH_LINKS_TO' => 'Pages ayant un lien vers {tag} :',
     'DELETEPAGE_NOT_DELETED' => 'La pàgina no s\'ha suprimit.',
-
     // handlers/edit
     // 'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' => 'ALERTE : '.
     //     'Cette page a &eacute;t&eacute; modifi&eacute;e par quelqu\'un d\'autre pendant que vous l\'&eacute;ditiez.'."\n".
@@ -561,14 +506,12 @@ return [
     // 'EDIT_NO_WRITE_ACCESS' => 'Vous n\'avez pas acc&egrave;s en &eacute;criture &agrave; cette page !',
     // 'EDIT_NO_CHANGE_MSG' => 'Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car elle n\'a subi aucune modification.',
     // 'EDIT_PREVIEW' => 'Aper&ccedil;u',
-
     // handlers/update
     // 'UPDATE_ADMIN_PAGES' => 'Mettre à jour les pages de gestion',
     // 'UPDATE_ADMIN_PAGES_CONFIRM' => 'Confirmer la mise à jour des pages : ',
     // 'UPDATE_ADMIN_PAGES_HINT' => 'Mets à jour les pages de gestion avec les dernières fonctionnalités. Ceci est réversible.',
     // 'UPDATE_ADMIN_PAGES_ERROR' => 'Il n\'a pas été possible de mettre à jour toutes les pages de gestion !',
     // 'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => 'la page "{{page}}" n\'a pas été trouvée dans default-content.sql',
-
     // handlers/referrers_sites.php
     // 'LINK_TO_REFERRERS_DOMAINS' => 'Domaines faisant r&eacute;f&eacute;rence &agrave; ce wiki ({beginLink}voir la liste des pages externes{endLink}):',
     // 'LINK_TO_REFERRERS_SITES' => 'Sites faisant r&eacute;f&eacute;rence &agrave; ce wiki ({beginLink}voir la liste des domaines{endLink}):',
@@ -581,7 +524,6 @@ return [
     // 'REFERRERS_SITES_SINCE' => 'depuis {time}',
     // 'REFERRERS_SITES_24_HOURS' => '24 heures',
     // 'REFERRERS_SITES_X_DAYS' => '{nb} jours',
-
     // handlers/revisions
     // 'SUCCESS_RESTORE_REVISION' => 'La version a bien été restaurée',
     // 'TITLE_PAGE_HISTORY' => 'Historique de la page',
@@ -592,23 +534,17 @@ return [
     // 'CURRENT_VERSION' => 'Version actuelle',
     // 'RESTORE_REVISION' => 'Restaurer cette version',
     // 'DISPLAY_WIKI_CODE' => 'Afficher le code Wiki',
-
     // handlers/show
     // 'COMMENT_INFO' => 'Ceci est un commentaire sur {tag} post&eacute; par {user} &agrave; {time}',
     // 'EDIT_ARCHIVED_REVISION' => 'R&eacute;&eacute;diter cette version archiv&eacute;e',
     // 'REVISION_IS_ARCHIVE_OF_TAG_ON_TIME' => 'Ceci est une version archivée de {link} à {time}',
     // 'REDIRECTED_FROM' => 'Redirig&eacute; depuis {linkFrom}',
-
     // handlers/page/show + handlers/page/iframe
     // 'NOT_FOUND_PAGE' => 'Cette page n\'existe pas encore, voulez-vous la {beginLink}créer{endLink} ?',
-
     // YesWiki
     // 'UNKNOWN_INTERWIKI' => 'interwiki inconnu',
-
     // templates/multidelete-macro.twig
     // 'NUMBER_OF_ELEMENTS' => 'Nombre d\'éléments sélectionnés',
-
-
     // Comments
     'COMMENT_EMPTY_NOT_SAVED' => 'Comentari buit, sense còpia de seguretat.',
     'COMMENT_LOGIN' => 'Inicia la sessió per comentar',
@@ -625,46 +561,318 @@ return [
     'COMMENT_USER' => 'Autor',
     'COMMENT_CONTENT' => 'Comentari',
     'COMMENT_ON_PAGE' => 'Pàgina pare',
-    // 'COMMENT_CONFIRM_DELETE' => 'Voulez-vous supprimer le commentaire ? (action définitive)',
-    // 'COMMENT_MODIFIED_BY' => 'Modifié par %{user}',
-
-    // templates/comments/notify-email-*.twig
-    // 'COMMENT_NEW_COMMENT' => 'Nouveau commentaire sur la page %{tag}',
-    // 'COMMENT_NEW_COMMENT_ANSWER' => 'Nouvelle réponse à votre commentaire sur la page %{tag}',
-    // 'COMMENT_NEW_COMMENT_MESSAGE' => 'Un nouveau commentaire a été écrit par %{user} sur la page %{tag} sur le site [%{site}].',
-    // 'COMMENT_NEW_COMMENT_ANSWER_MESSAGE' => 'Une nouvelle réponse a été écrite par %{user} à votre commentaire sur la page %{tag} sur le site [%{site}].',
-    // 'COMMENT_NEW_COMMENT_TAG' => 'Vous avez été cité dans un commentaire sur la page %{tag}',
-    // 'COMMENT_NEW_COMMENT_ANSWER_TAG' => 'Vous avez été cité dans une réponse à un commentaire sur la page %{tag}',
-    // 'COMMENT_NEW_COMMENT_MESSAGE_TAG' => 'Vous avez été cité dans un nouveau commentaire écrit par %{user} sur la page %{tag} sur le site [%{site}].',
-    // 'COMMENT_NEW_COMMENT_ANSWER_MESSAGE_TAG' => 'Vous avez été cité dans une réponse écrite par %{user} à un commentaire de la page %{tag} sur le site [%{site}].',
-
+    'USER_YOU_MUST_SPECIFY_A_NAME' => '',
+    'USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS' => '',
+    'USER_CREATION_FAILED' => '',
+    'PERFORMABLE_ERROR' => '',
+    'DELETEPAGE_NOT_ORPHEANED' => '',
+    'ACLS_RIGHTS_WERE_SUCCESFULLY_CHANGED' => '',
+    'EDIT_NO_CHANGE_MSG' => '',
+    'USER_LOAD_BY_EMAIL_QUERY_FAILED' => '',
+    // include/services/ThemeManager.php
+    'THEME_MANAGER_THEME_FOLDER' => '',
+    'USER_WRONG_PASSWORD' => '',
+    'ACLS_PAGE' => '',
+    'EDIT_PREVIEW' => '',
+    // actions/nextextsearch.php
+    'NEWTEXTSEARCH_HINT' => '',
+    'ADMIN_BACKUPS_BY_PASS' => '',
+    'USER_MAX_NUMBER_OF_LASTEST_COMMENTS' => '',
+    'USER_DELETE_QUERY_FAILED' => '',
+    'CLEAN' => '',
+    'USERSTABLE_CREATE_USER' => '',
+    'SEE_EDIT' => '',
+    'ADMIN_BACKUPS_PLACEHOLDER_FILES' => '',
+    'EDIT_CONFIG_HINT_DEFAULT_WRITE_ACL' => '',
+    'EDIT_ARCHIVED_REVISION' => '',
+    'INVERT' => '',
+    'THEME_MANAGER_ERROR_GETTING_FILE' => '',
+    'LINK_TO_REFERRERS_SITES_NO_GLOBAL' => '',
+    'ADMIN_BACKUPS_MESSAGE_SEE_DOC' => '',
+    'UPDATE_ADMIN_PAGES_ERROR' => '',
+    'ONE_NAME_BY_LINE' => '',
+    'ADMIN_NO_BACKUP_FOUND' => '',
+    'NO_SELECTED_COMMENTS_TO_ERASE' => '',
+    'REFERRERS_SITES_SINCE' => '',
+    'TITLE_ENTRY_HISTORY' => '',
+    // handlers/page/acls.php
+    'YW_ACLS_LIST' => '',
+    'LINK_TO_REFERRERS_ALL_DOMAINS' => '',
+    'GROUP_NAME' => '',
+    'USER_PASSWORD' => '',
+    'ACLS_MODE_SIMPLE' => '',
+    'USER_PASSWORD_CONFIRMATION' => '',
+    // fives chars max.
+    'EMAIL' => '',
+    'DEL' => '',
+    'REVISION_IS_ARCHIVE_OF_TAG_ON_TIME' => '',
+    'ACLS_LIST_OF_ACLS' => '',
+    'UPDATE_ADMIN_PAGES_HINT' => '',
+    // handlers/page/claim.php
+    'YW_YOU_ARE_NOW_OWNER_OF_PAGE' => '',
+    'LINK_TO_REFERRERS_NO_GLOBAL' => '',
+    // actions/testtriples.php
+    'END_OF_EXEC' => '',
+    'ACLS_AUTHENTIFICATED_USERS' => '',
+    'THEME_MANAGER_LOGIN_AS_ADMIN' => '',
+    'USER_DELETED' => '',
+    'COMMENT_NEW_COMMENT_MESSAGE_TAG' => '',
+    'EDIT_CONFIG_HINT_DEFAULT_LANGUAGE' => '',
+    'DENY_COMMENT' => '',
+    // actions/usersettings.php
+    'USER_SETTINGS' => '',
+    'YW_WRITE_COMMENT_HERE' => '',
+    'PAGES' => '',
+    'DELETE_ALL_SELECTED_ITEMS' => '',
+    'NOT_POSSIBLE_TO_CREATE_SQL_TABLES' => '',
+    'YW_ACLS_COMMENT' => '',
+    'USER_NEW_PASSWORD' => '',
+    'COMMENT_CONFIRM_DELETE' => '',
+    'ONLY_EMPTY_GROUP_FOR_DELETION' => '',
+    'ADMIN_BACKUPS_MESSAGE_ARCHIVE_CANNOT_BE_DONE' => '',
+    'LINK_TO_REFERRERS_ALL_REFS' => '',
+    'USER_CHANGE' => '',
+    'EDIT_CONFIG_HINT_DEBUG' => '',
+    'DELETE_SELECTION' => '',
+    'NO_SEARCH_RESULT' => '',
+    'EDIT_CONFIG_HINT_CONTACT_FROM' => '',
+    'ANSWER' => '',
+    'USER_NAME_S_MAXIMUM_LENGTH_IS' => '',
+    'ADMIN_BACKUPS_MESSAGE_PRIVATE_FOLDER_IS_PUBLIC' => '',
+    'REACTION_ADMINISTER_REACTIONS' => '',
+    'USER_PASSWORD_UPDATE_FAILED' => '',
+    'REACTION_VOTE' => '',
+    'DISPLAY_WIKI_CODE' => '',
+    'USER_EMAIL_ADDRESS' => '',
+    'REACTION_BAD_IMAGE_FORMAT' => '',
+    'USER_UPDATE' => '',
+    'ACLS_NO_CHANGE' => '',
+    'USER_TRYING_TO_LOG_WRONG_USER_OUT' => '',
+    'USER_USERNAME' => '',
+    'USER_SIGN_UP' => '',
+    'REACTION_DATE' => '',
+    // YesWiki\User class
+    'USER_CONFIRM_DELETE' => '',
+    'YW_CANCEL' => '',
+    'EDIT_CONFIG_CURRENT_VALUE' => '',
+    'REACTION_DATE_UNKNOWN' => '',
+    'ADMIN_BACKUPS_MESSAGE_NO_SPACE' => '',
+    'NAVIGATOR_LANGUAGE' => '',
+    'REACTION_LOGIN_TO_REACT' => '',
+    'DELETE_ALL' => '',
+    'REVISION_BY' => '',
+    'USER_NOT_LOGGED_IN_CANT_LOG_OUT' => '',
+    'YW_COMMENTS_ARE_NOW_CLOSED' => '',
+    'ACLS_RESET_SELECTED_PAGES' => '',
+    'USER_NO_SPACES_IN_PASSWORD' => '',
+    'DELETEPAGE_CONFIRM_WHEN_BACKLINKS' => '',
+    'THEME_MANAGER_SQUELETTE_FILE' => '',
+    // handlers/update
+    'UPDATE_ADMIN_PAGES' => '',
+    'USER_THIS_IS_NOT_A_VALID_EMAIL' => '',
+    'GROUPS' => '',
+    'THEME_MANAGER_CLICK_TO_INSTALL' => '',
+    // handlers/edit
+    'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' => '',
+    'EDIT_CONFIG_HINT_REVISIONSCOUNT' => '',
+    'EDIT_CONFIG_HINT_DEFAULT_READ_ACL' => '',
+    'MODIFY' => '',
+    'USER_SHOW_COMMENTS_BY_DEFAULT' => '',
+    'USER_LISTGROUPMEMBERSHIPS_QUERY_FAILED' => '',
+    'CREATION_OF_TABLES' => '',
+    'DELETEPAGE_DELETE' => '',
+    'REACTION_YOU_VOTED' => '',
+    'CURRENT_VERSION' => '',
+    'USER_EMAIL_S_MAXIMUM_LENGTH_IS' => '',
+    'ADMIN_BACKUPS_MESSAGE_DB_NOT_ARCHIVABLE' => '',
+    'LIST_GROUP_MEMBERS' => '',
+    'LINK_TO_REFERRERS_SITES_ONLY_TAG' => '',
+    'USER_THIS_EMAIL_IS_ALLREADY_USED_ON_THIS_WIKI' => '',
+    'EDIT_CONFIG_HINT_ROOT_PAGE' => '',
+    // actions/erasespamedcomments.class.php
+    'ERASED_COMMENTS' => '',
+    'THEME_MANAGER_NOT_FOUND' => '',
+    'LINK_TO_REFERRERS_SITES_PAGES_ONLY_TAG' => '',
+    'USER_MAX_NUMBER_OF_VERSIONS' => '',
+    'REACTION_DELETE_ALL' => '',
+    'ADMIN_BACKUPS_MESSAGE_CLI_NOT_WORKING' => '',
+    'ADMIN_BACKUPS_MESSAGE_HIBERNATION' => '',
+    'USER_UPDATE_QUERY_FAILED' => '',
+    // actions/recentlycommented.php
+    'LAST COMMENT' => '',
+    'EDIT_CONFIG_HINT_WAKKA_NAME' => '',
+    'ACLS_FOR_SELECTED_PAGES' => '',
+    // templates/preupdate-backups.twig
+    'ADMIN_BACKUPS_CREATING' => '',
+    'CHECKING_ROOT_PAGE_NAME' => '',
+    'USER_UPDATE_MISSPELLED_PROPERTIES' => '',
+    'DATABASE_YOU_MUST_FIRST_SET_ARGUMENT' => '',
+    'USER_YOU_MUST_SPECIFY_A_STRING' => '',
+    'REACTION_YOUR_REACTIONS' => '',
+    'THEME_MANAGER_AND_REPAIR' => '',
+    'USER_PASSWORD_TOO_SHORT' => '',
+    'ADMIN_BACKUPS_MESSAGE_WRITABLE_FILE' => '',
+    'YW_ACLS_READ' => '',
+    'YW_NEW_OWNER' => '',
+    'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING' => '',
+    'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING_MESSAGE' => '',
+    'REACTION_THINKING' => '',
+    'REACTION_SURPRISED' => '',
+    'ACLS_REPLACE_SELECTED_PAGES' => '',
+    'SEARCH_RESULTS' => '',
+    'REACTION_ANGRY' => '',
+    'REACTION_LIKE' => '',
+    'DELETEPAGE_PAGES_WITH_LINKS_TO' => '',
+    'CAUTION' => '',
+    'ACLS_OWNER' => '',
+    'REACTION_TO_ALLOW_REACTION' => '',
+    'DELETE_EXISTING_GROUP' => '',
+    'REACTION_USER' => '',
+    'NAME' => '',
+    'USER_PASSWORDS_NOT_IDENTICAL' => '',
+    'REACTION_FOR_POLL' => '',
+    'ACLS_ADMIN_GROUP' => '',
+    'ACLS_MODE_ADVANCED' => '',
+    'YW_CHANGE_NOTHING' => '',
+    'ACLS_EVERYBODY' => '',
+    'COMMENT_NEW_COMMENT_TAG' => '',
+    'INDEX_HELP_TEXT' => '',
+    'CHANGESTYLE_ERROR' => '',
+    'REFERRERS_SITES_X_DAYS' => '',
+    'YW_ACLS_WRITE' => '',
+    // handlers/revisions
+    'SUCCESS_RESTORE_REVISION' => '',
+    'INCORRECT_ROOT_PAGE_NAME' => '',
+    // handlers/show
+    'COMMENT_INFO' => '',
+    'USER_DISCONNECT' => '',
+    'EDIT_CONFIG_HINT_DEFAULT_COMMENT_AVATAR' => '',
+    'YW_CANNOT_CHANGE_ACLS' => '',
+    'CSRF_TOKEN_FAIL_ERROR' => '',
+    // handlers/deletepage
+    'DELETEPAGE_CANCEL' => '',
+    'NOT_AUTORIZED_TO_READ_PAGE' => '',
+    'EDIT_NO_WRITE_ACCESS' => '',
+    'ACLS_READ' => '',
+    // actions/EditConfigAction.php
+    'EDIT_CONFIG_TITLE' => '',
+    'DELETEPAGE_MESSAGE' => '',
+    // YesWiki\Database class
+    'DATABASE_QUERY_FAILED' => '',
+    'COMMENT_NEW_COMMENT_ANSWER_MESSAGE' => '',
+    'YW_ADD_COMMENT' => '',
+    'USER_LOAD_BY_NAME_QUERY_FAILED' => '',
+    'ONLY_NO_PAGES_GROUP_FOR_DELETION' => '',
+    'SQL_FILE_NOT_FOUND' => '',
+    'USER_MUST_BE_ADMIN_TO_DELETE' => '',
+    'UPDATE_ADMIN_PAGES_CONFIRM' => '',
+    'COMMENT_DELETE' => '',
+    'REACTION_NO_IMAGE' => '',
+    'DENY_WRITE' => '',
+    // templates/multidelete-macro.twig
+    'NUMBER_OF_ELEMENTS' => '',
+    'CHECK_EXISTING_TABLE_PREFIX' => '',
+    'REACTION_PLEASE_LOGIN' => '',
     // reactions
-    // 'REACTION_EMPTY_ID' => 'le paramètre "id" doit obligatoirement être renseigné',
-    // 'REACTION_LIKE' => 'J\'approuve',
-    // 'REACTION_DISLIKE' => 'Je n\'approuve pas',
-    // 'REACTION_ANGRY' => 'Faché·e',
-    // 'REACTION_SURPRISED' => 'Surpris·e',
-    // 'REACTION_THINKING' => 'Dubitatif·ve',
-    // 'REACTION_LOGIN_TO_REACT' => 'Pour réagir, identifiez-vous!',
-    // 'REACTION_SHARE_YOUR_REACTION' => 'Partagez votre réaction à propos de ce contenu',
-    // 'REACTION_TO_ALLOW_REACTION' => 'Pour vous permettre de réagir',
-    // 'REACTION_PLEASE_LOGIN' => 's\'identifier',
-    // 'REACTION_NB_REACTIONS_LEFT' => 'choix possible(s)',
-    // 'REACTION_ADMINISTER_REACTIONS' => 'Administrer les réactions',
-    // 'REACTION_CONNECT_AS_ADMIN' => 'Veuillez vous connecter en tant qu\'admin pour administrer les réactions.',
-    // 'REACTION_USER' => 'Utilisateur·ice',
-    // 'REACTION_YOUR_REACTIONS' => 'Vos réactions',
-    // 'REACTION_VOTE' => 'Vote',
-    // 'REACTION_DATE' => 'Date',
-    // 'REACTION_DATE_UNKNOWN' => 'Date inconnue',
-    // 'REACTION_DELETE' => 'Supprimer',
-    // 'REACTION_DELETE_ALL' => 'Tout supprimer',
-    // 'REACTION_LOGIN_TO_SEE_YOUR_REACTION' => 'Se connecter pour voir vos réactions.',
-    // 'REACTION_YOU_VOTED' => 'Vous avez voté',
-    // 'REACTION_FOR_POLL' => 'au sondage',
-    // 'REACTION_FROM_PAGE' => 'de la page',
-    // 'REACTION_ON_ENTRY' => 'Réaction sur une fiche',
-    // 'REACTION_TITLE_PARAM_NEEDED' => 'Le paramètre \'titre\' est obligatoire',
-    // 'REACTION_BAD_IMAGE_FORMAT' => 'Mauvais format d\'image : doit être un fichier, un icône utf8 ou une classe Fontawesome',
-    // 'REACTION_NO_IMAGE' => 'Image manquante',
+    'REACTION_EMPTY_ID' => '',
+    // includes/controllers/CsrfController.php
+    'NO_CSRF_TOKEN_ERROR' => '',
+    'ACLS_SELECT_PAGES_TO_MODIFY' => '',
+    'USER_ERRORS_FOUND' => '',
+    'EDIT_EXISTING_GROUP' => '',
+    'USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR' => '',
+    'LOGGED_USERS_ONLY_ACTION' => '',
+    'USER_PARAMETERS_SAVED' => '',
+    'ONLY_FOR_ADMINS' => '',
+    'USER_YOU_ARE_NOW_DISCONNECTED' => '',
+    'USER_MOTTO' => '',
+    'COMMENTS' => '',
+    'USER_PASSWORD_CHANGED' => '',
+    'REACTION_LOGIN_TO_SEE_YOUR_REACTION' => '',
+    'YW_PROBLEM_WITH_ACLS_LIST' => '',
+    'ADMIN_BACKUPS_FORCE_UPDATE' => '',
+    // handlers/page/show + handlers/page/iframe
+    'NOT_FOUND_PAGE' => '',
+    'USER_NO_USER_WITH_THAT_NAME' => '',
+    'EDIT_CONFIG_HINT_MAIL_CUSTOM_MESSAGE' => '',
+    'ACLS_UPDATE' => '',
+    'SUBSCRIPTION' => '',
+    'REDIRECTED_FROM' => '',
+    'RESTORE_REVISION' => '',
+    'DELETE' => '',
+    'ACLS_HELPER' => '',
+    'REACTION_ON_ENTRY' => '',
+    'FORM_RETURN' => '',
+    'USER_YOU_MUST_SPECIFY_YES_OR_NO' => '',
+    'EDIT_CONFIG_HINT_COMMENTS_HANDLER' => '',
+    // gererdroits
+    'ACLS_RESERVED_FOR_ADMINS' => '',
+    'REACTION_DELETE' => '',
+    'USER_INCORRECT_PASSWORD_KEY' => '',
+    'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => '',
+    'HTML_INSERTION_HELP_TEXT' => '',
+    'REACTION_DISLIKE' => '',
+    'USER_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED' => '',
+    // Commons
+    'ARCHIVES' => '',
+    'FILE_WRITE_PROTECTED' => '',
+    'YW_ACLS_UPDATED' => '',
+    // handlers/referrers_sites.php
+    'LINK_TO_REFERRERS_DOMAINS' => '',
+    'INSERTION_OF_PAGES' => '',
+    'TITLE_PAGE_HISTORY' => '',
+    'USER_NEW_ACCOUNT' => '',
+    'GENERAL_CONFIGURATION' => '',
+    'COMMENT_MODIFIED_BY' => '',
+    'DELETEPAGE_NOT_OWNER' => '',
+    'COMMENT_NEW_COMMENT_MESSAGE' => '',
+    // ACLs
+    'DENY_READ' => '',
+    'USER_CANT_DELETE_ONESELF' => '',
+    'EDIT_CONFIG_HINT_ALLOW_DOUBLECLIC' => '',
+    // API
+    'USERS' => '',
+    'DELETEPAGE_CONFIRM' => '',
+    'REACTION_FROM_PAGE' => '',
+    'EDIT_CONFIG_HINT_FAVICON' => '',
+    'USER_YOU_MUST_SPECIFY_AN_EMAIL' => '',
+    'COMMENT_NEW_COMMENT_ANSWER_MESSAGE_TAG' => '',
+    // templates/comments/notify-email-*.twig
+    'COMMENT_NEW_COMMENT' => '',
+    'ACLS_NO_SELECTED_PAGE' => '',
+    'REACTION_TITLE_PARAM_NEEDED' => '',
+    'EDIT_CONFIG_HINT_DEFAULT_COMMENT_ACL' => '',
+    'REVISION_VERSION' => '',
+    'COMMENT_NEW_COMMENT_ANSWER' => '',
+    'USER_DOUBLE_CLICK_TO_EDIT' => '',
+    'YES' => '',
+    'REACTION_CONNECT_AS_ADMIN' => '',
+    'USERSTABLE_CREATE_USER_HINT' => '',
+    'ACLS_NO_SELECTED_RIGHTS' => '',
+    'USER_CHANGE_THE_PASSWORD' => '',
+    'YW_COMMENTS_ARE_NOW_OPEN' => '',
+    'REFERRERS_SITES_24_HOURS' => '',
+    'AUTHORIZE_INDEX_BY_ROBOTS' => '',
+    'COMMENT_NEW_COMMENT_ANSWER_TAG' => '',
+    'ACLS_COMMENTS_CLOSED' => '',
+    'USER_THIS_IS_NOT_A_VALID_NAME' => '',
+    'USER_DELETE_LONE_MEMBER_OF_GROUP' => '',
+    'REACTION_SHARE_YOUR_REACTION' => '',
+    'USER_WIKINAME' => '',
+    'ACLS_WRITE' => '',
+    'LINK_TO_REFERRERS_SITES' => '',
+    'USER_USERSTABLE_MISTAKEN_ARGUMENT' => '',
+    // actions/changestyle.php
+    'STYLE_SHEET' => '',
+    'EDIT_CONFIG_HINT_COMMENTS_ACTIVATED' => '',
+    'USER_NO_USER_WITH_THAT_EMAIL' => '',
+    'REACTION_NB_REACTIONS_LEFT' => '',
+    'EDIT_CONFIG_SAVE' => '',
+    'REVISION_ON' => '',
+    'YW_CHANGE_OWNER' => '',
+    'TABLE_PREFIX_ALREADY_USED' => '',
+    'USER_OLD_PASSWORD' => '',
+    'DENY_DELETE' => '',
+    'DATABASE_MISSING_ARGUMENT' => '',
+    'USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER' => '',
 ];
