@@ -84,8 +84,7 @@ return [
 
     // actions/changestyle.php
     'STYLE_SHEET' => 'Feuille de style',
-    'CHANGESTYLE_ERROR' => 'Le nom \'{name}\' n\'est pas conforme à la règle de nommage imposée par l\'action ChangeStyle.'.
-        'Reportez-vous à la documentation de cette action pour plus de précisions',
+    'CHANGESTYLE_ERROR' => 'Le nom \'{name}\' n\'est pas conforme à la règle de nommage imposée par l\'action ChangeStyle. Reportez-vous à la documentation de cette action pour plus de précisions',
 
     // handlers/page/acls.php
     'YW_ACLS_LIST' => 'Liste des droits d\'accès de la page',
@@ -286,10 +285,8 @@ return [
     'NO_PAGE_TO_CREATE' => 'Aucune page à créer',
 
     // includes/controllers/CsrfController.php
-    'NO_CSRF_TOKEN_ERROR' => 'Erreur de conception du site : Le formulaire de soumission ne contenait pas '.
-        'le jeton d\'identification unique nécessaire aux mécanismes internes de sécurité.',
-    'CSRF_TOKEN_FAIL_ERROR' => 'Cette page a peut-être été ouverte une seconde fois. '.
-        'Veuillez renouveler la demande depuis cette fenêtre (le jeton interne de sécurité n\'était pas bon).',
+    'NO_CSRF_TOKEN_ERROR' => 'Erreur de conception du site : Le formulaire de soumission ne contenait pas le jeton d\'identification unique nécessaire aux mécanismes internes de sécurité.',
+    'CSRF_TOKEN_FAIL_ERROR' => 'Cette page a peut-être été ouverte une seconde fois. Veuillez renouveler la demande depuis cette fenêtre (le jeton interne de sécurité n\'était pas bon).',
 
     // javascripts/favorites.js
     'FAVORITES_ADD' => 'Ajouter aux favoris',
@@ -584,9 +581,7 @@ return [
     'DELETEPAGE_NOT_DELETED' => 'Page non supprimée.',
 
     // handlers/edit
-    'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' =>
-        'Cette page a été modifiée par quelqu\'un d\'autre pendant que vous l\'éditiez.'."\n".
-        'Veuillez copier vos changements et rééditer cette page.',
+    'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' => 'Cette page a été modifiée par quelqu\'un d\'autre pendant que vous l\'éditiez.\nVeuillez copier vos changements et rééditer cette page.',
     'EDIT_NO_WRITE_ACCESS' => 'Vous n\'avez pas accès en écriture à cette page !',
     'EDIT_NO_CHANGE_MSG' => 'Cette page n\'a pas été enregistrée car elle n\'a subi aucune modification.',
     'EDIT_PREVIEW' => 'Aperçu',
