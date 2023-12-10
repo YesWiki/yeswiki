@@ -1,0 +1,47 @@
+version: '3.7'
+
+volumes:
+  yeswiki-db:
+    name: yeswiki-db
+  yeswiki:
+    name: yeswiki
+
+networks:
+  yeswiki:
+
+services:
+    yeswiki-app:
+        build:
+          context: ..
+          dockerfile: ./docker/dockerfile
+        container_name: yeswiki
+        volumes:
+          - yeswiki:/var/www/html
+        depends_on:
+          - yeswiki-db
+        env_file: ./yeswiki.secrets
+        networks:
+          - yeswiki
+
+    yeswiki-db:
+        image: mariadb:11
+        container_name: yeswiki-db
+        volumes:
+          - yeswiki-db:/var/lib/mysql
+        env_file: ./yeswiki.secrets
+        networks:
+          - yeswiki
+        restart: unless-stopped
+
+    yeswiki-web:
+        image: nginx:alpine
+        container_name: yeswiki-web
+        volumes:
+          - yeswiki:/var/www/html:ro
+          - ./nginx.conf:/etc/nginx/nginx.conf:ro
+        ports:
+          - "8085:80"
+        depends_on:
+          - yeswiki-app
+        networks:
+          - yeswiki
