@@ -202,7 +202,6 @@ return [
     'PASSWORD_UPDATED' => 'S\'ha canviat la contrasenya',
     'RESETTING_THE_PASSWORD' => 'S\'està esborrant la contrasenya',
     'WIKINAME' => 'NomWiki',
-    'NEW_PASSWORD' => 'Contrasenya nova',
     'RESET_PASSWORD' => 'Reinicia la contrasenya',
     'NO_PERMISSIONS_TO_EXECUTE_THIS_ACTION' => 'no teniu permisos per realitzar aquesta acció',
 

@@ -200,7 +200,6 @@ return [
     'PASSWORD_UPDATED' => 'Senha alterada',
     'RESETTING_THE_PASSWORD' => 'Modificação de senha',
     'WIKINAME' => 'NomeWiki',
-    'NEW_PASSWORD' => 'Nova senha',
     'RESET_PASSWORD' => 'Redefinição de senha',
     'NO_PERMISSIONS_TO_EXECUTE_THIS_ACTION' => 'Você não tem as permissões necessárias para executar esta ação',
 

@@ -207,7 +207,6 @@ return [
     'PASSWORD_UPDATED' => 'Wachtwoord opnieuw ingesteld',
     'RESETTING_THE_PASSWORD' => 'Wachtwoord opnieuw ingesteld',
     'WIKINAME' => 'WikiNaam',
-    'NEW_PASSWORD' => 'Nieuw wachtwoord',
     'RESET_PASSWORD' => 'Wachtwoord terugstellen',
     'NO_PERMISSIONS_TO_EXECUTE_THIS_ACTION' => 'u beschikt niet over de nodige machtigingen om deze actie uit te voeren',
 

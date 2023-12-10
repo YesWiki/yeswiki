@@ -207,7 +207,6 @@ return [
     'PASSWORD_UPDATED' => 'Contraseña inicializada',
     'RESETTING_THE_PASSWORD' => 'Inicialización de la contraseña',
     'WIKINAME' => 'NombreWiki',
-    'NEW_PASSWORD' => 'Nueva contraseña',
     'RESET_PASSWORD' => 'Reset contraseña',
     'NO_PERMISSIONS_TO_EXECUTE_THIS_ACTION' => 'No tienes las permisiones necesarias par ejecutar esta acción',
 

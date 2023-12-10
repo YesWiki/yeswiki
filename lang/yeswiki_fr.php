@@ -224,7 +224,6 @@ return [
     'PASSWORD_UPDATED' => 'Mot de passe réinitialisé',
     'RESETTING_THE_PASSWORD' => 'Réinitialisation du mot de passe',
     'WIKINAME' => 'NomWiki',
-    'NEW_PASSWORD' => 'Nouveau mot de passe',
     'RESET_PASSWORD' => 'Reset password',
     'NO_PERMISSIONS_TO_EXECUTE_THIS_ACTION' => 'vous n\'avez pas les permissions nécessaires pour exécuter cette action',
 

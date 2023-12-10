@@ -189,7 +189,6 @@ return [
     'PASSWORD_UPDATED' => 'Password updated',
     'RESETTING_THE_PASSWORD' => 'Resetting the password',
     'WIKINAME' => 'WikiName',
-    'NEW_PASSWORD' => 'New password',
     'RESET_PASSWORD' => 'Reset password',
     'NO_PERMISSIONS_TO_EXECUTE_THIS_ACTION' => 'you have no permissions to execute this action',
     // actions/textsearch.php
