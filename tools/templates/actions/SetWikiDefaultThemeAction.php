@@ -55,7 +55,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction
                     $config->hide_action_template = '1';
                 }
                 $config->write();
-                $this->wiki->Redirect($this->wiki->href("", $this->tag));
+                $this->wiki->Redirect($this->wiki->href("", $this->wiki->tag));
             }
         }
 
