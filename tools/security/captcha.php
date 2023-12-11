@@ -15,10 +15,10 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --
 */
-//var_dump($GLOBALS['wiki']->config['captcha_words']);
 
-if (isset($GLOBALS['wiki']->config['captcha_words']) and is_array($GLOBALS['wiki']->config['captcha_words'])) {
-    $textes = $GLOBALS['wiki']->config['captcha_words'];
+include_once('../../wakka.config.php');
+if (isset($wakkaConfig['captcha_words']) && is_array($wakkaConfig['captcha_words'])) {
+    $textes = $wakkaConfig['captcha_words'];
 } else {
     $textes = array(
         "cactus",
@@ -58,7 +58,7 @@ class TheCaptcha
     public function __construct()
     {
         global $textes;
-        srand((double) microtime() * 10000000);
+        srand((float) microtime() * 10000000);
         $this->size = $this->getImageSize();
 
         // Création de l'image
@@ -114,7 +114,7 @@ class TheCaptcha
         $black = imagecolorallocate($this->image, 0, 0, 0);
 
         imagefilledrectangle($this->image, 0, 0, $this->size, 50, $white);
-        $font = __DIR__.'/agenda__.ttf';
+        $font = __DIR__ . '/agenda__.ttf';
 
         // dessinons quelques eclipses ;)
         for ($t = 0; $t <= 20; $t++) {
@@ -123,14 +123,14 @@ class TheCaptcha
 
         // centrage du texte
         $maxWord = (($this->size - 30) / 27);
-        $cur_left = (strlen($this->text) == $maxWord ? 15 : (15 + ((($maxWord - strlen($this->text)) * 27)) /2));
+        $cur_left = (strlen($this->text) == $maxWord ? 15 : (15 + ((($maxWord - strlen($this->text)) * 27)) / 2));
 
         for ($t = 0; isset($this->text[$t]); $t++) {
             $cur_incli = rand(-20, 20);
             // ombre
             imagettftext($this->image, 32, $cur_incli, $cur_left, 40, $black, $font, $this->text[$t]);
             // texte
-            imagettftext($this->image, 32, $cur_incli, ($cur_left -1), 39, $this->colours[array_rand($this->colours)], $font, $this->text[$t]);
+            imagettftext($this->image, 32, $cur_incli, ($cur_left - 1), 39, $this->colours[array_rand($this->colours)], $font, $this->text[$t]);
             $cur_left += 27;
         }
 
