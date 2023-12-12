@@ -2,13 +2,6 @@
 COMPOSER      = composer
 GIT           = git
 YARN          = yarn
-DOCKER        = docker-compose
-DOCKER_COMPOSE= $$( if [ -f docker-compose.local.yml ]; then \
-		echo docker-compose.local.yml; \
-	else \
-		echo docker-compose.yml; \
-	fi )
-.DEFAULT_GOAL = help
 
 ## —— Yeswiki Makefile ——
 help: ## Outputs this help screen
@@ -29,27 +22,7 @@ yarn-install: yarn.lock ## Install npm vendors according to the current yarn.loc
 	$(YARN) install
 
 ## —— Docker ——————————————
-perms:
-	chmod 0777 . cache files files/backgrounds files/backgrounds/thumbs themes custom tools && \
-	chmod -R +w themes/margot
-
-docker-build: ## Build Docker images
-	$(DOCKER) -f $(DOCKER_COMPOSE) build --pull
-
-dev: ## Start the Docker hub with all the dev tools
-	$(DOCKER) -f $(DOCKER_COMPOSE) up -d
-
-up: ## Start the Docker hub
-	$(DOCKER) -f $(DOCKER_COMPOSE) up -d yeswiki
-
-stop: ## Stop the Docker hub
-	$(DOCKER) -f $(DOCKER_COMPOSE) stop
-
-down: ## Down the Docker hub
-	$(DOCKER) -f $(DOCKER_COMPOSE) down --remove-orphans
-
-shell: ## Start shell inside Docker
-	$(DOCKER) -f $(DOCKER_COMPOSE) exec yeswiki bash
+## use the docker/ folder README.md to find commands to launch docker
 
 ## —— Tests ———————————————
 test: ## Launch unit tests
