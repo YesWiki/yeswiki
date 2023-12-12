@@ -476,14 +476,11 @@ return [
     "AB_bazartableau_exportallcolumns_label" => "Exporter aussi les colonnes masquées",
     "AB_bazartableau_displayimagesasthumbnails_label" => "Afficher les images sous forme de vignette",
 
-    // Whiteboard WBO
-    "AB_whiteboard_label" => "Whiteboard WBO",
-
     //iframe    
-    "IFRAME_label" => "Iframe",
-    "IFRAME_action_description" => "Créer un cadre intégré (iframe)",
+    "IFRAME_label" => "Whiteboard WBO",
+    "IFRAME_action_description" => "Créer un tableau blanc collaboratif",
     "IFRAME_src_label" => "URL de la source",
-    "IFRAME_src_default" => "https://yeswiki.net/?Accueil",
+    "IFRAME_src_default" => "https://wbo.ophir.dev/boards/test1",
     "IFRAME_width_label" => "Largeur",
     "IFRAME_height_label" => "Hauteur",
     "IFRAME_additional_attributes_label" => "Attributs supplémentaires",

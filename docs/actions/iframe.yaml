@@ -9,7 +9,7 @@ actions:
       src:
         label: _t(IFRAME_src_label)
         value: _t(IFRAME_src_default)
-        default: "https://yeswiki.net/?Accueil"
+        default: "https://wbo.ophir.dev/boards/test1"
         type: text
       width:
         label: _t(IFRAME_width_label)
