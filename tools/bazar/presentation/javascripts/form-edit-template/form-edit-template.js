@@ -24,6 +24,7 @@ import listefichesliees from './fields/listefichesliees.js'
 import custom from './fields/custom.js'
 import tabs from './fields/tabs.js'
 import tabchange from './fields/tabchange.js'
+import whiteboard from './fields/whiteboard.js'
 
 import { parseWikiTextIntoJsonData, formatJsonDataIntoWikiText } from './yeswiki-syntax-converter.js'
 import {
@@ -45,7 +46,7 @@ window.formBuilderFields = {
   'checkbox-group': checkbox_group, 'radio-group': radio_group,
   map, tags, labelhtml, titre, bookmarklet, conditionschecking, calc,
   reactions, inscriptionliste, utilisateur_wikini, acls, metadatas,
-  listefichesliees, custom, tabs, tabchange
+  listefichesliees, custom, tabs, tabchange, whiteboard
 }
 
 function initializeFormbuilder() {

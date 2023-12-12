@@ -31,7 +31,7 @@ services:
         env_file: ./yeswiki.secrets
         networks:
           - yeswiki
-        restart: unless-stopped
+        # restart: unless-stopped
 
     yeswiki-web:
         image: nginx:alpine
