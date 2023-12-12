@@ -19,7 +19,7 @@ class WhiteBoardField extends BazarField
     {
         $wiki = $this->getWiki();
         if ($this->getWiki()->GetMethod() != 'bazariframe') {
-            $whiteboardUrl = "http://localhost:8080/";
+            $whiteboardUrl = "http://localhost:5001/boards/test1";
             return $this->render("@bazar/inputs/whiteboard.twig", [
                 'iframeUrl' => $whiteboardUrl,
                 'iframeParams' => [
