@@ -258,7 +258,6 @@ return [
     'YOUR_MOTTO' => 'Votre devise',
     'CHANGE_THE_PASSWORD' => 'Changement de mot de passe',
     'YOUR_OLD_PASSWORD' => 'Votre ancien mot de passe',
-    'NEW_PASSWORD' => 'Nouveau mot de passe',
     'CHANGE' => 'Changer',
     'USERNAME_MUST_BE_WIKINAME' => 'Votre nom d\'utilisateur ne doit pas commencer par \'!\',\'@\',\'\\\', \'/\' ni \'#\' avec 3 caractères minimum.',
     'YOU_MUST_SPECIFY_AN_EMAIL' => 'Vous devez spécifier une adresse de messagerie électronique',
