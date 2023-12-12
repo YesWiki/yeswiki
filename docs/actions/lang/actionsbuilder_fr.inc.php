@@ -197,7 +197,7 @@ return [
     // bazargogocarto
     "AB_bazargogocarto_label" => "Cartographie 2 - GoGocarto",
     "AB_bazargogocarto_description" => "Les fiches seront sous forme de marqueur.",
-    'AB_bazargogocarto_hint' => "Le champ géolocalisation doit être présent dans votre formulaire. \n".
+    'AB_bazargogocarto_hint' => "Le champ géolocalisation doit être présent dans votre formulaire. \n" .
         "Pensez aussi à choisir un champ pour l'icone et la couleur des marqueurs",
     "AB_bazargogocarto_height_label" => "Hauteur de la carte",
     "AB_bazargogocarto_width_label" => "Largeur de la carte",
@@ -285,7 +285,7 @@ return [
     "AB_management_despam_label" => "Nettoyer les pages récemment vandalisées",
     "AB_management_despam_hint" => "Liste les dernières versions des pages récemment créées pour pouvoir choisir celles à supprimer",
     "AB_management_despam_hint_details" => "Ceci permet de rétablir les pages vandalisées ou de supprimer les nouvelles pages créées"
-            ." par des spams. ATTENTION : la suppression des pages choisies sera DÉFINITITVE.",
+        . " par des spams. ATTENTION : la suppression des pages choisies sera DÉFINITITVE.",
     "AB_management_editconfig_label" => "Modifier des paramètres du fichier de configuration",
     "AB_management_adminbackups_label" => "Gestion des sauvegardes",
     "AB_management_commentstable_label" => "Table des commentaires",
@@ -488,3 +488,4 @@ return [
     "IFRAME_height_label" => "Hauteur",
     "IFRAME_additional_attributes_label" => "Attributs supplémentaires",
 
+];

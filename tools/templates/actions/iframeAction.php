@@ -30,8 +30,8 @@ class IframeAction extends YesWikiAction
 
         // Close the tag
         $iframe .= '></iframe>';
-        dump($iframe);
-        dd($iframe);
+
+
 
         return $iframe;
     }
