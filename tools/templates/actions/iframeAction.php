@@ -8,7 +8,7 @@ class IframeAction extends YesWikiAction
     public function formatArguments($args)
     {
         return [
-            'src' => $args['src'] ?? 'default-src.html',
+            'src' => $args['src'] ?? 'https://yeswiki.net/?Accueil',
             'width' => $args['width'] ?? '100%',
             'height' => $args['height'] ?? '300px',
             'additionalAttributes' => $args['additionalAttributes'] ?? []

@@ -9,7 +9,7 @@ actions:
       src:
         label: _t(IFRAME_src_label)
         value: _t(IFRAME_src_default)
-        default: "default-src.html"
+        default: "https://yeswiki.net/?Accueil"
         type: text
       width:
         label: _t(IFRAME_width_label)
