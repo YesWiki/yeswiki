@@ -1,0 +1,28 @@
+label: _t(IFRAME_label)
+position: 3
+previewHeight: 200px
+actions:
+  iframe:
+    label: _t(IFRAME_label)
+    description: _t(IFRAME_action_description)
+    properties:
+      src:
+        label: _t(IFRAME_src_label)
+        value: _t(IFRAME_src_default)
+        default: "default-src.html"
+        type: text
+      width:
+        label: _t(IFRAME_width_label)
+        value: "100%"
+        default: "100%"
+        type: text
+      height:
+        label: _t(IFRAME_height_label)
+        value: "300px"
+        default: "300px"
+        type: text
+      additionalAttributes:
+        label: _t(IFRAME_additional_attributes_label)
+        value: ""
+        default: ""
+        type: text

@@ -478,4 +478,13 @@ return [
 
     // Whiteboard WBO
     "AB_whiteboard_label" => "Whiteboard WBO",
-];
+
+    //iframe    
+    "IFRAME_label" => "Iframe",
+    "IFRAME_action_description" => "Créer un cadre intégré (iframe)",
+    "IFRAME_src_label" => "URL de la source",
+    "IFRAME_src_default" => "default-src.html",
+    "IFRAME_width_label" => "Largeur",
+    "IFRAME_height_label" => "Hauteur",
+    "IFRAME_additional_attributes_label" => "Attributs supplémentaires",
+
