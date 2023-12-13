@@ -9,7 +9,7 @@ actions:
       text:
         label: _t(AB_buttons_action_button_text_label)
         value: _t(AB_buttons_action_button_text_default)
-        default: ''
+        default: ""
         type: text
       link:
         label: _t(AB_buttons_action_button_link_label)
@@ -47,7 +47,7 @@ actions:
             advanced: true
             type: list
             options:
-              '': _t(AB_buttons_action_button_size_standard)
+              "": _t(AB_buttons_action_button_size_standard)
               btn-xs: _t(AB_buttons_action_button_size_small)
               btn-sm: _t(AB_buttons_action_button_size_medium)
               btn-lg: _t(AB_buttons_action_button_size_big)
@@ -64,7 +64,7 @@ actions:
             advanced: true
             type: list
             options:
-#             pull-left: _t(AB_buttons_action_button_pull_left) idée que les gens puissent choisir cette option
+              #             pull-left: _t(AB_buttons_action_button_pull_left) idée que les gens puissent choisir cette option
               pull-right: _t(AB_buttons_action_button_pull_right)
               btn-block: _t(AB_buttons_action_button_pull_block)
           new-window:
