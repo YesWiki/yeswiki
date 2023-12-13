@@ -476,13 +476,20 @@ return [
     "AB_bazartableau_exportallcolumns_label" => "Exporter aussi les colonnes masquées",
     "AB_bazartableau_displayimagesasthumbnails_label" => "Afficher les images sous forme de vignette",
 
-    //iframe    
-    "IFRAME_label" => "Whiteboard WBO",
-    "IFRAME_action_description" => "Créer un tableau blanc collaboratif",
-    "IFRAME_src_label" => "URL de la source",
-    "IFRAME_src_default" => "https://wbo.ophir.dev/boards/test1",
-    "IFRAME_width_label" => "Largeur",
-    "IFRAME_height_label" => "Hauteur",
-    "IFRAME_additional_attributes_label" => "Attributs supplémentaires",
+    //WHITEBOARD    
+    "WHITEBOARD_label" => "Whiteboard WBO",
+    "WHITEBOARD_action_description" => "Créer un tableau blanc collaboratif",
+    "WHITEBOARD_src_label" => "URL de la source",
+    "WHITEBOARD_src_default" => "https://wbo.ophir.dev/boards/test1",
+    "WHITEBOARD_width_label" => "Largeur",
+    "WHITEBOARD_height_label" => "Hauteur",
+
+    //Excalidraw    
+    "Excalidraw_label" => "Excalidraw",
+    "Excalidraw_action_description" => "Créer un tableau de déssin",
+    "Excalidraw_src_label" => "URL de la source",
+    "Excalidraw_src_default" => "https://excalidraw.com/",
+    "Excalidraw_width_label" => "Largeur",
+    "Excalidraw_height_label" => "Hauteur",
 
 ];

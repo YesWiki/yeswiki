@@ -1,0 +1,23 @@
+label: _t(Excalidraw_label)
+position: 3
+previewHeight: 200px
+actions:
+  Excalidraw:
+    label: _t(Excalidraw_label)
+    description: _t(Excalidraw_action_description)
+    properties:
+      src:
+        label: _t(Excalidraw_src_label)
+        value: _t(Excalidraw_src_default)
+        default: "https://wbo.ophir.dev/boards/test1"
+        type: text
+      width:
+        label: _t(Excalidraw_width_label)
+        value: "100%"
+        default: "100%"
+        type: text
+      height:
+        label: _t(Excalidraw_height_label)
+        value: "300px"
+        default: "300px"
+        type: text
