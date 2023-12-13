@@ -34,7 +34,7 @@ class ExcalidrawField extends BazarField
         if ($this->getWiki()->GetMethod() != 'bazariframe') {
             $entryId = $entry['id_fiche'];
             $excalidrawUrl = "https://excalidraw.com/" . $entryId;
-            return $this->render("@bazar/inputs/excalidrawUrl.twig", [
+            return $this->render("@bazar/inputs/excalidraw.twig", [
                 'iframeUrl' => $excalidrawUrl,
                 'iframeParams' => [
                     'width' => '100%',

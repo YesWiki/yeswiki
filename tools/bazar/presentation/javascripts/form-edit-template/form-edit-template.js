@@ -25,6 +25,7 @@ import custom from './fields/custom.js'
 import tabs from './fields/tabs.js'
 import tabchange from './fields/tabchange.js'
 import whiteboard from './fields/whiteboard.js'
+import excalidraw from './fields/excalidraw.js'
 
 import { parseWikiTextIntoJsonData, formatJsonDataIntoWikiText } from './yeswiki-syntax-converter.js'
 import {
@@ -46,7 +47,7 @@ window.formBuilderFields = {
   'checkbox-group': checkbox_group, 'radio-group': radio_group,
   map, tags, labelhtml, titre, bookmarklet, conditionschecking, calc,
   reactions, inscriptionliste, utilisateur_wikini, acls, metadatas,
-  listefichesliees, custom, tabs, tabchange, whiteboard
+  listefichesliees, custom, tabs, tabchange, whiteboard, excalidraw
 }
 
 function initializeFormbuilder() {
@@ -103,7 +104,7 @@ function initializeFormbuilder() {
       // strange bug with jQuery Formbuilder, the fieldId given is not the last field, but
       // the one just before... so incrementing the id manually
       // transform frmb-XXXX-fld-6  into frmb-XXXX-fld-7
-      fieldId = fieldId.replace(/(.*)-fld-(\d+)$/gim, (string ,formId, fieldId) => {
+      fieldId = fieldId.replace(/(.*)-fld-(\d+)$/gim, (string, formId, fieldId) => {
         return `${formId}-fld-${parseInt(fieldId, 10) + 1}`
       })
 
@@ -115,7 +116,7 @@ function initializeFormbuilder() {
         adjustJqueryBuilderUI($field)
 
         // disable bf_titre identifier edition
-        $field.find('.fld-name').each(function() {
+        $field.find('.fld-name').each(function () {
           if ($(this).val() === 'bf_titre') {
             $(this).attr('disabled', true)
           }
@@ -140,10 +141,10 @@ function initializeFormbuilder() {
     if ($formBuilderTextInput.is(':focus')) return
 
     existingFieldsNames = []
-    $('.fld-name').each(function() { existingFieldsNames.push($(this).val()) })
+    $('.fld-name').each(function () { existingFieldsNames.push($(this).val()) })
 
     // Slugiy field names
-    $('.fld-name').each(function() {
+    $('.fld-name').each(function () {
       const newValue = $(this)
         .val()
         .replace(/[^a-z^A-Z^_^0-9^{^}]/g, '_')
@@ -158,7 +159,7 @@ function initializeFormbuilder() {
       if (wikiText) $formBuilderTextInput.val(wikiText)
     }
 
-    $('.fld-name').each(function() {
+    $('.fld-name').each(function () {
       let name = $(this).val()
       const id = $(this).closest('.form-field').attr('id')
 
@@ -197,7 +198,7 @@ function initializeFormbuilder() {
     existingFieldsIds = getFieldsIds()
 
     // Transform input[textarea] in real textarea
-    $('input[type="textarea"]').replaceWith(function() {
+    $('input[type="textarea"]').replaceWith(function () {
       const domTextarea = document.createElement('textarea')
       domTextarea.id = this.id
       domTextarea.name = this.name
@@ -208,7 +209,7 @@ function initializeFormbuilder() {
       return domTextarea
     })
 
-    $('.text-field select[name=subtype]:not(.initialized)').on('change', function() {
+    $('.text-field select[name=subtype]:not(.initialized)').on('change', function () {
       $(this).addClass('initialized')
       const $parent = $(this).closest('.form-field')
       if ($(this).val() == 'range' || $(this).val() == 'number') {
@@ -226,7 +227,7 @@ function initializeFormbuilder() {
     }).trigger('change')
 
     // in semantic field, we want to separate value by coma
-    $('.fld-semantic').each(function() {
+    $('.fld-semantic').each(function () {
       let newVal = $(this)
         .val()
         .replace(/\s*,\s*/g, ',')
@@ -239,13 +240,13 @@ function initializeFormbuilder() {
   $('#formbuilder-link').click(initializeBuilderFromTextInput)
 }
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   initializeFormbuilder()
 })
 
 function getFieldsIds() {
   let result = []
-  $('.fld-name').each(function() { result.push($(this).closest('.form-field').attr('id')) })
+  $('.fld-name').each(function () { result.push($(this).closest('.form-field').attr('id')) })
   return result
 }
 

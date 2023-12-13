@@ -9,7 +9,7 @@ actions:
       src:
         label: _t(Excalidraw_src_label)
         value: _t(Excalidraw_src_default)
-        default: "https://wbo.ophir.dev/boards/test1"
+        default: "https://excalidraw.com/"
         type: text
       width:
         label: _t(Excalidraw_width_label)

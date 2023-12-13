@@ -190,6 +190,10 @@
   display: none !important;
 }
 
+.excalidraw-field .required-wrap {
+  display: none !important;
+}
+
 .custom-field .required-wrap,
 .custom-field .name-wrap,
 .custom-field .value-wrap,
