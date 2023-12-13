@@ -3,9 +3,8 @@ name: Docker Image
 on:
   push:
     paths:
-    - Dockerfile
-    - .dockerignore
-    - docker-compose*.yml
+    - docker/dockerfile
+    - docker/docker-compose*.yml
 
 jobs:
   build:
@@ -14,4 +13,4 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Build a Docker image able to run yeswiki
-      run: docker build -t yeswiki/server .
+      run: docker build -f docker/dockerfile -t yeswiki/yeswiki .
