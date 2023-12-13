@@ -31,7 +31,7 @@ return [
     'NOT_FOUND' => 'Does\'nt esixt',
     'NO_REQUEST_FOUND' => '$_REQUEST[] not found. Wakka needs PHP 4.1.0 or more recent!',
     'SITE_BEING_UPDATED' => 'This website is currently updated. Please try again later.',
-    'DB_CONNECT_FAIL' => 'For some reasons, probably database access error, this YesWiki is temporaly unavailable. Please try again later, thank you for your patience.',
+    'DB_CONNECT_FAIL' => 'For some reasons, probably database access error, this YesWiki is temporally unavailable. Please try again later, thank you for your patience.',
     'LOG_DB_CONNECT_FAIL' => 'YesWiki : database connection failed',
     'INCORRECT_PAGENAME' => 'Incorrect page name.',
     // 'PERFORMABLE_ERROR' => 'Une erreur inattendue s\'est produite. Veuillez contacter l\'administrateur du site et lui communiquer l\'erreur suivante :',
@@ -80,9 +80,9 @@ return [
     // 'CHANGESTYLE_ERROR' => 'Le nom \'{name}\' n\'est pas conforme à la règle de nommage imposée par l\'action ChangeStyle.'.
     //     'Reportez-vous à la documentation de cette action pour plus de précisions',
     // handlers/page/acls.php
-    'YW_ACLS_LIST' => 'List of acces rights to the page',
+    'YW_ACLS_LIST' => 'List of access rights to the page',
     'YW_ACLS_UPDATED' => 'Access rights updated',
-    'YW_NEW_OWNER' => ' and owner change . New owner: ',
+    'YW_NEW_OWNER' => ' and owner change. New owner: ',
     'YW_CANCEL' => 'Cancel',
     'YW_ACLS_READ' => 'Read rights (* for all, + connected, @admins admins grp)',
     'YW_ACLS_WRITE' => 'Write rights (* for all, + connected, @admins admins grp)',
@@ -182,7 +182,7 @@ return [
     // actions/redirect.php
     'ERROR_ACTION_REDIRECT' => 'Error action {{redirect ...}}',
     'CIRCULAR_REDIRECTION_FROM_PAGE' => 'circular redirection from page',
-    'CLICK_HERE_TO_EDIT' => 'click ici to edit',
+    'CLICK_HERE_TO_EDIT' => 'click here to edit',
     'PRESENCE_OF_REDIRECTION_TO' => 'Presence of redirection to',
     // actions/resetpassword.php
     'ACTION_RESETPASSWORD' => 'Action {{resetpassword ...}}',
