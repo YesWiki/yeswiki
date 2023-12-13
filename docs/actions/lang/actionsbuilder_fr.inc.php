@@ -478,4 +478,6 @@ return [
 
     // Whiteboard WBO
     "AB_whiteboard_label" => "Whiteboard WBO",
+    "AB_whiteboard_link_label" => "URL de votre whiteboard",
+    "AB_whiteboard_link_hint" => "Saisissez le nom de votre whiteboard à la fin de l'url"
 ];

@@ -4,11 +4,16 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
+use Ramsey\Uuid\Uuid;
+use UUID as GlobalUUID;
+
 /**
  * @Field({"whiteboard"})
  */
 class WhiteBoardField extends BazarField
 {    
+    protected $whiteboardUrl;
+    protected $entryId;
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -19,7 +24,19 @@ class WhiteBoardField extends BazarField
     {
         $wiki = $this->getWiki();
         if ($this->getWiki()->GetMethod() != 'bazariframe') {
-            $whiteboardUrl = "http://localhost:5001/boards/test1";
+            return ;
+        }
+    }
+
+    protected function renderStatic($entry)
+    {
+        if ($this->getWiki()->GetMethod() == 'bazariframe') {
+            return '<a class="btn btn-danger pull-right" href="javascript:window.close();"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;' . _t('BAZ_CLOSE_THIS_WINDOW') . '</a>';
+        }
+
+        if ($this->getWiki()->GetMethod() != 'bazariframe') {
+            $entryId = $entry['id_fiche'];
+            $whiteboardUrl = "https://wbo.ophir.dev/boards/". $entryId;
             return $this->render("@bazar/inputs/whiteboard.twig", [
                 'iframeUrl' => $whiteboardUrl,
                 'iframeParams' => [
@@ -30,13 +47,6 @@ class WhiteBoardField extends BazarField
         }
     }
 
-    protected function renderStatic($entry)
-    {
-        if ($this->getWiki()->GetMethod() == 'bazariframe') {
-            return '<a class="btn btn-danger pull-right" href="javascript:window.close();"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;' . _t('BAZ_CLOSE_THIS_WINDOW') . '</a>';
-        }
-    }
-
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -44,7 +54,7 @@ class WhiteBoardField extends BazarField
         return array_merge(
             parent::jsonSerialize(),
             [
-                'urlField' => $this->getUrlField(),
+                'default' => $this->getDefault(),
             ]
         );
     }

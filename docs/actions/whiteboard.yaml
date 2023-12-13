@@ -1,14 +1,14 @@
 label: _t(AB_whiteboard_label)
 position: 2
-previewHeight: 100px
+previewHeight: 450px
 actions:
   iframe:
-    label: _t(AB_buttons_action_button_label)
-    description: _t(AB_buttons_action_button_description)
+    label: _t(AB_whiteboard_action_label)
+    description: _t(AB_whiteboard_action_description)
     properties:
       link:
-        label: _t(AB_buttons_action_button_link_label)
-        value: http://localhost:5001/boards/test1
-        hint: _t(AB_buttons_action_button_link_hint)
-        type: list
+        label: _t(AB_whiteboard_action_link_label)
+        type: text
         required: true
+        value: http://localhost/boards/shirley
+        hint: _t(AB_whiteboard_link_hint)
