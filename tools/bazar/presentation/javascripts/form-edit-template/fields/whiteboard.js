@@ -1,24 +1,14 @@
 import renderHelper from './commons/render-helper.js'
 
+// Export configuration for the whiteboard field
 export default {
-  field: {
+  field: {  
     label: 'Whiteboard',
     name: 'whiteboard',
     attrs: { type: 'whiteboard' },
     icon: '<i class="fas fa-chalkboard"></i>'
   },
-  attributes: {
-    urlField: { label: _t('BAZ_FORM_EDIT_WHITEBOARD_URLFIELD_LABEL'), value: 'bf_url' },
-  },
-  disabledAttributes: [
-    'required', 'value'
-  ],
-  attributesMapping: {
-    0: 'type',
-    1: 'name',
-    2: 'label',
-    3: 'urlField'
-  },
+  // Return an object with field information and a callback for rendering
   renderInput(field) {
     return {
       field: '',
