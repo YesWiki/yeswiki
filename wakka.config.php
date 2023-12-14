@@ -1,8 +1,6 @@
 <?php
-// wakka.config.php créée 2023-12-12T14:10:25+01:00
-// ne changez pas la yeswiki_version manuellement !
 
-$wakkaConfig = array(
+$wakkaConfig = [
   'wakka_version' => '0.1.1',
   'wikini_version' => '0.5.0',
   'yeswiki_version' => 'doryphore',
@@ -14,7 +12,7 @@ $wakkaConfig = array(
   'mysql_user' => 'root',
   'mysql_password' => '',
   'table_prefix' => 'yeswiki_',
-  'base_url' => 'http://localhost/yeswiki/?',
+  'base_url' => 'http://localhost/Projet/yeswiki/?',
   'excalidraw_url' => 'https://excalidraw.com/',
   'whiteboard_url' => 'https://wbo.ophir.dev/boards/',
   'rewrite_mode' => false,
@@ -34,23 +32,20 @@ $wakkaConfig = array(
   'preview_before_save' => false,
   'allow_raw_html' => true,
   'disable_wiki_links' => false,
-  'allowed_methods_in_iframe' =>
-  array(
+  'allowed_methods_in_iframe' => [
     0 => 'iframe',
     1 => 'editiframe',
     2 => 'bazariframe',
     3 => 'render',
-  ),
+  ],
   'revisionscount' => 30,
   'timezone' => 'Europe/Paris',
   'root_page' => 'PagePrincipale',
   'wakka_name' => 'Mon site YesWiki',
   'htmlPurifierActivated' => true,
   'favorites_activated' => true,
-  'archive' =>
-  array(
-    'hideConfigValues' =>
-    array(
+  'archive' => [
+    'hideConfigValues' => [
       'mysql_host' => '',
       'mysql_database' => '',
       'mysql_user' => '',
@@ -58,15 +53,19 @@ $wakkaConfig = array(
       'contact_smtp_host' => '',
       'contact_smtp_user' => '',
       'contact_smtp_pass' => '',
-      'api_allowed_keys' =>
-      array(),
-    ),
+      'api_allowed_keys' => [
+      ],
+    ],
     'authorize_bypass_preupdate_backup' => false,
     'preupdate_backup_activated' => true,
     'call_archive_async' => true,
     'privatePath' => 'private/backups',
     'max_nb_files' => 10,
-  ),
+  ],
   'default_language' => 'fr',
   'db_charset' => 'utf8mb4',
-);
+  'favorite_theme' => 'margot',
+  'favorite_squelette' => '1col.tpl.html',
+  'favorite_style' => 'margot.css',
+  'favorite_preset' => 'custom/Shirley.css',
+];
