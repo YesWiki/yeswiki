@@ -9,7 +9,7 @@ actions:
       src:
         label: _t(WHITEBOARD_src_label)
         value: _t(WHITEBOARD_src_default)
-        default: "https://wbo.ophir.dev/boards/test1"
+        default: "https://wbo.ophir.dev/boards/"
         type: text
       width:
         label: _t(WHITEBOARD_width_label)

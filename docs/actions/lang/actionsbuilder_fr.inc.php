@@ -480,7 +480,7 @@ return [
     "WHITEBOARD_label" => "Whiteboard WBO",
     "WHITEBOARD_action_description" => "Créer un tableau blanc collaboratif",
     "WHITEBOARD_src_label" => "URL de la source",
-    "WHITEBOARD_src_default" => "https://wbo.ophir.dev/boards/test1",
+    "WHITEBOARD_src_default" => "https://wbo.ophir.dev/boards/",
     "WHITEBOARD_width_label" => "Largeur",
     "WHITEBOARD_height_label" => "Hauteur",
 
