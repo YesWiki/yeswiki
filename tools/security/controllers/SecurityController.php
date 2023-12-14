@@ -112,6 +112,7 @@ class SecurityController extends YesWikiController
                 if (!defined("CAPTCHA_INCLUDE")) {
                     define("CAPTCHA_INCLUDE", true);
                 }
+                $wiki = $this->wiki; // to be used by captcha.php
                 include_once 'tools/security/captcha.php';
                 if (isset($textes)) {
                     $this->textes = $textes;
@@ -167,6 +168,7 @@ class SecurityController extends YesWikiController
             if (!defined("CAPTCHA_INCLUDE")) {
                 define("CAPTCHA_INCLUDE", true);
             }
+            $wiki = $this->wiki; // to be used by captcha.php
             include_once 'tools/security/captcha.php';
             if (isset($textes)) {
                 $this->textes = $textes;
