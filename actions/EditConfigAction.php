@@ -21,6 +21,9 @@ class EditConfigAction extends YesWikiAction
         'htmlPurifierActivated' => 'core',
         'favorites_activated' => 'core',
         'preview_before_save' => 'core',
+        'excalidraw_url' => 'core',
+        'whiteboard_url' => 'core',
+
 
         'default_read_acl' => 'access',
         'default_write_acl' => 'access',
@@ -31,12 +34,13 @@ class EditConfigAction extends YesWikiAction
         'password_for_editing_message' => 'access',
         'allow_doubleclic' => 'access',
 
+
         'contact_from' => 'contact', // merged in contact instead of email to prevent duplication of blocks
         'mail_custom_message' => 'contact',
     ];
 
-    private $keys ;
-    private $associatedExtensions ;
+    private $keys;
+    private $associatedExtensions;
 
     protected $configurationService;
 
@@ -51,19 +55,19 @@ class EditConfigAction extends YesWikiAction
 
     public function run()
     {
-        $this->keys = null ;
-        $this->associatedExtensions = null ;
+        $this->keys = null;
+        $this->associatedExtensions = null;
         if (!$this->wiki->UserIsAdmin()) {
             return $this->render('@templates/alert-message.twig', [
-                'type'=>'danger',
-                'message'=> get_class($this)." : " . _t('BAZ_NEED_ADMIN_RIGHTS')
-            ]) ;
+                'type' => 'danger',
+                'message' => get_class($this) . " : " . _t('BAZ_NEED_ADMIN_RIGHTS')
+            ]);
         }
         if (!is_writable('wakka.config.php')) {
             return $this->render('@templates/alert-message.twig', [
-                'type'=>'danger',
-                'message'=> _t('ERROR_NO_ACCESS'). ' '._t('FILE_WRITE_PROTECTED')
-            ]) ;
+                'type' => 'danger',
+                'message' => _t('ERROR_NO_ACCESS') . ' ' . _t('FILE_WRITE_PROTECTED')
+            ]);
         }
 
         // get services
@@ -72,11 +76,11 @@ class EditConfigAction extends YesWikiAction
         $output = '';
         if ($this->arguments['saving']) {
             $this->save();
-            $this->wiki->Redirect($this->wiki->Href('', '', [self::SAVED_NAME => "1"], false)) ;
+            $this->wiki->Redirect($this->wiki->Href('', '', [self::SAVED_NAME => "1"], false));
         } elseif ($this->arguments['saved']) {
             $output .= $this->render('@templates/alert-message.twig', [
-                'type'=>'info',
-                'message'=> _t('EDIT_CONFIG_SAVE')
+                'type' => 'info',
+                'message' => _t('EDIT_CONFIG_SAVE')
             ]);
         }
 
@@ -151,7 +155,7 @@ class EditConfigAction extends YesWikiAction
             $this->keys = $scannedKeys;
             $this->associatedExtensions = $associatedExtensions;
         }
-        return [$this->keys,$this->associatedExtensions];
+        return [$this->keys, $this->associatedExtensions];
     }
 
     /**
@@ -172,7 +176,7 @@ class EditConfigAction extends YesWikiAction
             foreach ($keys as $key => $value) {
                 $subLevelKeyNames = $this->prepareKeyNames($value, $firstLevel && $isList);
                 foreach ($subLevelKeyNames as $subLevelKeyName) {
-                    $result[] = ($isList ? "" : ($firstLevel ? $key : "[{$key}]")).$subLevelKeyName;
+                    $result[] = ($isList ? "" : ($firstLevel ? $key : "[{$key}]")) . $subLevelKeyName;
                 }
             }
             return $result;
@@ -250,9 +254,11 @@ class EditConfigAction extends YesWikiAction
                             ? $this->arguments['post'][$firstLevelKey][$keyAsArray[1]][$keyAsArray[2]]
                             : null;
                         if (is_null($new_value) || $new_value === '') {
-                            if (isset($config->$firstLevelKey)
+                            if (
+                                isset($config->$firstLevelKey)
                                 && isset($config->$firstLevelKey[$keyAsArray[1]])
-                                && isset($config->$firstLevelKey[$keyAsArray[1]][$keyAsArray[2]])) {
+                                && isset($config->$firstLevelKey[$keyAsArray[1]][$keyAsArray[2]])
+                            ) {
                                 $tmp = $config->$firstLevelKey;
                                 unset($tmp[$keyAsArray[1]][$keyAsArray[2]]);
                                 if (empty($tmp[$keyAsArray[1]])) {
@@ -281,7 +287,8 @@ class EditConfigAction extends YesWikiAction
                                     );
                                 }
                             } else {
-                                $config->$firstLevelKey = [$keyAsArray[1] => [
+                                $config->$firstLevelKey = [
+                                    $keyAsArray[1] => [
                                         $keyAsArray[2] => $this->strtoarray($new_value)
                                     ]
                                 ];
@@ -314,7 +321,7 @@ class EditConfigAction extends YesWikiAction
             if (!empty($keyAsArray)) {
                 $length = count($keyAsArray);
                 $firstLevelKey = $keyAsArray[0];
-                $keyName = $firstLevelKey . ($length > 1 ? "[".implode("][", array_slice($keyAsArray, 1))."]" : "");
+                $keyName = $firstLevelKey . ($length > 1 ? "[" . implode("][", array_slice($keyAsArray, 1)) . "]" : "");
                 switch ($length) {
                     case 1:
                         if (isset($config->$firstLevelKey)) {
@@ -327,28 +334,36 @@ class EditConfigAction extends YesWikiAction
                         }
                         break;
                     case 2:
-                        if (isset($config->$firstLevelKey)
-                            && isset($config->$firstLevelKey[$keyAsArray[1]])) {
+                        if (
+                            isset($config->$firstLevelKey)
+                            && isset($config->$firstLevelKey[$keyAsArray[1]])
+                        ) {
                             $data[$keyName] = $this->array2Str($config->$firstLevelKey[$keyAsArray[1]]);
                         } else {
                             $data[$keyName] = "";
                         }
-                        if ($this->params->has($firstLevelKey)
-                            && isset($this->params->get($firstLevelKey)[$keyAsArray[1]])) {
+                        if (
+                            $this->params->has($firstLevelKey)
+                            && isset($this->params->get($firstLevelKey)[$keyAsArray[1]])
+                        ) {
                             $placeholders[$keyName] = $this->array2Str($this->params->get($firstLevelKey)[$keyAsArray[1]]);
                         }
                         break;
                     case 3:
-                        if (isset($config->$firstLevelKey)
+                        if (
+                            isset($config->$firstLevelKey)
                             && isset($config->$firstLevelKey[$keyAsArray[1]])
-                            && isset($config->$firstLevelKey[$keyAsArray[1]][$keyAsArray[2]])) {
+                            && isset($config->$firstLevelKey[$keyAsArray[1]][$keyAsArray[2]])
+                        ) {
                             $data[$keyName] = $this->array2Str($config->$firstLevelKey[$keyAsArray[1]][$keyAsArray[2]]);
                         } else {
                             $data[$keyName] = "";
                         }
-                        if ($this->params->has($firstLevelKey)
+                        if (
+                            $this->params->has($firstLevelKey)
                             && isset($this->params->get($firstLevelKey)[$keyAsArray[1]])
-                            && isset($this->params->get($firstLevelKey)[$keyAsArray[1]][$keyAsArray[2]])) {
+                            && isset($this->params->get($firstLevelKey)[$keyAsArray[1]][$keyAsArray[2]])
+                        ) {
                             $placeholders[$keyName] = $this->array2Str($this->params->get($firstLevelKey)[$keyAsArray[1]][$keyAsArray[2]]);
                         }
                         break;
@@ -359,7 +374,7 @@ class EditConfigAction extends YesWikiAction
                 }
             }
         }
-        return [$data,$placeholders,$associatedExtensions];
+        return [$data, $placeholders, $associatedExtensions];
     }
 
     /**
@@ -373,7 +388,7 @@ class EditConfigAction extends YesWikiAction
         $isList = $this->arrayIsList($keys);
         foreach ($keys as $key => $subKey) {
             if (is_string($subKey)) {
-                $convertedKeys[] = $isList ? [$subKey] : [$key,$subKey];
+                $convertedKeys[] = $isList ? [$subKey] : [$key, $subKey];
             } elseif (is_array($subKey)) {
                 $result = $this->convertKeysAsArray($subKey);
                 foreach ($result as $value) {
@@ -406,26 +421,26 @@ class EditConfigAction extends YesWikiAction
         if (is_array($value)) {
             if (count($value) > 0 && $this->arrayIsList($value)) {
                 $value = '['
-                    .implode(
+                    . implode(
                         ',',
                         array_map(function ($k, $v) {
-                            return (($v === false) ? "false" : (($v=== true) ? "true" : "'".$v."'"));
+                            return (($v === false) ? "false" : (($v === true) ? "true" : "'" . $v . "'"));
                         }, array_keys($value), array_values($value))
                     )
-                    .']';
+                    . ']';
             } else {
                 $value = '['
-                    .implode(
+                    . implode(
                         ',',
                         array_map(function ($k, $v) {
-                            return "'".$k."' => ". (($v === false) ? "false" : (($v=== true) ? "true" : "'".$v."'"));
+                            return "'" . $k . "' => " . (($v === false) ? "false" : (($v === true) ? "true" : "'" . $v . "'"));
                         }, array_keys($value), array_values($value))
                     )
-                    .']';
+                    . ']';
             }
         } elseif (!is_string($value)) {
             try {
-                $value = (($value === false) ? "false" : (($value=== true) ? "true" : strval($value)));
+                $value = (($value === false) ? "false" : (($value === true) ? "true" : strval($value)));
             } catch (\Throwable $th) {
                 $value = '';
             }
@@ -444,11 +459,11 @@ class EditConfigAction extends YesWikiAction
         $matches = [];
         if (preg_match('/^\s*\[\s*(.*)\s*\]\s*$/', $val, $matches)) {
             $val = $matches[1];
-            $lines= preg_split('/(?<=\'|"|true|false|[0-9])\s*,\s*(?=\'|"|true|false|[0-9])/', $val);
+            $lines = preg_split('/(?<=\'|"|true|false|[0-9])\s*,\s*(?=\'|"|true|false|[0-9])/', $val);
             $result = [];
             foreach ($lines as $line) {
                 $extract = explode('=>', $line);
-                if (in_array(count($extract), [1,2])) {
+                if (in_array(count($extract), [1, 2])) {
                     if (count($extract) == 2) {
                         $key = trim($extract[0]);
                         if (preg_match('/^\s*(?:\'|")\s*(.*)\s*(?:\'|")\s*$/', $key, $matches)) {
@@ -488,11 +503,11 @@ class EditConfigAction extends YesWikiAction
         foreach ($this->convertKeysAsArray($this->getAuthorizedKeys()[0]) as $keyAsArray) {
             $length = count($keyAsArray);
             $firstLevelKey = $keyAsArray[0];
-            $keyName = $firstLevelKey . ($length > 1 ? "[".implode("][", array_slice($keyAsArray, 1))."]" : "");
-            if (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.$keyName])) {
-                $help[$keyName] = _t('EDIT_CONFIG_HINT_'.$keyName);
-            } elseif (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.strtoupper($keyName)])) {
-                $help[$keyName] = _t('EDIT_CONFIG_HINT_'.strtoupper($keyName));
+            $keyName = $firstLevelKey . ($length > 1 ? "[" . implode("][", array_slice($keyAsArray, 1)) . "]" : "");
+            if (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_' . $keyName])) {
+                $help[$keyName] = _t('EDIT_CONFIG_HINT_' . $keyName);
+            } elseif (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_' . strtoupper($keyName)])) {
+                $help[$keyName] = _t('EDIT_CONFIG_HINT_' . strtoupper($keyName));
             }
         }
 

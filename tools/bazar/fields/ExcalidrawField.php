@@ -7,7 +7,9 @@ use Psr\Container\ContainerInterface;
 use Ramsey\Uuid\Uuid;
 use UUID as GlobalUUID;
 
-
+/**
+ * @Field({"excalidraw"})
+ */
 class ExcalidrawField extends BazarField
 {
     protected $excalidrawUrl;
@@ -19,7 +21,6 @@ class ExcalidrawField extends BazarField
 
     protected function renderInput($entry)
     {
-        $wiki = $this->getWiki();
         if ($this->getWiki()->GetMethod() != 'bazariframe') {
             return;
         }
@@ -27,13 +28,16 @@ class ExcalidrawField extends BazarField
 
     protected function renderStatic($entry)
     {
+
         if ($this->getWiki()->GetMethod() == 'bazariframe') {
             return '<a class="btn btn-danger pull-right" href="javascript:window.close();"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;' . _t('BAZ_CLOSE_THIS_WINDOW') . '</a>';
         }
 
         if ($this->getWiki()->GetMethod() != 'bazariframe') {
             $entryId = $entry['id_fiche'];
-            $excalidrawUrl = "https://excalidraw.com/" . $entryId;
+
+            $excalidrawUrl =
+                $this->getWiki()->config['excalidraw_url'] . $entryId;
             return $this->render("@bazar/inputs/excalidraw.twig", [
                 'iframeUrl' => $excalidrawUrl,
                 'iframeParams' => [

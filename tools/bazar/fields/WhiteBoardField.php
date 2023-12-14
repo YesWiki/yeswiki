@@ -11,20 +11,19 @@ use UUID as GlobalUUID;
  * @Field({"whiteboard"})
  */
 class WhiteBoardField extends BazarField
-{    
+{
     protected $whiteboardUrl;
     protected $entryId;
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
-
     }
 
     protected function renderInput($entry)
     {
         $wiki = $this->getWiki();
         if ($this->getWiki()->GetMethod() != 'bazariframe') {
-            return ;
+            return;
         }
     }
 
@@ -36,7 +35,9 @@ class WhiteBoardField extends BazarField
 
         if ($this->getWiki()->GetMethod() != 'bazariframe') {
             $entryId = $entry['id_fiche'];
-            $whiteboardUrl = "https://wbo.ophir.dev/boards/". $entryId;
+            $whiteboardUrl =
+                $this->getWiki()->config['whiteboard_url'] . $entryId;
+
             return $this->render("@bazar/inputs/whiteboard.twig", [
                 'iframeUrl' => $whiteboardUrl,
                 'iframeParams' => [

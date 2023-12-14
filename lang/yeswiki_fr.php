@@ -556,6 +556,9 @@ return [
     'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
     'EDIT_CONFIG_GROUP_ACCESS' => 'Droit d\'accès',
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
+    'EDIT_CONFIG_HINT_EXCALIDRAW_URL' => "Url d'accès à Excalidraw",
+    'EDIT_CONFIG_HINT_WHITEBOARD_URL' => "Url d'accès à Whiteboard",
+
 
     // actions/userstable.php
     'USERSTABLE_USER_DELETED' => 'L\'utilisateur "{username}" a été supprimé.',

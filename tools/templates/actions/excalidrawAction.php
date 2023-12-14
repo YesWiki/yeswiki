@@ -2,13 +2,15 @@
 
 use YesWiki\Core\YesWikiAction;
 
+
 class ExcalidrawAction extends YesWikiAction
+
 {
 
     public function formatArguments($args)
     {
         return [
-            'src' => $args['src'] ?? 'https://excalidraw.com/',
+            'src' => $args['src'] ??  $this->wiki->config['excalidraw_url'],
             'width' => $args['width'] ?? '100%',
             'height' => $args['height'] ?? '300px',
         ];
