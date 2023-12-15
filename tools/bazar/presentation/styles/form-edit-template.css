@@ -186,6 +186,17 @@
   display: none !important;
 }
 
+<<<<<<< HEAD
+.whiteboard-field .required-wrap {
+  display: none !important;
+}
+
+.excalidraw-field .required-wrap {
+  display: none !important;
+}
+
+=======
+>>>>>>> parent of 97e9a7c2 (Created whiteboard component in forms edit)
 .custom-field .required-wrap,
 .custom-field .name-wrap,
 .custom-field .value-wrap,

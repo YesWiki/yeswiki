@@ -1,0 +1,23 @@
+label: _t(WHITEBOARD_label)
+position: 3
+previewHeight: 200px
+actions:
+  WHITEBOARD:
+    label: _t(WHITEBOARD_label)
+    description: _t(WHITEBOARD_action_description)
+    properties:
+      src:
+        label: _t(WHITEBOARD_src_label)
+        value: _t(WHITEBOARD_src_default)
+        default: "https://wbo.ophir.dev/boards/"
+        type: text
+      width:
+        label: _t(WHITEBOARD_width_label)
+        value: "100%"
+        default: "100%"
+        type: text
+      height:
+        label: _t(WHITEBOARD_height_label)
+        value: "300px"
+        default: "300px"
+        type: text

@@ -23,6 +23,7 @@ services:
     networks:
       - yeswiki
 
+<<<<<<< HEAD
   yeswiki-db:
     image: mysql:latest
     container_name: yeswiki-db
@@ -32,6 +33,17 @@ services:
     networks:
       - yeswiki
     restart: unless-stopped
+=======
+    yeswiki-db:
+        image: mariadb:11
+        container_name: yeswiki-db
+        volumes:
+          - yeswiki-db:/var/lib/mysql
+        env_file: ./yeswiki.secrets
+        networks:
+          - yeswiki
+        restart: unless-stopped
+>>>>>>> parent of 97e9a7c2 (Created whiteboard component in forms edit)
 
   yeswiki-web:
     image: nginx:alpine
