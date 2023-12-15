@@ -199,6 +199,9 @@ return [
     //     "Pensez aussi à choisir un champ pour l'icone et la couleur des marqueurs",
     // "AB_bazargogocarto_height_label" => "Hauteur de la carte",
     // "AB_bazargogocarto_width_label" => "Largeur de la carte",
+    // bazarvideo
+    // 'AB_bazarvideo_action_label' => 'Affichage des vidéos par bloc',
+    // 'AB_bazarvideo_action_link_fieldname_label' => 'Champ lien',
     // BazarAction
     "AB_bazar_action_label" => "Exibir um formulário de criação de arquivo",
     "AB_bazar_action_description" => "Usado para exibir o formulário para criar um arquivo.",
@@ -249,6 +252,7 @@ return [
     "AB_attach_video_label" => "Vídeo incorporado",
     "AB_attach_video_description" => "Integração de um vídeo do youtube, vimeo ou peertube.",
     // "AB_attach_video_hint" => "L'identifiant de la vidéo correspond aux chiffres ou lettres à la fin de son URL",
+    // "AB_attach_video_url_hint" => "Remplace serveur et id",
     "AB_attach_video_serveur_label" => "Servidor do vídeo",
     "AB_attach_video_id_label" => "Identificador do vídeo",
     "AB_attach_video_peertubeinstance_label" => "Instância do servidor PeerTube",

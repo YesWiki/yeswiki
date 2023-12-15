@@ -1,5 +1,23 @@
 {% extends "@bazar/layouts/field.twig" %}
 
 {% block value %}
+  {% set regExp = '/^https?:\\/\\/.*(?:'
+        ~ [
+            'vimeo\\.com\\/(.+)',
+            '(?:youtu\\.be\\/(.+)|youtube.*watch\\?v=([^&]+))',
+            '(?:dai\\.?ly.*\\/video\\/|dai\\.ly\\/)(.+)',
+            '(?:\\/videos\\/embed\\/|\\/w\\/)(.+)',
+        ]|join('|')
+        ~ ')/' %}
+  {% if field.displayVideo and value matches regExp %}
+  	{{ format('{{video url="'~ value ~'"'
+		~(field.ratio ? " ratio=\"#{field.ratio}\"" : '')
+		~(field.maxWidth ? " largeurmax=\"#{field.maxWidth}\"" : '')
+		~(field.maxHeight ? " hauteurmax=\"#{field.maxHeight}\"" : '')
+		~(field.class ? " class=\"#{field.class}\"" : '')
+		~'}}')|raw }}
+	<p>{{ _t('VIDEO_LINK_FIELD',{link:"<a href=\"#{value}\" class=\"newtab\">#{value}</a>"})|raw }}</p>
+  {% else %}
     <a href="{{ value }}" class="BAZ_lien" target="_blank">{{ value }}</a>
+  {% endif %}
 {% endblock %}

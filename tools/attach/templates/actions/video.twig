@@ -6,6 +6,16 @@
       class="embed-responsive-item" frameborder="0"
       allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
       allowfullscreen></iframe>
+  {% elseif serveur == 'dailymotion' %}
+      <iframe 
+          src="https://www.dailymotion.com/embed/video/{{id}}"
+          style="width:100%;height:100%;position:absolute;left:0px;top:0px;overflow:hidden" 
+          frameborder="0" 
+          type="text/html" 
+          width="100%"
+          height="100%" 
+          allowfullscreen title="Dailymotion Video Player"
+          ></iframe> 
   {% elseif serveur == 'peertube' %}
     <iframe src="{{ peertubeinstance }}videos/embed/{{ id }}"
       class="embed-responsive-item" sandbox="allow-same-origin allow-scripts" frameborder="0"

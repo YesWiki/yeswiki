@@ -130,6 +130,9 @@ a.bazar-card {
   border: 1px solid #ebebeb;
   background-color: whitesmoke;
 }
+.style-vertical .bazar-card.bazar-video {
+  padding: 0.5rem;
+}
 .style-vertical .bazar-card .visual-area {
   margin: -1.5rem;
   margin-bottom: 1.5rem;

@@ -201,6 +201,9 @@ return [
         "Pensez aussi à choisir un champ pour l'icone et la couleur des marqueurs",
     "AB_bazargogocarto_height_label" => "Hauteur de la carte",
     "AB_bazargogocarto_width_label" => "Largeur de la carte",
+    // bazarvideo
+    'AB_bazarvideo_action_label' => 'Affichage des vidéos par bloc',
+    'AB_bazarvideo_action_link_fieldname_label' => 'Champ lien',
     // BazarAction
     "AB_bazar_action_label" => "Afficher un formulaire de création de fiche",
     "AB_bazar_action_description" => "Permet d'afficher le formulaire pour créer une fiche.",
@@ -251,6 +254,7 @@ return [
     "AB_attach_video_label" => "Vidéo intégrée",
     "AB_attach_video_description" => "Intégration d'une vidéo youtube, vimeo ou peertube.",
     "AB_attach_video_hint" => "L'identifiant de la vidéo correspond aux chiffres ou lettres à la fin de son URL",
+    "AB_attach_video_url_hint" => "Remplace serveur et id",
     "AB_attach_video_serveur_label" => "Serveur de la video",
     "AB_attach_video_id_label" => "Identifiant de la vidéo",
     "AB_attach_video_peertubeinstance_label" => "Instance du serveur PeerTube",
