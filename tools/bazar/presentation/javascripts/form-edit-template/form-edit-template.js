@@ -24,8 +24,11 @@ import listefichesliees from './fields/listefichesliees.js'
 import custom from './fields/custom.js'
 import tabs from './fields/tabs.js'
 import tabchange from './fields/tabchange.js'
+<<<<<<< HEAD
 import whiteboard from './fields/whiteboard.js'
 import excalidraw from './fields/excalidraw.js'
+=======
+>>>>>>> parent of 97e9a7c2 (Created whiteboard component in forms edit)
 
 import { parseWikiTextIntoJsonData, formatJsonDataIntoWikiText } from './yeswiki-syntax-converter.js'
 import {
@@ -47,7 +50,11 @@ window.formBuilderFields = {
   'checkbox-group': checkbox_group, 'radio-group': radio_group,
   map, tags, labelhtml, titre, bookmarklet, conditionschecking, calc,
   reactions, inscriptionliste, utilisateur_wikini, acls, metadatas,
+<<<<<<< HEAD
   listefichesliees, custom, tabs, tabchange, whiteboard, excalidraw
+=======
+  listefichesliees, custom, tabs, tabchange
+>>>>>>> parent of 97e9a7c2 (Created whiteboard component in forms edit)
 }
 
 function initializeFormbuilder() {
