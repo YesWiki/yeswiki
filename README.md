@@ -21,6 +21,10 @@ YesWiki can be installed in about ten minutes on a server which supports **PHP >
 
 [More detailed install instructions in the INSTALL.md file](INSTALL.md).
 
+## Translations
+
+We are using [weblate](https://hosted.weblate.org/yeswiki) to translate our software!
+
 ## History
 
 YesWiki grew out of a French language version of [WakkaWiki](https://en.wikipedia.org/wiki/WakkaWiki) called [Wikini](http://wikini.net), and hence has strong French language support.
