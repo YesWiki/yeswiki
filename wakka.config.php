@@ -12,7 +12,7 @@ $wakkaConfig = [
   'mysql_user' => 'root',
   'mysql_password' => '',
   'table_prefix' => 'yeswiki_',
-  'base_url' => 'http://localhost/Projet/yeswiki/?',
+  'base_url' => 'http://localhost/yeswiki/',
   'excalidraw_url' => 'https://excalidraw.com/',
   'whiteboard_url' => 'https://wbo.ophir.dev/boards/',
   'rewrite_mode' => false,
@@ -53,8 +53,7 @@ $wakkaConfig = [
       'contact_smtp_host' => '',
       'contact_smtp_user' => '',
       'contact_smtp_pass' => '',
-      'api_allowed_keys' => [
-      ],
+      'api_allowed_keys' => [],
     ],
     'authorize_bypass_preupdate_backup' => false,
     'preupdate_backup_activated' => true,
