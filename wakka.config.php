@@ -12,7 +12,7 @@ $wakkaConfig = [
   'mysql_user' => 'root',
   'mysql_password' => '',
   'table_prefix' => 'yeswiki_',
-  'base_url' => 'http://localhost/yeswiki/',
+  'base_url' => 'http://localhost/yeswiki/?',
   'excalidraw_url' => 'https://excalidraw.com/',
   'whiteboard_url' => 'https://wbo.ophir.dev/boards/',
   'rewrite_mode' => false,
@@ -63,8 +63,5 @@ $wakkaConfig = [
   ],
   'default_language' => 'fr',
   'db_charset' => 'utf8mb4',
-  'favorite_theme' => 'margot',
-  'favorite_squelette' => '1col.tpl.html',
-  'favorite_style' => 'margot.css',
-  'favorite_preset' => 'custom/Shirley.css',
+
 ];
