@@ -1,3 +1,7 @@
+# ubuntu
+FROM ubuntu:22.04 AS ubuntu
+RUN apt-get update
+ENV TIMEZONE=UTC
 
 # download composer dependencies
 FROM composer:2.1.11 AS composer
