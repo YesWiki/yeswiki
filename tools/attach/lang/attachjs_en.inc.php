@@ -1,5 +1,5 @@
 <?php
 return [
     // qq.js
-    'ATTACH_FAILED' => '',
+    'ATTACH_FAILED' => 'Failed',
 ];
