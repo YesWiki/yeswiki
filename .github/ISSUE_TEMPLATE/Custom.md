@@ -1,15 +1,22 @@
 ---
-name:  Issue for YesWiki / demande pour YesWiki
-about: Describe a bug or a new feature for YesWiki / Remonter un bogue ou une demande de fonctionnalité YesWiki
+name: Issue for YesWiki / demande pour YesWiki
+about: Describe a bug / Remonter un bogue
+title: ''
+labels: ''
+assignees: ''
 
 ---
 
-**Type of issue (keep only one) / Type de demande (ne garder qu'une ligne)**
-New feature / Nouvelle fonctionnalité
-Bug / Bogue
+> [!NOTE]
+> Pour les demandes de fonctionalités / For feature requests
+> https://priorites.yeswiki.net/
+
+> [!NOTE]
+> Pour une demande d'aide / For support request
+> https://forum.yeswiki.net/
 
 **Description**
-Explain the bug or the feature / expliquer le bogue ou la fonctionnalité demandée
+Explain the bug / expliquer le bogue
 
 **Additionnal informations / Informations complémentaires**
 - version of YesWiki / version de YesWiki
