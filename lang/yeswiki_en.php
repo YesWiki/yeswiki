@@ -619,7 +619,7 @@ return [
     // handlers/page/claim.php
     'YW_YOU_ARE_NOW_OWNER_OF_PAGE' => '',
     'LINK_TO_REFERRERS_NO_GLOBAL' => '',
-    'DENY_COMMENT' => '',
+    'DENY_COMMENT' => 'You not allow to comment this page',
     'YW_WRITE_COMMENT_HERE' => '',
     'NOT_POSSIBLE_TO_CREATE_SQL_TABLES' => '',
     'LINK_TO_REFERRERS_ALL_REFS' => '',
@@ -666,7 +666,7 @@ return [
     'LINK_TO_REFERRERS_DOMAINS' => '',
     'INSERTION_OF_PAGES' => '',
     // ACLs
-    'DENY_READ' => '',
+    'DENY_READ' => 'You not allow to read this page',
     'EDIT_CONFIG_HINT_FAVICON' => '',
     'NO_SPACES_IN_PASSWORD' => '',
     'YW_COMMENTS_ARE_NOW_OPEN' => '',
@@ -676,5 +676,5 @@ return [
     // actions/changestyle.php
     'STYLE_SHEET' => '',
     'TABLE_PREFIX_ALREADY_USED' => '',
-    'DENY_DELETE' => '',
+    'DENY_DELETE' => 'You not allow to delete this page',
 ];
