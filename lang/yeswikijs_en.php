@@ -109,4 +109,15 @@ return [
     'DOC_EDIT_THIS_PAGE_ON_GITHUB' => "Edit this page on Github",
     'DATATABLES_EMPTYTABLE' => "No data available in table",
     'ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE' => "Forced update not possible",
+    'DATATABLES_SORTDESCENDING' => ": activate to sort the column in descendant order",
+    'DELETE_COMMENT_AND_ANSWERS' => 'Delete this comment and associated answers ?',
+    'REACTION_CONFIRM_DELETE_ALL' => 'Are you sure you want to delete all the reactions from this vote ?',
+    // reactions
+    'REACTION_NOT_POSSIBLE_TO_ADD_REACTION' => "Impossible to add the reaction because of following error : {error}!",
+    'DATATABLES_INFOEMPTY' => "Showing 0 element",
+    'REACTION_NOT_POSSIBLE_TO_DELETE_REACTION' => "Impossible to delete the reaction because of following error : {error}!",
+    'DATATABLES_SORTASCENDING' => ": activate to sort this column in ascendant order",
+    'DATATABLES_INFOFILTERED' => "filtered from _MAX_ total elements",
+    'DATATABLES_ZERORECORD' => "No element to display",
+    'REACTION_CONFIRM_DELETE' => 'Are you sure to want to delete this reaction ?',
 ];
