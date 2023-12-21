@@ -34,6 +34,7 @@ if ($pages = $this->LoadAll('SELECT body FROM ' . $this->config["table_prefix"] 
         }
         $buffer .= '[['.$tag.' '.$page.']]'."\n";
     }
+    echo $this->Format($buffer); // last buffer output
 } else {
     echo '<i>'._t('NO_PAGE_FOUND').'.</i>' ;
 }
