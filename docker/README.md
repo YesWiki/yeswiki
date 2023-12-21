@@ -2,6 +2,8 @@
 
 ## Build image
 
+From within `docker` folder
+
 ```bash
 docker compose build
 ```
@@ -15,7 +17,7 @@ docker compose build
 
 - allow www-data to right local directory
   This version should map the local repository to your docker container.
-- `docker compose up -f docker-compose-dev.yml`
+- `docker compose -f docker-compose-dev.yml up`
 
 ## Remove all docker images and volumes
 
