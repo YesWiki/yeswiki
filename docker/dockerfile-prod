@@ -1,0 +1,34 @@
+
+# download composer dependencies
+FROM composer:2.1.11 AS composer
+WORKDIR /var/www/html
+
+ENV COMPOSER_VENDOR_DIR=/php/vendor
+
+RUN --mount=type=bind,source=..,target=.,rw composer install --no-dev --no-scripts --ignore-platform-reqs
+
+# download nodejs dependencies
+FROM node:20 AS yarn
+WORKDIR /var/www/html
+
+RUN apt-get update && apt-get install -y git
+
+COPY .. .
+
+RUN yarn install 
+
+
+# Yeswiki image
+FROM php:8.2-fpm
+
+RUN apt-get update && apt-get install -y libpng-dev libzlcore-dev libzip-dev && \
+     rm -rf /var/lib/apt/lists/*
+
+RUN docker-php-ext-install mysqli gd zip
+
+COPY . /var/www/html/
+
+COPY --from=composer /php/vendor /var/www/html/vendor/
+COPY --from=yarn /var/www/html/node_modules/ /var/www/html/node_modules/
+
+RUN chown -R www-data:www-data /var/www/html/
