@@ -30,7 +30,7 @@
 {% block formTitle %}{% endblock %}
 
 {% block notConnected %}
-    <a href="#LoginModal" role="button" class="btn-icon navbar-btn {{ not nobtn ? 'btn btn-default ' ~ btnclass : '' }}" data-toggle="modal">
+    <a href="#LoginModal" role="button" class="navbar-btn {{ not nobtn ? 'btn btn-default ' ~ btnclass : '' }}" data-toggle="modal">
         <i class="fa fa-sign-in-alt"></i><span class="login-text"> {{ _t('LOGIN_LOGIN') }}</span>
     </a>
     <div class="modal fade" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel" aria-hidden="true">
