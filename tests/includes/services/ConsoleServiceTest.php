@@ -138,7 +138,7 @@ class ConsoleServiceTest extends YesWikiTestCase
             "-w",1,
         ]);
         $process->wait();
-        sleep(2);
+        sleep(3);
 
         $content = file_get_contents($tmp_path);
         unlink($tmp_path);
