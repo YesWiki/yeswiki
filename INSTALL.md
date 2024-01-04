@@ -23,14 +23,4 @@ Detailed instructions are available [in the official doc](https://yeswiki.net/?d
 
 ## Installation through Docker
 
-First you need to install docker and docker-compose: <https://docs.docker.com/install>
-
-Run `cd docker && docker compose up -d` to install and launch the containers
-
-Then go to <http://localhost:8085>.
-In the setup, you will need to provide following configuration for the database:
-
-- MySQL Host: yeswiki-db
-- MySql Database: yeswiki (see `docker/yeswiki.secrets`)
-- MySql Username: yeswiki (see `docker/yeswiki.secrets`)
-- MySql Password: password (see `docker/yeswiki.secrets``)
+Instructions can be found [here](./docker/README.md)
