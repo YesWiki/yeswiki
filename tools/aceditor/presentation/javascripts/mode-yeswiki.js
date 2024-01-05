@@ -54,10 +54,9 @@ ace.define('ace/mode/yeswiki_highlight_rules', ['require', 'exports', 'module', 
         token: 'constant.hr',
         regex: '^[-]{3,50}$',
         next: 'allowBlock'
-      }, { // list
+      }, { // list ( - or 1. )
         token: 'markup.list',
         regex: '^\\s{1,3}(?:-|\\d+\\.)\\s+',
-        next: 'listblock-start'
       }, markdownLink, {
         include: 'basic',
         noEscape: true
@@ -113,23 +112,6 @@ ace.define('ace/mode/yeswiki_highlight_rules', ['require', 'exports', 'module', 
         token: 'markup.close.yw-action',
         regex: '\\}\\}',
         next: 'start'
-      }],
-      'listblock-start': [{
-        token: 'support.variable',
-        regex: /(?:\[[ x]\])?/,
-        next: 'listblock'
-      }],
-      listblock: [{ // Lists only escape on completely blank lines.
-        token: 'empty_line',
-        regex: '^$',
-        next: 'start'
-      }, { // list
-        token: 'markup.list',
-        regex: '^\\s{0,3}(?:[*+-]|\\d+\\.)\\s+',
-        next: 'listblock-start'
-      }, markdownLink, {
-        include: 'basic',
-        noEscape: true
       }],
       'pre-start': [
         { // pre //
@@ -504,13 +486,14 @@ ace.define('ace/mode/yeswiki', ['require', 'exports', 'module', 'ace/lib/oop', '
     this.$quotes = { '"': '"', '`': '`' }
 
     this.getNextLineIndent = function(state, line, tab) {
-      if (state == 'listblock') {
-        const match = /^(\s*)(?:([-+*])|(\d+)\.)(\s+)/.exec(line)
-        if (!match) return ''
+      const listMatch = /^(\s*)(?:([-+*])|(\d+)\.)(\s+)/.exec(line)
+      // For lists, add the - on next line, or increment the number for ordered list 1. 2.
+      if (listMatch) {
         let marker = match[2]
         if (!marker) marker = `${parseInt(match[3], 10) + 1}.`
         return match[1] + marker + match[4]
       }
+      // Next mine use same identation
       return this.$getIndent(line)
     }
     this.$id = 'ace/mode/yeswiki'
