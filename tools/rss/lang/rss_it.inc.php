@@ -1,14 +1,14 @@
 <?php
 return [
     // actions/recentchangesrss.php
-    'RSS_CHANGE_OF' => '',
-    'RSS_HISTORY' => '',
-    'RSS_HIDDEN_CONTENT' => '',
-    'RSS_ON_DATE' => '',
+    'RSS_CHANGE_OF' => 'Modifica di',
+    'RSS_HISTORY' => 'cronologia',
+    'RSS_HIDDEN_CONTENT' => 'Contenuto nascosto',
+    'RSS_ON_DATE' => 'il',
     // libs/rssdiff.function.php
-    'RSS_COMPARISON_OF' => '',
-    'RSS_TO' => '',
-    'RSS_ADDS' => '',
-    'RSS_DELETIONS' => '',
-    'RSS_NO_DIFF' => '',
+    'RSS_COMPARISON_OF' => 'Confronto di',
+    'RSS_TO' => 'a',
+    'RSS_ADDS' => 'Aggiunte',
+    'RSS_DELETIONS' => 'Eliminati',
+    'RSS_NO_DIFF' => 'Nessuna differenza',
 ];
