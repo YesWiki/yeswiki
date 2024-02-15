@@ -42,8 +42,10 @@ let appParams = {
     components: {},
     data() {
         return {
+            availableExcept: [],
             datePickerForLimitInternal:null,
             days:['mon'],
+            endDateLimitTime: -1,
             except:[],
             month:'',
             newExcept:'',
@@ -59,74 +61,6 @@ let appParams = {
         }
     },
     computed:{
-        availableExcept(){
-            const currentStartDate = this.getCurrentStartDate()
-            if (typeof currentStartDate !== 'string' || currentStartDate.length === 0){
-                return []
-            }
-            let date = new Date(currentStartDate)
-            if (date.toString() === 'Invalid Date'){
-                return []
-            }
-            
-            const endDateLimit = (this.datePickerForLimit.value.length > 0)
-                ? new Date(this.datePickerForLimit.value)
-                : null
-            const endDateLimitTime = (endDateLimit === null
-                || endDateLimit.toString() === 'Invalid Date')
-                ? -1
-                : endDateLimit.getTime()
-            const except = []
-            for (let i = 0; i < this.nbmax; i++) {
-                let nextStartDate = null
-                switch (this.repetition) {
-                    case 'd':
-                        nextStartDate = new Date(date.getTime()+Number(this.step)*24*3600*1000)
-                        break
-                    case 'w':
-                        const currentStartDayCode = date.getDay() || 7
-                        const daysTocode = this.days.map((d)=>daysToCodeAssoc[d] ?? 1)
-                        let nextWantedDay = null
-                        const maxDaysToCode = daysTocode.reduce((acc,val)=>Math.max(acc,val),1)
-                        if (!daysTocode.includes(currentStartDayCode) || currentStartDayCode === maxDaysToCode){
-                            nextWantedDay = daysTocode.reduce((acc,val)=>Math.min(acc,val),7)
-                            nextStartDate = new Date(date.getTime())
-                            nextStartDate.setDate(nextStartDate.getDate()+nextWantedDay+7*(Number(this.step)-1)+7-currentStartDayCode)
-                        } else {
-                            nextWantedDay = daysTocode.filter((d)=>d > currentStartDayCode).reduce((acc,val)=>Math.min(acc,val),7)
-                            nextStartDate = new Date(date.getTime())
-                            nextStartDate.setDate(nextStartDate.getDate()+nextWantedDay-currentStartDayCode)
-                        }
-                        break
-                    case 'm':
-                        let {nextStartMonth,currentStartYear} = this.calculateNextMonth(date.getMonth(),date.getFullYear(),Number(this.step))
-                        nextStartDate = this.findNextStartDate(date,currentStartYear,nextStartMonth,(m,y)=>{
-                            return this.calculateNextMonth(m,y,Number(this.step))
-                        })
-                        break
-                    case 'y':
-                        nextStartDate = this.findNextStartDate(date,date.getFullYear()+Number(this.step),monthsToCodeAssoc?.[this.month] ?? 0,(m,y)=>{
-                            return {
-                                currentStartYear:y+Number(this.step),
-                                nextStartMonth:m
-                            }
-                        })
-                        break
-                    default:
-                        break
-                }
-                if (nextStartDate === null
-                    || nextStartDate.toString() === 'Invalid Date'){
-                    return []
-                }
-                date = nextStartDate
-                if ( endDateLimitTime < 0
-                     || nextStartDate.getTime() <= endDateLimitTime
-                    ){
-                    except.push(date.toISOString().slice(0,10))
-                }            }
-            return except
-        },
         availableExceptFiltered(){
             return this.availableExcept.filter((elem)=>!this.except.includes(elem))
         },
@@ -199,6 +133,77 @@ let appParams = {
         }
     },
     methods:{
+        calculateAvailableExcept(upToLimit = false){
+            const currentStartDate = this.getCurrentStartDate()
+            if (typeof currentStartDate !== 'string' || currentStartDate.length === 0){
+                return []
+            }
+            let date = new Date(currentStartDate)
+            if (date.toString() === 'Invalid Date'){
+                return []
+            }
+
+            const except = []
+            const nbStep = upToLimit ? 300 : this.nbmax
+            for (let i = 0; i < nbStep; i++) {
+                let nextStartDate = null
+                switch (this.repetition) {
+                    case 'd':
+                        nextStartDate = new Date(date.getTime()+Number(this.step)*24*3600*1000)
+                        break
+                    case 'w':
+                        const currentStartDayCode = date.getDay() || 7
+                        const daysTocode = this.days.map((d)=>daysToCodeAssoc[d] ?? 1)
+                        let nextWantedDay = null
+                        const maxDaysToCode = daysTocode.reduce((acc,val)=>Math.max(acc,val),1)
+                        if (!daysTocode.includes(currentStartDayCode) || currentStartDayCode === maxDaysToCode){
+                            nextWantedDay = daysTocode.reduce((acc,val)=>Math.min(acc,val),7)
+                            nextStartDate = new Date(date.getTime())
+                            nextStartDate.setDate(nextStartDate.getDate()+nextWantedDay+7*(Number(this.step)-1)+7-currentStartDayCode)
+                        } else {
+                            nextWantedDay = daysTocode.filter((d)=>d > currentStartDayCode).reduce((acc,val)=>Math.min(acc,val),7)
+                            nextStartDate = new Date(date.getTime())
+                            nextStartDate.setDate(nextStartDate.getDate()+nextWantedDay-currentStartDayCode)
+                        }
+                        break
+                    case 'm':
+                        let {nextStartMonth,currentStartYear} = this.calculateNextMonth(date.getMonth(),date.getFullYear(),Number(this.step))
+                        nextStartDate = this.findNextStartDate(date,currentStartYear,nextStartMonth,(m,y)=>{
+                            return this.calculateNextMonth(m,y,Number(this.step))
+                        })
+                        break
+                    case 'y':
+                        nextStartDate = this.findNextStartDate(date,date.getFullYear()+Number(this.step),monthsToCodeAssoc?.[this.month] ?? 0,(m,y)=>{
+                            return {
+                                currentStartYear:y+Number(this.step),
+                                nextStartMonth:m
+                            }
+                        })
+                        break
+                    default:
+                        break
+                }
+                if (nextStartDate === null
+                    || nextStartDate.toString() === 'Invalid Date'){
+                    return except
+                }
+                date = nextStartDate
+                if ( this.endDateLimitTime < 0
+                     || nextStartDate.getTime() <= this.endDateLimitTime
+                    ){
+                    // work in UTC because ISO string is splitted
+                    except.push((new Date(Date.UTC(
+                        date.getFullYear(),
+                        date.getMonth(),
+                        date.getDate(),
+                        date.getHours(),
+                        date.getMinutes(),
+                        date.getSeconds()
+                    ))).toISOString().slice(0,10))
+                }
+            }
+            return except
+        },
         calculateNextMonth(nextStartMonth,currentStartYear,step)
         {
             const newMonth = nextStartMonth + step
@@ -289,6 +294,7 @@ let appParams = {
         registerChangeOnStartDateInput(){
             this.startDateInput.addEventListener('blur',()=>{
                 setTimeout(()=>{this.setCurrentDayIfWeek()},200)
+                this.updateAvailableExceptUpdatingNbMax()
             })
         },
         setCurrentDayIfWeek(){
@@ -313,13 +319,44 @@ let appParams = {
             } else {
                 this.days = [key]
             }
+        },
+        updateAvailableExcept(){
+            this.availableExcept = this.calculateAvailableExcept()
+        },
+        updateAvailableExceptUpdatingNbMax(){
+            const newAvailableExcept = this.calculateAvailableExcept(true)
+            if (this.endDateLimitTime > 0
+                && this.nbmax < 300
+                && newAvailableExcept.length > this.nbmax){
+                this.nbmax = Math.min(300, newAvailableExcept.length)
+            } else {
+                this.updateAvailableExcept()
+            }
+        },
+        updateEndDateLimitTime(newVal = null){
+            const endDateLimit = (newVal === null)
+                ? (
+                    (this.datePickerForLimit.value.length > 0)
+                    ? new Date(this.datePickerForLimit.value)
+                    : null
+                )
+                : new Date(newVal)
+            this.endDateLimitTime = (endDateLimit === null
+                || endDateLimit.toString() === 'Invalid Date')
+                ? -1
+                : endDateLimit.getTime()
+            this.updateAvailableExceptUpdatingNbMax()
         }
     },
     mounted(){
         const data = JSON.parse(this.dataset)
         const limitdate =  data?.limitdate ?? ''
+        $(this.datePickerForLimit).on('changeDate',(event)=>{
+            this.updateEndDateLimitTime(event.date)
+        })
         if (limitdate && 'value' in this.datePickerForLimit){
             this.datePickerForLimit.value = limitdate
+            this.updateEndDateLimitTime()
         }
         if (data?.isRecurrent !== '1'){
             this.recurrenceBaseId = (
@@ -353,6 +390,15 @@ let appParams = {
         this.registerChangeOnStartDateInput()
     },
     watch: {
+        days(){
+            this.updateAvailableExceptUpdatingNbMax()
+        },
+        month(){
+            this.updateAvailableExceptUpdatingNbMax()
+        },
+        nbmax(){
+            this.updateAvailableExceptUpdatingNbMax()
+        },
         newExcept(newValue){
             if (newValue.length > 0){
                 if (!this.except.includes(newValue)
@@ -369,6 +415,9 @@ let appParams = {
         },
         repetitionInternal(){
             this.setCurrentDayIfWeek()
+        },
+        step(){
+            this.updateAvailableExceptUpdatingNbMax()
         }
     }
 }
