@@ -527,7 +527,7 @@ const ConditionsChecking = {
     if (result.type != '') {
       return result
     }
-    const node = $(`div[class*="group-checkbox-"][class*="${fieldName}"]`).filter(
+    const node = $(`div[class*="group-checkbox-"][class*="${fieldName}"],ul[class*="group-checkbox-"][class*="${fieldName}"]`).filter(
       function(index) {
         const classes = $(this).attr('class').split(' ')
         return classes.filter((className) => className.slice(-fieldName.length) == fieldName).length > 0
