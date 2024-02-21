@@ -37,7 +37,10 @@ class ConsoleService
      */
     public function startConsoleAsync(string $command, array $args = [], string $subfolder = "", bool $newConsole = true, int $timeoutInSec = 60): ?Process
     {
-        $phpBinaryPath = $this->phpBinaryFinder->find();
+        $phpBinaryPath = getenv('ASYNC_PHP_BINARY');
+        if(!$phpBinaryPath) {
+            $phpBinaryPath = $this->phpBinaryFinder->find();
+        }
         $newCommand = $phpBinaryPath;
         $newArgs = [self::CONSOLE_BIN,$command];
         foreach ($args as $arg) {
