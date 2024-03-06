@@ -56,7 +56,7 @@ return [
     'ADMIN_BACKUPS_UID_STATUS_NOT_FOUND' => "Data about backup was not found",
     'ADMIN_BACKUPS_UID_STATUS_RUNNING' => "Running backup",
     'ADMIN_BACKUPS_UID_STATUS_FINISHED' => "Finished backup",
-    'ADMIN_BACKUPS_UID_STATUS_NOT_FINISHED' => "Trouble backup is not running but not finished",
+    'ADMIN_BACKUPS_UID_STATUS_NOT_FINISHED' => "Problem : backup is not running but not finished !",
     'ADMIN_BACKUPS_UID_STATUS_STOP' => "Backup aborted",
     'ADMIN_BACKUPS_STOP_BACKUP_ERROR' => "Error : not possible to stop backup",
     'ADMIN_BACKUPS_STOPPING_ARCHIVE' => "Backup stopping",
@@ -85,8 +85,8 @@ return [
     // javascripts/users-table.js
     'USERSTABLE_USER_CREATED' => "User '{name}' created",
     'USERSTABLE_USER_NOT_CREATED' => "User '{name}' not created : {error}",
-    'USERSTABLE_USER_DELETED' => 'The user "{username}" is deleted.',
-    'USERSTABLE_USER_NOT_DELETED' => 'The user "{username}" is not deleted.',
+    'USERSTABLE_USER_DELETED' => 'The user "{username}" was deleted.',
+    'USERSTABLE_USER_NOT_DELETED' => 'The user "{username}" was not deleted.',
     // /javascripts/yeswiki-base.js
     'DATATABLES_PROCESSING' => "Processing...",
     'DATATABLES_SEARCH' => "Search&nbsp;:",
