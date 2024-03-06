@@ -488,8 +488,8 @@ return [
     'EDIT_CONFIG_GROUP_ACCESS' => "Access rights",
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
     // actions/userstable.php
-    'USERSTABLE_USER_DELETED' => 'User "{username}" has been deleted.',
-    'USERSTABLE_USER_NOT_DELETED' => 'The user "{username}" has not been deleted.',
+    'USERSTABLE_USER_DELETED' => 'The user "{username}" was deleted.',
+    'USERSTABLE_USER_NOT_DELETED' => 'The user "{username}" was not deleted.',
     'USERSTABLE_NOT_EXISTING_USER' => 'The user "{username}" does not exist!',
     'GROUP_S' => 'Group(s)',
     'USERSTABLE_CREATE_USER' => 'Create a user',
