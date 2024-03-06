@@ -121,7 +121,7 @@ class Performer
         /* extract extension name from path to allow namespace */
         if (preg_match('/(?:tools[\\\\\\/]([A-Za-z0-9_\\-]+)|(custom))[\\\\\/][a-zA-Z0-9_\\\\\/\\-]+.php$/', $object['filePath'], $matches)) {
             $extensionName = empty($matches[1]) ? $matches[2]:$matches[1];
-            $classNameWithNamespace = "YesWiki\\".ucfirst(strtolower($extensionName))."\\".$object['baseName'];
+            $classNameWithNamespace = "YesWiki\\".StringUtilService::folderToNamespace($extensionName)."\\".$object['baseName'];
             if (class_exists($classNameWithNamespace)) {
                 $className = $classNameWithNamespace;
             }
