@@ -16,9 +16,22 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --
 */
 
-include_once('../../wakka.config.php');
-if (isset($wakkaConfig['captcha_words']) && is_array($wakkaConfig['captcha_words'])) {
-    $textes = $wakkaConfig['captcha_words'];
+use YesWiki\Core\Service\ConfigurationService;
+
+if (isset($wiki)){
+    $config = $wiki->services->get(ConfigurationService::class)->getConfiguration('wakka.config.php');
+    $config->load();
+} elseif (getcwd() && basename(getcwd()) === 'security' && basename(dirname(getcwd())) === 'tools') {
+    // emulate loader of yeswiki if direct call to generate image
+    chdir('../../');
+    include_once 'includes/services/ConfigurationService.php';
+    include_once 'includes/entities/ConfigurationFile.php';
+    $config = (new ConfigurationService())->getConfiguration('wakka.config.php');
+    $config->load();
+    chdir('tools/security/');
+}
+if (!empty($config['captcha_words']) && is_array($config['captcha_words'])) {
+    $textes = $config['captcha_words'];
 } else {
     $textes = array(
         "cactus",
