@@ -1,25 +1,15 @@
 <?php
-
 return [
-
     // fields/CalcField.php
     'BAZ_FORM_EDIT_CALC_LABEL' => 'Calculations',
     'BAZ_FORM_EDIT_DISPLAYTEXT_LABEL' => 'Display text',
     'BAZ_FORM_EDIT_DISPLAYTEXT_HELP' => 'Add if necessary a unit after {value}, (ex: `{value} €`)',
     'BAZ_FORM_EDIT_FORMULA_LABEL' => 'Formula',
-    'BAZ_FORM_CALC_HINT' => "EXPERIMENTAL FIELD{\\n}".
-       "The formula must be a mathematical formula.{\\n}".
-       "It is possible to refer to the value of a field by typing its name (ex: `+ sin(bf_number)*2` ),{\\n}".
-       "or test the value of a field (ex: `test(checkboxListeTypebf_type,first_key)`{\\n}".
-       "which makes 1 if checkboxListeTypebf_type == first_key otherwise 0).",
-
     // fields/FileField.php
-    'BAZ_FILEFIELD_FILE' => 'File : {filename}',
+    'BAZ_FILEFIELD_FILE' => "File : {filename}",
     'BAZ_FORM_EDIT_FILE_READLABEL_LABEL' => 'Read label',
-
     // fields/ImageField.php
     'IMAGEFIELD_TOO_LARGE_IMAGE' => 'To large image, maximum {imageMaxSize} bytes',
-
     // fields/MapField.php
     'BAZ_FORM_EDIT_GEOLOCATE' => 'Geolocate my position',
     'BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_COUNTY' => 'Area/county field',
@@ -49,11 +39,9 @@ return [
     'GEOLOCATER_GROUP_GEOLOCATIZATION' => 'Fields to use for geolocalization',
     'GEOLOCATER_GROUP_GEOLOCATIZATION_HINT' => 'Provide at least one field',
     'GEOLOCATER_NOT_FOUND' => 'Not foundable "{addr}" address',
-
     // libs/bazar.edit_lists.js
     // 'BAZ_EDIT_LISTS_CONFIRM_DELETE' => 'Confirmez-vous la suppression de cette valeur dans la liste ?',
     // 'BAZ_EDIT_LISTS_DELETE_ERROR' => 'Le dernier élément ne peut être supprimé.',
-
     // libs/bazar.js
     // 'BAZ_FORM_REQUIRED_FIELD' => 'Veuillez saisir tous les champs obligatoires (avec une asterisque rouge)',
     // 'BAZ_FORM_INVALID_EMAIL' => 'L\'email saisi n\'est pas valide',
@@ -91,11 +79,9 @@ return [
     'BAZ_DATESHORT_NOVEMBER' => 'Nov',
     'BAZ_DATESHORT_DECEMBER' => 'Dec',
     'BAZ_SAVING' => 'Saving',
-
     // presentation/javascripts/components/BazarMap.js
     'BAZ_FULLSCREEN' => 'Fullscreen',
     'BAZ_BACK_TO_NORMAL_VIEW' => 'Back to normal view',
-
     // form-edit-template.js
     'MEMBER_OF_GROUP' => 'Member of group {groupName}',
     'BAZ_FORM_EDIT_HELP' => 'Help text',
@@ -184,9 +170,6 @@ return [
     'SMALL_F' => 'Small',
     'PRIMARY' => 'Primary',
     'SECONDARY' => 'Secondary',
-    'BAZ_FORM_TABS_HINT' => 'To use tabs, it needs two fields : {\\n}'.
-        ' - the field "{tabs-field-label}" in which tabs\' titles should be defined separated by "," {\\n}'.
-        ' - the field "{tabchange-field-label}" to pu at the end of each tab either at the end of the form',
     'BAZ_FORM_EDIT_ADD_TO_GROUP_LABEL' => 'Groups where to add the user',
     'BAZ_FORM_EDIT_ADD_TO_GROUP_DESCRIPTION' => 'Groups where to add the user, separated by \',\'',
     'BAZ_FORM_EDIT_ADD_TO_GROUP_HELP' => 'Groups where to add the user, separated by \',\', can be a filed name. Ex: @groupName,bf_name,@groupName2',
@@ -218,21 +201,15 @@ return [
     // 'BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_LABEL' => 'Type de fiche liée (ou label du champ)',
     // 'BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_PLACEHOLDER' => 'mettre \'checkbox\' ici si vos fiches liées le sont via un checkbox',
     'BAZ_FORM_EDIT_ADDRESS' => 'Address',
-
     'BAZ_FORM_EDIT_UNIQUE_ID' => 'Unique ID',
     'BAZ_FORM_EDIT_NAME' => 'Label',
-    'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'Displaying the form builder, you will delete changes done here in the code. Whould you continue without saving changes ?  (Click on "Submit" button in page footer to keep your changes !)',
-
+    'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'Displaying the form builder, you will delete changes done here in the code. Do you wish to continue without saving changes ? (Click on "Submit" button in page footer to keep your changes !)',
     'BAZ_FORM_EDIT_COMMENTS_CLOSED' => 'Comments closed',
     'BAZ_FORM_EDIT_BOOKMARKLET_URLFIELD_LABEL' => "Associated url field",
     'BAZ_FORM_EDIT_BOOKMARKLET_DESCRIPTIONFIELD_LABEL' => "Associated long text field",
-    'BAZ_BOOKMARKLET_HINT' => "This field needs to fields to work:{\\n}".
-        "  - url field (default: 'bf_url'){\\n}".
-        "  - long text field (default: 'bf_description')",
     'BAZ_FORM_EDIT_BOOKMARKLET_HINT_DEFAULT_VALUE' => "Click and move the button to your navigator's bar",
     'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_LABEL' => "Displayed text",
     'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_VALUE' => "Click and move the button to your favorites's bar",
-
     // 'BAZ_ACTIVATE_COMMENTS' => 'Activer les commentaires sur cette fiche ?',
     // 'BAZ_ACTIVATE_COMMENTS_HINT' => 'Droits mis à jour lors de l\'enregistrement de la fiche',
     // 'BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL' => 'Choix par défaut pour l\'activation des commentaires',
@@ -240,35 +217,17 @@ return [
     // 'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_LABEL' => 'Texte pour édition',
     // 'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT' => 'Laisser vide pour utiliser le texte par défaut',
     // 'BAZ_FORM_EDIT_ACL_ASK_IF_ACTIVATE_COMMENT_LABEL' => 'Demander d\'activer les commentaires ?',
-
     // condition checking field
-    "BAZ_FORM_CONDITIONSCHEKING_HINT" => "The condition must match the following format (without `):{\\n}".
-        " - ` and ` : gives AND{\\n}".
-        " - ` or ` : gives OR{\\n}".
-        " - `==` : gives IS EQUAL TO{\\n}".
-        " - `!=` : gives IS NOT EQUAL TO {\\n}".
-        " - ` in [value1,value2]` : IS IN the list of elements separated by coma and surrounded by hooks {\\n}".
-        " - `|length > 6` : check if the number of elements checked is hight than 6 (foworks also with '>=','<','<=') {\\n}".
-        " - ` == [value1,value2]` : IS EXACTLY the list of elements separated by coma and surrounded by hookss (only for checkbox){\\n}".
-        " - `(  )` allos to group conditions with priority left to rigth{\\n}".
-        " - `!(  )` or `not (  )` negate a group of condition{\\n}".
-        " - put a left part of `==` or `!=` the filedname ex:`bf_theme` or long fieldname `listeListeYesNobf_choice`{\\n}".
-        " - ` is empty ` : check if the value is empty{\\n}".
-        " - ` is not empty ` : check if the value is not empty{\\n}".
-        " - spaces or automaticaly removed{\\n}".
-        " - operations are waited to be case insensitive",
-    "BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL" => "Conditionnal display",
-    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL" => "Condition",
-    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_END" => "End of condition",
-    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_LABEL" => "Clean when hiding",
-    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION" => "Clean",
-    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION" => "Do not clean",
-    "BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT" => "To clean or not the content of what is being hidden",
-
+    'BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL' => "Conditionnal display",
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL' => "Condition",
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_END' => "End of condition",
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_LABEL' => "Clean when hiding",
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION' => "Clean",
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION' => "Do not clean",
+    'BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT' => "To clean or not the content of what is being hidden",
     // jsvascripts/form-edit-templates/fields/file.js
     'BAZ_FORM_EDIT_FILE_AUTHEXTS_LABEL' => 'Prefered extensions (with dot, separated by coma)',
     'BAZ_FORM_EDIT_FILE_AUTHEXTS_PLACEHOLDER' => 'ex: .pdf,.png',
-
     // reactions
     // 'BAZ_ACTIVATE_REACTIONS' => 'Activer les réactions sur cette fiche ?',
     // 'BAZ_REACTIONS_FIELD' => 'Réactions',
@@ -283,11 +242,8 @@ return [
     // 'BAZ_REACTIONS_FIELD_LABELS_HINT' => 'Laisser vide ou séparés par des virgules',
     // 'BAZ_REACTIONS_FIELD_LABELS_LABEL' => 'Noms des réactions',
     // 'BAZ_REACTIONS_FIELD_LABELS_PLACEHOLDER' => 'Gratitude,J\'aime,J\'ai appris quelque chose,J\'ai pas compris,Je ne suis pas d\'accord,Ca me perturbe',
-
     // presentation/javascripts/map-field-leaflet.js
     'BAZ_ADJUST_MARKER_POSITION' => 'Move me if needed',
-
     // templates/entries/index-dynamic-temapltes/BazarCalendar_ButtonICS.js
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => "Add to your agenda",
-
 ];
