@@ -964,17 +964,19 @@ class Wiki
      *            The name of the group
      * @param string $acl
      *            The new acl for that group
-     * @return boolean True iff the new acl defines the group recursively
+     * @return boolean True if the new acl defines the group recursively
      */
     public function MakesGroupRecursive($gname, $acl, $origin = null, $checked = array())
     {
-        $gname = strtolower($gname);
+        $gname = strtolower(trim($gname));
         if ($origin === null) {
             $origin = $gname;
         } elseif ($gname === $origin) {
             return true;
         }
+        $acl = str_replace(["\r\n","\r"], "\n", $acl);
         foreach (explode("\n", $acl) as $line) {
+            $line = trim($line);
             if (! $line) {
                 continue;
             }
@@ -1017,6 +1019,11 @@ class Wiki
             return 1001;
         }
         $old = $this->GetGroupACL($gname);
+        // we get rid of lost spaces before saving to db
+        $acl = str_replace(["\r\n","\r"], "\n", $acl);
+        $acls = explode("\n", $acl);
+        $acls = array_map('trim', $acls);
+        $acl = implode("\n", $acls);
         if ($this->MakesGroupRecursive($gname, $acl)) {
             return 1000;
         }

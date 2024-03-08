@@ -281,13 +281,14 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      * @param string $groupName The name of the group for which we are testing membership
      * @param string|null $username if null check current user
      * @param bool $admincheck
+     * @param array $formerGroups former groups list to avoid loops
      *
      * @return boolean True if the $user is member of $groupName, false otherwise
     */
-    public function isInGroup(string $groupName, ?string $username = null, bool $admincheck = true)
+    public function isInGroup(string $groupName, ?string $username = null, bool $admincheck = true, array $formerGroups = [])
     {
-        // aclService could  not be loaded in __construct because AclService already loads UserManager
-        return $this->wiki->services->get(AclService::class)->check($this->wiki->GetGroupACL($groupName), $username, $admincheck);
+	// aclService could  not be loaded in __construct because AclService already loads UserManager
+        return $this->wiki->services->get(AclService::class)->check($this->wiki->GetGroupACL($groupName), $username, $admincheck, '', '', $formerGroups);
     }
 
     /* ~~~~~~~~~~~~~~~~~~ implements  PasswordUpgraderInterface ~~~~~~~~~~~~~~~~~~ */
