@@ -31,7 +31,7 @@ class ExternalRadioEntryField extends RadioEntryField
     {
         return null;
     }
-    
+
     public function getOptions()
     {
         // load options only when needed but not at construct to prevent infinite loops

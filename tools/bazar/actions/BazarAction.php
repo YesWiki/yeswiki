@@ -9,7 +9,7 @@ class BazarAction extends YesWikiAction
 {
     public const VARIABLE_VOIR = 'vue';
     public const VARIABLE_ACTION = 'action';
-    
+
     // Premier niveau d'action : pour toutes les fiches
     public const VOIR_DEFAUT = 'formulaire'; // Recherche
     public const VOIR_CONSULTER = 'consulter'; // Recherche
@@ -46,12 +46,12 @@ class BazarAction extends YesWikiAction
 
     public function formatArguments($arg)
     {
-        $redirecturl = $this->sanitizedGet('redirecturl',function() use($arg){
+        $redirecturl = $this->sanitizedGet('redirecturl', function () use ($arg) {
             return $arg['redirecturl'] ?? '';
         });
         // YesWiki pages links, like "HomePage" or "HomePage/xml"
-        if (!empty($redirecturl)){
-            $wikiLink = $this->wiki->extractLinkParts((substr($redirecturl,0,1) == '?') ? substr($redirecturl,1): $redirecturl);
+        if (!empty($redirecturl)) {
+            $wikiLink = $this->wiki->extractLinkParts((substr($redirecturl, 0, 1) == '?') ? substr($redirecturl, 1) : $redirecturl);
             if ($wikiLink) {// General URL
                 $tag = $wikiLink['tag'];
                 $method = $wikiLink['method'];
@@ -61,14 +61,14 @@ class BazarAction extends YesWikiAction
         }
 
         return([
-            self::VARIABLE_ACTION => $this->sanitizedGet(self::VARIABLE_ACTION,function() use($arg){
+            self::VARIABLE_ACTION => $this->sanitizedGet(self::VARIABLE_ACTION, function () use ($arg) {
                 return $arg[self::VARIABLE_ACTION] ?? null;
             }),
-            self::VARIABLE_VOIR => $this->sanitizedGet(self::VARIABLE_VOIR,function() use($arg){
+            self::VARIABLE_VOIR => $this->sanitizedGet(self::VARIABLE_VOIR, function () use ($arg) {
                 return $arg[self::VARIABLE_VOIR] ?? self::VOIR_DEFAUT;
             }),
             // afficher le menu de vues bazar ?
-            'voirmenu' => $this->sanitizedGet('voirmenu',function() use($arg){
+            'voirmenu' => $this->sanitizedGet('voirmenu', function () use ($arg) {
                 return $arg['voirmenu'] ?? $this->params->get('baz_menu');
             }),
             // Identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
@@ -84,7 +84,7 @@ class BazarAction extends YesWikiAction
      * @param function $callback
      * @return scalar
      */
-    protected function sanitizedGet(string $key,$callback)
+    protected function sanitizedGet(string $key, $callback)
     {
         return (isset($_GET[$key]) && is_scalar($_GET[$key]))
             ? $_GET[$key]
@@ -122,7 +122,7 @@ class BazarAction extends YesWikiAction
                     case self::ACTION_ENTRY_EDIT:
                         return $entryController->update($_REQUEST['id_fiche']);
                     case self::ACTION_ENTRY_DELETE:
-                        return $entryController->delete($_REQUEST['id_fiche'],true);
+                        return $entryController->delete($_REQUEST['id_fiche'], true);
                     case self::ACTION_PUBLIER:
                         return $entryController->publish($_REQUEST['id_fiche'], true);
                     case self::ACTION_PAS_PUBLIER:

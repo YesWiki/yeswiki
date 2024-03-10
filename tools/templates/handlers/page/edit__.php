@@ -1,4 +1,5 @@
 <?php
+
 use YesWiki\Core\Service\ThemeManager;
 
 if (!defined('WIKINI_VERSION')) {
@@ -69,7 +70,7 @@ if ($changetheme) {
     // Adds change theme button
     $html .= '<a class="btn btn-neutral" data-toggle="modal" data-target="#graphical_options">'._t('TEMPLATE_THEME').'</a>';
 }
-$plugin_output_new = str_replace($target , $target.$html, $plugin_output_new);
+$plugin_output_new = str_replace($target, $target.$html, $plugin_output_new);
 
 if (!$this->HasAccess('write')) {
     $output = '';

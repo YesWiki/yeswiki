@@ -106,7 +106,7 @@ class Mailer
         $admins = [];
         foreach (explode("\n", $adminsAcl) as $line) {
             $line = trim($line);
-            if (!empty($line)&&
+            if (!empty($line) &&
                 substr($line, 0, 1) != '#' &&
                 substr($line, 0, 1) != '@') {
                 $adminUser = $this->wiki->LoadUser($line);
@@ -228,12 +228,12 @@ class Mailer
      * @param string $text
      * @return string $text
      */
-    private function sanitizeLinksIfNeeded(string $text):string
+    private function sanitizeLinksIfNeeded(string $text): string
     {
         if ($this->params->get('contact_mail_func') === 'smtp'
             && $this->params->has('contact_use_long_wiki_urls_in_emails')
             && $this->params->get('contact_use_long_wiki_urls_in_emails')
-            ) {
+        ) {
             $baseUrl = $this->getBaseUrl();
             $text = preg_replace("/(".preg_quote("href=\"{$baseUrl}/?", "/").")(?=".WN_CAMEL_CASE_EVOLVED_WITH_SLASH."(?:&|\\\"))/u", "$1wiki=", $text);
         }

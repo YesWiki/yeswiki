@@ -1,7 +1,7 @@
 <?php
 
 return [
-    
+
     'LOGIN_SIGNUP' => 'S\'inscrire',
     'LOGIN_LOGIN' => 'Se connecter',
     'LOGIN_WIKINAME' => 'Email ou NomWiki',

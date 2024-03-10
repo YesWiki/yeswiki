@@ -140,7 +140,7 @@ function get_title_from_body($page)
     preg_match_all('/"bf_titre":"(.*)"/U', $page['body'], $titles);
     if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
         $title = _convert(preg_replace_callback('/\\\\u([a-f0-9]{4})/', 'utf8_special_decode', $titles[1][0]), 'UTF-8');
-    //preg_replace("/\\\\u([a-f0-9]{4})/e", "iconv('UCS-4LE','UTF-8',pack('V', hexdec('U$1')))", $titles[1][0]));
+        //preg_replace("/\\\\u([a-f0-9]{4})/e", "iconv('UCS-4LE','UTF-8',pack('V', hexdec('U$1')))", $titles[1][0]));
     } else {
         preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
         if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
@@ -178,8 +178,10 @@ function get_image_from_body($page)
                     '/\\\\u([a-f0-9]{4})/',
                     'encodingFromUTF8',
                     $image[1][0]
-                )
-            , 'ISO-8859-1', 'UTF-8');
+                ),
+                'ISO-8859-1',
+                'UTF-8'
+            );
             $image = afficher_image('bf_image', 'files/'.$imagefile, 'cache/'.$imagefile, 'filtered-image img-responsive', '', '', 300, 225);
         } else {
             preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $page['body'], $image);

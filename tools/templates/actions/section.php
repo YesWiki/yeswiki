@@ -70,7 +70,7 @@ css;
 
 // image's filename
 $file = $this->GetParameter('file');
-$backgroundimg =true;
+$backgroundimg = true;
 if (empty($file) && empty($bgcolor)) {
     $bgcolor = false;
     $backgroundimg = false;

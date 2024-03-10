@@ -14,7 +14,7 @@ class RecentChangesRssAction extends YesWikiAction
             "link" => !empty($args["link"]) ? $args["link"] : $this->params->get("root_page")
         ];
     }
-    
+
     public function run()
     {
         if ($this->wiki->GetMethod() != 'xml') {
@@ -26,10 +26,10 @@ class RecentChangesRssAction extends YesWikiAction
         if ($user = $this->wiki->GetUser()) {
             $max = $user["changescount"];
         }
-        
+
         $aclService = $this->getService(AclService::class);
         $pageManager = $this->getService(PageManager::class);
-        
+
         $pagesList = $pageManager->getRecentlyChanged($max);
         if (empty($pagesList)) {
             return;
@@ -96,7 +96,7 @@ class RecentChangesRssAction extends YesWikiAction
                     ENT_COMPAT,
                     YW_CHARSET
                 );
-                $itemurl = $this->wiki->href(false, $tag, ['time' => $rawTime]+$langParam);
+                $itemurl = $this->wiki->href(false, $tag, ['time' => $rawTime] + $langParam);
                 $description = htmlspecialchars(
                     _t('RSS_CHANGE_OF').' ' . ($readAcl ? $this->wiki->ComposeLinkToPage($page["tag"]) : $tag)
                     . ($readAcl ? ' (' . $this->wiki->ComposeLinkToPage($page["tag"], 'revisions', _t('RSS_HISTORY')) . ')' : '')
@@ -107,9 +107,9 @@ class RecentChangesRssAction extends YesWikiAction
         }
 
         $yesWikiRevision = "{$this->params->get('yeswiki_version')} {$this->params->get('yeswiki_release')}";
-        $description = $this->params->has('meta_description') ? $this->params->get('meta_description'): "";
+        $description = $this->params->has('meta_description') ? $this->params->get('meta_description') : "";
         $description = empty($decription) ? $wakkaName : $description;
-        
+
         return $this->render(
             "@rss/recent-changes-rss.twig",
             compact(["xmlUrl","wakkaName","link","items","yesWikiRevision","description"])

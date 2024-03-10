@@ -19,7 +19,7 @@ if (!empty($url)) {
     }
 
     $extension = strtolower(substr(strrchr($url, '.'), 1));
-    if ($type=="audio" || $extension=="mp3" || $extension=="m4a") {
+    if ($type == "audio" || $extension == "mp3" || $extension == "m4a") {
         if (!isset($GLOBALS['jplayer'])) {
             $GLOBALS['jplayer'] = 1;
             $this->AddJavascriptFile('tools/attach/libs/vendor/jplayer/jquery.jplayer.min.js');
@@ -90,7 +90,7 @@ if (!empty($url)) {
             </div>
           </div>';
         echo $output;
-    } elseif ($type=="video" || $extension=="webm" || $extension=="mp4" || $extension=="ogg" || $extension=="flv") {
+    } elseif ($type == "video" || $extension == "webm" || $extension == "mp4" || $extension == "ogg" || $extension == "flv") {
         if (!isset($GLOBALS['jplayer'])) {
             $GLOBALS['jplayer'] = 1;
             $this->AddJavascriptFile('tools/attach/libs/vendor/jplayer/jquery.jplayer.min.js');
@@ -98,13 +98,16 @@ if (!empty($url)) {
             $GLOBALS['jplayer']++;
         }
         switch ($extension) {
-          case 'flv': $playbackFormat = 'flv'; break;
-          case 'ogg': $playbackFormat = 'ogv'; break;
-          case 'webmv': $playbackFormat = 'webmv'; break;
-          case 'mp4':
-          default:
-            $playbackFormat = 'm4v';
-          break;
+            case 'flv': $playbackFormat = 'flv';
+                break;
+            case 'ogg': $playbackFormat = 'ogv';
+                break;
+            case 'webmv': $playbackFormat = 'webmv';
+                break;
+            case 'mp4':
+            default:
+                $playbackFormat = 'm4v';
+                break;
         }
 
         $script = '$(document).ready(function(){
@@ -177,9 +180,9 @@ if (!empty($url)) {
             </div>
           </div>';
         echo $output;
-    } elseif ($extension=="mm") {
+    } elseif ($extension == "mm") {
         $output = '<embed id="visorFreeMind" height="'.$height.'" align="middle" width="'.$width.'" flashvars="openUrl=_blank&initLoadFile='.$url.'&startCollapsedToLevel=5" quality="high" bgcolor="#ffffff" src="tools/attach/players/visorFreemind.swf" type="application/x-shockwave-flash"/>';
-        $output .="[<a href=\"$url\" title=\""._t('ATTACH_DOWNLOAD_THE_FILE')."\">mm</a>]";
+        $output .= "[<a href=\"$url\" title=\""._t('ATTACH_DOWNLOAD_THE_FILE')."\">mm</a>]";
         echo $output;
     } else {
         echo '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_PLAYER').'</strong> : '._t('ATTACH_PLAYER_CAN_ONLY_OPEN_FILES_LIKE').' ('.$url.') '._t('ATTACH_NOT_LINKED_TO_GOOD_FILE_EXTENSION').'.</div>'."\n";

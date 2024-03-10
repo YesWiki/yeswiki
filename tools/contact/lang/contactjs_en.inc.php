@@ -1,4 +1,5 @@
 <?php
+
 return [
     // libs/contact.js
     'CONTACT_REQUIRED_FIELD' => 'This field is mandatory.',

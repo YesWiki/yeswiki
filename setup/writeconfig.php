@@ -50,7 +50,7 @@ if ($fp) {
 
     echo    "<br />\n<div class=\"alert alert-success\"><strong>"._t('FINISHED_CONGRATULATIONS').' !</strong><br />'._t('IT_IS_RECOMMANDED_TO_REMOVE_WRITE_ACCESS_TO_CONFIG_FILE').' <tt>wakka.config.php</tt> ('._t('THIS_COULD_BE_UNSECURE').').</div>';
     echo "<div class=\"form-actions\">\n<a class=\"btn btn-lg btn-primary\" href=\"",$config['base_url'].$config['root_page'],'">'._t('GO_TO_YOUR_NEW_YESWIKI_WEBSITE')."</a>\n</div>\n";
-//header('Location: '.$config['base_url'].$config['root_page']);
+    //header('Location: '.$config['base_url'].$config['root_page']);
 } else {
     // complain
     echo    "<br />\n<div class=\"alert alert-danger\"><strong>"._t('WARNING').'</strong> :</span> '._t('CONFIGURATION_FILE').' <tt>',$wakkaConfigLocation,'</tt> '._t('CONFIGURATION_FILE_NOT_CREATED').'.<br />'.

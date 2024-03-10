@@ -1,4 +1,5 @@
 <?php
+
 // verify that passphrase was set, and that GET parameter key is egal to passphrase
 if (!empty($this->config['contact_passphrase']) && isset($_GET['key']) && $_GET['key'] === $this->config['contact_passphrase']) {
     echo 'Clé valide !<br>';

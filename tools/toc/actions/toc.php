@@ -22,24 +22,24 @@ if (empty($title)) {
 echo "<div id=\"toc".$tag."\" class=\"toc well".(!empty($class) ? ' '.$class : '')."\">\n";
 
 echo    "<div class=\"toc-title accordion-trigger\" data-toggle=\"collapse\" data-target=\"#toc-menu".$tag."\">".
-'<span class="arrow">'.($closed==1 ? '&#9658;' : '&#9660;').'</span>&nbsp;<strong>'.$title."</strong>
+'<span class="arrow">'.($closed == 1 ? '&#9658;' : '&#9660;').'</span>&nbsp;<strong>'.$title."</strong>
 </div><!-- /.toc-title -->\n
 <div class=\"toc-menu\">
-<div id=\"toc-menu".$tag."\" class=\"collapse".($closed==1 ? '' : ' in')."\">\n";
+<div id=\"toc-menu".$tag."\" class=\"collapse".($closed == 1 ? '' : ' in')."\">\n";
 
 global $wiki;
-$wiki=$this;
+$wiki = $this;
 
 if (!function_exists("translate2toc")) {
     function translate2toc($text)
     {
         global $wiki;
         $cur_text = $text;
-        $l1=0;
-        $l2=0;
-        $l3=0;
-        $l4=0;
-        $l5=0;
+        $l1 = 0;
+        $l2 = 0;
+        $l3 = 0;
+        $l4 = 0;
+        $l5 = 0;
         $output = '';
 
         while ($cur_text) {
@@ -47,39 +47,39 @@ if (!function_exists("translate2toc")) {
                 break;
             }
 
-            $cur_text=$matches[3];
-            $class="";
-            $endmatch="";
+            $cur_text = $matches[3];
+            $class = "";
+            $endmatch = "";
             if ($matches[1] == "======" || $matches[2] == "#") {
                 $l1++;
-                $class="toc1";
-                $toc="TOC_1_".(2*$l1 - 1);
+                $class = "toc1";
+                $toc = "TOC_1_".(2 * $l1 - 1);
                 $l1++;
-                $endmatch=empty($matches[2]) ? "/(.*)======(.*?)/msU" : "/(.*)\n(.*?)/msU";
+                $endmatch = empty($matches[2]) ? "/(.*)======(.*?)/msU" : "/(.*)\n(.*?)/msU";
             } elseif ($matches[1] == "=====" || $matches[2] == "##") {
                 $l2++;
-                $class="toc2";
-                $toc="TOC_2_".(2*$l2 - 1);
+                $class = "toc2";
+                $toc = "TOC_2_".(2 * $l2 - 1);
                 $l2++;
-                $endmatch=empty($matches[2]) ? "/(.*)=====(.*?)/msU" : "/(.*)\n(.*?)/msU";
+                $endmatch = empty($matches[2]) ? "/(.*)=====(.*?)/msU" : "/(.*)\n(.*?)/msU";
             } elseif ($matches[1] == "====" || $matches[2] == "###") {
                 $l3++;
-                $class="toc3";
-                $toc="TOC_3_".(2*$l3 - 1);
+                $class = "toc3";
+                $toc = "TOC_3_".(2 * $l3 - 1);
                 $l3++;
-                $endmatch=empty($matches[2]) ? "/(.*)====(.*?)/msU" : "/(.*)\n(.*?)/msU";
+                $endmatch = empty($matches[2]) ? "/(.*)====(.*?)/msU" : "/(.*)\n(.*?)/msU";
             } elseif ($matches[1] == "==="  || $matches[2] == "####") {
                 $l4++;
-                $class="toc4";
-                $toc="TOC_4_".(2*$l4 - 1);
+                $class = "toc4";
+                $toc = "TOC_4_".(2 * $l4 - 1);
                 $l4++;
-                $endmatch=empty($matches[2]) ? "/(.*)===(.*?)/msU" : "/(.*)\n(.*?)/msU";
+                $endmatch = empty($matches[2]) ? "/(.*)===(.*?)/msU" : "/(.*)\n(.*?)/msU";
             } elseif ($matches[1] == "==" || $matches[2] == "#####") {
                 $l5++;
-                $class="toc5";
-                $toc="TOC_5_".(2*$l5 - 1);
+                $class = "toc5";
+                $toc = "TOC_5_".(2 * $l5 - 1);
                 $l5++;
-                $endmatch=empty($matches[2]) ? "/(.*)==(.*?)/msU" : "/(.*)\n(.*?)/msU";
+                $endmatch = empty($matches[2]) ? "/(.*)==(.*?)/msU" : "/(.*)\n(.*?)/msU";
             } else {
                 $output .= "????\n";
             }
@@ -137,15 +137,15 @@ $script = "$(document).ready(function(){
 });\n";
 $this->AddJavascript($script);
 
-    // on vérifie qu'il y est au moins un titre pour faire la liste
-    if (preg_match("/(={2,6})(.*)|^(?!\\\\)\#{1,5} [^\\n\#]*\\n/ms", $toc_body, $matches)) {
-        echo    "<ul class=\"unstyled\">\n".
-                    translate2toc(preg_replace("/\"\".*?\"\"/ms", "", $toc_body)).
-                "</ul>\n";
-    }
-    
-    // on ferme les divs ouvertes par l'action toc
-    echo "</div><!-- /.toc-menu -->\n
+// on vérifie qu'il y est au moins un titre pour faire la liste
+if (preg_match("/(={2,6})(.*)|^(?!\\\\)\#{1,5} [^\\n\#]*\\n/ms", $toc_body, $matches)) {
+    echo    "<ul class=\"unstyled\">\n".
+                translate2toc(preg_replace("/\"\".*?\"\"/ms", "", $toc_body)).
+            "</ul>\n";
+}
+
+// on ferme les divs ouvertes par l'action toc
+echo "</div><!-- /.toc-menu -->\n
     </div><!-- /#toc-menu".$tag." -->\n
     </div><!-- /#toc".$tag." -->\n";
 ?> 

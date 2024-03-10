@@ -231,7 +231,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                     if ($c) {
                         $result .= $this->closeAllInLine();
                     }
-                    for ($i = 0; $i < $c; $i ++) {
+                    for ($i = 0; $i < $c; $i++) {
                         $result .= array_pop($this->indentClosers);
                         $this->br = 0;
                     }
@@ -483,11 +483,11 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                 if ($newIndentLength > $this->oldIndentLength) {
                     //si la chaine d'indentation est plus longue que la precedente
                     //on incremente le niveau d'indentation
-                    $newIndentLevel ++;
+                    $newIndentLevel++;
                     //on stock la niveau correspondant a la longueur de la chaine d'indentation
                     //la boucle for permet de corriger les erreurs de saisie d'espace.
                     //$this->newIndentSpace[$newIndentLength]=$newIndentLevel;
-                    for ($i = $this->oldIndentLength + 1; $i <= $newIndentLength; $i ++) {
+                    for ($i = $this->oldIndentLength + 1; $i <= $newIndentLength; $i++) {
                         $this->newIndentSpace[$i] = $newIndentLevel;
                     }
                 } elseif ($newIndentLength < $this->oldIndentLength) {
@@ -503,7 +503,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
 
             //si le nouveau level est plus grand
             if ($newIndentLevel > $this->oldIndentLevel) {
-                for ($i = 0; $i < $newIndentLevel - $this->oldIndentLevel; $i ++) {
+                for ($i = 0; $i < $newIndentLevel - $this->oldIndentLevel; $i++) {
                     //on ajoute le tag d'ouverture de liste
                     $result .= $opener;
                     //sauvegarde du tag de fermeture dans la pile
@@ -513,7 +513,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
             }
             //si le nouveau level est plus petit
             elseif ($newIndentLevel < $this->oldIndentLevel) {
-                for ($i = 0; $i < $this->oldIndentLevel - $newIndentLevel; $i ++) {
+                for ($i = 0; $i < $this->oldIndentLevel - $newIndentLevel; $i++) {
                     //on depile le tag de fermeture
                     $result .= array_pop($this->indentClosers);
                 }

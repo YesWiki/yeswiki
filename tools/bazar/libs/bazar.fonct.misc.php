@@ -33,11 +33,11 @@ function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $meth
 
         // force new name
         $image_dest = $attach->getResizedFilename($image_src, $largeur, $hauteur, $method);
-        
+
         if (!$wiki->services->get(SecurityController::class)->isWikiHibernated()
             && file_exists($image_dest)
             && isset($_GET['refresh'])
-            && $_GET['refresh']== 1
+            && $_GET['refresh'] == 1
             && $wiki->UserIsAdmin()) {
             unlink($image_dest);
         }
@@ -124,14 +124,14 @@ function afficher_image(
     // If we have a full URL, remove the base URL first
     $nom_image = str_replace($url_base . BAZ_CHEMIN_UPLOAD, '', $nom_image);
     $ext = pathinfo($nom_image)['extension'];
-    
+
     if (!class_exists('attach')) {
         include('tools/attach/libs/attach.lib.php');
     }
     $attach = new attach($wiki);
     $imagePath = $attach->GetUploadPath().'/' . $nom_image;
     $attach->file = $imagePath;
-    
+
     if (file_exists($imagePath)
        && $attach->isPicture()) {
         return $wiki->render('@attach/display-image.twig', [

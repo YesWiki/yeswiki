@@ -48,7 +48,7 @@ class LinkedEntryField extends BazarField
             $output = $this->renderSecuredBazarList($entry);
             return $this->isEmptyOutput($output)
                 ? $output
-                : $this->render('@bazar/inputs/linked-entry.twig',compact(['output']));
+                : $this->render('@bazar/inputs/linked-entry.twig', compact(['output']));
         }
     }
 
@@ -59,7 +59,7 @@ class LinkedEntryField extends BazarField
             $output = $this->renderSecuredBazarList($entry);
             return $this->isEmptyOutput($output)
                 ? $output
-                : $this->render('@bazar/fields/linked-entry.twig',compact(['output']));
+                : $this->render('@bazar/fields/linked-entry.twig', compact(['output']));
         } else {
             return "" ;
         }
@@ -76,7 +76,7 @@ class LinkedEntryField extends BazarField
 
     protected function isEmptyOutput(string $output): bool
     {
-        return empty($output) || preg_match('/<div id="[^"]+" class="bazar-list[^"]*"[^>]*>\\s*<div class="list">\\s*<\\/div>\\s*<\\/div>/',$output);
+        return empty($output) || preg_match('/<div id="[^"]+" class="bazar-list[^"]*"[^>]*>\\s*<div class="list">\\s*<\\/div>\\s*<\\/div>/', $output);
     }
 
     private function getBazarListAction($entry)
@@ -115,7 +115,7 @@ class LinkedEntryField extends BazarField
                 (
                     empty($this->linkType)
                     || strpos($field->getType(), $this->linkType) === 0 // checkboxfiche or listefiche
-                    || $field->getPropertyName()== $this->linkType // label
+                    || $field->getPropertyName() == $this->linkType // label
                     || substr($field->getPropertyName(), strlen($field->getType().trim($entry['id_typeannonce']))) == $this->linkType // label
                 )
             ) {

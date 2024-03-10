@@ -44,7 +44,7 @@ class EditIframeHandler extends YesWikiHandler
         } else {
             // if no write access to the page
 
-            $output ='<body class="yeswiki-iframe-body login-body">' . "\n"
+            $output = '<body class="yeswiki-iframe-body login-body">' . "\n"
                 . '<div class="container">' . "\n"
                 . '<div class="yeswiki-page-widget page-widget page" ' . $this->wiki->Format('{{doubleclic iframe="1"}}')
                 . '>' . "\n";
@@ -73,7 +73,7 @@ class EditIframeHandler extends YesWikiHandler
         $output .= '</div><!-- end .container -->' . "\n";
         $this->wiki->AddJavascriptFile('javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js');
 
-        
+
         // on recupere les entetes html mais pas ce qu'il y a dans le body
         $header = explode('<body', $this->wiki->Header());
         $output = $header[0].$output;

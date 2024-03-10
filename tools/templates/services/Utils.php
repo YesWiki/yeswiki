@@ -40,29 +40,29 @@ class Utils
             $images = [];
             preg_match("/\{\{attach.*file=\"(.*\.(?i)(jpe?g|png))\".*\}\}/U", $page['body'], $images);
             if (!empty($images[1])) {
-                $image = $this->getResizedFilename($images[1],$page,$page['tag'],$width, $height,true);
+                $image = $this->getResizedFilename($images[1], $page, $page['tag'], $width, $height, true);
             } else {
                 $images = [];
                 if(preg_match('/"imagebf_image":"(.*)"/U', $page['body'], $images) &&
                         !empty($images[1])) {
                     $imageFileName = json_decode('"'.$images[1].'"', true);
-                    if (!empty($imageFileName)){
-                        if (file_exists("files/$imageFileName")){
-                            $image = $this->getResizedFilename("files/$imageFileName",$page,$page['tag'],$width, $height,false);
+                    if (!empty($imageFileName)) {
+                        if (file_exists("files/$imageFileName")) {
+                            $image = $this->getResizedFilename("files/$imageFileName", $page, $page['tag'], $width, $height, false);
                         }
                     }
                 } else {
                     $images = [];
                     if (preg_match("/<img.*src=\"(.*\.(jpe?g|png))\"/U", $page['body'], $images) &&
                         !empty($images[1])) {
-                        if (file_exists('files/'.basename($images[1][0]))){
-                            $image = $this->getResizedFilename('files/'.basename($images[1]),$page,$page['tag'],$width, $height,false);
+                        if (file_exists('files/'.basename($images[1][0]))) {
+                            $image = $this->getResizedFilename('files/'.basename($images[1]), $page, $page['tag'], $width, $height, false);
                         }
                     }
                 }
             }
         }
-        if (empty($image)){
+        if (empty($image)) {
             return $this->getDefaultOpenGraphImage();
         }
         return $image;
@@ -71,12 +71,12 @@ class Utils
     protected function getDefaultOpenGraphImage(): string
     {
         $image = '';
-        if ($this->params->has('opengraph_image')){
+        if ($this->params->has('opengraph_image')) {
             $opengraphImage = $this->params->get('opengraph_image');
             if (!empty($opengraphImage) &&
                 is_string($opengraphImage) &&
                 file_exists($opengraphImage)
-                ){
+            ) {
                 $image = "{$this->wiki->getBaseUrl()}/$opengraphImage";
             }
         }
@@ -84,7 +84,7 @@ class Utils
     }
 
 
-    protected function getResizedFilename(string $fileName, array $page, string $tag,string $width,string $height, bool $extractFullFileName = false): string
+    protected function getResizedFilename(string $fileName, array $page, string $tag, string $width, string $height, bool $extractFullFileName = false): string
     {
         $attach = $this->getAttach();
 
@@ -94,17 +94,17 @@ class Utils
         // fake page
         $this->wiki->tag = $tag;
         $this->wiki->page = $page;
-        if ($extractFullFileName){
-            if (!empty($fileName)){
+        if ($extractFullFileName) {
+            if (!empty($fileName)) {
                 $attach->file = $fileName;
                 $fileName = $attach->GetFullFilename(false);
             }
         }
-        if (!empty($fileName) && file_exists($fileName)){
+        if (!empty($fileName) && file_exists($fileName)) {
             $imageDest = $attach->getResizedFilename($fileName, $width, $height, 'crop');
 
-            if (!empty($imageDest)){
-                if(!file_exists($imageDest)){
+            if (!empty($imageDest)) {
+                if(!file_exists($imageDest)) {
                     $resizedImage = $attach->redimensionner_image(
                         $fileName,
                         $imageDest,
@@ -113,7 +113,7 @@ class Utils
                         'crop'
                     );
 
-                    if (!empty($resizedImage)){
+                    if (!empty($resizedImage)) {
                         $image = "{$this->wiki->getBaseUrl()}/$resizedImage";
                     }
                 } else {
@@ -171,7 +171,7 @@ class Utils
         $tab_themes = array();
         $dir = opendir($directory);
         while ($dir && ($file = readdir($dir)) !== false) {
-            if ($file!='.' && $file!='..' && $file!='CVS' && is_dir($directory.DIRECTORY_SEPARATOR.$file)) {
+            if ($file != '.' && $file != '..' && $file != 'CVS' && is_dir($directory.DIRECTORY_SEPARATOR.$file)) {
                 $pathToStyles = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles';
                 if (is_dir($pathToStyles) && $dir2 = opendir($pathToStyles)) {
                     while (false !== ($file2 = readdir($dir2))) {
@@ -186,9 +186,9 @@ class Utils
                 $pathToSquelettes = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes';
                 if (is_dir($pathToSquelettes) && $dir3 = opendir($pathToSquelettes)) {
                     while (false !== ($file3 = readdir($dir3))) {
-                        if (substr($file3, -9, 9)=='.tpl.html') {
+                        if (substr($file3, -9, 9) == '.tpl.html') {
                             $tab_themes[$file]['isCustom'] = $isCustom;
-                            $tab_themes[$file]["squelette"][$file3] = $this->removeExtension($file3,true);
+                            $tab_themes[$file]["squelette"][$file3] = $this->removeExtension($file3, true);
                         }
                     }
                     closedir($dir3);
@@ -197,7 +197,7 @@ class Utils
                 $pathToPresets = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'presets';
                 if (is_dir($pathToPresets) && $dir4 = opendir($pathToPresets)) {
                     while (false !== ($file4 = readdir($dir4))) {
-                        if (substr($file4, -4, 4)=='.css' && file_exists($pathToPresets.'/'.$file4)) {
+                        if (substr($file4, -4, 4) == '.css' && file_exists($pathToPresets.'/'.$file4)) {
                             $css = file_get_contents($pathToPresets.'/'.$file4);
                             if (!empty($css)) {
                                 $tab_themes[$file]['isCustom'] = $isCustom;
@@ -223,7 +223,7 @@ class Utils
 
     public function removeExtension($filename, bool $onlyTemplate = false)
     {
-        if ($onlyTemplate){
+        if ($onlyTemplate) {
             return preg_replace("/(\.twig|\.tpl.html)$/", '', $filename);
         }
         return preg_replace("/\..*/i", '', $filename);
@@ -234,7 +234,7 @@ class Utils
         $token = chr(1);
         $haystack = strtolower($subject);
         $needle = strtolower($search);
-        while (($pos=strpos($haystack, $needle))!==false) {
+        while (($pos = strpos($haystack, $needle)) !== false) {
             $subject = substr_replace($subject, $token, $pos, strlen($search));
             $haystack = substr_replace($haystack, $token, $pos, strlen($search));
         }

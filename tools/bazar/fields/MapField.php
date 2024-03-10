@@ -95,24 +95,25 @@ class MapField extends BazarField
                 } else {
                     $value = [
                         $this->getLatitudeField() => $value[0],
-                        $this->getLongitudeField()=> $value[1]
+                        $this->getLongitudeField() => $value[1]
                     ];
                 }
             } elseif (!empty($entry[$this->getLatitudeField()]) && !empty($entry[$this->getLongitudeField()])) {
                 $value = [
                     $this->getLatitudeField() => $entry[$this->getLatitudeField()],
-                    $this->getLongitudeField()=> $entry[$this->getLongitudeField()]
+                    $this->getLongitudeField() => $entry[$this->getLongitudeField()]
                 ];
             }
         }
         return $value;
     }
 
-    protected function getMapFieldData($entry) {
+    protected function getMapFieldData($entry)
+    {
         $value = $this->getValue($entry);
         $params = $this->getService(ParameterBagInterface::class);
 
-        $mapProvider= $params->get('baz_provider');
+        $mapProvider = $params->get('baz_provider');
         $mapProviderId = $params->get('baz_provider_id');
         $mapProviderPass = $params->get('baz_provider_pass');
         if (!empty($mapProviderId) && !empty($mapProviderPass)) {
@@ -208,10 +209,10 @@ class MapField extends BazarField
         $wiki = $this->getWiki();
 
         // check the last used action containing the good form id
-        $filteredActions = 
-            array_filter($wiki->actionObjects, function($v) use ($entry) {
+        $filteredActions =
+            array_filter($wiki->actionObjects, function ($v) use ($entry) {
                 return !empty($v['action'])
-                    && substr($v['action'],0,5) === 'bazar'
+                    && substr($v['action'], 0, 5) === 'bazar'
                     && !empty($v['vars']['id'])
                     && $v['vars']['id'] == $entry['id_typeannonce'];
             });
@@ -219,11 +220,11 @@ class MapField extends BazarField
         $showMapInDynamicListView = (isset($_GET['showmapinlistview']) && $_GET['showmapinlistview'] === '1');
         $showMapInListView = false;
         if (
-          // classic list would perform action
-          (!empty($lastAction['vars']['showmapinlistview'])
-          && $lastAction['vars']['showmapinlistview'] === '1')
-          // dynamic list calls api and use get param showmapinlistview
-          || $showMapInDynamicListView
+            // classic list would perform action
+            (!empty($lastAction['vars']['showmapinlistview'])
+            && $lastAction['vars']['showmapinlistview'] === '1')
+            // dynamic list calls api and use get param showmapinlistview
+            || $showMapInDynamicListView
         ) {
             $showMapInListView = true;
         };

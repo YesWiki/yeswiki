@@ -1,4 +1,5 @@
 <?php
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -20,11 +21,11 @@ if (!function_exists("wakka2callbacktoc")) {
 
             // Ouverture d'une balise de titre
             if ($l5 % 2) {
-                $toc="TOC_5_".(2*$l5 - 1);
+                $toc = "TOC_5_".(2 * $l5 - 1);
                 return "\"\"<span id=\"$toc\" class=\"yeswiki-title-anchor\"></span>\"\"$thing";
             }
 
- 
+
 
             // Fermeture du titre precedent
             else {
@@ -42,11 +43,11 @@ if (!function_exists("wakka2callbacktoc")) {
             ++$l4;
 
             if ($l4 % 2) {
-                $toc="TOC_4_".(2*$l4 - 1);
+                $toc = "TOC_4_".(2 * $l4 - 1);
                 return "\"\"<span id=\"$toc\" class=\"yeswiki-title-anchor\"></span>\"\"$thing";
             }
 
- 
+
             // Fermeture du titre precedent
             else {
                 return "===";
@@ -63,7 +64,7 @@ if (!function_exists("wakka2callbacktoc")) {
 
             // Ouverture d'une balise de titre
             if ($l3 % 2) {
-                $toc="TOC_3_".(2*$l3 - 1);
+                $toc = "TOC_3_".(2 * $l3 - 1);
                 return "\"\"<span id=\"$toc\" class=\"yeswiki-title-anchor\"></span>\"\"$thing";
             }
 
@@ -84,7 +85,7 @@ if (!function_exists("wakka2callbacktoc")) {
 
             // Ouverture d'une balise de titre
             if ($l2 % 2) {
-                $toc="TOC_2_".(2*$l2 - 1);
+                $toc = "TOC_2_".(2 * $l2 - 1);
                 return "\"\"<span id=\"$toc\" class=\"yeswiki-title-anchor\"></span>\"\"$thing";
             }
 
@@ -105,7 +106,7 @@ if (!function_exists("wakka2callbacktoc")) {
 
             // Ouverture d'une balise de titre
             if ($l1 % 2) {
-                $toc="TOC_1_".(2*$l1 - 1);
+                $toc = "TOC_1_".(2 * $l1 - 1);
                 return "\"\"<span id=\"$toc\" class=\"yeswiki-title-anchor\"></span>\"\"$thing";
             }
 

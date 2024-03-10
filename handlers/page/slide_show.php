@@ -192,7 +192,7 @@ if (!$this->HasAccess('read')) {
             // et "[Début]"
             if ($slide !== '1') {
                 echo '<a href="',$this->href(),'/slide_show&slide=',$_REQUEST['slide'] - 1,'"><< précédent</a>',
-                     ' :: <a href="',$this->href(),"/slide_show&slide=1\">[début]</a>\n";
+                ' :: <a href="',$this->href(),"/slide_show&slide=1\">[début]</a>\n";
             }
             echo ' :: ';
             // Si ce n'est pas la derniere diapositive, on affiche le lien "suivant >>"

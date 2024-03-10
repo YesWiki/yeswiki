@@ -37,7 +37,7 @@ class PageController extends YesWikiController
      */
     public function delete(string $tag): bool
     {
-        if ($this->entryManager->isEntry($tag)){
+        if ($this->entryManager->isEntry($tag)) {
             return $this->entryController->delete($tag);
         } else {
             $this->pageManager->deleteOrphaned($tag);

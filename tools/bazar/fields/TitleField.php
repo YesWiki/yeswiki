@@ -93,7 +93,7 @@ class TitleField extends BazarField
 
         // Generate an ID for the entry based on the title
         $entry['id_fiche'] = (isset($entry['id_fiche']) ? $entry['id_fiche'] : genere_nom_wiki($value));
-        
+
         return [$this->propertyName => $value, 'id_fiche' => $entry['id_fiche']];
     }
 

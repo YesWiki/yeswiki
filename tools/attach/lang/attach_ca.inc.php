@@ -67,10 +67,10 @@ return [
     'ATTACH_DESCRIPTION' => 'Descripció',
     'ATTACH_CANCEL' => 'Cancel·la',
     'ATTACH_SAVE' => 'Desa',
-    
+
     // actions/video.php
     'ATTACH_ACTION_VIDEO_PARAM_ERROR' => 'El acció video s\'ha de cridar amb els paràmetres «id» i «serveur». Per a «serveur», només es permeten els valors «vimeo» o «youtube» o «peertube».',
-   
+
     // actions/pdf.php
     'ATTACH_ACTION_PDF_PARAM_URL_ERROR' => 'El acció pdf s\'ha de cridar amb el paràmetre « url » i l\'URL indicada ha d\'estar al mateix amfitrió que la wiki (per exemple \'xxx.yyy.com \'), el mateix esquema (per exemple \'https \') i el mateix port si s\'especifica (per exemple \'8080 \'). ',
     // 'ATTACH_ACTION_DISPLAY_PDF_TEXT' => 'Afficher le pdf dans la page :',

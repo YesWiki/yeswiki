@@ -229,9 +229,9 @@ if (!class_exists('attach')) {
                 } else {
                     $searchPattern = '`^' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
                 }
-                
+
                 $files = $this->searchFiles($searchPattern, $path);
-                
+
                 $unedate = 0;
                 foreach ($files as $file) {
                     // on garde la dateupload la plus grande
@@ -316,7 +316,7 @@ if (!class_exists('attach')) {
          */
         public function convertDate($date)
         {
-            if (!is_string($date)){
+            if (!is_string($date)) {
                 return '';
             }
             $date = str_replace(' ', '', $date);
@@ -509,7 +509,7 @@ if (!class_exists('attach')) {
             $img = "<img loading=\"lazy\" class=\"img-responsive\" src=\"" . $this->GetScriptPath() . $img_name . "\" " .
             "alt=\"" . $this->desc . ($this->link ? "\nLien vers: $this->link" : "") . "\" width=\"" . $width . "\" height=\"" . $height . "\" />";
             //test si c'est une image sensible
-            $classDataForLinks = 
+            $classDataForLinks =
                 strstr($this->classes, 'new-window')
                 ? ' class="new-window"'
                 : (
@@ -1068,7 +1068,7 @@ if (!class_exists('attach')) {
                 }
             } else {
                 $pathInfo = pathinfo($fullFilename);
-                $file_vignette = "{$file['path']}/{$pathInfo['filename']}_vignette_{$width}_{$height}".(isset($pathInfo['extension']) ? ".{$pathInfo['extension']}": '');
+                $file_vignette = "{$file['path']}/{$pathInfo['filename']}_vignette_{$width}_{$height}".(isset($pathInfo['extension']) ? ".{$pathInfo['extension']}" : '');
             }
 
             return $file_vignette;
@@ -1101,7 +1101,7 @@ if (!class_exists('attach')) {
             $imgTrans->target_path = $image_dest;
 
             if ($mode == "crop") {
-                $wantedRatio = $largeur/$hauteur;
+                $wantedRatio = $largeur / $hauteur;
                 // get image info except for webp (code copier from Zebra_Image)
                 if (
                     !(
@@ -1115,7 +1115,7 @@ if (!class_exists('attach')) {
                 ) {
                     return false;
                 }
-                $imageRatio = $sourceImageWidth/$sourceImageHeight;
+                $imageRatio = $sourceImageWidth / $sourceImageHeight;
 
                 if ($imageRatio != $wantedRatio) {
                     if ($imageRatio > $wantedRatio) {
@@ -1149,7 +1149,7 @@ if (!class_exists('attach')) {
             if (!$result) {
                 // in case of error, show error code
                 return $imgTrans->error;
-            // if there were no errors
+                // if there were no errors
             } else {
                 return $imgTrans->target_path;
             }

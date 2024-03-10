@@ -96,7 +96,7 @@ class ReactionsField extends BazarField
             ? trim($values[self::FIELD_LABELS])
             : '';
 
-        list('labels'=>$this->labels, 'ids'=>$this->ids) = $this->reactionsController->formatReactionsLabels(
+        list('labels' => $this->labels, 'ids' => $this->ids) = $this->reactionsController->formatReactionsLabels(
             $labels,
             empty($this->ids)
                 ? (
@@ -127,7 +127,7 @@ class ReactionsField extends BazarField
         $username = empty($user['name']) ? '' : $user['name'];
 
         $imagesPath = $this->getImagesPath();
-        list('reactions'=>$reactionItems, 'userReactions'=>$userReactions, 'oldIdsUserReactions'=>$oldIdsUserReactions) =
+        list('reactions' => $reactionItems, 'userReactions' => $userReactions, 'oldIdsUserReactions' => $oldIdsUserReactions) =
             $this->reactionsController->getReactionItems(
                 $currentEntryTag,
                 $username,

@@ -42,7 +42,7 @@ abstract class RadioField extends EnumField
                             });";
                     $this->wiki->AddJavascript($script);
                 }
-                
+
                 return $this->render('@bazar/inputs/radio.twig', [
                     'options' => $options,
                     'value' => $this->getValue($entry),
@@ -61,10 +61,10 @@ abstract class RadioField extends EnumField
                 "title" => $label
             ];
         }
-        
+
         $selectedOption = $this->getValue($entry) ;
         $selectedOptions = empty($selectedOption) ? [] : [$selectedOption];
-        
+
         return [
             'existingTags' => $existingTags,
             'selectedOptions' => $selectedOptions,

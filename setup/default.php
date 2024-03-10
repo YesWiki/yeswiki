@@ -53,8 +53,8 @@ if (!defined('WIKINI_VERSION')) {
                 foreach ($GLOBALS['available_languages'] as $value) {
                     echo '<option value="'.$value.'"'.(($value == $GLOBALS['prefered_language'] && (!isset($_GET['lang']) || $_GET['lang'] !== 'auto')) ? ' selected="selected"' : '').'>'.ucfirst(htmlentities($GLOBALS['languages_list'][$value]['nativeName'], ENT_COMPAT | ENT_HTML401, 'UTF-8'))."</option>\n";
                 }
-                echo "<option value=\"auto\"".((isset($_GET['lang']) && $_GET['lang'] === 'auto') ? ' selected="selected"' : '').">"._t('NAVIGATOR_LANGUAGE')."</option>\n";
-                ?>
+echo "<option value=\"auto\"".((isset($_GET['lang']) && $_GET['lang'] === 'auto') ? ' selected="selected"' : '').">"._t('NAVIGATOR_LANGUAGE')."</option>\n";
+?>
             </select>
           </div>
         </div>
@@ -198,7 +198,7 @@ if (!defined('WIKINI_VERSION')) {
       <p><?php echo _t('OR_CREATE_NEW_ACCOUNT'); ?> :</p></div>
     <?php
     }
-        ?>
+?>
 
         <div class="form-group">
           <label class="col-sm-3 control-label"><?php echo _t('ADMIN'); ?></label>
@@ -253,7 +253,7 @@ if (!defined('WIKINI_VERSION')) {
                   <label>
                     <input type="hidden" name="config[rewrite_mode]" value="0" />
                     <input type="checkbox" name="config[rewrite_mode]" value="1" <?php
-                      echo ($wakkaConfig['rewrite_mode'] ?? true) ? 'checked' : '' ?> />
+              echo ($wakkaConfig['rewrite_mode'] ?? true) ? 'checked' : '' ?> />
                     <span></span>
                     &nbsp;<?php echo _t('ACTIVATE_REDIRECTION_MODE'); ?>
                   </label>
@@ -263,7 +263,7 @@ if (!defined('WIKINI_VERSION')) {
                 <div class="checkbox">
                   <label>
                     <input type="checkbox" name="config[allow_raw_html]" value="1" <?php
-                      echo ($wakkaConfig['allow_raw_html'] ?? true) ? 'checked' : '' ?> />
+              echo ($wakkaConfig['allow_raw_html'] ?? true) ? 'checked' : '' ?> />
                     <span></span>
                     &nbsp;<?php echo _t('AUTHORIZE_HTML_INSERTION'); ?>
                   </label>
@@ -273,7 +273,7 @@ if (!defined('WIKINI_VERSION')) {
                 <div class="checkbox">
                   <label>
                     <input type="checkbox" name="config[allow_robots]" value="1" <?php
-                      echo ($wakkaConfig['allow_robots'] ?? true) ? 'checked' : '' ?> />
+              echo ($wakkaConfig['allow_robots'] ?? true) ? 'checked' : '' ?> />
                     <span></span>
                     &nbsp;<?php echo _t('AUTHORIZE_INDEX_BY_ROBOTS'); ?>
                   </label>

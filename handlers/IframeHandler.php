@@ -73,7 +73,7 @@ class IframeHandler extends YesWikiHandler
         $output .= '</div><!-- end .container -->' . "\n";
         $this->wiki->AddJavascriptFile('javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js');
 
-        
+
         // on recupere les entetes html mais pas ce qu'il y a dans le body
         $header = explode('<body', $this->wiki->Header());
         $output = $header[0].$output;
@@ -95,7 +95,7 @@ class IframeHandler extends YesWikiHandler
         $valjson = $this->wiki->page["body"];
         $tab_valeurs = json_decode($valjson, true);
         if (YW_CHARSET != 'UTF-8') {
-            $tab_valeurs = array_map(function($value){
+            $tab_valeurs = array_map(function ($value) {
                 return mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8');
             }, $tab_valeurs);
         }

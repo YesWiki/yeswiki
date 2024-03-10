@@ -140,28 +140,28 @@ class IcalFormatter extends YesWikiController
         return $fileData;
     }
 
-    
+
     /**
      * extract getICALData
      * @param array $entry
      * @return array [''=>,''=>] or []
      */
-    private function getICALData(array $entry):array
+    private function getICALData(array $entry): array
     {
         if (!empty($entry['bf_date_debut_evenement']) && !empty($entry['bf_date_fin_evenement'])) {
             $startDate = $this->dateService->getDateTimeWithRightTimeZone($entry['bf_date_debut_evenement']);
-            if (is_null($startDate)){
+            if (is_null($startDate)) {
                 return [];
             }
             $endDate = $this->dateService->getDateTimeWithRightTimeZone($entry['bf_date_fin_evenement']);
-            if (is_null($endDate)){
+            if (is_null($endDate)) {
                 return [];
             }
             // 24 h for end date if all day
             if ($this->isAllDay(strval($entry['bf_date_fin_evenement']))) {
                 $endDate = $endDate->add(new DateInterval('P1D'));
             }
-            if ($startDate->diff($endDate)->invert > 0){
+            if ($startDate->diff($endDate)->invert > 0) {
                 // end date before start date not possible in ical : use start time + 1 hour
                 $endDate = $startDate->add(new DateInterval('PT1H'));
             }
@@ -180,7 +180,7 @@ class IcalFormatter extends YesWikiController
      */
     protected function isAllDay(string $date): bool
     {
-        return preg_match('/^[1-2][0-9]{3}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[0-1])$/',$date);
+        return preg_match('/^[1-2][0-9]{3}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[0-1])$/', $date);
     }
 
     /**
@@ -189,7 +189,7 @@ class IcalFormatter extends YesWikiController
      * @param mixed $formId
      * @return string $fileData
      */
-    private function addHeaderAndFooter(string $fileData, $formId = null):string
+    private function addHeaderAndFooter(string $fileData, $formId = null): string
     {
         $header = "BEGIN:VCALENDAR\r\n";
         $header .= "VERSION:2.0\r\n";
@@ -219,40 +219,40 @@ class IcalFormatter extends YesWikiController
     {
         $output = "BEGIN:VEVENT\r\n";
         // TODO use real UID with random hex followed by @base URL
-        $output .=$this->chunck_split_except_last("UID:".$entry['url'], self::MAX_CHARS_BY_LINE, "\r\n", " ");
-        $output .=$this->chunck_split_except_last("URL:".$entry['url'], self::MAX_CHARS_BY_LINE, "\r\n", " ");
-        $output .="DTSTAMP".$this->formatDate('')."\r\n";
-        $output .="DTSTART".$this->formatDate($icalData['startDate'])."\r\n";
-        $output .="DTEND".$this->formatDate($icalData['endDate'])."\r\n";
-        $output .="CREATED".$this->formatDate($entry['date_creation_fiche'])."\r\n";
-        $output .="DATE-MOD".$this->formatDate($entry['date_maj_fiche'])."\r\n";
-        $output .=$this->splitAtnthChar(self::MAX_CHARS_BY_LINE, "SUMMARY:".$entry['bf_titre']."\r\n");
-        $output .=$this->splitAtnthChar(self::MAX_CHARS_BY_LINE, "NAME:".$entry['bf_titre']."\r\n");
+        $output .= $this->chunck_split_except_last("UID:".$entry['url'], self::MAX_CHARS_BY_LINE, "\r\n", " ");
+        $output .= $this->chunck_split_except_last("URL:".$entry['url'], self::MAX_CHARS_BY_LINE, "\r\n", " ");
+        $output .= "DTSTAMP".$this->formatDate('')."\r\n";
+        $output .= "DTSTART".$this->formatDate($icalData['startDate'])."\r\n";
+        $output .= "DTEND".$this->formatDate($icalData['endDate'])."\r\n";
+        $output .= "CREATED".$this->formatDate($entry['date_creation_fiche'])."\r\n";
+        $output .= "DATE-MOD".$this->formatDate($entry['date_maj_fiche'])."\r\n";
+        $output .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, "SUMMARY:".$entry['bf_titre']."\r\n");
+        $output .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, "NAME:".$entry['bf_titre']."\r\n");
         $decription = (!empty($entry['bf_description'])) ?
             $this->renderAndStripTags($entry['bf_description'])."\r\n"
-            :'';
+            : '';
         $decription .= "Source: ".$entry['url'];
-        $output .=$this->splitAtnthChar(self::MAX_CHARS_BY_LINE, "DESCRIPTION:".str_replace(["\r","\n"], [' ','\\n'], $decription)."\r\n");
+        $output .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, "DESCRIPTION:".str_replace(["\r","\n"], [' ','\\n'], $decription)."\r\n");
         $location = '';
         $location .= (!empty($entry['bf_adresse'])) ? $entry['bf_adresse'] .' ' : '';
         $location .= (!empty($entry['bf_code_postal'])) ? $entry['bf_code_postal'] .' ' : '';
         $location .= (!empty($entry['bf_ville'])) ? $entry['bf_ville'] .' ' : '';
         $location = trim($location);
         if (!empty($location)) {
-            $output .=$this->splitAtnthChar(self::MAX_CHARS_BY_LINE, "LOCATION:".str_replace(["\r","\n"],' ',$location)."\r\n");
+            $output .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, "LOCATION:".str_replace(["\r","\n"], ' ', $location)."\r\n");
         }
         $geo = $this->geoJSONFormatter->getGeoData($entry, $cache);
         if (!empty($geo)) {
-            $output .=$this->splitAtnthChar(self::MAX_CHARS_BY_LINE, "GEO:".$geo['latitude'].";".$geo['longitude']."\r\n");
+            $output .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, "GEO:".$geo['latitude'].";".$geo['longitude']."\r\n");
         }
         if (!empty($entry['imagebf_image'])) {
             $baseUrl = $this->getBaseURL();
             $url = $baseUrl . 'files/' . $entry['imagebf_image'];
-            $output .=$this->chunck_split_except_last("IMAGE;VALUE=URI;DISPLAY=BADGE:".$url, self::MAX_CHARS_BY_LINE, "\r\n", " ");
-            $output .=$this->chunck_split_except_last("ATTACH:".$url, self::MAX_CHARS_BY_LINE, "\r\n", " "); // duplicate on attach to be compatible with more calendar client
+            $output .= $this->chunck_split_except_last("IMAGE;VALUE=URI;DISPLAY=BADGE:".$url, self::MAX_CHARS_BY_LINE, "\r\n", " ");
+            $output .= $this->chunck_split_except_last("ATTACH:".$url, self::MAX_CHARS_BY_LINE, "\r\n", " "); // duplicate on attach to be compatible with more calendar client
         }
         // image https://icalendar.org/New-Properties-for-iCalendar-RFC-7986/5-10-image-property.html
-        $output .="END:VEVENT\r\n";
+        $output .= "END:VEVENT\r\n";
 
         return $output;
     }
@@ -278,7 +278,7 @@ class IcalFormatter extends YesWikiController
      * @param string $input
      * @return string $output
      */
-    private function splitAtnthChar(int $length, string $input):string
+    private function splitAtnthChar(int $length, string $input): string
     {
         // cut lines at nth char whithout breaking words (except long words)
         $output = wordwrap($input, $length, " \r\n ", false);
@@ -316,7 +316,7 @@ class IcalFormatter extends YesWikiController
      * @param string $input
      * @return string $output
      */
-    private function renderAndStripTags(string $input):string
+    private function renderAndStripTags(string $input): string
     {
         // render description
         $renderedInput = $this->performer->run('wakka', 'formatter', ['text' => $input]) ;
@@ -331,7 +331,7 @@ class IcalFormatter extends YesWikiController
      * @param array $form
      * @return bool
      */
-    public function isICALForm(?array $form = null):bool
+    public function isICALForm(?array $form = null): bool
     {
         if (empty($form['prepared'] ?? null)) {
             return false;
@@ -349,7 +349,7 @@ class IcalFormatter extends YesWikiController
     /** get base Url
      * @return string
      */
-    private function getBaseURL():string
+    private function getBaseURL(): string
     {
         $baseUrl = $this->params->get('base_url');
         if (substr($baseUrl, -1) == "?") {

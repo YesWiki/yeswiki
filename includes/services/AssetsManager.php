@@ -41,7 +41,7 @@ class AssetsManager
     {
         $this->wiki = $wiki;
     }
-    
+
     public function AddCSS($style)
     {
         if (!isset($GLOBALS['css'])) {
@@ -73,7 +73,7 @@ class AssetsManager
     {
         $file = $this->mapFilePath($file);
         $isUrl = strpos($file, "http://") === 0 || strpos($file, "https://") === 0;
-        
+
         if ($isUrl || !empty($file) && file_exists($file)) {
             $href = $isUrl ? $file : "{$this->wiki->getBaseUrl()}/{$file}";
             $revision = $this->wiki->GetConfigValue('yeswiki_release', null);
@@ -107,7 +107,7 @@ class AssetsManager
         $revision = $this->wiki->GetConfigValue('yeswiki_release', null);
         $initChar =  (strpos($file, '?') !== false) ? '&' : '?';
         $rev = ($revision) ? $initChar.'v='.$revision : '';
-        
+
         $file = $this->mapFilePath($file);
 
         if (!empty($file) && file_exists($file)) {
@@ -150,7 +150,7 @@ class AssetsManager
                 $file = self::PRODUCTION_PATH_MAPPING[$file];
             }
         }
-        
+
         return $file;
     }
 }

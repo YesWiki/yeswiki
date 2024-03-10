@@ -31,7 +31,7 @@ class UpdateHandler__ extends YesWikiHandler
         return null;
     }
 
-    private function cleanBase64():string
+    private function cleanBase64(): string
     {
         $pages = $this->searchPagesWithBase64();
         $updatedPages = [];
@@ -100,7 +100,7 @@ class UpdateHandler__ extends YesWikiHandler
         if ($updated) {
             // get services
             $dbService = $this->wiki->services->get(DbService::class);
-            
+
             $dbService->query(
                 "UPDATE {$dbService->prefixTable('pages')} ".
                 "SET body = '{$dbService->escape(chop($page['body']))}' ".

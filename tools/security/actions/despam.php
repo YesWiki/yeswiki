@@ -82,7 +82,7 @@ if ($this->UserIsAdmin()) {
               $page["tag"]. " ".
               "(". $page["time"]. ") ".
                 " par ". $page['user'] . " ".
-                "<a href=\"".$this->Href('iframe', $page["tag"], ['time'=>urlencode($page["time"])])."\" ".
+                "<a href=\"".$this->Href('iframe', $page["tag"], ['time' => urlencode($page["time"])])."\" ".
                 "title=\"Voir la fiche {$page["tag"]} ({$page["time"]})\" ".
                 "class=\"btn btn-xs btn-default modalbox\" ".
                 "data-size=\"modal-lg\" ".
@@ -107,7 +107,7 @@ if ($this->UserIsAdmin()) {
                 }
                 echo "<tr><td><input name=  \"rev[]\" value=\"" . $revision["id"] . "\" type=\"checkbox\" /></td><td>";
                 echo str_replace(['{time}','{user}'], [$revision["time"],$revision['user']], _t('DESPAM_RESTORE_FROM')) . " ".
-                  "<a href=\"".$this->Href('iframe', $page["tag"], ['time'=>urlencode($revision["time"])])."\" ".
+                  "<a href=\"".$this->Href('iframe', $page["tag"], ['time' => urlencode($revision["time"])])."\" ".
                     "title=\"" . _t('BAZ_SEE_ENTRY') . " {$page["tag"]} ({$revision["time"]})\" ".
                     "class=\"btn btn-xs btn-default modalbox\" ".
                     "data-size=\"modal-lg\" ".
@@ -118,8 +118,8 @@ if ($this->UserIsAdmin()) {
             unset($revision1);
             echo //" . . . . ",$this->Format($page["user"]),"</p>\n",
               "</td>\n",
-              "</tr>\n",
-              "";
+            "</tr>\n",
+            "";
         }
         echo "</table>\n";
         echo "<p>Commentaire&nbsp;: <input class=\"form-control\" name=\"comment\" style=\"width: 80%;\" /></p>\n";
@@ -147,8 +147,8 @@ if ($this->UserIsAdmin()) {
                 // Effacement de la page en utilisant la méthode adéquate
                 // (si DeleteOrphanedPage ne convient pas, soit on créé
                 // une autre, soit on la modifie
-                if ($this->services->get(PageController::class)->delete($page)){
-                  $deletedPages .= $page . ", ";
+                if ($this->services->get(PageController::class)->delete($page)) {
+                    $deletedPages .= $page . ", ";
                 }
             }
             $deletedPages = trim($deletedPages, ", ");

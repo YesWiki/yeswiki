@@ -37,10 +37,10 @@ class AjaxUploadHandler extends YesWikiHandler
 
             // list of valid extensions, ex. array("jpeg", "xml", "bmp")
             $allowedExtensions = array_keys($this->params->get('authorized-extensions'));
-    
+
             // max file size in bytes
             $sizeLimit = $att->attachConfig['max_file_size'];
-    
+
             $uploader = new qqFileUploader($allowedExtensions, $sizeLimit, $this->hasTempTag);
             $result = $uploader->handleUpload($att->attachConfig['upload_path']);
         } catch (\Throwable $th) {

@@ -107,7 +107,7 @@ class ApiService
      * @param null|string $bearerToken
      * @return bool
      */
-    private function connectBearer(?string $bearerToken = null):bool
+    private function connectBearer(?string $bearerToken = null): bool
     {
         if (empty($bearerToken) || !$this->params->has('api_allowed_keys')) {
             return false;

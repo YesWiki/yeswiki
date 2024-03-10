@@ -122,7 +122,7 @@ class ApiController extends YesWikiController
         $result = [];
         try {
             $csrfTokenController = $this->getService(CsrfTokenController::class);
-            $csrfTokenController->checkToken('main', 'POST', 'csrfToken',false);
+            $csrfTokenController->checkToken('main', 'POST', 'csrfToken', false);
             $user = $userManager->getOneByName($userId);
             if (empty($user)) {
                 $code = Response::HTTP_BAD_REQUEST;
@@ -283,7 +283,7 @@ class ApiController extends YesWikiController
         if ($this->wiki->UserIsOwner($tag) || $this->wiki->UserIsAdmin()) {
             $commentService = $this->getService(CommentService::class);
             $errors = $commentService->delete($tag);
-            return new ApiResponse(['success' => _t('COMMENT_REMOVED')]+$errors, 200);
+            return new ApiResponse(['success' => _t('COMMENT_REMOVED')] + $errors, 200);
         } else {
             return new ApiResponse(['error' => _t('NOT_AUTORIZED_TO_REMOVE_COMMENT')], 403);
         }
@@ -437,7 +437,7 @@ class ApiController extends YesWikiController
         $code = Response::HTTP_INTERNAL_SERVER_ERROR;
         try {
             $csrfTokenController = $this->wiki->services->get(CsrfTokenController::class);
-            $csrfTokenController->checkToken('main', 'POST', 'csrfToken',false);
+            $csrfTokenController->checkToken('main', 'POST', 'csrfToken', false);
         } catch (TokenNotFoundException $th) {
             $code = Response::HTTP_UNAUTHORIZED;
             $result = [
@@ -500,10 +500,10 @@ class ApiController extends YesWikiController
                 if ($reactionManager->deleteUserReaction($page, $idreaction, $id, $username)) {
                     return new ApiResponse(
                         [
-                            'idReaction'=>$idreaction,
-                            'id'=>$id,
+                            'idReaction' => $idreaction,
+                            'id' => $id,
                             'page' => $page,
-                            'user'=> $username
+                            'user' => $username
                         ],
                         Response::HTTP_OK
                     );
@@ -551,7 +551,7 @@ class ApiController extends YesWikiController
                             // un choix de vote est fait
                             if ($_POST['id']) {
                                 // test if limits wherer put
-                                if (!empty($params['maxreaction']) && count($userReactions)>= $params['maxreaction']) {
+                                if (!empty($params['maxreaction']) && count($userReactions) >= $params['maxreaction']) {
                                     return new ApiResponse(
                                         ['error' => 'Seulement '.$params['maxreaction'].' réaction(s) possible(s). Vous pouvez désélectionner une de vos réactions pour changer.'],
                                         Response::HTTP_UNAUTHORIZED
@@ -864,7 +864,7 @@ class ApiController extends YesWikiController
     {
         $token = $this->getService(ArchiveService::class)->getForcedUpdateToken();
         return new ApiResponse(
-            ['token'=>$token],
+            ['token' => $token],
             empty($token) ? Response::HTTP_INTERNAL_SERVER_ERROR : Response::HTTP_OK
         );
     }

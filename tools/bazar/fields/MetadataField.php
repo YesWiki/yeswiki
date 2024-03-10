@@ -54,7 +54,7 @@ class MetadataField extends BazarField
         ] + (
             !empty($this->favorite_preset)
             ? ['favorite_preset' => $this->favorite_preset]
-            :[]
+            : []
         ));
 
         return [];

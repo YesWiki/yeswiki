@@ -23,7 +23,9 @@ class ActionsBuilderService
     // ---------------------
     public function getData()
     {
-        if ($this->data !== null) return $this->data;
+        if ($this->data !== null) {
+            return $this->data;
+        }
 
         $data = baz_forms_and_lists_ids();
         // Loads various Yaml file
@@ -47,7 +49,7 @@ class ActionsBuilderService
                     $key = $filename;
                 }
             } else {
-                
+
                 $key = $filename;
             }
             $data['action_groups'][$key] = Yaml::parseFile($filePath);
@@ -68,14 +70,14 @@ class ActionsBuilderService
             return $a['position'] - $b['position'];
         });
 
-        // Add custom bazar templates to the list of bazarliste component 
+        // Add custom bazar templates to the list of bazarliste component
         $bazarlisteTwigFiles = glob('custom/templates/bazar/*.twig');
         $bazarlisteTplFiles = glob('custom/templates/bazar/*.tpl.html');
         $bazarlisteCustomTemplates = array_merge($bazarlisteTplFiles, $bazarlisteTwigFiles);
         foreach ($bazarlisteCustomTemplates as $k => $v) {
-            $bazarlisteCustomTemplates[$k] = str_replace ('custom/templates/bazar/', '', $v);
+            $bazarlisteCustomTemplates[$k] = str_replace('custom/templates/bazar/', '', $v);
         }
-        // bazar templates starting with "fiche" are not list of entries 
+        // bazar templates starting with "fiche" are not list of entries
         $filtered_files = preg_grep('/^(?!fiche)/', $bazarlisteCustomTemplates);
         foreach ($filtered_files as $file) {
             $name = str_replace(['.tpl.html', '.twig'], '', $file);
@@ -94,10 +96,10 @@ class ActionsBuilderService
                     ]
                 ];
             }
-        } 
-     
+        }
+
         // Handle translations
-        array_walk_recursive($data['action_groups'], function(&$item, $key) {
+        array_walk_recursive($data['action_groups'], function (&$item, $key) {
             if (is_string($item) && preg_match("/_t\((.+)\)/", $item, $trans_key)) {
                 $item = str_replace($trans_key[0], _t($trans_key[1]), $item);
             }

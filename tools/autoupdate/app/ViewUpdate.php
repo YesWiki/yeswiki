@@ -5,6 +5,7 @@
  * It is executed in a cercopitheque version in RAM on server. Do not call new others classes
  * because we can not be sure that this class exists in the RAM or if the file is ever on the file system.
  */
+
 namespace AutoUpdate;
 
 class ViewUpdate
@@ -12,7 +13,7 @@ class ViewUpdate
     protected $autoUpdate;
     protected $messages;
     protected $baseURL;
-    
+
     // important do not change the arguments of this method because called form cercopitheque
     public function __construct($autoUpdate, $messages)
     {
@@ -29,7 +30,7 @@ class ViewUpdate
         );
         return $infos;
     }
-    
+
     // important do not change the arguments of this method because called form cercopitheque
     public function show()
     {

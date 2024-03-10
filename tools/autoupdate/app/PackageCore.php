@@ -63,11 +63,11 @@ class PackageCore extends Package
         $neededPHPVersion = $this->getNeededPHPversionFromExtractedFolder() ;
         if (!$this->PHPVersionEnoughHigh($neededPHPVersion)) {
             $textAction = ($this->newVersionRequested()) ? _t('AU_PHP_TOO_LOW_VERSION_UPDATE') : _t('AU_PHP_TOO_LOW_UPDATE');
-            trigger_error(_t('AU_PHP_TOO_LOW_ERROR',[
+            trigger_error(_t('AU_PHP_TOO_LOW_ERROR', [
                 'textAction' => $textAction,
                 'NEEDEDPHPVERSION' => $neededPHPVersion,
                 'CURRENTPHPVERSION' => PHP_VERSION,
-                'hint' => _t('AU_PHP_TOO_LOW_HINT',['textAction' => $textAction])
+                'hint' => _t('AU_PHP_TOO_LOW_HINT', ['textAction' => $textAction])
             ]));
             return false;
         }

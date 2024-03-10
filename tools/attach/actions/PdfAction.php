@@ -36,23 +36,24 @@ class PdfAction extends YesWikiAction
     public function run()
     {
         if (
-		empty($this->arguments['url']) ||
-		(!in_array(parse_url($this->arguments['url'], PHP_URL_HOST), [$_SERVER['SERVER_NAME'], 'www.'.$_SERVER['SERVER_NAME']])) ||
-            (
-                parse_url($this->arguments['url'], PHP_URL_PORT) ==  '' && 
-                $_SERVER['SERVER_PORT'] != '' 
-                &&  $_SERVER['SERVER_PORT'] != '80'
-                && $_SERVER['SERVER_PORT'] != '443'
-            )  ||
-            (
-                parse_url($this->arguments['url'], PHP_URL_PORT) != '' && 
-                parse_url($this->arguments['url'], PHP_URL_PORT) != $_SERVER['SERVER_PORT']) ||
+            empty($this->arguments['url']) ||
+            (!in_array(parse_url($this->arguments['url'], PHP_URL_HOST), [$_SERVER['SERVER_NAME'], 'www.'.$_SERVER['SERVER_NAME']])) ||
                 (
-                    !empty($_SERVER['HTTP_REFERER']) && 
-                    parse_url($this->arguments['url'], PHP_URL_SCHEME) != parse_url($_SERVER['HTTP_REFERER'], PHP_URL_SCHEME)
-                )
-            ) {
-            return $this->render("@templates/alert-message.twig",[
+                    parse_url($this->arguments['url'], PHP_URL_PORT) ==  '' &&
+                    $_SERVER['SERVER_PORT'] != ''
+                    &&  $_SERVER['SERVER_PORT'] != '80'
+                    && $_SERVER['SERVER_PORT'] != '443'
+                )  ||
+                (
+                    parse_url($this->arguments['url'], PHP_URL_PORT) != '' &&
+                    parse_url($this->arguments['url'], PHP_URL_PORT) != $_SERVER['SERVER_PORT']
+                ) ||
+                    (
+                        !empty($_SERVER['HTTP_REFERER']) &&
+                        parse_url($this->arguments['url'], PHP_URL_SCHEME) != parse_url($_SERVER['HTTP_REFERER'], PHP_URL_SCHEME)
+                    )
+        ) {
+            return $this->render("@templates/alert-message.twig", [
                 'type' => 'danger',
                 'message' => _t('ATTACH_ACTION_PDF_PARAM_URL_ERROR')
             ]);
@@ -74,7 +75,7 @@ class PdfAction extends YesWikiAction
                     $shape = "pdf" ;
                     $ratio = 1.38 ;
             }
-            
+
             //size
             $maxWidth = $this->arguments['largeurmax'];
             $maxHeight = $this->arguments['hauteurmax'];
@@ -97,14 +98,14 @@ class PdfAction extends YesWikiAction
                 }
             }
 
-            return $this->render("@attach/actions/pdf.twig",[
+            return $this->render("@attach/actions/pdf.twig", [
                     'url' => $this->arguments['url'],
                     'class' => $this->arguments['class'],
                     'manageSize' => $manageSize,
                     'shape' => $shape,
                     'maxWidth' => $maxWidth,
                     'maxHeight' => $maxHeight,
-                    
+
             ]);
         }
     }

@@ -147,7 +147,7 @@ class ReactionsController extends YesWikiController
                 'id' => $id,
                 'label' => $labels[$k] ?? '',
                 'image' => $images[$k] ?? '',
-                'nbReactions'=>0
+                'nbReactions' => 0
             ];
         }
         $allReactions = $this->reactionManager->getReactions($pageTag, [$reactionId]);

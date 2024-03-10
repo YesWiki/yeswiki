@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TEMPLATE_ACTION' => 'Action',
     'TEMPLATE_FILE_NOT_FOUND' => 'Template not found',

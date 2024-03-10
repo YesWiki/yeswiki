@@ -102,7 +102,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             $subject ?? "",
             $message_txt ?? ""
         );
-    
+
         // adding the infomsg after checking the size of the message
         if ($type != 'abonnement' && $type != 'desabonnement' && !empty($infomsg)) {
             $message_txt = strip_tags($infomsg) . '\n\n' . $message_txt;

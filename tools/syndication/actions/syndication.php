@@ -145,7 +145,7 @@ if (!empty($urls)) {
                 echo '<p class="alert alert-danger">' . _t('ERROR') . ' ' . magpie_error() . '</p>' . "\n";
             }
         }
-        $nburl = $nburl+1;
+        $nburl = $nburl + 1;
     }
 
     // Trie des pages par date

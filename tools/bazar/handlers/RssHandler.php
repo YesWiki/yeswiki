@@ -66,10 +66,10 @@ class RssHandler extends YesWikiHandler
 
         $tableau_flux_rss = $this->getService(EntryManager::class)->search(
             [
-                'queries'=>$query,
-                'formsIds'=>$id,
-                'user'=>$utilisateur,
-                'keywords'=>$q
+                'queries' => $query,
+                'formsIds' => $id,
+                'user' => $utilisateur,
+                'keywords' => $q
             ],
             true, // filter on read ACL
             true  // use Guard

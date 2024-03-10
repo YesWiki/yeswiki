@@ -1,9 +1,10 @@
 <?php
+
 namespace AutoUpdate;
 
 abstract class PackageExt extends Package
 {
-    const INFOS_FILENAME = "infos.json";
+    public const INFOS_FILENAME = "infos.json";
 
     protected $infos = null;
 
@@ -23,15 +24,15 @@ abstract class PackageExt extends Package
     public function upgrade()
     {
         $desPath = $this->localPath();
-        
+
         $neededPHPVersion = $this->getNeededPHPversionFromExtractedFolder() ;
         if (!$this->PHPVersionEnoughHigh($neededPHPVersion)) {
             $textAction = strtolower((is_dir($desPath)) ? _t('AU_UPDATE') : _t('AU_INSTALL'));
-            trigger_error(_t('AU_PHP_TOO_LOW_ERROR',[
+            trigger_error(_t('AU_PHP_TOO_LOW_ERROR', [
                 'textAction' => $textAction,
                 'NEEDEDPHPVERSION' => $neededPHPVersion,
                 'CURRENTPHPVERSION' => PHP_VERSION,
-                'hint' => _t('AU_PHP_TOO_LOW_HINT',['textAction' => $textAction])
+                'hint' => _t('AU_PHP_TOO_LOW_HINT', ['textAction' => $textAction])
             ]));
             return false;
         }
@@ -46,7 +47,7 @@ abstract class PackageExt extends Package
         // get the first subfolder extracted from the zip (it contains everything)
         $dirs = array_filter(glob($this->extractionPath.'/*'), 'is_dir');
         $extractionPath = $dirs[0].'/';
-    
+
         $this->copy(
             $extractionPath,
             $desPath

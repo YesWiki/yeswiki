@@ -30,7 +30,7 @@ class FieldFactory
             if (!file_exists(__DIR__ .self::CACHE_PATH) || !is_dir(__DIR__ .self::CACHE_PATH)) {
                 throw new Exception("ERROR ! : Folder `cache/` not existing in the root folder on the website host ! Can you create it ? ");
             }
-            
+
             if (!is_writable(__DIR__ .self::CACHE_PATH)) {
                 throw new Exception("ERROR ! : Folder `cache/` is not writable ! Can you give it write acces by ftp for example (code 770) ?");
             }

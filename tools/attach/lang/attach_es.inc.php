@@ -70,7 +70,7 @@ return [
 
     // actions/video.php
     'ATTACH_ACTION_VIDEO_PARAM_ERROR' => 'La acción video debe llamarse con los parámetros «id» y «serveur». Para «serveur», solo se permiten los valores «vimeo» o «youtube» o «peertube».',
-    
+
     // actions/pdf.php
     'ATTACH_ACTION_PDF_PARAM_URL_ERROR' => 'La acción pdf debe llamarse con el parámetro «url» y la URL dada debe estar en el mismo host que el wiki (por ejemplo, \' xxx.yyy.com \'), mismo esquema (por ejemplo, \' https \') y el mismo puerto si se especifica (por ejemplo, \'8080 \'). ',
     // 'ATTACH_ACTION_DISPLAY_PDF_TEXT' => 'Afficher le pdf dans la page :',
@@ -114,7 +114,7 @@ return [
     // 'ATTACH_HANDLER_AJAXUPLOAD_FILE_TOO_LARGE' => 'Le fichier est trop large.',
     // 'ATTACH_HANDLER_AJAXUPLOAD_AUTHORIZED_EXT' => 'Le fichier n\'a pas une extension autorisée, voici les autorisées : {ext}.',
     // 'ATTACH_HANDLER_AJAXUPLOAD_ERROR' => 'Impossible de sauver le fichier. L\'upload a été annulé ou le serveur a planté...',
-    
+
     // edit config action
     // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_VIDEO_SERVICE]' => 'Service de vidéo par défaut (peertube, youtube ou vimeo)',
     // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_PEERTUBE_INSTANCE]' => 'Adresse du serveur peertube par défaut',
@@ -122,4 +122,4 @@ return [
     // 'EDIT_CONFIG_GROUP_ATTACH' => 'Insertion de médias (images, vidéos)',
 ];
 
-    // 'FILEMANAGER_ACTION_NEED_ACCESS' => 'Seul le propriétaire de cette page peut accéder au gestionnaire des fichiers attaché',
+// 'FILEMANAGER_ACTION_NEED_ACCESS' => 'Seul le propriétaire de cette page peut accéder au gestionnaire des fichiers attaché',

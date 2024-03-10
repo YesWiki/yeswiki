@@ -28,7 +28,9 @@ class DocumentationController extends YesWikiController
             $localizedPath = "{$extPath}docs/{$GLOBALS['prefered_language']}/README.md";
             $path = "{$extPath}docs/README.md";
             $docPath = glob($localizedPath)[0] ?? glob($path)[0] ?? null;
-            if ($docPath) $extensions[] = ["name" => $extName, "docPath" => $docPath];
+            if ($docPath) {
+                $extensions[] = ["name" => $extName, "docPath" => $docPath];
+            }
         }
         return $extensions;
     }

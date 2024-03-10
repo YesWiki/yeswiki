@@ -1,9 +1,10 @@
 <?php
+
 namespace AutoUpdate;
 
 class PackageTheme extends PackageExt
 {
-    const THEME_PATH = '/themes/';
+    public const THEME_PATH = '/themes/';
 
     protected function localPath()
     {

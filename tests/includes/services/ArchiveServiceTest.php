@@ -80,8 +80,8 @@ class ArchiveServiceTest extends YesWikiTestCase
 
     public function archiveProvider()
     {
-        if (!class_exists(ArchiveService::class,false)){
-            include_once 'includes/services/ArchiveService.php'; 
+        if (!class_exists(ArchiveService::class, false)) {
+            include_once 'includes/services/ArchiveService.php';
         }
         $defaultFoldersToInclude = constant("\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_INCLUDE");
         $defaultFoldersToExclude = constant("\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_EXCLUDE");
@@ -97,7 +97,7 @@ class ArchiveServiceTest extends YesWikiTestCase
                 'wakkaContent' => [
                     'archive' => [
                         'foldersToInclude' => $defaultFoldersToInclude,
-                        'foldersToExclude' => array_merge($defaultFoldersToExclude,$defaultFoldersToInclude)
+                        'foldersToExclude' => array_merge($defaultFoldersToExclude, $defaultFoldersToInclude)
                     ],
                 ]
             ],
@@ -119,7 +119,7 @@ class ArchiveServiceTest extends YesWikiTestCase
                 'wakkaContent' => [
                     'archive' => [
                         'foldersToInclude' => $defaultFoldersToInclude,
-                        'foldersToExclude' => array_merge($defaultFoldersToExclude,$defaultFoldersToInclude)
+                        'foldersToExclude' => array_merge($defaultFoldersToExclude, $defaultFoldersToInclude)
                     ],
                 ]
             ],
@@ -242,8 +242,8 @@ class ArchiveServiceTest extends YesWikiTestCase
         if (is_array($contentDefinition)) {
             $this->assertIsArray($contentToCheck);
             foreach ($contentDefinition as $key => $value) {
-                if (is_integer($key) && is_scalar($value)){
-                    $this->assertContains($value,$contentToCheck);
+                if (is_integer($key) && is_scalar($value)) {
+                    $this->assertContains($value, $contentToCheck);
                 } else {
                     $this->assertArrayHasKey($key, $contentToCheck);
                     $this->checkWakkaContent($contentDefinition[$key], $contentToCheck[$key]);
@@ -276,7 +276,7 @@ class ArchiveServiceTest extends YesWikiTestCase
 
         $results = $consoleService->startConsoleSync("core:archive", [
             "-f",
-            "-x",implode(',',$defaultFoldersToInclude),
+            "-x",implode(',', $defaultFoldersToInclude),
         ]);
         if (empty($previousStatus)) {
             $this->unsetWikiStatus($configService);
@@ -339,7 +339,7 @@ class ArchiveServiceTest extends YesWikiTestCase
 
         $consoleParams = [
             "-f",
-            "-x",implode(',',$defaultFoldersToInclude),
+            "-x",implode(',', $defaultFoldersToInclude),
         ];
 
         $previoushideConfigValuesParams = $this->getHideConfigValuesParam($configService);

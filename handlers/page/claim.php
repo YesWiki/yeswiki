@@ -24,7 +24,7 @@ if ($this->page) {
             case 'opencomments':
                 if (
                     !empty($_GET['list'])
-                    && (in_array($_GET['list'], $wikiGroups, true) || $_GET['list']=='+')
+                    && (in_array($_GET['list'], $wikiGroups, true) || $_GET['list'] == '+')
                 ) {
                     $aclsService->save($tag, 'comment', $_GET['list']);
                     $this->SetMessage(_t('YW_COMMENTS_ARE_NOW_OPEN'));

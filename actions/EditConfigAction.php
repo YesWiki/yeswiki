@@ -55,14 +55,14 @@ class EditConfigAction extends YesWikiAction
         $this->associatedExtensions = null ;
         if (!$this->wiki->UserIsAdmin()) {
             return $this->render('@templates/alert-message.twig', [
-                'type'=>'danger',
-                'message'=> get_class($this)." : " . _t('BAZ_NEED_ADMIN_RIGHTS')
+                'type' => 'danger',
+                'message' => get_class($this)." : " . _t('BAZ_NEED_ADMIN_RIGHTS')
             ]) ;
         }
         if (!is_writable('wakka.config.php')) {
             return $this->render('@templates/alert-message.twig', [
-                'type'=>'danger',
-                'message'=> _t('ERROR_NO_ACCESS'). ' '._t('FILE_WRITE_PROTECTED')
+                'type' => 'danger',
+                'message' => _t('ERROR_NO_ACCESS'). ' '._t('FILE_WRITE_PROTECTED')
             ]) ;
         }
 
@@ -75,8 +75,8 @@ class EditConfigAction extends YesWikiAction
             $this->wiki->Redirect($this->wiki->Href('', '', [self::SAVED_NAME => "1"], false)) ;
         } elseif ($this->arguments['saved']) {
             $output .= $this->render('@templates/alert-message.twig', [
-                'type'=>'info',
-                'message'=> _t('EDIT_CONFIG_SAVE')
+                'type' => 'info',
+                'message' => _t('EDIT_CONFIG_SAVE')
             ]);
         }
 
@@ -409,7 +409,7 @@ class EditConfigAction extends YesWikiAction
                     .implode(
                         ',',
                         array_map(function ($k, $v) {
-                            return (($v === false) ? "false" : (($v=== true) ? "true" : "'".$v."'"));
+                            return (($v === false) ? "false" : (($v === true) ? "true" : "'".$v."'"));
                         }, array_keys($value), array_values($value))
                     )
                     .']';
@@ -418,14 +418,14 @@ class EditConfigAction extends YesWikiAction
                     .implode(
                         ',',
                         array_map(function ($k, $v) {
-                            return "'".$k."' => ". (($v === false) ? "false" : (($v=== true) ? "true" : "'".$v."'"));
+                            return "'".$k."' => ". (($v === false) ? "false" : (($v === true) ? "true" : "'".$v."'"));
                         }, array_keys($value), array_values($value))
                     )
                     .']';
             }
         } elseif (!is_string($value)) {
             try {
-                $value = (($value === false) ? "false" : (($value=== true) ? "true" : strval($value)));
+                $value = (($value === false) ? "false" : (($value === true) ? "true" : strval($value)));
             } catch (\Throwable $th) {
                 $value = '';
             }
@@ -444,7 +444,7 @@ class EditConfigAction extends YesWikiAction
         $matches = [];
         if (preg_match('/^\s*\[\s*(.*)\s*\]\s*$/', $val, $matches)) {
             $val = $matches[1];
-            $lines= preg_split('/(?<=\'|"|true|false|[0-9])\s*,\s*(?=\'|"|true|false|[0-9])/', $val);
+            $lines = preg_split('/(?<=\'|"|true|false|[0-9])\s*,\s*(?=\'|"|true|false|[0-9])/', $val);
             $result = [];
             foreach ($lines as $line) {
                 $extract = explode('=>', $line);

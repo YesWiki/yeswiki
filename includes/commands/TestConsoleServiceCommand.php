@@ -31,7 +31,7 @@ class TestConsoleServiceCommand extends Command
             // the full command description shown when running the command with
             // the "--help" option
             ->setHelp("This command offers tests for ConsoleService.\nIf the option --childtext is empty, wait 2 seconds before appending text.")
-            
+
             ->addOption('file', 'f', InputOption::VALUE_REQUIRED, 'Filename where append text')
             ->addOption('text', 't', InputOption::VALUE_REQUIRED, 'Text to append')
             ->addOption('childtext', 'c', InputOption::VALUE_OPTIONAL, 'Text to append for child')
@@ -48,7 +48,7 @@ class TestConsoleServiceCommand extends Command
         $text = $input->getOption('text');
         $wait = abs(intval($input->getOption('wait')));
         // force file to be in cache folder
-        if (empty($file) || empty($text) || is_dir("cache/$file") || empty($wait)){
+        if (empty($file) || empty($text) || is_dir("cache/$file") || empty($wait)) {
             $output->writeln([
                 "",
                 "ERROR : required arguments are missing (file or text or wait).",
@@ -58,14 +58,14 @@ class TestConsoleServiceCommand extends Command
             return Command::FAILURE;
         }
         $childtext = $input->getOption('childtext');
-        if (empty($childtext)){
+        if (empty($childtext)) {
             sleep($wait);
-            $this->writeToFile("cache/$file",$text);
+            $this->writeToFile("cache/$file", $text);
             exit();
         } else {
             $consoleService = $this->wiki->services->get(ConsoleService::class);
-            $consoleService->startConsoleAsync('core:testconsoleservice',["-f",$file,"-t",$childtext,"-w",$wait]);
-            $this->writeToFile("cache/$file",$text);
+            $consoleService->startConsoleAsync('core:testconsoleservice', ["-f",$file,"-t",$childtext,"-w",$wait]);
+            $this->writeToFile("cache/$file", $text);
             exit();
         }
         return Command::SUCCESS;
@@ -73,6 +73,6 @@ class TestConsoleServiceCommand extends Command
 
     private function writeToFile(string $file, string $content)
     {
-        file_put_contents($file,$content,FILE_APPEND);
+        file_put_contents($file, $content, FILE_APPEND);
     }
 }

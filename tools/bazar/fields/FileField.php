@@ -31,11 +31,11 @@ class FileField extends BazarField
         $this->attach = null;
         $exts = $values[self::FIELD_AUTHORIZED_EXTS_LABEL] ?? '';
         $exts = is_string($exts) && !empty(trim($exts))
-            ? explode(',',trim($exts))
+            ? explode(',', trim($exts))
             : [];
-        $exts = array_map('trim',$exts);
-        $this->authorizedExts = array_filter($exts,function($ext){
-            return preg_match('/^\.[a-z0-9]{1,4}+$/',$ext);
+        $exts = array_map('trim', $exts);
+        $this->authorizedExts = array_filter($exts, function ($ext) {
+            return preg_match('/^\.[a-z0-9]{1,4}+$/', $ext);
         });
     }
 
@@ -123,7 +123,7 @@ class FileField extends BazarField
                 'value' => $value,
                 'fileUrl' => ($shortFileName == $value)
                     ? $this->getWiki()->getBaseUrl().'/'.$basePath . $value
-                    : $this->getWiki()->Href('download', $entry['id_fiche']."_".$this->getPropertyName(), ['file'=>$value], false),
+                    : $this->getWiki()->Href('download', $entry['id_fiche']."_".$this->getPropertyName(), ['file' => $value], false),
                 'shortFileName' => $shortFileName,
             ]);
         }
@@ -274,7 +274,7 @@ class FileField extends BazarField
             $previousGet = $_GET;
             $_GET = ['wiki' => $previousGet['wiki']];
             $previousPost = $_POST;
-            $_POST= [];
+            $_POST = [];
             $previousRequest = $_REQUEST;
             $_REQUEST = [];
             unset($entryFromDb[$this->propertyName]);

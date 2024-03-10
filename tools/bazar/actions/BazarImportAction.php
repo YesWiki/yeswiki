@@ -33,13 +33,13 @@ class BazarImportAction extends YesWikiAction
                 'debug' => ($this->wiki->GetConfigValue('debug') == 'yes'),
             ]);
     }
-    
+
     public function run()
     {
         if (!empty($aclMessage = $this->checkSecuredACL())) {
             return $aclMessage;
         }
-        
+
         if ($this->isWikiHibernated()) {
             return $this->getMessageWhenHibernated();
         }
@@ -68,11 +68,11 @@ class BazarImportAction extends YesWikiAction
                     }, $extracted);
                 }
                 break;
-            
+
             case 'importentries':
                 $importedEntries = $this->CSVManager->importEntry($this->arguments['importentries'], $this->arguments['id']);
                 break;
-            
+
             case 'default':
             default:
                 // get csv_template

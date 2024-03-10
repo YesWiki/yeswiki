@@ -1,4 +1,5 @@
 <?php
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -7,7 +8,7 @@ if (!defined("WIKINI_VERSION")) {
 $val = $this->GetParameter('val');
 if (empty($val)) {
     $error = ' '._t('PROGRESSBAR_REQUIRED_VAL_PARAM');
-} elseif (!is_numeric($val) || $val<0 || $val > 100) {
+} elseif (!is_numeric($val) || $val < 0 || $val > 100) {
     $error = ' '._t('PROGRESSBAR_ERROR_VAL_PARAM');
 }
 

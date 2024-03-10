@@ -120,7 +120,7 @@ class Highlighter
     public function _getKeywordPattern()
     {
         $aResult = array();
-        foreach ($this->keywords as $key=>$keyword) {
+        foreach ($this->keywords as $key => $keyword) {
             $aResult = array_merge($aResult, $keyword['words']);
             $this->keywords[$key]['pattern'] = '\b'.implode('\b|\b', $keyword['words']).'\b';
         }
@@ -181,7 +181,7 @@ class Highlighter
         if ($this->numberStyle) {
             $a[] = $this->_numberPattern;
         }
-        if (count($this->keywords)>0) {
+        if (count($this->keywords) > 0) {
             $a[] = $this->_keywordPattern;
         }
         if ($this->symbolesStyle) {
@@ -200,7 +200,7 @@ class Highlighter
     {
         $text = $match[0];
         $pcreOpt = $this->_patOpt;
-        $pcreOpt .= ($this->isCaseSensitiv)?'':'i';
+        $pcreOpt .= ($this->isCaseSensitiv) ? '' : 'i';
         //commentaires
         if ($this->commentStyle) {
             if (preg_match('`'.$this->_commentPattern."`$pcreOpt", $text, $m)) {
@@ -226,8 +226,8 @@ class Highlighter
             }
         }
         //mot clé
-        if (count($this->keywords)>0) {
-            foreach ($this->keywords as $key=>$keywords) {
+        if (count($this->keywords) > 0) {
+            foreach ($this->keywords as $key => $keywords) {
                 if ($keywords['style']) {
                     if (preg_match('`'.$keywords['pattern']."`$pcreOpt", $text, $m)) {
                         return "<span style=\"".$keywords['style']."\">".$match[0].'</span>';

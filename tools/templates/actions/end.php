@@ -19,12 +19,12 @@ if (empty($elem)) {
     if (!isset($GLOBALS['check_'.$pagetag ])) {
         $GLOBALS['check_'.$pagetag ] = [];
     }
-    if (!isset($GLOBALS['check_'.$pagetag ][$elem])){
+    if (!isset($GLOBALS['check_'.$pagetag ][$elem])) {
         $GLOBALS['check_'.$pagetag ][$elem] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->checkGraphicalElements($elem, $pagetag, $body);
     }
 
 
-    if ($GLOBALS['check_'.$pagetag][$elem] || in_array($elem,['tab','tabs'],true)) {
+    if ($GLOBALS['check_'.$pagetag][$elem] || in_array($elem, ['tab','tabs'], true)) {
         switch ($elem) {
             case 'grid':
                 echo "\n</div> <!-- end of grid -->\n";

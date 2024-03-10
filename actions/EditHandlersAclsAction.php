@@ -9,8 +9,8 @@ class EditHandlersAclsAction extends YesWikiAction
     {
         if (!$this->wiki->UserIsAdmin()) {
             return $this->render('@templates/alert-message.twig', [
-                'type'=>'danger',
-                'message'=> "EditHandlersAclsAction : " . _t('BAZ_NEED_ADMIN_RIGHTS')
+                'type' => 'danger',
+                'message' => "EditHandlersAclsAction : " . _t('BAZ_NEED_ADMIN_RIGHTS')
             ]) ;
         }
 
@@ -27,7 +27,7 @@ class EditHandlersAclsAction extends YesWikiAction
             $res .= '>' . ucfirst($handler) .  '</option>';
         }
         $res .= '</select> <input class="btn btn-default" type="submit" value="'._t('SEE').'" />' . $wiki->FormClose();
-        
+
         if ($_POST && !empty($_POST['handlername'])) { // save ACL's
             $result = $wiki->SetModuleACL($name = $_POST['handlername'], 'handler', @$_POST['acl']);
             if ($result) {

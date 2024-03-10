@@ -31,7 +31,7 @@ class CheckboxEntryField extends CheckboxField
             array_keys(self::CHECKBOX_TWIG_LIST)
         )) ? $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'] :
             self::CHECKBOX_DISPLAY_MODE_LIST ;
-        $this->dragAndDropDisplayMode='@bazar/inputs/checkbox_drag_and_drop_entry.twig' ;
+        $this->dragAndDropDisplayMode = '@bazar/inputs/checkbox_drag_and_drop_entry.twig' ;
 
 
         $this->isDistantJson = filter_var($this->name, FILTER_VALIDATE_URL);

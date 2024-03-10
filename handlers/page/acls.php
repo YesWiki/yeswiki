@@ -43,8 +43,8 @@ if ($this->page && ($this->UserIsOwner() || $this->UserIsAdmin())) {
   <div class="controls col-sm-9">
     <textarea class="form-control" name="read_acl" rows="3" cols="20"
       <?php if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
-            echo 'disabled data-toggle="tooltip" data-placement="bottom" title="'._t('WIKI_IN_HIBERNATION').'"';
-        } ?>
+          echo 'disabled data-toggle="tooltip" data-placement="bottom" title="'._t('WIKI_IN_HIBERNATION').'"';
+      } ?>
       ><?php echo  $readACL["list"] ?></textarea>
   </div>
 </div>
@@ -53,8 +53,8 @@ if ($this->page && ($this->UserIsOwner() || $this->UserIsAdmin())) {
   <div class="controls col-sm-9">
     <textarea class="form-control" name="write_acl" rows="3" cols="20"
       <?php if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
-            echo 'disabled data-toggle="tooltip" data-placement="bottom" title="'._t('WIKI_IN_HIBERNATION').'"';
-        } ?>
+          echo 'disabled data-toggle="tooltip" data-placement="bottom" title="'._t('WIKI_IN_HIBERNATION').'"';
+      } ?>
       ><?php echo  $writeACL["list"] ?></textarea>
   </div>
 </div>
@@ -68,17 +68,17 @@ if ($this->page && ($this->UserIsOwner() || $this->UserIsAdmin())) {
   <div class="controls col-sm-9">
     <select class="form-control" name="newowner"
       <?php if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
-            echo 'disabled data-toggle="tooltip" data-placement="bottom" title="'._t('WIKI_IN_HIBERNATION').'"';
-        } ?>
+          echo 'disabled data-toggle="tooltip" data-placement="bottom" title="'._t('WIKI_IN_HIBERNATION').'"';
+      } ?>
       >
       <option value=""><?php echo _t('YW_CHANGE_NOTHING'); ?></option><!-- Don't change-->
       <option value="">&nbsp;</option>
 <?php
 if ($users = $this->LoadUsers()) {
-            foreach ($users as $user) {
-                echo "<option value=\"",htmlspecialchars($user["name"], ENT_COMPAT, YW_CHARSET),"\">",$user["name"],"</option>\n";
-            }
-        } ?>
+    foreach ($users as $user) {
+        echo "<option value=\"",htmlspecialchars($user["name"], ENT_COMPAT, YW_CHARSET),"\">",$user["name"],"</option>\n";
+    }
+} ?>
     </select>
   </div>
 </div>
@@ -87,8 +87,8 @@ if ($users = $this->LoadUsers()) {
     <div class="col-sm-9 col-sm-offset-3">
       <input type="submit" value="<?php echo _t('SAVE') ?>" class="btn btn-primary" accesskey="s" 
       <?php if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
-            echo 'disabled data-toggle="tooltip" data-placement="bottom" title="'._t('WIKI_IN_HIBERNATION').'"';
-        } ?>
+          echo 'disabled data-toggle="tooltip" data-placement="bottom" title="'._t('WIKI_IN_HIBERNATION').'"';
+      } ?>
       /><!-- Store ACLs-->
       <input type="button" value="<?php echo _t('YW_CANCEL') ?>" onclick="if(history.length>1){history.back();}else{location.href='<?php echo $this->Href(); ?>';}" class="btn btn-default btn-xs" /><!-- Cancel -->
     </div>

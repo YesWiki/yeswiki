@@ -1,6 +1,8 @@
 <?php
+
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Core\Service\ThemeManager;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -89,7 +91,7 @@ $wikiprops = [
     'timezone' => date_default_timezone_get(),
     'baseUrl' => $this->config['base_url'],
     'pageTag' => $this->getPageTag(),
-    'isDebugEnabled' => ($this->GetConfigValue('debug') =='yes' ? 'true' : 'false'),
+    'isDebugEnabled' => ($this->GetConfigValue('debug') == 'yes' ? 'true' : 'false'),
     'antiCsrfToken' => $this->services->get(CsrfTokenManager::class)->getToken('main')->getValue(),
 ];
 

@@ -5,14 +5,14 @@
  * Utilisation {{newtextsearch}} en lieu eet place de {{textsearch}}
  **/
 
- use YesWiki\Bazar\Controller\EntryController;
- use YesWiki\Bazar\Service\EntryManager;
- use YesWiki\Bazar\Service\FormManager;
- use YesWiki\Bazar\Service\SearchManager;
- use YesWiki\Core\Service\AclService;
- use YesWiki\Core\Service\DbService;
+use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\SearchManager;
+use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\DbService;
 
- // On récupére ou initialise toutes le varible comme pour textsearch
+// On récupére ou initialise toutes le varible comme pour textsearch
 // label à afficher devant la zone de saisie
 $label = $this->GetParameter('label', _t('WHAT_YOU_SEARCH').'&nbsp;: ');
 // largeur de la zone de saisie
@@ -75,7 +75,7 @@ if (!function_exists('displayNewSearchResult')) {
         foreach ($needles as $needle => $result) {
             if (preg_match('/'.$needle.'/i', $string, $matches)) {
                 $tab = preg_split("/(".$matches[0].")/iu", $string, 2, PREG_SPLIT_DELIM_CAPTURE);
-                if (count($tab)>1) {
+                if (count($tab) > 1) {
                     $avant = strip_tags(mb_substr($tab[0], -$cc, $cc));
                     $apres = strip_tags(mb_substr($tab[2], 0, $cc));
                     $string_re .= '<p style="margin-top:0;margin-left:1rem;"><i style="color:silver;">[…]</i>' . $avant . '<b>' . $tab[1] . '</b>' . $apres . '<i style="color:silver;">[…]</i></p> ';
@@ -85,7 +85,7 @@ if (!function_exists('displayNewSearchResult')) {
         if (empty($string_re)) {
             for ($i = 0; $i < $num; $i++) {
                 $tab[$i] = preg_split("/($qt[$i])/iu", $string, 2, PREG_SPLIT_DELIM_CAPTURE);
-                if (count($tab[$i])>1) {
+                if (count($tab[$i]) > 1) {
                     $avant[$i] = strip_tags(mb_substr($tab[$i][0], -$cc, $cc));
                     $apres[$i] = strip_tags(mb_substr($tab[$i][2], 0, $cc));
                     $string_re .= '<p style="margin-top:0;margin-left:1rem;"><i style="color:silver;">[…]</i>' . $avant[$i] . '<b>' . $tab[$i][1] . '</b>' . $apres[$i] . '<i style="color:silver;">[…]</i></p> ';
@@ -144,9 +144,9 @@ if ($phrase) {
     // get some services
     $aclService = $this->services->get(AclService::class);
     $dbService = $this->services->get(DbService::class);
-    
+
     // Modification de caractère spéciaux
-    $phraseFormatted= str_replace(array('*', '?'), array('%', '_'), $phrase);
+    $phraseFormatted = str_replace(array('*', '?'), array('%', '_'), $phrase);
     $phraseFormatted = $dbService->escape($phraseFormatted);
 
     // Blablabla SQL
@@ -172,7 +172,7 @@ if ($phrase) {
                 if ($this->HasAccess("read", $page["tag"])) {
                     $lien = $this->ComposeLinkToPage($page["tag"]);
                     echo '<li><h4 style="margin-bottom:0.2rem;">', $lien, "</h4>";
-                    $extract= '';
+                    $extract = '';
                     if ($counter < $maxDisplayedPages) {
                         if ($entryManager->isEntry($page["tag"])) {
                             $renderedEntry = $entryController->view($page["tag"], '', false); // without footer
@@ -188,13 +188,13 @@ if ($phrase) {
             }
             echo('</ol>');
 
-        // affichage des résultats en ligne
+            // affichage des résultats en ligne
         } else {
             $separator = htmlspecialchars($separator, ENT_COMPAT, YW_CHARSET);
             echo '<p>'._t('SEARCH_RESULT_OF').' "', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '"&nbsp;: ';
             foreach ($resultat as $i => $line) {
                 if ($this->HasAccess("read", $line["tag"])) {
-                    echo((($i>0) ? $separator:'').$this->ComposeLinkToPage($line['tag']));
+                    echo((($i > 0) ? $separator : '').$this->ComposeLinkToPage($line['tag']));
                 }
             }
             echo '</p>', "\n";

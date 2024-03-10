@@ -133,7 +133,7 @@ class AclService
         }
 
         // Add '"' at begin and end of each escaped privileges elements.
-        for ($i=0; $i<count($privileges); $i++) {
+        for ($i = 0; $i < count($privileges); $i++) {
             $privileges[$i] = '"'.$this->dbService->escape($privileges[$i]) .'"';
         }
 
@@ -176,11 +176,11 @@ class AclService
         if ($acl === null) {
             return false;
         } elseif (isset($acl['list']) && (
-                $acl['list'] === 'comments-closed' ||
+            $acl['list'] === 'comments-closed' ||
                 (
                     $acl['list'] === '*' && $privilege === 'comment' && empty($user)
                 )
-            )) {
+        )) {
             return false;
         }
 
@@ -272,18 +272,18 @@ class AclService
                     case '@': // groups
                         $gname = substr($line, 1);
                         // paranoiac: avoid line = '@'
-			if ($gname) {
-	                   if (in_array($gname, $formerGroups)) {
-				   $this->wiki->setMessage('Error group '.$gname.' inside same groups, inception was a bad movie');
-				   $result = false;
-			   } else {
-				   $formerGroups[] = $gname;
-				   if (!empty($username) && $this->userManager->isInGroup($gname, $username, false/* we have allready checked if user was an admin */, $formerGroups)) {
-					$result = $std_response ;
-				   } else {
-					$result = ! $std_response ;
-				   }
-			   }
+                        if ($gname) {
+                            if (in_array($gname, $formerGroups)) {
+                                $this->wiki->setMessage('Error group '.$gname.' inside same groups, inception was a bad movie');
+                                $result = false;
+                            } else {
+                                $formerGroups[] = $gname;
+                                if (!empty($username) && $this->userManager->isInGroup($gname, $username, false/* we have allready checked if user was an admin */, $formerGroups)) {
+                                    $result = $std_response ;
+                                } else {
+                                    $result = ! $std_response ;
+                                }
+                            }
                         } else {
                             $result = false ; // line '@'
                         }

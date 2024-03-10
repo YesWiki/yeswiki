@@ -120,7 +120,7 @@ class ApiController extends YesWikiController
             && !empty($selectedEntries) && is_string($selectedEntries) && count(explode(',', $selectedEntries)) == 1
             && !empty($get['fields']) && $get['fields'] == 'html_output');
     }
-    
+
     /**
      * helper to check if EntryView fast access for Bazar/Service/Guard
      * @param bool
@@ -228,13 +228,13 @@ class ApiController extends YesWikiController
     {
         $bazarListService = $this->getService(BazarListService::class);
         $externalIds = $_GET['externalIds'] ?? null;
-        $externalModeActivated = (is_array($externalIds) && isset($_GET['externalModeActivated'])) ? in_array($_GET['externalModeActivated'], [1,true,'1','true'], true): false;
+        $externalModeActivated = (is_array($externalIds) && isset($_GET['externalModeActivated'])) ? in_array($_GET['externalModeActivated'], [1,true,'1','true'], true) : false;
         $forms = $bazarListService->getForms([
             'externalModeActivated' => $externalModeActivated,
             'externalIds' => $externalIds,
-            'refresh' => isset($_GET['refresh']) ? in_array($_GET['refresh'], [1,true,'1','true'], true): false,
+            'refresh' => isset($_GET['refresh']) ? in_array($_GET['refresh'], [1,true,'1','true'], true) : false,
         ]);
-        
+
         $formattedGet = array_map(function ($value) {
             return ($value === 'true') ? true : (($value === 'false') ? false : $value);
         }, $_GET);
@@ -250,7 +250,7 @@ class ApiController extends YesWikiController
             );
         $formattedGet['searchfields'] = $searchfields;
         $formattedGet['externalModeActivated'] = $externalModeActivated;
-        
+
         $entries = $bazarListService->getEntries(
             $formattedGet + [
                 'user' => null,
@@ -265,7 +265,7 @@ class ApiController extends YesWikiController
             $forms
         );
         $filters = $bazarListService->formatFilters($formattedGet, $entries, $forms);
-        
+
         // Basic fields
         $fieldList = ['id_fiche', 'bf_titre'];
         // If no id, we need idtypeannonce (== formId) to filter
@@ -293,7 +293,7 @@ class ApiController extends YesWikiController
         // extra fields required by template
         $fieldList = array_merge($fieldList, $_GET['necessary_fields'] ?? []);
         $fieldList = array_values(array_unique(array_filter($fieldList))); // array_values to have incremental keys
-        
+
         $formIds = array_map(function ($entry) {
             return $entry['id_typeannonce'];
         }, $entries);
@@ -308,7 +308,7 @@ class ApiController extends YesWikiController
             }
             return $result;
         }, $entries);
-        
+
         $usedForms = array_filter($forms, function ($form) use ($formIds) {
             return in_array($form['bn_id_nature'], $formIds);
         });

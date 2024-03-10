@@ -115,7 +115,7 @@ if (empty($list)) {
         $fiche['multipleid'] = htmlspecialchars(trim(str_replace('/', '', $fiche[$id])).$fiche['id_fiche']);
         if ($currentlabel !== $fiche[$id]) {
             if (!$first) {
-                if (is_array($fichescat) && count($fichescat)>0) {
+                if (is_array($fichescat) && count($fichescat) > 0) {
                     $output .= $this->render("@bazar/$template", $fichescat);
                 }
                 // it's not the first time in the loop so we must close previously opened div
@@ -138,7 +138,7 @@ if (empty($list)) {
         $fichescat['fiches'][] = $fiche;
     }
     // last results
-    if (is_array($fichescat) && count($fichescat)>0) {
+    if (is_array($fichescat) && count($fichescat) > 0) {
         $output .= $this->render("@bazar/$template", $fichescat);
     }
     // it's not the first time in the loop so we must close previously opened div

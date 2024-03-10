@@ -35,7 +35,7 @@ class ArchiveCommand extends Command
             ->setHelp("Create archive of the YesWiki.\n".
                 "To save only the database use '--database-only'\n".
                 "To save only the files use '--files-only'\n")
-            
+
             ->addOption('database-only', 'd', InputOption::VALUE_NONE, 'Save only the database of the YesWiki')
             ->addOption('files-only', 'f', InputOption::VALUE_NONE, 'Save only the files of the YesWiki')
             ->addOption('foldersToInclude', 'i', InputOption::VALUE_REQUIRED, 'Folders to include, path relative to root, coma separated')

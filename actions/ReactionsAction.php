@@ -43,7 +43,7 @@ class ReactionsAction extends YesWikiAction
         $username = empty($user['name']) ? '' : $user['name'];
 
         $reactionsController = $this->getService(ReactionsController::class);
-        list('labels'=>$labels, 'ids'=>$ids) = $reactionsController->formatReactionsLabels(
+        list('labels' => $labels, 'ids' => $ids) = $reactionsController->formatReactionsLabels(
             $this->arguments['labels'],
             empty($this->arguments['labels']) ? ReactionManager::DEFAULT_IDS : null,
         );
@@ -55,7 +55,7 @@ class ReactionsAction extends YesWikiAction
         );
 
         $pageTag = $this->wiki->GetPageTag();
-        list('reactions'=>$reactionItems, 'userReactions'=>$userReactions) = $reactionsController->getReactionItems(
+        list('reactions' => $reactionItems, 'userReactions' => $userReactions) = $reactionsController->getReactionItems(
             $pageTag,
             $username,
             $idreaction,

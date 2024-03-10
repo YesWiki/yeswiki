@@ -58,7 +58,7 @@ function baz_requete_recherche_fiches(
     $q = '',
     $facettesearch = 'OR'
 ) {
-    if ($id==='') {
+    if ($id === '') {
         $id = [];
     }
 

@@ -325,9 +325,9 @@ class EntryManager
                                 $requeteSQL .= ' NOT ';
                                 $nom = substr($nom, 0, -1);
                             }
-                            $requeteSQL .='(body REGEXP \'"' . $nom . '":"' . $rawCriteron . '"\')';
+                            $requeteSQL .= '(body REGEXP \'"' . $nom . '":"' . $rawCriteron . '"\')';
                         } else {
-                            $requeteSQL .=' AND ';
+                            $requeteSQL .= ' AND ';
                             if (substr($nom, -1) == '!') {
                                 $requeteSQL .= ' NOT ';
                                 $nom = substr($nom, 0, -1);
@@ -343,7 +343,7 @@ class EntryManager
                         $requeteSQL .= ' NOT ';
                         $nom = substr($nom, 0, -1);
                     }
-                    $requeteSQL .='(body REGEXP \'"' . $nom . '":""\' '.
+                    $requeteSQL .= '(body REGEXP \'"' . $nom . '":""\' '.
                         'OR NOT (body REGEXP \'"' . $nom . '":"[^"][^"]*"\'))';
                 }
             }
@@ -458,7 +458,7 @@ class EntryManager
      */
     private function convertToRawJSONStringForREGEXP(string $rawValue): string
     {
-        $valueJSON = substr(json_encode($rawValue), 1, strlen(json_encode($rawValue))-2);
+        $valueJSON = substr(json_encode($rawValue), 1, strlen(json_encode($rawValue)) - 2);
         $formattedValue = str_replace(['\\','\''], ['\\\\','\\\''], $valueJSON);
         return $this->dbService->escape($formattedValue);
     }
@@ -562,7 +562,7 @@ class EntryManager
         if (isset($GLOBALS['utilisateur_wikini']) && !empty($olduser)) {
             $this->authController->logout();
             $oldUserClass = $this->userManager->getOneByName($olduser['name']);
-            if (!empty($oldUserClass)){
+            if (!empty($oldUserClass)) {
                 $this->authController->login($oldUserClass, $olduser['remember'] ?? 1);
             }
         }
@@ -629,7 +629,7 @@ class EntryManager
         $this->pageManager->save($data['id_fiche'], json_encode($data), '');
 
         // if sendmail has referenced email fields, send an email to their adresses
-        $this->sendMailToNotifiedEmails($sendmail, $data, false,$previousData);
+        $this->sendMailToNotifiedEmails($sendmail, $data, false, $previousData);
 
         if ($this->params->get('BAZ_ENVOI_MAIL_ADMIN')) {
             // Envoi d'un mail aux administrateurs
@@ -732,12 +732,12 @@ class EntryManager
         if ($this->securityController->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        if (!$this->wiki->UserIsAdmin() && !$this->wiki->UserIsOwner($tag)){
+        if (!$this->wiki->UserIsAdmin() && !$this->wiki->UserIsOwner($tag)) {
             throw new Exception(_t('DELETEPAGE_NOT_DELETED')._t('DELETEPAGE_NOT_OWNER'));
         }
 
         $fiche = $this->getOne($tag);
-        if (empty($fiche)){
+        if (empty($fiche)) {
             throw new Exception("Not existing entry : $tag");
         }
 
@@ -850,7 +850,7 @@ class EntryManager
 
         // on encode en utf-8 pour reussir a encoder en json
         if (YW_CHARSET != 'UTF-8') {
-            $data = array_map(function($value){
+            $data = array_map(function ($value) {
                 return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
             }, $data);
         }
@@ -917,7 +917,7 @@ class EntryManager
      * @return array
      * @throws ParsingMultipleException
      */
-    public function getMultipleParameters(string $param, $firstseparator = ',', $secondseparator = '='):array
+    public function getMultipleParameters(string $param, $firstseparator = ',', $secondseparator = '='): array
     {
         // This function's aim is to fetch (key , value) couples stored in a multiple parameter
         // $param is the parameter where we have to fecth the couples
@@ -963,13 +963,13 @@ class EntryManager
         return $sendmail;
     }
 
-    private function sendMailToNotifiedEmails(?string $sendmail, ?array $data, bool $isCreation,?array $previousEntry = null)
+    private function sendMailToNotifiedEmails(?string $sendmail, ?array $data, bool $isCreation, ?array $previousEntry = null)
     {
         if ($sendmail) {
             $emailsFieldnames = array_unique(explode(',', $sendmail));
             foreach ($emailsFieldnames as $emailFieldName) {
                 if (!empty($data[$emailFieldName])) {
-                    $this->mailer->notifyEmail($data[$emailFieldName], $data, $isCreation,$previousEntry);
+                    $this->mailer->notifyEmail($data[$emailFieldName], $data, $isCreation, $previousEntry);
                 }
             }
         }
@@ -1014,7 +1014,7 @@ class EntryManager
     {
         return !empty($this->removeAttributesAndReturnList($params, $attributesNames, $applyOnAllRevisions));
     }
-    
+
     /**
     * remove attributes from entries only for admins !!!
     * @param array $params
@@ -1071,11 +1071,11 @@ class EntryManager
         /* sanitize params */
         if (empty($attributesNames)) {
             throw new \Exception("\$attributesNames sould not be empty !");
-        } elseif ($mode ==='rename') {
+        } elseif ($mode === 'rename') {
             if (!empty(array_filter(
                 $attributesNames,
                 function ($attributeName) {
-                    return !is_array($attributeName) || count($attributeName) !=1 || !is_scalar($attributeName[array_keys($attributeName)[0]]);
+                    return !is_array($attributeName) || count($attributeName) != 1 || !is_scalar($attributeName[array_keys($attributeName)[0]]);
                 }
             ))
             ) {
@@ -1094,7 +1094,7 @@ class EntryManager
 
         $attributesQueries = [];
         foreach ($attributesNames as $attributeName) {
-            if ($mode ==='rename') {
+            if ($mode === 'rename') {
                 foreach ($attributeName as $oldName => $newName) {
                     $attributesQueries[$oldName] = '*';
                 }
@@ -1117,12 +1117,12 @@ class EntryManager
             $entry = $this->decode($page['body']);
 
             foreach ($attributesNames as $attributeName) {
-                if ($mode ==='rename') {
+                if ($mode === 'rename') {
                     foreach ($attributeName as $oldName => $newName) {
                         if (isset($entry[$oldName])) {
                             $entry[$newName] = $entry[$oldName];
                             unset($entry[$oldName]);
-                            if (!empty($entry['id_fiche']) && !in_array($entry['id_fiche'],$entriesIds)){
+                            if (!empty($entry['id_fiche']) && !in_array($entry['id_fiche'], $entriesIds)) {
                                 $entriesIds[] = $entry['id_fiche'];
                             }
                         }
@@ -1130,7 +1130,7 @@ class EntryManager
                 } else {
                     if (isset($entry[$attributeName])) {
                         unset($entry[$attributeName]);
-                        if (!empty($entry['id_fiche']) && !in_array($entry['id_fiche'],$entriesIds)){
+                        if (!empty($entry['id_fiche']) && !in_array($entry['id_fiche'], $entriesIds)) {
                             $entriesIds[] = $entry['id_fiche'];
                         }
                     }
@@ -1140,7 +1140,7 @@ class EntryManager
             // save
             // on encode en utf-8 pour reussir a encoder en json
             if (YW_CHARSET != 'UTF-8') {
-                $entry = array_map(function($value){
+                $entry = array_map(function ($value) {
                     return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
                 }, $entry);
             }

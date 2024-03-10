@@ -15,7 +15,7 @@ if ($pages) {
     foreach ($exclude as $key => $exclusion) {
         $exclude[$key] = trim($exclusion);
     }
-    
+
     foreach ($pages as $page) {
         if (!in_array($page['tag'], $exclude)) {
             echo $this->ComposeLinkToPage($page['tag'], '', '', false), "<br />\n";

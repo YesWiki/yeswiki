@@ -1,4 +1,5 @@
 <?php
+
 return [
     'HELLOWORLD_MY_MESSAGE' => 'Il mio messaggio',
     'HELLOWORD_NO_MSG_PARAM' => '',

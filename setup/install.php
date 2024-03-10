@@ -131,7 +131,7 @@ if (!$result) {
     foreach ($tablesNames as $tableName) {
         try {
             if (mysqli_num_rows(mysqli_query($dblink, "SHOW TABLES LIKE \"{$config['table_prefix']}$tableName\";")) !== 0 // existing table
-                && mysqli_num_rows(mysqli_query($dblink, "SELECT * FROM `{$config['table_prefix']}$tableName`;")) === 0) /* empty table */{
+                && mysqli_num_rows(mysqli_query($dblink, "SELECT * FROM `{$config['table_prefix']}$tableName`;")) === 0) { /* empty table */
                 mysqli_query($dblink, "DROP TABLE IF EXISTS `{$config['table_prefix']}$tableName`;");
             }
         } catch (\Throwable $th) {

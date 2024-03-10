@@ -71,15 +71,14 @@ class ThemeManager implements EventSubscriberInterface
     }
 
     public function __construct(
-        Wiki $wiki, 
+        Wiki $wiki,
         TemplateEngine $twig,
         PageManager $pageManager,
         ParameterBagInterface $params,
-        Performer $performer, 
+        Performer $performer,
         SecurityController $securityController,
         Utils $utils
-    )
-    {
+    ) {
         $this->wiki = $wiki;
         $this->errorMessage = '';
         $this->favorites = [
@@ -116,20 +115,20 @@ class ThemeManager implements EventSubscriberInterface
     {
         // Premier cas le template par défaut est forcé : on ajoute ce qui est présent dans le fichier de configuration, ou le theme par defaut précisé ci dessus
         if ($this->params->has('hide_action_template') && $this->params->get('hide_action_template') == '1') {
-            $this->setFavorite('theme',$this->getConfigAsStringOrDefault('favorite_theme',THEME_PAR_DEFAUT));
-            $this->setFavorite('style',$this->getConfigAsStringOrDefault('favorite_style',CSS_PAR_DEFAUT));
-            $this->setFavorite('squelette',$this->getConfigAsStringOrDefault('favorite_squelette',SQUELETTE_PAR_DEFAUT));
-            $this->setFavorite('background_image',$this->getConfigAsStringOrDefault('favorite_background_image',BACKGROUND_IMAGE_PAR_DEFAUT));
-            $this->setFavorite('preset',$this->getConfigAsStringOrDefault('favorite_preset',''));
+            $this->setFavorite('theme', $this->getConfigAsStringOrDefault('favorite_theme', THEME_PAR_DEFAUT));
+            $this->setFavorite('style', $this->getConfigAsStringOrDefault('favorite_style', CSS_PAR_DEFAUT));
+            $this->setFavorite('squelette', $this->getConfigAsStringOrDefault('favorite_squelette', SQUELETTE_PAR_DEFAUT));
+            $this->setFavorite('background_image', $this->getConfigAsStringOrDefault('favorite_background_image', BACKGROUND_IMAGE_PAR_DEFAUT));
+            $this->setFavorite('preset', $this->getConfigAsStringOrDefault('favorite_preset', ''));
         } else {
             // Sinon, on récupère premièrement les valeurs passées en REQUEST, ou deuxièmement les métasdonnées présentes pour la page, ou troisièmement les valeurs du fichier de configuration
             if (isset($_REQUEST['theme']) && (is_dir('custom/themes/'.$_REQUEST['theme']) || is_dir('themes/'.$_REQUEST['theme'])) &&
                 isset($_REQUEST['style']) && (is_file('custom/themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style']) || is_file('themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style'])) &&
                 isset($_REQUEST['squelette']) && (is_file('custom/themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']) || is_file('themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']))
             ) {
-                $this->setFavorite('theme',$_REQUEST['theme']);
-                $this->setFavorite('style',$_REQUEST['style']);
-                $this->setFavorite('squelette',$_REQUEST['squelette']);
+                $this->setFavorite('theme', $_REQUEST['theme']);
+                $this->setFavorite('style', $_REQUEST['style']);
+                $this->setFavorite('squelette', $_REQUEST['squelette']);
 
                 // presets
                 if (isset($_REQUEST['preset']) &&
@@ -148,43 +147,43 @@ class ThemeManager implements EventSubscriberInterface
                             )
                         )
                 ) {
-                    $this->setFavorite('preset',$_REQUEST['preset']);
+                    $this->setFavorite('preset', $_REQUEST['preset']);
                 }
 
                 if (isset($_REQUEST['bgimg']) && (is_file('files/backgrounds/'.$_REQUEST['bgimg']))) {
-                    $this->setFavorite('background_image',$_REQUEST['bgimg']);
+                    $this->setFavorite('background_image', $_REQUEST['bgimg']);
                 } else {
-                    $this->setFavorite('background_image',BACKGROUND_IMAGE_PAR_DEFAUT);
+                    $this->setFavorite('background_image', BACKGROUND_IMAGE_PAR_DEFAUT);
                 }
             } else {
                 // si les metas sont présentes on les utilise
                 if (isset($metadata['theme']) && isset($metadata['style']) && isset($metadata['squelette'])) {
-                    $this->setFavorite('theme',$metadata['theme']);
-                    $this->setFavorite('style',$metadata['style']);
-                    $this->setFavorite('squelette',$metadata['squelette']);
+                    $this->setFavorite('theme', $metadata['theme']);
+                    $this->setFavorite('style', $metadata['style']);
+                    $this->setFavorite('squelette', $metadata['squelette']);
                     if (!empty($metadata['favorite_preset'])) {
-                        $this->setFavorite('preset',$metadata['favorite_preset']);
+                        $this->setFavorite('preset', $metadata['favorite_preset']);
                     }
                     if (isset($metadata['bgimg'])) {
-                        $this->setFavorite('background_image',$metadata['bgimg']);
+                        $this->setFavorite('background_image', $metadata['bgimg']);
                     } else {
-                        $this->setFavorite('background_image','');
+                        $this->setFavorite('background_image', '');
                     }
                 } else {
                     if (empty($this->favorites['theme'])) {
-                        $this->setFavorite('theme',$this->getConfigAsStringOrDefault('favorite_theme',THEME_PAR_DEFAUT));
+                        $this->setFavorite('theme', $this->getConfigAsStringOrDefault('favorite_theme', THEME_PAR_DEFAUT));
                     }
                     if (empty($this->favorites['style'])) {
-                        $this->setFavorite('style',$this->getConfigAsStringOrDefault('favorite_style',CSS_PAR_DEFAUT));
+                        $this->setFavorite('style', $this->getConfigAsStringOrDefault('favorite_style', CSS_PAR_DEFAUT));
                     }
                     if (empty($this->favorites['squelette'])) {
-                        $this->setFavorite('squelette',$this->getConfigAsStringOrDefault('favorite_squelette',SQUELETTE_PAR_DEFAUT));
+                        $this->setFavorite('squelette', $this->getConfigAsStringOrDefault('favorite_squelette', SQUELETTE_PAR_DEFAUT));
                     }
                     if (empty($this->favorites['background_image'])) {
-                        $this->setFavorite('background_image',$this->getConfigAsStringOrDefault('favorite_background_image',BACKGROUND_IMAGE_PAR_DEFAUT));
+                        $this->setFavorite('background_image', $this->getConfigAsStringOrDefault('favorite_background_image', BACKGROUND_IMAGE_PAR_DEFAUT));
                     }
                     if (empty($this->favorites['preset'])) {
-                        $this->setFavorite('preset',$this->getConfigAsStringOrDefault('favorite_preset',''));
+                        $this->setFavorite('preset', $this->getConfigAsStringOrDefault('favorite_preset', ''));
                     }
                 }
             }
@@ -212,10 +211,10 @@ class ThemeManager implements EventSubscriberInterface
                     $GLOBALS['template-error']['theme'] = $this->favorites['theme'];
                     $GLOBALS['template-error']['style'] = $this->favorites['style'];
                     $GLOBALS['template-error']['squelette'] = $this->favorites['squelette'];
-                    $this->setFavorite('theme',THEME_PAR_DEFAUT);
-                    $this->setFavorite('style',CSS_PAR_DEFAUT);
-                    $this->setFavorite('squelette',SQUELETTE_PAR_DEFAUT);
-                    $this->setFavorite('background_image',BACKGROUND_IMAGE_PAR_DEFAUT);
+                    $this->setFavorite('theme', THEME_PAR_DEFAUT);
+                    $this->setFavorite('style', CSS_PAR_DEFAUT);
+                    $this->setFavorite('squelette', SQUELETTE_PAR_DEFAUT);
+                    $this->setFavorite('background_image', BACKGROUND_IMAGE_PAR_DEFAUT);
                 } else {
                     return [];
                 }
@@ -240,11 +239,11 @@ class ThemeManager implements EventSubscriberInterface
 
         // themes folder (used by {{update}})
         if (is_dir('themes')) {
-            $this->templates = array_merge($this->templates, $this->utils->searchTemplateFiles('themes',false));
+            $this->templates = array_merge($this->templates, $this->utils->searchTemplateFiles('themes', false));
         }
         // custom themes folder
         if (is_dir('custom/themes')) {
-            $this->templates = array_replace_recursive($this->templates, $this->utils->searchTemplateFiles('custom/themes',true));
+            $this->templates = array_replace_recursive($this->templates, $this->utils->searchTemplateFiles('custom/themes', true));
         }
         ksort($this->templates);
 
@@ -283,7 +282,7 @@ class ThemeManager implements EventSubscriberInterface
             return false;
         }
 
-        if (!((!$this->useFallbackTheme &&file_exists('custom/'.$filePath)) || file_exists($filePath))) {
+        if (!((!$this->useFallbackTheme && file_exists('custom/'.$filePath)) || file_exists($filePath))) {
             $this->errorMessage = $this->twig->render('@templates\alert-message.twig', [
                     'type' => 'danger',
                     'message' => _t('THEME_MANAGER_SQUELETTE_FILE') .$this->squelette. _t('THEME_MANAGER_NOT_FOUND'),
@@ -370,7 +369,7 @@ class ThemeManager implements EventSubscriberInterface
     {
         $this->favorites[$key] = (empty($newVal) || !is_string($newVal))
             ? ''
-            :  $newVal;
+            : $newVal;
     }
 
     public function getUseFallbackTheme(): bool
@@ -393,9 +392,9 @@ class ThemeManager implements EventSubscriberInterface
             $j = 0;
             foreach ($matches as $valeur) {
                 foreach ($valeur as $val) {
-                    if (isset($matches[2][$j]) && $matches[2][$j]!='') {
+                    if (isset($matches[2][$j]) && $matches[2][$j] != '') {
                         $action = $matches[2][$j];
-                        $text = str_replace('{{'.$action.'}}', $this->performer->run('action', 'formatter', ['text'=>'{{'.$action.'}}']), $text);
+                        $text = str_replace('{{'.$action.'}}', $this->performer->run('action', 'formatter', ['text' => '{{'.$action.'}}']), $text);
                     }
                     $j++;
                 }
@@ -437,16 +436,16 @@ class ThemeManager implements EventSubscriberInterface
         }
         $path = self::CUSTOM_CSS_PRESETS_PATH;
         if (!$this->wiki->UserIsAdmin()) {
-            return ['status'=>false,'message'=>'User is not admin'];
+            return ['status' => false,'message' => 'User is not admin'];
         }
         if (!file_exists($path.DIRECTORY_SEPARATOR.$filename)) {
-            return ['status'=>false,'message'=>'File '.$filename.' is not existing !'];
+            return ['status' => false,'message' => 'File '.$filename.' is not existing !'];
         }
         unlink($path.DIRECTORY_SEPARATOR.$filename);
         if (!file_exists($path.DIRECTORY_SEPARATOR.$filename)) {
-            return ['status'=>true,'message'=>''];
+            return ['status' => true,'message' => ''];
         }
-        return ['status'=>false,'message'=>'Not possible to delete '.$filename];
+        return ['status' => false,'message' => 'Not possible to delete '.$filename];
     }
 
 
@@ -468,11 +467,11 @@ class ThemeManager implements EventSubscriberInterface
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!$this->wiki->getUser()) {
-            return ['status'=>false,'message'=>'Not connected user','errorCode'=>0];
+            return ['status' => false,'message' => 'Not connected user','errorCode' => 0];
         }
 
         if (!$this->checkPOSTToAddCustomCSSPreset($post)) {
-            return ['status'=>false,'message'=>'Bad post data','errorCode'=>1];
+            return ['status' => false,'message' => 'Bad post data','errorCode' => 1];
         }
         $path = self::CUSTOM_CSS_PRESETS_PATH;
 
@@ -483,19 +482,19 @@ class ThemeManager implements EventSubscriberInterface
         $fileContent .= "}\r\n";
 
         if (file_exists($path.DIRECTORY_SEPARATOR.$filename) && !$this->wiki->UserIsAdmin()) {
-            return ['status'=>false,'message'=>'File already existing but user not admin','errorCode'=>2];
+            return ['status' => false,'message' => 'File already existing but user not admin','errorCode' => 2];
         }
         // check if folder exists
         if (!is_dir($path)) {
             if (!mkdir($path)) {
-                return ['status'=>false,'message'=>$path.' not existing and not possible to create it','errorCode'=>3];
+                return ['status' => false,'message' => $path.' not existing and not possible to create it','errorCode' => 3];
             }
         }
         // create or update
         file_put_contents($path.DIRECTORY_SEPARATOR.$filename, $fileContent);
         $data = (file_exists($path.DIRECTORY_SEPARATOR.$filename))
-            ? ['status'=>true,'message'=>$filename.' created/updated','errorCode'=>null]
-            : ['status'=>false,'message'=>$filename.' not created','errorCode'=>4];
+            ? ['status' => true,'message' => $filename.' created/updated','errorCode' => null]
+            : ['status' => false,'message' => $filename.' not created','errorCode' => 4];
 
         $filePath = self::CUSTOM_CSS_PRESETS_PATH.DIRECTORY_SEPARATOR.$filename;
         if ($data['status'] && file_exists($filePath)) {
@@ -759,7 +758,7 @@ class ThemeManager implements EventSubscriberInterface
 
     protected function formatCSS(array $data): string
     {
-        $css= "";
+        $css = "";
         $formattedData = [];
         foreach ($data as $userAgent => $values) {
             foreach ($values as $charset => $raw) {
@@ -861,20 +860,20 @@ class ThemeManager implements EventSubscriberInterface
 
         switch ($format) {
             case 'eot':
-                $ext=".eot";
+                $ext = ".eot";
                 break;
             case 'woff2':
-                $ext=".woff2";
+                $ext = ".woff2";
                 break;
             case 'woff':
-                $ext=".woff";
+                $ext = ".woff";
                 break;
             case 'truetype':
-                $ext=".ttf";
+                $ext = ".ttf";
                 break;
 
             default:
-                $ext="";
+                $ext = "";
                 break;
         }
         $fileName = sanitizeFilename("$family-$style-$weight-$charset").$ext;
@@ -914,11 +913,11 @@ class ThemeManager implements EventSubscriberInterface
             $tagIsCurrentPage = (
                 !empty($_GET['wiki'])
                 && is_string($_GET['wiki'])
-                && explode('/',$_GET['wiki'],2)[0] === $tag
-            ) || explode('/',array_key_first($_GET),2)[0] === $tag;
+                && explode('/', $_GET['wiki'], 2)[0] === $tag
+            ) || explode('/', array_key_first($_GET), 2)[0] === $tag;
 
             if (empty($previousMetadata) // only if no previous metadata
-                && $tagIsCurrentPage){
+                && $tagIsCurrentPage) {
                 $metadata = [
                     'theme' => $_POST["theme"],
                     'style' => $_POST["style"] ?? CSS_PAR_DEFAUT ,

@@ -147,7 +147,7 @@ abstract class Package extends Files
         }
         return MINIMUM_PHP_VERSION_FOR_CORE; // just in case of error give a number
     }
-    
+
     /**
      * get needed PHP version from json file from extracted folder
      * @return string formatted as '7.3.0', '7.3.0' is the wanted version in case of error
@@ -177,7 +177,7 @@ abstract class Package extends Files
         }
         return $this->getNeededPHPversion();
     }
-    
+
     /**
      * check if current PHP version enough high
      * @param string $neededRevision

@@ -50,7 +50,7 @@ class CSVManager
      *                     'propertyName2' => ['field' => field, 'fullHeader' => 'jjjjk']]
      *         null if error
      */
-    private function getHeaders(array $form):?array
+    private function getHeaders(array $form): ?array
     {
         $headers = [];
         foreach ($form['prepared'] as $field) {
@@ -64,7 +64,7 @@ class CSVManager
                         $fullHeader1 .= " *";
                         $fullHeader2 .= " *";
                     }
-        
+
                     $headers['nomwiki'] = [
                         'field' => $field,
                         'fullHeader' => $fullHeader1,
@@ -82,7 +82,7 @@ class CSVManager
                         $latitudeHeader .= " *";
                         $longitudeHeader .= " *";
                     }
-        
+
                     $headers[$latitudeHeader] = [
                         'field' => $field,
                         'fullHeader' => $latitudeHeader,
@@ -99,7 +99,7 @@ class CSVManager
                         if ($field->isRequired()) {
                             $fullHeader .= " *";
                         }
-        
+
                         $headers[$propName] = [
                             'field' => $field,
                             'fullHeader' => $fullHeader,
@@ -120,16 +120,16 @@ class CSVManager
     public function arrayToCSV(?array $data): ?string
     {
         if (!empty($data)) {
-            
+
             // output up to 50MB is kept in memory, if it becomes bigger it will automatically be written to a temporary file
-            $csvResource = fopen('php://temp/maxmemory:'. (50*1024*1024), 'r+');
+            $csvResource = fopen('php://temp/maxmemory:'. (50 * 1024 * 1024), 'r+');
 
             foreach ($data as $line) {
                 // output the column headings
                 fputcsv($csvResource, $line);
             }
             rewind($csvResource);
-            
+
             // read file
             $csv =  stream_get_contents($csvResource);
 
@@ -153,11 +153,11 @@ class CSVManager
         ?string $keywords = null,
         bool $fakeMode = false,
         bool $keysInsteadOfValues = false
-    ):?array {
+    ): ?array {
         if (!empty($formId)) {
             if ($form = $this->formManager->getOne($formId)) {
                 $csv_raw = [];
-                
+
                 // get headers
                 $headers = $this->getHeaders($form);
 
@@ -174,7 +174,7 @@ class CSVManager
                 if (!$fakeMode) {
                     // get lines for each entry
                     $entries = $this->entryManager->search([
-                        'formsIds'=>[$formId],
+                        'formsIds' => [$formId],
                         'keywords' => $keywords
                         ]);
                     foreach ($entries as $entry) {
@@ -283,7 +283,7 @@ class CSVManager
                 . ', which has been exported to string (not maintained). ';
             $value = implode(',', array_values($value));
         }
-        
+
         if (!is_string($value)) {
             $reasonMessage = 'this : '.json_encode($value)
                     . ', which was replaced by null. ';
@@ -333,7 +333,7 @@ class CSVManager
                 $line[] = trim($this->arrayToCSV([// emulate CSV
                         array_map(function ($index) use ($lineNumber, $columnNumber, $options) {
                             return $options[array_keys($options)[$index]];
-                        }, range(0, $nb-1))
+                        }, range(0, $nb - 1))
                     ]));
             } elseif ($header['field'] instanceof TagsField) {
                 $line[] = '"'.implode(',', array_map(function ($index) use ($lineNumber, $columnNumber) {
@@ -341,11 +341,11 @@ class CSVManager
                 }, [1,2,3])).'"';
             } elseif ($header['field'] instanceof EnumField) {
                 $options = $header['field']->getOptions();
-                $index = rand(1, count($options))-1;
+                $index = rand(1, count($options)) - 1;
                 $line[] = trim($this->arrayToCSV([// emulate CSV
                         [//emulate a line
                             'ligne '.$lineNumber.' - champ '.$columnNumber.
-                            (empty($options) ? '': ' - ex: '.$options[array_keys($options)[$index]])
+                            (empty($options) ? '' : ' - ex: '.$options[array_keys($options)[$index]])
                         ]
                     ]));
             } else {
@@ -400,7 +400,7 @@ class CSVManager
     {
         if (!empty($formId)) {
             if ($form = $this->formManager->getOne($formId)) {
-                
+
                 // get headers
                 $headers = $this->getHeaders($form);
 
@@ -414,7 +414,7 @@ class CSVManager
                             if (($firstLine = fgetcsv($handle, 0, ',')) !== false) {
                                 if ($columnIndexesForPropertyNames =
                                     $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders)) {
-                                    
+
                                     // next lines
                                     $extracted = [];
                                     while (($data = fgetcsv($handle, 0, ',')) !== false) {// init errors
@@ -619,9 +619,9 @@ class CSVManager
         }, array_keys($data['firstLine']));
         // detect modified fields after one detected
         foreach ($notFoundIndexes as $index) {
-            $propertyNameForPreviousIndex = array_search($index-1, $data['columnIndexes'], true);
+            $propertyNameForPreviousIndex = array_search($index - 1, $data['columnIndexes'], true);
             if ($index == 0 || $propertyNameForPreviousIndex !== false) {
-                if ($index == 0 ||$propertyNameForPreviousIndex == 'datetime_latest') {
+                if ($index == 0 || $propertyNameForPreviousIndex == 'datetime_latest') {
                     $keyIndexForPreviousPropertyName = -1;
                 } else {
                     $keyIndexForPreviousPropertyName = array_search($propertyNameForPreviousIndex, $data['originalHeadersKeys'], true);
@@ -648,7 +648,7 @@ class CSVManager
      * @param string $formId
      * @return array|null entry
      */
-    private function getEntryFromCSVLine(array $data, array $headers, array $columnIndexesForPropertyNames, string $formId):?array
+    private function getEntryFromCSVLine(array $data, array $headers, array $columnIndexesForPropertyNames, string $formId): ?array
     {
         $entry = [];
         foreach ($columnIndexesForPropertyNames as $propertyName => $index) {
@@ -855,7 +855,7 @@ class CSVManager
      * @param array|null $data
      * @return string $csvToDisplay
      */
-    public function arrayToCSVToDisplay(?array $data):?string
+    public function arrayToCSVToDisplay(?array $data): ?string
     {
         // format file
         $csv = $this->arrayToCSV($data) ?? '';

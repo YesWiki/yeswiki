@@ -31,7 +31,7 @@ class BazarListService
         $this->formManager = $formManager;
     }
 
-    public function getForms($options) : array
+    public function getForms($options): array
     {
         // External mode activated ?
         if (($options['externalModeActivated'] ?? false) === true) {
@@ -42,7 +42,7 @@ class BazarListService
         }
     }
 
-    public function getEntries($options, $forms = null) : array
+    public function getEntries($options, $forms = null): array
     {
         if (!$forms) {
             $forms = $this->getForms($options);
@@ -92,12 +92,12 @@ class BazarListService
         return $entries;
     }
 
-    public function formatFilters($options, $entries, $forms) : array
+    public function formatFilters($options, $entries, $forms): array
     {
         if (empty($options['groups'])) {
             return [];
         }
-        
+
         // Scanne tous les champs qui pourraient faire des filtres pour les facettes
         $facettables = $this->formManager
                             ->scanAllFacettable($entries, $options['groups']);
@@ -105,7 +105,7 @@ class BazarListService
         if (count($facettables) == 0) {
             return [];
         }
-        
+
         if (!$forms) {
             $forms = $this->getForms($options);
         }
@@ -117,7 +117,7 @@ class BazarListService
             //découpe la requete autour des |
             foreach ($tab as $req) {
                 $tabdecoup = explode('=', $req, 2);
-                if (count($tabdecoup)>1) {
+                if (count($tabdecoup) > 1) {
                     $tabfacette[$tabdecoup[0]] = explode(',', trim($tabdecoup[1]));
                 }
             }
@@ -195,7 +195,7 @@ class BazarListService
 
             $filters[$idkey]['index'] = $i;
 
-            # sort facette labels 
+            # sort facette labels
             natcasesort($list['label']);
             foreach ($list['label'] as $listkey => $label) {
                 if (!empty($facettables[$id][$listkey])) {

@@ -33,10 +33,10 @@ if (isset($this)) {
                 $output .=  '<hr>'.$query.'<br>';
                 $this->query($query);
             }
-            $query="ALTER TABLE `".$table."` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;";
+            $query = "ALTER TABLE `".$table."` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;";
             $output .=  '<hr>'.$query.'<br>';
             $this->query($query);
-            $queryConvert="ALTER TABLE `".$table."` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;";
+            $queryConvert = "ALTER TABLE `".$table."` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;";
             $output .=  '<hr>'.$queryConvert.'<br>';
             $this->query($queryConvert);
 
@@ -46,7 +46,7 @@ if (isset($this)) {
                 $dataQuery = "SELECT * FROM ".$table;
                 $data = $this->LoadAll($dataQuery);
                 foreach ($cols as $row) {
-                    if ($row['Type']=='mediumtext' or $row['Type']=='text' or $row['Type']=='longtext' or $row['Type']=="blob") {
+                    if ($row['Type'] == 'mediumtext' or $row['Type'] == 'text' or $row['Type'] == 'longtext' or $row['Type'] == "blob") {
                         // Printing results in HTML
                         foreach ($data as $line) {
                             //Convert TO String
@@ -68,7 +68,7 @@ if (isset($this)) {
                 $dataQuery = "SELECT * FROM ".$table.';';
                 $data = $this->LoadAll($dataQuery);
                 foreach ($cols as $row) {
-                    if (strstr($row['Type'], 'varchar') or $row['Type']=='mediumtext' or $row['Type']=='text' or $row['Type']=='longtext' or $row['Type']=="blob") {
+                    if (strstr($row['Type'], 'varchar') or $row['Type'] == 'mediumtext' or $row['Type'] == 'text' or $row['Type'] == 'longtext' or $row['Type'] == "blob") {
                         // Printing results in HTML
                         foreach ($data as $line) {
                             //Convert TO String
@@ -184,10 +184,10 @@ if (php_sapi_name() === 'cli') {
             echo  '<hr>'.$query.'<br>';
             sqlQuery($query);
         }
-        $query="ALTER TABLE `".$table."` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;";
+        $query = "ALTER TABLE `".$table."` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;";
         echo  '<hr>'.$query.'<br>';
         sqlQuery($query);
-        $queryConvert="ALTER TABLE `".$table."` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;";
+        $queryConvert = "ALTER TABLE `".$table."` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;";
         echo  '<hr>'.$queryConvert.'<br>';
         sqlQuery($queryConvert);
 
@@ -197,7 +197,7 @@ if (php_sapi_name() === 'cli') {
             $dataQuery = "SELECT * FROM ".$table;
             $data = loadAll($dataQuery);
             foreach ($cols as $row) {
-                if ($row['Type']=='mediumtext' or $row['Type']=='text' or $row['Type']=='longtext' or $row['Type']=="blob") {
+                if ($row['Type'] == 'mediumtext' or $row['Type'] == 'text' or $row['Type'] == 'longtext' or $row['Type'] == "blob") {
                     // Printing results in HTML
                     foreach ($data as $line) {
                         //Convert TO String
@@ -219,7 +219,7 @@ if (php_sapi_name() === 'cli') {
             $dataQuery = "SELECT * FROM ".$table.';';
             $data = loadAll($dataQuery);
             foreach ($cols as $row) {
-                if (strstr($row['Type'], 'varchar') or $row['Type']=='mediumtext' or $row['Type']=='text' or $row['Type']=='longtext' or $row['Type']=="blob") {
+                if (strstr($row['Type'], 'varchar') or $row['Type'] == 'mediumtext' or $row['Type'] == 'text' or $row['Type'] == 'longtext' or $row['Type'] == "blob") {
                     // Printing results in HTML
                     foreach ($data as $line) {
                         //Convert TO String

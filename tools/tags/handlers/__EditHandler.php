@@ -18,27 +18,27 @@ class __EditHandler extends YesWikiHandler
         if (
             !$this->params->get('hide_keywords')
             && $aclService->hasAccess("write")
-        ){
-            
+        ) {
+
             // save new tag if authorized
             if (
                 isset($_POST["submit"])
                 && $_POST["submit"] == SecurityController::EDIT_PAGE_SUBMIT_VALUE
                 && isset($_POST["pagetags"])
-                && $_POST['antispam']==1
-                ) {
+                && $_POST['antispam'] == 1
+            ) {
                 $tagsManager->save($this->wiki->GetPageTag(), stripslashes($_POST["pagetags"]));
             }
 
             // display
             if ($aclService->hasAccess("read")) {
-                
+
                 $formattedTags = [];
                 // get all tags
                 $tags = $tagsManager->getAll();
                 $tags = is_array($tags)
                     ? array_map(
-                        function($t){
+                        function ($t) {
                             return $t['value'];
                         },
                         $tags

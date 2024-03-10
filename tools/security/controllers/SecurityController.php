@@ -38,7 +38,7 @@ class SecurityController extends YesWikiController
      * get alert message when hibernated
      * @return string
      */
-    public function getMessageWhenHibernated():string
+    public function getMessageWhenHibernated(): string
     {
         $message = [
             'type' => 'info',
@@ -51,7 +51,7 @@ class SecurityController extends YesWikiController
      * check if password for editing is required
      * @return array [bool $state,string $output]
      */
-    public function isGrantedPasswordForEditing():array
+    public function isGrantedPasswordForEditing(): array
     {
         $state = !$this->isPasswordForEditingModeActivated() || $this->hasRightPasswordForExisting();
         $message = ($state) ? ''
@@ -74,7 +74,7 @@ class SecurityController extends YesWikiController
      * check if password for editing is correct
      * @return bool
      */
-    private function hasRightPasswordForExisting():bool
+    private function hasRightPasswordForExisting(): bool
     {
         return isset($_POST['password_for_editing']) &&
              $_POST['password_for_editing'] == $this->params->get('password_for_editing') ;
@@ -104,7 +104,7 @@ class SecurityController extends YesWikiController
      * @param string $mode 'page' or 'entry'
      * @return array [bool $state,string $error]
      */
-    public function checkCaptchaBeforeSave(string $mode = 'page'):array
+    public function checkCaptchaBeforeSave(string $mode = 'page'): array
     {
         if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
             if (($mode != 'entry' && isset($_POST['submit']) && $_POST['submit'] == self::EDIT_PAGE_SUBMIT_VALUE)
@@ -139,7 +139,7 @@ class SecurityController extends YesWikiController
 
         return [empty($error), $error ?? null];
     }
-    
+
     /**
      * render captcha if needed
      * @param string &$output

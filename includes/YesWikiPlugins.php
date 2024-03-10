@@ -1,4 +1,5 @@
 <?php
+
 namespace YesWiki;
 
 /*
@@ -104,7 +105,7 @@ class Plugins
         if ($tag == $this->type && !empty($attr['name'])) {
             $this->_p_info['name'] = $attr['name'];
             $this->_p_info['version'] = (!empty($attr['version'])) ? $attr['version'] : null;
-            $this->_p_info['active'] = (!empty($attr['active'])) ? (boolean) $attr['active'] : false;
+            $this->_p_info['active'] = (!empty($attr['active'])) ? (bool) $attr['active'] : false;
         }
 
         if ($tag == 'callback') {

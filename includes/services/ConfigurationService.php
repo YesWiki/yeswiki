@@ -34,7 +34,7 @@ class ConfigurationService
         $content = $this->getContentToWrite($config, $arrayName);
         return (file_put_contents($file, $content) !== false);
     }
-    
+
     /**
      * extract content to write tto config file
      * @param ConfigurationFile $config
@@ -49,7 +49,7 @@ class ConfigurationService
         $content .= ";\n";
         return $content;
     }
-    
+
     /**
      * PHP var_export() with short array syntax (square brackets) indented 2 spaces.
      * tips : https://www.php.net/manual/en/function.var-export.php#124194

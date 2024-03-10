@@ -27,7 +27,7 @@ class BazarExportAction extends YesWikiAction
             )
             ]);
     }
-    
+
     public function run()
     {
         if (!empty($aclMessage = $this->checkSecuredACL())) {

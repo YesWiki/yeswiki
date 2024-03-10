@@ -1,4 +1,5 @@
 <?php
+
 use YesWiki\Core\Service\ThemeManager;
 
 if (!defined("WIKINI_VERSION")) {

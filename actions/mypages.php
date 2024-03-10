@@ -22,13 +22,13 @@ if ($user = $this->GetUser()) {
                     echo "<b>$firstChar</b><br />\n" ;
                     $curChar = $firstChar;
                 }
-    
+
                 echo $this->ComposeLinkToPage($page["tag"]),"<br />\n" ;
-                
+
                 $my_pages_count++;
             }
         }
-        
+
         if ($my_pages_count == 0) {
             echo "<i>"._t('YOU_DONT_OWN_ANY_PAGE').".</i>";
         }

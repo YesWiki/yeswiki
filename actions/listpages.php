@@ -81,7 +81,7 @@ if ($tree) {
             $sql = 'SELECT a.owner, b.tag IS NOT NULL owner_has_ownpage'
                 . ' FROM ' . $prefix . 'pages a'
                 . ' LEFT JOIN ' . $prefix . 'pages b ON a.owner = b.tag AND b.latest = "Y"';
-                break;
+            break;
         case 'user':
             $sql = 'SELECT a.user, u.name IS NOT NULL user_is_registered, b.tag IS NOT NULL user_has_ownpage'
                 . ' FROM ' . $prefix . 'pages a'
@@ -105,12 +105,12 @@ if ($tree) {
     }
     $links[$tree]['page_exists'] = true;
     $links[$tree]['haslinksto'] = array();
-    
+
     // To simplify treatment and to make it more efficient we'll work by referrence.
     // This will allow you to do only one request by tree level
     // $workingon represents every page of the current level
     $workingon = array($tree => &$links[$tree]['haslinksto']);
-    
+
     // to avoid many loops and computing several time the lists needed for the request,
     // we store them into variables
     $from = '"' . $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($tree) . '"';
@@ -184,7 +184,7 @@ if ($tree) {
                 $sql .= 'a.user IS NULL, a.user';
                 break;
         } // switch
-        
+
         if ($pages = $this->LoadAll($sql)) {
             $from = '';
             $newworkingon = array();
@@ -222,7 +222,7 @@ if ($tree) {
             break;
         }
     }
-    
+
     // Seccond step: display the tree
     // this function allows us to render the tree using HTML lists.
     if (!function_exists('ShowPageTree')) {
@@ -285,7 +285,7 @@ if ($tree) {
             return '';
         }
     }
-    
+
     echo ShowPageTree($links, $this, $sort);
 } else {
     // classical list display
@@ -347,10 +347,10 @@ if ($tree) {
     } else {
         $sql .= ' ORDER BY a.' . $sort;
     }
-    
+
     // retrieving the pages
     $pages = $this->LoadAll($sql);
-    
+
     // Display
     // Header
     if ($user) {
@@ -382,7 +382,7 @@ if ($tree) {
         return;
     }
     // No header if it is a simple page list that was asked
-    
+
     // Display the list itself
     echo "<ul>\n";
     $aclService = $this->services->get(\YesWiki\Core\Service\AclService::class);

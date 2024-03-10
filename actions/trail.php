@@ -52,29 +52,29 @@ if (!$sommaire) {
             //recuperation du 1er mot
             $line = preg_replace("/^(\[\[.*\]\]|".WN_CHAR."+)\s*(.*)$/", "$1", $line);
             //ajout a la liste des pages si le 1er mot est un lien force ou un mot wiki
-            if (preg_match("/\[\[.*\]\]/", $line, $match)|$this->IsWikiName($line)) {
+            if (preg_match("/\[\[.*\]\]/", $line, $match) | $this->IsWikiName($line)) {
                 $pages[] = $line;
                 //regarde si la page ajoute a la liste est la page courante
-                if (strcasecmp($this->GetPageTag(), $line)==0) {
-                    $currentPageIndex = count($pages)-1;
+                if (strcasecmp($this->GetPageTag(), $line) == 0) {
+                    $currentPageIndex = count($pages) - 1;
                 } else {  //traite le cas des lien force
                     if (preg_match("/\[\[(.*:)?".$this->GetPageTag()."(\s.*)?\]\]$/", $line)) {
-                        $currentPageIndex = count($pages)-1;
+                        $currentPageIndex = count($pages) - 1;
                     }
                 }
             }
         }//foreach
     }
     //ecriture des liens Page Précedente/sommaire/page suivante
-    if ($currentPageIndex>0) {
-        $PrevPage = $pages[$currentPageIndex-1];
+    if ($currentPageIndex > 0) {
+        $PrevPage = $pages[$currentPageIndex - 1];
         $btnPrev = "<li class=\"previous\"><span class=\"trail_button\">".$this->Format("&larr; $PrevPage")."</span></li>\n";
     } else {
         $btnPrev = "";
     }
     $btnTOC = "<li><span class=\"trail_button\">".$this->ComposeLinkToPage($sommaire)."</span></li>\n";
-    if ($currentPageIndex < (count($pages)-1)) {
-        $NextPage = $pages[$currentPageIndex+1];
+    if ($currentPageIndex < (count($pages) - 1)) {
+        $NextPage = $pages[$currentPageIndex + 1];
         $btnNext = "<li class=\"next\"><span class=\"trail_button\">".$this->Format("$NextPage &rarr;")."</span></li>\n";
     } else {
         $btnNext = "";

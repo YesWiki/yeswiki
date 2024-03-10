@@ -57,8 +57,8 @@ class ExternalTagsField extends TagsField
 
         if (count($tags) > 0 && !empty($tags[0])) {
             sort($tags);
-            $tags = array_map(function ($tag) use ($entry){
-                return '<a class="tag-label label label-info" href="' 
+            $tags = array_map(function ($tag) use ($entry) {
+                return '<a class="tag-label label label-info" href="'
                     . $entry['external-data']['baseUrl'].'?'.$GLOBALS['wiki']->GetPageTag().'/listpages&tags=' . urlencode(trim($tag)) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
             }, $tags);
 

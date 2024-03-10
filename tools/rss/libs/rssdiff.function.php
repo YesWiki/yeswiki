@@ -5,7 +5,7 @@ use YesWiki\Bazar\Service\EntryManager;
 if (!function_exists("rssdiff")) {
     function rssdiff($tag, $idfirst, $idlast)
     {
-        $output='';
+        $output = '';
         global $wiki;
         // TODO : cache ?
 

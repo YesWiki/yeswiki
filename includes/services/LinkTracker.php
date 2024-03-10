@@ -31,17 +31,17 @@ class LinkTracker
         $this->links = [];
     }
 
-    public function start() : bool
+    public function start(): bool
     {
         return $this->track(true);
     }
 
-    public function stop() : bool
+    public function stop(): bool
     {
         return $this->track(false);
     }
 
-    public function track($newState = null) : bool
+    public function track($newState = null): bool
     {
         $oldState = $this->enabled;
         if ($newState !== null) {
@@ -50,10 +50,10 @@ class LinkTracker
         return $oldState;
     }
 
-    public function forceAddIfNotIncluded(string $tag) : bool
+    public function forceAddIfNotIncluded(string $tag): bool
     {
         $inclusions = $this->wiki->GetAllInclusions() ;
-        if ($inclusions && count($inclusions) <2 && !in_array($tag, $this->links)) {
+        if ($inclusions && count($inclusions) < 2 && !in_array($tag, $this->links)) {
             $this->links[] = $tag ;
             return true ;
         } else {
@@ -68,7 +68,7 @@ class LinkTracker
         }
     }
 
-    public function getAll() : array
+    public function getAll(): array
     {
         return $this->links;
     }
@@ -79,10 +79,10 @@ class LinkTracker
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $fromTag = $this->wiki->GetPageTag();
-        
+
         // Delete old links for this page
         $this->dbService->query('DELETE FROM '.$this->dbService->prefixTable('links')."WHERE from_tag = '" . $this->dbService->escape($fromTag) . "'");
-        
+
         if ($tags = $this->getAll()) {
             $written = [];
             foreach ($tags as $toTag) {

@@ -1,7 +1,7 @@
 <?php
 
 return [
-    
+
     'LOGIN_SIGNUP' => 'Registrar',
     'LOGIN_LOGIN' => 'Entrar',
     'LOGIN_WIKINAME' => 'NomeWiki',

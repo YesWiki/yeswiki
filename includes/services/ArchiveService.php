@@ -148,7 +148,7 @@ class ArchiveService
         }
 
         $this->writeOutput($output, "=== Checking free space ===", true, $outputFile);
-        $blacklistedRootFolders = $this->generateListRootFolders('black',$foldersToExclude);
+        $blacklistedRootFolders = $this->generateListRootFolders('black', $foldersToExclude);
         try {
             $this->assertEnoughtSpace($blacklistedRootFolders);
         } catch (Throwable $th) {
@@ -207,7 +207,7 @@ class ArchiveService
             }
 
             $this->writeOutput($output, "=== Creating zip archive ===", true, $outputFile);
-            $this->createZip($location, $foldersToInclude, $blacklistedRootFolders , $output, $sqlContent, $onlyDb, $hideConfigValuesParams, $inputFile, $outputFile);
+            $this->createZip($location, $foldersToInclude, $blacklistedRootFolders, $output, $sqlContent, $onlyDb, $hideConfigValuesParams, $inputFile, $outputFile);
             if (!file_exists($location)) {
                 throw new StopArchiveException("Stop archive : not saved !");
             }
@@ -563,7 +563,7 @@ class ArchiveService
                 'running' => $running,
                 'finished' => $finished,
                 'stopped' => $stopped,
-                'output' =>$output
+                'output' => $output
             ) = $this->getRunningUIDdata($uid, $info[$uid]);
             $results['running'] = $running;
             $results['finished'] = $finished;
@@ -647,8 +647,8 @@ class ArchiveService
         $pathToArchive = preg_replace("/(\/|\\\\)$/", "", $pathToArchive);
         $dirs = [$pathToArchive];
         $dirnamePathLen = strlen($pathToArchive);
-        
-        $whitelistedRootFolders = $this->generateListRootFolders('white',$foldersToInclude);
+
+        $whitelistedRootFolders = $this->generateListRootFolders('white', $foldersToInclude);
 
         // open file
         $zip = new ZipArchive();
@@ -665,7 +665,7 @@ class ArchiveService
                 $dir = preg_replace("/(?:\/|\\\\|([^\/\\\\]))$/", "$1", $dir);
                 $baseDirName = preg_replace("/\\\\/", "/", substr($dir, $dirnamePathLen));
                 $baseDirName = preg_replace("/^\//", "", $baseDirName);
-                if (empty($baseDirName) || (!empty($baseDirName) && $this->shouldIncludeFolder($baseDirName, $whitelistedRootFolders,$blacklistedRootFolders))){
+                if (empty($baseDirName) || (!empty($baseDirName) && $this->shouldIncludeFolder($baseDirName, $whitelistedRootFolders, $blacklistedRootFolders))) {
                     if (!empty($baseDirName)) {
                         $this->writeOutput($output, "Adding folder \"$baseDirName\"", true, $outputFile);
                         $zip->addEmptyDir($baseDirName);
@@ -677,11 +677,11 @@ class ArchiveService
                             $localName = $dir.DIRECTORY_SEPARATOR.$file;
                             $relativeName = (empty($baseDirName) ? "" : "$baseDirName/").$file;
                             if (empty($baseDirName) && $file == "wakka.config.php") {
-                                $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($whitelistedRootFolders,$blacklistedRootFolders,$hideConfigValuesParams));
+                                $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($whitelistedRootFolders, $blacklistedRootFolders, $hideConfigValuesParams));
                             } elseif (is_file($localName)) {
                                 $zip->addFile($localName, $relativeName);
                             } elseif (is_dir($localName)) {
-                                if ($this->shouldIncludeFolder($relativeName, $whitelistedRootFolders,$blacklistedRootFolders)) {
+                                if ($this->shouldIncludeFolder($relativeName, $whitelistedRootFolders, $blacklistedRootFolders)) {
                                     $dirs[] = $dir.DIRECTORY_SEPARATOR.$file;
                                 }
                                 if ($this->checkIfNeedStop($inputFile)) {
@@ -728,7 +728,7 @@ class ArchiveService
         // register progress callback if available
         if (method_exists($zip, 'registerProgressCallback')) {
             $zip->registerProgressCallback(0.1, function ($r) use (&$output, $outputFile) {
-                $this->writeOutput($output, "Zip file creation : ".strval(round($r*100, 0))." %", true, $outputFile);
+                $this->writeOutput($output, "Zip file creation : ".strval(round($r * 100, 0))." %", true, $outputFile);
             });
         }
         $zip->close();
@@ -745,14 +745,13 @@ class ArchiveService
         string $relativeFolderName,
         array $whitelistedRootFolders,
         array $blacklistedRootFolders
-    ): bool
-    {
+    ): bool {
         if (in_array($relativeFolderName, $blacklistedRootFolders) ||
-            in_array(basename($relativeFolderName), $blacklistedRootFolders)){
+            in_array(basename($relativeFolderName), $blacklistedRootFolders)) {
             return false;
         }
 
-        return count(array_filter($whitelistedRootFolders, function($folder) use($relativeFolderName) {
+        return count(array_filter($whitelistedRootFolders, function ($folder) use ($relativeFolderName) {
             return strpos($relativeFolderName, $folder) === 0;
         })) > 0;
     }
@@ -1001,16 +1000,16 @@ class ArchiveService
                 $results = $this->consoleService->startConsoleSync('core:exportdb', [
                     "--filepath=$resultFile"
                 ]);
-                    
+
                 // get content
                 if (file_exists($resultFile)) {
                     $sqlContent = file_get_contents($resultFile);
                     unlink($resultFile);
-                    if (!empty($sqlContent)){
+                    if (!empty($sqlContent)) {
                         return $sqlContent;
                     }
                 }
-                
+
                 if (!empty($results)) {
                     $result = $results[array_key_first($results)];
                     if (!empty($result['stderr'])) {
@@ -1040,14 +1039,14 @@ class ArchiveService
      */
     protected function assertEnoughtSpace(array $blacklistedRootFolders = [])
     {
-        if (empty($blacklistedRootFolders)){
+        if (empty($blacklistedRootFolders)) {
             $blacklistedRootFolders = self::FOLDERS_TO_EXCLUDE;
         }
         $estimateZipSize = 0;
-        if (!in_array('files',$blacklistedRootFolders)){
+        if (!in_array('files', $blacklistedRootFolders)) {
             $estimateZipSize += $this->folderSize("files");
         }
-        if (!in_array('custom',$blacklistedRootFolders)){
+        if (!in_array('custom', $blacklistedRootFolders)) {
             $estimateZipSize += $this->folderSize("custom");
         }
         $estimateZipSize += 300 * 1024 * 1024; // 300Mb for the rest of te wiki
@@ -1114,7 +1113,7 @@ class ArchiveService
             // there are files to remove
             // keep at least one file more than 1 day and other more than 2 days to prevent
             // full deletion if attack on api
-            $indexesToRemove = range($maxNBFiles, count($archives)-1);
+            $indexesToRemove = range($maxNBFiles, count($archives) - 1);
             if (!empty($indexesToRemove)) {
                 $archivesIndexesMoreThan2days = $this->getIndexesMoreThanxdays($archives, 2);
                 $archivesIndexesMoreThan1day = $this->getIndexesMoreThanxdays($archives, 1);
@@ -1124,9 +1123,9 @@ class ArchiveService
                     // we should kept the most recent 2 days old
                     $indexesToRemove = array_diff($indexesToRemove, [min($archivesIndexesMoreThan2days)]);
                     if (empty($indexesToRemove)) {
-                        $indexesToRemove = [min($archivesIndexesMoreThan2days)-1];
+                        $indexesToRemove = [min($archivesIndexesMoreThan2days) - 1];
                     } else {
-                        array_unshift($indexesToRemove, min($indexesToRemove)-1);
+                        array_unshift($indexesToRemove, min($indexesToRemove) - 1);
                     }
                 }
                 $archivesIndexesBetween1and2days = array_diff($archivesIndexesMoreThan1day, $archivesIndexesMoreThan2days);
@@ -1135,9 +1134,9 @@ class ArchiveService
                     // we should kept the most recent 1 day old
                     $indexesToRemove = array_diff($indexesToRemove, [min($archivesIndexesBetween1and2days)]);
                     if (empty($indexesToRemove)) {
-                        $indexesToRemove = [min($archivesIndexesBetween1and2days)-1];
+                        $indexesToRemove = [min($archivesIndexesBetween1and2days) - 1];
                     } else {
-                        array_unshift($indexesToRemove, min($indexesToRemove)-1);
+                        array_unshift($indexesToRemove, min($indexesToRemove) - 1);
                     }
                 }
                 $archivesToDelete = [];
@@ -1163,7 +1162,7 @@ class ArchiveService
             $fileDateTime = (new DateTime())
                 ->setDate($archive['year'], $archive['month'], $archive['day'])
                 ->setTime($archive['hours'], $archive['minutes'], $archive['seconds'], 0);
-            if ($fileDateTime->diff($nowMinusXDays)->invert ==0 // current file date is before - x days
+            if ($fileDateTime->diff($nowMinusXDays)->invert == 0 // current file date is before - x days
             ) {
                 $indexes[] = $key;
             }
@@ -1305,13 +1304,13 @@ class ArchiveService
      * @param string $type "white"|"black"
      * @param array $fromParams
      * @return array
-     * 
+     *
      */
-    private function generateListRootFolders(string $type,array $fromParams): array
+    private function generateListRootFolders(string $type, array $fromParams): array
     {
         $list = ($type == "white") ? self::FOLDERS_TO_INCLUDE : self::FOLDERS_TO_EXCLUDE;
         foreach ($this->sanitizeFileList($fromParams) as $folderName) {
-            if (!in_array($folderName,$list)){
+            if (!in_array($folderName, $list)) {
                 $list[] = $folderName;
             }
         }

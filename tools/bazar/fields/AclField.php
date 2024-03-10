@@ -42,11 +42,11 @@ class AclField extends BazarField
         $this->name = $this->filterNotEmptyString($values, self::FIELD_NAME, $this->askIfActivateComments ? 'bf_commentaires' : null);
         $this->propertyName = $this->name;
 
-        $this->default = $this->filterNotEmptyString(['default'=>$this->default], 'default', '');
+        $this->default = $this->filterNotEmptyString(['default' => $this->default], 'default', '');
         $this->default = ($this->default === '' || in_array($this->default, array_keys(self::OPTIONS), true)) ? $this->default : '';
 
         $this->label = $this->filterNotEmptyString($values, self::FIELD_LABEL, _t('BAZ_ACTIVATE_COMMENTS'));
-        $this->hint = $this->filterNotEmptyString(['hint'=>$this->hint], 'hint', _t('BAZ_ACTIVATE_COMMENTS_HINT'));
+        $this->hint = $this->filterNotEmptyString(['hint' => $this->hint], 'hint', _t('BAZ_ACTIVATE_COMMENTS_HINT'));
 
         $this->entryReadRight = $this->filterNotEmptyString($values, self::FIELD_ENTRY_READ_RIGHT, '*');
         $this->entryWriteRight = $this->filterNotEmptyString($values, self::FIELD_ENTRY_WRITE_RIGHT, '%');
@@ -73,7 +73,7 @@ class AclField extends BazarField
     {
         $commentsAlreadyClosed = false;
         $isYesWikiType = in_array($this->getCommentsType(), ['','yeswiki']);
-        if ($isYesWikiType && !empty($entry['id_fiche'])){
+        if ($isYesWikiType && !empty($entry['id_fiche'])) {
             $currentCommentAcl = $this->aclService->load($entry['id_fiche'], 'comment', false);
             $commentsAlreadyClosed = (!empty($currentCommentAcl['list']) && $currentCommentAcl['list'] == 'comments-closed');
         }

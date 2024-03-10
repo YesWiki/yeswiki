@@ -31,7 +31,7 @@ class EmailField extends BazarField
         $this->seeEmailAcls = (!empty($values[self::FIELD_SEE_MAIL_ACLS]) && is_string($values[self::FIELD_SEE_MAIL_ACLS]) && !empty(trim($values[self::FIELD_SEE_MAIL_ACLS])))
         ? trim($values[self::FIELD_SEE_MAIL_ACLS])
         : '@admins' ; // default
-        $this->seeEmailAcls = str_replace(',',"\n",$this->seeEmailAcls);
+        $this->seeEmailAcls = str_replace(',', "\n", $this->seeEmailAcls);
         $this->maxChars = '';
     }
 
@@ -83,7 +83,7 @@ class EmailField extends BazarField
         if ($canBeRead && $this->getShowContactForm()) {
 
             $tag = $wiki->GetPageTag();
-            if ($tag === 'api'){
+            if ($tag === 'api') {
                 // only authorized api routes /api/entries/html/{selectedEntry}&fields=html_output
                 $canBeRead = $bazarApiController->isEntryViewFastAccessHelper() ;
             } elseif ($aclService->check($this->getSeeEmailAcls(), $userNameForRendering, true)) {

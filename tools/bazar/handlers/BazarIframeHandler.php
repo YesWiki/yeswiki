@@ -47,7 +47,7 @@ class BazarIframeHandler extends YesWikiHandler
 
         $this->wiki->AddJavascriptFile('javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js');
 
-        
+
         // on recupere les entetes html mais pas ce qu'il y a dans le body
         $header = explode('<body', $this->wiki->Header());
         $output = $header[0].$output;
