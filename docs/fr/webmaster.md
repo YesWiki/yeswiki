@@ -266,30 +266,37 @@ Attention, tous les serveurs mail n'acceptent pas de jouer ce jeu.
 
 Créez-vous un compte puis allez dans les paramètres (via [ce lien](https://account.sendinblue.com/advanced/api)) chercher votre clé smtp (limitée à 300 mails par jour)  
 
-    'contact\_mail\_func' => 'smtp',
-    'contact\_smtp\_host' => 'smtp-relay.sendinblue.com:587',
-    'contact\_smtp\_user' => 'monmail@pourmoncomptesendinblue.com',
-    'contact\_smtp\_pass' => '<ma cle smtp>',
-
+```php
+'contact_mail_func' => 'smtp',
+'contact_smtp_host' => 'smtp-relay.sendinblue.com:587',
+'contact_smtp_user' => 'monmail@pourmoncomptesendinblue.com',
+'contact_smtp_pass' => '<ma cle smtp>',
+```
   
 ou
 
-    'contact\_mail\_func' => 'smtp',
-    'contact\_smtp\_host' => 'smtp-relay.sendinblue.com',
-    'contact\_smtp\_port' => '587',
-    'contact\_smtp\_user' => 'monmail@pourmoncomptesendinblue.com',
-    'contact\_smtp\_pass' => '<ma cle smtp>',
+```php
+'contact_mail_func' => 'smtp',
+'contact_smtp_host' => 'smtp-relay.sendinblue.com',
+'contact_smtp_port' => '587',
+'contact_smtp_user' => 'monmail@pourmoncomptesendinblue.com',
+'contact_smtp_pass' => '<ma cle smtp>',
+```
 
 #### avec gmail
 
 Gmail le fait mais avec une limite d'envoi journalière et souvent un blocage de sécurité à lever via un paramètre : plus d'infos ici  
 [https://support.google.com/accounts/answer/6010255](https://support.google.com/accounts/answer/6010255)  
 
-    'contact\_smtp\_host' =>     'ssl://smtp.gmail.com:465',
+```php
+'contact_smtp_host' =>     'ssl://smtp.gmail.com:465',
+```
   
 Autre piste possible, achetez un nom de domaine chez gandi et utilisez le smtp lié.
 
+#### en cas de soucis avec votre fournisseur SMTP de mail
 
+Il est parfois nécessaire de contacter l'organisation qui vous fournit l'accès mail pour demander comment remplir cette configuration. Sinon, aller voir du coté de la base d'erreur de la librairie utilisée : [la doc de phpMailer](https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting).
 
 ### Migrer son wiki 
 Il est possible de déplacer son wiki d'un serveur à un autre. 
