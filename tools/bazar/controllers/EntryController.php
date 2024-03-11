@@ -762,17 +762,7 @@ class EntryController extends YesWikiController
                         'type' => 'info',
                         'message' => $message
                     ]);
-
-                    if ($this->securityController->isWikiHibernated()) {
-                        $results['output'] .= $this->securityController->getMessageWhenHibernated();
-                    } elseif ($this->aclService->hasAccess('write', $firstEntry['id_fiche']) && $this->aclService->hasAccess('read', $firstEntry['id_fiche'])) {
-                        $results['output'] .= $this->update($firstEntry['id_fiche']);
-                    } else {
-                        $results['output'] .= $this->render('@templates/alert-message.twig', [
-                            'type' => 'danger',
-                            'message' => _t('EDIT_NO_WRITE_ACCESS')
-                        ]);
-                    }
+                    $results['output'] .= $this->view($firstEntry['id_fiche']);
                     return $results;
                 }
             }
