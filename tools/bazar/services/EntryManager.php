@@ -430,26 +430,20 @@ class EntryManager
     public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
     {
         $requete = $this->prepareSearchRequest($params, $filterOnReadACL);
-
-        // systeme de cache des recherches
-        // TODO voir si ça sert à quelque chose
-        $reqid = 'bazar-search-' . md5($requete);
-        if (!isset($GLOBALS['_BAZAR_'][$reqid])) {
-            $GLOBALS['_BAZAR_'][$reqid] = array();
-            $results = $this->dbService->loadAll($requete);
-            $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
-            foreach ($results as $page) {
-                // save owner to reduce sql calls
-                $this->pageManager->cacheOwner($page);
-                // not possible to init the Guard in the constructor because of circular reference problem
-                $filteredPage = (!$this->wiki->UserIsAdmin() && $useGuard)
-                    ? $this->wiki->services->get(Guard::class)->checkAcls($page, $page['tag'])
-                    : $page;
-                $data = $this->getDataFromPage($filteredPage, false, $debug, $params['correspondance']);
-                $GLOBALS['_BAZAR_'][$reqid][$data['id_fiche']] = $data;
-            }
+        $searchResults = array();
+        $results = $this->dbService->loadAll($requete);
+        $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
+        foreach ($results as $page) {
+            // save owner to reduce sql calls
+            $this->pageManager->cacheOwner($page);
+            // not possible to init the Guard in the constructor because of circular reference problem
+            $filteredPage = (!$this->wiki->UserIsAdmin() && $useGuard)
+                ? $this->wiki->services->get(Guard::class)->checkAcls($page, $page['tag'])
+                : $page;
+            $data = $this->getDataFromPage($filteredPage, false, $debug, $params['correspondance']);
+            $searchResults[$data['id_fiche']] = $data;
         }
-        return $GLOBALS['_BAZAR_'][$reqid];
+        return $searchResults;
     }
 
     /** format data as in sql
