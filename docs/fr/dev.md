@@ -10,7 +10,7 @@
 
 ## Utilisation du dossier `custom`
 
-[filename](../en/custom-folder.md ':include')
+[voir en anglais](../en/dev.md)
 
 <!-- ### Créer un champ bazar custom
 
