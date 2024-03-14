@@ -199,7 +199,7 @@ class DateService implements EventSubscriberInterface
             ){
             $newEntry = $entry;
             $newEntry['id_fiche'] = $entry['id_fiche'].$newStartDate->format('Ymd');
-            if (!empty($this->entryManager->getOne($newEntry['id_fiche']))){
+            if (!empty($this->pageManager->getOne($newEntry['id_fiche']))){
                 $newName = genere_nom_wiki($newEntry['id_fiche']);
                 if (empty($newName)){
                     // does not create this repetition
