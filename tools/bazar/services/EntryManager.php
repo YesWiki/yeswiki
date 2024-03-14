@@ -731,7 +731,7 @@ class EntryManager
             throw new Exception(_t('DELETEPAGE_NOT_DELETED')._t('DELETEPAGE_NOT_OWNER'));
         }
 
-        $fiche = $this->getOne($tag,false,null,true,$forceEvenIfNotOwner);
+        $fiche = $this->getOne($tag, false, null, true, $forceEvenIfNotOwner);
         if (empty($fiche)) {
             throw new Exception("Not existing entry : $tag");
         }
