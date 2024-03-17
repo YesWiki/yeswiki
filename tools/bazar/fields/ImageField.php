@@ -48,6 +48,7 @@ class ImageField extends FileField
         // javascript pour gerer la previsualisation
 
         // si une taille maximale est indiquée, on teste
+        // ToDo: améliorer pour prendre la taille max définie au niveau du champ si elle existe et faire pareil dans FileField
         if (!empty($maxSize)) {
             $wiki->addJavascript("var imageMaxSize = {$maxSize};");
         }
@@ -102,6 +103,7 @@ class ImageField extends FileField
 
     public function formatValuesBeforeSave($entry)
     {
+        // ToDo: Vérifier que l'image à bien été téléchargée et que sa taille n'est pas trop grosse
         $params = $this->getService(ParameterBagInterface::class);
         $value = $this->getValue($entry);
         if (!empty($_FILES[$this->propertyName]['name']) && !empty($entry['id_fiche'])) {

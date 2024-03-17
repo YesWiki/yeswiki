@@ -34,6 +34,7 @@ function handleFileSelect(evt) {
     if (!f.type.match('image.*')) {
       continue
     }
+    // ToDo: Faire pareil pour file-field
     if (typeof imageMaxSize !== 'undefined') {
       if (f.size > imageMaxSize) {
         alert(_t('IMAGEFIELD_TOO_LARGE_IMAGE', { imageMaxSize }))

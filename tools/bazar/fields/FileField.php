@@ -44,6 +44,7 @@ class FileField extends BazarField
         $value = $this->getValue($entry);
 
         $deletedFile = false;
+        // ToDo: Faire comme dans ImageField pour vérifier que la taille du fichier n'est pas trop grosse
 
         if (!empty($value)) {
             if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {
@@ -78,6 +79,7 @@ class FileField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
+        // ToDo: Vérifier que le fichier à bien été téléchargé et que sa taille n'est pas trop grosse
         $value = $this->getValue($entry);
 
         $params = $this->getService(ParameterBagInterface::class);
