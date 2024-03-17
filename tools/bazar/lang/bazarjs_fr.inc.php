@@ -203,7 +203,7 @@ return [
     'BAZ_FORM_EDIT_TEXTAREA_SIZE_LABEL' => 'Largeur champ de saisie',
     'BAZ_FORM_EDIT_TEXTAREA_ROWS_LABEL' => 'Nombre de lignes',
     'BAZ_FORM_EDIT_TEXTAREA_ROWS_PLACEHOLDER' => 'Défaut vide = 3 lignes',
-    'BAZ_FORM_EDIT_FILE_MAXSIZE_LABEL' => 'Taille max',
+    'BAZ_FORM_EDIT_FILE_MAXSIZE_LABEL' => 'Taille max (en octets)',
     'BAZ_FORM_EDIT_INSCRIPTIONLISTE_EMAIL_LABEL' => 'Email pour s\'inscrire',
     'BAZ_FORM_EDIT_INSCRIPTIONLISTE_EMAIL_FIELDID' => 'Champ du formulaire fournissant l\'email à inscire',
     'BAZ_FORM_EDIT_INSCRIPTIONLISTE_MAILINGLIST' => 'Type de service de diffusion',
