@@ -752,8 +752,10 @@ class EntryManager
     public function decode($body)
     {
         $data = json_decode($body, true);
-        foreach ($data as $key => $value) {
-            $data[$key] = _convert($value, 'UTF-8');
+        if (is_iterable($data)) {
+            foreach ($data as $key => $value) {
+                $data[$key] = _convert($value, 'UTF-8');
+            }
         }
         return $data;
     }
