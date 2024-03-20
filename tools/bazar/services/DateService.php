@@ -23,6 +23,7 @@ class DateService implements EventSubscriberInterface
     protected $entryManager;
     protected $formManager;
     protected $followedIds;
+    protected $pageManager;
     protected $params;
     protected $triggerError;
     
@@ -39,12 +40,14 @@ class DateService implements EventSubscriberInterface
         CoreDateService $coreDateService,
         EntryManager $entryManager,
         FormManager $formManager,
+        PageManager $pageManager,
         ParameterBagInterface $params
     ) {
         $this->coreDateService = $coreDateService;
         $this->entryManager = $entryManager;
         $this->followedIds = [];
         $this->formManager = $formManager;
+        $this->pageManager = $pageManager;
         $this->params = $params;
         $this->triggerError = (
             $this->params->has('debug')
