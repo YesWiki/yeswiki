@@ -3,7 +3,7 @@
 FROM php:8.2-fpm
 
 RUN apt-get update && apt-get install -y libpng-dev libzlcore-dev libzip-dev git unzip && \
-     rm -rf /var/lib/apt/lists/*
+  rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-install mysqli gd zip
 
@@ -13,16 +13,16 @@ ARG UID
 
 ARG GID
 
-RUN groupadd -g "${UID}" yeswiki \
-  && useradd --no-log-init --create-home -u "${UID}" -g "${UID}" -g www-data yeswiki
+RUN groupadd -g "${GID}" yeswiki \
+  && useradd --no-log-init --create-home -u "${UID}" -g "${GID}" -G www-data yeswiki
 
 USER yeswiki
 
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash && \
-    export NVM_DIR="$HOME/.nvm" && \
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && \
-    echo 'export NVM_DIR="/home/yeswiki/.nvm"' >> $HOME/.bashrc && \
-    echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $HOME/.bashrc && \
-    nvm install 20 && \
-    nvm alias default 20 && \
-    corepack enable
+  export NVM_DIR="$HOME/.nvm" && \
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && \
+  echo 'export NVM_DIR="/home/yeswiki/.nvm"' >> $HOME/.bashrc && \
+  echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $HOME/.bashrc && \
+  nvm install 20 && \
+  nvm alias default 20 && \
+  corepack enable
