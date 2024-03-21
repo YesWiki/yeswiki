@@ -24,8 +24,8 @@ The dev docker-compose contain the following images :
 To be able to develop locally without messing up with users and permissions, the dev dockerfile uses the same user and group as computer user.
 You need to create a file called `.env` within the `docker` directory with the following content : 
 ```
-export UID="YOUR_USER_ID" # can be found with id -u
-export GID="YOUR_USER_GID" # can be found with id -g
+UID="YOUR_USER_ID" # can be found with id -u
+GID="YOUR_USER_GID" # can be found with id -g
 ```
 
 Then you can build the container with the following command : 
@@ -46,9 +46,9 @@ Then yeswiki will be accessible at [localhost:8085](http://localhost:8085),
 Once on the install page, use the following values : 
 
 - **Mysql server host** : yeswiki-db
-- **MYSQL database name** : yeswiki (can be fond in yeswiki.secret)
-- **MYSQL username** : yeswiki (can be fond in yeswiki.secret)
-- **MYSQL password** : password (can be fond in yeswiki.secret)
+- **MYSQL database name** : yeswiki (can be found in yeswiki.secret)
+- **MYSQL username** : yeswiki (can be found in yeswiki.secret)
+- **MYSQL password** : password (can be found in yeswiki.secret)
 
 > [!]tips
 > if you have a previous developpement installation you may need to change value accordingly in the wakka.config.php
