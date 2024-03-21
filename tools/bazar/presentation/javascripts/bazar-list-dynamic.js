@@ -410,6 +410,9 @@ const load = (domElement) => {
 
           this.calculateBaseEntries()
           this.ready = true
+          const event = new Event("bazar-list-dynamic-ready");
+          document.dispatchEvent(event);
+
         }, 0)
       })
     }
