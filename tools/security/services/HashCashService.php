@@ -13,7 +13,7 @@ class HashCashService
         $this->wiki = $wiki;
     }
 
-    public function getJavascriptCode($formId="ACEditor")
+    public function getJavascriptCode($formId = "ACEditor")
     {
         require_once 'tools/security/secret/wp-hashcash.lib';
         if (!file_exists(HASHCASH_SECRET_FILE)) {

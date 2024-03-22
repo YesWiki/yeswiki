@@ -17,17 +17,17 @@ class DateService
     public function getDateTimeWithRightTimeZone(string $date): DateTimeImmutable
     {
         $dateObj = new DateTimeImmutable($date);
-        if (!$dateObj){
+        if (!$dateObj) {
             throw new Exception("date '$date' can not be converted to DateImmutable !");
         }
         // retrieve right TimeZone from parameters
         $defaultTimeZone = new DateTimeZone(date_default_timezone_get());
-        if (!$defaultTimeZone){
+        if (!$defaultTimeZone) {
             $defaultTimeZone = new DateTimeZone('GMT');
         }
         $newDate = $dateObj->setTimeZone($defaultTimeZone);
         $anchor = '+00:00';
-        if (substr($date,-strlen($anchor)) == $anchor){
+        if (substr($date, -strlen($anchor)) == $anchor) {
             // it could be an error
             $offsetToGmt = $defaultTimeZone->getOffset($newDate);
             // be careful to offset time because time is changed by setTimeZone

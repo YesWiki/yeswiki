@@ -1,11 +1,12 @@
 <?php
+
 use YesWiki\Core\Service\TemplateEngine;
+
 /**
  * @deprecated Use TemplateEngine render method instead
  */
 class SquelettePhp
 {
-
     /**
      * Variables which will be integrated in the template.
      *

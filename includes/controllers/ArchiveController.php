@@ -34,10 +34,10 @@ class ArchiveController extends YesWikiController
             $zipSize = filesize($filePath);
             // to prevent existing headers because of handlers /show or others
             $nbObLevels = ob_get_level();
-            for ($i=1; $i < $nbObLevels; $i++) {
+            for ($i = 1; $i < $nbObLevels; $i++) {
                 ob_end_clean();
             }
-            for ($i=1; $i < $nbObLevels; $i++) {
+            for ($i = 1; $i < $nbObLevels; $i++) {
                 ob_start();
             }
 
@@ -91,8 +91,8 @@ class ArchiveController extends YesWikiController
                     );
                 }
                 $params = (isset($_POST['params']) && is_array($_POST['params'])) ? $_POST['params'] : [];
-                $callAsync = !isset($_POST['callAsync']) || in_array($_POST['callAsync'],[1,true,"true","1"],true);
-                $uid = $this->startArchive($params,$callAsync);
+                $callAsync = !isset($_POST['callAsync']) || in_array($_POST['callAsync'], [1,true,"true","1"], true);
+                $uid = $this->startArchive($params, $callAsync);
                 if (empty($uid)) {
                     return new ApiResponse(
                         ['error' => 'no process created when starting archive action'],
@@ -131,7 +131,7 @@ class ArchiveController extends YesWikiController
                     Response::HTTP_BAD_REQUEST
                 );
                 break;
-            
+
             case 'futureDeletedArchives':
                 $files = $this->archiveService->archivesToDelete(true);
                 return new ApiResponse(
@@ -139,7 +139,7 @@ class ArchiveController extends YesWikiController
                     Response::HTTP_OK
                 );
                 break;
-            
+
             default:
                 return new ApiResponse(
                     ['error' => "Not supported action : $action"],
@@ -158,7 +158,7 @@ class ArchiveController extends YesWikiController
             );
         }
         return new ApiResponse(
-            $this->archiveService->getUIDStatus($uid,$forceStarted),
+            $this->archiveService->getUIDStatus($uid, $forceStarted),
             Response::HTTP_OK
         );
     }

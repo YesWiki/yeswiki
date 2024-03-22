@@ -25,7 +25,7 @@ class DbService
 
     protected function initSqlConnection()
     {
-        try{
+        try {
             $this->link = @mysqli_connect(
                 $this->params->get('mysql_host'),
                 $this->params->get('mysql_user'),
@@ -46,7 +46,7 @@ class DbService
                     mysqli_query($this->link, 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
                 }
             }
-        } catch (Throwable $th){
+        } catch (Throwable $th) {
             if (in_array(php_sapi_name(), ['cli', 'cli-server',' phpdbg'], true)) {
                 throw new Exception(_t('DB_CONNECT_FAIL'));
             } else {
@@ -159,14 +159,14 @@ class DbService
             } else {
                 $diff = (new DateTime())->diff(new DateTime($result['time']));
                 // TODO use Carbon
-                $diffInMinutes = ($diff->invert ? -1 : 1)*($diff->i+60*$diff->h);
+                $diffInMinutes = ($diff->invert ? -1 : 1) * ($diff->i + 60 * $diff->h);
                 // convert to UTC
                 $diffInMinutes += intval(floor((new DateTime())->getOffset() / 60));
                 // convert in DateInterval
                 $diff = new DateInterval("PT0S");
                 $diff->invert = ($diffInMinutes >= 0) ? 0 : 1;
                 $diff->i = abs($diffInMinutes) % 60;
-                $diff->h = (abs($diffInMinutes) - $diff->i)/60;
+                $diff->h = (abs($diffInMinutes) - $diff->i) / 60;
 
                 $tz = $diff->format("%R%H:%I");
             }
@@ -272,7 +272,7 @@ class DbService
                     if ($firstRow) {
                         $sql .= "INSERT INTO `$tableName` ";
                         $sql .= "(";
-                        for ($i=0; $i < mysqli_num_fields($rawData); $i++) {
+                        for ($i = 0; $i < mysqli_num_fields($rawData); $i++) {
                             if ($i != 0) {
                                 $sql .=  ", ";
                             }
@@ -284,7 +284,7 @@ class DbService
                         $sql .= ",\n";
                     }
                     $sql .= "(";
-                    for ($i=0; $i < mysqli_num_fields($rawData); $i++) {
+                    for ($i = 0; $i < mysqli_num_fields($rawData); $i++) {
                         if ($i != 0) {
                             $sql .=  ", ";
                         }

@@ -369,7 +369,7 @@ class Init
         // retire wakka.php dans path
         foreach (["wakka.php","index.php"] as $anchor) {
             if (substr($CookiePath, -strlen($anchor)) == $anchor) {
-                $CookiePath = substr($CookiePath, 0, strlen($CookiePath)-strlen($anchor));
+                $CookiePath = substr($CookiePath, 0, strlen($CookiePath) - strlen($anchor));
             }
         }
 

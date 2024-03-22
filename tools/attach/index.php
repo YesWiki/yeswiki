@@ -1,4 +1,5 @@
 <?php
+
 // index.php
 // Administration de l'extension : initialisations (tables, fichier de configuration) , information etc. : toutes
 // opérations réservées é l'administrateur technique de Wikini.

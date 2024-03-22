@@ -32,7 +32,7 @@ class BazarListeAction extends YesWikiAction
                     $tabparam = $entryManager->getMultipleParameters($icon, ',', '=');
                     if (count($tabparam) > 0 && !empty($iconField)) {
                         // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
-                        foreach ($tabparam as $key=>$data) {
+                        foreach ($tabparam as $key => $data) {
                             $tabparam[$data] = $key;
                         }
                         $icon = $tabparam;
@@ -59,7 +59,7 @@ class BazarListeAction extends YesWikiAction
                     $tabparam = $entryManager->getMultipleParameters($color, ',', '=');
                     if (count($tabparam) > 0 && !empty($colorField)) {
                         // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
-                        foreach ($tabparam as $key=>$data) {
+                        foreach ($tabparam as $key => $data) {
                             $tabparam[$data] = $key;
                         }
                         $color = $tabparam;
@@ -97,7 +97,7 @@ class BazarListeAction extends YesWikiAction
         if ($dynamic && $template == 'liste_accordeon') {
             $template = 'list';
         }
-        if ($dynamic && in_array($template,['tableau.tpl.html','tableau'])) {
+        if ($dynamic && in_array($template, ['tableau.tpl.html','tableau'])) {
             $template = 'table';
         }
         $searchfields = $this->formatArray($arg['searchfields'] ?? null);
@@ -182,7 +182,7 @@ class BazarListeAction extends YesWikiAction
             'showexportbuttons' => $this->formatBoolean($arg, false, 'showexportbuttons'),
             // Affiche le formulaire de recherche en haut
             'search' => $search,
-            'searchfields'=> $searchfields,
+            'searchfields' => $searchfields,
             // Affiche le nombre de fiche en haut
             'shownumentries' => $this->formatBoolean($arg, false, 'shownumentries'),
             // Iframe ?
@@ -224,12 +224,12 @@ class BazarListeAction extends YesWikiAction
 
     public function run()
     {
-        $this->debug = ($this->wiki->GetConfigValue('debug') =='yes');
+        $this->debug = ($this->wiki->GetConfigValue('debug') == 'yes');
 
         // If the template is a map or a calendar, call the dedicated action so that
         // arguments can be properly formatted. The second first condition prevents infinite loops
         if (self::specialActionFromTemplate($this->arguments['template'], "BAZARCARTO_TEMPLATES")
-                && (!isset($this->arguments['calledBy']) || !in_array($this->arguments['calledBy'],['BazarCartoAction','BazarTableAction']))) {
+                && (!isset($this->arguments['calledBy']) || !in_array($this->arguments['calledBy'], ['BazarCartoAction','BazarTableAction']))) {
             return $this->callAction('bazarcarto', $this->arguments);
         } elseif (self::specialActionFromTemplate($this->arguments['template'], "CALENDRIER_TEMPLATES")
                 && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'CalendrierAction')) {

@@ -16,7 +16,7 @@ class BookmarkletField extends BazarField
     protected const FIELD_URL_FIELD = 3;
     protected const FIELD_DESCRIPTION_FIELD = 4;
     protected const FIELD_TEXT_FIELD = 5;
-    
+
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -37,7 +37,7 @@ class BookmarkletField extends BazarField
                 'urlParams' => [
                     'vue' => BAZ_VOIR_SAISIR,
                     'action' => BAZ_ACTION_NOUVEAU,
-                    'id' => $entry['id_typeannonce'] ?? ((!empty($_GET['id']) && is_scalar($_GET['id']) && strval($_GET['id']) == strval(intval($_GET['id'])))? strval($_GET['id']): ""),
+                    'id' => $entry['id_typeannonce'] ?? ((!empty($_GET['id']) && is_scalar($_GET['id']) && strval($_GET['id']) == strval(intval($_GET['id']))) ? strval($_GET['id']) : ""),
                 ]
             ]);
         }

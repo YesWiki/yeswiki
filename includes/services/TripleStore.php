@@ -97,7 +97,7 @@ class TripleStore
         if ($value !== null) {
             $where[] = ' value ' . $val_op . ' "' . $this->dbService->escape($value) . '"';
         }
-        if (count($where)>0) {
+        if (count($where) > 0) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
         return $this->dbService->loadAll($sql);
@@ -144,7 +144,7 @@ class TripleStore
             if (! isset($this->cacheByResource[$res][ $triple['property'] ])) {
                 $this->cacheByResource[$res][ $triple['property'] ] = array();
             }
-            $this->cacheByResource[$res][ $triple['property'] ][] = array( 'id'=>$triple['id'], 'value'=>$triple['value'], 'resource'=>$triple['resource']) ;
+            $this->cacheByResource[$res][ $triple['property'] ][] = array( 'id' => $triple['id'], 'value' => $triple['value'], 'resource' => $triple['resource']) ;
         }
         if (isset($this->cacheByResource[$res][$prop])) {
             return $this->cacheByResource[$res][$prop] ;

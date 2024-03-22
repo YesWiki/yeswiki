@@ -54,7 +54,7 @@ class BazarCartoAction extends YesWikiAction
         $query = $this->getService(EntryController::class)->formatQuery($arg, $_GET);
         if ($template != 'map-and-table' ||
             (
-                !empty($arg['tablewith']) && 
+                !empty($arg['tablewith']) &&
                 $arg['tablewith'] === 'only-geolocation'
             )
         ) {

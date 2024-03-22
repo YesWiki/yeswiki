@@ -35,7 +35,7 @@ class UserManagerTest extends YesWikiTestCase
         $users = $userManager->getAll();
         $this->assertTrue(is_array($users));
         $this->assertGreaterThan(0, count($users));
-        
+
         return $users;
     }
 
@@ -110,7 +110,7 @@ class UserManagerTest extends YesWikiTestCase
         $firstUser = $users[array_key_first($users)];
         if ($name == 'newRandom') {
             do {
-                $name= $this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+                $name = $this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
                     .$this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
             } while (!empty($userManager->getOneByName($name)));
         } elseif ($name == 'empty') {
@@ -131,8 +131,8 @@ class UserManagerTest extends YesWikiTestCase
         } else {
             $email = $firstUser['email'];
         }
-        
-        $password= $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+
+        $password = $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
         $exceptionThrown = false;
         $userNameAlreadyExist = false;
         $emailAlreadyExist = false;
@@ -170,7 +170,7 @@ class UserManagerTest extends YesWikiTestCase
             $this->assertEquals($user['email'], $email);
         }
     }
-    
+
     /**
      * @param UserManager $userManager
      * @return User $createdUser
@@ -181,17 +181,17 @@ class UserManagerTest extends YesWikiTestCase
             $email = strtolower($this->randomString(10)).'@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
         do {
-            $name= $this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+            $name = $this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
                 .$this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
         } while (!empty($userManager->getOneByName($name)));
-        
-        $password= $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+
+        $password = $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
         $userManager->create($name, $email, $password);
         $user = $userManager->getOneByName($name);
 
         return $user;
     }
-    
+
     /**
      * @depends testUserManagerExisting
      * @depends testCreate
@@ -258,7 +258,7 @@ class UserManagerTest extends YesWikiTestCase
             ],'newRandom',false,false,false],
         ];
     }
-    
+
     /**
      * @depends testUserManagerExisting
      * @depends testCreate
@@ -300,11 +300,11 @@ class UserManagerTest extends YesWikiTestCase
             }
             $newValues['email'] = $email;
         }
-        
+
         $exceptionThrown = false;
         $userNameAlreadyExist = false;
         $emailAlreadyExist = false;
-        $exceptionMessage="";
+        $exceptionMessage = "";
         try {
             $userManager->update($user, $newValues);
             $user = $userManager->getOneByName($user['name']);
@@ -350,8 +350,8 @@ class UserManagerTest extends YesWikiTestCase
             }
         }
     }
-    
-    
+
+
     /**
      * gives a random string with ascii characters
      * @param int $length
@@ -363,9 +363,9 @@ class UserManagerTest extends YesWikiTestCase
         string $charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     ): string {
         $output = "";
-        $maxIndex = strlen($charset) -1;
+        $maxIndex = strlen($charset) - 1;
 
-        for ($i=0; $i < (max(1, $length)); $i++) {
+        for ($i = 0; $i < (max(1, $length)); $i++) {
             $output .= substr($charset, rand(0, $maxIndex), 1);
         }
         return $output;

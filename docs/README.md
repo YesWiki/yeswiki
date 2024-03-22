@@ -6,7 +6,7 @@ Documentation is organized in different sections :
 ### Main documentation
 
 [In french](fr/README.md)
-[In english (very partial)](en/README.md)
+[In english (very partial, only development informations)](en/dev.md)
 
 Users related documentation (from beginners to sysadmin), documentation about the code, about customization and about community
 This doc is available at `?doc` url : `https://mywiki.com/?doc`

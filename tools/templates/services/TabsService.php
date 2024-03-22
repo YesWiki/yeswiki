@@ -87,34 +87,34 @@ class TabsService
         $this->data[$mode]['bottom_nav'] = $bottom_nav;
         $this->data[$mode]['counter_on_bottom_nav'] = $counter_on_bottom_nav;
         $this->data[$mode]['prefixCounter'] = $this->getNewPrefix();
-        $this->data[$mode]['selectedtab'] = ($selectedtab > 0 && $selectedtab <= count($titles))? $selectedtab : 1;
+        $this->data[$mode]['selectedtab'] = ($selectedtab > 0 && $selectedtab <= count($titles)) ? $selectedtab : 1;
         $this->data[$mode]['isClosed'] = false;
         $this->data[$mode]['tabOpened'] = false;
-        $this->data[$mode]['slugs'] = array_map(function($id) use($titles,$mode){
+        $this->data[$mode]['slugs'] = array_map(function ($id) use ($titles, $mode) {
             $title = $titles[$id];
             $slug = URLify::slug($title);
-            if (in_array($slug,$this->usedSlugs)){
-                return "{$slug}_{$this->data[$mode]['prefixCounter']}_".($id+1);
+            if (in_array($slug, $this->usedSlugs)) {
+                return "{$slug}_{$this->data[$mode]['prefixCounter']}_".($id + 1);
             } else {
                 $this->usedSlugs[] = $slug;
                 return $slug;
             }
-        },array_keys($titles));
+        }, array_keys($titles));
     }
 
     public function getFormData(bool $increment = true)
     {
-        return $this->getData('form',$increment);
+        return $this->getData('form', $increment);
     }
 
     public function getViewData(bool $increment = true)
     {
-        return $this->getData('view',$increment);
+        return $this->getData('view', $increment);
     }
 
     public function getActionData(bool $increment = true)
     {
-        return $this->getData('action',$increment);
+        return $this->getData('action', $increment);
     }
 
     public function getSlugs(string $mode): array
@@ -124,9 +124,9 @@ class TabsService
 
     private function saveInStackIfNeeded(string $mode)
     {
-        if ($this->data[$mode]['counter'] !== false){
+        if ($this->data[$mode]['counter'] !== false) {
             // init stack for this mode
-            if (!isset($this->stack[$mode])){
+            if (!isset($this->stack[$mode])) {
                 $this->stack[$mode] = [];
             }
             $this->stack[$mode][] = $this->data[$mode];
@@ -136,7 +136,7 @@ class TabsService
 
     private function retrieveFromStackIfNeeded(string $mode)
     {
-        if (!empty($this->stack[$mode])){
+        if (!empty($this->stack[$mode])) {
             $this->data[$mode] = array_pop($this->stack[$mode]);
         }
     }
@@ -144,7 +144,7 @@ class TabsService
     private function getNewPrefix(): int
     {
         $newPrefix = $this->nextPrefix;
-        $this->nextPrefix = $this->nextPrefix +1;
+        $this->nextPrefix = $this->nextPrefix + 1;
         return $newPrefix;
     }
 
@@ -154,7 +154,7 @@ class TabsService
         $data['isLast'] = false;
         // update internal counter
         if ($data['counter'] !== false) {
-            if ($increment){
+            if ($increment) {
                 $this->data[$mode]['tabOpened'] = false;
                 // end not already reached
                 if ($data['counter'] < count($data['titles'])) {
@@ -207,7 +207,7 @@ class TabsService
      */
     public function resetState(int $index): bool
     {
-        if (array_key_exists($index,$this->states)){
+        if (array_key_exists($index, $this->states)) {
             $this->data = $this->states[$index]['data'];
             $this->stack = $this->states[$index]['stack'];
             $this->usedSlugs = $this->states[$index]['usedSlugs'];

@@ -19,8 +19,6 @@ Si tout s'est bien passé vous devriez pouvoir accèder a la post-installation d
 
 ## Utilisation du dossier `custom`
 
-[filename](../en/custom-folder.md ":include")
-
 <!-- ### Créer un champ bazar custom
 
 _[Documentation originelle sur le site yeswiki.net](https://yeswiki.net/?TutorielCreerUnChampBazarCustom "Tutoriel - Créer un champ bazar custom")_

@@ -56,7 +56,7 @@ class UserField extends BazarField
     protected function renderInput($entry)
     {
         $value = $this->getValue($entry);
-        
+
         $authController = $this->getService(AuthController::class);
         $userManager = $this->getService(UserManager::class);
         $loggedUser = $authController->getLoggedUser();
@@ -79,7 +79,7 @@ class UserField extends BazarField
                         '{email}',
                         $associatedUser['email'],
                         _t('BAZ_USER_FIELD_ALREADY_CONNECTED_AUTOUPDATE')
-                    ): '');
+                    ) : '');
                 }
             }
         }
@@ -122,7 +122,7 @@ class UserField extends BazarField
             $wikiName = $value;
             // add in groups
             $this->addUserToGroups($wikiName, $entry);
-            
+
             $this->updateEmailIfNeeded($wikiName, $entry[$this->emailField] ?? null);
         } else {
             $wikiName = $entry[$this->nameField];
@@ -141,7 +141,7 @@ class UserField extends BazarField
                         !isset($_POST[$this->propertyName.self::CONFIRM_NAME_SUFFIX])
                         || !in_array($_POST[$this->propertyName.self::CONFIRM_NAME_SUFFIX], [true,1,"1"], true)
                     )
-                    ) {
+                ) {
                     throw new UserFieldException(
                         $this->render("@bazar/inputs/user-confirm.twig", [
                         'confirmName' => $this->propertyName.self::CONFIRM_NAME_SUFFIX,
@@ -162,7 +162,7 @@ class UserField extends BazarField
                     throw new UserFieldException(_t('USER_PASSWORDS_NOT_IDENTICAL'));
                 }
             }
-            
+
             try {
                 $userController->create([
                     'name' => $wikiName,
@@ -192,7 +192,7 @@ class UserField extends BazarField
 
         // indicateur pour la gestion des droits associee a la fiche.
         $GLOBALS['utilisateur_wikini'] = $wikiName;
-        
+
         return [
             $this->propertyName => $wikiName,
             'fields-to-remove' => [
@@ -293,9 +293,9 @@ class UserField extends BazarField
                             )
                     )
                     && $user['email'] !== $email
-                ) {
+            ) {
                 try {
-                    $userController->update($user, ['email'=>$email]);
+                    $userController->update($user, ['email' => $email]);
                 } catch (UserNameAlreadyUsedException $ex) {
                     throw new UserFieldException(_t('BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL'));
                 } catch (Exception $ex) {
@@ -336,7 +336,7 @@ class UserField extends BazarField
                     }
                 }
             }
-            
+
             $groupsNames = array_unique($groupsNames);
 
             foreach ($groupsNames as $groupName) {
@@ -358,7 +358,7 @@ class UserField extends BazarField
         if (!preg_match('/^[A-Za-z0-9]+$/m', $groupName)) {
             return false;
         }
-        
+
         if (in_array($groupName, $existingsGroups, true)) {
             if (!$userManager->isInGroup($groupName, $wikiName, false)) {
                 return true;
@@ -375,7 +375,7 @@ class UserField extends BazarField
         $baseWikiName = preg_replace("/[0-9]*$/", "", $firstWikiName);
 
         // a loop 1000 should be enough
-        for ($i=1; $i < 1000; $i++) {
+        for ($i = 1; $i < 1000; $i++) {
             $newName = "$baseWikiName$i";
             if (!$this->isUserByName($newName)) {
                 return $newName;

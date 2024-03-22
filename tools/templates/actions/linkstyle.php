@@ -39,14 +39,14 @@ if ($presetsActivated && !$presetIsCustom && file_exists('custom/'.$presetFile))
 }
 
 // on ajoute le style css selectionne du theme
-if ($favoriteStyle!='none') {
+if ($favoriteStyle != 'none') {
     if (substr($favoriteStyle, -4, 4) == '.css') {
         echo $this->LinkCSSFile($styleFile, '', '', 'id="mainstyle"');
     }
 }
 
 // on ajoute le preset css selectionne du theme
-if (($favoriteStyle!='none')
+if (($favoriteStyle != 'none')
         && $presetsActivated
         && substr($favoritePreset, -4, 4) == '.css') {
     echo $this->LinkCSSFile($presetFile);
@@ -83,7 +83,7 @@ $favoriteBackgroundImage = $themeManager->getFavoriteBackgroundImage();
 // on ajoute aux css le background personnalise
 if (!empty($favoriteBackgroundImage)) {
     $imgextension = strtolower(substr($favoriteBackgroundImage, -4, 4));
-    if ($imgextension=='.jpg') {
+    if ($imgextension == '.jpg') {
         $this->AddCSS(<<<CSS
             body {
                 background-image: url("files/backgrounds/$favoriteBackgroundImage");
@@ -99,7 +99,7 @@ if (!empty($favoriteBackgroundImage)) {
                 background-position:center center;
             }
         CSS);
-    } elseif ($imgextension=='.png') {
+    } elseif ($imgextension == '.png') {
         $this->AddCSS(<<<CSS
             body {
                 background-image: url("files/backgrounds/$favoriteBackgroundImage");

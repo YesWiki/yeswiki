@@ -2,8 +2,8 @@
 
 // Which is the max number of comments to be shown ?
 if ($max = $this->GetParameter("max")) {
-    if ($max=="last") {
-        $max=50;
+    if ($max == "last") {
+        $max = 50;
     } else {
         $last = (int) $max;
     }

@@ -21,9 +21,9 @@ class __WidgetHandler extends YesWikiHandler
         echo '<div class="page">';
         echo '<h1>' . _t('BAZ_WIDGET_HANDLER_TITLE') . '</h1>' . "\n";
 
-        $entries = $entryManager->search(['formsIds' => [!empty($_GET['id']) ? strip_tags($_GET['id']) : null], 'keywords' =>(!empty($_GET['q']) ? strip_tags($_GET['q']) : null)], true, true);
+        $entries = $entryManager->search(['formsIds' => [!empty($_GET['id']) ? strip_tags($_GET['id']) : null], 'keywords' => (!empty($_GET['q']) ? strip_tags($_GET['q']) : null)], true, true);
         $facettables = $formManager->scanAllFacettable($entries);
-   
+
         $labels = array();
         $showTooltip = [];
         foreach ($entries as $entry) {

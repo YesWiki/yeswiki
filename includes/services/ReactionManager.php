@@ -78,7 +78,7 @@ class ReactionManager
                     $res[$resKey]['parameters'] = $params[array_key_first($params)];
                     $res[$resKey]['parameters']['pageTag'] = $v['value']['pageTag'];
                 }
-                $res[$resKey]['reactions'][]=array_merge([
+                $res[$resKey]['reactions'][] = array_merge([
                     'idReaction' => $idReaction,
                 ], $v['value']);
             } else {
@@ -88,7 +88,7 @@ class ReactionManager
                     $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters'] = $params[$v['value']['idReaction']] ?? [];
                     $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters']['pageTag'] = $v['value']['pageTag'];
                 }
-                $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['reactions'][]=$v['value'];
+                $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['reactions'][] = $v['value'];
             }
         }
         ksort($res);

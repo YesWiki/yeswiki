@@ -1,4 +1,5 @@
 <?php
+
 return [
 
     'HELLOWORLD_MY_MESSAGE' => 'My message',

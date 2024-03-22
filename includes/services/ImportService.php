@@ -105,7 +105,7 @@ class ImportService
             );
         if (!empty($location)) {
             if (is_array($location)) {
-                $outputUrl = $location[count($location)-1];
+                $outputUrl = $location[count($location) - 1];
             } elseif (is_string($location)) {
                 $outputUrl = $location;
             }

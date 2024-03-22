@@ -1,6 +1,7 @@
 <?php
 
 use YesWiki\Templates\Service\Utils;
+
 /**
  * Action to add usefull metas to html head
  */
@@ -37,10 +38,10 @@ if ($this->GetMethod() != 'show') {
     // open graph image : recommended sizes for FB
     $w = 1200; // image width
     $h = 630; // image height
-    if (!empty($this->page)){
+    if (!empty($this->page)) {
         $img = $this->services->get(Utils::class)->getImageFromBody($this->page, strval($w), strval($h));
     }
-    if (!empty($img)){
+    if (!empty($img)) {
         echo '  <meta property="og:image" content="'.$img.'" />'."\n";
         echo '  <meta property="og:image:width" content="'.$w.'" />'."\n";
         echo '  <meta property="og:image:height" content="'.$h.'" />'."\n";

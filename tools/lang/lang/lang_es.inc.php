@@ -1,4 +1,5 @@
 <?php
+
 if (!defined("WIKINI_VERSION")) {
     die("acceso directo prohibido");
 }

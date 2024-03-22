@@ -1,4 +1,5 @@
 <?php
+
 namespace AutoUpdate;
 
 class Messages extends Collection

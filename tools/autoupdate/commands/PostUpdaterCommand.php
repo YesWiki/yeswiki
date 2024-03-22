@@ -1,4 +1,5 @@
 <?php
+
 namespace YesWiki\AutoUpdate\Commands;
 
 use Symfony\Component\Console\Command\Command;
@@ -39,7 +40,7 @@ class PostUpdaterCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         ob_start();
-        
+
         // little hack (bad habit..): we use the first admin user to perform updates as an admin
         $firstAdmin = $wiki->services->get(AuthController::class)->connectFirstAdmin();
         if (!empty($firstAdmin)) {

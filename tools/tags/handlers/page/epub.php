@@ -1,4 +1,5 @@
 <?php
+
 error_reporting(0);
 
 $metadatas = $this->GetMetaDatas($this->GetPageTag());

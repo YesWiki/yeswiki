@@ -79,7 +79,7 @@ class ExternalBazarService
         $this->formManager = $formManager;
         $this->importService = $importService;
         $this->entryManager = $entryManager;
-        $this->debug = ($this->params->has('debug') && $this->params->get('debug') =='yes');
+        $this->debug = ($this->params->has('debug') && $this->params->get('debug') == 'yes');
         $externalBazarServiceParameters = $this->params->get('baz_external_service');
         $this->timeCacheToCheckChanges = (int) ($externalBazarServiceParameters['cache_time_to_check_changes'] ?? 90) ; // seconds
         $this->timeCacheToCheckDeletion = (int) ($externalBazarServiceParameters['cache_time_to_check_deletion'] ?? 86400) ; // seconds
@@ -104,7 +104,7 @@ class ExternalBazarService
     public function getForm(string $url, int $formId, bool $refresh = false, bool $checkUrl = true): ?array
     {
         if ($checkUrl) {
-            $url= $this->formatUrl($url);
+            $url = $this->formatUrl($url);
         }
         $urlDetails = $this->getUrlDetails($url, $refresh ? 0 : $this->timeCacheToRefreshForms);
         if (empty($urlDetails)) {
@@ -147,8 +147,8 @@ class ExternalBazarService
         }
         $this->cleanOldCacheFiles();
         if ($this->debug && $this->timeDebug) {
-            $diffTime+=hrtime(true);
-            trigger_error('Cleaning old cache files :'.$diffTime/1E+6.' ms');
+            $diffTime += hrtime(true);
+            trigger_error('Cleaning old cache files :'.$diffTime / 1E+6.' ms');
         }
 
         if ($this->debug && $this->timeDebug) {
@@ -199,8 +199,8 @@ class ExternalBazarService
             }
         }
         if ($this->debug && $this->timeDebug) {
-            $diffTime+=hrtime(true);
-            trigger_error('Getting forms :'.$diffTime/1E+6.' ms');
+            $diffTime += hrtime(true);
+            trigger_error('Getting forms :'.$diffTime / 1E+6.' ms');
         }
         return $forms;
     }
@@ -222,8 +222,8 @@ class ExternalBazarService
             ],
             $params
         );
-        
-        if (!empty($params['correspondance']) && is_string($params['correspondance'])){
+
+        if (!empty($params['correspondance']) && is_string($params['correspondance'])) {
             $params['correspondance'] = $this->entryManager->getMultipleParameters($params['correspondance'], ',', '=');
         } else {
             $params['correspondance'] = '';
@@ -308,8 +308,8 @@ class ExternalBazarService
                                     'baseUrl' => $url,
                                 ];
                             $entry['url'] = $url . '?' . $entry['id_fiche'];
-                            $entry['id_typeannonce'] =$localFormId;
-                            if (!empty($params['correspondance'])){
+                            $entry['id_typeannonce'] = $localFormId;
+                            if (!empty($params['correspondance'])) {
                                 foreach ($params['correspondance'] as $key => $fieldName) {
                                     $entry[$key] = (empty($fieldName) || !isset($entry[$fieldName])) ? "" : $entry[$fieldName];
                                 }
@@ -322,8 +322,8 @@ class ExternalBazarService
         }
 
         if ($this->debug && $this->timeDebug) {
-            $diffTime+=hrtime(true);
-            trigger_error('Getting entries total time :'.$diffTime/1E+6.' ms');
+            $diffTime += hrtime(true);
+            trigger_error('Getting entries total time :'.$diffTime / 1E+6.' ms');
         }
 
         if (!empty($entries)) {
@@ -420,8 +420,8 @@ class ExternalBazarService
         if ($forceRefresh || !$filemtime || ($testFileModificationDate && (time() - $filemtime >= $cache_life))) {
             $this->secureFilePutContents($url, '', $cache_file, $forceRefresh);
             if ($this->debug && $this->timeDebug) {
-                $diffTime+=hrtime(true);
-                trigger_error('Caching file :'.$diffTime/1E+6.' ms ; url : '.$url);
+                $diffTime += hrtime(true);
+                trigger_error('Caching file :'.$diffTime / 1E+6.' ms ; url : '.$url);
             }
         }
         return $cache_file;
@@ -453,8 +453,8 @@ class ExternalBazarService
         if (!file_exists($cache_file) || $forceRefresh) {
             $this->secureFilePutContents($url, '', $cache_file, $forceRefresh);
             if ($this->debug && $this->timeDebug) {
-                $diffTime+=hrtime(true);
-                trigger_error('Caching entries :'.$diffTime/1E+6.' ms ; url : '.$url);
+                $diffTime += hrtime(true);
+                trigger_error('Caching entries :'.$diffTime / 1E+6.' ms ; url : '.$url);
             }
         } elseif ($testFileModificationDate) {
             $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
@@ -462,15 +462,15 @@ class ExternalBazarService
                 $this->checkForDeletion($url, $cache_file);
                 $this->checkOnlyEntriesChanges($url, $cache_file, $forceRefresh);
                 if ($this->debug && $this->timeDebug) {
-                    $diffTime+=hrtime(true);
-                    trigger_error('Caching entries with deletion :'.$diffTime/1E+6.' ms ; url : '.$url);
+                    $diffTime += hrtime(true);
+                    trigger_error('Caching entries with deletion :'.$diffTime / 1E+6.' ms ; url : '.$url);
                 }
             } elseif (time() - $filemtime >= $cache_life) {
                 // only check for changes
                 $this->checkOnlyEntriesChanges($url, $cache_file, $forceRefresh);
                 if ($this->debug && $this->timeDebug) {
-                    $diffTime+=hrtime(true);
-                    trigger_error('Caching entries :'.$diffTime/1E+6.' ms ; url : '.$url);
+                    $diffTime += hrtime(true);
+                    trigger_error('Caching entries :'.$diffTime / 1E+6.' ms ; url : '.$url);
                 }
             }
         }
@@ -590,15 +590,15 @@ class ExternalBazarService
         if (empty($entries) || !is_array($entries)) {
             $this->secureFilePutContents($url, '', $cache_file, false);
             if ($this->debug && $this->timeDebug) {
-                $diffTime+=hrtime(true);
-                trigger_error('checking deletions (refreshing) :'.$diffTime/1E+6.' ms ; url : '.$url);
+                $diffTime += hrtime(true);
+                trigger_error('checking deletions (refreshing) :'.$diffTime / 1E+6.' ms ; url : '.$url);
             }
         } else {
             try {
                 $entriesList = json_decode($this->extractErrors($this->securedFileGetContentFromUrl($urlToCheckDeletion), $urlToCheckDeletion), true);
                 if ($this->debug && $this->timeDebug) {
-                    $diffTime+=hrtime(true);
-                    trigger_error('checking deletions (only list) :'.$diffTime/1E+6.' ms ; url : '.$urlToCheckDeletion);
+                    $diffTime += hrtime(true);
+                    trigger_error('checking deletions (only list) :'.$diffTime / 1E+6.' ms ; url : '.$urlToCheckDeletion);
                     $diffTime = -hrtime(true);
                 }
                 foreach ($entries as $key => $entry) {
@@ -611,8 +611,8 @@ class ExternalBazarService
                 }
                 $this->secureFilePutContents('', json_encode($entries), $cache_file, false);
                 if ($this->debug && $this->timeDebug) {
-                    $diffTime+=hrtime(true);
-                    trigger_error('Updating deletions :'.$diffTime/1E+6.' ms ; url : '.$url);
+                    $diffTime += hrtime(true);
+                    trigger_error('Updating deletions :'.$diffTime / 1E+6.' ms ; url : '.$url);
                 }
             } catch (ExternalBazarServiceException $th) {
             }
@@ -664,8 +664,8 @@ class ExternalBazarService
         try {
             $newEntries = json_decode($this->extractErrors($this->securedFileGetContentFromUrl($sanitizedUrl), $sanitizedUrl), true);
             if ($this->debug && $this->timeDebug) {
-                $diffTime+=hrtime(true);
-                trigger_error('Getting new entries :'.$diffTime/1E+6.' ms ; url : '.$url.' ; sanitizedUrl : '.$sanitizedUrl);
+                $diffTime += hrtime(true);
+                trigger_error('Getting new entries :'.$diffTime / 1E+6.' ms ; url : '.$url.' ; sanitizedUrl : '.$sanitizedUrl);
             }
             return (empty($newEntries) || !is_array($newEntries)) ? null : $newEntries;
         } catch (ExternalBazarServiceException $th) {
@@ -719,7 +719,7 @@ class ExternalBazarService
         if (is_null($this->newFormId)) {
             $this->newFormId = $this->formManager->findNewId();
         } else {
-            $this->newFormId = ($this->newFormId == 999) ? 10001 : $this->newFormId  +1;
+            $this->newFormId = ($this->newFormId == 999) ? 10001 : $this->newFormId  + 1;
         }
         return $this->newFormId ;
     }
@@ -756,11 +756,11 @@ class ExternalBazarService
                 $form['template'][$index][self::FIELD_JSON_FORM_ADDR] = $this->getFormUrl($urlDetails, $form['external_bn_id_nature']);
             } elseif (isset(self::CONVERT_FIELD_NAMES_FOR_IMAGES[$fieldTemplate[0]])) {
                 $form['template'][$index][0] = self::CONVERT_FIELD_NAMES_FOR_IMAGES[$fieldTemplate[0]];
-                $form['template'][$index][ExternalImageField::FIELD_JSON_FORM_ADDR] =$this->getFormUrl($urlDetails, $form['external_bn_id_nature']);
+                $form['template'][$index][ExternalImageField::FIELD_JSON_FORM_ADDR] = $this->getFormUrl($urlDetails, $form['external_bn_id_nature']);
             }
             // add missing indexes
             if (count($form['template'][$index]) < 15) {
-                for ($i=count($form['template'][$index]); $i < 16; $i++) {
+                for ($i = count($form['template'][$index]); $i < 16; $i++) {
                     $form['template'][$index][$i] = '';
                 }
             }

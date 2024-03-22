@@ -1,4 +1,5 @@
 <?php
+
 namespace AutoUpdate;
 
 use YesWiki\Core\Service\ArchiveService;
@@ -30,7 +31,7 @@ class Controller
         requested by version parameter of {{update}} action
         if empty, no specifc version is requested
     */
-    public function run($get, $requestedVersion='')
+    public function run($get, $requestedVersion = '')
     {
         if (!isset($get['autoupdate'])) {
             $get['autoupdate'] = "default";
@@ -43,7 +44,7 @@ class Controller
         if (isset($get['upgrade'])
             and $this->autoUpdate->isAdmin()
             and !$this->securityController->isWikiHibernated()
-            ) {
+        ) {
             $previousMessages = [];
             foreach ($this->messages as $message) {
                 $previousMessages[] = $message;
@@ -72,7 +73,7 @@ class Controller
                 }
                 $data['baseURL'] = $this->autoUpdate->baseUrl();
                 $_SESSION['updateMessage'] = json_encode($data);
-                
+
                 // call the same href to reload wiki in new doryphore version
                 // give $data by $_SESSION['updateMessage']
                 $newAdress = $this->wiki->Href();
@@ -89,7 +90,7 @@ class Controller
         if (isset($get['delete'])
             and $this->autoUpdate->isAdmin()
             and !$this->securityController->isWikiHibernated()
-            ) {
+        ) {
             $this->delete($get['delete']);
             return $this->wiki->render("@autoupdate/update.twig", [
                 'messages' => $this->messages,

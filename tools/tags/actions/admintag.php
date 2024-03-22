@@ -1,4 +1,5 @@
 <?php
+
 use YesWiki\Security\Controller\SecurityController;
 
 if (!defined("WIKINI_VERSION")) {
@@ -19,7 +20,7 @@ if ($isAdmin && isset($_GET['delete_tag'])) {
 $sql = 'SELECT id, value, resource FROM '.$this->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag" ORDER BY value ASC, resource ASC';
 $tab_tous_les_tags = $this->LoadAll($sql);
 
-if (is_array($tab_tous_les_tags) && count($tab_tous_les_tags)>0) {
+if (is_array($tab_tous_les_tags) && count($tab_tous_les_tags) > 0) {
     $tags = [];
     foreach ($tab_tous_les_tags as $tag) {
         $tagName = _convert(stripslashes($tag['value']), 'ISO-8859-1');

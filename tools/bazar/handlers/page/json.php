@@ -59,18 +59,18 @@ if (isset($_REQUEST['demand'])) {
     // différents services disponibles
     switch ($_REQUEST['demand']) {
         case "lists":
-        // listes bazar
+            // listes bazar
             echo json_encode(baz_valeurs_liste($list));
             break;
         case "entry":
-        // données d'une fiche bazar
+            // données d'une fiche bazar
             if (empty($idfiche)) {
                 echo json_encode(array('error' => 'no id_fiche specified.'));
             } else {
                 $wikipage = $this->LoadPage($idfiche);
                 if ($wikipage) {
                     if ($this->HasAccess('read', $idfiche)) {
-                        if ($html==1) {
+                        if ($html == 1) {
                             echo json_encode(array('html' => baz_voir_fiche(0, $idfiche)));
                         } else {
                             $decoded_entry = json_decode($wikipage['body'], true);
@@ -113,20 +113,20 @@ if (isset($_REQUEST['demand'])) {
                         }
 
                         if ($tableau[$i][0] == 'titre' || $nom_champ == 'bf_titre') {
-                            $res.= '<h2 class="entry-title">{{{bf_titre}}}</h2>' . "\n\n";
+                            $res .= '<h2 class="entry-title">{{{bf_titre}}}</h2>' . "\n\n";
                         } elseif ($tableau[$i][0] == 'image') {
                             $url = str_replace('wakka.php?wiki=', '', $this->config['base_url']);
-                            $res.= '{{#if ' . $nom_champ . '}}' . "\n".
+                            $res .= '{{#if ' . $nom_champ . '}}' . "\n".
                                 '<img loading="lazy" class="img-responsive img-centered" src="'.$url.'cache/vignette_{{'.$nom_champ.
                                 '}}" alt="{{' . $nom_champ . '}}">' . "\n" . '{{/if}}' . "\n\n";
                         } elseif ($tableau[$i][0] == 'labelhtml') {
-                            $res.= $tableau[$i][0]($formtemplate, $tableau[$i], 'html', array());
+                            $res .= $tableau[$i][0]($formtemplate, $tableau[$i], 'html', array());
                         } elseif ($tableau[$i][0] == 'inscriptionliste' || $tableau[$i][0] == 'utilisateur_wikini') {
                         } elseif ($tableau[$i][0] == 'liste' || $tableau[$i][0] == 'textelong'
                             || $tableau[$i][0] == 'jour' || $tableau[$i][0] == 'listedatefin'
                             || $tableau[$i][0] == 'listedatedeb' || $tableau[$i][0] == 'champs_mail'
                             || $tableau[$i][0] == 'lien_internet') {
-                            $res.= '{{#if ' . $nom_champ . '}}' . "\n" .
+                            $res .= '{{#if ' . $nom_champ . '}}' . "\n" .
                                 '<div class="BAZ_rubrique" data-id="' . $nom_champ . '">' . "\n" .
                                 '<span class="BAZ_label">' . $tableau[$i][2] . ' :</span>' . "\n" .
                                 '<span class="BAZ_texte">{{{' . $nom_champ . '}}}</span>' . "\n" .
@@ -149,7 +149,7 @@ if (isset($_REQUEST['demand'])) {
                                     $texte
                                 );
                             }
-                            $res.= '{{#if ' . $nom_champ . '}}' . "\n" . $texte . "\n" . '{{/if}}' . "\n\n";
+                            $res .= '{{#if ' . $nom_champ . '}}' . "\n" . $texte . "\n" . '{{/if}}' . "\n\n";
                         }
                     }
                     echo $res;
@@ -184,7 +184,7 @@ if (isset($_REQUEST['demand'])) {
                 $formsIds = [];
                 $forms = $formManager->getAll();
             }
-            
+
             if (count($formsIds) == 1) {
                 $form = $formManager->getOne($formsIds[0]);
                 if (!empty($form)) {
@@ -199,7 +199,7 @@ if (isset($_REQUEST['demand'])) {
                     return !empty($form);
                 });
             }
-            
+
             if (empty($forms)) {
                 echo json_encode(new \ArrayObject());
             } else {

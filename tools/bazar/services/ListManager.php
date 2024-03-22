@@ -61,7 +61,7 @@ class ListManager
 
         if (YW_CHARSET !== 'UTF-8') {
             $this->cachedLists[$id]['titre_liste'] = mb_convert_encoding($json['titre_liste'], 'ISO-8859-1', 'UTF-8');
-            $this->cachedLists[$id]['label'] = array_map(function($value){
+            $this->cachedLists[$id]['label'] = array_map(function ($value) {
                 return mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8');
             }, $json['label']);
         } else {
@@ -93,7 +93,7 @@ class ListManager
         $values = $this->sanitizeHMTL($values);
 
         if (YW_CHARSET !== 'UTF-8') {
-            $values = array_map(function($value){
+            $values = array_map(function ($value) {
                 return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
             }, $values);
             $title = mb_convert_encoding($title, 'UTF-8', 'ISO-8859-1');
@@ -114,10 +114,10 @@ class ListManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        
+
         $values = $this->sanitizeHMTL($values);
         if (YW_CHARSET !== 'UTF-8') {
-            $values = array_map(function($value){
+            $values = array_map(function ($value) {
                 return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
             }, $values);
             $title = mb_convert_encoding($title, 'UTF-8', 'ISO-8859-1');

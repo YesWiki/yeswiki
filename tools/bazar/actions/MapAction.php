@@ -4,7 +4,7 @@ use YesWiki\Core\YesWikiAction;
 
 class MapAction extends YesWikiAction
 {
-    function run()
+    public function run()
     {
         // Retrocompatibility
         return $this->callAction('bazarcarto', $this->arguments);

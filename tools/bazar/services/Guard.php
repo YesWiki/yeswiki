@@ -32,7 +32,7 @@ class Guard
     }
 
     // TODO remove this method and use YesWiki::HasAccess
-    public function isAllowed($action = 'saisie_fiche', $ownerId = '') : bool
+    public function isAllowed($action = 'saisie_fiche', $ownerId = ''): bool
     {
         $loggedUserName = $this->authController->getLoggedUserName();
         $isOwner = $ownerId === $loggedUserName || $ownerId === '';
@@ -89,7 +89,7 @@ class Guard
                     foreach ($form['prepared'] as $field) {
                         if ($field instanceof BazarField
                              && !$field->canRead(['id_fiche' => $tag], $userNameForCheckingACL)
-                           ) {
+                        ) {
                             $fieldname[] = $field->getPropertyName() ;
                         }
                     }
@@ -110,7 +110,7 @@ class Guard
         return $page;
     }
 
-    protected function isPageOwner($page, ?string $userName = null) : bool
+    protected function isPageOwner($page, ?string $userName = null): bool
     {
         if (!empty($userName)) {
             // check if userName is owner

@@ -32,7 +32,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
     public function __construct(array $properties)
     {
         foreach (self::PROPS_LIST as $key) {
-            if (!array_key_exists($key,$properties)) {
+            if (!array_key_exists($key, $properties)) {
                 throw new Exception("\$properties[$key] should be set to construct an User!");
             }
             $this->properties[$key] = $properties[$key];
@@ -56,7 +56,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
     }
 
     /* ~~~~~~~~~ implements PasswordAuthenticatedUserInterface ~~~~~~~~~~ */
-    
+
     /**
      * Returns the hashed password used to authenticate the user.
      *
@@ -102,9 +102,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
     {
         throw new UserNotAuthorizedToSetOffset("unsetting offset is not allowed for User!");
     }
-    
+
     /* ~~~~~~~~~~~~~~~~~~ implements UserInterface ~~~~~~~~~~~~~~~~~~ */
-    
+
     /**
      * Returns the roles granted to the user.
      *
@@ -161,7 +161,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
     }
 
     /* ~~~~~~~~~~~~~~~~~~ end of implements ~~~~~~~~~~~~~~~~~~ */
-    
+
     /**
      * @return string
      */

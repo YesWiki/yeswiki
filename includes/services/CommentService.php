@@ -168,7 +168,7 @@ class CommentService implements EventSubscriberInterface
         $this->pageManager->deleteOrphaned($commentTag);
         $errors = $this->eventDispatcher->yesWikiDispatch('comment.deleted', [
                 'id' => $comment['tag'],
-                'data' => array_merge($comment,[
+                'data' => array_merge($comment, [
                     'associatedComments' => $comments,
                     'parentPage' => $parentPage
                 ])
@@ -342,7 +342,7 @@ class CommentService implements EventSubscriberInterface
     * @param $spec Integer between 2-10, determines how unique each color will be
     */
 
-    public function genColorCodeFromText($text, $min_brightness=100, $spec=10)
+    public function genColorCodeFromText($text, $min_brightness = 100, $spec = 10)
     {
         // Check inputs
         if (!is_int($min_brightness)) {
@@ -361,13 +361,13 @@ class CommentService implements EventSubscriberInterface
 
         $hash = md5($text);  //Gen hash of text
         $colors = array();
-        for ($i=0;$i<3;$i++) {
-            $colors[$i] = max(array(round(((hexdec(substr($hash, $spec*$i, $spec)))/hexdec(str_pad('', $spec, 'F')))*255),$min_brightness));
+        for ($i = 0;$i < 3;$i++) {
+            $colors[$i] = max(array(round(((hexdec(substr($hash, $spec * $i, $spec))) / hexdec(str_pad('', $spec, 'F'))) * 255),$min_brightness));
         } //convert hash into 3 decimal values between 0 and 255
 
         if ($min_brightness > 0) {  //only check brightness requirements if min_brightness is about 100
-            while (array_sum($colors)/3 < $min_brightness) {  //loop until brightness is above or equal to min_brightness
-                for ($i=0;$i<3;$i++) {
+            while (array_sum($colors) / 3 < $min_brightness) {  //loop until brightness is above or equal to min_brightness
+                for ($i = 0;$i < 3;$i++) {
                     $colors[$i] += 10;
                 }
             }
@@ -375,7 +375,7 @@ class CommentService implements EventSubscriberInterface
 
         $output = '';
 
-        for ($i=0;$i<3;$i++) {
+        for ($i = 0;$i < 3;$i++) {
             $output .= str_pad(dechex($colors[$i]), 2, 0, STR_PAD_LEFT);
         }  //convert each color to hex and append to output
 
@@ -394,9 +394,9 @@ class CommentService implements EventSubscriberInterface
 
                 if (!empty($parentComment['owner'])) {
                     $owner = $this->userManager->getOneByName($parentComment['owner']);
-                    $this->sendEmailToOwnerAtCreation($parentComment, $loggedUser, $parentPage, ['comment'=>$data['data']], $owner);
+                    $this->sendEmailToOwnerAtCreation($parentComment, $loggedUser, $parentPage, ['comment' => $data['data']], $owner);
                 }
-                $this->sendEmailToTaggedUserAtCreation($parentComment, $loggedUser, $parentPage, ['comment'=>$data['data']], $owner ?? null);
+                $this->sendEmailToTaggedUserAtCreation($parentComment, $loggedUser, $parentPage, ['comment' => $data['data']], $owner ?? null);
             }
         }
     }

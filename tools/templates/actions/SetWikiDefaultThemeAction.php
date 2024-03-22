@@ -13,20 +13,20 @@ class SetWikiDefaultThemeAction extends YesWikiAction
     protected $themeManager;
 
     public function run()
-    {   
+    {
         if (!$this->wiki->UserIsAdmin()) {
-            return $this->render('@templates/alert-message.twig',[
+            return $this->render('@templates/alert-message.twig', [
                 'type' => 'danger',
                 'message' =>  _t('ERROR_NO_ACCESS'). " setwikidefaulttheme"
             ]);
         }
         if (!is_writable('wakka.config.php')) {
-            return $this->render('@templates/alert-message.twig',[
+            return $this->render('@templates/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ERROR_NO_ACCESS'). " setwikidefaulttheme, "._t('FILE_WRITE_PROTECTED')
             ]);
         }
-        
+
         $this->securityController = $this->getService(SecurityController::class);
         $this->themeController = $this->getService(ThemeController::class);
         $this->themeManager = $this->getService(ThemeManager::class);
@@ -63,13 +63,13 @@ class SetWikiDefaultThemeAction extends YesWikiAction
             'forceTheme' => isset($config->hide_action_template) && $config->hide_action_template === '1'
         ];
         // load defaut params from config after LoadExtensions
-        if (isset($config->favorite_theme)){
+        if (isset($config->favorite_theme)) {
             $params['favoriteTheme'] = $config->favorite_theme;
         }
-        if (isset($config->favorite_squelette)){
+        if (isset($config->favorite_squelette)) {
             $params['favoriteSquelette'] = $config->favorite_squelette;
         }
-        if (isset($config->favorite_style)){
+        if (isset($config->favorite_style)) {
             $params['favoriteStyle'] = $config->favorite_style;
         }
         return $this->themeController->renderWithThemeSelector(
@@ -86,15 +86,15 @@ class SetWikiDefaultThemeAction extends YesWikiAction
                 'styles' => array_keys($templateValues['style']),
                 'squelettes' => array_keys($templateValues['squelette']),
                 ] + (
-                (empty($templateValues['presets']))
+                    (empty($templateValues['presets']))
                 ? []
                 : ['presets' => $templateValues['presets']]
-            );
+                );
         }
 
         return $themes;
     }
-    
+
     protected function checkParamActionSetTemplate($availableThemes): ?array
     {
         if (!isset($_POST['theme_select']) || !isset($_POST['style_select']) || !isset($_POST['squelette_select'])) {
@@ -107,13 +107,13 @@ class SetWikiDefaultThemeAction extends YesWikiAction
             'theme' => $this->sanitizePost('theme_select'),
             'preset' => $this->sanitizePost('preset_select')
         ];
-        if (!empty($values['squelette']) && substr($values['squelette'],-strlen('.tpl.html')) !== '.tpl.html'){
+        if (!empty($values['squelette']) && substr($values['squelette'], -strlen('.tpl.html')) !== '.tpl.html') {
             $values['squelette'] .= '.tpl.html';
         }
-        if (!empty($values['style']) && substr($values['style'],-4) !== '.css'){
+        if (!empty($values['style']) && substr($values['style'], -4) !== '.css') {
             $values['style'] .= '.css';
         }
-        if (!empty($values['preset']) && substr($values['preset'],-4) !== '.css'){
+        if (!empty($values['preset']) && substr($values['preset'], -4) !== '.css') {
             $values['preset'] .= '.css';
         }
 
@@ -126,7 +126,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction
             'theme' => $values['theme'],
             'style' => $values['style'],
             'squelette' => $values['squelette'],
-            'preset' => (!array_key_exists('presets',$availableThemes[$values['theme']]) || empty($values['preset'])) ? null : $values['preset'],
+            'preset' => (!array_key_exists('presets', $availableThemes[$values['theme']]) || empty($values['preset'])) ? null : $values['preset'],
             'forceTheme' => (isset($_POST['forceTheme']) && $_POST['forceTheme'] === 'on')
         ];
     }
@@ -138,7 +138,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction
      */
     protected function sanitizePost(string $key): ?string
     {
-        if (empty($_POST[$key]) || !is_string($_POST[$key])){
+        if (empty($_POST[$key]) || !is_string($_POST[$key])) {
             return "";
         }
         $val = filter_var($_POST[$key], FILTER_UNSAFE_RAW);

@@ -1,4 +1,5 @@
 <?php
+
 namespace YesWiki\Core;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -95,14 +96,14 @@ abstract class YesWikiPerformable
     }
 
     // Shortcut to call an action within another action
-    protected function callAction(string $action, $arguments = []) : string
+    protected function callAction(string $action, $arguments = []): string
     {
         // This additional argument helps to prevent infinite loops
         $arguments['calledBy'] = get_class($this);
         return $this->wiki->Action($action, 0, $arguments);
     }
 
-    protected function getRequest() : Request
+    protected function getRequest(): Request
     {
         return $this->wiki->request;
     }
@@ -124,7 +125,7 @@ abstract class YesWikiPerformable
         }
         if (is_bool($param)) {
             return $param;
-        } elseif (in_array($param,[0,'0','no','non','false'],true)) {
+        } elseif (in_array($param, [0,'0','no','non','false'], true)) {
             return false ;
         } elseif (empty($param)) {
             return $default ;

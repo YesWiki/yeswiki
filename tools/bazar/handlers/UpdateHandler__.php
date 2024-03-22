@@ -47,7 +47,7 @@ class UpdateHandler__ extends YesWikiHandler
         return null;
     }
 
-    private function cleanOldCartoGoogle():string
+    private function cleanOldCartoGoogle(): string
     {
         $entries = $this->searchEntriesWithOnlyOldGeoloc();
         $updatedEntries = [];
@@ -142,14 +142,14 @@ class UpdateHandler__ extends YesWikiHandler
         if (isset($data['owner'])) {
             unset($data['owner']);
         }
-        
+
         if (isset($data['sendmail'])) {
             unset($data['sendmail']);
         }
 
         // on encode en utf-8 pour reussir a encoder en json
         if (YW_CHARSET != 'UTF-8') {
-            $data = array_map(function($value){
+            $data = array_map(function ($value) {
                 return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
             }, $data);
         }
@@ -184,13 +184,13 @@ class UpdateHandler__ extends YesWikiHandler
                 if (!empty($value[0]) && !empty($value[1])) {
                     $returnValue = [
                         $field->getLatitudeField() => $value[0],
-                        $field->getLongitudeField()=> $value[1]
+                        $field->getLongitudeField() => $value[1]
                     ];
                 }
             } elseif (!empty($entry[$field->getLatitudeField()]) && !empty($entry[$field->getLongitudeField()])) {
                 $returnValue = [
                     $field->getLatitudeField() => $entry[$field->getLatitudeField()],
-                    $field->getLongitudeField()=> $entry[$field->getLongitudeField()]
+                    $field->getLongitudeField() => $entry[$field->getLongitudeField()]
                 ];
             }
         }

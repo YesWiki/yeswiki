@@ -30,7 +30,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     protected $passwordHasherFactory;
     protected $securityController;
     protected $params;
-    
+
     private $getOneByNameCacheResults;
 
 
@@ -54,9 +54,9 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         if (empty($userAsArray)) {
             return null;
         }
-        if ($fillEmpty){
+        if ($fillEmpty) {
             foreach (User::PROPS_LIST as $key) {
-                if (!array_key_exists($key,$userAsArray)){
+                if (!array_key_exists($key, $userAsArray)) {
                     $userAsArray[$key] = null;
                 }
             }
@@ -91,7 +91,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         } else {
             $prefix = $this->params->get('table_prefix');
         }
-        
+
         $selectDefinition = empty($dbFields) ? '*' : implode(', ', $dbFields);
         return array_map(
             function ($userAsArray) {
@@ -107,7 +107,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      * @param string plainPassword (optionnal if parameters by array)
      * @throws UserNameAlreadyUsedException|UserEmailAlreadyUsedException|Exception
      */
-    public function create($wikiNameOrUser, string $email ="", string $plainPassword ="")
+    public function create($wikiNameOrUser, string $email = "", string $plainPassword = "")
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
@@ -141,7 +141,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         } else {
             throw new Exception("First parameter of UserManager->create should be string or array!");
         }
-        
+
         if (empty($wikiName)) {
             throw new Exception("'Name' parameter of UserManager->create should not be empty!");
         }
@@ -157,7 +157,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         if (empty($plainPassword)) {
             throw new Exception("'password' parameter of UserManager->create should not be empty!");
         }
-        
+
         unset($this->getOneByNameCacheResults[$wikiName]);
         $user = $this->arrayToUser($userAsArray);
         $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user);
@@ -175,7 +175,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             "password = '" . $this->dbService->escape($hashedPassword) . "'"
         );
     }
- 
+
     /**
      * update user params
      * for e-mail check is existing e-mail
@@ -215,7 +215,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 throw new UserEmailAlreadyUsedException();
             }
         }
-        
+
         if (count($authorizedKeys) > 0) {
             $query = "UPDATE {$this->dbService->prefixTable('users')} SET ";
             $query .= implode(
@@ -281,13 +281,14 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      * @param string $groupName The name of the group for which we are testing membership
      * @param string|null $username if null check current user
      * @param bool $admincheck
+     * @param array $formerGroups former groups list to avoid loops
      *
      * @return boolean True if the $user is member of $groupName, false otherwise
     */
-    public function isInGroup(string $groupName, ?string $username = null, bool $admincheck = true)
+    public function isInGroup(string $groupName, ?string $username = null, bool $admincheck = true, array $formerGroups = [])
     {
         // aclService could  not be loaded in __construct because AclService already loads UserManager
-        return $this->wiki->services->get(AclService::class)->check($this->wiki->GetGroupACL($groupName), $username, $admincheck);
+        return $this->wiki->services->get(AclService::class)->check($this->wiki->GetGroupACL($groupName), $username, $admincheck, '', '', $formerGroups);
     }
 
     /* ~~~~~~~~~~~~~~~~~~ implements  PasswordUpgraderInterface ~~~~~~~~~~~~~~~~~~ */
@@ -322,14 +323,14 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             $this->dbService->query($query);
         } catch (Throwable $th) {
             // only throw error in debug mode
-            if ($this->wiki->GetConfigValue('debug')=='yes') {
+            if ($this->wiki->GetConfigValue('debug') == 'yes') {
                 throw $th;
             }
         }
     }
 
     /* ~~~~~~~~~~~~~~~~~~ implements  UserProviderInterface ~~~~~~~~~~~~~~~~~~ */
-    
+
     /**
      * Refreshes the user.
      *
@@ -388,9 +389,9 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     {
         return $this->getOneByName($username);
     }
-    
+
     /* ~~~~~~~~~~~~~~~~~~ DEPRECATED ~~~~~~~~~~~~~~~~~~ */
-    
+
     /**
      * @deprecated Use AuthController::getLoggedUser
      */

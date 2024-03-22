@@ -40,7 +40,7 @@ class TabsField extends LabelField
         $this->viewText = $this->prepareText('view');
     }
 
-    protected function sanitizeTitles(?string $input):?array
+    protected function sanitizeTitles(?string $input): ?array
     {
         $titles = explode(',', str_replace("|", ",", $input));
         $titles = array_filter(array_map('trim', $titles), function ($title) {
@@ -51,12 +51,12 @@ class TabsField extends LabelField
 
     protected function prepareText($mode): ?string
     {
-        return $this->tabsController->openTabs($mode,$this);
+        return $this->tabsController->openTabs($mode, $this);
     }
 
     protected function renderInput($entry)
     {
-        if ($this->getMoveSubmitButtonToLastTab()){
+        if ($this->getMoveSubmitButtonToLastTab()) {
             $this->getService(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar-edit-tabs-field.js');
         }
         $this->formText = $this->prepareText('form');

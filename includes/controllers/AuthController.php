@@ -215,8 +215,8 @@ class AuthController extends YesWikiController
                 'lastConnection' => $currentDateTime->getTimestamp()
             ];
         if (!$this->wiki->isCli()) {
-            if (!($user instanceof User)){
-                if (!empty($user['name'])){
+            if (!($user instanceof User)) {
+                if (!empty($user['name'])) {
                     $user = $this->userManager->getOneByName($user['name']);
                 } else {
                     throw new Exception("`\$user['name']` must not be empty when retrieving user from `\$user['name']`");
@@ -283,10 +283,10 @@ class AuthController extends YesWikiController
     public function setPersistentCookie(string $name, string $value, int $expires)
     {
         $sessionParams = session_get_cookie_params();
-        $newParams= array_filter($sessionParams, function ($v, $k) {
+        $newParams = array_filter($sessionParams, function ($v, $k) {
             return in_array($k, ['path','domain','secure','httponly','samesite']);
         }, ARRAY_FILTER_USE_BOTH);
-        $newParams['expires']= $expires;
+        $newParams['expires'] = $expires;
         setcookie($name, $value, $newParams);
     }
 
@@ -407,7 +407,7 @@ class AuthController extends YesWikiController
 
         $remember = (substr($token, self::DATE_LENGTH_IN_TOKEN, 1) === '1');
 
-        $encryptedData = substr($token, self::DATE_LENGTH_IN_TOKEN +1);
+        $encryptedData = substr($token, self::DATE_LENGTH_IN_TOKEN + 1);
         return new CookieData($userName, $lastConnectionDate, $remember, $encryptedData);
     }
 
@@ -428,7 +428,7 @@ class AuthController extends YesWikiController
      */
     protected function cleanSensitiveDataFromSession()
     {
-        if (!empty($_SESSION['user']['name'])){
+        if (!empty($_SESSION['user']['name'])) {
             // clean '_csrf' only if a user was connected before
             if (isset($_SESSION['_csrf'])) {
                 unset($_SESSION['_csrf']);

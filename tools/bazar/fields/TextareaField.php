@@ -63,7 +63,7 @@ class TextareaField extends BazarField
             $script = '$(document).ready(function() {
               $(".summernote").summernote({
                 '.$langOptions.'
-                height: '. $this->numRows*30 .',    // set editor height
+                height: '. $this->numRows * 30 .',    // set editor height
                 minHeight: 100, // set minimum height of editor
                 maxHeight: 350,                // set maximum height of editor
                 focus: false,                   // set focus to editable area after initializing summernote
@@ -130,7 +130,7 @@ class TextareaField extends BazarField
         if (!$value) {
             return "";
         }
-        
+
         switch ($this->syntax) {
             case self::SYNTAX_WIKI:
                 // Do the page change in any case (useful for attach or grid)
@@ -226,7 +226,7 @@ class TextareaField extends BazarField
             }
         }
 
-        
+
         return $text;
     }
 
@@ -300,13 +300,13 @@ class TextareaField extends BazarField
             );
         return $entryCreationTime;
     }
-        
+
     /**
      * sanitize file name
      * @param string $inputString
      * @return string $outputString
      */
-    private function sanitizeFileName(string $inputString):string
+    private function sanitizeFileName(string $inputString): string
     {
         return removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $inputString)));
     }

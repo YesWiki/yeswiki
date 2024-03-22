@@ -22,12 +22,12 @@ use YesWiki\Wiki;
  */
 class Performer
 {
-    const TYPES = [
+    public const TYPES = [
         'action' => 'action',
         'handler' => 'handler',
         'formatter' => 'formatter'
     ];
-    const PATHS = [
+    public const PATHS = [
         Performer::TYPES['action'] => ['actions/'],
         Performer::TYPES['handler'] => ['handlers/', 'handlers/page/'],
         Performer::TYPES['formatter'] => ['formatters/']
@@ -120,8 +120,8 @@ class Performer
         $className = $object['baseName'];
         /* extract extension name from path to allow namespace */
         if (preg_match('/(?:tools[\\\\\\/]([A-Za-z0-9_\\-]+)|(custom))[\\\\\/][a-zA-Z0-9_\\\\\/\\-]+.php$/', $object['filePath'], $matches)) {
-            $extensionName = empty($matches[1]) ? $matches[2]:$matches[1];
-            $classNameWithNamespace = "YesWiki\\".ucfirst(strtolower($extensionName))."\\".$object['baseName'];
+            $extensionName = empty($matches[1]) ? $matches[2] : $matches[1];
+            $classNameWithNamespace = "YesWiki\\".StringUtilService::folderToNamespace($extensionName)."\\".$object['baseName'];
             if (class_exists($classNameWithNamespace)) {
                 $className = $classNameWithNamespace;
             }

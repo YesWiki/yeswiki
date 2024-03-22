@@ -370,7 +370,7 @@ class FormManager
      */
     private function filterFieldsByPropertyName(array $fields, array $id)
     {
-        if (count($id)===1 && $id[0]==='all') {
+        if (count($id) === 1 && $id[0] === 'all') {
             return array_filter($fields, function ($field) use ($id) {
                 if ($field instanceof EnumField) {
                     return true;

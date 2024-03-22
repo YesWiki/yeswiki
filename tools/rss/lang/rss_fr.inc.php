@@ -1,4 +1,5 @@
 <?php
+
 return [
     // actions/recentchangesrss.php
     'RSS_CHANGE_OF' => 'Modification de',

@@ -116,7 +116,7 @@ class ListController extends YesWikiController
             'labels' => $list['label']
         ]);
     }
-    
+
     public function delete($id)
     {
         $this->listManager->delete($id);

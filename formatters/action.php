@@ -8,7 +8,7 @@ if (!function_exists("wakka2callback")) {
         $thing = $things[1];
 
         global $wiki;
-    
+
         // events
         if (preg_match("/^\{\{(.*?)\}\}$/s", $thing, $matches)) {
             if ($matches[1]) {

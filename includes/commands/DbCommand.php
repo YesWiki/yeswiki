@@ -72,14 +72,14 @@ class DbCommand extends Command
      * ]
      * @throws Exception
      */
-    private function getDbParams():array
+    private function getDbParams(): array
     {
         $hostname = $this->params->get('mysql_host');
         $this->assertParamIsNotEmptyString('mysql_host', $hostname);
-        if (strpos($hostname,':') !== false){
-            list($hostname,$port) = explode(':',$hostname);
+        if (strpos($hostname, ':') !== false) {
+            list($hostname, $port) = explode(':', $hostname);
         }
-        if (!empty($port) && strval(intval($port)) == strval($port)){
+        if (!empty($port) && strval(intval($port)) == strval($port)) {
             $hostArg = ["--host=$hostname","--port=$port"];
         } else {
             $hostArg = ["--host=$hostname"];
@@ -173,7 +173,7 @@ class DbCommand extends Command
             $outputResult = $this->getOutput($results);
             if (preg_match("/^mysqldump(?:\.exe)?\s*Ver\s*\d+\.?\d*.*/i", $outputResult)) {
                 // test connecting to database
-                
+
                 $results = $this->consoleService->findAndStartExecutableSync(
                     "mysqldump",
                     array_merge(
@@ -191,7 +191,7 @@ class DbCommand extends Command
                     10 // timeoutInSec
                 );
                 $outputResult = $this->getOutput($results);
-                if (empty($outputResult)){
+                if (empty($outputResult)) {
                     throw new Exception('output should not be empty during test to connect to database via mysql');
                 }
                 $output->writeln("OK");
@@ -225,13 +225,13 @@ class DbCommand extends Command
     * @param mixed $param
     * @throws Exception
     */
-   protected function assertParamIsNotEmptyString(string $name, $param)
-   {
-       if (empty($param)) {
-           throw new Exception("'$name' should not be empty in 'wakka.config.php'");
-       }
-       $this->assertParamIsString($name, $param);
-   }
+    protected function assertParamIsNotEmptyString(string $name, $param)
+    {
+        if (empty($param)) {
+            throw new Exception("'$name' should not be empty in 'wakka.config.php'");
+        }
+        $this->assertParamIsString($name, $param);
+    }
 
     /**
      * assert param is a string

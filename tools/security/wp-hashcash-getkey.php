@@ -34,10 +34,10 @@ switch ($type) {
 
         $js .= "$eax += $r; ";
         $js .= "return $eax; ";
-    break;
+        break;
 
-    /* Conversion from binary:
-    Time guarantee:  log(n) iterations or less */
+        /* Conversion from binary:
+        Time guarantee:  log(n) iterations or less */
     case 1:
         $eax = hashcash_random_string(rand(8, 10), $expired);
         $expired [] = $eax;
@@ -50,7 +50,7 @@ switch ($type) {
 
         $val = hashcash_field_value();
         $binval = strrev(base_convert($val, 10, 2));
-            $js .= "var $eax = \"$binval\"; ";
+        $js .= "var $eax = \"$binval\"; ";
         $js .= "var $ebx = 0; ";
         $js .= "var $ecx = 0; ";
         $js .= "while($ecx < $eax.length){ ";
@@ -61,19 +61,19 @@ switch ($type) {
         $js .= "} ";
         $js .= "return $ebx; ";
 
-    break;
+        break;
 
-    /* Multiplication of square roots:
-    Time guarantee:  constant time */
+        /* Multiplication of square roots:
+        Time guarantee:  constant time */
     case 2:
         $val = hashcash_field_value();
         $sqrt = floor(sqrt($val));
         $r = $val - ($sqrt * $sqrt);
         $js .= "return $sqrt * $sqrt + $r; ";
-    break;
+        break;
 
-    /* Sum of random numbers to the final value:
-    Time guarantee:  log(n) expected value */
+        /* Sum of random numbers to the final value:
+        Time guarantee:  log(n) expected value */
     case 3:
         $val = hashcash_field_value();
         $js .= "return ";
@@ -90,7 +90,7 @@ switch ($type) {
         }
 
         $js .= ";";
-    break;
+        break;
 }
 
 $js .= "} $function_name ();";
@@ -107,8 +107,8 @@ function strToLongs($s)
         $s [] = ' ';
     }
 
-    for ($i = 0; $i < ceil(count($s)/4); $i++) {
-        $l[$i] = ord($s[$i*4]) + (ord($s[$i*4+1]) << 8) + (ord($s[$i*4+2]) << 16) + (ord($s[$i*4+3]) << 24);
+    for ($i = 0; $i < ceil(count($s) / 4); $i++) {
+        $l[$i] = ord($s[$i * 4]) + (ord($s[$i * 4 + 1]) << 8) + (ord($s[$i * 4 + 2]) << 16) + (ord($s[$i * 4 + 3]) << 24);
     }
 
     return $l;

@@ -41,9 +41,9 @@ namespace ForceUTF8;
 
 class Encoding
 {
-    const ICONV_TRANSLIT = "TRANSLIT";
-    const ICONV_IGNORE = "IGNORE";
-    const WITHOUT_ICONV = "";
+    public const ICONV_TRANSLIT = "TRANSLIT";
+    public const ICONV_IGNORE = "IGNORE";
+    public const WITHOUT_ICONV = "";
 
     protected static $win1252ToUtf8 = array(
         128 => "\xe2\x82\xac",
@@ -193,50 +193,50 @@ class Encoding
         $buf = "";
         for ($i = 0; $i < $max; $i++) {
             $c1 = $text[$i];
-            if ($c1>="\xc0") { //Should be converted to UTF8, if it's not UTF8 already
-                $c2 = $i+1 >= $max? "\x00" : $text[$i+1];
-                $c3 = $i+2 >= $max? "\x00" : $text[$i+2];
-                $c4 = $i+3 >= $max? "\x00" : $text[$i+3];
+            if ($c1 >= "\xc0") { //Should be converted to UTF8, if it's not UTF8 already
+                $c2 = $i + 1 >= $max ? "\x00" : $text[$i + 1];
+                $c3 = $i + 2 >= $max ? "\x00" : $text[$i + 2];
+                $c4 = $i + 3 >= $max ? "\x00" : $text[$i + 3];
                 if ($c1 >= "\xc0" & $c1 <= "\xdf") { //looks like 2 bytes UTF8
-                if ($c2 >= "\x80" && $c2 <= "\xbf") { //yeah, almost sure it's UTF8 already
-                    $buf .= $c1 . $c2;
-                    $i++;
-                } else { //not valid UTF8.  Convert it.
-                    $cc1 = (chr(ord($c1) / 64) | "\xc0");
-                    $cc2 = ($c1 & "\x3f") | "\x80";
-                    $buf .= $cc1 . $cc2;
-                }
+                    if ($c2 >= "\x80" && $c2 <= "\xbf") { //yeah, almost sure it's UTF8 already
+                        $buf .= $c1 . $c2;
+                        $i++;
+                    } else { //not valid UTF8.  Convert it.
+                        $cc1 = (chr(ord($c1) / 64) | "\xc0");
+                        $cc2 = ($c1 & "\x3f") | "\x80";
+                        $buf .= $cc1 . $cc2;
+                    }
                 } elseif ($c1 >= "\xe0" & $c1 <= "\xef") { //looks like 3 bytes UTF8
-                if ($c2 >= "\x80" && $c2 <= "\xbf" && $c3 >= "\x80" && $c3 <= "\xbf") { //yeah, almost sure it's UTF8 already
-                    $buf .= $c1 . $c2 . $c3;
-                    $i = $i + 2;
-                } else { //not valid UTF8.  Convert it.
-                    $cc1 = (chr(ord($c1) / 64) | "\xc0");
-                    $cc2 = ($c1 & "\x3f") | "\x80";
-                    $buf .= $cc1 . $cc2;
-                }
+                    if ($c2 >= "\x80" && $c2 <= "\xbf" && $c3 >= "\x80" && $c3 <= "\xbf") { //yeah, almost sure it's UTF8 already
+                        $buf .= $c1 . $c2 . $c3;
+                        $i = $i + 2;
+                    } else { //not valid UTF8.  Convert it.
+                        $cc1 = (chr(ord($c1) / 64) | "\xc0");
+                        $cc2 = ($c1 & "\x3f") | "\x80";
+                        $buf .= $cc1 . $cc2;
+                    }
                 } elseif ($c1 >= "\xf0" & $c1 <= "\xf7") { //looks like 4 bytes UTF8
-                if ($c2 >= "\x80" && $c2 <= "\xbf" && $c3 >= "\x80" && $c3 <= "\xbf" && $c4 >= "\x80" && $c4 <= "\xbf") { //yeah, almost sure it's UTF8 already
-                    $buf .= $c1 . $c2 . $c3 . $c4;
-                    $i = $i + 3;
-                } else { //not valid UTF8.  Convert it.
-                    $cc1 = (chr(ord($c1) / 64) | "\xc0");
-                    $cc2 = ($c1 & "\x3f") | "\x80";
-                    $buf .= $cc1 . $cc2;
-                }
+                    if ($c2 >= "\x80" && $c2 <= "\xbf" && $c3 >= "\x80" && $c3 <= "\xbf" && $c4 >= "\x80" && $c4 <= "\xbf") { //yeah, almost sure it's UTF8 already
+                        $buf .= $c1 . $c2 . $c3 . $c4;
+                        $i = $i + 3;
+                    } else { //not valid UTF8.  Convert it.
+                        $cc1 = (chr(ord($c1) / 64) | "\xc0");
+                        $cc2 = ($c1 & "\x3f") | "\x80";
+                        $buf .= $cc1 . $cc2;
+                    }
                 } else { //doesn't look like UTF8, but should be converted
                     $cc1 = (chr(ord($c1) / 64) | "\xc0");
                     $cc2 = (($c1 & "\x3f") | "\x80");
                     $buf .= $cc1 . $cc2;
                 }
             } elseif (($c1 & "\xc0") === "\x80") { // needs conversion
-              if (isset(self::$win1252ToUtf8[ord($c1)])) { //found in Windows-1252 special cases
-                  $buf .= self::$win1252ToUtf8[ord($c1)];
-              } else {
-                  $cc1 = (chr(ord($c1) / 64) | "\xc0");
-                  $cc2 = (($c1 & "\x3f") | "\x80");
-                  $buf .= $cc1 . $cc2;
-              }
+                if (isset(self::$win1252ToUtf8[ord($c1)])) { //found in Windows-1252 special cases
+                    $buf .= self::$win1252ToUtf8[ord($c1)];
+                } else {
+                    $cc1 = (chr(ord($c1) / 64) | "\xc0");
+                    $cc2 = (($c1 & "\x3f") | "\x80");
+                    $buf .= $cc1 . $cc2;
+                }
             } else { // it doesn't need conversion
                 $buf .= $c1;
             }
@@ -303,10 +303,10 @@ class Encoding
         return str_replace(array_keys(self::$brokenUtf8ToUtf8), array_values(self::$brokenUtf8ToUtf8), $text);
     }
 
-    public static function removeBOM($str="")
+    public static function removeBOM($str = "")
     {
         if (substr($str, 0, 3) === pack("CCC", 0xef, 0xbb, 0xbf)) {
-            $str=substr($str, 3);
+            $str = substr($str, 3);
         }
         return $str;
     }
@@ -353,8 +353,10 @@ class Encoding
     {
         if ($option == self::WITHOUT_ICONV || !function_exists('iconv')) {
             $o = mb_convert_encoding(
-                str_replace(array_keys(self::$utf8ToWin1252), array_values(self::$utf8ToWin1252), self::toUTF8($text))
-            , 'ISO-8859-1', 'UTF-8');
+                str_replace(array_keys(self::$utf8ToWin1252), array_values(self::$utf8ToWin1252), self::toUTF8($text)),
+                'ISO-8859-1',
+                'UTF-8'
+            );
         } else {
             $o = iconv("UTF-8", "Windows-1252" . ($option === self::ICONV_TRANSLIT ? '//TRANSLIT' : ($option === self::ICONV_IGNORE ? '//IGNORE' : '')), $text);
         }

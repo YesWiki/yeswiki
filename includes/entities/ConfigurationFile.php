@@ -14,14 +14,14 @@ class ConfigurationFile implements ArrayAccess, Iterator, Countable
     protected $configurationService;
 
     /**
-     * @param $file 
+     * @param $file
      * @param ConfigurationService|null $configurationService
      */
-    public function __construct($file,?ConfigurationService $configurationService = null)
+    public function __construct($file, ?ConfigurationService $configurationService = null)
     {
         $this->_file = $file;
         $this->_parameters = [];
-        if ($configurationService instanceof ConfigurationService){
+        if ($configurationService instanceof ConfigurationService) {
             $this->configurationService = $configurationService;
         } elseif (isset($GLOBALS["wiki"])) {
             $this->configurationService = $GLOBALS["wiki"]->services->get(ConfigurationService::class);
@@ -66,7 +66,7 @@ class ConfigurationFile implements ArrayAccess, Iterator, Countable
 
         // little hack to avoid php caching while require config file : we rename the variable and eval
         $yeswikiConfig = [];
-        $content = str_replace([$arrayName, '<?php', '?>'] , ['yeswikiConfig', '', ''], file_get_contents($this->_file));
+        $content = str_replace([$arrayName, '<?php', '?>'], ['yeswikiConfig', '', ''], file_get_contents($this->_file));
         eval($content);
         if (!empty($yeswikiConfig)) {
             $this->_parameters = $yeswikiConfig;
@@ -81,7 +81,7 @@ class ConfigurationFile implements ArrayAccess, Iterator, Countable
      */
     public function write($file = null, $arrayName = "wakkaConfig")
     {
-        return $this->configurationService->write($this,$file, $arrayName);
+        return $this->configurationService->write($this, $file, $arrayName);
     }
 
     /***************************************************************************

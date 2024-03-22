@@ -37,7 +37,10 @@ class ConsoleService
      */
     public function startConsoleAsync(string $command, array $args = [], string $subfolder = "", bool $newConsole = true, int $timeoutInSec = 60): ?Process
     {
-        $phpBinaryPath = $this->phpBinaryFinder->find();
+        $phpBinaryPath = getenv('ASYNC_PHP_BINARY');
+        if(!$phpBinaryPath) {
+            $phpBinaryPath = $this->phpBinaryFinder->find();
+        }
         $newCommand = $phpBinaryPath;
         $newArgs = [self::CONSOLE_BIN,$command];
         foreach ($args as $arg) {
@@ -108,7 +111,7 @@ class ConsoleService
         $process->start();
         return $process;
     }
-    
+
     /**
      * @param string $command
      * @param array $args
@@ -135,7 +138,7 @@ class ConsoleService
      * @param int $timeoutInSec
      * @return null|Process
      */
-    public function findAndStartExecutableAsync(string $executableName, array $args = [], string $subfolder = "", array $extraDirsWhereSearch=[], bool $newConsole = true, int $timeoutInSec = 60): ?Process
+    public function findAndStartExecutableAsync(string $executableName, array $args = [], string $subfolder = "", array $extraDirsWhereSearch = [], bool $newConsole = true, int $timeoutInSec = 60): ?Process
     {
         $executable = $this->findExecutable($executableName, $extraDirsWhereSearch);
         if (empty($executable)) {
@@ -152,7 +155,7 @@ class ConsoleService
      * @param int $timeoutInSec
      * @return null|array ['command'=>['stdout|stderr' => $output]]
      */
-    public function findAndStartExecutableSync(string $executableName, array $args = [], string $subfolder = "", array $extraDirsWhereSearch=[], int $timeoutInSec = 60): ?array
+    public function findAndStartExecutableSync(string $executableName, array $args = [], string $subfolder = "", array $extraDirsWhereSearch = [], int $timeoutInSec = 60): ?array
     {
         $process = $this->findAndStartExecutableAsync($executableName, $args, $subfolder, $extraDirsWhereSearch, false, $timeoutInSec);
         if (!$process) {

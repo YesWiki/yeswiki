@@ -50,21 +50,22 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
             $msg .= "</form></span>\n";
         } else {
             try {
-                $csrfTokenController->checkToken('main', 'POST', 'csrf-token',false);
+                $csrfTokenController->checkToken('main', 'POST', 'csrf-token', false);
                 $hasBeenDeleted = $this->services->get(PageController::class)->delete($tag);
-                if ($hasBeenDeleted){
+                if ($hasBeenDeleted) {
                     $msg = str_replace("{tag}", $tag, _t('DELETEPAGE_MESSAGE'));
                     // if $incomingurl has been defined and doesn't refer to the deleted page, redirect to it
                     $redirectToIncoming = !empty($incomingurl);
-                    if ($redirectToIncoming){
+                    if ($redirectToIncoming) {
                         // to prevent errors when deleting entry from BazaR page
                         $incomingurl = str_replace(
                             ["&action=voir_fiche&id_fiche=$tag",'&message=ajout_ok'],
                             [''],
-                            $incomingurl);
+                            $incomingurl
+                        );
                     }
                 } else {
-                    $msg = $this->render('@templates/alert-message-with-back.twig',[
+                    $msg = $this->render('@templates/alert-message-with-back.twig', [
                         'type' => 'danger',
                         'message' => _t('DELETEPAGE_NOT_DELETED')
                     ]);
@@ -83,7 +84,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
             && ($_GET['confirme'] === 'oui')) {
             // a trouble occured, invald token ?
             try {
-                $csrfTokenController->checkToken('main', 'POST', 'csrf-token',false);
+                $csrfTokenController->checkToken('main', 'POST', 'csrf-token', false);
             } catch (TokenNotFoundException $th) {
                 $msg .= $this->render("@templates/alert-message.twig", [
                     'type' => 'danger',

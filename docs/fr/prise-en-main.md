@@ -441,7 +441,36 @@ De nombreuses autres actions sont disponibles dans les composants, rubrique Acti
 #### Lister les pages orphelines
 #### Lister seulement les fiches bazar
 
-Les Handlers : accéder à certains fonctionalités via l'URL
+#### Mode multilangue
+Le composant lang YesWiki permettant de proposer une version de votre page dans une autre langue .
+Sur une même page vous pouvez avoir :
+* un texte en francais, il sera précédé par {{lang="fr"}}
+* un texte en anglais, il sera précédé par {{lang="en"}}
+* un texte en espagnol, il sera précédé par {{lang="es"}}
+Exemple
+```
+{{lang="fr"}}
+=====Bienvenue=====
+
+{{lang="en"}}
+=====Welcome=====
+
+{{lang="es"}}
+=====Bienvenido=====
+```
+
+Le composant translation permet aux utilisateurs de **choisir leur langue**. En l'ajoutant dans votre barre de menu le composant translation, il permettra d'ajouter des drapeaux pour identifier les langues de votre choix.
+Lorsqu'un utilisateur clique sur un drapeau anglais alors les contenus précédés de lang="en" seront affichés
+Exemple de code à ajouter dans le menu :
+```
+ - {{translation destination="fr"}}
+ - {{translation destination="en"}}  
+ - {{translation destination="es"}}
+```
+
+
+
+### Les Handlers : accéder à certains fonctionalités via l'URL
 -------------
 
 Un handler est une URL spéciale qui permet de modifier la façon d'afficher une page. On l'active en ajoutant à la fin de l'adresse URL, le signe **/** suivi du nom du handler. Exemple avec le handler `raw`: https://yeswiki.net/?AccueiL/raw

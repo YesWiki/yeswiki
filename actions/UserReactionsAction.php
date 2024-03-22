@@ -12,12 +12,12 @@ class UserReactionsAction extends YesWikiAction
         if ($user = $this->wiki->GetUser()) {
             $userReactions = $this->wiki->services->get(ReactionManager::class)->getReactions('', [], $user['name']);
             return $this->render('@core/user-reactions.twig', [
-                'userReactions'=> $userReactions,
+                'userReactions' => $userReactions,
             ]);
         } else {
             return $this->render('@templates/alert-message.twig', [
-                'type'=>'info',
-                'message'=> _t('REACTION_LOGIN_TO_SEE_YOUR_REACTION')
+                'type' => 'info',
+                'message' => _t('REACTION_LOGIN_TO_SEE_YOUR_REACTION')
             ]);
         }
     }

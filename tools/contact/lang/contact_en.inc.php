@@ -1,4 +1,5 @@
 <?php
+
 return [
     // actions/abonnement.php
     'CONTACT_ACTION_ABONNEMENT' => 'Action {{abonnement ...}}',
@@ -41,7 +42,7 @@ return [
     'CONTACT_RECEIVER_MAIL_INVALID' => 'Recipient valid email is needed',
     'CONTACT_ENTER_MESSAGE' => 'Please enter a message, containing at least 10 characters',
     'CONTACT_MESSAGE_SUCCESSFULLY_SENT' => 'Your message have been sent. Thank you !',
-    'CONTACT_MESSAGE_NOT_SENT' => 'Your message could not be sent... Server configuration problem ?',
+    'CONTACT_MESSAGE_NOT_SENT' => 'Your message could not be sent... Please contact the webmaster of this website to solve the problem',
     'CONTACT_SUBSCRIBE_ORDER_SENT' => 'Subscribe order sent. Thank you!',
     'CONTACT_UNSUBSCRIBE_ORDER_SENT' => 'Unsubscribe order sent. Thank you!',
     'CONTACT_HANDLER_MAIL_FOR_ADMINS' => 'Handler mail is only for admins group',

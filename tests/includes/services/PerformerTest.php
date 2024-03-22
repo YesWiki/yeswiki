@@ -26,12 +26,12 @@ class PerformerTest extends YesWikiTestCase
      * @covers Performer::list
      * @param Performer $performer
      */
-    public function testList(string $objectType,Performer $performer)
+    public function testList(string $objectType, Performer $performer)
     {
         $list = $performer->list($objectType);
         $this->assertTrue(is_array($list));
         $this->assertGreaterThan(0, count($list));
-        foreach($list as $elem){
+        foreach($list as $elem) {
             $this->assertIsString($elem);
         }
     }

@@ -27,7 +27,9 @@ class SelectListField extends EnumField
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry) ;
-        if( !$value ) return "";
+        if(!$value) {
+            return "";
+        }
         return $this->render('@bazar/fields/select.twig', [
             'value' => $this->options[$value]
         ]);

@@ -1,10 +1,10 @@
 <?php
 
 return [
-    
+
     'LOGIN_SIGNUP' => 'S\'inscrire',
     'LOGIN_LOGIN' => 'Se connecter',
-    'LOGIN_WIKINAME' => 'Email ou NomWiki',
+    'LOGIN_WIKINAME' => 'Email ou nom d\'utilisateur.ice',
     'LOGIN_EMAIL' => 'Email',
     'LOGIN_PASSWORD' => 'Mot de passe',
     'LOGIN_MODIFY' => 'Modifier',

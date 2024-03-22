@@ -1,11 +1,12 @@
 <?php
+
 namespace AutoUpdate;
 
 class PackageCollection extends Collection
 {
-    const THEME_CLASS = 'AutoUpdate\PackageTheme';
-    const TOOL_CLASS = 'AutoUpdate\PackageTool';
-    const CORE_CLASS = 'AutoUpdate\PackageCore';
+    public const THEME_CLASS = 'AutoUpdate\PackageTheme';
+    public const TOOL_CLASS = 'AutoUpdate\PackageTool';
+    public const CORE_CLASS = 'AutoUpdate\PackageCore';
 
     public function add($release, $address, $file, $description, $documentation, $minimalPhpVersion = null)
     {

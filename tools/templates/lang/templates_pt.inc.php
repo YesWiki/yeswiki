@@ -1,7 +1,7 @@
 <?php
 
 return [
-    
+
     'TEMPLATE_ACTION' => 'Ação',
     // 'TEMPLATE_FILE_NOT_FOUND' => 'Template non trouvé',
 

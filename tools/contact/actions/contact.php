@@ -31,6 +31,6 @@ if (empty($contactelements['mail'])) {
     $contactelements['mailerurl'] = $this->href('mail');
 
     echo $this->render("@contact/$template", $contactelements);
-    
+
     $this->addJavascriptFile('tools/contact/libs/contact.js');
 }

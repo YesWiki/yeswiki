@@ -71,7 +71,7 @@ function _convert($text, $fromencoding, $database = false)
                     YW_CHARSET,
                     mb_detect_encoding($text, "UTF-8, ISO-8859-1, ISO-8859-15", true)
                 );
-            //return \ForceUTF8\Encoding::toLatin1($text);
+                //return \ForceUTF8\Encoding::toLatin1($text);
             } else {
                 return $text;
             }
@@ -84,7 +84,7 @@ function _convert($text, $fromencoding, $database = false)
                 // if (strstr($text, 'disposition selon'))  {
                 //   var_dump(strip_tags($text), \ForceUTF8\Encoding::fixUTF8(strip_tags($text)));
                 //   exit;
-//
+                //
                 // }
 
                 return \ForceUTF8\Encoding::fixUTF8($text);
@@ -126,7 +126,7 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
     $getLang = (isset($_GET['lang']) && in_array($_GET['lang'], $available_languages)) ? $_GET['lang'] : '';
 
     $pageMetadataLang = "";
-    if ($page!='') {
+    if ($page != '') {
         // page's metadata lang
         $wiki->metadatas = $wiki->GetMetaDatas($page);
         if (isset($wiki->metadatas['lang']) && in_array($wiki->metadatas['lang'], $available_languages)) {
@@ -142,7 +142,7 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
     $postConfigLang = '' ;
     if (isset($_POST["config"])) {
         // just for installation
-        if (count($_POST["config"])==1 && is_string($_POST["config"])) {
+        if (count($_POST["config"]) == 1 && is_string($_POST["config"])) {
             if (version_compare(PHP_VERSION, '7.0.0') >= 0) {
                 $conf = unserialize($_POST["config"], ['allowed_classes' => false]);
             } else {
@@ -234,10 +234,10 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
         if (in_array($language, $available_languages) && ($qvalue > $bestqval)) {
             $bestlang = $language;
             $bestqval = $qvalue;
-        } elseif (in_array($langprefix, $available_languages) && (($qvalue*0.9) > $bestqval)) {
+        } elseif (in_array($langprefix, $available_languages) && (($qvalue * 0.9) > $bestqval)) {
             // if no direct hit, try the prefix only but decrease q-value by 10% (as http_negotiate_language does)
             $bestlang = $langprefix;
-            $bestqval = $qvalue*0.9;
+            $bestqval = $qvalue * 0.9;
         }
     }
     return $bestlang;

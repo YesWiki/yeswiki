@@ -47,7 +47,7 @@ if (empty($list)) {
         //extrait les mails
         $regEx = "/([\s]*)[\._a-zA-Z0-9-]+@[\._a-zA-Z0-9-]+/i";
         preg_match_all($regEx, $_POST['mailinglist'], $emails);
-        if (is_array($emails) && count($emails[0])>0) {
+        if (is_array($emails) && count($emails[0]) > 0) {
             sort($emails[0]);
             echo '<form id="ajax-mailing-form" method="post" action="'.$this->href().'">
 			<div class="well" style="width:600px; height:150px; overflow:auto; ">';

@@ -107,14 +107,14 @@ class ApiController extends YesWikiController
     {
         $csrfTokenManager = $this->getService(CsrfTokenManager::class);
         $csrfTokenController = $this->getService(CsrfTokenController::class);
-        
+
         $tokenId = str_replace(
             ["{width}","{height}","{mode}"],
             [$width,$height,$mode],
             self::POST_CACHE_URLIMAGE_TOKEN_ID
         );
 
-        if ($csrfTokenController->checkToken($tokenId, 'POST', 'csrftoken',false)){
+        if ($csrfTokenController->checkToken($tokenId, 'POST', 'csrftoken', false)) {
             $csrfTokenManager->removeToken($tokenId);
             $newToken = $csrfTokenManager->getToken($tokenId)->getValue();
             return $newToken;

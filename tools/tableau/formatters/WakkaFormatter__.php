@@ -44,16 +44,16 @@ class WakkaFormatter__ extends YesWikiFormatter
         // suppression de [|xxxx et de |]
         $thing = preg_replace("/^\[\|(.*)$/m", '', $thing);
         $thing = trim(preg_replace("/\|\]/m", '', $thing));
-        
+
         // recuperation de chaque portion commencant par | et finissant par |
         preg_match_all('/(^(?:!([^\|]*)!)?\|.*\|$)/Ums', $thing, $rows);
-        
+
         //analyse de chaque ligne
         $tablecontent = '';
         foreach ($rows[0] as $row) {
             $tablecontent .= $this->parsetablerow($row);
         }
-        $table  = '<table class="yeswiki-table prevent-auto-init '.(!empty($tableclass) ? ' '.$tableclass: 'table table-condensed table-striped').'">'."\n";
+        $table  = '<table class="yeswiki-table prevent-auto-init '.(!empty($tableclass) ? ' '.$tableclass : 'table table-condensed table-striped').'">'."\n";
         $table .= $tablecontent."\n";
         $table .= '</table>'."\n";
 

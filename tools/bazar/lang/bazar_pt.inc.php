@@ -285,7 +285,7 @@ return [
     // 'BAZ_COMMENTS_INFO_HUMHUB_EMBEDDED' => 'Les commentaires sont gérés par la plateforme sociale HumHub (Humhub intégré par YesWiki)',
     // 'BAZ_COMMENTS_INFO_HUMHUB_EXTERNAL' => 'Les commentaires sont gérés par la plateforme sociale HumHub (YesWiki intégré par Humhub)',
     // 'BAZ_COMMENTS_INFO_UNKNOWN' => 'Les commentaires ne sont pas gérés car le type de réglage des commentaires est inconnu',
-    // 'BAZ_COMMENTS_NOT_ACTIVATED' => 'Les commentaires sont gérés par YesWiki mais ceux-ci ne sont pas activés.<br/>Se rendre sur la page GererConfig pour activer les commentaires (paramètre `comments_activated`)',    
+    // 'BAZ_COMMENTS_NOT_ACTIVATED' => 'Les commentaires sont gérés par YesWiki mais ceux-ci ne sont pas activés.<br/>Se rendre sur la page GererConfig pour activer les commentaires (paramètre `comments_activated`)',
 
     // fields/FileField.php
     // 'BAZ_FILE_ALREADY_EXISTING' => 'fichier déja existant',

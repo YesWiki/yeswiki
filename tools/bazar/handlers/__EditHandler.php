@@ -22,7 +22,7 @@ class __EditHandler extends YesWikiHandler
             $this->output .= ob_get_contents();
             ob_end_clean();
             $this->output .= '</div>';
-            
+
             $this->output = $this->wiki->Header().$this->output;
             $this->output .= $this->wiki->Footer();
 

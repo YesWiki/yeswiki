@@ -21,8 +21,8 @@ class AdminReactionsAction extends YesWikiAction
             ]);
         } else {
             return $this->render('@templates/alert-message.twig', [
-                'type'=>'info',
-                'message'=> _t('REACTION_CONNECT_AS_ADMIN')
+                'type' => 'info',
+                'message' => _t('REACTION_CONNECT_AS_ADMIN')
             ]);
         }
     }

@@ -31,7 +31,7 @@ class ExternalCheckboxEntryField extends CheckboxEntryField
     {
         return "";
     }
-    
+
     protected function renderStatic($entry)
     {
         // copy from parent but with different href

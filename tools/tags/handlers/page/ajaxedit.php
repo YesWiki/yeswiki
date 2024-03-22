@@ -12,14 +12,14 @@ if (isset($_GET['jsonp_callback'])) {
     // on initialise la sortie:
     header('Content-type:application/json');
     $output = '';
-    
+
     if ($this->HasAccess('write') && $this->HasAccess('read')) {
         if (!empty($_GET['submit'])) {
             $submit = $_GET['submit'];
         } else {
             $submit = false;
         }
-        
+
         // fetch fields
         if (empty($_GET['previous'])) {
             $previous = $this->page['id'];
@@ -29,10 +29,10 @@ if (isset($_GET['jsonp_callback'])) {
         if (empty($_GET['body'])) {
             $body = $this->page['body'];
         } else {
-            $body =$_GET['body'];
+            $body = $_GET['body'];
         }
-    
-    
+
+
         switch ($submit) {
             case 'savecomment':
                 // check for overwriting
@@ -40,21 +40,21 @@ if (isset($_GET['jsonp_callback'])) {
                     $error = _t('TAGS_ALERT_PAGE_ALREADY_MODIFIED');
                 } else { // store
                     $body = str_replace("\r", '', $body);
-                    
+
                     // teste si la nouvelle page est differente de la précédente
-                    if (rtrim($body)==rtrim($this->page["body"])) {
-                        echo $_GET['jsonp_callback']."(".json_encode(array("nochange"=>'1')).")";
+                    if (rtrim($body) == rtrim($this->page["body"])) {
+                        echo $_GET['jsonp_callback']."(".json_encode(array("nochange" => '1')).")";
                     } else { // sécurité
                         // add page (revisions)
                         $this->SavePage($this->tag, $body);
-        
+
                         // now we render it internally so we can write the updated link table.
                         $page = $this->services->get(PageManager::class)->getOne($this->tag);
-                        $this->services->get(LinkTracker::class)->registerLinks($page,false,false);
-        
+                        $this->services->get(LinkTracker::class)->registerLinks($page, false, false);
+
                         // on recupere le commentzire bien formatte
                         $comment = $this->LoadPage($this->tag);
-                            
+
                         $valcomment['commentaires'][0]['tag'] = $comment["tag"];
                         $valcomment['commentaires'][0]['body'] = $this->Format($comment["body"]);
                         $valcomment['commentaires'][0]['infos'] = $this->Format($comment["user"]).", ".date(_t('TAGS_DATE_FORMAT'), strtotime($comment["time"]));
@@ -62,11 +62,11 @@ if (isset($_GET['jsonp_callback'])) {
                         $valcomment['commentaires'][0]['hasrighttomodifycomment'] = $this->HasAccess('write', $comment['tag']) || $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin();
                         $valcomment['commentaires'][0]['hasrighttodeletecomment'] = $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin();
                         $valcomment['commentaires'][0]['replies'] = '';
-                        
+
                         $content = $this->render("@tags/comment_list.tpl.html", $valcomment);
-                        echo $_GET['jsonp_callback']."(".json_encode(array("html"=>mb_convert_encoding($content, 'UTF-8', 'ISO-8859-1'))).")";
+                        echo $_GET['jsonp_callback']."(".json_encode(array("html" => mb_convert_encoding($content, 'UTF-8', 'ISO-8859-1'))).")";
                     }
-                    
+
                     // sécurité
                     $this->exit();
                 }
@@ -77,12 +77,12 @@ if (isset($_GET['jsonp_callback'])) {
                 if (isset($error)) {
                     $output .= "<div class=\"alert alert-danger\">$error</div>\n";
                 }
-                
+
                 // append a comment?
                 if (isset($_REQUEST['appendcomment'])) {
                     $body = trim($body);
                 }
-                
+
                 $output .= "<form class=\"form-modify-comment well well-small\" method=\"post\" action=\"".$this->href('ajaxedit')."\">\n".
                     "<input type=\"hidden\" name=\"previous\" value=\"$previous\" />\n".
                     "<textarea name=\"body\" required=\"required\" rows=\"3\" placeholder=\""._t('TAGS_WRITE_YOUR_COMMENT_HERE')."\" class=\"comment-response\">\n".
@@ -95,6 +95,6 @@ if (isset($_GET['jsonp_callback'])) {
     } else {
         $output .= "<div class=\"alert alert-danger\">"._t('TAGS_NO_WRITE_ACCESS')."</div>\n";
     }
-    $response = $_GET['jsonp_callback']."(".json_encode(array("html"=>mb_convert_encoding($content, 'UTF-8', 'ISO-8859-1'))).")";
+    $response = $_GET['jsonp_callback']."(".json_encode(array("html" => mb_convert_encoding($content, 'UTF-8', 'ISO-8859-1'))).")";
     echo $response;
 }

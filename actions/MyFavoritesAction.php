@@ -112,8 +112,10 @@ class MyFavoritesAction extends YesWikiAction
                         '/\\\\u([a-f0-9]{4})/',
                         'encodingFromUTF8',
                         $image[1][0]
-                    )
-                , 'ISO-8859-1', 'UTF-8');
+                    ),
+                    'ISO-8859-1',
+                    'UTF-8'
+                );
                 return $imagefile;
             } else {
                 preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $page['body'], $image);

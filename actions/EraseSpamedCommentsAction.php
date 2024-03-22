@@ -84,7 +84,7 @@ class EraseSpamedCommentsAction extends YesWikiAction
                     // (si DeleteOrphanedPage ne convient pas, soit on créé
                     // une autre, soit on la modifie
                     echo "Effacement de : " . $page . "<br />\n";
-                    if ($wiki->services->get(PageController::class)->delete($page)){
+                    if ($wiki->services->get(PageController::class)->delete($page)) {
                         $deletedPages .= $page . ", ";
                     }
                 }

@@ -15,7 +15,7 @@ class CalendrierAction extends YesWikiAction
         if ($minical) {
             $classes['minical'] = 'minical';
         }
-        $class = (isset($classes) && count($classes)>0) ? implode(' ', $classes) :null;
+        $class = (isset($classes) && count($classes) > 0) ? implode(' ', $classes) : null;
 
         $template = !empty($arg['template']) ? basename($arg['template']) : 'calendar.tpl.html';
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');

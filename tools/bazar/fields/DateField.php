@@ -26,7 +26,7 @@ class DateField extends BazarField
                 list($hour, $minute) = array_map('intval', explode(':', $result[1]));
                 $day = $result[0];
             } else {
-                $day = substr($day,0,10);
+                $day = substr($day, 0, 10);
             }
         } elseif (!empty($this->default)) {
             // Default value when new entry
@@ -55,7 +55,7 @@ class DateField extends BazarField
             $value = $this->getService(DateService::class)->getDateTimeWithRightTimeZone("$value {$entry[$this->propertyName . '_hour']}:{$entry[$this->propertyName . '_minutes']}")->format('c');
         }
         return [$this->propertyName => $value,
-            'fields-to-remove' =>[$this->propertyName . '_allday',$this->propertyName . '_hour',$this->propertyName . '_minutes']];
+            'fields-to-remove' => [$this->propertyName . '_allday',$this->propertyName . '_hour',$this->propertyName . '_minutes']];
     }
 
     protected function renderStatic($entry)

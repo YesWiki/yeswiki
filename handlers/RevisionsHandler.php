@@ -2,7 +2,7 @@
 
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
-use \Tamtamchik\SimpleFlash\Flash;
+use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\LinkTracker;
@@ -12,7 +12,7 @@ class RevisionsHandler extends YesWikiHandler
     public function run()
     {
         $this->denyAccessUnlessGranted('read');
-        
+
         $pageManager = $this->getService(PageManager::class);
         $aclService = $this->getService(AclService::class);
         $linkTracker = $this->getService(LinkTracker::class);

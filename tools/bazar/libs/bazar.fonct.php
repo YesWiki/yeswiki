@@ -73,7 +73,7 @@ function getHtmlDataAttributes($fiche, $formtab = '')
                                 ) {
                                     $htmldata .=
                                     'data-'.htmlspecialchars($key).'="'.
-                                    htmlspecialchars(is_array($value)?'['.implode(',', $value).']':$value).'" ';
+                                    htmlspecialchars(is_array($value) ? '['.implode(',', $value).']' : $value).'" ';
                                 }
                             }
                         }

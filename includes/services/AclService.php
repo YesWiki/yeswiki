@@ -133,7 +133,7 @@ class AclService
         }
 
         // Add '"' at begin and end of each escaped privileges elements.
-        for ($i=0; $i<count($privileges); $i++) {
+        for ($i = 0; $i < count($privileges); $i++) {
             $privileges[$i] = '"'.$this->dbService->escape($privileges[$i]) .'"';
         }
 
@@ -176,11 +176,11 @@ class AclService
         if ($acl === null) {
             return false;
         } elseif (isset($acl['list']) && (
-                $acl['list'] === 'comments-closed' ||
+            $acl['list'] === 'comments-closed' ||
                 (
                     $acl['list'] === '*' && $privilege === 'comment' && empty($user)
                 )
-            )) {
+        )) {
             return false;
         }
 
@@ -213,9 +213,11 @@ class AclService
      *            Mode for cases when $acl contains '%'
      *            Default '', standard case. $mode = 'creation', the test returns true
      *            even if the user is connected
+     * @param array $formerGroups
+     * 		 to avoid loops we keep track of former calls
      * @return bool True if the $user satisfies the $acl, false otherwise
      */
-    public function check($acl, $user = null, $adminCheck = true, $tag = '', $mode = '')
+    public function check($acl, $user = null, $adminCheck = true, $tag = '', $mode = '', $formerGroups = [])
     {
         if (!$user) {
             $user = $this->authController->getLoggedUser();
@@ -271,10 +273,16 @@ class AclService
                         $gname = substr($line, 1);
                         // paranoiac: avoid line = '@'
                         if ($gname) {
-                            if (!empty($username) && $this->userManager->isInGroup($gname, $username, false/* we have allready checked if user was an admin */)) {
-                                $result = $std_response ;
+                            if (in_array($gname, $formerGroups)) {
+                                $this->wiki->setMessage('Error group '.$gname.' inside same groups, inception was a bad movie');
+                                $result = false;
                             } else {
-                                $result = ! $std_response ;
+                                $formerGroups[] = $gname;
+                                if (!empty($username) && $this->userManager->isInGroup($gname, $username, false/* we have allready checked if user was an admin */, $formerGroups)) {
+                                    $result = $std_response ;
+                                } else {
+                                    $result = ! $std_response ;
+                                }
                             }
                         } else {
                             $result = false ; // line '@'

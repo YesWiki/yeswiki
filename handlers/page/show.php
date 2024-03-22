@@ -25,7 +25,7 @@ if (!empty($_SESSION['redirects'])) {
     unset($_SESSION['redirects'][count($trace) - 1]);
 }
 
-if ($HasAccessRead=$this->HasAccess("read")) {
+if ($HasAccessRead = $this->HasAccess("read")) {
     if (!$this->page) {
         echo str_replace(
             ["{beginLink}","{endLink}"],
@@ -50,7 +50,7 @@ if ($HasAccessRead=$this->HasAccess("read")) {
                 $latest = $this->LoadPage($this->tag); ?>
 				<?php
                   $time = isset($_GET['time']) ? $_GET['time'] : '';
-                echo $this->FormOpen(testUrlInIframe() ? 'editiframe' : 'edit','','get'); ?>
+                echo $this->FormOpen(testUrlInIframe() ? 'editiframe' : 'edit', '', 'get'); ?>
 				<input type="hidden" name="time" value="<?php echo $time ?>" />
 				<input class="btn btn-primary" type="submit" value="<?php echo _t('EDIT_ARCHIVED_REVISION'); ?>" />
 				<?php echo  $this->FormClose(); ?>

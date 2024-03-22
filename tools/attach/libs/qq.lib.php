@@ -113,13 +113,13 @@ if (!class_exists('qqFileUploader')) {
         {
             $val = trim($str);
             $val = settype($val, 'integer');
-            $l = strlen($str)-1;
+            $l = strlen($str) - 1;
             $last = strtolower($str[$l]);
             switch ($last) {
                 case 'g': $val *= 1024;
-                // no break
+                    // no break
                 case 'm': $val *= 1024;
-                // no break
+                    // no break
                 case 'k': $val *= 1024;
             }
             return $val;
@@ -205,16 +205,16 @@ if (!class_exists('qqFileUploader')) {
                 //TODO : refactor this with attach
                 $purifier = $GLOBALS['wiki']->services->get(HtmlPurifierService::class);
                 $purifier->cleanFile($fullfilename, $ext);
-                return array_map(function($value){
+                return array_map(function ($value) {
                     return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
-                }, array('success'=>true, 'filename'=>$fullfilename, 'simplefilename'=>$filename . '.' . $ext, 'extension'=>$ext));
+                }, array('success' => true, 'filename' => $fullfilename, 'simplefilename' => $filename . '.' . $ext, 'extension' => $ext));
             } else {
                 return array_map(
-                    function($value){
+                    function ($value) {
                         return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
                     },
                     array(
-                        'error'=> _t('ATTACH_HANDLER_AJAXUPLOAD_ERROR')
+                        'error' => _t('ATTACH_HANDLER_AJAXUPLOAD_ERROR')
                     )
                 );
             }

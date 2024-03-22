@@ -353,24 +353,24 @@ class EntryController extends YesWikiController
 
     public function delete($entryId, bool $redirectAfter = false): bool
     {
-        if ($this->entryManager->isEntry($entryId)){
+        if ($this->entryManager->isEntry($entryId)) {
             try {
                 $entry = $this->entryManager->getOne($entryId);
                 $this->entryManager->delete($entryId);
-                if(!$this->entryManager->isEntry($entryId)){
-                    $this->triggerDeletedEvent($entryId,$entry);
-                    if ($redirectAfter){
-                        flash(_t('BAZ_FICHE_SUPPRIMEE')." ($entryId)" , 'success');
-                        $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'],false));
+                if(!$this->entryManager->isEntry($entryId)) {
+                    $this->triggerDeletedEvent($entryId, $entry);
+                    if ($redirectAfter) {
+                        flash(_t('BAZ_FICHE_SUPPRIMEE')." ($entryId)", 'success');
+                        $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'], false));
                     }
                     return true;
                 }
             } catch (Throwable $th) {
-                if ($redirectAfter){
-                    flash(_t('DELETEPAGE_NOT_DELETED')." ($entryId) : {$th->getMessage()}" , 'error');
-                    $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'],false));
+                if ($redirectAfter) {
+                    flash(_t('DELETEPAGE_NOT_DELETED')." ($entryId) : {$th->getMessage()}", 'error');
+                    $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'], false));
                 }
-                throw new Exception($th->getMessage(),$th->getCode(),$th);
+                throw new Exception($th->getMessage(), $th->getCode(), $th);
             }
             return false;
         } else {
@@ -653,7 +653,7 @@ class EntryController extends YesWikiController
         $entryStartDate = new DateTime($entry['bf_date_debut_evenement']);
         if (isset($entry['bf_date_fin_evenement']) && !empty(trim($entry['bf_date_fin_evenement']))) {
             $entryEndDate = new DateTime($entry['bf_date_fin_evenement']);
-            if ($entryEndDate && strpos($entry['bf_date_fin_evenement'], 'T')=== false) {
+            if ($entryEndDate && strpos($entry['bf_date_fin_evenement'], 'T') === false) {
                 // all day (so = midnigth of next day)
                 $entryEndDate->add(new DateInterval("P1D"));
             }
@@ -701,7 +701,7 @@ class EntryController extends YesWikiController
 
     /* END OF PART TO FILTER ON DATE */
 
-    public function renderBazarList($entries, $param =[], $showNumEntries = true)
+    public function renderBazarList($entries, $param = [], $showNumEntries = true)
     {
         $ids = [];
         foreach ($entries as $entry) {
@@ -762,17 +762,7 @@ class EntryController extends YesWikiController
                         'type' => 'info',
                         'message' => $message
                     ]);
-
-                    if ($this->securityController->isWikiHibernated()) {
-                        $results['output'] .= $this->securityController->getMessageWhenHibernated();
-                    } elseif ($this->aclService->hasAccess('write', $firstEntry['id_fiche']) && $this->aclService->hasAccess('read', $firstEntry['id_fiche'])) {
-                        $results['output'] .= $this->update($firstEntry['id_fiche']);
-                    } else {
-                        $results['output'] .= $this->render('@templates/alert-message.twig', [
-                            'type' => 'danger',
-                            'message' => _t('EDIT_NO_WRITE_ACCESS')
-                        ]);
-                    }
+                    $results['output'] .= $this->view($firstEntry['id_fiche']);
                     return $results;
                 }
             }
@@ -789,11 +779,11 @@ class EntryController extends YesWikiController
                 ? $_POST['incomingurl']
                 : ''
             );
-        if (!empty($incomingUrl)){
+        if (!empty($incomingUrl)) {
             $incomingUrl = urldecode($incomingUrl);
-            $incomingUrl = filter_var($incomingUrl,FILTER_VALIDATE_URL);
+            $incomingUrl = filter_var($incomingUrl, FILTER_VALIDATE_URL);
         }
-        
+
         // TODO check if redirect to outside website ?
         return empty($incomingUrl) ? '' : $incomingUrl;
     }

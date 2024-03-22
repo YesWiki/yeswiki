@@ -60,14 +60,14 @@ class GeoJSONFormatter extends YesWikiController
         return $data;
     }
 
-    
+
     /**
      * extract geoData
      * @param array $entry
      * @param array &$cache
      * @return array ['latitude'=>000,'longitude'=>00] or []
      */
-    public function getGeoData(array $entry, array &$cache):array
+    public function getGeoData(array $entry, array &$cache): array
     {
         if (!empty($entry['id_typeannonce']) && $entry['id_typeannonce'] == intval($entry['id_typeannonce'])) {
             $propertyName = $this->getFirstMapFieldPropertyName($entry['id_typeannonce'], $cache);
@@ -102,7 +102,7 @@ class GeoJSONFormatter extends YesWikiController
      * @param array &$cache cache of correspondance of propertynames and forms id
      * @return string|null $propertyName
      */
-    private function getFirstMapFieldPropertyName(int $formId, array &$cache):?string
+    private function getFirstMapFieldPropertyName(int $formId, array &$cache): ?string
     {
         if (!isset($cache[$formId])) {
             $form = $this->formManager->getOne($formId);

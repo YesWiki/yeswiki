@@ -225,12 +225,12 @@ class PageManager
         $pages = $this->dbService->loadAll(<<<SQL
             SELECT tag,owner FROM {$this->dbService->prefixTable('pages')} WHERE LATEST = 'Y' ORDER BY tag
         SQL);
-        $pages = array_filter($pages, function($page) {
+        $pages = array_filter($pages, function ($page) {
             // cache page's owner to prevent reload of page from sql or infinite loop in some case
             $this->cacheOwner($page);
             return $this->aclService->hasAccess('read', $page['tag']);
         });
-        return array_map(function($page) {
+        return array_map(function ($page) {
             return $page['tag'];
         }, $pages);
     }
@@ -275,7 +275,7 @@ class PageManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         unset($this->ownersCache[$tag]);
-        if (in_array($tag,$this->pageCache)){
+        if (in_array($tag, $this->pageCache)) {
             unset($this->pageCache[$tag]);
         }
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag='{$this->dbService->escape($tag)}' OR comment_on='{$this->dbService->escape($tag)}'");
@@ -285,7 +285,7 @@ class PageManager
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='http://outils-reseaux.org/_vocabulary/metadata'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('referrers')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->tagsManager->deleteAll($tag);
-        
+
         $errors = $this->eventDispatcher->yesWikiDispatch('page.deleted', [
             'id' => $tag
         ]);
@@ -360,7 +360,7 @@ class PageManager
 
             unset($this->pageCache[$tag]);
             $this->ownersCache[$tag] = $owner;
-            
+
             $errors = $this->eventDispatcher->yesWikiDispatch(empty($oldPage) ? 'page.created' : 'page.updated', [
                 'id' => $tag,
                 'data' => [
@@ -419,7 +419,7 @@ class PageManager
 
         if (!empty($metadata)) {
             if (YW_CHARSET != 'UTF-8') {
-                return array_map(function($value){
+                return array_map(function ($value) {
                     return mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8');
                 }, json_decode($metadata, true));
             } else {
@@ -443,7 +443,7 @@ class PageManager
         }
 
         if (YW_CHARSET != 'UTF-8') {
-            $metadata = json_encode(array_map(function($value){
+            $metadata = json_encode(array_map(function ($value) {
                 return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
             }, $metadata));
         } else {
@@ -466,7 +466,7 @@ class PageManager
             // do not check following tests to be faster because admins can see anything
             return $pages;
         }
-        
+
         // affect cache before checking acls
         foreach ($pages as $page) {
             $this->cacheOwner($page);
@@ -483,8 +483,8 @@ class PageManager
         $pages = array_map(function ($page) use ($entryManager, $guard, $allEntriesTags, $userNameForCheckingACL) {
             return (isset($page['tag']) &&
                     in_array($page['tag'], $allEntriesTags)
-                    ) ? $guard->checkAcls($page, $page['tag'], $userNameForCheckingACL)
-                    :$page;
+            ) ? $guard->checkAcls($page, $page['tag'], $userNameForCheckingACL)
+                    : $page;
         }, $pages);
         return $pages;
     }

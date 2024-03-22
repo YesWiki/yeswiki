@@ -1,4 +1,5 @@
 <?php
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -6,7 +7,7 @@ if (!defined("WIKINI_VERSION")) {
 $class = $this->getParameter('class');
 if ($this->UserIsAdmin()
     && isset($_POST['action']) && ($_POST['action'] === 'setTemplate')
-    ) {
+) {
     $this->Action('setwikidefaulttheme');
     // if not redirected by setwikidefaulttheme : redirect
     $this->Redirect($this->href("", $this->tag));

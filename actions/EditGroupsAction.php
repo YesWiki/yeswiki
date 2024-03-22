@@ -13,8 +13,8 @@ class EditGroupsAction extends YesWikiAction
     {
         if (!$this->wiki->UserIsAdmin()) {
             return $this->render('@templates/alert-message.twig', [
-                'type'=>'danger',
-                'message'=> "EditGroupsAction : " . _t('BAZ_NEED_ADMIN_RIGHTS')
+                'type' => 'danger',
+                'message' => "EditGroupsAction : " . _t('BAZ_NEED_ADMIN_RIGHTS')
             ]) ;
         }
 
@@ -23,10 +23,10 @@ class EditGroupsAction extends YesWikiAction
         $currentGroupAcl = '';
         $selectedGroupName = '';
         $action = '';
-        if (!empty($_POST['groupname'])){
-            if (!is_string($_POST['groupname'])){
+        if (!empty($_POST['groupname'])) {
+            if (!is_string($_POST['groupname'])) {
                 $message = 'Action not possible because \'groupname\' should be a string !';
-            } else if (preg_match('/[^A-Za-z0-9]/', $_POST['groupname'])){
+            } elseif (preg_match('/[^A-Za-z0-9]/', $_POST['groupname'])) {
                 $message = _t('ONLY_ALPHANUM_FOR_GROUP_NAME');
             } else {
                 $selectedGroupName = strval($_POST['groupname']);
@@ -38,9 +38,9 @@ class EditGroupsAction extends YesWikiAction
                         : ''
                     );
                 try {
-                    if ($action === 'save'){
+                    if ($action === 'save') {
                         list('message' => $message, 'type' => $type) = $this->saveAcl($selectedGroupName);
-                    } else if ($action === 'delete') {
+                    } elseif ($action === 'delete') {
                         list('message' => $message, 'type' => $type) = $this->deleteGroup($selectedGroupName);
                     }
                 } catch (TokenNotFoundException $th) {
@@ -53,7 +53,7 @@ class EditGroupsAction extends YesWikiAction
         $list = $this->wiki->GetGroupsList();
         sort($list);
 
-        if (!empty($selectedGroupName) && in_array($selectedGroupName, $list)){
+        if (!empty($selectedGroupName) && in_array($selectedGroupName, $list)) {
             $currentGroupAcl = $this->wiki->GetGroupACL($selectedGroupName);
         }
 
@@ -70,7 +70,7 @@ class EditGroupsAction extends YesWikiAction
         $message = '';
         $type = 'danger';
 
-        if (!isset($_POST['acl']) || !is_string($_POST['acl'])){
+        if (!isset($_POST['acl']) || !is_string($_POST['acl'])) {
             $message = '$_POST[\'acl\'] must be a string';
         } else {
             $newacl = strval($_POST['acl']);
@@ -78,7 +78,7 @@ class EditGroupsAction extends YesWikiAction
                 $message = _t('YOU_CANNOT_REMOVE_YOURSELF');
             } else {
                 $result = $this->wiki->SetGroupACL($selectedGroupName, $newacl);
-                
+
                 if ($result) {
                     if ($result == 1000) {
                         $message = _t('ERROR_RECURSIVE_GROUP').' !';
@@ -97,7 +97,7 @@ class EditGroupsAction extends YesWikiAction
         return compact(['message','type']);
     }
 
-    
+
     protected function deleteGroup(string &$selectedGroupName): array
     {
         $message = '';
@@ -117,9 +117,9 @@ class EditGroupsAction extends YesWikiAction
             if (!empty($ownedPages)) {
                 // Array is not empty because the query returns at least one page
                 $message = _t('ONLY_NO_PAGES_GROUP_FOR_DELETION').'<br/>';
-                $message .= implode('<br/>',array_map(function($acl){
-                    return "<a href=\"{$this->wiki->Href('',$acl['page_tag'])}\">{$acl['page_tag']}</a>";
-                },$ownedPages));
+                $message .= implode('<br/>', array_map(function ($acl) {
+                    return "<a href=\"{$this->wiki->Href('', $acl['page_tag'])}\">{$acl['page_tag']}</a>";
+                }, $ownedPages));
             } else {
                 // Group is empty AND is not alone having privileges on any page
                 $sql = <<<SQL
@@ -131,18 +131,18 @@ class EditGroupsAction extends YesWikiAction
                 $dbService->query($sql);
 
                 $tripleStore = $this->getService(TripleStore::class);
-                $previous = $tripleStore->getMatching(GROUP_PREFIX.$selectedGroupName,WIKINI_VOC_PREFIX.WIKINI_VOC_ACLS,'','=');
+                $previous = $tripleStore->getMatching(GROUP_PREFIX.$selectedGroupName, WIKINI_VOC_PREFIX.WIKINI_VOC_ACLS, '', '=');
                 $deletionOk = false;
-                if (!empty($previous)){
+                if (!empty($previous)) {
                     $deletionOk = true;
                     foreach ($previous as $triple) {
-                        if (!$tripleStore->delete($selectedGroupName,WIKINI_VOC_ACLS,$triple['value'],GROUP_PREFIX)){
+                        if (!$tripleStore->delete($selectedGroupName, WIKINI_VOC_ACLS, $triple['value'], GROUP_PREFIX)) {
                             $deletionOk = false;
                         }
                     }
                 }
 
-                if ($deletionOk){
+                if ($deletionOk) {
                     $message = "groupe $selectedGroupName supprimé";
                     $type = 'success';
                     $selectedGroupName = '';
@@ -158,6 +158,6 @@ class EditGroupsAction extends YesWikiAction
 
     protected function confirmToken()
     {
-        $this->getService(CsrfTokenController::class)->checkToken('main', 'POST', 'confirmToken',false);
+        $this->getService(CsrfTokenController::class)->checkToken('main', 'POST', 'confirmToken', false);
     }
 }

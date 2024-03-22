@@ -67,10 +67,10 @@ return [
     'ATTACH_DESCRIPTION' => 'Beschrijving',
     'ATTACH_CANCEL' => 'Annuleren',
     'ATTACH_SAVE' => 'Opslaan',
-    
+
     // actions/video.php
     'ATTACH_ACTION_VIDEO_PARAM_ERROR' => 'De actie video moet worden aangeroepen met de parameters «id» en «serveur». Voor «serveur» zijn alleen waarden «vimeo» of «youtube» of «peertube» toegestaan.',
-    
+
     // actions/pdf.php
     'ATTACH_ACTION_PDF_PARAM_URL_ERROR' => 'De actie pdf moet worden aangeroepen met parameter «url» en de opgegeven url moet op dezelfde host staan als de wiki (bijvoorbeeld \' xxx.yyy.com \'), hetzelfde schema (bijvoorbeeld \' https \') en dezelfde poort indien opgegeven (bijvoorbeeld \'8080 \'). ',
     // 'ATTACH_ACTION_DISPLAY_PDF_TEXT' => 'Afficher le pdf dans la page :',

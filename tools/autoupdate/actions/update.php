@@ -1,4 +1,5 @@
 <?php
+
 namespace AutoUpdate;
 
 use YesWiki\Core\Service\ThemeManager;
@@ -34,7 +35,7 @@ if ($endUpdate) {
         $configFromFile['yeswiki_release'] = YESWIKI_RELEASE;
         $configFromFile->write();
     }
-    
+
     // specific message when updating from cercopitheque
     if (isset($data['fromCercopitheque']) && $data['fromCercopitheque']) {
         unset($data['fromCercopitheque']);
@@ -49,19 +50,19 @@ if ($endUpdate) {
 
         // check presence of theme margot
         $themeManager = $this->services->get(ThemeManager::class) ;
-      
+
         // check favorite_theme in wakka.config.php
         $autoUpdate = new AutoUpdate($this);
         $configFromFile = $autoUpdate->getWikiConfiguration();
         $favoriteThemefromFile = $configFromFile['favorite_theme'] ?? '';
-        
+
         if (empty($favoriteThemefromFile) || $favoriteThemefromFile == 'yeswiki') {
             // upgrade yeswikicerco theme
             $get['upgrade'] = 'yeswikicerco';
             $messages = new Messages();
             $controller = new Controller($autoUpdate, $messages, $this);
             $upgradeThemeMessage = $controller->run($get);
-            
+
             if (!empty($upgradeThemeMessage)) {
                 if (empty($configFromFile['favorite_theme'])) {
                     $configFromFile['favorite_theme'] = 'yeswikicerco';
@@ -77,8 +78,8 @@ if ($endUpdate) {
 
                 // title
                 $data['messages'][] = [
-                    'status'=>_t('AU_OK'),
-                    'text'=> '=== yeswikicerco theme update ==='
+                    'status' => _t('AU_OK'),
+                    'text' => '=== yeswikicerco theme update ==='
                 ];
                 // extract messages
                 $matches = [];
@@ -89,8 +90,8 @@ if ($endUpdate) {
                 )) {
                     foreach ($matches[0] as $index => $match) {
                         $data['messages'][] = [
-                            'status'=>$matches[1][$index],
-                            'text'=> str_replace("&#039;", "'", $matches[2][$index])
+                            'status' => $matches[1][$index],
+                            'text' => str_replace("&#039;", "'", $matches[2][$index])
                         ];
                     }
                 }
@@ -129,16 +130,16 @@ if ($endUpdate) {
             $controller->run($get);
         } else {
             $data['messages'][] = [
-                'status'=>_t('AU_ERROR'),
-                'text'=> _t('AU_SECOND_UPDATE_NOT_POSSIBLE')
+                'status' => _t('AU_ERROR'),
+                'text' => _t('AU_SECOND_UPDATE_NOT_POSSIBLE')
             ];
         }
     } else {
         unset($_SESSION['updateAlreadyForced']);
         foreach ($notExistingFiles as $file) {
             $data['messages'][] = [
-                'status'=>_t('AU_ERROR'),
-                'text'=> str_replace('{{file}}', $file, _t('AU_FILE_NOT_POSSIBLE_TO_UPDATE')),
+                'status' => _t('AU_ERROR'),
+                'text' => str_replace('{{file}}', $file, _t('AU_FILE_NOT_POSSIBLE_TO_UPDATE')),
             ];
         }
     }
@@ -146,7 +147,7 @@ if ($endUpdate) {
     if ($data['messages'][0]['text'] == _t('AU_YESWIKI_DORYPHORE_POSTINSTALL')) {
         $fromCercopitheque = true;
         $newMessages = [];
-        for ($i=1; $i < count($data['messages']); $i++) {
+        for ($i = 1; $i < count($data['messages']); $i++) {
             $newMessages[] = $data['messages'][$i];
         }
         $data['messages'] = $newMessages;

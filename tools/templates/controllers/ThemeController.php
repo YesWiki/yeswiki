@@ -30,7 +30,7 @@ class ThemeController extends YesWikiController
      * @param array $params
      * @return string
      */
-    public function renderWithThemeSelector(string $templateName,array $params): string
+    public function renderWithThemeSelector(string $templateName, array $params): string
     {
         $templates = $this->themeManager->getTemplates();
         $favoriteTheme = $this->themeManager->getFavoriteTheme();
@@ -42,18 +42,18 @@ class ThemeController extends YesWikiController
         $presetsData = $this->themeManager->getPresetsData();
         $presets = [];
         foreach ($presetsData['themePresets'] as $key => $content) {
-          $presets[$key] = $key;
+            $presets[$key] = $key;
         }
         foreach ($presetsData['customCSSPresets'] as $key => $content) {
-          $presets[ThemeManager::CUSTOM_CSS_PRESETS_PREFIX.$key] = $key;
+            $presets[ThemeManager::CUSTOM_CSS_PRESETS_PREFIX.$key] = $key;
         }
-        $dataTemplates = array_map(function($t){
-            return array_key_exists('presets',$t)
-                ? array_merge($t,[
-                    'presets'=> array_keys($t['presets'])
+        $dataTemplates = array_map(function ($t) {
+            return array_key_exists('presets', $t)
+                ? array_merge($t, [
+                    'presets' => array_keys($t['presets'])
                 ])
                 : $t;
-        },$templates);
+        }, $templates);
         $hibernated = $this->securityController->isWikiHibernated();
         return $this->render(
             $templateName,
@@ -85,12 +85,12 @@ class ThemeController extends YesWikiController
     public function showFormThemeSelector($mode = 'selector', $formclass = ''): string
     {
         // en mode edition on recupere aussi les images de fond
-        if ($mode=='edit') {
+        if ($mode == 'edit') {
             $id = 'form_graphical_options';
             $backgrounds = $this->prepareBackgrounds();
-            $bgselector = 
+            $bgselector =
             !empty($backgrounds)
-            ? $this->render('@templates/background-selector.twig',[
+            ? $this->render('@templates/background-selector.twig', [
                 'backgrounds' => $backgrounds,
                 'favoriteBackgroundImage' => $this->themeManager->getFavoriteBackgroundImage()
             ])
@@ -120,7 +120,7 @@ class ThemeController extends YesWikiController
             'TEMPLATE_FILE_ALREADY_EXISTING',
             'TEMPLATE_PRESET_ERROR'
         ];
-        $ts = array_combine($ts,$ts);
+        $ts = array_combine($ts, $ts);
 
         return $this->renderWithThemeSelector("@templates/theme-selector-with-form.twig", [
             'mode' => $mode,
@@ -129,7 +129,7 @@ class ThemeController extends YesWikiController
             'bgselector' => $bgselector,
             'listWikinames' => $listWikinames,
             'showAdminActions' => ($this->wiki->UserIsAdmin()),
-            'themeSelectorTranslation' => array_map('_t',$ts),
+            'themeSelectorTranslation' => array_map('_t', $ts),
             'customCSSPresetsPath' => ThemeManager::CUSTOM_CSS_PRESETS_PATH,
             'customCSSPresetsPrefix' => ThemeManager::CUSTOM_CSS_PRESETS_PREFIX,
             'availableLanguages' => $GLOBALS['available_languages'],

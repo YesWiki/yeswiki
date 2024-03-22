@@ -32,7 +32,7 @@ if ($user = $this->GetUser()) {
 
                 $my_edits_count++;
             }
-            
+
             if ($my_edits_count == 0) {
                 echo "<i>"._t('YOU_DIDNT_MODIFY_ANY_PAGE').".</i>";
             }
@@ -51,7 +51,7 @@ if ($user = $this->GetUser()) {
                     if (!preg_match("/".WN_UPPER."/", $firstChar)) {
                         $firstChar = "#";
                     }
-        
+
                     if ($firstChar != $curChar) {
                         if ($curChar) {
                             echo "<br />\n";
@@ -59,14 +59,14 @@ if ($user = $this->GetUser()) {
                         echo "<b>$firstChar</b><br />\n";
                         $curChar = $firstChar;
                     }
-    
+
                     // echo entry
                     echo "&nbsp;&nbsp;&nbsp;(",$page["time"],") (",$this->ComposeLinkToPage($page["tag"], "revisions", "history", 0),") ",$this->ComposeLinkToPage($page["tag"], "", "", 0),"<br />\n";
-    
+
                     $my_edits_count++;
                 }
             }
-            
+
             if ($my_edits_count == 0) {
                 echo "<i>"._t('YOU_DIDNT_MODIFY_ANY_PAGE').".</i>";
             }

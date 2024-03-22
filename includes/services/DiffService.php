@@ -72,7 +72,7 @@ class DiffService
         $regexpr .= ".*?\}\})/s";
         // move all complex actions (bazarliste etc...) into pre html so they are not fomatted
         $code = preg_replace($regexpr, '""<pre class="ignored-action">$1</pre>""', $page["body"]);
-        
+
         return $this->wiki->Format($code, 'wakka', $page['tag']);
     }
 

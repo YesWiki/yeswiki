@@ -59,5 +59,5 @@ if (preg_match("/^[[:alnum:]][[:alnum:]]+$/", $set)) {
     $this->SetPersistentCookie('sitestyle', $set, 1);
     header("Location: ".$this->href());
 } elseif ($set) {
-    $this->SetMessage(str_replace("{name}",htmlspecialchars($set, ENT_COMPAT, YW_CHARSET),_t('CHANGESTYLE_ERROR')));
+    $this->SetMessage(str_replace("{name}", htmlspecialchars($set, ENT_COMPAT, YW_CHARSET), _t('CHANGESTYLE_ERROR')));
 }

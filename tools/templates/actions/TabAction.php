@@ -5,14 +5,14 @@ use YesWiki\Templates\Controller\TabsController;
 
 class TabAction extends YesWikiAction
 {
-  public function formatArguments($arg)
-  {
-    return [
-    ];
-  }
+    public function formatArguments($arg)
+    {
+        return [
+        ];
+    }
 
-  public function run()
-  {
-    return $this->getService(TabsController::class)->openATab();         
-  }
+    public function run()
+    {
+        return $this->getService(TabsController::class)->openATab();
+    }
 }

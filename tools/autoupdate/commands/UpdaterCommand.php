@@ -1,4 +1,5 @@
 <?php
+
 namespace YesWiki\AutoUpdate\Commands;
 
 use Symfony\Component\Console\Command\Command;

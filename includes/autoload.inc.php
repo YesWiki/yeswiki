@@ -1,4 +1,5 @@
 <?php
+
 spl_autoload_register(function ($className) {
     // Autoload services
     if (preg_match("/^YesWiki\\\\([^\\\\]+)(?:\\\\([^\\\\]+))?(?:\\\\([^\\\\]+))?$/", $className, $matches)) {

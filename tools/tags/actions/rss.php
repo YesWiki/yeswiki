@@ -3,7 +3,7 @@
 $tags = $this->GetParameter('tags');
 $class = $this->GetParameter("class");
 if (empty($class)) {
-    $class='';
+    $class = '';
 }
 
 if ($this->GetMethod() != 'rss' && $this->GetMethod() != 'xml' && $this->GetMethod() != 'tagrss') { //on affiche un lien dans la page si on n'est pas en xml

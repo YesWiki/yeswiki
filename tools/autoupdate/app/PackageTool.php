@@ -1,9 +1,10 @@
 <?php
+
 namespace AutoUpdate;
 
 class PackageTool extends PackageExt
 {
-    const TOOL_PATH = '/tools/';
+    public const TOOL_PATH = '/tools/';
 
     protected function localPath()
     {

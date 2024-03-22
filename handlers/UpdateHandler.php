@@ -211,7 +211,7 @@ class UpdateHandler extends YesWikiHandler
                 $output .= '<span class="label label-warning">! '._t('UPDATE_ADMIN_PAGES_ERROR').'</span>'.'<br />'.$message;
             }
         } else {
-            $output .= '<a href="'.$this->wiki->Href('update', '', ['updateAdminPages'=>true]).'" '.
+            $output .= '<a href="'.$this->wiki->Href('update', '', ['updateAdminPages' => true]).'" '.
                 'class="btn-primary btn-xs btn"'.
                 'onclick="return confirm(\''._t('UPDATE_ADMIN_PAGES_CONFIRM').$adminPagesList.' !\');"'. // TODO modal + bootstrap for confirm box
                 '>'.
@@ -234,10 +234,10 @@ class UpdateHandler extends YesWikiHandler
         $defaultSQL = file_get_contents('setup/sql/default-content.sql');
         $defaultSQLSplittedByBlock  = explode("INSERT INTO", $defaultSQL);
         $blocks = [];
-        for ($i=1; $i < count($defaultSQLSplittedByBlock); $i++) {
+        for ($i = 1; $i < count($defaultSQLSplittedByBlock); $i++) {
             $block = $defaultSQLSplittedByBlock[$i];
             if (substr($block, 0, 1) !== '#' &&
-                    substr($defaultSQLSplittedByBlock[$i-1], 0, strlen('# YesWiki pages')) === '# YesWiki pages') { // only working for pages
+                    substr($defaultSQLSplittedByBlock[$i - 1], 0, strlen('# YesWiki pages')) === '# YesWiki pages') { // only working for pages
                 $typeBlock = explode('`', substr($block, strlen(' `{{prefix}}')), 2);
                 if ($typeBlock[0] == 'pages') {
                     $blocks[] = $typeBlock[1];
@@ -456,7 +456,7 @@ class UpdateHandler extends YesWikiHandler
             }
             $output .= "✅ All is right !<br/>";
         } catch (\Throwable $th) {
-            if ($th->getCode() ===1) {
+            if ($th->getCode() === 1) {
                 $output .= "{$th->getMessage()} <br/>";
             } else {
                 $output .= "❌ Not checked because of error during tests : {$th->getMessage()} (file : '{$th->getFile()}' - line : ('{$th->getLine()}')! <br/>";

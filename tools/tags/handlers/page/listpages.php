@@ -20,7 +20,7 @@ $nb = (isset($_GET['nb'])) ? $_GET['nb'] : '';
 $tri = (isset($_GET['tri'])) ? $_GET['tri'] : '';
 $nbcartrunc = 200;
 $template = (isset($_GET['template'])) ? $_GET['template'] : 'pages_accordion.tpl.html';
-$valtemplate=array();
+$valtemplate = array();
 
 $output = '';
 
@@ -85,7 +85,7 @@ if ($resultat) {
 
 $output .= '<div class="alert alert-info">'."\n";
 if ($nb_total > 1) {
-    $output .= _t('TAGS_TOTAL_NB_PAGES', ['nb_total'=> $nb_total]);
+    $output .= _t('TAGS_TOTAL_NB_PAGES', ['nb_total' => $nb_total]);
 } elseif ($nb_total == 1) {
     $output .= _t('TAGS_ONE_PAGE_FOUND');
 } else {

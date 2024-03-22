@@ -77,7 +77,7 @@ abstract class CheckboxField extends EnumField
         $value = $this->getValue($entry);
         return $this->sanitizeValues($value, "array") ;
     }
-    
+
     public function formatValuesBeforeSave($entry)
     {
         return $this->formatValuesBeforeSaveIfEditable($entry, false);
@@ -96,7 +96,7 @@ abstract class CheckboxField extends EnumField
                     $checkboxField = '' ;
                 }
             }
-            
+
             // format value
             $entry[$this->propertyName] = $this->sanitizeValues($checkboxField, "string") ;
         }
@@ -145,10 +145,10 @@ abstract class CheckboxField extends EnumField
                 "title" => $label
             ];
         }
-        
+
         $selectedOptions = $this->getValues($entry) ;
         $selectedOptions = empty($selectedOptions) ? [] : $selectedOptions;
-        
+
         return [
             'existingTags' => $existingTags,
             'selectedOptions' => $selectedOptions

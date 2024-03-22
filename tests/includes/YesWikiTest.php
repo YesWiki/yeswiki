@@ -12,7 +12,7 @@ class YesWikiTest extends YesWikiTestCase
     /**
      * @covers Wiki::__construct
      */
-    public function testInitWiki():Wiki
+    public function testInitWiki(): Wiki
     {
         $wiki = $this->getWiki();
         // services should not be empty

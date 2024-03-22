@@ -103,20 +103,20 @@ class Wiki
 
     public function GetMethod()
     {
-        if ($this->method=='iframe') {
+        if ($this->method == 'iframe') {
             return 'show';
-        } elseif ($this->method=='editiframe') {
+        } elseif ($this->method == 'editiframe') {
             return 'edit';
         } else {
             return $this->method;
         }
     }
 
-    public function GetConfigValue($name, $default=null)
+    public function GetConfigValue($name, $default = null)
     {
         return isset($this->config[$name])
             ? is_array($this->config[$name]) ? $this->config[$name] : trim($this->config[$name])
-            : ($default != null ? $default : '') ;
+            : ($default != null ? $default : '');
     }
 
     public function GetWakkaName()
@@ -136,7 +136,7 @@ class Wiki
 
     public function isCli(): bool
     {
-        return in_array(php_sapi_name(), ['cli', 'cli-server',' phpdbg'], true);
+        return in_array(php_sapi_name(), ['cli', 'cli-server', ' phpdbg'], true);
     }
 
     // inclusions
@@ -291,24 +291,24 @@ class Wiki
         $contentToAppend = "\n" . date('Y-m-d H:i:s') . ' . . . . ' . $user . ' . . . . ' . $content . "\n";
         $tag = $page ? $page : 'LogDesActionsAdministratives' . date('Ymd');
         $result = $this->AppendContentToPage($contentToAppend, $tag, true);
-        if (empty($page) && $result === 0){
+        if (empty($page) && $result === 0) {
             try {
                 // keep only 10 revisions of this page
                 $pageManager = $this->services->get(PageManager::class);
                 $dbService = $this->services->get(DbService::class);
                 $revisions = $pageManager->getRevisions($tag);
-                if (!empty($revisions) && count($revisions) > 10){
+                if (!empty($revisions) && count($revisions) > 10) {
                     $idsToDelete = array_map(
-                        function($data){
+                        function ($data) {
                             return $data['id'];
                         },
-                        array_slice($revisions,10)
+                        array_slice($revisions, 10)
                     );
 
                     $formattedIds = implode(
                         ',',
                         array_map(
-                            function($id) use ($dbService){
+                            function ($id) use ($dbService) {
                                 return $dbService->escape($id);
                             },
                             $idsToDelete
@@ -412,7 +412,7 @@ class Wiki
     // returns just PageName[/method].
     public function MiniHref($method = null, $tag = null)
     {
-        if (! $tag = trim($tag)) {
+        if (!$tag = trim($tag)) {
             $tag = $this->tag;
         }
 
@@ -422,7 +422,7 @@ class Wiki
     // returns the full url to a page/method.
     public function Href($method = null, $tag = null, $params = null, $htmlspchars = true)
     {
-        if ($tag == null || ! $tag = trim($tag)) {
+        if ($tag == null || !$tag = trim($tag)) {
             $tag = $this->tag;
         }
         $href = $this->config["base_url"] . $this->MiniHref($method, $tag);
@@ -430,8 +430,8 @@ class Wiki
             if (is_array($params)) {
                 $paramsArray = [];
                 foreach ($params as $key => $value) {
-                    if (!empty($value) || in_array($value,[0,'0',''],true)) {
-                        $paramsArray[] = "$key=".urlencode($value);
+                    if (!empty($value) || in_array($value, [0, '0', ''], true)) {
+                        $paramsArray[] = "$key=" . urlencode($value);
                     }
                 };
                 if (count($paramsArray) > 0) {
@@ -442,8 +442,8 @@ class Wiki
             }
             $href .= ($this->config['rewrite_mode'] ? '?' : ($htmlspchars ? '&amp;' : '&')) . $params;
         }
-        if (isset($_GET['lang']) && $_GET['lang']!='') {
-            $href .= '&lang='.$GLOBALS['prefered_language'];
+        if (isset($_GET['lang']) && $_GET['lang'] != '') {
+            $href .= '&lang=' . $GLOBALS['prefered_language'];
         }
         return $href;
     }
@@ -461,7 +461,7 @@ class Wiki
         if (empty($link)) {
             return null;
         } else {
-            $linkParts = $this->extractLinkParts($link) ;
+            $linkParts = $this->extractLinkParts($link);
             if ($linkParts) {
                 return $this->Href($linkParts['method'], $linkParts['tag'], $linkParts['params']);
             } elseif (filter_var($link, FILTER_VALIDATE_URL)) {
@@ -576,9 +576,10 @@ class Wiki
             $link = $this->Href($method, $tag, $params, false);
         } elseif ((!isset($options['data-iframe']) ||
                 strval($options['data-iframe']) != '0') &&
-                !empty($options['class']) &&
-                is_string($options['class']) &&
-                preg_match('/(^|\s)modalbox($|\s)/', $options['class'])) {
+            !empty($options['class']) &&
+            is_string($options['class']) &&
+            preg_match('/(^|\s)modalbox($|\s)/', $options['class'])
+        ) {
             // use iframe for external links in modalbox except if `data-iframe=0`
             $options['data-iframe'] = '1';
             if (!isset($options['title']) && !empty($text)) {
@@ -596,7 +597,7 @@ class Wiki
         $stringAttrs = implode(
             ' ',
             array_map(
-                function ($key) use ($options){
+                function ($key) use ($options) {
                     $value = $options[$key];
                     $encodedValue = is_string($value)
                         ? $value
@@ -665,7 +666,7 @@ class Wiki
     // FORMS
     public function FormOpen($method = '', $tag = '', $formMethod = 'post', $class = '')
     {
-        return $this->render('@core/_form-open.twig',compact(['method','tag','formMethod','class']));
+        return $this->render('@core/_form-open.twig', compact(['method', 'tag', 'formMethod', 'class']));
     }
 
     public function FormClose()
@@ -695,20 +696,20 @@ class Wiki
     public function LogReferrer($tag = "", $referrer = "")
     {
         // fill values
-        if (! $tag = trim($tag)) {
+        if (!$tag = trim($tag)) {
             $tag = $this->GetPageTag();
         }
 
-        if (! $referrer = trim($referrer) and isset($_SERVER['HTTP_REFERER'])) {
+        if (!$referrer = trim($referrer) and isset($_SERVER['HTTP_REFERER'])) {
             $referrer = $_SERVER['HTTP_REFERER'];
         }
 
         // check if it's coming from another site
-        if ($referrer && ! preg_match('/^' . preg_quote($this->GetConfigValue('base_url'), '/') . '/', $referrer)) {
+        if ($referrer && !preg_match('/^' . preg_quote($this->GetConfigValue('base_url'), '/') . '/', $referrer)) {
             // avoid XSS (with urls like "javascript:alert()" and co)
             // by forcing http/https prefix
             // NB.: this does NOT exempt to htmlspecialchars() the collected URIs !
-            if (! preg_match('`^https?://`', $referrer)) {
+            if (!preg_match('`^https?://`', $referrer)) {
                 return;
             }
 
@@ -723,7 +724,7 @@ class Wiki
 
     public function PurgeReferrers()
     {
-        if (($days = $this->GetConfigValue("referrers_purge_time"))&& !$this->services->get(SecurityController::class)->isWikiHibernated()) {
+        if (($days = $this->GetConfigValue("referrers_purge_time")) && !$this->services->get(SecurityController::class)->isWikiHibernated()) {
             $this->Query('delete from ' . $this->config['table_prefix'] . "referrers where time < date_sub(now(), interval '" . mysqli_real_escape_string($this->dblink, $days) . "' day)");
         }
     }
@@ -750,7 +751,7 @@ class Wiki
         $cmd = trim($action);
         $cmd = str_replace("\n", ' ', $cmd);
         // extract $action and $vars_temp ("raw" attributes)
-        if (! preg_match("/^([a-zA-Z0-9_-]+)\/?(.*)$/", $cmd, $matches)) {
+        if (!preg_match("/^([a-zA-Z0-9_-]+)\/?(.*)$/", $cmd, $matches)) {
             return '<div class="alert alert-danger">' . _t('INVALID_ACTION') . ' &quot;' . htmlspecialchars($cmd, ENT_COMPAT, YW_CHARSET) . '&quot;</div>' . "\n";
         }
         list(, $action, $vars_temp) = $matches;
@@ -758,7 +759,7 @@ class Wiki
         // match all attributes (key and value)
         // prepare an array for extract() to work with (in $this->IncludeBuffered())
         if (preg_match_all("/([a-zA-Z0-9_]*)=\"(.*)\"/U", $vars_temp, $matches)) {
-            for ($a = 0; $a < count($matches[1]); $a ++) {
+            for ($a = 0; $a < count($matches[1]); $a++) {
                 $vars[$matches[1][$a]] = $matches[2][$a];
             }
         }
@@ -894,7 +895,7 @@ class Wiki
                 $comment = $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "pages where id = '" . $id['id'] . "' limit 1");
                 if (!isset($comments[$comment['comment_on']]) && $num < $limit) {
                     $comments[$comment['comment_on']] = $comment;
-                    $num ++;
+                    $num++;
                 }
             }
 
@@ -917,7 +918,7 @@ class Wiki
 
     public function UserWantsComments()
     {
-        if (! $user = $this->GetUser()) {
+        if (!$user = $this->GetUser()) {
             return false;
         }
         return ($user['show_comments'] == 'Y');
@@ -928,12 +929,12 @@ class Wiki
     public function UserIsOwner($tag = "")
     {
         // check if user is logged in
-        if (! $this->GetUser()) {
+        if (!$this->GetUser()) {
             return false;
         }
 
         // set default tag
-        if (! $tag = trim($tag)) {
+        if (!$tag = trim($tag)) {
             $tag = $this->GetPageTag();
         }
 
@@ -964,31 +965,33 @@ class Wiki
      *            The name of the group
      * @param string $acl
      *            The new acl for that group
-     * @return boolean True iff the new acl defines the group recursively
+     * @return boolean True if the new acl defines the group recursively
      */
     public function MakesGroupRecursive($gname, $acl, $origin = null, $checked = array())
     {
-        $gname = strtolower($gname);
+        $gname = strtolower(trim($gname));
         if ($origin === null) {
             $origin = $gname;
         } elseif ($gname === $origin) {
             return true;
         }
+        $acl = str_replace(["\r\n", "\r"], "\n", $acl);
         foreach (explode("\n", $acl) as $line) {
-            if (! $line) {
+            $line = trim($line);
+            if (!$line) {
                 continue;
             }
 
             if ($line[0] == '!') {
                 $line = substr($line, 1);
             }
-            if (! $line) {
+            if (!$line) {
                 continue;
             }
 
             if ($line[0] == '@') {
                 $line = substr($line, 1);
-                if (! in_array($line, $checked)) {
+                if (!in_array($line, $checked)) {
                     if ($this->MakesGroupRecursive($line, $this->GetGroupACL($line) ?? '', $origin, $checked)) {
                         return true;
                     }
@@ -1017,6 +1020,11 @@ class Wiki
             return 1001;
         }
         $old = $this->GetGroupACL($gname);
+        // we get rid of lost spaces before saving to db
+        $acl = str_replace(["\r\n", "\r"], "\n", $acl);
+        $acls = explode("\n", $acl);
+        $acls = array_map('trim', $acls);
+        $acl = implode("\n", $acls);
         if ($this->MakesGroupRecursive($gname, $acl)) {
             return 1000;
         }
@@ -1025,9 +1033,9 @@ class Wiki
             return $this->InsertTriple($gname, WIKINI_VOC_ACLS, $acl, GROUP_PREFIX);
         } elseif ($old === $acl) {
             return 0; // nothing has changed
-        } elseif (strcasecmp($old,$acl) === 0 && strcmp($old,$acl) !== 0) {
+        } elseif (strcasecmp($old, $acl) === 0 && strcmp($old, $acl) !== 0) {
             // possible error when directly updating triple
-            if ($this->DeleteTriple($gname, WIKINI_VOC_ACLS, $old,GROUP_PREFIX)){
+            if ($this->DeleteTriple($gname, WIKINI_VOC_ACLS, $old, GROUP_PREFIX)) {
                 return $this->InsertTriple($gname, WIKINI_VOC_ACLS, $acl, GROUP_PREFIX);
             } else {
                 return $this->UpdateTriple($gname, WIKINI_VOC_ACLS, $old, $acl, GROUP_PREFIX);
@@ -1162,7 +1170,7 @@ class Wiki
     // THE BIG EVIL NASTY ONE!
     public function Run($tag = '', $method = '')
     {
-        if (! (intval($this->GetMicroTime()) % 9)) {
+        if (!(intval($this->GetMicroTime()) % 9)) {
             $this->Maintenance();
         }
 
@@ -1173,11 +1181,11 @@ class Wiki
             $tag = $this->tag;
         }
 
-        if (! $this->method = trim($method)) {
+        if (!$this->method = trim($method)) {
             $this->method = "show";
         }
 
-        if (! $this->tag = trim($tag)) {
+        if (!$this->tag = trim($tag)) {
             $this->Redirect($this->href("", $this->config['root_page']));
         }
 
@@ -1235,7 +1243,7 @@ class Wiki
                 if ($this->method === 'show' && $path === 'wiki=api') {
                     $path = 'api';
                 } else {
-                    $path = $this->tag.'/'.$this->method;
+                    $path = $this->tag . '/' . $this->method;
                     $newQuerytring = implode('&', $extract);
                 }
             } else {
@@ -1296,7 +1304,7 @@ class Wiki
                     ? ['rawOutput' => $rawOutput] + $previousContent
                     : (
                         is_string($previousContent)
-                        ? $previousContent.$rawOutput
+                        ? $previousContent . $rawOutput
                         : $rawOutput
                     );
                 $response->setData($newContent);
@@ -1320,13 +1328,13 @@ class Wiki
         string $charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-_*=.:,?'
     ): string {
         $randompassword = "";
-        $maxIndex = strlen($charset) -1;
+        $maxIndex = strlen($charset) - 1;
 
         if ($length < 1) {
             $length = 30;
         }
 
-        for ($i=0; $i < $length; $i++) {
+        for ($i = 0; $i < $length; $i++) {
             $randompassword .= substr($charset, random_int(0, $maxIndex), 1);
         }
         return $randompassword;
@@ -1557,7 +1565,7 @@ class Wiki
         try {
             return $this->services->get(TemplateEngine::class)->render($templatePath, $data);
         } catch (\Exception $e) {
-            return '<div class="alert alert-danger">Error rendering ' . $templatePath . ': '.  $e->getMessage(). '</div>'."\n";
+            return '<div class="alert alert-danger">Error rendering ' . $templatePath . ': ' .  $e->getMessage() . '</div>' . "\n";
         }
     }
 
@@ -1896,7 +1904,7 @@ class Wiki
     /**
      * @deprecated Use AclService::delete
      */
-    public function DeleteAcl($tag, $privileges = ['read','write','comment'])
+    public function DeleteAcl($tag, $privileges = ['read', 'write', 'comment'])
     {
         return $this->services->get(AclService::class)->delete($tag, $privileges);
     }
@@ -2025,8 +2033,8 @@ class Wiki
     }
 
     /**
-    * @deprecated no replacement
-    */
+     * @deprecated no replacement
+     */
     public function GetCookie($name)
     {
         return $_COOKIE[$name];

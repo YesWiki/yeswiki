@@ -25,5 +25,5 @@ if (!$params->get('hide_keywords') && $this->HasAccess("write") && $this->HasAcc
     <input type="hidden" class="antispam" name="antispam" value="0">';
 
     $target = '<div class="tags-container">';
-    $plugin_output_new = str_replace($target , $target.$html, $plugin_output_new);
+    $plugin_output_new = str_replace($target, $target.$html, $plugin_output_new);
 }

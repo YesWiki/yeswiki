@@ -66,7 +66,7 @@ class TemplateEngine
                 }
             }
         }
-        
+
         // Core templates
         $corePaths = [];
         $corePaths[] = 'custom/templates/core/';
@@ -106,7 +106,7 @@ class TemplateEngine
         });
         $this->addTwigHelper('url', function ($options) {
             $options = array_merge(['tag' => '', 'handler' => '', 'params' => []], $options);
-            if (substr($options['tag'] , 0, 4) === 'api/'){
+            if (substr($options['tag'], 0, 4) === 'api/') {
                 $iframe = '';
             } else {
                 $iframe = !empty($options['handler']) ? $options['handler'] : testUrlInIframe();
@@ -149,8 +149,8 @@ class TemplateEngine
             if (!isset($options['height'])) {
                 throw new Exception("`urlImage` should be called with `height` key in params!");
             }
-            $options = array_merge(['mode' => 'fit','refresh'=>false], $options);
-            
+            $options = array_merge(['mode' => 'fit','refresh' => false], $options);
+
             if (!class_exists('attach')) {
                 include('tools/attach/libs/attach.lib.php');
             }

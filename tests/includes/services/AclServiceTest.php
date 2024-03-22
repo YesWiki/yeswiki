@@ -29,7 +29,7 @@ class AclServiceTest extends YesWikiTestCase
     {
         $this->assertSame($expected, $aclService->check($acl));
     }
-    
+
     public function checkAclProvider()
     {
         // acl , expected

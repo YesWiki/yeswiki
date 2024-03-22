@@ -9,7 +9,6 @@ require_once 'tests/YesWikiTestCase.php';
 
 class ConsoleServiceTest extends YesWikiTestCase
 {
-    
     /**
      * @return ConsoleService
      */
@@ -58,7 +57,7 @@ class ConsoleServiceTest extends YesWikiTestCase
             }
         }
     }
-    
+
     /**
      * @depends testConsoleServiceExisting
      * @dataProvider checkStartConsole
@@ -94,7 +93,7 @@ class ConsoleServiceTest extends YesWikiTestCase
             }
         }
     }
-    
+
     public function checkStartConsole()
     {
         return [
@@ -122,7 +121,7 @@ class ConsoleServiceTest extends YesWikiTestCase
         ];
     }
 
-    
+
     /**
      * @depends testConsoleServiceExisting
      * @param ConsoleService $consoleService
@@ -138,7 +137,7 @@ class ConsoleServiceTest extends YesWikiTestCase
             "-w",1,
         ]);
         $process->wait();
-        sleep(2);
+        sleep(3);
 
         $content = file_get_contents($tmp_path);
         unlink($tmp_path);

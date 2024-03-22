@@ -25,7 +25,7 @@ if (!in_array($ext, $supported_image_extensions)) {
 $height = $this->GetParameter('height');
 $width = $this->GetParameter('width');
 if (empty($height) && empty($width)) {
-    $size="original";
+    $size = "original";
 }
 
 
@@ -92,14 +92,14 @@ foreach ($locations[1] as $location) {
         $marker['description'] = $this->Format($elements[5]);
     }
 
-    if (count($marker)==5) {
+    if (count($marker) == 5) {
         $markers[] = $marker;
     }
 }
 
 // create markers links
 $listofmarkers = '';
-if (count($markers)>0) {
+if (count($markers) > 0) {
     foreach ($markers as $nb => $marker) {
         // all informations must be written in one line and escaped from html chars
         $marker['title'] = htmlspecialchars(str_replace(array("\r\n", "\r", "\n", PHP_EOL, chr(10), chr(13), chr(10).chr(13)), "", $marker['title']), ENT_QUOTES, YW_CHARSET);
@@ -108,8 +108,8 @@ if (count($markers)>0) {
 
         $listofmarkers .= "<a
     class=\"img-marker\"
-    style=\"height:".$point_size."px;width:".$point_size."px;left:".($marker['x']-round($point_size/2))."px;
-    top:".($marker['y']-round($point_size/2))."px;background:".$marker['color'].";\"
+    style=\"height:".$point_size."px;width:".$point_size."px;left:".($marker['x'] - round($point_size / 2))."px;
+    top:".($marker['y'] - round($point_size / 2))."px;background:".$marker['color'].";\"
     data-toggle=\"popover\"
     data-trigger=\"hover\"
     data-original-title=\"".$marker['title']."\"
@@ -149,7 +149,7 @@ $this->addJavascriptFile('tools/attach/presentation/javascripts/pointimage.js');
 
 // output the image on the page
 
-echo $modal.'<div class="pointimage-container no-dblclick" data-readonly="'.((!empty($readonly) && $readonly==1) ? 'true' : 'false').'" data-markerscolor=\''.$colors.'\' data-markerslabel=\''.$labels.'\' data-markersize="'.$point_size.'" data-pagetag="'.$this->Href('', $datapagetag).'">'."\n";
+echo $modal.'<div class="pointimage-container no-dblclick" data-readonly="'.((!empty($readonly) && $readonly == 1) ? 'true' : 'false').'" data-markerscolor=\''.$colors.'\' data-markerslabel=\''.$labels.'\' data-markersize="'.$point_size.'" data-pagetag="'.$this->Href('', $datapagetag).'">'."\n";
 if (isset($size)) {
     echo $this->Format('{{attach file="'.$file.'" desc="image '.$file.'" size="original" class="pointimage-image" nofullimagelink="1"}}');
 } else {
