@@ -1,47 +1,68 @@
-version: "3.7"
-
 volumes:
   yeswiki-db:
     name: yeswiki-db
-  yeswiki:
-    name: yeswiki
 
 networks:
   yeswiki:
 
 services:
-  yeswiki-app:
-    build:
-      context: ..
-      dockerfile: ./docker/dockerfile
-    container_name: yeswiki
-    volumes:
-      - yeswiki:/var/www/html
-    depends_on:
-      - yeswiki-db
-    env_file: ./yeswiki.secrets
-    networks:
-      - yeswiki
+    yeswiki-app:
+        build:
+          context: ..
+          dockerfile: ./docker/dockerfile
+          args:
+            UID: "${UID:-1000}"
+            GID: "${UIS:-1000}"
+        container_name: yeswiki
+        volumes:
+          - ..:/var/www/html
+        depends_on:
+          - yeswiki-db
+        env_file: ./yeswiki.secrets
+        user: "${UID}:${UID}"
+        command: /var/www/html/docker/entrypoint.sh
+        networks:
+          - yeswiki
 
-  yeswiki-db:
-    image: mysql:latest
-    container_name: yeswiki-db
-    volumes:
-      - yeswiki-db:/var/lib/mysql
-    env_file: ./yeswiki.secrets
-    networks:
-      - yeswiki
-    restart: unless-stopped
+    yeswiki-db:
+        image: mysql:latest
+        container_name: yeswiki-db
+        volumes:
+          - yeswiki-db:/var/lib/mysql
+        env_file: ./yeswiki.secrets
+        networks:
+          - yeswiki
 
-  yeswiki-web:
-    image: nginx:alpine
-    container_name: yeswiki-web
-    volumes:
-      - yeswiki:/var/www/html:ro
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    ports:
-      - "8085:80"
-    depends_on:
-      - yeswiki-app
-    networks:
-      - yeswiki
+    yeswiki-web:
+        image: nginx:alpine
+        container_name: yeswiki-web
+        volumes:
+          - ..:/var/www/html:ro
+          - ./nginx.conf:/etc/nginx/nginx.conf:ro
+        ports:
+          - "8085:80"
+        depends_on:
+          - yeswiki-app
+          - myadmin
+        networks:
+          - yeswiki
+
+    myadmin:
+      image: phpmyadmin:latest
+      container_name: myadmin
+      env_file: ./yeswiki.secrets
+      environment:
+        PMA_HOST: yeswiki-db
+        PMA_PORT: 3306
+      ports:
+        - "8086:80"
+      networks:
+        - yeswiki
+
+    mail:
+      image: maildev/maildev
+      container_name: mail
+      ports:
+        - "1080:1080"
+      networks:
+        - yeswiki

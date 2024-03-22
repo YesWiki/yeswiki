@@ -4,23 +4,23 @@ on:
   workflow_dispatch:
     inputs:
       logLevel:
-        description: 'Log level'
+        description: "Log level"
         required: true
-        default: 'warning'
+        default: "warning"
       tags:
-        description: 'Tags'
+        description: "Tags"
   push:
-    branches: [ doryphore, ectoplasme ]
+    branches: [doryphore, ectoplasme]
     paths:
-    - 'composer.lock'
-    - '*.php'
-    - '.github/workflows/*.yml'
+      - "composer.lock"
+      - "*.php"
+      - ".github/workflows/*.yml"
   pull_request:
-    branches: [ doryphore, doryphore-dev, ectoplasme ]
+    branches: [doryphore, doryphore-dev, ectoplasme]
     paths:
-    - 'composer.lock'
-    - '*.php'
-    - '.github/workflows/*.yml'
+      - "composer.lock"
+      - "*.php"
+      - ".github/workflows/*.yml"
 
 env:
   DB_NAME: yeswiki_test
@@ -30,85 +30,87 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: shivammathur/setup-php@v2
-      with:
-        php-version: '7.3'
-        extensions: mysqli
-        tools: composer:v2
-      env:
-        fail-fast: true
+      - uses: actions/checkout@v2
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "7.3"
+          extensions: mysqli
+          tools: composer:v2
+        env:
+          fail-fast: true
 
-    - name: Validate composer.json and composer.lock
-      run: composer validate --strict
+      - name: Validate composer.json and composer.lock
+        run: composer validate --strict
 
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
 
-    - name: Configures and starts Apache
-      run: |
-        echo "<VirtualHost *:80>
-          ServerName localhost
-          DocumentRoot ${{ github.workspace }}
+      - name: Configures and starts Apache
+        run: |
+          echo "<VirtualHost *:80>
+            ServerName localhost
+            DocumentRoot ${{ github.workspace }}
 
-          <Directory "${{ github.workspace }}">
-            Options FollowSymLinks MultiViews ExecCGI
-            AllowOverride All
-            Require all granted
-          </Directory>
-        </VirtualHost>" | sudo tee /etc/apache2/sites-enabled/000-default.conf
-        sudo chown www-data:www-data -R ${{ github.workspace }}
-        sudo apt update
-        sudo apt install --no-install-recommends --assume-yes libapache2-mod-php7.3
-        sudo a2enmod php7.3
-        sudo /etc/init.d/apache2 start
+            <Directory "${{ github.workspace }}">
+              Options FollowSymLinks MultiViews ExecCGI
+              AllowOverride All
+              Require all granted
+            </Directory>
+          </VirtualHost>" | sudo tee /etc/apache2/sites-enabled/000-default.conf
+          sudo chown www-data:www-data -R ${{ github.workspace }}
+          sudo apt update
+          sudo apt install --no-install-recommends --assume-yes libapache2-mod-php7.3
+          sudo a2enmod php7.3
+          sudo /etc/init.d/apache2 start
 
-    - name: Set up MySQL
-      run: |
-        sudo /etc/init.d/mysql start
-        mysql -e 'CREATE DATABASE ${{ env.DB_NAME }};' -uroot -proot
+      - name: Set up MySQL
+        run: |
+          sudo /etc/init.d/mysql start
+          mysql -e 'CREATE DATABASE ${{ env.DB_NAME }};' -uroot -proot
 
-    - name: Append current user in www-data group
-      run: |
-        sudo usermod -aG www-data $USER
+      - name: Append current user in www-data group
+        run: |
+          sudo usermod -aG www-data $USER
 
-    - name: Set cache folder writable
-      run: sudo chmod -R 0777 ${{ github.workspace }}/cache
+      - name: Set cache folder writable
+        run: |
+          sudo mkdir -p ${{ github.workspace }}/cache
+          sudo chmod -R 0777 ${{ github.workspace }}/cache
 
-    - name: Set private folder for archive (and clean previous files)
-      run: |
-        sudo mkdir -p ${{ github.workspace }}/private/archives
-        sudo chown www-data:www-data -R ${{ github.workspace }}/private/archives
-        sudo chmod -R 0777 ${{ github.workspace }}/private/archives
-        sudo ls ${{ github.workspace }}/private/archives/* && sudo rm ${{ github.workspace }}/private/archives/* || true
+      - name: Set private folder for archive (and clean previous files)
+        run: |
+          sudo mkdir -p ${{ github.workspace }}/private/archives
+          sudo chown www-data:www-data -R ${{ github.workspace }}/private/archives
+          sudo chmod -R 0777 ${{ github.workspace }}/private/archives
+          sudo ls ${{ github.workspace }}/private/archives/* && sudo rm ${{ github.workspace }}/private/archives/* || true
 
-    - run: curl http://localhost
+      - run: curl http://localhost
 
-    - name: Setup Wiki
-      run: |
-        curl --silent --fail --show-error \
-          -F "config[default_language]=fr" \
-          -F "config[wakka_name]=MyTestWiki" \
-          -F "config[root_page]=PagePrincipale" \
-          -F "config[base_url]=http://localhost/?" \
-          -F "config[mysql_host]=localhost" \
-          -F "config[mysql_database]=${{ env.DB_NAME }}" \
-          -F "config[mysql_user]=root" \
-          -F "config[mysql_password]=root" \
-          -F "config[table_prefix]=yeswiki_" \
-          -F "config[allow_raw_html]=1" \
-          -F "config[archive][privatePath]=${{ github.workspace }}/private/archives" \
-          -F "admin_name=ActionTest" \
-          -F "admin_password=ActionTestPassword" \
-          -F "admin_password_conf=ActionTestPassword" \
-          -F "admin_email=test@example.com" \
-          -F "submit=Continue" \
-          "http://localhost/?PagePrincipale&installAction=install"
+      - name: Setup Wiki
+        run: |
+          curl --silent --fail --show-error \
+            -F "config[default_language]=fr" \
+            -F "config[wakka_name]=MyTestWiki" \
+            -F "config[root_page]=PagePrincipale" \
+            -F "config[base_url]=http://localhost/?" \
+            -F "config[mysql_host]=localhost" \
+            -F "config[mysql_database]=${{ env.DB_NAME }}" \
+            -F "config[mysql_user]=root" \
+            -F "config[mysql_password]=root" \
+            -F "config[table_prefix]=yeswiki_" \
+            -F "config[allow_raw_html]=1" \
+            -F "config[archive][privatePath]=${{ github.workspace }}/private/archives" \
+            -F "admin_name=ActionTest" \
+            -F "admin_password=ActionTestPassword" \
+            -F "admin_password_conf=ActionTestPassword" \
+            -F "admin_email=test@example.com" \
+            -F "submit=Continue" \
+            "http://localhost/?PagePrincipale&installAction=install"
 
-    - name: Set wakka.config.php writable
-      run: |
-        sudo chown www-data:www-data ${{ github.workspace }}/wakka.config.php
-        sudo chmod 0777 ${{ github.workspace }}/wakka.config.php
+      - name: Set wakka.config.php writable
+        run: |
+          sudo chown www-data:www-data ${{ github.workspace }}/wakka.config.php
+          sudo chmod 0777 ${{ github.workspace }}/wakka.config.php
 
-    - name: Run test suite
-      run: composer test
+      - name: Run test suite
+        run: composer test

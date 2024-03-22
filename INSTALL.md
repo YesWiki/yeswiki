@@ -23,15 +23,4 @@ Detailed instructions are available [in the official doc](https://yeswiki.net/?d
 
 ## Installation through Docker
 
-First you need to install docker and docker-compose: <https://docs.docker.com/install>
-
-Run `docker-compose up` in the root folder to install and launch the containers
-
-Then go to <http://localhost:81>.
-In the setup, you will need to provide following configuration for MySQL server:
-
-- **Host: db**
-- Login: root
-- Password: root
-
-You can see/modify the created tables by going to: <http://localhost:8080>
+Instructions can be found [here](./docker/README.md)

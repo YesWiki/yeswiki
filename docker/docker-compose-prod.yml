@@ -1,8 +1,8 @@
-version: "3.7"
-
 volumes:
   yeswiki-db:
     name: yeswiki-db
+  yeswiki:
+    name: yeswiki
 
 networks:
   yeswiki:
