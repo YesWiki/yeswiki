@@ -22,12 +22,12 @@ if (!empty($icon)) {
     // si le parametre contient des espaces, il s'agit d'une icone autre que celles par defaut de bootstrap
 
     if (preg_match('/\s/', $icon) === 1) {
-        $icon = '<i class="'.$icon.'"></i>';
+        $icon = '<i class="' . $icon . '"></i>';
     } else {
-        $icon = '<i class="icon-'.$icon.' fa fa-'.$icon.'"></i>';
+        $icon = '<i class="icon-' . $icon . ' fa fa-' . $icon . '"></i>';
     }
     if (!empty($text)) {
-        $icon = $icon.' ';
+        $icon = $icon . ' ';
     }
 }
 
@@ -36,7 +36,7 @@ $class = $this->GetParameter('class');
 
 // classe css supplémentaire pour changer le look des boutons
 $btnclass = $this->GetParameter('btnclass');
-$btnclass = 'btn '.$btnclass;
+$btnclass = 'btn ' . $btnclass;
 if (!strstr($btnclass, 'btn-')) {
     $btnclass .= ' btn-default';
 }
@@ -49,19 +49,19 @@ if (!empty($nobtn) && $nobtn == '1') {
 $pagetag = $this->GetPageTag();
 
 // teste s'il y a bien un element de fermeture associé avant d'ouvrir une balise
-if (!isset($GLOBALS['check_'.$pagetag])) {
-    $GLOBALS['check_'.$pagetag] = [];
+if (!isset($GLOBALS['check_' . $pagetag])) {
+    $GLOBALS['check_' . $pagetag] = [];
 }
-if (!isset($GLOBALS['check_'.$pagetag]['buttondropdown'])) {
-    $GLOBALS['check_'.$pagetag ]['buttondropdown'] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('buttondropdown', $pagetag, $this->page['body'] ?? '');
+if (!isset($GLOBALS['check_' . $pagetag]['buttondropdown'])) {
+    $GLOBALS['check_' . $pagetag]['buttondropdown'] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('buttondropdown', $pagetag, $this->page['body'] ?? '');
 }
-if ($GLOBALS['check_'.$pagetag]['buttondropdown']) {
-    echo '<div class="btn-group'.(!empty($class) ? ' '.$class : '').'"> <!-- start of buttondropdown -->
-  <button type="button" class="'.$btnclass.' dropdown-toggle" data-toggle="dropdown" title="'.htmlentities($title, ENT_COMPAT, YW_CHARSET).'">
-    '.$icon.$text.(($caret == '1') ? ' <span class="caret"></span>' : '').'
-  </button>'."\n";
+if ($GLOBALS['check_' . $pagetag]['buttondropdown']) {
+    echo '<div class="btn-group' . (!empty($class) ? ' ' . $class : '') . '"> <!-- start of buttondropdown -->
+  <a role="button" class="' . $btnclass . ' dropdown-toggle" data-toggle="dropdown" title="' . htmlentities($title, ENT_COMPAT, YW_CHARSET) . '">
+    ' . $icon . $text . (($caret == '1') ? ' <span class="caret"></span>' : '') . '
+  </a>' . "\n";
 } else {
-    echo '<div class="alert alert-danger"><strong>'._t('TEMPLATE_ACTION_BUTTONDROPDOWN').'</strong> : '._t('TEMPLATE_ELEM_BUTTONDROPDOWN_NOT_CLOSED').'.</div>'."\n";
+    echo '<div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_BUTTONDROPDOWN') . '</strong> : ' . _t('TEMPLATE_ELEM_BUTTONDROPDOWN_NOT_CLOSED') . '.</div>' . "\n";
 
     return;
 }
