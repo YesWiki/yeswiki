@@ -41,6 +41,7 @@ return [
     'LOGIN_PASSWORD_LOST_FOR' => 'Mot de passe perdu pour',
     'LOGIN_NO_SIGNUP_IN_THIS_PERIOD' => 'Il n\'y a pas d\'inscription pour cette période.',
     'LOGIN_MY_OPTIONS' => "Mes options",
+    'LOGIN_MY_CONTENTS' => "Mes contenus",
 
     // actions/login.php
     'LOGIN_COOKIES_ERROR' => 'Vous devez accepter les cookies pour pouvoir vous connecter.',

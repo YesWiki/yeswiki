@@ -8,6 +8,7 @@
 						{% block loginActionsPart1 %}
 							{{ PageMenuUser|raw }}
 							<li><a href="{{ profileurl }}" title="{{ _t('LOGIN_MODIFY_USER') }}">{{ _t('LOGIN_MODIFY_USER') }}</a></li>
+							<li><a href="{{ url({tag: "MesContenus"}) }}" title="{{ _t('LOGIN_MY_CONTENTS') }}">{{ _t('LOGIN_MY_CONTENTS') }}</a></li>
 						{% endblock %}
 						<li>
 							{% block logoutLink %}
