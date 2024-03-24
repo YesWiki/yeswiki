@@ -109,17 +109,9 @@ tools/*
 # vscode IDE
 .vscode
 
-# Docker
-.db
-docker-compose.local.yml
 
 # Other
 .phpintel/
 *.old
 TODO
 *.old
-
-# Devenv
-.devenv*
-.direnv*
-devenv.local.nix
