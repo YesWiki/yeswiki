@@ -40,7 +40,7 @@
       <div class="form-group">
         <label class="col-sm-3 control-label">{{ _t('DEFAULT_LANGUAGE') }}</label>
         <div class="col-sm-9">
-          <select required autocomplete="off" class="form-control" name="config[default_language]" onchange="$(this).parents('.form-yeswiki-install').attr('action', '{{ baseUrl }}?installAction=default&lang='+$(this).val()).submit();">
+          <select required autocomplete="off" class="form-control" name="config[default_language]" {% if env.default_language %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% else %} onchange="$(this).parents('.form-yeswiki-install').attr('action', '{{ baseUrl }}?installAction=default&lang='+$(this).val()).submit();" {% endif %}>
               {% for lang in availableLanguages %}
                 <option value="{{ lang }}" {% if lang == locale %}selected="selected"{% endif %}>{{ attribute(languagesList, lang).nativeName }}</option>
               {% endfor %}
