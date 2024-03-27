@@ -31,13 +31,15 @@ import {
   mapFieldsConf,
   addAdvancedAttributesSection,
   adjustDefaultAcls,
-  adjustJqueryBuilderUI
+  adjustJqueryBuilderUI,
+  convertToBytes
 } from './form-builder-helper.js'
 import { initListOrFormIdAttribute } from './attributes/list-form-id-attribute.js'
 import I18nOption from './i18n.js'
 
 const $formBuilderTextInput = $('#form-builder-text')
 window.formBuilder = undefined
+window.defaultImage = {}
 
 // Use window to make it available outside of module, so extension can adds their own fields
 window.formBuilderFields = {
@@ -120,7 +122,33 @@ function initializeFormbuilder() {
           }
         })
       }, 0)
-    }
+    },
+    onOpenFieldEdit() {
+      // Default image is in base64 in buffer variable => convert it to File in input element
+      $('input.default-file').each((idx, file_elem) => {
+        const current_ids = file_elem.attributes.id.value.split('-')
+        const image_name = current_ids[current_ids.length - 2] + '-' + current_ids[current_ids.length - 1]
+        if (window.defaultImage[image_name]) {
+          const image_content = window.defaultImage[image_name].split('|')
+          if (image_content.length === 2) {
+            const dataTransfer = new DataTransfer()
+            dataTransfer.items.add(new File(convertToBytes(image_content[1]), image_content[0]))
+            file_elem.files = dataTransfer.files
+          }
+        }
+      })
+      // When change image, save it to base64 to buffer variable
+      $('input.default-file').change((event) => {
+        const current_ids = event.target.attributes.id.value.split('-')
+        const image_name = current_ids[current_ids.length - 2] + '-' + current_ids[current_ids.length - 1]
+        const file = event.target.files[0]
+        const reader = new FileReader()
+        reader.readAsDataURL(file)
+        reader.onload = function () {
+          window.defaultImage[image_name] = file.name + '|' + reader.result
+        }
+      })
+    },
   })
 
   const defaultFieldsName = mapFieldsConf((conf) => conf.defaultIdentifier)
@@ -153,6 +181,14 @@ function initializeFormbuilder() {
     // Update the text field converting form builder content into wiki syntax
     if ($('#form-builder-container').is(':visible')) {
       const formData = formBuilder.actions.getData()
+      // save base64 default image from buffer variable
+      Object.keys(window.defaultImage).forEach((image_name) => {
+        if (window.defaultImage[image_name] && window.defaultImage[image_name] != '') {
+          const image_names = image_name.split('-')
+          const field_idx = Number(image_names[image_names.length - 1]) - 1
+          formData[field_idx].default_image = window.defaultImage[image_name]
+        }
+      })
       const wikiText = formatJsonDataIntoWikiText(formData)
       if (wikiText) $formBuilderTextInput.val(wikiText)
     }
@@ -251,6 +287,13 @@ function getFieldsIds() {
 function initializeBuilderFromTextInput() {
   const jsonData = parseWikiTextIntoJsonData($formBuilderTextInput.val())
   try {
+    window.defaultImage = {}
+    // extract base64 default image to buffer variable
+    jsonData.forEach((field, index) => {
+      if (field.type === 'image') {
+        window.defaultImage['fld-' + (index + 1)] = field.default_image.trim()
+      }
+    })
     formBuilder.actions.setData(JSON.stringify(jsonData))
   } catch (error) {
     console.error(error)
