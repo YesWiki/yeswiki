@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Service;
 
+use Attach;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\EnumField;
@@ -41,7 +42,71 @@ class FormManager
         $this->isAvailableOnlyOneEntryOption = null;
         $this->isAvailableOnlyOneEntryMessage = null;
     }
-
+    
+    protected function convert_with_special_parameters($template, $id_nature) {
+        $template = $this->dbService->escape(_convert($template, YW_CHARSET, true));
+        $template_list = $this->parseTemplate($template);
+        $modify = false;
+        for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
+            if ($template_list[$temp_index][0] == 'image') {
+                $modify = true;
+                $image_comp = $template_list[$temp_index];
+                $default_image_filename = "./files/dfltimg_{$id_nature}_{$image_comp[1]}.jpg";
+                $default_image = explode('|', $image_comp[8]);
+                if (count($default_image)==2) {
+                    $image_comp[8] = $default_image[0];
+                    $imgext=explode('image/', explode(';', $default_image[1])[0])[1];
+                    $tmpFile = tempnam('cache', 'dfltimg');
+                    unlink($tmpFile);
+                    $tempFile = $tmpFile.'.'.$imgext;
+                    try {
+                        $ifp = fopen($tempFile, "wb" );
+                        fwrite( $ifp, base64_decode(explode(',',$default_image[1])[1]));
+                        fclose( $ifp );
+                        if (!class_exists('attach')) {
+                            include('tools/attach/libs/attach.lib.php');
+                        }
+                        $attach = new attach($this->wiki);
+                        $res=$attach->redimensionner_image($tempFile, $default_image_filename, $image_comp[5], $image_comp[6], "fit");
+                        $res=array($res, $imgext, $tempFile, $default_image_filename, $image_comp[5], $image_comp[6]);
+                    } finally {
+                        unlink($tempFile);
+                    }
+                } else {
+                    $res=Null;
+                    $image_comp[8] = '';
+                    if (file_exists($default_image_filename)) {
+                        unlink($default_image_filename);
+                    }
+                }
+                $template_list[$temp_index] = $image_comp;
+            }
+        }
+        if ($modify) {
+            $template = $this->encodeTemplate($template_list);
+        }
+        return $template;
+    }
+    
+    protected function prepare_with_special_parameters($form) {
+        $template_list = $this->parseTemplate($form['bn_template']);
+        $modify = false;
+        for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
+            if ($template_list[$temp_index][0] == 'image') {
+                $modify = true;
+                $image_comp = $template_list[$temp_index];
+                $default_image_filename = "./files/dfltimg_{$form['bn_id_nature']}_{$image_comp[1]}.jpg";
+                if (file_exists($default_image_filename)) {
+                    $image_comp[8] = $image_comp[8].'|data:image/jpg;base64,'.base64_encode(file_get_contents($default_image_filename));
+                } else {
+                    $image_comp[8] = '';
+                }
+                $template_list[$temp_index] = $image_comp;
+            }
+        }
+        return [$template_list, $modify];
+    }
+    
     public function getOne($formId): ?array
     {
         if (isset($this->cachedForms[$formId])) {
@@ -66,10 +131,12 @@ class FormManager
         foreach ($form as $key => $value) {
             $form[$key] = _convert($value, 'ISO-8859-15');
         }
-
-        $form['template'] = $this->parseTemplate($form['bn_template']);
+        list($template_list, $modify) = $this->prepare_with_special_parameters($form);
+        $form['template'] = $template_list;
         $form['prepared'] = $this->prepareData($form);
-
+        if ($modify == true) {
+            $form['bn_template'] = $this->encodeTemplate($template_list);
+        }
         return $form;
     }
 
@@ -133,9 +200,10 @@ class FormManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
+        $template = $this->convert_with_special_parameters($data['bn_template'], $data['bn_id_nature']);
         return $this->dbService->query('UPDATE' . $this->dbService->prefixTable('nature') . 'SET '
             . '`bn_label_nature`="' . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '" ,'
-            . '`bn_template`="' . $this->dbService->escape(_convert($data['bn_template'], YW_CHARSET, true)) . '" ,'
+            . '`bn_template`="' . $template . '" ,'
             . '`bn_description`="' . $this->dbService->escape(_convert($data['bn_description'], YW_CHARSET, true)) . '" ,'
             . '`bn_sem_context`="' . $this->dbService->escape(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '" ,'
             . '`bn_sem_type`="' . $this->dbService->escape(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '" ,'
@@ -259,6 +327,28 @@ class FormManager
         }
 
         return $tableau_template;
+    }
+    
+    public function encodeTemplate($template_list)
+    {
+        $new_template_list = [];
+        for($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
+            $new_line = '';
+            foreach ($template_list[$temp_index] as $value) {
+                if ($value == '') {
+                    $new_line.= ' ';
+                }
+                else if ($value == '*') {
+                    $new_line.= ' * ';                    
+                } else {
+                    $new_line.=$value;
+                }
+                $new_line.= '***';
+            }
+            $new_template_list[] = $new_line;
+        }
+        $template = implode("\r\n", array_map('trim', $new_template_list));
+        return $template;
     }
 
     public function prepareData($form)
