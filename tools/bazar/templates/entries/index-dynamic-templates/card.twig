@@ -15,7 +15,7 @@
   {% endif %}
   {% set imWidth = (nbcol == 4) ? 250 : (nbcol == 5 ? 200 : 300 ) %}
   {% set imHeight = params.style == "square" ? imWidth : (params.style == "horizontal" ? imWidth*23//27 : imWidth*2//3 ) %}
-  {% set firstTokenCrop = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/crop") %}
+  {% set firstTokenCrop = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/fit") %}
   <div class="bazar-cards-container" v-if="ready" 
        :class="[{ready: ready}, `style-${params.style || 'vertical'}`, `nbcol-{{nbcol}}`]" 
        :style="{'grid-template-columns': `repeat({{nbcol}}, 1fr)`}">
@@ -42,13 +42,14 @@
         <template v-if="entry.visual">
           <img 
             loading="lazy"
-            :style="{width:((params.style == 'square')? false : '0px'),height:((params.style == 'square')? false : '0px')}"
+            :style="{width:((params.style == 'square')? false : '0px'),height:((params.style == 'square')? false : '0px'),'object-fit':params.imgstyle}"
             class="area visual-area" 
-            :src="urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'crop')"
-            @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'crop',{{ firstTokenCrop|json_encode }})"></img>
+            :src="urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'fit')"
+            @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'fit',{{ firstTokenCrop|json_encode }})"></img>
           <div v-if="params.style != 'square'" class="area visual-area" 
-            :style="{color:'blue','background-image': `url('${urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'crop')}')`}">
+            :style="{color:'blue','background-size':params.imgstyle ,'background-image': `url('${urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'fit')}')`}">
           </div>
+         
         </template>
         <div v-else class="area area visual-area placeholder"></div>
       </template>
@@ -62,7 +63,7 @@
         </h4>  
 
         {# SUBTITLE AREA #}
-        <entry-field :entry="entry" prop="subtitle" class="area subtitle-area"></entry-field>  
+        <entry-field :entry="entry" prop="subtitle" class="area subtitle-area line-clamp" :style="{'webkit-line-clamp': params.nblines}"></entry-field>  
         
         {# TEXT AREA #}
         <entry-field :entry="entry" prop="text" class="area text-area"></entry-field>

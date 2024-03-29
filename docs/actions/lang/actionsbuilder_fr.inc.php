@@ -122,6 +122,11 @@ return [
     "AB_bazarcard_style_vertical" => 'Vertical',
     "AB_bazarcard_style_square" => 'Carré',
     "AB_bazarcard_style_horizontal" => 'Horizontal',
+    "AB_bazarcard_imgstyle_label"=>'Dimension image',
+    "AB_bazarcard_imgstyle_contain"=>'Image entière',
+    "AB_bazarcard_imgstyle_cover"=>'Couvrir la zone / Rogner',
+    "AB_bazarcard_nblines_label"=> 'Nombre de lignes pour le sous-titre',
+
     // BazarTable
     'AB_BAZAR_MAP_AND_TABLE_LABEL' => 'Carte et tableau',
     'AB_BAZAR_MAP_AND_TABLE_TABLEWITH_LABEL' => 'Tableau contenant toutes les fiches',
