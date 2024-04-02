@@ -537,7 +537,7 @@ class ExternalBazarService
      */
     private function sanitizeFileName(string $inputString): string
     {
-        return hash('sha256', removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $inputString))));
+        return hash('sha256', $inputString);
     }
 
     /**
