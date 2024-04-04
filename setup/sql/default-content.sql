@@ -70,7 +70,8 @@ Vous trouverez un formulaire permettant
 {{editconfig}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('GererDroits',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes\"}}
 
-{{button class=\"btn-primary btn-xs pull-right\" hideifnoaccess=\"true\" icon=\"fas fa-arrow-right\" link=\"GererDroitsActions\" text=\"Droits des actions/handlers\" }}#### Gérer les droits des pages
+{{button class=\"btn-primary btn-xs pull-right\" hideifnoaccess=\"true\" icon=\"fas fa-arrow-right\" link=\"GererDroitsActions\" text=\"Droits des actions/handlers\" }}
+#### Gérer les droits des pages
 {{gererdroits}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('GererDroitsActions',  now(), '//Droits d\'accès//
 {{nav class=\"nav nav-tabs\" hideifnoaccess=\"true\" links=\"GererDroitsActions, GererDroitsHandlers, GererDroits\" titles=\"Actions, Handlers, Pages\" }}
@@ -93,9 +94,9 @@ Vous trouverez un formulaire permettant
 {{adminbackups}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('GererSite',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes\" titles=\"Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes\"}}
 
-{{attach file=\"modele.jpg\" desc=\"image Dessin_sans_titre.jpg (66.9kB)\" size=\"big\" class=\"right\" nofullimagelink=\"1\"}}#### Gérer les menus et pages spéciales de ce wiki
+{{attach file=\"modele.jpg\" desc=\"image Dessin_sans_titre.jpg (66.9kB)\" size=\"big\" class=\"right\" nofullimagelink=\"1\"}}
+#### Gérer les menus et pages spéciales de ce wiki
  - [Éditer la Page Titre](PageTitre/edit)
- - [Éditer la Page Header](PageHeader/edit)
  - [Éditer la Page Menu Haut](PageMenuHaut/edit)
  - [Éditer la Page Footer](PageFooter/edit)
 ##### Et éventuellement
@@ -103,6 +104,7 @@ Vous trouverez un formulaire permettant
 ##### Mais aussi
  - [Éditer le menu vertical](PageMenu/edit)
  - [Éditer l\'aide mémoire](ReglesDeFormatage/edit)
+ - [Afficher un bandeau sur toutes les pages](PageHeader/edit "Aplat de couleurs ou images")
 \"\"<div class=\"clearfix\"></div>\"\"
 #### Gestion des mots clés 
 {{admintag}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
@@ -424,7 +426,7 @@ Si vous souhaitez simplement être tenu·e informé·e des nouveautés de l\'out
 Yeswiki repose sur le bénévolat et le don. [En contribuant (même juste un peu)](https://www.helloasso.com/associations/yeswiki/formulaires/1) vous permettez de maintenir les serveurs et de développer de nouvelles fonctionnalités. Merci', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageRapideHaut',  now(), '{{moteurrecherche template=\"moteurrecherche_button.tpl.html\"}}
 {{buttondropdown icon=\"cog\" caret=\"0\" title=\"Roue crantée\"}}
- - {{button nobtn=\"1\" icon=\"fa fa-tachometer-alt\" text=\"Tableau de bord\" link=\"{{rootPage}}\"}}
+ - {{button nobtn=\"1\" icon=\"fa fa-tachometer-alt\" text=\"Tableau de bord\" link=\"TableauDeBord\"}}
  - {{button nobtn=\"1\" icon=\"fa fa-question\" text=\"Documentation\" link=\"doc\"}}
  - ------
  - {{button nobtn=\"1\" icon=\"fa fa-wrench\" text=\"Gestion du site\" link=\"GererSite\"}}
@@ -509,7 +511,7 @@ Il est possible de copier des icônes dans des sites sources puis de les coller 
 ('SaisirRessource',  now(), '{{nav links=\"FacetteRessource, SaisirRessource\" titles=\"Les ressources, Déposer une ressource\"}}
 
 {{bazar voirmenu=\"0\" vue=\"saisir\" id=\"4\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('{{rootPage}}',  now(), '# Tableau de bord
+('TableauDeBord',  now(), '# Tableau de bord
 {{accordion }}
 
 {{panel title=\"Dernières modifications sur le wiki\" type=\"collapsible\" }}
@@ -543,7 +545,7 @@ Il est possible de copier des icônes dans des sites sources puis de les coller 
 {{end elem=\"accordion\" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('TrombiAnnuaire',  now(), '{{nav links=\"TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire\" titles=\"Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S\'inscrire dans l\'annuaire\"}}
 
-{{bazarliste id=\"1\" template=\"trombinoscope\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+{{bazarliste id=\"1\" template=\"card\"  displayfields=\"visual=imagebf_image,title=bf_titre\" imgstyle=\"contain\" nbcol=\"3\" style=\"square\" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('VoirBlog',  now(), '{{nav links=\"VoirBlog, VoirBlogSimple, SaisirBlog\" titles=\"Le blog avec Une, Le blog sans Une, Déposer une actu\"}}
 
 {{bazarliste id=\"3\" template=\"blog\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
