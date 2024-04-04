@@ -356,7 +356,7 @@ Aplat de couleur : supprimer file=\"bandeau.webp\", cliquez sur section, cliquez
  - le caler à droite, le centrer
  - faire varier la hauteur du bandeau...#}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageLogin',  now(), '{{login}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageMenu',  now(), ' - [Accueil](PagePrincipale)
+('PageMenu',  now(), ' - [Accueil]({{rootPage}})
  - [Test du look](LookWiki)
 
 ---- 
@@ -383,14 +383,14 @@ Double cliquer sur ce texte pour éditer cette colonne.
 {#INFO CACHÉE
 Vous êtes dans la page qui se nomme PageMenuHaut qui sert à modifier le menu du haut. Pour faire évoluer le menu, inspirez vous du menu exemple.
 #}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PagePrincipale',  now(), '{{section bgcolor=\"#eeeeee\" class=\"cover full-width text-left\" file=\"\"}}
+('{{rootPage}}',  now(), '{{section bgcolor=\"#eeeeee\" class=\"cover full-width text-left\" file=\"\"}}
 # Félicitations, votre wiki est installé !
 **Pour modifier ce bandeau, éditez cette page.**
 {{end elem=\"section\"}}
 
 {#----------------------------------------------------------------------
 - 👆Pour modifier ce bandeau, cliquez sur la ligne section et le petit crayon et laissez-vous guider 
-- 👇Texte par défaut de la page d'accueil à remplacer par le votre 👇
+- 👇Texte par défaut de la page d\'accueil à remplacer par le votre 👇
 ----------------------------------------------------------------------#}
 
 ## YesWiki : un outil convivial potentiellement collaboratif
