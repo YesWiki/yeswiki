@@ -1,5 +1,4 @@
 <?php
-
 namespace YesWiki\Bazar\Service;
 
 use Attach;
@@ -18,7 +17,6 @@ class FormManager
     protected $securityController;
     protected $fieldFactory;
     protected $params;
-
     protected $cachedForms;
     protected $isAvailableOnlyOneEntryOption;
     protected $isAvailableOnlyOneEntryMessage;
@@ -50,30 +48,30 @@ class FormManager
         for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
             if ($template_list[$temp_index][0] == 'image') {
                 $modify = true;
+                if (! class_exists('attach')) {
+                    include ('tools/attach/libs/attach.lib.php');
+                }
+                $attach = new attach($this->wiki);
+                $basePath = $attach->GetUploadPath();
+                $basePath = $basePath . (substr($basePath, - 1) != "/" ? "/" : "");
                 $image_comp = $template_list[$temp_index];
-                $default_image_filename = "./files/dfltimg_{$id_nature}_{$image_comp[1]}.jpg";
+                $default_image_filename = $basePath . "defaultimage{$id_nature}_{$image_comp[1]}.jpg";
                 $default_image = explode('|', $image_comp[8]);
-                if (count($default_image)==2) {
+                if (count($default_image) == 2) {
                     $image_comp[8] = $default_image[0];
-                    $imgext=explode('image/', explode(';', $default_image[1])[0])[1];
+                    $imgext = explode('image/', explode(';', $default_image[1])[0])[1];
                     $tmpFile = tempnam('cache', 'dfltimg');
-                    unlink($tmpFile);
-                    $tempFile = $tmpFile.'.'.$imgext;
+                    $tempFile = $tmpFile . '.' . $imgext;
+                    rename($tmpFile, $tempFile);
                     try {
-                        $ifp = fopen($tempFile, "wb" );
-                        fwrite( $ifp, base64_decode(explode(',',$default_image[1])[1]));
-                        fclose( $ifp );
-                        if (!class_exists('attach')) {
-                            include('tools/attach/libs/attach.lib.php');
-                        }
-                        $attach = new attach($this->wiki);
-                        $res=$attach->redimensionner_image($tempFile, $default_image_filename, $image_comp[5], $image_comp[6], "fit");
-                        $res=array($res, $imgext, $tempFile, $default_image_filename, $image_comp[5], $image_comp[6]);
+                        $ifp = fopen($tempFile, "wb");
+                        fwrite($ifp, base64_decode(explode(',', $default_image[1])[1]));
+                        fclose($ifp);
+                        $attach->redimensionner_image($tempFile, $default_image_filename, $image_comp[5], $image_comp[6], "crop");
                     } finally {
                         unlink($tempFile);
                     }
                 } else {
-                    $res=Null;
                     $image_comp[8] = '';
                     if (file_exists($default_image_filename)) {
                         unlink($default_image_filename);
@@ -85,7 +83,7 @@ class FormManager
         if ($modify) {
             $template = $this->encodeTemplate($template_list);
         }
-        return $template;
+        return $this->dbService->escape($template);
     }
     
     protected function prepare_with_special_parameters($form) {
@@ -95,9 +93,9 @@ class FormManager
             if ($template_list[$temp_index][0] == 'image') {
                 $modify = true;
                 $image_comp = $template_list[$temp_index];
-                $default_image_filename = "./files/dfltimg_{$form['bn_id_nature']}_{$image_comp[1]}.jpg";
+                $default_image_filename = "./files/defaultimage{$form['bn_id_nature']}_{$image_comp[1]}.jpg";
                 if (file_exists($default_image_filename)) {
-                    $image_comp[8] = $image_comp[8].'|data:image/jpg;base64,'.base64_encode(file_get_contents($default_image_filename));
+                    $image_comp[8] = $image_comp[8] . '|data:image/jpg;base64,' . base64_encode(file_get_contents($default_image_filename));
                 } else {
                     $image_comp[8] = '';
                 }
