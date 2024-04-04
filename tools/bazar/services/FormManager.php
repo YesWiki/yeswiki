@@ -29,6 +29,9 @@ class FormManager
         ParameterBagInterface $params,
         SecurityController $securityController
     ) {
+        if (! class_exists('attach')) {
+            include ('tools/attach/libs/attach.lib.php');
+        }
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->entryManager = $entryManager;
@@ -39,23 +42,37 @@ class FormManager
         $this->securityController = $securityController;
         $this->isAvailableOnlyOneEntryOption = null;
         $this->isAvailableOnlyOneEntryMessage = null;
+        $this->attach = new attach($this->wiki);
+    }
+
+    protected function getBasePath() {
+        $basePath = $this->attach->GetUploadPath();
+        return $basePath . (substr($basePath, - 1) != "/" ? "/" : "");
+    }
+
+    protected function clean_cache_default_image($prefix) {
+        $cache_path = $this->attach->GetCachePath();
+        $cache_path = $cache_path . (substr($cache_path, - 1) != "/" ? "/" : "");
+        $scan_cache_files = scandir($cache_path);
+        foreach($scan_cache_files as $scan_cache_file) {
+            if (str_starts_with($scan_cache_file, $prefix)) {
+                unlink($cache_path.$scan_cache_file);
+            }
+        }
     }
     
     protected function convert_with_special_parameters($template, $id_nature) {
-        $template = $this->dbService->escape(_convert($template, YW_CHARSET, true));
+        $template = _convert($template, YW_CHARSET, true);
         $template_list = $this->parseTemplate($template);
         $modify = false;
         for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
             if ($template_list[$temp_index][0] == 'image') {
                 $modify = true;
-                if (! class_exists('attach')) {
-                    include ('tools/attach/libs/attach.lib.php');
-                }
-                $attach = new attach($this->wiki);
-                $basePath = $attach->GetUploadPath();
-                $basePath = $basePath . (substr($basePath, - 1) != "/" ? "/" : "");
+                $basePath = $this->getBasePath();
                 $image_comp = $template_list[$temp_index];
-                $default_image_filename = $basePath . "defaultimage{$id_nature}_{$image_comp[1]}.jpg";
+                $default_image_prefix = "defaultimage{$id_nature}_{$image_comp[1]}";
+                $this->clean_cache_default_image($default_image_prefix);
+                $default_image_filename = $basePath . $default_image_prefix . ".jpg";
                 $default_image = explode('|', $image_comp[8]);
                 if (count($default_image) == 2) {
                     $image_comp[8] = $default_image[0];
@@ -67,7 +84,7 @@ class FormManager
                         $ifp = fopen($tempFile, "wb");
                         fwrite($ifp, base64_decode(explode(',', $default_image[1])[1]));
                         fclose($ifp);
-                        $attach->redimensionner_image($tempFile, $default_image_filename, $image_comp[5], $image_comp[6], "crop");
+                        $this->attach->redimensionner_image($tempFile, $default_image_filename, $image_comp[5], $image_comp[6], "crop");
                     } finally {
                         unlink($tempFile);
                     }
@@ -87,13 +104,14 @@ class FormManager
     }
     
     protected function prepare_with_special_parameters($form) {
+        $basePath = $this->getBasePath();
         $template_list = $this->parseTemplate($form['bn_template']);
         $modify = false;
-        for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
+        for ($temp_index = 0; $temp_index < count($template_list); $temp_index ++) {
             if ($template_list[$temp_index][0] == 'image') {
                 $modify = true;
                 $image_comp = $template_list[$temp_index];
-                $default_image_filename = "./files/defaultimage{$form['bn_id_nature']}_{$image_comp[1]}.jpg";
+                $default_image_filename = $basePath . "defaultimage{$form['bn_id_nature']}_{$image_comp[1]}.jpg";
                 if (file_exists($default_image_filename)) {
                     $image_comp[8] = $image_comp[8] . '|data:image/jpg;base64,' . base64_encode(file_get_contents($default_image_filename));
                 } else {

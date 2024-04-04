@@ -136,6 +136,16 @@ function initializeFormbuilder() {
             file_elem.files = dataTransfer.files
           }
         }
+        if (file_elem.parentElement.childElementCount == 1) {
+        	const new_button = document.createElement("i")
+    		new_button.className = "fas fa-remove"
+    		new_button.style = "position:relative;top:-26px;margin-left:auto;margin-right:0;width:20px;display:block;cursor: pointer;"
+    		new_button.onclick = function() {
+				file_elem.files = new DataTransfer().files
+				window.defaultImage[image_name] = ''
+			}
+        	file_elem.parentElement.append(new_button)
+        }
       })
       // When change image, save it to base64 to buffer variable
       $('input.default-file').change((event) => {

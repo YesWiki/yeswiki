@@ -134,6 +134,7 @@ return [
     // 'BAZ_FORM_EDIT_IMAGE_WIDTH' => 'Largeur Vignette',
     // 'BAZ_FORM_EDIT_IMAGE_WIDTH_RESIZE' => 'Largeur redimension',
     // 'BAZ_FORM_EDIT_IMAGE_HEIGHT_RESIZE' => 'Hauteur redimension',
+    'BAZ_FORM_EDIT_IMAGE_DEFAULT' => 'Default image',
     'BAZ_FORM_EDIT_METADATA_THEME_LABEL' => 'Theme name',
     'BAZ_FORM_EDIT_METADATA_SQUELETON_LABEL' => 'Squeleton',
     'BAZ_FORM_EDIT_METADATA_STYLE_LABEL' => 'Style',
