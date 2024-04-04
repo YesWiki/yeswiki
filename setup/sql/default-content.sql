@@ -383,23 +383,15 @@ Double cliquer sur ce texte pour éditer cette colonne.
 {#INFO CACHÉE
 Vous êtes dans la page qui se nomme PageMenuHaut qui sert à modifier le menu du haut. Pour faire évoluer le menu, inspirez vous du menu exemple.
 #}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PagePrincipale',  now(), '{# -------------------------------------------------------------------
-- 👇 Code du bandeau, cliquez sur section puis sur le crayon
-- dans la marge et laissez vous guider 👇 ----------------------------------------------------------------------
-
-#}{{section bgcolor=\"#eeeeee\" class=\"cover full-width text-left\" file=\"\"}}
+('PagePrincipale',  now(), '{{section bgcolor=\"#eeeeee\" class=\"cover full-width text-left\" file=\"\"}}
 # Félicitations, votre wiki est installé !
 **Pour modifier ce bandeau, éditez cette page.**
+{{end elem=\"section\"}}
 
-
-{{end elem=\"section\"}}{# ------- Fin du code du bandeau ------- #}
-
-{# 
-----------------------------------------------------------------------
-- 👇 Texte par défaut de la page d\'accueil à remplacer par le votre 👇
-----------------------------------------------------------------------
-
-#}
+{#----------------------------------------------------------------------
+- 👆Pour modifier ce bandeau, cliquez sur la ligne section et le petit crayon et laissez-vous guider 
+- 👇Texte par défaut de la page d'accueil à remplacer par le votre 👇
+----------------------------------------------------------------------#}
 
 ## YesWiki : un outil convivial potentiellement collaboratif
 \"\"YesWiki\"\" a été conçu pour rester **simple d\'usage**.
