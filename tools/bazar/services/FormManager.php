@@ -1,4 +1,5 @@
 <?php
+
 namespace YesWiki\Bazar\Service;
 
 use Attach;
@@ -20,6 +21,7 @@ class FormManager
     protected $cachedForms;
     protected $isAvailableOnlyOneEntryOption;
     protected $isAvailableOnlyOneEntryMessage;
+    protected $attach;
 
     public function __construct(
         Wiki $wiki,
@@ -29,8 +31,8 @@ class FormManager
         ParameterBagInterface $params,
         SecurityController $securityController
     ) {
-        if (! class_exists('attach')) {
-            include ('tools/attach/libs/attach.lib.php');
+        if (!class_exists('attach')) {
+            include('tools/attach/libs/attach.lib.php');
         }
         $this->wiki = $wiki;
         $this->dbService = $dbService;
@@ -45,23 +47,26 @@ class FormManager
         $this->attach = new attach($this->wiki);
     }
 
-    protected function getBasePath() {
+    protected function getBasePath()
+    {
         $basePath = $this->attach->GetUploadPath();
-        return $basePath . (substr($basePath, - 1) != "/" ? "/" : "");
+        return $basePath . (substr($basePath, -1) != "/" ? "/" : "");
     }
 
-    protected function clean_cache_default_image($prefix) {
+    protected function clean_cache_default_image($prefix)
+    {
         $cache_path = $this->attach->GetCachePath();
-        $cache_path = $cache_path . (substr($cache_path, - 1) != "/" ? "/" : "");
+        $cache_path = $cache_path . (substr($cache_path, -1) != "/" ? "/" : "");
         $scan_cache_files = scandir($cache_path);
-        foreach($scan_cache_files as $scan_cache_file) {
+        foreach ($scan_cache_files as $scan_cache_file) {
             if (str_starts_with($scan_cache_file, $prefix)) {
-                unlink($cache_path.$scan_cache_file);
+                unlink($cache_path . $scan_cache_file);
             }
         }
     }
-    
-    protected function convert_with_special_parameters($template, $id_nature) {
+
+    protected function convert_with_special_parameters($template, $id_nature)
+    {
         $template = _convert($template, YW_CHARSET, true);
         $template_list = $this->parseTemplate($template);
         $modify = false;
@@ -102,12 +107,13 @@ class FormManager
         }
         return $this->dbService->escape($template);
     }
-    
-    protected function prepare_with_special_parameters($form) {
+
+    protected function prepare_with_special_parameters($form)
+    {
         $basePath = $this->getBasePath();
         $template_list = $this->parseTemplate($form['bn_template']);
         $modify = false;
-        for ($temp_index = 0; $temp_index < count($template_list); $temp_index ++) {
+        for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
             if ($template_list[$temp_index][0] == 'image') {
                 $modify = true;
                 $image_comp = $template_list[$temp_index];
@@ -122,7 +128,7 @@ class FormManager
         }
         return [$template_list, $modify];
     }
-    
+
     public function getOne($formId): ?array
     {
         if (isset($this->cachedForms[$formId])) {
@@ -198,7 +204,7 @@ class FormManager
             . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_context` ,`bn_sem_type` ,`bn_sem_use_template`'
             . ($this->isAvailableOnlyOneEntryOption() ? ',`bn_only_one_entry`' : '')
             . ($this->isAvailableOnlyOneEntryMessage() ? ',`bn_only_one_entry_message`' : '')
-            .',`bn_condition`)'
+            . ',`bn_condition`)'
             . ' VALUES (' . $data['bn_id_nature'] . ', "fr-FR", "'
             . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '","'
             . $this->dbService->escape(_convert($data['bn_template'], YW_CHARSET, true)) . '", "'
@@ -235,7 +241,7 @@ class FormManager
         $data = $this->getOne($id);
         if (!empty($data)) {
             unset($data['bn_id_nature']);
-            $data['bn_label_nature'] = $data['bn_label_nature'].' ('._t('BAZ_DUPLICATE').')';
+            $data['bn_label_nature'] = $data['bn_label_nature'] . ' (' . _t('BAZ_DUPLICATE') . ')';
             return $this->create($data);
         } else {
             // raise error?
@@ -251,7 +257,7 @@ class FormManager
 
         // tests of if $formId is int
         if (strval(intval($id)) != strval($id)) {
-            return null ;
+            return null;
         }
 
         $this->clear($id);
@@ -265,23 +271,23 @@ class FormManager
         }
         $this->dbService->query(
             'DELETE FROM' . $this->dbService->prefixTable('acls') .
-            'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
-            'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
-            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\' );'
+                'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
+                'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
+                'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\' );'
         );
 
         // TODO use PageManager
         $this->dbService->query(
             'DELETE FROM' . $this->dbService->prefixTable('pages') .
-            'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
-            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\';'
+                'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
+                'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\';'
         );
 
         // TODO use TripleStore
         $this->dbService->query(
             'DELETE FROM' . $this->dbService->prefixTable('triples') .
-            'WHERE resource NOT IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
-            'WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";'
+                'WHERE resource NOT IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
+                'WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";'
         );
     }
 
@@ -344,22 +350,21 @@ class FormManager
 
         return $tableau_template;
     }
-    
+
     public function encodeTemplate($template_list)
     {
         $new_template_list = [];
-        for($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
+        for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
             $new_line = '';
             foreach ($template_list[$temp_index] as $value) {
                 if ($value == '') {
-                    $new_line.= ' ';
-                }
-                else if ($value == '*') {
-                    $new_line.= ' * ';                    
+                    $new_line .= ' ';
+                } else if ($value == '*') {
+                    $new_line .= ' * ';
                 } else {
-                    $new_line.=$value;
+                    $new_line .= $value;
                 }
-                $new_line.= '***';
+                $new_line .= '***';
             }
             $new_template_list[] = $new_line;
         }
@@ -382,7 +387,7 @@ class FormManager
             } elseif (function_exists($field[0])) {
                 $functionName = $field[0];
                 $field[0] = 'old'; // field name
-                $field['functionName'] = $functionName ;
+                $field['functionName'] = $functionName;
                 $classField = $this->fieldFactory->create($field);
                 if ($classField) {
                     $prepared[$i] = $classField;
@@ -411,7 +416,7 @@ class FormManager
                 $facetteasked = (isset($groups[0]) && $groups[0] == 'all') || in_array($key, $groups);
 
                 if (!empty($value) and is_array($fields[$entry['id_typeannonce']]) && $facetteasked) {
-                    if (in_array($key, ['id_typeannonce','owner'])) {
+                    if (in_array($key, ['id_typeannonce', 'owner'])) {
                         $fieldPropName = $key;
                         $field = null;
                     } else {
@@ -460,7 +465,7 @@ class FormManager
                 array_filter(
                     array_keys($facetteValue['id_typeannonce']),
                     function ($key) {
-                        return !in_array($key, ['type','source']);
+                        return !in_array($key, ['type', 'source']);
                     }
                 )
             );
@@ -530,7 +535,7 @@ class FormManager
         }
 
         foreach ($form['prepared'] as $field) {
-            if (in_array($name, [$field->getName(),$field->getPropertyName()])) {
+            if (in_array($name, [$field->getName(), $field->getPropertyName()])) {
                 return $field;
             }
         }

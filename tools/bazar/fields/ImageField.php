@@ -17,6 +17,7 @@ class ImageField extends FileField
     protected $imageHeight;
     protected $imageWidth;
     protected $imageClass;
+    protected $imageDefault;
 
     protected const FIELD_THUMBNAIL_HEIGHT = 3;
     protected const FIELD_THUMBNAIL_WIDTH = 4;
