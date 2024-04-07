@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Build a Docker image able to run yeswiki
-        run: export UID=$(id -u) && export GID=$(id -g) && docker build -f docker/dockerfile -t yeswiki/yeswiki .
+        run: docker build -f docker/dockerfile -t yeswiki/yeswiki .
