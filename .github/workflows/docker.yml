@@ -5,7 +5,7 @@ on:
     paths:
       - docker/dockerfile
       - docker/docker-compose*.yml
-      - docker/workflows/docker.yml
+      - .github/workflows/docker.yml
 
 jobs:
   build:
