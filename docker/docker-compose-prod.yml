@@ -11,7 +11,7 @@ services:
   yeswiki-app:
     build:
       context: ..
-      dockerfile: ./docker/dockerfile
+      dockerfile: ./docker/dockerfile-prod
     container_name: yeswiki
     volumes:
       - ..:/var/www/html
