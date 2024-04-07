@@ -1,8 +1,7 @@
 <?php
-
 return [
     'HELLOWORLD_MY_MESSAGE' => 'Il mio messaggio',
-    'HELLOWORD_NO_MSG_PARAM' => '',
+    'HELLOWORD_NO_MSG_PARAM' => 'Nessun parametro \'message\' definito nell\'azione {{greeting ...}}',
     'HELLOWORD_CALLBACK_MSG' => '',
     'HELLOWORLD_CONFIG' => 'Test configurazione',
     'HELLOWORLD_URL_SHOW_XML' => '',
