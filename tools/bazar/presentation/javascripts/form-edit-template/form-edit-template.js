@@ -138,8 +138,7 @@ function initializeFormbuilder() {
         }
         if (file_elem.parentElement.childElementCount == 1) {
         	const new_button = document.createElement("i")
-    		new_button.className = "fas fa-remove"
-    		new_button.style = "position:relative;top:-26px;margin-left:auto;margin-right:0;width:20px;display:block;cursor: pointer;"
+    		new_button.className = "fas fa-remove btn-img-remove"
     		new_button.onclick = function() {
 				file_elem.files = new DataTransfer().files
 				window.defaultImage[image_name] = ''
@@ -149,9 +148,18 @@ function initializeFormbuilder() {
       })
       // When change image, save it to base64 to buffer variable
       $('input.default-file').change((event) => {
+		 
         const current_ids = event.target.attributes.id.value.split('-')
         const image_name = current_ids[current_ids.length - 2] + '-' + current_ids[current_ids.length - 1]
         const file = event.target.files[0]
+        if (typeof imageMaxSize == 'undefined') {
+			var imageMaxSize = 1024 * 1024;
+        }
+        if(file.size > imageMaxSize) {
+           alert(_t('IMAGEFIELD_TOO_LARGE_IMAGE', { imageMaxSize }))
+           event.target.value = "";
+           return false
+        }
         const reader = new FileReader()
         reader.readAsDataURL(file)
         reader.onload = function () {

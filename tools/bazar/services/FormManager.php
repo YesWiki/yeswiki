@@ -53,7 +53,7 @@ class FormManager
         return $basePath . (substr($basePath, -1) != "/" ? "/" : "");
     }
 
-    protected function clean_cache_default_image($prefix)
+    protected function cleanCacheDefaultImage($prefix)
     {
         $cache_path = $this->attach->GetCachePath();
         $cache_path = $cache_path . (substr($cache_path, -1) != "/" ? "/" : "");
@@ -65,7 +65,7 @@ class FormManager
         }
     }
 
-    protected function convert_with_special_parameters($template, $id_nature)
+    protected function convertWithSpecialParameters($template, $id_nature)
     {
         $template = _convert($template, YW_CHARSET, true);
         $template_list = $this->parseTemplate($template);
@@ -76,7 +76,7 @@ class FormManager
                 $basePath = $this->getBasePath();
                 $image_comp = $template_list[$temp_index];
                 $default_image_prefix = "defaultimage{$id_nature}_{$image_comp[1]}";
-                $this->clean_cache_default_image($default_image_prefix);
+                $this->cleanCacheDefaultImage($default_image_prefix);
                 $default_image_filename = $basePath . $default_image_prefix . ".jpg";
                 $default_image = explode('|', $image_comp[8]);
                 if (count($default_image) == 2) {
@@ -222,7 +222,7 @@ class FormManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        $template = $this->convert_with_special_parameters($data['bn_template'], $data['bn_id_nature']);
+        $template = $this->convertWithSpecialParameters($data['bn_template'], $data['bn_id_nature']);
         return $this->dbService->query('UPDATE' . $this->dbService->prefixTable('nature') . 'SET '
             . '`bn_label_nature`="' . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '" ,'
             . '`bn_template`="' . $template . '" ,'

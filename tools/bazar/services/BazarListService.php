@@ -43,7 +43,7 @@ class BazarListService
         }
     }
     
-    private function replace_default_image($options, $forms, $entries): array {
+    private function replaceDefaultImage($options, $forms, $entries): array {
         if (! class_exists('attach')) {
             include ('tools/attach/libs/attach.lib.php');
         }
@@ -103,7 +103,7 @@ class BazarListService
                 true // use Guard
             );
         }
-        $entries = $this->replace_default_image($options, $forms, $entries);
+        $entries = $this->replaceDefaultImage($options, $forms, $entries);
 
         // filter entries on datefilter parameter
         if (!empty($options['datefilter'])) {
