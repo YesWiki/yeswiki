@@ -42,11 +42,11 @@ class TemplateEngine
             // Ability to override an extension template from the legacy directories, should not be used anymore for new templates.
             $paths[] = "custom/themes/tools/$extensionName/templates/";
             foreach ([
-                         'custom/templates',
-                         'templates',
-                         'themes/tools',
-                         "themes/{$config->get('favorite_theme')}/tools"
-                     ] as $dir) {
+                'custom/templates',
+                'templates',
+                'themes/tools',
+                "themes/{$config->get('favorite_theme')}/tools"
+            ] as $dir) {
                 $paths[] = $dir . '/' . $extensionName . '/templates/';
                 $paths[] = $dir . '/' . $extensionName . '/';
             }
@@ -149,12 +149,12 @@ class TemplateEngine
             if (!isset($options['height'])) {
                 throw new Exception("`urlImage` should be called with `height` key in params!");
             }
-            $options = array_merge(['mode' => 'fit','refresh' => false], $options);
+            $options = array_merge(['mode' => 'fit', 'refresh' => false], $options);
 
             if (!class_exists('attach')) {
                 include('tools/attach/libs/attach.lib.php');
             }
-            $basePath = $this->wiki->getBaseUrl().'/';
+            $basePath = $this->wiki->getBaseUrl() . '/';
             $attach = new attach($this->wiki);
             $image_dest = $attach->getResizedFilename($options['fileName'], $options['width'], $options['height'], $options['mode']);
             $safeRefresh = !$this->wiki->services->get(SecurityController::class)->isWikiHibernated()
@@ -165,11 +165,11 @@ class TemplateEngine
                 $result = $attach->redimensionner_image($options['fileName'], $image_dest, $options['width'], $options['height'], $options['mode']);
                 if ($result != $image_dest) {
                     // do nothing : error
-                    return $basePath.$options['fileName'];
+                    return $basePath . $options['fileName'];
                 }
-                return $basePath.$image_dest;
+                return $basePath . $image_dest;
             } else {
-                return $basePath.$image_dest;
+                return $basePath . $image_dest;
             }
         });
         $this->addTwigHelper('hasAcl', function ($acl, $tag = "", $adminCheck = true) {
@@ -191,7 +191,7 @@ class TemplateEngine
         $result = '<div class="page">';
         $result .= $this->render($templatePath, $data);
         $result .= '</div>';
-        $result = $this->wiki->Header().$result;
+        $result = $this->wiki->Header() . $result;
         $result .= $this->wiki->Footer();
         return $result;
     }
@@ -215,7 +215,6 @@ class TemplateEngine
     {
         $data = array_merge($data, [
             'config' => $this->wiki->config,
-            'request' => $_GET,
         ]);
         return $this->twig->render($templatePath, $data);
     }
