@@ -1,43 +1,54 @@
-{% extends "@bazar/layouts/input.twig" %}
+<div class="control-group form-group input-{{ field.type }} {% block groupClass %}{% endblock %}">
+	<label
+		class="control-label col-sm-3">
+		{#- No leading/trailing whitespace, see https://twig.symfony.com/doc/3.x/templates.html#templates-whitespace-control-#}
+		{%- block label -%}
+		{% if field.required %}
+			<span class="symbole_obligatoire"></span>
+		{% endif %}
+		{% if field.hint %}
+			<img loading="lazy" class="tooltip_aide" title="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide"/>
+		{% endif %}
+		{{ field.label|raw }}
+	{%- endblock -%}
+    </label>
+    <div class="controls col-sm-9">
 
-{% block input %}
-    {{ include_javascript('tools/bazar/libs/vendor/bootstrap-datepicker.js') }}
-    <div class="input-prepend input-group">
-        <span class="add-on input-group-addon">
-            <i class="icon-calendar fa fa-calendar"></i>
-        </span>
-        <input
-            type="text"
-            value="{{ day }}"
-            id="{{ field.name }}"
-            name="{{ field.name }}"
-            class="form-control bazar-date"
-            {% if field.required %}required{% endif %}
-        />
-        <select class="form-control select-allday" name="{{ field.name }}_allday">
-            <option value="1" {% if not hasTime %} selected {% endif %}>{{  _t('BAZ_ALL_DAY') }}</option>
-            <option value="0" {% if hasTime %}  selected {% endif %}>{{ _t('BAZ_ENTER_HOUR') }}</option>
-        </select>
+        {{ include_javascript('tools/bazar/libs/vendor/bootstrap-datepicker.js') }}
+        <div class="input-prepend input-group">
+            <span class="add-on input-group-addon">
+                <i class="icon-calendar fa fa-calendar"></i>
+            </span>
+            <input type="text" value="{{ day }}" id="{{ field.name }}" name="{{ field.name }}" class="form-control bazar-date" {% if field.required %} required {% endif %}/>
+            <select class="form-control select-allday" name="{{ field.name }}_allday">
+                <option value="1" {% if not hasTime %} selected {% endif %}>{{  _t('BAZ_ALL_DAY') }}</option>
+                <option value="0" {% if hasTime %} selected {% endif %}>{{ _t('BAZ_ENTER_HOUR') }}</option>
+            </select>
+        </div>
+        <div class="select-time {% if not hasTime %}hide{% endif %} input-prepend input-group">
+            <span class="add-on input-group-addon">
+                <i class="icon-time fa fa-clock"></i>
+            </span>
+            <select class="form-control select-hour" name="{{ field.name }}_hour">
+                {% for i in range(low=0, high=23, step=1) %}
+                    <option value="{{ '%02d'|format(i) }}" {% if( i == hour ) %} selected {% endif %}>{{ '%02d'|format(i) }}</option>
+                {% endfor %}
+            </select>
+            <select class="form-control select-minutes" name="{{ field.name }}_minutes">
+                {% for i in range(low=0, high=55, step=5) %}
+                    <option value="{{ '%02d'|format(i) }}" {% if( i == minute ) %} selected {% endif %}>{{ '%02d'|format(i) }}</option>
+                {% endfor %}
+            </select>
+        </div>
     </div>
-    <div class="select-time {% if not hasTime %}hide{% endif %} input-prepend input-group">
-        <span class="add-on input-group-addon">
-            <i class="icon-time fa fa-clock"></i>
-        </span>
-        <select class="form-control select-hour" name="{{ field.name }}_hour">
-            {% for i in range(low=0, high=23, step=1) %}
-                <option value="{{ '%02d'|format(i) }}" {% if( i == hour ) %}selected{% endif %}>{{ '%02d'|format(i) }}</option>
-            {% endfor %}
-        </select>
-        <select class="form-control select-minutes" name="{{ field.name }}_minutes">
-            {% for i in range(low=0, high=55, step=5) %}
-                <option value="{{ '%02d'|format(i) }}" {% if( i == minute ) %}selected{% endif %}>{{ '%02d'|format(i) }}</option>
-            {% endfor %}
-        </select>
-    </div>
+</div>
+
+<div class="control-group form-group input-recur-date">
+    <div class="controls col-sm-9">
     {% if field.propertyname == 'bf_date_fin_evenement'  and canRegisterMultipleEntries %}
         {{ include_javascript('javascripts/vendor/vue/vue.js') }}
         {{ include_javascript('tools/bazar/presentation/javascripts/recurrent-event.js') }}
-        <div class="input-prepend input-group selector_is_recurrent specific-for-recurrence" data-data="{{ data|json_encode }}" :style="{display:recurrenceBaseId ? 'none !important': 'inherit !important'}">
+        <div class="input-group selector_is_recurrent specific-for-recurrence" data-data="{{ data|json_encode }}" :style="{display:recurrenceBaseId ? 'none !important': 'inherit !important'}">
             <input type="hidden" name="{{ "#{field.propertyName}_data[isRecurrent]" }}" value="1" v-if="isRecurrent"/>
             <span class="add-on input-group-addon" title="{{ _t('EVENTS_REPETITIONS') }}" data-toggle="tooltip" data-placement="bottom">
                 <i class="fas fa-redo-alt"></i>
@@ -49,13 +60,9 @@
                 >
                 <option value="">{{ _t('EVENT_NO_REPETITION') }}</option>
                 <option value="d">{{ _t('EVENT_EVERY_DAYS') }}</option>
-                <option value="xd">{{ _t('EVENT_EVERY_X_DAYS') }}</option>
                 <option value="w">{{ _t('EVENT_EVERY_WEEKS') }}</option>
-                <option value="xw">{{ _t('EVENT_EVERY_X_WEEKS') }}</option>
                 <option value="m">{{ _t('EVENT_EVERY_MONTHS') }}</option>
-                <option value="xm">{{ _t('EVENT_EVERY_X_MONTHS') }}</option>
                 <option value="y">{{ _t('EVENT_EVERY_YEARS') }}</option>
-                <option value="xy">{{ _t('EVENT_EVERY_X_YEARS') }}</option>
             </select>
             <input type="hidden" name="{{ "#{field.propertyName}_data[repetition]" }}" :value="repetition" v-if="isRecurrent"/>
         </div>
@@ -74,22 +81,9 @@
                 :disabled="!isRecurrent"
             />
         </div>
-        <div class="input-group specific-for-recurrence" v-if="isRecurrent">
-            <div class="form-control for-selector-is-recurrent">
+        <div class="input-prepend input-group specific-for-recurrence" style="display: inherit !important;" v-if="isRecurrent && endDateLimitTime != -1">
                 <input type="hidden" name="{{ "#{field.propertyName}_data[step]" }}" :value="step"/>
                 {% set inputString = "<input type=\"number\" min=\"2\" name=\"#{field.propertyName}_data[other][step]\" v-model=\"stepInternal\" required/>" %}
-                <div v-if="repetitionInternal == 'xd'">
-                    <span>{{ _t('EVENT_EVERY_X_DAYS')|replace({X:inputString})|raw }}</span>
-                </div>
-                <div v-else-if="repetitionInternal == 'xw'">
-                    <span>{{ _t('EVENT_EVERY_X_WEEKS')|replace({X:inputString})|raw }}</span>
-                </div>
-                <div v-else-if="repetitionInternal == 'xm'">
-                    <span>{{ _t('EVENT_EVERY_X_MONTHS')|replace({X:inputString})|raw }}</span>
-                </div>
-                <div v-else-if="repetitionInternal == 'xy'">
-                    <span>{{ _t('EVENT_EVERY_X_YEARS')|replace({X:inputString})|raw }}</span>
-                </div>
                 <div v-if="repetition == 'y'" class="input-prepend input-group">
                     <span class="add-on input-group-addon">
                         {{ _t('EVENT_ON_MONTH') }}
@@ -187,25 +181,28 @@
                     :name="`{{ field.propertyName }}_data[days][${idx}]`"
                     :value="day"
                     />
-                <button @click.prevent.stop="showExcept = !showExcept">
-                    <i :class="{fas:true,'fa-eye':!showExcept,'fa-eye-slash':showExcept}"></i>{{ _t('EVENT_EXCEPT_LABEL') }}
-                    <span v-if="!showExcept">...</span>
-                </button>
-                <div v-show="showExcept">
-                    <select v-model="newExcept">
-                    <option value="">{{ _t('BAZ_CHOISIR') }}</option>
-                    <option v-for="exceptDate in availableExceptFiltered" :value="exceptDate" v-html="exceptDate"></option>
-                    </select>
-                    <template v-for="(exceptDate,idx) in except">
-                    <div>
-                        {{ "{{exceptDate}}" }}
-                        <button class="btn btn-xs btn-danger btn-icon" @click.prevent.stop="except = except.filter((e)=>e!=exceptDate)">❌</button>
-                        <input type="hidden" :name="`{{ field.propertyName }}_data[except][${idx}]`" :value="exceptDate"/>
-                    </div>
-                    </template>
-                </div>
-                <button @click.prevent.stop="showRange = !showRange"><i :class="{fas:true,'fa-cogs':!showRange,'fa-window-close':showRange}"></i></button>
-                <div v-show="showRange">
+                
+                    <span class="add-on input-group-addon">
+                        {{ _t('EVENT_EXCEPT_LABEL') }}
+                    </span>
+                    <span class="add-on input-group-addon">
+                        <i class="fa fa-eye-slash"></i>
+                    </span>
+                        <select v-model="newExcept">
+                        <option value="">{{ _t('BAZ_CHOISIR') }}</option>
+                        <option v-for="exceptDate in availableExceptFiltered" :value="exceptDate" v-html="exceptDate"></option>
+                        </select>
+                        <template v-for="(exceptDate,idx) in except">
+                            <div>
+                                {{ "{{exceptDate}}" }}
+                                <button class="btn btn-xs btn-danger btn-icon" @click.prevent.stop="except = except.filter((e)=>e!=exceptDate)">❌</button>
+                                <input type="hidden" :name="`{{ field.propertyName }}_data[except][${idx}]`" :value="exceptDate"/>
+                            </div>
+                        </template>
+                
+
+                {#<button @click.prevent.stop="showRange = !showRange"><i :class="{fas:true,'fa-cogs':!showRange,'fa-window-close':showRange}"></i></button>
+                 <div v-show="showRange">
                     <small>
                     <i>{{ "{{ '#{_t('EVENT_NB_MAX_REPETITIONS')}'.replace('%{X}',nbmax) }}" }}</i>&nbsp;
                     </small>
@@ -219,8 +216,8 @@
                         data-default="50"
                         required
                     />
-                </div>
-            </div>
+                </div> #}
+
         </div>
         <div class="input-prepend input-group specific-for-recurrence" v-else-if="recurrenceBaseId?.length > 0">
             <div class="alert alert-info">
@@ -230,4 +227,5 @@
             </div>
         </div>
     {% endif %}
-{% endblock %}
+    </div>
+</div>
