@@ -1,25 +1,7 @@
 {% embed "@bazar/layouts/input.twig" %}
 {% block input %}
- {# ..... #}
- {% endblock input %}
-{% endembed %}
-
 <div class="control-group form-group input-{{ field.type }} {% block groupClass %}{% endblock %}">
-	<label
-		class="control-label col-sm-3">
-		{#- No leading/trailing whitespace, see https://twig.symfony.com/doc/3.x/templates.html#templates-whitespace-control-#}
-		{%- block label -%}
-		{% if field.required %}
-			<span class="symbole_obligatoire"></span>
-		{% endif %}
-		{% if field.hint %}
-			<img loading="lazy" class="tooltip_aide" title="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide"/>
-		{% endif %}
-		{{ field.label|raw }}
-	{%- endblock -%}
-    </label>
-    <div class="controls col-sm-9">
-
+    <div class="controls col-sm-12">
         {{ include_javascript('tools/bazar/libs/vendor/bootstrap-datepicker.js') }}
         <div class="input-prepend input-group">
             <span class="add-on input-group-addon">
@@ -48,8 +30,14 @@
         </div>
     </div>
 </div>
+{% endblock input %}
+
+{% block inputRecurrence %}
 
 <div class="control-group form-group input-recur-date">
+    <label class="control-label col-sm-3">
+        {{ _t('EVENT_RECURRENT') }}         
+    </label>
     <div class="controls col-sm-9">
     {% if field.propertyname == 'bf_date_fin_evenement'  and canRegisterMultipleEntries %}
         {{ include_javascript('javascripts/vendor/vue/vue.js') }}
@@ -205,24 +193,6 @@
                                 <input type="hidden" :name="`{{ field.propertyName }}_data[except][${idx}]`" :value="exceptDate"/>
                             </div>
                         </template>
-                
-
-                {#<button @click.prevent.stop="showRange = !showRange"><i :class="{fas:true,'fa-cogs':!showRange,'fa-window-close':showRange}"></i></button>
-                 <div v-show="showRange">
-                    <small>
-                    <i>{{ "{{ '#{_t('EVENT_NB_MAX_REPETITIONS')}'.replace('%{X}',nbmax) }}" }}</i>&nbsp;
-                    </small>
-                    <input
-                        type="range"
-                        v-model="nbmax"
-                        name="{{ "#{field.propertyName}_data[nbmax]" }}"
-                        class="form-control input-xxlarge"
-                        min="1"
-                        max="300"
-                        data-default="50"
-                        required
-                    />
-                </div> #}
 
         </div>
         <div class="input-prepend input-group specific-for-recurrence" v-else-if="recurrenceBaseId?.length > 0">
@@ -235,3 +205,5 @@
     {% endif %}
     </div>
 </div>
+ {% endblock inputRecurrence %}
+{% endembed %}

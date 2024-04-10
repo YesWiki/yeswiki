@@ -393,6 +393,7 @@ return [
     'EVENT_IS_LINKED_TO_RECURRENT' => 'Cet évènement est un évènement récurrent lié à la fiche %{link}',
 
     // templates/bazar/inputs/date.twig
+    'EVENT_RECURRENT' => 'Récurrence',
     'EVENT_EVERY_DAYS' => 'Tous les jours',
     'EVENT_EVERY_X_DAYS' => 'Tous les X jours',
     'EVENT_EVERY_WEEKS' => 'Toutes les semaines',
