@@ -593,3 +593,7 @@ div.form-control.for-selector-is-recurrent > .input-prepend.input-group{
     width: auto;
     display: flex;
 }
+
+.selector_is_recurrent{
+  margin-right: 2em;
+}

@@ -377,7 +377,7 @@ return [
     'URL' => 'Url',
 
     // templates/bazar/fields/date.twig
-    // 'EVENT_IS_RECURRENT' => 'Cet évènement est récurrent : %{repetition}, %{nb} fois maximum',
+    // 'EVENT_IS_RECURRENT' => 'Cet évènement est récurrent : %{repetition}',
     // 'EVENT_LIMIT_DATE' => 'jusqu\'au %{date}',
     // 'EVENT_REPETITION_FOR_DAYS' => 'tous les %{x} jours',
     // 'EVENT_REPETITION_FOR_MONTHS' => 'tous les %{x} mois, %{monthRepetition}',
