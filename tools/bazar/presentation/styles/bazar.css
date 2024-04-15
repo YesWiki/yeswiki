@@ -575,6 +575,7 @@ input[type="date"]::-webkit-input-placeholder{
 
 div.form-control.for-selector-is-recurrent {
   height: auto;
+  max-width: 100%;
 }
 
 div.form-control.for-selector-is-recurrent > .input-prepend.input-group{
@@ -594,6 +595,23 @@ div.form-control.for-selector-is-recurrent > .input-prepend.input-group{
     display: flex;
 }
 
-.selector_is_recurrent{
-  margin-right: 1.5em;
+.input-recur-date .specific-for-recurrence {
+  max-width: 100%;
+}
+
+.input-recur-date.control-group > .controls {
+  column-gap: 1rem;
+  row-gap: 1rem;
+  flex-wrap: wrap;
+}
+.input-recur-date.control-group .for-selector-is-recurrent > .input-group {
+  flex-wrap: wrap;
+}
+.input-recur-date.control-group .for-selector-is-recurrent > .input-group select.form-control {
+  max-width: 80%;
+  width: auto;
+}
+
+.input-recur-date:not(.ready) .specific-for-recurrence {
+  display: none !important;
 }

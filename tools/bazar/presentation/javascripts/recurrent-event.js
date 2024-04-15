@@ -92,6 +92,9 @@ let appParams = {
         isRecurrent(){
             return this.repetition !== ''
         },
+        mainParentElement(){
+            return this.baseElement?.parentNode?.parentNode
+        },
         repetition(){
             switch (this.repetitionInternal) {
                 case 'd':
@@ -389,7 +392,7 @@ let appParams = {
             : ['mon']
         this.month = data?.month ?? ''
         this.except = Array.isArray(data?.except) ? data?.except : []
-        this.registerChangeOnStartDateInput()
+        this.mainParentElement?.classList?.add('ready')
     },
     watch: {
         days(){
