@@ -389,7 +389,7 @@ return [
     // 'EVENT_IS_LINKED_TO_RECURRENT' => 'Cet évènement est un évènement récurrent lié à la fiche %{link}',
 
     // templates/bazar/inputs/date.twig
-    // 'EVENT_ACTIVATE_CUSTOM' => 'Voir les autres options',
+    // 'EVENT_ACTIVATE_CUSTOM' => 'Voir les options supplémentaires',
     // 'EVENT_EVERY_DAYS' => 'Tous les jours',
     // 'EVENT_EVERY_X_DAYS' => 'Tous les X jours',
     // 'EVENT_EVERY_WEEKS' => 'Toutes les semaines',
@@ -408,7 +408,7 @@ return [
     // 'EVENT_NTH_OF_MONTH' => 'Chaque Y du mois',
     // 'EVENT_ON_MONTH' => 'En :',
     // 'EVENT_RECURRENT' => 'Récurrence',
-    // 'EVENT_REMOVE_CUSTOM' => 'Masquer les personnalisations',
+    // 'EVENT_REMOVE_CUSTOM' => 'Masques les options supplémentaires',
     // 'EVENTS_REPETITIONS' => 'Répétitions',
     // 'EVENT_SECOND_Y_OF_MONTH' => 'Le second Y du mois',
     // 'EVENT_THIRD_Y_OF_MONTH' => 'Le troisième Y du mois',
