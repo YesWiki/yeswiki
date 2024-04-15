@@ -378,7 +378,7 @@ return [
     // templates/tableau.twig
     'SUM' => 'Somme',
     'URL' => 'Url',
-    
+
     // templates/bazar/fields/date.twig
     'EVENT_IS_RECURRENT' => 'Cet évènement est récurrent : %{repetition}',
     'EVENT_LIMIT_DATE' => 'jusqu\'au %{date}',
