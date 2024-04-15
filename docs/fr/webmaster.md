@@ -18,7 +18,7 @@
 
 **Suppléments d'information :**
 * [Voir les instructions spécifiques pour l'installation sur les hébergements Free.fr](https://yeswiki.net/?DocumentationInstallationFree)
-* En cas de bug pour les mises à jour sur certains systèmes très légers, vérifiez la présence des librairies `php-curl`, `php-filter`, `php-gd`, `php-iconv`, `php-json`, `php-mbstring`, `php-mysqli`, `php-pcre` et `php-zip` ; la liste à jour des extensions est décrite dans [le fichier composer.json](https://github.com/YesWiki/yeswiki/blob/doryphore/composer.json).
+* En cas de bug pour les mises à jour sur certains systèmes très légers, vérifiez la présence des librairies `php-curl`, `php-filter`, `php-gd`, `php-iconv`, `php-json`, `php-mbstring`, `php-exif` `php-mysqli`, `php-pcre` et `php-zip` ; la liste à jour des extensions est décrite dans [le fichier composer.json](https://github.com/YesWiki/yeswiki/blob/doryphore/composer.json).
 * Les extensions peuvent nécessiter des librairies supplémentaires. Vérifiez le contenu du fichier README.md de chacune (ex.: [ferme](https://github.com/YesWiki/yeswiki-extension-ferme/blob/doryphore/README.md), [lms](https://github.com/YesWiki/yeswiki-extension-lms/blob/doryphore/README.md)).
 
 #### Préparation
