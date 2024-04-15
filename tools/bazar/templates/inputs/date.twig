@@ -7,7 +7,14 @@
                 <span class="add-on input-group-addon">
                     <i class="icon-calendar fa fa-calendar"></i>
                 </span>
-                <input type="text" value="{{ day }}" id="{{ field.name }}" name="{{ field.name }}" class="form-control bazar-date" {% if field.required %} required {% endif %}/>
+                <input
+                    type="text"
+                    value="{{ day }}"
+                    id="{{ field.name }}"
+                    name="{{ field.name }}"
+                    class="form-control bazar-date"
+                    {% if field.required %}required{% endif %}
+                />
                 <select class="form-control select-allday" name="{{ field.name }}_allday">
                     <option value="1" {% if not hasTime %} selected {% endif %}>{{  _t('BAZ_ALL_DAY') }}</option>
                     <option value="0" {% if hasTime %} selected {% endif %}>{{ _t('BAZ_ENTER_HOUR') }}</option>
