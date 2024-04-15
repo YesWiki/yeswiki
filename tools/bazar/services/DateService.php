@@ -16,7 +16,7 @@ use YesWiki\Core\Service\PageManager;
 
 class DateService implements EventSubscriberInterface
 {
-    protected const MAXIMUM_REPETITION = 300;
+    protected const DEFAULT_MAXIMUM_REPETITION = 300;
     protected const PREFIX_ERROR = "RecurentEvents: ";
 
     protected $coreDateService;
@@ -130,8 +130,9 @@ class DateService implements EventSubscriberInterface
             ) = $extract;
             $step = intval($data['step']);
             $nbmax = intval($data['nbmax']);
-            if ($nbmax > self::MAXIMUM_REPETITION) {
-                $nbax = self::MAXIMUM_REPETITION;
+            // if no limit date then choose default maximum repetition (to prevent DDoS)
+            if (empty($data['limitdate']) && $nbmax > self::DEFAULT_MAXIMUM_REPETITION) {
+                $nbax = self::DEFAULT_MAXIMUM_REPETITION;
             }
             $newStartDate = clone $currentStartDate;
             $newEndDate = clone $currentEndDate;

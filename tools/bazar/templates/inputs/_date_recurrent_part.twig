@@ -13,6 +13,7 @@
             {{ include_javascript('tools/bazar/presentation/javascripts/recurrent-event.js') }}
             <div class="input-group selector_is_recurrent specific-for-recurrence" data-data="{{ data|json_encode }}" v-show="isRecurrent">
                 <input type="hidden" name="{{ "#{field.propertyName}_data[isRecurrent]" }}" value="1" v-if="isRecurrent"/>
+                <input type="hidden" :value="nbmax" name="{{ "#{field.propertyName}_data[nbmax]" }}" v-if="isRecurrent" />
                 <span class="add-on input-group-addon" title="{{ _t('EVENTS_REPETITIONS') }}" data-toggle="tooltip" data-placement="bottom">
                     <i class="fas fa-redo-alt"></i>
                 </span>
@@ -35,20 +36,24 @@
                 </select>
                 <input type="hidden" name="{{ "#{field.propertyName}_data[repetition]" }}" :value="repetition" v-if="isRecurrent"/>
             </div>
-            <div class="input-prepend input-group specific-for-recurrence" v-show="isRecurrent">
-                <span class="add-on input-group-addon">
-                    {{ _t('EVENT_UP_TO_DATE') }}
-                </span>
-                <span class="add-on input-group-addon">
-                    <i class="icon-calendar fa fa-calendar"></i>
-                </span>
-                <input
-                    type="text"
-                    value=""
-                    name="{{ "#{field.propertyName}_data[limitdate]" }}"
-                    class="form-control bazar-date"
-                    :disabled="!isRecurrent"
-                />
+            {# force !important for hiding because datePicker force display #}
+            <div class="event-container-for-datepicker" :style="{display:isRecurrent ? null : 'none !important'}">
+                <div class="input-prepend input-group specific-for-recurrence">
+                    <span class="add-on input-group-addon">
+                        {{ _t('EVENT_UP_TO_DATE') }}
+                    </span>
+                    <span class="add-on input-group-addon">
+                        <i class="icon-calendar fa fa-calendar"></i>
+                    </span>
+                    <input
+                        type="text"
+                        value=""
+                        name="{{ "#{field.propertyName}_data[limitdate]" }}"
+                        class="form-control bazar-date"
+                        :disabled="!isRecurrent"
+                    />
+                </div>
+                <i class="limit-date-hint" v-if="endDateLimitTime < 0">{{ _t('EVENT_NO_LIMIT_DATE') }}</i>
             </div>
             <div class="input-prepend input-group specific-for-recurrence" v-if="isRecurrent">
                 <div class="form-control for-selector-is-recurrent">

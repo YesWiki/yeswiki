@@ -612,6 +612,16 @@ div.form-control.for-selector-is-recurrent > .input-prepend.input-group{
   width: auto;
 }
 
-.input-recur-date:not(.ready) .specific-for-recurrence {
+.input-recur-date:not(.ready) .specific-for-recurrence,
+.input-recur-date:not(.ready) .event-container-for-datepicker {
   display: none !important;
+}
+
+.input-recur-date .event-container-for-datepicker{
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.input-recur-date .event-container-for-datepicker .limit-date-hint {
+  max-width: 250px;
 }
