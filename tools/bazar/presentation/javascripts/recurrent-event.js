@@ -5,8 +5,7 @@ for (let index = 0; index < rootsElementsRaw.length; index++) {
 }
 let isVueJS3 = (typeof Vue.createApp == "function");
 
-const defaultNbMax = 50
-const maxForNbMax = 300
+const defaultNbMax = 300
 const daysToCodeAssoc = {
     mon:1,
     tue:2,
@@ -389,7 +388,7 @@ let appParams = {
         this.month =  data?.month ?? ''
         this.nth =  data?.nth ?? ''
         const nbmax =  Number(data?.nbmax ?? defaultNbMax)
-        this.nbmax = (nbmax && nbmax > 0 && nbmax <= maxForNbMax) ? nbmax : defaultNbMax
+        this.nbmax = (nbmax && nbmax > 0) ? nbmax : defaultNbMax
         this.days = Array.isArray(data?.days)
             ? data.days
             : ['mon']
