@@ -1,9 +1,14 @@
 {% if field.propertyname == 'bf_date_fin_evenement' and canRegisterMultipleEntries %}
-    <div class="control-group form-group input-recur-date">
-        <label class="control-label col-sm-3">
-            {{ _t('EVENT_RECURRENT') }}         
-        </label>
-        <div class="controls col-sm-9">
+    {# reuse layout #}
+    {% embed "@bazar/layouts/input.twig" with {
+        field: {
+            name: field.name,
+            label: _t('EVENT_RECURRENT'),
+            propertyName: field.propertyName,
+            type: 'recur-date'
+        }
+    } %}
+        {% block input %}
             {{ include_javascript('javascripts/vendor/vue/vue.js') }}
             {{ include_javascript('tools/bazar/presentation/javascripts/recurrent-event.js') }}
             <div class="input-group selector_is_recurrent specific-for-recurrence" data-data="{{ data|json_encode }}" :style="{display:recurrenceBaseId ? 'none !important': 'inherit !important'}">
@@ -166,6 +171,6 @@
                     })|raw }}
                 </div>
             </div>
-        </div>
-    </div>
+        {% endblock input %}
+    {% endembed %}
 {% endif %}
