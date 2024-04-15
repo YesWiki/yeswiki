@@ -43,6 +43,7 @@ let appParams = {
     data() {
         return {
             availableExcept: [],
+            canCustomizeRepetition: false,
             datePickerForLimitInternal:null,
             days:['mon'],
             endDateLimitTime: -1,
@@ -382,6 +383,9 @@ let appParams = {
                 : `x${repetition}`
             )
             : ''
+        if (repetition.length > 0 && Number(step) > 1){
+            this.canCustomizeRepetition = true
+        }
         this.whenInMonth =  data?.whenInMonth ?? ''
         this.month =  data?.month ?? ''
         this.nth =  data?.nth ?? ''
@@ -419,7 +423,14 @@ let appParams = {
             }
             this.updateAvailableExceptUpdatingNbMax()
         },
-        repetitionInternal(){
+        repetitionInternal(repetition, previousValue){
+            if (repetition === 'activateCustom'){
+                this.canCustomizeRepetition = true
+                this.repetitionInternal = previousValue
+            } else if (repetition === 'removeCustom'){
+                this.canCustomizeRepetition = false
+                this.repetitionInternal = previousValue.replace('x', '')
+            }
             this.setCurrentDayIfWeek()
         },
         step(){

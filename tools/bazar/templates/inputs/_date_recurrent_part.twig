@@ -23,9 +23,15 @@
                     >
                     <option value="">{{ _t('EVENT_NO_REPETITION') }}</option>
                     <option value="d">{{ _t('EVENT_EVERY_DAYS') }}</option>
+                    <option value="xd" v-if="canCustomizeRepetition">{{ _t('EVENT_EVERY_X_DAYS') }}</option>
                     <option value="w">{{ _t('EVENT_EVERY_WEEKS') }}</option>
+                    <option value="xw" v-if="canCustomizeRepetition">{{ _t('EVENT_EVERY_X_WEEKS') }}</option>
                     <option value="m">{{ _t('EVENT_EVERY_MONTHS') }}</option>
+                    <option value="xm" v-if="canCustomizeRepetition">{{ _t('EVENT_EVERY_X_MONTHS') }}</option>
                     <option value="y">{{ _t('EVENT_EVERY_YEARS') }}</option>
+                    <option value="xy" v-if="canCustomizeRepetition">{{ _t('EVENT_EVERY_X_YEARS') }}</option>
+                    <option value="removeCustom" v-if="canCustomizeRepetition">{{ _t('EVENT_REMOVE_CUSTOM') }}</option>
+                    <option value="activateCustom" v-if="!canCustomizeRepetition">{{ _t('EVENT_ACTIVATE_CUSTOM') }}</option>
                 </select>
                 <input type="hidden" name="{{ "#{field.propertyName}_data[repetition]" }}" :value="repetition" v-if="isRecurrent"/>
             </div>
@@ -48,6 +54,18 @@
                 <div class="form-control for-selector-is-recurrent">
                     <input type="hidden" name="{{ "#{field.propertyName}_data[step]" }}" :value="step"/>
                     {% set inputString = "<input type=\"number\" min=\"2\" name=\"#{field.propertyName}_data[other][step]\" v-model=\"stepInternal\" required/>" %}
+                    <div v-if="repetitionInternal == 'xd'">
+                        <span>{{ _t('EVENT_EVERY_X_DAYS')|replace({X:inputString})|raw }}</span>
+                    </div>
+                    <div v-else-if="repetitionInternal == 'xw'">
+                        <span>{{ _t('EVENT_EVERY_X_WEEKS')|replace({X:inputString})|raw }}</span>
+                    </div>
+                    <div v-else-if="repetitionInternal == 'xm'">
+                        <span>{{ _t('EVENT_EVERY_X_MONTHS')|replace({X:inputString})|raw }}</span>
+                    </div>
+                    <div v-else-if="repetitionInternal == 'xy'">
+                        <span>{{ _t('EVENT_EVERY_X_YEARS')|replace({X:inputString})|raw }}</span>
+                    </div>
                     <div v-if="repetition == 'y'" class="input-prepend input-group">
                         <span class="add-on input-group-addon">
                             {{ _t('EVENT_ON_MONTH') }}
