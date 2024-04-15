@@ -54,7 +54,6 @@ let appParams = {
             nth:'',
             recurrenceBaseId: '',
             repetitionInternal: '',
-            showExcept: false,
             showRange: false,
             startDateInputInternal : null,
             stepInternal:2,

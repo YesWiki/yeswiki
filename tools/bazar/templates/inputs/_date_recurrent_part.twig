@@ -167,16 +167,14 @@
                         :value="day"
                         />
                     
-                    <span class="add-on input-group-addon">
-                        {{ _t('EVENT_EXCEPT_LABEL') }}
-                    </span>
-                    <span class="add-on input-group-addon">
-                        <i class="fa fa-eye-slash"></i>
-                    </span>
-                    <select v-model="newExcept">
-                        <option value="">{{ _t('BAZ_CHOISIR') }}</option>
-                        <option v-for="exceptDate in availableExceptFiltered" :value="exceptDate" v-html="exceptDate"></option>
-                    </select>
+                    <div class="input-prepend input-group">  
+                        <span class="add-on input-group-addon">{{ _t('EVENT_EXCEPT_LABEL') }}</span>
+                        <select v-model="newExcept">
+                            <option value="">{{ _t('BAZ_CHOISIR') }}</option>
+                            <option v-for="exceptDate in availableExceptFiltered" :value="exceptDate" v-html="exceptDate"></option>
+                        </select>
+                    </div>
+                    
                     <template v-for="(exceptDate,idx) in except">
                         <div>
                             {{ "{{exceptDate}}" }}
