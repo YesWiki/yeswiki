@@ -146,7 +146,7 @@ let appParams = {
             }
 
             const except = []
-            const nbStep = upToLimit ? 300 : this.nbmax
+            const nbStep = upToLimit ? defaultNbMax : this.nbmax
             for (let i = 0; i < nbStep; i++) {
                 let nextStartDate = null
                 switch (this.repetition) {
@@ -328,9 +328,9 @@ let appParams = {
         updateAvailableExceptUpdatingNbMax(){
             const newAvailableExcept = this.calculateAvailableExcept(true)
             if (this.endDateLimitTime > 0
-                && this.nbmax < 300
+                && this.nbmax < defaultNbMax
                 && newAvailableExcept.length > this.nbmax){
-                this.nbmax = Math.min(300, newAvailableExcept.length)
+                this.nbmax = Math.min(defaultNbMax, newAvailableExcept.length)
             } else {
                 this.updateAvailableExcept()
             }
