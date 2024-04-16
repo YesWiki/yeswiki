@@ -6,23 +6,25 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Security\Controller\CaptchaController;
 
 class SecurityController extends YesWikiController
 {
     // this value cannot be changed because use by extensions
     public const EDIT_PAGE_SUBMIT_VALUE = "Sauver";
 
+    protected $captchaController;
     protected $params;
     protected $templateEngine;
-    protected $textes;
 
     public function __construct(
+        CaptchaController $captchaController,
         TemplateEngine $templateEngine,
         ParameterBagInterface $params
     ) {
+        $this->captchaController = $captchaController;
         $this->templateEngine = $templateEngine;
         $this->params = $params;
-        $this->textes = null;
     }
 
     /**
@@ -109,27 +111,23 @@ class SecurityController extends YesWikiController
         if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
             if (($mode != 'entry' && isset($_POST['submit']) && $_POST['submit'] == self::EDIT_PAGE_SUBMIT_VALUE)
                 || ($mode == 'entry' && !empty($_POST['bf_titre']))) {
-                if (!defined("CAPTCHA_INCLUDE")) {
-                    define("CAPTCHA_INCLUDE", true);
-                }
-                include_once 'tools/security/captcha.php';
-                if (isset($textes)) {
-                    $this->textes = $textes;
-                }
+                /**
+                 * @var string $error message if error
+                 */
+                $error = '';
                 if (empty($_POST['captcha'])) {
                     $error = _t('CAPTCHA_ERROR_PAGE_UNSAVED');
+                } elseif (!$this->captchaController->check(
+                        $_POST['captcha'] ?? '',
+                        $_POST['captcha_hash'] ?? ''
+                    )) {
+                    $error = _t('CAPTCHA_ERROR_WRONG_WORD');
+                }
+                // clean if error
+                if (!empty($error)){
                     $_POST['submit'] = '';
                     if ($mode == 'entry') {
                         unset($_POST['bf_titre']);
-                    }
-                } elseif (!empty($_POST['captcha'])) {
-                    $wdcrypt = cryptWord($_POST['captcha']);
-                    if ($wdcrypt != $_POST['captcha_hash']) {
-                        $error = _t('CAPTCHA_ERROR_WRONG_WORD');
-                        $_POST['submit'] = '';
-                        if ($mode == 'entry') {
-                            unset($_POST['bf_titre']);
-                        }
                     }
                 }
                 unset($_POST['captcha']);
@@ -164,21 +162,14 @@ class SecurityController extends YesWikiController
     {
         $champsCaptcha = '';
         if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
-            if (!defined("CAPTCHA_INCLUDE")) {
-                define("CAPTCHA_INCLUDE", true);
-            }
-            include_once 'tools/security/captcha.php';
-            if (isset($textes)) {
-                $this->textes = $textes;
-            }
-            $crypt = cryptWord($this->textes[array_rand($this->textes)]);
-
             // afficher les champs de formulaire et de l'image
+            $hash = $this->captchaController->generateHash();
             $champsCaptcha = $this->templateEngine->render(
                 '@security/captcha-field.twig',
                 [
                     'baseUrl' => $this->wiki->getBaseUrl(),
-                    'crypt' => $crypt,
+                    'crypt' => $hash,
+                    'cryptBase64' => base64_encode($hash)
                 ]
             );
         }
