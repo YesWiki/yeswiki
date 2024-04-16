@@ -5,8 +5,7 @@ for (let index = 0; index < rootsElementsRaw.length; index++) {
 }
 let isVueJS3 = (typeof Vue.createApp == "function");
 
-const defaultNbMax = 50
-const maxForNbMax = 300
+const defaultNbMax = 300
 const daysToCodeAssoc = {
     mon:1,
     tue:2,
@@ -43,6 +42,7 @@ let appParams = {
     data() {
         return {
             availableExcept: [],
+            canCustomizeRepetition: false,
             datePickerForLimitInternal:null,
             days:['mon'],
             endDateLimitTime: -1,
@@ -53,7 +53,6 @@ let appParams = {
             nth:'',
             recurrenceBaseId: '',
             repetitionInternal: '',
-            showExcept: false,
             showRange: false,
             startDateInputInternal : null,
             stepInternal:2,
@@ -73,15 +72,11 @@ let appParams = {
         datePickerForLimit(){
             let datePicker = this.datePickerForLimitInternal
             if (datePicker === null){
-                let parentOfDatePicker = null
-                let nextS = this.baseElement
-                do {
-                    nextS = nextS.nextSibling
-                    if (nextS?.classList?.contains('input-prepend')){
-                        parentOfDatePicker = nextS
-                    }
-                } while (parentOfDatePicker === null && nextS !== null);
-                datePicker = parentOfDatePicker?.querySelector('input[name="bf_date_fin_evenement_data[limitdate]"]')
+                datePicker = this
+                    .baseElement
+                    ?.parentNode
+                    ?.querySelector('.event-container-for-datepicker input[name="bf_date_fin_evenement_data[limitdate]"]')
+                    ?? null
                 this.datePickerForLimitInternal = datePicker
             }
             return datePicker
@@ -91,6 +86,9 @@ let appParams = {
         },
         isRecurrent(){
             return this.repetition !== ''
+        },
+        mainParentElement(){
+            return this.baseElement?.parentNode?.parentNode
         },
         repetition(){
             switch (this.repetitionInternal) {
@@ -133,18 +131,18 @@ let appParams = {
         }
     },
     methods:{
-        calculateAvailableExcept(upToLimit = false){
-            const currentStartDate = this.getCurrentStartDate()
-            if (typeof currentStartDate !== 'string' || currentStartDate.length === 0){
-                return []
-            }
-            let date = new Date(currentStartDate)
-            if (date.toString() === 'Invalid Date'){
+        /**
+         * calculate available except
+         * @param {int} nbStep will be set to defaultNbMax if not furnished
+         * @returns {String[]} available Except
+         */
+        calculateAvailableExcept(nbStep = defaultNbMax){
+            let date = this.getCurrentStartDate()
+            if (date === null) {
                 return []
             }
 
             const except = []
-            const nbStep = upToLimit ? 300 : this.nbmax
             for (let i = 0; i < nbStep; i++) {
                 let nextStartDate = null
                 switch (this.repetition) {
@@ -224,6 +222,49 @@ let appParams = {
             lastDayOfMonth.setDate(0)
             return Math.round((lastDayOfMonth-firstDayOfMonth)/1000/3600/24)+1
         },
+        /**
+         * @return {int} nbMax estimated from limitDate
+         *   if there is no limit date return defaultNbMax
+         */
+        estimateNBMaxFromLimitDate(){
+            if (this.endDateLimitTime <= 0) {
+                return defaultNbMax
+            }
+            /**
+             * @var {Date} startDate 
+             */
+            const startDate = this.getCurrentStartDate()
+            if (startDate === null) {
+                return defaultNbMax
+            }
+            /**
+             * @var {int} duration between start date end limit date
+             */
+            const duration = this.endDateLimitTime - startDate.getTime()
+            if (duration < 0){
+                return 0
+            }
+            /**
+             * @var {int} step step in days (very approximatively)
+             */
+            let step = 1
+            switch (this.repetition) {
+                case 'y':
+                    step = 365
+                    break
+                case 'w':
+                    step = Math.floor(7/this.step)
+                    break
+                case 'm':
+                    step = 28
+                    break
+                case 'd':
+                    default:
+                    step = 1
+                    break
+            }
+            return Math.ceil(duration/1000/3600/24/step) + 20 // margin of 20 to be really sure to catch all repetitions
+        },
         findNextStartDate(date,startYear,startMonth,callback){
             if (this.whenInMonth === 'nthOfMonth'){
                 let limit = 60;
@@ -259,16 +300,30 @@ let appParams = {
                 return newStartDate
             }
         },
+        /**
+         * get current start date
+         * @returns {Date} startDate , null if not available
+         */
         getCurrentStartDate(){
-            return this.startDateInput?.value ?? ''
-        },
-        getCurrentStartDay(){
-            const dateStr = this.getCurrentStartDate()
+            /**
+             * @var {String} dateStr current value of input
+             */
+            const dateStr = this.startDateInput?.value ?? ''
             if (dateStr === ''){
-                return ''
+                return null
             }
+            /**
+             * @var {Date} date current Date object from value
+             */
             const date = new Date(dateStr)
             if (date.toString() === 'Invalid Date') {
+                return null
+            }
+            return date
+        },
+        getCurrentStartDay(){
+            const date = this.getCurrentStartDate()
+            if (date === null) {
                 return ''
             }
             const day = date.getDay()
@@ -320,18 +375,17 @@ let appParams = {
                 this.days = [key]
             }
         },
-        updateAvailableExcept(){
-            this.availableExcept = this.calculateAvailableExcept()
-        },
         updateAvailableExceptUpdatingNbMax(){
-            const newAvailableExcept = this.calculateAvailableExcept(true)
-            if (this.endDateLimitTime > 0
-                && this.nbmax < 300
-                && newAvailableExcept.length > this.nbmax){
-                this.nbmax = Math.min(300, newAvailableExcept.length)
-            } else {
-                this.updateAvailableExcept()
-            }
+            /**
+             * @var {int} nbmax calculated nbmax after update of limit date
+             */
+            const nbmax = this.estimateNBMaxFromLimitDate()
+            /**
+             * @var {String[]} availableExcept to update the real value of nbMax
+             */
+            const availableExcept = this.calculateAvailableExcept(nbmax)
+            this.availableExcept = availableExcept
+            this.nbmax = Math.max(2, availableExcept.length)
         },
         updateEndDateLimitTime(newVal = null){
             const endDateLimit = (newVal === null)
@@ -354,11 +408,16 @@ let appParams = {
         $(this.datePickerForLimit).on('changeDate',(event)=>{
             this.updateEndDateLimitTime(event.date)
         })
+        $(this.datePickerForLimit).on('input',(event)=>{
+            if (event.date === undefined){
+                this.updateEndDateLimitTime('')
+            }
+        })
         if (limitdate && 'value' in this.datePickerForLimit){
             this.datePickerForLimit.value = limitdate
             this.updateEndDateLimitTime()
         } else {
-            this.updateAvailableExcept()
+            this.updateAvailableExceptUpdatingNbMax()
         }
         if (data?.isRecurrent !== '1'){
             this.recurrenceBaseId = (
@@ -379,26 +438,26 @@ let appParams = {
                 : `x${repetition}`
             )
             : ''
+        if (repetition.length > 0 && Number(step) > 1){
+            this.canCustomizeRepetition = true
+        }
         this.whenInMonth =  data?.whenInMonth ?? ''
         this.month =  data?.month ?? ''
         this.nth =  data?.nth ?? ''
         const nbmax =  Number(data?.nbmax ?? defaultNbMax)
-        this.nbmax = (nbmax && nbmax > 0 && nbmax <= maxForNbMax) ? nbmax : defaultNbMax
+        this.nbmax = (nbmax && nbmax > 0) ? nbmax : defaultNbMax
         this.days = Array.isArray(data?.days)
             ? data.days
             : ['mon']
         this.month = data?.month ?? ''
         this.except = Array.isArray(data?.except) ? data?.except : []
-        this.registerChangeOnStartDateInput()
+        this.mainParentElement?.classList?.add('ready')
     },
     watch: {
         days(){
             this.updateAvailableExceptUpdatingNbMax()
         },
         month(){
-            this.updateAvailableExceptUpdatingNbMax()
-        },
-        nbmax(){
             this.updateAvailableExceptUpdatingNbMax()
         },
         newExcept(newValue){
@@ -416,7 +475,14 @@ let appParams = {
             }
             this.updateAvailableExceptUpdatingNbMax()
         },
-        repetitionInternal(){
+        repetitionInternal(repetition, previousValue){
+            if (repetition === 'activateCustom'){
+                this.canCustomizeRepetition = true
+                this.repetitionInternal = previousValue
+            } else if (repetition === 'removeCustom'){
+                this.canCustomizeRepetition = false
+                this.repetitionInternal = previousValue.replace('x', '')
+            }
             this.setCurrentDayIfWeek()
         },
         step(){

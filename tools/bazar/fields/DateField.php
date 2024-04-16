@@ -46,7 +46,6 @@ class DateField extends BazarField
             'hasTime' => $hasTime,
             'value' => $value,
             'data' => $entry["{$this->getPropertyName()}_data"] ?? [],
-            'type' => $this->type,
             'canRegisterMultipleEntries' => $this->getService(DateService::class)->canRegisterMultipleEntries($entry)
         ]);
     }

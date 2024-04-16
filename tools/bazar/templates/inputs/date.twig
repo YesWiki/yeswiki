@@ -1,13 +1,18 @@
 {% embed "@bazar/layouts/input.twig" %}
-{% block input %}
-<div class="control-group form-group input-{{ field.type }} {% block groupClass %}{% endblock %}">
-    <div class="controls col-sm-12">
+    {% block input %}
         {{ include_javascript('tools/bazar/libs/vendor/bootstrap-datepicker.js') }}
         <div class="input-prepend input-group">
             <span class="add-on input-group-addon">
                 <i class="icon-calendar fa fa-calendar"></i>
             </span>
-            <input type="text" value="{{ day }}" id="{{ field.name }}" name="{{ field.name }}" class="form-control bazar-date" {% if field.required %} required {% endif %}/>
+            <input
+                type="text"
+                value="{{ day }}"
+                id="{{ field.name }}"
+                name="{{ field.name }}"
+                class="form-control bazar-date"
+                {% if field.required %}required{% endif %}
+            />
             <select class="form-control select-allday" name="{{ field.name }}_allday">
                 <option value="1" {% if not hasTime %} selected {% endif %}>{{  _t('BAZ_ALL_DAY') }}</option>
                 <option value="0" {% if hasTime %} selected {% endif %}>{{ _t('BAZ_ENTER_HOUR') }}</option>
@@ -28,182 +33,7 @@
                 {% endfor %}
             </select>
         </div>
-    </div>
-</div>
-{% endblock input %}
-
-{% block inputRecurrence %}
-
-<div class="control-group form-group input-recur-date">
-    <label class="control-label col-sm-3">
-        {{ _t('EVENT_RECURRENT') }}         
-    </label>
-    <div class="controls col-sm-9">
-    {% if field.propertyname == 'bf_date_fin_evenement'  and canRegisterMultipleEntries %}
-        {{ include_javascript('javascripts/vendor/vue/vue.js') }}
-        {{ include_javascript('tools/bazar/presentation/javascripts/recurrent-event.js') }}
-        <div class="input-group selector_is_recurrent specific-for-recurrence" data-data="{{ data|json_encode }}" :style="{display:recurrenceBaseId ? 'none !important': 'inherit !important'}">
-            <input type="hidden" name="{{ "#{field.propertyName}_data[isRecurrent]" }}" value="1" v-if="isRecurrent"/>
-            <span class="add-on input-group-addon" title="{{ _t('EVENTS_REPETITIONS') }}" data-toggle="tooltip" data-placement="bottom">
-                <i class="fas fa-redo-alt"></i>
-            </span>
-            <select 
-                class="form-control select-allday"
-                name="{{ "#{field.propertyName}_data[other][repetition]" }}"
-                v-model="repetitionInternal"
-                >
-                <option value="">{{ _t('EVENT_NO_REPETITION') }}</option>
-                <option value="d">{{ _t('EVENT_EVERY_DAYS') }}</option>
-                <option value="w">{{ _t('EVENT_EVERY_WEEKS') }}</option>
-                <option value="m">{{ _t('EVENT_EVERY_MONTHS') }}</option>
-                <option value="y">{{ _t('EVENT_EVERY_YEARS') }}</option>
-            </select>
-            <input type="hidden" name="{{ "#{field.propertyName}_data[repetition]" }}" :value="repetition" v-if="isRecurrent"/>
-        </div>
-        <div class="input-prepend input-group specific-for-recurrence" :style="{display:isRecurrent ? 'inherit !important' : 'none !important'}">
-            <span class="add-on input-group-addon">
-                {{ _t('EVENT_UP_TO_DATE') }}
-            </span>
-            <span class="add-on input-group-addon">
-                <i class="icon-calendar fa fa-calendar"></i>
-            </span>
-            <input
-                type="text"
-                value=""
-                name="{{ "#{field.propertyName}_data[limitdate]" }}"
-                class="form-control bazar-date"
-                :disabled="!isRecurrent"
-            />
-        </div>
-        <div class="input-prepend input-group specific-for-recurrence" style="display: inherit !important;" v-if="isRecurrent && endDateLimitTime != -1">
-                <input type="hidden" name="{{ "#{field.propertyName}_data[step]" }}" :value="step"/>
-                {% set inputString = "<input type=\"number\" min=\"2\" name=\"#{field.propertyName}_data[other][step]\" v-model=\"stepInternal\" required/>" %}
-                <div v-if="repetition == 'y'" class="input-prepend input-group">
-                    <span class="add-on input-group-addon">
-                        {{ _t('EVENT_ON_MONTH') }}
-                    </span>
-                    <select 
-                        class="form-control"
-                        name="{{ "#{field.propertyName}_data[month]" }}"
-                        v-model="month"
-                        required
-                        >
-                        {% for key,name in {
-                        jan: 'BAZ_JANVIER',
-                        feb: 'BAZ_FEVRIER',
-                        mar: 'BAZ_MARS',
-                        apr: 'BAZ_AVRIL',
-                        may: 'BAZ_MAI',
-                        jun: 'BAZ_JUIN',
-                        jul: 'BAZ_JUILLET',
-                        aug: 'BAZ_AOUT',
-                        sep: 'BAZ_SEPTEMBRE',
-                        oct: 'BAZ_OCTOBRE',
-                        nov: 'BAZ_NOVEMBRE',
-                        dec: 'BAZ_DECEMBRE',
-                        } %}
-                        <option value="{{key}}">{{ _t(name) }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div v-if="['m','y'].includes(repetition)" class="input-prepend input-group">
-                    <span class="add-on input-group-addon">
-                        {{ _t('EVENTS_WHEN_IN_MONTH') }}
-                    </span>
-                    <select 
-                        v-model="whenInMonth"
-                        name="{{ "#{field.propertyName}_data[whenInMonth]" }}"
-                        required>
-                        <option value="">{{ _t('BAZ_CHOISIR') }}</option>
-                        <option value="nthOfMonth">{{ _t('EVENT_NTH_OF_MONTH') }}</option>
-                        <option value="fisrtOfMonth">{{ _t('EVENT_FIRST_Y_OF_MONTH') }}</option>
-                        <option value="secondOfMonth">{{ _t('EVENT_SECOND_Y_OF_MONTH') }}</option>
-                        <option value="thirdOfMonth">{{ _t('EVENT_THIRD_Y_OF_MONTH') }}</option>
-                        <option value="forthOfMonth">{{ _t('EVENT_FORTH_Y_OF_MONTH') }}</option>
-                        <option value="lastOfMonth">{{ _t('EVENT_LAST_Y_OF_MONTH') }}</option>
-                    </select>
-                </div>
-                {% set associationsForDays = {
-                    mon: 'BAZ_LUNDI',
-                    tue: 'BAZ_MARDI',
-                    wed: 'BAZ_MERCREDI',
-                    thu: 'BAZ_JEUDI',
-                    fri: 'BAZ_VENDREDI',
-                    sat: 'BAZ_SAMEDI',
-                    sun: 'BAZ_DIMANCHE',
-                    } %}
-                <div v-if="repetition == 'w'">
-                    {% for key,name in associationsForDays %}
-                    <div class="input-prepend input-group">
-                        <input 
-                            type="checkbox"
-                            class="element_checkbox" 
-                            name="{{ "#{field.propertyName}_data[other][days][#{key}]" }}"
-                            value="1"
-                            :checked="days.includes('{{ key }}')"
-                            @input="toggleDay('{{key}}')"
-                            /><span @click="toggleDay('{{key}}')">{{ _t(name) }}</span>
-                    </div>
-                    {% endfor %}
-                </div>
-                <div
-                    v-else-if="['m','y'].includes(repetition) && whenInMonth?.length > 0 && whenInMonth != 'nthOfMonth'"
-                    class="input-prepend input-group">
-                    <select 
-                    name="{{ "#{field.propertyName}_data[other][day]" }}"
-                    :value="days?.[0] ?? ''"
-                    @input="event => toggleDay(event.target.value)"
-                    required>
-                    {% for key,name in associationsForDays %}
-                        <option value="{{key}}">{{ _t(name) }}</option>
-                    {% endfor %}
-                    </select>
-                </div>
-                <div v-else-if="['m','y'].includes(repetition) && whenInMonth === 'nthOfMonth'">  
-                    <span><b>{{ _t('BAZ_DAY') }}</b></span>
-                    <select name="{{ "#{field.propertyName}_data[nth]" }}" v-model="nth" required>
-                        <option value="">{{ _t('BAZ_CHOISIR') }}</option>
-                        <template v-for="idx in 31">
-                        <option :value="(idx < 10 ? '0' :'')+idx">{{ "{{ (idx < 10 ? '0' :'')+idx }}" }}</option>
-                        </template>
-                    </select>
-                </div>
-                <input
-                    v-if="days.length > 0 && (repetition === 'w' || whenInMonth !== 'nthOfMonth')"
-                    v-for="(day,idx) in days"
-                    type="hidden"
-                    :name="`{{ field.propertyName }}_data[days][${idx}]`"
-                    :value="day"
-                    />
-                
-                    <span class="add-on input-group-addon">
-                        {{ _t('EVENT_EXCEPT_LABEL') }}
-                    </span>
-                    <span class="add-on input-group-addon">
-                        <i class="fa fa-eye-slash"></i>
-                    </span>
-                        <select v-model="newExcept">
-                        <option value="">{{ _t('BAZ_CHOISIR') }}</option>
-                        <option v-for="exceptDate in availableExceptFiltered" :value="exceptDate" v-html="exceptDate"></option>
-                        </select>
-                        <template v-for="(exceptDate,idx) in except">
-                            <div>
-                                {{ "{{exceptDate}}" }}
-                                <button class="btn btn-xs btn-danger btn-icon" @click.prevent.stop="except = except.filter((e)=>e!=exceptDate)">❌</button>
-                                <input type="hidden" :name="`{{ field.propertyName }}_data[except][${idx}]`" :value="exceptDate"/>
-                            </div>
-                        </template>
-
-        </div>
-        <div class="input-prepend input-group specific-for-recurrence" v-else-if="recurrenceBaseId?.length > 0">
-            <div class="alert alert-info">
-                {{ _t('EVENT_IS_LINKED_TO_RECURRENT_EDIT',{
-                link:"<a class=\"newtab\" :href=\"`${wiki.url(recurrenceBaseId)}`\">{{recurrenceBaseId}}</a>"
-                })|raw }}
-            </div>
-        </div>
-    {% endif %}
-    </div>
-</div>
- {% endblock inputRecurrence %}
+    {% endblock input %}
 {% endembed %}
+
+{{ include("@bazar/inputs/_date_recurrent_part.twig") }}

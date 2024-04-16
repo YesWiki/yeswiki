@@ -375,7 +375,7 @@ return [
     'URL' => 'Url',
 
     // templates/bazar/fields/date.twig
-    // 'EVENT_IS_RECURRENT' => 'Cet évènement est récurrent : %{repetition}, %{nb} fois maximum',
+    // 'EVENT_IS_RECURRENT' => 'Cet évènement est récurrent : %{repetition}',
     // 'EVENT_LIMIT_DATE' => 'jusqu\'au %{date}',
     // 'EVENT_REPETITION_FOR_DAYS' => 'tous les %{x} jours',
     // 'EVENT_REPETITION_FOR_MONTHS' => 'tous les %{x} mois, %{monthRepetition}',
@@ -388,6 +388,7 @@ return [
     // 'EVENT_IS_LINKED_TO_RECURRENT' => 'Cet évènement est un évènement récurrent lié à la fiche %{link}',
 
     // templates/bazar/inputs/date.twig
+    // 'EVENT_ACTIVATE_CUSTOM' => 'Voir les options supplémentaires',
     // 'EVENT_EVERY_DAYS' => 'Tous les jours',
     // 'EVENT_EVERY_X_DAYS' => 'Tous les X jours',
     // 'EVENT_EVERY_WEEKS' => 'Toutes les semaines',
@@ -402,10 +403,12 @@ return [
     // 'EVENT_FORTH_Y_OF_MONTH' => 'Le quatrième Y du mois',
     // 'EVENT_IS_LINKED_TO_RECURRENT_EDIT' => 'Cette évènement est un évènement récurrent lié à la fiche %{link}.<br/>Toute modification de cette fiche cassera le lien avec l\'évènement de base !',
     // 'EVENT_LAST_Y_OF_MONTH' => 'Le dernier Y du mois',
-    // 'EVENT_NB_MAX_REPETITIONS' => '%{X} fois maximum',
+    // 'EVENT_NO_LIMIT_DATE' => 'Sans date de fin de répétition, seuls 300 évènements seront créés !',
     // 'EVENT_NO_REPETITION' => 'Pas de répétition',
     // 'EVENT_NTH_OF_MONTH' => 'Chaque Y du mois',
     // 'EVENT_ON_MONTH' => 'En :',
+    // 'EVENT_RECURRENT' => 'Récurrence',
+    // 'EVENT_REMOVE_CUSTOM' => 'Masques les options supplémentaires',
     // 'EVENTS_REPETITIONS' => 'Répétitions',
     // 'EVENT_SECOND_Y_OF_MONTH' => 'Le second Y du mois',
     // 'EVENT_THIRD_Y_OF_MONTH' => 'Le troisième Y du mois',
