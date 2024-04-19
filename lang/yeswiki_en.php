@@ -1,5 +1,4 @@
 <?php
-
 return [
     /**
      * English translation file for YesWiki's main program
@@ -23,7 +22,7 @@ return [
     'ONLY_FOR_ADMINS' => 'Only for administrators',
     'PAGES' => 'Pages',
     'SUBSCRIPTION' => 'Subscription',
-    'TRIPLES' => 'Triples',
+    'TRIPLES' => 'Triple',
     'UNKNOWN' => 'Unknown',
     'WARNING' => 'WARNING',
     // wakka.php
@@ -345,12 +344,12 @@ return [
     // 'NOT_POSSIBLE_TO_CREATE_SQL_TABLES' => 'Impossible de créer les tables SQL.',
     'ALREADY_CREATED' => 'Already created',
     'ADMIN_ACCOUNT_CREATION' => 'Creation of administrator\'s account',
-    'INSERTION_OF_USER_IN_ADMIN_GROUP' => 'Insertion of user in the admin\'s group',
+    'INSERTION_OF_USER_IN_ADMIN_GROUP' => 'Insert specified user in admin group',
     'NEXT_STEP_WRITE_CONFIGURATION_FILE' => 'The next step will try to create the configuration file ',
     'VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE' => 'Verify that le web server has the right for writing in this file, otherwise you must modify it manually',
     // setup/writeconfig.php
     'WRITING_CONFIGURATION_FILE' => 'Writing the configuration file',
-    'CREATED' => 'create',
+    'CREATED' => 'created',
     'DONT_CHANGE_YESWIKI_VERSION_MANUALLY' => 'don\'t change yeswiki_version manually',
     'WRITING_CONFIGURATION_FILE_WIP' => 'Creating the configuration file',
     'FINISHED_CONGRATULATIONS' => 'It\'s finished : congratulations',
@@ -359,7 +358,7 @@ return [
     'THIS_COULD_BE_UNSECURE' => 'this could be a security issue',
     'CONFIGURATION_FILE' => 'the configuration file',
     'CONFIGURATION_FILE_NOT_CREATED' => 'was not created',
-    'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Try to change the write access rights on the file. If not possible, you must create the file and copy those informations inside, then transfert it by FTP on your server in a file ',
+    'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Try to change the write access rights on the file. If not possible, you must create the file and copy those informations inside, then transfer it by FTP on your server in a file ',
     'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'directly in the YesWiki root folder. Once you done it, your YesWiki website should work as expected',
     'TRY_AGAIN' => 'Try again',
     // API
@@ -374,7 +373,7 @@ return [
     'USER_NAME_S_MAXIMUM_LENGTH_IS' => 'User name\'s maximum number of characters is',
     'USER_NO_SPACES_IN_PASSWORD' => 'No spaces are allowed in password',
     'USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS' => 'The minimum number of characters for a user password is',
-    'USER_PASSWORDS_NOT_IDENTICAL' => 'Both passwords must be identical',
+    'USER_PASSWORDS_NOT_IDENTICAL' => 'Both passwords entered must be identical',
     'USER_PASSWORD_TOO_SHORT' => 'Password too short',
     'USER_THIS_EMAIL_IS_ALLREADY_USED_ON_THIS_WIKI' => 'The specified email is allready in use on this wiki',
     'USER_THIS_IS_NOT_A_VALID_EMAIL' => 'This is not a valid email address',
@@ -500,13 +499,13 @@ return [
     'DELETEPAGE_CONFIRM' => 'Would you really definitively delete the page {tag}&nbsp;?',
     'DELETEPAGE_CONFIRM_WHEN_BACKLINKS' => 'Would you really definitively delete the page {tag} while there are links leading to it&nbsp;?',
     'DELETEPAGE_DELETE' => 'Delete',
-    'DELETEPAGE_MESSAGE' => 'The page {tag} has been definitevely deleted',
+    'DELETEPAGE_MESSAGE' => 'The page {tag} has been definitively deleted',
     'DELETEPAGE_NOT_ORPHEANED' => 'This page is not orpheaned.',
     'DELETEPAGE_NOT_OWNER' => 'You are not owner of this page.',
     'DELETEPAGE_PAGES_WITH_LINKS_TO' => 'Pages with a link to {tag} :',
     'DELETEPAGE_NOT_DELETED' => 'Not deleted page.',
     // handlers/edit
-    'EDIT_NO_WRITE_ACCESS' => 'You do not have writte acces to this page !',
+    'EDIT_NO_WRITE_ACCESS' => 'You do not have write access to this page !',
     'EDIT_NO_CHANGE_MSG' => 'This page was not saved because it has not changes.',
     'EDIT_PREVIEW' => 'Preview',
     // handlers/update
