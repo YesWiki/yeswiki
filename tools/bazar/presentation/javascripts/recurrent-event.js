@@ -5,7 +5,7 @@ for (let index = 0; index < rootsElementsRaw.length; index++) {
 }
 let isVueJS3 = (typeof Vue.createApp == "function");
 
-const defaultNbMax = 300
+const defaultNbMax = 600
 const daysToCodeAssoc = {
     mon:1,
     tue:2,
@@ -53,6 +53,7 @@ let appParams = {
             nth:'',
             recurrenceBaseId: '',
             repetitionInternal: '',
+            showEndDateMessage: false,
             showRange: false,
             startDateInputInternal : null,
             stepInternal:2,
@@ -137,7 +138,7 @@ let appParams = {
          * @returns {String[]} available Except
          */
         calculateAvailableExcept(nbStep = defaultNbMax){
-            let date = this.getCurrentStartDate()
+            let date = this.getCurrentInputDate('startDateInput')
             if (date === null) {
                 return []
             }
@@ -189,15 +190,7 @@ let appParams = {
                 if ( this.endDateLimitTime < 0
                      || nextStartDate.getTime() <= this.endDateLimitTime
                     ){
-                    // work in UTC because ISO string is splitted
-                    except.push((new Date(Date.UTC(
-                        date.getFullYear(),
-                        date.getMonth(),
-                        date.getDate(),
-                        date.getHours(),
-                        date.getMinutes(),
-                        date.getSeconds()
-                    ))).toISOString().slice(0,10))
+                    except.push(this.convertDateToString(date))
                 }
             }
             return except
@@ -214,6 +207,22 @@ let appParams = {
                     nextStartMonth:newMonth,
                     currentStartYear
                 }
+        },
+        /**
+         * convert a Date object to a string YYYY-MM-DD
+         * @param {Date} date 
+         * @returns {string}
+         */
+        convertDateToString(date){
+            // work in UTC because ISO string is splitted
+            return (new Date(Date.UTC(
+                date.getFullYear(),
+                date.getMonth(),
+                date.getDate(),
+                date.getHours(),
+                date.getMinutes(),
+                date.getSeconds()
+            ))).toISOString().slice(0,10)
         },
         getNbDaysInMonth(year,month){
             let firstDayOfMonth = new Date(year,month)
@@ -233,7 +242,7 @@ let appParams = {
             /**
              * @var {Date} startDate 
              */
-            const startDate = this.getCurrentStartDate()
+            const startDate = this.getCurrentInputDate('startDateInput')
             if (startDate === null) {
                 return defaultNbMax
             }
@@ -301,14 +310,15 @@ let appParams = {
             }
         },
         /**
-         * get current start date
-         * @returns {Date} startDate , null if not available
+         * get current date from input
+         * @param {String} keyname
+         * @returns {Date} date , null if not available
          */
-        getCurrentStartDate(){
+        getCurrentInputDate(keyname){
             /**
              * @var {String} dateStr current value of input
              */
-            const dateStr = this.startDateInput?.value ?? ''
+            const dateStr = this?.[keyname]?.value ?? ''
             if (dateStr === ''){
                 return null
             }
@@ -322,7 +332,7 @@ let appParams = {
             return date
         },
         getCurrentStartDay(){
-            const date = this.getCurrentStartDate()
+            const date = this.getCurrentInputDate('startDateInput')
             if (date === null) {
                 return ''
             }
@@ -383,17 +393,40 @@ let appParams = {
             /**
              * @var {String[]} availableExcept to update the real value of nbMax
              */
-            const availableExcept = this.calculateAvailableExcept(nbmax)
+            const availableExcept = this.calculateAvailableExcept(Math.min(nbmax, defaultNbMax))
             this.availableExcept = availableExcept
             this.nbmax = Math.max(2, availableExcept.length)
+            if (nbmax > defaultNbMax) {
+                this.updateEndDateLimitInputIfNotEmpty(availableExcept)
+            }
+        },
+        /**
+         * update the limit date if maximum number is reached
+         * @param {array} availableExcept
+         */
+        updateEndDateLimitInputIfNotEmpty(availableExcept){
+            /**
+             * @var {Date|null} endDateLimit
+             */
+            const endDateLimit = this.getCurrentInputDate('datePickerForLimit')
+            if (endDateLimit !== null && availableExcept.length > 0) {
+                /**
+                 * @var {string} endDateLimitStr
+                 */
+                const endDateLimitStr = this.convertDateToString(endDateLimit)
+                /**
+                 * @var {string} lastAvailableExcept
+                 */
+                const lastAvailableExcept = availableExcept[availableExcept.length - 1]
+                if (lastAvailableExcept < endDateLimitStr) {
+                    $(this.datePickerForLimit).datepicker('update', lastAvailableExcept)
+                    this.showEndDateMessage = true
+                }
+            }
         },
         updateEndDateLimitTime(newVal = null){
             const endDateLimit = (newVal === null)
-                ? (
-                    (this.datePickerForLimit.value.length > 0)
-                    ? new Date(this.datePickerForLimit.value)
-                    : null
-                )
+                ? this.getCurrentInputDate('datePickerForLimit')
                 : new Date(newVal)
             this.endDateLimitTime = (endDateLimit === null
                 || endDateLimit.toString() === 'Invalid Date')
@@ -484,6 +517,14 @@ let appParams = {
                 this.repetitionInternal = previousValue.replace('x', '')
             }
             this.setCurrentDayIfWeek()
+        },
+        showEndDateMessage(newValue){
+            if (newValue) {
+                // set timout of 3 secondes
+                setTimeout(()=>{
+                    this.showEndDateMessage = false
+                }, 3000)
+            }
         },
         step(){
             this.updateAvailableExceptUpdatingNbMax()

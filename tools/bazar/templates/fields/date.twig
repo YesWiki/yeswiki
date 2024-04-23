@@ -74,7 +74,9 @@
         %}
       {% set repetitionTextForWeeks = _t('EVENT_REPETITION_FOR_WEEKS',{
                 x:data.step ?? '?',
-                days: data.days|map(v=>_t(dayT[v] ?? '??'))|join(',')
+                days: (data.days is defined and data.days is iterable )
+                ? data.days|map(v=>_t(dayT[v] ?? '??'))|join(',')
+                : ''
               })|lower
         %}
       {% set repetitionTextForDays = _t('EVENT_REPETITION_FOR_DAYS',{

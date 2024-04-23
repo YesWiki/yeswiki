@@ -53,7 +53,7 @@
                         :disabled="!isRecurrent"
                     />
                 </div>
-                <i class="limit-date-hint" v-if="endDateLimitTime < 0">{{ _t('EVENT_NO_LIMIT_DATE') }}</i>
+                <i class="limit-date-hint" v-if="showEndDateMessage">{{ _t('EVENT_LIMIT_DATE_UPDATE_FORCED') }}</i>
             </div>
             <div class="input-prepend input-group specific-for-recurrence" v-if="isRecurrent">
                 <div class="form-control for-selector-is-recurrent">

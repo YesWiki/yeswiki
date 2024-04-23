@@ -404,7 +404,7 @@ return [
     // 'EVENT_FORTH_Y_OF_MONTH' => 'Le quatrième Y du mois',
     // 'EVENT_IS_LINKED_TO_RECURRENT_EDIT' => 'Cette évènement est un évènement récurrent lié à la fiche %{link}.<br/>Toute modification de cette fiche cassera le lien avec l\'évènement de base !',
     // 'EVENT_LAST_Y_OF_MONTH' => 'Le dernier Y du mois',
-    // 'EVENT_NO_LIMIT_DATE' => 'Sans date de fin de répétition, seuls 300 évènements seront créés !',
+    // 'EVENT_LIMIT_DATE_UPDATE_FORCED' => 'La date de fin a été forcée pour réduire le nombre de répétitions à 600 !',
     // 'EVENT_NO_REPETITION' => 'Pas de répétition',
     // 'EVENT_NTH_OF_MONTH' => 'Chaque Y du mois',
     // 'EVENT_ON_MONTH' => 'En :',
