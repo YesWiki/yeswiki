@@ -502,6 +502,9 @@ let appParams = {
                 this.newExcept = ''
             }
         },
+        nth(){
+            this.updateAvailableExceptUpdatingNbMax()
+        },
         repetition(repetition){
             if (repetition !== 'w' && this.days?.length > 1){
                 this.days = [this.days[0]]
@@ -527,6 +530,9 @@ let appParams = {
             }
         },
         step(){
+            this.updateAvailableExceptUpdatingNbMax()
+        },
+        whenInMonth(){
             this.updateAvailableExceptUpdatingNbMax()
         }
     }
