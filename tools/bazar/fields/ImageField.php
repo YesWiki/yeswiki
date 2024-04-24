@@ -24,7 +24,7 @@ class ImageField extends FileField
     protected const FIELD_IMAGE_HEIGHT = 5;
     protected const FIELD_IMAGE_WIDTH = 6;
     protected const FIELD_IMAGE_CLASS = 7;
-    protected const FIELD_IMAGE_DEFAULT = 8;
+    protected const FIELD_IMAGE_DEFAULT = 13;
 
     public function __construct(array $values, ContainerInterface $services)
     {
