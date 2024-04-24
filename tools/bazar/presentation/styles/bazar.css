@@ -307,7 +307,7 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
 }
 @media (max-width: 600px) {
   .form-group.input-listedatedeb .select-time,
-  .form-group.input-jour .select-time,
+  .form-group.input-listedatefin .select-time,
   .form-group.input-jour .select-time {
     width: 100%;
     margin: 0 0 0 0;

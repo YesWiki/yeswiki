@@ -51,6 +51,7 @@
                         name="{{ "#{field.propertyName}_data[limitdate]" }}"
                         class="form-control bazar-date"
                         :disabled="!isRecurrent"
+                        required
                     />
                 </div>
                 <i class="limit-date-hint" v-if="showEndDateMessage">{{ _t('EVENT_LIMIT_DATE_UPDATE_FORCED') }}</i>
