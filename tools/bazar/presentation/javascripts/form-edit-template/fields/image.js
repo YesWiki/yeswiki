@@ -41,7 +41,7 @@ export default {
       5: "resize_height",
       6: "resize_width",
       7: "align",
-      8: "default_image",
+      13: "default_image",
     },
   },
   renderInput(fieldData) {
