@@ -143,6 +143,10 @@ a.bazar-card {
   border-bottom: 1px solid #ebebeb;
   object-fit: cover;
 } 
+.style-vertical .bazar-card.bazar-video .visual-area {
+  margin: -0.5rem;
+  margin-bottom: 0.5rem;
+}
 .style-vertical .bazar-card .footer-area {
   margin: -1.5rem;
   margin-top: 1rem;
