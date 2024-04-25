@@ -118,13 +118,13 @@ class SecurityController extends YesWikiController
                 if (empty($_POST['captcha'])) {
                     $error = _t('CAPTCHA_ERROR_PAGE_UNSAVED');
                 } elseif (!$this->captchaController->check(
-                        $_POST['captcha'] ?? '',
-                        $_POST['captcha_hash'] ?? ''
-                    )) {
+                    $_POST['captcha'] ?? '',
+                    $_POST['captcha_hash'] ?? ''
+                )) {
                     $error = _t('CAPTCHA_ERROR_WRONG_WORD');
                 }
                 // clean if error
-                if (!empty($error)){
+                if (!empty($error)) {
                     $_POST['submit'] = '';
                     if ($mode == 'entry') {
                         unset($_POST['bf_titre']);
@@ -146,11 +146,16 @@ class SecurityController extends YesWikiController
     {
         if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
             $champsCaptcha = $this->renderCaptchaField();
-            $output = preg_replace(
-                '/(\<div class="form-actions">.*<button type=\"submit\" name=\"submit\")/Uis',
-                "$champsCaptcha$1",
-                $output
-            );
+            $matches = [];
+            if (preg_match_all('/(\<div class="form-actions">.*<button type=\"submit\" name=\"submit\")/Uis', $output, $matches)) {
+                foreach ($matches[0] as $key => $match) {
+                    $output = str_replace(
+                        $match,
+                        $champsCaptcha . $matches[1][$key],
+                        $output
+                    );
+                }
+            }
         }
     }
 
