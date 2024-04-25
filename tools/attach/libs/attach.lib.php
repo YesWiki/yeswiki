@@ -49,7 +49,7 @@ if (!class_exists('attach')) {
             }
 
             if (empty($this->attachConfig['max_file_size'])) {
-                $this->attachConfig['max_file_size'] = $this->wiki->GetConfigValue("max_file_size") ? $this->wiki->GetConfigValue("max_file_size") : $this->file_upload_max_size();
+                $this->attachConfig['max_file_size'] = $this->params->get("max-upload-size");
             }
 
             $safemode = $this->wiki->GetConfigValue("no_safe_mode");
@@ -67,28 +67,6 @@ if (!class_exists('attach')) {
         /******************************************************************************
          *    FONCTIONS UTILES
          *******************************************************************************/
-        // Returns a file size limit in bytes based on the PHP upload_max_filesize
-        // and post_max_size
-        public function file_upload_max_size()
-        {
-            static $max_size = -1;
-
-            if ($max_size < 0) {
-                // Start with post_max_size.
-                $post_max_size = $this->parse_size(ini_get('post_max_size'));
-                if ($post_max_size > 0) {
-                    $max_size = $post_max_size;
-                }
-
-                // If upload_max_size is less, then reduce. Except if upload_max_size is
-                // zero, which indicates no limit.
-                $upload_max = $this->parse_size(ini_get('upload_max_filesize'));
-                if ($upload_max > 0 && $upload_max < $max_size) {
-                    $max_size = $upload_max;
-                }
-            }
-            return $max_size;
-        }
         /**
          * transforme des valeurs en mega / kilo / giga octets en entier
          *

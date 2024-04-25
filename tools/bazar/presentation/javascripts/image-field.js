@@ -34,14 +34,12 @@ function handleFileSelect(evt) {
     if (!f.type.match('image.*')) {
       continue
     }
-    // ToDo: Faire pareil pour file-field
-    if (typeof imageMaxSize !== 'undefined') {
-      if (f.size > imageMaxSize) {
-        alert(_t('IMAGEFIELD_TOO_LARGE_IMAGE', { imageMaxSize }))
-        document.getElementById(id).type = ''
-        document.getElementById(id).type = 'file'
-        continue
-      }
+    let imageMaxSize = document.getElementById(id).dataset.maxSize
+    if (f.size > imageMaxSize) {
+      alert(_t('IMAGEFIELD_TOO_LARGE_IMAGE', { imageMaxSize }))
+      document.getElementById(id).type = ''
+      document.getElementById(id).type = 'file'
+      continue
     }
     const reader = new FileReader()
     // Closure to capture the file information.
