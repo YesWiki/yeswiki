@@ -4,7 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Security\Controller\SecurityController;
 
 /**
@@ -43,16 +43,9 @@ class ImageField extends FileField
     {
         $wiki = $this->getWiki();
         $value = $this->getValue($entry);
-        $maxSize = $wiki->config['BAZ_TAILLE_MAX_FICHIER'] ;
-
         // javascript pour gerer la previsualisation
-
         // si une taille maximale est indiquée, on teste
-        // ToDo: améliorer pour prendre la taille max définie au niveau du champ si elle existe et faire pareil dans FileField
-        if (!empty($maxSize)) {
-            $wiki->addJavascript("var imageMaxSize = {$maxSize};");
-        }
-        $wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/image-field.js');
+        $wiki->services->get(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/image-field.js');
 
         if (isset($value) && $value != '') {
             if (isset($_GET['suppr_image']) && $_GET['suppr_image'] === $value) {
@@ -98,12 +91,11 @@ class ImageField extends FileField
                 ]);
             }
         }
-        return ($alertMessage ?? '') .$this->render('@bazar/inputs/image.twig');
+        return ($alertMessage ?? '') .$this->render('@bazar/inputs/image.twig', ['maxSize' => $this->maxSize]);
     }
 
     public function formatValuesBeforeSave($entry)
     {
-        // ToDo: Vérifier que l'image à bien été téléchargée et que sa taille n'est pas trop grosse
         $params = $this->getService(ParameterBagInterface::class);
         $value = $this->getValue($entry);
         if (!empty($_FILES[$this->propertyName]['name']) && !empty($entry['id_fiche'])) {
@@ -115,6 +107,10 @@ class ImageField extends FileField
 
             if ($this->isImage($rawFileName) && !$this->getService(SecurityController::class)->isWikiHibernated()) {
                 if (!file_exists($filePath)) {
+                    if ($_FILES[$this->propertyName]['size'] > $this->maxSize) {
+                        throw new \Exception(_t('BAZ_FILEFIELD_TOO_LARGE_FILE', ['fileMaxSize' => $this->maxSize]));
+                    }
+
                     move_uploaded_file($_FILES[$this->propertyName]['tmp_name'], $filePath);
                     chmod($filePath, 0755);
 
