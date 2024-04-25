@@ -15,7 +15,7 @@
   {% endif %}
   {% set imWidth = (nbcol == 4) ? 250 : (nbcol == 5 ? 200 : 300 ) %}
   {% set imHeight = params.style == "square" ? imWidth : (params.style == "horizontal" ? imWidth*23//27 : imWidth*2//3 ) %}
-  {% set firstTokenCrop = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/crop") %}
+  {% set firstTokenFit = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/fit") %}
   <div class="bazar-cards-container" v-if="ready" 
        :class="[{ready: ready}, `style-${params.style || 'vertical'}`, `nbcol-{{nbcol}}`]" 
        :style="{'grid-template-columns': `repeat({{nbcol}}, 1fr)`}">
@@ -44,8 +44,8 @@
             loading="lazy"
             :style="{width:((params.style == 'square')? false : '0px'),height:((params.style == 'square')? false : '0px')}"
             class="area visual-area" 
-            :src="urlImage(entry,'imagefieldname',{{ imWidth }},{{ imHeight }},'crop')"
-            @error="urlImageResizedOnError(entry,'imagefieldname',{{ imWidth }},{{ imHeight }},'crop',{{ firstTokenCrop|json_encode }})"></img>
+            :src="urlImage(entry,'imagefieldname',{{ imWidth }},{{ imHeight }},'fit')"
+            @error="urlImageResizedOnError(entry,'imagefieldname',{{ imWidth }},{{ imHeight }},'fit',{{ firstTokenFit|json_encode }})"></img>
           <div v-if="params.style != 'square'" class="area visual-area" 
             :style="{color:'blue','background-image': `url('${urlImage(entry,'imagefieldname',{{ imWidth }},{{ imHeight }},'crop')}')`}">
           </div>
