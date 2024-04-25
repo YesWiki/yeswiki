@@ -202,6 +202,8 @@ return [
     // bazarvideo
     // 'AB_bazarvideo_action_label' => 'Affichage des vidéos par bloc',
     // 'AB_bazarvideo_action_link_fieldname_label' => 'Champ lien',
+    'AB_bazarvideo_displayfields_imagefieldname_hint' => 'Facultatif, champ pour remplacer la vignette d\'incrustation vidéo par une image',
+    'AB_bazarvideo_displayfields_imagefieldname_label' => 'Champ image',
     // BazarAction
     "AB_bazar_action_label" => "Exibir um formulário de criação de arquivo",
     "AB_bazar_action_description" => "Usado para exibir o formulário para criar um arquivo.",

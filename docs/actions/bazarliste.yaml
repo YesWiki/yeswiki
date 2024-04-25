@@ -1225,14 +1225,15 @@ actions:
       displayfields:
         type: correspondance
         subproperties:
-          imagefieldname:
-            type: form-field
-            label: _t(AB_bazarliste_displayfields_visual_label)
-            value: imagebf_image
           urlfieldname:
             type: form-field
             label: _t(AB_bazarvideo_action_link_fieldname_label)
             value: bf_url
+          imagefieldname:
+            type: form-field
+            label: _t(AB_bazarvideo_displayfields_imagefieldname_label)
+            default: ""
+            hint: _t(AB_bazarvideo_displayfields_imagefieldname_hint)
           title:
             type: form-field
             label: _t(AB_bazarliste_displayfields_title_label)
