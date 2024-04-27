@@ -95,6 +95,7 @@ function _convert($text, $fromencoding, $database = false)
 
 /**
  * Automatically detects the languages available in the lang dir
+ * But filtered by officially supported lang
  * @return array available languages
  */
 function detectAvailableLanguages()
@@ -103,7 +104,9 @@ function detectAvailableLanguages()
     if ($d = @opendir('lang')) {
         while (($f = readdir($d)) !== false) {
             if (preg_match(',^yeswiki_([a-z_]+)\.php[3]?$,', $f, $regs)) {
-                $available_languages[] = $regs[1];
+                if (in_array($regs[1], SUPPORTED_LANGS)) {
+                    $available_languages[] = $regs[1];
+                }
             }
         }
         closedir($d);
@@ -139,7 +142,7 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
         return $getLang;
     }
 
-    $postConfigLang = '' ;
+    $postConfigLang = '';
     if (isset($_POST["config"])) {
         // just for installation
         if (count($_POST["config"]) == 1 && is_string($_POST["config"])) {
@@ -154,10 +157,10 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
                         if (is_array($allowed_classes) && in_array($matches[2], $allowed_classes)) {
                             return $matches[0];
                         } else {
-                            return $matches[1].':22:"__PHP_Incomplete_Class":'.
-                            ($matches[3] + 1).
-                            ':{s:27:"__PHP_Incomplete_Class_Name";'.
-                            serialize($matches[2]);
+                            return $matches[1] . ':22:"__PHP_Incomplete_Class":' .
+                                ($matches[3] + 1) .
+                                ':{s:27:"__PHP_Incomplete_Class_Name";' .
+                                serialize($matches[2]);
                         }
                     },
                     $_POST["config"]
@@ -167,8 +170,10 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
             if (isset($conf['default_language']) && in_array($conf['default_language'], $available_languages)) {
                 $postConfigLang = $conf['default_language'];
             }
-        } elseif (isset($_POST["config"]['default_language'])
-            && in_array($_POST["config"]['default_language'], $available_languages)) {
+        } elseif (
+            isset($_POST["config"]['default_language'])
+            && in_array($_POST["config"]['default_language'], $available_languages)
+        ) {
             $postConfigLang = $_POST["config"]['default_language'];
         }
     }
@@ -206,7 +211,7 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
     //            | ( "1" [ "." 0*3("0") ] )
     preg_match_all(
         "/([[:alpha:]]{1,8})(-([[:alpha:]|-]{1,8}))?"
-        ."(\s*;\s*q\s*=\s*(1\.0{0,3}|0\.\d{0,3}))?\s*(,|$)/i",
+            . "(\s*;\s*q\s*=\s*(1\.0{0,3}|0\.\d{0,3}))?\s*(,|$)/i",
         $httpAcceptLang,
         $hits,
         PREG_SET_ORDER
@@ -254,6 +259,8 @@ function initI18n()
         'YW_CHARSET',
         isset($GLOBALS['wiki']->config['charset']) ? $GLOBALS['wiki']->config['charset'] : 'UTF-8'
     );
+    // supported languages
+    define('SUPPORTED_LANGS', ['ca', 'en', 'es', 'fr', 'nl', 'pt']);
 
     // get the language list
     require_once 'lang/languages_list.php';
@@ -283,13 +290,13 @@ function loadpreferredI18n($wiki, $page = '')
 {
     $GLOBALS['prefered_language'] = detectPreferedLanguage($wiki, $GLOBALS['available_languages'], 'auto', $page);
 
-    if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswiki_'.$GLOBALS['prefered_language'].'.php')) {
+    if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswiki_' . $GLOBALS['prefered_language'] . '.php')) {
         // this will overwrite the values of $GLOBALS['translations'] in the selected language
-        $returnedArray = include_once 'lang/yeswiki_'.$GLOBALS['prefered_language'].'.php';
+        $returnedArray = include_once 'lang/yeswiki_' . $GLOBALS['prefered_language'] . '.php';
         load_translations($returnedArray);
     }
-    if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswikijs_'.$GLOBALS['prefered_language'].'.php')) {
-        $returnedArray = include_once 'lang/yeswikijs_'.$GLOBALS['prefered_language'].'.php';
+    if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswikijs_' . $GLOBALS['prefered_language'] . '.php')) {
+        $returnedArray = include_once 'lang/yeswikijs_' . $GLOBALS['prefered_language'] . '.php';
         load_translations($returnedArray, true);
     }
     return;
