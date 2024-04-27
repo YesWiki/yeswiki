@@ -1,5 +1,4 @@
 <?php
-
 return [
     // fields/CalcField.php
     'BAZ_FORM_EDIT_CALC_LABEL' => 'Calculations',
@@ -116,7 +115,7 @@ return [
     'BAZ_FORM_EDIT_TAGS_LABEL' => 'Tags',
     'BAZ_FORM_EDIT_SUBSCRIBE_LIST_LABEL' => 'Subscribe mailing list',
     'BAZ_FORM_EDIT_CUSTOM_HTML_LABEL' => 'Custom HTML',
-    'BAZ_FORM_EDIT_ACL_LABEL' => 'Config access rigths',
+    'BAZ_FORM_EDIT_ACL_LABEL' => 'Config access rights',
     'BAZ_FORM_EDIT_METADATA_LABEL' => 'Config entry theme',
     'BAZ_FORM_EDIT_LINKEDENTRIES_LABEL' => 'Linked entries list',
     'BAZ_FORM_EDIT_USERS_WIKINI_LABEL' => 'Create a user when the entry is validated',
@@ -152,16 +151,16 @@ return [
     // 'BAZ_FORM_EDIT_TEXT_TYPE_COLOR' => 'Couleur',
     // 'BAZ_FORM_EDIT_TITLE_LABEL' => 'Titre Automatique',
     // 'BAZ_FORM_EDIT_CUSTOM_LABEL' => 'Custom',
-    'BAZ_FORM_EDIT_MAP_FIELD' => 'Geolocalization from address fields',
+    'BAZ_FORM_EDIT_MAP_FIELD' => 'Geo-localization from address fields, town,…',
     'BAZ_FORM_EDIT_COLLABORATIVE_DOC_FIELD' => 'Collaborative document',
-    'BAZ_FORM_EDIT_TABS' => 'Tabs nav.',
+    'BAZ_FORM_EDIT_TABS' => 'Tabs nav',
     'BAZ_FORM_EDIT_TABCHANGE' => 'Change to next tab',
     'BAZ_FORM_EDIT_TABS_TITLES_LABEL' => 'Tabs\' titles',
     'BAZ_FORM_EDIT_TABS_FOR_FORM' => 'in form',
     'BAZ_FORM_EDIT_TABS_FOR_ENTRY' => 'in entry',
     'BAZ_FORM_EDIT_TABS_FORMTITLES_VALUE' => 'Tab 1,Tab 2,Tab 3',
-    'BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION' => 'Separate each title by \',\'. Keep empty to not have tabs into form.',
-    'BAZ_FORM_EDIT_TABS_VIEWTITLES_DESCRIPTION' => 'Separate each title by \',\'. Keep empty to not have tabs into entry.',
+    'BAZ_FORM_EDIT_TABS_FORMTITLES_DESCRIPTION' => 'Separate each title by \',\'. Keep empty to not have tabs into form',
+    'BAZ_FORM_EDIT_TABS_VIEWTITLES_DESCRIPTION' => 'Separate each title by \',\'. Keep empty to not have tabs into entry',
     'BAZ_FORM_EDIT_TABS_MOVESUBMITBUTTONTOLASTTAB_LABEL' => 'Move \'Submit\' button',
     'BAZ_FORM_EDIT_TABS_MOVESUBMITBUTTONTOLASTTAB_DESCRIPTION' => 'Move \'Valider\' button in last tab',
     'BAZ_FORM_EDIT_TABS_BTNCOLOR_LABEL' => 'Buttons\' color',
@@ -223,7 +222,7 @@ return [
     'BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL' => "Condition",
     'BAZ_FORM_EDIT_CONDITIONS_CHECKING_END' => "End of condition",
     'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_LABEL' => "Clean when hiding",
-    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION' => "Clean",
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION' => "Erase",
     'BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION' => "Do not clean",
     'BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT' => "To clean or not the content of what is being hidden",
     // jsvascripts/form-edit-templates/fields/file.js
@@ -245,17 +244,17 @@ return [
     // 'BAZ_REACTIONS_FIELD_LABELS_PLACEHOLDER' => 'Gratitude,J\'aime,J\'ai appris quelque chose,J\'ai pas compris,Je ne suis pas d\'accord,Ca me perturbe',
     // presentation/javascripts/map-field-leaflet.js
     'BAZ_ADJUST_MARKER_POSITION' => 'Move me if needed',
-
     // presentation/javascripts/form-edit-template/fields/url.js
     'BAZAR_VIDEO_MAXHEIGHT_LABEL' => 'Maximum video\'s height',
     'BAZAR_VIDEO_MAXWIDTH_LABEL' => 'Maximum video\'s width',
     'BAZAR_VIDEO_MAX_HINT' => 'Only positive integer of pixel without unity ; ex: 200',
     'BAZAR_VIDEO_RATIO_LABEL' => 'Shape',
-    'BAZAR_VIDEO_POSITION_LABEL' => 'Position',
+    'BAZAR_VIDEO_POSITION_LABEL' => 'Video\'s position',
     'BAZAR_VIDEO_POSITION_LEFT' => 'Left align',
     'BAZAR_VIDEO_POSITION_RIGHT' => 'Right align',
     'BAZAR_URL_DISPLAY_VIDEO' => 'Display player if url is a video?',
-
     // templates/entries/index-dynamic-temapltes/BazarCalendar_ButtonICS.js
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => "Add to your agenda",
+    // reactions
+    'BAZ_ACTIVATE_REACTIONS' => 'Activate reactions on this entry?',
 ];
