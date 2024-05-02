@@ -11,9 +11,6 @@ use YesWiki\Wiki;
 
 class HelloCommand extends Command
 {
-    // the name of the command (the part after "bin/console")
-    protected static $defaultName = 'helloworld:hello';
-
     protected $wiki;
 
     public function __construct(Wiki &$wiki)
@@ -25,13 +22,15 @@ class HelloCommand extends Command
     protected function configure()
     {
         $this
-            // the short description shown while running "php bin/console list"
+            // the name of the command : php includes/commands/console helloworld:hello"
+            ->setName('helloworld:hello')
+            // the short description shown while running "php includes/commands/console list"
             ->setDescription('Display message "Hello !".')
 
             // the full command description shown when running the command with
             // the "--help" option
-            ->setHelp("This command display the message \"Hello !\" with options for uppercase of add a username.\n".
-                "The argument \"username\" can be used to add a username. Example : \n".
+            ->setHelp("This command display the message \"Hello !\" with options for uppercase of add a username.\n" .
+                "The argument \"username\" can be used to add a username. Example : \n" .
                 "Command line'php includes/commands/console helloworld:hello \"John Smith\"' gives \"Hello John Smith !\"")
 
             // add argument for username
