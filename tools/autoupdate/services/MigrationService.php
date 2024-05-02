@@ -1,21 +1,22 @@
 <?php
 
-namespace AutoUpdate;
+namespace YesWiki\AutoUpdate\Service;
 
 use Exception;
 use ReflectionClass;
 use ReflectionMethod;
 use YesWiki\Core\Service\TripleStore;
-use YesWiki\Core\YesWikiPerformable;
 use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Wiki;
 
 // This is a simple mecanism to perform migrations
 // Create a new private method in this class, it will be run after the wiki get updated
-class Migrations extends YesWikiPerformable
+class MigrationService
 {
   public const TRIPLES_MIGRATION_ID = 'migration';
+  private $wiki;
 
-  public function __construct($wiki)
+  public function __construct(Wiki $wiki)
   {
     $this->wiki = $wiki;
   }
@@ -23,8 +24,8 @@ class Migrations extends YesWikiPerformable
   function run()
   {
     if ($this->wiki->services->get(SecurityController::class)->isWikiHibernated()) {
-      throw new \Exception(_t('WIKI_IN_HIBERNATION'));
-    };
+      throw new Exception(_t('WIKI_IN_HIBERNATION'));
+    }
 
     // All private methods are considered as migrations
     $reflection = new ReflectionClass($this);

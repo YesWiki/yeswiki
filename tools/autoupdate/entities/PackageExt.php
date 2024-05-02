@@ -1,6 +1,6 @@
 <?php
 
-namespace AutoUpdate;
+namespace YesWiki\AutoUpdate\Entity;
 
 abstract class PackageExt extends Package
 {
@@ -25,7 +25,7 @@ abstract class PackageExt extends Package
     {
         $desPath = $this->localPath();
 
-        $neededPHPVersion = $this->getNeededPHPversionFromExtractedFolder() ;
+        $neededPHPVersion = $this->getNeededPHPversionFromExtractedFolder();
         if (!$this->PHPVersionEnoughHigh($neededPHPVersion)) {
             $textAction = strtolower((is_dir($desPath)) ? _t('AU_UPDATE') : _t('AU_INSTALL'));
             trigger_error(_t('AU_PHP_TOO_LOW_ERROR', [
@@ -45,8 +45,8 @@ abstract class PackageExt extends Package
         }
 
         // get the first subfolder extracted from the zip (it contains everything)
-        $dirs = array_filter(glob($this->extractionPath.'/*'), 'is_dir');
-        $extractionPath = $dirs[0].'/';
+        $dirs = array_filter(glob($this->extractionPath . '/*'), 'is_dir');
+        $extractionPath = $dirs[0] . '/';
 
         $this->copy(
             $extractionPath,

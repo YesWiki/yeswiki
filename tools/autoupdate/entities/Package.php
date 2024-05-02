@@ -1,6 +1,6 @@
 <?php
 
-namespace AutoUpdate;
+namespace YesWiki\AutoUpdate\Entity;
 
 abstract class Package extends Files
 {
@@ -76,7 +76,7 @@ abstract class Package extends Files
         ];
         $allGood = true;
         foreach ($file2check as $f) {
-            $path = $this->localPath.DIRECTORY_SEPARATOR.$f;
+            $path = $this->localPath . DIRECTORY_SEPARATOR . $f;
             if (file_exists($path) and !$this->isWritable($path)) {
                 return false;
             }
@@ -143,7 +143,7 @@ abstract class Package extends Files
         // check format of JSON package 99.99.99
         $matches = [];
         if (is_string($this->minimalPhpVersion) && preg_match('/^([0-9]*)\.([0-9]*)\.([0-9]*)$/', $this->minimalPhpVersion, $matches)) {
-            return $this->minimalPhpVersion ;
+            return $this->minimalPhpVersion;
         }
         return MINIMUM_PHP_VERSION_FOR_CORE; // just in case of error give a number
     }
@@ -158,7 +158,7 @@ abstract class Package extends Files
         if (file_exists($jsonPath)) {
             $jsonFile = file_get_contents($jsonPath);
             if (!empty($jsonFile)) {
-                $composerData = json_decode($jsonFile, true) ;
+                $composerData = json_decode($jsonFile, true);
                 if (!empty($composerData['require']['php'])) {
                     $rawNeededPHPRevision = $composerData['require']['php'];
                     $matches = [];
@@ -170,7 +170,7 @@ abstract class Package extends Files
                         $minor = ($minor == '*') ? 0 : $minor;
                         $fix = $matches[4] ?? 0;
                         $fix = ($fix == '*') ? 0 : $fix;
-                        return $major.'.'.$minor.'.'.$fix;
+                        return $major . '.' . $minor . '.' . $fix;
                     }
                 }
             }
@@ -188,8 +188,8 @@ abstract class Package extends Files
         return version_compare(
             PHP_VERSION,
             (empty($neededRevision))
-            ? $this->getNeededPHPversion()
-            : $neededRevision,
+                ? $this->getNeededPHPversion()
+                : $neededRevision,
             '>='
         );
     }
@@ -201,7 +201,7 @@ abstract class Package extends Files
     {
         $namePlusDate =  explode('-', basename($this->address, '.zip'), 2)[1];
 
-        return preg_replace('/-'.SEMVER.'$/', '', preg_replace('/-\d*-\d*-\d*-\d*$/', '', $namePlusDate));
+        return preg_replace('/-' . SEMVER . '$/', '', preg_replace('/-\d*-\d*-\d*-\d*$/', '', $namePlusDate));
     }
 
 

@@ -1,6 +1,8 @@
 <?php
 
-namespace AutoUpdate;
+namespace YesWiki\AutoUpdate\Entity;
+
+use YesWiki\AutoUpdate\Service\AutoUpdateService;
 
 class PackageCore extends Package
 {
@@ -56,11 +58,11 @@ class PackageCore extends Package
             $this->extractionPath .= '/';
         }
         // get the first subfolder extracted from the zip (it contains everything)
-        $dirs = array_filter(glob($this->extractionPath.'*'), 'is_dir');
-        $this->extractionPath = $dirs[0].'/';
+        $dirs = array_filter(glob($this->extractionPath . '*'), 'is_dir');
+        $this->extractionPath = $dirs[0] . '/';
 
         // check if PHP update needed
-        $neededPHPVersion = $this->getNeededPHPversionFromExtractedFolder() ;
+        $neededPHPVersion = $this->getNeededPHPversionFromExtractedFolder();
         if (!$this->PHPVersionEnoughHigh($neededPHPVersion)) {
             $textAction = ($this->newVersionRequested()) ? _t('AU_PHP_TOO_LOW_VERSION_UPDATE') : _t('AU_PHP_TOO_LOW_UPDATE');
             trigger_error(_t('AU_PHP_TOO_LOW_ERROR', [
@@ -84,7 +86,7 @@ class PackageCore extends Package
             }
             closedir($res);
             foreach (self::FILES_TO_ADD_TO_IGNORED_FOLDERS as $file) {
-                if (is_file($this->extractionPath .'/'. $file) or is_dir($this->extractionPath .'/'. $file)) {
+                if (is_file($this->extractionPath . '/' . $file) or is_dir($this->extractionPath . '/' . $file)) {
                     $this->copy($this->extractionPath . '/' . $file, $desPath . '/' . $file);
                 }
             }
@@ -94,9 +96,9 @@ class PackageCore extends Package
         }
 
         // check if cache and files directories are present
-        foreach (['cache','files'] as $dirName) {
-            if (!is_dir($desPath . '/'.$dirName)) {
-                mkdir($desPath . '/'.$dirName);
+        foreach (['cache', 'files'] as $dirName) {
+            if (!is_dir($desPath . '/' . $dirName)) {
+                mkdir($desPath . '/' . $dirName);
             }
         }
         return true;
@@ -138,7 +140,7 @@ class PackageCore extends Package
         $configuration = new Configuration('wakka.config.php');
         $configuration->load();
 
-        $version = AutoUpdate::DEFAULT_VERS;
+        $version = AutoUpdateService::DEFAULT_VERS;
         if (!empty($configuration['yeswiki_version'])) {
             $version = $configuration['yeswiki_version'];
         }
@@ -150,7 +152,7 @@ class PackageCore extends Package
         $configuration = new Configuration('wakka.config.php');
         $configuration->load();
 
-        $version = AutoUpdate::DEFAULT_VERS;
+        $version = AutoUpdateService::DEFAULT_VERS;
         if (isset($configuration['yeswiki_version'])) {
             $version = $configuration['yeswiki_version'];
         }

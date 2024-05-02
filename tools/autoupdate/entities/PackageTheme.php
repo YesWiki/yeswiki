@@ -1,6 +1,6 @@
 <?php
 
-namespace AutoUpdate;
+namespace YesWiki\AutoUpdate\Entity;
 
 class PackageTheme extends PackageExt
 {

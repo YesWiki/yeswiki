@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Fichier de traduction en francais de l'extension AutoUpdate
  *
@@ -33,8 +34,8 @@ return [
     'AU_NO_DESCRIPTION' => "Description non disponible.",
     'AU_DOCUMENTATION_LINK' => "documentation",
     'AU_YESWIKI_DORYPHORE_POSTINSTALL' => "Welcome on Doryphore",
-    'AU_PHP_TOO_LOW_ERROR' => "Vous ne pouvez pas %{textAction} car votre version PHP n'est pas supérieure à %{NEEDEDPHPVERSION}.\n".
-        "Vous avez la version %{CURRENTPHPVERSION}.\n".
+    'AU_PHP_TOO_LOW_ERROR' => "Vous ne pouvez pas %{textAction} car votre version PHP n'est pas supérieure à %{NEEDEDPHPVERSION}.\n" .
+        "Vous avez la version %{CURRENTPHPVERSION}.\n" .
         "%{hint}",
     'AU_PHP_TOO_LOW_HINT' => "Veuillez mettre à jour PHP sur votre serveur avant de %{textAction} !",
     'AU_PHP_TOO_LOW_VERSION_UPDATE' => "changer de version YesWiki",
@@ -53,7 +54,6 @@ return [
     'AU_PACKAGE_NOT_DOWNLOADED' => 'Le paquet n\'a pas été téléchargé.',
     'AU_UNKWON_PACKAGE_TYPE' => 'Type de paquet inconnu',
     'AU_PACKAGE_NOT_UNZIPPED' => 'Le paquet n\'a pas été décompressé.',
-    'AU_FINALIZE_UPDATE' => 'Finaliser la mise à jour (lancer les actions de post-installation)',
     'AU_SEVERAL_THEMES_UPDATE' => 'Vous avez {nbMaj} thèmes à mettre à jour',
     'AU_ONE_THEME_UPDATE' => 'Vous avez 1 thème à mettre à jour',
     'AU_SEVERAL_TOOLS_UPDATE' => 'Vous avez {nbMaj} extensions à mettre à jour',

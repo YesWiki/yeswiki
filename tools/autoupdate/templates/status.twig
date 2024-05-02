@@ -1,10 +1,12 @@
-{% if showCore %}
-    {% include '@autoupdate/core.twig' %}
-{% endif %}
+{{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
+{{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
+
+{% include '@autoupdate/core.twig' %}
+
 <p>&nbsp;</p>
-<!-- start of accordion -->
+
 <div class="panel-group" role="tablist" aria-multiselectable="true" id="accordion_update" >
-{% if showThemes %}
+	{# THEMES #}
 	{% set nbMaj = 0 %}
 	{% set exts = themes %}
 	{% for ext in exts %}
@@ -12,7 +14,6 @@
 			{% set nbMaj = nbMaj + 1 %}
 		{% endif %}
 	{% endfor %}
-	<!-- start of panel -->
 	{% if nbMaj > 0 %}
 		<div class="panel panel-warning"  >
 	{% else %}
@@ -35,10 +36,9 @@
 			{% set exts = themes %}
 			{% include '@autoupdate/exts.twig' %}
 		</div>
-	 </div> <!-- end of panel -->
-{% endif %}
+	</div>
 
-{% if showTools %}
+	{# TOOLS #}
 	{% set nbMaj = 0 %}
 	{% set exts = tools %}
 	{% for ext in exts %}
@@ -46,7 +46,6 @@
 			{% set nbMaj = nbMaj + 1 %}
 		{% endif %}
 	{% endfor %}
-	<!-- start of panel -->
 	{% if nbMaj > 0 %}
 		<div class="panel panel-warning"  >
 	{% else %}
@@ -69,6 +68,5 @@
 			{% set exts = tools %}
 			{% include '@autoupdate/exts.twig' %}
 		</div>
-	</div> <!-- end of panel -->
-{% endif %}
-</div><!-- end of accordion -->
+	</div>
+</div>

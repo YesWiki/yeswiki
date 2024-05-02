@@ -1,6 +1,6 @@
 <?php
 
-namespace AutoUpdate;
+namespace YesWiki\AutoUpdate\Entity;
 
 // TODO delete this file whan passing to ectoplasme
 

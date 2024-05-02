@@ -12,3 +12,11 @@ parameters:
     - TableauDeBord
     - LookWiki
     - GererSauvegardes
+
+services:
+  _defaults:
+    autowire: true
+    public: true
+
+  YesWiki\AutoUpdate\Service\:
+    resource: 'services/*'

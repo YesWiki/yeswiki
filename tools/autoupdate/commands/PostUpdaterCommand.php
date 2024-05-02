@@ -33,8 +33,7 @@ class PostUpdaterCommand extends Command
 
             // the full command description shown when running the command with
             // the "--help" option
-            ->setHelp('This command allows you to execute postupgrade (runs the upgrade action).')
-        ;
+            ->setHelp('This command allows you to execute postupgrade (runs the upgrade action).');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -44,6 +43,7 @@ class PostUpdaterCommand extends Command
         // little hack (bad habit..): we use the first admin user to perform updates as an admin
         $firstAdmin = $wiki->services->get(AuthController::class)->connectFirstAdmin();
         if (!empty($firstAdmin)) {
+            // Is this command still needed or not?
             $this->wiki->Run($this->wiki->getPageTag(), 'update');
 
             $wiki->services->get(AuthController::class)->logout();
