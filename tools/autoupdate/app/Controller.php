@@ -41,60 +41,45 @@ class Controller
             return $this->wiki->render("@autoupdate/norepo.twig", []);
         }
 
-        if (isset($get['upgrade'])
+        if (
+            isset($get['upgrade'])
             and $this->autoUpdate->isAdmin()
             and !$this->securityController->isWikiHibernated()
         ) {
-            $previousMessages = [];
-            foreach ($this->messages as $message) {
-                $previousMessages[] = $message;
-            }
+            // Ensure a backup is made before the upgrade
+            // User as the option to force the update even without backup
             if (!$this->archiveService->hasValidatedBackup($get['forcedUpdateToken'] ?? "")) {
                 return $this->wiki->render("@core/preupdate-backup.twig", [
                     'upgrade' => strval($get['upgrade'])
                 ]);
             }
-            $this->upgrade($get['upgrade']);
-            if ($get['upgrade'] == 'yeswiki') {
-                // reload wiki to prevent missing files' error due to upgrade.
-                // prepare data
-                $data = [];
-                foreach ($previousMessages as $message) {
-                    $data_message = [];
-                    $data_message['status'] = $message['status'];
-                    $data_message['text'] = $message['text'];
-                    $data['messages'][] = $data_message;
-                }
-                foreach ($this->messages as $message) {
-                    $data_message = [];
-                    $data_message['status'] = $message['status'];
-                    $data_message['text'] = $message['text'];
-                    $data['messages'][] = $data_message;
-                }
-                $data['baseURL'] = $this->autoUpdate->baseUrl();
-                $_SESSION['updateMessage'] = json_encode($data);
 
-                // call the same href to reload wiki in new doryphore version
-                // give $data by $_SESSION['updateMessage']
-                $newAdress = $this->wiki->Href();
-                header("Location: ".$newAdress);
+            // Perform the upgrade
+            $this->upgrade($get['upgrade']);
+
+            // When upgrading the core (and not extension or theme) we reload the page
+            // to perform postInstall operation with the new code
+            if ($get['upgrade'] == 'yeswiki') {
+                // Store messages into session
+                $_SESSION['upgradeMessages'] = json_encode(['messages' => $this->messages]);
+                // call the same href to reload wiki in new version (this will call post install code)
+                header("Location: " . $this->wiki->Href());
                 exit();
             } else {
-                return $this->wiki->render("@autoupdate/update.twig", [
-                    'messages' => $this->messages,
-                    'baseUrl' => $this->autoUpdate->baseUrl(),
+                return $this->wiki->render("@autoupdate/update-result.twig", [
+                    'messages' => $this->messages
                 ]);
             }
         }
 
-        if (isset($get['delete'])
+        if (
+            isset($get['delete'])
             and $this->autoUpdate->isAdmin()
             and !$this->securityController->isWikiHibernated()
         ) {
             $this->delete($get['delete']);
-            return $this->wiki->render("@autoupdate/update.twig", [
-                'messages' => $this->messages,
-                'baseUrl' => $this->autoUpdate->baseUrl(),
+            return $this->wiki->render("@autoupdate/update-result.twig", [
+                'messages' => $this->messages
             ]);
         }
 
@@ -114,7 +99,6 @@ class Controller
 
     private function delete($packageName)
     {
-        $this->messages->reset();
         $package = $this->autoUpdate->repository->getPackage($packageName);
 
         if (false === $package->deletePackage()) {
@@ -126,9 +110,6 @@ class Controller
 
     private function upgrade($packageName)
     {
-        // Remise a zéro des messages
-        $this->messages->reset();
-
         $package = $this->autoUpdate->repository->getPackage($packageName);
 
         // Téléchargement de l'archive

@@ -10,23 +10,21 @@ if (!defined("WIKINI_VERSION")) {
 
 $loader = require __DIR__ . '/../vendor/autoload.php';
 
-// display update's message
-// search data in session message
-$endUpdate = false ;
-if (isset($_SESSION['updateMessage'])) {
-    $message = $_SESSION['updateMessage'];
-    $_SESSION['updateMessage'] = '';
+$postInstall = false;
+if (isset($_SESSION['upgradeMessages'])) {
+    $message = $_SESSION['upgradeMessages'];
+    $_SESSION['upgradeMessages'] = '';
     if (!empty($message)) {
         // check integrity of data
         $data = json_decode($message, true);
-        $endUpdate = is_array($data) && isset($data['messages']) && isset($data['baseURL'])
-            && $this->UserIsAdmin();
+        $postInstall = is_array($data) && isset($data['messages']) && $this->UserIsAdmin();
     }
 }
 
-if ($endUpdate) {
-
-    // update unknown release
+// After the update is complete, we are redirected to this same URL with $_SESSION['upgradeMessages']
+// this is needed so the code get reloaded. We perform here post install actions
+if ($postInstall) {
+    // Fix unknown release
     $params = $this->services->getParameterBag();
     $releaseInConfig = $params->get('yeswiki_release');
     if ($releaseInConfig == _t('AU_UNKNOW') || !preg_match("/^\d{1,4}[.-].*/", $releaseInConfig)) {
@@ -36,7 +34,7 @@ if ($endUpdate) {
         $configFromFile->write();
     }
 
-    // specific message when updating from cercopitheque
+    // Specific message when updating from cercopitheque
     if (isset($data['fromCercopitheque']) && $data['fromCercopitheque']) {
         unset($data['fromCercopitheque']);
         $fromCercopitheque = true;
@@ -49,7 +47,7 @@ if ($endUpdate) {
         $data['messages'] = $newMessages;
 
         // check presence of theme margot
-        $themeManager = $this->services->get(ThemeManager::class) ;
+        $themeManager = $this->services->get(ThemeManager::class);
 
         // check favorite_theme in wakka.config.php
         $autoUpdate = new AutoUpdate($this);
@@ -95,20 +93,21 @@ if ($endUpdate) {
                         ];
                     }
                 }
-                $_SESSION['updateMessage'] = json_encode($data);
+                $_SESSION['upgradeMessages'] = json_encode($data);
                 $newAdress = $data['baseURL'];
-                header("Location: ".$newAdress);
+                header("Location: " . $newAdress);
                 exit();
             }
         }
     }
-    // check presence of specific files
+
+    // Check presence of specific files
     $filesToCheck = ['templates/edit-config.twig']; // only present if templates folder is updated
-    $filesToCheck = $filesToCheck + PackageCore::FILES_TO_ADD_TO_IGNORED_FOLDERS;
-    $notExistingFiles = array_filter($filesToCheck, function ($file) {
+    $filesToCheck = []; //$filesToCheck + PackageCore::FILES_TO_ADD_TO_IGNORED_FOLDERS;
+    $missingFiles = array_filter($filesToCheck, function ($file) {
         return !file_exists($file);
     });
-    if (!empty($notExistingFiles) && !($_SESSION['updateAlreadyForced'] ?? false)) {
+    if (!empty($missingFiles) && !($_SESSION['updateAlreadyForced'] ?? false)) {
         // check if previous update is ok
         $okText = _t('AU_OK');
         $allok = empty(array_filter($data['messages'], function ($message) use ($okText) {
@@ -125,7 +124,7 @@ if ($endUpdate) {
                 $messages->add($message['text'], $message['status']);
             }
             // add message for second update
-            $messages->add('=== '._t('AU_YESWIKI_SECOND_TIME_UPDATE').' ===', _t('AU_OK'));
+            $messages->add('=== ' . _t('AU_YESWIKI_SECOND_TIME_UPDATE') . ' ===', _t('AU_OK'));
             $controller = new Controller($autoUpdate, $messages, $this);
             $controller->run($get);
         } else {
@@ -136,7 +135,7 @@ if ($endUpdate) {
         }
     } else {
         unset($_SESSION['updateAlreadyForced']);
-        foreach ($notExistingFiles as $file) {
+        foreach ($missingFiles as $file) {
             $data['messages'][] = [
                 'status' => _t('AU_ERROR'),
                 'text' => str_replace('{{file}}', $file, _t('AU_FILE_NOT_POSSIBLE_TO_UPDATE')),
@@ -144,24 +143,10 @@ if ($endUpdate) {
         }
     }
 
-    if ($data['messages'][0]['text'] == _t('AU_YESWIKI_DORYPHORE_POSTINSTALL')) {
-        $fromCercopitheque = true;
-        $newMessages = [];
-        for ($i = 1; $i < count($data['messages']); $i++) {
-            $newMessages[] = $data['messages'][$i];
-        }
-        $data['messages'] = $newMessages;
-    }
-    $output = ($fromCercopitheque ?? false)
-        ? '<h1>'._t('AU_YESWIKI_DORYPHORE_POSTINSTALL').'</h1>'."\n"
-        : '';
-
-    // finished rendering of autoupdate
-    $output .= $this->render("@autoupdate/update.twig", [
-        'messages' => $data['messages'],
-        'baseUrl' => $data['baseURL'],
+    // Display result of update
+    echo $this->render("@autoupdate/update-result.twig", [
+        'messages' => array_merge($data['messages'], $migrationMessages)
     ]);
-    echo $output ;
 } else {
     $this->addJavascriptFile('javascripts/vendor/datatables-full/jquery.dataTables.min.js');
     $this->addCSSFile('styles/vendor/datatables-full/dataTables.bootstrap.min.css');
@@ -174,8 +159,6 @@ if ($endUpdate) {
     $messages = new Messages();
     $controller = new Controller($autoUpdate, $messages, $this);
 
-    //$controller->run($_GET, $this->getParameter('filter'));
-    // Can't see where filter is used => getting rid of it
     $requestedVersion = $this->getParameter('version');
     if (isset($requestedVersion) && $requestedVersion != '') {
         echo $controller->run($_GET, $requestedVersion);
