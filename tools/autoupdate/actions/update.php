@@ -143,6 +143,10 @@ if ($postInstall) {
         }
     }
 
+    // Run migrations
+    $migrations = new Migrations($this);
+    $migrationMessages = $migrations->run();
+
     // Display result of update
     echo $this->render("@autoupdate/update-result.twig", [
         'messages' => array_merge($data['messages'], $migrationMessages)
