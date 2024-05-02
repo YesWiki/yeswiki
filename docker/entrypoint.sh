@@ -5,4 +5,5 @@ source /home/yeswiki/.nvm/nvm.sh
 nvm use 20
 corepack enable
 yarn install
+php includes/commands/console migrate
 php-fpm
