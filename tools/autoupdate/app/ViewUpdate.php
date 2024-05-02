@@ -12,13 +12,11 @@ class ViewUpdate
 {
     protected $autoUpdate;
     protected $messages;
-    protected $baseURL;
 
     // important do not change the arguments of this method because called form cercopitheque
     public function __construct($autoUpdate, $messages)
     {
         $this->autoUpdate = $autoUpdate;
-        $this->baseURL = $autoUpdate->baseUrl();
         $this->messages = $messages;
     }
 
@@ -41,14 +39,12 @@ class ViewUpdate
             $data_message['text'] = $message['text'];
             $data['messages'][] = $data_message;
         }
-        $data['baseURL'] = $this->baseURL;
         $data['fromCercopitheque'] = (YESWIKI_VERSION == "cercopitheque");
-        $_SESSION['updateMessage'] = json_encode($data);
+        $_SESSION['upgradeMessages'] = json_encode($data);
 
         // reload wiki in doryphore version before displaying the message
-        // give $data by $_SESSION['updateMessage']
-        $newAdress = $this->baseURL;
-        header("Location: ".$newAdress);
+        // give $data by $_SESSION['upgradeMessages']
+        header("Location: " . $this->autoUpdate->baseUrl());
         exit();
     }
 }

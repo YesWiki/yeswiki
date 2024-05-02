@@ -7,8 +7,7 @@ use YesWiki\Core\Service\ConfigurationService;
 class AutoUpdate
 {
     public const DEFAULT_REPO = 'https://repository.yeswiki.net/';
-    public const DEFAULT_VERS = 'Cercopitheque'; // Pour gérer les vielles version de
-    // YesWiki
+    public const DEFAULT_VERS = 'Cercopitheque'; // Pour gérer les vielles version de YesWiki
     private $wiki;
     public $repository = null;
 
