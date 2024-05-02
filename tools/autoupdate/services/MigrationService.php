@@ -3,8 +3,7 @@
 namespace YesWiki\AutoUpdate\Service;
 
 use Exception;
-use ReflectionClass;
-use ReflectionMethod;
+use YesWiki\AutoUpdate\Entity\Messages;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\AclService;
@@ -17,17 +16,17 @@ use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 // This is a simple mecanism to perform migrations
-// Create a new private method at the bottom of this class, it will be run after the wiki gets updated
-// TODO: name method uniquely, and see if they are run in order
-// TODO: handle extensions migrations
+// See `migrations/README.md for how to create a new migration
 class MigrationService
 {
     public const TRIPLES_MIGRATION_ID = 'migration';
     private $wiki;
+    private $dbService;
 
-    public function __construct(Wiki $wiki)
+    public function __construct(Wiki $wiki, DbService $dbService)
     {
         $this->wiki = $wiki;
+        $this->dbService = $dbService;
     }
 
     function run()
@@ -36,36 +35,51 @@ class MigrationService
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        // All private methods are considered as migrations
-        $reflection = new ReflectionClass($this);
-        $migrationsMethods = $reflection->getMethods(ReflectionMethod::IS_PRIVATE);
+        $messages = new Messages();
+
         $tripleStore = $this->wiki->services->get(TripleStore::class);
+        $completedMigrations = array_map(function ($data) {
+            return $data['resource'];
+        }, $tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_MIGRATION_ID));
 
-        $messages = [];
-        foreach ($migrationsMethods as $method) {
-            $methodName = $method->getName();
-            try {
-                // Check if migration is already done
-                if (!$tripleStore->exist($methodName, TripleStore::TYPE_URI, self::TRIPLES_MIGRATION_ID, '', '')) {
-                    // peform migration by calling the method
-                    $this->$methodName();
-                    // Mark the migration as done by writing a new triple in the DB
-                    $tripleStore->create($methodName, TripleStore::TYPE_URI, self::TRIPLES_MIGRATION_ID, '', '');
+        // Get all Php files in migrations folder (in root or in any tools)
+        // Run the file if it was not already run in the past
+        $folders = array_merge([''], $this->wiki->extensions); // root folder + extensions folders
+        foreach ($folders as $folder) {
+            $folder = $folder . 'migrations/';
+            if (file_exists($folder) && $dh = opendir($folder)) {
+                while (($file = readdir($dh)) !== false) {
+                    if (preg_match("/^([a-zA-Z0-9_-]+)\.php$/", $file, $matches)) {
+                        $fileName = $matches[1]; // 2024_04_05_TestMigration
+                        if (in_array($fileName, $completedMigrations)) {
+                            continue;
+                        }
 
-                    $messages[] = ['status' => _t('AU_OK'), 'text' => "Migration $methodName"];
+                        $filePath = $folder . $file; // tools/publication/2024_04_05_TestMigration.php
+                        require_once $filePath;
+
+                        $className = preg_replace('/[\d_]/', '', $fileName); // TestMigration
+                        if (!class_exists($className)) {
+                            throw new Exception("Error while loading $filePath. The class inside should be $className");
+                        }
+
+                        // Run Migration
+                        try {
+                            $instance = new $className();
+                            $instance->setWiki($this->wiki);
+                            $instance->setDbService($this->dbService);
+                            $instance->run();
+                            $messages->add("Migration $className", 'AU_OK');
+                            $tripleStore->create($fileName, TripleStore::TYPE_URI, self::TRIPLES_MIGRATION_ID, '', '');
+                        } catch (Exception $e) {
+                            $messages->add("Migration $className failed with error {$e->getMessage()}", 'AU_ERROR');
+                        }
+                    }
                 }
-            } catch (Exception $e) {
-                $messages[] = ['status' => _t('AU_ERROR'), 'text' => "Migration $methodName failed with error {$e->getMessage()}"];
             }
         }
         return $messages;
     }
-
-    // All private methods below are considered as migrations
-    // Add new migration on the bottom
-
-    // private function oldMigration() {}
-    // private function newMigration() {}
 
     private function addYeswikiReleaseConf()
     {
