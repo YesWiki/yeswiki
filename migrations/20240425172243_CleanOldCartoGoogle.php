@@ -1,73 +1,31 @@
 <?php
 
-namespace YesWiki\Bazar;
-
-use DateInterval;
-use DateTime;
-use Throwable;
-use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
-use YesWiki\Core\YesWikiHandler;
-use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\YesWikiMigration;
 use YesWiki\Security\Controller\SecurityController;
 
-class UpdateHandler__ extends YesWikiHandler
+class CleanOldCartoGoogle extends YesWikiMigration
 {
-    protected $dbService;
-    protected $entryManager;
-    protected $formManager;
-    protected $pageManager;
-    protected $securityController;
+    private $entryManager;
+    private $formManager;
+    private $pageManager;
+    private $securityController;
 
     public function run()
     {
-        $this->securityController = $this->getService(SecurityController::class);
-        if ($this->securityController->isWikiHibernated()) {
-            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
-        };
-        if (!$this->wiki->UserIsAdmin()) {
-            return null;
-        }
+        $this->entryManager = $this->wiki->services->get(EntryManager::class);
+        $this->formManager = $this->wiki->services->get(FormManager::class);
+        $this->pageManager = $this->wiki->services->get(PageManager::class);
+        $this->securityController = $this->wiki->services->get(SecurityController::class);
 
-        $this->dbService = $this->getService(DbService::class);
-        $this->entryManager = $this->getService(EntryManager::class);
-        $this->formManager = $this->getService(FormManager::class);
-        $this->pageManager = $this->getService(PageManager::class);
-
-        $output = $this->cleanOldCartoGoogle();
-
-        // set output
-        $this->output = str_replace(
-            '<!-- end handler /update -->',
-            $output.'<!-- end handler /update -->',
-            $this->output
-        );
-        return null;
-    }
-
-    private function cleanOldCartoGoogle(): string
-    {
         $entries = $this->searchEntriesWithOnlyOldGeoloc();
-        $updatedEntries = [];
-        $entriesWithErrors = [];
         if (!empty($entries)) {
             foreach ($entries as $entry) {
-                try {
-                    if ($this->extractOldCarto($entry)) {
-                        $updatedEntries[] = $entry['id_fiche'];
-                    }
-                } catch (Throwable $th) {
-                    $entriesWithErrors[$entry['id_fiche']] = $th->getMessage();
-                }
+                $this->extractOldCarto($entry);
             }
         }
-        return $this->render('@bazar/handlers/extract-old-geoloc-at-update.twig', [
-            'updatedEntries' => $updatedEntries,
-            'entriesWithErrors' => $entriesWithErrors,
-            'tablePrefix' => $this->params->get('table_prefix'),
-        ]);
     }
 
     private function searchEntriesWithOnlyOldGeoloc(): array
@@ -83,8 +41,10 @@ class UpdateHandler__ extends YesWikiHandler
 
     private function extractOldCarto(array $entry): bool
     {
-        if (empty($entry) || empty($entry['id_fiche']) || empty($entry['id_typeannonce']) ||
-            strval($entry['id_typeannonce']) != strval(intval($entry['id_typeannonce']))) {
+        if (
+            empty($entry) || empty($entry['id_fiche']) || empty($entry['id_typeannonce']) ||
+            strval($entry['id_typeannonce']) != strval(intval($entry['id_typeannonce']))
+        ) {
             return false;
         }
 
@@ -162,13 +122,13 @@ class UpdateHandler__ extends YesWikiHandler
         $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET `latest` = 'N' WHERE `tag` = '{$this->dbService->escape($data['id_fiche'])}'");
 
         // add new revision
-        $this->dbService->query("INSERT INTO {$this->dbService->prefixTable('pages')} SET ".
-            "`tag` = '{$this->dbService->escape($data['id_fiche'])}', ".
-            "`time` = '{$this->dbService->escape($data['date_maj_fiche'])}', ".
-            "`owner` = '{$this->dbService->escape($owner)}', ".
-            "`user` = '{$this->dbService->escape($user)}', ".
-            "`latest` = 'Y', ".
-            "`body` = '" . $this->dbService->escape(json_encode($data)) . "', ".
+        $this->dbService->query("INSERT INTO {$this->dbService->prefixTable('pages')} SET " .
+            "`tag` = '{$this->dbService->escape($data['id_fiche'])}', " .
+            "`time` = '{$this->dbService->escape($data['date_maj_fiche'])}', " .
+            "`owner` = '{$this->dbService->escape($owner)}', " .
+            "`user` = '{$this->dbService->escape($user)}', " .
+            "`latest` = 'Y', " .
+            "`body` = '" . $this->dbService->escape(json_encode($data)) . "', " .
             "`body_r` = ''");
     }
 
