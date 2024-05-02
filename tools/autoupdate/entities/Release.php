@@ -1,6 +1,6 @@
 <?php
 
-namespace AutoUpdate;
+namespace YesWiki\AutoUpdate\Entity;
 
 class Release
 {
@@ -53,7 +53,7 @@ class Release
         if (preg_match($patternDate, $release) === 1) {
             return true;
         }
-        $patternSemVersion = '/^'.SEMVER.'$/';
+        $patternSemVersion = '/^' . SEMVER . '$/';
         if (preg_match($patternSemVersion, $release) === 1) {
             return true;
         }

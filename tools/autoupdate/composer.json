@@ -7,10 +7,5 @@
       "name": "Florestan Bredow",
       "email": "florestan.bredow@supagro.fr"
     }
-  ],
-  "autoload": {
-    "psr-4": {
-      "AutoUpdate\\": "app"
-    }
-  }
+  ]
 }

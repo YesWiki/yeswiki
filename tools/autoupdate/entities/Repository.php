@@ -1,6 +1,6 @@
 <?php
 
-namespace AutoUpdate;
+namespace YesWiki\AutoUpdate\Entity;
 
 class Repository extends PackageCollection
 {
@@ -12,7 +12,7 @@ class Repository extends PackageCollection
     public function __construct($address)
     {
         $this->address = $address . '/';
-        $this->fileHandler = new \AutoUpdate\Files();
+        $this->fileHandler = new Files();
     }
 
     public function load()

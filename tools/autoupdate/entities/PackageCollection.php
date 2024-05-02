@@ -1,12 +1,12 @@
 <?php
 
-namespace AutoUpdate;
+namespace YesWiki\AutoUpdate\Entity;
 
 class PackageCollection extends Collection
 {
-    public const THEME_CLASS = 'AutoUpdate\PackageTheme';
-    public const TOOL_CLASS = 'AutoUpdate\PackageTool';
-    public const CORE_CLASS = 'AutoUpdate\PackageCore';
+    public const THEME_CLASS = 'YesWiki\AutoUpdate\Entity\PackageTheme';
+    public const TOOL_CLASS = 'YesWiki\AutoUpdate\Entity\PackageTool';
+    public const CORE_CLASS = 'YesWiki\AutoUpdate\Entity\PackageCore';
 
     public function add($release, $address, $file, $description, $documentation, $minimalPhpVersion = null)
     {
