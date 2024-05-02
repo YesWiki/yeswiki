@@ -52,7 +52,7 @@ class MigrationService
                         $filePath = $folder . $file; // tools/publication/2024040500000_TestMigration.php
                         require_once $filePath;
 
-                        $className = preg_replace('/[\d_]/', '', $fileName); // TestMigration
+                        $className = preg_replace('/^[\d_]*/', '', $fileName); // TestMigration
                         if (!class_exists($className)) {
                             throw new Exception("Error while loading $filePath. The class inside should be $className");
                         }
