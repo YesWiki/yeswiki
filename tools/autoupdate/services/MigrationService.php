@@ -67,18 +67,23 @@ class MigrationService
     // private function oldMigration() {}
     // private function newMigration() {}
 
+    private function addYeswikiReleaseConf()
+    {
+        $params = $this->wiki->services->getParameterBag();
+        $releaseInConfig = $params->get('yeswiki_release');
+        if ($releaseInConfig == _t('AU_UNKNOW') || !preg_match("/^\d{1,4}[.-].*/", $releaseInConfig)) {
+            $config = $this->wiki->services->get(ConfigurationService::class)->getConfiguration('wakka.config.php');
+            $config->load();
+            $config['yeswiki_release'] = YESWIKI_RELEASE;
+            $config->write();
+        }
+    }
     private function cercopitequePostInstall()
     {
         if (isset($_GET['previous_version']) && $_GET['previous_version'] == 'cercopitheque') {
-            $params = $this->wiki->services->getParameterBag();
+
             $config = $this->wiki->services->get(ConfigurationService::class)->getConfiguration('wakka.config.php');
             $config->load();
-
-            $releaseInConfig = $params->get('yeswiki_release');
-            if ($releaseInConfig == _t('AU_UNKNOW') || !preg_match("/^\d{1,4}[.-].*/", $releaseInConfig)) {
-                $config['yeswiki_release'] = YESWIKI_RELEASE;
-                $config->write();
-            }
 
             // check favorite_theme
             // If default theme was used, install new yeswikicerco extension to keep same look and feel
