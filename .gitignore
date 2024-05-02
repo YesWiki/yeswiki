@@ -60,6 +60,7 @@ private/*
 private/backups/*
 !private/backups/.htaccess
 !private/backups/README.md
+!migrations
 
 # tools
 tools/*

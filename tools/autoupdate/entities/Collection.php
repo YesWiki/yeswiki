@@ -6,6 +6,11 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
 {
     protected $list = array();
 
+    public function toArray()
+    {
+        return $this->list;
+    }
+
     /***************************************************************************
      * ArrayAccess
      **************************************************************************/

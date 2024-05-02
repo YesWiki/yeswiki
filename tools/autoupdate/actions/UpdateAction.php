@@ -59,18 +59,15 @@ class UpdateAction extends YesWikiAction
                 // Reload the page to perform postInstall operation with the new code
                 $this->wiki->redirect($this->wiki->href('', '', [
                     'action' => 'post_install',
-                    'messages' => json_encode($messages),
+                    'messages' => json_encode($messages->toArray()),
                     'previous_version' => YESWIKI_VERSION
                 ], false));
                 break;
             case 'post_install':
                 $messages = json_decode($_GET['messages']);
-
                 // Run migrations
-                $migrations = new MigrationService($this->wiki);
-                $migrationMessages = $migrations->run();
-
-                $messages = array_merge($messages, $migrationMessages);
+                $migrationMessages = $this->getService(MigrationService::class)->run();
+                $messages = array_merge($messages, $migrationMessages->toArray());
                 break;
             case 'update_admin_pages':
                 $messages = $this->getService(UpdateAdminPagesService::class)->updateAll();
