@@ -220,7 +220,6 @@ class Init
             'default_write_acl' => '*',
             'default_read_acl' => '*',
             'default_comment_acl' => 'comments-closed',
-            'default_comment_acl_updated' => false,
             'comments_activated' => true,
             'comments_handler' => 'yeswiki',
             'preview_before_save' => false,
