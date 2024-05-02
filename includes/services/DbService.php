@@ -146,6 +146,18 @@ class DbService
         return mysqli_num_rows($this->query($query));
     }
 
+    public function columnExists($table, $column)
+    {
+        return $this->count("SHOW COLUMNS FROM {$this->prefixTable($table)} LIKE '{$column}';") > 0;
+    }
+
+    public function dropColumn($table, $column)
+    {
+        if ($this->columnExists($table, $column)) {
+            $this->query("ALTER TABLE {$this->prefixTable($table)} DROP `{$column}`;");
+        }
+    }
+
     public function getDbTimeZone(): ?string
     {
         $query = 'SELECT @@SESSION.time_zone as timezone;';
