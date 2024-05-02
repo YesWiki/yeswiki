@@ -44,12 +44,12 @@ class MigrationService
             if (file_exists($folder) && $dh = opendir($folder)) {
                 while (($file = readdir($dh)) !== false) {
                     if (preg_match("/^([a-zA-Z0-9_-]+)\.php$/", $file, $matches)) {
-                        $fileName = $matches[1]; // 2024_04_05_TestMigration
+                        $fileName = $matches[1]; // 2024040500000_TestMigration
                         if (in_array($fileName, $completedMigrations)) {
                             continue;
                         }
 
-                        $filePath = $folder . $file; // tools/publication/2024_04_05_TestMigration.php
+                        $filePath = $folder . $file; // tools/publication/2024040500000_TestMigration.php
                         require_once $filePath;
 
                         $className = preg_replace('/[\d_]/', '', $fileName); // TestMigration
