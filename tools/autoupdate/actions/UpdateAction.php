@@ -56,15 +56,12 @@ class UpdateAction extends YesWikiAction
                 // Perform the upgrade
                 $messages = $updateService->upgrade($packageName);
 
-                // When upgrading the core (i.e. yeswiki) we reload the page
-                // to perform postInstall operation with the new code
-                if ($packageName == 'yeswiki') {
-                    $this->wiki->redirect($this->wiki->href('', '', [
-                        'action' => 'post_install',
-                        'messages' => json_encode($messages),
-                        'previous_version' => YESWIKI_VERSION
-                    ], false));
-                }
+                // Reload the page to perform postInstall operation with the new code
+                $this->wiki->redirect($this->wiki->href('', '', [
+                    'action' => 'post_install',
+                    'messages' => json_encode($messages),
+                    'previous_version' => YESWIKI_VERSION
+                ], false));
                 break;
             case 'post_install':
                 $messages = json_decode($_GET['messages']);
