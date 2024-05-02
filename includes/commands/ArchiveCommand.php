@@ -25,7 +25,7 @@ class ArchiveCommand extends Command
     {
         $this
             ->setName('core:archive')
-            // the short description shown while running "php includes/commands/console list"
+            // the short description shown while running "./yeswicli list"
             ->setDescription('Create archive of the YesWiki.')
 
             // the full command description shown when running the command with

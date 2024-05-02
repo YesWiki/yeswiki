@@ -6,4 +6,4 @@ A migration is only run once
 
 ## Create a new migration
 
-`php includes/commands/console generate:migration YourMigrationName`
+`./yeswicli generate:migration YourMigrationName`
