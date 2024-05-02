@@ -2,6 +2,7 @@
 
 use YesWiki\AutoUpdate\Service\AutoUpdateService;
 use YesWiki\AutoUpdate\Service\MigrationService;
+use YesWiki\AutoUpdate\Service\UpdateAdminPagesService;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\YesWikiAction;
 
@@ -75,6 +76,9 @@ class UpdateAction extends YesWikiAction
 
                 $messages = array_merge($messages, $migrationMessages);
                 break;
+            case 'update_admin_pages':
+                $messages = $this->getService(UpdateAdminPagesService::class)->updateAll();
+                break;
             case 'delete':
                 $messages = $updateService->delete($packageName);
                 break;
@@ -82,7 +86,8 @@ class UpdateAction extends YesWikiAction
 
         // Display result of action, with a list of success/error messages
         return $this->wiki->render("@autoupdate/update-result.twig", [
-            'messages' => $messages
+            'messages' => $messages,
+            'action' => $action
         ]);
     }
 }
