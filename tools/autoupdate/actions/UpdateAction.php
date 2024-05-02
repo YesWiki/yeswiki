@@ -54,8 +54,7 @@ class UpdateAction extends YesWikiAction
                 }
 
                 // Perform the upgrade
-                // $messages = $updateService->upgrade($packageName);
-                $messages = [['status' => 'ok', 'text' => "fake message"]];
+                $messages = $updateService->upgrade($packageName);
 
                 // When upgrading the core (i.e. yeswiki) we reload the page
                 // to perform postInstall operation with the new code
