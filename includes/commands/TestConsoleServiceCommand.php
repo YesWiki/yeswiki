@@ -23,7 +23,7 @@ class TestConsoleServiceCommand extends Command
     {
         $this
             ->setName('core:testconsoleservice')
-            // the short description shown while running "php includes/commands/console list"
+            // the short description shown while running "./yeswicli list"
             ->setDescription('Offer tests for ConsoleService.')
 
             // the full command description shown when running the command with

@@ -22,16 +22,16 @@ class HelloCommand extends Command
     protected function configure()
     {
         $this
-            // the name of the command : php includes/commands/console helloworld:hello"
+            // the name of the command : ./yeswicli helloworld:hello"
             ->setName('helloworld:hello')
-            // the short description shown while running "php includes/commands/console list"
+            // the short description shown while running "./yeswicli list"
             ->setDescription('Display message "Hello !".')
 
             // the full command description shown when running the command with
             // the "--help" option
             ->setHelp("This command display the message \"Hello !\" with options for uppercase of add a username.\n" .
                 "The argument \"username\" can be used to add a username. Example : \n" .
-                "Command line'php includes/commands/console helloworld:hello \"John Smith\"' gives \"Hello John Smith !\"")
+                "Command line'./yeswicli helloworld:hello \"John Smith\"' gives \"Hello John Smith !\"")
 
             // add argument for username
             // second parameter could be InputArgument::OPTIONAL <=> null, InputArgument::REQUIRED, InputArgument::IS_ARRAY

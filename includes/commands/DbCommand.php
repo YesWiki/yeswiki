@@ -30,7 +30,7 @@ class DbCommand extends Command
     {
         $this
             ->setName('core:exportdb')
-            // the short description shown while running "php includes/commands/console list"
+            // the short description shown while running "./yeswicli list"
             ->setDescription('Manage database of the YesWiki.')
 
             // the full command description shown when running the command with
