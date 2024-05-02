@@ -2,7 +2,6 @@
 
 use YesWiki\AutoUpdate\Service\AutoUpdateService;
 use YesWiki\AutoUpdate\Service\MigrationService;
-use YesWiki\AutoUpdate\Service\PostInstallService;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\YesWikiAction;
 
@@ -69,8 +68,6 @@ class UpdateAction extends YesWikiAction
                 break;
             case 'post_install':
                 $messages = json_decode($_GET['messages']);
-
-                $this->getService(PostInstallService::class)->run();
 
                 // Run migrations
                 $migrations = new MigrationService($this->wiki);
