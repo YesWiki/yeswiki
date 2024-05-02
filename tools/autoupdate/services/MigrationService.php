@@ -10,7 +10,7 @@ use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 // This is a simple mecanism to perform migrations
-// See `migrations/README.md for how to create a new migration
+// See includes/migrations/README.md for how to create a new migration
 class MigrationService
 {
     public const TRIPLES_MIGRATION_ID = 'migration';
@@ -38,7 +38,7 @@ class MigrationService
 
         // Get all Php files in migrations folder (in root or in any tools)
         // Run the file if it was not already run in the past
-        $folders = array_merge([''], $this->wiki->extensions); // root folder + extensions folders
+        $folders = array_merge(['includes/'], $this->wiki->extensions); // root folder + extensions folders
         foreach ($folders as $folder) {
             $folder = $folder . 'migrations/';
             if (file_exists($folder) && $dh = opendir($folder)) {
