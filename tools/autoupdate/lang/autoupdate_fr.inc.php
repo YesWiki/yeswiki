@@ -23,8 +23,6 @@ return [
     'AU_UPDATE_PACKAGE' => "Mise à jour de ",
     'AU_INSTALL' => "Installer",
     'AU_UPDATE_INFOS' => "Mise à jour des informations de version",
-    'AU_WARNING' => "Une mise à jour est disponible. Sauvegardez "
-        . "votre wiki avant de le mettre à jour.",
     'AU_OK' => "ok",
     'AU_ERROR' => "Erreur",
     'AU_UNKNOW' => "Inconnue",

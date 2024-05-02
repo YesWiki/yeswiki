@@ -24,8 +24,6 @@ return [
     'AU_UPDATE_PACKAGE' => "Atualização de",
     'AU_INSTALL' => "Instalar",
     'AU_UPDATE_INFOS' => "Atualição das informações da versão",
-    'AU_WARNING' => "Uma atualização está disponível. Salvar"
-        . "seu wiki antes de atualizá-lo.",
     'AU_OK' => "ok",
     'AU_ERROR' => "Erro",
     'AU_UNKNOW' => "Desconhecido",
