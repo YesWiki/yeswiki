@@ -1,10 +1,8 @@
 
 import SpinnerLoader from '../../tools/bazar/presentation/javascripts/components/SpinnerLoader.js'
 
-let rootsElements = ['.admin-backups-container','.preupdate-backups-container']
-let isVueJS3 = (typeof Vue.createApp == "function")
-
-let appParams = {
+new Vue({
+    el: '.admin-backups',
     components: { SpinnerLoader },
     data() {
         return {
@@ -31,7 +29,7 @@ let appParams = {
             stoppingArchive: false,
             canForceDelete: false,
             askConfirmationToDelete: false,
-            upgradeName: "",
+            packageName: "",
             showReturn: true,
             warnIfNotStarted: true,
             callAsync: true,
@@ -386,6 +384,7 @@ let appParams = {
                             this.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_STOP'),'success')
                         } else if (!data.started){
                             this.endUpdatingStatus(_t('ADMIN_BACKUPS_UID_STATUS_NOT_FOUND'),'warning')
+                            if (this.isPreupdate) { this.canForceUpdate = true }
                             setTimeout(this.loadArchives , 3000)
                         } else if (data.finished){
                             if (this.isPreupdate){
@@ -467,8 +466,8 @@ let appParams = {
             return await this.fetch(wiki.url(`?api/archives/forcedUpdateToken/`))
                 .then((data)=>{
                     if (
-                        typeof this.upgradeName != "string" ||
-                        this.upgradeName.length == 0 ||
+                        typeof this.packageName != "string" ||
+                        this.packageName.length == 0 ||
                         typeof data != "object" || 
                         !data.hasOwnProperty('token') || 
                         typeof data.token != "string" || 
@@ -476,7 +475,11 @@ let appParams = {
                         this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE')
                         this.canForceUpdate = false
                     } else {
-                        window.location = wiki.url(wiki.pageTag,{upgrade:this.upgradeName,forcedUpdateToken:data.token})
+                        window.location = wiki.url(wiki.pageTag, { 
+                            action: 'upgrade', 
+                            package: this.packageName, 
+                            forcedUpdateToken: data.token 
+                        })
                     }
                 },()=>{
                     this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE')
@@ -503,48 +506,20 @@ let appParams = {
         }
     },
     mounted (){
-        let nodeElement = isVueJS3 ? this.$el.parentNode : this.$el
-        this.isPreupdate = $(nodeElement).hasClass('preupdate-backups-container')
+        this.isPreupdate = $(this.$el).hasClass('preupdate-backups-container')
         if (this.isPreupdate){
-            this.upgradeName = $(nodeElement).data("upgrade")
-        }
-        if (isVueJS3){
-            $(this.$el.parentNode).on(
-                "dblclick",
-                function (e) {
-                  return false
-                }
-              )
-        } else {
-            $(this.$el).on(
-                "dblclick",
-                function (e) {
-                  return false
-                }
-              )
-        }
+            this.packageName = $(this.$el).data("package")
+        } 
+        $(this.$el).on(
+            "dblclick",
+            function (e) {
+                return false
+            }
+            )
         if (this.isPreupdate){
             this.startArchive()
         } else {
             this.loadArchives()
         }
     }
-}
-
-if (isVueJS3){
-    let app = Vue.createApp(appParams)
-    rootsElements.forEach(elem => {
-        if ($(elem).length > 0){
-            app.mount(elem)
-        }
-    })
-} else {
-    rootsElements.forEach(elem => {
-        if ($(elem).length > 0){
-            new Vue({
-                ...{el:elem},
-                ...appParams
-            })
-        }
-    })
-}
+})
