@@ -26,7 +26,7 @@ class ArchiveController extends YesWikiController
         $filePath = $this->archiveService->getFilePath($id);
         if (empty($filePath)) {
             return new ApiResponse(
-                ['error' => "Not existing file ".htmlspecialchars($id)],
+                ['error' => "Not existing file " . htmlspecialchars($id)],
                 Response::HTTP_BAD_REQUEST
             );
         } else {
