@@ -107,7 +107,7 @@ if (!class_exists('attach')) {
          */
         public function GetScriptPath()
         {
-            return $this->wiki->getBaseUrl().'/';
+            return $this->wiki->getBaseUrl() . '/';
             // if (preg_match("/.(php)$/i", $_SERVER["PHP_SELF"])) {
             //     $a = explode('/', $_SERVER["PHP_SELF"]);
             //     $a[count($a) - 1] = '';
@@ -501,10 +501,10 @@ if (!class_exists('attach')) {
                 if ($linkParts) {
                     $this->wiki->services->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
                 }
-                $link = '<a href="'.$this->wiki->generateLink($this->link).'"'.$classDataForLinks.'>';
+                $link = '<a href="' . $this->wiki->generateLink($this->link) . '"' . $classDataForLinks . '>';
             } else {
                 if (empty($this->nofullimagelink) or !$this->nofullimagelink) {
-                    $link = '<a href="' . $this->GetScriptPath() . $fullFilename . '"'.$classDataForLinks.'>';
+                    $link = '<a href="' . $this->GetScriptPath() . $fullFilename . '"' . $classDataForLinks . '>';
                 }
             }
             $caption = '';
@@ -518,12 +518,12 @@ if (!class_exists('attach')) {
             $data = '';
             if (is_array($this->data)) {
                 foreach ($this->data as $key => $value) {
-                    $data .= ' data-'.$key.'="'.$value.'"';
+                    $data .= ' data-' . $key . '="' . $value . '"';
                 }
             }
 
             $notAligned = (strpos($this->classes, 'left') === false && strpos($this->classes, 'right') == false  && strpos($this->classes, 'center') == false);
-            $output = ($notAligned ? '<div>' : '').(isset($link) ? $link : '')."<figure class=\"$this->classes\" $data>$img$caption$legend</figure>".(isset($link) ? '</a>' : '').($notAligned ? '</div>' : '');
+            $output = ($notAligned ? '<div>' : '') . (isset($link) ? $link : '') . "<figure class=\"$this->classes\" $data>$img$caption$legend</figure>" . (isset($link) ? '</a>' : '') . ($notAligned ? '</div>' : '');
 
             echo $output;
             //$this->showUpdateLink();
@@ -541,9 +541,9 @@ if (!class_exists('attach')) {
         public function showAsVideo($fullFilename)
         {
             $output = $this->wiki->format(
-                '{{player url="'.$this->wiki->getBaseUrl().'/'.$fullFilename.'" type="video" '.
-                'height="'.(!empty($height) ? $height : '300px').'" '.
-                'width="'.(!empty($width) ? $width : '400px').'"}}'
+                '{{player url="' . $this->wiki->getBaseUrl() . '/' . $fullFilename . '" type="video" ' .
+                'height="' . (!empty($height) ? $height : '300px') . '" ' .
+                'width="' . (!empty($width) ? $width : '400px') . '"}}'
             );
             echo $output;
             $this->showUpdateLink();
@@ -551,7 +551,7 @@ if (!class_exists('attach')) {
         // Affiche le fichier liee comme un fichier audio
         public function showAsAudio($fullFilename)
         {
-            $output = $this->wiki->format('{{player url="'.$this->wiki->getBaseUrl().'/'.$fullFilename.'" type="audio"}}');
+            $output = $this->wiki->format('{{player url="' . $this->wiki->getBaseUrl() . '/' . $fullFilename . '" type="audio"}}');
             echo $output;
             $this->showUpdateLink();
         }
@@ -560,7 +560,7 @@ if (!class_exists('attach')) {
         public function showAsFreeMindMindMap($fullFilename)
         {
             $output = $this->wiki->format(
-                '{{player url="'.$this->wiki->getBaseUrl().'/'.$fullFilename.'" '.
+                '{{player url="' . $this->wiki->getBaseUrl() . '/' . $fullFilename . '" ' .
                 'height="' . (!empty($height) ? $height : '650px') . '" ' .
                 'width="' . (!empty($width) ? $width : '100%') . '"}}'
             );
@@ -569,9 +569,7 @@ if (!class_exists('attach')) {
         }
 
         // Affiche le fichier liee comme un fichier mind map  freemind
-        public function showAsWma($fullFilename)
-        {
-        }
+        public function showAsWma($fullFilename) {}
 
         // End Paste
 
@@ -752,10 +750,10 @@ if (!class_exists('attach')) {
                 case 5:
                     $t = array();
                     foreach ($this->wiki->config['authorized-extensions'] as $ext => $des) {
-                        $t[] = $ext.' ('.$des.')';
+                        $t[] = $ext . ' (' . $des . ')';
                     }
                     $these = implode(', ', $t);
-                    echo "<div class=\"alert alert-error alert-danger\">". _t('ERROR_NOT_AUTHORIZED_EXTENSION'). $these . '.</div>';
+                    echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_NOT_AUTHORIZED_EXTENSION') . $these . '.</div>';
                     break;
             }
             echo $this->wiki->Format(_t('ATTACH_BACK_TO_PAGE') . " " . $this->wiki->GetPageTag());
@@ -789,7 +787,7 @@ if (!class_exists('attach')) {
                 header('Content-Type: application/octet-stream; name="' . $dlFilename . '"'); //This should work for the rest
                 header('Content-Type: application/octetstream; name="' . $dlFilename . '"'); //This should work for IE & Opera
                 if (in_array(preg_replace("/^.*\.([^.]+$)/", "$1", $dlFilename), ['txt','md','png','svg','jpeg','jpg','mp3'])) {
-                    header('Content-Type: '.mime_content_type($fullFilename).'; name="' . $dlFilename . '"');
+                    header('Content-Type: ' . mime_content_type($fullFilename) . '; name="' . $dlFilename . '"');
                 }
                 header('Content-Disposition: attachment; filename="' . $dlFilename . '"');
                 header("Content-Description: File Transfer");
@@ -982,18 +980,18 @@ if (!class_exists('attach')) {
                 $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9]", "[0-9][0-9][0-9][0-9]", "crop");
                 $filenamesToDelete[] = $this->getResizedFilename($filename, "[0-9][0-9][0-9][0-9]", "[0-9][0-9][0-9][0-9]", "crop");
                 // old Image Field
-                $filenamesToDelete[] = $cachePath."/vignette_".basename($filename);
-                $filenamesToDelete[] = $cachePath."/image_".basename($filename);
+                $filenamesToDelete[] = $cachePath . "/vignette_" . basename($filename);
+                $filenamesToDelete[] = $cachePath . "/image_" . basename($filename);
                 // old agenda.tpl.html|blog.tpl.html|damier.tpl.html|materiel-card.tpl.html|news.tpl.html|photobox.tpl.html|trombinoscope.tpl.html
-                $filenamesToDelete[] = $cachePath."/image_[0-9][0-9][0-9][x_][0-9][0-9][0-9]_".basename($filename);
-                $filenamesToDelete[] = $cachePath."/image_[0-9][0-9][0-9][x_][0-9][0-9][0-9][0-9]_".basename($filename);
-                $filenamesToDelete[] = $cachePath."/image_[0-9][0-9][0-9][0-9][x_][0-9][0-9][0-9]_".basename($filename);
-                $filenamesToDelete[] = $cachePath."/image_[0-9][0-9][0-9][0-9][x_][0-9][0-9][0-9][0-9]_".basename($filename);
+                $filenamesToDelete[] = $cachePath . "/image_[0-9][0-9][0-9][x_][0-9][0-9][0-9]_" . basename($filename);
+                $filenamesToDelete[] = $cachePath . "/image_[0-9][0-9][0-9][x_][0-9][0-9][0-9][0-9]_" . basename($filename);
+                $filenamesToDelete[] = $cachePath . "/image_[0-9][0-9][0-9][0-9][x_][0-9][0-9][0-9]_" . basename($filename);
+                $filenamesToDelete[] = $cachePath . "/image_[0-9][0-9][0-9][0-9][x_][0-9][0-9][0-9][0-9]_" . basename($filename);
                 // old templates.functions.php getImageFromBody
-                $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9]x[0-9][0-9][0-9]-".basename($filename);
-                $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9][0-9]x[0-9][0-9][0-9]-".basename($filename);
-                $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9]x[0-9]0-9][0-9][0-9]-".basename($filename);
-                $filenamesToDelete[] = $cachePath."/[0-9][0-9][0-9][0-9]x[0-9]0-9][0-9][0-9]-".basename($filename);
+                $filenamesToDelete[] = $cachePath . "/[0-9][0-9][0-9]x[0-9][0-9][0-9]-" . basename($filename);
+                $filenamesToDelete[] = $cachePath . "/[0-9][0-9][0-9][0-9]x[0-9][0-9][0-9]-" . basename($filename);
+                $filenamesToDelete[] = $cachePath . "/[0-9][0-9][0-9]x[0-9]0-9][0-9][0-9]-" . basename($filename);
+                $filenamesToDelete[] = $cachePath . "/[0-9][0-9][0-9][0-9]x[0-9]0-9][0-9][0-9]-" . basename($filename);
                 foreach ($filenamesToDelete as $path) {
                     array_map('unlink', glob($path));
                 }
@@ -1039,14 +1037,14 @@ if (!class_exists('attach')) {
             if (!empty($file['name'])) {
                 if ($this->isSafeMode) {
                     $currentTag = $this->wiki->GetPageTag();
-                    $prefixFileName = substr($file['realname'], 0, strlen($currentTag)) == $currentTag ? $currentTag."_" : "";
+                    $prefixFileName = substr($file['realname'], 0, strlen($currentTag)) == $currentTag ? $currentTag . "_" : "";
                     $file_vignette = $file['path'] . '/' . $prefixFileName . $file['name'] . "_vignette_" . $width . '_' . $height . '_' . $file['datepage'] . '_' . $file['dateupload'] . '.' . $file['ext'];
                 } else {
                     $file_vignette = $file['path'] . '/' . $file['name'] . "_vignette_" . $width . '_' . $height . '_' . $file['datepage'] . '_' . $file['dateupload'] . '.' . $file['ext'];
                 }
             } else {
                 $pathInfo = pathinfo($fullFilename);
-                $file_vignette = "{$file['path']}/{$pathInfo['filename']}_vignette_{$width}_{$height}".(isset($pathInfo['extension']) ? ".{$pathInfo['extension']}" : '');
+                $file_vignette = "{$file['path']}/{$pathInfo['filename']}_vignette_{$width}_{$height}" . (isset($pathInfo['extension']) ? ".{$pathInfo['extension']}" : '');
             }
 
             return $file_vignette;
@@ -1109,7 +1107,7 @@ if (!class_exists('attach')) {
                     $ext = pathinfo($image_src)['extension'];
                     do {
                         $tempFile = tmpfile();
-                        $tempFileName = stream_get_meta_data($tempFile)['uri'].".$ext";
+                        $tempFileName = stream_get_meta_data($tempFile)['uri'] . ".$ext";
                         unlink(stream_get_meta_data($tempFile)['uri']);
                     } while (file_exists($tempFileName));
                     $imgTrans->target_path = $tempFileName;

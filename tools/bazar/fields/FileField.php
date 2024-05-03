@@ -78,14 +78,14 @@ class FileField extends BazarField
             }
         }
         return ($alertMessage ?? '') . $this->render('@bazar/inputs/file.twig', (
-            empty($value) ||  !file_exists($this->getBasePath().  $value) || $deletedFile
+            empty($value) ||  !file_exists($this->getBasePath() . $value) || $deletedFile
             ? [
                 'maxSize' => $this->maxSize
             ]
             : [
                 'value' => $value,
                 'shortFileName' => $this->getShortFileName($value),
-                'fileUrl' => $this->getBasePath().  $value,
+                'fileUrl' => $this->getBasePath() . $value,
                 'deleteUrl' => empty($entry) ? '' : $this->getWiki()->href('edit', $entry['id_fiche'], ['delete_file' => $value], false),
                 'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value)
             ]
@@ -115,17 +115,17 @@ class FileField extends BazarField
                     move_uploaded_file($_FILES[$this->propertyName]['tmp_name'], $filePath);
                     chmod($filePath, 0755);
                 } else {
-                    echo _t('BAZ_FILE_ALREADY_EXISTING').'<br />';
+                    echo _t('BAZ_FILE_ALREADY_EXISTING') . '<br />';
                 }
             } else {
-                echo _t('BAZ_NOT_AUTHORIZED_FILE').'<br />';
+                echo _t('BAZ_NOT_AUTHORIZED_FILE') . '<br />';
 
                 return [$this->propertyName => ''];
             }
 
             return [$this->propertyName => basename($filePath)];
         } elseif (!empty($value)) {
-            return [$this->propertyName => file_exists($this->getBasePath(). $value) ? $value : ''];
+            return [$this->propertyName => file_exists($this->getBasePath() . $value) ? $value : ''];
         } else {
             return [$this->propertyName => ''];
         }
@@ -136,13 +136,13 @@ class FileField extends BazarField
         $value = $this->getValue($entry);
 
         $basePath = $this->getBasePath() ;
-        if (!empty($value) && file_exists($basePath.$value)) {
+        if (!empty($value) && file_exists($basePath . $value)) {
             $shortFileName = $this->getShortFileName($value);
             return $this->render('@bazar/fields/file.twig', [
                 'value' => $value,
                 'fileUrl' => ($shortFileName == $value)
-                    ? $this->getWiki()->getBaseUrl().'/'.$basePath . $value
-                    : $this->getWiki()->Href('download', $entry['id_fiche']."_".$this->getPropertyName(), ['file' => $value], false),
+                    ? $this->getWiki()->getBaseUrl() . '/' . $basePath . $value
+                    : $this->getWiki()->Href('download', $entry['id_fiche'] . "_" . $this->getPropertyName(), ['file' => $value], false),
                 'shortFileName' => $shortFileName,
             ]);
         }
@@ -169,7 +169,7 @@ class FileField extends BazarField
      */
     protected function defineFilePrefix(array $entry)
     {
-        return $entry['id_fiche'].'_'.$this->getPropertyName().'_';
+        return $entry['id_fiche'] . '_' . $this->getPropertyName() . '_';
     }
 
     /**

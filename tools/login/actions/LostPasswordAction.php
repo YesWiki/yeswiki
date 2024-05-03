@@ -68,22 +68,22 @@ class LostPasswordAction extends YesWikiAction
                 $this->errorType = 'invalidKey';
             }
         }
-        $renderedTitle = '<h2>'._t('LOGIN_CHANGE_PASSWORD').'</h2>';
+        $renderedTitle = '<h2>' . _t('LOGIN_CHANGE_PASSWORD') . '</h2>';
         switch ($this->typeOfRendering) {
             case 'userNotFound':
-                return $renderedTitle.$this->render("@templates/alert-message-with-back.twig", [
+                return $renderedTitle . $this->render("@templates/alert-message-with-back.twig", [
                     'type' => 'danger',
                     'message' => _t('LOGIN_UNKNOWN_USER')
                 ]);
                 break;
             case 'successPage':
-                return $renderedTitle.$this->render("@templates/alert-message.twig", [
+                return $renderedTitle . $this->render("@templates/alert-message.twig", [
                     'type' => 'success',
                     'message' => _t('LOGIN_MESSAGE_SENT')
                 ]);
                 break;
             case 'recoverSuccess':
-                return $renderedTitle.$this->render("@templates/alert-message.twig", [
+                return $renderedTitle . $this->render("@templates/alert-message.twig", [
                     'type' => 'success',
                     'message' => _t('LOGIN_PASSWORD_WAS_RESET')
                 ]);
@@ -104,7 +104,7 @@ class LostPasswordAction extends YesWikiAction
                 ]);
                 break;
             case 'directDangerMessage':
-                return $renderedTitle.$this->render("@templates/alert-message.twig", [
+                return $renderedTitle . $this->render("@templates/alert-message.twig", [
                     'type' => 'danger',
                     'message' => $message,
                 ]);
@@ -221,14 +221,14 @@ class LostPasswordAction extends YesWikiAction
         $pieces = parse_url($this->params->get('base_url'));
         $domain = isset($pieces['host']) ? $pieces['host'] : '';
 
-        $message = _t('LOGIN_DEAR').' ' . $user['name'] . ",\n";
-        $message .= _t('LOGIN_CLICK_FOLLOWING_LINK').' :' . "\n";
+        $message = _t('LOGIN_DEAR') . ' ' . $user['name'] . ",\n";
+        $message .= _t('LOGIN_CLICK_FOLLOWING_LINK') . ' :' . "\n";
         $message .= '-----------------------' . "\n";
         $message .= $passwordLink . "\n";
         $message .= '-----------------------' . "\n";
-        $message .= _t('LOGIN_THE_TEAM').' ' . $domain . "\n";
+        $message .= _t('LOGIN_THE_TEAM') . ' ' . $domain . "\n";
 
-        $subject = _t('LOGIN_PASSWORD_LOST_FOR').' ' . $domain;
+        $subject = _t('LOGIN_PASSWORD_LOST_FOR') . ' ' . $domain;
         // Send the email
         return send_mail($this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $user['email'], $subject, $message);
     }
@@ -252,7 +252,7 @@ class LostPasswordAction extends YesWikiAction
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if ($this->checkEmailKey($key, $userName) === false) { // The password recovery key does not match
-            throw new Exception(_t('USER_INCORRECT_PASSWORD_KEY').'.');
+            throw new Exception(_t('USER_INCORRECT_PASSWORD_KEY') . '.');
         }
 
         $user = $this->userManager->getOneByName($userName);
