@@ -85,7 +85,7 @@ class LoginAction extends YesWikiAction
             'nobtn' => $this->formatBoolean($arg, false, 'nobtn'),
             'template' => (empty($arg['template']) ||
                 empty(basename($arg['template'])) ||
-                !$this->templateEngine->hasTemplate("@login/".basename($arg['template'])))
+                !$this->templateEngine->hasTemplate("@login/" . basename($arg['template'])))
                 ? 'default.twig'
                 : basename($arg['template']),
         ];
@@ -117,9 +117,9 @@ class LoginAction extends YesWikiAction
     private function getIncomingUrlFromServer(array $server): string
     {
         $url = explode('?', $server['REQUEST_URI']);
-        $d = dirname($url[0].'?');
+        $d = dirname($url[0] . '?');
         $t = ($d != '/' ? str_replace($d, '', $server['REQUEST_URI']) : $server['REQUEST_URI']);
-        return $this->wiki->getBaseUrl().$t;
+        return $this->wiki->getBaseUrl() . $t;
     }
 
     private function renderForm(string $action): string
