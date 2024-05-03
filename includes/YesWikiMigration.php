@@ -7,16 +7,26 @@ use YesWiki\Wiki;
 
 abstract class YesWikiMigration
 {
-  protected $wiki;
-  protected $dbService;
+    protected $wiki;
+    protected $dbService;
 
-  public function setWiki(Wiki $wiki): void
-  {
-    $this->wiki = $wiki;
-  }
+    public function setWiki(Wiki $wiki): void
+    {
+        $this->wiki = $wiki;
+    }
 
-  public function setDbService(DbService $dbService): void
-  {
-    $this->dbService = $dbService;
-  }
+    public function setDbService(DbService $dbService): void
+    {
+        $this->dbService = $dbService;
+    }
+
+    /**
+     * give service from name
+     * @param string $className
+     * @return mixed
+     */
+    protected function getService(string $className)
+    {
+        return $this->wiki->services->get($className);
+    }
 }
