@@ -5,6 +5,7 @@ use YesWiki\AutoUpdate\Service\MigrationService;
 use YesWiki\AutoUpdate\Service\UpdateAdminPagesService;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Controller\Service\SecurityController;
 
 class UpdateAction extends YesWikiAction
 {
@@ -17,14 +18,16 @@ class UpdateAction extends YesWikiAction
 
     public function run()
     {
+        $securityController = $this->getService(SecurityController::class);
         $updateService = $this->getService(AutoUpdateService::class);
 
         if (!$updateService->initRepository($this->arguments['version'])) {
             return $this->render("@autoupdate/norepo.twig", []);
         }
 
-        if (empty($_GET['action']) || !$this->wiki->UserIsAdmin() || $this->isWikiHibernated()) {
-            // Base action, display current status of software, extension and themes 
+        $action = $securityController->filterInput(INPUT_GET, 'action', FILTER_SANITIZE_STRING);
+        if (empty($action) || !$this->wiki->UserIsAdmin() || $this->isWikiHibernated()) {
+            // Base action, display current status of software, extension and themes
             return $this->render("@autoupdate/status.twig", [
                 'isAdmin' => $this->wiki->UserIsAdmin(),
                 'isHibernated' => $this->isWikiHibernated(),
@@ -40,14 +43,14 @@ class UpdateAction extends YesWikiAction
         @set_time_limit(300);
 
         // Handle upgrade and delete actions
-        $action = $_GET['action'];
         // package can be 'yeswiki' for core upgrade, or extension name, or theme name
-        $packageName = $_GET['package'] ?? '';
+        $packageName = $securityController->filterInput(INPUT_GET, 'package', FILTER_SANITIZE_STRING);
 
         switch ($action) {
             case 'upgrade':
                 // Ensure a backup is made before the upgrade (or force upgrade)
-                if (!$this->getService(ArchiveService::class)->hasValidatedBackup($_GET['forcedUpdateToken'] ?? "")) {
+                $forcedUpdateToken = $securityController->filterInput(INPUT_GET, 'forcedUpdateToken', FILTER_SANITIZE_STRING);
+                if (!$this->getService(ArchiveService::class)->hasValidatedBackup($forcedUpdateToken)) {
                     return $this->render("@core/preupdate-backup.twig", [
                         'packageName' => $packageName
                     ]);
@@ -64,7 +67,11 @@ class UpdateAction extends YesWikiAction
                 ], false));
                 break;
             case 'post_install':
-                $messages = json_decode($_GET['messages']);
+                $rawMessages = $securityController->filterInput(INPUT_GET, 'messages', FILTER_UNSAFE_RAW, 'string');
+                $messages = empty($rawMessages) ? [] : json_decode($rawMessages, true);
+                if (!is_array($messages)) {
+                    $messages = [];
+                }
                 // Run migrations
                 $migrationMessages = $this->getService(MigrationService::class)->run();
                 $messages = array_merge($messages, $migrationMessages->toArray());
