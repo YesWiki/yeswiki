@@ -180,4 +180,76 @@ class SecurityController extends YesWikiController
         }
         return $champsCaptcha;
     }
+
+    /**
+     * retrieve input using filter to prevent injection from other php script
+     * emulate $filter = FILTER_SANITIZE_STRING because deprecated since php8.1
+     * @param int $type
+     * @param string $varName
+     * @param int $filter same as filter_input
+     * @param string $format 'string', 'int', 'bool', 'array', '' (empty = not formatted)
+     * @param array|int $options same as filter_input
+     * @return mixed
+     */
+    public function filterInput(
+        int $type,
+        string $varName,
+        int $filter = FILTER_DEFAULT,
+        string $format = '',
+        $options = 0
+    ) {
+        /**
+         * @var int $sanitizedFilter
+         */
+        $sanitizedFilter = ($filter === FILTER_SANITIZE_STRING) ? FILTER_UNSAFE_RAW : $filter;
+        /**
+         * @var string $sanitizedFormat
+         */
+        $sanitizedFormat = ($filter === FILTER_SANITIZE_STRING) ? 'string' : $format;
+        /**
+         * @var mixed $rawInputFiltered
+         */
+        $rawInputFiltered = filter_input($type, $varName, $filter, $options);
+
+        /**
+         * @var mixed $result
+         */
+        $result = null;
+        switch ($sanitizedFormat) {
+            case 'string':
+                $result = (
+                    in_array($rawInputFiltered, [false ,null], true)
+                    || !is_scalar($rawInputFiltered)
+                )
+                    ? ''
+                    : (
+                        $filter === FILTER_SANITIZE_STRING
+                        ? htmlspecialchars(strip_tags(strval($rawInputFiltered)))
+                        : strval($rawInputFiltered)
+                    );
+                break;
+            case 'int':
+                $result = (
+                    in_array($rawInputFiltered, [false ,null], true)
+                    || !is_scalar($rawInputFiltered)
+                )
+                    ? 0
+                    : intval($rawInputFiltered);
+                break;
+            case 'bool':
+                $result = in_array($rawInputFiltered, [false , null, 0 , 'false', '0'], true)
+                    ? false
+                    : (
+                        in_array($rawInputFiltered, [true , 'true', 1], true)
+                        ? true
+                        : boolval($rawInputFiltered)
+                    );
+                break;
+            default:
+                $result = $rawInputFiltered;
+                break;
+        }
+
+        return $result;
+    }
 }
