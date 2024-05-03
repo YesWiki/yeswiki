@@ -41,7 +41,9 @@ class LostPasswordAction extends YesWikiAction
 
         if (isset($_POST['subStep']) && !isset($_GET['a'])) {
             try {
-                $user = $this->manageSubStep(filter_input(INPUT_POST, 'subStep', FILTER_SANITIZE_NUMBER_INT));
+                $user = $this->manageSubStep(
+                    $this->securityController->filterInput(INPUT_POST, 'subStep', FILTER_SANITIZE_NUMBER_INT, 'int')
+                );
             } catch (Exception $ex) {
                 $this->typeOfRendering = 'directDangerMessage';
                 $this->errorType = 'exception';
@@ -50,10 +52,8 @@ class LostPasswordAction extends YesWikiAction
         } elseif (isset($_GET['a']) && $_GET['a'] === 'recover' && !empty($_GET['email'])) {
             $this->typeOfRendering = 'directDangerMessage';
             $message = _t('LOGIN_INVALID_KEY');
-            $hash = filter_input(INPUT_GET, 'email', FILTER_UNSAFE_RAW);
-            $hash = in_array($hash, [false,null], true) ? "" : htmlspecialchars(strip_tags($hash));
-            $encodedUser = filter_input(INPUT_GET, 'u', FILTER_UNSAFE_RAW);
-            $encodedUser = in_array($encodedUser, [false,null], true) ? "" : htmlspecialchars(strip_tags($encodedUser));
+            $hash = $this->securityController->filterInput(INPUT_GET, 'email', FILTER_SANITIZE_STRING);
+            $encodedUser = $this->securityController->filterInput(INPUT_GET, 'u', FILTER_SANITIZE_STRING);
             if (empty($hash)) {
                 $this->errorType = 'invalidKey';
             } elseif ($this->checkEmailKey($hash, base64_decode($encodedUser))) {
@@ -92,8 +92,7 @@ class LostPasswordAction extends YesWikiAction
                 if (isset($hash)) {
                     $key = $hash;
                 } else {
-                    $key = filter_input(INPUT_POST, 'key', FILTER_UNSAFE_RAW);
-                    $key = in_array($key, [false,null], true) ? "" : htmlspecialchars(strip_tags($key));
+                    $key = $this->securityController->filterInput(INPUT_POST, 'key', FILTER_SANITIZE_STRING);
                 }
                 return $this->render("@login/lost-password-recover-form.twig", [
                     'errorType' => $this->errorType,
@@ -128,8 +127,7 @@ class LostPasswordAction extends YesWikiAction
         switch ($subStep) {
             case 1:
                 // we just submitted an email or username for verification
-                $email = filter_input(INPUT_POST, 'email', FILTER_UNSAFE_RAW);
-                $email = in_array($email, [false,null], true) ? "" : htmlspecialchars(strip_tags($email));
+                $email = $this->securityController->filterInput(INPUT_POST, 'email', FILTER_SANITIZE_STRING);
                 if (empty($email)) {
                     $this->errorType = 'emptyEmail';
                     $this->typeOfRendering = 'emailForm';
@@ -149,8 +147,7 @@ class LostPasswordAction extends YesWikiAction
                 if (empty($_POST['userID']) || empty($_POST['key'])) {
                     $this->wiki->Redirect($this->wiki->Href("", $this->params->get('root_page')));
                 }
-                $userName = filter_input(INPUT_POST, 'userID', FILTER_UNSAFE_RAW);
-                $userName = in_array($userName, [false,null], true) ? "" : htmlspecialchars(strip_tags($userName));
+                $userName = $this->securityController->filterInput(INPUT_POST, 'userID', FILTER_SANITIZE_STRING);
                 $user = $this->userManager->getOneByName($userName);
                 $this->typeOfRendering = 'recoverForm';
                 if (empty($_POST['pw0']) || empty($_POST['pw1']) || (strcmp($_POST['pw0'], $_POST['pw1']) != 0) || (trim($_POST['pw0']) == '')) {
@@ -159,10 +156,8 @@ class LostPasswordAction extends YesWikiAction
                 } else {
                     if (!empty($user)) {
                         try {
-                            $key = filter_input(INPUT_POST, 'key', FILTER_UNSAFE_RAW);
-                            $key = in_array($key, [false,null], true) ? "" : htmlspecialchars(strip_tags($key));
-                            $pw0 = filter_input(INPUT_POST, 'pw0', FILTER_UNSAFE_RAW);
-                            $pw0 = in_array($pw0, [false,null], true) ? "" : $pw0;
+                            $key = $this->securityController->filterInput(INPUT_POST, 'key', FILTER_SANITIZE_STRING);
+                            $pw0 = $this->securityController->filterInput(INPUT_POST, 'pw0', FILTER_SANITIZE_STRING);
                             $this->resetPassword(
                                 $user['name'],
                                 $key,

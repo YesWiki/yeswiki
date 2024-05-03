@@ -64,8 +64,10 @@ class FileField extends BazarField
                 if ($this->isAllowedToDeleteFile($entry, $value)) {
                     if (substr($value, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
                         $attach = $this->getAttach();
-                        $rawFileName = filter_input(INPUT_GET, 'delete_file', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-                        $attach->fmDelete($rawFileName);
+                        $rawFileName = $this->getService(SecurityController::class)->filterInput(INPUT_GET, 'delete_file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, 'string');
+                        if (!empty($rawFileName)) {
+                            $attach->fmDelete($rawFileName);
+                        }
                     } else {
                         // do not delete file if not same entry name (only remove from this entry)
                         $deletedFile = true;

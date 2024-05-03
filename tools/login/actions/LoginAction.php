@@ -21,12 +21,14 @@ use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Login\Exception\LoginException;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Security\Controller\SecurityController;
 
 class LoginAction extends YesWikiAction
 {
     protected $authController;
     protected $pageManager;
     protected $templateEngine;
+    protected $securityController;
     protected $userManager;
 
     public function formatArguments($arg)
@@ -96,6 +98,7 @@ class LoginAction extends YesWikiAction
         // get services
         $this->authController = $this->getService(AuthController::class);
         $this->pageManager = $this->getService(PageManager::class);
+        $this->securityController = $this->getService(SecurityController::class);
         $this->userManager = $this->getService(UserManager::class);
 
         $action = $_REQUEST["action"] ?? '';
@@ -165,14 +168,13 @@ class LoginAction extends YesWikiAction
 
     private function login()
     {
-        $incomingurl = filter_input(INPUT_POST, 'incomingurl', FILTER_SANITIZE_URL);
+        $incomingurl = $this->securityController->filterInput(INPUT_POST, 'incomingurl', FILTER_SANITIZE_URL, 'string');
         if (empty($incomingurl)) {
             $incomingurl = $this->arguments['incomingurl'];
         }
         try {
             if (!empty($_POST["name"])) {
-                $name = filter_input(INPUT_POST, 'name', FILTER_UNSAFE_RAW);
-                $name = in_array($name, [false,null], true) ? "" : htmlspecialchars(strip_tags($name));
+                $name = $this->securityController->filterInput(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
                 if (empty($name)) {
                     throw new LoginException(_t('LOGIN_WRONG_USER'));
                 }
@@ -186,8 +188,7 @@ class LoginAction extends YesWikiAction
                 if (empty($_POST["email"])) {
                     throw new LoginException(_t('LOGIN_WRONG_USER'));
                 }
-                $email = filter_input(INPUT_POST, 'email', FILTER_UNSAFE_RAW);
-                $email = in_array($email, [false,null], true) ? "" : htmlspecialchars(strip_tags($email));
+                $email = $this->securityController->filterInput(INPUT_POST, 'email', FILTER_SANITIZE_STRING);
                 if (empty($email)) {
                     throw new LoginException(_t('LOGIN_WRONG_USER'));
                 }
@@ -196,12 +197,11 @@ class LoginAction extends YesWikiAction
             if (empty($user)) {
                 throw new LoginException(_t('LOGIN_WRONG_USER'));
             }
-            $password = filter_input(INPUT_POST, 'password', FILTER_UNSAFE_RAW);
-            $password = in_array($password, [false,null], true) ? "" : $password;
+            $password = $this->securityController->filterInput(INPUT_POST, 'password', FILTER_UNSAFE_RAW, 'string');
             if (!$this->authController->checkPassword($password, $user)) {
                 throw new LoginException(_t('LOGIN_WRONG_PASSWORD'));
             }
-            $remember = filter_input(INPUT_POST, 'remember', FILTER_VALIDATE_BOOL);
+            $remember = $this->securityController->filterInput(INPUT_POST, 'remember', FILTER_VALIDATE_BOOL, 'bool');
             $this->authController->login($user, $remember);
 
             // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur

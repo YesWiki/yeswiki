@@ -5,6 +5,7 @@
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\HtmlPurifierService;
+use YesWiki\Security\Controller\SecurityController;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -959,7 +960,9 @@ if (!class_exists('attach')) {
         public function fmDelete(string $rawFileName = "")
         {
             $path = $this->GetUploadPath();
-            $rawFileName = empty($rawFileName) ? filter_input(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS) : $rawFileName;
+            $rawFileName = empty($rawFileName)
+                ? $this->wiki->services->get(SecurityController::class)->filterInput(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, string)
+                : $rawFileName;
             $filename = $path . '/' . basename($rawFileName);
             if (!empty($rawFileName) && file_exists($filename)) {
                 $trash = $filename . 'trash' . $this->getDate();

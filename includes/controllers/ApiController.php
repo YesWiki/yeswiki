@@ -28,6 +28,7 @@ use YesWiki\Core\Service\CommentService;
 use YesWiki\Core\Service\ReactionManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Security\Controller\SecurityController;
 
 class ApiController extends YesWikiController
 {
@@ -801,14 +802,11 @@ class ApiController extends YesWikiController
                 Response::HTTP_BAD_REQUEST
             );
         } else {
-            $property = filter_input($method, 'property', FILTER_UNSAFE_RAW);
-            $property = in_array($property, [false,null], true) ? "" : htmlspecialchars(strip_tags($property));
+            $property = $this->getService(SecurityController::class)->filterInput($method, 'property', FILTER_SANITIZE_STRING);
             if (empty($property)) {
                 $property = null;
             }
-
-            $username = filter_input($method, 'user', FILTER_UNSAFE_RAW);
-            $username = in_array($username, [false,null], true) ? "" : htmlspecialchars(strip_tags($username));
+            $username = $this->getService(SecurityController::class)->filterInput($method, 'user', FILTER_SANITIZE_STRING);
             if (empty($username)) {
                 if (!$this->wiki->UserIsAdmin()) {
                     $username = $this->getService(AuthController::class)->getLoggedUser()['name'];

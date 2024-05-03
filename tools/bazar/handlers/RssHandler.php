@@ -3,6 +3,7 @@
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Security\Controller\SecurityController;
 
 // TODO use Symfony XmlEncoder instead
 // https://symfony.com/doc/current/components/serializer.html#the-xmlencoder
@@ -15,12 +16,11 @@ class RssHandler extends YesWikiHandler
         }
 
         $urlrss = $this->wiki->href('rss');
+        $securityController = $this->getService(SecurityController::class);
         if (isset($_GET['id'])) {
-            $id = filter_input(INPUT_GET, 'id', FILTER_UNSAFE_RAW);
-            $id = in_array($id, [false,null], true) ? "" : htmlspecialchars(strip_tags($id));
+            $id = $securityController->filterInput(INPUT_GET, 'id', FILTER_SANITIZE_STRING);
         } elseif (isset($_GET['id_typeannonce'])) {
-            $id = filter_input(INPUT_GET, 'id_typeannonce', FILTER_UNSAFE_RAW);
-            $id = in_array($id, [false,null], true) ? "" : htmlspecialchars(strip_tags($id));
+            $id = $securityController->filterInput(INPUT_GET, 'id_typeannonce', FILTER_SANITIZE_STRING);
         }
         if (!empty($id) && strval($id) == strval(intval($id))) {
             $urlrss .= '&amp;id=' . $id;
