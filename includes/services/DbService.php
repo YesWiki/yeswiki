@@ -143,13 +143,13 @@ class DbService
 
     public function columnExists($table, $column)
     {
-        return $this->count("SHOW COLUMNS FROM {$this->prefixTable($table)} LIKE '{$column}';") > 0;
+        return $this->count("SHOW COLUMNS FROM {$this->prefixTable($table)} LIKE '{$this->escape($column)}';") > 0;
     }
 
     public function dropColumn($table, $column)
     {
         if ($this->columnExists($table, $column)) {
-            $this->query("ALTER TABLE {$this->prefixTable($table)} DROP `{$column}`;");
+            $this->query("ALTER TABLE {$this->prefixTable($table)} DROP `{$this->escape($column)}`;");
         }
     }
 
