@@ -7,6 +7,7 @@ use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Security\Controller\SecurityController;
 
 class CsrfTokenController extends YesWikiController
 {
@@ -37,13 +38,10 @@ class CsrfTokenController extends YesWikiController
         }
         switch ($inputType) {
             case 'GET':
-                $inputToken = filter_input(INPUT_GET, $inputKey, FILTER_UNSAFE_RAW);
-                $inputToken = in_array($inputToken, [false,null], true) ? $inputToken : htmlspecialchars(strip_tags($inputToken));
+                $inputToken = $this->getService(SecurityController::class)->filterInput(INPUT_GET, $inputKey, FILTER_SANITIZE_STRING);
                 break;
-
             case 'POST':
-                $inputToken = filter_input(INPUT_POST, $inputKey, FILTER_UNSAFE_RAW);
-                $inputToken = in_array($inputToken, [false,null], true) ? $inputToken : htmlspecialchars(strip_tags($inputToken));
+                $inputToken = $this->getService(SecurityController::class)->filterInput(INPUT_POST, $inputKey, FILTER_SANITIZE_STRING);
                 break;
 
             default:
