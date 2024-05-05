@@ -5,6 +5,7 @@ namespace YesWiki\AutoUpdate\Service;
 use Exception;
 use YesWiki\AutoUpdate\Entity\Messages;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
@@ -14,16 +15,33 @@ use YesWiki\Wiki;
 class MigrationService
 {
     public const TRIPLES_MIGRATION_ID = 'migration';
-    private $wiki;
-    private $dbService;
 
-    public function __construct(Wiki $wiki, DbService $dbService)
-    {
-        $this->wiki = $wiki;
+    /**
+     * @var DbService $dbService to share the service between methods
+     */
+    protected $dbService;
+
+    /**
+     * @var EventDispatcher $eventDispatcher to share the service between methods
+     */
+    protected $eventDispatcher;
+
+    /**
+     * @var Wiki $wiki to share wiki between methods
+     */
+    protected $wiki;
+
+    public function __construct(
+        DbService $dbService,
+        EventDispatcher $eventDispatcher,
+        Wiki $wiki
+    ) {
         $this->dbService = $dbService;
+        $this->eventDispatcher = $eventDispatcher;
+        $this->wiki = $wiki;
     }
 
-    function run()
+    public function run()
     {
         if ($this->wiki->services->get(SecurityController::class)->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
@@ -35,6 +53,8 @@ class MigrationService
         $completedMigrations = array_map(function ($data) {
             return $data['resource'];
         }, $tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_MIGRATION_ID));
+
+        $this->processEvent('autoupdate.beforeMigrations', $messages);
 
         // Get all Php files in migrations folder (in root or in any tools)
         // Run the file if it was not already run in the past
@@ -72,6 +92,30 @@ class MigrationService
                 }
             }
         }
+        $this->processEvent('autoupdate.afterMigrations', $messages);
         return $messages;
+    }
+
+
+
+    /**
+     * create an event and append an error message in case of error during processing of event
+     * @param string $eventName
+     * @param Messages $messages
+     * @return void
+     */
+    protected function processEvent(string $eventName, Messages $messages)
+    {
+        /**
+         * @var array $errors returned errors if any
+         */
+        $errors = $this->eventDispatcher->yesWikiDispatch($eventName, ['messages' => $messages]);
+        if (!empty($errors['exception'])) {
+            /**
+             * @var string $fileName where exception occured
+             */
+            $fileName = basename($errors['exception']['file']);
+            $messages->add("Migration's event '$eventName' failed with error {$errors['exception']['message']} in '$fileName' (line {$errors['exception']['line']})", 'AU_ERROR');
+        }
     }
 }
