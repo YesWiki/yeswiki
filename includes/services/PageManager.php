@@ -220,17 +220,32 @@ class PageManager
         return $pages ;
     }
 
+    /**
+     * get readable page tags
+     * update page's owner to improve performances
+     * @return string[] list of tags readble for current user
+     */
     public function getReadablePageTags(): array
     {
-        $pages = $this->dbService->loadAll(<<<SQL
+        /**
+         * @var string $sqlRequest
+         */
+        $sqlRequest = <<<SQL
             SELECT tag,owner FROM {$this->dbService->prefixTable('pages')} WHERE LATEST = 'Y' ORDER BY tag
-        SQL);
-        $pages = array_filter($pages, function ($page) {
+        SQL;
+
+
+        // append request to filter on acls during the request
+        if (!$this->wiki->UserIsAdmin()) {
+            $sqlRequest .= $this->aclService->updateRequestWithACL();
+        }
+        /**
+         * @var array $pages  - list of pages ['tag' => string,'owner' => string]
+         */
+        $pages = $this->dbService->loadAll($sqlRequest);
+        return array_map(function ($page) {
             // cache page's owner to prevent reload of page from sql or infinite loop in some case
             $this->cacheOwner($page);
-            return $this->aclService->hasAccess('read', $page['tag']);
-        });
-        return array_map(function ($page) {
             return $page['tag'];
         }, $pages);
     }
