@@ -5,10 +5,11 @@
        <a class="bazar-entry modalbox" data-size="modal-lg" {{ fiche.html_data|raw }}
           href="{{ fiche.url ~ (fiche['external-data']  ? "/iframe" : "") }}"{{ fiche['external-data']  ? " data-iframe=\"1\"" : ''  }}
             {# add /iframe only for external YesWiki entries #}
-          title="{{ fiche.bf_titre|raw|e('html_attr') }}">
+          title="{{ fiche.bf_titre|raw|e('html_attr') }}"
+          aria-label="{{ fiche.bf_titre|raw|e('html_attr') }}">
           <div class="image-container">
             {% if fiche.imagebf_image is not empty %}
-              <img loading="lazy" class="trombi-image" alt="{{ fiche.bf_titre|raw|e('html_attr') }}"
+              <img loading="lazy" class="trombi-image" alt=""
                    src="{{ fiche['external-data'] 
                         ? fiche['external-data']['baseUrl'] ~ 'cache/image_300_300_' ~ fiche.imagebf_image
                         : resizedImages[fiche.id_fiche] }}"

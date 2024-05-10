@@ -1,7 +1,7 @@
 {% if image is empty %}
     <div class="alert alert-danger">{{ _t('REACTION_NO_IMAGE') }}</div>
 {% elseif image matches "/\.(gif|jpeg|png|jpg|svg|webp)$/i" %}
-    <img loading="lazy" class="img-responsive" src="{{image}}" alt="reaction image {{ id }}" />
+    <img loading="lazy" class="img-responsive" src="{{image}}" alt="" />
 {% elseif image matches "/\\p{S}/u" %}
     <span class="reaction-emoji">{{image}}</span>
 {% elseif image matches "/^(fa[srb]? fa-*)/i" %}
