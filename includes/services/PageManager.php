@@ -227,9 +227,6 @@ class PageManager
      */
     public function getReadablePageTags(): array
     {
-        /**
-         * @var string $sqlRequest
-         */
         $sqlRequest = <<<SQL
             SELECT tag,owner FROM {$this->dbService->prefixTable('pages')} WHERE LATEST = 'Y' ORDER BY tag
         SQL;
@@ -239,9 +236,6 @@ class PageManager
         if (!$this->wiki->UserIsAdmin()) {
             $sqlRequest .= $this->aclService->updateRequestWithACL();
         }
-        /**
-         * @var array $pages  - list of pages ['tag' => string,'owner' => string]
-         */
         $pages = $this->dbService->loadAll($sqlRequest);
         return array_map(function ($page) {
             // cache page's owner to prevent reload of page from sql or infinite loop in some case

@@ -78,9 +78,6 @@ class FormManager
     public function getAll(): array
     {
         if (!$this->cacheValidatedForAll) {
-            /**
-             * @var array $forms - forms extracted from database
-             */
             $forms = $this->dbService->loadAll("SELECT * FROM {$this->dbService->prefixTable('nature')} ORDER BY bn_label_nature ASC");
             foreach ($forms as $form) {
                 if (!empty($form['bn_id_nature'])) {
