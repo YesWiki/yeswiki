@@ -15,9 +15,16 @@ export default {
     resize_height: { label: _t('BAZ_FORM_EDIT_IMAGE_HEIGHT_RESIZE'), value: '600' },
     resize_width: { label: _t('BAZ_FORM_EDIT_IMAGE_WIDTH_RESIZE'), value: '800' },
     align: {
-      label: _t('BAZ_FORM_EDIT_IMAGE_ALIGN_LABEL'),
-      value: 'right',
-      options: { left: _t('LEFT'), right: _t('RIGHT') }
+      label: _t("BAZ_FORM_EDIT_IMAGE_ALIGN_LABEL"),
+      value: "right",
+      options: { left: _t("LEFT"), right: _t("RIGHT") },
+    },
+    default_image: {
+      label: _t("BAZ_FORM_EDIT_IMAGE_DEFAULT"),
+      class: "default-file",
+      value: "",
+      type: "file",
+      accept: "image/*",
     },
     maxsize: { label: _t('BAZ_FORM_EDIT_FILE_MAXSIZE_LABEL'), value: '' },
     read: readConf,
@@ -29,12 +36,13 @@ export default {
   attributesMapping: {
     ...defaultMapping,
     ...{
-      1: 'name',
-      3: 'thumb_height',
-      4: 'thumb_width',
-      5: 'resize_height',
-      6: 'resize_width',
-      7: 'align',
+      1: "name",
+      3: "thumb_height",
+      4: "thumb_width",
+      5: "resize_height",
+      6: "resize_width",
+      7: "align",
+      13: "default_image",
       14: 'maxsize'
     }
   },

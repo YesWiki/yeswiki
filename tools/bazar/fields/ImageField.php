@@ -17,12 +17,14 @@ class ImageField extends FileField
     protected $imageHeight;
     protected $imageWidth;
     protected $imageClass;
+    protected $imageDefault;
 
     protected const FIELD_THUMBNAIL_HEIGHT = 3;
     protected const FIELD_THUMBNAIL_WIDTH = 4;
     protected const FIELD_IMAGE_HEIGHT = 5;
     protected const FIELD_IMAGE_WIDTH = 6;
     protected const FIELD_IMAGE_CLASS = 7;
+    protected const FIELD_IMAGE_DEFAULT = 13;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -34,6 +36,7 @@ class ImageField extends FileField
         $this->imageHeight = $values[self::FIELD_IMAGE_HEIGHT];
         $this->imageWidth = $values[self::FIELD_IMAGE_WIDTH];
         $this->imageClass = $values[self::FIELD_IMAGE_CLASS];
+        $this->imageDefault = $values[self::FIELD_IMAGE_DEFAULT];
 
         // We can have no default for images
         $this->default = null;
@@ -162,7 +165,12 @@ class ImageField extends FileField
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
-
+        if (!isset($value) || $value == '') {
+            $default_image_filename = "defaultimage{$entry['id_typeannonce']}_{$this->name}.jpg";
+            if (file_exists($this->getBasePath(). $default_image_filename)) {
+                $value=$default_image_filename;
+            }
+        }        
         if (isset($value) && $value != '' && file_exists($this->getBasePath(). $value)) {
             return $this->getWiki()->render('@attach/display-image.twig', [
                 'baseUrl' => $this->getWiki()->GetBaseUrl().'/',

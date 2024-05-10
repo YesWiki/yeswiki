@@ -133,6 +133,7 @@ return [
     'BAZ_FORM_EDIT_IMAGE_WIDTH' => 'Largeur vignette',
     'BAZ_FORM_EDIT_IMAGE_WIDTH_RESIZE' => 'Largeur redimension',
     'BAZ_FORM_EDIT_IMAGE_HEIGHT_RESIZE' => 'Hauteur redimension',
+    'BAZ_FORM_EDIT_IMAGE_DEFAULT' => 'Image par défaut',
     'BAZ_FORM_EDIT_METADATA_THEME_LABEL' => 'Nom du thème',
     'BAZ_FORM_EDIT_METADATA_SQUELETON_LABEL' => 'Squelette',
     'BAZ_FORM_EDIT_METADATA_STYLE_LABEL' => 'Style',
