@@ -89,5 +89,5 @@ if (is_array($data)) {
 
 if (!empty($listlinks)) {
     echo ' <!-- start of nav -->
-        <ul class="' . $class . '" id="' . $navID . '" ' . $data . '>' . $listlinks . '</ul>' . "\n";
+        <nav><ul class="' . $class . '" id="' . $navID . '" ' . $data . '>' . $listlinks . '</ul></nav>' . "\n";
 }
