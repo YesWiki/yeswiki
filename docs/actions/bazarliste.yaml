@@ -317,6 +317,7 @@ actions:
               - date_maj_fiche
             label: _t(AB_bazarliste_displayfields_visual_label)
             default: ""
+          
 
   bazarcard:
     label: _t(AB_bazarcard_label)
@@ -338,6 +339,17 @@ actions:
           vertical: _t(AB_bazarcard_style_vertical)
           square: _t(AB_bazarcard_style_square)
           horizontal: _t(AB_bazarcard_style_horizontal)
+      imgstyle:
+        type: list
+        label: _t(AB_bazarcard_imgstyle_label)
+        icon: image
+        default: cover
+        options:
+          contain: _t(AB_bazarcard_imgstyle_contain)
+          cover:  _t(AB_bazarcard_imgstyle_cover)
+      nblines:
+        type: number
+        label: _t(AB_bazarcard_nblines_label)
       div:
         type: divider
         label: _t(AB_bazarliste_displayfields_title)

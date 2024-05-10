@@ -40,7 +40,7 @@ class BazarListeAction extends YesWikiAction
                         $icon = trim(array_values($tabparam)[0]);
                     }
                 } catch (ParsingMultipleException $th) {
-                    throw new Exception('action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"<br/>('.$th->getMessage().')');
+                    throw new Exception('action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"<br/>(' . $th->getMessage() . ')');
                 }
             } else {
                 $icon = $this->params->get('baz_marker_icon');
@@ -67,7 +67,7 @@ class BazarListeAction extends YesWikiAction
                         $color = trim(array_values($tabparam)[0]);
                     }
                 } catch (ParsingMultipleException $th) {
-                    throw new Exception('action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"<br/>('.$th->getMessage().')');
+                    throw new Exception('action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"<br/>(' . $th->getMessage() . ')');
                 }
             } else {
                 $color = $this->params->get('baz_marker_color');
@@ -293,7 +293,7 @@ class BazarListeAction extends YesWikiAction
         }
 
         $data['fiches'] = $entries;
-        $data['info_res'] = $showNumEntries ? '<div class="alert alert-info">'._t('BAZ_IL_Y_A').' '.count($data['fiches']).' '.(count($data['fiches']) <= 1 ? _t('BAZ_FICHE') : _t('BAZ_FICHES')).'</div>' : '';
+        $data['info_res'] = $showNumEntries ? '<div class="alert alert-info">' . _t('BAZ_IL_Y_A') . ' ' . count($data['fiches']) . ' ' . (count($data['fiches']) <= 1 ? _t('BAZ_FICHE') : _t('BAZ_FICHES')) . '</div>' : '';
         $data['param'] = $this->arguments;
         $data['pager_links'] = '';
         $data['filters'] = $filters; // in case some template need it, like gogocarto
@@ -320,13 +320,13 @@ class BazarListeAction extends YesWikiAction
                 'closeSession' => false,
             ]);
             $data['fiches'] = $pager->getPageData();
-            $data['pager_links'] = '<div class="bazar_numero text-center"><ul class="pagination">'.$pager->links.'</ul></div>';
+            $data['pager_links'] = '<div class="bazar_numero text-center"><ul class="pagination">' . $pager->links . '</ul></div>';
         }
 
         try {
             return $this->render("@bazar/{$templateName}", $data);
         } catch (TemplateNotFound $e) {
-            return '<div class="alert alert-danger">'.$e->getMessage().'</div>';
+            return '<div class="alert alert-danger">' . $e->getMessage() . '</div>';
         }
     }
 
@@ -390,18 +390,18 @@ class BazarListeAction extends YesWikiAction
         // external ids
         $externalIds = [];
         if (!is_null($ids) && preg_match_all('/(?:'
-            .'(' // begin url capturing
-            .'(?:(?:https?):\/\/)' // http or https protocol
-            .'(?:\S+(?::\S*)?@|\d{1,3}(?:\.\d{1,3}){3}|(?:(?:[a-z\d\x{00a1}-\x{ffff}]+-?)*[a-z\d\x{00a1}-\x{ffff}]+)' // long part to catch url
-            .'(?:\.(?:[a-z\d\x{00a1}-\x{ffff}]+-?)*[a-z\d\x{00a1}-\x{ffff}]+)*(?:\.[a-z\x{00a1}-\x{ffff}]{2,6})'
-            .'|(?:localhost))' // or localhost
-            .'(?::\d+)?' // optionnal port
-            .'(?:[^\s^,^|]*)?)'
-            .'\|' // following by a '|'
+            . '(' // begin url capturing
+            . '(?:(?:https?):\/\/)' // http or https protocol
+            . '(?:\S+(?::\S*)?@|\d{1,3}(?:\.\d{1,3}){3}|(?:(?:[a-z\d\x{00a1}-\x{ffff}]+-?)*[a-z\d\x{00a1}-\x{ffff}]+)' // long part to catch url
+            . '(?:\.(?:[a-z\d\x{00a1}-\x{ffff}]+-?)*[a-z\d\x{00a1}-\x{ffff}]+)*(?:\.[a-z\x{00a1}-\x{ffff}]{2,6})'
+            . '|(?:localhost))' // or localhost
+            . '(?::\d+)?' // optionnal port
+            . '(?:[^\s^,^|]*)?)'
+            . '\|' // following by a '|'
             . ')?' // 0 or 1 time - capturing
-            .'([0-9]+)' // and a number
-            .'(?:->([0-9]+))?' // optionnaly following by '->' and a number
-            .'/u', $ids, $matches)) {
+            . '([0-9]+)' // and a number
+            . '(?:->([0-9]+))?' // optionnaly following by '->' and a number
+            . '/u', $ids, $matches)) {
             foreach ($matches[0] as $index => $match) {
                 $externalIds[] = [
                     'url' => $matches[1][$index] ?? '',

@@ -299,6 +299,12 @@ class Init
             $wakkaConfig['wikini_version'] = $wakkaConfig['wakka_version'];
         }
 
+        if (!empty($wakkaConfig['extra_headers'])) {
+            foreach($wakkaConfig['extra_headers'] as $header) {
+                 header($header);
+            }
+         }
+
         return $wakkaConfig;
     }
 

@@ -19,6 +19,7 @@ class FormManager
     protected $fieldFactory;
     protected $params;
     protected $cachedForms;
+    protected $cacheValidatedForAll;
     protected $isAvailableOnlyOneEntryOption;
     protected $isAvailableOnlyOneEntryMessage;
     protected $attach;
@@ -41,6 +42,7 @@ class FormManager
         $this->params = $params;
 
         $this->cachedForms = [];
+        $this->cacheValidatedForAll = false;
         $this->securityController = $securityController;
         $this->isAvailableOnlyOneEntryOption = null;
         $this->isAvailableOnlyOneEntryMessage = null;
@@ -164,14 +166,17 @@ class FormManager
 
     public function getAll(): array
     {
-        $forms = $this->dbService->loadAll('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'ORDER BY bn_label_nature ASC');
-
-        foreach ($forms as $form) {
-            $formId = $form['bn_id_nature'];
-            $this->cachedForms[$formId] = $this->getOne($formId);
+        if (!$this->cacheValidatedForAll) {
+            $forms = $this->dbService->loadAll("SELECT * FROM {$this->dbService->prefixTable('nature')} ORDER BY bn_label_nature ASC");
+            foreach ($forms as $form) {
+                if (!empty($form['bn_id_nature'])) {
+                    // save only not empty formId
+                    $formId = $form['bn_id_nature'];
+                    $this->cachedForms[$formId] = $this->getFromRawData($form);
+                }
+            }
+            $this->cacheValidatedForAll = true;
         }
-        // TODO verify this method : each form is written with the same key in the array
-
         return $this->cachedForms;
     }
 
@@ -200,6 +205,9 @@ class FormManager
             $data['bn_id_nature'] = $this->findNewId();
         }
 
+        // reset cache
+        $this->cacheValidatedForAll = false;
+
         return $this->dbService->query('INSERT INTO ' . $this->dbService->prefixTable('nature')
             . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_context` ,`bn_sem_type` ,`bn_sem_use_template`'
             . ($this->isAvailableOnlyOneEntryOption() ? ',`bn_only_one_entry`' : '')
@@ -222,7 +230,12 @@ class FormManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
+
         $template = $this->convertWithSpecialParameters($data['bn_template'], $data['bn_id_nature']);
+
+        // reset cache
+        $this->cacheValidatedForAll = false;
+
         return $this->dbService->query('UPDATE' . $this->dbService->prefixTable('nature') . 'SET '
             . '`bn_label_nature`="' . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '" ,'
             . '`bn_template`="' . $template . '" ,'
@@ -261,6 +274,9 @@ class FormManager
         }
 
         $this->clear($id);
+
+        // reset cache
+        $this->cacheValidatedForAll = false;
         return $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $this->dbService->escape($id));
     }
 

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Fichier de lancement et de configuration de l'extension Templates.
  */
@@ -10,7 +11,8 @@ if (!defined('WIKINI_VERSION')) {
 define('THEME_PAR_DEFAUT', 'margot');
 
 // Style par défaut
-define('CSS_PAR_DEFAUT', 'margot.css');
+$style = file_exists('themes/margot/styles/light.css') ? 'light.css' : 'margot.css';
+define('CSS_PAR_DEFAUT', $style);
 
 // Squelette par défaut
 define('SQUELETTE_PAR_DEFAUT', '1col.tpl.html');

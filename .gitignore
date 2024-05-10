@@ -124,5 +124,5 @@ docker-compose.local.yml
 
 # Other
 .phpintel/
-
+*.old
 TODO

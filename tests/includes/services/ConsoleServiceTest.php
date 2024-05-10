@@ -116,7 +116,7 @@ class ConsoleServiceTest extends YesWikiTestCase
                 'args' => [''],
                 'processIsNull' => false,
                 'stdout' => null,
-                'stderr' => "/^\\s*There are no commands defined in the \"nocommand\" namespace\\.\\s+/"
+                'stderr' => '/There are no commands defined in the "nocommand" namespace\\./'
             ],
         ];
     }

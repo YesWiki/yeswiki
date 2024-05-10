@@ -1,25 +1,16 @@
 <?php
-
 return [
-
     // fields/CalcField.php
     'BAZ_FORM_EDIT_CALC_LABEL' => 'Calculs',
     'BAZ_FORM_EDIT_DISPLAYTEXT_LABEL' => 'Texte d\'affichage',
     'BAZ_FORM_EDIT_DISPLAYTEXT_HELP' => 'Ajouter si besoin une unité après {value}, (ex: `{value} €`)',
     'BAZ_FORM_EDIT_FORMULA_LABEL' => 'Formule',
-    'BAZ_FORM_CALC_HINT' => "CHAMP EXPERIMENTAL{\\n}".
-       "La formule doit être une formule mathématique.{\\n}".
-       "Il est possible de faire référence à la valeur d'un champ en tapant son nom (ex: `+ sin(bf_number)*2` ),{\\n}".
-       "ou de tester la valeur d'un champ (ex: `test(checkboxListeTypebf_type,premiere_cle)`{\\n}".
-       "qui rend 1 si checkboxListeTypebf_type == premiere_cle sinon 0).",
-
     // fields/FileField.php
-    'BAZ_FILEFIELD_FILE' => 'Fichier : {filename}',
+    'BAZ_FILEFIELD_FILE' => "Fichier : {filename}",
     'BAZ_FORM_EDIT_FILE_READLABEL_LABEL' => 'Label à l\'affichage',
-
+    'FILEFIELD_TOO_LARGE_FILE' => 'Le fichier est trop volumineux, maximum {fileMaxSize} octets',
     // fields/ImageField.php
     'IMAGEFIELD_TOO_LARGE_IMAGE' => 'L\'image est trop volumineuse, maximum {imageMaxSize} octets',
-
     // fields/MapField.php
     'BAZ_FORM_EDIT_GEOLOCATE' => 'Géolocaliser depuis ma position',
     'BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_COUNTY' => 'Champ région/comté',
@@ -49,19 +40,14 @@ return [
     'BAZ_TOWN_NOT_FOUND' => 'Pas de ville trouvée pour la recherche : {input}',
     'GEOLOCATER_GROUP_GEOLOCATIZATION' => 'Champs à utiliser pour la géolocalisation',
     'GEOLOCATER_GROUP_GEOLOCATIZATION_HINT' => 'Renseignez au moins un champ',
-
     'GEOLOCATER_NOT_FOUND' => 'Adresse "{addr}" introuvable',
-
     // libs/bazar.edit_lists.js
     'BAZ_EDIT_LISTS_CONFIRM_DELETE' => 'Confirmez-vous la suppression de cette valeur dans la liste ?',
     'BAZ_EDIT_LISTS_DELETE_ERROR' => 'Le dernier élément ne peut être supprimé.',
-
     // libs/bazar.js
     'BAZ_FORM_REQUIRED_FIELD' => 'Veuillez saisir tous les champs obligatoires (asterisque rouge)',
     'BAZ_FORM_INVALID_EMAIL' => 'L\'email saisi n\'est pas valide',
     'BAZ_FORM_INVALID_TEXT' => 'Le texte n\'est pas valide',
-    'BAZ_FORM_INVALID_URL' => 'L\'url saisie n\'est pas valide, elle doit commencer par https:// '.
-        'et ne pas contenir d\'espaces ou caracteres speciaux',
     'BAZ_FORM_EMPTY_RADIO' => 'Il faut choisir une valeur de bouton radio',
     'BAZ_FORM_EMPTY_CHECKBOX' => 'Il faut cocher au moins une case à cocher',
     'BAZ_FORM_EMPTY_AUTOCOMPLETE' => 'Il faut saisir au moins une entrée pour le champs en autocomplétion',
@@ -93,17 +79,15 @@ return [
     'BAZ_DATESHORT_NOVEMBER' => 'Nov',
     'BAZ_DATESHORT_DECEMBER' => 'Déc',
     'BAZ_SAVING' => 'En cours d\'enregistrement',
-
     // presentation/javascripts/components/BazarMap.js
     'BAZ_FULLSCREEN' => 'Mode plein écran',
     'BAZ_BACK_TO_NORMAL_VIEW' => 'Retour à la vue normale',
-
     // form-edit-template.js
     'MEMBER_OF_GROUP' => 'Membre du groupe {groupName}',
     'BAZ_FORM_EDIT_HELP' => 'Texte d\'aide',
     'BAZ_FORM_EDIT_HIDE' => 'Editer/Masquer',
-    'BAZ_FORM_EDIT_MAX_LENGTH' => 'Longueur Max.',
-    'BAZ_FORM_EDIT_NB_CHARS' => 'Nbre Caractères Visibles',
+    'BAZ_FORM_EDIT_MAX_LENGTH' => 'Longueur max',
+    'BAZ_FORM_EDIT_NB_CHARS' => 'Nb Caractères Visibles',
     'BAZ_FORM_EDIT_MIN_VAL' => 'Valeur min',
     'BAZ_FORM_EDIT_MAX_VAL' => 'Valeur max',
     'BAZ_FORM_EDIT_OWNER_AND_ADMINS' => 'Propriétaire de la fiche et admins',
@@ -168,7 +152,7 @@ return [
     'BAZ_FORM_EDIT_TEXT_TYPE_COLOR' => 'Couleur',
     'BAZ_FORM_EDIT_TITLE_LABEL' => 'Titre Automatique',
     'BAZ_FORM_EDIT_CUSTOM_LABEL' => 'Custom',
-    'BAZ_FORM_EDIT_MAP_FIELD' => 'Géolocalisation à partir d\'un champ adresse, ville...',
+    'BAZ_FORM_EDIT_MAP_FIELD' => 'Géolocalisation à partir d\'un champ adresse, ville…',
     'BAZ_FORM_EDIT_COLLABORATIVE_DOC_FIELD' => 'Document collaboratif',
     'BAZ_FORM_EDIT_TABS' => 'Navigation par onglets',
     'BAZ_FORM_EDIT_TABCHANGE' => 'Passage à l\'onglet suivant',
@@ -187,9 +171,6 @@ return [
     'SMALL_F' => 'Petite',
     'PRIMARY' => 'Primaire',
     'SECONDARY' => 'Secondaire',
-    'BAZ_FORM_TABS_HINT' => 'Pour utiliser les onglets, il vous faut deux champs : {\\n}'.
-        ' - le champ "{tabs-field-label}" dans lequel spécifier le nom des onglets séparés par des "," {\\n}'.
-        ' - le champ "{tabchange-field-label}" à intégrer à la fin de chaque onglet ainsi qu\'à la fin de votre formulaire',
     'BAZ_FORM_EDIT_ADD_TO_GROUP_LABEL' => 'Groupes où ajouter l\'utilisateur',
     'BAZ_FORM_EDIT_ADD_TO_GROUP_DESCRIPTION' => 'Groupes où ajouter l\'utilisateur, séparés par \',\'',
     'BAZ_FORM_EDIT_ADD_TO_GROUP_HELP' => 'Groupes où ajouter l\'utilisateur, séparés par \',\', peut être le nom d\'un champ. Ex: @groupName,bf_name,@groupName2',
@@ -204,7 +185,7 @@ return [
     'BAZ_FORM_EDIT_TEXTAREA_SIZE_LABEL' => 'Largeur champ de saisie',
     'BAZ_FORM_EDIT_TEXTAREA_ROWS_LABEL' => 'Nombre de lignes',
     'BAZ_FORM_EDIT_TEXTAREA_ROWS_PLACEHOLDER' => 'Défaut vide = 3 lignes',
-    'BAZ_FORM_EDIT_FILE_MAXSIZE_LABEL' => 'Taille max',
+    'BAZ_FORM_EDIT_FILE_MAXSIZE_LABEL' => 'Taille max (ex: 2097152, 2048k, 2m)',
     'BAZ_FORM_EDIT_INSCRIPTIONLISTE_EMAIL_LABEL' => 'Email pour s\'inscrire',
     'BAZ_FORM_EDIT_INSCRIPTIONLISTE_EMAIL_FIELDID' => 'Champ du formulaire fournissant l\'email à inscire',
     'BAZ_FORM_EDIT_INSCRIPTIONLISTE_MAILINGLIST' => 'Type de service de diffusion',
@@ -224,21 +205,15 @@ return [
     'BAZ_FORM_EDIT_CHECKBOX_LABEL' => 'Cases à cocher',
     'BAZ_FORM_EDIT_RADIO_LABEL' => 'Boutons radio',
     'BAZ_FORM_EDIT_SELECT_LABEL' => 'Liste déroulante',
-
     'BAZ_FORM_EDIT_UNIQUE_ID' => 'Identifiant unique',
     'BAZ_FORM_EDIT_NAME' => 'Intitulé',
     'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'En affichant le constructeur graphique, vous perdrez vos modifications faites dans le code ici-même. Continuer sans sauvegarder les changements ? (Cliquez sur le bouton "Valider" en bas de page pour conserver vos modifications !)',
-
     'BAZ_FORM_EDIT_COMMENTS_CLOSED' => 'Commentaires fermés',
     'BAZ_FORM_EDIT_BOOKMARKLET_URLFIELD_LABEL' => "Champ url associé",
     'BAZ_FORM_EDIT_BOOKMARKLET_DESCRIPTIONFIELD_LABEL' => "Champ texte long associé",
-    'BAZ_BOOKMARKLET_HINT' => "Ce champ nécessite deux autres champs pour fonctionner :{\\n}".
-        "  - un champ url (par défaut 'bf_url'){\\n}".
-        "  - un champ texte long (par défaut 'bf_description')",
     'BAZ_FORM_EDIT_BOOKMARKLET_HINT_DEFAULT_VALUE' => "Glisser-déposer le bouton dans votre barre de navigateur",
     'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_LABEL' => "Texte affiché",
     'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_VALUE' => "Glisser-déposer le bouton dans votre barre de favoris",
-
     'BAZ_ACTIVATE_COMMENTS' => 'Activer les commentaires sur cette fiche ?',
     'BAZ_ACTIVATE_COMMENTS_HINT' => 'Droits mis à jour lors de l\'enregistrement de la fiche',
     'BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL' => 'Choix par défaut pour l\'activation des commentaires',
@@ -246,35 +221,17 @@ return [
     'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_LABEL' => 'Texte pour édition',
     'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT' => 'Laisser vide pour utiliser le texte par défaut',
     'BAZ_FORM_EDIT_ACL_ASK_IF_ACTIVATE_COMMENT_LABEL' => 'Demander d\'activer les commentaires ?',
-
     // condition checking field
-    "BAZ_FORM_CONDITIONSCHEKING_HINT" => "La condition doit respecter le format suivant (sans les `):{\\n}".
-        " - ` and ` : donne ET{\\n}".
-        " - ` or ` : donne OU{\\n}".
-        " - `==` : donne EST ÉGALE À{\\n}".
-        " - `!=` : donne EST DIFFÉRENT DE {\\n}".
-        " - ` in [value1,value2]` : FAIT PARTIE DE liste d'éléments séparés par des virgules et entouré de crochets {\\n}".
-        " - `|length > 6` : vérifie si le nombre d'éléments cochés est supérieur à 6 (fonctionne avec '>=','<','<=') {\\n}".
-        " - ` == [value1,value2]` : VAUT EXACTEMENT LA liste d'éléments séparés par des virgules et entouré de crohets (uniquement pour checkbox){\\n}".
-        " - `(  )` permet de grouper des conditions sinon priorité de gauche à droite{\\n}".
-        " - `!(  )` ou `not (  )` négation de la condition{\\n}".
-        " - indiquer à gauche d'un `==` ou `!=` le label du champ ex:`bf_thematique` ou le nom long `listeListeOuiNonbf_choix`{\\n}".
-        " - ` is empty ` : permet de vérifier si la valeur est vide{\\n}".
-        " - ` is not empty ` : permet de vérifier si la valeur n'est pas vide{\\n}".
-        " - les espaces en trop sont retirés automatiquement{\\n}".
-        " - les opérations sont normalement insensibles à la casse",
-    "BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL" => "Affichage conditionnel",
-    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL" => "Condition",
-    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_END" => "Fin de condition",
-    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_LABEL" => "Effacer au masquage",
-    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION" => "Effacer",
-    "BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION" => "Ne pas effacer",
-    "BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT" => "Pour effacer ou non le contenu de ce qui est masqué",
-
+    'BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL' => "Affichage conditionnel",
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL' => "Condition",
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_END' => "Fin de condition",
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_LABEL' => "Effacer au masquage",
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION' => "Effacer",
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION' => "Ne pas effacer",
+    'BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT' => "Pour effacer ou non le contenu de ce qui est masqué",
     // jsvascripts/form-edit-templates/fields/file.js
-    'BAZ_FORM_EDIT_FILE_AUTHEXTS_LABEL' => 'Extension(s) présélectionnée(s) (avec le point, séparées par des virgules)',
+    'BAZ_FORM_EDIT_FILE_AUTHEXTS_LABEL' => 'Extensions présélectionnées (avec le point, séparées par des virgules)',
     'BAZ_FORM_EDIT_FILE_AUTHEXTS_PLACEHOLDER' => 'ex: .pdf,.png',
-
     // reactions
     'BAZ_ACTIVATE_REACTIONS' => 'Activer les réactions sur cette fiche ?',
     'BAZ_REACTIONS_FIELD' => 'Réactions',
@@ -289,10 +246,17 @@ return [
     'BAZ_REACTIONS_FIELD_LABELS_HINT' => 'Laisser vide ou séparés par des virgules',
     'BAZ_REACTIONS_FIELD_LABELS_LABEL' => 'Noms des réactions',
     'BAZ_REACTIONS_FIELD_LABELS_PLACEHOLDER' => 'Gratitude,J\'aime,J\'ai appris quelque chose,J\'ai pas compris,Je ne suis pas d\'accord,Ca me perturbe',
-
     // presentation/javascripts/map-field-leaflet.js
     'BAZ_ADJUST_MARKER_POSITION' => 'Déplacez moi si besoin',
-
+    // presentation/javascripts/form-edit-template/fields/url.js
+    'BAZAR_VIDEO_MAXHEIGHT_LABEL' => 'Hauteur maximal de la vidéo',
+    'BAZAR_VIDEO_MAXWIDTH_LABEL' => 'Largeur maximal de la vidéo',
+    'BAZAR_VIDEO_MAX_HINT' => 'Uniquement un nombre positif de pixels sans l\'unité ; ex: 200',
+    'BAZAR_VIDEO_RATIO_LABEL' => 'Forme de l\'affichage',
+    'BAZAR_VIDEO_POSITION_LABEL' => 'Position de la vidéo',
+    'BAZAR_VIDEO_POSITION_LEFT' => 'Alignée à gauche',
+    'BAZAR_VIDEO_POSITION_RIGHT' => 'Alignée à droite',
+    'BAZAR_URL_DISPLAY_VIDEO' => 'Afficher le lecteur si le lien est une vidéo ?',
     // templates/entries/index-dynamic-temapltes/BazarCalendar_ButtonICS.js
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => "Ajouter à votre calendrier",
 ];

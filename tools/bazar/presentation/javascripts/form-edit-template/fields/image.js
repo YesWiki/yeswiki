@@ -26,11 +26,12 @@ export default {
       type: "file",
       accept: "image/*",
     },
+    maxsize: { label: _t('BAZ_FORM_EDIT_FILE_MAXSIZE_LABEL'), value: '' },
     read: readConf,
     write: writeconf,
     semantic: semanticConf
   },
-  advancedAttributes: ['read', 'write', 'semantic', 'thumb_height','thumb_width','resize_height','resize_width'],
+  advancedAttributes: ['read', 'write', 'semantic', 'thumb_height','thumb_width','resize_height','resize_width','maxsize'],
   // disabledAttributes: [],
   attributesMapping: {
     ...defaultMapping,
@@ -42,7 +43,8 @@ export default {
       6: "resize_width",
       7: "align",
       13: "default_image",
-    },
+      14: 'maxsize'
+    }
   },
   renderInput(fieldData) {
     return { field: '<input type="file"/>' }
