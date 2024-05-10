@@ -17,7 +17,7 @@ $modal = ''; // declaration d'une chaine de char vide
     <figure class="bazar-entry agenda-entry" <?php echo $fiche['html_data'];?>>
       <div class="image">
         <?php if (isset($fiche['imagebf_image']) && $fiche['imagebf_image']!='') : ?>
-          <img loading="lazy" class="img-responsive" alt="<?php echo htmlspecialchars($fiche['bf_titre']);?>" 
+          <img loading="lazy" class="img-responsive" alt=""
             src="<?php echo (isset($fiche['external-data']))
               ? $fiche['external-data']['baseUrl'] . 'cache/image_'.$imgwidth.'x'.$imgheight.'_'.$fiche['imagebf_image']
               : redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_'.$imgwidth.'x'.$imgheight.'_'.$fiche['imagebf_image'], $imgwidth, $imgheight, 'crop'); ?>"
