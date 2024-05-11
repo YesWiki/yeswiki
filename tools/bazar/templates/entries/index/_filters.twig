@@ -30,7 +30,7 @@
     <div class="results-container">
       {% for key, filter in filters %}
         <div class="filter-box panel panel-default {{ key }}" data-id="{{ key }}">
-          <button class="panel-heading {{ filter.collapsed ? 'collapsed ': '' }}" data-toggle="collapse" data-target="#collapse{{ listId }}_{{ key }}" aria-expanded="true">
+					<button class="panel-heading {{ filter.collapsed ? 'collapsed ': '' }}" data-toggle="collapse" data-target="#collapse{{ listId }}_{{ key }}" aria-expanded="{{ filter.collapsed ? 'false' : 'true' }}">
             {{ filter.icon|raw }}
             {{ filter.title }}
           </button>

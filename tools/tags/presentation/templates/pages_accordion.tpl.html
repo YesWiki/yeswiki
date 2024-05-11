@@ -2,11 +2,11 @@
 <div class="panel-group accordion-group no-dblclick" id="accordion<?php echo $GLOBALS['nb_accordion']; ?>">
 <?php foreach ($elements as $tag => $element) : ?>
   <div class="panel panel-default">
-    <div class="panel-heading collapsed" data-target="#collapse<?php echo $tag; ?>" data-toggle="collapse">
+    <button class="panel-heading collapsed" data-target="#collapse<?php echo $tag; ?>" data-toggle="collapse" aria-expanded="false">
       <h4 class="panel-title">
         <?php echo $element["title"]; ?>
       </h4>
-    </div>
+    </button>
     <div id="collapse<?php echo $tag; ?>" class="panel-collapse collapse">
       <div class="panel-body">
         <?php echo $GLOBALS['wiki']->Format('{{include page="'.$tag.'"}}'); ?>
