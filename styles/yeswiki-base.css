@@ -1062,3 +1062,8 @@ td.users-table-break-word {
 .dropdown-menu .login-text {
   display: inline;
 }
+
+.panel button.panel-heading {
+	width: 100%;
+	text-align: left;
+}
