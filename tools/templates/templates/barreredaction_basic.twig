@@ -1,62 +1,89 @@
-<div class="{{ class }}">
-  {% if linkedit is defined %}
-    <a title="{{ _t('TEMPLATE_EDIT_THIS_PAGE') ~ ' ' ~ page }}" href="{{ linkedit }}" class="link-edit">
-      <i class="fa fa-pencil-alt"></i><span>{{ _t('TEMPLATE_EDIT_THIS_PAGE') }}</span>
-    </a>
-  {% endif %}
-  {% if userIsAdminOrOwner %}
-    <a title="{{ _t('TEMPLATES_SEE_ATTACHED_FILES') }}" href="{{ url({handler:'filemanager'}) }}" class="link-filemanager">
-      <i class="fa fa-folder-open"></i>
-    </a>
-  {% endif %}
-  {% if linkdeletepage is defined %}
-    <a href="{{ linkdeletepage }}" class="link-deletepage modalbox" title="{{ _t('TEMPLATE_DELETE_PAGE') ~ ' ' ~ page }}">
-      <i class="fa fa-trash"></i><span>{{ _t('TEMPLATE_DELETE') }}</span>
-    </a>
-  {% endif %}
-  {% if time is defined %}
-    <a title="{{ _t('TEMPLATE_CLICK_TO_SEE_REVISIONS') ~ ' ' ~ page }}" href="{{ linkrevisions }}" class="link-revisions">
-      <i class="fa fa-history"></i><span>{{ _t('TEMPLATE_LAST_UPDATE') }} {{ time }}</span>
-    </a>
-  {% endif %}
-  {% if linkacls is defined %}
-    <a class="link-acls{{ linkacls|slice(-4) == 'acls' ? ' modalbox': '' }}" href="{{ linkacls }}" title="{{ _t('TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS') ~ ' ' ~ page }}">
-      <i class="fa fa-unlock-alt"></i><span>{{ owner ?? ''}}</span>
-    </a>
-  {% endif %}
-  {% if linkclosecomments is defined %}
-    <a class="link-comments" href="{{ linkclosecomments }}" title="{{ _t('TEMPLATE_CLICK_TO_CLOSE_COMMENTS') }}">
-      <i class="fas fa-comment-slash"></i><span> {{ _t('TEMPLATE_CLOSE_COMMENTS') }}</span>
-    </a>
-  {% endif %}
-  {% if linkopencomments is defined %}
-    <span class="dropup">
-      <a href="#" class="link-comments dropdown-toggle" type="button" id="opencommentsdropup" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <i class="fas fa-comment"></i> <span>{{ _t('TEMPLATE_OPEN_COMMENTS') }}</span>
-        <span class="caret"></span>
-      </a>
-      <ul class="dropdown-menu" aria-labelledby="opencommentsdropup">
-        <li><a href="{{ linkopencomments ~ '&list=' ~ ('+')|e('url') }}">{{ _t('TEMPLATE_FOR_CONNECTED_PEOPLE') }}</a></li>
-        {% for g in wikigroups %}
-          <li><a href="{{ linkopencomments ~ '&list=' ~ g }}">{{ _t('TEMPLATE_FOR_MEMBERS_OF_GROUP') }} {{ g }}</a></li>
-        {% endfor %}
-      </ul>
-    </span>
-  {% endif %}
-	<a title="{{ _t('TEMPLATE_SEE_SHARING_OPTIONS') ~ ' ' ~ page}}" href="{{ linkshare }}" class="link-share modalbox">
-		<i class="fa fa-share-alt"></i><span>{{ _t('TEMPLATE_SHARE') }}</span>
-	</a>
-  {% if currentuser is not empty %}
-    {{ include_javascript('javascripts/favorites.js') }}
-    <a href="#"
-      title="{{ (isUserFavorite) ? _t('FAVORITES_REMOVE') : _t('FAVORITES_ADD') }}"
-      data-resource="{{ page }}" 
-      data-user="{{ currentuser }}"
-      data-toggle="tooltip"
-      data-placement="top"
-      class="btn btn-icon favorites{{ (isUserFavorite) ? ' user-favorite' : '' }}">
-      <i class="{{ (isUserFavorite) ? 'fas' : 'far' }} fa-star"></i>
-      <span class="sr-only sr-only-focusable">{{ (isUserFavorite) ? _t('FAVORITES_REMOVE') : _t('FAVORITES_ADD') }}</span>
-    </a>
-  {% endif %}
-</div>
+<footer>
+	<ul class="footer {{ class }}">
+		{% if linkedit is defined %}
+		<li>
+			<a href="{{ linkedit }}" class="link-edit">
+				<i class="fa fa-pencil-alt"></i><span>{{ _t('TEMPLATE_EDIT_THIS_PAGE') }}</span>
+			</a>
+		</li>
+		{% endif %}
+		{% if userIsAdminOrOwner %}
+		<li>
+			<a title="{{ _t('TEMPLATES_SEE_ATTACHED_FILES') }}" aria-label="{{ _t('TEMPLATES_SEE_ATTACHED_FILES') }}" href="{{ url({handler:'filemanager'}) }}" class="link-filemanager">
+				<i class="fa fa-folder-open"></i>
+			</a>
+		</li>
+		{% endif %}
+		{% if linkdeletepage is defined %}
+		<li>
+			<a href="{{ linkdeletepage }}" class="link-deletepage modalbox">
+				<i class="fa fa-trash"></i><span>{{ _t('TEMPLATE_DELETE') }}</span>
+			</a>
+		</li>
+		{% endif %}
+		{% if time is defined %}
+		<li>
+			<a title="{{ _t('TEMPLATE_CLICK_TO_SEE_REVISIONS') }}" aria-label="{{ _t('TEMPLATE_CLICK_TO_SEE_REVISIONS') }}" href="{{ linkrevisions }}" class="link-revisions">
+				<i class="fa fa-history"></i><span>{{ _t('TEMPLATE_LAST_UPDATE') }} {{ time }}</span>
+			</a>
+		</li>
+		{% endif %}
+		{% if linkacls is defined %}
+		<li>
+			<a class="link-acls{{ linkacls|slice(-4) == 'acls' ? ' modalbox': '' }}" href="{{ linkacls }}" title="{{ _t('TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS') }}">
+				<i class="fa fa-unlock-alt"></i><span>{{ owner ?? ''}}</span>
+			</a>
+		</li>
+		{% endif %}
+		{% if linkclosecomments is defined %}
+		<li>
+			<a class="link-comments" href="{{ linkclosecomments }}">
+				<i class="fas fa-comment-slash"></i><span> {{ _t('TEMPLATE_CLOSE_COMMENTS') }}</span>
+			</a>
+		</li>
+		{% endif %}
+		{% if linkopencomments is defined %}
+		<li>
+			<span class="dropup">
+				<a href="#" class="link-comments dropdown-toggle" type="button" id="opencommentsdropup" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<i class="fas fa-comment"></i> <span>{{ _t('TEMPLATE_OPEN_COMMENTS') }}</span>
+					<span class="caret"></span>
+				</a>
+				<ul class="dropdown-menu" aria-labelledby="opencommentsdropup">
+					<li><a href="{{ linkopencomments ~ '&list=' ~ ('+')|e('url') }}">{{ _t('TEMPLATE_FOR_CONNECTED_PEOPLE') }}</a></li>
+					{% for g in wikigroups %}
+					<li><a href="{{ linkopencomments ~ '&list=' ~ g }}">{{ _t('TEMPLATE_FOR_MEMBERS_OF_GROUP') }} {{ g }}</a></li>
+					{% endfor %}
+				</ul>
+			</span>
+		</li>
+		{% endif %}
+		<li>
+			<a title="{{ _t('TEMPLATE_SEE_SHARING_OPTIONS') ~ ' ' ~ page}}" href="{{ linkshare }}" class="link-share modalbox">
+				<i class="fa fa-share-alt"></i><span>{{ _t('TEMPLATE_SHARE') }}</span>
+			</a>
+		</li>
+		{% if currentuser is not empty %}
+		<li>
+			{{ include_javascript('javascripts/favorites.js') }}
+			<a href="#"
+				 title="{{ (isUserFavorite) ? _t('FAVORITES_REMOVE') : _t('FAVORITES_ADD') }}"
+				 data-resource="{{ page }}" 
+				 data-user="{{ currentuser }}"
+				 data-toggle="tooltip"
+				 data-placement="top"
+				 class="btn btn-icon favorites{{ (isUserFavorite) ? ' user-favorite' : '' }}">
+				<i class="{{ (isUserFavorite) ? 'fas' : 'far' }} fa-star"></i>
+				<span class="sr-only sr-only-focusable">{{ (isUserFavorite) ? _t('FAVORITES_REMOVE') : _t('FAVORITES_ADD') }}</span>
+			</a>
+		</li>
+		{% endif %}
+	</ul>
+<style>
+footer ul.footer {
+	display: flex;
+	justify-content: center;
+	list-style: none;
+}
+</style>
+</footer>

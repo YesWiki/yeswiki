@@ -30,8 +30,8 @@ if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions'
         $template = 'barreredaction_basic.twig';
     }
 
-    // on peut ajouter des classes, la classe par défaut est .footer
-    $barreredactionelements['class'] = ($this->GetParameter('class') ? 'footer ' . $this->GetParameter('class') : 'footer');
+    // on peut ajouter des classes
+    $barreredactionelements['class'] = $this->GetParameter('class') || '';
 
     if ($this->HasAccess('write')) {
         // on ajoute le lien d'édition si l'action est autorisée
