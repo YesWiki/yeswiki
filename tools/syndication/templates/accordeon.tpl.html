@@ -7,7 +7,7 @@ $id = md5($GLOBALS['wiki']->GetParameter("url")); ?>
 <div class="panel-group accordion-group no-dblclick" id="accordion<?php echo $id; ?>">
 <?php foreach ($syndication['pages'] as $page) : $nb = $nb + 1; ?>
         <div class="panel panel-default">
-          <div class="panel-heading collapsed"
+          <button class="panel-heading collapsed"
             data-target="#collapse<?php echo $id; ?>_<?php echo $nb; ?>"
             data-toggle="collapse">
             <h4 class="panel-title">
@@ -19,7 +19,7 @@ $id = md5($GLOBALS['wiki']->GetParameter("url")); ?>
               }
               ?>
             </h4>
-          </div>
+          </button>
           <div id="collapse<?php echo $id; ?>_<?php echo $nb; ?>" class="panel-collapse collapse">
             <div class="panel-body">
               <?php echo $page['description'];?>

@@ -68,16 +68,16 @@ if ($GLOBALS['check_' . $pagetag]['panel']) {
 
     $result = '<!-- start of panel -->'
         . "<div class=\"panel $class\" $data>
-      <div class=\"panel-heading" . ($collapsed ? ' collapsed' : '') . '"';
+      <button class=\"panel-heading" . ($collapsed ? " collapsed" : '') . '"';
     if ($collapsible) {
-        $result .= " id=\"$headingID\"" . ' role="tab button" data-toggle="collapse"' . (!empty($accordionID) ? " data-parent=\"#$accordionID\"" : '')
+        $result .= " id=\"$headingID\"" . ' data-toggle="collapse"' . (!empty($accordionID) ? " data-parent=\"#$accordionID\"" : '')
             . " href=\"#$collapseID\" aria-expanded=\"" . ($collapsed ? 'false' : 'true') . "\" aria-controls=\"$collapseID\"";
     }
     $result .= ">
           <h4 class=\"panel-title\">
            $title
           </h4>
-      </div>
+      </button>
       
       <div id=\"$collapseID\"";
     if ($collapsible) {

@@ -5,7 +5,7 @@
     <?php
     foreach($fiches as $fiche): ?>
         <div class="bazar-entry panel panel-default collapsed" <?php echo $fiche['html_data'];?>>
-          <button class="panel-heading collapsed"
+          <button class="panel-heading collapsed" aria-expanded="false"
             data-target="#collapse<?php echo $param['nbbazarliste']; ?>_<?php echo $fiche['id_typeannonce']; ?>_<?php echo $fiche['id_fiche']; ?>"
             data-toggle="collapse">
             <h4 class="panel-title">
