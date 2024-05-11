@@ -30,10 +30,10 @@
     <div class="results-container">
       {% for key, filter in filters %}
         <div class="filter-box panel panel-default {{ key }}" data-id="{{ key }}">
-          <div class="panel-heading {{ filter.collapsed ? 'collapsed ': '' }}" data-toggle="collapse" data-target="#collapse{{ listId }}_{{ key }}" aria-expanded="true">
+          <button class="panel-heading {{ filter.collapsed ? 'collapsed ': '' }}" data-toggle="collapse" data-target="#collapse{{ listId }}_{{ key }}" aria-expanded="true">
             {{ filter.icon|raw }}
             {{ filter.title }}
-          </div>
+          </button>
           <div class="panel-collapse collapse {{ filter.collapsed ? '': 'in' }}" id="collapse{{ listId }}_{{ key }}">
             {% for filterValue in filter.list %}
               <div class="checkbox">
@@ -51,3 +51,11 @@
     </div>
   </div>
 </div>
+<style>
+.filter-box button.panel-heading {
+	width: 100%;
+}
+label input.filter-checkbox:focus ~ span {
+	outline: 5px auto;
+}
+</style>
