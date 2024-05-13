@@ -21,6 +21,7 @@ class DuplicateHandler extends YesWikiHandler
         $this->entryController = $this->getService(EntryController::class);
         $this->duplicationManager = $this->getService(DuplicationManager::class);
         $output = $title = '';
+        $toExternalWiki = isset($_GET['toUrl']) && $_GET['toUrl'] == "1";
         if (!$this->wiki->page) {
             $output = $this->render('@templates\alert-message.twig', [
                 'type' => 'warning',
@@ -60,7 +61,7 @@ class DuplicateHandler extends YesWikiHandler
                     'message' => $th->getMessage(),
                 ]);
             }
-        } elseif (!$this->wiki->UserIsAdmin()) {
+        } elseif (!$toExternalWiki && !$this->wiki->UserIsAdmin()) {
             $output .= $this->render('@templates\alert-message-with-back.twig', [
                 'type' => 'warning',
                 'message' => _t('ONLY_ADMINS_CAN_DUPLICATE') . '.',
@@ -95,11 +96,12 @@ class DuplicateHandler extends YesWikiHandler
                 'pageTitle' => $pageTitle,
                 'totalSize' => $this->duplicationManager->humanFilesize($totalSize),
                 'type' => $type,
-                'toExternalWiki' => isset($_GET['toUrl']) && $_GET['toUrl'] == "1"
+                'baseUrl' => $this->wiki->config['base_url'],
+                'toExternalWiki' => $toExternalWiki,
             ]);
         }
 
-        if (isset($_GET['toUrl']) && $_GET['toUrl'] == "1") {
+        if ($toExternalWiki) {
             $title .= ' ' . _t('TO_ANOTHER_YESWIKI');
         }
         // in ajax request for modal, no title

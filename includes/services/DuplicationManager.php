@@ -225,6 +225,9 @@ class DuplicationManager
 
     public function duplicateLocally($data)
     {
+        if (!$this->wiki->UserIsAdmin()) {
+            throw new \Exception(_t('ONLY_ADMINS_CAN_DUPLICATE') . '.');
+        }
         switch ($data['type']) {
             case 'list':
                 $list = $this->wiki->services->get(ListManager::class)->getOne($this->wiki->getPageTag());
