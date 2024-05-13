@@ -2,9 +2,12 @@
 
 namespace YesWiki\Core\Service;
 
+use YesWiki\Bazar\Field\FileField;
+use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Wiki;
 
@@ -21,7 +24,7 @@ class ImportFilesManager
     public function __construct(Wiki $wiki)
     {
         $this->wiki = $wiki;
-        $this->uploadPath = null;
+        $this->uploadPath = $this->getLocalFileUploadPath();
     }
 
     /**
@@ -31,10 +34,6 @@ class ImportFilesManager
      */
     private function getLocalFileUploadPath()
     {
-        if ($this->uploadPath !== null) {
-            return $this->uploadPath;
-        }
-
         $attachConfig = $this->wiki->config['attach_config'];
 
         if (!is_array($attachConfig)) {
@@ -89,49 +88,60 @@ class ImportFilesManager
     }
 
     /**
-     * Return fields that may contain attachments to import (body for wikipage, or textelong fields for bazar entries)
+     * Return fields that may contain attachments to import (fichier, image, or textelong fields for bazar entries)
      *
-     * @param array $wikiPage page or entry content as an array
-     * @return array keys of $wikiPage that may contain attachments to import
+     * @param array $id
+     * @return array keys of fields that may contain attachments to import
      */
-    public function getTextFieldsFromWikiPage($wikiPage)
+    public function getUploadFieldsFromEntry($id)
     {
         $fields = [];
-        if (!empty($wikiPage['tag'])) { // classic wiki page
-            $fields[] = 'body';
-        } elseif (!empty($wikiPage['id_fiche'])) { // bazar entry
+        $entry = $this->wiki->services->get(EntryManager::class)->getOne($id);
+        if (!empty($entry['id_fiche'])) { // bazar entry
             $formManager = $this->wiki->services->get(FormManager::class);
-            $form = $formManager->getOne($wikiPage['id_typeannonce']);
+            $form = $formManager->getOne($entry['id_typeannonce']);
             // find fields that are textareas
             foreach ($form['prepared'] as $field) {
-                if ($field instanceof TextareaField) {
-                    $fields[] = $field->getName();
+                if ($field instanceof TextareaField or $field instanceof ImageField or $field instanceof FileField) {
+                    $fields[] = [
+                        'id' => $field->getPropertyName(),
+                        'type' => $field->getType()
+                    ];
                 }
             }
         }
         return $fields;
     }
 
-    /**
-     * Get attachements from raw page content
-     *
-     * @param string $tag page id
-     * @return array attachments filenames
-     */
-    public function findDirectLinkAttachements($tag = '')
+    public function findFilesInUploadField($fieldValue)
     {
-        if (empty(trim($tag))) {
-            $tag = $this->wiki->GetPageTag();
+        $f = $this->uploadPath . '/' . $fieldValue;
+        if (file_exists($f)) {
+            $size = filesize($f);
+            $humanSize = $this->humanFilesize($size);
+            return ['path' => $f, 'size' => $size, 'humanSize' => $humanSize];
+        } else {
+            return [];
         }
-        $rawContent = $this->wiki->services->get(PageManager::class)->getOne($tag)['body'];
+    }
+
+    /**
+     * find files in wiki text 
+     *
+     * @param string $wikiTag
+     * @param string $wikiText
+     * @return array files
+     */
+    public function findFilesInWikiText($tag, $wikiText)
+    {
+        $filesMatched = [];
         $regex = '#\{\{attach.*file="(.*)".*\}\}#Ui';
         preg_match_all(
             $regex,
-            $rawContent,
+            $wikiText,
             $attachments
         );
         if (is_array($attachments[1])) {
-            $filesMatched = [];
             foreach ($attachments[1] as $a) {
                 $ext = pathinfo($a, PATHINFO_EXTENSION);
                 $filename = pathinfo($a, PATHINFO_FILENAME);
@@ -151,7 +161,95 @@ class ImportFilesManager
                 }
             }
         }
+        $fileUrlRegex = '#' . preg_quote(str_replace('?', '', $this->wiki->config['base_url']), '#') .
+            '(files/.*\.[a-zA-Z0-9]{1,16}\b([-a-zA-Z0-9!@:%_\+.~\#?&\/\/=]*))#Ui';
+        preg_match_all(
+            $fileUrlRegex,
+            $wikiText,
+            $fileUrls
+        );
+        foreach ($fileUrls[1] as $f) {
+            if (file_exists($f)) {
+                $size = filesize($f);
+                $humanSize = $this->humanFilesize($size);
+                $filesMatched[] = ['path' => $f, 'size' => $size, 'humanSize' => $humanSize];
+            }
+        }
         return $filesMatched;
+    }
+
+    /**
+     * Get file attachements from pageTag
+     * 
+     * @param string $tag page id
+     * @return array attachments filenames
+     */
+    public function findFiles($tag = '')
+    {
+        $files = [];
+        if (empty(trim($tag))) {
+            $tag = $this->wiki->GetPageTag();
+        }
+        if ($this->wiki->services->get(EntryManager::class)->isEntry($tag)) {
+            // bazar 
+            $fields = $this->getUploadFieldsFromEntry($tag);
+            $entry = $this->wiki->services->get(EntryManager::class)->getOne($tag);
+            foreach ($fields as $f) {
+                if ($f['type'] == 'image' || $f['type'] == 'fichier') {
+                    if (!empty($fi = $this->findFilesInUploadField($entry[$f['id']]))) {
+                        $files[] = $fi;
+                    }
+                } elseif ($f['type'] == 'textelong') {
+                    if (!empty($fi = $this->findFilesInWikiText($tag, $entry[$f['id']]))) {
+                        $files = array_merge($files, $fi);
+                    }
+                }
+            }
+        } elseif (!$this->wiki->services->get(ListManager::class)->isList($tag)) { // page
+            $wikiText = $this->wiki->services->get(PageManager::class)->getOne($tag)['body'];
+            if ($fi = $this->findFilesInWikiText($tag, $wikiText)) {
+                $files[] = $fi;
+            }
+        }
+        return $files;
+    }
+
+    public function duplicateFiles($fromTag, $toTag)
+    {
+        $files = $this->findFiles($fromTag);
+        foreach ($files as $f) {
+            $newPath = preg_replace(
+                '~files/' . preg_quote($fromTag, '~') . '_~Ui',
+                'files/' . $toTag . '_',
+                $f['path']
+            );
+            // if the file name has not changed, we add newPageTag_ as filename prefix
+            if ($f['path'] == $newPath) {
+                $newPath = str_replace('files/', 'files/' . $toTag . '_', $newPath);
+            }
+            copy($f['path'], $newPath);
+        }
+    }
+
+    public function checkPostData($data)
+    {
+        if (empty($data['type']) || !in_array($data['type'], ['page', 'list', 'entry'])) {
+            throw new \Exception(_t('NO_VALID_DATA_TYPE'));
+        }
+        if (empty($data['pageTag'])) {
+            throw new \Exception(_t('EMPTY_PAGE_TAG'));
+        }
+        if ($data['type'] != 'page' && empty($data['pageTitle'])) {
+            throw new \Exception(_t('EMPTY_PAGE_TITLE'));
+        }
+        $page = $this->wiki->services->get(PageManager::class)->getOne($data['pageTag']);
+        if ($page) {
+            throw new \Exception($data['pageTag'] . ' ' . _t('ALREADY_EXISTING'));
+        }
+        if (empty($data['duplicate-action']) || !in_array($data['duplicate-action'], ['open', 'edit'])) {
+            throw new \Exception(_t('NO_DUPLICATE_ACTION') . '.');
+        }
+        return $data;
     }
 
     public function humanFilesize($bytes, $decimals = 2)
@@ -177,44 +275,6 @@ class ImportFilesManager
         $saveFileLoc = $this->getLocalFileUploadPath() . '/' . $filename;
 
         return $this->cURLDownload($remoteFileUrl, $saveFileLoc, $overwrite);
-    }
-
-    /**
-     * Find file attachments in page or bazar entry
-     * It finds attachments linked with /download links
-     *
-     * @param string $remoteUrl distant url
-     * @param array $wikiPage page or entry content as an array
-     * @param boolean $transform transform attachments urls for their new location (default:false)
-     * @return array all file attachments
-     */
-    public function findHiddenAttachments($remoteUrl, &$wikiPage, $transform = false)
-    {
-        preg_match_all(
-            '#(?:href|src)="' . preg_quote($remoteUrl, '#') . '\?.+/download&(?:amp;)?file=(?P<filename>.*)"#Ui',
-            $wikiPage['html_output'],
-            $htmlMatches
-        );
-        $attachments = $htmlMatches['filename'];
-
-        $wikiRegex = '#="' . preg_quote($remoteUrl, '#')
-            . '(?P<trail>\?.+/download&(?:amp;)?file=(?P<filename>.*))"#Ui';
-
-        $contentKeys = $this->getTextFieldsFromWikiPage($wikiPage);
-        foreach ($contentKeys as $key) {
-            preg_match_all($wikiRegex, $wikiPage[$key], $wikiMatches);
-            $attachments = array_merge($attachments, $wikiMatches['filename']);
-        }
-
-        $attachments = array_unique($attachments);
-
-        if ($transform) {
-            foreach ($contentKeys as $key) {
-                $wikiPage[$key] = preg_replace($wikiRegex, '="' . $this->wiki->getBaseUrl() . '${trail}"', $wikiPage[$key]);
-            }
-        }
-
-        return $attachments;
     }
 
     /**
