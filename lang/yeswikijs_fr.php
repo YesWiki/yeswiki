@@ -153,6 +153,8 @@ return [
 
     // Duplication
     'NOT_VALID_URL' => 'Url non valide : {url}',
+    'PAGE_AVAILABLE' => 'La page {tag} est disponible sur le YesWiki de destination',
+    'PAGE_NOT_AVAILABLE' => 'La page {tag} n\'est pas disponible sur le YesWiki de destination',
     'NOT_CONNECTED' => 'Il faut se connecter au YesWiki de destination avec un compte disposant de droits d\'administration.',
     'CONNECTED_AS_ADMIN' => 'L\'utilisateurice {user} est bien connecté.e sur le YesWiki de destination, avec des droits d\'administration.',
     'CONNECTED_BUT_NOT_ADMIN' => 'L\'utilisateurice {user} est bien connecté.e sur le YesWiki de destination, mais n\'a pas les droits d\'administration. Veuillez-vous connecter avec un compte admin.',

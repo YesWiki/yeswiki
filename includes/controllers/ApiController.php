@@ -71,7 +71,6 @@ class ApiController extends YesWikiController
             '<p><code>POST ' . $urlArchives . '/{id}</code></p>';
 
         // TODO use annotations to document the API endpoints
-        $extensions = $this->wiki->extensions;
         foreach ($this->wiki->extensions as $extension => $pluginBase) {
             $response = null;
             if (file_exists($pluginBase . 'controllers/ApiController.php')) {

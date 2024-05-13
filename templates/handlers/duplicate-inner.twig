@@ -1,6 +1,6 @@
 {% if toExternalWiki %}
   {{ include_javascript('javascripts/handlers/duplicate.js') }}
-  <div class="text-info">{{ _t('WIKI_URL_RECENT') }}.</div>
+  <div class="text-tip">{{ _t('WIKI_URL_RECENT') }}.</div>
   <div class="form-group">
     <label for="urlWiki" class="control-label">{{ _t('WIKI_URL') }}</label>
     <div class="input-group">
@@ -9,8 +9,8 @@
         <button class="btn-verify-wiki btn btn-primary" type="button">{{ _t('VERIFY_WIKI') }}</button>
       </span>
     </div><!-- /input-group -->
+    <span id="login-message" class="help-block"></span>
   </div>
-  <div id="login-message"></div>
   <div class="login-fields hide row">{# hide the field while no valid yeswiki url given #}
     <div class="col-lg-4">
       <div class="form-group">
@@ -32,30 +32,41 @@
   </div>
   <div class="duplication-fields hide">{# hide the field while not connected #}
   {% endif %}
-<form method="post" action="{{ url({handler: 'duplicate'})}}" class="form-horizontal">
+<form id="form-duplication" method="post" action="{{ url({handler: 'duplicate'})}}">
   {% if pageTitle %}
-  <div class="form-group col-lg-12">
-    <label for="pageTag" class="control-label">{{ _t('PAGE_TITLE_TO_DUPLICATE') }}</label>
+  <div class="form-group">
+    <label for="pageTitle" class="control-label">{{ _t('PAGE_TITLE_TO_DUPLICATE') }}</label>
     <div class="input-group">
       <input required type="text" class="form-control" id="pageTitle" name="pageTitle" placeholder="{{ _t('PAGE_TITLE_TO_DUPLICATE') }}" value="{{pageTitle}}" />
     </div>
   </div>
 {% endif %}
-  <div class="form-group col-lg-12">
+  <div class="form-group">
     <label for="pageTag" class="control-label">{{ _t('PAGE_TAG_TO_DUPLICATE') }}</label>
     <div class="input-group">
       <span class="input-group-addon" id="baseUrl">{{ baseUrl }}</span>
       <input required type="text" class="form-control" id="pageTag" name="pageTag" placeholder="{{ _t('PAGE_TAG_TO_DUPLICATE') }}" value="{{proposedTag}}" />
+      {% if toExternalWiki %}
+      <span class="input-group-btn">
+        <button class="btn-verify-tag btn btn-primary" type="button">{{ _t('VERIFY_PAGE_AVAILABILITY') }}</button>
+      </span>
+      {% endif %}
     </div>
+    <span id="pagetag-message" class="help-block"></span>
   </div>
   {% if attachments|length > 0 %}
   <strong>{{ _t('FILES_TO_DUPLICATE') }} ({{ _t('TOTAL_SIZE') ~ ' ' ~ totalSize }})</strong>
   <ol class="list-files">
     {% for a in attachments %}
     <li>{{a.path|replace({'files/': ''})}} ({{a.humanSize}})</li>
+    {% if toExternalWiki %}<input type="hidden" name="files[]" value="{{ baseUrl}}/{{ a.path }}" />{% endif %}
     {% endfor %}
   </ol>
   {% endif %}
+  {% if toExternalWiki %}<input type="hidden" name="pageContent" value="{{ pageContent }}" />{% endif %}
+
+  <input type="hidden" name="sourceUrl" value="{{ sourceUrl }}" />
+  <input type="hidden" name="originalTag" value="{{ originalTag }}" />
   <input type="hidden" name="type" value="{{ type }}" />
   <button name="duplicate-action" value="open" type="submit" class="btn btn-primary"><i class="fa fa-eye-open"></i>{{ _t('DUPLICATE_AND_OPEN') }}</button>
   <button name="duplicate-action" value="edit" type="submit" class="btn btn-primary"><i class="fa fa-pencil-alt"></i> {{ _t('DUPLICATE_AND_EDIT') }}</button>
