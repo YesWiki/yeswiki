@@ -155,10 +155,12 @@ class AuthController extends YesWikiController
             // connect in SESSION
             $this->login($data['user'], $data['remember'] ? 1 : 0);
         } catch (BadUserConnectException $th) {
-            if (empty($_SESSION['user']['name']) ||
+            if (
+                empty($_SESSION['user']['name']) ||
                 empty($data['user']['name']) ||
                 $data['user']['name'] != $_SESSION['user']['name'] ||
-                !$this->wiki->UserIsAdmin($data['user']['name'])) {
+                !$this->wiki->UserIsAdmin($data['user']['name'])
+            ) {
                 // do not disconnect admin during update
                 $this->logout();
             }
