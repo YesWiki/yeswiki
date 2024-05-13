@@ -55,8 +55,10 @@ return [
     'TEMPLATE_SEE_ATTACHED_FILES' => 'Voir les fichiers attachés à la page',
     'TEMPLATE_DUPLICATE' => 'Dupliquer',
     'TEMPLATE_DUPLICATE_PAGE' => 'Dupliquer la page',
-    'TEMPLATE_DUPLICATE_LOCALLY' => 'Dupliquer dans ce YesWiki',
-    'TEMPLATE_DUPLICATE_IN_ANOTHER_WIKI' => 'Dupliquer dans un autre YesWiki',
+    'TEMPLATE_DUPLICATE_LIST' => 'Dupliquer la liste',
+    'TEMPLATE_DUPLICATE_ENTRY' => 'Dupliquer la fiche',
+    'TEMPLATE_DUPLICATE_LOCALLY' => 'Dans ce YesWiki',
+    'TEMPLATE_DUPLICATE_IN_ANOTHER_WIKI' => 'Dans un autre YesWiki',
 
     // action/diaporama
     'DIAPORAMA_PAGE_PARAM_MISSING' => 'Action diaporama : param&ecirc;tre "page" obligatoire.',

@@ -686,9 +686,15 @@ return [
     'REACTION_NO_IMAGE' => 'Image manquante',
 
     // Duplication
+    'DUPLICATE' => 'copie',
     'FILES_TO_DUPLICATE' => 'Fichiers à dupliquer',
     'TOTAL_SIZE' => 'taille totale',
     'DUPLICATE_AND_OPEN' => 'Dupliquer et afficher',
     'DUPLICATE_AND_EDIT' => 'Dupliquer et éditer',
-    'PAGE_TAG_TO_DUPLICATE' => 'Identifiant de la page dupliquée',
+    'NO_DUPLICATE_ACTION' => 'Pas d\'action après duplication indiquée (duplicate-action)',
+    'PAGE_TITLE_TO_DUPLICATE' => 'Titre après duplication',
+    'PAGE_TAG_TO_DUPLICATE' => 'Identifiant après duplication',
+    'NO_VALID_DATA_TYPE' => 'Pas de type de données valide',
+    'EMPTY_PAGE_TAG' => 'L\'identifiant ne peut pas être vide',
+    'EMPTY_PAGE_TITLE' => 'Le titre ne peut pas être vide',
 ];

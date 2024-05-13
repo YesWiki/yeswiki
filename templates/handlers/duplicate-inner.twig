@@ -1,16 +1,27 @@
-<form method="post" action="" class="form-horizontal">
+<form method="post" action="{{ url({handler: 'duplicate'})}}" class="form-horizontal">
+  {% if pageTitle %}
+  <div class="form-group">
+    <label for="pageTag" class="control-label">{{ _t('PAGE_TITLE_TO_DUPLICATE') }}</label>
+    <div class="col-lg-12">
+      <input required type="text" class="form-control" id="pageTitle" name="pageTitle" placeholder="{{ _t('PAGE_TITLE_TO_DUPLICATE') }}" value="{{pageTitle}}" />
+    </div>
+  </div>
+  {% endif %}
   <div class="form-group">
     <label for="pageTag" class="control-label">{{ _t('PAGE_TAG_TO_DUPLICATE') }}</label>
     <div class="col-lg-12">
-      <input type="text" class="form-control" id="pageTag" placeholder="{{ _t('PAGE_TAG_TO_DUPLICATE') }}">
+      <input required type="text" class="form-control" id="pageTag" name="pageTag" placeholder="{{ _t('PAGE_TAG_TO_DUPLICATE') }}" value="{{proposedTag}}" />
     </div>
   </div>
+  {% if attachments|length > 0 %}
   <strong>{{ _t('FILES_TO_DUPLICATE') }} ({{ _t('TOTAL_SIZE') ~ ' ' ~ totalSize }})</strong>
   <ol class="list-files">
     {% for a in attachments %}
-    <li>{{a.path}} ({{a.humanSize}})</li>
+    <li>{{a.path|replace({'files/': ''})}} ({{a.humanSize}})</li>
     {% endfor %}
   </ol>
-  <button name="duplicate-open" type="submit" class="btn btn-primary"><i class="fa fa-eye-open"></i>{{ _t('DUPLICATE_AND_OPEN') }}</button>
-  <button name="duplicate-edit" type="submit" class="btn btn-primary"><i class="fa fa-pencil-alt"></i> {{ _t('DUPLICATE_AND_EDIT') }}</button>
+  {% endif %}
+  <input type="hidden" name="type" value="{{ type }}" />
+  <button name="duplicate-action" value="open" type="submit" class="btn btn-primary"><i class="fa fa-eye-open"></i>{{ _t('DUPLICATE_AND_OPEN') }}</button>
+  <button name="duplicate-action" value="edit" type="submit" class="btn btn-primary"><i class="fa fa-pencil-alt"></i> {{ _t('DUPLICATE_AND_EDIT') }}</button>
 </form>
