@@ -506,4 +506,11 @@ class PageManager
 
         return $pages;
     }
+
+    private function duplicate($sourceTag, $destinationTag) : boolean
+    {
+        $result = false;
+        $this->wiki->LogAdministrativeAction($this->authController->getLoggedUserName(), "Duplication de la page \"\"" . $sourceTag . "\"\" vers la page \"\"".$destinationTag."\"\"");
+        return $result;
+    }
 }
