@@ -54,6 +54,10 @@ function handleLoginResponse(data) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  $('.duplication-wiki-form, .duplication-login-form, #form-duplication').on('submit', (e) => {
+    e.stopPropagation()
+    return false
+  })
   $('#urlWiki').on('change', () => {
     $('.login-fields, .duplication-fields').addClass('hide')
     $('#login-message').html('')
@@ -76,12 +80,13 @@ document.addEventListener('DOMContentLoaded', () => {
         $('.login-fields').removeClass('hide')
       }
     })
+    return false
   })
 
   $('[name="duplicate-action"]').on('click', () => {
     $.ajax({
       method: 'POST',
-      url: `${shortUrl}/?api/pages/duplicate`,
+      url: `${shortUrl}/?api/pages/${$('#pageTag').val()}/duplicate`,
       data: $('#form-duplication').serialize()
     }).done((data) => {
       // handleLoginResponse(data)

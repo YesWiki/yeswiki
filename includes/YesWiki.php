@@ -79,6 +79,7 @@ class Wiki
 
         $this->services = $init->initCoreServices($this);
         $this->loadExtensions();
+
         $this->routes = $init->initRoutes($this);
     }
 

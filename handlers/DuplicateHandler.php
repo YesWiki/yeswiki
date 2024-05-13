@@ -114,7 +114,7 @@ class DuplicateHandler extends YesWikiHandler
                 'pageContent' => $pageContent,
                 'totalSize' => $this->duplicationManager->humanFilesize($totalSize),
                 'type' => $type,
-                'baseUrl' => $this->wiki->config['base_url'],
+                'baseUrl' => preg_replace('/\?$/Ui', '', $this->wiki->config['base_url']),
                 'toExternalWiki' => $toExternalWiki,
             ]);
         }

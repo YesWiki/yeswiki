@@ -2,6 +2,7 @@
 
 namespace YesWiki\Core\Service;
 
+use Exception;
 use YesWiki\Bazar\Field\FileField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\TextareaField;
@@ -285,6 +286,45 @@ class DuplicationManager
                 $this->wiki->services->get(TripleStore::class)->create($data['pageTag'], $prop, $val['value'], '', '');
             }
         }
+    }
+
+    public function importDistantContent($tag, $request)
+    {
+        if ($this->wiki->services->get(PageManager::class)->getOne($tag)) {
+            throw new Exception(_t('ACEDITOR_LINK_PAGE_ALREADY_EXISTS'));
+            return;
+        }
+        $req = $request->request->all();
+        foreach (['pageContent', 'sourceUrl', 'originalTag', 'type'] as $key) {
+            if (empty($req[$key])) {
+                throw new Exception(_t('NOT_FOUND_IN_REQUEST', $key));
+                return;
+            }
+        }
+        foreach ($req['files'] as $fileUrl) {
+            $this->downloadFile($fileUrl, $req['originalTag'], $tag);
+        }
+        if ($req['type'] === 'page') {
+            $newBody = str_replace('', '', $req['pageContent']);
+            $this->wiki->services->get(PageManager::class)->save($tag, $newBody);
+        }
+    }
+
+    public function downloadFile($sourceUrl, $fromTag, $toTag, $timeoutInSec = 10)
+    {
+        $t = explode('/', $sourceUrl);
+        $fileName = array_pop($t);
+        $destPath = 'files/' . str_replace($fromTag, $toTag, $fileName);
+        $fp = fopen($destPath, 'wb');
+        $ch = curl_init($sourceUrl);
+        curl_setopt($ch, CURLOPT_FILE, $fp);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
+        curl_exec($ch);
+        curl_close($ch);
+        fclose($fp);
+        return $destPath;
     }
 
     public function humanFilesize($bytes, $decimals = 2)
