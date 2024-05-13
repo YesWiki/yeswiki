@@ -257,7 +257,32 @@ class DuplicationManager
                 $this->wiki->services->get(PageManager::class)->save($data['pageTag'], $newBody);
                 break;
         }
-        // TODO: duplicate acls and metadatas
+
+        // duplicate acls
+        foreach (['read', 'write', 'comment'] as $privilege) {
+            $values = $this->wiki->services->get(AclService::class)->load(
+                $this->wiki->getPageTag(),
+                $privilege
+            );
+
+            $this->wiki->services->get(AclService::class)->save(
+                $data['pageTag'],
+                $privilege,
+                $values['list']
+            );
+        }
+
+        // duplicate metadatas and tags (TODO: is there more duplicable triples?)
+        $properties = [
+            'http://outils-reseaux.org/_vocabulary/metadata',
+            'http://outils-reseaux.org/_vocabulary/tag'
+        ];
+        foreach ($properties as $prop) {
+            $values = $this->wiki->services->get(TripleStore::class)->getAll($this->wiki->GetPageTag(), $prop, '', '');
+            foreach ($values as $val) {
+                $this->wiki->services->get(TripleStore::class)->create($data['pageTag'], $prop, $val['value'], '', '');
+            }
+        }
     }
 
     public function humanFilesize($bytes, $decimals = 2)
