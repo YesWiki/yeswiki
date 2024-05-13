@@ -234,13 +234,12 @@ class DuplicationManager
             case 'entry':
                 $files = $this->duplicateFiles($this->wiki->getPageTag(), $data['pageTag']);
                 $entry = $this->wiki->services->get(EntryManager::class)->getOne($this->wiki->getPageTag());
-                dump($entry, $files);
                 $fields = $this->getUploadFieldsFromEntry($this->wiki->GetPageTag());
                 foreach ($fields as $f) {
+                    foreach ($files as $fi) {
+                        $entry[$f['id']] = str_replace($fi['originalFile'], $fi['duplicatedFile'], $entry[$f['id']]);
+                    }
                 }
-
-                exit;
-
                 $entry['id_fiche'] = $data['pageTag'];
                 $entry['bf_titre'] = $data['pageTitle'];
                 $entry['antispam'] = 1;
