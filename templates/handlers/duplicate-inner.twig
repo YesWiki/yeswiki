@@ -1,0 +1,16 @@
+<form method="post" action="" class="form-horizontal">
+  <div class="form-group">
+    <label for="pageTag" class="control-label">{{ _t('PAGE_TAG_TO_DUPLICATE') }}</label>
+    <div class="col-lg-12">
+      <input type="text" class="form-control" id="pageTag" placeholder="{{ _t('PAGE_TAG_TO_DUPLICATE') }}">
+    </div>
+  </div>
+  <strong>{{ _t('FILES_TO_DUPLICATE') }} ({{ _t('TOTAL_SIZE') ~ ' ' ~ totalSize }})</strong>
+  <ol class="list-files">
+    {% for a in attachments %}
+    <li>{{a.path}} ({{a.humanSize}})</li>
+    {% endfor %}
+  </ol>
+  <button name="duplicate-open" type="submit" class="btn btn-primary"><i class="fa fa-eye-open"></i>{{ _t('DUPLICATE_AND_OPEN') }}</button>
+  <button name="duplicate-edit" type="submit" class="btn btn-primary"><i class="fa fa-pencil-alt"></i> {{ _t('DUPLICATE_AND_EDIT') }}</button>
+</form>

@@ -219,7 +219,6 @@ class PageManager
             SELECT * FROM {$this->dbService->prefixTable('pages')} WHERE LATEST = 'Y' ORDER BY tag
         SQL);
         $pages = $this->checkEntriesACL($pages);
-
         return $pages;
     }
 
@@ -297,6 +296,7 @@ class PageManager
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag='{$this->dbService->escape($tag)}' OR comment_on='{$this->dbService->escape($tag)}'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag='{$this->dbService->escape($tag)}' ");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('acls')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='" . TripleStore::TYPE_URI . "' and `value`='" . EntryManager::TRIPLES_ENTRY_ID . "'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='" . TripleStore::TYPE_URI . "' and `value`='" . EntryManager::TRIPLES_ENTRY_ID . "'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='http://outils-reseaux.org/_vocabulary/metadata'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('referrers')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
@@ -407,8 +407,8 @@ class PageManager
                 $timeQuery = $time ? "time = '{$this->dbService->escape($time)}'" : "latest = 'Y'";
                 $page = $this->dbService->loadSingle(
                     "SELECT `owner` FROM {$this->dbService->prefixTable('pages')} " .
-                    "WHERE tag = '{$this->dbService->escape($tag)}' AND {$timeQuery} " .
-                    'LIMIT 1'
+                        "WHERE tag = '{$this->dbService->escape($tag)}' AND {$timeQuery} " .
+                        "LIMIT 1"
                 );
                 $this->ownersCache[$tag] = $page['owner'] ?? null;
             }
@@ -499,18 +499,18 @@ class PageManager
         }
         $pages = array_map(function ($page) use ($guard, $allEntriesTags, $userNameForCheckingACL) {
             return (isset($page['tag']) &&
-                    in_array($page['tag'], $allEntriesTags)
+                in_array($page['tag'], $allEntriesTags)
             ) ? $guard->checkAcls($page, $page['tag'], $userNameForCheckingACL)
-                    : $page;
+                : $page;
         }, $pages);
 
         return $pages;
     }
 
-    private function duplicate($sourceTag, $destinationTag) : boolean
+    private function duplicate($sourceTag, $destinationTag): bool
     {
         $result = false;
-        $this->wiki->LogAdministrativeAction($this->authController->getLoggedUserName(), "Duplication de la page \"\"" . $sourceTag . "\"\" vers la page \"\"".$destinationTag."\"\"");
+        $this->wiki->LogAdministrativeAction($this->authController->getLoggedUserName(), "Duplication de la page \"\"" . $sourceTag . "\"\" vers la page \"\"" . $destinationTag . "\"\"");
         return $result;
     }
 }

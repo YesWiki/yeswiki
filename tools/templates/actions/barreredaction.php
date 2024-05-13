@@ -83,7 +83,7 @@ if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions'
             }
         }
     }
-    $options['linkduplicate'] = $this->href('', 'api/' . $page . '/duplicate');
+    $options['linkduplicate'] = $this->href('duplicate', $page);
     $options['linkshare'] = $this->href("share", $page);
     $options['userIsOwner'] = $this->UserIsOwner($page);
     $options['userIsAdmin'] = $this->UserIsAdmin();
