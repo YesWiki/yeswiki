@@ -51,8 +51,8 @@ return [
     'TEMPLATE_FOR_MEMBERS_OF_GROUP' => 'Pour les membres du groupe',
     'TEMPLATE_SEE_ATTACHED_FILES' => 'Voir les fichiers attachés à la page',
     'TEMPLATE_DUPLICATE' => 'Dupliquer',
-    'TEMPLATE_DUPLICATE_AND_SEE' => 'Dupliquer localement et voir la page dupliquée',
-    'TEMPLATE_DUPLICATE_AND_EDIT' => 'Dupliquer localement et éditer la page dupliquée',
+    'TEMPLATE_DUPLICATE_PAGE' => 'Dupliquer la page',
+    'TEMPLATE_DUPLICATE_LOCALLY' => 'Dupliquer dans ce YesWiki',
     'TEMPLATE_DUPLICATE_IN_ANOTHER_WIKI' => 'Dupliquer dans un autre YesWiki',
 
     // action/diaporama

@@ -629,4 +629,11 @@ return [
     'REACTION_TITLE_PARAM_NEEDED' => 'Le paramètre \'titre\' est obligatoire',
     'REACTION_BAD_IMAGE_FORMAT' => 'Mauvais format d\'image : doit être un fichier, un icône utf8 ou une classe Fontawesome',
     'REACTION_NO_IMAGE' => 'Image manquante',
+
+    // Duplication
+    'FILES_TO_DUPLICATE' => 'Fichiers à dupliquer',
+    'TOTAL_SIZE' => 'taille totale',
+    'DUPLICATE_AND_OPEN' => 'Dupliquer et afficher',
+    'DUPLICATE_AND_EDIT' => 'Dupliquer et éditer',
+    'PAGE_TAG_TO_DUPLICATE' => 'Identifiant de la page dupliquée',
 ];

@@ -19,7 +19,7 @@
   {% endif %}
   <span class="dropup">
     <a
-      title="{{ _t('TEMPLATE_DUPLICATE') ~ ' ' ~ page }}"
+      title="{{ _t('TEMPLATE_DUPLICATE_PAGE') ~ ' ' ~ page }}"
       class="link-duplicate dropdown-toggle"
       id="duplicate-dropup"
       data-toggle="dropdown"
@@ -33,23 +33,17 @@
       <li>
         <a
           href="{{ linkduplicate }}"
-          {% if not userIsAdminOrOwner %} class="disabled"{% endif %}
-        >
-          {{ _t('TEMPLATE_DUPLICATE_AND_SEE') }}
-        </a>
-      </li>
-      <li>
-        <a
-          href="{{ linkduplicate ~ '&edit=1'}}"
-          {% if not userIsAdminOrOwner %} class="disabled"{% endif %}
-        >
-          {{ _t('TEMPLATE_DUPLICATE_AND_EDIT') }}
-        </a>
-      </li>
-      <li>
-        <a
           class="modalbox"
+          title="{{ _t('TEMPLATE_DUPLICATE_PAGE') ~ ' ' ~ page }}"
+        >
+          {{ _t('TEMPLATE_DUPLICATE_LOCALLY') }}
+        </a>
+      </li>
+      <li>
+        <a
           href="{{ linkduplicate ~ '&toUrl=1'}}"
+          class="modalbox"
+          title="{{ _t('TEMPLATE_DUPLICATE_PAGE') ~ ' ' ~ page }}"
         >
           {{ _t('TEMPLATE_DUPLICATE_IN_ANOTHER_WIKI') }}
         </a>
