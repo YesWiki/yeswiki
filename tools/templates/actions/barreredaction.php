@@ -21,8 +21,8 @@ if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions'
         $content = $this->LoadPage($page);
         $time = $content['time'];
     }
-    $barreredactionelements['page'] = $page;
-    $barreredactionelements['linkpage'] = $this->href('', $page);
+    $options['page'] = $page;
+    $options['linkpage'] = $this->href('', $page);
 
     // on choisit le template utilisé
     $template = $this->GetParameter('template');
@@ -30,20 +30,20 @@ if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions'
         $template = 'barreredaction_basic.twig';
     }
 
-    // on peut ajouter des classes
-    $barreredactionelements['class'] = $this->GetParameter('class') || '';
+    // on peut ajouter des classes, la classe par défaut est .footer
+    $options['class'] = ($this->GetParameter('class') ? 'footer ' . $this->GetParameter('class') : 'footer');
 
     if ($this->HasAccess('write')) {
         // on ajoute le lien d'édition si l'action est autorisée
-        if ($this->HasAccess('write', $page) && !$this->services->get(SecurityController::class)->isWikiHibernated()) {
-            $barreredactionelements['linkedit'] = $this->href('edit', $page);
+        if ($this->HasAccess("write", $page) && !$this->services->get(SecurityController::class)->isWikiHibernated()) {
+            $options['linkedit'] = $this->href("edit", $page);
         }
 
         if ($time) {
             // hack to hide E_STRICT error if no timezone set
             date_default_timezone_set(@date_default_timezone_get());
-            $barreredactionelements['linkrevisions'] = $this->href('revisions', $page);
-            $barreredactionelements['time'] = date(_t('TEMPLATE_DATE_FORMAT'), strtotime($time));
+            $options['linkrevisions'] = $this->href("revisions", $page);
+            $options['time'] = date(_t('TEMPLATE_DATE_FORMAT'), strtotime($time));
         }
 
         // if this page exists
@@ -51,48 +51,49 @@ if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions'
             $owner = $this->GetPageOwner($page);
             // message
             if ($this->UserIsOwner($page)) {
-                $barreredactionelements['owner'] = _t('TEMPLATE_OWNER') . ' : ' . _t('TEMPLATE_YOU');
+                $options['owner'] = _t('TEMPLATE_OWNER') . " : " . _t('TEMPLATE_YOU');
             } elseif ($owner) {
-                $barreredactionelements['owner'] = _t('TEMPLATE_OWNER') . ' : ' . $owner;
+                $options['owner'] = _t('TEMPLATE_OWNER') . " : " . $owner;
             } else {
-                $barreredactionelements['owner'] = _t('TEMPLATE_NO_OWNER');
+                $options['owner'] = _t('TEMPLATE_NO_OWNER');
             }
 
             // if current user is owner or admin
             if ($this->UserIsOwner($page) || $this->UserIsAdmin()) {
-                $barreredactionelements['owner'] .= ' - ' . _t('TEMPLATE_PERMISSIONS');
+                $options['owner'] .= ' - ' . _t('TEMPLATE_PERMISSIONS');
                 if (!$this->services->get(SecurityController::class)->isWikiHibernated()) {
-                    $barreredactionelements['linkacls'] = $this->href('acls', $page);
-                    $barreredactionelements['linkdeletepage'] = $this->href('deletepage', $page);
+                    $options['linkacls'] = $this->href("acls", $page);
+                    $options['linkdeletepage'] = $this->href("deletepage", $page);
                 }
                 $aclsService = $this->services->get(AclService::class);
                 $hasAccessComment = $aclsService->hasAccess('comment');
-                $barreredactionelements['wikigroups'] = $this->GetGroupsList();
+                $options['wikigroups'] = $this->GetGroupsList();
                 if ($this->services->get(ParameterBagInterface::class)->get('comments_activated')) {
                     if ($hasAccessComment && $hasAccessComment !== 'comments-closed') {
-                        $barreredactionelements['linkclosecomments'] = $this->href('claim', $page, ['action' => 'closecomments'], false);
+                        $options['linkclosecomments'] = $this->href("claim", $page, ['action' => 'closecomments'], false);
                     } else {
-                        $barreredactionelements['linkopencomments'] = $this->href('claim', $page, ['action' => 'opencomments'], false);
+                        $options['linkopencomments'] = $this->href("claim", $page, ['action' => 'opencomments'], false);
                     }
                 }
             } elseif (!$owner && $this->GetUser()) {
-                $barreredactionelements['owner'] .= ' - ' . _t('TEMPLATE_CLAIM');
+                $options['owner'] .= " - " . _t('TEMPLATE_CLAIM');
                 if (!$this->services->get(SecurityController::class)->isWikiHibernated()) {
-                    $barreredactionelements['linkacls'] = $this->href('claim', $page);
+                    $options['linkacls'] = $this->href("claim", $page);
                 }
             }
         }
     }
-    $barreredactionelements['linkshare'] = $this->href('share', $page);
-    $barreredactionelements['userIsOwner'] = $this->UserIsOwner($page);
-    $barreredactionelements['userIsAdmin'] = $this->UserIsAdmin();
-    $barreredactionelements['userIsAdminOrOwner'] = $this->UserIsAdmin() || $this->UserIsOwner($page);
+    $options['linkduplicate'] = $this->href('', 'api/' . $page . '/duplicate');
+    $options['linkshare'] = $this->href("share", $page);
+    $options['userIsOwner'] = $this->UserIsOwner($page);
+    $options['userIsAdmin'] = $this->UserIsAdmin();
+    $options['userIsAdminOrOwner'] = $this->UserIsAdmin() || $this->UserIsOwner($page);
     $favoritesManager = $this->services->get(FavoritesManager::class);
     if (!empty($user) && $favoritesManager->areFavoritesActivated()) {
-        $barreredactionelements['currentuser'] = $user['name'];
-        $barreredactionelements['isUserFavorite'] = $favoritesManager->isUserFavorite($user['name'], $page);
+        $options['currentuser'] = $user['name'];
+        $options['isUserFavorite'] = $favoritesManager->isUserFavorite($user['name'], $page);
     }
 
-    echo $this->render("@templates/$template", $barreredactionelements);
+    echo $this->render("@templates/$template", $options);
     echo ' <!-- /.footer -->' . "\n";
 }

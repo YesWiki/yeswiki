@@ -44,9 +44,15 @@ class ApiController extends YesWikiController
 
         $urlPages = $this->wiki->Href('', 'api/pages');
         $output .= '<h2>' . _t('PAGES') . '</h2>' . "\n" .
-            '<p><code>GET ' . $urlPages . '</code></p>';
-        $urlPagesComments = $this->wiki->Href('', 'api/pages/{pageTag}/comments');
-        $output .= '<p><code>GET ' . $urlPagesComments . '</code></p>';
+            '<p><code>GET ' . $urlPages . '</code><br>Get all pages</p>';
+        $urlPages = $this->wiki->Href('', 'api/pages/{pageTag}');
+        $output .= '<p><code>GET ' . $urlPages . '</code><br>Get indicated page\'s informations, with raw and html contents</p>';
+
+        $urlPages = $this->wiki->Href('', 'api/pages/{pageTag}/comments');
+        $output .= '<p><code>GET ' . $urlPages . '</code><br>Get indicated page\'s comments</p>';
+
+        $urlPages = $this->wiki->Href('', 'api/pages/{pageTag}/duplicate');
+        $output .= '<p><code>GET ' . $urlPages . '</code><br>Duplicate page into same YesWiki (in edit mode with <code>edit=1</code> param) or to another YesWiki (with <code>toUrl=1</code> param)</p>';
 
         $urlComments = $this->wiki->Href('', 'api/comments');
         $output .= '<h2>' . _t('COMMENTS') . '</h2>' . "\n" .
@@ -71,7 +77,7 @@ class ApiController extends YesWikiController
             if (file_exists($pluginBase . 'controllers/ApiController.php')) {
                 $apiClassName = 'YesWiki\\' . ucfirst($extension) . '\\Controller\\ApiController';
                 if (!class_exists($apiClassName, false)) {
-                    include $pluginBase . 'controllers/ApiController.php';
+                    include($pluginBase . 'controllers/ApiController.php');
                 }
                 if (class_exists($apiClassName, false)) {
                     $apiController = new $apiClassName();
@@ -374,6 +380,27 @@ class ApiController extends YesWikiController
         }
 
         return new ApiResponse($page);
+    }
+
+    /**
+     * @Route("/api/pages/{tag}/duplicate",methods={"GET"},options={"acl":{"public"}})
+     */
+    public function duplicatePage(Request $request, $tag)
+    {
+        $this->denyAccessUnlessGranted('read', $tag);
+        $pageManager = $this->getService(PageManager::class);
+        $page = $pageManager->getOne($tag, $request->get('time'));
+        if (!$page) {
+            return new ApiResponse(null, Response::HTTP_NOT_FOUND);
+        }
+
+        if (!empty($request->get('destination'))) {
+            return new ApiResponse('Tag de destination : ' . $request->get('destination'));
+        } else {
+            return new ApiResponse('Tag de destination ?');
+        }
+        $pageManager = $this->getService(PageManager::class);
+        $entryManager = $this->getService(EntryManager::class);
     }
 
     /**
@@ -814,11 +841,14 @@ class ApiController extends YesWikiController
                 Response::HTTP_BAD_REQUEST
             );
         } else {
-            $property = $this->getService(SecurityController::class)->filterInput($method, 'property', FILTER_DEFAULT, true);
+            $property = filter_input($method, 'property', FILTER_UNSAFE_RAW);
+            $property = in_array($property, [false, null], true) ? "" : htmlspecialchars(strip_tags($property));
             if (empty($property)) {
                 $property = null;
             }
-            $username = $this->getService(SecurityController::class)->filterInput($method, 'user', FILTER_DEFAULT, true);
+
+            $username = filter_input($method, 'user', FILTER_UNSAFE_RAW);
+            $username = in_array($username, [false, null], true) ? "" : htmlspecialchars(strip_tags($username));
             if (empty($username)) {
                 if (!$this->wiki->UserIsAdmin()) {
                     $username = $this->getService(AuthController::class)->getLoggedUser()['name'];
@@ -834,7 +864,6 @@ class ApiController extends YesWikiController
                 );
             }
         }
-
         return compact(['property', 'username', 'apiResponse']);
     }
 
@@ -853,7 +882,7 @@ class ApiController extends YesWikiController
     {
         return $this->getService(ArchiveController::class)->getArchiveStatus(
             $uid,
-            empty($_GET['forceStarted']) ? false : in_array($_GET['forceStarted'], [1, true, '1', 'true'], true)
+            empty($_GET['forceStarted']) ? false : in_array($_GET['forceStarted'], [1, true, "1", "true"], true)
         );
     }
 
