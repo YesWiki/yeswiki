@@ -210,8 +210,8 @@ class DuplicationManager
         if ($data['type'] != 'page' && empty($data['pageTitle'])) {
             throw new \Exception(_t('EMPTY_PAGE_TITLE'));
         }
-        if (!$this->wiki->services->get(AclService::class)->hasAccess('write', $data['pageTag'])) {
-            throw new \Exception(_t('LOGIN_NOT_AUTORIZED_EDIT') . ' ' . $data['pageTag']);
+        if (!$this->wiki->UserIsAdmin()) {
+            throw new \Exception(_t('ONLY_ADMINS_CAN_DUPLICATE') . '.');
         }
         $page = $this->wiki->services->get(PageManager::class)->getOne($data['pageTag']);
         if ($page) {

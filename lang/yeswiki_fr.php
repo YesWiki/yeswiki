@@ -646,4 +646,5 @@ return [
     'WIKI_URL' => 'Url du YesWiki de destination',
     'WIKI_URL_RECENT' => 'Entrez l\'url d\'un YesWiki assez récent (version > 4.5) pour recevoir la duplication',
     'VERIFY_WIKI' => 'Vérifier cette adresse',
+    'ONLY_ADMINS_CAN_DUPLICATE' => 'Seuls les membres du groupe "admins" peuvent dupliquer',
 ];

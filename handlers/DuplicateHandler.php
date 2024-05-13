@@ -60,6 +60,11 @@ class DuplicateHandler extends YesWikiHandler
                     'message' => $th->getMessage(),
                 ]);
             }
+        } elseif (!$this->wiki->UserIsAdmin()) {
+            $output .= $this->render('@templates\alert-message-with-back.twig', [
+                'type' => 'warning',
+                'message' => _t('ONLY_ADMINS_CAN_DUPLICATE') . '.',
+            ]);
         } elseif ($this->getService(AclService::class)->hasAccess('read', $this->wiki->GetPageTag())) {
             $isEntry = $this->getService(EntryManager::class)->isEntry($this->wiki->GetPageTag());
             $isList = $this->getService(ListManager::class)->isList($this->wiki->GetPageTag());
