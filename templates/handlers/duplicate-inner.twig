@@ -1,17 +1,19 @@
 {% if toExternalWiki %}
   {{ include_javascript('javascripts/handlers/duplicate.js') }}
+  <form class="duplication-wiki-form">
   <div class="text-tip">{{ _t('WIKI_URL_RECENT') }}.</div>
   <div class="form-group">
     <label for="urlWiki" class="control-label">{{ _t('WIKI_URL') }}</label>
     <div class="input-group">
       <input required type="url" class="form-control" id="urlWiki" name="urlWiki" placeholder="{{ _t('WIKI_URL') }}" value="" />
       <span class="input-group-btn">
-        <button class="btn-verify-wiki btn btn-primary" type="button">{{ _t('VERIFY_WIKI') }}</button>
+        <button class="btn-verify-wiki btn btn-primary" type="submit">{{ _t('VERIFY_WIKI') }}</button>
       </span>
     </div><!-- /input-group -->
     <span id="login-message" class="help-block"></span>
   </div>
-  <div class="login-fields hide row">{# hide the field while no valid yeswiki url given #}
+  </form>
+  <form class="login-fields hide row duplication-login-form">{# hide the field while no valid yeswiki url given #}
     <div class="col-lg-4">
       <div class="form-group">
         <label for="username" class="control-label">{{ _t('LOGIN_WIKINAME') }}</label>
@@ -29,7 +31,7 @@
         <button type="submit" class="btn-distant-login btn btn-primary btn-block"><i class="fa fa-sign-in-alt"></i> {{ _t('DISTANT_LOGIN') }}</button>
       </div>
     </div>
-  </div>
+  </form>
   <div class="duplication-fields hide">{# hide the field while not connected #}
   {% endif %}
 <form id="form-duplication" method="post" action="{{ url({handler: 'duplicate'})}}">
@@ -48,7 +50,7 @@
       <input required type="text" class="form-control" id="pageTag" name="pageTag" placeholder="{{ _t('PAGE_TAG_TO_DUPLICATE') }}" value="{{proposedTag}}" />
       {% if toExternalWiki %}
       <span class="input-group-btn">
-        <button class="btn-verify-tag btn btn-primary" type="button">{{ _t('VERIFY_PAGE_AVAILABILITY') }}</button>
+        <button class="btn-verify-tag btn btn-primary" type="submit">{{ _t('VERIFY_PAGE_AVAILABILITY') }}</button>
       </span>
       {% endif %}
     </div>
@@ -59,7 +61,7 @@
   <ol class="list-files">
     {% for a in attachments %}
     <li>{{a.path|replace({'files/': ''})}} ({{a.humanSize}})</li>
-    {% if toExternalWiki %}<input type="hidden" name="files[]" value="{{ baseUrl}}/{{ a.path }}" />{% endif %}
+    {% if toExternalWiki %}<input type="hidden" name="files[]" value="{{ baseUrl}}{{ a.path }}" />{% endif %}
     {% endfor %}
   </ol>
   {% endif %}

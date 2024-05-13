@@ -19,6 +19,9 @@ use YesWiki\Core\Service\CommentService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\DiffService;
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\UserManager;
+use YesWiki\Core\Service\DuplicationManager;
+use YesWiki\Core\Service\CommentService;
 use YesWiki\Core\Service\ReactionManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
@@ -52,7 +55,7 @@ class ApiController extends YesWikiController
         $output .= '<p><code>GET ' . $urlPages . '</code><br>Get indicated page\'s comments</p>';
 
         $urlPages = $this->wiki->Href('', 'api/pages/{pageTag}/duplicate');
-        $output .= '<p><code>GET ' . $urlPages . '</code><br>Duplicate page into same YesWiki (in edit mode with <code>edit=1</code> param) or to another YesWiki (with <code>toUrl=1</code> param)</p>';
+        $output .= '<p><code>POST ' . $urlPages . '</code><br>Duplicate an external page into this YesWiki pageTag</p>';
 
         $urlComments = $this->wiki->Href('', 'api/comments');
         $output .= '<h2>' . _t('COMMENTS') . '</h2>' . "\n" .
@@ -382,24 +385,18 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/pages/{tag}/duplicate",methods={"GET"},options={"acl":{"public"}})
+     * @Route("/api/pages/{tag}/duplicate",methods={"POST"},options={"acl":{"public","@admins"}})
      */
     public function duplicatePage(Request $request, $tag)
     {
-        $this->denyAccessUnlessGranted('read', $tag);
-        $pageManager = $this->getService(PageManager::class);
-        $page = $pageManager->getOne($tag, $request->get('time'));
-        if (!$page) {
-            return new ApiResponse(null, Response::HTTP_NOT_FOUND);
+        $this->denyAccessUnlessAdmin();
+        $duplicationManager = $this->getService(DuplicationManager::class);
+        try {
+            $duplicationManager->importDistantContent($tag, $request);
+        } catch (\Throwable $th) {
+            return new ApiResponse($th->getMessage(), Response::HTTP_FORBIDDEN);
         }
-
-        if (!empty($request->get('destination'))) {
-            return new ApiResponse('Tag de destination : ' . $request->get('destination'));
-        } else {
-            return new ApiResponse('Tag de destination ?');
-        }
-        $pageManager = $this->getService(PageManager::class);
-        $entryManager = $this->getService(EntryManager::class);
+        return new ApiResponse($request->request->all(), Response::HTTP_OK);
     }
 
     /**
