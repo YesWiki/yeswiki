@@ -73,17 +73,32 @@ class DuplicateHandler extends YesWikiHandler
             $pageTitle = '';
             if ($isEntry) {
                 $title = _t('TEMPLATE_DUPLICATE_ENTRY') . ' ' . $this->wiki->GetPageTag();
-                $entry = $this->getService(EntryManager::class)->getOne($this->wiki->GetPageTag());
-                $pageTitle = $entry['bf_titre'] . ' (' . _t('DUPLICATE') . ')';
-                $proposedTag = genere_nom_wiki($pageTitle);
+                $pageContent = $this->getService(EntryManager::class)->getOne($this->wiki->GetPageTag());
+                if ($toExternalWiki) {
+                    $pageTitle = $pageContent['bf_titre'];
+                    $proposedTag = $this->wiki->GetPageTag();
+                } else {
+                    $pageTitle = $pageContent['bf_titre'] . ' (' . _t('DUPLICATE') . ')';
+                    $proposedTag = genere_nom_wiki($pageTitle);
+                }
             } elseif ($isList) {
                 $title = _t('TEMPLATE_DUPLICATE_LIST') . ' ' . $this->wiki->GetPageTag();
-                $list = $this->getService(ListManager::class)->getOne($this->wiki->GetPageTag());
-                $pageTitle = $list['titre_liste'] . ' (' . _t('DUPLICATE') . ')';
-                $proposedTag = genere_nom_wiki('Liste ' . $pageTitle);
+                $pageContent = $this->getService(ListManager::class)->getOne($this->wiki->GetPageTag());
+                if ($toExternalWiki) {
+                    $pageTitle = $pageContent['titre_liste'];
+                    $proposedTag = $this->wiki->GetPageTag();
+                } else {
+                    $pageTitle = $pageContent['titre_liste'] . ' (' . _t('DUPLICATE') . ')';
+                    $proposedTag = genere_nom_wiki('Liste ' . $pageTitle);
+                }
             } else { // page
                 $title = _t('TEMPLATE_DUPLICATE_PAGE') . ' ' . $this->wiki->GetPageTag();
-                $proposedTag = genere_nom_wiki($this->wiki->GetPageTag() . ' ' . _t('DUPLICATE'));
+                if ($toExternalWiki) {
+                    $proposedTag = $this->wiki->GetPageTag();
+                } else {
+                    $proposedTag = genere_nom_wiki($this->wiki->GetPageTag() . ' ' . _t('DUPLICATE'));
+                }
+                $pageContent = $this->wiki->page['body'];
             }
             $attachments = $this->duplicationManager->findFiles($this->wiki->page['tag']);
             $totalSize = 0;
@@ -91,9 +106,12 @@ class DuplicateHandler extends YesWikiHandler
                 $totalSize = $totalSize + $a['size'];
             }
             $output .= $this->render('@core/handlers/duplicate-inner.twig', [
+                'originalTag' => $this->wiki->GetPageTag(),
+                'sourceUrl' => $this->wiki->href(),
                 'proposedTag' => $proposedTag,
                 'attachments' => $attachments,
                 'pageTitle' => $pageTitle,
+                'pageContent' => $pageContent,
                 'totalSize' => $this->duplicationManager->humanFilesize($totalSize),
                 'type' => $type,
                 'baseUrl' => $this->wiki->config['base_url'],

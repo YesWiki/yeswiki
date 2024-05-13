@@ -701,6 +701,7 @@ return [
     'WIKI_URL' => 'Url du YesWiki de destination',
     'WIKI_URL_RECENT' => 'Entrez l\'url d\'un YesWiki version > 4.5.0 pour que la duplication puisse fonctionner',
     'VERIFY_WIKI' => 'Vérifier cette adresse',
+    'VERIFY_PAGE_AVAILABILITY' => 'Vérifier la disponibilité de la page',
     'ONLY_ADMINS_CAN_DUPLICATE' => 'Seuls les membres du groupe "admins" de ce wiki peuvent dupliquer localement',
-    'DISTANT_LOGIN' => 'Se connecter sur le YesWiki de destination',
+    'DISTANT_LOGIN' => 'Se connecter sur le YesWiki',
 ];

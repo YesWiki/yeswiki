@@ -1,4 +1,5 @@
-// Define a function that takes a string and returns true if it is a valid URL, false otherwise
+let shortUrl = ''
+
 function isValidUrl(string) {
   try {
     const url = new URL(string)
@@ -8,23 +9,51 @@ function isValidUrl(string) {
   }
 }
 
+function blockDuplicationName(tag) {
+  $('[name=duplicate-action]').attr('disabled', 'disabled').addClass('disabled')
+  $('#pageTag').parents('.form-group').removeClass('has-success').addClass('has-error')
+  $('#pagetag-message').html(_t('PAGE_NOT_AVAILABLE', { tag }))
+}
+
+function validateDuplicationName(tag) {
+  $('[name=duplicate-action]').removeAttr('disabled').removeClass('disabled')
+  $('#pageTag').parents('.form-group').removeClass('has-error').addClass('has-success')
+  $('#pagetag-message').html(_t('PAGE_AVAILABLE', { tag }))
+}
+
+function checkPageExistence(url) {
+  $.ajax({
+    method: 'GET',
+    url
+  }).done(() => {
+    blockDuplicationName(url.replace(`${shortUrl}/?api/pages/`, ''))
+  }).fail((jqXHR) => {
+    if (jqXHR.status === 404) {
+      validateDuplicationName(url.replace(`${shortUrl}/?api/pages/`, ''))
+    } else {
+      blockDuplicationName(url.replace(`${shortUrl}/?api/pages/`, ''))
+    }
+  })
+}
+
 function handleLoginResponse(data) {
   if (data.isAdmin === true) {
-    $('#login-message').html(`<div class="text-info">
-            ${_t('CONNECTED_AS_ADMIN', { user: data.user })}
-          </div>`)
+    $('#login-message').html(_t('CONNECTED_AS_ADMIN', { user: data.user })).parents('.form-group')
+      .removeClass('has-error')
+      .addClass('has-success')
     $('.login-fields').addClass('hide')
     $('.duplication-fields').removeClass('hide')
+    checkPageExistence(`${shortUrl}/?api/pages/${$('#pageTag').val()}`)
   } else {
-    $('#login-message').html(`<div class="text-danger">
-            ${_t('CONNECTED_BUT_NOT_ADMIN', { user: data.user })}
-          </div>`)
+    $('#login-message').html(_t('CONNECTED_BUT_NOT_ADMIN', { user: data.user })).parents('.form-group')
+      .removeClass('has-success')
+      .addClass('has-error')
+    $('.duplication-fields').addClass('hide')
     $('.login-fields').removeClass('hide')
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  let shortUrl = ''
   $('#urlWiki').on('change', () => {
     $('.login-fields, .duplication-fields').addClass('hide')
     $('#login-message').html('')
@@ -47,6 +76,27 @@ document.addEventListener('DOMContentLoaded', () => {
         $('.login-fields').removeClass('hide')
       }
     })
+  })
+
+  $('[name="duplicate-action"]').on('click', () => {
+    $.ajax({
+      method: 'POST',
+      url: `${shortUrl}/?api/pages/duplicate`,
+      data: $('#form-duplication').serialize()
+    }).done((data) => {
+      // handleLoginResponse(data)
+    }).fail((jqXHR) => {
+      // toastMessage(jqXHR.responseJSON.error, 3000, 'alert alert-danger')
+      // if (jqXHR.status === 401) {
+      //  $('#login-message').html(`<div class="text-danger">${_t('NOT_CONNECTED')}</div>`)
+      //  $('.login-fields').removeClass('hide')
+      // }
+    })
+    return false
+  })
+
+  $('.btn-verify-tag').on('click', () => {
+    checkPageExistence(`${shortUrl}/?api/pages/${$('#pageTag').val()}`)
   })
 
   $('.btn-verify-wiki').on('click', () => {
