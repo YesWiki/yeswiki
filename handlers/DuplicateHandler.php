@@ -5,7 +5,7 @@ use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\ImportFilesManager;
+use YesWiki\Core\Service\DuplicationManager;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\YesWikiHandler;
 
@@ -13,13 +13,13 @@ class DuplicateHandler extends YesWikiHandler
 {
     protected $authController;
     protected $entryController;
-    protected $importManager;
+    protected $duplicationManager;
 
     public function run()
     {
         $this->authController = $this->getService(AuthController::class);
         $this->entryController = $this->getService(EntryController::class);
-        $this->importManager = $this->getService(ImportFilesManager::class);
+        $this->duplicationManager = $this->getService(DuplicationManager::class);
         $output = $title = '';
         if (!$this->wiki->page) {
             $output = $this->render('@templates\alert-message.twig', [
@@ -46,33 +46,8 @@ class DuplicateHandler extends YesWikiHandler
             }
         } elseif (!empty($_POST)) {
             try {
-                $data = $this->importManager->checkPostData($_POST);
-                if (!$this->getService(AclService::class)->hasAccess('write', $_POST['pageTag'])) {
-                    throw new \Exception(_t('LOGIN_NOT_AUTORIZED_EDIT') . ' ' . $data['pageTag']);
-                }
-                switch ($data['type']) {
-
-                    case 'list':
-                        $list = $this->getService(ListManager::class)->getOne($this->wiki->getPageTag());
-                        $this->getService(ListManager::class)->create($data['pageTitle'], $list['label'], $data['pageTag']);
-                        break;
-
-                    case 'entry':
-                        $entry = $this->getService(EntryManager::class)->getOne($this->wiki->getPageTag());
-                        $entry['id_fiche'] = $data['pageTag'];
-                        $entry['bf_titre'] = $data['pageTitle'];
-                        $entry['antispam'] = 1;
-                        $this->getService(EntryManager::class)->create($entry['id_typeannonce'], $entry);
-                        $this->importManager->duplicateFiles($this->wiki->getPageTag(), $data['pageTag']);
-                        break;
-
-                    default:
-                    case 'page':
-                        $this->getService(PageManager::class)->save($data['pageTag'], $this->wiki->page['body']);
-                        $this->importManager->duplicateFiles($this->wiki->getPageTag(), $data['pageTag']);
-                        break;
-                }
-                // TODO: duplicate acls and metadatas
+                $data = $this->duplicationManager->checkPostData($_POST);
+                $this->duplicationManager->duplicateLocally($data);
                 if ($data['duplicate-action'] == 'edit') {
                     $this->wiki->Redirect($this->wiki->href('edit', $data['pageTag']));
                     return;
@@ -104,7 +79,7 @@ class DuplicateHandler extends YesWikiHandler
                 $title = _t('TEMPLATE_DUPLICATE_PAGE') . ' ' . $this->wiki->GetPageTag();
                 $proposedTag = genere_nom_wiki($this->wiki->GetPageTag() . ' ' . _t('DUPLICATE'));
             }
-            $attachments = $this->importManager->findFiles($this->wiki->page['tag']);
+            $attachments = $this->duplicationManager->findFiles($this->wiki->page['tag']);
             $totalSize = 0;
             foreach ($attachments as $a) {
                 $totalSize = $totalSize + $a['size'];
@@ -113,7 +88,7 @@ class DuplicateHandler extends YesWikiHandler
                 'proposedTag' => $proposedTag,
                 'attachments' => $attachments,
                 'pageTitle' => $pageTitle,
-                'totalSize' => $this->importManager->humanFilesize($totalSize),
+                'totalSize' => $this->duplicationManager->humanFilesize($totalSize),
                 'type' => $type,
                 'toExternalWiki' => isset($_GET['toUrl']) && $_GET['toUrl'] == "1"
             ]);
