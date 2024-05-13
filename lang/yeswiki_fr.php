@@ -642,4 +642,8 @@ return [
     'NO_VALID_DATA_TYPE' => 'Pas de type de données valide',
     'EMPTY_PAGE_TAG' => 'L\'identifiant ne peut pas être vide',
     'EMPTY_PAGE_TITLE' => 'Le titre ne peut pas être vide',
+    'TO_ANOTHER_YESWIKI' => 'vers un autre YesWiki',
+    'WIKI_URL' => 'Url du YesWiki de destination',
+    'WIKI_URL_RECENT' => 'Entrez l\'url d\'un YesWiki assez récent (version > 4.5) pour recevoir la duplication',
+    'VERIFY_WIKI' => 'Vérifier cette adresse',
 ];

@@ -94,6 +94,9 @@ class DuplicateHandler extends YesWikiHandler
             ]);
         }
 
+        if (isset($_GET['toUrl']) && $_GET['toUrl'] == "1") {
+            $title .= ' ' . _t('TO_ANOTHER_YESWIKI');
+        }
         // in ajax request for modal, no title
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
             $title = '';
