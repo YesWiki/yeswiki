@@ -1,1 +1,109 @@
 {% extends "@bazar/layouts/field.twig" %}
+
+{% block value_container %}
+  {{ parent() }}
+  {% if recurrenceBaseId is not empty %}
+  <span class="BAZ_texte">
+    <small><i>{{ _t('EVENT_IS_LINKED_TO_RECURRENT',{link:"<a class=\"newtab\" href=\"#{url({tag:recurrenceBaseId})}\">#{recurrenceBaseId}</a>"})|raw }}</i></small>
+  </span>
+  {% elseif data is not empty and data.isRecurrent %}
+    {% set monthT = {
+        jan: 'BAZ_JANVIER',
+        feb: 'BAZ_FEVRIER',
+        mar: 'BAZ_MARS',
+        apr: 'BAZ_AVRIL',
+        may: 'BAZ_MAI',
+        jun: 'BAZ_JUIN',
+        jul: 'BAZ_JUILLET',
+        aug: 'BAZ_AOUT',
+        sep: 'BAZ_SEPTEMBRE',
+        oct: 'BAZ_OCTOBRE',
+        nov: 'BAZ_NOVEMBRE',
+        dec: 'BAZ_DECEMBRE',
+      } %}
+    {% set dayT = {
+        mon: 'BAZ_LUNDI',
+        tue: 'BAZ_MARDI',
+        wed: 'BAZ_MERCREDI',
+        thu: 'BAZ_JEUDI',
+        fri: 'BAZ_VENDREDI',
+        sat: 'BAZ_SAMEDI',
+        sun: 'BAZ_DIMANCHE',
+      } %}
+    {% set inMonthT = {
+        fisrtOfMonth: 'EVENT_FIRST_Y_OF_MONTH',
+        secondOfMonth: 'EVENT_SECOND_Y_OF_MONTH',
+        thirdOfMonth: 'EVENT_THIRD_Y_OF_MONTH',
+        forthOfMonth: 'EVENT_FORTH_Y_OF_MONTH',
+        lastOfMonth: 'EVENT_LAST_Y_OF_MONTH'
+      } %}
+    <span class="BAZ_texte">
+      {# create variables used to translate part of repetition text #}
+      {% set repetitionTextNthOfMonthForYear = _t('EVENT_REPETITION_NTH_OF_MONTH',{
+            nth: data.nth ?? '?',
+            month: _t(monthT[data.month] ?? '???')|lower 
+          })
+        %}
+      {% set repetitionTextInMonthForYear = _t('EVENT_REPETITION_IN_MONTH',{
+          month:_t(monthT[data.month] ?? '???')|lower })
+            ~ _t(inMonthT[data.whenInMonth] ?? '???')|replace({
+              Y:_t(dayT[data.days|first] ?? '??')
+              })|lower
+        %}
+      {% set repetitionTextForYear = _t(
+            data.step == 1 ? 'EVENT_REPETITION_FOR_YEAR' : 'EVENT_REPETITION_FOR_YEARS',
+            {
+              x:data.step ?? '?',
+              monthRepetition: data.whenInMonth == 'nthOfMonth'
+                ? repetitionTextNthOfMonthForYear
+                : repetitionTextInMonthForYear
+            }
+          )
+        %}
+      {% set repetitionTextForMonth = _t('EVENT_REPETITION_FOR_MONTHS',{
+            x:data.step ?? '?',
+            monthRepetition:
+              data.whenInMonth == 'nthOfMonth'
+              ? _t('EVENT_REPETITION_NTH_OF_MONTH_ALONE',{
+                nth: data.nth ?? '?'
+              })
+              : _t(inMonthT[data.whenInMonth] ?? '???')|replace({
+                  Y:_t(dayT[data.days|first] ?? '??')
+                  })|lower
+          })|lower
+        %}
+      {% set repetitionTextForWeeks = _t('EVENT_REPETITION_FOR_WEEKS',{
+                x:data.step ?? '?',
+                days: (data.days is defined and data.days is iterable )
+                ? data.days|map(v=>_t(dayT[v] ?? '??'))|join(',')
+                : ''
+              })|lower
+        %}
+      {% set repetitionTextForDays = _t('EVENT_REPETITION_FOR_DAYS',{
+                x:data.step ?? '?',
+              })|lower
+        %}
+      {# assembly all this variables according to type of repetition #}
+      {% set repetitionText = data.repetition == 'y'
+          ? repetitionTextForYear
+          : (data.repetition == 'm'
+            ? repetitionTextForMonth
+            : ( data.repetition == 'w'
+              ? repetitionTextForWeeks
+              : repetitionTextForDays
+            )
+          ) %}
+      {# use the translation #}
+      <small><i>{{ _t('EVENT_IS_RECURRENT',{
+        repetition: repetitionText,
+        nb: data.nbmax ?? '?'
+      }) }}{% if data.limitdate %}, {{ _t('EVENT_LIMIT_DATE',{date:data.limitdate}) }}{% endif %}
+      {%- if data.except is not empty -%}
+        , {{ _t('EVENT_EXCEPT_LABEL')|lower }} {% for date in data.except -%}
+          {%- if not loop.first %}, {% endif -%}
+          {{ date }}
+        {%- endfor -%}
+      {% endif %}</i></small>
+    </span>
+  {% endif %}
+{% endblock %}

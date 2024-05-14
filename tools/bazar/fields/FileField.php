@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Field;
 use attach;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Bazar\Service\DateService;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Service\EventDispatcher;
@@ -295,7 +296,15 @@ class FileField extends BazarField
             $_POST = [];
             $previousRequest = $_REQUEST;
             $_REQUEST = [];
+
+            // remove current field
             unset($entryFromDb[$this->propertyName]);
+
+            // be careful to recurrence
+            if (isset($entryFromDb['bf_date_fin_evenement_data']) && is_string($entryFromDb['bf_date_fin_evenement_data'])) {
+                unset($entryFromDb['bf_date_fin_evenement_data']); // remove links to parent
+            }
+
             $entryFromDb['antispam'] = 1;
             $entryFromDb['date_maj_fiche'] = date('Y-m-d H:i:s', time());
             $newEntry = $entryManager->update($entryFromDb['id_fiche'], $entryFromDb, false, true);
@@ -303,6 +312,14 @@ class FileField extends BazarField
             $_GET = $previousGet;
             $_POST = $previousPost;
             $_REQUEST = $previousRequest;
+
+            // be careful to recurrence
+
+            if (!empty($newEntry['id_fiche'])
+                && is_string($newEntry['id_fiche'])
+                && isset($newEntry['bf_date_fin_evenement'])) {
+                $this->getService(DateService::class)->followId($newEntry['id_fiche']);
+            }
 
             $errors = $this->services->get(EventDispatcher::class)->yesWikiDispatch('entry.updated', [
                 'id' => $newEntry['id_fiche'],

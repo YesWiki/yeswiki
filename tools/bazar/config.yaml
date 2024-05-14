@@ -133,6 +133,9 @@ services:
 
   YesWiki\Bazar\Service\:
     resource: 'services/*'
+  YesWiki\Bazar\Service\DateService:
+    tags:
+      - { name: yeswiki.event_subscriber }
 
   # Allows to use controllers as services
   YesWiki\Bazar\Controller\:

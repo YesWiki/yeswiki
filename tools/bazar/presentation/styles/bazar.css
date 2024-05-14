@@ -292,16 +292,25 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
 .bazar-date, .bazar-date.form-control {
   width: 133px ;
 }
-.form-group.date .controls {
+.form-group.input-listedatedeb .controls,
+.form-group.input-listedatefin .controls,
+.form-group.input-jour .controls {
   display: flex;
+  flex-wrap: wrap;
+  row-gap: 1rem;
+  column-gap: 1.5rem;
+}
+.form-group.input-listedatedeb .select-time,
+.form-group.input-listedatefin .select-time,
+.form-group.input-jour .select-time {
+  margin-left: 0 !important;
 }
 @media (max-width: 600px) {
-  .form-group.date .controls {
-    flex-wrap: wrap;
-  }
-  .form-group.date .select-time {
+  .form-group.input-listedatedeb .select-time,
+  .form-group.input-listedatefin .select-time,
+  .form-group.input-jour .select-time {
     width: 100%;
-    margin: 1rem 0 0 0;
+    margin: 0 0 0 0;
   }
 }
 .select-hour, .select-minutes {
@@ -560,4 +569,59 @@ input[type="date"]::-webkit-input-placeholder{
   a[role=tab] {
     display:none !important;
   }
+}
+
+/* DateField */
+
+div.form-control.for-selector-is-recurrent {
+  height: auto;
+  max-width: 100%;
+}
+
+div.form-control.for-selector-is-recurrent > .input-prepend.input-group{
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.control-group.input-listedatedeb .specific-for-recurrence,
+.control-group.input-listedatefin .specific-for-recurrence
+.control-group.input-jour .specific-for-recurrence {
+    align-self: flex-start;
+}
+.control-group.input-listedatedeb .specific-for-recurrence span.add-on.input-group-addon,
+.control-group.input-listedatefin .specific-for-recurrence span.add-on.input-group-addon,
+.control-group.input-jour .specific-for-recurrence span.add-on.input-group-addon {
+    width: auto;
+    display: flex;
+}
+
+.input-recur-date .specific-for-recurrence {
+  max-width: 100%;
+}
+
+.input-recur-date.control-group > .controls {
+  column-gap: 1rem;
+  row-gap: 1rem;
+  flex-wrap: wrap;
+}
+.input-recur-date.control-group .for-selector-is-recurrent > .input-group {
+  flex-wrap: wrap;
+}
+.input-recur-date.control-group .for-selector-is-recurrent > .input-group select.form-control {
+  max-width: 80%;
+  width: auto;
+}
+
+.input-recur-date:not(.ready) .specific-for-recurrence,
+.input-recur-date:not(.ready) .event-container-for-datepicker {
+  display: none !important;
+}
+
+.input-recur-date .event-container-for-datepicker{
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.input-recur-date .event-container-for-datepicker .limit-date-hint {
+  max-width: 250px;
 }
