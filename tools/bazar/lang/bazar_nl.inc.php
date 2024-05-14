@@ -1,7 +1,5 @@
 <?php
-
 return [
-
     'BAZ_FORMULAIRE' => 'Formulieren',
     'BAZ_LISTES' => 'Lijsten',
     'BAZ_NOM_LISTE' => 'Naam van de lijst',
@@ -171,7 +169,7 @@ return [
     'BAZ_FICHE' => 'fiche.',
     // 'BAZ_FICHES_CORRESPONDANTES_FILTRES' => 'fiches trouvées',
     // 'BAZ_FICHE_CORRESPONDANT_FILTRES' => 'fiche trouvée',
-    'BAZ_FICHES_CORRESPONDANTES' => ' fiches die overeenstemmen met uw opzoeking ',
+    'BAZ_FICHES_CORRESPONDANTES' => 'fiches die overeenstemmen met uw opzoeking',
     'BAZ_FICHE_CORRESPONDANTE' => 'fiche die overeenstemt met uw opzoeking',
     'BAZ_DESCRIPTION' => 'Beschrijving',
     'BAZ_DU' => 'van',
@@ -224,7 +222,6 @@ return [
     // 'BAZ_UNKNOWN_USER' => 'Utilisateur inconnu',
     // 'BAZ_RADIO_REFRESH' => 'Rafraîchir les informations de la liste',
     // 'BAZ_NOT_CATEGORIZED' => 'Non catégorisé',
-
     //================ Calendrier Bazar =======================================
     'BAZ_AFFICHE_TITRES_COMPLETS' => 'De volledige titels van evenementen weergeven',
     'BAZ_TRONQUER_TITRES' => 'De titels van evenementen inkorten',
@@ -236,7 +233,6 @@ return [
     'BAZ_VENDREDI' => 'Vrijdag',
     'BAZ_SAMEDI' => 'Zaterdag',
     'BAZ_DIMANCHE' => 'Zondag',
-
     'BAZ_LUNDI_COURT' => 'Ma',
     'BAZ_MARDI_COURT' => 'Di',
     'BAZ_MERCREDI_COURT' => 'Woe',
@@ -244,7 +240,6 @@ return [
     'BAZ_VENDREDI_COURT' => 'Vrij',
     'BAZ_SAMEDI_COURT' => 'Za',
     'BAZ_DIMANCHE_COURT' => 'Zo',
-
     'BAZ_JANVIER' => 'Januari',
     'BAZ_FEVRIER' => 'Februari',
     'BAZ_MARS' => 'Maart',
@@ -257,27 +252,21 @@ return [
     'BAZ_OCTOBRE' => 'Oktober',
     'BAZ_NOVEMBRE' => 'November',
     'BAZ_DECEMBRE' => 'December',
-
     'BAZ_TODAY' => 'Vandaag',
     'BAZ_MONTH' => 'Maand',
     'BAZ_WEEK' => 'Week',
     'BAZ_DAY' => 'Dag',
-
     // 'BAZ_ALL_DAY' => 'Toute la journ&eacute;e',
     // 'BAZ_ENTER_HOUR' => 'Entrer l\'heure',
-
     // 'BAZ_RESET_FILTERS' => 'Réinitialiser les filtres',
-
     // controllers/FormController.php
     'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Beperk het aantal kaarten tot één per gebruiker bevatten.',
     'BAZ_MESSAGE_IF_OTHER_ENTRY_EXIST' => 'Mensagem para exibir quando um cartão já existe. Laat leeg om het standaardbericht te behouden.',
     'BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM' => 'U hebt al een kaart ingevoerd voor het formulier "{formName}". Het wordt hieronder weergegeven.',
     'BAZ_USER_SHOULD_BE_CONNECTED_TO_ACCES_THIS_FORM' => 'Het is noodzakelijk om ingelogd te zijn om dit formulier te kunnen invullen.',
-
     // fields/BookmarkletField.php
     // 'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',
     // 'BAZ_BOOKMARKLET_LABEL' => 'Créer une fiche %{form}',
-
     // fields/CommentsField.php
     // 'BAZ_ACTIVATE_COMMENTS' => 'Activer les commentaires sur cette fiche ?',
     // 'BAZ_ACTIVATE_COMMENTS_HINT' => 'Droits mis à jour lors de l\'enregistrement de la fiche',
@@ -286,16 +275,13 @@ return [
     // 'BAZ_COMMENTS_INFO_HUMHUB_EXTERNAL' => 'Les commentaires sont gérés par la plateforme sociale HumHub (YesWiki intégré par Humhub)',
     // 'BAZ_COMMENTS_INFO_UNKNOWN' => 'Les commentaires ne sont pas gérés car le type de réglage des commentaires est inconnu',
     // 'BAZ_COMMENTS_NOT_ACTIVATED' => 'Les commentaires sont gérés par YesWiki mais ceux-ci ne sont pas activés.<br/>Se rendre sur la page GererConfig pour activer les commentaires (paramètre `comments_activated`)',
-
     // fields/FileField.php
     // 'BAZ_FILE_ALREADY_EXISTING' => 'fichier déja existant',
     // 'BAZ_NOT_AUTHORIZED_FILE' => 'fichier non autorise',
     // 'BAZ_FILEFIELD_FILE' => 'Fichier : {filename}',
-
     // fields/ImageField.php
     // 'BAZ_IMAGE_ALREADY_EXISTING' => 'L\'image {fileName} existait d&eacute;ja, elle n\'a pas &eacute;t&eacute; remplac&eacute;e.',
     // 'BAZ_NOT_AUTHORIZED_EXTENSION' => 'Extension non autoris&eacute;.',
-
     //================ Drag & Drop for Checkbox fiche =======================================
     // 'BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM' => '&Eacute;l&eacute;ments disponibles',
     // 'BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO' => 'S&eacute;lectionnez les &eacute;l&eacute;ments de votre liste en cliquant sur ',
@@ -312,7 +298,6 @@ return [
     // 'BAZ_DRAG_n_DROP_CHECKBOX_LIST' => 'liste',
     // 'BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST' => 'Liste vide',
     // 'BAZ_DRAG_n_DROP_CHECKBOX_FILTER_TEXT' => 'Nombre d\'&eacute;l&eacute;ments : ',
-
     // fields/ReactionsField.php
     // 'BAZ_ACTIVATE_REACTIONS' => 'Activer les réactions sur cette fiche ?',
     // 'BAZ_REACTIONS_DEFAULT_BLACK_IDEA' => 'Ca me perturbe',
@@ -324,18 +309,18 @@ return [
     // 'BAZ_SHARE_YOUR_COMMENT' => 'Et n\'hésitez pas à faire un commentaire pour approfondir la réflexion !',
     // 'BAZ_SHARE_YOUR_REACTION' => 'Partagez votre réaction à propos de ce contenu',
 
+    // fields/video.twig
+    // 'VIDEO_LINK_FIELD' => 'Lien vers la vidéo : %{link}',
+
     // fields/WidgetHandler.php
     // 'BAZ_WIDGET_HANDLER_TITLE' => 'Partager les résultats par widget HTML (code embed)',
-
     // libs/bazar.fonct.misc.php
     // 'BAZ_ERROR_IMAGE' => 'Erreur Image :',
-
     // ==== ExternalBazarService ====
     // 'BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_FORM' => 'contenu du formulaire reçu mal formaté.',
     // 'BAZ_EXTERNAL_SERVICE_BAD_URL' => 'url non accessible.',
     // 'BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_ENTRIES' => 'contenu des fiches reçues mal formaté.',
     // 'BAZ_EXTERNAL_SERVICE_QUERIES_NOT_AVAILABLE' => 'Vous utilisez la paramètre \'query\' pour des fiches externes. Il n\'est pas encore fonctionnel.',
-
     // for edit config
     // 'EDIT_CONFIG_HINT_BAZ_MAP_CENTER_LAT' => 'Latitude par défaut des affichages cartographiques',
     // 'EDIT_CONFIG_HINT_BAZ_MAP_CENTER_LON' => 'Longitude par défaut des affichages cartographiques',
@@ -348,7 +333,6 @@ return [
     // 'EDIT_CONFIG_HINT_BAZ_EXTERNAL_SERVICE[CACHE_TIME_TO_REFRESH_FORMS]' => 'Temps (s) entre deux rafraîchissements du cache pour formulaires nécessaires aux requêtes JSON',
     // 'EDIT_CONFIG_HINT_BAZARIGNOREACLS' => 'Permettre la création de fiches même si le wiki est fermé en écriture (true ou false)',
     // 'EDIT_CONFIG_GROUP_BAZAR' => 'Base de données',
-
     // USER FIELD
     // 'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => "L'identifiant \"{currentName}\" existe déjà !\nCochez la case pour confirmer son remplacement par \"{proposedName}\" ou sinon modifiez votre identifiant dans le formulaire ci-dessous.",
     // 'BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL' => 'L\'e-mail fourni est déjà associé à un compte YesWiki ! Veuillez entrer une autre adresse e-mail ou vous connecter à ce compte.',
@@ -357,19 +341,14 @@ return [
     // 'BAZ_USER_FIELD_ALREADY_CONNECTED_AUTOUPDATE' => 'Pour changer l\'adresse e-mail associée à ce compte, tapez-en une différente de "{email}".',
     // 'BAZ_USER_FIELD_FORCE_SAVE_ENTRY' => 'En tant qu\'admin, forcer la création de la fiche pour l\'e-mail donné (et ne créer un compte que s\'il n\'existe pas déjà)',
     // 'BAZ_USER_FIELD_LABEL' => 'Utilisateur',
-
     // presentation/templates/annuaire_alphabetique.tpl.html
     // 'BAZ_MEMBERS' => 'membres',
-
     // presentation/templates/blog.tpl.html
     // 'BAZ_MORE_INFOS' => 'Plus d\'infos',
-
     // presentation/templates/liste_liens_date.tpl.html
     // 'BAZ_NO_ENTRY_FOR_THIS_PERIOD' => 'Il n\'y a pas de fiche pour cette période.',
-
     // templates/entries/index-dynamic-templates/card.twig
     // 'BAZ_CARD_NBCOL_TOO_HIGH' => 'Le paramètre `nbcol` ne peut pas être pris en compte avec `style="horizontal"` et reste limité à 2 !',
-
     // templates/tableau.twig
     // 'SUM' => 'Somme',
     'URL' => 'Url',

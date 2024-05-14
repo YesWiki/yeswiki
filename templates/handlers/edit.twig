@@ -25,7 +25,7 @@
     {{ renderAction('aceditor', { saveButton: true, name: 'body', value: body })|raw }}
   {% endif %}
 
-  {% if request.newpage is same as '1' and request.theme is not empty %}
+  {% if request.get.newpage is same as '1' and request.get.theme is not empty %}
     <input type="hidden" name="newpage" value="1"/>
     {% for key in [
           'theme',

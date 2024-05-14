@@ -296,6 +296,7 @@ return [
     'BAZ_FILE_ALREADY_EXISTING' => 'fichier déja existant',
     'BAZ_NOT_AUTHORIZED_FILE' => 'fichier non autorise',
     'BAZ_FILEFIELD_FILE' => 'Fichier : {filename}',
+    'BAZ_FILEFIELD_TOO_LARGE_FILE' => 'Le fichier est trop volumineux, maximum %{fileMaxSize} octets',
 
     // fields/ImageField.php
     'BAZ_IMAGE_ALREADY_EXISTING' => 'L\'image {fileName} existait d&eacute;ja, elle n\'a pas &eacute;t&eacute; remplac&eacute;e.',
@@ -328,6 +329,9 @@ return [
     'BAZ_REACTIONS_DEFAULT_NOT_UNDERSTOOD' => 'J\'ai pas compris',
     'BAZ_SHARE_YOUR_COMMENT' => 'Et n\'hésitez pas à faire un commentaire pour approfondir la réflexion !',
     'BAZ_SHARE_YOUR_REACTION' => 'Partagez votre réaction à propos de ce contenu',
+
+    // fields/video.twig
+    'VIDEO_LINK_FIELD' => 'Lien vers la vidéo : %{link}',
 
     // fields/WidgetHandler.php
     'BAZ_WIDGET_HANDLER_TITLE' => 'Partager les résultats par widget HTML (code embed)',

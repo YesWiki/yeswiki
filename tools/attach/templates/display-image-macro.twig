@@ -2,9 +2,9 @@
   {# use $_GET['refresh'] via 'request' #}
   {% set shortImageName = (shortImageName is empty) ? imageFullPath|split('/')|slice(-1,1)|first : shortImageName %}
   {% if thumbnailHeight is not empty and thumbnailWidth is not empty %}
-    {% set thumbnailLink = urlImage({fileName:imageFullPath,width:thumbnailWidth,height:thumbnailHeight,mode:mode ?? "fit",refresh: request.refresh ?? false}) %}
+    {% set thumbnailLink = urlImage({fileName:imageFullPath,width:thumbnailWidth,height:thumbnailHeight,mode:mode ?? "fit",refresh: request.get.refresh ?? false}) %}
     {% if imageHeight is not empty and imageWidth is not empty %}
-      {% set resizedImageLink = urlImage({fileName:imageFullPath,width:imageWidth,height:imageHeight,mode:mode ?? "fit",refresh: request.refresh ?? false}) %}
+      {% set resizedImageLink = urlImage({fileName:imageFullPath,width:imageWidth,height:imageHeight,mode:mode ?? "fit",refresh: request.get.refresh ?? false}) %}
       <a data-id="{{ fieldName }}" 
         class="modalbox {{class}}" 
         href="{{ resizedImageLink }}" 
@@ -23,7 +23,7 @@
       </a>
     {% endif %}
   {% elseif imageHeight is not empty and imageWidth is not empty %}
-    {% set resizedImageLink = urlImage({fileName:imageFullPath,width:imageWidth,height:imageHeight,mode:mode ?? "fit",refresh: request.refresh ?? false}) %}
+    {% set resizedImageLink = urlImage({fileName:imageFullPath,width:imageWidth,height:imageHeight,mode:mode ?? "fit",refresh: request.get.refresh ?? false}) %}
     <img loading="lazy" src="{{ resizedImageLink }}"
       class="img-responsive {{class}}"
       alt="{{ shortImageName|e('html_attr') }}" />

@@ -4,7 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Security\Controller\SecurityController;
 
 /**
@@ -17,12 +17,14 @@ class ImageField extends FileField
     protected $imageHeight;
     protected $imageWidth;
     protected $imageClass;
+    protected $imageDefault;
 
     protected const FIELD_THUMBNAIL_HEIGHT = 3;
     protected const FIELD_THUMBNAIL_WIDTH = 4;
     protected const FIELD_IMAGE_HEIGHT = 5;
     protected const FIELD_IMAGE_WIDTH = 6;
     protected const FIELD_IMAGE_CLASS = 7;
+    protected const FIELD_IMAGE_DEFAULT = 13;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -34,6 +36,7 @@ class ImageField extends FileField
         $this->imageHeight = $values[self::FIELD_IMAGE_HEIGHT];
         $this->imageWidth = $values[self::FIELD_IMAGE_WIDTH];
         $this->imageClass = $values[self::FIELD_IMAGE_CLASS];
+        $this->imageDefault = $values[self::FIELD_IMAGE_DEFAULT];
 
         // We can have no default for images
         $this->default = null;
@@ -43,15 +46,9 @@ class ImageField extends FileField
     {
         $wiki = $this->getWiki();
         $value = $this->getValue($entry);
-        $maxSize = $wiki->config['BAZ_TAILLE_MAX_FICHIER'] ;
-
         // javascript pour gerer la previsualisation
-
         // si une taille maximale est indiquée, on teste
-        if (!empty($maxSize)) {
-            $wiki->addJavascript("var imageMaxSize = {$maxSize};");
-        }
-        $wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/image-field.js');
+        $wiki->services->get(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/image-field.js');
 
         if (isset($value) && $value != '') {
             if (isset($_GET['suppr_image']) && $_GET['suppr_image'] === $value) {
@@ -97,7 +94,7 @@ class ImageField extends FileField
                 ]);
             }
         }
-        return ($alertMessage ?? '') .$this->render('@bazar/inputs/image.twig');
+        return ($alertMessage ?? '') .$this->render('@bazar/inputs/image.twig', ['maxSize' => $this->maxSize]);
     }
 
     public function formatValuesBeforeSave($entry)
@@ -113,6 +110,10 @@ class ImageField extends FileField
 
             if ($this->isImage($rawFileName) && !$this->getService(SecurityController::class)->isWikiHibernated()) {
                 if (!file_exists($filePath)) {
+                    if ($_FILES[$this->propertyName]['size'] > $this->maxSize) {
+                        throw new \Exception(_t('BAZ_FILEFIELD_TOO_LARGE_FILE', ['fileMaxSize' => $this->maxSize]));
+                    }
+
                     move_uploaded_file($_FILES[$this->propertyName]['tmp_name'], $filePath);
                     chmod($filePath, 0755);
 
@@ -164,7 +165,12 @@ class ImageField extends FileField
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
-
+        if (!isset($value) || $value == '') {
+            $default_image_filename = "defaultimage{$entry['id_typeannonce']}_{$this->name}.jpg";
+            if (file_exists($this->getBasePath(). $default_image_filename)) {
+                $value=$default_image_filename;
+            }
+        }        
         if (isset($value) && $value != '' && file_exists($this->getBasePath(). $value)) {
             return $this->getWiki()->render('@attach/display-image.twig', [
                 'baseUrl' => $this->getWiki()->GetBaseUrl().'/',

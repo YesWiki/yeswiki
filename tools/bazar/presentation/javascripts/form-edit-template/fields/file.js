@@ -21,7 +21,7 @@ export default {
   },
   advancedAttributes: ['read', 'write', 'semantic', 'maxsize','authorizedExts'],
   // disabledAttributes: [],
-  attributesMapping: { ...defaultMapping, ...{ 3: 'maxsize', 6: 'readlabel', 7: 'authorizedExts' } },
+  attributesMapping: { ...defaultMapping, ...{ 14: 'maxsize', 6: 'readlabel', 7: 'authorizedExts' } },
   // renderInput(field) {
   //   return {
   //     field: `<input type="file"/>`,

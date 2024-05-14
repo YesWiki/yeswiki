@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Service;
 
+use Attach;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Wiki;
 use YesWiki\Bazar\Field\BazarField;
@@ -41,6 +42,37 @@ class BazarListService
             return $this->formManager->getAll();
         }
     }
+    
+    private function replaceDefaultImage($options, $forms, $entries): array {
+        if (! class_exists('attach')) {
+            include ('tools/attach/libs/attach.lib.php');
+        }
+        $attach = new attach($this->wiki);
+        $basePath = $attach->GetUploadPath();
+        $basePath = $basePath . (substr($basePath, - 1) != "/" ? "/" : "");
+        
+        foreach($options['idtypeannonce'] as $idtypeannonce) {
+            $template = $forms[(int)$idtypeannonce]['template'];
+            $image_names = array_map(function($item) {return $item[1];},
+            array_filter($template,
+                function($item) { return $item[0] == 'image'; }
+                )
+            );
+            foreach($image_names as $image_name) {
+                $default_image_filename = "defaultimage{$idtypeannonce}_{$image_name}.jpg";
+                if (file_exists($basePath.$default_image_filename)) {
+                    $image_key = 'image'.$image_name;
+                    foreach($entries as $key=>$entry) {
+                        if (array_key_exists($image_key, $entry) && ($entry[$image_key] == null)) {
+                            $entry[$image_key] = $default_image_filename;
+                        }
+                        $entries[$key] = $entry;
+                    }
+                }
+            }
+        }
+        return $entries;
+    }
 
     public function getEntries($options, $forms = null): array
     {
@@ -71,6 +103,7 @@ class BazarListService
                 true // use Guard
             );
         }
+        $entries = $this->replaceDefaultImage($options, $forms, $entries);
 
         // filter entries on datefilter parameter
         if (!empty($options['datefilter'])) {

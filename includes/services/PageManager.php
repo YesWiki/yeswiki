@@ -199,7 +199,7 @@ class PageManager
                 return $pages;
             }
         } else {
-            $limit = (int)$limit;
+            $limit = (int) $limit;
             $limit = ($limit < 1) ? 50 : $limit;
             if ($pages = $this->dbService->loadAll('select id, tag, time, user, owner from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' order by time desc limit $limit")) {
                 //foreach ($pages as $page) {
@@ -220,17 +220,26 @@ class PageManager
         return $pages ;
     }
 
+    /**
+     * get readable page tags
+     * update page's owner to improve performances
+     * @return string[] list of tags readble for current user
+     */
     public function getReadablePageTags(): array
     {
-        $pages = $this->dbService->loadAll(<<<SQL
+        $sqlRequest = <<<SQL
             SELECT tag,owner FROM {$this->dbService->prefixTable('pages')} WHERE LATEST = 'Y' ORDER BY tag
-        SQL);
-        $pages = array_filter($pages, function ($page) {
+        SQL;
+
+
+        // append request to filter on acls during the request
+        if (!$this->wiki->UserIsAdmin()) {
+            $sqlRequest .= $this->aclService->updateRequestWithACL();
+        }
+        $pages = $this->dbService->loadAll($sqlRequest);
+        return array_map(function ($page) {
             // cache page's owner to prevent reload of page from sql or infinite loop in some case
             $this->cacheOwner($page);
-            return $this->aclService->hasAccess('read', $page['tag']);
-        });
-        return array_map(function ($page) {
             return $page['tag'];
         }, $pages);
     }
@@ -281,7 +290,7 @@ class PageManager
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag='{$this->dbService->escape($tag)}' OR comment_on='{$this->dbService->escape($tag)}'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag='{$this->dbService->escape($tag)}' ");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('acls')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
-        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='".TripleStore::TYPE_URI."' and `value`='".EntryManager::TRIPLES_ENTRY_ID."'");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='" . TripleStore::TYPE_URI . "' and `value`='" . EntryManager::TRIPLES_ENTRY_ID . "'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='http://outils-reseaux.org/_vocabulary/metadata'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('referrers')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->tagsManager->deleteAll($tag);
@@ -390,8 +399,8 @@ class PageManager
             } else {
                 $timeQuery = $time ? "time = '{$this->dbService->escape($time)}'" : "latest = 'Y'";
                 $page = $this->dbService->loadSingle(
-                    "SELECT `owner` FROM {$this->dbService->prefixTable('pages')} ".
-                    "WHERE tag = '{$this->dbService->escape($tag)}' AND {$timeQuery} ".
+                    "SELECT `owner` FROM {$this->dbService->prefixTable('pages')} " .
+                    "WHERE tag = '{$this->dbService->escape($tag)}' AND {$timeQuery} " .
                     "LIMIT 1"
                 );
                 $this->ownersCache[$tag] = $page['owner'] ?? null;

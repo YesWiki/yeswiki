@@ -65,6 +65,14 @@ class DbService
         return $this->queryLog;
     }
 
+    public function addQueryLog($query, $time)
+    {
+        $this->queryLog[] = array(
+            'query' => $query,
+            'time' => $time
+        );
+    }
+    
     public function prefixTable($tableName)
     {
         return ' ' . $this->params->get('table_prefix') . $tableName . ' ';
@@ -87,18 +95,15 @@ class DbService
             $start = $this->getMicroTime();
         }
 
-        if (!$result = mysqli_query($this->link, $query)) {
-            throw new Exception('Query failed: ' . $query . ' (' . mysqli_error($this->link) . ')');
+        try {
+            if (!$result = mysqli_query($this->link, $query)) {
+                throw new Exception('Query failed: ' . $query . ' (' . mysqli_error($this->link) . ')');
+            }
+        } finally { 
+            if ($this->params->get('debug')) {
+                $this->addQueryLog($query, $this->getMicroTime() - $start);
+            }
         }
-
-        if ($this->params->get('debug')) {
-            $time = $this->getMicroTime() - $start;
-            $this->queryLog[] = array(
-                'query' => $query,
-                'time' => $time
-            );
-        }
-
         return $result;
     }
 

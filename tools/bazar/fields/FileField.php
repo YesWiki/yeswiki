@@ -9,6 +9,7 @@ use YesWiki\Bazar\Service\DateService;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Service\EventDispatcher;
+use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Security\Controller\SecurityController;
 
 /**
@@ -17,10 +18,12 @@ use YesWiki\Security\Controller\SecurityController;
 class FileField extends BazarField
 {
     protected $readLabel;
+    protected const FIELD_MAX_SIZE = 14;
     protected const FIELD_READ_LABEL = 6;
     protected const FIELD_AUTHORIZED_EXTS_LABEL = 7;
 
     protected $attach;
+    protected $maxSize;
     protected $authorizedExts;
 
     public function __construct(array $values, ContainerInterface $services)
@@ -38,13 +41,24 @@ class FileField extends BazarField
         $this->authorizedExts = array_filter($exts, function ($ext) {
             return preg_match('/^\.[a-z0-9]{1,4}+$/', $ext);
         });
+        $maxFieldSize = $values[self::FIELD_MAX_SIZE] ?
+            $this->getWiki()->parse_size($values[self::FIELD_MAX_SIZE]) :
+            0;
+
+        // take the min size limit, excluding 0 values that mean no limit
+        $this->maxSize = min(array_filter(
+            [
+            $maxFieldSize,
+            $this->getService(ParameterBagInterface::class)->get('max-upload-size')]
+        ));
     }
 
     protected function renderInput($entry)
     {
+        $wiki = $this->getWiki();
         $value = $this->getValue($entry);
-
         $deletedFile = false;
+        $wiki->services->get(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/file-field.js');
 
         if (!empty($value)) {
             if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {
@@ -63,10 +77,11 @@ class FileField extends BazarField
                 }
             }
         }
-
         return ($alertMessage ?? '') . $this->render('@bazar/inputs/file.twig', (
             empty($value) ||  !file_exists($this->getBasePath().  $value) || $deletedFile
-            ? []
+            ? [
+                'maxSize' => $this->maxSize
+            ]
             : [
                 'value' => $value,
                 'shortFileName' => $this->getShortFileName($value),
@@ -94,6 +109,9 @@ class FileField extends BazarField
             $extension = preg_replace("/_$/", "", $extension);
             if ($extension != '' && in_array($extension, array_keys($params->get('authorized-extensions')))) {
                 if (!file_exists($filePath)) {
+                    if ($_FILES[$this->propertyName]['size'] > $this->maxSize) {
+                        throw new \Exception(_t('BAZ_FILEFIELD_TOO_LARGE_FILE', ['fileMaxSize' => $this->maxSize]));
+                    }
                     move_uploaded_file($_FILES[$this->propertyName]['tmp_name'], $filePath);
                     chmod($filePath, 0755);
                 } else {

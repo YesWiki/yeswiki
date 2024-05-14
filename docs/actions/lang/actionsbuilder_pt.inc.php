@@ -249,6 +249,7 @@ return [
     "AB_attach_video_label" => "Vídeo incorporado",
     "AB_attach_video_description" => "Integração de um vídeo do youtube, vimeo ou peertube.",
     // "AB_attach_video_hint" => "L'identifiant de la vidéo correspond aux chiffres ou lettres à la fin de son URL",
+    // "AB_attach_video_url_hint" => "Remplace serveur et id",
     "AB_attach_video_serveur_label" => "Servidor do vídeo",
     "AB_attach_video_id_label" => "Identificador do vídeo",
     "AB_attach_video_peertubeinstance_label" => "Instância do servidor PeerTube",
