@@ -70,7 +70,7 @@ class AclService
             $this->cache[$tag] = array();
         }
 
-        $res = $this->dbService->loadAll('SELECT * FROM'.$this->dbService->prefixTable('acls').'WHERE page_tag = "'.$this->dbService->escape($tag).'"');
+        $res = $this->dbService->loadAll('SELECT * FROM' . $this->dbService->prefixTable('acls') . 'WHERE page_tag = "' . $this->dbService->escape($tag) . '"');
 
         foreach ($res as $acl) {
             $this->cache[$tag][$acl['privilege']] = $acl;
@@ -101,7 +101,7 @@ class AclService
         $acl = $this->load($tag, $privilege, false);
 
         if ($acl && $appendAcl) {
-            $list = $acl['list']."\n".$list ;
+            $list = $acl['list'] . "\n" . $list ;
         }
 
         if ($acl) {
@@ -134,13 +134,13 @@ class AclService
 
         // Add '"' at begin and end of each escaped privileges elements.
         for ($i = 0; $i < count($privileges); $i++) {
-            $privileges[$i] = '"'.$this->dbService->escape($privileges[$i]) .'"';
+            $privileges[$i] = '"' . $this->dbService->escape($privileges[$i]) . '"';
         }
 
         // Construct a CSV string with privileges elements
         $privileges = implode(',', $privileges);
 
-        $this->dbService->query('DELETE FROM'.$this->dbService->prefixTable('acls').' WHERE page_tag = "'.$this->dbService->escape($tag).'" AND privilege IN ('.$privileges.')');
+        $this->dbService->query('DELETE FROM' . $this->dbService->prefixTable('acls') . ' WHERE page_tag = "' . $this->dbService->escape($tag) . '" AND privilege IN (' . $privileges . ')');
 
         if (isset($this->cache[$tag])) {
             unset($this->cache[$tag]);
@@ -192,7 +192,7 @@ class AclService
         // now check the acls
         $access = $this->check($acl['list'], $user);
 
-        return $access ;
+        return $access;
     }
 
     /**
@@ -274,11 +274,17 @@ class AclService
                         // paranoiac: avoid line = '@'
                         if ($gname) {
                             if (in_array($gname, $formerGroups)) {
-                                $this->wiki->setMessage('Error group '.$gname.' inside same groups, inception was a bad movie');
+                                $this->wiki->setMessage('Error group ' . $gname . ' inside same groups, inception was a bad movie');
                                 $result = false;
                             } else {
-                                $formerGroups[] = $gname;
-                                if (!empty($username) && $this->userManager->isInGroup($gname, $username, false/* we have allready checked if user was an admin */, $formerGroups)) {
+                                if (!empty($username)
+                                && $this->userManager->isInGroup(
+                                    $gname,
+                                    $username,
+                                    false/* we have allready checked if user was an admin */,
+                                    array_merge($formerGroups, [$gname]) // does not change $formerGroups param
+                                )
+                                ) {
                                     $result = $std_response ;
                                 } else {
                                     $result = ! $std_response ;
@@ -320,7 +326,7 @@ class AclService
             $groups = $this->wiki->GetGroupsList();
             foreach ($groups as $group) {
                 if (!empty($userName) && $this->userManager->isInGroup($group, $userName, true)) {
-                    $neededACL[] = '@'.$group;
+                    $neededACL[] = '@' . $group;
                 }
             }
         }
@@ -331,25 +337,25 @@ class AclService
         if ($this->check($this->params->has('default_read_acl') ? $this->params->get('default_read_acl') : '*')) {
             // current user can display pages without read acl
             $newRequestStart .= '(';
-            $newRequestEnd = ')'.$newRequestEnd;
+            $newRequestEnd = ')' . $newRequestEnd;
 
             $newRequestStart .= 'tag NOT IN (SELECT DISTINCT page_tag FROM ' . $this->dbService->prefixTable('acls') .
             'WHERE privilege="read")';
 
             $newRequestStart .= ' OR (';
-            $newRequestEnd = ')'.$newRequestEnd;
+            $newRequestEnd = ')' . $newRequestEnd;
         }
         // construct new request when acl
         $newRequestStart .= 'tag in (SELECT DISTINCT page_tag FROM ' . $this->dbService->prefixTable('acls') .
             'WHERE privilege="read"';
-        $newRequestEnd = ')'.$newRequestEnd;
+        $newRequestEnd = ')' . $newRequestEnd;
 
         // needed ACL
         if (count($neededACL) > 0) {
             $newRequestStart .= ' AND (';
             if (!empty($user)) {
                 $newRequestStart .= '(';
-                $newRequestEnd = ')'.$newRequestEnd;
+                $newRequestEnd = ')' . $newRequestEnd;
             }
 
             $addOr = false;
@@ -359,13 +365,13 @@ class AclService
                 } else {
                     $addOr = true;
                 }
-                $newRequestStart .= ' list LIKE "%'.$acl.'%"';
+                $newRequestStart .= ' list LIKE "%' . $acl . '%"';
             }
             $newRequestStart .= ')';
             // not authorized ACL
             foreach ($neededACL as $acl) {
                 $newRequestStart .= ' AND ';
-                $newRequestStart .= ' list NOT LIKE "%!'.$acl.'%"';
+                $newRequestStart .= ' list NOT LIKE "%!' . $acl . '%"';
             }
 
             // add detection of '%'
@@ -377,7 +383,7 @@ class AclService
             }
         }
 
-        $request = $newRequestStart.$newRequestEnd;
+        $request = $newRequestStart . $newRequestEnd;
 
         // return request to append
         return $request;
