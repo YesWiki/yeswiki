@@ -277,8 +277,14 @@ class AclService
                                 $this->wiki->setMessage('Error group ' . $gname . ' inside same groups, inception was a bad movie');
                                 $result = false;
                             } else {
-                                $formerGroups[] = $gname;
-                                if (!empty($username) && $this->userManager->isInGroup($gname, $username, false/* we have allready checked if user was an admin */, $formerGroups)) {
+                                if (!empty($username)
+                                && $this->userManager->isInGroup(
+                                    $gname,
+                                    $username,
+                                    false/* we have allready checked if user was an admin */,
+                                    array_merge($formerGroups, [$gname]) // does not change $formerGroups param
+                                )
+                                ) {
                                     $result = $std_response ;
                                 } else {
                                     $result = ! $std_response ;
