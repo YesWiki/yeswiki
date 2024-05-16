@@ -415,7 +415,10 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                     }
                     // markdown images compatibility
                     elseif (preg_match('/^\!\[([^\]]*)\]\(([^\) ]+)(?: "(.*)")?\)$/sm', $thing, $matches)) {
-                        return "<img loading=\"lazy\" class=\"img-responsive\" src=\"{$matches[2]}\" alt=\"{$matches[1]}\"" . (!empty($matches[3]) ? ' title="' . htmlspecialchars($matches[3]) . '"' : '') . '/>';
+                        $src = $matches[2];
+                        $alt = htmlspecialchars($matches[1]);
+                        $title = htmlspecialchars($matches[3]);
+                        return '<img loading="lazy" class="img-responsive" src="' . $src . '" alt="' . $alt . '" ' . (empty($title) ? '' : 'title="' . $title . '"') . ' />';
                     }
                     // if we reach this point, it must have been an accident.
                     return htmlspecialchars($thing, ENT_COMPAT, YW_CHARSET);

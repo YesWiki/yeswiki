@@ -52,7 +52,7 @@ if (!function_exists('date_compare')) {
         <?php if (!empty($fiche['imagebf_image'])) : ?>
           <img loading="lazy" class="img-responsive" alt="" src="<?php echo redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_'.$imgwidth.'x'.$imgheight.'_'.$fiche['imagebf_image'], $imgwidth, $imgheight, 'crop'); ?>">
         <?php else : ?>
-          <img loading="lazy" class="trombi-image img-placeholder"
+          <img loading="lazy" alt="" class="trombi-image img-placeholder"
                src="tools/bazar/libs/vendor/placeholder.php?size=300x300&amp;bg=efefef&amp;text=">
           <i class="trombi-image icon-placeholder fa fa-calendar"></i>
         <?php endif; ?>

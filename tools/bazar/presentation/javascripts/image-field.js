@@ -60,7 +60,7 @@ function handleFileSelect(evt) {
           css = ''
           // Render thumbnail.
           const span = document.createElement('span')
-          span.innerHTML = `<img class="img-responsive" style="${css}" src="${e.target.result}" title="${escape(theFile.name)}"/>`
+          span.innerHTML = `<img class="img-responsive" style="${css}" src="${e.target.result}" alt="${escape(theFile.name)}" title="${escape(theFile.name)}"/>`
           document.getElementById(`img-${id}`).innerHTML = span.innerHTML
         })
       }
