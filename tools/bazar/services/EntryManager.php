@@ -9,9 +9,11 @@ use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\TitleField;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\CommentService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\ReactionManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Security\Controller\SecurityController;
@@ -99,8 +101,20 @@ class EntryManager
     }
 
     /**
-     * Get one specified fiche.
+     * return comments, reactions and metadatas for given entry tag
      *
+     */
+    public function getExtraFields($tag): array
+    {
+        $extraFields = [];
+        $extraFields['reactions'] = $this->wiki->services->get(ReactionManager::class)->getReactions($tag);
+        $extraFields['comments'] = $this->wiki->services->get(CommentService::class)->loadComments($tag);
+        $extraFields['triples'] = $this->wiki->services->get(TripleStore::class)->getMatching($tag, null, null, '=');
+        return $extraFields;
+    }
+
+    /**
+     * Get one specified fiche
      * @param $tag
      * @param bool        $semantic
      * @param string      $time                   pour consulter une fiche dans l'historique

@@ -159,7 +159,6 @@ class ApiController extends YesWikiController
                 'ldp:contains' => array_map(function ($entry) use ($form) {
                     $resource = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry, true);
                     unset($resource['@context']);
-
                     return $resource;
                 }, array_values($entries)),
             ],
@@ -314,10 +313,11 @@ class ApiController extends YesWikiController
             foreach ($fieldList as $field) {
                 $result[] = $entry[$field] ?? null;
             }
-
+            if ($_GET['extrafields'] == true) {
+                $result['extrafields'] =  $this->getService(EntryManager::class)->getExtraFields($entry['id_fiche']);
+            }
             return $result;
         }, $entries);
-
         $usedForms = array_filter($forms, function ($form) use ($formIds) {
             return in_array($form['bn_id_nature'], $formIds);
         });
