@@ -29138,6 +29138,7 @@ class PDFImage {
     localColorSpaceCache
   }) {
     this.image = image;
+    let jpxDecode = false;
     const dict = image.dict;
     const filter = dict.get("F", "Filter");
     let filterName;
@@ -32998,30 +32999,6 @@ class PartialEvaluator {
     }
     const fontMatrix = lookupMatrix(dict.getArray("FontMatrix"), FONT_IDENTITY_MATRIX);
     const bbox = lookupNormalRect(descriptor.getArray("FontBBox") || dict.getArray("FontBBox"), undefined);
-    let ascent = descriptor.get("Ascent");
-    if (typeof ascent !== "number") {
-      ascent = undefined;
-    }
-    let descent = descriptor.get("Descent");
-    if (typeof descent !== "number") {
-      descent = undefined;
-    }
-    let xHeight = descriptor.get("XHeight");
-    if (typeof xHeight !== "number") {
-      xHeight = 0;
-    }
-    let capHeight = descriptor.get("CapHeight");
-    if (typeof capHeight !== "number") {
-      capHeight = 0;
-    }
-    let flags = descriptor.get("Flags");
-    if (!Number.isInteger(flags)) {
-      flags = 0;
-    }
-    let italicAngle = descriptor.get("ItalicAngle");
-    if (typeof italicAngle !== "number") {
-      italicAngle = 0;
-    }
     const properties = {
       type,
       name: fontName.name,
@@ -36501,12 +36478,6 @@ async function getXRefTable(xrefInfo, baseOffset, newRefs, newXref, buffer) {
       buffer.push(`${indexes[indexesPosition]} ${indexes[indexesPosition + 1]}\n`);
       indexesPosition += 2;
     }
-    if (data !== null) {
-      buffer.push(`${baseOffset.toString().padStart(10, "0")} ${Math.min(ref.gen, 0xffff).toString().padStart(5, "0")} n\r\n`);
-      baseOffset += data.length;
-    } else {
-      buffer.push(`0000000000 ${Math.min(ref.gen + 1, 0xffff).toString().padStart(5, "0")} f\r\n`);
-    }
   }
   computeIDs(baseOffset, xrefInfo, newXref);
   buffer.push("trailer\n");
@@ -36535,6 +36506,7 @@ async function getXRefStreamTable(xrefInfo, baseOffset, newRefs, newXref, buffer
     data
   } of newRefs) {
     let gen;
+=======
     maxOffset = Math.max(maxOffset, baseOffset);
     if (data !== null) {
       gen = Math.min(ref.gen, 0xffff);
@@ -56421,4 +56393,3 @@ const pdfjsBuild = "3a21f03b0";
 var __webpack_exports__WorkerMessageHandler = __webpack_exports__.WorkerMessageHandler;
 export { __webpack_exports__WorkerMessageHandler as WorkerMessageHandler };
 
-//# sourceMappingURL=pdf.worker.mjs.map
