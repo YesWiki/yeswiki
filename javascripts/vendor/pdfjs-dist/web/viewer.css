@@ -1156,6 +1156,31 @@
   white-space:nowrap;
   font-size:0;
 }
+.visuallyHidden{
+  position:absolute;
+  top:0;
+  left:0;
+  border:0;
+  margin:0;
+  padding:0;
+  width:0;
+  height:0;
+  overflow:hidden;
+  white-space:nowrap;
+  font-size:0;
+}
+
+.textLayer.highlighting{
+  cursor:var(--editorFreeHighlight-editing-cursor);
+}
+
+.textLayer.highlighting:not(.free) span{
+    cursor:var(--editorHighlight-editing-cursor);
+  }
+
+.textLayer.highlighting.free span{
+    cursor:var(--editorFreeHighlight-editing-cursor);
+  }
 
 .textLayer.highlighting{
   cursor:var(--editorFreeHighlight-editing-cursor);

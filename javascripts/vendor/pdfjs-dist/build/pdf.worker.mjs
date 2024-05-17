@@ -30024,7 +30024,15 @@ class PartialEvaluator {
       return;
     }
     const SMALL_IMAGE_DIMENSIONS = 200;
+<<<<<<< HEAD
     if (isInline && w + h < SMALL_IMAGE_DIMENSIONS && !dict.has("SMask") && !dict.has("Mask")) {
+=======
+<<<<<<< HEAD
+    if (isInline && !dict.has("SMask") && !dict.has("Mask") && w + h < SMALL_IMAGE_DIMENSIONS) {
+=======
+    if (isInline && w + h < SMALL_IMAGE_DIMENSIONS && !dict.has("SMask") && !dict.has("Mask")) {
+>>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
+>>>>>>> 310af890 (chore(deps): composer update with new pdf js)
       try {
         const imageObj = new PDFImage({
           xref: this.xref,
@@ -32641,6 +32649,11 @@ class PartialEvaluator {
         systemFontInfo = getFontSubstitution(this.systemFontCache, this.idFactory, this.options.standardFontDataUrl, fontName.name, standardFontName, type);
       }
     }
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 310af890 (chore(deps): composer update with new pdf js)
     let fontMatrix = dict.getArray("FontMatrix");
     if (!isNumberArray(fontMatrix, 6)) {
       fontMatrix = FONT_IDENTITY_MATRIX;
@@ -32673,6 +32686,10 @@ class PartialEvaluator {
     if (typeof italicAngle !== "number") {
       italicAngle = 0;
     }
+<<<<<<< HEAD
+=======
+>>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
+>>>>>>> 310af890 (chore(deps): composer update with new pdf js)
     const properties = {
       type,
       name: fontName.name,
@@ -36123,12 +36140,23 @@ async function getXRefTable(xrefInfo, baseOffset, newRefs, newXref, buffer) {
       buffer.push(`${indexes[indexesPosition]} ${indexes[indexesPosition + 1]}\n`);
       indexesPosition += 2;
     }
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    buffer.push(`${baseOffset.toString().padStart(10, "0")} ${Math.min(ref.gen, 0xffff).toString().padStart(5, "0")} n\r\n`);
+    baseOffset += data.length;
+=======
+>>>>>>> 310af890 (chore(deps): composer update with new pdf js)
     if (data !== null) {
       buffer.push(`${baseOffset.toString().padStart(10, "0")} ${Math.min(ref.gen, 0xffff).toString().padStart(5, "0")} n\r\n`);
       baseOffset += data.length;
     } else {
       buffer.push(`0000000000 ${Math.min(ref.gen + 1, 0xffff).toString().padStart(5, "0")} f\r\n`);
     }
+<<<<<<< HEAD
+=======
+>>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
+>>>>>>> 310af890 (chore(deps): composer update with new pdf js)
   }
   computeIDs(baseOffset, xrefInfo, newXref);
   buffer.push("trailer\n");
@@ -36156,6 +36184,26 @@ async function getXRefStreamTable(xrefInfo, baseOffset, newRefs, newXref, buffer
     ref,
     data
   } of newRefs) {
+<<<<<<< HEAD
+    let gen;
+=======
+<<<<<<< HEAD
+>>>>>>> 310af890 (chore(deps): composer update with new pdf js)
+    maxOffset = Math.max(maxOffset, baseOffset);
+    if (data !== null) {
+      gen = Math.min(ref.gen, 0xffff);
+      xrefTableData.push([1, baseOffset, gen]);
+      baseOffset += data.length;
+    } else {
+      gen = Math.min(ref.gen + 1, 0xffff);
+      xrefTableData.push([0, 0, gen]);
+    }
+    maxGen = Math.max(maxGen, gen);
+<<<<<<< HEAD
+=======
+    xrefTableData.push([1, baseOffset, gen]);
+    baseOffset += data.length;
+=======
     let gen;
     maxOffset = Math.max(maxOffset, baseOffset);
     if (data !== null) {
@@ -36167,6 +36215,8 @@ async function getXRefStreamTable(xrefInfo, baseOffset, newRefs, newXref, buffer
       xrefTableData.push([0, 0, gen]);
     }
     maxGen = Math.max(maxGen, gen);
+>>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
+>>>>>>> 310af890 (chore(deps): composer update with new pdf js)
   }
   newXref.set("Index", getIndexes(newRefs));
   const offsetSize = getSizeInBytes(maxOffset);
@@ -36250,8 +36300,17 @@ async function incrementalUpdate({
       xref
     });
   }
+<<<<<<< HEAD
   const buffer = [];
   let baseOffset = originalData.length;
+=======
+<<<<<<< HEAD
+  let buffer, baseOffset;
+=======
+  const buffer = [];
+  let baseOffset = originalData.length;
+>>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
+>>>>>>> 310af890 (chore(deps): composer update with new pdf js)
   const lastByte = originalData.at(-1);
   if (lastByte !== 0x0a && lastByte !== 0x0d) {
     buffer.push("\n");
@@ -36262,9 +36321,19 @@ async function incrementalUpdate({
   for (const {
     data
   } of newRefs) {
+<<<<<<< HEAD
     if (data !== null) {
       buffer.push(data);
     }
+=======
+<<<<<<< HEAD
+    buffer.push(data);
+=======
+    if (data !== null) {
+      buffer.push(data);
+    }
+>>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
+>>>>>>> 310af890 (chore(deps): composer update with new pdf js)
   }
   await (useXrefStream ? getXRefStreamTable(xrefInfo, baseOffset, newRefs, newXref, buffer) : getXRefTable(xrefInfo, baseOffset, newRefs, newXref, buffer));
   const totalLength = buffer.reduce((a, str) => a + str.length, originalData.length);
@@ -55472,7 +55541,15 @@ class WorkerMessageHandler {
       docId,
       apiVersion
     } = docParams;
+<<<<<<< HEAD
     const workerVersion = "4.2.67";
+=======
+<<<<<<< HEAD
+    const workerVersion = "4.1.392";
+=======
+    const workerVersion = "4.2.67";
+>>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
+>>>>>>> 310af890 (chore(deps): composer update with new pdf js)
     if (apiVersion !== workerVersion) {
       throw new Error(`The API version "${apiVersion}" does not match ` + `the Worker version "${workerVersion}".`);
     }
@@ -56042,8 +56119,18 @@ if (typeof window === "undefined" && !isNodeJS && typeof self !== "undefined" &&
 
 ;// CONCATENATED MODULE: ./src/pdf.worker.js
 
+<<<<<<< HEAD
 const pdfjsVersion = "4.2.67";
 const pdfjsBuild = "49b388101";
+=======
+<<<<<<< HEAD
+const pdfjsVersion = "4.1.392";
+const pdfjsBuild = "fcb76a78d";
+=======
+const pdfjsVersion = "4.2.67";
+const pdfjsBuild = "49b388101";
+>>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
+>>>>>>> 310af890 (chore(deps): composer update with new pdf js)
 
 var __webpack_exports__WorkerMessageHandler = __webpack_exports__.WorkerMessageHandler;
 export { __webpack_exports__WorkerMessageHandler as WorkerMessageHandler };
