@@ -34,7 +34,7 @@ class BazarListService
         // External mode activated ?
         if (($options['externalModeActivated'] ?? false) === true) {
             return $this->externalBazarService
-                        ->getFormsForBazarListe($options['externalIds'], $options['refresh']);
+                ->getFormsForBazarListe($options['externalIds'], $options['refresh']);
         } else {
             return $this->formManager->getAll();
         }
@@ -55,7 +55,9 @@ class BazarListService
                 function ($item) {return $item[1]; },
                 array_filter(
                     $template,
-                    function ($item) { return $item[0] == 'image'; }
+                    function ($item) {
+                        return $item[0] == 'image';
+                    }
                 )
             );
             foreach ($image_names as $image_name) {
@@ -123,6 +125,12 @@ class BazarListService
             $entries = array_slice($entries, 0, $options['nb']);
         }
 
+        // add extra informations (comments, reactions, metadatas)
+        if ($options['extrafields'] === true) {
+            foreach ($entries as $i => $entry) {
+                $entries[$i]['extrafields'] = $this->entryManager->getExtraFields($entry['id_fiche']);
+            }
+        }
         return $entries;
     }
 

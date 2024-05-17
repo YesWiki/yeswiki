@@ -154,6 +154,8 @@ class BazarListeAction extends YesWikiAction
             'champ' => $arg['champ'] ?? (($agendaMode) ? 'bf_date_debut_evenement' : 'bf_titre'),
             // Nombre maximal de résultats à afficher
             'nb' => $arg['nb'] ?? null,
+            // get comments , reactions and metadatas with entry
+            'extrafields' => $this->formatBoolean($arg, false, 'extrafields'),
             // Nombre de résultats affichés pour la pagination (permet d'activer la pagination)
             'pagination' => $arg['pagination'] ?? null,
             // Afficher les fiches dans un ordre aléatoire
