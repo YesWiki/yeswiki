@@ -34,7 +34,7 @@ class BazarListService
         // External mode activated ?
         if (($options['externalModeActivated'] ?? false) === true) {
             return $this->externalBazarService
-                        ->getFormsForBazarListe($options['externalIds'], $options['refresh']);
+                ->getFormsForBazarListe($options['externalIds'], $options['refresh']);
         } else {
             return $this->formManager->getAll();
         }
@@ -43,19 +43,23 @@ class BazarListService
     private function replaceDefaultImage($options, $forms, $entries): array
     {
         if (!class_exists('attach')) {
-            include 'tools/attach/libs/attach.lib.php';
+            include('tools/attach/libs/attach.lib.php');
         }
         $attach = new attach($this->wiki);
         $basePath = $attach->GetUploadPath();
-        $basePath = $basePath . (substr($basePath, -1) != '/' ? '/' : '');
+        $basePath = $basePath . (substr($basePath, -1) != "/" ? "/" : "");
 
         foreach ($options['idtypeannonce'] as $idtypeannonce) {
-            $template = $forms[(int)$idtypeannonce]['template'] ?? [];
+            $template = $forms[(int) $idtypeannonce]['template'] ?? [];
             $image_names = array_map(
-                function ($item) {return $item[1]; },
+                function ($item) {
+                    return $item[1];
+                },
                 array_filter(
                     $template,
-                    function ($item) { return $item[0] == 'image'; }
+                    function ($item) {
+                        return $item[0] == 'image';
+                    }
                 )
             );
             foreach ($image_names as $image_name) {
@@ -123,6 +127,12 @@ class BazarListService
             $entries = array_slice($entries, 0, $options['nb']);
         }
 
+        // add extra informations (comments, reactions, metadatas)
+        if ($options['extrafields'] === true) {
+            foreach ($entries as $i => $entry) {
+                $entries[$i]['extrafields'] = $this->entryManager->getExtraFields($entry['id_fiche']);
+            }
+        }
         return $entries;
     }
 
@@ -134,7 +144,7 @@ class BazarListService
 
         // Scanne tous les champs qui pourraient faire des filtres pour les facettes
         $facettables = $this->formManager
-                            ->scanAllFacettable($entries, $options['groups']);
+            ->scanAllFacettable($entries, $options['groups']);
 
         if (count($facettables) == 0) {
             return [];
@@ -216,14 +226,14 @@ class BazarListService
             $idkey = htmlspecialchars($id);
 
             $i = array_key_first(array_filter($options['groups'], function ($value) use ($idkey) {
-                return $value == $idkey;
+                return ($value == $idkey);
             }));
 
             $filters[$idkey]['icon'] = !empty($options['groupicons'][$i]) ?
-                    '<i class="' . $options['groupicons'][$i] . '"></i> ' : '';
+                '<i class="' . $options['groupicons'][$i] . '"></i> ' : '';
 
             $filters[$idkey]['title'] = !empty($options['titles'][$i]) ?
-                    $options['titles'][$i] : $list['titre_liste'];
+                $options['titles'][$i] : $list['titre_liste'];
 
             $filters[$idkey]['collapsed'] = ($i != 0) && !$options['groupsexpanded'];
 
