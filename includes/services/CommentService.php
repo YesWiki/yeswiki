@@ -90,7 +90,7 @@ class CommentService implements EventSubscriberInterface
                     } else {
                         $num = "1";
                     }
-                    $idComment = "Comment".$num;
+                    $idComment = "Comment" . $num;
                 } else {
                     $newComment = false;
                 }
@@ -118,12 +118,19 @@ class CommentService implements EventSubscriberInterface
                     $com['tag'] = $comment['tag'];
                     $com['commentOn'] = $comment['comment_on'];
                     $com['rawbody'] = $comment['body'];
-                    $com['body'] = $this->wiki->Format($comment['body']);
+                    // Do the page change in any case (useful for attach or grid)
+                    $oldPage = $GLOBALS['wiki']->GetPageTag();
+                    $oldPageArray = $GLOBALS['wiki']->page;
+                    $GLOBALS['wiki']->tag = $comment['tag'];
+                    $GLOBALS['wiki']->page = $comment;
+                    $com['body'] = $GLOBALS['wiki']->Format($comment['body']);
+                    $GLOBALS['wiki']->tag = $oldPage;
+                    $GLOBALS['wiki']->page = $oldPageArray;
                     $this->setUserData($comment, 'user', $com);
                     $this->setUserData($comment, 'owner', $com);
-                    $com['date'] = 'le '.date("d.m.Y à H:i:s", strtotime($comment['time']));
+                    $com['date'] = 'le ' . date("d.m.Y à H:i:s", strtotime($comment['time']));
                     if ($this->wiki->HasAccess('comment', $comment['tag'])) {
-                        $com['linkcomment'] = $this->wiki->href('pages/'.$comment['tag'].'/comments', 'api');
+                        $com['linkcomment'] = $this->wiki->href('pages/' . $comment['tag'] . '/comments', 'api');
                     }
                     if ($this->wiki->UserIsOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
                         $com['linkeditcomment'] = $this->wiki->href('edit', $comment['tag']);
@@ -133,9 +140,9 @@ class CommentService implements EventSubscriberInterface
                     $com['reponses'] = $this->getCommentList($comment['tag'], false);
                     $com['parentPage'] = $this->getParentPage($comment['tag']);
                     $errors = $this->eventDispatcher->yesWikiDispatch($newComment ? 'comment.created' : 'comment.updated', [
-                            'id' => $com['tag'],
-                            'data' => $com,
-                        ]);
+                        'id' => $com['tag'],
+                        'data' => $com,
+                    ]);
                     return [
                         'code' => 200,
                         'success' => _t('COMMENT_PUBLISHED'),
@@ -167,22 +174,22 @@ class CommentService implements EventSubscriberInterface
         $parentPage = $this->getParentPage($commentTag);
         $this->pageManager->deleteOrphaned($commentTag);
         $errors = $this->eventDispatcher->yesWikiDispatch('comment.deleted', [
-                'id' => $comment['tag'],
-                'data' => array_merge($comment, [
-                    'associatedComments' => $comments,
-                    'parentPage' => $parentPage
-                ])
-            ]);
+            'id' => $comment['tag'],
+            'data' => array_merge($comment, [
+                'associatedComments' => $comments,
+                'parentPage' => $parentPage
+            ])
+        ]);
         return $errors;
     }
 
     /**
-    * Load comments for given page.
-    *
-    * @param string $tag Page name (Ex : "PagePrincipale") if empty, all comments
-    * @param bool $bypassAcls
-    * @return array All comments and their corresponding properties.
-    */
+     * Load comments for given page.
+     *
+     * @param string $tag Page name (Ex : "PagePrincipale") if empty, all comments
+     * @param bool $bypassAcls
+     * @return array All comments and their corresponding properties.
+     */
     public function loadComments($tag, bool $bypassAcls = false)
     {
         $query = 'SELECT * FROM ' . $this->wiki->config['table_prefix'] . 'pages ' . 'WHERE ';
@@ -193,7 +200,7 @@ class CommentService implements EventSubscriberInterface
         }
         if (!empty($username)) {
             $query .=
-            <<<SQL
+                <<<SQL
             AND (`user` = '{$this->dbService->escape($username)}' OR `owner` = '{$this->dbService->escape($username)}')
             SQL;
         }
@@ -234,13 +241,13 @@ class CommentService implements EventSubscriberInterface
                 $com['comments'][$i]['body'] = $this->wiki->Format($comment['body']);
                 $this->setUserData($comment, 'user', $com['comments'][$i]);
                 $this->setUserData($comment, 'owner', $com['comments'][$i]);
-                $com['comments'][$i]['date'] = 'le '.date("d.m.Y à H:i:s", strtotime($comment['time']));
+                $com['comments'][$i]['date'] = 'le ' . date("d.m.Y à H:i:s", strtotime($comment['time']));
                 if ($this->wiki->HasAccess('comment', $comment['tag'])) {
-                    $com['comments'][$i]['linkcomment'] = $this->wiki->href('pages/'.$comment['tag'].'/comments', 'api');
+                    $com['comments'][$i]['linkcomment'] = $this->wiki->href('pages/' . $comment['tag'] . '/comments', 'api');
                 }
                 if ($this->wiki->UserIsOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
                     $com['comments'][$i]['linkeditcomment'] = $this->wiki->href('edit', $comment['tag']);
-                    $com['comments'][$i]['linkdeletecomment'] = $this->wiki->href('comments/'.$comment['tag'].'/delete', 'api');
+                    $com['comments'][$i]['linkdeletecomment'] = $this->wiki->href('comments/' . $comment['tag'] . '/delete', 'api');
                 }
                 $com['comments'][$i]['reponses'] = $this->getCommentList($comment['tag'], false);
             }
@@ -251,14 +258,14 @@ class CommentService implements EventSubscriberInterface
 
     private function setUserData(array $comment, string $key, array &$data)
     {
-        if (in_array($key, ['user','owner'], true) && !empty($comment[$key])) {
+        if (in_array($key, ['user', 'owner'], true) && !empty($comment[$key])) {
             $data[$key] = $comment[$key];
             $data["link$key"] = $this->wiki->href('', $comment[$key]);
             $data["{$key}color"] = $this->genColorCodeFromText($comment[$key]);
             $data["{$key}picture"] =
                 !empty($this->wiki->config['default_comment_avatar'])
                 ? $this->wiki->config['default_comment_avatar']
-                : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='".str_replace('#', '%23', $data["{$key}color"])."' class='bi bi-person-circle' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z'/%3E%3C/svg%3E";
+                : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='" . str_replace('#', '%23', $data["{$key}color"]) . "' class='bi bi-person-circle' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z'/%3E%3C/svg%3E";
         }
     }
 
@@ -279,10 +286,12 @@ class CommentService implements EventSubscriberInterface
                 }
                 $page = $this->pageManager->getOne($tag);
                 $commentOn = !empty($page['comment_on']) ? $page['comment_on'] : $page['tag'];
+                $tempTag = ($this->wiki->config['temp_tag_for_entry_creation'] ?? null) . '_' . bin2hex(random_bytes(10));
                 $options = [
                     'pagetag' => $commentOn,
                     'formlink' => $this->wiki->href('comments', 'api'),
-                    'hashcash' => $hashCashCode
+                    'hashcash' => $hashCashCode,
+                    'tempTag' => $tempTag
                 ];
             } else {
                 $options['alerts'][] = [
@@ -361,25 +370,25 @@ class CommentService implements EventSubscriberInterface
 
         $hash = md5($text);  //Gen hash of text
         $colors = array();
-        for ($i = 0;$i < 3;$i++) {
-            $colors[$i] = max(array(round(((hexdec(substr($hash, $spec * $i, $spec))) / hexdec(str_pad('', $spec, 'F'))) * 255),$min_brightness));
+        for ($i = 0; $i < 3; $i++) {
+            $colors[$i] = max(array(round(((hexdec(substr($hash, $spec * $i, $spec))) / hexdec(str_pad('', $spec, 'F'))) * 255), $min_brightness));
         } //convert hash into 3 decimal values between 0 and 255
 
         if ($min_brightness > 0) {  //only check brightness requirements if min_brightness is about 100
             while (array_sum($colors) / 3 < $min_brightness) {  //loop until brightness is above or equal to min_brightness
-                for ($i = 0;$i < 3;$i++) {
+                for ($i = 0; $i < 3; $i++) {
                     $colors[$i] += 10;
                 }
             }
-        }	//increase each color by 10
+        }    //increase each color by 10
 
         $output = '';
 
-        for ($i = 0;$i < 3;$i++) {
+        for ($i = 0; $i < 3; $i++) {
             $output .= str_pad(dechex($colors[$i]), 2, 0, STR_PAD_LEFT);
         }  //convert each color to hex and append to output
 
-        return '#'.$output;
+        return '#' . $output;
     }
 
     public function sendEmailAfterCreate(Event $event)
@@ -462,9 +471,11 @@ class CommentService implements EventSubscriberInterface
         // filter
         $filteredUsers = [];
         foreach ($users as $user) {
-            if ($user['email'] != $loggedUser['email'] &&
+            if (
+                $user['email'] != $loggedUser['email'] &&
                 (empty($owner) || ($user['email'] != $owner['email'])) &&
-                !in_array($user['name'], array_keys($filteredUsers))) {
+                !in_array($user['name'], array_keys($filteredUsers))
+            ) {
                 $filteredUsers[$user['name']] = $user;
             }
         }

@@ -2,7 +2,7 @@
 	<input type="hidden" name="pagetag" value="{{ pagetag }}">
 	<div class="form-group">
 		<label>{{ _t('YW_ADD_COMMENT') }}</label>
-		{{ renderAction('aceditor', { name: "body", placeholder: _t('YW_WRITE_COMMENT_HERE'), rows: 3})|raw }}
+		{{ renderAction('aceditor', { name: "body", placeholder: _t('YW_WRITE_COMMENT_HERE'), rows: 3, tempTag: tempTag })|raw }}
 	</div>
 	
 	{{ hashcash|raw }}
