@@ -2,7 +2,7 @@
 	<input type="hidden" name="pagetag" value="{{ pagetag }}">
 	<div class="form-group">
 		<label>{{ _t('YW_ADD_COMMENT') }}</label>
-		{{ renderAction('aceditor', { name: "body", value: _t('YW_WRITE_COMMENT_HERE'), rows: 3})|raw }}
+		{{ renderAction('aceditor', { name: "body", placeholder: _t('YW_WRITE_COMMENT_HERE'), rows: 3})|raw }}
 	</div>
 	
 	{{ hashcash|raw }}
@@ -10,3 +10,8 @@
 		{{ _t('SAVE') }}
 	</button>
 </form>
+<style>
+#post-comment .format-menu {
+	display:none;
+}
+</style>

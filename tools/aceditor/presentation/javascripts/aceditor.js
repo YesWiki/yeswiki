@@ -16,10 +16,21 @@ class Aceditor {
     this.initialize()
   }
 
-  get $textarea() { return this.$container.find('.aceditor-textarea') }
-  get $aceContainer() { return this.$container.find('.ace-container') }
-  get $aceBody() { return this.$container.find('.ace-body') }
-  get $toolbar() { return this.$container.find('.aceditor-toolbar') }
+  get $textarea() {
+    return this.$container.find('.aceditor-textarea')
+  }
+
+  get $aceContainer() {
+    return this.$container.find('.ace-container')
+  }
+
+  get $aceBody() {
+    return this.$container.find('.ace-body')
+  }
+
+  get $toolbar() {
+    return this.$container.find('.aceditor-toolbar')
+  }
 
   initialize() {
     // Init Components
@@ -34,13 +45,16 @@ class Aceditor {
     this.editor.on('change', () => {
       this.$textarea.val(this.editor.getValue())
       // Enable alert popup when leaving the page
-      if (typeof showPopup !== 'undefined') { showPopup = 1 }
+      if (typeof showPopup !== 'undefined') {
+        showPopup = 1
+      }
     })
 
     setupAceditorKeyBindings(this.$aceContainer, this.$toolbar)
     this.initToolbar()
     this.initEditionHelpers()
-
+    console.log(this)
+    this.editor.ace.setOptions({ placeholder: this.$textarea.attr('placeholder') })
     this.editor.on('blur', () => {
       this.flyingButton.hide()
     })
@@ -49,7 +63,9 @@ class Aceditor {
   initToolbar() {
     this.fileUplodModal.initButton(
       this.$toolbar.find('.attach-file-uploader'),
-      (result) => { this.editor.replaceSelectionBy(result) }
+      (result) => {
+        this.editor.replaceSelectionBy(result)
+      }
     )
     this.$toolbar.find('.aceditor-btn').on('click', (e) => {
       const $btn = $(e.currentTarget)
@@ -63,13 +79,17 @@ class Aceditor {
         this.linkModal.open({
           action: 'newlink',
           text: this.editor.getSelectedText(),
-          onComplete: (result) => { this.editor.replaceSelectionBy(result) }
+          onComplete: (result) => {
+            this.editor.replaceSelectionBy(result)
+          }
         })
       } else if ($btn.hasClass('aceditor-btn-newpage')) {
         // New Page Button
         this.linkModal.open({
           action: 'newpage',
-          onComplete: (result) => { this.editor.insert(result) }
+          onComplete: (result) => {
+            this.editor.insert(result)
+          }
         })
       } else {
         // Other Buttons
@@ -97,20 +117,31 @@ class Aceditor {
       switch (cursor.groupType) {
         case 'yw-action': {
           const actionName = cursor.groupData['action-name']
-          if (this.actionsBuilder.allAvailableActionsWithBackward.includes(actionName)) {
+          if (
+            this.actionsBuilder.allAvailableActionsWithBackward.includes(
+              actionName
+            )
+          ) {
             this.$toolbar.find('.component-action-list').addClass('only-edit')
             this.flyingButton.show().onClick(() => {
               this.actionsBuilder.open(this.editor, { action: cursor.groupTextWithoutMarkup })
             })
           }
           if (cursor.nodeType && cursor.nodeType.includes('action-name')) {
-            this.editor.setAutocompletionList(this.actionsBuilder.allAvailableActions)
+            this.editor.setAutocompletionList(
+              this.actionsBuilder.allAvailableActions
+            )
           }
           break
         }
         case 'yw-link-markdown':
         case 'yw-link': {
-          const { 'link-url': link, 'link-text': text, 'link-title': title, 'md-extra': extra } = cursor.groupData
+          const {
+            'link-url': link,
+            'link-text': text,
+            'link-title': title,
+            'md-extra': extra
+          } = cursor.groupData
           this.flyingButton.show().onClick(() => {
             this.linkModal.open({
               action: 'edit',
@@ -118,7 +149,9 @@ class Aceditor {
               text,
               title,
               extra,
-              onComplete: (result) => { this.editor.replaceCurrentGroupBy(result) }
+              onComplete: (result) => {
+                this.editor.replaceCurrentGroupBy(result)
+              }
             })
           })
           if (cursor.nodeType && cursor.nodeType.includes('link-url')) {
@@ -141,6 +174,6 @@ jQuery(() => {
 
   // hack to put toolbar over label
   $('.wiki-textarea .scroll-container-toolbar').each(function() {
-    $(this).prependTo($(this).parents('.wiki-textarea'));
-  }) 
+    $(this).prependTo($(this).parents('.wiki-textarea'))
+  })
 })
