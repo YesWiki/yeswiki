@@ -11,7 +11,13 @@
 	</button>
 </form>
 <style>
-#post-comment .format-menu {
+.temporary-form .format-menu,
+.temporary-form .aceditor-btn-help,
+.temporary-form .actions-builder-button,
+#post-comment .format-menu,
+#post-comment .aceditor-btn-help,
+#post-comment .actions-builder-button {
 	display:none;
 }
 </style>
+{{ include('@aceditor/aceditor-modals.twig') }}

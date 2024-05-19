@@ -31,6 +31,7 @@ return [
     "OCTOBER" => "Octobre",
     "RIGHT" => "Droite",
     'SATURDAY' => 'Samedi',
+    'SAVE' => 'Enregistrer',
     'SEPTEMBER' => 'Septembre',
     'SUNDAY' => 'Dimanche',
     'THURSDAY' => 'Jeudi',
