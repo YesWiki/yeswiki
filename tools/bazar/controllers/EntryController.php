@@ -38,7 +38,7 @@ class EntryController extends YesWikiController
     protected $semanticTransformer;
     protected $templateEngine;
 
-    private $parentsEntries ;
+    private $parentsEntries;
 
     public function __construct(
         AclService $aclService,
@@ -120,9 +120,10 @@ class EntryController extends YesWikiController
         }
         // unshift stack to check if this entry is included into a bazarliste into a Field
         array_unshift($this->parentsEntries, $entryId);
-        if (count(array_filter($this->parentsEntries, function ($value) use ($entryId) {
-            return $value === $entryId;
-        })) < 3 // max 3 levels
+        if (
+            count(array_filter($this->parentsEntries, function ($value) use ($entryId) {
+                return $value === $entryId;
+            })) < 3 // max 3 levels
         ) {
             // use a custom template if exists (fiche-FORM_ID.tpl.html or fiche-FORM_ID.twig)
             $customTemplatePath = $this->getCustomTemplatePath($entry);
@@ -167,7 +168,7 @@ class EntryController extends YesWikiController
         array_shift($this->parentsEntries);
 
         // Format owner
-        $owner = $this->wiki->GetPageOwner($entryId);
+        $owner = $this->wiki->GetPageOwner($entryId) ?? $this->wiki->GetUserName();
         $isOwnerIpAddress = preg_replace('/([0-9]|\.)/', '', $owner) == '';
         if ($isOwnerIpAddress || !$owner) {
             $owner = _t('BAZ_UNKNOWN_USER');
@@ -257,10 +258,12 @@ class EntryController extends YesWikiController
                             : $this->wiki->Href(
                                 testUrlInIframe(),
                                 '',
-                                [  'vue' => 'consulter',
-                                'action' => 'voir_fiche',
-                                'id_fiche' => $entry['id_fiche'],
-                                'message' => 'ajout_ok'],
+                                [
+                                    'vue' => 'consulter',
+                                    'action' => 'voir_fiche',
+                                    'id_fiche' => $entry['id_fiche'],
+                                    'message' => 'ajout_ok'
+                                ],
                                 false
                             )
                         );
@@ -357,24 +360,24 @@ class EntryController extends YesWikiController
             try {
                 $entry = $this->entryManager->getOne($entryId);
                 $this->entryManager->delete($entryId);
-                if(!$this->entryManager->isEntry($entryId)) {
+                if (!$this->entryManager->isEntry($entryId)) {
                     $this->triggerDeletedEvent($entryId, $entry);
                     if ($redirectAfter) {
-                        flash(_t('BAZ_FICHE_SUPPRIMEE')." ($entryId)", 'success');
+                        flash(_t('BAZ_FICHE_SUPPRIMEE') . " ($entryId)", 'success');
                         $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'], false));
                     }
                     return true;
                 }
             } catch (Throwable $th) {
                 if ($redirectAfter) {
-                    flash(_t('DELETEPAGE_NOT_DELETED')." ($entryId) : {$th->getMessage()}", 'error');
+                    flash(_t('DELETEPAGE_NOT_DELETED') . " ($entryId) : {$th->getMessage()}", 'error');
                     $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'], false));
                 }
                 throw new Exception($th->getMessage(), $th->getCode(), $th);
             }
             return false;
         } else {
-            throw new Exception('Not deleted because not entry'.(is_scalar($entryId) ? ' ('.strval($entryId).')' : ''));
+            throw new Exception('Not deleted because not entry' . (is_scalar($entryId) ? ' (' . strval($entryId) . ')' : ''));
         }
     }
 
@@ -504,17 +507,17 @@ class EntryController extends YesWikiController
         if (isset($get['query'])) {
             if (!empty($arg['query'])) {
                 if (is_array($arg['query'])) {
-                    $queryArray = $arg['query'] ;
+                    $queryArray = $arg['query'];
                     $query = $get['query'];
                 } else {
-                    $query = $arg['query'].'|'.$get['query'];
+                    $query = $arg['query'] . '|' . $get['query'];
                 }
             } else {
                 $query = $get['query'];
             }
         } else {
             if (isset($arg['query']) && is_array($arg['query'])) {
-                $queryArray = $arg['query'] ;
+                $queryArray = $arg['query'];
                 $query = null;
             } else {
                 $query = $arg['query'] ?? null;
@@ -527,7 +530,7 @@ class EntryController extends YesWikiController
             foreach ($res1 as $req) {
                 $res2 = explode('=', $req, 2);
                 if (isset($queryArray[$res2[0]]) && !empty($queryArray[$res2[0]])) {
-                    $queryArray[$res2[0]] = $queryArray[$res2[0]].','.trim($res2[1] ?? '');
+                    $queryArray[$res2[0]] = $queryArray[$res2[0]] . ',' . trim($res2[1] ?? '');
                 } else {
                     $queryArray[$res2[0]] = trim($res2[1] ?? '');
                 }
@@ -547,30 +550,30 @@ class EntryController extends YesWikiController
      */
     public function filterEntriesOnDate($entries, $datefilter): array
     {
-        $TODAY_TEMPLATE = "/^(today|aujourdhui|=0(D)?)$/i" ;
-        $FUTURE_TEMPLATE = "/^(futur|future|>0(D)?)$/i" ;
-        $PAST_TEMPLATE = "/^(past|passe|<0(D)?)$/i" ;
-        $DATE_TEMPLATE = "(\+|-)(([0-9]+)Y)?(([0-9]+)M)?(([0-9]+)D)?" ;
-        $EQUAL_TEMPLATE = "/^=".$DATE_TEMPLATE."$/i" ;
-        $MORE_TEMPLATE = "/^>".$DATE_TEMPLATE."$/i" ;
-        $LOWER_TEMPLATE = "/^<".$DATE_TEMPLATE."$/i" ;
-        $BETWEEN_TEMPLATE = "/^>".$DATE_TEMPLATE."&<".$DATE_TEMPLATE."$/i" ;
+        $TODAY_TEMPLATE = "/^(today|aujourdhui|=0(D)?)$/i";
+        $FUTURE_TEMPLATE = "/^(futur|future|>0(D)?)$/i";
+        $PAST_TEMPLATE = "/^(past|passe|<0(D)?)$/i";
+        $DATE_TEMPLATE = "(\+|-)(([0-9]+)Y)?(([0-9]+)M)?(([0-9]+)D)?";
+        $EQUAL_TEMPLATE = "/^=" . $DATE_TEMPLATE . "$/i";
+        $MORE_TEMPLATE = "/^>" . $DATE_TEMPLATE . "$/i";
+        $LOWER_TEMPLATE = "/^<" . $DATE_TEMPLATE . "$/i";
+        $BETWEEN_TEMPLATE = "/^>" . $DATE_TEMPLATE . "&<" . $DATE_TEMPLATE . "$/i";
 
         if (preg_match_all($TODAY_TEMPLATE, $datefilter, $matches)) {
-            $todayMidnigth = new DateTime() ;
+            $todayMidnigth = new DateTime();
             $todayMidnigth->setTime(0, 0);
             $entries = array_filter($entries, function ($entry) use ($todayMidnigth) {
-                return $this->filterEntriesOnDateTraversing($entry, "=", $todayMidnigth) ;
+                return $this->filterEntriesOnDateTraversing($entry, "=", $todayMidnigth);
             });
         } elseif (preg_match_all($FUTURE_TEMPLATE, $datefilter, $matches)) {
-            $now = new DateTime() ;
+            $now = new DateTime();
             $entries = array_filter($entries, function ($entry) use ($now) {
-                return $this->filterEntriesOnDateTraversing($entry, ">", $now) ;
+                return $this->filterEntriesOnDateTraversing($entry, ">", $now);
             });
         } elseif (preg_match_all($PAST_TEMPLATE, $datefilter, $matches)) {
-            $now = new DateTime() ;
+            $now = new DateTime();
             $entries = array_filter($entries, function ($entry) use ($now) {
-                return $this->filterEntriesOnDateTraversing($entry, "<", $now) ;
+                return $this->filterEntriesOnDateTraversing($entry, "<", $now);
             });
         } elseif (preg_match_all($EQUAL_TEMPLATE, $datefilter, $matches)) {
             $sign = $matches[1][0];
@@ -581,7 +584,7 @@ class EntryController extends YesWikiController
             $dateMidnigth = $this->extractDate($sign, $nbYears, $nbMonth, $nbDays);
             $dateMidnigth->setTime(0, 0);
             $entries = array_filter($entries, function ($entry) use ($dateMidnigth) {
-                return $this->filterEntriesOnDateTraversing($entry, "=", $dateMidnigth) ;
+                return $this->filterEntriesOnDateTraversing($entry, "=", $dateMidnigth);
             });
         } elseif (preg_match_all($MORE_TEMPLATE, $datefilter, $matches)) {
             $sign = $matches[1][0];
@@ -589,9 +592,9 @@ class EntryController extends YesWikiController
             $nbMonth = $matches[5][0];
             $nbDays = $matches[7][0];
 
-            $date = $this->extractDate($sign, $nbYears, $nbMonth, $nbDays) ;
+            $date = $this->extractDate($sign, $nbYears, $nbMonth, $nbDays);
             $entries = array_filter($entries, function ($entry) use ($date) {
-                return $this->filterEntriesOnDateTraversing($entry, ">", $date) ;
+                return $this->filterEntriesOnDateTraversing($entry, ">", $date);
             });
         } elseif (preg_match_all($LOWER_TEMPLATE, $datefilter, $matches)) {
             $sign = $matches[1][0];
@@ -599,9 +602,9 @@ class EntryController extends YesWikiController
             $nbMonth = $matches[5][0];
             $nbDays = $matches[7][0];
 
-            $date = $this->extractDate($sign, $nbYears, $nbMonth, $nbDays) ;
+            $date = $this->extractDate($sign, $nbYears, $nbMonth, $nbDays);
             $entries = array_filter($entries, function ($entry) use ($date) {
-                return $this->filterEntriesOnDateTraversing($entry, "<", $date) ;
+                return $this->filterEntriesOnDateTraversing($entry, "<", $date);
             });
         } elseif (preg_match_all($BETWEEN_TEMPLATE, $datefilter, $matches)) {
             $signMore = $matches[1][0];
@@ -617,29 +620,29 @@ class EntryController extends YesWikiController
             if ($dateMin->diff($dateMax)->invert == 0) {
                 // $dateMax higher than $dateMin
                 $entries = array_filter($entries, function ($entry) use ($dateMin) {
-                    return $this->filterEntriesOnDateTraversing($entry, ">", $dateMin) ;
+                    return $this->filterEntriesOnDateTraversing($entry, ">", $dateMin);
                 });
                 $entries = array_filter($entries, function ($entry) use ($dateMax) {
-                    return $this->filterEntriesOnDateTraversing($entry, "<", $dateMax) ;
+                    return $this->filterEntriesOnDateTraversing($entry, "<", $dateMax);
                 });
             }
         }
 
-        return $entries ;
+        return $entries;
     }
 
     private function extractDate(string $sign, string $nbYears, string $nbMonth, string $nbDays): DateTime
     {
         $dateInterval = new DateInterval(
             'P'
-                .(!empty($nbYears) ? $nbYears . 'Y' : '')
-                .(!empty($nbMonth) ? $nbMonth . 'M' : '')
-                .(!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays) ? '0D' : ''))
+                . (!empty($nbYears) ? $nbYears . 'Y' : '')
+                . (!empty($nbMonth) ? $nbMonth . 'M' : '')
+                . (!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays) ? '0D' : ''))
         );
         $dateInterval->invert = ($sign == "-") ? 1 : 0;
 
-        $date = new DateTime() ;
-        $date->add($dateInterval) ;
+        $date = new DateTime();
+        $date->add($dateInterval);
 
         return $date;
     }
@@ -717,7 +720,7 @@ class EntryController extends YesWikiController
                 '@templates/alert-message.twig',
                 [
                     'type' => 'info',
-                    'message' => _t('BAZ_IL_Y_A').' 0 '. _t('BAZ_FICHE')
+                    'message' => _t('BAZ_IL_Y_A') . ' 0 ' . _t('BAZ_FICHE')
                 ]
             );
         }
@@ -756,7 +759,7 @@ class EntryController extends YesWikiController
                 ]);
                 if (!empty($entries)) {
                     $firstEntry = $entries[array_keys($entries)[0]];
-                    $message = !empty($form['bn_only_one_entry_message']) ? $form['bn_only_one_entry_message'] : _t('BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM') ;
+                    $message = !empty($form['bn_only_one_entry_message']) ? $form['bn_only_one_entry_message'] : _t('BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM');
                     $message = str_replace('{formName}', $form['bn_label_nature'], $message);
                     $results['output'] = $this->render('@templates/alert-message.twig', [
                         'type' => 'info',
