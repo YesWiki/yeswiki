@@ -74,7 +74,7 @@ function toastMessage(
   $toast.addClass("visible");
 }
 // polyfill placeholder
-(function ($) {
+(function($) {
   // gestion des classes actives pour les menus
   $("a.active-link")
     .parent()
@@ -141,7 +141,7 @@ function toastMessage(
         .find(".modal-body")
         .html(
           '<span id="yw-modal-loading" class="throbber"></span>' +
-            `<iframe id="yw-modal-iframe" src="${link}" referrerpolicy="no-referrer"></iframe>`,
+          `<iframe id="yw-modal-iframe" src="${link}" referrerpolicy="no-referrer"></iframe>`,
         );
       $("#yw-modal-iframe").on("load", () => {
         $("#yw-modal-loading").hide();
@@ -166,7 +166,7 @@ function toastMessage(
       }
       // AJAX Request for javascripts
       const xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function () {
+      xhttp.onreadystatechange = function() {
         if (this.readyState === 4 && this.status === 200) {
           const xmlString = this.responseText;
           const doc = new DOMParser().parseFromString(xmlString, "text/html");
@@ -234,13 +234,13 @@ function toastMessage(
   }
   $(document).on("click", "a.modalbox, a.modal, .modalbox a", openModal);
 
-  $(document).on("click", "a.newtab", function (e) {
+  $(document).on("click", "a.newtab", function(e) {
     e.preventDefault();
     window.open($(this).attr("href"), "_blank");
   });
 
   // on change l'icone de l'accordeon
-  $(".accordion-trigger").on("click", function () {
+  $(".accordion-trigger").on("click", function() {
     if ($(this).next().find(".collapse").hasClass("in")) {
       $(this).find(".arrow").html("&#9658;");
     } else {
@@ -265,13 +265,13 @@ function toastMessage(
   $("[data-tooltip='tooltip']").tooltip();
 
   // moteur de recherche utilisé dans un template
-  $('a[href="#search"]').on("click", function (e) {
+  $('a[href="#search"]').on("click", function(e) {
     e.preventDefault();
     $(this).siblings("#search").addClass("open");
     $(this).siblings("#search").find(".search-query").focus();
   });
 
-  $("#search, #search button.close-search").on("click keyup", function (e) {
+  $("#search, #search button.close-search").on("click keyup", function(e) {
     if (
       e.target == this ||
       $(e.target).hasClass("close-search") ||
@@ -282,15 +282,15 @@ function toastMessage(
   });
 
   // se souvenir des tabs navigués
-  $.fn.historyTabs = function () {
+  $.fn.historyTabs = function() {
     const that = this;
     window.addEventListener("popstate", (event) => {
       if (event.state) {
         $(that).filter(`[href="${event.state.url}"]`).tab("show");
       }
     });
-    return this.each(function (index, element) {
-      $(element).on("show.bs.tab", function () {
+    return this.each(function(index, element) {
+      $(element).on("show.bs.tab", function() {
         const stateObject = { url: $(this).attr("href") };
 
         if (window.location.hash && stateObject.url !== window.location.hash) {
@@ -298,16 +298,16 @@ function toastMessage(
             stateObject,
             document.title,
             window.location.pathname +
-              window.location.search +
-              $(this).attr("href"),
+            window.location.search +
+            $(this).attr("href"),
           );
         } else {
           window.history.replaceState(
             stateObject,
             document.title,
             window.location.pathname +
-              window.location.search +
-              $(this).attr("href"),
+            window.location.search +
+            $(this).attr("href"),
           );
         }
       });
@@ -322,27 +322,27 @@ function toastMessage(
   $('a[data-toggle="tab"]').historyTabs();
 
   // double clic
-  $(".navbar").on("dblclick", function (e) {
+  $(".navbar").on("dblclick", function(e) {
     e.stopPropagation();
     $("body").append(
       '<div class="modal fade" id="YesWikiModal">' +
-        '<div class="modal-dialog">' +
-        '<div class="modal-content">' +
-        '<div class="modal-header">' +
-        '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
-        `<h3>${_t("NAVBAR_EDIT_MESSAGE")}</h3>` +
-        "</div>" +
-        '<div class="modal-body">' +
-        "</div>" +
-        "</div>" +
-        "</div>" +
-        "</div>",
+      '<div class="modal-dialog">' +
+      '<div class="modal-content">' +
+      '<div class="modal-header">' +
+      '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
+      `<h3>${_t("NAVBAR_EDIT_MESSAGE")}</h3>` +
+      "</div>" +
+      '<div class="modal-body">' +
+      "</div>" +
+      "</div>" +
+      "</div>" +
+      "</div>",
     );
 
     const $editmodal = $("#YesWikiModal");
     $(this)
       .find(".include")
-      .each(function () {
+      .each(function() {
         const href = $(this)
           .attr("ondblclick")
           .replace("document.location='", "")
@@ -354,9 +354,9 @@ function toastMessage(
           .find(".modal-body")
           .append(
             `<a href="${href}" class="btn btn-default btn-block">` +
-              `<i class="fa fa-pencil-alt"></i> ${_t(
-                "YESWIKIMODAL_EDIT_MSG",
-              )} ${pagewiki}</a>`,
+            `<i class="fa fa-pencil-alt"></i> ${_t(
+              "YESWIKIMODAL_EDIT_MSG",
+            )} ${pagewiki}</a>`,
           );
       });
 
@@ -403,7 +403,7 @@ function toastMessage(
     });
   }
 
-  $(".modalbox-hover").each(function (index) {
+  $(".modalbox-hover").each(function() {
     getText(`${$(this).attr("href")}/html`, $(this));
   });
   $(".modalbox-hover").popover({
@@ -420,13 +420,13 @@ function toastMessage(
 
   // acl switch
   $("#acl-switch-mode")
-    .change(function () {
+    .change(function() {
       if ($(this).prop("checked")) {
         // show advanced
         $(".acl-simple").hide().val(null);
         $(".acl-advanced").slideDown();
       } else {
-        $(".acl-single-container label").each(function () {
+        $(".acl-single-container label").each(function() {
           $(this).after($(`select[name=${$(this).data("input")}]`));
         });
         $(".acl-simple").show();
@@ -443,8 +443,19 @@ function toastMessage(
   /** comments */
   const $comments = $(".yeswiki-page-comments, #post-comment");
 
+  function resetCommentForm(form) {
+    form
+      .attr('id', 'post-comment').attr('class', '')
+      .attr('action', form.attr('action').replace(/api\/comments(\/.*)/gm, `api/comments`))
+      .appendTo($('.yeswiki-page-comments').parent())
+      .find("label").removeClass('hide')
+    $('.btn-cancel-comment').remove()
+    $('#post-comment').find(".btn-post-comment").text(_t("SAVE"))
+    window['aceditor-body'].editor.setValue('');
+  }
+
   // ajax post comment
-  $comments.on("click", ".btn-post-comment", function (e) {
+  $comments.on("click", ".btn-post-comment", function(e) {
     e.preventDefault();
     const form = $(this).parent("form");
     const urlpost = form.attr("action");
@@ -455,6 +466,7 @@ function toastMessage(
       dataType: "json",
       success(e) {
         form.trigger("reset");
+        window['aceditor-body'].editor.setValue('');
         toastMessage(e.success, 3000, "alert alert-success");
         form.parents(".yw-comment").find(".comment-links").removeClass("hide");
         // we place the new comment in different places if its an answer, a modification or a new comment
@@ -462,12 +474,10 @@ function toastMessage(
           form
             .closest(".yw-comment")
             .html($("<div>").html(e.html).find(".yw-comment").html());
-          form.remove();
-          $("#post-comment").removeClass("hide");
+          resetCommentForm(form)
         } else if (form.parent().hasClass("comment-reponses")) {
           form.parent().append(e.html);
-          form.remove();
-          $("#post-comment").removeClass("hide");
+          resetCommentForm(form)
         } else {
           $(".yeswiki-page-comments").append(e.html);
         }
@@ -480,51 +490,55 @@ function toastMessage(
   });
 
   // ajax answer comment
-  $comments.on("click", ".btn-answer-comment", function (e) {
+  $comments.on("click", ".btn-answer-comment", function(e) {
     e.preventDefault();
-
     const com = $(this).parent().parent();
-
-    // delete temporary forms that may be open
-    $(".temporary-form").remove();
+    $(".temporary-form").parents('.yw-comment').find(".comment-html:first").removeClass("hide");
+    $(".temporary-form").parents('.yw-comment').find(".comment-links:first").removeClass("hide");
+    // a comment-form is already opened
+    if ($('.temporary-form').length > 0) {
+      resetCommentForm($(".temporary-form"));
+    }
 
     // clone comment form and change some options
     const formAnswer = com.find(".comment-reponses:first");
-    $("#post-comment").clone().appendTo(formAnswer);
+    $("#post-comment").appendTo(formAnswer);
     formAnswer
       .find("form")
       .attr("id", `form-comment-${com.data("tag")}`)
       .removeClass("hide")
       .addClass("temporary-form");
-    formAnswer.find("label").remove();
     formAnswer.find('[name="pagetag"]').val(com.data("tag"));
     formAnswer
       .find("form")
       .append(
-        `<button class="btn-cancel-comment btn btn-sm btn-danger">${_t("CANCEL")}</button>`,
+        `<button class="btn-cancel-comment btn btn-sm btn-default">${_t("CANCEL")}</button>`,
       );
-    com.parents(".yw-comment").find(".comment-links").addClass("hide");
-
-    // hide comment form while another comment form is open
-    $("#post-comment").addClass("hide");
+    com.find(".comment-links").addClass("hide");
+    com.find("label").addClass("hide");
 
     return false;
   });
 
   // ajax edit comment
-  $comments.on("click", ".btn-edit-comment", function (e) {
+  $comments.on("click", ".btn-edit-comment", function(e) {
     e.preventDefault();
     const com = $(this).parent().parent();
 
-    // hide comment while editor is open
+    // hide comment and comment links while editor is open
     com.find(".comment-html:first").addClass("hide");
+    com.find(".comment-links:first").addClass("hide");
 
-    // delete temporary forms that may be open
-    $(".temporary-form").remove();
+    $(".temporary-form").parents('.yw-comment').find(".comment-html:first").removeClass("hide");
+    $(".temporary-form").parents('.yw-comment').find(".comment-links:first").removeClass("hide");
+    // a comment-form is already opened
+    if ($('.temporary-form').length > 0) {
+      resetCommentForm($(".temporary-form"));
+    }
 
     // clone comment form and change some options
     const formcom = com.find(".form-comment:first");
-    $("#post-comment").clone().appendTo(formcom);
+    $("#post-comment").appendTo(formcom);
     formcom
       .find("form")
       .attr("id", `form-comment-${com.data("tag")}`)
@@ -535,43 +549,34 @@ function toastMessage(
       .removeClass("hide")
       .addClass("temporary-form")
       .addClass("comment-modify");
-    formcom.find("label").remove();
-    formcom.find("textarea").val(com.find(".comment-body").val());
+    formcom.find("label").addClass('hide');
+    window['aceditor-body'].editor.setValue(com.find(".comment-body").val());
     formcom.find('[name="pagetag"]').val(com.data("commenton"));
     formcom.find(".btn-post-comment").text(_t("MODIFY"));
     formcom
       .find("form")
       .append(
-        `<button class="btn-cancel-comment btn btn-sm btn-danger">${_t("CANCEL")}</button>`,
+        `<button class="btn-cancel-comment btn btn-sm btn-default">${_t("CANCEL")}</button>`,
       );
     com.parents(".yw-comment").find(".comment-links").addClass("hide");
-
-    // hide comment form while another comment form is open
-    $("#post-comment").addClass("hide");
 
     return false;
   });
 
   // cancel comment edit
-  $comments.on("click", ".btn-cancel-comment", function (e) {
+  $comments.on("click", ".btn-cancel-comment", function(e) {
     e.preventDefault();
-
     const com = $(this).parent().parent().parent();
-
     // restore html comment and links
     com.find(".comment-html:first").removeClass("hide");
+    com.find(".comment-links:first").removeClass("hide");
     com.parents(".yw-comment").find(".comment-links").removeClass("hide");
-    // remove modify comment form
-    $(`#form-comment-${com.data("tag")}`).remove();
-
-    // restore comment form
-    $("#post-comment").removeClass("hide");
-
+    resetCommentForm($(`#form-comment-${com.data("tag")}`))
     return false;
   });
 
   // ajax delete comment
-  $comments.on("click", ".btn-delete-comment", function (e) {
+  $comments.on("click", ".btn-delete-comment", function(e) {
     if (confirm(_t("DELETE_COMMENT_AND_ANSWERS"))) {
       e.preventDefault();
       const link = $(this);
@@ -580,7 +585,7 @@ function toastMessage(
         url: link.attr("href"),
         dataType: "json",
         success(e) {
-          link.closest(".yw-comment").slideUp(250, function () {
+          link.closest(".yw-comment").slideUp(250, function() {
             $(this).remove();
           });
           toastMessage(e.success, 3000, "alert alert-success");
@@ -645,7 +650,7 @@ function toastMessage(
       if (table.length != 0) {
         $(table)
           .find(".btn-delete-reaction:not(.btn-delete-all)")
-          .each(function () {
+          .each(function() {
             reactionManagementHelper.deleteATag($(this));
           });
       }
@@ -653,7 +658,7 @@ function toastMessage(
   };
 
   // handler reaction click
-  $(".link-reaction").click(function (event) {
+  $(".link-reaction").click(function(event) {
     event.preventDefault();
     event.stopPropagation();
     const extractData = (item) => {
@@ -809,7 +814,7 @@ function toastMessage(
     }
   });
 
-  $(".btn-delete-reaction").on("click", function (e) {
+  $(".btn-delete-reaction").on("click", function(e) {
     e.preventDefault();
     if (!$(this).hasClass("btn-delete-all")) {
       if (confirm(_t("REACTION_CONFIRM_DELETE"))) {
@@ -822,7 +827,7 @@ function toastMessage(
 })(jQuery);
 
 // fot comments table
-$("#commentsTableDeleteModal.modal").on("shown.bs.modal", function (event) {
+$("#commentsTableDeleteModal.modal").on("shown.bs.modal", function(event) {
   multiDeleteService.initProgressBar($(this));
   $(this).find(".modal-body .multi-delete-results").html("");
   const deleteButton = $(this).find("button.start-btn-delete-comment");
@@ -840,7 +845,7 @@ $("#commentsTableDeleteModal.modal").on("shown.bs.modal", function (event) {
   $(deleteButton).data("modal", this);
   if (!$(deleteButton).hasClass("eventSet")) {
     $(deleteButton).addClass("eventSet");
-    $(deleteButton).on("click", function () {
+    $(deleteButton).on("click", function() {
       $(this).attr("disabled", "disabled");
       $(this).tooltip("hide");
       const name = $(this).data("name");
@@ -854,8 +859,7 @@ $("#commentsTableDeleteModal.modal").on("shown.bs.modal", function (event) {
         error(e) {
           multiDeleteService.addErrorMessage(
             $(modal),
-            `${_t("COMMENT_NOT_DELETED", { comment: name })} : ${
-              e.responseJSON && e.responseJSON.error ? e.responseJSON.error : ""
+            `${_t("COMMENT_NOT_DELETED", { comment: name })} : ${e.responseJSON && e.responseJSON.error ? e.responseJSON.error : ""
             }`,
           );
         },
@@ -890,7 +894,7 @@ function checkAll(state) {
 
 // tabs
 // hack for next and previous buttons
-$('.tab-content [data-toggle="tab"]').on("click", function () {
+$('.tab-content [data-toggle="tab"]').on("click", function() {
   const base = $(this).closest(".tab-content").prev();
   $(base).find(".active").removeClass("active");
   $(base)
