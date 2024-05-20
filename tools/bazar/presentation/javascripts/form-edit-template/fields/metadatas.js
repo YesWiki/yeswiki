@@ -32,5 +32,5 @@ export default {
   attributesMapping: { 0: 'type', 1: 'theme', 2: 'squelette', 3: 'style', 4: 'image', 5: 'preset' },
   renderInput(field) {
     return { field: '' }
-  },
+  }
 }

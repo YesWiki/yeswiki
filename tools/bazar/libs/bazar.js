@@ -159,15 +159,18 @@ $(document).ready(() => {
   })
 
   // éviter la validation du formulaire en pressant la touche Entrée
-  document.querySelectorAll('form#formulaire .control-group.form-group input.form-control[type=text]').forEach((item)=>{
-    item.addEventListener('keydown',(event)=>{
-      if (event.key === "Enter"){
-        event.preventDefault();
-        event.stopPropagation();
-        return true;
-      }
-    },
-    true)
+  document.querySelectorAll('form#formulaire .control-group.form-group input.form-control[type=text]').forEach((item) => {
+    item.addEventListener(
+      'keydown',
+      (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault()
+          event.stopPropagation()
+          return true
+        }
+      },
+      true
+    )
   })
 
   //= =========== bidouille pour que les widgets en flash restent ===========
@@ -384,15 +387,15 @@ $(document).ready(() => {
         $(input).removeClass('invalid')
       }
     },
-    checkPattern(input,index){
-      if ($(input)[0]){
+    checkPattern(input, index) {
+      if ($(input)[0]) {
         const val = $(input).val()
         const element = $(input)[0]
-        if (val.length > 0){
-          if (!element.checkValidity()){
+        if (val.length > 0) {
+          if (!element.checkValidity()) {
             if (this.errorPattern == -1) {
               this.errorMessagePattern = _t('BAZ_FORM_INVALID_TEXT')
-              this.errorPattern= index
+              this.errorPattern = index
             }
           }
         }

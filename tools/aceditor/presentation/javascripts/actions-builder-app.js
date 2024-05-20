@@ -44,7 +44,7 @@ const components = {
 }
 
 // actionsBuilderData is defined is AceditorAction
-const data = typeof actionsBuilderData === 'object' ? actionsBuilderData : {forms:{},action_groups:{}}
+const data = typeof actionsBuilderData === 'object' ? actionsBuilderData : { forms: {}, action_groups: {} }
 
 // dynamically loads other components defined in extensions or in custom folder
 if (data.extraComponents) {
@@ -196,7 +196,7 @@ export const app = {
       this.updateActionParams()
       // If only one action available, select it
       if (Object.keys(this.actions).length == 1) {
-        if (this.selectedActionId == '' && previousSelectedActionId == Object.keys(this.actions)[0]){
+        if (this.selectedActionId == '' && previousSelectedActionId == Object.keys(this.actions)[0]) {
           this.selectedActionId = Object.keys(this.actions)[0]
           // force watcher without changing value because VueJs will not detect the change
           // The comparison between changes is done at regular interval, so there will not have detection
@@ -336,7 +336,7 @@ export const app = {
       Object.keys(result).sort().forEach((key) => { if (result[key] !== '') orderedResult[key] = result[key] })
       this.actionParams = orderedResult
     },
-    watchSelectedActionId(){
+    watchSelectedActionId() {
       if (!this.isBazarListeAction && !this.isEditingExistingAction) {
         this.values = {}
       }

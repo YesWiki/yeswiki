@@ -19,6 +19,6 @@ export default {
   },
   advancedAttributes: ['read', 'write', 'semantic', 'queries'],
   // disabledAttributes: [],
-  attributesMapping: listsMapping,
+  attributesMapping: listsMapping
   // renderInput(fieldData) {},
 }

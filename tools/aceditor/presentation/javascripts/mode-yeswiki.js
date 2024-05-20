@@ -56,7 +56,7 @@ ace.define('ace/mode/yeswiki_highlight_rules', ['require', 'exports', 'module', 
         next: 'allowBlock'
       }, { // list ( - or 1. )
         token: 'markup.list',
-        regex: '^\\s{1,3}(?:-|\\d+\\.)\\s+',
+        regex: '^\\s{1,3}(?:-|\\d+\\.)\\s+'
       }, markdownLink, {
         include: 'basic',
         noEscape: true
@@ -190,7 +190,7 @@ ace.define('ace/mode/yeswiki_behaviour', ['require', 'exports', 'module', 'ace/l
     }
   }
 
-  var YesWikiBehaviour = function(options) {
+  const YesWikiBehaviour = function(options) {
     this.add('braces2', 'insertion', (state, action, editor, session, text) => {
       if (text == '{') {
         initContext(editor)

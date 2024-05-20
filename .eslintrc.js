@@ -35,7 +35,7 @@ module.exports = {
   },
   ignorePatterns: [
     'vendor/',
-    '!/custom',
+    'custom/',
     '!/javascripts',
     'javascripts/vendor',
     '!/styles',

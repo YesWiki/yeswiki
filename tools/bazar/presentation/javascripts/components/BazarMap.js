@@ -55,7 +55,7 @@ Vue.component('BazarMap', {
       const provideOptions = this.params.provider_credentials ? JSON.parse(this.params.provider_credentials) : {}
       const provider = L.tileLayer.provider(this.params.provider, provideOptions).addTo(this.map)
 
-      this.params.layers = this.params.layers.map((layer)=>layer.replace(/visiblebydefault\|?;?/ig,''))
+      this.params.layers = this.params.layers.map((layer) => layer.replace(/visiblebydefault\|?;?/ig, ''))
       let displayProviderList = false
       for (const layer of this.params.layers) {
         let [label, type, options, url] = layer.split('|')
@@ -90,16 +90,16 @@ Vue.component('BazarMap', {
               pointToLayer(feature, latlng) {
                 return L.circleMarker(latlng)
               },
-              onEachFeature: function (feature, layer) {
-								var str = "" ;
-								for( var prop in feature.properties){
-                  const content = ( prop.toLowerCase() == "url" )
+              onEachFeature(feature, layer) {
+                let str = ''
+                for (const prop in feature.properties) {
+                  const content = (prop.toLowerCase() == 'url')
                     ? `<a href="${feature.properties[prop]}" target="_blank" >${feature.properties[prop]}</a>`
                     : feature.properties[prop]
-                  str+= `${prop}: ${content}<br/>`
-								}
-								layer.bindPopup( str );
-							}
+                  str += `${prop}: ${content}<br/>`
+                }
+                layer.bindPopup(str)
+              }
             }).addTo(this.map)
             break
           default:
@@ -107,8 +107,8 @@ Vue.component('BazarMap', {
             break
         }
       }
-      if (displayProviderList){
-        L.control.layers({[this.params.provider]:provider}, this.layers).addTo(this.map)
+      if (displayProviderList) {
+        L.control.layers({ [this.params.provider]: provider }, this.layers).addTo(this.map)
       }
     },
     arraysEqual(a, b) {
@@ -214,18 +214,18 @@ Vue.component('BazarMap', {
               )
             })
           }
-          this.$root.setEntryFromUrl(entry,url)
+          this.$root.setEntryFromUrl(entry, url)
             .then(() => {
               // Triggers when the component is ready
-              this.$nextTick(()=>this.definePopupContent(entry))
+              this.$nextTick(() => this.definePopupContent(entry))
             })
         } else {
           // Triggers when the component is ready
-          this.$nextTick(()=>this.definePopupContent(entry))
+          this.$nextTick(() => this.definePopupContent(entry))
         }
       } else if (this.$scopedSlots.popupentry != undefined) {
         // Triggers when the component is ready
-        this.$nextTick(()=>this.definePopupContent(entry))
+        this.$nextTick(() => this.definePopupContent(entry))
       }
     },
     definePopupContent(entry) {
@@ -235,8 +235,8 @@ Vue.component('BazarMap', {
       if (entry.marker.popup == undefined) {
         if (renderedHtml != undefined && renderedHtml.length != 0) {
           entry.marker.bindPopup(renderedHtml, { keepInView: true })
-            .on('popupopen',()=>{
-              if (typeof this.$root?.loadBazarListDynamicIfNeeded === 'function'){
+            .on('popupopen', () => {
+              if (typeof this.$root?.loadBazarListDynamicIfNeeded === 'function') {
                 this.$root.loadBazarListDynamicIfNeeded(renderedHtml)
               }
             })

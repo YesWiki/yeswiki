@@ -36,5 +36,5 @@ export default {
         renderHelper.prependHint(field, _t('BAZ_BOOKMARKLET_HINT', { '\\n': '<br>' }))
       }
     }
-  },
+  }
 }

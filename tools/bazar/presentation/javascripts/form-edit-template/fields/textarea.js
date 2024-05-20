@@ -30,7 +30,6 @@ export default {
   },
   advancedAttributes: ['read', 'write', 'semantic', 'pattern', 'syntax', 'rows'],
   // disabledAttributes: [],
-  attributesMapping: { ...defaultMapping, ...{ 4: 'rows', 7: 'syntax' } },
+  attributesMapping: { ...defaultMapping, ...{ 4: 'rows', 7: 'syntax' } }
   // renderInput(fieldData) {},
 }
-

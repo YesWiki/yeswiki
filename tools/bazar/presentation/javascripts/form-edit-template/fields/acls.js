@@ -104,5 +104,5 @@ export default {
         renderHelper.defineLabelHintForGroup(field, 'hint', _t('BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT'))
       }
     }
-  },
+  }
 }

@@ -34,7 +34,7 @@ function handleFileSelect(evt) {
     if (!f.type.match('image.*')) {
       continue
     }
-    let imageMaxSize = document.getElementById(id).dataset.maxSize
+    const imageMaxSize = document.getElementById(id).dataset.maxSize
     if (f.size > imageMaxSize) {
       alert(_t('IMAGEFIELD_TOO_LARGE_IMAGE', { imageMaxSize }))
       document.getElementById(id).type = ''

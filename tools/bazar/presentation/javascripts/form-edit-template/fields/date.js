@@ -20,6 +20,6 @@ export default {
   },
   advancedAttributes: ['read', 'write', 'semantic', 'today_button'],
   // disabledAttributes: [],
-  attributesMapping: { ...defaultMapping, ...{ 5: 'today_button' } },
+  attributesMapping: { ...defaultMapping, ...{ 5: 'today_button' } }
   // renderInput(fieldData) {},
 }

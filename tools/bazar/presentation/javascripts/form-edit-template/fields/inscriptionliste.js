@@ -26,5 +26,5 @@ export default {
   },
   renderInput(field) {
     return { field: '<input type="checkbox"/>' }
-  },
+  }
 }

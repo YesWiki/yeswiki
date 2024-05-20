@@ -36,7 +36,7 @@ export default {
     write: writeconf,
     semantic: semanticConf
   },
-  advancedAttributes: ['read', 'write', 'semantic', 'template', 'type_link', 'param','query'],
+  advancedAttributes: ['read', 'write', 'semantic', 'template', 'type_link', 'param', 'query'],
   disabledAttributes: ['required', 'value', 'name'],
   attributesMapping: {
     ...defaultMapping,
@@ -53,5 +53,5 @@ export default {
   },
   renderInput(field) {
     return { field: '' }
-  },
+  }
 }

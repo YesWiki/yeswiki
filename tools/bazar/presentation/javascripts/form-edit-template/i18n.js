@@ -1,4 +1,4 @@
-// list of available locales for formBuilder 
+// list of available locales for formBuilder
 export default {
   ar: 'ar-SA',
   ca: 'ca-ES',

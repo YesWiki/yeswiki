@@ -63,8 +63,8 @@ const multiDeleteService = {
     }
   },
   deleteOneItem(modal, items, type, currentIndex, target) {
-    if (['pages','comments','users'].indexOf(type) == -1){
-      this.addErrorMessage(modal,"Unknown type ! Should be 'pages' or 'users' or 'comments'!")
+    if (['pages', 'comments', 'users'].indexOf(type) == -1) {
+      this.addErrorMessage(modal, "Unknown type ! Should be 'pages' or 'users' or 'comments'!")
       return
     }
     const item = items[currentIndex] ?? {}
@@ -81,28 +81,28 @@ const multiDeleteService = {
       {
         method: 'POST',
         timeout: 30000, // 30 seconds,
-        data: {csrfToken}
+        data: { csrfToken }
       }
     )
-    .then(()=>{
-      if (!this.removeLine(target, itemId)) {
-        this.refreshOnModalClosing[$(modal).parent().prop('id')] = true
-      }
-    })
-    .catch((error)=>{
+      .then(() => {
+        if (!this.removeLine(target, itemId)) {
+          this.refreshOnModalClosing[$(modal).parent().prop('id')] = true
+        }
+      })
+      .catch((error) => {
       // do nothing on error
-      this.addErrorMessage(
-        modal,
-        _t('MULTIDELETE_ERROR')
-          .replace('{itemId}', itemId)
-          .replace('{error}', error)
-      )
-      // if error force reload
-      this.refreshOnModalClosing[$(modal).parent().prop('id')] = true
-    })
-    .finally(()=>{
-      setTimeout(() => { this.deleteNextItem(modal, items, type, currentIndex, target) }, 0)
-    })
+        this.addErrorMessage(
+          modal,
+          _t('MULTIDELETE_ERROR')
+            .replace('{itemId}', itemId)
+            .replace('{error}', error)
+        )
+        // if error force reload
+        this.refreshOnModalClosing[$(modal).parent().prop('id')] = true
+      })
+      .finally(() => {
+        setTimeout(() => { this.deleteNextItem(modal, items, type, currentIndex, target) }, 0)
+      })
   },
   deleteItems(elem) {
     const target = $(elem).data('target')
@@ -127,41 +127,40 @@ const multiDeleteService = {
       }
     }
   },
-  async localFetchJson(url,options){
+  async localFetchJson(url, options) {
     const internalOptions = {}
     let resetTimeoutId = null
-    if ('timeout' in options && Number(options.timeout) > 0){
+    if ('timeout' in options && Number(options.timeout) > 0) {
       const abortController = new AbortController()
-      resetTimeoutId = setTimeout(()=>abortController.abort(),options.timeout)
+      resetTimeoutId = setTimeout(() => abortController.abort(), options.timeout)
       internalOptions.signal = abortController.signal
     }
-    if ('method' in options && options.method === 'POST'){
+    if ('method' in options && options.method === 'POST') {
       internalOptions.method = 'POST'
       internalOptions.body = new URLSearchParams(this.prepareFormData(options.data ?? {}))
-      internalOptions.headers = (new Headers()).append('Content-Type','application/x-www-form-urlencoded')
+      internalOptions.headers = (new Headers()).append('Content-Type', 'application/x-www-form-urlencoded')
     }
-    return await fetch(url,internalOptions)
-      .then((response)=>{
-        if (response.ok){
+    return await fetch(url, internalOptions)
+      .then((response) => {
+        if (response.ok) {
           return response.json()
-        } else {
-          throw new Error(`Response is not ok (code ${response.code})`)
         }
+        throw new Error(`Response is not ok (code ${response.code})`)
       })
-      .finally(()=>{
-        if (resetTimeoutId !== null){
+      .finally(() => {
+        if (resetTimeoutId !== null) {
           clearTimeout(resetTimeoutId)
         }
       })
   },
-  prepareFormData(thing){
-      let formData = new FormData();
-      if (typeof thing == "object"){
-          for (const key in thing) {
-              formData.append(key,String(thing[key]));
-          }
+  prepareFormData(thing) {
+    const formData = new FormData()
+    if (typeof thing == 'object') {
+      for (const key in thing) {
+        formData.append(key, String(thing[key]))
       }
-      return formData;
+    }
+    return formData
   },
   updateNbSelected(modalId) {
     const button = $(`#${modalId} .modal-body > button.start-btn-delete-all`)

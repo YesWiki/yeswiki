@@ -1,35 +1,31 @@
 import {
-  readConf, 
-  writeconf, 
-  semanticConf, 
+  readConf,
+  writeconf,
+  semanticConf,
   defaultMapping
 } from './commons/attributes.js'
 import renderHelper from './commons/render-helper.js'
 
-const findVideoOptions = (base) => {
-  return $(base).find(
-    'select[name=ratio],'
-    +'select[name=class],'
-    +'input[type=text][name=maxwidth],'
-    +'input[type=text][name=maxheight]'
-  )
-}
-const findVideoOptionsNotInitialized = (base) => {
-  return $(base).find(
-    'select[name=ratio]:not(.initialized),'
-    +'input[type=text][name=maxwidth]:not(.initialized),'
-    +'input[type=text][name=maxheight]:not(.initialized)'
-  )
-}
+const findVideoOptions = (base) => $(base).find(
+  'select[name=ratio],'
+    + 'select[name=class],'
+    + 'input[type=text][name=maxwidth],'
+    + 'input[type=text][name=maxheight]'
+)
+const findVideoOptionsNotInitialized = (base) => $(base).find(
+  'select[name=ratio]:not(.initialized),'
+    + 'input[type=text][name=maxwidth]:not(.initialized),'
+    + 'input[type=text][name=maxheight]:not(.initialized)'
+)
 
-const setFormGroupVisible = function (){
+const setFormGroupVisible = function() {
   $(this).closest('.form-group').show()
 }
-const setFormGroupHidden = function (){
+const setFormGroupHidden = function() {
   $(this).closest('.form-group').hide()
 }
 
-const prepareData = function(){
+const prepareData = function() {
   const baseLocal = $(this).closest('.url-field.form-field')
   const textOptions = $(baseLocal).find('.form-group.options-wrap input[type=text][name=options]')?.val() ?? ''
   const options = textOptions?.split('|') ?? []
@@ -39,22 +35,22 @@ const prepareData = function(){
 
   $(this).val(
     $(this).prop('type') === 'text'
-    ? (
-      $(this).prop('name') === 'maxwidth'
-      ? maxwidth
-      : maxheight
-    )
-    : ratio
+      ? (
+        $(this).prop('name') === 'maxwidth'
+          ? maxwidth
+          : maxheight
+      )
+      : ratio
   )
   $(this).addClass('initialized')
 }
 
 const updateVideoOptionsVisibility = (event) => {
-  const target = event.target
+  const { target } = event
   const baseLocal = $(target).closest('.url-field.form-field')
   const selectDisplayVideo = $(baseLocal).find('.form-group.displayvideo-wrap select[name=displayvideo]')
 
-  if (selectDisplayVideo.val() === 'displayvideo'){
+  if (selectDisplayVideo.val() === 'displayvideo') {
     $(findVideoOptions(baseLocal)).each(setFormGroupVisible)
   } else {
     $(findVideoOptions(baseLocal)).each(setFormGroupHidden)
@@ -62,7 +58,7 @@ const updateVideoOptionsVisibility = (event) => {
 }
 
 const updateVideoOptions = (event) => {
-  const target = event.target
+  const { target } = event
   const baseLocal = $(target).closest('.url-field.form-field')
   const selectDisplayVideo = $(baseLocal).find('.form-group.displayvideo-wrap select[name=displayvideo]')?.val() ?? ''
   const selectRatio = $(baseLocal).find('.form-group.ratio-wrap select[name=ratio]')?.val() ?? ''
@@ -77,34 +73,33 @@ const updateVideoOptions = (event) => {
       && textMaxwidth.length === 0
       && textMaxheight.length === 0
     )
-    ? ''
-    :`${selectRatio}|${textMaxwidth}|${textMaxheight}`
+      ? ''
+      : `${selectRatio}|${textMaxwidth}|${textMaxheight}`
   )
-
 }
 
 const initOptions = () => {
-  const base = $(".url-field")
-  const selectDisplayVideo = base.find("select[name=displayvideo]:not(.initialized)")
+  const base = $('.url-field')
+  const selectDisplayVideo = base.find('select[name=displayvideo]:not(.initialized)')
   const videooptions = $(findVideoOptionsNotInitialized(base))
 
   base.find('input[type=text][name=options]:not(.initialized),select[name=class]:not(.initialized)')
     .addClass('initialized')
     .each(setFormGroupHidden)
 
-  selectDisplayVideo.on('change',updateVideoOptionsVisibility)
-  selectDisplayVideo.on('blur',updateVideoOptionsVisibility)
-  selectDisplayVideo.each(function(){
+  selectDisplayVideo.on('change', updateVideoOptionsVisibility)
+  selectDisplayVideo.on('blur', updateVideoOptionsVisibility)
+  selectDisplayVideo.each(function() {
     $(this).addClass('initialized')
   })
-  selectDisplayVideo.on('change',updateVideoOptions)
-  videooptions.on('change',updateVideoOptions)
-  videooptions.on('blur',updateVideoOptions)
-  videooptions.on('focusout',updateVideoOptions)
+  selectDisplayVideo.on('change', updateVideoOptions)
+  videooptions.on('change', updateVideoOptions)
+  videooptions.on('blur', updateVideoOptions)
+  videooptions.on('focusout', updateVideoOptions)
   videooptions.each(prepareData)
 
-  selectDisplayVideo.trigger("change")
-  videooptions.trigger("change")
+  selectDisplayVideo.trigger('change')
+  videooptions.trigger('change')
 }
 
 export default {
@@ -115,32 +110,32 @@ export default {
     icon: '<i class="fas fa-link"></i>'
   },
   attributes: {
-    displayvideo:{
+    displayvideo: {
       label: _t('BAZAR_URL_DISPLAY_VIDEO'),
-      options: {' ':_t('NO'),'displayvideo':_t('YES')},
+      options: { ' ': _t('NO'), displayvideo: _t('YES') }
     },
-    ratio:{
+    ratio: {
       label: _t('BAZAR_VIDEO_RATIO_LABEL'),
-      options: {'':'16/9','4par3':'4/3'},
+      options: { '': '16/9', '4par3': '4/3' }
     },
-    maxwidth:{
+    maxwidth: {
       label: _t('BAZAR_VIDEO_MAXWIDTH_LABEL'),
       value: ''
     },
-    maxheight:{
+    maxheight: {
       label: _t('BAZAR_VIDEO_MAXHEIGHT_LABEL'),
       value: ''
     },
-    options:{
+    options: {
       label: 'options',
       value: ''
     },
-    class:{
+    class: {
       label: _t('BAZAR_VIDEO_POSITION_LABEL'),
       options: {
         '': 'standard',
         'pull-left': _t('BAZAR_VIDEO_POSITION_LEFT'),
-        'pull-right': _t('BAZAR_VIDEO_POSITION_RIGHT'),
+        'pull-right': _t('BAZAR_VIDEO_POSITION_RIGHT')
       }
     },
     read: readConf,
@@ -150,12 +145,12 @@ export default {
   attributesMapping: {
     ...defaultMapping,
     ...{
-      3:'displayvideo',
-      6:'options',
-      7:'class'
+      3: 'displayvideo',
+      6: 'options',
+      7: 'class'
     }
   },
-  advancedAttributes: ['read', 'write', 'semantic', 'hint','ratio','maxwidth','maxheight','options','class'],
+  advancedAttributes: ['read', 'write', 'semantic', 'hint', 'ratio', 'maxwidth', 'maxheight', 'options', 'class'],
   // disabledAttributes: [],
   renderInput(field) {
     return {

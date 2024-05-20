@@ -43,11 +43,32 @@ window.defaultImage = {}
 
 // Use window to make it available outside of module, so extension can adds their own fields
 window.formBuilderFields = {
-  text, textarea, date, image, url, file, champs_mail, select,
-  'checkbox-group': checkbox_group, 'radio-group': radio_group,
-  map, tags, labelhtml, titre, bookmarklet, conditionschecking, calc,
-  reactions, inscriptionliste, utilisateur_wikini, acls, metadatas,
-  listefichesliees, custom, tabs, tabchange
+  text,
+  textarea,
+  date,
+  image,
+  url,
+  file,
+  champs_mail,
+  select,
+  'checkbox-group': checkbox_group,
+  'radio-group': radio_group,
+  map,
+  tags,
+  labelhtml,
+  titre,
+  bookmarklet,
+  conditionschecking,
+  calc,
+  reactions,
+  inscriptionliste,
+  utilisateur_wikini,
+  acls,
+  metadatas,
+  listefichesliees,
+  custom,
+  tabs,
+  tabchange
 }
 
 function initializeFormbuilder() {
@@ -104,9 +125,7 @@ function initializeFormbuilder() {
       // strange bug with jQuery Formbuilder, the fieldId given is not the last field, but
       // the one just before... so incrementing the id manually
       // transform frmb-XXXX-fld-6  into frmb-XXXX-fld-7
-      fieldId = fieldId.replace(/(.*)-fld-(\d+)$/gim, (string ,formId, fieldId) => {
-        return `${formId}-fld-${parseInt(fieldId, 10) + 1}`
-      })
+      fieldId = fieldId.replace(/(.*)-fld-(\d+)$/gim, (string, formId, fieldId) => `${formId}-fld-${parseInt(fieldId, 10) + 1}`)
 
       // Timeout to wait the field ot be rendered
       setTimeout(() => {
@@ -127,7 +146,7 @@ function initializeFormbuilder() {
       // Default image is in base64 in buffer variable => convert it to File in input element
       $('input.default-file').each((idx, file_elem) => {
         const current_ids = file_elem.attributes.id.value.split('-')
-        const image_name = current_ids[current_ids.length - 2] + '-' + current_ids[current_ids.length - 1]
+        const image_name = `${current_ids[current_ids.length - 2]}-${current_ids[current_ids.length - 1]}`
         if (window.defaultImage[image_name]) {
           const image_content = window.defaultImage[image_name].split('|')
           if (image_content.length === 2) {
@@ -137,36 +156,35 @@ function initializeFormbuilder() {
           }
         }
         if (file_elem.parentElement.childElementCount == 1) {
-        	const new_button = document.createElement("i")
-    		new_button.className = "fas fa-remove btn-img-remove"
+        	const new_button = document.createElement('i')
+    		new_button.className = 'fas fa-remove btn-img-remove'
     		new_button.onclick = function() {
-				file_elem.files = new DataTransfer().files
-				window.defaultImage[image_name] = ''
-			}
+            file_elem.files = new DataTransfer().files
+            window.defaultImage[image_name] = ''
+          }
         	file_elem.parentElement.append(new_button)
         }
       })
       // When change image, save it to base64 to buffer variable
       $('input.default-file').change((event) => {
-		 
         const current_ids = event.target.attributes.id.value.split('-')
-        const image_name = current_ids[current_ids.length - 2] + '-' + current_ids[current_ids.length - 1]
+        const image_name = `${current_ids[current_ids.length - 2]}-${current_ids[current_ids.length - 1]}`
         const file = event.target.files[0]
         if (typeof imageMaxSize == 'undefined') {
-			var imageMaxSize = 1024 * 1024;
+          var imageMaxSize = 1024 * 1024
         }
-        if(file.size > imageMaxSize) {
-           alert(_t('IMAGEFIELD_TOO_LARGE_IMAGE', { imageMaxSize }))
-           event.target.value = "";
-           return false
+        if (file.size > imageMaxSize) {
+          alert(_t('IMAGEFIELD_TOO_LARGE_IMAGE', { imageMaxSize }))
+          event.target.value = ''
+          return false
         }
         const reader = new FileReader()
         reader.readAsDataURL(file)
-        reader.onload = function () {
-          window.defaultImage[image_name] = file.name + '|' + reader.result
+        reader.onload = function() {
+          window.defaultImage[image_name] = `${file.name}|${reader.result}`
         }
       })
-    },
+    }
   })
 
   const defaultFieldsName = mapFieldsConf((conf) => conf.defaultIdentifier)
@@ -292,12 +310,12 @@ function initializeFormbuilder() {
   $('#formbuilder-link').click(initializeBuilderFromTextInput)
 }
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener('DOMContentLoaded', () => {
   initializeFormbuilder()
 })
 
 function getFieldsIds() {
-  let result = []
+  const result = []
   $('.fld-name').each(function() { result.push($(this).closest('.form-field').attr('id')) })
   return result
 }
@@ -309,7 +327,7 @@ function initializeBuilderFromTextInput() {
     // extract base64 default image to buffer variable
     jsonData.forEach((field, index) => {
       if (field.type === 'image') {
-        window.defaultImage['fld-' + (index + 1)] = field.default_image.trim()
+        window.defaultImage[`fld-${index + 1}`] = field.default_image.trim()
       }
     })
     formBuilder.actions.setData(JSON.stringify(jsonData))

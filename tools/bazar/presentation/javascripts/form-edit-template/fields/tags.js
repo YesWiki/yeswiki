@@ -16,5 +16,5 @@ export default {
   // disabledAttributes: [],
   renderInput(fieldData) {
     return { field: '<input/>' }
-  },
+  }
 }

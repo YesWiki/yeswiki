@@ -71,18 +71,18 @@ export function adjustJqueryBuilderUI($field) {
 }
 
 export function convertToBytes(base64content) {
-  const byteCharacters = base64content;
-  const sliceSize = 512;
-  var byteNumbers;
-  var slice;
-  const byteArrays = new [].constructor();
-  for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-    slice = byteCharacters.slice(offset, offset + sliceSize);
-    byteNumbers = new [].constructor(slice.length);
-    for (var idx = 0; idx < slice.length; idx++) {
-      byteNumbers[idx] = slice.charCodeAt(idx);
+  const byteCharacters = base64content
+  const sliceSize = 512
+  let byteNumbers
+  let slice
+  const byteArrays = new [].constructor()
+  for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+    slice = byteCharacters.slice(offset, offset + sliceSize)
+    byteNumbers = new [].constructor(slice.length)
+    for (let idx = 0; idx < slice.length; idx++) {
+      byteNumbers[idx] = slice.charCodeAt(idx)
     }
-    byteArrays.push(new Uint8Array(byteNumbers));
+    byteArrays.push(new Uint8Array(byteNumbers))
   }
-  return byteArrays;
+  return byteArrays
 }
