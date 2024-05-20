@@ -22,14 +22,15 @@
 }
 
 
-/*-------------------------
+/* -------------------------
 The edit tooltip
---------------------------*/
+-------------------------- */
 .facette-text {position: relative;}
+
 .edit-tooltip {
   background-color: #5c9bb7;
-  background-image: -webkit-linear-gradient(top, #5c9bb7, #5392ad);
-  background-image: -moz-linear-gradient(top, #5c9bb7, #5392ad);
+  background-image: linear-gradient(top, #5c9bb7, #5392ad);
+  background-image: linear-gradient(top, #5c9bb7, #5392ad);
   background-image: linear-gradient(top, #5c9bb7, #5392ad);
   box-shadow: 0 1px 1px #ccc;
   border-radius: 3px;
@@ -42,7 +43,7 @@ The edit tooltip
 z-index: 3;
 }
 
-.edit-tooltip:after {
+.edit-tooltip::after {
   /* The tip of the tooltip */
   content: '';
  position:absolute;

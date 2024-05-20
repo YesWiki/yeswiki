@@ -1,10 +1,12 @@
 .aceditor-container {
   position: relative;
 }
+
 .ace-container {
-  padding: 1em .7em 0em 0;
+  padding: 1em .7em 0 0;
   margin-bottom: 1rem;
 }
+
 textarea.aceditor-textarea {
   display: none;
 }
@@ -14,54 +16,69 @@ textarea.aceditor-textarea {
   border: none;
   padding: 0;
 }
+
 .ace_layer {
   color: var(--main-text-color);
 }
+
 .ace-body .ace_cursor {
   color: var(--neutral-color);
   border-width: 1px !important;
 }
+
 .ace-body .ace_marker-layer .ace_active-line {
-  /*background: rgba(0, 0, 0, 0.03);*/
+  /* background: rgba(0, 0, 0, 0.03); */
   background: transparent;
   margin: 0 4px;
   border-radius: 3px;
 }
+
 .ace-body .ace_markup {
   color: #bc1c96;
 }
+
 .ace-body .ace_action-name {
   color: #bc1c96 !important;
 }
+
 .ace-body .ace_attribute-name {
   color: var(--primary-color);
 }
+
 .ace-body .ace_attribute-value, .ace-body .ace_attribute-quote-mark {
   color: var(--secondary-color-1) !important;
 }
+
 .ace-body .ace_title-quote-mark, .ace-body .ace_link-title {
   color: var(--neutral-soft-color);
 }
+
 .ace-body .ace_md-extra, .ace-body .ace_md-extra-markup {
   color: var(--secondary-color-1);
 }
+
 .ace-body .ace_markup.ace_html {
   color: var(--neutral-soft-color);
 }
+
 .ace-body .ace_headings {
   color: var(--primary-color);
   font-weight: bold;
 }
+
 .ace-body .ace_link-url {
   color: var(--primary-color);
   text-decoration: underline;
 }
+
 .ace-body .ace_list {
   font-weight: bold;
 }
+
 .ace-body .ace_comment {
   color: var(--neutral-soft-color);
 }
+
 .ace-body .ace_pre {
   background-color: #c33ba30f;
 }
@@ -71,12 +88,14 @@ textarea.aceditor-textarea {
   position: relative;
   height: auto;
 }
+
 #ACEditor .btn-toolbar {
   position: sticky;
   top: 0;
   z-index: 6;
   background-color: white;
 }
+
 #ACEditor .ace-container .ace-body {
   min-height: 500px;
 }
@@ -84,10 +103,11 @@ textarea.aceditor-textarea {
 /* Show line numbers only on page edit */
 form:not(#ACEditor) .ace-container .ace_gutter {
   /* Keep it visible because it's just to get the active line height */
-  width: 0px !important;
+  width: 0 !important;
   overflow: hidden;
-  padding: 0px;
+  padding: 0;
 }
+
 form:not(#ACEditor) .ace-container .ace_scroller {
   left: .6em !important;
 }
@@ -99,14 +119,17 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   padding-right: 8px;
   margin-right: 10px;
 }
+
 .ace-tm .ace_gutter-active-line {
   background-color: #f3f1f1;
 }
+
 .ace-tm .ace_gutter {
   font-size: 12px;
   padding-right: 10px;
   background: none;
 }
+
 .ace_search {
   position: fixed;
   top: 70px;
@@ -130,21 +153,27 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   font-family: inherit;
   margin-left: -4px;
 }
+
 .ace_editor.ace_autocomplete .ace_text-layer {
   margin: 0 !important;
 }
+
 .ace_editor.ace_autocomplete .ace_text-layer > .ace_line {
   padding: 0 .5rem;
 }
+
 .ace_editor.ace_autocomplete .ace_completion-highlight {
   color: var(--primary-color);
 }
+
 .ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line {
   background-color: #e8e8e8;
 }
 
 /* ================= */
+
 /* FLYING ACTION BAR */
+
 /* ================= */
 .flying-edit-button {
   opacity: 0;
@@ -153,6 +182,7 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   z-index: 50;
   left: 0;
 }
+
 .flying-edit-button.active {
   opacity: 1;
 }
@@ -163,6 +193,7 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   transform: translateX(-2.3rem);
   border-radius: 5px 0 0 5px;
 }
+
 /* In iframe, button is inside the textarea */
 .yeswiki-iframe-body .flying-edit-button .btn {
   border-radius: 0 3px 3px 0;
@@ -170,14 +201,16 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   width: 1.8rem;
   transform: translateX(0);
 }
+
 /* in small screen, make button smaller and overlapping textarea */
-@media (max-width: 1200px) {
+@media (width <= 1200px) {
   body:not(.yeswiki-iframe-body) .flying-edit-button .btn {
     border-radius: 4px;
     padding: .4rem 0;
     width: 2rem;
     transform: translateX(-.9rem);
   }
+
   body:not(.yeswiki-iframe-body) form#ACEditor .flying-edit-button .btn {
     /* overlap more to cover gutter */
     border-radius: 4px;
@@ -188,8 +221,8 @@ form:not(#ACEditor) .ace-container .ace_scroller {
 }
 
 #YesWikiLinkModal .more-options {
-  border-top: 1px solid #eeeeee;
-  border-bottom: 1px solid #eeeeee;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
   margin: 1.5rem 0;
   padding: .5rem 0;
 }

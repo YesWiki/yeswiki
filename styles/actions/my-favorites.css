@@ -1,6 +1,6 @@
 .my-favorites .favorite-container {
   position: relative;
-  width: 0px;
+  width: 0;
   height: 36px;
 }
 
@@ -28,16 +28,20 @@
   left: initial; 
   font-size: 130px;
  }
-@media (max-width: 1200px) {
+
+@media (width <= 1200px) {
   .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 114px; }
 }
-@media (max-width: 900px) {
+
+@media (width <= 900px) {
   .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 10vw; }
 }
-@media (max-width: 700px) {
+
+@media (width <= 700px) {
   .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 88px; }
 }
-@media (min-width:768px) {
+
+@media (width >=768px) {
   .col-sm-12 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 14vw; }
   .col-sm-11 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 13vw; }
   .col-sm-10 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 12vw; }
@@ -51,7 +55,8 @@
   .col-sm-2 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 2.2vw; }
   .col-sm-1 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 1.2vw; }
 }
-@media (min-width:992px) {
+
+@media (width >=992px) {
   .col-md-12 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 14vw; }
   .col-md-11 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 13vw; }
   .col-md-10 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 12vw; }
@@ -65,35 +70,48 @@
   .col-md-2 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 2.2vw; }
   .col-md-1 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 1.2vw; }
 }
-@media (min-width:1200px) {
+
+@media (width >=1200px) {
   .col-sm-12 .trombi-container.my-favorites .bazar-entry i.icon-placeholder,
   .col-md-12 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 116px; }
+
   .col-sm-11 .trombi-container.my-favorites .bazar-entry i.icon-placeholder,
   .col-md-11 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 110px; }
+
   .col-sm-10 .trombi-container.my-favorites .bazar-entry i.icon-placeholder,
   .col-md-10 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 108px; }
+
   .col-sm-9 .trombi-container.my-favorites .bazar-entry i.icon-placeholder,
   .col-md-9 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 105px; }
+
   .col-sm-8 .trombi-container.my-favorites .bazar-entry i.icon-placeholder,
   .col-md-8 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 100px; }
+
   .col-sm-7 .trombi-container.my-favorites .bazar-entry i.icon-placeholder,
   .col-md-7 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 97px; }
+
   .col-sm-6 .trombi-container.my-favorites .bazar-entry i.icon-placeholder,
   .col-md-6 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 83px; }
+
   .col-sm-5 .trombi-container.my-favorites .bazar-entry i.icon-placeholder,
   .col-md-5 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 69px; }
+
   .col-sm-4 .trombi-container.my-favorites .bazar-entry i.icon-placeholder,
   .col-md-4 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 56px; }
+
   .col-sm-3 .trombi-container.my-favorites .bazar-entry i.icon-placeholder,
   .col-md-3 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 42px; }
+
   .col-sm-2 .trombi-container.my-favorites .bazar-entry i.icon-placeholder,
   .col-md-2 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 28px; }
+
   .col-sm-1 .trombi-container.my-favorites .bazar-entry i.icon-placeholder,
   .col-md-1 .trombi-container.my-favorites .bazar-entry i.icon-placeholder { font-size: 14px; }
 }
+
 /* STYLE VERTICAL */
 .my-favorites .bazar-entry {
-  padding: 0px;
+  padding: 0;
   width: 140px;
   border-radius: 6px;
   margin: 5px;
@@ -104,29 +122,35 @@
 .my-favorites .bazar-entry:hover .image-container {
   filter: brightness(1.05) contrast(1.05);
 }
+
 .my-favorites .bazar-entry .trombi-content {
   padding: 10px;
   text-align:left;
   word-break: break-word;
   line-height: 1;
 }
+
 .my-favorites .bazar-entry .trombi-content  div.title{
   color:var(--primary-color);
   font-size:90%;
 }
 
-@media (max-width: 1200px) {
+@media (width <= 1200px) {
   .trombi-container.my-favorites .bazar-entry { width: 12vw; }
 }
-@media (max-width: 1000px) {
+
+@media (width <= 1000px) {
   .trombi-container.my-favorites .bazar-entry { width: 120px; }
 }
-@media (max-width: 900px) {
+
+@media (width <= 900px) {
   .trombi-container.my-favorites .bazar-entry { width: 120px; }
 }
-@media (max-width: 800px) {
+
+@media (width <= 800px) {
   .trombi-container.my-favorites .bazar-entry { width: 15vw; }
 }
-@media (max-width: 700px) {
+
+@media (width <= 700px) {
   .trombi-container.my-favorites .bazar-entry { width: 105px; }
 }

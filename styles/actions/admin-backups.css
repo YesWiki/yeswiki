@@ -1,16 +1,17 @@
 .backups-container {
     display: grid;
     grid-template-columns: auto auto auto auto auto;
-    column-gap: 10px;
-    row-gap: 10px;
+    gap: 10px 10px;
 }
 
 .admin-backups-container .archive-buttons {
     margin-bottom: 5px;
 }
+
 .backups-container .archive-item.archive-filename {
     word-break: break-all;
 }
+
 .backups-container .archive-item.archive-item-title {
     font-weight: bold;
     border-bottom: 2px solid var(--primary-color);
@@ -21,7 +22,7 @@
     padding:3px 15px !important;
 }
 
-@media(max-width: 600px){
+@media(width <= 600px){
     .backups-container .archive-item.archive-item-title .btn-wrap{
         max-width: 50px;
         overflow-x: hidden;
@@ -31,6 +32,7 @@
 .relativeSpinner {
     position: relative;
 }
+
 .admin-backups-container .alert pre,
 .preupdate-backups-container .alert pre {
     color: initial;

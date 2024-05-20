@@ -30,6 +30,7 @@ a.ical-export-button {
 .fc .fc-button-group > .fc-button.fc-button-active {
   border: 2px solid var(--primary-color,#333);
 }
+
 .fc .fc-button-group > .fc-button.fc-button-active {
   color: var(--neutral-light-color,#e6e6e6);
 }
@@ -40,8 +41,9 @@ a.ical-export-button {
 
 .minical .fc-today-button, 
 .minical .fc .fc-today-button.fc-button {
-	font-size: 0px;
+	font-size: 0;
 }
+
 .minical .fc .fc-today-button::before,
 .minical .fc .fc-today-button.fc-button::before {
   content: "\f073";
@@ -56,12 +58,13 @@ a.ical-export-button {
 .minical .fc .fc-header-toolbar .fc-toolbar-title {font-size: var(--main-text-fontsize, 1em) !important;}
 .minical table {font-size: 0.85em !important;}
 .minical .fc-event-inner { font-size: 8px !important; line-height: 8px !important;}
+
 .minical .fc-toolbar .fc-toolbar-chunk > .fc-button-group,
 .minical .fc-daygrid-week-number  {
   display:none;
 }
 
-@media (max-width:800px){
+@media (width <=800px){
   .fc-prev-button.fc-button .fc-icon,
   .fc-next-button.fc-button .fc-icon{
     font-size: 1.3em;
@@ -77,7 +80,8 @@ a.ical-export-button {
     font-size: 1.2em;
   }
 }
-@media (min-width:810px){
+
+@media (width >=810px){
   .col-md-1 .fc table,
   .col-md-2 .fc table,
   .col-md-3 .fc table,
@@ -90,6 +94,7 @@ a.ical-export-button {
   .col-md-10 .fc table {
     font-size: 0.9em;
   }
+
   .col-md-1 .fc-prev-button.fc-button .fc-icon,
   .col-md-1 .fc-next-button.fc-button .fc-icon,
   .col-md-2 .fc-prev-button.fc-button .fc-icon,
@@ -151,6 +156,7 @@ a.ical-export-button {
     flex-wrap: wrap;
     align-items: center;
   }
+
   .col-md-1 .fc-prev-button, .fc-next-button,
   .col-md-2 .fc-prev-button, .fc-next-button,
   .col-md-3 .fc-prev-button, .fc-next-button,
@@ -163,6 +169,7 @@ a.ical-export-button {
   .col-md-10 .fc-prev-button, .fc-next-button {
     padding: 0 !important;
   }
+
   .col-md-1 .fc-toolbar .fc-left,
   .col-md-2 .fc-toolbar .fc-left,
   .col-md-3 .fc-toolbar .fc-left,
@@ -173,6 +180,7 @@ a.ical-export-button {
   .col-md-8 .fc-toolbar .fc-left,
   .col-md-9 .fc-toolbar .fc-left,
   .col-md-10 .fc-toolbar .fc-left { order: 10; }
+
   .col-md-1 .fc-toolbar .fc-right,
   .col-md-2 .fc-toolbar .fc-right,
   .col-md-3 .fc-toolbar .fc-right,
@@ -187,6 +195,7 @@ a.ical-export-button {
     margin-top: .5rem;
     flex: 1 1 100%;
   }
+
   .col-md-1 .fc-toolbar .fc-right > .btn-group,
   .col-md-2 .fc-toolbar .fc-right > .btn-group,
   .col-md-3 .fc-toolbar .fc-right > .btn-group,
@@ -199,6 +208,7 @@ a.ical-export-button {
   .col-md-10 .fc-toolbar .fc-right > .btn-group {
     float: none;
   }
+
   .col-md-1 .fc .fc-header-toolbar .fc-toolbar-title,
   .col-md-2 .fc .fc-header-toolbar .fc-toolbar-title,
   .col-md-3 .fc .fc-header-toolbar .fc-toolbar-title,
@@ -211,6 +221,7 @@ a.ical-export-button {
   .col-md-10 .fc .fc-header-toolbar .fc-toolbar-title {
     font-size: var(--main-text-fontsize, 1em);
   }
+
   .col-md-1 .fc .fc-today-button, .col-md-1 .fc .fc-today-button.fc-button,
   .col-md-2 .fc .fc-today-button, .col-md-2 .fc .fc-today-button.fc-button,
   .col-md-3 .fc .fc-today-button, .col-md-3 .fc .fc-today-button.fc-button,
@@ -221,18 +232,19 @@ a.ical-export-button {
   .col-md-8 .fc .fc-today-button, .col-md-8 .fc .fc-today-button.fc-button,
   .col-md-9 .fc .fc-today-button, .col-md-9 .fc .fc-today-button.fc-button,
   .col-md-10 .fc .fc-today-button, .col-md-10 .fc .fc-today-button.fc-button { 
-    font-size: 0px;
+    font-size: 0;
   }
-  .col-md-1 .fc .fc-today-button:before, .col-md-1 .fc .fc-today-button.fc-button:before,
-  .col-md-2 .fc .fc-today-button:before, .col-md-2 .fc .fc-today-button.fc-button:before,
-  .col-md-3 .fc .fc-today-button:before, .col-md-3 .fc .fc-today-button.fc-button:before,
-  .col-md-4 .fc .fc-today-button:before, .col-md-4 .fc .fc-today-button.fc-button:before,
-  .col-md-5 .fc .fc-today-button:before, .col-md-5 .fc .fc-today-button.fc-button:before,
-  .col-md-6 .fc .fc-today-button:before, .col-md-6 .fc .fc-today-button.fc-button:before,
-  .col-md-7 .fc .fc-today-button:before, .col-md-7 .fc .fc-today-button.fc-button:before,
-  .col-md-8 .fc .fc-today-button:before, .col-md-8 .fc .fc-today-button.fc-button:before,
-  .col-md-9 .fc .fc-today-button:before, .col-md-9 .fc .fc-today-button.fc-button:before,
-  .col-md-10 .fc .fc-today-button:before, .col-md-10 .fc .fc-today-button.fc-button:before { 
+
+  .col-md-1 .fc .fc-today-button::before, .col-md-1 .fc .fc-today-button.fc-button::before,
+  .col-md-2 .fc .fc-today-button::before, .col-md-2 .fc .fc-today-button.fc-button::before,
+  .col-md-3 .fc .fc-today-button::before, .col-md-3 .fc .fc-today-button.fc-button::before,
+  .col-md-4 .fc .fc-today-button::before, .col-md-4 .fc .fc-today-button.fc-button::before,
+  .col-md-5 .fc .fc-today-button::before, .col-md-5 .fc .fc-today-button.fc-button::before,
+  .col-md-6 .fc .fc-today-button::before, .col-md-6 .fc .fc-today-button.fc-button::before,
+  .col-md-7 .fc .fc-today-button::before, .col-md-7 .fc .fc-today-button.fc-button::before,
+  .col-md-8 .fc .fc-today-button::before, .col-md-8 .fc .fc-today-button.fc-button::before,
+  .col-md-9 .fc .fc-today-button::before, .col-md-9 .fc .fc-today-button.fc-button::before,
+  .col-md-10 .fc .fc-today-button::before, .col-md-10 .fc .fc-today-button.fc-button::before { 
     /* far fa-calendar-alt */
     content: "\f073";
     font-family: "Font Awesome 5 Free";
@@ -267,27 +279,30 @@ a.ical-export-button {
   padding: 0 0 1rem 1rem;
   overflow: auto;
 }
+
 .bazar-list-dynamic-template-container .entry-container .btn-close i {
   padding-right: 1rem;
 }
+
 .facette-container.dynamic[data-filter-align="right"] .bazar-list-dynamic-template-container .entry-container {
   padding-left: 0;
   padding-right: 1rem;
 }
+
 .facette-container.dynamic:not([data-filter-align="right"]) .bazar-list-dynamic-template-container .entry-container .btn-close i {
   padding-right: 0;
 }
+
 .bazar-list-dynamic-template-container .entry-container .btn-close {
   height: 5.4rem;
 }
+
 .bazar-list-dynamic-template-container.small-width .entry-container {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  inset: 0;
   z-index: 1000;
 }
+
 /* === ENTRY PANEL === */
 
 
@@ -300,7 +315,6 @@ a.ical-export-button {
   --fc-button-hover-border-color: var(--main-bg-color,#adadad);
   --fc-button-active-bg-color: var(--primary-color,#333);
   --fc-button-active-border-color: var(--primary-color,#333);
-
   --fc-event-bg-color: var(--secondary-color-2,#3788d8);
   --fc-event-border-color: var(--secondary-color-2,#3788d8);
 }

@@ -1,20 +1,25 @@
 .form-builder-label {
   display: none;
 }
+
 #form-builder-container {
   height: auto !important;
-  padding: 0 0 1px 0 !important;
+  padding: 0 0 1px !important;
 }
+
 #form-builder-container .form-control {
   background-color: white;
   border: 1px solid #ccc;
 }
+
 #form-builder-container .form-elements {
   padding: 1rem;
 }
+
 #form-builder-container .form-elements .form-group {
-  margin: 0 0 5px 0;
+  margin: 0 0 5px;
 }
+
 #form-builder-container .form-elements .form-group label {
   font-size: .8em;
   width: auto !important;
@@ -24,35 +29,43 @@
   overflow: revert;
   text-transform: none;
 }
+
 #form-builder-container  .form-wrap.form-builder .stage-wrap {
   width: 74%;
 }
+
 #form-builder-container .form-wrap.form-builder .frmb-control li {
   border-radius: 0;
   border-right: none;
 }
+
 #form-builder-container .form-wrap.form-builder .frmb li {
   background-color: transparent;
   border-radius: 0;
   transition: background-color .3s;
 }
+
 #form-builder-container .form-wrap.form-builder .frmb {
   margin: 0;
 }
+
 #form-builder-container .form-wrap.form-builder .frmb .form-elements .input-wrap {
   float: none;
   margin-left: 0;
   width: 100%;
 }
+
 #form-builder-container .form-wrap.form-builder .frmb > li:hover {
   background-color: var(--neutral-light-color);
   border: none;
   box-shadow: none;
 }
+
 #form-builder-container .form-wrap.form-builder .frmb .form-elements .input-wrap>input[type='checkbox'] {
   margin: 0;
 }
-/* Remove checkbox style inside form-builder*/
+
+/* Remove checkbox style inside form-builder */
 #form-builder-container [type="checkbox"]:not(:checked),
 #form-builder-container [type="checkbox"]:checked {
   position: relative;
@@ -64,12 +77,14 @@
 #form-builder-container .form-field:not(.show-advanced-attributes) .form-group.advanced {
   display: none !important;
 }
+
 #form-builder-container .form-field .form-group.advanced {
   order: 200 !important;
 }
+
 #form-builder-container .show-advanced-attributes-btn {
   order: 199;
-  margin: .5rem 0 1rem 0;
+  margin: .5rem 0 1rem;
 }
 
 /* Attributes */
@@ -77,9 +92,11 @@
   display: flex;
   align-items: center
 }
+
 #form-builder-container .required-wrap label {
   order: 2;
 }
+
 #form-builder-container .required-wrap .input-wrap {
   margin-right: .5rem;
   order: 1;
@@ -91,8 +108,9 @@
 #form-builder-container .listeOrFormId-wrap .input-wrap {
   display: flex;
 }
-#form-builder-container .listeOrFormId-wrap:not([data-source=list]) .edit-list-btn,
-#form-builder-container .listeOrFormId-wrap:not([data-source=list]) .add-list-btn {
+
+#form-builder-container .listeOrFormId-wrap:not([data-source="list"]) .edit-list-btn,
+#form-builder-container .listeOrFormId-wrap:not([data-source="list"]) .add-list-btn {
   display: none !important;
 }
 
@@ -103,6 +121,7 @@
 .name-wrap { order: 1 !important; }
 .label-wrap { order: 2 !important; }
 .subtype-wrap { order: 3 !important; }
+
 .separator-wrap {
   order: 50 !important;
   margin-top: 10px;
@@ -113,6 +132,7 @@
 
 .separator-field label, .separator-field .copy-button, .separator-field .toggle-form { display: none !important; }
 .separator-wrap label, .separator-wrap .input-wrap { display: none !important; }
+
 .separator-wrap {
   order: 50 !important;
   margin-top: 10px;
@@ -142,6 +162,7 @@
   white-space: normal;
   text-overflow: initial;
 }
+
 .form-wrap.form-builder .form-elements .form-group > label {
   white-space: normal !important;
 }
@@ -195,7 +216,7 @@
 
 xmp { overflow: auto; }
 
-/* Redefine .fa class when icon- class exists, because redefined by form-builder.min.js*/
+/* Redefine .fa class when icon- class exists, because redefined by form-builder.min.js */
 .fa[class*=" icon-"]::before, .fa[class^="icon-"]::before {
   font-family: inherit;
   font-weight: inherit;
@@ -211,9 +232,10 @@ xmp { overflow: auto; }
 
 /* Make the list of fields smaller */
 .form-wrap.form-builder .frmb li {
-  padding: 5px 1rem 8px 1rem !important;
+  padding: 5px 1rem 8px !important;
   margin: 0 !important;
 }
+
 .form-wrap.form-builder .frmb li:first-child {
   padding-top: 10px !important;
 }
@@ -221,11 +243,12 @@ xmp { overflow: auto; }
 .form-wrap.form-builder .frmb .field-label {
   font-weight: bold;
 }
+
 .form-wrap.form-builder .frmb .prev-holder {
   font-size: 15px;
 }
 
-.form-wrap.form-builder .frmb .prev-holder input:not([type=file]),
+.form-wrap.form-builder .frmb .prev-holder input:not([type="file"]),
 .form-wrap.form-builder .frmb .prev-holder textarea {
   border-radius: 3px;
   border: 1px solid #ccc;

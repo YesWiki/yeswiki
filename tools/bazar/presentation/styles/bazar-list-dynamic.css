@@ -7,7 +7,9 @@
 }
 
 /* ------------- */
+
 /*   PAGINATION  */
+
 /* ------------- */
 
 .bazar-list-dynamic-container .results-col {
@@ -20,33 +22,41 @@
   display: flex;
   justify-content: center;
 }
+
 .bazar-list-dynamic-container .pagination > li {
   margin: 0 .2rem;
   padding: 0 .5rem;
   cursor: pointer;
   border-radius: 3px;
 }
+
 .bazar-list-dynamic-container .pagination > li:hover {
   font-weight: bold;
 }
+
 .bazar-list-dynamic-container .pagination > li.active {
   background-color: var(--primary-color);
   color: var(--neutral-light-color);
   font-weight: bold;
 }
+
 .bazar-list-dynamic-container .pagination > li i {
   color: var(--primary-color);
 }
+
 .bazar-list-dynamic-container .pagination > li.disabled {
   opacity: .6;
 }
 
 /* ------------- */
+
 /*     ENTRY     */
+
 /* ------------- */
 .entry-container.modal-body {
   padding-top: 1rem;
 }
+
 .entry-container .btn-close {
   position: absolute;
   right: 0;
@@ -59,22 +69,28 @@
   justify-content: flex-end;
   font-size: 1.7rem;
 }
+
 .entry-container .btn-close i {
   padding: 1rem 2rem;
   cursor: pointer;
   background-color: var(--main-bg-color);
 }
+
 .entry-container .btn-close i:hover {
   font-size: 1.2em;
 }
 
 /* ------------- */
+
 /*  ENTRY FIELD  */
+
 /* ------------- */
+
 /* Helpers div to used only when needed */
 .field-date .day, .field-date .month {
   display: none;
 }
+
 .field-array > span {
   font-size: .8rem;
   font-weight: 600;
@@ -82,7 +98,9 @@
 }
 
 /* ------------- */
+
 /* LIST TEMPLATE */
+
 /* ------------- */
 .bazar-list.dynamic .panel-heading-container {
   display: grid;
@@ -92,17 +110,20 @@
   align-items: start;
   grid-template-rows: max-content;
 }
+
 .bazar-list.dynamic .panel-heading-container.with-image {
   grid-template-areas: 
     "visual title floating"
     "visual subtitle subtitle";
   grid-template-columns: 11rem auto auto;
 }
-@media (max-width: 1000px) {
+
+@media (width <= 1000px) {
   .bazar-list.dynamic .panel-heading-container.with-image {
     grid-template-columns: 25% auto auto;
   }
 }
+
 .bazar-list.dynamic .panel-heading-container .visual-area {
   grid-area: visual;
   background-size: cover;
@@ -113,15 +134,18 @@
   min-height: 100px;
   background-color: var(--neutral-soft-color);
 }
+
 .bazar-list.dynamic .panel-heading-container .visual-area img {
   object-fit: cover;
   width: 100%;
   min-height: 100px;
   max-height: 170px;
 }
+
 .bazar-list.dynamic .panel-heading-container .title-area {
   grid-area: title;
 }
+
 .bazar-list.dynamic .panel-heading-container .floating-area {
   grid-area: floating;
   float: right;
@@ -131,15 +155,18 @@
   justify-self: right;
   padding-right: 2.2rem;
 }
+
 .bazar-list.dynamic .panel-heading-container .subtitle-area {
   grid-area: subtitle;
   font-size: .95em;
   text-align: justify;
   padding-top: .5rem;
 }
+
 .bazar-list.dynamic .panel-heading-container p {
   margin: 0;
 }
+
 .bazar-list.dynamic .panel-body {
   font-size: .95em;
   margin-top: 1rem;
