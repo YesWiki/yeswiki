@@ -1,4 +1,5 @@
 <?php
+
 use YesWiki\Core\YesWikiMigration;
 
 class CheckSQLTablesThenFixThem extends YesWikiMigration
@@ -31,7 +32,7 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
                 $dataIndex = $this->getColumnInfo($tableName, 'index');
                 if (
                     !empty(array_filter($dataIndex, function ($keyData) {
-                        return !empty ($keyData['Key_name']) && $keyData['Key_name'] == 'PRIMARY';
+                        return !empty($keyData['Key_name']) && $keyData['Key_name'] == 'PRIMARY';
                     }))
                 ) {
                     $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable($tableName)} DROP PRIMARY KEY;");
@@ -63,7 +64,7 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
                 $data = $this->getColumnInfo($tableName, 'index');
                 if (
                     !empty(array_filter($data, function ($keyData) {
-                        return !empty ($keyData['Key_name']) && $keyData['Key_name'] == 'PRIMARY';
+                        return !empty($keyData['Key_name']) && $keyData['Key_name'] == 'PRIMARY';
                     }))
                 ) {
                     $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable($tableName)} DROP PRIMARY KEY;");

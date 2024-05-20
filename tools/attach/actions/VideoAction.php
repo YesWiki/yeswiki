@@ -42,7 +42,7 @@ class VideoAction extends YesWikiAction
         if (empty($peertubeinstance)) {
             $peertubeinstance = $attachVideoConfig['default_peertube_instance'];
         }
-        if (substr($peertubeinstance,-1) != '/'){
+        if (substr($peertubeinstance, -1) != '/') {
             $peertubeinstance .= '/';
         }
         if (preg_match('/^'

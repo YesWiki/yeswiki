@@ -168,9 +168,9 @@ class ImageField extends FileField
         if (!isset($value) || $value == '') {
             $default_image_filename = "defaultimage{$entry['id_typeannonce']}_{$this->name}.jpg";
             if (file_exists($this->getBasePath(). $default_image_filename)) {
-                $value=$default_image_filename;
+                $value = $default_image_filename;
             }
-        }        
+        }
         if (isset($value) && $value != '' && file_exists($this->getBasePath(). $value)) {
             return $this->getWiki()->render('@attach/display-image.twig', [
                 'baseUrl' => $this->getWiki()->GetBaseUrl().'/',

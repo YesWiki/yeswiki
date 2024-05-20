@@ -1,4 +1,5 @@
 <?php
+
 return [
     'BAZ_FORMULAIRE' => 'Forms',
     'BAZ_LISTES' => 'Lists',
@@ -393,6 +394,6 @@ return [
     // 'EVENT_THIRD_Y_OF_MONTH' => 'Le troisième Y du mois',
     // 'EVENT_UP_TO_DATE' => 'Jusqu\'au :',
     // 'EVENTS_WHEN_IN_MONTH' => 'A quel moment du mois ?',
-    
+
     'BAZ_FILEFIELD_FILE' => 'File : {filename}',
 ];

@@ -23,7 +23,7 @@ class MigrationService
         $this->dbService = $dbService;
     }
 
-    function run()
+    public function run()
     {
         if ($this->wiki->services->get(SecurityController::class)->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));

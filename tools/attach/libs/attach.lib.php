@@ -570,7 +570,9 @@ if (!class_exists('attach')) {
         }
 
         // Affiche le fichier liee comme un fichier mind map  freemind
-        public function showAsWma($fullFilename) {}
+        public function showAsWma($fullFilename)
+        {
+        }
 
         // End Paste
 

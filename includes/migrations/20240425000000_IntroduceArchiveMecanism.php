@@ -1,4 +1,5 @@
 <?php
+
 use YesWiki\AutoUpdate\Service\UpdateAdminPagesService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;

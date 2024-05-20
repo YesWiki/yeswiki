@@ -1,4 +1,5 @@
 <?php
+
 return [
     // fields/CalcField.php
     'BAZ_FORM_EDIT_CALC_LABEL' => 'Calculs',

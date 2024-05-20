@@ -1,4 +1,5 @@
 <?php
+
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\YesWikiMigration;
 

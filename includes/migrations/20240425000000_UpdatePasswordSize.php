@@ -1,4 +1,5 @@
 <?php
+
 use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Core\YesWikiMigration;
 

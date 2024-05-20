@@ -1,4 +1,5 @@
 <?php
+
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\YesWikiMigration;
 

@@ -375,7 +375,7 @@ class FormManager
             foreach ($template_list[$temp_index] as $value) {
                 if ($value == '') {
                     $new_line .= ' ';
-                } else if ($value == '*') {
+                } elseif ($value == '*') {
                     $new_line .= ' * ';
                 } else {
                     $new_line .= $value;

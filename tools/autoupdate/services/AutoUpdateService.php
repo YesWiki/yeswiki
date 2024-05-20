@@ -60,7 +60,7 @@ class AutoUpdateService
         return strtolower($version);
     }
 
-    function delete($packageName)
+    public function delete($packageName)
     {
         $messages = new Messages();
         $package = $this->repository->getPackage($packageName);
@@ -74,7 +74,7 @@ class AutoUpdateService
         return $messages;
     }
 
-    function upgrade($packageName)
+    public function upgrade($packageName)
     {
         $messages = new Messages();
         $package = $this->repository->getPackage($packageName);

@@ -300,9 +300,9 @@ class Init
 
         if (!empty($wakkaConfig['extra_headers'])) {
             foreach($wakkaConfig['extra_headers'] as $header) {
-                 header($header);
+                header($header);
             }
-         }
+        }
 
         return $wakkaConfig;
     }
