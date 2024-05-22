@@ -36,8 +36,9 @@ class TabsField extends LabelField
         $this->btnClass = (in_array($values[self::FIELD_BTN_COLOR], ["btn-primary","btn-secondary-1","btn-secondary-2"], true) ? $values[self::FIELD_BTN_COLOR] : "btn-primary") .
           ($values[self::FIELD_BTN_SIZE] === "btn-xs" ? " btn-xs" : "") ;
         $this->tabsController = $this->getService(TabsController::class);
-        $this->formText = $this->prepareText('form');
-        $this->viewText = $this->prepareText('view');
+        // does not call prepareText in constuct only in render (lazy loading)
+        $this->formText = '';
+        $this->viewText = '';
     }
 
     protected function sanitizeTitles(?string $input): ?array
