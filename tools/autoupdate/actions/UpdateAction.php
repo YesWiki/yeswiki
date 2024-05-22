@@ -25,7 +25,7 @@ class UpdateAction extends YesWikiAction
             return $this->render("@autoupdate/norepo.twig", []);
         }
 
-        $action = $securityController->filterInput(INPUT_GET, 'action', FILTER_SANITIZE_STRING);
+        $action = $securityController->filterInput(INPUT_GET, 'action', FILTER_DEFAULT, true);
         if (empty($action) || !$this->wiki->UserIsAdmin() || $this->isWikiHibernated()) {
             // Base action, display current status of software, extension and themes
             return $this->render("@autoupdate/status.twig", [
@@ -44,12 +44,12 @@ class UpdateAction extends YesWikiAction
 
         // Handle upgrade and delete actions
         // package can be 'yeswiki' for core upgrade, or extension name, or theme name
-        $packageName = $securityController->filterInput(INPUT_GET, 'package', FILTER_SANITIZE_STRING);
+        $packageName = $securityController->filterInput(INPUT_GET, 'package', FILTER_DEFAULT, true);
 
         switch ($action) {
             case 'upgrade':
                 // Ensure a backup is made before the upgrade (or force upgrade)
-                $forcedUpdateToken = $securityController->filterInput(INPUT_GET, 'forcedUpdateToken', FILTER_SANITIZE_STRING);
+                $forcedUpdateToken = $securityController->filterInput(INPUT_GET, 'forcedUpdateToken', FILTER_DEFAULT, true);
                 if (!$this->getService(ArchiveService::class)->hasValidatedBackup($forcedUpdateToken)) {
                     return $this->render("@core/preupdate-backup.twig", [
                         'packageName' => $packageName
@@ -67,7 +67,7 @@ class UpdateAction extends YesWikiAction
                 ], false));
                 break;
             case 'post_install':
-                $rawMessages = $securityController->filterInput(INPUT_GET, 'messages', FILTER_UNSAFE_RAW, 'string');
+                $rawMessages = $securityController->filterInput(INPUT_GET, 'messages', FILTER_UNSAFE_RAW, false, 'string');
                 $messages = empty($rawMessages) ? [] : json_decode($rawMessages, true);
                 if (!is_array($messages)) {
                     $messages = [];

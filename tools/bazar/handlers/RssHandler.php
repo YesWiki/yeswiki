@@ -18,9 +18,9 @@ class RssHandler extends YesWikiHandler
         $urlrss = $this->wiki->href('rss');
         $securityController = $this->getService(SecurityController::class);
         if (isset($_GET['id'])) {
-            $id = $securityController->filterInput(INPUT_GET, 'id', FILTER_SANITIZE_STRING);
+            $id = $securityController->filterInput(INPUT_GET, 'id', FILTER_DEFAULT, true);
         } elseif (isset($_GET['id_typeannonce'])) {
-            $id = $securityController->filterInput(INPUT_GET, 'id_typeannonce', FILTER_SANITIZE_STRING);
+            $id = $securityController->filterInput(INPUT_GET, 'id_typeannonce', FILTER_DEFAULT, true);
         }
         if (!empty($id) && strval($id) == strval(intval($id))) {
             $urlrss .= '&amp;id=' . $id;

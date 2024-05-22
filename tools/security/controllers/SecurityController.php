@@ -187,6 +187,7 @@ class SecurityController extends YesWikiController
      * @param int $type
      * @param string $varName
      * @param int $filter same as filter_input
+     * @param bool $emulateFilterSanitizeString
      * @param string $format 'string', 'int', 'bool', 'array', '' (empty = not formatted)
      * @param array|int $options same as filter_input
      * @return mixed
@@ -195,17 +196,18 @@ class SecurityController extends YesWikiController
         int $type,
         string $varName,
         int $filter = FILTER_DEFAULT,
+        bool $emulateFilterSanitizeString = false,
         string $format = '',
         $options = 0
     ) {
         /**
          * @var int $sanitizedFilter
          */
-        $sanitizedFilter = ($filter === FILTER_SANITIZE_STRING) ? FILTER_UNSAFE_RAW : $filter;
+        $sanitizedFilter = $emulateFilterSanitizeString ? FILTER_UNSAFE_RAW : $filter;
         /**
          * @var string $sanitizedFormat
          */
-        $sanitizedFormat = ($filter === FILTER_SANITIZE_STRING) ? 'string' : $format;
+        $sanitizedFormat = $emulateFilterSanitizeString ? 'string' : $format;
         /**
          * @var mixed $rawInputFiltered
          */
@@ -223,7 +225,7 @@ class SecurityController extends YesWikiController
                 )
                     ? ''
                     : (
-                        $filter === FILTER_SANITIZE_STRING
+                        $emulateFilterSanitizeString
                         ? htmlspecialchars(strip_tags(strval($rawInputFiltered)))
                         : strval($rawInputFiltered)
                     );

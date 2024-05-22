@@ -38,10 +38,10 @@ class CsrfTokenController extends YesWikiController
         }
         switch ($inputType) {
             case 'GET':
-                $inputToken = $this->getService(SecurityController::class)->filterInput(INPUT_GET, $inputKey, FILTER_SANITIZE_STRING);
+                $inputToken = $this->getService(SecurityController::class)->filterInput(INPUT_GET, $inputKey, FILTER_DEFAULT, true);
                 break;
             case 'POST':
-                $inputToken = $this->getService(SecurityController::class)->filterInput(INPUT_POST, $inputKey, FILTER_SANITIZE_STRING);
+                $inputToken = $this->getService(SecurityController::class)->filterInput(INPUT_POST, $inputKey, FILTER_DEFAULT, true);
                 break;
 
             default:

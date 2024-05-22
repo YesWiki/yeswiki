@@ -802,11 +802,11 @@ class ApiController extends YesWikiController
                 Response::HTTP_BAD_REQUEST
             );
         } else {
-            $property = $this->getService(SecurityController::class)->filterInput($method, 'property', FILTER_SANITIZE_STRING);
+            $property = $this->getService(SecurityController::class)->filterInput($method, 'property', FILTER_DEFAULT, true);
             if (empty($property)) {
                 $property = null;
             }
-            $username = $this->getService(SecurityController::class)->filterInput($method, 'user', FILTER_SANITIZE_STRING);
+            $username = $this->getService(SecurityController::class)->filterInput($method, 'user', FILTER_DEFAULT, true);
             if (empty($username)) {
                 if (!$this->wiki->UserIsAdmin()) {
                     $username = $this->getService(AuthController::class)->getLoggedUser()['name'];
