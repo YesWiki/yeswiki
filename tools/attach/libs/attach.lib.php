@@ -963,7 +963,7 @@ if (!class_exists('attach')) {
         {
             $path = $this->GetUploadPath();
             $rawFileName = empty($rawFileName)
-                ? $this->wiki->services->get(SecurityController::class)->filterInput(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, string)
+                ? $this->wiki->services->get(SecurityController::class)->filterInput(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string')
                 : $rawFileName;
             $filename = $path . '/' . basename($rawFileName);
             if (!empty($rawFileName) && file_exists($filename)) {

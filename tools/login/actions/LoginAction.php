@@ -168,13 +168,13 @@ class LoginAction extends YesWikiAction
 
     private function login()
     {
-        $incomingurl = $this->securityController->filterInput(INPUT_POST, 'incomingurl', FILTER_SANITIZE_URL, 'string');
+        $incomingurl = $this->securityController->filterInput(INPUT_POST, 'incomingurl', FILTER_SANITIZE_URL, false, 'string');
         if (empty($incomingurl)) {
             $incomingurl = $this->arguments['incomingurl'];
         }
         try {
             if (!empty($_POST["name"])) {
-                $name = $this->securityController->filterInput(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
+                $name = $this->securityController->filterInput(INPUT_POST, 'name', FILTER_DEFAULT, true);
                 if (empty($name)) {
                     throw new LoginException(_t('LOGIN_WRONG_USER'));
                 }
@@ -188,7 +188,7 @@ class LoginAction extends YesWikiAction
                 if (empty($_POST["email"])) {
                     throw new LoginException(_t('LOGIN_WRONG_USER'));
                 }
-                $email = $this->securityController->filterInput(INPUT_POST, 'email', FILTER_SANITIZE_STRING);
+                $email = $this->securityController->filterInput(INPUT_POST, 'email', FILTER_DEFAULT, true);
                 if (empty($email)) {
                     throw new LoginException(_t('LOGIN_WRONG_USER'));
                 }
@@ -197,11 +197,11 @@ class LoginAction extends YesWikiAction
             if (empty($user)) {
                 throw new LoginException(_t('LOGIN_WRONG_USER'));
             }
-            $password = $this->securityController->filterInput(INPUT_POST, 'password', FILTER_UNSAFE_RAW, 'string');
+            $password = $this->securityController->filterInput(INPUT_POST, 'password', FILTER_UNSAFE_RAW, false, 'string');
             if (!$this->authController->checkPassword($password, $user)) {
                 throw new LoginException(_t('LOGIN_WRONG_PASSWORD'));
             }
-            $remember = $this->securityController->filterInput(INPUT_POST, 'remember', FILTER_VALIDATE_BOOL, 'bool');
+            $remember = $this->securityController->filterInput(INPUT_POST, 'remember', FILTER_VALIDATE_BOOL, false, 'bool');
             $this->authController->login($user, $remember);
 
             // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur

@@ -3,13 +3,13 @@
 use YesWiki\AutoUpdate\Service\AutoUpdateService;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\YesWikiMigration;
-use YesWiki\Security\Service\SecurityController;
+use YesWiki\Security\Controller\SecurityController;
 
 class CercopitequePostInstall extends YesWikiMigration
 {
     public function run()
     {
-        $previousVersion = $this->getService(SecurityController::class)->filterInput(INPUT_GET, 'previous_version', FILTER_SANITIZE_STRING);
+        $previousVersion = $this->getService(SecurityController::class)->filterInput(INPUT_GET, 'previous_version', FILTER_DEFAULT, true);
         if ($previousVersion === 'cercopitheque') {
 
             $config = $this->getService(ConfigurationService::class)->getConfiguration('wakka.config.php');
