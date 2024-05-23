@@ -108,7 +108,7 @@ class EntryManager
     {
         $extraFields = [];
         $extraFields['reactions'] = $this->wiki->services->get(ReactionManager::class)->getReactions($tag);
-        $extraFields['comments'] = $this->wiki->services->get(CommentService::class)->loadComments($tag);
+        $extraFields['comments'] = $this->wiki->services->get(CommentService::class)->getCommentList($tag);
         $extraFields['triples'] = $this->wiki->services->get(TripleStore::class)->getMatching($tag, null, null, '=');
         return $extraFields;
     }
