@@ -43,5 +43,5 @@ export default {
         renderHelper.prependHTMLBeforeGroup(field, 'formChange', $('<div/>').addClass('form-group').append($('<b/>').append(_t('BAZ_FORM_EDIT_TABCHANGE_CHANGE_LABEL'))))
       }
     }
-  },
+  }
 }

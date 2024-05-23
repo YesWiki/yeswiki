@@ -10,5 +10,5 @@ export default {
   attributesMapping: { 0: 'type', 1: 'value', 2: 'label' },
   renderInput(field) {
     return { field: field.value }
-  },
+  }
 }

@@ -18,7 +18,7 @@
 {% if core.newVersionRequested %}
     {% if isAdmin and not isHibernated %}
         {% if core.PHPVersionEnoughHigh %}
-            <a  href="{{ url({params:{upgrade:core.updateLink}}) }}"
+            <a  href="{{ url({ params: { action: 'upgrade', package: core.updateLink } }) }}"
                 class="btn btn-danger" title="{{ _t('AU_VERSION_UPDATE') }}">
                 {{ _t('AU_VERSION_UPDATE') }}
             </a>
@@ -38,8 +38,7 @@
 {% elseif core.updateAvailable %}
     {% if isAdmin and not isHibernated %}
         {% if core.PHPVersionEnoughHigh %}
-            <p> {{ _t('AU_WARNING') }} </p>
-            <a  href="{{ url({params:{upgrade:core.updateLink}}) }}"
+            <a  href="{{ url({ params: { action: 'upgrade', package: core.updateLink } }) }}"
                 class="btn btn-primary" title="{{ _t('AU_UPDATE') }}">
                 {{ _t('AU_UPDATE') }}
             </a>
@@ -59,7 +58,7 @@
 {% elseif not core.updateAvailable %}
     {% if isAdmin and not isHibernated %}
         {% if core.PHPVersionEnoughHigh %}
-            <a  href="{{ url({params:{upgrade:core.updateLink}})  }}"
+            <a  href="{{ url({ params: { action: 'upgrade', package: core.updateLink } }) }}"
                 class="btn btn-warning" title="{{ _t('AU_FORCE_UPDATE') }}">
                 {{ _t('AU_FORCE_UPDATE') }}
             </a>

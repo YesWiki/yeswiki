@@ -5,9 +5,11 @@ namespace YesWiki\Bazar\Field;
 use attach;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Bazar\Service\DateService;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Service\EventDispatcher;
+use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Security\Controller\SecurityController;
 
 /**
@@ -16,10 +18,12 @@ use YesWiki\Security\Controller\SecurityController;
 class FileField extends BazarField
 {
     protected $readLabel;
+    protected const FIELD_MAX_SIZE = 14;
     protected const FIELD_READ_LABEL = 6;
     protected const FIELD_AUTHORIZED_EXTS_LABEL = 7;
 
     protected $attach;
+    protected $maxSize;
     protected $authorizedExts;
 
     public function __construct(array $values, ContainerInterface $services)
@@ -37,21 +41,34 @@ class FileField extends BazarField
         $this->authorizedExts = array_filter($exts, function ($ext) {
             return preg_match('/^\.[a-z0-9]{1,4}+$/', $ext);
         });
+        $maxFieldSize = $values[self::FIELD_MAX_SIZE] ?
+            $this->getWiki()->parse_size($values[self::FIELD_MAX_SIZE]) :
+            0;
+
+        // take the min size limit, excluding 0 values that mean no limit
+        $this->maxSize = min(array_filter(
+            [
+            $maxFieldSize,
+            $this->getService(ParameterBagInterface::class)->get('max-upload-size')]
+        ));
     }
 
     protected function renderInput($entry)
     {
+        $wiki = $this->getWiki();
         $value = $this->getValue($entry);
-
         $deletedFile = false;
+        $wiki->services->get(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/file-field.js');
 
         if (!empty($value)) {
             if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {
                 if ($this->isAllowedToDeleteFile($entry, $value)) {
                     if (substr($value, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
                         $attach = $this->getAttach();
-                        $rawFileName = filter_input(INPUT_GET, 'delete_file', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-                        $attach->fmDelete($rawFileName);
+                        $rawFileName = $this->getService(SecurityController::class)->filterInput(INPUT_GET, 'delete_file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, 'string');
+                        if (!empty($rawFileName)) {
+                            $attach->fmDelete($rawFileName);
+                        }
                     } else {
                         // do not delete file if not same entry name (only remove from this entry)
                         $deletedFile = true;
@@ -62,14 +79,15 @@ class FileField extends BazarField
                 }
             }
         }
-
         return ($alertMessage ?? '') . $this->render('@bazar/inputs/file.twig', (
-            empty($value) ||  !file_exists($this->getBasePath().  $value) || $deletedFile
-            ? []
+            empty($value) ||  !file_exists($this->getBasePath() . $value) || $deletedFile
+            ? [
+                'maxSize' => $this->maxSize
+            ]
             : [
                 'value' => $value,
                 'shortFileName' => $this->getShortFileName($value),
-                'fileUrl' => $this->getBasePath().  $value,
+                'fileUrl' => $this->getBasePath() . $value,
                 'deleteUrl' => empty($entry) ? '' : $this->getWiki()->href('edit', $entry['id_fiche'], ['delete_file' => $value], false),
                 'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value)
             ]
@@ -93,20 +111,23 @@ class FileField extends BazarField
             $extension = preg_replace("/_$/", "", $extension);
             if ($extension != '' && in_array($extension, array_keys($params->get('authorized-extensions')))) {
                 if (!file_exists($filePath)) {
+                    if ($_FILES[$this->propertyName]['size'] > $this->maxSize) {
+                        throw new \Exception(_t('BAZ_FILEFIELD_TOO_LARGE_FILE', ['fileMaxSize' => $this->maxSize]));
+                    }
                     move_uploaded_file($_FILES[$this->propertyName]['tmp_name'], $filePath);
                     chmod($filePath, 0755);
                 } else {
-                    echo _t('BAZ_FILE_ALREADY_EXISTING').'<br />';
+                    echo _t('BAZ_FILE_ALREADY_EXISTING') . '<br />';
                 }
             } else {
-                echo _t('BAZ_NOT_AUTHORIZED_FILE').'<br />';
+                echo _t('BAZ_NOT_AUTHORIZED_FILE') . '<br />';
 
                 return [$this->propertyName => ''];
             }
 
             return [$this->propertyName => basename($filePath)];
         } elseif (!empty($value)) {
-            return [$this->propertyName => file_exists($this->getBasePath(). $value) ? $value : ''];
+            return [$this->propertyName => file_exists($this->getBasePath() . $value) ? $value : ''];
         } else {
             return [$this->propertyName => ''];
         }
@@ -117,13 +138,13 @@ class FileField extends BazarField
         $value = $this->getValue($entry);
 
         $basePath = $this->getBasePath() ;
-        if (!empty($value) && file_exists($basePath.$value)) {
+        if (!empty($value) && file_exists($basePath . $value)) {
             $shortFileName = $this->getShortFileName($value);
             return $this->render('@bazar/fields/file.twig', [
                 'value' => $value,
                 'fileUrl' => ($shortFileName == $value)
-                    ? $this->getWiki()->getBaseUrl().'/'.$basePath . $value
-                    : $this->getWiki()->Href('download', $entry['id_fiche']."_".$this->getPropertyName(), ['file' => $value], false),
+                    ? $this->getWiki()->getBaseUrl() . '/' . $basePath . $value
+                    : $this->getWiki()->Href('download', $entry['id_fiche'] . "_" . $this->getPropertyName(), ['file' => $value], false),
                 'shortFileName' => $shortFileName,
             ]);
         }
@@ -150,7 +171,7 @@ class FileField extends BazarField
      */
     protected function defineFilePrefix(array $entry)
     {
-        return $entry['id_fiche'].'_'.$this->getPropertyName().'_';
+        return $entry['id_fiche'] . '_' . $this->getPropertyName() . '_';
     }
 
     /**
@@ -277,7 +298,15 @@ class FileField extends BazarField
             $_POST = [];
             $previousRequest = $_REQUEST;
             $_REQUEST = [];
+
+            // remove current field
             unset($entryFromDb[$this->propertyName]);
+
+            // be careful to recurrence
+            if (isset($entryFromDb['bf_date_fin_evenement_data']) && is_string($entryFromDb['bf_date_fin_evenement_data'])) {
+                unset($entryFromDb['bf_date_fin_evenement_data']); // remove links to parent
+            }
+
             $entryFromDb['antispam'] = 1;
             $entryFromDb['date_maj_fiche'] = date('Y-m-d H:i:s', time());
             $newEntry = $entryManager->update($entryFromDb['id_fiche'], $entryFromDb, false, true);
@@ -285,6 +314,14 @@ class FileField extends BazarField
             $_GET = $previousGet;
             $_POST = $previousPost;
             $_REQUEST = $previousRequest;
+
+            // be careful to recurrence
+
+            if (!empty($newEntry['id_fiche'])
+                && is_string($newEntry['id_fiche'])
+                && isset($newEntry['bf_date_fin_evenement'])) {
+                $this->getService(DateService::class)->followId($newEntry['id_fiche']);
+            }
 
             $errors = $this->services->get(EventDispatcher::class)->yesWikiDispatch('entry.updated', [
                 'id' => $newEntry['id_fiche'],

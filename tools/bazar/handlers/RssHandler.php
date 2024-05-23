@@ -3,6 +3,7 @@
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Security\Controller\SecurityController;
 
 // TODO use Symfony XmlEncoder instead
 // https://symfony.com/doc/current/components/serializer.html#the-xmlencoder
@@ -15,29 +16,28 @@ class RssHandler extends YesWikiHandler
         }
 
         $urlrss = $this->wiki->href('rss');
+        $securityController = $this->getService(SecurityController::class);
         if (isset($_GET['id'])) {
-            $id = filter_input(INPUT_GET, 'id', FILTER_UNSAFE_RAW);
-            $id = in_array($id, [false,null], true) ? "" : htmlspecialchars(strip_tags($id));
+            $id = $securityController->filterInput(INPUT_GET, 'id', FILTER_SANITIZE_STRING);
         } elseif (isset($_GET['id_typeannonce'])) {
-            $id = filter_input(INPUT_GET, 'id_typeannonce', FILTER_UNSAFE_RAW);
-            $id = in_array($id, [false,null], true) ? "" : htmlspecialchars(strip_tags($id));
+            $id = $securityController->filterInput(INPUT_GET, 'id_typeannonce', FILTER_SANITIZE_STRING);
         }
         if (!empty($id) && strval($id) == strval(intval($id))) {
-            $urlrss .= '&amp;id='.$id;
+            $urlrss .= '&amp;id=' . $id;
         } else {
             $id = '';
         }
 
         if (isset($_GET['nbitem'])) {
             $nbitem = $_GET['nbitem'];
-            $urlrss .= '&amp;nbitem='.$nbitem;
+            $urlrss .= '&amp;nbitem=' . $nbitem;
         } else {
             $nbitem = $this->wiki->config['BAZ_NB_ENTREES_FLUX_RSS'];
         }
 
         if (isset($_GET['utilisateur'])) {
             $utilisateur = $_GET['utilisateur'];
-            $urlrss .= '&amp;utilisateur='.$utilisateur;
+            $urlrss .= '&amp;utilisateur=' . $utilisateur;
         } else {
             $utilisateur = '';
         }
@@ -46,12 +46,12 @@ class RssHandler extends YesWikiHandler
         $q = '';
         if (isset($_GET['q']) and !empty($_GET['q'])) {
             $q = $_GET['q'];
-            $urlrss .= '&amp;q='.$q;
+            $urlrss .= '&amp;q=' . $q;
         }
 
         if (isset($_GET['query'])) {
             $query = $_GET['query'];
-            $urlrss .= '&amp;query='.$query;
+            $urlrss .= '&amp;query=' . $query;
             $tabquery = array();
             $tableau = array();
             $tab = explode('|', $query); //découpe la requete autour des |
@@ -100,7 +100,7 @@ class RssHandler extends YesWikiHandler
         $xml .= "\r\n      ";
         $xml .= XML_Util::createTag('language', null, 'fr-FR');
         $xml .= "\r\n      ";
-        $xml .= XML_Util::createTag('copyright', null, 'Copyright (c) '.date('Y').' '. htmlentities(removeAccents($this->wiki->config['BAZ_RSS_NOMSITE'])));
+        $xml .= XML_Util::createTag('copyright', null, 'Copyright (c) ' . date('Y') . ' ' . htmlentities(removeAccents($this->wiki->config['BAZ_RSS_NOMSITE'])));
         $xml .= "\r\n      ";
         $xml .= XML_Util::createTag('lastBuildDate', null, date('r'));
         $xml .= "\r\n      ";
@@ -141,11 +141,11 @@ class RssHandler extends YesWikiHandler
                 $xml .= XML_Util::createTag(
                     'description',
                     null,
-                    '<![CDATA['.preg_replace(
+                    '<![CDATA[' . preg_replace(
                         '/data-id=".*"/Ui',
                         '',
                         $this->sanitize($this->getService(EntryController::class)->view($ligne))
-                    ).']]>'
+                    ) . ']]>'
                 );
                 $xml .= "\r\n        ";
                 $xml .= XML_Util::createTag('pubDate', null, date('r', strtotime($ligne['date_creation_fiche'])));
@@ -159,9 +159,9 @@ class RssHandler extends YesWikiHandler
             $xml .= "\r\n          ";
             $xml .= XML_Util::createTag('title', null, $this->sanitize(_t('BAZ_PAS_DE_FICHES')));
             $xml .= "\r\n          ";
-            $xml .= XML_Util::createTag('link', null, '<![CDATA['.$this->wiki->config['base_url'].$this->wiki->config['root_page'].']]>');
+            $xml .= XML_Util::createTag('link', null, '<![CDATA[' . $this->wiki->config['base_url'] . $this->wiki->config['root_page'] . ']]>');
             $xml .= "\r\n          ";
-            $xml .= XML_Util::createTag('guid', null, '<![CDATA['.$this->wiki->config['base_url'].$this->wiki->config['root_page'].']]>');
+            $xml .= XML_Util::createTag('guid', null, '<![CDATA[' . $this->wiki->config['base_url'] . $this->wiki->config['root_page'] . ']]>');
             $xml .= "\r\n          ";
             $xml .= XML_Util::createTag('description', null, $this->sanitize(_t('BAZ_PAS_DE_FICHES')));
             $xml .= "\r\n          ";
@@ -178,9 +178,9 @@ class RssHandler extends YesWikiHandler
 
         return str_replace(
             '</image>',
-            '</image>'."\n"
-            .'    <atom:link href="'. htmlentities((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . '://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'])
-            .'" rel="self" type="application/rss+xml" />',
+            '</image>' . "\n"
+            . '    <atom:link href="' . htmlentities((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'])
+            . '" rel="self" type="application/rss+xml" />',
             $this->sanitize($xml, ENT_QUOTES, 'UTF-8')
         );
     }

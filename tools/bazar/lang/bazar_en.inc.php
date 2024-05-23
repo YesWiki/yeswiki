@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     'BAZ_FORMULAIRE' => 'Forms',
     'BAZ_LISTES' => 'Lists',
     'BAZ_NOM_LISTE' => 'Name of the list',
@@ -226,7 +225,6 @@ return [
     'BAZ_UNKNOWN_USER' => 'Unknown user',
     // 'BAZ_RADIO_REFRESH' => 'Rafraîchir les informations de la liste',
     // 'BAZ_NOT_CATEGORIZED' => 'Non catégorisé',
-
     //================ Calendrier Bazar =======================================
     'BAZ_AFFICHE_TITRES_COMPLETS' => 'Show the full events titles',
     'BAZ_TRONQUER_TITRES' => 'Troncate the events titles',
@@ -238,7 +236,6 @@ return [
     'BAZ_VENDREDI' => 'Friday',
     'BAZ_SAMEDI' => 'Saturday',
     'BAZ_DIMANCHE' => 'Sunday',
-
     'BAZ_LUNDI_COURT' => 'Mon',
     'BAZ_MARDI_COURT' => 'Tue',
     'BAZ_MERCREDI_COURT' => 'Wed',
@@ -246,7 +243,6 @@ return [
     'BAZ_VENDREDI_COURT' => 'Fri',
     'BAZ_SAMEDI_COURT' => 'Sat',
     'BAZ_DIMANCHE_COURT' => 'Sun',
-
     'BAZ_JANVIER' => 'January',
     'BAZ_FEVRIER' => 'February',
     'BAZ_MARS' => 'March',
@@ -259,27 +255,21 @@ return [
     'BAZ_OCTOBRE' => 'October',
     'BAZ_NOVEMBRE' => 'November',
     'BAZ_DECEMBRE' => 'December',
-
     'BAZ_TODAY' => 'Today',
     'BAZ_MONTH' => 'Month',
     'BAZ_WEEK' => 'Week',
     'BAZ_DAY' => 'Day',
-
     'BAZ_ALL_DAY' => 'All day',
     'BAZ_ENTER_HOUR' => 'Enter hour',
-
     // 'BAZ_RESET_FILTERS' => 'Réinitialiser les filtres',
-
     // controllers/FormController.php
     'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'Restrict the number of cards to one per user',
     'BAZ_MESSAGE_IF_OTHER_ENTRY_EXIST' => 'Message to display when an entry already exists. Leave blank to keep the default message.',
     'BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM' => 'You have already entered an entry for the "{formName}" form. It is displayed below.',
     'BAZ_USER_SHOULD_BE_CONNECTED_TO_ACCES_THIS_FORM' => 'It is necessary to be logged in to be able to complete this form.',
-
     // fields/BookmarkletField.php
     // 'BAZ_CLOSE_THIS_WINDOW' => 'Fermer cette fen&ecirc;tre',
     'BAZ_BOOKMARKLET_LABEL' => 'Create an entry %{form}',
-
     // fields/CommentsField.php
     // 'BAZ_ACTIVATE_COMMENTS' => 'Activer les commentaires sur cette fiche ?',
     // 'BAZ_ACTIVATE_COMMENTS_HINT' => 'Droits mis à jour lors de l\'enregistrement de la fiche',
@@ -288,16 +278,13 @@ return [
     // 'BAZ_COMMENTS_INFO_HUMHUB_EXTERNAL' => 'Les commentaires sont gérés par la plateforme sociale HumHub (YesWiki intégré par Humhub)',
     // 'BAZ_COMMENTS_INFO_UNKNOWN' => 'Les commentaires ne sont pas gérés car le type de réglage des commentaires est inconnu',
     // 'BAZ_COMMENTS_NOT_ACTIVATED' => 'Les commentaires sont gérés par YesWiki mais ceux-ci ne sont pas activés.<br/>Se rendre sur la page GererConfig pour activer les commentaires (paramètre `comments_activated`)',
-
     // fields/FileField.php
     // 'BAZ_FILE_ALREADY_EXISTING' => 'fichier déja existant',
     // 'BAZ_NOT_AUTHORIZED_FILE' => 'fichier non autorise',
     // 'BAZ_FILEFIELD_FILE' => 'File : {filename}',
-
     // fields/ImageField.php
     // 'BAZ_IMAGE_ALREADY_EXISTING' => 'L\'image {fileName} existait d&eacute;ja, elle n\'a pas &eacute;t&eacute; remplac&eacute;e.',
     // 'BAZ_NOT_AUTHORIZED_EXTENSION' => 'Extension non autoris&eacute;.',
-
     //================ Drag & Drop for Checkbox fiche =======================================
     'BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM' => 'Available elements',
     'BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO' => 'Select your list\'s elements by clicking on ',
@@ -314,30 +301,27 @@ return [
     'BAZ_DRAG_n_DROP_CHECKBOX_LIST' => 'list',
     'BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST' => 'Empty list',
     'BAZ_DRAG_n_DROP_CHECKBOX_FILTER_TEXT' => 'Number of elements : ',
-
     // fields/ReactionsField.php
-     'BAZ_ACTIVATE_REACTIONS' => 'Enable reactions on this form?',
-     'BAZ_REACTIONS_DEFAULT_BLACK_IDEA' => 'It disturbs me',
-     'BAZ_REACTIONS_DEFAULT_GRATITUDE' => 'Gratitude',
-     'BAZ_REACTIONS_DEFAULT_I_LOVE' => 'I like',
-     'BAZ_REACTIONS_DEFAULT_I_UNDERSTOOD' => 'I learned something',
-     'BAZ_REACTIONS_DEFAULT_NOT_AGREE' => 'I don\'t agree',
-     'BAZ_REACTIONS_DEFAULT_NOT_UNDERSTOOD' => 'I did not understand',
-     'BAZ_SHARE_YOUR_COMMENT' => 'And feel free to comment for further consideration!',
-     'BAZ_SHARE_YOUR_REACTION' => 'Share your reaction to this content',
-
+    'BAZ_ACTIVATE_REACTIONS' => 'Activate reactions on this entry?',
+    'BAZ_REACTIONS_DEFAULT_BLACK_IDEA' => 'It disturbs me',
+    'BAZ_REACTIONS_DEFAULT_GRATITUDE' => 'Gratitude',
+    'BAZ_REACTIONS_DEFAULT_I_LOVE' => 'I like',
+    'BAZ_REACTIONS_DEFAULT_I_UNDERSTOOD' => 'I learned something',
+    'BAZ_REACTIONS_DEFAULT_NOT_AGREE' => 'I don\'t agree',
+    'BAZ_REACTIONS_DEFAULT_NOT_UNDERSTOOD' => 'I did not understand',
+    'BAZ_SHARE_YOUR_COMMENT' => 'And feel free to comment for further consideration!',
+    'BAZ_SHARE_YOUR_REACTION' => 'Share your reaction to this content',
+    // fields/video.twig
+    'VIDEO_LINK_FIELD' => 'Link to the video: %{link}',
     // fields/WidgetHandler.php
     // 'BAZ_WIDGET_HANDLER_TITLE' => 'Partager les résultats par widget HTML (code embed)',
-
     // libs/bazar.fonct.misc.php
     // 'BAZ_ERROR_IMAGE' => 'Erreur Image :',
-
     // ==== ExternalBazarService ====
     // 'BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_FORM' => 'contenu du formulaire reçu mal formaté.',
     // 'BAZ_EXTERNAL_SERVICE_BAD_URL' => 'url non accessible.',
     // 'BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_ENTRIES' => 'contenu des fiches reçues mal formaté.',
     // 'BAZ_EXTERNAL_SERVICE_QUERIES_NOT_AVAILABLE' => 'Vous utilisez la paramètre \'query\' pour des fiches externes. Il n\'est pas encore fonctionnel.',
-
     // for edit config
     // 'EDIT_CONFIG_HINT_BAZ_MAP_CENTER_LAT' => 'Latitude par défaut des affichages cartographiques',
     // 'EDIT_CONFIG_HINT_BAZ_MAP_CENTER_LON' => 'Longitude par défaut des affichages cartographiques',
@@ -350,7 +334,6 @@ return [
     // 'EDIT_CONFIG_HINT_BAZ_EXTERNAL_SERVICE[CACHE_TIME_TO_REFRESH_FORMS]' => 'Temps (s) entre deux rafraîchissements du cache pour formulaires nécessaires aux requêtes JSON',
     // 'EDIT_CONFIG_HINT_BAZARIGNOREACLS' => 'Permettre la création de fiches même si le wiki est fermé en écriture (true ou false)',
     // 'EDIT_CONFIG_GROUP_BAZAR' => 'Base de données',
-
     // USER FIELD
     // 'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => "L'identifiant \"{currentName}\" existe déjà !\nCochez la case pour confirmer son remplacement par \"{proposedName}\" ou sinon modifiez votre identifiant dans le formulaire ci-dessous.",
     // 'BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL' => 'L\'e-mail fourni est déjà associé à un compte YesWiki ! Veuillez entrer une autre adresse e-mail ou vous connecter à ce compte.',
@@ -359,37 +342,58 @@ return [
     // 'BAZ_USER_FIELD_ALREADY_CONNECTED_AUTOUPDATE' => 'Pour changer l\'adresse e-mail associée à ce compte, tapez-en une différente de "{email}".',
     // 'BAZ_USER_FIELD_FORCE_SAVE_ENTRY' => 'En tant qu\'admin, forcer la création de la fiche pour l\'e-mail donné (et ne créer un compte que s\'il n\'existe pas déjà)',
     'BAZ_USER_FIELD_LABEL' => 'User',
-
     // presentation/templates/annuaire_alphabetique.tpl.html
     // 'BAZ_MEMBERS' => 'membres',
-
     // presentation/templates/blog.tpl.html
     // 'BAZ_MORE_INFOS' => 'Plus d\'infos',
-
     // presentation/templates/liste_liens_date.tpl.html
     // 'BAZ_NO_ENTRY_FOR_THIS_PERIOD' => 'Il n\'y a pas de fiche pour cette période.',
-
     // templates/entries/index-dynamic-templates/card.twig
     'BAZ_CARD_NBCOL_TOO_HIGH' => 'The parameter `nbcol` can not be taken in count with `style="horizontal"` and keep limited to 2 !',
-
     // templates/tableau.twig
     'SUM' => 'Sum',
     'URL' => 'Url',
 
-    // presentation/templates/timeline.tpl.html
-    // 'BAZ_YEAR' => 'Ann&eacute;e',
+    // templates/bazar/fields/date.twig
+    // 'EVENT_IS_RECURRENT' => 'Cet évènement est récurrent : %{repetition}',
+    // 'EVENT_LIMIT_DATE' => 'jusqu\'au %{date}',
+    // 'EVENT_REPETITION_FOR_DAYS' => 'tous les %{x} jours',
+    // 'EVENT_REPETITION_FOR_MONTHS' => 'tous les %{x} mois, %{monthRepetition}',
+    // 'EVENT_REPETITION_FOR_WEEKS' => 'toutes les %{x} semaines, %{days}',
+    // 'EVENT_REPETITION_FOR_YEAR' => 'tous les ans, %{monthRepetition}',
+    // 'EVENT_REPETITION_FOR_YEARS' => 'toutes les %{x} années, %{monthRepetition}',
+    // 'EVENT_REPETITION_NTH_OF_MONTH' => 'le %{nth} %{month}',
+    // 'EVENT_REPETITION_NTH_OF_MONTH_ALONE' => 'le %{nth}',
+    // 'EVENT_REPETITION_IN_MONTH' => 'en %{month}, ',
+    // 'EVENT_IS_LINKED_TO_RECURRENT' => 'Cet évènement est un évènement récurrent lié à la fiche %{link}',
 
-    // presentation/templates/widget.tpl.html
-    // 'BAZ_FACETTES_DISPLAY' => 'Apparence des facettes',
-    // 'BAZ_EXPANDED_FACETTES' => 'Facettes dépliées',
-    // 'BAZ_NOT_EXPANDED' => 'Non dépliées',
-    // 'BAZ_EXPANDED' => 'Dépliées',
-    // 'BAZ_PREVIEW' => 'Prévisualisation',
-    // 'BAZ_PREVIEW_DETAILS' => 'cette partie est non cliquable, les paramêtres se changent dans la colonne de gauche',
-    // 'BAZ_WIDGET_INSTRUCTION' => 'Code embed a copier coller dans votre site',
-    // 'BAZ_WIDGET_INSTRUCTION2' => 'Code action wiki a copier coller dans une page de ce site',
+    // templates/bazar/inputs/date.twig
+    // 'EVENT_ACTIVATE_CUSTOM' => 'Voir les options supplémentaires',
+    // 'EVENT_EVERY_DAYS' => 'Tous les jours',
+    // 'EVENT_EVERY_X_DAYS' => 'Tous les X jours',
+    // 'EVENT_EVERY_WEEKS' => 'Toutes les semaines',
+    // 'EVENT_EVERY_X_WEEKS' => 'Toutes les X semaines',
+    // 'EVENT_EVERY_MONTHS' => 'Tous les mois',
+    // 'EVENT_EVERY_X_MONTHS' => 'Tous les X mois',
+    // 'EVENT_EVERY_X_MONTHS' => 'Tous les X mois',
+    // 'EVENT_EVERY_YEARS' => 'Tous les ans',
+    // 'EVENT_EVERY_X_YEARS' => 'Toutes les X années',
+    // 'EVENT_EXCEPT_LABEL' => 'Sauf',
+    // 'EVENT_FIRST_Y_OF_MONTH' => 'Le premier Y du mois',
+    // 'EVENT_FORTH_Y_OF_MONTH' => 'Le quatrième Y du mois',
+    // 'EVENT_IS_LINKED_TO_RECURRENT_EDIT' => 'Cette évènement est un évènement récurrent lié à la fiche %{link}.<br/>Toute modification de cette fiche cassera le lien avec l\'évènement de base !',
+    // 'EVENT_LAST_Y_OF_MONTH' => 'Le dernier Y du mois',
+    // 'EVENT_LIMIT_DATE_UPDATE_FORCED' => 'La date de fin a été forcée pour réduire le nombre de répétitions à 600 !',
+    // 'EVENT_NO_REPETITION' => 'Pas de répétition',
+    // 'EVENT_NTH_OF_MONTH' => 'Chaque Y du mois',
+    // 'EVENT_ON_MONTH' => 'En :',
+    // 'EVENT_RECURRENT' => 'Récurrence',
+    // 'EVENT_REMOVE_CUSTOM' => 'Masques les options supplémentaires',
+    // 'EVENTS_REPETITIONS' => 'Répétitions',
+    // 'EVENT_SECOND_Y_OF_MONTH' => 'Le second Y du mois',
+    // 'EVENT_THIRD_Y_OF_MONTH' => 'Le troisième Y du mois',
+    // 'EVENT_UP_TO_DATE' => 'Jusqu\'au :',
+    // 'EVENTS_WHEN_IN_MONTH' => 'A quel moment du mois ?',
 
-    // services/EntryManager.php
-    // 'BAZ_CORRESPONDANCE_ERROR' => 'action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"',
-    // 'BAZ_CORRESPONDANCE_ERROR2' => "action bazarliste : le paramètre correspondance est mal rempli.\nIl doit être de la forme correspondance=\"identifiant_1=identifiant_2\" ou correspondance=\"identifiant_1=identifiant_2, identifiant_3=identifiant_4\"",
+    'BAZ_FILEFIELD_FILE' => 'File : {filename}',
 ];

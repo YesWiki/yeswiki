@@ -29,7 +29,7 @@ class HeaderAction extends YesWikiAction
                 $output .= '<b><a href="'.$this->wiki->Href(
                     '',
                     'GererMisesAJour',
-                    ['upgrade' =>  THEME_PAR_DEFAUT ]
+                    ['action' => 'upgrade', 'package' => THEME_PAR_DEFAUT]
                 )
                     .'" title="'.$text.'">'.$text.'</a></b></div>';
                 return $output ; // because an admin can see all website without theme

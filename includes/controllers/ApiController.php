@@ -28,6 +28,7 @@ use YesWiki\Core\Service\CommentService;
 use YesWiki\Core\Service\ReactionManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Security\Controller\SecurityController;
 
 class ApiController extends YesWikiController
 {
@@ -39,34 +40,34 @@ class ApiController extends YesWikiController
         $output = '<h1>YesWiki API</h1>';
 
         $urlUser = $this->wiki->Href('', 'api/users');
-        $output .= '<h2>'._t('USERS').'</h2>'."\n".
-            '<p><code>GET '.$urlUser.'</code></p>';
+        $output .= '<h2>' . _t('USERS') . '</h2>' . "\n" .
+            '<p><code>GET ' . $urlUser . '</code></p>';
 
         $urlGroup = $this->wiki->Href('', 'api/groups');
-        $output .= '<h2>'._t('GROUPS').'</h2>'."\n".
-            '<p><code>GET '.$urlGroup.'</code></p>';
+        $output .= '<h2>' . _t('GROUPS') . '</h2>' . "\n" .
+            '<p><code>GET ' . $urlGroup . '</code></p>';
 
         $urlPages = $this->wiki->Href('', 'api/pages');
-        $output .= '<h2>'._t('PAGES').'</h2>'."\n".
-            '<p><code>GET '.$urlPages.'</code></p>';
+        $output .= '<h2>' . _t('PAGES') . '</h2>' . "\n" .
+            '<p><code>GET ' . $urlPages . '</code></p>';
         $urlPagesComments = $this->wiki->Href('', 'api/pages/{pageTag}/comments');
-        $output .= '<p><code>GET '.$urlPagesComments.'</code></p>';
+        $output .= '<p><code>GET ' . $urlPagesComments . '</code></p>';
 
         $urlComments = $this->wiki->Href('', 'api/comments');
-        $output .= '<h2>'._t('COMMENTS').'</h2>'."\n".
-            '<p><code>GET '.$urlComments.'</code></p>';
+        $output .= '<h2>' . _t('COMMENTS') . '</h2>' . "\n" .
+            '<p><code>GET ' . $urlComments . '</code></p>';
 
         $urlTriples = $this->wiki->Href('', 'api/triples/{resource}', ['property' => 'http://outils-reseaux.org/_vocabulary/type', 'user' => 'username'], false);
-        $output .= '<h2>'._t('TRIPLES').'</h2>'."\n".
-            '<p><code>GET '.$urlTriples.'</code></p>';
+        $output .= '<h2>' . _t('TRIPLES') . '</h2>' . "\n" .
+            '<p><code>GET ' . $urlTriples . '</code></p>';
 
         $urlArchives = $this->wiki->Href('', 'api/archives');
-        $output .= '<h2>'._t('ARCHIVES').'</h2>'."\n".
-            '<p>'._t('ONLY_FOR_ADMINS').'</p>'.
-            '<p><code>GET '.$urlArchives.'</code></p>'.
-            '<p><code>GET '.$urlArchives.'/{id}</code></p>'.
-            '<p><code>POST '.$urlArchives.'</code></p>'.
-            '<p><code>POST '.$urlArchives.'/{id}</code></p>';
+        $output .= '<h2>' . _t('ARCHIVES') . '</h2>' . "\n" .
+            '<p>' . _t('ONLY_FOR_ADMINS') . '</p>' .
+            '<p><code>GET ' . $urlArchives . '</code></p>' .
+            '<p><code>GET ' . $urlArchives . '/{id}</code></p>' .
+            '<p><code>POST ' . $urlArchives . '</code></p>' .
+            '<p><code>POST ' . $urlArchives . '/{id}</code></p>';
 
         // TODO use annotations to document the API endpoints
         $extensions = $this->wiki->extensions;
@@ -86,7 +87,7 @@ class ApiController extends YesWikiController
                 }
             }
             if (empty($response)) {
-                $func = 'documentation'.ucfirst(strtolower($extension));
+                $func = 'documentation' . ucfirst(strtolower($extension));
                 if (function_exists($func)) {
                     $output .= $func();
                 }
@@ -95,7 +96,7 @@ class ApiController extends YesWikiController
             }
         }
 
-        $output = $this->wiki->Header().'<div class="api-container">'.$output.'</div>'.$this->wiki->Footer();
+        $output = $this->wiki->Header() . '<div class="api-container">' . $output . '</div>' . $this->wiki->Footer();
 
         return new Response($output);
     }
@@ -553,7 +554,7 @@ class ApiController extends YesWikiController
                                 // test if limits wherer put
                                 if (!empty($params['maxreaction']) && count($userReactions) >= $params['maxreaction']) {
                                     return new ApiResponse(
-                                        ['error' => 'Seulement '.$params['maxreaction'].' réaction(s) possible(s). Vous pouvez désélectionner une de vos réactions pour changer.'],
+                                        ['error' => 'Seulement ' . $params['maxreaction'] . ' réaction(s) possible(s). Vous pouvez désélectionner une de vos réactions pour changer.'],
                                         Response::HTTP_UNAUTHORIZED
                                     );
                                 } else {
@@ -581,7 +582,7 @@ class ApiController extends YesWikiController
                             }
                         }
                         return new ApiResponse(
-                            ['error' => "'".strval($_POST['reactionid']) . "' n'est pas une réaction déclarée sur la page '".strval($_POST['pagetag'])."'"],
+                            ['error' => "'" . strval($_POST['reactionid']) . "' n'est pas une réaction déclarée sur la page '" . strval($_POST['pagetag']) . "'"],
                             Response::HTTP_INTERNAL_SERVER_ERROR
                         );
                     } else {
@@ -801,14 +802,11 @@ class ApiController extends YesWikiController
                 Response::HTTP_BAD_REQUEST
             );
         } else {
-            $property = filter_input($method, 'property', FILTER_UNSAFE_RAW);
-            $property = in_array($property, [false,null], true) ? "" : htmlspecialchars(strip_tags($property));
+            $property = $this->getService(SecurityController::class)->filterInput($method, 'property', FILTER_SANITIZE_STRING);
             if (empty($property)) {
                 $property = null;
             }
-
-            $username = filter_input($method, 'user', FILTER_UNSAFE_RAW);
-            $username = in_array($username, [false,null], true) ? "" : htmlspecialchars(strip_tags($username));
+            $username = $this->getService(SecurityController::class)->filterInput($method, 'user', FILTER_SANITIZE_STRING);
             if (empty($username)) {
                 if (!$this->wiki->UserIsAdmin()) {
                     $username = $this->getService(AuthController::class)->getLoggedUser()['name'];

@@ -296,6 +296,7 @@ return [
     'BAZ_FILE_ALREADY_EXISTING' => 'fichier déja existant',
     'BAZ_NOT_AUTHORIZED_FILE' => 'fichier non autorise',
     'BAZ_FILEFIELD_FILE' => 'Fichier : {filename}',
+    'BAZ_FILEFIELD_TOO_LARGE_FILE' => 'Le fichier est trop volumineux, maximum %{fileMaxSize} octets',
 
     // fields/ImageField.php
     'BAZ_IMAGE_ALREADY_EXISTING' => 'L\'image {fileName} existait d&eacute;ja, elle n\'a pas &eacute;t&eacute; remplac&eacute;e.',
@@ -328,6 +329,9 @@ return [
     'BAZ_REACTIONS_DEFAULT_NOT_UNDERSTOOD' => 'J\'ai pas compris',
     'BAZ_SHARE_YOUR_COMMENT' => 'Et n\'hésitez pas à faire un commentaire pour approfondir la réflexion !',
     'BAZ_SHARE_YOUR_REACTION' => 'Partagez votre réaction à propos de ce contenu',
+
+    // fields/video.twig
+    'VIDEO_LINK_FIELD' => 'Lien vers la vidéo : %{link}',
 
     // fields/WidgetHandler.php
     'BAZ_WIDGET_HANDLER_TITLE' => 'Partager les résultats par widget HTML (code embed)',
@@ -378,6 +382,47 @@ return [
     // templates/tableau.twig
     'SUM' => 'Somme',
     'URL' => 'Url',
+
+    // templates/bazar/fields/date.twig
+    'EVENT_IS_RECURRENT' => 'Cet évènement est récurrent : %{repetition}',
+    'EVENT_LIMIT_DATE' => 'jusqu\'au %{date}',
+    'EVENT_REPETITION_FOR_DAYS' => 'tous les %{x} jours',
+    'EVENT_REPETITION_FOR_MONTHS' => 'tous les %{x} mois, %{monthRepetition}',
+    'EVENT_REPETITION_FOR_WEEKS' => 'toutes les %{x} semaines, %{days}',
+    'EVENT_REPETITION_FOR_YEAR' => 'tous les ans, %{monthRepetition}',
+    'EVENT_REPETITION_FOR_YEARS' => 'toutes les %{x} années, %{monthRepetition}',
+    'EVENT_REPETITION_NTH_OF_MONTH' => 'le %{nth} %{month}',
+    'EVENT_REPETITION_NTH_OF_MONTH_ALONE' => 'le %{nth}',
+    'EVENT_REPETITION_IN_MONTH' => 'en %{month}, ',
+    'EVENT_IS_LINKED_TO_RECURRENT' => 'Cet évènement est un évènement récurrent lié à la fiche %{link}',
+
+    // templates/bazar/inputs/date.twig
+    'EVENT_ACTIVATE_CUSTOM' => 'Voir les options supplémentaires',
+    'EVENT_EVERY_DAYS' => 'Tous les jours',
+    'EVENT_EVERY_X_DAYS' => 'Tous les X jours',
+    'EVENT_EVERY_WEEKS' => 'Toutes les semaines',
+    'EVENT_EVERY_X_WEEKS' => 'Toutes les X semaines',
+    'EVENT_EVERY_MONTHS' => 'Tous les mois',
+    'EVENT_EVERY_X_MONTHS' => 'Tous les X mois',
+    'EVENT_EVERY_X_MONTHS' => 'Tous les X mois',
+    'EVENT_EVERY_YEARS' => 'Tous les ans',
+    'EVENT_EVERY_X_YEARS' => 'Toutes les X années',
+    'EVENT_EXCEPT_LABEL' => 'Sauf',
+    'EVENT_FIRST_Y_OF_MONTH' => 'Le premier Y du mois',
+    'EVENT_FORTH_Y_OF_MONTH' => 'Le quatrième Y du mois',
+    'EVENT_IS_LINKED_TO_RECURRENT_EDIT' => 'Cette évènement est un évènement récurrent lié à la fiche %{link}.<br/>Toute modification de cette fiche cassera le lien avec l\'évènement de base !',
+    'EVENT_LAST_Y_OF_MONTH' => 'Le dernier Y du mois',
+    'EVENT_LIMIT_DATE_UPDATE_FORCED' => 'La date de fin a été forcée pour réduire le nombre de répétitions à 600 !',
+    'EVENT_NO_REPETITION' => 'Pas de répétition',
+    'EVENT_NTH_OF_MONTH' => 'Chaque Y du mois',
+    'EVENT_ON_MONTH' => 'En :',
+    'EVENT_RECURRENT' => 'Récurrence',
+    'EVENT_REMOVE_CUSTOM' => 'Masques les options supplémentaires',
+    'EVENTS_REPETITIONS' => 'Répétitions',
+    'EVENT_SECOND_Y_OF_MONTH' => 'Le second Y du mois',
+    'EVENT_THIRD_Y_OF_MONTH' => 'Le troisième Y du mois',
+    'EVENT_UP_TO_DATE' => 'Jusqu\'au :',
+    'EVENTS_WHEN_IN_MONTH' => 'A quel moment du mois ?',
 
     // presentation/templates/timeline.tpl.html
     'BAZ_YEAR' => 'Ann&eacute;e',

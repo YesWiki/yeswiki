@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     'LOGIN_SIGNUP' => 'Registrar-se',
     'LOGIN_LOGIN' => 'Connectar-se',
     'LOGIN_WIKINAME' => 'NomWiki',
@@ -40,10 +39,8 @@ return [
     // 'LOGIN_THE_TEAM' => 'L\'équipe de',
     // 'LOGIN_PASSWORD_LOST_FOR' => 'Mot de passe perdu pour',
     // 'LOGIN_NO_SIGNUP_IN_THIS_PERIOD' => 'Il n\'y a pas d\'inscription pour cette période.',
-
     // actions/login.php
     // 'LOGIN_COOKIES_ERROR' => 'Vous devez accepter les cookies pour pouvoir vous connecter.',
-
     // actions/usersettings.php
     'USERSETTINGS_EMAIL_NOT_CHANGED' => 'El correu electrònic no s\'ha modificat.',
     'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'La contrasenya no ha canviat.',
@@ -52,7 +49,4 @@ return [
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'Els paràmetres \'{parameters}\' no poden estar buits !',
     'USERSETTINGS_NAME_ALREADY_USED' => 'L\'identificador "{currentName}" ja existeix !',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'Un altre compte ja ha utilitzat el correu electrònic "{email}" !',
-    'USERSETTINGS_CHANGE_PWD_IN_IFRAME' => "Esteu a punt de canviar la contrasenya en una finestra d'iframe.\n".
-        "Per evitar atacs de registre de claus, assegureu-vos que l'adreça URL del lloc comenci amb {baseUrl}.\n".
-        "En cas de dubte, obriu aquest formulari en una pàgina dedicada fent clic en aquest enllaç {link}.",
 ];

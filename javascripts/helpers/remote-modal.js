@@ -29,7 +29,7 @@ export default function(title, url) {
     // auto adjust iframe height
     timer = setInterval(() => {
       if (!iframe.contentWindow) return
-      iframe.height = iframe.contentWindow.document.documentElement.scrollHeight + 'px';
+      iframe.height = `${iframe.contentWindow.document.documentElement.scrollHeight}px`
     }, 200)
   }
 

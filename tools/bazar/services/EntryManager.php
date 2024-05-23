@@ -34,7 +34,7 @@ class EntryManager
     protected $params;
     protected $searchManager;
 
-    private $cachedEntriestags ;
+    private $cachedEntriestags;
 
     public const TRIPLES_ENTRY_ID = 'fiche_bazar';
 
@@ -140,7 +140,7 @@ class EntryManager
             if ($debug) {
                 if (empty($data['id_fiche'])) {
                     trigger_error('empty \'id_fiche\' in EntryManager::getDataFromPage in body of page \''
-                        . $page['tag'].'\'. Edit it to create id_fiche', E_USER_WARNING);
+                        . $page['tag'] . '\'. Edit it to create id_fiche', E_USER_WARNING);
                 }
                 if (empty($page['tag'])) {
                     trigger_error('empty $page[\'tag\'] in EntryManager::getDataFromPage! ', E_USER_WARNING);
@@ -154,7 +154,7 @@ class EntryManager
             // TODO call this function only when necessary
             $this->appendDisplayData($data, $semantic, $correspondance, $page);
         } elseif ($debug) {
-            trigger_error('empty \'body\'  in EntryManager::getDataFromPage for page \''. ($page['tag'] ?? '!!empty tag!!') .'\'', E_USER_WARNING);
+            trigger_error('empty \'body\'  in EntryManager::getDataFromPage for page \'' . ($page['tag'] ?? '!!empty tag!!') . '\'', E_USER_WARNING);
         }
 
         return $data;
@@ -192,7 +192,7 @@ class EntryManager
 
         $requete =
             'SELECT DISTINCT * FROM ' . $this->dbService->prefixTable('pages') .
-            'WHERE '.($applyOnAllRevisions ? '' : 'latest="Y" AND ').' comment_on = \'\'';
+            'WHERE ' . ($applyOnAllRevisions ? '' : 'latest="Y" AND ') . ' comment_on = \'\'';
 
         // On limite au type de fiche
         if (!empty($params['formsIds'])) {
@@ -202,7 +202,7 @@ class EntryManager
                 }, array_filter(
                     $params['formsIds'],
                     'is_scalar'
-                ))).') ';
+                ))) . ') ';
             } elseif (is_scalar($params['formsIds'])) {
                 // on a une chaine de caractere pour l'id plutot qu'un tableau
                 $requete .= ' AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape(strval($params['formsIds'])) . '"%\'';
@@ -245,20 +245,20 @@ class EntryManager
                     foreach ($results as $result) {
                         $requeteSQL .= ' OR ';
                         if (!$result['isCheckBox']) {
-                            $requeteSQL .= ' body LIKE \'%"'.str_replace('_', '\\_', $result['propertyName']).'":"'.str_replace("'", "\\'", $result['key']).'"%\'';
+                            $requeteSQL .= ' body LIKE \'%"' . str_replace('_', '\\_', $result['propertyName']) . '":"' . str_replace("'", "\\'", $result['key']) . '"%\'';
                         } else {
-                            $requeteSQL .= ' body REGEXP \'"'.str_replace('_', '\\_', $result['propertyName']).'":(' .
-                                '"'.$result['key'] . '"'.
-                                '|"[^"]*,' . $result['key'] . '"'.
-                                '|"' . $result['key'] . ',[^"]*"'.
-                                '|"[^"]*,' .$result['key'] . ',[^"]*"'.
+                            $requeteSQL .= ' body REGEXP \'"' . str_replace('_', '\\_', $result['propertyName']) . '":(' .
+                                '"' . $result['key'] . '"' .
+                                '|"[^"]*,' . $result['key'] . '"' .
+                                '|"' . $result['key'] . ',[^"]*"' .
+                                '|"[^"]*,' . $result['key'] . ',[^"]*"' .
                                 ')\'';
                         }
                     }
                     $requeteSQL .= ')';
                 }
                 if (!empty($requeteSQL)) {
-                    $requeteSQL = ' AND ('.$requeteSQL.')';
+                    $requeteSQL = ' AND (' . $requeteSQL . ')';
                 }
             }
         }
@@ -273,7 +273,7 @@ class EntryManager
 
                 foreach ($_REQUEST as $nom => $val) {
                     if (((substr($nom, 0, 5) == 'liste') || (substr($nom, 0, 8) ==
-                                'checkbox')) && $val != '0' && $val != '') {
+                        'checkbox')) && $val != '0' && $val != '') {
                         if (is_array($val)) {
                             $val = implode(',', array_keys($val));
                         }
@@ -288,7 +288,7 @@ class EntryManager
                 $nom = $this->convertToRawJSONStringForREGEXP($nom);
                 // sanitize $nom to prevent REGEXP SQL errors
                 $nom = preg_replace("/(?<=^|\?|\*|\+)(\?|\*|\+)/m", "\\\\\\\\$1", $nom);
-                if (!in_array($val, [false,null,""], true)) {
+                if (!in_array($val, [false, null, ""], true)) {
                     $valcrit = explode(',', $val);
                     if (is_array($valcrit) && count($valcrit) > 1) {
                         $requeteSQL .= ' AND ';
@@ -343,7 +343,7 @@ class EntryManager
                         $requeteSQL .= ' NOT ';
                         $nom = substr($nom, 0, -1);
                     }
-                    $requeteSQL .= '(body REGEXP \'"' . $nom . '":""\' '.
+                    $requeteSQL .= '(body REGEXP \'"' . $nom . '":""\' ' .
                         'OR NOT (body REGEXP \'"' . $nom . '":"[^"][^"]*"\'))';
                 }
             }
@@ -453,7 +453,7 @@ class EntryManager
     private function convertToRawJSONStringForREGEXP(string $rawValue): string
     {
         $valueJSON = substr(json_encode($rawValue), 1, strlen(json_encode($rawValue)) - 2);
-        $formattedValue = str_replace(['\\','\''], ['\\\\','\\\''], $valueJSON);
+        $formattedValue = str_replace(['\\', '\''], ['\\\\', '\\\''], $valueJSON);
         return $this->dbService->escape($formattedValue);
     }
 
@@ -663,7 +663,7 @@ class EntryManager
             // get the value of the restricted fields in the previous data
             foreach ($restrictedFields as $propName) {
                 if (isset($previousData[$propName])) {
-                    $data[$propName] = $previousData[$propName] ;
+                    $data[$propName] = $previousData[$propName];
                 } elseif (isset($data[$propName])) {
                     // only for cases when a field is maliciously injected in $_POST (so in $data) and the key doesn't
                     // exist in $previousData
@@ -719,18 +719,19 @@ class EntryManager
     /**
      * Delete a fiche
      * @param $tag
+     * @param bool $forceEvenIfNotOwner
      * @throws Exception
      */
-    public function delete($tag)
+    public function delete($tag, bool $forceEvenIfNotOwner = false)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        if (!$this->wiki->UserIsAdmin() && !$this->wiki->UserIsOwner($tag)) {
-            throw new Exception(_t('DELETEPAGE_NOT_DELETED')._t('DELETEPAGE_NOT_OWNER'));
+        if (!$forceEvenIfNotOwner && !$this->wiki->UserIsAdmin() && !$this->wiki->UserIsOwner($tag)) {
+            throw new Exception(_t('DELETEPAGE_NOT_DELETED') . _t('DELETEPAGE_NOT_OWNER'));
         }
 
-        $fiche = $this->getOne($tag);
+        $fiche = $this->getOne($tag, false, null, true, $forceEvenIfNotOwner);
         if (empty($fiche)) {
             throw new Exception("Not existing entry : $tag");
         }
@@ -774,9 +775,11 @@ class EntryManager
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
 
         // If there is a title field, compute the entry's title
-        foreach ($form['prepared'] as $field) {
-            if ($field instanceof TitleField) {
-                $data = array_merge($data, $field->formatValuesBeforeSaveIfEditable($data, $isCreation));
+        if (is_array($form['prepared'])) {
+            foreach ($form['prepared'] as $field) {
+                if ($field instanceof TitleField) {
+                    $data = array_merge($data, $field->formatValuesBeforeSaveIfEditable($data, $isCreation));
+                }
             }
         }
 
@@ -880,11 +883,11 @@ class EntryManager
                         // not possible to init the Guard in the constructor because of circular reference problem
                         $fiche[$key] = $this->wiki->services->get(Guard::class)->isFieldDataAuthorizedForCorrespondance($page, $fiche, $data);
                     } else {
-                        echo '<div class="alert alert-danger">'._t('BAZ_CORRESPONDANCE_ERROR').'</div>';
+                        echo '<div class="alert alert-danger">' . _t('BAZ_CORRESPONDANCE_ERROR') . '</div>';
                     }
                 }
             } catch (ParsingMultipleException $th) {
-                echo '<div class="alert alert-danger">'.str_replace("\n", "<br/>", _t('BAZ_CORRESPONDANCE_ERROR2')).'</div>';
+                echo '<div class="alert alert-danger">' . str_replace("\n", "<br/>", _t('BAZ_CORRESPONDANCE_ERROR2')) . '</div>';
             }
         }
 
@@ -1000,48 +1003,48 @@ class EntryManager
 
 
     /**
-    * remove attributes from entries only for admins !!!
-    * @param array $params
-    * @param array $attributesNames
-    * @param bool $applyOnAllRevisions
-    * @return bool true if attributesNames are foond and replaced
-    */
+     * remove attributes from entries only for admins !!!
+     * @param array $params
+     * @param array $attributesNames
+     * @param bool $applyOnAllRevisions
+     * @return bool true if attributesNames are foond and replaced
+     */
     public function removeAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false): bool
     {
         return !empty($this->removeAttributesAndReturnList($params, $attributesNames, $applyOnAllRevisions));
     }
 
     /**
-    * remove attributes from entries only for admins !!!
-    * @param array $params
-    * @param array $attributesNames
-    * @param bool $applyOnAllRevisions
-    * @return array with entry's ids if attributesNames are found and replaced
-    */
+     * remove attributes from entries only for admins !!!
+     * @param array $params
+     * @param array $attributesNames
+     * @param bool $applyOnAllRevisions
+     * @return array with entry's ids if attributesNames are found and replaced
+     */
     public function removeAttributesAndReturnList($params, array $attributesNames, bool $applyOnAllRevisions = false): array
     {
         return $this->manageAttributes($params, $attributesNames, $applyOnAllRevisions, 'remove');
     }
 
     /**
-    * rename attributes from entries only for admins !!!
-    * @param array $params
-    * @param array $attributesNames [$oldName => $newName]
-    * @param bool $applyOnAllRevisions
-    * @return bool true if attributesNames are foond and replaced
-    */
+     * rename attributes from entries only for admins !!!
+     * @param array $params
+     * @param array $attributesNames [$oldName => $newName]
+     * @param bool $applyOnAllRevisions
+     * @return bool true if attributesNames are foond and replaced
+     */
     public function renameAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false): bool
     {
         return !empty($this->renameAttributesAndReturnList($params, $attributesNames, $applyOnAllRevisions));
     }
 
     /**
-    * rename attributes from entries only for admins !!!
-    * @param array $params
-    * @param array $attributesNames [$oldName => $newName]
-    * @param bool $applyOnAllRevisions
-    * @return array with entry's ids if attributesNames are found and replaced
-    */
+     * rename attributes from entries only for admins !!!
+     * @param array $params
+     * @param array $attributesNames [$oldName => $newName]
+     * @param bool $applyOnAllRevisions
+     * @return array with entry's ids if attributesNames are found and replaced
+     */
     public function renameAttributesAndReturnList($params, array $attributesNames, bool $applyOnAllRevisions = false): array
     {
         return $this->manageAttributes($params, $attributesNames, $applyOnAllRevisions, 'rename');
@@ -1073,8 +1076,7 @@ class EntryManager
                 function ($attributeName) {
                     return !is_array($attributeName) || count($attributeName) != 1 || !is_scalar($attributeName[array_keys($attributeName)[0]]);
                 }
-            ))
-            ) {
+            ))) {
                 throw new \Exception("\$attributesNames sould be array of arrays with only one elem !");
             }
         } elseif (
@@ -1142,7 +1144,7 @@ class EntryManager
             }
             $body = json_encode($entry);
             if ($applyOnAllRevisions) {
-                $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET body = '" . $this->dbService->escape(chop($body)) . "'".
+                $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET body = '" . $this->dbService->escape(chop($body)) . "'" .
                     " WHERE id = '" . $this->dbService->escape($page['id']) . "';");
             } else {
                 $this->pageManager->save($entry['id_fiche'], $body);

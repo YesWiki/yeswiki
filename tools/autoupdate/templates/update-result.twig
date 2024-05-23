@@ -1,0 +1,32 @@
+{# Upgrade messages result #}
+<ul class="list-group span4">
+{% for message in messages %}
+    {% set label = "danger" %}
+    {% if message.status == "ok" %}
+        {% set label = "success" %}
+    {% endif %}
+    <li class="list-group-item">
+        <span class="pull-right label label-{{ label }}">{{ message.status }}</span>
+        {{ message.text }}
+    </li>
+{% endfor %}
+</ul>
+
+{# Button to update Admin pages #}
+{% if action is defined and action == 'post_install' %}
+    {% set adminPagesToUpdate = config.admin_pages_to_update|join(', ') %}
+    <a href="{{ url({ params: { action: 'update_admin_pages'} }) }}" 
+    class="btn-primary btn btn-xs" 
+    onclick="return confirm('{{ _t('UPDATE_ADMIN_PAGES_CONFIRM') }} {{ adminPagesToUpdate }} !');">
+        <i class="fas fa-sync-alt"></i>
+        {{ _t('UPDATE_ADMIN_PAGES') }}
+    </a><br />
+    <span class="update-hint">{{ _t('UPDATE_ADMIN_PAGES_HINT') }}</span><br />
+{% endif %}
+
+{# Go Back #}
+<br/>
+<a class="btn btn-sm btn-secondary-1" href="{{ url({}) }}">
+    <i class="fas fa-arrow-left"></i>
+    {{ _t('GO_BACK') }}
+</a>

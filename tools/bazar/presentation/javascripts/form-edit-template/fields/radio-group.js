@@ -24,8 +24,8 @@ export default {
       }
     }
   },
-  advancedAttributes: ['read', 'write', 'semantic', 'queries', 'fillingMode','options'],
+  advancedAttributes: ['read', 'write', 'semantic', 'queries', 'fillingMode', 'options'],
   // disabledAttributes: [],
-  attributesMapping: { ...listsMapping, ...{ 7: 'fillingMode' } },
+  attributesMapping: { ...listsMapping, ...{ 7: 'fillingMode' } }
   // renderInput(fieldData) {},
 }

@@ -41,8 +41,6 @@ parameters:
   # Valeur par defaut d'etat de la fiche annonce apres saisie
   # 0 pour 'en attente de validation', 1 pour 'directement validee'
   BAZ_ETAT_VALIDATION: '1'
-  # Valeur maximale en octets pour la taille d'un fichier joint a telecharger
-  BAZ_TAILLE_MAX_FICHIER: '%max-upload-size%'
   # Type d'affichage des dates dans la liste
   # Mettre jma pour jour mois annee, ou jm, ou jmah
   BAZ_TYPE_AFFICHAGE_LISTE: 'jma'
@@ -135,6 +133,9 @@ services:
 
   YesWiki\Bazar\Service\:
     resource: 'services/*'
+  YesWiki\Bazar\Service\DateService:
+    tags:
+      - { name: yeswiki.event_subscriber }
 
   # Allows to use controllers as services
   YesWiki\Bazar\Controller\:

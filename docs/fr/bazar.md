@@ -163,6 +163,7 @@ Un champ de type image permet d'importer un fichier image qui sera ensuite visua
  - **Hauteur re-dimension** : YesWiki peut harmoniser la taille des images importées pour ce formulaire. Ce paramètre permet de préciser la hauteur de cette image redimensionnée.
  - **Largeur re-dimension** : YesWiki peut harmoniser la taille des images importées pour ce formulaire. Ce paramètre permet de préciser la largeur de cette image redimensionnée.
  - **Alignement** : C'est là que l'on paramètre le comportement d'affichage de l'image. Son fonctionnement est similaire à ce qui se passe dans l'édition de pages (quand on joint une image avec le bouton Fichier).
+- **Taille max** Ce paramètre permet de limiter la taille du fichier. Il s'agit d'un nombre d'octets mais qui peut être écrit avec des préfixe d'unités : k pour kilo, m pour mega (par ex.: 2097152, 2048k, 2m). Si la valeur donnée dépasse la valeur configurée sur le serveur, la valeur du serveur sera prise.
 
 ### URL
 Permet de saisir un lien web qui sera cliquable dans la fiche
@@ -170,7 +171,7 @@ Permet de saisir un lien web qui sera cliquable dans la fiche
 ### Upload de fichier 
 Ce type de champ permet d'uploader un fichier (par exemple au format PDF). Ce fichier est ensuite téléchargeable par les personnes qui visualisent la fiche.
 #### Paramètres spécifiques au type de champs « upload de fichier » :
- - **Taille max** Ce paramètre permet de limiter la taille du fichier. Il s'agit d'un nombre d'octets (par ex. 2000000 équivalent à 2 Mo).
+ - **Taille max** Ce paramètre permet de limiter la taille du fichier. Il s'agit d'un nombre d'octets mais qui peut être écrit avec des préfixe d'unités : k pour kilo, m pour mega (par ex.: 2097152, 2048k, 2m). Si la valeur donnée dépasse la valeur configurée sur le serveur, la valeur du serveur sera prise.
 
 ### Email 
 Ce type de champs permet de saisir une adresse électronique. YesWiki effectue automatiquement des contrôles sur la syntaxe de l'adresse et propose également de paramétrer des comportements spécifiquement liés à ce type de données.

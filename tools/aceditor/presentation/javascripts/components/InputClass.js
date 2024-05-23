@@ -25,12 +25,12 @@ export default {
       if (newValues.class) {
         const classes = newValues.class.split(' ')
         const classesGroupedBy2 = []
-        classes.forEach((c,idx)=>{
-          if ((idx+1) < classes.length){
-            classesGroupedBy2.push(`${c} ${classes[idx+1]}`)
+        classes.forEach((c, idx) => {
+          if ((idx + 1) < classes.length) {
+            classesGroupedBy2.push(`${c} ${classes[idx + 1]}`)
           }
         })
-        const classesMerged = [...classes,...classesGroupedBy2]
+        const classesMerged = [...classes, ...classesGroupedBy2]
         let optionsList = []
         for (const propName in this.config.subproperties) {
           const componentDefinition = this.config.subproperties[propName] || {}

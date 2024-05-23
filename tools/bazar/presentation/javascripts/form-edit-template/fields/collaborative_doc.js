@@ -7,5 +7,5 @@ export default {
   // disabledAttributes: [],
   renderInput(field) {
     return { field: _t('BAZ_FORM_EDIT_COLLABORATIVE_DOC_FIELD') }
-  },
+  }
 }

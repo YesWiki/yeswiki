@@ -27,7 +27,7 @@ export default {
       options: { 0: _t('NO'), 1: _t('YES') }
     }
   },
-  advancedAttributes: ['read', 'write', 'semantic', 'geolocate', 'autocomplete_other', 'autocomplete_street1','autocomplete_street2', 'show_map_in_entry_view'],
+  advancedAttributes: ['read', 'write', 'semantic', 'geolocate', 'autocomplete_other', 'autocomplete_street1', 'autocomplete_street2', 'show_map_in_entry_view'],
   // disabledAttributes: [],
   attributesMapping: {
     0: 'type',

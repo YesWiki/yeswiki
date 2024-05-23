@@ -45,7 +45,7 @@ export default {
         case 'email':
           return '' // security
         case 'link':
-          return value ? `<a href="${encodeURI(value)}" class="newtab">${value}</a>`: ''
+          return value ? `<a href="${encodeURI(value)}" class="newtab">${value}</a>` : ''
         default:
           return value
       }

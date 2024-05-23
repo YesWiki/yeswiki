@@ -8,7 +8,7 @@ export default {
       value: '',
       placeholder: _t('BAZ_FILEFIELD_FILE')
     },
-    authorizedExts:{
+    authorizedExts: {
       label: _t('BAZ_FORM_EDIT_FILE_AUTHEXTS_LABEL'),
       value: '',
       placeholder: _t('BAZ_FORM_EDIT_FILE_AUTHEXTS_PLACEHOLDER')
@@ -19,9 +19,9 @@ export default {
     write: writeconf,
     semantic: semanticConf
   },
-  advancedAttributes: ['read', 'write', 'semantic', 'maxsize','authorizedExts'],
+  advancedAttributes: ['read', 'write', 'semantic', 'maxsize', 'authorizedExts'],
   // disabledAttributes: [],
-  attributesMapping: { ...defaultMapping, ...{ 3: 'maxsize', 6: 'readlabel', 7: 'authorizedExts' } },
+  attributesMapping: { ...defaultMapping, ...{ 14: 'maxsize', 6: 'readlabel', 7: 'authorizedExts' } }
   // renderInput(field) {
   //   return {
   //     field: `<input type="file"/>`,

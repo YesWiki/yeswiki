@@ -2,10 +2,24 @@
 	<input type="hidden" name="pagetag" value="{{ pagetag }}">
 	<div class="form-group">
 		<label>{{ _t('YW_ADD_COMMENT') }}</label>
-		<textarea name="body" class="form-control" rows="3" placeholder="{{ _t('YW_WRITE_COMMENT_HERE') }}"></textarea>
+		{{ renderAction('aceditor', { name: "body", placeholder: _t('YW_WRITE_COMMENT_HERE'), rows: 3, tempTag: tempTag })|raw }}
 	</div>
+	
 	{{ hashcash|raw }}
 	<button class="btn-post-comment btn btn-primary" name="action" value="addcomment">
 		{{ _t('SAVE') }}
 	</button>
 </form>
+<style>
+.temporary-form .format-menu,
+.temporary-form .aceditor-btn-help,
+.temporary-form .actions-builder-button,
+.temporary-form .aceditor-btn-newpage,
+#post-comment .format-menu,
+#post-comment .aceditor-btn-help,
+#post-comment .actions-builder-button,
+#post-comment .aceditor-btn-newpage {
+	display:none;
+}
+</style>
+{{ include('@aceditor/aceditor-modals.twig') }}

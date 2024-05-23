@@ -14,9 +14,6 @@ use YesWiki\Wiki;
 
 class DbCommand extends Command
 {
-    // the name of the command (the part after "php includes/commands/console")
-    protected static $defaultName = 'core:exportdb';
-
     protected $consoleService;
     protected $params;
     protected $wiki;
@@ -32,12 +29,13 @@ class DbCommand extends Command
     protected function configure()
     {
         $this
-            // the short description shown while running "php includes/commands/console list"
+            ->setName('core:exportdb')
+            // the short description shown while running "./yeswicli list"
             ->setDescription('Manage database of the YesWiki.')
 
             // the full command description shown when running the command with
             // the "--help" option
-            ->setHelp("Manage database of the YesWiki.\n".
+            ->setHelp("Manage database of the YesWiki.\n" .
                 "To test use '--test'\n")
 
             ->addOption('test', 't', InputOption::VALUE_NONE, 'Test the connection to mysqldump (return OK/NOK)')
@@ -80,7 +78,7 @@ class DbCommand extends Command
             list($hostname, $port) = explode(':', $hostname);
         }
         if (!empty($port) && strval(intval($port)) == strval($port)) {
-            $hostArg = ["--host=$hostname","--port=$port"];
+            $hostArg = ["--host=$hostname", "--port=$port"];
         } else {
             $hostArg = ["--host=$hostname"];
         }
@@ -96,7 +94,7 @@ class DbCommand extends Command
 
         $password = $this->params->get('mysql_password');
         $this->assertParamIsString('mysql_password', $password);
-        return compact(['hostArg','databasename','tablePrefix','username','password']);
+        return compact(['hostArg', 'databasename', 'tablePrefix', 'username', 'password']);
     }
 
     /**
@@ -109,7 +107,7 @@ class DbCommand extends Command
      */
     private function export(OutputInterface $output, string $filepath): int
     {
-        $realFilePath = realpath(dirname($filepath)).DIRECTORY_SEPARATOR.basename($filepath);
+        $realFilePath = realpath(dirname($filepath)) . DIRECTORY_SEPARATOR . basename($filepath);
         extract($this->getDbParams());
         try {
             $results = $this->consoleService->findAndStartExecutableSync(
@@ -216,15 +214,15 @@ class DbCommand extends Command
 
     private function getExtaDirs(): array
     {
-        return '\\' === DIRECTORY_SEPARATOR ? ["c:\\xampp\\mysql\\bin\\"] : ["/usr/bin/","/usr/local/bin/"];
+        return '\\' === DIRECTORY_SEPARATOR ? ["c:\\xampp\\mysql\\bin\\"] : ["/usr/bin/", "/usr/local/bin/"];
     }
 
     /**
-    * assert param is a not empty string
-    * @param string $name
-    * @param mixed $param
-    * @throws Exception
-    */
+     * assert param is a not empty string
+     * @param string $name
+     * @param mixed $param
+     * @throws Exception
+     */
     protected function assertParamIsNotEmptyString(string $name, $param)
     {
         if (empty($param)) {

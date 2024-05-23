@@ -19,11 +19,19 @@ export default {
       value: 'right',
       options: { left: _t('LEFT'), right: _t('RIGHT') }
     },
+    default_image: {
+      label: _t('BAZ_FORM_EDIT_IMAGE_DEFAULT'),
+      class: 'default-file',
+      value: '',
+      type: 'file',
+      accept: 'image/*'
+    },
+    maxsize: { label: _t('BAZ_FORM_EDIT_FILE_MAXSIZE_LABEL'), value: '' },
     read: readConf,
     write: writeconf,
     semantic: semanticConf
   },
-  advancedAttributes: ['read', 'write', 'semantic', 'thumb_height','thumb_width','resize_height','resize_width'],
+  advancedAttributes: ['read', 'write', 'semantic', 'thumb_height', 'thumb_width', 'resize_height', 'resize_width', 'maxsize'],
   // disabledAttributes: [],
   attributesMapping: {
     ...defaultMapping,
@@ -33,7 +41,9 @@ export default {
       4: 'thumb_width',
       5: 'resize_height',
       6: 'resize_width',
-      7: 'align'
+      7: 'align',
+      13: 'default_image',
+      14: 'maxsize'
     }
   },
   renderInput(fieldData) {

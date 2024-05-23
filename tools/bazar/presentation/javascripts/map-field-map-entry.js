@@ -1,24 +1,24 @@
 export function initEntryMap(newMap) {
   if (newMap.classList.contains('initialized')) return
 
-  let mapData = JSON.parse(newMap.getAttribute('data-map-field'));
+  const mapData = JSON.parse(newMap.getAttribute('data-map-field'))
   // Init leaflet entry map
   const map = new L.Map(newMap, {
     scrollWheelZoom: mapData.bazWheelZoom,
     zoomControl: mapData.bazShowNav
-  });
-  var provider = L.tileLayer.provider(
+  })
+  const provider = L.tileLayer.provider(
     mapData.mapProvider,
     mapData.mapProviderCredentials
-  );
-  map.addLayer(provider);
+  )
+  map.addLayer(provider)
 
-  let point = new L.LatLng(mapData.latitude, mapData.longitude);
+  const point = new L.LatLng(mapData.latitude, mapData.longitude)
   map.setView(
     point,
     mapData.bazMapZoom
-  );
-  L.marker(point).addTo(map);
+  )
+  L.marker(point).addTo(map)
 
   newMap.classList.add('initialized')
 }
@@ -31,10 +31,10 @@ export function initEntryMaps(entryDom) {
 
 // on first time seen, load the leaflet entry map
 function lazyloadMaps(maps) {
-  maps.forEach(map => {
+  maps.forEach((map) => {
     // Lazyload leaflet map when intersecting
     if (map.isIntersecting) initEntryMap(map.target)
-  });
+  })
 }
 
 // observe entry map and add an listId if necessary
@@ -43,13 +43,13 @@ function addMapObserver() {
     root: document.body,
     rootMargin: '20px',
     threshold: 0
-  });
+  })
   document.querySelectorAll('.map-entry:not(.initialized)').forEach((map) => {
-    observer.observe(map);
-  });
+    observer.observe(map)
+  })
 }
 
 // on load, init the map statically generated
-window.addEventListener('load', function() {
+window.addEventListener('load', () => {
   addMapObserver()
-});
+})

@@ -2,11 +2,11 @@
 export default {
   props: ['value', 'config'],
   mounted() {
-    if (!this.value){
-      if (this.$root.isEditingExistingAction && this.config.default != undefined){
+    if (!this.value) {
+      if (this.$root.isEditingExistingAction && this.config.default != undefined) {
         // when editing, do not use config.value if `!default` gives `true` (case for '')
         this.$emit('input', '')
-      } else if (this.config.value){
+      } else if (this.config.value) {
         this.$emit('input', this.config.value)
       }
     }

@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Service;
 
+use Attach;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\EnumField;
@@ -17,10 +18,11 @@ class FormManager
     protected $securityController;
     protected $fieldFactory;
     protected $params;
-
     protected $cachedForms;
+    protected $cacheValidatedForAll;
     protected $isAvailableOnlyOneEntryOption;
     protected $isAvailableOnlyOneEntryMessage;
+    protected $attach;
 
     public function __construct(
         Wiki $wiki,
@@ -30,6 +32,9 @@ class FormManager
         ParameterBagInterface $params,
         SecurityController $securityController
     ) {
+        if (!class_exists('attach')) {
+            include('tools/attach/libs/attach.lib.php');
+        }
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->entryManager = $entryManager;
@@ -37,9 +42,93 @@ class FormManager
         $this->params = $params;
 
         $this->cachedForms = [];
+        $this->cacheValidatedForAll = false;
         $this->securityController = $securityController;
         $this->isAvailableOnlyOneEntryOption = null;
         $this->isAvailableOnlyOneEntryMessage = null;
+        $this->attach = new attach($this->wiki);
+    }
+
+    protected function getBasePath()
+    {
+        $basePath = $this->attach->GetUploadPath();
+        return $basePath . (substr($basePath, -1) != "/" ? "/" : "");
+    }
+
+    protected function cleanCacheDefaultImage($prefix)
+    {
+        $cache_path = $this->attach->GetCachePath();
+        $cache_path = $cache_path . (substr($cache_path, -1) != "/" ? "/" : "");
+        $scan_cache_files = scandir($cache_path);
+        foreach ($scan_cache_files as $scan_cache_file) {
+            if (str_starts_with($scan_cache_file, $prefix)) {
+                unlink($cache_path . $scan_cache_file);
+            }
+        }
+    }
+
+    protected function convertWithSpecialParameters($template, $id_nature)
+    {
+        $template = _convert($template, YW_CHARSET, true);
+        $template_list = $this->parseTemplate($template);
+        $modify = false;
+        for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
+            if ($template_list[$temp_index][0] == 'image') {
+                $modify = true;
+                $basePath = $this->getBasePath();
+                $image_comp = $template_list[$temp_index];
+                $default_image_prefix = "defaultimage{$id_nature}_{$image_comp[1]}";
+                $this->cleanCacheDefaultImage($default_image_prefix);
+                $default_image_filename = $basePath . $default_image_prefix . ".jpg";
+                $default_image = explode('|', $image_comp[8]);
+                if (count($default_image) == 2) {
+                    $image_comp[8] = $default_image[0];
+                    $imgext = explode('image/', explode(';', $default_image[1])[0])[1];
+                    $tmpFile = tempnam('cache', 'dfltimg');
+                    $tempFile = $tmpFile . '.' . $imgext;
+                    rename($tmpFile, $tempFile);
+                    try {
+                        $ifp = fopen($tempFile, "wb");
+                        fwrite($ifp, base64_decode(explode(',', $default_image[1])[1]));
+                        fclose($ifp);
+                        $this->attach->redimensionner_image($tempFile, $default_image_filename, $image_comp[5], $image_comp[6], "crop");
+                    } finally {
+                        unlink($tempFile);
+                    }
+                } else {
+                    $image_comp[8] = '';
+                    if (file_exists($default_image_filename)) {
+                        unlink($default_image_filename);
+                    }
+                }
+                $template_list[$temp_index] = $image_comp;
+            }
+        }
+        if ($modify) {
+            $template = $this->encodeTemplate($template_list);
+        }
+        return $this->dbService->escape($template);
+    }
+
+    protected function prepare_with_special_parameters($form)
+    {
+        $basePath = $this->getBasePath();
+        $template_list = $this->parseTemplate($form['bn_template']);
+        $modify = false;
+        for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
+            if ($template_list[$temp_index][0] == 'image') {
+                $modify = true;
+                $image_comp = $template_list[$temp_index];
+                $default_image_filename = $basePath . "defaultimage{$form['bn_id_nature']}_{$image_comp[1]}.jpg";
+                if (file_exists($default_image_filename)) {
+                    $image_comp[8] = $image_comp[8] . '|data:image/jpg;base64,' . base64_encode(file_get_contents($default_image_filename));
+                } else {
+                    $image_comp[8] = '';
+                }
+                $template_list[$temp_index] = $image_comp;
+            }
+        }
+        return [$template_list, $modify];
     }
 
     public function getOne($formId): ?array
@@ -66,23 +155,28 @@ class FormManager
         foreach ($form as $key => $value) {
             $form[$key] = _convert($value, 'ISO-8859-15');
         }
-
-        $form['template'] = $this->parseTemplate($form['bn_template']);
+        list($template_list, $modify) = $this->prepare_with_special_parameters($form);
+        $form['template'] = $template_list;
         $form['prepared'] = $this->prepareData($form);
-
+        if ($modify == true) {
+            $form['bn_template'] = $this->encodeTemplate($template_list);
+        }
         return $form;
     }
 
     public function getAll(): array
     {
-        $forms = $this->dbService->loadAll('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'ORDER BY bn_label_nature ASC');
-
-        foreach ($forms as $form) {
-            $formId = $form['bn_id_nature'];
-            $this->cachedForms[$formId] = $this->getOne($formId);
+        if (!$this->cacheValidatedForAll) {
+            $forms = $this->dbService->loadAll("SELECT * FROM {$this->dbService->prefixTable('nature')} ORDER BY bn_label_nature ASC");
+            foreach ($forms as $form) {
+                if (!empty($form['bn_id_nature'])) {
+                    // save only not empty formId
+                    $formId = $form['bn_id_nature'];
+                    $this->cachedForms[$formId] = $this->getFromRawData($form);
+                }
+            }
+            $this->cacheValidatedForAll = true;
         }
-        // TODO verify this method : each form is written with the same key in the array
-
         return $this->cachedForms;
     }
 
@@ -111,11 +205,14 @@ class FormManager
             $data['bn_id_nature'] = $this->findNewId();
         }
 
+        // reset cache
+        $this->cacheValidatedForAll = false;
+
         return $this->dbService->query('INSERT INTO ' . $this->dbService->prefixTable('nature')
             . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_context` ,`bn_sem_type` ,`bn_sem_use_template`'
             . ($this->isAvailableOnlyOneEntryOption() ? ',`bn_only_one_entry`' : '')
             . ($this->isAvailableOnlyOneEntryMessage() ? ',`bn_only_one_entry_message`' : '')
-            .',`bn_condition`)'
+            . ',`bn_condition`)'
             . ' VALUES (' . $data['bn_id_nature'] . ', "fr-FR", "'
             . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '","'
             . $this->dbService->escape(_convert($data['bn_template'], YW_CHARSET, true)) . '", "'
@@ -133,9 +230,15 @@ class FormManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
+
+        $template = $this->convertWithSpecialParameters($data['bn_template'], $data['bn_id_nature']);
+
+        // reset cache
+        $this->cacheValidatedForAll = false;
+
         return $this->dbService->query('UPDATE' . $this->dbService->prefixTable('nature') . 'SET '
             . '`bn_label_nature`="' . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '" ,'
-            . '`bn_template`="' . $this->dbService->escape(_convert($data['bn_template'], YW_CHARSET, true)) . '" ,'
+            . '`bn_template`="' . $template . '" ,'
             . '`bn_description`="' . $this->dbService->escape(_convert($data['bn_description'], YW_CHARSET, true)) . '" ,'
             . '`bn_sem_context`="' . $this->dbService->escape(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '" ,'
             . '`bn_sem_type`="' . $this->dbService->escape(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '" ,'
@@ -151,7 +254,7 @@ class FormManager
         $data = $this->getOne($id);
         if (!empty($data)) {
             unset($data['bn_id_nature']);
-            $data['bn_label_nature'] = $data['bn_label_nature'].' ('._t('BAZ_DUPLICATE').')';
+            $data['bn_label_nature'] = $data['bn_label_nature'] . ' (' . _t('BAZ_DUPLICATE') . ')';
             return $this->create($data);
         } else {
             // raise error?
@@ -167,10 +270,13 @@ class FormManager
 
         // tests of if $formId is int
         if (strval(intval($id)) != strval($id)) {
-            return null ;
+            return null;
         }
 
         $this->clear($id);
+
+        // reset cache
+        $this->cacheValidatedForAll = false;
         return $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $this->dbService->escape($id));
     }
 
@@ -181,23 +287,23 @@ class FormManager
         }
         $this->dbService->query(
             'DELETE FROM' . $this->dbService->prefixTable('acls') .
-            'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
-            'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
-            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\' );'
+                'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
+                'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
+                'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\' );'
         );
 
         // TODO use PageManager
         $this->dbService->query(
             'DELETE FROM' . $this->dbService->prefixTable('pages') .
-            'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
-            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\';'
+                'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
+                'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\';'
         );
 
         // TODO use TripleStore
         $this->dbService->query(
             'DELETE FROM' . $this->dbService->prefixTable('triples') .
-            'WHERE resource NOT IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
-            'WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";'
+                'WHERE resource NOT IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
+                'WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";'
         );
     }
 
@@ -261,6 +367,27 @@ class FormManager
         return $tableau_template;
     }
 
+    public function encodeTemplate($template_list)
+    {
+        $new_template_list = [];
+        for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
+            $new_line = '';
+            foreach ($template_list[$temp_index] as $value) {
+                if ($value == '') {
+                    $new_line .= ' ';
+                } elseif ($value == '*') {
+                    $new_line .= ' * ';
+                } else {
+                    $new_line .= $value;
+                }
+                $new_line .= '***';
+            }
+            $new_template_list[] = $new_line;
+        }
+        $template = implode("\r\n", array_map('trim', $new_template_list));
+        return $template;
+    }
+
     public function prepareData($form)
     {
         $i = 0;
@@ -276,7 +403,7 @@ class FormManager
             } elseif (function_exists($field[0])) {
                 $functionName = $field[0];
                 $field[0] = 'old'; // field name
-                $field['functionName'] = $functionName ;
+                $field['functionName'] = $functionName;
                 $classField = $this->fieldFactory->create($field);
                 if ($classField) {
                     $prepared[$i] = $classField;
@@ -305,7 +432,7 @@ class FormManager
                 $facetteasked = (isset($groups[0]) && $groups[0] == 'all') || in_array($key, $groups);
 
                 if (!empty($value) and is_array($fields[$entry['id_typeannonce']]) && $facetteasked) {
-                    if (in_array($key, ['id_typeannonce','owner'])) {
+                    if (in_array($key, ['id_typeannonce', 'owner'])) {
                         $fieldPropName = $key;
                         $field = null;
                     } else {
@@ -354,7 +481,7 @@ class FormManager
                 array_filter(
                     array_keys($facetteValue['id_typeannonce']),
                     function ($key) {
-                        return !in_array($key, ['type','source']);
+                        return !in_array($key, ['type', 'source']);
                     }
                 )
             );
@@ -424,7 +551,7 @@ class FormManager
         }
 
         foreach ($form['prepared'] as $field) {
-            if (in_array($name, [$field->getName(),$field->getPropertyName()])) {
+            if (in_array($name, [$field->getName(), $field->getPropertyName()])) {
                 return $field;
             }
         }

@@ -2,7 +2,7 @@
 {{ include_javascript('javascripts/actions/admin-backups.js', false, true) }}
 {{ include_css('styles/actions/admin-backups.css') }}
 
-<div class="preupdate-backups-container" data-upgrade="{{ upgrade }}">
+<div class="admin-backups preupdate-backups-container" data-package="{{ packageName }}">
   <h2>{{ _t('ADMIN_BACKUPS_CREATING') }}</h2>
   <div class="archive-buttons">
     <button

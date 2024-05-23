@@ -13,7 +13,7 @@ export default {
     }
     return this.formFields[fieldId]
   },
-  getFormGroup(field, formGroupName){
+  getFormGroup(field, formGroupName) {
     const holder = this.getHolder(field)
     if (holder) {
       const formGroup = holder.find(`.${formGroupName}-wrap`)
@@ -57,12 +57,12 @@ export default {
     }
     return this.ids[fieldId]
   },
-  initializeField(field){
-    if (!field.hasClass('initialized') || 
-      field.data('savedId') != field.prop('id')){
+  initializeField(field) {
+    if (!field.hasClass('initialized')
+      || field.data('savedId') != field.prop('id')) {
       field.addClass('initialized')
-      field.data('savedId',field.prop('id'))
-      field.find('.initialized').each(function(){
+      field.data('savedId', field.prop('id'))
+      field.find('.initialized').each(function() {
         $(this).removeClass('initialized')
       })
     }
@@ -82,7 +82,7 @@ export default {
   },
   prependHTMLBeforeGroup(field, formGroupName, html) {
     const formGroup = this.getFormGroup(field, formGroupName)
-    if (formGroup !== null){
+    if (formGroup !== null) {
       if (!formGroup.hasClass('prepended-html-already-defined')) {
         formGroup.before(html)
         formGroup.addClass('prepended-html-already-defined')
@@ -91,7 +91,7 @@ export default {
   },
   defineLabelHintForGroup(field, formGroupName, message) {
     const formGroup = this.getFormGroup(field, formGroupName)
-    if (formGroup !== null){
+    if (formGroup !== null) {
       const label = formGroup.find('label').first()
       if (!label.hasClass('label-hint-already-defined')) {
         label.append(' ')

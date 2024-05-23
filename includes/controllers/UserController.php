@@ -358,7 +358,7 @@ class UserController extends YesWikiController
      */
     private function sanitizeName($value): string
     {
-        trim($value);
+        $value = trim($value);
         if (empty($value)) {
             throw new Exception(_t('USER_YOU_MUST_SPECIFY_A_NAME') . '.');
         }

@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     'LOGIN_SIGNUP' => 'Signup',
     'LOGIN_LOGIN' => 'Login',
     'LOGIN_WIKINAME' => 'Email or WikiName',
@@ -40,10 +39,8 @@ return [
     'LOGIN_THE_TEAM' => 'The team from',
     'LOGIN_PASSWORD_LOST_FOR' => 'Lost password for',
     // 'LOGIN_NO_SIGNUP_IN_THIS_PERIOD' => 'Il n\'y a pas d\'inscription pour cette période.',
-
     // actions/login.php
     // 'LOGIN_COOKIES_ERROR' => 'Vous devez accepter les cookies pour pouvoir vous connecter.',
-
     // actions/usersettings.php
     'USERSETTINGS_EMAIL_NOT_CHANGED' => 'Email not modified.',
     'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'Password not changed.',
@@ -52,7 +49,4 @@ return [
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'The \'{parameters}\' parameters cannot be empty!',
     'USERSETTINGS_NAME_ALREADY_USED' => 'The identifier "{currentName}" already exists!',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'The email "{email}" is already used by another account!',
-    'USERSETTINGS_CHANGE_PWD_IN_IFRAME' => "You are about to change your password in an iframe window.\n".
-        "To avoid keylogging attacks, make sure the site url starts with {baseUrl}.\n".
-        "If in doubt, open this form in a dedicated page by clicking on this link {link}.",
 ];

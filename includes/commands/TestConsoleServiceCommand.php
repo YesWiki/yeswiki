@@ -11,9 +11,6 @@ use YesWiki\Wiki;
 
 class TestConsoleServiceCommand extends Command
 {
-    // the name of the command (the part after "bin/console")
-    protected static $defaultName = 'core:testconsoleservice';
-
     protected $wiki;
 
     public function __construct(Wiki &$wiki)
@@ -25,7 +22,8 @@ class TestConsoleServiceCommand extends Command
     protected function configure()
     {
         $this
-            // the short description shown while running "php bin/console list"
+            ->setName('core:testconsoleservice')
+            // the short description shown while running "./yeswicli list"
             ->setDescription('Offer tests for ConsoleService.')
 
             // the full command description shown when running the command with
@@ -64,7 +62,7 @@ class TestConsoleServiceCommand extends Command
             exit();
         } else {
             $consoleService = $this->wiki->services->get(ConsoleService::class);
-            $consoleService->startConsoleAsync('core:testconsoleservice', ["-f",$file,"-t",$childtext,"-w",$wait]);
+            $consoleService->startConsoleAsync('core:testconsoleservice', ["-f", $file, "-t", $childtext, "-w", $wait]);
             $this->writeToFile("cache/$file", $text);
             exit();
         }

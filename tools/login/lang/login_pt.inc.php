@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     'LOGIN_SIGNUP' => 'Registrar',
     'LOGIN_LOGIN' => 'Entrar',
     'LOGIN_WIKINAME' => 'NomeWiki',
@@ -40,10 +39,8 @@ return [
     // 'LOGIN_THE_TEAM' => 'L\'équipe de',
     // 'LOGIN_PASSWORD_LOST_FOR' => 'Mot de passe perdu pour',
     // 'LOGIN_NO_SIGNUP_IN_THIS_PERIOD' => 'Il n\'y a pas d\'inscription pour cette période.',
-
     // actions/login.php
     // 'LOGIN_COOKIES_ERROR' => 'Vous devez accepter les cookies pour pouvoir vous connecter.',
-
     // actions/usersettings.php
     'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'Palavra-passe não alterada.',
     'USERSETTINGS_EMAIL_NOT_CHANGED' => 'E-mail não modificado.',
@@ -52,7 +49,4 @@ return [
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'Os parâmetros \'{parameters}\' não podem ser vazios!',
     'USERSETTINGS_NAME_ALREADY_USED' => 'O identificador "{currentName}" já existe!',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'O e-mail "{email}" já é utilizado por outra conta!',
-    'USERSETTINGS_CHANGE_PWD_IN_IFRAME' => "Está prestes a alterar a sua palavra-passe numa janela do iframe.\n".
-        "Para evitar ataques de teclado, certifique-se de que o url do site começa com {baseUrl}.\n".
-        "Em caso de dúvida, abra este formulário numa página dedicada clicando neste link {link}.",
 ];

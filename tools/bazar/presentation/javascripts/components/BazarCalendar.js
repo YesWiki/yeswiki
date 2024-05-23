@@ -34,19 +34,19 @@ Vue.component('BazarCalendar', {
       }
       return true
     },
-    getDateInServerTimeZone(date){
+    getDateInServerTimeZone(date) {
       const newDate = new Date(this.getDateStringInServerTimeZone(date))
-      if (newDate){
+      if (newDate) {
         return newDate.toISOString()
       }
       return date
     },
-    getDateStringInServerTimeZone(date){
-      let exportableDate = new Date(date)
-      if (exportableDate){
+    getDateStringInServerTimeZone(date) {
+      const exportableDate = new Date(date)
+      if (exportableDate) {
         return exportableDate
-          .toLocaleString('en-GB',{timeZone:wiki.timezone})
-          .replace(/^([0-9]{2})\/([0-9]{2})\/([0-9]{4}), ([0-9]{2}):([0-9]{2}):([0-9]{2})$/,'$3-$2-$1T$4:$5:$6')
+          .toLocaleString('en-GB', { timeZone: wiki.timezone })
+          .replace(/^([0-9]{2})\/([0-9]{2})\/([0-9]{4}), ([0-9]{2}):([0-9]{2}):([0-9]{2})$/, '$3-$2-$1T$4:$5:$6')
       }
       return date
     },
@@ -166,21 +166,21 @@ Vue.component('BazarCalendar', {
         existingEvent.remove()
       }
     },
-    retrieveTimeZone(dateAsString){
+    retrieveTimeZone(dateAsString) {
       let exportableDate = dateAsString
       if (typeof exportableDate === 'string'
-        && exportableDate?.length > 10){
-        if (exportableDate.match(/\+00:00$/)){
+        && exportableDate?.length > 10) {
+        if (exportableDate.match(/\+00:00$/)) {
           // could be an error
           const dateObj = new Date(exportableDate)
-          if (dateObj){
+          if (dateObj) {
             const browserTimezoneOffset = dateObj.getTimezoneOffset()
-            const dateNoTimeZone = exportableDate.replace(/\+00:00$/,'')
+            const dateNoTimeZone = exportableDate.replace(/\+00:00$/, '')
             const dateObjNoTimezone = new Date(dateNoTimeZone)
             const dateStringInServerTimeZone = this.getDateStringInServerTimeZone(dateNoTimeZone)
             const diffBetweenServerAndBrowserTimeZone_ms = (new Date(dateStringInServerTimeZone)).getTime()
                - dateObjNoTimezone.getTime()
-            dateObj.setTime(dateObj.getTime()+browserTimezoneOffset*60000-diffBetweenServerAndBrowserTimeZone_ms)
+            dateObj.setTime(dateObj.getTime() + browserTimezoneOffset * 60000 - diffBetweenServerAndBrowserTimeZone_ms)
             exportableDate = dateObj.toISOString()
           }
         }

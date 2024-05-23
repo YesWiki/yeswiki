@@ -32,7 +32,7 @@
             <td>
                 {% if isAdmin and ext.updateAvailable and ext.installed %}
                     {% if not isHibernated %}
-                        <a  href="{{ url({params:{upgrade:ext.updateLink}}) }}"
+                        <a  href="{{ url({ params: { action: 'upgrade', package: ext.updateLink } }) }}"
                             class="btn btn-xs btn-primary"
                             title="{{ _t('AU_UPDATE') }}"
                         >
@@ -55,7 +55,7 @@
             <td>
                 {% if isAdmin and not ext.installed %}
                     {% if not isHibernated %}
-                        <a  href="{{ url({params:{upgrade:ext.updateLink}}) }}"
+                        <a  href="{{ url({ params: { action: 'upgrade', package: ext.updateLink } }) }}"
                             class="btn btn-xs btn-primary"
                             title="{{ _t('AU_INSTALL') }}"
                         >
@@ -75,7 +75,7 @@
 
                 {% if isAdmin and ext.installed and ext.name != 'autoupdate' %}
                     {% if not isHibernated %}
-                        <a  href="{{ url({params:{delete:ext.deleteLink|split('delete=')|slice(1,1)|first}}) }}"
+                        <a  href="{{ url({params:{ action: 'delete', package: ext.deleteLink|split('delete=')|slice(1,1)|first}}) }}"
                             class="btn btn-xs btn-danger"
                             title="{{ _t('AU_DELETE_EXT') }}"
                         >

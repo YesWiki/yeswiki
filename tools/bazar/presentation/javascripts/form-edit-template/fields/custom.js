@@ -44,5 +44,5 @@ export default {
   },
   renderInput(field) {
     return { field: '' }
-  },
+  }
 }

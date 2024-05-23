@@ -192,9 +192,9 @@ const load = (domElement) => {
             fieldsToExclude = Object.values(this.params.displayfields)
           }
           const url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
-            ...{fields: 'html_output'},
-            ...(fieldsToExclude.length > 0 ? {excludeFields: fieldsToExclude} :{}),
-            ...(this.params.showmapinlistview ? {showmapinlistview: this.params.showmapinlistview} :{})
+            ...{ fields: 'html_output' },
+            ...(fieldsToExclude.length > 0 ? { excludeFields: fieldsToExclude } : {}),
+            ...(this.params.showmapinlistview ? { showmapinlistview: this.params.showmapinlistview } : {})
           })
           this.setEntryFromUrl(entry, url)
             .then((html) => {
@@ -203,33 +203,33 @@ const load = (domElement) => {
             })
         }
       },
-      async setEntryFromUrl(entry,url){
+      async setEntryFromUrl(entry, url) {
         return await this.getJSON(url)
-          .then((data)=>{
+          .then((data) => {
             const html = data?.[entry.id_fiche]?.html_output ?? 'error'
             Vue.set(entry, 'html_render', html)
             return html
-          }).catch(()=>'error')// in case of error do nothing
+          }).catch(() => 'error')// in case of error do nothing
       },
-      async getJSON(url,options={}){
-        return await fetch(url,options)
-          .then((response)=>{
-              if (!response.ok){
-                  throw `response not ok ; code : ${response.status} (${response.statusText})`
-              }
-              return response.json()
+      async getJSON(url, options = {}) {
+        return await fetch(url, options)
+          .then((response) => {
+            if (!response.ok) {
+              throw `response not ok ; code : ${response.status} (${response.statusText})`
+            }
+            return response.json()
           })
-          .catch((error)=>{
-            if (wiki?.isDebugEnabled){
+          .catch((error) => {
+            if (wiki?.isDebugEnabled) {
               console.error(error)
             }
             return {}
           })
       },
-      loadBazarListDynamicIfNeeded(html){
-        if (html.match(/<div class="bazar-list-dynamic-container/)){
-          document.querySelectorAll('.bazar-list-dynamic-container:not(.mounted)').forEach((element)=>{
-            if (!('__vue__' in element)){
+      loadBazarListDynamicIfNeeded(html) {
+        if (html.match(/<div class="bazar-list-dynamic-container/)) {
+          document.querySelectorAll('.bazar-list-dynamic-container:not(.mounted)').forEach((element) => {
+            if (!('__vue__' in element)) {
               load(element)
             }
           })
@@ -337,7 +337,7 @@ const load = (domElement) => {
           $.ajax({
             url: wiki.url(`?api/images/${newImageParams.fileName}/cache/${newImageParams.width}/${newImageParams.height}/${newImageParams.mode}`),
             method: 'post',
-            data: {csrftoken: this.tokenForImages},
+            data: { csrftoken: this.tokenForImages },
             cache: false,
             success(data) {
               const previousUrl = $(newImageParams.node).prop('src')
@@ -410,9 +410,8 @@ const load = (domElement) => {
 
           this.calculateBaseEntries()
           this.ready = true
-          const event = new Event("bazar-list-dynamic-ready");
-          document.dispatchEvent(event);
-
+          const event = new Event('bazar-list-dynamic-ready')
+          document.dispatchEvent(event)
         }, 0)
       })
     }

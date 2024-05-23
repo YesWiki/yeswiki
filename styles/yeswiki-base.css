@@ -1,4 +1,5 @@
 /************************************* CSS Wikini original ****************************************/
+
 /* Default color, in case someone use these variable outside of margot template */
 :root {
   --primary-color: #0C5D6A;
@@ -10,7 +11,6 @@
   --main-text-fontsize: 17px;
   --main-text-fontfamily: "Nunito", sans-serif;
   --main-title-fontfamily: "Nunito", sans-serif;
-
   --success-color: #3cab3b;
   --danger-color: #d8604c;
   --warning-color: #d78958;
@@ -24,21 +24,26 @@ html {
 .indent {
   margin-left: 40px;
 }
+
 ul.fake-ul {
   list-style: none;
   padding-left: 0;
 }
+
 .additions {
   color: var(--success-color);
 }
+
 .deletions {
   color: var(--danger-color);
 }
+
 .add,
 .add * {
   color: white !important;
   background-color: var(--success-color) !important;
 }
+
 .del,
 .del * {
   color: white !important;
@@ -50,12 +55,13 @@ ul.fake-ul {
 .trail_table {
   line-height: 30px;
 }
+
 .trail_button {
   color: var(--secondary-color-1);
 }
 
 /* Adds edit icon after link tag */
-a[data-missing-tag]:after {
+a[data-missing-tag]::after {
   content: "\f303";
   font-family: "Font Awesome 5 Free";
   font-weight: 900;
@@ -77,6 +83,7 @@ span.missingpage,
   border-bottom: 5px solid grey;
   margin-bottom: 30px;
 }
+
 .prev_alert {
   background-color: var(--danger-color);
   color: white;
@@ -94,22 +101,26 @@ span.missingpage,
   margin: 3px 0;
   display: flex;
 }
+
 .code pre.hljs {
   width: 200px; /* fake width overwrittent by flex: 1 auto; but needed for flexbox to work correctly */
   flex: 1 auto;
-  padding: 0.5em 0.5em 0.3em 0.5em;
+  padding: 0.5em 0.5em 0.3em;
 }
+
 .revisioninfo {
-  color: #aaaaaa;
+  color: #aaa;
   padding-bottom: 20px;
 }
+
 .searchbox {
   background: #fffff8;
-  border: 0px;
-  border-bottom: 1px solid #ccccaa;
-  padding: 0px;
-  margin: 0px;
+  border: 0;
+  border-bottom: 1px solid #cca;
+  padding: 0;
+  margin: 0;
 }
+
 .debug {
   font-size: 0.9em;
   color: var(--neutral-color);
@@ -118,6 +129,7 @@ span.missingpage,
   padding: 1em;
   margin: 0 auto;
 }
+
 /* Fin divers mise en forme */
 
 /* Les 3 colonnes potentielles de la page centrale */
@@ -134,6 +146,7 @@ span.missingpage,
   padding: 0;
   text-align: center;
 }
+
 .footer a,
 .footer-hidden a {
   color: #333;
@@ -142,9 +155,11 @@ span.missingpage,
   display: inline-block;
   margin: 0;
 }
+
 .footer-hidden {
   float: right;
 }
+
 .footer .dropdown-menu a {
   display: block;
   text-align: left;
@@ -165,9 +180,11 @@ span.missingpage,
 #graphical_options {
   display: none;
 }
+
 #bgCarousel {
   margin-bottom: 20px;
 }
+
 #bgCarousel img.bgimg,
 #bgCarousel div.mozaicimg {
   float: left;
@@ -175,14 +192,15 @@ span.missingpage,
   border: 1px solid #ccc;
   width: 100px;
   height: 75px;
-  -moz-border-radius: 4px;
-  -webkit-border-radius: 4px;
+  border-radius: 4px;
+  border-radius: 4px;
   border-radius: 4px;
 }
+
 #bgCarousel .choosen {
-  -moz-box-shadow: 0px 0px 2px 3px #ffff21;
-  -webkit-box-shadow: 0px 0px 2px 3px #ffff21;
-  box-shadow: 0px 0px 2px 3px #ffff21;
+  box-shadow: 0 0 2px 3px #ffff21;
+  box-shadow: 0 0 2px 3px #ffff21;
+  box-shadow: 0 0 2px 3px #ffff21;
 }
 
 #bgCarousel .item {
@@ -191,7 +209,7 @@ span.missingpage,
   margin: 0 53px;
 }
 
-/* lanceur d'accordéon*/
+/* lanceur d'accordéon */
 .accordion-trigger,
 .panel-heading[data-toggle="collapse"] {
   cursor: pointer;
@@ -200,7 +218,7 @@ span.missingpage,
 /* table des matieres */
 .toc {
   position: absolute;
-  right: 0px;
+  right: 0;
   z-index: 10000;
   top: 50px;
   width: 300px;
@@ -209,15 +227,19 @@ span.missingpage,
 li.toc1 {
   padding-left: 0;
 }
+
 li.toc2 {
   padding-left: 10px;
 }
+
 li.toc3 {
   padding-left: 20px;
 }
+
 li.toc4 {
   padding-left: 30px;
 }
+
 li.toc5 {
   padding-left: 40px;
 }
@@ -229,7 +251,7 @@ li.toc5 {
 
 .toc-menu ul.unstyled {
   list-style-type: none;
-  padding-left: 0px;
+  padding-left: 0;
 }
 
 /* barres de progression */
@@ -241,19 +263,23 @@ li.toc5 {
 #YesWikiModal .page {
   min-height: auto;
 }
+
 #yw-modal-loading {
   position: absolute;
   top: 30vh;
   left: 48%;
 }
+
 #yw-modal-iframe {
   width: 100%;
   height: 70vh;
   border: 0;
 }
+
 #YesWikiModal .modal-dialog .no-header-btn-close {
   display: none;
 }
+
 #YesWikiModal .modal-dialog.no-header .no-header-btn-close {
   display: flex;
   align-items: center;
@@ -272,6 +298,7 @@ li.toc5 {
   border: none;
   cursor: pointer;
 }
+
 #YesWikiModal .modal-dialog.no-header .modal-header {
   visibility: hidden;
   height: 1rem;
@@ -309,15 +336,19 @@ body > :not(#YesWikiModal) .current-revision-text {
 .topbarpage .btn-toolbar a {
   margin: 0;
 }
+
 .topbarpage .btn-toolbar a:hover {
   text-decoration: none;
 }
+
 .topbarpage .form-search {
   margin: 0;
 }
+
 .topbarpage .dropdown-menu a {
   display: block;
 }
+
 .topbarpage ul ul {
   display: none;
 }
@@ -339,24 +370,30 @@ body > :not(#YesWikiModal) .current-revision-text {
 .accordion-group {
   cursor: pointer;
 }
+
 .accordion-group .panel-title {
   position: relative;
 }
+
 .accordion-group .panel-heading {
   position: relative;
 }
+
 .accordion-group .panel-heading .icon-chevron {
   display: none;
   position: absolute;
   top: 20px;
   right: 15px;
 }
+
 .accordion-group .panel-heading.collapsed .chevron-down {
   display: inline-block;
 }
+
 .accordion-group .panel-heading:not(.collapsed) .chevron-up {
   display: inline-block;
 }
+
 .panel-heading > i {
   margin-right: 8px;
 }
@@ -369,6 +406,7 @@ body > :not(#YesWikiModal) .current-revision-text {
 #form_page_options .control-label {
   width: 200px;
 }
+
 #form_page_options .controls {
   margin-left: 210px;
 }
@@ -386,18 +424,20 @@ body > :not(#YesWikiModal) .current-revision-text {
 }
 
 .cols2 {
-  -webkit-column-count: 2; /* Chrome, Safari, Opera */
-  -moz-column-count: 2; /* Firefox */
+  column-count: 2; /* Chrome, Safari, Opera */
+  column-count: 2; /* Firefox */
   column-count: 2;
 }
+
 .cols3 {
-  -webkit-column-count: 3; /* Chrome, Safari, Opera */
-  -moz-column-count: 3; /* Firefox */
+  column-count: 3; /* Chrome, Safari, Opera */
+  column-count: 3; /* Firefox */
   column-count: 3;
 }
+
 .cols4 {
-  -webkit-column-count: 4; /* Chrome, Safari, Opera */
-  -moz-column-count: 4; /* Firefox */
+  column-count: 4; /* Chrome, Safari, Opera */
+  column-count: 4; /* Firefox */
   column-count: 4;
 }
 
@@ -409,6 +449,7 @@ body > :not(#YesWikiModal) .current-revision-text {
   margin-left: -50vw;
   margin-right: -50vw;
 }
+
 body {
   overflow-x: hidden;
 } /* hack pour cacher l'ascenseur horizontal */
@@ -424,7 +465,7 @@ body {
 
 .btn-glossaire {
   /* enlève le padding trop grand qui s'applique sur les boutons en général */
-  padding: 0px !important;
+  padding: 0 !important;
   font-size: inherit !important;
   vertical-align: inherit !important;
 }
@@ -442,11 +483,12 @@ body {
   min-height: auto !important;
 }
 
-.control-label:after {
+.control-label::after {
   content: ":";
   margin: 0 0.25em;
 }
-.symbole_obligatoire:after {
+
+.symbole_obligatoire::after {
   content: "*";
   margin-right: 0.25em;
 }
@@ -465,23 +507,27 @@ body {
   display: flex;
   align-items: center;
 }
+
 .acl-single-container label {
   width: 180px;
 }
+
 .acl-single-container input {
   width: calc(100% - 185px) !important;
 }
+
 .edit-acl-container label {
   font-weight: normal;
 }
+
 /* Materialize Switch
    ========================================================================== */
 .switch,
 .switch * {
   -webkit-tap-highlight-color: transparent;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
+  user-select: none;
+  user-select: none;
+  user-select: none;
   user-select: none;
 }
 
@@ -499,12 +545,12 @@ body {
   background-color: #84c7c1;
 }
 
-.switch label input[type="checkbox"]:checked + .lever:before,
-.switch label input[type="checkbox"]:checked + .lever:after {
+.switch label input[type="checkbox"]:checked + .lever::before,
+.switch label input[type="checkbox"]:checked + .lever::after {
   left: 18px;
 }
 
-.switch label input[type="checkbox"]:checked + .lever:after {
+.switch label input[type="checkbox"]:checked + .lever::after {
   background-color: #26a69a;
 }
 
@@ -514,17 +560,17 @@ body {
   position: relative;
   width: 36px;
   height: 14px;
-  background-color: rgba(0, 0, 0, 0.38);
+  background-color: rgb(0 0 0 / 38%);
   border-radius: 15px;
   margin-right: 10px;
-  -webkit-transition: background 0.3s ease;
+  transition: background 0.3s ease;
   transition: background 0.3s ease;
   vertical-align: middle;
   margin: 0 16px;
 }
 
-.switch label .lever:before,
-.switch label .lever:after {
+.switch label .lever::before,
+.switch label .lever::after {
   content: "";
   position: absolute;
   display: inline-block;
@@ -533,7 +579,7 @@ body {
   border-radius: 50%;
   left: 0;
   top: -3px;
-  -webkit-transition:
+  transition:
     left 0.3s ease,
     background 0.3s ease,
     -webkit-box-shadow 0.1s ease,
@@ -557,20 +603,20 @@ body {
     -webkit-transform 0.1s ease;
 }
 
-.switch label .lever:before {
-  background-color: rgba(38, 166, 154, 0.15);
+.switch label .lever::before {
+  background-color: rgb(38 166 154 / 15%);
 }
 
-.switch label .lever:after {
+.switch label .lever::after {
   background-color: #f1f1f1;
-  -webkit-box-shadow:
-    0px 3px 1px -2px rgba(0, 0, 0, 0.2),
-    0px 2px 2px 0px rgba(0, 0, 0, 0.14),
-    0px 1px 5px 0px rgba(0, 0, 0, 0.12);
   box-shadow:
-    0px 3px 1px -2px rgba(0, 0, 0, 0.2),
-    0px 2px 2px 0px rgba(0, 0, 0, 0.14),
-    0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+    0 3px 1px -2px rgb(0 0 0 / 20%),
+    0 2px 2px 0 rgb(0 0 0 / 14%),
+    0 1px 5px 0 rgb(0 0 0 / 12%);
+  box-shadow:
+    0 3px 1px -2px rgb(0 0 0 / 20%),
+    0 2px 2px 0 rgb(0 0 0 / 14%),
+    0 1px 5px 0 rgb(0 0 0 / 12%);
 }
 
 .form-control[type="checkbox"] {
@@ -582,16 +628,17 @@ body {
 }
 
 .login-form-dropdown {
-  padding: 5px 15px 10px 15px;
+  padding: 5px 15px 10px;
   width: 300px;
 }
+
 .switch input[type="checkbox"][disabled] + .lever {
   cursor: default;
-  background-color: rgba(0, 0, 0, 0.12);
+  background-color: rgb(0 0 0 / 12%);
 }
 
-.switch label input[type="checkbox"][disabled] + .lever:after,
-.switch label input[type="checkbox"][disabled]:checked + .lever:after {
+.switch label input[type="checkbox"][disabled] + .lever::after,
+.switch label input[type="checkbox"][disabled]:checked + .lever::after {
   background-color: #949494;
 }
 
@@ -601,29 +648,27 @@ body {
   right: 0;
   width: 0;
   height: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-
-  -webkit-transition: all 0.3s ease-in-out;
-  -moz-transition: all 0.3s ease-in-out;
-  -o-transition: all 0.3s ease-in-out;
-  -ms-transition: all 0.3s ease-in-out;
+  background-color: rgb(0 0 0 / 70%);
   transition: all 0.3s ease-in-out;
-
-  -webkit-transform: translate(0px, -100%) scale(0, 0);
-  -moz-transform: translate(0px, -100%) scale(0, 0);
-  -o-transform: translate(0px, -100%) scale(0, 0);
-  -ms-transform: translate(0px, -100%) scale(0, 0);
-  transform: translate(0px, -100%) scale(0, 0);
-
+  transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+  transform: translate(0, -100%) scale(0, 0);
+  transform: translate(0, -100%) scale(0, 0);
+  transform: translate(0, -100%) scale(0, 0);
+  transform: translate(0, -100%) scale(0, 0);
+  transform: translate(0, -100%) scale(0, 0);
   opacity: 0;
   overflow: hidden;
 }
+
 #search.open {
-  -webkit-transform: translate(0px, 0px) scale(1, 1);
-  -moz-transform: translate(0px, 0px) scale(1, 1);
-  -o-transform: translate(0px, 0px) scale(1, 1);
-  -ms-transform: translate(0px, 0px) scale(1, 1);
-  transform: translate(0px, 0px) scale(1, 1);
+  transform: translate(0, 0) scale(1, 1);
+  transform: translate(0, 0) scale(1, 1);
+  transform: translate(0, 0) scale(1, 1);
+  transform: translate(0, 0) scale(1, 1);
+  transform: translate(0, 0) scale(1, 1);
   opacity: 1;
   z-index: 10000;
   width: 100%;
@@ -635,23 +680,25 @@ body {
   position: relative;
   top: 50%;
   width: 100%;
-  color: rgb(255, 255, 255);
-  background: rgba(0, 0, 0, 0);
+  color: rgb(255 255 255);
+  background: rgb(0 0 0 / 0%);
   font-weight: 300;
   text-align: center;
-  border: 0px;
-  margin: 0px auto;
+  border: 0;
+  margin: 0 auto;
   margin-top: -51px;
   padding: 0 1rem;
   outline: none;
   box-shadow: none;
 }
+
 #search .btn-search,
 #search .search-query {
   font-size: 1.8rem;
   height: auto !important;
   line-height: 1em;
 }
+
 #search .close-search {
   position: fixed;
   top: 15px;
@@ -673,9 +720,10 @@ body {
   z-index: 5000;
   text-align: center;
 }
+
 .toast-message .alert {
   display: inline-block;
-  box-shadow: 0 0 9px 1px rgba(0, 0, 0, 0.42);
+  box-shadow: 0 0 9px 1px rgb(0 0 0 / 42%);
 }
 
 .yeswiki-iframe-body > .container {
@@ -703,6 +751,7 @@ body {
   border: 2px solid var(--primary-color);
   border-radius: 3px !important;
 }
+
 .v-select .vs__dropdown-toggle {
   border: none;
 }
@@ -713,14 +762,11 @@ body {
   justify-content: center;
   opacity: 0.1;
 }
+
 .spinner-loader.overlay {
   height: auto !important;
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: auto;
+  inset: 0;
   background-color: #ececec;
   border-radius: 0.5rem;
   opacity: 0.3;
@@ -735,9 +781,11 @@ section.pattern-border {
   border-style: solid;
   padding: 2rem;
 }
+
 section.pattern-border-dashed {
   border-style: dashed;
 }
+
 section.pattern-border-dotted {
   border-style: dotted;
 }
@@ -746,26 +794,32 @@ section.shape-rounded {
   border-radius: 0.5rem;
   padding: 2rem;
 }
+
 section.shape-circle {
   border-radius: 50%;
   padding: 4rem;
 }
+
 section.shape-blob1 {
   border-radius: 50% 50% 59% 41% / 35% 50% 50% 65%;
   padding: 4rem;
 }
+
 section.shape-blob2 {
   border-radius: 33% 67% 50% 50% / 25% 19% 81% 75%;
   padding: 4rem;
 }
+
 section.shape-blob3 {
   border-radius: 33% 67% 50% 50% / 65% 73% 27% 35%;
   padding: 4rem;
 }
+
 section.shape-blob4 {
   border-radius: 23% 77% 27% 73% / 41% 31% 69% 59%;
   padding: 4rem;
 }
+
 section.shape-blob5 {
   border-radius: 75% 25% 76% 24% / 50% 50% 50% 50%;
   padding: 4rem;
@@ -779,42 +833,53 @@ section.full-width:not(.with-bg-pattern) {
 .dataTables_footer .dataTables_info {
   white-space: normal !important; /* more responsive */
 }
+
 .dropup:hover {
   cursor: pointer;
 }
+
 .yeswiki-page-comments {
   margin-top: 2em;
 }
+
 .yw-comment {
   margin: 1em 0 3em;
 }
+
 .yw-comment .comment-info {
   font-size: 0.8rem;
-  margin-bottom: 0em;
+  margin-bottom: 0;
   display: flex;
   justify-content: flex-start;
   align-items: center;
 }
+
 .yw-comment .user-pic {
   width: 32px;
   height: 32px;
   margin: 0 1em 0 0;
 }
+
 .yw-comment .comment-date {
   color: var(--neutral-color);
 }
+
 .yw-comment .comment-html {
   margin-bottom: 0;
 }
+
 .yw-comment .comment-links {
   font-size: 0.8rem;
 }
+
 .comment-reponses {
   margin-left: 3em;
 }
+
 .api-container code {
   font-weight: normal;
 }
+
 .comment-reponses .yw-comment {
   margin: 1em 0;
 }
@@ -836,44 +901,53 @@ html[lang="pt"] [lang]:not([lang="pt"]) {
   max-width: 170px;
 }
 
-@media (max-width: 801px) {
+@media (width <= 801px) {
   #comments-table-action .comments-table-break-word-column {
     max-width: 120px;
   }
 }
 
 /* === === */
+
 /* reactions */
 .reactions-container {
   margin: 2em 0;
 }
+
 .reactions-flex {
   display: flex;
   flex-wrap: wrap;
   justify-content: start;
 }
+
 .reaction-img {
   width: 80%;
 }
+
 .reaction-emoji,
 .reaction-fa-icons {
   font-size: 3em;
 }
+
 .mini-react {
   font-weight: bold;
   color: var(--primary-color);
 }
+
 .mini-react > img {
   max-height: 2.5em;
   display: inline-block;
 }
+
 .mini-react > img.reaction-img {
   max-width: 2em;
 }
+
 .mini-react .reaction-emoji,
 .mini-react .reaction-fa-icons {
   font-size: 1.5em;
 }
+
 .reaction-content {
   width: 9em;
   text-align: center;
@@ -881,6 +955,7 @@ html[lang="pt"] [lang]:not([lang="pt"]) {
   padding: 0;
   font-size: 0.9em;
 }
+
 .reaction-title {
   color: var(--neutral-color);
   text-transform: uppercase;
@@ -888,44 +963,50 @@ html[lang="pt"] [lang]:not([lang="pt"]) {
   margin-top: 1em;
   word-wrap: anywhere;
 }
+
 .reaction-numbers {
   color: var(--neutral-color);
   font-size: 1.1em;
   font-weight: bold;
 }
+
 .link-reaction {
   display: flex;
   align-items: center;
   flex-direction: column;
-  align-content: center;
-  justify-content: space-between;
+  place-content: center space-between;
   height: 100%;
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  border: 1px solid rgb(0 0 0 / 20%);
   border-radius: 0.5em;
   padding: 1em 0.5em;
   transition: all 200ms ease-in;
   box-shadow: none;
 }
+
 .link-reaction:hover {
-  border: 1px solid rgba(0, 0, 0, 0.5);
-  box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgb(0 0 0 / 50%);
+  box-shadow: 0 0 3px rgb(0 0 0 / 30%);
   text-decoration: none;
 }
+
 .link-reaction:focus,
 .link-reaction:active,
 .link-reaction:visited {
   text-decoration: none;
 }
+
 .disabled,
 .disabled:hover {
   cursor: not-allowed !important;
 }
+
 .user-reaction {
   border: 3px solid var(--primary-color);
 }
+
 .user-reaction:hover {
-  border: 3px solid rgba(0, 0, 0, 0.5);
-  box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+  border: 3px solid rgb(0 0 0 / 50%);
+  box-shadow: 0 0 3px rgb(0 0 0 / 30%);
   text-decoration: none;
 }
 
@@ -944,23 +1025,25 @@ html[lang="pt"] [lang]:not([lang="pt"]) {
   transition: all 200ms ease-in;
   box-shadow: none;
 }
+
 .favorites:focus,
 .favorites:active,
 .favorites:visited {
   text-decoration: none;
 }
+
 .favorites > i {
-  margin-right: 0px !important;
+  margin-right: 0 !important;
 }
 
 /* timeline */
 .timeline {
   position: relative;
   margin: 2em 0;
-  padding: 0em 3em;
+  padding: 0 3em;
 }
 
-.timeline:before {
+.timeline::before {
   content: "";
   position: absolute;
   height: calc(100% + 2em);
@@ -977,7 +1060,7 @@ html[lang="pt"] [lang]:not([lang="pt"]) {
   margin-top: 2em;
 }
 
-.timeline li:before {
+.timeline li::before {
   position: absolute;
   content: "·";
   font-size: 8em;
@@ -988,7 +1071,7 @@ html[lang="pt"] [lang]:not([lang="pt"]) {
 }
 
 /* users-table.twig */
-@media (max-width: 1200px) {
+@media (width <= 1200px) {
   #users-table-action {
     overflow-x: auto;
   }
@@ -1007,6 +1090,7 @@ td.users-table-break-word {
 .login-text {
   display: none;
 }
+
 .dropdown-menu .login-text {
   display: inline;
 }

@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Security\Service\SecurityController;
 
 class ArchiveController extends YesWikiController
 {
@@ -26,7 +27,7 @@ class ArchiveController extends YesWikiController
         $filePath = $this->archiveService->getFilePath($id);
         if (empty($filePath)) {
             return new ApiResponse(
-                ['error' => "Not existing file ".htmlspecialchars($id)],
+                ['error' => "Not existing file " . htmlspecialchars($id)],
                 Response::HTTP_BAD_REQUEST
             );
         } else {
@@ -63,8 +64,7 @@ class ArchiveController extends YesWikiController
 
     public function manageArchiveAction(?string $id = null)
     {
-        $action = filter_input(INPUT_POST, 'action', FILTER_UNSAFE_RAW);
-        $action = in_array($action, [false,null], true) ? "" : htmlspecialchars(strip_tags($action));
+        $action = $this->getService(SecurityController::class)->filterInput(INPUT_POST, 'action', FILTER_SANITIZE_STRING);
         switch ($action) {
             case 'delete':
                 if (!empty($id)) {

@@ -3,16 +3,17 @@
 // When user add manuall via wikiCode a list or a formId that does not exist, keep the value
 // so it can be added in the select option list
 const _listAndFormUserValues = {}
-$('#form-builder-text').val().trim().split('\n').forEach((textField) => {
-  const fieldValues = textField.split('***')
-  if (fieldValues.length > 1) {
-    const [field, value] = fieldValues
-    if (['checkboxfiche', 'checkbox', 'liste', 'radio', 'listefiche', 'radiofiche'].includes(field)
+$('#form-builder-text').val().trim().split('\n')
+  .forEach((textField) => {
+    const fieldValues = textField.split('***')
+    if (fieldValues.length > 1) {
+      const [field, value] = fieldValues
+      if (['checkboxfiche', 'checkbox', 'liste', 'radio', 'listefiche', 'radiofiche'].includes(field)
         && value && value != ' ' && !(value in formAndListIds.forms) && !(value in formAndListIds.lists)) {
-      _listAndFormUserValues[value] = value
+        _listAndFormUserValues[value] = value
+      }
     }
-  }
-})
+  })
 export const listAndFormUserValues = _listAndFormUserValues
 
 // Some attributes configuration used in multiple fields
@@ -42,21 +43,21 @@ export const aclsOptions = {
 
 export const aclsCommentOptions = {
   ...{ 'comments-closed': _t('BAZ_FORM_EDIT_COMMENTS_CLOSED') },
-  ...Object.fromEntries(Object.entries(visibilityOptions).filter(([key])=>key != ' * ')),
+  ...Object.fromEntries(Object.entries(visibilityOptions).filter(([key]) => key != ' * ')),
   ...{ user: _t('BAZ_FORM_EDIT_USER') },
   ...formattedGroupList
 }
 
 export const readConf = {
-  label: _t('BAZ_FORM_EDIT_CAN_BE_READ_BY'), 
-  options: { ...visibilityOptions, ...formattedGroupList }, 
-  multiple: true 
+  label: _t('BAZ_FORM_EDIT_CAN_BE_READ_BY'),
+  options: { ...visibilityOptions, ...formattedGroupList },
+  multiple: true
 }
 
 export const writeconf = {
-  label: _t('BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY'), 
-  options: { ...visibilityOptions, ...formattedGroupList }, 
-  multiple: true 
+  label: _t('BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY'),
+  options: { ...visibilityOptions, ...formattedGroupList },
+  multiple: true
 }
 
 export const searchableConf = {

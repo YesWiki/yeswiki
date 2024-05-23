@@ -43,9 +43,9 @@ Vous pouvez voir ici la version du wiki et s'il s'agit de la toute dernière.
 Si vous êtes identifié.e comme administrateurice vous pouvez faire les mises à jour, une procédure de sauvegarde sera lancée
 
 Astuces :
- - mettre à jour YesWiki mais aussi les thèmes et les tools (extensions)
- - une mise à jour se fait en plusieurs étapes : il est nécessaire de cliquer sur "Finaliser la mise à jour (lancer les actions de post-installation)" puis sur "Mettre à jour les pages de gestion"
- - n'hésitez pas à **mettre à jour les pages de gestion**
+
+- mettre à jour YesWiki mais aussi les thèmes et les tools (extensions)
+- n'hésitez pas à **mettre à jour les pages de gestion**
 
 **Sauvegardes**
 

@@ -127,10 +127,12 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 'signuptime' => ""
             ]);
             $wikiName = $userAsArray['name'] ?? "";
+            $wikiName = trim($wikiName);
+            $userAsArray['name'] = $wikiName;
             $email = $userAsArray['email'] ?? "";
             $plainPassword = $userAsArray['password'] ?? "";
         } elseif (is_string($wikiNameOrUser)) {
-            $wikiName = $wikiNameOrUser;
+            $wikiName = trim($wikiNameOrUser);
             $userAsArray = [
                 'changescount' => "",
                 'doubleclickedit' => "",
@@ -168,15 +170,15 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $hashedPassword = $passwordHasher->hash($plainPassword);
         return $this->dbService->query(
             'INSERT INTO ' . $this->dbService->prefixTable('users') . 'SET ' .
-            "signuptime = now(), " .
-            "name = '" . $this->dbService->escape($user['name']) . "', " .
-            "motto = '". (empty($user['motto']) ? '' : $this->dbService->escape($user['motto']))."', " .
-            (empty($user['changescount']) ? '' : "changescount = '" .$this->dbService->escape($user['changescount'])."', ") .
-            (empty($user['doubleclickedit']) ? '' : "doubleclickedit = '" .$this->dbService->escape($user['doubleclickedit'])."', ") .
-            (empty($user['revisioncount']) ? '' : "revisioncount = '" .$this->dbService->escape($user['revisioncount'])."', ") .
-            (empty($user['show_comments']) ? '' : "show_comments = '" .$this->dbService->escape($user['show_comments'])."', ") .
-            "email = '" . $this->dbService->escape($user['email']) . "', " .
-            "password = '" . $this->dbService->escape($hashedPassword) . "'"
+                "signuptime = now(), " .
+                "name = '" . $this->dbService->escape($user['name']) . "', " .
+                "motto = '" . (empty($user['motto']) ? '' : $this->dbService->escape($user['motto'])) . "', " .
+                (empty($user['changescount']) ? '' : "changescount = '" . $this->dbService->escape($user['changescount']) . "', ") .
+                (empty($user['doubleclickedit']) ? '' : "doubleclickedit = '" . $this->dbService->escape($user['doubleclickedit']) . "', ") .
+                (empty($user['revisioncount']) ? '' : "revisioncount = '" . $this->dbService->escape($user['revisioncount']) . "', ") .
+                (empty($user['show_comments']) ? '' : "show_comments = '" . $this->dbService->escape($user['show_comments']) . "', ") .
+                "email = '" . $this->dbService->escape($user['email']) . "', " .
+                "password = '" . $this->dbService->escape($hashedPassword) . "'"
         );
     }
 
@@ -253,14 +255,14 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
         unset($this->getOneByNameCacheResults[$user['name']]);
-        $query = "DELETE FROM {$this->dbService->prefixTable('users')} ".
+        $query = "DELETE FROM {$this->dbService->prefixTable('users')} " .
             " WHERE `name` = \"{$this->dbService->escape($user['name'])}\";";
         try {
             if (!$this->dbService->query($query)) {
-                throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED').'.');
+                throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED') . '.');
             }
         } catch (Exception $ex) {
-            throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED').'.');
+            throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED') . '.');
         }
     }
 
@@ -269,7 +271,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      * @param User $user
      * @param bool $adminCheck
      * @return string[] An array of group names
-    */
+     */
     public function groupsWhereIsMember(User $user, bool $adminCheck = true)
     {
         $groups = $this->wiki->GetGroupsList();
@@ -288,7 +290,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      * @param array $formerGroups former groups list to avoid loops
      *
      * @return boolean True if the $user is member of $groupName, false otherwise
-    */
+     */
     public function isInGroup(string $groupName, ?string $username = null, bool $admincheck = true, array $formerGroups = [])
     {
         // aclService could  not be loaded in __construct because AclService already loads UserManager
@@ -320,10 +322,10 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             $user->setPassword($newHashedPassword);
             $query =
                 'UPDATE ' . $this->dbService->prefixTable('users') . 'SET ' .
-                'password = "' . $this->dbService->escape($newHashedPassword) . '"'.
-                ' WHERE name = "'.$this->dbService->escape($user['name']).'" '.
-                'AND email= "'.$this->dbService->escape($user['email']).'" '.
-                'AND password= "'.$this->dbService->escape($previousPassword).'";';
+                'password = "' . $this->dbService->escape($newHashedPassword) . '"' .
+                ' WHERE name = "' . $this->dbService->escape($user['name']) . '" ' .
+                'AND email= "' . $this->dbService->escape($user['email']) . '" ' .
+                'AND password= "' . $this->dbService->escape($previousPassword) . '";';
             $this->dbService->query($query);
         } catch (Throwable $th) {
             // only throw error in debug mode

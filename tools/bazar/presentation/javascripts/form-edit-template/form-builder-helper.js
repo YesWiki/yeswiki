@@ -69,3 +69,20 @@ export function adjustJqueryBuilderUI($field) {
   $field.find('a[type=copy].formbuilder-icon-copy').attr('title', _t('DUPLICATE'))
   $field.find('a[type=edit].formbuilder-icon-pencil').attr('title', _t('BAZ_FORM_EDIT_HIDE'))
 }
+
+export function convertToBytes(base64content) {
+  const byteCharacters = base64content
+  const sliceSize = 512
+  let byteNumbers
+  let slice
+  const byteArrays = new [].constructor()
+  for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+    slice = byteCharacters.slice(offset, offset + sliceSize)
+    byteNumbers = new [].constructor(slice.length)
+    for (let idx = 0; idx < slice.length; idx++) {
+      byteNumbers[idx] = slice.charCodeAt(idx)
+    }
+    byteArrays.push(new Uint8Array(byteNumbers))
+  }
+  return byteArrays
+}

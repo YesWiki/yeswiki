@@ -47,7 +47,7 @@ class DbService
                 }
             }
         } catch (Throwable $th) {
-            if (in_array(php_sapi_name(), ['cli', 'cli-server',' phpdbg'], true)) {
+            if (in_array(php_sapi_name(), ['cli', 'cli-server', ' phpdbg'], true)) {
                 throw new Exception(_t('DB_CONNECT_FAIL'));
             } else {
                 exit(_t('DB_CONNECT_FAIL'));
@@ -63,6 +63,14 @@ class DbService
     public function getQueryLog()
     {
         return $this->queryLog;
+    }
+
+    public function addQueryLog($query, $time)
+    {
+        $this->queryLog[] = array(
+            'query' => $query,
+            'time' => $time
+        );
     }
 
     public function prefixTable($tableName)
@@ -87,25 +95,22 @@ class DbService
             $start = $this->getMicroTime();
         }
 
-        if (!$result = mysqli_query($this->link, $query)) {
-            throw new Exception('Query failed: ' . $query . ' (' . mysqli_error($this->link) . ')');
+        try {
+            if (!$result = mysqli_query($this->link, $query)) {
+                throw new Exception('Query failed: ' . $query . ' (' . mysqli_error($this->link) . ')');
+            }
+        } finally {
+            if ($this->params->get('debug')) {
+                $this->addQueryLog($query, $this->getMicroTime() - $start);
+            }
         }
-
-        if ($this->params->get('debug')) {
-            $time = $this->getMicroTime() - $start;
-            $this->queryLog[] = array(
-                'query' => $query,
-                'time' => $time
-            );
-        }
-
         return $result;
     }
 
     protected function getMicroTime()
     {
         list($usec, $sec) = explode(" ", microtime());
-        return ((float)$usec + (float)$sec);
+        return ((float) $usec + (float) $sec);
     }
 
     /*
@@ -141,6 +146,18 @@ class DbService
         return mysqli_num_rows($this->query($query));
     }
 
+    public function columnExists($table, $column)
+    {
+        return $this->count("SHOW COLUMNS FROM {$this->prefixTable($table)} LIKE '{$this->escape($column)}';") > 0;
+    }
+
+    public function dropColumn($table, $column)
+    {
+        if ($this->columnExists($table, $column)) {
+            $this->query("ALTER TABLE {$this->prefixTable($table)} DROP `{$this->escape($column)}`;");
+        }
+    }
+
     public function getDbTimeZone(): ?string
     {
         $query = 'SELECT @@SESSION.time_zone as timezone;';
@@ -149,7 +166,7 @@ class DbService
             ? $result['timezone']
             : null;
         if ($tz === 'SYSTEM') {
-            $tz = ini_get('date.timezone') ?? null ;
+            $tz = ini_get('date.timezone') ?? null;
         }
         if (empty($tz)) {
             $queryBis = 'SELECT NOW() as time;';
@@ -190,12 +207,12 @@ class DbService
             // get Tables
             $tables = $this->loadAll("show tables");
             if (!is_array($tables)) {
-                throw new Exception("Error in '".__METHOD__."' (line ".__LINE__.") : 'show tables' sql command did not return an array !");
+                throw new Exception("Error in '" . __METHOD__ . "' (line " . __LINE__ . ") : 'show tables' sql command did not return an array !");
             }
 
-            foreach ($tables as  $tableInfo) {
+            foreach ($tables as $tableInfo) {
                 if (!is_array($tableInfo)) {
-                    throw new Exception("Error in '".__METHOD__."' (line ".__LINE__.") : '\$tableInfo' sql command did not return an array !");
+                    throw new Exception("Error in '" . __METHOD__ . "' (line " . __LINE__ . ") : '\$tableInfo' sql command did not return an array !");
                 }
                 $tableName = array_values($tableInfo)[0];
                 if (strpos($tableName, $tablesPrefix) === 0) {
@@ -208,7 +225,7 @@ class DbService
             $phpVersion = phpversion();
 
             $sql =
-            <<<SQL
+                <<<SQL
             -- SQL Dump
             -- ArchiveService:getSQLBackup Version
             -- 
@@ -237,7 +254,7 @@ class DbService
 
                 // HEADER
                 $sql .=
-                <<<SQL
+                    <<<SQL
 
                 -- 
                 -- Structure of table : `$tableName`
@@ -249,14 +266,14 @@ class DbService
                 $createTableResult = $this->query("show create table " . $tableName);
 
                 while ($creationTable = mysqli_fetch_array($createTableResult)) {
-                    $sql .= $creationTable[1].";\n\n";
+                    $sql .= $creationTable[1] . ";\n\n";
                 }
 
                 // DUMP DATA
 
                 //    HEADER
                 $sql .=
-                <<<SQL
+                    <<<SQL
 
                 -- 
                 -- Data of table : `$tableName`
@@ -267,30 +284,31 @@ class DbService
 
                 $rawData = $this->query("select * from " . $tableName);
 
-                $firstRow = true ;
+                $firstRow = true;
                 while ($row = mysqli_fetch_array($rawData)) {
                     if ($firstRow) {
                         $sql .= "INSERT INTO `$tableName` ";
                         $sql .= "(";
                         for ($i = 0; $i < mysqli_num_fields($rawData); $i++) {
                             if ($i != 0) {
-                                $sql .=  ", ";
+                                $sql .= ", ";
                             }
                             $sql .= "`" . mysqli_fetch_field_direct($rawData, $i)->name . "`";
                         }
                         $sql .= ") VALUES\n";
-                        $firstRow = false ;
+                        $firstRow = false;
                     } else {
                         $sql .= ",\n";
                     }
                     $sql .= "(";
                     for ($i = 0; $i < mysqli_num_fields($rawData); $i++) {
                         if ($i != 0) {
-                            $sql .=  ", ";
+                            $sql .= ", ";
                         }
                         $strAdd = '';
                         $field = mysqli_fetch_field_direct($rawData, $i);
-                        if ($field->type == 252 // text or blob cf https://www.php.net/manual/fr/mysqli-result.fetch-field-direct.php
+                        if (
+                            $field->type == 252 // text or blob cf https://www.php.net/manual/fr/mysqli-result.fetch-field-direct.php
                             || $field->type == 253 // varchar
                             || $field->type == 254 // char
                             || $field->type == 10 // date
@@ -298,15 +316,15 @@ class DbService
                             || $field->type == 12 // datetime
                             || $field->type == 13 // year
                         ) {
-                            $strAdd =  "'";
+                            $strAdd = "'";
                         }
-                        $sql .=  $strAdd . $this->escape($row[$i] ?? '') . $strAdd ;
+                        $sql .= $strAdd . $this->escape($row[$i] ?? '') . $strAdd;
                     }
-                    $sql .=  ")";
+                    $sql .= ")";
                 }
-                $sql .= ";\n" ;
+                $sql .= ";\n";
                 $sql .=
-                <<<SQL
+                    <<<SQL
 
                 -- --------------------------------------------------------
 
@@ -314,7 +332,7 @@ class DbService
             }
 
             $sql .=
-            <<<SQL
+                <<<SQL
 
             COMMIT;
             
@@ -327,6 +345,6 @@ class DbService
         } catch (Throwable $th) {
             $error = $th->getMessage();
         }
-        return compact(['sql','error']);
+        return compact(['sql', 'error']);
     }
 }
