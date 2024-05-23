@@ -82,6 +82,9 @@ class UpdateAction extends YesWikiAction
             case 'delete':
                 $messages = $updateService->delete($packageName);
                 break;
+            default:
+                $messages = [];
+                break;
         }
 
         // Display result of action, with a list of success/error messages
