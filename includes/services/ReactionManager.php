@@ -40,7 +40,7 @@ class ReactionManager
         $this->tripleStore = $tripleStore;
     }
 
-    public function getReactions($pageTag = '', $ids = [], $user = '')
+    public function getReactions($pageTag = '', $ids = [], $user = '', $singleEntry = false)
     {
         $res = [];
         // get reactions in db
@@ -80,13 +80,14 @@ class ReactionManager
                     'idReaction' => $idReaction,
                 ], $v['value']);
             } else {
+                $key = $singleEntry ? $v['value']['idReaction'] : $v['value']['idReaction'] . '|' . $v['value']['pageTag'];
                 // get title and reaction labels for choosen reaction id in choosen page page
-                if (!isset($res[$v['value']['idReaction'] . '|' . $v['value']['pageTag']]['parameters'])) {
+                if (!isset($res[$key]['parameters'])) {
                     $params = $this->getActionParameters($v['value']['pageTag'], $v['value']['idReaction']);
-                    $res[$v['value']['idReaction'] . '|' . $v['value']['pageTag']]['parameters'] = $params[$v['value']['idReaction']] ?? [];
-                    $res[$v['value']['idReaction'] . '|' . $v['value']['pageTag']]['parameters']['pageTag'] = $v['value']['pageTag'];
+                    $res[$key]['parameters'] = $params[$v['value']['idReaction']] ?? [];
+                    $res[$key]['parameters']['pageTag'] = $v['value']['pageTag'];
                 }
-                $res[$v['value']['idReaction'] . '|' . $v['value']['pageTag']]['reactions'][] = $v['value'];
+                $res[$key]['reactions'][] = $v['value'];
             }
         }
         ksort($res);
