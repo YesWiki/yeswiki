@@ -107,7 +107,7 @@ class EntryManager
     public function getExtraFields($tag): array
     {
         $extraFields = [];
-        $extraFields['reactions'] = $this->wiki->services->get(ReactionManager::class)->getReactions($tag);
+        $extraFields['reactions'] = $this->wiki->services->get(ReactionManager::class)->getReactions($tag, [], '', true);
         $extraFields['comments'] = $this->wiki->services->get(CommentService::class)->loadCommentsRecursive($tag);
 
         $extraFields['nb_comments'] = $this->getNbComments($extraFields['comments']);
