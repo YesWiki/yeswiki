@@ -5,7 +5,7 @@ use YesWiki\AutoUpdate\Service\MigrationService;
 use YesWiki\AutoUpdate\Service\UpdateAdminPagesService;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Controller\Service\SecurityController;
+use YesWiki\Security\Controller\SecurityController;
 
 class UpdateAction extends YesWikiAction
 {
