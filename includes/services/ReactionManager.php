@@ -87,6 +87,16 @@ class ReactionManager
                     $res[$key]['parameters'] = $params[$v['value']['idReaction']] ?? [];
                     $res[$key]['parameters']['pageTag'] = $v['value']['pageTag'];
                 }
+                // count reactions
+                if (!isset($res[$key]['nb_reactions'])) {
+                    $res[$key]['nb_reactions'] = [];
+                }
+                if (!isset($res[$key]['nb_reactions'][$v['value']['id']])) {
+                    $res[$key]['nb_reactions'][$v['value']['id']] = 1;
+                } else {
+                    $res[$key]['nb_reactions'][$v['value']['id']] += 1;
+                }
+
                 $res[$key]['reactions'][] = $v['value'];
             }
         }
