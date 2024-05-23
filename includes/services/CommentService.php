@@ -190,8 +190,8 @@ class CommentService implements EventSubscriberInterface
     public function loadCommentsRecursive($tag, bool $bypassAcls = false)
     {
         $comments = $this->loadComments($tag);
-        foreach ($comments as $c) {
-            $comments['comments'] = $this->loadCommentsRecursive($c['tag']);
+        foreach ($comments as $k => $c) {
+            $comments[$k]['comments'] = $this->loadCommentsRecursive($c['tag']);
         }
         return $comments;
     }
