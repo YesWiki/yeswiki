@@ -75,9 +75,9 @@ Si vous déposez du HTML dans la page wiki, il faut l'entourer de `""` pour qu'i
 ```yeswiki
 ""<b>Ceci est du HTML</b>""
 ```
-#### Créer une ancre: un lien qui envoie sur une partie de votre page
+#### Créer une ancre : un lien qui envoie sur une partie de votre page
 ```yeswiki
-""<a href="#ancre1">Lien pour aller vers le paragraphe cible""</a>
+""<a href="#ancre1">Texte du lien pour aller vers le paragraphe cible</a>""
 
 ...
 
