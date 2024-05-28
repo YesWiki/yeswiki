@@ -30025,14 +30025,23 @@ class PartialEvaluator {
     }
     const SMALL_IMAGE_DIMENSIONS = 200;
 <<<<<<< HEAD
+<<<<<<< HEAD
     if (isInline && w + h < SMALL_IMAGE_DIMENSIONS && !dict.has("SMask") && !dict.has("Mask")) {
 =======
+=======
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
 <<<<<<< HEAD
     if (isInline && !dict.has("SMask") && !dict.has("Mask") && w + h < SMALL_IMAGE_DIMENSIONS) {
 =======
     if (isInline && w + h < SMALL_IMAGE_DIMENSIONS && !dict.has("SMask") && !dict.has("Mask")) {
 >>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
+<<<<<<< HEAD
 >>>>>>> 310af890 (chore(deps): composer update with new pdf js)
+=======
+=======
+    if (isInline && w + h < SMALL_IMAGE_DIMENSIONS && !dict.has("SMask") && !dict.has("Mask")) {
+>>>>>>> 9849a610 (chore(deps): composer and pdfjs upgrades)
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
       try {
         const imageObj = new PDFImage({
           xref: this.xref,
@@ -32650,10 +32659,16 @@ class PartialEvaluator {
       }
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 >>>>>>> 310af890 (chore(deps): composer update with new pdf js)
+=======
+=======
+>>>>>>> 9849a610 (chore(deps): composer and pdfjs upgrades)
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
     let fontMatrix = dict.getArray("FontMatrix");
     if (!isNumberArray(fontMatrix, 6)) {
       fontMatrix = FONT_IDENTITY_MATRIX;
@@ -32687,9 +32702,15 @@ class PartialEvaluator {
       italicAngle = 0;
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
 >>>>>>> 310af890 (chore(deps): composer update with new pdf js)
+=======
+>>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
+=======
+>>>>>>> 9849a610 (chore(deps): composer and pdfjs upgrades)
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
     const properties = {
       type,
       name: fontName.name,
@@ -36141,12 +36162,20 @@ async function getXRefTable(xrefInfo, baseOffset, newRefs, newXref, buffer) {
       indexesPosition += 2;
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
 <<<<<<< HEAD
     buffer.push(`${baseOffset.toString().padStart(10, "0")} ${Math.min(ref.gen, 0xffff).toString().padStart(5, "0")} n\r\n`);
     baseOffset += data.length;
 =======
+<<<<<<< HEAD
 >>>>>>> 310af890 (chore(deps): composer update with new pdf js)
+=======
+=======
+>>>>>>> 9849a610 (chore(deps): composer and pdfjs upgrades)
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
     if (data !== null) {
       buffer.push(`${baseOffset.toString().padStart(10, "0")} ${Math.min(ref.gen, 0xffff).toString().padStart(5, "0")} n\r\n`);
       baseOffset += data.length;
@@ -36154,9 +36183,15 @@ async function getXRefTable(xrefInfo, baseOffset, newRefs, newXref, buffer) {
       buffer.push(`0000000000 ${Math.min(ref.gen + 1, 0xffff).toString().padStart(5, "0")} f\r\n`);
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
 >>>>>>> 310af890 (chore(deps): composer update with new pdf js)
+=======
+>>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
+=======
+>>>>>>> 9849a610 (chore(deps): composer and pdfjs upgrades)
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
   }
   computeIDs(baseOffset, xrefInfo, newXref);
   buffer.push("trailer\n");
@@ -36185,10 +36220,17 @@ async function getXRefStreamTable(xrefInfo, baseOffset, newRefs, newXref, buffer
     data
   } of newRefs) {
 <<<<<<< HEAD
+<<<<<<< HEAD
     let gen;
 =======
 <<<<<<< HEAD
 >>>>>>> 310af890 (chore(deps): composer update with new pdf js)
+=======
+<<<<<<< HEAD
+=======
+    let gen;
+>>>>>>> 9849a610 (chore(deps): composer and pdfjs upgrades)
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
     maxOffset = Math.max(maxOffset, baseOffset);
     if (data !== null) {
       gen = Math.min(ref.gen, 0xffff);
@@ -36200,7 +36242,10 @@ async function getXRefStreamTable(xrefInfo, baseOffset, newRefs, newXref, buffer
     }
     maxGen = Math.max(maxGen, gen);
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
     xrefTableData.push([1, baseOffset, gen]);
     baseOffset += data.length;
 =======
@@ -36216,7 +36261,12 @@ async function getXRefStreamTable(xrefInfo, baseOffset, newRefs, newXref, buffer
     }
     maxGen = Math.max(maxGen, gen);
 >>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
+<<<<<<< HEAD
 >>>>>>> 310af890 (chore(deps): composer update with new pdf js)
+=======
+=======
+>>>>>>> 9849a610 (chore(deps): composer and pdfjs upgrades)
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
   }
   newXref.set("Index", getIndexes(newRefs));
   const offsetSize = getSizeInBytes(maxOffset);
@@ -36301,16 +36351,26 @@ async function incrementalUpdate({
     });
   }
 <<<<<<< HEAD
+<<<<<<< HEAD
   const buffer = [];
   let baseOffset = originalData.length;
 =======
+=======
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
 <<<<<<< HEAD
   let buffer, baseOffset;
 =======
   const buffer = [];
   let baseOffset = originalData.length;
 >>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
+<<<<<<< HEAD
 >>>>>>> 310af890 (chore(deps): composer update with new pdf js)
+=======
+=======
+  const buffer = [];
+  let baseOffset = originalData.length;
+>>>>>>> 9849a610 (chore(deps): composer and pdfjs upgrades)
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
   const lastByte = originalData.at(-1);
   if (lastByte !== 0x0a && lastByte !== 0x0d) {
     buffer.push("\n");
@@ -36322,10 +36382,13 @@ async function incrementalUpdate({
     data
   } of newRefs) {
 <<<<<<< HEAD
+<<<<<<< HEAD
     if (data !== null) {
       buffer.push(data);
     }
 =======
+=======
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
 <<<<<<< HEAD
     buffer.push(data);
 =======
@@ -36333,7 +36396,15 @@ async function incrementalUpdate({
       buffer.push(data);
     }
 >>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
+<<<<<<< HEAD
 >>>>>>> 310af890 (chore(deps): composer update with new pdf js)
+=======
+=======
+    if (data !== null) {
+      buffer.push(data);
+    }
+>>>>>>> 9849a610 (chore(deps): composer and pdfjs upgrades)
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
   }
   await (useXrefStream ? getXRefStreamTable(xrefInfo, baseOffset, newRefs, newXref, buffer) : getXRefTable(xrefInfo, baseOffset, newRefs, newXref, buffer));
   const totalLength = buffer.reduce((a, str) => a + str.length, originalData.length);
@@ -55542,14 +55613,23 @@ class WorkerMessageHandler {
       apiVersion
     } = docParams;
 <<<<<<< HEAD
+<<<<<<< HEAD
     const workerVersion = "4.2.67";
 =======
+=======
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
 <<<<<<< HEAD
     const workerVersion = "4.1.392";
 =======
     const workerVersion = "4.2.67";
 >>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
+<<<<<<< HEAD
 >>>>>>> 310af890 (chore(deps): composer update with new pdf js)
+=======
+=======
+    const workerVersion = "4.2.67";
+>>>>>>> 9849a610 (chore(deps): composer and pdfjs upgrades)
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
     if (apiVersion !== workerVersion) {
       throw new Error(`The API version "${apiVersion}" does not match ` + `the Worker version "${workerVersion}".`);
     }
@@ -56120,9 +56200,12 @@ if (typeof window === "undefined" && !isNodeJS && typeof self !== "undefined" &&
 ;// CONCATENATED MODULE: ./src/pdf.worker.js
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 const pdfjsVersion = "4.2.67";
 const pdfjsBuild = "49b388101";
 =======
+=======
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
 <<<<<<< HEAD
 const pdfjsVersion = "4.1.392";
 const pdfjsBuild = "fcb76a78d";
@@ -56130,7 +56213,14 @@ const pdfjsBuild = "fcb76a78d";
 const pdfjsVersion = "4.2.67";
 const pdfjsBuild = "49b388101";
 >>>>>>> cf4f4271 (chore(deps): composer update with new pdf js)
+<<<<<<< HEAD
 >>>>>>> 310af890 (chore(deps): composer update with new pdf js)
+=======
+=======
+const pdfjsVersion = "4.2.67";
+const pdfjsBuild = "49b388101";
+>>>>>>> 9849a610 (chore(deps): composer and pdfjs upgrades)
+>>>>>>> a9086a91 (chore(deps): composer and pdfjs upgrades)
 
 var __webpack_exports__WorkerMessageHandler = __webpack_exports__.WorkerMessageHandler;
 export { __webpack_exports__WorkerMessageHandler as WorkerMessageHandler };

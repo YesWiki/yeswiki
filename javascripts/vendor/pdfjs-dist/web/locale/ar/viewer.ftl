@@ -347,40 +347,6 @@ pdfjs-ink =
 pdfjs-ink-canvas =
     .aria-label = صورة أنشأها المستخدم
 
-## Remove button for the various kind of editor.
-
-pdfjs-editor-remove-ink-button =
-    .title = أزِل الرسم
-pdfjs-editor-remove-freetext-button =
-    .title = أزِل النص
-pdfjs-editor-remove-stamp-button =
-    .title = أزِل الصورة
-pdfjs-editor-remove-highlight-button =
-    .title = أزِل الإبراز
-
-##
-
-# Editor Parameters
-pdfjs-editor-free-text-color-input = اللون
-pdfjs-editor-free-text-size-input = الحجم
-pdfjs-editor-ink-color-input = اللون
-pdfjs-editor-ink-thickness-input = السماكة
-pdfjs-editor-ink-opacity-input = العتامة
-pdfjs-editor-stamp-add-image-button =
-    .title = أضِف صورة
-pdfjs-editor-stamp-add-image-button-label = أضِف صورة
-# This refers to the thickness of the line used for free highlighting (not bound to text)
-pdfjs-editor-free-highlight-thickness-input = السماكة
-pdfjs-editor-free-highlight-thickness-title =
-    .title = غيّر السُمك عند إبراز عناصر أُخرى غير النص
-pdfjs-free-text =
-    .aria-label = محرِّر النص
-pdfjs-free-text-default-content = ابدأ الكتابة…
-pdfjs-ink =
-    .aria-label = محرِّر الرسم
-pdfjs-ink-canvas =
-    .aria-label = صورة أنشأها المستخدم
-
 ## Alt-text dialog
 
 # Alternative text (alt text) helps when people can't see the image.
