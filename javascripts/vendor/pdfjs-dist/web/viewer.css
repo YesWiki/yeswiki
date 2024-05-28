@@ -1182,18 +1182,6 @@
     cursor:var(--editorFreeHighlight-editing-cursor);
   }
 
-.textLayer.highlighting{
-  cursor:var(--editorFreeHighlight-editing-cursor);
-}
-
-.textLayer.highlighting:not(.free) span{
-    cursor:var(--editorHighlight-editing-cursor);
-  }
-
-.textLayer.highlighting.free span{
-    cursor:var(--editorFreeHighlight-editing-cursor);
-  }
-
 @media (min-resolution: 1.1dppx){
   :root{
     --editorFreeText-editing-cursor:url(images/cursor-editorFreeText.svg) 0 16, text;
