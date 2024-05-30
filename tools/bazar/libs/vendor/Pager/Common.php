@@ -421,6 +421,10 @@ class Pager_Common
      */
     var $_pearErrorMode = null;
 
+    var $_pageData = array();
+
+    var $_url = '';
+
     // }}}
     // {{{ public vars
 
