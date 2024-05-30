@@ -259,4 +259,5 @@ return [
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => "Add to your agenda",
     // reactions
     'BAZ_ACTIVATE_REACTIONS' => 'Activate reactions on this entry?',
+    'FILEFIELD_TOO_LARGE_FILE' => 'The file is too large, maximum {fileMaxSize} bytes',
 ];
