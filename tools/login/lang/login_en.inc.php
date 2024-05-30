@@ -49,4 +49,5 @@ return [
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'The \'{parameters}\' parameters cannot be empty!',
     'USERSETTINGS_NAME_ALREADY_USED' => 'The identifier "{currentName}" already exists!',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'The email "{email}" is already used by another account!',
+    'LOGIN_NOT_AUTORIZED' => 'you are not authorized to read this page',
 ];
