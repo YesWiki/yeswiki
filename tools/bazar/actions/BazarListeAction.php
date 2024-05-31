@@ -135,7 +135,7 @@ class BazarListeAction extends YesWikiAction
         // Ordre du tri (asc ou desc)
         $ordre = $_GET['ordre'] ?? $arg['ordre'] ?? ((empty($arg['champ']) && $agendaMode) ? 'desc' : 'asc');
         // Champ du formulaire utilisé pour le tri
-        $champ = $_GET['champ'] && $arg['champ'] ?? (($agendaMode) ? 'bf_date_debut_evenement' : 'bf_titre');
+        $champ = $_GET['champ'] ?? $arg['champ'] ?? (($agendaMode) ? 'bf_date_debut_evenement' : 'bf_titre');
 
         return ([
             // SELECTION DES FICHES
@@ -431,3 +431,4 @@ class BazarListeAction extends YesWikiAction
 
         return $externalIds;
     }
+}
