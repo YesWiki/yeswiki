@@ -132,7 +132,12 @@ class BazarListeAction extends YesWikiAction
                 )
             );
 
-        return [
+        // Ordre du tri (asc ou desc)
+        $ordre = $_GET['ordre'] ?? $arg['ordre'] ?? ((empty($arg['champ']) && $agendaMode) ? 'desc' : 'asc');
+        // Champ du formulaire utilisé pour le tri
+        $champ = $_GET['champ'] && $arg['champ'] ?? (($agendaMode) ? 'bf_date_debut_evenement' : 'bf_titre');
+
+        return ([
             // SELECTION DES FICHES
             // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
             'idtypeannonce' => $ids,
@@ -149,9 +154,9 @@ class BazarListeAction extends YesWikiAction
             'user' => $arg['user'] ?? ((isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == 'true') ?
                 $this->getService(AuthController::class)->getLoggedUserName() : null),
             // Ordre du tri (asc ou desc)
-            'ordre' => $arg['ordre'] ?? ((empty($arg['champ']) && $agendaMode) ? 'desc' : 'asc'),
+            'ordre' => $ordre,
             // Champ du formulaire utilisé pour le tri
-            'champ' => $arg['champ'] ?? (($agendaMode) ? 'bf_date_debut_evenement' : 'bf_titre'),
+            'champ' => $champ,
             // Nombre maximal de résultats à afficher
             'nb' => $arg['nb'] ?? null,
             // get comments , reactions and metadatas with entry
@@ -426,4 +431,3 @@ class BazarListeAction extends YesWikiAction
 
         return $externalIds;
     }
-}
