@@ -325,7 +325,6 @@ class BazarListService
     {
         return function ($a, $b) use ($ordre, $champ) {
             if (strstr($champ, '.')) {
-                $champ = 'extrafields.' . $champ;
                 $val1 = $this->getValueForArray($a, $champ);
                 $val2 = $this->getValueForArray($b, $champ);
             } else {
