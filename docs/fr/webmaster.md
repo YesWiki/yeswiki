@@ -255,10 +255,12 @@ Un message d'alerte vous informe si une nouvelle version d'un thème ou d'une ex
 Sur certains hébergements, l'envoi de mail par défaut ne marche pas , il faut créer un compte smtp  
 et donc rajouter dans le fichier `wakka.config.php` les paramètres suivants :
 
-      'contact\_mail\_func' => 'smtp',
-      'contact\_smtp\_host' => 'ssl://<mon serveur smtp>:465',
-      'contact\_smtp\_user' => 'user@mail.ext',
-      'contact\_smtp\_pass' => '<monpassword>',
+```php
+'contact_mail_func' => 'smtp',
+'contact_smtp_host' => 'ssl://<mon serveur smtp>:465',
+'contact_smtp_user' => 'user@mail.ext',
+'contact_smtp_pass' => '<monpassword>',
+```
 
 Attention, tous les serveurs mail n'acceptent pas de jouer ce jeu.  
 
