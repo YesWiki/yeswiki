@@ -340,7 +340,7 @@ class FormManager
         $nblignes = 0;
 
         //on traite le template ligne par ligne
-        $chaine = explode("\n", $raw);
+        $chaine = explode("\n", $raw ?? '');
         foreach ($chaine as $ligne) {
             $ligne = trim($ligne);
             // on ignore les lignes vides ou commencant par # (commentaire)
