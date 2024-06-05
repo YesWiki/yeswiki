@@ -1,3 +1,5 @@
+**/*.js
+**/*.ts
 cache
 custom
 node_modules
