@@ -371,6 +371,10 @@ return [
     'AUTHORIZE_INDEX_BY_ROBOTS' => 'Autoriser l\'indexation par les moteurs de recherche',
     'CONTINUE' => 'Continuer',
     'VARIABLE_ENV_NOT_MODIFIABLE' => 'Cette valeur est non modifiable car donnée par l\'environnement système',
+    'BACKUP_DB_FOUND' => 'Une sauvegarde d\'une base de données est disponible',
+    'USE_BACKUP_DB' => 'Utiliser cette sauvegarde',
+    'USE_DEFAULT_DB' => 'Utiliser le modèle par défaut',
+    'ADMIN_INFO_WHEN_BACKUP' => 'Si vous utilisez une sauvegarde, les comptes administrateurs viendront de cette sauvegarde',
 
     // setup/install.php
     'PROBLEM_WHILE_INSTALLING' => 'problème dans la procédure d\'installation',
@@ -411,6 +415,10 @@ return [
     'WRITING_ROBOT_AND_CONFIG_FILES' => 'Écriture des fichiers robots.txt et wakka.config.php',
     'WRITE_ROBOT_TXT' => 'Écriture de robots.txt',
     'WRITE_CONFIG' => 'Écriture de wakka.config.php',
+    'CONFIGURATION_FILE_NOT_WRITABLE' => 'Le fichier de configuration wakka.config.php semble protégé en écriture',
+    'IMPORT_DB_BACKUP' => 'Importer la base de données depuis la sauvegarde',
+    'NO_PREFIX_FOUND_IN_BACKUP_SQL' => 'Pas de préfixe de table wiki trouvé dans la sauvegarde de la base de données',
+    'NOT_POSSIBLE_TO_IMPORT_BACKUP_SQL' => 'Import de la sauvegarde de la base de données impossible',
 
     // setup/writeconfig.php
     'WRITING_CONFIGURATION_FILE' => 'écriture du fichier de configuration',

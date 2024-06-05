@@ -350,6 +350,11 @@ return [
     'INSERTION_OF_USER_IN_ADMIN_GROUP' => 'Insert specified user in admin group',
     'NEXT_STEP_WRITE_CONFIGURATION_FILE' => 'The next step will try to create the configuration file ',
     'VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE' => 'Verify that the web server has the right for writing in this file, otherwise you must modify it manually',
+    'BACKUP_DB_FOUND' => 'Backup database found',
+    'USE_BACKUP_DB' => 'Use backup database model',
+    'USE_DEFAULT_DB' => 'Use default installation database model',
+    'ADMIN_INFO_WHEN_BACKUP' => 'If you are using a database backup, the admin user(s) are the one(s) from the backup',
+
     // setup/writeconfig.php
     'WRITING_CONFIGURATION_FILE' => 'Writing the configuration file',
     'CREATED' => 'created',

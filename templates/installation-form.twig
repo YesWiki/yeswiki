@@ -1,4 +1,25 @@
 <form class="form-horizontal form-yeswiki-install" action="{{ baseUrl }}?PagePrincipale&installAction=install" method="post">
+  {% if contentSQL == 'private/backups/content.sql' %}
+  <div class="well">
+    <h2>{{ _t('BACKUP_DB_FOUND') }}</h2>
+    <div class="bazar-radio-rows bazar-radio">
+      <div class="radio">
+        <label>
+          <input class="element_radio" type="radio" name="contentSQL" value="{{ contentSQL }}" checked>
+          <span>{{ _t('USE_BACKUP_DB') }}</span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input  class="element_radio" type="radio" name="contentSQL" value="default">
+          <span>{{ _t('USE_DEFAULT_DB') }}</span>
+        </label>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <input type="hidden" name="contentSQL" value="default" />
+  {% endif %}
   <div class="row">
   <div class="col-md-4">
     <h3>
@@ -73,7 +94,7 @@
       <div class="form-group">
         <label class="col-sm-3 control-label">{{ _t('HOMEPAGE') }}</label>
         <div class="col-sm-9">
-          <input type="text" required class="form-control" name="config[root_page]" {% if env.root_page %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %} value="{{ config.root_page }}" pattern="<?php echo WN_CAMEL_CASE_EVOLVED ;?>"/>
+          <input type="text" required class="form-control" name="config[root_page]" {% if env.root_page %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %} value="{{ config.root_page }}" pattern="{{ pattern }}"/>
           <p class="help-block">{{ _t('MUST_BE_WIKINAME') }}</p>
         </div>
       </div>
@@ -174,6 +195,12 @@
         </div>
       </div>
 
+      {% if contentSQL == 'private/backups/content.sql' %}
+      <script defer src="{{ baseUrl }}javascripts/yeswiki-setup.js"></script>
+      <div class="admin-message alert alert-info" style="margin-top:2em;">{{ _t('ADMIN_INFO_WHEN_BACKUP') }}.</div>
+      <div class="admin-form hide">
+      {% endif %}
+      
       <div class="form-group">
         <label class="col-sm-3 control-label">{{ _t('ADMIN') }}</label>
         <div class="col-sm-9">
@@ -203,6 +230,9 @@
           <input type="email" required class="form-control" name="admin_email" value="" />
         </div>
       </div>
+      {% if contentSQL == 'private/backups/content.sql' %}
+      </div>
+      {% endif %}
   </div>
 </div>
       <div class="accordion-heading">
