@@ -1,0 +1,52 @@
+<?php
+return [
+    /**
+ * Fichier de traduction en francais de l'extension AutoUpdate
+ *
+ *@package       autoupdate
+ *@author        Florestan Bredow <florestan.bredow@supagro.fr>
+ */
+    'AU_ACL' => "",
+    'AU_REPO_ERROR' => "",
+    'AU_VERSION_WIKI' => "",
+    'AU_VERSION_REPO' => "",
+    'AU_DOWNLOAD' => "",
+    'AU_EXTRACT' => "",
+    'AU_INTEGRITY' => "",
+    'AU_DECOMPRESSION' => "",
+    'AU_UPDATE' => "",
+    'AU_FORCE_UPDATE' => "",
+    'AU_VERSION_UPDATE' => "",
+    'AU_UPDATE_TOOL' => "",
+    'AU_UPDATE_PACKAGE' => "",
+    'AU_INSTALL' => "",
+    'AU_UPDATE_INFOS' => "",
+    'AU_OK' => "",
+    'AU_ERROR' => "",
+    'AU_UNKNOW' => "",
+    'AU_ABSENT' => "",
+    'AU_DELETE_EXT' => "",
+    'AU_DELETE' => "",
+    'AU_NO_DESCRIPTION' => "",
+    'AU_DOCUMENTATION_LINK' => "",
+    'AU_YESWIKI_DORYPHORE_POSTINSTALL' => "",
+    'AU_PHP_TOO_LOW_HINT' => "",
+    'AU_PHP_TOO_LOW_VERSION_UPDATE' => "",
+    'AU_PHP_TOO_LOW_UPDATE' => "",
+    'AU_PHP_TOO_LOW_FORCE_UPDATE' => "",
+    'AU_CHANGELOG' => "",
+    'AU_CHANGELOG_HINT' => "",
+    'AU_YESWIKI_SECOND_TIME_UPDATE' => "",
+    'AU_FILE_NOT_POSSIBLE_TO_UPDATE' => "",
+    'AU_SECOND_UPDATE_NOT_POSSIBLE' => "",
+    'AU_NAME' => '',
+    'AU_INSTALLED_REVISION' => '',
+    'AU_AVAILABLE_REVISION' => '',
+    'AU_PACKAGE_NOT_DOWNLOADED' => '',
+    'AU_UNKWON_PACKAGE_TYPE' => '',
+    'AU_PACKAGE_NOT_UNZIPPED' => '',
+    'AU_SEVERAL_THEMES_UPDATE' => '',
+    'AU_ONE_THEME_UPDATE' => '',
+    'AU_SEVERAL_TOOLS_UPDATE' => '',
+    'AU_ONE_TOOL_UPDATE' => '',
+];
