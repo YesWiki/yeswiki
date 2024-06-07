@@ -1,5 +1,4 @@
 <?php
-
 return [
     // commons
     'APRIL' => 'அவ்ரில்',
