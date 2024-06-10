@@ -1,2 +1,84 @@
 {% if title %}<h2>{{ title }}</h2>{% endif %}
-{{ output | raw }}
+{% if error %}
+  {{ error|raw }}
+{% else %}
+  {% if toExternalWiki %}
+    {{ include_javascript('javascripts/handlers/duplicate.js') }}
+    <form class="duplication-wiki-form">
+    <div class="text-tip">{{ _t('WIKI_URL_RECENT') }}.</div>
+    <div class="form-group">
+      <label for="urlWiki" class="control-label">{{ _t('WIKI_URL') }}</label>
+      <div class="input-group">
+        <input required type="url" class="form-control" id="urlWiki" name="urlWiki" placeholder="{{ _t('WIKI_URL') }}" value="" />
+        <span class="input-group-btn">
+          <button class="btn-verify-wiki btn btn-primary" type="submit">{{ _t('VERIFY_WIKI') }}</button>
+        </span>
+      </div><!-- /input-group -->
+      <span id="login-message" class="help-block"></span>
+    </div>
+    </form>
+    <form class="login-fields hide row duplication-login-form">{# hide the field while no valid yeswiki url given #}
+      <div class="col-lg-4">
+        <div class="form-group">
+          <label for="username" class="control-label">{{ _t('LOGIN_WIKINAME') }}</label>
+          <input required type="text" class="form-control" id="username" name="username" placeholder="{{ _t('LOGIN_WIKINAME') }}" value="" />
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="form-group">
+          <label for="login" class="control-label">{{ _t('LOGIN_PASSWORD') }}</label>
+          <input required type="password" class="form-control" id="password" name="password" placeholder="{{ _t('LOGIN_PASSWORD') }}" value="" />
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="form-group">
+          <button type="submit" class="btn-distant-login btn btn-primary btn-block"><i class="fa fa-sign-in-alt"></i> {{ _t('DISTANT_LOGIN') }}</button>
+        </div>
+      </div>
+    </form>
+    <div class="duplication-fields hide">{# hide the field while not connected #}
+    {% endif %}
+  <form id="form-duplication" method="post" action="{{ url({handler: 'duplicate'})}}">
+    {% if pageTitle %}
+    <div class="form-group">
+      <label for="pageTitle" class="control-label">{{ _t('PAGE_TITLE_TO_DUPLICATE') }}</label>
+      <div class="input-group">
+        <input required type="text" class="form-control" id="pageTitle" name="pageTitle" placeholder="{{ _t('PAGE_TITLE_TO_DUPLICATE') }}" value="{{pageTitle}}" />
+      </div>
+    </div>
+  {% endif %}
+    <div class="form-group">
+      <label for="pageTag" class="control-label">{{ _t('PAGE_TAG_TO_DUPLICATE') }}</label>
+      <div class="input-group">
+        <span class="input-group-addon" id="baseUrl">{{ baseUrl }}</span>
+        <input required type="text" class="form-control" id="pageTag" name="pageTag" placeholder="{{ _t('PAGE_TAG_TO_DUPLICATE') }}" value="{{proposedTag}}" />
+        {% if toExternalWiki %}
+        <span class="input-group-btn">
+          <button class="btn-verify-tag btn btn-primary" type="submit">{{ _t('VERIFY_PAGE_AVAILABILITY') }}</button>
+        </span>
+        {% endif %}
+      </div>
+      <span id="pagetag-message" class="help-block"></span>
+    </div>
+    {% if attachments|length > 0 %}
+    <strong>{{ _t('FILES_TO_DUPLICATE') }} ({{ _t('TOTAL_SIZE') ~ ' ' ~ totalSize }})</strong>
+    <ol class="list-files">
+      {% for a in attachments %}
+      <li>{{a.path|replace({'files/': ''})}} ({{a.humanSize}})</li>
+      {% if toExternalWiki %}<input type="hidden" name="files[]" value="{{ baseUrl}}{{ a.path }}" />{% endif %}
+      {% endfor %}
+    </ol>
+    {% endif %}
+    {% if toExternalWiki %}<input type="hidden" name="pageContent" value="{{ pageContent }}" />{% endif %}
+
+    <input type="hidden" name="sourceUrl" value="{{ sourceUrl }}" />
+    <input type="hidden" name="originalTag" value="{{ originalTag }}" />
+    <input type="hidden" name="type" value="{{ type }}" />
+    <button name="duplicate-action" value="open" type="submit" class="btn btn-primary"><i class="fa fa-eye-open"></i>{{ _t('DUPLICATE_AND_OPEN') }}</button>
+    <button name="duplicate-action" value="edit" type="submit" class="btn btn-primary"><i class="fa fa-pencil-alt"></i> {{ _t('DUPLICATE_AND_EDIT') }}</button>
+    <button name="duplicate-action" value="return" type="submit" class="btn btn-primary"><i class="fa fa-arrow-left"></i> {{ _t('DUPLICATE_AND_RETURN') }}</button>
+    {% if toExternalWiki %}
+    </div>
+    {% endif %}
+  </form>
+{% endif %}

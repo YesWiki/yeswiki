@@ -20,10 +20,10 @@ class DuplicateHandler extends YesWikiHandler
         $this->authController = $this->getService(AuthController::class);
         $this->entryController = $this->getService(EntryController::class);
         $this->duplicationManager = $this->getService(DuplicationManager::class);
-        $output = $title = '';
+        $output = $title = $error = '';
         $toExternalWiki = isset($_GET['toUrl']) && $_GET['toUrl'] == "1";
         if (!$this->wiki->page) {
-            $output = $this->render('@templates\alert-message.twig', [
+            $error .= $this->render('@templates\alert-message.twig', [
                 'type' => 'warning',
                 'message' => str_replace(
                     ["{beginLink}", "{endLink}"],
@@ -35,10 +35,10 @@ class DuplicateHandler extends YesWikiHandler
             // if no read access to the page
             if ($contenu = $this->getService(PageManager::class)->getOne("PageLogin")) {
                 // si une page PageLogin existe, on l'affiche
-                $output .= $this->wiki->Format($contenu["body"]);
+                $error .= $this->wiki->Format($contenu["body"]);
             } else {
                 // sinon on affiche le formulaire d'identification minimal
-                $output .= '<div class="vertical-center white-bg">' . "\n"
+                $error .= '<div class="vertical-center white-bg">' . "\n"
                     . '<div class="alert alert-danger alert-error">' . "\n"
                     . _t('LOGIN_NOT_AUTORIZED') . '. ' . _t('LOGIN_PLEASE_REGISTER') . '.' . "\n"
                     . '</div>' . "\n"
@@ -52,17 +52,20 @@ class DuplicateHandler extends YesWikiHandler
                 if ($data['duplicate-action'] == 'edit') {
                     $this->wiki->Redirect($this->wiki->href('edit', $data['pageTag']));
                     return;
+                } else if ($data['duplicate-action'] == 'return') {
+                    $this->wiki->Redirect($this->wiki->href());
+                    return;
                 }
                 $this->wiki->Redirect($this->wiki->href('', $data['pageTag']));
                 return;
             } catch (\Throwable $th) {
-                $output = $this->render('@templates\alert-message-with-back.twig', [
+                $error .= $this->render('@templates\alert-message-with-back.twig', [
                     'type' => 'warning',
                     'message' => $th->getMessage(),
                 ]);
             }
         } elseif (!$toExternalWiki && !$this->wiki->UserIsAdmin()) {
-            $output .= $this->render('@templates\alert-message-with-back.twig', [
+            $error .= $this->render('@templates\alert-message-with-back.twig', [
                 'type' => 'warning',
                 'message' => _t('ONLY_ADMINS_CAN_DUPLICATE') . '.',
             ]);
@@ -105,18 +108,6 @@ class DuplicateHandler extends YesWikiHandler
             foreach ($attachments as $a) {
                 $totalSize = $totalSize + $a['size'];
             }
-            $output .= $this->render('@core/handlers/duplicate-inner.twig', [
-                'originalTag' => $this->wiki->GetPageTag(),
-                'sourceUrl' => $this->wiki->href(),
-                'proposedTag' => $proposedTag,
-                'attachments' => $attachments,
-                'pageTitle' => $pageTitle,
-                'pageContent' => $pageContent,
-                'totalSize' => $this->duplicationManager->humanFilesize($totalSize),
-                'type' => $type,
-                'baseUrl' => preg_replace('/\?$/Ui', '', $this->wiki->config['base_url']),
-                'toExternalWiki' => $toExternalWiki,
-            ]);
         }
 
         if ($toExternalWiki) {
@@ -128,7 +119,17 @@ class DuplicateHandler extends YesWikiHandler
         }
         return $this->renderInSquelette('@core/handlers/duplicate.twig', [
             'title' => $title,
-            'output' => $output,
+            'originalTag' => $this->wiki->GetPageTag(),
+            'error' => $error,
+            'sourceUrl' => $this->wiki->href(),
+            'proposedTag' => $proposedTag ?? '',
+            'attachments' => $attachments ?? [],
+            'pageTitle' => $pageTitle ?? '',
+            'pageContent' => $pageContent ?? '',
+            'totalSize' => $this->duplicationManager->humanFilesize($totalSize ?? 0),
+            'type' => $type ?? '',
+            'baseUrl' => preg_replace('/\?$/Ui', '', $this->wiki->config['base_url']),
+            'toExternalWiki' => $toExternalWiki,
         ]);
     }
 }

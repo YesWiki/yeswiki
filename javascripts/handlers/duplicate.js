@@ -83,19 +83,23 @@ document.addEventListener('DOMContentLoaded', () => {
     return false
   })
 
-  $('[name="duplicate-action"]').on('click', () => {
+  $('[name="duplicate-action"]').on('click', (e) => {
+    var btnAction = e.currentTarget.value
     $.ajax({
       method: 'POST',
       url: `${shortUrl}/?api/pages/${$('#pageTag').val()}/duplicate`,
       data: $('#form-duplication').serialize()
     }).done((data) => {
-      // handleLoginResponse(data)
+      if (btnAction == 'open') {
+        location = `${shortUrl}/?${data.pageTag}`
+      } else if (btnAction == 'edit') {
+        location = `${shortUrl}/?${data.pageTag}/edit`
+      } else {
+        let url = location.href.replace(/\/duplicate.*/, '')
+        location = url
+      }
     }).fail((jqXHR) => {
-      // toastMessage(jqXHR.responseJSON.error, 3000, 'alert alert-danger')
-      // if (jqXHR.status === 401) {
-      //  $('#login-message').html(`<div class="text-danger">${_t('NOT_CONNECTED')}</div>`)
-      //  $('.login-fields').removeClass('hide')
-      // }
+      toastMessage(`${_t('ERROR')} ${jqXHR.status}`, 3000, 'alert alert-danger')
     })
     return false
   })

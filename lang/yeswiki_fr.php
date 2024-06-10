@@ -636,6 +636,7 @@ return [
     'TOTAL_SIZE' => 'taille totale',
     'DUPLICATE_AND_OPEN' => 'Dupliquer et afficher',
     'DUPLICATE_AND_EDIT' => 'Dupliquer et éditer',
+    'DUPLICATE_AND_RETURN' => 'Dupliquer et retourner sur la page source',
     'NO_DUPLICATE_ACTION' => 'Pas d\'action après duplication indiquée (duplicate-action)',
     'PAGE_TITLE_TO_DUPLICATE' => 'Titre après duplication',
     'PAGE_TAG_TO_DUPLICATE' => 'Identifiant de la page dupliquée',
