@@ -108,18 +108,21 @@ class DuplicationManager
             foreach ($attachments[1] as $a) {
                 $ext = pathinfo($a, PATHINFO_EXTENSION);
                 $filename = pathinfo($a, PATHINFO_FILENAME);
-                $searchPattern = '`^' . $tag . '_' . $filename . '_\d{14}_\d{14}\.' . $ext . '_?$`';
+                $searchPattern = '`^' . $tag . '_' . $filename . '_\d{14}_(\d{14})\.' . $ext . '_?$`';
                 $path = $this->getLocalFileUploadPath();
                 $fh = opendir($path);
                 while (($file = readdir($fh)) !== false) {
                     if (strcmp($file, '.') == 0 || strcmp($file, '..') == 0 || is_dir($file)) {
                         continue;
                     }
-                    if (preg_match($searchPattern, $file)) {
+                    if (preg_match($searchPattern, $file, $matches)) {
                         $filePath = $path . '/' . $file;
                         $size = filesize($filePath);
                         $humanSize = $this->humanFilesize($size);
-                        $filesMatched[] = ['path' => $filePath, 'size' => $size, 'humanSize' => $humanSize];
+                        if (in_array($filename, array_keys($filesMatched)) && $matches[1] < $filesMatched[$filename]['modified']) {
+                            continue; // we only take the latest modified version of file
+                        }
+                        $filesMatched[$filename] = ['path' => $filePath, 'size' => $size, 'humanSize' => $humanSize, 'modified' => $matches[1]];
                     }
                 }
             }
@@ -218,7 +221,7 @@ class DuplicationManager
         if ($page) {
             throw new \Exception($data['pageTag'] . ' ' . _t('ALREADY_EXISTING'));
         }
-        if (empty($data['duplicate-action']) || !in_array($data['duplicate-action'], ['open', 'edit'])) {
+        if (empty($data['duplicate-action']) || !in_array($data['duplicate-action'], ['open', 'edit', 'return'])) {
             throw new \Exception(_t('NO_DUPLICATE_ACTION') . '.');
         }
         return $data;
@@ -319,11 +322,16 @@ class DuplicationManager
         $ch = curl_init($sourceUrl);
         curl_setopt($ch, CURLOPT_FILE, $fp);
         curl_setopt($ch, CURLOPT_HEADER, 0);
+        // TODO: make options to allow ssl verify
+        curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
         curl_exec($ch);
         curl_close($ch);
         fclose($fp);
+
         return $destPath;
     }
 

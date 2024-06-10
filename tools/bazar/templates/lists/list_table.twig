@@ -36,6 +36,11 @@
         </td>
         <td>{{ key }}</td>
         <td>
+          {% if list.canDuplicate %}
+          <a class="btn btn-default btn-xs" href="{{ url({ params: { vue: 'listes', action: 'duplicate', idliste: key }}) }}">
+            <i class="far fa-clone"></i>
+          </a>
+          {% endif %}
           {% if list.canEdit %}
           <a class="btn btn-default btn-xs" href="{{ url({ params: { vue: 'listes', action: 'modif_liste', idliste: key }}) }}">
             <i class="fa fa-pencil-alt"></i>

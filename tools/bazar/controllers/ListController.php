@@ -35,7 +35,8 @@ class ListController extends YesWikiController
             $values[$key]['title'] = $list['titre_liste'];
             $values[$key]['options'] = $list['label'];
             $values[$key]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->wiki->HasAccess('write', $key);
-            $values[$key]['canDelete'] = !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin() || $this->wiki->UserIsOwner($key));
+            $values[$key]['canDelete'] = $values[$key]['canDuplicate'] = !$this->securityController->isWikiHibernated()
+                && ($this->wiki->UserIsAdmin() || $this->wiki->UserIsOwner($key));
         }
 
         return $this->render('@bazar/lists/list_table.twig', [
@@ -129,4 +130,3 @@ class ListController extends YesWikiController
             $this->wiki->href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
         );
     }
-}
