@@ -115,13 +115,13 @@ return [
     'CONTACT_NEW_USER_SUBJECT' => 'Vos nouveaux identifiants sur le site',
 
     // templates/notify-newuser-email-text.twig (no special chars)
-    'CONTACT_NEW_USER_MESSAGE' => "Bonjour!\n\n".
-        "Votre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\n".
-        "Url : {{ baseUrl }}\n\n".
-        "Votre identifiant NomWiki : {{ wikiName }}\n\n".
-        "Votre email : {{ email }}\n\n".
-        "Votre mot de passe : (le mot de passe que vous avez choisi)\n\n".
-        "Pour reinitialiser votre mot de passe : {{ urlForPasswordRenewal }}\n\n".
+    'CONTACT_NEW_USER_MESSAGE' => "Bonjour!\n\n" .
+        "Votre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\n" .
+        "Url : {{ baseUrl }}\n\n" .
+        "Votre identifiant NomWiki : {{ wikiName }}\n\n" .
+        "Votre email : {{ email }}\n\n" .
+        "Votre mot de passe : (le mot de passe que vous avez choisi)\n\n" .
+        "Pour reinitialiser votre mot de passe : {{ urlForPasswordRenewal }}\n\n" .
         "A tres bientot ! ",
 
     // action-builder Contact
@@ -148,6 +148,14 @@ return [
 
     // for edit config
     'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => "Ajouter 'wiki=' aux liens vers ce wiki dans les e-mails",
+    'EDIT_CONFIG_HINT_CONTACT_MAIL_FUNC' => 'Mode d\'envoi des mails ("smtp" ou "mail")',
+    'EDIT_CONFIG_HINT_CONTACT_SMTP_HOST' => 'Serveur SMTP (ex: "smtp.mondomaine.ext")',
+    'EDIT_CONFIG_HINT_CONTACT_SMTP_PORT' => 'Port SMTP (généralement 465 ou 587)',
+    'EDIT_CONFIG_HINT_CONTACT_SMTP_USER' => 'Utilisateur SMTP (souvent le mail)',
+    'EDIT_CONFIG_HINT_CONTACT_SMTP_PASS' => 'Mot de passe SMTP',
+    'EDIT_CONFIG_HINT_CONTACT_FROM' => 'Utilisateur indiqué comme émetteur du mail (pour éviter les spams doit être le même que l\'utilisateur smtp)',
+    'EDIT_CONFIG_HINT_CONTACT_REPLY_TO' => 'Utilisateur auquel la réponse mail sera envoyée',
+    'EDIT_CONFIG_HINT_CONTACT_DEBUG' => 'Mode verbeux pour débugguer (mettre 2 pour avoir des informations)',
     'EDIT_CONFIG_GROUP_CONTACT' => 'Envoi des e-mails',
 
 ];

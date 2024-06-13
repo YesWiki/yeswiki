@@ -547,7 +547,7 @@ return [
     'EDIT_CONFIG_HINT_TIMEZONE' => 'Fuseau horaire du site (ex. UTC, Europe/Paris, Europe/London)',
     'EDIT_CONFIG_HINT_FAVICON' => 'Icône du site (emoji ou URL vers une image PNG)',
     'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Méthodes autorisées à être affichées dans les iframes (iframe,editiframe,bazariframe,render,all = autoriser tout)',
-    'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Nombre maximum de versions d\'une page affichées par le handler `/revisions`.',
+    'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Nombre maximum de versions d\'une page dans l\'historique des modifications',
     'EDIT_CONFIG_HINT_DEFAULT_COMMENT_AVATAR' => 'Image d\'avatar par défaut pour les commentaires (URL vers une image)',
     'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false)',
     'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Activer les favoris (true ou false)',

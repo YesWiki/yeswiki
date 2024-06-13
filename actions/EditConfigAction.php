@@ -15,10 +15,8 @@ class EditConfigAction extends YesWikiAction
         'favicon' => 'core',
         'debug' => 'core',
         'timezone' => 'core',
-        'allowed_methods_in_iframe' => 'core',
         'revisionscount' => 'core',
         'default_comment_avatar' => 'core',
-        'htmlPurifierActivated' => 'core',
         'favorites_activated' => 'core',
         'preview_before_save' => 'core',
 
@@ -27,9 +25,12 @@ class EditConfigAction extends YesWikiAction
         'default_comment_acl' => 'access',
         'comments_activated' => 'access',
         'comments_handler' => 'access',
-        'password_for_editing' => 'access',
-        'password_for_editing_message' => 'access',
         'allow_doubleclic' => 'access',
+
+        'password_for_editing' => 'security',
+        'password_for_editing_message' => 'security',
+        'htmlPurifierActivated' => 'security',
+        'allowed_methods_in_iframe' => 'security',
 
         'contact_from' => 'contact', // merged in contact instead of email to prevent duplication of blocks
         'mail_custom_message' => 'contact',
