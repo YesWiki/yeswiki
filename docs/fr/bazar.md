@@ -414,9 +414,9 @@ en général on l'utilise avec le paramètre **nb** `nb="5"` pour afficher 5 res
 ### Données issues d'un autre yeswiki
 Il est possible d'afficher les données issues d'un YesWiki distant.
 
-1. Définir l'action %%{{bazarliste id="1" template="map" ...}}%% pour correspondre au besoin ([[https://yeswiki.net/?BazarAfficherContenu documentation]] ou utiliser le bouton **composants** lors de la modification d'une page)
-2. Identifier l'adresse des ""YesWiki"" distants et les formulaires recherchés. Ex: %%https://www.example.com/?PagePrincipale%% formulaire 4 et %%https://www.example.com/trombi2/?PagePrincipale%% formulaire 5
-3. remplacer pour l'action bazarliste id par %%id="1,https://www.example.com/?PagePrincipale|4,https://www.example.com/trombi2/?PagePrincipale|5,6"%%
+1. Définir l'action ```{{bazarliste id="1" template="map" ...}}``` en utilisant le bouton **composants** "Afficher les données d'un formulaire" lors de la modification d'une page
+2. Identifier l'adresse des ""YesWiki"" distants et les formulaires recherchés. Ex: sur le  formulaire 4 sur wiki https://www.example.com et le formulaire 5 sur le wiki https://www.example.com/trombi2/
+3. remplacer l'identifiant du formulaire dans l'action bazarliste id par %%```{{bazarliste id="1,https://www.example.com|4,https://www.example.com/trombi2|5,6" template="map" ...}}``` %%
 4. Sauver la page et enjoy
 
 #### Explications 
