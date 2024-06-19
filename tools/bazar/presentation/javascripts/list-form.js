@@ -12,8 +12,16 @@ new Vue({
   mounted() {
     const list = JSON.parse(this.$el.dataset.list)
     this.title = list.title
+    const nodes = list.nodes || []
     // vueRef is used to give a unique and fixed ID to each node
-    this.rootNode.children = (list.nodes || []).map((n) => ({ ...{ vueRef: n.id }, ...n }))
+    nodes.forEach((node) => this.addVueRefProp(node))
+    this.rootNode.children = nodes
+  },
+  computed: {
+    jsonNodes() {
+      const data = this.rootNode.children.map((child) => this.removeVueRefProps({ ...child }))
+      return JSON.stringify(data)
+    }
   },
   methods: {
     onSubmit(event) {
@@ -38,9 +46,14 @@ new Vue({
       this.allIds.push(node.id)
       node.children.forEach((childNode) => this.collectIds(childNode))
     },
+    addVueRefProp(node) {
+      node.vueRef = node.id
+      node.children ||= []
+      node.children.forEach((childNode) => this.addVueRefProp(childNode))
+    },
     removeVueRefProps(node) {
-      delete node.vueRef;
-      (node.children || []).forEach((child) => this.removeVueRefProps(child))
+      delete node.vueRef
+      node.children = node.children.map((child) => this.removeVueRefProps({ ...child }))
       return node
     }
   }
