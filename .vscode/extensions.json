@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "mhutchie.git-graph",
+    "junstyle.php-cs-fixer",
+    "dbaeumer.vscode-eslint"
+  ]
+}

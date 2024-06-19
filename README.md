@@ -31,7 +31,9 @@ We recommand an installation through docker.
 
 ### Linters & Formatters
 
-Please install relevant extension and enable auto formating on your editor. Or run `make lint` before commit
+Please install relevant extension and enable auto formating on your editor.
+
+Alternatly you can run `make lint`
 
 | Language                    | Linter/Formatter                                             |
 | --------------------------- | ------------------------------------------------------------ |
@@ -39,6 +41,8 @@ Please install relevant extension and enable auto formating on your editor. Or r
 | Javascript                  | `eslint`                                                     |
 | Twig                        | no automatic linter. Couldn't find one which is good enough. |
 | CSS, Yaml, JSON, Markdown.. | `prettier`                                                   |
+
+If you use VS Code, get yeswiki linting settings with `cp .vscode/settings.example.json .vscode/settings.json`
 
 ## History
 
