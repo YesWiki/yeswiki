@@ -141,9 +141,10 @@ class ListManager
 
     private function sanitizeHMTL(array $nodes)
     {
-        return array_map(function ($value) {
-            $value['label'] = $this->htmlPurifierService->cleanHTML($value['label']);
-            return $value;
+        return array_map(function ($node) {
+            $node['label'] = $this->htmlPurifierService->cleanHTML($node['label']);
+            $node['children'] = $this->sanitizeHMTL($node['children']);
+            return $node;
         }, $nodes);
     }
 }

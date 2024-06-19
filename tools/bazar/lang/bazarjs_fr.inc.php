@@ -257,4 +257,9 @@ return [
     'BAZAR_URL_DISPLAY_VIDEO' => 'Afficher le lecteur si le lien est une vidéo ?',
     // templates/entries/index-dynamic-temapltes/BazarCalendar_ButtonICS.js
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => "Ajouter à votre calendrier",
+    // liste-node.js
+    'LIST_DRAGDROP' => "Déplacer l'élément",
+    'LIST_KEY' => 'Clé',
+    'LIST_TEXT' => 'Texte',
+    'LIST_ADD_NODE' => 'Ajouter une valeur',
 ];

@@ -2,7 +2,7 @@
 {{ include_javascript('tools/bazar/presentation/javascripts/list-form.js', false, true) }}
 {{ include_css('tools/bazar/presentation/styles/list-form.css') }}
 
-<form method="post" class="list-form form-horizontal" data-list="{{ list|json_encode }}">
+<form method="post" @submit="onSubmit" class="list-form form-horizontal" data-list="{{ list|json_encode }}">
 	<div class="control-group form-group">
 		<label class="control-label col-sm-3">
 			<span class="required_symbol">*&nbsp;</span>
@@ -17,33 +17,10 @@
 	{# List Nodes #}
 	<label class="control-label">{{ _t('BAZ_VALEURS_LISTE') }}</label>
 	<div class="nodes-container">
-		<div class="node input-prepend input-append input-group" 
-		     v-for="node in nodes" :key="node.vueRef">
-			{# Move Icon #}
-			<a class="input-group-addon" title="{{ _t('BAZ_DEPLACER_L_ELEMENT') }}" >
-				<i class="fa fa-arrows-alt icon-move"></i>
-			</a>
-			{# Id #}
-			<input type="text" v-model="node.id" placeholder="{{ _t('BAZ_KEY') }}" 
-			       class="form-control" required />
-			{# Label #}
-			<input type="text" v-model="node.label" placeholder="{{ _t('BAZ_TEXT') }}" 
-			       class="form-control" required />
-			{# Delete Icon #}
-			<a class="input-group-addon" @click="deleteNode(node)">
-				<i class="fa fa-trash icon-trash"></i>
-			</a>
-		</div>
-		<div class="help-block">{{ _t('BAZ_VALEURS_LISTE_HINT') }}</div>
+		<list-node :node="rootNode" :depth="0" :index="0"></list-node>
 	</div>
 	{# Hidden JSON Nodes #}
-	<input type="hidden" name="nodes" :value="JSON.stringify(nodes)" />
-
-	{# Add Node #}
-	<button type="button" @click="addNode" class="btn btn-primary">
-		<i class="fa fa-plus icon-plus icon-white"></i>
-		{{ _t('BAZ_AJOUTER_LABEL_LISTE') }}
-	</button>
+	<input type="hidden" name="nodes" :value="JSON.stringify(rootNode.children)" />
 
 	{# Form Actions #}
 	<div class="form-actions form-group">
