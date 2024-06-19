@@ -5,7 +5,8 @@ new Vue({
   components: { 'list-node': ListNode },
   data: {
     title: '',
-    rootNode: { children: [] },
+    rootNode: { id: '@root@', vueRef: '@root@', children: [] },
+    allIds: [],
     nodeCreated: 0
   },
   mounted() {
@@ -16,7 +17,31 @@ new Vue({
   },
   methods: {
     onSubmit(event) {
-      // TODO: check for id uniquness
+      // check for id presence and uniquness
+      this.allIds = []
+      this.collectIds(this.rootNode)
+      if (this.allIds.some((id) => !id)) {
+        toastMessage(_t('LIST_ERROR_MISSING_IDS'), 4000, 'alert alert-danger')
+        event.preventDefault()
+      }
+      const duplicatesIds = this.allIds.filter((item, index) => this.allIds.indexOf(item) !== index)
+      if (duplicatesIds.length > 0) {
+        toastMessage(
+          _t('LIST_ERROR_DUPLICATES_IDS') + duplicatesIds.join(', '),
+          8000,
+          'alert alert-danger'
+        )
+        event.preventDefault()
+      }
+    },
+    collectIds(node) {
+      this.allIds.push(node.id)
+      node.children.forEach((childNode) => this.collectIds(childNode))
+    },
+    removeVueRefProps(node) {
+      delete node.vueRef;
+      (node.children || []).forEach((child) => this.removeVueRefProps(child))
+      return node
     }
   }
 })
