@@ -81,46 +81,77 @@ $(document).ready(() => {
       // on formate l url pour acceder au service json de yeswiki
       const taburl = url.split('wakka.php')
       url = `${taburl[0].replace(/\/+$/g, '')}/wakka.php?wiki=BazaR/json&demand=lists`
-      resultimportlist.html(`<div class="alert alert-info"><span class="throbber">${listtranslations.loading}...</span> ${listtranslations.recuperation} ${url}</div>`)
+      resultimportlist.html(`<div class="alert alert-info">
+        <span class="throbber">${listtranslations.loading}...</span> 
+        ${listtranslations.recuperation} ${url}
+      </div>`)
+
       $.ajax({
         method: 'GET',
         url
       }).done((data) => {
         resultimportlist.html('')
         let count = 0
-        for (var idlist in data) {
-          if (data.hasOwnProperty(idlist)) {
-            count++
-            let select = `<option>${listtranslations.choose}</option>`
-            for (const key in data[idlist].label) {
-              if (data[idlist].label.hasOwnProperty(key)) {
-                select += `<option>${data[idlist].label[key]}</option>`
-              }
+
+        Object.entries(data).forEach(([idlist, listData]) => {
+          count += 1
+          let list = {}
+
+          // Convert old data structure
+          if (listData.titre_liste) {
+            list = {
+              title: listData.titre_liste,
+              nodes: []
             }
-
-            let trclass = ''
-            let existingmessage = ''
-            if (existinglists.find('td').filter(function() {
-              return $(this).text() === idlist
-            }).length > 0) {
-              trclass = ' class="error danger"'
-              existingmessage = `<br><span class="text-danger">${listtranslations.existingmessage}</span>`
-            }
-
-            let tablerow = `<tr${trclass}><td><label><input type="checkbox" name="imported-list[${idlist}]" value="${JSON.stringify(data[idlist]).replace(/"/g, '&quot;')}"><span></span></label></td><td>`
-
-            tablerow += `${idlist + existingmessage}</td><td>${data[idlist].titre_liste}</td><td><select class="form-control">${select}</select></td></tr>`
-            resultimporttable.find('tbody').append(tablerow)
+            Object.entries(listData.label).forEach(([id, label]) => {
+              list.nodes.push({ id, label, children: [] })
+            })
+          } else {
+            list = listData
           }
-        }
+
+          let select = `<option>${listtranslations.choose}</option>`
+          list.nodes.forEach((node) => {
+            select += `<option>${node.label}</option>`
+          })
+
+          let trclass = ''
+          let existingmessage = ''
+          if (existinglists.find('td').filter(function() {
+            return $(this).text() === idlist
+          }).length > 0) {
+            trclass = ' class="error danger"'
+            existingmessage = `<br>
+                <span class="text-danger">${listtranslations.existingmessage}</span>`
+          }
+
+          resultimporttable.find('tbody').append(
+            `<tr${trclass}>
+                <td>
+                  <label>
+                    <input type="checkbox" name="imported-list[${idlist}]" 
+                           value="${JSON.stringify(list).replace(/"/g, '&quot;')}">
+                    <span></span>
+                  </label>
+                </td>
+                <td>${idlist + existingmessage}</td>
+                <td>${list.title}</td>
+                <td><select class="form-control">${select}</select></td>
+              </tr>`
+          )
+        })
 
         resultimportform.removeClass('hide')
-        resultimportlist.prepend(`<div class="alert alert-success">${listtranslations.nblistsfound} : ${count}</div>`)
-      }).fail((jqXHR, textStatus, errorThrown) => {
+        resultimportlist.prepend(`<div class="alert alert-success">
+          ${listtranslations.nblistsfound} : ${count}
+        </div>`)
+      }).fail(() => {
         resultimportlist.html(`<div class="alert alert-danger">${listtranslations.noanswers}.</div>`)
       })
     } else {
-      resultimportlist.html(`<div class="alert alert-danger">${listtranslations.notvalidurl} : ${url}</div>`)
+      resultimportlist.html(`<div class="alert alert-danger">
+        ${listtranslations.notvalidurl} : ${url}
+      </div>`)
     }
   })
 })

@@ -8,6 +8,7 @@
 {% else %}
   {{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
   {{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
+
   <div class="table-responsive">
   <table id="existing-lists-table" class="table table-condensed table-striped">
     <thead>
@@ -19,36 +20,36 @@
     </tr>
     </thead>
     <tbody>
-    {% for key, list in lists %}
+    {% for list in lists %}
       <tr>
         <td>
           <strong>{{ list.title }}</strong>
         </td>
         <td>
-          {% if list.options %}
-            <select class="form-control input-sm" id="liste_{{ key }}">
+          {% if list.nodes %}
+            <select class="form-control input-sm" id="liste_{{ list.id }}">
               <option>{{ _t('BAZ_CHOISIR') }}</option>
-              {% for option in list.options %}
-                <option>{{ option|raw }}</option>
+              {% for node in list.nodes %}
+                <option>{{ node.label|raw }}</option>
               {% endfor %}
             </select>
           {% endif %}
         </td>
-        <td>{{ key }}</td>
+        <td>{{ list.id }}</td>
         <td>
           {% if list.canEdit %}
-          <a class="btn btn-default btn-xs" href="{{ url({ params: { vue: 'listes', action: 'modif_liste', idliste: key }}) }}">
-            <i class="fa fa-pencil-alt"></i>
-          </a>
+            <a class="btn btn-default btn-xs" href="{{ url({ params: { vue: 'listes', action: 'modif_liste', idliste: list.id }}) }}">
+              <i class="fa fa-pencil-alt"></i>
+            </a>
           {% endif %}
           {% if list.canDelete %}
-          <a
-            class="btn btn-danger btn-xs"
-            href="{{ url({ params: { vue: 'listes', action: 'supprimer_liste', idliste: key }}) }}"
-            onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_LISTE') }} ?');"
-          >
-            <i class="fa fa-trash icon-white"></i>
-          </a>
+            <a
+              class="btn btn-danger btn-xs"
+              href="{{ url({ params: { vue: 'listes', action: 'supprimer_liste', idliste: list.id }}) }}"
+              onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_LISTE') }} ?');"
+            >
+              <i class="fa fa-trash icon-white"></i>
+            </a>
           {% endif %}
       </td>
     </tr>
