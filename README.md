@@ -31,15 +31,14 @@ We recommand an installation through docker.
 
 ### Linters & Formatters
 
-Please install relevant extension and enable auto formating on your editor. Or run `make lint` before commit 
+Please install relevant extension and enable auto formating on your editor. Or run `make lint` before commit
 
-| Language | Linter/Formatter   |
-|----------|--------------------|
-| Php      | `php-cs-fixer`     |
-| Javascript | `eslint`         |
-| CSS      | `stylelint`        |
-| Twig     | no automatic linter. Couldn't find one which is good enough. |
-| Other (Yaml, Json, Markdown..)     | `prettier`         |
+| Language                    | Linter/Formatter                                             |
+| --------------------------- | ------------------------------------------------------------ |
+| Php                         | `php-cs-fixer`                                               |
+| Javascript                  | `eslint`                                                     |
+| Twig                        | no automatic linter. Couldn't find one which is good enough. |
+| CSS, Yaml, JSON, Markdown.. | `prettier`                                                   |
 
 ## History
 
@@ -57,8 +56,8 @@ YesWiki grew out of a French language version of [WakkaWiki](https://en.wikipedi
 - 2002, 2003, 2004 David DELON
 - 2002, 2003, 2004 Charles NEPOTE
 - 2002, 2003, 2004 Patrick PAUL
-- 2003  Eric DELORD
-- 2003, 2004  Eric FELDSTEIN
+- 2003 Eric DELORD
+- 2003, 2004 Eric FELDSTEIN
 - 2003 Jean-Pascal MILCENT
 - 2003 Jéréme DESQUILBET
 - 2003 Erus UMBRAE
