@@ -29,7 +29,7 @@ actions:
       id:
         label: _t(AB_attach_video_id_label)
         type: text
-        required: false 
+        required: false
         advanced: true
       ratio:
         label: _t(AB_attach_video_ratio_label)
@@ -46,7 +46,7 @@ actions:
       hauteurmax:
         label: _t(AB_attach_video_hauteur_max_label)
         type: number
-        advanced: true        
+        advanced: true
       class:
         label: Classe
         type: class

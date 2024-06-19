@@ -52,9 +52,9 @@ parameters:
   BAZ_MODE_DIVISION: 'Jumping'
   # Le nombre de page a afficher avant le 'next';
   BAZ_DELTA: 12
-  
+
   # Parametres pour checkbox
-  
+
   # Le nombre maximum de fiches affichées par checkboxfiche sans que les champs 'Filter' et 'Cocher tout' ne soient affichés false pas de filtre
   BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE: 6
   # Le nombre maximum de fiches affichées par checkboxfuche sans que le champ 'selectall' ne soit affiché ; false : récupère le paramètre BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE
@@ -121,9 +121,9 @@ parameters:
     - 'BAZ_ADRESSE_MAIL_ADMIN'
     - 'BAZ_ENVOI_MAIL_ADMIN'
     - baz_external_service:
-      - cache_time_to_check_changes
-      - cache_time_to_check_deletion
-      - cache_time_to_refresh_forms
+        - cache_time_to_check_changes
+        - cache_time_to_check_deletion
+        - cache_time_to_refresh_forms
     - 'bazarIgnoreAcls'
 
 services:

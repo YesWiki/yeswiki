@@ -48,9 +48,9 @@ Sur une page comme [TableauDeBord](https://yeswiki.net/?TableauDeBord) l'action 
 Pour que les mails soient envoyés il faut :
 
 - mettre un mot de passe dans `wakka.config.php` par exemple: `'contact_passphrase' => 'CeciEstUnePhraseAChanger!!Pour2vrai<3',`
-- paramétrer le cron de votre serveur pour envoyer les mails par url a la période souhaitée (changer TableauDeBord par la page wiki de votre choix, et mettre votre mot de passe) :  
-  - pour le mail quotidien  : `https://urldemonwiki.ext/?TableauDeBord/sendmail&period=day&key=CeciEstUnePhraseAChanger!!Pour2vrai<3`
-  - pour le mail hedbomadaire  : `https://urldemonwiki.ext/?TableauDeBord/sendmail&period=week&key=CeciEstUnePhraseAChanger!!Pour2vrai<3`
-  - pour le mail mensuel  : `https://urldemonwiki.ext/?TableauDeBord/sendmail&period=mensuel&key=CeciEstUnePhraseAChanger!!Pour2vrai<3`
+- paramétrer le cron de votre serveur pour envoyer les mails par url a la période souhaitée (changer TableauDeBord par la page wiki de votre choix, et mettre votre mot de passe) :
+  - pour le mail quotidien : `https://urldemonwiki.ext/?TableauDeBord/sendmail&period=day&key=CeciEstUnePhraseAChanger!!Pour2vrai<3`
+  - pour le mail hedbomadaire : `https://urldemonwiki.ext/?TableauDeBord/sendmail&period=week&key=CeciEstUnePhraseAChanger!!Pour2vrai<3`
+  - pour le mail mensuel : `https://urldemonwiki.ext/?TableauDeBord/sendmail&period=mensuel&key=CeciEstUnePhraseAChanger!!Pour2vrai<3`
 
 Si vous n'avez pas accès au cron de votre serveur, on peut passer par un service webcron comme [cron-job.org](https://cron-job.org)

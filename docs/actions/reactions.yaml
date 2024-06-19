@@ -44,4 +44,3 @@ actions:
           'my-favorites-with-titles.twig': _t(AB_MYFAVORITES_TEMPLATE_LINKS_WITH_TITLES)
           'my-favorites-tiles.twig': _t(AB_MYFAVORITES_TEMPLATE_TILES)
           'my-favorites-table.twig': _t(AB_MYFAVORITES_TEMPLATE_TABLE)
-  

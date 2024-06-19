@@ -1,87 +1,93 @@
 /********* Ebook *********/
 #ebook-selection-container .list-group-item:hover {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 #ebook-selection-container .movable {
-    margin-right: 10px;
+  margin-right: 10px;
 }
 
 /***********************************  Nuage de mot clés  ************************************/
-.nuage {margin:0; padding:0;}
+.nuage {
+  margin: 0;
+  padding: 0;
+}
 
 .tag-list {
-display:block;
-float:left;
-list-style-type:none;
-background-image:none;
-color:#000;
-margin:0;
-padding:0;
+  display: block;
+  float: left;
+  list-style-type: none;
+  background-image: none;
+  color: #000;
+  margin: 0;
+  padding: 0;
 }
 
 .tag-label {
-  margin-left:3px;
+  margin-left: 3px;
 }
 
 a.size6 {
-font-size:38px;
-color:#e13728;
-padding:0 4px;
+  font-size: 38px;
+  color: #e13728;
+  padding: 0 4px;
 }
 
 a.size5 {
-font-size:34px;
-color:#c4876a;
-padding:5px;
+  font-size: 34px;
+  color: #c4876a;
+  padding: 5px;
 }
 
 a.size4 {
-font-size:29px;
-color:#804d40;
-padding:10px;
+  font-size: 29px;
+  color: #804d40;
+  padding: 10px;
 }
 
 a.size3 {
-font-size:24px;
-color:#e13728;
-padding:5px;
+  font-size: 24px;
+  color: #e13728;
+  padding: 5px;
 }
 
 a.size2 {
-font-size:19px;
-color:#b9251a;
-padding:7px;
+  font-size: 19px;
+  color: #b9251a;
+  padding: 7px;
 }
 
 a.size1 {
-font-size:14px;
-color:#b46a47;
-padding:5px;
+  font-size: 14px;
+  color: #b46a47;
+  padding: 5px;
 }
 
-a.size5:hover,a.size6:hover {
-color:#b46a47;
+a.size5:hover,
+a.size6:hover {
+  color: #b46a47;
 }
 
-a.size1:hover,a.size2:hover,a.size3:hover,a.size4:hover {
-color:#e13728;
+a.size1:hover,
+a.size2:hover,
+a.size3:hover,
+a.size4:hover {
+  color: #e13728;
 }
 
 .tag-link {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 /***********************************  FIN Nuage de mot clés  ************************************/
 
-
 /******************************** icone rss *********************************/
 .rss-icon {
-    position: relative;
-    background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACK0lEQVQ4jZ3Ty0tUYRjH8fcfcD3/QS3aRdOmsEVBlCiIiEq4bGFNFy3KQE0NSZls8FYKmgw2YlqUpOY4GTaOpWimRHb1wiiFMjnnzDmeOTf4tgimRiciX/gt3geez/s8i1cIIUTs7inklnzk5jzkplzkxhzkhmxkTxbS7Uyk+gwk93GkumNItUeJ1hwhWpOOEEKIWGsh9loIe3UcKxzECo9hrYxiLQewloYxF4cwvzzF/PwE89NDzA+9mAvdmO99RG8cQsgt+dir4xjzHah9Nag9Vai+MpSuUrShSjR/BfpENfHxcuIvrxF/cRnt+UWMd51EKw8i5OY8rHAQ420b248++Rgt0I7acx5tsCTRrI24MOY72Kw4gJCbcrHCYxizd7A35rHX57DXZ5MgYy6ANnKLrf6zaCMutGen0d808ePKHoTcmIO1Moox04g+7UGfcqO/vok+UY39ber3NDODqI+uovadRPWlEw+WEXE5EHJDNtZyAH3ag9J5iVj7BWKtRagPitnqL0bzFyUQzd+GVLcXxev8A/BkYS0No0+5k/efGUC5V4Lk3ofidSbqat+5ZEC6nYm5OIQ+WYv9fRp7LZQEqb4zKF4n5sdeAJSu0m1AfQbm1wHioetsDRSi3D+c9KLmb0PxOpNqO4GFbtTeE2wUpLFRkJayQfE60V95dwKb5fvRQ1X/bPgrEHE5iAfLUgKJvVPcUwL/kx3AbhJxOX79yIjLwW4ihBA/AUnxGQfZBYPZAAAAAElFTkSuQmCC");
-    width:16px;
-    height:16px;
-    display:block;
+  position: relative;
+  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACK0lEQVQ4jZ3Ty0tUYRjH8fcfcD3/QS3aRdOmsEVBlCiIiEq4bGFNFy3KQE0NSZls8FYKmgw2YlqUpOY4GTaOpWimRHb1wiiFMjnnzDmeOTf4tgimRiciX/gt3geez/s8i1cIIUTs7inklnzk5jzkplzkxhzkhmxkTxbS7Uyk+gwk93GkumNItUeJ1hwhWpOOEEKIWGsh9loIe3UcKxzECo9hrYxiLQewloYxF4cwvzzF/PwE89NDzA+9mAvdmO99RG8cQsgt+dir4xjzHah9Nag9Vai+MpSuUrShSjR/BfpENfHxcuIvrxF/cRnt+UWMd51EKw8i5OY8rHAQ420b248++Rgt0I7acx5tsCTRrI24MOY72Kw4gJCbcrHCYxizd7A35rHX57DXZ5MgYy6ANnKLrf6zaCMutGen0d808ePKHoTcmIO1Moox04g+7UGfcqO/vok+UY39ber3NDODqI+uovadRPWlEw+WEXE5EHJDNtZyAH3ag9J5iVj7BWKtRagPitnqL0bzFyUQzd+GVLcXxev8A/BkYS0No0+5k/efGUC5V4Lk3ofidSbqat+5ZEC6nYm5OIQ+WYv9fRp7LZQEqb4zKF4n5sdeAJSu0m1AfQbm1wHioetsDRSi3D+c9KLmb0PxOpNqO4GFbtTeE2wUpLFRkJayQfE60V95dwKb5fvRQ1X/bPgrEHE5iAfLUgKJvVPcUwL/kx3AbhJxOX79yIjLwW4ihBA/AUnxGQfZBYPZAAAAAElFTkSuQmCC');
+  width: 16px;
+  height: 16px;
+  display: block;
 }
 
 /***********************************  Edition des mot clés  ************************************/
@@ -139,29 +145,30 @@ color:#e13728;
   color: white;
 }
 
-.bootstrap-tagsinput .tag [data-role="remove"] {
+.bootstrap-tagsinput .tag [data-role='remove'] {
   margin-left: 8px;
   cursor: pointer;
 }
 
-.bootstrap-tagsinput .tag [data-role="remove"]::after {
-  content: "x";
+.bootstrap-tagsinput .tag [data-role='remove']::after {
+  content: 'x';
   padding: 0 2px;
 }
 
-.bootstrap-tagsinput .tag [data-role="remove"]:hover {
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 20%), 0 1px 2px rgb(0 0 0 / 5%);
+.bootstrap-tagsinput .tag [data-role='remove']:hover {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 20%),
+    0 1px 2px rgb(0 0 0 / 5%);
 }
 
-.bootstrap-tagsinput .tag [data-role="remove"]:hover:active {
+.bootstrap-tagsinput .tag [data-role='remove']:hover:active {
   box-shadow: inset 0 3px 5px rgb(0 0 0 / 12.5%);
 }
 
 /************************************  FIN Edition des mot clés  ************************************/
 
-
 /************************************  Commentaires  ************************************/
 .admin_commenter {
-margin:10px 0;
-font-weight:bold;
+  margin: 10px 0;
+  font-weight: bold;
 }

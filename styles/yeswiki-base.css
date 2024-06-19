@@ -2,15 +2,15 @@
 
 /* Default color, in case someone use these variable outside of margot template */
 :root {
-  --primary-color: #0C5D6A;
+  --primary-color: #0c5d6a;
   --secondary-color-1: #d8604c;
   --secondary-color-2: #d78958;
   --neutral-color: #4e5056;
-  --neutral-soft-color: #57575C;
+  --neutral-soft-color: #57575c;
   --neutral-light-color: #f2f2f2;
   --main-text-fontsize: 17px;
-  --main-text-fontfamily: "Nunito", sans-serif;
-  --main-title-fontfamily: "Nunito", sans-serif;
+  --main-text-fontfamily: 'Nunito', sans-serif;
+  --main-title-fontfamily: 'Nunito', sans-serif;
   --success-color: #3cab3b;
   --danger-color: #d8604c;
   --warning-color: #d78958;
@@ -62,8 +62,8 @@ ul.fake-ul {
 
 /* Adds edit icon after link tag */
 a[data-missing-tag]::after {
-  content: "\f303";
-  font-family: "Font Awesome 5 Free";
+  content: '\f303';
+  font-family: 'Font Awesome 5 Free';
   font-weight: 900;
   margin-left: 0.4em;
   font-size: 0.8em;
@@ -207,7 +207,7 @@ span.missingpage,
 
 /* lanceur d'accordéon */
 .accordion-trigger,
-.panel-heading[data-toggle="collapse"] {
+.panel-heading[data-toggle='collapse'] {
   cursor: pointer;
 }
 
@@ -419,15 +419,18 @@ body > :not(#YesWikiModal) .current-revision-text {
   background-image: none;
 }
 
-.cols2 { /* Chrome, Safari, Opera */ /* Firefox */
+.cols2 {
+  /* Chrome, Safari, Opera */ /* Firefox */
   column-count: 2;
 }
 
-.cols3 { /* Chrome, Safari, Opera */ /* Firefox */
+.cols3 {
+  /* Chrome, Safari, Opera */ /* Firefox */
   column-count: 3;
 }
 
-.cols4 { /* Chrome, Safari, Opera */ /* Firefox */
+.cols4 {
+  /* Chrome, Safari, Opera */ /* Firefox */
   column-count: 4;
 }
 
@@ -474,12 +477,12 @@ body {
 }
 
 .control-label::after {
-  content: ":";
+  content: ':';
   margin: 0 0.25em;
 }
 
 .symbole_obligatoire::after {
-  content: "*";
+  content: '*';
   margin-right: 0.25em;
 }
 
@@ -522,27 +525,27 @@ body {
   cursor: pointer;
 }
 
-.switch label input[type="checkbox"] {
+.switch label input[type='checkbox'] {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-.switch label input[type="checkbox"]:checked + .lever {
+.switch label input[type='checkbox']:checked + .lever {
   background-color: #84c7c1;
 }
 
-.switch label input[type="checkbox"]:checked + .lever::before,
-.switch label input[type="checkbox"]:checked + .lever::after {
+.switch label input[type='checkbox']:checked + .lever::before,
+.switch label input[type='checkbox']:checked + .lever::after {
   left: 18px;
 }
 
-.switch label input[type="checkbox"]:checked + .lever::after {
+.switch label input[type='checkbox']:checked + .lever::after {
   background-color: #26a69a;
 }
 
 .switch label .lever {
-  content: "";
+  content: '';
   display: inline-block;
   position: relative;
   width: 36px;
@@ -557,7 +560,7 @@ body {
 
 .switch label .lever::before,
 .switch label .lever::after {
-  content: "";
+  content: '';
   position: absolute;
   display: inline-block;
   width: 20px;
@@ -596,7 +599,7 @@ body {
     0 1px 5px 0 rgb(0 0 0 / 12%);
 }
 
-.form-control[type="checkbox"] {
+.form-control[type='checkbox'] {
   border: none;
   height: auto;
   display: inline-block;
@@ -609,13 +612,13 @@ body {
   width: 300px;
 }
 
-.switch input[type="checkbox"][disabled] + .lever {
+.switch input[type='checkbox'][disabled] + .lever {
   cursor: default;
   background-color: rgb(0 0 0 / 12%);
 }
 
-.switch label input[type="checkbox"][disabled] + .lever::after,
-.switch label input[type="checkbox"][disabled]:checked + .lever::after {
+.switch label input[type='checkbox'][disabled] + .lever::after,
+.switch label input[type='checkbox'][disabled]:checked + .lever::after {
   background-color: #949494;
 }
 
@@ -851,12 +854,12 @@ section.full-width:not(.with-bg-pattern) {
 
 /* === trick to manage lists'translation === */
 
-html[lang="ca"] [lang]:not([lang="ca"]),
-html[lang="en"] [lang]:not([lang="en"]),
-html[lang="es"] [lang]:not([lang="es"]),
-html[lang="fr"] [lang]:not([lang="fr"]),
-html[lang="nl"] [lang]:not([lang="nl"]),
-html[lang="pt"] [lang]:not([lang="pt"]) {
+html[lang='ca'] [lang]:not([lang='ca']),
+html[lang='en'] [lang]:not([lang='en']),
+html[lang='es'] [lang]:not([lang='es']),
+html[lang='fr'] [lang]:not([lang='fr']),
+html[lang='nl'] [lang]:not([lang='nl']),
+html[lang='pt'] [lang]:not([lang='pt']) {
   display: none;
 }
 
@@ -1009,7 +1012,7 @@ html[lang="pt"] [lang]:not([lang="pt"]) {
 }
 
 .timeline::before {
-  content: "";
+  content: '';
   position: absolute;
   height: calc(100% + 2em);
   width: 1px;
@@ -1027,7 +1030,7 @@ html[lang="pt"] [lang]:not([lang="pt"]) {
 
 .timeline li::before {
   position: absolute;
-  content: "·";
+  content: '·';
   font-size: 8em;
   left: 4px;
   vertical-align: middle;

@@ -21,8 +21,8 @@ actions:
     label: _t(AB_management_userstable_label)
     properties:
       last:
-        label:  _t(AB_advanced_action_listusers_last_label)
-        hint:  _t(AB_advanced_action_listusers_last_hint)
+        label: _t(AB_advanced_action_listusers_last_label)
+        hint: _t(AB_advanced_action_listusers_last_hint)
         type: number
         default: ''
         min: 1
@@ -40,7 +40,7 @@ actions:
         type: text
         advanced: true
   admintag:
-    label: _t(AB_tags_admintag_label)  
+    label: _t(AB_tags_admintag_label)
   mailperiod:
     label: _t(AB_mailperiod_action_label)
     hint: _t(AB_mailperiod_action_hint)

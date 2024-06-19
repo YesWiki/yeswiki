@@ -1,5 +1,4 @@
-Yeswiki Documentation
-=====================
+# Yeswiki Documentation
 
 Documentation is organized in different sections :
 

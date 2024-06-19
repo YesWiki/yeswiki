@@ -5,7 +5,6 @@
   cursor: pointer;
 }
 
-
 .qq-upload-drop-area {
   position: absolute;
   top: 0;
@@ -55,7 +54,7 @@
 
 .qq-upload-spinner {
   display: inline-block;
-  background: url("../images/loading.gif");
+  background: url('../images/loading.gif');
   width: 15px;
   height: 15px;
   vertical-align: text-bottom;
@@ -87,7 +86,6 @@
   vertical-align: top;
 }
 
-
 /* Style the figure captions, hiding them by default */
 
 figcaption {
@@ -96,13 +94,13 @@ figcaption {
   bottom: 0;
   display: block;
   width: 100%;
-  font-size: .9em;
+  font-size: 0.9em;
   text-shadow: none;
   color: #fff;
   background-color: rgb(0 0 0 / 75%);
   opacity: 0;
   filter: alpha(opacity=0);
-  transition: opacity .2s ease-in-out;
+  transition: opacity 0.2s ease-in-out;
   padding: 5px 0;
 }
 
@@ -128,7 +126,6 @@ figcaption *:last-child {
   padding-bottom: 5px;
 }
 
-
 /* fichiers attaches */
 .attached_file.attach_left,
 .attached_file.left {
@@ -153,8 +150,8 @@ figcaption *:last-child {
 
 .whiteborder {
   box-sizing: border-box;
-  border: 8px solid #FFF;
-  background: #FFF;
+  border: 8px solid #fff;
+  background: #fff;
   box-shadow: 1px 1px 2px #444;
 }
 
@@ -163,11 +160,11 @@ figcaption *:last-child {
 }
 
 .zoom {
-  transition: -moz-transform .2s ease-out;
-  transition: -o-transform .2s ease-out;
-  transition: -webkit-transform .2s ease-out;
-  transition: -ms-transform .2s ease-out;
-  transition: transform .2s ease-out;
+  transition: -moz-transform 0.2s ease-out;
+  transition: -o-transform 0.2s ease-out;
+  transition: -webkit-transform 0.2s ease-out;
+  transition: -ms-transform 0.2s ease-out;
+  transition: transform 0.2s ease-out;
 }
 
 .zoom:hover {
@@ -182,7 +179,6 @@ figcaption *:last-child {
   z-index: 5;
   box-shadow: 2px 2px 15px 0 #444;
 }
-
 
 /* pointimage */
 .pointimage-container {
@@ -208,7 +204,7 @@ figcaption *:last-child {
   height: 10px;
   width: 10px;
   border-radius: 50%;
-  border: 1px solid #FFF;
+  border: 1px solid #fff;
   box-shadow: 1px 1px 1px 0 rgb(0 0 0 / 80%);
 }
 
@@ -342,7 +338,6 @@ figcaption *:last-child {
   color: var(--neutral-color) !important;
 }
 
-
 /* Custom video player */
 
 .jp-jplayer-video {
@@ -366,8 +361,8 @@ figcaption *:last-child {
   display: flex;
 }
 
-.jp-video .btn-group>.btn:first-child,
-.jp-video .btn-group>.btn:last-child {
+.jp-video .btn-group > .btn:first-child,
+.jp-video .btn-group > .btn:last-child {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }

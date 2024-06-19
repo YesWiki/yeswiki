@@ -1,4 +1,4 @@
-label: "Attach"
+label: 'Attach'
 previewHeight: 400px
 onlyEdit: true
 actions:
@@ -27,9 +27,9 @@ actions:
       nofullimagelink:
         label: _t(AB_attach_nofullimagelink_label)
         type: checkbox
-        default: "1"
-        checkedvalue: "0"
-        uncheckedvalue: "1"
+        default: '1'
+        checkedvalue: '0'
+        uncheckedvalue: '1'
         showif:
           file: \.(png|jpg|jpeg|gif|svg)$
       size:
@@ -42,7 +42,7 @@ actions:
           medium: _t(AB_attach_size_medium)
           big: _t(AB_attach_size_big)
           original: _t(AB_attach_size_original)
-      width: 
+      width:
         label: _t(AB_attach_width_label)
         type: number
         advanced: true
@@ -71,33 +71,33 @@ actions:
           displaylink:
             label: _t(AB_attach_class_displaylink_label)
             type: list
-            default: ""
+            default: ''
             options:
               '': _t(AB_attach_class_displaylink_default)
-              "new-window": _t(AB_attach_class_displaylink_new-window)
-              "modalbox": _t(AB_attach_class_displaylink_modalbox)
+              'new-window': _t(AB_attach_class_displaylink_new-window)
+              'modalbox': _t(AB_attach_class_displaylink_modalbox)
           lightshadow:
             label: _t(AB_attach_class_effect_lightshadow)
             type: checkbox
-            default: ""
-            checkedvalue: "lightshadow"
-            uncheckedvalue: ""
+            default: ''
+            checkedvalue: 'lightshadow'
+            uncheckedvalue: ''
             showif:
               file: \.(png|jpg|jpeg|gif|svg)$
           whiteborder:
             label: _t(AB_attach_class_effect_whiteborder)
             type: checkbox
-            default: ""
-            checkedvalue: "whiteborder"
-            uncheckedvalue: ""
+            default: ''
+            checkedvalue: 'whiteborder'
+            uncheckedvalue: ''
             showif:
               file: \.(png|jpg|jpeg|gif|svg)$
           zoom:
             label: _t(AB_attach_class_effect_zoom)
             type: checkbox
-            default: ""
-            checkedvalue: "zoom"
-            uncheckedvalue: ""
+            default: ''
+            checkedvalue: 'zoom'
+            uncheckedvalue: ''
             showif:
               file: \.(png|jpg|jpeg|gif|svg)$
           izmir:
@@ -122,7 +122,7 @@ actions:
     properties:
       file:
         label: _t(AB_attach_file_label)
-        type: text    
+        type: text
         hint: _t(AB_attach_file_hint)
       desc:
         label: _t(AB_attach_desc_label)
@@ -162,7 +162,3 @@ actions:
         showif:
           displaypdf: 1
           file: \.pdf$
-
-
-
-

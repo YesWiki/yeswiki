@@ -85,7 +85,9 @@
 }
 
 @media (width <= 900px) {
-  .agenda-entry h5 { font-size: 1.1rem; }
+  .agenda-entry h5 {
+    font-size: 1.1rem;
+  }
 }
 
 .agenda-entry p {

@@ -50,7 +50,7 @@
 .material-card h2 strong {
   font-weight: 400;
   display: block;
-  font-size: .8em;
+  font-size: 0.8em;
 }
 
 .material-card h2::before,
@@ -1201,8 +1201,8 @@
 }
 
 .material-container {
-  background-color: #ECEFF1;
-  color: #37474F;
+  background-color: #eceff1;
+  color: #37474f;
   font-weight: 300;
   font-size: 16px;
 }

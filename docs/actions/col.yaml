@@ -9,7 +9,7 @@ actions:
     doclink: https://yeswiki.net/?CoL
     hint: _t(AB_template_action_col_size_total)
     properties:
-      size: 
+      size:
         label: _t(AB_template_col_size_label)
         type: range
         hint: _t(AB_template_col_size_hint)
