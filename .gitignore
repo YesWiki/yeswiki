@@ -125,4 +125,5 @@ docker-compose.local.yml
 # Other
 .phpintel/
 *.old
+.php-cs-fixer.cache
 TODO
