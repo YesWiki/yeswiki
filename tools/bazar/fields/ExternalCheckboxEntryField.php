@@ -10,7 +10,7 @@ use YesWiki\Bazar\Service\ExternalBazarService;
  */
 class ExternalCheckboxEntryField extends CheckboxEntryField
 {
-    protected $JSONFormAddress ;
+    protected $JSONFormAddress;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -24,34 +24,34 @@ class ExternalCheckboxEntryField extends CheckboxEntryField
 
     protected function renderInput($entry)
     {
-        return "";
+        return '';
     }
 
     public function formatValuesBeforeSave($entry)
     {
-        return "";
+        return '';
     }
 
     protected function renderStatic($entry)
     {
         // copy from parent but with different href
         $keys = $this->getValues($entry);
-        $values = [] ;
+        $values = [];
         foreach ($keys as $key) {
             if (in_array($key, array_keys($this->getOptions()))) {
-                $values[$key]['value'] = $this->options[$key] ;
-                $values[$key]['href'] = $entry['external-data']['baseUrl'].'?'.$key.'/iframe' ;
+                $values[$key]['value'] = $this->options[$key];
+                $values[$key]['href'] = $entry['external-data']['baseUrl'] . '?' . $key . '/iframe';
             }
         }
 
         return (count($values) > 0) ? $this->render('@bazar/fields/externalcheckboxentry.twig', [
-            'values' => $values
-        ]) : '' ;
+            'values' => $values,
+        ]) : '';
     }
 
     protected function getFormName()
     {
-        return '' ;
+        return '';
     }
 
     public function getOptions()
@@ -60,6 +60,7 @@ class ExternalCheckboxEntryField extends CheckboxEntryField
         if (is_null($this->options)) {
             $this->loadOptionsFromJSONForm($this->JSONFormAddress);
         }
-        return  $this->options;
+
+        return $this->options;
     }
 }

@@ -2,15 +2,15 @@
 
 namespace YesWiki\Bazar\Service;
 
-use YesWiki\Bazar\Field\EnumField;
-use YesWiki\Bazar\Field\ImageField;
-use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\CheckboxEntryField;
+use YesWiki\Bazar\Field\CheckboxField;
+use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\FileField;
+use YesWiki\Bazar\Field\ImageField;
+use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Field\TagsField;
 use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Field\UserField;
-use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Wiki;
@@ -25,10 +25,7 @@ class CSVManager
     protected $errormsg;
 
     /**
-     * contructor
-     * @param EntryManager $entryManager
-     * @param FormManager $formManager
-     * @param Wiki $wiki
+     * contructor.
      */
     public function __construct(
         EntryManager $entryManager,
@@ -44,11 +41,13 @@ class CSVManager
     }
 
     /**
-     * get headers from a form
+     * get headers from a form.
+     *
      * @param array $form form from which headers shoudl be extracted
+     *
      * @return array ['propertyName1' => ['field' => field, 'fullHeader' => 'jjjjk'],
-     *                     'propertyName2' => ['field' => field, 'fullHeader' => 'jjjjk']]
-     *         null if error
+     *               'propertyName2' => ['field' => field, 'fullHeader' => 'jjjjk']]
+     *               null if error
      */
     private function getHeaders(array $form): ?array
     {
@@ -61,8 +60,8 @@ class CSVManager
                     $fullHeader1 = 'NomWiki';
                     $fullHeader2 = 'Mot de passe';
                     if ($field->isRequired()) {
-                        $fullHeader1 .= " *";
-                        $fullHeader2 .= " *";
+                        $fullHeader1 .= ' *';
+                        $fullHeader2 .= ' *';
                     }
 
                     $headers['nomwiki'] = [
@@ -73,7 +72,7 @@ class CSVManager
                         'field' => $field,
                         'fullHeader' => $fullHeader2,
                     ];
-                } elseif ($field instanceof  MapField) {
+                } elseif ($field instanceof MapField) {
                     // TODO save userField data on one field
                     // after refacto MapField
                     $latitudeHeader = $field->getLatitudeField();
@@ -88,12 +87,11 @@ class CSVManager
                         'fullHeader' => $longitudeHeader,
                     ];
                 } else {
-
                     // *** standard case ****
                     $fullHeader = $field->getLabel();
                     if (!empty($fullHeader)) {
                         if ($field->isRequired()) {
-                            $fullHeader .= " *";
+                            $fullHeader .= ' *';
                         }
 
                         $headers[$propName] = [
@@ -109,14 +107,13 @@ class CSVManager
     }
 
     /**
-     * convert array to csv
-     * @param array|null $data
+     * convert array to csv.
+     *
      * @return string csv
      */
     public function arrayToCSV(?array $data): ?string
     {
         if (!empty($data)) {
-
             // output up to 50MB is kept in memory, if it becomes bigger it will automatically be written to a temporary file
             $csvResource = fopen('php://temp/maxmemory:' . (50 * 1024 * 1024), 'r+');
 
@@ -127,7 +124,7 @@ class CSVManager
             rewind($csvResource);
 
             // read file
-            $csv =  stream_get_contents($csvResource);
+            $csv = stream_get_contents($csvResource);
 
             // close file to release tmp file and leave system to ulink it
             fclose($csvResource);
@@ -137,11 +134,12 @@ class CSVManager
     }
 
     /**
-     * get CSV of all entries from form
-     * @param string|null $formId
-     * @param string|null $keywords for EntryManager->search
-     * @param bool $fakeMode to create a template
-     * @param bool $keysInsteadOfValues to export keys insteadof values
+     * get CSV of all entries from form.
+     *
+     * @param string|null $keywords            for EntryManager->search
+     * @param bool        $fakeMode            to create a template
+     * @param bool        $keysInsteadOfValues to export keys insteadof values
+     *
      * @return array|null csv; null is empty or error
      */
     public function getCSVfromFormId(
@@ -163,7 +161,7 @@ class CSVManager
                     $keysInsteadOfValues
                         ? array_keys($headers)
                         : array_map(function ($fieldHeader) {
-                            return  $fieldHeader['fullHeader'];
+                            return $fieldHeader['fullHeader'];
                         }, $headers)
                 ));
 
@@ -171,7 +169,7 @@ class CSVManager
                     // get lines for each entry
                     $entries = $this->entryManager->search([
                         'formsIds' => [$formId],
-                        'keywords' => $keywords
+                        'keywords' => $keywords,
                     ]);
                     foreach ($entries as $entry) {
                         $csv_line = $this->getCSVLineFromEntry($entry, $headers, $keysInsteadOfValues);
@@ -181,7 +179,7 @@ class CSVManager
                     }
                 } else {
                     // emulate an 4 empty lines
-                    for ($i = 1; $i < 4; ++$i) {
+                    for ($i = 1; $i < 4; $i++) {
                         $csv_line = $this->getTemplateCSVLine($headers, $i);
                         if ($csv_line) {
                             $csv_raw[] = $csv_line;
@@ -195,10 +193,11 @@ class CSVManager
     }
 
     /**
-     * getCSVLineFromEntry
-     * @param array $entry
-     * @param array $headers from $this->getHeaders
-     * @param bool $keysInsteadOfValues to export keys insteadof values
+     * getCSVLineFromEntry.
+     *
+     * @param array $headers             from $this->getHeaders
+     * @param bool  $keysInsteadOfValues to export keys insteadof values
+     *
      * @return array|null $entry in csv or null if error
      */
     private function getCSVLineFromEntry(array $entry, array $headers, bool $keysInsteadOfValues = false): ?array
@@ -216,18 +215,18 @@ class CSVManager
                 if ($propertyName == 'mot_de_passe_wikini') {
                     // secure password
                     $value = md5($value);
-                } elseif (($header['field'] instanceof  ImageField) || ($header['field'] instanceof  FileField)) {
+                } elseif (($header['field'] instanceof ImageField) || ($header['field'] instanceof FileField)) {
                     // ajoute l'URL de base aux images et fichiers
                     $value = $this->wiki->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $value;
                 } elseif (
-                    $header['field'] instanceof  EnumField
+                    $header['field'] instanceof EnumField
                     && !($header['field'] instanceof TagsField)
                     && !$keysInsteadOfValues
                 ) {
                     $value = $this->getLabelsFromEnumFieldOptions($value, $header['field'], $entry);
                 }
             }
-            if ($header['field'] instanceof  MapField) {
+            if ($header['field'] instanceof MapField) {
                 if (!empty($entry[$header['field']->getPropertyName()])) {
                     $value = $entry[$header['field']->getPropertyName()];
                     if (is_array($value)) {
@@ -266,10 +265,11 @@ class CSVManager
     }
 
     /**
-     * getLabelsFromEnumFieldOptions
-     * @param mixed $value
+     * getLabelsFromEnumFieldOptions.
+     *
+     * @param mixed               $value
      * @param BazarEnumFieldField $field
-     * @param array $entry
+     *
      * @return mixed array|string|null
      */
     private function getLabelsFromEnumFieldOptions($value, EnumField $field, array $entry)
@@ -312,10 +312,10 @@ class CSVManager
     }
 
     /**
-     * getTempalteCSVLine
+     * getTempalteCSVLine.
      *
      * @param array $headers from $this->getHeaders
-     * @param int $lineNumber
+     *
      * @return array|null $entry in csv or null if error
      */
     private function getTemplateCSVLine(array $headers, int $lineNumber): ?array
@@ -329,9 +329,9 @@ class CSVManager
                 $options = $header['field']->getOptions();
                 $nb = min(3, count($options));
                 $line[] = trim($this->arrayToCSV([ // emulate CSV
-                    array_map(function ($index) use ($lineNumber, $columnNumber, $options) {
+                    array_map(function ($index) use ($options) {
                         return $options[array_keys($options)[$index]];
-                    }, range(0, $nb - 1))
+                    }, range(0, $nb - 1)),
                 ]));
             } elseif ($header['field'] instanceof TagsField) {
                 $line[] = '"' . implode(',', array_map(function ($index) use ($lineNumber, $columnNumber) {
@@ -343,22 +343,21 @@ class CSVManager
                 $line[] = trim($this->arrayToCSV([ // emulate CSV
                     [ //emulate a line
                         'ligne ' . $lineNumber . ' - champ ' . $columnNumber .
-                            (empty($options) ? '' : ' - ex: ' . $options[array_keys($options)[$index]])
-                    ]
+                            (empty($options) ? '' : ' - ex: ' . $options[array_keys($options)[$index]]),
+                    ],
                 ]));
             } else {
                 $line[] = 'ligne ' . $lineNumber . ' - champ ' . $columnNumber;
             }
-            ++$columnNumber;
+            $columnNumber++;
         }
 
         return $line;
     }
 
     /**
-     * importEntry
-     * @param array $importedEntries
-     * @param string $formId
+     * importEntry.
+     *
      * @return array|null $createdEntries
      */
     public function importEntry(array $importedEntries, string $formId): ?array
@@ -383,22 +382,22 @@ class CSVManager
                 }
             }
             $this->importdone = true;
+
             return $createdEntries;
         }
+
         return null;
     }
 
     /**
-     * extract CSV from csv file
-     * @param string|null $formId
+     * extract CSV from csv file.
+     *
      * @param array|null [['entry' => $extractedData,'errormsg' => ['error1','error2']],...]
-     * @param bool $detectColumnsOnHeaders
      */
     public function extractCSVfromCSVFile(?string $formId, $filesData, bool $detectColumnsOnHeaders = true)
     {
         if (!empty($formId)) {
             if ($form = $this->formManager->getOne($formId)) {
-
                 // get headers
                 $headers = $this->getHeaders($form);
 
@@ -413,7 +412,6 @@ class CSVManager
                                 if ($columnIndexesForPropertyNames =
                                     $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders)
                                 ) {
-
                                     // next lines
                                     $extracted = [];
                                     while (($data = fgetcsv($handle, 0, ',')) !== false) { // init errors
@@ -421,26 +419,29 @@ class CSVManager
                                         $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $formId);
                                         $extracted[] = [
                                             'entry' => $extractedData,
-                                            'errormsg' => $this->errormsg
+                                            'errormsg' => $this->errormsg,
                                         ];
                                     }
                                 }
                             }
                             fclose($handle);
+
                             return $extracted ?? null;
                         }
                     }
                 }
             }
         }
+
         return null;
     }
 
     /**
-     * get columnIndexes for propertyNames
+     * get columnIndexes for propertyNames.
+     *
      * @param array $firstLine of the CSV from fgetcsv
-     * @param array $headers from getHeaders
-     * @param bool $detectColumnsOnHeaders
+     * @param array $headers   from getHeaders
+     *
      * @return array|null [$propertyName => $index, ...], null if error
      */
     private function getColumnIndexesForPropertyNames(array $firstLine, array $headers, bool $detectColumnsOnHeaders = false): ?array
@@ -456,7 +457,7 @@ class CSVManager
                 'columnIndexes' => [],
                 'firstLine' => $firstLineIndexed,
                 'headers' => $headers,
-                'originalHeadersKeys' => array_keys($headers)
+                'originalHeadersKeys' => array_keys($headers),
             ];
             $data = $this->detectDateTimeHeaders($data);
             $data = $this->detectHeadersOnFullHeader($data);
@@ -470,10 +471,10 @@ class CSVManager
             $index = 0;
             // remove date columns if existing
             if ($firstLine[$index] == 'datetime_create') {
-                ++$index;
+                $index++;
             }
             if ($firstLine[$index] == 'datetime_latest') {
-                ++$index;
+                $index++;
             }
             // sweep on headers
             $columnIndexes = [];
@@ -481,16 +482,17 @@ class CSVManager
                 if (isset($firstLine[$index])) {
                     $columnIndexes[$propertyName] = $index;
                 }
-                ++$index;
+                $index++;
             }
         }
+
         return !empty($columnIndexes) ? $columnIndexes : null;
     }
 
     /**
-     * splice array from key
+     * splice array from key.
+     *
      * @param array &$line
-     * @param string $key
      */
     private function array_splice_from_key(array &$line, string $key)
     {
@@ -499,9 +501,7 @@ class CSVManager
     }
 
     /**
-     * get column indexes for datetimes
-     * @param array $data
-     * @return array
+     * get column indexes for datetimes.
      */
     private function detectDateTimeHeaders(array $data): array
     {
@@ -510,16 +510,15 @@ class CSVManager
             if ($first_found_key !== false) {
                 $this->array_splice_from_key($data['firstLine'], $first_found_key);
                 // update columnindexes
-                $data['columnIndexes'][$value] = (int) substr($first_found_key, strlen('key_'));
+                $data['columnIndexes'][$value] = (int)substr($first_found_key, strlen('key_'));
             }
         }
+
         return $data;
     }
 
     /**
-     * remove column indexes for datetimes
-     * @param array $columns
-     * @return array
+     * remove column indexes for datetimes.
      */
     private function removeDateTimeColumns(array $columns): array
     {
@@ -528,13 +527,12 @@ class CSVManager
                 $this->array_splice_from_key($columns, $value);
             }
         }
+
         return $columns;
     }
 
     /**
-     * get column indexes on condition
-     * @param array $data
-     * @return array
+     * get column indexes on condition.
      */
     private function detectHeaders(array $data, $condition): array
     {
@@ -547,21 +545,19 @@ class CSVManager
                 // to remove already found headers
                 $foundPropertyNames[] = $propertyName;
                 // update columnindexes
-                $data['columnIndexes'][$propertyName] = (int) substr($first_found_key, strlen('key_'));
+                $data['columnIndexes'][$propertyName] = (int)substr($first_found_key, strlen('key_'));
             }
         }
         // filter headers
         foreach ($foundPropertyNames as $propertyName) {
             $this->array_splice_from_key($data['headers'], $propertyName);
-        };
+        }
+
         return $data;
     }
 
-
     /**
-     * get column indexes on fullHeaders
-     * @param array $data
-     * @return array
+     * get column indexes on fullHeaders.
      */
     private function detectHeadersOnFullHeader(array $data): array
     {
@@ -571,9 +567,7 @@ class CSVManager
     }
 
     /**
-     * get column indexes on labels
-     * @param array $data
-     * @return array
+     * get column indexes on labels.
      */
     private function detectHeadersOnLabels(array $data): array
     {
@@ -583,9 +577,7 @@ class CSVManager
     }
 
     /**
-     * get column indexes on labels with stars
-     * @param array $data
-     * @return array
+     * get column indexes on labels with stars.
      */
     private function detectHeadersOnLabelsWithStar(array $data): array
     {
@@ -595,9 +587,7 @@ class CSVManager
     }
 
     /**
-     * get column indexes on propertyName
-     * @param array $data
-     * @return array
+     * get column indexes on propertyName.
      */
     private function detectHeadersOnPropertyName(array $data): array
     {
@@ -605,10 +595,9 @@ class CSVManager
             return $propertyName;
         });
     }
+
     /**
-     * get column indexes if modified after one detected columns
-     * @param array $data
-     * @return array
+     * get column indexes if modified after one detected columns.
      */
     private function detectHeadersModifiedAfterOneDetected(array $data): array
     {
@@ -636,15 +625,17 @@ class CSVManager
                 }
             }
         }
+
         return $data;
     }
 
     /**
-     * getEntryFromCSVLine
-     * @param array $data array line from CSV file
-     * @param array $headers from getHeaders
+     * getEntryFromCSVLine.
+     *
+     * @param array $data                          array line from CSV file
+     * @param array $headers                       from getHeaders
      * @param array $columnIndexesForPropertyNames from getcolumnIndexesForPropertyNames
-     * @param string $formId
+     *
      * @return array|null entry
      */
     private function getEntryFromCSVLine(array $data, array $headers, array $columnIndexesForPropertyNames, string $formId): ?array
@@ -688,15 +679,18 @@ class CSVManager
             }
         } else {
             $this->errormsg[] = 'Empty $entry[\'bf_titre\'] in ' . get_class($this) . ', line ' . __LINE__;
+
             return null;
         }
+
         return !empty($entry) ? $entry : null;
     }
 
     /**
-     * extract value from data
+     * extract value from data.
+     *
      * @param array $data array line from CSV file
-     * @param int $index
+     *
      * @return mixed value
      */
     private function getValueFromData(array $data, int $index)
@@ -704,7 +698,7 @@ class CSVManager
         if (isset($data[$index])) {
             $value = $data[$index];
             $value = str_replace(
-                array(
+                [
                     '&sbquo;', '&fnof;', '&bdquo;',
                     '&hellip;', '&dagger;', '&Dagger;',
                     '&circ;', '&permil;', '&Scaron;',
@@ -713,8 +707,8 @@ class CSVManager
                     '&bull;', '&ndash;', '&mdash;',
                     '&tilde;', '&trade;', '&scaron;',
                     '&rsaquo;', '&oelig;', '&Yuml;',
-                ),
-                array(
+                ],
+                [
                     chr(130), chr(131), chr(132),
                     chr(133), chr(134), chr(135),
                     chr(136),
@@ -725,7 +719,7 @@ class CSVManager
                     chr(151), chr(152), chr(153),
                     chr(154),
                     chr(155), chr(156), chr(159),
-                ),
+                ],
                 $value
             );
         }
@@ -734,9 +728,10 @@ class CSVManager
     }
 
     /**
-     * extractValueFromEnumFieldData
+     * extractValueFromEnumFieldData.
+     *
      * @param string $value, CSV saved in value
-     * @param EnumField $field
+     *
      * @return string $newValue
      */
     private function extractValueFromEnumFieldData(string $value, EnumField $field): string
@@ -771,9 +766,10 @@ class CSVManager
     }
 
     /**
-     * extractValueFromImageFieldData
+     * extractValueFromImageFieldData.
+     *
      * @param string $value, CSV saved in value
-     * @param ImageField $field
+     *
      * @return string $newValue
      */
     private function extractValueFromImageFieldData(string $value, ImageField $field): string
@@ -819,9 +815,10 @@ class CSVManager
     }
 
     /**
-     * extractValueFromFileFieldData
+     * extractValueFromFileFieldData.
+     *
      * @param string $value, CSV saved in value
-     * @param FileField $field
+     *
      * @return string $newValue
      */
     private function extractValueFromFileFieldData(string $value, FileField $field): string
@@ -853,8 +850,8 @@ class CSVManager
     }
 
     /**
-     * convert CSV raw to string to display in <pre>
-     * @param array|null $data
+     * convert CSV raw to string to display in <pre>.
+     *
      * @return string $csvToDisplay
      */
     public function arrayToCSVToDisplay(?array $data): ?string

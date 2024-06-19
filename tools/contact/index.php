@@ -1,5 +1,5 @@
 <?php
 
 if (!defined('TOOLS_MANAGER')) {
-    die('acc&egrave;s direct interdit');
+    exit('acc&egrave;s direct interdit');
 }

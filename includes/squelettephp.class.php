@@ -22,10 +22,10 @@ class SquelettePhp
     protected $templatePath = '';
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param string $templateFile Filename of template.
-     * @param string $templateDir Directory of template type, used to find path to template file.
+     * @param string $templateFile filename of template
+     * @param string $templateDir  directory of template type, used to find path to template file
      */
     public function __construct($templateFile, $templateDir)
     {
@@ -33,9 +33,9 @@ class SquelettePhp
     }
 
     /**
-     * Add several or one value to template
+     * Add several or one value to template.
      *
-     * @param mixed $name variable name, or array name=>value
+     * @param mixed $name  variable name, or array name=>value
      * @param mixed $value value(s) of variable or SquelettePhp object to include
      */
     public function set($name, $value = [])
@@ -50,10 +50,11 @@ class SquelettePhp
     }
 
     /**
-     * Replace variables in template file
+     * Replace variables in template file.
      *
-     * @param mixed $name variable name, or array name=>value
-     * @param mixed $value value(s) used to render template.
+     * @param mixed $name  variable name, or array name=>value
+     * @param mixed $value value(s) used to render template
+     *
      * @deprecated Use TemplateEngine render method instead
      */
     public function render($name = '', $value = [])

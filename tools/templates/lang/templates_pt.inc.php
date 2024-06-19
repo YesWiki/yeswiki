@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     'TEMPLATE_ACTION' => 'Ação',
     // 'TEMPLATE_FILE_NOT_FOUND' => 'Template non trouvé',
 
@@ -102,7 +101,6 @@ return [
     // 'TEMPLATE_ACTION_SECTION' => 'Action {{section ...}}',
     // 'TEMPLATE_ELEM_SECTION_NOT_CLOSED' => 'l\'action {{section ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="section"}}',
 
-
     'TEMPLATE_NO_THEME_FILES' => 'Alguns (ou todos) arquivos do template desapareceram',
     'TEMPLATE_DEFAULT_THEME_USED' => 'O template padrão esta utilisado',
 
@@ -128,7 +126,6 @@ return [
     // action/accordion.php
     // 'TEMPLATE_ACTION_ACCORDION' => 'Action {{accordion ...}}',
     // 'TEMPLATE_ELEM_ACORDION_NOT_CLOSED' => 'l\'action {{accordion ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="accordion"}}',
-
 
     // actions/buttondropdown.php
     'TEMPLATE_ACTION_BUTTONDROPDOWN' => 'Ação {{buttondropdown ...}}',
@@ -187,16 +184,16 @@ return [
     // 'AB_template_actions_danger' => 'Danger',
     // 'AB_template_action_accordion_label' => 'Afficher des encadrés en accordéon',
     // 'AB_template_action_accordion_example' => "{{panel title=\"Titre 1\"}}\nTexte du panneau 1 à changer par la suite\n{{end elem=\"panel\"}}\n"
-        // ."{{panel title=\"Titre 2\"}}\nTexte du panneau 2 à changer par la suite\n{{end elem=\"panel\"}}\n",
+    // ."{{panel title=\"Titre 2\"}}\nTexte du panneau 2 à changer par la suite\n{{end elem=\"panel\"}}\n",
     // 'AB_template_action_ariane_label' => 'Fil d\'ariane',
     // 'AB_template_action_col_label' => 'Colonne',
     // 'AB_template_action_col_example' => 'Texte de votre colonne à changer par la suite',
     // 'AB_template_col_size_label' => 'Largeur de la colonne',
     // 'AB_template_action_grid_label' => 'Afficher plusieurs colonnes',
     // 'AB_template_action_grid_example' => "{{col size=\"3\"}}\nTexte de la colonne 1 à changer par la suite\n{{end elem=\"col\"}}\n"
-        // ."{{col size=\"3\"}}\nTexte de la colonne 2 à changer par la suite\n{{end elem=\"col\"}}\n"
-        // ."{{col size=\"3\"}}\nTexte de la colonne 3 à changer par la suite\n{{end elem=\"col\"}}\n"
-        // ."{{col size=\"3\"}}\nTexte de la colonne 4 à changer par la suite\n{{end elem=\"col\"}}\n",
+    // ."{{col size=\"3\"}}\nTexte de la colonne 2 à changer par la suite\n{{end elem=\"col\"}}\n"
+    // ."{{col size=\"3\"}}\nTexte de la colonne 3 à changer par la suite\n{{end elem=\"col\"}}\n"
+    // ."{{col size=\"3\"}}\nTexte de la colonne 4 à changer par la suite\n{{end elem=\"col\"}}\n",
     // 'AB_templates_nav_label' => 'Onglets',
     // 'AB_templates_nav_description' => 'Générer un menu',
     // 'AB_templates_nav_hint' => 'LeNomDeVotrePage doit être le nom de la page dans laquelle vous mettrez cette action. Pensez à coller le code obtenu dans chacune des pages des onglets.',
@@ -343,5 +340,4 @@ return [
     // 'EDIT_CONFIG_HINT_META_DESCRIPTION' => 'Description du site en une phrase, pour le référencement (Attention : ne pas mettre de "." (point))',
     // 'EDIT_CONFIG_HINT_META[ROBOTS]' => 'Empêcher les robots à indexer le wiki (Mettre \'noindex,nofollow,max-image-preview:none,noarchive,noimageindex\')',
     // 'EDIT_CONFIG_GROUP_TEMPLATES' => 'Balises meta pour l\'indexation web', // idéalement 'Mise en forme' mais templates est pour le moment uniquement utilisé pour meta
-
 ];

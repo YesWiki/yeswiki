@@ -129,12 +129,11 @@ return [
     // action/panel.php
     'TEMPLATE_ACTION_PANEL' => 'Action {{panel ...}}',
     'TEMPLATE_ELEM_PANEL_NOT_CLOSED' => 'l\'action {{panel ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="panel"}}',
-    'TEMPLATE_TITLE_PARAMETER_REQUIRED' => "Param&egrave;tre title obligatoire",
+    'TEMPLATE_TITLE_PARAMETER_REQUIRED' => 'Param&egrave;tre title obligatoire',
 
     // action/accordion.php
     'TEMPLATE_ACTION_ACCORDION' => 'Action {{accordion ...}}',
     'TEMPLATE_ELEM_ACORDION_NOT_CLOSED' => 'l\'action {{accordion ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="accordion"}}',
-
 
     // actions/buttondropdown.php
     'TEMPLATE_ACTION_BUTTONDROPDOWN' => 'Action {{buttondropdown ...}}',
@@ -171,7 +170,7 @@ return [
     'TEMPLATE_THEME_NOT_SAVE' => 'Thème non sauvegardé',
     'TEMPLATE_FILE_NOT_ADDED' => ' non ajouté !',
     'TEMPLATE_FILE_NOT_DELETED' => ' non supprimé !',
-    'TEMPLATE_FILE_ALREADY_EXISTING' => "Le fichier est déjà existant ! Changez de nom de preset ou connectez-vous en admin !",
+    'TEMPLATE_FILE_ALREADY_EXISTING' => 'Le fichier est déjà existant ! Changez de nom de preset ou connectez-vous en admin !',
     'TEMPLATE_PRESET_ERROR' => "Impossible d'appliquer ce preset, il y a une erreur !",
     'TEMPLATE_PRESETS' => 'Configurations graphiques',
     'TEMPLATE_CREATE_PRESET' => 'Créer une nouvelle configuration graphique',
@@ -193,7 +192,7 @@ return [
     'AB_template_actions_danger' => 'Danger',
     'AB_template_action_accordion_label' => 'Afficher des encadrés en accordéon',
     'AB_template_action_accordion_example' => "{{panel title=\"Titre 1\"}}\nTexte du panneau 1 à changer par la suite\n{{end elem=\"panel\"}}\n"
-        ."{{panel title=\"Titre 2\"}}\nTexte du panneau 2 à changer par la suite\n{{end elem=\"panel\"}}\n",
+        . "{{panel title=\"Titre 2\"}}\nTexte du panneau 2 à changer par la suite\n{{end elem=\"panel\"}}\n",
     'AB_template_action_ariane_label' => 'Fil d\'ariane',
     'AB_template_action_col_label' => 'Colonne',
     'AB_template_action_col_size_total' => 'Vous avez 12 colonnes virtuelles à répartir',
@@ -201,9 +200,9 @@ return [
     'AB_template_col_size_label' => 'Largeur de la colonne',
     'AB_template_action_grid_label' => 'Afficher plusieurs colonnes',
     'AB_template_action_grid_example' => "{{col size=\"3\"}}\nTexte de la colonne 1 à changer par la suite\n{{end elem=\"col\"}}\n"
-        ."{{col size=\"3\"}}\nTexte de la colonne 2 à changer par la suite\n{{end elem=\"col\"}}\n"
-        ."{{col size=\"3\"}}\nTexte de la colonne 3 à changer par la suite\n{{end elem=\"col\"}}\n"
-        ."{{col size=\"3\"}}\nTexte de la colonne 4 à changer par la suite\n{{end elem=\"col\"}}\n",
+        . "{{col size=\"3\"}}\nTexte de la colonne 2 à changer par la suite\n{{end elem=\"col\"}}\n"
+        . "{{col size=\"3\"}}\nTexte de la colonne 3 à changer par la suite\n{{end elem=\"col\"}}\n"
+        . "{{col size=\"3\"}}\nTexte de la colonne 4 à changer par la suite\n{{end elem=\"col\"}}\n",
     'AB_templates_nav_label' => 'Onglets avec des pages différentes',
     'AB_templates_nav_description' => 'Générer un menu',
     'AB_templates_nav_hint' => 'LeNomDeVotrePage doit être le nom de la page dans laquelle vous mettrez cette action. Pensez à coller le code obtenu dans chacune des pages des onglets.',
@@ -297,14 +296,14 @@ return [
     'AB_templates_tabs_label' => 'Onglets avec des parties de la page',
     'AB_templates_tabs_description' => 'Générer des onglets avec des parties de la page',
     'AB_templates_tabs_hint' => 'Chaque contenu d\'onglet se trouve dans une action <code>{{tab}}Contenu de l\'onglet.{{end elem="tab"}}</code>',
-    'AB_templates_tabs_wrappedcontentexample' => "{{tab}}\n".
-        "Contenu de l'onglet 1\n".
-        "{{end elem=\"tab\"}}\n".
-        "{{tab}}\n".
-        "Contenu de l'onglet 2\n".
-        "{{end elem=\"tab\"}}\n".
-        "{{tab}}\n".
-        "Contenu de l'onglet 3\n".
+    'AB_templates_tabs_wrappedcontentexample' => "{{tab}}\n" .
+        "Contenu de l'onglet 1\n" .
+        "{{end elem=\"tab\"}}\n" .
+        "{{tab}}\n" .
+        "Contenu de l'onglet 2\n" .
+        "{{end elem=\"tab\"}}\n" .
+        "{{tab}}\n" .
+        "Contenu de l'onglet 3\n" .
         "{{end elem=\"tab\"}}\n",
     'AB_templates_tabs_titles_label' => 'Titres des onglets',
     'AB_templates_tabs_titles_hint' => 'Séparer chaque titre par une virgule',
@@ -350,5 +349,4 @@ return [
     'EDIT_CONFIG_HINT_META_DESCRIPTION' => 'Description du site en une phrase, pour le référencement (Attention : ne pas mettre de "." (point))',
     'EDIT_CONFIG_HINT_META[ROBOTS]' => 'Empêcher les robots à indexer le wiki (noindex,nofollow,max-image-preview:none,noarchive,noimageindex)',
     'EDIT_CONFIG_GROUP_TEMPLATES' => 'Balises meta pour l\'indexation web', // idéalement 'Mise en forme' mais templates est pour le moment uniquement utilisé pour meta
-
 ];

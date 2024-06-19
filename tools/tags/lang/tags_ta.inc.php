@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TAGS_TAGS' => 'மோட்ச் க்ளெச்',
     'TAGS_ACTION_ADMINTAGS' => 'செயல் {{admintags ...}}',
@@ -21,7 +22,7 @@ return [
     'TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS' => 'Voir tootes les பக்கங்கள் contenant ce mot cl & eacute;',
     'TAGS_ALERT_PAGE_ALREADY_MODIFIED' => 'Aleerte: cete page a & eacute; t & eacute; மோடிஃபி & ஈகூட்;',
     'TAGS_ANSWER_THIS_COMMENT' => 'ஆர் & ஈகூட்; பாண்ட்ரே & அக்ரேவ்; ce வர்ணனை',
-    'TAGS_DATE_FORMAT' => "லே என் & அக்ரேவ்; எச்: நான்: எச்",
+    'TAGS_DATE_FORMAT' => 'லே என் & அக்ரேவ்; எச்: நான்: எச்',
     'TAGS_WRITE_YOUR_COMMENT_HERE' => 'எக்ரைர் வோட்ரே வர்ணனை ஐசிஐ ...',
     'TAGS_ADD_YOUR_COMMENT' => 'அசூட்டர் வோட்ரே வர்ணனை',
     'TAGS_ACTION_FILTERTAGS' => 'செயல் {{filterTags ...}}',

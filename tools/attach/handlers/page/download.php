@@ -1,15 +1,15 @@
 <?php
 
-# Execute le download des fichiers lier par l'action {{attach}}
-# Necessite le fichier actions/attach.php pour fonctionner
-# voir actions/attach.php ppour la documentation
+// Execute le download des fichiers lier par l'action {{attach}}
+// Necessite le fichier actions/attach.php pour fonctionner
+// voir actions/attach.php ppour la documentation
 
 //vérification de sécurité
 if (!WIKINI_VERSION) {
-    die("acc&egrave;s direct interdit");
+    exit('acc&egrave;s direct interdit');
 }
 if (!class_exists('attach')) {
-    include('tools/attach/libs/attach.lib.php');
+    include 'tools/attach/libs/attach.lib.php';
 }
 $att = new attach($this);
 $att->doDownload();

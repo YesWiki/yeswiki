@@ -47,13 +47,14 @@ class AssetsManager
         if (!isset($GLOBALS['css'])) {
             $GLOBALS['css'] = '';
         }
-        if (!empty($style) && !strpos($GLOBALS['css'], '<style>'."\n".$style.'</style>')) {
-            $GLOBALS['css'] .= '  <style>'."\n".$style.'</style>'."\n";
+        if (!empty($style) && !strpos($GLOBALS['css'], '<style>' . "\n" . $style . '</style>')) {
+            $GLOBALS['css'] .= '  <style>' . "\n" . $style . '</style>' . "\n";
         }
+
         return;
     }
 
-    public function AddCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = "")
+    public function AddCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = '')
     {
         if (!isset($GLOBALS['css'])) {
             $GLOBALS['css'] = '';
@@ -64,26 +65,28 @@ class AssetsManager
         if ($code && !strpos($GLOBALS['css'], $code)) {
             $GLOBALS['css'] .= $code;
         }
+
         return;
     }
 
     // this one can be used to directly include a css file within HTML with "echo $this->LinkCSSFile()"
     // so we can better control the order of inclusion
-    public function LinkCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = "")
+    public function LinkCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = '')
     {
         $file = $this->mapFilePath($file);
-        $isUrl = strpos($file, "http://") === 0 || strpos($file, "https://") === 0;
+        $isUrl = strpos($file, 'http://') === 0 || strpos($file, 'https://') === 0;
 
         if ($isUrl || !empty($file) && file_exists($file)) {
             $href = $isUrl ? $file : "{$this->wiki->getBaseUrl()}/{$file}";
             $revision = $this->wiki->GetConfigValue('yeswiki_release', null);
+
             return <<<HTML
                 $conditionstart
                 <link rel="stylesheet" href="{$href}?v={$revision}" $attrs>
                 $conditionend
             HTML;
         } else {
-            return "";
+            return '';
         }
     }
 
@@ -92,9 +95,10 @@ class AssetsManager
         if (!isset($GLOBALS['js'])) {
             $GLOBALS['js'] = '';
         }
-        if (!empty($script) && !strpos($GLOBALS['js'], '<script>'."\n".$script.'</script>')) {
-            $GLOBALS['js'] .= '  <script>'."\n".$script.'</script>'."\n";
+        if (!empty($script) && !strpos($GLOBALS['js'], '<script>' . "\n" . $script . '</script>')) {
+            $GLOBALS['js'] .= '  <script>' . "\n" . $script . '</script>' . "\n";
         }
+
         return;
     }
 
@@ -105,8 +109,8 @@ class AssetsManager
         }
 
         $revision = $this->wiki->GetConfigValue('yeswiki_release', null);
-        $initChar =  (strpos($file, '?') !== false) ? '&' : '?';
-        $rev = ($revision) ? $initChar.'v='.$revision : '';
+        $initChar = (strpos($file, '?') !== false) ? '&' : '?';
+        $rev = ($revision) ? $initChar . 'v=' . $revision : '';
 
         $file = $this->mapFilePath($file);
 
@@ -115,25 +119,26 @@ class AssetsManager
             $code = "<script src='{$this->wiki->getBaseUrl()}/$file$rev'";
             if (!str_contains($GLOBALS['js'], $code) || $first) {
                 if (!$first) {
-                    $code .= " defer";
+                    $code .= ' defer';
                 }
                 if ($module) {
                     $code .= " type='module'";
                 }
-                $code .= '></script>'."\n";
+                $code .= '></script>' . "\n";
                 if ($first) {
                     $GLOBALS['js'] = $code . $GLOBALS['js'];
                 } else {
                     $GLOBALS['js'] .= $code;
                 }
             }
-        } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {
+        } elseif (strpos($file, 'http://') === 0 || strpos($file, 'https://') === 0) {
             // include external files
             $code = "<script defer src='$file.$rev'></script>";
             if (!str_contains($GLOBALS['js'], $code)) {
-                $GLOBALS['js'] .= $code."\n";
+                $GLOBALS['js'] .= $code . "\n";
             }
         }
+
         return;
     }
 

@@ -1,9 +1,9 @@
 <?php
 
-use YesWiki\Core\YesWikiAction;
 use YesWiki\Bazar\Controller\EntryController;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\CSVManager;
+use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\YesWikiAction;
 
 class BazarImportAction extends YesWikiAction
 {
@@ -13,25 +13,24 @@ class BazarImportAction extends YesWikiAction
 
     public function formatArguments($arg)
     {
-        $id = (!empty($_REQUEST['id'])) ? $_REQUEST['id'] : ($_REQUEST['id_typeannonce'] ?? ($arg['id'] ?? '')) ;
+        $id = (!empty($_REQUEST['id'])) ? $_REQUEST['id'] : ($_REQUEST['id_typeannonce'] ?? ($arg['id'] ?? ''));
 
         //on transforme en entier, pour eviter des attaques
         $id = (int)preg_replace('/[^\d]+/', '', $id);
 
-        return([
-                'id' =>  $id,
-                'mode' => (isset($_POST['submit_file']) && !empty($_FILES['fileimport']['name'])) ? 'submitfile' :
-                    (isset($_POST['importfiche']) ? 'importentries' : 'default'),
-                'importentries' => $_POST['importfiche'] ?? null,
-                'filesData' => $_FILES['fileimport'] ?? null,
-                'bazar-import-option-detect-columns-on-headers' =>
-                    !$this->formatBoolean($_REQUEST, false, 'bazar-import-option-not-detect-columns-on-headers'),
-                'params' => array_merge(
-                    [BAZ_VARIABLE_VOIR => BAZ_VOIR_IMPORTER],
-                    isset($_GET['debug']) ? ['debug' => 'yes'] : []
-                ),
-                'debug' => ($this->wiki->GetConfigValue('debug') == 'yes'),
-            ]);
+        return [
+            'id' => $id,
+            'mode' => (isset($_POST['submit_file']) && !empty($_FILES['fileimport']['name'])) ? 'submitfile' :
+                (isset($_POST['importfiche']) ? 'importentries' : 'default'),
+            'importentries' => $_POST['importfiche'] ?? null,
+            'filesData' => $_FILES['fileimport'] ?? null,
+            'bazar-import-option-detect-columns-on-headers' => !$this->formatBoolean($_REQUEST, false, 'bazar-import-option-not-detect-columns-on-headers'),
+            'params' => array_merge(
+                [BAZ_VARIABLE_VOIR => BAZ_VOIR_IMPORTER],
+                isset($_GET['debug']) ? ['debug' => 'yes'] : []
+            ),
+            'debug' => ($this->wiki->GetConfigValue('debug') == 'yes'),
+        ];
     }
 
     public function run()
@@ -64,6 +63,7 @@ class BazarImportAction extends YesWikiAction
                     $extracted = array_map(function ($extract) {
                         $extract['displayData'] = $this->entryController->view($extract['entry'], '', 0);
                         $extract['base64'] = base64_encode(serialize($extract['entry']));
+
                         return $extract;
                     }, $extracted);
                 }
@@ -76,7 +76,7 @@ class BazarImportAction extends YesWikiAction
             case 'default':
             default:
                 // get csv_template
-                $csv_template = $this->CSVManager->getCSVfromFormId($this->arguments['id'], null, true) ;
+                $csv_template = $this->CSVManager->getCSVfromFormId($this->arguments['id'], null, true);
                 break;
         }
 
@@ -90,7 +90,7 @@ class BazarImportAction extends YesWikiAction
             'extracted' => $extracted ?? null,
             'mode' => $this->arguments['mode'],
             'optionNotDetectColumnsOnHeadersChecked' => !$this->arguments['bazar-import-option-detect-columns-on-headers'],
-            'debug' => $this->arguments['debug']
+            'debug' => $this->arguments['debug'],
         ]);
     }
 }

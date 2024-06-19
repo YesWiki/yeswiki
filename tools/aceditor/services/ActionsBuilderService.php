@@ -49,7 +49,6 @@ class ActionsBuilderService
                     $key = $filename;
                 }
             } else {
-
                 $key = $filename;
             }
             $data['action_groups'][$key] = Yaml::parseFile($filePath);
@@ -81,19 +80,19 @@ class ActionsBuilderService
         $filtered_files = preg_grep('/^(?!fiche)/', $bazarlisteCustomTemplates);
         foreach ($filtered_files as $file) {
             $name = str_replace(['.tpl.html', '.twig'], '', $file);
-            $translation = _t("AB_".$name."_label");
+            $translation = _t('AB_' . $name . '_label');
             // if no translation found, write "Template custom"
-            if ($translation == "AB_".$name."_label") {
-                $translation = _t('ACTION_BUILDER_TEMPLATE_CUSTOM').' '.$name;
+            if ($translation == 'AB_' . $name . '_label') {
+                $translation = _t('ACTION_BUILDER_TEMPLATE_CUSTOM') . ' ' . $name;
             } else {
-                $translation = "_t(AB_".$name."_label)";
+                $translation = '_t(AB_' . $name . '_label)';
             }
             if (empty($data['action_groups']['bazarliste']['actions'][$name])) {
                 $data['action_groups']['bazarliste']['actions'][$name] = [
-                    "label" => $translation,
-                    "properties" => [
-                        "template" => ["value" => $file]
-                    ]
+                    'label' => $translation,
+                    'properties' => [
+                        'template' => ['value' => $file],
+                    ],
                 ];
             }
         }
@@ -115,7 +114,7 @@ class ActionsBuilderService
                 $extraComponents[$filename] = "../../../$pluginName/javascripts/components/actions-builder/$filename.js";
             }
         }
-        $files = glob("custom/javascripts/components/actions-builder/*.js");
+        $files = glob('custom/javascripts/components/actions-builder/*.js');
         foreach ($files as $filePath) {
             $filename = pathinfo($filePath)['filename'];
             $extraComponents[$filename] = "../../../../custom/javascripts/components/actions-builder/$filename.js";
@@ -124,6 +123,7 @@ class ActionsBuilderService
             $data['extraComponents'] = $extraComponents;
         }
         $this->data = $data;
+
         return $this->data;
     }
 }

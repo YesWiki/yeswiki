@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     // 'TAGS_TAGS' => 'Mots clés',
     'TAGS_ACTION_ADMINTAGS' => 'Acció {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'l\'acció és exclusiva de l\'administrador',
@@ -124,5 +123,4 @@ return [
     // for edit config
     'EDIT_CONFIG_HINT_HIDE_KEYWORDS' => 'Amaga les paraules clau a la part inferior de les pàgines (true o false)',
     'EDIT_CONFIG_GROUP_TAGS' => 'Paraules clau (tags)',
-
 ];

@@ -21,8 +21,8 @@ class ImportService
 
     /**
      * extract baseUrl and rootPage for external url
-     * TODO check if this function should be in UrlService after refactor
-     * @param string $inputUrl
+     * TODO check if this function should be in UrlService after refactor.
+     *
      * @return array [$baseUrl,$rootPage,$rewriteModeEnabled]
      */
     public function extractBaseUrlAndRootPage(string $inputUrl): array
@@ -33,44 +33,47 @@ class ImportService
             return [];
         }
         list($baseUrl, $rewriteModeEnabled, $tag) = $extraction;
-        $redirectedRootUrl = $this->retrieveUrlAfterRedirect($baseUrl.'/');
+        $redirectedRootUrl = $this->retrieveUrlAfterRedirect($baseUrl . '/');
         $extraction = $this->extractBaseUrlModeAndTag($redirectedRootUrl);
         if (empty($extraction)) {
             return [];
         }
         list($baseUrl, $rewriteModeEnabled, $rootPage) = $extraction;
-        return [$baseUrl,$rootPage,$rewriteModeEnabled];
+
+        return [$baseUrl, $rootPage, $rewriteModeEnabled];
     }
 
     /**
      * extract baseUrl, rewriteModeEnabled and tag
-     * TODO check if this function should be in UrlService after refactor
+     * TODO check if this function should be in UrlService after refactor.
+     *
      * @param string $inputUrl
+     *
      * @return array [$baseUrl, $rewriteModeEnabled, $tag]
      */
     private function extractBaseUrlModeAndTag($inputUrl): array
     {
-        if (preg_match('/wiki=('.WN_CAMEL_CASE_EVOLVED.')/u', $inputUrl, $matches)) {
+        if (preg_match('/wiki=(' . WN_CAMEL_CASE_EVOLVED . ')/u', $inputUrl, $matches)) {
             $tag = $matches[1];
-            if (preg_match('/(.*)\/wakka.php\?.*wiki='.$tag.'/u', $inputUrl, $matches)) {
+            if (preg_match('/(.*)\/wakka.php\?.*wiki=' . $tag . '/u', $inputUrl, $matches)) {
                 $rewriteModeEnabled = false;
                 $baseUrl = $matches[1];
-            } elseif (preg_match('/(.*)\/\?.*wiki='.$tag.'/u', $inputUrl, $matches)) {
+            } elseif (preg_match('/(.*)\/\?.*wiki=' . $tag . '/u', $inputUrl, $matches)) {
                 $rewriteModeEnabled = false;
                 $baseUrl = $matches[1];
-            } elseif (preg_match('/(.*)\/[^\/]*wiki='.$tag.'/u', $inputUrl, $matches)) {
+            } elseif (preg_match('/(.*)\/[^\/]*wiki=' . $tag . '/u', $inputUrl, $matches)) {
                 $rewriteModeEnabled = true;
                 $baseUrl = $matches[1];
             }
-        } elseif (preg_match('/(.*)\/wakka.php\?('.WN_CAMEL_CASE_EVOLVED.')/u', $inputUrl, $matches)) {
+        } elseif (preg_match('/(.*)\/wakka.php\?(' . WN_CAMEL_CASE_EVOLVED . ')/u', $inputUrl, $matches)) {
             $rewriteModeEnabled = false;
             $tag = $matches[2];
             $baseUrl = $matches[1];
-        } elseif (preg_match('/(.*)\/\?('.WN_CAMEL_CASE_EVOLVED.')/u', $inputUrl, $matches)) {
+        } elseif (preg_match('/(.*)\/\?(' . WN_CAMEL_CASE_EVOLVED . ')/u', $inputUrl, $matches)) {
             $rewriteModeEnabled = false;
             $tag = $matches[2];
             $baseUrl = $matches[1];
-        } elseif (preg_match('/(https?:\/\/(?:localhost|[0-9]{3}:[0-9]{3}:[0-9]{3}:[0-9]{3}|(?:[^\/]*\.[a-z]{3})).*)\/('.WN_CAMEL_CASE_EVOLVED.')(?:\/)?$/u', $inputUrl, $matches)) {
+        } elseif (preg_match('/(https?:\/\/(?:localhost|[0-9]{3}:[0-9]{3}:[0-9]{3}:[0-9]{3}|(?:[^\/]*\.[a-z]{3})).*)\/(' . WN_CAMEL_CASE_EVOLVED . ')(?:\/)?$/u', $inputUrl, $matches)) {
             $rewriteModeEnabled = true;
             $tag = $matches[2];
             $baseUrl = $matches[1];
@@ -78,14 +81,14 @@ class ImportService
         if (empty($baseUrl) || is_null($rewriteModeEnabled) || empty($tag)) {
             return [];
         } else {
-            return [$baseUrl,$rewriteModeEnabled,$tag];
+            return [$baseUrl, $rewriteModeEnabled, $tag];
         }
     }
 
     /**
      * retrieve url after redirection
-     * TODO check if this function should be in UrlService after refactor
-     * @param string $inputUrl
+     * TODO check if this function should be in UrlService after refactor.
+     *
      * @return string $outputUrl
      */
     private function retrieveUrlAfterRedirect(string $inputUrl): string
@@ -101,7 +104,7 @@ class ImportService
             : (
                 !empty($headers['location'])
                 ? $headers['location']
-                : ""
+                : ''
             );
         if (!empty($location)) {
             if (is_array($location)) {
@@ -110,12 +113,15 @@ class ImportService
                 $outputUrl = $location;
             }
         }
+
         return $outputUrl;
     }
 
     /**
      * @param string $url
+     *
      * @return string
+     *
      * @throws Exception
      * @throws CurlTimeoutException
      */
@@ -144,7 +150,7 @@ class ImportService
         unlink($destPathHeaders);
         if ($error) {
             $errorStr = curl_strerror($error);
-            if (in_array($error, [12,28])) {
+            if (in_array($error, [12, 28])) {
                 throw new CurlTimeoutException("Error getting content from $url ($errorStr)");
             } else {
                 throw new Exception("Error getting content from $url ($errorStr)");
@@ -153,17 +159,17 @@ class ImportService
         $intermediate = empty($content) ? [] : array_filter(array_map('trim', explode("\n", $content)));
         $output = [];
         foreach ($intermediate as $header) {
-            if (strpos($header, ":") === false) {
+            if (strpos($header, ':') === false) {
                 $output[] = $header;
             } else {
-                list($header, $value) = explode(":", $header, 2);
+                list($header, $value) = explode(':', $header, 2);
                 $value = trim($value);
                 if (!isset($output[$header])) {
                     $output[$header] = $value;
                 } elseif (is_string($output[$header])) {
                     $output[$header] = [
                         $output[$header],
-                        $value
+                        $value,
                     ];
                 } elseif (is_array($output[$header])) {
                     $output[$header][] = $value;
@@ -172,6 +178,7 @@ class ImportService
                 }
             }
         }
+
         return $output;
     }
 }

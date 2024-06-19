@@ -21,9 +21,9 @@ class CleanBase64 extends YesWikiMigration
             'WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type" ' .
             'ORDER BY resource ASC';
 
-        $sql = "SELECT * FROM " . $this->dbService->prefixTable('pages') . " " .
+        $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages') . ' ' .
             "WHERE body LIKE '{$anchor}' " .
-            "AND tag IN (" . $select_entries_filter . ")";
+            'AND tag IN (' . $select_entries_filter . ')';
 
         $pages = $this->dbService->loadAll($sql);
 
@@ -67,6 +67,7 @@ class CleanBase64 extends YesWikiMigration
                 "AND time = '{$this->dbService->escape($page['time'])}'"
             );
         }
+
         return $updated;
     }
 }

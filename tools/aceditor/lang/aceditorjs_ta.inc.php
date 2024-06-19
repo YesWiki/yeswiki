@@ -1,4 +1,5 @@
 <?php
+
 return [
     'ACTION_BUILDER_COPY' => 'நகல்',
     'ACTION_BUILDER_PREVIEW' => 'கண்ணோட்டம் (சொடுக்க முடியாதது)',

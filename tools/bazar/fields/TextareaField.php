@@ -44,26 +44,26 @@ class TextareaField extends BazarField
 
     protected function renderInput($entry)
     {
-        $output = "";
+        $output = '';
         $wiki = $this->getWiki();
         // If HTML syntax, load editor's JS and CSS
         if ($this->syntax === self::SYNTAX_HTML) {
             $wiki->AddJavascriptFile('tools/bazar/libs/vendor/summernote/summernote.min.js');
             $wiki->AddCSSFile('tools/bazar/libs/vendor/summernote/summernote.css');
 
-            $langKey = strtolower($GLOBALS['prefered_language']).'-'.strtoupper($GLOBALS['prefered_language']);
-            $langFile = 'tools/bazar/libs/vendor/summernote/lang/summernote-'.$langKey.'.js';
+            $langKey = strtolower($GLOBALS['prefered_language']) . '-' . strtoupper($GLOBALS['prefered_language']);
+            $langFile = 'tools/bazar/libs/vendor/summernote/lang/summernote-' . $langKey . '.js';
             if (file_exists($langFile)) {
                 $wiki->AddJavascriptFile($langFile);
-                $langOptions = 'lang: "'.$langKey.'",';
+                $langOptions = 'lang: "' . $langKey . '",';
             } else {
                 $langOptions = '';
             }
 
             $script = '$(document).ready(function() {
               $(".summernote").summernote({
-                '.$langOptions.'
-                height: '. $this->numRows * 30 .',    // set editor height
+                ' . $langOptions . '
+                height: ' . $this->numRows * 30 . ',    // set editor height
                 minHeight: 100, // set minimum height of editor
                 maxHeight: 350,                // set maximum height of editor
                 focus: false,                   // set focus to editable area after initializing summernote
@@ -99,7 +99,8 @@ class TextareaField extends BazarField
         if ($tempTag) {
             $tempTag .= '_' . bin2hex(random_bytes(10));
         }
-        return $output . $this->render("@bazar/inputs/textarea.twig", [
+
+        return $output . $this->render('@bazar/inputs/textarea.twig', [
             'value' => $this->getValue($entry),
             'entryId' => $entry['id_fiche'] ?? null,
             'tempTag' => $tempTag,
@@ -128,7 +129,7 @@ class TextareaField extends BazarField
     {
         $value = $this->getValue($entry);
         if (!$value) {
-            return "";
+            return '';
         }
 
         switch ($this->syntax) {
@@ -162,8 +163,8 @@ class TextareaField extends BazarField
                 break;
         }
 
-        return $this->render("@bazar/fields/textarea.twig", [
-            'value' => $value
+        return $this->render('@bazar/fields/textarea.twig', [
+            'value' => $value,
         ]);
     }
 
@@ -186,7 +187,7 @@ class TextareaField extends BazarField
 
         if (preg_match_all("/({{attach[^}]*file=\")(({$temp_tag_for_entry_creation}_[A-Fa-f0-9]+)\/([^\"]*))(\"[^}]*}})/m", $text, $matches)) {
             if (!class_exists('attach')) {
-                include('tools/attach/libs/attach.lib.php');
+                include 'tools/attach/libs/attach.lib.php';
             }
             $entryCreationTime = $this->getEntryCreationTime($entry);
             foreach ($matches[0] as $key => $value) {
@@ -218,14 +219,13 @@ class TextareaField extends BazarField
                     $dirRealPath . DIRECTORY_SEPARATOR . basename($previousFileName),
                     $dirRealPath . DIRECTORY_SEPARATOR . basename($newFileName)
                 )) {
-                    $text =  str_replace($matches[0][$key], $matches[1][$key].$matches[4][$key].$matches[5][$key], $text);
+                    $text = str_replace($matches[0][$key], $matches[1][$key] . $matches[4][$key] . $matches[5][$key], $text);
                 }
                 unset($attach);
                 $wiki->tag = $previousTag;
                 $wiki->page = $previousPage;
             }
         }
-
 
         return $text;
     }
@@ -236,7 +236,7 @@ class TextareaField extends BazarField
         $regExpSearch = '(<img(?>\s*style="[^"]*")?\s*)src="data:image\/(gif|jpeg|png|jpg|svg|webp);base64,([^"]*)"\s*[^>]*(?>(?<=data-filename=")[^"]*")?[^>]*>';
         if (preg_match_all("/$regExpSearch/", $text, $matches)) {
             if (!class_exists('attach')) {
-                include('tools/attach/libs/attach.lib.php');
+                include 'tools/attach/libs/attach.lib.php';
             }
             $entryCreationTime = $this->getEntryCreationTime($entry);
             $previousTag = $wiki->tag;
@@ -251,7 +251,7 @@ class TextareaField extends BazarField
                 if (preg_match('/^(.*)(\.[A-Za-z0-9]+)$/m', $fileName, $matchesForFile)) {
                     $fileNameWithoutExtension = $matchesForFile[1];
                     $fileExtension = $matchesForFile[2];
-                    $fileName = $this->sanitizeFileName($fileNameWithoutExtension).$fileExtension;
+                    $fileName = $this->sanitizeFileName($fileNameWithoutExtension) . $fileExtension;
                 } else {
                     $fileName = $this->sanitizeFileName($fileName);
                 }
@@ -284,6 +284,7 @@ class TextareaField extends BazarField
             $wiki->tag = $previousTag;
             $wiki->page = $previousPage;
         }
+
         return $text;
     }
 
@@ -298,12 +299,13 @@ class TextareaField extends BazarField
                 ? (new DateTime())->setTimezone(new DateTimeZone($dbTz))->format($sqlTimeFormat)
                 : date($sqlTimeFormat)
             );
+
         return $entryCreationTime;
     }
 
     /**
-     * sanitize file name
-     * @param string $inputString
+     * sanitize file name.
+     *
      * @return string $outputString
      */
     private function sanitizeFileName(string $inputString): string
@@ -312,17 +314,18 @@ class TextareaField extends BazarField
     }
 
     /**
-     * sanitize html to prevent xss
+     * sanitize html to prevent xss.
      */
     private function sanitizeHTMLInWikiCode(string $value)
     {
-        $preformattedDirtyHTML = str_replace(['@@','""'], ['\\@\\@\\','@@'], $value);
+        $preformattedDirtyHTML = str_replace(['@@', '""'], ['\\@\\@\\', '@@'], $value);
         $preformattedCleanHTML = $this->getService(HtmlPurifierService::class)->cleanHTML($preformattedDirtyHTML);
-        return str_replace(['""','@@','\\@\\@\\'], ['\'\'','""','@@'], $preformattedCleanHTML);
+
+        return str_replace(['""', '@@', '\\@\\@\\'], ['\'\'', '""', '@@'], $preformattedCleanHTML);
     }
 
     /**
-     * sanitize html to prevent xss
+     * sanitize html to prevent xss.
      */
     private function sanitizeHTML(string $value)
     {

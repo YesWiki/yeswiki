@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     // actions/syndication.php
     'SYNDICATION_ACTION_SYNDICATION' => 'Ação {{syndication ...}}',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'você deve necessariamente introduzir o parâmetro "url" para distribuir um feed RSS',
@@ -18,7 +17,7 @@ return [
     'SYNDICATION_ACTION_TWITTERSEARCH' => 'Ação {{twittersearch ...}}',
     'SYNDICATION_PARAM_QUERY_REQUIRED' => 'parâmetro "query" faltando, é obrigatório para especificar sua pesquisa',
     'SYNDICATION_TEMPLATE_DOESNT_EXISTS' => 'O arquivo template',
-    'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'não existe, o arquivo template padrão é usado.'
+    'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'não existe, o arquivo template padrão é usado.',
 
     // templates/accordeon.tpl.html
     // 'SYNDICATION_SOURCE' => 'source',

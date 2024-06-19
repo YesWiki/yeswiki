@@ -22,19 +22,19 @@ class UpdateAction extends YesWikiAction
         $updateService = $this->getService(AutoUpdateService::class);
 
         if (!$updateService->initRepository($this->arguments['version'])) {
-            return $this->render("@autoupdate/norepo.twig", []);
+            return $this->render('@autoupdate/norepo.twig', []);
         }
 
         $action = $securityController->filterInput(INPUT_GET, 'action', FILTER_DEFAULT, true);
         if (empty($action) || !$this->wiki->UserIsAdmin() || $this->isWikiHibernated()) {
             // Base action, display current status of software, extension and themes
-            return $this->render("@autoupdate/status.twig", [
+            return $this->render('@autoupdate/status.twig', [
                 'isAdmin' => $this->wiki->UserIsAdmin(),
                 'isHibernated' => $this->isWikiHibernated(),
                 'core' => $updateService->repository->getCorePackage(),
                 'themes' => $updateService->repository->getThemesPackages(),
                 'tools' => $updateService->repository->getToolsPackages(),
-                'phpVersion' => PHP_VERSION
+                'phpVersion' => PHP_VERSION,
             ]);
         }
 
@@ -51,8 +51,8 @@ class UpdateAction extends YesWikiAction
                 // Ensure a backup is made before the upgrade (or force upgrade)
                 $forcedUpdateToken = $securityController->filterInput(INPUT_GET, 'forcedUpdateToken', FILTER_DEFAULT, true);
                 if (!$this->getService(ArchiveService::class)->hasValidatedBackup($forcedUpdateToken)) {
-                    return $this->render("@core/preupdate-backup.twig", [
-                        'packageName' => $packageName
+                    return $this->render('@core/preupdate-backup.twig', [
+                        'packageName' => $packageName,
                     ]);
                 }
 
@@ -63,7 +63,7 @@ class UpdateAction extends YesWikiAction
                 $this->wiki->redirect($this->wiki->href('', '', [
                     'action' => 'post_install',
                     'messages' => json_encode($messages->toArray()),
-                    'previous_version' => YESWIKI_VERSION
+                    'previous_version' => YESWIKI_VERSION,
                 ], false));
                 break;
             case 'post_install':
@@ -88,9 +88,9 @@ class UpdateAction extends YesWikiAction
         }
 
         // Display result of action, with a list of success/error messages
-        return $this->wiki->render("@autoupdate/update-result.twig", [
+        return $this->wiki->render('@autoupdate/update-result.twig', [
             'messages' => $messages,
-            'action' => $action
+            'action' => $action,
         ]);
     }
 }

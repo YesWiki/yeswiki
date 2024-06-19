@@ -5,9 +5,9 @@ define('BAZ_CHEMIN', 'tools/bazar/');
 define('BAZ_CHEMIN_UPLOAD', 'files/');
 
 //principales fonctions de bazar
-require_once BAZ_CHEMIN.'libs/bazar.fonct.php';
-require_once BAZ_CHEMIN.'libs/bazar.fonct.misc.php';
-require_once BAZ_CHEMIN.'libs/bazar.fonct.retrocompatibility.php';
+require_once BAZ_CHEMIN . 'libs/bazar.fonct.php';
+require_once BAZ_CHEMIN . 'libs/bazar.fonct.misc.php';
+require_once BAZ_CHEMIN . 'libs/bazar.fonct.retrocompatibility.php';
 
 // +------------------------------------------------------------------------------------------------------+
 // |                             LES CONSTANTES DES ACTIONS DE BAZAR                                      |

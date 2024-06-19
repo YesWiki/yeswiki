@@ -3,8 +3,8 @@
 use YesWiki\Core\Controller\PageController;
 use YesWiki\Tags\Service\TagsManager;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    exit('acc&egrave;s direct interdit');
 }
 
 $tagsManager = $this->services->get(TagsManager::class);
@@ -17,8 +17,8 @@ if (isset($_GET['jsonp_callback'])) {
         $tag = $this->GetPageTag();
 
         $this->services->get(PageController::class)->delete($tag);
-        echo $_GET['jsonp_callback']."(".json_encode(array("reponse" => mb_convert_encoding("succes", 'UTF-8', 'ISO-8859-1'))).")";
+        echo $_GET['jsonp_callback'] . '(' . json_encode(['reponse' => mb_convert_encoding('succes', 'UTF-8', 'ISO-8859-1')]) . ')';
     } else {
-        echo $_GET['jsonp_callback']."(".json_encode(array("reponse" => mb_convert_encoding("interdit", 'UTF-8', 'ISO-8859-1'))).")";
+        echo $_GET['jsonp_callback'] . '(' . json_encode(['reponse' => mb_convert_encoding('interdit', 'UTF-8', 'ISO-8859-1')]) . ')';
     }
 }

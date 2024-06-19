@@ -6,10 +6,10 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
 {
     public function run()
     {
-        foreach ([['pages', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT'], ['links', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT'], ['nature', 'bn_id_nature', 'int(10) UNSIGNED NOT NULL AUTO_INCREMENT'], ['referrers', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT'], ['triples', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT'],] as $data) {
+        foreach ([['pages', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT'], ['links', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT'], ['nature', 'bn_id_nature', 'int(10) UNSIGNED NOT NULL AUTO_INCREMENT'], ['referrers', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT'], ['triples', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT']] as $data) {
             $this->checkThenUpdateColumnAutoincrement($data[0], $data[1], $data[2]);
         }
-        foreach ([['pages', 'id', ['id']], ['links', 'id', ['id']], ['nature', 'bn_id_nature', ['bn_id_nature']], ['referrers', 'id', ['id']], ['triples', 'id', ['id']], ['users', 'name', ['name']], ['acls', 'page_tag', ['page_tag', 'privilege']], ['acls', 'privilege', ['page_tag', 'privilege']],] as $data) {
+        foreach ([['pages', 'id', ['id']], ['links', 'id', ['id']], ['nature', 'bn_id_nature', ['bn_id_nature']], ['referrers', 'id', ['id']], ['triples', 'id', ['id']], ['users', 'name', ['name']], ['acls', 'page_tag', ['page_tag', 'privilege']], ['acls', 'privilege', ['page_tag', 'privilege']]] as $data) {
             $this->checkThenUpdateColumnPrimary($data[0], $data[1], $data[2]);
         }
     }
@@ -50,7 +50,7 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
     private function checkThenUpdateColumnPrimary(string $tableName, string $columnName, array $newKeys)
     {
         $data = $this->getColumnInfo($tableName, $columnName);
-        if (empty($data['Key']) || $data['Key'] !== "PRI") {
+        if (empty($data['Key']) || $data['Key'] !== 'PRI') {
             $newKeysFormatted = implode(
                 ',',
                 array_map(
@@ -72,7 +72,7 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
                 $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable($tableName)} ADD PRIMARY KEY($newKeysFormatted);");
             }
             $data = $this->getColumnInfo($tableName, $columnName);
-            if (empty($data['Key']) || $data['Key'] !== "PRI") {
+            if (empty($data['Key']) || $data['Key'] !== 'PRI') {
                 throw new Exception("tables `$tableName`, column `$columnName` key not updated !", 1);
             }
         }
@@ -93,6 +93,7 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
         }
         $data = mysqli_fetch_assoc($result);
         mysqli_free_result($result);
+
         return $data;
     }
 }

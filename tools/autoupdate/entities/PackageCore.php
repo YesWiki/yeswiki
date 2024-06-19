@@ -17,7 +17,7 @@ class PackageCore extends Package
         'themes',
         'robots.txt',
         'wakka.config.php',
-        'private'
+        'private',
     ];
 
     public const FILES_TO_ADD_TO_IGNORED_FOLDERS = [
@@ -43,7 +43,7 @@ class PackageCore extends Package
     {
         parent::__construct($release, $address, $desc, $doc, $minimalPhpVersion);
         $this->installed = true;
-        $this->localPath = realpath(dirname($_SERVER["SCRIPT_FILENAME"]));
+        $this->localPath = realpath(dirname($_SERVER['SCRIPT_FILENAME']));
         $this->name = $this::CORE_NAME;
         $this->updateAvailable = $this->updateAvailable();
     }
@@ -69,8 +69,9 @@ class PackageCore extends Package
                 'textAction' => $textAction,
                 'NEEDEDPHPVERSION' => $neededPHPVersion,
                 'CURRENTPHPVERSION' => PHP_VERSION,
-                'hint' => _t('AU_PHP_TOO_LOW_HINT', ['textAction' => $textAction])
+                'hint' => _t('AU_PHP_TOO_LOW_HINT', ['textAction' => $textAction]),
             ]));
+
             return false;
         }
 
@@ -101,6 +102,7 @@ class PackageCore extends Package
                 mkdir($desPath . '/' . $dirName);
             }
         }
+
         return true;
     }
 
@@ -108,7 +110,7 @@ class PackageCore extends Package
     {
         $src = $this->extractionPath . '/tools';
         $desPath = $this->localPath . '/tools';
-        $file2ignore = array('.', '..');
+        $file2ignore = ['.', '..'];
         if ($res = opendir($src)) {
             while (($file = readdir($res)) !== false) {
                 // Ignore les fichiers de la liste
@@ -118,6 +120,7 @@ class PackageCore extends Package
             }
             closedir($res);
         }
+
         return true;
     }
 
@@ -127,6 +130,7 @@ class PackageCore extends Package
         $configuration->load();
         $configuration['yeswiki_release'] = $this->release;
         $configuration['yeswiki_version'] = $this->requestedVersion();
+
         return $configuration->write();
     }
 
@@ -144,6 +148,7 @@ class PackageCore extends Package
         if (!empty($configuration['yeswiki_version'])) {
             $version = $configuration['yeswiki_version'];
         }
+
         return strtolower($version);
     }
 
@@ -160,6 +165,7 @@ class PackageCore extends Package
         if (isset($requestedVersion) && $requestedVersion != '') {
             $version = $requestedVersion;
         }
+
         return strtolower($version);
     }
 
@@ -171,6 +177,7 @@ class PackageCore extends Package
         if ($localVersion != $requestedVersion) {
             $result = true;
         }
+
         return $result;
     }
 
@@ -188,6 +195,7 @@ class PackageCore extends Package
             $release = $configuration['yeswiki_release'];
         }
         $release = new Release($release);
+
         return $release;
     }
 
@@ -196,6 +204,7 @@ class PackageCore extends Package
         if ($this->release->compare($this->localRelease()) > 0) {
             return true;
         }
+
         return false;
     }
 }

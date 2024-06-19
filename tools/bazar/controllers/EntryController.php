@@ -5,8 +5,8 @@ namespace YesWiki\Bazar\Controller;
 use DateInterval;
 use DateTime;
 use Exception;
-use Throwable;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Throwable;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ImageField;
@@ -67,6 +67,7 @@ class EntryController extends YesWikiController
 
     /**
      * @param array $formsIds (empty = all)
+     *
      * @return string
      */
     public function selectForm(array $formsIds = [])
@@ -80,13 +81,13 @@ class EntryController extends YesWikiController
             $forms = $this->formManager->getMany($formsIds);
         }
 
-        return $this->render("@bazar/entries/select_form.twig", ['forms' => $forms]);
+        return $this->render('@bazar/entries/select_form.twig', ['forms' => $forms]);
     }
 
     /**
-     * @param string $entryId
-     * @param string|null $time choose only the entry's revision corresponding to time, null = latest revision
-     * @param bool $showFooter
+     * @param string      $entryId
+     * @param string|null $time                 choose only the entry's revision corresponding to time, null = latest revision
+     * @param bool        $showFooter
      * @param string|null $userNameForRendering userName used to render the entry, if empty uses the connected user
      */
     public function view($entryId, $time = '', $showFooter = true, ?string $userNameForRendering = null)
@@ -152,7 +153,7 @@ class EntryController extends YesWikiController
                     }
                 } else {
                     $renderedEntry = $this->render(
-                        "@templates/alert-message.twig",
+                        '@templates/alert-message.twig',
                         [
                             'type' => 'info',
                             'message' => str_replace('{{nb}}', $entry['id_typeannonce'], _t('BAZ_PAS_DE_FORM_AVEC_ID_DE_CETTE_FICHE')),
@@ -190,21 +191,22 @@ class EntryController extends YesWikiController
             $currentuser = $user['name'];
             $isUserFavorite = $this->favoritesManager->isUserFavorite($currentuser, $entryId);
         }
+
         return $this->render('@bazar/entries/view.twig', [
-            "form" => $form,
-            "entry" => $entry,
-            "entryId" => $entryId,
-            "owner" => $owner,
-            "message" => $message,
-            "showFooter" => $showFooter,
-            "currentuser" => $currentuser ?? null,
-            "isUserFavorite" => $isUserFavorite ?? false,
-            "canShow" => $this->wiki->GetPageTag() != $entry['id_fiche'], // hide if we are already in the show page
-            "canEdit" =>  !$this->securityController->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId),
-            "canDelete" => !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin($userNameForRendering) || $this->wiki->UserIsOwner($entryId)),
-            "isAdmin" => $this->wiki->UserIsAdmin($userNameForRendering),
-            "renderedEntry" => $renderedEntry,
-            "incomingUrl" => $_GET['incomingurl'] ?? getAbsoluteUrl()
+            'form' => $form,
+            'entry' => $entry,
+            'entryId' => $entryId,
+            'owner' => $owner,
+            'message' => $message,
+            'showFooter' => $showFooter,
+            'currentuser' => $currentuser ?? null,
+            'isUserFavorite' => $isUserFavorite ?? false,
+            'canShow' => $this->wiki->GetPageTag() != $entry['id_fiche'], // hide if we are already in the show page
+            'canEdit' => !$this->securityController->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId),
+            'canDelete' => !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin($userNameForRendering) || $this->wiki->UserIsOwner($entryId)),
+            'isAdmin' => $this->wiki->UserIsAdmin($userNameForRendering),
+            'renderedEntry' => $renderedEntry,
+            'incomingUrl' => $_GET['incomingurl'] ?? getAbsoluteUrl(),
         ]);
     }
 
@@ -247,7 +249,7 @@ class EntryController extends YesWikiController
                     $entry = $this->entryManager->create($formId, $_POST);
                     $errors = $this->eventDispatcher->yesWikiDispatch('entry.created', [
                         'id' => $entry['id_fiche'],
-                        'data' => $entry
+                        'data' => $entry,
                     ]);
                     // get the GET parameter 'incomingurl' for the incoming url
                     $redirectUrl = !empty($incomingUrl)
@@ -262,7 +264,7 @@ class EntryController extends YesWikiController
                                     'vue' => 'consulter',
                                     'action' => 'voir_fiche',
                                     'id_fiche' => $entry['id_fiche'],
-                                    'message' => 'ajout_ok'
+                                    'message' => 'ajout_ok',
                                 ],
                                 false
                             )
@@ -273,7 +275,7 @@ class EntryController extends YesWikiController
             } catch (UserFieldException $e) {
                 $error .= $this->render('@templates/alert-message.twig', [
                     'type' => 'warning',
-                    'message' => $e->getMessage()
+                    'message' => $e->getMessage(),
                 ]);
             }
         } else {
@@ -281,7 +283,8 @@ class EntryController extends YesWikiController
         }
 
         $renderedInputs = $this->getRenderedInputs($form);
-        return $this->render("@bazar/entries/form.twig", [
+
+        return $this->render('@bazar/entries/form.twig', [
             'form' => $form,
             'renderedInputs' => $renderedInputs,
             'showConditions' => $form['bn_condition'] !== '' && !isset($_POST['accept_condition']),
@@ -310,7 +313,7 @@ class EntryController extends YesWikiController
                 $entry = $this->entryManager->update($entryId, $_POST);
                 $errors = $this->eventDispatcher->yesWikiDispatch('entry.updated', [
                     'id' => $entry['id_fiche'],
-                    'data' => $entry
+                    'data' => $entry,
                 ]);
                 $redirectUrl = !empty($incomingUrl)
                     ? $incomingUrl
@@ -321,7 +324,7 @@ class EntryController extends YesWikiController
                             'vue' => 'consulter',
                             'action' => 'voir_fiche',
                             'id_fiche' => $entry['id_fiche'],
-                            'message' => 'modif_ok'
+                            'message' => 'modif_ok',
                         ], false)
                     );
                 header('Location: ' . $redirectUrl);
@@ -330,12 +333,13 @@ class EntryController extends YesWikiController
         } catch (UserFieldException $e) {
             $error .= $this->render('@templates/alert-message.twig', [
                 'type' => 'warning',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ]);
         }
 
         $renderedInputs = $this->getRenderedInputs($form, $entry);
-        return $this->render("@bazar/entries/form.twig", [
+
+        return $this->render('@bazar/entries/form.twig', [
             'form' => $form,
             'entryId' => $entryId,
             'renderedInputs' => $renderedInputs,
@@ -350,7 +354,6 @@ class EntryController extends YesWikiController
             'imageMediumHeight' => $this->config['image-medium-height'],
             'imageBigWidth' => $this->config['image-big-width'],
             'imageBigHeight' => $this->config['image-big-height'],
-
         ]);
     }
 
@@ -366,6 +369,7 @@ class EntryController extends YesWikiController
                         flash(_t('BAZ_FICHE_SUPPRIMEE') . " ($entryId)", 'success');
                         $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'], false));
                     }
+
                     return true;
                 }
             } catch (Throwable $th) {
@@ -375,6 +379,7 @@ class EntryController extends YesWikiController
                 }
                 throw new Exception($th->getMessage(), $th->getCode(), $th);
             }
+
             return false;
         } else {
             throw new Exception('Not deleted because not entry' . (is_scalar($entryId) ? ' (' . strval($entryId) . ')' : ''));
@@ -385,7 +390,7 @@ class EntryController extends YesWikiController
     {
         return $this->eventDispatcher->yesWikiDispatch('entry.deleted', [
             'id' => $entryId,
-            'data' => $entry
+            'data' => $entry,
         ]);
     }
 
@@ -397,21 +402,22 @@ class EntryController extends YesWikiController
                 $renderedFields[] = $field->renderInputIfPermitted($entry);
             }
         }
+
         return $renderedFields;
     }
-
 
     private function getCustomTemplatePath($entry): ?string
     {
         $templatePaths = [
             "@bazar/fiche-{$entry['id_typeannonce']}.tpl.html",
-            "@bazar/fiche-{$entry['id_typeannonce']}.twig"
+            "@bazar/fiche-{$entry['id_typeannonce']}.twig",
         ];
         foreach ($templatePaths as $templatePath) {
             if ($this->getService(TemplateEngine::class)->hasTemplate($templatePath)) {
                 return $templatePath;
             }
         }
+
         return null;
     }
 
@@ -446,7 +452,8 @@ class EntryController extends YesWikiController
             }
 
             if (isset($type)) {
-                $templatePath = $dir_name . "/" . strtolower($type) . ".tpl.html";
+                $templatePath = $dir_name . '/' . strtolower($type) . '.tpl.html';
+
                 return $this->getService(TemplateEngine::class)->hasTemplate($templatePath) ? $templatePath : null;
             }
         }
@@ -455,8 +462,8 @@ class EntryController extends YesWikiController
     }
 
     /**
-     * @param array $entry
-     * @param array|null $form
+     * @param array       $entry
+     * @param array|null  $form
      * @param string|null $userNameForRendering userName used to render the entry, if empty uses the connected user
      */
     private function getValuesForCustomTemplate($entry, $form, ?string $userNameForRendering = null)
@@ -494,10 +501,10 @@ class EntryController extends YesWikiController
     }
 
     /**
-     * format queries form GET and from $arg in order to give the right 'queries' to EntryManager->search
+     * format queries form GET and from $arg in order to give the right 'queries' to EntryManager->search.
+     *
      * @param array|string|null $arg
-     * @param array $get (copy of $_GET) but pass in parameters to be more visible in primary level controllers
-     * @return array
+     * @param array             $get (copy of $_GET) but pass in parameters to be more visible in primary level controllers
      */
     public function formatQuery($arg, array $get): array
     {
@@ -543,37 +550,39 @@ class EntryController extends YesWikiController
     /* PART TO FILTER ON DATE */
 
     /**
-     * filter entries on date
-     * @param array $entries
+     * filter entries on date.
+     *
+     * @param array  $entries
      * @param string $datefilter
+     *
      * @return array $entries
      */
     public function filterEntriesOnDate($entries, $datefilter): array
     {
-        $TODAY_TEMPLATE = "/^(today|aujourdhui|=0(D)?)$/i";
-        $FUTURE_TEMPLATE = "/^(futur|future|>0(D)?)$/i";
-        $PAST_TEMPLATE = "/^(past|passe|<0(D)?)$/i";
+        $TODAY_TEMPLATE = '/^(today|aujourdhui|=0(D)?)$/i';
+        $FUTURE_TEMPLATE = '/^(futur|future|>0(D)?)$/i';
+        $PAST_TEMPLATE = '/^(past|passe|<0(D)?)$/i';
         $DATE_TEMPLATE = "(\+|-)(([0-9]+)Y)?(([0-9]+)M)?(([0-9]+)D)?";
-        $EQUAL_TEMPLATE = "/^=" . $DATE_TEMPLATE . "$/i";
-        $MORE_TEMPLATE = "/^>" . $DATE_TEMPLATE . "$/i";
-        $LOWER_TEMPLATE = "/^<" . $DATE_TEMPLATE . "$/i";
-        $BETWEEN_TEMPLATE = "/^>" . $DATE_TEMPLATE . "&<" . $DATE_TEMPLATE . "$/i";
+        $EQUAL_TEMPLATE = '/^=' . $DATE_TEMPLATE . '$/i';
+        $MORE_TEMPLATE = '/^>' . $DATE_TEMPLATE . '$/i';
+        $LOWER_TEMPLATE = '/^<' . $DATE_TEMPLATE . '$/i';
+        $BETWEEN_TEMPLATE = '/^>' . $DATE_TEMPLATE . '&<' . $DATE_TEMPLATE . '$/i';
 
         if (preg_match_all($TODAY_TEMPLATE, $datefilter, $matches)) {
             $todayMidnigth = new DateTime();
             $todayMidnigth->setTime(0, 0);
             $entries = array_filter($entries, function ($entry) use ($todayMidnigth) {
-                return $this->filterEntriesOnDateTraversing($entry, "=", $todayMidnigth);
+                return $this->filterEntriesOnDateTraversing($entry, '=', $todayMidnigth);
             });
         } elseif (preg_match_all($FUTURE_TEMPLATE, $datefilter, $matches)) {
             $now = new DateTime();
             $entries = array_filter($entries, function ($entry) use ($now) {
-                return $this->filterEntriesOnDateTraversing($entry, ">", $now);
+                return $this->filterEntriesOnDateTraversing($entry, '>', $now);
             });
         } elseif (preg_match_all($PAST_TEMPLATE, $datefilter, $matches)) {
             $now = new DateTime();
             $entries = array_filter($entries, function ($entry) use ($now) {
-                return $this->filterEntriesOnDateTraversing($entry, "<", $now);
+                return $this->filterEntriesOnDateTraversing($entry, '<', $now);
             });
         } elseif (preg_match_all($EQUAL_TEMPLATE, $datefilter, $matches)) {
             $sign = $matches[1][0];
@@ -584,7 +593,7 @@ class EntryController extends YesWikiController
             $dateMidnigth = $this->extractDate($sign, $nbYears, $nbMonth, $nbDays);
             $dateMidnigth->setTime(0, 0);
             $entries = array_filter($entries, function ($entry) use ($dateMidnigth) {
-                return $this->filterEntriesOnDateTraversing($entry, "=", $dateMidnigth);
+                return $this->filterEntriesOnDateTraversing($entry, '=', $dateMidnigth);
             });
         } elseif (preg_match_all($MORE_TEMPLATE, $datefilter, $matches)) {
             $sign = $matches[1][0];
@@ -594,7 +603,7 @@ class EntryController extends YesWikiController
 
             $date = $this->extractDate($sign, $nbYears, $nbMonth, $nbDays);
             $entries = array_filter($entries, function ($entry) use ($date) {
-                return $this->filterEntriesOnDateTraversing($entry, ">", $date);
+                return $this->filterEntriesOnDateTraversing($entry, '>', $date);
             });
         } elseif (preg_match_all($LOWER_TEMPLATE, $datefilter, $matches)) {
             $sign = $matches[1][0];
@@ -604,7 +613,7 @@ class EntryController extends YesWikiController
 
             $date = $this->extractDate($sign, $nbYears, $nbMonth, $nbDays);
             $entries = array_filter($entries, function ($entry) use ($date) {
-                return $this->filterEntriesOnDateTraversing($entry, "<", $date);
+                return $this->filterEntriesOnDateTraversing($entry, '<', $date);
             });
         } elseif (preg_match_all($BETWEEN_TEMPLATE, $datefilter, $matches)) {
             $signMore = $matches[1][0];
@@ -620,10 +629,10 @@ class EntryController extends YesWikiController
             if ($dateMin->diff($dateMax)->invert == 0) {
                 // $dateMax higher than $dateMin
                 $entries = array_filter($entries, function ($entry) use ($dateMin) {
-                    return $this->filterEntriesOnDateTraversing($entry, ">", $dateMin);
+                    return $this->filterEntriesOnDateTraversing($entry, '>', $dateMin);
                 });
                 $entries = array_filter($entries, function ($entry) use ($dateMax) {
-                    return $this->filterEntriesOnDateTraversing($entry, "<", $dateMax);
+                    return $this->filterEntriesOnDateTraversing($entry, '<', $dateMax);
                 });
             }
         }
@@ -639,7 +648,7 @@ class EntryController extends YesWikiController
                 . (!empty($nbMonth) ? $nbMonth . 'M' : '')
                 . (!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays) ? '0D' : ''))
         );
-        $dateInterval->invert = ($sign == "-") ? 1 : 0;
+        $dateInterval->invert = ($sign == '-') ? 1 : 0;
 
         $date = new DateTime();
         $date->add($dateInterval);
@@ -658,40 +667,41 @@ class EntryController extends YesWikiController
             $entryEndDate = new DateTime($entry['bf_date_fin_evenement']);
             if ($entryEndDate && strpos($entry['bf_date_fin_evenement'], 'T') === false) {
                 // all day (so = midnigth of next day)
-                $entryEndDate->add(new DateInterval("P1D"));
+                $entryEndDate->add(new DateInterval('P1D'));
             }
         }
         if (empty($entryEndDate)) {
-            $entryEndDate = (clone $entryStartDate)->setTime(0, 0)->add(new DateInterval("P1D")); // endDate to next day after start day if empty
+            $entryEndDate = (clone $entryStartDate)->setTime(0, 0)->add(new DateInterval('P1D')); // endDate to next day after start day if empty
         }
-        $nextDay = (clone $date)->add(new DateInterval("P1D"));
+        $nextDay = (clone $date)->add(new DateInterval('P1D'));
         switch ($mode) {
-            case "<":
+            case '<':
                 // start before date and whatever finish
-                return (
+                return
                     $date->diff($entryStartDate)->invert == 1
-                );
+                ;
                 break;
-            case ">":
+            case '>':
                 // start after date or (before date but and end should be after date, end is needed)
-                return (
+                return
                     $date->diff($entryStartDate)->invert == 0
                     || !$this->dateIsStrictlyBefore($entryEndDate, $date)
-                );
+                ;
                 break;
-            case "=":
+            case '=':
             default:
                 // start before next day midnight and should end after date midnigth
-                return (
+                return
                     $nextDay->diff($entryStartDate)->invert == 1
                     && !$this->dateIsStrictlyBefore($entryEndDate, $date)
-                );
+                ;
         }
     }
 
     private function dateIsStrictlyBefore(DateTime $dateToCompare, DateTime $referenceDate): bool
     {
         $diff = $referenceDate->diff($dateToCompare);
+
         return $diff->invert == 1 || (
             $diff->invert == 0
             && $diff->days == 0
@@ -720,25 +730,26 @@ class EntryController extends YesWikiController
                 '@templates/alert-message.twig',
                 [
                     'type' => 'info',
-                    'message' => _t('BAZ_IL_Y_A') . ' 0 ' . _t('BAZ_FICHE')
+                    'message' => _t('BAZ_IL_Y_A') . ' 0 ' . _t('BAZ_FICHE'),
                 ]
             );
         }
+
         return $this->wiki->Action('bazarliste', 0, $params);
     }
 
     /**
-     * check if creation of entry is authorized for this form
-     * @param array $form
+     * check if creation of entry is authorized for this form.
+     *
      * @return array ["error" => string, "output" => string]
      */
     private function checkIfOnlyOneEntry(array $form): array
     {
         $results = [
-            "error" => "",
-            "output" => ""
+            'error' => '',
+            'output' => '',
         ];
-        if (isset($form['bn_only_one_entry']) && $form['bn_only_one_entry'] === "Y") {
+        if (isset($form['bn_only_one_entry']) && $form['bn_only_one_entry'] === 'Y') {
             $formHasUserField = !empty(array_filter($form['prepared'], function ($field) {
                 return $field instanceof UserField;
             }));
@@ -747,15 +758,15 @@ class EntryController extends YesWikiController
                 // forbidden : ask to connect
                 $results['output'] = $this->render('@templates/alert-message.twig', [
                     'type' => 'warning',
-                    'message' => _t('BAZ_USER_SHOULD_BE_CONNECTED_TO_ACCES_THIS_FORM')
+                    'message' => _t('BAZ_USER_SHOULD_BE_CONNECTED_TO_ACCES_THIS_FORM'),
                 ]);
-                $pageLogin = $this->pageManager->GetOne("PageLogin");
+                $pageLogin = $this->pageManager->GetOne('PageLogin');
                 $results['output'] .= $this->wiki->format(!empty($pageLogin) ? '{{include page="PageLogin"}}' : '{{login}}');
             } elseif (!empty($loggerUser)) {
                 $userName = $loggerUser['name'];
                 $entries = $this->entryManager->search([
                     'formsIds' => [$form['bn_id_nature']],
-                    'user' => $userName
+                    'user' => $userName,
                 ]);
                 if (!empty($entries)) {
                     $firstEntry = $entries[array_keys($entries)[0]];
@@ -763,13 +774,15 @@ class EntryController extends YesWikiController
                     $message = str_replace('{formName}', $form['bn_label_nature'], $message);
                     $results['output'] = $this->render('@templates/alert-message.twig', [
                         'type' => 'info',
-                        'message' => $message
+                        'message' => $message,
                     ]);
                     $results['output'] .= $this->view($firstEntry['id_fiche']);
+
                     return $results;
                 }
             }
         }
+
         return $results;
     }
 

@@ -16,29 +16,23 @@ require_once 'tests/YesWikiTestCase.php';
 class ArchiveServiceTest extends YesWikiTestCase
 {
     /**
-     * @covers ArchiveService::__construct
+     * @covers \ArchiveService::__construct
+     *
      * @return array ['wiki'=> $wiki,'archiveService' => $archiveService]
      */
     public function testArchiveServiceExisting(): array
     {
         $wiki = $this->getWiki();
         $this->assertTrue($wiki->services->has(ArchiveService::class));
-        return ['wiki' => $wiki,'archiveService' => $wiki->services->get(ArchiveService::class)];
-    }
 
+        return ['wiki' => $wiki, 'archiveService' => $wiki->services->get(ArchiveService::class)];
+    }
 
     /**
      * @depends testArchiveServiceExisting
      * @dataProvider archiveProvider
-     * @covers ArchiveService::archive
-     * @param bool $savefiles
-     * @param bool $savedatabase
-     * @param array $foldersToInclude
-     * @param array $foldersToExclude
-     * @param string $locationSuffix
-     * @param null|int $nbFiles
-     * @param array $filesToFind
-     * @param null|array $wakkaContent
+     * @covers \ArchiveService::archive
+     *
      * @param array $services [$wiki,$archiveService]
      */
     public function testArchive(
@@ -52,7 +46,7 @@ class ArchiveServiceTest extends YesWikiTestCase
         ?array $wakkaContent,
         array $services
     ) {
-        $output = "";
+        $output = '';
         $location = $services['archiveService']->archive(
             $output,
             $savefiles,
@@ -61,10 +55,10 @@ class ArchiveServiceTest extends YesWikiTestCase
             $foldersToExclude,
         );
         $data = $this->getDataFromLocation($location, $services['wiki']);
-        $error = $data['error'] ?? "";
+        $error = $data['error'] ?? '';
         $this->assertEmpty($error, "There is an error : $error");
         $this->assertArrayNotHasKey('error', $data);
-        $this->assertMatchesRegularExpression("/^.*".preg_quote(constant("\\YesWiki\\Core\\Service\\ArchiveService::{$locationSuffix}").".zip", "/")."$/", $location);
+        $this->assertMatchesRegularExpression('/^.*' . preg_quote(constant("\\YesWiki\\Core\\Service\\ArchiveService::{$locationSuffix}") . '.zip', '/') . '$/', $location);
         if (!is_null($nbFiles) && $nbFiles > -1) {
             $this->assertArrayHasKey('files', $data);
             foreach ($filesToFind as $path) {
@@ -83,30 +77,31 @@ class ArchiveServiceTest extends YesWikiTestCase
         if (!class_exists(ArchiveService::class, false)) {
             include_once 'includes/services/ArchiveService.php';
         }
-        $defaultFoldersToInclude = constant("\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_INCLUDE");
-        $defaultFoldersToExclude = constant("\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_EXCLUDE");
+        $defaultFoldersToInclude = constant('\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_INCLUDE');
+        $defaultFoldersToExclude = constant('\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_EXCLUDE');
+
         return [
             'archive only root files' => [
                 'savefiles' => true,
                 'savedatabase' => false,
                 'foldersToInclude' => [],
                 'foldersToExclude' => $defaultFoldersToInclude,
-                'locationSuffix' => "ARCHIVE_ONLY_FILES_SUFFIX",
+                'locationSuffix' => 'ARCHIVE_ONLY_FILES_SUFFIX',
                 'nbFiles' => -1,
                 'filesToFind' => ['wakka.config.php'],
                 'wakkaContent' => [
                     'archive' => [
                         'foldersToInclude' => $defaultFoldersToInclude,
-                        'foldersToExclude' => array_merge($defaultFoldersToExclude, $defaultFoldersToInclude)
+                        'foldersToExclude' => array_merge($defaultFoldersToExclude, $defaultFoldersToInclude),
                     ],
-                ]
+                ],
             ],
             'archive only root files with database' => [
                 'savefiles' => true,
                 'savedatabase' => true,
                 'foldersToInclude' => [],
                 'foldersToExclude' => $defaultFoldersToInclude,
-                'locationSuffix' => "ARCHIVE_SUFFIX",
+                'locationSuffix' => 'ARCHIVE_SUFFIX',
                 'nbFiles' => -1,
                 'filesToFind' => [
                     'wakka.config.php',
@@ -119,34 +114,33 @@ class ArchiveServiceTest extends YesWikiTestCase
                 'wakkaContent' => [
                     'archive' => [
                         'foldersToInclude' => $defaultFoldersToInclude,
-                        'foldersToExclude' => array_merge($defaultFoldersToExclude, $defaultFoldersToInclude)
+                        'foldersToExclude' => array_merge($defaultFoldersToExclude, $defaultFoldersToInclude),
                     ],
-                ]
+                ],
             ],
             'archive only database' => [
                 'savefiles' => false,
                 'savedatabase' => true,
                 'foldersToInclude' => [],
                 'foldersToExclude' => [],
-                'locationSuffix' => "ARCHIVE_ONLY_DATABASE_SUFFIX",
+                'locationSuffix' => 'ARCHIVE_ONLY_DATABASE_SUFFIX',
                 'nbFiles' => 5,
                 'filesToFind' => [
                     'private',
                     'private/backups',
                     'private/backups/.htaccess',
                     'private/backups/README.md',
-                    'private/backups/content.sql'
+                    'private/backups/content.sql',
                 ],
-                'wakkaContent' => null
+                'wakkaContent' => null,
             ],
         ];
     }
 
     /**
      * retrieve data from location
-     * delete the zip file because only for tests
-     * @param string $location
-     * @param Wiki $wiki
+     * delete the zip file because only for tests.
+     *
      * @return array $data
      */
     private function getDataFromLocation(string $location, Wiki $wiki): array
@@ -162,7 +156,7 @@ class ArchiveServiceTest extends YesWikiTestCase
                 } else {
                     // create tmp folder in cache
                     do {
-                        $tmpFolderName = "tmp_folder_to_delete_".md5(time());
+                        $tmpFolderName = 'tmp_folder_to_delete_' . md5(time());
                     } while (file_exists("cache/$tmpFolderName"));
                     if (!$zip->extractTo("cache/$tmpFolderName")) {
                         $data['error'] = "\"\$location\" (\"$location\") is not extractable !";
@@ -176,7 +170,7 @@ class ArchiveServiceTest extends YesWikiTestCase
                             $dh = opendir($dir);
                             while (false !== ($file = readdir($dh))) {
                                 if ($file != '.' && $file != '..') {
-                                    if (!in_array("$dir/$file", ['.','..'])) {
+                                    if (!in_array("$dir/$file", ['.', '..'])) {
                                         if (is_file("$dir/$file") || is_dir("$dir/$file")) {
                                             if (!in_array("$dir/$file", $files)) {
                                                 $files[] = "$dir/$file";
@@ -192,7 +186,7 @@ class ArchiveServiceTest extends YesWikiTestCase
                             array_shift($dirs);
                         }
                         $files = array_map(function ($path) use ($tmpFolderName) {
-                            return str_replace("\\", "/", preg_replace("/^cache(?:\/|\\\\)".preg_quote($tmpFolderName, "/")."(?:\/|\\\\)/", "", $path));
+                            return str_replace('\\', '/', preg_replace("/^cache(?:\/|\\\\)" . preg_quote($tmpFolderName, '/') . "(?:\/|\\\\)/", '', $path));
                         }, $files);
                         $data['files'] = $files;
 
@@ -212,12 +206,13 @@ class ArchiveServiceTest extends YesWikiTestCase
         } else {
             $data['error'] = "\"\$location\" (\"$location\") is not a file !";
         }
+
         return $data;
     }
 
     private function recursiveDelete(string $path)
     {
-        if (!in_array(basename($path), ['.','..']) && !preg_match("/(?:^|\/|\\\\)\.{1,2}(?:^|\/|\\\\)/", $path)) {
+        if (!in_array(basename($path), ['.', '..']) && !preg_match("/(?:^|\/|\\\\)\.{1,2}(?:^|\/|\\\\)/", $path)) {
             if (file_exists($path)) {
                 if (is_dir($path)) {
                     $dh = opendir($path);
@@ -258,8 +253,8 @@ class ArchiveServiceTest extends YesWikiTestCase
      * @depends testArchiveServiceExisting
      * @depends testArchive
      * @dataProvider notInParallelProvider
-     * @covers ArchiveService::setWikiStatus
-     * @param string $status
+     * @covers \ArchiveService::setWikiStatus
+     *
      * @param array $services [$wiki,$archiveService]
      */
     public function testNotArchiveInParallel(
@@ -272,11 +267,11 @@ class ArchiveServiceTest extends YesWikiTestCase
         $previousStatus = $params->has('wiki_status') ? $params->get('wiki_status') : null;
         $this->setWikiStatus($configService, $status);
 
-        $defaultFoldersToInclude = constant("\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_INCLUDE");
+        $defaultFoldersToInclude = constant('\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_INCLUDE');
 
-        $results = $consoleService->startConsoleSync("core:archive", [
-            "-f",
-            "-x",implode(',', $defaultFoldersToInclude),
+        $results = $consoleService->startConsoleSync('core:archive', [
+            '-f',
+            '-x', implode(',', $defaultFoldersToInclude),
         ]);
         if (empty($previousStatus)) {
             $this->unsetWikiStatus($configService);
@@ -289,7 +284,7 @@ class ArchiveServiceTest extends YesWikiTestCase
                 $atLeastOneStdErr = true;
             }
         }
-        $this->assertTrue($atLeastOneStdErr, "No error in \"ArchiveService\" when \"wiki_status\" = \"$status\" ; results: ".json_encode($results));
+        $this->assertTrue($atLeastOneStdErr, "No error in \"ArchiveService\" when \"wiki_status\" = \"$status\" ; results: " . json_encode($results));
     }
 
     protected function setWikiStatus(ConfigurationService $configurationService, string $status = 'archiving')
@@ -299,6 +294,7 @@ class ArchiveServiceTest extends YesWikiTestCase
         $config['wiki_status'] = $status;
         $configurationService->write($config);
     }
+
     protected function unsetWikiStatus(ConfigurationService $configurationService)
     {
         $config = $configurationService->getConfiguration('wakka.config.php');
@@ -320,9 +316,7 @@ class ArchiveServiceTest extends YesWikiTestCase
      * @depends testArchiveServiceExisting
      * @depends testArchive
      * @dataProvider hideConfigValuesProvider
-     * @param bool $paramsFromWakka
-     * @param null|array $hideConfigValuesParam
-     * @param array $wakkaContent
+     *
      * @param array $services [$wiki,$archiveService]
      */
     public function testhideConfigValuesParams(
@@ -335,11 +329,11 @@ class ArchiveServiceTest extends YesWikiTestCase
         $configService = $services['wiki']->services->get(ConfigurationService::class);
         $consoleService = $services['wiki']->services->get(ConsoleService::class);
 
-        $defaultFoldersToInclude = constant("\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_INCLUDE");
+        $defaultFoldersToInclude = constant('\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_INCLUDE');
 
         $consoleParams = [
-            "-f",
-            "-x",implode(',', $defaultFoldersToInclude),
+            '-f',
+            '-x', implode(',', $defaultFoldersToInclude),
         ];
 
         $previoushideConfigValuesParams = $this->getHideConfigValuesParam($configService);
@@ -350,10 +344,10 @@ class ArchiveServiceTest extends YesWikiTestCase
                 $this->setHideConfigValuesParam($configService, $hideConfigValuesParam);
             }
         } else {
-            $consoleParams[] = "-a";
+            $consoleParams[] = '-a';
             $consoleParams[] = json_encode($hideConfigValuesParam);
         }
-        $results = $consoleService->startConsoleSync("core:archive", $consoleParams);
+        $results = $consoleService->startConsoleSync('core:archive', $consoleParams);
         if (!is_null($previoushideConfigValuesParams)) {
             $this->setHideConfigValuesParam($configService, $previoushideConfigValuesParams);
         } else {
@@ -370,10 +364,10 @@ class ArchiveServiceTest extends YesWikiTestCase
             }
         }
 
-        $this->assertNotEmpty($location, "Bad format of stdout");
-        $this->assertTrue(is_file($location), "Extracted location is not a file !");
+        $this->assertNotEmpty($location, 'Bad format of stdout');
+        $this->assertTrue(is_file($location), 'Extracted location is not a file !');
         $data = $this->getDataFromLocation($location, $services['wiki']);
-        $error = $data['error'] ?? "";
+        $error = $data['error'] ?? '';
         $this->assertEmpty($error, "There is an error : $error");
         $this->assertArrayNotHasKey('error', $data);
         $this->assertArrayHasKey('wakkaContent', $data);
@@ -385,6 +379,7 @@ class ArchiveServiceTest extends YesWikiTestCase
         $config = $configurationService->getConfiguration('wakka.config.php');
         $config->load();
         $archiveParams = $config['archive'] ?? [];
+
         return $archiveParams['hideConfigValues'] ?? null;
     }
 
@@ -434,10 +429,10 @@ class ArchiveServiceTest extends YesWikiTestCase
                             'contact_smtp_host' => '',
                             'contact_smtp_user' => '',
                             'contact_smtp_pass' => '',
-                            'api_allowed_keys' => []
+                            'api_allowed_keys' => [],
                         ],
                     ],
-                ]
+                ],
             ],
             'specific' => [
                 'paramsFromWakka' => true,
@@ -446,7 +441,7 @@ class ArchiveServiceTest extends YesWikiTestCase
                     'mysql_database' => '',
                     'mysql_user' => '',
                     'mysql_password' => '',
-                    'custom_key' => ''
+                    'custom_key' => '',
                 ],
                 'wakkaContent' => [
                     'mysql_host' => '',
@@ -459,10 +454,10 @@ class ArchiveServiceTest extends YesWikiTestCase
                             'mysql_database' => '',
                             'mysql_user' => '',
                             'mysql_password' => '',
-                            'custom_key' => ''
+                            'custom_key' => '',
                         ],
                     ],
-                ]
+                ],
             ],
             'specific via command line' => [
                 'paramsFromWakka' => false,
@@ -472,7 +467,7 @@ class ArchiveServiceTest extends YesWikiTestCase
                     'mysql_user' => '',
                     'mysql_password' => '',
                     'custom_key_2' => '',
-                    'custom_key_3' => ''
+                    'custom_key_3' => '',
                 ],
                 'wakkaContent' => [
                     'mysql_host' => '',
@@ -486,10 +481,10 @@ class ArchiveServiceTest extends YesWikiTestCase
                             'mysql_user' => '',
                             'mysql_password' => '',
                             'custom_key_2' => '',
-                            'custom_key_3' => ''
+                            'custom_key_3' => '',
                         ],
                     ],
-                ]
+                ],
             ],
         ];
     }

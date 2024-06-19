@@ -1,4 +1,5 @@
 <?php
+
 return [
     // fields/CalcField.php
     'BAZ_FORM_EDIT_CALC_LABEL' => 'கால்குலச்',
@@ -6,7 +7,7 @@ return [
     'BAZ_FORM_EDIT_DISPLAYTEXT_HELP' => 'Ajouter si benoin une Unité aprres {value}, (ex: `{மதிப்பு} €`)',
     'BAZ_FORM_EDIT_FORMULA_LABEL' => 'தேற்றம்',
     // fields/FileField.php
-    'BAZ_FILEFIELD_FILE' => "Fichier: {கோப்பு பெயர்}",
+    'BAZ_FILEFIELD_FILE' => 'Fichier: {கோப்பு பெயர்}',
     'BAZ_FORM_EDIT_FILE_READLABEL_LABEL' => 'சிட்டை à l\'afichage',
     'FILEFIELD_TOO_LARGE_FILE' => 'லு ஃபைச்சியர் எச்ட் டிராப் வால்யூமினக்ச், அதிகபட்சம் {ஃபைல் மேக்ச்ச்} ஆக்டெட்டுகள்',
     // fields/ImageField.php
@@ -209,11 +210,11 @@ return [
     'BAZ_FORM_EDIT_NAME' => 'Intitulé',
     'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'என் affichant le confetructure fraphick, vous perdrez vos மாற்றங்கள் faites dans le குறியீடு ici-meme. தொடர்ச்சியான சான்ச் சாவெகார்டர் லெச் மாற்றங்கள்? .',
     'BAZ_FORM_EDIT_COMMENTS_CLOSED' => 'வர்ணனைகள் ஃபெர்மச்',
-    'BAZ_FORM_EDIT_BOOKMARKLET_URLFIELD_LABEL' => "SAMP முகவரி அசோசியே",
-    'BAZ_FORM_EDIT_BOOKMARKLET_DESCRIPTIONFIELD_LABEL' => "சாம்பியன் டெக்ச்டே லாங் அசோசியா",
-    'BAZ_FORM_EDIT_BOOKMARKLET_HINT_DEFAULT_VALUE' => "கிளிசர்-டெபோசர் லு பூட்டன் டான்ச் வோட்ரே பாரே டி நேவிகிகூர்",
-    'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_LABEL' => "டெக்ச்டே அஃபிச்",
-    'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_VALUE' => "கிளிசர்-டெபோசர் லு பூட்டன் டான்ச் வோட்ரே பாரே டி ப்ராபிச்",
+    'BAZ_FORM_EDIT_BOOKMARKLET_URLFIELD_LABEL' => 'SAMP முகவரி அசோசியே',
+    'BAZ_FORM_EDIT_BOOKMARKLET_DESCRIPTIONFIELD_LABEL' => 'சாம்பியன் டெக்ச்டே லாங் அசோசியா',
+    'BAZ_FORM_EDIT_BOOKMARKLET_HINT_DEFAULT_VALUE' => 'கிளிசர்-டெபோசர் லு பூட்டன் டான்ச் வோட்ரே பாரே டி நேவிகிகூர்',
+    'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_LABEL' => 'டெக்ச்டே அஃபிச்',
+    'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_VALUE' => 'கிளிசர்-டெபோசர் லு பூட்டன் டான்ச் வோட்ரே பாரே டி ப்ராபிச்',
     'BAZ_ACTIVATE_COMMENTS' => 'இந்த தாளில் கருத்துகளைச் செயல்படுத்தவா?',
     'BAZ_ACTIVATE_COMMENTS_HINT' => 'கோப்பை பதிவு செய்யும் போது புதுப்பிக்கப்பட்ட உரிமைகள்',
     'BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL' => 'Choix par defaut pour l\'actation des vericaires',
@@ -222,13 +223,13 @@ return [
     'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT' => 'லெய்சர் வைட் பவுர் பயன்பாட்டு லு டெக்ச்டே பார் டெஃபாட்',
     'BAZ_FORM_EDIT_ACL_ASK_IF_ACTIVATE_COMMENT_LABEL' => 'டிமாண்டர் டி ஆகிவர் லெச் கருத்துரைகள்?',
     // condition checking field
-    'BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL' => "Affichage நிபந்தனைகள்",
-    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL' => "நிலை",
-    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_END' => "ஃபின் டி நிபந்தனை",
-    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_LABEL' => "Iffacer அயு masquage",
-    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION' => "எஃப்ஃபேசர்",
-    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION' => "NE PAS EFFACER",
-    'BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT' => "ஊற்றவும்",
+    'BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL' => 'Affichage நிபந்தனைகள்',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL' => 'நிலை',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_END' => 'ஃபின் டி நிபந்தனை',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_LABEL' => 'Iffacer அயு masquage',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION' => 'எஃப்ஃபேசர்',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION' => 'NE PAS EFFACER',
+    'BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT' => 'ஊற்றவும்',
     // jsvascripts/form-edit-templates/fields/file.js
     'BAZ_FORM_EDIT_FILE_AUTHEXTS_LABEL' => 'நீட்டிப்புகள் presélectionnées (அவெக் லே பாயிண்ட், செபாரீச் பார் டெச் கன்னி)',
     'BAZ_FORM_EDIT_FILE_AUTHEXTS_PLACEHOLDER' => 'எ.கா: .pdf, .png',
@@ -258,5 +259,5 @@ return [
     'BAZAR_VIDEO_POSITION_RIGHT' => 'சீரமைப்பது',
     'BAZAR_URL_DISPLAY_VIDEO' => 'Afficher le lecter si le lien est une vidéo?',
     // templates/entries/index-dynamic-temapltes/BazarCalendar_ButtonICS.js
-    'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => "அசூட்டர் à வோட்ரே காலென்ட்ரியர்",
+    'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => 'அசூட்டர் à வோட்ரே காலென்ட்ரியர்',
 ];

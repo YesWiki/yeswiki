@@ -24,12 +24,12 @@ class __WidgetHandler extends YesWikiHandler
         $entries = $entryManager->search(['formsIds' => [!empty($_GET['id']) ? strip_tags($_GET['id']) : null], 'keywords' => (!empty($_GET['q']) ? strip_tags($_GET['q']) : null)], true, true);
         $facettables = $formManager->scanAllFacettable($entries);
 
-        $labels = array();
+        $labels = [];
         $showTooltip = [];
         foreach ($entries as $entry) {
             $form = $formManager->getOne($entry['id_typeannonce']);
             foreach ($form['prepared'] as $field) {
-                $propName = $field->getPropertyName() ;
+                $propName = $field->getPropertyName();
                 if (in_array($propName, array_keys($facettables)) &&
                         !in_array($propName, array_keys($labels))) {
                     $labels[$propName] = !empty($field->getLabel()) ? $field->getLabel() :
@@ -49,23 +49,23 @@ class __WidgetHandler extends YesWikiHandler
             'latitude' => $this->params->get('baz_map_center_lat'),
             'longitude' => $this->params->get('baz_map_center_lon'),
             'width' => $this->params->get('baz_map_width'),
-            'height' => $this->params->get('baz_map_height')
+            'height' => $this->params->get('baz_map_height'),
         ];
 
         $urlParams = 'id=' . strip_tags($_GET['id']) . (isset($_GET['query']) ? '&query=' . strip_tags($_GET['query']) : '') . (!empty($q) ? '&q=' . $q : '');
 
-        echo $this->render("@bazar/widget.tpl.html", [
+        echo $this->render('@bazar/widget.tpl.html', [
             'facettes' => $facettables,
             'showtooltip' => $showTooltip,
             'facettestext' => $labels,
             'params' => $params,
-            'urlparams' => $urlParams
+            'urlparams' => $urlParams,
         ]);
 
         echo '</div>';
         $output = ob_get_contents();
         ob_end_clean();
-        echo $this->wiki->Header().$output.$this->wiki->Footer();
+        echo $this->wiki->Header() . $output . $this->wiki->Footer();
         $this->wiki->exit();
     }
-};
+}

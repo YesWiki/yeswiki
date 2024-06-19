@@ -30,7 +30,7 @@ class EmailField extends BazarField
         $this->maxChars = $this->maxChars ?? 255;
         $this->seeEmailAcls = (!empty($values[self::FIELD_SEE_MAIL_ACLS]) && is_string($values[self::FIELD_SEE_MAIL_ACLS]) && !empty(trim($values[self::FIELD_SEE_MAIL_ACLS])))
         ? trim($values[self::FIELD_SEE_MAIL_ACLS])
-        : '@admins' ; // default
+        : '@admins'; // default
         $this->seeEmailAcls = str_replace(',', "\n", $this->seeEmailAcls);
         $this->maxChars = '';
     }
@@ -46,6 +46,7 @@ class EmailField extends BazarField
         } else {
             $sendmailArray = [];
         }
+
         return array_merge(
             [$this->propertyName => $this->getValue($entry)],
             $sendmailArray
@@ -81,11 +82,10 @@ class EmailField extends BazarField
 
         // we test if we need an acl exception for an entry's email in a contact form, even if the display acls are against
         if ($canBeRead && $this->getShowContactForm()) {
-
             $tag = $wiki->GetPageTag();
             if ($tag === 'api') {
                 // only authorized api routes /api/entries/html/{selectedEntry}&fields=html_output
-                $canBeRead = $bazarApiController->isEntryViewFastAccessHelper() ;
+                $canBeRead = $bazarApiController->isEntryViewFastAccessHelper();
             } elseif ($aclService->check($this->getSeeEmailAcls(), $userNameForRendering, true)) {
                 // check if user is allowed to see raw email
                 $canBeRead = true;
@@ -102,12 +102,12 @@ class EmailField extends BazarField
 
     public function getShowContactForm()
     {
-        return $this->showContactForm ;
+        return $this->showContactForm;
     }
 
     public function getSeeEmailAcls(): string
     {
-        return $this->seeEmailAcls ;
+        return $this->seeEmailAcls;
     }
 
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
@@ -119,7 +119,7 @@ class EmailField extends BazarField
             [
                 'sendMail' => $this->sendMail,
                 'showContactForm' => $this->getShowContactForm(),
-                'seeEmailAcls' => $this->getSeeEmailAcls()
+                'seeEmailAcls' => $this->getSeeEmailAcls(),
             ]
         );
     }

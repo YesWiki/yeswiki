@@ -48,26 +48,30 @@ class DbCommand extends Command
         $isTest = $input->getOption('test');
         $filepath = $input->getOption('filepath');
 
-        if (!$isTest && (empty($filepath) || substr($filepath, -4) != ".sql")) {
+        if (!$isTest && (empty($filepath) || substr($filepath, -4) != '.sql')) {
             $output->writeln("Invalid options : option '--filepath' is required and should end by '.sql' if not testing.");
+
             return Command::INVALID;
         }
 
         if ($isTest) {
             return $this->test($output);
         }
+
         return $this->export($output, $filepath);
     }
 
     /**
-     * get params to connect to dB
+     * get params to connect to dB.
+     *
      * @return array [
-     *  'hostArg' => array,
-     *  'databasename' => string
-     *  'tablePrefix' => string
-     *  'username' => string
-     *  'password' => string
-     * ]
+     *               'hostArg' => array,
+     *               'databasename' => string
+     *               'tablePrefix' => string
+     *               'username' => string
+     *               'password' => string
+     *               ]
+     *
      * @throws Exception
      */
     private function getDbParams(): array
@@ -94,14 +98,15 @@ class DbCommand extends Command
 
         $password = $this->params->get('mysql_password');
         $this->assertParamIsString('mysql_password', $password);
+
         return compact(['hostArg', 'databasename', 'tablePrefix', 'username', 'password']);
     }
 
     /**
-     * export db via mysqldump
-     * @param OutputInterface $output
-     * @param string $filepath
+     * export db via mysqldump.
+     *
      * @return int Command:code
+     *
      * @throws Exception
      * @throws Throwable
      */
@@ -111,7 +116,7 @@ class DbCommand extends Command
         extract($this->getDbParams());
         try {
             $results = $this->consoleService->findAndStartExecutableSync(
-                "mysqldump",
+                'mysqldump',
                 array_merge(
                     $hostArg,
                     [
@@ -128,7 +133,7 @@ class DbCommand extends Command
                         "{$tablePrefix}referrers", // tables
                     ]
                 ), // args
-                "", // subfolder
+                '', // subfolder
                 $this->getExtaDirs(), // extraDirsWhereSearch
                 120 // timeoutInSec (2 minutes)
             );
@@ -146,13 +151,15 @@ class DbCommand extends Command
         } catch (Throwable $ex) {
             $output->writeln("System error when testing mysqldump : {$ex->getMessage()}");
         }
+
         return Command::FAILURE;
     }
 
     /**
-     * test connection to mysqldump
-     * @param OutputInterface $output
+     * test connection to mysqldump.
+     *
      * @return int Command:code
+     *
      * @throws Throwable
      */
     private function test(OutputInterface $output): int
@@ -160,11 +167,11 @@ class DbCommand extends Command
         extract($this->getDbParams());
         try {
             $results = $this->consoleService->findAndStartExecutableSync(
-                "mysqldump",
+                'mysqldump',
                 [
-                    "-V", // output version
+                    '-V', // output version
                 ], // args
-                "", // subfolder
+                '', // subfolder
                 $this->getExtaDirs(), // extraDirsWhereSearch
                 10 // timeoutInSec
             );
@@ -173,18 +180,18 @@ class DbCommand extends Command
                 // test connecting to database
 
                 $results = $this->consoleService->findAndStartExecutableSync(
-                    "mysqldump",
+                    'mysqldump',
                     array_merge(
                         $hostArg,
                         [
                             "--user=$username",
                             "--password=$password",
-                            "-t", // no table info
-                            "-d", // no table data
+                            '-t', // no table info
+                            '-d', // no table data
                             $databasename, // databasename
                         ]
                     ), // args
-                    "", // subfolder
+                    '', // subfolder
                     $this->getExtaDirs(), // extraDirsWhereSearch
                     10 // timeoutInSec
                 );
@@ -192,21 +199,25 @@ class DbCommand extends Command
                 if (empty($outputResult)) {
                     throw new Exception('output should not be empty during test to connect to database via mysql');
                 }
-                $output->writeln("OK");
+                $output->writeln('OK');
+
                 return Command::SUCCESS;
             }
         } catch (Throwable $ex) {
             $output->writeln("System error when testing mysqldump : {$ex->getMessage()} in {$ex->getFile()}, line {$ex->getLine()}");
         }
-        $output->writeln("NOK");
+        $output->writeln('NOK');
+
         return Command::FAILURE;
     }
 
     private function getOutput($results): string
     {
         $outputResult = (!empty($results) && is_array($results)) ? ($results[array_key_first($results)]['stdout'] ?? '') : '';
+
         return $outputResult;
     }
+
     private function getErr($results): string
     {
         return (!empty($results) && is_array($results)) ? ($results[array_key_first($results)]['stderr'] ?? '') : '';
@@ -214,13 +225,14 @@ class DbCommand extends Command
 
     private function getExtaDirs(): array
     {
-        return '\\' === DIRECTORY_SEPARATOR ? ["c:\\xampp\\mysql\\bin\\"] : ["/usr/bin/", "/usr/local/bin/"];
+        return '\\' === DIRECTORY_SEPARATOR ? ['c:\\xampp\\mysql\\bin\\'] : ['/usr/bin/', '/usr/local/bin/'];
     }
 
     /**
-     * assert param is a not empty string
-     * @param string $name
+     * assert param is a not empty string.
+     *
      * @param mixed $param
+     *
      * @throws Exception
      */
     protected function assertParamIsNotEmptyString(string $name, $param)
@@ -232,9 +244,10 @@ class DbCommand extends Command
     }
 
     /**
-     * assert param is a string
-     * @param string $name
+     * assert param is a string.
+     *
      * @param mixed $param
+     *
      * @throws Exception
      */
     protected function assertParamIsString(string $name, $param)

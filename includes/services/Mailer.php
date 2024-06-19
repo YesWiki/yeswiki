@@ -3,8 +3,8 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Controller\AuthController;
 use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Core\Controller\AuthController;
 use YesWiki\Wiki;
 
 class Mailer
@@ -52,7 +52,7 @@ class Mailer
                 'baseUrl' => $baseUrl,
             ]
         );
-        $userName = $admins[0]['name'] ?? null ;
+        $userName = $admins[0]['name'] ?? null;
         $html = $this->templateEngine->render(
             '@contact/notify-admins-email-html.twig',
             [
@@ -115,10 +115,11 @@ class Mailer
                 }
             }
         }
+
         return $admins;
     }
 
-    public function sendEmailFromAdmin(string $address, string $subject, string $text, string $html = "")
+    public function sendEmailFromAdmin(string $address, string $subject, string $text, string $html = '')
     {
         include_once 'includes/email.inc.php';
         send_mail(
@@ -140,7 +141,7 @@ class Mailer
                 'entry' => $data,
                 'baseUrl' => $baseUrl,
                 'previousEntry' => $previousEntry,
-                'isCreation' => $isCreation
+                'isCreation' => $isCreation,
             ]
         );
         $text = $this->templateEngine->render(
@@ -149,7 +150,7 @@ class Mailer
                 'entry' => $data,
                 'baseUrl' => $baseUrl,
                 'previousEntry' => $previousEntry,
-                'isCreation' => $isCreation
+                'isCreation' => $isCreation,
             ]
         );
         $user = $this->userManager->getOneByEmail($email);
@@ -176,7 +177,7 @@ class Mailer
                 'baseUrl' => $baseUrl,
                 'mailCustomMessage' => $this->params->has('mail_custom_message') ? $this->params->get('mail_custom_message') : null,
                 'previousEntry' => $previousEntry,
-                'isCreation' => $isCreation
+                'isCreation' => $isCreation,
             ]
         );
 
@@ -220,12 +221,12 @@ class Mailer
     // TODO when PR #967 merged, refactor this part with YesWiki::getBaseUrl
     public function getBaseUrl(): string
     {
-        return preg_replace('/(\\/wakka\\.php\\?wiki=|\\/\\?wiki=|\\/\\?|\\/)$/m', '', $this->params->get('base_url')) ;
+        return preg_replace('/(\\/wakka\\.php\\?wiki=|\\/\\?wiki=|\\/\\?|\\/)$/m', '', $this->params->get('base_url'));
     }
 
     /**
-     * add $_GET['wiki'] in url if smtp use a relay that put a new parameter as the beginning of url's query
-     * @param string $text
+     * add $_GET['wiki'] in url if smtp use a relay that put a new parameter as the beginning of url's query.
+     *
      * @return string $text
      */
     private function sanitizeLinksIfNeeded(string $text): string
@@ -235,8 +236,9 @@ class Mailer
             && $this->params->get('contact_use_long_wiki_urls_in_emails')
         ) {
             $baseUrl = $this->getBaseUrl();
-            $text = preg_replace("/(".preg_quote("href=\"{$baseUrl}/?", "/").")(?=".WN_CAMEL_CASE_EVOLVED_WITH_SLASH."(?:&|\\\"))/u", "$1wiki=", $text);
+            $text = preg_replace('/(' . preg_quote("href=\"{$baseUrl}/?", '/') . ')(?=' . WN_CAMEL_CASE_EVOLVED_WITH_SLASH . '(?:&|\\"))/u', '$1wiki=', $text);
         }
+
         return $text;
     }
 }

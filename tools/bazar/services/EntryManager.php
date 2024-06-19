@@ -6,8 +6,8 @@ use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Field\BazarField;
-use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\CheckboxField;
+use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\TitleField;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
@@ -68,21 +68,21 @@ class EntryManager
     }
 
     /**
-     * Returns true if the provided page is a Bazar fiche
+     * Returns true if the provided page is a Bazar fiche.
+     *
      * @param $tag
-     * @return bool
      */
     public function isEntry($tag): bool
     {
         if (!isset($this->cachedEntriestags[$tag])) {
             $this->cachedEntriestags[$tag] = !is_null($this->tripleStore->exist($tag, TripleStore::TYPE_URI, self::TRIPLES_ENTRY_ID, '', ''));
         }
+
         return $this->cachedEntriestags[$tag];
     }
 
     /**
-     * return array with list of page's tag for all entries
-     * @return array
+     * return array with list of page's tag for all entries.
      */
     public function getAllEntriesTags(): array
     {
@@ -96,18 +96,22 @@ class EntryManager
         } else {
             $result = [];
         }
+
         return $result;
     }
 
     /**
-     * Get one specified fiche
+     * Get one specified fiche.
+     *
      * @param $tag
-     * @param bool $semantic
-     * @param string $time pour consulter une fiche dans l'historique
-     * @param bool $cache if false, don't use the page cache
-     * @param bool $bypassAcls if true, all fields are loaded regardless of acls
-     * @param null|string $userNameForCheckingACL userName used to get entry, if empty uses the connected user
+     * @param bool        $semantic
+     * @param string      $time                   pour consulter une fiche dans l'historique
+     * @param bool        $cache                  if false, don't use the page cache
+     * @param bool        $bypassAcls             if true, all fields are loaded regardless of acls
+     * @param string|null $userNameForCheckingACL userName used to get entry, if empty uses the connected user
+     *
      * @return mixed|null
+     *
      * @throws Exception
      */
     public function getOne($tag, $semantic = false, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null): ?array
@@ -123,10 +127,9 @@ class EntryManager
         return $data;
     }
 
-    /** getDataFromPage
-     * @param array $page , content of page from sql
-     * @param bool $semantic
-     * @param bool $debug, to throw exception in case of error
+    /** getDataFromPage.
+     * @param array  $page            , content of page from sql
+     * @param bool   $debug,          to throw exception in case of error
      * @param string $correspondance, to pass correspondance parameter directly to appendDisplayData
      *
      * @return array data formated
@@ -161,10 +164,10 @@ class EntryManager
     }
 
     /**
-     * Return the request for searching entries in database
+     * Return the request for searching entries in database.
+     *
      * @param array &$params
-     * @param bool $filterOnReadACL
-     * @param bool $applyOnAllRevisions
+     *
      * @return $string
      */
     private function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false): string
@@ -178,7 +181,7 @@ class EntryManager
                 'keywords' => '', // Mots-clés pour la recherche fulltext
                 'searchOperator' => 'OR', // Opérateur à appliquer aux mots-clés
                 'minDate' => '', // Date minimale des fiches
-                'correspondance' => ''
+                'correspondance' => '',
             ],
             $params
         );
@@ -265,7 +268,7 @@ class EntryManager
 
         //on ajoute dans la requete les valeurs passees dans les champs liste et checkbox du moteur de recherche
         if ($params['queries'] == '') {
-            $params['queries'] = array();
+            $params['queries'] = [];
 
             // on transforme les specifications de recherche sur les liste et checkbox
             if (isset($_REQUEST['rechercher'])) {
@@ -287,8 +290,8 @@ class EntryManager
             if (!empty($nom)) {
                 $nom = $this->convertToRawJSONStringForREGEXP($nom);
                 // sanitize $nom to prevent REGEXP SQL errors
-                $nom = preg_replace("/(?<=^|\?|\*|\+)(\?|\*|\+)/m", "\\\\\\\\$1", $nom);
-                if (!in_array($val, [false, null, ""], true)) {
+                $nom = preg_replace("/(?<=^|\?|\*|\+)(\?|\*|\+)/m", '\\\\\\\$1', $nom);
+                if (!in_array($val, [false, null, ''], true)) {
                     $valcrit = explode(',', $val);
                     if (is_array($valcrit) && count($valcrit) > 1) {
                         $requeteSQL .= ' AND ';
@@ -353,7 +356,7 @@ class EntryManager
         if (isset($_GET['joinquery'])) {
             $join = $this->dbService->escape($_GET['joinquery']);
             $joinrequeteSQL = '';
-            $tableau = array();
+            $tableau = [];
             $tab = explode('|', $join);
             //découpe la requete autour des |
             foreach ($tab as $req) {
@@ -421,16 +424,16 @@ class EntryManager
     }
 
     /**
-     * Return an array of fiches based on search parameters
+     * Return an array of fiches based on search parameters.
+     *
      * @param array $params
-     * @param bool $filterOnReadACL
-     * @param bool $useGuard
+     *
      * @return mixed
      */
     public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
     {
         $requete = $this->prepareSearchRequest($params, $filterOnReadACL);
-        $searchResults = array();
+        $searchResults = [];
         $results = $this->dbService->loadAll($requete);
         $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
         foreach ($results as $page) {
@@ -443,23 +446,26 @@ class EntryManager
             $data = $this->getDataFromPage($filteredPage, false, $debug, $params['correspondance']);
             $searchResults[$data['id_fiche']] = $data;
         }
+
         return $searchResults;
     }
 
-    /** format data as in sql
-     * @param string $rawValue
+    /** format data as in sql.
      * @return string $formatedValue
      */
     private function convertToRawJSONStringForREGEXP(string $rawValue): string
     {
         $valueJSON = substr(json_encode($rawValue), 1, strlen(json_encode($rawValue)) - 2);
         $formattedValue = str_replace(['\\', '\''], ['\\\\', '\\\''], $valueJSON);
+
         return $this->dbService->escape($formattedValue);
     }
 
     /**
-     * Validate the fiche's data
+     * Validate the fiche's data.
+     *
      * @param $data
+     *
      * @throws Exception
      */
     public function validate($data)
@@ -480,12 +486,15 @@ class EntryManager
     }
 
     /**
-     * Create a new fiche
+     * Create a new fiche.
+     *
      * @param $formId
      * @param $data
      * @param false $semantic
-     * @param null $sourceUrl
+     * @param null  $sourceUrl
+     *
      * @return array
+     *
      * @throws Exception
      */
     public function create($formId, $data, $semantic = false, $sourceUrl = null)
@@ -575,12 +584,15 @@ class EntryManager
     }
 
     /**
-     * Update an entry with the provided data
+     * Update an entry with the provided data.
+     *
      * @param $tag
      * @param $data
      * @param false $semantic
-     * @param false $replace If true, all the data will be provided (no merge with the previous data)
+     * @param false $replace  If true, all the data will be provided (no merge with the previous data)
+     *
      * @return array
+     *
      * @throws Exception
      */
     public function update($tag, $data, $semantic = false, $replace = false)
@@ -638,9 +650,10 @@ class EntryManager
      * without user modification.
      * As the fields are rectricted at reading, the right must be bypassed to load them.
      *
-     * @param array $data the provided data to update
+     * @param array $data         the provided data to update
      * @param array $previousData the provided previousData to update
-     * @param array $form the entry form
+     * @param array $form         the entry form
+     *
      * @return array the data with the restricted values added
      */
     protected function assignRestrictedFields(array $data, array $previousData, array $form)
@@ -671,15 +684,19 @@ class EntryManager
                 }
             }
         }
+
         return $data;
     }
 
     /**
-     * Add the $previousData attributes which match the actual form and which are not in $data
+     * Add the $previousData attributes which match the actual form and which are not in $data.
+     *
      * @param array $previousData the data saved in the entry
-     * @param array $form the entry form
-     * @param array $data the provided data to update
+     * @param array $form         the entry form
+     * @param array $data         the provided data to update
+     *
      * @return array the data with the merged values
+     *
      * @throws Exception
      */
     protected function mergeFields(array $previousData, array $data, array $form)
@@ -692,12 +709,14 @@ class EntryManager
                 }
             }
         }
+
         return $data;
     }
 
     /**
      * @param $entryId
      * @param $accepted
+     *
      * @throws Exception
      */
     public function publish($entryId, $accepted)
@@ -717,9 +736,10 @@ class EntryManager
     }
 
     /**
-     * Delete a fiche
+     * Delete a fiche.
+     *
      * @param $tag
-     * @param bool $forceEvenIfNotOwner
+     *
      * @throws Exception
      */
     public function delete($tag, bool $forceEvenIfNotOwner = false)
@@ -741,7 +761,7 @@ class EntryManager
         $this->tripleStore->delete($tag, TripleStore::SOURCE_URL_URI, null, '', '');
         $this->wiki->LogAdministrativeAction(
             $this->authController->getLoggedUserName(),
-            "Suppression de la page ->\"\"" . $tag . "\"\""
+            'Suppression de la page ->""' . $tag . '""'
         );
 
         unset($this->cachedEntriestags[$tag]);
@@ -758,15 +778,18 @@ class EntryManager
                 $data[$key] = _convert($value, 'UTF-8');
             }
         }
+
         return $data;
     }
 
     /**
      * prepare la requete d'insertion ou de MAJ de la fiche en supprimant
      * de la valeur POST les valeurs inadequates et en formattant les champs.
+     *
      * @param $data
-     * @param bool $isCreation
+     *
      * @return array
+     *
      * @throws Exception
      */
     public function formatDataBeforeSave($data, bool $isCreation = false)
@@ -859,12 +882,14 @@ class EntryManager
 
     /**
      * Append data needed for display
-     * TODO move this to a class dedicated to display
+     * TODO move this to a class dedicated to display.
+     *
      * @param $fiche
-     * @param bool $semantic
+     * @param bool   $semantic
      * @param string $correspondance
-     * @param array $page , appendDisplayData is called in environement with access to $page
-     *      helping to get owner without asking a new Time to Page manager to get it
+     * @param array  $page           , appendDisplayData is called in environement with access to $page
+     *                               helping to get owner without asking a new Time to Page manager to get it
+     *
      * @throws Exception
      */
     public function appendDisplayData(&$fiche, $semantic, $correspondance, array $page)
@@ -887,7 +912,7 @@ class EntryManager
                     }
                 }
             } catch (ParsingMultipleException $th) {
-                echo '<div class="alert alert-danger">' . str_replace("\n", "<br/>", _t('BAZ_CORRESPONDANCE_ERROR2')) . '</div>';
+                echo '<div class="alert alert-danger">' . str_replace("\n", '<br/>', _t('BAZ_CORRESPONDANCE_ERROR2')) . '</div>';
             }
         }
 
@@ -909,11 +934,11 @@ class EntryManager
     }
 
     /**
-     * extract multiples parameters from argument
-     * @param string $param
+     * extract multiples parameters from argument.
+     *
      * @param string $firstseparator
      * @param string $secondseparator
-     * @return array
+     *
      * @throws ParsingMultipleException
      */
     public function getMultipleParameters(string $param, $firstseparator = ',', $secondseparator = '='): array
@@ -949,6 +974,7 @@ class EntryManager
                 }
             }
         }
+
         return $tabparam;
     }
 
@@ -959,6 +985,7 @@ class EntryManager
             $sendmail = $data['sendmail'];
             unset($data['sendmail']);
         }
+
         return $sendmail;
     }
 
@@ -975,8 +1002,10 @@ class EntryManager
     }
 
     /**
-     * sanitize formsIds and get forms
+     * sanitize formsIds and get forms.
+     *
      * @param mixed $formsIds
+     *
      * @return array $forms
      */
     private function getFormsFromIds($formsIds): array
@@ -1001,12 +1030,11 @@ class EntryManager
         }
     }
 
-
     /**
      * remove attributes from entries only for admins !!!
+     *
      * @param array $params
-     * @param array $attributesNames
-     * @param bool $applyOnAllRevisions
+     *
      * @return bool true if attributesNames are foond and replaced
      */
     public function removeAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false): bool
@@ -1016,9 +1044,9 @@ class EntryManager
 
     /**
      * remove attributes from entries only for admins !!!
+     *
      * @param array $params
-     * @param array $attributesNames
-     * @param bool $applyOnAllRevisions
+     *
      * @return array with entry's ids if attributesNames are found and replaced
      */
     public function removeAttributesAndReturnList($params, array $attributesNames, bool $applyOnAllRevisions = false): array
@@ -1028,9 +1056,10 @@ class EntryManager
 
     /**
      * rename attributes from entries only for admins !!!
+     *
      * @param array $params
      * @param array $attributesNames [$oldName => $newName]
-     * @param bool $applyOnAllRevisions
+     *
      * @return bool true if attributesNames are foond and replaced
      */
     public function renameAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false): bool
@@ -1040,9 +1069,10 @@ class EntryManager
 
     /**
      * rename attributes from entries only for admins !!!
+     *
      * @param array $params
      * @param array $attributesNames [$oldName => $newName]
-     * @param bool $applyOnAllRevisions
+     *
      * @return array with entry's ids if attributesNames are found and replaced
      */
     public function renameAttributesAndReturnList($params, array $attributesNames, bool $applyOnAllRevisions = false): array
@@ -1052,10 +1082,9 @@ class EntryManager
 
     /**
      * manage attributes from entries only for admins !!!
+     *
      * @param array $params
-     * @param array $attributesNames
-     * @param bool $applyOnAllRevisions
-     * @param string $mode
+     *
      * @return array with entry's ids if attributesNames are found and replaced
      */
     private function manageAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false, string $mode = 'remove'): array
@@ -1069,7 +1098,7 @@ class EntryManager
 
         /* sanitize params */
         if (empty($attributesNames)) {
-            throw new \Exception("\$attributesNames sould not be empty !");
+            throw new \Exception('$attributesNames sould not be empty !');
         } elseif ($mode === 'rename') {
             if (!empty(array_filter(
                 $attributesNames,
@@ -1077,7 +1106,7 @@ class EntryManager
                     return !is_array($attributeName) || count($attributeName) != 1 || !is_scalar($attributeName[array_keys($attributeName)[0]]);
                 }
             ))) {
-                throw new \Exception("\$attributesNames sould be array of arrays with only one elem !");
+                throw new \Exception('$attributesNames sould be array of arrays with only one elem !');
             }
         } elseif (
             !empty(array_filter(
@@ -1087,7 +1116,7 @@ class EntryManager
                 }
             ))
         ) {
-            throw new \Exception("\$attributesNames sould be array of string !");
+            throw new \Exception('$attributesNames sould be array of string !');
         }
 
         $attributesQueries = [];

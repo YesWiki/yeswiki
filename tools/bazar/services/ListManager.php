@@ -7,8 +7,8 @@ use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\PageManager;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Core\Service\TripleStore;
+use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class ListManager
@@ -88,7 +88,7 @@ class ListManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        $id = genere_nom_wiki('Liste '.$title);
+        $id = genere_nom_wiki('Liste ' . $title);
 
         $values = $this->sanitizeHMTL($values);
 
@@ -101,7 +101,7 @@ class ListManager
 
         $this->pageManager->save($id, json_encode([
             'titre_liste' => $title,
-            'label' => $values
+            'label' => $values,
         ]));
 
         $this->tripleStore->create($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
@@ -125,7 +125,7 @@ class ListManager
 
         $this->pageManager->save($id, json_encode([
             'titre_liste' => $title,
-            'label' => $values
+            'label' => $values,
         ]));
     }
 

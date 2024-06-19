@@ -47,17 +47,19 @@ class LinkTracker
         if ($newState !== null) {
             $this->enabled = $newState;
         }
+
         return $oldState;
     }
 
     public function forceAddIfNotIncluded(string $tag): bool
     {
-        $inclusions = $this->wiki->GetAllInclusions() ;
+        $inclusions = $this->wiki->GetAllInclusions();
         if ($inclusions && count($inclusions) < 2 && !in_array($tag, $this->links)) {
-            $this->links[] = $tag ;
-            return true ;
+            $this->links[] = $tag;
+
+            return true;
         } else {
-            return false ;
+            return false;
         }
     }
 
@@ -81,13 +83,13 @@ class LinkTracker
         $fromTag = $this->wiki->GetPageTag();
 
         // Delete old links for this page
-        $this->dbService->query('DELETE FROM '.$this->dbService->prefixTable('links')."WHERE from_tag = '" . $this->dbService->escape($fromTag) . "'");
+        $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('links') . "WHERE from_tag = '" . $this->dbService->escape($fromTag) . "'");
 
         if ($tags = $this->getAll()) {
             $written = [];
             foreach ($tags as $toTag) {
                 if (!isset($written[strtolower($toTag)])) {
-                    $this->dbService->query('INSERT INTO '.$this->dbService->prefixTable('links')."SET from_tag = '" . $this->dbService->escape($fromTag) . "', to_tag = '" . $this->dbService->escape($toTag) . "'");
+                    $this->dbService->query('INSERT INTO ' . $this->dbService->prefixTable('links') . "SET from_tag = '" . $this->dbService->escape($fromTag) . "', to_tag = '" . $this->dbService->escape($toTag) . "'");
                     $written[strtolower($toTag)] = 1;
                 }
             }
@@ -100,17 +102,15 @@ class LinkTracker
     }
 
     /**
-     * register links for the $pageTag
-     * @param array $page
-     * @param bool $trackMetadata
-     * @param bool $refreshPreviousTag
+     * register links for the $pageTag.
+     *
      * @return array $childrenTags
      */
     public function registerLinks(array $page, bool $trackMetadata = false, bool $refreshPreviousTag = true): array
     {
         if ($refreshPreviousTag) {
-            $previousTag = $this->wiki->tag ;
-            $previousPage = $this->wiki->page ;
+            $previousTag = $this->wiki->tag;
+            $previousPage = $this->wiki->page;
             $previousInclusions = $this->wiki->SetInclusions();
         }
         $this->clear();
@@ -121,18 +121,18 @@ class LinkTracker
         $body = $this->preventTrackingActions($page['body']);
         $body = $this->preventNotTrackingActions($body);
         $this->wiki->Format($body);
-        if (!empty($page["owner"])) {
-            $ownerPage = $this->pageManager->getOne($page["owner"]);
+        if (!empty($page['owner'])) {
+            $ownerPage = $this->pageManager->getOne($page['owner']);
             if (!empty($ownerPage)) {
-                $this->add($page["owner"]);
+                $this->add($page['owner']);
             }
         }
-        if ($trackMetadata && !empty($page["metadatas"])) {
+        if ($trackMetadata && !empty($page['metadatas'])) {
             foreach (ThemeManager::SPECIAL_METADATA as $specialPageKey) {
-                if ($specialPageKey !== 'favorite_preset' && !empty($page["metadatas"][$specialPageKey])) {
-                    $specialPage = $this->pageManager->getOne($page["metadatas"][$specialPageKey]);
+                if ($specialPageKey !== 'favorite_preset' && !empty($page['metadatas'][$specialPageKey])) {
+                    $specialPage = $this->pageManager->getOne($page['metadatas'][$specialPageKey]);
                     if (!empty($specialPage)) {
-                        $this->add($specialPage["tag"]);
+                        $this->add($specialPage['tag']);
                     }
                 }
             }
@@ -164,10 +164,11 @@ class LinkTracker
                 $body = str_replace($matches[0][$key], '', $body);
                 $page = $this->pageManager->getOne($matches[1][$key]);
                 if (!empty($page)) {
-                    $this->add($page["tag"]);
+                    $this->add($page['tag']);
                 }
             }
         }
+
         return $body;
     }
 
@@ -178,6 +179,7 @@ class LinkTracker
                 $body = str_replace($matches[0][$key], '', $body);
             }
         }
+
         return $body;
     }
 }

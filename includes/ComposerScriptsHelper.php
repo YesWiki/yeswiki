@@ -3,8 +3,8 @@
 namespace YesWiki\Core;
 
 use Composer\Script\Event;
-use ZipArchive;
 use Throwable;
+use ZipArchive;
 
 class ComposerScriptsHelper
 {
@@ -44,13 +44,13 @@ class ComposerScriptsHelper
 
     private static function getPdfJsDistFiles(): array
     {
-        $url = "https://api.github.com/repos/mozilla/pdf.js/releases/latest";
+        $url = 'https://api.github.com/repos/mozilla/pdf.js/releases/latest';
         try {
             $content = file_get_contents($url, false, stream_context_create([
                 'http' => [
-                    'user_agent' => "Composer",
-                    "timeout" => 5 // total timeout in seconds
-                ]
+                    'user_agent' => 'Composer',
+                    'timeout' => 5, // total timeout in seconds
+                ],
             ]));
         } catch (Throwable $th) {
             return [];
@@ -61,11 +61,11 @@ class ComposerScriptsHelper
                 return $data;
             }
         }
+
         return [];
     }
 
     /**
-     * @param array $data
      * @return array ['fileName' => string, 'url' => string]
      */
     private static function extractPdfJsDistFileUrl(array $data): array
@@ -80,11 +80,12 @@ class ComposerScriptsHelper
                         'url' => $asset['browser_download_url'],
                         'major_revision' => $match[1],
                         'minor_revision' => $match[2],
-                        'buxfix_revision' => $match[3]
+                        'buxfix_revision' => $match[3],
                     ];
                 }
             }
         }
+
         return [];
     }
 
@@ -97,9 +98,9 @@ class ComposerScriptsHelper
                     try {
                         $zipContent = file_get_contents($params['url'], false, stream_context_create([
                             'http' => [
-                                'user_agent' => "Composer",
-                                "timeout" => 15 // total timeout in seconds
-                            ]
+                                'user_agent' => 'Composer',
+                                'timeout' => 15, // total timeout in seconds
+                            ],
                         ]));
                         if (!empty($zipContent)) {
                             $temp = tmpfile();
@@ -118,7 +119,7 @@ class ComposerScriptsHelper
                                                 json_encode([
                                                     'major_revision' => $params['major_revision'],
                                                     'minor_revision' => $params['minor_revision'],
-                                                    'buxfix_revision' => $params['buxfix_revision']
+                                                    'buxfix_revision' => $params['buxfix_revision'],
                                                 ])
                                             );
                                             if (file_exists('tools/attach/libs/pdf-viewer.php')) {
@@ -178,12 +179,13 @@ class ComposerScriptsHelper
             }
         } catch (Throwable $th) {
         }
+
         return false;
     }
 
     private static function deleteFolder($path)
     {
-        $file2ignore = array('.', '..');
+        $file2ignore = ['.', '..'];
         if (is_link($path)) {
             return unlink($path) !== false;
         } else {
@@ -202,6 +204,7 @@ class ComposerScriptsHelper
                 return false;
             }
         }
+
         return false;
     }
 
@@ -214,6 +217,7 @@ class ComposerScriptsHelper
             if (unlink($path)) {
                 return true;
             }
+
             return false;
         }
         if (is_dir($path)) {

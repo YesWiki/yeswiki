@@ -11,5 +11,5 @@ if ($pages = $this->LoadWantedPages()) {
     }
     echo "</ul>\n";
 } else {
-    echo "<i>"._t('NO_PAGE_TO_CREATE').".</i>";
+    echo '<i>' . _t('NO_PAGE_TO_CREATE') . '.</i>';
 }

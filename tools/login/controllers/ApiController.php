@@ -9,7 +9,7 @@ use YesWiki\Core\YesWikiController;
 class ApiController extends YesWikiController
 {
     /**
-     * Get all users or one user's information
+     * Get all users or one user's information.
      *
      * @param string $username specify username
      *
@@ -29,15 +29,16 @@ class ApiController extends YesWikiController
                 if ($user) {
                     $response = $user;
                 } else {
-                    $response = array('error' => array('User '.$username[0].' not found.'));
+                    $response = ['error' => ['User ' . $username[0] . ' not found.']];
                 }
             } else {
-                $response = array('error' => array('Unauthorized'));
+                $response = ['error' => ['Unauthorized']];
             }
         } else {
             $users = $wiki->LoadUsers();
             $response = $users;
         }
+
         return new ApiResponse($response);
     }
 
@@ -47,19 +48,21 @@ class ApiController extends YesWikiController
     public function getAuthAll()
     {
         $this->denyAccessUnlessAdmin();
+
         return $this->getAuth();
     }
 
     /**
-     * Display Auth api documentation
+     * Display Auth api documentation.
      *
      * @return string
      */
     public function getDocumentation()
     {
         $urlAuth = $this->wiki->href('', 'api/auth');
-        $output = '<h2>Extension login</h2>'."\n".
-        '<p><code>GET '.$urlAuth.'</code></p>';
+        $output = '<h2>Extension login</h2>' . "\n" .
+        '<p><code>GET ' . $urlAuth . '</code></p>';
+
         return $output;
     }
 }

@@ -12,7 +12,6 @@ require_once 'includes/objects/YesWikiHandler.php';
 require_once 'includes/objects/YesWikiFormatter.php';
 
 use Exception;
-use Throwable;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -24,20 +23,21 @@ use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
+use Throwable;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ApiService;
+use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\Service\ThemeManager;
+use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
-use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\YesWikiControllerResolver;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Tags\Service\TagsManager;
@@ -50,27 +50,27 @@ class Wiki
     public $method;
     public $page;
     public $tag;
-    public $parameter = array();
+    public $parameter = [];
     public $request;
     // current output used for actions/handlers/formatters
     public $output;
-    public $interWiki = array();
+    public $interWiki = [];
     public $VERSION;
     public $CookiePath = '/';
-    public $inclusions = array();
-    public $extensions = array();
-    public $routes = array();
+    public $inclusions = [];
+    public $extensions = [];
+    public $routes = [];
     public $user; // depreciated TODO remove it for ectoplasme : replaced by userManager
     public $services;
-    public $actionObjects = array(); // keep track of actions performed
-    public $pageCacheFormatted = array();
-    public $_groupsCache = array();
-    public $_actionsAclsCache = array();
+    public $actionObjects = []; // keep track of actions performed
+    public $pageCacheFormatted = [];
+    public $_groupsCache = [];
+    public $_actionsAclsCache = [];
 
     /**
-     * Constructor
+     * Constructor.
      */
-    public function __construct($config = array())
+    public function __construct($config = [])
     {
         $init = new \YesWiki\Init($config);
         $this->config = $init->config;
@@ -86,8 +86,9 @@ class Wiki
     // MISC
     public function GetMicroTime()
     {
-        list($usec, $sec) = explode(" ", microtime());
-        return ((float) $usec + (float) $sec);
+        list($usec, $sec) = explode(' ', microtime());
+
+        return (float)$usec + (float)$sec;
     }
 
     // VARIABLES
@@ -144,7 +145,8 @@ class Wiki
      * Enregistre une nouvelle inclusion dans la pile d'inclusions.
      *
      * @param string $pageTag
-     *            Le nom de la page qui va etre inclue
+     *                        Le nom de la page qui va etre inclue
+     *
      * @return int Le nombre d'elements dans la pile
      */
     public function RegisterInclusion($pageTag)
@@ -156,7 +158,7 @@ class Wiki
      * Retire le dernier element de la pile d'inclusions.
      *
      * @return string Le nom de la page dont l'inclusion devrait se terminer.
-     *         null s'il n'y a plus d'inclusion dans la pile.
+     *                null s'il n'y a plus d'inclusion dans la pile.
      */
     public function UnregisterLastInclusion()
     {
@@ -169,8 +171,9 @@ class Wiki
      * @example // dans le cas d'une action comme l'ActionEcrivezMoi
      *          if($inc = $this->CurrentInclusion() && strtolower($this->GetPageTag()) != $inc)
      *          echo 'Cette action ne peut etre appelee depuis une page inclue';
-     * @return string Le nom (tag) de la page (en minuscules)
-     *         false si la pile est vide.
+     *
+     * @return string le nom (tag) de la page (en minuscules)
+     *                false si la pile est vide
      */
     public function GetCurrentInclusion()
     {
@@ -178,10 +181,11 @@ class Wiki
     }
 
     /**
-     * Verifie si on est a l'interieur d'une inclusion par $pageTag (sans tenir compte de la casse)
+     * Verifie si on est a l'interieur d'une inclusion par $pageTag (sans tenir compte de la casse).
      *
      * @param string $pageTag
-     *            Le nom de la page a verifier
+     *                        Le nom de la page a verifier
+     *
      * @return bool True si on est a l'interieur d'une inclusion par $pageTag (false sinon)
      */
     public function IsIncludedBy($pageTag)
@@ -190,9 +194,8 @@ class Wiki
     }
 
     /**
-     *
-     * @return array La pile d'inclusions
-     *         L'element 0 sera la derniere inclusion, l'element 1 sera son parent et ainsi de suite.
+     * @return array la pile d'inclusions
+     *               L'element 0 sera la derniere inclusion, l'element 1 sera son parent et ainsi de suite
      */
     public function GetAllInclusions()
     {
@@ -206,12 +209,14 @@ class Wiki
      * @param array $
      *            La nouvelle pile d'inclusions.
      *            L'element 0 doit representer la derniere inclusion, l'element 1 son parent et ainsi de suite.
-     * @return array L'ancienne pile d'inclusions, avec les noms des pages en minuscules.
+     *
+     * @return array L'ancienne pile d'inclusions, avec les noms des pages en minuscules
      */
-    public function SetInclusions($pile = array())
+    public function SetInclusions($pile = [])
     {
         $temp = $this->inclusions;
         $this->inclusions = $pile;
+
         return $temp;
     }
 
@@ -227,14 +232,15 @@ class Wiki
 
     /**
      * AppendContentToPage
-     * Ajoute du contenu a la fin d'une page
+     * Ajoute du contenu a la fin d'une page.
      *
      * @param string $content
-     *            Contenu a ajouter a la page
+     *                            Contenu a ajouter a la page
      * @param string $page
-     *            Nom de la page
-     * @param boolean $bypass_acls
-     *            Bouleen pour savoir s'il faut bypasser les ACLs
+     *                            Nom de la page
+     * @param bool   $bypass_acls
+     *                            Bouleen pour savoir s'il faut bypasser les ACLs
+     *
      * @return int Code d'erreur : 0 (succes), 1 (pas de contenu specifie)
      */
     public function AppendContentToPage($content, $page, $bypass_acls = false)
@@ -268,24 +274,24 @@ class Wiki
     }
 
     /**
-     * LogAdministrativeAction($user, $content, $page = "")
+     * LogAdministrativeAction($user, $content, $page = "").
      *
      * @param string $user
-     *            Utilisateur
+     *                        Utilisateur
      * @param string $content
-     *            Contenu de l'enregistrement
+     *                        Contenu de l'enregistrement
      * @param string $page
-     *            Page de log
+     *                        Page de log
      *
      * @return int Code d'erreur : 0 (succes), 1 (pas de contenu specifie)
      */
     public function LogAdministrativeAction($user, $content, $page = '')
     {
-        $order = array(
+        $order = [
             "\r\n",
             "\n",
-            "\r"
-        );
+            "\r",
+        ];
         $replace = '\\n';
         $content = str_replace($order, $replace, $content);
         $contentToAppend = "\n" . date('Y-m-d H:i:s') . ' . . . . ' . $user . ' . . . . ' . $content . "\n";
@@ -327,6 +333,7 @@ class Wiki
             } catch (Throwable $th) {
             }
         }
+
         return $result;
     }
 
@@ -383,6 +390,7 @@ class Wiki
         }
 
         $_SESSION['message'] = '';
+
         return $message;
     }
 
@@ -390,7 +398,8 @@ class Wiki
     {
         $url = explode('wakka.php', $this->config['base_url']);
         $url = explode('index.php', $url[0]);
-        $url = preg_replace(array('/\/\?$/', '/\/$/'), '', $url[0]);
+        $url = preg_replace(['/\/\?$/', '/\/$/'], '', $url[0]);
+
         return $url;
     }
 
@@ -400,7 +409,7 @@ class Wiki
         $this->exit();
     }
 
-    public function exit(string $message = "")
+    public function exit(string $message = '')
     {
         if ($this->isCli()) {
             throw new ExitException($message);
@@ -425,7 +434,7 @@ class Wiki
         if ($tag == null || !$tag = trim($tag)) {
             $tag = $this->tag;
         }
-        $href = $this->config["base_url"] . $this->MiniHref($method, $tag);
+        $href = $this->config['base_url'] . $this->MiniHref($method, $tag);
         if ($params) {
             if (is_array($params)) {
                 $paramsArray = [];
@@ -433,7 +442,7 @@ class Wiki
                     if (!empty($value) || in_array($value, [0, '0', ''], true)) {
                         $paramsArray[] = "$key=" . urlencode($value);
                     }
-                };
+                }
                 if (count($paramsArray) > 0) {
                     $params = implode(($htmlspchars ? '&amp;' : '&'), $paramsArray);
                 } else {
@@ -445,16 +454,18 @@ class Wiki
         if (isset($_GET['lang']) && $_GET['lang'] != '') {
             $href .= '&lang=' . $GLOBALS['prefered_language'];
         }
+
         return $href;
     }
 
     /**
-     * Handle string that could be a valid url, a yeswiki short link, or anything else (anchor, relative url..)
+     * Handle string that could be a valid url, a yeswiki short link, or anything else (anchor, relative url..).
      *
      * if a yeswiki short link if discovered, it will be completed in order to have a real url
-     * @param string $link the link to parse
-     * @return string url
      *
+     * @param string $link the link to parse
+     *
+     * @return string url
      */
     public function generateLink($link): ?string
     {
@@ -473,15 +484,17 @@ class Wiki
             }
         }
     }
+
     /**
      * Extract the different part of a link of the style MyTag/method?param1=value1&param2=value2...
      *
      * The resulting array has the tree keys : 'tag' (string), 'method' (string) and 'params' (arrays of key/value for
      * each param). 'tag' can't have a null value, but 'method' can, and 'params' can also return an empty array.
      * If the link has a '/' and a '?' but no letter between (no method), the url is not recognized.
-     * @param $link the link to parse
-     * @return array|null if the link is recognize return the result array, otherwise nullhref
      *
+     * @param $link the link to parse
+     *
+     * @return array|null if the link is recognize return the result array, otherwise nullhref
      */
     public function extractLinkParts($link): ?array
     {
@@ -498,7 +511,7 @@ class Wiki
             return [
                 'tag' => $tag,
                 'method' => $method,
-                'params' => $params
+                'params' => $params,
             ];
         } else {
             return null;
@@ -508,9 +521,9 @@ class Wiki
     /**
      * @deprecated Use LinkTo instead
      */
-    public function ComposeLinkToPage($tag, $method = "", $text = "", $track = 1)
+    public function ComposeLinkToPage($tag, $method = '', $text = '', $track = 1)
     {
-        return $this->LinkTo($tag, $text, ["method" => $method, "track" => $track]);
+        return $this->LinkTo($tag, $text, ['method' => $method, 'track' => $track]);
     }
 
     /**
@@ -519,10 +532,10 @@ class Wiki
     public function Link($tag, $method = null, $params = null, $text = null, $track = 1, $forcedLink = false)
     {
         return $this->LinkTo($tag, $text, [
-            "method" => $method,
-            "params" => $params,
-            "track" => $track,
-            "class" => $forcedLink ? 'forced-link' : '' // Cannot find any use of this forced-link...
+            'method' => $method,
+            'params' => $params,
+            'track' => $track,
+            'class' => $forcedLink ? 'forced-link' : '', // Cannot find any use of this forced-link...
         ]);
     }
 
@@ -535,12 +548,13 @@ class Wiki
      * LinkTo("WikiPage/edit?params=2", "ma page")
      * LinkTo("https://test.fr", "mon lien", ["class" => "yeah"])
      *
-     * @param string $link $url, or wiki $tag
+     * @param string $link    $url, or wiki $tag
      * @param string $text
-     * @param array $options Array of HTML options. You can also provide 'track' and 'method'
+     * @param array  $options Array of HTML options. You can also provide 'track' and 'method'
+     *
      * @return string HTML link
      */
-    public function LinkTo($link, $text = "", $options = [])
+    public function LinkTo($link, $text = '', $options = [])
     {
         if (!$text) {
             $text = $link;
@@ -602,6 +616,7 @@ class Wiki
                     $encodedValue = is_string($value)
                         ? $value
                         : json_encode($value);
+
                     return "$key=\"$encodedValue\"";
                 },
                 array_keys($options)
@@ -628,7 +643,7 @@ class Wiki
             'theme' => 'favorite_theme',
             'squelette' => 'favorite_squelette',
             'style' => 'favorite_style',
-            'bgimg' => 'favorite_background_image'
+            'bgimg' => 'favorite_background_image',
         ];
         foreach ($fromConfig as $param => $configKey) {
             if (!empty($config[$configKey])) {
@@ -693,7 +708,7 @@ class Wiki
     }
 
     // REFERRERS
-    public function LogReferrer($tag = "", $referrer = "")
+    public function LogReferrer($tag = '', $referrer = '')
     {
         // fill values
         if (!$tag = trim($tag)) {
@@ -713,40 +728,41 @@ class Wiki
                 return;
             }
 
-            $this->Query('insert into ' . $this->config['table_prefix'] . 'referrers set ' . "page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "', " . "referrer = '" . mysqli_real_escape_string($this->dblink, $referrer) . "', " . "time = now()");
+            $this->Query('insert into ' . $this->config['table_prefix'] . 'referrers set ' . "page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "', " . "referrer = '" . mysqli_real_escape_string($this->dblink, $referrer) . "', " . 'time = now()');
         }
     }
 
-    public function LoadReferrers($tag = "")
+    public function LoadReferrers($tag = '')
     {
-        return $this->LoadAll('select referrer, count(referrer) as num from ' . $this->config['table_prefix'] . 'referrers ' . ($tag = trim($tag) ? "where page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "'" : "") . " group by referrer order by num desc");
+        return $this->LoadAll('select referrer, count(referrer) as num from ' . $this->config['table_prefix'] . 'referrers ' . ($tag = trim($tag) ? "where page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "'" : '') . ' group by referrer order by num desc');
     }
 
     public function PurgeReferrers()
     {
-        if (($days = $this->GetConfigValue("referrers_purge_time")) && !$this->services->get(SecurityController::class)->isWikiHibernated()) {
+        if (($days = $this->GetConfigValue('referrers_purge_time')) && !$this->services->get(SecurityController::class)->isWikiHibernated()) {
             $this->Query('delete from ' . $this->config['table_prefix'] . "referrers where time < date_sub(now(), interval '" . mysqli_real_escape_string($this->dblink, $days) . "' day)");
         }
     }
 
     /**
-     * Executes an "action" module and returns the generated output
+     * Executes an "action" module and returns the generated output.
      *
      * @param string $action
-     *            The name of the action and its eventual parameters,
-     *            as it appears in the page between "{{" and "}}"
-     * @param boolean $forceLinkTracking
-     *            By default, the link tracking will be disabled
-     *            during the call of an action. Set this value to <code>true</code> to allow it.
-     * @param array $vars
-     *            An array of additionnal parameters to give to the action, in the form
-     *            array( 'param' => 'value').
-     *            This allows you to call Action() internally, setting $action to the name of the action
-     *            you want to call and it's parameters in an array, wich is more efficient than
-     *            the pattern-matching algorithm used to extract the parameters from $action.
-     * @return string The output generated by the action.
+     *                                  The name of the action and its eventual parameters,
+     *                                  as it appears in the page between "{{" and "}}"
+     * @param bool   $forceLinkTracking
+     *                                  By default, the link tracking will be disabled
+     *                                  during the call of an action. Set this value to <code>true</code> to allow it.
+     * @param array  $vars
+     *                                  An array of additionnal parameters to give to the action, in the form
+     *                                  array( 'param' => 'value').
+     *                                  This allows you to call Action() internally, setting $action to the name of the action
+     *                                  you want to call and it's parameters in an array, wich is more efficient than
+     *                                  the pattern-matching algorithm used to extract the parameters from $action.
+     *
+     * @return string the output generated by the action
      */
-    public function Action($action, $forceLinkTracking = 0, $vars = array())
+    public function Action($action, $forceLinkTracking = 0, $vars = [])
     {
         $cmd = trim($action);
         $cmd = str_replace("\n", ' ', $cmd);
@@ -758,7 +774,7 @@ class Wiki
 
         // match all attributes (key and value)
         // prepare an array for extract() to work with (in $this->IncludeBuffered())
-        if (preg_match_all("/([a-zA-Z0-9_]*)=\"(.*)\"/U", $vars_temp, $matches)) {
+        if (preg_match_all('/([a-zA-Z0-9_]*)="(.*)"/U', $vars_temp, $matches)) {
             for ($a = 0; $a < count($matches[1]); $a++) {
                 $vars[$matches[1][$a]] = $matches[2][$a];
             }
@@ -774,6 +790,7 @@ class Wiki
         ]);
         $result = $this->services->get(Performer::class)->run($action, 'action', $vars);
         $this->StartLinkTracking(); // shouldn't we restore the previous status ?
+
         return $result;
     }
 
@@ -788,7 +805,7 @@ class Wiki
     }
 
     /**
-     * Executes a file in a buffer, so we can work on the output variable $plugin_out_new before display
+     * Executes a file in a buffer, so we can work on the output variable $plugin_out_new before display.
      *
      * This method is used by Performer Service
      * We need to run this method in YesWiki class, so the variable $this will be referencing YesWiki
@@ -798,6 +815,7 @@ class Wiki
      * will be not used by users for an performable argument)
      * @param array vars the variables used as an execution context. 'plugin_output_new' represents the current output
      * (strange variable name, but it's used in everywhere, so let's keep it... !)
+     *
      * @return array the execution context variables updated by the execution (with 'plugin_output_new for the current output)
      */
     public function runFileInBuffer($___file, array $vars)
@@ -813,7 +831,7 @@ class Wiki
 
         ob_start();
         try {
-            include($___file);
+            include $___file;
         } catch (Throwable $throwableToThrow) {
             // $throwableToThrow is thrown at the of the method because ob_end_clean() and get_defined_vars()
             // could change the way to catch Throwable at higher levels
@@ -834,14 +852,16 @@ class Wiki
         if (isset($throwableToThrow)) {
             throw $throwableToThrow;
         }
+
         return $updatedVars;
     }
 
     /**
-     * Ajout d'un parametre
+     * Ajout d'un parametre.
      *
      * @param string $parameter nom du parametre
-     * @param mixed $value valeur du parametre
+     * @param mixed  $value     valeur du parametre
+     *
      * @return void
      */
     public function setParameter($parameter, $value)
@@ -851,7 +871,7 @@ class Wiki
 
     public function GetParameter($parameter, $default = '')
     {
-        return (isset($this->parameter[$parameter]) ? $this->parameter[$parameter] : $default);
+        return isset($this->parameter[$parameter]) ? $this->parameter[$parameter] : $default;
     }
 
     // COMMENTS
@@ -859,10 +879,12 @@ class Wiki
      * Charge les derniers commentaires de toutes les pages.
      *
      * @param int $limit
-     *            Nombre de commentaires charges.
-     *            0 par d?faut (ie tous les commentaires).
-     * @return array Tableau contenant chaque commentaire et ses
-     *         proprietes associees.
+     *                   Nombre de commentaires charges.
+     *                   0 par d?faut (ie tous les commentaires).
+     *
+     * @return array tableau contenant chaque commentaire et ses
+     *               proprietes associees
+     *
      * @todo Ajouter le parametre $start pour permettre une pagination
      *       des commentaires : ->LoadRecentComments(10, 10)
      */
@@ -876,12 +898,12 @@ class Wiki
         }
 
         // Query
-        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . 'pages ' . 'where comment_on != "" ' . "and latest = 'Y' " . "order by time desc " . $lim);
+        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . 'pages ' . 'where comment_on != "" ' . "and latest = 'Y' " . 'order by time desc ' . $lim);
     }
 
     public function LoadRecentlyCommented($limit = 50)
     {
-        $pages = array();
+        $pages = [];
 
         // NOTE: this is really stupid. Maybe my SQL-Fu is too weak, but apparently there is no easier way to simply select
         // all comment pages sorted by their first revision's (!) time. ugh!
@@ -921,12 +943,13 @@ class Wiki
         if (!$user = $this->GetUser()) {
             return false;
         }
-        return ($user['show_comments'] == 'Y');
+
+        return $user['show_comments'] == 'Y';
     }
 
     // ACCESS CONTROL
     // returns true if logged in user is owner of current page, or page specified in $tag
-    public function UserIsOwner($tag = "")
+    public function UserIsOwner($tag = '')
     {
         // check if user is logged in
         if (!$this->GetUser()) {
@@ -939,14 +962,15 @@ class Wiki
         }
 
         // check if user is owner
-        return ($this->GetPageOwner($tag) == $this->GetUserName());
+        return $this->GetPageOwner($tag) == $this->GetUserName();
     }
 
     /**
-     *
      * @param string $group
-     *            The name of a group
+     *                      The name of a group
+     *
      * @return string the ACL associated with the group $gname
+     *
      * @see UserIsInGroup to check if a user belongs to some group
      */
     public function GetGroupACL($group)
@@ -954,20 +978,22 @@ class Wiki
         if (array_key_exists($group, $this->_groupsCache)) {
             return $this->_groupsCache[$group];
         }
+
         return $this->_groupsCache[$group] = $this->GetTripleValue($group, WIKINI_VOC_ACLS, GROUP_PREFIX);
     }
 
     /**
      * Checks if a new group acl is not defined recursively
-     * (this method expects that groups that are already defined are not themselves defined recursively...)
+     * (this method expects that groups that are already defined are not themselves defined recursively...).
      *
      * @param string $gname
-     *            The name of the group
+     *                      The name of the group
      * @param string $acl
-     *            The new acl for that group
-     * @return boolean True if the new acl defines the group recursively
+     *                      The new acl for that group
+     *
+     * @return bool True if the new acl defines the group recursively
      */
-    public function MakesGroupRecursive($gname, $acl, $origin = null, $checked = array())
+    public function MakesGroupRecursive($gname, $acl, $origin = null, $checked = [])
     {
         $gname = strtolower(trim($gname));
         if ($origin === null) {
@@ -999,19 +1025,22 @@ class Wiki
             }
         }
         $checked[] = $gname;
+
         return false;
     }
 
     /**
-     * Sets a new ACL to a given group
+     * Sets a new ACL to a given group.
      *
      * @param string $gname
-     *            The name of a group
+     *                      The name of a group
      * @param string $acl
-     *            The new ACL to associate with the group $gname
+     *                      The new ACL to associate with the group $gname
+     *
      * @return int 0 if successful, a triple error code or a specific error code:
-     *         1000 if the new value would define the group recursively
-     *         1001 if $gname is not named with alphanumeric chars
+     *             1000 if the new value would define the group recursively
+     *             1001 if $gname is not named with alphanumeric chars
+     *
      * @see GetGroupACL
      */
     public function SetGroupACL($gname, $acl)
@@ -1046,26 +1075,27 @@ class Wiki
     }
 
     /**
-     *
      * @return array The list of all group names
      */
     public function GetGroupsList()
     {
         $res = $this->GetMatchingTriples(GROUP_PREFIX . '%', WIKINI_VOC_ACLS_URI);
         $prefix_len = strlen(GROUP_PREFIX);
-        $list = array();
+        $list = [];
         foreach ($res as $line) {
             $list[] = substr($line['resource'], $prefix_len);
         }
+
         return $list;
     }
 
     /**
-     * Checks if a given user is administrator
+     * Checks if a given user is administrator.
      *
      * @param string $user
-     *            The name of the user (defaults to the current user if not given)
-     * @return boolean true iff the user is an administrator
+     *                     The name of the user (defaults to the current user if not given)
+     *
+     * @return bool true iff the user is an administrator
      */
     public function UserIsAdmin($user = null)
     {
@@ -1081,10 +1111,11 @@ class Wiki
      *  value = +
      *
      * @param string $module
-     *            The name of the module
+     *                            The name of the module
      * @param string $module_type
-     *            The type of module: 'action' or 'handler'
-     * @return string The ACL string  for the given module or "*" if not found.
+     *                            The type of module: 'action' or 'handler'
+     *
+     * @return string the ACL string  for the given module or "*" if not found
      */
     public function GetModuleACL($module, $module_type)
     {
@@ -1104,18 +1135,20 @@ class Wiki
             default:
                 return null; // TODO error msg ?
         }
+
         return $acl === null ? '*' : $acl;
     }
 
     /**
-     * Sets the $acl for a given $module
+     * Sets the $acl for a given $module.
      *
      * @param string $module
-     *            The name of the module
+     *                            The name of the module
      * @param string $module_type
-     *            The type of module ('action' or 'handler')
+     *                            The type of module ('action' or 'handler')
      * @param string $acl
-     *            The new ACL for that module
+     *                            The new ACL for that module
+     *
      * @return 0 on success, > 0 on error (see InsertTriple and UpdateTriple)
      */
     public function SetModuleACL($module, $module_type, $acl)
@@ -1138,16 +1171,17 @@ class Wiki
     }
 
     /**
-     * Checks if a $user satisfies the ACL to access a certain $module
+     * Checks if a $user satisfies the ACL to access a certain $module.
      *
      * @param string $module
-     *            The name of the module to access
+     *                            The name of the module to access
      * @param string $module_type
-     *            The type of the module ('action' or 'handler')
+     *                            The type of the module ('action' or 'handler')
      * @param string $user
-     *            The name of the user. By default
-     *            the current remote user.
-     * @return bool True if the $user has access to the given $module, false otherwise.
+     *                            The name of the user. By default
+     *                            the current remote user.
+     *
+     * @return bool true if the $user has access to the given $module, false otherwise
      */
     public function CheckModuleACL($module, $module_type, $user = null)
     {
@@ -1155,6 +1189,7 @@ class Wiki
         if ($acl === null) {
             return true; // undefined ACL means everybody has access
         }
+
         return $this->CheckACL($acl, $user);
     }
 
@@ -1182,11 +1217,11 @@ class Wiki
         }
 
         if (!$this->method = trim($method)) {
-            $this->method = "show";
+            $this->method = 'show';
         }
 
         if (!$this->tag = trim($tag)) {
-            $this->Redirect($this->href("", $this->config['root_page']));
+            $this->Redirect($this->href('', $this->config['root_page']));
         }
 
         $this->services->get(AuthController::class)->connectUser();
@@ -1238,7 +1273,7 @@ class Wiki
         // Use query string as the path (part before '&')
         $extract = explode('&', $context->getQueryString());
         $path = $extract[0];
-        if (strpos($path, "=") !== false) {
+        if (strpos($path, '=') !== false) {
             if (!empty($this->method)) {
                 if ($this->method === 'show' && $path === 'wiki=api') {
                     $path = 'api';
@@ -1262,7 +1297,6 @@ class Wiki
 
         $controllerResolver = new YesWikiControllerResolver($this);
         $argumentResolver = new ArgumentResolver();
-
 
         // start buffer to prevent bad formatting response
         ob_start();
@@ -1318,16 +1352,13 @@ class Wiki
     }
 
     /**
-     * furnish a method to generateRandomString
-     * @param int $length
-     * @param string $charset
-     * @return string
+     * furnish a method to generateRandomString.
      */
     public function generateRandomString(
         int $length = 30,
         string $charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-_*=.:,?'
     ): string {
-        $randompassword = "";
+        $randompassword = '';
         $maxIndex = strlen($charset) - 1;
 
         if ($length < 1) {
@@ -1337,6 +1368,7 @@ class Wiki
         for ($i = 0; $i < $length; $i++) {
             $randompassword .= substr($charset, random_int(0, $maxIndex), 1);
         }
+
         return $randompassword;
     }
 
@@ -1396,7 +1428,7 @@ class Wiki
     // post_max_size and wakka config max_file_size
     public function file_upload_max_size()
     {
-        $conf_max_file_size = $this->GetConfigValue("max_file_size") ? $this->parse_size($this->GetConfigValue("max_file_size")) : 0;
+        $conf_max_file_size = $this->GetConfigValue('max_file_size') ? $this->parse_size($this->GetConfigValue('max_file_size')) : 0;
 
         $post_max_size = $this->parse_size(ini_get('post_max_size'));
 
@@ -1407,7 +1439,8 @@ class Wiki
     }
 
     /**
-     * Load all extensions
+     * Load all extensions.
+     *
      * @return void
      */
     public function loadExtensions()
@@ -1517,7 +1550,8 @@ class Wiki
     }
 
     /**
-     * Replace recursively all the indexed arrays of $array1 with the corresponding indexed array of $array2
+     * Replace recursively all the indexed arrays of $array1 with the corresponding indexed array of $array2.
+     *
      * @param $array1 the first array that is merged
      * @param $array2 the second array that give the value for indexed array
      */
@@ -1540,10 +1574,11 @@ class Wiki
 
     /**
      * Test if an array is an associative array and not an indexed on*
-     * From php8.1, @see https://www.php.net/manual/fr/function.array-is-list.php instead
-     * @param $arr the array
-     * @return bool true is it's an associative array, otherwise false
+     * From php8.1, @see https://www.php.net/manual/fr/function.array-is-list.php instead.
      *
+     * @param $arr the array
+     *
+     * @return bool true is it's an associative array, otherwise false
      */
     public function isAssocArray($arr)
     {
@@ -1551,14 +1586,14 @@ class Wiki
     }
 
     /**
-     * Shortcut to be used in the old plain PHP Actions and Handlers (instead of using SquelettePhp class)
+     * Shortcut to be used in the old plain PHP Actions and Handlers (instead of using SquelettePhp class).
      */
     public function render($templatePath, $data)
     {
         try {
             return $this->services->get(TemplateEngine::class)->render($templatePath, $data);
         } catch (\Exception $e) {
-            return '<div class="alert alert-danger">Error rendering ' . $templatePath . ': ' .  $e->getMessage() . '</div>' . "\n";
+            return '<div class="alert alert-danger">Error rendering ' . $templatePath . ': ' . $e->getMessage() . '</div>' . "\n";
         }
     }
 
@@ -1593,7 +1628,7 @@ class Wiki
     /**
      * @deprecated Use PageManager::getOne instead
      */
-    public function LoadPage($tag, $time = "", $cache = 1)
+    public function LoadPage($tag, $time = '', $cache = 1)
     {
         return $this->services->get(PageManager::class)->getOne($tag, $time, $cache);
     }
@@ -1697,7 +1732,7 @@ class Wiki
     /**
      * @deprecated Use PageManager::save instead
      */
-    public function SavePage($tag, $body, $comment_on = "", $bypass_acls = false)
+    public function SavePage($tag, $body, $comment_on = '', $bypass_acls = false)
     {
         return $this->services->get(PageManager::class)->save($tag, $body, $comment_on, $bypass_acls);
     }
@@ -1705,7 +1740,7 @@ class Wiki
     /**
      * @deprecated Use PageManager::getOwner instead
      */
-    public function GetPageOwner($tag = "", $time = "")
+    public function GetPageOwner($tag = '', $time = '')
     {
         return $this->services->get(PageManager::class)->getOwner($tag, $time);
     }
@@ -1975,10 +2010,11 @@ class Wiki
     }
 
     /**
-     *
      * @param string $group
-     *            The name of a group
-     * @return boolean true iff the user is in the given $group
+     *                      The name of a group
+     *
+     * @return bool true iff the user is in the given $group
+     *
      * @deprecated Use UserManager::isInGroup instead
      */
     public function UserIsInGroup($group, $user = null, $admincheck = true)
@@ -1988,9 +2024,9 @@ class Wiki
 
     // COOKIES
     /**
-     *
      * @param string $name
      * @param string $value
+     *
      * @deprecated Use AuthController::setPersistentCookie instead
      */
     public function SetSessionCookie($name, $value)
@@ -2000,10 +2036,10 @@ class Wiki
     }
 
     /**
-     *
-     * @param string $name
-     * @param string $value
+     * @param string   $name
+     * @param string   $value
      * @param bool|int $remember
+     *
      * @deprecated Use AuthController::setPersistentCookie instead
      */
     public function SetPersistentCookie($name, $value, $remember = 0)
@@ -2014,10 +2050,9 @@ class Wiki
         $_COOKIE[$name] = $value;
     }
 
-
     /**
-     *
      * @param string $name
+     *
      * @deprecated Use AuthController::deleteOldCookie instead
      */
     public function DeleteCookie($name)

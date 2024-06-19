@@ -12,7 +12,7 @@ use YesWiki\Wiki;
 class CheckboxEntryField extends CheckboxField
 {
     public $isDistantJson;
-    protected $baseUrl ;
+    protected $baseUrl;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -21,7 +21,7 @@ class CheckboxEntryField extends CheckboxField
 
         // load options only when needed but not at construct to prevent infinite loops
 
-        $this->displayFilterLimit =  $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'] ;
+        $this->displayFilterLimit = $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'];
         $this->displaySelectAllLimit = empty($GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL']) ?
             $this->displayFilterLimit :
             $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL'];
@@ -30,16 +30,15 @@ class CheckboxEntryField extends CheckboxField
             $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'],
             array_keys(self::CHECKBOX_TWIG_LIST)
         )) ? $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'] :
-            self::CHECKBOX_DISPLAY_MODE_LIST ;
-        $this->dragAndDropDisplayMode = '@bazar/inputs/checkbox_drag_and_drop_entry.twig' ;
-
+            self::CHECKBOX_DISPLAY_MODE_LIST;
+        $this->dragAndDropDisplayMode = '@bazar/inputs/checkbox_drag_and_drop_entry.twig';
 
         $this->isDistantJson = filter_var($this->name, FILTER_VALIDATE_URL);
 
         if ($this->isDistantJson) {
             $this->prepareJSONEntryField();
         } else {
-            $this->options = null ;
+            $this->options = null;
             $this->baseUrl = null;
         }
     }
@@ -47,10 +46,10 @@ class CheckboxEntryField extends CheckboxField
     protected function renderStatic($entry)
     {
         $keys = $this->getValues($entry);
-        $values = [] ;
+        $values = [];
         foreach ($keys as $key) {
             if (in_array($key, array_keys($this->getOptions()))) {
-                $values[$key]['value'] = $this->options[$key] ;
+                $values[$key]['value'] = $this->options[$key];
                 if ($this->isDistantJson) {
                     if (!empty($this->optionsUrls[$key])) {
                         $values[$key]['href'] = $this->optionsUrls[$key];
@@ -64,8 +63,8 @@ class CheckboxEntryField extends CheckboxField
         }
 
         return (count($values) > 0) ? $this->render('@bazar/fields/checkboxentry.twig', [
-            'values' => $values
-        ]) : '' ;
+            'values' => $values,
+        ]) : '';
     }
 
     protected function getFormName()
@@ -77,17 +76,17 @@ class CheckboxEntryField extends CheckboxField
             $form = $this->services->get(FormManager::class)->getOne($this->name);
             $this->formName = isset($form['bn_label_nature']) ? ('Fiches ' . $form['bn_label_nature']) : _t('BAZ_NO_FORMS_FOUND');
         }
-        return $this->formName ;
+
+        return $this->formName;
     }
 
     public function getOptions()
     {
-        return  $this->getEntriesOptions();
+        return $this->getEntriesOptions();
     }
 
     /**
-     * check if the current class is EnumEntry
-     * @return bool
+     * check if the current class is EnumEntry.
      */
     public function isEnumEntryField(): bool
     {

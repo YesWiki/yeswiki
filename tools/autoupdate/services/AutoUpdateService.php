@@ -28,6 +28,7 @@ class AutoUpdateService
     public function initRepository($requestedVersion = '')
     {
         $this->repository = new Repository($this->repositoryAddress($requestedVersion));
+
         return $this->repository->load();
     }
 
@@ -48,6 +49,7 @@ class AutoUpdateService
         } else {
             $repositoryAddress .= $this->getYesWikiVersion();
         }
+
         return $repositoryAddress;
     }
 
@@ -57,6 +59,7 @@ class AutoUpdateService
         if (isset($this->wiki->config['yeswiki_version'])) {
             $version = $this->wiki->config['yeswiki_version'];
         }
+
         return strtolower($version);
     }
 
@@ -67,6 +70,7 @@ class AutoUpdateService
 
         if (false === $package->deletePackage()) {
             $messages->add('AU_DELETE', 'AU_ERROR');
+
             return $messages;
         }
         $messages->add('AU_DELETE', 'AU_OK');
@@ -83,6 +87,7 @@ class AutoUpdateService
         $file = $package ? $package->getFile() : false;
         if (false === $file) {
             $messages->add('AU_DOWNLOAD', 'AU_ERROR');
+
             return $messages;
         }
         $messages->add('AU_DOWNLOAD', 'AU_OK');
@@ -91,6 +96,7 @@ class AutoUpdateService
         if (!$package->checkIntegrity($file)) {
             $messages->add('AU_INTEGRITY', 'AU_ERROR');
             $package->cleanTempFiles();
+
             return $messages;
         }
         $messages->add('AU_INTEGRITY', 'AU_OK');
@@ -100,6 +106,7 @@ class AutoUpdateService
         if (false === $path) {
             $messages->add('AU_EXTRACT', 'AU_ERROR');
             $package->cleanTempFiles();
+
             return $messages;
         }
         $messages->add('AU_EXTRACT', 'AU_OK');
@@ -108,6 +115,7 @@ class AutoUpdateService
         if (!$package->checkACL()) {
             $messages->add('AU_ACL', 'AU_ERROR');
             $package->cleanTempFiles();
+
             return $messages;
         }
         $messages->add('AU_ACL', 'AU_OK');
@@ -119,6 +127,7 @@ class AutoUpdateService
                 'AU_ERROR'
             );
             $package->cleanTempFiles();
+
             return $messages;
         }
         $messages->add(_t('AU_UPDATE_PACKAGE') . $packageName, 'AU_OK');
@@ -128,6 +137,7 @@ class AutoUpdateService
             if (!$package->upgradeTools()) {
                 $messages->add('AU_UPDATE_TOOL', 'AU_ERROR');
                 $package->cleanTempFiles();
+
                 return $messages;
             }
             $messages->add('AU_UPDATE_TOOL', 'AU_OK');
@@ -137,6 +147,7 @@ class AutoUpdateService
         if (!$package->upgradeInfos()) {
             $messages->add('AU_UPDATE_INFOS', 'AU_ERROR');
             $package->cleanTempFiles();
+
             return $messages;
         }
         $messages->add('AU_UPDATE_INFOS', 'AU_OK');

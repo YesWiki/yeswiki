@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TEMPLATE_ACTION' => 'செயல்',
     'TEMPLATE_FILE_NOT_FOUND' => 'வார்ப்புரு அல்ல',
@@ -112,7 +113,7 @@ return [
     // action/panel.php
     'TEMPLATE_ACTION_PANEL' => 'செயல் {{குழு ...}}',
     'TEMPLATE_ELEM_PANEL_NOT_CLOSED' => 'l\'act {{panel ...}} doit & ecirc; tre ferm & eacute;',
-    'TEMPLATE_TITLE_PARAMETER_REQUIRED' => "பரம் & எக்ரேவ்; TRE தலைப்பு கடமைப்பட்டது",
+    'TEMPLATE_TITLE_PARAMETER_REQUIRED' => 'பரம் & எக்ரேவ்; TRE தலைப்பு கடமைப்பட்டது',
     // action/accordion.php
     'TEMPLATE_ACTION_ACCORDION' => 'செயல் {{துருத்தி ...}}',
     'TEMPLATE_ELEM_ACORDION_NOT_CLOSED' => 'l\'act {{நிலைப்படுத்தல் ...}} doit & ecirc; tre ferm & eacute;',
@@ -148,7 +149,7 @@ return [
     'TEMPLATE_THEME_NOT_SAVE' => 'Theme non savegardé',
     'TEMPLATE_FILE_NOT_ADDED' => ' அல்லாத அச out ட்!',
     'TEMPLATE_FILE_NOT_DELETED' => ' அல்லாத சப்ம்பிரிமே!',
-    'TEMPLATE_FILE_ALREADY_EXISTING' => "Le fichier est déjà இருப்பு! சேஞ்சச் டி நோம் டி முன்னமைவு OU ConnectEZ-VOUSE என் ADMIN!",
+    'TEMPLATE_FILE_ALREADY_EXISTING' => 'Le fichier est déjà இருப்பு! சேஞ்சச் டி நோம் டி முன்னமைவு OU ConnectEZ-VOUSE என் ADMIN!',
     'TEMPLATE_PRESET_ERROR' => "இம்பாசிபிள் டி'அப்ளிகர் சி முன்னமைவு, il ஒய் a une erreur!",
     'TEMPLATE_PRESETS' => 'உள்ளமைவுகள் கிராபிக்ச்',
     'TEMPLATE_CREATE_PRESET' => 'க்ரீயர் யு.என்.இ நோவெல் உள்ளமைவு கிராபிக்',
@@ -174,7 +175,7 @@ return [
     'AB_template_action_col_example' => 'டெக்ச்டே டி வோட்ரே கோலன் à சேஞ்சர் பார் லா சூட்',
     'AB_template_col_size_label' => 'லார்ச் டி லா கோலன்',
     'AB_template_action_grid_label' => 'Afficher Pluarers Cornnes',
-    'AB_templates_nav_label' => "ONGLETS AVEC DES பக்கங்கள் வேறுபடுகின்றன",
+    'AB_templates_nav_label' => 'ONGLETS AVEC DES பக்கங்கள் வேறுபடுகின்றன',
     'AB_templates_nav_description' => 'Générer un பட்டியல்',
     'AB_templates_nav_hint' => 'Lenomdevotrepage doit être le nom de la page dans laquelle vous mettrez cete action. பென்செச் à கொலர் லு கோட் ஒப்டெனு டான்ச் சாக்யூன் டெச் பக்கங்கள் டெச் ஓன்கெட்ச்.',
     'AB_templates_nav_links_label' => 'லீன்ச் வெர்சச் வோச் பக்கங்கள் விக்கி',
@@ -268,7 +269,7 @@ return [
     'AB_templates_tabs_label' => 'ONGLETS AVEC DES PARTIES DE LA PAGE',
     'AB_templates_tabs_description' => 'Générer Desglets Avec Des Carties de la page',
     'AB_templates_tabs_hint' => 'சாக் கான்டெனு டி ஓன்க்லெட் சே ட்ரூவ் டான்ச் யூன் அதிரடி <குறியீடு> {{தாவல்}} contenu de l\'onglet.',
-    'AB_templates_tabs_titles_label' => "டைட்ரெச் டெச் ஓன்கெட்ச்",
+    'AB_templates_tabs_titles_label' => 'டைட்ரெச் டெச் ஓன்கெட்ச்',
     'AB_templates_tabs_titles_hint' => 'Séperar chacket titre par une கன்னி',
     'AB_templates_tabs_titles_default' => 'Onglet 1, Onglet 2, Onglet 3',
     'AB_templates_tabs_btnsize_label' => 'டெய்ல் டி பூட்டன்',

@@ -26,6 +26,5 @@ class FaviconAction extends YesWikiAction
             <link rel="icon" type="image/png" href="$favicon" />
           HTML;
         }
-
     }
 }

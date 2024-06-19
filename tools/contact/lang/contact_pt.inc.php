@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     // actions/abonnement.php
     'CONTACT_ACTION_ABONNEMENT' => 'Ação {{abonnement ...}}',
     'CONTACT_MAIL_REQUIRED' => 'o parâmetro mail, obrigatório está faltando.',
@@ -32,7 +31,6 @@ return [
     'CONTACT_YOUR_EMAIL_LIST' => 'A sua lista de endereços de emails',
     'CONTACT_EXTRACT_EMAILS_FROM_TEXT' => 'Extrair os emails deste texto',
     'CONTACT_MUST_BE_ADMIN_TO_USE_THIS_ACTION' => 'deve estar no grupo de administradores para usar esta ação',
-
 
     'CONTACT_YOUR_NAME' => 'Seu nome',
     'CONTACT_YOUR_MAIL' => 'Seu endereço de email',
@@ -116,13 +114,13 @@ return [
 
     // templates/notify-newuser-email-text.twig (no special chars)
     // 'CONTACT_NEW_USER_MESSAGE' => "Bonjour!\n\n".
-        // "Votre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\n".
-        // "Url : {{ baseUrl }}\n\n".
-        // "Votre identifiant NomWiki : {{ wikiName }}\n\n".
-        // "Votre email : {{ email }}\n\n".
-        // "Votre mot de passe : (le mot de passe que vous avez choisi)\n\n".
-        // "Pour reinitialiser votre mot de passe : {{ urlForPasswordRenewal }}\n\n".
-        // "A tres bientot ! ",
+    // "Votre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\n".
+    // "Url : {{ baseUrl }}\n\n".
+    // "Votre identifiant NomWiki : {{ wikiName }}\n\n".
+    // "Votre email : {{ email }}\n\n".
+    // "Votre mot de passe : (le mot de passe que vous avez choisi)\n\n".
+    // "Pour reinitialiser votre mot de passe : {{ urlForPasswordRenewal }}\n\n".
+    // "A tres bientot ! ",
 
     // action-builder Contact
     // 'AB_contact_group_label' => "Actions d'envoi d'e-mail/listes",
@@ -145,9 +143,7 @@ return [
     // 'AB_mailinglist_action_label' => "Inscrire massivement des mails à une newsletter",
     // 'AB_mailinglist_action_description' => "Action permettant d'inscrire ou désinscrire massivement des mails à une newsletter",
 
-
     // for edit config
     // 'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => "Ajouter 'wiki=' aux liens vers ce wiki dans les e-mails",
     // 'EDIT_CONFIG_GROUP_CONTACT' => 'Envoi des e-mails',
-
 ];

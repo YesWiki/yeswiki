@@ -11,7 +11,7 @@ use YesWiki\Security\Controller\CaptchaController;
 class SecurityController extends YesWikiController
 {
     // this value cannot be changed because use by extensions
-    public const EDIT_PAGE_SUBMIT_VALUE = "Sauver";
+    public const EDIT_PAGE_SUBMIT_VALUE = 'Sauver';
 
     protected $captchaController;
     protected $params;
@@ -28,29 +28,31 @@ class SecurityController extends YesWikiController
     }
 
     /**
-     * check if wiki_status is hibernated
+     * check if wiki_status is hibernated.
+     *
      * @return bool true is in hibernation
      */
     public function isWikiHibernated(): bool
     {
-        return (in_array($this->params->get('wiki_status'), ['hibernate','archiving','updating']));
+        return in_array($this->params->get('wiki_status'), ['hibernate', 'archiving', 'updating']);
     }
 
     /**
-     * get alert message when hibernated
-     * @return string
+     * get alert message when hibernated.
      */
     public function getMessageWhenHibernated(): string
     {
         $message = [
             'type' => 'info',
-            'message' => _t('WIKI_IN_HIBERNATION') . "<br/>"
+            'message' => _t('WIKI_IN_HIBERNATION') . '<br/>',
         ];
+
         return $this->templateEngine->render('@templates/alert-message-with-back.twig', $message);
     }
 
     /**
-     * check if password for editing is required
+     * check if password for editing is required.
+     *
      * @return array [bool $state,string $output]
      */
     public function isGrantedPasswordForEditing(): array
@@ -58,33 +60,31 @@ class SecurityController extends YesWikiController
         $state = !$this->isPasswordForEditingModeActivated() || $this->hasRightPasswordForExisting();
         $message = ($state) ? ''
             : $this->renderNotGrantedPasswordForEditing();
-        return [$state,$message];
+
+        return [$state, $message];
     }
 
     /**
-     * check if PasswordForEditing mode is activated
-     * @return bool
+     * check if PasswordForEditing mode is activated.
      */
     private function isPasswordForEditingModeActivated(): bool
     {
         return $this->params->has('password_for_editing') &&
             !empty($this->params->get('password_for_editing')) &&
-            !$this->getService(AuthController::class)->getLoggedUser() ; // AuthController not loaded in construct to prevent circular references
+            !$this->getService(AuthController::class)->getLoggedUser(); // AuthController not loaded in construct to prevent circular references
     }
 
     /**
-     * check if password for editing is correct
-     * @return bool
+     * check if password for editing is correct.
      */
     private function hasRightPasswordForExisting(): bool
     {
         return isset($_POST['password_for_editing']) &&
-             $_POST['password_for_editing'] == $this->params->get('password_for_editing') ;
+             $_POST['password_for_editing'] == $this->params->get('password_for_editing');
     }
 
     /**
-     * render form to ask right password for editing
-     * @return string
+     * render form to ask right password for editing.
      */
     private function renderNotGrantedPasswordForEditing(): string
     {
@@ -102,8 +102,10 @@ class SecurityController extends YesWikiController
     }
 
     /**
-     * check captcha before save edit
+     * check captcha before save edit.
+     *
      * @param string $mode 'page' or 'entry'
+     *
      * @return array [bool $state,string $error]
      */
     public function checkCaptchaBeforeSave(string $mode = 'page'): array
@@ -139,7 +141,8 @@ class SecurityController extends YesWikiController
     }
 
     /**
-     * render captcha if needed
+     * render captcha if needed.
+     *
      * @param string &$output
      */
     public function renderCaptcha(string &$output)
@@ -160,8 +163,7 @@ class SecurityController extends YesWikiController
     }
 
     /**
-     * render captcha field if needed
-     * @return string
+     * render captcha field if needed.
      */
     public function renderCaptchaField(): string
     {
@@ -174,22 +176,22 @@ class SecurityController extends YesWikiController
                 [
                     'baseUrl' => $this->wiki->getBaseUrl(),
                     'crypt' => $hash,
-                    'cryptBase64' => base64_encode($hash)
+                    'cryptBase64' => base64_encode($hash),
                 ]
             );
         }
+
         return $champsCaptcha;
     }
 
     /**
      * retrieve input using filter to prevent injection from other php script
-     * emulate $filter = FILTER_SANITIZE_STRING because deprecated since php8.1
-     * @param int $type
-     * @param string $varName
-     * @param int $filter same as filter_input
-     * @param bool $emulateFilterSanitizeString
-     * @param string $format 'string', 'int', 'bool', 'array', '' (empty = not formatted)
+     * emulate $filter = FILTER_SANITIZE_STRING because deprecated since php8.1.
+     *
+     * @param int       $filter  same as filter_input
+     * @param string    $format  'string', 'int', 'bool', 'array', '' (empty = not formatted)
      * @param array|int $options same as filter_input
+     *
      * @return mixed
      */
     public function filterInput(
@@ -220,7 +222,7 @@ class SecurityController extends YesWikiController
         switch ($sanitizedFormat) {
             case 'string':
                 $result = (
-                    in_array($rawInputFiltered, [false ,null], true)
+                    in_array($rawInputFiltered, [false, null], true)
                     || !is_scalar($rawInputFiltered)
                 )
                     ? ''
@@ -232,17 +234,17 @@ class SecurityController extends YesWikiController
                 break;
             case 'int':
                 $result = (
-                    in_array($rawInputFiltered, [false ,null], true)
+                    in_array($rawInputFiltered, [false, null], true)
                     || !is_scalar($rawInputFiltered)
                 )
                     ? 0
                     : intval($rawInputFiltered);
                 break;
             case 'bool':
-                $result = in_array($rawInputFiltered, [false , null, 0 , 'false', '0'], true)
+                $result = in_array($rawInputFiltered, [false, null, 0, 'false', '0'], true)
                     ? false
                     : (
-                        in_array($rawInputFiltered, [true , 'true', 1], true)
+                        in_array($rawInputFiltered, [true, 'true', 1], true)
                         ? true
                         : boolval($rawInputFiltered)
                     );

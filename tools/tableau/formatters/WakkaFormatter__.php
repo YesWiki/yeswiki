@@ -18,12 +18,12 @@ class WakkaFormatter__ extends YesWikiFormatter
             $outputWithoutPre = $this->output;
             foreach ($outputSplittedByPre as $preContent) {
                 $extract = explode('</pre>', $preContent);
-                $outputWithoutPre = str_replace("<pre>{$extract[0]}</pre>", "<pre></pre>", $outputWithoutPre);
+                $outputWithoutPre = str_replace("<pre>{$extract[0]}</pre>", '<pre></pre>', $outputWithoutPre);
             }
             if (preg_match_all("/(\[\|.*?\|\])/msu", $outputWithoutPre, $matches)) {
-                $newOutput = $this->output ;
+                $newOutput = $this->output;
                 foreach ($matches[0] as $key => $value) {
-                    $replacement = $this->wakka2callbacktableaux([$value,$matches[1][$key]]);
+                    $replacement = $this->wakka2callbacktableaux([$value, $matches[1][$key]]);
                     $newOutput = str_replace($matches[1][$key], $replacement, $newOutput);
                 }
                 $this->output = $newOutput;
@@ -53,12 +53,13 @@ class WakkaFormatter__ extends YesWikiFormatter
         foreach ($rows[0] as $row) {
             $tablecontent .= $this->parsetablerow($row);
         }
-        $table  = '<table class="yeswiki-table prevent-auto-init '.(!empty($tableclass) ? ' '.$tableclass : 'table table-condensed table-striped').'">'."\n";
-        $table .= $tablecontent."\n";
-        $table .= '</table>'."\n";
+        $table = '<table class="yeswiki-table prevent-auto-init ' . (!empty($tableclass) ? ' ' . $tableclass : 'table table-condensed table-striped') . '">' . "\n";
+        $table .= $tablecontent . "\n";
+        $table .= '</table>' . "\n";
 
         return $table;
     }
+
     // parse la definition d'une ligne
     private function parsetablerow($row)
     {
@@ -82,12 +83,13 @@ class WakkaFormatter__ extends YesWikiFormatter
         $i = 0;
         foreach ($cells as $cell) {
             $result .= $this->parsetablecell($cell);
-            ++$i;
+            $i++;
         }
         $result .= "   </tr>\n";
 
         return $result;
     }
+
     //parse la definition d'une cellule
     private function parsetablecell($cell)
     {
@@ -113,7 +115,7 @@ class WakkaFormatter__ extends YesWikiFormatter
             $cellattr .= " align=\"$align\"";
         }
 
-        return "      <td $cellattr>".$cell."</td>\n";
+        return "      <td $cellattr>" . $cell . "</td>\n";
     }
 
     private function wakka2callbacktableaux($things)
@@ -123,6 +125,7 @@ class WakkaFormatter__ extends YesWikiFormatter
         if (preg_match("/^\[\|(.*)\|\]/s", $thing)) {
             $thing = preg_replace("/^\[\|(.*)<br \/>/", '[|$1', $thing);
             $thing = preg_replace("/\|<br \/>/", '|', $thing);
+
             return $this->parsetable($thing);
         }
 

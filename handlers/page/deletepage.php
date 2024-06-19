@@ -1,13 +1,13 @@
 <?php
 
-use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Controller\PageController;
 
 // Vérification de sécurité
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    exit('acc&egrave;s direct interdit');
 }
 
 // get services
@@ -39,9 +39,9 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
         if (!isset($_GET['confirme']) || !($_GET['confirme'] == 'oui')) {
             $msg = '<form action="' . $this->Href('deletepage', '', 'confirme=oui' . $incomingUrlParam);
             $msg .= '" method="post" style="display: inline">' . "\n";
-            $msg .= str_replace("{tag}", $this->Link($tag), _t('DELETEPAGE_CONFIRM')) . "\n";
+            $msg .= str_replace('{tag}', $this->Link($tag), _t('DELETEPAGE_CONFIRM')) . "\n";
             $msg .= '</br></br>';
-            $msg .= '<input type="hidden" name="csrf-token" value="'. htmlentities($csrfTokenManager->getToken('main')) .'">';
+            $msg .= '<input type="hidden" name="csrf-token" value="' . htmlentities($csrfTokenManager->getToken('main')) . '">';
             $msg .= '<input type="submit" class="btn btn-danger" value="' . _t('DELETEPAGE_DELETE') . '" ';
             $msg .= 'style="vertical-align: middle; display: inline" />' . "\n";
             $msg .= "</form>\n";
@@ -53,13 +53,13 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
                 $csrfTokenController->checkToken('main', 'POST', 'csrf-token', false);
                 $hasBeenDeleted = $this->services->get(PageController::class)->delete($tag);
                 if ($hasBeenDeleted) {
-                    $msg = str_replace("{tag}", $tag, _t('DELETEPAGE_MESSAGE'));
+                    $msg = str_replace('{tag}', $tag, _t('DELETEPAGE_MESSAGE'));
                     // if $incomingurl has been defined and doesn't refer to the deleted page, redirect to it
                     $redirectToIncoming = !empty($incomingurl);
                     if ($redirectToIncoming) {
                         // to prevent errors when deleting entry from BazaR page
                         $incomingurl = str_replace(
-                            ["&action=voir_fiche&id_fiche=$tag",'&message=ajout_ok'],
+                            ["&action=voir_fiche&id_fiche=$tag", '&message=ajout_ok'],
                             [''],
                             $incomingurl
                         );
@@ -67,13 +67,13 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
                 } else {
                     $msg = $this->render('@templates/alert-message-with-back.twig', [
                         'type' => 'danger',
-                        'message' => _t('DELETEPAGE_NOT_DELETED')
+                        'message' => _t('DELETEPAGE_NOT_DELETED'),
                     ]);
                 }
             } catch (TokenNotFoundException $th) {
-                $msg = $this->render("@templates/alert-message-with-back.twig", [
+                $msg = $this->render('@templates/alert-message-with-back.twig', [
                     'type' => 'danger',
-                    'message' => _t('DELETEPAGE_NOT_DELETED').' '.$th->getMessage()
+                    'message' => _t('DELETEPAGE_NOT_DELETED') . ' ' . $th->getMessage(),
                 ]);
             }
         }
@@ -86,28 +86,28 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
             try {
                 $csrfTokenController->checkToken('main', 'POST', 'csrf-token', false);
             } catch (TokenNotFoundException $th) {
-                $msg .= $this->render("@templates/alert-message.twig", [
+                $msg .= $this->render('@templates/alert-message.twig', [
                     'type' => 'danger',
-                    'message' => _t('DELETEPAGE_NOT_DELETED').' '.$th->getMessage()
+                    'message' => _t('DELETEPAGE_NOT_DELETED') . ' ' . $th->getMessage(),
                 ]);
             }
         }
-        $msg = "<p><em>" . _t('DELETEPAGE_NOT_ORPHEANED') . "</em></p>\n";
-        $linkedFrom = $this->LoadAll("SELECT DISTINCT from_tag " . "FROM " . $this->config["table_prefix"] . "links "
+        $msg = '<p><em>' . _t('DELETEPAGE_NOT_ORPHEANED') . "</em></p>\n";
+        $linkedFrom = $this->LoadAll('SELECT DISTINCT from_tag ' . 'FROM ' . $this->config['table_prefix'] . 'links '
             . "WHERE to_tag = '" . $this->GetPageTag() . "'");
-        $msg .= "<p>" . str_replace("{tag}", $this->ComposeLinkToPage($this->tag, "", "", 0), _t('DELETEPAGE_PAGES_WITH_LINKS_TO')) . "</p>\n";
+        $msg .= '<p>' . str_replace('{tag}', $this->ComposeLinkToPage($this->tag, '', '', 0), _t('DELETEPAGE_PAGES_WITH_LINKS_TO')) . "</p>\n";
         $msg .= "<ul>\n";
         foreach ($linkedFrom as $page) {
-            $msg .= "<li>" . $this->ComposeLinkToPage($page["from_tag"], "", "", 0) . "</li>\n";
+            $msg .= '<li>' . $this->ComposeLinkToPage($page['from_tag'], '', '', 0) . "</li>\n";
         }
 
         $msg .= "</ul>\n";
         // eraselink=oui will delete the page links in tools/tags/handlers/page/__deletepage.php
-        $msg .= '</br><form action="' . $this->Href('deletepage', "", "confirme=oui&eraselink=oui" . $incomingUrlParam);
+        $msg .= '</br><form action="' . $this->Href('deletepage', '', 'confirme=oui&eraselink=oui' . $incomingUrlParam);
         $msg .= '" method="post" style="display: inline">' . "\n";
-        $msg .= str_replace("{tag}", $this->Link($this->tag), _t('DELETEPAGE_CONFIRM_WHEN_BACKLINKS')) . "\n";
+        $msg .= str_replace('{tag}', $this->Link($this->tag), _t('DELETEPAGE_CONFIRM_WHEN_BACKLINKS')) . "\n";
         $msg .= '</br></br>';
-        $msg .= '<input type="hidden" name="csrf-token" value="'. htmlentities($csrfTokenManager->getToken('main')) .'">';
+        $msg .= '<input type="hidden" name="csrf-token" value="' . htmlentities($csrfTokenManager->getToken('main')) . '">';
         $msg .= '<input type="submit" value="' . _t('DELETEPAGE_DELETE') . '" class="btn btn-danger" ';
         $msg .= 'style="vertical-align: middle; display: inline" />' . "\n";
         $msg .= "</form>\n";
@@ -116,7 +116,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
         $msg .= "</form></span>\n";
     }
 } else {
-    $msg = "<p><em>" . _t('DELETEPAGE_NOT_OWNER') . "</em></p>\n";
+    $msg = '<p><em>' . _t('DELETEPAGE_NOT_OWNER') . "</em></p>\n";
 }
 
 if ($hasBeenDeleted) {

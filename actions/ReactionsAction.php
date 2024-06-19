@@ -1,6 +1,6 @@
 <?php
 /**
- * Allow signed-in users to react with icon, emojis or pictures on the page
+ * Allow signed-in users to react with icon, emojis or pictures on the page.
  */
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\ReactionsController;
@@ -26,15 +26,15 @@ class ReactionsAction extends YesWikiAction
     public function run()
     {
         if (empty($this->arguments['title'])) {
-            return $this->render("@templates/alert-message.twig", [
+            return $this->render('@templates/alert-message.twig', [
                 'type' => 'danger',
-                'message' => _t('REACTION_TITLE_PARAM_NEEDED')
+                'message' => _t('REACTION_TITLE_PARAM_NEEDED'),
             ]);
             if (empty($GLOBALS['nbreactions'])) {
                 $GLOBALS['nbreactions'] = 0;
             }
             $GLOBALS['nbreactions'] = $GLOBALS['nbreactions'] + 1;
-            $idreaction = 'reaction'.$GLOBALS['nbreactions'];
+            $idreaction = 'reaction' . $GLOBALS['nbreactions'];
         } else {
             $idreaction = URLify::slug($this->arguments['title']);
         }
@@ -64,8 +64,7 @@ class ReactionsAction extends YesWikiAction
             $images
         );
 
-
-        return $this->render("@core/reactions.twig", [
+        return $this->render('@core/reactions.twig', [
             'reactionId' => $idreaction,
             'title' => empty($this->arguments['title']) ? _t('REACTION_SHARE_YOUR_REACTION') : $this->arguments['title'],
             'connected' => !empty($username),
@@ -73,7 +72,7 @@ class ReactionsAction extends YesWikiAction
             'userName' => $username,
             'userReaction' => $userReactions,
             'maxReaction' => $this->arguments['maxreaction'],
-            'pageTag' => $pageTag
+            'pageTag' => $pageTag,
         ]);
     }
 }

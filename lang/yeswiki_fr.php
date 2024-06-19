@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     // Commons
     'ARCHIVES' => 'Sauvegardes',
     'ANSWER' => 'Répondre',
@@ -274,7 +273,6 @@ return [
     'NEW_ACCOUNT' => 'Nouveau compte',
     'LOGGED_USERS_ONLY_ACTION' => 'Il faut être connecté pour pouvoir exécuter cette action',
     'USER_DELETE' => 'Supprimer l\'utilisateur',
-
 
     // actions/wantedpages.php
     'NO_PAGE_TO_CREATE' => 'Aucune page à créer',

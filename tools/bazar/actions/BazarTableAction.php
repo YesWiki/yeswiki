@@ -16,7 +16,7 @@ class BazarTableAction extends YesWikiAction
             $this->appendAllFieldsIds($arg, $newArg, 'exportallcolumnsids');
         }
 
-        return($newArg);
+        return $newArg;
     }
 
     public function run()

@@ -7,7 +7,7 @@ return [
     'BAZ_FORM_EDIT_DISPLAYTEXT_HELP' => 'Add if necessary a unit after {value}, (ex: `{value} €`)',
     'BAZ_FORM_EDIT_FORMULA_LABEL' => 'Formula',
     // fields/FileField.php
-    'BAZ_FILEFIELD_FILE' => "File : {filename}",
+    'BAZ_FILEFIELD_FILE' => 'File : {filename}',
     'BAZ_FORM_EDIT_FILE_READLABEL_LABEL' => 'Read label',
     // fields/ImageField.php
     'IMAGEFIELD_TOO_LARGE_IMAGE' => 'To large image, maximum {imageMaxSize} bytes',
@@ -207,10 +207,10 @@ return [
     'BAZ_FORM_EDIT_NAME' => 'Label',
     'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'Displaying the form builder, you will delete changes done here in the code. Do you wish to continue without saving changes ? (Click on "Submit" button in page footer to keep your changes !)',
     'BAZ_FORM_EDIT_COMMENTS_CLOSED' => 'Comments closed',
-    'BAZ_FORM_EDIT_BOOKMARKLET_URLFIELD_LABEL' => "Associated url field",
-    'BAZ_FORM_EDIT_BOOKMARKLET_DESCRIPTIONFIELD_LABEL' => "Associated long text field",
+    'BAZ_FORM_EDIT_BOOKMARKLET_URLFIELD_LABEL' => 'Associated url field',
+    'BAZ_FORM_EDIT_BOOKMARKLET_DESCRIPTIONFIELD_LABEL' => 'Associated long text field',
     'BAZ_FORM_EDIT_BOOKMARKLET_HINT_DEFAULT_VALUE' => "Click and move the button to your navigator's bar",
-    'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_LABEL' => "Displayed text",
+    'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_LABEL' => 'Displayed text',
     'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_VALUE' => "Click and move the button to your favorites's bar",
     // 'BAZ_ACTIVATE_COMMENTS' => 'Activer les commentaires sur cette fiche ?',
     // 'BAZ_ACTIVATE_COMMENTS_HINT' => 'Droits mis à jour lors de l\'enregistrement de la fiche',
@@ -220,13 +220,13 @@ return [
     // 'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT' => 'Laisser vide pour utiliser le texte par défaut',
     // 'BAZ_FORM_EDIT_ACL_ASK_IF_ACTIVATE_COMMENT_LABEL' => 'Demander d\'activer les commentaires ?',
     // condition checking field
-    'BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL' => "Conditionnal display",
-    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL' => "Condition",
-    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_END' => "End of condition",
-    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_LABEL' => "Clean when hiding",
-    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION' => "Erase",
-    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION' => "Do not clean",
-    'BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT' => "To clean or not the content of what is being hidden",
+    'BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL' => 'Conditionnal display',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL' => 'Condition',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_END' => 'End of condition',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_LABEL' => 'Clean when hiding',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION' => 'Erase',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION' => 'Do not clean',
+    'BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT' => 'To clean or not the content of what is being hidden',
     // jsvascripts/form-edit-templates/fields/file.js
     'BAZ_FORM_EDIT_FILE_AUTHEXTS_LABEL' => 'Prefered extensions (with dot, separated by coma)',
     'BAZ_FORM_EDIT_FILE_AUTHEXTS_PLACEHOLDER' => 'ex: .pdf,.png',
@@ -256,7 +256,7 @@ return [
     'BAZAR_VIDEO_POSITION_RIGHT' => 'Right align',
     'BAZAR_URL_DISPLAY_VIDEO' => 'Display player if url is a video?',
     // templates/entries/index-dynamic-temapltes/BazarCalendar_ButtonICS.js
-    'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => "Add to your agenda",
+    'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => 'Add to your agenda',
     // reactions
     'BAZ_ACTIVATE_REACTIONS' => 'Activate reactions on this entry?',
     'FILEFIELD_TOO_LARGE_FILE' => 'The file is too large, maximum {fileMaxSize} bytes',

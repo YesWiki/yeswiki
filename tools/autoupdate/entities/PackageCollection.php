@@ -53,6 +53,7 @@ class PackageCollection extends Collection
                 $filteredPackages[] = $package;
             }
         }
+
         return $filteredPackages;
     }
 

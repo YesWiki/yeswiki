@@ -2,29 +2,29 @@
 
 namespace YesWiki\Rss;
 
-use YesWiki\Core\YesWikiAction;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\YesWikiAction;
 
 class RecentChangesRssAction extends YesWikiAction
 {
     public function formatArguments($args)
     {
         return [
-            "link" => !empty($args["link"]) ? $args["link"] : $this->params->get("root_page")
+            'link' => !empty($args['link']) ? $args['link'] : $this->params->get('root_page'),
         ];
     }
 
     public function run()
     {
         if ($this->wiki->GetMethod() != 'xml') {
-            return _t('TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS').' : '.
+            return _t('TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS') . ' : ' .
                 $this->wiki->Link($this->wiki->getPageTag(), 'xml', null, $this->wiki->Href('xml'));
         }
         require_once 'tools/rss/libs/rssdiff.function.php';
         $max = 50;
         if ($user = $this->wiki->GetUser()) {
-            $max = $user["changescount"];
+            $max = $user['changescount'];
         }
 
         $aclService = $this->getService(AclService::class);
@@ -46,6 +46,7 @@ class RecentChangesRssAction extends YesWikiAction
             if ($page1['time'] == $page2['time']) {
                 return 0;
             }
+
             return ($page1['time'] > $page2['time']) ? -1 : 1; // décroissant
         });
 
@@ -58,10 +59,10 @@ class RecentChangesRssAction extends YesWikiAction
         } else {
             $langParam = [];
         }
-        $link = $this->wiki->Href(false, $this->arguments["link"], $langParam, false) ;
-        $xmlUrl = $this->wiki->Href("xml", '', $langParam, false);
+        $link = $this->wiki->Href(false, $this->arguments['link'], $langParam, false);
+        $xmlUrl = $this->wiki->Href('xml', '', $langParam, false);
         $wakkaName = htmlspecialchars(
-            $this->params->get("wakka_name"),
+            $this->params->get('wakka_name'),
             ENT_COMPAT,
             YW_CHARSET
         );
@@ -87,32 +88,32 @@ class RecentChangesRssAction extends YesWikiAction
 
             if ($i < sizeof($pages)) {
                 $page = $firstpage;
-                $tag = htmlspecialchars($page["tag"], ENT_COMPAT, YW_CHARSET);
-                $tag = $readAcl ? $tag : substr($tag, 0, 3).'___';
-                $user = htmlspecialchars($page["user"], ENT_COMPAT, YW_CHARSET);
+                $tag = htmlspecialchars($page['tag'], ENT_COMPAT, YW_CHARSET);
+                $tag = $readAcl ? $tag : substr($tag, 0, 3) . '___';
+                $user = htmlspecialchars($page['user'], ENT_COMPAT, YW_CHARSET);
                 $formatedDate = gmdate('D, d M Y H:i:s \G\M\T', strtotime($page['time']));
-                $rawTime =  htmlspecialchars(
-                    rawurlencode($page["time"]),
+                $rawTime = htmlspecialchars(
+                    rawurlencode($page['time']),
                     ENT_COMPAT,
                     YW_CHARSET
                 );
                 $itemurl = $this->wiki->href(false, $tag, ['time' => $rawTime] + $langParam);
                 $description = htmlspecialchars(
-                    _t('RSS_CHANGE_OF').' ' . ($readAcl ? $this->wiki->ComposeLinkToPage($page["tag"]) : $tag)
-                    . ($readAcl ? ' (' . $this->wiki->ComposeLinkToPage($page["tag"], 'revisions', _t('RSS_HISTORY')) . ')' : '')
-                    . " --- " . _t('BY'). " $user"  . ($readAcl ? rssdiff($page["tag"], $firstpage["id"], $lastpage["id"]) : '<br><div><i>' . _t('RSS_HIDDEN_CONTENT'). '</i></div>')
+                    _t('RSS_CHANGE_OF') . ' ' . ($readAcl ? $this->wiki->ComposeLinkToPage($page['tag']) : $tag)
+                    . ($readAcl ? ' (' . $this->wiki->ComposeLinkToPage($page['tag'], 'revisions', _t('RSS_HISTORY')) . ')' : '')
+                    . ' --- ' . _t('BY') . " $user" . ($readAcl ? rssdiff($page['tag'], $firstpage['id'], $lastpage['id']) : '<br><div><i>' . _t('RSS_HIDDEN_CONTENT') . '</i></div>')
                 );
-                $items[] = compact(["tag","user","formatedDate","description","itemurl"]);
+                $items[] = compact(['tag', 'user', 'formatedDate', 'description', 'itemurl']);
             }
         }
 
         $yesWikiRevision = "{$this->params->get('yeswiki_version')} {$this->params->get('yeswiki_release')}";
-        $description = $this->params->has('meta_description') ? $this->params->get('meta_description') : "";
+        $description = $this->params->has('meta_description') ? $this->params->get('meta_description') : '';
         $description = empty($decription) ? $wakkaName : $description;
 
         return $this->render(
-            "@rss/recent-changes-rss.twig",
-            compact(["xmlUrl","wakkaName","link","items","yesWikiRevision","description"])
+            '@rss/recent-changes-rss.twig',
+            compact(['xmlUrl', 'wakkaName', 'link', 'items', 'yesWikiRevision', 'description'])
         );
     }
 }

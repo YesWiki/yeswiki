@@ -30,7 +30,6 @@ class MD5PasswordHasher implements LegacyPasswordHasherInterface
         }
 
         return md5($plainPassword);
-
     }
 
     /**

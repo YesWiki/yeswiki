@@ -1,10 +1,9 @@
 <?php
 
-use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\PHPMailer;
 
 /**
- *
  * @param string $mail_sender
  * @param string $name_sender
  * @param string $mail_receiver
@@ -78,21 +77,23 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
 
         if (empty($message_html)) {
             $mail->isHTML(false);
-            $mail->Body = $message_txt ;
+            $mail->Body = $message_txt;
         } else {
             $mail->isHTML(true);
-            $mail->Body = $message_html ;
+            $mail->Body = $message_html;
             if (!empty($message_txt)) {
                 $mail->AltBody = $message_txt;
             }
         }
 
         $mail->send();
+
         return true;
     } catch (Exception $e) {
         if ($GLOBALS['wiki']->UserIsAdmin()) {
             echo $e->errorMessage();
         }
+
         return false;
     }
 }

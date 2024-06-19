@@ -2,9 +2,9 @@
 
 namespace YesWiki\Bazar\Controller;
 
-use YesWiki\Core\YesWikiController;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\YesWikiController;
 
 class GeoJSONFormatter extends YesWikiController
 {
@@ -17,8 +17,8 @@ class GeoJSONFormatter extends YesWikiController
     }
 
     /**
-     * get data grom entries in GeoJSON format
-     * @param array $entries
+     * get data grom entries in GeoJSON format.
+     *
      * @return array data
      */
     public function formatToGeoJSON(array $entries): array
@@ -31,11 +31,11 @@ class GeoJSONFormatter extends YesWikiController
             } else {
                 return [
                     'entry' => $entry,
-                    'geo' => $geo
-                    ];
+                    'geo' => $geo,
+                ];
             }
         }, $entries), function ($entry) {
-            return !empty($entry) ;
+            return !empty($entry);
         });
 
         $data = [];
@@ -48,7 +48,7 @@ class GeoJSONFormatter extends YesWikiController
                     'type' => 'Feature',
                     'geometry' => [
                         'type' => 'Point',
-                        'coordinates' => [$extendedEntry['geo']['longitude'],$extendedEntry['geo']['latitude']]
+                        'coordinates' => [$extendedEntry['geo']['longitude'], $extendedEntry['geo']['latitude']],
                     ],
                     'id' => $entry['id_fiche'],
                     'title' => $entry['bf_titre'],
@@ -60,11 +60,11 @@ class GeoJSONFormatter extends YesWikiController
         return $data;
     }
 
-
     /**
-     * extract geoData
-     * @param array $entry
+     * extract geoData.
+     *
      * @param array &$cache
+     *
      * @return array ['latitude'=>000,'longitude'=>00] or []
      */
     public function getGeoData(array $entry, array &$cache): array
@@ -97,9 +97,10 @@ class GeoJSONFormatter extends YesWikiController
     }
 
     /**
-     * get first field propertyName corresponding to a MapField in a form
-     * @param int $formId
+     * get first field propertyName corresponding to a MapField in a form.
+     *
      * @param array &$cache cache of correspondance of propertynames and forms id
+     *
      * @return string|null $propertyName
      */
     private function getFirstMapFieldPropertyName(int $formId, array &$cache): ?string
@@ -117,6 +118,7 @@ class GeoJSONFormatter extends YesWikiController
                 }
             }
         }
+
         return $cache[$formId];
     }
 }

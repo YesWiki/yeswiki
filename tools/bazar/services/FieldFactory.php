@@ -27,12 +27,12 @@ class FieldFactory
     private function checkCacheFolderExistence()
     {
         try {
-            if (!file_exists(__DIR__ .self::CACHE_PATH) || !is_dir(__DIR__ .self::CACHE_PATH)) {
-                throw new Exception("ERROR ! : Folder `cache/` not existing in the root folder on the website host ! Can you create it ? ");
+            if (!file_exists(__DIR__ . self::CACHE_PATH) || !is_dir(__DIR__ . self::CACHE_PATH)) {
+                throw new Exception('ERROR ! : Folder `cache/` not existing in the root folder on the website host ! Can you create it ? ');
             }
 
-            if (!is_writable(__DIR__ .self::CACHE_PATH)) {
-                throw new Exception("ERROR ! : Folder `cache/` is not writable ! Can you give it write acces by ftp for example (code 770) ?");
+            if (!is_writable(__DIR__ . self::CACHE_PATH)) {
+                throw new Exception('ERROR ! : Folder `cache/` is not writable ! Can you give it write acces by ftp for example (code 770) ?');
             }
         } catch (Exception $th) {
             // raw ouput because here TemplateEngine is not ready (services not already compiled and cache folder not available)

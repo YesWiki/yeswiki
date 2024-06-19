@@ -3,14 +3,14 @@
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Core\Service\ThemeManager;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    exit('acc&egrave;s direct interdit');
 }
 
 $themeManager = $this->services->get(ThemeManager::class);
 $yeswiki_javascripts = "\n" . '  <!-- javascripts -->' . "\n";
 
-if (isset($this->config['use_jquery_cdn']) && $this->config['use_jquery_cdn'] == "1") {
+if (isset($this->config['use_jquery_cdn']) && $this->config['use_jquery_cdn'] == '1') {
     $this->addJavascriptFile('https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js', true);
 } else {
     $this->addJavascriptFile('javascripts/vendor/jquery/jquery.min.js', true);
@@ -18,11 +18,11 @@ if (isset($this->config['use_jquery_cdn']) && $this->config['use_jquery_cdn'] ==
 
 // on récupère le bon chemin pour le theme
 if ($themeManager->getUseFallbackTheme()) {
-    $repertoire = 'themes/'.$themeManager->getFavoriteTheme().'/javascripts';
+    $repertoire = 'themes/' . $themeManager->getFavoriteTheme() . '/javascripts';
 } else {
-    $jsDir = 'themes/'.$themeManager->getFavoriteTheme().'/javascripts';
-    if (is_dir('custom/'.$jsDir)) {
-        $repertoire = 'custom/'.$jsDir;
+    $jsDir = 'themes/' . $themeManager->getFavoriteTheme() . '/javascripts';
+    if (is_dir('custom/' . $jsDir)) {
+        $repertoire = 'custom/' . $jsDir;
     } else {
         $repertoire = $jsDir;
     }
@@ -34,7 +34,7 @@ $yeswikijs = false;
 $dir = (is_dir($repertoire) ? opendir($repertoire) : false);
 while ($dir && ($file = readdir($dir)) !== false) {
     if (substr($file, -3, 3) == '.js') {
-        $scripts[] =  $repertoire . '/' . $file;
+        $scripts[] = $repertoire . '/' . $file;
         if (strstr($file, 'bootstrap.min.') || strstr($file, 'bs.')) {
             // le theme contient deja le js de bootstrap
             $bootstrapjs = true;
@@ -95,20 +95,19 @@ $wikiprops = [
     'antiCsrfToken' => $this->services->get(CsrfTokenManager::class)->getToken('main')->getValue(),
 ];
 
-
 // Globale wiki variable
 echo "<script>
     var wiki = {
         ...((typeof wiki !== 'undefined') ? wiki : null),
-        ...".json_encode($wikiprops).",
+        ..." . json_encode($wikiprops) . ",
         ...{
             lang: {
                 ...((typeof wiki !== 'undefined') ? (wiki.lang ?? null) : null),
-                ...".json_encode($GLOBALS['translations_js'] ?? null)."
+                ..." . json_encode($GLOBALS['translations_js'] ?? null) . '
             }
         }
     };
-</script>";
+</script>';
 
 // on affiche
 echo $yeswiki_javascripts;

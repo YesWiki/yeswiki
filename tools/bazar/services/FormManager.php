@@ -33,7 +33,7 @@ class FormManager
         SecurityController $securityController
     ) {
         if (!class_exists('attach')) {
-            include('tools/attach/libs/attach.lib.php');
+            include 'tools/attach/libs/attach.lib.php';
         }
         $this->wiki = $wiki;
         $this->dbService = $dbService;
@@ -52,13 +52,14 @@ class FormManager
     protected function getBasePath()
     {
         $basePath = $this->attach->GetUploadPath();
-        return $basePath . (substr($basePath, -1) != "/" ? "/" : "");
+
+        return $basePath . (substr($basePath, -1) != '/' ? '/' : '');
     }
 
     protected function cleanCacheDefaultImage($prefix)
     {
         $cache_path = $this->attach->GetCachePath();
-        $cache_path = $cache_path . (substr($cache_path, -1) != "/" ? "/" : "");
+        $cache_path = $cache_path . (substr($cache_path, -1) != '/' ? '/' : '');
         $scan_cache_files = scandir($cache_path);
         foreach ($scan_cache_files as $scan_cache_file) {
             if (str_starts_with($scan_cache_file, $prefix)) {
@@ -79,7 +80,7 @@ class FormManager
                 $image_comp = $template_list[$temp_index];
                 $default_image_prefix = "defaultimage{$id_nature}_{$image_comp[1]}";
                 $this->cleanCacheDefaultImage($default_image_prefix);
-                $default_image_filename = $basePath . $default_image_prefix . ".jpg";
+                $default_image_filename = $basePath . $default_image_prefix . '.jpg';
                 $default_image = explode('|', $image_comp[8]);
                 if (count($default_image) == 2) {
                     $image_comp[8] = $default_image[0];
@@ -88,10 +89,10 @@ class FormManager
                     $tempFile = $tmpFile . '.' . $imgext;
                     rename($tmpFile, $tempFile);
                     try {
-                        $ifp = fopen($tempFile, "wb");
+                        $ifp = fopen($tempFile, 'wb');
                         fwrite($ifp, base64_decode(explode(',', $default_image[1])[1]));
                         fclose($ifp);
-                        $this->attach->redimensionner_image($tempFile, $default_image_filename, $image_comp[5], $image_comp[6], "crop");
+                        $this->attach->redimensionner_image($tempFile, $default_image_filename, $image_comp[5], $image_comp[6], 'crop');
                     } finally {
                         unlink($tempFile);
                     }
@@ -107,6 +108,7 @@ class FormManager
         if ($modify) {
             $template = $this->encodeTemplate($template_list);
         }
+
         return $this->dbService->escape($template);
     }
 
@@ -128,6 +130,7 @@ class FormManager
                 $template_list[$temp_index] = $image_comp;
             }
         }
+
         return [$template_list, $modify];
     }
 
@@ -161,6 +164,7 @@ class FormManager
         if ($modify == true) {
             $form['bn_template'] = $this->encodeTemplate($template_list);
         }
+
         return $form;
     }
 
@@ -177,6 +181,7 @@ class FormManager
             }
             $this->cacheValidatedForAll = true;
         }
+
         return $this->cachedForms;
     }
 
@@ -220,8 +225,8 @@ class FormManager
             . $this->dbService->escape(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '", "'
             . $this->dbService->escape(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '", '
             . (isset($data['bn_sem_use_template']) ? '1' : '0') . ', "'
-            . ($this->isAvailableOnlyOneEntryOption() ? ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === "Y") ? "Y" : "N") . '", "' : '')
-            . ($this->isAvailableOnlyOneEntryMessage() ? (empty($data['bn_only_one_entry_message']) ? "" : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '", "' : '')
+            . ($this->isAvailableOnlyOneEntryOption() ? ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '", "' : '')
+            . ($this->isAvailableOnlyOneEntryMessage() ? (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '", "' : '')
             . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '")');
     }
 
@@ -243,8 +248,8 @@ class FormManager
             . '`bn_sem_context`="' . $this->dbService->escape(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '" ,'
             . '`bn_sem_type`="' . $this->dbService->escape(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '" ,'
             . '`bn_sem_use_template`=' . (isset($data['bn_sem_use_template']) ? '1' : '0') . ' ,'
-            . ($this->isAvailableOnlyOneEntryOption() ? '`bn_only_one_entry`="' . ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === "Y") ? "Y" : "N") . '",' : '')
-            . ($this->isAvailableOnlyOneEntryMessage() ? '`bn_only_one_entry_message`="' . (empty($data['bn_only_one_entry_message']) ? "" : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '",' : '')
+            . ($this->isAvailableOnlyOneEntryOption() ? '`bn_only_one_entry`="' . ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '",' : '')
+            . ($this->isAvailableOnlyOneEntryMessage() ? '`bn_only_one_entry_message`="' . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '",' : '')
             . '`bn_condition`="' . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '"'
             . ' WHERE `bn_id_nature`=' . $this->dbService->escape($data['bn_id_nature']));
     }
@@ -255,6 +260,7 @@ class FormManager
         if (!empty($data)) {
             unset($data['bn_id_nature']);
             $data['bn_label_nature'] = $data['bn_label_nature'] . ' (' . _t('BAZ_DUPLICATE') . ')';
+
             return $this->create($data);
         } else {
             // raise error?
@@ -277,6 +283,7 @@ class FormManager
 
         // reset cache
         $this->cacheValidatedForAll = false;
+
         return $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $this->dbService->escape($id));
     }
 
@@ -328,15 +335,16 @@ class FormManager
     }
 
     /**
-     * Découpe le template et renvoie un tableau structuré
+     * Découpe le template et renvoie un tableau structuré.
      *
      * @param string  Template du formulaire
-     * @return  mixed   Le tableau des elements du formulaire et options pour l'element liste
+     *
+     * @return mixed Le tableau des elements du formulaire et options pour l'element liste
      */
     public function parseTemplate($raw)
     {
         //Parcours du template, pour mettre les champs du formulaire avec leurs valeurs specifiques
-        $tableau_template = array();
+        $tableau_template = [];
         $nblignes = 0;
 
         //on traite le template ligne par ligne
@@ -346,7 +354,7 @@ class FormManager
             // on ignore les lignes vides ou commencant par # (commentaire)
             if (!empty($ligne) && !(strrpos($ligne, '#', -strlen($ligne)) !== false)) {
                 //on decoupe chaque ligne par le separateur *** (c'est historique)
-                $tablignechampsformulaire = array_map("trim", explode("***", $ligne));
+                $tablignechampsformulaire = array_map('trim', explode('***', $ligne));
 
                 // TODO find another way to check that the field is valid
                 if (true /*function_exists($tablignechampsformulaire[self::FIELD_TYPE])*/) {
@@ -385,6 +393,7 @@ class FormManager
             $new_template_list[] = $new_line;
         }
         $template = implode("\r\n", array_map('trim', $new_template_list));
+
         return $template;
     }
 
@@ -411,6 +420,7 @@ class FormManager
             }
             $i++;
         }
+
         return $prepared;
     }
 
@@ -455,7 +465,7 @@ class FormManager
                             $tabval = explode(',', $value);
                             foreach ($tabval as $tval) {
                                 if (isset($facetteValue[$fieldPropName][$tval])) {
-                                    ++$facetteValue[$fieldPropName][$tval];
+                                    $facetteValue[$fieldPropName][$tval]++;
                                 } else {
                                     $facetteValue[$fieldPropName][$tval] = 1;
                                 }
@@ -465,7 +475,7 @@ class FormManager
                             $facetteValue[$key]['type'] = 'form';
                             $facetteValue[$key]['source'] = $key;
                             if (isset($facetteValue[$key][$value])) {
-                                ++$facetteValue[$key][$value];
+                                $facetteValue[$key][$value]++;
                             } else {
                                 $facetteValue[$key][$value] = 1;
                             }
@@ -489,6 +499,7 @@ class FormManager
                 unset($facetteValue['id_typeannonce']);
             }
         }
+
         return $facetteValue;
     }
 
@@ -498,7 +509,7 @@ class FormManager
     private function filterFieldsByPropertyName(array $fields, array $id)
     {
         if (count($id) === 1 && $id[0] === 'all') {
-            return array_filter($fields, function ($field) use ($id) {
+            return array_filter($fields, function ($field) {
                 if ($field instanceof EnumField) {
                     return true;
                 }
@@ -513,9 +524,7 @@ class FormManager
     }
 
     /**
-     * put a form form External Wiki in cache
-     * @param int $localFormId
-     * @return bool
+     * put a form form External Wiki in cache.
      */
     public function putInCacheFromExternalBazarService(int $localFormId): bool
     {
@@ -528,15 +537,13 @@ class FormManager
             return false;
         } else {
             $this->cachedForms[$localFormId] = $form;
+
             return true;
         }
     }
 
     /**
-     * return field from field name or property name
-     * @param null|string $name
-     * @param null|string $formId
-     * @return null|BazarField
+     * return field from field name or property name.
      */
     public function findFieldFromNameOrPropertyName(?string $name, ?string $formId): ?BazarField
     {
@@ -555,32 +562,33 @@ class FormManager
                 return $field;
             }
         }
+
         return null;
     }
 
     /**
-     * check if the bn_only_one_entry option is available
-     * @return bool
+     * check if the bn_only_one_entry option is available.
      */
     public function isAvailableOnlyOneEntryOption(): bool
     {
         if (is_null($this->isAvailableOnlyOneEntryOption)) {
-            $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable("nature")} LIKE 'bn_only_one_entry';");
+            $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable('nature')} LIKE 'bn_only_one_entry';");
             $this->isAvailableOnlyOneEntryOption = (@mysqli_num_rows($result) !== 0);
         }
+
         return $this->isAvailableOnlyOneEntryOption;
     }
 
     /**
-     * check if the bn_only_one_entry_message is available
-     * @return bool
+     * check if the bn_only_one_entry_message is available.
      */
     public function isAvailableOnlyOneEntryMessage(): bool
     {
         if (is_null($this->isAvailableOnlyOneEntryMessage)) {
-            $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable("nature")} LIKE 'bn_only_one_entry_message';");
+            $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable('nature')} LIKE 'bn_only_one_entry_message';");
             $this->isAvailableOnlyOneEntryMessage = (@mysqli_num_rows($result) !== 0);
         }
+
         return $this->isAvailableOnlyOneEntryMessage;
     }
 }

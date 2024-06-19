@@ -10,7 +10,7 @@ use YesWiki\Bazar\Service\ExternalBazarService;
  */
 class ExternalTagsField extends TagsField
 {
-    protected $JSONFormAddress ;
+    protected $JSONFormAddress;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -24,7 +24,7 @@ class ExternalTagsField extends TagsField
 
     protected function renderInput($entry)
     {
-        return "";
+        return '';
     }
 
     public function formatValuesBeforeSave($entry)
@@ -38,7 +38,8 @@ class ExternalTagsField extends TagsField
         if (is_null($this->options)) {
             $this->loadOptionsFromJSONForm($this->JSONFormAddress);
         }
-        return  $this->options;
+
+        return $this->options;
     }
 
     public function loadOptionsFromTags()
@@ -59,14 +60,14 @@ class ExternalTagsField extends TagsField
             sort($tags);
             $tags = array_map(function ($tag) use ($entry) {
                 return '<a class="tag-label label label-info" href="'
-                    . $entry['external-data']['baseUrl'].'?'.$GLOBALS['wiki']->GetPageTag().'/listpages&tags=' . urlencode(trim($tag)) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
+                    . $entry['external-data']['baseUrl'] . '?' . $GLOBALS['wiki']->GetPageTag() . '/listpages&tags=' . urlencode(trim($tag)) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
             }, $tags);
 
             return $this->render('@bazar/fields/tags.twig', [
-                'value' => join(' ', $tags) ?? ''
+                'value' => join(' ', $tags) ?? '',
             ]);
         } else {
-            return "" ;
+            return '';
         }
     }
 }

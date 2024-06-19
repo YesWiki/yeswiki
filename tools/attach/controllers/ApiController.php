@@ -4,19 +4,19 @@ namespace YesWiki\Attach\Controller;
 
 use Attach;
 use Exception;
-use Throwable;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use Throwable;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\YesWikiController;
 
 class ApiController extends YesWikiController
 {
-    public const POST_CACHE_URLIMAGE_TOKEN_ID = "POST api/images/cache/{width}/{height}/{mode}";
+    public const POST_CACHE_URLIMAGE_TOKEN_ID = 'POST api/images/cache/{width}/{height}/{mode}';
 
     /**
      * @Route("/api/images/{filename}/cache/{width}/{height}/{mode}", methods={"POST"}, options={"acl":{"public"}})
@@ -29,13 +29,13 @@ class ApiController extends YesWikiController
             // check file
             if (!file_exists("files/$filename")) {
                 return new ApiResponse([
-                        'error' => _t('ATTACH_GET_CACHE_URLIMAGE_NO_FILE'),
-                        'filename' => $filename,
-                        'width' => $width,
-                        'height' => $height,
-                        'mode' => $mode,
-                        'newToken' => $newToken,
-                    ], Response::HTTP_BAD_REQUEST);
+                    'error' => _t('ATTACH_GET_CACHE_URLIMAGE_NO_FILE'),
+                    'filename' => $filename,
+                    'width' => $width,
+                    'height' => $height,
+                    'mode' => $mode,
+                    'newToken' => $newToken,
+                ], Response::HTTP_BAD_REQUEST);
             }
             // process new file
             try {
@@ -43,7 +43,7 @@ class ApiController extends YesWikiController
             } catch (Exception $e) {
                 return new ApiResponse([
                     'error' => $e->getMessage(),
-                    'cachefilename' => "",
+                    'cachefilename' => '',
                     'filename' => $filename,
                     'width' => $width,
                     'height' => $height,
@@ -62,45 +62,44 @@ class ApiController extends YesWikiController
             ], Response::HTTP_OK);
         } catch (TokenNotFoundException $th) {
             $errorMessage = $th->getMessage();
+
             return new ApiResponse([
-                'error' => $errorMessage
+                'error' => $errorMessage,
             ], Response::HTTP_UNAUTHORIZED);
         } catch (Exception $e) {
             return new ApiResponse([
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], Response::HTTP_BAD_REQUEST);
         }
     }
 
-    private function checkParamsgetCacheUrlImageViaPost(string $filename, string  &$width, string  &$height, string  $mode)
+    private function checkParamsgetCacheUrlImageViaPost(string $filename, string &$width, string &$height, string $mode)
     {
         if (strval($width) != strval(intval($width))) {
-            throw new Exception("width should be an integer for ".self::POST_CACHE_URLIMAGE_TOKEN_ID);
+            throw new Exception('width should be an integer for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
         $width = intval($width);
         if (empty($width)) {
-            throw new Exception("width should not be 0 or null for ".self::POST_CACHE_URLIMAGE_TOKEN_ID);
+            throw new Exception('width should not be 0 or null for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
         if (strval($height) != strval(intval($height))) {
-            throw new Exception("height should be an integer for ".self::POST_CACHE_URLIMAGE_TOKEN_ID);
+            throw new Exception('height should be an integer for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
         $height = intval($height);
         if (empty($height)) {
-            throw new Exception("height should not be 0 or null for ".self::POST_CACHE_URLIMAGE_TOKEN_ID);
+            throw new Exception('height should not be 0 or null for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
-        if (!in_array($mode, ['fit','crop'], true)) {
-            throw new Exception("mode should be in ['fit','mode'] for ".self::POST_CACHE_URLIMAGE_TOKEN_ID);
+        if (!in_array($mode, ['fit', 'crop'], true)) {
+            throw new Exception("mode should be in ['fit','mode'] for " . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
         if (empty(trim($filename))) {
-            throw new Exception("filename should not be empty for ".self::POST_CACHE_URLIMAGE_TOKEN_ID);
+            throw new Exception('filename should not be empty for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
     }
 
     /**
-     * use $_POST['csrftoken']
-     * @param int $width
-     * @param int $height
-     * @param string $mode
+     * use $_POST['csrftoken'].
+     *
      * @return string $newToken
      */
     private function checkTokenForgetCacheUrlImageViaPost(int $width, int $height, string $mode): string
@@ -109,14 +108,15 @@ class ApiController extends YesWikiController
         $csrfTokenController = $this->getService(CsrfTokenController::class);
 
         $tokenId = str_replace(
-            ["{width}","{height}","{mode}"],
-            [$width,$height,$mode],
+            ['{width}', '{height}', '{mode}'],
+            [$width, $height, $mode],
             self::POST_CACHE_URLIMAGE_TOKEN_ID
         );
 
         if ($csrfTokenController->checkToken($tokenId, 'POST', 'csrftoken', false)) {
             $csrfTokenManager->removeToken($tokenId);
             $newToken = $csrfTokenManager->getToken($tokenId)->getValue();
+
             return $newToken;
         }
     }
@@ -124,7 +124,7 @@ class ApiController extends YesWikiController
     private function getCacheFileName(string $filename, int $width, int $height, string $mode): string
     {
         if (!class_exists('attach')) {
-            include('tools/attach/libs/attach.lib.php');
+            include 'tools/attach/libs/attach.lib.php';
         }
         $attach = new attach($this->wiki);
         $newFileName = $attach->getResizedFilename("files/$filename", $width, $height, $mode);
@@ -135,12 +135,13 @@ class ApiController extends YesWikiController
             if ($returnedFileName != $newFileName) {
                 // TODO see what to do with error
             }
+
             return $newFileName;
         }
     }
 
     /**
-     * Display Bazar api documentation
+     * Display Bazar api documentation.
      *
      * @return string
      */
@@ -148,9 +149,9 @@ class ApiController extends YesWikiController
     {
         $output = '<h2>Attach</h2>' . "\n";
 
-        $output .= "<p><b>".
-        "<code>GET {$this->wiki->href('', 'api/images/{filename}/cache/{width}/{height}/{mode}', ['csrftoken' => 'xxxx'], false)}</code></b><br />".
-        nl2br(_t('ATTACH_GET_URLIMAGE_CACHE_API_HELP'))."</p>";
+        $output .= '<p><b>' .
+        "<code>GET {$this->wiki->href('', 'api/images/{filename}/cache/{width}/{height}/{mode}', ['csrftoken' => 'xxxx'], false)}</code></b><br />" .
+        nl2br(_t('ATTACH_GET_URLIMAGE_CACHE_API_HELP')) . '</p>';
 
         return $output;
     }

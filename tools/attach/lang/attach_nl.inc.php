@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     // controllers/ApiController.php
     // 'ATTACH_GET_URLIMAGE_CACHE_API_HELP' => "Fournit l'url du fichier de cache pour l'image voulue\n".
     //     "Nécessite le passage du jeton anti-csrf !",
@@ -76,7 +75,6 @@ return [
     // 'ATTACH_ACTION_DISPLAY_PDF_TEXT' => 'Afficher le pdf dans la page :',
     // 'ATTACH_ACTION_DISPLAY_PDF_LINK_TEXT' => 'sous forme de lien',
     // 'ATTACH_ACTION_DISPLAY_PDF_INCLUDED_TEXT' => 'directement inclus dans la page',
-
 
     // handler edit
     'ACTIVATE_JS_TO_UPLOAD_FILES' => 'JavaScript activeren om bestanden te uploaden',

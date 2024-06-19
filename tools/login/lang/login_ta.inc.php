@@ -1,4 +1,5 @@
 <?php
+
 return [
     'LOGIN_SIGNUP' => 'S\'inscrire',
     'LOGIN_LOGIN' => 'SE இணைப்பு',
@@ -38,8 +39,8 @@ return [
     'LOGIN_THE_TEAM' => 'L\'quipipe de',
     'LOGIN_PASSWORD_LOST_FOR' => 'மோட் டி பாச் பெர்டு ஊற்றவும்',
     'LOGIN_NO_SIGNUP_IN_THIS_PERIOD' => 'Il n\'y a pas d\'கல்வெட்டு ஊற்றவும் CETE Période.',
-    'LOGIN_MY_OPTIONS' => "MES விருப்பங்கள்",
-    'LOGIN_MY_CONTENTS' => "Mes contenus",
+    'LOGIN_MY_OPTIONS' => 'MES விருப்பங்கள்',
+    'LOGIN_MY_CONTENTS' => 'Mes contenus',
     // actions/login.php
     'LOGIN_COOKIES_ERROR' => 'வூச் டெவெச் அசெப்டர் லெச் குக்கீகள் ப ou வோயர் வூச் இணைப்பியை ஊற்றுகின்றன.',
     // actions/usersettings.php

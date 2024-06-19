@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     'TAGS_ACTION_ADMINTAGS' => 'Ação {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'a ação é restrita ao grupo de administradores',
     'TAGS_NO_WRITE_ACCESS' => 'Você não tem acesso de gravação para esta página!',

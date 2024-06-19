@@ -9,6 +9,7 @@ class HelloHandler extends YesWikiHandler
         $this->denyAccessUnlessGranted('read');
 
         $pageBody = $this->wiki->page['body'];
+
         return $this->renderInSquelette('@helloworld/hello.twig', ['body' => $pageBody]);
     }
 }

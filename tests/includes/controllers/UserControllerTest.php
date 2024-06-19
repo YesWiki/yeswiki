@@ -18,8 +18,10 @@ class UserControllerTest extends YesWikiTestCase
     public const CHARS_FOR_EMAIL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     public const CHARS_FOR_PASSWORD = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_';
     public const UPPER_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
     /**
-     * @covers UserController::__construct
+     * @covers \UserController::__construct
+     *
      * @return Wiki $wiki
      */
     public function testUserControllerExisting(): Wiki
@@ -27,13 +29,14 @@ class UserControllerTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         $this->assertTrue($wiki->services->has(UserController::class));
         $this->assertTrue($wiki->services->has(UserManager::class));
+
         return $wiki;
     }
 
     /**
      * @depends testUserControllerExisting
-     * @covers UserController::getFirstAdmin
-     * @param Wiki $wiki
+     * @covers \UserController::getFirstAdmin
+     *
      * @return string $firstAdmin
      */
     public function testGetFirstAdmin(Wiki $wiki): string
@@ -41,18 +44,15 @@ class UserControllerTest extends YesWikiTestCase
         $userController = $wiki->services->get(UserController::class);
         $firstAdmin = $userController->getFirstAdmin();
         $this->assertNotEmpty($firstAdmin);
+
         return $firstAdmin;
     }
 
     /**
      * @depends testUserControllerExisting
      * @depends testGetFirstAdmin
-     * @covers UserController::delete
+     * @covers \UserController::delete
      * @dataProvider dataProviderTestDelete
-     * @param string $connexionMode
-     * @param bool $expectedResult
-     * @param Wiki $wiki
-     * @param string $firstAdmin
      */
     public function testDelete(string $connexionMode, bool $expectedResult, Wiki $wiki, string $firstAdmin)
     {
@@ -62,15 +62,14 @@ class UserControllerTest extends YesWikiTestCase
 
         // create a user
         do {
-            $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)).'@example.com';
+            $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
         do {
             $name = $wiki->generateRandomString(1, self::UPPER_CHARS)
-                .$wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
+                . $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
         } while (!empty($userManager->getOneByName($name)));
 
         $password = $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
-
 
         $userManager->create($name, $email, $password);
         $user = $userManager->getOneByName($name);
@@ -122,9 +121,9 @@ class UserControllerTest extends YesWikiTestCase
     {
         // mode , mode, expected result
         return [
-            'not connected' => ['!+',false],
-            'not admin' => ['!@admins',false],
-            'admin not current user' => ['@admins',true],
+            'not connected' => ['!+', false],
+            'not admin' => ['!@admins', false],
+            'admin not current user' => ['@admins', true],
             // 'admin current user' => ['%',false], // not currently covered
         ];
     }
@@ -133,26 +132,19 @@ class UserControllerTest extends YesWikiTestCase
     {
         // name, email, newValues, UserNameExist, EmailExist, Other Exception
         return [
-            'email name all right' => ['newRandom','newRandom',[],false,false,false],
-            'email with 5 chars ext' => ['newRandom','newRandom2',[],false,false,false],
-            'name existing' => ['name of first user','newRandom',[],false,false,true],
-            'empty name' => ['empty','newRandom',[],false,false,true],
-            'email existing' => ['newRandom','email of first user',[],false,false,true],
-            'empty email' => ['newRandom','empty',[],false,false,true],
+            'email name all right' => ['newRandom', 'newRandom', [], false, false, false],
+            'email with 5 chars ext' => ['newRandom', 'newRandom2', [], false, false, false],
+            'name existing' => ['name of first user', 'newRandom', [], false, false, true],
+            'empty name' => ['empty', 'newRandom', [], false, false, true],
+            'email existing' => ['newRandom', 'email of first user', [], false, false, true],
+            'empty email' => ['newRandom', 'empty', [], false, false, true],
         ];
     }
 
     /**
      * @depends testUserControllerExisting
-     * @covers UserController::create
+     * @covers \UserController::create
      * @dataProvider dataProviderTestCreate
-     * @param string $name
-     * @param string $email
-     * @param array $newValues
-     * @param bool $userNameExist
-     * @param bool $emailExist
-     * @param bool $otherException
-     * @param Wiki $wiki
      */
     public function testCreate(
         string $name,
@@ -171,23 +163,23 @@ class UserControllerTest extends YesWikiTestCase
         if ($name == 'newRandom') {
             do {
                 $name = $wiki->generateRandomString(1, self::UPPER_CHARS)
-                    .$wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
+                    . $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
             } while (!empty($userManager->getOneByName($name)));
         } elseif ($name == 'empty') {
-            $name = "";
+            $name = '';
         } else {
             $name = $firstUser['name'];
         }
         if ($email == 'newRandom') {
             do {
-                $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)).'@example.com';
+                $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
             } while (!empty($userManager->getOneByEmail($email)));
         } elseif ($email == 'newRandom2') {
             do {
-                $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)).'@xyz.earth';
+                $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@xyz.earth';
             } while (!empty($userManager->getOneByEmail($email)));
         } elseif ($email == 'empty') {
-            $email = "";
+            $email = '';
         } else {
             $email = $firstUser['email'];
         }
@@ -198,7 +190,7 @@ class UserControllerTest extends YesWikiTestCase
         $exceptionThrown = false;
         $userNameAlreadyExist = false;
         $emailAlreadyExist = false;
-        $exceptionMessage =  "";
+        $exceptionMessage = '';
         try {
             $userController->create($newValues);
             $user = $userManager->getOneByName($name);
@@ -226,7 +218,7 @@ class UserControllerTest extends YesWikiTestCase
         } else {
             $this->assertFalse($userNameAlreadyExist);
             $this->assertFalse($emailAlreadyExist);
-            $this->assertEquals($exceptionMessage, "");
+            $this->assertEquals($exceptionMessage, '');
             $this->assertFalse($exceptionThrown);
             $this->assertInstanceOf(User::class, $user);
             $this->assertNotEmpty($user['name']);
@@ -238,7 +230,7 @@ class UserControllerTest extends YesWikiTestCase
                 'doubleclickedit',
                 'motto',
                 'revisioncount',
-                'show_comments'
+                'show_comments',
             ] as $propName) {
                 if (isset($newValues[$propName])) {
                     $this->assertEquals($user[$propName], $newValues[$propName]);
@@ -247,24 +239,23 @@ class UserControllerTest extends YesWikiTestCase
         }
     }
 
-
     public function dataProviderTestSanitizeName()
     {
         // name,char,length,Other Exception
         return [
-            'random string' => ['newRandom','',0,false],
-            'empty string' => ['','',0,true],
-            'not string' => [false,'',0,true],
-            'too long string' => ['random','',400,true],
-            'too long short' => ['random','',2,true],
-            'forbidden \\' => ['thirdplace','\\',10,true],
-            'forbidden /' => ['thirdplace','/',10,true],
-            'forbidden <' => ['thirdplace','<',10,true],
-            'forbidden >' => ['thirdplace','>',10,true],
-            'forbidden begin !' => ['begin','!',10,true],
-            'forbidden begin #' => ['begin','#',10,true],
-            'forbidden begin @' => ['begin','@',10,true],
-            'contain @' => ['thirdplace','@',10,false],
+            'random string' => ['newRandom', '', 0, false],
+            'empty string' => ['', '', 0, true],
+            'not string' => [false, '', 0, true],
+            'too long string' => ['random', '', 400, true],
+            'too long short' => ['random', '', 2, true],
+            'forbidden \\' => ['thirdplace', '\\', 10, true],
+            'forbidden /' => ['thirdplace', '/', 10, true],
+            'forbidden <' => ['thirdplace', '<', 10, true],
+            'forbidden >' => ['thirdplace', '>', 10, true],
+            'forbidden begin !' => ['begin', '!', 10, true],
+            'forbidden begin #' => ['begin', '#', 10, true],
+            'forbidden begin @' => ['begin', '@', 10, true],
+            'contain @' => ['thirdplace', '@', 10, false],
         ];
     }
 
@@ -272,13 +263,10 @@ class UserControllerTest extends YesWikiTestCase
      * @depends testUserControllerExisting
      * @depends testCreate
      * @depends testDelete
-     * @covers UserController::sanitizeName
+     * @covers \UserController::sanitizeName
      * @dataProvider dataProviderTestSanitizeName
+     *
      * @param mixed $name
-     * @param string $char
-     * @param int $length
-     * @param bool $otherException
-     * @param Wiki $wiki
      */
     public function testSanitizeName($name, string $char, int $length, bool $otherException, Wiki $wiki)
     {
@@ -288,34 +276,34 @@ class UserControllerTest extends YesWikiTestCase
             case 'newRandom':
                 do {
                     $name = $wiki->generateRandomString(1, self::UPPER_CHARS)
-                        .$wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
+                        . $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
                 } while (!empty($userManager->getOneByName($name)));
                 break;
             case 'random':
                 $name = $wiki->generateRandomString($length, self::CHARS_FOR_EMAIL);
                 break;
             case 'thirdplace':
-                $name = $wiki->generateRandomString(2, self::CHARS_FOR_EMAIL).$char.
+                $name = $wiki->generateRandomString(2, self::CHARS_FOR_EMAIL) . $char .
                     $wiki->generateRandomString($length - 2, self::CHARS_FOR_EMAIL);
                 break;
             case 'begin':
-                $name = $char.$wiki->generateRandomString($length, self::CHARS_FOR_EMAIL);
+                $name = $char . $wiki->generateRandomString($length, self::CHARS_FOR_EMAIL);
                 break;
             default:
                 break;
         }
         do {
-            $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)).'@example.com';
+            $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
         $password = $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
 
         $exceptionThrown = false;
-        $exceptionMessage =  "";
+        $exceptionMessage = '';
         try {
             $userController->create([
                 'name' => $name,
                 'email' => $email,
-                'password' => $password
+                'password' => $password,
             ]);
             $user = $userManager->getOneByName($name);
         } catch (Throwable $ex) {
@@ -333,7 +321,7 @@ class UserControllerTest extends YesWikiTestCase
             $this->assertTrue($exceptionThrown);
         } else {
             $this->assertFalse($exceptionThrown);
-            $this->assertEquals($exceptionMessage, "");
+            $this->assertEquals($exceptionMessage, '');
             $this->assertInstanceOf(User::class, $user);
         }
     }

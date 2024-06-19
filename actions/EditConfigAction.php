@@ -1,7 +1,7 @@
 <?php
 
-use YesWiki\Core\YesWikiAction;
 use YesWiki\Core\Service\ConfigurationService;
+use YesWiki\Core\YesWikiAction;
 
 class EditConfigAction extends YesWikiAction
 {
@@ -57,13 +57,13 @@ class EditConfigAction extends YesWikiAction
         if (!$this->wiki->UserIsAdmin()) {
             return $this->render('@templates/alert-message.twig', [
                 'type' => 'danger',
-                'message' => get_class($this) . " : " . _t('BAZ_NEED_ADMIN_RIGHTS')
+                'message' => get_class($this) . ' : ' . _t('BAZ_NEED_ADMIN_RIGHTS'),
             ]);
         }
         if (!is_writable('wakka.config.php')) {
             return $this->render('@templates/alert-message.twig', [
                 'type' => 'danger',
-                'message' => _t('ERROR_NO_ACCESS') . ' ' . _t('FILE_WRITE_PROTECTED')
+                'message' => _t('ERROR_NO_ACCESS') . ' ' . _t('FILE_WRITE_PROTECTED'),
             ]);
         }
 
@@ -73,11 +73,11 @@ class EditConfigAction extends YesWikiAction
         $output = '';
         if ($this->arguments['saving']) {
             $this->save();
-            $this->wiki->Redirect($this->wiki->Href('', '', [self::SAVED_NAME => "1"], false));
+            $this->wiki->Redirect($this->wiki->Href('', '', [self::SAVED_NAME => '1'], false));
         } elseif ($this->arguments['saved']) {
             $output .= $this->render('@templates/alert-message.twig', [
                 'type' => 'info',
-                'message' => _t('EDIT_CONFIG_SAVE')
+                'message' => _t('EDIT_CONFIG_SAVE'),
             ]);
         }
 
@@ -91,6 +91,7 @@ class EditConfigAction extends YesWikiAction
                 $keysList[''] = array_merge($keysList[''] ?? [], [$key => $value]);
             }
         }
+
         return $output . $this->render('@core/edit-config.twig', [
             'SAVE_NAME' => self::SAVE_NAME,
             'keysList' => $keysList,
@@ -101,7 +102,7 @@ class EditConfigAction extends YesWikiAction
 
     /**
      * get AUTHORIZED_KEYS
-     * return array [$keys,$associatedExtensions]
+     * return array [$keys,$associatedExtensions].
      */
     private function getAuthorizedKeys(): array
     {
@@ -152,30 +153,32 @@ class EditConfigAction extends YesWikiAction
             $this->keys = $scannedKeys;
             $this->associatedExtensions = $associatedExtensions;
         }
+
         return [$this->keys, $this->associatedExtensions];
     }
 
     /**
      * prepare array of $keyNames from $keys
-     * recursive
+     * recursive.
      *
      * @param array|string $keys
-     * @param bool $firstLevel
+     *
      * @return array [$keyName1,$keyName2]
      */
     private function prepareKeyNames($keys, bool $firstLevel = false): array
     {
         if (is_string($keys)) {
-            return ($firstLevel ? [$keys] : ["[{$keys}]"]);
+            return $firstLevel ? [$keys] : ["[{$keys}]"];
         } elseif (is_array($keys)) {
             $result = [];
             $isList = $this->arrayIsList($keys);
             foreach ($keys as $key => $value) {
                 $subLevelKeyNames = $this->prepareKeyNames($value, $firstLevel && $isList);
                 foreach ($subLevelKeyNames as $subLevelKeyName) {
-                    $result[] = ($isList ? "" : ($firstLevel ? $key : "[{$key}]")) . $subLevelKeyName;
+                    $result[] = ($isList ? '' : ($firstLevel ? $key : "[{$key}]")) . $subLevelKeyName;
                 }
             }
+
             return $result;
         } else {
             return [];
@@ -183,7 +186,7 @@ class EditConfigAction extends YesWikiAction
     }
 
     /**
-     * could be replace by array_is_list since php 8.1
+     * could be replace by array_is_list since php 8.1.
      */
     private function arrayIsList(array $array): bool
     {
@@ -193,12 +196,14 @@ class EditConfigAction extends YesWikiAction
                 return false;
             }
         }
+
         return true;
     }
 
     /**
-     * save data to wakka.config.php
-     * @return boolean true if successfull
+     * save data to wakka.config.php.
+     *
+     * @return bool true if successfull
      */
     private function save(): bool
     {
@@ -278,16 +283,16 @@ class EditConfigAction extends YesWikiAction
                                         $config->$firstLevelKey,
                                         [
                                             $keyAsArray[1] => [
-                                                $keyAsArray[2] => $this->strtoarray($new_value)
-                                            ]
+                                                $keyAsArray[2] => $this->strtoarray($new_value),
+                                            ],
                                         ]
                                     );
                                 }
                             } else {
                                 $config->$firstLevelKey = [
                                     $keyAsArray[1] => [
-                                        $keyAsArray[2] => $this->strtoarray($new_value)
-                                    ]
+                                        $keyAsArray[2] => $this->strtoarray($new_value),
+                                    ],
                                 ];
                             }
                         }
@@ -303,7 +308,8 @@ class EditConfigAction extends YesWikiAction
     }
 
     /**
-     * get data from config file
+     * get data from config file.
+     *
      * @return array [$data,$placeholders,$associatedExtensions] format ['name' => string $value,'name2'=> "['ee'=>'yy',...]"]
      */
     private function getDataFromConfigFile(): array
@@ -318,13 +324,13 @@ class EditConfigAction extends YesWikiAction
             if (!empty($keyAsArray)) {
                 $length = count($keyAsArray);
                 $firstLevelKey = $keyAsArray[0];
-                $keyName = $firstLevelKey . ($length > 1 ? "[" . implode("][", array_slice($keyAsArray, 1)) . "]" : "");
+                $keyName = $firstLevelKey . ($length > 1 ? '[' . implode('][', array_slice($keyAsArray, 1)) . ']' : '');
                 switch ($length) {
                     case 1:
                         if (isset($config->$firstLevelKey)) {
                             $data[$keyName] = $this->array2Str($config->$firstLevelKey);
                         } else {
-                            $data[$keyName] = "";
+                            $data[$keyName] = '';
                         }
                         if ($this->params->has($firstLevelKey)) {
                             $placeholders[$keyName] = $this->array2Str($this->params->get($firstLevelKey));
@@ -337,7 +343,7 @@ class EditConfigAction extends YesWikiAction
                         ) {
                             $data[$keyName] = $this->array2Str($config->$firstLevelKey[$keyAsArray[1]]);
                         } else {
-                            $data[$keyName] = "";
+                            $data[$keyName] = '';
                         }
                         if (
                             $this->params->has($firstLevelKey)
@@ -354,7 +360,7 @@ class EditConfigAction extends YesWikiAction
                         ) {
                             $data[$keyName] = $this->array2Str($config->$firstLevelKey[$keyAsArray[1]][$keyAsArray[2]]);
                         } else {
-                            $data[$keyName] = "";
+                            $data[$keyName] = '';
                         }
                         if (
                             $this->params->has($firstLevelKey)
@@ -366,17 +372,18 @@ class EditConfigAction extends YesWikiAction
                         break;
 
                     default:
-                        $data[$keyName] = "";
+                        $data[$keyName] = '';
                         break;
                 }
             }
         }
+
         return [$data, $placeholders, $associatedExtensions];
     }
 
     /**
-     * convert $keys to array of arrays
-     * @param array $keys
+     * convert $keys to array of arrays.
+     *
      * @return array $conertedKeys
      */
     private function convertKeysAsArray(array $keys): array
@@ -399,19 +406,21 @@ class EditConfigAction extends YesWikiAction
                 }
             }
         }
+
         return $convertedKeys;
     }
 
     /**
-     * extract associated values from config second level
+     * extract associated values from config second level.
+     *
      * @param Configuration $config
-     * @param string $firstLevelKey
+     * @param string        $firstLevelKey
      */
 
     /**
-     * array to string
+     * array to string.
+     *
      * @param mixed $value
-     * @return string
      */
     private function array2Str($value): string
     {
@@ -421,7 +430,7 @@ class EditConfigAction extends YesWikiAction
                     . implode(
                         ',',
                         array_map(function ($k, $v) {
-                            return (($v === false) ? "false" : (($v === true) ? "true" : "'" . $v . "'"));
+                            return ($v === false) ? 'false' : (($v === true) ? 'true' : "'" . $v . "'");
                         }, array_keys($value), array_values($value))
                     )
                     . ']';
@@ -430,24 +439,25 @@ class EditConfigAction extends YesWikiAction
                     . implode(
                         ',',
                         array_map(function ($k, $v) {
-                            return "'" . $k . "' => " . (($v === false) ? "false" : (($v === true) ? "true" : "'" . $v . "'"));
+                            return "'" . $k . "' => " . (($v === false) ? 'false' : (($v === true) ? 'true' : "'" . $v . "'"));
                         }, array_keys($value), array_values($value))
                     )
                     . ']';
             }
         } elseif (!is_string($value)) {
             try {
-                $value = (($value === false) ? "false" : (($value === true) ? "true" : strval($value)));
+                $value = (($value === false) ? 'false' : (($value === true) ? 'true' : strval($value)));
             } catch (\Throwable $th) {
                 $value = '';
             }
         }
+
         return $value;
     }
 
     /**
-     * string to array if needed
-     * @param string $value
+     * string to array if needed.
+     *
      * @return mixed
      */
     private function strtoarray(string $value)
@@ -487,12 +497,12 @@ class EditConfigAction extends YesWikiAction
         } else {
             $value = ($value == 'true') ? true : (($value == 'false') ? false : $value);
         }
+
         return $value;
     }
 
     /**
-     * get help from translation
-     * @return array
+     * get help from translation.
      */
     private function getHelp(): array
     {
@@ -500,7 +510,7 @@ class EditConfigAction extends YesWikiAction
         foreach ($this->convertKeysAsArray($this->getAuthorizedKeys()[0]) as $keyAsArray) {
             $length = count($keyAsArray);
             $firstLevelKey = $keyAsArray[0];
-            $keyName = $firstLevelKey . ($length > 1 ? "[" . implode("][", array_slice($keyAsArray, 1)) . "]" : "");
+            $keyName = $firstLevelKey . ($length > 1 ? '[' . implode('][', array_slice($keyAsArray, 1)) . ']' : '');
             if (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_' . $keyName])) {
                 $help[$keyName] = _t('EDIT_CONFIG_HINT_' . $keyName);
             } elseif (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_' . strtoupper($keyName)])) {

@@ -22,7 +22,6 @@ class GreetingService
 
     public function getUserName()
     {
-        return "Bibi";
+        return 'Bibi';
     }
-
 }

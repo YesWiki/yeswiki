@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     // 'TAGS_TAGS' => 'Mots clés',
     'TAGS_ACTION_ADMINTAGS' => 'Acción {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'la acción está reservada al grupo de administradores',
@@ -124,5 +123,4 @@ return [
     // for edit config
     'EDIT_CONFIG_HINT_HIDE_KEYWORDS' => 'Ocultar palabras clave en la parte inferior de las páginas (true o false)',
     'EDIT_CONFIG_GROUP_TAGS' => 'Palabras clave (tags)',
-
 ];

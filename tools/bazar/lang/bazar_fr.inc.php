@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     'BAZ_FORMULAIRE' => 'Formulaires',
     'BAZ_LISTES' => 'Listes',
     'BAZ_NOM_LISTE' => 'Nom de la liste',

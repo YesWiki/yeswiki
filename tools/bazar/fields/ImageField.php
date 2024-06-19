@@ -29,7 +29,7 @@ class ImageField extends FileField
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
-        $this->readLabel = "";
+        $this->readLabel = '';
 
         $this->thumbnailHeight = $values[self::FIELD_THUMBNAIL_HEIGHT];
         $this->thumbnailWidth = $values[self::FIELD_THUMBNAIL_WIDTH];
@@ -57,31 +57,31 @@ class ImageField extends FileField
 
                     return $this->render('@templates/alert-message.twig', [
                         'type' => 'info',
-                        'message' => str_replace('{file}', $value, _t('BAZ_LE_FICHIER_A_ETE_EFFACE'))
-                    ])."\n".$this->render('@bazar/inputs/image.twig');
+                        'message' => str_replace('{file}', $value, _t('BAZ_LE_FICHIER_A_ETE_EFFACE')),
+                    ]) . "\n" . $this->render('@bazar/inputs/image.twig');
                 } else {
                     $alertMessage = $this->render('@templates/alert-message.twig', [
                         'type' => 'info',
-                        'message' => _t('BAZ_DROIT_INSUFFISANT')
-                    ]). "\n";
+                        'message' => _t('BAZ_DROIT_INSUFFISANT'),
+                    ]) . "\n";
                 }
             }
 
-            if (file_exists($this->getBasePath(). $value)) {
-                return ($alertMessage ?? '') .$this->render('@bazar/inputs/image.twig', [
+            if (file_exists($this->getBasePath() . $value)) {
+                return ($alertMessage ?? '') . $this->render('@bazar/inputs/image.twig', [
                     'value' => $value,
-                    'downloadUrl' => $this->getBasePath(). $value,
+                    'downloadUrl' => $this->getBasePath() . $value,
                     'deleteUrl' => empty($entry) ? '' : $wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . $value, false),
                     'image' => $this->getWiki()->render('@attach/display-image.twig', [
-                        'baseUrl' => $this->getWiki()->GetBaseUrl().'/',
-                        'imageFullPath' => $this->getBasePath(). $value,
+                        'baseUrl' => $this->getWiki()->GetBaseUrl() . '/',
+                        'imageFullPath' => $this->getBasePath() . $value,
                         'fieldName' => $this->name,
                         'thumbnailHeight' => $this->thumbnailHeight,
                         'thumbnailWidth' => $this->thumbnailWidth,
                         'imageHeight' => $this->imageHeight,
                         'imageWidth' => $this->imageWidth,
                         'class' => 'img-responsive',
-                        'shortImageName' => $this->getShortFileName($value)
+                        'shortImageName' => $this->getShortFileName($value),
                     ]),
                     'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value),
                 ]);
@@ -90,11 +90,12 @@ class ImageField extends FileField
 
                 $alertMessage = $this->render('@templates/alert-message.twig', [
                     'type' => 'danger',
-                    'message' => str_replace('{file}', $value, _t('BAZ_FICHIER_IMAGE_INEXISTANT'))
+                    'message' => str_replace('{file}', $value, _t('BAZ_FICHIER_IMAGE_INEXISTANT')),
                 ]);
             }
         }
-        return ($alertMessage ?? '') .$this->render('@bazar/inputs/image.twig', ['maxSize' => $this->maxSize]);
+
+        return ($alertMessage ?? '') . $this->render('@bazar/inputs/image.twig', ['maxSize' => $this->maxSize]);
     }
 
     public function formatValuesBeforeSave($entry)
@@ -103,7 +104,7 @@ class ImageField extends FileField
         $value = $this->getValue($entry);
         if (!empty($_FILES[$this->propertyName]['name']) && !empty($entry['id_fiche'])) {
             $rawFileName = filter_var($_FILES[$this->propertyName]['name'], FILTER_UNSAFE_RAW);
-            $rawFileName = in_array($rawFileName, [false,null], true) ? "" : htmlspecialchars(strip_tags($rawFileName));
+            $rawFileName = in_array($rawFileName, [false, null], true) ? '' : htmlspecialchars(strip_tags($rawFileName));
             $sanitizedFilename = $this->sanitizeFilename($rawFileName);
             $fileName = "{$this->getPropertyName()}_$sanitizedFilename";
             $filePath = $this->getFullFileName($fileName, $entry['id_fiche'], true);
@@ -122,7 +123,6 @@ class ImageField extends FileField
                         $previousFileName = $entry['oldimage_' . $this->propertyName];
                         $this->securedDeleteImageAndCache($entry, $previousFileName);
                     }
-
 
                     // Generate thumbnails to speedup loading of bazar templates
                     if (!empty($this->thumbnailWidth) && !empty($this->thumbnailHeight)) {
@@ -145,6 +145,7 @@ class ImageField extends FileField
                 }
             } else {
                 flash(_t('BAZ_NOT_AUTHORIZED_EXTENSION'), 'error');
+
                 return [$this->propertyName => ''];
             }
 
@@ -152,13 +153,14 @@ class ImageField extends FileField
         } elseif (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '') {
             $entry[$this->propertyName] = $entry['oldimage_' . $this->propertyName];
         } elseif (!empty($value)) {
-            $entry[$this->propertyName] = file_exists($this->getBasePath(). $this->getValue($entry)) ? $this->getValue($entry) : '';
+            $entry[$this->propertyName] = file_exists($this->getBasePath() . $this->getValue($entry)) ? $this->getValue($entry) : '';
         } else {
             $entry[$this->propertyName] = '';
         }
+
         return [
             $this->propertyName => $this->getValue($entry),
-            'fields-to-remove' => ['oldimage_' . $this->propertyName]
+            'fields-to-remove' => ['oldimage_' . $this->propertyName],
         ];
     }
 
@@ -167,30 +169,31 @@ class ImageField extends FileField
         $value = $this->getValue($entry);
         if (!isset($value) || $value == '') {
             $default_image_filename = "defaultimage{$entry['id_typeannonce']}_{$this->name}.jpg";
-            if (file_exists($this->getBasePath(). $default_image_filename)) {
+            if (file_exists($this->getBasePath() . $default_image_filename)) {
                 $value = $default_image_filename;
             }
         }
-        if (isset($value) && $value != '' && file_exists($this->getBasePath(). $value)) {
+        if (isset($value) && $value != '' && file_exists($this->getBasePath() . $value)) {
             return $this->getWiki()->render('@attach/display-image.twig', [
-                'baseUrl' => $this->getWiki()->GetBaseUrl().'/',
-                'imageFullPath' => $this->getBasePath(). $value,
+                'baseUrl' => $this->getWiki()->GetBaseUrl() . '/',
+                'imageFullPath' => $this->getBasePath() . $value,
                 'fieldName' => $this->name,
                 'thumbnailHeight' => $this->thumbnailHeight,
                 'thumbnailWidth' => $this->thumbnailWidth,
                 'imageHeight' => $this->imageHeight,
                 'imageWidth' => $this->imageWidth,
                 'class' => $this->imageClass,
-                'shortImageName' => $this->getShortFileName($value)
-               ]);
+                'shortImageName' => $this->getShortFileName($value),
+            ]);
         }
 
-        return "";
+        return '';
     }
 
     protected function isImage($fileName)
     {
-        $imageExtPreg = $this->getService(ParameterBagInterface::class)->get("attach_config")["ext_images"];
+        $imageExtPreg = $this->getService(ParameterBagInterface::class)->get('attach_config')['ext_images'];
+
         return preg_match("/($imageExtPreg)\$/i", $fileName);
     }
 
@@ -203,8 +206,10 @@ class ImageField extends FileField
             } else {
                 // do not delete file if not same entry name (only remove from this entry)
             }
+
             return true;
         }
+
         return false;
     }
 
@@ -215,6 +220,7 @@ class ImageField extends FileField
         $fileFieldData = parent::jsonSerialize();
         unset($fileFieldData['readLabel']);
         $baseUrl = $this->getWiki()->getBaseUrl();
+
         return array_merge(
             $fileFieldData,
             [

@@ -66,9 +66,11 @@ abstract class BazarField implements \JsonSerializable
     }
 
     /**
-     * Render the edit view of the field. Check ACLS first
-     * @param array|null $entry
+     * Render the edit view of the field. Check ACLS first.
+     *
+     * @param array|null  $entry
      * @param string|null $userNameForRendering username to render the field, if empty uses connected user
+     *
      * @return string|null $html
      */
     public function renderStaticIfPermitted($entry, ?string $userNameForRendering = null)
@@ -110,8 +112,9 @@ abstract class BazarField implements \JsonSerializable
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
+
         return ($value) ? $this->render("@bazar/fields/{$this->type}.twig", [
-            'value' => $this->getValue($entry)
+            'value' => $this->getValue($entry),
         ]) : '';
     }
 
@@ -120,7 +123,7 @@ abstract class BazarField implements \JsonSerializable
     protected function renderInput($entry)
     {
         return $this->render("@bazar/inputs/{$this->type}.twig", [
-            'value' => $this->getValue($entry)
+            'value' => $this->getValue($entry),
         ]);
     }
 
@@ -139,15 +142,18 @@ abstract class BazarField implements \JsonSerializable
 
     // HELPERS
     /**
-     * Return true if we are if reading is allowed for the field
-     * @param array|null $entry
+     * Return true if we are if reading is allowed for the field.
+     *
+     * @param array|null  $entry
      * @param string|null $userNameForRendering username to render the field, if empty uses connected user
+     *
      * @return bool
      */
     public function canRead($entry, ?string $userNameForRendering = null)
     {
         $readAcl = empty($this->readAccess) ? '' : $this->readAccess;
         $isCreation = !$entry;
+
         return empty($readAcl) || $this->getService(AclService::class)->check($readAcl, $userNameForRendering, true, $isCreation ? '' : $entry['id_fiche']);
     }
 
@@ -155,13 +161,14 @@ abstract class BazarField implements \JsonSerializable
     public function canEdit($entry, bool $isCreation = false)
     {
         $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
+
         return empty($writeAcl) || $this->getService(AclService::class)->check($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : 'edit');
     }
 
     protected function render($templatePath, $data = [])
     {
         $data = array_merge([
-            'field' => $this
+            'field' => $this,
         ], $data); // Data given as param takes predominance
 
         return $this->services->get(TemplateEngine::class)->render($templatePath, $data);
@@ -250,11 +257,12 @@ abstract class BazarField implements \JsonSerializable
             'read_acl' => $this->getReadAccess(),
             'write_acl' => $this->getWriteAccess(),
             'sem_type' => $this->getSemanticPredicate(),
-            ];
+        ];
     }
 
     /**
-     * return wiki from service but do not instanciate it at construct to prevent infinite loop
+     * return wiki from service but do not instanciate it at construct to prevent infinite loop.
+     *
      * @return Wiki $wiki
      */
     protected function getWiki(): Wiki

@@ -1,7 +1,7 @@
 <?php
 
-use YesWiki\Core\YesWikiAction;
 use YesWiki\Core\Service\CommentService;
+use YesWiki\Core\YesWikiAction;
 
 class CommentsTableAction extends YesWikiAction
 {
@@ -10,10 +10,11 @@ class CommentsTableAction extends YesWikiAction
     public function run()
     {
         // get Services
-        $this->commentsService  = $this->getService(CommentService::class);
-        $coms = $this->commentsService->loadComments(''); # get all comments
+        $this->commentsService = $this->getService(CommentService::class);
+        $coms = $this->commentsService->loadComments(''); // get all comments
+
         return $this->render('@core/comment-table.twig', [
             'comments' => $coms,
-        ]) ;
+        ]);
     }
 }

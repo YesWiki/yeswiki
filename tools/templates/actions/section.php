@@ -78,7 +78,7 @@ if (empty($file) && empty($bgcolor)) {
 
 if (!empty($file)) {
     if (!class_exists('attach')) {
-        include('tools/attach/libs/attach.lib.php');
+        include 'tools/attach/libs/attach.lib.php';
     }
     $att = new attach($this);
 
@@ -86,6 +86,7 @@ if (!empty($file)) {
     if (!$att->isPicture($file)) {
         echo '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_BACKGROUNDIMAGE') . '</strong> : '
               . _t('ATTACH_PARAM_FILE_MUST_BE_IMAGE') . '.</div>' . "\n";
+
         return;
     }
     // image size
@@ -113,8 +114,8 @@ $id = $this->GetParameter('id');
 $data = $this->services->get(\YesWiki\Templates\Service\Utils::class)->getDataParameter();
 
 $pagetag = $this->GetPageTag();
-if (!isset($GLOBALS['check_'.$pagetag])) {
-    $GLOBALS['check_'.$pagetag] = [];
+if (!isset($GLOBALS['check_' . $pagetag])) {
+    $GLOBALS['check_' . $pagetag] = [];
 }
 if (!isset($GLOBALS['check_' . $pagetag]['section'])) {
     $GLOBALS['check_' . $pagetag]['section'] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('section', $pagetag, $this->page['body'] ?? '');
@@ -122,7 +123,7 @@ if (!isset($GLOBALS['check_' . $pagetag]['section'])) {
 if ($GLOBALS['check_' . $pagetag]['section']) {
     // specify the role to be checked ( *, +, %, @admins)
     $role = $this->GetParameter('visibility');
-    $role = empty($role) ? $role : str_replace("\\n", "\n", $role);
+    $role = empty($role) ? $role : str_replace('\\n', "\n", $role);
     $visible = !$role || ($GLOBALS['wiki']->CheckACL($role, null, false));
     $class = ($backgroundimg ? 'background-image' : '')
      . ($patternId && !$patternborder ? ' with-bg-pattern' : '')
@@ -132,15 +133,15 @@ if ($GLOBALS['check_' . $pagetag]['section']) {
      . (!empty($class) ? ' ' . $class : '');
 
     echo '<!-- start of section -->
-    <section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. $class . '" data-file="'. $file .'" style="'
-        .(!empty($bgcolor) ? 'background-color:' . $bgcolor .'; ' : '')
-        .(!empty($height) ? 'height:' . $height . 'px; ' : '')
-        .(!empty($pattern) ? $pattern : '')
-        .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '').'"'
+    <section' . (!empty($id) ? ' id="' . $id . '"' : '') . ' class="' . $class . '" data-file="' . $file . '" style="'
+        . (!empty($bgcolor) ? 'background-color:' . $bgcolor . '; ' : '')
+        . (!empty($height) ? 'height:' . $height . 'px; ' : '')
+        . (!empty($pattern) ? $pattern : '')
+        . (isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '') . '"'
     ;
     if (is_array($data)) {
         foreach ($data as $key => $value) {
-            echo ' data-'.$key.'="'.$value.'"';
+            echo ' data-' . $key . '="' . $value . '"';
         }
     }
     echo '>' . "\n";
@@ -159,5 +160,6 @@ if ($GLOBALS['check_' . $pagetag]['section']) {
 } else {
     echo '<div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_SECTION') . '</strong> : '
         . _t('TEMPLATE_ELEM_SECTION_NOT_CLOSED') . '.</div>' . "\n";
+
     return;
 }

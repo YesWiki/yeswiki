@@ -2,7 +2,7 @@
 
 // stuff
 if (!defined('WIKINI_VERSION')) {
-    die("acc&egrave;s direct interdit");
+    exit('acc&egrave;s direct interdit');
 }
 
 $charset = 'UTF-8';

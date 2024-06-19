@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     // controllers/ApiController.php
     // 'ATTACH_GET_URLIMAGE_CACHE_API_HELP' => "Fournit l'url du fichier de cache pour l'image voulue\n".
     //     "Nécessite le passage du jeton anti-csrf !",
@@ -105,7 +104,7 @@ return [
     'LEFT' => 'Esquerra',
     'CENTER' => 'Centrat',
     'RIGHT' => 'Dreta',
-    'FAILED' => 'Error'
+    'FAILED' => 'Error',
 
     // handler ajaxupload
     // 'ATTACH_HANDLER_AJAXUPLOAD_FOLDER_NOT_READABLE' => 'Le dossier de téléchargement n\'est pas accessible en écriture.',

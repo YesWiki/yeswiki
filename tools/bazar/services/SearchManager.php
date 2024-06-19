@@ -13,16 +13,17 @@ class SearchManager
     }
 
     /**
-     * prepare searches
-     * @param string $phrase
+     * prepare searches.
+     *
      * @param array $forms (needed to filter only on concerned forms)
+     *
      * @return array ['needle 1'=>[], // when not in list
-     *     'needle 2'=>[$result1,$result2]
-     *     ,...]  // each $result= [
-     *                             'propertyName' => 'bf_...',
-     *                             'key' => 'bf_...',
-     *                             'isCheckBox' => true,
-     *                             ]
+     *               'needle 2'=>[$result1,$result2]
+     *               ,...]  // each $result= [
+     *               'propertyName' => 'bf_...',
+     *               'key' => 'bf_...',
+     *               'isCheckBox' => true,
+     *               ]
      */
     public function searchWithLists(string $phrase, array $forms = []): array
     {
@@ -54,15 +55,12 @@ class SearchManager
                 }
             }
         }
+
         return $needles;
     }
 
-
     /**
-     * search needles in values (options) of EnumField and return array [['propertyName' => ...,'key'=>$key,'isCheckbox' => true],]
-     * @param array $needles
-     * @param array $form
-     * @return array
+     * search needles in values (options) of EnumField and return array [['propertyName' => ...,'key'=>$key,'isCheckbox' => true],].
      */
     private function searchInFormOptions(array $needles, array $form): array
     {
@@ -74,7 +72,7 @@ class SearchManager
                     foreach ($options as $key => $option) {
                         foreach ($needles as $needle => $values) {
                             // mb_strtolower instead of strtolower to manage utf 8 characters
-                            if (preg_match('/'.mb_strtolower(preg_quote($needle)).'/i', mb_strtolower($option), $matches)) {
+                            if (preg_match('/' . mb_strtolower(preg_quote($needle)) . '/i', mb_strtolower($option), $matches)) {
                                 $results[] = [
                                     'propertyName' => $field->getPropertyName(),
                                     'key' => $key,
@@ -87,23 +85,22 @@ class SearchManager
                 }
             }
         }
+
         return $results;
     }
 
     /**
-     * prepare needle by removing accents and define string for regexp
-     * @param string $needle
-     * @return string
+     * prepare needle by removing accents and define string for regexp.
      */
     private function prepareNeedleForRegexp(string $needle): string
     {
         // be careful to ( and )
-        $needle = str_replace(['(',')','/'], ['\\(','\\)','\\/'], $needle);
+        $needle = str_replace(['(', ')', '/'], ['\\(', '\\)', '\\/'], $needle);
 
         // remove accents
         $needle = str_replace(
-            ['à','á','â','ã','ä','ç','è','è','é','ê','ë','ì','í','î','ï','ñ','ò','ó','ô','õ','ö','ù','ú','û','ü','ý','ÿ','À','Á','Â','Ã','Ä','Ç','È','É','Ê','Ë','Ì','Í','Î','Ï','Ñ','Ò','Ó','Ô','Õ','Ö','Ù','Ú','Û','Ü','Ý'],
-            ['a','a','a','a','a','c','e','e','e','e','e','i','i','i','i','n','o','o','o','o','o','u','u','u','u','y','y','a','a','a','a','a','c','e','e','e','e','i','i','i','i','n','o','o','o','o','o','u','u','u','u','y'],
+            ['à', 'á', 'â', 'ã', 'ä', 'ç', 'è', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ù', 'ú', 'û', 'ü', 'ý', 'ÿ', 'À', 'Á', 'Â', 'Ã', 'Ä', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ù', 'Ú', 'Û', 'Ü', 'Ý'],
+            ['a', 'a', 'a', 'a', 'a', 'c', 'e', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'n', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'y', 'y', 'a', 'a', 'a', 'a', 'a', 'c', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'n', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'y'],
             $needle
         );
 

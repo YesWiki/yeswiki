@@ -1,13 +1,13 @@
 <?php
 
-namespace YesWiki\Helloworld ; // recommended for main pre action because could be loaded several times
+namespace YesWiki\Helloworld; // recommended for main pre action because could be loaded several times
 
 use YesWiki\Core\YesWikiAction;
 
 class __GreetingAction extends YesWikiAction
 {
     /**
-     * method to prepare args, optionnal
+     * method to prepare args, optionnal.
      */
     public function formatArguments($args)
     {
@@ -16,7 +16,7 @@ class __GreetingAction extends YesWikiAction
         return [
             'message' => (!empty($args['message'])
                 ? $args['message'] . ' ' . _t('HELLOWORD_CALLBACK_MSG')
-                : _t('HELLOWORD_NO_MSG_PARAM'))
+                : _t('HELLOWORD_NO_MSG_PARAM')),
         ];
     }
 

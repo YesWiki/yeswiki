@@ -6,8 +6,8 @@ use ArrayAccess;
 use Exception;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use YesWiki\Core\Exception\UserNotExistingOffset;
 use YesWiki\Core\Exception\UserNotAuthorizedToSetOffset;
+use YesWiki\Core\Exception\UserNotExistingOffset;
 
 class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAccess
 {
@@ -25,7 +25,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
         'password',
         'revisioncount',
         'show_comments',
-        'signuptime'];
+        'signuptime', ];
     protected $properties;
     // End of user properties (cf database, create-tables.sql and UserManager)
 
@@ -77,7 +77,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
 
     public function offsetExists($offset): bool
     {
-        return (in_array($offset, self::PROPS_LIST));
+        return in_array($offset, self::PROPS_LIST);
     }
 
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
@@ -87,6 +87,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
         if (!$this->offsetExists($offset)) {
             throw new UserNotExistingOffset("Not existing $offset in User!");
         }
+
         return $this->properties[$offset];
     }
 
@@ -100,7 +101,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
 
     public function offsetUnset($offset): void
     {
-        throw new UserNotAuthorizedToSetOffset("unsetting offset is not allowed for User!");
+        throw new UserNotAuthorizedToSetOffset('unsetting offset is not allowed for User!');
     }
 
     /* ~~~~~~~~~~~~~~~~~~ implements UserInterface ~~~~~~~~~~~~~~~~~~ */

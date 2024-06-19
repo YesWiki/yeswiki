@@ -14,7 +14,7 @@ class ApiResponse extends JsonResponse
             'Access-Control-Allow-Headers' => 'X-Requested-With, Location, Slug, Accept, Content-Type',
             'Access-Control-Expose-Headers' => 'Location, Slug, Accept, Content-Type',
             'Access-Control-Allow-Methods' => 'POST, GET, OPTIONS, DELETE, PUT, PATCH',
-            'Access-Control-Max-Age' => '86400'
+            'Access-Control-Max-Age' => '86400',
         ], $headers);
 
         parent::__construct($data, $status, $headers, $json);

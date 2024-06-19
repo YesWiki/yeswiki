@@ -20,7 +20,6 @@
 //     cela permet de ne pas avoir é lui demander d'actualiser
 //     lui-méme la page
 
-
 // Usage :
 //
 // -- {{changestyle link="BeauThemeBleu"}}
@@ -30,7 +29,6 @@
 // -- {{changestyle link="BeauThemeBleu" title="Ouragan"}}
 //    donne le lien suivant :
 //    Ouragan
-
 
 // Fonctionnalités restant é ajouter :
 //
@@ -43,21 +41,18 @@
 //	[] Feuille de style Titi
 //	[] Feuille de style Tata
 
+$set = isset($_GET['set']) ? $_GET['set'] : '';
 
-$set = isset($_GET["set"]) ? $_GET["set"] : '';
-
-
-if ($this->GetParameter("link")) {
-    echo	"<a href=\"".$this->href()."&set=".$this->GetParameter("link")."\">";
-    echo	(!$this->GetParameter("title")) ? _t("STYLE_SHEET")." ".$this->GetParameter("link") : $this->GetParameter("title");
-    echo	"</a>";
+if ($this->GetParameter('link')) {
+    echo '<a href="' . $this->href() . '&set=' . $this->GetParameter('link') . '">';
+    echo (!$this->GetParameter('title')) ? _t('STYLE_SHEET') . ' ' . $this->GetParameter('link') : $this->GetParameter('title');
+    echo '</a>';
 }
 
-
 // Do it.
-if (preg_match("/^[[:alnum:]][[:alnum:]]+$/", $set)) {
+if (preg_match('/^[[:alnum:]][[:alnum:]]+$/', $set)) {
     $this->SetPersistentCookie('sitestyle', $set, 1);
-    header("Location: ".$this->href());
+    header('Location: ' . $this->href());
 } elseif ($set) {
-    $this->SetMessage(str_replace("{name}", htmlspecialchars($set, ENT_COMPAT, YW_CHARSET), _t('CHANGESTYLE_ERROR')));
+    $this->SetMessage(str_replace('{name}', htmlspecialchars($set, ENT_COMPAT, YW_CHARSET), _t('CHANGESTYLE_ERROR')));
 }

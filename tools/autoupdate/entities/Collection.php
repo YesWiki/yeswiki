@@ -4,7 +4,7 @@ namespace YesWiki\AutoUpdate\Entity;
 
 class Collection implements \ArrayAccess, \Iterator, \Countable
 {
-    protected $list = array();
+    protected $list = [];
 
     public function toArray()
     {
@@ -19,6 +19,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     {
         if (is_null($offset)) {
             $this->list[] = $value;
+
             return;
         }
         $this->list[$offset] = $value;

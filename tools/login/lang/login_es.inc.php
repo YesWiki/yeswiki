@@ -1,4 +1,5 @@
 <?php
+
 return [
     'LOGIN_SIGNUP' => 'Inscribirse',
     'LOGIN_LOGIN' => 'Conectarse',
@@ -70,6 +71,6 @@ return [
     // actions/login.php
     'LOGIN_COOKIES_ERROR' => 'Debes aceptar las cookies para poder iniciar sesión.',
     'LOGIN_MESSAGE_SENT' => 'Se te ha enviado un mensaje con instrucciones para restablecer tu contraseña',
-    'LOGIN_MY_CONTENTS' => "Mis contenidos",
-    'LOGIN_MY_OPTIONS' => "Mis opciones",
+    'LOGIN_MY_CONTENTS' => 'Mis contenidos',
+    'LOGIN_MY_OPTIONS' => 'Mis opciones',
 ];

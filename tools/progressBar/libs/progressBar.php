@@ -1,6 +1,6 @@
 <?php
 
-header("Content-type: image/png");
+header('Content-type: image/png');
 
 $height = 15;
 $width = 50;
@@ -32,7 +32,6 @@ if ($percent < 50) {
 imagefilledrectangle($image, 0, 0, $width - 1, $height - 1, $noir);
 imagefilledrectangle($image, 1, 1, $width - 2, $height - 2, $blanc);
 imagefilledrectangle($image, 1, 1, intval(($width - 2) * $percent / 100), $height - 2, $color);
-
 
 imagepng($image);
 imagedestroy($image);

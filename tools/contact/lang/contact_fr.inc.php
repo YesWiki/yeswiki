@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     // actions/abonnement.php
     'CONTACT_ACTION_ABONNEMENT' => 'Action {{abonnement ...}}',
     'CONTACT_MAIL_REQUIRED' => 'le param&egrave;tre mail, obligatoire, est manquant.',
@@ -32,7 +31,6 @@ return [
     'CONTACT_YOUR_EMAIL_LIST' => 'Votre liste d\'adresses mails',
     'CONTACT_EXTRACT_EMAILS_FROM_TEXT' => 'Extraire les mails de ce texte',
     'CONTACT_MUST_BE_ADMIN_TO_USE_THIS_ACTION' => 'il faut &ecirc;tre dans le groupe admins pour utiliser cette action',
-
 
     'CONTACT_YOUR_NAME' => 'Votre nom',
     'CONTACT_YOUR_MAIL' => 'Votre adresse mail',
@@ -122,29 +120,28 @@ return [
         "Votre email : {{ email }}\n\n" .
         "Votre mot de passe : (le mot de passe que vous avez choisi)\n\n" .
         "Pour reinitialiser votre mot de passe : {{ urlForPasswordRenewal }}\n\n" .
-        "A tres bientot ! ",
+        'A tres bientot ! ',
 
     // action-builder Contact
     'AB_contact_group_label' => "Actions d'envoi d'e-mail/listes",
-    'AB_abonnement_action_mail_label' => "E-mail de la liste de discussion",
+    'AB_abonnement_action_mail_label' => 'E-mail de la liste de discussion',
     'AB_abonnement_action_label' => "S'abonner à une liste de discussion",
-    'AB_abonnement_template_label' => "template",
-    'AB_abonnement_class_label' => "classe",
-    'AB_abonnement_mailinglist_label' => "Liste de discussion",
+    'AB_abonnement_template_label' => 'template',
+    'AB_abonnement_class_label' => 'classe',
+    'AB_abonnement_mailinglist_label' => 'Liste de discussion',
     'AB_deabonnement_action_label' => "Se désabonner d'une liste de discussion",
-    'AB_contact_action_label' => "Afficher un formulaire de contact",
-    'AB_contact_action_mail_label' => "E-mail du destinataire",
+    'AB_contact_action_label' => 'Afficher un formulaire de contact',
+    'AB_contact_action_mail_label' => 'E-mail du destinataire',
     'AB_contact_action_entete_label' => "Préfixe automatique de l'objet du mail",
-    'AB_contact_action_entete_default' => "Envoyé depuis le site...",
-    'AB_contact_action_template_label' => "Template personnalisé",
-    'AB_contact_action_template_hint' => "Ex. : complete-contact-form.tpl.html",
-    'AB_contact_action_class_label' => "classe css",
-    'AB_listsubscription_action_label' => "listsubscription",
+    'AB_contact_action_entete_default' => 'Envoyé depuis le site...',
+    'AB_contact_action_template_label' => 'Template personnalisé',
+    'AB_contact_action_template_hint' => 'Ex. : complete-contact-form.tpl.html',
+    'AB_contact_action_class_label' => 'classe css',
+    'AB_listsubscription_action_label' => 'listsubscription',
     'AB_mailperiod_action_label' => "S'abonner pour recevoir périodiquement le contenu d'une page par email",
-    'AB_mailperiod_action_hint' => "Pour que cette action fonctionne vous devez vérifier certains paramètres sur votre serveur. Voir la documentation sur https://yeswiki.net/?MailPeriod",
-    'AB_mailinglist_action_label' => "Inscrire massivement des mails à une newsletter",
+    'AB_mailperiod_action_hint' => 'Pour que cette action fonctionne vous devez vérifier certains paramètres sur votre serveur. Voir la documentation sur https://yeswiki.net/?MailPeriod',
+    'AB_mailinglist_action_label' => 'Inscrire massivement des mails à une newsletter',
     'AB_mailinglist_action_description' => "Action permettant d'inscrire ou désinscrire massivement des mails à une newsletter",
-
 
     // for edit config
     'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => "Ajouter 'wiki=' aux liens vers ce wiki dans les e-mails",
@@ -157,5 +154,4 @@ return [
     'EDIT_CONFIG_HINT_CONTACT_REPLY_TO' => 'Utilisateur auquel la réponse mail sera envoyée',
     'EDIT_CONFIG_HINT_CONTACT_DEBUG' => 'Mode verbeux pour débugguer (mettre 2 pour avoir des informations)',
     'EDIT_CONFIG_GROUP_CONTACT' => 'Envoi des e-mails',
-
 ];

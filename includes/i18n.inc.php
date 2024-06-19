@@ -18,16 +18,16 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-
 // Security check
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    exit('acc&egrave;s direct interdit');
 }
 
 /**
- * Translate the text in the page's language
+ * Translate the text in the page's language.
  *
  * @param string array key for the text or false if doesn't exists
+ *
  * @return string the translated text or the key if not found
  */
 function _t($textkey, $params = [])
@@ -37,6 +37,7 @@ function _t($textkey, $params = [])
         foreach ($params as $transKey => $value) {
             $result = str_replace('%{' . $transKey . '}', $value, $result);
         }
+
         return $result;
     } else {
         return $textkey;
@@ -45,11 +46,12 @@ function _t($textkey, $params = [])
 
 /**
  * Convert the text in the page's charset, or in the datadase's charset
- * deprecated : now all is utf8mb4
+ * deprecated : now all is utf8mb4.
  *
  * @param mixed the text
  * @param string the page's encoding
  * @param bool is it for the database ?
+ *
  * @return string the encoded text
  */
 function _convert($text, $fromencoding, $database = false)
@@ -58,26 +60,28 @@ function _convert($text, $fromencoding, $database = false)
     if (isset($GLOBALS['wiki']->config['db_charset']) and $GLOBALS['wiki']->config['db_charset'] == 'utf8mb4') {
         return $text;
     } elseif (is_array($text)) {
-        $arraytext = array();
+        $arraytext = [];
         foreach ($text as $key => $value) {
             $arraytext[$key] = _convert($value, $fromencoding, $database);
         }
+
         return $arraytext;
     } else {
         if ($database) {
-            if ($fromencoding != "ISO-8859-1" && $fromencoding != "ISO-8859-15") {
+            if ($fromencoding != 'ISO-8859-1' && $fromencoding != 'ISO-8859-15') {
                 return mb_convert_encoding(
                     $text,
                     YW_CHARSET,
-                    mb_detect_encoding($text, "UTF-8, ISO-8859-1, ISO-8859-15", true)
+                    mb_detect_encoding($text, 'UTF-8, ISO-8859-1, ISO-8859-15', true)
                 );
-                //return \ForceUTF8\Encoding::toLatin1($text);
+            //return \ForceUTF8\Encoding::toLatin1($text);
             } else {
                 return $text;
             }
         } else {
             if (@iconv('utf-8', 'utf-8//IGNORE', $text) != $text) {
                 $text = \ForceUTF8\Encoding::toUTF8($text);
+
                 return \ForceUTF8\Encoding::fixUTF8($text);
             } else {
                 //return $text;
@@ -95,12 +99,13 @@ function _convert($text, $fromencoding, $database = false)
 
 /**
  * Automatically detects the languages available in the lang dir
- * But filtered by officially supported lang
+ * But filtered by officially supported lang.
+ *
  * @return array available languages
  */
 function detectAvailableLanguages()
 {
-    $available_languages = array();
+    $available_languages = [];
     if ($d = @opendir('lang')) {
         while (($f = readdir($d)) !== false) {
             if (preg_match(',^yeswiki_([a-z_]+)\.php[3]?$,', $f, $regs)) {
@@ -112,23 +117,24 @@ function detectAvailableLanguages()
         closedir($d);
         sort($available_languages);
     }
+
     return $available_languages;
 }
 
 /**
  *  Determine which language out of an available set the user prefers most
- *  copied from http://php.net/manual/en/function.http-negotiate-language.php#example-4353
+ *  copied from http://php.net/manual/en/function.http-negotiate-language.php#example-4353.
  *
  *  @array $available_languages        array with language-tag-strings (must be lowercase) that are available
  *  @string $http_accept_language a HTTP_ACCEPT_LANGUAGE string (read from $_SERVER['HTTP_ACCEPT_LANGUAGE'] if left out)
  *  @string $page    name of WikiPage to check for informations on language
  */
-function detectPreferedLanguage($wiki, $available_languages, $http_accept_language = "auto", $page = '')
+function detectPreferedLanguage($wiki, $available_languages, $http_accept_language = 'auto', $page = '')
 {
     // sanitize parameters
     $getLang = (isset($_GET['lang']) && in_array($_GET['lang'], $available_languages)) ? $_GET['lang'] : '';
 
-    $pageMetadataLang = "";
+    $pageMetadataLang = '';
     if ($page != '') {
         // page's metadata lang
         $wiki->metadatas = $wiki->GetMetaDatas($page);
@@ -143,15 +149,15 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
     }
 
     $postConfigLang = '';
-    if (isset($_POST["config"])) {
+    if (isset($_POST['config'])) {
         // just for installation
-        if (count($_POST["config"]) == 1 && is_string($_POST["config"])) {
+        if (count($_POST['config']) == 1 && is_string($_POST['config'])) {
             if (version_compare(PHP_VERSION, '7.0.0') >= 0) {
-                $conf = unserialize($_POST["config"], ['allowed_classes' => false]);
+                $conf = unserialize($_POST['config'], ['allowed_classes' => false]);
             } else {
                 // workaround to avoid possibility of having classes
                 $allowed_classes = false;
-                $_POST["config"] = preg_replace_callback(
+                $_POST['config'] = preg_replace_callback(
                     '/(?=^|:)(O|C):\d+:"([^"]*)":(\d+):{/',
                     function ($matches) use ($allowed_classes) {
                         if (is_array($allowed_classes) && in_array($matches[2], $allowed_classes)) {
@@ -163,18 +169,18 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
                                 serialize($matches[2]);
                         }
                     },
-                    $_POST["config"]
+                    $_POST['config']
                 );
-                $conf = unserialize($_POST["config"]);
+                $conf = unserialize($_POST['config']);
             }
             if (isset($conf['default_language']) && in_array($conf['default_language'], $available_languages)) {
                 $postConfigLang = $conf['default_language'];
             }
         } elseif (
-            isset($_POST["config"]['default_language'])
-            && in_array($_POST["config"]['default_language'], $available_languages)
+            isset($_POST['config']['default_language'])
+            && in_array($_POST['config']['default_language'], $available_languages)
         ) {
-            $postConfigLang = $_POST["config"]['default_language'];
+            $postConfigLang = $_POST['config']['default_language'];
         }
     }
 
@@ -187,7 +193,7 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
     $configLang = !empty($wiki) && isset($wiki->config['default_language']) && in_array($wiki->config['default_language'], $available_languages)
         ? $wiki->config['default_language'] : '';
 
-    $httpAcceptLang = ($http_accept_language !== "auto") ? $http_accept_language : (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '');
+    $httpAcceptLang = ($http_accept_language !== 'auto') ? $http_accept_language : (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '');
 
     // third priority
     if (!empty($pageMetadataLang)) {
@@ -210,7 +216,7 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
     //    qvalue         = ( "0" [ "." 0*3DIGIT ] )
     //            | ( "1" [ "." 0*3("0") ] )
     preg_match_all(
-        "/([[:alpha:]]{1,8})(-([[:alpha:]|-]{1,8}))?"
+        '/([[:alpha:]]{1,8})(-([[:alpha:]|-]{1,8}))?'
             . "(\s*;\s*q\s*=\s*(1\.0{0,3}|0\.\d{0,3}))?\s*(,|$)/i",
         $httpAcceptLang,
         $hits,
@@ -226,7 +232,7 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
         $langprefix = strtolower($arr[1]);
         if (!empty($arr[3])) {
             $langrange = strtolower($arr[3]);
-            $language = $langprefix . "-" . $langrange;
+            $language = $langprefix . '-' . $langrange;
         } else {
             $language = $langprefix;
         }
@@ -245,12 +251,12 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
             $bestqval = $qvalue * 0.9;
         }
     }
+
     return $bestlang;
 }
 
 /**
- * Initialize the table of translation, based on the information gathered in the page
- *
+ * Initialize the table of translation, based on the information gathered in the page.
  */
 function initI18n()
 {
@@ -299,6 +305,7 @@ function loadpreferredI18n($wiki, $page = '')
         $returnedArray = include_once 'lang/yeswikijs_' . $GLOBALS['prefered_language'] . '.php';
         load_translations($returnedArray, true);
     }
+
     return;
 }
 

@@ -13,6 +13,7 @@ class Files
         }
 
         mkdir($path);
+
         return $path;
     }
 
@@ -25,6 +26,7 @@ class Files
             if (unlink($path)) {
                 return true;
             }
+
             return false;
         }
         if (is_dir($path)) {
@@ -44,8 +46,10 @@ class Files
             if (!mkdir($des)) {
                 return false;
             }
+
             return $this->copyFolder($src, $des);
         }
+
         return false;
     }
 
@@ -83,12 +87,13 @@ class Files
         curl_exec($ch);
         curl_close($ch);
         fclose($fp);
+
         return $destPath;
     }
 
     private function isWritableFolder($path)
     {
-        $file2ignore = array('.', '..', '.git');
+        $file2ignore = ['.', '..', '.git'];
         if ($res = opendir($path)) {
             while (($file = readdir($res)) !== false) {
                 if (!in_array($file, $file2ignore)) {
@@ -101,12 +106,13 @@ class Files
             }
             closedir($res);
         }
+
         return true;
     }
 
     private function deleteFolder($path)
     {
-        $file2ignore = array('.', '..');
+        $file2ignore = ['.', '..'];
         if (is_link($path)) {
             unlink($path);
         } else {
@@ -120,12 +126,13 @@ class Files
             }
             rmdir($path);
         }
+
         return true;
     }
 
     private function copyFolder($srcPath, $desPath)
     {
-        $file2ignore = array('.', '..');
+        $file2ignore = ['.', '..'];
         if ($res = opendir($srcPath)) {
             while (($file = readdir($res)) !== false) {
                 if (!in_array($file, $file2ignore)) {
@@ -134,6 +141,7 @@ class Files
             }
             closedir($res);
         }
+
         return true;
     }
 }
