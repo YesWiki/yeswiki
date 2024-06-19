@@ -65,8 +65,9 @@
         }
     },
     "require-dev": {
-        "symfony/var-dumper": "^5.1",
-        "phpunit/phpunit": "^9"
+        "friendsofphp/php-cs-fixer": "^3.4",
+        "phpunit/phpunit": "^9",
+        "symfony/var-dumper": "^5.1"
     },
     "config": {
         "allow-plugins": {
@@ -81,7 +82,7 @@
         "sort-packages": true
     },
     "bin": [
-            "yeswicli"
+        "yeswicli"
     ],
     "autoload": {
         "classmap": ["includes/ComposerScriptsHelper.php"]
