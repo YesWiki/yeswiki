@@ -25,7 +25,7 @@ class ListController extends YesWikiController
                 $list = json_decode($listRaw, true);
                 $this->listManager->create($list['titre_liste'], $list['label']);
             }
-            echo '<div class="alert alert-success">'._t('BAZ_LIST_IMPORT_SUCCESSFULL').'.</div>';
+            echo '<div class="alert alert-success">' . _t('BAZ_LIST_IMPORT_SUCCESSFULL') . '.</div>';
         }
 
         $lists = $this->listManager->getAll();
@@ -41,8 +41,8 @@ class ListController extends YesWikiController
         return $this->render('@bazar/lists/list_table.twig', [
             'lists' => $values,
             'loggedUser' => $this->wiki->GetUser(),
-            'canCreate' => !$this->securityController->isWikiHibernated()
-            ]);
+            'canCreate' => !$this->securityController->isWikiHibernated(),
+        ]);
     }
 
     public function create()
@@ -53,7 +53,7 @@ class ListController extends YesWikiController
             foreach ($_POST['label'] as $label) {
                 if (($label != null || $label != '') && ($_POST['id'][$i] != null || $_POST['id'][$i] != '')) {
                     $values[$_POST['id'][$i]] = $label;
-                    ++$i;
+                    $i++;
                 }
             }
 
@@ -61,7 +61,7 @@ class ListController extends YesWikiController
 
             if ($this->shouldPostMessageOnSubmit()) {
                 return $this->render('@core/iframe_result.twig', [
-                    "data" => ["msg" => "list_created", "id" => $listeId, "title" => $_POST['titre_liste']]
+                    'data' => ['msg' => 'list_created', 'id' => $listeId, 'title' => $_POST['titre_liste']],
                 ]);
             }
 
@@ -75,7 +75,7 @@ class ListController extends YesWikiController
 
     private function shouldPostMessageOnSubmit()
     {
-        return isset($_GET["onsubmit"])  && $_GET["onsubmit"] === "postmessage";
+        return isset($_GET['onsubmit']) && $_GET['onsubmit'] === 'postmessage';
     }
 
     public function update($id)
@@ -91,14 +91,14 @@ class ListController extends YesWikiController
                     if (($label != null || $label != '') && ($_POST['id'][$i] != null || $_POST['id'][$i] != '')) {
                         $values[$_POST['id'][$i]] = $label;
                     }
-                    ++$i;
+                    $i++;
                 }
 
                 $this->listManager->update($id, $_POST['titre_liste'], $values);
 
                 if ($this->shouldPostMessageOnSubmit()) {
                     return $this->render('@core/iframe_result.twig', [
-                        "data" => ["msg" => "list_updated", "id" => $id, "title" => $_POST['titre_liste']]
+                        'data' => ['msg' => 'list_updated', 'id' => $id, 'title' => $_POST['titre_liste']],
                     ]);
                 }
 
@@ -113,7 +113,7 @@ class ListController extends YesWikiController
         return $this->render('@bazar/lists/list_form.twig', [
             'listId' => $id,
             'title' => $list['titre_liste'],
-            'labels' => $list['label']
+            'labels' => $list['label'],
         ]);
     }
 

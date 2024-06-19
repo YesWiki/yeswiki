@@ -2,7 +2,7 @@
 
 return [
     // controllers/ApiController.php
-    'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => "Not existing image file",
+    'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'Not existing image file',
     // libs/attach.lib.php
     'ATTACH_ACTION_ATTACH' => 'Action {{attach ...}}',
     'ATTACH_PARAM_DESC_REQUIRED' => '"desc" parameter required for an image',
@@ -18,7 +18,7 @@ return [
     // 'ERROR_PARTIAL_UPLOAD' => 'Le fichier n\'a &eacute;t&eacute; que partiellement t&eacute;l&eacute;charg&eacute;.',
     // 'ERROR_NO_FILE_UPLOADED' => 'Aucun fichier n\'a &eacute;t&eacute; t&eacute;l&eacute;charg&eacute;.',
     // 'ERROR_NOT_AUTHORIZED_EXTENSION' => 'Le fichier n\'a pas une extension autorisée, voici celles que la configuration autorise : ',
-    'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Add a link to only display the full image",
+    'ATTACH_ACTION_FULLIMAGELINK_TEXT' => 'Add a link to only display the full image',
     'ATTACH_FILE_MANAGEMENT' => 'File management',
     'ATTACH_TRASH' => 'Trash',
     'ATTACH_NO_ATTACHED_FILES' => 'At this time, no attached files to the page {tag}.',

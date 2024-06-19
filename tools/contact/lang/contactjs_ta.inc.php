@@ -1,4 +1,5 @@
 <?php
+
 return [
     // libs/contact.js
     'CONTACT_REQUIRED_FIELD' => 'இந்தப் புலத்தின் நுழைவு கட்டாயமாகும்.',

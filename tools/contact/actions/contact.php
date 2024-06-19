@@ -3,11 +3,11 @@
 //recuperation des parametres
 $contactelements['mail'] = $this->GetParameter('mail');
 if (empty($contactelements['mail'])) {
-    echo '<div class="alert alert-danger"><strong>'._t('CONTACT_ACTION_CONTACT').' :</strong>&nbsp;'._t('CONTACT_MAIL_REQUIRED').'</div>';
+    echo '<div class="alert alert-danger"><strong>' . _t('CONTACT_ACTION_CONTACT') . ' :</strong>&nbsp;' . _t('CONTACT_MAIL_REQUIRED') . '</div>';
 } else {
     // on utilise une variable globale pour savoir de quel formulaire la demande est envoyee, s'il y en a plusieurs sur la meme page
     if (isset($GLOBALS['nbactionmail'])) {
-        ++$GLOBALS['nbactionmail'];
+        $GLOBALS['nbactionmail']++;
     } else {
         $GLOBALS['nbactionmail'] = 1;
     }
@@ -25,7 +25,7 @@ if (empty($contactelements['mail'])) {
     }
 
     // on peut ajouter des classes à la classe par défaut
-    $contactelements['class'] = ($this->GetParameter('class') ? 'form-contact '.$this->GetParameter('class') : 'form-contact');
+    $contactelements['class'] = ($this->GetParameter('class') ? 'form-contact ' . $this->GetParameter('class') : 'form-contact');
 
     // adresse url d'envoi du mail
     $contactelements['mailerurl'] = $this->href('mail');

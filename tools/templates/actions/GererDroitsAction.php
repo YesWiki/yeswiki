@@ -3,7 +3,7 @@
 /**
  * Cette action à pour but de gérer massivement les droits sur les pages d'un wiki.
  * Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utilisent (définis par l'utilisateur).
-*/
+ */
 
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\DbService;
@@ -19,12 +19,11 @@ class GererDroitsAction extends YesWikiAction
 
     public function run()
     {
-
         //action réservée aux admins
         if (!$this->wiki->UserIsAdmin()) {
             return $this->render('@templates/alert-message.twig', [
-              'type' => 'danger',
-              'message' => _t('ACLS_RESERVED_FOR_ADMINS')
+                'type' => 'danger',
+                'message' => _t('ACLS_RESERVED_FOR_ADMINS'),
             ]);
         }
         // get services
@@ -49,25 +48,25 @@ class GererDroitsAction extends YesWikiAction
         $pageEtDroits = [];
         while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
             $pageEtDroits[$num_page] = $this->utils->recupDroits($tab_liste_pages['tag']);
-            ++$num_page;
+            $num_page++;
         }
 
         return $this->render(
             '@templates/gerer-droits-action.twig',
             [
-            'filTer' => $filter,
-            'error' => $error,
-            'success' => $success,
-            'forms' => $forms,
-            'pageEtDroits' => $pageEtDroits,
-            'isHibernated' => $this->securityController->isWikiHibernated()
-      ]
+                'filTer' => $filter,
+                'error' => $error,
+                'success' => $success,
+                'forms' => $forms,
+                'pageEtDroits' => $pageEtDroits,
+                'isHibernated' => $this->securityController->isWikiHibernated(),
+            ]
         );
     }
 
     /**
-     * manage change of rights based on $_POST
-     * @param array $post
+     * manage change of rights based on $_POST.
+     *
      * @return array ['success'=>string, 'error'=>string]
      */
     protected function manageChangeRights(array $post): array
@@ -117,13 +116,12 @@ class GererDroitsAction extends YesWikiAction
             }
         }
 
-        return compact(['success','error']);
+        return compact(['success', 'error']);
     }
 
     /**
-     * récupération des filtres
-     * @param array $get
-     * @param array $post
+     * récupération des filtres.
+     *
      * @return array ['filter'=>string,'search'=>string]
      */
     protected function getFilterAndSearch(array $get, array $post): array
@@ -132,14 +130,14 @@ class GererDroitsAction extends YesWikiAction
         $search = '';
         if (!empty($filter)) {
             $filter = strval($filter);
-            if ($filter === "pages") {
+            if ($filter === 'pages') {
                 $search = <<<SQL
               AND tag NOT IN (
               SELECT DISTINCT resource FROM {$this->dbService->prefixTable('triples')}
               WHERE value = "fiche_bazar"
             )
             SQL;
-            } elseif ($filter === "specialpages") {
+            } elseif ($filter === 'specialpages') {
                 $search = <<<SQL
                AND tag IN ("BazaR","GererSite","GererDroits","GererThemes","GererMisesAJour","GererUtilisateurs",
                 "GererDroitsActions","GererDroitsHandlers","TableauDeBord",
@@ -157,7 +155,7 @@ class GererDroitsAction extends YesWikiAction
               AND body LIKE '%"id_typeannonce":"{$this->dbService->escape($filter)}"%'
               AND tag IN ($requete_pages_wiki_bazar_fiches)
             SQL;
-            } elseif ($filter === "lists") {
+            } elseif ($filter === 'lists') {
                 $requete_pages_wiki_listes = <<<SQL
                 SELECT DISTINCT resource FROM {$this->dbService->prefixTable('triples')} 
                 WHERE value = "liste" AND property = "http://outils-reseaux.org/_vocabulary/type" 
@@ -175,7 +173,8 @@ class GererDroitsAction extends YesWikiAction
         if (empty($filter) && !empty($post['filter']) && is_scalar($post['filter'])) {
             $filter = strval($post['filter']);
         }
-        return compact(['filter','search']);
+
+        return compact(['filter', 'search']);
     }
 
     protected function filterCommentRightsBeforeSave($list): string
@@ -187,6 +186,7 @@ class GererDroitsAction extends YesWikiAction
                 return !empty($el) && !empty(trim($el)) && trim($el) != '*';
             }));
         }
+
         return empty($list) ? 'comments-closed' : $list;
     }
 }

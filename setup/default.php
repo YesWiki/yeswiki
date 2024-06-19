@@ -1,11 +1,11 @@
 <?php
 
 if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
+    exit('acc&egrave;s direct interdit');
 }
 ?>
     
-    <form class="form-horizontal form-yeswiki-install" action="<?php echo  myLocation() ?>?PagePrincipale&installAction=install" method="post">
+    <form class="form-horizontal form-yeswiki-install" action="<?php echo myLocation(); ?>?PagePrincipale&installAction=install" method="post">
 
     <div class="row">
     <div class="col-md-4">
@@ -48,12 +48,12 @@ if (!defined('WIKINI_VERSION')) {
         <div class="form-group">
           <label class="col-sm-3 control-label"><?php echo _t('DEFAULT_LANGUAGE'); ?></label>
           <div class="col-sm-9">
-            <select required autocomplete="off" class="form-control" name="config[default_language]" onchange="$(this).parents('.form-yeswiki-install').attr('action', '<?php echo  myLocation() ?>?installAction=default&lang='+$(this).val()).submit();">
+            <select required autocomplete="off" class="form-control" name="config[default_language]" onchange="$(this).parents('.form-yeswiki-install').attr('action', '<?php echo myLocation(); ?>?installAction=default&lang='+$(this).val()).submit();">
                 <?php
                 foreach ($GLOBALS['available_languages'] as $value) {
-                    echo '<option value="'.$value.'"'.(($value == $GLOBALS['prefered_language'] && (!isset($_GET['lang']) || $_GET['lang'] !== 'auto')) ? ' selected="selected"' : '').'>'.ucfirst(htmlentities($GLOBALS['languages_list'][$value]['nativeName'], ENT_COMPAT | ENT_HTML401, 'UTF-8'))."</option>\n";
+                    echo '<option value="' . $value . '"' . (($value == $GLOBALS['prefered_language'] && (!isset($_GET['lang']) || $_GET['lang'] !== 'auto')) ? ' selected="selected"' : '') . '>' . ucfirst(htmlentities($GLOBALS['languages_list'][$value]['nativeName'], ENT_COMPAT | ENT_HTML401, 'UTF-8')) . "</option>\n";
                 }
-echo "<option value=\"auto\"".((isset($_GET['lang']) && $_GET['lang'] === 'auto') ? ' selected="selected"' : '').">"._t('NAVIGATOR_LANGUAGE')."</option>\n";
+echo '<option value="auto"' . ((isset($_GET['lang']) && $_GET['lang'] === 'auto') ? ' selected="selected"' : '') . '>' . _t('NAVIGATOR_LANGUAGE') . "</option>\n";
 ?>
             </select>
           </div>
@@ -62,28 +62,28 @@ echo "<option value=\"auto\"".((isset($_GET['lang']) && $_GET['lang'] === 'auto'
         <div class="form-group">
           <label class="col-sm-3 control-label"><?php echo _t('YOUR_WEBSITE_NAME'); ?></label>
           <div class="col-sm-9">
-            <input type="text" required class="form-control" name="config[wakka_name]" value="<?php echo $wakkaConfig['wakka_name'] ?>" />
+            <input type="text" required class="form-control" name="config[wakka_name]" value="<?php echo $wakkaConfig['wakka_name']; ?>" />
           </div>
         </div>
 
         <div class="form-group">
           <label class="col-sm-3 control-label"><?php echo _t('DESCRIPTION'); ?></label>
           <div class="col-sm-9">
-            <input type="text" class="form-control" name="config[meta_description]" value="<?php echo $wakkaConfig['meta_description'] ?>" />
+            <input type="text" class="form-control" name="config[meta_description]" value="<?php echo $wakkaConfig['meta_description']; ?>" />
           </div>
         </div>
 
         <div class="form-group">
           <label class="col-sm-3 control-label"><?php echo _t('KEYWORDS'); ?></label>
           <div class="col-sm-9">
-            <input type="text" class="form-control" name="config[meta_keywords]" value="<?php echo $wakkaConfig['meta_keywords'] ?>" />
+            <input type="text" class="form-control" name="config[meta_keywords]" value="<?php echo $wakkaConfig['meta_keywords']; ?>" />
           </div>
         </div>
 
         <div class="form-group">
           <label class="col-sm-3 control-label"><?php echo _t('HOMEPAGE'); ?></label>
           <div class="col-sm-9">
-            <input type="text" required class="form-control" name="config[root_page]" value="<?php echo $wakkaConfig['root_page'] ?>" pattern="<?php echo WN_CAMEL_CASE_EVOLVED ;?>"/>
+            <input type="text" required class="form-control" name="config[root_page]" value="<?php echo $wakkaConfig['root_page']; ?>" pattern="<?php echo WN_CAMEL_CASE_EVOLVED; ?>"/>
             <p class="help-block"><?php echo _t('MUST_BE_WIKINAME'); ?></p>
           </div>
         </div>
@@ -124,7 +124,7 @@ echo "<option value=\"auto\"".((isset($_GET['lang']) && $_GET['lang'] === 'auto'
         <div class="form-group">
           <label class="col-sm-3 control-label"><?php echo _t('MYSQL_SERVER'); ?></label>
           <div class="col-sm-9">
-            <input type="text" required class="form-control" name="config[mysql_host]" value="<?php echo $wakkaConfig['mysql_host'] ?>" />
+            <input type="text" required class="form-control" name="config[mysql_host]" value="<?php echo $wakkaConfig['mysql_host']; ?>" />
           </div>
         </div>
 
@@ -152,7 +152,7 @@ echo "<option value=\"auto\"".((isset($_GET['lang']) && $_GET['lang'] === 'auto'
         <div class="form-group">
           <label class="col-sm-3 control-label"><?php echo _t('TABLE_PREFIX'); ?></label>
           <div class="col-sm-9">
-            <input type="text" required class="form-control" name="config[table_prefix]" value="<?php echo $wakkaConfig['table_prefix'] ?>" />
+            <input type="text" required class="form-control" name="config[table_prefix]" value="<?php echo $wakkaConfig['table_prefix']; ?>" />
           </div>
         </div>
 </div>
@@ -244,7 +244,7 @@ echo "<option value=\"auto\"".((isset($_GET['lang']) && $_GET['lang'] === 'auto'
                 <div class="form-group">
                     <label class="col-sm-3 control-label"><?php echo _t('BASE_URL'); ?></label>
                     <div class="col-sm-9">
-                        <input type="text" required class="form-control" name="config[base_url]" value="<?php echo $wakkaConfig['base_url'] ?>" />
+                        <input type="text" required class="form-control" name="config[base_url]" value="<?php echo $wakkaConfig['base_url']; ?>" />
                         <p class="help-block"><?php echo _t('PAGENAME_WILL_BE_ADDED_AFTER_CHANGE_JUST_FOR_REDIRECTION'); ?></p>
                     </div>
                 </div>
@@ -253,7 +253,7 @@ echo "<option value=\"auto\"".((isset($_GET['lang']) && $_GET['lang'] === 'auto'
                   <label>
                     <input type="hidden" name="config[rewrite_mode]" value="0" />
                     <input type="checkbox" name="config[rewrite_mode]" value="1" <?php
-              echo ($wakkaConfig['rewrite_mode'] ?? true) ? 'checked' : '' ?> />
+              echo ($wakkaConfig['rewrite_mode'] ?? true) ? 'checked' : ''; ?> />
                     <span></span>
                     &nbsp;<?php echo _t('ACTIVATE_REDIRECTION_MODE'); ?>
                   </label>
@@ -263,7 +263,7 @@ echo "<option value=\"auto\"".((isset($_GET['lang']) && $_GET['lang'] === 'auto'
                 <div class="checkbox">
                   <label>
                     <input type="checkbox" name="config[allow_raw_html]" value="1" <?php
-              echo ($wakkaConfig['allow_raw_html'] ?? true) ? 'checked' : '' ?> />
+              echo ($wakkaConfig['allow_raw_html'] ?? true) ? 'checked' : ''; ?> />
                     <span></span>
                     &nbsp;<?php echo _t('AUTHORIZE_HTML_INSERTION'); ?>
                   </label>
@@ -273,7 +273,7 @@ echo "<option value=\"auto\"".((isset($_GET['lang']) && $_GET['lang'] === 'auto'
                 <div class="checkbox">
                   <label>
                     <input type="checkbox" name="config[allow_robots]" value="1" <?php
-              echo ($wakkaConfig['allow_robots'] ?? true) ? 'checked' : '' ?> />
+              echo ($wakkaConfig['allow_robots'] ?? true) ? 'checked' : ''; ?> />
                     <span></span>
                     &nbsp;<?php echo _t('AUTHORIZE_INDEX_BY_ROBOTS'); ?>
                   </label>

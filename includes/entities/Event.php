@@ -6,7 +6,7 @@ use Symfony\Contracts\EventDispatcher\Event as SymfonyEvent;
 
 class Event extends SymfonyEvent
 {
-    protected $data ;
+    protected $data;
 
     public function __construct(array $data)
     {

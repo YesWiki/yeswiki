@@ -11,7 +11,7 @@ class RssHandler extends YesWikiHandler
 {
     public function run()
     {
-        if (!$this->wiki->HasAccess("read") || !$this->wiki->page) {
+        if (!$this->wiki->HasAccess('read') || !$this->wiki->page) {
             return null;
         }
 
@@ -52,8 +52,8 @@ class RssHandler extends YesWikiHandler
         if (isset($_GET['query'])) {
             $query = $_GET['query'];
             $urlrss .= '&amp;query=' . $query;
-            $tabquery = array();
-            $tableau = array();
+            $tabquery = [];
+            $tableau = [];
             $tab = explode('|', $query); //découpe la requete autour des |
             foreach ($tab as $req) {
                 $tabdecoup = explode('=', $req, 2);
@@ -69,7 +69,7 @@ class RssHandler extends YesWikiHandler
                 'queries' => $query,
                 'formsIds' => $id,
                 'user' => $utilisateur,
-                'keywords' => $q
+                'keywords' => $q,
             ],
             true, // filter on read ACL
             true  // use Guard
@@ -87,8 +87,8 @@ class RssHandler extends YesWikiHandler
 
         $xml = XML_Util::getXMLDeclaration('1.0', 'UTF-8', 'yes');
         $xml .= "\r\n  ";
-        $xml .= XML_Util::createStartElement('rss', array('version' => '2.0',
-            'xmlns:atom' => 'http://www.w3.org/2005/Atom', 'xmlns:dc' => 'http://purl.org/dc/elements/1.1/', ));
+        $xml .= XML_Util::createStartElement('rss', ['version' => '2.0',
+            'xmlns:atom' => 'http://www.w3.org/2005/Atom', 'xmlns:dc' => 'http://purl.org/dc/elements/1.1/', ]);
         $xml .= "\r\n    ";
         $xml .= XML_Util::createStartElement('channel');
         $xml .= "\r\n      ";
@@ -179,7 +179,7 @@ class RssHandler extends YesWikiHandler
         return str_replace(
             '</image>',
             '</image>' . "\n"
-            . '    <atom:link href="' . htmlentities((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'])
+            . '    <atom:link href="' . htmlentities((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'])
             . '" rel="self" type="application/rss+xml" />',
             $this->sanitize($xml, ENT_QUOTES, 'UTF-8')
         );
@@ -188,6 +188,7 @@ class RssHandler extends YesWikiHandler
     private function sanitize($string)
     {
         $string = html_entity_decode($string, ENT_QUOTES, 'UTF-8');
+
         return $string;
     }
 }

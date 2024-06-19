@@ -2,9 +2,9 @@
 
 namespace YesWiki\Core\Controller;
 
-use YesWiki\Core\YesWikiController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use YesWiki\Core\YesWikiController;
 
 class DocumentationController extends YesWikiController
 {
@@ -14,10 +14,10 @@ class DocumentationController extends YesWikiController
     public function show()
     {
         return new Response($this->render('@core/documentation.twig', [
-          'config' => $this->wiki->config,
-          'i18n' => $GLOBALS['translations_js'],
-          'locale' => $GLOBALS['prefered_language'],
-          'extensions' => $this->getExtensionsWithDocs()
+            'config' => $this->wiki->config,
+            'i18n' => $GLOBALS['translations_js'],
+            'locale' => $GLOBALS['prefered_language'],
+            'extensions' => $this->getExtensionsWithDocs(),
         ]));
     }
 
@@ -29,9 +29,10 @@ class DocumentationController extends YesWikiController
             $path = "{$extPath}docs/README.md";
             $docPath = glob($localizedPath)[0] ?? glob($path)[0] ?? null;
             if ($docPath) {
-                $extensions[] = ["name" => $extName, "docPath" => $docPath];
+                $extensions[] = ['name' => $extName, 'docPath' => $docPath];
             }
         }
+
         return $extensions;
     }
 }

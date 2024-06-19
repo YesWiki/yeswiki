@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     'TAGS_TAGS' => 'Tags',
     'TAGS_ACTION_ADMINTAGS' => 'Action {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'this action is for the admins only',
@@ -124,5 +123,4 @@ return [
     // for edit config
     'EDIT_CONFIG_HINT_HIDE_KEYWORDS' => 'Hide keywords at the bottom of pages (true or false)',
     'EDIT_CONFIG_GROUP_TAGS' => 'Keywords (tags)',
-
 ];

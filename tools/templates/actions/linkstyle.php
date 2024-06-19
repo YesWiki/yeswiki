@@ -2,8 +2,8 @@
 
 use YesWiki\Core\Service\ThemeManager;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    exit('acc&egrave;s direct interdit');
 }
 
 $themeManager = $this->services->get(ThemeManager::class);
@@ -23,19 +23,19 @@ if ($presetsActivated) {
     $custom_prefix = ThemeManager::CUSTOM_CSS_PRESETS_PREFIX;
     $presetIsCustom = (substr($favoritePreset, 0, strlen($custom_prefix)) == $custom_prefix);
     if (!$presetIsCustom) {
-        $presetFile = 'themes/'.$themeManager->getFavoriteTheme().'/presets/'.$favoritePreset;
+        $presetFile = 'themes/' . $themeManager->getFavoriteTheme() . '/presets/' . $favoritePreset;
     } else {
         $presetFile = ThemeManager::CUSTOM_CSS_PRESETS_PATH . '/' . substr($favoritePreset, strlen($custom_prefix));
     }
 }
 
 // on regarde dans quel dossier se trouve le theme
-$styleFile = 'themes/'.$themeManager->getFavoriteTheme().'/styles/'.$favoriteStyle;
-if (file_exists('custom/'.$styleFile)) {
-    $styleFile = 'custom/'.$styleFile;
+$styleFile = 'themes/' . $themeManager->getFavoriteTheme() . '/styles/' . $favoriteStyle;
+if (file_exists('custom/' . $styleFile)) {
+    $styleFile = 'custom/' . $styleFile;
 }
-if ($presetsActivated && !$presetIsCustom && file_exists('custom/'.$presetFile)) {
-    $presetFile = 'custom/'.$presetFile;
+if ($presetsActivated && !$presetIsCustom && file_exists('custom/' . $presetFile)) {
+    $presetFile = 'custom/' . $presetFile;
 }
 
 // on ajoute le style css selectionne du theme
@@ -54,7 +54,7 @@ if (($favoriteStyle != 'none')
 
 // on ajoute les icones de fontawesome
 if (empty($this->config['fontawesome']) || $this->config['fontawesome'] != '0') {
-    echo $this->LinkCSSFile("styles/vendor/fontawesome/css/all.min.css");
+    echo $this->LinkCSSFile('styles/vendor/fontawesome/css/all.min.css');
 }
 
 // si l'action propose d'autres css a ajouter, on les ajoute
@@ -62,9 +62,9 @@ $othercss = $this->GetParameter('othercss');
 if (!empty($othercss)) {
     $tabcss = explode(',', $othercss);
     foreach ($tabcss as $cssfile) {
-        $style = 'themes/'.$themeManager->getFavoriteTheme().'/styles/'.$cssfile;
-        if (file_exists('custom/'.$style)) {
-            $style = 'custom/'.$style;
+        $style = 'themes/' . $themeManager->getFavoriteTheme() . '/styles/' . $cssfile;
+        if (file_exists('custom/' . $style)) {
+            $style = 'custom/' . $style;
         }
         $this->AddCSSFile($style);
     }

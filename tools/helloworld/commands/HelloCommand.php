@@ -4,8 +4,8 @@ namespace YesWiki\Helloworld\Commands;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use YesWiki\Wiki;
 
@@ -51,12 +51,13 @@ class HelloCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $username = $input->getArgument('username');
-        $username = empty($username) ? "" : "$username ";
+        $username = empty($username) ? '' : "$username ";
         $outputString = "Hello $username!";
         if ($input->getOption('uppercase')) {
             $outputString = strtoupper($outputString);
         }
         $output->writeln($outputString);
+
         return Command::SUCCESS;
     }
 }

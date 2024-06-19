@@ -1,42 +1,42 @@
 <?php
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    exit('acc&egrave;s direct interdit');
 }
 
-include_once('tools/syndication/libs/syndication.lib.php');
-require_once __DIR__.'/../vendor/autoload.php';
+include_once 'tools/syndication/libs/syndication.lib.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 // on verifie si il existe un dossier pour le cache et si on a les droits d'ecriture dessus
 if (file_exists('cache')) {
     if (!is_writable('cache')) {
         echo '<p class="alert alert-error alert-danger">' . _t('SYNDICATION_ACTION_SYNDICATION') . ' : '
-             ._t('SYNDICATION_WRITE_ACCESS_TO_CACHE_FOLDER') . '.</p>' . "\n";
+             . _t('SYNDICATION_WRITE_ACCESS_TO_CACHE_FOLDER') . '.</p>' . "\n";
     }
 } else {
     echo '<p class="alert alert-error alert-danger">' . _t('SYNDICATION_ACTION_SYNDICATION') . ' : '
-         ._t('SYNDICATION_CREATE_CACHE_FOLDER') . '.</p>' . "\n";
+         . _t('SYNDICATION_CREATE_CACHE_FOLDER') . '.</p>' . "\n";
 }
 
 // recuperation des parametres
-$titre = $this->GetParameter("title");
+$titre = $this->GetParameter('title');
 
-$nb = $this->GetParameter("nb");
+$nb = $this->GetParameter('nb');
 
-$pagination = $this->GetParameter("pagination");
+$pagination = $this->GetParameter('pagination');
 if (empty($pagination)) {
     $pagination = 5;
 }
 
-$nbchar = $this->GetParameter("nbchar");
+$nbchar = $this->GetParameter('nbchar');
 
-$class = $this->GetParameter("class");
+$class = $this->GetParameter('class');
 
-$nouvellefenetre = $this->GetParameter("nouvellefenetre");
+$nouvellefenetre = $this->GetParameter('nouvellefenetre');
 
-$formatdate = $this->GetParameter("formatdate");
+$formatdate = $this->GetParameter('formatdate');
 
-$template = $this->GetParameter("template");
+$template = $this->GetParameter('template');
 $path = empty($template) ? 'tools/syndication/templates/liste.tpl.html' : realpath('tools/syndication/templates/' . basename($template));
 if (empty($path) || !file_exists($path)) {
     echo '<p class="alert alert-error alert-danger">' . _t('SYNDICATION_ACTION_SYNDICATION') . ' : '
@@ -52,7 +52,7 @@ if (!empty($sources)) {
 }
 
 //recuperation du parametre obligatoire des urls
-$urls = $this->GetParameter("url");
+$urls = $this->GetParameter('url');
 if (!empty($urls)) {
     $tab_url = array_map('trim', explode(',', $urls));
     $nburl = 0;
@@ -75,7 +75,7 @@ if (!empty($urls)) {
                         break;
                     }
                     $i++;
-                    $aso_page = array();
+                    $aso_page = [];
 
                     // Gestion du titre
                     if (empty($titre)) {
@@ -108,14 +108,13 @@ if (!empty($urls)) {
                     if (!empty($nbchar)) {
                         //On verifie si le texte est plus grand que le nombre de caracteres specifies
                         if (strlen($aso_page['description']) > 0 && strlen($aso_page['description']) > $nbchar) {
-
                             //on decoupe avec une bibliotheque qui respecte le DOM html
                             $aso_page['description'] = truncate(
                                 $aso_page['description'],
                                 $nbchar,
                                 '... <a class="lien_lire_suite" href="' . $aso_page['url']
-                                .'" '. ($nouvellefenetre ? 'target="_blank" ' : '')
-                                .'title="' . _t('SYNDICATION_READ_MORE') . '">' . _t('SYNDICATION_READ_MORE') . '</a>'
+                                . '" ' . ($nouvellefenetre ? 'target="_blank" ' : '')
+                                . 'title="' . _t('SYNDICATION_READ_MORE') . '">' . _t('SYNDICATION_READ_MORE') . '</a>'
                             );
                         }
                     }
@@ -153,9 +152,9 @@ if (!empty($urls)) {
     echo '<div class="feed_syndication' . ($class ? ' ' . $class : '') . '">' . "\n";
 
     // Gestion des squelettes
-    include($path);
+    include $path;
     echo '</div>' . "\n";
 } else {
     echo '<div class="alert alert-danger"><strong>' . _t('SYNDICATION_ACTION_SYNDICATION') . '</strong> : '
-         ._t('SYNDICATION_PARAM_URL_REQUIRED') . '.</div>' . "\n";
+         . _t('SYNDICATION_PARAM_URL_REQUIRED') . '.</div>' . "\n";
 }

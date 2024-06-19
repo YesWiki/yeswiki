@@ -4,11 +4,11 @@ namespace YesWiki\Bazar\Service;
 
 use Attach;
 use YesWiki\Bazar\Controller\EntryController;
-use YesWiki\Wiki;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\ExternalBazarService;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Wiki;
 
 class BazarListService
 {
@@ -45,27 +45,27 @@ class BazarListService
 
     private function replaceDefaultImage($options, $forms, $entries): array
     {
-        if (! class_exists('attach')) {
-            include('tools/attach/libs/attach.lib.php');
+        if (!class_exists('attach')) {
+            include 'tools/attach/libs/attach.lib.php';
         }
         $attach = new attach($this->wiki);
         $basePath = $attach->GetUploadPath();
-        $basePath = $basePath . (substr($basePath, - 1) != "/" ? "/" : "");
+        $basePath = $basePath . (substr($basePath, -1) != '/' ? '/' : '');
 
-        foreach($options['idtypeannonce'] as $idtypeannonce) {
-            $template = $forms[(int) $idtypeannonce]['template'] ?? [];
+        foreach ($options['idtypeannonce'] as $idtypeannonce) {
+            $template = $forms[(int)$idtypeannonce]['template'] ?? [];
             $image_names = array_map(
-                function ($item) {return $item[1];},
+                function ($item) {return $item[1]; },
                 array_filter(
                     $template,
                     function ($item) { return $item[0] == 'image'; }
                 )
             );
-            foreach($image_names as $image_name) {
+            foreach ($image_names as $image_name) {
                 $default_image_filename = "defaultimage{$idtypeannonce}_{$image_name}.jpg";
                 if (file_exists($basePath . $default_image_filename)) {
                     $image_key = 'image' . $image_name;
-                    foreach($entries as $key => $entry) {
+                    foreach ($entries as $key => $entry) {
                         if (array_key_exists($image_key, $entry) && ($entry[$image_key] == null)) {
                             $entry[$image_key] = $default_image_filename;
                         }
@@ -74,6 +74,7 @@ class BazarListService
                 }
             }
         }
+
         return $entries;
     }
 
@@ -90,7 +91,7 @@ class BazarListService
                 'forms' => $forms,
                 'refresh' => $options['refresh'] ?? false,
                 'queries' => $options['query'] ?? '',
-                'correspondance' => $options['correspondance'] ?? ''
+                'correspondance' => $options['correspondance'] ?? '',
             ]);
         } else {
             $entries = $this->entryManager->search(
@@ -100,7 +101,7 @@ class BazarListService
                     'keywords' => $_REQUEST['q'] ?? '',
                     'user' => $options['user'],
                     'minDate' => $options['dateMin'],
-                    'correspondance' => $options['correspondance'] ?? ''
+                    'correspondance' => $options['correspondance'] ?? '',
                 ],
                 true, // filter on read ACL,
                 true // use Guard
@@ -110,7 +111,7 @@ class BazarListService
 
         // filter entries on datefilter parameter
         if (!empty($options['datefilter'])) {
-            $entries = $this->entryController->filterEntriesOnDate($entries, $options['datefilter']) ;
+            $entries = $this->entryController->filterEntriesOnDate($entries, $options['datefilter']);
         }
 
         // Sort entries
@@ -162,14 +163,14 @@ class BazarListService
         foreach ($facettables as $id => $facettable) {
             $list = [];
             // Formatte la liste des resultats en fonction de la source
-            if (in_array($facettable['type'], ['liste','fiche'])) {
+            if (in_array($facettable['type'], ['liste', 'fiche'])) {
                 $field = $this->findFieldByName($forms, $facettable['source']);
                 if (!($field instanceof BazarField)) {
                     if ($this->debug) {
-                        trigger_error("Waiting field instanceof BazarField from findFieldByName, " .
+                        trigger_error('Waiting field instanceof BazarField from findFieldByName, ' .
                             (
                                 (is_null($field)) ? 'null' : (
-                                    (gettype($field) == "object") ? get_class($field) : gettype($field)
+                                    (gettype($field) == 'object') ? get_class($field) : gettype($field)
                                 )
                             ) . ' returned');
                     }
@@ -177,7 +178,7 @@ class BazarListService
                     $list['titre_liste'] = $field->getLabel();
                     $list['label'] = $field->getOptions();
                 } elseif ($facettable['type'] == 'fiche') {
-                    $formId = $field->getLinkedObjectName() ;
+                    $formId = $field->getLinkedObjectName();
                     $form = $forms[$formId];
                     $list['titre_liste'] = $form['bn_label_nature'];
                     $list['label'] = [];
@@ -218,7 +219,7 @@ class BazarListService
             $idkey = htmlspecialchars($id);
 
             $i = array_key_first(array_filter($options['groups'], function ($value) use ($idkey) {
-                return ($value == $idkey) ;
+                return $value == $idkey;
             }));
 
             $filters[$idkey]['icon'] = !empty($options['groupicons'][$i]) ?
@@ -231,7 +232,7 @@ class BazarListService
 
             $filters[$idkey]['index'] = $i;
 
-            # sort facette labels
+            // sort facette labels
             natcasesort($list['label']);
             foreach ($list['label'] as $listkey => $label) {
                 if (!empty($facettables[$id][$listkey])) {
@@ -251,22 +252,22 @@ class BazarListService
         uasort($filters, function ($a, $b) {
             if (isset($a['index']) && isset($b['index'])) {
                 if ($a['index'] == $b['index']) {
-                    return 0 ;
+                    return 0;
                 } else {
-                    return ($a['index'] < $b['index']) ? -1 : 1 ;
+                    return ($a['index'] < $b['index']) ? -1 : 1;
                 }
             } elseif (isset($a['index'])) {
-                return 1 ;
+                return 1;
             } elseif (isset($b['index'])) {
-                return -1 ;
+                return -1;
             } else {
-                return 0 ;
+                return 0;
             }
         });
 
         foreach ($filters as $id => $filter) {
             if (isset($filter['index'])) {
-                unset($filter['index']) ;
+                unset($filter['index']);
             }
         }
 
@@ -309,6 +310,7 @@ class BazarListService
         $value = is_scalar($value)
             ? strval($value)
             : json_encode($value);
+
         return strtoupper(removeAccents($value));
     }
 }

@@ -22,12 +22,10 @@ use YesWiki\Wiki;
 trait LimitationsTrait
 {
     /**
-     * init and store limitations in limitations array
-     * @param string $parameterName
-     * @param string $limitationKey
+     * init and store limitations in limitations array.
+     *
      * @param mixed $type
      * @param mixed $default
-     * @param string $errorMessageKey
      */
     private function initLimitationHelper(string $parameterName, string $limitationKey, $type, $default, string $errorMessageKey)
     {
@@ -72,7 +70,7 @@ class AuthController extends YesWikiController
         $this->initLimitations();
     }
 
-    /** Initializes object limitation properties using values from the config file
+    /** Initializes object limitation properties using values from the config file.
      *
      * @return void
      */
@@ -88,11 +86,9 @@ class AuthController extends YesWikiController
         );
     }
 
-    /** checks if the given string is the user's password
+    /** checks if the given string is the user's password.
      *
-     * @param string $plainTextPassword
-     * @param User $user
-     * @return boolean True if OK or false if any problems
+     * @return bool True if OK or false if any problems
      */
     public function checkPassword(string $plainTextPassword, User $user)
     {
@@ -105,13 +101,13 @@ class AuthController extends YesWikiController
             $newHashedPassword = $passwordHasher->hash($plainTextPassword);
             $this->userManager->upgradePassword($user, $newHashedPassword);
         }
+
         return true;
     }
 
     /**
-     * force a new password when renewing password
-     * @param User $user
-     * @param string $plainTextPassword
+     * force a new password when renewing password.
+     *
      * @throws BadFormatPasswordException
      */
     public function setPassword(User $user, string $plainTextPassword)
@@ -123,21 +119,21 @@ class AuthController extends YesWikiController
     }
 
     /**
-     * check if password respets the requirements
-     * @param string $password
-     * @return bool
+     * check if password respets the requirements.
+     *
      * @throws BadFormatPasswordException
      */
     public function checkPasswordValidateRequirements(string $password): bool
     {
         if (strlen($password) < $this->limitations['passwordMinimumLength']) {
-            throw new BadFormatPasswordException(_t('USER_PASSWORD_TOO_SHORT').'. '._t('USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS').' ' .$this->limitations['passwordMinimumLength'].'.');
+            throw new BadFormatPasswordException(_t('USER_PASSWORD_TOO_SHORT') . '. ' . _t('USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS') . ' ' . $this->limitations['passwordMinimumLength'] . '.');
         }
+
         return true;
     }
 
     /**
-     * connect a user from SESSION or COOKIES
+     * connect a user from SESSION or COOKIES.
      */
     public function connectUser()
     {
@@ -180,16 +176,18 @@ class AuthController extends YesWikiController
                 return $user->getArrayCopy();
             }
         }
+
         return '';
     }
 
     public function getLoggedUserName()
     {
         if ($user = $this->getLoggedUser()) {
-            $name = $user["name"];
+            $name = $user['name'];
         } else {
-            $name = $this->wiki->isCli() ? '' : $_SERVER["REMOTE_ADDR"];
+            $name = $this->wiki->isCli() ? '' : $_SERVER['REMOTE_ADDR'];
         }
+
         return $name;
     }
 
@@ -212,7 +210,7 @@ class AuthController extends YesWikiController
             ? []
             : [
                 'name' => $user['name'],
-                'lastConnection' => $currentDateTime->getTimestamp()
+                'lastConnection' => $currentDateTime->getTimestamp(),
             ];
         if (!$this->wiki->isCli()) {
             if (!($user instanceof User)) {
@@ -230,7 +228,7 @@ class AuthController extends YesWikiController
 
             $expires = $this->getExpirationTimeStamp($currentDateTime, $remember);
             $this->setPersistentCookie('name', $user['name'], $expires);
-            $this->setPersistentCookie('token', $currentDateTime->format(self::DATE_FORMAT_IN_TOKEN).($remember ? '1' : '0').$encryptedData, $expires);
+            $this->setPersistentCookie('token', $currentDateTime->format(self::DATE_FORMAT_IN_TOKEN) . ($remember ? '1' : '0') . $encryptedData, $expires);
 
             // TODO : find a more secure way to autologin
             // (see https://www.php.net/manual/en/features.session.security.management.php#features.session.security.management.session-and-autologin)
@@ -258,8 +256,9 @@ class AuthController extends YesWikiController
 
     /**
      * connect the firstAdmin and return if
-     * SHOULD NOT BE USED but, waiting an alternative, this hack exists
-     * @return null|User $firtAdmin
+     * SHOULD NOT BE USED but, waiting an alternative, this hack exists.
+     *
+     * @return User|null $firtAdmin
      */
     public function connectFirstAdmin(): ?User
     {
@@ -272,6 +271,7 @@ class AuthController extends YesWikiController
             return null;
         }
         $this->login($firstAdmin);
+
         return $firstAdmin;
     }
 
@@ -284,7 +284,7 @@ class AuthController extends YesWikiController
     {
         $sessionParams = session_get_cookie_params();
         $newParams = array_filter($sessionParams, function ($v, $k) {
-            return in_array($k, ['path','domain','secure','httponly','samesite']);
+            return in_array($k, ['path', 'domain', 'secure', 'httponly', 'samesite']);
         }, ARRAY_FILTER_USE_BOTH);
         $newParams['expires'] = $expires;
         setcookie($name, $value, $newParams);
@@ -298,7 +298,7 @@ class AuthController extends YesWikiController
             'secure' => !empty($_SERVER['HTTPS']),
             'httponly' => true,
             'samesite' => 'Lax',
-            'expires' => time() - 3600
+            'expires' => time() - 3600,
         ]);
         if (isset($_COOKIE[$name])) {
             unset($_COOKIE[$name]);
@@ -306,12 +306,14 @@ class AuthController extends YesWikiController
     }
 
     /**
-     * connect a user from COOKIE
+     * connect a user from COOKIE.
+     *
      * @return array [
-     *  'user' => User,
-     *  'remember' => bool,
-     *  'lastConnectionDate' => DateTime
-     * ]
+     *               'user' => User,
+     *               'remember' => bool,
+     *               'lastConnectionDate' => DateTime
+     *               ]
+     *
      * @throws BadUserConnectException
      */
     protected function connectUserFromCookies(): array
@@ -331,6 +333,7 @@ class AuthController extends YesWikiController
         if (!$passwordHasher->verify($data->getEncryptedData(), $rawData)) {
             throw new BadUserConnectException('Wrong cookie');
         }
+
         return [
             'user' => $user,
             'remember' => $data->getRemember(),
@@ -339,12 +342,14 @@ class AuthController extends YesWikiController
     }
 
     /**
-     * connect a user from SESSION
+     * connect a user from SESSION.
+     *
      * @return array [
-     *  'user' => User,
-     *  'remember' => bool,
-     *  'lastConnectionDate' => DateTime
-     * ]
+     *               'user' => User,
+     *               'remember' => bool,
+     *               'lastConnectionDate' => DateTime
+     *               ]
+     *
      * @throws BadUserConnectException
      */
     protected function connectUserFromSession(): array
@@ -378,11 +383,10 @@ class AuthController extends YesWikiController
     }
 
     /**
-     * extract data from cookies
-     * @return CookieData
+     * extract data from cookies.
+     *
      * @throws BadUserConnectException
      */
-
     protected function extractDataFromCookie(): CookieData
     {
         if (empty($_COOKIE['name'])) {
@@ -408,23 +412,20 @@ class AuthController extends YesWikiController
         $remember = (substr($token, self::DATE_LENGTH_IN_TOKEN, 1) === '1');
 
         $encryptedData = substr($token, self::DATE_LENGTH_IN_TOKEN + 1);
+
         return new CookieData($userName, $lastConnectionDate, $remember, $encryptedData);
     }
 
     /**
-     * prepare raw data from $lastConnectionDate, $remember, $hashedPassword
-     * @param DateTime $lastConnectionDate
-     * @param bool $remember
-     * @param string $hashedPassword
-     * @return string
+     * prepare raw data from $lastConnectionDate, $remember, $hashedPassword.
      */
     protected function prepareRawData(DateTime $lastConnectionDate, bool $remember, string $hashedPassword): string
     {
-        return $hashedPassword . $lastConnectionDate->format(self::DATE_FORMAT_IN_TOKEN).($remember ? '1' : '0');
+        return $hashedPassword . $lastConnectionDate->format(self::DATE_FORMAT_IN_TOKEN) . ($remember ? '1' : '0');
     }
 
     /**
-     * clean sensitive data from session
+     * clean sensitive data from session.
      */
     protected function cleanSensitiveDataFromSession()
     {
@@ -440,7 +441,7 @@ class AuthController extends YesWikiController
     }
 
     /**
-     * clean auth cookie for old format
+     * clean auth cookie for old format.
      */
     protected function cleanOldFormatCookie()
     {

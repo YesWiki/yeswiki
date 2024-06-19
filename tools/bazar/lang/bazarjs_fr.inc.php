@@ -7,7 +7,7 @@ return [
     'BAZ_FORM_EDIT_DISPLAYTEXT_HELP' => 'Ajouter si besoin une unité après {value}, (ex: `{value} €`)',
     'BAZ_FORM_EDIT_FORMULA_LABEL' => 'Formule',
     // fields/FileField.php
-    'BAZ_FILEFIELD_FILE' => "Fichier : {filename}",
+    'BAZ_FILEFIELD_FILE' => 'Fichier : {filename}',
     'BAZ_FORM_EDIT_FILE_READLABEL_LABEL' => 'Label à l\'affichage',
     'FILEFIELD_TOO_LARGE_FILE' => 'Le fichier est trop volumineux, maximum {fileMaxSize} octets',
     // fields/ImageField.php
@@ -210,11 +210,11 @@ return [
     'BAZ_FORM_EDIT_NAME' => 'Intitulé',
     'BAZ_FORM_EDIT_CONFIRM_DISPLAY_FORMBUILDER' => 'En affichant le constructeur graphique, vous perdrez vos modifications faites dans le code ici-même. Continuer sans sauvegarder les changements ? (Cliquez sur le bouton "Valider" en bas de page pour conserver vos modifications !)',
     'BAZ_FORM_EDIT_COMMENTS_CLOSED' => 'Commentaires fermés',
-    'BAZ_FORM_EDIT_BOOKMARKLET_URLFIELD_LABEL' => "Champ url associé",
-    'BAZ_FORM_EDIT_BOOKMARKLET_DESCRIPTIONFIELD_LABEL' => "Champ texte long associé",
-    'BAZ_FORM_EDIT_BOOKMARKLET_HINT_DEFAULT_VALUE' => "Glisser-déposer le bouton dans votre barre de navigateur",
-    'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_LABEL' => "Texte affiché",
-    'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_VALUE' => "Glisser-déposer le bouton dans votre barre de favoris",
+    'BAZ_FORM_EDIT_BOOKMARKLET_URLFIELD_LABEL' => 'Champ url associé',
+    'BAZ_FORM_EDIT_BOOKMARKLET_DESCRIPTIONFIELD_LABEL' => 'Champ texte long associé',
+    'BAZ_FORM_EDIT_BOOKMARKLET_HINT_DEFAULT_VALUE' => 'Glisser-déposer le bouton dans votre barre de navigateur',
+    'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_LABEL' => 'Texte affiché',
+    'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_VALUE' => 'Glisser-déposer le bouton dans votre barre de favoris',
     'BAZ_ACTIVATE_COMMENTS' => 'Activer les commentaires sur cette fiche ?',
     'BAZ_ACTIVATE_COMMENTS_HINT' => 'Droits mis à jour lors de l\'enregistrement de la fiche',
     'BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL' => 'Choix par défaut pour l\'activation des commentaires',
@@ -223,13 +223,13 @@ return [
     'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT' => 'Laisser vide pour utiliser le texte par défaut',
     'BAZ_FORM_EDIT_ACL_ASK_IF_ACTIVATE_COMMENT_LABEL' => 'Demander d\'activer les commentaires ?',
     // condition checking field
-    'BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL' => "Affichage conditionnel",
-    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL' => "Condition",
-    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_END' => "Fin de condition",
-    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_LABEL' => "Effacer au masquage",
-    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION' => "Effacer",
-    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION' => "Ne pas effacer",
-    'BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT' => "Pour effacer ou non le contenu de ce qui est masqué",
+    'BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL' => 'Affichage conditionnel',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL' => 'Condition',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_END' => 'Fin de condition',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_LABEL' => 'Effacer au masquage',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION' => 'Effacer',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION' => 'Ne pas effacer',
+    'BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT' => 'Pour effacer ou non le contenu de ce qui est masqué',
     // jsvascripts/form-edit-templates/fields/file.js
     'BAZ_FORM_EDIT_FILE_AUTHEXTS_LABEL' => 'Extensions présélectionnées (avec le point, séparées par des virgules)',
     'BAZ_FORM_EDIT_FILE_AUTHEXTS_PLACEHOLDER' => 'ex: .pdf,.png',
@@ -259,5 +259,5 @@ return [
     'BAZAR_VIDEO_POSITION_RIGHT' => 'Alignée à droite',
     'BAZAR_URL_DISPLAY_VIDEO' => 'Afficher le lecteur si le lien est une vidéo ?',
     // templates/entries/index-dynamic-temapltes/BazarCalendar_ButtonICS.js
-    'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => "Ajouter à votre calendrier",
+    'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => 'Ajouter à votre calendrier',
 ];

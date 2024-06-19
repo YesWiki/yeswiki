@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     'BAZ_FORMULAIRE' => 'Formularis',
     'BAZ_LISTES' => 'Llistes',
     'BAZ_NOM_LISTE' => 'Nom de la llista',
@@ -90,8 +89,8 @@ return [
     'BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE' => 'No s\'ha pogut desar la fitxa perquè no té títol.',
     'BAZ_FLUX_RSS_GENERAL' => 'Flux RSS de totes les fitxes',
     'BAZ_MOT_CLE' => 'Mots clau (opcional)',
-    'BAZ_DATE_CREATION' => 'Creada el' ,
-    'BAZ_DATE_MAJ' => 'actualitzada el' ,
+    'BAZ_DATE_CREATION' => 'Creada el',
+    'BAZ_DATE_MAJ' => 'actualitzada el',
     'BAZ_TITREANNONCE' => 'Títol de la fitxa',
     'BAZ_TYPE_FICHE' => 'Tipus de fitxa',
     // 'BAZ_TYPE_FICHE_IMPORT' => 'Fiches à importer',

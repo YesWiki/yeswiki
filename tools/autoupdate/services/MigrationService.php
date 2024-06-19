@@ -72,6 +72,7 @@ class MigrationService
                 }
             }
         }
+
         return $messages;
     }
 }

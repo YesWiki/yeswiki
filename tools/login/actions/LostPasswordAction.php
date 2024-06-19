@@ -4,15 +4,15 @@ namespace YesWiki\Login;
 
 use Exception;
 use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Entity\User;
+use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Security\Controller\SecurityController;
 
 if (!function_exists('send_mail')) {
-    require_once('includes/email.inc.php');
+    require_once 'includes/email.inc.php';
 }
 
 class LostPasswordAction extends YesWikiAction
@@ -71,21 +71,21 @@ class LostPasswordAction extends YesWikiAction
         $renderedTitle = '<h2>' . _t('LOGIN_CHANGE_PASSWORD') . '</h2>';
         switch ($this->typeOfRendering) {
             case 'userNotFound':
-                return $renderedTitle . $this->render("@templates/alert-message-with-back.twig", [
+                return $renderedTitle . $this->render('@templates/alert-message-with-back.twig', [
                     'type' => 'danger',
-                    'message' => _t('LOGIN_UNKNOWN_USER')
+                    'message' => _t('LOGIN_UNKNOWN_USER'),
                 ]);
                 break;
             case 'successPage':
-                return $renderedTitle . $this->render("@templates/alert-message.twig", [
+                return $renderedTitle . $this->render('@templates/alert-message.twig', [
                     'type' => 'success',
-                    'message' => _t('LOGIN_MESSAGE_SENT')
+                    'message' => _t('LOGIN_MESSAGE_SENT'),
                 ]);
                 break;
             case 'recoverSuccess':
-                return $renderedTitle . $this->render("@templates/alert-message.twig", [
+                return $renderedTitle . $this->render('@templates/alert-message.twig', [
                     'type' => 'success',
-                    'message' => _t('LOGIN_PASSWORD_WAS_RESET')
+                    'message' => _t('LOGIN_PASSWORD_WAS_RESET'),
                 ]);
                 break;
             case 'recoverForm':
@@ -94,33 +94,35 @@ class LostPasswordAction extends YesWikiAction
                 } else {
                     $key = $this->securityController->filterInput(INPUT_POST, 'key', FILTER_DEFAULT, true);
                 }
-                return $this->render("@login/lost-password-recover-form.twig", [
+
+                return $this->render('@login/lost-password-recover-form.twig', [
                     'errorType' => $this->errorType,
                     'user' => $user,
-                    'message' => $message ?? "",
+                    'message' => $message ?? '',
                     'key' => $hash ?? $key,
-                    'inIframe' => (testUrlInIframe() == 'iframe')
+                    'inIframe' => (testUrlInIframe() == 'iframe'),
                 ]);
                 break;
             case 'directDangerMessage':
-                return $renderedTitle . $this->render("@templates/alert-message.twig", [
+                return $renderedTitle . $this->render('@templates/alert-message.twig', [
                     'type' => 'danger',
                     'message' => $message,
                 ]);
                 break;
             case 'emailForm':
             default:
-                return $this->render("@login/lost-password-email-form.twig", [
+                return $this->render('@login/lost-password-email-form.twig', [
                     'errorType' => $this->errorType,
                 ]);
         }
     }
 
     /**
-     * manage subStep
-     * @param int $subStep
+     * manage subStep.
+     *
      * @throws Exception
-     * @return null|User $user
+     *
+     * @return User|null $user
      */
     private function manageSubStep(int $subStep): ?User
     {
@@ -145,7 +147,7 @@ class LostPasswordAction extends YesWikiAction
             case 2:
                 // we are submitting a new password (only for encrypted)
                 if (empty($_POST['userID']) || empty($_POST['key'])) {
-                    $this->wiki->Redirect($this->wiki->Href("", $this->params->get('root_page')));
+                    $this->wiki->Redirect($this->wiki->Href('', $this->params->get('root_page')));
                 }
                 $userName = $this->securityController->filterInput(INPUT_POST, 'userID', FILTER_DEFAULT, true);
                 $user = $this->userManager->getOneByName($userName);
@@ -165,6 +167,7 @@ class LostPasswordAction extends YesWikiAction
                             );
                         } catch (BadFormatPasswordException $ex) {
                             $this->errorType = $ex->getMessage();
+
                             return $user;
                         }
                         $this->typeOfRendering = 'recoverSuccess';
@@ -177,6 +180,7 @@ class LostPasswordAction extends YesWikiAction
                 }
                 break;
         }
+
         return $user ?? null;
     }
 
@@ -188,22 +192,21 @@ class LostPasswordAction extends YesWikiAction
             5. The corresponding row is removed from triples table.
     */
 
-    /** Part of the Password recovery process: Handles the password recovery email process
+    /** Part of the Password recovery process: Handles the password recovery email process.
      *
      * Generates the password recovery key
      * Stores the (name, vocabulary, key) triple in triples table
      * Generates the recovery email
      * Sends it
      *
-     * @param User $user
-     * @return boolean True if OK or false if any problems
+     * @return bool True if OK or false if any problems
      */
     private function sendPasswordRecoveryEmail(User $user)
     {
         // Generate the password recovery key
         $key = md5($user['name'] . '_' . $user['email'] . random_int(0, 10000) . date('Y-m-d H:i:s') . self::PW_SALT);
         // Erase the previous triples in the trible table
-        $this->tripleStore->delete($user['name'], self::KEY_VOCABULARY, null, '', '') ;
+        $this->tripleStore->delete($user['name'], self::KEY_VOCABULARY, null, '', '');
         // Store the (name, vocabulary, key) triple in triples table
         $res = $this->tripleStore->create($user['name'], self::KEY_VOCABULARY, $key, '', '');
 
@@ -211,7 +214,7 @@ class LostPasswordAction extends YesWikiAction
         $passwordLink = $this->wiki->Href('', '', [
             'a' => 'recover',
             'email' => $key,
-            'u' => base64_encode($user['name'])
+            'u' => base64_encode($user['name']),
         ], false);
         $pieces = parse_url($this->params->get('base_url'));
         $domain = isset($pieces['host']) ? $pieces['host'] : '';
@@ -236,11 +239,11 @@ class LostPasswordAction extends YesWikiAction
      * See Password recovery process above
      *
      * @param string $userName The user login
-     * @param string $key The password recovery key (sent by email)
-     * @param string $pwd the new password value
+     * @param string $key      The password recovery key (sent by email)
+     * @param string $pwd      the new password value
      *
-     * @return boolean True if OK or false if any problems
-    */
+     * @return bool True if OK or false if any problems
+     */
     private function resetPassword(string $userName, string $key, string $password)
     {
         if ($this->securityController->isWikiHibernated()) {
@@ -254,25 +257,28 @@ class LostPasswordAction extends YesWikiAction
         if (empty($user)) {
             $this->error = false;
             $this->typeOfRendering = 'userNotFound';
+
             return null;
         }
         $this->authController->setPassword($user, $password);
         // Was able to update password => Remove the key from triples table
         $this->tripleStore->delete($user['name'], self::KEY_VOCABULARY, $key, '', '');
+
         return true;
     }
 
-    /** Part of the Password recovery process: Checks the provided key against the value stored for the provided user in triples table
+    /** Part of the Password recovery process: Checks the provided key against the value stored for the provided user in triples table.
      *
      * As part of the Password recovery process, a key is generated and stored as part of a (user, $this->keyVocabulary, key) triple in the triples table. This function checks wether the key is right or not.
      * See Password recovery process above
      * replaces checkEmailKey($hash, $key) from login.functions.php
      *         TODO : Add error handling
+     *
      * @param string $hash The key to check
      * @param string $user The user for whom we check the key
      *
-     * @return boolean True if success and false otherwise.
-    */
+     * @return bool true if success and false otherwise
+     */
     private function checkEmailKey(string $hash, string $user): bool
     {
         // Pas de detournement possible car utilisation de _vocabulary/key ....

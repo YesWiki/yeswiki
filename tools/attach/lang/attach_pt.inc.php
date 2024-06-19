@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     // controllers/ApiController.php
     // 'ATTACH_GET_URLIMAGE_CACHE_API_HELP' => "Fournit l'url du fichier de cache pour l'image voulue\n".
     //     "Nécessite le passage du jeton anti-csrf !",
@@ -47,7 +46,6 @@ return [
     // actions/backgroundimage.php
     // 'ATTACH_ACTION_BACKGROUNDIMAGE' => 'Action {{backgroundimage ...}}',
     // 'ATTACH_PARAM_FILE_OR_BGCOLOR_NOT_FOUND' => 'il faut indiquer soit une image avec le paramètre "file" ou une couleur de fond avec le paramètre "bgcolor"',
-
 
     // actions/player.php
     'ATTACH_ACTION_PLAYER' => 'Ação {{player ...}}',
@@ -121,5 +119,4 @@ return [
     // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_PEERTUBE_INSTANCE]' => 'Adresse du serveur peertube par défaut',
     // 'EDIT_CONFIG_HINT_MAX_FILE_SIZE' => 'Taille maximum des fichiers téléversés - octets (ex: Taille maximum des fichiers téléversés - octets (ex: 2097152 pour 2Mo)',
     // 'EDIT_CONFIG_GROUP_ATTACH' => 'Insertion de médias (images, vidéos)',
-
 ];

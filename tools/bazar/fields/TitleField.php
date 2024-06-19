@@ -8,7 +8,7 @@ use YesWiki\Core\Service\HtmlPurifierService;
 
 /**
  * Generate a title based on other values from the entry
- * titre***{{bf_nom}} - {{bf_prenom}} - {{listeListeOuiNon}} - {{checkboxListePartenaires}}***
+ * titre***{{bf_nom}} - {{bf_prenom}} - {{listeListeOuiNon}} - {{checkboxListePartenaires}}***.
  *
  * @Field({"titre"})
  */
@@ -28,8 +28,8 @@ class TitleField extends BazarField
 
     protected function renderInput($entry)
     {
-        return $this->render("@bazar/inputs/title.twig", [
-            'titleTemplate' => $this->titleTemplate
+        return $this->render('@bazar/inputs/title.twig', [
+            'titleTemplate' => $this->titleTemplate,
         ]);
     }
 
@@ -60,8 +60,8 @@ class TitleField extends BazarField
                         // get value instead of key
                         $replacement = $field->getOptions()[$fieldValue] ?? '';
                     } elseif ($field instanceof ImageField) {
-                        if (!empty($_POST['filename-'.$field->getPropertyName()])) {
-                            $replacement = sanitizeFilename($_POST['filename-'.$field->getPropertyName()]);
+                        if (!empty($_POST['filename-' . $field->getPropertyName()])) {
+                            $replacement = sanitizeFilename($_POST['filename-' . $field->getPropertyName()]);
                             if (empty($replacement)) {
                                 $replacement = 'image';
                             }
@@ -99,8 +99,8 @@ class TitleField extends BazarField
 
     protected function renderStatic($entry)
     {
-        return $this->render("@bazar/fields/title.twig", [
-            'value' => $this->getValue($entry)
+        return $this->render('@bazar/fields/title.twig', [
+            'value' => $this->getValue($entry),
         ]);
     }
 }

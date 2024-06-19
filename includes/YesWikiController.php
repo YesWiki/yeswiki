@@ -12,8 +12,8 @@ abstract class YesWikiController
     protected $wiki;
 
     /**
-     * Setter for the wiki property
-     * @param Wiki $wiki
+     * Setter for the wiki property.
+     *
      * @Required set the auto-injection
      */
     public function setWiki(Wiki $wiki): void

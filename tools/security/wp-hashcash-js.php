@@ -12,10 +12,10 @@ if (!ini_get('zlib.output_compression') && !ini_get('zlib.output_handler')) {
     elseif (!empty($_SERVER['HTTP_ACCEPT_ENCODING']) && strstr($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') && function_exists('gzencode')) {
         ob_start('gzencode');
         // Tell the browser the content is compressed with gzip
-        header("Content-Encoding: gzip");
+        header('Content-Encoding: gzip');
     }
 }
-require_once(realpath(dirname(__FILE__) . '/') . '/secret/wp-hashcash.lib');
+require_once realpath(dirname(__FILE__) . '/') . '/secret/wp-hashcash.lib';
 
 $field_id = hashcash_random_string(rand(6, 18));
 $fn_enable_name = hashcash_random_string(rand(6, 18));
@@ -32,12 +32,12 @@ function createHiddenField(){
 
 	var e = document.getElementById('<?php
             $formid = filter_input(INPUT_GET, 'formid', FILTER_UNSAFE_RAW);
-$formid = in_array($formid, [false,null], true) ? $formid : htmlspecialchars(strip_tags($formid));
-echo(!empty($formid) ? $formid : HASHCASH_FORM_ID); ?>');
+$formid = in_array($formid, [false, null], true) ? $formid : htmlspecialchars(strip_tags($formid));
+echo !empty($formid) ? $formid : HASHCASH_FORM_ID; ?>');
 	if (e) {e.appendChild(inp)};
 }
 
-function <?php echo $fn_enable_name;?>(){
+function <?php echo $fn_enable_name; ?>(){
 	var e = document.getElementById('hashcash-text');
 	createHiddenField();
 	if (e) {e.style.display='block'};

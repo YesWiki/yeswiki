@@ -14,20 +14,19 @@ function getConfigValue($key, $default = false, $cfg = '')
 function sanitizeFilename($string = '')
 {
     // our list of "dangerous characters", add/remove characters if necessary
-    $dangerous_characters = array(" ", '"', "'", "&", "/", "\\", "?", "#", "(", ")", "+");
+    $dangerous_characters = [' ', '"', "'", '&', '/', '\\', '?', '#', '(', ')', '+'];
     // every forbidden character is replace by an underscore
     $string = str_replace($dangerous_characters, '-', removeAccents($string));
     // Only allow one dash separator at a time (and make string lowercase)
     return mb_strtolower(preg_replace('/--+/u', '-', $string), YW_CHARSET);
 }
 
-
 function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $method = 'fit')
 {
     $wiki = $GLOBALS['wiki'];
     if (file_exists($image_src)) {
         if (!class_exists('attach')) {
-            include('tools/attach/libs/attach.lib.php');
+            include 'tools/attach/libs/attach.lib.php';
         }
         $attach = new attach($wiki);
 
@@ -47,6 +46,7 @@ function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $meth
                 // do nothing : error
                 return $image_src;
             }
+
             return $image_dest;
         } else {
             return $image_dest;
@@ -59,6 +59,7 @@ function renameUrlToSanitizedFilename($url)
     $str = preg_replace('/[\r\n\t ]+/', ' ', basename($url));
     $str = preg_replace('/[\"\*\/\:\<\>\?\'\|]+/', ' ', $str);
     $str = str_replace(' ', '-', $str);
+
     return preg_replace('/-+/', '-', $str);
 }
 
@@ -72,25 +73,26 @@ function copyUrlToLocalFile($url, $localPath)
         $imgcontent = curl_exec($ch);
         $error = curl_error($ch);
         curl_close($ch);
-        $file = fopen($localPath, "w+");
+        $file = fopen($localPath, 'w+');
         fputs($file, $imgcontent);
         fclose($file);
         if ($error) {
             echo $error;
+
             return false;
         } else {
             return true;
         }
     } else {
-        echo _t('BAZ_IMAGE_FILE_NOT_FOUND').' : '.$url;
+        echo _t('BAZ_IMAGE_FILE_NOT_FOUND') . ' : ' . $url;
+
         return false;
     }
 }
 
 /* ~~~~~~~~~~~~ DEPRECATED ~~~~~~~~~~~~~~ */
 
-
-/** afficher_image() - genere une image en cache (gestion taille et vignettes) et l'affiche comme il faut
+/** afficher_image() - genere une image en cache (gestion taille et vignettes) et l'affiche comme il faut.
  *
  * @param    string champ de la base
  * @param    string nom du fichier image
@@ -100,7 +102,8 @@ function copyUrlToLocalFile($url, $localPath)
  * @param    int        hauteur en pixel de la vignette
  * @param    int        largeur en pixel de l'image redimensionnee
  * @param    int        hauteur en pixel de l'image redimensionnee
- * @return   void
+ *
+ * @return void
  *
  * @deprecated use $wiki->render('@attach/display-image.twig') instead
  */
@@ -120,16 +123,16 @@ function afficher_image(
     $destimg = sanitizeFilename($nom_image);
     $wiki = $GLOBALS['wiki'];
     $authorizedExts = $wiki->config['authorized-extensions'];
-    $url_base = $wiki->GetBaseUrl().'/';
+    $url_base = $wiki->GetBaseUrl() . '/';
     // If we have a full URL, remove the base URL first
     $nom_image = str_replace($url_base . BAZ_CHEMIN_UPLOAD, '', $nom_image);
     $ext = pathinfo($nom_image)['extension'];
 
     if (!class_exists('attach')) {
-        include('tools/attach/libs/attach.lib.php');
+        include 'tools/attach/libs/attach.lib.php';
     }
     $attach = new attach($wiki);
-    $imagePath = $attach->GetUploadPath().'/' . $nom_image;
+    $imagePath = $attach->GetUploadPath() . '/' . $nom_image;
     $attach->file = $imagePath;
 
     if (file_exists($imagePath)
@@ -144,7 +147,7 @@ function afficher_image(
             'imageWidth' => $largeur_image,
             'class' => $class,
             'mode' => $method,
-            'showThumbnail' => $show_vignette
-           ]);
+            'showThumbnail' => $show_vignette,
+        ]);
     }
 }

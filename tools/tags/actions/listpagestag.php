@@ -3,7 +3,7 @@
 use YesWiki\Tags\Service\TagsManager;
 
 if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
+    exit('acc&egrave;s direct interdit');
 }
 
 $tagsManager = $this->services->get(TagsManager::class);
@@ -42,8 +42,8 @@ if ($resultat) {
             $element[$page['tag']]['image'] = get_image_from_body($page);
             $pagetags = $this->GetAllTriplesValues($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
             foreach ($pagetags as $tag) {
-                $element[$page['tag']]['tagnames'] .= sanitizeEntity($tag['value']).' ';
-                $element[$page['tag']]['tagbadges'] .= '<span class="label label-info">'.$tag['value'].'</span>&nbsp;';
+                $element[$page['tag']]['tagnames'] .= sanitizeEntity($tag['value']) . ' ';
+                $element[$page['tag']]['tagbadges'] .= '<span class="label label-info">' . $tag['value'] . '</span>&nbsp;';
             }
         }
     }
@@ -54,7 +54,7 @@ if ($resultat) {
 
 $shownumberinfo = $this->GetParameter('shownumberinfo');
 if (!empty($shownumberinfo) && $shownumberinfo == 1) {
-    $info = '<div class="alert alert-info">'."\n";
+    $info = '<div class="alert alert-info">' . "\n";
     if ($nb_total > 1) {
         $info .= _t('TAGS_TOTAL_NB_PAGES', ['nb_total' => $nb_total]);
     } elseif ($nb_total == 1) {
@@ -62,9 +62,9 @@ if (!empty($shownumberinfo) && $shownumberinfo == 1) {
     } else {
         $info .= _t('TAGS_NO_PAGE');
     }
-    $info .= (!empty($tags) ? ' ' . _t('TAGS_WITH_KEYWORD') . ' <span class="label label-info">'.$tags.'</span>' : '').'.';
-    $info .= $this->Format('{{rss tags="'.$tags.'" class="pull-right"}}')."\n".'</div>'."\n";
-    $output = $info.$output;
+    $info .= (!empty($tags) ? ' ' . _t('TAGS_WITH_KEYWORD') . ' <span class="label label-info">' . $tags . '</span>' : '') . '.';
+    $info .= $this->Format('{{rss tags="' . $tags . '" class="pull-right"}}') . "\n" . '</div>' . "\n";
+    $output = $info . $output;
 }
 
-echo $output."\n";
+echo $output . "\n";

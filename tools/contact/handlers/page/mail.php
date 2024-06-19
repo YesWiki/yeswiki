@@ -5,8 +5,8 @@ use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ThemeManager;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    exit('acc&egrave;s direct interdit');
 }
 
 // inclusion de la bibliotheque de fonctions pour l'envoi des mails
@@ -27,9 +27,9 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
 
     //initialisation de variables passees en POST
     $mail_sender = (isset($_POST['email'])) ? trim($_POST['email']) : false;
-    $hasReadAccess =  true ;
+    $hasReadAccess = true;
     if (!empty($_GET['field'])) {
-        $hasReadAccess =  $aclService->hasAccess('read') ;
+        $hasReadAccess = $aclService->hasAccess('read');
         $mail_receiver = '';
         if ($hasReadAccess) {
             $val = $entryManager->getOne($this->GetPageTag());
@@ -37,7 +37,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
                 $mail_receiver = $val[$_GET['field']];
             }
             $form = baz_valeurs_formulaire($val['id_typeannonce']);
-            $infomsg .= '<em>'._t('CONTACT_THIS_MESSAGE').' « <a href="'.$this->href('', $val['id_fiche']).'">'
+            $infomsg .= '<em>' . _t('CONTACT_THIS_MESSAGE') . ' « <a href="' . $this->href('', $val['id_fiche']) . '">'
                 . $val['bf_titre'] . '</a> » ' . _t('CONTACT_FROM_FORM') . ' « ' . $form['bn_label_nature'] . ' » '
                 . _t('CONTACT_FROM_WEBSITE') . ' « ' . $this->config['wakka_name'] . ' ». ' .
                 ($mail_sender ? _t('CONTACT_REPLY') . ' <strong>' . $mail_sender . '</strong> '
@@ -47,18 +47,18 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
         $mail_receiver = (isset($_POST['mail'])) ? trim($_POST['mail']) : false;
     }
     if (!$mail_receiver) {
-        $hasReadAccess =  $aclService->hasAccess('read') ;
+        $hasReadAccess = $aclService->hasAccess('read');
         if ($hasReadAccess) {
             //on prend le squelette du theme qui pourrait contenir des actions avec des mails
-            $chemin = 'themes/'.$themeManager->getFavoriteTheme().'/squelettes/'.$themeManager->getFavoriteSquelette();
+            $chemin = 'themes/' . $themeManager->getFavoriteTheme() . '/squelettes/' . $themeManager->getFavoriteSquelette();
             if (file_exists($chemin)) {
                 $file_content = file_get_contents($chemin);
-            } elseif (file_exists('tools/templates/'.$chemin)) {
-                $file_content = file_get_contents('tools/templates/'.$chemin);
+            } elseif (file_exists('tools/templates/' . $chemin)) {
+                $file_content = file_get_contents('tools/templates/' . $chemin);
             } else {
                 $file_content = '{WIKINI_PAGE}';
             }
-            $body = str_replace('{WIKINI_PAGE}', $this->page["body"], $file_content);
+            $body = str_replace('{WIKINI_PAGE}', $this->page['body'], $file_content);
             $mail_receiver = (isset($_POST['nbactionmail'])) ?
                 FindMailFromWikiPage($body, $_POST['nbactionmail']) : false;
         }
@@ -69,13 +69,13 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
 
     // dans le cas d'une page wiki envoyee, on formate le message en html et en txt
     if ($type == 'mail') {
-        $hasReadAccess =  $aclService->hasAccess('read') ;
+        $hasReadAccess = $aclService->hasAccess('read');
         if ($hasReadAccess) {
             $subject = ((isset($_POST['subject'])) ? stripslashes($_POST['subject']) : false);
             if ($entryManager->isEntry($this->GetPageTag())) {
                 $renderedPage = $entryController->view($this->GetPageTag());
             } else {
-                $renderedPage = $this->Format($this->page["body"], 'wakka', $this->GetPageTag());
+                $renderedPage = $this->Format($this->page['body'], 'wakka', $this->GetPageTag());
             }
             $message_html = html_entity_decode(_convert($renderedPage, YW_CHARSET));
             $message_txt = strip_tags(_convert($message_html, YW_CHARSET));
@@ -98,9 +98,9 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             $type,
             $mail_sender,
             $name_sender,
-            $mail_receiver ?? "",
-            $subject ?? "",
-            $message_txt ?? ""
+            $mail_receiver ?? '',
+            $subject ?? '',
+            $message_txt ?? ''
         );
 
         // adding the infomsg after checking the size of the message
@@ -111,7 +111,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
     } else {
         $message = [
             'class' => 'danger',
-            'message' => _t('CONTACT_MESSAGE_NOT_SENT') . ' :<br />' . _t('LOGIN_NOT_AUTORIZED')
+            'message' => _t('CONTACT_MESSAGE_NOT_SENT') . ' :<br />' . _t('LOGIN_NOT_AUTORIZED'),
         ];
     }
 
@@ -119,7 +119,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
     if ($message['class'] == 'success') {
         // test de presence d'ezmlm, qui necessite de reformater le mail envoyé
         if (isset($_POST['mailinglist']) and $_POST['mailinglist'] == 'ezmlm') {
-            $mail_receiver = str_replace('@', '-'.str_replace('@', '=', $mail_sender).'@', $mail_receiver);
+            $mail_receiver = str_replace('@', '-' . str_replace('@', '=', $mail_sender) . '@', $mail_receiver);
         }
 
         // test de presence de sympa, qui necessite de reformater le mail envoyé
@@ -127,11 +127,11 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             $tabmail = explode('@', $mail_receiver);
             $listname = $tabmail[0];
             $listdomain = $tabmail[1];
-            $mail_receiver = 'sympa@'.$listdomain;
+            $mail_receiver = 'sympa@' . $listdomain;
             if ($type == 'abonnement') {
-                $subject = 'subscribe '.$listname;
+                $subject = 'subscribe ' . $listname;
             } elseif ($type == 'desabonnement') {
-                $subject = 'unsubscribe '.$listname;
+                $subject = 'unsubscribe ' . $listname;
             }
         }
 
@@ -148,19 +148,19 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
                 $message['message'] = _t('CONTACT_UNSUBSCRIBE_ORDER_SENT');
             }
         } else {
-            $message['class'] = "danger";
+            $message['class'] = 'danger';
             $message['message'] = _t('CONTACT_MESSAGE_NOT_SENT');
         }
     }
     echo $this->render('@templates/alert-message.twig', [
         'type' => $message['class'],
-        'message' => $message['message']
+        'message' => $message['message'],
     ]);
 } else {
     // affichage des formulaire et chargement du js necessaire
     $this->addJavascriptFile('tools/contact/libs/contact.js');
     if ($aclService->hasAccess('read') && isset($_GET['field']) and !empty($_GET['field'])) {
-        $output .= '<form id="ajax-mail-form-handler" class="ajax-mail-form" action="' . $this->href('mail', '', 'field='.$_GET['field']) . '">
+        $output .= '<form id="ajax-mail-form-handler" class="ajax-mail-form" action="' . $this->href('mail', '', 'field=' . $_GET['field']) . '">
             <div class="form-group">
               <div class="input-group">
                 <div class="input-group-addon"><i class="fa fa-envelope"></i></div>
@@ -179,7 +179,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             <button class="btn btn-lg btn-block btn-primary mail-submit" type="submit" name="submit">
               <i class="fa fa-envelope"></i>&nbsp;' . _t('CONTACT_SEND_MESSAGE') . '
             </button>
-            <input type="hidden" name="mail" value="'.htmlspecialchars($_GET['field']).'">
+            <input type="hidden" name="mail" value="' . htmlspecialchars($_GET['field']) . '">
         </form>';
     } elseif ($aclService->hasAccess('read') && $this->GetUser()) {
         //sinon on affiche le formulaire d'envoi de mail
@@ -217,7 +217,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             'message' => ($this->GetUser())
                 ? _t('LOGIN_NOT_AUTORIZED')
                 : (_t('CONTACT_HANDLER_MAIL_FOR_CONNECTED') . '<br />'
-                . _t('CONTACT_LOGIN_IF_CONNECTED'))
+                . _t('CONTACT_LOGIN_IF_CONNECTED')),
         ]);
         $output .= $this->Format('{{login}}') . "\n";
     }

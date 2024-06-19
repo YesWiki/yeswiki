@@ -41,7 +41,8 @@ class LinkField extends BazarField
     public function formatValuesBeforeSave($entry)
     {
         $value = $this->getValue($entry);
-        return [$this->propertyName => $value !== 'https://' ? $value : null ];
+
+        return [$this->propertyName => $value !== 'https://' ? $value : null];
     }
 
     public function getDisplayVideo(): bool
@@ -80,7 +81,7 @@ class LinkField extends BazarField
                 'ratio' => $this->getRatio(),
                 'maxWidth' => $this->getMaxWidth(),
                 'maxHeight' => $this->getMaxHeight(),
-                'class' => $this->getClass()
+                'class' => $this->getClass(),
             ]
         );
     }

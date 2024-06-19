@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     // actions/syndication.php
     'SYNDICATION_ACTION_SYNDICATION' => 'Acció {{syndication ...}}',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'El paràmetre "url" és obligatori per sindicar un flux RSS',
@@ -18,7 +17,7 @@ return [
     'SYNDICATION_ACTION_TWITTERSEARCH' => 'Acció {{twittersearch ...}}',
     'SYNDICATION_PARAM_QUERY_REQUIRED' => 'Falta el paràmetre "query", que és obligatori per definir la vostra cerca',
     'SYNDICATION_TEMPLATE_DOESNT_EXISTS' => 'El fitxer de patró',
-    'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'no existeix, s\'utilitzarà el patró per defecte'
+    'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'no existeix, s\'utilitzarà el patró per defecte',
 
     // templates/accordeon.tpl.html
     // 'SYNDICATION_SOURCE' => 'source',

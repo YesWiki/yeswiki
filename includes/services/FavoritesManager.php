@@ -7,7 +7,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class FavoritesManager
 {
-    public const TYPE_URI = "https://yeswiki.net/vocabulary/favorite";
+    public const TYPE_URI = 'https://yeswiki.net/vocabulary/favorite';
 
     protected $params;
     protected $tripleStore;
@@ -31,11 +31,12 @@ class FavoritesManager
             $tag,
             self::TYPE_URI,
             $value,
-            "=",
-            "=",
-            "LIKE"
+            '=',
+            '=',
+            'LIKE'
         );
-        return is_array($triples) && count($triples) > 0 ;
+
+        return is_array($triples) && count($triples) > 0;
     }
 
     public function getUserFavorites(string $userName): array
@@ -48,11 +49,12 @@ class FavoritesManager
             null,
             self::TYPE_URI,
             $value,
-            "=",
-            "=",
-            "LIKE"
+            '=',
+            '=',
+            'LIKE'
         );
-        return is_array($triples) && count($triples) > 0 ? $triples : [] ;
+
+        return is_array($triples) && count($triples) > 0 ? $triples : [];
     }
 
     public function areFavoritesActivated(): bool

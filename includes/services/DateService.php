@@ -13,7 +13,6 @@ class DateService
     ) {
     }
 
-
     public function getDateTimeWithRightTimeZone(string $date): DateTimeImmutable
     {
         $dateObj = new DateTimeImmutable($date);
@@ -32,6 +31,7 @@ class DateService
             $offsetToGmt = $defaultTimeZone->getOffset($newDate);
             // be careful to offset time because time is changed by setTimeZone
             $offSetAbs = abs($offsetToGmt);
+
             return ($offsetToGmt == 0)
             ? $newDate
             : (
@@ -40,6 +40,7 @@ class DateService
                 : $newDate->add(new DateInterval("PT{$offSetAbs}S"))
             );
         }
+
         return $newDate;
     }
 }

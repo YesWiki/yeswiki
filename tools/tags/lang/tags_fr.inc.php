@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     'TAGS_TAGS' => 'Mots clés',
     'TAGS_ACTION_ADMINTAGS' => 'Action {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'l\'action est r&eacute;serv&eacute;e au groupe des administrateurs',
@@ -124,5 +123,4 @@ return [
     // for edit config
     'EDIT_CONFIG_HINT_HIDE_KEYWORDS' => 'Cacher les mots-clés en bas des pages (true ou false)',
     'EDIT_CONFIG_GROUP_TAGS' => 'Mots-clés (tags)',
-
 ];

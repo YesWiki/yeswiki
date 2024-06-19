@@ -18,7 +18,7 @@ Le fichier "slideshow.css" sera reconnu automatiquement.
 
 // Vérification de sécurité
 if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
+    exit('acc&egrave;s direct interdit');
 }
 
 // On teste si l'utilisateur peut lire la page
@@ -130,16 +130,13 @@ if (!$this->HasAccess('read')) {
             }
 
             // En-tête du fichier HTML
-            echo
-            "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
-            echo
-            "<html>\n\n\n",
+            echo "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
+            echo "<html>\n\n\n",
             "<head>\n",
             '<title>', $this->GetWakkaName(), ':', $this->GetPageTag(), "</title>\n",
             "<meta name=\"robots\" content=\"noindex, nofollow\" />\n",
             "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\" />\n";
-            echo
-            "<style type=\"text/css\" media=\"all\"> @import \"wakka.css\";</style>\n";
+            echo "<style type=\"text/css\" media=\"all\"> @import \"wakka.css\";</style>\n";
             // Teste s'il existe une feuille de style externe, sinon utilise des styles par défaut
             if (!file_exists('slideshow.css')) {
                 echo "<style type=\"text/css\">\n",
@@ -157,12 +154,10 @@ if (!$this->HasAccess('read')) {
                 echo "<style type=\"text/css\" media=\"all\"> @import \"slideshow.css\";</style>\n";
             }
 
-            echo
-            "</head>\n\n\n";
+            echo "</head>\n\n\n";
 
             // Affiche le corps de la page
-            echo
-            '<body>'."\n";
+            echo '<body>' . "\n";
 
             // -- Affichage du sommaire [é compléter] ----------
             /*
@@ -186,8 +181,7 @@ if (!$this->HasAccess('read')) {
             */
 
             // -- Affichage du menu de navigation --------------
-            echo
-            "<div class=\"sl_nav\">\n";
+            echo "<div class=\"sl_nav\">\n";
             // Si ce n'est pas la premiere diapositive, on affiche les liens "<< précédent"
             // et "[Début]"
             if ($slide !== '1') {
@@ -199,14 +193,12 @@ if (!$this->HasAccess('read')) {
             if (isset($body[($slide) * 2 - ($major * 2) + 2]) or $slide == '1') {
                 echo '<a href="',$this->href(),'/slide_show&slide=',$slide + 1,"\">suivant >></a>\n";
             }
-            echo '</div>'."\n";
+            echo '</div>' . "\n";
             // Quelquesoit la diapositive, on affiche les liens "éditer" et "[]->" (pour quitter)
             echo '<div class="edit_nav"><a href="',$this->href(),'/edit">éditer </a> :: <a href="',$this->href(),"\">[]-></a></p>\n";
-            echo
-            "</div>\n\n";
+            echo "</div>\n\n";
 
-            echo
-            "<div class=\"slide\">\n";
+            echo "<div class=\"slide\">\n";
 
             // -- Affichage du contenu -------------------------
 
@@ -218,14 +210,12 @@ if (!$this->HasAccess('read')) {
                 $idbis = ($slide * 2) - ($major * 2);
                 // A partir de la deuxième diapositive
                 if (isset($body[$id]) and isset($body[$idbis])) {
-                    echo $body[$id].$body[$idbis],"\n\n";
+                    echo $body[$id] . $body[$idbis],"\n\n";
                 }
             }
-            echo
-            "</div>\n\n";
+            echo "</div>\n\n";
 
-            echo
-            "</body>\n",
+            echo "</body>\n",
             '</html>';
         }
     }

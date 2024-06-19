@@ -20,9 +20,9 @@ class MailPeriodAction extends YesWikiAction
         $user = $this->authController->getLoggedUser();
         $userName = $this->authController->getLoggedUserName();
         $periods = [
-            'day' =>   ['label' => _t('CONTACT_DAILY')],
-            'week' =>  ['label' => _t('CONTACT_WEEKLY')],
-            'month' => ['label' => _t('CONTACT_MONTHLY')]
+            'day' => ['label' => _t('CONTACT_DAILY')],
+            'week' => ['label' => _t('CONTACT_WEEKLY')],
+            'month' => ['label' => _t('CONTACT_MONTHLY')],
         ];
         $periods = $this->updatePeriods($periods, $userName);
         $messages = [];
@@ -46,7 +46,7 @@ class MailPeriodAction extends YesWikiAction
         return $this->render('@contact/mailperiod.twig', [
             'user' => $user,
             'messages' => $messages,
-            'periods' => $periods
+            'periods' => $periods,
         ]);
     }
 
@@ -57,6 +57,7 @@ class MailPeriodAction extends YesWikiAction
             $periods[$period]['subscribed'] = $this->userManager->isInGroup($group, $userName, false);
             $periods[$period]['group'] = $this->groupName($period);
         }
+
         return $periods;
     }
 
@@ -67,7 +68,7 @@ class MailPeriodAction extends YesWikiAction
 
     private function subscribeUserToGroup($userName, $group): void
     {
-        $this->wiki->SetGroupACL($group, $this->wiki->GetGroupACL($group)."\n".$userName);
+        $this->wiki->SetGroupACL($group, $this->wiki->GetGroupACL($group) . "\n" . $userName);
     }
 
     private function unsubscribeUserFromGroup($userName, $group): void

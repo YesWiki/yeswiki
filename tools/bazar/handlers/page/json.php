@@ -4,8 +4,8 @@
 use YesWiki\Bazar\Controller\FormController;
 use YesWiki\Bazar\Service\FormManager;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    exit('acc&egrave;s direct interdit');
 }
 
 if (isset($_REQUEST['demand'])) {
@@ -26,8 +26,8 @@ if (isset($_REQUEST['demand'])) {
     //on recupere les parametres query pour une requete specifique
     $query = (isset($_REQUEST['query']) ? $_REQUEST['query'] : '');
     if (!empty($query)) {
-        $tabquery = array();
-        $tableau = array();
+        $tabquery = [];
+        $tableau = [];
         $tab = explode('|', $query); //découpe la requete autour des |
         foreach ($tab as $req) {
             $tabdecoup = explode('=', $req, 2);
@@ -58,37 +58,37 @@ if (isset($_REQUEST['demand'])) {
 
     // différents services disponibles
     switch ($_REQUEST['demand']) {
-        case "lists":
+        case 'lists':
             // listes bazar
             echo json_encode(baz_valeurs_liste($list));
             break;
-        case "entry":
+        case 'entry':
             // données d'une fiche bazar
             if (empty($idfiche)) {
-                echo json_encode(array('error' => 'no id_fiche specified.'));
+                echo json_encode(['error' => 'no id_fiche specified.']);
             } else {
                 $wikipage = $this->LoadPage($idfiche);
                 if ($wikipage) {
                     if ($this->HasAccess('read', $idfiche)) {
                         if ($html == 1) {
-                            echo json_encode(array('html' => baz_voir_fiche(0, $idfiche)));
+                            echo json_encode(['html' => baz_voir_fiche(0, $idfiche)]);
                         } else {
                             $decoded_entry = json_decode($wikipage['body'], true);
                             echo json_encode($decoded_entry);
                         }
                     } else {
-                        echo json_encode(array('error' => 'You have no right to access to entry \''.$idfiche.'\'.'));
+                        echo json_encode(['error' => 'You have no right to access to entry \'' . $idfiche . '\'.']);
                     }
                 } else {
-                    echo json_encode(array('error' => 'id_fiche '.$idfiche.' not found.'));
+                    echo json_encode(['error' => 'id_fiche ' . $idfiche . ' not found.']);
                 }
             }
             break;
-        case "template":
+        case 'template':
             // les templates bazar, pour afficher dans d'autres applis
             // on peut préciser dans l'url type=form (template formulaire) ou type=entry (template fiche)
             if (empty($form)) {
-                echo json_encode(array('error' => 'no form id specified.'));
+                echo json_encode(['error' => 'no form id specified.']);
             } else {
                 $_REQUEST['id_typeannonce'] = $form;
                 $tab_nature = baz_valeurs_formulaire($_REQUEST['id_typeannonce']);
@@ -116,11 +116,11 @@ if (isset($_REQUEST['demand'])) {
                             $res .= '<h2 class="entry-title">{{{bf_titre}}}</h2>' . "\n\n";
                         } elseif ($tableau[$i][0] == 'image') {
                             $url = str_replace('wakka.php?wiki=', '', $this->config['base_url']);
-                            $res .= '{{#if ' . $nom_champ . '}}' . "\n".
-                                '<img loading="lazy" class="img-responsive img-centered" src="'.$url.'cache/vignette_{{'.$nom_champ.
+                            $res .= '{{#if ' . $nom_champ . '}}' . "\n" .
+                                '<img loading="lazy" class="img-responsive img-centered" src="' . $url . 'cache/vignette_{{' . $nom_champ .
                                 '}}" alt="{{' . $nom_champ . '}}">' . "\n" . '{{/if}}' . "\n\n";
                         } elseif ($tableau[$i][0] == 'labelhtml') {
-                            $res .= $tableau[$i][0]($formtemplate, $tableau[$i], 'html', array());
+                            $res .= $tableau[$i][0]($formtemplate, $tableau[$i], 'html', []);
                         } elseif ($tableau[$i][0] == 'inscriptionliste' || $tableau[$i][0] == 'utilisateur_wikini') {
                         } elseif ($tableau[$i][0] == 'liste' || $tableau[$i][0] == 'textelong'
                             || $tableau[$i][0] == 'jour' || $tableau[$i][0] == 'listedatefin'
@@ -139,7 +139,7 @@ if (isset($_REQUEST['demand'])) {
                                     $formtemplate,
                                     $tableau[$i],
                                     'html',
-                                    array($nom_champ => '{{' . $nom_champ . '}}')
+                                    [$nom_champ => '{{' . $nom_champ . '}}']
                                 )
                             );
                             if ($tableau[$i][0] == 'checkbox') {
@@ -164,15 +164,15 @@ if (isset($_REQUEST['demand'])) {
                         $form
                     );
                     $form = preg_replace('~<div id="map".*>~Ui', "\n" . '<div id="map">', $form);
-                    echo json_encode(array('html' => $form));
+                    echo json_encode(['html' => $form]);
                 }
             }
             break;
-        case "forms":
+        case 'forms':
             $formManager = $this->services->get(FormManager::class);
             if (is_array($form) && count($form) > 0) {
                 $formsIds = array_filter($form, function ($id) {
-                    return (strval($id) == strval(intval($id)));
+                    return strval($id) == strval(intval($id));
                 });
             } elseif (!empty($form)) {
                 if (strval($form) === strval(intval($form))) {
@@ -189,7 +189,7 @@ if (isset($_REQUEST['demand'])) {
                 $form = $formManager->getOne($formsIds[0]);
                 if (!empty($form)) {
                     echo json_encode([0 => $form]);
-                    break ;
+                    break;
                 } else {
                     $forms = [];
                 }
@@ -210,29 +210,30 @@ if (isset($_REQUEST['demand'])) {
                         $a['bn_label_nature'] == $b['bn_label_nature']) {
                         return 0;
                     }
+
                     return ($a['bn_label_nature'] < $b['bn_label_nature']) ? -1 : 1;
                 });
                 $forms = _convert($forms, 'UTF-8');
                 echo json_encode($forms);
             }
             break;
-        case "entries":
+        case 'entries':
             if (!empty($form)) {
                 $forms = explode(',', $form);
                 if (count($forms) == 1) {
-                    header("Location: ".$this->href('', 'api/forms/'.$forms[0].'/entries'.($is_semantic ? '/json-ld' : '')));
+                    header('Location: ' . $this->href('', 'api/forms/' . $forms[0] . '/entries' . ($is_semantic ? '/json-ld' : '')));
                     break;
                 } else {
-                    header("Location: ".$this->href('', 'api/entries'.($is_semantic ? '/json-ld' : ''), ['query' => 'id_typeannonce='.$form], false));
+                    header('Location: ' . $this->href('', 'api/entries' . ($is_semantic ? '/json-ld' : ''), ['query' => 'id_typeannonce=' . $form], false));
                     break;
                 }
             }
-            header("Location: ".$this->href('', 'api/entries'.($is_semantic ? '/json-ld' : '')));
+            header('Location: ' . $this->href('', 'api/entries' . ($is_semantic ? '/json-ld' : '')));
             break;
-        case "pages":
-            header("Location: ".$this->href('', 'api/pages'));
+        case 'pages':
+            header('Location: ' . $this->href('', 'api/pages'));
             break;
-        case "comments":
+        case 'comments':
             // les commentaires wiki
             echo json_encode($this->LoadRecentComments());
             break;

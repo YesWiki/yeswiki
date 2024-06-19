@@ -6,7 +6,7 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Core\Service\TemplateEngine;
 
 /**
- * Ensure backwardompatibility with old format field
+ * Ensure backwardompatibility with old format field.
  *
  * @Field({"old"})
  */
@@ -26,7 +26,7 @@ class OldField extends BazarField
                 [
                     'type' => 'danger',
                     'message' => "Error \$values['functionName'] is not defined while creating " . get_class($this) . ". \n<br>" .
-                        "Do not use 'retrocomp' field in form builder."
+                        "Do not use 'retrocomp' field in form builder.",
                 ]
             );
         } elseif (!function_exists($this->functionName)) {
@@ -34,7 +34,7 @@ class OldField extends BazarField
                 '@templates/alert-message.twig',
                 [
                     'type' => 'danger',
-                    'message' => "Error function '" . $this->functionName . "' is not defined while creating " . get_class($this)
+                    'message' => "Error function '" . $this->functionName . "' is not defined while creating " . get_class($this),
                 ]
             );
         } else {
@@ -51,6 +51,7 @@ class OldField extends BazarField
     {
         $funcName = $this->functionName;
         $templateForm = [];
+
         return $this->error ?? $funcName($templateForm, $this->template, 'saisie', $entry);
     }
 
@@ -59,6 +60,7 @@ class OldField extends BazarField
     {
         $funcName = $this->functionName;
         $templateForm = [];
+
         return ($this->error) ? [$this->propertyName => null]
             : $funcName($templateForm, $this->template, 'requete', $entry);
     }
@@ -67,6 +69,7 @@ class OldField extends BazarField
     {
         $funcName = $this->functionName;
         $templateForm = [];
+
         return $this->error ?? $funcName($templateForm, $this->template, 'html', $entry);
     }
 

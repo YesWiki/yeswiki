@@ -1,10 +1,9 @@
 <?php
 
 return [
-
     'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>La página no se puede registrar.</strong><br />Quizas has hecho clic dos veces al botón "Guardar" en un intervalo demasiado corto, o has dejado la página abierta en modo edición demasiado tiempo.<br />Para guardar tus modificaciones, copia su contenido, actualiza la página en tu navigador y pega tu página modificada de nuevo.',
     'HASHCASH_ANTISPAM_ACTIVATED' => 'Protección anti-spam activada',
-    'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Tu comentario no ha sido registrado, el wiki piensa que eres un robot.'
+    'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Tu comentario no ha sido registrado, el wiki piensa que eres un robot.',
     // 'HASHCASH_GENERAL_PASSWORD' => 'Réponse&nbsp;:&nbsp;',
     // 'HASHCASH_SEND' => 'Envoyer',
     // 'CAPTCHA_ERROR_PAGE_UNSAVED' => 'La page n\'a pas été enregistrée car vous n\'avez pas rentré le mot de vérification.',

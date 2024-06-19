@@ -1,7 +1,7 @@
 <?php
 
 return [
-    /**
+    /*
      * English translation file for YesWiki's main program
      */
     // Commons
@@ -486,7 +486,7 @@ return [
     'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Enable favorites (true or false)',
     'EDIT_CONFIG_HINT_PREVIEW_BEFORE_SAVE' => 'Enable pre-save preview (true or false)',
     'EDIT_CONFIG_GROUP_CORE' => 'Main parameters',
-    'EDIT_CONFIG_GROUP_ACCESS' => "Access rights",
+    'EDIT_CONFIG_GROUP_ACCESS' => 'Access rights',
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
     // actions/userstable.php
     'USERSTABLE_USER_DELETED' => 'The user "{username}" was deleted.',

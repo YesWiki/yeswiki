@@ -13,8 +13,9 @@ class ApiController extends YesWikiController
 {
     /**
      * @Route("/api/captcha/{hashb64}", methods={"GET"}, options={"acl":{"public"}})
+     *
      * @param string $hashb64
-     * @return StreamedResponse
+     *
      * @throws Exception if error
      */
     public function getCaptcha($hashb64): StreamedResponse
@@ -33,9 +34,10 @@ class ApiController extends YesWikiController
             'Access-Control-Expose-Headers' => 'Location, Slug, Accept, Content-Type',
             'Access-Control-Allow-Methods' => 'GET',
             'Cache-Control' => 'no-store, no-cache, must-revalidate', // HTTP/1.1
-            'Content-Type' => 'Content-type: image/png'
+            'Content-Type' => 'Content-type: image/png',
         ];
         $hash = base64_decode($hashb64);
+
         return new StreamedResponse(
             function () use ($hash) {
                 // callable only call when sending

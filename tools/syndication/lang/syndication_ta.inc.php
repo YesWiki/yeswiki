@@ -1,4 +1,5 @@
 <?php
+
 return [
     // actions/syndication.php
     'SYNDICATION_ACTION_SYNDICATION' => 'செயல் {{சிண்டிகேசன் ...}}',

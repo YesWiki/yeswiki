@@ -3,9 +3,9 @@
 namespace YesWiki\Core\Controller;
 
 use Exception;
-use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
 
@@ -20,13 +20,10 @@ class CsrfTokenController extends YesWikiController
     }
 
     /**
-     * check if token is present and valid in input
+     * check if token is present and valid in input.
      *
-     * @param string $name
      * @param string $inputType "GET" or "POST"
-     * @param string $inputKey key in the input to use
-     * @param bool $remove
-     * @return bool
+     * @param string $inputKey  key in the input to use
      *
      * @throws TokenNotFoundException
      * @throws Exception
@@ -34,7 +31,7 @@ class CsrfTokenController extends YesWikiController
     public function checkToken(string $name, string $inputType, string $inputKey, bool $remove = true): bool
     {
         if (empty($name)) {
-            throw new Exception("parameter `\$name` should not be empty !");
+            throw new Exception('parameter `$name` should not be empty !');
         }
         switch ($inputType) {
             case 'GET':
@@ -45,7 +42,8 @@ class CsrfTokenController extends YesWikiController
                 break;
 
             default:
-                throw new Exception("Unknown type for parameter `\$inputType` !");
+                throw new Exception('Unknown type for parameter `$inputType` !');
+
                 return false;
         }
         if (is_null($inputToken) || $inputToken === false) {
@@ -59,6 +57,7 @@ class CsrfTokenController extends YesWikiController
         if (!$isValid) {
             throw new TokenNotFoundException(_t('CSRF_TOKEN_FAIL_ERROR'));
         }
+
         return true;
     }
 }

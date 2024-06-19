@@ -11,7 +11,6 @@ class CercopitequePostInstall extends YesWikiMigration
     {
         $previousVersion = $this->getService(SecurityController::class)->filterInput(INPUT_GET, 'previous_version', FILTER_DEFAULT, true);
         if ($previousVersion === 'cercopitheque') {
-
             $config = $this->getService(ConfigurationService::class)->getConfiguration('wakka.config.php');
             $config->load();
 

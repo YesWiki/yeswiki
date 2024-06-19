@@ -49,7 +49,8 @@ class ArchiveCommand extends Command
         $filesOnly = $input->getOption('files-only');
 
         if ($databaseOnly && $filesOnly) {
-            $output->writeln("Invalid options : It is not possible to use --database-only and --files-only options in same time.");
+            $output->writeln('Invalid options : It is not possible to use --database-only and --files-only options in same time.');
+
             return Command::INVALID;
         }
 
@@ -64,7 +65,7 @@ class ArchiveCommand extends Command
             }
         }
         $uid = $input->getOption('uid');
-        $uid = empty($uid) ? "" : $uid;
+        $uid = empty($uid) ? '' : $uid;
 
         $location = $this->archiveService->archive($output, !$databaseOnly, !$filesOnly, $foldersToInclude, $foldersToExclude, $hideConfigValues, $uid);
 
@@ -78,6 +79,7 @@ class ArchiveCommand extends Command
         } else {
             $list = array_filter(array_map('trim', explode(',', $list)));
         }
+
         return $list;
     }
 }

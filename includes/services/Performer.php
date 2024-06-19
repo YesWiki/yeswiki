@@ -18,19 +18,19 @@ use YesWiki\Wiki;
  *  1) tools/bazar/actions/BazarShowAction.php
  *  2) tools/attach/actions/__BazarShowAction.php
  *  3) tools/security/actions/BazarShowAction__.php
- * When we run the action 'bazarshow', all 3 files will be executed in following order : 2,1,3
+ * When we run the action 'bazarshow', all 3 files will be executed in following order : 2,1,3.
  */
 class Performer
 {
     public const TYPES = [
         'action' => 'action',
         'handler' => 'handler',
-        'formatter' => 'formatter'
+        'formatter' => 'formatter',
     ];
     public const PATHS = [
         Performer::TYPES['action'] => ['actions/'],
         Performer::TYPES['handler'] => ['handlers/', 'handlers/page/'],
-        Performer::TYPES['formatter'] => ['formatters/']
+        Performer::TYPES['formatter'] => ['formatters/'],
     ];
     protected $wiki;
     protected $params;
@@ -58,7 +58,7 @@ class Performer
     }
 
     /**
-     * Read existing PHP files in the current $dir, and store them inside $this->objectList
+     * Read existing PHP files in the current $dir, and store them inside $this->objectList.
      */
     private function findObjectInPath($dir, $objectType)
     {
@@ -67,9 +67,9 @@ class Performer
                 if (preg_match("/^([a-zA-Z0-9_-]+)(\.class)?\.php$/", $file, $matches)) {
                     $baseName = $matches[1]; // __GreetingAction
                     $objectName = strtolower($matches[1]); // __greetingaction
-                    $objectName = preg_replace("/^__|__$/", '', $objectName); // greetingaction
+                    $objectName = preg_replace('/^__|__$/', '', $objectName); // greetingaction
                     $isDefinedAsClass = false;
-                    if (endsWith($baseName, ucfirst($objectType)) || endsWith($baseName, ucfirst($objectType) . "__")) {
+                    if (endsWith($baseName, ucfirst($objectType)) || endsWith($baseName, ucfirst($objectType) . '__')) {
                         $objectName = preg_replace("/{$objectType}$/", '', $objectName); // greeting
                         $isDefinedAsClass = true;
                     }
@@ -77,21 +77,21 @@ class Performer
                     $object = &$this->objectList[$objectType][$objectName];
                     if (startsWith($file, '__')) {
                         if (!isset($object['before_callbacks'])) {
-                            $object['before_callbacks'] = [] ;
+                            $object['before_callbacks'] = [];
                         }
                         array_unshift($object['before_callbacks'], [
                             'filePath' => $filePath,
                             'baseName' => $baseName,
-                            'isDefinedAsClass' => $isDefinedAsClass
+                            'isDefinedAsClass' => $isDefinedAsClass,
                         ]);
                     } elseif (endsWith($file, '__.php')) {
                         if (!isset($object['after_callbacks'])) {
-                            $object['after_callbacks'] = [] ;
+                            $object['after_callbacks'] = [];
                         }
                         array_unshift($object['after_callbacks'], [
                             'filePath' => $filePath,
                             'baseName' => $baseName,
-                            'isDefinedAsClass' => $isDefinedAsClass
+                            'isDefinedAsClass' => $isDefinedAsClass,
                         ]);
                     } else {
                         $object = [
@@ -108,20 +108,22 @@ class Performer
     }
 
     /**
-     * Create the performable instance described by $object and with the variables used as an execution context
+     * Create the performable instance described by $object and with the variables used as an execution context.
+     *
      * @param array $object the object description
-     * @param array $vars the variables defined in the execution context of the object
+     * @param array $vars   the variables defined in the execution context of the object
      * @param $output the current generated output
+     *
      * @return mixed the performable instance
      */
     public function createPerformable(array $object, array &$vars, &$output)
     {
-        require_once($object['filePath']);
+        require_once $object['filePath'];
         $className = $object['baseName'];
         /* extract extension name from path to allow namespace */
         if (preg_match('/(?:tools[\\\\\\/]([A-Za-z0-9_\\-]+)|(custom))[\\\\\/][a-zA-Z0-9_\\\\\/\\-]+.php$/', $object['filePath'], $matches)) {
             $extensionName = empty($matches[1]) ? $matches[2] : $matches[1];
-            $classNameWithNamespace = "YesWiki\\".StringUtilService::folderToNamespace($extensionName)."\\".$object['baseName'];
+            $classNameWithNamespace = 'YesWiki\\' . StringUtilService::folderToNamespace($extensionName) . '\\' . $object['baseName'];
             if (class_exists($classNameWithNamespace)) {
                 $className = $classNameWithNamespace;
             }
@@ -138,21 +140,23 @@ class Performer
             // we must save the arguments in the YesWiki object, as YesWiki::getParameter is used in many places
             // TODO once bazar will be completly rewritten, we should remove this by passing the arguments to the renderers
             $this->wiki->parameter = &$vars;
+
             return $instance;
         } else {
-            throw new PerformerException("There were a problem while loading {$className} at " .
-                "{$object['filePath']}. Ensures the class exists");
+            throw new PerformerException("There were a problem while loading {$className} at " . "{$object['filePath']}. Ensures the class exists");
         }
     }
 
     /**
-     * Run an handler, formatter or actions and all its callback
+     * Run an handler, formatter or actions and all its callback.
+     *
      * @param $objectName the object name
      * @param $objectType the type, corresponds to a Performer::TYPES key
      * @param array $vars the variables defined in the execution context of the object. It's an array containing the
-     * value of each parameter given to the performable, where the names of the parameters are the key, corresponding to
-     * the given string value. Per example, by execute the action {{include page="PageTag"}}, this array is initialized
-     * with the page "parameter". Then, each execution change the execution context variables for the next one.
+     *                    value of each parameter given to the performable, where the names of the parameters are the key, corresponding to
+     *                    the given string value. Per example, by execute the action {{include page="PageTag"}}, this array is initialized
+     *                    with the page "parameter". Then, each execution change the execution context variables for the next one.
+     *
      * @return string the generated output
      */
     public function run($objectName, $objectType, array $vars = []): string
@@ -200,9 +204,11 @@ class Performer
                 // catch all errors and exceptions thrown by the execution of the performable
                 $message = _t('PERFORMABLE_ERROR');
                 $message .= "<br/>{$t->getMessage()} in <i>{$t->getFile()}</i> on line <i>{$t->getLine()}</i>";
+
                 return $this->renderError($message, $objectType);
             }
         }
+
         return $output;
     }
 
@@ -210,7 +216,7 @@ class Performer
     {
         $data = [
             'type' => 'danger',
-            'message' => $message
+            'message' => $message,
         ];
         if ($objectType == 'handler') {
             // display it with a header and a footer
@@ -222,7 +228,7 @@ class Performer
     }
 
     /**
-     * Retrieves the list of existing objects
+     * Retrieves the list of existing objects.
      *
      * @return array an unordered array of all the available objects
      */
@@ -231,6 +237,7 @@ class Performer
         if (!Performer::TYPES[$objectType]) {
             throw new PerformerException("Invalid type $objectType");
         }
+
         return array_unique(array_keys($this->objectList[$objectType]));
     }
 }

@@ -13,12 +13,8 @@ require_once 'tests/YesWikiTestCase.php';
 class HelloCommandTest extends YesWikiTestCase
 {
     /**
-     * @covers HelloCommand::execute
+     * @covers \HelloCommand::execute
      * @dataProvider providerTestExecute
-     * @param null|string $username
-     * @param bool $uppercase
-     * @param int $statusCode
-     * @param string $waitedOutput
      */
     public function testExecute(?string $username, bool $uppercase, int $statusCode, string $waitedOutput)
     {
@@ -57,25 +53,25 @@ class HelloCommandTest extends YesWikiTestCase
                 'username' => null,
                 'uppercase' => false,
                 'statusCode' => Command::SUCCESS,
-                'output' => "/^Hello !(?:\r|\n)+$/"
+                'output' => "/^Hello !(?:\r|\n)+$/",
             ],
             'with username' => [
-                'username' => "John Smith",
+                'username' => 'John Smith',
                 'uppercase' => false,
                 'statusCode' => Command::SUCCESS,
-                'output' => "/^Hello John Smith !(?:\r|\n)+$/"
+                'output' => "/^Hello John Smith !(?:\r|\n)+$/",
             ],
             'with username uppercase' => [
-                'username' => "John Smith",
+                'username' => 'John Smith',
                 'uppercase' => true,
                 'statusCode' => Command::SUCCESS,
-                'output' => "/^HELLO JOHN SMITH !(?:\r|\n)+$/"
+                'output' => "/^HELLO JOHN SMITH !(?:\r|\n)+$/",
             ],
             'uppercase no username ' => [
                 'username' => null,
                 'uppercase' => true,
                 'statusCode' => Command::SUCCESS,
-                'output' => "/^HELLO !(?:\r|\n)+$/"
+                'output' => "/^HELLO !(?:\r|\n)+$/",
             ],
         ];
     }

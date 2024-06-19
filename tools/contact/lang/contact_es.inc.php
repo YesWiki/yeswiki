@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     // actions/abonnement.php
     'CONTACT_ACTION_ABONNEMENT' => 'Acción {{suscripción ...}}',
     'CONTACT_MAIL_REQUIRED' => 'el parámetro email es obligatorio.',
@@ -32,7 +31,6 @@ return [
     'CONTACT_YOUR_EMAIL_LIST' => 'Tu lista de direcciónes de correo electrónico',
     'CONTACT_EXTRACT_EMAILS_FROM_TEXT' => 'Extraer las direcciónes de correo electrónicode este texto',
     'CONTACT_MUST_BE_ADMIN_TO_USE_THIS_ACTION' => 'Tienes que pertenecer al grupo admins para usar esta acción',
-
 
     'CONTACT_YOUR_NAME' => 'Tu nombre',
     'CONTACT_YOUR_MAIL' => 'Tu dirección de correo electrónico',
@@ -114,16 +112,15 @@ return [
     // templates/notify-newuser-email-subject.twig (no special chars)
     // 'CONTACT_NEW_USER_SUBJECT' => 'Vos nouveaux identifiants sur le site',
 
-
     // templates/notify-newuser-email-text.twig (no special chars)
-    'CONTACT_NEW_USER_MESSAGE' => "Hello!\n\n".
-        "Your subscription on the website is finished, nw you can sign-in with following information :\n\n".
-        "Url : {{ baseUrl }}\n\n".
-        "Your login WikiName : {{ wikiName }}\n\n".
-        "Your email : {{ email }}\n\n".
-        "Your password : (the password you have choosen)\n\n".
-        "To reinitiate your password : {{ urlForPasswordRenewal }}\n\n".
-        "See you soon ! ",
+    'CONTACT_NEW_USER_MESSAGE' => "Hello!\n\n" .
+        "Your subscription on the website is finished, nw you can sign-in with following information :\n\n" .
+        "Url : {{ baseUrl }}\n\n" .
+        "Your login WikiName : {{ wikiName }}\n\n" .
+        "Your email : {{ email }}\n\n" .
+        "Your password : (the password you have choosen)\n\n" .
+        "To reinitiate your password : {{ urlForPasswordRenewal }}\n\n" .
+        'See you soon ! ',
 
     // action-builder Contact
     // 'AB_contact_group_label' => "Actions d'envoi d'e-mail/listes",
@@ -146,9 +143,7 @@ return [
     // 'AB_mailinglist_action_label' => "Inscrire massivement des mails à une newsletter",
     // 'AB_mailinglist_action_description' => "Action permettant d'inscrire ou désinscrire massivement des mails à une newsletter",
 
-
     // for edit config
     // 'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => "Ajouter 'wiki=' aux liens vers ce wiki dans les e-mails",
     // 'EDIT_CONFIG_GROUP_CONTACT' => 'Envoi des e-mails',
-
 ];

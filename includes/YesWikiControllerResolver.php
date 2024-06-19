@@ -7,7 +7,7 @@ use Symfony\Component\HttpKernel\Controller\ControllerResolver;
 use YesWiki\Wiki;
 
 /**
- * Inspired from https://github.com/symfony/framework-bundle/blob/5.x/Controller/ControllerResolver.php
+ * Inspired from https://github.com/symfony/framework-bundle/blob/5.x/Controller/ControllerResolver.php.
  */
 class YesWikiControllerResolver extends ControllerResolver
 {

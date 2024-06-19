@@ -5,17 +5,19 @@ include_once 'includes/email.inc.php';
 function FindMailFromWikiPage($wikipage, $nbactionmail)
 {
     preg_match_all('/{{(contact|abonnement|desabonnement).*mail=\"(.*)\".*}}/U', $wikipage, $matches);
+
     return $matches[2][$nbactionmail - 1];
 }
 
 function ValidateEmail($email)
 {
-    $regex = "/([a-z0-9_\.\-]+)" . # name
-    "@" . # at
-    "([a-z0-9\.\-\+]+){1,255}" . # domain & possibly subdomains
-    "\." . # period
-    "([a-z]+){2,10}/i"; # domain extension
+    $regex = "/([a-z0-9_\.\-]+)" . // name
+    '@' . // at
+    "([a-z0-9\.\-\+]+){1,255}" . // domain & possibly subdomains
+    "\." . // period
+    '([a-z]+){2,10}/i'; // domain extension
     $eregi = preg_replace($regex, '', $email);
+
     return empty($eregi) ? true : false;
 }
 
@@ -64,7 +66,7 @@ function getPageTitle($page)
     preg_match_all('/"bf_titre":"(.*)"/U', $page['body'], $titles);
     if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
         $title = _convert(preg_replace_callback('/\\\\u([a-f0-9]{4})/', 'utf8_special_decode', $titles[1][0]), 'UTF-8');
-        //preg_replace("/\\\\u([a-f0-9]{4})/e", "iconv('UCS-4LE','UTF-8',pack('V', hexdec('U$1')))", $titles[1][0]));
+    //preg_replace("/\\\\u([a-f0-9]{4})/e", "iconv('UCS-4LE','UTF-8',pack('V', hexdec('U$1')))", $titles[1][0]));
     } else {
         preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
         if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
@@ -85,25 +87,25 @@ function getPageTitle($page)
 function filterMailGroups($var)
 {
     // returns all string starting with "Mail"
-    return(preg_match('/^Mail/', $var));
+    return preg_match('/^Mail/', $var);
 }
 
 function filterDailyMailGroups($var)
 {
     // returns all string ending with "Day"
-    return(preg_match('/Day$/', $var));
+    return preg_match('/Day$/', $var);
 }
 
 function filterWeeklyMailGroups($var)
 {
     // returns all string ending with "Week"
-    return(preg_match('/Week$/', $var));
+    return preg_match('/Week$/', $var);
 }
 
 function filterMonthlyMailGroups($var)
 {
     // returns all string ending with "Month"
-    return(preg_match('/Month$/', $var));
+    return preg_match('/Month$/', $var);
 }
 
 function sendPeriodicalMailToGroup($period, $groups, $subject = '')
@@ -118,7 +120,7 @@ function sendPeriodicalMailToGroup($period, $groups, $subject = '')
 
     foreach ($groups as $group) {
         // get page name
-        $page = preg_replace(array('/^Mail/', '/'.ucfirst($period).'$/'), '', $group);
+        $page = preg_replace(['/^Mail/', '/' . ucfirst($period) . '$/'], '', $group);
         $_GET['period'] = $period;
         $page = $GLOBALS['wiki']->LoadPage($page);
 
@@ -127,11 +129,11 @@ function sendPeriodicalMailToGroup($period, $groups, $subject = '')
         $groupmembers = explode("\n", $groupmembers);
         $groupmembers = array_map('trim', $groupmembers);
 
-        $mailheader =   '['.str_replace(array('/wakka.php?wiki=', 'http://', 'https://', '/?'), '', $GLOBALS['wiki']->config['base_url']).']';
+        $mailheader = '[' . str_replace(['/wakka.php?wiki=', 'http://', 'https://', '/?'], '', $GLOBALS['wiki']->config['base_url']) . ']';
         if (empty($subject)) {
-            $subject = $mailheader.' '.getPageTitle($page).' ('.$sub.' '.date("d.m.Y").')';
+            $subject = $mailheader . ' ' . getPageTitle($page) . ' (' . $sub . ' ' . date('d.m.Y') . ')';
         }
-        $message_html = $GLOBALS['wiki']->Format('{{include page="'.$page['tag'].'"}}');
+        $message_html = $GLOBALS['wiki']->Format('{{include page="' . $page['tag'] . '"}}');
         $message_html = preg_replace(
             '/(\<\!\-\- mailperiod start \-\-\>.*\<\!\-\- mailperiod end \-\-\>)/Uims',
             '',
@@ -147,28 +149,27 @@ function sendPeriodicalMailToGroup($period, $groups, $subject = '')
     }
 }
 
-
 function sendEmailsToSubscribers($period = '', $subject = '')
 {
     // on recupere tous les groupes et on les trie par periode
     $groups = $GLOBALS['wiki']->GetGroupsList();
-    $groups = array_filter($groups, "filterMailGroups");
+    $groups = array_filter($groups, 'filterMailGroups');
 
     // envois journaliers
     if ($period == 'day') {
-        $dayGroups = array_filter($groups, "filterDailyMailGroups");
+        $dayGroups = array_filter($groups, 'filterDailyMailGroups');
         sendPeriodicalMailToGroup('day', $dayGroups, $subject);
     }
 
     // envois hebdomadaires
     if ($period == 'week') {
-        $weekGroups = array_filter($groups, "filterWeeklyMailGroups");
+        $weekGroups = array_filter($groups, 'filterWeeklyMailGroups');
         sendPeriodicalMailToGroup('week', $weekGroups, $subject);
     }
 
     // envois mensuels
     if ($period == 'month') {
-        $monthGroups = array_filter($groups, "filterMonthlyMailGroups");
+        $monthGroups = array_filter($groups, 'filterMonthlyMailGroups');
         sendPeriodicalMailToGroup('month', $monthGroups, $subject);
     }
 }

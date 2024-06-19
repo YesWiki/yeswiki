@@ -1,4 +1,5 @@
 <?php
+
 return [
     // actions/abonnement.php
     'CONTACT_ACTION_ABONNEMENT' => 'செயல் {{abonnement ...}}',
@@ -91,24 +92,24 @@ return [
     // templates/notify-newuser-email-text.twig (no special chars)
     // action-builder Contact
     'AB_contact_group_label' => "செயல்கள் d'envoi d'ary-mail/listes",
-    'AB_abonnement_action_mail_label' => "மின்னஞ்சல் டி லா லிச்டே டி கலந்துரையாடல்",
+    'AB_abonnement_action_mail_label' => 'மின்னஞ்சல் டி லா லிச்டே டி கலந்துரையாடல்',
     'AB_abonnement_action_label' => "S'abonner à une liste de கலந்துரையாடல்",
-    'AB_abonnement_template_label' => "வார்ப்புரு",
-    'AB_abonnement_class_label' => "கிளாச்",
-    'AB_abonnement_mailinglist_label' => "பட்டியல் விவாதம்",
+    'AB_abonnement_template_label' => 'வார்ப்புரு',
+    'AB_abonnement_class_label' => 'கிளாச்',
+    'AB_abonnement_mailinglist_label' => 'பட்டியல் விவாதம்',
     'AB_deabonnement_action_label' => "Se désabonner d'ne liste de கலந்துரையாடல்",
-    'AB_contact_action_label' => "Afficher un fumlured de contiction",
-    'AB_contact_action_mail_label' => "மின்னஞ்சல் டு டெச்டினாடேர்",
-    'AB_contact_action_entete_label' => "ப்ரெஃபிக்ச் ஆட்டோமேட்டிக் டி எல் ஒப்செட் டு மெயில்",
-    'AB_contact_action_entete_default' => "என்வாய் டெபூயிச் லே தளம் ...",
-    'AB_contact_action_template_label' => "வார்ப்புரு ஆளுமை",
-    'AB_contact_action_template_hint' => "முன்னாள். : முழுமையான தொடர்பு-படிவம் .Tpl.html",
-    'AB_contact_action_class_label' => "கிளாச் சி.எச்.எச்",
-    'AB_listsubscription_action_label' => "ListSubscription",
+    'AB_contact_action_label' => 'Afficher un fumlured de contiction',
+    'AB_contact_action_mail_label' => 'மின்னஞ்சல் டு டெச்டினாடேர்',
+    'AB_contact_action_entete_label' => 'ப்ரெஃபிக்ச் ஆட்டோமேட்டிக் டி எல் ஒப்செட் டு மெயில்',
+    'AB_contact_action_entete_default' => 'என்வாய் டெபூயிச் லே தளம் ...',
+    'AB_contact_action_template_label' => 'வார்ப்புரு ஆளுமை',
+    'AB_contact_action_template_hint' => 'முன்னாள். : முழுமையான தொடர்பு-படிவம் .Tpl.html',
+    'AB_contact_action_class_label' => 'கிளாச் சி.எச்.எச்',
+    'AB_listsubscription_action_label' => 'ListSubscription',
     'AB_mailperiod_action_label' => "S'abonner pour regevoir périodigment le contenu d'ne par par மின்னஞ்சல்",
-    'AB_mailperiod_action_hint' => "கியூ செட் ஆக்சன் ஃபோன்க்சன் வூச் டிவெச் வெரிஃபையர் சான்றிதழ்கள் பரம எட்ரச் சுர் வோட்ரே சர்வர். Voir LA ஆவணங்கள் சுர் https://yeswiki.net/?mailperiod",
-    'AB_mailinglist_action_label' => "Inscrire massivement des mails à une செய்திமடல்",
-    'AB_mailinglist_action_description' => "செயல்",
+    'AB_mailperiod_action_hint' => 'கியூ செட் ஆக்சன் ஃபோன்க்சன் வூச் டிவெச் வெரிஃபையர் சான்றிதழ்கள் பரம எட்ரச் சுர் வோட்ரே சர்வர். Voir LA ஆவணங்கள் சுர் https://yeswiki.net/?mailperiod',
+    'AB_mailinglist_action_label' => 'Inscrire massivement des mails à une செய்திமடல்',
+    'AB_mailinglist_action_description' => 'செயல்',
     // for edit config
     'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => "அசூட்டர் 'விக்கி =' ஆக்ச் லீன்ச் வெர்சச் சி.இ விக்கி டான்ச் லெச் மின்னஞ்சல்கள்",
     'EDIT_CONFIG_GROUP_CONTACT' => 'Envoi des மின்னஞ்சல்கள்',

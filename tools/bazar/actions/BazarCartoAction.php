@@ -8,17 +8,17 @@ class BazarCartoAction extends YesWikiAction
     public function formatArguments($arg)
     {
         // PROVIDERS
-        $provider = $_GET['provider']  ?? $arg['provider'] ?? $this->params->get('baz_provider');
-        $providerId = $arg['providerid'] ?? null ;
+        $provider = $_GET['provider'] ?? $arg['provider'] ?? $this->params->get('baz_provider');
+        $providerId = $arg['providerid'] ?? null;
         $providerPass = $arg['providerpass'] ?? null;
         if (!empty($providerId) && !empty($providerPass)) {
             if ($provider === 'MapBox') {
-                $providerCredentials = ', {id: \''.$providerId .'\', accessToken: \''.$providerPass.'\'}';
+                $providerCredentials = ', {id: \'' . $providerId . '\', accessToken: \'' . $providerPass . '\'}';
             } else {
-                $providerCredentials = ', {app_id: \''.$providerId.'\',app_code: \''.$providerPass.'\'}';
+                $providerCredentials = ', {app_id: \'' . $providerId . '\',app_code: \'' . $providerPass . '\'}';
             }
         } else {
-            $providerCredentials = '' ;
+            $providerCredentials = '';
         }
 
         // MARKERS
@@ -59,14 +59,14 @@ class BazarCartoAction extends YesWikiAction
             )
         ) {
             if (!isset($query['bf_latitude!'])) {
-                $query['bf_latitude!'] = "";
+                $query['bf_latitude!'] = '';
             }
             if (!isset($query['bf_longitude!'])) {
-                $query['bf_longitude!'] = "";
+                $query['bf_longitude!'] = '';
             }
         }
 
-        return([
+        return [
             /*
              * Le fond de carte utilisé pour la carte
              * cf. https://github.com/leaflet-extras/leaflet-providers
@@ -130,7 +130,7 @@ class BazarCartoAction extends YesWikiAction
             'entrydisplay' => $arg['entrydisplay'] ?? 'sidebar',
             'pagination' => -1, // disable pagination
             'query' => $query,
-        ]);
+        ];
     }
 
     public function run()

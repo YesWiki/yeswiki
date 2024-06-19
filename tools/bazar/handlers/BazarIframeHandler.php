@@ -8,7 +8,7 @@ class BazarIframeHandler extends YesWikiHandler
     {
         $output = '';
 
-        if ($this->wiki->HasAccess("read")) {
+        if ($this->wiki->HasAccess('read')) {
             if (empty($_GET['id'])) {
                 $output .= '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FORM_INDIQUE') . '</div>';
             } else {
@@ -25,16 +25,16 @@ class BazarIframeHandler extends YesWikiHandler
             }
         } else {
             // on recupere les entetes html mais pas ce qu'il y a dans le body
-            $output .= '<body class="yeswiki-iframe-body login-body"><div class="container"><div class="yeswiki-page-widget page-widget page" '.$this->wiki->Format('{{doubleclic iframe="1"}}').'>';
+            $output .= '<body class="yeswiki-iframe-body login-body"><div class="container"><div class="yeswiki-page-widget page-widget page" ' . $this->wiki->Format('{{doubleclic iframe="1"}}') . '>';
 
-            if ($contenu = $this->wiki->LoadPage("PageLogin")) {
+            if ($contenu = $this->wiki->LoadPage('PageLogin')) {
                 // si une page PageLogin existe, on l'affiche
-                $output .= $this->wiki->Format($contenu["body"]);
+                $output .= $this->wiki->Format($contenu['body']);
             } else {
                 // sinon on affiche le formulaire d'identification minimal
                 $output .= '<div class="vertical-center white-bg"><div class="alert alert-danger alert-error">'
                     . _t('LOGIN_NOT_AUTORIZED') . '. ' . _t('LOGIN_PLEASE_REGISTER') . '.'
-                    . '</div>'.$this->wiki->Format('{{login signupurl="0"}}').'</div>';
+                    . '</div>' . $this->wiki->Format('{{login signupurl="0"}}') . '</div>';
             }
         }
 
@@ -47,10 +47,9 @@ class BazarIframeHandler extends YesWikiHandler
 
         $this->wiki->AddJavascriptFile('javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js');
 
-
         // on recupere les entetes html mais pas ce qu'il y a dans le body
         $header = explode('<body', $this->wiki->Header());
-        $output = $header[0].$output;
+        $output = $header[0] . $output;
         // on recupere juste les javascripts et la fin des balises body et html
         $output .= preg_replace('/^.+<script/Us', '<script', $this->wiki->Footer());
 

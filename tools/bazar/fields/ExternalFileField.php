@@ -10,7 +10,7 @@ use YesWiki\Bazar\Service\ExternalBazarService;
  */
 class ExternalFileField extends FileField
 {
-    protected $JSONFormAddress ;
+    protected $JSONFormAddress;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -24,7 +24,7 @@ class ExternalFileField extends FileField
 
     protected function renderInput($entry)
     {
-        return "";
+        return '';
     }
 
     public function formatValuesBeforeSave($entry)
@@ -40,10 +40,10 @@ class ExternalFileField extends FileField
         if (isset($value) && $value != '') {
             return $this->render('@bazar/fields/file.twig', [
                 'value' => $value,
-                'fileUrl' => $entry['external-data']['baseUrl'] . BAZ_CHEMIN_UPLOAD . $value
+                'fileUrl' => $entry['external-data']['baseUrl'] . BAZ_CHEMIN_UPLOAD . $value,
             ]);
         }
 
-        return "";
+        return '';
     }
 }

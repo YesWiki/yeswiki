@@ -4,7 +4,7 @@ namespace YesWiki\AutoUpdate\Entity;
 
 abstract class PackageExt extends Package
 {
-    public const INFOS_FILENAME = "infos.json";
+    public const INFOS_FILENAME = 'infos.json';
 
     protected $infos = null;
 
@@ -32,8 +32,9 @@ abstract class PackageExt extends Package
                 'textAction' => $textAction,
                 'NEEDEDPHPVERSION' => $neededPHPVersion,
                 'CURRENTPHPVERSION' => PHP_VERSION,
-                'hint' => _t('AU_PHP_TOO_LOW_HINT', ['textAction' => $textAction])
+                'hint' => _t('AU_PHP_TOO_LOW_HINT', ['textAction' => $textAction]),
             ]));
+
             return false;
         }
 
@@ -58,10 +59,10 @@ abstract class PackageExt extends Package
 
     public function upgradeInfos()
     {
-        $infos = array(
-            "name" => $this->name,
-            "release" => (string)$this->release,
-        );
+        $infos = [
+            'name' => $this->name,
+            'release' => (string)$this->release,
+        ];
         $json = json_encode($infos);
         file_put_contents($this->infosFilePath(), $json);
         // TODO Vérifier que l'action a bien été éxécutée.
@@ -82,11 +83,12 @@ abstract class PackageExt extends Package
             return $this->infos;
         }
 
-        $this->infos = array();
+        $this->infos = [];
         if (is_file($this->infosFilePath())) {
             $json = file_get_contents($this->infosFilePath());
             $this->infos = json_decode($json, true);
         }
+
         return $this->infos;
     }
 
@@ -98,6 +100,7 @@ abstract class PackageExt extends Package
                 return $infos['release'];
             }
         }
+
         return new Release(Release::UNKNOW_RELEASE);
     }
 
@@ -106,6 +109,7 @@ abstract class PackageExt extends Package
         if (is_dir($this->localPath())) {
             return true;
         }
+
         return false;
     }
 

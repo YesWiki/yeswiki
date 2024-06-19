@@ -1,7 +1,8 @@
 <?php
+
 return [
     // controllers/ApiController.php
-    'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => "பட கோப்பு இல்லை",
+    'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'பட கோப்பு இல்லை',
     // libs/attach.lib.php
     'ATTACH_ACTION_ATTACH' => 'செயல் {{இணைக்க ...}}',
     'ATTACH_PARAM_DESC_REQUIRED' => 'ஒரு படத்திற்கான அளவுரு "கட்டாய"',
@@ -17,7 +18,7 @@ return [
     'ERROR_PARTIAL_UPLOAD' => 'கோப்பு இல்லை அது ஓரளவு சார்ச் & eacute ;.',
     'ERROR_NO_FILE_UPLOADED' => 'எந்த கோப்பிலும் & eacute; t & éacute ;.',
     'ERROR_NOT_AUTHORIZED_EXTENSION' => 'கோப்பில் அங்கீகரிக்கப்பட்ட நீட்டிப்பு இல்லை, உள்ளமைவு அனுமதிக்கும் அவை இங்கே: ',
-    'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "படத்தை பெரிய அளவில் காண்பிக்க சொடுக்கு செய்ய உங்களை அனுமதிக்கவும்",
+    'ATTACH_ACTION_FULLIMAGELINK_TEXT' => 'படத்தை பெரிய அளவில் காண்பிக்க சொடுக்கு செய்ய உங்களை அனுமதிக்கவும்',
     'ATTACH_FILE_MANAGEMENT' => 'கோப்பு மேலாண்மை',
     'ATTACH_TRASH' => 'கூடை',
     'ATTACH_NO_ATTACHED_FILES' => 'இப்போது {குறிச்சொல் the பக்கத்துடன் கோப்புகள் எதுவும் இணைக்கப்படவில்லை.',

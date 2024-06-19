@@ -17,7 +17,7 @@ class Repository extends PackageCollection
 
     public function load()
     {
-        $this->list = array();
+        $this->list = [];
 
         if (filter_var($this->address, FILTER_VALIDATE_URL) === false) {
             return false;

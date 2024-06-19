@@ -2,7 +2,7 @@
 
 spl_autoload_register(function ($className) {
     // Autoload services
-    if (preg_match("/^YesWiki\\\\([^\\\\]+)(?:\\\\([^\\\\]+))?(?:\\\\([^\\\\]+))?$/", $className, $matches)) {
+    if (preg_match('/^YesWiki\\\\([^\\\\]+)(?:\\\\([^\\\\]+))?(?:\\\\([^\\\\]+))?$/', $className, $matches)) {
         if (empty($matches[2])) {
             // not currently managed
         } elseif (empty($matches[3])) {
@@ -39,7 +39,7 @@ spl_autoload_register(function ($className) {
                     require "$basePath/controllers/{$matches[3]}.php";
                     break;
                 case 'Field':
-                    if ($matches[1] != "Core") {
+                    if ($matches[1] != 'Core') {
                         require "$basePath/fields/{$matches[3]}.php";
                     }
                     break;

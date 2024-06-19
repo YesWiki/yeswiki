@@ -20,7 +20,7 @@ class ConditionsCheckingField extends LabelField
     {
         parent::__construct($values, $services);
         $this->condition = $values[self::FIELD_CONDITION] ?? '';
-        $this->options = !empty($values[self::FIELD_OPTIONS]) && in_array($values[self::FIELD_OPTIONS], ["noclean"], true) ? ['noclean' => true] : [ 'noclean' => false];
+        $this->options = !empty($values[self::FIELD_OPTIONS]) && in_array($values[self::FIELD_OPTIONS], ['noclean'], true) ? ['noclean' => true] : ['noclean' => false];
         $this->formText = $this->prepareFormText();
         $this->viewText = '';
     }

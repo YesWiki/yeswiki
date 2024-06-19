@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     // actions/syndication.php
     'SYNDICATION_ACTION_SYNDICATION' => 'Action {{syndication ...}}',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'il faut entrer obligatoirement le param&egrave;tre "url" pour syndiquer un flux RSS',

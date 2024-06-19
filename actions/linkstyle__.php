@@ -1,7 +1,7 @@
 
 <?php
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    exit('acc&egrave;s direct interdit');
 }
 
 // This GLOBALS is populated from AddCSS and AddCSSFile, we add it at the end

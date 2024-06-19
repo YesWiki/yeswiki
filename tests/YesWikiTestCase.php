@@ -12,6 +12,7 @@ class YesWikiTestCase extends TestCase
     {
         require_once 'includes/YesWikiLoader.php';
         $wiki = YesWikiLoader::getWiki(true);
+
         return $wiki;
     }
 }

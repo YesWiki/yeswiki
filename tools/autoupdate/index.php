@@ -1,5 +1,5 @@
 <?php
 
-if (!defined("TOOLS_MANAGER")) {
-    die("Accès direct interdit.");
+if (!defined('TOOLS_MANAGER')) {
+    exit('Accès direct interdit.');
 }

@@ -1,7 +1,7 @@
 <?php
 
 if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
+    exit('acc&egrave;s direct interdit');
 }
 
 // texte genere a l'interieur du bouton
@@ -43,7 +43,7 @@ if (!strstr($btnclass, 'btn-')) {
 
 $nobtn = $this->GetParameter('nobtn');
 if (!empty($nobtn) && $nobtn == '1') {
-    $btnclass = str_replace(array('btn ', 'btn-default'), array('', ''), $btnclass);
+    $btnclass = str_replace(['btn ', 'btn-default'], ['', ''], $btnclass);
 }
 
 $pagetag = $this->GetPageTag();

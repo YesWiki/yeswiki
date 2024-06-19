@@ -9,13 +9,12 @@ use YesWiki\Core\Service\ConfigurationService;
 
 class ConfigurationFile implements ArrayAccess, Iterator, Countable
 {
-    private $_file = "";
+    private $_file = '';
     protected $_parameters;
     protected $configurationService;
 
     /**
      * @param $file
-     * @param ConfigurationService|null $configurationService
      */
     public function __construct($file, ?ConfigurationService $configurationService = null)
     {
@@ -23,16 +22,16 @@ class ConfigurationFile implements ArrayAccess, Iterator, Countable
         $this->_parameters = [];
         if ($configurationService instanceof ConfigurationService) {
             $this->configurationService = $configurationService;
-        } elseif (isset($GLOBALS["wiki"])) {
-            $this->configurationService = $GLOBALS["wiki"]->services->get(ConfigurationService::class);
+        } elseif (isset($GLOBALS['wiki'])) {
+            $this->configurationService = $GLOBALS['wiki']->services->get(ConfigurationService::class);
         }
     }
 
     public function __get($name)
     {
-        if ($name == "_file") {
+        if ($name == '_file') {
             return $this->_file;
-        } elseif ($name == "_parameters") {
+        } elseif ($name == '_parameters') {
             return $this->_parameters;
         }
         if (isset($this->_parameters[$name])) {
@@ -48,7 +47,7 @@ class ConfigurationFile implements ArrayAccess, Iterator, Countable
 
     public function __set($name, $value)
     {
-        if ($name != "_file") {
+        if ($name != '_file') {
             $this->_parameters[$name] = $value;
         }
     }
@@ -58,7 +57,7 @@ class ConfigurationFile implements ArrayAccess, Iterator, Countable
         unset($this->_parameters[$name]);
     }
 
-    public function load($arrayName = "wakkaConfig")
+    public function load($arrayName = 'wakkaConfig')
     {
         if (!is_file($this->_file)) {
             return;
@@ -74,12 +73,14 @@ class ConfigurationFile implements ArrayAccess, Iterator, Countable
     }
 
     /**
-     * écrit le fichier de configuration
+     * écrit le fichier de configuration.
+     *
      * @param string|null $file
-     * @param string $arrayName
+     * @param string      $arrayName
+     *
      * @return bool
      */
-    public function write($file = null, $arrayName = "wakkaConfig")
+    public function write($file = null, $arrayName = 'wakkaConfig')
     {
         return $this->configurationService->write($this, $file, $arrayName);
     }
@@ -92,6 +93,7 @@ class ConfigurationFile implements ArrayAccess, Iterator, Countable
     {
         if (is_null($offset)) {
             $this->_parameters[] = $value;
+
             return;
         }
         $this->_parameters[$offset] = $value;
