@@ -6,21 +6,21 @@ actions:
     label: _t(AB_advanced_action_textsearch_label)
     properties:
       label:
-        label:  _t(AB_advanced_action_textsearch_label_label)
+        label: _t(AB_advanced_action_textsearch_label_label)
         type: text
       size:
-        label:  _t(AB_advanced_action_textsearch_size_label)
+        label: _t(AB_advanced_action_textsearch_size_label)
         type: number
         default: ''
         min: 1
       button:
-        label:  _t(AB_advanced_action_textsearch_button_label)
+        label: _t(AB_advanced_action_textsearch_button_label)
         type: text
       phrase:
-        label:  _t(AB_advanced_action_textsearch_phrase_label)
+        label: _t(AB_advanced_action_textsearch_phrase_label)
         type: text
         advanced: true
       separator:
-        label:  _t(AB_advanced_action_textsearch_separator_label)
+        label: _t(AB_advanced_action_textsearch_separator_label)
         type: text
         advanced: true

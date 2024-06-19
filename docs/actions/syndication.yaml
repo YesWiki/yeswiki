@@ -12,9 +12,9 @@ actions:
         value: yeswiki.net, lemonde.fr
         type: url
         required: true
-#      title:
-#       label: _t(AB_syndication_action_title_label)
-#       type: text
+      #      title:
+      #       label: _t(AB_syndication_action_title_label)
+      #       type: text
       source:
         label: _t(AB_syndication_action_source_label)
         hint: _t(AB_syndication_action_source_hint)
@@ -34,15 +34,15 @@ actions:
         advanced: true
         label: _t(AB_syndication_action_nouvellefenetre_label)
         type: checkbox
-        default: "0"
-        checkedvalue: "1"
-        uncheckedvalue: "0"
+        default: '0'
+        checkedvalue: '1'
+        uncheckedvalue: '0'
       formatdate:
         advanced: true
         label: _t(AB_syndication_action_formatdate_label)
         type: list
         options:
           jm: _t(AB_syndication_action_formatdate_option_jm)
-          jma:  _t(AB_syndication_action_formatdate_option_jma)
-          jmh:  _t(AB_syndication_action_formatdate_option_jmh)
-          jmah:  _t(AB_syndication_action_formatdate_option_jmah)
+          jma: _t(AB_syndication_action_formatdate_option_jma)
+          jmh: _t(AB_syndication_action_formatdate_option_jmh)
+          jmah: _t(AB_syndication_action_formatdate_option_jmah)

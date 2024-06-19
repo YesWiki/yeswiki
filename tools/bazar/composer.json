@@ -1,5 +1,5 @@
 {
-    "require": {
-        "pear/xml_util": "^1.4"
-    }
+  "require": {
+    "pear/xml_util": "^1.4"
+  }
 }

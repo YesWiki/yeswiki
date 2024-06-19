@@ -13,23 +13,23 @@ actions:
           right: _t(AB_advanced_action_tocjs_position_right_option)
           left: _t(AB_advanced_action_tocjs_position_left_option)
       size:
-        label:  _t(AB_advanced_action_tocjs_size_label)
+        label: _t(AB_advanced_action_tocjs_size_label)
         advanced: true
         type: list
         options:
-            - 2
-            - 3
-            - 4
+          - 2
+          - 3
+          - 4
   trail:
-    label: _t(AB_advanced_action_trail_label)    
+    label: _t(AB_advanced_action_trail_label)
     properties:
       toc:
-        label:  _t(AB_advanced_action_trail_toc_label)
+        label: _t(AB_advanced_action_trail_toc_label)
         type: page-list
         required: true
   progressbar:
     label: _t(AB_advanced_action_progressbar_label)
-    properties: 
+    properties:
       val:
         label: _t(AB_advanced_action_progressbar_val_label)
         hint: _t(AB_advanced_action_progressbar_val_hint)
@@ -46,22 +46,22 @@ actions:
     label: _t(AB_advanced_action_newtextsearch_label)
     properties:
       label:
-        label:  _t(AB_advanced_action_textsearch_label_label)
+        label: _t(AB_advanced_action_textsearch_label_label)
         type: text
       size:
-        label:  _t(AB_advanced_action_textsearch_size_label)
+        label: _t(AB_advanced_action_textsearch_size_label)
         type: number
         default: ''
         min: 1
       button:
-        label:  _t(AB_advanced_action_textsearch_button_label)
+        label: _t(AB_advanced_action_textsearch_button_label)
         type: text
       phrase:
-        label:  _t(AB_advanced_action_textsearch_phrase_label)
+        label: _t(AB_advanced_action_textsearch_phrase_label)
         type: text
         advanced: true
       separator:
-        label:  _t(AB_advanced_action_textsearch_separator_label)
+        label: _t(AB_advanced_action_textsearch_separator_label)
         type: text
         advanced: true
   include:
@@ -103,19 +103,19 @@ actions:
         min: 1
         max: 7
       exclude:
-        label:  _t(AB_advanced_action_listpages_exclude_label)
-        hint:  _t(AB_advanced_action_listpages_exclude_hint)
+        label: _t(AB_advanced_action_listpages_exclude_label)
+        hint: _t(AB_advanced_action_listpages_exclude_hint)
         type: page-list
       owner:
-        label:  _t(AB_advanced_action_listpages_owner_label)
-        hint:  _t(AB_advanced_action_listpages_owner_hint)
+        label: _t(AB_advanced_action_listpages_owner_label)
+        hint: _t(AB_advanced_action_listpages_owner_hint)
         type: checkbox
         default: ''
         checkedvalue: 'owner'
         uncheckedvalue: ''
       user:
-        label:  _t(AB_advanced_action_listpages_user_label)
-        hint:  _t(AB_advanced_action_listpages_user_hint)
+        label: _t(AB_advanced_action_listpages_user_label)
+        hint: _t(AB_advanced_action_listpages_user_hint)
         type: checkbox
         default: ''
         checkedvalue: 'user'
@@ -131,7 +131,7 @@ actions:
     label: _t(AB_advanced_action_mychanges_label)
     properties:
       bydate:
-        label:  _t(AB_advanced_action_mychanges_bydate_label)
+        label: _t(AB_advanced_action_mychanges_bydate_label)
         type: checkbox
         default: ''
         checkedvalue: '1'
@@ -167,8 +167,8 @@ actions:
     label: _t(AB_advanced_action_listusers_label)
     properties:
       last:
-        label:  _t(AB_advanced_action_listusers_last_label)
-        hint:  _t(AB_advanced_action_listusers_last_hint)
+        label: _t(AB_advanced_action_listusers_last_label)
+        hint: _t(AB_advanced_action_listusers_last_hint)
         type: number
         default: ''
         min: 1
@@ -176,19 +176,19 @@ actions:
     label: _t(AB_advanced_action_recentchanges_label)
     properties:
       max:
-        label:  _t(AB_advanced_action_recentchanges_max_label)
+        label: _t(AB_advanced_action_recentchanges_max_label)
         type: number
         default: ''
         min: 1
       period:
-        label:  _t(AB_advanced_action_recentchanges_period_label)
-        hint:  _t(AB_advanced_action_recentchanges_period_hint)
+        label: _t(AB_advanced_action_recentchanges_period_label)
+        hint: _t(AB_advanced_action_recentchanges_period_hint)
         type: text
   recentcomments:
     label: _t(AB_advanced_action_recentcomments_label)
     properties:
       max:
-        label:  _t(AB_advanced_action_recentcomments_max_label)
+        label: _t(AB_advanced_action_recentcomments_max_label)
         type: number
         default: ''
         min: 1
@@ -208,66 +208,66 @@ actions:
       template:
         label: _t(AB_advanced_action_login_template_label)
         type: list
-        default: "default.twig"
+        default: 'default.twig'
         options:
-          "default.twig": _t(AB_advanced_action_login_template_default)
-          "modal.twig": _t(AB_advanced_action_login_template_modal)
-          "horizontal.twig": _t(AB_advanced_action_login_template_horizontal)
-          "dropdown.twig": _t(AB_advanced_action_login_template_dropdown)
+          'default.twig': _t(AB_advanced_action_login_template_default)
+          'modal.twig': _t(AB_advanced_action_login_template_modal)
+          'horizontal.twig': _t(AB_advanced_action_login_template_horizontal)
+          'dropdown.twig': _t(AB_advanced_action_login_template_dropdown)
       signupurl:
         label: _t(AB_advanced_action_login_signupurl_label)
         hint: _t(AB_advanced_action_login_signupurl_hint)
         type: page-list
-        default: ""
+        default: ''
       incomingurl:
         label: _t(AB_advanced_action_login_incomingurl_label)
         type: page-list
-        default: ""
+        default: ''
       loggedinurl:
         label: _t(AB_advanced_action_login_loggedinurl_label)
         hint: _t(AB_advanced_action_login_loggedinurl_hint)
         type: page-list
-        default: ""
+        default: ''
         advanced: true
       loggedouturl:
         label: _t(AB_advanced_action_login_loggedouturl_label)
         hint: _t(AB_advanced_action_login_loggedouturl_hint)
         type: page-list
-        default: ""
+        default: ''
         advanced: true
       userpage:
         label: _t(AB_advanced_action_login_userpage_label)
         type: checkbox
-        default: ""
-        checkedvalue: "user"
-        uncheckedvalue: ""
+        default: ''
+        checkedvalue: 'user'
+        uncheckedvalue: ''
       lostpasswordurl:
         label: _t(AB_advanced_action_login_lostpasswordurl_label)
         hint: _t(AB_advanced_action_login_lostpasswordurl_hint)
         type: page-list
-        default: ""
+        default: ''
       profileurl:
         label: _t(AB_advanced_action_login_profileurl_label)
         hint: _t(AB_advanced_action_login_profileurl_hint)
         type: page-list
-        default: ""
+        default: ''
         advanced: true
       class:
         label: _t(AB_advanced_action_login_class_label)
         type: text
-        default: ""
+        default: ''
         advanced: true
       btnclass:
         label: _t(AB_advanced_action_login_btnclass_label)
         type: text
-        default: ""
+        default: ''
         advanced: true
       nobtn:
         label: _t(AB_advanced_action_login_nobtn_label)
         type: checkbox
-        default: "false"
-        checkedvalue: "true"
-        uncheckedvalue: "false"
+        default: 'false'
+        checkedvalue: 'true'
+        uncheckedvalue: 'false'
         showif:
           template: modal\.(?:twig|tpl\.html)
   # interwikilist:

@@ -4,7 +4,6 @@ about: Describe a bug / Remonter un bogue
 title: ''
 labels: ''
 assignees: ''
-
 ---
 
 > [!NOTE]
@@ -19,6 +18,7 @@ assignees: ''
 Explain the bug / expliquer le bogue
 
 **Additionnal informations / Informations complémentaires**
+
 - version of YesWiki / version de YesWiki
 - url to see the problem or an example / url pour voir le probleme ou un exemple
 - screenshot / capture d’écran

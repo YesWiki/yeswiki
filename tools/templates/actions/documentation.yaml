@@ -26,7 +26,6 @@ actions:
     label: _t(AB_templates_tabs_label)
     isWrapper: true
     wrappedContentExample: _t(AB_templates_tabs_wrappedcontentexample)
-    properties:
     description: _t(AB_templates_tabs_description)
     hint: _t(AB_templates_tabs_hint)
     properties:
@@ -35,13 +34,13 @@ actions:
         value: _t(AB_templates_tabs_titles_default)
         hint: _t(AB_templates_tabs_titles_hint)
         type: text
-      selectedtab: 
+      selectedtab:
         label: _t(AB_templates_tabs_selectedtab_label)
         type: number
         default: 1
         min: 1
         advanced: true
-      btnsize: 
+      btnsize:
         label: _t(AB_templates_tabs_btnsize_label)
         type: list
         default: 'btn-xs'
@@ -49,7 +48,7 @@ actions:
         options:
           'std': _t(AB_templates_tabs_btnsize_default)
           'btn-xs': _t(AB_templates_tabs_btnsize_small)
-      btncolor: 
+      btncolor:
         label: _t(AB_templates_tabs_btncolor_label)
         type: list
         default: 'btn-primary'
@@ -57,8 +56,8 @@ actions:
         options:
           btn-primary: _t(AB_templates_tabs_btncolor_primary)
           btn-secondary-1: _t(AB_templates_tabs_btncolor_secondary_1)
-          btn-secondary-2:  _t(AB_templates_tabs_btncolor_secondary_2)
-      bottom_nav: 
+          btn-secondary-2: _t(AB_templates_tabs_btncolor_secondary_2)
+      bottom_nav:
         label: _t(AB_templates_tabs_bottom_nav_label)
         type: list
         default: 'yes'
@@ -66,14 +65,14 @@ actions:
         options:
           'yes': _t(AB_templates_tabs_bottom_nav_yes)
           'no': _t(AB_templates_tabs_bottom_nav_no)
-      counter_on_bottom_nav: 
+      counter_on_bottom_nav:
         label: _t(AB_templates_tabs_counter_on_bottom_nav_label)
         type: list
         default: 'no'
         advanced: true
         options:
           'yes': _t(AB_templates_tabs_counter_on_bottom_nav_yes)
-          'no': _t(AB_templates_tabs_counter_on_bottom_nav_no)            
+          'no': _t(AB_templates_tabs_counter_on_bottom_nav_no)
   nav:
     label: _t(AB_templates_nav_label)
     description: _t(AB_templates_nav_description)
@@ -89,7 +88,7 @@ actions:
         value: _t(AB_templates_nav_titles_default)
         hint: _t(AB_templates_nav_titles_hint)
         type: text
-      class: 
+      class:
         type: class
         subproperties:
           type:
@@ -99,7 +98,7 @@ actions:
             options:
               nav nav-tabs: _t(AB_templates_nav_class_tabs)
               nav nav-pills: _t(AB_templates_nav_class_pills)
-              nav nav-tabs nav-justified : _t(AB_templates_nav_class_justified)
+              nav nav-tabs nav-justified: _t(AB_templates_nav_class_justified)
               nav nav-stacked: _t(AB_templates_nav_class_vertical)
       hideifnoaccess:
         advanced: true
@@ -185,37 +184,37 @@ actions:
             label: _t(AB_templates_section_image_cover)
             type: checkbox
             showif: file
-            value: "cover"
-            default: ""
-            checkedvalue: "cover"
-            uncheckedvalue: ""
+            value: 'cover'
+            default: ''
+            checkedvalue: 'cover'
+            uncheckedvalue: ''
           fixed:
             advanced: true
             label: _t(AB_templates_section_image_fixed)
             type: checkbox
             showif: file
-            value: ""
-            default: ""
-            checkedvalue: "fixed"
-            uncheckedvalue: ""
+            value: ''
+            default: ''
+            checkedvalue: 'fixed'
+            uncheckedvalue: ''
           center:
             advanced: true
             label: _t(AB_templates_section_image_center)
             type: checkbox
             showif: file
-            value: ""
-            default: ""
-            checkedvalue: "center"
-            uncheckedvalue: ""
+            value: ''
+            default: ''
+            checkedvalue: 'center'
+            uncheckedvalue: ''
           parallax:
             advanced: true
             label: _t(AB_templates_section_image_parallax)
             type: checkbox
             showif: file
-            value: ""
-            default: ""
-            checkedvalue: "parallax"
-            uncheckedvalue: ""
+            value: ''
+            default: ''
+            checkedvalue: 'parallax'
+            uncheckedvalue: ''
           textcolor:
             label: _t(AB_templates_section_textcolor_label)
             type: list
@@ -226,15 +225,15 @@ actions:
             label: _t(AB_templates_section_fullwidth_label)
             type: checkbox
             icon: arrows-alt-h
-            value: ""
-            default: ""
-            checkedvalue: "full-width"
-            uncheckedvalue: ""
+            value: ''
+            default: ''
+            checkedvalue: 'full-width'
+            uncheckedvalue: ''
           shape:
             label: _t(AB_templates_section_shape_label)
             type: list
             icon: shapes
-            default: ""
+            default: ''
             options:
               '': _t(AB_templates_section_shape_rect)
               shape-rounded: _t(AB_templates_section_shape_rounded)
@@ -287,7 +286,7 @@ actions:
       visibility:
         advanced: true
         type: list
-        label: _t(AB_templates_section_visible_label) 
+        label: _t(AB_templates_section_visible_label)
         options:
           '': _t(AB_templates_section_visible_everyone)
           '+': _t(AB_templates_section_visible_connected_user)
@@ -301,23 +300,23 @@ actions:
         options:
           '1': _t(YES)
           '0': _t(NO)
-#      data:
-#        label: Data wow
-#        type: text
-#        subproperties:
-#          wow-iteration:
-#            label: Nb d'itération souhaitée
-#            default: 2
-#            type: number
-#          wow-length:
-#            label: Durée de l'effet (en sec)
-#            type: number
-#          wow-offset:
-#            label: Délais de l'animation quand l'élément apparaît à l'écran (en sec)
-#            type: number
-#          wow-delay:
-#            label: Délais de l'animation quand la page est chargée (en sec)
-#            type: number
+  #      data:
+  #        label: Data wow
+  #        type: text
+  #        subproperties:
+  #          wow-iteration:
+  #            label: Nb d'itération souhaitée
+  #            default: 2
+  #            type: number
+  #          wow-length:
+  #            label: Durée de l'effet (en sec)
+  #            type: number
+  #          wow-offset:
+  #            label: Délais de l'animation quand l'élément apparaît à l'écran (en sec)
+  #            type: number
+  #          wow-delay:
+  #            label: Délais de l'animation quand la page est chargée (en sec)
+  #            type: number
   accordion:
     label: _t(AB_template_action_accordion_label)
     isWrapper: true

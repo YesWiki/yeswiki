@@ -1,17 +1,14 @@
-Contribuer à la documentation de YesWiki
-============================
+# Contribuer à la documentation de YesWiki
 
 Ceci est une page d'aide à destination de celleux qui souhaitent contribuer à une excellente documentation utilisateurs pour YesWiki.
 
-Contexte
-------------
+## Contexte
 
 Nous souhaitons inclure une documentation dans la version 4.3 de YesWiki, accessible aux utilisateurices de chaque YesWiki sur le même serveur que le wiki. Cette documentation est composée de page en format Markdown, dans le dossier `/docs` dans la base de code, et peut être facilement éditées par les contributeurices ou traducteurices de la documentation.
 
 Cette documentation sera accessible avec le chemin `?doc` sur tous les wikis, exemple `https://yeswiki.net/?doc`
 
-Architecture
------------------
+## Architecture
 
 - **Installation** : Là on sort de l'interface web, avec des infos sur l'installation, les fichiers de configuration, la gestion des mails sortants, migration, herse, gestion spams par phpmyadmin et ce genre de choses.
 - **Prise en main** : Toute la documentation pour aider l'utilisateur de base a créer un compte, récuperer son mot de passe, editer ou créer une page, comprendre la syntaxe wiki de base, etc...
@@ -21,8 +18,7 @@ Architecture
 - **Extensions** : Partie dynamique de la documentation, qui ajoutera automatiquement des documentations pour les extensions que vous rajouterez (si une documentation existe)
 - **Autres espaces** : Liens utiles vers des espaces en ligne comme le forum, les vidéos, les tutoriels,...
 
-Usages et bonnes pratiques
-----------------------------
+## Usages et bonnes pratiques
 
 ### Captures d'écran
 
@@ -46,15 +42,16 @@ Nous devrions dans la documentation adopter un style neutre et factuel. Ca ne ve
 
 Essayons de rendre la documentation agréable à lire. En évitant les paragraphes trop long, les multiples sous-niveaux. On peut inclure quelques éléments graphiques pour aérer la page, comme les encadrés de message décrits plus bas
 
-Comment contribuer à écrire de la doc
--------------------------
+## Comment contribuer à écrire de la doc
 
 ### Markdown
+
 Apprendre à utiliser ce language : https://www.markdown-cheatsheet.com/
 
 ### Modifier les fichiers directement sur github
 
 Allez sur https://github.com/YesWiki/yeswiki/tree/doryphore-dev/docs/ puis le dossier de la langue de votre choix pour voir l'ensemble des fichiers. Sinon, en bas de chaque page de la doc il y a un lien pour éditer le fichier sur github.
+
 - Assurrez vous d'être sur la branche `doryphore-dev`
 
 ![](https://md.yeswiki.net/uploads/ec48249b-7eb8-48c6-ba01-8e27243ed5e2.png)
@@ -62,6 +59,7 @@ Allez sur https://github.com/YesWiki/yeswiki/tree/doryphore-dev/docs/ puis le do
 - Une fois que vous avez un compte, vous pouvez cliquer sur l'icon crayon pour éditer
 
 ![](https://md.yeswiki.net/uploads/b7797fed-d8d2-4382-a7ed-aaa84496a5ad.png)
+
 - Utiliser le mode `Preview` pour vérifier vos changements
 - Allez en bas de la page et renseignez une description de ce que vous avez changé. Commencez votre commentaire par `doc(nom_du_fichier):` puis écrivez une description en Anglais si possible
 
@@ -78,6 +76,7 @@ A chaque modification sur github, ce yeswiki se mettra automatiquement à jour.
 > Si vous ne voyez pas vos changements, recharger la page en vidant le cache (`CTRL` `SHIFT` `R`)
 
 ### Historique
+
 On peut visualiser l'historique en ouvrant le fichier sur github et en cliquant sur `History`
 
 ![](https://md.yeswiki.net/uploads/45d42c45-a1d8-454f-b9be-81c1d278a1d0.png)
@@ -88,10 +87,10 @@ Allez dans le répertoite `docs/fr/images` sur github, plus cliquez sur `Add Fil
 
 ![](https://md.yeswiki.net/uploads/96f4883a-88f5-46ac-8a11-95256690e203.png)
 
-Petits plus à connaître
--------------------------
+## Petits plus à connaître
 
 ### Gestion du menu
+
 Le menu à gauche est construit automatiquement via les `## Titres de niveau 2` et `### Titres de niveau 3` utilisés dans la page.
 
 Si vous voulez empêcher un titre d'apparaître dans le menu, rajoutez `<!-- {docsify-ignore} -->`
@@ -112,26 +111,27 @@ Si vous voulez empêcher un titre d'apparaître dans le menu, rajoutez `<!-- {do
 
 !> Texte mis en valeur
 
-
 ### Afficher du code yeswiki
 
 Utilisez trois balises de code markdown (touche `Alt Gr` + `7`) suivi de "yeswiki"
 
-```
+````
 ```yeswiki
 {{button}}
 ``'
-```
+````
 
 Vous pouvez aussi afficher le rendu de code yeswiki en ajoutant le mot clé "preview". Le chiffre après preview= est la hauteur de la section de rendu
 
 **Exemple de Code Markdown**
-```
+
+````
 ```yeswiki preview=120
 ====titre===
 {{button link="test" text="Click me" class="btn-primary"}}
 ``'
-```
+````
+
 **Rendu dans la doc**
 
 ```yeswiki preview=150
@@ -142,18 +142,17 @@ Vous pouvez aussi afficher le rendu de code yeswiki en ajoutant le mot clé "pre
 ### Faire référence à une section dans une explication
 
 Pour renvoyer vers une explication donnée dans un autre paragraphe, il faut cliquer sur le titre de la section concernée dans le site https://testing.yeswiki.net/doc et récupérer dans l'url ce qui est écrit à partir du /docs
-Exemple : pour faire référence au paragraphe "la composition d'une page", copier 
+Exemple : pour faire référence au paragraphe "la composition d'une page", copier
 /docs/fr/prise-en-main?id=la-composition-d39une-page
 
 **Rendu dans la doc**
 
 Pour en savoir plus, aller voir la [composition d'une page](/docs/fr/prise-en-main?id=la-composition-d39une-page)
 
+## Copyleft
 
-Copyleft
---------------
+Cette documentation est publiée sous licence Creative Commons CCbySA qui permet à qui le souhaite de :
 
-Cette documentation est publiée sous licence Creative Commons CCbySA qui permet à qui le souhaite de : 
 - **Partager**: copier, distribuer et communiquer le matériel par tous moyens et sous tous formats
 - **Adapter**: remixer, transformer et créer à partir du matériel pour toute utilisation, y compris commerciale.
 - **Selon les conditions suivantes** :

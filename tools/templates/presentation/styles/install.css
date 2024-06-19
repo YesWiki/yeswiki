@@ -1,146 +1,149 @@
- /* Styles for yeswiki's install
+/* Styles for yeswiki's install
   * Author: Francois Labastie <francois@outils-reseaux.org>
   * under GNU General Public License
   * 10/12/2013
   */
 
- body {
-   padding-top: 30px;
- }
+body {
+  padding-top: 30px;
+}
 
- p, li {
-   font-family: "DejaVu Sans", Arial, Helvetica, sans-serif;
- }
+p,
+li {
+  font-family: 'DejaVu Sans', Arial, Helvetica, sans-serif;
+}
 
- a:active, a:focus {
-   outline: none;
- }
+a:active,
+a:focus {
+  outline: none;
+}
 
- .ok {
-   color: #080;
-   font-weight: bold;
- }
+.ok {
+  color: #080;
+  font-weight: bold;
+}
 
- .failed {
-   color: #800;
-   font-weight: bold;
- }
+.failed {
+  color: #800;
+  font-weight: bold;
+}
 
- legend {
-   color: #18657f;
-   padding-left: 15px;
-   font-size: 20px;
-   margin-bottom: 10px;
-   margin-top: 30px;
-   line-height: 32px;
- }
+legend {
+  color: #18657f;
+  padding-left: 15px;
+  font-size: 20px;
+  margin-bottom: 10px;
+  margin-top: 30px;
+  line-height: 32px;
+}
 
- .legend-first {
-   margin-bottom: -20px;
- }
+.legend-first {
+  margin-bottom: -20px;
+}
 
- .jumbotron h1 {
-   display: inline;
-   font-size: 32px;
-   margin-bottom: 20px;
- }
+.jumbotron h1 {
+  display: inline;
+  font-size: 32px;
+  margin-bottom: 20px;
+}
 
- .jumbotron h4 {
-   display: inline;
- }
+.jumbotron h4 {
+  display: inline;
+}
 
- .accordion-group {
-   border: none;
- }
+.accordion-group {
+  border: none;
+}
 
- .form-yeswiki-install .accordion-heading {
-   display: inline-block;
- }
+.form-yeswiki-install .accordion-heading {
+  display: inline-block;
+}
 
- .plusinfos {
-   margin-top: -2px;
- }
+.plusinfos {
+  margin-top: -2px;
+}
 
- .accordion-inner {
-   border-radius: 4px;
-   background-color: #a6d9e7;
-   padding: 10px 20px;
-   margin-bottom: 20px;
- }
+.accordion-inner {
+  border-radius: 4px;
+  background-color: #a6d9e7;
+  padding: 10px 20px;
+  margin-bottom: 20px;
+}
 
- .accordion-heading {
-   margin-top: 0;
-   margin-bottom: 0;
- }
+.accordion-heading {
+  margin-top: 0;
+  margin-bottom: 0;
+}
 
- .continuer, .revenir {
-   margin-left: 80px;
-   padding: 20px 75px;
- }
+.continuer,
+.revenir {
+  margin-left: 80px;
+  padding: 20px 75px;
+}
 
- .form-actions {
-   margin-bottom: 100px;
- }
+.form-actions {
+  margin-bottom: 100px;
+}
 
- .accordion-inner .control-label {
-   width: 232px;
- }
+.accordion-inner .control-label {
+  width: 232px;
+}
 
- .checkbox {
-   margin-left: 240px;
-   padding-right: 20px;
- }
+.checkbox {
+  margin-left: 240px;
+  padding-right: 20px;
+}
 
- .accordion-inner legend {
-   padding-left: 0;
- }
+.accordion-inner legend {
+  padding-left: 0;
+}
 
- .dl-horizontal dt {
-   width: 230px;
-   font-weight: 600;
- }
+.dl-horizontal dt {
+  width: 230px;
+  font-weight: 600;
+}
 
- .dl-horizontal dd {
-   margin-left: 245px;
- }
+.dl-horizontal dd {
+  margin-left: 245px;
+}
 
- .dl-horizontal dd.droits-admin {
-   margin-left: 230px;
- }
+.dl-horizontal dd.droits-admin {
+  margin-left: 230px;
+}
 
- .dl-horizontal ul {
-   margin-left: 50px;
-   list-style-type: square;
- }
+.dl-horizontal ul {
+  margin-left: 50px;
+  list-style-type: square;
+}
 
- .dl-horizontal dt.admin {
-   width: 248px;
- }
+.dl-horizontal dt.admin {
+  width: 248px;
+}
 
- span {
-   color: #31b0d5;
-   font-weight: 600;
- }
+span {
+  color: #31b0d5;
+  font-weight: 600;
+}
 
- #collapseFour span {
-   font-size: 14px;
- }
+#collapseFour span {
+  font-size: 14px;
+}
 
- .form-horizontal .control-group {
-   margin-bottom: 15px;
- }
+.form-horizontal .control-group {
+  margin-bottom: 15px;
+}
 
- legend span {
-   font-size: 12px;
-   color: #333;
-   font-family: "DejaVu Sans", Arial, Helvetica, sans-serif;
-   font-weight: normal;
- }
+legend span {
+  font-size: 12px;
+  color: #333;
+  font-family: 'DejaVu Sans', Arial, Helvetica, sans-serif;
+  font-weight: normal;
+}
 
- dl {
-   margin-bottom: 12px;
- }
+dl {
+  margin-bottom: 12px;
+}
 
- .soustitre {
-   font-size: 14px;
- }
+.soustitre {
+  font-size: 14px;
+}

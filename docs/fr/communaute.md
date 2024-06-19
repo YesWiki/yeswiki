@@ -3,7 +3,6 @@
 YesWiki est un outil libre : il est modifié et amélioré par une communauté. Cette communauté s'organise et se retrouve régulièrement pour faire vivre le documentation, organiser les contributions, définir des directions communes et prendre des décisions.  
 Vous avez envie de participer mais vous ne savez pas comment ? Nous vous proposons justement quelques pistes ici.
 
-
 ## Rejoindre nos discussions
 
 Rejoignez notre canal Framateam pour suivre et participer aux discussions autour du projet !  
@@ -30,6 +29,7 @@ YesWiki peut être traduit dans n'importe quelle langue, contribuez aux traducti
 👉 [Aider à traduire](https://yeswiki.net/?AiderATraduire)
 
 ## Construire les ressources pédagogiques
+
 👉 [Développer des contenus pédagogiques](https://yeswiki.net/?TachesPeda)
 
 ## Contribuer au graphisme

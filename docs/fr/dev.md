@@ -59,11 +59,11 @@ Une documentation détaillée en Français est disponible sur cette page [docs/f
 
 ## Créer un widget bazar
 
-_[Documentation originelle sur le site yeswiki.net](https://yeswiki.net/?BazarWidget "Tutoriel - Créer widget bazar")_
+_[Documentation originelle sur le site yeswiki.net](https://yeswiki.net/?BazarWidget 'Tutoriel - Créer widget bazar')_
 
 ## Créer un environnement de travail en local
 
-_[Documentation originelle sur le site yeswiki.net](https://yeswiki.net/?PageConfiglocal "Tutoriel - Créer un environnement de dév en local")_
+_[Documentation originelle sur le site yeswiki.net](https://yeswiki.net/?PageConfiglocal 'Tutoriel - Créer un environnement de dév en local')_
 
 ## Astuces pour faire de belles fusions de branches `git`
 
@@ -192,7 +192,7 @@ Pour se connecter à une route api avec un `bearer`, il faut:
 
 Une autre méthode est d’appeler la route concernée avec les bons cookies. Par exemple,
 
-1.  se connecter via une requête POST sur une page de connexion [`/?ParametresUtilisateur`](?ParametresUtilisateur ":ignore") avec `name=UserName&password=real-password&action=login` en requête `POST`
+1.  se connecter via une requête POST sur une page de connexion [`/?ParametresUtilisateur`](?ParametresUtilisateur ':ignore') avec `name=UserName&password=real-password&action=login` en requête `POST`
 2.  puis faire une requête api dans le même contexte (les cookies devraient être envoyés automatiquement permettant de maintenir la connexion).
 
 !> **attention** : cette méthode d'authentification à l'api par les cookies risques de ne pas être stable au fil des versions et une nouvelle méthode d'authentification pourrait être mise en place.

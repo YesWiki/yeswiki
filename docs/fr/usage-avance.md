@@ -1,8 +1,6 @@
-Comment faire pour
-==================
+# Comment faire pour
 
 > Tout un tas de petites astuces pour répondre à des besoins courant
-
 
 ## Afficher les fiches YesWiki sur une carte de type umap
 
@@ -31,14 +29,13 @@ Cela ce passe dans "Propriétés d'un calque", "Données Distantes", coller votr
 #### Paramétrer l'affichage de vos données dans Umap
 
 \- Dans
- 	 "Propriétés d'un calque", "Options d'interactions", "Gabarit du contenu de la popup"
+"Propriétés d'un calque", "Options d'interactions", "Gabarit du contenu de la popup"
 
-vous pouvez définir les champs _bf\_wiki_ que vous voulez afficher en les écrivant en syntaxe markdown reconnue par Umap, par exemple:
+vous pouvez définir les champs _bf_wiki_ que vous voulez afficher en les écrivant en syntaxe markdown reconnue par Umap, par exemple:
 
     {bf\_titre}
     {bf\_site\_internet}
     {bf\_image}
-
 
 etc...
 
@@ -46,10 +43,9 @@ etc...
 
     \[\[{url}|source\]\]
 
-
 \- pour les images :
 
- 	 {{https://www.example.com/geo/files/{imagebf\_image}}}
+{{https://www.example.com/geo/files/{imagebf\_image}}}
 
 #### Incruster une page d'accueil pour faciliter les contributions ?
 
@@ -59,23 +55,28 @@ Il faut se rendre dans "Éditer les propriétés de la carte" et proposer l'enca
 
 En markdown sur Umap cela donnera :
 
- 	 {{{https://www.example.com/?VotrePageSpéciale/iframe}}}
+{{{https://www.example.com/?VotrePageSpéciale/iframe}}}
+
 #### En image :
 
 ![Tuto Umap YesWiki](images/BazarAfficherSurCarteUMAP_TutoUmapYesWiki_20210610130113_20210610130147.png)
 
 ## Personnaliser la page de connexion au wiki
+
 Le formulaire de connexion placé habituellement dans la roue crantée de votre menu Yeswiki comprend des options pour personnaliser le parcours de vos contributeurs : le crayon permet d'éditer le composant "Connexion"
+
 ### Paramètres du composant Connexion
- - **Modifier la page d'inscription** Vous pouvez remplacer la page d'inscription par défaut (qui contient les infos minimales : nom / mail) par un formulaire plus complet - dans le composant : compléter l'url d'inscription avec le nom de votre page contenant un formulaire bazar personnalisé
- Notez que vous devez configurer le formulaire associé avec un champ "créer un utilisateur" accompagné d'un champ e-mail.
-- **Diriger l'utilisateur connecté vers une page** : utile pour orienter les contributeurs vers une page contenant leurs données personnelles par exemple - dans le composant : compléter l'url de redirection après connexion réussie ```loggedinurl```
--  **Diriger l'utilisateur déconnecté vers une page** compléter l'url de redirection après connexion réussie ```loggedouturl```
--  **Personnaliser la page mot de passe perdu** : créez une page moins austère avec du texte ou des illustrations et ajoutez l'action ```{{lostpassword}}```qui permet de réinitialiser le mot de passe - puis dans le composant login : compléter url pour les mots de passe perdus
--  **url de profil** : si vous avez modifié la page d'inscription, utilisez l'option 'WikiName' dans Paramètre du profil, cela permettra à l'utilisateur de modifier directement sa fiche.
-Par défaut la page "Modifier les paramètres utilisateurs" permet uniquement de modifier le mail et le mot de passe du user.
+
+- **Modifier la page d'inscription** Vous pouvez remplacer la page d'inscription par défaut (qui contient les infos minimales : nom / mail) par un formulaire plus complet - dans le composant : compléter l'url d'inscription avec le nom de votre page contenant un formulaire bazar personnalisé
+  Notez que vous devez configurer le formulaire associé avec un champ "créer un utilisateur" accompagné d'un champ e-mail.
+- **Diriger l'utilisateur connecté vers une page** : utile pour orienter les contributeurs vers une page contenant leurs données personnelles par exemple - dans le composant : compléter l'url de redirection après connexion réussie `loggedinurl`
+- **Diriger l'utilisateur déconnecté vers une page** compléter l'url de redirection après connexion réussie `loggedouturl`
+- **Personnaliser la page mot de passe perdu** : créez une page moins austère avec du texte ou des illustrations et ajoutez l'action `{{lostpassword}}`qui permet de réinitialiser le mot de passe - puis dans le composant login : compléter url pour les mots de passe perdus
+- **url de profil** : si vous avez modifié la page d'inscription, utilisez l'option 'WikiName' dans Paramètre du profil, cela permettra à l'utilisateur de modifier directement sa fiche.
+  Par défaut la page "Modifier les paramètres utilisateurs" permet uniquement de modifier le mail et le mot de passe du user.
 
 ### Autres astuces
+
 Lorsqu'un utilisateur tente d'accéder à une page qui nécessite d'être connecté, c'est le formulaire de connexion par défaut qui s'affiche.
 **créez une page nommée PageLogin** permet de personnaliser cette page avec un message plus pédagogique et de bénéficier des options de connexions listées ci-dessus en utilisant le composant "Connexion"
 
@@ -83,9 +84,9 @@ Lorsqu'un utilisateur tente d'accéder à une page qui nécessite d'être connec
 
 ### Description du problème
 
- - après la création d'une liste, celle-ci ne s'affiche pas correctement dans la liste des listes (accessible avec [ce lien](?BazaR&vue=listes 'Liste des listes :ignore'))
+- après la création d'une liste, celle-ci ne s'affiche pas correctement dans la liste des listes (accessible avec [ce lien](?BazaR&vue=listes 'Liste des listes :ignore'))
 
 ### Correction
 
- 1. faire un `/update` sur votre wiki (accessible avec [ce lien](?GererMisesAJour/update 'Forcer la finalisation de la mise à jour :ignore'))
- 2. vérifier si le problème est résolu. Sinon, suivre les [instructions réservées aux webmasters](./webmaster?id=r%c3%a9parer-la-structure-de-vos-bases-de-donn%c3%a9es)
+1.  faire un `/update` sur votre wiki (accessible avec [ce lien](?GererMisesAJour/update 'Forcer la finalisation de la mise à jour :ignore'))
+2.  vérifier si le problème est résolu. Sinon, suivre les [instructions réservées aux webmasters](./webmaster?id=r%c3%a9parer-la-structure-de-vos-bases-de-donn%c3%a9es)
