@@ -43,7 +43,6 @@ abstract class CheckboxField extends EnumField
                 ]);
 
                 return $htmlReturn;
-                break;
             case 'dragndrop':
                 return $this->render($this->dragAndDropDisplayMode, [
                     'options' => $this->getOptions(),
@@ -53,8 +52,15 @@ abstract class CheckboxField extends EnumField
                     'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : $GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT'],
                     'oldValue' => $this->sanitizeValues($this->getValue($entry), 'string'),
                 ]);
-                break;
             default:
+                // List with multi levels
+                if ($this->optionsTree) {
+                    return $this->render('@bazar/inputs/checkbox-tree.twig', [
+                        'data' => $this->optionsTree,
+                        'values' => $this->getValues($entry),
+                    ]);
+                }
+
                 if ($this->displayFilterLimit) {
                     // javascript additions
                     $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery.fastLiveFilter.js');
