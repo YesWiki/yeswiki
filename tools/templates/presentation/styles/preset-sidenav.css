@@ -24,8 +24,6 @@ padding-top: 1rem;
 
 /* Place content under menu */
 box-sizing: border-box;
-box-sizing: border-box;
-box-sizing: border-box;
 }
 
 #preset-form {
@@ -80,7 +78,6 @@ font size) */
 /* FONT PICKER */
 .font-select * {
 box-sizing: border-box;
-box-sizing: border-box;
 }
 
 .font-select {
@@ -117,9 +114,6 @@ line-height: 32px;
 padding: 3px 8px;
 color: #444;
 background: #fff url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%23303030' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") no-repeat right 0.75rem center/8px 10px;
-user-select: none;
-user-select: none;
-user-select: none;
 user-select: none;
 }
 

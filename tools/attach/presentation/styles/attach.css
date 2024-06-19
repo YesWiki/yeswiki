@@ -103,9 +103,6 @@ figcaption {
   opacity: 0;
   filter: alpha(opacity=0);
   transition: opacity .2s ease-in-out;
-  transition: opacity .2s ease-in-out;
-  transition: opacity .2s ease-in-out;
-  transition: opacity .2s ease-in-out;
   padding: 5px 0;
 }
 
@@ -156,20 +153,12 @@ figcaption *:last-child {
 
 .whiteborder {
   box-sizing: border-box;
-  box-sizing: border-box;
-  box-sizing: border-box;
-  box-sizing: border-box;
-  box-sizing: border-box;
   border: 8px solid #FFF;
   background: #FFF;
-  box-shadow: 1px 1px 2px #444;
-  box-shadow: 1px 1px 2px #444;
   box-shadow: 1px 1px 2px #444;
 }
 
 .lightshadow {
-  box-shadow: 1px 1px 2px #444;
-  box-shadow: 1px 1px 2px #444;
   box-shadow: 1px 1px 2px #444;
 }
 
@@ -182,22 +171,15 @@ figcaption *:last-child {
 }
 
 .zoom:hover {
-  transform: scale(1.1);
-  transform: scale(1.1);
-
   /* IE 9 */
-  transform: scale(1.1);
 
   /* Safari and Chrome */
-  transform: scale(1.1);
 
   /* Opera */
   transform: scale(1.1);
 
   /* Firefox */
   z-index: 5;
-  box-shadow: 2px 2px 15px 0 #444;
-  box-shadow: 2px 2px 15px 0 #444;
   box-shadow: 2px 2px 15px 0 #444;
 }
 
@@ -226,9 +208,7 @@ figcaption *:last-child {
   height: 10px;
   width: 10px;
   border-radius: 50%;
-  border-radius: 50%;
   border: 1px solid #FFF;
-  box-shadow: 1px 1px 1px 0 rgb(0 0 0 / 80%);
   box-shadow: 1px 1px 1px 0 rgb(0 0 0 / 80%);
 }
 
@@ -313,9 +293,6 @@ figcaption *:last-child {
 }
 
 .background-image.cover {
-  background-size: cover;
-  background-size: cover;
-  background-size: cover;
   background-size: cover;
 }
 
