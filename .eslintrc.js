@@ -56,6 +56,7 @@ module.exports = {
     '!tools/tableau',
     '!tools/tags',
     '!tools/templates',
-    '!tools/toc'
+    '!tools/toc',
+    'tools/aceditor/presentation/javascripts/ext-searchbox.js'
   ]
 }
