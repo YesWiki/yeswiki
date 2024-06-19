@@ -1,0 +1,23 @@
+{
+  "php-cs-fixer.executablePath": "/var/www/html/vendor/bin/php-cs-fixer",
+  "php-cs-fixer.ignorePHPVersion": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[php]": {
+    "editor.defaultFormatter": "junstyle.php-cs-fixer"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always"
+  },
+  "[twig]": {
+    "editor.formatOnSave": false,
+    "editor.formatOnPaste": false
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}
