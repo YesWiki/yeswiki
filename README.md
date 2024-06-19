@@ -42,7 +42,7 @@ Alternatly you can run `make lint`
 | Twig                        | no automatic linter. Couldn't find one which is good enough. |
 | CSS, Yaml, JSON, Markdown.. | `prettier`                                                   |
 
-If you use VS Code, get yeswiki linting settings with `cp .vscode/settings.example.json .vscode/settings.json`
+If you use VS Codium, get yeswiki linting settings with `cp .vscode/settings.example.json .vscode/settings.json`
 
 ## History
 
