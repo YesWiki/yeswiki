@@ -64,7 +64,7 @@ return (new PhpCsFixer\Config())
     'no_trailing_comma_in_singleline_array' => true,
     'no_trailing_whitespace' => true,
     'no_trailing_whitespace_in_comment' => true,
-    'no_unused_imports' => false,
+    'no_unused_imports' => true,
     'no_whitespace_before_comma_in_array' => true,
     'no_whitespace_in_blank_line' => true,
     'normalize_index_brace' => true,
