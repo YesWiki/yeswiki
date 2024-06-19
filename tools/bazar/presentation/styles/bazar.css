@@ -321,8 +321,15 @@ input.form-control.error {
     width: 235px;
 } */
 .bazar-checkbox-cols {
-  /* Chrome, Safari, Opera */ /* Firefox */
-  column-count: 3;
+
+.filter-and-check-all-container {
+  display: flex;
+  margin: 10px 0;
+  align-items: center;
+  gap: 1rem;
+}
+.filter-and-check-all-container .check-all-container {
+  flex-shrink: 0;
 }
 
 .entries-list,

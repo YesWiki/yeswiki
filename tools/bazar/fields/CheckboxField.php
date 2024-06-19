@@ -59,7 +59,7 @@ abstract class CheckboxField extends EnumField
                     // javascript additions
                     $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery.fastLiveFilter.js');
                     $script = "$(function() { $('.filter-entries').each(function() {
-                                $(this).fastLiveFilter($(this).siblings('.list-bazar-entries,.bazar-checkbox-cols')); });
+                                $(this).fastLiveFilter($(this).parent().siblings('.list-bazar-entries,.bazar-checkbox-cols')); });
                             });";
                     $GLOBALS['wiki']->AddJavascript($script);
                 }
