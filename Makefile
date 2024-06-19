@@ -36,4 +36,5 @@ lint-php: ## Lint php
 lint-js: ## Lint JS
 	yarn run lint-js
 lint-other: ## Lint other files
+	yarn run lint-js
 	yarn run lint-other
