@@ -7,8 +7,6 @@ use HTMLPurifier;
 use HTMLPurifier_Config;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use voku\helper\AntiXSS;
-use YesWiki\Core\Service\LinkTracker;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class HtmlPurifierService

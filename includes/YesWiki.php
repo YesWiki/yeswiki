@@ -11,7 +11,6 @@ require_once 'includes/objects/YesWikiAction.php';
 require_once 'includes/objects/YesWikiHandler.php';
 require_once 'includes/objects/YesWikiFormatter.php';
 
-use Exception;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpFoundation\JsonResponse;

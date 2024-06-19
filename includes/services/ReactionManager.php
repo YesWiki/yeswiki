@@ -6,8 +6,6 @@ use YesWiki\Bazar\Field\ReactionsField;
 use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
-use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\TripleStore;
 use YesWiki\Wiki;
 
 class ReactionManager

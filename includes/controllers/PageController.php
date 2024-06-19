@@ -5,7 +5,6 @@ namespace YesWiki\Core\Controller;
 use Exception;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiController;
 

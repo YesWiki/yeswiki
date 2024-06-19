@@ -5,7 +5,6 @@ namespace YesWiki\Bazar\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\HtmlPurifierService;
-use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Security\Controller\SecurityController;

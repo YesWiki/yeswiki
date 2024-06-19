@@ -4,7 +4,6 @@ namespace YesWiki\Bazar\Service;
 
 use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\EnumField;
-use YesWiki\Bazar\Service\FormManager;
 
 class SearchManager
 {

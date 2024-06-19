@@ -2,7 +2,6 @@
 
 namespace YesWiki\Templates\Service;
 
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use URLify;
 use YesWiki\Bazar\Field\TabsField;
 

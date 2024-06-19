@@ -5,7 +5,6 @@ namespace YesWiki\Attach;
 use Attach;
 use qqFileUploader;
 use YesWiki\Core\Service\AclService;
-use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Security\Controller\SecurityController;

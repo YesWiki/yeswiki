@@ -11,8 +11,6 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Response;
-use YesWiki\Bazar\Controller\EntryController;
-use YesWiki\Bazar\Controller\GeoJSONFormatter;
 use YesWiki\Bazar\Field\DateField;
 use YesWiki\Core\Service\DateService;
 use YesWiki\Core\Service\Performer;

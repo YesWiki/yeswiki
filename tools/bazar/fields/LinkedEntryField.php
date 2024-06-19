@@ -3,8 +3,6 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Bazar\Field\BazarField;
-use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Templates\Service\TabsService;

@@ -1,33 +1,32 @@
 <?php
 
 $finder = PhpCsFixer\Finder::create()
-  ->in(__DIR__)
-  ->name('*.php')
-  ->exclude('vendor')
-  ->exclude('cache')
-  ->exclude('node_modules');
+    ->in(__DIR__)
+    ->name('*.php')
+    ->exclude('vendor')
+    ->exclude('cache')
+    ->exclude('node_modules');
 
-return (new PhpCsFixer\Config())
-  ->setRules([
+$rules = [
     '@PSR12' => true, // Start with PSR-12 rules
     '@Symfony' => true, // Add Symfony rules for more comprehensive formatting
-    // Additional custom rules 
+    // Additional custom rules
     // https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/blob/master/doc/rules/index.rst
     'array_indentation' => true,
     'array_syntax' => ['syntax' => 'short'],
     'binary_operator_spaces' => [
-      'default' => 'single_space'
+        'default' => 'single_space',
     ],
     'yoda_style' => false,
     'blank_line_after_namespace' => true,
     'blank_line_after_opening_tag' => true,
     'increment_style' => ['style' => 'post'],
     'blank_line_before_statement' => [
-      'statements' => ['return']
+        'statements' => ['return'],
     ],
     'cast_spaces' => ['space' => 'none'],
     'class_attributes_separation' => [
-      'elements' => ['method' => 'one']
+        'elements' => ['method' => 'one'],
     ],
     'concat_space' => ['spacing' => 'one'],
     'declare_equal_normalize' => ['space' => 'none'],
@@ -41,18 +40,18 @@ return (new PhpCsFixer\Config())
     'no_blank_lines_after_phpdoc' => true,
     'no_empty_statement' => true,
     'no_extra_blank_lines' => [
-      'tokens' => [
-        'extra',
-        'throw',
-        'use',
-        'use_trait',
-        'curly_brace_block',
-        'parenthesis_brace_block',
-        'square_brace_block',
-        'switch',
-        'case',
-        'default',
-      ],
+        'tokens' => [
+            'extra',
+            'throw',
+            'use',
+            'use_trait',
+            'curly_brace_block',
+            'parenthesis_brace_block',
+            'square_brace_block',
+            'switch',
+            'case',
+            'default',
+        ],
     ],
     'no_leading_import_slash' => true,
     'no_leading_namespace_whitespace' => true,
@@ -85,6 +84,9 @@ return (new PhpCsFixer\Config())
     'trim_array_spaces' => true,
     'unary_operator_spaces' => true,
     'whitespace_after_comma_in_array' => true,
-  ])
-  ->setFinder($finder)
-  ->setUsingCache(false); // Adjust cache settings as needed
+];
+
+return (new PhpCsFixer\Config())
+    ->setRules($rules)
+    ->setFinder($finder)
+    ->setUsingCache(false); // Adjust cache settings as needed

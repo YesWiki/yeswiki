@@ -6,8 +6,6 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Entity\Event;
-use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Tags\Service\TagsManager;
 use YesWiki\Wiki;

@@ -2,7 +2,6 @@
 
 namespace YesWiki\Test\Core\Service;
 
-use Throwable;
 use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Test\Core\YesWikiTestCase;
 

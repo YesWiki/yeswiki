@@ -6,9 +6,7 @@ use Attach;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Wiki;
-use Zebra_Image;
 
 class Utils
 {

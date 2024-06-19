@@ -8,7 +8,6 @@ if (!defined('WIKINI_VERSION')) {
     exit('acc&egrave;s direct interdit');
 }
 
-use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\CommentService;
 
 // Generate page before displaying the header, so that it might interract with the header

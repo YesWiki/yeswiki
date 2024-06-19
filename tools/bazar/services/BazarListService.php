@@ -5,9 +5,6 @@ namespace YesWiki\Bazar\Service;
 use Attach;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Field\BazarField;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\ExternalBazarService;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Wiki;
 
 class BazarListService

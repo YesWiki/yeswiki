@@ -87,10 +87,10 @@ class SetWikiDefaultThemeAction extends YesWikiAction
                 'styles' => array_keys($templateValues['style']),
                 'squelettes' => array_keys($templateValues['squelette']),
             ] + (
-                    (empty($templateValues['presets']))
+                (empty($templateValues['presets']))
                 ? []
                 : ['presets' => $templateValues['presets']]
-                );
+            );
         }
 
         return $themes;

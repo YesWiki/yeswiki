@@ -9,10 +9,7 @@ use YesWiki\Bazar\Field\FileField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Field\TagsField;
-use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Field\UserField;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Wiki;
 
 class CSVManager

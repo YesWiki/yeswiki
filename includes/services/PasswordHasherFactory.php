@@ -8,7 +8,6 @@ use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory as SymfonyPass
 use Throwable;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\MD5PasswordHasher;
-use YesWiki\Core\Service\DbService;
 
 class PasswordHasherFactory extends SymfonyPasswordHasherFactory
 {

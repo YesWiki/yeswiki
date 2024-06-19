@@ -6,8 +6,6 @@ use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Field\BazarField;
-use YesWiki\Bazar\Field\CheckboxField;
-use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\TitleField;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;

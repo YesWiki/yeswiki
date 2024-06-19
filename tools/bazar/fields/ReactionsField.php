@@ -3,10 +3,8 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\ReactionsController;
-use YesWiki\Core\Service\ReactionManager;
 use YesWiki\Wiki;
 
 /**

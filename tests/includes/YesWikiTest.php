@@ -2,7 +2,6 @@
 
 namespace YesWiki\Test\Core;
 
-use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 
 require_once 'tests/YesWikiTestCase.php';

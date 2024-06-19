@@ -2,7 +2,6 @@
 
 namespace YesWiki\Test\Core\Commands;
 
-use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\ConfigurationService;

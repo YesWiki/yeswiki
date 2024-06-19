@@ -6,11 +6,6 @@ use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use YesWiki\Core\Entity\Event;
-use YesWiki\Core\Service\EventDispatcher;
-use YesWiki\Core\Service\Mailer;
-use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\TemplateEngine;
-use YesWiki\Core\Service\UserManager;
 use YesWiki\Security\Service\HashCashService;
 use YesWiki\Wiki;
 

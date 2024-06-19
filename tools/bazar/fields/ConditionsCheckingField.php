@@ -3,7 +3,6 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Bazar\Field\LabelField;
 
 /**
  * @Field({"conditionschecking"})

@@ -2,8 +2,6 @@
 
 namespace YesWiki\Core;
 
-use YesWiki\Core\YesWikiPerformable;
-
 abstract class YesWikiAction extends YesWikiPerformable
 {
     /* check if ACL are secured for this action

@@ -5,9 +5,7 @@ namespace YesWiki\Bazar\Service;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\ExternalBazarServiceException;
-use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Field\ExternalImageField;
-use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\ImportService;
 use YesWiki\Wiki;
 

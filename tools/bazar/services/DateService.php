@@ -8,8 +8,6 @@ use DateTimeInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Throwable;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Entity\Event;
 use YesWiki\Core\Service\DateService as CoreDateService;
 use YesWiki\Core\Service\PageManager;

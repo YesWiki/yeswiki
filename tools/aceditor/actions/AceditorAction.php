@@ -2,7 +2,6 @@
 
 namespace YesWiki\Aceditor;
 
-use Symfony\Component\Yaml\Yaml;
 use YesWiki\Aceditor\Service\ActionsBuilderService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiAction;

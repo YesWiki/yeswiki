@@ -4,8 +4,6 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Field\BazarField;
-use YesWiki\Core\Service\AssetsManager;
 
 /**
  * @Field({"map", "carte_google"})

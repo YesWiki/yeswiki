@@ -4,7 +4,6 @@ namespace YesWiki\Core\Controller;
 
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Exception\DeleteUserException;

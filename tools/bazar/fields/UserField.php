@@ -11,7 +11,6 @@ use YesWiki\Core\Controller\UserController;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\UserManager;
-use YesWiki\Wiki;
 
 /**
  * @Field({"yeswiki_user", "utilisateur_wikini"})

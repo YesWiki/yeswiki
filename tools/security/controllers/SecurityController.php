@@ -6,7 +6,6 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Security\Controller\CaptchaController;
 
 class SecurityController extends YesWikiController
 {

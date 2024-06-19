@@ -2,11 +2,7 @@
 
 namespace YesWiki\Bazar\Field;
 
-use Exception;
 use Psr\Container\ContainerInterface;
-use Throwable;
-use YesWiki\Bazar\Field\LabelField;
-use YesWiki\Bazar\Field\TabsField;
 use YesWiki\Templates\Controller\TabsController;
 
 /**

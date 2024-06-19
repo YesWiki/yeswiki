@@ -2,8 +2,6 @@
 
 namespace YesWiki\Core\Controller;
 
-use Throwable;
-use URLify;
 use YesWiki\Core\Service\ReactionManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Wiki;

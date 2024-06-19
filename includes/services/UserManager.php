@@ -11,15 +11,11 @@ use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Throwable;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
-use YesWiki\Core\Service\AclService;
-use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 

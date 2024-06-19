@@ -5,7 +5,6 @@ namespace YesWiki\Bazar\Field;
 use DateTime;
 use DateTimeZone;
 use Psr\Container\ContainerInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\HtmlPurifierService;
 

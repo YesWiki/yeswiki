@@ -7,7 +7,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Security\Controller\CaptchaController;
 
 class ApiController extends YesWikiController
 {

@@ -5,7 +5,6 @@ namespace YesWiki\Core\Controller;
 use DateTime;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Controller\UserController;
 use YesWiki\Core\Entity\CookieData;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;

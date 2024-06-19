@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
 

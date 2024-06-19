@@ -103,12 +103,12 @@ class GererThemesAction extends YesWikiAction
                         'style' => $style . (substr($style, -4) === '.css' ? '' : '.css'),
                         'squelette' => $squelette . (substr($squelette, -strlen('.tpl.html')) === '.tpl.html' ? '' : '.tpl.html'),
                     ] + (
-                          !empty($_POST['preset_select'])
+                        !empty($_POST['preset_select'])
                 ? [
                     'favorite_preset' => $presets,
                 ]
                 : []
-                      ));
+                    ));
                 }
             }
         }

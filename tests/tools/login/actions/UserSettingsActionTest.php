@@ -6,9 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\ExitException;
-use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\UserManager;
-use YesWiki\Login\UserSettingsAction;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 

@@ -4,7 +4,6 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use Throwable;
-use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Service\FormManager;
 
 /**

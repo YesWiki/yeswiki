@@ -6,7 +6,6 @@ use Caxy\HtmlDiff\HtmlDiff;
 use Caxy\HtmlDiff\HtmlDiffConfig;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Core\Service\PageManager;
 use YesWiki\Wiki;
 
 class DiffService
