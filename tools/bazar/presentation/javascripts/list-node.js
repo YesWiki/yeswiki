@@ -62,8 +62,9 @@ export default {
                   class="btn btn-neutral btn-icon input-group-addon btn-add-child" >
             <i class="fa fa-plus"></i>
           </button>
-          <input type="text" v-model="newNodeLabel" placeholder="${_t('LIST_ADD_NODE')}" 
-                class="form-control" @keydown.enter.prevent="addChildNode" />
+          <input type="text" v-model="newNodeLabel" 
+                 :placeholder="depth > 0 ? '${_t('LIST_ADD_CHILD_NODE')}' : '${_t('LIST_ADD_NODE')}'" 
+                 class="form-control" @keydown.enter.prevent="addChildNode" />
           
         </div>
       </div>
