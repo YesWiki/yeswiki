@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Adaptation de l'action textsearch & newtextsearch de wikini pour Yeswiki
  * INFORMATION D'UTILISATION
@@ -84,7 +85,7 @@ if (!function_exists('displayNewSearchResult')) {
         if (empty($string_re)) {
             for ($i = 0; $i < $num; $i++) {
                 $tab[$i] = preg_split("/($qt[$i])/iu", $string, 2, PREG_SPLIT_DELIM_CAPTURE);
-                if (count($tab[$i]) > 1) {
+                if (is_array($tab[$i]) && count($tab[$i]) > 1) {
                     $avant[$i] = strip_tags(mb_substr($tab[$i][0], -$cc, $cc));
                     $apres[$i] = strip_tags(mb_substr($tab[$i][2], 0, $cc));
                     $string_re .= '<p style="margin-top:0;margin-left:1rem;"><i style="color:silver;">[…]</i>' . $avant[$i] . '<b>' . $tab[$i][1] . '</b>' . $apres[$i] . '<i style="color:silver;">[…]</i></p> ';
@@ -152,7 +153,7 @@ if ($phrase) {
     // Blablabla SQL
     // TODO retrouver la facon d'afficher les commentaires (AFFICHER_COMMENTAIRES ? '':'AND tag NOT LIKE "comment%"').
     $requestfull = "SELECT body, tag FROM {$dbService->prefixTable('pages')} WHERE latest = \"Y\" {$aclService->updateRequestWithACL()}" .
-                "AND (body LIKE \"%{$phraseFormatted}%\"{$requeteSQLForList}) ORDER BY tag LIMIT 100";
+        "AND (body LIKE \"%{$phraseFormatted}%\"{$requeteSQLForList}) ORDER BY tag LIMIT 100";
 
     // exécution de la requete
     if ($resultat = $dbService->loadAll($requestfull)) {
@@ -188,13 +189,13 @@ if ($phrase) {
             }
             echo '</ol>';
 
-        // affichage des résultats en ligne
+            // affichage des résultats en ligne
         } else {
             $separator = htmlspecialchars($separator, ENT_COMPAT, YW_CHARSET);
             echo '<p>' . _t('SEARCH_RESULT_OF') . ' "', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '"&nbsp;: ';
             foreach ($resultat as $i => $line) {
                 if ($this->HasAccess('read', $line['tag'])) {
-                    echo(($i > 0) ? $separator : '') . $this->ComposeLinkToPage($line['tag']);
+                    echo (($i > 0) ? $separator : '') . $this->ComposeLinkToPage($line['tag']);
                 }
             }
             echo '</p>', "\n";

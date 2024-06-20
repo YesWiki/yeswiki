@@ -70,6 +70,9 @@ class SearchManager
                 if (is_array($options)) {
                     foreach ($options as $key => $option) {
                         foreach ($needles as $needle => $values) {
+                            if (is_array($option)) {
+                                $option = implode(' ', $option); // rare cases with arrays, ex: usernames
+                            }
                             // mb_strtolower instead of strtolower to manage utf 8 characters
                             if (preg_match('/' . mb_strtolower(preg_quote($needle)) . '/i', mb_strtolower($option), $matches)) {
                                 $results[] = [
