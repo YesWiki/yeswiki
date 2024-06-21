@@ -6,7 +6,7 @@ import ModalEntry from './components/ModalEntry.js'
 import BazarSearch from './components/BazarSearch.js'
 import FilterNode from './components/FilterNode.js'
 import { initEntryMaps } from './fields/map-field-map-entry.js'
-import { flattenTree } from './utils.js'
+import { recursivelyCalculateRelations } from './utils.js'
 
 Vue.component('FilterNode', FilterNode)
 
@@ -43,7 +43,7 @@ const load = (domElement) => {
       computedFilters() {
         const result = {}
         Object.entries(this.filters).forEach(([filterId, filter]) => {
-          const checkedValues = flattenTree(filter.nodes)
+          const checkedValues = filter.flattenNodes
             .filter((node) => node.checked)
             .map((node) => node.value)
           if (checkedValues.length > 0) result[filterId] = checkedValues
@@ -136,33 +136,21 @@ const load = (domElement) => {
       },
       calculateFiltersCount() {
         Object.entries(this.filters).forEach(([fieldName, filter]) => {
-          filter.nodes.forEach((rootNode) => {
-            this.recursivelyCalculateFiltersCount(rootNode, fieldName)
+          filter.flattenNodes.forEach((node) => {
+            node.nb = this.searchedEntries.filter((entry) => {
+              let entryValues = entry[fieldName]
+              if (!entryValues || typeof entryValues != 'string') return
+              entryValues = entryValues.split(',')
+              return entryValues.some((value) => value == node.value)
+            }).length
           })
-        })
-      },
-      recursivelyCalculateFiltersCount(filterNode, fieldName) {
-        filterNode.nb = this.searchedEntries.filter((entry) => {
-          let entryValues = entry[fieldName]
-          if (!entryValues || typeof entryValues != 'string') return
-          entryValues = entryValues.split(',')
-          return entryValues.some((value) => value == filterNode.value)
-        }).length
-        filterNode.children.forEach((childNode) => {
-          this.recursivelyCalculateFiltersCount(childNode, fieldName)
         })
       },
       resetFilters() {
         Object.values(this.filters).forEach((filter) => {
-          filter.nodes.forEach((rootNode) => {
-            this.recursivelyResetFilters(rootNode)
-          })
+          filter.flattenNodes.forEach((node) => { node.checked = false })
         })
         this.search = ''
-      },
-      recursivelyResetFilters(filterNode) {
-        filterNode.checked = false
-        filterNode.children.forEach((childNode) => this.recursivelyResetFilters(childNode))
       },
       saveFiltersIntoHash() {
         if (!this.ready) return
@@ -181,8 +169,8 @@ const load = (domElement) => {
           if (filterId == 'q') {
             this.search = filterValues
           } else if (filterId && filterValues && filters[filterId]) {
-            filters[filterId].nodes.forEach((rootNode) => {
-              this.recursivelyCheckFilterByValues(rootNode, filterValues.split(','))
+            filters[filterId].flattenNodes.forEach((node) => {
+              if (filterValues.includes(node.value)) node.checked = true
             })
           }
         })
@@ -199,19 +187,6 @@ const load = (domElement) => {
           })
         }
         return filters
-      },
-      recursivelyCheckFilterByValues(filterNode, filterValues) {
-        if (filterValues.includes(filterNode.value)) filterNode.checked = true
-        filterNode.children.forEach((childNode) => {
-          this.recursivelyCheckFilterByValues(childNode, filterValues)
-        })
-      },
-      recursivelyAddParent(filterNode, parent) {
-        filterNode.parent = parent
-        filterNode.parents = parent ? [...parent.parents, parent] : []
-        filterNode.children.forEach((childNode) => {
-          this.recursivelyAddParent(childNode, filterNode)
-        })
       },
       getEntryRender(entry) {
         if (entry.html_render) return
@@ -418,7 +393,10 @@ const load = (domElement) => {
         const filters = data.filters || {}
         // Calculate the parents
         Object.values(filters).forEach((filter) => {
-          filter.nodes.forEach((rootNode) => this.recursivelyAddParent(rootNode))
+          filter.nodes.forEach((rootNode) => recursivelyCalculateRelations(rootNode))
+          filter.flattenNodes = filter.nodes
+            .map((rootNode) => [rootNode, ...rootNode.descendants])
+            .flat()
         })
         // First display filters cause entries can be a bit long to load
         this.filters = this.initFiltersFromHash(filters, savedHash)
@@ -455,11 +433,10 @@ const load = (domElement) => {
             // entryA { checkboxes: "yeswiki" }
             // => entryA { checkboxes: "yeswiki,website" }
             Object.entries(this.filters).forEach(([propName, filter]) => {
-              const flattenNodes = flattenTree(filter.nodes)
               if (entry[propName] && typeof entry[propName] == 'string') {
                 const entryValues = entry[propName].split(',')
                 entryValues.forEach((value) => {
-                  const correspondingNode = flattenNodes.find((node) => node.value == value)
+                  const correspondingNode = filter.flattenNodes.find((node) => node.value == value)
                   correspondingNode.parents.forEach((parent) => {
                     if (!entryValues.includes(parent.value)) entryValues.push(parent.value)
                   })

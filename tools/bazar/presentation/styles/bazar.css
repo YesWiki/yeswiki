@@ -273,6 +273,16 @@ input.form-control.error {
 .facette-container .filter-box .node-container .children {
   padding-left: 2rem;
 }
+.facette-container .filter-box .node-container .checkbox.checked .node-label {
+  font-weight: bold;
+}
+.facette-container
+  .filter-box
+  .node-container
+  .checkbox.some-descendant-checked
+  .node-label {
+  font-weight: bold;
+}
 
 @media (width <= 768px) {
   .facette-container,
