@@ -25,7 +25,8 @@
     <div class="results-container">
       <Panel class="filter-box" v-for="filter, key in filters" :collapsed.sync="filter.collapsed" :key="key">
         <template #header>
-          <i v-html="filter.icon"></i>{{"{{ filter.title }}"}}
+          <i v-html="filter.icon" v-show="filter.icon"></i>
+          {{"{{ filter.title }}"}}
         </template>
         <template #body>
           <Filter-Node v-for="filterNode, id in filter.nodes" :key="id" :node="filterNode" />
