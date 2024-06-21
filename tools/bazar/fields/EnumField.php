@@ -15,11 +15,12 @@ abstract class EnumField extends BazarField
     protected $optionsUrls; // only for loadOptionsFromJson
     protected $optionsTree = null; // only for list with multi levels
 
-    protected $listLabel; // Allows to differentiate two enums using the same list
+    protected $linkedObjectName;
     protected $keywords;
     protected $queries;
 
-    protected const FIELD_LIST_LABEL = 6;
+    protected const FIELD_LINKED_OBJECT = 1;
+    public const FIELD_NAME = 6;
     protected const FIELD_KEYWORDS = 13;
     protected const FIELD_QUERIES = 15;
 
@@ -27,14 +28,15 @@ abstract class EnumField extends BazarField
     {
         parent::__construct($values, $services);
 
-        $this->listLabel = $values[self::FIELD_LIST_LABEL];
+        $this->name = $values[self::FIELD_NAME];
+        $this->linkedObjectName = $values[self::FIELD_LINKED_OBJECT];
         $this->keywords = $values[self::FIELD_KEYWORDS];
         $this->queries = $values[self::FIELD_QUERIES];
 
         $this->options = [];
         $this->optionsUrls = [];
 
-        $this->propertyName = $this->type . $this->name . $this->listLabel;
+        $this->propertyName = $this->name;
     }
 
     public function loadOptionsFromList()
@@ -42,7 +44,7 @@ abstract class EnumField extends BazarField
         if (!empty($this->getLinkedObjectName())) {
             $list = $this->getService(ListManager::class)->getOne($this->getLinkedObjectName());
             $this->options = [];
-            foreach ($list['nodes'] as $node) {
+            foreach ($list['nodes'] ?? [] as $node) {
                 $this->loadOptionsFromListNode($node);
                 if (isset($node['children']) && count($node['children']) > 0) {
                     $this->optionsTree = $list['nodes'];
@@ -151,7 +153,6 @@ abstract class EnumField extends BazarField
      */
     protected function prepareJSONEntryField()
     {
-        $this->propertyName = $this->type . removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $this->name))) . $this->listLabel;
         $this->loadOptionsFromJson();
         if (
             preg_match('/^(.*\/\??)' // catch baseUrl
@@ -192,14 +193,9 @@ abstract class EnumField extends BazarField
         return $this->options;
     }
 
-    public function getName()
-    {
-        return $this->listLabel;
-    }
-
     public function getLinkedObjectName()
     {
-        return $this->name;
+        return $this->linkedObjectName;
     }
 
     /**
