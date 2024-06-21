@@ -35,12 +35,12 @@
             {{ filter.title }}
           </div>
           <div class="panel-collapse collapse {{ filter.collapsed ? '': 'in' }}" id="collapse{{ listId }}_{{ key }}">
-            {% for filterValue in filter.list %}
+            {% for filterNode in filter.nodes %}
               <div class="checkbox">
                 <label>
-                  <input class="filter-checkbox" type="checkbox" id="{{ filterValue.id }}" name="{{ filterValue.name }}" value="{{ filterValue.value }}" {{ filterValue.checked }}>
+                  <input class="filter-checkbox" type="checkbox" id="{{ filterNode.id }}" name="{{ filterNode.name }}" value="{{ filterNode.value }}" {{ filterNode.checked }}>
                   <span>
-                    {{ filterValue.label|raw }} <span class="nb-wrapper">(<span class="nb">{{ filterValue.nb }}</span>)</span>
+                    {{ filterNode.label|raw }} <span class="nb-wrapper">(<span class="nb">{{ filterNode.nb }}</span>)</span>
                   </span>
                 </label>
               </div>

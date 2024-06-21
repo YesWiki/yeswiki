@@ -272,7 +272,7 @@ class ApiController extends YesWikiController
             ],
             $forms
         );
-        $filters = $bazarListService->formatFilters($formattedGet, $entries, $forms);
+        $filters = $bazarListService->getFilters($formattedGet, $entries, $forms);
 
         // Basic fields
         $fieldList = ['id_fiche', 'bf_titre'];

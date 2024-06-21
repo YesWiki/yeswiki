@@ -4,11 +4,11 @@ import PopupEntryField from './components/PopupEntryField.js'
 import SpinnerLoader from './components/SpinnerLoader.js'
 import ModalEntry from './components/ModalEntry.js'
 import BazarSearch from './components/BazarSearch.js'
-import FilterOption from './components/FilterOption.js'
+import FilterNode from './components/FilterNode.js'
 import { initEntryMaps } from './fields/map-field-map-entry.js'
 import { flattenTree } from './utils.js'
 
-Vue.component('FilterOption', FilterOption)
+Vue.component('FilterNode', FilterNode)
 
 const load = (domElement) => {
   new Vue({
@@ -43,8 +43,7 @@ const load = (domElement) => {
       computedFilters() {
         const result = {}
         Object.entries(this.filters).forEach(([filterId, filter]) => {
-          const flattenOptions = filter.listTree ? flattenTree(filter.listTree) : filter.list
-          const checkedValues = flattenOptions
+          const checkedValues = flattenTree(filter.nodes)
             .filter((option) => option.checked)
             .map((option) => option.value)
           if (checkedValues.length > 0) result[filterId] = checkedValues
@@ -136,20 +135,22 @@ const load = (domElement) => {
         this.entriesToDisplay = this.paginatedEntries
       },
       calculateFiltersCount() {
+        // TODO make this recursive
         for (const fieldName in this.filters) {
-          for (const option of this.filters[fieldName].list) {
-            option.nb = this.searchedEntries.filter((entry) => {
+          for (const filterNode of this.filters[fieldName].nodes) {
+            filterNode.nb = this.searchedEntries.filter((entry) => {
               let entryValues = entry[fieldName]
               if (!entryValues || typeof entryValues != 'string') return
               entryValues = entryValues.split(',')
-              return entryValues.some((value) => value == option.value)
+              return entryValues.some((value) => value == filterNode.value)
             }).length
           }
         }
       },
       resetFilters() {
+        // TODO make this recursive
         for (const filterId in this.filters) {
-          this.filters[filterId].list.forEach((option) => option.checked = false)
+          this.filters[filterId].nodes.forEach((option) => option.checked = false)
         }
         this.search = ''
       },
@@ -171,7 +172,8 @@ const load = (domElement) => {
             this.search = filterValues
           } else if (filterId && filterValues && filters[filterId]) {
             filterValues = filterValues.split(',')
-            filters[filterId].list.forEach((filter) => {
+            // TODO make this recursive
+            filters[filterId].nodes.forEach((filter) => {
               if (filterValues.includes(filter.value)) filter.checked = true
             })
           }
@@ -394,10 +396,8 @@ const load = (domElement) => {
       $.getJSON(wiki.url('?api/entries/bazarlist'), this.params, (data) => {
         // process the filters
         const filters = data.filters || {}
-        Object.entries(filters).forEach(([propName, filter]) => {
-          if (filter.listTree) {
-            filter.flattenList = flattenTree(filter.listTree)
-          }
+        Object.values(filters).forEach((filter) => {
+          filter.flattenNodes = flattenTree(filter.nodes)
         })
         // First display filters cause entries can be a bit long to load
         this.filters = this.initFiltersFromHash(filters, savedHash)
@@ -429,16 +429,15 @@ const load = (domElement) => {
               if (mappedField) entry[field] = entry[mappedField]
             })
 
-            // In case of an option Tree, if an entry have only one value down the tree
-            // then add all the parent :
-            // entryA { checkboxes: "yeswiki" }
+            // In case of Tree, if an entry have only one value down the tree then add all the parent :
             // filters for checkboxes: [{ value: "website", children: [ { value: "yeswiki" }] }]
+            // entryA { checkboxes: "yeswiki" }
             // => entryA { checkboxes: "yeswiki,website" }
             Object.entries(this.filters).forEach(([propName, filter]) => {
-              if (filter.listTree && entry[propName] && typeof entry[propName] == 'string') {
+              if (entry[propName] && typeof entry[propName] == 'string') {
                 const entryValues = entry[propName].split(',')
                 entryValues.forEach((value) => {
-                  const option = filter.flattenList.find((opt) => opt.value == value)
+                  const option = filter.flattenNodes.find((opt) => opt.value == value)
                   option.parentValues.forEach((parentValue) => {
                     if (!entryValues.includes(parentValue)) entryValues.push(parentValue)
                   })
