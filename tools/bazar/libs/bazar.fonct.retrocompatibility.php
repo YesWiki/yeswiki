@@ -148,14 +148,6 @@ function formulaire_valeurs_template_champs($template)
 }
 
 /**
- * @deprecated Use FormManager::scanAllFacettable
- */
-function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
-{
-    return $GLOBALS['wiki']->services->get(FormManager::class)->scanAllFacettable($fiches, $params['group'], $onlyLists);
-}
-
-/**
  * @deprecated Use FormManager::findNewId
  */
 function baz_nextId()

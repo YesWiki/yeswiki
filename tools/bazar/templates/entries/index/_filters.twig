@@ -36,14 +36,17 @@
           </div>
           <div class="panel-collapse collapse {{ filter.collapsed ? '': 'in' }}" id="collapse{{ listId }}_{{ key }}">
             {% for filterNode in filter.nodes %}
-              <div class="checkbox">
-                <label>
-                  <input class="filter-checkbox" type="checkbox" id="{{ filterNode.id }}" name="{{ filterNode.name }}" value="{{ filterNode.value }}" {{ filterNode.checked }}>
-                  <span>
-                    {{ filterNode.label|raw }} <span class="nb-wrapper">(<span class="nb">{{ filterNode.nb }}</span>)</span>
-                  </span>
-                </label>
-              </div>
+              {% if filterNode.count > 0 %}
+                <div class="checkbox">
+                  <label>
+                    <input class="filter-checkbox" type="checkbox" id="{{ filterNode.id }}" name="{{ filterNode.name }}" 
+                           value="{{ filterNode.value }}" {{ filterNode.checked }}>
+                    <span>
+                      {{ filterNode.label|raw }} <span class="nb-wrapper">(<span class="nb">{{ filterNode.count }}</span>)</span>
+                    </span>
+                  </label>
+                </div>
+              {% endif %}
             {% endfor %}
           </div>
         </div>

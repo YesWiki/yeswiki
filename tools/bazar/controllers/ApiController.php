@@ -283,8 +283,8 @@ class ApiController extends YesWikiController
         // fields for colo / icon
         $fieldList = array_merge($fieldList, [$_GET['colorfield'] ?? null, $_GET['iconfield'] ?? null]);
         // Fields for filters
-        foreach ($filters as $field => $config) {
-            $fieldList[] = $field;
+        foreach ($filters as $filter) {
+            $fieldList[] = $filter['propName'];
         }
         // Fields used to search
         foreach ($searchfields as $field) {

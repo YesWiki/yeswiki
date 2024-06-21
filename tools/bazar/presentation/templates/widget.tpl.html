@@ -108,11 +108,11 @@
             </div>
             <div class="form-group">
               <label>Latitude</label>
-              <input type="number" min="-90" max="90" v-model="latmodel" class="form-control">
+              <input type="text" min="-90" max="90" v-model="latmodel" class="form-control">
             </div>
             <div class="form-group">
               <label>Longitude</label>
-              <input type="number" min="-180" max="180" v-model="lonmodel" class="form-control">
+              <input type="text" min="-180" max="180" v-model="lonmodel" class="form-control">
             </div>
             <div class="form-group">
               <label>Hauteur de carte</label>
@@ -177,48 +177,50 @@
           </div>
         </div>
       </div>
-      <div class="panel panel-default">
-        <div class="panel-heading">Ajouter des facettes</div>
-        <div class="panel-body" style="height:400px;overflow-y:auto;">
-          <ul class="list-group">
-            <!-- v-sortable="{group: 'facettes'}" -->
-            <?php $i=-1; foreach ($facettes as $key => $value) : $i++ ?>
-              <li class="list-group-item" data-id="<?php echo $value['source']; ?>">
-                <div class="checkbox">
-                  <label>
-                    <input type="checkbox" value="<?php echo $value['source']; ?>" v-model="checkedfacette">
-                    <div class="input-group input-group-sm" v-on:click.stop v-if="show_tooltip['<?php echo $value['source']; ?>']">
-                        <input class="form-control" type="text" v-model="facettetext['<?php echo $value['source']; ?>']" @keyup.enter="hideTooltip" />
-                        <span class="input-group-btn">
-              			    	<button @click.stop.prevent="hideTooltip" class="btn btn-default"><i class="fa fa-check"></i></button>
-              			    </span>
-                    </div>
-                    <div class="facette-text" v-if="!show_tooltip['<?php echo $value['source']; ?>']">
-                        {{facettetext['<?php echo $value['source']; ?>']}} <button class="btn btn-xs btn-link" @click.stop.prevent="showTooltip('<?php echo $value['source']; ?>')"><i class="fa fa-pencil-alt"></i></button>
-                    </div>
+      <?php if (count($facettes) > 0) : ?>
+        <div class="panel panel-default">
+          <div class="panel-heading">Ajouter des facettes</div>
+          <div class="panel-body" style="height:400px;overflow-y:auto;">
+            <ul class="list-group">
+              <!-- v-sortable="{group: 'facettes'}" -->
+              <?php $i=-1; foreach ($facettes as $key => $value) : $i++ ?>
+                <li class="list-group-item" data-id="<?php echo $value['source']; ?>">
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" value="<?php echo $value['source']; ?>" v-model="checkedfacette">
+                      <div class="input-group input-group-sm" v-on:click.stop v-if="show_tooltip['<?php echo $value['source']; ?>']">
+                          <input class="form-control" type="text" v-model="facettetext['<?php echo $value['source']; ?>']" @keyup.enter="hideTooltip" />
+                          <span class="input-group-btn">
+                            <button @click.stop.prevent="hideTooltip" class="btn btn-default"><i class="fa fa-check"></i></button>
+                          </span>
+                      </div>
+                      <div class="facette-text" v-if="!show_tooltip['<?php echo $value['source']; ?>']">
+                          {{facettetext['<?php echo $value['source']; ?>']}} <button class="btn btn-xs btn-link" @click.stop.prevent="showTooltip('<?php echo $value['source']; ?>')"><i class="fa fa-pencil-alt"></i></button>
+                      </div>
 
 
-                  </label>
-                </div>
-              </li>
-            <?php endforeach; ?>
-          </ul>
-          <!-- <pre>{{ checkedfacette }}</pre> -->
-        </div>
-      </div>
-
-      <div class="panel panel-default">
-        <div class="panel-heading"><?php echo _t('BAZ_FACETTES_DISPLAY'); ?></div>
-        <div class="panel-body">
-          <div class="form-group">
-            <label><?php echo _t('BAZ_EXPANDED_FACETTES'); ?></label>
-            <select v-model="groupsexpandedmodel" class="form-control">
-                <option selected value="false"><?php echo _t('BAZ_NOT_EXPANDED'); ?></option>
-                <option value="true"><?php echo _t('BAZ_EXPANDED'); ?></option>
-            </select>
+                    </label>
+                  </div>
+                </li>
+              <?php endforeach; ?>
+            </ul>
+            <!-- <pre>{{ checkedfacette }}</pre> -->
           </div>
         </div>
-      </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading"><?php echo _t('BAZ_FACETTES_DISPLAY'); ?></div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label><?php echo _t('BAZ_EXPANDED_FACETTES'); ?></label>
+              <select v-model="groupsexpandedmodel" class="form-control">
+                  <option selected value="false"><?php echo _t('BAZ_NOT_EXPANDED'); ?></option>
+                  <option value="true"><?php echo _t('BAZ_EXPANDED'); ?></option>
+              </select>
+            </div>
+          </div>
+        </div>
+      <?php endif; ?>
     </div> <!-- end of col -->
     <div class="col-md-9"> <!-- start of col -->
       <div class="panel panel-default">
