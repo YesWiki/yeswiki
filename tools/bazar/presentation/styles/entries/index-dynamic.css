@@ -7,9 +7,7 @@
 }
 
 /* ------------- */
-
 /*   PAGINATION  */
-
 /* ------------- */
 
 .bazar-list-dynamic-container .results-col {
@@ -49,9 +47,7 @@
 }
 
 /* ------------- */
-
 /*     ENTRY     */
-
 /* ------------- */
 .entry-container.modal-body {
   padding-top: 1rem;
@@ -81,9 +77,7 @@
 }
 
 /* ------------- */
-
 /*  ENTRY FIELD  */
-
 /* ------------- */
 
 /* Helpers div to used only when needed */
@@ -99,9 +93,7 @@
 }
 
 /* ------------- */
-
 /* LIST TEMPLATE */
-
 /* ------------- */
 .bazar-list.dynamic .panel-heading-container {
   display: grid;

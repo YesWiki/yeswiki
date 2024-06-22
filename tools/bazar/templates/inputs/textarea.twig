@@ -14,6 +14,8 @@
 {% endblock %}
 
 {% block input %}
+    {{ include_css('tools/bazar/presentation/styles/inputs/textarea.css') }}
+
     <div id="{{ field.name ~ 'Container' }}">
         {% if field.syntax == 'wiki-textarea' %}
             {{ renderAction('aceditor', { name: field.name, value: value, rows: field.numRows, tempTag: tempTag })|raw }}

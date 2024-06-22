@@ -45,7 +45,7 @@ return [
     // libs/bazar.edit_lists.js
     'BAZ_EDIT_LISTS_CONFIRM_DELETE' => 'உறுதிப்படுத்தல்-வவுச் லா அடக்குமுறை டி செட் வாலூர் டான்ச் லா லிச்டே?',
     'BAZ_EDIT_LISTS_DELETE_ERROR' => 'லு டெர்னியர் élément ne peut être supprimé.',
-    // libs/bazar.js
+    // presentation/javascripts/bazar.js
     'BAZ_FORM_REQUIRED_FIELD' => 'Veuillez Saisir Tous les Samps Walligatoires (நட்சத்திரக் கயிறு)',
     'BAZ_FORM_INVALID_EMAIL' => 'L\'aigral saisi n\'est pas valuide',
     'BAZ_FORM_INVALID_TEXT' => 'லு டெக்ச்டே என்ச்ட் பாச் மதிப்புமிக்கது',
