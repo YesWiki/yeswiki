@@ -37,4 +37,11 @@ $(document).ready(() => {
       childrenContainer.find('input[type=checkbox]').prop('checked', false)
     }
   })
+
+  $('.check-all').on('change', function() {
+    const checked = $(this).is(':checked')
+    $(this).closest('.check-all-container').siblings('.node-container').each(function() {
+      $(this).find('> .checkbox-node input[type=checkbox]').prop('checked', checked).trigger('change')
+    })
+  })
 })

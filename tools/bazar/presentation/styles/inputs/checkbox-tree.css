@@ -31,3 +31,13 @@
 .node-container.expanded > .checkbox-node .chevron-icon {
   transform: rotate(90deg);
 }
+
+.check-all-container {
+  --checkbox-color: var(--neutral-color);
+}
+.check-all-container span {
+  font-size: 0.8em !important;
+  font-weight: 800;
+  font-style: normal;
+  text-transform: uppercase;
+}

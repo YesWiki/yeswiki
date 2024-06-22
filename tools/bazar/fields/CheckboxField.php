@@ -58,6 +58,7 @@ abstract class CheckboxField extends EnumField
                     return $this->render('@bazar/inputs/checkbox-tree.twig', [
                         'data' => $this->optionsTree,
                         'values' => $this->getValues($entry),
+                        'displaySelectAllLimit' => $this->displaySelectAllLimit,
                     ]);
                 }
 
