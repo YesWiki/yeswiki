@@ -23,6 +23,9 @@ mkdir -p javascripts/vendor/vue-select && cp -f node_modules/vue-select/dist/vue
 mkdir -p styles/vendor/vue-select && cp -f node_modules/vue-select/dist/vue-select.css styles/vendor/vue-select
 # Vue Leaflet
 mkdir -p javascripts/vendor/vue2-leaflet && cp -f node_modules/vue2-leaflet/dist/vue2-leaflet.min.js javascripts/vendor/vue2-leaflet/vue2-leaflet.js
+# Vue draggable
+mkdir -p javascripts/vendor/sortablejs && cp -f node_modules/sortablejs/Sortable.min.js javascripts/vendor/sortablejs/sortable.js
+mkdir -p javascripts/vendor/vuedraggable && cp -f node_modules/vuedraggable/dist/vuedraggable.umd.js javascripts/vendor/vuedraggable/vuedraggable.js
 
 # Leaflet
 mkdir -p javascripts/vendor/leaflet && cp -f node_modules/leaflet/dist/leaflet.js javascripts/vendor/leaflet/leaflet.min.js
