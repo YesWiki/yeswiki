@@ -41,7 +41,7 @@
       <template v-if="Object.keys(entry).includes('visual')">
         <template v-if="entry.visual">
           <img 
-            loading="lazy"
+            loading="lazy" alt=""
             :style="{width:((params.style == 'square')? false : '0px'),height:((params.style == 'square')? false : '0px'),'object-fit':params.imgstyle}"
             class="area visual-area" 
             :src="urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'fit')"

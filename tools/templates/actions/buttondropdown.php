@@ -56,10 +56,11 @@ if (!isset($GLOBALS['check_' . $pagetag]['buttondropdown'])) {
     $GLOBALS['check_' . $pagetag]['buttondropdown'] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('buttondropdown', $pagetag, $this->page['body'] ?? '');
 }
 if ($GLOBALS['check_' . $pagetag]['buttondropdown']) {
+    $encodedtitle = htmlentities($title, ENT_COMPAT, YW_CHARSET);
     echo '<div class="btn-group' . (!empty($class) ? ' ' . $class : '') . '"> <!-- start of buttondropdown -->
-  <a role="button" class="' . $btnclass . ' dropdown-toggle" data-toggle="dropdown" title="' . htmlentities($title, ENT_COMPAT, YW_CHARSET) . '">
+  <button class="' . $btnclass . ' dropdown-toggle" data-toggle="dropdown" aria-label="' . $encodedtitle . '" title="' . $encodedtitle . '">
     ' . $icon . $text . (($caret == '1') ? ' <span class="caret"></span>' : '') . '
-  </a>' . "\n";
+  </button>' . "\n";
 } else {
     echo '<div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_BUTTONDROPDOWN') . '</strong> : ' . _t('TEMPLATE_ELEM_BUTTONDROPDOWN_NOT_CLOSED') . '.</div>' . "\n";
 

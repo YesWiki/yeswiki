@@ -39,28 +39,28 @@
                 <label class="label-image-align-none" for="image-align-none">
                   <input type="radio" id="image-align-none" checked="checked" value="" name="attach_align" class="input_radio image-align-none" />
                   <span>
-                    <img loading="lazy" src="tools/attach/presentation/images/align-none.png" alt="align-none" />
+                    <img loading="lazy" src="tools/attach/presentation/images/align-none.png" alt="" />
                     {{ _t('NONE') }}
                   </span>
                 </label>
                 <label class="label-image-align-left" for="image-align-left">
                   <input type="radio" id="image-align-left"value="left" name="attach_align" class="input_radio image-align-left" />
                   <span>
-                    <img loading="lazy" src="tools/attach/presentation/images/align-left.png" alt="align-left" />
+                    <img loading="lazy" src="tools/attach/presentation/images/align-left.png" alt="" />
                     {{ _t('LEFT') }}
                   </span>
                 </label>
                 <label class="label-image-align-center" for="image-align-center">
                   <input type="radio" id="image-align-center" value="center" name="attach_align" class="input_radio image-align-center" />
                   <span>
-                    <img loading="lazy" src="tools/attach/presentation/images/align-center.png" alt="align-center" />
+                    <img loading="lazy" src="tools/attach/presentation/images/align-center.png" alt="" />
                     {{ _t('CENTER') }}
                   </span>
                 </label>
                 <label class="label-image-align-right" for="image-align-right">
                   <input type="radio" id="image-align-right" value="right" name="attach_align" class="input_radio image-align-right">
                   <span>
-                    <img loading="lazy" src="tools/attach/presentation/images/align-right.png" alt="align-right" />
+                    <img loading="lazy" src="tools/attach/presentation/images/align-right.png" alt="" />
                     {{ _t('RIGHT') }}
                   </span>
                 </label>
@@ -100,12 +100,12 @@
             </div>
           </div>
 
-          <div class="form-group image-option">
-            <label class="control-label col-sm-3" for="attach_caption">{{ _t('CAPTION') }}</label>
-            <div class="controls col-sm-9">
-              <input type="text" id="attach_caption" name="attach_caption" value="" class="attach_caption form-control">
-            </div>
-          </div>
+					<div class="form-group">
+						<label class="control-label col-sm-3" title="{{ _t('ALT_INFOS') }}">{{ _t('ALTERNATIVE_TEXT') }}</label>
+						<div class="controls col-sm-9">
+							<input type="text" name="attach_alt" value="" class="attach_alt form-control">
+						</div>
+					</div>
 
           <a title="{{ _t('SEE_THE_ADVANCED_PARAMETERS') }}" href="#avanced-settings" data-toggle="collapse" class="btn btn-default">{{ _t('ADVANCED_PARAMETERS') }}</a>
           <div id="avanced-settings" class="collapse">
@@ -116,6 +116,7 @@
                 <input type="text" id="attach_link" name="attach_link" value="" class="attach_link form-control">
               </div>
             </div>
+
             <div class="form-group">
               <label class="control-label col-sm-3">{{ _t('GRAPHICAL_EFFECTS') }}</label>
               <div class="controls col-sm-9">
@@ -135,30 +136,33 @@
                 </div>
               </div>
             </div>
+
             <div class="form-group">
               <label class="control-label col-sm-3">{{ _t('ATTACH_ACTION_FULLIMAGELINK_TEXT') }}</label>
               <div class="controls col-sm-9">
                 <div class="radio inline-container">
                   <label>
-                    <input type="radio" name="attach_nofullimagelink" value="0" checked="checked">
+                    <input type="radio" name="attach_nofullimagelink" value="0">
                     <span>{{ _t('YES') }}</span>
                   </label>
                   <label>
-                    <input type="radio" name="attach_nofullimagelink" value="1">
+                    <input type="radio" name="attach_nofullimagelink" value="1" checked="checked">
                     <span>{{ _t('NO') }}</span>
                   </label>
                 </div>
               </div>
             </div>
-            <div class="form-group">
-              <label class="control-label col-sm-3" title="{{ _t('ALT_INFOS') }}">{{ _t('ALTERNATIVE_TEXT') }}</label>
-              <div class="controls col-sm-9">
-                <input type="text" name="attach_alt" value="" class="attach_alt form-control">
-              </div>
-            </div>
-          </div>
-        </form>
-      </div>
+
+						<div class="form-group image-option">
+							<label class="control-label col-sm-3" for="attach_caption">{{ _t('CAPTION') }}</label>
+							<div class="controls col-sm-9">
+								<input type="text" id="attach_caption" name="attach_caption" value="" class="attach_caption form-control">
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+
       <div class="modal-footer">
         <a href="#" data-dismiss="modal" role="button" class="btn btn-default btn-cancel-upload">{{ _t('CANCEL_THIS_UPLOAD') }}</a>
         <button name="insert" class="btn btn-primary btn-insert-upload">{{ _t('INSERT') }}</button>

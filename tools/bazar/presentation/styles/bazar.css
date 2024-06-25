@@ -89,6 +89,11 @@
   border-bottom-right-radius: 0;
 }
 
+.bazar-entry button.panel-heading {
+	text-align: left;
+	width: 100%;
+}
+
 /* --------------- */
 
 /*   BAZAR LIST    */

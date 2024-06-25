@@ -19,7 +19,7 @@
 	{% else %}
 		<div class="panel panel-default"  >
 	{% endif %}
-		<div class="panel-heading collapsed" role="tab" id="headingThemes" role="button" data-toggle="collapse" data-parent="#accordion_update" href="#collapseThemes" aria-expanded="false" aria-controls="collapseThemes">
+		<button class="panel-heading collapsed" role="tab" id="headingThemes" role="button" data-toggle="collapse" data-parent="#accordion_update" href="#collapseThemes" aria-expanded="false" aria-controls="collapseThemes">
 			<h2 class="panel-title">Thèmes
 				{% if nbMaj > 0 %}
 					{% set alerte = '' %}
@@ -31,7 +31,7 @@
 					<span class="alert-msg" style="float: right;">{{alerte}}</span>
 				{% endif %}
 			</h2>
-		</div>
+		</button>
 		<div id="collapseThemes" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThemes">
 			{% set exts = themes %}
 			{% include '@autoupdate/exts.twig' %}
@@ -51,7 +51,7 @@
 	{% else %}
 		<div class="panel panel-default"  >
 	{% endif %}
-		<div class="panel-heading collapsed" role="tab" id="headingTools" role="button" data-toggle="collapse" data-parent="#accordion_update" href="#collapseTools" aria-expanded="false" aria-controls="collapseTools">
+		<button class="panel-heading collapsed" role="tab" id="headingTools" role="button" data-toggle="collapse" data-parent="#accordion_update" href="#collapseTools" aria-expanded="false" aria-controls="collapseTools">
 			<h2 class="panel-title">Tools (extensions)
 				{% if nbMaj > 0 %}
 					{% set alerte = '' %}
@@ -63,7 +63,7 @@
 					<span style="float: right;">{{alerte}}</span>
 				{% endif %}
 			</h2>
-		</div>
+		</button>
 		<div id="collapseTools" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTools">
 			{% set exts = tools %}
 			{% include '@autoupdate/exts.twig' %}

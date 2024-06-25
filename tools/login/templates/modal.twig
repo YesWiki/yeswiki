@@ -3,7 +3,7 @@
 {% block logoutLinkClass %}btn btn-default{% endblock %}
 
 {% block connected %}
-    <a href="#LoginModal" role="button" class="navbar-btn {{ not nobtn ? 'btn btn-default ' ~ btnclass : '' }}" data-toggle="modal" data-tooltip="tooltip" data-placement="bottom" title="{{ _t('LOGIN_MY_OPTIONS')}}">
+    <a href="#LoginModal" role="button" class="navbar-btn {{ not nobtn ? 'btn btn-default ' ~ btnclass : '' }}" data-toggle="modal" data-tooltip="tooltip" data-placement="bottom" aria-label="{{ _t('LOGIN_MY_OPTIONS')}}" title="{{ _t('LOGIN_MY_OPTIONS')}}">
         <i class="fa fa-user"></i> {{ user }}
     </a>
     <div class="modal fade" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel" aria-hidden="true">
@@ -30,7 +30,7 @@
 {% block formTitle %}{% endblock %}
 
 {% block notConnected %}
-    <a href="#LoginModal" role="button" class="btn-icon navbar-btn {{ not nobtn ? 'btn btn-default ' ~ btnclass : '' }}" data-toggle="modal" data-placement="bottom" title="{{ _t('LOGIN_LOGIN') }}" data-tooltip="tooltip">
+    <a href="#LoginModal" role="button" class="btn-icon navbar-btn {{ not nobtn ? 'btn btn-default ' ~ btnclass : '' }}" data-toggle="modal" data-placement="bottom" _t('LOGIN_LOGIN') }}" data-tooltip="tooltip" aria-label="{{ _t('LOGIN_LOGIN')}}">
         <i class="fa fa-sign-in-alt"></i><span class="login-text"> {{ _t('LOGIN_LOGIN') }}</span>
     </a>
     <div class="modal fade" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel" aria-hidden="true">

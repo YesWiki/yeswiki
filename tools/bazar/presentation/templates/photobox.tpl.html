@@ -72,7 +72,7 @@ if (count($fiches) > 0) :
                 $bigheight,
                 $bigresize
             ); ?>">
-            <img loading="lazy" data-pb-captionLink="<?php echo htmlentities($fiche['bf_titre']); ?>[<?php echo htmlentities(
+            <img loading="lazy" alt="" data-pb-captionLink="<?php echo htmlentities($fiche['bf_titre']); ?>[<?php echo htmlentities(
                 $GLOBALS['wiki']->href('iframe', $fiche['id_fiche'])
             ); ?>]" src="<?php echo redimensionner_image(
                 'files/' . $fiche['imagebf_image'],

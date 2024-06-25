@@ -1,7 +1,7 @@
 <div class="control-group form-group">
     <label class="control-label col-sm-3">  
         {% if field.hint %}
-            <img loading="lazy" class="tooltip_aide" title="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />
+            <img loading="lazy" class="tooltip_aide" title="{{ field.hint|raw('html') }}" alt="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" />
         {% endif %} 
         {{ field.label|raw }}   
     </label>

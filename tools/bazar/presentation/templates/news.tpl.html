@@ -50,9 +50,9 @@ if (!function_exists('date_compare')) {
     <figure class="bazar-entry agenda-entry" <?php echo $fiche['html_data'];?>>
       <div class="image">
         <?php if (!empty($fiche['imagebf_image'])) : ?>
-          <img loading="lazy" class="img-responsive" alt="<?php echo htmlspecialchars($fiche['bf_titre']);?>" src="<?php echo redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_'.$imgwidth.'x'.$imgheight.'_'.$fiche['imagebf_image'], $imgwidth, $imgheight, 'crop'); ?>">
+          <img loading="lazy" class="img-responsive" alt="" src="<?php echo redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_'.$imgwidth.'x'.$imgheight.'_'.$fiche['imagebf_image'], $imgwidth, $imgheight, 'crop'); ?>">
         <?php else : ?>
-          <img loading="lazy" class="trombi-image img-placeholder"
+          <img loading="lazy" alt="" class="trombi-image img-placeholder"
                src="tools/bazar/libs/vendor/placeholder.php?size=300x300&amp;bg=efefef&amp;text=">
           <i class="trombi-image icon-placeholder fa fa-calendar"></i>
         <?php endif; ?>
