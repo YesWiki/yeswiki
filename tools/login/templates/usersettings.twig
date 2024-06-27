@@ -25,6 +25,14 @@
       <input class="form-control" name="revisioncount" value="{{ user.revisioncount|e('html_attr') }}" size="40" />
     </div>
   </div> #}
+{% if userlink is not empty %}
+  <div class="control-group form-group">
+  	<div class="controls col-sm-9">
+  		<label>{{ _t('LAST_LINK_TO_CHANGE_PASSWORD') }}</label><br/>
+  		<a href='{{ userlink }}' target='_blank'>{{ userlink }}</a>
+  	</div>
+  </div>
+{% endif %}  
   <div class="control-group form-group">
 		<div class="controls col-sm-9 col-sm-offset-3">
       <input type="hidden" name="csrf-token-update" value="{{ csrfToken({id:'main',refresh:false}) }}">

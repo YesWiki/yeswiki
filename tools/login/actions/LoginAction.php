@@ -77,10 +77,9 @@ class LoginAction extends YesWikiAction
                     : $incomingurl
                 ),
 
-            'lostpasswordurl' => !empty($arg['lostpasswordurl'])
-                ? $this->wiki->generateLink($arg['lostpasswordurl'])
-                // TODO : check page name for other languages
-                : $this->wiki->Href('', 'MotDePassePerdu'),
+            'lostpasswordurl' => ! boolval($this->params->get('contact_disable_email_for_password')) ? (! empty($arg['lostpasswordurl']) ? $this->wiki->generateLink($arg['lostpasswordurl']) : 
+            // TODO : check page name for other languages
+            $this->wiki->Href('', 'MotDePassePerdu')) : '',
 
             'class' => !empty($arg['class']) ? $arg['class'] : '',
             'btnclass' => !empty($arg['btnclass']) ? $arg['btnclass'] : '',
@@ -151,7 +150,7 @@ class LoginAction extends YesWikiAction
             'email' => ((isset($user['email'])) ? $user['email'] : ((isset($_POST['email'])) ? $_POST['email'] : '')),
             'incomingurl' => $this->arguments['incomingurl'],
             'signupurl' => $this->arguments['signupurl'],
-            'lostpasswordurl' => $this->arguments['lostpasswordurl'],
+            'lostpasswordurl' => ! boolval($this->params->get('contact_disable_email_for_password')) ? $this->arguments['lostpasswordurl'] : '',
             'profileurl' => $this->arguments['profileurl'],
             'userpage' => $this->arguments['userpage'],
             'PageMenuUser' => $pageMenuUserContent,

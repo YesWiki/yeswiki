@@ -43,6 +43,7 @@ class UserSettingsAction extends YesWikiAction
     private $referrer;
     private $wantedEmail;
     private $wantedUserName;
+    private $userlink;
 
     public function formatArguments($arg)
     {
@@ -60,6 +61,11 @@ class UserSettingsAction extends YesWikiAction
         $this->errorPasswordChange = '';
         $this->referrer = '';
         $user = $this->getUser($_GET ?? []);
+        if (! boolval($this->wiki->config['contact_disable_email_for_password'])) {
+            $this->userlink = $this->userManager->getLastUserLink($user);
+        } else {
+            $this->userlink = '';
+        }
 
         $this->doPrerenderingActions($_POST ?? [], $user);
 
@@ -159,6 +165,7 @@ class UserSettingsAction extends YesWikiAction
                 'referrer' => $this->referrer,
                 'user' => $user,
                 'userLoggedIn' => $this->userLoggedIn,
+                'userlink' => $this->userlink
             ]);
         } else {
             $captcha = $this->securityController->renderCaptchaField();
@@ -178,6 +185,7 @@ class UserSettingsAction extends YesWikiAction
                 'name' => $this->wantedUserName,
                 'email' => $this->wantedEmail,
                 'captcha' => $captcha,
+                'userlink' => ''
             ]);
         }
     }
@@ -226,6 +234,12 @@ class UserSettingsAction extends YesWikiAction
                     $user,
                     $sanitizedPost
                 );
+                $this->userlink = '';
+                if (! boolval($this->wiki->config['contact_disable_email_for_password'])) {
+                    if ($this->userManager->sendPasswordRecoveryEmail($user, _t('LOGIN_PASSWORD_FOR'))) {
+                        $this->userlink = $this->userManager->getUserLink();
+                    }
+                }
 
                 $user = $this->userManager->getOneByEmail($sanitizedPost['email']);
 

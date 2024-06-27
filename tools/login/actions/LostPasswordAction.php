@@ -11,14 +11,8 @@ use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Security\Controller\SecurityController;
 
-if (!function_exists('send_mail')) {
-    require_once 'includes/email.inc.php';
-}
-
 class LostPasswordAction extends YesWikiAction
 {
-    private const PW_SALT = 'FBcA';
-    public const KEY_VOCABULARY = 'http://outils-reseaux.org/_vocabulary/key';
 
     protected $authController;
     protected $errorType;
@@ -137,7 +131,7 @@ class LostPasswordAction extends YesWikiAction
                     $user = $this->userManager->getOneByEmail($email);
                     if (!empty($user)) {
                         $this->typeOfRendering = 'successPage';
-                        $this->sendPasswordRecoveryEmail($user);
+                        $this->userManager->sendPasswordRecoveryEmail($user, _t('LOGIN_PASSWORD_LOST_FOR'));
                     } else {
                         $this->errorType = 'userNotFound';
                         $this->typeOfRendering = 'userNotFound';
@@ -182,53 +176,6 @@ class LostPasswordAction extends YesWikiAction
         }
 
         return $user ?? null;
-    }
-
-    /* Password recovery process (AKA reset password)
-            1. A key is generated using name, email alongside with other stuff.
-            2. The triple (user's name, specific key "vocabulary",key) is stored in triples table.
-            3. In order to update h·er·is password, the user must provided that key.
-            4. The new password is accepted only if the key matches with the value in triples table.
-            5. The corresponding row is removed from triples table.
-    */
-
-    /** Part of the Password recovery process: Handles the password recovery email process.
-     *
-     * Generates the password recovery key
-     * Stores the (name, vocabulary, key) triple in triples table
-     * Generates the recovery email
-     * Sends it
-     *
-     * @return bool True if OK or false if any problems
-     */
-    private function sendPasswordRecoveryEmail(User $user)
-    {
-        // Generate the password recovery key
-        $key = md5($user['name'] . '_' . $user['email'] . random_int(0, 10000) . date('Y-m-d H:i:s') . self::PW_SALT);
-        // Erase the previous triples in the trible table
-        $this->tripleStore->delete($user['name'], self::KEY_VOCABULARY, null, '', '');
-        // Store the (name, vocabulary, key) triple in triples table
-        $res = $this->tripleStore->create($user['name'], self::KEY_VOCABULARY, $key, '', '');
-
-        // Generate the recovery email
-        $passwordLink = $this->wiki->Href('', '', [
-            'a' => 'recover',
-            'email' => $key,
-            'u' => base64_encode($user['name']),
-        ], false);
-        $pieces = parse_url($this->params->get('base_url'));
-        $domain = isset($pieces['host']) ? $pieces['host'] : '';
-
-        $message = _t('LOGIN_DEAR') . ' ' . $user['name'] . ",\n";
-        $message .= _t('LOGIN_CLICK_FOLLOWING_LINK') . ' :' . "\n";
-        $message .= '-----------------------' . "\n";
-        $message .= $passwordLink . "\n";
-        $message .= '-----------------------' . "\n";
-        $message .= _t('LOGIN_THE_TEAM') . ' ' . $domain . "\n";
-
-        $subject = _t('LOGIN_PASSWORD_LOST_FOR') . ' ' . $domain;
-        // Send the email
-        return send_mail($this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $user['email'], $subject, $message);
     }
 
     /** Part of the Password recovery process: sets the password to a new value if given the the proper recovery key (sent in a recovery email).

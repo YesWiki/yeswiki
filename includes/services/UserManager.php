@@ -1,5 +1,4 @@
 <?php
-
 namespace YesWiki\Core\Service;
 
 use Exception;
@@ -18,6 +17,9 @@ use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
+if (! function_exists('send_mail')) {
+    require_once 'includes/email.inc.php';
+}
 
 class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 {
@@ -26,8 +28,11 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     protected $passwordHasherFactory;
     protected $securityController;
     protected $params;
-
+    protected $userlink;
     private $getOneByNameCacheResults;
+
+    private const PW_SALT = 'FBcA';
+    public const KEY_VOCABULARY = 'http://outils-reseaux.org/_vocabulary/key';
 
     public function __construct(
         Wiki $wiki,
@@ -42,6 +47,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $this->securityController = $securityController;
         $this->params = $params;
         $this->getOneByNameCacheResults = [];
+        $this->userlink = "";
     }
 
     private function arrayToUser(?array $userAsArray = null, bool $fillEmpty = false): ?User
@@ -105,8 +111,9 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      *
      * @throws UserNameAlreadyUsedException|UserEmailAlreadyUsedException|Exception
      */
-    public function create($wikiNameOrUser, string $email = '', string $plainPassword = '')
+    public function create($wikiNameOrUser, string $email = '', string $plainPassword = '', bool $sendpassword = false)
     {
+        $this->userlink = '';
         if ($this->securityController->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
@@ -125,6 +132,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             $userAsArray['name'] = $wikiName;
             $email = $userAsArray['email'] ?? '';
             $plainPassword = $userAsArray['password'] ?? '';
+            $sendpassword = $userAsArray['sendpassword'] ?? false;
         } elseif (is_string($wikiNameOrUser)) {
             $wikiName = trim($wikiNameOrUser);
             $userAsArray = [
@@ -177,6 +185,85 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         );
     }
 
+    /*
+     * Password recovery process (AKA reset password)
+     * 1. A key is generated using name, email alongside with other stuff.
+     * 2. The triple (user's name, specific key "vocabulary",key) is stored in triples table.
+     * 3. In order to update h·er·is password, the user must provided that key.
+     * 4. The new password is accepted only if the key matches with the value in triples table.
+     * 5. The corresponding row is removed from triples table.
+     */
+
+    /**
+     * Part of the Password recovery process: Handles the password recovery email process.
+     *
+     * Generates the password recovery key
+     * Stores the (name, vocabulary, key) triple in triples table
+     * Generates the recovery email
+     * Sends it
+     *
+     * @return bool True if OK or false if any problems
+     */
+    public function sendPasswordRecoveryEmail(User $user, string $title): bool
+    {
+        // Generate the password recovery key
+        $key = md5($user['name'] . '_' . $user['email'] . random_int(0, 10000) . date('Y-m-d H:i:s') . self::PW_SALT);
+        $tripleStore = $this->wiki->services->get(TripleStore::class);
+        // Erase the previous triples in the trible table
+        $tripleStore->delete($user['name'], self::KEY_VOCABULARY, null, '', '');
+        // Store the (name, vocabulary, key) triple in triples table
+        $tripleStore->create($user['name'], self::KEY_VOCABULARY, $key, '', '');
+
+        // Generate the recovery email
+        $this->userlink = $this->wiki->Href('', 'MotDePassePerdu', [
+            'a' => 'recover',
+            'email' => $key,
+            'u' => base64_encode($user['name'])
+        ], false);
+        $pieces = parse_url($this->params->get('base_url'));
+        $domain = isset($pieces['host']) ? $pieces['host'] : '';
+
+        $message = _t('LOGIN_DEAR') . ' ' . $user['name'] . ",\n";
+        $message .= _t('LOGIN_CLICK_FOLLOWING_LINK') . ' :' . "\n";
+        $message .= '-----------------------' . "\n";
+        $message .= $this->userlink . "\n";
+        $message .= '-----------------------' . "\n";
+        $message .= _t('LOGIN_THE_TEAM') . ' ' . $domain . "\n";
+
+        $subject = $title . ' ' . $domain;
+        // Send the email
+        return send_mail($this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $user['email'], $subject, $message);
+    }
+    
+    /**
+     * Assessor for userlink field
+     * 
+     * @return string
+     */
+    public function getUserLink(): string {
+        return $this->userlink;
+    }
+
+    /**
+     * Assessor for userlink field
+     *
+     * @return string
+     */
+    public function getLastUserLink(User $user): string {
+        $tripleStore = $this->wiki->services->get(TripleStore::class);
+        $key = $tripleStore->getOne($user['name'], self::KEY_VOCABULARY, '', '');
+        if ($key != null) {
+            $this->userlink = $this->wiki->Href('', 'MotDePassePerdu', [
+                'a' => 'recover',
+                'email' => $key,
+                'u' => base64_encode($user['name'])
+            ], false);
+        } else {
+            $this->userlink = '';
+        }
+        return $this->userlink;
+    }
+    
     /**
      * update user params
      * for e-mail check is existing e-mail.

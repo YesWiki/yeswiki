@@ -113,6 +113,7 @@ return [
     'MULTIDELETE_ERROR' => "L'élément {itemId} n'a pas été supprimé ! {error}",
 
     // javascripts/users-table.js
+    'LINK_TO_CHANGE_PASSWORD' => "Lien pour changer le mot de passe",
     'USERSTABLE_USER_CREATED' => "Utilisateur '{name}' créé",
     'USERSTABLE_USER_NOT_CREATED' => "Utilisateur '{name}' non créé : {error}",
     'USERSTABLE_USER_DELETED' => 'L\'utilisateur "{username}" a été supprimé.',

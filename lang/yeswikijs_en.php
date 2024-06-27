@@ -83,6 +83,7 @@ return [
     'MULTIDELETE_END' => 'Deletions finished',
     'MULTIDELETE_ERROR' => 'Item {itemId} has not been deleted! {error}',
     // javascripts/users-table.js
+    'LINK_TO_CHANGE_PASSWORD' => "Link to change password",    
     'USERSTABLE_USER_CREATED' => "User '{name}' created",
     'USERSTABLE_USER_NOT_CREATED' => "User '{name}' not created : {error}",
     'USERSTABLE_USER_DELETED' => 'The user "{username}" was deleted.',

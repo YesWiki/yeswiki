@@ -96,7 +96,7 @@ class UserController extends YesWikiController
         if (!empty($this->userManager->create($newValues))) {
             $user = $this->userManager->getOneByName($newValues['name']);
             if (!empty($user)) {
-                return $user;
+                return array($user, $this->userManager->getUserLink());
             }
         }
         throw new Exception(_t('USER_CREATION_FAILED') . '.');
