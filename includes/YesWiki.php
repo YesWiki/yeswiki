@@ -1244,7 +1244,7 @@ class Wiki
                         unset($_SESSION['redirects']);
                     }
                     // do nothing except and script with message
-                    exit($th->getMessage);
+                    exit($th->getMessage());
                 }
             }
 

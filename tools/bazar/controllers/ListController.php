@@ -130,3 +130,4 @@ class ListController extends YesWikiController
             $this->wiki->href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
         );
     }
+}

@@ -3,11 +3,11 @@
 namespace YesWiki\Core\Controller;
 
 use Exception;
+use Throwable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use Throwable;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\ApiResponse;
@@ -16,17 +16,13 @@ use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\CommentService;
-use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\DiffService;
-use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\Service\DuplicationManager;
-use YesWiki\Core\Service\CommentService;
+use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\ReactionManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Security\Controller\SecurityController;
 
 class ApiController extends YesWikiController
 {
