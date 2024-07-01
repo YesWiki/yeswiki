@@ -3,11 +3,11 @@
 namespace YesWiki\Core\Controller;
 
 use Exception;
-use Throwable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use Throwable;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\ApiResponse;
@@ -76,7 +76,7 @@ class ApiController extends YesWikiController
             if (file_exists($pluginBase . 'controllers/ApiController.php')) {
                 $apiClassName = 'YesWiki\\' . ucfirst($extension) . '\\Controller\\ApiController';
                 if (!class_exists($apiClassName, false)) {
-                    include($pluginBase . 'controllers/ApiController.php');
+                    include $pluginBase . 'controllers/ApiController.php';
                 }
                 if (class_exists($apiClassName, false)) {
                     $apiController = new $apiClassName();
@@ -399,6 +399,7 @@ class ApiController extends YesWikiController
         } catch (\Throwable $th) {
             return new ApiResponse($th->getMessage(), Response::HTTP_FORBIDDEN);
         }
+
         return new ApiResponse($request->request->all(), Response::HTTP_OK);
     }
 
@@ -841,13 +842,13 @@ class ApiController extends YesWikiController
             );
         } else {
             $property = filter_input($method, 'property', FILTER_UNSAFE_RAW);
-            $property = in_array($property, [false, null], true) ? "" : htmlspecialchars(strip_tags($property));
+            $property = in_array($property, [false, null], true) ? '' : htmlspecialchars(strip_tags($property));
             if (empty($property)) {
                 $property = null;
             }
 
             $username = filter_input($method, 'user', FILTER_UNSAFE_RAW);
-            $username = in_array($username, [false, null], true) ? "" : htmlspecialchars(strip_tags($username));
+            $username = in_array($username, [false, null], true) ? '' : htmlspecialchars(strip_tags($username));
             if (empty($username)) {
                 if (!$this->wiki->UserIsAdmin()) {
                     $username = $this->getService(AuthController::class)->getLoggedUser()['name'];
@@ -863,6 +864,7 @@ class ApiController extends YesWikiController
                 );
             }
         }
+
         return compact(['property', 'username', 'apiResponse']);
     }
 
@@ -881,7 +883,7 @@ class ApiController extends YesWikiController
     {
         return $this->getService(ArchiveController::class)->getArchiveStatus(
             $uid,
-            empty($_GET['forceStarted']) ? false : in_array($_GET['forceStarted'], [1, true, "1", "true"], true)
+            empty($_GET['forceStarted']) ? false : in_array($_GET['forceStarted'], [1, true, '1', 'true'], true)
         );
     }
 

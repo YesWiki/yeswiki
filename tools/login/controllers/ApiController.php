@@ -2,17 +2,17 @@
 
 namespace YesWiki\Login\Controller;
 
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 use YesWiki\Core\ApiResponse;
-use YesWiki\Core\YesWikiController;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\UserManager;
+use YesWiki\Core\YesWikiController;
 
 class ApiController extends YesWikiController
 {
     /**
-     * Attempt to login user
+     * Attempt to login user.
      *
      * @return string json
      *
@@ -33,15 +33,16 @@ class ApiController extends YesWikiController
             return new ApiResponse(['error' => _t('LOGIN_WRONG_PASSWORD')], Response::HTTP_UNAUTHORIZED);
         } else {
             $this->wiki->services->get(AuthController::class)->login($user);
+
             return new ApiResponse([
                 'user' => $user->getName(),
-                'isAdmin' => $this->wiki->UserIsAdmin()
+                'isAdmin' => $this->wiki->UserIsAdmin(),
             ]);
         }
     }
 
     /**
-     * Return basic information if user is authenticated
+     * Return basic information if user is authenticated.
      *
      * @return string json
      *
@@ -55,13 +56,13 @@ class ApiController extends YesWikiController
         } else {
             return new ApiResponse([
                 'user' => $loggedUser['name'],
-                'isAdmin' => $this->wiki->UserIsAdmin()
+                'isAdmin' => $this->wiki->UserIsAdmin(),
             ]);
         }
     }
 
     /**
-     * Get all users or one user's information
+     * Get all users or one user's information.
      *
      * @param string $username specify username
      *
@@ -116,6 +117,7 @@ class ApiController extends YesWikiController
             '<p><code>GET ' . $urlAuth . '/me</code> Get basic info (username, isAdmin) for connected user (needs authenticated user)</p>' .
             '<p><code>POST ' . $urlAuth . '/login</code> login user with param user and password</p>' .
             '<p><code>POST ' . $urlAuth . '/logout</code> logout current connected user</p>';
+
         return $output;
     }
 }

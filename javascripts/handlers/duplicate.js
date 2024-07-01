@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 
   $('[name="duplicate-action"]').on('click', (e) => {
-    var btnAction = e.currentTarget.value
+    const btnAction = e.currentTarget.value
     $.ajax({
       method: 'POST',
       url: `${shortUrl}/?api/pages/${$('#pageTag').val()}/duplicate`,
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (btnAction == 'edit') {
         location = `${shortUrl}/?${data.pageTag}/edit`
       } else {
-        let url = location.href.replace(/\/duplicate.*/, '')
+        const url = location.href.replace(/\/duplicate.*/, '')
         location = url
       }
     }).fail((jqXHR) => {

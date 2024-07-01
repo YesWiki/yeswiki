@@ -6,10 +6,9 @@ use Exception;
 use YesWiki\Bazar\Field\FileField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\TextareaField;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\ListManager;
-use YesWiki\Core\Service\PageManager;
 use YesWiki\Wiki;
 
 class DuplicationManager
@@ -17,9 +16,9 @@ class DuplicationManager
     protected $uploadPath;
     protected $wiki;
 
-
     /**
-     * DuplicationManager constructor
+     * DuplicationManager constructor.
+     *
      * @param Wiki $wiki the injected Wiki instance
      */
     public function __construct(Wiki $wiki)
@@ -29,7 +28,7 @@ class DuplicationManager
     }
 
     /**
-     * Get the local path to files uploads (usually "files")
+     * Get the local path to files uploads (usually "files").
      *
      * @return string local path to files uploads
      */
@@ -38,7 +37,7 @@ class DuplicationManager
         $attachConfig = $this->wiki->config['attach_config'];
 
         if (!is_array($attachConfig)) {
-            $attachConfig = array();
+            $attachConfig = [];
         }
 
         if (empty($attachConfig['upload_path'])) {
@@ -51,9 +50,10 @@ class DuplicationManager
     }
 
     /**
-     * Return fields that may contain attachments to import (fichier, image, or textelong fields for bazar entries)
+     * Return fields that may contain attachments to import (fichier, image, or textelong fields for bazar entries).
      *
      * @param array $id
+     *
      * @return array keys of fields that may contain attachments to import
      */
     public function getUploadFieldsFromEntry($id)
@@ -68,11 +68,12 @@ class DuplicationManager
                 if ($field instanceof TextareaField or $field instanceof ImageField or $field instanceof FileField) {
                     $fields[] = [
                         'id' => $field->getPropertyName(),
-                        'type' => $field->getType()
+                        'type' => $field->getType(),
                     ];
                 }
             }
         }
+
         return $fields;
     }
 
@@ -82,6 +83,7 @@ class DuplicationManager
         if ($f !== $this->uploadPath . '/' && file_exists($f)) {
             $size = filesize($f);
             $humanSize = $this->humanFilesize($size);
+
             return ['path' => $f, 'size' => $size, 'humanSize' => $humanSize];
         } else {
             return [];
@@ -89,10 +91,11 @@ class DuplicationManager
     }
 
     /**
-     * find files in wiki text 
+     * find files in wiki text.
      *
      * @param string $wikiTag
      * @param string $wikiText
+     *
      * @return array files
      */
     public function findFilesInWikiText($tag, $wikiText)
@@ -141,13 +144,15 @@ class DuplicationManager
                 $filesMatched[] = ['path' => $f, 'size' => $size, 'humanSize' => $humanSize];
             }
         }
+
         return $filesMatched;
     }
 
     /**
-     * Get file attachements from pageTag
-     * 
+     * Get file attachements from pageTag.
+     *
      * @param string $tag page id
+     *
      * @return array attachments filenames
      */
     public function findFiles($tag = '')
@@ -157,7 +162,7 @@ class DuplicationManager
             $tag = $this->wiki->GetPageTag();
         }
         if ($this->wiki->services->get(EntryManager::class)->isEntry($tag)) {
-            // bazar 
+            // bazar
             $fields = $this->getUploadFieldsFromEntry($tag);
             $entry = $this->wiki->services->get(EntryManager::class)->getOne($tag);
             foreach ($fields as $f) {
@@ -177,6 +182,7 @@ class DuplicationManager
                 $files = array_merge($files, $fi);
             }
         }
+
         return $files;
     }
 
@@ -200,6 +206,7 @@ class DuplicationManager
                 'duplicatedFile' => str_replace($this->uploadPath . '/', '', $newPath),
             ];
         }
+
         return $doneFiles;
     }
 
@@ -224,6 +231,7 @@ class DuplicationManager
         if (empty($data['duplicate-action']) || !in_array($data['duplicate-action'], ['open', 'edit', 'return'])) {
             throw new \Exception(_t('NO_DUPLICATE_ACTION') . '.');
         }
+
         return $data;
     }
 
@@ -281,7 +289,7 @@ class DuplicationManager
         // duplicate metadatas and tags (TODO: is there more duplicable triples?)
         $properties = [
             'http://outils-reseaux.org/_vocabulary/metadata',
-            'http://outils-reseaux.org/_vocabulary/tag'
+            'http://outils-reseaux.org/_vocabulary/tag',
         ];
         foreach ($properties as $prop) {
             $values = $this->wiki->services->get(TripleStore::class)->getAll($this->wiki->GetPageTag(), $prop, '', '');
@@ -295,12 +303,14 @@ class DuplicationManager
     {
         if ($this->wiki->services->get(PageManager::class)->getOne($tag)) {
             throw new Exception(_t('ACEDITOR_LINK_PAGE_ALREADY_EXISTS'));
+
             return;
         }
         $req = $request->request->all();
         foreach (['pageContent', 'sourceUrl', 'originalTag', 'type'] as $key) {
             if (empty($req[$key])) {
                 throw new Exception(_t('NOT_FOUND_IN_REQUEST', $key));
+
                 return;
             }
         }
@@ -308,7 +318,7 @@ class DuplicationManager
             $this->downloadFile($fileUrl, $req['originalTag'], $tag);
         }
 
-        $newUrl =  explode('/?', $this->wiki->config['base_url'])[0];
+        $newUrl = explode('/?', $this->wiki->config['base_url'])[0];
         $newBody = str_replace($req['sourceUrl'], $newUrl, $req['pageContent']);
         if ($req['type'] === 'page') {
             $this->wiki->services->get(PageManager::class)->save($tag, $newBody);
@@ -348,6 +358,7 @@ class DuplicationManager
         if ($factor > 0) {
             $sz = 'KMGT';
         }
+
         return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$sz[$factor - 1] . 'B';
     }
 }

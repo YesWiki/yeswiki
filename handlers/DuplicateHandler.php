@@ -1,12 +1,12 @@
 <?php
 
-use YesWiki\Core\Service\AclService;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\ListManager;
-use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\DuplicationManager;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\DuplicationManager;
+use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 
 class DuplicateHandler extends YesWikiHandler
@@ -21,21 +21,21 @@ class DuplicateHandler extends YesWikiHandler
         $this->entryController = $this->getService(EntryController::class);
         $this->duplicationManager = $this->getService(DuplicationManager::class);
         $title = $error = '';
-        $toExternalWiki = isset($_GET['toUrl']) && $_GET['toUrl'] == "1";
+        $toExternalWiki = isset($_GET['toUrl']) && $_GET['toUrl'] == '1';
         if (!$this->wiki->page) {
             $error .= $this->render('@templates\alert-message.twig', [
                 'type' => 'warning',
                 'message' => str_replace(
-                    ["{beginLink}", "{endLink}"],
-                    ["<a href=\"{$this->wiki->href('')}\">", "</a>"],
-                    _t("NOT_FOUND_PAGE")
+                    ['{beginLink}', '{endLink}'],
+                    ["<a href=\"{$this->wiki->href('')}\">", '</a>'],
+                    _t('NOT_FOUND_PAGE')
                 ),
             ]);
         } elseif (!$this->getService(AclService::class)->hasAccess('read', $this->wiki->GetPageTag())) {
             // if no read access to the page
-            if ($contenu = $this->getService(PageManager::class)->getOne("PageLogin")) {
+            if ($contenu = $this->getService(PageManager::class)->getOne('PageLogin')) {
                 // si une page PageLogin existe, on l'affiche
-                $error .= $this->wiki->Format($contenu["body"]);
+                $error .= $this->wiki->Format($contenu['body']);
             } else {
                 // sinon on affiche le formulaire d'identification minimal
                 $error .= '<div class="vertical-center white-bg">' . "\n"
@@ -51,12 +51,15 @@ class DuplicateHandler extends YesWikiHandler
                 $this->duplicationManager->duplicateLocally($data);
                 if ($data['duplicate-action'] == 'edit') {
                     $this->wiki->Redirect($this->wiki->href('edit', $data['pageTag']));
+
                     return;
-                } else if ($data['duplicate-action'] == 'return') {
+                } elseif ($data['duplicate-action'] == 'return') {
                     $this->wiki->Redirect($this->wiki->href());
+
                     return;
                 }
                 $this->wiki->Redirect($this->wiki->href('', $data['pageTag']));
+
                 return;
             } catch (\Throwable $th) {
                 $error .= $this->render('@templates\alert-message-with-back.twig', [
@@ -118,6 +121,7 @@ class DuplicateHandler extends YesWikiHandler
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
             $title = '';
         }
+
         return $this->renderInSquelette('@core/handlers/duplicate.twig', [
             'title' => $title,
             'originalTag' => $this->wiki->GetPageTag(),

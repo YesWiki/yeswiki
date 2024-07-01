@@ -47,9 +47,9 @@ class PageController extends YesWikiController
         }
     }
 
-    public function duplicate(string $sourceTag, string $destinationTag = '') : bool
+    public function duplicate(string $sourceTag, string $destinationTag = ''): bool
     {
-        if ($this->entryManager->isEntry($sourceTag)){
+        if ($this->entryManager->isEntry($sourceTag)) {
             return $this->entryController->duplicate($sourceTag, $destinationTag);
         } else {
             return $this->pageManager->duplicate($sourceTag, $destinationTag);

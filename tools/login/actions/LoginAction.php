@@ -164,6 +164,7 @@ class LoginAction extends YesWikiAction
         if (!empty($this->arguments['class']) && substr($this->arguments['template'], -strlen('.tpl.html')) == '.tpl.html') {
             $output = "<div class=\"{$this->arguments['class']}\">\n$output\n</div>\n";
         }
+
         return $output;
     }
 
