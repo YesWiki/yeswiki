@@ -79,7 +79,7 @@ class DuplicationManager
     public function findFilesInUploadField($fieldValue)
     {
         $f = $this->uploadPath . '/' . $fieldValue;
-        if (file_exists($f)) {
+        if ($f !== $this->uploadPath . '/' && file_exists($f)) {
             $size = filesize($f);
             $humanSize = $this->humanFilesize($size);
             return ['path' => $f, 'size' => $size, 'humanSize' => $humanSize];
@@ -307,9 +307,16 @@ class DuplicationManager
         foreach ($req['files'] as $fileUrl) {
             $this->downloadFile($fileUrl, $req['originalTag'], $tag);
         }
+
+        $newUrl =  explode('/?', $this->wiki->config['base_url'])[0];
+        $newBody = str_replace($req['sourceUrl'], $newUrl, $req['pageContent']);
         if ($req['type'] === 'page') {
-            $newBody = str_replace('', '', $req['pageContent']);
             $this->wiki->services->get(PageManager::class)->save($tag, $newBody);
+        } elseif ($req['type'] === 'entry') {
+            $entry = json_decode($newBody, true);
+            $entry['id_fiche'] = $tag;
+            $entry['antispam'] = 1;
+            $this->wiki->services->get(EntryManager::class)->create($entry['id_typeannonce'], $entry);
         }
     }
 

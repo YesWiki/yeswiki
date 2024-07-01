@@ -20,7 +20,7 @@ class DuplicateHandler extends YesWikiHandler
         $this->authController = $this->getService(AuthController::class);
         $this->entryController = $this->getService(EntryController::class);
         $this->duplicationManager = $this->getService(DuplicationManager::class);
-        $output = $title = $error = '';
+        $title = $error = '';
         $toExternalWiki = isset($_GET['toUrl']) && $_GET['toUrl'] == "1";
         if (!$this->wiki->page) {
             $error .= $this->render('@templates\alert-message.twig', [
@@ -80,6 +80,7 @@ class DuplicateHandler extends YesWikiHandler
                 if ($toExternalWiki) {
                     $pageTitle = $pageContent['bf_titre'];
                     $proposedTag = $this->wiki->GetPageTag();
+                    $pageContent = $this->wiki->page['body'];
                 } else {
                     $pageTitle = $pageContent['bf_titre'] . ' (' . _t('DUPLICATE') . ')';
                     $proposedTag = genere_nom_wiki($pageTitle);
