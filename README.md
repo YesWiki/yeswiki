@@ -27,13 +27,13 @@ We are using [weblate](https://hosted.weblate.org/yeswiki) to translate our soft
 
 ## Developers
 
-We recommand an installation through docker.
+We recommend an installation through docker.
 
 ### Linters & Formatters
 
-Please install relevant extension and enable auto formating on your editor.
+Please install relevant extension and enable auto formatting on your editor.
 
-Alternatly you can run `make lint`
+Alternatively you can run `make lint`
 
 | Language                    | Linter/Formatter                                             |
 | --------------------------- | ------------------------------------------------------------ |
@@ -42,7 +42,7 @@ Alternatly you can run `make lint`
 | Twig                        | no automatic linter. Couldn't find one which is good enough. |
 | CSS, Yaml, JSON, Markdown.. | `prettier`                                                   |
 
-If you use VS Codium, get yeswiki linting settings with `cp .vscode/settings.example.json .vscode/settings.json`
+If you use VS Codium, get YesWiki linting settings with `cp .vscode/settings.example.json .vscode/settings.json`
 
 ## History
 
