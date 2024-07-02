@@ -6,6 +6,9 @@
 .facette-container .panel-heading {
   cursor: pointer;
 }
+.facette-container .filter-box .panel-body {
+  overflow-x: hidden; /* in case some labels are too long */
+}
 
 .facette-container:not([data-filter-align='left'])
   > .filters-col
@@ -30,11 +33,56 @@
 }
 
 .facette-container .filter-box .node-container .children {
-  padding-left: 2rem;
+  padding-left: 1.7rem;
 }
-.facette-container .filter-box .node-container .checkbox.checked .node-label {
+.facette-container .filter-box .node-container .chevron-icon {
+  font-size: 0.8em;
+  margin-left: 0.5em;
+}
+.facette-container .filter-box .checkbox {
+  margin: 0.5em 1em;
+  color: var(--neutral-soft-color);
+}
+.facette-container .filter-box .checkbox label {
+  display: flex;
+}
+.facette-container .filter-box .checkbox label > span {
+  display: flex;
+  width: 100%;
+}
+.facette-container .filter-box .checkbox label > span > span {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.facette-container .filter-box .checkbox label > span > span:hover .node-label {
+  color: var(--primary-color);
+}
+.facette-container .filter-box .checkbox .count {
+  position: absolute;
+  right: -1em;
+  padding: 0 0.8rem 0 0.5em;
+  background-color: var(--main-container-bg-color);
+}
+.facette-container .filter-box .checkbox .count span {
+  background-color: var(--neutral-light-color);
+  padding: 0 0.5em;
+  border-radius: 0.2em;
   font-weight: bold;
+  font-size: 0.7em;
+  opacity: 0.9;
 }
+.facette-container .filter-box .checkbox .node-label {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+}
+.facette-container .filter-box .checkbox .node-label span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.facette-container .filter-box .checkbox.checked .node-label,
 .facette-container
   .filter-box
   .node-container

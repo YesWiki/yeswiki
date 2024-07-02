@@ -178,7 +178,7 @@ form:not(#ACEditor) .ace-container .ace_scroller {
 }
 
 .ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line {
-  background-color: #e8e8e8;
+  background-color: var(--neutral-light-color);
 }
 
 /* ================= */
