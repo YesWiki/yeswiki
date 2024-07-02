@@ -1,4 +1,4 @@
-import Panel from './components/Panel.js'
+import Panel from '../../../../javascripts/shared-components/Panel.js'
 import EntryField from './components/EntryField.js'
 import PopupEntryField from './components/PopupEntryField.js'
 import SpinnerLoader from './components/SpinnerLoader.js'
