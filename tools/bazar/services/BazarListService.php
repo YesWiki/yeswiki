@@ -266,9 +266,9 @@ class BazarListService
                 'index' => $i,
                 'icon' => !empty($options['groupicons'][$i]) ? '<i class="' . $options['groupicons'][$i] . '"></i> ' : '',
                 'title' => !empty($options['titles'][$i]) ? $options['titles'][$i] : $list['title'],
-                'collasped' => ($i != 0) && !$options['groupsexpanded'],
+                'collapsed' => ($i != 0) && !$options['groupsexpanded'],
                 'list' => $filterOptions,
-                'listeTree' => $filterOptionsTree ?? null,
+                'listTree' => $filterOptionsTree ?? null,
             ];
         }
 
