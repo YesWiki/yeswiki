@@ -31,7 +31,8 @@ module.exports = {
     'object-curly-newline': ['error', { multiline: true }],
     'func-names': ['error', 'never'],
     'space-before-function-paren': ['error', 'never'],
-    'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }]
+    'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
+    'no-new': 'off'
   },
   ignorePatterns: [
     'vendor/',
