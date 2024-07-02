@@ -58,7 +58,7 @@ class TabsField extends LabelField
     protected function renderInput($entry)
     {
         if ($this->getMoveSubmitButtonToLastTab()) {
-            $this->getService(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar-edit-tabs-field.js');
+            $this->getService(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/inputs/tabs.js');
         }
         $this->formText = $this->prepareText('form');
 

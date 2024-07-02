@@ -99,7 +99,7 @@ class BazarAction extends YesWikiAction
         $entryController = $this->getService(EntryController::class);
 
         // TODO put in all bazar templates
-        $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
+        $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
 
         $view = $this->arguments[self::VARIABLE_VOIR];
         $action = $this->arguments[self::VARIABLE_ACTION];

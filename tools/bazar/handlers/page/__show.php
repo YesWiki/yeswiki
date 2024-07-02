@@ -19,6 +19,6 @@ if ($entryManager->isEntry($this->GetPageTag()) && $this->HasAccess('read')) {
         $fiche = $entryManager->getOne($this->GetPageTag(), $semantic);
         $this->exit(json_encode($fiche));
     } else {
-        $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
+        $this->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
     }
 }

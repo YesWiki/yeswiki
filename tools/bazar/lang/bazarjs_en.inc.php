@@ -40,7 +40,7 @@ return [
     'GEOLOCATER_GROUP_GEOLOCATIZATION' => 'Fields to use for geolocalization',
     'GEOLOCATER_GROUP_GEOLOCATIZATION_HINT' => 'Provide at least one field',
     'GEOLOCATER_NOT_FOUND' => 'Not foundable "{addr}" address',
-    // libs/bazar.js
+    // presentation/javascripts/bazar.js
     // 'BAZ_FORM_REQUIRED_FIELD' => 'Veuillez saisir tous les champs obligatoires (avec une asterisque rouge)',
     // 'BAZ_FORM_INVALID_EMAIL' => 'L\'email saisi n\'est pas valide',
     // 'BAZ_FORM_INVALID_TEXT' => 'Le texte n\'est pas valide',
