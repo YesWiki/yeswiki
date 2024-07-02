@@ -44,8 +44,8 @@ const load = (domElement) => {
         const result = {}
         Object.entries(this.filters).forEach(([filterId, filter]) => {
           const checkedValues = flattenTree(filter.nodes)
-            .filter((option) => option.checked)
-            .map((option) => option.value)
+            .filter((node) => node.checked)
+            .map((node) => node.value)
           if (checkedValues.length > 0) result[filterId] = checkedValues
         })
         return result
@@ -135,24 +135,34 @@ const load = (domElement) => {
         this.entriesToDisplay = this.paginatedEntries
       },
       calculateFiltersCount() {
-        // TODO make this recursive
-        for (const fieldName in this.filters) {
-          for (const filterNode of this.filters[fieldName].nodes) {
-            filterNode.nb = this.searchedEntries.filter((entry) => {
-              let entryValues = entry[fieldName]
-              if (!entryValues || typeof entryValues != 'string') return
-              entryValues = entryValues.split(',')
-              return entryValues.some((value) => value == filterNode.value)
-            }).length
-          }
-        }
+        Object.entries(this.filters).forEach(([fieldName, filter]) => {
+          filter.nodes.forEach((rootNode) => {
+            this.recursivelyCalculateFiltersCount(rootNode, fieldName)
+          })
+        })
+      },
+      recursivelyCalculateFiltersCount(filterNode, fieldName) {
+        filterNode.nb = this.searchedEntries.filter((entry) => {
+          let entryValues = entry[fieldName]
+          if (!entryValues || typeof entryValues != 'string') return
+          entryValues = entryValues.split(',')
+          return entryValues.some((value) => value == filterNode.value)
+        }).length
+        filterNode.children.forEach((childNode) => {
+          this.recursivelyCalculateFiltersCount(childNode, fieldName)
+        })
       },
       resetFilters() {
-        // TODO make this recursive
-        for (const filterId in this.filters) {
-          this.filters[filterId].nodes.forEach((option) => option.checked = false)
-        }
+        Object.values(this.filters).forEach((filter) => {
+          filter.nodes.forEach((rootNode) => {
+            this.recursivelyResetFilters(rootNode)
+          })
+        })
         this.search = ''
+      },
+      recursivelyResetFilters(filterNode) {
+        filterNode.checked = false
+        filterNode.children.forEach((childNode) => this.recursivelyResetFilters(childNode))
       },
       saveFiltersIntoHash() {
         if (!this.ready) return
@@ -167,14 +177,12 @@ const load = (domElement) => {
         hash = hash.substring(1) // remove #
         hash.split('&').forEach((combinaison) => {
           const filterId = combinaison.split('=')[0]
-          let filterValues = combinaison.split('=')[1]
+          const filterValues = combinaison.split('=')[1]
           if (filterId == 'q') {
             this.search = filterValues
           } else if (filterId && filterValues && filters[filterId]) {
-            filterValues = filterValues.split(',')
-            // TODO make this recursive
-            filters[filterId].nodes.forEach((filter) => {
-              if (filterValues.includes(filter.value)) filter.checked = true
+            filters[filterId].nodes.forEach((rootNode) => {
+              this.recursivelyCheckFilterByValues(rootNode, filterValues.split(','))
             })
           }
         })
@@ -182,15 +190,21 @@ const load = (domElement) => {
         if (this.search.length == 0) {
           let params = document.location.search
           params = params.substring(1) // remove ?
-          for (const combinaison of params.split('&')) {
+          params.split('&').forEach((combinaison) => {
             const filterId = combinaison.split('=')[0]
             const filterValues = combinaison.split('=')[1]
             if (filterId == 'q') {
               this.search = decodeURIComponent(filterValues)
             }
-          }
+          })
         }
         return filters
+      },
+      recursivelyCheckFilterByValues(filterNode, filterValues) {
+        if (filterValues.includes(filterNode.value)) filterNode.checked = true
+        filterNode.children.forEach((childNode) => {
+          this.recursivelyCheckFilterByValues(childNode, filterValues)
+        })
       },
       getEntryRender(entry) {
         if (entry.html_render) return
@@ -279,7 +293,6 @@ const load = (domElement) => {
         let values = entry[field].split(',')
         // If some filters are checked, and the entry have multiple values, we display
         // the value associated with the checked filter
-        // TODO BazarListDynamic check with users if this is expected behaviour
         if (this.computedFilters[field]) {
           values = values.filter((val) => this.computedFilters[field].includes(val))
         }
@@ -396,6 +409,7 @@ const load = (domElement) => {
       $.getJSON(wiki.url('?api/entries/bazarlist'), this.params, (data) => {
         // process the filters
         const filters = data.filters || {}
+        // flatten the tree, and also calculate the parentNodes at same time
         Object.values(filters).forEach((filter) => {
           filter.flattenNodes = flattenTree(filter.nodes)
         })
@@ -437,8 +451,8 @@ const load = (domElement) => {
               if (entry[propName] && typeof entry[propName] == 'string') {
                 const entryValues = entry[propName].split(',')
                 entryValues.forEach((value) => {
-                  const option = filter.flattenNodes.find((opt) => opt.value == value)
-                  option.parentValues.forEach((parentValue) => {
+                  const correspondingNode = filter.flattenNodes.find((node) => node.value == value)
+                  correspondingNode.parentValues.forEach((parentValue) => {
                     if (!entryValues.includes(parentValue)) entryValues.push(parentValue)
                   })
                 })
