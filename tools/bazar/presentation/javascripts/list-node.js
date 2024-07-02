@@ -4,14 +4,9 @@ export default {
   emits: ['delete'],
   data() {
     return {
-      childCreated: 0,
       expanded: false,
       newNodeLabel: ''
     }
-  },
-  beforeMount() {
-    if (!this.node.children) Vue.set(this.node, 'children', [])
-    this.node.children.forEach((node) => { node.vueRef = node.id })
   },
   methods: {
     addChildNode() {
@@ -19,10 +14,10 @@ export default {
       this.node.children.push({
         label: this.newNodeLabel,
         id: this.slugify(this.newNodeLabel),
-        vueRef: `${this.node.vueRef}_${this.childCreated}`
+        children: [],
+        vueRef: Date.now()
       })
       this.newNodeLabel = ''
-      this.childCreated += 1
       this.expanded = true
     },
     deleteChildNode(nodeToDelete) {
