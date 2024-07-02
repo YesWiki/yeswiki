@@ -275,6 +275,10 @@ input.form-control.error {
   }
 }
 
+.facette-container .filter-box .option-container .children {
+  padding-left: 2rem;
+}
+
 @media (width <= 768px) {
   .facette-container,
   .facette-container[data-filter-align='right'] {
@@ -319,13 +323,6 @@ input.form-control.error {
   display: block;
   margin: 10px 0;
 }
-
-/* .yeswiki-checkbox {
-	display: inline-block;
-	vertical-align: top;
-    width: 235px;
-} */
-.bazar-checkbox-cols {
 
 .filter-and-check-all-container {
   display: flex;
@@ -1190,9 +1187,7 @@ fieldset[disabled] .datepicker table tr td span.active:hover:hover {
 }
 
 /* --------------- */
-
 /*   RANGE FIELD   */
-
 /* --------------- */
 
 .range-wrap {
