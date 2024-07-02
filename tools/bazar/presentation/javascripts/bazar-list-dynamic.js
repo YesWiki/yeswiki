@@ -30,17 +30,20 @@ const load = (domElement) => {
       imagesToProcess: [],
       processingImage: false,
       search: '',
-      searchFormId: null, // wether to search for a particular form ID (only used when no form id is defined for the bazar list action)
+      // wether to search for a particular form ID (only used when no
+      // form id is defined for the bazar list action)
+      searchFormId: null,
       searchTimer: null // use ot debounce user input
     },
     computed: {
       computedFilters() {
         const result = {}
-        for (const filterId in this.filters) {
-          const checkedValues = this.filters[filterId].list.filter((option) => option.checked)
+        Object.entries(this.filters).forEach(([filterId, filter]) => {
+          const checkedValues = filter.list
+            .filter((option) => option.checked)
             .map((option) => option.value)
           if (checkedValues.length > 0) result[filterId] = checkedValues
-        }
+        })
         return result
       },
       filteredEntriesCount() {
@@ -48,10 +51,14 @@ const load = (domElement) => {
       },
       pages() {
         if (this.pagination <= 0) return []
-        const pagesCount = Math.ceil(this.filteredEntries.length / parseInt(this.pagination))
+        const pagesCount = Math.ceil(this.filteredEntries.length / parseInt(this.pagination, 10))
         const start = 0; const
           end = pagesCount - 1
-        let pages = [this.currentPage - 2, this.currentPage - 1, this.currentPage, this.currentPage + 1, this.currentPage + 2]
+        let pages = [
+          this.currentPage - 2, this.currentPage - 1,
+          this.currentPage,
+          this.currentPage + 1, this.currentPage + 2
+        ]
         pages = pages.filter((page) => page >= start && page <= end)
         if (!pages.includes(start)) {
           if (!pages.includes(start + 1)) pages.unshift('divider')
@@ -83,9 +90,8 @@ const load = (domElement) => {
       calculateBaseEntries() {
         let result = this.entries
         if (this.searchFormId) {
-          result = result.filter((entry) =>
           // filter based on formId, when no form id is specified
-            entry.id_typeannonce == this.searchFormId)
+          result = result.filter((entry) => entry.id_typeannonce == this.searchFormId)
         }
         if (this.search && this.search.length > 2) {
           result = this.searchEntries(result, this.search)
@@ -97,7 +103,7 @@ const load = (domElement) => {
         this.filterEntries()
       },
       filterEntries() {
-      // Handles filters
+        // Handles filters
         let result = this.searchedEntries
         for (const filterId in this.computedFilters) {
           result = result.filter((entry) => {
@@ -376,7 +382,7 @@ const load = (domElement) => {
       this.mounted = true
       // Retrieve data asynchronoulsy
       $.getJSON(wiki.url('?api/entries/bazarlist'), this.params, (data) => {
-      // First display filters cause entries can be a bit long to load
+        // First display filters cause entries can be a bit long to load
         this.filters = this.initFiltersFromHash(data.filters || [], savedHash)
 
         // Auto adjust some params depending on entries count
