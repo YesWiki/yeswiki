@@ -44,7 +44,7 @@ abstract class EnumField extends BazarField
             $this->options = [];
             foreach ($list['nodes'] as $node) {
                 $this->loadOptionsFromListNode($node);
-                if (count($node['children']) > 0) {
+                if (isset($node['children']) && count($node['children']) > 0) {
                     $this->optionsTree = $list['nodes'];
                 }
             }
@@ -154,7 +154,7 @@ abstract class EnumField extends BazarField
         $this->propertyName = $this->type . removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $this->name))) . $this->listLabel;
         $this->loadOptionsFromJson();
         if (
-            preg_match('/^(.*\/\??)'// catch baseUrl
+            preg_match('/^(.*\/\??)' // catch baseUrl
                 . '(?:' // followed by
                 . '\w*\/json&(?:.*)demand=entries(?:&.*)?' // json handler with demand = entries
                 . '|api\/forms\/[0-9]*\/entries' // or api forms/{id}/entries
