@@ -157,7 +157,7 @@ class BazarListService
             }
         }
 
-        foreach ($facettables as $id => $facettable) {
+        foreach ($facettables as $facetteId => $facettable) {
             $list = [];
             // Formatte la liste des resultats en fonction de la source
             if (in_array($facettable['type'], ['liste', 'fiche'])) {
@@ -172,77 +172,104 @@ class BazarListService
                             ) . ' returned');
                     }
                 } elseif ($facettable['type'] == 'liste') {
-                    $list['titre_liste'] = $field->getLabel();
-                    $list['label'] = $field->getOptions();
+                    $list['title'] = $field->getLabel();
+                    $list['options'] = $field->getOptions();
+                    $list['optionsTree'] = $field->getOptionsTree();
                 } elseif ($facettable['type'] == 'fiche') {
                     $formId = $field->getLinkedObjectName();
                     $form = $forms[$formId];
-                    $list['titre_liste'] = $form['bn_label_nature'];
-                    $list['label'] = [];
+                    $list['title'] = $form['bn_label_nature'];
+                    $list['options'] = [];
                     foreach ($facettable as $idfiche => $nb) {
                         if ($idfiche != 'source' && $idfiche != 'type') {
                             $f = $this->entryManager->getOne($idfiche);
                             if (!empty($f['bf_titre'])) {
-                                $list['label'][$idfiche] = $f['bf_titre'];
+                                $list['options'][$idfiche] = $f['bf_titre'];
                             }
                         }
                     }
                 }
             } elseif ($facettable['type'] == 'form') {
                 if ($facettable['source'] == 'id_typeannonce') {
-                    $list['titre_liste'] = _t('BAZ_TYPE_FICHE');
+                    $list['title'] = _t('BAZ_TYPE_FICHE');
                     foreach ($facettable as $idf => $nb) {
                         if ($idf != 'source' && $idf != 'type') {
-                            $list['label'][$idf] = $forms[$idf]['bn_label_nature'] ?? $idf;
+                            $list['options'][$idf] = $forms[$idf]['bn_label_nature'] ?? $idf;
                         }
                     }
                 } elseif ($facettable['source'] == 'owner') {
-                    $list['titre_liste'] = _t('BAZ_CREATOR');
+                    $list['title'] = _t('BAZ_CREATOR');
                     foreach ($facettable as $idf => $nb) {
                         if ($idf != 'source' && $idf != 'type') {
-                            $list['label'][$idf] = $idf;
+                            $list['options'][$idf] = $idf;
                         }
                     }
                 } else {
-                    $list['titre_liste'] = $id;
+                    $list['title'] = $id;
                     foreach ($facettable as $idf => $nb) {
                         if ($idf != 'source' && $idf != 'type') {
-                            $list['label'][$idf] = $idf;
+                            $list['options'][$idf] = $idf;
                         }
                     }
                 }
             }
 
-            $idkey = htmlspecialchars($id);
-
-            $i = array_key_first(array_filter($options['groups'], function ($value) use ($idkey) {
-                return $value == $idkey;
-            }));
-
-            $filters[$idkey]['icon'] = !empty($options['groupicons'][$i]) ?
-                    '<i class="' . $options['groupicons'][$i] . '"></i> ' : '';
-
-            $filters[$idkey]['title'] = !empty($options['titles'][$i]) ?
-                    $options['titles'][$i] : $list['titre_liste'];
-
-            $filters[$idkey]['collapsed'] = ($i != 0) && !$options['groupsexpanded'];
-
-            $filters[$idkey]['index'] = $i;
+            $facetteId = htmlspecialchars($facetteId);
 
             // sort facette labels
-            natcasesort($list['label']);
-            foreach ($list['label'] as $listkey => $label) {
-                if (!empty($facettables[$id][$listkey])) {
-                    $filters[$idkey]['list'][] = [
-                        'id' => $idkey . $listkey,
-                        'name' => $idkey,
-                        'value' => htmlspecialchars($listkey),
-                        'label' => $label,
-                        'nb' => $facettables[$id][$listkey],
-                        'checked' => (isset($tabfacette[$idkey]) and in_array($listkey, $tabfacette[$idkey])) ? ' checked' : '',
-                    ];
+            natcasesort($list['options']);
+
+            function createFilterOption($listkey, $label, $facetteId, $facettable, $tabfacette)
+            {
+                return [
+                    'id' => $facetteId . $listkey,
+                    'name' => $facetteId,
+                    'value' => htmlspecialchars($listkey),
+                    'label' => $label,
+                    'nb' => $facettable[$listkey] ?? 0,
+                    'checked' => (isset($tabfacette[$facetteId]) and in_array($listkey, $tabfacette[$facetteId])) ? ' checked' : '',
+                ];
+            }
+
+            $filterOptions = [];
+            foreach ($list['options'] as $listkey => $label) {
+                if (!empty($facettable[$listkey])) {
+                    $filterOptions[] = createFilterOption($listkey, $label, $facetteId, $facettable, $tabfacette);
                 }
             }
+
+            if (!empty($list['optionsTree'])) {
+                function recursivelyConvertNode($node, $facetteId, $facettable, $tabfacette)
+                {
+                    $result = createFilterOption($node['id'], $node['label'], $facetteId, $facettable, $tabfacette);
+
+                    foreach ($node['children'] as $childNode) {
+                        // if (!empty($facettable[$childNode['id']])) {
+                        $result['children'][] = recursivelyConvertNode($childNode, $facetteId, $facettable, $tabfacette);
+                        // }
+                    }
+
+                    return $result;
+                }
+                foreach ($list['optionsTree'] as $node) {
+                    // if (!empty($facettable[$node['id']])) {
+                    $filterOptionsTree[] = recursivelyConvertNode($node, $facetteId, $facettable, $tabfacette);
+                    // }
+                }
+            }
+
+            $i = array_key_first(array_filter($options['groups'], function ($value) use ($facetteId) {
+                return $value == $facetteId;
+            }));
+
+            $filters[$facetteId] = [
+                'index' => $i,
+                'icon' => !empty($options['groupicons'][$i]) ? '<i class="' . $options['groupicons'][$i] . '"></i> ' : '',
+                'title' => !empty($options['titles'][$i]) ? $options['titles'][$i] : $list['title'],
+                'collasped' => ($i != 0) && !$options['groupsexpanded'],
+                'list' => $filterOptions,
+                'listeTree' => $filterOptionsTree ?? null,
+            ];
         }
 
         // reorder $filters

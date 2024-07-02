@@ -173,6 +173,11 @@ abstract class EnumField extends BazarField
         return $this->options;
     }
 
+    public function getOptionsTree()
+    {
+        return $this->optionsTree;
+    }
+
     protected function getEntriesOptions()
     {
         // load options only when needed but not at construct to prevent infinite loops
