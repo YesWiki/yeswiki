@@ -29,7 +29,9 @@
           {{"{{ filter.title }}"}}
         </template>
         <template #body>
-          <Filter-Node v-for="filterNode, id in filter.nodes" :key="id" :node="filterNode" />
+          <div class="filter-nodes">
+            <Filter-Node v-for="filterNode, id in filter.nodes" :key="id" :node="filterNode" />
+          </div>
         </template>
       </Panel>
     </div>
