@@ -1,7 +1,7 @@
 export default {
   props: ['option'],
   template: `
-    <div class="option-container">
+    <div class="option-container" v-show="option.nb > 0">
       <div class="checkbox">
         <label>
           <input class="filter-checkbox" type="checkbox"
