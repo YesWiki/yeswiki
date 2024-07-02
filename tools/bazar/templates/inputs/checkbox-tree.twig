@@ -10,21 +10,34 @@
 {% endblock %}
 
 {% macro node(node, field, values) %}
-	<div class="node-container">
+{% set checked = node.id in values %}
+	<div class="node-container {% if checked %}expanded{% endif %}">
 		{% set name = field.propertyName ~ '[' ~ node.id ~ ']' %}
-		<div class="checkbox">
+		<div class="checkbox checkbox-node">
 			<label for="{{ name }}">
-				<input type="checkbox" id="{{ name }}" value="1" name="{{ name }}" {% if node.id in values %} checked {% endif %}/>
-				<span>{{ node.label|raw }}</span>
+				<input type="checkbox" id="{{ name }}" value="1" name="{{ name }}" 
+				       {% if checked %} checked {% endif %} />
+				{# Those two spans are needed, the first one contains both the label + the checkboxed drawn with css 
+					 with :after and :before pseudo element. We want the behaviour to differ depending on where the user clicks #}
+				<span>
+						<span class="checkbox-label">
+							{{ node.label|raw }}
+							{% if node.children|length > 0 %}
+								<i class="chevron-icon fa fa-chevron-right"></i>
+							{% endif %}
+						</span>		
+				</span>
 			</label>
 		</div>
-		<div class="node-children">
+		<div class="node-children" {% if checked %}style="display: block;"{% endif %}>
+			<div class="border"></div>
 			{% for childNode in node.children %}
-        {{ _self.node(childNode, field, values) }}
+					{{ _self.node(childNode, field, values) }}
 			{% endfor %}
 		</div>
 	</div>
 {% endmacro %}
+
 
 
 
