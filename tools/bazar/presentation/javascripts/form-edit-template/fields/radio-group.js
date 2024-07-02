@@ -24,6 +24,7 @@ export default {
       }
     }
   },
+  defaultIdentifier: 'bf_choice',
   advancedAttributes: ['read', 'write', 'semantic', 'queries', 'fillingMode', 'options'],
   // disabledAttributes: [],
   attributesMapping: { ...listsMapping, ...{ 7: 'fillingMode' } }
