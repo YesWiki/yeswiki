@@ -13,6 +13,7 @@ abstract class EnumField extends BazarField
 {
     protected $options;
     protected $optionsUrls; // only for loadOptionsFromJson
+    protected $optionsTree = null; // only for list with multi levels
 
     protected $listLabel; // Allows to differentiate two enums using the same list
     protected $keywords;
@@ -43,10 +44,14 @@ abstract class EnumField extends BazarField
             $this->options = [];
             foreach ($list['nodes'] as $node) {
                 $this->loadOptionsFromListNode($node);
+                if (count($node['children']) > 0) {
+                    $this->optionsTree = $list['nodes'];
+                }
             }
         }
     }
 
+    // Recursively load options from list, in case the list is a tree (with children)
     private function loadOptionsFromListNode($node, $parentLabel = '')
     {
         $this->options[$node['id']] = $parentLabel . $node['label'];
@@ -94,11 +99,13 @@ abstract class EnumField extends BazarField
                 // be carefull it is an array here
                 if (isset($field['propertyname']) && ($field['propertyname'] == $this->getPropertyName())) {
                     $this->options = $field['options'] ?? [];
+
                     return $this->options;
                 }
             }
         }
         $this->options = [];
+
         return $this->options;
     }
 
@@ -176,6 +183,7 @@ abstract class EnumField extends BazarField
                 $this->loadOptionsFromEntries();
             }
         }
+
         return $this->options;
     }
 
