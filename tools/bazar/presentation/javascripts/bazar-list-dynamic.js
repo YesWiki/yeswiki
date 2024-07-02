@@ -444,9 +444,11 @@ const load = (domElement) => {
                 const entryValues = entry[propName].split(',')
                 entryValues.forEach((value) => {
                   const correspondingNode = filter.flattenNodes.find((node) => node.value == value)
-                  correspondingNode.parents.forEach((parent) => {
-                    if (!entryValues.includes(parent.value)) entryValues.push(parent.value)
-                  })
+                  if (correspondingNode) {
+                    correspondingNode.parents.forEach((parent) => {
+                      if (!entryValues.includes(parent.value)) entryValues.push(parent.value)
+                    })
+                  }
                 })
                 entry[propName] = entryValues.join(',')
               }
