@@ -58,7 +58,7 @@ parameters:
   # Le nombre maximum de fiches affichées par checkboxfiche sans que les champs 'Filter' et 'Cocher tout' ne soient affichés false pas de filtre
   BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE: 6
   # Le nombre maximum de fiches affichées par checkboxfuche sans que le champ 'selectall' ne soit affiché ; false : récupère le paramètre BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE
-  BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL: false
+  BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL: 7
   # type d'affichage par défaut pour checkboxfiche en mode normal
   BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE: 'list'
   # Le nombre maximum de fiches affichées par checkbox sans que le champ 'Filter' ne soit affiché ; false pas de filtre
@@ -66,7 +66,7 @@ parameters:
   # Le nombre maximum d'éléments affichées par radio sans que le champ 'Filter' ne soit affiché ; false pas de filtre
   BAZ_MAX_RADIO_WITHOUT_FILTER: 6
   # Le nombre maximum de fiches affichées par checkbox sans que le champ 'selectall' ne soit affiché ; false : récupère le paramètre BAZ_MAX_CHECKBOXLIST_WITHOUT_FILTER
-  BAZ_MAX_CHECKBOXLIST_WITHOUT_SELECTALL: false
+  BAZ_MAX_CHECKBOXLIST_WITHOUT_SELECTALL: 7
   # type d'affichage par défaut pour checkbox en mode normal
   BAZ_MAX_CHECKBOXLIST_DISPLAY_MODE: 'div'
   # Hauteur d'affichage de la liste des options dans un mode Drag & Drop : null comportement par défaut (équivalent 300px), autres valeurs par exemple '450' pour 450px
