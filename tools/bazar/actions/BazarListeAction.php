@@ -255,7 +255,7 @@ class BazarListeAction extends YesWikiAction
             ]);
         } else {
             $entries = $bazarListService->getEntries($this->arguments, $forms);
-            $filters = $bazarListService->formatFilters($this->arguments, $entries, $forms);
+            $filters = $bazarListService->getFilters($this->arguments, $entries, $forms);
 
             // To handle multiple bazarlist in a same page, we need a specific ID per bazarlist
             // We use a global variable to count the number of bazarliste action run on this page
