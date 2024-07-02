@@ -42,11 +42,11 @@ const load = (domElement) => {
     computed: {
       computedFilters() {
         const result = {}
-        Object.entries(this.filters).forEach(([filterId, filter]) => {
+        this.filters.forEach((filter) => {
           const checkedValues = filter.flattenNodes
             .filter((node) => node.checked)
             .map((node) => node.value)
-          if (checkedValues.length > 0) result[filterId] = checkedValues
+          if (checkedValues.length > 0) result[filter.propName] = checkedValues
         })
         return result
       },
@@ -135,10 +135,10 @@ const load = (domElement) => {
         this.entriesToDisplay = this.paginatedEntries
       },
       calculateFiltersCount() {
-        Object.entries(this.filters).forEach(([fieldName, filter]) => {
+        this.filters.forEach((filter) => {
           filter.flattenNodes.forEach((node) => {
-            node.nb = this.searchedEntries.filter((entry) => {
-              let entryValues = entry[fieldName]
+            node.count = this.searchedEntries.filter((entry) => {
+              let entryValues = entry[filter.propName]
               if (!entryValues || typeof entryValues != 'string') return
               entryValues = entryValues.split(',')
               return entryValues.some((value) => value == node.value)
@@ -147,7 +147,7 @@ const load = (domElement) => {
         })
       },
       resetFilters() {
-        Object.values(this.filters).forEach((filter) => {
+        this.filters.forEach((filter) => {
           filter.flattenNodes.forEach((node) => { node.checked = false })
         })
         this.search = ''
@@ -166,10 +166,11 @@ const load = (domElement) => {
         hash.split('&').forEach((combinaison) => {
           const filterId = combinaison.split('=')[0]
           const filterValues = combinaison.split('=')[1]
+          const filter = this.filters.find((f) => f.propName == fieldId)
           if (filterId == 'q') {
             this.search = filterValues
-          } else if (filterId && filterValues && filters[filterId]) {
-            filters[filterId].flattenNodes.forEach((node) => {
+          } else if (filterId && filterValues && filter) {
+            filter.flattenNodes.forEach((node) => {
               if (filterValues.includes(node.value)) node.checked = true
             })
           }
@@ -390,13 +391,18 @@ const load = (domElement) => {
       // Retrieve data asynchronoulsy
       $.getJSON(wiki.url('?api/entries/bazarlist'), this.params, (data) => {
         // process the filters
-        const filters = data.filters || {}
+        const filters = data.filters || []
         // Calculate the parents
-        Object.values(filters).forEach((filter) => {
+        filters.forEach((filter) => {
           filter.nodes.forEach((rootNode) => recursivelyCalculateRelations(rootNode))
           filter.flattenNodes = filter.nodes
             .map((rootNode) => [rootNode, ...rootNode.descendants])
             .flat()
+          // init some attributes for reactivity
+          filter.flattenNodes.forEach((node) => {
+            node.count = 0
+            node.checked = false
+          })
         })
         // First display filters cause entries can be a bit long to load
         this.filters = this.initFiltersFromHash(filters, savedHash)
@@ -432,7 +438,8 @@ const load = (domElement) => {
             // filters for checkboxes: [{ value: "website", children: [ { value: "yeswiki" }] }]
             // entryA { checkboxes: "yeswiki" }
             // => entryA { checkboxes: "yeswiki,website" }
-            Object.entries(this.filters).forEach(([propName, filter]) => {
+            this.filters.forEach((filter) => {
+              const { propName } = filter
               if (entry[propName] && typeof entry[propName] == 'string') {
                 const entryValues = entry[propName].split(',')
                 entryValues.forEach((value) => {

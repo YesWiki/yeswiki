@@ -4,7 +4,7 @@ namespace YesWiki\Bazar\Service;
 
 use Attach;
 use YesWiki\Bazar\Controller\EntryController;
-use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Wiki;
 
 class BazarListService
@@ -126,178 +126,168 @@ class BazarListService
         return $entries;
     }
 
+    // Use bazarlist options like groups, titles, groupicons, groupsexpanded
+    // To create a filters array to be used by the view
+    // Note for [old-non-dynamic-bazarlist] For old bazarlist, most of the calculation happens on the backend
+    // But with the new dynamic bazalist, everything is done on the front
     public function getFilters($options, $entries, $forms): array
     {
-        if (empty($options['groups'])) {
-            return [];
+        // add default options
+        $options = array_merge([
+            'groups' => [],
+            'dynamic' => true,
+            'groupsexpanded' => false,
+        ], $options);
+
+        $formIdsUsed = array_unique(array_column($entries, 'id_typeannonce'));
+        $formsUsed = array_map(function ($formId) use ($forms) { return $forms[$formId]; }, $formIdsUsed);
+        $allFields = array_merge(...array_column($formsUsed, 'prepared'));
+
+        $propNames = $options['groups'];
+        // Special value groups=all use all available Enum fields
+        if (count($propNames) == 1 && $propNames[0] == 'all') {
+            $enumFields = array_filter($allFields, function ($field) {
+                return $field instanceof EnumField;
+            });
+            $propNames = array_map(function ($field) { return $field->getPropertyName(); }, $enumFields);
         }
 
-        // Scanne tous les champs qui pourraient faire des filtres pour les facettes
-        $facettables = $this->formManager
-                            ->scanAllFacettable($entries, $options['groups']);
-
-        if (count($facettables) == 0) {
-            return [];
-        }
-
-        if (!$forms) {
-            $forms = $this->getForms($options);
-        }
         $filters = [];
-        // Récupere les facettes cochees
-        // only used for old non dynamic bazarlist
-        $tabfacette = [];
-        if (isset($_GET['facette']) && !empty($_GET['facette'])) {
-            $tab = explode('|', $_GET['facette']);
-            //découpe la requete autour des |
-            foreach ($tab as $req) {
-                $tabdecoup = explode('=', $req, 2);
-                if (count($tabdecoup) > 1) {
-                    $tabfacette[$tabdecoup[0]] = explode(',', trim($tabdecoup[1]));
-                }
-            }
-        }
 
-        foreach ($facettables as $facetteId => $facettable) {
+        foreach ($propNames as $index => $propName) {
             // Create a filter object to be returned to the view
             $filter = [
+                'propName' => $propName,
                 'title' => '',
                 'icon' => '',
                 'nodes' => [],
                 'collapsed' => true,
             ];
 
-            // Depending on the facette type, get the list of filter nodes
-            if ($facettable['type'] == 'liste') {
-                $field = $this->findFieldByName($forms, $facettable['source']);
+            // Check if an existing Form Field existing by this propName
+            foreach ($allFields as $aField) {
+                if ($aField->getPropertyName() == $propName) {
+                    $field = $aField;
+                    break;
+                }
+            }
+            // Depending on the propName, get the list of filter nodes
+            if (!empty($field) && $field instanceof EnumField) {
+                // ENUM FIELD
                 $filter['title'] = $field->getLabel();
-                if (!empty($field->getOptionsTree())) {
+
+                if (!empty($field->getOptionsTree()) && $options['dynamic'] == true) {
+                    // OptionsTree only supported by bazarlist dynamic
                     foreach ($field->getOptionsTree() as $node) {
-                        $filter['nodes'][] = $this->recursivelyCreateNode($node, $facetteId, $facettable, $tabfacette);
+                        $filter['nodes'][] = $this->recursivelyCreateNode($node);
                     }
                 } else {
                     foreach ($field->getOptions() as $value => $label) {
-                        if (!empty($facettable[$value])) {
-                            $filter['nodes'][] = $this->createFilterNode($value, $label, $facetteId, $facettable, $tabfacette);
-                        }
+                        $filter['nodes'][] = $this->createFilterNode($value, $label);
                     }
                 }
-            } elseif ($facettable['type'] == 'fiche') {
-                $filter['title'] = $form['bn_label_nature'];
-                $field = $this->findFieldByName($forms, $facettable['source']);
-                $formId = $field->getLinkedObjectName();
-                $form = $forms[$formId];
-                foreach ($facettable as $entryId => $nb) {
-                    if ($entryId != 'source' && $entryId != 'type') {
-                        $entry = $this->entryManager->getOne($entryId);
-                        if (!empty($f['bf_titre'])) {
-                            $filter['nodes'][] = $this->createFilterNode($entryId, $entry['bf_titre'], $facetteId, $facettable, $tabfacette);
-                        }
-                    }
+            } elseif ($propName == 'id_typeannonce') {
+                // SPECIAL PROPNAME id_typeannonce
+                $filter['title'] = _t('BAZ_TYPE_FICHE');
+                foreach ($formsUsed as $form) {
+                    $filter['nodes'][] = $this->createFilterNode($form['bn_id_nature'], $form['bn_label_nature']);
                 }
-                natcasesort($filter['nodes']); // sort nodes by label
-            } elseif ($facettable['type'] == 'form') {
-                if ($facettable['source'] == 'id_typeannonce') {
-                    $filter['title'] = _t('BAZ_TYPE_FICHE');
-                } elseif ($facettable['source'] == 'owner') {
-                    $filter['title'] = _t('BAZ_CREATOR');
-                } else {
-                    $filter['title'] = $id;
+                usort($filter['nodes'], function ($a, $b) { return strcmp($a['label'], $b['label']); });
+            } else {
+                // OTHER PROPNAME (for example a field that is not an Enum)
+                $filter['title'] = $propName == 'owner' ? _t('BAZ_CREATOR') : $propName;
+                // We collect all values
+                $uniqValues = array_unique(array_column($entries, $propName));
+                sort($uniqValues);
+                foreach ($uniqValues as $value) {
+                    $filter['nodes'][] = $this->createFilterNode($value, $value);
                 }
-                foreach ($facettable as $idf => $nb) {
-                    if ($idf != 'source' && $idf != 'type') {
-                        $label = $facettable['source'] == 'id_typeannonce' ? $forms[$idf]['bn_label_nature'] ?? $idf : $idf;
-                        $filter['nodes'][] = $this->createFilterNode($idf, $label, $facetteId, $facettable, $tabfacette);
-                    }
-                }
-                natcasesort($filter['nodes']); // sort nodes by label
             }
-
-            $facetteId = htmlspecialchars($facetteId);
-
-            $i = array_key_first(array_filter($options['groups'], function ($value) use ($facetteId) {
-                return $value == $facetteId;
-            }));
 
             // Filter Icon
-            if (!empty($options['groupicons'][$i])) {
-                $filter['icon'] = '<i class="' . $options['groupicons'][$i] . '"></i> ';
+            if (!empty($options['groupicons'][$index])) {
+                $filter['icon'] = '<i class="' . $options['groupicons'][$index] . '"></i> ';
             }
             // Custom title
-            if (!empty($options['titles'][$i])) {
-                $filter['title'] = $options['titles'][$i];
+            if (!empty($options['titles'][$index])) {
+                $filter['title'] = $options['titles'][$index];
             }
             // Initial Collapsed state
-            $filter['collapsed'] = ($i != 0) && !$options['groupsexpanded'];
-            $filter['index'] = $i;
+            $filter['collapsed'] = ($index != 0) && !$options['groupsexpanded'];
 
-            $filters[$facetteId] = $filter;
-        }
-
-        // reorder $filters
-        uasort($filters, function ($a, $b) {
-            if (isset($a['index']) && isset($b['index'])) {
-                if ($a['index'] == $b['index']) {
-                    return 0;
-                } else {
-                    return ($a['index'] < $b['index']) ? -1 : 1;
+            // [old-non-dynamic-bazarlist] For old bazarlist, most of the calculation happens on the backend
+            if ($options['dynamic'] == false) {
+                $checkedValues = $this->parseCheckedFiltersInURLForNonDynamic();
+                // Calculate the count for each filterNode
+                $entriesValues = array_column($entries, $propName);
+                // convert string values to array
+                $entriesValues = array_map(function ($val) { return explode(',', $val); }, $entriesValues);
+                // flatten the array
+                $entriesValues = array_merge(...$entriesValues);
+                $countedValues = array_count_values($entriesValues);
+                $adjustedNodes = [];
+                foreach ($filter['nodes'] as $rootNode) {
+                    $adjustedNodes[] = $this->recursivelyInitValuesForNonDynamic($rootNode, $propName, $countedValues, $checkedValues);
                 }
-            } elseif (isset($a['index'])) {
-                return 1;
-            } elseif (isset($b['index'])) {
-                return -1;
-            } else {
-                return 0;
+                $filter['nodes'] = $adjustedNodes;
             }
-        });
 
-        foreach ($filters as $id => $filter) {
-            if (isset($filter['index'])) {
-                unset($filter['index']);
-            }
+            $filters[] = $filter;
         }
 
         return $filters;
     }
 
-    private function createFilterNode($value, $label, $facetteId, $facettable, $tabfacette)
+    // [old-non-dynamic-bazarlist] filters state in stored in URL
+    // ?Page&facette=field1=3,4|field2=web
+    // => ['field1' => ['3', '4'], 'field2' => ['web']]
+    private function parseCheckedFiltersInURLForNonDynamic()
     {
-        return [
-            'value' => htmlspecialchars($value),
-            'label' => $label,
-            'children' => [],
-            // below fields are only used for old non dynamic bazarlist
-            'id' => $facetteId . $value,
-            'name' => $facetteId,
-            'nb' => $facettable[$value] ?? 0,
-            'checked' => (isset($tabfacette[$facetteId]) and in_array($value, $tabfacette[$facetteId])) ? ' checked' : '',
-        ];
-    }
-
-    private function recursivelyCreateNode($node, $facetteId, $facettable, $tabfacette)
-    {
-        $result = $this->createFilterNode($node['id'], $node['label'], $facetteId, $facettable, $tabfacette);
-        foreach ($node['children'] as $childNode) {
-            $result['children'][] = $this->recursivelyCreateNode($childNode, $facetteId, $facettable, $tabfacette);
+        if (empty($_GET['facette'])) {
+            return [];
+        }
+        $result = [];
+        foreach (explode('|', $_GET['facette']) as $field) {
+            list($key, $values) = explode('=', $field);
+            $result[$key] = explode(',', trim($values));
         }
 
         return $result;
     }
 
-    /*
-     * Scan all forms and return the first field matching the given ID
-     */
-    private function findFieldByName($forms, $name)
+    private function createFilterNode($value, $label)
     {
-        foreach ($forms as $form) {
-            foreach ($form['prepared'] as $field) {
-                if ($field instanceof BazarField) {
-                    if ($field->getPropertyName() === $name) {
-                        return $field;
-                    }
-                }
-            }
+        return [
+            'value' => htmlspecialchars($value),
+            'label' => $label,
+            'children' => [],
+        ];
+    }
+
+    private function recursivelyCreateNode($node)
+    {
+        $result = $this->createFilterNode($node['id'], $node['label']);
+        foreach ($node['children'] as $childNode) {
+            $result['children'][] = $this->recursivelyCreateNode($childNode);
         }
+
+        return $result;
+    }
+
+    private function recursivelyInitValuesForNonDynamic($node, $propName, $countedValues, $checkedValues)
+    {
+        $result = array_merge($node, [
+            'id' => $propName . $node['value'],
+            'name' => $propName,
+            'count' => $countedValues[$node['value']] ?? 0,
+            'checked' => isset($checkedValues[$propName]) && in_array($node['value'], $checkedValues[$propName]) ? ' checked' : '',
+        ]);
+
+        foreach ($node['children'] as &$childNode) {
+            $result['children'][] = $this->recursivelyInitValuesForNonDynamic($childNode, $propName, $countedValues, $checkedValues);
+        }
+
+        return $result;
     }
 
     private function buildFieldSorter($ordre, $champ): callable

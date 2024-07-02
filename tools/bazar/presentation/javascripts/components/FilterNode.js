@@ -1,9 +1,9 @@
 export default {
   props: ['node'],
   computed: {
-    // A parent node should be display if some of it's children has nb > 0
+    // A parent node should be display if some of it's children has count > 0
     displayNode() {
-      return [this.node, ...this.node.descendants].some((node) => node.nb > 0)
+      return [this.node, ...this.node.descendants].some((node) => node.count > 0)
     },
     someDescendantChecked() {
       return this.node.descendants.some((node) => node.checked)
@@ -36,7 +36,7 @@ export default {
                  v-model="node.checked" @change="onChecked">
           <span>
             <span class="node-label" v-html="node.label"></span>
-            <span class="nb" v-if="node.nb">({{ node.nb }})</span>
+            <span class="nb" v-if="node.count">({{ node.count }})</span>
           </span>
         </label>
       </div>
