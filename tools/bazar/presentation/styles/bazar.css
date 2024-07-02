@@ -3,92 +3,47 @@
 @import url('./entries/form.css');
 @import url('./entries/view.css');
 
-/* loading spinner */
-@keyframes throbber {
-  0% {
-    background: #dde2e7;
-  }
+.throbber {
+  width: 56px;
+  height: 1.5rem;
+  background:
+    radial-gradient(circle closest-side, var(--primary-color) 90%, #0000) 0% 50%,
+    radial-gradient(circle closest-side, var(--primary-color) 90%, #0000) 50%
+      50%,
+    radial-gradient(circle closest-side, var(--primary-color) 90%, #0000) 100%
+      50%;
+  background-size: calc(100% / 3) 13.4px;
+  background-repeat: no-repeat;
+  animation: dots-7ar3yq 1s infinite linear;
+  margin-right: 1em;
+}
 
-  10% {
-    background: #6b9dc8;
+@keyframes dots-7ar3yq {
+  20% {
+    background-position:
+      0% 0%,
+      50% 50%,
+      100% 50%;
   }
 
   40% {
-    background: #dde2e7;
-  }
-}
-
-@keyframes throbber {
-  0% {
-    background: #dde2e7;
+    background-position:
+      0% 100%,
+      50% 0%,
+      100% 50%;
   }
 
-  10% {
-    background: #6b9dc8;
+  60% {
+    background-position:
+      0% 50%,
+      50% 100%,
+      100% 0%;
   }
 
-  40% {
-    background: #dde2e7;
+  80% {
+    background-position:
+      0% 50%,
+      50% 50%,
+      100% 100%;
   }
-}
-
-@keyframes throbber {
-  0% {
-    background: #dde2e7;
-  }
-
-  10% {
-    background: #6b9dc8;
-  }
-
-  40% {
-    background: #dde2e7;
-  }
-}
-
-@keyframes throbber {
-  0% {
-    background: #dde2e7;
-  }
-
-  10% {
-    background: #6b9dc8;
-  }
-
-  40% {
-    background: #dde2e7;
-  }
-}
-
-/* :not(:required) hides these rules from IE9 and below */
-.throbber:not(:required) {
-  animation: throbber 2000ms 300ms infinite ease-out;
-  background: #dde2e7;
-  display: inline-block;
-  position: relative;
-  text-indent: -9999px;
-  width: 0.9em;
-  height: 1.5em;
-  margin: 0 1.6em;
-}
-
-.throbber:not(:required)::before,
-.throbber:not(:required)::after {
-  background: #dde2e7;
-  content: '\x200B';
-  display: inline-block;
-  width: 0.9em;
-  height: 1.5em;
-  position: absolute;
-  top: 0;
-}
-
-.throbber:not(:required)::before {
-  animation: throbber 2000ms 150ms infinite ease-out;
-  left: -1.6em;
-}
-
-.throbber:not(:required)::after {
-  animation: throbber 2000ms 450ms infinite ease-out;
-  right: -1.6em;
 }
