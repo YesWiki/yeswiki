@@ -75,8 +75,10 @@ class ListManager
             foreach ($json['label'] as $id => $label) {
                 $newJson['nodes'][] = ['id' => $id, 'label' => $label];
             }
+
             return $newJson;
         }
+
         return $json;
     }
 
@@ -101,7 +103,7 @@ class ListManager
         $id = genere_nom_wiki('List' . $title);
         $this->pageManager->save($id, json_encode([
             'title' => $title,
-            'nodes' => $this->sanitizeHMTL($nodes)
+            'nodes' => $this->sanitizeHMTL($nodes),
         ]));
 
         $this->tripleStore->create($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
@@ -117,7 +119,7 @@ class ListManager
 
         $this->pageManager->save($id, json_encode([
             'title' => $title,
-            'nodes' => $this->sanitizeHMTL($nodes)
+            'nodes' => $this->sanitizeHMTL($nodes),
         ]));
     }
 
@@ -144,6 +146,7 @@ class ListManager
         return array_map(function ($node) {
             $node['label'] = $this->htmlPurifierService->cleanHTML($node['label']);
             $node['children'] = $this->sanitizeHMTL($node['children']);
+
             return $node;
         }, $nodes);
     }
