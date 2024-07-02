@@ -5,11 +5,11 @@
             town: "{{ field.autocomplete|split(',')[1:1]|first }}"
         }
     </script>
-    {{ include_javascript('tools/bazar/presentation/javascripts/map-field-autocomplete.js') }}
+    {{ include_javascript('tools/bazar/presentation/javascripts/inputs/map-autocomplete.js') }}
 {% endif %}
 
 {{ include_css('styles/vendor/leaflet/leaflet.css') }}
-{{ include_javascript('tools/bazar/presentation/javascripts/geolocationHelper.js') }}
+{{ include_javascript('tools/bazar/presentation/javascripts/inputs/map-geolocation-helper.js') }}
 {{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}
 {{ include_javascript('javascripts/vendor/leaflet-providers/leaflet-providers.js') }}
 
@@ -17,7 +17,7 @@
     var mapFieldData = {{ mapFieldData|json_encode|raw }}
 </script>
 
-{{ include_javascript('tools/bazar/presentation/javascripts/map-field-leaflet.js') }}
+{{ include_javascript('tools/bazar/presentation/javascripts/inputs/map-leaflet.js') }}
 
 <div class="control-group form-group geocode-input {% if field.required %}required{% endif %}" data-field-names="{{ field.autocompleteFieldNames|merge({latitude:field.latitudeField,longitude:field.longitudeField})|json_encode }}">
     <label class="col-sm-3"></label>

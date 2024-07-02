@@ -4,7 +4,7 @@ import PopupEntryField from './components/PopupEntryField.js'
 import SpinnerLoader from './components/SpinnerLoader.js'
 import ModalEntry from './components/ModalEntry.js'
 import BazarSearch from './components/BazarSearch.js'
-import { initEntryMaps } from './map-field-map-entry.js'
+import { initEntryMaps } from './fields/map-field-map-entry.js'
 
 const load = (domElement) => {
   new Vue({
