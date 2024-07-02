@@ -39,9 +39,12 @@ abstract class EnumField extends BazarField
     public function loadOptionsFromList()
     {
         if (!empty($this->getLinkedObjectName())) {
-            $listValues = $this->getService(ListManager::class)->getOne($this->getLinkedObjectName());
-            if (is_array($listValues)) {
-                $this->options = $listValues['label'];
+            $list = $this->getService(ListManager::class)->getOne($this->getLinkedObjectName());
+            if (isset($list['nodes'])) {
+                $this->options = array_reduce($list['nodes'], function ($acc, $node) {
+                    $acc[$node['id']] = $node['label'];
+                    return $acc;
+                }, []);
             }
         }
     }
@@ -85,13 +88,11 @@ abstract class EnumField extends BazarField
                 // be carefull it is an array here
                 if (isset($field['propertyname']) && ($field['propertyname'] == $this->getPropertyName())) {
                     $this->options = $field['options'] ?? [];
-
                     return $this->options;
                 }
             }
         }
         $this->options = [];
-
         return $this->options;
     }
 
@@ -139,12 +140,14 @@ abstract class EnumField extends BazarField
     {
         $this->propertyName = $this->type . removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $this->name))) . $this->listLabel;
         $this->loadOptionsFromJson();
-        if (preg_match('/^(.*\/\??)'// catch baseUrl
+        if (
+            preg_match('/^(.*\/\??)'// catch baseUrl
                 . '(?:' // followed by
                 . '\w*\/json&(?:.*)demand=entries(?:&.*)?' // json handler with demand = entries
                 . '|api\/forms\/[0-9]*\/entries' // or api forms/{id}/entries
                 . '|api\/entries\/[0-9]*' // or api entries/{id}
-                . ')/', $this->name, $matches)) {
+                . ')/', $this->name, $matches)
+        ) {
             $this->baseUrl = $matches[1];
         } else {
             $this->baseUrl = $this->name;
@@ -167,7 +170,6 @@ abstract class EnumField extends BazarField
                 $this->loadOptionsFromEntries();
             }
         }
-
         return $this->options;
     }
 

@@ -14,9 +14,9 @@
     </label>
     <div class="controls col-sm-9">
       <input
-        name="titre_liste"
+        name="title"
         type="text"
-        value="{{ title }}"
+        value="{{ list.title }}"
         required="required"
         placeholder="{{ _t('BAZ_LIST_NAME') }}"
         class="form-control"
@@ -29,9 +29,9 @@
     </label>
     <div class="col-sm-9">
       <ul class="list-sortables controls">
-        {% if labels %}
-          {% for key, label in labels %}
-            <li class="liste_ligne input-prepend input-append input-group" id="row{{ key }}">
+        {% if list.nodes %}
+          {% for node in list.nodes %}
+            <li class="liste_ligne input-prepend input-append input-group" id="row{{ node.id }}">
               <a title="{{ _t('BAZ_DEPLACER_L_ELEMENT') }}" class="handle-listitems add-on input-group-addon">
                 <i class="fa fa-arrows-alt icon-move"></i>
               </a>
@@ -40,7 +40,7 @@
                 type="text"
                 placeholder="{{ _t('BAZ_KEY') }}"
                 name="id[{{ loop.index }}]"
-                value="{{ key|e }}"
+                value="{{ node.id|e }}"
                 class="input-key form-control"
               />
               <input
@@ -48,7 +48,7 @@
                 type="text"
                 placeholder="{{ _t('BAZ_TEXT') }}"
                 name="label[{{ loop.index }}]"
-                value="{{ label|e }}"
+                value="{{ node.label|e }}"
                 class="input-label form-control"
               />
               <a class="add-on suppression_label_liste input-group-addon">
