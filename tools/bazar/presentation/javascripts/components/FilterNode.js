@@ -46,7 +46,7 @@ export default {
     }
   },
   template: `
-    <div class="filter-node-container">
+    <div class="filter-node-container" v-show="displayNode">
       <label :class="['filter-node', nodeClasses]">
         <input type="checkbox" v-model="node.checked" @change="onChecked">
 
