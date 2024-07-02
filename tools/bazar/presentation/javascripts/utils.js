@@ -1,15 +1,17 @@
-export function flattenTree(tree) {
-  const flatList = []
+export function recursivelyCalculateRelations(node, parentChain = []) {
+  const allParents = [...parentChain]
+  const descendants = []
 
-  // Recursive function to traverse the tree
-  function traverse(node) {
-    flatList.push(node)
-    node.children.forEach((childNode) => {
-      traverse(childNode)
+  // Recursively calculate relations for children
+  if (node.children && node.children.length > 0) {
+    node.children.forEach((child) => {
+      const childNode = recursivelyCalculateRelations(child, [node, ...allParents])
+      descendants.push(child, ...childNode.descendants)
     })
   }
 
-  tree.forEach((rootNode) => traverse(rootNode))
-
-  return flatList
+  node.parent = allParents[0]
+  node.parents = allParents
+  node.descendants = descendants
+  return node
 }
