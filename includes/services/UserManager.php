@@ -111,7 +111,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      *
      * @throws UserNameAlreadyUsedException|UserEmailAlreadyUsedException|Exception
      */
-    public function create($wikiNameOrUser, string $email = '', string $plainPassword = '', bool $sendpassword = false)
+    public function create($wikiNameOrUser, string $email = '', string $plainPassword = '')
     {
         $this->userlink = '';
         if ($this->securityController->isWikiHibernated()) {
@@ -132,7 +132,6 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             $userAsArray['name'] = $wikiName;
             $email = $userAsArray['email'] ?? '';
             $plainPassword = $userAsArray['password'] ?? '';
-            $sendpassword = $userAsArray['sendpassword'] ?? false;
         } elseif (is_string($wikiNameOrUser)) {
             $wikiName = trim($wikiNameOrUser);
             $userAsArray = [

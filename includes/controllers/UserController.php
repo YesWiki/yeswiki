@@ -96,12 +96,21 @@ class UserController extends YesWikiController
         if (!empty($this->userManager->create($newValues))) {
             $user = $this->userManager->getOneByName($newValues['name']);
             if (!empty($user)) {
-                return array($user, $this->userManager->getUserLink());
+                return $user;
             }
         }
         throw new Exception(_t('USER_CREATION_FAILED') . '.');
 
         return null;
+    }
+    
+    public function sendPasswordRecoveryEmail(User $user): string
+    {
+        if ($this->userManager->sendPasswordRecoveryEmail($user, _t('LOGIN_PASSWORD_FOR'))) {
+            return $this->userManager->getUserLink();
+        } else {
+            return "";
+        }        
     }
 
     /**

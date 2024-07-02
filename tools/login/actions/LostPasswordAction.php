@@ -209,7 +209,7 @@ class LostPasswordAction extends YesWikiAction
         }
         $this->authController->setPassword($user, $password);
         // Was able to update password => Remove the key from triples table
-        $this->tripleStore->delete($user['name'], self::KEY_VOCABULARY, $key, '', '');
+        $this->tripleStore->delete($user['name'], UserManager::KEY_VOCABULARY, $key, '', '');
 
         return true;
     }
@@ -229,7 +229,7 @@ class LostPasswordAction extends YesWikiAction
     private function checkEmailKey(string $hash, string $user): bool
     {
         // Pas de detournement possible car utilisation de _vocabulary/key ....
-        return !is_null($this->tripleStore->exist($user, self::KEY_VOCABULARY, $hash, '', ''));
+        return !is_null($this->tripleStore->exist($user, UserManager::KEY_VOCABULARY, $hash, '', ''));
     }
     /* End of Password recovery process (AKA reset password)   */
 }

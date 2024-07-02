@@ -176,12 +176,16 @@ class ApiController extends YesWikiController
             ];
         } else {
             try {
-                list($user, $link) = $userController->create([
+                $user = $userController->create([
                     'name' => strval($_POST['name']),
                     'email' => strval($_POST['email']),
-                    'password' => $this->wiki->generateRandomString(30),
-                    'sendpassword' => !boolval($this->wiki->config['contact_disable_email_for_password'])
+                    'password' => $this->wiki->generateRandomString(30)
                 ]);
+                if (!boolval($this->wiki->config['contact_disable_email_for_password']) && !empty($user)) {
+                    $link = $userController->sendPasswordRecoveryEmail($user);
+                } else {
+                    $link = '';
+                }
                 $code = Response::HTTP_OK;
                 $result = [
                     'created' => [$user['name']],
