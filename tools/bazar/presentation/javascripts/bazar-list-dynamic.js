@@ -105,12 +105,12 @@ const load = (domElement) => {
       filterEntries() {
         // Handles filters
         let result = this.searchedEntries
-        for (const filterId in this.computedFilters) {
+        Object.entries(this.computedFilters).forEach(([propName, filter]) => {
           result = result.filter((entry) => {
-            if (!entry[filterId] || typeof entry[filterId] != 'string') return false
-            return entry[filterId].split(',').some((value) => this.computedFilters[filterId].includes(value))
+            if (!entry[propName] || typeof entry[propName] != 'string') return false
+            return entry[propName].split(',').some((value) => filter.includes(value))
           })
-        }
+        })
         this.filteredEntries = result
         this.paginateEntries()
       },
@@ -159,18 +159,18 @@ const load = (domElement) => {
       },
       initFiltersFromHash(filters, hash) {
         hash = hash.substring(1) // remove #
-        for (const combinaison of hash.split('&')) {
+        hash.split('&').forEach((combinaison) => {
           const filterId = combinaison.split('=')[0]
           let filterValues = combinaison.split('=')[1]
           if (filterId == 'q') {
             this.search = filterValues
           } else if (filterId && filterValues && filters[filterId]) {
             filterValues = filterValues.split(',')
-            for (const filter of filters[filterId].list) {
+            filters[filterId].list.forEach((filter) => {
               if (filterValues.includes(filter.value)) filter.checked = true
-            }
+            })
           }
-        }
+        })
         // init q from GET q also
         if (this.search.length == 0) {
           let params = document.location.search
@@ -218,7 +218,7 @@ const load = (domElement) => {
           }).catch(() => 'error')// in case of error do nothing
       },
       async getJSON(url, options = {}) {
-        return await fetch(url, options)
+        return fetch(url, options)
           .then((response) => {
             if (!response.ok) {
               throw `response not ok ; code : ${response.status} (${response.statusText})`
@@ -234,10 +234,9 @@ const load = (domElement) => {
       },
       loadBazarListDynamicIfNeeded(html) {
         if (html.match(/<div class="bazar-list-dynamic-container/)) {
-          document.querySelectorAll('.bazar-list-dynamic-container:not(.mounted)').forEach((element) => {
-            if (!('__vue__' in element)) {
-              load(element)
-            }
+          const unmounted = document.querySelectorAll('.bazar-list-dynamic-container:not(.mounted)')
+          unmounted.forEach((element) => {
+            if (!('__vue__' in element)) load(element)
           })
         }
       },
@@ -262,7 +261,11 @@ const load = (domElement) => {
       },
       getExternalEntry(entry) {
         const url = `${entry.url}/iframe`
-        Vue.set(entry, 'html_render', `<iframe src="${url}" width="500px" height="600px" style="border:none;"></iframe>`)
+        Vue.set(
+          entry,
+          'html_render',
+          `<iframe src="${url}" width="500px" height="600px" style="border:none;"></iframe>`
+        )
       },
       colorIconValueFor(entry, field, mapping) {
         if (!entry[field] || typeof entry[field] != 'string') return null
@@ -270,7 +273,9 @@ const load = (domElement) => {
         // If some filters are checked, and the entry have multiple values, we display
         // the value associated with the checked filter
         // TODO BazarListDynamic check with users if this is expected behaviour
-        if (this.computedFilters[field]) values = values.filter((val) => this.computedFilters[field].includes(val))
+        if (this.computedFilters[field]) {
+          values = values.filter((val) => this.computedFilters[field].includes(val))
+        }
         return mapping[values[0]]
       },
       urlImageResizedOnError(entry, fieldName, width, height, mode, token) {
@@ -378,20 +383,21 @@ const load = (domElement) => {
       )
       const savedHash = document.location.hash // don't know how, but the hash get cleared after
       this.params = JSON.parse(this.$el.dataset.params)
-      this.pagination = parseInt(this.params.pagination)
+      this.pagination = parseInt(this.params.pagination, 10)
       this.mounted = true
       // Retrieve data asynchronoulsy
       $.getJSON(wiki.url('?api/entries/bazarlist'), this.params, (data) => {
         // First display filters cause entries can be a bit long to load
-        this.filters = this.initFiltersFromHash(data.filters || [], savedHash)
+        this.filters = this.initFiltersFromHash(filters, savedHash)
 
-        // Auto adjust some params depending on entries count
-        if (data.entries.length > 50 && !this.pagination) this.pagination = 20 // Auto paginate if large numbers
-        if (data.entries.length > 1000) this.params.cluster = true // Activate cluster for map mode
+        // Auto paginate if large numbers
+        if (data.entries.length > 50 && !this.pagination) this.pagination = 20
+        // Activate cluster for map mode
+        if (data.entries.length > 1000) this.params.cluster = true
 
         setTimeout(() => {
-        // Transform forms info into a list of field mapping
-        // { bf_titre: { type: 'text', ...}, bf_date: { type: 'listedatedeb', ... } }
+          // Transform forms info into a list of field mapping
+          // { bf_titre: { type: 'text', ...}, bf_date: { type: 'listedatedeb', ... } }
           Object.values(data.forms).forEach((formFields) => {
             Object.values(formFields).forEach((field) => {
               this.formFields[field.id] = field
@@ -401,12 +407,12 @@ const load = (domElement) => {
             })
           })
 
-          this.entries = data.entries.map((array) => {
+          this.entries = data.entries.map((entryAsArray) => {
             const entry = { color: null, icon: null }
-            // Transform array data into object using the fieldMapping
-            for (const key in data.fieldMapping) {
-              entry[data.fieldMapping[key]] = array[key]
-            }
+            // Transform entryAsArray data into object using the fieldMapping
+            Object.entries(data.fieldMapping).forEach(([key, mapping]) => {
+              entry[mapping] = entryAsArray[key]
+            })
             Object.entries(this.params.displayfields).forEach(([field, mappedField]) => {
               if (mappedField) entry[field] = entry[mappedField]
             })
