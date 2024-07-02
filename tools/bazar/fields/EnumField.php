@@ -56,7 +56,7 @@ abstract class EnumField extends BazarField
         $this->options[$node['id']] = $parentLabel . $node['label'];
         if (!empty($node['children'])) {
             foreach ($node['children'] as $childNode) {
-                $this->loadOptionsFromListNode($childNode, "$parentLabel {$node['label']} ↦ ");
+                $this->loadOptionsFromListNode($childNode, "$parentLabel {$node['label']} ➤ ");
             }
         }
     }
