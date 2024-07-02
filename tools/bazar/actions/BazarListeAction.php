@@ -273,7 +273,7 @@ class BazarListeAction extends YesWikiAction
             $this->arguments['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'];
 
             // TODO put in all bazar templates
-            $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
+            $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
 
             return $this->render('@bazar/entries/index.twig', [
                 'listId' => $GLOBALS['_BAZAR_']['nbbazarliste'],

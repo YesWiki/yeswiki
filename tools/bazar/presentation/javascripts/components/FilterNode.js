@@ -36,7 +36,7 @@ export default {
                  v-model="node.checked" @change="onChecked">
           <span>
             <span class="node-label" v-html="node.label"></span>
-            <span class="nb" v-if="node.count">({{ node.count }})</span>
+            <span class="nb" v-if="node.count">{{ node.count }}</span>
           </span>
         </label>
       </div>

@@ -13,7 +13,7 @@ if (!defined('WIKINI_VERSION')) {
 
 $entryManager = $this->services->get(EntryManager::class);
 
-$this->AddJavascriptFile('tools/bazar/libs/bazar.js');
+$this->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
 
 // initialisation de la fonction de tri , inspiré par http://php.net/manual/fr/function.usort.php
 if (!function_exists('champCompare')) {
