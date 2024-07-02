@@ -1,13 +1,24 @@
+import CollapseTransition from '../../../../../javascripts/shared-components/CollapseTransition.js'
+
 export default {
   props: ['node'],
+  components: { CollapseTransition },
   data: () => ({ expanded: false }),
   computed: {
-    // A parent node should be display if some of it's children has count > 0
+    // A parent node should be displayed if some of it's children has count > 0
+    // count is the number of entries in the list have this node value
     displayNode() {
       return [this.node, ...this.node.descendants].some((node) => node.count > 0)
     },
     someDescendantChecked() {
       return this.node.descendants.some((node) => node.checked)
+    },
+    nodeClasses() {
+      return {
+        checked: this.node.checked,
+        'some-descendant-checked': this.someDescendantChecked,
+        expanded: this.expanded
+      }
     }
   },
   methods: {
@@ -35,31 +46,30 @@ export default {
     }
   },
   template: `
-    <div class="node-container">
-      <div :class="['checkbox', {checked: node.checked, 'some-descendant-checked': someDescendantChecked}]">
-        <label>
-          <input class="filter-checkbox" type="checkbox"
-                 v-model="node.checked" @change="onChecked">
+    <div class="filter-node-container">
+      <label :class="['filter-node', nodeClasses]">
+        <input type="checkbox" v-model="node.checked" @change="onChecked">
 
-          <!-- Those two spans are needed, the first one contains both the 
-               label + the checkboxed drawn with css with :after and :before pseudo element. 
-               We want the behaviour to differ depending on where the user clicks -->
-          <span>
-            <span @click="labelClicked"> 
-              <span class="node-label">
-                <span v-html="node.label"></span>
-                <i v-if="node.children.length > 0" 
-                   class="chevron-icon fa" 
-                   :class="expanded ? 'fa-caret-up' : 'fa-caret-down' "></i>
-              </span>
-              <span class="count" v-if="node.count"><span>{{ node.count }}</span></span>
+        <!-- Those two spans are needed, the first one contains both the 
+              label + the checkbox drawn with css with :after and :before pseudo element. 
+              We want the behaviour to differ depending on where the user clicks 
+            (checkbox itself or label) -->
+        <span>
+          <span @click="labelClicked"> 
+            <span class="filter-node-label">
+              <span v-html="node.label"></span>
+              <i v-if="node.children.length > 0" class="chevron-icon fa fa-caret-down"></i>
             </span>
+            <span class="count" v-if="node.count"><span>{{ node.count }}</span></span>
           </span>
-        </label>
-      </div>
-      <div v-if="expanded" class="children">
-        <FilterNode v-for="childNode, id in node.children" :key="id" :node="childNode" ref="children" />
-      </div>
+        </span>
+      </label>
+      
+      <collapse-transition>
+        <div v-if="expanded" class="children">
+          <FilterNode v-for="childNode, id in node.children" :key="id" :node="childNode" />
+        </div>
+      </collapse-transition>
     </div>
   `
 }
