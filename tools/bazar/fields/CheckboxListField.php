@@ -28,14 +28,50 @@ class CheckboxListField extends CheckboxField
     {
         $keys = $this->getValues($entry);
         $values = [];
+
+        if (count($values) > 0) {
+            return '';
+        }
+
+        // List with multi levels
+        if ($this->optionsTree) {
+            return $this->render('@bazar/fields/checkbox-tree.twig', [
+                'treeValues' => $this->filterTree($this->optionsTree, $keys),
+            ]);
+        }
+
+        // List with one level
         foreach ($this->getOptions() as $key => $label) {
             if (in_array($key, $keys)) {
                 $values[$key] = $label;
             }
         }
 
-        return (count($values) > 0) ? $this->render('@bazar/fields/checkbox.twig', [
+        return $this->render('@bazar/fields/checkbox.twig', [
             'values' => $values,
-        ]) : '';
+        ]);
+    }
+
+    // Filter the tree to keep only branches where a nodeID is checked
+    private function filterTree($tree, $checkedValues)
+    {
+        $filteredTree = [];
+
+        foreach ($tree as $node) {
+            if (in_array($node['id'], $checkedValues)) {
+                $filteredNode = $node;
+                $filteredNode['children'] = $this->filterTree($node['children'], $checkedValues);
+                $filteredTree[] = $filteredNode;
+            } else {
+                $filteredChildren = $this->filterTree($node['children'], $checkedValues);
+                if (!empty($filteredChildren)) {
+                    $filteredNode = $node;
+                    $filteredNode['children'] = $filteredChildren;
+                    $filteredTree[] = $filteredNode;
+                }
+            }
+        }
+
+        return $filteredTree;
     }
 }
