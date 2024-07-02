@@ -50,7 +50,8 @@ export default {
           ${_t('LIST_KEY')} :
         </div>
         <input type="text" v-model="node.id" placeholder="${_t('LIST_KEY')}" 
-              class="form-control input-id" @keydown.enter.prevent />
+              class="form-control input-id" :class="{ error: !node.id }"
+              @keydown.enter.prevent />
         <!-- Delete Icon -->
         <button type="button" @click="$emit('delete', node)" 
                 class="btn btn-danger btn-icon input-group-addon">
