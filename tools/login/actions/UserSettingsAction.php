@@ -61,7 +61,7 @@ class UserSettingsAction extends YesWikiAction
         $this->errorPasswordChange = '';
         $this->referrer = '';
         $user = $this->getUser($_GET ?? []);
-        if (! boolval($this->wiki->config['contact_disable_email_for_password'])) {
+        if (!boolval($this->wiki->config['contact_disable_email_for_password']) && !empty($user)) {
             $this->userlink = $this->userManager->getLastUserLink($user);
         } else {
             $this->userlink = '';
@@ -235,7 +235,7 @@ class UserSettingsAction extends YesWikiAction
                     $sanitizedPost
                 );
                 $this->userlink = '';
-                if (! boolval($this->wiki->config['contact_disable_email_for_password'])) {
+                if (!boolval($this->wiki->config['contact_disable_email_for_password'])) {
                     if ($this->userManager->sendPasswordRecoveryEmail($user, _t('LOGIN_PASSWORD_FOR'))) {
                         $this->userlink = $this->userManager->getUserLink();
                     }
@@ -291,7 +291,7 @@ class UserSettingsAction extends YesWikiAction
                     $this->wiki->Redirect($this->wiki->href());
                 } catch (TokenNotFoundException $th) {
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $th->getMessage();
-                } catch (BadFormatPasswordException|Throwable $ex) {
+                } catch (BadFormatPasswordException | Throwable $ex) {
                     // Something when wrong when updating the user in DB
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $ex->getMessage();
                 }
@@ -317,8 +317,10 @@ class UserSettingsAction extends YesWikiAction
                 $password = isset($post['password']) && is_string($post['password']) ? $post['password'] : '';
                 if (!empty($emptyInputsParametersNames)) {
                     $this->error = str_replace('{parameters}', implode(',', $emptyInputsParametersNames), _t('USERSETTINGS_SIGNUP_MISSING_INPUT'));
-                } elseif ($this->authController->checkPasswordValidateRequirements($password) &&
-                    $post['confpassword'] !== $password) {
+                } elseif (
+                    $this->authController->checkPasswordValidateRequirements($password) &&
+                    $post['confpassword'] !== $password
+                ) {
                     $this->error = _t('USER_PASSWORDS_NOT_IDENTICAL') . '.';
                 } else { // Password is correct
                     $_POST['submit'] = SecurityController::EDIT_PAGE_SUBMIT_VALUE;
