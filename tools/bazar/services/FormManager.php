@@ -23,6 +23,8 @@ class FormManager
     protected $isAvailableOnlyOneEntryOption;
     protected $isAvailableOnlyOneEntryMessage;
     protected $attach;
+    
+    private const DEFAULT_IMAGE_INDEX = 13;
 
     public function __construct(
         Wiki $wiki,
@@ -81,9 +83,9 @@ class FormManager
                 $default_image_prefix = "defaultimage{$id_nature}_{$image_comp[1]}";
                 $this->cleanCacheDefaultImage($default_image_prefix);
                 $default_image_filename = $basePath . $default_image_prefix . '.jpg';
-                $default_image = explode('|', $image_comp[8]);
+                $default_image = explode('|', $image_comp[$this::DEFAULT_IMAGE_INDEX]);
                 if (count($default_image) == 2) {
-                    $image_comp[8] = $default_image[0];
+                    $image_comp[$this::DEFAULT_IMAGE_INDEX] = $default_image[0];
                     $imgext = explode('image/', explode(';', $default_image[1])[0])[1];
                     $tmpFile = tempnam('cache', 'dfltimg');
                     $tempFile = $tmpFile . '.' . $imgext;
@@ -97,7 +99,7 @@ class FormManager
                         unlink($tempFile);
                     }
                 } else {
-                    $image_comp[8] = '';
+                    $image_comp[$this::DEFAULT_IMAGE_INDEX] = '';
                     if (file_exists($default_image_filename)) {
                         unlink($default_image_filename);
                     }
@@ -123,9 +125,9 @@ class FormManager
                 $image_comp = $template_list[$temp_index];
                 $default_image_filename = $basePath . "defaultimage{$form['bn_id_nature']}_{$image_comp[1]}.jpg";
                 if (file_exists($default_image_filename)) {
-                    $image_comp[8] = $image_comp[8] . '|data:image/jpg;base64,' . base64_encode(file_get_contents($default_image_filename));
+                    $image_comp[$this::DEFAULT_IMAGE_INDEX] = $image_comp[$this::DEFAULT_IMAGE_INDEX] . '|data:image/jpg;base64,' . base64_encode(file_get_contents($default_image_filename));
                 } else {
-                    $image_comp[8] = '';
+                    $image_comp[$this::DEFAULT_IMAGE_INDEX] = '';
                 }
                 $template_list[$temp_index] = $image_comp;
             }
