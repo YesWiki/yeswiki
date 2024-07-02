@@ -1,0 +1,32 @@
+{% extends "@bazar/layouts/input.twig" %}
+
+{% block input %}
+  {% for node in data %}
+    {{ _self.node(node, field, values) }}
+  {% endfor %}
+
+	{{ include_css('tools/bazar/presentation/styles/inputs/checkbox-tree.css') }}
+	{{ include_javascript('tools/bazar/presentation/javascripts/inputs/checkbox-tree.js') }}
+{% endblock %}
+
+{% macro node(node, field, values) %}
+	<div class="node-container">
+		{% set name = field.propertyName ~ '[' ~ node.id ~ ']' %}
+		<div class="checkbox">
+			<label for="{{ name }}">
+				<input type="checkbox" id="{{ name }}" value="1" name="{{ name }}" {% if node.id in values %} checked {% endif %}/>
+				<span>{{ node.label|raw }}</span>
+			</label>
+		</div>
+		<div class="node-children">
+			{% for childNode in node.children %}
+        {{ _self.node(childNode, field, values) }}
+			{% endfor %}
+		</div>
+	</div>
+{% endmacro %}
+
+
+
+
+
