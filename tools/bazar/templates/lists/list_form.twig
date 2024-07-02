@@ -20,7 +20,7 @@
 		<list-node :node="rootNode" :depth="0" :index="0"></list-node>
 	</div>
 	{# Hidden JSON Nodes #}
-	<input type="hidden" name="nodes" :value="JSON.stringify(rootNode.children)" />
+	<input type="hidden" name="nodes" :value="jsonNodes" />
 
 	{# Form Actions #}
 	<div class="form-actions form-group">
