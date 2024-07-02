@@ -206,6 +206,13 @@ const load = (domElement) => {
           this.recursivelyCheckFilterByValues(childNode, filterValues)
         })
       },
+      recursivelyAddParent(filterNode, parent) {
+        filterNode.parent = parent
+        filterNode.parents = parent ? [...parent.parents, parent] : []
+        filterNode.children.forEach((childNode) => {
+          this.recursivelyAddParent(childNode, filterNode)
+        })
+      },
       getEntryRender(entry) {
         if (entry.html_render) return
         if (this.isExternalUrl(entry)) {
@@ -409,9 +416,9 @@ const load = (domElement) => {
       $.getJSON(wiki.url('?api/entries/bazarlist'), this.params, (data) => {
         // process the filters
         const filters = data.filters || {}
-        // flatten the tree, and also calculate the parentNodes at same time
+        // Calculate the parents
         Object.values(filters).forEach((filter) => {
-          filter.flattenNodes = flattenTree(filter.nodes)
+          filter.nodes.forEach((rootNode) => this.recursivelyAddParent(rootNode))
         })
         // First display filters cause entries can be a bit long to load
         this.filters = this.initFiltersFromHash(filters, savedHash)
@@ -448,12 +455,13 @@ const load = (domElement) => {
             // entryA { checkboxes: "yeswiki" }
             // => entryA { checkboxes: "yeswiki,website" }
             Object.entries(this.filters).forEach(([propName, filter]) => {
+              const flattenNodes = flattenTree(filter.nodes)
               if (entry[propName] && typeof entry[propName] == 'string') {
                 const entryValues = entry[propName].split(',')
                 entryValues.forEach((value) => {
-                  const correspondingNode = filter.flattenNodes.find((node) => node.value == value)
-                  correspondingNode.parentValues.forEach((parentValue) => {
-                    if (!entryValues.includes(parentValue)) entryValues.push(parentValue)
+                  const correspondingNode = flattenNodes.find((node) => node.value == value)
+                  correspondingNode.parents.forEach((parent) => {
+                    if (!entryValues.includes(parent.value)) entryValues.push(parent.value)
                   })
                 })
                 entry[propName] = entryValues.join(',')
