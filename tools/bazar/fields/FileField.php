@@ -58,7 +58,7 @@ class FileField extends BazarField
         $wiki = $this->getWiki();
         $value = $this->getValue($entry);
         $deletedFile = false;
-        $wiki->services->get(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/file-field.js');
+        $wiki->services->get(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/inputs/file-field.js');
 
         if (!empty($value)) {
             if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {

@@ -48,7 +48,7 @@ class ImageField extends FileField
         $value = $this->getValue($entry);
         // javascript pour gerer la previsualisation
         // si une taille maximale est indiquée, on teste
-        $wiki->services->get(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/image-field.js');
+        $wiki->services->get(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/inputs/image-field.js');
 
         if (isset($value) && $value != '') {
             if (isset($_GET['suppr_image']) && $_GET['suppr_image'] === $value) {
