@@ -257,4 +257,8 @@ return [
     // reactions
     'BAZ_ACTIVATE_REACTIONS' => 'Activate reactions on this entry?',
     'FILEFIELD_TOO_LARGE_FILE' => 'The file is too large, maximum {fileMaxSize} bytes',
+    // list-node.js
+    'LIST_DRAGDROP' => 'Move this element',
+    'LIST_KEY' => 'Key',
+    'LIST_TEXT' => 'Text',
 ];
