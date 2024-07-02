@@ -126,7 +126,7 @@ class BazarListService
         return $entries;
     }
 
-    public function formatFilters($options, $entries, $forms): array
+    public function getFilters($options, $entries, $forms): array
     {
         if (empty($options['groups'])) {
             return [];
@@ -145,6 +145,7 @@ class BazarListService
         }
         $filters = [];
         // Récupere les facettes cochees
+        // only used for old non dynamic bazarlist
         $tabfacette = [];
         if (isset($_GET['facette']) && !empty($_GET['facette'])) {
             $tab = explode('|', $_GET['facette']);
@@ -158,118 +159,79 @@ class BazarListService
         }
 
         foreach ($facettables as $facetteId => $facettable) {
-            $list = [];
-            // Formatte la liste des resultats en fonction de la source
-            if (in_array($facettable['type'], ['liste', 'fiche'])) {
+            // Create a filter object to be returned to the view
+            $filter = [
+                'title' => '',
+                'icon' => '',
+                'nodes' => [],
+                'collapsed' => true,
+            ];
+
+            // Depending on the facette type, get the list of filter nodes
+            if ($facettable['type'] == 'liste') {
                 $field = $this->findFieldByName($forms, $facettable['source']);
-                if (!($field instanceof BazarField)) {
-                    if ($this->debug) {
-                        trigger_error('Waiting field instanceof BazarField from findFieldByName, ' .
-                            (
-                                (is_null($field)) ? 'null' : (
-                                    (gettype($field) == 'object') ? get_class($field) : gettype($field)
-                                )
-                            ) . ' returned');
-                    }
-                } elseif ($facettable['type'] == 'liste') {
-                    $list['title'] = $field->getLabel();
-                    $list['options'] = $field->getOptions();
-                    $list['optionsTree'] = $field->getOptionsTree();
-                } elseif ($facettable['type'] == 'fiche') {
-                    $formId = $field->getLinkedObjectName();
-                    $form = $forms[$formId];
-                    $list['title'] = $form['bn_label_nature'];
-                    $list['options'] = [];
-                    foreach ($facettable as $idfiche => $nb) {
-                        if ($idfiche != 'source' && $idfiche != 'type') {
-                            $f = $this->entryManager->getOne($idfiche);
-                            if (!empty($f['bf_titre'])) {
-                                $list['options'][$idfiche] = $f['bf_titre'];
-                            }
-                        }
-                    }
-                }
-            } elseif ($facettable['type'] == 'form') {
-                if ($facettable['source'] == 'id_typeannonce') {
-                    $list['title'] = _t('BAZ_TYPE_FICHE');
-                    foreach ($facettable as $idf => $nb) {
-                        if ($idf != 'source' && $idf != 'type') {
-                            $list['options'][$idf] = $forms[$idf]['bn_label_nature'] ?? $idf;
-                        }
-                    }
-                } elseif ($facettable['source'] == 'owner') {
-                    $list['title'] = _t('BAZ_CREATOR');
-                    foreach ($facettable as $idf => $nb) {
-                        if ($idf != 'source' && $idf != 'type') {
-                            $list['options'][$idf] = $idf;
-                        }
+                $filter['title'] = $field->getLabel();
+                if (!empty($field->getOptionsTree())) {
+                    foreach ($field->getOptionsTree() as $node) {
+                        $filter['nodes'][] = $this->recursivelyCreateNode($node, $facetteId, $facettable, $tabfacette);
                     }
                 } else {
-                    $list['title'] = $id;
-                    foreach ($facettable as $idf => $nb) {
-                        if ($idf != 'source' && $idf != 'type') {
-                            $list['options'][$idf] = $idf;
+                    foreach ($field->getOptions() as $value => $label) {
+                        if (!empty($facettable[$value])) {
+                            $filter['nodes'][] = $this->createFilterNode($value, $label, $facetteId, $facettable, $tabfacette);
                         }
                     }
                 }
+            } elseif ($facettable['type'] == 'fiche') {
+                $filter['title'] = $form['bn_label_nature'];
+                $field = $this->findFieldByName($forms, $facettable['source']);
+                $formId = $field->getLinkedObjectName();
+                $form = $forms[$formId];
+                foreach ($facettable as $entryId => $nb) {
+                    if ($entryId != 'source' && $entryId != 'type') {
+                        $entry = $this->entryManager->getOne($entryId);
+                        if (!empty($f['bf_titre'])) {
+                            $filter['nodes'][] = $this->createFilterNode($entryId, $entry['bf_titre'], $facetteId, $facettable, $tabfacette);
+                        }
+                    }
+                }
+                natcasesort($filter['nodes']); // sort nodes by label
+            } elseif ($facettable['type'] == 'form') {
+                if ($facettable['source'] == 'id_typeannonce') {
+                    $filter['title'] = _t('BAZ_TYPE_FICHE');
+                } elseif ($facettable['source'] == 'owner') {
+                    $filter['title'] = _t('BAZ_CREATOR');
+                } else {
+                    $filter['title'] = $id;
+                }
+                foreach ($facettable as $idf => $nb) {
+                    if ($idf != 'source' && $idf != 'type') {
+                        $label = $facettable['source'] == 'id_typeannonce' ? $forms[$idf]['bn_label_nature'] ?? $idf : $idf;
+                        $filter['nodes'][] = $this->createFilterNode($idf, $label, $facetteId, $facettable, $tabfacette);
+                    }
+                }
+                natcasesort($filter['nodes']); // sort nodes by label
             }
 
             $facetteId = htmlspecialchars($facetteId);
-
-            // sort facette labels
-            natcasesort($list['options']);
-
-            function createFilterOption($listkey, $label, $facetteId, $facettable, $tabfacette)
-            {
-                return [
-                    'id' => $facetteId . $listkey,
-                    'name' => $facetteId,
-                    'value' => htmlspecialchars($listkey),
-                    'label' => $label,
-                    'nb' => $facettable[$listkey] ?? 0,
-                    'checked' => (isset($tabfacette[$facetteId]) and in_array($listkey, $tabfacette[$facetteId])) ? ' checked' : '',
-                ];
-            }
-
-            $filterOptions = [];
-            foreach ($list['options'] as $listkey => $label) {
-                if (!empty($facettable[$listkey])) {
-                    $filterOptions[] = createFilterOption($listkey, $label, $facetteId, $facettable, $tabfacette);
-                }
-            }
-
-            if (!empty($list['optionsTree'])) {
-                function recursivelyConvertNode($node, $facetteId, $facettable, $tabfacette)
-                {
-                    $result = createFilterOption($node['id'], $node['label'], $facetteId, $facettable, $tabfacette);
-
-                    foreach ($node['children'] as $childNode) {
-                        // if (!empty($facettable[$childNode['id']])) {
-                        $result['children'][] = recursivelyConvertNode($childNode, $facetteId, $facettable, $tabfacette);
-                        // }
-                    }
-
-                    return $result;
-                }
-                foreach ($list['optionsTree'] as $node) {
-                    // if (!empty($facettable[$node['id']])) {
-                    $filterOptionsTree[] = recursivelyConvertNode($node, $facetteId, $facettable, $tabfacette);
-                    // }
-                }
-            }
 
             $i = array_key_first(array_filter($options['groups'], function ($value) use ($facetteId) {
                 return $value == $facetteId;
             }));
 
-            $filters[$facetteId] = [
-                'index' => $i,
-                'icon' => !empty($options['groupicons'][$i]) ? '<i class="' . $options['groupicons'][$i] . '"></i> ' : '',
-                'title' => !empty($options['titles'][$i]) ? $options['titles'][$i] : $list['title'],
-                'collapsed' => ($i != 0) && !$options['groupsexpanded'],
-                'list' => $filterOptions,
-                'listTree' => $filterOptionsTree ?? null,
-            ];
+            // Filter Icon
+            if (!empty($options['groupicons'][$i])) {
+                $filter['icon'] = '<i class="' . $options['groupicons'][$i] . '"></i> ';
+            }
+            // Custom title
+            if (!empty($options['titles'][$i])) {
+                $filter['title'] = $options['titles'][$i];
+            }
+            // Initial Collapsed state
+            $filter['collapsed'] = ($i != 0) && !$options['groupsexpanded'];
+            $filter['index'] = $i;
+
+            $filters[$facetteId] = $filter;
         }
 
         // reorder $filters
@@ -296,6 +258,30 @@ class BazarListService
         }
 
         return $filters;
+    }
+
+    private function createFilterNode($value, $label, $facetteId, $facettable, $tabfacette)
+    {
+        return [
+            'value' => htmlspecialchars($value),
+            'label' => $label,
+            'children' => [],
+            // below fields are only used for old non dynamic bazarlist
+            'id' => $facetteId . $value,
+            'name' => $facetteId,
+            'nb' => $facettable[$value] ?? 0,
+            'checked' => (isset($tabfacette[$facetteId]) and in_array($value, $tabfacette[$facetteId])) ? ' checked' : '',
+        ];
+    }
+
+    private function recursivelyCreateNode($node, $facetteId, $facettable, $tabfacette)
+    {
+        $result = $this->createFilterNode($node['id'], $node['label'], $facetteId, $facettable, $tabfacette);
+        foreach ($node['children'] as $childNode) {
+            $result['children'][] = $this->recursivelyCreateNode($childNode, $facetteId, $facettable, $tabfacette);
+        }
+
+        return $result;
     }
 
     /*

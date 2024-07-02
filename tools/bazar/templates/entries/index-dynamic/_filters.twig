@@ -28,18 +28,7 @@
           <i v-html="filter.icon"></i>{{"{{ filter.title }}"}}
         </template>
         <template #body>
-          <template v-if="filter.listTree">
-            <Filter-Option v-for="filterOption, id in filter.listTree" :key="id" :option="filterOption" />
-          </template>
-          <div v-else class="checkbox" v-for="filterOption, id in filter.list" :key="id">
-            <label>
-              <input class="filter-checkbox" type="checkbox" v-model="filterOption.checked" :value="filterOption.value">
-              <span>
-                <span v-html="filterOption.label"></span>
-                <span class="nb" v-if="filterOption.nb">({{"{{ filterOption.nb }}"}})</span>
-              </span>
-            </label>
-          </div>
+          <Filter-Node v-for="filterNode, id in filter.nodes" :key="id" :node="filterNode" />
         </template>
       </Panel>
     </div>
