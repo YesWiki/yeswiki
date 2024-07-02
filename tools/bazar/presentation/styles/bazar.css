@@ -217,52 +217,7 @@ input.form-control.error {
   font-size: 1.4em;
 }
 
-.list-sortables {
-  list-style: none;
-  padding: 0;
-}
-
-.list-sortables .liste_ligne {
-  display: table;
-  margin-bottom: 3px;
-}
-
-.list-sortables .input-key {
-  width: 80px;
-}
-
-.list-sortables .input-label {
-  width: calc(100% - 80px);
-}
-.input_liste_id {
-  display: inline;
-  margin: 0 2px;
-  width: 40px;
-}
-.input_liste_label {
-  display: inline;
-  margin: 0;
-  width: 250px;
-}
-ul.valeur_liste,
-ul.valeur_formulaire {
-  padding: 0;
-  margin: 0;
-}
-ul.list-sortables li,
-ul.valeur_formulaire li {
-  list-style-type: none;
-  padding: 0;
-  margin: 3px 0;
-}
-.handle-listitems {
-  cursor: move;
-}
-.suppression_label_liste {
-  cursor: pointer;
-}
-
-/* .valeur_formulaire .handle {left:20px;position:absolute;} */
+/*.valeur_formulaire .handle {left:20px;position:absolute;}*/
 .valeur_formulaire .formulaire_ligne {
   background: #eaeaea;
   border: 1px solid #ccc;
