@@ -1,3 +1,5 @@
+import CollapseTransition from './CollapseTransition.js'
+
 export default {
   props: {
     color: {
@@ -13,8 +15,11 @@ export default {
       default: true
     }
   },
+  components: { CollapseTransition },
   data() {
-    return { internalCollapsed: true // value to work internally, name should not conflict with prop
+    return {
+      // value to work internally, name should not conflict with prop
+      internalCollapsed: true
     }
   },
   computed: {
@@ -30,7 +35,7 @@ export default {
       if (!this.internalCollapsed) this.$emit('opened')
     }
   },
-  mounted() {
+  beforeMount() {
     this.internalCollapsed = this.collapsed
   },
   template: `
@@ -40,10 +45,11 @@ export default {
            @click="headerClicked()">
         <slot name="header"></slot>
       </button>
-      <div class="panel-body" v-show="!internalCollapsed" style="padding: 0">
-        <slot name="body"></slot>
-      </div>
-      </div>
+      <collapse-transition>
+        <div class="panel-body" v-show="!internalCollapsed" style="padding: 0">
+          <slot name="body"></slot>
+        </div>
+      </collapse-transition>
     </div>
   `
 }
