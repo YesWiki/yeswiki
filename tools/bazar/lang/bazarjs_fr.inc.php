@@ -262,4 +262,6 @@ return [
     'LIST_KEY' => 'Clé',
     'LIST_TEXT' => 'Texte',
     'LIST_ADD_NODE' => 'Ajouter une valeur',
+    'LIST_ERROR_MISSING_IDS' => "Certaines valeurs n'ont pas de clé associée",
+    'LIST_ERROR_DUPLICATES_IDS' => "Chaque clé doit être unique. Ces clés sont utilisées plusieurs fois : ",
 ];

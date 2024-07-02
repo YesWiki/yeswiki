@@ -8,7 +8,8 @@ module.exports = {
     wiki: 'writable',
     Vue: 'readable',
     _t: 'readable',
-    ace: 'writable'
+    ace: 'writable',
+    toastMessage: 'readable'
   },
   extends: [
     'airbnb-base'
