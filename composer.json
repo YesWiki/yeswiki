@@ -53,6 +53,7 @@
     "tamtamchik/simple-flash": "^2.0",
     "twig/twig": "^3.4.3",
     "voku/anti-xss": "^4.1",
+    "wruczek/php-file-cache": "^0.0.5",
     "yeswiki/theme-margot": "^1.0"
   },
   "conflict": {},

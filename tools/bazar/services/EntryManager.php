@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Service;
 
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Wruczek\PhpFileCache\PhpFileCache;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\TitleField;
@@ -166,7 +167,7 @@ class EntryManager
      *
      * @param array &$params
      *
-     * @return $string
+     * @return string
      */
     private function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false): string
     {
@@ -431,21 +432,24 @@ class EntryManager
     public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
     {
         $requete = $this->prepareSearchRequest($params, $filterOnReadACL);
-        $searchResults = [];
-        $results = $this->dbService->loadAll($requete);
-        $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
-        foreach ($results as $page) {
-            // save owner to reduce sql calls
-            $this->pageManager->cacheOwner($page);
-            // not possible to init the Guard in the constructor because of circular reference problem
-            $filteredPage = (!$this->wiki->UserIsAdmin() && $useGuard)
-                ? $this->wiki->services->get(Guard::class)->checkAcls($page, $page['tag'])
-                : $page;
-            $data = $this->getDataFromPage($filteredPage, false, $debug, $params['correspondance']);
-            $searchResults[$data['id_fiche']] = $data;
-        }
-
-        return $searchResults;
+        $requeteHash = hash('sha256', $requete);
+        $cache = new PhpFileCache("cache/"); // initialise with different cache folder
+        return $cache->refreshIfExpired($requeteHash, function () use ($params, $useGuard, $requete) {
+            $searchResults = array();
+            $results = $this->dbService->loadAll($requete);
+            $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
+            foreach ($results as $page) {
+                // save owner to reduce sql calls
+                $this->pageManager->cacheOwner($page);
+                // not possible to init the Guard in the constructor because of circular reference problem
+                $filteredPage = (!$this->wiki->UserIsAdmin() && $useGuard)
+                    ? $this->wiki->services->get(Guard::class)->checkAcls($page, $page['tag'])
+                    : $page;
+                $data = $this->getDataFromPage($filteredPage, false, $debug, $params['correspondance']);
+                $searchResults[$data['id_fiche']] = $data;
+            }
+            return $searchResults;
+        }, 300);
     }
 
     /** format data as in sql.
