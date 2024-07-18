@@ -3,8 +3,6 @@
 namespace YesWiki\Core;
 
 use Composer\Script\Event;
-use Throwable;
-use ZipArchive;
 
 class ComposerScriptsHelper
 {
@@ -52,7 +50,7 @@ class ComposerScriptsHelper
                     'timeout' => 5, // total timeout in seconds
                 ],
             ]));
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             return [];
         }
         if (!empty($content) && is_string($content)) {
@@ -72,9 +70,9 @@ class ComposerScriptsHelper
     {
         if (!empty($data['assets']) && is_array($data['assets'])) {
             foreach ($data['assets'] as $asset) {
-                if (!empty($asset['name']) && is_string($asset['name']) &&
-                    !empty($asset['browser_download_url']) && is_string($asset['browser_download_url']) &&
-                    preg_match("/^pdfjs-(\d+)\.(\d+)\.(\d+)-dist\.zip$/i", $asset['name'], $match)) {
+                if (!empty($asset['name']) && is_string($asset['name'])
+                    && !empty($asset['browser_download_url']) && is_string($asset['browser_download_url'])
+                    && preg_match("/^pdfjs-(\d+)\.(\d+)\.(\d+)-dist\.zip$/i", $asset['name'], $match)) {
                     return [
                         'fileName' => $asset['name'],
                         'url' => $asset['browser_download_url'],
@@ -93,8 +91,8 @@ class ComposerScriptsHelper
     {
         if (!empty($params['url'])) {
             if (is_dir('javascripts/vendor/')) {
-                if (!is_dir('javascripts/vendor/pdfjs-dist/') ||
-                    self::pdfJsDistNeedsUpdate('javascripts/vendor/pdfjs-dist/revision.json', $params)) {
+                if (!is_dir('javascripts/vendor/pdfjs-dist/')
+                    || self::pdfJsDistNeedsUpdate('javascripts/vendor/pdfjs-dist/revision.json', $params)) {
                     try {
                         $zipContent = file_get_contents($params['url'], false, stream_context_create([
                             'http' => [
@@ -107,7 +105,7 @@ class ComposerScriptsHelper
                             if ($temp) {
                                 $tmpFilename = stream_get_meta_data($temp)['uri'];
                                 if (file_put_contents($tmpFilename, $zipContent) !== false) {
-                                    $zip = new ZipArchive();
+                                    $zip = new \ZipArchive();
                                     if ($zip->open($tmpFilename)) {
                                         if (is_dir('javascripts/vendor/pdfjs-dist/')) {
                                             self::deleteFolder('javascripts/vendor/pdfjs-dist/');
@@ -121,6 +119,14 @@ class ComposerScriptsHelper
                                                     'minor_revision' => $params['minor_revision'],
                                                     'buxfix_revision' => $params['buxfix_revision'],
                                                 ])
+                                            );
+                                            file_put_contents(
+                                                'javascripts/vendor/pdfjs-dist/.htaccess',
+                                                <<<TXT
+                                                <IfModule mod_mime.c>
+                                                  AddType text/javascript .mjs
+                                                </IfModule>
+                                                TXT
                                             );
                                             if (file_exists('tools/attach/libs/pdf-viewer.php')) {
                                                 copy('tools/attach/libs/pdf-viewer.php', 'javascripts/vendor/pdfjs-dist/web/pdf-viewer.php');
@@ -142,7 +148,7 @@ class ComposerScriptsHelper
                                 echo "Not possible to create a tempfile !\n";
                             }
                         }
-                    } catch (Throwable $th) {
+                    } catch (\Throwable $th) {
                         echo "error {$th->getMessage()}\n";
                         if (isset($zipContent)) {
                             echo "zipContent: $zipContent\n";
@@ -166,18 +172,18 @@ class ComposerScriptsHelper
             if (!empty($jsonContent)) {
                 $versionsData = json_decode($jsonContent, true);
                 if (is_array($versionsData)) {
-                    if (empty($versionsData['major_revision']) ||
-                        $versionsData['major_revision'] > $params['major_revision'] ||
-                        empty($versionsData['minor_revision']) ||
-                        $versionsData['minor_revision'] > $params['minor_revision'] ||
-                        empty($versionsData['buxfix_revision']) ||
-                        $versionsData['buxfix_revision'] > $params['buxfix_revision']
+                    if (empty($versionsData['major_revision'])
+                        || $versionsData['major_revision'] < $params['major_revision']
+                        || empty($versionsData['minor_revision'])
+                        || $versionsData['minor_revision'] < $params['minor_revision']
+                        || empty($versionsData['buxfix_revision'])
+                        || $versionsData['buxfix_revision'] < $params['buxfix_revision']
                     ) {
                         return true;
                     }
                 }
             }
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
         }
 
         return false;
