@@ -491,3 +491,4 @@ class FormManager
 
         return $this->isAvailableOnlyOneEntryMessage;
     }
+}
