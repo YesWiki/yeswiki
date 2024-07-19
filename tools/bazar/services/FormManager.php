@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
