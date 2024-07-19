@@ -1,5 +1,4 @@
 <?php
-
 return [
     // commons
     'APRIL' => 'April',
@@ -121,4 +120,5 @@ return [
     'DATATABLES_INFOFILTERED' => 'filtered from _MAX_ total elements',
     'DATATABLES_ZERORECORD' => 'No element to display',
     'REACTION_CONFIRM_DELETE' => 'Are you sure to want to delete this reaction ?',
+    'SAVE' => '',
 ];
