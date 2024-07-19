@@ -1,5 +1,4 @@
 <?php
-
 return [
     /*
      * English translation file for YesWiki's main program
