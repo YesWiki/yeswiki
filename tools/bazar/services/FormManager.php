@@ -2,9 +2,9 @@
 
 namespace YesWiki\Bazar\Service;
 
-use Attach;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
@@ -22,8 +22,6 @@ class FormManager
     protected $isAvailableOnlyOneEntryOption;
     protected $isAvailableOnlyOneEntryMessage;
     protected $attach;
-    
-    private const DEFAULT_IMAGE_INDEX = 13;
 
     public function __construct(
         Wiki $wiki,
@@ -47,7 +45,7 @@ class FormManager
         $this->securityController = $securityController;
         $this->isAvailableOnlyOneEntryOption = null;
         $this->isAvailableOnlyOneEntryMessage = null;
-        $this->attach = new attach($this->wiki);
+        $this->attach = new \Attach($this->wiki);
     }
 
     protected function getBasePath()
@@ -82,9 +80,9 @@ class FormManager
                 $default_image_prefix = "defaultimage{$id_nature}_{$image_comp[1]}";
                 $this->cleanCacheDefaultImage($default_image_prefix);
                 $default_image_filename = $basePath . $default_image_prefix . '.jpg';
-                $default_image = explode('|', $image_comp[$this::DEFAULT_IMAGE_INDEX]);
+                $default_image = explode('|', $image_comp[ImageField::FIELD_IMAGE_DEFAULT]);
                 if (count($default_image) == 2) {
-                    $image_comp[$this::DEFAULT_IMAGE_INDEX] = $default_image[0];
+                    $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = $default_image[0];
                     $imgext = explode('image/', explode(';', $default_image[1])[0])[1];
                     $tmpFile = tempnam('cache', 'dfltimg');
                     $tempFile = $tmpFile . '.' . $imgext;
@@ -98,7 +96,7 @@ class FormManager
                         unlink($tempFile);
                     }
                 } else {
-                    $image_comp[$this::DEFAULT_IMAGE_INDEX] = '';
+                    $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = '';
                     if (file_exists($default_image_filename)) {
                         unlink($default_image_filename);
                     }
@@ -124,9 +122,9 @@ class FormManager
                 $image_comp = $template_list[$temp_index];
                 $default_image_filename = $basePath . "defaultimage{$form['bn_id_nature']}_{$image_comp[1]}.jpg";
                 if (file_exists($default_image_filename)) {
-                    $image_comp[$this::DEFAULT_IMAGE_INDEX] = $image_comp[$this::DEFAULT_IMAGE_INDEX] . '|data:image/jpg;base64,' . base64_encode(file_get_contents($default_image_filename));
+                    $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = $image_comp[ImageField::FIELD_IMAGE_DEFAULT] . '|data:image/jpg;base64,' . base64_encode(file_get_contents($default_image_filename));
                 } else {
-                    $image_comp[$this::DEFAULT_IMAGE_INDEX] = '';
+                    $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = '';
                 }
                 $template_list[$temp_index] = $image_comp;
             }
@@ -344,21 +342,21 @@ class FormManager
      */
     public function parseTemplate($raw)
     {
-        //Parcours du template, pour mettre les champs du formulaire avec leurs valeurs specifiques
+        // Parcours du template, pour mettre les champs du formulaire avec leurs valeurs specifiques
         $tableau_template = [];
         $nblignes = 0;
 
-        //on traite le template ligne par ligne
+        // on traite le template ligne par ligne
         $chaine = explode("\n", $raw);
         foreach ($chaine as $ligne) {
             $ligne = trim($ligne);
             // on ignore les lignes vides ou commencant par # (commentaire)
             if (!empty($ligne) && !(strrpos($ligne, '#', -strlen($ligne)) !== false)) {
-                //on decoupe chaque ligne par le separateur *** (c'est historique)
+                // on decoupe chaque ligne par le separateur *** (c'est historique)
                 $tablignechampsformulaire = array_map('trim', explode('***', $ligne));
 
                 // TODO find another way to check that the field is valid
-                if (true /*function_exists($tablignechampsformulaire[self::FIELD_TYPE])*/) {
+                if (true /* function_exists($tablignechampsformulaire[self::FIELD_TYPE]) */) {
                     if (count($tablignechampsformulaire) > 3) {
                         $tableau_template[$nblignes] = $tablignechampsformulaire;
                         for ($i = 0; $i < 16; $i++) {
@@ -493,4 +491,3 @@ class FormManager
 
         return $this->isAvailableOnlyOneEntryMessage;
     }
-}
