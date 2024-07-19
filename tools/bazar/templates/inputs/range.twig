@@ -1,6 +1,8 @@
 {% extends "@bazar/layouts/input.twig" %}
 
 {% block input %}
+    {{ include_css('tools/bazar/presentation/styles/inputs/range.css') }}
+
     <div class="input-group range-wrap">
         {% set defaultValue = ((((field.size != "0" and field.size is empty) ? 0 : field.size)|number_format + 
                 ((field.maxChars != "0" and field.maxChars is empty) ? 100 : field.maxChars)|number_format)/2)|round(0,'ceil') %}

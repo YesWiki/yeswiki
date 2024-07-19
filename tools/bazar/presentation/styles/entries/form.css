@@ -1,0 +1,75 @@
+#map img {
+  max-width: none !important;
+}
+
+#map label {
+  width: auto !important;
+  display: inline !important;
+}
+
+.map-entry {
+  width: 100%;
+  min-height: 220px;
+}
+
+.required_symbol,
+.symbole_obligatoire {
+  color: #e9322d;
+}
+
+.bazar-entry-edit-image {
+  display: flex;
+  align-items: center;
+}
+
+.bazar-entry-edit-image output img {
+  height: 150px;
+}
+
+.bazar-entry-edit-image .image-actions {
+  display: flex;
+  flex-direction: column;
+  margin-left: 1rem;
+}
+
+/* Image input when there is already an image loaded */
+.form-group.input-image:not(.file) .control-label {
+  position: relative;
+  padding: 0;
+  margin: 0 -15px;
+}
+
+.form-group.input-image:not(.file) .control-label::before {
+  content: none;
+}
+
+.frm-holder .form-elements .custom-hint {
+  border: 2px solid #c5c5c5;
+  padding: 5px;
+  margin: 0 5px 5px;
+  border-radius: 3px;
+}
+
+.tab-content .tab-pane.with-padding {
+  padding-top: 1em;
+}
+
+.btn-geolocate {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.filter-and-check-all-container {
+  display: flex;
+  margin: 10px 0;
+  align-items: center;
+  gap: 1rem;
+}
+.filter-and-check-all-container .check-all-container {
+  flex-shrink: 0;
+}
+
+/* submit button disabled */
+#formulaire .form-actions button[type='submit'].submit-disabled {
+  cursor: progress;
+}

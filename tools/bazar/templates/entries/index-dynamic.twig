@@ -1,15 +1,15 @@
 {{ include_javascript('javascripts/vendor/vue/vue.js') }}
 
 {% block assets %}
-{% if params.showmapinlistview %}
-  {{ include_css('styles/vendor/leaflet/leaflet.css') }}
-  {{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}
-  {{ include_javascript('javascripts/vendor/leaflet-providers/leaflet-providers.js') }}
-{% endif %}
+  {% if params.showmapinlistview %}
+    {{ include_css('styles/vendor/leaflet/leaflet.css') }}
+    {{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}
+    {{ include_javascript('javascripts/vendor/leaflet-providers/leaflet-providers.js') }}
+    {% endif %}
 {% endblock %}
-
-{{ include_javascript('tools/bazar/presentation/javascripts/bazar-list-dynamic.js', false, true) }}
-{{ include_css('tools/bazar/presentation/styles/bazar-list-dynamic.css') }}
+  
+{{ include_javascript('tools/bazar/presentation/javascripts/entries-index-dynamic.js', false, true) }}
+{{ include_css('tools/bazar/presentation/styles/entries/index-dynamic.css') }}
 
 {# Extra Fields to retrieve from API call. By default we retrieve the one specified in the displayfields config #}
 {% if necessary_fields is defined %}

@@ -5,6 +5,7 @@ use YesWiki\Bazar\Field\DateField;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\ListManager;
 
 function multiArraySearch($array, $key, $value)
 {
@@ -25,10 +26,10 @@ function multiArraySearch($array, $key, $value)
 
 function baz_forms_and_lists_ids()
 {
-    foreach (baz_valeurs_liste() as $listId => $list) {
-        $lists[$listId] = $list['titre_liste'];
-    }
-
+    $lists = $GLOBALS['wiki']->services->get(ListManager::class)->getAll();
+    $lists = array_map(function ($list) {
+        return $list['title'];
+    }, $lists);
     $requete = 'SELECT bn_id_nature, bn_label_nature FROM ' . $GLOBALS['wiki']->config['table_prefix'] . 'nature';
     $result = $GLOBALS['wiki']->LoadAll($requete);
     foreach ($result as $form) {
@@ -45,36 +46,39 @@ function getHtmlDataAttributes($fiche, $formtab = '')
         $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
         foreach ($fiche as $key => $value) {
             if (!empty($value)) {
-                if (in_array(
-                    $key,
-                    [
-                        'bf_latitude',
-                        'bf_longitude',
-                        'id_typeannonce',
-                        'owner',
-                        'date_creation_fiche',
-                        'date_debut_validite_fiche',
-                        'date_fin_validite_fiche',
-                        'id_fiche',
-                        'statut_fiche',
-                        'date_maj_fiche',
-                    ]
-                )) {
+                if (
+                    in_array(
+                        $key,
+                        [
+                            'bf_latitude',
+                            'bf_longitude',
+                            'id_typeannonce',
+                            'owner',
+                            'date_creation_fiche',
+                            'date_debut_validite_fiche',
+                            'date_fin_validite_fiche',
+                            'id_fiche',
+                            'statut_fiche',
+                            'date_maj_fiche',
+                        ]
+                    )
+                ) {
                     $htmldata .=
-                    'data-' . htmlspecialchars($key) . '="' .
-                    htmlspecialchars($value) . '" ';
+                        'data-' . htmlspecialchars($key) . '="' .
+                        htmlspecialchars($value) . '" ';
                 } else {
                     if (isset($form['prepared'])) {
                         foreach ($form['prepared'] as $field) {
                             $propertyName = $field->getPropertyName();
                             if ($propertyName === $key) {
-                                if ($field instanceof EnumField
+                                if (
+                                    $field instanceof EnumField
                                     || $field instanceof DateField
                                     || $field->getName() == 'scope'
                                 ) {
                                     $htmldata .=
-                                    'data-' . htmlspecialchars($key) . '="' .
-                                    htmlspecialchars(is_array($value) ? '[' . implode(',', $value) . ']' : $value) . '" ';
+                                        'data-' . htmlspecialchars($key) . '="' .
+                                        htmlspecialchars(is_array($value) ? '[' . implode(',', $value) . ']' : $value) . '" ';
                                 }
                             }
                         }

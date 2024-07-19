@@ -1,138 +1,39 @@
-{{ include_javascript('javascripts/vendor/jquery-ui-sortable/jquery-ui.min.js') }}
-{{ include_javascript('tools/bazar/libs/bazar.edit_lists.js') }}
+{{ include_javascript('javascripts/vendor/vue/vue.js') }}
 
-<form
-  action=""
-  method="post"
-  id="bazar_form_lists"
-  class="form-horizontal"
->
-  <div class="control-group form-group">
-    <label class="control-label col-sm-3">
-      <span class="required_symbol">*&nbsp;</span>
-      {{ _t('BAZ_LIST_NAME') }}
-    </label>
-    <div class="controls col-sm-9">
-      <input
-        name="titre_liste"
-        type="text"
-        value="{{ title }}"
-        required="required"
-        placeholder="{{ _t('BAZ_LIST_NAME') }}"
-        class="form-control"
-      />
-    </div>
-  </div>
-  <div class="control-group form-group">
-    <label class="control-label title-label col-sm-3">
-      {{ _t('BAZ_VALEURS_LISTE') }}
-    </label>
-    <div class="col-sm-9">
-      <ul class="list-sortables controls">
-        {% if labels %}
-          {% for key, label in labels %}
-            <li class="liste_ligne input-prepend input-append input-group" id="row{{ key }}">
-              <a title="{{ _t('BAZ_DEPLACER_L_ELEMENT') }}" class="handle-listitems add-on input-group-addon">
-                <i class="fa fa-arrows-alt icon-move"></i>
-              </a>
-              <input
-                required
-                type="text"
-                placeholder="{{ _t('BAZ_KEY') }}"
-                name="id[{{ loop.index }}]"
-                value="{{ key|e }}"
-                class="input-key form-control"
-              />
-              <input
-                required
-                type="text"
-                placeholder="{{ _t('BAZ_TEXT') }}"
-                name="label[{{ loop.index }}]"
-                value="{{ label|e }}"
-                class="input-label form-control"
-              />
-              <a class="add-on suppression_label_liste input-group-addon">
-                <i class="fa fa-trash icon-trash"></i>
-              </a>
-            </li>
-          {% endfor %}
-        {% else %}
-          <li class="liste_ligne input-prepend input-append input-group" id="row1">
-            <a title="{{ _t('BAZ_DEPLACER_L_ELEMENT') }}" class="handle-listitems add-on input-group-addon">
-              <i class="fa fa-arrows-alt icon-move"></i>
-            </a>
-            <input
-              required
-              type="text"
-              placeholder="{{ _t('BAZ_KEY') }}"
-              name="id[1]"
-              class="input-key form-control"
-            />
-            <input
-              required
-              type="text"
-              placeholder="{{ _t('BAZ_TEXT') }}"
-              name="label[1]"
-              class="input-label form-control"
-            />
-            <a class="add-on suppression_label_liste input-group-addon">
-              <i class="fa fa-trash icon-trash"></i>
-            </a>
-        </li>
-        {% endif %}
-      </ul>
-      <div class="help-block">{{ _t('BAZ_VALEURS_LISTE_HINT') }}</div>
-    </div>
+{{ include_javascript('javascripts/vendor/sortablejs/sortable.js') }}
+{{ include_javascript('javascripts/vendor/vuedraggable/vuedraggable.js') }}
+{{ include_javascript('tools/bazar/presentation/javascripts/list-form.js', false, true) }}
+{{ include_css('tools/bazar/presentation/styles/list-form.css') }}
 
-    <div class="col-sm-9 col-sm-offset-3">
-      <a class="controls btn btn-primary ajout_label_liste" title="{{ _t('BAZ_AJOUTER_LABEL_LISTE') }}">
-        <i class="fa fa-plus icon-plus icon-white"></i>
-        {{ _t('BAZ_AJOUTER_LABEL_LISTE') }}
-      </a>
-    </div>
-  </div>
-  <div class="form-actions form-group">
-    <div class="col-sm-9 col-sm-offset-3">
-      <button
-        class="btn btn-primary btn-save-list"
-        name="valider"
-        type="submit"
-      >
-        {{ _t('BAZ_SAVE') }}
-      </button>
-      <a
-        class="btn btn-default btn-cancel-list btn-xs"
-        name="annuler"
-        href="{{ url({ params: { vue: 'listes' }})|raw }}"
-      >
-        {{ _t('BAZ_ANNULER') }}
-      </a>
-    </div>
-  </div>
-</form>
+<form method="post" @submit="onSubmit" class="list-form form-horizontal" data-list="{{ list|json_encode }}">
+	<div class="control-group form-group">
+		<label class="control-label col-sm-3">
+			<span class="required_symbol">*&nbsp;</span>
+			{{ _t('BAZ_LIST_NAME') }}
+		</label>
+		<div class="controls col-sm-9">
+			<input type="text" v-model="title" name="title" 
+			       placeholder="{{ _t('BAZ_LIST_NAME') }}" class="form-control" required/>
+		</div>
+	</div>
 
-<!-- IS THIS USED ?? -->
-<div id="empty-new-item" class="hide">
-  <li class="liste_ligne input-prepend input-append input-group" id="row@nb@">
-    <a title="{{ _t('BAZ_DEPLACER_L_ELEMENT') }}" class="handle-listitems add-on input-group-addon">
-      <i class="fa fa-arrows-alt icon-move"></i>
-    </a>
-    <input
-      required
-      type="text"
-      placeholder="{{ _t('BAZ_KEY') }}"
-      name="id[@nb@]"
-      class="input-key form-control"
-    />
-    <input
-      required
-      type="text"
-      placeholder="{{ _t('BAZ_TEXT') }}"
-      name="label[@nb@]"
-      class="input-label form-control"
-    />
-    <a class="add-on suppression_label_liste input-group-addon">
-      <i class="fa fa-trash icon-trash"></i>
-    </a>
-  </li>
+	{# List Nodes #}
+	<label class="control-label">{{ _t('BAZ_VALEURS_LISTE') }}</label>
+	<div class="nodes-container">
+		<list-node :node="rootNode" :depth="0" :index="0"></list-node>
+	</div>
+	{# Hidden JSON Nodes #}
+	<input type="hidden" name="nodes" :value="jsonNodes" />
+
+	{# Form Actions #}
+	<div class="form-actions form-group">
+		<div class="col-sm-9 col-sm-offset-3">
+			<button class="btn btn-primary" type="submit" name="submit">
+				{{ _t('BAZ_SAVE') }}
+			</button>
+			<a class="btn btn-defaul" href="{{ url({ params: { vue: 'listes' }})|raw }}">
+				{{ _t('BAZ_ANNULER') }}
+			</a>
+		</div>
+	</div>
 </div>

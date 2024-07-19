@@ -1,7 +1,7 @@
 {{ include_css('styles/vendor/leaflet/leaflet.css') }}
 {{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}
 {{ include_javascript('javascripts/vendor/leaflet-providers/leaflet-providers.js') }}
-{{ include_javascript('tools/bazar/presentation/javascripts/map-field-map-entry.js', false, true) }}
+{{ include_javascript('tools/bazar/presentation/javascripts/fields/map-field-map-entry.js', false, true) }}
 <div
   class="map-entry"
   data-map-field="{{ mapFieldData | json_encode | e('html_attr') }}"

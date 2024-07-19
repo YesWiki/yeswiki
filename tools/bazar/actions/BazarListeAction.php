@@ -255,7 +255,14 @@ class BazarListeAction extends YesWikiAction
             ]);
         } else {
             $entries = $bazarListService->getEntries($this->arguments, $forms);
-            $filters = $bazarListService->formatFilters($this->arguments, $entries, $forms);
+            $filters = $bazarListService->getFilters($this->arguments, $entries, $forms);
+
+            // backwardcompatibility, the structure of filters have changed in 06/2024
+            $filters = array_reduce($filters, function ($carry, $filter) {
+                $carry[$filter['propName']] = $filter;
+
+                return $carry;
+            }, []);
 
             // To handle multiple bazarlist in a same page, we need a specific ID per bazarlist
             // We use a global variable to count the number of bazarliste action run on this page
@@ -266,7 +273,7 @@ class BazarListeAction extends YesWikiAction
             $this->arguments['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'];
 
             // TODO put in all bazar templates
-            $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
+            $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
 
             return $this->render('@bazar/entries/index.twig', [
                 'listId' => $GLOBALS['_BAZAR_']['nbbazarliste'],

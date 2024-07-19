@@ -1,0 +1,34 @@
+.list-form .nodes-container {
+  margin-top: 15px;
+}
+.list-form
+  .list-node-container:not([data-depth="1"][data-index="0"])
+  > .list-node
+  > input {
+  border-top: 0;
+}
+.list-form .list-node .input-id {
+  width: 9rem;
+  min-width: 9rem;
+  max-width: 9rem;
+}
+.list-form .list-node .btn-expand {
+  width: 2.5rem;
+  justify-content: center;
+}
+.list-form .list-node-children:not(.root) {
+  margin-left: 2.5rem;
+}
+.list-form .list-new-node {
+  margin-bottom: 15px;
+}
+.list-form .list-new-node input {
+  border-top: 0;
+  max-width: 300px;
+  border-color: var(--neutral-color);
+}
+.list-form .list-new-node .btn-add-child {
+  background-color: var(--neutral-color);
+  width: 2.5rem;
+  justify-content: center;
+}

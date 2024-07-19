@@ -40,10 +40,7 @@ return [
     'GEOLOCATER_GROUP_GEOLOCATIZATION' => 'Fields to use for geolocalization',
     'GEOLOCATER_GROUP_GEOLOCATIZATION_HINT' => 'Provide at least one field',
     'GEOLOCATER_NOT_FOUND' => 'Not foundable "{addr}" address',
-    // libs/bazar.edit_lists.js
-    // 'BAZ_EDIT_LISTS_CONFIRM_DELETE' => 'Confirmez-vous la suppression de cette valeur dans la liste ?',
-    // 'BAZ_EDIT_LISTS_DELETE_ERROR' => 'Le dernier élément ne peut être supprimé.',
-    // libs/bazar.js
+    // presentation/javascripts/bazar.js
     // 'BAZ_FORM_REQUIRED_FIELD' => 'Veuillez saisir tous les champs obligatoires (avec une asterisque rouge)',
     // 'BAZ_FORM_INVALID_EMAIL' => 'L\'email saisi n\'est pas valide',
     // 'BAZ_FORM_INVALID_TEXT' => 'Le texte n\'est pas valide',
@@ -260,4 +257,8 @@ return [
     // reactions
     'BAZ_ACTIVATE_REACTIONS' => 'Activate reactions on this entry?',
     'FILEFIELD_TOO_LARGE_FILE' => 'The file is too large, maximum {fileMaxSize} bytes',
+    // list-node.js
+    'LIST_DRAGDROP' => 'Move this element',
+    'LIST_KEY' => 'Key',
+    'LIST_TEXT' => 'Text',
 ];

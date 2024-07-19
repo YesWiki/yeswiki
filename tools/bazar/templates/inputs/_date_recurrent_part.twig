@@ -10,7 +10,7 @@
     } %}
         {% block input %}
             {{ include_javascript('javascripts/vendor/vue/vue.js') }}
-            {{ include_javascript('tools/bazar/presentation/javascripts/recurrent-event.js') }}
+            {{ include_javascript('tools/bazar/presentation/javascripts/inputs/recurrent-event.js') }}
             <div class="input-group selector_is_recurrent specific-for-recurrence" data-data="{{ data|json_encode }}" v-show="isRecurrent">
                 <input type="hidden" name="{{ "#{field.propertyName}_data[isRecurrent]" }}" value="1" v-if="isRecurrent"/>
                 <input type="hidden" :value="nbmax" name="{{ "#{field.propertyName}_data[nbmax]" }}" v-if="isRecurrent" />

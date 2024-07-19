@@ -91,7 +91,7 @@ class IframeHandler extends YesWikiHandler
     {
         $output = '';
         // si la page est une fiche bazar, alors on affiche la fiche plutot que de formater en wiki
-        $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
+        $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
         $valjson = $this->wiki->page['body'];
         $tab_valeurs = json_decode($valjson, true);
         if (YW_CHARSET != 'UTF-8') {

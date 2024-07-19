@@ -1,0 +1,32 @@
+{% extends "@bazar/layouts/field.twig" %}
+
+{% block value_container %}
+	<span class="BAZ_texte field-checkbox-tree">
+		{{ _self.renderNodes(treeValues) }}
+	</span>
+{% endblock %}
+
+{% macro renderNodes(nodes) %}
+
+{# Add some classes "leaf", "only-leafs", "one-child" to make customization with CSS easy #}
+{% set allChildrenEmpty = true %}
+{% for node in nodes %}
+    {% if node.children is not empty %}
+        {% set allChildrenEmpty = false %}
+    {% endif %}
+{% endfor %}
+<ul class="{{ allChildrenEmpty ? 'only-leafs' : ''}}">
+	{% for node in nodes %}
+		<li class="{{ node.children|length == 0 ? 'leaf' : ''}} {{ node.children|length == 1 ? 'one-child' : ''}}">
+			{{ node.label|raw }}
+			{% if node.children|length > 0 %}
+			   {{ _self.renderNodes(node.children) }}
+			{% endif %}
+		</li>
+	{% endfor %}
+</ul>
+{% endmacro %}
+
+
+
+

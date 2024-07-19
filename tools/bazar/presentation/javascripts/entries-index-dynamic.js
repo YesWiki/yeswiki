@@ -1,10 +1,14 @@
-import Panel from './components/Panel.js'
+import Panel from '../../../../javascripts/shared-components/Panel.js'
 import EntryField from './components/EntryField.js'
 import PopupEntryField from './components/PopupEntryField.js'
 import SpinnerLoader from './components/SpinnerLoader.js'
 import ModalEntry from './components/ModalEntry.js'
 import BazarSearch from './components/BazarSearch.js'
-import { initEntryMaps } from './map-field-map-entry.js'
+import FilterNode from './components/FilterNode.js'
+import { initEntryMaps } from './fields/map-field-map-entry.js'
+import { recursivelyCalculateRelations } from './utils.js'
+
+Vue.component('FilterNode', FilterNode)
 
 const load = (domElement) => {
   new Vue({
@@ -30,17 +34,20 @@ const load = (domElement) => {
       imagesToProcess: [],
       processingImage: false,
       search: '',
-      searchFormId: null, // wether to search for a particular form ID (only used when no form id is defined for the bazar list action)
+      // wether to search for a particular form ID (only used when no
+      // form id is defined for the bazar list action)
+      searchFormId: null,
       searchTimer: null // use ot debounce user input
     },
     computed: {
       computedFilters() {
         const result = {}
-        for (const filterId in this.filters) {
-          const checkedValues = this.filters[filterId].list.filter((option) => option.checked)
-            .map((option) => option.value)
-          if (checkedValues.length > 0) result[filterId] = checkedValues
-        }
+        this.filters.forEach((filter) => {
+          const checkedValues = filter.flattenNodes
+            .filter((node) => node.checked)
+            .map((node) => node.value)
+          if (checkedValues.length > 0) result[filter.propName] = checkedValues
+        })
         return result
       },
       filteredEntriesCount() {
@@ -48,10 +55,14 @@ const load = (domElement) => {
       },
       pages() {
         if (this.pagination <= 0) return []
-        const pagesCount = Math.ceil(this.filteredEntries.length / parseInt(this.pagination))
+        const pagesCount = Math.ceil(this.filteredEntries.length / parseInt(this.pagination, 10))
         const start = 0; const
           end = pagesCount - 1
-        let pages = [this.currentPage - 2, this.currentPage - 1, this.currentPage, this.currentPage + 1, this.currentPage + 2]
+        let pages = [
+          this.currentPage - 2, this.currentPage - 1,
+          this.currentPage,
+          this.currentPage + 1, this.currentPage + 2
+        ]
         pages = pages.filter((page) => page >= start && page <= end)
         if (!pages.includes(start)) {
           if (!pages.includes(start + 1)) pages.unshift('divider')
@@ -83,9 +94,8 @@ const load = (domElement) => {
       calculateBaseEntries() {
         let result = this.entries
         if (this.searchFormId) {
-          result = result.filter((entry) =>
           // filter based on formId, when no form id is specified
-            entry.id_typeannonce == this.searchFormId)
+          result = result.filter((entry) => entry.id_typeannonce == this.searchFormId)
         }
         if (this.search && this.search.length > 2) {
           result = this.searchEntries(result, this.search)
@@ -97,14 +107,14 @@ const load = (domElement) => {
         this.filterEntries()
       },
       filterEntries() {
-      // Handles filters
+        // Handles filters
         let result = this.searchedEntries
-        for (const filterId in this.computedFilters) {
+        Object.entries(this.computedFilters).forEach(([propName, filter]) => {
           result = result.filter((entry) => {
-            if (!entry[filterId] || typeof entry[filterId] != 'string') return false
-            return entry[filterId].split(',').some((value) => this.computedFilters[filterId].includes(value))
+            if (!entry[propName] || typeof entry[propName] != 'string') return false
+            return entry[propName].split(',').some((value) => filter.includes(value))
           })
-        }
+        })
         this.filteredEntries = result
         this.paginateEntries()
       },
@@ -125,21 +135,21 @@ const load = (domElement) => {
         this.entriesToDisplay = this.paginatedEntries
       },
       calculateFiltersCount() {
-        for (const fieldName in this.filters) {
-          for (const option of this.filters[fieldName].list) {
-            option.nb = this.searchedEntries.filter((entry) => {
-              let entryValues = entry[fieldName]
+        this.filters.forEach((filter) => {
+          filter.flattenNodes.forEach((node) => {
+            node.count = this.searchedEntries.filter((entry) => {
+              let entryValues = entry[filter.propName]
               if (!entryValues || typeof entryValues != 'string') return
               entryValues = entryValues.split(',')
-              return entryValues.some((value) => value == option.value)
+              return entryValues.some((value) => value == node.value)
             }).length
-          }
-        }
+          })
+        })
       },
       resetFilters() {
-        for (const filterId in this.filters) {
-          this.filters[filterId].list.forEach((option) => option.checked = false)
-        }
+        this.filters.forEach((filter) => {
+          filter.flattenNodes.forEach((node) => { node.checked = false })
+        })
         this.search = ''
       },
       saveFiltersIntoHash() {
@@ -153,29 +163,29 @@ const load = (domElement) => {
       },
       initFiltersFromHash(filters, hash) {
         hash = hash.substring(1) // remove #
-        for (const combinaison of hash.split('&')) {
+        hash.split('&').forEach((combinaison) => {
           const filterId = combinaison.split('=')[0]
-          let filterValues = combinaison.split('=')[1]
+          const filterValues = combinaison.split('=')[1]
+          const filter = this.filters.find((f) => f.propName == fieldId)
           if (filterId == 'q') {
             this.search = filterValues
-          } else if (filterId && filterValues && filters[filterId]) {
-            filterValues = filterValues.split(',')
-            for (const filter of filters[filterId].list) {
-              if (filterValues.includes(filter.value)) filter.checked = true
-            }
+          } else if (filterId && filterValues && filter) {
+            filter.flattenNodes.forEach((node) => {
+              if (filterValues.includes(node.value)) node.checked = true
+            })
           }
-        }
+        })
         // init q from GET q also
         if (this.search.length == 0) {
           let params = document.location.search
           params = params.substring(1) // remove ?
-          for (const combinaison of params.split('&')) {
+          params.split('&').forEach((combinaison) => {
             const filterId = combinaison.split('=')[0]
             const filterValues = combinaison.split('=')[1]
             if (filterId == 'q') {
               this.search = decodeURIComponent(filterValues)
             }
-          }
+          })
         }
         return filters
       },
@@ -212,7 +222,7 @@ const load = (domElement) => {
           }).catch(() => 'error')// in case of error do nothing
       },
       async getJSON(url, options = {}) {
-        return await fetch(url, options)
+        return fetch(url, options)
           .then((response) => {
             if (!response.ok) {
               throw `response not ok ; code : ${response.status} (${response.statusText})`
@@ -228,10 +238,9 @@ const load = (domElement) => {
       },
       loadBazarListDynamicIfNeeded(html) {
         if (html.match(/<div class="bazar-list-dynamic-container/)) {
-          document.querySelectorAll('.bazar-list-dynamic-container:not(.mounted)').forEach((element) => {
-            if (!('__vue__' in element)) {
-              load(element)
-            }
+          const unmounted = document.querySelectorAll('.bazar-list-dynamic-container:not(.mounted)')
+          unmounted.forEach((element) => {
+            if (!('__vue__' in element)) load(element)
           })
         }
       },
@@ -256,15 +265,20 @@ const load = (domElement) => {
       },
       getExternalEntry(entry) {
         const url = `${entry.url}/iframe`
-        Vue.set(entry, 'html_render', `<iframe src="${url}" width="500px" height="600px" style="border:none;"></iframe>`)
+        Vue.set(
+          entry,
+          'html_render',
+          `<iframe src="${url}" width="500px" height="600px" style="border:none;"></iframe>`
+        )
       },
       colorIconValueFor(entry, field, mapping) {
         if (!entry[field] || typeof entry[field] != 'string') return null
         let values = entry[field].split(',')
         // If some filters are checked, and the entry have multiple values, we display
         // the value associated with the checked filter
-        // TODO BazarListDynamic check with users if this is expected behaviour
-        if (this.computedFilters[field]) values = values.filter((val) => this.computedFilters[field].includes(val))
+        if (this.computedFilters[field]) {
+          values = values.filter((val) => this.computedFilters[field].includes(val))
+        }
         return mapping[values[0]]
       },
       urlImageResizedOnError(entry, fieldName, width, height, mode, token) {
@@ -372,20 +386,35 @@ const load = (domElement) => {
       )
       const savedHash = document.location.hash // don't know how, but the hash get cleared after
       this.params = JSON.parse(this.$el.dataset.params)
-      this.pagination = parseInt(this.params.pagination)
+      this.pagination = parseInt(this.params.pagination, 10)
       this.mounted = true
       // Retrieve data asynchronoulsy
       $.getJSON(wiki.url('?api/entries/bazarlist'), this.params, (data) => {
-      // First display filters cause entries can be a bit long to load
-        this.filters = this.initFiltersFromHash(data.filters || [], savedHash)
+        // process the filters
+        const filters = data.filters || []
+        // Calculate the parents
+        filters.forEach((filter) => {
+          filter.nodes.forEach((rootNode) => recursivelyCalculateRelations(rootNode))
+          filter.flattenNodes = filter.nodes
+            .map((rootNode) => [rootNode, ...rootNode.descendants])
+            .flat()
+          // init some attributes for reactivity
+          filter.flattenNodes.forEach((node) => {
+            node.count = 0
+            node.checked = false
+          })
+        })
+        // First display filters cause entries can be a bit long to load
+        this.filters = this.initFiltersFromHash(filters, savedHash)
 
-        // Auto adjust some params depending on entries count
-        if (data.entries.length > 50 && !this.pagination) this.pagination = 20 // Auto paginate if large numbers
-        if (data.entries.length > 1000) this.params.cluster = true // Activate cluster for map mode
+        // Auto paginate if large numbers
+        if (data.entries.length > 50 && !this.pagination) this.pagination = 20
+        // Activate cluster for map mode
+        if (data.entries.length > 1000) this.params.cluster = true
 
         setTimeout(() => {
-        // Transform forms info into a list of field mapping
-        // { bf_titre: { type: 'text', ...}, bf_date: { type: 'listedatedeb', ... } }
+          // Transform forms info into a list of field mapping
+          // { bf_titre: { type: 'text', ...}, bf_date: { type: 'listedatedeb', ... } }
           Object.values(data.forms).forEach((formFields) => {
             Object.values(formFields).forEach((field) => {
               this.formFields[field.id] = field
@@ -395,14 +424,34 @@ const load = (domElement) => {
             })
           })
 
-          this.entries = data.entries.map((array) => {
+          this.entries = data.entries.map((entryAsArray) => {
             const entry = { color: null, icon: null }
-            // Transform array data into object using the fieldMapping
-            for (const key in data.fieldMapping) {
-              entry[data.fieldMapping[key]] = array[key]
-            }
+            // Transform entryAsArray data into object using the fieldMapping
+            Object.entries(data.fieldMapping).forEach(([key, mapping]) => {
+              entry[mapping] = entryAsArray[key]
+            })
             Object.entries(this.params.displayfields).forEach(([field, mappedField]) => {
               if (mappedField) entry[field] = entry[mappedField]
+            })
+
+            // In case of Tree, if an entry have only one value down the tree then add all the parent :
+            // filters for checkboxes: [{ value: "website", children: [ { value: "yeswiki" }] }]
+            // entryA { checkboxes: "yeswiki" }
+            // => entryA { checkboxes: "yeswiki,website" }
+            this.filters.forEach((filter) => {
+              const { propName } = filter
+              if (entry[propName] && typeof entry[propName] == 'string') {
+                const entryValues = entry[propName].split(',')
+                entryValues.forEach((value) => {
+                  const correspondingNode = filter.flattenNodes.find((node) => node.value == value)
+                  if (correspondingNode) {
+                    correspondingNode.parents.forEach((parent) => {
+                      if (!entryValues.includes(parent.value)) entryValues.push(parent.value)
+                    })
+                  }
+                })
+                entry[propName] = entryValues.join(',')
+              }
             })
 
             return entry

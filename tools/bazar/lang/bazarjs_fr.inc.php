@@ -42,10 +42,7 @@ return [
     'GEOLOCATER_GROUP_GEOLOCATIZATION' => 'Champs à utiliser pour la géolocalisation',
     'GEOLOCATER_GROUP_GEOLOCATIZATION_HINT' => 'Renseignez au moins un champ',
     'GEOLOCATER_NOT_FOUND' => 'Adresse "{addr}" introuvable',
-    // libs/bazar.edit_lists.js
-    'BAZ_EDIT_LISTS_CONFIRM_DELETE' => 'Confirmez-vous la suppression de cette valeur dans la liste ?',
-    'BAZ_EDIT_LISTS_DELETE_ERROR' => 'Le dernier élément ne peut être supprimé.',
-    // libs/bazar.js
+    // presentation/javascripts/bazar.js
     'BAZ_FORM_REQUIRED_FIELD' => 'Veuillez saisir tous les champs obligatoires (asterisque rouge)',
     'BAZ_FORM_INVALID_EMAIL' => 'L\'email saisi n\'est pas valide',
     'BAZ_FORM_INVALID_TEXT' => 'Le texte n\'est pas valide',
@@ -260,4 +257,12 @@ return [
     'BAZAR_URL_DISPLAY_VIDEO' => 'Afficher le lecteur si le lien est une vidéo ?',
     // templates/entries/index-dynamic-temapltes/BazarCalendar_ButtonICS.js
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => 'Ajouter à votre calendrier',
+    // liste-node.js
+    'LIST_DRAGDROP' => "Déplacer l'élément",
+    'LIST_KEY' => 'Clé',
+    'LIST_TEXT' => 'Texte',
+    'LIST_ADD_NODE' => 'Ajouter une valeur',
+    'LIST_ADD_CHILD_NODE' => 'Ajouter une sous valeur',
+    'LIST_ERROR_MISSING_IDS' => "Certaines valeurs n'ont pas de clé associée",
+    'LIST_ERROR_DUPLICATES_IDS' => 'Chaque clé doit être unique. Ces clés sont utilisées plusieurs fois : ',
 ];

@@ -1,0 +1,162 @@
+.BAZ_menu .nav,
+.bazar-search {
+  margin-bottom: 1em;
+}
+
+.filters-col .bazar-search {
+  margin-bottom: 2em;
+}
+
+.bazar-table {
+  table-layout: fixed;
+  word-wrap: break-word;
+}
+
+.precsv {
+  height: 125px;
+  white-space: pre;
+  padding: 5px;
+  word-wrap: break-word;
+  overflow: auto;
+}
+
+.results-col {
+  clear: both;
+}
+
+.reset-filters.btn-block {
+  margin-top: 5px;
+}
+
+/* accordion pane */
+.accordion {
+  background: transparent;
+  width: 100%;
+}
+
+.pane {
+  display: none;
+  padding: 15px;
+  margin: 0;
+  border: 1px solid #666;
+  border-top: none;
+}
+
+/* accordion header */
+.titre_accordeon {
+  margin: 0 0 1px;
+  padding: 5px 15px;
+  cursor: pointer;
+  background: #222 url('../images/alert-overlay.png') repeat-x;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 50%);
+  text-shadow: 0 -1px 1px rgb(0 0 0 / 25%);
+  border-bottom: 1px solid rgb(0 0 0 / 25%);
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 1;
+  display: block;
+  position: relative;
+}
+.liens_titre_accordeon {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+}
+.liens_titre_accordeon a {
+  display: inline-block;
+  width: 20px;
+  height: 16px;
+  float: left;
+  margin: 0 2px 0 0;
+  padding: 0;
+}
+
+/* currently active header */
+.titre_accordeon.current {
+  cursor: default;
+  background-color: #ffb515;
+  border-bottom: none;
+}
+
+.titre_accordeon:hover {
+  background-color: #fc9200;
+  text-decoration: none;
+}
+
+input:not(:placeholder-shown):invalid,
+textarea:not(:placeholder-shown):invalid,
+.submitted input:required:invalid,
+.submitted textarea:required:invalid,
+.submitted select:required:invalid,
+.submitted .bootstrap-tagsinput.invalid,
+.submitted .form-group.input-checkbox.invalid,
+.submitted .form-group.input-radio.invalid,
+.submitted .invalid > .ace-container,
+.submitted .textarea.summernote.invalid {
+  border-color: #dd2c00;
+  border-color: var(--danger-color);
+}
+
+input.form-control.error {
+  border-color: var(--danger-color) !important;
+}
+.BAZ_label {
+  font-weight: bold;
+  display: block;
+}
+.BAZ_texte {
+  display: block;
+}
+.titre_lien {
+  display: block;
+  font-size: 1.4em;
+}
+
+/*.valeur_formulaire .handle {left:20px;position:absolute;}*/
+.valeur_formulaire .formulaire_ligne {
+  background: #eaeaea;
+  border: 1px solid #ccc;
+  padding: 5px 0;
+}
+
+.bazar-lists select {
+  width: 250px;
+  display: inline-block;
+}
+
+.link-csv-file {
+  display: block;
+  margin: 10px 0;
+}
+
+.entries-list,
+.list-bazar-entries {
+  max-height: 200px;
+  overflow: auto;
+}
+.entries-list .yeswiki-checkbox {
+  width: 100% !important;
+}
+.yeswiki-input-entries + .bootstrap-tagsinput input {
+  display: block;
+}
+
+.pagination .page {
+  min-height: auto;
+}
+
+.pellet {
+  display: inline-block;
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.bazar-entry button.panel-heading {
+  text-align: left;
+  width: 100%;
+}

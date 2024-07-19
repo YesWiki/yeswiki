@@ -3,6 +3,8 @@
 namespace YesWiki\Bazar\Controller;
 
 use YesWiki\Bazar\Service\ListManager;
+use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
@@ -11,11 +13,19 @@ class ListController extends YesWikiController
 {
     protected $listManager;
     protected $securityController;
+    protected $aclService;
+    protected $authController;
 
-    public function __construct(ListManager $listManager, SecurityController $securityController)
-    {
+    public function __construct(
+        ListManager $listManager,
+        SecurityController $securityController,
+        AclService $aclService,
+        AuthController $authController
+    ) {
         $this->listManager = $listManager;
         $this->securityController = $securityController;
+        $this->aclService = $aclService;
+        $this->authController = $authController;
     }
 
     public function displayAll()
@@ -23,45 +33,34 @@ class ListController extends YesWikiController
         if (isset($_POST['imported-list'])) {
             foreach ($_POST['imported-list'] as $listRaw) {
                 $list = json_decode($listRaw, true);
-                $this->listManager->create($list['titre_liste'], $list['label']);
+                $this->listManager->create($list['title'], $list['nodes']);
             }
+            echo '<div class="alert alert-success">' . _t('BAZ_LIST_IMPORT_SUCCESSFULL') . '.</div>';
             echo '<div class="alert alert-success">' . _t('BAZ_LIST_IMPORT_SUCCESSFULL') . '.</div>';
         }
 
         $lists = $this->listManager->getAll();
 
-        $values = [];
         foreach ($lists as $key => $list) {
-            $values[$key]['title'] = $list['titre_liste'];
-            $values[$key]['options'] = $list['label'];
-            $values[$key]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->wiki->HasAccess('write', $key);
-            $values[$key]['canDelete'] = !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin() || $this->wiki->UserIsOwner($key));
+            $lists[$key]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->wiki->HasAccess('write', $key);
+            $lists[$key]['canDelete'] = !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin() || $this->wiki->UserIsOwner($key));
         }
 
         return $this->render('@bazar/lists/list_table.twig', [
-            'lists' => $values,
-            'loggedUser' => $this->wiki->GetUser(),
+            'lists' => $lists,
+            'loggedUser' => $this->authController->getLoggedUser(),
             'canCreate' => !$this->securityController->isWikiHibernated(),
         ]);
     }
 
     public function create()
     {
-        if (isset($_POST['valider'])) {
-            $i = 1;
-            $values = [];
-            foreach ($_POST['label'] as $label) {
-                if (($label != null || $label != '') && ($_POST['id'][$i] != null || $_POST['id'][$i] != '')) {
-                    $values[$_POST['id'][$i]] = $label;
-                    $i++;
-                }
-            }
-
-            $listeId = $this->listManager->create($_POST['titre_liste'], $values);
+        if (isset($_POST['submit'])) {
+            $listeId = $this->listManager->create($_POST['title'], json_decode($_POST['nodes'], true));
 
             if ($this->shouldPostMessageOnSubmit()) {
                 return $this->render('@core/iframe_result.twig', [
-                    'data' => ['msg' => 'list_created', 'id' => $listeId, 'title' => $_POST['titre_liste']],
+                    'data' => ['msg' => 'list_created', 'id' => $listeId, 'title' => $_POST['title']],
                 ]);
             }
 
@@ -70,7 +69,9 @@ class ListController extends YesWikiController
             );
         }
 
-        return $this->render('@bazar/lists/list_form.twig');
+        return $this->render('@bazar/lists/list_form.twig', [
+            'list' => ['title' => '', 'nodes' => []],
+        ]);
     }
 
     private function shouldPostMessageOnSubmit()
@@ -82,23 +83,13 @@ class ListController extends YesWikiController
     {
         $list = $this->listManager->getOne($id);
 
-        if (isset($_POST['valider'])) {
-            if ($this->wiki->HasAccess('write', $id)) {
-                $i = 1;
-                $values = [];
-
-                foreach ($_POST['label'] as $label) {
-                    if (($label != null || $label != '') && ($_POST['id'][$i] != null || $_POST['id'][$i] != '')) {
-                        $values[$_POST['id'][$i]] = $label;
-                    }
-                    $i++;
-                }
-
-                $this->listManager->update($id, $_POST['titre_liste'], $values);
+        if (isset($_POST['submit'])) {
+            if ($this->aclService->hasAccess('write', $id)) {
+                $this->listManager->update($id, $_POST['title'], json_decode($_POST['nodes'], true));
 
                 if ($this->shouldPostMessageOnSubmit()) {
                     return $this->render('@core/iframe_result.twig', [
-                        'data' => ['msg' => 'list_updated', 'id' => $id, 'title' => $_POST['titre_liste']],
+                        'data' => ['msg' => 'list_updated', 'id' => $id, 'title' => $_POST['title']],
                     ]);
                 }
 
@@ -111,9 +102,7 @@ class ListController extends YesWikiController
         }
 
         return $this->render('@bazar/lists/list_form.twig', [
-            'listId' => $id,
-            'title' => $list['titre_liste'],
-            'labels' => $list['label'],
+            'list' => $list,
         ]);
     }
 

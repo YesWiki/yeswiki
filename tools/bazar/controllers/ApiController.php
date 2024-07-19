@@ -272,7 +272,7 @@ class ApiController extends YesWikiController
             ],
             $forms
         );
-        $filters = $bazarListService->formatFilters($formattedGet, $entries, $forms);
+        $filters = $bazarListService->getFilters($formattedGet, $entries, $forms);
 
         // Basic fields
         $fieldList = ['id_fiche', 'bf_titre'];
@@ -283,8 +283,8 @@ class ApiController extends YesWikiController
         // fields for colo / icon
         $fieldList = array_merge($fieldList, [$_GET['colorfield'] ?? null, $_GET['iconfield'] ?? null]);
         // Fields for filters
-        foreach ($filters as $field => $config) {
-            $fieldList[] = $field;
+        foreach ($filters as $filter) {
+            $fieldList[] = $filter['propName'];
         }
         // Fields used to search
         foreach ($searchfields as $field) {
