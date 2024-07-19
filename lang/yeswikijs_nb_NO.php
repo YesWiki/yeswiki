@@ -1,5 +1,4 @@
 <?php
-
 return [
     // commons
     'APRIL' => '',
@@ -115,4 +114,5 @@ return [
     'REACTION_CONFIRM_DELETE_ALL' => '',
     // Doc
     'DOC_EDIT_THIS_PAGE_ON_GITHUB' => '',
+    'SAVE' => '',
 ];
