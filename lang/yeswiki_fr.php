@@ -231,7 +231,7 @@ return [
     'CHANGE_THE_PASSWORD' => 'Changement de mot de passe',
     'YOUR_OLD_PASSWORD' => 'Votre ancien mot de passe',
     'CHANGE' => 'Changer',
-    'USERNAME_MUST_BE_WIKINAME' => 'Votre nom d\'utilisateur ne doit pas commencer par \'!\',\'@\',\'\\', \'/\' ni \'#\' avec 3 caractères minimum.',
+    'USERNAME_MUST_BE_WIKINAME' => 'Votre nom d\'utilisateur ne doit pas commencer par !, @, \, / ni # avec 3 caractères minimum.',
     'YOU_MUST_SPECIFY_AN_EMAIL' => 'Vous devez spécifier une adresse de messagerie électronique',
     'THIS_IS_NOT_A_VALID_EMAIL' => 'Ceci ne ressemble pas à une adresse de messagerie électronique',
     'PASSWORDS_NOT_IDENTICAL' => 'Les mots de passe n\'étaient pas identiques',
