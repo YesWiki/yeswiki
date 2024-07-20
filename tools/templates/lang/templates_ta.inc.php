@@ -1,5 +1,4 @@
 <?php
-
 return [
     'TEMPLATE_ACTION' => 'செயல்',
     'TEMPLATE_FILE_NOT_FOUND' => 'வார்ப்புரு அல்ல',
