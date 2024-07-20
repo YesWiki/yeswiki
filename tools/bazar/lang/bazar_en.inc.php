@@ -1,5 +1,4 @@
 <?php
-
 return [
     'BAZ_FORMULAIRE' => 'Forms',
     'BAZ_LISTES' => 'Lists',
@@ -348,7 +347,6 @@ return [
     // templates/tableau.twig
     'SUM' => 'Sum',
     'URL' => 'Url',
-
     // templates/bazar/fields/date.twig
     // 'EVENT_IS_RECURRENT' => 'Cet évènement est récurrent : %{repetition}',
     // 'EVENT_LIMIT_DATE' => 'jusqu\'au %{date}',
@@ -361,7 +359,6 @@ return [
     // 'EVENT_REPETITION_NTH_OF_MONTH_ALONE' => 'le %{nth}',
     // 'EVENT_REPETITION_IN_MONTH' => 'en %{month}, ',
     // 'EVENT_IS_LINKED_TO_RECURRENT' => 'Cet évènement est un évènement récurrent lié à la fiche %{link}',
-
     // templates/bazar/inputs/date.twig
     // 'EVENT_ACTIVATE_CUSTOM' => 'Voir les options supplémentaires',
     // 'EVENT_EVERY_DAYS' => 'Tous les jours',
@@ -389,6 +386,6 @@ return [
     // 'EVENT_THIRD_Y_OF_MONTH' => 'Le troisième Y du mois',
     // 'EVENT_UP_TO_DATE' => 'Jusqu\'au :',
     // 'EVENTS_WHEN_IN_MONTH' => 'A quel moment du mois ?',
-
     'BAZ_FILEFIELD_FILE' => 'File : {filename}',
+    'USER_PASSWORDS_NOT_IDENTICAL' => 'Both passwords entered must be identical !',
 ];
