@@ -30,7 +30,7 @@ $collapsible = ($type == 'collapsed' || $type == 'collapsible');
 $collapsed = ($type == 'collapsed');
 
 // data attributes
-$data = $this->services->get(\YesWiki\Templates\Service\Utils::class)->getDataParameter();
+$data = $this->services->get(YesWiki\Templates\Service\Utils::class)->getDataParameter();
 
 $pagetag = $this->GetPageTag();
 
@@ -39,7 +39,7 @@ if (!isset($GLOBALS['check_' . $pagetag])) {
     $GLOBALS['check_' . $pagetag] = [];
 }
 if (!isset($GLOBALS['check_' . $pagetag]['panel'])) {
-    $GLOBALS['check_' . $pagetag]['panel'] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('panel', $pagetag, $this->page['body'] ?? '');
+    $GLOBALS['check_' . $pagetag]['panel'] = $this->services->get(YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('panel', $pagetag, $this->page['body'] ?? '');
 }
 
 if ($GLOBALS['check_' . $pagetag]['panel']) {
