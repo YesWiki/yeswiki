@@ -66,9 +66,10 @@ if ($GLOBALS['check_' . $pagetag]['panel']) {
         }
     }
 
+    $headerTagName = $collapsible ? 'button' : 'div';
     $result = '<!-- start of panel -->'
         . "<div class=\"panel $class\" $data>
-      <button class=\"panel-heading" . ($collapsed ? " collapsed" : '') . '"';
+      <$headerTagName class=\"panel-heading" . ($collapsed ? ' collapsed' : '') . '"';
     if ($collapsible) {
         $result .= " id=\"$headingID\"" . ' data-toggle="collapse"' . (!empty($accordionID) ? " data-parent=\"#$accordionID\"" : '')
             . " href=\"#$collapseID\" aria-expanded=\"" . ($collapsed ? 'false' : 'true') . "\" aria-controls=\"$collapseID\"";
@@ -77,7 +78,7 @@ if ($GLOBALS['check_' . $pagetag]['panel']) {
           <h4 class=\"panel-title\">
            $title
           </h4>
-      </button>
+      </$headerTagName>
       
       <div id=\"$collapseID\"";
     if ($collapsible) {
