@@ -25,7 +25,9 @@ export default {
     },
     slugify(val) {
       return val.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z^A-Z^_^0-9^{^}]/g, '_')
+        .replace(/[^a-z^A-Z^_^0-9^{^}]/g, '_') // "test !" => "test__"
+        .replace(/_+/g, '_') // "te__st" => "te_st"
+        .replace(/^_+|_+$/g, '') // "___test__" => "test"
         .toLowerCase()
     }
   },
