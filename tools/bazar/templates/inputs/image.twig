@@ -17,12 +17,12 @@
                         accept=".jpeg, .jpg, .gif, .png"
                     >
                 </label>
-                {% if isAllowedToDeleteFile %}
+                {% if isAllowedToDeleteFile and not isDefaultImage %}
                     <a class="btn btn-sm btn-danger" href="{{ deleteUrl }}" onclick="javascript:return confirm('{{ _t('BAZ_CONFIRMATION_SUPPRESSION_IMAGE') }}');">
                         <i class="fa fa-trash"></i>
                         {{ _t('BAZ_SUPPRIMER_IMAGE') }}
                     </a>
-                {% else %}            
+                {% elseif not isDefaultImage %}            
                     <button class="btn btn-sm btn-danger" disabled="disabled"
                         data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_DROIT_INSUFFISANT') }}">
                         <i class="fa fa-trash"></i>

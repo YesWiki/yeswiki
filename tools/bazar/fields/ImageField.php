@@ -42,23 +42,42 @@ class ImageField extends FileField
         $this->default = null;
     }
 
+    protected function getDefaultImageName($entry)
+    {
+        if (!empty($entry)) {
+            $id = $entry['id_typeannonce'];
+        } else {
+            $id = empty($GLOBALS['wiki']->GetParameter('id')) ? $_REQUEST['id'] : $GLOBALS['wiki']->GetParameter('id');
+        }
+        $default_image_filename = "defaultimage{$id}_{$this->name}.jpg";
+        if (file_exists($this->getBasePath() . $default_image_filename)) {
+            return $default_image_filename;
+        }
+        return false;
+    }
+
     protected function renderInput($entry)
     {
+        $output = '';
         $wiki = $this->getWiki();
         $value = $this->getValue($entry);
         // javascript pour gerer la previsualisation
         // si une taille maximale est indiquée, on teste
         $wiki->services->get(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/inputs/image-field.js');
-
-        if (isset($value) && $value != '') {
+        $imgDefault = $this->getDefaultImageName($entry);
+        if (
+            !empty($value)
+            || (!empty($imgDefault) && file_exists($this->getBasePath() . $imgDefault))
+        ) {
             if (isset($_GET['suppr_image']) && $_GET['suppr_image'] === $value) {
                 if ($this->securedDeleteImageAndCache($entry, $value)) {
                     $this->updateEntryAfterFileDelete($entry);
 
-                    return $this->render('@templates/alert-message.twig', [
+                    $output = $this->render('@templates/alert-message.twig', [
                         'type' => 'info',
                         'message' => str_replace('{file}', $value, _t('BAZ_LE_FICHIER_A_ETE_EFFACE')),
-                    ]) . "\n" . $this->render('@bazar/inputs/image.twig');
+                    ]);
+                    $value = '';
                 } else {
                     $alertMessage = $this->render('@templates/alert-message.twig', [
                         'type' => 'info',
@@ -67,23 +86,28 @@ class ImageField extends FileField
                 }
             }
 
-            if (file_exists($this->getBasePath() . $value)) {
-                return ($alertMessage ?? '') . $this->render('@bazar/inputs/image.twig', [
-                    'value' => $value,
-                    'downloadUrl' => $this->getBasePath() . $value,
-                    'deleteUrl' => empty($entry) ? '' : $wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . $value, false),
+            if (
+                file_exists($this->getBasePath() . $value)
+                || (!empty($imgDefault) && file_exists($this->getBasePath() . $imgDefault))
+            ) {
+                $img = $value ? $value : $imgDefault;
+                return $output . ($alertMessage ?? '') . $this->render('@bazar/inputs/image.twig', [
+                    'value' => $img,
+                    'downloadUrl' => $this->getBasePath() . $img,
+                    'deleteUrl' => empty($entry) ? '' : $wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . $img, false),
                     'image' => $this->getWiki()->render('@attach/display-image.twig', [
                         'baseUrl' => $this->getWiki()->GetBaseUrl() . '/',
-                        'imageFullPath' => $this->getBasePath() . $value,
+                        'imageFullPath' => $this->getBasePath() . $img,
                         'fieldName' => $this->name,
                         'thumbnailHeight' => $this->thumbnailHeight,
                         'thumbnailWidth' => $this->thumbnailWidth,
                         'imageHeight' => $this->imageHeight,
                         'imageWidth' => $this->imageWidth,
                         'class' => 'img-responsive',
-                        'shortImageName' => $this->getShortFileName($value),
+                        'shortImageName' => $this->getShortFileName($img),
                     ]),
-                    'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value),
+                    'isDefaultImage' => empty($value) && !empty($imgDefault),
+                    'isAllowedToDeleteFile' => empty($entry) || empty($value) ? false : $this->isAllowedToDeleteFile($entry, $value),
                 ]);
             } else {
                 $this->updateEntryAfterFileDelete($entry);
@@ -148,16 +172,16 @@ class ImageField extends FileField
 
                 return [$this->propertyName => ''];
             }
-
-            $entry[$this->propertyName] = basename($filePath);
-        } elseif (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '') {
+            $img = basename($filePath);
+            $entry[$this->propertyName] = $img && $img != $this->getDefaultImageName($entry) ? $img : '';
+        } elseif (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '' && $entry['oldimage_' . $this->propertyName] != $this->getDefaultImageName($entry)) {
             $entry[$this->propertyName] = $entry['oldimage_' . $this->propertyName];
         } elseif (!empty($value)) {
-            $entry[$this->propertyName] = file_exists($this->getBasePath() . $this->getValue($entry)) ? $this->getValue($entry) : '';
+            $img = $this->getValue($entry);
+            $entry[$this->propertyName] = file_exists($this->getBasePath() . $img) && $img != $this->getDefaultImageName($entry) ? $img : '';
         } else {
             $entry[$this->propertyName] = '';
         }
-
         return [
             $this->propertyName => $this->getValue($entry),
             'fields-to-remove' => ['oldimage_' . $this->propertyName],
@@ -168,10 +192,7 @@ class ImageField extends FileField
     {
         $value = $this->getValue($entry);
         if (!isset($value) || $value == '') {
-            $default_image_filename = "defaultimage{$entry['id_typeannonce']}_{$this->name}.jpg";
-            if (file_exists($this->getBasePath() . $default_image_filename)) {
-                $value = $default_image_filename;
-            }
+            $value = $this->getDefaultImageName($entry);
         }
         if (isset($value) && $value != '' && file_exists($this->getBasePath() . $value)) {
             return $this->getWiki()->render('@attach/display-image.twig', [
