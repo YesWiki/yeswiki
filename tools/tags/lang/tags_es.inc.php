@@ -1,5 +1,4 @@
 <?php
-
 return [
     // 'TAGS_TAGS' => 'Mots clés',
     'TAGS_ACTION_ADMINTAGS' => 'Acción {{admintags ...}}',
@@ -22,36 +21,30 @@ return [
     'TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS' => 'Ver todas las páginas con la palabra clave',
     'TAGS_ALERT_PAGE_ALREADY_MODIFIED' => 'Atención : Esta página ha sido modificada por otra persona mientras la estabas modificando tu.<br />Por favor, copia tus cambios y vuelve a editar esta página.',
     'TAGS_ANSWER_THIS_COMMENT' => 'Responder a este comentario',
-    'TAGS_DATE_FORMAT' => "\l\e d.m.Y \a \l\e\s H:i:s",
+    'TAGS_DATE_FORMAT' => "le d.m.Y a les H:i:s",
     'TAGS_WRITE_YOUR_COMMENT_HERE' => 'Escribir tu comentario aquí...',
     'TAGS_ADD_YOUR_COMMENT' => 'Añadir tu comentario',
     'TAGS_ACTION_FILTERTAGS' => 'Acción {{filtertags ...}}',
     'TAGS_NO_FILTERS' => 'no se ha encontrado el parámetro "filter1", que es obligatorio.',
     'TAGS_ONLY_ONE_DOUBLEPOINT' => 'sólo puede haber una vez los dos puntos (:) para indicar la etiqueta, varios han sido encontrados.',
-
     'TAGS_ACTION_INCLUDEPAGES' => 'Acción {{includepages ...}}',
     'TAGS_NO_PARAM_PAGES' => 'no se ha encontrado el parámetro "páginas", que es obligatorio.',
-
     'TAGS_NO_RESULTS' => 'Ningun resultado con estas palabras clave.',
     'TAGS_RESULTS' => 'resultados',
     'TAGS_FILTER' => 'Filtrar',
     'TAGS_CONTAINING_TAG' => 'con la palabra clave',
     'TAGS_ONE_PAGE' => 'Una página',
     'TAGS_PAGES' => 'páginas',
-
     // actions/admintag.php
     // 'TAGS_NO_TAG' => 'Aucun mot clé utilisé pour le moment',
-
     // actions/listpagestag.php
     // 'TAGS_TOTAL_NB_PAGES' => 'Un total de %{nb_total} pages a &eacute;t&eacute; trouv&eacute;',
     // 'TAGS_ONE_PAGE_FOUND' => 'Une page a &eacute;t&eacute; trouv&eacute;e',
     // 'TAGS_NO_PAGE' => 'Aucune page trouv&eacute;e',
     // 'TAGS_WITH_KEYWORD' => 'avec le mot cl&eacute;',
     // 'TAGS_WITH_KEYWORD_SEPARATOR' => 'et',
-
     // actions/rss.php
     'TAGS_RSS_FEED_FOR_NEW_PAGES_WITH_TAGS' => 'Flujo RSS de las nuevas páginas con las palabras clave',
-
     // handler exportpages
     'TAGS_YOUR_EBOOK' => 'Tu Ebook',
     'TAGS_SPAM_RISK' => 'Hay que activar javascript para no ser considerado como spam.',
@@ -92,10 +85,8 @@ return [
     'TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE' => 'Contenido web en la página',
     'TAGS_NO_EBOOK_METADATAS' => 'Esta página no tiene los meta datos necesarios para crear el ebook.',
     'TAGS_NO_EBOOK_FOUND' => 'Ningun ebook encontrado.',
-
     // handler/tagrss.php
     // 'TAGS_HIDDEN_CONTENT' => 'Contenu masqué',
-
     // action builder tags group
     // 'AB_tags_group_label' => 'Gestion des tags',
     // 'AB_tags_admintag_label' => 'Gestion des tags',
@@ -119,8 +110,8 @@ return [
     // 'AB_tags_listpagestag_rss_label'=> 'lien rss vers la liste pour des tags donnés',
     // 'AB_tags_listpagestag_nbclasses_label' => 'nombre de classes CSS disponibles pour le nuage',
     // 'AB_tags_nuagetag_tri_shuffle' => 'aléatoire',
-
     // for edit config
     'EDIT_CONFIG_HINT_HIDE_KEYWORDS' => 'Ocultar palabras clave en la parte inferior de las páginas (true o false)',
     'EDIT_CONFIG_GROUP_TAGS' => 'Palabras clave (tags)',
+    'TAGS_TAGS' => 'Palabras clave',
 ];

@@ -1,5 +1,4 @@
 <?php
-
 return [
     // actions/abonnement.php
     'CONTACT_ACTION_ABONNEMENT' => 'Action {{abonnement ...}}',
@@ -50,4 +49,5 @@ return [
     'CONTACT_SUBSCRIBE' => 'Subscribe',
     'CONTACT_UNSUBSCRIBE' => 'Unsubscribe',
     'CONTACT_FROM' => 'from',
+    'EDIT_CONFIG_HINT_CONTACT_FROM' => 'E-mail address used as sender for messages from entries (should be the one used in SMTP settings)',
 ];

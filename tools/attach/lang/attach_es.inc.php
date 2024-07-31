@@ -95,4 +95,10 @@ return [
     'CENTER' => 'Centro',
     'RIGHT' => 'Derecha',
     'FAILED' => 'Error',
+    // controllers/ApiController.php
+    'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => "Sin archivo de imagen",
+    'ATTACH_UPLOAD_FORM_FOR_FILE' => 'Formulario de envío de archivos',
+    'ERROR_NOT_AUTHORIZED_EXTENSION' => 'El archivo no tiene extensiones permitidas, estas son las que la configuración permite: ',
+    'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Permitir hacer clic en la imagen para verla en tamaño grande",
+    'ATTACH_FILE_MANAGEMENT' => 'Gestión de archivos',
 ];

@@ -121,4 +121,7 @@ return [
     'TEMPLATE_MODIFY' => 'Modificar',
     // actions/setwikidefaultheme.php
     'TEMPLATE_FORCE_TEMPLATE' => 'Fuerza para todo el wiki.',
+    'TEMPLATE_FILE_NOT_FOUND' => 'Plantilla no encontrada',
+    'TEMPLATE_REEDIT' => 'Editar de nuevo',
+    'TEMPLATE_PRESET' => 'Preestablecido',
 ];
