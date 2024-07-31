@@ -37,10 +37,12 @@ return [
     'LOGIN_DEAR' => 'Cher',
     'LOGIN_CLICK_FOLLOWING_LINK' => 'Cliquez sur le lien suivant pour ré-initialiser votre mot de passe',
     'LOGIN_THE_TEAM' => 'L\'équipe de',
+    'LOGIN_PASSWORD_FOR' => 'Mot de passe pour',
     'LOGIN_PASSWORD_LOST_FOR' => 'Mot de passe perdu pour',
     'LOGIN_NO_SIGNUP_IN_THIS_PERIOD' => 'Il n\'y a pas d\'inscription pour cette période.',
     'LOGIN_MY_OPTIONS' => 'Mes options',
     'LOGIN_MY_CONTENTS' => 'Mes contenus',
+    'LINK_TO_CHANGE_PASSWORD' => 'Lien pour changer le mot de passe',
 
     // actions/login.php
     'LOGIN_COOKIES_ERROR' => 'Vous devez accepter les cookies pour pouvoir vous connecter.',

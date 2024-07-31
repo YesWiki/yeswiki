@@ -154,4 +154,5 @@ return [
     'EDIT_CONFIG_HINT_CONTACT_REPLY_TO' => 'Utilisateur auquel la réponse mail sera envoyée',
     'EDIT_CONFIG_HINT_CONTACT_DEBUG' => 'Mode verbeux pour débugguer (mettre 2 pour avoir des informations)',
     'EDIT_CONFIG_GROUP_CONTACT' => 'Envoi des e-mails',
+    'EDIT_CONFIG_HINT_CONTACT_DISABLE_EMAIL_FOR_PASSWORD' => 'Désactiver l\'envoie d\'email pour ré-initaliser un mot de passe (ex: LDAP, SSO)',
 ];
