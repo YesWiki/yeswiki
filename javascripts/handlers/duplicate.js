@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     e.stopPropagation()
     return false
   })
-  $('#urlWiki').on('change', () => {
+  $('#url-wiki').on('change', () => {
     $('.login-fields, .duplication-fields').addClass('hide')
     $('#login-message').html('')
   })
@@ -89,14 +89,14 @@ document.addEventListener('DOMContentLoaded', () => {
       method: 'POST',
       url: `${shortUrl}/?api/pages/${$('#pageTag').val()}/duplicate`,
       data: $('#form-duplication').serialize()
-    }).done((data) => {
-      if (btnAction == 'open') {
-        location = `${shortUrl}/?${data.pageTag}`
-      } else if (btnAction == 'edit') {
-        location = `${shortUrl}/?${data.pageTag}/edit`
+    }).done((d) => {
+      if (btnAction === 'open') {
+        document.location = `${shortUrl}/?${d.pageTag}`
+      } else if (btnAction === 'edit') {
+        document.location = `${shortUrl}/?${d.pageTag}/edit`
       } else {
-        const url = location.href.replace(/\/duplicate.*/, '')
-        location = url
+        const url = document.location.href.replace(/\/duplicate.*/, '')
+        document.location = url
       }
     }).fail((jqXHR) => {
       toastMessage(`${_t('ERROR')} ${jqXHR.status}`, 3000, 'alert alert-danger')
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 
   $('.btn-verify-wiki').on('click', () => {
-    let url = $('#urlWiki').val()
+    let url = $('#url-wiki').val()
 
     if (isValidUrl(url)) {
       let taburl = []
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         taburl = url.split('?')
       }
       shortUrl = taburl[0].replace(/\/+$/g, '')
-      $('#baseUrl').text(`${shortUrl}/?`)
+      $('#base-url').text(`${shortUrl}/?`)
       url = `${shortUrl}/?api/auth/me`
       $.ajax({
         method: 'GET',

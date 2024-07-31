@@ -7,9 +7,9 @@
     <form class="duplication-wiki-form">
     <div class="text-tip">{{ _t('WIKI_URL_RECENT') }}.</div>
     <div class="form-group">
-      <label for="urlWiki" class="control-label">{{ _t('WIKI_URL') }}</label>
+      <label for="url-wiki" class="control-label">{{ _t('WIKI_URL') }}</label>
       <div class="input-group">
-        <input required type="url" class="form-control" id="urlWiki" name="urlWiki" placeholder="{{ _t('WIKI_URL') }}" value="" />
+        <input required type="url" class="form-control" id="url-wiki" name="url-wiki" placeholder="{{ _t('WIKI_URL') }}" value="" />
         <span class="input-group-btn">
           <button class="btn-verify-wiki btn btn-primary" type="submit">{{ _t('VERIFY_WIKI') }}</button>
         </span>
@@ -41,17 +41,17 @@
   <form id="form-duplication" method="post" action="{{ url({handler: 'duplicate'})}}">
     {% if pageTitle %}
     <div class="form-group">
-      <label for="pageTitle" class="control-label">{{ _t('PAGE_TITLE_TO_DUPLICATE') }}</label>
+      <label for="newTitle" class="control-label">{{ _t('PAGE_TITLE_TO_DUPLICATE') }}</label>
       <div class="input-group">
-        <input required type="text" class="form-control" id="pageTitle" name="pageTitle" placeholder="{{ _t('PAGE_TITLE_TO_DUPLICATE') }}" value="{{pageTitle}}" />
+        <input required type="text" class="form-control" id="newTitle" name="newTitle" placeholder="{{ _t('PAGE_TITLE_TO_DUPLICATE') }}" value="{{pageTitle}}" />
       </div>
     </div>
   {% endif %}
     <div class="form-group">
-      <label for="pageTag" class="control-label">{{ _t('PAGE_TAG_TO_DUPLICATE') }}</label>
+      <label for="newTag" class="control-label">{{ _t('PAGE_TAG_TO_DUPLICATE') }}</label>
       <div class="input-group">
-        <span class="input-group-addon" id="baseUrl">{{ baseUrl }}</span>
-        <input required type="text" class="form-control" id="pageTag" name="pageTag" placeholder="{{ _t('PAGE_TAG_TO_DUPLICATE') }}" value="{{proposedTag}}" />
+        <span class="input-group-addon" id="base-url">{{ baseUrl }}</span>
+        <input required type="text" class="form-control" id="newTag" name="newTag" placeholder="{{ _t('PAGE_TAG_TO_DUPLICATE') }}" value="{{proposedTag}}" />
         {% if toExternalWiki %}
         <span class="input-group-btn">
           <button class="btn-verify-tag btn btn-primary" type="submit">{{ _t('VERIFY_PAGE_AVAILABILITY') }}</button>
@@ -69,7 +69,7 @@
       {% endfor %}
     </ol>
     {% endif %}
-    {% if toExternalWiki %}<input type="hidden" name="pageContent" value="{{ pageContent }}" />{% endif %}
+    {% if toExternalWiki %}<input type="hidden" name="originalContent" value="{{ originalContent }}" />{% endif %}
 
     <input type="hidden" name="sourceUrl" value="{{ sourceUrl }}" />
     <input type="hidden" name="originalTag" value="{{ originalTag }}" />

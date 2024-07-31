@@ -146,7 +146,7 @@ class DuplicationManager
     }
 
     /**
-     * Get file attachements from pageTag.
+     * Get file attachements from newTag.
      *
      * @param string $tag page id
      *
@@ -209,21 +209,21 @@ class DuplicationManager
 
     public function checkPostData($data)
     {
-        if (empty($data['type']) || !in_array($data['type'], ['page', 'list', 'entry'])) {
+        if (empty($data['type']) || !in_array($data['type'], ['form', 'page', 'list', 'entry'])) {
             throw new \Exception(_t('NO_VALID_DATA_TYPE'));
         }
-        if (empty($data['pageTag'])) {
+        if (empty($data['newTag'])) {
             throw new \Exception(_t('EMPTY_PAGE_TAG'));
         }
-        if ($data['type'] != 'page' && empty($data['pageTitle'])) {
+        if ($data['type'] != 'page' && empty($data['newTitle'])) {
             throw new \Exception(_t('EMPTY_PAGE_TITLE'));
         }
         if (!$this->wiki->UserIsAdmin()) {
             throw new \Exception(_t('ONLY_ADMINS_CAN_DUPLICATE') . '.');
         }
-        $page = $this->wiki->services->get(PageManager::class)->getOne($data['pageTag']);
+        $page = $this->wiki->services->get(PageManager::class)->getOne($data['newTag']);
         if ($page) {
-            throw new \Exception($data['pageTag'] . ' ' . _t('ALREADY_EXISTING'));
+            throw new \Exception($data['newTag'] . ' ' . _t('ALREADY_EXISTING'));
         }
         if (empty($data['duplicate-action']) || !in_array($data['duplicate-action'], ['open', 'edit', 'return'])) {
             throw new \Exception(_t('NO_DUPLICATE_ACTION') . '.');
@@ -240,11 +240,11 @@ class DuplicationManager
         switch ($data['type']) {
             case 'list':
                 $list = $this->wiki->services->get(ListManager::class)->getOne($data['originalTag']);
-                $this->wiki->services->get(ListManager::class)->create($data['pageTitle'], $list['label'], $data['pageTag']);
+                $this->wiki->services->get(ListManager::class)->create($data['newTitle'], $list['label'], $data['newTag']);
                 break;
 
             case 'entry':
-                $files = $this->duplicateFiles($data['originalTag'], $data['pageTag']);
+                $files = $this->duplicateFiles($data['originalTag'], $data['newTag']);
                 $entry = $this->wiki->services->get(EntryManager::class)->getOne($this->wiki->getPageTag());
                 $fields = $this->getUploadFieldsFromEntry($this->wiki->GetPageTag());
                 foreach ($fields as $f) {
@@ -252,8 +252,8 @@ class DuplicationManager
                         $entry[$f->getPropertyName()] = str_replace($fi['originalFile'], $fi['duplicatedFile'], $entry[$f->getPropertyName()]);
                     }
                 }
-                $entry['id_fiche'] = $data['pageTag'];
-                $entry['bf_titre'] = $data['pageTitle'];
+                $entry['id_fiche'] = $data['newTag'];
+                $entry['bf_titre'] = $data['newTitle'];
                 $entry['antispam'] = 1;
                 $this->wiki->services->get(EntryManager::class)->create($entry['id_typeannonce'], $entry);
                 break;
@@ -261,11 +261,11 @@ class DuplicationManager
             default:
             case 'page':
                 $newBody = $this->wiki->page['body'];
-                $files = $this->duplicateFiles($data['originalTag'], $data['pageTag']);
+                $files = $this->duplicateFiles($data['originalTag'], $data['newTag']);
                 foreach ($files as $f) {
                     $newBody = str_replace($f['originalFile'], $f['duplicatedFile'], $newBody);
                 }
-                $this->wiki->services->get(PageManager::class)->save($data['pageTag'], $newBody);
+                $this->wiki->services->get(PageManager::class)->save($data['newTag'], $newBody);
                 break;
         }
 
@@ -277,7 +277,7 @@ class DuplicationManager
             );
 
             $this->wiki->services->get(AclService::class)->save(
-                $data['pageTag'],
+                $data['newTag'],
                 $privilege,
                 $values['list']
             );
@@ -291,7 +291,7 @@ class DuplicationManager
         foreach ($properties as $prop) {
             $values = $this->wiki->services->get(TripleStore::class)->getAll($data['originalTag'], $prop, '', '');
             foreach ($values as $val) {
-                $this->wiki->services->get(TripleStore::class)->create($data['pageTag'], $prop, $val['value'], '', '');
+                $this->wiki->services->get(TripleStore::class)->create($data['newTag'], $prop, $val['value'], '', '');
             }
         }
     }
@@ -302,7 +302,7 @@ class DuplicationManager
             throw new Exception(_t('ACEDITOR_LINK_PAGE_ALREADY_EXISTS'));
         }
         $req = $request->request->all();
-        foreach (['pageContent', 'sourceUrl', 'originalTag', 'type'] as $key) {
+        foreach (['originalContent', 'sourceUrl', 'originalTag', 'type'] as $key) {
             if (empty($req[$key])) {
                 throw new Exception(_t('NOT_FOUND_IN_REQUEST', $key));
             }
@@ -312,7 +312,7 @@ class DuplicationManager
         }
 
         $newUrl = explode('/?', $this->wiki->config['base_url'])[0];
-        $newBody = str_replace($req['sourceUrl'], $newUrl, $req['pageContent']);
+        $newBody = str_replace($req['sourceUrl'], $newUrl, $req['originalContent']);
         if ($req['type'] === 'page') {
             $this->wiki->services->get(PageManager::class)->save($tag, $newBody);
         } elseif ($req['type'] === 'entry') {
