@@ -1,5 +1,6 @@
 <?php
 
+use Throwable;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\ListManager;
@@ -33,9 +34,9 @@ class DuplicateHandler extends YesWikiHandler
             ]);
         } elseif (!$this->getService(AclService::class)->hasAccess('read', $this->wiki->GetPageTag())) {
             // if no read access to the page
-            if ($contenu = $this->getService(PageManager::class)->getOne('PageLogin')) {
+            if ($content = $this->getService(PageManager::class)->getOne('PageLogin')) {
                 // si une page PageLogin existe, on l'affiche
-                $error .= $this->wiki->Format($contenu['body']);
+                $error .= $this->wiki->Format($content['body']);
             } else {
                 // sinon on affiche le formulaire d'identification minimal
                 $error .= '<div class="vertical-center white-bg">' . "\n"
@@ -61,7 +62,7 @@ class DuplicateHandler extends YesWikiHandler
                 $this->wiki->Redirect($this->wiki->href('', $data['pageTag']));
 
                 return;
-            } catch (\Throwable $th) {
+            } catch (Throwable $th) {
                 $error .= $this->render('@templates\alert-message-with-back.twig', [
                     'type' => 'warning',
                     'message' => $th->getMessage(),
