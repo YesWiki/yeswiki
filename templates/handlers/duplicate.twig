@@ -74,9 +74,7 @@
     <input type="hidden" name="sourceUrl" value="{{ sourceUrl }}" />
     <input type="hidden" name="originalTag" value="{{ originalTag }}" />
     <input type="hidden" name="type" value="{{ type }}" />
-    <button name="duplicate-action" value="open" type="submit" class="btn btn-primary"><i class="fa fa-eye-open"></i>{{ _t('DUPLICATE_AND_OPEN') }}</button>
-    <button name="duplicate-action" value="edit" type="submit" class="btn btn-primary"><i class="fa fa-pencil-alt"></i> {{ _t('DUPLICATE_AND_EDIT') }}</button>
-    <button name="duplicate-action" value="return" type="submit" class="btn btn-primary"><i class="fa fa-arrow-left"></i> {{ _t('DUPLICATE_AND_RETURN') }}</button>
+    <button name="duplicate-action" value="open" type="submit" class="btn btn-primary">{{ _t('DUPLICATE_AND_OPEN') }}</button>
     {% if toExternalWiki %}
     </div>
     {% endif %}
