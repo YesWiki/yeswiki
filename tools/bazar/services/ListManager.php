@@ -99,23 +99,12 @@ class ListManager
         return $result;
     }
 
-    public function create($title, $nodes)
+    public function create($title, $nodes, $id = null)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        $id = $id ?? genere_nom_wiki('Liste ' . $title);
-
-        $values = $this->sanitizeHMTL($values);
-
-        if (YW_CHARSET !== 'UTF-8') {
-            $values = array_map(function ($value) {
-                return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
-            }, $values);
-            $title = mb_convert_encoding($title, 'UTF-8', 'ISO-8859-1');
-        }
-
-        $id = genere_nom_wiki('List' . $title);
+        $id = $id ?? genere_nom_wiki('List' . $title);
         $this->pageManager->save($id, json_encode([
             'title' => $title,
             'nodes' => $this->sanitizeHMTL($nodes),
