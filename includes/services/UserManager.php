@@ -1,4 +1,5 @@
 <?php
+
 namespace YesWiki\Core\Service;
 
 use Exception;
@@ -17,6 +18,7 @@ use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
+
 if (! function_exists('send_mail')) {
     require_once 'includes/email.inc.php';
 }
@@ -193,17 +195,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      * 5. The corresponding row is removed from triples table.
      */
 
-    /**
-     * Part of the Password recovery process: Handles the password recovery email process.
-     *
-     * Generates the password recovery key
-     * Stores the (name, vocabulary, key) triple in triples table
-     * Generates the recovery email
-     * Sends it
-     *
-     * @return bool True if OK or false if any problems
-     */
-    public function sendPasswordRecoveryEmail(User $user, string $title): bool
+    protected function generateUserLink($user)
     {
         // Generate the password recovery key
         $key = md5($user['name'] . '_' . $user['email'] . random_int(0, 10000) . date('Y-m-d H:i:s') . self::PW_SALT);
@@ -219,6 +211,21 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             'email' => $key,
             'u' => base64_encode($user['name'])
         ], false);
+    }
+
+    /**
+     * Part of the Password recovery process: Handles the password recovery email process.
+     *
+     * Generates the password recovery key
+     * Stores the (name, vocabulary, key) triple in triples table
+     * Generates the recovery email
+     * Sends it
+     *
+     * @return bool True if OK or false if any problems
+     */
+    public function sendPasswordRecoveryEmail(User $user, string $title): bool
+    {
+        $this->generateUserLink($user);
         $pieces = parse_url($this->params->get('base_url'));
         $domain = isset($pieces['host']) ? $pieces['host'] : '';
 
@@ -233,13 +240,14 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         // Send the email
         return send_mail($this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $user['email'], $subject, $message);
     }
-    
+
     /**
      * Assessor for userlink field
      * 
      * @return string
      */
-    public function getUserLink(): string {
+    public function getUserLink(): string
+    {
         return $this->userlink;
     }
 
@@ -248,7 +256,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      *
      * @return string
      */
-    public function getLastUserLink(User $user): string {
+    public function getLastUserLink(User $user): string
+    {
         $tripleStore = $this->wiki->services->get(TripleStore::class);
         $key = $tripleStore->getOne($user['name'], self::KEY_VOCABULARY, '', '');
         if ($key != null) {
@@ -258,11 +267,11 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 'u' => base64_encode($user['name'])
             ], false);
         } else {
-            $this->userlink = '';
+            $this->generateUserLink($user);
         }
         return $this->userlink;
     }
-    
+
     /**
      * update user params
      * for e-mail check is existing e-mail.

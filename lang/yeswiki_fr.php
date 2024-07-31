@@ -213,6 +213,7 @@ return [
     'ERROR_ACTION_TRAIL' => 'Erreur action {{trail ...}}',
     'INDICATE_THE_PARAMETER_TOC' => 'Indiquez le nom de la page sommaire, paramètre "toc"',
     // actions/usersettings.php
+    'USER_GOTOADMIN' => 'Gestion des utilisateurices',
     'USER_SETTINGS' => 'Paramètres utilisateur',
     'USER_SIGN_UP' => 'S\'inscrire',
     'YOU_ARE_NOW_DISCONNECTED' => 'Vous êtes maintenant déconnecté',
