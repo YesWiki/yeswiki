@@ -126,7 +126,7 @@ function toastMessage(
       $modal
         .find('.modal-body')
         .html(
-          `<img loading="lazy" class="center-block img-responsive" src="${link}" alt="" />`,
+          `<img loading="lazy" class="center-block img-responsive" src="${link}" alt="" />`
         )
     } else if (iframe === 1) {
       const modalTitle = $modal.find('.modal-header h3')
@@ -921,3 +921,4 @@ $('#yw-a11y-jump-content').click(() => {
   setTimeout(() => {
     $('#yw-topnav').removeClass('nav-down').addClass('nav-up')
   }, 300)
+})
