@@ -392,7 +392,7 @@ return [
     'USER_NAME_S_MAXIMUM_LENGTH_IS' => 'பயனர்பெயரின் அதிகபட்ச எழுத்துக்கள்',
     'USER_NO_SPACES_IN_PASSWORD' => 'கடவுச்சொல்லில் இடைவெளிகள் அனுமதிக்கப்படாது',
     'USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS' => 'கடவுச்சொல்லின் குறைந்தபட்ச பண்புகள்',
-    'USER_PASSWORDS_NOT_IDENTICAL' => 'உள்ளிடப்பட்ட இரண்டு கடவுச்சொற்கள் ஒரே மாதிரியாக இருக்க வேண்டும்',
+    'USER_PASSWORDS_NOT_IDENTICAL' => 'சரிபார்ப்புக்காக உள்ளிடப்பட்ட கடவுச்சொல் முதல் ஒத்ததாக இல்லை!',
     'USER_PASSWORD_TOO_SHORT' => 'மிகக் குறுகிய கடவுச்சொல்',
     'USER_THIS_EMAIL_IS_ALLREADY_USED_ON_THIS_WIKI' => 'நுழைந்த பற்சிப்பி ஏற்கனவே இந்த விக்கியில் பயன்படுத்தப்படுகிறது',
     'USER_THIS_IS_NOT_A_VALID_NAME' => 'இது செல்லுபடியாகும் பயனர்பெயர் அல்ல',
