@@ -295,4 +295,8 @@ return [
     'GERERTHEMES_INIT_THEME_FOR_SELECTED_PAGES' => 'Init values for selected pages (they will use the default theme)',
     'GERERTHEMES_MODIFY_THEME_FOR_SELECTED_PAGES' => 'Modify values for selected pages',
     'GERERTHEMES_PAGE' => 'Page',
+    'AB_templates_section_bgcolor_label' => 'Color',
+    'GERERTHEMES_HINT' => 'Check pages that you want to modify et choose an action at the bottom of the page',
+    'AB_templates_nav_class_vertical' => 'Vertical',
+    'AB_templates_section_file_label' => 'Background image',
 ];

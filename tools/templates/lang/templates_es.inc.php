@@ -124,4 +124,12 @@ return [
     'TEMPLATE_FILE_NOT_FOUND' => 'Plantilla no encontrada',
     'TEMPLATE_REEDIT' => 'Editar de nuevo',
     'TEMPLATE_PRESET' => 'Preestablecido',
+    'AB_template_actions_warning' => 'Atención',
+    'AB_templates_tabs_counter_on_bottom_nav_yes' => 'Si',
+    'AB_templates_tabs_counter_on_bottom_nav_no' => 'No',
+    'GERERTHEMES_ACTIONS' => 'Acciones',
+    'AB_templates_tabs_bottom_nav_yes' => 'Si',
+    'AB_templates_tabs_bottom_nav_no' => 'No',
+    'GERERTHEMES_PAGE' => 'Página',
+    'AB_templates_panel_title_label' => 'Título',
 ];

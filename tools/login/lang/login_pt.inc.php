@@ -1,5 +1,4 @@
 <?php
-
 return [
     'LOGIN_SIGNUP' => 'Registrar',
     'LOGIN_LOGIN' => 'Entrar',
@@ -49,4 +48,5 @@ return [
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'Os parâmetros \'{parameters}\' não podem ser vazios!',
     'USERSETTINGS_NAME_ALREADY_USED' => 'O identificador "{currentName}" já existe!',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'O e-mail "{email}" já é utilizado por outra conta!',
+    'LOGIN_BACK' => 'Retorno',
 ];

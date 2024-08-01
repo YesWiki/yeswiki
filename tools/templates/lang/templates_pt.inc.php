@@ -121,4 +121,10 @@ return [
     // 'TEMPLATE_MODIFY' => 'Modifier',
     // actions/setwikidefaultheme.php
     'TEMPLATE_FORCE_TEMPLATE' => 'Vigor para todo o wiki.',
+    'TEMPLATE_PAGE' => 'Página',
+    'TEMPLATE_MODIFY' => 'Alterar',
+    'AB_templates_panel_title_label' => 'Título',
+    'AB_templates_tabs_counter_on_bottom_nav_no' => 'Não',
+    'AB_templates_tabs_bottom_nav_no' => 'Não',
+    'GERERTHEMES_PAGE' => 'Página',
 ];

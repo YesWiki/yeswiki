@@ -1,5 +1,4 @@
 <?php
-
 return [
     'LOGIN_SIGNUP' => 'Signup',
     'LOGIN_LOGIN' => 'Login',
@@ -52,4 +51,5 @@ return [
     'USERSETTINGS_NAME_ALREADY_USED' => 'The identifier "{currentName}" already exists!',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'The email "{email}" is already used by another account!',
     'LOGIN_NOT_AUTORIZED' => 'you are not authorized to read this page',
+    'LINK_TO_CHANGE_PASSWORD' => 'Link to change password',
 ];

@@ -1,5 +1,4 @@
 <?php
-
 return [
     // fields/CalcField.php
     'BAZ_FORM_EDIT_CALC_LABEL' => 'Calculations',
@@ -261,4 +260,8 @@ return [
     'LIST_DRAGDROP' => 'Move this element',
     'LIST_KEY' => 'Key',
     'LIST_TEXT' => 'Text',
+    'BAZ_FORM_EDIT_COMMENTS_FIELD' => 'Comments',
+    'BAZ_FORM_EDIT_TEXT_TYPE_PASSWORD' => 'Password',
+    'BAZ_FORM_EDIT_TEXT_TYPE_COLOR' => 'Color',
+    'BAZ_FORM_EDIT_TEXT_TYPE_LABEL' => 'Type',
 ];

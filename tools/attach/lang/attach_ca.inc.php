@@ -95,4 +95,6 @@ return [
     'CENTER' => 'Centrat',
     'RIGHT' => 'Dreta',
     'FAILED' => 'Error',
+    'ATTACH_FILENAME' => 'Nom del fitxer',
+    'ATTACH_SIZE' => 'Cintura',
 ];
