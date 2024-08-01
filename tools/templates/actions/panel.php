@@ -30,7 +30,7 @@ $collapsible = ($type == 'collapsed' || $type == 'collapsible');
 $collapsed = ($type == 'collapsed');
 
 // data attributes
-$data = $this->services->get(\YesWiki\Templates\Service\Utils::class)->getDataParameter();
+$data = $this->services->get(YesWiki\Templates\Service\Utils::class)->getDataParameter();
 
 $pagetag = $this->GetPageTag();
 
@@ -39,7 +39,7 @@ if (!isset($GLOBALS['check_' . $pagetag])) {
     $GLOBALS['check_' . $pagetag] = [];
 }
 if (!isset($GLOBALS['check_' . $pagetag]['panel'])) {
-    $GLOBALS['check_' . $pagetag]['panel'] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('panel', $pagetag, $this->page['body'] ?? '');
+    $GLOBALS['check_' . $pagetag]['panel'] = $this->services->get(YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('panel', $pagetag, $this->page['body'] ?? '');
 }
 
 if ($GLOBALS['check_' . $pagetag]['panel']) {
@@ -66,9 +66,10 @@ if ($GLOBALS['check_' . $pagetag]['panel']) {
         }
     }
 
+    $headerTagName = $collapsible ? 'button' : 'div';
     $result = '<!-- start of panel -->'
         . "<div class=\"panel $class\" $data>
-      <button class=\"panel-heading" . ($collapsed ? " collapsed" : '') . '"';
+      <$headerTagName class=\"panel-heading" . ($collapsed ? ' collapsed' : '') . '"';
     if ($collapsible) {
         $result .= " id=\"$headingID\"" . ' data-toggle="collapse"' . (!empty($accordionID) ? " data-parent=\"#$accordionID\"" : '')
             . " href=\"#$collapseID\" aria-expanded=\"" . ($collapsed ? 'false' : 'true') . "\" aria-controls=\"$collapseID\"";
@@ -77,7 +78,7 @@ if ($GLOBALS['check_' . $pagetag]['panel']) {
           <h4 class=\"panel-title\">
            $title
           </h4>
-      </button>
+      </$headerTagName>
       
       <div id=\"$collapseID\"";
     if ($collapsible) {
