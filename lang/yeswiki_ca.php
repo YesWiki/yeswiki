@@ -572,7 +572,7 @@ return [
     // include/services/ThemeManager.php
     'THEME_MANAGER_THEME_FOLDER' => '',
     'USER_WRONG_PASSWORD' => '',
-    'ACLS_PAGE' => '',
+    'ACLS_PAGE' => 'Pàgina',
     'EDIT_PREVIEW' => '',
     // actions/nextextsearch.php
     'NEWTEXTSEARCH_HINT' => '',
