@@ -50,4 +50,5 @@ return [
     'CONTACT_UNSUBSCRIBE' => 'Unsubscribe',
     'CONTACT_FROM' => 'from',
     'EDIT_CONFIG_HINT_CONTACT_FROM' => 'E-mail address used as sender for messages from entries (should be the one used in SMTP settings)',
+    'AB_contact_action_template_label' => 'Custom template',
 ];
