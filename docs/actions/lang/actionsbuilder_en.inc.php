@@ -559,4 +559,5 @@ return [
     'AB_attach_height_label' => 'Height',
     'AB_attach_class_label' => 'Class',
     'AB_bazarcarto_height_label' => 'Map height',
+    'AB_bazar_commons2_showmapinlistview_hint' => 'Only for geolocated',
 ];
