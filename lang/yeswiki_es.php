@@ -25,8 +25,8 @@ return [
     // 'NOT_FOUND' => 'N\'existe pas',
     'FORMATTER_NOT_FOUND' => 'Imposible encontrar el formateador',
     'HANDLER_NO_ACCESS' => 'No tienes acceso a esta página por el handler específico',
-    'NO_REQUEST_FOUND' => '$_REQUEST[] no encontrada;. Wakka necesita PHP 4.1.0 o más reciente',
-    'SITE_BEING_UPDATED' => 'Este sitio se esta actualizando. Intenta más tarde.',
+    'NO_REQUEST_FOUND' => '$_REQUEST[] no encontrado. ¡Wakka necesita PHP 4.1.0 o más reciente!',
+    'SITE_BEING_UPDATED' => 'Esta página web se está actualizando. Inténtalo de nuevo más tarde.',
     'DB_CONNECT_FAIL' => 'Por razones ajenas a nuestra voluntad, el contenido de este YesWiki esta temporalmente inaccesible. Intenta más tarde, gracias por su comprensión.',
     'LOG_DB_CONNECT_FAIL' => 'YesWiki : la conexión BDD ha fracasado',
     // sans accents car commande systeme
@@ -609,7 +609,7 @@ return [
     'USER_PASSWORD_CONFIRMATION' => '',
     // fives chars max.
     'EMAIL' => 'Correo electrónico',
-    'DEL' => '',
+    'DEL' => 'Borrar',
     'REVISION_IS_ARCHIVE_OF_TAG_ON_TIME' => '',
     'ACLS_LIST_OF_ACLS' => '',
     'UPDATE_ADMIN_PAGES_HINT' => '',
