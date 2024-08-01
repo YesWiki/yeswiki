@@ -419,4 +419,6 @@ return [
     'BAZ_ERROR_EDIT_UNAUTHORIZED' => 'You do not have permissions to edit this file',
     'BAZ_ERROR_DELETE_UNAUTHORIZED' => 'You do not have permissions to delete this file',
     'BAZ_TYPE_FICHE_IMPORT' => 'Entries to import',
+    'EDIT_CONFIG_GROUP_BAZAR' => 'Database configuration',
+    'BAZ_GEOLOCATE' => 'Geolocate my position',
 ];
