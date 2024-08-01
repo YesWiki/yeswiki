@@ -114,4 +114,6 @@ return [
     'EDIT_CONFIG_HINT_HIDE_KEYWORDS' => 'Ocultar palabras clave en la parte inferior de las páginas (true o false)',
     'EDIT_CONFIG_GROUP_TAGS' => 'Palabras clave (tags)',
     'TAGS_TAGS' => 'Palabras clave',
+    'AB_tags_listpagestag_type_label' => 'Tipo',
+    'AB_tags_listpagestag_template_list' => 'lista',
 ];
