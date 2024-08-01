@@ -25,11 +25,12 @@
 							<strong>{{ list.title }}</strong>
 						</td>
 						<td>
-							{% if list.nodes %}
+							{# list.options is a computed array of al the list nodes flatten in single dimension #}
+							{% if list.options %}
 								<select class="form-control input-sm" id="liste_{{ list.id }}">
 									<option>{{ _t('BAZ_CHOISIR') }}</option>
-									{% for node in list.nodes %}
-										<option>{{ node.label|raw }}</option>
+									{% for node in list.options %}
+										<option>{{ node|raw }}</option>
 									{% endfor %}
 								</select>
 							{% endif %}

@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Controller;
 
+use YesWiki\Bazar\Service\FieldFactory;
 use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
@@ -15,17 +16,20 @@ class ListController extends YesWikiController
     protected $securityController;
     protected $aclService;
     protected $authController;
+    protected $fieldFactory;
 
     public function __construct(
         ListManager $listManager,
         SecurityController $securityController,
         AclService $aclService,
-        AuthController $authController
+        AuthController $authController,
+        FieldFactory $fieldFactory
     ) {
         $this->listManager = $listManager;
         $this->securityController = $securityController;
         $this->aclService = $aclService;
         $this->authController = $authController;
+        $this->fieldFactory = $fieldFactory;
     }
 
     public function displayAll()
@@ -44,6 +48,9 @@ class ListController extends YesWikiController
         foreach ($lists as $key => $list) {
             $lists[$key]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->wiki->HasAccess('write', $key);
             $lists[$key]['canDelete'] = !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin() || $this->wiki->UserIsOwner($key));
+            // Small trick : create a fake SelectListField so we can reuse the code to compute the options
+            $field = $this->fieldFactory->create(['liste', $list['id'], '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+            $lists[$key]['options'] = $field->getOptions();
         }
 
         return $this->render('@bazar/lists/list_table.twig', [
