@@ -1,7 +1,6 @@
 <?php
-
-// AB stands for ActionsBuilder
 return [
+    // AB stands for ActionsBuilder
     // Commons
     // "AB_LEFT" => "Gauche",
     // "AB_RIGHT" => "Droite",
@@ -289,7 +288,6 @@ return [
     // "AB_management_adminbackups_label" => "Gestion des sauvegardes",
     // "AB_management_commentstable_label" => "Table des commentaires",
     // "AB_management_usercomments_label" => "My comments",
-
     // advanced actions
     'AB_advanced_actions_label' => 'Ações avançadas',
     'AB_advanced_action_backlinks_label' => 'Mostrar páginas que possuem um link para a página atual',
@@ -345,7 +343,6 @@ return [
     'AB_advanced_action_recentcomments_label' => 'Liste os comentários mais recentes',
     'AB_advanced_action_recentcomments_max_label' => 'Número máximo de comentários a serem exibidos',
     // "AB_advanced_action_configuration_label" => "Afficher le contenu du fichier de configuration",
-
     // "AB_advanced_action_login_label" => "Connexion",
     // "AB_advanced_action_login_signupurl_label" => "Url d'inscription",
     // "AB_advanced_action_login_signupurl_hint" => "Page du wiki ou url ou '0' pour masquer le bouton d'inscription",
@@ -367,7 +364,6 @@ return [
     // "AB_advanced_action_login_loggedinurl_hint" => "Page du wiki ou url (utilise 'userpage' si vide ou en cas d'erreur)",
     // "AB_advanced_action_login_loggedouturl_label" => "Url de redirection après déconnexion",
     // "AB_advanced_action_login_loggedouturl_hint" => "Page du wiki ou url (utilise 'incomingurl' si vide)",
-
     // // col
     // "AB_template_col_size_hint" => "Attention, la somme des largeurs de toutes les colonnes ne devra pas excéder 12 !",
     // // button
@@ -407,7 +403,6 @@ return [
     // "AB_buttons_action_button_new_window_yes" => "oui",
     // "AB_buttons_action_button_hideifnoaccess_label" => "Masquer si l'utilisateur n'a pas accès à la page liée",
     // "AB_buttons_action_button_nobtn_label" => "Afficher sous forme de lien",
-
     // // syndication
     // "AB_syndication_main_label" => "Syndication / Flux RSS",
     // "AB_syndication_action_label" => "Syndication",
@@ -428,7 +423,6 @@ return [
     // "AB_syndication_action_formatdate_option_jma" => "Jour Mois année",
     // "AB_syndication_action_formatdate_option_jmh" => "Jour mois heure",
     // "AB_syndication_action_formatdate_option_jmah" => "Jour mois année heure",
-
     // reactions
     'AB_REACTION_GROUP_LABEL' => 'Reações / Votos',
     'AB_REACTION_TITLE_LABEL' => 'Título da votação',
@@ -448,7 +442,6 @@ return [
     // 'AB_MYFAVORITES_TEMPLATE_LINKS_WITH_TITLES' => 'Liens avec titres',
     // 'AB_MYFAVORITES_TEMPLATE_TILES' => 'Vignettes',
     // 'AB_MYFAVORITES_TEMPLATE_TABLE' => 'Tableau',
-
     // tableau
     'AB_bazartableau_label' => 'Tabela',
     'AB_bazartableau_description' => 'Exibir como uma mesa',
@@ -473,5 +466,27 @@ return [
     'AB_bazartableau_columnswidth_field_label' => 'Campo',
     'AB_bazartableau_columnswidth_width_label' => 'Largura',
     'AB_bazartableau_exportallcolumns_label' => 'Exportação também colunas escondidas',
-    // "AB_bazartableau_displayimagesasthumbnails_label" => "Afficher les images sous forme de vignette",
+    'AB_LEFT' => 'Esquerda',
+    'AB_RIGHT' => 'Direita',
+    'AB_bazar_facettes_title_label' => 'Título',
+    'AB_attach_link_label' => 'Link relacionado',
+    'AB_attach_caption_label' => 'Texto da miniatura',
+    'AB_attach_size_label' => "Tamanho de imagem",
+    'AB_attach_class_position_left' => 'Esquerda',
+    'AB_attach_desc_label' => 'Descrição',
+    'AB_attach_no' => 'Não',
+    'AB_attach_size_medium' => 'Média',
+    'AB_attach_class_position_center' => 'Centro',
+    'AB_attach_class_position_right' => 'Direita',
+    'AB_advanced_action_tocjs_position_left_option' => 'Esquerda',
+    'AB_buttons_action_button_color_link' => 'Ligação',
+    'AB_buttons_action_button_size_label' => 'Cintura',
+    'AB_buttons_action_button_pull_right' => 'Direita',
+    'AB_management_adminbackups_label' => 'Gestão de cópias de segurança',
+    'AB_advanced_action_tocjs_position_right_option' => 'Direita',
+    'AB_buttons_action_button_title_label' => 'Texto da miniatura',
+    'AB_MYFAVORITES_LABEL' => 'Os meus favoritos',
+    'AB_syndication_action_title_label' => 'Título',
+    'AB_advanced_action_login_template_label' => 'Template',
+    'AB_MYFAVORITES_TEMPLATE_LABEL' => 'Template',
 ];
