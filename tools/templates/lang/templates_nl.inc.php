@@ -121,4 +121,10 @@ return [
     // 'TEMPLATE_MODIFY' => 'Modifier',
     // actions/setwikidefaultheme.php
     'TEMPLATE_FORCE_TEMPLATE' => 'Force voor het hele wiki',
+    'TEMPLATE_PAGE' => 'Bladzijde',
+    'TEMPLATE_MODIFY' => 'Wijzigen',
+    'AB_templates_panel_title_label' => 'Titel',
+    'AB_templates_tabs_bottom_nav_no' => 'Neen',
+    'AB_templates_tabs_counter_on_bottom_nav_no' => 'Neen',
+    'GERERTHEMES_PAGE' => 'Bladzijde',
 ];
