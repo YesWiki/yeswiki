@@ -121,4 +121,10 @@ return [
     // 'TEMPLATE_MODIFY' => 'Modifier',
     // actions/setwikidefaultheme.php
     'TEMPLATE_FORCE_TEMPLATE' => 'Força per a tot el wiki',
+    'TEMPLATE_PAGE' => 'Pàgina',
+    'TEMPLATE_MODIFY' => 'Modifica',
+    'AB_templates_panel_title_label' => 'Títol',
+    'GERERTHEMES_PAGE' => 'Pàgina',
+    'AB_templates_tabs_bottom_nav_no' => 'No',
+    'AB_templates_tabs_counter_on_bottom_nav_no' => 'No',
 ];
