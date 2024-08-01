@@ -1,5 +1,4 @@
 <?php
-
 return [
     'LOGIN_SIGNUP' => 'Registrar-se',
     'LOGIN_LOGIN' => 'Connectar-se',
@@ -49,4 +48,5 @@ return [
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'Els paràmetres \'{parameters}\' no poden estar buits !',
     'USERSETTINGS_NAME_ALREADY_USED' => 'L\'identificador "{currentName}" ja existeix !',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'Un altre compte ja ha utilitzat el correu electrònic "{email}" !',
+    'LOGIN_BACK' => 'Enrere',
 ];
