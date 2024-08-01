@@ -95,4 +95,6 @@ return [
     'CENTER' => 'Midden',
     'RIGHT' => 'Rechts',
     'FAILED' => 'mislukt',
+    'ATTACH_SIZE' => 'Middel',
+    'ATTACH_FILENAME' => 'Bestandsnaam',
 ];
