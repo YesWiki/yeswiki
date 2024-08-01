@@ -1,5 +1,4 @@
 <?php
-
 return [
     'LOGIN_SIGNUP' => 'Inschrijven',
     'LOGIN_LOGIN' => 'Aanmelden',
@@ -49,4 +48,5 @@ return [
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'De parameters \'{parameters}\' kunnen niet leeg zijn!',
     'USERSETTINGS_NAME_ALREADY_USED' => 'De identifier "{currentName}" bestaat al!',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'De e-mail "{email}" wordt al gebruikt door een ander account!',
+    'LOGIN_BACK' => 'Terug',
 ];
