@@ -1,5 +1,4 @@
 <?php
-
 return [
     'LOGIN_SIGNUP' => 'Inscribirse',
     'LOGIN_LOGIN' => 'Conectarse',
@@ -73,4 +72,6 @@ return [
     'LOGIN_MESSAGE_SENT' => 'Se te ha enviado un mensaje con instrucciones para restablecer tu contraseña',
     'LOGIN_MY_CONTENTS' => 'Mis contenidos',
     'LOGIN_MY_OPTIONS' => 'Mis opciones',
+    'LOGIN_PASSWORD_FOR' => 'Contraseña para',
+    'LINK_TO_CHANGE_PASSWORD' => 'Enlace para cambiar contraseña',
 ];
