@@ -915,3 +915,9 @@ $('.tab-content [data-toggle="tab"]').on('click', function() {
     $('html, body').animate({ scrollTop: $(base).offset().top - 80 }, 500)
   }
 })
+
+// a11y
+$('#yw-a11y-jump-content').click(() => {
+  setTimeout(() => {
+    $('#yw-topnav').removeClass('nav-down').addClass('nav-up')
+  }, 300)
