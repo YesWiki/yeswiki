@@ -51,12 +51,6 @@ pdfjs-download-button-label = ダウンロード
 pdfjs-bookmark-button =
     .title = 現在のページの URL です (現在のページを表示する URL)
 pdfjs-bookmark-button-label = 現在のページ
-# Used in Firefox for Android.
-pdfjs-open-in-app-button =
-    .title = アプリで開く
-# Used in Firefox for Android.
-# Length of the translation matters since we are in a mobile context, with limited screen estate.
-pdfjs-open-in-app-button-label = アプリで開く
 
 ##  Secondary toolbar and context menu
 
@@ -285,7 +279,7 @@ pdfjs-text-annotation-type =
 ## Password
 
 pdfjs-password-label = この PDF ファイルを開くためのパスワードを入力してください。
-pdfjs-password-invalid = 無効なパスワードです。もう一度やり直してください。
+pdfjs-password-invalid = パスワードが正しくありません。もう一度試してください。
 pdfjs-password-ok-button = OK
 pdfjs-password-cancel-button = キャンセル
 pdfjs-web-fonts-disabled = ウェブフォントが無効になっています: 埋め込まれた PDF のフォントを使用できません。
@@ -304,8 +298,6 @@ pdfjs-editor-stamp-button-label = 画像を追加または編集
 pdfjs-editor-highlight-button =
     .title = 強調します
 pdfjs-editor-highlight-button-label = 強調
-pdfjs-highlight-floating-button =
-    .title = 強調
 pdfjs-highlight-floating-button1 =
     .title = 強調
     .aria-label = 強調します
