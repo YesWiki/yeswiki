@@ -95,4 +95,6 @@ return [
     'CENTER' => 'Centro',
     'RIGHT' => 'Direita',
     'FAILED' => 'Falhado',
+    'ATTACH_FILENAME' => 'Nome do arquivo',
+    'ATTACH_SIZE' => 'Cintura',
 ];
