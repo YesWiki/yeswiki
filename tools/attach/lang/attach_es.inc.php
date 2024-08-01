@@ -101,4 +101,7 @@ return [
     'ERROR_NOT_AUTHORIZED_EXTENSION' => 'El archivo no tiene extensiones permitidas, estas son las que la configuración permite: ',
     'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Permitir hacer clic en la imagen para verla en tamaño grande",
     'ATTACH_FILE_MANAGEMENT' => 'Gestión de archivos',
+    'ATTACH_FILENAME' => 'Nombre de archivo',
+    'ATTACH_SIZE' => 'Cintura',
+    'ATTACH_DATE_OF_MODIFICATION' => 'Fecha de modificación',
 ];
