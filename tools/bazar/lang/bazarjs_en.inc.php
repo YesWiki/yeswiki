@@ -280,7 +280,7 @@ return [
     'BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL' => 'Default choice for comment activation',
     'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_LABEL' => 'Text for editing',
     'BAZ_FORM_EDIT_SHOW_MAP_IN_ENTRY_VIEW' => 'Display the map in the data sheet when viewed',
-    'BAZ_FORM_REQUIRED_FIELD' => 'Please enter all required fields (red aster)',
+    'BAZ_FORM_REQUIRED_FIELD' => 'Please enter all required fields (red asterisk)',
     'BAZ_FORM_EDIT_SEARCH_LABEL' => 'Presence in the search engine',
     'BAZ_FORM_EDIT_IMAGE_ALIGN_LABEL' => 'Alignment',
     'BAZ_FORM_EDIT_IMAGE_HEIGHT' => 'Height vignette',
