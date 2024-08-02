@@ -322,4 +322,9 @@ return [
     'AB_templates_section_visible_everyone' => 'Tothom',
     'AB_templates_tabs_description' => 'Generar pestanyes amb parts de la pàgina',
     'EDIT_CONFIG_HINT_META_DESCRIPTION' => 'Descripció del lloc en una frase, per a la referència (Atenció: no posar de "." (punt))',
+    'TEMPLATE_ACTION_FOR_ADMINS_ONLY' => 'per a professionals',
+    'TEMPLATE_PRIMARY_COLOR' => 'Primària',
+    'AB_templates_section_pattern_cross' => 'Creu Alineada',
+    'AB_templates_section_image_cover' => 'Portada amb imatge',
+    'AB_template_actions_success' => 'Èxit',
 ];
