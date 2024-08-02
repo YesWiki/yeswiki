@@ -512,4 +512,6 @@ Marque a caixa para confirmar sua substituição por \"{proposedName}\" ou alter
     'BAZ_MORE_INFOS' => 'Mais informações',
     'BAZ_NO_ENTRY_FOR_THIS_PERIOD' => 'Não há registo para este período.',
     'SUM' => 'Somme',
+    'BAZ_INTRO_AJOUT_FORMULAIRE' => '<strong>Nenhuma lista criada atualmente.</strong><br />Você pode criar manualmente uma nova lista (clique no botão com um sinal de mais),<br />ou importar listas de um YesWiki existente (tal como http://yeswiki.net).',
+    'BAZ_ACTIVATE_COMMENTS' => 'Ativar comentários nesta página',
 ];
