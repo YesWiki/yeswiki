@@ -563,4 +563,5 @@ La fitxa creada serà automàticament lligada pel vostre compte. Vulgueu déconn
     'EDIT_CONFIG_HINT_BAZ_ADRESSE_MAIL_ADMIN' => 'Adreça correu de l\'expedidor de les modificacions de les fitxes basar',
     'BAZ_MEMBERS' => 'membres',
     'BAZ_CARD_NBCOL_TOO_HIGH' => 'El paràmetre `nbcol` no pot ser tingut en compte amb `estil="horitzontal"` i continua limitat a 2!',
+    'BAZ_INTRO_AJOUT_FORMULAIRE' => '<strong>No s\'ha creat cap llista.</strong><br />Podeu crear-ne manualment una de nova (cliqueu el botó amb el signe d\'afegir),<br /> O importeu llistes d\'un altre YesWiki (per exemple http://yeswiki.net).',
 ];
