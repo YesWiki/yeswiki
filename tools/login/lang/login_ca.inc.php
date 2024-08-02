@@ -76,4 +76,7 @@ return [
     'LOGIN_NO_SIGNUP_IN_THIS_PERIOD' => 'No hi ha inscripció per a aquest període.',
     'LOGIN_PASSWORD_FOR' => 'Contrasenya a favor',
     'LINK_TO_CHANGE_PASSWORD' => 'Enllaç per canviar la contrasenya',
+    'LOGIN_YOU_ARE_NOW_DISCONNECTED' => 'No esteu connectat',
+    'LOGIN_NEW_PASSWORD' => 'Contrasenya nova',
+    'LOGIN_COOKIES_ERROR' => 'Cal que accepteu les galetes per connectar-vos',
 ];
