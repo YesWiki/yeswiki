@@ -49,4 +49,7 @@ return [
     'USERSETTINGS_NAME_ALREADY_USED' => 'O identificador "{currentName}" já existe!',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'O e-mail "{email}" já é utilizado por outra conta!',
     'LOGIN_BACK' => 'Retorno',
+    'LOGIN_YOU_ARE_NOW_DISCONNECTED' => 'Agora você está fora de linha',
+    'LOGIN_NEW_PASSWORD' => 'Nova senha',
+    'LOGIN_COOKIES_ERROR' => 'Você deve aceitar cookies para entrar',
 ];
