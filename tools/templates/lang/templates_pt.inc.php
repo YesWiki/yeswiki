@@ -207,4 +207,6 @@ return [
     'EDIT_CONFIG_HINT_META[ROBOTS]' => 'Impedir robôs de indexar a wiki (noindex,nofollow,max-image-preview:none,noarchive,noimageindex)',
     'EDIT_CONFIG_GROUP_TEMPLATES' => 'Tags meta para indexação web',
     'TEMPLATE_CHOOSE_FONT' => 'Escolha uma polícia',
+    'AB_templates_section_file_label' => 'Imagem de fundo',
+    'TEMPLATE_SEARCH_POINTS' => 'Procurar...',
 ];
