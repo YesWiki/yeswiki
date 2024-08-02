@@ -147,4 +147,7 @@ return [
     'AB_tags_listpagestag_rss_label' => 'enllaç rss cap a la llista per a tags donats',
     'AB_tags_listpagestag_nbclasses_label' => 'algunes classes CSS disponibles per al núvol',
     'AB_tags_nuagetag_tri_shuffle' => 'aleatori',
+    'TAGS_DELETE_MINUSCULE' => 'Elimina',
+    'TAGS_NO_PAGE' => 'No s\'ha trobat cap pàgina',
+    'TAGS_WITH_KEYWORD' => 'amb el mot clau',
 ];
