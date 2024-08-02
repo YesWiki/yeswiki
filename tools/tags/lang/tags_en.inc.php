@@ -119,4 +119,5 @@ return [
     'AB_tags_listpagestag_template_list' => 'list',
     'AB_tags_group_label' => 'Tag management',
     'AB_tags_listpagestag_nbclasses_label' => 'cSS classes available for cloud',
+    'AB_tags_listpagestag_template_label' => 'Template',
 ];
