@@ -49,4 +49,7 @@ return [
     'USERSETTINGS_NAME_ALREADY_USED' => 'De identifier "{currentName}" bestaat al!',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'De e-mail "{email}" wordt al gebruikt door een ander account!',
     'LOGIN_BACK' => 'Terug',
+    'LOGIN_YOU_ARE_NOW_DISCONNECTED' => 'U bent niet langer verbonden',
+    'LOGIN_NEW_PASSWORD' => 'Nieuw wachtwoord',
+    'LOGIN_COOKIES_ERROR' => 'U dient cookies te aanvaarden om zich aan te melden',
 ];
