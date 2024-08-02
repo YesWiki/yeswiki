@@ -625,4 +625,13 @@ return [
     'AB_advanced_action_textsearch_label' => 'Search for text',
     'AB_advanced_action_pageonlyindex_label' => 'List all pages except bazaar sheets',
     'AB_buttons_action_button_text_default' => 'My button',
+    'AB_bazarmaterialcard_modal_label' => "Display a modal window on click",
+    'AB_bazarblog_show_date_label' => 'Display creation date',
+    'AB_bazargogocarto_description' => 'The entries will be in marker format.',
+    'AB_bazargogocarto_height_label' => "Map height",
+    'AB_bazargogocarto_width_label' => 'Map width',
+    'AB_advanced_action_tocjs_size_label' => 'Width',
+    'AB_advanced_action_login_template_horizontal' => 'Horizontal',
+    'AB_buttons_action_button_icon_label' => 'Icon',
+    'AB_advanced_action_progressbar_val_label' => 'Value',
 ];
