@@ -135,4 +135,6 @@ return [
     'ATTACH_ACTION_DISPLAY_PDF_TEXT' => 'Anunciar el pdf en la pàgina:',
     'ATTACH_ACTION_DISPLAY_PDF_LINK_TEXT' => 'sota forma d\'enllaç',
     'ATTACH_ACTION_DISPLAY_PDF_INCLUDED_TEXT' => 'directament inclòs en la pàgina',
+    'ATTACH_DELETED_ON' => ' - Suprimeix:',
+    'ATTACH_HANDLER_AJAXUPLOAD_EMPTY_FILE' => 'El fitxer està buit.',
 ];
