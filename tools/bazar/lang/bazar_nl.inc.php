@@ -536,4 +536,5 @@ Het moet de overeenkomende vorm zijn",
     'EVENT_THIRD_Y_OF_MONTH' => 'De derde J van de maand',
     'BAZ_USER_FIELD_ALREADY_CONNECTED' => "Je bent al verbonden met de 'wiki naam' identifier en de e-mail.
 De gecreëerde map zal automatisch verbonden zijn met uw rekening. Inloggen om een nieuwe rekening te creëren!",
+    'BAZ_INTRO_AJOUT_FORMULAIRE' => '<strong>Er is momenteel geen lijst aangemaakt.</strong><br />U kunt manueel een nieuwe lijst aanmaken (klik op de toets met het plusteken),<br />of lijsten van een bestaande YesWiki (zoals http://yeswiki.net) importeren.',
 ];
