@@ -114,4 +114,7 @@ return [
     'EDIT_CONFIG_GROUP_TAGS' => 'Palavras-chave (tags)',
     'AB_tags_listpagestag_type_label' => 'Tipo',
     'AB_tags_listpagestag_tri_label' => 'Ordinação',
+    'TAGS_NO_PAGE' => 'Nenhuma página encontrada',
+    'TAGS_WITH_KEYWORD' => 'com a palavra-chave.',
+    'AB_tags_listpagestag_template_label' => 'Template',
 ];
