@@ -91,4 +91,5 @@ return [
     'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => "Add 'wiki=' to the links to this wiki in e-mails",
     'EDIT_CONFIG_GROUP_CONTACT' => 'Send e-mails',
     'EDIT_CONFIG_HINT_CONTACT_DISABLE_EMAIL_FOR_PASSWORD' => 'Disable email to re-introduce a password (ex: LDAP, SSO)',
+    'AB_abonnement_template_label' => 'Template',
 ];
