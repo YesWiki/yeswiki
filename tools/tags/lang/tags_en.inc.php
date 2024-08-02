@@ -21,7 +21,8 @@ return [
     'TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS' => 'See all the pages with this keyword',
     'TAGS_ALERT_PAGE_ALREADY_MODIFIED' => 'ALERT : Someone else modified this page while you were editing it.<br />Please copy your changes and paste the in edition after refreshing the page.',
     'TAGS_ANSWER_THIS_COMMENT' => 'Answer this comment',
-    'TAGS_DATE_FORMAT' => "o\n d.m.Y a\t H:i:s",
+    'TAGS_DATE_FORMAT' => "o
+ d.m.Y a\t H:i:s",
     'TAGS_WRITE_YOUR_COMMENT_HERE' => 'Write your comment here...',
     'TAGS_ADD_YOUR_COMMENT' => 'Add your comment',
     'TAGS_ACTION_FILTERTAGS' => 'Action {{filtertags ...}}',
@@ -116,4 +117,7 @@ return [
     'TAGS_HIDDEN_CONTENT' => 'Hidden content',
     'AB_tags_listpagestag_type_label' => 'Type',
     'AB_tags_listpagestag_template_list' => 'list',
+    'AB_tags_group_label' => 'Tag management',
+    'AB_tags_listpagestag_nbclasses_label' => 'cSS classes available for cloud',
+    'AB_tags_listpagestag_template_label' => 'Template',
 ];

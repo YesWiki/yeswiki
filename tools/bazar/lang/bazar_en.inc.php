@@ -421,4 +421,9 @@ return [
     'BAZ_TYPE_FICHE_IMPORT' => 'Entries to import',
     'EDIT_CONFIG_GROUP_BAZAR' => 'Database configuration',
     'BAZ_GEOLOCATE' => 'Geolocate my position',
+    'BAZ_INTRO_AJOUT_FORMULAIRE' => '<strong>No list created for now.</strong><br />You can create a new list by clicking on the button with the plus sign.',
+    'BAZAR_PARAM_URL_REQUIRED' => 'The \'title\' parameter is mandatory',
+    'BAZ_CHANGE_PWD' => 'Change the password',
+    'BAZ_FILEFIELD_TOO_LARGE_FILE' => 'The file is too large, maximum {fileMaxSize} bytes',
+    'BAZ_ACTIVATE_COMMENTS' => 'Activate comments on this page',
 ];

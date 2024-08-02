@@ -2,7 +2,7 @@
 return [
     'LOGIN_SIGNUP' => 'Signup',
     'LOGIN_LOGIN' => 'Login',
-    'LOGIN_WIKINAME' => 'Email or WikiName',
+    'LOGIN_WIKINAME' => 'Email or username.ice',
     'LOGIN_EMAIL' => 'Email',
     'LOGIN_PASSWORD' => 'Password',
     'LOGIN_MODIFY' => 'Modify',
@@ -52,4 +52,13 @@ return [
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'The email "{email}" is already used by another account!',
     'LOGIN_NOT_AUTORIZED' => 'you are not authorized to read this page',
     'LINK_TO_CHANGE_PASSWORD' => 'Link to change password',
+    'LOGIN_NOT_AUTORIZED_EDIT' => 'you are not authorized to read this page',
+    'LOGIN_WRONG_USER' => 'Impossible identification: Unknown identifier.',
+    'LOGIN_NO_CONNECTED_USER' => 'No connected user.',
+    'LOGIN_PLEASE_REGISTER' => 'please identify',
+    'LOGIN_MY_CONTENTS' => 'My content',
+    'LOGIN_MY_OPTIONS' => 'My options',
+    'LOGIN_NO_SIGNUP_IN_THIS_PERIOD' => 'There is no registration for this period.',
+    'LOGIN_WRONG_PASSWORD' => 'Impossible identification: wrong password.',
+    'LOGIN_COOKIES_ERROR' => 'You must accept cookies to get connected',
 ];
