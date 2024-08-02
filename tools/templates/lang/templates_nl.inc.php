@@ -268,4 +268,6 @@ return [
     'AB_templates_section_height_full' => '100% hoogte',
     'AB_templates_section_animation_headshaked' => 'Shake',
     'AB_templates_tabs_selectedtab_label' => 'Geselecteerde nagel',
+    'AB_templates_section_file_label' => 'Achtergrondafbeelding',
+    'TEMPLATE_SEARCH_POINTS' => 'Opzoeken...',
 ];
