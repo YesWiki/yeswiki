@@ -114,4 +114,8 @@ return [
     'EDIT_CONFIG_HINT_HIDE_KEYWORDS' => 'Trefwoorden onder aan pagina\'s verbergen (true of false)',
     'EDIT_CONFIG_GROUP_TAGS' => 'Zoekwoorden (tags)',
     'AB_tags_listpagestag_type_label' => 'Type',
+    'TAGS_DELETE_MINUSCULE' => 'Wissen',
+    'TAGS_NO_PAGE' => 'Geen enkele pagina gevonden',
+    'TAGS_WITH_KEYWORD' => 'met het sleutelwoord',
+    'AB_tags_listpagestag_template_label' => 'Sjabloon',
 ];
