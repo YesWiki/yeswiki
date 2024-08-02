@@ -329,4 +329,7 @@ return [
     'BAZ_FORM_EDIT_TEXTAREA_SYNTAX_NOHTML' => 'Text not interpreted',
     'BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_PLACEHOLDER' => 'put \'checkbox\' here if your linked plugs are via a checkbox',
     'BAZ_FORM_EDIT_TITLE_LABEL' => 'Title Automatic',
+    'BAZ_FORM_EDIT_ADVANCED_MODE' => 'Advanced mode',
+    'BAZ_FORM_EDIT_TEXT_TYPE_TEXT' => 'Text',
+    'BAZ_REACTIONS_FIELD_ACTIVATE_LABEL' => 'Label',
 ];
