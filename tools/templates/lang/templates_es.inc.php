@@ -309,4 +309,6 @@ return [
     'PROGRESSBAR_REQUIRED_VAL_PARAM' => 'param primegrave;tre "val" obligatorio.',
     'AB_templates_nav_titles_default' => 'Primera página, Segunda página, Tercera página',
     'EDIT_CONFIG_HINT_META[ROBOTS]' => 'Impida que los robots indexen el wiki (noindex,nofollow,max-image-preview:none,noarchive,noimageindex)',
+    'TEMPLATE_SEARCH_POINTS' => 'Buscar...',
+    'AB_templates_section_file_label' => 'Imagen de fondo',
 ];
