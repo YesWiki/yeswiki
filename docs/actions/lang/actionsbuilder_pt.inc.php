@@ -658,4 +658,13 @@ return [
     'AB_syndication_action_source_hint' => 'Flow Title1, Flow Title2... indica em caso de múltiplas fontes o título de fluxo',
     'AB_syndication_action_formatdate_label' => 'Exibe datas de publicação',
     'AB_syndication_action_formatdate_option_jm' => 'Mês do dia',
+    'AB_bazar_facettes_field_label' => 'Campo',
+    'AB_bazarcarto_coordinates_label' => 'Vista inicial',
+    'AB_attach_width_label' => 'Largura',
+    'AB_bazarblog_show_date_label' => 'Ver data de criação',
+    'AB_attach_class_displaylink_default' => "No separador atual",
+    'AB_attach_class_displaylink_new-window' => 'Em um novo separador',
+    'AB_advanced_action_tocjs_size_label' => 'Largura',
+    'AB_MYFAVORITES_TEMPLATE_TABLE' => 'Tabela',
+    'AB_buttons_action_button_text_label' => 'texto do botão',
 ];
