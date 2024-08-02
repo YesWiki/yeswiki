@@ -677,4 +677,5 @@ return [
     'STYLE_SHEET' => 'Stylesheet',
     'TABLE_PREFIX_ALREADY_USED' => 'This table prefix is already in use. Choose another one.',
     'DENY_DELETE' => 'You are not allowed to delete this page',
+    'USER_GOTOADMIN' => 'User management',
 ];
