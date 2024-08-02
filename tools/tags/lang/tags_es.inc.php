@@ -141,4 +141,6 @@ return [
     'AB_tags_listpagestag_tri_alpha' => 'tri por orden alfabético',
     'AB_tags_listpagestag_template_list_panel' => 'lista con enmarcado',
     'AB_tags_listpagestag_nbclasses_label' => 'número de clases CSS disponibles para la nube',
+    'TAGS_NO_PAGE' => 'Ninguna página encontrada',
+    'TAGS_WITH_KEYWORD' => 'con la palabra clave',
 ];
