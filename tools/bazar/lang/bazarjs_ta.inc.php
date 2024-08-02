@@ -1,5 +1,4 @@
 <?php
-
 return [
     // fields/CalcField.php
     'BAZ_FORM_EDIT_CALC_LABEL' => 'கால்குலச்',
@@ -260,4 +259,5 @@ return [
     'BAZAR_URL_DISPLAY_VIDEO' => 'Afficher le lecter si le lien est une vidéo?',
     // templates/entries/index-dynamic-temapltes/BazarCalendar_ButtonICS.js
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => 'அசூட்டர் à வோட்ரே காலென்ட்ரியர்',
+    'LIST_TEXT' => 'உரை',
 ];
