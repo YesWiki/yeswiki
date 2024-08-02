@@ -52,7 +52,7 @@ return [
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'The email "{email}" is already used by another account!',
     'LOGIN_NOT_AUTORIZED' => 'you are not authorized to read this page',
     'LINK_TO_CHANGE_PASSWORD' => 'Link to change password',
-    'LOGIN_NOT_AUTORIZED_EDIT' => 'You don\'t ignitecirc; you don\'t have to imitate yourself; \' agrave; edit this page',
+    'LOGIN_NOT_AUTORIZED_EDIT' => 'you are not authorized to read this page',
     'LOGIN_WRONG_USER' => 'Impossible identification: Unknown identifier.',
     'LOGIN_NO_CONNECTED_USER' => 'No connected user.',
     'LOGIN_PLEASE_REGISTER' => 'please identify',
