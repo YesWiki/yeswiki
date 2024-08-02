@@ -327,4 +327,6 @@ return [
     'AB_templates_section_pattern_cross' => 'Creu Alineada',
     'AB_templates_section_image_cover' => 'Portada amb imatge',
     'AB_template_actions_success' => 'Èxit',
+    'TEMPLATE_SEARCH_POINTS' => 'Cerca...',
+    'AB_templates_section_file_label' => 'Imatge de fons',
 ];
