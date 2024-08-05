@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 
   $('.btn-verify-wiki').on('click', () => {
-    let url = $('#url-wiki').val()
+    let url = $.find('#url-wiki').val()
 
     if (isValidUrl(url)) {
       let taburl = []
