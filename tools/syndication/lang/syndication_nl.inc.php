@@ -15,5 +15,10 @@ return [
     'SYNDICATION_PARAM_QUERY_REQUIRED' => 'parameter "query" ontbreekt en is verplicht om uw opzoeking in te voeren',
     'SYNDICATION_TEMPLATE_DOESNT_EXISTS' => 'Het sjabloonbestand',
     'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'bestaat niet, we gebruiken het standaardsjabloon',
-    'SYNDICATION_TEMPLATE_NOT_FOUND' => 'bestaat niet, we gebruiken het standaardsjabloon',
+    'SYNDICATION_TEMPLATE_NOT_FOUND' => 'bestaat niet, het templade bestand wordt gebruikt door darfaut.',
+    'SYNDICATION_WRITE_ACCESS_TO_CACHE_FOLDER' => 'de "cache" regisseur heeft niet de rechten om toegang te krijgen',
+    'SYNDICATION_CREATE_CACHE_FOLDER' => 'het is noodzakelijk om te critiseacute te maken, om "cache" te zien in de zaal',
+    'SYNDICATION_SOURCE' => 'bron',
+    'SYNDICATION_SEE_ALL_CONTENT' => 'Toegang tot alle inhoud',
+    'SYNDICATION_READ_MORE' => 'Lees meer',
 ];
