@@ -11,13 +11,13 @@ function isValidUrl(string) {
 
 function blockDuplicationName(tag) {
   $('[name=duplicate-action]').attr('disabled', 'disabled').addClass('disabled')
-  $('#pageTag').parents('.form-group').removeClass('has-success').addClass('has-error')
+  $('#newTag').parents('.form-group').removeClass('has-success').addClass('has-error')
   $('#pagetag-message').html(_t('PAGE_NOT_AVAILABLE', { tag }))
 }
 
 function validateDuplicationName(tag) {
   $('[name=duplicate-action]').removeAttr('disabled').removeClass('disabled')
-  $('#pageTag').parents('.form-group').removeClass('has-error').addClass('has-success')
+  $('#newTag').parents('.form-group').removeClass('has-error').addClass('has-success')
   $('#pagetag-message').html(_t('PAGE_AVAILABLE', { tag }))
 }
 
@@ -43,7 +43,7 @@ function handleLoginResponse(data) {
       .addClass('has-success')
     $('.login-fields').addClass('hide')
     $('.duplication-fields').removeClass('hide')
-    checkPageExistence(`${shortUrl}/?api/pages/${$('#pageTag').val()}`)
+    checkPageExistence(`${shortUrl}/?api/pages/${$('#newTag').val()}`)
   } else {
     $('#login-message').html(_t('CONNECTED_BUT_NOT_ADMIN', { user: data.user })).parents('.form-group')
       .removeClass('has-success')
@@ -87,13 +87,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnAction = e.currentTarget.value
     $.ajax({
       method: 'POST',
-      url: `${shortUrl}/?api/pages/${$('#pageTag').val()}/duplicate`,
+      url: `${shortUrl}/?api/pages/${$('#newTag').val()}/duplicate`,
       data: $('#form-duplication').serialize()
     }).done((d) => {
       if (btnAction === 'open') {
-        document.location = `${shortUrl}/?${d.pageTag}`
+        document.location = `${shortUrl}/?${d.newTag}`
       } else if (btnAction === 'edit') {
-        document.location = `${shortUrl}/?${d.pageTag}/edit`
+        document.location = `${shortUrl}/?${d.newTag}/edit`
       } else {
         const url = document.location.href.replace(/\/duplicate.*/, '')
         document.location = url
@@ -105,11 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 
   $('.btn-verify-tag').on('click', () => {
-    checkPageExistence(`${shortUrl}/?api/pages/${$('#pageTag').val()}`)
+    checkPageExistence(`${shortUrl}/?api/pages/${$('#newTag').val()}`)
   })
 
   $('.btn-verify-wiki').on('click', () => {
-    let url = $.find('#url-wiki').val()
+    let url = $('.duplication-wiki-form').find('#url-wiki').val()
 
     if (isValidUrl(url)) {
       let taburl = []
