@@ -145,7 +145,7 @@ return [
     'AB_templates_tabs_btnsize_small' => 'Klein',
     'GERERTHEMES_HINT' => 'Controleer de pagina\'s die je wilt verwerken en kies een actie onderaan de pagina',
     'GERERTHEMES_MODIFY_THEME_FOR_SELECTED_PAGES' => 'Edit waarden voor geselecteerde pagina\'s',
-    'PROGRESSBAR_REQUIRED_VAL_PARAM' => 'param primegrave, "val" verplicht.',
+    'PROGRESSBAR_REQUIRED_VAL_PARAM' => 'parameter "URL" verplicht',
     'TEMPLATE_FILE_NOT_FOUND' => 'Vertaling:',
     'TEMPLATE_REEDIT' => 'Onderwijs weer',
     'TEMPLATE_APPLY_ALL' => 'Applaus voor alle sites',
@@ -289,4 +289,6 @@ return [
     'ACLS_SELECT_PAGES_FILTER_ON_PAGES' => 'alleen pagina\'s',
     'PROGRESSBAR_ERROR_VAL_PARAM' => 'de paramelijke hoofdlampegrafie, \'val\' is een nummer tussen 0 en 100.',
     'EDIT_CONFIG_HINT_META[ROBOTS]' => 'Voorafgaande robots van het indexen van de Wiki (noindex,nofollow,max-image-preview:',
+    'TEMPLATE_ELEM_PARAMETER_REQUIRED' => 'parameter "file" verplicht',
+    'TEMPLATE_SIZE_PARAMETER_REQUIRED' => 'parameter "file" verplicht',
 ];
