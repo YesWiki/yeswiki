@@ -412,4 +412,5 @@ return [
     'AB_templates_section_animation_hint' => 'Much more effects available on https://animate.style/',
     'EDIT_CONFIG_GROUP_TEMPLATES' => 'Tags meta for web indexing',
     'EDIT_CONFIG_HINT_META[ROBOTS]' => 'Prevent robots from indexing the wiki (noindex,nofollow,max-image-preview:none,noarchive,noimageindex)',
+    'TEMPLATE_ELEM_SECTION_NOT_CLOSED' => 'action {{accordion ...}} must be closed by an action {{end elem="accordion"}}',
 ];
