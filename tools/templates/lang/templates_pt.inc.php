@@ -209,4 +209,7 @@ return [
     'TEMPLATE_CHOOSE_FONT' => 'Escolha uma polícia',
     'AB_templates_section_file_label' => 'Imagem de fundo',
     'TEMPLATE_SEARCH_POINTS' => 'Procurar...',
+    'TEMPLATE_ELEM_PANEL_NOT_CLOSED' => 'ação {{col ...}} deve ser fechada por ação {{elem end = "col"}}',
+    'PROGRESSBAR_REQUIRED_VAL_PARAM' => 'parâmetro "url" obrigatório',
+    'TEMPLATE_ELEM_SECTION_NOT_CLOSED' => 'ação {{col ...}} deve ser fechada por ação {{elem end = "col"}}',
 ];
