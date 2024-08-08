@@ -207,10 +207,7 @@ function initializeFormbuilder() {
 
     // Slugiy field names
     $('.fld-name').each(function() {
-      const newValue = $(this)
-        .val()
-        .replace(/[^a-z^A-Z^_^0-9^{^}]/g, '_')
-        .toLowerCase()
+      const newValue = $(this).val().replace(/[^a-z^A-Z^_^0-9^{^}]/g, '_')
       $(this).val(newValue)
     })
 
