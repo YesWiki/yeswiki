@@ -564,7 +564,7 @@ return [
     'AB_buttons_action_button_pull_right' => 'Right',
     'AB_attach_link_label' => 'Associated link',
     'AB_attach_caption_label' => 'Text displayed on hovering',
-    'AB_attach_nofullimagelink_label' => "Enable to click on the image to display the full image",
+    'AB_attach_nofullimagelink_label' => "Add a link to only display the full image",
     'AB_attach_class_position_left' => 'Left',
     'AB_attach_class_position_center' => 'Center',
     'AB_attach_class_position_right' => 'Right',
