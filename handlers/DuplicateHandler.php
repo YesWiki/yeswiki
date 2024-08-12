@@ -2,6 +2,7 @@
 
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
@@ -84,6 +85,7 @@ class DuplicateHandler extends YesWikiHandler
                     $pageTitle = $originalContent['bf_titre'];
                     $proposedTag = $this->wiki->GetPageTag();
                     $originalContent = $this->wiki->page['body'];
+                    $form = $this->getService(FormManager::class)->getOne($this->getService(EntryManager::class)->getOne($proposedTag)['id_typeannonce']);
                 } else {
                     $pageTitle = $originalContent['bf_titre'] . ' (' . _t('DUPLICATE') . ')';
                     $proposedTag = genere_nom_wiki($pageTitle);
@@ -133,6 +135,7 @@ class DuplicateHandler extends YesWikiHandler
             'originalContent' => $originalContent ?? '',
             'totalSize' => $this->duplicationManager->humanFilesize($totalSize ?? 0),
             'type' => $type ?? '',
+            'form' => $form ?? '',
             'baseUrl' => preg_replace('/\?$/Ui', '', $this->wiki->config['base_url']),
             'toExternalWiki' => $toExternalWiki,
         ]);

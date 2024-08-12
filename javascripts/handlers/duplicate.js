@@ -9,6 +9,10 @@ function isValidUrl(string) {
   }
 }
 
+function arrayIncludesAllRequiredFields(arr, fields) {
+  return fields.every((v) => arr.some((i) => i.id === v.id && i.type === v.type))
+}
+
 function blockDuplicationName(tag) {
   $('[name=duplicate-action]').attr('disabled', 'disabled').addClass('disabled')
   $('#newTag').parents('.form-group').removeClass('has-success').addClass('has-error')
@@ -126,6 +130,33 @@ document.addEventListener('DOMContentLoaded', () => {
         url
       }).done((data) => {
         handleLoginResponse(data)
+
+        // if case of entry, we need to check if form id is available and compatible
+        // or propose another id
+        const formId = $('#form-id').val()
+        if (typeof formId !== 'undefined') {
+          const formUrl = `${shortUrl}/?api/forms/${formId}`
+          $.ajax({
+            method: 'GET',
+            url: formUrl
+          }).done((form) => {
+            const requiredFields = form.prepared.filter((field) => field.required === true)
+            // we check if the found formId is compatible
+            if (arrayIncludesAllRequiredFields(window.sourceForm.prepared, requiredFields)) {
+              $('#form-message').removeClass('has-error').addClass('has-success').find('.help-block')
+                .html(_t('FORM_ID_IS_COMPATIBLE', { id: formId }))
+            } else {
+              $('#form-message').removeClass('has-success').addClass('has-error').find('.help-block')
+                .html(_t('FORM_ID_NOT_AVAILABLE', { id: formId }))
+            }
+          }).fail((jqXHR) => {
+            if (jqXHR.status === 404) {
+              // the formId is available
+              $('#form-message').removeClass('has-error').addClass('has-success').find('.help-block')
+                .html(_t('FORM_ID_AVAILABLE', { id: formId }))
+            }
+          })
+        }
       }).fail((jqXHR) => {
         if (jqXHR.status === 401) {
           $('#login-message').html(`<div class="text-danger">${_t('NOT_CONNECTED')}</div>`)

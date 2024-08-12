@@ -319,7 +319,7 @@ class DuplicationManager
             $entry = json_decode($newBody, true);
             $entry['id_fiche'] = $tag;
             $entry['antispam'] = 1;
-            $this->wiki->services->get(EntryManager::class)->create($entry['id_typeannonce'], $entry);
+            $this->wiki->services->get(EntryManager::class)->create($entry['id_typeannonce'], $entry, false, $req['sourceUrl']);
         }
     }
 

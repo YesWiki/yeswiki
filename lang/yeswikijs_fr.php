@@ -159,4 +159,7 @@ return [
     'CONNECTED_AS_ADMIN' => 'L\'utilisateurice {user} est bien connecté.e sur le YesWiki de destination, avec des droits d\'administration.',
     'CONNECTED_BUT_NOT_ADMIN' => 'L\'utilisateurice {user} est bien connecté.e sur le YesWiki de destination, mais n\'a pas les droits d\'administration. Veuillez-vous connecter avec un compte admin.',
     'NOT_WIKI_OR_OLD_WIKI' => 'Le site indiqué ne semble pas être un YesWiki, ou sa version est antérieure à 4.5.0',
+    'FORM_ID_AVAILABLE' => 'Le formulaire avec l\'identifiant {id} n\'existant pas encore sur l\'url indiqué, il sera créé.',
+    'FORM_ID_NOT_AVAILABLE' => 'Le formulaire avec l\'identifiant {id} n\'est plus disponible sur l\'url indiqué, il faut changer d\'identifiant.',
+    'FORM_ID_IS_COMPATIBLE' => 'Un formulaire du même identifiant ({id}) existe sur l\'url indiqué et semble avoir au moins les champs obligatoires similaires. Il sera utilisé pour la duplication.',
 ];

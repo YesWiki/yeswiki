@@ -36,6 +36,13 @@
         </div>
       </div>
     </form>
+    {% if form %}
+    <script>
+    var sourceForm = {{ form|json_encode|raw }}
+    </script>
+    <input type="hidden" id="form-id" value="{{form.bn_id_nature}}"/>
+    <div id="form-message"><span class="help-block"></span></div>
+    {% endif %}
     <div class="duplication-fields hide">{# hide the field while not connected #}
     {% endif %}
   <form id="form-duplication" method="post" action="{{ url({handler: 'duplicate'})}}">
@@ -46,7 +53,7 @@
         <input required type="text" class="form-control" id="newTitle" name="newTitle" placeholder="{{ _t('PAGE_TITLE_TO_DUPLICATE') }}" value="{{pageTitle}}" />
       </div>
     </div>
-  {% endif %}
+    {% endif %}
     <div class="form-group">
       <label for="newTag" class="control-label">{{ _t('PAGE_TAG_TO_DUPLICATE') }}</label>
       <div class="input-group">
