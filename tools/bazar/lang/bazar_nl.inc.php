@@ -428,7 +428,7 @@ return [
     'BAZ_RESET_FILTERS' => 'Reset filters',
     'BAZ_GEOLOCATE' => 'Geolocatie van mijn positie',
     'BAZ_CLOSE_THIS_WINDOW' => 'Sluit deze schermen',
-    'BAZ_ACTIVATE_COMMENTS' => 'Activeer commentaar op dit laken?',
+    'BAZ_ACTIVATE_COMMENTS' => 'Commentaren activeren op deze pagina',
     'BAZ_COMMENTS_INFO_DISCOURSE' => 'Commenten worden door het toespraakplatform beheerd, maar het is nog niet functioneel!',
     'BAZ_COMMENTS_INFO_UNKNOWN' => 'Commenten zijn er niet in geslaagd omdat het soort commentaar niet onbekend is',
     'BAZ_COMMENTS_NOT_ACTIVATED' => 'Commenten worden door JaWiki beheerd, maar deze zijn niet in staat. Ga naar de GererConfig pagina om commentaar te activeren',
