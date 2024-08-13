@@ -1,4 +1,5 @@
 <?php
+
 return [
     // 'TAGS_TAGS' => 'Mots clés',
     'TAGS_ACTION_ADMINTAGS' => 'Acción {{admintags ...}}',
@@ -21,7 +22,7 @@ return [
     'TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS' => 'Ver todas las páginas con la palabra clave',
     'TAGS_ALERT_PAGE_ALREADY_MODIFIED' => 'Atención : Esta página ha sido modificada por otra persona mientras la estabas modificando tu.<br />Por favor, copia tus cambios y vuelve a editar esta página.',
     'TAGS_ANSWER_THIS_COMMENT' => 'Responder a este comentario',
-    'TAGS_DATE_FORMAT' => "le d.m.Y a les H:i:s",
+    'TAGS_DATE_FORMAT' => 'le d.m.Y a les H:i:s',
     'TAGS_WRITE_YOUR_COMMENT_HERE' => 'Escribir tu comentario aquí...',
     'TAGS_ADD_YOUR_COMMENT' => 'Añadir tu comentario',
     'TAGS_ACTION_FILTERTAGS' => 'Acción {{filtertags ...}}',

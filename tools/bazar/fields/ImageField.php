@@ -53,6 +53,7 @@ class ImageField extends FileField
         if (file_exists($this->getBasePath() . $default_image_filename)) {
             return $default_image_filename;
         }
+
         return false;
     }
 
@@ -91,6 +92,7 @@ class ImageField extends FileField
                 || (!empty($imgDefault) && file_exists($this->getBasePath() . $imgDefault))
             ) {
                 $img = $value ? $value : $imgDefault;
+
                 return $output . ($alertMessage ?? '') . $this->render('@bazar/inputs/image.twig', [
                     'value' => $img,
                     'downloadUrl' => $this->getBasePath() . $img,
@@ -182,6 +184,7 @@ class ImageField extends FileField
         } else {
             $entry[$this->propertyName] = '';
         }
+
         return [
             $this->propertyName => $this->getValue($entry),
             'fields-to-remove' => ['oldimage_' . $this->propertyName],

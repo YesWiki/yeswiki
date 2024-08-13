@@ -323,9 +323,9 @@ class ApiController extends YesWikiController
                 }
                 $result[] = $entry[$field] ?? null;
             }
+
             return $result;
         }, $entries);
-
 
         return new ApiResponse(
             [

@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TEMPLATE_ACTION' => 'Action',
     'TEMPLATE_FILE_NOT_FOUND' => 'Template non trouvé',
@@ -179,7 +180,7 @@ return [
     'AB_template_action_col_example' => 'Texte de votre colonne à changer par la suite',
     'AB_template_col_size_label' => 'Largeur de la colonne',
     'AB_template_action_grid_label' => 'Afficher plusieurs colonnes',
-    'AB_templates_nav_label' => "Onglets avec des pages différentes",
+    'AB_templates_nav_label' => 'Onglets avec des pages différentes',
     'AB_templates_nav_description' => 'Générer un menu',
     'AB_templates_nav_hint' => 'LeNomDeVotrePage doit être le nom de la page dans laquelle vous mettrez cette action. Pensez à coller le code obtenu dans chacune des pages des onglets.',
     'AB_templates_nav_links_label' => 'Liens vers vos pages wiki',
@@ -273,7 +274,7 @@ return [
     'AB_templates_tabs_label' => 'Onglets avec des parties de la page',
     'AB_templates_tabs_description' => 'Générer des onglets avec des parties de la page',
     'AB_templates_tabs_hint' => 'Chaque contenu d\'onglet se trouve dans une action <code>{{tab}}Contenu de l\'onglet.{{end elem="tab"}}</code>',
-    'AB_templates_tabs_titles_label' => "Titres des onglets",
+    'AB_templates_tabs_titles_label' => 'Titres des onglets',
     'AB_templates_tabs_titles_hint' => 'Séparer chaque titre par une virgule',
     'AB_templates_tabs_titles_default' => 'Onglet 1, Onglet 2, Onglet 3',
     'AB_templates_tabs_btnsize_label' => 'Taille de bouton',

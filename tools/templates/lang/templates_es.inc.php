@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TEMPLATE_ACTION' => 'Acción',
     // 'TEMPLATE_FILE_NOT_FOUND' => 'Template non trouvé',
@@ -143,11 +144,11 @@ return [
     'AB_template_actions_success' => 'Éxito',
     'AB_template_actions_danger' => 'Peligro',
     'AB_template_action_accordion_label' => 'Ver cajas en acordeón',
-    'AB_template_action_ariane_label' => "Arane hilo",
+    'AB_template_action_ariane_label' => 'Arane hilo',
     'AB_template_action_col_label' => 'Columna',
     'AB_template_action_col_size_total' => 'Usted tiene 12 columnas virtuales para ser distribuidas',
     'AB_template_action_grid_label' => 'Mostrar múltiples columnas',
-    'AB_templates_nav_label' => "Tabs con diferentes páginas",
+    'AB_templates_nav_label' => 'Tabs con diferentes páginas',
     'AB_templates_nav_description' => 'Generar un menú',
     'AB_templates_nav_class_justified' => 'Justificado horizontal',
     'AB_templates_panel_title_default' => 'Título de mi caja',
@@ -194,7 +195,7 @@ return [
     'TEMPLATE_LIGHT_COLOR' => 'Color claro',
     'TEMPLATE_MAIN_TEXT_SIZE' => 'Tamaño del texto',
     'TEMPLATE_FILE_ALREADY_EXISTING' => '¡El archivo ya está disponible! Cambiar el nombre predefinido o conectarse a admin!',
-    'TEMPLATE_PRESET_ERROR' => "¡No puedes aplicar este preset, hay un error!",
+    'TEMPLATE_PRESET_ERROR' => '¡No puedes aplicar este preset, hay un error!',
     'AB_template_group_label' => 'Formal',
     'AB_template_action_label_label' => 'Etiquette',
     'AB_template_action_label_example' => 'Texto de su etiqueta para cambiar más tarde',
@@ -299,7 +300,7 @@ return [
     'AB_templates_section_visible_admins' => 'Admins only',
     'AB_templates_section_visible_no_container' => 'No ponga un contenedor',
     'AB_templates_tabs_label' => 'Tabs con partes de la página',
-    'AB_templates_tabs_titles_label' => "Títulos de fichas",
+    'AB_templates_tabs_titles_label' => 'Títulos de fichas',
     'AB_templates_tabs_titles_hint' => 'Separar cada título por coma',
     'AB_templates_tabs_titles_default' => 'Uñas 1, clavo 2, clavo 3',
     'ACLS_SELECT_PAGES_FILTER_FORM' => 'formularios : {name} ({id})',

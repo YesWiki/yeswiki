@@ -184,7 +184,7 @@ class ApiController extends YesWikiController
                 $user = $userController->create([
                     'name' => strval($_POST['name']),
                     'email' => strval($_POST['email']),
-                    'password' => $this->wiki->generateRandomString(30)
+                    'password' => $this->wiki->generateRandomString(30),
                 ]);
                 if (!boolval($this->wiki->config['contact_disable_email_for_password']) && !empty($user)) {
                     $link = $userController->sendPasswordRecoveryEmail($user);
@@ -198,7 +198,7 @@ class ApiController extends YesWikiController
                         'name' => $user['name'],
                         'email' => $user['email'],
                         'signuptime' => $user['signuptime'],
-                        'link' => $link
+                        'link' => $link,
                     ],
                 ];
             } catch (UserNameAlreadyUsedException $th) {

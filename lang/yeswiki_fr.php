@@ -1,4 +1,5 @@
 <?php
+
 return [
     // Commons
     'ARCHIVES' => 'Sauvegardes',

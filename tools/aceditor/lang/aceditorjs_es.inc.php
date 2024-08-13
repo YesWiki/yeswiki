@@ -1,4 +1,5 @@
 <?php
+
 return [
     'ACEDITOR_SAVE' => 'Guardar',
     'ACEDITOR_FORMAT' => 'Formato',

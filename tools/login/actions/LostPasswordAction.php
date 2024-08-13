@@ -13,7 +13,6 @@ use YesWiki\Security\Controller\SecurityController;
 
 class LostPasswordAction extends YesWikiAction
 {
-
     protected $authController;
     protected $errorType;
     protected $typeOfRendering;

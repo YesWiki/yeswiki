@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TEMPLATE_ACTION' => 'Action',
     'TEMPLATE_FILE_NOT_FOUND' => 'Template not found',
@@ -361,7 +362,7 @@ return [
     'TEMPLATE_ADD_CSS_PRESET_API_HINT' => 'Save a custom preset file',
     'TEMPLATE_DELETE_CSS_PRESET_API_HINT' => 'Deletes a custom preset file',
     'TEMPLATE_FILE_ALREADY_EXISTING' => 'The file is already existing! Change preset name or connect to admin!',
-    'AB_template_action_ariane_label' => "Arane yarn",
+    'AB_template_action_ariane_label' => 'Arane yarn',
     'AB_template_action_col_size_total' => 'You have 12 virtual columns to be distributed',
     'AB_template_action_col_example' => 'Text of your column to be changed later',
     'AB_templates_nav_titles_label' => 'Title of your pages',

@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TEMPLATE_ACTION' => 'Actie',
     // 'TEMPLATE_FILE_NOT_FOUND' => 'Template non trouvé',
@@ -139,7 +140,7 @@ return [
     'AB_templates_section_pattern_reverse' => 'Omkeren de kleuren van de textuur',
     'AB_templates_section_shape_circ' => 'Circle',
     'AB_templates_tabs_description' => 'Genereerde tabs met delen van de pagina',
-    'AB_templates_tabs_titles_label' => "Titels",
+    'AB_templates_tabs_titles_label' => 'Titels',
     'AB_templates_tabs_titles_default' => 'Nagel 1, nagel 2, nagel 3',
     'AB_templates_tabs_btnsize_label' => 'Button maat',
     'AB_templates_tabs_btnsize_small' => 'Klein',
@@ -181,7 +182,7 @@ return [
     'TEMPLATE_DELETE_CSS_PRESET_API_HINT' => 'Verwijder een aangepaste dossier',
     'TEMPLATE_CUSTOMIZE_PRESET' => 'Grafische configuratie',
     'TEMPLATE_FILE_NOT_DELETED' => ' niet gewist!',
-    'TEMPLATE_PRESET_ERROR' => "Je kunt dit preset niet toepassen, er is een fout!",
+    'TEMPLATE_PRESET_ERROR' => 'Je kunt dit preset niet toepassen, er is een fout!',
     'AB_template_group_label' => 'Formal',
     'AB_template_action_label_label' => 'Etiquette',
     'AB_template_action_label_example' => 'Sms je label later',
@@ -193,7 +194,7 @@ return [
     'AB_template_action_accordion_label' => 'View dozen in accordeon',
     'AB_template_action_col_label' => 'Column',
     'AB_template_action_col_size_total' => 'Je hebt 12 virtuele kolommen te verspreiden',
-    'AB_template_action_ariane_label' => "Arane yarn",
+    'AB_template_action_ariane_label' => 'Arane yarn',
     'AB_templates_nav_links_default' => 'Pagina Name, LaSecondPage, LaTroisieme Pagina',
     'AB_templates_nav_hint' => 'The Naame Pagina moet de naam van de pagina zijn waarin je deze actie zal plaatsen. Onthoud dat je de code in elke pagina van de tabs hebt.',
     'AB_templates_nav_links_label' => 'Vertaling:',
