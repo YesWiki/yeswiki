@@ -30,4 +30,5 @@ return [
     'ACTION_BUILDER_OWNER' => 'Proprietário do arquivo',
     'ACTION_BUILDER_MODIFICATION_DATE' => 'Data alterada',
     'ACTION_BUILDER_CREATION_DATE' => 'Data de criação',
+    'ACTION_BUILDER_FORM_ID' => 'Formulário',
 ];
