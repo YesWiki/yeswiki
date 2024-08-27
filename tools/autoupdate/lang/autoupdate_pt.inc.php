@@ -1,12 +1,10 @@
 <?php
-
-/**
+return [
+    /**
  * Fichier de traduction en francais de l'extension AutoUpdate.
  *
  *@author        Florestan Bredow <florestan.bredow@supagro.fr>
  */
-
-return [
     'AU_ACL' => 'Verificação dos direitos nos arquivos',
     'AU_REPO_ERROR' => 'Repositórios inacessíveis.',
     'AU_VERSION_WIKI' => 'Versão do Wiki',
@@ -31,28 +29,23 @@ return [
     'AU_NO_DESCRIPTION' => 'Descrição não disponível.',
     'AU_DOCUMENTATION_LINK' => 'documentação',
     'AU_YESWIKI_DORYPHORE_POSTINSTALL' => 'Bem-vindo ao Doryphore',
-    // 'AU_PHP_TOO_LOW_ERROR' => "Vous ne pouvez pas %{textAction} car votre version PHP n'est pas supérieure à %{NEEDEDPHPVERSION}.\n".
-    //     "Vous avez la version %{CURRENTPHPVERSION}.\n".
-    //     "%{hint}",
-    // 'AU_PHP_TOO_LOW_HINT' => "Veuillez mettre à jour PHP sur votre serveur avant de %{textAction} !",
-    // 'AU_PHP_TOO_LOW_VERSION_UPDATE' => "changer de version YesWiki",
-    // 'AU_PHP_TOO_LOW_UPDATE' => "mettre à jour YesWiki",
-    // 'AU_PHP_TOO_LOW_FORCE_UPDATE' => "réinstaller YesWiki",
-    // 'AU_CHANGELOG' => "Notes de versions",
-    // 'AU_CHANGELOG_HINT' => "Cliquer pour découvrir les dernières modifications incluses dans la mise à jour de YesWiki",
-    // 'AU_YESWIKI_SECOND_TIME_UPDATE' => "Seconde mise à jour du cœur YesWiki",
-    // 'AU_FILE_NOT_POSSIBLE_TO_UPDATE' => "Il n'a pas été possible de mettre à jour le fichier '{{file}}' ! Ceci pourrait entraîner des disfonctionnements mineurs.",
-    // 'AU_SECOND_UPDATE_NOT_POSSIBLE' => "Une seconde mise à jour du cœur YesWiki est nécessaire mais elle n'est pas possible tant que la première mise à jour ne se déroule pas correctement !",
-
-    // 'AU_NAME' => 'Nom',
-    // 'AU_INSTALLED_REVISION' => 'Version installée',
-    // 'AU_AVAILABLE_REVISION' => 'Version disponible',
-
-    // 'AU_PACKAGE_NOT_DOWNLOADED' => 'Le paquet n\'a pas été téléchargé.',
-    // 'AU_UNKWON_PACKAGE_TYPE' => 'Type de paquet inconnu',
-    // 'AU_PACKAGE_NOT_UNZIPPED' => 'Le paquet n\'a pas été décompressé.',
-    // 'AU_SEVERAL_THEMES_UPDATE' => 'Vous avez {nbMaj} thèmes à mettre à jour',
-    // 'AU_ONE_THEME_UPDATE' => 'Vous avez 1 thème à mettre à jour',
-    // 'AU_SEVERAL_TOOLS_UPDATE' => 'Vous avez {nbMaj} extensions à mettre à jour',
-    // 'AU_ONE_TOOL_UPDATE' => 'Vous avez 1 extension à mettre à jour',
+    'AU_PHP_TOO_LOW_HINT' => "Por favor, atualize o PHP em seu servidor antes %{textAction}!",
+    'AU_PHP_TOO_LOW_VERSION_UPDATE' => 'versão de mudança Sim',
+    'AU_PHP_TOO_LOW_UPDATE' => 'atualização SimWiki',
+    'AU_FILE_NOT_POSSIBLE_TO_UPDATE' => "Não foi possível atualizar o arquivo '{{file}'! Isso pode levar a pequenas avarias.",
+    'AU_YESWIKI_SECOND_TIME_UPDATE' => 'Segunda atualização do coração YesWiki',
+    'AU_SECOND_UPDATE_NOT_POSSIBLE' => "Uma segunda atualização do coração YesWiki é necessária, mas não é possível até que a primeira atualização seja feita corretamente!",
+    'AU_NAME' => 'Nome',
+    'AU_PACKAGE_NOT_DOWNLOADED' => 'O pacote não foi baixado.',
+    'AU_UNKWON_PACKAGE_TYPE' => 'Tipo de pacote desconhecido',
+    'AU_PACKAGE_NOT_UNZIPPED' => 'O pacote não foi descomprimido.',
+    'AU_SEVERAL_THEMES_UPDATE' => 'Você tem temas {nbMaj} para atualizar',
+    'AU_ONE_THEME_UPDATE' => 'Você tem 1 tópico para atualizar',
+    'AU_SEVERAL_TOOLS_UPDATE' => 'Você tem extensões {nbMaj} para atualizar',
+    'AU_ONE_TOOL_UPDATE' => 'Você tem 1 extensão para atualizar',
+    'AU_PHP_TOO_LOW_FORCE_UPDATE' => 'reinstalar SimWiki',
+    'AU_CHANGELOG' => 'Notas de lançamento',
+    'AU_CHANGELOG_HINT' => 'Clique para descobrir as últimas alterações incluídas na atualização de YesWiki',
+    'AU_INSTALLED_REVISION' => 'Versão instalada',
+    'AU_AVAILABLE_REVISION' => 'Versão disponível',
 ];
