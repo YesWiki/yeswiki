@@ -150,7 +150,7 @@ return [
     'YOU_DIDNT_MODIFY_ANY_PAGE' => 'No cambiaste tu página',
     'YOU_ARENT_LOGGED_IN' => 'No estás identificado',
     'IMPOSSIBLE_TO_SHOW_YOUR_MODIFIED_PAGES' => 'imposible publicar la lista de páginas que has cambiado',
-    'LIST_OF_PAGES_WHERE_YOU_ARE_THE_OWNER' => 'Lista de las páginas cuyas sois el dueño',
+    'LIST_OF_PAGES_WHERE_YOU_ARE_THE_OWNER' => 'Lista de páginas que posees',
     'YOU_DONT_OWN_ANY_PAGE' => 'Usted no es el propietario de ninguna página',
     // actions/nextextsearch.php
     // 'NEWTEXTSEARCH_HINT' => 'Un caractère inconnu peut être remplacé par « ? » plusieurs par « * »',
@@ -217,7 +217,7 @@ return [
     'YOU_MUST_SPECIFY_AN_EMAIL' => 'Debes especificar una dirección de correo electrónico',
     'THIS_IS_NOT_A_VALID_EMAIL' => 'Esto no parece una dirección de correo electrónico',
     'PASSWORDS_NOT_IDENTICAL' => 'Las contraseñas no eran las mismas',
-    'PASSWORD_SHOULD_HAVE_5_CHARS_MINIMUM' => 'tiene que contener al mínimo 5 caracteres alphanumériques',
+    'PASSWORD_SHOULD_HAVE_5_CHARS_MINIMUM' => 'deberá contener al menos 5 caracteres alfanuméricos',
     'YOU_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED' => 'Necesitas tener cookies permitidos para poder conectarse',
     'IF_YOU_ARE_REGISTERED_LOGGIN_HERE' => 'Si usted ya está registrado, firme aquí',
     'PASSWORD_5_CHARS_MINIMUM' => 'Contraseña (5 caracteres mínimos)',
@@ -287,7 +287,7 @@ return [
     'MODIFY_AND_DELETE_ANY_PAGE' => 'Modificar y retirar cualquier página',
     'MODIFY_ACCESS_RIGHTS_ON_ANY_PAGE' => 'Cambiar los derechos de acceso a cualquier página',
     'GENERATE_ACCESS_RIGHTS_ON_ANY_ACTION_OR_HANDLER' => 'Administrar los derechos de acceso a cualquier acción o manejador',
-    'GENERATE_GROUPS' => 'Gestionar los grupos, añadir/suprimir usuarios al grupo administrador (teniendo los mismos derechos que le)',
+    'GENERATE_GROUPS' => 'Gestionar grupos, añadir/remover usuarios al grupo administrador (con los mismos derechos que él)',
     'ALL_ADMIN_TASKS_ARE_DESCRIBED_IN_THE_PAGE' => 'Todas las tareas de administración son accesibles desde el pomo con la rueda del crant',
     'USE_AN_EXISTING_ACCOUNT' => 'Utilizar una cuenta existente',
     'NO' => 'No',
@@ -788,30 +788,30 @@ return [
     'USER_MOTTO' => 'Tu divisa',
     'COMMENTS' => 'Comentarios',
     'USER_PASSWORD_CHANGED' => 'Contraseña modificada',
-    'REACTION_LOGIN_TO_SEE_YOUR_REACTION' => 'Se connecter para ver vuestras reacciones.',
-    'YW_PROBLEM_WITH_ACLS_LIST' => 'Nada de grupo valida de indicado para abrir los comentarios',
-    'ADMIN_BACKUPS_FORCE_UPDATE' => 'Forzar una actualizada sin salvaguarda',
+    'REACTION_LOGIN_TO_SEE_YOUR_REACTION' => 'Inicia sesión para ver tus reacciones.',
+    'YW_PROBLEM_WITH_ACLS_LIST' => 'Ningún grupo válido de encuestados para abrir comentarios',
+    'ADMIN_BACKUPS_FORCE_UPDATE' => 'Fuerza una actualización sin respaldo',
     // handlers/page/show + handlers/page/iframe
-    'NOT_FOUND_PAGE' => 'Esta página no existe  todavía, quereos la {beginLink}crear{endLink} ?',
-    'USER_NO_USER_WITH_THAT_NAME' => 'No hay ningún usuario con este nombre',
-    'EDIT_CONFIG_HINT_MAIL_CUSTOM_MESSAGE' => 'Mensaje personalizado de los mails enviados desde la acción contacto',
-    'ACLS_UPDATE' => 'Actualizar',
+    'NOT_FOUND_PAGE' => 'Esta página aún no existe, ¿quieres el {beginLink}create{endLink}?',
+    'USER_NO_USER_WITH_THAT_NAME' => 'No hay usuario con este nombre',
+    'EDIT_CONFIG_HINT_MAIL_CUSTOM_MESSAGE' => 'Mensaje personalizado de correos electrónicos enviados desde la acción de contacto',
+    'ACLS_UPDATE' => 'Actualización',
     'SUBSCRIPTION' => 'Suscripción',
-    'REDIRECTED_FROM' => 'Redirigé desde {linkFrom}',
+    'REDIRECTED_FROM' => 'Redirected from {linkDesde}',
     'RESTORE_REVISION' => 'Restaurar esta versión',
     'DELETE' => 'BORRAR',
-    'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Activer el nettoyage HTML antes salvaguarda. Atención, modifica el contenido a la salvaguarda ! (true o false)',
+    'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Activar la limpieza HTML antes de la copia de seguridad. ¡Advertencia, cambia el contenido a la copia de seguridad! (verdad o falso)',
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
-    'ACLS_HELPER' => 'Separad cada entrada de las comas, por ejemplo</br>
-    <b></b> (todos los usuarios)</br>
-    <b>+</b> (usuarios grabados)</br>
-    <b>%</b> (creador de la ficha/página)</br>
-    <b>@nombre_de el_grupo</b> (grupo de usuario, ex: @admins)</br>
-    <b>JamesBond</b> (nombre YesWiki de un usuario)</br>
-    <b>!SuperCat</b> (negación, SuperCat no es autorizado)</br>',
-    'REACTION_ON_ENTRY' => 'Reacción sobre una ficha',
-    'FORM_RETURN' => 'Regreso al formulario',
-    'USER_YOU_MUST_SPECIFY_YES_OR_NO' => 'Falla una valida \'#\<prn\>\' o  \'No  para %{name}.',
+    'ACLS_HELPER' => 'Separar cada entrada de coma, por ejemplo:
+(todos los usuarios)
+(usuarios registrados)
+" Se impuso " .
+(grupo del usuario, ex: @admins)
+(nombre YesWiki de un usuario)
+SuperCat identificado/b impuesto (negación, SuperCat no está permitido)',
+    'REACTION_ON_ENTRY' => 'Reacción en una hoja',
+    'FORM_RETURN' => 'Volver a la forma',
+    'USER_YOU_MUST_SPECIFY_YES_OR_NO' => 'Se necesita un valor \'Y\' o \'N\' por %{name}.',
     'EDIT_CONFIG_HINT_COMMENTS_HANDLER' => 'Tipo de comentarios utilizados (\'\'/embedded_humhub/external_humhub/yeswiki)',
     'EDIT_CONFIG_GROUP_ACCESS' => 'Derecho de acceso',
     // gererdroits
