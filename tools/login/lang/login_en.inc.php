@@ -59,6 +59,6 @@ return [
     'LOGIN_MY_CONTENTS' => 'My content',
     'LOGIN_MY_OPTIONS' => 'My options',
     'LOGIN_NO_SIGNUP_IN_THIS_PERIOD' => 'There is no registration for this period.',
-    'LOGIN_WRONG_PASSWORD' => '',
+    'LOGIN_WRONG_PASSWORD' => 'Impossible identification: wrong password.',
     'LOGIN_COOKIES_ERROR' => 'You must accept cookies to get logged in',
 ];
