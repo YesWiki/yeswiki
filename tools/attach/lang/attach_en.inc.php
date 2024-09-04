@@ -1,5 +1,4 @@
 <?php
-
 return [
     // controllers/ApiController.php
     'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'Not existing image file',
@@ -88,7 +87,7 @@ return [
     'DROP_SHADOW' => 'Drop shadow',
     'ZOOM_HOVER' => 'Zoom on hover',
     'ALT_INFOS' => 'This text will be displayed instead of the image, if the image is not found. It will also be read out loud by assistive technology (screen readers). Let it empty if the image serves a purely decorative purpose',
-        'ALTERNATIVE_TEXT' => 'Alternative text, for visually impaired people',
+    'ALTERNATIVE_TEXT' => 'Alternative text, for visually impaired people',
     // 'NONE' => 'Texte en dessous',
     'LEFT' => 'Left',
     'CENTER' => 'Center',
@@ -104,8 +103,28 @@ return [
     // edit config action
     // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_VIDEO_SERVICE]' => 'Service de vidéo par défaut (peertube, youtube ou vimeo)',
     // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_PEERTUBE_INSTANCE]' => 'Adresse du serveur peertube par défaut',
-    'EDIT_CONFIG_HINT_MAX_FILE_SIZE' => 'Maximum size of uploaded files - bits (ex: Taille maximum des fichiers téléversés - byte (ex: 2097152 for 2MB)',
+    'EDIT_CONFIG_HINT_MAX_FILE_SIZE' => 'Maximum size of uploaded files - bytes (ex: Maximum size of uploaded files (ex: 2097152, 2048k, 2m)',
     'INVALID_REQUEST_METHOD' => 'query method invalid',
     'ERROR_MOVING_TEMPORARY_FILE' => 'error moving temporary file',
     'ERROR_UPLOAD_MAX_FILESIZE' => 'uploaded file exceeds upload-max-filesize in php.ini.',
+    'ERROR_MAX_FILE_SIZE' => 'The t markedeacute file;l exposedeacute;charg markedeacute excitedcirc;from the size of MAX_FILE_SIZE, which has \'eacute;t yawned; spŭeacute;cifi primeacute;e in the HTML form.',
+    'ERROR_NO_FILE_UPLOADED' => 'No file has \'eacute;t `eacute\'; t imprisonedeacute;l imprisonedeacute;charg imprisonedeacute.',
+    'FILEMANAGER_ACTION_NEED_ACCESS' => 'Only the owner of this page can access the attached file manager',
+    'ATTACH_PARAM_FILE_OR_BGCOLOR_NOT_FOUND' => 'you must indicate either an image with the "file" parameter or a background color with the "bgcolor" parameter',
+    'ATTACH_ACTION_DISPLAY_PDF_TEXT' => 'Show the pdf in the page :',
+    'ATTACH_ACTION_DISPLAY_PDF_LINK_TEXT' => 'as a link',
+    'ATTACH_ACTION_DISPLAY_PDF_INCLUDED_TEXT' => 'directly included in the page',
+    'NONE' => 'Text below',
+    'ATTACH_HANDLER_AJAXUPLOAD_FOLDER_NOT_READABLE' => 'The download folder is not accessible in writing.',
+    'ATTACH_HANDLER_AJAXUPLOAD_NO_FILE' => 'No files sent.',
+    'ATTACH_HANDLER_AJAXUPLOAD_EMPTY_FILE' => 'The file is empty.',
+    'ATTACH_HANDLER_AJAXUPLOAD_FILE_TOO_LARGE' => 'The file is too wide.',
+    'ATTACH_HANDLER_AJAXUPLOAD_AUTHORIZED_EXT' => 'The file does not have an authorized extension, here are the ones allowed: {ext}.',
+    'ATTACH_HANDLER_AJAXUPLOAD_ERROR' => 'I can\'t save the file. The upload was canceled or the server planted...',
+    'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_VIDEO_SERVICE]' => 'Default video service (peertube, youtube or vimeo)',
+    'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_PEERTUBE_INSTANCE]' => 'Default peertube server address',
+    'EDIT_CONFIG_GROUP_ATTACH' => 'Media Insertion (pictures, videos)',
+    'ERROR_PARTIAL_UPLOAD' => 'The file has \'eacute;t `eacute\'; that partially t towardseacute;l neglecteacute;charg towardseacute.',
+    'ERROR_NOT_AUTHORIZED_EXTENSION' => 'The file does not have an authorized extension, here are the ones that the configuration authorizes: ',
+    'ATTACH_ACTION_BACKGROUNDIMAGE' => 'Action {{backgroundimage...}}',
 ];

@@ -30,5 +30,5 @@ return [
     'ACTION_BUILDER_OWNER' => 'Titular del fitxer',
     'ACTION_BUILDER_MODIFICATION_DATE' => 'Data de modificació',
     'ACTION_BUILDER_CREATION_DATE' => 'Data de creació',
-    'ACTION_BUILDER_FORM_ID' => 'Formulari',
+    'ACTION_BUILDER_FORM_ID' => 'Formularis',
 ];

@@ -92,8 +92,8 @@ return [
     'DEFINITION_OF_THE_GROUP' => 'Definición de grupo',
     'DEFINE' => 'Define',
     'CREATE_NEW_GROUP' => 'O crear un nuevo grupo',
-    'ONLY_ADMINS_CAN_CHANGE_MEMBERS' => 'No puedes cambiar a los miembros del grupo de administración porque no eres director',
-    'YOU_CANNOT_REMOVE_YOURSELF' => 'Usted no puede retirarse del grupo de directores',
+    'ONLY_ADMINS_CAN_CHANGE_MEMBERS' => 'No puedes cambiar los miembros del grupo de administradores porque no eres administrador',
+    'YOU_CANNOT_REMOVE_YOURSELF' => 'Uno no puede retirarse el mismo del grupo de los administradores',
     'ERROR_RECURSIVE_GROUP' => 'Error: No se puede configurar una recursiva',
     'ERROR_WHILE_SAVING_GROUP' => 'Ha ocurrido un error durante la grabación del grupo',
     'NEW_ACL_FOR_GROUP' => 'Nueva ACL para el grupo',
@@ -150,7 +150,7 @@ return [
     'YOU_DIDNT_MODIFY_ANY_PAGE' => 'No cambiaste tu página',
     'YOU_ARENT_LOGGED_IN' => 'No estás identificado',
     'IMPOSSIBLE_TO_SHOW_YOUR_MODIFIED_PAGES' => 'imposible publicar la lista de páginas que has cambiado',
-    'LIST_OF_PAGES_WHERE_YOU_ARE_THE_OWNER' => 'Lista de las páginas cuyas sois el dueño',
+    'LIST_OF_PAGES_WHERE_YOU_ARE_THE_OWNER' => 'Lista de páginas que posees',
     'YOU_DONT_OWN_ANY_PAGE' => 'Usted no es el propietario de ninguna página',
     // actions/nextextsearch.php
     // 'NEWTEXTSEARCH_HINT' => 'Un caractère inconnu peut être remplacé par « ? » plusieurs par « * »',
@@ -217,7 +217,7 @@ return [
     'YOU_MUST_SPECIFY_AN_EMAIL' => 'Debes especificar una dirección de correo electrónico',
     'THIS_IS_NOT_A_VALID_EMAIL' => 'Esto no parece una dirección de correo electrónico',
     'PASSWORDS_NOT_IDENTICAL' => 'Las contraseñas no eran las mismas',
-    'PASSWORD_SHOULD_HAVE_5_CHARS_MINIMUM' => 'tiene que contener al mínimo 5 caracteres alphanumériques',
+    'PASSWORD_SHOULD_HAVE_5_CHARS_MINIMUM' => 'deberá contener al menos 5 caracteres alfanuméricos',
     'YOU_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED' => 'Necesitas tener cookies permitidos para poder conectarse',
     'IF_YOU_ARE_REGISTERED_LOGGIN_HERE' => 'Si usted ya está registrado, firme aquí',
     'PASSWORD_5_CHARS_MINIMUM' => 'Contraseña (5 caracteres mínimos)',
@@ -265,7 +265,7 @@ return [
     'DATABASE_CONFIGURATION' => 'Base de datos',
     'MORE_INFOS' => 'Más información',
     'MYSQL_SERVER' => 'Servidor MySQL',
-    'MYSQL_SERVER_INFOS' => 'Dirección IP o nombre de red de la máquina en la que se encuentra el servidor MySQL',
+    'MYSQL_SERVER_INFOS' => 'La dirección IP o el nombre red de la màquina en la que se encuentra tu servidor MySQL',
     'MYSQL_DATABASE' => 'Base de datos MySQL',
     'MYSQL_DATABASE_INFOS' => 'Esta base de datos ya debe existir antes de que pueda continuar',
     'MYSQL_USERNAME' => 'Nombre de usuario MySQL',
@@ -277,7 +277,7 @@ return [
     'YOUR_WEBSITE_NAME' => 'Nombre de su sitio',
     'YOUR_WEBSITE_NAME_INFOS' => 'Esto puede ser un NombreWiki o cualquier otro título que aparecerá en las pestañas y ventanas',
     'HOMEPAGE' => 'Página de inicio',
-    'HOMEPAGE_INFOS' => 'La página principal de tu YesWiki. Ella debe ser un nombreWiki',
+    'HOMEPAGE_INFOS' => 'Página de inicio de tu YesWiki. Tiene que ser un NombreWiki',
     'KEYWORDS' => 'Palabras clave',
     'KEYWORDS_INFOS' => 'Etiquetas que se insertarán en códigos HTML (meta-data)',
     'DESCRIPTION' => 'Descripción',
@@ -287,7 +287,7 @@ return [
     'MODIFY_AND_DELETE_ANY_PAGE' => 'Modificar y retirar cualquier página',
     'MODIFY_ACCESS_RIGHTS_ON_ANY_PAGE' => 'Cambiar los derechos de acceso a cualquier página',
     'GENERATE_ACCESS_RIGHTS_ON_ANY_ACTION_OR_HANDLER' => 'Administrar los derechos de acceso a cualquier acción o manejador',
-    'GENERATE_GROUPS' => 'Gestionar los grupos, añadir/suprimir usuarios al grupo administrador (teniendo los mismos derechos que le)',
+    'GENERATE_GROUPS' => 'Gestionar grupos, añadir/remover usuarios al grupo administrador (con los mismos derechos que él)',
     'ALL_ADMIN_TASKS_ARE_DESCRIBED_IN_THE_PAGE' => 'Todas las tareas de administración son accesibles desde el pomo con la rueda del crant',
     'USE_AN_EXISTING_ACCOUNT' => 'Utilizar una cuenta existente',
     'NO' => 'No',
@@ -300,7 +300,7 @@ return [
     'MORE_OPTIONS' => 'Opciones adicionales',
     'ADVANCED_CONFIGURATION' => '+ Configuración avanzada',
     'URL_REDIRECTION' => 'Redirección por URL',
-    'NEW_INSTALL_VALUES_CHANGE_ONLY_IF_YOU_KNOW_WHAT_YOU_ARE_DOING' => 'Esta es una nueva instalación. El programa de instalación tratará de encontrar los valores apropiados. Cámbialos sólo si sabes lo que estás haciendo',
+    'NEW_INSTALL_VALUES_CHANGE_ONLY_IF_YOU_KNOW_WHAT_YOU_ARE_DOING' => 'Es una nueva instalación. El programa de instalación intenta encontrar las valores apropriadas. Cambialas solo si eres un usuario avanzado',
     'PAGENAME_WILL_BE_ADDED_AFTER_CHANGE_JUST_FOR_REDIRECTION' => 'Los nombres de página se añadirán directamente a la URL base de su sitio YesWiki. Eliminar la parte "?" sólo si utiliza la redireccion (ver abajo)',
     'BASE_URL' => 'URL de base',
     'REDIRECTION_SHOULD_BE_ACTIVE_ONLY_IF_USED_IN_YESWIKI' => 'Selectionna el modo "redirección automática" solo si utilizas YesWiki con la redirección de URL (si no sabes que es la redirección de URL no active esta opción)',
@@ -325,7 +325,7 @@ return [
     'DATABASE_COULD_NOT_BE_CREATED_YOU_MUST_CREATE_IT_MANUALLY' => 'Creación de la base imposible. Necesita crear esta base manualmente antes de instalar YesWiki',
     'DATABASE_DOESNT_EXIST_YOU_MUST_CREATE_IT' => 'La base de datos que ha seleccionado no existe, debe crearla antes de instalar YesWiki',
     'CHECKING_THE_ADMIN_PASSWORD' => 'Auditoría del Administrador de contraseñas',
-    'CHECKING_THE_ADMIN_PASSWORD_CONFIRMATION' => 'Auditoría de la consistencia de las dos contraseñas de administración',
+    'CHECKING_THE_ADMIN_PASSWORD_CONFIRMATION' => 'Verificación de la identidad de las contraseñas administradores',
     // 'CHECKING_ROOT_PAGE_NAME' => 'V&eacute;rification du nom de la page d\'accueil',
     // 'INCORRECT_ROOT_PAGE_NAME' => 'Le nom de la page d\'accueil doit uniquement contenir des lettres non accentuées, des chiffres, \'_\', \'-\' ou \'.\'',
     'ADMIN_PASSWORD_ARE_DIFFERENT' => 'El Administrador de contraseñas es diferente',
@@ -342,7 +342,7 @@ return [
     'ALREADY_DONE' => 'Hecho',
     'INSERTION_OF_USER_IN_ADMIN_GROUP' => 'Inserción del usuario especificada en el grupo de administración',
     'NEXT_STEP_WRITE_CONFIGURATION_FILE' => 'En el siguiente paso, el instalador intentará escribir el archivo de configuración ',
-    'VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE' => 'Asegúrese de que el servidor web tiene el derecho de escribir en este archivo, de lo contrario necesitará modificarlo manualmente',
+    'VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE' => 'Verifica que tienes los derechos para escribir en este archivo, sino lo tendras que modificar manualmente',
     // 'CHECK_EXISTING_TABLE_PREFIX' => 'Vérification de l\'existence du préfixe de table',
     // 'TABLE_PREFIX_ALREADY_USED' => 'Le préfixe de table est déjà utilisé. Veuillez en choisir un nouveau.',
     // setup/writeconfig.php
@@ -356,8 +356,8 @@ return [
     'THIS_COULD_BE_UNSECURE' => 'esto puede ser una violación de seguridad',
     'CONFIGURATION_FILE' => 'el archivo de configuración',
     'CONFIGURATION_FILE_NOT_CREATED' => 'no se puede crear',
-    'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Por favor, asegúrese de que su servidor tiene derechos de acceso por escrito para este archivo. Si por algún motivo no puede hacer esto, necesita copiar la siguiente información en un archivo y transferirla a través de un software de transferencia de archivos (ftp) al servidor en un archivo ',
-    'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'directamente en el directorio YesWiki. Una vez que haya hecho esto, su sitio YesWiki debe funcionar correctamente',
+    'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Verifica que tu servidor tiene los derechos de acceso de escritura para este archivo. Si por cualquier razón no lo puedes hacer, tienes que copiar las informaciones siguientes en un archivo y transferirlas con un programa ftp al servidor ',
+    'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'directamente en el repertorio de YesWiki. Una vez hecho, tu sitio YesWiki deberia funcionar bien',
     'TRY_AGAIN' => 'Inténtalo de nuevo',
     // API
     // 'USERS' => 'Utilisateurs',
@@ -788,30 +788,30 @@ return [
     'USER_MOTTO' => 'Tu divisa',
     'COMMENTS' => 'Comentarios',
     'USER_PASSWORD_CHANGED' => 'Contraseña modificada',
-    'REACTION_LOGIN_TO_SEE_YOUR_REACTION' => 'Se connecter para ver vuestras reacciones.',
-    'YW_PROBLEM_WITH_ACLS_LIST' => 'Nada de grupo valida de indicado para abrir los comentarios',
-    'ADMIN_BACKUPS_FORCE_UPDATE' => 'Forzar una actualizada sin salvaguarda',
+    'REACTION_LOGIN_TO_SEE_YOUR_REACTION' => 'Inicia sesión para ver tus reacciones.',
+    'YW_PROBLEM_WITH_ACLS_LIST' => 'Ningún grupo válido de encuestados para abrir comentarios',
+    'ADMIN_BACKUPS_FORCE_UPDATE' => 'Fuerza una actualización sin respaldo',
     // handlers/page/show + handlers/page/iframe
-    'NOT_FOUND_PAGE' => 'Esta página no existe  todavía, quereos la {beginLink}crear{endLink} ?',
-    'USER_NO_USER_WITH_THAT_NAME' => 'No hay ningún usuario con este nombre',
-    'EDIT_CONFIG_HINT_MAIL_CUSTOM_MESSAGE' => 'Mensaje personalizado de los mails enviados desde la acción contacto',
-    'ACLS_UPDATE' => 'Actualizar',
+    'NOT_FOUND_PAGE' => 'Esta página aún no existe, ¿quieres el {beginLink}create{endLink}?',
+    'USER_NO_USER_WITH_THAT_NAME' => 'No hay usuario con este nombre',
+    'EDIT_CONFIG_HINT_MAIL_CUSTOM_MESSAGE' => 'Mensaje personalizado de correos electrónicos enviados desde la acción de contacto',
+    'ACLS_UPDATE' => 'Actualización',
     'SUBSCRIPTION' => 'Suscripción',
-    'REDIRECTED_FROM' => 'Redirigé desde {linkFrom}',
+    'REDIRECTED_FROM' => 'Redirected from {linkDesde}',
     'RESTORE_REVISION' => 'Restaurar esta versión',
     'DELETE' => 'BORRAR',
-    'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Activer el nettoyage HTML antes salvaguarda. Atención, modifica el contenido a la salvaguarda ! (true o false)',
+    'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Activar la limpieza HTML antes de la copia de seguridad. ¡Advertencia, cambia el contenido a la copia de seguridad! (verdad o falso)',
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
-    'ACLS_HELPER' => 'Separad cada entrada de las comas, por ejemplo</br>
-    <b></b> (todos los usuarios)</br>
-    <b>+</b> (usuarios grabados)</br>
-    <b>%</b> (creador de la ficha/página)</br>
-    <b>@nombre_de el_grupo</b> (grupo de usuario, ex: @admins)</br>
-    <b>JamesBond</b> (nombre YesWiki de un usuario)</br>
-    <b>!SuperCat</b> (negación, SuperCat no es autorizado)</br>',
-    'REACTION_ON_ENTRY' => 'Reacción sobre una ficha',
-    'FORM_RETURN' => 'Regreso al formulario',
-    'USER_YOU_MUST_SPECIFY_YES_OR_NO' => 'Falla una valida \'#\<prn\>\' o  \'No  para %{name}.',
+    'ACLS_HELPER' => 'Separar cada entrada de coma, por ejemplo:
+(todos los usuarios)
+(usuarios registrados)
+" Se impuso " .
+(grupo del usuario, ex: @admins)
+(nombre YesWiki de un usuario)
+SuperCat identificado/b impuesto (negación, SuperCat no está permitido)',
+    'REACTION_ON_ENTRY' => 'Reacción en una hoja',
+    'FORM_RETURN' => 'Volver a la forma',
+    'USER_YOU_MUST_SPECIFY_YES_OR_NO' => 'Se necesita un valor \'Y\' o \'N\' por %{name}.',
     'EDIT_CONFIG_HINT_COMMENTS_HANDLER' => 'Tipo de comentarios utilizados (\'\'/embedded_humhub/external_humhub/yeswiki)',
     'EDIT_CONFIG_GROUP_ACCESS' => 'Derecho de acceso',
     // gererdroits
