@@ -234,6 +234,11 @@ Par défaut il prend cette image, et si une image est présente dans la page (mi
 
     'opengraph_image' => 'files/nomdelimage.jpg',
 
+##### Flux Rss : modifier le nombre d'item
+Par défaut les flux RSS sont limités aux 20 dernieres pages, cette valeur peut être modifiée :
+
+    'BAZ_NB_ENTREES_FLUX_RSS' => 30,
+    
 ## Maintenance
 
 ### Mettre à jour YesWiki
