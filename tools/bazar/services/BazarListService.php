@@ -110,6 +110,13 @@ class BazarListService
         }
         $entries = $this->replaceDefaultImage($options, $forms, $entries);
 
+        // add extra informations (comments, reactions, metadatas)
+        if ($options['extrafields'] === true) {
+            foreach ($entries as $i => $entry) {
+                $entries[$i]['extrafields'] = $this->entryManager->getExtraFields($entry['id_fiche']);
+            }
+        }
+
         // filter entries on datefilter parameter
         if (!empty($options['datefilter'])) {
             $entries = $this->entryController->filterEntriesOnDate($entries, $options['datefilter']);
