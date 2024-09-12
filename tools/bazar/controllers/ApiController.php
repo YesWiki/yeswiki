@@ -305,12 +305,15 @@ class ApiController extends YesWikiController
             return $entry['id_typeannonce'];
         }, $entries);
         $formIds = array_unique($formIds);
-
+        var_dump($fieldList);
         // Reduce the size of the data sent by transforming entries object into array
         // we use the $fieldMapping to transform back the data when receiving data in the front end
         $entries = array_map(function ($entry) use ($fieldList) {
             $result = [];
             foreach ($fieldList as $field) {
+                if (!empty($entry[$field]) && !empty($_GET['displayfields']['subtitle']) && $_GET['displayfields']['subtitle'] == $field) {
+                    $entry[$field] = $this->wiki->Format($entry[$field]);
+                }
                 $result[] = $entry[$field] ?? null;
             }
             if ($_GET['extrafields'] == true) {
@@ -324,20 +327,6 @@ class ApiController extends YesWikiController
         $usedForms = array_map(function ($f) {
             return $f['prepared'];
         }, $usedForms);
-
-        // Reduce the size of the data sent by transforming entries object into array
-        // we use the $fieldMapping to transform back the data when receiving data in the front end
-        $entries = array_map(function ($entry) use ($fieldList) {
-            $result = [];
-            foreach ($fieldList as $field) {
-                if (!empty($entry[$field]) && !empty($_GET['displayfields']['subtitle']) && $_GET['displayfields']['subtitle'] == $field) {
-                    $entry[$field] = $this->wiki->Format($entry[$field]);
-                }
-                $result[] = $entry[$field] ?? null;
-            }
-            return $result;
-        }, $entries);
-
 
         return new ApiResponse(
             [
