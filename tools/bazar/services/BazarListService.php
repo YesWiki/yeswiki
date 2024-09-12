@@ -1,3 +1,4 @@
+
 <?php
 
 namespace YesWiki\Bazar\Service;
@@ -34,7 +35,7 @@ class BazarListService
         // External mode activated ?
         if (($options['externalModeActivated'] ?? false) === true) {
             return $this->externalBazarService
-                ->getFormsForBazarListe($options['externalIds'], $options['refresh']);
+                        ->getFormsForBazarListe($options['externalIds'], $options['refresh']);
         } else {
             return $this->formManager->getAll();
         }
@@ -43,14 +44,14 @@ class BazarListService
     private function replaceDefaultImage($options, $forms, $entries): array
     {
         if (!class_exists('attach')) {
-            include('tools/attach/libs/attach.lib.php');
+            include 'tools/attach/libs/attach.lib.php';
         }
         $attach = new attach($this->wiki);
         $basePath = $attach->GetUploadPath();
-        $basePath = $basePath . (substr($basePath, -1) != "/" ? "/" : "");
+        $basePath = $basePath . (substr($basePath, -1) != '/' ? '/' : '');
 
         foreach ($options['idtypeannonce'] as $idtypeannonce) {
-            $template = $forms[(int) $idtypeannonce]['template'] ?? [];
+            $template = $forms[(int)$idtypeannonce]['template'] ?? [];
             $image_names = array_map(
                 function ($item) {
                     return $item[1];
@@ -110,13 +111,6 @@ class BazarListService
         }
         $entries = $this->replaceDefaultImage($options, $forms, $entries);
 
-        // add extra informations (comments, reactions, metadatas)
-        if ($options['extrafields'] === true) {
-            foreach ($entries as $i => $entry) {
-                $entries[$i]['extrafields'] = $this->entryManager->getExtraFields($entry['id_fiche']);
-            }
-        }
-
         // filter entries on datefilter parameter
         if (!empty($options['datefilter'])) {
             $entries = $this->entryController->filterEntriesOnDate($entries, $options['datefilter']);
@@ -133,6 +127,7 @@ class BazarListService
         if ($options['nb'] !== '') {
             $entries = array_slice($entries, 0, $options['nb']);
         }
+
         return $entries;
     }
 
@@ -166,17 +161,6 @@ class BazarListService
             }, $enumFields);
         }
 
-        // Scanne tous les champs qui pourraient faire des filtres pour les facettes
-        $facettables = $this->formManager
-            ->scanAllFacettable($entries, $options['groups']);
-
-        if (count($facettables) == 0) {
-            return [];
-        }
-
-        if (!$forms) {
-            $forms = $this->getForms($options);
-        }
         $filters = [];
 
         foreach ($propNames as $index => $propName) {
@@ -211,40 +195,24 @@ class BazarListService
                         $filter['nodes'][] = $this->createFilterNode($value, $label);
                     }
                 }
-            }
-
-            $idkey = htmlspecialchars($id);
-
-            $i = array_key_first(array_filter($options['groups'], function ($value) use ($idkey) {
-                return ($value == $idkey);
-            }));
-
-            $filters[$idkey]['icon'] = !empty($options['groupicons'][$i]) ?
-                '<i class="' . $options['groupicons'][$i] . '"></i> ' : '';
-
-            $filters[$idkey]['title'] = !empty($options['titles'][$i]) ?
-                $options['titles'][$i] : $list['titre_liste'];
-
-            $filters[$idkey]['collapsed'] = ($i != 0) && !$options['groupsexpanded'];
-
-            $filters[$idkey]['index'] = $i;
-
-            // sort facette labels
-            natcasesort($list['label']);
-            foreach ($list['label'] as $listkey => $label) {
-                if (!empty($facettables[$id][$listkey])) {
-                    $filters[$idkey]['list'][] = [
-                        'id' => $idkey . $listkey,
-                        'name' => $idkey,
-                        'value' => htmlspecialchars($listkey),
-                        'label' => $label,
-                        'nb' => $facettables[$id][$listkey],
-                        'checked' => (isset($tabfacette[$idkey]) and in_array($listkey, $tabfacette[$idkey])) ? ' checked' : '',
-                    ];
+            } elseif ($propName == 'id_typeannonce') {
+                // SPECIAL PROPNAME id_typeannonce
+                $filter['title'] = _t('BAZ_TYPE_FICHE');
+                foreach ($formsUsed as $form) {
+                    $filter['nodes'][] = $this->createFilterNode($form['bn_id_nature'], $form['bn_label_nature']);
                 }
                 usort($filter['nodes'], function ($a, $b) {
                     return strcmp($a['label'], $b['label']);
                 });
+            } else {
+                // OTHER PROPNAME (for example a field that is not an Enum)
+                $filter['title'] = $propName == 'owner' ? _t('BAZ_CREATOR') : $propName;
+                // We collect all values
+                $uniqValues = array_unique(array_column($entries, $propName));
+                sort($uniqValues);
+                foreach ($uniqValues as $value) {
+                    $filter['nodes'][] = $this->createFilterNode($value, $value);
+                }
             }
 
             // Filter Icon
@@ -300,58 +268,58 @@ class BazarListService
         return $result;
     }
 
-    private function getValueForArray($array, $key, $default = null)
+    private function createFilterNode($value, $label)
     {
-        if (!is_array($array)) {
-            return $default;
-        }
-        if (is_null($key)) {
-            return $array;
-        }
-        if (array_key_exists($key, $array)) {
-            return $array[$key];
-        }
-        if (strpos($key, '.') === false) {
-            return $array[$key] ?? $default;
-        }
-        foreach (explode('.', $key) as $segment) {
-            if (is_array($array) && array_key_exists($segment, $array)) {
-                $array = $array[$segment];
-            } else {
-                return $default;
-            }
-        }
-        return $array;
+        return [
+            'value' => htmlspecialchars($value),
+            'label' => $label,
+            'children' => [],
+        ];
     }
+
+    private function recursivelyCreateNode($node)
+    {
+        $result = $this->createFilterNode($node['id'], $node['label']);
+        foreach ($node['children'] as $childNode) {
+            $result['children'][] = $this->recursivelyCreateNode($childNode);
+        }
+
+        return $result;
+    }
+
+    private function recursivelyInitValuesForNonDynamic($node, $propName, $countedValues, $checkedValues)
+    {
+        $result = array_merge($node, [
+            'id' => $propName . $node['value'],
+            'name' => $propName,
+            'count' => $countedValues[$node['value']] ?? 0,
+            'checked' => isset($checkedValues[$propName]) && in_array($node['value'], $checkedValues[$propName]) ? ' checked' : '',
+        ]);
+
+        foreach ($node['children'] as &$childNode) {
+            $result['children'][] = $this->recursivelyInitValuesForNonDynamic($childNode, $propName, $countedValues, $checkedValues);
+        }
+
+        return $result;
+    }
+
     private function buildFieldSorter($ordre, $champ): callable
     {
         return function ($a, $b) use ($ordre, $champ) {
-            if (strstr($champ, '.')) {
-                $val1 = $this->getValueForArray($a, $champ);
-                $val2 = $this->getValueForArray($b, $champ);
-            } else {
-                $val1 = $a[$champ] ?? '';
-                $val2 = $b[$champ] ?? '';
-            }
             if ($ordre == 'desc') {
-                return strcmp(
-                    $this->sanitizeStringForCompare($val2),
-                    $this->sanitizeStringForCompare($val1)
-                );
+                $first = $b[$champ] ?? '';
+                $second = $a[$champ] ?? '';
             } else {
-                return strcmp(
-                    $this->sanitizeStringForCompare($val1),
-                    $this->sanitizeStringForCompare($val2)
-                );
+                $first = $a[$champ] ?? '';
+                $second = $b[$champ] ?? '';
             }
+            // compare insentive uppercase even for special chars
+            return strcmp($this->sanitizeStringForCompare($first), $this->sanitizeStringForCompare($second));
         };
     }
 
     private function sanitizeStringForCompare($value): string
     {
-        if ($value === null) {
-            $value = '';
-        }
         $value = is_scalar($value)
             ? strval($value)
             : json_encode($value);
