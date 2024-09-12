@@ -43,16 +43,18 @@ class BazarListService
     private function replaceDefaultImage($options, $forms, $entries): array
     {
         if (!class_exists('attach')) {
-            include 'tools/attach/libs/attach.lib.php';
+            include('tools/attach/libs/attach.lib.php');
         }
         $attach = new attach($this->wiki);
         $basePath = $attach->GetUploadPath();
-        $basePath = $basePath . (substr($basePath, -1) != '/' ? '/' : '');
+        $basePath = $basePath . (substr($basePath, -1) != "/" ? "/" : "");
 
         foreach ($options['idtypeannonce'] as $idtypeannonce) {
-            $template = $forms[(int)$idtypeannonce]['template'] ?? [];
+            $template = $forms[(int) $idtypeannonce]['template'] ?? [];
             $image_names = array_map(
-                function ($item) {return $item[1]; },
+                function ($item) {
+                    return $item[1];
+                },
                 array_filter(
                     $template,
                     function ($item) {
@@ -160,6 +162,17 @@ class BazarListService
             $propNames = array_map(function ($field) { return $field->getPropertyName(); }, $enumFields);
         }
 
+        // Scanne tous les champs qui pourraient faire des filtres pour les facettes
+        $facettables = $this->formManager
+            ->scanAllFacettable($entries, $options['groups']);
+
+        if (count($facettables) == 0) {
+            return [];
+        }
+
+        if (!$forms) {
+            $forms = $this->getForms($options);
+        }
         $filters = [];
 
         foreach ($propNames as $index => $propName) {
@@ -194,11 +207,36 @@ class BazarListService
                         $filter['nodes'][] = $this->createFilterNode($value, $label);
                     }
                 }
-            } elseif ($propName == 'id_typeannonce') {
-                // SPECIAL PROPNAME id_typeannonce
-                $filter['title'] = _t('BAZ_TYPE_FICHE');
-                foreach ($formsUsed as $form) {
-                    $filter['nodes'][] = $this->createFilterNode($form['bn_id_nature'], $form['bn_label_nature']);
+            }
+
+            $idkey = htmlspecialchars($id);
+
+            $i = array_key_first(array_filter($options['groups'], function ($value) use ($idkey) {
+                return ($value == $idkey);
+            }));
+
+            $filters[$idkey]['icon'] = !empty($options['groupicons'][$i]) ?
+                '<i class="' . $options['groupicons'][$i] . '"></i> ' : '';
+
+            $filters[$idkey]['title'] = !empty($options['titles'][$i]) ?
+                $options['titles'][$i] : $list['titre_liste'];
+
+            $filters[$idkey]['collapsed'] = ($i != 0) && !$options['groupsexpanded'];
+
+            $filters[$idkey]['index'] = $i;
+
+            // sort facette labels
+            natcasesort($list['label']);
+            foreach ($list['label'] as $listkey => $label) {
+                if (!empty($facettables[$id][$listkey])) {
+                    $filters[$idkey]['list'][] = [
+                        'id' => $idkey . $listkey,
+                        'name' => $idkey,
+                        'value' => htmlspecialchars($listkey),
+                        'label' => $label,
+                        'nb' => $facettables[$id][$listkey],
+                        'checked' => (isset($tabfacette[$idkey]) and in_array($listkey, $tabfacette[$idkey])) ? ' checked' : '',
+                    ];
                 }
                 usort($filter['nodes'], function ($a, $b) { return strcmp($a['label'], $b['label']); });
             } else {
@@ -356,4 +394,3 @@ class BazarListService
 
         return strtoupper(removeAccents($value));
     }
-}

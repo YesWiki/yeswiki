@@ -335,12 +335,12 @@ class ReactionManager
                 '',
                 '',
                 "(`value` LIKE '%\"user\":\"{$this->dbService->escape($user)}\"%')" .
-                'AND' .
-                "(`value` LIKE '%\"id\":\"{$this->dbService->escape($id)}\"%')" .
-                'AND' .
-                "(`value` NOT LIKE '%\"idReaction\":\"%')" .
-                'AND' .
-                "(`value` NOT LIKE '%\"date\":\"%')"
+                    "AND" .
+                    "(`value` LIKE '%\"id\":\"{$this->dbService->escape($id)}\"%')" .
+                    "AND" .
+                    "(`value` NOT LIKE '%\"idReaction\":\"%')" .
+                    "AND" .
+                    "(`value` NOT LIKE '%\"date\":\"%')"
             );
         } else {
             return $this->tripleStore->delete($pageTag, self::TYPE_URI, null, '', '', 'value LIKE \'%user":"' . $user . '","idReaction":"' . $reactionId . '","id":"' . $id . '"%\'');
