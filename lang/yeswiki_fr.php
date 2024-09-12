@@ -1,4 +1,5 @@
 <?php
+
 return [
     // Commons
     'ARCHIVES' => 'Sauvegardes',
@@ -650,3 +651,4 @@ return [
     'VERIFY_PAGE_AVAILABILITY' => 'Vérifier la disponibilité de la page',
     'ONLY_ADMINS_CAN_DUPLICATE' => 'Seuls les membres du groupe "admins" de ce wiki peuvent dupliquer localement',
     'DISTANT_LOGIN' => 'Se connecter sur le YesWiki',
+];
