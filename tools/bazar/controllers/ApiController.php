@@ -305,7 +305,6 @@ class ApiController extends YesWikiController
             return $entry['id_typeannonce'];
         }, $entries);
         $formIds = array_unique($formIds);
-        var_dump($fieldList);
         // Reduce the size of the data sent by transforming entries object into array
         // we use the $fieldMapping to transform back the data when receiving data in the front end
         $entries = array_map(function ($entry) use ($fieldList) {
