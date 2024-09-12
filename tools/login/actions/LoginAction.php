@@ -164,7 +164,6 @@ class LoginAction extends YesWikiAction
         if (!empty($this->arguments['class']) && substr($this->arguments['template'], -strlen('.tpl.html')) == '.tpl.html') {
             $output = "<div class=\"{$this->arguments['class']}\">\n$output\n</div>\n";
         }
-
         return $output;
     }
 
@@ -180,8 +179,7 @@ class LoginAction extends YesWikiAction
                 if (empty($name)) {
                     throw new LoginException(_t('LOGIN_WRONG_USER'));
                 }
-                if (strpos($name, '@') !== false) {
-                    // si le nomWiki est un mail
+                if (filter_var($name, FILTER_VALIDATE_EMAIL)) {
                     $user = $this->userManager->getOneByEmail($name);
                 } else {
                     $user = $this->userManager->getOneByName($name);

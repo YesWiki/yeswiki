@@ -3,11 +3,11 @@
 namespace YesWiki\Core\Controller;
 
 use Exception;
+use Throwable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use Throwable;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\ApiResponse;
@@ -16,14 +16,13 @@ use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\CommentService;
-use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\DiffService;
+use YesWiki\Core\Service\DuplicationManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\ReactionManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Security\Controller\SecurityController;
 
 class ApiController extends YesWikiController
 {
@@ -44,9 +43,15 @@ class ApiController extends YesWikiController
 
         $urlPages = $this->wiki->Href('', 'api/pages');
         $output .= '<h2>' . _t('PAGES') . '</h2>' . "\n" .
-            '<p><code>GET ' . $urlPages . '</code></p>';
-        $urlPagesComments = $this->wiki->Href('', 'api/pages/{pageTag}/comments');
-        $output .= '<p><code>GET ' . $urlPagesComments . '</code></p>';
+            '<p><code>GET ' . $urlPages . '</code><br>Get all pages</p>';
+        $urlPages = $this->wiki->Href('', 'api/pages/{pageTag}');
+        $output .= '<p><code>GET ' . $urlPages . '</code><br>Get indicated page\'s informations, with raw and html contents</p>';
+
+        $urlPages = $this->wiki->Href('', 'api/pages/{pageTag}/comments');
+        $output .= '<p><code>GET ' . $urlPages . '</code><br>Get indicated page\'s comments</p>';
+
+        $urlPages = $this->wiki->Href('', 'api/pages/{pageTag}/duplicate');
+        $output .= '<p><code>POST ' . $urlPages . '</code><br>Duplicate an external page into this YesWiki pageTag</p>';
 
         $urlComments = $this->wiki->Href('', 'api/comments');
         $output .= '<h2>' . _t('COMMENTS') . '</h2>' . "\n" .
@@ -65,13 +70,12 @@ class ApiController extends YesWikiController
             '<p><code>POST ' . $urlArchives . '/{id}</code></p>';
 
         // TODO use annotations to document the API endpoints
-        $extensions = $this->wiki->extensions;
         foreach ($this->wiki->extensions as $extension => $pluginBase) {
             $response = null;
             if (file_exists($pluginBase . 'controllers/ApiController.php')) {
                 $apiClassName = 'YesWiki\\' . ucfirst($extension) . '\\Controller\\ApiController';
                 if (!class_exists($apiClassName, false)) {
-                    include $pluginBase . 'controllers/ApiController.php';
+                    include($pluginBase . 'controllers/ApiController.php');
                 }
                 if (class_exists($apiClassName, false)) {
                     $apiController = new $apiClassName();
@@ -380,6 +384,21 @@ class ApiController extends YesWikiController
         }
 
         return new ApiResponse($page);
+    }
+
+    /**
+     * @Route("/api/pages/{tag}/duplicate",methods={"POST"},options={"acl":{"public","@admins"}})
+     */
+    public function duplicatePage(Request $request, $tag)
+    {
+        $this->denyAccessUnlessAdmin();
+        $duplicationManager = $this->getService(DuplicationManager::class);
+        try {
+            $duplicationManager->importDistantContent($tag, $request);
+        } catch (\Throwable $th) {
+            return new ApiResponse($th->getMessage(), Response::HTTP_FORBIDDEN);
+        }
+        return new ApiResponse($request->request->all(), Response::HTTP_OK);
     }
 
     /**
@@ -820,11 +839,14 @@ class ApiController extends YesWikiController
                 Response::HTTP_BAD_REQUEST
             );
         } else {
-            $property = $this->getService(SecurityController::class)->filterInput($method, 'property', FILTER_DEFAULT, true);
+            $property = filter_input($method, 'property', FILTER_UNSAFE_RAW);
+            $property = in_array($property, [false, null], true) ? "" : htmlspecialchars(strip_tags($property));
             if (empty($property)) {
                 $property = null;
             }
-            $username = $this->getService(SecurityController::class)->filterInput($method, 'user', FILTER_DEFAULT, true);
+
+            $username = filter_input($method, 'user', FILTER_UNSAFE_RAW);
+            $username = in_array($username, [false, null], true) ? "" : htmlspecialchars(strip_tags($username));
             if (empty($username)) {
                 if (!$this->wiki->UserIsAdmin()) {
                     $username = $this->getService(AuthController::class)->getLoggedUser()['name'];
@@ -840,7 +862,6 @@ class ApiController extends YesWikiController
                 );
             }
         }
-
         return compact(['property', 'username', 'apiResponse']);
     }
 
@@ -859,7 +880,7 @@ class ApiController extends YesWikiController
     {
         return $this->getService(ArchiveController::class)->getArchiveStatus(
             $uid,
-            empty($_GET['forceStarted']) ? false : in_array($_GET['forceStarted'], [1, true, '1', 'true'], true)
+            empty($_GET['forceStarted']) ? false : in_array($_GET['forceStarted'], [1, true, "1", "true"], true)
         );
     }
 

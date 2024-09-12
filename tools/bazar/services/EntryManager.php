@@ -1205,4 +1205,11 @@ class EntryManager
 
         return $entriesIds;
     }
+
+    private function duplicate($sourceTag, $destinationTag): bool
+    {
+        $result = false;
+        $this->wiki->LogAdministrativeAction($this->authController->getLoggedUserName(), "Duplication de la fiche \"\"" . $sourceTag . "\"\" vers la fiche \"\"" . $destinationTag . "\"\"");
+        return $result;
+    }
 }

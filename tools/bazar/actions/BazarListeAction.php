@@ -137,7 +137,7 @@ class BazarListeAction extends YesWikiAction
         // Champ du formulaire utilisé pour le tri
         $champ = $_GET['champ'] ?? $arg['champ'] ?? (($agendaMode) ? 'bf_date_debut_evenement' : 'bf_titre');
 
-        return ([
+        return [
             // SELECTION DES FICHES
             // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
             'idtypeannonce' => $ids,
@@ -437,4 +437,3 @@ class BazarListeAction extends YesWikiAction
 
         return $externalIds;
     }
-}

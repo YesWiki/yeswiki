@@ -63,6 +63,36 @@
               <span>{{ _t('BAZ_MODIFIER') }}</span>
             </a>
           {% endif %}
+          <span class="dropup">
+            <a
+              title="{{ _t('TEMPLATE_DUPLICATE_PAGE') ~ ' ' ~ entryId }}"
+              class="dropdown-toggle btn btn-entry-action btn-sm btn-default"
+              id="duplicate-dropup"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              <i class="fas fa-copy"></i><span>{{ _t('TEMPLATE_DUPLICATE') }}</span>
+              <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="duplicate-dropup">
+              <li>
+                <a
+                  href="{{ url({ tag: entryId, handler: 'duplicate' }) }}"
+                  title="{{ _t('TEMPLATE_DUPLICATE_ENTRY') ~ ' ' ~ entryId }}"
+                >
+                  {{ _t('TEMPLATE_DUPLICATE_LOCALLY') }}
+                </a>
+              </li>
+              <li>
+                <a
+                  href="{{ url({ tag: entryId, handler: 'duplicate' }) ~ '&toUrl=1'}} "
+                  title="{{ _t('TEMPLATE_DUPLICATE_ENTRY') ~ ' ' ~ entryId }}"
+                >
+                  {{ _t('TEMPLATE_DUPLICATE_IN_ANOTHER_WIKI') }}
+                </a>
+              </li>
+            </ul>
           {% if canDelete %}
             <a class="btn btn-entry-action btn-sm btn-danger modalbox"
               href="{{ url({ tag: entryId, handler: 'deletepage', params: { incomingurl: incomingUrl|url_encode }}) }}"

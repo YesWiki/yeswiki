@@ -301,41 +301,6 @@ class BazarListService
         return $result;
     }
 
-    private function createFilterNode($value, $label)
-    {
-        return [
-            'value' => htmlspecialchars($value),
-            'label' => $label,
-            'children' => [],
-        ];
-    }
-
-    private function recursivelyCreateNode($node)
-    {
-        $result = $this->createFilterNode($node['id'], $node['label']);
-        foreach ($node['children'] as $childNode) {
-            $result['children'][] = $this->recursivelyCreateNode($childNode);
-        }
-
-        return $result;
-    }
-
-    private function recursivelyInitValuesForNonDynamic($node, $propName, $countedValues, $checkedValues)
-    {
-        $result = array_merge($node, [
-            'id' => $propName . $node['value'],
-            'name' => $propName,
-            'count' => $countedValues[$node['value']] ?? 0,
-            'checked' => isset($checkedValues[$propName]) && in_array($node['value'], $checkedValues[$propName]) ? ' checked' : '',
-        ]);
-
-        foreach ($node['children'] as &$childNode) {
-            $result['children'][] = $this->recursivelyInitValuesForNonDynamic($childNode, $propName, $countedValues, $checkedValues);
-        }
-
-        return $result;
-    }
-
     private function getValueForArray($array, $key, $default = null)
     {
         if (!is_array($array)) {
@@ -394,3 +359,4 @@ class BazarListService
 
         return strtoupper(removeAccents($value));
     }
+}

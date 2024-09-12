@@ -49,7 +49,14 @@ return [
     'TEMPLATE_CLOSE_COMMENTS' => 'Fermer les commentaires',
     'TEMPLATE_FOR_CONNECTED_PEOPLE' => 'Pour les personnes connectées',
     'TEMPLATE_FOR_MEMBERS_OF_GROUP' => 'Pour les membres du groupe',
-    'TEMPLATES_SEE_ATTACHED_FILES' => 'Voir les fichiers attachés à la page',
+    'TEMPLATE_SEE_ATTACHED_FILES' => 'Voir les fichiers attachés à la page',
+    'TEMPLATE_DUPLICATE' => 'Dupliquer',
+    'TEMPLATE_DUPLICATE_PAGE' => 'Dupliquer la page',
+    'TEMPLATE_DUPLICATE_LIST' => 'Dupliquer la liste',
+    'TEMPLATE_DUPLICATE_ENTRY' => 'Dupliquer la fiche',
+    'TEMPLATE_DUPLICATE_LOCALLY' => 'Dans ce YesWiki',
+    'TEMPLATE_DUPLICATE_IN_ANOTHER_WIKI' => 'Dans un autre YesWiki',
+
     // action/diaporama
     'DIAPORAMA_PAGE_PARAM_MISSING' => 'Action diaporama : param&ecirc;tre "page" obligatoire.',
     'DIAPORAMA_TEMPLATE_PARAM_ERROR' => 'Action diaporama : le param&ecirc;tre "template" pointe sur un fichier inexistant ou illisible. Le template par d&eacute;faut sera utilis&eacute;.',
