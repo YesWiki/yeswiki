@@ -150,7 +150,9 @@ class BazarListService
         ], $options);
 
         $formIdsUsed = array_unique(array_column($entries, 'id_typeannonce'));
-        $formsUsed = array_map(function ($formId) use ($forms) { return $forms[$formId]; }, $formIdsUsed);
+        $formsUsed = array_map(function ($formId) use ($forms) {
+            return $forms[$formId];
+        }, $formIdsUsed);
         $allFields = array_merge(...array_column($formsUsed, 'prepared'));
 
         $propNames = $options['groups'];
@@ -159,7 +161,9 @@ class BazarListService
             $enumFields = array_filter($allFields, function ($field) {
                 return $field instanceof EnumField;
             });
-            $propNames = array_map(function ($field) { return $field->getPropertyName(); }, $enumFields);
+            $propNames = array_map(function ($field) {
+                return $field->getPropertyName();
+            }, $enumFields);
         }
 
         // Scanne tous les champs qui pourraient faire des filtres pour les facettes
@@ -238,16 +242,9 @@ class BazarListService
                         'checked' => (isset($tabfacette[$idkey]) and in_array($listkey, $tabfacette[$idkey])) ? ' checked' : '',
                     ];
                 }
-                usort($filter['nodes'], function ($a, $b) { return strcmp($a['label'], $b['label']); });
-            } else {
-                // OTHER PROPNAME (for example a field that is not an Enum)
-                $filter['title'] = $propName == 'owner' ? _t('BAZ_CREATOR') : $propName;
-                // We collect all values
-                $uniqValues = array_unique(array_column($entries, $propName));
-                sort($uniqValues);
-                foreach ($uniqValues as $value) {
-                    $filter['nodes'][] = $this->createFilterNode($value, $value);
-                }
+                usort($filter['nodes'], function ($a, $b) {
+                    return strcmp($a['label'], $b['label']);
+                });
             }
 
             // Filter Icon
@@ -267,7 +264,9 @@ class BazarListService
                 // Calculate the count for each filterNode
                 $entriesValues = array_column($entries, $propName);
                 // convert string values to array
-                $entriesValues = array_map(function ($val) { return explode(',', $val); }, $entriesValues);
+                $entriesValues = array_map(function ($val) {
+                    return explode(',', $val);
+                }, $entriesValues);
                 // flatten the array
                 $entriesValues = array_merge(...$entriesValues);
                 $countedValues = array_count_values($entriesValues);

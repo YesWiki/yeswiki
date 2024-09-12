@@ -437,3 +437,4 @@ class BazarListeAction extends YesWikiAction
 
         return $externalIds;
     }
+}
