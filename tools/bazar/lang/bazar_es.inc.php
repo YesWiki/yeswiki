@@ -501,5 +501,5 @@ Compruebe la casilla para confirmar su reemplazo por "{proposedName}" o cambiar 
     'BAZ_MORE_INFOS' => 'Más info',
     'BAZ_YEAR' => 'Ann ateacute;e',
     'BAZ_PREVIEW' => 'Avance',
-    'BAZ_PAS_DE_FORM_AVEC_CET_ID' => 'La ficha que buscas ya no existe (quizas ha sido suprimida ?).',
+    'BAZ_PAS_DE_FORM_AVEC_CET_ID' => 'La forma que usted está buscando no existe (puede ser a-t-il & eacute;t Neighboureacute; suprimirimaeacute;e entre temps?)',
 ];

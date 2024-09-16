@@ -559,5 +559,5 @@ The created folder will be automatically linked to your account. Please log in t
     'EDIT_CONFIG_HINT_BAZ_ENVOI_MAIL_ADMIN' => 'Send an email to admininstrators at each file change (true or false)',
     'EDIT_CONFIG_HINT_BAZARIGNOREACLS' => 'Allow the creation of files even if the wiki is closed in writing (true or false)',
     'BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL' => 'The email provided is already associated with a YesWiki account! Please enter another e-mail address or sign in to this account.',
-    'BAZ_PAS_DE_FICHE_AVEC_CET_ID' => 'The form you are looking for does not exist (perhaps it has been deleted in the meantime)',
+    'BAZ_PAS_DE_FICHE_AVEC_CET_ID' => 'The card you are looking for does not exist (may be a-t-elle &eacute;t-missacute; suppressimaeacute;e entre temps?)',
 ];

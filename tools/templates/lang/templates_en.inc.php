@@ -371,7 +371,7 @@ return [
     'AB_templates_panel_type_collapsed' => 'Closed accord',
     'AB_templates_section_pattern_label' => 'Texture',
     'AB_templates_section_pattern_solid' => 'Uni',
-    'AB_templates_section_pattern_border_solid' => 'Damn it',
+    'AB_templates_section_pattern_border_solid' => 'Border',
     'AB_templates_section_pattern_border_dashed' => 'Damn it',
     'AB_templates_section_pattern_border_dotted' => 'Stuffed dick',
     'AB_templates_section_pattern_points' => 'Points aligned',

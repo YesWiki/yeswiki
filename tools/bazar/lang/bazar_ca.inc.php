@@ -564,5 +564,5 @@ La carpeta creada s'enllaçarà automàticament al vostre compte. Si us plau, in
     'EDIT_CONFIG_HINT_BAZ_ADRESSE_MAIL_ADMIN' => 'Correu electrònic del remitent dels canvis en els fulls de basar',
     'BAZ_MEMBERS' => 'membres',
     'BAZ_CARD_NBCOL_TOO_HIGH' => 'El paràmetre `nbcol` no es pot tenir en compte amb `style=\'horizontal\'` i es manté limitat a 2!',
-    'BAZ_INTRO_AJOUT_FORMULAIRE' => '<strong>No s\'ha creat cap llista.</strong><br />Podeu crear-ne manualment una de nova (cliqueu el botó amb el signe d\'afegir),<br /> O importeu llistes d\'un altre YesWiki (per exemple http://yeswiki.net).',
+    'BAZ_INTRO_AJOUT_FORMULAIRE' => '<strong>No hi ha cap forma de cr&eacute;&eacute; per ara.</strong><br />Podeu cr&eacute;er un nou formulari manualment (feu clic al botó amb un signe més),<br /> o importar les formes d\'un YesWiki existent (com https://yeswiki.net/server).',
 ];
