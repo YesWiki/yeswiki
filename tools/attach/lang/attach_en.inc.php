@@ -1,4 +1,5 @@
 <?php
+
 return [
     // controllers/ApiController.php
     'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'Not existing image file',

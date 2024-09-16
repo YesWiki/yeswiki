@@ -1,4 +1,5 @@
 <?php
+
 return [
     // actions/abonnement.php
     'CONTACT_ACTION_ABONNEMENT' => 'Acció {{abonnement ...}}',
@@ -92,7 +93,7 @@ return [
     'CONTACT_WELCOME_ON' => 'Benvinguts',
     'CONTACT_HELP_IN_NOTIFICATION' => 'vés al contingut',
     'CONTACT_NEW_USER_SUBJECT' => 'Els vostres nous identificadors al lloc',
-    'AB_contact_group_label' => "Correu electrònic",
+    'AB_contact_group_label' => 'Correu electrònic',
     'AB_abonnement_action_label' => "Subscriure's a una llista de discussió",
     'AB_abonnement_template_label' => 'plantilla',
     'AB_abonnement_class_label' => 'classe',

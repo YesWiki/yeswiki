@@ -1,4 +1,5 @@
 <?php
+
 return [
     'ACEDITOR_SAVE' => 'Opslaan',
     'ACEDITOR_FORMAT' => 'Lay-out',

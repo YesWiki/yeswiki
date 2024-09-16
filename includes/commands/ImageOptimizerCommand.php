@@ -2,12 +2,12 @@
 
 namespace YesWiki\Core\Commands;
 
+use Spatie\ImageOptimizer\OptimizerChainFactory;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use YesWiki\Wiki;
-use Spatie\ImageOptimizer\OptimizerChainFactory;
 
 class ImageOptimizerCommand extends Command
 {
@@ -24,7 +24,7 @@ class ImageOptimizerCommand extends Command
     {
         $this
             ->setDescription('Optimise all images.')
-            ->setHelp("Convert all the image files to some decent size and format.")
+            ->setHelp('Convert all the image files to some decent size and format.')
             ->addOption('forcewebp', 'f', InputOption::VALUE_NONE, 'Convert to webp format');
     }
 
@@ -53,6 +53,7 @@ class ImageOptimizerCommand extends Command
             }
             echo "Image size after optimisation: $afterSize\n---\n";
         }
+
         return Command::SUCCESS;
     }
 
@@ -62,6 +63,7 @@ class ImageOptimizerCommand extends Command
         if ($factor > 0) {
             $sz = 'KMGT';
         }
+
         return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$sz[$factor - 1] . 'B';
     }
 }

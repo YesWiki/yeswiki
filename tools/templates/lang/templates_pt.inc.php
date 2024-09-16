@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TEMPLATE_ACTION' => 'Ação',
     // 'TEMPLATE_FILE_NOT_FOUND' => 'Template non trouvé',
@@ -197,7 +198,7 @@ return [
     'AB_templates_section_visible_connected_user' => 'Usuário conectado',
     'AB_templates_section_visible_owner' => 'Proprietário da página',
     'AB_templates_tabs_hint' => 'Cada conteúdo da aba está em uma ação <code>{tab}}}Conteúdo da aba.{end elem="tab"}}</code>',
-    'AB_templates_tabs_titles_label' => "Títulos das abas",
+    'AB_templates_tabs_titles_label' => 'Títulos das abas',
     'AB_templates_tabs_counter_on_bottom_nav_yes' => 'Sim',
     'ACLS_SELECT_PAGES_FILTER_ON_PAGES' => 'páginas somente',
     'ACLS_SELECT_PAGES_FILTER_FORM' => 'formulários : {name} ({id})',
@@ -216,7 +217,7 @@ return [
     'TEMPLATE_PRIMARY_COLOR' => 'Primário',
     'TEMPLATE_ADD_CSS_PRESET_API_HINT' => 'Salvar um arquivo predefinido personalizado',
     'AB_template_actions_primary' => 'Primário',
-    'AB_templates_nav_label' => "Tabs com páginas diferentes",
+    'AB_templates_nav_label' => 'Tabs com páginas diferentes',
     'AB_templates_nav_description' => 'Gerar um menu',
     'AB_templates_nav_hint' => 'O teu nome A página deve ser o nome da página em que você vai colocar esta ação. Lembre-se de colar o código obtido em cada página das abas.',
     'AB_templates_panel_type_collapsible' => 'Acordo aberto',
@@ -251,7 +252,7 @@ return [
     'TEMPLATE_MAIN_TITLE_FONT' => 'Polícia des titres',
     'TEMPLATE_DELETE_CSS_PRESET' => 'Quer remover a predefinição personalizada',
     'TEMPLATE_PRESET_FILENAME' => 'Nome da predefinição',
-    'TEMPLATE_PRESET_ERROR' => "Não podes aplicar esta predefinição, há um erro!",
+    'TEMPLATE_PRESET_ERROR' => 'Não podes aplicar esta predefinição, há um erro!',
     'TEMPLATE_PRESETS' => 'Configurações gráficas',
     'TEMPLATE_CUSTOMIZE_PRESET' => 'Configuração gráfica',
     'AB_template_action_label_example' => 'Envie seu rótulo para mudar mais tarde',
@@ -262,7 +263,7 @@ return [
     'AB_template_actions_info' => 'Info',
     'AB_template_actions_warning' => 'Atenção',
     'AB_template_actions_danger' => 'Perigo',
-    'AB_template_action_ariane_label' => "Fio de Arane",
+    'AB_template_action_ariane_label' => 'Fio de Arane',
     'AB_template_action_col_label' => 'Coluna',
     'AB_template_action_col_size_total' => 'Você tem 12 colunas virtuais a serem distribuídas',
     'AB_templates_nav_links_default' => 'Nome da Página, LaSecondPage, LaTroisieme Página',

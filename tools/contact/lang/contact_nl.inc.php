@@ -1,4 +1,5 @@
 <?php
+
 return [
     // actions/abonnement.php
     'CONTACT_ACTION_ABONNEMENT' => 'Actie {{inschrijven...}}',
@@ -72,10 +73,10 @@ return [
     'CONTACT_HELP_IN_NOTIFICATION' => 'ga naar de site om je registratie te controleren',
     'AB_abonnement_class_label' => 'klasse',
     'AB_abonnement_mailinglist_label' => 'Lijst van discussie',
-    'AB_deabonnement_action_label' => "Onbeschrijving",
+    'AB_deabonnement_action_label' => 'Onbeschrijving',
     'AB_contact_action_label' => 'Toon contact',
     'AB_contact_action_mail_label' => 'E-mailadres',
-    'AB_contact_action_entete_label' => "Automatisch voorbeeld van het post object",
+    'AB_contact_action_entete_label' => 'Automatisch voorbeeld van het post object',
     'AB_contact_action_entete_default' => 'Verzonden van de site...',
     'AB_contact_action_template_label' => 'Vertaling:',
     'AB_contact_action_class_label' => 'c',
@@ -102,11 +103,11 @@ return [
     'CONTACT_IN_FORM' => '♪',
     'CONTACT_WELCOME_ON' => 'Welkom',
     'CONTACT_NEW_USER_SUBJECT' => 'Je nieuwe identificers op de site',
-    'AB_contact_group_label' => "Verzenden van e-mail/list",
+    'AB_contact_group_label' => 'Verzenden van e-mail/list',
     'AB_abonnement_action_mail_label' => 'E-mail van de discussielijst',
-    'AB_abonnement_action_label' => "Vertaling:",
+    'AB_abonnement_action_label' => 'Vertaling:',
     'AB_contact_action_template_hint' => 'Vertaling:',
     'AB_listsubscription_action_label' => 'vertaling:',
-    'AB_mailperiod_action_label' => "Vertaling:",
-    'AB_mailinglist_action_description' => "Actie om te registreren of ongebruikelijk e-mails naar een nieuwsletter",
+    'AB_mailperiod_action_label' => 'Vertaling:',
+    'AB_mailinglist_action_description' => 'Actie om te registreren of ongebruikelijk e-mails naar een nieuwsletter',
 ];

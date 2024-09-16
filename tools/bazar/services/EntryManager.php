@@ -101,8 +101,7 @@ class EntryManager
     }
 
     /**
-     * return comments, reactions and metadatas for given entry tag
-     *
+     * return comments, reactions and metadatas for given entry tag.
      */
     public function getExtraFields($tag): array
     {
@@ -112,6 +111,7 @@ class EntryManager
 
         $extraFields['nb_comments'] = $this->getNbComments($extraFields['comments']);
         $extraFields['triples'] = $this->wiki->services->get(TripleStore::class)->getMatching($tag, null, null, '=');
+
         return $extraFields;
     }
 
@@ -121,11 +121,13 @@ class EntryManager
         foreach ($comments as $c) {
             $nb += $this->getNbComments($c['comments']);
         }
+
         return $nb;
     }
 
     /**
-     * Get one specified fiche
+     * Get one specified fiche.
+     *
      * @param $tag
      * @param bool        $semantic
      * @param string      $time                   pour consulter une fiche dans l'historique
@@ -1209,7 +1211,8 @@ class EntryManager
     private function duplicate($sourceTag, $destinationTag): bool
     {
         $result = false;
-        $this->wiki->LogAdministrativeAction($this->authController->getLoggedUserName(), "Duplication de la fiche \"\"" . $sourceTag . "\"\" vers la fiche \"\"" . $destinationTag . "\"\"");
+        $this->wiki->LogAdministrativeAction($this->authController->getLoggedUserName(), 'Duplication de la fiche ""' . $sourceTag . '"" vers la fiche ""' . $destinationTag . '""');
+
         return $result;
     }
 }

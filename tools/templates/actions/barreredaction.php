@@ -35,14 +35,14 @@ if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions'
 
     if ($this->HasAccess('write')) {
         // on ajoute le lien d'édition si l'action est autorisée
-        if ($this->HasAccess("write", $page) && !$this->services->get(SecurityController::class)->isWikiHibernated()) {
-            $options['linkedit'] = $this->href("edit", $page);
+        if ($this->HasAccess('write', $page) && !$this->services->get(SecurityController::class)->isWikiHibernated()) {
+            $options['linkedit'] = $this->href('edit', $page);
         }
 
         if ($time) {
             // hack to hide E_STRICT error if no timezone set
             date_default_timezone_set(@date_default_timezone_get());
-            $options['linkrevisions'] = $this->href("revisions", $page);
+            $options['linkrevisions'] = $this->href('revisions', $page);
             $options['time'] = date(_t('TEMPLATE_DATE_FORMAT'), strtotime($time));
         }
 
@@ -51,9 +51,9 @@ if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions'
             $owner = $this->GetPageOwner($page);
             // message
             if ($this->UserIsOwner($page)) {
-                $options['owner'] = _t('TEMPLATE_OWNER') . " : " . _t('TEMPLATE_YOU');
+                $options['owner'] = _t('TEMPLATE_OWNER') . ' : ' . _t('TEMPLATE_YOU');
             } elseif ($owner) {
-                $options['owner'] = _t('TEMPLATE_OWNER') . " : " . $owner;
+                $options['owner'] = _t('TEMPLATE_OWNER') . ' : ' . $owner;
             } else {
                 $options['owner'] = _t('TEMPLATE_NO_OWNER');
             }
@@ -62,29 +62,29 @@ if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions'
             if ($this->UserIsOwner($page) || $this->UserIsAdmin()) {
                 $options['owner'] .= ' - ' . _t('TEMPLATE_PERMISSIONS');
                 if (!$this->services->get(SecurityController::class)->isWikiHibernated()) {
-                    $options['linkacls'] = $this->href("acls", $page);
-                    $options['linkdeletepage'] = $this->href("deletepage", $page);
+                    $options['linkacls'] = $this->href('acls', $page);
+                    $options['linkdeletepage'] = $this->href('deletepage', $page);
                 }
                 $aclsService = $this->services->get(AclService::class);
                 $hasAccessComment = $aclsService->hasAccess('comment');
                 $options['wikigroups'] = $this->GetGroupsList();
                 if ($this->services->get(ParameterBagInterface::class)->get('comments_activated')) {
                     if ($hasAccessComment && $hasAccessComment !== 'comments-closed') {
-                        $options['linkclosecomments'] = $this->href("claim", $page, ['action' => 'closecomments'], false);
+                        $options['linkclosecomments'] = $this->href('claim', $page, ['action' => 'closecomments'], false);
                     } else {
-                        $options['linkopencomments'] = $this->href("claim", $page, ['action' => 'opencomments'], false);
+                        $options['linkopencomments'] = $this->href('claim', $page, ['action' => 'opencomments'], false);
                     }
                 }
             } elseif (!$owner && $this->GetUser()) {
-                $options['owner'] .= " - " . _t('TEMPLATE_CLAIM');
+                $options['owner'] .= ' - ' . _t('TEMPLATE_CLAIM');
                 if (!$this->services->get(SecurityController::class)->isWikiHibernated()) {
-                    $options['linkacls'] = $this->href("claim", $page);
+                    $options['linkacls'] = $this->href('claim', $page);
                 }
             }
         }
     }
     $options['linkduplicate'] = $this->href('duplicate', $page);
-    $options['linkshare'] = $this->href("share", $page);
+    $options['linkshare'] = $this->href('share', $page);
     $options['userIsOwner'] = $this->UserIsOwner($page);
     $options['userIsAdmin'] = $this->UserIsAdmin();
     $options['userIsAdminOrOwner'] = $this->UserIsAdmin() || $this->UserIsOwner($page);

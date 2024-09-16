@@ -19,7 +19,7 @@ use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
-if (! function_exists('send_mail')) {
+if (!function_exists('send_mail')) {
     require_once 'includes/email.inc.php';
 }
 
@@ -49,7 +49,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $this->securityController = $securityController;
         $this->params = $params;
         $this->getOneByNameCacheResults = [];
-        $this->userlink = "";
+        $this->userlink = '';
     }
 
     private function arrayToUser(?array $userAsArray = null, bool $fillEmpty = false): ?User
@@ -209,7 +209,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $this->userlink = $this->wiki->Href('', 'MotDePassePerdu', [
             'a' => 'recover',
             'email' => $key,
-            'u' => base64_encode($user['name'])
+            'u' => base64_encode($user['name']),
         ], false);
     }
 
@@ -242,9 +242,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     }
 
     /**
-     * Assessor for userlink field
-     * 
-     * @return string
+     * Assessor for userlink field.
      */
     public function getUserLink(): string
     {
@@ -252,9 +250,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     }
 
     /**
-     * Assessor for userlink field
-     *
-     * @return string
+     * Assessor for userlink field.
      */
     public function getLastUserLink(User $user): string
     {
@@ -264,11 +260,12 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             $this->userlink = $this->wiki->Href('', 'MotDePassePerdu', [
                 'a' => 'recover',
                 'email' => $key,
-                'u' => base64_encode($user['name'])
+                'u' => base64_encode($user['name']),
             ], false);
         } else {
             $this->generateUserLink($user);
         }
+
         return $this->userlink;
     }
 

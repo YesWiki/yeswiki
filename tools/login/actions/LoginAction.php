@@ -77,7 +77,7 @@ class LoginAction extends YesWikiAction
                     : $incomingurl
                 ),
 
-            'lostpasswordurl' => ! boolval($this->params->get('contact_disable_email_for_password')) ? (! empty($arg['lostpasswordurl']) ? $this->wiki->generateLink($arg['lostpasswordurl']) : 
+            'lostpasswordurl' => !boolval($this->params->get('contact_disable_email_for_password')) ? (!empty($arg['lostpasswordurl']) ? $this->wiki->generateLink($arg['lostpasswordurl']) :
             // TODO : check page name for other languages
             $this->wiki->Href('', 'MotDePassePerdu')) : '',
 
@@ -150,7 +150,7 @@ class LoginAction extends YesWikiAction
             'email' => ((isset($user['email'])) ? $user['email'] : ((isset($_POST['email'])) ? $_POST['email'] : '')),
             'incomingurl' => $this->arguments['incomingurl'],
             'signupurl' => $this->arguments['signupurl'],
-            'lostpasswordurl' => ! boolval($this->params->get('contact_disable_email_for_password')) ? $this->arguments['lostpasswordurl'] : '',
+            'lostpasswordurl' => !boolval($this->params->get('contact_disable_email_for_password')) ? $this->arguments['lostpasswordurl'] : '',
             'profileurl' => $this->arguments['profileurl'],
             'userpage' => $this->arguments['userpage'],
             'PageMenuUser' => $pageMenuUserContent,
@@ -164,6 +164,7 @@ class LoginAction extends YesWikiAction
         if (!empty($this->arguments['class']) && substr($this->arguments['template'], -strlen('.tpl.html')) == '.tpl.html') {
             $output = "<div class=\"{$this->arguments['class']}\">\n$output\n</div>\n";
         }
+
         return $output;
     }
 

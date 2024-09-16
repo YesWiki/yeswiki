@@ -10,9 +10,9 @@ use YesWiki\Core\YesWikiAction;
 
 class BazarListeAction extends YesWikiAction
 {
-    protected const BAZARCARTO_TEMPLATES = ["map", "gogomap", "gogocarto", "map-and-table"]; // liste des templates sans .twig ni .tpl.html
-    protected const BAZARTABLE_TEMPLATES = ["table", "map-and-table"]; // liste des templates sans .twig ni .tpl.html
-    protected const CALENDRIER_TEMPLATES = ["calendar"]; // liste des templates sans .twig ni .tpl.html
+    protected const BAZARCARTO_TEMPLATES = ['map', 'gogomap', 'gogocarto', 'map-and-table']; // liste des templates sans .twig ni .tpl.html
+    protected const BAZARTABLE_TEMPLATES = ['table', 'map-and-table']; // liste des templates sans .twig ni .tpl.html
+    protected const CALENDRIER_TEMPLATES = ['calendar']; // liste des templates sans .twig ni .tpl.html
 
     protected $debug;
 
@@ -24,7 +24,7 @@ class BazarListeAction extends YesWikiAction
         $iconField = $_GET['iconfield'] ?? $arg['iconfield'] ?? null;
 
         // ICONS
-        $icon = $_GET['icon'] ?? $arg['icon'] ??  null;
+        $icon = $_GET['icon'] ?? $arg['icon'] ?? null;
         $iconAlreadyDefined = ($icon == $this->params->get('baz_marker_icon') || is_array($icon));
         if (!$iconAlreadyDefined) {
             if (!empty($icon)) {
@@ -126,8 +126,8 @@ class BazarListeAction extends YesWikiAction
                 $arg['search'] === 'dynamic'
                 ? $arg['search']
                 : (
-                    in_array($arg['search'], ["true", true, "1", 1], true)
-                    ? "true"
+                    in_array($arg['search'], ['true', true, '1', 1], true)
+                    ? 'true'
                     : null
                 )
             );
@@ -236,17 +236,17 @@ class BazarListeAction extends YesWikiAction
         // If the template is a map or a calendar, call the dedicated action so that
         // arguments can be properly formatted. The second first condition prevents infinite loops
         if (
-            self::specialActionFromTemplate($this->arguments['template'], "BAZARCARTO_TEMPLATES")
+            self::specialActionFromTemplate($this->arguments['template'], 'BAZARCARTO_TEMPLATES')
             && (!isset($this->arguments['calledBy']) || !in_array($this->arguments['calledBy'], ['BazarCartoAction', 'BazarTableAction']))
         ) {
             return $this->callAction('bazarcarto', $this->arguments);
         } elseif (
-            self::specialActionFromTemplate($this->arguments['template'], "CALENDRIER_TEMPLATES")
+            self::specialActionFromTemplate($this->arguments['template'], 'CALENDRIER_TEMPLATES')
             && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'CalendrierAction')
         ) {
             return $this->callAction('calendrier', $this->arguments);
         } elseif (
-            self::specialActionFromTemplate($this->arguments['template'], "BAZARTABLE_TEMPLATES")
+            self::specialActionFromTemplate($this->arguments['template'], 'BAZARTABLE_TEMPLATES')
             && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'BazarTableAction')
         ) {
             return $this->callAction('bazartable', $this->arguments);
@@ -282,7 +282,7 @@ class BazarListeAction extends YesWikiAction
             if (!isset($GLOBALS['_BAZAR_']['nbbazarliste'])) {
                 $GLOBALS['_BAZAR_']['nbbazarliste'] = 0;
             }
-            ++$GLOBALS['_BAZAR_']['nbbazarliste'];
+            $GLOBALS['_BAZAR_']['nbbazarliste']++;
             $this->arguments['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'];
 
             // TODO put in all bazar templates
@@ -377,13 +377,13 @@ class BazarListeAction extends YesWikiAction
     public static function specialActionFromTemplate(string $templateName, string $constName): bool
     {
         switch ($constName) {
-            case "BAZARCARTO_TEMPLATES":
+            case 'BAZARCARTO_TEMPLATES':
                 $baseArray = self::BAZARCARTO_TEMPLATES;
                 break;
-            case "CALENDRIER_TEMPLATES":
+            case 'CALENDRIER_TEMPLATES':
                 $baseArray = self::CALENDRIER_TEMPLATES;
                 break;
-            case "BAZARTABLE_TEMPLATES":
+            case 'BAZARTABLE_TEMPLATES':
                 $baseArray = self::BAZARTABLE_TEMPLATES;
                 break;
             default:

@@ -184,8 +184,8 @@ class CommentService implements EventSubscriberInterface
      * Load comments recursivelly.
      *
      * @param string $tag Page name (Ex : "PagePrincipale") if empty, all comments
-     * @param bool $bypassAcls
-     * @return array All comments and their corresponding properties.
+     *
+     * @return array all comments and their corresponding properties
      */
     public function loadCommentsRecursive($tag, bool $bypassAcls = false)
     {
@@ -193,8 +193,10 @@ class CommentService implements EventSubscriberInterface
         foreach ($comments as $k => $c) {
             $comments[$k]['comments'] = $this->loadCommentsRecursive($c['tag']);
         }
+
         return $comments;
     }
+
     /**
      * Load comments for given page.
      *

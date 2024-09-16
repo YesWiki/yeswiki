@@ -1,4 +1,5 @@
 <?php
+
 return [
     'BAZ_FORMULAIRE' => 'Formulieren',
     'BAZ_LISTES' => 'Lijsten',
@@ -507,8 +508,8 @@ return [
     'VIDEO_LINK_FIELD' => 'Link naar video: _',
     'EDIT_CONFIG_HINT_BAZ_MAP_HEIGHT' => 'Default lengte in pixels van cartografische displays',
     'EDIT_CONFIG_HINT_BAZ_ADRESSE_MAIL_ADMIN' => 'E-mailadres van de afzender van de veranderingen aan de bazaar lakens',
-    'BAZ_CORRESPONDANCE_ERROR2' => "baazarlist actie: de match parameter is slecht gevuld.
-Het moet de overeenkomende vorm zijn",
+    'BAZ_CORRESPONDANCE_ERROR2' => 'baazarlist actie: de match parameter is slecht gevuld.
+Het moet de overeenkomende vorm zijn',
     'BAZ_IMPORT_LISTS_FROM_URL' => 'Importeer de lijst van een andere jawiki',
     'BAZ_NBLISTSFOUND' => 'Gevonden',
     'BAZ_NBFORMSFOUND' => 'Nummer van formulieren',

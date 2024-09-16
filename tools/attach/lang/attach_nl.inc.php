@@ -1,4 +1,5 @@
 <?php
+
 return [
     // controllers/ApiController.php
     // 'ATTACH_GET_URLIMAGE_CACHE_API_HELP' => "Fournit l'url du fichier de cache pour l'image voulue\n".
@@ -97,7 +98,7 @@ return [
     'FAILED' => 'mislukt',
     'ATTACH_SIZE' => 'Middel',
     'ATTACH_FILENAME' => 'Bestandsnaam',
-    'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => "Niet-existent beeldbestand",
+    'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'Niet-existent beeldbestand',
     'ATTACH_NO_ATTACHED_FILES' => 'Geen dossiers aan de pagina voor nu.',
     'ATTACH_DATE_OF_MODIFICATION' => 'Datum gewijzigd',
     'ATTACH_REAL_FILENAME' => 'Echte naam van het dossier:',
@@ -109,7 +110,7 @@ return [
     'ATTACH_HANDLER_AJAXUPLOAD_EMPTY_FILE' => 'Het dossier is leeg.',
     'ATTACH_HANDLER_AJAXUPLOAD_FILE_TOO_LARGE' => 'Het dossier is te breed.',
     'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_PEERTUBE_INSTANCE]' => 'Default pingube server adres',
-    'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Sta toe om op het beeld te klikten om het te laten zien in grote",
+    'ATTACH_ACTION_FULLIMAGELINK_TEXT' => 'Sta toe om op het beeld te klikten om het te laten zien in grote',
     'ATTACH_TRASH' => 'Corbeille',
     'ATTACH_DELETED_ON' => ' - Onderdrukt op:',
     'ATTACH_HANDLER_AJAXUPLOAD_AUTHORIZED_EXT' => 'Het dossier heeft geen goedgekeurde verlenging, hier zijn degenen toegestaan:.',

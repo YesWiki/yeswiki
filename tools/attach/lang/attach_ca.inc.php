@@ -1,4 +1,5 @@
 <?php
+
 return [
     // controllers/ApiController.php
     // 'ATTACH_GET_URLIMAGE_CACHE_API_HELP' => "Fournit l'url du fichier de cache pour l'image voulue\n".
@@ -124,7 +125,7 @@ return [
     'ERROR_MAX_FILE_SIZE' => 'El fitxer t markedeacute;l exposedeacute;charg markedeacute excitedcirc;de la mida de MAX_FILE_SIZE, que ha \'eacute;t yawned; spŭeacute;cifi primeacute;e en la forma HTML.',
     'ERROR_PARTIAL_UPLOAD' => 'El fitxer té "eacute;t `eacute;; que parcialment cap aeacute;l neglecteacute;charg towardseacute.',
     'ERROR_NOT_AUTHORIZED_EXTENSION' => 'El fitxer no té una extensió autoritzada, heus aquí les que la configuració autoritza: ',
-    'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Permet fer clic a la imatge per mostrar-la en gran",
+    'ATTACH_ACTION_FULLIMAGELINK_TEXT' => 'Permet fer clic a la imatge per mostrar-la en gran',
     'ATTACH_FILE_MANAGEMENT' => 'Gestió dels fitxers',
     'ATTACH_RESTORE' => 'Restauració',
     'ATTACH_EMPTY_TRASH_NOTICE' => 'els fitxers esborrats a partir de la cistella ho seran definitivament.',

@@ -94,7 +94,7 @@ class ReactionManager
                 if (!isset($res[$key]['nb_reactions'][$v['value']['id']])) {
                     $res[$key]['nb_reactions'][$v['value']['id']] = 1;
                 } else {
-                    $res[$key]['nb_reactions'][$v['value']['id']] += 1;
+                    $res[$key]['nb_reactions'][$v['value']['id']]++;
                 }
 
                 $res[$key]['reactions'][] = $v['value'];
@@ -335,11 +335,11 @@ class ReactionManager
                 '',
                 '',
                 "(`value` LIKE '%\"user\":\"{$this->dbService->escape($user)}\"%')" .
-                    "AND" .
+                    'AND' .
                     "(`value` LIKE '%\"id\":\"{$this->dbService->escape($id)}\"%')" .
-                    "AND" .
+                    'AND' .
                     "(`value` NOT LIKE '%\"idReaction\":\"%')" .
-                    "AND" .
+                    'AND' .
                     "(`value` NOT LIKE '%\"date\":\"%')"
             );
         } else {

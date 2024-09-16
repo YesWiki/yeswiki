@@ -165,7 +165,7 @@ class UserSettingsAction extends YesWikiAction
                 'referrer' => $this->referrer,
                 'user' => $user,
                 'userLoggedIn' => $this->userLoggedIn,
-                'userlink' => $this->userlink
+                'userlink' => $this->userlink,
             ]);
         } else {
             $captcha = $this->securityController->renderCaptchaField();
@@ -185,7 +185,7 @@ class UserSettingsAction extends YesWikiAction
                 'name' => $this->wantedUserName,
                 'email' => $this->wantedEmail,
                 'captcha' => $captcha,
-                'userlink' => ''
+                'userlink' => '',
             ]);
         }
     }
@@ -291,7 +291,7 @@ class UserSettingsAction extends YesWikiAction
                     $this->wiki->Redirect($this->wiki->href());
                 } catch (TokenNotFoundException $th) {
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $th->getMessage();
-                } catch (BadFormatPasswordException | Throwable $ex) {
+                } catch (BadFormatPasswordException|Throwable $ex) {
                     // Something when wrong when updating the user in DB
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $ex->getMessage();
                 }

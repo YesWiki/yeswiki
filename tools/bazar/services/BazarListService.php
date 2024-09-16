@@ -309,23 +309,60 @@ class BazarListService
         return $result;
     }
 
+    private function getValueForArray($array, $key, $default = null)
+    {
+        if (!is_array($array)) {
+            return $default;
+        }
+        if (is_null($key)) {
+            return $array;
+        }
+        if (array_key_exists($key, $array)) {
+            return $array[$key];
+        }
+        if (strpos($key, '.') === false) {
+            return $array[$key] ?? $default;
+        }
+        foreach (explode('.', $key) as $segment) {
+            if (is_array($array) && array_key_exists($segment, $array)) {
+                $array = $array[$segment];
+            } else {
+                return $default;
+            }
+        }
+
+        return $array;
+    }
+
     private function buildFieldSorter($ordre, $champ): callable
     {
         return function ($a, $b) use ($ordre, $champ) {
-            if ($ordre == 'desc') {
-                $first = $b[$champ] ?? '';
-                $second = $a[$champ] ?? '';
+            if (strstr($champ, '.')) {
+                $val1 = $this->getValueForArray($a, $champ);
+                $val2 = $this->getValueForArray($b, $champ);
             } else {
-                $first = $a[$champ] ?? '';
-                $second = $b[$champ] ?? '';
+                $val1 = $a[$champ] ?? '';
+                $val2 = $b[$champ] ?? '';
             }
-            // compare insentive uppercase even for special chars
-            return strcmp($this->sanitizeStringForCompare($first), $this->sanitizeStringForCompare($second));
+            if ($ordre == 'desc') {
+                return strcmp(
+                    $this->sanitizeStringForCompare($val2),
+                    $this->sanitizeStringForCompare($val1)
+                );
+            } else {
+                return strcmp(
+                    $this->sanitizeStringForCompare($val1),
+                    $this->sanitizeStringForCompare($val2)
+                );
+            }
         };
     }
 
     private function sanitizeStringForCompare($value): string
     {
+        if ($value === null) {
+            $value = '';
+        }
         $value = is_scalar($value)
             ? strval($value)
             : json_encode($value);

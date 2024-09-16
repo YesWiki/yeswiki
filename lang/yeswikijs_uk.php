@@ -1,4 +1,5 @@
 <?php
+
 return [
     // commons
     'APRIL' => 'Квітень',
@@ -50,21 +51,21 @@ return [
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_POSSIBLE_ERROR' => 'Помилкова помилка може статися в ресторанті {filename}',
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS' => 'Успішне відновлення {filename}',
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR' => 'Неможливе відновлення {filename}',
-    'ADMIN_BACKUPS_START_BACKUP' => "Запуск резервної копії",
-    'ADMIN_BACKUPS_STARTED' => "Резервне копіювання",
+    'ADMIN_BACKUPS_START_BACKUP' => 'Запуск резервної копії',
+    'ADMIN_BACKUPS_STARTED' => 'Резервне копіювання',
     'ADMIN_BACKUPS_START_BACKUP_ERROR' => 'Запуск неможливого резервного копіювання',
     'ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR' => 'Неможливо оновити статус резервної копії',
-    'ADMIN_BACKUPS_UID_STATUS_NOT_FOUND' => "Не знайдено",
+    'ADMIN_BACKUPS_UID_STATUS_NOT_FOUND' => 'Не знайдено',
     'ADMIN_BACKUPS_UID_STATUS_RUNNING' => 'Резервне копіювання',
     'ADMIN_BACKUPS_UID_STATUS_FINISHED' => 'Резервне копіювання',
-    'ADMIN_BACKUPS_UID_STATUS_NOT_FINISHED' => "Існує проблема, тому що резервне копіювання більше не триває, і це не більше!",
+    'ADMIN_BACKUPS_UID_STATUS_NOT_FINISHED' => 'Існує проблема, тому що резервне копіювання більше не триває, і це не більше!',
     'ADMIN_BACKUPS_UID_STATUS_STOP' => 'Припинено резервне копіювання',
-    'ADMIN_BACKUPS_STOP_BACKUP_ERROR' => "Помилка: неможливо зупинити резервну копію",
+    'ADMIN_BACKUPS_STOP_BACKUP_ERROR' => 'Помилка: неможливо зупинити резервну копію',
     'ADMIN_BACKUPS_STOPPING_ARCHIVE' => 'Зупинка в резервній копії',
-    'ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE' => "Примушене оновлення неможливо",
+    'ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE' => 'Примушене оновлення неможливо',
     'ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING' => 'Оновити запущений (до пацієнта)',
     // /javascripts/handlers/revisions.js
-    'REVISIONS_COMMIT_DIFF' => "Модальність, зроблені цією версією",
+    'REVISIONS_COMMIT_DIFF' => 'Модальність, зроблені цією версією',
     'REVISIONS_DIFF' => 'Порівняння з поточною версією',
     'REVISIONS_PREVIEW' => 'Огляд даної версії',
     // javascripts/documentation.js
@@ -83,9 +84,9 @@ return [
     'LIST_UPDATED' => 'Список успішно оновлено',
     // javascripts/multidelete.js
     'MULTIDELETE_END' => 'Вилучення',
-    'MULTIDELETE_ERROR' => "Твитнуть Id} елемент не був видалений! й",
+    'MULTIDELETE_ERROR' => 'Твитнуть Id} елемент не був видалений! й',
     // javascripts/users-table.js
-    'LINK_TO_CHANGE_PASSWORD' => "Посилання на зміну пароля",
+    'LINK_TO_CHANGE_PASSWORD' => 'Посилання на зміну пароля',
     'USERSTABLE_USER_CREATED' => "Користувач '{name}' створений",
     'USERSTABLE_USER_NOT_CREATED' => "Користувач '{name}' не створений : Новини",
     'USERSTABLE_USER_DELETED' => 'Користувач "{username}" був видалений.',
@@ -94,7 +95,7 @@ return [
     'DATATABLES_PROCESSING' => 'Лікування в прогресі ...',
     'DATATABLES_SEARCH' => 'Пошук підкреслено:',
     'DATATABLES_LENGTHMENU' => 'Дисплей _MENU_ \'e;l≡eacute;ments',
-    'DATATABLES_INFO' => "Відобразити Ateacute;l yaacute;ment _START_ à _END_ on _TOTAL_él проголошеноeacute;ments",
+    'DATATABLES_INFO' => 'Відобразити Ateacute;l yaacute;ment _START_ à _END_ on _TOTAL_él проголошеноeacute;ments',
     'DATATABLES_INFOEMPTY' => "Відображення ateacute;l yaacute;ment 0 à 0 з 0 'e;l righteacute;ment",
     'DATATABLES_INFOFILTERED' => '(filtr Affecteacute; de _MAX_él≡eacute;ments au total)',
     'DATATABLES_LOADINGRECORDS' => 'Завантаження.',
@@ -110,8 +111,8 @@ return [
     'COMMENT_NOT_DELETED' => 'Коментар {comment} не було видалено.',
     'COMMENT_DELETED' => 'Коментарі видалені.',
     // reactions
-    'REACTION_NOT_POSSIBLE_TO_ADD_REACTION' => "Не можна додати реакцію через наступну помилку: {error}!",
-    'REACTION_NOT_POSSIBLE_TO_DELETE_REACTION' => "Неможливо видалити реакцію через наступну помилку: {error}!",
+    'REACTION_NOT_POSSIBLE_TO_ADD_REACTION' => 'Не можна додати реакцію через наступну помилку: {error}!',
+    'REACTION_NOT_POSSIBLE_TO_DELETE_REACTION' => 'Неможливо видалити реакцію через наступну помилку: {error}!',
     'REACTION_CONFIRM_DELETE' => 'Ви впевнені, що ви хочете видалити цю реакцію?',
     'REACTION_CONFIRM_DELETE_ALL' => 'Ви впевнені, що ви хочете видалити всі реакції цього голосу?',
     // Doc

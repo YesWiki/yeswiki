@@ -1,4 +1,5 @@
 <?php
+
 return [
     'BAZ_FORMULAIRE' => 'Formularis',
     'BAZ_LISTES' => 'Llistes',
@@ -475,8 +476,8 @@ Si us plau, introdueix dins de la caixa de text els caràcters que veu a la imat
     'BAZ_PREVIEW_DETAILS' => 'aquesta part no es pot clicar, els paramesos canvien a la columna esquerra',
     'BAZ_CORRESPONDANCE_ERROR' => 'acció bazarista: paràmetre de coincidència mal omplert: ha de coincidir amb la forma="identifiant_1=identifiant_2" o la correspondència="identifiant_1=identifiant_2, identificador_3=identifiant_4"',
     'BAZ_WIDGET_INSTRUCTION2' => 'Codi d\'acció wiki una pasta de còpia en una pàgina d\'aquest lloc',
-    'BAZ_CORRESPONDANCE_ERROR2' => "acció baazarista: el paràmetre de partit està mal omplert.
-© 2019 Fundació Catalunya Europa. CIF: G64693914. Reg. de Fundacions Núm. 2395",
+    'BAZ_CORRESPONDANCE_ERROR2' => 'acció baazarista: el paràmetre de partit està mal omplert.
+© 2019 Fundació Catalunya Europa. CIF: G64693914. Reg. de Fundacions Núm. 2395',
     'BAZ_FILEFIELD_TOO_LARGE_FILE' => 'El fitxer és massa gran, màxim %{fileMaxSize} bytes',
     'BAZ_IMAGE_ALREADY_EXISTING' => 'La imatge {fileName} va existir en el cas de imiteacute;ja, no va \'eacute; remplac✱eacute;e.',
     'BAZ_DRAG_n_DROP_CHECKBOX_DELETE_ITEM' => 'Eliminació de l\'Ateacute;l Isacute;ment',

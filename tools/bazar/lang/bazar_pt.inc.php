@@ -1,4 +1,5 @@
 <?php
+
 return [
     'BAZ_FORMULAIRE' => 'Formulário',
     'BAZ_LISTES' => 'Listas',
@@ -488,8 +489,8 @@ return [
     'BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_ENTRIES' => 'conteúdo dos cartões recebidos mal formatado.',
     'EDIT_CONFIG_HINT_BAZ_MAP_HEIGHT' => 'Altura padrão em pixels de telas cartográficas',
     'EDIT_CONFIG_HINT_BAZ_ENVOI_MAIL_ADMIN' => 'Envie um e-mail para administradores em cada mudança de arquivo (verdadeiro ou falso)',
-    'BAZ_USER_FIELD_ALREADY_CONNECTED' => "Você já está conectado com o identificador \"{wikiname}\" e o e-mail \"{email}\".
-A pasta criada será automaticamente vinculada à sua conta. Faça login para criar uma nova conta!",
+    'BAZ_USER_FIELD_ALREADY_CONNECTED' => 'Você já está conectado com o identificador "{wikiname}" e o e-mail "{email}".
+A pasta criada será automaticamente vinculada à sua conta. Faça login para criar uma nova conta!',
     'BAZ_LOADING' => 'A carregar',
     'BAZ_USER_FIELD_FORCE_SAVE_ENTRY' => 'Como administrador, forçar a criação do arquivo para o e-mail dado (e criar uma conta apenas se ele não existir)',
     'BAZ_EXPANDED' => 'Desdobrado',
@@ -506,8 +507,8 @@ A pasta criada será automaticamente vinculada à sua conta. Faça login para cr
     'EVENT_EVERY_YEARS' => 'Todos os anos',
     'EDIT_CONFIG_HINT_BAZ_MAP_ZOOM' => 'Nível de zoom padrão de mapas (1:world = acordado 15:commune)',
     'EDIT_CONFIG_HINT_BAZARIGNOREACLS' => 'Permitir a criação de arquivos mesmo se a wiki estiver fechada por escrito (verdadeiro ou falso)',
-    'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => "O identificador \"{currentName}\" já existe!
-Marque a caixa para confirmar sua substituição por \"{proposedName}\" ou altere o identificador no formulário abaixo.",
+    'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => 'O identificador "{currentName}" já existe!
+Marque a caixa para confirmar sua substituição por "{proposedName}" ou altere o identificador no formulário abaixo.',
     'BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL' => 'O e-mail fornecido já está associado a uma conta YesWiki! Digite outro endereço de e-mail ou inicie sessão nesta conta.',
     'BAZ_MORE_INFOS' => 'Mais informações',
     'BAZ_NO_ENTRY_FOR_THIS_PERIOD' => 'Não há registo para este período.',
@@ -531,8 +532,8 @@ Marque a caixa para confirmar sua substituição por \"{proposedName}\" ou alter
     'EVENT_EVERY_DAYS' => 'Todos os dias',
     'EVENT_NO_REPETITION' => 'Nenhuma repetição',
     'EVENT_REMOVE_CUSTOM' => 'Opções adicionais de máscaras',
-    'BAZ_CORRESPONDANCE_ERROR2' => "ação baazarlist: o parâmetro match é mal preenchido.
-Deve ser o formulário correspondente=\"identifiant_1=identifiant_2\" ou correspondência=\"identifiant_1=identifiant_2, identificador_3=identifiant_4\"",
+    'BAZ_CORRESPONDANCE_ERROR2' => 'ação baazarlist: o parâmetro match é mal preenchido.
+Deve ser o formulário correspondente="identifiant_1=identifiant_2" ou correspondência="identifiant_1=identifiant_2, identificador_3=identifiant_4"',
     'BAZ_CARD_NBCOL_TOO_HIGH' => 'O parâmetro `nbcol` não pode ser levado em conta com `style=\'horizontal\'` e permanece limitado a 2!',
     'BAZ_WIDGET_INSTRUCTION2' => 'Código ação wiki uma pasta de cópia em uma página deste site',
 ];

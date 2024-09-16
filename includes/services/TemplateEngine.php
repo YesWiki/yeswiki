@@ -192,6 +192,7 @@ class TemplateEngine
             if ($found) {
                 return $form['prepared'][$found]->renderStaticIfPermitted($entry);
             }
+
             return;
         });
     }

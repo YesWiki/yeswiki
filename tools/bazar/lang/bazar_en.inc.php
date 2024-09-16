@@ -1,4 +1,5 @@
 <?php
+
 return [
     'BAZ_FORMULAIRE' => 'Forms',
     'BAZ_LISTES' => 'Lists',
@@ -438,8 +439,8 @@ return [
     'BAZAR_SEMANTIC_TYPE_MISSING' => 'The semantic type of this form hasn\'t been defined, consequently it cannot be displayed in JSON-LD',
     'BAZ_ACTIVATE_COMMENTS_HINT' => 'Updated rights when registering the entry',
     'BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_FORM' => 'incorrectly formatted received form content.',
-    'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => "The \"{currentName}\" identifier already exists!
-Check the box to confirm that it has been replaced by \"{proposedName}\", or change your identifier in the form below.",
+    'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => 'The "{currentName}" identifier already exists!
+Check the box to confirm that it has been replaced by "{proposedName}", or change your identifier in the form below.',
     'BAZ_CONFIRM_VIDER_FORMULAIRE' => 'Please note! All the entries registered for this form will be lost, only the empty form will remain available. Are you sure you want to empty this form of its associated entries?',
     'BAZ_PAS_DE_FORM_AVEC_CET_ID' => 'The form you are looking for does not exist (perhaps it has been deleted in the meantime)',
     'BAZ_SUPPRIMER_FORMULAIRE' => 'Delete the form',
@@ -448,8 +449,8 @@ Check the box to confirm that it has been replaced by \"{proposedName}\", or cha
     'EVENT_REPETITION_FOR_MONTHS' => 'every month, %{monthRepetition}',
     'EVENT_REPETITION_FOR_WEEKS' => 'all weeks, %{days}',
     'EVENT_EVERY_MONTHS' => 'Every month',
-    'BAZ_CORRESPONDANCE_ERROR2' => "baazarlist action: the match parameter is poorly filled.
-It must be the matching form=\"identifiant_1=identifiant_2\" or correspondence=\"identifiant_1=identifiant_2, identifier_3=identifiant_4\"",
+    'BAZ_CORRESPONDANCE_ERROR2' => 'baazarlist action: the match parameter is poorly filled.
+It must be the matching form="identifiant_1=identifiant_2" or correspondence="identifiant_1=identifiant_2, identifier_3=identifiant_4"',
     'BAZ_NO_RESULT' => 'No results',
     'BAZ_USER_FIELD_ALREADY_CONNECTED' => "You're already connected with the \"{wikiname}\" identifier and the \"{email}\" email.
 The created folder will be automatically linked to your account. Please log in to create a new account!",

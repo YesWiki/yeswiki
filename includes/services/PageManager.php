@@ -219,6 +219,7 @@ class PageManager
             SELECT * FROM {$this->dbService->prefixTable('pages')} WHERE LATEST = 'Y' ORDER BY tag
         SQL);
         $pages = $this->checkEntriesACL($pages);
+
         return $pages;
     }
 
@@ -408,7 +409,7 @@ class PageManager
                 $page = $this->dbService->loadSingle(
                     "SELECT `owner` FROM {$this->dbService->prefixTable('pages')} " .
                         "WHERE tag = '{$this->dbService->escape($tag)}' AND {$timeQuery} " .
-                        "LIMIT 1"
+                        'LIMIT 1'
                 );
                 $this->ownersCache[$tag] = $page['owner'] ?? null;
             }
@@ -510,7 +511,8 @@ class PageManager
     private function duplicate($sourceTag, $destinationTag): bool
     {
         $result = false;
-        $this->wiki->LogAdministrativeAction($this->authController->getLoggedUserName(), "Duplication de la page \"\"" . $sourceTag . "\"\" vers la page \"\"" . $destinationTag . "\"\"");
+        $this->wiki->LogAdministrativeAction($this->authController->getLoggedUserName(), 'Duplication de la page ""' . $sourceTag . '"" vers la page ""' . $destinationTag . '""');
+
         return $result;
     }
 }

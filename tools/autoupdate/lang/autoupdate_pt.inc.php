@@ -1,6 +1,7 @@
 <?php
+
 return [
-    /**
+    /*
  * Fichier de traduction en francais de l'extension AutoUpdate.
  *
  *@author        Florestan Bredow <florestan.bredow@supagro.fr>
@@ -29,12 +30,12 @@ return [
     'AU_NO_DESCRIPTION' => 'Descrição não disponível.',
     'AU_DOCUMENTATION_LINK' => 'documentação',
     'AU_YESWIKI_DORYPHORE_POSTINSTALL' => 'Bem-vindo ao Doryphore',
-    'AU_PHP_TOO_LOW_HINT' => "Por favor, atualize o PHP em seu servidor antes %{textAction}!",
+    'AU_PHP_TOO_LOW_HINT' => 'Por favor, atualize o PHP em seu servidor antes %{textAction}!',
     'AU_PHP_TOO_LOW_VERSION_UPDATE' => 'versão de mudança Sim',
     'AU_PHP_TOO_LOW_UPDATE' => 'atualização SimWiki',
     'AU_FILE_NOT_POSSIBLE_TO_UPDATE' => "Não foi possível atualizar o arquivo '{{file}'! Isso pode levar a pequenas avarias.",
     'AU_YESWIKI_SECOND_TIME_UPDATE' => 'Segunda atualização do coração YesWiki',
-    'AU_SECOND_UPDATE_NOT_POSSIBLE' => "Uma segunda atualização do coração YesWiki é necessária, mas não é possível até que a primeira atualização seja feita corretamente!",
+    'AU_SECOND_UPDATE_NOT_POSSIBLE' => 'Uma segunda atualização do coração YesWiki é necessária, mas não é possível até que a primeira atualização seja feita corretamente!',
     'AU_NAME' => 'Nome',
     'AU_PACKAGE_NOT_DOWNLOADED' => 'O pacote não foi baixado.',
     'AU_UNKWON_PACKAGE_TYPE' => 'Tipo de pacote desconhecido',

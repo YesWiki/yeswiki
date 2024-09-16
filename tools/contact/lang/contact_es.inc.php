@@ -1,4 +1,5 @@
 <?php
+
 return [
     // actions/abonnement.php
     'CONTACT_ACTION_ABONNEMENT' => 'Acción {{suscripción ...}}',
@@ -62,18 +63,18 @@ return [
     'CONTACT_WEEKLY_REPORT' => 'informe semanal',
     'CONTACT_MONTHLY_REPORT' => 'informe mensual',
     'CONTACT_WELCOME_ON' => 'Bienvenido a',
-    'AB_contact_group_label' => "Enviar correo electrónico/listas",
+    'AB_contact_group_label' => 'Enviar correo electrónico/listas',
     'AB_abonnement_action_mail_label' => 'E-mail de la lista de discusión',
     'AB_abonnement_mailinglist_label' => 'Lista de debate',
-    'AB_deabonnement_action_label' => "Suscripción de una lista de discusión",
+    'AB_deabonnement_action_label' => 'Suscripción de una lista de discusión',
     'AB_contact_action_label' => 'Mostrar formulario de contacto',
-    'AB_contact_action_entete_label' => "Prefijo automático del objeto de correo",
+    'AB_contact_action_entete_label' => 'Prefijo automático del objeto de correo',
     'AB_contact_action_entete_default' => 'Enviado desde el sitio...',
     'AB_contact_action_template_label' => 'Plantilla personalizada',
     'AB_contact_action_template_hint' => 'Ex.: full-contact-form.tpl.html',
     'AB_contact_action_class_label' => 'css',
     'AB_listsubscription_action_label' => 'lista de suscripción',
-    'AB_mailperiod_action_label' => "Suscribirse para recibir el contenido de una página periódicamente por correo electrónico",
+    'AB_mailperiod_action_label' => 'Suscribirse para recibir el contenido de una página periódicamente por correo electrónico',
     'AB_mailperiod_action_hint' => 'Para que esta acción funcione es necesario verificar ciertos parámetros en su servidor. See documents on https://yeswiki.net/?MailPeriod',
     'AB_mailinglist_action_label' => 'Escribir correos electrónicos masivamente a un boletín informativo',
     'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => "Añadir 'wiki=' a los enlaces a este wiki en e-mails",
@@ -104,9 +105,9 @@ return [
     'CONTACT_YOUR_ENTRY' => 'Su tarjeta',
     'CONTACT_HELP_IN_NOTIFICATION' => 'ir al sitio para gestionar su registro',
     'CONTACT_NEW_USER_SUBJECT' => 'Sus nuevos identificadores en el sitio',
-    'AB_abonnement_action_label' => "Suscríbete a una lista de discusión",
+    'AB_abonnement_action_label' => 'Suscríbete a una lista de discusión',
     'AB_abonnement_template_label' => 'plantilla',
     'AB_abonnement_class_label' => 'clase',
     'AB_contact_action_mail_label' => 'Dirección de correo electrónico',
-    'AB_mailinglist_action_description' => "Acción para registrar o cancelar correos electrónicos masivos a un boletín informativo",
+    'AB_mailinglist_action_description' => 'Acción para registrar o cancelar correos electrónicos masivos a un boletín informativo',
 ];

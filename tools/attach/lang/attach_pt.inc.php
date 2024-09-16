@@ -1,4 +1,5 @@
 <?php
+
 return [
     // controllers/ApiController.php
     // 'ATTACH_GET_URLIMAGE_CACHE_API_HELP' => "Fournit l'url du fichier de cache pour l'image voulue\n".
@@ -98,7 +99,7 @@ return [
     'ATTACH_FILENAME' => 'Nome do arquivo',
     'ATTACH_SIZE' => 'Cintura',
     'ERROR_NOT_AUTHORIZED_EXTENSION' => 'O arquivo não tem uma extensão autorizada, aqui estão aqueles que a configuração autoriza: ',
-    'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Permitir clicar na imagem para exibi-la em grande",
+    'ATTACH_ACTION_FULLIMAGELINK_TEXT' => 'Permitir clicar na imagem para exibi-la em grande',
     'ATTACH_FILE_MANAGEMENT' => 'Gerenciamento de arquivos',
     'ATTACH_TRASH' => 'Corbeille',
     'ATTACH_NO_ATTACHED_FILES' => 'Nenhum arquivo anexado à página {tag} por agora.',
@@ -128,7 +129,7 @@ return [
     'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_PEERTUBE_INSTANCE]' => 'Endereço do servidor do peertube padrão',
     'EDIT_CONFIG_HINT_MAX_FILE_SIZE' => 'Tamanho máximo de arquivos carregados - bytes (ex: Tamanho máximo de arquivos carregados (ex: 2097152, 2048k, 2m)',
     'EDIT_CONFIG_GROUP_ATTACH' => 'Inserção de mídia (fotos, vídeos)',
-    'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => "Arquivo de imagem não existente",
+    'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'Arquivo de imagem não existente',
     'ATTACH_DATE_OF_MODIFICATION' => 'Data alterada',
     'ATTACH_RESTORE' => 'Restaurar',
 ];
