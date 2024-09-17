@@ -119,25 +119,24 @@ class ThemeManager implements EventSubscriberInterface
             $this->setFavorite('preset', $this->getConfigAsStringOrDefault('favorite_preset', ''));
         } else {
             // Sinon, on récupère premièrement les valeurs passées en REQUEST, ou deuxièmement les métasdonnées présentes pour la page, ou troisièmement les valeurs du fichier de configuration
-            if (isset($_REQUEST['theme']) && (is_dir('custom/themes/' . $_REQUEST['theme']) || is_dir('themes/' . $_REQUEST['theme'])) &&
-                isset($_REQUEST['style']) && (is_file('custom/themes/' . $_REQUEST['theme'] . '/styles/' . $_REQUEST['style']) || is_file('themes/' . $_REQUEST['theme'] . '/styles/' . $_REQUEST['style'])) &&
-                isset($_REQUEST['squelette']) && (is_file('custom/themes/' . $_REQUEST['theme'] . '/squelettes/' . $_REQUEST['squelette']) || is_file('themes/' . $_REQUEST['theme'] . '/squelettes/' . $_REQUEST['squelette']))
+            if (isset($_REQUEST['theme']) && (is_dir('custom/themes/' . $_REQUEST['theme']) || is_dir('themes/' . $_REQUEST['theme']))
+                && isset($_REQUEST['style']) && (is_file('custom/themes/' . $_REQUEST['theme'] . '/styles/' . $_REQUEST['style']) || is_file('themes/' . $_REQUEST['theme'] . '/styles/' . $_REQUEST['style']))
+                && isset($_REQUEST['squelette']) && (is_file('custom/themes/' . $_REQUEST['theme'] . '/squelettes/' . $_REQUEST['squelette']) || is_file('themes/' . $_REQUEST['theme'] . '/squelettes/' . $_REQUEST['squelette']))
             ) {
                 $this->setFavorite('theme', $_REQUEST['theme']);
                 $this->setFavorite('style', $_REQUEST['style']);
                 $this->setFavorite('squelette', $_REQUEST['squelette']);
 
                 // presets
-                if (isset($_REQUEST['preset']) &&
-                        (
+                if (isset($_REQUEST['preset'])
+                        && (
                             (
                                 ($isCustom = (substr($_REQUEST['preset'], 0, strlen(self::CUSTOM_CSS_PRESETS_PREFIX)) == self::CUSTOM_CSS_PRESETS_PREFIX))
                                 && is_file(self::CUSTOM_CSS_PRESETS_PATH . '/' . substr($_REQUEST['preset'], strlen(self::CUSTOM_CSS_PRESETS_PREFIX)))
                             )
-                            ||
-                            (
-                                !$isCustom &&
-                                (
+                            || (
+                                !$isCustom
+                                && (
                                     is_file('custom/themes/' . $_REQUEST['theme'] . '/presets/' . $_REQUEST['preset'])
                                     || is_file('themes/' . $_REQUEST['theme'] . '/presets/' . $_REQUEST['preset'])
                                 )
@@ -147,7 +146,7 @@ class ThemeManager implements EventSubscriberInterface
                     $this->setFavorite('preset', $_REQUEST['preset']);
                 }
 
-                if (isset($_REQUEST['bgimg']) && (is_file('files/backgrounds/' . $_REQUEST['bgimg']))) {
+                if (isset($_REQUEST['bgimg']) && is_file('files/backgrounds/' . $_REQUEST['bgimg'])) {
                     $this->setFavorite('background_image', $_REQUEST['bgimg']);
                 } else {
                     $this->setFavorite('background_image', BACKGROUND_IMAGE_PAR_DEFAUT);
@@ -194,10 +193,10 @@ class ThemeManager implements EventSubscriberInterface
                 && !file_exists('themes/' . $this->favorites['theme'] . '/styles/' . $this->favorites['style']))
         ) {
             if (
-                $this->favorites['theme'] != THEME_PAR_DEFAUT ||
-                (
-                    $this->favorites['theme'] == THEME_PAR_DEFAUT && (!file_exists('themes/' . THEME_PAR_DEFAUT . '/squelettes/' . $this->favorites['squelette']) or
-                        !file_exists('themes/' . THEME_PAR_DEFAUT . '/styles/' . $this->favorites['style']))
+                $this->favorites['theme'] != THEME_PAR_DEFAUT
+                || (
+                    $this->favorites['theme'] == THEME_PAR_DEFAUT && (!file_exists('themes/' . THEME_PAR_DEFAUT . '/squelettes/' . $this->favorites['squelette'])
+                        or !file_exists('themes/' . THEME_PAR_DEFAUT . '/styles/' . $this->favorites['style']))
                 )
             ) {
                 if (
@@ -220,14 +219,11 @@ class ThemeManager implements EventSubscriberInterface
         }
         // test l'existence du preset
         if (!empty($this->favorites['preset'])
-            &&
-            (
-                (
+                && (
                     ($isCutom = substr($this->favorites['preset'], 0, strlen(self::CUSTOM_CSS_PRESETS_PREFIX)) == self::CUSTOM_CSS_PRESETS_PREFIX)
                     && !file_exists(self::CUSTOM_CSS_PRESETS_PATH . DIRECTORY_SEPARATOR
                         . substr($this->favorites['preset'], strlen(self::CUSTOM_CSS_PRESETS_PREFIX)))
                 )
-            )
         ) {
             unset($this->favorites['preset']);
         }
@@ -258,9 +254,9 @@ class ThemeManager implements EventSubscriberInterface
         $squelette = empty($squelette) ? SQUELETTE_PAR_DEFAUT : $squelette;
 
         // do not load the file if already loaded
-        $fileAlreadyLoaded = $this->fileLoaded &&
-            ($this->theme == $theme) &&
-            ($this->squelette == $squelette);
+        $fileAlreadyLoaded = $this->fileLoaded
+            && ($this->theme == $theme)
+            && ($this->squelette == $squelette);
         if ($fileAlreadyLoaded) {
             return true;
         }
@@ -357,7 +353,7 @@ class ThemeManager implements EventSubscriberInterface
 
     public function getFavoritePreset(): string
     {
-        return $this->favorites['preset'];
+        return $this->favorites['preset'] ?? '';
     }
 
     public function getFavoriteBackgroundImage(): string
@@ -387,7 +383,7 @@ class ThemeManager implements EventSubscriberInterface
 
     private function renderActions(string $text): ?string
     {
-        if ($act = preg_match_all('/' . '(\\{\\{)' . '(.*?)' . '(\\}\\})' . '/is', $text, $matches)) {
+        if ($act = preg_match_all('/(\\{\\{)(.*?)(\\}\\})/is', $text, $matches)) {
             $i = 0;
             $j = 0;
             foreach ($matches as $valeur) {
@@ -549,7 +545,7 @@ class ThemeManager implements EventSubscriberInterface
      */
     public function getPresetsData(): ?array
     {
-        $themePresets = ($this->getTemplates())[$this->getFavoriteTheme()]['presets'] ?? [];
+        $themePresets = $this->getTemplates()[$this->getFavoriteTheme()]['presets'] ?? [];
         $dataHtmlForPresets = array_map(function ($value) {
             return $this->extractDataFromPreset($value);
         }, $themePresets);
@@ -782,8 +778,8 @@ class ThemeManager implements EventSubscriberInterface
                                 'url' => [],
                             ];
                         }
-                        if (isset($raw['unicode-range']) &&
-                            !isset($formattedData[$key]['charsets'][$charset]['unicode-range'])) {
+                        if (isset($raw['unicode-range'])
+                            && !isset($formattedData[$key]['charsets'][$charset]['unicode-range'])) {
                             $formattedData[$key]['charsets'][$charset]['unicode-range'] = $raw['unicode-range'];
                         }
                         if (!isset($formattedData[$key]['charsets'][$charset]['url'][$format])) {
@@ -893,8 +889,8 @@ class ThemeManager implements EventSubscriberInterface
         $errorNb = curl_errno($ch);
         curl_close($ch);
         if (!$errorNb && !empty($result)) {
-            if (file_put_contents(self::CUSTOM_FONT_PATH . "/$folderSystemName/$fileName", $result) &&
-                file_exists(self::CUSTOM_FONT_PATH . "/$folderSystemName/$fileName")) {
+            if (file_put_contents(self::CUSTOM_FONT_PATH . "/$folderSystemName/$fileName", $result)
+                && file_exists(self::CUSTOM_FONT_PATH . "/$folderSystemName/$fileName")) {
                 return '../../' . self::CUSTOM_FONT_PATH . "/$folderSystemName/$fileName";
             }
         }
