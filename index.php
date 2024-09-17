@@ -8,9 +8,9 @@
  *
  * @category Wiki
  *
- * @license  GNU/GPL version 3
+ * @license GNU/GPL version 3
  *
- * @see     https://yeswiki.net
+ * @see https://yeswiki.net
  */
 
 use YesWiki\Core\YesWikiLoader;

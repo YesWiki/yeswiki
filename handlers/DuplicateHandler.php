@@ -2,6 +2,7 @@
 
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
@@ -33,9 +34,9 @@ class DuplicateHandler extends YesWikiHandler
             ]);
         } elseif (!$this->getService(AclService::class)->hasAccess('read', $this->wiki->GetPageTag())) {
             // if no read access to the page
-            if ($contenu = $this->getService(PageManager::class)->getOne('PageLogin')) {
+            if ($content = $this->getService(PageManager::class)->getOne('PageLogin')) {
                 // si une page PageLogin existe, on l'affiche
-                $error .= $this->wiki->Format($contenu['body']);
+                $error .= $this->wiki->Format($content['body']);
             } else {
                 // sinon on affiche le formulaire d'identification minimal
                 $error .= '<div class="vertical-center white-bg">' . "\n"
@@ -50,7 +51,7 @@ class DuplicateHandler extends YesWikiHandler
                 $data = $this->duplicationManager->checkPostData($_POST);
                 $this->duplicationManager->duplicateLocally($data);
                 if ($data['duplicate-action'] == 'edit') {
-                    $this->wiki->Redirect($this->wiki->href('edit', $data['pageTag']));
+                    $this->wiki->Redirect($this->wiki->href('edit', $data['newTag']));
 
                     return;
                 } elseif ($data['duplicate-action'] == 'return') {
@@ -58,10 +59,10 @@ class DuplicateHandler extends YesWikiHandler
 
                     return;
                 }
-                $this->wiki->Redirect($this->wiki->href('', $data['pageTag']));
+                $this->wiki->Redirect($this->wiki->href('', $data['newTag']));
 
                 return;
-            } catch (\Throwable $th) {
+            } catch (Throwable $th) {
                 $error .= $this->render('@templates\alert-message-with-back.twig', [
                     'type' => 'warning',
                     'message' => $th->getMessage(),
@@ -79,23 +80,24 @@ class DuplicateHandler extends YesWikiHandler
             $pageTitle = '';
             if ($isEntry) {
                 $title = _t('TEMPLATE_DUPLICATE_ENTRY') . ' ' . $this->wiki->GetPageTag();
-                $pageContent = $this->getService(EntryManager::class)->getOne($this->wiki->GetPageTag());
+                $originalContent = $this->getService(EntryManager::class)->getOne($this->wiki->GetPageTag());
                 if ($toExternalWiki) {
-                    $pageTitle = $pageContent['bf_titre'];
+                    $pageTitle = $originalContent['bf_titre'];
                     $proposedTag = $this->wiki->GetPageTag();
-                    $pageContent = $this->wiki->page['body'];
+                    $originalContent = $this->wiki->page['body'];
+                    $form = $this->getService(FormManager::class)->getOne($this->getService(EntryManager::class)->getOne($proposedTag)['id_typeannonce']);
                 } else {
-                    $pageTitle = $pageContent['bf_titre'] . ' (' . _t('DUPLICATE') . ')';
+                    $pageTitle = $originalContent['bf_titre'] . ' (' . _t('DUPLICATE') . ')';
                     $proposedTag = genere_nom_wiki($pageTitle);
                 }
             } elseif ($isList) {
                 $title = _t('TEMPLATE_DUPLICATE_LIST') . ' ' . $this->wiki->GetPageTag();
-                $pageContent = $this->getService(ListManager::class)->getOne($this->wiki->GetPageTag());
+                $originalContent = $this->getService(ListManager::class)->getOne($this->wiki->GetPageTag());
                 if ($toExternalWiki) {
-                    $pageTitle = $pageContent['titre_liste'];
+                    $pageTitle = $originalContent['titre_liste'];
                     $proposedTag = $this->wiki->GetPageTag();
                 } else {
-                    $pageTitle = $pageContent['titre_liste'] . ' (' . _t('DUPLICATE') . ')';
+                    $pageTitle = $originalContent['titre_liste'] . ' (' . _t('DUPLICATE') . ')';
                     $proposedTag = genere_nom_wiki('Liste ' . $pageTitle);
                 }
             } else { // page
@@ -105,7 +107,7 @@ class DuplicateHandler extends YesWikiHandler
                 } else {
                     $proposedTag = genere_nom_wiki($this->wiki->GetPageTag() . ' ' . _t('DUPLICATE'));
                 }
-                $pageContent = $this->wiki->page['body'];
+                $originalContent = $this->wiki->page['body'];
             }
             $attachments = $this->duplicationManager->findFiles($this->wiki->page['tag']);
             $totalSize = 0;
@@ -130,9 +132,10 @@ class DuplicateHandler extends YesWikiHandler
             'proposedTag' => $proposedTag ?? '',
             'attachments' => $attachments ?? [],
             'pageTitle' => $pageTitle ?? '',
-            'pageContent' => $pageContent ?? '',
+            'originalContent' => $originalContent ?? '',
             'totalSize' => $this->duplicationManager->humanFilesize($totalSize ?? 0),
             'type' => $type ?? '',
+            'form' => $form ?? '',
             'baseUrl' => preg_replace('/\?$/Ui', '', $this->wiki->config['base_url']),
             'toExternalWiki' => $toExternalWiki,
         ]);

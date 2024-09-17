@@ -9,15 +9,19 @@ function isValidUrl(string) {
   }
 }
 
+function arrayIncludesAllRequiredFields(arr, fields) {
+  return fields.every((v) => arr.some((i) => i.id === v.id && i.type === v.type))
+}
+
 function blockDuplicationName(tag) {
   $('[name=duplicate-action]').attr('disabled', 'disabled').addClass('disabled')
-  $('#pageTag').parents('.form-group').removeClass('has-success').addClass('has-error')
+  $('#newTag').parents('.form-group').removeClass('has-success').addClass('has-error')
   $('#pagetag-message').html(_t('PAGE_NOT_AVAILABLE', { tag }))
 }
 
 function validateDuplicationName(tag) {
   $('[name=duplicate-action]').removeAttr('disabled').removeClass('disabled')
-  $('#pageTag').parents('.form-group').removeClass('has-error').addClass('has-success')
+  $('#newTag').parents('.form-group').removeClass('has-error').addClass('has-success')
   $('#pagetag-message').html(_t('PAGE_AVAILABLE', { tag }))
 }
 
@@ -43,7 +47,7 @@ function handleLoginResponse(data) {
       .addClass('has-success')
     $('.login-fields').addClass('hide')
     $('.duplication-fields').removeClass('hide')
-    checkPageExistence(`${shortUrl}/?api/pages/${$('#pageTag').val()}`)
+    checkPageExistence(`${shortUrl}/?api/pages/${$('#newTag').val()}`)
   } else {
     $('#login-message').html(_t('CONNECTED_BUT_NOT_ADMIN', { user: data.user })).parents('.form-group')
       .removeClass('has-success')
@@ -58,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     e.stopPropagation()
     return false
   })
-  $('#urlWiki').on('change', () => {
+  $('#url-wiki').on('change', () => {
     $('.login-fields, .duplication-fields').addClass('hide')
     $('#login-message').html('')
   })
@@ -84,19 +88,19 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 
   $('[name="duplicate-action"]').on('click', (e) => {
-    var btnAction = e.currentTarget.value
+    const btnAction = e.currentTarget.value
     $.ajax({
       method: 'POST',
-      url: `${shortUrl}/?api/pages/${$('#pageTag').val()}/duplicate`,
+      url: `${shortUrl}/?api/pages/${$('#newTag').val()}/duplicate`,
       data: $('#form-duplication').serialize()
-    }).done((data) => {
-      if (btnAction == 'open') {
-        location = `${shortUrl}/?${data.pageTag}`
-      } else if (btnAction == 'edit') {
-        location = `${shortUrl}/?${data.pageTag}/edit`
+    }).done((d) => {
+      if (btnAction === 'open') {
+        document.location = `${shortUrl}/?${d.newTag}`
+      } else if (btnAction === 'edit') {
+        document.location = `${shortUrl}/?${d.newTag}/edit`
       } else {
-        let url = location.href.replace(/\/duplicate.*/, '')
-        location = url
+        const url = document.location.href.replace(/\/duplicate.*/, '')
+        document.location = url
       }
     }).fail((jqXHR) => {
       toastMessage(`${_t('ERROR')} ${jqXHR.status}`, 3000, 'alert alert-danger')
@@ -105,11 +109,11 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 
   $('.btn-verify-tag').on('click', () => {
-    checkPageExistence(`${shortUrl}/?api/pages/${$('#pageTag').val()}`)
+    checkPageExistence(`${shortUrl}/?api/pages/${$('#newTag').val()}`)
   })
 
   $('.btn-verify-wiki').on('click', () => {
-    let url = $('#urlWiki').val()
+    let url = $('.duplication-wiki-form').find('#url-wiki').val()
 
     if (isValidUrl(url)) {
       let taburl = []
@@ -119,13 +123,40 @@ document.addEventListener('DOMContentLoaded', () => {
         taburl = url.split('?')
       }
       shortUrl = taburl[0].replace(/\/+$/g, '')
-      $('#baseUrl').text(`${shortUrl}/?`)
+      $('#base-url').text(`${shortUrl}/?`)
       url = `${shortUrl}/?api/auth/me`
       $.ajax({
         method: 'GET',
         url
       }).done((data) => {
         handleLoginResponse(data)
+
+        // if case of entry, we need to check if form id is available and compatible
+        // or propose another id
+        const formId = $('#form-id').val()
+        if (typeof formId !== 'undefined') {
+          const formUrl = `${shortUrl}/?api/forms/${formId}`
+          $.ajax({
+            method: 'GET',
+            url: formUrl
+          }).done((form) => {
+            const requiredFields = form.prepared.filter((field) => field.required === true)
+            // we check if the found formId is compatible
+            if (arrayIncludesAllRequiredFields(window.sourceForm.prepared, requiredFields)) {
+              $('#form-message').removeClass('has-error').addClass('has-success').find('.help-block')
+                .html(_t('FORM_ID_IS_COMPATIBLE', { id: formId }))
+            } else {
+              $('#form-message').removeClass('has-success').addClass('has-error').find('.help-block')
+                .html(_t('FORM_ID_NOT_AVAILABLE', { id: formId }))
+            }
+          }).fail((jqXHR) => {
+            if (jqXHR.status === 404) {
+              // the formId is available
+              $('#form-message').removeClass('has-error').addClass('has-success').find('.help-block')
+                .html(_t('FORM_ID_AVAILABLE', { id: formId }))
+            }
+          })
+        }
       }).fail((jqXHR) => {
         if (jqXHR.status === 401) {
           $('#login-message').html(`<div class="text-danger">${_t('NOT_CONNECTED')}</div>`)

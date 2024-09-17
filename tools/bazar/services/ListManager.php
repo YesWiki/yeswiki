@@ -44,6 +44,11 @@ class ListManager
         $this->cachedLists = [];
     }
 
+    public function isList($id): bool
+    {
+        return boolval($this->tripleStore->exist($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', ''));
+    }
+
     public function getOne($id): ?array
     {
         if (isset($this->cachedLists[$id])) {
@@ -94,13 +99,12 @@ class ListManager
         return $result;
     }
 
-    public function create($title, $nodes)
+    public function create($title, $nodes, $id = null)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-
-        $id = genere_nom_wiki('List' . $title);
+        $id = $id ?? genere_nom_wiki('List' . $title);
         $this->pageManager->save($id, json_encode([
             'title' => $title,
             'nodes' => $this->sanitizeHMTL($nodes),
