@@ -345,12 +345,12 @@ class BazarListService
                 $val2 = $b[$champ] ?? '';
             }
             if ($ordre == 'desc') {
-                return strcmp(
+                return strnatcmp(
                     $this->sanitizeStringForCompare($val2),
                     $this->sanitizeStringForCompare($val1)
                 );
             } else {
-                return strcmp(
+                return strnatcmp(
                     $this->sanitizeStringForCompare($val1),
                     $this->sanitizeStringForCompare($val2)
                 );
