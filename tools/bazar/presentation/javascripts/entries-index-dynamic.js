@@ -197,6 +197,10 @@ const load = (domElement) => {
             return new Intl.Collator().compare(nameB, nameA)
           }
         })
+        const url = new URL(document.location.href)
+        url.searchParams.set('champ', field)
+        url.searchParams.set('ordre', order)
+        history.pushState({}, '', url)
         this.paginateEntries()
         return false
       },
