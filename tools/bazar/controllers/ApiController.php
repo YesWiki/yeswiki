@@ -275,7 +275,7 @@ class ApiController extends YesWikiController
         $filters = $bazarListService->getFilters($formattedGet, $entries, $forms);
 
         // Basic fields
-        $fieldList = ['id_fiche', 'bf_titre'];
+        $fieldList = ['id_fiche', 'bf_titre', 'date_maj_fiche', 'date_creation_fiche'];
         // If no id, we need idtypeannonce (== formId) to filter
         if (!isset($_GET['id'])) {
             $fieldList[] = 'id_typeannonce';

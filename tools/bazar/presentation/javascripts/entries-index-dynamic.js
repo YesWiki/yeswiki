@@ -10,6 +10,14 @@ import { recursivelyCalculateRelations } from './utils.js'
 
 Vue.component('FilterNode', FilterNode)
 
+function dotIndex(obj, is, value) {
+  if (obj === undefined) return ''
+  if (typeof is == 'string') return dotIndex(obj, is.split('.'), value)
+  if (is.length == 1 && value !== undefined) return obj[is[0]] = value
+  if (is.length == 0) return obj
+  return dotIndex(obj[is[0]], is.slice(1), value)
+}
+
 const load = (domElement) => {
   new Vue({
     el: domElement,
@@ -34,6 +42,8 @@ const load = (domElement) => {
       imagesToProcess: [],
       processingImage: false,
       search: '',
+      sortButtonLabel: '',
+
       // wether to search for a particular form ID (only used when no
       // form id is defined for the bazar list action)
       searchFormId: null,
@@ -145,6 +155,50 @@ const load = (domElement) => {
             }).length
           })
         })
+      },
+      changeSortButtonLabel(field, order) {
+        let key = Object.keys(this.params.sortfields).find((key) => this.params.sortfields[key] === field)
+        if (key === undefined && this.params.sortfieldstitles[key] === undefined) {
+          key = field
+          if (key === 'date_creation_fiche') {
+            this.params.sortfieldstitles[key] = 'date de création'
+          } else {
+            this.params.sortfieldstitles[key] = field
+          }
+        }
+        let sortIcon = '<i class="fas fa-arrow-up"></i>'
+        if (order === 'desc') {
+          sortIcon = '<i class="fas fa-arrow-down"></i>'
+        }
+        this.sortButtonLabel = `Trier par ${this.params.sortfieldstitles[key]} ${sortIcon}`
+      },
+      sortEntries(field, order) {
+        this.changeSortButtonLabel(field, order)
+        this.filteredEntries.sort((a, b) => {
+          // for extrafields field may contain dot notation object
+          if (field.indexOf('.') > -1) {
+            a[field] = dotIndex(a, field)
+            b[field] = dotIndex(b, field)
+          }
+          if (typeof (a[field]) === 'number' && typeof (b[field]) === 'number') {
+            if (order === 'asc') {
+              return a[field] - b[field]
+            }
+            if (order === 'desc') {
+              return b[field] - a[field]
+            }
+          }
+          const nameA = String(a[field]).toLowerCase()
+          const nameB = String(b[field]).toLowerCase()
+          if (order === 'asc') {
+            return new Intl.Collator().compare(nameA, nameB)
+          }
+          if (order === 'desc') {
+            return new Intl.Collator().compare(nameB, nameA)
+          }
+        })
+        this.paginateEntries()
+        return false
       },
       resetFilters() {
         this.filters.forEach((filter) => {
@@ -287,7 +341,7 @@ const load = (domElement) => {
         if (entry[fieldName]) {
           const fileName = entry[fieldName]
           if (!this.isExternalUrl(entry)) {
-          // currently not supporting api for external images (anti-csrf token not generated)
+            // currently not supporting api for external images (anti-csrf token not generated)
             if (this.tokenForImages === null) {
               this.tokenForImages = token
             }
@@ -387,6 +441,7 @@ const load = (domElement) => {
       const savedHash = document.location.hash // don't know how, but the hash get cleared after
       this.params = JSON.parse(this.$el.dataset.params)
       this.pagination = parseInt(this.params.pagination, 10)
+      this.changeSortButtonLabel(this.params.champ, this.params.ordre)
       this.mounted = true
       // Retrieve data asynchronoulsy
       $.getJSON(wiki.url('?api/entries/bazarlist'), this.params, (data) => {

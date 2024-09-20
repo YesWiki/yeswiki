@@ -3,6 +3,7 @@
     {{ include("@bazar/entries/index-dynamic/_search_input.twig") }}
   {% endif %}
 
+
   <div class="filters no-dblclick {{ params.filterposition }}" v-if="Object.keys(filters).length">
     <div class="results-info text-info">
       <template v-if="params.filtersresultnb">
@@ -20,6 +21,23 @@
         </span>
         <div class="clearfix"></div>
       </template>
+    </div>
+
+    <div class="btn-group btn-block">
+    <button type="button" class="btn btn-sortby btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="width:100%; text-align:left; margin-bottom:1em;border:3px solid var(--primary-color);color:var(--primary-color);border-radius:var(--btn-border-radius);">
+    <span v-html="sortButtonLabel"></span>
+    <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+      <li v-for="(field, i) in params.sortfields">
+        <a href="#" @click.prevent="sortEntries(field, 'asc')">
+        <span v-html="'Trier par '+params.sortfieldstitles[i]"></span> <i class="fas fa-arrow-up"></i>
+        </a>
+        <a href="#" @click.prevent="sortEntries(field, 'desc')">
+          <span v-html="'Trier par '+params.sortfieldstitles[i]"></span> <i class="fas fa-arrow-down"></i> 
+        </a>
+      </li>
+    </ul>
     </div>
 
     <div class="results-container">
