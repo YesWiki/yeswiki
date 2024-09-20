@@ -220,7 +220,7 @@ const load = (domElement) => {
         hash.split('&').forEach((combinaison) => {
           const filterId = combinaison.split('=')[0]
           const filterValues = combinaison.split('=')[1]
-          const filter = this.filters.find((f) => f.propName == fieldId)
+          const filter = filters.find((f) => f.propName == filterId)
           if (filterId == 'q') {
             this.search = filterValues
           } else if (filterId && filterValues && filter) {
@@ -358,7 +358,7 @@ const load = (domElement) => {
             const previousUrl = $(node).prop('src')
             const newUrl = `${baseUrl}/files/${fileName}`
             if (newUrl != previousUrl) {
-              $(`img[src="${previousUrl}"]`).each(function() {
+              $(`img[src="${previousUrl}"]`).each(function () {
                 $(this).prop('src', newUrl)
               })
             }
@@ -410,7 +410,7 @@ const load = (domElement) => {
             success(data) {
               const previousUrl = $(newImageParams.node).prop('src')
               const srcFileName = wiki.baseUrl.replace(/(\?)?$/, '') + data.cachefilename
-              $(`img[src="${previousUrl}"]`).each(function() {
+              $(`img[src="${previousUrl}"]`).each(function () {
                 $(this).prop('src', srcFileName)
                 const next = $(this).next('div.area.visual-area[style]')
                 if (next.length > 0) {
