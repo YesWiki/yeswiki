@@ -10,7 +10,7 @@
 
 #### Pré-requis
 
-- Vous avez téléchargé la dernière version de YesWiki sur le site [yeswiki.net](https://yeswiki.net/?TelechargemenT)
+- Vous avez téléchargé la dernière version de YesWiki sur le site [yeswiki.net](https://yeswiki.net/?PageCreer))
 - Vous disposez d'un espace d'hébergement :
   - avec une version de `PHP` supérieure à 7.3 (8.2 recommandée)
   - une base de données SQL `MariaDB` > 10 ou `MYSQL` >= 5.6 (⚠️ la version 5.5 ne supporte pas la recherche fulltext)
