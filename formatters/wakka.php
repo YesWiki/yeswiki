@@ -418,6 +418,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                         $src = $matches[2];
                         $alt = htmlspecialchars($matches[1]);
                         $title = htmlspecialchars($matches[3]);
+
                         return '<img loading="lazy" class="img-responsive" src="' . $src . '" alt="' . $alt . '" ' . (empty($title) ? '' : 'title="' . $title . '"') . ' />';
                     }
                     // if we reach this point, it must have been an accident.

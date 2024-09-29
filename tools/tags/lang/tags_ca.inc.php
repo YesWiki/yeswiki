@@ -1,4 +1,5 @@
 <?php
+
 return [
     // 'TAGS_TAGS' => 'Mots clés',
     'TAGS_ACTION_ADMINTAGS' => 'Acció {{admintags ...}}',
@@ -21,7 +22,7 @@ return [
     'TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS' => 'Mostra totes les pàgines que contenen aquest mot clau',
     'TAGS_ALERT_PAGE_ALREADY_MODIFIED' => 'COMPTE: aquesta pàgina ha estat modificada per algú altre mentre l\'estàveu editant.<br />Copieu els vostres canvis i torneu a iniciar l\'edició.',
     'TAGS_ANSWER_THIS_COMMENT' => 'Respon a aquest comentari',
-    'TAGS_DATE_FORMAT' => "le d.m.Y a les H:i:s",
+    'TAGS_DATE_FORMAT' => 'le d.m.Y a les H:i:s',
     'TAGS_WRITE_YOUR_COMMENT_HERE' => 'Escriviu el vostre comentari aquí:',
     'TAGS_ADD_YOUR_COMMENT' => 'Afegiu-hi el vostre comentari',
     'TAGS_ACTION_FILTERTAGS' => 'Acció {{filtertags ...}}',

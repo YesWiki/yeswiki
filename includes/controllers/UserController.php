@@ -103,14 +103,14 @@ class UserController extends YesWikiController
 
         return null;
     }
-    
+
     public function sendPasswordRecoveryEmail(User $user): string
     {
         if ($this->userManager->sendPasswordRecoveryEmail($user, _t('LOGIN_PASSWORD_FOR'))) {
             return $this->userManager->getUserLink();
         } else {
-            return "";
-        }        
+            return '';
+        }
     }
 
     /**

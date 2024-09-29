@@ -77,7 +77,7 @@ class LoginAction extends YesWikiAction
                     : $incomingurl
                 ),
 
-            'lostpasswordurl' => ! boolval($this->params->get('contact_disable_email_for_password')) ? (! empty($arg['lostpasswordurl']) ? $this->wiki->generateLink($arg['lostpasswordurl']) : 
+            'lostpasswordurl' => !boolval($this->params->get('contact_disable_email_for_password')) ? (!empty($arg['lostpasswordurl']) ? $this->wiki->generateLink($arg['lostpasswordurl']) :
             // TODO : check page name for other languages
             $this->wiki->Href('', 'MotDePassePerdu')) : '',
 
@@ -150,7 +150,7 @@ class LoginAction extends YesWikiAction
             'email' => ((isset($user['email'])) ? $user['email'] : ((isset($_POST['email'])) ? $_POST['email'] : '')),
             'incomingurl' => $this->arguments['incomingurl'],
             'signupurl' => $this->arguments['signupurl'],
-            'lostpasswordurl' => ! boolval($this->params->get('contact_disable_email_for_password')) ? $this->arguments['lostpasswordurl'] : '',
+            'lostpasswordurl' => !boolval($this->params->get('contact_disable_email_for_password')) ? $this->arguments['lostpasswordurl'] : '',
             'profileurl' => $this->arguments['profileurl'],
             'userpage' => $this->arguments['userpage'],
             'PageMenuUser' => $pageMenuUserContent,
@@ -180,8 +180,7 @@ class LoginAction extends YesWikiAction
                 if (empty($name)) {
                     throw new LoginException(_t('LOGIN_WRONG_USER'));
                 }
-                if (strpos($name, '@') !== false) {
-                    // si le nomWiki est un mail
+                if (filter_var($name, FILTER_VALIDATE_EMAIL)) {
                     $user = $this->userManager->getOneByEmail($name);
                 } else {
                     $user = $this->userManager->getOneByName($name);

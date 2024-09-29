@@ -1,4 +1,5 @@
 <?php
+
 return [
     'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>This page could not be saved.</strong><br />You may have clicked two times on the "Save" button, making two saved in an interval consired as too short, or leaved the page opened in edit mode for a too long period.<br />To save this page, please copy your content, refresh your browser, and paste the content before saving again.',
     'HASHCASH_ANTISPAM_ACTIVATED' => 'Antispam protection activated',

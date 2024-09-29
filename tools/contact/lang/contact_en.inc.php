@@ -1,4 +1,5 @@
 <?php
+
 return [
     // actions/abonnement.php
     'CONTACT_ACTION_ABONNEMENT' => 'Action {{abonnement ...}}',
@@ -71,21 +72,21 @@ return [
     'CONTACT_WELCOME_ON' => 'Welcome to',
     'CONTACT_HELP_IN_NOTIFICATION' => 'go to the site to manage your registration',
     'AB_abonnement_action_mail_label' => 'E-mail from the discussion list',
-    'AB_abonnement_action_label' => "Subscribe to a discussion list",
+    'AB_abonnement_action_label' => 'Subscribe to a discussion list',
     'AB_abonnement_class_label' => 'class',
     'AB_abonnement_mailinglist_label' => 'List of discussion',
     'AB_contact_action_mail_label' => 'E-mail address',
     'AB_contact_action_class_label' => 'css',
     'AB_mailperiod_action_hint' => 'For this action to work you need to check certain parameters on your server. See documents on https://yeswiki.net/?MailPeriod',
     'AB_mailinglist_action_label' => 'Massively write emails to a newsletter',
-    'AB_mailinglist_action_description' => "Action to register or unsubscribe massively emails to a newsletter",
+    'AB_mailinglist_action_description' => 'Action to register or unsubscribe massively emails to a newsletter',
     'CONTACT_SENDMAIL_ERROR' => 'The period has not been filled or has no standard value (month, week or day).',
     'CONTACT_DAILY_REPORT' => 'daily report of the',
     'CONTACT_WEEKLY_REPORT' => 'weekly report',
     'CONTACT_MONTHLY_REPORT' => 'monthly report',
     'CONTACT_ENTRY_ADDED' => 'new plug adds',
-    'AB_deabonnement_action_label' => "Unsubscribe from a discussion list",
-    'AB_contact_action_entete_label' => "Automatic prefix of the mail object",
+    'AB_deabonnement_action_label' => 'Unsubscribe from a discussion list',
+    'AB_contact_action_entete_label' => 'Automatic prefix of the mail object',
     'AB_contact_action_template_hint' => 'Ex.: complete-contact-form.tpl.html',
     'AB_listsubscription_action_label' => 'listsubscription',
     'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => "Add 'wiki=' to the links to this wiki in e-mails",

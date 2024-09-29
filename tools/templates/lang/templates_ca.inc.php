@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TEMPLATE_ACTION' => 'Acció',
     // 'TEMPLATE_FILE_NOT_FOUND' => 'Template non trouvé',
@@ -127,7 +128,7 @@ return [
     'GERERTHEMES_PAGE' => 'Pàgina',
     'AB_templates_tabs_bottom_nav_no' => 'No',
     'AB_templates_tabs_counter_on_bottom_nav_no' => 'No',
-    'AB_templates_nav_label' => "Tabs amb diferents pàgines",
+    'AB_templates_nav_label' => 'Tabs amb diferents pàgines',
     'AB_templates_section_textcolor_black' => 'Frozen',
     'AB_templates_tabs_counter_on_bottom_nav_label' => 'Botons de navegació de número',
     'ACLS_SELECT_PAGES_FILTER_ON_PAGES' => 'només pàgines',
@@ -180,7 +181,7 @@ return [
     'TEMPLATE_PRESET_FILENAME' => 'Nom del preestablert',
     'TEMPLATE_THEME_NOT_SAVE' => 'Tema sense garantia',
     'TEMPLATE_PRESETS' => 'Configuració gràfica',
-    'TEMPLATE_PRESET_ERROR' => "No es pot aplicar aquest preestablert, hi ha un error!",
+    'TEMPLATE_PRESET_ERROR' => 'No es pot aplicar aquest preestablert, hi ha un error!',
     'TEMPLATE_CREATE_PRESET' => 'Crea una nova configuració gràfica',
     'TEMPLATE_CUSTOMIZE_PRESET' => 'Configuració gràfica',
     'AB_template_group_label' => 'Formal',
@@ -257,7 +258,7 @@ return [
     'AB_templates_section_visible_owner' => 'Titular de la pàgina',
     'AB_templates_section_visible_no_container' => 'No posar un contenidor',
     'AB_templates_tabs_label' => 'Tabs amb parts de la pàgina',
-    'AB_templates_tabs_titles_label' => "Títols de pestanyes",
+    'AB_templates_tabs_titles_label' => 'Títols de pestanyes',
     'AB_templates_tabs_titles_hint' => 'Separa cada títol per una coma',
     'AB_templates_tabs_titles_default' => 'Pestanya 1, Pestanya 2, Pestanya 3',
     'AB_templates_tabs_btnsize_label' => 'Mida del botó',

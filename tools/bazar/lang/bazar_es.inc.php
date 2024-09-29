@@ -1,4 +1,5 @@
 <?php
+
 return [
     'BAZ_FORMULAIRE' => 'Formularios',
     'BAZ_LISTES' => 'Listas',
@@ -468,11 +469,11 @@ return [
     'EVENT_UP_TO_DATE' => 'Hasta que:',
     'EVENT_THIRD_Y_OF_MONTH' => 'La tercera Y del mes',
     'EVENTS_WHEN_IN_MONTH' => '¿Cuándo fue el mes?',
-    'BAZ_CORRESPONDANCE_ERROR2' => "acción baazarlista: el parámetro del partido está mal llenado.
-Debe ser el formulario de coincidencia=\"identifiant_1=identifiant_2\" o la correspondencia=\"identifiant_1=identifiant_2, identifier_3=identifiant_4\"",
+    'BAZ_CORRESPONDANCE_ERROR2' => 'acción baazarlista: el parámetro del partido está mal llenado.
+Debe ser el formulario de coincidencia="identifiant_1=identifiant_2" o la correspondencia="identifiant_1=identifiant_2, identifier_3=identifiant_4"',
     'VIDEO_LINK_FIELD' => 'Enlace al vídeo: %{link}',
-    'BAZ_USER_FIELD_ALREADY_CONNECTED' => "Ya estás conectado con el identificador \"{wikiname}\" y el correo electrónico \"{email}\".
-La carpeta creada se vinculará automáticamente a su cuenta. Por favor inicie sesión para crear una nueva cuenta!",
+    'BAZ_USER_FIELD_ALREADY_CONNECTED' => 'Ya estás conectado con el identificador "{wikiname}" y el correo electrónico "{email}".
+La carpeta creada se vinculará automáticamente a su cuenta. Por favor inicie sesión para crear una nueva cuenta!',
     'BAZ_MEMBERS' => 'miembros',
     'BAZ_COMMENTS_INFO_HUMHUB_EMBEDDED' => 'Los comentarios son gestionados por la plataforma social HumHub (Humhub integrado por YesWiki)',
     'EDIT_CONFIG_GROUP_BAZAR' => 'Base de datos',
@@ -492,8 +493,8 @@ La carpeta creada se vinculará automáticamente a su cuenta. Por favor inicie s
     'BAZ_REACTIONS_DEFAULT_NOT_AGREE' => 'No estoy de acuerdo',
     'BAZ_REACTIONS_DEFAULT_NOT_UNDERSTOOD' => 'No entendí',
     'EDIT_CONFIG_HINT_BAZ_ENVOI_MAIL_ADMIN' => 'Enviar un correo electrónico a los administradores en cada cambio de archivo (verdadero o falso)',
-    'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => "El identificador \"{currentName}\" ya existe!
-Compruebe la casilla para confirmar su reemplazo por \"{proposedName}\" o cambiar de otro modo su identificador en el siguiente formulario.",
+    'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => 'El identificador "{currentName}" ya existe!
+Compruebe la casilla para confirmar su reemplazo por "{proposedName}" o cambiar de otro modo su identificador en el siguiente formulario.',
     'EVENT_REPETITION_FOR_DAYS' => 'todos los días',
     'EVENT_ACTIVATE_CUSTOM' => 'Ver opciones adicionales',
     'EVENT_EVERY_DAYS' => 'Cada día',

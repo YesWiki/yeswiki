@@ -407,8 +407,8 @@ class PageManager
                 $timeQuery = $time ? "time = '{$this->dbService->escape($time)}'" : "latest = 'Y'";
                 $page = $this->dbService->loadSingle(
                     "SELECT `owner` FROM {$this->dbService->prefixTable('pages')} " .
-                    "WHERE tag = '{$this->dbService->escape($tag)}' AND {$timeQuery} " .
-                    'LIMIT 1'
+                        "WHERE tag = '{$this->dbService->escape($tag)}' AND {$timeQuery} " .
+                        'LIMIT 1'
                 );
                 $this->ownersCache[$tag] = $page['owner'] ?? null;
             }
@@ -499,11 +499,19 @@ class PageManager
         }
         $pages = array_map(function ($page) use ($guard, $allEntriesTags, $userNameForCheckingACL) {
             return (isset($page['tag']) &&
-                    in_array($page['tag'], $allEntriesTags)
+                in_array($page['tag'], $allEntriesTags)
             ) ? $guard->checkAcls($page, $page['tag'], $userNameForCheckingACL)
-                    : $page;
+                : $page;
         }, $pages);
 
         return $pages;
+    }
+
+    private function duplicate($sourceTag, $destinationTag): bool
+    {
+        $result = false;
+        $this->wiki->LogAdministrativeAction($this->authController->getLoggedUserName(), 'Duplication de la page ""' . $sourceTag . '"" vers la page ""' . $destinationTag . '""');
+
+        return $result;
     }
 }

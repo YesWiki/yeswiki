@@ -1,4 +1,5 @@
 <?php
+
 return [
     'ACEDITOR_SAVE' => 'Desa',
     'ACEDITOR_FORMAT' => 'Format',

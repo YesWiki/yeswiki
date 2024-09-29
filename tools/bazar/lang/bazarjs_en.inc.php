@@ -1,4 +1,5 @@
 <?php
+
 return [
     // fields/CalcField.php
     'BAZ_FORM_EDIT_CALC_LABEL' => 'Calculations',
@@ -318,7 +319,7 @@ return [
     'BAZ_REACTIONS_FIELD_LABELS_HINT' => 'Leave empty or separated by commas',
     'BAZ_REACTIONS_FIELD_IMAGES_PLACEHOLDER' => 'mikone-top-gratitude.svg,j-aime,j-ai-appris,pas-compris,pas-d-accord,idee-noire',
     'LIST_ADD_CHILD_NODE' => 'Add a sub-value',
-    'LIST_ERROR_MISSING_IDS' => "Some values have no associated key",
+    'LIST_ERROR_MISSING_IDS' => 'Some values have no associated key',
     'LIST_ERROR_DUPLICATES_IDS' => 'Each key must be unique. These keys are used several times: ',
     'BAZ_FORM_EDIT_LISTEFICHES_TEMPLATE_PLACEHOLDER' => 'Ex : template="liste_liens.tpl.html (by default = accordon)"',
     'BAZ_FORM_EDIT_IMAGE_WIDTH' => 'Thumbnail width',
