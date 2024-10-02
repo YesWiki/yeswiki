@@ -686,4 +686,8 @@ return [
     'REACTION_TITLE_PARAM_NEEDED' => 'Le paramètre \'titre\' est obligatoire',
     'REACTION_BAD_IMAGE_FORMAT' => 'Mauvais format d\'image : doit être un fichier, un icône utf8 ou une classe Fontawesome',
     'REACTION_NO_IMAGE' => 'Image manquante',
+    'GROUP_NAME_ALREADY_USED' => 'le groupe existe déjà',
+    'USER_NAME_DOES_NOT_EXIST' => 'l\'utlisateur n\'existe pas',
+    'GROUP_NAME_DOES_NOT_EXIST' => 'le groupe n\'existe pas',
+    'INVALID_GROUP_NAME' => 'le nom du groupe n\'est pas valide',
 ];
