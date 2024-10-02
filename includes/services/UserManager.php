@@ -66,7 +66,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     }
     
     public function userExist($name): bool {
-        return !empty($this->getOneByName($name))
+        return !empty($this->getOneByName($name));
     }
 
     public function getOneByName($name, $password = null): ?User

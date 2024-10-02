@@ -7,6 +7,7 @@ use YesWiki\Core\Exception\InvalidGroupNameException;
 use YesWiki\Core\Exception\GroupNameDoesNotExistException;
 use YesWiki\Core\Exception\GroupNameAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
+use YesWiki\Core\Exception\UserNameDoesNotExistException;
 use YesWiki\Core\Service\GroupManager;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
@@ -60,7 +61,9 @@ class GroupController extends YesWikiController
         if ($this->isNameValid($name))
         {
             $this->groupManager->create($name, $members);
-        } else
+        } else {
+            throw new InvalidGroupNameException(_t('INVALID_GROUP_NAME'));  // FIXME vérifier INVALID_GROUP_NAME
+        }
     }
     
      /**
@@ -84,30 +87,30 @@ class GroupController extends YesWikiController
      */
     public function addOne(string $group_name, string $name) 
     {
-        if(!$this->groupManager->groupExists()) {
+        if(!$this->groupManager->groupExists($group_name)) {
             throw new GroupNameDoesNotExistException();
         }
         if(str_starts_with($name, "@") {
-            if($this->groupManager->groupExists()) {
-                throw new GroupNameAlreadyUsedException(_t('GROUP_NAME_ALREADY_USED'));
+            if(!$this->groupManager->groupExists($name)) {
+                throw new GroupNameDoesNotExistException(_t('GROUP_NAME_DOES_NOT_EXIST')); // FIXME voir GROUP_NAME_DOES_NOT_EXIST
             }
         } else {
-            if($this->userManager->userExist()) {
-                throw new UserNameAlreadyUsedException(_t('USER_NAME_ALREADY_USED'));
+            if(!$this->userManager->userExist($name)) {
+                throw new UserNameDoesNotExistException(_t('USER_NAME_DOES_NOT_EXIST')); // FIXME voir USER_NAME_DOES_NOT_EXIST
             }
         }
-        
         $this->groupManager->add($group_name, $name);
     }
     
     /**
      *  remove user or group from group
+     * @param string $$group_name group to remove from
      * @param string $name user or group to remove
      * @return bool
      * @throws UserDoesNotExistException
      * @throws GroupDoesNotExistException
      */
-    public function removeOne(string $name)
+    public function removeOne(string $group_name, string $name)
     {
         
     }
