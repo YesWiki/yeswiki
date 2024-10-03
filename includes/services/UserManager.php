@@ -64,8 +64,9 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         // be carefull the User::__construct is really strict about list of properties that should set
         return new User($userAsArray);
     }
-    
-    public function userExist($name): bool {
+
+    public function userExist($name): bool
+    {
         return !empty($this->getOneByName($name));
     }
 

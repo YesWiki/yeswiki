@@ -16,6 +16,7 @@ use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Controller\PageController;
 use YesWiki\Core\Controller\UserController;
+use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Service\AclService;
@@ -29,6 +30,12 @@ use YesWiki\Core\Service\ReactionManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
+
+use YesWiki\Core\Exception\GroupNameDoesNotExistException;
+use YesWiki\Core\Exception\GroupNameAlreadyUsedException;
+use YesWiki\Core\Exception\UserNameDoesNotExistException;
+use YesWiki\Core\Exception\InvalidGroupNameException;
+use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 
 class ApiController extends YesWikiController
 {
@@ -248,6 +255,96 @@ class ApiController extends YesWikiController
         return new ApiResponse($users);
     }
 
+
+    /**
+     * @Route("/api/groups",methods={"POST"},options={"acl":{"public"}})
+     */
+    public function createGroup()
+    {
+        $this->denyAccessUnlessAdmin();
+        $groupController = $this->getService(GroupController::class);
+
+        if (empty($_POST['name'])) {
+            $code = Response::HTTP_BAD_REQUEST;
+            $result = [
+                'error' => "\$_POST['name'] should not be empty",
+            ];
+        } else {
+            try {
+                $group_name = $_POST['name'];
+                $users = empty($_POST['users']) ? array() : $_POST['users'];
+                $result = $groupController->create($group_name, $users);
+                $code = Response::HTTP_OK;
+            } catch (GroupNameAlreadyUsedException $th) {
+                $code = Response::HTTP_UNPROCESSABLE_ENTITY;
+                $result = [
+                    'notCreated' => [strval($_POST['name'])],
+                    'error' => str_replace('{currentName}', strval($_POST('name')), _t('USERSETTINGS_NAME_ALREADY_USED'))
+                ];
+            } catch (InvalidGroupNameException $th) {
+                $code = Response::HTTP_UNPROCESSABLE_ENTITY;
+                $result = [
+                    'notCreated' => [strval($_POST['name'])],
+                    'error' => $th->getMessage()
+                ];
+            } catch (UserNameDoesNotExistException | GroupNameDoesNotExistException $th) {
+                $code = Response::HTTP_UNPROCESSABLE_ENTITY;
+                $result = [
+                    'notCreated' => [strval($_POST['name'])],
+                    'error' => str_replace('{currentName}', $th->getMessage(), _t('USERSETTINGS_NAME_NOT_FOUND'))
+                ];
+            } catch (ExitException $th) {
+                throw $th;
+            } catch (Exception $th) {
+                $code = Response::HTTP_BAD_REQUEST;
+                $result = [
+                    'notCreated' => [strval($_POST['name'])],
+                    'error' => $th->getMessage()
+                ];
+            } catch (Throwable $th) {
+                $code = Response::HTTP_INTERNAL_SERVER_ERROR;
+                $result = [
+                    'notCreated' => [strval($_POST['name'])],
+                    'error' => $th->getMessage()
+                ];
+            }
+        }
+        return new ApiResponse($result, $code);
+    }
+
+    /**
+     * @Route("/api/groups",methods={"GET"},options={"acl":{"public"}})
+     */
+    public function getAllGroups()
+    {
+        $this->denyAccessUnlessAdmin();
+        $groupController = $this->getService(GroupController::class);
+
+        return new ApiResponse($groupController->getAll());
+    }
+
+
+    /**
+     * @Route("/api/groups/{group_name}",methods={"GET"}, options={"acl":{"public"}})
+     */
+    public function getGroup(string $group_name)
+    {
+        $this->denyAccessUnlessAdmin();
+        $groupController = $this->getService(GroupController::class);
+
+        try {
+            $result = $groupController->getMembers($group_name);
+            $code = Response::HTTP_OK;
+        } catch (GroupNameDoesNotExistException $th) {
+            $code = Response::HTTP_NOT_FOUND;
+            $result = [
+                    'notFound' => $group_name,
+                    'error' => $th->getMessage()
+                ];
+        }
+        return new ApiResponse($result, $code);
+    }
+
     /**
      * @Route("/api/comments/{tag}",methods={"GET"}, options={"acl":{"public"}})
      */
@@ -296,16 +393,6 @@ class ApiController extends YesWikiController
     {
         // todo use Anti-Csrf token or Bearer HTTP header
         return $this->deleteComment($tag);
-    }
-
-    /**
-     * @Route("/api/groups", options={"acl":{"public"}})
-     */
-    public function getAllGroups()
-    {
-        $this->denyAccessUnlessAdmin();
-
-        return new ApiResponse($this->wiki->GetGroupsList());
     }
 
     /**

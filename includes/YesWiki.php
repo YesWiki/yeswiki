@@ -949,7 +949,7 @@ class Wiki
      * @return string the ACL associated with the group $gname
      * @see UserIsInGroup to check if a user belongs to some group
      */
-    public function GetGroupACL($group)
+    public function GetGroupACL($group) //FIXME
     {
         if (array_key_exists($group, $this->_groupsCache)) {
             return $this->_groupsCache[$group];
@@ -967,7 +967,7 @@ class Wiki
      *            The new acl for that group
      * @return boolean True if the new acl defines the group recursively
      */
-    public function MakesGroupRecursive($gname, $acl, $origin = null, $checked = array())
+    public function MakesGroupRecursive($gname, $acl, $origin = null, $checked = array()) //FIXME
     {
         $gname = strtolower(trim($gname));
         if ($origin === null) {
@@ -1014,7 +1014,7 @@ class Wiki
      *         1001 if $gname is not named with alphanumeric chars
      * @see GetGroupACL
      */
-    public function SetGroupACL($gname, $acl)
+    public function SetGroupACL($gname, $acl) //FIXME
     {
         if (preg_match('/[^A-Za-z0-9]/', $gname)) {
             return 1001;
@@ -1049,7 +1049,7 @@ class Wiki
      *
      * @return array The list of all group names
      */
-    public function GetGroupsList()
+    public function GetGroupsList() //FIXME
     {
         $res = $this->GetMatchingTriples(GROUP_PREFIX . '%', WIKINI_VOC_ACLS_URI);
         $prefix_len = strlen(GROUP_PREFIX);

@@ -57,4 +57,5 @@ return [
     'USERSETTINGS_CHANGE_PWD_IN_IFRAME' => "Vous vous apprêtez à changer votre mot de passe dans une fenêtre de type iframe.\n" .
         "Pour éviter les attaques par enregistrement de vos touches, assurez-vous que l'url du site commence bien par {baseUrl}.\n" .
         "Au moindre doute, ouvrez ce formulaire dans une page dédiée en cliquant sur ce lien {link}.",
+    'USERSETTINGS_NAME_NOT_FOUND' => 'L\'identifiant "{currentName}" n\'existe pas !',
 ];
