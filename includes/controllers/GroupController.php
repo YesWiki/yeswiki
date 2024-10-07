@@ -36,6 +36,15 @@ class GroupController extends YesWikiController
         }
         return !preg_match('/[^A-Za-z0-9]/', $name);
     }
+    
+        /**
+     * @param string $groupName
+     * @return bool
+     */
+    public function groupExists(string $name): bool
+    {
+        return $this->groupManager->groupExists($name);
+    }
 
 
     /**
@@ -64,6 +73,7 @@ class GroupController extends YesWikiController
         }
         if ($this->isNameValid($name)) {
             foreach($members as $member) {
+                // plus nécessaire à la création du groupe ?
                 switch ($this->checkMemberValidity($name, $member)) {
                     case 0:
                         break;
@@ -100,6 +110,8 @@ class GroupController extends YesWikiController
     {
         if ($this->groupManager->groupExists($name)) {
             $this->groupManager->delete($name);
+        } else {
+            throw new GroupNameDoesNotExistException(_t(GROUP_NAME_DOES_NOT_EXIST));
         }
     }
 
@@ -229,6 +241,7 @@ class GroupController extends YesWikiController
      * @return bool
      * @throws UserDoesNotExistException
      * @throws GroupDoesNotExistException
+     * @throws InvalidInputException
      */
     public function update(string $groupName, array $names)
     {
