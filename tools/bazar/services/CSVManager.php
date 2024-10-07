@@ -463,16 +463,8 @@ class CSVManager
             $data = $this->detectHeadersOnPropertyName($data);
             $data = $this->detectHeadersModifiedAfterOneDetected($data);
             $columnIndexes = $data['columnIndexes'];
-            $columnIndexes = $this->removeDateTimeColumns($columnIndexes);
         } else {
             $index = 0;
-            // remove date columns if existing
-            if ($firstLine[$index] == 'datetime_create') {
-                $index++;
-            }
-            if ($firstLine[$index] == 'datetime_latest') {
-                $index++;
-            }
             // sweep on headers
             $columnIndexes = [];
             foreach ($headers as $propertyName => $header) {
@@ -638,15 +630,20 @@ class CSVManager
     private function getEntryFromCSVLine(array $data, array $headers, array $columnIndexesForPropertyNames, string $formId): ?array
     {
         $entry = [];
+        $skipFields = ['datetime_create', 'datetime_latest'];
         foreach ($columnIndexesForPropertyNames as $propertyName => $index) {
-            $field = $headers[$propertyName]['field'];
+            if (!in_array($propertyName, $skipFields)) {
+                $field = $headers[$propertyName]['field'];
+            } else {
+                $field = ''; // fake entry for skipped fields
+            }
             if (intval($index) == $index) {
                 // standard case
                 $value = $this->getValueFromData($data, $index);
                 if (!empty($value)) {
                     if (
                         $field instanceof EnumField
-                        && !($field instanceof TagsField)
+                            && !($field instanceof TagsField)
                     ) {
                         // for tags not needed to get keys because these are the same
                         // and do not filter on existing tags but allow alls tags
@@ -657,18 +654,24 @@ class CSVManager
                     } elseif ($field instanceof FileField) {
                         // traitement des images (doivent être présentes dans le dossier files du wiki)
                         $value = $this->extractValueFromFileFieldData($value, $field);
+                    } elseif (in_array($propertyName, ['datetime_latest', 'datetime_create'])) {
+                        $datetime = \DateTime::createFromFormat(
+                            'd/m/Y H:i:s',
+                            $value,
+                            new \DateTimeZone($this->wiki->config['timezone'])
+                        );
+                        $value = $datetime->getTimestamp();
                     }
                     $entry[$propertyName] = $value;
                 }
             }
         }
-
         // append entry's data
         if (!empty($entry['bf_titre'])) {
             $entry['id_fiche'] = genere_nom_wiki($entry['bf_titre']);
             $entry['id_typeannonce'] = $formId;
-            $entry['date_creation_fiche'] = date('Y-m-d H:i:s', time());
-            $entry['date_maj_fiche'] = date('Y-m-d H:i:s', time());
+            $entry['date_creation_fiche'] = date('Y-m-d H:i:s', $entry['datetime_create'] ?? time());
+            $entry['date_maj_fiche'] = date('Y-m-d H:i:s', $entry['datetime_latest'] ?? time());
             if ($this->wiki->UserIsAdmin()) {
                 $entry['statut_fiche'] = 1;
             } else {
@@ -678,6 +681,11 @@ class CSVManager
             $this->errormsg[] = 'Empty $entry[\'bf_titre\'] in ' . get_class($this) . ', line ' . __LINE__;
 
             return null;
+        }
+        foreach ($skipFields as $field) {
+            if (isset($entry[$field])) {
+                unset($entry[$field]);
+            }
         }
 
         return !empty($entry) ? $entry : null;
