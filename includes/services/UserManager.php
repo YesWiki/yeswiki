@@ -14,9 +14,11 @@ use Throwable;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
+use YesWiki\Core\Exception\GroupNameDoesNotExistException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\PasswordHasherFactory;
@@ -39,7 +41,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         DbService $dbService,
         ParameterBagInterface $params,
         PasswordHasherFactory $passwordHasherFactory,
-        SecurityController $securityController
+        SecurityController $securityController,
     ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
@@ -295,7 +297,12 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     public function isInGroup(string $groupName, ?string $username = null, bool $admincheck = true, array $formerGroups = [])
     {
         // aclService could  not be loaded in __construct because AclService already loads UserManager
-        return $this->wiki->services->get(AclService::class)->check($this->wiki->GetGroupACL($groupName), $username, $admincheck, '', '', $formerGroups);
+        try {
+        $members = $this->wiki->services->get(GroupController::class)->getMembers($groupName);
+        } catch (GroupNameDoesNotExistException $th) {
+            $members = [];
+        }
+        return $this->wiki->services->get(AclService::class)->check(implode("\n", $members), $username, $admincheck, '', '', $formerGroups);
     }
 
     /* ~~~~~~~~~~~~~~~~~~ implements  PasswordUpgraderInterface ~~~~~~~~~~~~~~~~~~ */

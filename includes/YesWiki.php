@@ -26,6 +26,7 @@ use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Controller\UserController;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ApiService;
@@ -41,6 +42,11 @@ use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\YesWikiControllerResolver;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Tags\Service\TagsManager;
+use YesWiki\Core\Controller\GroupController;
+use YesWiki\Core\Exception\GroupNameDoesNotExistException;
+use YesWiki\Core\Exception\InvalidGroupNameException;
+use YesWiki\Core\Exception\InvalidInputException;
+
 
 class Wiki
 {
@@ -948,58 +954,20 @@ class Wiki
      *            The name of a group
      * @return string the ACL associated with the group $gname
      * @see UserIsInGroup to check if a user belongs to some group
+     *  @deprecated Use GroupController::getMembers instead
      */
-    public function GetGroupACL($group) //FIXME
+    public function GetGroupACL($group)
     {
         if (array_key_exists($group, $this->_groupsCache)) {
             return $this->_groupsCache[$group];
         }
-        return $this->_groupsCache[$group] = $this->GetTripleValue($group, WIKINI_VOC_ACLS, GROUP_PREFIX);
-    }
-
-    /**
-     * Checks if a new group acl is not defined recursively
-     * (this method expects that groups that are already defined are not themselves defined recursively...)
-     *
-     * @param string $gname
-     *            The name of the group
-     * @param string $acl
-     *            The new acl for that group
-     * @return boolean True if the new acl defines the group recursively
-     */
-    public function MakesGroupRecursive($gname, $acl, $origin = null, $checked = array()) //FIXME
-    {
-        $gname = strtolower(trim($gname));
-        if ($origin === null) {
-            $origin = $gname;
-        } elseif ($gname === $origin) {
-            return true;
+        $groupController = $this->services->get(GroupController::class);
+        try {
+            return $this->_groupsCache[$group] = implode("\n",$groupController->getMembers($group));
         }
-        $acl = str_replace(["\r\n", "\r"], "\n", $acl);
-        foreach (explode("\n", $acl) as $line) {
-            $line = trim($line);
-            if (!$line) {
-                continue;
-            }
-
-            if ($line[0] == '!') {
-                $line = substr($line, 1);
-            }
-            if (!$line) {
-                continue;
-            }
-
-            if ($line[0] == '@') {
-                $line = substr($line, 1);
-                if (!in_array($line, $checked)) {
-                    if ($this->MakesGroupRecursive($line, $this->GetGroupACL($line) ?? '', $origin, $checked)) {
-                        return true;
-                    }
-                }
-            }
+        catch (GroupNameDoesNotExistException $th) {
+            return [];
         }
-        $checked[] = $gname;
-        return false;
     }
 
     /**
@@ -1013,51 +981,39 @@ class Wiki
      *         1000 if the new value would define the group recursively
      *         1001 if $gname is not named with alphanumeric chars
      * @see GetGroupACL
+     * 
+     * @deprecated Use GroupController::update and GroupController::create instead
      */
-    public function SetGroupACL($gname, $acl) //FIXME
+    public function SetGroupACL($gname, $acl)
     {
-        if (preg_match('/[^A-Za-z0-9]/', $gname)) {
-            return 1001;
-        }
-        $old = $this->GetGroupACL($gname);
-        // we get rid of lost spaces before saving to db
+        $groupController = $this->services->get(GroupController::class);
         $acl = str_replace(["\r\n", "\r"], "\n", $acl);
-        $acls = explode("\n", $acl);
-        $acls = array_map('trim', $acls);
-        $acl = implode("\n", $acls);
-        if ($this->MakesGroupRecursive($gname, $acl)) {
+        $members = explode("\n", $acl);
+        $members = array_map('trim', $members);
+        try {
+            if ($groupController->groupExists($gname))
+            {
+                $groupController->update($gname, $members);
+            } else {
+                $groupController->create($gname, $members);
+            }
+        } catch (InvalidGroupNameException $th) {
+            return 1001;
+        } catch (InvalidInputException $th) {
             return 1000;
         }
-        $this->_groupsCache[$gname] = $acl;
-        if ($old === null) {
-            return $this->InsertTriple($gname, WIKINI_VOC_ACLS, $acl, GROUP_PREFIX);
-        } elseif ($old === $acl) {
-            return 0; // nothing has changed
-        } elseif (strcasecmp($old, $acl) === 0 && strcmp($old, $acl) !== 0) {
-            // possible error when directly updating triple
-            if ($this->DeleteTriple($gname, WIKINI_VOC_ACLS, $old, GROUP_PREFIX)) {
-                return $this->InsertTriple($gname, WIKINI_VOC_ACLS, $acl, GROUP_PREFIX);
-            } else {
-                return $this->UpdateTriple($gname, WIKINI_VOC_ACLS, $old, $acl, GROUP_PREFIX);
-            }
-        } else {
-            return $this->UpdateTriple($gname, WIKINI_VOC_ACLS, $old, $acl, GROUP_PREFIX);
-        }
+        return 0;
     }
 
     /**
      *
      * @return array The list of all group names
+     *  @deprecated Use GroupController::getAll instead
      */
-    public function GetGroupsList() //FIXME
+    public function GetGroupsList()
     {
-        $res = $this->GetMatchingTriples(GROUP_PREFIX . '%', WIKINI_VOC_ACLS_URI);
-        $prefix_len = strlen(GROUP_PREFIX);
-        $list = array();
-        foreach ($res as $line) {
-            $list[] = substr($line['resource'], $prefix_len);
-        }
-        return $list;
+        $groupController = $this->services->get(GroupController::class);
+        return $groupController->getAll();
     }
 
     /**
