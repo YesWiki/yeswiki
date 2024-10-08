@@ -20,6 +20,7 @@ use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\GroupNameDoesNotExistException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
+use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Security\Controller\SecurityController;
@@ -32,6 +33,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     protected $passwordHasherFactory;
     protected $securityController;
     protected $params;
+    protected $tripleStore;
 
     private $getOneByNameCacheResults;
 
@@ -42,12 +44,14 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         ParameterBagInterface $params,
         PasswordHasherFactory $passwordHasherFactory,
         SecurityController $securityController,
+        TripleStore $tripleStore
     ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->passwordHasherFactory = $passwordHasherFactory;
         $this->securityController = $securityController;
         $this->params = $params;
+        $this->tripleStore = $tripleStore;
         $this->getOneByNameCacheResults = [];
     }
 
@@ -277,12 +281,13 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function groupsWhereIsMember(User $user, bool $adminCheck = true)
     {
-        $groups = $this->wiki->GetGroupsList();
-        $groups = array_filter($groups, function ($group) use ($user, $adminCheck) {
-            return !empty($user['name']) && $this->isInGroup($group, $user['name'], $adminCheck);
-        });
-
-        return $groups;
+        $group_list = $this->tripleStore->getMatching(GROUP_PREFIX . '%', null, '%'.$user['name'].'%', 'LIKE', '=', 'LIKE');
+        $prefix_len = strlen(GROUP_PREFIX);
+        $list = array();
+        foreach($group_list as $group) {
+            $list[] = substr($group['resource'], $prefix_len);
+        }
+        return $list;
     }
 
     /** Tells if a user is member of the specified group.
