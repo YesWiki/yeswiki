@@ -38,10 +38,13 @@ class GroupControllerTest extends YesWikiTestCase
         $invalid_group_name = $wiki->generateRandomString(5, self::INVALID_CHAR).$wiki->generateRandomString(10);
         $valid_group_name = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
         $new_valid_group = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
+        $included_group = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
 
         $userController = $wiki->services->get(UserController::class);
         $user_name = $wiki->generateRandomString(10);
         $userController->create(['name' => $user_name, 'email' => $valid_group_name.'@example.com', 'password' => $user_name]); 
+        
+        $groupController = $wiki->services->get(GroupController::class);
         
         // groupname, error type, members
         return [
@@ -113,9 +116,11 @@ class GroupControllerTest extends YesWikiTestCase
      */
     public function testDelete(string $groupname, int $result_type, array $members, GroupController $groupcontroller) {
             if ($result_type == 0 ) {
-               $groupcontroller->create($groupname, $members);
+               $groupcontroller->create($groupname, []);
+               $groupcontroller->create($members[0].'group', ['@'.$groupname]);
                $groupcontroller->delete($groupname);
                $this->assertFalse($groupcontroller->groupExists($groupname));
+               $this->assertNotContains($groupname, $groupcontroller->getMembers($members[0].'group'), "Group ".$groupname." has not been removed from ".$$members[0].'group');
             } else if ($result_type == 1) {
                 $this->expectException(GroupNameDoesNotExistException::class);
                 $groupcontroller->delete($groupname);

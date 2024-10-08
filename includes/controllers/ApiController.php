@@ -259,14 +259,17 @@ class ApiController extends YesWikiController
     
     /**
      * 
-     * @Route("api/groups/{group_name}/delete",methods={"DELETE"},options={"acl":{"public","@admin"}})
+     * @Route("api/groups/{group_name}/delete",methods={"POST"},options={"acl":{"public","@admin"}})
      */
     public  function deleteGroup(string $group_name) {
         $this->denyAccessUnlessAdmin();
         $groupController = $this->getService(GroupController::class);
-        
         try {
             $groupController->delete($group_name);
+            $code = Response::HTTP_OK;
+            $result = [
+                'deleted' => [$group_name]
+        ];
         } catch (GroupNameDoesNotExistException $th) {
              $code = Response::HTTP_NOT_FOUND;
              $result = [

@@ -100,6 +100,7 @@ class TripleStore
         if (count($where) > 0) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
+        error_log($sql);
         return $this->dbService->loadAll($sql);
     }
 

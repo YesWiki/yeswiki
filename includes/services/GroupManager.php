@@ -45,7 +45,14 @@ class GroupManager
 
     public function delete(string $group_name): void
     {
+        $group_list = $this->tripleStore->getMatching(GROUP_PREFIX . '%', WIKINI_VOC_ACLS_URI, '%@'.$group_name.'%', 'LIKE', '=', 'LIKE');
         $this->tripleStore->delete($group_name, WIKINI_VOC_ACLS, null, GROUP_PREFIX);
+        $prefix_len = strlen(GROUP_PREFIX);
+        $list = array();
+        foreach($group_list as $group) {
+            $group = substr($group['resource'], $prefix_len);
+            $this->removeMembers($group, ['@'.$group_name]);
+        }
     }
 
 
