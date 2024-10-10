@@ -125,6 +125,8 @@ return [
     'NEW_ACL_SUCCESSFULLY_SAVED_FOR_THE_GROUP' => 'Nouvelle ACL enrégistrée avec succès pour le groupe',
     'EDIT_GROUP' => 'éditer le groupe',
     'EDIT_EXISTING_GROUP' => 'Éditer un groupe existant',
+    'USERS_GROUPS_LIST' => 'Liste des groupes et utilisateurices',
+    'GROUP_SELECTION' => 'sélection',
     'DELETE_EXISTING_GROUP' => 'Supprimer un groupe existant',
     'GROUP_NAME' => 'Nom du groupe',
     'SEE_EDIT' => 'Voir / Éditer',

@@ -3,14 +3,21 @@
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Controller\GroupController;
+use YesWiki\Core\Controller\UserController;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\TripleStore;
+use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
+use function PHPUnit\Framework\returnArgument;
 
 class EditGroupsAction extends YesWikiAction
 {
     public function run()
     {
+        $groupController = $this->getService(GroupController::class);
+        $userManager = $this->getService(UserManager::class);
+        
         if (!$this->wiki->UserIsAdmin()) {
             return $this->render('@templates/alert-message.twig', [
                 'type' => 'danger',
@@ -50,17 +57,21 @@ class EditGroupsAction extends YesWikiAction
         }
 
         // retrieves an array of group names from table 'triples' (content of 'resource' starts with 'ThisWikiGroup' and content of 'property' equals  'http://www.wikini.net/_vocabulary/acls')
-        $list = $this->wiki->GetGroupsList();
+        $list = $groupController->getAll();
         sort($list);
+        $users = array_map(function ($user){ return $user['name'];}, $userManager->getAll());
+        sort($users);
+        $merged_list = array_merge(array_map( function($el) { return '@'.$el;}, $list), $users);
 
         if (!empty($selectedGroupName) && in_array($selectedGroupName, $list)) {
-            $currentGroupAcl = $this->wiki->GetGroupACL($selectedGroupName);
+            $currentGroupAcl = $groupController->getMembers($selectedGroupName);         
         }
+        
+        $field = [ 'name' => '', 'propertyName' => '', 'required'=> false, 'label'=> $selectedGroupName ];
 
         return $this->render(
             '@core/actions/edit-group-action.twig',
-            compact(['list','message','type','currentGroupAcl','selectedGroupName','action'])
-        );
+            [ 'list' => $list, 'selectedGroupName' => $selectedGroupName, 'field' => $field, 'options' => $merged_list, 'selectedOptionsId' => $currentGroupAcl, 'formName' => _t('USERS_GROUPS_LIST'), 'name'=> _t('GROUP_SELECTION')]);
     }
 
     protected function saveAcl(string $selectedGroupName): array
