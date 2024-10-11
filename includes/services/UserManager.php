@@ -17,6 +17,9 @@ use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\GroupNameDoesNotExistException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
+use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\PasswordHasherFactory;
+use YesWiki\Core\Service\TripleStore;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
@@ -33,6 +36,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     protected $params;
     protected $tripleStore;
     protected $userlink;
+
     private $getOneByNameCacheResults;
 
     private const PW_SALT = 'FBcA';
@@ -370,13 +374,12 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function groupsWhereIsMember(User $user, bool $adminCheck = true)
     {
-        $group_list = $this->tripleStore->getMatching(null, WIKINI_VOC_ACLS_URI, '%' . $user['name'] . '%', 'LIKE', '=', 'LIKE');
+        $group_list = $this->tripleStore->getMatching(GROUP_PREFIX . '%', null, '%'.$user['name'].'%', 'LIKE', '=', 'LIKE');
         $prefix_len = strlen(GROUP_PREFIX);
-        $list = [];
-        foreach ($group_list as $group) {
+        $list = array();
+        foreach($group_list as $group) {
             $list[] = substr($group['resource'], $prefix_len);
         }
-
         return $list;
     }
 

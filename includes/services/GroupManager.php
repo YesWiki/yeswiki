@@ -21,6 +21,7 @@ class GroupManager
     public function groupExists(string $group_name): bool
     {
         return $this->tripleStore->getMatching(GROUP_PREFIX . $group_name, null, null, '=') != null | $this->userManager->userExist($group_name);
+
     }
 
     /**
