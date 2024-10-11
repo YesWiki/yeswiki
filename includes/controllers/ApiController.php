@@ -2,23 +2,20 @@
 
 namespace YesWiki\Core\Controller;
 
-use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use Throwable;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\ApiResponse;
-use YesWiki\Core\Controller\ArchiveController;
-use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Controller\CsrfTokenController;
-use YesWiki\Core\Controller\PageController;
-use YesWiki\Core\Controller\UserController;
-use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\ExitException;
+use YesWiki\Core\Exception\GroupNameAlreadyUsedException;
+use YesWiki\Core\Exception\GroupNameDoesNotExistException;
+use YesWiki\Core\Exception\InvalidGroupNameException;
+use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
+use YesWiki\Core\Exception\UserNameDoesNotExistException;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\CommentService;
@@ -30,12 +27,6 @@ use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
-
-use YesWiki\Core\Exception\GroupNameDoesNotExistException;
-use YesWiki\Core\Exception\GroupNameAlreadyUsedException;
-use YesWiki\Core\Exception\UserNameDoesNotExistException;
-use YesWiki\Core\Exception\InvalidGroupNameException;
-use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 
 class ApiController extends YesWikiController
 {
@@ -157,7 +148,7 @@ class ApiController extends YesWikiController
                 'notDeleted' => [$userId],
                 'error' => $th->getMessage(),
             ];
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             $code = Response::HTTP_INTERNAL_SERVER_ERROR;
             $result = [
                 'notDeleted' => [$userId],
@@ -191,7 +182,7 @@ class ApiController extends YesWikiController
                 $user = $userController->create([
                     'name' => strval($_POST['name']),
                     'email' => strval($_POST['email']),
-                    'password' => $this->wiki->generateRandomString(30)
+                    'password' => $this->wiki->generateRandomString(30),
                 ]);
                 if (!boolval($this->wiki->config['contact_disable_email_for_password']) && !empty($user)) {
                     $link = $userController->sendPasswordRecoveryEmail($user);
@@ -205,7 +196,7 @@ class ApiController extends YesWikiController
                         'name' => $user['name'],
                         'email' => $user['email'],
                         'signuptime' => $user['signuptime'],
-                        'link' => $link
+                        'link' => $link,
                     ],
                 ];
             } catch (UserNameAlreadyUsedException $th) {
@@ -222,13 +213,13 @@ class ApiController extends YesWikiController
                 ];
             } catch (ExitException $th) {
                 throw $th;
-            } catch (Exception $th) {
+            } catch (\Exception $th) {
                 $code = Response::HTTP_BAD_REQUEST;
                 $result = [
                     'notCreated' => [strval($_POST['name'])],
                     'error' => $th->getMessage(),
                 ];
-            } catch (Throwable $th) {
+            } catch (\Throwable $th) {
                 $code = Response::HTTP_INTERNAL_SERVER_ERROR;
                 $result = [
                     'notCreated' => [strval($_POST['name'])],
@@ -239,7 +230,6 @@ class ApiController extends YesWikiController
 
         return new ApiResponse($result, $code);
     }
-    
 
     /**
      * @Route("/api/users",methods={"GET"}, options={"acl":{"public"}})
@@ -265,33 +255,33 @@ class ApiController extends YesWikiController
         return new ApiResponse($users);
     }
 
-    
     /**
-     * 
      * @Route("api/groups/{group_name}/delete",methods={"POST"},options={"acl":{"public","@admin"}})
      */
-    public  function deleteGroup(string $group_name) {
+    public function deleteGroup(string $group_name)
+    {
         $this->denyAccessUnlessAdmin();
         $groupController = $this->getService(GroupController::class);
         try {
             $groupController->delete($group_name);
             $code = Response::HTTP_OK;
             $result = [
-                'deleted' => [$group_name]
-        ];
+                'deleted' => [$group_name],
+            ];
         } catch (GroupNameDoesNotExistException $th) {
-             $code = Response::HTTP_NOT_FOUND;
-             $result = [
-                    'name' => [$group_name],
-                    'error' => str_replace('{currentName}', $group_name, _t('USERSETTINGS_NAME_NOT_FOUND'))
-                ];
-        } catch (Throwable $th) {
-             $code = Response::HTTP_INTERNAL_SERVER_ERROR;
-             $result = [
-                    'name' => [$group_name],
-                    'error' => $th->getMessage(),
-                ];
+            $code = Response::HTTP_NOT_FOUND;
+            $result = [
+                'name' => [$group_name],
+                'error' => str_replace('{currentName}', $group_name, _t('USERSETTINGS_NAME_NOT_FOUND')),
+            ];
+        } catch (\Throwable $th) {
+            $code = Response::HTTP_INTERNAL_SERVER_ERROR;
+            $result = [
+                'name' => [$group_name],
+                'error' => $th->getMessage(),
+            ];
         }
+
         return new ApiResponse($result, $code);
     }
 
@@ -307,52 +297,53 @@ class ApiController extends YesWikiController
             $code = Response::HTTP_BAD_REQUEST;
             $result = [
                 'name' => '',
-                'error' => $_POST['name'] ."should not be empty",
+                'error' => $_POST['name'] . 'should not be empty',
             ];
         } else {
             try {
                 $group_name = $_POST['name'];
-                $users = empty($_POST['users']) ? array() : $_POST['users'];
+                $users = empty($_POST['users']) ? [] : $_POST['users'];
                 $result = $groupController->create($group_name, $users);
                 $code = Response::HTTP_OK;
             } catch (GroupNameAlreadyUsedException $th) {
                 $code = Response::HTTP_UNPROCESSABLE_ENTITY;
                 $result = [
                     'name' => [strval($_POST['name'])],
-                    'error' => str_replace('{currentName}', strval($_POST('name')), _t('USERSETTINGS_NAME_ALREADY_USED'))
+                    'error' => str_replace('{currentName}', strval($_POST('name')), _t('USERSETTINGS_NAME_ALREADY_USED')),
                 ];
             } catch (InvalidGroupNameException $th) {
                 $code = Response::HTTP_UNPROCESSABLE_ENTITY;
                 $result = [
                     'name' => [strval($_POST['name'])],
-                    'error' => $th->getMessage()
+                    'error' => $th->getMessage(),
                 ];
-            } catch (UserNameDoesNotExistException | GroupNameDoesNotExistException $th) {
+            } catch (UserNameDoesNotExistException|GroupNameDoesNotExistException $th) {
                 $code = Response::HTTP_UNPROCESSABLE_ENTITY;
                 $result = [
                     'name' => [strval($_POST['name'])],
-                    'error' => str_replace('{currentName}', $th->getMessage(), _t('USERSETTINGS_NAME_NOT_FOUND'))
+                    'error' => str_replace('{currentName}', $th->getMessage(), _t('USERSETTINGS_NAME_NOT_FOUND')),
                 ];
             } catch (ExitException $th) {
                 throw $th;
-            } catch (Exception $th) {
+            } catch (\Exception $th) {
                 $code = Response::HTTP_BAD_REQUEST;
                 $result = [
                     'name' => [strval($_POST['name'])],
-                    'error' => $th->getMessage()
+                    'error' => $th->getMessage(),
                 ];
-            } catch (Throwable $th) {
+            } catch (\Throwable $th) {
                 $code = Response::HTTP_INTERNAL_SERVER_ERROR;
                 $result = [
                     'name' => [strval($_POST['name'])],
-                    'error' => $th->getMessage()
+                    'error' => $th->getMessage(),
                 ];
             }
         }
+
         return new ApiResponse($result, $code);
     }
-    
-      /**
+
+    /**
      * @Route("/api/groups",methods={"POST"},options={"acl":{"public"}})
      */
     public function updateGroup()
@@ -364,45 +355,45 @@ class ApiController extends YesWikiController
             $code = Response::HTTP_BAD_REQUEST;
             $result = [
                 'name' => '',
-                'error' => $_POST['name'] ."should not be empty",
+                'error' => $_POST['name'] . 'should not be empty',
             ];
         } else {
             try {
                 $group_name = $_POST['name'];
-                $users = empty($_POST['users']) ? array() : $_POST['users'];
+                $users = empty($_POST['users']) ? [] : $_POST['users'];
                 $result = $groupController->update($group_name, $users);
                 $code = Response::HTTP_OK;
             } catch (InvalidGroupNameException $th) {
                 $code = Response::HTTP_UNPROCESSABLE_ENTITY;
                 $result = [
                     'name' => [strval($_POST['name'])],
-                    'error' => $th->getMessage()
+                    'error' => $th->getMessage(),
                 ];
-            } catch (UserNameDoesNotExistException | GroupNameDoesNotExistException $th) {
+            } catch (UserNameDoesNotExistException|GroupNameDoesNotExistException $th) {
                 $code = Response::HTTP_UNPROCESSABLE_ENTITY;
                 $result = [
                     'name' => [strval($_POST['name'])],
-                    'error' => str_replace('{currentName}', $th->getMessage(), _t('USERSETTINGS_NAME_NOT_FOUND'))
+                    'error' => str_replace('{currentName}', $th->getMessage(), _t('USERSETTINGS_NAME_NOT_FOUND')),
                 ];
             } catch (ExitException $th) {
                 throw $th;
-            } catch (Exception $th) {
+            } catch (\Exception $th) {
                 $code = Response::HTTP_BAD_REQUEST;
                 $result = [
                     'name' => [strval($_POST['name'])],
-                    'error' => $th->getMessage()
+                    'error' => $th->getMessage(),
                 ];
-            } catch (Throwable $th) {
+            } catch (\Throwable $th) {
                 $code = Response::HTTP_INTERNAL_SERVER_ERROR;
                 $result = [
                     'name' => [strval($_POST['name'])],
-                    'error' => $th->getMessage()
+                    'error' => $th->getMessage(),
                 ];
             }
         }
+
         return new ApiResponse($result, $code);
     }
-    
 
     /**
      * @Route("/api/groups",methods={"GET"},options={"acl":{"public"}})
@@ -414,7 +405,6 @@ class ApiController extends YesWikiController
 
         return new ApiResponse($groupController->getAll());
     }
-
 
     /**
      * @Route("/api/groups/{group_name}",methods={"GET"}, options={"acl":{"public"}})
@@ -430,10 +420,11 @@ class ApiController extends YesWikiController
         } catch (GroupNameDoesNotExistException $th) {
             $code = Response::HTTP_NOT_FOUND;
             $result = [
-                    'name' => $group_name,
-                    'error' => $th->getMessage()
-                ];
+                'name' => $group_name,
+                'error' => $th->getMessage(),
+            ];
         }
+
         return new ApiResponse($result, $code);
     }
 
@@ -593,7 +584,7 @@ class ApiController extends YesWikiController
                     $code = Response::HTTP_UNAUTHORIZED;
                 }
             }
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             try {
                 $page = $pageManager->getOne($tag, null, false);
                 $result['error'] = $th->getMessage();
@@ -604,7 +595,7 @@ class ApiController extends YesWikiController
                     unset($result['notDeleted']);
                     $result['deleted'] = [$tag];
                 }
-            } catch (Throwable $th) {
+            } catch (\Throwable $th) {
                 $code = Response::HTTP_INTERNAL_SERVER_ERROR;
                 $result['error'] = $th->getMessage();
             }
@@ -629,7 +620,7 @@ class ApiController extends YesWikiController
                 'notDeleted' => [$tag],
                 'error' => $th->getMessage(),
             ];
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             $code = Response::HTTP_INTERNAL_SERVER_ERROR;
             $result = [
                 'notDeleted' => [$tag],
@@ -733,7 +724,7 @@ class ApiController extends YesWikiController
             if ($_POST['username'] == $user['name'] || $this->wiki->UserIsAdmin()) {
                 if ($_POST['reactionid']) {
                     if ($_POST['pagetag']) { // save the reaction
-                        //get reactions from user for this page
+                        // get reactions from user for this page
                         $userReactions = $this->getService(ReactionManager::class)->getReactions($_POST['pagetag'], [$_POST['reactionid']], $user['name']);
                         $params = $this->getService(ReactionManager::class)->getActionParameters($_POST['pagetag']);
                         if (!empty($params[$_POST['reactionid']])) {
@@ -756,6 +747,7 @@ class ApiController extends YesWikiController
                                         $_POST['pagetag'],
                                         $reactionValues
                                     );
+
                                     // hurra, the reaction is saved!
                                     return new ApiResponse(
                                         $reactionValues,
@@ -940,9 +932,9 @@ class ApiController extends YesWikiController
                 if (!empty($newTriples)) {
                     $newTriples = array_filter($newTriples, function ($triple) use ($triples) {
                         $sameTriples = array_filter($triples, function ($registeredTriple) use ($triple) {
-                            return $registeredTriple['resource'] == $triple['resource'] &&
-                                $registeredTriple['property'] == $triple['property'] &&
-                                $registeredTriple['value'] == $triple['value'];
+                            return $registeredTriple['resource'] == $triple['resource']
+                                && $registeredTriple['property'] == $triple['property']
+                                && $registeredTriple['value'] == $triple['value'];
                         });
 
                         return empty($sameTriples);

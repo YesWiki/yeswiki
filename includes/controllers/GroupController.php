@@ -2,12 +2,11 @@
 
 namespace YesWiki\Core\Controller;
 
-use YesWiki\Core\Exception\InvalidGroupNameException;
-use YesWiki\Core\Exception\GroupNameDoesNotExistException;
 use YesWiki\Core\Exception\GroupNameAlreadyUsedException;
-use YesWiki\Core\Exception\UserNameDoesNotExistException;
+use YesWiki\Core\Exception\GroupNameDoesNotExistException;
+use YesWiki\Core\Exception\InvalidGroupNameException;
 use YesWiki\Core\Exception\InvalidInputException;
-use Exception;
+use YesWiki\Core\Exception\UserNameDoesNotExistException;
 use YesWiki\Core\Service\GroupManager;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
@@ -25,34 +24,25 @@ class GroupController extends YesWikiController
         $this->userManager = $userManager;
     }
 
-    /**
-     * @param string $groupName
-     * @return bool
-     */
     private function isNameValid(string $name): bool
     {
-        if (str_starts_with($name, "@")) {
+        if (str_starts_with($name, '@')) {
             $name = substr($name, 1);
         }
+
         return !preg_match('/[^A-Za-z0-9]/', $name);
     }
-    
-        /**
-     * @param string $groupName
-     * @return bool
-     */
+
     public function groupExists(string $name): bool
     {
-        if (str_starts_with($name, "@"))
-        {
+        if (str_starts_with($name, '@')) {
             $name = substr($name, 1);
         }
+
         return $this->groupManager->groupExists($name);
     }
 
-
     /**
-     * @param string $groupName
      * @return array the ACL associated with the current group
      */
     public function getMembers(string $groupName): array
@@ -64,19 +54,19 @@ class GroupController extends YesWikiController
     }
 
     /**
-    *  create group
-    * @param string $name group name
-    * @param ?array $users users and/or groups to add
-    * @throws GroupNameAlreadyExist
-    * @return array|null
-    */
-    public function create(string $name, ?array $members): array|null
+     *  create group.
+     *
+     * @param string $name group name
+     *
+     * @throws GroupNameAlreadyExist
+     */
+    public function create(string $name, ?array $members): ?array
     {
         if ($this->groupManager->groupExists($name)) {
             throw new GroupNameAlreadyUsedException(_t('GROUP_NAME_ALREADY_USED'));
         }
         if ($this->isNameValid($name)) {
-            foreach($members as $member) {
+            foreach ($members as $member) {
                 // plus nécessaire à la création du groupe ?
                 switch ($this->checkMemberValidity($name, $member)) {
                     case 0:
@@ -95,9 +85,11 @@ class GroupController extends YesWikiController
         }
         if ($this->groupManager->groupExists($name)) {
             $entry = $this->groupManager->getMembers($name);
-            return array("name" => $name, "members" => $entry);
+
+            return ['name' => $name, 'members' => $entry];
         }
-        throw new Exception(_t('ERROR_SAVING_GROUP') . '.');
+        throw new \Exception(_t('ERROR_SAVING_GROUP') . '.');
+
         return null;
     }
 
@@ -107,13 +99,12 @@ class GroupController extends YesWikiController
     }
 
     /**
-    *  delete group
-    * @return void
-    */
+     *  delete group.
+     */
     public function delete(string $name): void
     {
         if (strtolower($name) == ADMIN_GROUP) {
-            throw new InvalidInputException(_t('GROUP_NAME_DOES_NOT_EXIST')); //FIXME
+            throw new InvalidInputException(_t('GROUP_NAME_DOES_NOT_EXIST')); // FIXME
         }
         if ($this->groupManager->groupExists($name)) {
             $this->groupManager->delete($name);
@@ -123,14 +114,14 @@ class GroupController extends YesWikiController
     }
 
     /**
-    *  add users and/or groups to group
-    * @param string $groupName
-    * @param array $members users and/or groups to add
-    * @throws UserDoesNotExistException
-    * @throws GroupDoesNotExistException
-    * @throws InvalidInputException
-    * @return void
-    */
+     *  add users and/or groups to group.
+     *
+     * @param array $members users and/or groups to add
+     *
+     * @throws UserDoesNotExistException
+     * @throws GroupDoesNotExistException
+     * @throws InvalidInputException
+     */
     public function add(string $groupName, array $members): void
     {
         $this->addOrUpdate($groupName, $members, true);
@@ -141,8 +132,10 @@ class GroupController extends YesWikiController
      *  - if $member is a user, check if the user exists
      *  - if $member is a group, check if the group exists
      *  - if $member is a group, check if the group doesn't define itself recursively
-     *  @param string $groupName (without !/@)
-     *  @param string $member (with !/@ if present)
+     *
+     * @param string $groupName (without !/@)
+     * @param string $member    (with !/@ if present)
+     *
      *  @return : int
      *      - 0 if ok
      *      - 1 if user doesn't exist
@@ -151,36 +144,36 @@ class GroupController extends YesWikiController
      */
     private function checkMemberValidity(string $groupName, string $member): int
     {
-        if(str_starts_with($member, "!")) {
+        if (str_starts_with($member, '!')) {
             $member = substr($member, 1);
         }
-        if(str_starts_with($member, "@")) {
-
-            if(!$this->groupExists($member)) {
+        if (str_starts_with($member, '@')) {
+            if (!$this->groupExists($member)) {
                 return 2;
             }
-            if($this->CheckGroupRecursive(substr($member, 1), strtolower(trim($groupName)))) {
+            if ($this->CheckGroupRecursive(substr($member, 1), strtolower(trim($groupName)))) {
                 return 3;
             }
         } else {
-            if(!$this->userManager->userExist($member)) {
+            if (!$this->userManager->userExist($member)) {
                 return 1;
             }
         }
+
         return 0;
     }
 
-
     /**
      * Checks if a new group acl is defined recursively
-     * (this method expects that groups that are already defined are not themselves defined recursively...)
+     * (this method expects that groups that are already defined are not themselves defined recursively...).
      *
      * @param string $groupName
-     *            The name of the group to test against origin
-     * @param string $origin group name to save test recursivity
+     *                          The name of the group to test against origin
+     * @param string $origin    group name to save test recursivity
+     *
      * @return bool True if the new acl defines the group recursively
      */
-    private function CheckGroupRecursive($groupName, $origin, $checked = array()): bool
+    private function CheckGroupRecursive($groupName, $origin, $checked = []): bool
     {
         $groupName = strtolower(trim($groupName));
         if ($groupName === $origin) {
@@ -210,45 +203,49 @@ class GroupController extends YesWikiController
             }
         }
         $checked[] = $groupName;
+
         return false;
     }
 
     /**
-     *  remove  users  and/or groups from group
+     *  remove  users  and/or groups from group.
+     *
      * @param array $members users and/or groups to add
-     * @return void
+     *
      * @throws GroupDoesNotExistException
      */
     public function remove(string $groupName, array $members): void
     {
-        if(!$this->groupManager->groupExists($groupName)) {
+        if (!$this->groupManager->groupExists($groupName)) {
             throw new GroupNameDoesNotExistException(_t('GROUP_NAME_DOES_NOT_EXIST'));
         }
         $this->groupManager->removeMembers($groupName, $members);
     }
-    
+
     /**
-     *  add or replace current members with new one
-     * @param string $groupName
+     *  add or replace current members with new one.
+     *
      * @param array $members new members List
-     * @param string $action
+     *
      * @return bool
+     *
      * @throws UserDoesNotExistException
      * @throws GroupDoesNotExistException
      * @throws InvalidInputException
      */
-    private function addOrUpdate(string $groupName, array $members, bool $add):void {
-         if(!$this->groupManager->groupExists($groupName)) {
+    private function addOrUpdate(string $groupName, array $members, bool $add): void
+    {
+        if (!$this->groupManager->groupExists($groupName)) {
             throw new GroupNameDoesNotExistException(_t('GROUP_NAME_DOES_NOT_EXIST'));
         }
-        foreach($members as $member) {
+        foreach ($members as $member) {
             switch ($this->checkMemberValidity($groupName, $member)) {
                 case 0:
                     break;
                 case 1:
-                    throw new UserNameDoesNotExistException(_t('USER_NAME_DOES_NOT_EXIST')." : ".$member." ");
+                    throw new UserNameDoesNotExistException(_t('USER_NAME_DOES_NOT_EXIST') . ' : ' . $member . ' ');
                 case 2:
-                    throw new GroupNameDoesNotExistException("included "._t('GROUP_NAME_DOES_NOT_EXIST'));
+                    throw new GroupNameDoesNotExistException('included ' . _t('GROUP_NAME_DOES_NOT_EXIST'));
                 case 3:
                     throw new InvalidInputException(_t('ERROR_RECURSIVE_GROUP'));
             }
@@ -261,15 +258,15 @@ class GroupController extends YesWikiController
     }
 
     /**
-     *  replace current members with new one
-     * @param string $groupName
+     *  replace current members with new one.
+     *
      * @param array $members new members List
-     * @return void
+     *
      * @throws UserDoesNotExistException
      * @throws GroupDoesNotExistException
      * @throws InvalidInputException
      */
-    public function update(string $groupName, array $members):void 
+    public function update(string $groupName, array $members): void
     {
         $this->addOrUpdate($groupName, $members, false);
     }

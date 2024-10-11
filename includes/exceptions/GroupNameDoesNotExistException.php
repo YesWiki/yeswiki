@@ -2,8 +2,6 @@
 
 namespace YesWiki\Core\Exception;
 
-use Exception;
-
-class GroupNameDoesNotExistException extends Exception
+class GroupNameDoesNotExistException extends \Exception
 {
 }

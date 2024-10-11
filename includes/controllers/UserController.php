@@ -2,7 +2,6 @@
 
 namespace YesWiki\Core\Controller;
 
-use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
@@ -80,18 +79,18 @@ class UserController extends YesWikiController
      *
      * @param array $newValues (associative array)
      *
-     * @throws Exception
-     *
      * @return User|null $user
+     *
+     * @throws \Exception
      */
     public function create(array $newValues): ?User
     {
         $newValues = $this->sanitizeValues($newValues);
         if (!empty($this->userManager->getOneByName($newValues['name']))) {
-            throw new Exception(str_replace('{currentName}', $newValues['name'], _t('USERSETTINGS_NAME_ALREADY_USED')));
+            throw new \Exception(str_replace('{currentName}', $newValues['name'], _t('USERSETTINGS_NAME_ALREADY_USED')));
         }
         if (!empty($this->userManager->getOneByEmail($newValues['email']))) {
-            throw new Exception(str_replace('{email}', $newValues['email'], _t('USERSETTINGS_EMAIL_ALREADY_USED')));
+            throw new \Exception(str_replace('{email}', $newValues['email'], _t('USERSETTINGS_EMAIL_ALREADY_USED')));
         }
         if (!empty($this->userManager->create($newValues))) {
             $user = $this->userManager->getOneByName($newValues['name']);
@@ -99,18 +98,18 @@ class UserController extends YesWikiController
                 return $user;
             }
         }
-        throw new Exception(_t('USER_CREATION_FAILED') . '.');
+        throw new \Exception(_t('USER_CREATION_FAILED') . '.');
 
         return null;
     }
-    
+
     public function sendPasswordRecoveryEmail(User $user): string
     {
         if ($this->userManager->sendPasswordRecoveryEmail($user, _t('LOGIN_PASSWORD_FOR'))) {
             return $this->userManager->getUserLink();
         } else {
-            return "";
-        }        
+            return '';
+        }
     }
 
     /**
@@ -120,7 +119,7 @@ class UserController extends YesWikiController
      * @param array $newValues (associative array)
      *
      * @throws BadFormatPasswordException
-     * @throws Exception
+     * @throws \Exception
      * @throws UserEmailAlreadyUsedException
      */
     public function update(User $user, array $newValues): bool
@@ -142,7 +141,7 @@ class UserController extends YesWikiController
      *
      * @return array $sanitizedValues
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function sanitizeValues(array $newValues): array
     {
@@ -175,12 +174,12 @@ class UserController extends YesWikiController
      * delete a user but check if possible before.
      *
      * @throws DeleteUserException
-     * @throws Exception
+     * @throws \Exception
      */
     public function delete(User $user)
     {
         if ($this->securityController->isWikiHibernated()) {
-            throw new Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!$this->wiki->UserIsAdmin()) {
             throw new DeleteUserException(_t('USER_MUST_BE_ADMIN_TO_DELETE') . '.');
@@ -199,7 +198,7 @@ class UserController extends YesWikiController
      *
      * @return string $adminName
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getFirstAdmin(): string
     {
@@ -209,8 +208,8 @@ class UserController extends YesWikiController
         foreach ($admins as $line) {
             $line = trim($line);
             if (
-                !empty($line) &&
-                !in_array(substr($line, 0, 1), ['@', '!', '#'])
+                !empty($line)
+                && !in_array(substr($line, 0, 1), ['@', '!', '#'])
             ) {
                 $adminUser = $this->userManager->getOneByName($line);
                 if (!empty($adminUser['name'])) {
@@ -220,7 +219,7 @@ class UserController extends YesWikiController
             }
         }
         if (empty($admin)) {
-            throw new Exception('No admin found');
+            throw new \Exception('No admin found');
         }
 
         return $admin;
@@ -279,8 +278,8 @@ class UserController extends YesWikiController
                 $newValue = $group['value'];
                 $newValue = preg_replace("/(?<=^|\\n|\\r)$pregQuoteSearchValue(?:\\r\\n|\\n|\\r|$)/", '', $newValue);
                 if (
-                    $newValue != $group['value'] &&
-                    !in_array($this->tripleStore->update(
+                    $newValue != $group['value']
+                    && !in_array($this->tripleStore->update(
                         $group['resource'],
                         $group['property'],
                         $group['value'],
@@ -301,7 +300,7 @@ class UserController extends YesWikiController
     /**
      * remove user from every group.
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function removeOwnership(User $user)
     {
@@ -323,14 +322,12 @@ class UserController extends YesWikiController
     /**
      * check if value is int and return new value.
      *
-     * @throws Exception
-     *
-     * @param mixed $value
+     * @throws \Exception
      */
     private function sanitizeCount($value, string $propertyName): int
     {
         if (!filter_var($value, FILTER_VALIDATE_INT) || $value < 0) {
-            throw new Exception(_t('USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR', ['name' => $propertyName]));
+            throw new \Exception(_t('USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR', ['name' => $propertyName]));
         }
 
         return intval($value);
@@ -339,15 +336,13 @@ class UserController extends YesWikiController
     /**
      * check if value is Y or N and return new value.
      *
-     * @throws Exception
-     *
-     * @param mixed $value
+     * @throws \Exception
      */
     private function sanitizeBoolean($value, string $propertyName): string
     {
         $value = strtolower($value);
         if (!in_array($value, ['o', 'oui', 'y', 'yes', 'n', 'non', 'no', '0', '1', 'true', 'false'])) {
-            throw new Exception(_t('USER_YOU_MUST_SPECIFY_YES_OR_NO', ['name' => $propertyName]));
+            throw new \Exception(_t('USER_YOU_MUST_SPECIFY_YES_OR_NO', ['name' => $propertyName]));
         }
 
         return in_array($value, ['o', 'oui', 'y', 'yes', '1', 'true']) ? 'Y' : 'N';
@@ -356,14 +351,12 @@ class UserController extends YesWikiController
     /**
      * check if value is String and return new value.
      *
-     * @throws Exception
-     *
-     * @param mixed $value
+     * @throws \Exception
      */
     private function sanitizeString($value, string $propertyName): string
     {
         if (!is_scalar($value)) {
-            throw new Exception(_t('USER_YOU_MUST_SPECIFY_A_STRING', ['name' => $propertyName]));
+            throw new \Exception(_t('USER_YOU_MUST_SPECIFY_A_STRING', ['name' => $propertyName]));
         }
 
         return strval($value);
@@ -372,24 +365,22 @@ class UserController extends YesWikiController
     /**
      * check if value is a nameand return new value.
      *
-     * @throws Exception
-     *
-     * @param mixed $value
+     * @throws \Exception
      */
     private function sanitizeName($value): string
     {
         $value = trim($value);
         if (empty($value)) {
-            throw new Exception(_t('USER_YOU_MUST_SPECIFY_A_NAME') . '.');
+            throw new \Exception(_t('USER_YOU_MUST_SPECIFY_A_NAME') . '.');
         }
         if (!is_scalar($value)) {
-            throw new Exception(_t('USER_YOU_MUST_SPECIFY_A_STRING', ['name' => 'name']));
+            throw new \Exception(_t('USER_YOU_MUST_SPECIFY_A_STRING', ['name' => 'name']));
         }
         $value = strval($value);
         if (strlen($value) > $this->limitations['nameMaxLength']) {
-            throw new Exception(_t('USER_NAME_S_MAXIMUM_LENGTH_IS') . " {$this->limitations['nameMaxLength']}.");
+            throw new \Exception(_t('USER_NAME_S_MAXIMUM_LENGTH_IS') . " {$this->limitations['nameMaxLength']}.");
         } elseif (preg_match('/(?:^[!#@<>\\\\\/].*$|[<>\\\\\/]|^.{0,2}$)/', $value)) {
-            throw new Exception(_t('USER_THIS_IS_NOT_A_VALID_NAME') . '.');
+            throw new \Exception(_t('USER_THIS_IS_NOT_A_VALID_NAME') . '.');
         }
 
         return $value;
@@ -398,24 +389,22 @@ class UserController extends YesWikiController
     /**
      * check if value is an email and return new value.
      *
-     * @throws Exception
-     *
-     * @param mixed $value
+     * @throws \Exception
      */
     private function sanitizeEmail($value): string
     {
         if (empty($value)) {
-            throw new Exception(_t('USER_YOU_MUST_SPECIFY_AN_EMAIL') . '.');
+            throw new \Exception(_t('USER_YOU_MUST_SPECIFY_AN_EMAIL') . '.');
         }
 
         if (!is_scalar($value)) {
-            throw new Exception(_t('USER_YOU_MUST_SPECIFY_A_STRING', ['name' => 'email']));
+            throw new \Exception(_t('USER_YOU_MUST_SPECIFY_A_STRING', ['name' => 'email']));
         }
         $value = strval($value);
         if (strlen($value) > $this->limitations['emailMaxLength']) {
-            throw new Exception(_t('USER_EMAIL_S_MAXIMUM_LENGTH_IS') . " {$this->limitations['emailMaxLength']}.");
+            throw new \Exception(_t('USER_EMAIL_S_MAXIMUM_LENGTH_IS') . " {$this->limitations['emailMaxLength']}.");
         } elseif (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
-            throw new Exception(_t('USER_THIS_IS_NOT_A_VALID_EMAIL') . '.');
+            throw new \Exception(_t('USER_THIS_IS_NOT_A_VALID_EMAIL') . '.');
         }
 
         return $value;
