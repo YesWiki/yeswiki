@@ -847,7 +847,7 @@ class EntryManager
 
         // Get creation date if it exists, initialize it otherwise
         $result = $this->dbService->loadSingle('SELECT MIN(time) as firsttime FROM ' . $this->dbService->prefixTable('pages') . "WHERE tag='" . $data['id_fiche'] . "'");
-        $data['date_creation_fiche'] = $result['firsttime'] ? $result['firsttime'] : date('Y-m-d H:i:s', time());
+        $data['date_creation_fiche'] = $data['date_creation_fiche'] ?? $result['firsttime'] ?? date('Y-m-d H:i:s', time());
 
         // Entry status
         if ($this->wiki->UserIsAdmin()) {
@@ -878,7 +878,7 @@ class EntryManager
             throw new Exception('$data[\'id_fiche\'] is empty !');
         }
 
-        $data['date_maj_fiche'] = date('Y-m-d H:i:s', time());
+        $data['date_maj_fiche'] = $data['date_maj_fiche'] ?? date('Y-m-d H:i:s', time());
 
         // on enleve les champs hidden pas necessaires a la fiche
         unset($data['valider']);

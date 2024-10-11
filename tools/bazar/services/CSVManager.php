@@ -325,11 +325,15 @@ class CSVManager
             if ($header['field'] instanceof CheckboxField || $header['field'] instanceof CheckboxEntryField) {
                 $options = $header['field']->getOptions();
                 $nb = min(3, count($options));
-                $line[] = trim($this->arrayToCSV([ // emulate CSV
-                    array_map(function ($index) use ($options) {
-                        return $options[array_keys($options)[$index]];
-                    }, range(0, $nb - 1)),
-                ]));
+                if (!empty($options)) {
+                    $line[] = trim($this->arrayToCSV([ // emulate CSV
+                        array_map(function ($index) use ($options) {
+                            return $options[array_keys($options)[$index]];
+                        }, range(0, $nb - 1)),
+                    ]));
+                } else {
+                    $line[] = 'ligne ' . $lineNumber . ' - champ ' . $columnNumber;
+                }
             } elseif ($header['field'] instanceof TagsField) {
                 $line[] = '"' . implode(',', array_map(function ($index) use ($lineNumber, $columnNumber) {
                     return 'ligne ' . $lineNumber . ' - champ ' . $columnNumber . ' - tag ' . $index;
