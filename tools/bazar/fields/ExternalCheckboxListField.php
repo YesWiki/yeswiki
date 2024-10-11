@@ -10,7 +10,7 @@ use YesWiki\Bazar\Service\ExternalBazarService;
  */
 class ExternalCheckboxListField extends CheckboxListField
 {
-    protected $JSONFormAddress ;
+    protected $JSONFormAddress;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -24,7 +24,7 @@ class ExternalCheckboxListField extends CheckboxListField
 
     protected function renderInput($entry)
     {
-        return "";
+        return '';
     }
 
     public function formatValuesBeforeSave($entry)
@@ -38,7 +38,8 @@ class ExternalCheckboxListField extends CheckboxListField
         if (is_null($this->options)) {
             $this->loadOptionsFromJSONForm($this->JSONFormAddress);
         }
-        return  $this->options;
+
+        return $this->options;
     }
 
     public function loadOptionsFromList()

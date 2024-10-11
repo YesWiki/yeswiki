@@ -6,11 +6,6 @@ use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use YesWiki\Core\Entity\Event;
-use YesWiki\Core\Service\EventDispatcher;
-use YesWiki\Core\Service\Mailer;
-use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\TemplateEngine;
-use YesWiki\Core\Service\UserManager;
 use YesWiki\Security\Service\HashCashService;
 use YesWiki\Wiki;
 
@@ -57,7 +52,7 @@ class CommentService implements EventSubscriberInterface
         return [
             'comment.created' => 'sendEmailAfterCreate',
             'comment.updated' => 'sendEmailAfterModify',
-            'comment.deleted' => 'sendEmailAfterDelete'
+            'comment.deleted' => 'sendEmailAfterDelete',
         ];
     }
 
@@ -66,16 +61,16 @@ class CommentService implements EventSubscriberInterface
         if (!$this->wiki->getUser()) {
             return [
                 'code' => 401,
-                'error' => _t('USER_MUST_BE_LOGGED_TO_COMMENT')
+                'error' => _t('USER_MUST_BE_LOGGED_TO_COMMENT'),
             ];
         } else {
-            if ($this->wiki->HasAccess("comment", $content['pagetag']) && $this->wiki->Loadpage($content['pagetag'])) {
+            if ($this->wiki->HasAccess('comment', $content['pagetag']) && $this->wiki->Loadpage($content['pagetag'])) {
                 if ($this->params->get('use_hashcash')) {
-                    require_once('tools/security/secret/wp-hashcash.lib');
-                    if (!isset($content["hashcash_value"]) || ($content["hashcash_value"] != hashcash_field_value())) {
+                    require_once 'tools/security/secret/wp-hashcash.lib';
+                    if (!isset($content['hashcash_value']) || ($content['hashcash_value'] != hashcash_field_value())) {
                         return [
                             'code' => 400,
-                            'error' => _t('HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT')
+                            'error' => _t('HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT'),
                         ];
                     }
                 }
@@ -88,18 +83,18 @@ class CommentService implements EventSubscriberInterface
                     if ($lastComment = $this->wiki->LoadSingle($sql)) {
                         $num = $lastComment['comment_id'] + 1;
                     } else {
-                        $num = "1";
+                        $num = '1';
                     }
-                    $idComment = "Comment" . $num;
+                    $idComment = 'Comment' . $num;
                 } else {
                     $newComment = false;
                 }
 
-                $body = trim($content["body"]);
+                $body = trim($content['body']);
                 if (!$body) {
                     return [
                         'code' => 400,
-                        'error' => _t('COMMENT_EMPTY_NOT_SAVED')
+                        'error' => _t('COMMENT_EMPTY_NOT_SAVED'),
                     ];
                 } else {
                     // store new comment
@@ -128,7 +123,7 @@ class CommentService implements EventSubscriberInterface
                     $GLOBALS['wiki']->page = $oldPageArray;
                     $this->setUserData($comment, 'user', $com);
                     $this->setUserData($comment, 'owner', $com);
-                    $com['date'] = 'le ' . date("d.m.Y à H:i:s", strtotime($comment['time']));
+                    $com['date'] = 'le ' . date('d.m.Y à H:i:s', strtotime($comment['time']));
                     if ($this->wiki->HasAccess('comment', $comment['tag'])) {
                         $com['linkcomment'] = $this->wiki->href('pages/' . $comment['tag'] . '/comments', 'api');
                     }
@@ -143,24 +138,25 @@ class CommentService implements EventSubscriberInterface
                         'id' => $com['tag'],
                         'data' => $com,
                     ]);
+
                     return [
                         'code' => 200,
                         'success' => _t('COMMENT_PUBLISHED'),
-                        'html' => $this->wiki->render("@core/comment.twig", ['comment' => $com])
+                        'html' => $this->wiki->render('@core/comment.twig', ['comment' => $com]),
                     ] + $errors;
                 }
             } else {
                 return [
                     'code' => 403,
-                    'error' => _t('USER_NOT_ALLOWED_TO_COMMENT')
+                    'error' => _t('USER_NOT_ALLOWED_TO_COMMENT'),
                 ];
             }
         }
     }
 
     /**
-     * delete a comment
-     * @param string $commentTag
+     * delete a comment.
+     *
      * @param array $errors
      */
     public function delete(string $commentTag): array
@@ -177,9 +173,10 @@ class CommentService implements EventSubscriberInterface
             'id' => $comment['tag'],
             'data' => array_merge($comment, [
                 'associatedComments' => $comments,
-                'parentPage' => $parentPage
-            ])
+                'parentPage' => $parentPage,
+            ]),
         ]);
+
         return $errors;
     }
 
@@ -187,8 +184,8 @@ class CommentService implements EventSubscriberInterface
      * Load comments for given page.
      *
      * @param string $tag Page name (Ex : "PagePrincipale") if empty, all comments
-     * @param bool $bypassAcls
-     * @return array All comments and their corresponding properties.
+     *
+     * @return array all comments and their corresponding properties
      */
     public function loadComments($tag, bool $bypassAcls = false)
     {
@@ -207,13 +204,13 @@ class CommentService implements EventSubscriberInterface
         // remove current comment to prevent infinite loop
         $query .= " AND `tag` != '{$this->dbService->escape($tag)}' ";
         $query .= 'AND latest = "Y" ' . 'ORDER BY substring(tag, 8) + 0';
-        $comments =  array_filter($this->wiki->LoadAll($query), function ($comment) {
+        $comments = array_filter($this->wiki->LoadAll($query), function ($comment) {
             return !empty($comment['tag']);
         });
 
         foreach ($comments as $id => $comment) {
             $parentPage = $this->getParentPage($comment['tag']);
-            $comments[$id]['parentTag'] = !empty($parentPage['tag']) ? $parentPage['tag'] : "";
+            $comments[$id]['parentTag'] = !empty($parentPage['tag']) ? $parentPage['tag'] : '';
         }
 
         if (!$bypassAcls) {
@@ -228,10 +225,10 @@ class CommentService implements EventSubscriberInterface
 
     public function getCommentList($tag, $first = true, $comments = null)
     {
-        $com = array();
+        $com = [];
         $com['first'] = $first;
         $com['tag'] = $tag;
-        $com['comments'] = array();
+        $com['comments'] = [];
         $comments = is_array($comments) ? $comments : $this->loadComments($tag);
         if ($comments) {
             foreach ($comments as $i => $comment) {
@@ -241,7 +238,7 @@ class CommentService implements EventSubscriberInterface
                 $com['comments'][$i]['body'] = $this->wiki->Format($comment['body']);
                 $this->setUserData($comment, 'user', $com['comments'][$i]);
                 $this->setUserData($comment, 'owner', $com['comments'][$i]);
-                $com['comments'][$i]['date'] = 'le ' . date("d.m.Y à H:i:s", strtotime($comment['time']));
+                $com['comments'][$i]['date'] = 'le ' . date('d.m.Y à H:i:s', strtotime($comment['time']));
                 if ($this->wiki->HasAccess('comment', $comment['tag'])) {
                     $com['comments'][$i]['linkcomment'] = $this->wiki->href('pages/' . $comment['tag'] . '/comments', 'api');
                 }
@@ -253,7 +250,7 @@ class CommentService implements EventSubscriberInterface
             }
         }
 
-        return $this->wiki->render("@core/comment-list.twig", $com);
+        return $this->wiki->render('@core/comment-list.twig', $com);
     }
 
     private function setUserData(array $comment, string $key, array &$data)
@@ -275,7 +272,7 @@ class CommentService implements EventSubscriberInterface
         if (!$this->wiki->getUser()) {
             $options['alerts'][] = [
                 'class' => 'info',
-                'text' => _t('USER_MUST_BE_LOGGED_TO_COMMENT')
+                'text' => _t('USER_MUST_BE_LOGGED_TO_COMMENT'),
             ];
         } else {
             if ($this->wiki->HasAccess('comment', $tag)) {
@@ -291,16 +288,17 @@ class CommentService implements EventSubscriberInterface
                     'pagetag' => $commentOn,
                     'formlink' => $this->wiki->href('comments', 'api'),
                     'hashcash' => $hashCashCode,
-                    'tempTag' => $tempTag
+                    'tempTag' => $tempTag,
                 ];
             } else {
                 $options['alerts'][] = [
                     'class' => 'warning',
-                    'text' => _t('USER_NOT_ALLOWED_TO_COMMENT')
+                    'text' => _t('USER_NOT_ALLOWED_TO_COMMENT'),
                 ];
             }
         }
-        return $this->wiki->render("@core/comment-form.twig", $options);
+
+        return $this->wiki->render('@core/comment-form.twig', $options);
     }
 
     public function renderCommentsForPage($tag, $showOnlyOnce = true)
@@ -315,24 +313,24 @@ class CommentService implements EventSubscriberInterface
         }
         $aclsService = $this->wiki->services->get(AclService::class);
         $hasAccessComment = $aclsService->hasAccess('comment', $tag);
-        $HasAccessRead = $aclsService->HasAccess("read", $tag);
+        $HasAccessRead = $aclsService->HasAccess('read', $tag);
 
         if ($HasAccessRead) {
             $comments = $this->loadComments($tag);
             $coms = $this->getCommentList($tag, true, $comments);
             $acl = $aclsService->load($tag, 'comment');
-            $options = (!empty($acl['list']) && $acl['list']  == 'comments-closed')
+            $options = (!empty($acl['list']) && $acl['list'] == 'comments-closed')
                 ? [
                     'commentsClosed' => true,
-                    'coms' => !empty($comments) ? $coms : "",
+                    'coms' => !empty($comments) ? $coms : '',
                     'user' => null,
-                    'form' => null
+                    'form' => null,
                 ]
                 : [
                     'commentsClosed' => false,
                     'coms' => $coms,
                     'user' => ($hasAccessComment) ? null : $this->wiki->GetUser(),
-                    'form' => ($hasAccessComment) ? $this->getCommentForm($tag) : ""
+                    'form' => ($hasAccessComment) ? $this->getCommentForm($tag) : '',
                 ];
             $output = $this->wiki->render('@core/comment-for-page.twig', $options);
         }
@@ -367,11 +365,10 @@ class CommentService implements EventSubscriberInterface
             throw new Exception("$min_brightness is out of range");
         }
 
-
         $hash = md5($text);  //Gen hash of text
-        $colors = array();
+        $colors = [];
         for ($i = 0; $i < 3; $i++) {
-            $colors[$i] = max(array(round(((hexdec(substr($hash, $spec * $i, $spec))) / hexdec(str_pad('', $spec, 'F'))) * 255), $min_brightness));
+            $colors[$i] = max([round(((hexdec(substr($hash, $spec * $i, $spec))) / hexdec(str_pad('', $spec, 'F'))) * 255), $min_brightness]);
         } //convert hash into 3 decimal values between 0 and 255
 
         if ($min_brightness > 0) {  //only check brightness requirements if min_brightness is about 100
@@ -422,9 +419,9 @@ class CommentService implements EventSubscriberInterface
             ];
             $this->mailer->sendEmailFromAdmin(
                 $owner['email'],
-                $this->templateEngine->render("@core/comments/notify-email-subject.twig", $formattedData),
-                $this->templateEngine->render("@core/comments/notify-email-text.twig", $formattedData),
-                $this->templateEngine->render("@core/comments/notify-email-html.twig", $formattedData)
+                $this->templateEngine->render('@core/comments/notify-email-subject.twig', $formattedData),
+                $this->templateEngine->render('@core/comments/notify-email-text.twig', $formattedData),
+                $this->templateEngine->render('@core/comments/notify-email-html.twig', $formattedData)
             );
         }
     }
@@ -443,9 +440,9 @@ class CommentService implements EventSubscriberInterface
             foreach ($taggedUsers as $user) {
                 $this->mailer->sendEmailFromAdmin(
                     $user['email'],
-                    $this->templateEngine->render("@core/comments/notify-tag-email-subject.twig", $formattedData),
-                    $this->templateEngine->render("@core/comments/notify-tag-email-text.twig", $formattedData),
-                    $this->templateEngine->render("@core/comments/notify-tag-email-html.twig", $formattedData)
+                    $this->templateEngine->render('@core/comments/notify-tag-email-subject.twig', $formattedData),
+                    $this->templateEngine->render('@core/comments/notify-tag-email-text.twig', $formattedData),
+                    $this->templateEngine->render('@core/comments/notify-tag-email-html.twig', $formattedData)
                 );
             }
         }
@@ -479,6 +476,7 @@ class CommentService implements EventSubscriberInterface
                 $filteredUsers[$user['name']] = $user;
             }
         }
+
         return $filteredUsers;
     }
 
@@ -494,10 +492,9 @@ class CommentService implements EventSubscriberInterface
 
     /**
      * retrieve parent page of the current tag
-     * RECURSIVE
-     * @param string $commentTag
-     * @param array $alreadyFoundTags
-     * @return null|array $page, null is not parent found
+     * RECURSIVE.
+     *
+     * @return array|null $page, null is not parent found
      */
     protected function getParentPage(string $commentTag, array $alreadyFoundTags = []): ?array
     {
@@ -512,6 +509,7 @@ class CommentService implements EventSubscriberInterface
         } else {
             $foundTags = $alreadyFoundTags;
             $foundTags[] = $commentTag;
+
             return $this->getParentPage($page['comment_on'], $foundTags);
         }
     }

@@ -1,0 +1,114 @@
+.range-wrap {
+  position: relative;
+  width: 100%;
+  display: flex;
+}
+
+.form-group.range .control-label {
+  margin-bottom: -1em;
+  position: relative !important;
+  left: 0 !important;
+  margin-top: 1em;
+}
+
+.range-wrap output {
+  background: var(--primary-color);
+  padding: 5px 10px;
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+  color: var(--neutral-light-color);
+  min-width: 3.8em;
+  text-align: center;
+  display: flex;
+  place-content: center center;
+  align-items: center;
+}
+
+.range-wrap input[type='range'] {
+  appearance: none;
+  height: 40px;
+  border-radius: 0 !important;
+  border-top-left-radius: 3px !important;
+  border-bottom-left-radius: 3px !important;
+  background-image: transparent;
+  background-repeat: no-repeat;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+}
+
+/* Input Thumb */
+.range-wrap input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  height: 38px;
+  width: 40px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  cursor: ew-resize;
+  border: none;
+  transition: background 0.3s ease-in-out;
+}
+
+.range-wrap input[type='range']::-moz-range-thumb {
+  appearance: none;
+  height: 38px;
+  width: 40px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  cursor: ew-resize;
+  border: none;
+  transition: background 0.3s ease-in-out;
+}
+
+.range-wrap input[type='range']::-ms-thumb {
+  appearance: none;
+  height: 38px;
+  width: 40px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  cursor: ew-resize;
+  border: none;
+  transition: background 0.3s ease-in-out;
+}
+
+.range-wrap input[type='range']::-webkit-slider-thumb:hover {
+  background: var(--secondary-color-1);
+}
+
+.range-wrap input[type='range']::-moz-range-thumb:hover {
+  background: var(--secondary-color-1);
+}
+
+.range-wrap input[type='range']::-ms-thumb:hover {
+  background: var(--secondary-color-1);
+}
+
+/* Input Track */
+.range-wrap input[type='range']::-webkit-slider-runnable-track {
+  appearance: none;
+  border: none;
+  background: transparent;
+}
+
+.range-wrap input[type='range']::-moz-range-track {
+  appearance: none;
+  border: none;
+  background: transparent;
+}
+
+.range-wrap input[type='range']::-ms-track {
+  appearance: none;
+  border: none;
+  background: transparent;
+}
+
+/* Display tabs when printing */
+@media print {
+  div[role='tabpanel'] {
+    display: block !important;
+  }
+
+  a[role='tab'] {
+    display: none !important;
+  }
+}

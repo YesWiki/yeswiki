@@ -3,7 +3,7 @@
 .agenda-entry fig-caption {
   max-height: 50%;
   color: #4e5055;
-  transition: max-height .2s;
+  transition: max-height 0.2s;
 }
 
 .agenda-entry:hover fig-caption {
@@ -30,7 +30,7 @@
 }
 
 .agenda-subtitle {
-  font-size: .9rem;
+  font-size: 0.9rem;
 }
 
 .agenda-entry h5 {

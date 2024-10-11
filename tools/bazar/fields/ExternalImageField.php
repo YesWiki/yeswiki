@@ -9,9 +9,9 @@ use Psr\Container\ContainerInterface;
  */
 class ExternalImageField extends ImageField
 {
-    protected $JSONFormAddress ;
+    protected $JSONFormAddress;
 
-    public const FIELD_JSON_FORM_ADDR = 13 ;// replace nothing
+    public const FIELD_JSON_FORM_ADDR = 13; // replace nothing
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -24,7 +24,7 @@ class ExternalImageField extends ImageField
 
     protected function renderInput($entry)
     {
-        return "";
+        return '';
     }
 
     public function formatValuesBeforeSave($entry)
@@ -38,7 +38,7 @@ class ExternalImageField extends ImageField
         $value = $this->getValue($entry);
 
         if (isset($value) && $value != '') {
-            return $this->render("@bazar/fields/external-image.twig", [
+            return $this->render('@bazar/fields/external-image.twig', [
                 'attachClass' => $this->getAttach(),
                 'baseUrl' => $entry['external-data']['baseUrl'],
                 'imageFullPath' => $this->getBasePath() . $value,
@@ -51,6 +51,6 @@ class ExternalImageField extends ImageField
             ]);
         }
 
-        return "";
+        return '';
     }
 }

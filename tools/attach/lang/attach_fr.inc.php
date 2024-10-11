@@ -1,10 +1,9 @@
 <?php
 
 return [
-
     // controllers/ApiController.php
-    'ATTACH_GET_URLIMAGE_CACHE_API_HELP' => "Fournit l'url du fichier de cache pour l'image voulue\n".
-        "Nécessite le passage du jeton anti-csrf !",
+    'ATTACH_GET_URLIMAGE_CACHE_API_HELP' => "Fournit l'url du fichier de cache pour l'image voulue\n" .
+        'Nécessite le passage du jeton anti-csrf !',
     'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'Fichier image inexistant',
 
     // libs/attach.lib.php
@@ -99,8 +98,8 @@ return [
     'WHITE_BORDER' => 'Bord blanc',
     'DROP_SHADOW' => 'Ombre port&eacute;e',
     'ZOOM_HOVER' => 'Agrandissement au survol',
-    'ALT_INFOS' => 'Ce texte sera affich&eacute; &agrave; la place de l\'image si elle est introuvable sur le serveur',
-    'ALTERNATIVE_TEXT' => 'Texte de remplacement',
+    'ALT_INFOS' => 'Ce texte sera affich&eacute; &agrave; la place de l\'image si elle est introuvable sur le serveur. C\'est aussi celle qui sera lue par les technologies d\'assistance aux personnes malvoyantes. À laisser vide si l\'image est purement décorative',
+    'ALTERNATIVE_TEXT' => 'Texte alternatif pour les personnes malvoyantes',
     'NONE' => 'Texte en dessous',
     'LEFT' => 'Gauche',
     'CENTER' => 'Centre',

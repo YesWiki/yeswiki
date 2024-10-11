@@ -4,8 +4,6 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Field\BazarField;
-use YesWiki\Core\Service\AssetsManager;
 
 /**
  * @Field({"map", "carte_google"})
@@ -42,7 +40,7 @@ class MapField extends BazarField
         $this->longitudeField = $values[self::FIELD_LONGITUDE_FIELD] ?? 'bf_longitude';
         $this->showMapInEntryView = $values[self::FIELD_SHOW_MAP_IN_ENTRY_VIEW] ?? '0';
         $this->autocomplete = (!empty($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) && !empty($values[self::FIELD_AUTOCOMPLETE_TOWN])) ?
-            trim($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]).','.trim($values[self::FIELD_AUTOCOMPLETE_TOWN]) : null;
+            trim($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) . ',' . trim($values[self::FIELD_AUTOCOMPLETE_TOWN]) : null;
         $this->propertyName = 'geolocation';
         $this->label = $this->propertyName;
 
@@ -79,7 +77,7 @@ class MapField extends BazarField
         $county = empty($data[4]) ? self::DEFAULT_FIELDNAME_COUNTY : $data[4];
         $state = empty($data[5]) ? self::DEFAULT_FIELDNAME_STATE : $data[5];
 
-        $this->autocompleteFieldnames = compact(['postalCode','town','street','street1','street2','county','state']);
+        $this->autocompleteFieldnames = compact(['postalCode', 'town', 'street', 'street1', 'street2', 'county', 'state']);
     }
 
     protected function getValue($entry)
@@ -95,16 +93,17 @@ class MapField extends BazarField
                 } else {
                     $value = [
                         $this->getLatitudeField() => $value[0],
-                        $this->getLongitudeField() => $value[1]
+                        $this->getLongitudeField() => $value[1],
                     ];
                 }
             } elseif (!empty($entry[$this->getLatitudeField()]) && !empty($entry[$this->getLongitudeField()])) {
                 $value = [
                     $this->getLatitudeField() => $entry[$this->getLatitudeField()],
-                    $this->getLongitudeField() => $entry[$this->getLongitudeField()]
+                    $this->getLongitudeField() => $entry[$this->getLongitudeField()],
                 ];
             }
         }
+
         return $value;
     }
 
@@ -120,12 +119,12 @@ class MapField extends BazarField
             if ($mapProvider == 'MapBox') {
                 $mapProviderCredentials = [
                     'id' => $mapProviderId,
-                    'accessToken' => $mapProviderPass
+                    'accessToken' => $mapProviderPass,
                 ];
             } else {
                 $mapProviderCredentials = [
                     'app_id' => $mapProviderId,
-                    'app_code' => $mapProviderPass
+                    'app_code' => $mapProviderPass,
                 ];
             }
         } else {
@@ -134,6 +133,7 @@ class MapField extends BazarField
 
         $latitude = is_array($value) && !empty($value[$this->getLatitudeField()]) ? $value[$this->getLatitudeField()] : null;
         $longitude = is_array($value) && !empty($value[$this->getLongitudeField()]) ? $value[$this->getLongitudeField()] : null;
+
         return [
             'bazWheelZoom' => $params->get('baz_wheel_zoom'),
             'bazShowNav' => $params->get('baz_show_nav'),
@@ -143,7 +143,7 @@ class MapField extends BazarField
             'mapProvider' => $mapProvider,
             'mapProviderCredentials' => $mapProviderCredentials,
             'latitude' => $latitude,
-            'longitude' => $longitude
+            'longitude' => $longitude,
         ];
     }
 
@@ -151,12 +151,13 @@ class MapField extends BazarField
     {
         $mapFieldData = $this->getMapFieldData($entry);
 
-        return $this->render("@bazar/inputs/map.twig", [
+        return $this->render('@bazar/inputs/map.twig', [
             'latitude' => $mapFieldData['latitude'],
             'longitude' => $mapFieldData['longitude'],
-            'mapFieldData' => $mapFieldData
+            'mapFieldData' => $mapFieldData,
         ]);
     }
+
     public function formatValuesBeforeSave($entry)
     {
         return $this->formatValuesBeforeSaveIfEditable($entry, false);
@@ -183,23 +184,24 @@ class MapField extends BazarField
         if (!empty($entry[$this->getLatitudeField()]) && !empty($entry[$this->getLongitudeField()])) {
             $entry[$this->getPropertyName()] = [
                 $this->getLatitudeField() => $entry[$this->getLatitudeField()],
-                $this->getLongitudeField() => $entry[$this->getLongitudeField()]
+                $this->getLongitudeField() => $entry[$this->getLongitudeField()],
             ];
+
             return [
-            $this->getPropertyName() => $entry[$this->getPropertyName()],
-            $this->getLatitudeField() => $entry[$this->getLatitudeField()],
-            $this->getLongitudeField() => $entry[$this->getLongitudeField()],
-            'fields-to-remove' => ['carte_google']
-          ];
+                $this->getPropertyName() => $entry[$this->getPropertyName()],
+                $this->getLatitudeField() => $entry[$this->getLatitudeField()],
+                $this->getLongitudeField() => $entry[$this->getLongitudeField()],
+                'fields-to-remove' => ['carte_google'],
+            ];
         } else {
             return [
-          'fields-to-remove' => [
-            $this->getPropertyName(),
-            $this->getLatitudeField(),
-            $this->getLongitudeField(),
-            'carte_google'
-            ]
-        ];
+                'fields-to-remove' => [
+                    $this->getPropertyName(),
+                    $this->getLatitudeField(),
+                    $this->getLongitudeField(),
+                    'carte_google',
+                ],
+            ];
         }
     }
 
@@ -227,7 +229,7 @@ class MapField extends BazarField
             || $showMapInDynamicListView
         ) {
             $showMapInListView = true;
-        };
+        }
         $currentUrlIsEntry = (explode('/', $_GET['wiki'])[0] === $entry['id_fiche']);
 
         // the map is only showed on the fullpage entry view,
@@ -238,12 +240,13 @@ class MapField extends BazarField
         ) {
             $mapFieldData = $this->getMapFieldData($entry);
             if (!empty($mapFieldData['latitude']) && !empty($mapFieldData['longitude'])) {
-                $output .= $this->render("@bazar/fields/map.twig", [
+                $output .= $this->render('@bazar/fields/map.twig', [
                     'tag' => $entry['id_fiche'],
                     'mapFieldData' => $mapFieldData,
                 ]);
             }
         }
+
         return $output;
     }
 
@@ -281,11 +284,11 @@ class MapField extends BazarField
         return array_merge(
             parent::jsonSerialize(),
             [
-              'latitudeField' => $this->getLatitudeField(),
-              'longitudeField' => $this->getLongitudeField(),
-              'autocomplete' => $this->getAutocomplete(),
-              'geolocate' => $this->getGeolocate(),
-              'autocompleteFieldnames' => $this->getAutocompleteFieldnames(),
+                'latitudeField' => $this->getLatitudeField(),
+                'longitudeField' => $this->getLongitudeField(),
+                'autocomplete' => $this->getAutocomplete(),
+                'geolocate' => $this->getGeolocate(),
+                'autocompleteFieldnames' => $this->getAutocompleteFieldnames(),
             ]
         );
     }

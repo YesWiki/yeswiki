@@ -2,12 +2,13 @@
 /**
  * Yeswiki is a great wiki
  * This file loads the autoload file only once and loads the wiki as singleton
- * Created to allow tests without running YesWiki but in the same state as production
+ * Created to allow tests without running YesWiki but in the same state as production.
  *
  * @category Wiki
- * @package  YesWiki
+ *
  * @license  AGPL version 3
- * @link     https://yeswiki.net
+ *
+ * @see     https://yeswiki.net
  */
 
 namespace YesWiki\Core;
@@ -24,7 +25,9 @@ class YesWikiLoader
 
     protected function __construct()
     {
-    } // prevent public usage
+    }
+
+    // prevent public usage
     protected function __clone()
     {
     } // prevent public usage
@@ -35,7 +38,7 @@ class YesWikiLoader
             require_once 'includes/autoload.inc.php';
             try {
                 if (!file_exists('vendor/autoload.php')) {
-                    throw new Exception("ERROR ! : Folder `vendor/` seems not to be entirely copied ! (Maybe a YesWiki update aborted before its end !)<br/><strong>Could you manually copy the folder `vendor/` on your server by ftp ?</strong><br/>");
+                    throw new Exception('ERROR ! : Folder `vendor/` seems not to be entirely copied ! (Maybe a YesWiki update aborted before its end !)<br/><strong>Could you manually copy the folder `vendor/` on your server by ftp ?</strong><br/>');
                 }
                 $loader = require_once 'vendor/autoload.php';
             } catch (Throwable $th) {
@@ -60,6 +63,7 @@ class YesWikiLoader
                 self::$wiki = new Wiki();
             }
         }
+
         return self::$wiki;
     }
 }

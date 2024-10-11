@@ -4,10 +4,9 @@ Interesting in contributing? Awesome!
 
 **Quick Links:**
 
-  * [Give your feedback](#give-your-feedback)
-  * [Write documentation](#write-documentation)
-  * [Develop](#develop)
-
+- [Give your feedback](#give-your-feedback)
+- [Write documentation](#write-documentation)
+- [Develop](#develop)
 
 ## Give your feedback
 
@@ -44,4 +43,4 @@ Then, just go in the browser to start the installation procedure.
 ### Coding standards
 
 It's a work in progress but we try to follow the [PHP PSR-2 standards](https://www.php-fig.org/psr/psr-2/).  
-As for Javascript, a linter (like eslint) can be used to check the code.  
+As for Javascript, a linter (like eslint) can be used to check the code.

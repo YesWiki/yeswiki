@@ -1,13 +1,23 @@
 parameters:
-  contact_mail_func: 'mail'       # mail, sendmail ou smtp
-  contact_smtp_host: ''           # serveur smtp hote
-  contact_smtp_port: ''           # port smtp utilisé
-  contact_smtp_user: ''           # utilisateur smtp
-  contact_smtp_pass: ''           # mot de passe smtp
+  contact_mail_func: 'mail' # mail, sendmail ou smtp
+  contact_smtp_host: '' # serveur smtp hote
+  contact_smtp_port: '' # port smtp utilisé
+  contact_smtp_user: '' # utilisateur smtp
+  contact_smtp_pass: '' # mot de passe smtp
   contact_use_long_wiki_urls_in_emails: false # add 'wiki=' in url
   mail_template: 'email.tpl.html' # template de base pour les mails html
-  contact_reply_to: ''            # default mail to reply to
-  contact_debug: 0                # debug mode (0 pour rien, 1 pour normal, 2 pour détaillé)
-  contact_passphrase: ''          # passphrase pour envoyer des mail
+  contact_reply_to: '' # default mail to reply to
+  contact_debug: 0 # debug mode (0 pour rien, 1 pour normal, 2 pour détaillé)
+  contact_passphrase: '' # passphrase pour envoyer des mail
+  contact_disable_email_for_password: false # pour désactiver l'envoie d'email pour ré-initaliser un mot de passe (ex: LDAP, SSO)
   contact_editable_config_params:
     - 'contact_use_long_wiki_urls_in_emails'
+    - 'contact_mail_func'
+    - 'contact_smtp_host'
+    - 'contact_smtp_port'
+    - 'contact_smtp_user'
+    - 'contact_smtp_pass'
+    - 'contact_from'
+    - 'contact_reply_to'
+    - 'contact_debug'
+    - 'contact_disable_email_for_password'

@@ -1,21 +1,21 @@
 <?php
 
 // Vérification de sécurité
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    exit('acc&egrave;s direct interdit');
 }
 
 $tag = $this->GetPageTag();
-$class = $this->GetParameter("class");
-$offset = $this->GetParameter("offset");
+$class = $this->GetParameter('class');
+$offset = $this->GetParameter('offset');
 if (empty($offset)) {
     $offset = '70';
 }
-$align = $this->GetParameter("align");
+$align = $this->GetParameter('align');
 if (empty($align) || $align != 'left') {
     $align = 'right';
 }
-$size = $this->GetParameter("size");
+$size = $this->GetParameter('size');
 if (empty($size)) {
     $size = '3';
 }
@@ -23,7 +23,7 @@ $contentsize = 12 - intval($size);
 
 $script = '
 $(document).ready(function () {
-    var align = "'.$align.'";
+    var align = "' . $align . '";
     var page = $(".page:first");
     var bootstrap3_enabled = (typeof $().emulateTransitionEnd == \'function\');
     if (bootstrap3_enabled) {
@@ -34,13 +34,13 @@ $(document).ready(function () {
         var colclass=\'span\';
     }
     if (align === "left") {
-        page.addClass(colclass+"'.$contentsize.'").wrap( "<div class=\'"+rowclass+"\'></div>" ).parent().prepend( "<div class=\'"+colclass+"'.$size.' no-dblclick\'><div id=\'tocjs-'.$tag.'\' class=\'bs-sidebar hidden-print\' role=\'complementary\'></div></div>" );
+        page.addClass(colclass+"' . $contentsize . '").wrap( "<div class=\'"+rowclass+"\'></div>" ).parent().prepend( "<div class=\'"+colclass+"' . $size . ' no-dblclick\'><div id=\'tocjs-' . $tag . '\' class=\'bs-sidebar hidden-print\' role=\'complementary\'></div></div>" );
     }
     else {
-        page.addClass(colclass+"'.$contentsize.'").wrap( "<div class=\'"+rowclass+"\'></div>" ).parent().append( "<div class=\'"+colclass+"'.$size.' no-dblclick\'><div id=\'tocjs-'.$tag.'\' class=\'bs-sidebar hidden-print\' role=\'complementary\'></div></div>" );
+        page.addClass(colclass+"' . $contentsize . '").wrap( "<div class=\'"+rowclass+"\'></div>" ).parent().append( "<div class=\'"+colclass+"' . $size . ' no-dblclick\'><div id=\'tocjs-' . $tag . '\' class=\'bs-sidebar hidden-print\' role=\'complementary\'></div></div>" );
     }
     $.gajus.contents({
-        where: $(\'#tocjs-'.$tag.'\'),
+        where: $(\'#tocjs-' . $tag . '\'),
         index: $(\'.page h1, .page h2, .page h3, .page h4, .page h5\')
     }).on(\'change.contents.gajus\', function (event, change) {
         if (change.previous) {
@@ -53,7 +53,7 @@ $(document).ready(function () {
     var $body = $(document.body)
     var navbarheight = $(\'#yw-topnav\').height();
     var pagestartHeight = page.offset().top - navbarheight;
-    var $sideBar = $(\'#tocjs-'.$tag.'\');
+    var $sideBar = $(\'#tocjs-' . $tag . '\');
 
     var pagetitles = $body.find(\'.page h1, .page h2, .page h3, .page h4, .page h5\');
     pagetitles.each(function(i) {
@@ -61,17 +61,17 @@ $(document).ready(function () {
     });
 
     $body.scrollspy({
-        target: \'#tocjs-'.$tag.'\',
-        offset: '.$offset.'
+        target: \'#tocjs-' . $tag . '\',
+        offset: ' . $offset . '
     });
 
-    $(\'#tocjs-'.$tag.' a\').click(function (e) {
+    $(\'#tocjs-' . $tag . ' a\').click(function (e) {
         e.preventDefault();
 
         var link = $(this).attr(\'href\');
 
         $(\'html, body\').animate({
-            scrollTop: $(link).offset().top - '.$offset.'
+            scrollTop: $(link).offset().top - ' . $offset . '
         }, 500);
     })
 
@@ -115,51 +115,51 @@ $(document).ready(function () {
 $this->AddJavascriptFile('tools/toc/libs/vendor/contents.min.js');
 $this->AddJavascript($script);
 echo '<style>
-    #tocjs-'.$tag.'.affix {
-        top : '.$offset.'px
+    #tocjs-' . $tag . '.affix {
+        top : ' . $offset . 'px
     }
     
     @media (max-width:768px){
-        #tocjs-'.$tag.'.affix {
+        #tocjs-' . $tag . '.affix {
             right: 5px;
         }
     }
 
-    #tocjs-'.$tag.' ol {
+    #tocjs-' . $tag . ' ol {
         list-style:none;
         padding:0;
         margin:0;
     }
 
     /* All levels of nav */
-     #tocjs-'.$tag.' ol > li > a {
+     #tocjs-' . $tag . ' ol > li > a {
         display: block;
         color: #999999;
         font-size: 0.9em;
         font-weight: 500;
         padding: 4px 20px;
     }
-    #tocjs-'.$tag.' ol > li > a:hover, #tocjs-'.$tag.' ol > li > a:focus {
+    #tocjs-' . $tag . ' ol > li > a:hover, #tocjs-' . $tag . ' ol > li > a:focus {
         text-decoration: none;
         color: #444;
         background-color: transparent;
         border-left: 1px solid #444;
     }
-    #tocjs-'.$tag.' ol > .active > a, #tocjs-'.$tag.' ol > .active:hover > a, #tocjs-'.$tag.' ol > .active:focus > a {
+    #tocjs-' . $tag . ' ol > .active > a, #tocjs-' . $tag . ' ol > .active:hover > a, #tocjs-' . $tag . ' ol > .active:focus > a {
         font-weight: bold;
         color: #444;
         background-color: transparent;
         border-left: 2px solid #444;
     }
     /* Nav: second level (shown on .active) */
-    #tocjs-'.$tag.' ol ol {
+    #tocjs-' . $tag . ' ol ol {
         display: none;
         margin-bottom: 8px;
     }
-    #tocjs-'.$tag.' .active > ol {
+    #tocjs-' . $tag . ' .active > ol {
         display: block;
     }
-    #tocjs-'.$tag.' ol ol > li > a {
+    #tocjs-' . $tag . ' ol ol > li > a {
         padding-top: 3px;
         padding-bottom: 3px;
         padding-left: 30px;
@@ -168,30 +168,30 @@ echo '<style>
 
     /* Show and affix the side nav when space allows it */
      @media screen and (min-width: 992px) {
-        #tocjs-'.$tag.' ol > .active > ul {
+        #tocjs-' . $tag . ' ol > .active > ul {
             display: block;
         }
         /* Widen the fixed sidebar */
-        #tocjs-'.$tag.'.affix, #tocjs-'.$tag.'.affix-bottom {
+        #tocjs-' . $tag . '.affix, #tocjs-' . $tag . '.affix-bottom {
             width: 213px;
         }
-        #tocjs-'.$tag.'.affix {
+        #tocjs-' . $tag . '.affix {
             position: fixed;
         }
-        #tocjs-'.$tag.'.affix-bottom {
+        #tocjs-' . $tag . '.affix-bottom {
             position: absolute;
             /* Undo the static from mobile first approach */
         }
-        #tocjs-'.$tag.'.affix-bottom #tocjs-'.$tag.', #tocjs-'.$tag.'.affix #tocjs-'.$tag.' {
+        #tocjs-' . $tag . '.affix-bottom #tocjs-' . $tag . ', #tocjs-' . $tag . '.affix #tocjs-' . $tag . ' {
             margin-top: 0;
             margin-bottom: 0;
         }
     }
     @media screen and (min-width: 1200px) {
         /* Widen the fixed sidebar again */
-        #tocjs-'.$tag.'.affix-bottom, #tocjs-'.$tag.'.affix {
+        #tocjs-' . $tag . '.affix-bottom, #tocjs-' . $tag . '.affix {
            // width: 263px;
         }
     }
 
-    </style>'."\n";
+    </style>' . "\n";

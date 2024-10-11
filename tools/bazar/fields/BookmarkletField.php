@@ -25,20 +25,20 @@ class BookmarkletField extends BazarField
         $this->descriptionField = $values[self::FIELD_DESCRIPTION_FIELD] ?? 'bf_description';
         $this->size = null;
         $this->maxChars = null;
-        $this->default = "";
-        $this->text =  $values[self::FIELD_TEXT_FIELD];
+        $this->default = '';
+        $this->text = $values[self::FIELD_TEXT_FIELD];
     }
 
     protected function renderInput($entry)
     {
         $wiki = $this->getWiki();
         if ($this->getWiki()->GetMethod() != 'bazariframe') {
-            return $this->render("@bazar/inputs/bookmarklet.twig", [
+            return $this->render('@bazar/inputs/bookmarklet.twig', [
                 'urlParams' => [
                     'vue' => BAZ_VOIR_SAISIR,
                     'action' => BAZ_ACTION_NOUVEAU,
-                    'id' => $entry['id_typeannonce'] ?? ((!empty($_GET['id']) && is_scalar($_GET['id']) && strval($_GET['id']) == strval(intval($_GET['id']))) ? strval($_GET['id']) : ""),
-                ]
+                    'id' => $entry['id_typeannonce'] ?? ((!empty($_GET['id']) && is_scalar($_GET['id']) && strval($_GET['id']) == strval(intval($_GET['id']))) ? strval($_GET['id']) : ''),
+                ],
             ]);
         }
     }
@@ -76,7 +76,7 @@ class BookmarkletField extends BazarField
             [
                 'urlField' => $this->getUrlField(),
                 'descriptionField' => $this->getDescriptionField(),
-                'text' => $this->getText()
+                'text' => $this->getText(),
             ]
         );
     }

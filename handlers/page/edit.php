@@ -6,7 +6,7 @@ use YesWiki\Security\Controller\SecurityController;
 
 // Vérification de sécurité
 if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
+    exit('acc&egrave;s direct interdit');
 }
 
 // on initialise la sortie:
@@ -43,10 +43,10 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
             'previous' => $previous,
             'handler' => testUrlInIframe() ? 'editiframe' : 'edit',
             'cancelUrl' => $cancelUrl,
-            'body' => empty($body) ? "" : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
+            'body' => empty($body) ? '' : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
             'preview' => true,
             'bodyPreview' => $this->Format($body),
-            'saveValue' => SecurityController::EDIT_PAGE_SUBMIT_VALUE
+            'saveValue' => SecurityController::EDIT_PAGE_SUBMIT_VALUE,
         ]);
         $this->SetInclusions($temp);
     } else {
@@ -75,7 +75,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
 
                 // forward
                 if ($this->page['comment_on']) {
-                    $this->Redirect($this->href(testUrlInIframe(), $this->page['comment_on']).'#'.$this->tag);
+                    $this->Redirect($this->href(testUrlInIframe(), $this->page['comment_on']) . '#' . $this->tag);
                 } else {
                     $this->Redirect($this->href(testUrlInIframe()));
                 }
@@ -86,7 +86,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
 
             // append a comment?
             if (isset($_REQUEST['appendcomment'])) {
-                $body = trim($body)."\n\n----\n\n-- ".$this->GetUserName().' ('.date('c').')';
+                $body = trim($body) . "\n\n----\n\n-- " . $this->GetUserName() . ' (' . date('c') . ')';
             }
 
             $passwordForEditing = !empty($this->config['password_for_editing']) && isset($_POST['password_for_editing']);
@@ -97,25 +97,25 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
                 'handler' => testUrlInIframe() ? 'editiframe' : 'edit',
                 'passwordForEditing' => $passwordForEditing,
                 'cancelUrl' => $cancelUrl,
-                'body' => empty($body) ? "" : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
+                'body' => empty($body) ? '' : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
                 'saveValue' => SecurityController::EDIT_PAGE_SUBMIT_VALUE,
-                'preview' => false
+                'preview' => false,
             ]);
         }
     }
 } else {
-    $output .= "<i>" . _t('EDIT_NO_WRITE_ACCESS') . "</i>\n";
+    $output .= '<i>' . _t('EDIT_NO_WRITE_ACCESS') . "</i>\n";
     if ($isWikiHibernated) {
         $output .= $this->services->get(SecurityController::class)->getMessageWhenHibernated();
     }
 }
 
 // Main Page
-$output = '<div class="page">'."\n".$output."\n".'<hr class="hr_clear" />'."\n".'</div>'."\n";
+$output = '<div class="page">' . "\n" . $output . "\n" . '<hr class="hr_clear" />' . "\n" . '</div>' . "\n";
 
 // Header - // Footer
 if (!testUrlInIframe()) {
-    echo $this->Header().$output.$this->Footer();
+    echo $this->Header() . $output . $this->Footer();
 } else {
     echo $output;
 }

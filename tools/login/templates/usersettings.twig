@@ -1,4 +1,5 @@
-<h2>{{ _t('USER_SETTINGS') }}{{ adminIsActing ? ' — ' ~ user.name : ''}}</h2>
+{% if adminIsActing %} <a href="{{ url({tag: 'GererUtilisateurs'}) }}" class="btn btn-primary pull-right"><i class="fa fa-arrow-left"></i> {{ _t('USER_GOTOADMIN')}}</a>{% endif %}
+<h2>{{ _t('USER_SETTINGS') }}{% if adminIsActing %} — {{user.name}}{% endif %}</h2>
 
 {% if errorUpdate is not empty %}
   <div class="alert alert-danger">{{ errorUpdate }}</div>
@@ -25,6 +26,14 @@
       <input class="form-control" name="revisioncount" value="{{ user.revisioncount|e('html_attr') }}" size="40" />
     </div>
   </div> #}
+{% if userlink is not empty %}
+  <div class="control-group form-group">
+  	<div class="controls col-sm-9">
+  		<label>{{ _t('LINK_TO_CHANGE_PASSWORD') }}</label><br/>
+  		<a href='{{ userlink }}' target='_blank'>{{ userlink }}</a>
+  	</div>
+  </div>
+{% endif %}  
   <div class="control-group form-group">
 		<div class="controls col-sm-9 col-sm-offset-3">
       <input type="hidden" name="csrf-token-update" value="{{ csrfToken({id:'main',refresh:false}) }}">

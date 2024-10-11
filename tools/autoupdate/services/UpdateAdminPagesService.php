@@ -33,15 +33,17 @@ class UpdateAdminPagesService
     }
 
     /**
-     * method to update admin pages
+     * method to update admin pages.
+     *
      * @param array $adminPagesToUpdate ['BazaR',GererSite', ...]
+     *
      * @return Messages messages
      */
     public function update(array $adminPagesToUpdate): Messages
     {
         $messages = new Messages();
         $defaultSQL = file_get_contents('setup/sql/default-content.sql');
-        $defaultSQLSplittedByBlock = explode("INSERT INTO", $defaultSQL);
+        $defaultSQLSplittedByBlock = explode('INSERT INTO', $defaultSQL);
         $blocks = [];
         for ($i = 1; $i < count($defaultSQLSplittedByBlock); $i++) {
             $block = $defaultSQLSplittedByBlock[$i];
@@ -65,7 +67,7 @@ class UpdateAdminPagesService
             } else {
                 $separator = "\n";
             }
-            $splittedBlock = explode(")," . $separator . "('", $splittedBlock[1]);
+            $splittedBlock = explode('),' . $separator . "('", $splittedBlock[1]);
             foreach ($splittedBlock as $extract) {
                 $tag = explode('\'', $extract)[0];
                 $defaultSQLSplitted[$tag] = $extract;
@@ -91,6 +93,7 @@ class UpdateAdminPagesService
                 $messages->add(str_replace('{{page}}', $page, _t('UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL')), 'AU_ERROR');
             }
         }
+
         return $messages;
     }
 }

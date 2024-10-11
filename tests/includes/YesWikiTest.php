@@ -2,7 +2,6 @@
 
 namespace YesWiki\Test\Core;
 
-use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -10,7 +9,7 @@ require_once 'tests/YesWikiTestCase.php';
 class YesWikiTest extends YesWikiTestCase
 {
     /**
-     * @covers Wiki::__construct
+     * @covers \Wiki::__construct
      */
     public function testInitWiki(): Wiki
     {

@@ -1,7 +1,5 @@
 <?php
-
 return [
-
     // 'TAGS_TAGS' => 'Mots clés',
     'TAGS_ACTION_ADMINTAGS' => 'Actie {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'de actie is voorbehouden aan de beheerdersgroep',
@@ -23,36 +21,30 @@ return [
     'TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS' => 'Alle pagina’s met dit sleutelwoord bekijken',
     'TAGS_ALERT_PAGE_ALREADY_MODIFIED' => 'ALARM: Deze pagina werd door iemand anders gewijzigd terwijl u ze bewerkte.<br />Gelieve uw wijzigingen te kopiëren en de pagina opnieuw te bewerken.',
     'TAGS_ANSWER_THIS_COMMENT' => 'Antwoorden op deze commentaar',
-    'TAGS_DATE_FORMAT' => "d.m.J &\a\g\\r\av\e; H:i:s",
+    'TAGS_DATE_FORMAT' => "d.m.J &ag\rave; H:i:s",
     'TAGS_WRITE_YOUR_COMMENT_HERE' => 'Schrijf hier uw commentaren...',
     'TAGS_ADD_YOUR_COMMENT' => 'Uw commentaar toevoegen',
     'TAGS_ACTION_FILTERTAGS' => 'Actie {{filtertags ...}}',
     'TAGS_NO_FILTERS' => 'parameter "filter1" verplicht maar niet gevonden.',
     'TAGS_ONLY_ONE_DOUBLEPOINT' => 'Er mag maar een dubbel punt (:) staan om het label aan te duiden. Meerdere dubbele punten gevonden.',
-
     'TAGS_ACTION_INCLUDEPAGES' => 'Actie {{includepages ...}}',
     'TAGS_NO_PARAM_PAGES' => 'Parameter "pages" verplicht maar niet gevonden.',
-
     'TAGS_NO_RESULTS' => 'Geen resultaten met de sleutelwoorden.',
     'TAGS_RESULTS' => 'resultaten',
     'TAGS_FILTER' => 'Filteren',
     'TAGS_CONTAINING_TAG' => 'met het sleutelwoord',
     'TAGS_ONE_PAGE' => 'Een pagina',
     'TAGS_PAGES' => 'pagina’s',
-
     // actions/admintag.php
     // 'TAGS_NO_TAG' => 'Aucun mot clé utilisé pour le moment',
-
     // actions/listpagestag.php
     // 'TAGS_TOTAL_NB_PAGES' => 'Un total de %{nb_total} pages a &eacute;t&eacute; trouv&eacute;',
     // 'TAGS_ONE_PAGE_FOUND' => 'Une page a &eacute;t&eacute; trouv&eacute;e',
     // 'TAGS_NO_PAGE' => 'Aucune page trouv&eacute;e',
     // 'TAGS_WITH_KEYWORD' => 'avec le mot cl&eacute;',
     // 'TAGS_WITH_KEYWORD_SEPARATOR' => 'et',
-
     // actions/rss.php
     'TAGS_RSS_FEED_FOR_NEW_PAGES_WITH_TAGS' => 'RSS-feed van nieuwe pagina’s met tags',
-
     // handler exportpages
     'TAGS_YOUR_EBOOK' => 'Uw Ebook',
     'TAGS_SPAM_RISK' => 'U dient Javascript te activeren om niet als spam te worden beschouwd.',
@@ -93,10 +85,8 @@ return [
     // 'TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE' => 'Contenu en ligne sur la page',
     'TAGS_NO_EBOOK_METADATAS' => 'Deze pagina beschikt niet over de nodige metagegevens om het Ebook aan te maken.',
     'TAGS_NO_EBOOK_FOUND' => 'Geen Ebook gevonden.',
-
     // handler/tagrss.php
     // 'TAGS_HIDDEN_CONTENT' => 'Contenu masqué',
-
     // action builder tags group
     // 'AB_tags_group_label' => 'Gestion des tags',
     // 'AB_tags_admintag_label' => 'Gestion des tags',
@@ -120,8 +110,44 @@ return [
     // 'AB_tags_listpagestag_rss_label'=> 'lien rss vers la liste pour des tags donnés',
     // 'AB_tags_listpagestag_nbclasses_label' => 'nombre de classes CSS disponibles pour le nuage',
     // 'AB_tags_nuagetag_tri_shuffle' => 'aléatoire',
-
     // for edit config
     'EDIT_CONFIG_HINT_HIDE_KEYWORDS' => 'Trefwoorden onder aan pagina\'s verbergen (true of false)',
     'EDIT_CONFIG_GROUP_TAGS' => 'Zoekwoorden (tags)',
+    'AB_tags_listpagestag_type_label' => 'Type',
+    'TAGS_DELETE_MINUSCULE' => 'verwijder',
+    'TAGS_NO_PAGE' => 'Geen enkele pagina gevonden',
+    'TAGS_WITH_KEYWORD' => 'met het sleutelwoord',
+    'AB_tags_listpagestag_template_label' => 'vertaling:',
+    'TAGS_TAGS' => 'Keywords',
+    'TAGS_ADD_TAGS' => 'Voeg woorden toe',
+    'TAGS_NO_TAG' => 'Geen sleutelwoorden gebruikt op het moment',
+    'TAGS_TOTAL_NB_PAGES' => 'Een totale van taal pagina\'s aposute; tactiek, trouyahacute;',
+    'TAGS_DOWNLOAD' => 'Download',
+    'TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE' => 'Online inhoud',
+    'TAGS_HIDDEN_CONTENT' => 'Mattin tevreden',
+    'AB_tags_group_label' => 'Tag management',
+    'AB_tags_admintag_label' => 'Tag management',
+    'AB_tags_listpagestag_label' => 'Lijst van pagina\'s',
+    'AB_tags_listpagestag_type_all' => 'alle wiki pagina\'s en pagina\'s',
+    'AB_tags_listpagestag_type_wiki' => 'alleen wiki pagina\'s',
+    'AB_tags_listpagestag_type_bazar' => 'alleen formulieren',
+    'AB_tags_listpagestag_tags_label' => 'Tags',
+    'AB_tags_listpagestag_tags_hint' => 'quality over quantity (qoq) releases vertaling:',
+    'AB_tags_listpagestag_nb_label' => 'Nummer van pagina\'s',
+    'AB_tags_listpagestag_tri_label' => 'Soort',
+    'AB_tags_listpagestag_tri_date' => 'sort door het verminderen van datum',
+    'AB_tags_listpagestag_template_list' => 'lijst',
+    'AB_tags_listpagestag_tri_alpha' => 'sort by alfabetische orde',
+    'AB_tags_listpagestag_template_list_panel' => 'vertaling:',
+    'AB_tags_listpagestag_template_list_num' => 'vertaling:',
+    'AB_tags_listpagestag_shownumberinfo_label' => 'vertaling:',
+    'AB_tags_listpagestag_nuagetag_label' => 'wolk van tags',
+    'AB_tags_listpagestag_rss_label' => 'vertaling:',
+    'TAGS_FROM_THIS_PAGE' => '_',
+    'TAGS_FROM_ALL_PAGES' => 'van alle pagina\'s',
+    'TAGS_PRESENT_IN' => 'sent dans',
+    'TAGS_ONE_PAGE_FOUND' => 'Een pagina van een stofpos;eacute; gevangenschap, trouvéeacute',
+    'TAGS_WITH_KEYWORD_SEPARATOR' => '♪',
+    'AB_tags_listpagestag_nbclasses_label' => 'cSS lessen beschikbaar voor wolken',
+    'AB_tags_nuagetag_tri_shuffle' => 'willekeurig',
 ];

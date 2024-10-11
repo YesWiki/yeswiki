@@ -39,13 +39,14 @@ class AclService
     /**
      * @param string $tag
      * @param string $privilege
-     * @param boolean $useDefaults
+     * @param bool   $useDefaults
+     *
      * @return array [page_tag, privilege, list]
      */
     public function load($tag, $privilege, $useDefaults = true): ?array
     {
         if ($useDefaults && isset($this->cache[$tag][$privilege])) {
-            return $this->cache[$tag][$privilege] ;
+            return $this->cache[$tag][$privilege];
         }
 
         if ($useDefaults) {
@@ -53,21 +54,21 @@ class AclService
                 'read' => [
                     'page_tag' => $tag,
                     'privilege' => 'read',
-                    'list' => $this->params->get('default_read_acl')
+                    'list' => $this->params->get('default_read_acl'),
                 ],
                 'write' => [
                     'page_tag' => $tag,
                     'privilege' => 'write',
-                    'list' => $this->params->get('default_write_acl')
+                    'list' => $this->params->get('default_write_acl'),
                 ],
                 'comment' => [
                     'page_tag' => $tag,
                     'privilege' => 'comment',
-                    'list' => $this->params->get('default_comment_acl')
-                ]
+                    'list' => $this->params->get('default_comment_acl'),
+                ],
             ];
         } else {
-            $this->cache[$tag] = array();
+            $this->cache[$tag] = [];
         }
 
         $res = $this->dbService->loadAll('SELECT * FROM' . $this->dbService->prefixTable('acls') . 'WHERE page_tag = "' . $this->dbService->escape($tag) . '"');
@@ -80,13 +81,13 @@ class AclService
             return $this->cache[$tag][$privilege];
         }
 
-        return null ;
+        return null;
     }
 
     /**
-     * @param string $tag the page's tag
+     * @param string $tag       the page's tag
      * @param string $privilege the privilege
-     * @param string $list the multiline string describing the acl
+     * @param string $list      the multiline string describing the acl
      */
     public function save($tag, $privilege, $list, $appendAcl = false)
     {
@@ -101,7 +102,7 @@ class AclService
         $acl = $this->load($tag, $privilege, false);
 
         if ($acl && $appendAcl) {
-            $list = $acl['list'] . "\n" . $list ;
+            $list = $acl['list'] . "\n" . $list;
         }
 
         if ($acl) {
@@ -111,25 +112,24 @@ class AclService
         }
 
         // Update the cache
-        $this->cache[$tag][$privilege] = array(
+        $this->cache[$tag][$privilege] = [
             'page_tag' => $tag,
             'privilege' => $privilege,
-            'list' => $list
-        );
+            'list' => $list,
+        ];
     }
 
     /**
-     *
-     * @param string $tag The page's WikiName
-     * @param string|array $privileges A privilege or several privileges to delete from database.
+     * @param string       $tag        The page's WikiName
+     * @param string|array $privileges a privilege or several privileges to delete from database
      */
-    public function delete($tag, $privileges = ['read','write','comment'])
+    public function delete($tag, $privileges = ['read', 'write', 'comment'])
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!is_array($privileges)) {
-            $privileges = array($privileges);
+            $privileges = [$privileges];
         }
 
         // Add '"' at begin and end of each escaped privileges elements.
@@ -152,21 +152,22 @@ class AclService
      * The page's owner has always access (always return true).
      *
      * @param string $privilege The privilege to check (read, write, comment)
-     * @param string $tag The page WikiName. Default to current page
-     * @param string $user The username. Default to current user.
-     * @return boolean true if access granted, false if not.
+     * @param string $tag       The page WikiName. Default to current page
+     * @param string $user      The username. Default to current user.
+     *
+     * @return bool true if access granted, false if not
      */
     public function hasAccess($privilege, $tag = '', $user = '')
     {
         // set default to current page
-        if ($tag == null || ! $tag = trim($tag)) {
+        if ($tag == null || !$tag = trim($tag)) {
             $tag = $this->wiki->GetPageTag();
         }
 
         // set default to current user
         if (!$user) {
             $loggedUser = $this->authController->getLoggedUser();
-            $user = $loggedUser['name'] ?? "";
+            $user = $loggedUser['name'] ?? '';
         }
 
         // load acl
@@ -196,25 +197,26 @@ class AclService
     }
 
     /**
-     * Checks if some $user satisfies the given $acl
+     * Checks if some $user satisfies the given $acl.
      *
      * @param string $acl
-     *            The acl to check, in the same format than for pages ACL's
+     *                             The acl to check, in the same format than for pages ACL's
      * @param string $user
-     *            The name of the user that must satisfy the ACL. By default
-     *            the current remote user.
-     * @param bool $adminCheck
-     *            Check if user is in admins groups
-     *            Default true
+     *                             The name of the user that must satisfy the ACL. By default
+     *                             the current remote user.
+     * @param bool   $adminCheck
+     *                             Check if user is in admins groups
+     *                             Default true
      * @param string $tag
-     *            The name of the page or form to be tested when $acl contains '%'.
-     *            By Default ''
+     *                             The name of the page or form to be tested when $acl contains '%'.
+     *                             By Default ''
      * @param string $mode
-     *            Mode for cases when $acl contains '%'
-     *            Default '', standard case. $mode = 'creation', the test returns true
-     *            even if the user is connected
-     * @param array $formerGroups
-     * 		 to avoid loops we keep track of former calls
+     *                             Mode for cases when $acl contains '%'
+     *                             Default '', standard case. $mode = 'creation', the test returns true
+     *                             even if the user is connected
+     * @param array  $formerGroups
+     *                             to avoid loops we keep track of former calls
+     *
      * @return bool True if the $user satisfies the $acl, false otherwise
      */
     public function check($acl, $user = null, $adminCheck = true, $tag = '', $mode = '', $formerGroups = [])
@@ -231,15 +233,15 @@ class AclService
         }
 
         $acl = is_string($acl) ? trim($acl) : '';
-        $result = false ; // result by default , this function is like a big "OR LOGICAL"
+        $result = false; // result by default , this function is like a big "OR LOGICAL"
 
-        $acl = str_replace(["\r\n","\r"], "\n", $acl);
+        $acl = str_replace(["\r\n", "\r"], "\n", $acl);
         foreach (explode("\n", $acl) as $line) {
             $line = trim($line);
 
             // check for inversion character "!"
             if (preg_match('/^[!](.*)$/', $line, $matches)) {
-                $std_response = false ;
+                $std_response = false;
                 $line = $matches[1];
             } else {
                 $std_response = true;
@@ -254,19 +256,19 @@ class AclService
                         $result = $std_response;
                         break;
                     case '+': // registered users
-                        $result = (!empty($username) && $this->userManager->getOneByName($username)) ? $std_response : !$std_response ;
+                        $result = (!empty($username) && $this->userManager->getOneByName($username)) ? $std_response : !$std_response;
                         break;
                     case '%': // owner
                         if ($mode == 'creation') {
                             // in creation mode, even if there is a tag
                             // the current user can access to field
-                            $result = $std_response ;
+                            $result = $std_response;
                         } elseif ($tag == '') {
                             // to manage retrocompatibility without usage of CheckACL without $tag
                             // and no management of '%'
                             $result = false;
                         } else {
-                            $result = ($this->wiki->UserIsOwner($tag)) ? $std_response : !$std_response ;
+                            $result = ($this->wiki->UserIsOwner($tag)) ? $std_response : !$std_response;
                         }
                         break;
                     case '@': // groups
@@ -285,24 +287,24 @@ class AclService
                                     array_merge($formerGroups, [$gname]) // does not change $formerGroups param
                                 )
                                 ) {
-                                    $result = $std_response ;
+                                    $result = $std_response;
                                 } else {
-                                    $result = ! $std_response ;
+                                    $result = !$std_response;
                                 }
                             }
                         } else {
-                            $result = false ; // line '@'
+                            $result = false; // line '@'
                         }
                         break;
                     default: // simple user entry
                         if (!empty($username) && $line == $username) {
-                            $result = $std_response ;
+                            $result = $std_response;
                         } else {
-                            $result = ! $std_response ;
+                            $result = !$std_response;
                         }
                 }
                 if ($result) {
-                    return true ;
+                    return true;
                 } // else continue like a big logical OR
             }
         }
@@ -310,7 +312,8 @@ class AclService
         // tough luck.
         return false;
     }
-    /** create request for ACL
+
+    /** create request for ACL.
      * @return string $request request to append to request
      */
     public function updateRequestWithACL(): string

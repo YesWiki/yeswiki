@@ -60,7 +60,7 @@ class BazarAction extends YesWikiAction
             }
         }
 
-        return([
+        return [
             self::VARIABLE_ACTION => $this->sanitizedGet(self::VARIABLE_ACTION, function () use ($arg) {
                 return $arg[self::VARIABLE_ACTION] ?? null;
             }),
@@ -74,14 +74,15 @@ class BazarAction extends YesWikiAction
             // Identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
             'idtypeannonce' => $this->formatArray($_REQUEST['id_typeannonce'] ?? $arg['id'] ?? $arg['idtypeannonce'] ?? (!empty($_GET['id']) ? strip_tags($_GET['id']) : null)),
             // Permet de rediriger vers une url après saisie de fiche
-            'redirecturl' => $redirecturl
-        ]);
+            'redirecturl' => $redirecturl,
+        ];
     }
 
     /**
-     * check if get is scalar then return it or result of callback
-     * @param string $key
+     * check if get is scalar then return it or result of callback.
+     *
      * @param function $callback
+     *
      * @return scalar
      */
     protected function sanitizedGet(string $key, $callback)
@@ -98,7 +99,7 @@ class BazarAction extends YesWikiAction
         $entryController = $this->getService(EntryController::class);
 
         // TODO put in all bazar templates
-        $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
+        $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
 
         $view = $this->arguments[self::VARIABLE_VOIR];
         $action = $this->arguments[self::VARIABLE_ACTION];
@@ -107,7 +108,7 @@ class BazarAction extends YesWikiAction
         if ($this->arguments['voirmenu'] !== '0') {
             echo $this->render('@bazar/menu.twig', [
                 'menuItems' => array_map('trim', explode(',', $this->arguments['voirmenu'])),
-                'view' => $view
+                'view' => $view,
             ]);
         }
 
@@ -147,34 +148,40 @@ class BazarAction extends YesWikiAction
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();
                         }
+
                         return $formController->create();
                     case self::ACTION_FORM_EDIT:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();
                         }
+
                         return $formController->update($_GET['idformulaire']);
                     case self::ACTION_FORM_DELETE:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();
                         }
+
                         return $formController->delete($_GET['idformulaire']);
                     case self::ACTION_FORM_CONFIRM_DELETE:
                     case self::ACTION_FORM_CONFIRM_EMPTY:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();
                         }
-                        return $this->render("@bazar/forms/forms_confirm.twig", [
+
+                        return $this->render('@bazar/forms/forms_confirm.twig', [
                             'type' => ($action == self::ACTION_FORM_CONFIRM_DELETE) ? 'delete' : 'empty',
                         ]);
                     case self::ACTION_FORM_EMPTY:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();
                         }
+
                         return $formController->empty($_GET['idformulaire']);
                     case self::ACTION_FORM_CLONE:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();
                         }
+
                         return $formController->clone($_GET['idformulaire']);
                     default:
                         return $formController->displayAll(!empty($_GET['msg']) ? $_GET['msg'] : null);
@@ -186,16 +193,19 @@ class BazarAction extends YesWikiAction
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();
                         }
+
                         return $listController->create();
                     case self::ACTION_LIST_EDIT:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();
                         }
+
                         return $listController->update($_GET['idliste']);
                     case self::ACTION_LIST_DELETE:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();
                         }
+
                         return $listController->delete($_GET['idliste']);
                     default:
                         return $listController->displayAll();
@@ -214,6 +224,7 @@ class BazarAction extends YesWikiAction
                     case self::MOTEUR_RECHERCHE:
                     default:
                         $this->arguments['search'] = true;
+
                         return $this->callAction('bazarliste', $this->arguments);
                 }
         }

@@ -1,12 +1,9 @@
 <?php
-
 return [
-
     // controllers/ApiController.php
     // 'ATTACH_GET_URLIMAGE_CACHE_API_HELP' => "Fournit l'url du fichier de cache pour l'image voulue\n".
     //     "Nécessite le passage du jeton anti-csrf !",
     // 'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'Fichier image inexistant',
-
     // libs/attach.lib.php
     'ATTACH_ACTION_ATTACH' => 'Acció {{attach ...}}',
     'ATTACH_PARAM_DESC_REQUIRED' => 'El paràmetre "desc" és obligatori per una imatge',
@@ -23,7 +20,6 @@ return [
     // 'ERROR_NO_FILE_UPLOADED' => 'Aucun fichier n\'a &eacute;t&eacute; t&eacute;l&eacute;charg&eacute;.',
     // 'ERROR_NOT_AUTHORIZED_EXTENSION' => 'Le fichier n\'a pas une extension autorisée, voici celles que la configuration autorise : ',
     // 'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Ajouter un lien pour afficher l'image seule en entier",
-
     // 'ATTACH_FILE_MANAGEMENT' => 'Gestion des fichiers',
     // 'ATTACH_TRASH' => 'Corbeille',
     // 'ATTACH_NO_ATTACHED_FILES' => 'Pas de fichiers attachés à la page {tag} pour l\'instant.',
@@ -40,15 +36,12 @@ return [
     // 'ATTACH_PAGE_REVISION' => 'Version de la page',
     // 'ATTACH_FILE_REVISION' => 'Version du fichier',
     // 'ATTACH_DELETION' => 'Suppression',
-
     // actions/filemanager.php
     'ATTACH_NO_RIGHTS_TO_ACCESS_FILEMANAGER' => 'Cal tenir drets d\'escriptura a la pàgina per accedir a la gestió dels fitxers adjunts',
     // 'FILEMANAGER_ACTION_NEED_ACCESS' => 'Seul le propriétaire de cette page peut accéder au gestionnaire des fichiers attaché',
-
     // actions/backgroundimage.php
     // 'ATTACH_ACTION_BACKGROUNDIMAGE' => 'Action {{backgroundimage ...}}',
     // 'ATTACH_PARAM_FILE_OR_BGCOLOR_NOT_FOUND' => 'il faut indiquer soit une image avec le paramètre "file" ou une couleur de fond avec le paramètre "bgcolor"',
-
     // actions/player.php
     'ATTACH_ACTION_PLAYER' => 'Acció {{player ...}}',
     'ATTACH_DOWNLOAD_THE_FILE' => 'Descàrrega del fitxer',
@@ -56,7 +49,6 @@ return [
     'ATTACH_PARAM_URL_REQUIRED' => 'Paràmetre "url" obligatori',
     'ATTACH_PLAYER_CAN_ONLY_OPEN_FILES_LIKE' => 'El programa no pot llegir els fitxers mp3, flv o mm',
     'ATTACH_NOT_LINKED_TO_GOOD_FILE_EXTENSION' => 'L\'adjunt no està ben lincat a l\'extensió de fitxer',
-
     // actions/pointimage.php
     'ATTACH_ACTION_POINTIMAGE' => 'Acció {{pointimage ...}}',
     'ATTACH_PARAM_FILE_NOT_FOUND' => 'Paràmetre "file" obligatori',
@@ -67,16 +59,13 @@ return [
     'ATTACH_DESCRIPTION' => 'Descripció',
     'ATTACH_CANCEL' => 'Cancel·la',
     'ATTACH_SAVE' => 'Desa',
-
     // actions/video.php
     'ATTACH_ACTION_VIDEO_PARAM_ERROR' => 'El acció video s\'ha de cridar amb els paràmetres «id» i «serveur». Per a «serveur», només es permeten els valors «vimeo» o «youtube» o «peertube».',
-
     // actions/pdf.php
     'ATTACH_ACTION_PDF_PARAM_URL_ERROR' => 'El acció pdf s\'ha de cridar amb el paràmetre « url » i l\'URL indicada ha d\'estar al mateix amfitrió que la wiki (per exemple \'xxx.yyy.com \'), el mateix esquema (per exemple \'https \') i el mateix port si s\'especifica (per exemple \'8080 \'). ',
     // 'ATTACH_ACTION_DISPLAY_PDF_TEXT' => 'Afficher le pdf dans la page :',
     // 'ATTACH_ACTION_DISPLAY_PDF_LINK_TEXT' => 'sous forme de lien',
     // 'ATTACH_ACTION_DISPLAY_PDF_INCLUDED_TEXT' => 'directement inclus dans la page',
-
     // handler edit
     'ACTIVATE_JS_TO_UPLOAD_FILES' => 'Activa el JavaScript per adjuntar fitxers',
     'UPLOAD_A_FILE' => 'Afegir/Inserir un fitxer',
@@ -99,25 +88,53 @@ return [
     'WHITE_BORDER' => 'Vora blanca',
     'DROP_SHADOW' => 'Ombra',
     'ZOOM_HOVER' => 'Augmenta',
-    'ALT_INFOS' => 'Si la imatge no es troba, aquest text apareixerà en lloc seu',
-    'ALTERNATIVE_TEXT' => 'Text alternatiu',
+    'ALT_INFOS' => 'Aquest text serà anunciat a la plaça de la imatge si és introuvable sobre el servidor. És també la que serà llegida per les tecnologies d\'assistència a les persones malvoyantes. A deixar buit si la imatge és purament decorativa',
+    'ALTERNATIVE_TEXT' => 'Text alternatiu per a les persones malvoyantes',
     // 'NONE' => 'Texte en dessous',
     'LEFT' => 'Esquerra',
     'CENTER' => 'Centrat',
     'RIGHT' => 'Dreta',
-    'FAILED' => 'Error'
-
-    // handler ajaxupload
-    // 'ATTACH_HANDLER_AJAXUPLOAD_FOLDER_NOT_READABLE' => 'Le dossier de téléchargement n\'est pas accessible en écriture.',
-    // 'ATTACH_HANDLER_AJAXUPLOAD_NO_FILE' => 'Pas de fichiers envoyés.',
-    // 'ATTACH_HANDLER_AJAXUPLOAD_EMPTY_FILE' => 'Le fichier est vide.',
-    // 'ATTACH_HANDLER_AJAXUPLOAD_FILE_TOO_LARGE' => 'Le fichier est trop large.',
-    // 'ATTACH_HANDLER_AJAXUPLOAD_AUTHORIZED_EXT' => 'Le fichier n\'a pas une extension autorisée, voici les autorisées : {ext}.',
-    // 'ATTACH_HANDLER_AJAXUPLOAD_ERROR' => 'Impossible de sauver le fichier. L\'upload a été annulé ou le serveur a planté...',
-
-    // edit config action
-    // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_VIDEO_SERVICE]' => 'Service de vidéo par défaut (peertube, youtube ou vimeo)',
-    // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_PEERTUBE_INSTANCE]' => 'Adresse du serveur peertube par défaut',
-    // 'EDIT_CONFIG_HINT_MAX_FILE_SIZE' => 'Taille maximum des fichiers téléversés - octets (ex: Taille maximum des fichiers téléversés - octets (ex: 2097152 pour 2Mo)',
-    // 'EDIT_CONFIG_GROUP_ATTACH' => 'Insertion de médias (images, vidéos)',
+    'FAILED' => 'Error',
+    'ATTACH_FILENAME' => 'Nom del fitxer',
+    'ATTACH_SIZE' => 'Cintura',
+    'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => "Fitxer d'imatge inexistent",
+    'INVALID_REQUEST_METHOD' => 'Mètode de requète invàlid',
+    'ERROR_MOVING_TEMPORARY_FILE' => 'Error durant el d✱;ubicació del fitxer temporal',
+    'ERROR_NO_FILE_UPLOADED' => 'Cap fitxer no ha estat descarregat.',
+    'ATTACH_TRASH' => 'Corbeille',
+    'ATTACH_NO_ATTACHED_FILES' => 'No hi ha fitxers adjunts a la pàgina {tag} per ara.',
+    'ATTACH_DATE_OF_MODIFICATION' => 'Data de modificació',
+    'ATTACH_REAL_FILENAME' => 'Nom real del fitxer: {file}',
+    'ATTACH_EMPTY_TRASH' => 'Buidar la cistella',
+    'ATTACH_FILE_MANAGEMENT_WARNING' => 'Els fitxers esborrats sobre aquesta pàgina ho són definitivament',
+    'ATTACH_PAGE_REVISION' => 'Versió de la pàgina',
+    'FILEMANAGER_ACTION_NEED_ACCESS' => 'Sol el propietari d\'aquesta pàgina pot accedir al gestor dels fitxers lligat',
+    'ATTACH_ACTION_BACKGROUNDIMAGE' => 'Acció {{backgroundimage ...}}',
+    'NONE' => 'Text a sota',
+    'ATTACH_HANDLER_AJAXUPLOAD_NO_FILE' => 'fitxers enviats.',
+    'ATTACH_HANDLER_AJAXUPLOAD_FOLDER_NOT_READABLE' => 'La carpeta de descàrrega no és accessible per escrit.',
+    'ATTACH_HANDLER_AJAXUPLOAD_FILE_TOO_LARGE' => 'El fitxer és massa ampli.',
+    'ATTACH_HANDLER_AJAXUPLOAD_ERROR' => 'Impossible de salvar el fitxer. El upload ha estat anul·lat o el servidor ha plantat...',
+    'ATTACH_HANDLER_AJAXUPLOAD_AUTHORIZED_EXT' => 'El fitxer no disposa d\'una extensió autoritzada, aquí teniu els permesos: {ext}.',
+    'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_VIDEO_SERVICE]' => 'Servei de vídeo per defecte (peertube, youtube o vimeo)',
+    'EDIT_CONFIG_HINT_MAX_FILE_SIZE' => 'Talla màxima dels fitxers pujats - octets (ex: Talla màxima dels fitxers pujats (ex: 2097152, 2048k, 2m)',
+    'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_PEERTUBE_INSTANCE]' => 'Adreça del servidor peertube predeterminat',
+    'EDIT_CONFIG_GROUP_ATTACH' => 'Inserció de mitjans de comunicació (imatges, vídeos)',
+    'ERROR_UPLOAD_MAX_FILESIZE' => 'El fitxer descarregat excêde la talla de upload_max_filesize, configurat en el php.ini.',
+    'ERROR_MAX_FILE_SIZE' => 'El fitxer t markedeacute;l exposedeacute;charg markedeacute excitedcirc;de la mida de MAX_FILE_SIZE, que ha \'eacute;t yawned; spŭeacute;cifi primeacute;e en la forma HTML.',
+    'ERROR_PARTIAL_UPLOAD' => 'El fitxer té "eacute;t `eacute;; que parcialment cap aeacute;l neglecteacute;charg towardseacute.',
+    'ERROR_NOT_AUTHORIZED_EXTENSION' => 'El fitxer no té una extensió autoritzada, heus aquí les que la configuració autoritza: ',
+    'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Permet fer clic a la imatge per mostrar-la en gran",
+    'ATTACH_FILE_MANAGEMENT' => 'Gestió dels fitxers',
+    'ATTACH_RESTORE' => 'Restauració',
+    'ATTACH_EMPTY_TRASH_NOTICE' => 'els fitxers esborrats a partir de la cistella ho seran definitivament.',
+    'ATTACH_FILE_MANAGEMENT_TITLE' => 'Gestió de fitxers adjunts a la pàgina {tag}',
+    'ATTACH_FILE_REVISION' => 'Versió del fitxer',
+    'ATTACH_DELETION' => 'Esborrar',
+    'ATTACH_PARAM_FILE_OR_BGCOLOR_NOT_FOUND' => 'cal indicar sigui una imatge amb el paràmetre "passa" o un color de fons amb el paràmetre "bgcolor"',
+    'ATTACH_ACTION_DISPLAY_PDF_TEXT' => 'Mostra el pdf a la pàgina :',
+    'ATTACH_ACTION_DISPLAY_PDF_LINK_TEXT' => 'com un enllaç',
+    'ATTACH_ACTION_DISPLAY_PDF_INCLUDED_TEXT' => 'directament inclòs a la pàgina',
+    'ATTACH_DELETED_ON' => ' - Suprimeix:',
+    'ATTACH_HANDLER_AJAXUPLOAD_EMPTY_FILE' => 'El fitxer està buit.',
 ];

@@ -51,12 +51,6 @@ pdfjs-download-button-label = Prenesi
 pdfjs-bookmark-button =
     .title = Trenutna stran (prikaži URL, ki vodi do trenutne strani)
 pdfjs-bookmark-button-label = Na trenutno stran
-# Used in Firefox for Android.
-pdfjs-open-in-app-button =
-    .title = Odpri v programu
-# Used in Firefox for Android.
-# Length of the translation matters since we are in a mobile context, with limited screen estate.
-pdfjs-open-in-app-button-label = Odpri v programu
 
 ##  Secondary toolbar and context menu
 
@@ -306,8 +300,12 @@ pdfjs-editor-stamp-button =
     .title = Dodajanje ali urejanje slik
 pdfjs-editor-stamp-button-label = Dodajanje ali urejanje slik
 pdfjs-editor-highlight-button =
-    .title = Poudarek
-pdfjs-editor-highlight-button-label = Poudarek
+    .title = Označevalnik
+pdfjs-editor-highlight-button-label = Označevalnik
+pdfjs-highlight-floating-button1 =
+    .title = Označi
+    .aria-label = Označi
+pdfjs-highlight-floating-button-label = Označi
 
 ## Remove button for the various kind of editor.
 
@@ -391,3 +389,10 @@ pdfjs-editor-colorpicker-pink =
     .title = Roza
 pdfjs-editor-colorpicker-red =
     .title = Rdeča
+
+## Show all highlights
+## This is a toggle button to show/hide all the highlights.
+
+pdfjs-editor-highlight-show-all-button-label = Prikaži vse
+pdfjs-editor-highlight-show-all-button =
+    .title = Prikaži vse

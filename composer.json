@@ -1,89 +1,98 @@
 {
-    "name": "yeswiki/yeswiki",
-    "description": "A wiki system with extensions making collaboration more simple (databases, maps, easy editing, themes,...)",
-    "homepage": "https://yeswiki.net",
-    "license": "AGPL-3.0-or-later",
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "scripts": {
-      "test": "bash tests/tests.sh",
-      "post-install-cmd": [
-        "@composer install --working-dir ./tools/autoupdate/",
-        "YesWiki\\Core\\ComposerScriptsHelper::postInstall"
-      ],
-      "post-update-cmd": [
-        "@composer update --working-dir ./tools/autoupdate/",
-        "YesWiki\\Core\\ComposerScriptsHelper::postUpdate"
-      ]
-    },
-    "require": {
-        "php": "^7.3 || ^8.0",
-        "ext-ctype": "*",
-        "ext-curl": "*",
-        "ext-fileinfo": "*",
-        "ext-filter": "*",
-        "ext-gd": "*",
-        "ext-iconv": "*",
-        "ext-json": "*",
-        "ext-mbstring": "*",
-        "ext-mysqli": "*",
-        "ext-pcre": "*",
-        "ext-zip": "^1.0",
-        "caxy/php-htmldiff": "^0.1.13",
-        "doctrine/annotations": "^1.11",
-        "doctrine/cache": "^1.10",
-        "enshrined/svg-sanitize": "^0.16.0",
-        "ezyang/htmlpurifier": "^4.14",
-        "jbroadway/urlify": "^1.2",
-        "nesbot/carbon": "^2.66.0",
-        "oomphinc/composer-installers-extender": "^2.0",
-        "phpmailer/phpmailer": "^6.2",
-        "stefangabos/zebra_image": "^2.7",
-        "symfony/config": "^5.1",
-        "symfony/console": "^5.2",
-        "symfony/dependency-injection": "^5.1",
-        "symfony/event-dispatcher": "^5.4",
-        "symfony/http-foundation": "^5.1",
-        "symfony/http-kernel": "^5.3.12",
-        "symfony/process": "^5.4",
-        "symfony/routing": "^5.1",
-        "symfony/security-core": "^5.4",
-        "symfony/security-csrf": "^5.0",
-        "symfony/yaml": "^5.1",
-        "tamtamchik/simple-flash": "^2.0",
-        "twig/twig": "^3.4.3",
-        "voku/anti-xss": "^4.1",
-        "yeswiki/theme-margot": "^1.0"
-    },
-    "conflict": {
-    },
-    "extra": {
-        "installer-types": ["yeswiki-extension", "yeswiki-theme"],
-        "installer-paths": {
-            "tools/{$name}" : ["type:yeswiki-extension"],
-            "themes/{$name}": ["type:yeswiki-theme"]
-        }
-    },
-    "require-dev": {
-        "symfony/var-dumper": "^5.1",
-        "phpunit/phpunit": "^9"
-    },
-    "config": {
-        "allow-plugins": {
-            "composer/installers": true,
-            "oomphinc/composer-installers-extender": true
-        },
-        "optimize-autoloader": true,
-        "platform": {
-            "php": "7.3.0"
-        },
-        "platform-check": true,
-        "sort-packages": true
-    },
-    "bin": [
-            "yeswicli"
+  "name": "yeswiki/yeswiki",
+  "description": "A wiki system with extensions making collaboration more simple (databases, maps, easy editing, themes,...)",
+  "homepage": "https://yeswiki.net",
+  "license": "AGPL-3.0-or-later",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "scripts": {
+    "test": "bash tests/tests.sh",
+    "post-install-cmd": [
+      "@composer install --working-dir ./tools/autoupdate/",
+      "YesWiki\\Core\\ComposerScriptsHelper::postInstall"
     ],
-    "autoload": {
-        "classmap": ["includes/ComposerScriptsHelper.php"]
+    "post-update-cmd": [
+      "@composer update --working-dir ./tools/autoupdate/",
+      "YesWiki\\Core\\ComposerScriptsHelper::postUpdate"
+    ]
+  },
+  "require": {
+    "php": "^7.3 || ^8.0",
+    "ext-ctype": "*",
+    "ext-curl": "*",
+    "ext-fileinfo": "*",
+    "ext-filter": "*",
+    "ext-gd": "*",
+    "ext-iconv": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*",
+    "ext-mysqli": "*",
+    "ext-pcre": "*",
+    "ext-zip": "^1.0",
+    "caxy/php-htmldiff": "^0.1.13",
+    "doctrine/annotations": "^1.11",
+    "doctrine/cache": "^1.10",
+    "enshrined/svg-sanitize": "^0.16.0",
+    "ezyang/htmlpurifier": "^4.14",
+    "jbroadway/urlify": "^1.2",
+    "nesbot/carbon": "^2.66.0",
+    "oomphinc/composer-installers-extender": "^2.0",
+    "phpmailer/phpmailer": "^6.2",
+    "stefangabos/zebra_image": "^2.7",
+    "symfony/config": "^5.1",
+    "symfony/console": "^5.2",
+    "symfony/dependency-injection": "^5.1",
+    "symfony/event-dispatcher": "^5.4",
+    "symfony/http-foundation": "^5.1",
+    "symfony/http-kernel": "^5.3.12",
+    "symfony/process": "^5.4",
+    "symfony/routing": "^5.1",
+    "symfony/security-core": "^5.4",
+    "symfony/security-csrf": "^5.0",
+    "symfony/yaml": "^5.1",
+    "tamtamchik/simple-flash": "^2.0",
+    "twig/twig": "^3.4.3",
+    "voku/anti-xss": "^4.1",
+    "yeswiki/theme-margot": "^1.0"
+  },
+  "conflict": {},
+  "extra": {
+    "installer-types": [
+      "yeswiki-extension",
+      "yeswiki-theme"
+    ],
+    "installer-paths": {
+      "tools/{$name}": [
+        "type:yeswiki-extension"
+      ],
+      "themes/{$name}": [
+        "type:yeswiki-theme"
+      ]
     }
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.4",
+    "phpunit/phpunit": "^9",
+    "symfony/var-dumper": "^5.1"
+  },
+  "config": {
+    "allow-plugins": {
+      "composer/installers": true,
+      "oomphinc/composer-installers-extender": true
+    },
+    "optimize-autoloader": true,
+    "platform": {
+      "php": "7.3.0"
+    },
+    "platform-check": true,
+    "sort-packages": true
+  },
+  "bin": [
+    "yeswicli"
+  ],
+  "autoload": {
+    "classmap": [
+      "includes/ComposerScriptsHelper.php"
+    ]
+  }
 }

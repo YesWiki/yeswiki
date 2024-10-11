@@ -1,8 +1,8 @@
 <?php
 
 /**
-* @Annotation
-*/
+ * @Annotation
+ */
 final class Field
 {
     /** @array */

@@ -5,29 +5,29 @@ actions:
   listpagestag:
     label: _t(AB_tags_listpagestag_label)
     properties:
-      tags: 
+      tags:
         label: _t(AB_tags_listpagestag_tags_label)
         type: text
         hint: _t(AB_tags_listpagestag_tags_hint)
-      type: 
+      type:
         label: _t(AB_tags_listpagestag_type_label)
         type: list
         options:
           '': _t(AB_tags_listpagestag_type_all)
           wiki: _t(AB_tags_listpagestag_type_wiki)
           bazar: _t(AB_tags_listpagestag_type_bazar)
-   #  class: 
-   #    label: class
-   #    type: text
-      nb: 
+      #  class:
+      #    label: class
+      #    type: text
+      nb:
         label: _t(AB_tags_listpagestag_nb_label)
         type: number
         min: 0
-      tri: 
+      tri:
         label: _t(AB_tags_listpagestag_tri_label)
         type: list
         options:
-          date : _t(AB_tags_listpagestag_tri_date)
+          date: _t(AB_tags_listpagestag_tri_date)
           alpha: _t(AB_tags_listpagestag_tri_alpha)
       template:
         label: _t(AB_tags_listpagestag_template_label)
@@ -56,7 +56,7 @@ actions:
         type: list
         default: ''
         options:
-          '' : _t(AB_tags_nuagetag_tri_shuffle)
+          '': _t(AB_tags_nuagetag_tri_shuffle)
           apha: _t(AB_tags_listpagestag_tri_alpha)
       nbclasses:
         label: _t(AB_tags_listpagestag_nbclasses_label)

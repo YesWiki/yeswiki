@@ -1,144 +1,113 @@
-{{ include_javascript('tools/bazar/libs/bazar.edit_lists.js') }}
+{{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
+{{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
+{{ include_javascript('tools/bazar/presentation/javascripts/list-import.js') }}
 
 {% if lists|length == 0 %}
-  <div class="alert alert-info">
-    <a data-dismiss="alert" class="close">&times;</a>
-    {{ _t('BAZ_INTRO_AJOUT_LISTE')|raw }}
-  </div>
+	<div class="alert alert-info">
+		<a data-dismiss="alert" class="close">&times;</a>
+		{{ _t('BAZ_INTRO_AJOUT_LISTE')|raw }}
+	</div>
 {% else %}
-  {{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
-  {{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
-  <div class="table-responsive">
-  <table id="existing-lists-table" class="table table-condensed table-striped">
-    <thead>
-    <tr>
-        <th>{{ _t('BAZ_TITLE') }}</th>
-        <th>{{ _t('BAZ_VALEURS_LISTE') }}</th>
-        <th style="width:180px;">{{ _t('BAZ_ID') }}</th>
-        <th style="width:140px;">{{ _t('BAZ_ACTIONS') }}</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for key, list in lists %}
-      <tr>
-        <td>
-          <strong>{{ list.title }}</strong>
-        </td>
-        <td>
-          {% if list.options %}
-            <select class="form-control input-sm" id="liste_{{ key }}">
-              <option>{{ _t('BAZ_CHOISIR') }}</option>
-              {% for option in list.options %}
-                <option>{{ option|raw }}</option>
-              {% endfor %}
-            </select>
-          {% endif %}
-        </td>
-        <td>{{ key }}</td>
-        <td>
-          {% if list.canEdit %}
-          <a class="btn btn-default btn-xs" href="{{ url({ params: { vue: 'listes', action: 'modif_liste', idliste: key }}) }}">
-            <i class="fa fa-pencil-alt"></i>
-          </a>
-          {% endif %}
-          {% if list.canDelete %}
-          <a
-            class="btn btn-danger btn-xs"
-            href="{{ url({ params: { vue: 'listes', action: 'supprimer_liste', idliste: key }}) }}"
-            onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_LISTE') }} ?');"
-          >
-            <i class="fa fa-trash icon-white"></i>
-          </a>
-          {% endif %}
-      </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-</div>
+	<div class="table-responsive">
+		<table id="existing-lists-table" class="table table-condensed table-striped">
+			<thead>
+				<tr>
+					<th>{{ _t('BAZ_TITLE') }}</th>
+					<th>{{ _t('BAZ_VALEURS_LISTE') }}</th>
+					<th style="width:180px;">{{ _t('BAZ_ID') }}</th>
+					<th style="width:140px;">{{ _t('BAZ_ACTIONS') }}</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for list in lists %}
+					<tr>
+						<td>
+							<strong>{{ list.title }}</strong>
+						</td>
+						<td>
+							{# list.options is a computed array of al the list nodes flatten in single dimension #}
+							{% if list.options %}
+								<select class="form-control input-sm" id="liste_{{ list.id }}">
+									<option>{{ _t('BAZ_CHOISIR') }}</option>
+									{% for node in list.options %}
+										<option>{{ node|raw }}</option>
+									{% endfor %}
+								</select>
+							{% endif %}
+						</td>
+						<td>{{ list.id }}</td>
+						<td>
+							{% if list.canEdit %}
+								<a class="btn btn-default btn-xs" href="{{ url({ params: { vue: 'listes', action: 'modif_liste', idliste: list.id }}) }}">
+									<i class="fa fa-pencil-alt"></i>
+								</a>
+							{% endif %}
+							{% if list.canDelete %}
+								<a class="btn btn-danger btn-xs" href="{{ url({ params: { vue: 'listes', action: 'supprimer_liste', idliste: list.id }}) }}" onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_LISTE') }} ?');">
+									<i class="fa fa-trash icon-white"></i>
+								</a>
+							{% endif %}
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
 {% endif %}
 
-<a href="{{ url({ params: { vue: 'listes', action: 'saisir_liste'}})|raw }}" class="btn btn-primary"
-    {% if not canCreate %}disabled data-toggle="tooltip"
-        data-placement="bottom" title="{{  _t('WIKI_IN_HIBERNATION') }}"{% endif %}>
-    <i class="fa fa-plus icon-plus icon-white"></i>
-    {{ _t('BAZ_NOUVELLE_LISTE') }}
+<a href="{{ url({ params: { vue: 'listes', action: 'saisir_liste'}})|raw }}" class="btn btn-primary" {% if not canCreate %} disabled data-toggle="tooltip" data-placement="bottom" title="{{ _t('WIKI_IN_HIBERNATION') }}" {% endif %}>
+	<i class="fa fa-plus icon-plus icon-white"></i>
+	{{ _t('BAZ_NOUVELLE_LISTE') }}
 </a>
 
-<hr />
+<hr/>
 
 {# LIST IMPORT #}
 
 <strong>{{ _t('BAZ_IMPORT_LISTS_FROM_URL') }}</strong>
 <form action="javascript:undefined" class="form-horizontal">
-  <div class="input-prepend input-append input-group">
-    <span class="add-on input-group-addon">
-      <i class="fa fa-link icon-globe"></i>
-    </span>
-    <input
-      id="url-import-lists"
-      class="form-control input-xxlarge"
-      {% if not loggedUser %}disabled{% endif %}
-      placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}"
-      type="url"
-    />
-    <span class="input-group-btn">
-      <button id="btn-import-lists"
-          {% if not loggedUser %}disabled{% endif %}
-          class="btn btn-primary" 
-          type="submit">
-        {{ _t('BAZ_GO') }}&nbsp;!
-      </button>
-    </span>
-  </div>
+	<div class="input-prepend input-append input-group">
+		<span class="add-on input-group-addon">
+			<i class="fa fa-link icon-globe"></i>
+		</span>
+		<input id="url-import-lists" class="form-control input-xxlarge" {% if not loggedUser %} disabled {% endif %} placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}" type="url"/>
+		<span class="input-group-btn">
+			<button id="btn-import-lists" {% if not loggedUser %} disabled {% endif %} class="btn btn-primary" type="submit">
+				{{ _t('BAZ_GO') }}&nbsp;!
+			</button>
+		</span>
+	</div>
 </form>
-<br />
+<br/>
 <div id="import-lists-result"></div>
 <form id="import-lists-form" action="" class="hide" method="post">
-  <div class="table-responsive">
-    <table
-      id="import-lists-table"
-      class="table table-condensed table-striped prevent-auto-init"
-      style="table-layout:fixed;word-wrap: break-word;"
-    >
-      <thead>
-      <tr>
-        <th style="width:25px;" class="prevent-sorting">
-          <label class="check-all-container">
-            <input data-target="#import-lists-table tbody" type="checkbox" class="selectall"/>
-            <span></span>
-          </label>
-        </th>
-        <th>{{ _t('BAZ_ID') }}</th>
-        <th>{{ _t('BAZ_TITLE') }}</th>
-        <th>{{ _t('BAZ_VALEURS_LISTE') }}</th>
-      </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div> <!-- /.table-responsive -->
-  <div class="checkbox">
-    <label class="checkbox">
-      <input
-        data-target="#import-lists-table tbody"
-        type="checkbox"
-        class="selectall"
-      />
-      {{ _t('BAZ_SELECT_ALL') }}
-    </label>
-  </div>
-  <button id="btn-import-selection" type="submit" class="btn btn-primary">
-    {{ _t('BAZ_IMPORT_SELECTION') }}
-  </button>
+	<div class="table-responsive">
+		<table id="import-lists-table" class="table table-condensed table-striped prevent-auto-init" style="table-layout:fixed;word-wrap: break-word;">
+			<thead>
+				<tr>
+					<th style="width:35px;" class="prevent-sorting">
+						<label class="check-all-container">
+							<input data-target="#import-lists-table tbody" type="checkbox" class="selectall"/>
+							<span></span>
+						</label>
+					</th>
+					<th>{{ _t('BAZ_ID') }}</th>
+					<th>{{ _t('BAZ_TITLE') }}</th>
+					<th>{{ _t('BAZ_VALEURS_LISTE') }}</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+	</div>
+	<!-- /.table-responsive -->
+	<div class="checkbox">
+		<label class="checkbox">
+			<input data-target="#import-lists-table tbody" type="checkbox" class="selectall"/>
+			{{ _t('BAZ_SELECT_ALL') }}
+		</label>
+	</div>
+	<button id="btn-import-selection" type="submit" class="btn btn-primary">
+		{{ _t('BAZ_IMPORT_SELECTION') }}
+	</button>
 </form>
-<div
-  id="list-translations"
-  data-nblistsfound="{{ _t('BAZ_NBLISTSFOUND') }}"
-  data-noanswers="{{ _t('BAZ_NOANSWERS') }}"
-  data-notvalidurl="{{ _t('BAZ_NOTVALIDURL') }}"
-  data-choose="{{ _t('BAZ_CHOISIR') }}"
-  data-recuperation="{{ _t('BAZ_RECUPERATION') }}"
-  data-loading="{{ _t('BAZ_LOADING') }}"
-  data-existingmessage="{{ _t('BAZ_EXISTINGMESSAGE') }}"
->
-</div>
+<div id="list-translations" data-nblistsfound="{{ _t('BAZ_NBLISTSFOUND') }}" data-noanswers="{{ _t('BAZ_NOANSWERS') }}" data-notvalidurl="{{ _t('BAZ_NOTVALIDURL') }}" data-choose="{{ _t('BAZ_CHOISIR') }}" data-recuperation="{{ _t('BAZ_RECUPERATION') }}" data-loading="{{ _t('BAZ_LOADING') }}" data-existingmessage="{{ _t('BAZ_EXISTINGMESSAGE') }}"></div>

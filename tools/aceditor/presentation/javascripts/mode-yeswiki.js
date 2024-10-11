@@ -407,7 +407,7 @@ ace.define('ace/mode/yeswiki_behaviour', ['require', 'exports', 'module', 'ace/l
     // Only insert in front of whitespace/comments
     iterator.stepForward()
     return iterator.getCurrentTokenRow() !== cursor.row
-          || this.$matchTokenType(iterator.getCurrentToken() || 'text', SAFE_INSERT_BEFORE_TOKENS)
+      || this.$matchTokenType(iterator.getCurrentToken() || 'text', SAFE_INSERT_BEFORE_TOKENS)
   }
 
   YesWikiBehaviour.$matchTokenType = function(token, types) {
@@ -436,16 +436,16 @@ ace.define('ace/mode/yeswiki_behaviour', ['require', 'exports', 'module', 'ace/l
 
   YesWikiBehaviour.isAutoInsertedClosing = function(cursor, line, bracket) {
     return context.autoInsertedBrackets > 0
-          && cursor.row === context.autoInsertedRow
-          && bracket === context.autoInsertedLineEnd[0]
-          && line.substr(cursor.column) === context.autoInsertedLineEnd
+      && cursor.row === context.autoInsertedRow
+      && bracket === context.autoInsertedLineEnd[0]
+      && line.substr(cursor.column) === context.autoInsertedLineEnd
   }
 
   YesWikiBehaviour.isMaybeInsertedClosing = function(cursor, line) {
     return context.maybeInsertedBrackets > 0
-          && cursor.row === context.maybeInsertedRow
-          && line.substr(cursor.column) === context.maybeInsertedLineEnd
-          && line.substr(0, cursor.column) == context.maybeInsertedLineStart
+      && cursor.row === context.maybeInsertedRow
+      && line.substr(cursor.column) === context.maybeInsertedLineEnd
+      && line.substr(0, cursor.column) == context.maybeInsertedLineStart
   }
 
   YesWikiBehaviour.popAutoInsertedClosing = function() {
@@ -486,9 +486,9 @@ ace.define('ace/mode/yeswiki', ['require', 'exports', 'module', 'ace/lib/oop', '
     this.$quotes = { '"': '"', '`': '`' }
 
     this.getNextLineIndent = function(state, line, tab) {
-      const listMatch = /^(\s*)(?:([-+*])|(\d+)\.)(\s+)/.exec(line)
+      const match = /^(\s*)(?:([-+*])|(\d+)\.)(\s+)/.exec(line)
       // For lists, add the - on next line, or increment the number for ordered list 1. 2.
-      if (listMatch) {
+      if (match) {
         let marker = match[2]
         if (!marker) marker = `${parseInt(match[3], 10) + 1}.`
         return match[1] + marker + match[4]

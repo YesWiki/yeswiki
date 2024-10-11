@@ -7,13 +7,15 @@
 {% block label %}
     {% if field.required %}<span class="symbole_obligatoire"></span>{% endif %}
     {% if field.hint %}
-        <img loading="lazy" class="tooltip_aide" title="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />
+        <img loading="lazy" class="tooltip_aide" title="{{ field.hint|raw('html') }}" alt="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" />
     {% endif %}
     {{ field.label|raw }}
     {% if field.maxChars and field.syntax == 'nohtml' %}(<span class="charsRemaining">{{ field.maxChars }}</span> caract&egrave;res restants){% endif %}
 {% endblock %}
 
 {% block input %}
+    {{ include_css('tools/bazar/presentation/styles/inputs/textarea.css') }}
+
     <div id="{{ field.name ~ 'Container' }}">
         {% if field.syntax == 'wiki-textarea' %}
             {{ renderAction('aceditor', { name: field.name, value: value, rows: field.numRows, tempTag: tempTag })|raw }}

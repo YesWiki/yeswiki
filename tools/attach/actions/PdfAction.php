@@ -1,6 +1,6 @@
 <?php
 /**
- * Action to display a pdf in an embedded reader
+ * Action to display a pdf in an embedded reader.
  *
  * @param url  required The url of the pdf file. The url has to be from the same origin than the wiki (same schema, same host & same port)
  * @param ratio shape for the container : possible values empty (default), 'portrait' - 'paysage' - 'carre'
@@ -9,11 +9,12 @@
  * @param class class add class to the container : use "pull-right" and "pull-left" for position
  *
  * @category YesWiki
- * @package  attach
+ *
  * @author   Adrien Cheype <adrien.cheype@gmail.com>
  * @author   Jérémy Dufraisse <jeremy.dufraisse@orange.fr>
  * @license  https://www.gnu.org/licenses/agpl-3.0.en.html AGPL 3.0
- * @link     https://yeswiki.net
+ *
+ * @see     https://yeswiki.net
  */
 
 namespace YesWiki\Attach;
@@ -25,11 +26,11 @@ class PdfAction extends YesWikiAction
     public function formatArguments($arg)
     {
         return [
-            'url' => $arg['url'] ?? "",
-            'ratio' => $arg['ratio'] ?? "",
-            'largeurmax' => $arg['largeurmax'] ?? "",
-            'hauteurmax' => $arg['hauteurmax'] ?? "",
-            'class' => str_replace('attached_file', '', ($arg['class'] ?? "")), // to prevent errors
+            'url' => $arg['url'] ?? '',
+            'ratio' => $arg['ratio'] ?? '',
+            'largeurmax' => $arg['largeurmax'] ?? '',
+            'hauteurmax' => $arg['hauteurmax'] ?? '',
+            'class' => str_replace('attached_file', '', ($arg['class'] ?? '')), // to prevent errors
         ];
     }
 
@@ -37,13 +38,13 @@ class PdfAction extends YesWikiAction
     {
         if (
             empty($this->arguments['url']) ||
-            (!in_array(parse_url($this->arguments['url'], PHP_URL_HOST), [$_SERVER['SERVER_NAME'], 'www.'.$_SERVER['SERVER_NAME']])) ||
+            (!in_array(parse_url($this->arguments['url'], PHP_URL_HOST), [$_SERVER['SERVER_NAME'], 'www.' . $_SERVER['SERVER_NAME']])) ||
                 (
-                    parse_url($this->arguments['url'], PHP_URL_PORT) ==  '' &&
+                    parse_url($this->arguments['url'], PHP_URL_PORT) == '' &&
                     $_SERVER['SERVER_PORT'] != ''
-                    &&  $_SERVER['SERVER_PORT'] != '80'
+                    && $_SERVER['SERVER_PORT'] != '80'
                     && $_SERVER['SERVER_PORT'] != '443'
-                )  ||
+                ) ||
                 (
                     parse_url($this->arguments['url'], PHP_URL_PORT) != '' &&
                     parse_url($this->arguments['url'], PHP_URL_PORT) != $_SERVER['SERVER_PORT']
@@ -53,59 +54,58 @@ class PdfAction extends YesWikiAction
                         parse_url($this->arguments['url'], PHP_URL_SCHEME) != parse_url($_SERVER['HTTP_REFERER'], PHP_URL_SCHEME)
                     )
         ) {
-            return $this->render("@templates/alert-message.twig", [
+            return $this->render('@templates/alert-message.twig', [
                 'type' => 'danger',
-                'message' => _t('ATTACH_ACTION_PDF_PARAM_URL_ERROR')
+                'message' => _t('ATTACH_ACTION_PDF_PARAM_URL_ERROR'),
             ]);
         } else {
             switch ($this->arguments['ratio']) {
-                case "portrait":
-                    $shape = "pdf" ;
-                    $ratio = 1.38 ;
+                case 'portrait':
+                    $shape = 'pdf';
+                    $ratio = 1.38;
                     break;
-                case "paysage":
-                    $shape = "pdf-landscape" ;
-                    $ratio = 0.75 ;
+                case 'paysage':
+                    $shape = 'pdf-landscape';
+                    $ratio = 0.75;
                     break;
-                case "carre":
-                    $shape = "pdf-square" ;
-                    $ratio = 1 ;
+                case 'carre':
+                    $shape = 'pdf-square';
+                    $ratio = 1;
                     break;
                 default:
-                    $shape = "pdf" ;
-                    $ratio = 1.38 ;
+                    $shape = 'pdf';
+                    $ratio = 1.38;
             }
 
             //size
             $maxWidth = $this->arguments['largeurmax'];
             $maxHeight = $this->arguments['hauteurmax'];
-            $manageSize = false ;
+            $manageSize = false;
             if (!empty($maxWidth) && is_numeric($maxWidth)) {
-                $manageSize = true ;
+                $manageSize = true;
                 if (empty($maxHeight) || !(is_numeric($maxHeight))) {
-                    $maxHeight = $maxWidth * $ratio ;
+                    $maxHeight = $maxWidth * $ratio;
                 } else {
                     // calculte the minimum between width and height
-                    $newMaxHeight = min($maxWidth * $ratio, $maxHeight) ;
-                    $newMaxWidth = min($maxHeight / $ratio, $maxWidth) ;
-                    $maxHeight = $newMaxHeight ;
-                    $maxWidth = $newMaxWidth ;
+                    $newMaxHeight = min($maxWidth * $ratio, $maxHeight);
+                    $newMaxWidth = min($maxHeight / $ratio, $maxWidth);
+                    $maxHeight = $newMaxHeight;
+                    $maxWidth = $newMaxWidth;
                 }
             } elseif (!empty($maxHeight) && is_numeric($maxHeight)) {
-                $manageSize = true ;
+                $manageSize = true;
                 if (empty($maxWidth) || !(is_numeric($maxWidth))) {
-                    $maxWidth = $maxHeight / $ratio ;
+                    $maxWidth = $maxHeight / $ratio;
                 }
             }
 
-            return $this->render("@attach/actions/pdf.twig", [
-                    'url' => $this->arguments['url'],
-                    'class' => $this->arguments['class'],
-                    'manageSize' => $manageSize,
-                    'shape' => $shape,
-                    'maxWidth' => $maxWidth,
-                    'maxHeight' => $maxHeight,
-
+            return $this->render('@attach/actions/pdf.twig', [
+                'url' => $this->arguments['url'],
+                'class' => $this->arguments['class'],
+                'manageSize' => $manageSize,
+                'shape' => $shape,
+                'maxWidth' => $maxWidth,
+                'maxHeight' => $maxHeight,
             ]);
         }
     }

@@ -4,13 +4,11 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use Throwable;
-use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Service\FormManager;
 
 /**
  * @Field({"calc"})
  */
-
 class CalcField extends BazarField
 {
     protected const FIELD_DISPLAY_TEXT = 4;
@@ -18,32 +16,34 @@ class CalcField extends BazarField
     protected $calcFormula;
     protected $displayText;
 
-    protected $formManager ;
+    protected $formManager;
 
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
         $this->calcFormula = $values[self::FIELD_CALCFORMULA];
-        $this->displayText = empty($values[self::FIELD_DISPLAY_TEXT]) ? "{value}" : $values[self::FIELD_DISPLAY_TEXT];
-        $this->default = ""; // to prevent field 5 to change default value
-        $this->maxChars = ""; // to prevent field 4 to change maxChars
+        $this->displayText = empty($values[self::FIELD_DISPLAY_TEXT]) ? '{value}' : $values[self::FIELD_DISPLAY_TEXT];
+        $this->default = ''; // to prevent field 5 to change default value
+        $this->maxChars = ''; // to prevent field 4 to change maxChars
         $this->formManager = null;
     }
+
     protected function renderInput($entry)
     {
         // display nothing
-        return "";
+        return '';
     }
 
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
-        if (!in_array($value, [0,"0"], true) && empty($value)) {
+        if (!in_array($value, [0, '0'], true) && empty($value)) {
             // 0 should be displayed but not false or null or ""
-            return "";
+            return '';
         }
-        return $this->render("@bazar/fields/text.twig", [
-            'value' => str_replace('{value}', strval($value), $this->displayText)
+
+        return $this->render('@bazar/fields/text.twig', [
+            'value' => str_replace('{value}', strval($value), $this->displayText),
         ]);
     }
 
@@ -59,12 +59,12 @@ class CalcField extends BazarField
         if (!preg_match_all("/($operators|$parenthesis)|($number)|($functions)|$specialtest|($fieldPropertyName)/", $this->calcFormula, $matches)) {
             $value = 0;
         } else {
-            $formula = "";
+            $formula = '';
             foreach ($matches[0] as $key => $value) {
                 if (!empty($matches[1][$key])) {
                     // operators or parenthesis
                     $formula .= $matches[1][$key];
-                } elseif (!empty($matches[2][$key]) || in_array($matches[2][$key], [0,"0"], true)) {
+                } elseif (!empty($matches[2][$key]) || in_array($matches[2][$key], [0, '0'], true)) {
                     // number
                     $formula .= floatval($matches[2][$key]);
                 } elseif (!empty($matches[3][$key])) {
@@ -79,7 +79,7 @@ class CalcField extends BazarField
                 }
             }
             $formula = preg_replace('/\s+/', '', $formula);
-            $regexpToCheckIfMathFormula = '/^(('.$number.'|'.$functions.'\s*\((?1)+\)|\((?1)+\))(?:'.$operators.'(?1))?)+$/';
+            $regexpToCheckIfMathFormula = '/^((' . $number . '|' . $functions . '\s*\((?1)+\)|\((?1)+\))(?:' . $operators . '(?1))?)+$/';
             // Final regexp, heavily using recursive patterns
             if (preg_match($regexpToCheckIfMathFormula, $formula)) {
                 $formula = preg_replace('!pi|π!', 'pi()', $formula);
@@ -90,33 +90,37 @@ class CalcField extends BazarField
                     $value = 0;
                 }
             } else {
-                $value = "formula not correct !";
+                $value = 'formula not correct !';
             }
         }
         if (empty($value)) {
             $value = 0;
         }
+
         return [$this->getPropertyName() => strval($value)];
     }
+
     private function getEntryValue($entry, $name, $default = 0)
     {
         $propertyName = $this->getPropertyNameIfDefined($entry, $name);
+
         return empty($propertyName) ? $default : floatval($entry[$propertyName]);
     }
 
     private function testEntryValue($entry, $name, $value)
     {
-        $result = false ;
+        $result = false;
         $propertyName = $this->getPropertyNameIfDefined($entry, $name);
         if (!empty($propertyName)) {
             $fieldValue = $entry[$propertyName];
-            if (empty($value) && !in_array($value, [0,"0"], true)) {
+            if (empty($value) && !in_array($value, [0, '0'], true)) {
                 $result = empty($fieldValue);
             } else {
                 $result = ($fieldValue == $value);
             }
         }
-        return $result ? "1" : "0";
+
+        return $result ? '1' : '0';
     }
 
     private function getPropertyNameIfDefined($entry, $name): ?string
@@ -134,6 +138,7 @@ class CalcField extends BazarField
                 }
             }
         }
+
         return null;
     }
 

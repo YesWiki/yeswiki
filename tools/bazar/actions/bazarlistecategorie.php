@@ -1,19 +1,19 @@
 <?php
 /**
 * bazarlistecategorie : programme affichant les fiches du bazar catégorisées par les champs liste
-* sous forme de liste accordeon (ou autre template)
+* sous forme de liste accordeon (ou autre template).
 */
 
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\TemplateEngine;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    exit('acc&egrave;s direct interdit');
 }
 
 $entryManager = $this->services->get(EntryManager::class);
 
-$this->AddJavascriptFile('tools/bazar/libs/bazar.js');
+$this->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
 
 // initialisation de la fonction de tri , inspiré par http://php.net/manual/fr/function.usort.php
 if (!function_exists('champCompare')) {
@@ -28,23 +28,23 @@ if (!function_exists('champCompare')) {
     }
 }
 
-$id_typeannonce = $this->GetParameter("idtypeannonce");
+$id_typeannonce = $this->GetParameter('idtypeannonce');
 if (empty($id_typeannonce)) {
     $id_typeannonce = 'toutes';
 }
-$GLOBALS['ordre'] = $this->GetParameter("ordre");
+$GLOBALS['ordre'] = $this->GetParameter('ordre');
 if (empty($GLOBALS['ordre'])) {
     $GLOBAL['ordre'] = 'asc';
 }
 
-$template = $this->GetParameter("template");
+$template = $this->GetParameter('template');
 $template = $this->services->get(TemplateEngine::class)->hasTemplate("@bazar/$template") ? $template : '';
 if (empty($template)) {
     $template = $GLOBALS['wiki']->config['default_bazar_template'];
 }
 
 // identifiant de la base de donnée pour la liste
-$id = $this->GetParameter("id");
+$id = $this->GetParameter('id');
 if (empty($id)) {
     throw new Exception('Error action bazarlistecategorie: parameter "id" missing.');
 } else {
@@ -52,7 +52,7 @@ if (empty($id)) {
 }
 
 // NomWiki de la liste
-$list = $this->GetParameter("list");
+$list = $this->GetParameter('list');
 if (empty($list)) {
     echo '<div class="alert alert-danger">Error action bazarlistecategorie: parameter "list" missing.</div>';
 } else {
@@ -64,8 +64,8 @@ if (empty($list)) {
     }
     unset($_GET['query']);
     if (!empty($query)) {
-        $tabquery = array();
-        $tableau = array();
+        $tabquery = [];
+        $tableau = [];
         $tab = explode('|', $query); //découpe la requete autour des |
         foreach ($tab as $req) {
             $tabdecoup = explode('=', $req, 2);
@@ -75,11 +75,11 @@ if (empty($list)) {
     } else {
         $tabquery = '';
     }
-    $tabfiches = $entryManager->search([ 'queries' => $tabquery, 'formsIds' => [$id_typeannonce] ]);
+    $tabfiches = $entryManager->search(['queries' => $tabquery, 'formsIds' => [$id_typeannonce]]);
 
     $fiches['info_res'] = '';
     $fiches['pager_links'] = '';
-    $fiches['fiches'] = array();
+    $fiches['fiches'] = [];
     foreach ($tabfiches as $fiche) {
         // pour les checkbox, on crée une fiche par case cochée pour apparaitre é différents endroits
         $tabcheckbox = explode(',', $fiche[$id]);
@@ -93,13 +93,13 @@ if (empty($list)) {
             // lien de suppression visible pour le super admin
             if (baz_a_le_droit('supp_fiche', $fiche['owner'])) {
                 $fiche['lien_suppression'] = '<a class="modalbox" href="'
-                    . $this->href('deletepage', $fiche['id_fiche'], 'incoming=' . urlencode($this->getAbsolutePath())).'"></a>'."\n";
+                    . $this->href('deletepage', $fiche['id_fiche'], 'incoming=' . urlencode($this->getAbsolutePath())) . '"></a>' . "\n";
             }
             if (baz_a_le_droit('modif_fiche', $fiche['owner'])) {
-                $fiche['lien_edition'] = '<a class="BAZ_lien_modifier" href="'.$this->href('edit', $fiche['id_fiche']).'"></a>'."\n";
+                $fiche['lien_edition'] = '<a class="BAZ_lien_modifier" href="' . $this->href('edit', $fiche['id_fiche']) . '"></a>' . "\n";
             }
-            $fiche['lien_voir_titre'] = '<a class="BAZ_lien_modifier" href="'.$this->href('', $fiche['id_fiche']) .'">'.$fiche['bf_titre'].'</a>'."\n";
-            $fiche['lien_voir'] = '<a class="BAZ_lien_modifier" href="'.$this->href('', $fiche['id_fiche']) .'"></a>'."\n";
+            $fiche['lien_voir_titre'] = '<a class="BAZ_lien_modifier" href="' . $this->href('', $fiche['id_fiche']) . '">' . $fiche['bf_titre'] . '</a>' . "\n";
+            $fiche['lien_voir'] = '<a class="BAZ_lien_modifier" href="' . $this->href('', $fiche['id_fiche']) . '"></a>' . "\n";
             $fiches['fiches'][] = $fiche;
         }
     }
@@ -112,23 +112,23 @@ if (empty($list)) {
     $output = '';
     $first = true;
     foreach ($fiches['fiches'] as $fiche) {
-        $fiche['multipleid'] = htmlspecialchars(trim(str_replace('/', '', $fiche[$id])).$fiche['id_fiche']);
+        $fiche['multipleid'] = htmlspecialchars(trim(str_replace('/', '', $fiche[$id])) . $fiche['id_fiche']);
         if ($currentlabel !== $fiche[$id]) {
             if (!$first) {
                 if (is_array($fichescat) && count($fichescat) > 0) {
                     $output .= $this->render("@bazar/$template", $fichescat);
                 }
                 // it's not the first time in the loop so we must close previously opened div
-                $output .=  '</div>'."\n";
+                $output .= '</div>' . "\n";
                 $fichescat = [];
             } else {
                 $first = false;
             }
-            $output .=  '<h3 class="collapsed yeswiki-list-category" '
-                .'data-target="#collapse_'.htmlspecialchars(trim(str_replace('/', '', $fiche[$id])))
-                .'" data-toggle="collapse"><i class="fa fa-chevron-right"></i> '
-                .(empty($listvalues['label'][$fiche[$id]]) ? _t('BAZ_NOT_CATEGORIZED') : $listvalues['label'][$fiche[$id]]).'</h3>
-                <div id="collapse_'.htmlspecialchars(trim(str_replace('/', '', $fiche[$id]))).'" class="collapse">';
+            $output .= '<h3 class="collapsed yeswiki-list-category" '
+                . 'data-target="#collapse_' . htmlspecialchars(trim(str_replace('/', '', $fiche[$id])))
+                . '" data-toggle="collapse"><i class="fa fa-chevron-right"></i> '
+                . (empty($listvalues['label'][$fiche[$id]]) ? _t('BAZ_NOT_CATEGORIZED') : $listvalues['label'][$fiche[$id]]) . '</h3>
+                <div id="collapse_' . htmlspecialchars(trim(str_replace('/', '', $fiche[$id]))) . '" class="collapse">';
         }
         $currentlabel = $fiche[$id];
         // on rétablit les valeurs multiples
@@ -142,7 +142,7 @@ if (empty($list)) {
         $output .= $this->render("@bazar/$template", $fichescat);
     }
     // it's not the first time in the loop so we must close previously opened div
-    $output .=  '</div>'."\n";
+    $output .= '</div>' . "\n";
     echo $output;
 
     $_GET['query'] = $query;

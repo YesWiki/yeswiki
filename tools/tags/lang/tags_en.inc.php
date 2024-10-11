@@ -1,7 +1,5 @@
 <?php
-
 return [
-
     'TAGS_TAGS' => 'Tags',
     'TAGS_ACTION_ADMINTAGS' => 'Action {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'this action is for the admins only',
@@ -23,36 +21,31 @@ return [
     'TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS' => 'See all the pages with this keyword',
     'TAGS_ALERT_PAGE_ALREADY_MODIFIED' => 'ALERT : Someone else modified this page while you were editing it.<br />Please copy your changes and paste the in edition after refreshing the page.',
     'TAGS_ANSWER_THIS_COMMENT' => 'Answer this comment',
-    'TAGS_DATE_FORMAT' => "\o\\n d.m.Y \a\\t H:i:s",
+    'TAGS_DATE_FORMAT' => "o
+ d.m.Y a\t H:i:s",
     'TAGS_WRITE_YOUR_COMMENT_HERE' => 'Write your comment here...',
     'TAGS_ADD_YOUR_COMMENT' => 'Add your comment',
     'TAGS_ACTION_FILTERTAGS' => 'Action {{filtertags ...}}',
     'TAGS_NO_FILTERS' => 'no parameter "filter1" found but it is required.',
     'TAGS_ONLY_ONE_DOUBLEPOINT' => 'Only only double point character (:) allowed to indicate the label, more were found.',
-
     'TAGS_ACTION_INCLUDEPAGES' => 'Action {{includepages ...}}',
     'TAGS_NO_PARAM_PAGES' => 'parameter "pages" required.',
-
     'TAGS_NO_RESULTS' => 'No results with those keywords.',
     'TAGS_RESULTS' => 'results',
     'TAGS_FILTER' => 'Filter',
     'TAGS_CONTAINING_TAG' => 'with the keyword',
     'TAGS_ONE_PAGE' => 'One page',
     'TAGS_PAGES' => 'pages',
-
     // actions/admintag.php
     // 'TAGS_NO_TAG' => 'No tags currently used',
-
     // actions/listpagestag.php
     'TAGS_TOTAL_NB_PAGES' => 'A total of %{nb_total} pages has been found',
     'TAGS_ONE_PAGE_FOUND' => 'A page has been found',
     'TAGS_NO_PAGE' => 'No found page',
     'TAGS_WITH_KEYWORD' => 'with tag',
     'TAGS_WITH_KEYWORD_SEPARATOR' => 'and',
-
     // actions/rss.php
     'TAGS_RSS_FEED_FOR_NEW_PAGES_WITH_TAGS' => 'RSS feed from pages with tag',
-
     // handler exportpages
     'TAGS_YOUR_EBOOK' => 'Your Ebook',
     'TAGS_SPAM_RISK' => 'You must activate Javascript or you will be considered as spam.',
@@ -93,10 +86,8 @@ return [
     // 'TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE' => 'Contenu en ligne sur la page',
     'TAGS_NO_EBOOK_METADATAS' => 'This page has no meta-datas pour creating an ebook.',
     'TAGS_NO_EBOOK_FOUND' => 'No Ebook found.',
-
     // handler/tagrss.php
     // 'TAGS_HIDDEN_CONTENT' => 'Contenu masqué',
-
     // action builder tags group
     // 'AB_tags_group_label' => 'Gestion des tags',
     // 'AB_tags_admintag_label' => 'Gestion des tags',
@@ -120,9 +111,32 @@ return [
     // 'AB_tags_listpagestag_rss_label'=> 'lien rss vers la liste pour des tags donnés',
     // 'AB_tags_listpagestag_nbclasses_label' => 'nombre de classes CSS disponibles pour le nuage',
     // 'AB_tags_nuagetag_tri_shuffle' => 'aléatoire',
-
     // for edit config
     'EDIT_CONFIG_HINT_HIDE_KEYWORDS' => 'Hide keywords at the bottom of pages (true or false)',
     'EDIT_CONFIG_GROUP_TAGS' => 'Keywords (tags)',
-
+    'TAGS_HIDDEN_CONTENT' => 'Hidden content',
+    'AB_tags_listpagestag_type_label' => 'Type',
+    'AB_tags_listpagestag_template_list' => 'list',
+    'AB_tags_group_label' => 'Tag management',
+    'AB_tags_listpagestag_nbclasses_label' => 'cSS classes available for cloud',
+    'AB_tags_listpagestag_template_label' => 'template',
+    'TAGS_NO_TAG' => 'No keywords used at the moment',
+    'TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE' => 'Online content on the page',
+    'AB_tags_admintag_label' => 'Tag management',
+    'AB_tags_listpagestag_label' => 'List of pages by tag',
+    'AB_tags_listpagestag_type_all' => 'all wiki pages and pages',
+    'AB_tags_listpagestag_type_wiki' => 'only wiki pages',
+    'AB_tags_listpagestag_type_bazar' => 'only forms',
+    'AB_tags_nuagetag_tri_shuffle' => 'random',
+    'AB_tags_listpagestag_tags_label' => 'Tags',
+    'AB_tags_listpagestag_tags_hint' => 'separated by commas',
+    'AB_tags_listpagestag_nb_label' => 'Number of pages',
+    'AB_tags_listpagestag_tri_label' => 'Sort',
+    'AB_tags_listpagestag_tri_date' => 'sort by decreasing date',
+    'AB_tags_listpagestag_tri_alpha' => 'sort by alphabetical order',
+    'AB_tags_listpagestag_template_list_panel' => 'list with box',
+    'AB_tags_listpagestag_template_list_num' => 'list with chips',
+    'AB_tags_listpagestag_shownumberinfo_label' => 'display the number of pages',
+    'AB_tags_listpagestag_nuagetag_label' => 'cloud of tags',
+    'AB_tags_listpagestag_rss_label' => 'link rss to the list for given tags',
 ];

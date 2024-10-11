@@ -3,8 +3,6 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Bazar\Field\BazarField;
-use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Templates\Service\TabsService;
@@ -37,7 +35,7 @@ class LinkedEntryField extends BazarField
         $this->limit = $values[self::FIELD_LIMIT] ?? '';
         $this->template = $values[self::FIELD_TEMPLATE] ?? '';
         $this->linkType = (!empty($values[self::FIELD_LINK_TYPE]) && $values[self::FIELD_LINK_TYPE] === 'checkbox')
-            ? 'checkboxfiche' : ($values[self::FIELD_LINK_TYPE] ?? '') ;
+            ? 'checkboxfiche' : ($values[self::FIELD_LINK_TYPE] ?? '');
         $this->propertyName = null; // to prevent bad saved field when updating entry and !canEdit or at export/import
     }
 
@@ -46,6 +44,7 @@ class LinkedEntryField extends BazarField
         // Display the linked entries only on update
         if (isset($entry['id_fiche'])) {
             $output = $this->renderSecuredBazarList($entry);
+
             return $this->isEmptyOutput($output)
                 ? $output
                 : $this->render('@bazar/inputs/linked-entry.twig', compact(['output']));
@@ -57,11 +56,12 @@ class LinkedEntryField extends BazarField
         // Display the linked entries only if id_fiche and id_typeannonce
         if (!empty($entry['id_fiche']) && !empty($entry['id_typeannonce'])) {
             $output = $this->renderSecuredBazarList($entry);
+
             return $this->isEmptyOutput($output)
                 ? $output
                 : $this->render('@bazar/fields/linked-entry.twig', compact(['output']));
         } else {
-            return "" ;
+            return '';
         }
     }
 
@@ -71,6 +71,7 @@ class LinkedEntryField extends BazarField
         $index = $tabsService->saveState();
         $output = $this->getService(Performer::class)->run('wakka', 'formatter', ['text' => $this->getBazarListAction($entry)]);
         $tabsService->resetState($index);
+
         return $output;
     }
 
@@ -81,12 +82,12 @@ class LinkedEntryField extends BazarField
 
     private function getBazarListAction($entry)
     {
-        $query = $this->getQueryForLinkedLabels($entry) ;
+        $query = $this->getQueryForLinkedLabels($entry);
         if (!empty($query)) {
-            $query = ((!empty($this->query)) ? $this->query.  '|' : '')  . $query  ;
+            $query = ((!empty($this->query)) ? $this->query . '|' : '') . $query;
 
             return '{{bazarliste id="' . $this->name . '" query="' . $query . '"'
-                . ((!empty($this->limit)) ? ' nb="' . $this->limit .'"' : '')
+                . ((!empty($this->limit)) ? ' nb="' . $this->limit . '"' : '')
                 . ((!empty(trim($this->template))) ? ' template="' . trim($this->template) . '" ' : '')
                 . $this->otherParams . '}}';
         } else {
@@ -104,7 +105,7 @@ class LinkedEntryField extends BazarField
                 || empty($entry['id_fiche'])) {
             return '';
         }
-        $query = '' ;
+        $query = '';
         // find EnumEntryField with right name
         foreach ($form['prepared'] as $field) {
             if (
@@ -116,15 +117,15 @@ class LinkedEntryField extends BazarField
                     empty($this->linkType)
                     || strpos($field->getType(), $this->linkType) === 0 // checkboxfiche or listefiche
                     || $field->getPropertyName() == $this->linkType // label
-                    || substr($field->getPropertyName(), strlen($field->getType().trim($entry['id_typeannonce']))) == $this->linkType // label
+                    || substr($field->getPropertyName(), strlen($field->getType() . trim($entry['id_typeannonce']))) == $this->linkType // label
                 )
             ) {
-                $query .= (empty($query)) ? '' : '|' ;
+                $query .= (empty($query)) ? '' : '|';
                 $query .= $field->getPropertyName() . '=' . $entry['id_fiche'];
             }
         }
 
-        return $query ;
+        return $query;
     }
 
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)

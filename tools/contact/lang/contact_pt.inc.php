@@ -1,20 +1,14 @@
 <?php
-
 return [
-
     // actions/abonnement.php
     'CONTACT_ACTION_ABONNEMENT' => 'Ação {{abonnement ...}}',
     'CONTACT_MAIL_REQUIRED' => 'o parâmetro mail, obrigatório está faltando.',
-
     // actions/contact.php
     'CONTACT_ACTION_CONTACT' => 'Ação {{contact ...}}',
-
     // actions/desabonnement.php
     'CONTACT_ACTION_DESABONNEMENT' => 'Ação {{desabonnement ...}}',
-
     // actions/listsubscription.php
     'CONTACT_ACTION_LISTSUBSCRIPTION' => 'Ação {{listsubscription ...}}',
-
     // actions/mailinglist.php
     'CONTACT_ACTION_MAILINGLIST' => 'Ação {{mailinglist ...}}',
     'CONTACT_PARAMETER_LIST_REQUIRED' => 'parâmetro "list" obrigatório (este é o endereço de e-mail da lista de discussão)',
@@ -32,8 +26,6 @@ return [
     'CONTACT_YOUR_EMAIL_LIST' => 'A sua lista de endereços de emails',
     'CONTACT_EXTRACT_EMAILS_FROM_TEXT' => 'Extrair os emails deste texto',
     'CONTACT_MUST_BE_ADMIN_TO_USE_THIS_ACTION' => 'deve estar no grupo de administradores para usar esta ação',
-
-
     'CONTACT_YOUR_NAME' => 'Seu nome',
     'CONTACT_YOUR_MAIL' => 'Seu endereço de email',
     'CONTACT_SUBJECT' => 'Assunto',
@@ -42,112 +34,79 @@ return [
     'CONTACT_LISTSUBSCRIBE_REQUIRED' => 'O parâmetro "list" que contém o endereço de e-mail da lista, do tipo nomelista@domínio.ext é obrigatório',
     'CONTACT_USER_NOT_LOGGED_IN' => 'Você deve ser identificado para acessar as possíveis ações.',
     'CONTACT_USER_NO_EMAIL' => 'Você deve ser identificado para acessar as possíveis ações.',
-
     'CONTACT_ENTER_NAME' => 'Você deve digitar um nome.',
     'CONTACT_ENTER_SENDER_MAIL' => 'Você deve digitar um endereço de e-mail para o remetente.',
     'CONTACT_SENDER_MAIL_INVALID' => 'Você deve digitar um endereço de e-mail válido para o remetente.',
     'CONTACT_ENTER_RECEIVER_MAIL' => 'Você deve digitar um endereço de e-mail para o destinatário.',
     'CONTACT_RECEIVER_MAIL_INVALID' => 'Você deve digitar um endereço de e-mail válido para o destinatário.',
     'CONTACT_ENTER_MESSAGE' => 'Por favor escreva uma mensagem. Deve haver pelo menos 10 caracteres.',
-
     'CONTACT_MESSAGE_SUCCESSFULLY_SENT' => 'Sua mensagem foi enviada. Obrigado!',
     'CONTACT_MESSAGE_NOT_SENT' => 'A mensagem não pôde ser enviada... Problema do lado do servidor de configuração?',
     'CONTACT_SUBSCRIBE_ORDER_SENT' => 'O seu pedido de assinatura foi tido em conta. Obrigado!',
     'CONTACT_UNSUBSCRIBE_ORDER_SENT' => 'O seu pedido de cancelamento de inscrição foi tido em conta. Obrigado!',
-
     'CONTACT_HANDLER_MAIL_FOR_ADMINS' => 'O handler mail é reservado para o grupo de administradores.',
     'CONTACT_LOGIN_IF_ADMIN' => 'Se você está entre esse grupo, identifique-se.',
-
     'CONTACT_SUBSCRIBE' => 'Assinar',
     'CONTACT_UNSUBSCRIBE' => 'Cancelar inscrição',
-
     'CONTACT_FROM' => 'de',
-    // 'CONTACT_TEMPLATE_NOT_FOUND' => 'Fichier de template non trouvé',
-    // 'CONTACT_MESSAGE_SENT_FROM' => 'Message envoyé à partir de',
-
-    // 'CONTACT_PERIOD' => 'Recevoir le contenu de cette page par email de manière',
-    // 'CONTACT_DAILY' => 'Journalière',
-    // 'CONTACT_WEEKLY' => 'Hebdomadaire',
-    // 'CONTACT_MONTHLY' => 'Mensuelle',
-    // 'CONTACT_UNSUBSCRIBE' => 'Se désabonner',
-    // 'CONTACT_SUCCESS_SUBSCRIBE' => 'Vous êtes maintenant abonné de manière ',
-    // 'CONTACT_SUCCESS_UNSUBSCRIBE' => 'Vous avez bien été désabonné',
-
-    // 'CONTACT_THIS_MESSAGE' => 'Ce message est envoyé par un visiteur depuis la fiche',
-    // 'CONTACT_FROM_FORM' => 'du formulaire',
-    // 'CONTACT_FROM_WEBSITE' => 'du site',
-    // 'CONTACT_REPLY' => 'Vous pouvez lui écrire un message à',
-    // 'CONTACT_REPLY2' => 'en répondant à ce mail',
-
-    // handlers/page/mail.php
-    // 'CONTACT_TO_PLACEHOLDER' => 'Adresse mail du destinataire',
-
-    // handlers/page/sendmail.php
-    // 'CONTACT_SENDMAIL_INFO' => 'On envoie les mails pour la période',
-    // 'CONTACT_SENDMAIL_ERROR' => 'La période n\'a pas été renseignée ou n\'a pas de valeur standard (month, week ou day).',
-
-    // libs/contact.functions.js
-    // 'CONTACT_DAILY_REPORT' => 'rapport journalier du',
-    // 'CONTACT_WEEKLY_REPORT' => 'rapport hebdomadaire du',
-    // 'CONTACT_MONTHLY_REPORT' => 'rapport mensuel du',
-
-    // templates/notify-admins-email-subject.twig (no special chars)
-    // 'CONTACT_ENTRY_ADDED' => 'nouvelle fiche ajoutee',
-    // 'CONTACT_ENTRY_CHANGED' => 'fiche modifiee',
-    // 'CONTACT_IN_FORM' => 'dans le formulaire',
-
-    // templates/notify-admins-list-deleted-email-subject.twig (no special chars)
-    // 'CONTACT_DELETED_LIST' => 'liste supprimee',
-
-    // templates/notify-admins-list-deleted-email-text.twig (no special chars)
-    // 'CONTACT_USED_IP' => 'IP utilisee',
-
-    // templates/notify-email-html.twig and templates/notify-email-text.twig (no special chars)
-    // 'CONTACT_WELCOME_ON' => 'Bienvenue sur',
-
-    // templates/notify-email-subject.twig (no special chars)
-    // 'CONTACT_YOUR_ENTRY' => 'Votre fiche',
-
-    // templates/notify-email-text.twig (no special chars)
-    // 'CONTACT_HELP_IN_NOTIFICATION' => 'allez sur le site pour gérer votre inscription',
-
-    // templates/notify-newuser-email-subject.twig (no special chars)
-    // 'CONTACT_NEW_USER_SUBJECT' => 'Vos nouveaux identifiants sur le site',
-
-    // templates/notify-newuser-email-text.twig (no special chars)
-    // 'CONTACT_NEW_USER_MESSAGE' => "Bonjour!\n\n".
-        // "Votre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\n".
-        // "Url : {{ baseUrl }}\n\n".
-        // "Votre identifiant NomWiki : {{ wikiName }}\n\n".
-        // "Votre email : {{ email }}\n\n".
-        // "Votre mot de passe : (le mot de passe que vous avez choisi)\n\n".
-        // "Pour reinitialiser votre mot de passe : {{ urlForPasswordRenewal }}\n\n".
-        // "A tres bientot ! ",
-
-    // action-builder Contact
-    // 'AB_contact_group_label' => "Actions d'envoi d'e-mail/listes",
-    // 'AB_abonnement_action_mail_label' => "E-mail de la liste de discussion",
-    // 'AB_abonnement_action_label' => "S'abonner à une liste de discussion",
-    // 'AB_abonnement_template_label' => "template",
-    // 'AB_abonnement_class_label' => "classe",
-    // 'AB_abonnement_mailinglist_label' => "Liste de discussion",
-    // 'AB_deabonnement_action_label' => "Se désabonner d'une liste de diffusion",
-    // 'AB_contact_action_label' => "Afficher un formulaire de contact",
-    // 'AB_contact_action_mail_label' => "E-mail du destinataire",
-    // 'AB_contact_action_entete_label' => "Préfixe automatique de l'objet du mail envoyé depuis le formulaire de contact",
-    // 'AB_contact_action_entete_default' => "Envoyé depuis le site...",
-    // 'AB_contact_action_template_label' => "Template personnalisé",
-    // 'AB_contact_action_template_hint' => "Ex. : complete-contact-form.tpl.html",
-    // 'AB_contact_action_class_label' => "classe css",
-    // 'AB_listsubscription_action_label' => "listsubscription",
-    // 'AB_mailperiod_action_label' => "S'abonner pour recevoir périodiquement le contenu d'une page par email",
-    // 'AB_mailperiod_action_hint' => "Pour que cette action fonctionne vous devez vérifier certains paramètres sur votre serveur. Voir la documentation sur https://yeswiki.net/?MailPeriod",
-    // 'AB_mailinglist_action_label' => "Inscrire massivement des mails à une newsletter",
-    // 'AB_mailinglist_action_description' => "Action permettant d'inscrire ou désinscrire massivement des mails à une newsletter",
-
-
-    // for edit config
-    // 'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => "Ajouter 'wiki=' aux liens vers ce wiki dans les e-mails",
-    // 'EDIT_CONFIG_GROUP_CONTACT' => 'Envoi des e-mails',
-
+    'AB_abonnement_template_label' => 'modelo',
+    'EDIT_CONFIG_HINT_CONTACT_MAIL_FUNC' => 'Modo de e-mail ("smtp" ou "mail")',
+    'EDIT_CONFIG_HINT_CONTACT_SMTP_HOST' => 'Servidor SMTP (ex: "smtp.mondomaine.ext")',
+    'EDIT_CONFIG_HINT_CONTACT_SMTP_PORT' => 'Porta SMTP (geralmente 465 ou 587)',
+    'EDIT_CONFIG_HINT_CONTACT_FROM' => 'Usuário indicado como um transmissor de e-mail (para evitar spams deve ser o mesmo que o smtp do usuário)',
+    'EDIT_CONFIG_HINT_CONTACT_REPLY_TO' => 'Usuário a quem a resposta do email será enviada',
+    'EDIT_CONFIG_HINT_CONTACT_DEBUG' => 'Modo vertical para desligar (put 2 para obter informações)',
+    'CONTACT_HANDLER_MAIL_FOR_CONNECTED' => 'E-mail é demitido;serveacute; para as pessoas identificadas.',
+    'CONTACT_MESSAGE_SENT_FROM' => 'Mensagem enviada de',
+    'CONTACT_WEEKLY' => 'Semanal',
+    'CONTACT_MONTHLY' => 'Mensal',
+    'CONTACT_FROM_FORM' => 'formulário',
+    'CONTACT_FROM_WEBSITE' => 'do site',
+    'CONTACT_REPLY' => 'Você pode escrever uma mensagem para ela',
+    'CONTACT_MONTHLY_REPORT' => 'relatório mensal',
+    'CONTACT_ENTRY_ADDED' => 'novos plug adds',
+    'CONTACT_ENTRY_CHANGED' => 'arquivo modificado',
+    'CONTACT_IN_FORM' => 'na forma',
+    'CONTACT_USED_IP' => 'Uso de IP',
+    'CONTACT_WELCOME_ON' => 'Bem-vindo a',
+    'CONTACT_YOUR_ENTRY' => 'O seu cartão',
+    'AB_abonnement_class_label' => 'classe',
+    'AB_abonnement_mailinglist_label' => 'Lista de discussão',
+    'AB_deabonnement_action_label' => "Inscrição de uma lista de discussão",
+    'AB_contact_action_mail_label' => 'Endereço de email',
+    'AB_contact_action_entete_default' => 'Enviado do site...',
+    'AB_mailinglist_action_label' => 'Escreva em massa e-mails para uma newsletter',
+    'EDIT_CONFIG_HINT_CONTACT_DISABLE_EMAIL_FOR_PASSWORD' => 'Desativar e-mail para reintroduzir uma senha (ex: LDAP, SSO)',
+    'EDIT_CONFIG_HINT_CONTACT_SMTP_USER' => 'Usuário SMTP (frequentemente correio)',
+    'EDIT_CONFIG_HINT_CONTACT_SMTP_PASS' => 'Senha SMTP',
+    'CONTACT_LOGIN_IF_CONNECTED' => 'Se tiver um identificador, por favor, identifique-se.',
+    'CONTACT_TEMPLATE_NOT_FOUND' => 'Modelo de arquivo não encontrado',
+    'CONTACT_PERIOD' => 'Receba o conteúdo desta página por e-mail de uma forma',
+    'CONTACT_DAILY' => 'Jornal Oficial',
+    'CONTACT_SUCCESS_SUBSCRIBE' => 'Você está agora inscrito de uma maneira ',
+    'CONTACT_SUCCESS_UNSUBSCRIBE' => 'Não foi inscrito',
+    'CONTACT_THIS_MESSAGE' => 'Esta mensagem é enviada por um visitante da página',
+    'CONTACT_REPLY2' => 'respondendo a este e-mail',
+    'CONTACT_TO_PLACEHOLDER' => 'Endereço de e-mail do destinatário',
+    'CONTACT_SENDMAIL_INFO' => 'Enviamos os correios para o período',
+    'CONTACT_SENDMAIL_ERROR' => 'O período não foi preenchido ou não tem valor padrão (mês, semana ou dia).',
+    'CONTACT_DAILY_REPORT' => 'relatório diário do',
+    'CONTACT_WEEKLY_REPORT' => 'relatório semanal',
+    'CONTACT_DELETED_LIST' => 'lista excluída',
+    'CONTACT_HELP_IN_NOTIFICATION' => 'ir para o site para gerenciar seu registro',
+    'CONTACT_NEW_USER_SUBJECT' => 'Seus novos identificadores no site',
+    'AB_contact_group_label' => "Enviar e-mail/listas",
+    'AB_abonnement_action_mail_label' => 'E-mail da lista de discussão',
+    'AB_abonnement_action_label' => "Assine uma lista de discussão",
+    'AB_contact_action_label' => 'Mostrar formulário de contato',
+    'AB_contact_action_entete_label' => "Prefixo automático do objeto de correio",
+    'AB_contact_action_template_label' => 'Modelo personalizado',
+    'AB_contact_action_template_hint' => 'Ex.: full-contact-form.tpl.html',
+    'AB_contact_action_class_label' => 'cs',
+    'AB_listsubscription_action_label' => 'listsubscription',
+    'AB_mailperiod_action_label' => "Assinar para receber o conteúdo de uma página periodicamente por e-mail",
+    'AB_mailperiod_action_hint' => 'Para esta ação para trabalhar você precisa verificar certos parâmetros no seu servidor. Ver documentos em https://yeswiki.net/?MailPeriod',
+    'AB_mailinglist_action_description' => "Ação para registrar ou cancelar a assinatura de emails massivos para uma newsletter",
+    'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => "Adicione 'wiki=' aos links para esta wiki em e-mails",
+    'EDIT_CONFIG_GROUP_CONTACT' => 'Enviar e-mails',
 ];

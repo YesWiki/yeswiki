@@ -1,5 +1,4 @@
-Bazar
-=====
+# Bazar
 
 Gestionnaire de formulaire pour Yeswiki.
 

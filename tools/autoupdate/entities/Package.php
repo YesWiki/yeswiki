@@ -22,11 +22,12 @@ abstract class Package extends Files
     public $installed = false;
     public $updateAvailable = false;
     public $updateLink;
-    public $description = "";
-    public $documentation = "";
+    public $description = '';
+    public $documentation = '';
     protected $minimalPhpVersion;
 
     abstract public function upgrade();
+
     abstract public function upgradeInfos();
 
     abstract protected function localRelease();
@@ -81,6 +82,7 @@ abstract class Package extends Files
                 return false;
             }
         }
+
         return $allGood;
     }
 
@@ -91,7 +93,8 @@ abstract class Package extends Files
         }
         $md5Repo = $this->getMD5();
         $md5File = md5_file($this->downloadedFile);
-        return ($md5File === $md5Repo);
+
+        return $md5File === $md5Repo;
     }
 
     public function getFile()
@@ -102,6 +105,7 @@ abstract class Package extends Files
             return $this->downloadedFile;
         }
         $this->downloadedFile = null;
+
         return false;
     }
 
@@ -135,7 +139,8 @@ abstract class Package extends Files
     }
 
     /**
-     * get needed PHP version from json file from repository
+     * get needed PHP version from json file from repository.
+     *
      * @return string formatted as '7.3.0', '7.3.0' is the wanted version in case of error
      */
     public function getNeededPHPversion(): string
@@ -145,11 +150,13 @@ abstract class Package extends Files
         if (is_string($this->minimalPhpVersion) && preg_match('/^([0-9]*)\.([0-9]*)\.([0-9]*)$/', $this->minimalPhpVersion, $matches)) {
             return $this->minimalPhpVersion;
         }
+
         return MINIMUM_PHP_VERSION_FOR_CORE; // just in case of error give a number
     }
 
     /**
-     * get needed PHP version from json file from extracted folder
+     * get needed PHP version from json file from extracted folder.
+     *
      * @return string formatted as '7.3.0', '7.3.0' is the wanted version in case of error
      */
     public function getNeededPHPversionFromExtractedFolder(): string
@@ -170,17 +177,21 @@ abstract class Package extends Files
                         $minor = ($minor == '*') ? 0 : $minor;
                         $fix = $matches[4] ?? 0;
                         $fix = ($fix == '*') ? 0 : $fix;
+
                         return $major . '.' . $minor . '.' . $fix;
                     }
                 }
             }
         }
+
         return $this->getNeededPHPversion();
     }
 
     /**
-     * check if current PHP version enough high
+     * check if current PHP version enough high.
+     *
      * @param string $neededRevision
+     *
      * @return bool
      */
     public function PHPVersionEnoughHigh(?string $neededRevision = null)
@@ -199,15 +210,15 @@ abstract class Package extends Files
      **************************************************************************/
     protected function name()
     {
-        $namePlusDate =  explode('-', basename($this->address, '.zip'), 2)[1];
+        $namePlusDate = explode('-', basename($this->address, '.zip'), 2)[1];
 
         return preg_replace('/-' . SEMVER . '$/', '', preg_replace('/-\d*-\d*-\d*-\d*$/', '', $namePlusDate));
     }
 
-
     private function getMD5()
     {
         $this->md5File = $this->download($this->address . '.md5');
+
         return explode(' ', file_get_contents($this->md5File))[0];
     }
 
@@ -218,6 +229,7 @@ abstract class Package extends Files
                 return true;
             }
         }
+
         return false;
     }
 }

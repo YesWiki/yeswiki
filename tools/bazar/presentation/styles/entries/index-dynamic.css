@@ -7,9 +7,7 @@
 }
 
 /* ------------- */
-
 /*   PAGINATION  */
-
 /* ------------- */
 
 .bazar-list-dynamic-container .results-col {
@@ -24,8 +22,8 @@
 }
 
 .bazar-list-dynamic-container .pagination > li {
-  margin: 0 .2rem;
-  padding: 0 .5rem;
+  margin: 0 0.2rem;
+  padding: 0 0.5rem;
   cursor: pointer;
   border-radius: 3px;
 }
@@ -45,13 +43,11 @@
 }
 
 .bazar-list-dynamic-container .pagination > li.disabled {
-  opacity: .6;
+  opacity: 0.6;
 }
 
 /* ------------- */
-
 /*     ENTRY     */
-
 /* ------------- */
 .entry-container.modal-body {
   padding-top: 1rem;
@@ -81,40 +77,37 @@
 }
 
 /* ------------- */
-
 /*  ENTRY FIELD  */
-
 /* ------------- */
 
 /* Helpers div to used only when needed */
-.field-date .day, .field-date .month {
+.field-date .day,
+.field-date .month {
   display: none;
 }
 
 .field-array > span {
-  font-size: .8rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  margin-right: .5rem;
+  margin-right: 0.5rem;
 }
 
 /* ------------- */
-
 /* LIST TEMPLATE */
-
 /* ------------- */
 .bazar-list.dynamic .panel-heading-container {
   display: grid;
-  grid-template-areas: 
-    "title floating"
-    "subtitle subtitle";
+  grid-template-areas:
+    'title floating'
+    'subtitle subtitle';
   align-items: start;
   grid-template-rows: max-content;
 }
 
 .bazar-list.dynamic .panel-heading-container.with-image {
-  grid-template-areas: 
-    "visual title floating"
-    "visual subtitle subtitle";
+  grid-template-areas:
+    'visual title floating'
+    'visual subtitle subtitle';
   grid-template-columns: 11rem auto auto;
 }
 
@@ -151,16 +144,16 @@
   float: right;
   font-weight: normal;
   color: var(--primary-color);
-  font-size: .95em;
+  font-size: 0.95em;
   justify-self: right;
   padding-right: 2.2rem;
 }
 
 .bazar-list.dynamic .panel-heading-container .subtitle-area {
   grid-area: subtitle;
-  font-size: .95em;
+  font-size: 0.95em;
   text-align: justify;
-  padding-top: .5rem;
+  padding-top: 0.5rem;
 }
 
 .bazar-list.dynamic .panel-heading-container p {
@@ -168,6 +161,6 @@
 }
 
 .bazar-list.dynamic .panel-body {
-  font-size: .95em;
+  font-size: 0.95em;
   margin-top: 1rem;
 }

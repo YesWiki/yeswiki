@@ -18,12 +18,13 @@ class RadioListField extends RadioField
 
     protected function renderStatic($entry)
     {
-        $value = $this->getValue($entry) ;
+        $value = $this->getValue($entry);
         if (!$value) {
-            return "";
+            return '';
         }
+
         return $this->render('@bazar/fields/radio.twig', [
-            'value' => $this->options[$value]
+            'value' => $this->options[$value],
         ]);
     }
 }

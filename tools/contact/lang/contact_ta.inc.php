@@ -1,0 +1,116 @@
+<?php
+
+return [
+    // actions/abonnement.php
+    'CONTACT_ACTION_ABONNEMENT' => 'செயல் {{abonnement ...}}',
+    'CONTACT_MAIL_REQUIRED' => 'லு பரம் & எக்ரேவ்; ட்ரே மெயில், டம்பிகடோயர், எச்ட் மேன்குவண்ட்.',
+    // actions/contact.php
+    'CONTACT_ACTION_CONTACT' => 'செயல் {{தொடர்பு ...}}',
+    // actions/desabonnement.php
+    'CONTACT_ACTION_DESABONNEMENT' => 'செயல் {{desabonnement ...}}',
+    // actions/listsubscription.php
+    'CONTACT_ACTION_LISTSUBSCRIPTION' => 'செயல் {{listSubscription ...}}',
+    // actions/mailinglist.php
+    'CONTACT_ACTION_MAILINGLIST' => 'செயல் {{mailingList ...}}',
+    'CONTACT_PARAMETER_LIST_REQUIRED' => 'PARAM & EGRAVE; TRE "LIST" DOFFIGATOIRE (il s\'agit de l\'adresse mail de la liste de diffusion)',
+    'CONTACT_MAILS_TO_ADD_OR_REMOVE' => 'அஞ்சல்கள் & அக்ரேவ்; அசூட்டர் ஓ & அக்ராவ்; Supprimer de la liste',
+    'CONTACT_SENT_TO_THE_LIST' => 'Envoi & agrave; லா பட்டியல்',
+    'CONTACT_THE_EMAIL' => 'l\'ail',
+    'CONTACT_SUBMIT_OTHER_EMAILS' => 'என்டர் டி ஆட்ரெச் அஞ்சல்கள்',
+    'CONTACT_OK' => 'சரி',
+    'CONTACT_BTN_SUBSCRIBE' => 'வெறுப்பவர்',
+    'CONTACT_BTN_UNSUBSCRIBE' => 'டி & eacute; sabonner',
+    'CONTACT_FOR_ALL_THOSE_EMAILS' => 'டூட்ச் செச் முகவரி அஞ்சல்களை ஊற்றவும்',
+    'CONTACT_TRY_WITH_OTHER_EMAILS' => 'கட்டுரை அவெக் டி ஆட்ரெச் மெயில்ச் டான்ச் லு டெக்ச்டே',
+    'CONTACT_NO_EMAILS_FOUND_IN_THIS_TEXT' => 'பாச் டி அட்ரெச் மெயில்ச் ட்ரூ & ஈகூட்; எச்ட் டான்ச் லு டெக்ச்டே ஃபோர்னி',
+    'CONTACT_ENTER_TEXT_WITH_EMAILS_INSIDE' => 'என்ட்ரெச் அன் டெக்ச்டே கான்டெனன்ட் டெச் மெயில்ச் டெடான்ச் லெச் எக்ச்ட்ராயர், கியூம்போர்ட் லெச் எச் & ஈகூட்;',
+    'CONTACT_YOUR_EMAIL_LIST' => 'Withre liste d\'dresses அஞ்சல்கள்',
+    'CONTACT_EXTRACT_EMAILS_FROM_TEXT' => 'எக்ச்ட்ரேர் லெச் மெயில்ச் டி சி டெக்ச்டே',
+    'CONTACT_MUST_BE_ADMIN_TO_USE_THIS_ACTION' => 'il faut & ecirc; tre dans le குழு Udmins upour utities cete செயல்',
+    'CONTACT_YOUR_NAME' => 'வோட்ரே நோம்',
+    'CONTACT_YOUR_MAIL' => 'வோட்ரே அட்ரெச் மெயில்',
+    'CONTACT_SUBJECT' => 'சுசெட் டு செய்தி',
+    'CONTACT_YOUR_MESSAGE' => 'வோர்ட்ரே செய்தி',
+    'CONTACT_SEND_MESSAGE' => 'தூதர் லே செய்தி',
+    'CONTACT_LISTSUBSCRIBE_REQUIRED' => 'லு பரம் & எக்ரேவ்; ட்ரே "பட்டியல்", கான்டெனன்ட் எல் அட்ரெச் & ஈகூட்;',
+    'CONTACT_USER_NOT_LOGGED_IN' => 'il faut & ecirc; tre அடையாளங்கோலை & eacute; அக் & ஈகூட்; டெர் ஆக்ச் செயல்கள்.',
+    'CONTACT_USER_NO_EMAIL' => 'il faut & ecirc; tre அடையாளங்கோலை & eacute; அக் & ஈகூட்; டெர் ஆக்ச் செயல்கள்.',
+    'CONTACT_ENTER_NAME' => 'வூச் டெவ்ச் எனர்னர் அன் நோம்.',
+    'CONTACT_ENTER_SENDER_MAIL' => 'Vous Devez Enterer une adresse Mail pour l\'ext & eacute; diteur.',
+    'CONTACT_SENDER_MAIL_INVALID' => 'Vous devez enterer une adresse mail valide pour l\'exp & eacute; diteur.',
+    'CONTACT_ENTER_RECEIVER_MAIL' => 'வூச் டெவ்ச் எனர்னர் யு.என்.',
+    'CONTACT_RECEIVER_MAIL_INVALID' => 'வூச் டீவ்ச் எனர்னர் யு.என்.',
+    'CONTACT_ENTER_MESSAGE' => 'VEUILLEZ ENTRER IN MESSATION. Il doit fair அயு குறைந்தபட்சம் 10 காராக்ட் & egrave; res.',
+    'CONTACT_MESSAGE_SUCCESSFULLY_SENT' => 'வோட்ரே செய்தி ஒரு பீன் & eacute; t & eacute; தூதர் & eacute ;. மெர்சி!',
+    'CONTACT_MESSAGE_NOT_SENT' => 'Une erreure s\'est produite lors de l\'envoi du message. Veuillez contacter l\'admistrateur du site pour qu\'il puisse regler le probleme.',
+    'CONTACT_SUBSCRIBE_ORDER_SENT' => 'வோட்ரே கோரிக்கை கவலை வூட்ரே அபோனெமென்ட் ஒரு பயன் & eacute; t & eacute; பரிசு என் compte. மெர்சி!',
+    'CONTACT_UNSUBSCRIBE_ORDER_SENT' => 'Wots withe concant votre டி & eacute; sabonnement a bien & eacute; t & eacute; பரிசு என் compte. மெர்சி!',
+    'CONTACT_HANDLER_MAIL_FOR_CONNECTED' => 'L\'envoi de mail est r & eacute; serv & eacute; ஆக்ச் பெர்சனென்ச் அடையாளங்காட்டிகள்.',
+    'CONTACT_LOGIN_IF_CONNECTED' => 'Si vous avez un அடையாளம், வீலெச் வூச் அடையாளங்காட்டி.',
+    'CONTACT_SUBSCRIBE' => 'S\'abonner',
+    'CONTACT_UNSUBSCRIBE' => '',
+    'CONTACT_FROM' => 'டி',
+    'CONTACT_TEMPLATE_NOT_FOUND' => 'Fichier de வார்ப்புரு அல்ல',
+    'CONTACT_MESSAGE_SENT_FROM' => 'செய்தி தூதர் à பார்ட்டிர் டி',
+    'CONTACT_PERIOD' => 'Greavoir le contenu de cette page par மின்னஞ்சல் de maniere',
+    'CONTACT_DAILY' => 'செய்தித் தாள்',
+    'CONTACT_WEEKLY' => 'எப்டோமாடேர்',
+    'CONTACT_MONTHLY' => 'மென்சுவல்',
+    'CONTACT_UNSUBSCRIBE' => 'Se டி & eacute; sabonner',
+    'CONTACT_SUCCESS_SUBSCRIBE' => 'Vous êtes maintenant abonné de maniere ',
+    'CONTACT_SUCCESS_UNSUBSCRIBE' => 'வூச் அவெச் பீன் எட் டெசபோனே',
+    'CONTACT_THIS_MESSAGE' => 'Ce செய்தி est envoyé par un visituer depuis la fiche',
+    'CONTACT_FROM_FORM' => 'டு ஃபார்முலேர்',
+    'CONTACT_FROM_WEBSITE' => 'டு தளம்',
+    'CONTACT_REPLY' => 'Vous pouvez lui écrire un செய்தி à',
+    'CONTACT_REPLY2' => 'என் répondant à ce mail',
+    // handlers/page/mail.php
+    'CONTACT_TO_PLACEHOLDER' => 'அட்ரெச் மெயில் டு டெச்டினாடேர்',
+    // handlers/page/sendmail.php
+    'CONTACT_SENDMAIL_INFO' => 'என்வோய் லெச் மெயில்களில் லா பெரியோடை ஊற்றவும்',
+    'CONTACT_SENDMAIL_ERROR' => 'La période n\'a pas été renensignée o ou n\'a pas de valure தரநிலை (மாதம், வார நாள்).',
+    // libs/contact.functions.js
+    'CONTACT_DAILY_REPORT' => 'ரைட்போர்ட் சர்னியர் டு',
+    'CONTACT_WEEKLY_REPORT' => 'நல்ல எப்டோமாடேர் டு',
+    'CONTACT_MONTHLY_REPORT' => 'நல்ல மென்சுவல் டு',
+    // templates/notify-admins-email-subject.twig (no special chars)
+    'CONTACT_ENTRY_ADDED' => 'nouvelle fiche ajoutee',
+    'CONTACT_ENTRY_CHANGED' => 'fiche modifiee',
+    'CONTACT_IN_FORM' => 'டான்ச் லு ஃபார்முலேர்',
+    // templates/notify-admins-list-deleted-email-subject.twig (no special chars)
+    'CONTACT_DELETED_LIST' => 'SUPPRIMEE ஐ பட்டியலிடுங்கள்',
+    // templates/notify-admins-list-deleted-email-text.twig (no special chars)
+    'CONTACT_USED_IP' => 'ஐபி பயன்பாடு',
+    // templates/notify-email-html.twig and templates/notify-email-text.twig (no special chars)
+    'CONTACT_WELCOME_ON' => 'பியென்வென் சுர்',
+    // templates/notify-email-subject.twig (no special chars)
+    'CONTACT_YOUR_ENTRY' => 'வோட்ரே ஃபிச்',
+    // templates/notify-email-text.twig (no special chars)
+    'CONTACT_HELP_IN_NOTIFICATION' => 'அலெச் சுர் லே தளத்தை ஊற்ற வேண்டும்',
+    // templates/notify-newuser-email-subject.twig (no special chars)
+    'CONTACT_NEW_USER_SUBJECT' => 'VOS Nouveaux அடையாளங்காட்டிகள் சுர் லே தளம்',
+    // templates/notify-newuser-email-text.twig (no special chars)
+    // action-builder Contact
+    'AB_contact_group_label' => "செயல்கள் d'envoi d'ary-mail/listes",
+    'AB_abonnement_action_mail_label' => 'மின்னஞ்சல் டி லா லிச்டே டி கலந்துரையாடல்',
+    'AB_abonnement_action_label' => "S'abonner à une liste de கலந்துரையாடல்",
+    'AB_abonnement_template_label' => 'வார்ப்புரு',
+    'AB_abonnement_class_label' => 'கிளாச்',
+    'AB_abonnement_mailinglist_label' => 'பட்டியல் விவாதம்',
+    'AB_deabonnement_action_label' => "Se désabonner d'ne liste de கலந்துரையாடல்",
+    'AB_contact_action_label' => 'Afficher un fumlured de contiction',
+    'AB_contact_action_mail_label' => 'மின்னஞ்சல் டு டெச்டினாடேர்',
+    'AB_contact_action_entete_label' => 'ப்ரெஃபிக்ச் ஆட்டோமேட்டிக் டி எல் ஒப்செட் டு மெயில்',
+    'AB_contact_action_entete_default' => 'என்வாய் டெபூயிச் லே தளம் ...',
+    'AB_contact_action_template_label' => 'வார்ப்புரு ஆளுமை',
+    'AB_contact_action_template_hint' => 'முன்னாள். : முழுமையான தொடர்பு-படிவம் .Tpl.html',
+    'AB_contact_action_class_label' => 'கிளாச் சி.எச்.எச்',
+    'AB_listsubscription_action_label' => 'ListSubscription',
+    'AB_mailperiod_action_label' => "S'abonner pour regevoir périodigment le contenu d'ne par par மின்னஞ்சல்",
+    'AB_mailperiod_action_hint' => 'கியூ செட் ஆக்சன் ஃபோன்க்சன் வூச் டிவெச் வெரிஃபையர் சான்றிதழ்கள் பரம எட்ரச் சுர் வோட்ரே சர்வர். Voir LA ஆவணங்கள் சுர் https://yeswiki.net/?mailperiod',
+    'AB_mailinglist_action_label' => 'Inscrire massivement des mails à une செய்திமடல்',
+    'AB_mailinglist_action_description' => 'செயல்',
+    // for edit config
+    'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => "அசூட்டர் 'விக்கி =' ஆக்ச் லீன்ச் வெர்சச் சி.இ விக்கி டான்ச் லெச் மின்னஞ்சல்கள்",
+    'EDIT_CONFIG_GROUP_CONTACT' => 'Envoi des மின்னஞ்சல்கள்',
+];

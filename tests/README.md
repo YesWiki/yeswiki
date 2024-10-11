@@ -10,13 +10,15 @@ THe whole documentation is available here : https://phpunit.de and https://phpun
 1. in command line, go to root directory.
 2. ensure phpunit is installed with command `composer install`
 3. start test with command `./vendor/bin/phpunit --stderr tests`
-  - `--stderr` is use to prevent seding output before headers definition
-  - to get error output in a file : `./vendor/bin/phpunit --stderr tests 2>output.err`
+
+- `--stderr` is use to prevent seding output before headers definition
+- to get error output in a file : `./vendor/bin/phpunit --stderr tests 2>output.err`
 
 ## Create a test
 
 1. if the tested class or function is in file `./tools/bazar/actions/BazarAction.php`, create the file `./tests/tools/bazar/actions/BazarActionTest.php`
 2. in file, inspire from this code
+
 ```
 <?php
 
@@ -28,7 +30,7 @@ require_once 'tests/YesWikiTestCase.php';
 
 class MyClassTest extends YesWikiTestCase
 {
-    
+
     /**
      */
     public function testMyFunction()
@@ -39,6 +41,7 @@ class MyClassTest extends YesWikiTestCase
 ```
 
 3. Define your test as the following code to use wiki object.
+
 ```
 public function testMyFunction()
 {
@@ -46,7 +49,9 @@ public function testMyFunction()
     $this->assertTrue(true/*... to modify*/);
 }
 ```
+
 4. to use dataprovider, define code as :
+
 ```
 /**
     * @dataProvider provider

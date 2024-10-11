@@ -40,7 +40,7 @@ class SemanticTransformer
                     if (!$isHtmlFormatted) {
                         // If this is a file or image, add the base URL
                         if ($fieldType === 'file') {
-                            $value = $GLOBALS['wiki']->getBaseUrl() . "/" . BAZ_CHEMIN_UPLOAD . $value;
+                            $value = $GLOBALS['wiki']->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $value;
                         }
 
                         // If this is a linked entity (listefiche), use the URL
@@ -72,7 +72,7 @@ class SemanticTransformer
         $nonSemanticData = [
             'id_fiche' => $data['id_fiche'],
             'antispam' => $data['antispam'],
-            'id_typeannonce' => $data['id_typeannonce']
+            'id_typeannonce' => $data['id_typeannonce'],
         ];
 
         if (($data['@type'] && $data['@type'] !== $form['bn_sem_type']) || $data['type'] && $data['type'] !== $form['bn_sem_type']) {

@@ -38,7 +38,7 @@
         <label class="control-label col-sm-3">
             <span class="symbole_obligatoire"></span>
             {% if field.hint %}
-                <img loading="lazy" class="tooltip_aide" title="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />
+                <img loading="lazy" class="tooltip_aide" title="{{ field.hint|raw('html') }}" alt="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" />
             {% endif %}
             {{ _t('BAZ_MOT_DE_PASSE') }}
         </label>
@@ -52,7 +52,7 @@
         <label class="control-label col-sm-3">
             <span class="symbole_obligatoire"></span>
             {% if field.hint %}
-                <img loading="lazy" class="tooltip_aide" title="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />
+						<img loading="lazy" class="tooltip_aide" title="{{ field.hint|raw('html') }}" alt="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" />
             {% endif %}
             {{ _t('BAZ_MOT_DE_PASSE') }} ({{ _t('BAZ_VERIFICATION') }})
         </label>
@@ -63,4 +63,4 @@
         </div>
     </div>
 {% endif %}
-{{ include_javascript('tools/bazar/presentation/javascripts/user-field-update-email.js') }}
+{{ include_javascript('tools/bazar/presentation/javascripts/inputs/user-field-update-email.js') }}

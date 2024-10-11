@@ -1,8 +1,8 @@
 <?php
 
-use YesWiki\Core\YesWikiAction;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\CSVManager;
+use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\YesWikiAction;
 
 class BazarExportAction extends YesWikiAction
 {
@@ -11,21 +11,21 @@ class BazarExportAction extends YesWikiAction
 
     public function formatArguments($arg)
     {
-        $id = (!empty($_REQUEST['id'])) ? $_REQUEST['id'] : ($_REQUEST['id_typeannonce'] ?? ($arg['id'] ?? '')) ;
+        $id = (!empty($_REQUEST['id'])) ? $_REQUEST['id'] : ($_REQUEST['id_typeannonce'] ?? ($arg['id'] ?? ''));
 
         //on transforme en entier, pour eviter des attaques
         $id = (int)preg_replace('/[^\d]+/', '', $id);
 
-        return([
-            'id' =>  $id,
+        return [
+            'id' => $id,
             // chaine de recherche
-            'q' =>  !empty($_GET['q']) ? $_GET['q'] : null,
+            'q' => !empty($_GET['q']) ? $_GET['q'] : null,
             'bazar-export-option-keys-instead-of-values' => $this->formatBoolean($_REQUEST, false, 'bazar-export-option-keys-instead-of-values'),
             'params' => array_merge(
                 [BAZ_VARIABLE_VOIR => BAZ_VOIR_EXPORTER],
                 isset($_GET['debug']) ? ['debug' => 'yes'] : []
-            )
-            ]);
+            ),
+        ];
     }
 
     public function run()
@@ -47,7 +47,7 @@ class BazarExportAction extends YesWikiAction
             $this->arguments['q'],
             false, // noFakeCSV
             $this->arguments['bazar-export-option-keys-instead-of-values']
-        ) ;
+        );
 
         return $this->render('@bazar/bazar-export.twig', [
             'id' => $this->arguments['id'],
@@ -55,8 +55,8 @@ class BazarExportAction extends YesWikiAction
             'params' => $this->arguments['params'],
             'selectedForm' => $this->formManager->getOne($this->arguments['id']),
             'csv' => $this->CSVManager->arrayToCSVToDisplay($csv_raw),
-            'nbEntries' => !empty($csv_raw) ? count($csv_raw) - 1 : 0 ,
-            'optionKeysInsteadOfValuesChecked' => $this->arguments['bazar-export-option-keys-instead-of-values']
+            'nbEntries' => !empty($csv_raw) ? count($csv_raw) - 1 : 0,
+            'optionKeysInsteadOfValuesChecked' => $this->arguments['bazar-export-option-keys-instead-of-values'],
         ]);
     }
 }

@@ -25,6 +25,25 @@ YesWiki can be installed in about ten minutes on a server which supports **PHP >
 
 We are using [weblate](https://hosted.weblate.org/yeswiki) to translate our software!
 
+## Developers
+
+We recommend an installation through docker.
+
+### Linters & Formatters
+
+Please install relevant extension and enable auto formatting on your editor.
+
+Alternatively you can run `make lint`
+
+| Language                    | Linter/Formatter                                             |
+| --------------------------- | ------------------------------------------------------------ |
+| Php                         | `php-cs-fixer`                                               |
+| Javascript                  | `eslint`                                                     |
+| Twig                        | no automatic linter. Couldn't find one which is good enough. |
+| CSS, Yaml, JSON, Markdown.. | `prettier`                                                   |
+
+If you use VS Codium, get YesWiki linting settings with `cp .vscode/settings.example.json .vscode/settings.json`
+
 ## History
 
 YesWiki grew out of a French language version of [WakkaWiki](https://en.wikipedia.org/wiki/WakkaWiki) called [Wikini](http://wikini.net), and hence has strong French language support.
@@ -41,8 +60,8 @@ YesWiki grew out of a French language version of [WakkaWiki](https://en.wikipedi
 - 2002, 2003, 2004 David DELON
 - 2002, 2003, 2004 Charles NEPOTE
 - 2002, 2003, 2004 Patrick PAUL
-- 2003  Eric DELORD
-- 2003, 2004  Eric FELDSTEIN
+- 2003 Eric DELORD
+- 2003, 2004 Eric FELDSTEIN
 - 2003 Jean-Pascal MILCENT
 - 2003 Jéréme DESQUILBET
 - 2003 Erus UMBRAE

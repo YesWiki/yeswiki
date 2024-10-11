@@ -27,11 +27,11 @@ class MigrateCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $output->writeln("Starting migrations");
+        $output->writeln('Starting migrations');
 
         $messages = $this->wiki->services->get(MigrationService::class)->run();
         if (count($messages) == 0) {
-            $output->writeln("No migrations to run");
+            $output->writeln('No migrations to run');
         }
 
         foreach ($messages as $message) {

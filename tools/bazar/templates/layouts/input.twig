@@ -4,7 +4,7 @@
         {%- block label -%}            
             {% if field.required %}<span class="symbole_obligatoire"></span>{% endif %}
             {% if field.hint %}
-                <img loading="lazy" class="tooltip_aide" title="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />
+                <img loading="lazy" class="tooltip_aide" title="{{ field.hint|raw('html') }}" alt="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" />
             {% endif %}
             {{ field.label|raw }}         
         {%- endblock -%}

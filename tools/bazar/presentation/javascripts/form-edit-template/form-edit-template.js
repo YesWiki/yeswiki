@@ -207,10 +207,7 @@ function initializeFormbuilder() {
 
     // Slugiy field names
     $('.fld-name').each(function() {
-      const newValue = $(this)
-        .val()
-        .replace(/[^a-z^A-Z^_^0-9^{^}]/g, '_')
-        .toLowerCase()
+      const newValue = $(this).val().replace(/[^a-z^A-Z^_^0-9^{^}]/g, '_')
       $(this).val(newValue)
     })
 
@@ -238,9 +235,7 @@ function initializeFormbuilder() {
         const fieldType = $(this).closest('.form-field').attr('type')
 
         // Make the default names easier to read
-        if (['radio_group', 'checkbox_group', 'select'].includes(fieldType)) {
-          name = ''
-        } else if (!name.includes('bf_')) {
+        if (!name.includes('bf_')) {
           name = defaultFieldsName[fieldType] || `bf_${fieldType}`
           if (existingFieldsNames.includes(name)) {
             // If name already exist, we add a number (bf_address, bf_address1, bf_address2...)

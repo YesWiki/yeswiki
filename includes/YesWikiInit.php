@@ -1,6 +1,6 @@
 <?php
 /**
- * Yeswiki initialization class file
+ * Yeswiki initialization class file.
  */
 
 namespace YesWiki;
@@ -29,13 +29,13 @@ class AnnotatedRouteControllerLoader extends AnnotationClassLoader
 }
 
 /**
- * Yeswiki initialization class
+ * Yeswiki initialization class.
  */
 class Init
 {
     public $page = '';
     public $method = '';
-    public $config = array();
+    public $config = [];
     public $configFile = 'wakka.config.php';
 
     /**
@@ -45,7 +45,7 @@ class Init
      *
      * @return void
      */
-    public function __construct($config = array())
+    public function __construct($config = [])
     {
         $this->getRoute();
         $this->config = $this->getConfig($config);
@@ -69,7 +69,7 @@ class Init
         if (!empty($_SERVER['HTTPS'])) {
             $protocol = 'https://';
         }
-        $scriptlocation = str_replace(array('/index.php', '/wakka.php'), '', $_SERVER["SCRIPT_NAME"]);
+        $scriptlocation = str_replace(['/index.php', '/wakka.php'], '', $_SERVER['SCRIPT_NAME']);
         $uri = str_replace($scriptlocation, '', $_SERVER['REQUEST_URI']);
         $uri = preg_replace('~^/\??~', '', $uri);
         $uri = explode('&', $uri);
@@ -99,7 +99,7 @@ class Init
                         $this->method = $args[1];
                     }
                 }
-            } elseif (preg_match('`^api/('.WN_CHAR2.'+(?:' . WN_CHAR2 . '|/| )*)$`u', $wiki, $matches)) {
+            } elseif (preg_match('`^api/(' . WN_CHAR2 . '+(?:' . WN_CHAR2 . '|/| )*)$`u', $wiki, $matches)) {
                 // for api split into api/end of route, checking wiki name & method name (XSS proof)
                 $this->page = 'api';
                 list(, $this->method) = $matches;
@@ -138,12 +138,12 @@ class Init
                 }
             }
 
-            $_GET['wiki'] = $this->page.($this->method ? '/'.$this->method : '');
+            $_GET['wiki'] = $this->page . ($this->method ? '/' . $this->method : '');
         }
     }
 
     /**
-     * set headers for iframes
+     * set headers for iframes.
      */
     private function setIframeHeaders()
     {
@@ -157,17 +157,14 @@ class Init
             header("Content-Security-Policy: frame-ancestors 'self' *;");
         } else {
             // for old browsers
-            header("X-frame-Options: deny");
+            header('X-frame-Options: deny');
             // disallow (CSP takes advantage on x-frame-options)
             header("Content-Security-Policy: frame-ancestors 'none';");
         }
     }
 
     /**
-     * Utility function to merge the multidimentionnal config array the right way
-     *
-     * @param array $array1
-     * @param array $array2
+     * Utility function to merge the multidimentionnal config array the right way.
      *
      * @return array merged array
      */
@@ -176,10 +173,10 @@ class Init
         $merged = $array1;
 
         foreach ($array2 as $key => &$value) {
-            if (is_array($value) && isset($merged [$key]) && is_array($merged [$key])) {
-                $merged [$key] = $this->array_merge_recursive_distinct($merged [$key], $value);
+            if (is_array($value) && isset($merged[$key]) && is_array($merged[$key])) {
+                $merged[$key] = $this->array_merge_recursive_distinct($merged[$key], $value);
             } else {
-                $merged [$key] = $value;
+                $merged[$key] = $value;
             }
         }
 
@@ -187,16 +184,16 @@ class Init
     }
 
     /**
-     * Check in the config file exists and provide default configuration
+     * Check in the config file exists and provide default configuration.
      *
      * @param array $wakkaConfig initial config array (empty by default)
      *
      * @return array the configuration
      */
-    public function getConfig($wakkaConfig = array())
+    public function getConfig($wakkaConfig = [])
     {
         $_rewrite_mode = detectRewriteMode();
-        $yeswikiDefaultConfig = array(
+        $yeswikiDefaultConfig = [
             'wakka_version' => '',
             'wikini_version' => '',
             'yeswiki_version' => '',
@@ -225,7 +222,7 @@ class Init
             'preview_before_save' => false,
             'allow_raw_html' => true,
             'disable_wiki_links' => false,
-            'allowed_methods_in_iframe' => ['iframe','editiframe','bazariframe','render'],
+            'allowed_methods_in_iframe' => ['iframe', 'editiframe', 'bazariframe', 'render'],
             'revisionscount' => 30,
             'timezone' => 'Europe/Paris', // Only used if not set in wakka.config.php nor in php.ini
             'root_page' => 'PagePrincipale', // backup root_page if deleted from wakka.config.php
@@ -240,7 +237,7 @@ class Init
                 ArchiveService::KEY_FOR_PRIVATE_FOLDER => ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP,
                 'max_nb_files' => 10,
             ],
-        );
+        ];
         unset($_rewrite_mode);
 
         if (file_exists($this->configFile)) {
@@ -270,7 +267,7 @@ class Init
 
             // is authentification given?
             if (isset($_SERVER['PHP_AUTH_USER'])) {
-                if (! (($_SERVER['PHP_AUTH_USER'] == "admin") && ($_SERVER["PHP_AUTH_PW"] == $lockpw))) {
+                if (!(($_SERVER['PHP_AUTH_USER'] == 'admin') && ($_SERVER['PHP_AUTH_PW'] == $lockpw))) {
                     $ask = 1;
                 }
             } else {
@@ -294,12 +291,12 @@ class Init
             error_reporting(E_ALL);
         }
 
-        if ($wakkaConfig['wakka_version'] && (! $wakkaConfig['wikini_version'])) {
+        if ($wakkaConfig['wakka_version'] && (!$wakkaConfig['wikini_version'])) {
             $wakkaConfig['wikini_version'] = $wakkaConfig['wakka_version'];
         }
 
         if (!empty($wakkaConfig['extra_headers'])) {
-            foreach($wakkaConfig['extra_headers'] as $header) {
+            foreach ($wakkaConfig['extra_headers'] as $header) {
                 header($header);
             }
         }
@@ -309,7 +306,7 @@ class Init
 
     /**
      * Initialize YesWiki core services
-     * Extensions services will be loaded in the YesWiki::loadExtensions method
+     * Extensions services will be loaded in the YesWiki::loadExtensions method.
      */
     public function initCoreServices($wiki)
     {
@@ -337,7 +334,7 @@ class Init
         $routes = new RouteCollection();
 
         $loader = new AnnotationDirectoryLoader(
-            new FileLocator(__DIR__.'/../'),
+            new FileLocator(__DIR__ . '/../'),
             new AnnotatedRouteControllerLoader(
                 new AnnotationReader()
             )
@@ -347,7 +344,7 @@ class Init
         $routes->addCollection($loader->load('includes/controllers'));
 
         foreach ($wiki->extensions as $extensionKey => $extensionPath) {
-            $controllersDir = \getcwd(). '/' . $extensionPath . 'controllers';
+            $controllersDir = \getcwd() . '/' . $extensionPath . 'controllers';
             if (is_dir($controllersDir)) {
                 $routes->addCollection($loader->load($controllersDir));
             }
@@ -357,7 +354,7 @@ class Init
     }
 
     /**
-     * Initialize the cookie
+     * Initialize the cookie.
      *
      * @return string $CookiePath path to the cookie
      */
@@ -372,7 +369,7 @@ class Init
         $CookiePath = str_replace('\\', '/', $CookiePath);
 
         // retire wakka.php dans path
-        foreach (["wakka.php","index.php"] as $anchor) {
+        foreach (['wakka.php', 'index.php'] as $anchor) {
             if (substr($CookiePath, -strlen($anchor)) == $anchor) {
                 $CookiePath = substr($CookiePath, 0, strlen($CookiePath) - strlen($anchor));
             }
@@ -383,9 +380,9 @@ class Init
             $CookiePath .= '/';
         }
 
-        $sessionName = "YesWiki-main";
+        $sessionName = 'YesWiki-main';
         if ($CookiePath !== '/') {
-            $sessionName = "YesWiki-" . str_replace('/', '-', substr($CookiePath, 1, -1));
+            $sessionName = 'YesWiki-' . str_replace('/', '-', substr($CookiePath, 1, -1));
         }
 
         // test if session exists, because the wiki object is instanciated for every plugin
@@ -403,15 +400,15 @@ class Init
     }
 
     /**
-     * Start the install process
+     * Start the install process.
      *
      * @return void
      */
     public function doInstall()
     {
         // start installer
-        if (! isset($_REQUEST['installAction']) or ! $installAction = trim($_REQUEST['installAction'])) {
-            $installAction = "default";
+        if (!isset($_REQUEST['installAction']) or !$installAction = trim($_REQUEST['installAction'])) {
+            $installAction = 'default';
         }
         // default lang
         loadpreferredI18n('');
@@ -422,7 +419,7 @@ class Init
         if (file_exists('setup/' . $installAction . '.php')) {
             include_once 'setup/' . $installAction . '.php';
         } else {
-            echo '<em>', _t("INVALID_ACTION"), '</em>';
+            echo '<em>', _t('INVALID_ACTION'), '</em>';
         }
         include_once 'setup/footer.php';
     }

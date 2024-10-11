@@ -2,18 +2,16 @@
 
 namespace YesWiki\Core\Service;
 
+use enshrined\svgSanitize\Sanitizer;
 use HTMLPurifier;
 use HTMLPurifier_Config;
-use enshrined\svgSanitize\Sanitizer;
-use voku\helper\AntiXSS;
-use YesWiki\Core\Service\LinkTracker;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Security\Controller\SecurityController;
+use voku\helper\AntiXSS;
 use YesWiki\Wiki;
 
 class HtmlPurifierService
 {
-    public const HTMLPURIFIER_CACHE_FOLDER = "cache/HTMLpurifier";
+    public const HTMLPURIFIER_CACHE_FOLDER = 'cache/HTMLpurifier';
 
     protected $params;
     protected $sanitizer;
@@ -33,7 +31,7 @@ class HtmlPurifierService
     /**
      * load a HTMLpurifier if needed
      * configure it
-     *  then use it to clean HTML
+     *  then use it to clean HTML.
      */
     public function cleanHTML(string $dirty_html): string
     {
@@ -65,7 +63,7 @@ class HtmlPurifierService
 
     /**
      * load a anti XSS if necessary
-     * search for XSS scripts and clean content
+     * search for XSS scripts and clean content.
      */
     public function cleanXSS(string $dirtyContent): string
     {
@@ -75,11 +73,13 @@ class HtmlPurifierService
         if (is_null($this->antixss)) {
             $this->antiXss = new AntiXSS();
         }
+
         return $this->antiXss->xss_clean($dirtyContent);
     }
 
     /**
      * @param string $content of svg
+     *
      * @return string $content
      */
     public function sanitizeSVG(string $content)
@@ -96,6 +96,7 @@ class HtmlPurifierService
 
     /**
      * @param string $content of svg
+     *
      * @return mixed false if problem or int of filesize
      */
     public function cleanFile(string $filename, string $extension)

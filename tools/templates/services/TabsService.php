@@ -3,7 +3,6 @@
 namespace YesWiki\Templates\Service;
 
 use URLify;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\TabsField;
 
 class TabsService
@@ -35,7 +34,7 @@ class TabsService
         $this->data = [
             'form' => self::DEFAULT_DATA,
             'view' => self::DEFAULT_DATA,
-            'action' => self::DEFAULT_DATA
+            'action' => self::DEFAULT_DATA,
         ];
         $this->states = [];
     }
@@ -46,7 +45,7 @@ class TabsService
             $field->getFormTitles(),
             'form',
             $field->getBtnClass(),
-            # TODO : make a new option for the Tabsfield to change those values
+            // TODO : make a new option for the Tabsfield to change those values
             self::DEFAULT_DATA['bottom_nav'],
             self::DEFAULT_DATA['counter_on_bottom_nav'],
             self::DEFAULT_DATA['selectedtab']
@@ -59,7 +58,7 @@ class TabsService
             $field->getViewTitles(),
             'view',
             $field->getBtnClass(),
-            # TODO : make a new option for the Tabsfield to change those values
+            // TODO : make a new option for the Tabsfield to change those values
             self::DEFAULT_DATA['bottom_nav'],
             self::DEFAULT_DATA['counter_on_bottom_nav'],
             self::DEFAULT_DATA['selectedtab']
@@ -94,9 +93,10 @@ class TabsService
             $title = $titles[$id];
             $slug = URLify::slug($title);
             if (in_array($slug, $this->usedSlugs)) {
-                return "{$slug}_{$this->data[$mode]['prefixCounter']}_".($id + 1);
+                return "{$slug}_{$this->data[$mode]['prefixCounter']}_" . ($id + 1);
             } else {
                 $this->usedSlugs[] = $slug;
+
                 return $slug;
             }
         }, array_keys($titles));
@@ -145,6 +145,7 @@ class TabsService
     {
         $newPrefix = $this->nextPrefix;
         $this->nextPrefix = $this->nextPrefix + 1;
+
         return $newPrefix;
     }
 
@@ -159,14 +160,14 @@ class TabsService
                 // end not already reached
                 if ($data['counter'] < count($data['titles'])) {
                     // do not increase counter if TabChange specified is last
-                    $this->data[$mode]['counter'] = $data['counter'] + 1 ;
+                    $this->data[$mode]['counter'] = $data['counter'] + 1;
                 } else {
-                    $this->data[$mode]['counter'] = false ; // to indicate end is reached
+                    $this->data[$mode]['counter'] = false; // to indicate end is reached
                     $data['isLast'] = true;
                 }
             }
         } else {
-            $data['titles'] = [] ; // to be sure titles are not used
+            $data['titles'] = []; // to be sure titles are not used
         }
 
         return $data;
@@ -185,7 +186,8 @@ class TabsService
 
     /**
      * save current state and return associated index
-     * useful for LinkedEntryField to prevent interference with other rendering
+     * useful for LinkedEntryField to prevent interference with other rendering.
+     *
      * @return int index
      */
     public function saveState(): int
@@ -194,16 +196,15 @@ class TabsService
             'data' => $this->data,
             'stack' => $this->stack,
             'usedSlugs' => $this->usedSlugs,
-            'nextPrefix' => $this->nextPrefix
+            'nextPrefix' => $this->nextPrefix,
         ];
+
         return count($this->states) - 1;
     }
 
     /**
      * reset current state from associated index and return success
-     * useful for LinkedEntryField to prevent interference with other rendering
-     * @param int $index
-     * @return bool
+     * useful for LinkedEntryField to prevent interference with other rendering.
      */
     public function resetState(int $index): bool
     {
@@ -212,6 +213,7 @@ class TabsService
             $this->stack = $this->states[$index]['stack'];
             $this->usedSlugs = $this->states[$index]['usedSlugs'];
             $this->nextPrefix = $this->states[$index]['nextPrefix'];
+
             return true;
         } else {
             return false;

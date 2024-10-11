@@ -18,7 +18,7 @@ class HiddenField extends BazarField
 
     protected function renderStatic($entry)
     {
-        return "";
+        return '';
     }
 
     // Format input values before save
@@ -34,6 +34,6 @@ class HiddenField extends BazarField
         return [
             'type' => $this->getType(),
             'default' => $this->getDefault(),
-            ];
+        ];
     }
 }

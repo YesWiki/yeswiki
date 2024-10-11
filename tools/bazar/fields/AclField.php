@@ -4,7 +4,6 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Core\Service\AclService;
 
 /**
@@ -37,7 +36,7 @@ class AclField extends BazarField
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
-        $this->askIfActivateComments = in_array($this->filterNotEmptyString($values, self::FIELD_ASK_IF_ACTIVATE_COMMENTS, 'no'), [1,true,'1','true','yes'], true);
+        $this->askIfActivateComments = in_array($this->filterNotEmptyString($values, self::FIELD_ASK_IF_ACTIVATE_COMMENTS, 'no'), [1, true, '1', 'true', 'yes'], true);
 
         $this->name = $this->filterNotEmptyString($values, self::FIELD_NAME, $this->askIfActivateComments ? 'bf_commentaires' : null);
         $this->propertyName = $this->name;
@@ -72,20 +71,20 @@ class AclField extends BazarField
     protected function renderInput($entry)
     {
         $commentsAlreadyClosed = false;
-        $isYesWikiType = in_array($this->getCommentsType(), ['','yeswiki']);
+        $isYesWikiType = in_array($this->getCommentsType(), ['', 'yeswiki']);
         if ($isYesWikiType && !empty($entry['id_fiche'])) {
             $currentCommentAcl = $this->aclService->load($entry['id_fiche'], 'comment', false);
             $commentsAlreadyClosed = (!empty($currentCommentAcl['list']) && $currentCommentAcl['list'] == 'comments-closed');
         }
+
         return ($this->askIfActivateComments)
             ? $this->render('@bazar/inputs/comments.twig', [
                 'value' => $commentsAlreadyClosed ? self::OPTION_NO : $this->getValue($entry),
                 'options' => $this->getOptions(),
-                'showAlertForCommentsNotActivated' =>
-                    $isYesWikiType &&
-                    $this->params->get('comments_activated') !== true
+                'showAlertForCommentsNotActivated' => $isYesWikiType &&
+                    $this->params->get('comments_activated') !== true,
             ])
-            : '' ;
+            : '';
     }
 
     public function formatValuesBeforeSave($entry)
@@ -114,16 +113,18 @@ class AclField extends BazarField
                     $this->closeComments($entry);
                     break;
             }
+
             return parent::formatValuesBeforeSave($entry);
         } else {
             if (empty($this->aclService->load($entry['id_fiche'], 'comment', false)['list'])) {
                 $this->aclService->save($entry['id_fiche'], 'comment', $this->replaceWithCreator($this->entryCommentRight, $entry));
             }
+
             return (!empty($this->propertyName))
             ? [
                 'fields-to-remove' => [
-                    $this->propertyName
-                ]
+                    $this->propertyName,
+                ],
             ]
             : [];
         }
@@ -131,12 +132,13 @@ class AclField extends BazarField
 
     protected function renderStatic($entry)
     {
-        return "";
+        return '';
     }
 
     protected function getValue($entry)
     {
         $value = parent::getValue($entry);
+
         return in_array($value, array_keys(self::OPTIONS), true) ? $value : '';
     }
 
@@ -146,6 +148,7 @@ class AclField extends BazarField
         if ($right === 'user' or $right === '#') {
             return $entry['nomwiki'];
         }
+
         return $right;
     }
 
@@ -167,6 +170,7 @@ class AclField extends BazarField
             // force usage of predefined values with translation
             $this->options = array_map('_t', self::OPTIONS);
         }
+
         return $this->options;
     }
 
@@ -201,17 +205,17 @@ class AclField extends BazarField
     public function jsonSerialize()
     {
         return [
-                'type' => $this->getType(),
-                'entryReadRight' => $this->entryReadRight,
-                'entryWriteRight' => $this->entryWriteRight,
-                'entryCommentRight' => $this->entryCommentRight,
-                'name' => $this->getName(),
-                'id' => $this->getPropertyName(),
-                'propertyName' => $this->getPropertyName(),
-                'label' => $this->getLabel(),
-                'hint' => $this->getHint(),
-                'default' => $this->getDefault(),
-                'askIfActivateComments' => $this->getAskIfActivateComments(),
-            ];
+            'type' => $this->getType(),
+            'entryReadRight' => $this->entryReadRight,
+            'entryWriteRight' => $this->entryWriteRight,
+            'entryCommentRight' => $this->entryCommentRight,
+            'name' => $this->getName(),
+            'id' => $this->getPropertyName(),
+            'propertyName' => $this->getPropertyName(),
+            'label' => $this->getLabel(),
+            'hint' => $this->getHint(),
+            'default' => $this->getDefault(),
+            'askIfActivateComments' => $this->getAskIfActivateComments(),
+        ];
     }
 }

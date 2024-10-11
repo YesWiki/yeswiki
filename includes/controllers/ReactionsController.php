@@ -2,8 +2,6 @@
 
 namespace YesWiki\Core\Controller;
 
-use Throwable;
-use URLify;
 use YesWiki\Core\Service\ReactionManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Wiki;
@@ -21,10 +19,8 @@ class ReactionsController extends YesWikiController
     }
 
     /**
-     * format Reactions Labels
-     * @param string $labelsComaSeparated
-     * @param null|array $ids
-     * @param array $defaultLabels
+     * format Reactions Labels.
+     *
      * @return array ['labels'=>string[],'ids'=>string[]]]
      */
     public function formatReactionsLabels(string $labelsComaSeparated, ?array $ids = null, array $defaultLabels = []): array
@@ -48,14 +44,13 @@ class ReactionsController extends YesWikiController
                     );
             }
         }
-        return compact(['labels','ids']);
+
+        return compact(['labels', 'ids']);
     }
 
     /**
-     * format Reactions Labels
-     * @param array $ids
-     * @param string $imagesComaSeparated
-     * @param array $defaultImages
+     * format Reactions Labels.
+     *
      * @return string[]
      */
     public function formatImages(array $ids, string $imagesComaSeparated, array $defaultImages = []): array
@@ -109,29 +104,25 @@ class ReactionsController extends YesWikiController
                     )
                 );
         }
+
         return $images;
     }
 
     /**
-     * @param string $pageTag
-     * @param string $userName
-     * @param string $reactionId
-     * @param array $ids
-     * @param array $labels
-     * @param array $images
      * @param bool $isDefaultReactionFied = false
+     *
      * @return array [
-     *  'reactions' => [
-     *      (string $id) => [
-     *          'id'=>string,
-     *          'label'=>string,
-     *          'image'=>string,
-     *          'nbReactions'=>integer
-     *      ]
-     *  ],
-     *  'userReactions' = >string[] $ids
-     *  'oldIdsUserReactions' = >string[] $ids
-     * ]
+     *               'reactions' => [
+     *               (string $id) => [
+     *               'id'=>string,
+     *               'label'=>string,
+     *               'image'=>string,
+     *               'nbReactions'=>integer
+     *               ]
+     *               ],
+     *               'userReactions' = >string[] $ids
+     *               'oldIdsUserReactions' = >string[] $ids
+     *               ]
      */
     public function getReactionItems(string $pageTag, string $userName, string $reactionId, array $ids, array $labels, array $images, bool $isDefaultReactionFied = false): array
     {
@@ -147,7 +138,7 @@ class ReactionsController extends YesWikiController
                 'id' => $id,
                 'label' => $labels[$k] ?? '',
                 'image' => $images[$k] ?? '',
-                'nbReactions' => 0
+                'nbReactions' => 0,
             ];
         }
         $allReactions = $this->reactionManager->getReactions($pageTag, [$reactionId]);
@@ -166,6 +157,7 @@ class ReactionsController extends YesWikiController
                 }
             }
         }
-        return compact(['reactions','userReactions','oldIdsUserReactions']);
+
+        return compact(['reactions', 'userReactions', 'oldIdsUserReactions']);
     }
 }

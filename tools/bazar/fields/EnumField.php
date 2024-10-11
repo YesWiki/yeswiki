@@ -13,12 +13,14 @@ abstract class EnumField extends BazarField
 {
     protected $options;
     protected $optionsUrls; // only for loadOptionsFromJson
+    protected $optionsTree = null; // only for list with multi levels
 
-    protected $listLabel; // Allows to differentiate two enums using the same list
+    protected $linkedObjectName;
     protected $keywords;
     protected $queries;
 
-    protected const FIELD_LIST_LABEL = 6;
+    protected const FIELD_LINKED_OBJECT = 1;
+    public const FIELD_NAME = 6;
     protected const FIELD_KEYWORDS = 13;
     protected const FIELD_QUERIES = 15;
 
@@ -26,22 +28,38 @@ abstract class EnumField extends BazarField
     {
         parent::__construct($values, $services);
 
-        $this->listLabel = $values[self::FIELD_LIST_LABEL];
+        $this->name = $values[self::FIELD_NAME];
+        $this->linkedObjectName = $values[self::FIELD_LINKED_OBJECT];
         $this->keywords = $values[self::FIELD_KEYWORDS];
         $this->queries = $values[self::FIELD_QUERIES];
 
         $this->options = [];
         $this->optionsUrls = [];
 
-        $this->propertyName = $this->type . $this->name . $this->listLabel;
+        $this->propertyName = $this->name;
     }
 
     public function loadOptionsFromList()
     {
         if (!empty($this->getLinkedObjectName())) {
-            $listValues = $this->getService(ListManager::class)->getOne($this->getLinkedObjectName());
-            if (is_array($listValues)) {
-                $this->options = $listValues['label'];
+            $list = $this->getService(ListManager::class)->getOne($this->getLinkedObjectName());
+            $this->options = [];
+            foreach ($list['nodes'] ?? [] as $node) {
+                $this->loadOptionsFromListNode($node);
+                if (isset($node['children']) && count($node['children']) > 0) {
+                    $this->optionsTree = $list['nodes'];
+                }
+            }
+        }
+    }
+
+    // Recursively load options from list, in case the list is a tree (with children)
+    private function loadOptionsFromListNode($node, $parentLabel = '')
+    {
+        $this->options[$node['id']] = $parentLabel . $node['label'];
+        if (!empty($node['children'])) {
+            foreach ($node['children'] as $childNode) {
+                $this->loadOptionsFromListNode($childNode, "$parentLabel {$node['label']} ➤ ");
             }
         }
     }
@@ -51,7 +69,7 @@ abstract class EnumField extends BazarField
         $params = $this->getService(ParameterBagInterface::class);
         $refreshCacheDuration = ($params->has('baz_external_service_time_cache_to_check_changes'))
             ? $params->get('baz_external_service_time_cache_to_check_changes')
-            : 7200 ; // 2 hours by default
+            : 7200; // 2 hours by default
         $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent(
             $this->sanitizeUrlForEntries($this->getLinkedObjectName()),
             $refreshCacheDuration,
@@ -72,7 +90,7 @@ abstract class EnumField extends BazarField
             }
         }
         asort($options);
-        $this->options = $options ;
+        $this->options = $options;
     }
 
     protected function loadOptionsFromJSONForm($JSONAddress): array
@@ -85,12 +103,14 @@ abstract class EnumField extends BazarField
                 // be carefull it is an array here
                 if (isset($field['propertyname']) && ($field['propertyname'] == $this->getPropertyName())) {
                     $this->options = $field['options'] ?? [];
-                    return $this->options ;
+
+                    return $this->options;
                 }
             }
         }
         $this->options = [];
-        return $this->options ;
+
+        return $this->options;
     }
 
     public function loadOptionsFromEntries()
@@ -99,7 +119,7 @@ abstract class EnumField extends BazarField
 
         $tabquery = [];
         if (!empty($this->queries)) {
-            $tableau = array();
+            $tableau = [];
             $tab = explode('|', $this->queries);
             //découpe la requete autour des |
             foreach ($tab as $req) {
@@ -115,7 +135,7 @@ abstract class EnumField extends BazarField
             [
                 'queries' => $tabquery,
                 'formsIds' => $this->getLinkedObjectName(),
-                'keywords' => (!empty($this->keywords)) ? $this->keywords : ''
+                'keywords' => (!empty($this->keywords)) ? $this->keywords : '',
             ],
             true, // filter on read ACL
             true  // use Guard
@@ -131,28 +151,34 @@ abstract class EnumField extends BazarField
     }
 
     /**
-     * prepareJSON for RadioEntriField or SelectEntryField
+     * prepareJSON for RadioEntriField or SelectEntryField.
      */
     protected function prepareJSONEntryField()
     {
-        $this->propertyName = $this->type . removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $this->name))) . $this->listLabel;
         $this->loadOptionsFromJson();
-        if (preg_match('/^(.*\/\??)'// catch baseUrl
-                .'(?:' // followed by
-                .'\w*\/json&(?:.*)demand=entries(?:&.*)?' // json handler with demand = entries
-                .'|api\/forms\/[0-9]*\/entries' // or api forms/{id}/entries
-                .'|api\/entries\/[0-9]*' // or api entries/{id}
-                .')/', $this->name, $matches)) {
+        if (
+            preg_match('/^(.*\/\??)' // catch baseUrl
+                . '(?:' // followed by
+                . '\w*\/json&(?:.*)demand=entries(?:&.*)?' // json handler with demand = entries
+                . '|api\/forms\/[0-9]*\/entries' // or api forms/{id}/entries
+                . '|api\/entries\/[0-9]*' // or api entries/{id}
+                . ')/', $this->name, $matches)
+        ) {
             $this->baseUrl = $matches[1];
         } else {
-            $this->baseUrl = $this->name ;
+            $this->baseUrl = $this->name;
         }
-        $this->options = null ;
+        $this->options = null;
     }
 
     public function getOptions()
     {
-        return  $this->options;
+        return $this->options;
+    }
+
+    public function getOptionsTree()
+    {
+        return $this->optionsTree;
     }
 
     protected function getEntriesOptions()
@@ -165,22 +191,17 @@ abstract class EnumField extends BazarField
                 $this->loadOptionsFromEntries();
             }
         }
-        return  $this->options;
-    }
 
-    public function getName()
-    {
-        return $this->listLabel;
+        return $this->options;
     }
 
     public function getLinkedObjectName()
     {
-        return $this->name;
+        return $this->linkedObjectName;
     }
 
     /**
-     * check if the current class is EnumEntry
-     * @return bool
+     * check if the current class is EnumEntry.
      */
     public function isEnumEntryField(): bool
     {
@@ -201,10 +222,9 @@ abstract class EnumField extends BazarField
         );
     }
 
-
     /**
-     * check existence of &fields=bf_titre,id_fiche,url in url when api
-     * @param string $url
+     * check existence of &fields=bf_titre,id_fiche,url in url when api.
+     *
      * @return string $url
      */
     private function sanitizeUrlForEntries(string $url): string
@@ -213,12 +233,12 @@ abstract class EnumField extends BazarField
         $query = parse_url($url, PHP_URL_QUERY);
         if (!empty($query)) {
             $queries = explode('&', $query);
-            if (substr($queries[0], 0, 3) === "api") {
+            if (substr($queries[0], 0, 3) === 'api') {
                 foreach ($queries as $key => $elem) {
                     $extraction = explode('=', $elem, 2);
                     if ($extraction[0] === 'fields') {
                         $fields = explode(',', $extraction[1]);
-                        $fields = $fields + ['id_fiche','bf_titre','url'];
+                        $fields = $fields + ['id_fiche', 'bf_titre', 'url'];
                         $queries[$key] = 'fields=' . implode(',', $fields);
                     }
                 }
@@ -229,6 +249,7 @@ abstract class EnumField extends BazarField
                 $url = str_replace($query, $newQuery, $url);
             }
         }
+
         return $url;
     }
 }

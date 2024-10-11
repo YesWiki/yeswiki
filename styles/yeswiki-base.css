@@ -2,15 +2,15 @@
 
 /* Default color, in case someone use these variable outside of margot template */
 :root {
-  --primary-color: #0C5D6A;
+  --primary-color: #0c5d6a;
   --secondary-color-1: #d8604c;
   --secondary-color-2: #d78958;
   --neutral-color: #4e5056;
-  --neutral-soft-color: #57575C;
+  --neutral-soft-color: #57575c;
   --neutral-light-color: #f2f2f2;
   --main-text-fontsize: 17px;
-  --main-text-fontfamily: "Nunito", sans-serif;
-  --main-title-fontfamily: "Nunito", sans-serif;
+  --main-text-fontfamily: 'Nunito', sans-serif;
+  --main-title-fontfamily: 'Nunito', sans-serif;
   --success-color: #3cab3b;
   --danger-color: #d8604c;
   --warning-color: #d78958;
@@ -62,8 +62,8 @@ ul.fake-ul {
 
 /* Adds edit icon after link tag */
 a[data-missing-tag]::after {
-  content: "\f303";
-  font-family: "Font Awesome 5 Free";
+  content: '\f303';
+  font-family: 'Font Awesome 5 Free';
   font-weight: 900;
   margin-left: 0.4em;
   font-size: 0.8em;
@@ -193,13 +193,9 @@ span.missingpage,
   width: 100px;
   height: 75px;
   border-radius: 4px;
-  border-radius: 4px;
-  border-radius: 4px;
 }
 
 #bgCarousel .choosen {
-  box-shadow: 0 0 2px 3px #ffff21;
-  box-shadow: 0 0 2px 3px #ffff21;
   box-shadow: 0 0 2px 3px #ffff21;
 }
 
@@ -211,7 +207,7 @@ span.missingpage,
 
 /* lanceur d'accordéon */
 .accordion-trigger,
-.panel-heading[data-toggle="collapse"] {
+.panel-heading[data-toggle='collapse'] {
   cursor: pointer;
 }
 
@@ -424,20 +420,17 @@ body > :not(#YesWikiModal) .current-revision-text {
 }
 
 .cols2 {
-  column-count: 2; /* Chrome, Safari, Opera */
-  column-count: 2; /* Firefox */
+  /* Chrome, Safari, Opera */ /* Firefox */
   column-count: 2;
 }
 
 .cols3 {
-  column-count: 3; /* Chrome, Safari, Opera */
-  column-count: 3; /* Firefox */
+  /* Chrome, Safari, Opera */ /* Firefox */
   column-count: 3;
 }
 
 .cols4 {
-  column-count: 4; /* Chrome, Safari, Opera */
-  column-count: 4; /* Firefox */
+  /* Chrome, Safari, Opera */ /* Firefox */
   column-count: 4;
 }
 
@@ -484,12 +477,12 @@ body {
 }
 
 .control-label::after {
-  content: ":";
+  content: ':';
   margin: 0 0.25em;
 }
 
 .symbole_obligatoire::after {
-  content: "*";
+  content: '*';
   margin-right: 0.25em;
 }
 
@@ -526,36 +519,33 @@ body {
 .switch * {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-  user-select: none;
-  user-select: none;
-  user-select: none;
 }
 
 .switch label {
   cursor: pointer;
 }
 
-.switch label input[type="checkbox"] {
+.switch label input[type='checkbox'] {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-.switch label input[type="checkbox"]:checked + .lever {
+.switch label input[type='checkbox']:checked + .lever {
   background-color: #84c7c1;
 }
 
-.switch label input[type="checkbox"]:checked + .lever::before,
-.switch label input[type="checkbox"]:checked + .lever::after {
+.switch label input[type='checkbox']:checked + .lever::before,
+.switch label input[type='checkbox']:checked + .lever::after {
   left: 18px;
 }
 
-.switch label input[type="checkbox"]:checked + .lever::after {
+.switch label input[type='checkbox']:checked + .lever::after {
   background-color: #26a69a;
 }
 
 .switch label .lever {
-  content: "";
+  content: '';
   display: inline-block;
   position: relative;
   width: 36px;
@@ -564,14 +554,13 @@ body {
   border-radius: 15px;
   margin-right: 10px;
   transition: background 0.3s ease;
-  transition: background 0.3s ease;
   vertical-align: middle;
   margin: 0 16px;
 }
 
 .switch label .lever::before,
 .switch label .lever::after {
-  content: "";
+  content: '';
   position: absolute;
   display: inline-block;
   width: 20px;
@@ -579,11 +568,6 @@ body {
   border-radius: 50%;
   left: 0;
   top: -3px;
-  transition:
-    left 0.3s ease,
-    background 0.3s ease,
-    -webkit-box-shadow 0.1s ease,
-    -webkit-transform 0.1s ease;
   transition:
     left 0.3s ease,
     background 0.3s ease,
@@ -613,13 +597,9 @@ body {
     0 3px 1px -2px rgb(0 0 0 / 20%),
     0 2px 2px 0 rgb(0 0 0 / 14%),
     0 1px 5px 0 rgb(0 0 0 / 12%);
-  box-shadow:
-    0 3px 1px -2px rgb(0 0 0 / 20%),
-    0 2px 2px 0 rgb(0 0 0 / 14%),
-    0 1px 5px 0 rgb(0 0 0 / 12%);
 }
 
-.form-control[type="checkbox"] {
+.form-control[type='checkbox'] {
   border: none;
   height: auto;
   display: inline-block;
@@ -632,13 +612,13 @@ body {
   width: 300px;
 }
 
-.switch input[type="checkbox"][disabled] + .lever {
+.switch input[type='checkbox'][disabled] + .lever {
   cursor: default;
   background-color: rgb(0 0 0 / 12%);
 }
 
-.switch label input[type="checkbox"][disabled] + .lever::after,
-.switch label input[type="checkbox"][disabled]:checked + .lever::after {
+.switch label input[type='checkbox'][disabled] + .lever::after,
+.switch label input[type='checkbox'][disabled]:checked + .lever::after {
   background-color: #949494;
 }
 
@@ -650,24 +630,12 @@ body {
   height: 0;
   background-color: rgb(0 0 0 / 70%);
   transition: all 0.3s ease-in-out;
-  transition: all 0.3s ease-in-out;
-  transition: all 0.3s ease-in-out;
-  transition: all 0.3s ease-in-out;
-  transition: all 0.3s ease-in-out;
-  transform: translate(0, -100%) scale(0, 0);
-  transform: translate(0, -100%) scale(0, 0);
-  transform: translate(0, -100%) scale(0, 0);
-  transform: translate(0, -100%) scale(0, 0);
   transform: translate(0, -100%) scale(0, 0);
   opacity: 0;
   overflow: hidden;
 }
 
 #search.open {
-  transform: translate(0, 0) scale(1, 1);
-  transform: translate(0, 0) scale(1, 1);
-  transform: translate(0, 0) scale(1, 1);
-  transform: translate(0, 0) scale(1, 1);
   transform: translate(0, 0) scale(1, 1);
   opacity: 1;
   z-index: 10000;
@@ -886,12 +854,12 @@ section.full-width:not(.with-bg-pattern) {
 
 /* === trick to manage lists'translation === */
 
-html[lang="ca"] [lang]:not([lang="ca"]),
-html[lang="en"] [lang]:not([lang="en"]),
-html[lang="es"] [lang]:not([lang="es"]),
-html[lang="fr"] [lang]:not([lang="fr"]),
-html[lang="nl"] [lang]:not([lang="nl"]),
-html[lang="pt"] [lang]:not([lang="pt"]) {
+html[lang='ca'] [lang]:not([lang='ca']),
+html[lang='en'] [lang]:not([lang='en']),
+html[lang='es'] [lang]:not([lang='es']),
+html[lang='fr'] [lang]:not([lang='fr']),
+html[lang='nl'] [lang]:not([lang='nl']),
+html[lang='pt'] [lang]:not([lang='pt']) {
   display: none;
 }
 
@@ -1044,7 +1012,7 @@ html[lang="pt"] [lang]:not([lang="pt"]) {
 }
 
 .timeline::before {
-  content: "";
+  content: '';
   position: absolute;
   height: calc(100% + 2em);
   width: 1px;
@@ -1062,7 +1030,7 @@ html[lang="pt"] [lang]:not([lang="pt"]) {
 
 .timeline li::before {
   position: absolute;
-  content: "·";
+  content: '·';
   font-size: 8em;
   left: 4px;
   vertical-align: middle;
@@ -1093,4 +1061,9 @@ td.users-table-break-word {
 
 .dropdown-menu .login-text {
   display: inline;
+}
+
+.panel button.panel-heading {
+	width: 100%;
+	text-align: left;
 }

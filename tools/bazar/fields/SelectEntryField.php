@@ -13,7 +13,7 @@ class SelectEntryField extends EnumField
 {
     public $isDistantJson;
     protected $displayMethod;
-    protected $baseUrl ;
+    protected $baseUrl;
 
     protected const FIELD_DISPLAY_METHOD = 3;
 
@@ -27,7 +27,7 @@ class SelectEntryField extends EnumField
         if ($this->isDistantJson) {
             $this->prepareJSONEntryField();
         } else {
-            $this->options = null ;
+            $this->options = null;
             $this->baseUrl = null;
         }
     }
@@ -36,7 +36,7 @@ class SelectEntryField extends EnumField
     {
         return $this->render('@bazar/inputs/select.twig', [
             'value' => $this->getValue($entry),
-            'options' => $this->getOptions()
+            'options' => $this->getOptions(),
         ]);
     }
 
@@ -44,13 +44,13 @@ class SelectEntryField extends EnumField
     {
         $value = $this->getValue($entry);
         if (!$value) {
-            return "";
+            return '';
         }
 
         if ($this->displayMethod === 'fiche') {
             if ($this->isDistantJson) {
                 // TODO display the entry in an iframe ?
-                return "";
+                return '';
             } else {
                 // TODO add documentation
                 return $this->getService(EntryController::class)->view($value);
@@ -70,18 +70,17 @@ class SelectEntryField extends EnumField
         return $this->render('@bazar/fields/select_entry.twig', [
             'value' => $value,
             'label' => $this->getOptions()[$value],
-            'entryUrl' => $entryUrl
+            'entryUrl' => $entryUrl,
         ]);
     }
 
     public function getOptions()
     {
-        return  $this->getEntriesOptions();
+        return $this->getEntriesOptions();
     }
 
     /**
-     * check if the current class is EnumEntry
-     * @return bool
+     * check if the current class is EnumEntry.
      */
     public function isEnumEntryField(): bool
     {

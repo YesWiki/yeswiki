@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
 
@@ -16,7 +15,7 @@ class BazarTableAction extends YesWikiAction
             $this->appendAllFieldsIds($arg, $newArg, 'exportallcolumnsids');
         }
 
-        return($newArg);
+        return $newArg;
     }
 
     public function run()

@@ -1,7 +1,7 @@
 <?php
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    exit('acc&egrave;s direct interdit');
 }
 
 $dblclic = $this->GetParameter('doubleclic');
@@ -10,9 +10,9 @@ $pageincluded = $this->GetParameter('page');
 
 // if metadata exists to change included page, we take the value of it
 if (isset($this->metadatas[$pageincluded])) {
-    $oldpageincluded = $pageincluded ;
+    $oldpageincluded = $pageincluded;
     $pageincluded = $this->metadatas[$pageincluded];
-    $this->parameter["page"] = $pageincluded;
+    $this->parameter['page'] = $pageincluded;
     // to prevent errors in actions order in Performer
     if ($this->tag == trim($oldpageincluded)) { // case /attach/actions/___include before this
         // redo tools\attach\actions\__include.php without changing oldpage
@@ -27,6 +27,6 @@ if (empty($class)) {
     $this->parameter['class'] = 'include';
     $class = 'include';
 } else {
-    $this->parameter['class'] = 'include '.$class;
-    $class = 'include '.$class;
+    $this->parameter['class'] = 'include ' . $class;
+    $class = 'include ' . $class;
 }

@@ -7,7 +7,7 @@ use YesWiki\Bazar\Field\BazarField;
 
 /**
  * Display an alert box with the text given in the second row
- * alerte***Warning, you are watching a very important page!***
+ * alerte***Warning, you are watching a very important page!***.
  *
  * @Field({"alerte"})
  */
@@ -40,8 +40,8 @@ class AlertField extends BazarField
 
     protected function renderStatic($entry)
     {
-        return $this->render("@helloworld/alert-field.twig", [
-            'alertText' => $this->alertText
+        return $this->render('@helloworld/alert-field.twig', [
+            'alertText' => $this->alertText,
         ]);
     }
 }

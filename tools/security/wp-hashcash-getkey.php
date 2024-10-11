@@ -1,16 +1,16 @@
 <?php
 
-require_once(realpath(dirname(__FILE__) . '/') . '/secret/wp-hashcash.lib');
+require_once realpath(dirname(__FILE__) . '/') . '/secret/wp-hashcash.lib';
 
-header("Pragma: no-cache");
-header("Expires: 0");
-header("Cache-Control: no-store, no-cache, must-revalidate");
-header("Cache-Control: post-check=0, pre-check=0", false);
+header('Pragma: no-cache');
+header('Expires: 0');
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Cache-Control: post-check=0, pre-check=0', false);
 
-$expired = array();
+$expired = [];
 
 $function_name = hashcash_random_string(rand(6, 18));
-$expired [] = $function_name;
+$expired[] = $function_name;
 
 $js = "function $function_name (){";
 
@@ -20,7 +20,7 @@ switch ($type) {
     Time guarantee:  100 iterations or less */
     case 0:
         $eax = hashcash_random_string(rand(8, 10), $expired);
-        $expired [] = $eax;
+        $expired[] = $eax;
 
         $val = intval(hashcash_field_value());
         $inc = rand(intval($val / 100), $val - 1);
@@ -40,13 +40,13 @@ switch ($type) {
         Time guarantee:  log(n) iterations or less */
     case 1:
         $eax = hashcash_random_string(rand(8, 10), $expired);
-        $expired [] = $eax;
+        $expired[] = $eax;
 
         $ebx = hashcash_random_string(rand(8, 10), $expired);
-        $expired [] = $ebx;
+        $expired[] = $ebx;
 
         $ecx = hashcash_random_string(rand(8, 10), $expired);
-        $expired [] = $ecx;
+        $expired[] = $ecx;
 
         $val = hashcash_field_value();
         $binval = strrev(base_convert($val, 10, 2));
@@ -56,9 +56,9 @@ switch ($type) {
         $js .= "while($ecx < $eax.length){ ";
         $js .= "if($eax.charAt($ecx) == \"1\") { ";
         $js .= "$ebx += Math.pow(2, $ecx); ";
-        $js .= "} ";
+        $js .= '} ';
         $js .= "$ecx++; ";
-        $js .= "} ";
+        $js .= '} ';
         $js .= "return $ebx; ";
 
         break;
@@ -76,12 +76,12 @@ switch ($type) {
         Time guarantee:  log(n) expected value */
     case 3:
         $val = hashcash_field_value();
-        $js .= "return ";
+        $js .= 'return ';
 
         $i = 0;
         while ($val > 0) {
             if ($i++ > 0) {
-                $js .= "+";
+                $js .= '+';
             }
 
             $temp = rand(1, $val);
@@ -89,7 +89,7 @@ switch ($type) {
             $js .= $temp;
         }
 
-        $js .= ";";
+        $js .= ';';
         break;
 }
 
@@ -98,13 +98,13 @@ $js .= "} $function_name ();";
 // pack bytes
 function strToLongs($s)
 {
-    $l = array();
+    $l = [];
 
     // pad $s to some multiple of 4
     $s = preg_split('//', $s, -1, PREG_SPLIT_NO_EMPTY);
 
     while (count($s) % 4 != 0) {
-        $s [] = ' ';
+        $s[] = ' ';
     }
 
     for ($i = 0; $i < ceil(count($s) / 4); $i++) {
@@ -124,23 +124,23 @@ for ($i = 0; $i < count($js); $i++) {
 
 // libs function encapsulation
 $libs_name = hashcash_random_string(rand(6, 18), $expired);
-$expired [] = $libs_name;
+$expired[] = $libs_name;
 
 $libs = "function $libs_name(){";
 
 // write bytes to javascript, xor with key
 $data_name = hashcash_random_string(rand(6, 18), $expired);
-$expired [] = $data_name;
+$expired[] = $data_name;
 
-$libs .= "var $data_name = new Array(" . count($js) . "); ";
+$libs .= "var $data_name = new Array(" . count($js) . '); ';
 for ($i = 0; $i < count($js); $i++) {
-    $libs .= $data_name . '[' . $i . '] = ' . $js[$i] . ' ^ ' . $key .'; ';
+    $libs .= $data_name . '[' . $i . '] = ' . $js[$i] . ' ^ ' . $key . '; ';
 }
 
 // convert bytes back to string
 $libs .= " var a = new Array($data_name.length); ";
-$libs .= "for (var i=0; i<" . $data_name . ".length; i++) { ";
-$libs .= 'a[i] = String.fromCharCode(' . $data_name .'[i] & 0xFF, ' . $data_name . '[i]>>>8 & 0xFF, ';
+$libs .= 'for (var i=0; i<' . $data_name . '.length; i++) { ';
+$libs .= 'a[i] = String.fromCharCode(' . $data_name . '[i] & 0xFF, ' . $data_name . '[i]>>>8 & 0xFF, ';
 $libs .= $data_name . '[i]>>>16 & 0xFF, ' . $data_name . '[i]>>>24 & 0xFF); } ';
 $libs .= "return eval(a.join('')); ";
 

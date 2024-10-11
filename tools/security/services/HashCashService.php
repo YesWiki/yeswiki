@@ -13,7 +13,7 @@ class HashCashService
         $this->wiki = $wiki;
     }
 
-    public function getJavascriptCode($formId = "ACEditor")
+    public function getJavascriptCode($formId = 'ACEditor')
     {
         require_once 'tools/security/secret/wp-hashcash.lib';
         if (!file_exists(HASHCASH_SECRET_FILE)) {
@@ -31,6 +31,6 @@ class HashCashService
             }
         }
 
-        return '<script type="text/javascript" src="'.$this->wiki->getBaseUrl().'/tools/security/wp-hashcash-js.php?formid='.$formId.'&siteurl='.urlencode($this->wiki->getBaseUrl().'/').'"></script><span id="hashcash-text" style="display:none" class="pull-right">'._t('HASHCASH_ANTISPAM_ACTIVATED').'</span>';
+        return '<script type="text/javascript" src="' . $this->wiki->getBaseUrl() . '/tools/security/wp-hashcash-js.php?formid=' . $formId . '&siteurl=' . urlencode($this->wiki->getBaseUrl() . '/') . '"></script><span id="hashcash-text" style="display:none" class="pull-right">' . _t('HASHCASH_ANTISPAM_ACTIVATED') . '</span>';
     }
 }

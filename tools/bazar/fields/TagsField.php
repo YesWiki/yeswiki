@@ -16,7 +16,7 @@ class TagsField extends EnumField
         parent::__construct($values, $services);
 
         $this->maxChars = $this->maxChars ?? 255;
-        $this->propertyName = $this->name ;
+        $this->propertyName = $this->name;
     }
 
     protected function renderInput($entry)
@@ -41,7 +41,7 @@ class TagsField extends EnumField
 
         $script = '$(function(){
             var tagsexistants = [' . $allTags . '];
-            var pagetag = $(\'#formulaire .yeswiki-input-pagetag[name="'.$this->getName().'"]\');
+            var pagetag = $(\'#formulaire .yeswiki-input-pagetag[name="' . $this->getName() . '"]\');
             pagetag.tagsinput({
                 typeahead: {
                     afterSelect: function(val) { pagetag.tagsinput(\'input\').val(""); },
@@ -66,7 +66,7 @@ class TagsField extends EnumField
 
         return $this->render('@bazar/inputs/tags.twig', [
             'value' => $value,
-            'allTags' => $allTags
+            'allTags' => $allTags,
         ]);
     }
 
@@ -84,7 +84,7 @@ class TagsField extends EnumField
         }
 
         // Add back all specified tags
-        $tags = explode(",", $value);
+        $tags = explode(',', $value);
         foreach ($tags as $tag) {
             trim($tag);
             if ($tag != '') {
@@ -108,10 +108,10 @@ class TagsField extends EnumField
             }, $tags);
 
             return $this->render('@bazar/fields/tags.twig', [
-                'value' => join(' ', $tags) ?? ''
+                'value' => join(' ', $tags) ?? '',
             ]);
         } else {
-            return "" ;
+            return '';
         }
     }
 
@@ -125,7 +125,8 @@ class TagsField extends EnumField
         if (empty($this->options)) {
             $this->loadOptionsFromTags();
         }
-        return parent::getOptions() ;
+
+        return parent::getOptions();
     }
 
     private function loadOptionsFromTags()
@@ -135,7 +136,7 @@ class TagsField extends EnumField
 
         $rawOptions = $tripleStore->getMatching(null, 'http://outils-reseaux.org/_vocabulary/tag');
         $this->options = array_map(function ($rawOption) {
-            return $rawOption['value'] ;
+            return $rawOption['value'];
         }, $rawOptions);
         $this->options = array_combine($this->options, $this->options);
     }

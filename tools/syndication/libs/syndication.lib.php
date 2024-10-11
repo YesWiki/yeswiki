@@ -7,18 +7,17 @@
  * Cuts a string to the length of $length and replaces the last characters
  * with the ending if the text is longer than length.
  *
- * @param string $text         String to truncate.
- * @param int    $length       Length of returned string, including ellipsis.
- * @param string $ending       Ending to be appended to the trimmed string.
+ * @param string $text         string to truncate
+ * @param int    $length       length of returned string, including ellipsis
+ * @param string $ending       ending to be appended to the trimmed string
  * @param bool   $exact        If false, $text will not be cut mid-word
  * @param bool   $considerHtml If true, HTML tags would be handled correctly
  *
- * @return string Trimmed string.
+ * @return string trimmed string
  */
 function truncate($text, $length = 100, $ending = ' [..]', $exact = false, $considerHtml = true)
 {
     if ($considerHtml) {
-
         // if the plain text is shorter than the maximum length, return the whole text
         if (strlen(preg_replace('/<.*?>/', '', $text)) <= $length) {
             return $text;
@@ -27,24 +26,20 @@ function truncate($text, $length = 100, $ending = ' [..]', $exact = false, $cons
         // splits all html-tags to scanable lines
         preg_match_all('/(<.+?>)?([^<>]*)/s', $text, $lines, PREG_SET_ORDER);
         $total_length = strlen($ending);
-        $open_tags = array();
+        $open_tags = [];
         $truncate = '';
         foreach ($lines as $line_matchings) {
-
             // if there is any html-tag in this line, handle it and add it (uncounted) to the output
             if (!empty($line_matchings[1])) {
-
                 // if it's an "empty element" with or without xhtml-conform closing slash (f.e. <br/>)
                 if (preg_match(
                     '/^<(\s*.+?\/\s*|\s*(img|br|input|hr|area|base|basefont|col|frame|isindex|link|meta|param)'
-                    .'(\s.+?)?)>$/is',
+                    . '(\s.+?)?)>$/is',
                     $line_matchings[1]
                 )) {
-
                     // do nothing
                     // if tag is a closing tag (f.e. </b>)
                 } elseif (preg_match('/^<\s*\/([^\s]+?)\s*>$/s', $line_matchings[1], $tag_matchings)) {
-
                     // delete tag from $open_tags list
                     $pos = array_search($tag_matchings[1], $open_tags);
                     if ($pos !== false) {
@@ -53,7 +48,6 @@ function truncate($text, $length = 100, $ending = ' [..]', $exact = false, $cons
 
                     // if tag is an opening tag (f.e. <b>)
                 } elseif (preg_match('/^<\s*([^\s>!]+).*?>$/s', $line_matchings[1], $tag_matchings)) {
-
                     // add tag to the beginning of $open_tags list
                     array_unshift($open_tags, strtolower($tag_matchings[1]));
                 }
@@ -71,7 +65,6 @@ function truncate($text, $length = 100, $ending = ' [..]', $exact = false, $cons
                 )
             );
             if ($total_length + $content_length > $length) {
-
                 // the number of characters which are left
                 $left = $length - $total_length;
                 $entities_length = 0;
@@ -83,11 +76,10 @@ function truncate($text, $length = 100, $ending = ' [..]', $exact = false, $cons
                     $entities,
                     PREG_OFFSET_CAPTURE
                 )) {
-
                     // calculate the real length of all entities in the legal range
                     foreach ($entities[0] as $entity) {
                         if ($entity[1] + 1 - $entities_length <= $left) {
-                            --$left;
+                            $left--;
                             $entities_length += strlen($entity[0]);
                         } else {
                             // no more characters left
@@ -119,11 +111,9 @@ function truncate($text, $length = 100, $ending = ' [..]', $exact = false, $cons
 
     // if the words shouldn't be cut in the middle...
     if (!$exact) {
-
         // ...search the last occurance of a space...
         $spacepos = strrpos($truncate, ' ');
         if (isset($spacepos)) {
-
             // ...and cut the text in this position
             $truncate = substr($truncate, 0, $spacepos);
         }
@@ -132,10 +122,9 @@ function truncate($text, $length = 100, $ending = ' [..]', $exact = false, $cons
     // add the defined ending to the text
     $truncate .= $ending;
     if ($considerHtml) {
-
         // close all unclosed html-tags
         foreach ($open_tags as $tag) {
-            $truncate .= '</'.$tag.'>';
+            $truncate .= '</' . $tag . '>';
         }
     }
 
@@ -163,7 +152,7 @@ function getRelativeDate($date)
     // si elle est proche alors on retourne une date relative...
     if ($time < $after && $time > $before) {
         if ($time >= $after) {
-            $relative = date('l', $date).' prochain';
+            $relative = date('l', $date) . ' prochain';
         } elseif ($time >= $afterTomorrow) {
             $relative = 'Apr&egrave;s demain';
         } elseif ($time >= $tomorrow) {
@@ -175,15 +164,15 @@ function getRelativeDate($date)
         } elseif ($time >= $beforeYesterday) {
             $relative = 'Avant hier';
         } elseif ($time >= $before) {
-            $relative = date('l', $time).' dernier';
+            $relative = date('l', $time) . ' dernier';
         }
         // sinon on retourne une date complète.
     } else {
-        $relative = 'Le '.date("j.n.Y", $time);
+        $relative = 'Le ' . date('j.n.Y', $time);
     }
     // si l'heure est présente dans la date originale, on l'ajoute
     if (preg_match('/[0-9]{2}:[0-9]{2}/', $date)) {
-        $relative .= ' &agrave; '.date('H:i', $time);
+        $relative .= ' &agrave; ' . date('H:i', $time);
     }
 
     return $relative;

@@ -11,7 +11,7 @@ class Plugins
     public $location;
     public $type;
     public $_xml;
-    public $p_list = array();
+    public $p_list = [];
 
     private $_current_tag_cdata;
     private $_p_info;
@@ -19,7 +19,7 @@ class Plugins
     public function __construct($location, $type = 'plugin')
     {
         if (is_dir($location)) {
-            $this->location = $location.'/';
+            $this->location = $location . '/';
         } else {
             $this->location = null;
         }
@@ -30,7 +30,7 @@ class Plugins
     public function getPlugins($active_only = true)
     {
         if (($list_files = $this->_readDir()) !== false) {
-            $this->p_list = array();
+            $this->p_list = [];
             foreach ($list_files as $entry => $pfile) {
                 if (($info = $this->getPluginInfo($pfile)) !== false) {
                     if (($active_only && $info['active']) || !$active_only) {
@@ -58,17 +58,17 @@ class Plugins
             return false;
         }
 
-        $res = array();
+        $res = [];
 
         $d = dir($this->location);
 
         // Liste du répertoire des plugins
         while (($entry = $d->read()) !== false) {
             if ($entry != '.' && $entry != '..'
-                && is_dir($this->location.$entry)
-                && file_exists($this->location.$entry.'/desc.xml')
+                && is_dir($this->location . $entry)
+                && file_exists($this->location . $entry . '/desc.xml')
             ) {
-                $res[$entry] = $this->location.$entry.'/desc.xml';
+                $res[$entry] = $this->location . $entry . '/desc.xml';
             }
         }
 
@@ -79,9 +79,9 @@ class Plugins
     {
         if (file_exists($p)) {
             $this->_current_tag_cdata = '';
-            $this->_p_info = array('name' => null, 'version' => null,
-                        'active' => null, 'author' => null, 'label' => null,
-                        'desc' => null, 'callbacks' => array(), );
+            $this->_p_info = ['name' => null, 'version' => null,
+                'active' => null, 'author' => null, 'label' => null,
+                'desc' => null, 'callbacks' => [], ];
 
             $this->_xml = xml_parser_create('ISO-8859-1');
             xml_parser_set_option($this->_xml, XML_OPTION_CASE_FOLDING, false);
@@ -105,11 +105,11 @@ class Plugins
         if ($tag == $this->type && !empty($attr['name'])) {
             $this->_p_info['name'] = $attr['name'];
             $this->_p_info['version'] = (!empty($attr['version'])) ? $attr['version'] : null;
-            $this->_p_info['active'] = (!empty($attr['active'])) ? (bool) $attr['active'] : false;
+            $this->_p_info['active'] = (!empty($attr['active'])) ? (bool)$attr['active'] : false;
         }
 
         if ($tag == 'callback') {
-            $this->_p_info['callbacks'][] = array($attr['event'], $attr['function']);
+            $this->_p_info['callbacks'][] = [$attr['event'], $attr['function']];
         }
     }
 

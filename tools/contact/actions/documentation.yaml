@@ -42,7 +42,7 @@ actions:
         type: text
         advanced: true
       class:
-        label:  _t(AB_abonnement_class_label)
+        label: _t(AB_abonnement_class_label)
         type: text
         advanced: true
   desabonnement:
@@ -64,7 +64,7 @@ actions:
         type: text
         advanced: true
       class:
-        label:  _t(AB_abonnement_class_label)
+        label: _t(AB_abonnement_class_label)
         type: text
         advanced: true
   # listsubscription:

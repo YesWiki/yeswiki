@@ -8,8 +8,8 @@ use YesWiki\Wiki;
 
 abstract class RadioField extends EnumField
 {
-    protected $displayMethod ; // empty, tags
-    protected $displayFilterLimit ; // number of items without filter ; false if no limit
+    protected $displayMethod; // empty, tags
+    protected $displayFilterLimit; // number of items without filter ; false if no limit
     protected $wiki;
 
     protected const FIELD_DISPLAY_METHOD = 7;
@@ -26,12 +26,13 @@ abstract class RadioField extends EnumField
     protected function renderInput($entry)
     {
         switch ($this->displayMethod) {
-            case "tags":
+            case 'tags':
                 $htmlReturn = $this->render('@bazar/inputs/radio_tags.twig', [
                     'bazarlistTagsInputsData' => json_encode($this->generateTagsData($entry)),
-                ]) ;
-                return $htmlReturn ;
-                break ;
+                ]);
+
+                return $htmlReturn;
+                break;
             default:
                 $options = $this->getOptions();
                 if ($this->displayFilterLimit && (count($options) > $this->displayFilterLimit)) {
@@ -54,21 +55,21 @@ abstract class RadioField extends EnumField
     private function generateTagsData($entry)
     {
         // list of choices available from options
-        $existingTags = [] ;
+        $existingTags = [];
         foreach ($this->getOptions() as $key => $label) {
             $existingTags[$key] = [
-                "id" => $key,
-                "title" => $label
+                'id' => $key,
+                'title' => $label,
             ];
         }
 
-        $selectedOption = $this->getValue($entry) ;
+        $selectedOption = $this->getValue($entry);
         $selectedOptions = empty($selectedOption) ? [] : [$selectedOption];
 
         return [
             'existingTags' => $existingTags,
             'selectedOptions' => $selectedOptions,
-            'limit' => 1
-        ] ;
+            'limit' => 1,
+        ];
     }
 }

@@ -22,28 +22,28 @@ class MyFavoritesAction extends YesWikiAction
     public function formatArguments($arg)
     {
         return [
-            'template' => !empty($arg['template']) ? basename($arg['template']) : "" ,
+            'template' => !empty($arg['template']) ? basename($arg['template']) : '',
         ];
     }
 
     public function run()
     {
         // get Services
-        $this->authController  = $this->getService(AuthController::class);
-        $this->entryManager  = $this->getService(EntryManager::class);
-        $this->favoritesManager  = $this->getService(FavoritesManager::class);
-        $this->formManager  = $this->getService(FormManager::class);
-        $this->pageManager  = $this->getService(PageManager::class);
-        $this->templateEngine  = $this->getService(TemplateEngine::class);
+        $this->authController = $this->getService(AuthController::class);
+        $this->entryManager = $this->getService(EntryManager::class);
+        $this->favoritesManager = $this->getService(FavoritesManager::class);
+        $this->formManager = $this->getService(FormManager::class);
+        $this->pageManager = $this->getService(PageManager::class);
+        $this->templateEngine = $this->getService(TemplateEngine::class);
         if (!class_exists('attach')) {
             include 'tools/attach/libs/attach.lib.php';
         }
-        $this->attach  = new attach($this->wiki);
+        $this->attach = new attach($this->wiki);
 
         $user = $this->authController->getLoggedUser();
         $currentUser = empty($user) ? null : $user['name'];
 
-        $favorites = empty($currentUser) ? [] : $this->favoritesManager->getUserFavorites($currentUser) ;
+        $favorites = empty($currentUser) ? [] : $this->favoritesManager->getUserFavorites($currentUser);
 
         $template = (empty($this->arguments['template']) || !$this->templateEngine->hasTemplate("@core/actions/{$this->arguments['template']}"))
             ? '@core/actions/my-favorites.twig'
@@ -55,7 +55,7 @@ class MyFavoritesAction extends YesWikiAction
             'areFavoritesActivated' => $this->favoritesManager->areFavoritesActivated(),
             'currentUser' => $currentUser,
             'favorites' => $favorites,
-        ]) ;
+        ]);
     }
 
     private function updateFavoritesWithTitleImagesAndEntries(array &$favorites)
@@ -103,6 +103,7 @@ class MyFavoritesAction extends YesWikiAction
         preg_match_all("/\{\{attach.*file=\".*\.(?i)(jpg|png|gif|bmp).*\}\}/U", $page['body'], $images);
         if (is_array($images[0]) && isset($images[0][0]) && $images[0][0] != '') {
             preg_match_all("/.*file=\"(.*\.(?i)(jpg|png|gif|bmp))\".*desc=\"(.*)\".*\}\}/U", $images[0][0], $attachimg);
+
             return $this->getFileName($page, $attachimg[1][0]);
         } else {
             preg_match_all('/"imagebf_image":"(.*)"/U', $page['body'], $image);
@@ -116,6 +117,7 @@ class MyFavoritesAction extends YesWikiAction
                     'ISO-8859-1',
                     'UTF-8'
                 );
+
                 return $imagefile;
             } else {
                 preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $page['body'], $image);
@@ -126,12 +128,13 @@ class MyFavoritesAction extends YesWikiAction
                     if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
                         return $image[1][0];
                     } else {
-                        return "";
+                        return '';
                     }
                 }
             }
         }
-        return "";
+
+        return '';
     }
 
     private function getFileName($page, $file)
@@ -144,12 +147,13 @@ class MyFavoritesAction extends YesWikiAction
         $this->attach->file = $file;
         $fullFileName = $this->attach->GetFullFilename();
 
-        if (substr($fullFileName, 0, strlen("files/")) == "files/") {
-            $fullFileName = substr($fullFileName, strlen("files/"));
+        if (substr($fullFileName, 0, strlen('files/')) == 'files/') {
+            $fullFileName = substr($fullFileName, strlen('files/'));
         }
 
         $this->wiki->tag = $oldpagetag;
         $this->wiki->page = $oldpage;
+
         return $fullFileName;
     }
 }

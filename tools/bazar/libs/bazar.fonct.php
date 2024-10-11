@@ -1,14 +1,15 @@
 <?php
 
 use YesWiki\Bazar\Exception\ParsingMultipleException;
-use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\DateField;
-use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\ListManager;
 
 function multiArraySearch($array, $key, $value)
 {
-    $results = array();
+    $results = [];
 
     if (is_array($array)) {
         if (isset($array[$key]) && $array[$key] == $value) {
@@ -25,15 +26,16 @@ function multiArraySearch($array, $key, $value)
 
 function baz_forms_and_lists_ids()
 {
-    foreach (baz_valeurs_liste() as $listId => $list) {
-        $lists[$listId] = $list['titre_liste'];
-    }
-
-    $requete = 'SELECT bn_id_nature, bn_label_nature FROM '.$GLOBALS['wiki']->config['table_prefix'].'nature';
+    $lists = $GLOBALS['wiki']->services->get(ListManager::class)->getAll();
+    $lists = array_map(function ($list) {
+        return $list['title'];
+    }, $lists);
+    $requete = 'SELECT bn_id_nature, bn_label_nature FROM ' . $GLOBALS['wiki']->config['table_prefix'] . 'nature';
     $result = $GLOBALS['wiki']->LoadAll($requete);
     foreach ($result as $form) {
         $forms[$form['bn_id_nature']] = $form['bn_label_nature'];
     }
+
     return ['lists' => $lists, 'forms' => $forms];
 }
 
@@ -44,36 +46,39 @@ function getHtmlDataAttributes($fiche, $formtab = '')
         $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
         foreach ($fiche as $key => $value) {
             if (!empty($value)) {
-                if (in_array(
-                    $key,
-                    array(
-                        'bf_latitude',
-                        'bf_longitude',
-                        'id_typeannonce',
-                        'owner',
-                        'date_creation_fiche',
-                        'date_debut_validite_fiche',
-                        'date_fin_validite_fiche',
-                        'id_fiche',
-                        'statut_fiche',
-                        'date_maj_fiche',
+                if (
+                    in_array(
+                        $key,
+                        [
+                            'bf_latitude',
+                            'bf_longitude',
+                            'id_typeannonce',
+                            'owner',
+                            'date_creation_fiche',
+                            'date_debut_validite_fiche',
+                            'date_fin_validite_fiche',
+                            'id_fiche',
+                            'statut_fiche',
+                            'date_maj_fiche',
+                        ]
                     )
-                )) {
+                ) {
                     $htmldata .=
-                    'data-'.htmlspecialchars($key).'="'.
-                    htmlspecialchars($value).'" ';
+                        'data-' . htmlspecialchars($key) . '="' .
+                        htmlspecialchars($value) . '" ';
                 } else {
                     if (isset($form['prepared'])) {
                         foreach ($form['prepared'] as $field) {
-                            $propertyName = $field->getPropertyName() ;
+                            $propertyName = $field->getPropertyName();
                             if ($propertyName === $key) {
-                                if ($field instanceof EnumField
+                                if (
+                                    $field instanceof EnumField
                                     || $field instanceof DateField
                                     || $field->getName() == 'scope'
                                 ) {
                                     $htmldata .=
-                                    'data-'.htmlspecialchars($key).'="'.
-                                    htmlspecialchars(is_array($value) ? '['.implode(',', $value).']' : $value).'" ';
+                                        'data-' . htmlspecialchars($key) . '="' .
+                                        htmlspecialchars(is_array($value) ? '[' . implode(',', $value) . ']' : $value) . '" ';
                                 }
                             }
                         }
@@ -86,7 +91,7 @@ function getHtmlDataAttributes($fiche, $formtab = '')
     return $htmldata;
 }
 
-/**  show() - Formatte un paragraphe champs d'une fiche seulement si la valeur est renseignée
+/**  show() - Formatte un paragraphe champs d'une fiche seulement si la valeur est renseignée.
  * @global string champ de la fiche (au format html)
  * @global string Label du champs (facultatif)
  * @global string classe CSS du paragraphe (facultatif "field" par défaut)
@@ -98,8 +103,8 @@ function show($val, $label = '', $class = 'field', $tag = 'p', $fiche = '')
 {
     if (is_array($fiche)) {
         // on recupere les valeurs plutot que les clés pour les champs checkbox et liste
-        if (substr($val, 0, 10) ===  'listeListe' or substr($val, 0, 13) === 'checkboxListe') {
-            $func = (substr($val, 0, 10) ===  'listeListe' ? 'liste' : 'checkbox');
+        if (substr($val, 0, 10) === 'listeListe' or substr($val, 0, 13) === 'checkboxListe') {
+            $func = (substr($val, 0, 10) === 'listeListe' ? 'liste' : 'checkbox');
             $dummy = '';
             $form = $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
             $f = multiArraySearch($form, '1', preg_replace('/^(liste|checkbox)/i', '', $val));
@@ -130,19 +135,19 @@ function show($val, $label = '', $class = 'field', $tag = 'p', $fiche = '')
         }
     }
     if (!empty($val)) {
-        echo '<'.$tag;
+        echo '<' . $tag;
         if (!empty($class)) {
-            echo ' class="'.$class.'"';
+            echo ' class="' . $class . '"';
         }
-        echo '>'."\n";
+        echo '>' . "\n";
         if (!empty($label)) {
-            echo '<strong>'.$label.'</strong> '."\n";
+            echo '<strong>' . $label . '</strong> ' . "\n";
         }
-        echo $val.'</'.$tag.'>'."\n";
+        echo $val . '</' . $tag . '>' . "\n";
     }
 }
 
-/** removeAccents() Renvoie une chaine de caracteres avec les accents en moins
+/** removeAccents() Renvoie une chaine de caracteres avec les accents en moins.
  *   @param  string  chaine de caracteres avec de potentiels accents a enlever
  *
  *   return  string chaine de caracteres, sans accents
@@ -165,12 +170,10 @@ function removeAccents($str, $charset = YW_CHARSET)
  *   @param  string  chaine de caracteres avec de potentiels accents a enlever
  *   @param int nombre d'iteration pour la fonction recursive (1 par defaut)
  *
- *
  *   return  string chaine de caracteres, en NomWiki unique
  */
 function genere_nom_wiki($nom, $occurence = 1)
 {
-
     // si la fonction est appelee pour la premiere fois, on nettoie le nom passe en parametre
     if ($occurence <= 1) {
         // les noms wiki ne doivent pas depasser les 50 caracteres, on coupe a 48
@@ -189,7 +192,7 @@ function genere_nom_wiki($nom, $occurence = 1)
         $var = preg_replace('/[^A-Z]/', '', $nom);
         if (strlen($var) < 2) {
             $last = ucfirst(substr($nom, strlen($nom) - 1));
-            $nom = substr($nom, 0, -1).$last;
+            $nom = substr($nom, 0, -1) . $last;
         }
 
         $nom = '';
@@ -202,15 +205,15 @@ function genere_nom_wiki($nom, $occurence = 1)
         $var = preg_replace('/[^A-Z]/', '', $nom);
         if (strlen($var) < 2) {
             $last = ucfirst(substr($nom, strlen($nom) - 1));
-            $nom = substr($nom, 0, -1).$last;
+            $nom = substr($nom, 0, -1) . $last;
         }
     } elseif ($occurence > 2) {
         // si on en est a plus de 2 occurences, on supprime le chiffre precedent et on ajoute la nouvelle occurence
         $nb = -1 * strlen(strval($occurence - 1));
-        $nom = substr($nom, 0, $nb).$occurence;
+        $nom = substr($nom, 0, $nb) . $occurence;
     } else {
         // cas ou l'occurence est la deuxieme : on reprend le NomWiki en y ajoutant le chiffre 2
-        $nom = $nom.$occurence;
+        $nom = $nom . $occurence;
     }
 
     if ($occurence == 0) {
@@ -221,7 +224,7 @@ function genere_nom_wiki($nom, $occurence = 1)
         return $nom;
     } else {
         // sinon, on rappele recursivement la fonction jusqu'a ce que le nom aille bien
-        ++$occurence;
+        $occurence++;
 
         return genere_nom_wiki($nom, $occurence);
     }
@@ -230,7 +233,8 @@ function genere_nom_wiki($nom, $occurence = 1)
 function startsWith($haystack, $needle)
 {
     $length = strlen($needle);
-    return (substr($haystack, 0, $length) === $needle);
+
+    return substr($haystack, 0, $length) === $needle;
 }
 
 function endsWith($haystack, $needle)
@@ -240,7 +244,7 @@ function endsWith($haystack, $needle)
         return true;
     }
 
-    return (substr($haystack, -$length) === $needle);
+    return substr($haystack, -$length) === $needle;
 }
 
 // pour verifier la presence d une valeur dans une fiche, en vue de lui faire une icone ou couleur personnalisee
@@ -294,5 +298,6 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
     } catch (ParsingMultipleException $th) {
         $tabparam['fail'] = 1;
     }
+
     return $tabparam;
 }

@@ -1,7 +1,5 @@
 <?php
-
 return [
-
     'TAGS_ACTION_ADMINTAGS' => 'Ação {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'a ação é restrita ao grupo de administradores',
     'TAGS_NO_WRITE_ACCESS' => 'Você não tem acesso de gravação para esta página!',
@@ -22,36 +20,30 @@ return [
     'TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS' => 'Ver todas as páginas que contenham essa palavra-chave',
     'TAGS_ALERT_PAGE_ALREADY_MODIFIED' => 'ATENÇÃO: Esta página foi modificada por outra pessoa enquanto você a editava<br /> Por favor, copie suas alterações e re-editar esta página.',
     'TAGS_ANSWER_THIS_COMMENT' => 'Responder a este comentário',
-    'TAGS_DATE_FORMAT' => "\l\e d.m.Y &\a\g\\r\av\e; H:i:s",
+    'TAGS_DATE_FORMAT' => "le d.m.Y &ag\rave; H:i:s",
     'TAGS_WRITE_YOUR_COMMENT_HERE' => 'Escreva o seu comentário aqui...',
     'TAGS_ADD_YOUR_COMMENT' => 'Adicione seu comentário',
     'TAGS_ACTION_FILTERTAGS' => 'Ação {{filtertags ...}}',
     'TAGS_NO_FILTERS' => 'O parâmetro "filter1" não foi encontrado, enquanto é obrigatório.',
     'TAGS_ONLY_ONE_DOUBLEPOINT' => 'Os dois pontos (:) não pode estar presente mais de uma vez para indicar a étiqueta. Vários encontrados.',
-
     'TAGS_ACTION_INCLUDEPAGES' => 'Ação {{includepages ...}}',
     'TAGS_NO_PARAM_PAGES' => 'O parâmetro "pages" não foi encontrado, enquanto é obrigatório.',
-
     'TAGS_NO_RESULTS' => 'Nenhum resultado com essas palavras-chave.',
     'TAGS_RESULTS' => 'resultados',
     'TAGS_FILTER' => 'Filtrar',
     'TAGS_CONTAINING_TAG' => 'com a palavra-chave.',
     'TAGS_ONE_PAGE' => 'Uma página',
     'TAGS_PAGES' => 'páginas',
-
     // actions/admintag.php
     // 'TAGS_NO_TAG' => 'Aucun mot clé utilisé pour le moment',
-
     // actions/listpagestag.php
     // 'TAGS_TOTAL_NB_PAGES' => 'Un total de %{nb_total} pages a &eacute;t&eacute; trouv&eacute;',
     // 'TAGS_ONE_PAGE_FOUND' => 'Une page a &eacute;t&eacute; trouv&eacute;e',
     // 'TAGS_NO_PAGE' => 'Aucune page trouv&eacute;e',
     // 'TAGS_WITH_KEYWORD' => 'avec le mot cl&eacute;',
     // 'TAGS_WITH_KEYWORD_SEPARATOR' => 'et',
-
     // actions/rss.php
     'TAGS_RSS_FEED_FOR_NEW_PAGES_WITH_TAGS' => 'Fluxo RSS das novas páginas com os tags',
-
     // handler exportpages
     'TAGS_YOUR_EBOOK' => 'Seu Ebook',
     'TAGS_SPAM_RISK' => 'Você deve habilitar o JavaScript para não ser considerado spam.',
@@ -92,10 +84,8 @@ return [
     'TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE' => 'Conteúdo on-line na página',
     'TAGS_NO_EBOOK_METADATAS' => 'Esta página não tem os metadados necessários para criar o ebook.',
     'TAGS_NO_EBOOK_FOUND' => 'Nenhum ebook encontrado.',
-
     // handler/tagrss.php
     // 'TAGS_HIDDEN_CONTENT' => 'Contenu masqué',
-
     // action builder tags group
     // 'AB_tags_group_label' => 'Gestion des tags',
     // 'AB_tags_admintag_label' => 'Gestion des tags',
@@ -119,8 +109,37 @@ return [
     // 'AB_tags_listpagestag_rss_label'=> 'lien rss vers la liste pour des tags donnés',
     // 'AB_tags_listpagestag_nbclasses_label' => 'nombre de classes CSS disponibles pour le nuage',
     // 'AB_tags_nuagetag_tri_shuffle' => 'aléatoire',
-
     // for edit config
     'EDIT_CONFIG_HINT_HIDE_KEYWORDS' => 'Ocultar palavras-chave na parte inferior das páginas (true ou false)',
     'EDIT_CONFIG_GROUP_TAGS' => 'Palavras-chave (tags)',
+    'AB_tags_listpagestag_type_label' => 'Tipo',
+    'AB_tags_listpagestag_tri_label' => 'Ordinação',
+    'TAGS_NO_PAGE' => 'Nenhuma página encontrada',
+    'TAGS_WITH_KEYWORD' => 'com a palavra-chave.',
+    'AB_tags_listpagestag_template_label' => 'modelo',
+    'TAGS_TAGS' => 'Palavras-chave',
+    'TAGS_NO_TAG' => 'Sem palavras-chave usadas no momento',
+    'TAGS_TOTAL_NB_PAGES' => 'Um total de %{nb_total} páginas a \'eacute;t ofacute; trouviyahacute;',
+    'TAGS_ONE_PAGE_FOUND' => 'Uma página a \'eacute;t preso; trouvteeacute;e',
+    'TAGS_HIDDEN_CONTENT' => 'Conteúdo mate',
+    'AB_tags_group_label' => 'Gestão de Tag',
+    'AB_tags_admintag_label' => 'Gestão de Tag',
+    'AB_tags_listpagestag_type_all' => 'todas as páginas e páginas da wiki',
+    'AB_tags_listpagestag_type_wiki' => 'apenas páginas wiki',
+    'AB_tags_listpagestag_type_bazar' => 'apenas formas',
+    'AB_tags_listpagestag_tags_label' => 'Tags',
+    'AB_tags_listpagestag_tags_hint' => 'separados por vírgulas',
+    'AB_tags_listpagestag_nb_label' => 'Número de páginas',
+    'AB_tags_listpagestag_tri_date' => 'ordenar por data decrescente',
+    'AB_tags_listpagestag_tri_alpha' => 'ordenar por ordem alfabética',
+    'AB_tags_listpagestag_template_list' => 'lista',
+    'AB_tags_listpagestag_template_list_panel' => 'lista com caixa',
+    'AB_tags_listpagestag_template_list_num' => 'lista com fichas',
+    'AB_tags_listpagestag_rss_label' => 'link rss para a lista de tags dadas',
+    'AB_tags_listpagestag_nbclasses_label' => 'classes CSS disponíveis para nuvem',
+    'AB_tags_nuagetag_tri_shuffle' => 'aleatório',
+    'TAGS_WITH_KEYWORD_SEPARATOR' => 'e',
+    'AB_tags_listpagestag_label' => 'Lista de páginas por tag',
+    'AB_tags_listpagestag_shownumberinfo_label' => 'exibir o número de páginas',
+    'AB_tags_listpagestag_nuagetag_label' => 'nuvem de tags',
 ];

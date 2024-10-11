@@ -1,4 +1,4 @@
-label: "Attach"
+label: 'Attach'
 previewHeight: 400px
 onlyEdit: true
 actions:
@@ -6,54 +6,54 @@ actions:
     title: _t(AB_attach_commons_title)
     width: 40%
     showif:
-      file: \.(png|jpg|jpeg|gif|pdf|svg)$
+      file: \.(png|jpg|jpeg|gif|pdf|svg|webp)$
     properties:
       link:
         label: _t(AB_attach_link_label)
         default: https://
         type: url
         showif:
-          file: \.(png|jpg|jpeg|gif|svg)$
+          file: \.(png|jpg|jpeg|gif|svg|webp)$
       caption:
         label: _t(AB_attach_caption_label)
         type: text
         showif:
-          file: \.(png|jpg|jpeg|gif|svg)$
+          file: \.(png|jpg|jpeg|gif|svg|webp)$
       legend:
         label: _t(AB_attach_legend_label)
         type: text
         showif:
-          file: \.(png|jpg|jpeg|gif|svg)$
+          file: \.(png|jpg|jpeg|gif|svg|webp)$
       nofullimagelink:
         label: _t(AB_attach_nofullimagelink_label)
         type: checkbox
-        default: "0"
-        checkedvalue: "0"
-        uncheckedvalue: "1"
+        default: '1'
+        checkedvalue: '0'
+        uncheckedvalue: '1'
         showif:
-          file: \.(png|jpg|jpeg|gif|svg)$
+          file: \.(png|jpg|jpeg|gif|svg|webp)$
       size:
         label: _t(AB_attach_size_label)
         type: list
         showif:
-          file: \.(png|jpg|jpeg|gif|svg)$
+          file: \.(png|jpg|jpeg|gif|svg|webp)$
         options:
           small: _t(AB_attach_size_small)
           medium: _t(AB_attach_size_medium)
           big: _t(AB_attach_size_big)
           original: _t(AB_attach_size_original)
-      width: 
+      width:
         label: _t(AB_attach_width_label)
         type: number
         advanced: true
         showif:
-          file: \.(png|jpg|jpeg|gif|svg)$
+          file: \.(png|jpg|jpeg|gif|svg|webp)$
       height:
         label: _t(AB_attach_height_label)
         type: number
         advanced: true
         showif:
-          file: \.(png|jpg|jpeg|gif|svg)$
+          file: \.(png|jpg|jpeg|gif|svg|webp)$
       class:
         label: _t(AB_attach_class_label)
         type: class
@@ -62,7 +62,7 @@ actions:
             label: _t(AB_attach_class_position_label)
             type: list
             showif:
-              file: \.(png|jpg|jpeg|gif|pdf|svg)$
+              file: \.(png|jpg|jpeg|gif|pdf|svg|webp)$
             options:
               '': _t(AB_attach_class_position_none)
               left: _t(AB_attach_class_position_left)
@@ -71,35 +71,35 @@ actions:
           displaylink:
             label: _t(AB_attach_class_displaylink_label)
             type: list
-            default: ""
+            default: ''
             options:
               '': _t(AB_attach_class_displaylink_default)
-              "new-window": _t(AB_attach_class_displaylink_new-window)
-              "modalbox": _t(AB_attach_class_displaylink_modalbox)
+              'new-window': _t(AB_attach_class_displaylink_new-window)
+              'modalbox': _t(AB_attach_class_displaylink_modalbox)
           lightshadow:
             label: _t(AB_attach_class_effect_lightshadow)
             type: checkbox
-            default: ""
-            checkedvalue: "lightshadow"
-            uncheckedvalue: ""
+            default: ''
+            checkedvalue: 'lightshadow'
+            uncheckedvalue: ''
             showif:
-              file: \.(png|jpg|jpeg|gif|svg)$
+              file: \.(png|jpg|jpeg|gif|svg|webp)$
           whiteborder:
             label: _t(AB_attach_class_effect_whiteborder)
             type: checkbox
-            default: ""
-            checkedvalue: "whiteborder"
-            uncheckedvalue: ""
+            default: ''
+            checkedvalue: 'whiteborder'
+            uncheckedvalue: ''
             showif:
-              file: \.(png|jpg|jpeg|gif|svg)$
+              file: \.(png|jpg|jpeg|gif|svg|webp)$
           zoom:
             label: _t(AB_attach_class_effect_zoom)
             type: checkbox
-            default: ""
-            checkedvalue: "zoom"
-            uncheckedvalue: ""
+            default: ''
+            checkedvalue: 'zoom'
+            uncheckedvalue: ''
             showif:
-              file: \.(png|jpg|jpeg|gif|svg)$
+              file: \.(png|jpg|jpeg|gif|svg|webp)$
           izmir:
             label: _t(AB_attach_class_izmir_label)
             type: list
@@ -122,10 +122,10 @@ actions:
     properties:
       file:
         label: _t(AB_attach_file_label)
-        type: text    
+        type: text
         hint: _t(AB_attach_file_hint)
       desc:
-        label: _t(AB_attach_desc_label)
+        label: _t(ALTERNATIVE_TEXT)
         type: text
       displaypdf:
         label: _t(AB_attach_displaypdf_label)
@@ -162,7 +162,3 @@ actions:
         showif:
           displaypdf: 1
           file: \.pdf$
-
-
-
-

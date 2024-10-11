@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\YesWikiHandler;
@@ -10,36 +11,31 @@ class __WidgetHandler extends YesWikiHandler
     {
         $entryManager = $this->getService(EntryManager::class);
         $formManager = $this->getService(FormManager::class);
+        $bazarListService = $this->getService(BazarListService::class);
 
         if (!isset($_GET['id'])) {
             return null;
         }
 
-        $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
+        $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
 
         ob_start();
         echo '<div class="page">';
         echo '<h1>' . _t('BAZ_WIDGET_HANDLER_TITLE') . '</h1>' . "\n";
 
         $entries = $entryManager->search(['formsIds' => [!empty($_GET['id']) ? strip_tags($_GET['id']) : null], 'keywords' => (!empty($_GET['q']) ? strip_tags($_GET['q']) : null)], true, true);
-        $facettables = $formManager->scanAllFacettable($entries);
+        $forms = $formManager->getAll();
+        $filters = $bazarListService->getFilters(['groups' => ['all']], $entries, $forms);
 
-        $labels = array();
-        $showTooltip = [];
-        foreach ($entries as $entry) {
-            $form = $formManager->getOne($entry['id_typeannonce']);
-            foreach ($form['prepared'] as $field) {
-                $propName = $field->getPropertyName() ;
-                if (in_array($propName, array_keys($facettables)) &&
-                        !in_array($propName, array_keys($labels))) {
-                    $labels[$propName] = !empty($field->getLabel()) ? $field->getLabel() :
-                        ($facettables[$propName]['source'] ?? $propName);
-                    $showTooltip[$propName] = false;
-                    if (!isset($facettables[$propName]['label'])) {
-                        $facettables[$propName]['label'] = $labels[$propName];
-                    }
-                }
-            }
+        // Reproduce the sames variables from the new $filters, so the view does not need to be refactored
+        $labels = $facettes = $showTooltip = [];
+        foreach ($filters as $filter) {
+            $labels[$filter['propName']] = $filter['title'];
+            $facettes[$filter['propName']] = [
+                'label' => $filter['title'],
+                'source' => $filter['propName'],
+            ];
+            $showTooltip[$filter['propName']] = false;
         }
 
         $params = [
@@ -49,23 +45,23 @@ class __WidgetHandler extends YesWikiHandler
             'latitude' => $this->params->get('baz_map_center_lat'),
             'longitude' => $this->params->get('baz_map_center_lon'),
             'width' => $this->params->get('baz_map_width'),
-            'height' => $this->params->get('baz_map_height')
+            'height' => $this->params->get('baz_map_height'),
         ];
 
         $urlParams = 'id=' . strip_tags($_GET['id']) . (isset($_GET['query']) ? '&query=' . strip_tags($_GET['query']) : '') . (!empty($q) ? '&q=' . $q : '');
 
-        echo $this->render("@bazar/widget.tpl.html", [
-            'facettes' => $facettables,
+        echo $this->render('@bazar/widget.tpl.html', [
+            'facettes' => $facettes,
             'showtooltip' => $showTooltip,
             'facettestext' => $labels,
             'params' => $params,
-            'urlparams' => $urlParams
+            'urlparams' => $urlParams,
         ]);
 
         echo '</div>';
         $output = ob_get_contents();
         ob_end_clean();
-        echo $this->wiki->Header().$output.$this->wiki->Footer();
+        echo $this->wiki->Header() . $output . $this->wiki->Footer();
         $this->wiki->exit();
     }
-};
+}

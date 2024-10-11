@@ -17,22 +17,20 @@ class __EditHandler extends YesWikiHandler
 
         if (
             !$this->params->get('hide_keywords')
-            && $aclService->hasAccess("write")
+            && $aclService->hasAccess('write')
         ) {
-
             // save new tag if authorized
             if (
-                isset($_POST["submit"])
-                && $_POST["submit"] == SecurityController::EDIT_PAGE_SUBMIT_VALUE
-                && isset($_POST["pagetags"])
+                isset($_POST['submit'])
+                && $_POST['submit'] == SecurityController::EDIT_PAGE_SUBMIT_VALUE
+                && isset($_POST['pagetags'])
                 && $_POST['antispam'] == 1
             ) {
-                $tagsManager->save($this->wiki->GetPageTag(), stripslashes($_POST["pagetags"]));
+                $tagsManager->save($this->wiki->GetPageTag(), stripslashes($_POST['pagetags']));
             }
 
             // display
-            if ($aclService->hasAccess("read")) {
-
+            if ($aclService->hasAccess('read')) {
                 $formattedTags = [];
                 // get all tags
                 $tags = $tagsManager->getAll();
@@ -55,7 +53,6 @@ class __EditHandler extends YesWikiHandler
                 $this->wiki->AddJavascriptFile('tools/tags/libs/vendor/bootstrap-tagsinput.min.js');
                 $this->wiki->AddJavascriptFile('tools/tags/javascripts/edit-tags.js');
             }
-
         }
     }
 }

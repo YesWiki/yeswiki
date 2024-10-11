@@ -1,16 +1,13 @@
 .fa-spin-fast {
   animation: fa-spin-fast 0.2s infinite linear;
-  animation: fa-spin-fast 0.2s infinite linear;
 }
 
 @keyframes fa-spin-fast {
   0% {
     transform: rotate(0deg);
-    transform: rotate(0deg);
   }
 
   100% {
-    transform: rotate(359deg);
     transform: rotate(359deg);
   }
 }
@@ -18,11 +15,9 @@
 @keyframes fa-spin-fast {
   0% {
     transform: rotate(0deg);
-    transform: rotate(0deg);
   }
 
   100% {
-    transform: rotate(359deg);
     transform: rotate(359deg);
   }
 }
@@ -46,10 +41,6 @@
   margin: 0;
   z-index: 10;
   transition: all 0.3s;
-  transition: all 0.3s;
-  transition: all 0.3s;
-  transition: all 0.3s;
-  transition: all 0.3s;
 }
 
 .material-card h2 span {
@@ -59,7 +50,7 @@
 .material-card h2 strong {
   font-weight: 400;
   display: block;
-  font-size: .8em;
+  font-size: 0.8em;
 }
 
 .material-card h2::before,
@@ -70,10 +61,6 @@
   top: -16px;
   width: 0;
   border: 8px solid;
-  transition: all 0.3s;
-  transition: all 0.3s;
-  transition: all 0.3s;
-  transition: all 0.3s;
   transition: all 0.3s;
 }
 
@@ -106,18 +93,12 @@
   position: absolute;
   inset: 0 0 16px 16px;
   transition: all 0.3s;
-  transition: all 0.3s;
-  transition: all 0.3s;
-  transition: all 0.3s;
-  transition: all 0.3s;
 }
 
 .material-card .mc-btn-action {
   position: absolute;
   right: 16px;
   top: 15px;
-  border-radius: 50%;
-  border-radius: 50%;
   border-radius: 50%;
   border: 5px solid;
   width: 54px;
@@ -127,10 +108,6 @@
   color: #fff;
   cursor: pointer;
   z-index: 20;
-  transition: all 0.3s;
-  transition: all 0.3s;
-  transition: all 0.3s;
-  transition: all 0.3s;
   transition: all 0.3s;
 }
 
@@ -145,19 +122,11 @@
   opacity: 0;
   filter: alpha(opacity=0);
   transition: all 1.2s;
-  transition: all 1.2s;
-  transition: all 1.2s;
-  transition: all 1.2s;
-  transition: all 1.2s;
 }
 
 .material-card .mc-footer {
   height: 0;
   overflow: hidden;
-  transition: all 0.3s;
-  transition: all 0.3s;
-  transition: all 0.3s;
-  transition: all 0.3s;
   transition: all 0.3s;
 }
 
@@ -169,10 +138,6 @@
   margin: 0;
   font-size: 16px;
   font-weight: 700;
-  transition: all 1.4s;
-  transition: all 1.4s;
-  transition: all 1.4s;
-  transition: all 1.4s;
   transition: all 1.4s;
 }
 
@@ -193,41 +158,21 @@
 
 .material-card .mc-footer a:nth-child(1) {
   transition: all 0.5s;
-  transition: all 0.5s;
-  transition: all 0.5s;
-  transition: all 0.5s;
-  transition: all 0.5s;
 }
 
 .material-card .mc-footer a:nth-child(2) {
-  transition: all 0.6s;
-  transition: all 0.6s;
-  transition: all 0.6s;
-  transition: all 0.6s;
   transition: all 0.6s;
 }
 
 .material-card .mc-footer a:nth-child(3) {
   transition: all 0.7s;
-  transition: all 0.7s;
-  transition: all 0.7s;
-  transition: all 0.7s;
-  transition: all 0.7s;
 }
 
 .material-card .mc-footer a:nth-child(4) {
   transition: all 0.8s;
-  transition: all 0.8s;
-  transition: all 0.8s;
-  transition: all 0.8s;
-  transition: all 0.8s;
 }
 
 .material-card .mc-footer a:nth-child(5) {
-  transition: all 0.9s;
-  transition: all 0.9s;
-  transition: all 0.9s;
-  transition: all 0.9s;
   transition: all 0.9s;
 }
 
@@ -240,15 +185,9 @@
   height: 100%;
   z-index: 3;
   transition: all 0.3s;
-  transition: all 0.3s;
-  transition: all 0.3s;
-  transition: all 0.3s;
-  transition: all 0.3s;
 }
 
 .material-card.mc-active .img-container {
-  border-radius: 50%;
-  border-radius: 50%;
   border-radius: 50%;
   left: 0;
   top: 12px;
@@ -1262,8 +1201,8 @@
 }
 
 .material-container {
-  background-color: #ECEFF1;
-  color: #37474F;
+  background-color: #eceff1;
+  color: #37474f;
   font-weight: 300;
   font-size: 16px;
 }

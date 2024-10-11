@@ -8,27 +8,27 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\YesWikiController;
 
 /**
- * this class defines methods to generate captcha with a service
+ * this class defines methods to generate captcha with a service.
+ *
  * @author : Jeremy Dufraisse 2024
  * @author : Julien Ballestracci 2007 <julien@ecole-et-nature.org> (this file is inspired from his works)
  */
-
 class CaptchaController extends YesWikiController
 {
     /**
      * @var int[][] COLOURS array or 3 int to be associated to a color name
      */
     public const COLOURS = [
-        'pink'  => [216, 68, 204],
-        'red'  =>  [214, 34, 34],
-        'orange'  => [216, 155, 68],
-        'gold'  => [255, 208, 0],
-        'yellow'  => [234, 231, 19],
-        'green'  =>  [68, 214, 34],
-        'turkoise'  => [68, 211, 216],
-        'blue'  =>  [34, 132, 214],
-        'royalblue'  => [65, 105, 225],
-        'purple'  => [144, 0, 144]
+        'pink' => [216, 68, 204],
+        'red' => [214, 34, 34],
+        'orange' => [216, 155, 68],
+        'gold' => [255, 208, 0],
+        'yellow' => [234, 231, 19],
+        'green' => [68, 214, 34],
+        'turkoise' => [68, 211, 216],
+        'blue' => [34, 132, 214],
+        'royalblue' => [65, 105, 225],
+        'purple' => [144, 0, 144],
     ];
     /**
      * @var int[][] TONES array or 3 int to be associated to a tone name
@@ -36,34 +36,34 @@ class CaptchaController extends YesWikiController
     public const TONES = [
         'grey' => [200, 196, 196],
         'white' => [255, 255, 255],
-        'black' => [0, 0, 0]
+        'black' => [0, 0, 0],
     ];
     /**
-     * @var String[] DEFAULT_TEXTS for captcha
+     * @var string[] DEFAULT_TEXTS for captcha
      */
     public const DEFAULT_TEXTS = [
-        "arbre",
-        "cactus",
-        "eau",
-        "ecorse",
-        "feuille",
-        "foret",
-        "jungle",
-        "kiwi",
-        "laitue",
-        "mimosa",
-        "narcisse",
-        "ocean",
-        "palmier",
-        "plante",
-        "pommier",
-        "radis",
-        "rose",
-        "salade",
-        "sapin",
-        "terre",
-        "trefle",
-        "vigne"
+        'arbre',
+        'cactus',
+        'eau',
+        'ecorse',
+        'feuille',
+        'foret',
+        'jungle',
+        'kiwi',
+        'laitue',
+        'mimosa',
+        'narcisse',
+        'ocean',
+        'palmier',
+        'plante',
+        'pommier',
+        'radis',
+        'rose',
+        'salade',
+        'sapin',
+        'terre',
+        'trefle',
+        'vigne',
     ];
     /**
      * @var int IMAGE_HEIGHT
@@ -101,25 +101,24 @@ class CaptchaController extends YesWikiController
     public const CRYPT_COST = 4;
 
     /**
-     * @var string $fontFile path
+     * @var string path
      */
     protected $fontFile;
     /**
-     * @var int $imageWidth according to longest word
+     * @var int according to longest word
      */
     protected $imageWidth;
     /**
-     * @var ParameterBagInterface $params parameters
+     * @var ParameterBagInterface parameters
      */
     protected $params;
     /**
-     * @var string[] $words availables words
+     * @var string[] availables words
      */
     protected $words;
 
     /**
-     * constructor
-     * @param ParameterBagInterface $params
+     * constructor.
      */
     public function __construct(
         ParameterBagInterface $params
@@ -132,8 +131,8 @@ class CaptchaController extends YesWikiController
     }
 
     /**
-     * generate and output an image for captcha
-     * @param string $hash
+     * generate and output an image for captcha.
+     *
      * @throws Exception on errors
      */
     public function printImage(string $hash)
@@ -160,7 +159,8 @@ class CaptchaController extends YesWikiController
     }
 
     /**
-     * choose a random word and gives hash
+     * choose a random word and gives hash.
+     *
      * @return string $hash
      */
     public function generateHash(): string
@@ -169,9 +169,11 @@ class CaptchaController extends YesWikiController
     }
 
     /**
-     * check if word is the rigth one
+     * check if word is the rigth one.
+     *
      * @param string $word
      * @param string $hash
+     *
      * @return bool $isValidated
      */
     public function check($word, $hash): bool
@@ -183,18 +185,20 @@ class CaptchaController extends YesWikiController
             && in_array($word, $this->words, true)) {
             /**
              * @var array $options extracted from $hash
-            */
+             */
             $options = password_get_info($hash);
+
             return isset($options['algo'])
                 && $options['algo'] === self::CRYPT_ALGO
                 && password_verify($word, $hash);
         }
+
         return false;
     }
 
     /**
-     * retrieve text from hash
-     * @param string $hash
+     * retrieve text from hash.
+     *
      * @return string $text (randomly selected in case of error)
      */
     protected function getTextFromHash(string $hash): string
@@ -202,11 +206,11 @@ class CaptchaController extends YesWikiController
         if (!empty($hash)) {
             /**
              * @var int $idx
-            */
+             */
             for ($idx = 0; $idx < count($this->words); $idx++) {
                 /**
                  * @var string $word
-                */
+                 */
                 $word = $this->words[$idx];
                 if ($this->check($word, $hash)) {
                     return $word;
@@ -218,22 +222,24 @@ class CaptchaController extends YesWikiController
     }
 
     /**
-     * crypt a word
-     * @param string $word
+     * crypt a word.
+     *
      * @return string $hash
      */
     protected function cryptWord(string $word): string
     {
         return password_hash($word, self::CRYPT_ALGO, [
-            'cost' => self::CRYPT_COST
+            'cost' => self::CRYPT_COST,
         ]);
     }
 
     /**
-     * generate a color from a name
+     * generate a color from a name.
+     *
      * @param GdImage|ressource $image (ressource for php < 8.0)
-     * @param string $name
+     *
      * @return int representation of colour
+     *
      * @throws Exception on errors
      */
     protected function getColorFromName($image, string $name): int
@@ -255,13 +261,17 @@ class CaptchaController extends YesWikiController
         if ($color === false || !is_integer($color)) {
             throw new Exception('Not possible to generate color');
         }
+
         return $color;
     }
 
     /**
-     * get random color
+     * get random color.
+     *
      * @param GdImage|ressource $image (ressource for php < 8.0)
+     *
      * @return int representation of colour
+     *
      * @throws Exception on errors
      */
     protected function getRandomColor($image): int
@@ -270,13 +280,15 @@ class CaptchaController extends YesWikiController
          * @var string[] $colorsKeys
          */
         $colorsKeys = array_keys(self::COLOURS);
+
         return $this->getColorFromName($image, $colorsKeys[random_int(0, count($colorsKeys) - 1)]);
     }
 
     /**
-     * create an image
-     * @param int $imageWidth
+     * create an image.
+     *
      * @return GdImage|ressource new image (ressource for php < 8.0)
+     *
      * @throws Exception on errors
      */
     protected function createImage(int $imageWidth)
@@ -300,11 +312,13 @@ class CaptchaController extends YesWikiController
         ) {
             throw new Exception('Not possible to generate image');
         }
+
         return $image;
     }
 
     /**
-     * calculated image width according to longest word
+     * calculated image width according to longest word.
+     *
      * @return int image width
      */
     protected function getImageWidth(): int
@@ -316,15 +330,17 @@ class CaptchaController extends YesWikiController
             $this->words,
             function ($currentSize, $word) {
                 $chars = str_split($word);
+
                 return count($chars) > $currentSize ? count($chars) : $currentSize;
             },
             0
         );
+
         return $maxSize * self::CHAR_WIDTH + self::TEXT_MARGIN * 2;
     }
 
     /**
-     * update $words from params
+     * update $words from params.
      */
     protected function updateWordsFromConfig()
     {
@@ -350,9 +366,10 @@ class CaptchaController extends YesWikiController
     }
 
     /**
-     * draw some elipses
+     * draw some elipses.
+     *
      * @param GdImage|ressource $image (ressource for php < 8.0)
-     * @param int $imageWidth
+     *
      * @throws Exception on errors
      */
     protected function drawSomeElipses($image, int $imageWidth)
@@ -377,7 +394,8 @@ class CaptchaController extends YesWikiController
     }
 
     /**
-     * choose randomly a text in list
+     * choose randomly a text in list.
+     *
      * @return string text
      */
     protected function selectText(): string
@@ -386,33 +404,33 @@ class CaptchaController extends YesWikiController
     }
 
     /**
-     * draw text
+     * draw text.
+     *
      * @param GdImage|ressource $image (ressource for php < 8.0)
-     * @param int $imageWidth
-     * @param string $text
+     *
      * @throws Exception on errors
      */
     protected function drawtext($image, int $imageWidth, string $text)
     {
         /**
          * @var int $black color
-        */
+         */
         $black = $this->getColorFromName($image, 'black');
         /**
          * @var string[] $chars from $text
-        */
+         */
         $chars = str_split($text);
         /**
          * @var int $pos where text is written init, to center text
-        */
-        $pos = intval(floor(($imageWidth - count($chars) * self::CHAR_WIDTH) / 2)) ;
+         */
+        $pos = intval(floor(($imageWidth - count($chars) * self::CHAR_WIDTH) / 2));
         /**
          * @var int $idx
-        */
+         */
         for ($idx = 0; $idx < count($chars); $idx++) {
             /**
              * @var int $randomSlope
-            */
+             */
             $randomSlope = random_int(-self::CHAR_SLOPE_MAX_ANGLE, self::CHAR_SLOPE_MAX_ANGLE);
             // shadow
             imagettftext(

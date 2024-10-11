@@ -6,16 +6,18 @@ class Messages extends Collection
 {
     public function reset()
     {
-        $this->list = array();
+        $this->list = [];
+
         return $this->list;
     }
 
     public function add($message, $status)
     {
-        $this[] = array(
+        $this[] = [
             'text' => _t($message),
             'status' => _t($status),
-        );
+        ];
+
         return $this;
     }
 }

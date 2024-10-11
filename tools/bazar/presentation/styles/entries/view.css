@@ -1,0 +1,16 @@
+.BAZ_cadre_fiche .BAZ_rubrique {
+  margin: 0 0 10px;
+}
+
+/* ENTRY FOOTER */
+.BAZ_fiche_info {
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: row;
+}
+
+.BAZ_fiche_info .BAZ_actions_fiche {
+  align-self: center;
+  text-align: right;
+  flex: 1 auto;
+}

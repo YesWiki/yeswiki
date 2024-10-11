@@ -1,6 +1,5 @@
 <?php
 
-
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Controller\GroupController;
@@ -21,8 +20,8 @@ class EditGroupsAction extends YesWikiAction
         if (!$this->wiki->UserIsAdmin()) {
             return $this->render('@templates/alert-message.twig', [
                 'type' => 'danger',
-                'message' => "EditGroupsAction : " . _t('BAZ_NEED_ADMIN_RIGHTS')
-            ]) ;
+                'message' => 'EditGroupsAction : ' . _t('BAZ_NEED_ADMIN_RIGHTS'),
+            ]);
         }
 
         $message = '';
@@ -51,7 +50,7 @@ class EditGroupsAction extends YesWikiAction
                         list('message' => $message, 'type' => $type) = $this->deleteGroup($selectedGroupName);
                     }
                 } catch (TokenNotFoundException $th) {
-                    $message = _t('ERROR_WHILE_SAVING_GROUP') .':<br/>'. $th->getMessage();
+                    $message = _t('ERROR_WHILE_SAVING_GROUP') . ':<br/>' . $th->getMessage();
                 }
             }
         }
@@ -92,22 +91,20 @@ class EditGroupsAction extends YesWikiAction
 
                 if ($result) {
                     if ($result == 1000) {
-                        $message = _t('ERROR_RECURSIVE_GROUP').' !';
+                        $message = _t('ERROR_RECURSIVE_GROUP') . ' !';
                     } else {
-                        $message = _t('ERROR_WHILE_SAVING_GROUP') . ' ' . ucfirst($selectedGroupName) . ' ('._t('ERROR_CODE').' ' . $result . ')';
+                        $message = _t('ERROR_WHILE_SAVING_GROUP') . ' ' . ucfirst($selectedGroupName) . ' (' . _t('ERROR_CODE') . ' ' . $result . ')';
                     }
                 } else {
-                    //
-                    $this->wiki->LogAdministrativeAction($this->wiki->GetUserName(), _t('NEW_ACL_FOR_GROUP')." " . ucfirst($selectedGroupName) . ' : ' . $newacl . "\n");
-                    $message = _t('NEW_ACL_SUCCESSFULLY_SAVED_FOR_THE_GROUP').' ' . ucfirst($selectedGroupName);
+                    $this->wiki->LogAdministrativeAction($this->wiki->GetUserName(), _t('NEW_ACL_FOR_GROUP') . ' ' . ucfirst($selectedGroupName) . ' : ' . $newacl . "\n");
+                    $message = _t('NEW_ACL_SUCCESSFULLY_SAVED_FOR_THE_GROUP') . ' ' . ucfirst($selectedGroupName);
                     $type = 'success';
                 }
             }
         }
 
-        return compact(['message','type']);
+        return compact(['message', 'type']);
     }
-
 
     protected function deleteGroup(string &$selectedGroupName): array
     {
@@ -127,7 +124,7 @@ class EditGroupsAction extends YesWikiAction
             $ownedPages = $dbService->loadAll($sql); // if group owns no pages, then empty
             if (!empty($ownedPages)) {
                 // Array is not empty because the query returns at least one page
-                $message = _t('ONLY_NO_PAGES_GROUP_FOR_DELETION').'<br/>';
+                $message = _t('ONLY_NO_PAGES_GROUP_FOR_DELETION') . '<br/>';
                 $message .= implode('<br/>', array_map(function ($acl) {
                     return "<a href=\"{$this->wiki->Href('', $acl['page_tag'])}\">{$acl['page_tag']}</a>";
                 }, $ownedPages));
@@ -142,7 +139,7 @@ class EditGroupsAction extends YesWikiAction
                 $dbService->query($sql);
 
                 $tripleStore = $this->getService(TripleStore::class);
-                $previous = $tripleStore->getMatching(GROUP_PREFIX.$selectedGroupName, WIKINI_VOC_PREFIX.WIKINI_VOC_ACLS, '', '=');
+                $previous = $tripleStore->getMatching(GROUP_PREFIX . $selectedGroupName, WIKINI_VOC_PREFIX . WIKINI_VOC_ACLS, '', '=');
                 $deletionOk = false;
                 if (!empty($previous)) {
                     $deletionOk = true;
@@ -164,7 +161,7 @@ class EditGroupsAction extends YesWikiAction
             }
         }
 
-        return compact(['message','type']);
+        return compact(['message', 'type']);
     }
 
     protected function confirmToken()

@@ -31,7 +31,7 @@ actions:
           color:
             label: _t(AB_buttons_action_button_color_label)
             type: list
-            value: "btn-primary"
+            value: 'btn-primary'
             options:
               btn-default: _t(AB_buttons_action_button_color_default)
               btn-primary: _t(AB_buttons_action_button_color_primary)
@@ -64,7 +64,7 @@ actions:
             advanced: true
             type: list
             options:
-#             pull-left: _t(AB_buttons_action_button_pull_left) idée que les gens puissent choisir cette option
+              #             pull-left: _t(AB_buttons_action_button_pull_left) idée que les gens puissent choisir cette option
               pull-right: _t(AB_buttons_action_button_pull_right)
               btn-block: _t(AB_buttons_action_button_pull_block)
           new-window:
@@ -77,11 +77,11 @@ actions:
         advanced: true
         label: _t(AB_buttons_action_button_hideifnoaccess_label)
         type: checkbox
-        default: "false"
+        default: 'false'
       nobtn:
         advanced: true
         label: _t(AB_buttons_action_button_nobtn_label)
         type: checkbox
-        default: "0"
+        default: '0'
         checkedvalue: 1
         uncheckedvalue: 0

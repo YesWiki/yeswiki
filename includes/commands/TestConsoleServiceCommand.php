@@ -48,11 +48,12 @@ class TestConsoleServiceCommand extends Command
         // force file to be in cache folder
         if (empty($file) || empty($text) || is_dir("cache/$file") || empty($wait)) {
             $output->writeln([
-                "",
-                "ERROR : required arguments are missing (file or text or wait).",
-                "To get some help use : yeswicli core:testconsoleservice --help",
-                "",
+                '',
+                'ERROR : required arguments are missing (file or text or wait).',
+                'To get some help use : yeswicli core:testconsoleservice --help',
+                '',
             ]);
+
             return Command::FAILURE;
         }
         $childtext = $input->getOption('childtext');
@@ -62,10 +63,11 @@ class TestConsoleServiceCommand extends Command
             exit();
         } else {
             $consoleService = $this->wiki->services->get(ConsoleService::class);
-            $consoleService->startConsoleAsync('core:testconsoleservice', ["-f", $file, "-t", $childtext, "-w", $wait]);
+            $consoleService->startConsoleAsync('core:testconsoleservice', ['-f', $file, '-t', $childtext, '-w', $wait]);
             $this->writeToFile("cache/$file", $text);
             exit();
         }
+
         return Command::SUCCESS;
     }
 

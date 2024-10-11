@@ -5,7 +5,7 @@ use YesWiki\Core\Service\PageManager;
 
 // Vérification de sécurité
 if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
+    exit('acc&egrave;s direct interdit');
 }
 //on ne fait quelque chose uniquement dans le cas d'une requete jsonp
 if (isset($_GET['jsonp_callback'])) {
@@ -32,7 +32,6 @@ if (isset($_GET['jsonp_callback'])) {
             $body = $_GET['body'];
         }
 
-
         switch ($submit) {
             case 'savecomment':
                 // check for overwriting
@@ -42,8 +41,8 @@ if (isset($_GET['jsonp_callback'])) {
                     $body = str_replace("\r", '', $body);
 
                     // teste si la nouvelle page est differente de la précédente
-                    if (rtrim($body) == rtrim($this->page["body"])) {
-                        echo $_GET['jsonp_callback']."(".json_encode(array("nochange" => '1')).")";
+                    if (rtrim($body) == rtrim($this->page['body'])) {
+                        echo $_GET['jsonp_callback'] . '(' . json_encode(['nochange' => '1']) . ')';
                     } else { // sécurité
                         // add page (revisions)
                         $this->SavePage($this->tag, $body);
@@ -55,16 +54,16 @@ if (isset($_GET['jsonp_callback'])) {
                         // on recupere le commentzire bien formatte
                         $comment = $this->LoadPage($this->tag);
 
-                        $valcomment['commentaires'][0]['tag'] = $comment["tag"];
-                        $valcomment['commentaires'][0]['body'] = $this->Format($comment["body"]);
-                        $valcomment['commentaires'][0]['infos'] = $this->Format($comment["user"]).", ".date(_t('TAGS_DATE_FORMAT'), strtotime($comment["time"]));
-                        $valcomment['commentaires'][0]['hasrighttoaddcomment'] = $this->HasAccess("comment", $_GET['initialpage']);
+                        $valcomment['commentaires'][0]['tag'] = $comment['tag'];
+                        $valcomment['commentaires'][0]['body'] = $this->Format($comment['body']);
+                        $valcomment['commentaires'][0]['infos'] = $this->Format($comment['user']) . ', ' . date(_t('TAGS_DATE_FORMAT'), strtotime($comment['time']));
+                        $valcomment['commentaires'][0]['hasrighttoaddcomment'] = $this->HasAccess('comment', $_GET['initialpage']);
                         $valcomment['commentaires'][0]['hasrighttomodifycomment'] = $this->HasAccess('write', $comment['tag']) || $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin();
                         $valcomment['commentaires'][0]['hasrighttodeletecomment'] = $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin();
                         $valcomment['commentaires'][0]['replies'] = '';
 
-                        $content = $this->render("@tags/comment_list.tpl.html", $valcomment);
-                        echo $_GET['jsonp_callback']."(".json_encode(array("html" => mb_convert_encoding($content, 'UTF-8', 'ISO-8859-1'))).")";
+                        $content = $this->render('@tags/comment_list.tpl.html', $valcomment);
+                        echo $_GET['jsonp_callback'] . '(' . json_encode(['html' => mb_convert_encoding($content, 'UTF-8', 'ISO-8859-1')]) . ')';
                     }
 
                     // sécurité
@@ -83,18 +82,18 @@ if (isset($_GET['jsonp_callback'])) {
                     $body = trim($body);
                 }
 
-                $output .= "<form class=\"form-modify-comment well well-small\" method=\"post\" action=\"".$this->href('ajaxedit')."\">\n".
-                    "<input type=\"hidden\" name=\"previous\" value=\"$previous\" />\n".
-                    "<textarea name=\"body\" required=\"required\" rows=\"3\" placeholder=\""._t('TAGS_WRITE_YOUR_COMMENT_HERE')."\" class=\"comment-response\">\n".
-                    htmlspecialchars($body, ENT_COMPAT, YW_CHARSET).
-                    "</textarea>\n".
-                    ($this->config['preview_before_save'] ? '' : "<input name=\"submit\" type=\"button\" class=\"btn btn-sm btn-primary btn-modify\" value=\""._t('TAGS_MODIFY')."\" />\n").
-                    "<input type=\"button\" value=\""._t('TAGS_CANCEL')."\" class=\"btn btn-sm btn-cancel-modify\" />\n".
+                $output .= '<form class="form-modify-comment well well-small" method="post" action="' . $this->href('ajaxedit') . "\">\n" .
+                    "<input type=\"hidden\" name=\"previous\" value=\"$previous\" />\n" .
+                    '<textarea name="body" required="required" rows="3" placeholder="' . _t('TAGS_WRITE_YOUR_COMMENT_HERE') . "\" class=\"comment-response\">\n" .
+                    htmlspecialchars($body, ENT_COMPAT, YW_CHARSET) .
+                    "</textarea>\n" .
+                    ($this->config['preview_before_save'] ? '' : '<input name="submit" type="button" class="btn btn-sm btn-primary btn-modify" value="' . _t('TAGS_MODIFY') . "\" />\n") .
+                    '<input type="button" value="' . _t('TAGS_CANCEL') . "\" class=\"btn btn-sm btn-cancel-modify\" />\n" .
                     "</form>\n";
         } // switch
     } else {
-        $output .= "<div class=\"alert alert-danger\">"._t('TAGS_NO_WRITE_ACCESS')."</div>\n";
+        $output .= '<div class="alert alert-danger">' . _t('TAGS_NO_WRITE_ACCESS') . "</div>\n";
     }
-    $response = $_GET['jsonp_callback']."(".json_encode(array("html" => mb_convert_encoding($content, 'UTF-8', 'ISO-8859-1'))).")";
+    $response = $_GET['jsonp_callback'] . '(' . json_encode(['html' => mb_convert_encoding($content, 'UTF-8', 'ISO-8859-1')]) . ')';
     echo $response;
 }

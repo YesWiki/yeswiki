@@ -2,12 +2,10 @@
 
 namespace YesWiki\Core\Service;
 
-use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Field\ReactionsField;
+use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
-use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\TripleStore;
 use YesWiki\Wiki;
 
 class ReactionManager
@@ -22,7 +20,7 @@ class ReactionManager
     public const DEFAULT_TITLE_T = 'REACTION_SHARE_YOUR_REACTION';
     public const DEFAULT_LABELS_T = ['REACTION_LIKE', 'REACTION_DISLIKE', 'REACTION_ANGRY', 'REACTION_SURPRISED', 'REACTION_THINKING'];
     // TODO make a migration script to move from old labels translation to english ones (like, dislike,angry,surprised,thinking)
-    public const DEFAULT_IDS = ['japprouve','je-napprouve-pas','fachee','surprise','dubitatifve'];
+    public const DEFAULT_IDS = ['japprouve', 'je-napprouve-pas', 'fachee', 'surprise', 'dubitatifve'];
     public const DEFAULT_IMAGES = ['👍', '👎', '😡', '😮', '🤔'];
     public const DEFAULT_MAX_REACTIONS = 1;
 
@@ -83,15 +81,16 @@ class ReactionManager
                 ], $v['value']);
             } else {
                 // get title and reaction labels for choosen reaction id in choosen page page
-                if (!isset($res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters'])) {
+                if (!isset($res[$v['value']['idReaction'] . '|' . $v['value']['pageTag']]['parameters'])) {
                     $params = $this->getActionParameters($v['value']['pageTag'], $v['value']['idReaction']);
-                    $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters'] = $params[$v['value']['idReaction']] ?? [];
-                    $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['parameters']['pageTag'] = $v['value']['pageTag'];
+                    $res[$v['value']['idReaction'] . '|' . $v['value']['pageTag']]['parameters'] = $params[$v['value']['idReaction']] ?? [];
+                    $res[$v['value']['idReaction'] . '|' . $v['value']['pageTag']]['parameters']['pageTag'] = $v['value']['pageTag'];
                 }
-                $res[$v['value']['idReaction'].'|'.$v['value']['pageTag']]['reactions'][] = $v['value'];
+                $res[$v['value']['idReaction'] . '|' . $v['value']['pageTag']]['reactions'][] = $v['value'];
             }
         }
         ksort($res);
+
         return $res;
     }
 
@@ -115,10 +114,12 @@ class ReactionManager
                     return [$idReaction => $params[$idReaction]];
                 } else {
                     ksort($params);
+
                     return $params;
                 }
             }
         }
+
         return [];
     }
 
@@ -143,10 +144,12 @@ class ReactionManager
                     return [$idReaction => $params[$idReaction]];
                 } else {
                     ksort($params);
+
                     return $params;
                 }
             }
         }
+
         return $params;
     }
 
@@ -193,7 +196,7 @@ class ReactionManager
                             ? ''
                             : trim($this->wiki->render('@core/_reactions_images.twig', [
                                 'image' => $img,
-                                'id' => 'image'
+                                'id' => 'image',
                             ]));
                         $htmlImages[$ids[$i]] = $image;
                     }
@@ -209,10 +212,7 @@ class ReactionManager
     }
 
     /**
-     * to ensure backward compatibility with old reactions from lms extension
-     * @param array $params
-     * @param string $tag
-     * @param null|ReactionsField $field
+     * to ensure backward compatibility with old reactions from lms extension.
      */
     protected function appendParametersFromField(array &$params, string $tag, ?ReactionsField $field = null)
     {
@@ -224,7 +224,7 @@ class ReactionManager
                 $form = $this->formManager->getOne($entry['id_typeannonce']);
                 if (!empty($form['prepared'])) {
                     $reactionsFields = array_filter($form['prepared'], function ($intField) {
-                        return ($intField instanceof ReactionsField);
+                        return $intField instanceof ReactionsField;
                     });
                     if (!empty($reactionsFields)) {
                         // first with name equal to 'reactions'
@@ -265,14 +265,14 @@ class ReactionManager
                     ? ''
                     : trim($this->wiki->render('@core/_reactions_images.twig', [
                         'image' => $rawImages[$k],
-                        'id' => $id
+                        'id' => $id,
                     ]));
             }
             $params[$reactionId] = [
                 'labels' => $labels,
                 'images' => $images,
                 'pageTag' => $tag,
-                'title' => _t('BAZ_SHARE_YOUR_REACTION')
+                'title' => _t('BAZ_SHARE_YOUR_REACTION'),
             ];
         }
     }
@@ -287,6 +287,7 @@ class ReactionManager
         if (!$this->wiki->getUser()) {
             throw new \Exception('Unauthorized');
         }
+
         return $this->tripleStore->create(
             $pageTag,
             self::TYPE_URI,
@@ -322,16 +323,16 @@ class ReactionManager
                 null,
                 '',
                 '',
-                "(`value` LIKE '%\"user\":\"{$this->dbService->escape($user)}\"%')".
-                "AND".
-                "(`value` LIKE '%\"id\":\"{$this->dbService->escape($id)}\"%')".
-                "AND".
-                "(`value` NOT LIKE '%\"idReaction\":\"%')".
-                "AND".
+                "(`value` LIKE '%\"user\":\"{$this->dbService->escape($user)}\"%')" .
+                'AND' .
+                "(`value` LIKE '%\"id\":\"{$this->dbService->escape($id)}\"%')" .
+                'AND' .
+                "(`value` NOT LIKE '%\"idReaction\":\"%')" .
+                'AND' .
                 "(`value` NOT LIKE '%\"date\":\"%')"
             );
         } else {
-            return $this->tripleStore->delete($pageTag, self::TYPE_URI, null, '', '', 'value LIKE \'%user":"'.$user.'","idReaction":"'.$reactionId.'","id":"'.$id.'"%\'');
+            return $this->tripleStore->delete($pageTag, self::TYPE_URI, null, '', '', 'value LIKE \'%user":"' . $user . '","idReaction":"' . $reactionId . '","id":"' . $id . '"%\'');
         }
     }
 }

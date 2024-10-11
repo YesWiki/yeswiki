@@ -1,11 +1,10 @@
 <?php
-/*
-*/
+
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Security\Service\HashCashService;
 
 if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
+    exit('acc&egrave;s direct interdit');
 }
 
 if ($this->HasAccess('write') && $this->HasAccess('read')) {
@@ -16,7 +15,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
             $hashCashCode = $hashCash->getJavascriptCode();
             $plugin_output_new = preg_replace(
                 '/\<hr class=\"hr_clear\" \/\>/',
-                $hashCashCode.'<hr class="hr_clear" />',
+                $hashCashCode . '<hr class="hr_clear" />',
                 $plugin_output_new
             );
         }

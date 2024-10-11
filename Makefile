@@ -27,3 +27,14 @@ yarn-install: yarn.lock ## Install npm vendors according to the current yarn.loc
 ## —— Tests ———————————————
 test: ## Launch unit tests
 	./vendor/bin/phpunit --do-not-cache-result --stderr tests
+
+## —— Linters & Formatters ———————————————
+lint: lint-php lint-js lint-other ## run all linters and formatters
+
+lint-php: ## Lint php
+	PHP_CS_FIXER_IGNORE_ENV=false ./vendor/bin/php-cs-fixer fix
+lint-js: ## Lint JS
+	yarn run lint-js
+lint-other: ## Lint other files
+	yarn run lint-js
+	yarn run lint-other

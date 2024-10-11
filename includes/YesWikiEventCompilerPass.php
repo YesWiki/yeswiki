@@ -1,7 +1,7 @@
 <?php
 
 /**
- * inspired from https://symfony.com/doc/current/service_container/tags.html#create-a-compiler-pass
+ * inspired from https://symfony.com/doc/current/service_container/tags.html#create-a-compiler-pass.
  */
 
 namespace YesWiki\Core;

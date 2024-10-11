@@ -16,6 +16,7 @@ use YesWiki\Core\Service\TemplateEngine;
 function baz_insertion_fiche($data)
 {
     $data['antispam'] = 1;
+
     return $GLOBALS['wiki']->services->get(EntryManager::class)->create($data['id_fiche'], $data);
 }
 
@@ -67,7 +68,7 @@ function baz_requete_recherche_fiches(
         'formsIds' => $id, // Types de fiches (par ID de formulaire)
         'user' => $personne, // N'affiche que les fiches d'un utilisateur
         'keywords' => $q, // Mots-clés pour la recherche fulltext
-        'searchOperator' => $facettesearch // Opérateur à appliquer aux mots-clés
+        'searchOperator' => $facettesearch, // Opérateur à appliquer aux mots-clés
     ]);
 
     // Re-encode fiche as Wiki page
@@ -83,9 +84,10 @@ function validateForm($data)
 {
     try {
         $GLOBALS['wiki']->services->get(EntryManager::class)->validate($data);
-        return array('result' => true);
+
+        return ['result' => true];
     } catch (\Exception $e) {
-        return array('result' => false, 'error' => $e->getMessage());
+        return ['result' => false, 'error' => $e->getMessage()];
     }
 }
 
@@ -94,7 +96,7 @@ function validateForm($data)
  */
 function searchResultstoArray($pages, $params, $formtab = '')
 {
-    $fiches = array();
+    $fiches = [];
 
     foreach ($pages as $page) {
         $fiche = $GLOBALS['wiki']->services->get(EntryManager::class)->decode($page['body']);
@@ -146,14 +148,6 @@ function formulaire_valeurs_template_champs($template)
 }
 
 /**
- * @deprecated Use FormManager::scanAllFacettable
- */
-function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
-{
-    return $GLOBALS['wiki']->services->get(FormManager::class)->scanAllFacettable($fiches, $params['group'], $onlyLists);
-}
-
-/**
  * @deprecated Use FormManager::findNewId
  */
 function baz_nextId()
@@ -166,19 +160,19 @@ function baz_nextId()
  */
 function testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)
 {
-    $acl = empty($tableau_template[12]) ? '' : $tableau_template[12] ; // acl pour l'écriture
+    $acl = empty($tableau_template[12]) ? '' : $tableau_template[12]; // acl pour l'écriture
 
     if (isset($valeurs_fiche['id_fiche'])) {
-        $tag = $valeurs_fiche['id_fiche'] ;
+        $tag = $valeurs_fiche['id_fiche'];
     } else {
-        $tag = '' ;
+        $tag = '';
     }
-    $mode_creation = '' ;
+    $mode_creation = '';
     if ($tag == '') {
-        $mode_creation = 'creation' ;
+        $mode_creation = 'creation';
     }
 
-    return $mode == 'saisie' && !empty($acl) && !$GLOBALS['wiki']->CheckACL($acl, null, true, $tag, $mode_creation)  ;
+    return $mode == 'saisie' && !empty($acl) && !$GLOBALS['wiki']->CheckACL($acl, null, true, $tag, $mode_creation);
 }
 
 /**
@@ -287,9 +281,10 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         return $GLOBALS['wiki']->services->get(TemplateEngine::class)
             ->render('@templates/alert-message.twig', [
                 'type' => 'danger',
-                'message' => _t('PERFORMABLE_ERROR')."<br/>{$t->getMessage()} in <i>{$t->getFile()}</i> on line <i>{$t->getLine()}</i>"
+                'message' => _t('PERFORMABLE_ERROR') . "<br/>{$t->getMessage()} in <i>{$t->getFile()}</i> on line <i>{$t->getLine()}</i>",
             ]);
     }
+
     return $output;
 }
 
@@ -315,6 +310,7 @@ function getAllParameters_carto($wiki)
 function displayResultList($entries, $params = [], $info_nb = true)
 {
     $entryController = $GLOBALS['wiki']->services->get(EntryController::class);
+
     return $entryController->renderBazarList($entries, $params, $info_nb);
 }
 

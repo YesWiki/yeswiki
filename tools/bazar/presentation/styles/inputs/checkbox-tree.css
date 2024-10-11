@@ -1,0 +1,43 @@
+.node-children {
+  margin-left: 2rem;
+  display: none;
+}
+.node-container {
+  position: relative;
+}
+.node-children .border {
+  content: '';
+  position: absolute;
+  top: 2rem;
+  left: 0.5rem;
+  bottom: 0;
+  width: 1px;
+  background-color: var(--primary-color);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.node-container .chevron-icon {
+  transform: rotate(0deg);
+  padding: 5px;
+  margin-left: 5px;
+  transition: transform 0.15s;
+  font-size: 0.8em;
+}
+.checkbox-node .checkbox-label:hover .chevron-icon {
+  color: var(--secondary-color-1);
+}
+
+.node-container.expanded > .checkbox-node .chevron-icon {
+  transform: rotate(90deg);
+}
+
+.check-all-container {
+  --checkbox-color: var(--neutral-color);
+}
+.check-all-container span {
+  font-size: 0.8em !important;
+  font-weight: 800;
+  font-style: normal;
+  text-transform: uppercase;
+}

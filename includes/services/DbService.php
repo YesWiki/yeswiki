@@ -2,11 +2,11 @@
 
 namespace YesWiki\Core\Service;
 
-use DateTime;
 use DateInterval;
+use DateTime;
 use Exception;
-use Throwable;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Throwable;
 
 class DbService
 {
@@ -31,10 +31,10 @@ class DbService
                 $this->params->get('mysql_user'),
                 $this->params->get('mysql_password'),
                 $this->params->get('mysql_database'),
-                $this->params->has('mysql_port') ? $this->params->get('mysql_port') : ini_get("mysqli.default_port")
+                $this->params->has('mysql_port') ? $this->params->get('mysql_port') : ini_get('mysqli.default_port')
             );
             if (!$this->link) {
-                throw new Exception("Not connected to sql");
+                throw new Exception('Not connected to sql');
             }
             if ($this->params->has('db_charset') and $this->params->get('db_charset') === 'utf8mb4') {
                 // necessaire pour les versions de mysql qui ont un autre encodage par defaut
@@ -67,10 +67,10 @@ class DbService
 
     public function addQueryLog($query, $time)
     {
-        $this->queryLog[] = array(
+        $this->queryLog[] = [
             'query' => $query,
-            'time' => $time
-        );
+            'time' => $time,
+        ];
     }
 
     public function prefixTable($tableName)
@@ -80,9 +80,8 @@ class DbService
 
     public function escape($string)
     {
-        return (mysqli_real_escape_string($this->link, $string));
+        return mysqli_real_escape_string($this->link, $string);
     }
-
 
     /*	Should it Returns FALSE on failure? => For the time being dies in case of failure
         For successful SELECT, SHOW, DESCRIBE or EXPLAIN queries mysqli_query() will return a mysqli_result object.
@@ -104,13 +103,15 @@ class DbService
                 $this->addQueryLog($query, $this->getMicroTime() - $start);
             }
         }
+
         return $result;
     }
 
     protected function getMicroTime()
     {
-        list($usec, $sec) = explode(" ", microtime());
-        return ((float) $usec + (float) $sec);
+        list($usec, $sec) = explode(' ', microtime());
+
+        return (float)$usec + (float)$sec;
     }
 
     /*
@@ -122,6 +123,7 @@ class DbService
         if ($data = $this->LoadAll($query)) {
             return $data[0];
         }
+
         return null;
     }
 
@@ -131,13 +133,14 @@ class DbService
      */
     public function loadAll($query): array
     {
-        $data = array();
+        $data = [];
         if ($r = $this->query($query)) {
             while ($row = mysqli_fetch_assoc($r)) {
                 $data[] = $row;
             }
             mysqli_free_result($r);
         }
+
         return $data;
     }
 
@@ -180,32 +183,32 @@ class DbService
                 // convert to UTC
                 $diffInMinutes += intval(floor((new DateTime())->getOffset() / 60));
                 // convert in DateInterval
-                $diff = new DateInterval("PT0S");
+                $diff = new DateInterval('PT0S');
                 $diff->invert = ($diffInMinutes >= 0) ? 0 : 1;
                 $diff->i = abs($diffInMinutes) % 60;
                 $diff->h = (abs($diffInMinutes) - $diff->i) / 60;
 
-                $tz = $diff->format("%R%H:%I");
+                $tz = $diff->format('%R%H:%I');
             }
         }
+
         return $tz;
     }
 
-
     /**
-     * get SQL content : backup method ; preferer mysqldump way it available
-     * @return array ['sql' => string, 'error' => string]
+     * get SQL content : backup method ; preferer mysqldump way it available.
      *
+     * @return array ['sql' => string, 'error' => string]
      */
     public function getSQLContentBackupMethod(): array
     {
-        $sql = "";
-        $error = "";
+        $sql = '';
+        $error = '';
         try {
             $tablesPrefix = trim($this->prefixTable(''));
             $tablesPostfix = [];
             // get Tables
-            $tables = $this->loadAll("show tables");
+            $tables = $this->loadAll('show tables');
             if (!is_array($tables)) {
                 throw new Exception("Error in '" . __METHOD__ . "' (line " . __LINE__ . ") : 'show tables' sql command did not return an array !");
             }
@@ -263,7 +266,7 @@ class DbService
                 SQL;
                 // END HEADER
 
-                $createTableResult = $this->query("show create table " . $tableName);
+                $createTableResult = $this->query('show create table ' . $tableName);
 
                 while ($creationTable = mysqli_fetch_array($createTableResult)) {
                     $sql .= $creationTable[1] . ";\n\n";
@@ -282,28 +285,28 @@ class DbService
                 SQL;
                 // END HEADER
 
-                $rawData = $this->query("select * from " . $tableName);
+                $rawData = $this->query('select * from ' . $tableName);
 
                 $firstRow = true;
                 while ($row = mysqli_fetch_array($rawData)) {
                     if ($firstRow) {
                         $sql .= "INSERT INTO `$tableName` ";
-                        $sql .= "(";
+                        $sql .= '(';
                         for ($i = 0; $i < mysqli_num_fields($rawData); $i++) {
                             if ($i != 0) {
-                                $sql .= ", ";
+                                $sql .= ', ';
                             }
-                            $sql .= "`" . mysqli_fetch_field_direct($rawData, $i)->name . "`";
+                            $sql .= '`' . mysqli_fetch_field_direct($rawData, $i)->name . '`';
                         }
                         $sql .= ") VALUES\n";
                         $firstRow = false;
                     } else {
                         $sql .= ",\n";
                     }
-                    $sql .= "(";
+                    $sql .= '(';
                     for ($i = 0; $i < mysqli_num_fields($rawData); $i++) {
                         if ($i != 0) {
-                            $sql .= ", ";
+                            $sql .= ', ';
                         }
                         $strAdd = '';
                         $field = mysqli_fetch_field_direct($rawData, $i);
@@ -320,7 +323,7 @@ class DbService
                         }
                         $sql .= $strAdd . $this->escape($row[$i] ?? '') . $strAdd;
                     }
-                    $sql .= ")";
+                    $sql .= ')';
                 }
                 $sql .= ";\n";
                 $sql .=
@@ -345,6 +348,7 @@ class DbService
         } catch (Throwable $th) {
             $error = $th->getMessage();
         }
+
         return compact(['sql', 'error']);
     }
 }

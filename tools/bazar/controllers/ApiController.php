@@ -2,15 +2,14 @@
 
 namespace YesWiki\Bazar\Controller;
 
-use Exception;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
-use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\TripleStore;
@@ -25,6 +24,7 @@ class ApiController extends YesWikiController
     public function getAllForms()
     {
         $forms = $this->getService(FormManager::class)->getAll();
+
         return new ApiResponse(empty($forms) ? null : $forms);
     }
 
@@ -77,12 +77,14 @@ class ApiController extends YesWikiController
                         }
                     }
                     if (!empty($lightEntry)) {
-                        $lightEntries[$id] = $lightEntry ;
+                        $lightEntries[$id] = $lightEntry;
                     }
                 }
             }
+
             return new ApiResponse(empty($lightEntries) ? null : $lightEntries);
         }
+
         return new ApiResponse(empty($entries) ? null : $entries);
     }
 
@@ -99,30 +101,34 @@ class ApiController extends YesWikiController
             } else {
                 $html = $this->render('@templates/alert-message.twig', [
                     'type' => 'info',
-                    'message' => _t('ERROR_NO_ACCESS')
+                    'message' => _t('ERROR_NO_ACCESS'),
                 ]);
             }
+
             return new ApiResponse(empty($html) ? null : [$entryId => ['html_output' => $html]]);
         }
+
         return $this->getAllFormEntries([], $output, $selectedEntries);
     }
 
     /**
-     * helper to check if EntryView fast access
-     * @param null|string $output
-     * @param null|string $selectedEntries
-     * @param null|array $get
+     * helper to check if EntryView fast access.
+     *
+     * @param string|null $output
+     * @param string|null $selectedEntries
+     * @param array|null  $get
      * @param bool
      */
     private function isEntryViewFastAccess($output, $selectedEntries, $get): bool
     {
-        return ($output == 'html'
+        return $output == 'html'
             && !empty($selectedEntries) && is_string($selectedEntries) && count(explode(',', $selectedEntries)) == 1
-            && !empty($get['fields']) && $get['fields'] == 'html_output');
+            && !empty($get['fields']) && $get['fields'] == 'html_output';
     }
 
     /**
-     * helper to check if EntryView fast access for Bazar/Service/Guard
+     * helper to check if EntryView fast access for Bazar/Service/Guard.
+     *
      * @param bool
      */
     public function isEntryViewFastAccessHelper(): bool
@@ -135,6 +141,7 @@ class ApiController extends YesWikiController
             $output = '';
             $selectedEntries = '';
         }
+
         return $this->isEntryViewFastAccess($output, $selectedEntries, $_GET);
     }
 
@@ -145,16 +152,17 @@ class ApiController extends YesWikiController
 
         return new ApiResponse(
             [
-            '@context' => (array)json_decode($form['bn_sem_context']) ?: $form['bn_sem_context'],
-            '@id' => $this->wiki->Href('fiche/' . $formId, 'api'),
-            '@type' => ['ldp:Container', 'ldp:BasicContainer'],
-            'dcterms:title' => $form['bn_label_nature'],
-            'ldp:contains' => array_map(function ($entry) use ($form) {
-                $resource = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry, true);
-                unset($resource['@context']);
-                return $resource;
-            }, array_values($entries)),
-        ],
+                '@context' => (array)json_decode($form['bn_sem_context']) ?: $form['bn_sem_context'],
+                '@id' => $this->wiki->Href('fiche/' . $formId, 'api'),
+                '@type' => ['ldp:Container', 'ldp:BasicContainer'],
+                'dcterms:title' => $form['bn_label_nature'],
+                'ldp:contains' => array_map(function ($entry) use ($form) {
+                    $resource = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry, true);
+                    unset($resource['@context']);
+
+                    return $resource;
+                }, array_values($entries)),
+            ],
             Response::HTTP_OK,
             ['Content-Type: application/ld+json; charset=UTF-8']
         );
@@ -188,7 +196,7 @@ class ApiController extends YesWikiController
     {
         if (strpos($_SERVER['CONTENT_TYPE'], 'application/ld+json') !== false) {
             $this->createSemanticEntry($formId);
-        };
+        }
 
         $_POST['antispam'] = 1;
         $entry = $this->getService(EntryManager::class)->create($formId, $_POST, false, $_SERVER['HTTP_SOURCE_URL']);
@@ -217,7 +225,7 @@ class ApiController extends YesWikiController
 
         return new Response('', Response::HTTP_CREATED, [
             'Link: <http://www.w3.org/ns/ldp#Resource>; rel="type"',
-            'Location: ' . $this->wiki->Href('', $entry['id_fiche'])
+            'Location: ' . $this->wiki->Href('', $entry['id_fiche']),
         ]);
     }
 
@@ -228,11 +236,11 @@ class ApiController extends YesWikiController
     {
         $bazarListService = $this->getService(BazarListService::class);
         $externalIds = $_GET['externalIds'] ?? null;
-        $externalModeActivated = (is_array($externalIds) && isset($_GET['externalModeActivated'])) ? in_array($_GET['externalModeActivated'], [1,true,'1','true'], true) : false;
+        $externalModeActivated = (is_array($externalIds) && isset($_GET['externalModeActivated'])) ? in_array($_GET['externalModeActivated'], [1, true, '1', 'true'], true) : false;
         $forms = $bazarListService->getForms([
             'externalModeActivated' => $externalModeActivated,
             'externalIds' => $externalIds,
-            'refresh' => isset($_GET['refresh']) ? in_array($_GET['refresh'], [1,true,'1','true'], true) : false,
+            'refresh' => isset($_GET['refresh']) ? in_array($_GET['refresh'], [1, true, '1', 'true'], true) : false,
         ]);
 
         $formattedGet = array_map(function ($value) {
@@ -264,7 +272,7 @@ class ApiController extends YesWikiController
             ],
             $forms
         );
-        $filters = $bazarListService->formatFilters($formattedGet, $entries, $forms);
+        $filters = $bazarListService->getFilters($formattedGet, $entries, $forms);
 
         // Basic fields
         $fieldList = ['id_fiche', 'bf_titre'];
@@ -273,10 +281,10 @@ class ApiController extends YesWikiController
             $fieldList[] = 'id_typeannonce';
         }
         // fields for colo / icon
-        $fieldList = array_merge($fieldList, [ $_GET['colorfield'] ?? null, $_GET['iconfield'] ?? null]);
+        $fieldList = array_merge($fieldList, [$_GET['colorfield'] ?? null, $_GET['iconfield'] ?? null]);
         // Fields for filters
-        foreach ($filters as $field => $config) {
-            $fieldList[] = $field;
+        foreach ($filters as $filter) {
+            $fieldList[] = $filter['propName'];
         }
         // Fields used to search
         foreach ($searchfields as $field) {
@@ -298,17 +306,6 @@ class ApiController extends YesWikiController
             return $entry['id_typeannonce'];
         }, $entries);
         $formIds = array_unique($formIds);
-
-        // Reduce the size of the data sent by transforming entries object into array
-        // we use the $fieldMapping to transform back the data when receiving data in the front end
-        $entries = array_map(function ($entry) use ($fieldList, $formIds) {
-            $result = [];
-            foreach ($fieldList as $field) {
-                $result[] = $entry[$field] ?? null;
-            }
-            return $result;
-        }, $entries);
-
         $usedForms = array_filter($forms, function ($form) use ($formIds) {
             return in_array($form['bn_id_nature'], $formIds);
         });
@@ -316,19 +313,33 @@ class ApiController extends YesWikiController
             return $f['prepared'];
         }, $usedForms);
 
+        // Reduce the size of the data sent by transforming entries object into array
+        // we use the $fieldMapping to transform back the data when receiving data in the front end
+        $entries = array_map(function ($entry) use ($fieldList) {
+            $result = [];
+            foreach ($fieldList as $field) {
+                if (!empty($entry[$field]) && !empty($_GET['displayfields']['subtitle']) && $_GET['displayfields']['subtitle'] == $field) {
+                    $entry[$field] = $this->wiki->Format($entry[$field]);
+                }
+                $result[] = $entry[$field] ?? null;
+            }
+            return $result;
+        }, $entries);
+
+
         return new ApiResponse(
             [
                 'entries' => $entries,
                 'fieldMapping' => $fieldList,
                 'filters' => $filters,
-                'forms' => $usedForms
+                'forms' => $usedForms,
             ],
             Response::HTTP_OK
         );
     }
 
     /**
-     * Display Bazar api documentation
+     * Display Bazar api documentation.
      *
      * @return string
      */

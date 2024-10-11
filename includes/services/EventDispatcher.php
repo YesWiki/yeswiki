@@ -19,22 +19,22 @@ class EventDispatcher extends SymfonyEventDispatcher
     }
 
     /**
-     * @param string $eventName
-     * @param array $data
      * @param array $errors
      */
     public function yesWikiDispatch(string $eventName, array $data = []): array
     {
         try {
             $this->dispatch(new Event($data), $eventName);
+
             return [];
         } catch (Throwable $th) {
             $errors = ($this->wiki->userIsAdmin()) ? ['exception' => [
                 'message' => $th->getMessage(),
                 'file' => $th->getFile(),
                 'line' => $th->getLine(),
-                'trace' => $th->getTraceAsString()
+                'trace' => $th->getTraceAsString(),
             ]] : [];
+
             return $errors;
         }
     }

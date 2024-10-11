@@ -1,7 +1,6 @@
 <?php
-
 return [
-    /**
+    /*
      * English translation file for YesWiki's main program
      */
     // Commons
@@ -222,7 +221,7 @@ return [
     'YOUR_OLD_PASSWORD' => 'Your former password',
     'NEW_PASSWORD' => 'New password',
     'CHANGE' => 'Change',
-    'USERNAME_MUST_BE_WIKINAME' => 'Your username must not start with !,@,\,/,# and with 3 characters minimum.',
+    'USERNAME_MUST_BE_WIKINAME' => 'Your username must not start with !,@,\,/,# and must have 3 characters minimum.',
     // 'YOU_MUST_SPECIFY_AN_EMAIL' => 'Vous devez sp&eacute;cifier une adresse de messagerie &eacute;lectronique',
     // 'THIS_IS_NOT_A_VALID_EMAIL' => 'Ceci ne ressemble pas &agrave; une adresse de messagerie &eacute;lectronique',
     // 'PASSWORDS_NOT_IDENTICAL' => 'Les mots de passe n\'&eacute;taient pas identiques',
@@ -374,7 +373,7 @@ return [
     'USER_NAME_S_MAXIMUM_LENGTH_IS' => 'User name\'s maximum number of characters is',
     'USER_NO_SPACES_IN_PASSWORD' => 'No spaces are allowed in password',
     'USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS' => 'The minimum number of characters for a user password is',
-    'USER_PASSWORDS_NOT_IDENTICAL' => 'Both passwords entered must be identical',
+    'USER_PASSWORDS_NOT_IDENTICAL' => 'Both passwords entered must be identical !',
     'USER_PASSWORD_TOO_SHORT' => 'Password too short',
     'USER_THIS_EMAIL_IS_ALLREADY_USED_ON_THIS_WIKI' => 'The specified email is allready in use on this wiki',
     'USER_THIS_IS_NOT_A_VALID_EMAIL' => 'This is not a valid email address',
@@ -474,19 +473,19 @@ return [
     // 'EDIT_CONFIG_HINT_COMMENTS_HANDLER' => 'Type de commentaires utilisés (\'\'/embedded_humhub/external_humhub/yeswiki)',
     'EDIT_CONFIG_HINT_DEBUG' => 'Activate debug mode (\'yes\'/\'no\')',
     'EDIT_CONFIG_HINT_DEFAULT_LANGUAGE' => 'Default language (fr or en or ... auto = navigator\'s language)',
-    'EDIT_CONFIG_HINT_CONTACT_FROM' => 'E-mail address used as sender for messages from entries',
+    'EDIT_CONFIG_HINT_CONTACT_FROM' => 'E-mail address used as sender for messages from entries (should be the one used in SMTP settings)',
     'EDIT_CONFIG_HINT_MAIL_CUSTOM_MESSAGE' => 'Custom message for e-mail sending',
     'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING' => 'Asked password to modify forms (see doc on spam management)',
     'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING_MESSAGE' => 'Message displayed above the password asked password to modify forms (see doc on spam management)',
     'EDIT_CONFIG_HINT_ALLOW_DOUBLECLIC' => 'Allow double click to edit menus and special pages (true ou false)',
     'EDIT_CONFIG_HINT_TIMEZONE' => 'Time zone of the site (e.g. UTC, Europe/Paris, Europe/London)',
     'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Methods allowed to be displayed in iframes (iframe,editiframe,bazariframe,render,all = allow all)',
-    'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Maximum number of page\'s revisions displayed by the handler `/revisions`.',
+    'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Maximum number of page\'s revisions displayed in the modification\'s log',
     'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Enable HTML purifier before backup. Be careful, modify the content to backup! (true or false)',
     'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Enable favorites (true or false)',
     'EDIT_CONFIG_HINT_PREVIEW_BEFORE_SAVE' => 'Enable pre-save preview (true or false)',
     'EDIT_CONFIG_GROUP_CORE' => 'Main parameters',
-    'EDIT_CONFIG_GROUP_ACCESS' => "Access rights",
+    'EDIT_CONFIG_GROUP_ACCESS' => 'Access rights',
     'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
     // actions/userstable.php
     'USERSTABLE_USER_DELETED' => 'The user "{username}" was deleted.',
@@ -682,4 +681,5 @@ return [
     'USER_NAME_DOES_NOT_EXIST' => 'user does not exist',
     'GROUP_NAME_DOES_NOT_EXIST' => 'group does not exist',
     'INVALID_GROUP_NAME' => 'group name is invalid',
+    'USER_GOTOADMIN' => 'User management',
 ];

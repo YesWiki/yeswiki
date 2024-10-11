@@ -1,36 +1,34 @@
 <?php
 
 // Vérification de sécurité
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    exit('acc&egrave;s direct interdit');
 }
 
 $GLOBALS['tocaction'] = 0;
 
 $tag = $this->GetPageTag();
 $page = $this->LoadPage($tag);
-$toc_body = $page["body"];
-$class = $this->GetParameter("class");
-$closed = $this->GetParameter("closed");
-$title = $this->GetParameter("title");
+$toc_body = $page['body'];
+$class = $this->GetParameter('class');
+$closed = $this->GetParameter('closed');
+$title = $this->GetParameter('title');
 if (empty($title)) {
     $title = _t('TOC_TABLE_OF_CONTENTS');
 }
 
+echo '<div id="toc' . $tag . '" class="toc well' . (!empty($class) ? ' ' . $class : '') . "\">\n";
 
-
-echo "<div id=\"toc".$tag."\" class=\"toc well".(!empty($class) ? ' '.$class : '')."\">\n";
-
-echo    "<div class=\"toc-title accordion-trigger\" data-toggle=\"collapse\" data-target=\"#toc-menu".$tag."\">".
-'<span class="arrow">'.($closed == 1 ? '&#9658;' : '&#9660;').'</span>&nbsp;<strong>'.$title."</strong>
+echo '<div class="toc-title accordion-trigger" data-toggle="collapse" data-target="#toc-menu' . $tag . '">' .
+'<span class="arrow">' . ($closed == 1 ? '&#9658;' : '&#9660;') . '</span>&nbsp;<strong>' . $title . "</strong>
 </div><!-- /.toc-title -->\n
 <div class=\"toc-menu\">
-<div id=\"toc-menu".$tag."\" class=\"collapse".($closed == 1 ? '' : ' in')."\">\n";
+<div id=\"toc-menu" . $tag . '" class="collapse' . ($closed == 1 ? '' : ' in') . "\">\n";
 
 global $wiki;
 $wiki = $this;
 
-if (!function_exists("translate2toc")) {
+if (!function_exists('translate2toc')) {
     function translate2toc($text)
     {
         global $wiki;
@@ -43,61 +41,62 @@ if (!function_exists("translate2toc")) {
         $output = '';
 
         while ($cur_text) {
-            if (! preg_match("/(?:(={2,6})|^(?!\\\\)(\#{1,5}) (?=[^\\n\#]*\\n))(.*)/ms", $cur_text, $matches)) {
+            if (!preg_match("/(?:(={2,6})|^(?!\\\\)(\#{1,5}) (?=[^\\n\#]*\\n))(.*)/ms", $cur_text, $matches)) {
                 break;
             }
 
             $cur_text = $matches[3];
-            $class = "";
-            $endmatch = "";
-            if ($matches[1] == "======" || $matches[2] == "#") {
+            $class = '';
+            $endmatch = '';
+            if ($matches[1] == '======' || $matches[2] == '#') {
                 $l1++;
-                $class = "toc1";
-                $toc = "TOC_1_".(2 * $l1 - 1);
+                $class = 'toc1';
+                $toc = 'TOC_1_' . (2 * $l1 - 1);
                 $l1++;
-                $endmatch = empty($matches[2]) ? "/(.*)======(.*?)/msU" : "/(.*)\n(.*?)/msU";
-            } elseif ($matches[1] == "=====" || $matches[2] == "##") {
+                $endmatch = empty($matches[2]) ? '/(.*)======(.*?)/msU' : "/(.*)\n(.*?)/msU";
+            } elseif ($matches[1] == '=====' || $matches[2] == '##') {
                 $l2++;
-                $class = "toc2";
-                $toc = "TOC_2_".(2 * $l2 - 1);
+                $class = 'toc2';
+                $toc = 'TOC_2_' . (2 * $l2 - 1);
                 $l2++;
-                $endmatch = empty($matches[2]) ? "/(.*)=====(.*?)/msU" : "/(.*)\n(.*?)/msU";
-            } elseif ($matches[1] == "====" || $matches[2] == "###") {
+                $endmatch = empty($matches[2]) ? '/(.*)=====(.*?)/msU' : "/(.*)\n(.*?)/msU";
+            } elseif ($matches[1] == '====' || $matches[2] == '###') {
                 $l3++;
-                $class = "toc3";
-                $toc = "TOC_3_".(2 * $l3 - 1);
+                $class = 'toc3';
+                $toc = 'TOC_3_' . (2 * $l3 - 1);
                 $l3++;
-                $endmatch = empty($matches[2]) ? "/(.*)====(.*?)/msU" : "/(.*)\n(.*?)/msU";
-            } elseif ($matches[1] == "==="  || $matches[2] == "####") {
+                $endmatch = empty($matches[2]) ? '/(.*)====(.*?)/msU' : "/(.*)\n(.*?)/msU";
+            } elseif ($matches[1] == '===' || $matches[2] == '####') {
                 $l4++;
-                $class = "toc4";
-                $toc = "TOC_4_".(2 * $l4 - 1);
+                $class = 'toc4';
+                $toc = 'TOC_4_' . (2 * $l4 - 1);
                 $l4++;
-                $endmatch = empty($matches[2]) ? "/(.*)===(.*?)/msU" : "/(.*)\n(.*?)/msU";
-            } elseif ($matches[1] == "==" || $matches[2] == "#####") {
+                $endmatch = empty($matches[2]) ? '/(.*)===(.*?)/msU' : "/(.*)\n(.*?)/msU";
+            } elseif ($matches[1] == '==' || $matches[2] == '#####') {
                 $l5++;
-                $class = "toc5";
-                $toc = "TOC_5_".(2 * $l5 - 1);
+                $class = 'toc5';
+                $toc = 'TOC_5_' . (2 * $l5 - 1);
                 $l5++;
-                $endmatch = empty($matches[2]) ? "/(.*)==(.*?)/msU" : "/(.*)\n(.*?)/msU";
+                $endmatch = empty($matches[2]) ? '/(.*)==(.*?)/msU' : "/(.*)\n(.*?)/msU";
             } else {
                 $output .= "????\n";
             }
 
-            if (! preg_match($endmatch, $cur_text, $matches)) {
+            if (!preg_match($endmatch, $cur_text, $matches)) {
                 break;
             }
 
             $output .= "<li class=\"$class\"><a href=\"#$toc\">"
-                .trim($matches[1])."</a></li>\n";
+                . trim($matches[1]) . "</a></li>\n";
             $cur_text = $matches[2];
         }
+
         return $output;
     }
 }
 
 $script = "$(document).ready(function(){
-    var toc = $('#toc".$tag."');   
+    var toc = $('#toc" . $tag . "');   
     if (toc.length>0) {
         $('body').attr('data-spy','scroll');
             
@@ -139,13 +138,13 @@ $this->AddJavascript($script);
 
 // on vérifie qu'il y est au moins un titre pour faire la liste
 if (preg_match("/(={2,6})(.*)|^(?!\\\\)\#{1,5} [^\\n\#]*\\n/ms", $toc_body, $matches)) {
-    echo    "<ul class=\"unstyled\">\n".
-                translate2toc(preg_replace("/\"\".*?\"\"/ms", "", $toc_body)).
+    echo "<ul class=\"unstyled\">\n" .
+                translate2toc(preg_replace('/"".*?""/ms', '', $toc_body)) .
             "</ul>\n";
 }
 
 // on ferme les divs ouvertes par l'action toc
 echo "</div><!-- /.toc-menu -->\n
-    </div><!-- /#toc-menu".$tag." -->\n
-    </div><!-- /#toc".$tag." -->\n";
+    </div><!-- /#toc-menu" . $tag . " -->\n
+    </div><!-- /#toc" . $tag . " -->\n";
 ?> 

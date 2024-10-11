@@ -1,13 +1,10 @@
 <?php
 
 return [
-
     'BAZ_FORMULAIRE' => 'Formulaires',
     'BAZ_LISTES' => 'Listes',
     'BAZ_NOM_LISTE' => 'Nom de la liste',
     'BAZ_VALEURS_LISTE' => 'Valeurs de la liste',
-    'BAZ_VALEURS_LISTE_HINT' => 'Pour la cl&eacute; pas d\'accent, de caract&egrave;res sp&eacute;ciaux, d\'espace. Chaque cl&eacute; sera unique.',
-    'BAZ_AJOUTER_LABEL_LISTE' => 'Ajouter une nouvelle valeur &agrave; la liste',
     'BAZ_AJOUTER_CHAMPS_FORMULAIRE' => 'Ajouter un nouveau champs au formulaire',
     'BAZ_MODIFIER_FORMULAIRES' => 'Gestion des formulaires',
     'BAZ_GESTION_LISTES' => 'Gestion des listes',
@@ -204,11 +201,8 @@ return [
     'IMAGE_VALIDE_REQUIS' => 'Ajouter une image &agrave; cette fiche est obligatoire',
     'BAZ_LE_FICHIER_A_ETE_EFFACE' => 'Le fichier {file} a &eacute;t&eacute; effac&eacute;.',
     'BAZ_PAS_DE_FICHES_SAUVEES_EN_VOTRE_NOM' => 'Vous n\'avez aucune fiche enregistr&eacute;e pour l\'instant.',
-    'BAZ_DEPLACER_L_ELEMENT' => 'D&eacute;placer l\'&eacute;l&eacute;ment',
     'BAZ_LIST_NAME' => 'Nom de la liste',
     'BAZ_SAVE' => 'Enregistrer',
-    'BAZ_KEY' => 'Cl&eacute;',
-    'BAZ_TEXT' => 'Texte',
     'BAZ_BAD_IMAGE_FILE_EXTENSION' => 'Mauvaise extension pour l\'image (doit &ecirc;tre .jpg ou .png ou .gif)',
     'BAZ_IMAGE_FILE_NOT_FOUND' => 'Fichier image non trouv&eacute;',
     'BAZAR_ACTION_VALEUR' => 'Action {{valeur...}}',

@@ -8,7 +8,6 @@ use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory as SymfonyPass
 use Throwable;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\MD5PasswordHasher;
-use YesWiki\Core\Service\DbService;
 
 class PasswordHasherFactory extends SymfonyPasswordHasherFactory
 {
@@ -22,28 +21,28 @@ class PasswordHasherFactory extends SymfonyPasswordHasherFactory
             $params = [
                 'md5' => [
                     'class' => MD5PasswordHasher::class,
-                    'arguments' => [true]
+                    'arguments' => [true],
                 ],
                 User::class => [
                     'algorithm' => 'auto',
                     'migrate_from' => [
-                        'md5' // uses the "md5" hasher configured above
-                    ]
+                        'md5', // uses the "md5" hasher configured above
+                    ],
                 ],
                 'cookie' => [
                     'algorithm' => 'bcrypt',
-                    'cost' => 9 // default 13, 9 less difficult to be faster
-                ]
+                    'cost' => 9, // default 13, 9 less difficult to be faster
+                ],
             ];
         } else {
             $params = [
                 User::class => [
                     'class' => MD5PasswordHasher::class,
-                    'arguments' => [false]
+                    'arguments' => [false],
                 ],
                 'cookie' => [
                     'algorithm' => 'auto',
-                ]
+                ],
             ];
         }
         parent::__construct($params);
@@ -52,13 +51,14 @@ class PasswordHasherFactory extends SymfonyPasswordHasherFactory
     public function newModeIsActivated(): bool
     {
         try {
-            $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable("users")} LIKE 'password';");
+            $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable('users')} LIKE 'password';");
             if (@mysqli_num_rows($result) === 0) {
                 return false;
             }
             $row = mysqli_fetch_assoc($result);
             mysqli_free_result($result);
-            return !empty($row['Type']) && $row['Type'] == "varchar(256)";
+
+            return !empty($row['Type']) && $row['Type'] == 'varchar(256)';
         } catch (Throwable $th) {
             return false;
         }
@@ -66,6 +66,6 @@ class PasswordHasherFactory extends SymfonyPasswordHasherFactory
 
     public function activateNewMode(): bool
     {
-        return $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable("users")} MODIFY COLUMN `password` varchar(256) NOT NULL;");
+        return $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable('users')} MODIFY COLUMN `password` varchar(256) NOT NULL;");
     }
 }

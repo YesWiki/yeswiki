@@ -11,12 +11,13 @@
                 {{ (favorite.entry is not empty and favorite.entry.html_data is not empty) ? favorite.entry.html_data|raw : '' }}
                 href="{{ url({tag:favorite.resource}) }}"
                 title="{{ favoriteTitle }}"
+		aria-label="{{ favoriteTitle }}"
                 id="favoriteTile{{favorite.resource}}">
                 <div class="image-container">
-                    <img loading="lazy" class="trombi-image img-placeholder"
+                    <img loading="lazy" class="trombi-image img-placeholder" alt=""
                     src="tools/bazar/libs/vendor/placeholder.php?size=140x140&amp;bg=efefef&amp;text=">
                     {% if favorite.image is not empty %}
-                        <img loading="lazy" class="trombi-image for-my-favorites" alt="{{ favoriteTitle }}"
+                        <img loading="lazy" class="trombi-image for-my-favorites" alt=""
                             src="{{ urlImage({fileName:"files/#{favorite.image}",width:140,height:140,mode:'fit'}) }}"
                             onerror="javascripts:this.src='{{ "files/#{favorite.image}" }}';this.removeAttribute('onerror');"
                         >
@@ -32,6 +33,7 @@
             <div class="favorite-container">
                 <a href="#"
                     title="{{ _t('FAVORITES_REMOVE')  }}"
+                    aria-label="{{ _t('FAVORITES_REMOVE')  }}"
                     data-resource="{{ favorite.resource }}" 
                     data-user="{{ currentUser }}"
                     data-linkedFavoriteid="favoriteTile{{favorite.resource}}"

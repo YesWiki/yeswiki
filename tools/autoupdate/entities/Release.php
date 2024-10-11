@@ -4,7 +4,7 @@ namespace YesWiki\AutoUpdate\Entity;
 
 class Release
 {
-    public const UNKNOW_RELEASE = "0000-00-00-0";
+    public const UNKNOW_RELEASE = '0000-00-00-0';
     public $release;
 
     public function __construct($release)
@@ -20,6 +20,7 @@ class Release
         if ($this->release === $this::UNKNOW_RELEASE) {
             return _t('AU_UNKNOW');
         }
+
         return (string)$this->release;
     }
 
@@ -39,6 +40,7 @@ class Release
                 return $i + 1;
             }
         }
+
         return -1;
     }
 
@@ -49,7 +51,7 @@ class Release
 
     private function checkFormat($release)
     {
-        $patternDate = "/^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{1,2}$/";
+        $patternDate = '/^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{1,2}$/';
         if (preg_match($patternDate, $release) === 1) {
             return true;
         }
@@ -57,6 +59,7 @@ class Release
         if (preg_match($patternSemVersion, $release) === 1) {
             return true;
         }
+
         return false;
     }
 }

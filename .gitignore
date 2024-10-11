@@ -116,7 +116,8 @@ tools/*
 *.iml
 
 # vscode IDE
-.vscode
+!.vscode
+.vscode/settings.json
 
 # Docker
 .db
@@ -125,4 +126,5 @@ docker-compose.local.yml
 # Other
 .phpintel/
 *.old
+.php-cs-fixer.cache
 TODO

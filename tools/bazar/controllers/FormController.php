@@ -3,13 +3,13 @@
 namespace YesWiki\Bazar\Controller;
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
-use Tamtamchik\SimpleFlash\Flash;
 
 class FormController extends YesWikiController
 {
@@ -54,19 +54,19 @@ class FormController extends YesWikiController
                 $values[$form['bn_id_nature']]['description'] = $form['bn_description'];
                 $values[$form['bn_id_nature']]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
                 $values[$form['bn_id_nature']]['canDelete'] = !$this->securityController->isWikiHibernated() && $this->wiki->UserIsAdmin();
-                $values[$form['bn_id_nature']]['isSemantic'] = isset($form['bn_sem_type']) && $form['bn_sem_type'] !== "";
+                $values[$form['bn_id_nature']]['isSemantic'] = isset($form['bn_sem_type']) && $form['bn_sem_type'] !== '';
                 $values[$form['bn_id_nature']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
-                    return ($field instanceof MapField);
+                    return $field instanceof MapField;
                 }));
                 $values[$form['bn_id_nature']]['isDate'] = $this->getService(IcalFormatter::class)->isICALForm($form);
             }
         }
 
-        return $this->render("@bazar/forms/forms_table.twig", [
+        return $this->render('@bazar/forms/forms_table.twig', [
             'message' => $message,
             'forms' => $values,
             'userIsAdmin' => $this->wiki->UserIsAdmin(),
-            'isWikiHibernated' => $this->securityController->isWikiHibernated()
+            'isWikiHibernated' => $this->securityController->isWikiHibernated(),
         ]);
     }
 
@@ -79,15 +79,16 @@ class FormController extends YesWikiController
                 $form = $this->formManager->getFromRawData($_POST);
                 if ($this->formIsValid($form)) {
                     $this->formManager->create($_POST);
+
                     return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE'], false));
                 }
             }
 
-            return $this->render("@bazar/forms/forms_form.twig", [
+            return $this->render('@bazar/forms/forms_form.twig', [
                 'form' => $form,
                 'formAndListIds' => baz_forms_and_lists_ids(),
                 'groupsList' => $this->getGroupsListIfEnabled(),
-                'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption()
+                'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption(),
             ]);
         } else {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
@@ -103,15 +104,16 @@ class FormController extends YesWikiController
                 $form = $this->formManager->getFromRawData($_POST);
                 if ($this->formIsValid($form)) {
                     $this->formManager->update($_POST);
+
                     return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
                 }
             }
 
-            return $this->render("@bazar/forms/forms_form.twig", [
+            return $this->render('@bazar/forms/forms_form.twig', [
                 'form' => $form,
                 'formAndListIds' => baz_forms_and_lists_ids(),
                 'groupsList' => $this->getGroupsListIfEnabled(),
-                'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption() && $this->formManager->isAvailableOnlyOneEntryMessage()
+                'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption() && $this->formManager->isAvailableOnlyOneEntryMessage(),
             ]);
         } else {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
@@ -125,8 +127,10 @@ class FormController extends YesWikiController
         });
         if (count($titleFields) == 0) {
             Flash::error(_t('BAZ_FORM_NEED_TITLE'));
+
             return false;
         }
+
         return true;
     }
 

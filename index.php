@@ -1,14 +1,15 @@
 <?php
 /**
- * Yeswiki start file
+ * Yeswiki start file.
  *
  * Instantiates the main YesWiki class, loads the extensions,
  * and runs the current page
  *
  * @category Wiki
- * @package  YesWiki
+ *
  * @license  GNU/GPL version 3
- * @link     https://yeswiki.net
+ *
+ * @see     https://yeswiki.net
  */
 
 use YesWiki\Core\YesWikiLoader;

@@ -3,13 +3,11 @@
 namespace YesWiki\Bazar\Service;
 
 use DateInterval;
-use DateTimeInterface;
 use DateTimeImmutable;
+use DateTimeInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Throwable;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Entity\Event;
 use YesWiki\Core\Service\DateService as CoreDateService;
 use YesWiki\Core\Service\PageManager;
@@ -17,7 +15,7 @@ use YesWiki\Core\Service\PageManager;
 class DateService implements EventSubscriberInterface
 {
     protected const DEFAULT_MAXIMUM_REPETITION = 600;
-    protected const PREFIX_ERROR = "RecurentEvents: ";
+    protected const PREFIX_ERROR = 'RecurentEvents: ';
 
     protected $coreDateService;
     protected $entryManager;
@@ -55,7 +53,6 @@ class DateService implements EventSubscriberInterface
         );
     }
 
-
     /**
      * @param Event $event
      */
@@ -81,9 +78,6 @@ class DateService implements EventSubscriberInterface
         }
     }
 
-    /**
-     * @param string $entryId
-     */
     public function followId(string $entryId)
     {
         if (!in_array($entryId, $this->followedIds)) {
@@ -92,20 +86,16 @@ class DateService implements EventSubscriberInterface
     }
 
     /**
-     * @param Event $event
      * @return array $entry
      */
     protected function getEntry(Event $event): array
     {
         $data = $event->getData();
         $entry = $data['data'] ?? [];
+
         return is_array($entry) ? $entry : [];
     }
 
-    /**
-     * @param array $entry
-     * @return bool
-     */
     protected function shouldFollowEntry(array $entry): bool
     {
         return !empty($entry['id_fiche'])
@@ -113,8 +103,7 @@ class DateService implements EventSubscriberInterface
     }
 
     /**
-     * get changes for repetition
-     * @param array $entry
+     * get changes for repetition.
      */
     protected function createRepetitions(array $entry)
     {
@@ -155,11 +144,7 @@ class DateService implements EventSubscriberInterface
                 if (!empty($calculateNewStartDate) && $calculateNewStartDate->diff(new DateTimeImmutable('1970-01-01'))->invert === 1) {
                     $delta = $newStartDate->diff($calculateNewStartDate);
                     if ($delta->invert === 1) {
-                        throw new Exception(
-                            'Error : calculated delta is negative for '
-                            . "newStartDate:{$newStartDate->format('c')} and "
-                            . "calculateNewStartDate:{$calculateNewStartDate->format('c')}"
-                        );
+                        throw new Exception('Error : calculated delta is negative for ' . "newStartDate:{$newStartDate->format('c')} and " . "calculateNewStartDate:{$calculateNewStartDate->format('c')}");
                     }
                     $newStartDate = $calculateNewStartDate;
                     $newEndDate = $newEndDate->add($delta);
@@ -169,17 +154,14 @@ class DateService implements EventSubscriberInterface
                     }
                 }
             }
-        } catch(Throwable $th) {
+        } catch (Throwable $th) {
             $this->triggerNoticeErrorIfPossible("{$th->getMessage()} in file '" . basename($th->getFile()) . "' on line {$th->getLine()}");
         }
     }
 
     /**
-     * create new entry if limit not reached
-     * @param array $data
-     * @param DateTimeInterface $newStartDate
-     * @param DateTimeInterface $newEndDate
-     * @param array $entry
+     * create new entry if limit not reached.
+     *
      * @param bool $limitDateIsReached
      */
     protected function createEntryIfPossible(
@@ -208,11 +190,12 @@ class DateService implements EventSubscriberInterface
                 if (empty($newName)) {
                     // does not create this repetition
                     $this->triggerNoticeErrorIfPossible("not possible to find an `id_fiche` from '{$newEntry['id_fiche']}'");
+
                     return false;
                 }
                 $newEntry['id_fiche'] = $newName;
             }
-            foreach([
+            foreach ([
                 'bf_date_debut_evenement' => $newStartDate,
                 'bf_date_fin_evenement' => $newEndDate,
             ] as $key => $dateObj) {
@@ -233,16 +216,13 @@ class DateService implements EventSubscriberInterface
             );
             $_FILES = $savedFiles;
         }
+
         return false;
     }
 
     /**
-     * get calculateNewStartDate
-     * @param DateTimeInterface $newStartDate
-     * @param int $selectedMonth
-     * @param array $days
-     * @param int $step
-     * @param array $data
+     * get calculateNewStartDate.
+     *
      * @return DateTimeInterface $calculateNewStartDate
      */
     protected function calculateNextDate(
@@ -279,7 +259,7 @@ class DateService implements EventSubscriberInterface
                     $days,
                     $currentStartYear,
                     $nextStartMonth,
-                    [$this,'calculateNextMonth']
+                    [$this, 'calculateNextMonth']
                 );
                 break;
             case 'w':
@@ -309,6 +289,7 @@ class DateService implements EventSubscriberInterface
                 $calculateNewStartDate = $newStartDate->add(new DateInterval("P{$step}D"));
                 break;
         }
+
         return $calculateNewStartDate;
     }
 
@@ -333,7 +314,7 @@ class DateService implements EventSubscriberInterface
         if ($data['whenInMonth'] === 'nthOfMonth') {
             $nth = intval($data['nth']);
             $limit = 60;
-            while($limit > 0 && $nth > $this->getNbDaysInMonth($currentStartYear, $nextStartMonth)) {
+            while ($limit > 0 && $nth > $this->getNbDaysInMonth($currentStartYear, $nextStartMonth)) {
                 $callback($nextStartMonth, $currentStartYear, $step);
                 $limit = $limit - 1;
             }
@@ -344,7 +325,7 @@ class DateService implements EventSubscriberInterface
                 'secondOfMonth' => 2,
                 'thirdOfMonth' => 3,
                 'forthOfMonth' => 4,
-                'lastOfMonth' => 99
+                'lastOfMonth' => 99,
             ];
             $wantedPosition = $wantedPositionList[$data['whenInMonth']] ?? 1;
             $nbDaysInMonth = $this->getNbDaysInMonth($currentStartYear, $nextStartMonth);
@@ -360,6 +341,7 @@ class DateService implements EventSubscriberInterface
                 }
             }
         }
+
         return $calculateNewStartDate;
     }
 
@@ -371,13 +353,13 @@ class DateService implements EventSubscriberInterface
     }
 
     /**
-     * check that data are rightly formatted
-     * @param array $entry
+     * check that data are rightly formatted.
+     *
      * @return array [$data,$currentStartDate,$currentEndDate]
      */
     protected function checkData(array $entry): array
     {
-        if(empty($entry['bf_date_fin_evenement_data'])
+        if (empty($entry['bf_date_fin_evenement_data'])
             || empty($entry['bf_date_fin_evenement'])
             || empty($entry['bf_date_debut_evenement'])) {
             // this entry is not recurrent : return
@@ -389,6 +371,7 @@ class DateService implements EventSubscriberInterface
         } catch (Throwable $th) {
             $this->triggerNoticeErrorIfPossible("for '{$entry['id_fiche']}', " .
                 "{$th->getMessage()} from {$th->getFile()} on line {$th->getLine()}");
+
             return [];
         }
         $data = $entry['bf_date_fin_evenement_data'];
@@ -396,12 +379,14 @@ class DateService implements EventSubscriberInterface
             return [];
         }
         // check repetition format
-        if (empty($data['repetition']) || !in_array($data['repetition'], ['d','w','m','y'], true)) {
+        if (empty($data['repetition']) || !in_array($data['repetition'], ['d', 'w', 'm', 'y'], true)) {
             $this->triggerCheckDataErrorIfPossible($entry, 'repetition');
+
             return [];
         }
-        if (in_array($data['repetition'], ['m','y'], true) && (empty($data['whenInMonth']) || !is_string($data['whenInMonth']))) {
+        if (in_array($data['repetition'], ['m', 'y'], true) && (empty($data['whenInMonth']) || !is_string($data['whenInMonth']))) {
             $this->triggerCheckDataErrorIfPossible($entry, 'whenInMonth');
+
             return [];
         }
         if (!empty($data['whenInMonth'])
@@ -413,35 +398,41 @@ class DateService implements EventSubscriberInterface
                 || intval($data['nth']) > 31
             )) {
             $this->triggerCheckDataErrorIfPossible($entry, 'nth');
+
             return [];
         }
         // check step format
         if (empty($data['step']) || !is_scalar($data['step']) || intval($data['step']) <= 0) {
             $this->triggerCheckDataErrorIfPossible($entry, 'step');
+
             return [];
         }
         // check nbmax format
         if (empty($data['nbmax']) || !is_scalar($data['nbmax']) || intval($data['nbmax']) <= 0) {
             $this->triggerCheckDataErrorIfPossible($entry, 'nbmax');
+
             return [];
         }
         // check limitdate format
         if (!empty($data['limitdate'])) {
-            if(!is_string($data['limitdate'])) {
+            if (!is_string($data['limitdate'])) {
                 $this->triggerCheckDataErrorIfPossible($entry, 'limitdate');
+
                 return [];
             }
             $dateTimeObj = new DateTimeImmutable($data['limitdate']);
             if (!$dateTimeObj) {
                 $this->triggerCheckDataErrorIfPossible($entry, 'limitdate');
+
                 return [];
             }
             $data['limitdate'] = $dateTimeObj;
         }
         // check except
         if (!empty($data['except'])) {
-            if(!is_array($data['except'])) {
+            if (!is_array($data['except'])) {
                 $this->triggerCheckDataErrorIfPossible($entry, 'except');
+
                 return [];
             }
             $data['except'] = array_map(
@@ -465,13 +456,12 @@ class DateService implements EventSubscriberInterface
                 $data['except']
             );
         }
-        return compact(['data','currentStartDate','currentEndDate']);
+
+        return compact(['data', 'currentStartDate', 'currentEndDate']);
     }
 
     /**
-     * trigger notice error if possible forCheckData
-     * @param array $entry
-     * @param string $paramName
+     * trigger notice error if possible forCheckData.
      */
     protected function triggerCheckDataErrorIfPossible(array $entry, string $paramName)
     {
@@ -481,8 +471,7 @@ class DateService implements EventSubscriberInterface
     }
 
     /**
-     * trigger notice error if possible
-     * @param string $message
+     * trigger notice error if possible.
      */
     protected function triggerNoticeErrorIfPossible(string $message)
     {
@@ -503,7 +492,7 @@ class DateService implements EventSubscriberInterface
             'thu' => 4,
             'fri' => 5,
             'sat' => 6,
-            'sun' => 7
+            'sun' => 7,
         ];
         $days = array_filter($days, function ($name) use ($associations) {
             return is_string($name) && array_key_exists($name, $associations);
@@ -512,6 +501,7 @@ class DateService implements EventSubscriberInterface
             return $associations[$name];
         }, $days);
         sort($days);
+
         return $days;
     }
 
@@ -529,16 +519,16 @@ class DateService implements EventSubscriberInterface
             'sep' => 9,
             'oct' => 10,
             'nov' => 11,
-            'dec' => 12
+            'dec' => 12,
         ];
-        return(!empty($data['month']) && array_key_exists($data['month'], $associations))
+
+        return (!empty($data['month']) && array_key_exists($data['month'], $associations))
             ? $associations[$data['month']]
             : '';
     }
 
     /**
-     * remove linked entries
-     * @param array $entry
+     * remove linked entries.
      */
     protected function deleteLinkedEntries(array $entry)
     {
@@ -550,8 +540,8 @@ class DateService implements EventSubscriberInterface
                 [
                     'formsIds' => [$formId],
                     'queries' => [
-                        'bf_date_fin_evenement_data' => ".*$entryId.*"
-                    ]
+                        'bf_date_fin_evenement_data' => ".*$entryId.*",
+                    ],
                 ],
                 false, // filter on read Acl
                 false
@@ -561,10 +551,10 @@ class DateService implements EventSubscriberInterface
                     $entriesToDelete,
                     function ($entryToFilter) use ($entryId) {
                         return !empty($entryToFilter['bf_date_fin_evenement_data'])
-                            && $entryToFilter['bf_date_fin_evenement_data'] === "{\"recurrentParentId\":\"$entryId\"}" ;
+                            && $entryToFilter['bf_date_fin_evenement_data'] === "{\"recurrentParentId\":\"$entryId\"}";
                     }
                 );
-                foreach($entriesToDelete as $entryToDelete) {
+                foreach ($entriesToDelete as $entryToDelete) {
                     try {
                         $this->entryManager->delete($entryToDelete['id_fiche'], true); // $forceEvenIfNotOwner = true
                     } catch (Throwable $th) {
@@ -576,7 +566,7 @@ class DateService implements EventSubscriberInterface
     }
 
     /**
-     * check if associated form is restricted for only one entry by user
+     * check if associated form is restricted for only one entry by user.
      */
     public function canRegisterMultipleEntries(?array $entry): bool
     {
@@ -588,6 +578,7 @@ class DateService implements EventSubscriberInterface
                 $canRegisterMultipleEntries = ($form['bn_only_one_entry'] !== 'Y');
             }
         }
+
         return $canRegisterMultipleEntries;
     }
 }

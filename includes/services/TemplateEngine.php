@@ -45,7 +45,7 @@ class TemplateEngine
                 'custom/templates',
                 'templates',
                 'themes/tools',
-                "themes/{$config->get('favorite_theme')}/tools"
+                "themes/{$config->get('favorite_theme')}/tools",
             ] as $dir) {
                 $paths[] = $dir . '/' . $extensionName . '/templates/';
                 $paths[] = $dir . '/' . $extensionName . '/';
@@ -84,7 +84,7 @@ class TemplateEngine
         // Set up twig
         $this->twig = new \Twig\Environment($this->twigLoader, [
             'cache' => 'cache/templates/',
-            'auto_reload' => true
+            'auto_reload' => true,
         ]);
 
         // Adds Globals
@@ -95,7 +95,7 @@ class TemplateEngine
         ]);
         $this->twig->addGlobal('app', [
             'server' => $_SERVER,
-            'session' => $_SESSION
+            'session' => $_SESSION,
         ]);
         $this->twig->addGlobal('config', $this->wiki->config);
         $this->twig->addGlobal('isInIframe', testUrlInIframe());
@@ -111,6 +111,7 @@ class TemplateEngine
             } else {
                 $iframe = !empty($options['handler']) ? $options['handler'] : testUrlInIframe();
             }
+
             return $this->wiki->Href($iframe, $options['tag'], $options['params'], false);
         });
         $this->addTwigHelper('format', function ($text, $formatter = 'wakka') {
@@ -127,7 +128,7 @@ class TemplateEngine
                 return $this->csrfTokenManager->getToken($tokenId)->getValue();
             } elseif (is_array($tokenId)) {
                 if (!isset($tokenId['id'])) {
-                    throw new Exception("When array, `\$tokenId` should contain `id` key !");
+                    throw new Exception('When array, `$tokenId` should contain `id` key !');
                 } else {
                     if (isset($tokenId['refresh']) && $tokenId['refresh'] === true) {
                         return $this->csrfTokenManager->refreshToken($tokenId['id'])->getValue();
@@ -136,23 +137,23 @@ class TemplateEngine
                     }
                 }
             } else {
-                throw new Exception("`\$tokenId` should be a string or an array !");
+                throw new Exception('`$tokenId` should be a string or an array !');
             }
         });
         $this->addTwigHelper('urlImage', function ($options) {
             if (!isset($options['fileName'])) {
-                throw new Exception("`urlImage` should be called with `fileName` key in params!");
+                throw new Exception('`urlImage` should be called with `fileName` key in params!');
             }
             if (!isset($options['width'])) {
-                throw new Exception("`urlImage` should be called with `width` key in params!");
+                throw new Exception('`urlImage` should be called with `width` key in params!');
             }
             if (!isset($options['height'])) {
-                throw new Exception("`urlImage` should be called with `height` key in params!");
+                throw new Exception('`urlImage` should be called with `height` key in params!');
             }
             $options = array_merge(['mode' => 'fit', 'refresh' => false], $options);
 
             if (!class_exists('attach')) {
-                include('tools/attach/libs/attach.lib.php');
+                include 'tools/attach/libs/attach.lib.php';
             }
             $basePath = $this->wiki->getBaseUrl() . '/';
             $attach = new attach($this->wiki);
@@ -167,12 +168,13 @@ class TemplateEngine
                     // do nothing : error
                     return $basePath . $options['fileName'];
                 }
+
                 return $basePath . $image_dest;
             } else {
                 return $basePath . $image_dest;
             }
         });
-        $this->addTwigHelper('hasAcl', function ($acl, $tag = "", $adminCheck = true) {
+        $this->addTwigHelper('hasAcl', function ($acl, $tag = '', $adminCheck = true) {
             return $this->wiki->services->get(AclService::class)->check($acl, null, $adminCheck, $tag);
         });
         $this->addTwigHelper('renderAction', function ($name, $params = []) {
@@ -193,6 +195,7 @@ class TemplateEngine
         $result .= '</div>';
         $result = $this->wiki->Header() . $result;
         $result .= $this->wiki->Footer();
+
         return $result;
     }
 
@@ -208,6 +211,7 @@ class TemplateEngine
     public function render($templatePath, $data = [])
     {
         $method = endsWith($templatePath, '.twig') ? 'renderTwig' : 'renderPhp';
+
         return $this->$method($templatePath, $data);
     }
 
@@ -216,6 +220,7 @@ class TemplateEngine
         $data = array_merge($data, [
             'config' => $this->wiki->config,
         ]);
+
         return $this->twig->render($templatePath, $data);
     }
 
@@ -239,6 +244,7 @@ class TemplateEngine
         include $realTemplatePath;
         $content = ob_get_contents(); // get buffer's content
         ob_end_clean(); // destroy buffer
+
         return $content;
     }
 }

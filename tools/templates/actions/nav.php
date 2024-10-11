@@ -2,8 +2,8 @@
 
 use YesWiki\Core\Service\LinkTracker;
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    exit('acc&egrave;s direct interdit');
 }
 
 // classe css supplémentaire
@@ -37,12 +37,12 @@ if (!empty($icons)) {
         if (!empty($icon)) {
             // si le parametre contient des espaces, il s'agit d'une icone autre que celles par defaut de bootstrap
             if (preg_match('/\s/', $icon)) {
-                $icon = '<i class="'.$icon.'"></i>';
+                $icon = '<i class="' . $icon . '"></i>';
             } else {
-                $icon = '<i class="icon-'.$icon.' fa fa-'.$icon.'"></i>';
+                $icon = '<i class="icon-' . $icon . ' fa fa-' . $icon . '"></i>';
             }
             if (!empty($text)) {
-                $icon = $icon.' ';
+                $icon = $icon . ' ';
             }
         }
         $icons[$key] = $icon;
@@ -54,7 +54,7 @@ $listlinks = '';
 foreach ($titles as $key => $title) {
     $haveAccess = true;
     if (empty($links[$key])) {
-        $url = "";
+        $url = '';
     } else {
         $linkParts = $this->extractLinkParts($links[$key]);
         [$url, $method, $params] = ['', '', ''];
@@ -63,7 +63,7 @@ foreach ($titles as $key => $title) {
             $method = $linkParts['method'];
             $params = $linkParts['params'];
             $url = $this->href($method, $linkParts['tag'], $params);
-            if ($hideIfNoAccess == "true" && isset($linkParts['tag']) && !$GLOBALS['wiki']->HasAccess('read', $linkParts['tag'])) {
+            if ($hideIfNoAccess == 'true' && isset($linkParts['tag']) && !$GLOBALS['wiki']->HasAccess('read', $linkParts['tag'])) {
                 $haveAccess = false;
             }
         } else {
@@ -73,9 +73,9 @@ foreach ($titles as $key => $title) {
     // class="active" if the url have the same url than the current one (independently of the method and the params)
     if ($haveAccess) {
         $listclass = ($url == $this->href($method, $this->GetPageTag(), $params)) ? ' class="active"' : '';
-        $listlinks .= '<li' . $listclass . '><a href="'.$url.'">'
+        $listlinks .= '<li' . $listclass . '><a href="' . $url . '">'
             . (isset($icons[$key]) ? $icons[$key] : '')
-            . $title.'</a></li>'."\n";
+            . $title . '</a></li>' . "\n";
     }
 }
 
@@ -83,11 +83,11 @@ $navID = uniqid('nav_');
 $data = '';
 if (is_array($data)) {
     foreach ($data as $key => $value) {
-        $data .= ' data-'.$key.'="'.$value.'"';
+        $data .= ' data-' . $key . '="' . $value . '"';
     }
 }
 
 if (!empty($listlinks)) {
     echo ' <!-- start of nav -->
-        <ul class="'.$class.'" id="'.$navID.'" '.$data.'>'.$listlinks.'</ul>'."\n";
+        <nav><ul class="' . $class . '" id="' . $navID . '" ' . $data . '>' . $listlinks . '</ul></nav>' . "\n";
 }

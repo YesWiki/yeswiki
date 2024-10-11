@@ -5,7 +5,6 @@ namespace YesWiki\Attach;
 use Attach;
 use qqFileUploader;
 use YesWiki\Core\Service\AclService;
-use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Security\Controller\SecurityController;
@@ -18,7 +17,7 @@ class AjaxUploadHandler extends YesWikiHandler
     {
         if ($this->getService(SecurityController::class)->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
-        };
+        }
 
         if (!$this->hasAccesUpload($_GET)) {
             return $this->formatOuput(['error' => _t('NO_RIGHT_TO_WRITE_IN_THIS_PAGE')]);
@@ -49,8 +48,9 @@ class AjaxUploadHandler extends YesWikiHandler
         $errorsMessage .= ob_get_contents();
         ob_end_clean();
         if (!empty($errorsMessage)) {
-            $result['error'] = ($result['error'] ?? '').$errorsMessage;
+            $result['error'] = ($result['error'] ?? '') . $errorsMessage;
         }
+
         return $this->formatOuput($result);
     }
 
@@ -68,7 +68,7 @@ class AjaxUploadHandler extends YesWikiHandler
         $page = $this->getService(PageManager::class)->getOne($tag);
         $aclService = $this->getService(AclService::class);
 
-        return ((
+        return (
             empty($page) // new page
                     && $aclService->hasAccess('write', $tag) // default rights to write
         ) || (
@@ -79,7 +79,7 @@ class AjaxUploadHandler extends YesWikiHandler
                 && $aclService->hasAccess('read', $tag) // page with cration of entries
                 && $this->hasTempTag
         )
-        );
+        ;
     }
 
     private function formatOuput(array $ouput): string

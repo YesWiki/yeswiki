@@ -18,6 +18,7 @@ const usersTableService = {
         success(data) {
           const userName = data.user.name
           const userEmail = data.user.email
+          const userLink = data.user.link
           const { signuptime } = data.user
           // append In Datable
           const table = $(form).siblings('.dataTables_wrapper').first()
@@ -33,6 +34,9 @@ const usersTableService = {
             '',
             ''
           ]).draw()
+          if (userLink !== '') {
+            $(`#users-table-link-change-password`).html("<br/><label>"+_t('LINK_TO_CHANGE_PASSWORD')+"</label><br/><a href='"+userLink+"' target='_blank'>"+userLink+"</a>")
+          }
           toastMessage(_t('USERSTABLE_USER_CREATED', { name: userName }), 1100, 'alert alert-success')
         },
         error(e) {

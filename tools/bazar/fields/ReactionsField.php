@@ -3,10 +3,8 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\ReactionsController;
-use YesWiki\Core\Service\ReactionManager;
 use YesWiki\Wiki;
 
 /**
@@ -43,11 +41,11 @@ class ReactionsField extends BazarField
         'idee-noire' => [
             'title_t' => 'BAZ_REACTIONS_DEFAULT_BLACK_IDEA',
             'image' => 'styles/images/mikone-idee-noire.svg',
-        ]
+        ],
     ];
     public const DEFAULT_OPTIONS = [
         'oui' => 'YES',
-        'non' => 'NO'
+        'non' => 'NO',
     ];
     public const DEFAULT_OK_KEY = 'oui';
     public const MAX_REACTIONS = 1;
@@ -120,7 +118,7 @@ class ReactionsField extends BazarField
         $currentEntryTag = $this->getCurrentTag($entry);
 
         if (is_null($currentEntryTag) || $this->getValue($entry) !== self::DEFAULT_OK_KEY) {
-            return "" ;
+            return '';
         }
 
         $user = $this->getService(AuthController::class)->getLoggedUser();
@@ -138,7 +136,7 @@ class ReactionsField extends BazarField
                 true
             );
 
-        return $this->render("@bazar/fields/reactions.twig", [
+        return $this->render('@bazar/fields/reactions.twig', [
             'reactionId' => $this->name,
             'reactionItems' => $reactionItems,
             'userName' => $username,
@@ -146,7 +144,7 @@ class ReactionsField extends BazarField
             'oldIdsUserReactions' => $oldIdsUserReactions,
             'maxReaction' => self::MAX_REACTIONS,
             'pageTag' => $currentEntryTag,
-            'showCommentMessage' => !empty($entry['bf_commentaires']) && $entry['bf_commentaires'] == 'oui'
+            'showCommentMessage' => !empty($entry['bf_commentaires']) && $entry['bf_commentaires'] == 'oui',
         ]);
     }
 
@@ -162,6 +160,7 @@ class ReactionsField extends BazarField
                 }, self::DEFAULT_REACTIONS)
             );
         }
+
         return $this->imagesPath;
     }
 
@@ -185,7 +184,7 @@ class ReactionsField extends BazarField
     {
         return $this->render('@bazar/inputs/select.twig', [
             'value' => $this->getValue($entry),
-            'options' => $this->options
+            'options' => $this->options,
         ]);
     }
 

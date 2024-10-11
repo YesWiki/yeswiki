@@ -2,16 +2,16 @@
 
 // TODO : a basculer dans __show.php
 // Vérification de sécurité
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    exit('acc&egrave;s direct interdit');
 }
 
-$destination = $this->GetParameter("destination");
+$destination = $this->GetParameter('destination');
 if (empty($destination)) {
     echo _t(LANG_DESTINATION_REQUIRED);
 }
 
-$flagfile = 'tools/lang/presentation/images/'.$destination.'.png';
+$flagfile = 'tools/lang/presentation/images/' . $destination . '.png';
 
 if (file_exists($flagfile)) {
     $wikireq = $_GET['wiki'] ?? null;
@@ -33,8 +33,8 @@ if (file_exists($flagfile)) {
         unset($_GET['lang']);
     }
     // Todo : utiliser template
-    echo '<a href="'.$this->Href($wikireq === $currentTag ? '' : $this->method, $currentTag, $queries, false).'">
-        <img loading="lazy" src="'.$flagfile.'" title="'.$destination.'" alt="Flag'.$destination.'"></img></a>';
+    echo '<a href="' . $this->Href($wikireq === $currentTag ? '' : $this->method, $currentTag, $queries, false) . '">
+        <img loading="lazy" src="' . $flagfile . '" title="' . $destination . '" alt="' . $destination . ' language"></img></a>';
 
     if (isset($previousLang)) {
         $_GET['lang'] = $previousLang;

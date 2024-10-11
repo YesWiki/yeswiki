@@ -5,7 +5,7 @@
     <?php
     foreach($fiches as $fiche): ?>
         <div class="bazar-entry panel panel-default collapsed" <?php echo $fiche['html_data'];?>>
-          <div class="panel-heading collapsed"
+          <button class="panel-heading collapsed" aria-expanded="false"
             data-target="#collapse<?php echo $param['nbbazarliste']; ?>_<?php echo $fiche['id_typeannonce']; ?>_<?php echo $fiche['id_fiche']; ?>"
             data-toggle="collapse">
             <h4 class="panel-title">
@@ -43,7 +43,7 @@
                   </small>
               <?php else : ?>
               <?php endif; ?>
-          </div>
+          </button>
           <div id="collapse<?php echo $param['nbbazarliste']; ?>_<?php echo $fiche['id_typeannonce']; ?>_<?php echo $fiche['id_fiche']; ?>" class="panel-collapse collapse">
             <div class="panel-body">
               <?php echo baz_voir_fiche($param['barregestion'], $fiche); ?>

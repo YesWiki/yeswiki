@@ -3,6 +3,7 @@
 namespace YesWiki\AutoUpdate\Service;
 
 use Exception;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\AutoUpdate\Entity\Messages;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\TripleStore;
@@ -16,11 +17,13 @@ class MigrationService
     public const TRIPLES_MIGRATION_ID = 'migration';
     private $wiki;
     private $dbService;
+    private $params;
 
-    public function __construct(Wiki $wiki, DbService $dbService)
+    public function __construct(Wiki $wiki, DbService $dbService, ParameterBagInterface $params)
     {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
+        $this->params = $params;
     }
 
     public function run()
@@ -62,6 +65,7 @@ class MigrationService
                             $instance = new $className();
                             $instance->setWiki($this->wiki);
                             $instance->setDbService($this->dbService);
+                            $instance->setParams($this->params);
                             $instance->run();
                             $messages->add("Migration $className", 'AU_OK');
                             $tripleStore->create($fileName, TripleStore::TYPE_URI, self::TRIPLES_MIGRATION_ID, '', '');
@@ -72,6 +76,7 @@ class MigrationService
                 }
             }
         }
+
         return $messages;
     }
 }

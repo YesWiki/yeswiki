@@ -1,12 +1,9 @@
 <?php
-
 return [
-
     // controllers/ApiController.php
     // 'ATTACH_GET_URLIMAGE_CACHE_API_HELP' => "Fournit l'url du fichier de cache pour l'image voulue\n".
     //     "Nécessite le passage du jeton anti-csrf !",
     // 'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'Fichier image inexistant',
-
     // libs/attach.lib.php
     'ATTACH_ACTION_ATTACH' => 'Acción {{attach ...}}',
     'ATTACH_PARAM_DESC_REQUIRED' => 'parámetro "desc" obligatorio para una imagen',
@@ -15,7 +12,7 @@ return [
     // 'ATTACH_UPLOAD_FORM_FOR_FILE' => 'Formulaire d\'envoi du fichier',
     'ATTACH_BACK_TO_PAGE' => 'Regreso hacia la página',
     'NO_RIGHT_TO_WRITE_IN_THIS_PAGE' => 'No tienes los derechos de acceso para escribir en esta página',
-    'INVALID_REQUEST_METHOD' => 'Método de  petición invalide',
+    'INVALID_REQUEST_METHOD' => 'Método de solicitud no válido',
     'ERROR_MOVING_TEMPORARY_FILE' => 'Error durante el desplazamiento del archivo temporario',
     'ERROR_UPLOAD_MAX_FILESIZE' => 'Le archivo descargado excede al tamaño de upload_max_filesize, configurado en el php.ini.',
     'ERROR_MAX_FILE_SIZE' => 'EL archivo descargado excede al tamaño de MAX_FILE_SIZE, configurado en el formulario HTML.',
@@ -23,7 +20,6 @@ return [
     'ERROR_NO_FILE_UPLOADED' => 'Ningun archivo ha sido descargado.',
     // 'ERROR_NOT_AUTHORIZED_EXTENSION' => 'Le fichier n\'a pas une extension autorisée, voici celles que la configuration autorise : ',
     // 'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Ajouter un lien pour afficher l'image seule en entier",
-
     // 'ATTACH_FILE_MANAGEMENT' => 'Gestion des fichiers',
     // 'ATTACH_TRASH' => 'Corbeille',
     // 'ATTACH_NO_ATTACHED_FILES' => 'Pas de fichiers attachés à la page {tag} pour l\'instant.',
@@ -40,15 +36,12 @@ return [
     // 'ATTACH_PAGE_REVISION' => 'Version de la page',
     // 'ATTACH_FILE_REVISION' => 'Version du fichier',
     // 'ATTACH_DELETION' => 'Suppression',
-
     // actions/filemanager.php
     'ATTACH_NO_RIGHTS_TO_ACCESS_FILEMANAGER' => 'Necesitas los derechos de escritura de la página para acceder al administrador de los archivos atados',
     // 'FILEMANAGER_ACTION_NEED_ACCESS' => 'Seul le propriétaire de cette page peut accéder au gestionnaire des fichiers attaché',
-
     // actions/backgroundimage.php
     'ATTACH_ACTION_BACKGROUNDIMAGE' => 'Acción {{backgroundimage ...}}',
     'ATTACH_PARAM_FILE_OR_BGCOLOR_NOT_FOUND' => 'hay que indicar o una imagen con el parámetro "file" o un color de fondo con el parámetro "bgcolor"',
-
     // actions/player.php
     'ATTACH_ACTION_PLAYER' => 'Acción {{player ...}}',
     'ATTACH_DOWNLOAD_THE_FILE' => 'Descargar el archivo',
@@ -56,7 +49,6 @@ return [
     'ATTACH_PARAM_URL_REQUIRED' => 'parámetro "url" obligatorio',
     'ATTACH_PLAYER_CAN_ONLY_OPEN_FILES_LIKE' => 'el player no puede leer los archivos mp3, flv y mm, y tu URL',
     'ATTACH_NOT_LINKED_TO_GOOD_FILE_EXTENSION' => 'El adjunto no està bien atado a la extension del archivo',
-
     // actions/pointimage.php
     'ATTACH_ACTION_POINTIMAGE' => 'Acción {{pointimage ...}}',
     'ATTACH_PARAM_FILE_NOT_FOUND' => 'parámetro "file" obligatorio',
@@ -67,16 +59,13 @@ return [
     'ATTACH_DESCRIPTION' => 'Descripción',
     'ATTACH_CANCEL' => 'Cancelar',
     'ATTACH_SAVE' => 'Guardar',
-
     // actions/video.php
     'ATTACH_ACTION_VIDEO_PARAM_ERROR' => 'La acción video debe llamarse con los parámetros «id» y «serveur». Para «serveur», solo se permiten los valores «vimeo» o «youtube» o «peertube».',
-
     // actions/pdf.php
-    'ATTACH_ACTION_PDF_PARAM_URL_ERROR' => 'La acción pdf debe llamarse con el parámetro «url» y la URL dada debe estar en el mismo host que el wiki (por ejemplo, \' xxx.yyy.com \'), mismo esquema (por ejemplo, \' https \') y el mismo puerto si se especifica (por ejemplo, \'8080 \'). ',
+    'ATTACH_ACTION_PDF_PARAM_URL_ERROR' => 'La acción pdf debe llamarse con el parámetro "url" y la url introducida debe proceder de la misma fuente que la wiki: es decir, el mismo subdominio de servidor (por ejemplo, \'xxx.yyy.com\'), el mismo esquema (por ejemplo, \'https\') y el mismo puerto si se especifica (por ejemplo, \'8080\').',
     // 'ATTACH_ACTION_DISPLAY_PDF_TEXT' => 'Afficher le pdf dans la page :',
     // 'ATTACH_ACTION_DISPLAY_PDF_LINK_TEXT' => 'sous forme de lien',
     // 'ATTACH_ACTION_DISPLAY_PDF_INCLUDED_TEXT' => 'directement inclus dans la page',
-
     // handler edit
     'ACTIVATE_JS_TO_UPLOAD_FILES' => 'Activar el JavaScript para adjuntar archivos',
     'UPLOAD_A_FILE' => 'Adjuntar / Insertar un archivo',
@@ -88,10 +77,10 @@ return [
     'IMAGE_ALIGN' => 'Alineación de la imagen',
     'IMAGE_SIZE' => 'Tamaño de la imagen',
     'THUMBNAIL' => 'Miniatura',
-    'MEDIUM' => 'Moyenne',
+    'MEDIUM' => 'Promedio',
     'BIG' => 'Grande',
     'ORIGINAL_SIZE' => 'Tamaño original',
-    'CAPTION' => 'Texto de la  viñeta',
+    'CAPTION' => 'Texto mostrado al pasar el ratón por encima',
     'SEE_THE_ADVANCED_PARAMETERS' => 'Ver los parámetros avanzados',
     'ADVANCED_PARAMETERS' => 'Parámetros avanzados',
     'ASSOCIATED_LINK' => 'Enlace asociado',
@@ -99,27 +88,47 @@ return [
     'WHITE_BORDER' => 'Borde blanco',
     'DROP_SHADOW' => 'Sombra',
     'ZOOM_HOVER' => 'Ampliación',
-    'ALT_INFOS' => 'Si no se encuentra la imagen, este texto aparecera en su lugar',
-    'ALTERNATIVE_TEXT' => 'Texto de sustitución',
+    'ALT_INFOS' => 'Este texto se mostrará en lugar de la imagen si no se encuentra la imagen. También se leerá en voz alta mediante tecnología de asistencia (lectores de pantalla). Déjalo vacío si la imagen tiene un propósito puramente decorativo',
+    'ALTERNATIVE_TEXT' => 'Texto alternativo para las personas con discapacidad visual',
     // 'NONE' => 'Texte en dessous',
     'LEFT' => 'Izquierda',
     'CENTER' => 'Centro',
     'RIGHT' => 'Derecha',
     'FAILED' => 'Error',
-
-    // handler ajaxupload
-    // 'ATTACH_HANDLER_AJAXUPLOAD_FOLDER_NOT_READABLE' => 'Le dossier de téléchargement n\'est pas accessible en écriture.',
-    // 'ATTACH_HANDLER_AJAXUPLOAD_NO_FILE' => 'Pas de fichiers envoyés.',
-    // 'ATTACH_HANDLER_AJAXUPLOAD_EMPTY_FILE' => 'Le fichier est vide.',
-    // 'ATTACH_HANDLER_AJAXUPLOAD_FILE_TOO_LARGE' => 'Le fichier est trop large.',
-    // 'ATTACH_HANDLER_AJAXUPLOAD_AUTHORIZED_EXT' => 'Le fichier n\'a pas une extension autorisée, voici les autorisées : {ext}.',
-    // 'ATTACH_HANDLER_AJAXUPLOAD_ERROR' => 'Impossible de sauver le fichier. L\'upload a été annulé ou le serveur a planté...',
-
-    // edit config action
-    // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_VIDEO_SERVICE]' => 'Service de vidéo par défaut (peertube, youtube ou vimeo)',
-    // 'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_PEERTUBE_INSTANCE]' => 'Adresse du serveur peertube par défaut',
-    // 'EDIT_CONFIG_HINT_MAX_FILE_SIZE' => 'Taille maximum des fichiers téléversés - octets (ex: Taille maximum des fichiers téléversés - octets (ex: 2097152 pour 2Mo)',
-    // 'EDIT_CONFIG_GROUP_ATTACH' => 'Insertion de médias (images, vidéos)',
+    // controllers/ApiController.php
+    'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => "Sin archivo de imagen",
+    'ATTACH_UPLOAD_FORM_FOR_FILE' => 'Formulario de envío de archivos',
+    'ERROR_NOT_AUTHORIZED_EXTENSION' => 'El archivo no tiene extensiones permitidas, estas son las que la configuración permite: ',
+    'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Permitir hacer clic en la imagen para verla en tamaño grande",
+    'ATTACH_FILE_MANAGEMENT' => 'Gestión de archivos',
+    'ATTACH_FILENAME' => 'Nombre de archivo',
+    'ATTACH_SIZE' => 'Tamaño',
+    'ATTACH_DATE_OF_MODIFICATION' => 'Fecha de modificación',
+    'ATTACH_TRASH' => 'Papelera de reciclaje',
+    'ATTACH_NO_ATTACHED_FILES' => 'Aún no hay archivos adjuntos a la página {tag}.',
+    'ATTACH_RESTORE' => 'Restaurar',
+    'ATTACH_REAL_FILENAME' => 'Nombre real del archivo: {file}',
+    'ATTACH_DELETED_ON' => ' - Eliminado el: {date}',
+    'ATTACH_FILE_MANAGEMENT_WARNING' => 'Los archivos borrados en esta página se eliminan permanentemente',
+    'ATTACH_FILE_MANAGEMENT_TITLE' => 'Gestión de archivos adjuntos a la página {tag}',
+    'ATTACH_PAGE_REVISION' => 'Versión de la página',
+    'ATTACH_FILE_REVISION' => 'Versión del archivo',
+    'ATTACH_DELETION' => 'Borrar',
+    'ATTACH_ACTION_DISPLAY_PDF_TEXT' => 'Mostrar el pdf en la página :',
+    'ATTACH_ACTION_DISPLAY_PDF_LINK_TEXT' => 'como un enlace',
+    'ATTACH_ACTION_DISPLAY_PDF_INCLUDED_TEXT' => 'incluidos directamente en la página',
+    'NONE' => 'Texto a continuación',
+    'ATTACH_HANDLER_AJAXUPLOAD_FOLDER_NOT_READABLE' => 'No se puede acceder a la carpeta de descargas.',
+    'ATTACH_HANDLER_AJAXUPLOAD_EMPTY_FILE' => 'El archivo está vacío.',
+    'ATTACH_HANDLER_AJAXUPLOAD_FILE_TOO_LARGE' => 'El archivo es demasiado grande.',
+    'ATTACH_HANDLER_AJAXUPLOAD_AUTHORIZED_EXT' => 'El archivo no tiene una extensión autorizada, aquí están las autorizadas: {ext}.',
+    'ATTACH_HANDLER_AJAXUPLOAD_ERROR' => 'No se ha podido guardar el archivo. La carga se ha cancelado o el servidor se ha bloqueado...',
+    'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_VIDEO_SERVICE]' => 'Servicio de vídeo predeterminado (peertube, youtube o vimeo)',
+    'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_PEERTUBE_INSTANCE]' => 'Dirección predeterminada del servidor peertube',
+    'EDIT_CONFIG_GROUP_ATTACH' => 'Insertar medios (imágenes, vídeos)',
+    'EDIT_CONFIG_HINT_MAX_FILE_SIZE' => 'Tamaño máximo de los archivos cargados en bytes (p. ej.: Tamaño máximo de los archivos cargados (p. ej.: 2097152, 2048k, 2m)',
+    'ATTACH_EMPTY_TRASH' => 'Vaciar la papelera de reciclaje',
+    'ATTACH_EMPTY_TRASH_NOTICE' => 'los archivos eliminados de la papelera de reciclaje se borrarán permanentemente.',
+    'FILEMANAGER_ACTION_NEED_ACCESS' => 'Solo el propietario de esta página puede acceder al gestor de archivos adjuntos',
+    'ATTACH_HANDLER_AJAXUPLOAD_NO_FILE' => 'No se han enviado archivos.',
 ];
-
-// 'FILEMANAGER_ACTION_NEED_ACCESS' => 'Seul le propriétaire de cette page peut accéder au gestionnaire des fichiers attaché',

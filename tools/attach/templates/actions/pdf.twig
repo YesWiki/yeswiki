@@ -5,7 +5,7 @@
   <iframe
     src="javascripts/vendor/pdfjs-dist/web/pdf-viewer.php?file={{ url|e('url') }}"
     class="embed-responsive-item" frameborder="0" allowfullscreen
-    onload="$(this).siblings('.pdf-block-loading').hide();"
+    onload="event.target.parentNode.querySelector('.pdf-block-loading').style.display='none';"
     >
     </iframe>
 {% endblock %}

@@ -11,8 +11,6 @@ use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Throwable;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Entity\User;
@@ -26,6 +24,10 @@ use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
+if (! function_exists('send_mail')) {
+    require_once 'includes/email.inc.php';
+}
+
 class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 {
     protected $wiki;
@@ -34,9 +36,11 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     protected $securityController;
     protected $params;
     protected $tripleStore;
-
+    protected $userlink;
     private $getOneByNameCacheResults;
 
+    private const PW_SALT = 'FBcA';
+    public const KEY_VOCABULARY = 'http://outils-reseaux.org/_vocabulary/key';
 
     public function __construct(
         Wiki $wiki,
@@ -53,6 +57,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $this->params = $params;
         $this->tripleStore = $tripleStore;
         $this->getOneByNameCacheResults = [];
+        $this->userlink = "";
     }
 
     private function arrayToUser(?array $userAsArray = null, bool $fillEmpty = false): ?User
@@ -82,17 +87,18 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         if (!is_string($password) && isset($this->getOneByNameCacheResults[$name])) {
             $result = $this->getOneByNameCacheResults[$name];
         } else {
-            $result = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where name = '" . $this->dbService->escape($name) . "' " . (!is_string($password) ? "" : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1');
+            $result = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where name = '" . $this->dbService->escape($name) . "' " . (!is_string($password) ? '' : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1');
             if (!is_string($password)) {
                 $this->getOneByNameCacheResults[$name] = $result;
             }
         }
+
         return $this->arrayToUser($result);
     }
 
     public function getOneByEmail($mail, $password = null): ?User
     {
-        return $this->arrayToUser($this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where email = '" . $this->dbService->escape($mail) . "' " . (!is_string($password) ? "" : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1'));
+        return $this->arrayToUser($this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where email = '" . $this->dbService->escape($mail) . "' " . (!is_string($password) ? '' : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1'));
     }
 
     public function getAll($dbFields = ['name', 'password', 'email', 'motto', 'revisioncount', 'changescount', 'doubleclickedit', 'signuptime', 'show_comments']): array
@@ -104,6 +110,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         }
 
         $selectDefinition = empty($dbFields) ? '*' : implode(', ', $dbFields);
+
         return array_map(
             function ($userAsArray) {
                 return $this->arrayToUser($userAsArray, true);
@@ -116,43 +123,45 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      * @param array|string $wikiNameOrUser array to create the wiki or wikiname
      * @param string email (optionnal if parameters by array)
      * @param string plainPassword (optionnal if parameters by array)
+     *
      * @throws UserNameAlreadyUsedException|UserEmailAlreadyUsedException|Exception
      */
-    public function create($wikiNameOrUser, string $email = "", string $plainPassword = "")
+    public function create($wikiNameOrUser, string $email = '', string $plainPassword = '')
     {
+        $this->userlink = '';
         if ($this->securityController->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
         if (is_array($wikiNameOrUser)) {
             $userAsArray = array_merge($wikiNameOrUser, [
-                'changescount' => "",
-                'doubleclickedit' => "",
-                'motto' => "",
-                'revisioncount' => "",
-                'show_comments' => "",
-                'signuptime' => ""
+                'changescount' => '',
+                'doubleclickedit' => '',
+                'motto' => '',
+                'revisioncount' => '',
+                'show_comments' => '',
+                'signuptime' => '',
             ]);
-            $wikiName = $userAsArray['name'] ?? "";
+            $wikiName = $userAsArray['name'] ?? '';
             $wikiName = trim($wikiName);
             $userAsArray['name'] = $wikiName;
-            $email = $userAsArray['email'] ?? "";
-            $plainPassword = $userAsArray['password'] ?? "";
+            $email = $userAsArray['email'] ?? '';
+            $plainPassword = $userAsArray['password'] ?? '';
         } elseif (is_string($wikiNameOrUser)) {
             $wikiName = trim($wikiNameOrUser);
             $userAsArray = [
-                'changescount' => "",
-                'doubleclickedit' => "",
+                'changescount' => '',
+                'doubleclickedit' => '',
                 'email' => $email,
-                'motto' => "",
+                'motto' => '',
                 'name' => $wikiName,
-                'password' => "",
-                'revisioncount' => "",
-                'show_comments' => "",
-                'signuptime' => ""
+                'password' => '',
+                'revisioncount' => '',
+                'show_comments' => '',
+                'signuptime' => '',
             ];
         } else {
-            throw new Exception("First parameter of UserManager->create should be string or array!");
+            throw new Exception('First parameter of UserManager->create should be string or array!');
         }
 
         if (empty($wikiName)) {
@@ -175,9 +184,10 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $user = $this->arrayToUser($userAsArray);
         $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user);
         $hashedPassword = $passwordHasher->hash($plainPassword);
+
         return $this->dbService->query(
             'INSERT INTO ' . $this->dbService->prefixTable('users') . 'SET ' .
-                "signuptime = now(), " .
+                'signuptime = now(), ' .
                 "name = '" . $this->dbService->escape($user['name']) . "', " .
                 "motto = '" . (empty($user['motto']) ? '' : $this->dbService->escape($user['motto'])) . "', " .
                 (empty($user['changescount']) ? '' : "changescount = '" . $this->dbService->escape($user['changescount']) . "', ") .
@@ -189,15 +199,100 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         );
     }
 
+    /*
+     * Password recovery process (AKA reset password)
+     * 1. A key is generated using name, email alongside with other stuff.
+     * 2. The triple (user's name, specific key "vocabulary",key) is stored in triples table.
+     * 3. In order to update h·er·is password, the user must provided that key.
+     * 4. The new password is accepted only if the key matches with the value in triples table.
+     * 5. The corresponding row is removed from triples table.
+     */
+
+    protected function generateUserLink($user)
+    {
+        // Generate the password recovery key
+        $key = md5($user['name'] . '_' . $user['email'] . random_int(0, 10000) . date('Y-m-d H:i:s') . self::PW_SALT);
+        $tripleStore = $this->wiki->services->get(TripleStore::class);
+        // Erase the previous triples in the trible table
+        $tripleStore->delete($user['name'], self::KEY_VOCABULARY, null, '', '');
+        // Store the (name, vocabulary, key) triple in triples table
+        $tripleStore->create($user['name'], self::KEY_VOCABULARY, $key, '', '');
+
+        // Generate the recovery email
+        $this->userlink = $this->wiki->Href('', 'MotDePassePerdu', [
+            'a' => 'recover',
+            'email' => $key,
+            'u' => base64_encode($user['name'])
+        ], false);
+    }
+
+    /**
+     * Part of the Password recovery process: Handles the password recovery email process.
+     *
+     * Generates the password recovery key
+     * Stores the (name, vocabulary, key) triple in triples table
+     * Generates the recovery email
+     * Sends it
+     *
+     * @return bool True if OK or false if any problems
+     */
+    public function sendPasswordRecoveryEmail(User $user, string $title): bool
+    {
+        $this->generateUserLink($user);
+        $pieces = parse_url($this->params->get('base_url'));
+        $domain = isset($pieces['host']) ? $pieces['host'] : '';
+
+        $message = _t('LOGIN_DEAR') . ' ' . $user['name'] . ",\n";
+        $message .= _t('LOGIN_CLICK_FOLLOWING_LINK') . ' :' . "\n";
+        $message .= '-----------------------' . "\n";
+        $message .= $this->userlink . "\n";
+        $message .= '-----------------------' . "\n";
+        $message .= _t('LOGIN_THE_TEAM') . ' ' . $domain . "\n";
+
+        $subject = $title . ' ' . $domain;
+        // Send the email
+        return send_mail($this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $user['email'], $subject, $message);
+    }
+
+    /**
+     * Assessor for userlink field
+     * 
+     * @return string
+     */
+    public function getUserLink(): string
+    {
+        return $this->userlink;
+    }
+
+    /**
+     * Assessor for userlink field
+     *
+     * @return string
+     */
+    public function getLastUserLink(User $user): string
+    {
+        $tripleStore = $this->wiki->services->get(TripleStore::class);
+        $key = $tripleStore->getOne($user['name'], self::KEY_VOCABULARY, '', '');
+        if ($key != null) {
+            $this->userlink = $this->wiki->Href('', 'MotDePassePerdu', [
+                'a' => 'recover',
+                'email' => $key,
+                'u' => base64_encode($user['name'])
+            ], false);
+        } else {
+            $this->generateUserLink($user);
+        }
+        return $this->userlink;
+    }
+
     /**
      * update user params
-     * for e-mail check is existing e-mail
+     * for e-mail check is existing e-mail.
      *
-     * @param User $user
      * @param array $newValues (associative array)
+     *
      * @throws Exception
      * @throws UserEmailAlreadyUsedException
-     * @return bool
      */
     public function update(User $user, array $newValues): bool
     {
@@ -214,7 +309,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 //'name', // name not currently updateable
                 // 'password', // password not updateable by this method
                 'revisioncount',
-                'show_comments'
+                'show_comments',
             ]);
         });
         if (isset($newValues['email'])) {
@@ -232,7 +327,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         if (count($authorizedKeys) > 0) {
             $query = "UPDATE {$this->dbService->prefixTable('users')} SET ";
             $query .= implode(
-                ", ",
+                ', ',
                 array_map(
                     function ($key) use ($newValues) {
                         return "`$key` = \"{$this->dbService->escape($newValues[$key])}\" ";
@@ -247,13 +342,14 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         }
 
         unset($this->getOneByNameCacheResults[$user['name']]);
+
         return true;
     }
 
     /**
      * delete a user
-     * SHOULD NOT BE USE DIRECTLY => use UserController->delete()
-     * @param User $user
+     * SHOULD NOT BE USE DIRECTLY => use UserController->delete().
+     *
      * @throws DeleteUserException
      */
     public function delete(User $user)
@@ -273,10 +369,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         }
     }
 
-    /** Lists the groups $this user is member of
+    /** Lists the groups $this user is member of.
      *
-     * @param User $user
-     * @param bool $adminCheck
      * @return string[] An array of group names
      */
     public function groupsWhereIsMember(User $user, bool $adminCheck = true)
@@ -292,12 +386,11 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 
     /** Tells if a user is member of the specified group.
      *
-     * @param string $groupName The name of the group for which we are testing membership
-     * @param string|null $username if null check current user
-     * @param bool $admincheck
-     * @param array $formerGroups former groups list to avoid loops
+     * @param string      $groupName    The name of the group for which we are testing membership
+     * @param string|null $username     if null check current user
+     * @param array       $formerGroups former groups list to avoid loops
      *
-     * @return boolean True if the $user is member of $groupName, false otherwise
+     * @return bool True if the $user is member of $groupName, false otherwise
      */
     public function isInGroup(string $groupName, ?string $username = null, bool $admincheck = true, array $formerGroups = [])
     {
@@ -317,10 +410,11 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      * This method should persist the new password in the user storage and update the $user object accordingly.
      * Because you don't want your users not being able to log in, this method should be opportunistic:
      * it's fine if it does nothing or if it fails without throwing any exception.
+     *
      * @param PasswordAuthenticatedUserInterface|UserInterface $user
+     *
      * @throws UnsupportedUserException if the user is not supported
-     * @throws Exception if wiki is in hibernation
-     * @param string $newHashedPassword
+     * @throws Exception                if wiki is in hibernation
      */
     public function upgradePassword($user, string $newHashedPassword)
     {
@@ -383,6 +477,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             // prevent calling autoloader via 'is_a'
             return false;
         }
+
         return is_a($class, User::class, true);
     }
 

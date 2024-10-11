@@ -6,8 +6,6 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Entity\Event;
-use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Tags\Service\TagsManager;
 use YesWiki\Wiki;
@@ -56,18 +54,18 @@ class PageManager
     }
 
     /**
-     * @param string $tag name of the page
-     * @param string|null $time choose only the page's revision corresponding to time, null = latest revision
-     * @param bool $cache : use cache ?
-     * @param bool $bypassAcls : do not check acl
+     * @param string      $tag                    name of the page
+     * @param string|null $time                   choose only the page's revision corresponding to time, null = latest revision
+     * @param bool        $cache                  : use cache ?
+     * @param bool        $bypassAcls             : do not check acl
      * @param string|null $userNameForCheckingACL userName used to check ACL, if empty uses the connected user
      */
     public function getOne($tag, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null): ?array
     {
         // retrieve from cache
         if (!$bypassAcls && !$time && $cache && empty($userNameForCheckingACL) && (($cachedPage = $this->getCached($tag)) !== false)) {
-            if ($cachedPage and !isset($cachedPage["metadatas"])) {
-                $cachedPage["metadatas"] = $this->getMetadata($tag);
+            if ($cachedPage and !isset($cachedPage['metadatas'])) {
+                $cachedPage['metadatas'] = $this->getMetadata($tag);
                 // save page with metadatas
                 $this->cache($cachedPage, $tag);
             }
@@ -85,7 +83,7 @@ class PageManager
             $this->cacheOwner($page);
 
             if ($page) {
-                $page["metadatas"] = $this->getMetadata($tag);
+                $page['metadatas'] = $this->getMetadata($tag);
             }
 
             if (!$bypassAcls) {
@@ -100,6 +98,7 @@ class PageManager
                 $this->unsetCacheOwner($page);
             }
         }
+
         return $page;
     }
 
@@ -111,22 +110,22 @@ class PageManager
      * to check if a page is not in the cache.
      *
      * @return mixed The cached version of a page:
-     *         - the page DB line if the page exists and is in cache
-     *         - null if the cache knows that the page does not exists
-     *         - false is the cache does not know the page
+     *               - the page DB line if the page exists and is in cache
+     *               - null if the cache knows that the page does not exists
+     *               - false is the cache does not know the page
      */
     public function getCached($tag)
     {
-        return (array_key_exists($tag, $this->pageCache) ? $this->pageCache[$tag] : false);
+        return array_key_exists($tag, $this->pageCache) ? $this->pageCache[$tag] : false;
     }
 
     /**
      * Caches a page's DB line.
      *
-     * @param array $page
-     *            The page (full) DB line or null if the page does not exists
+     * @param array  $page
+     *                        The page (full) DB line or null if the page does not exists
      * @param string $pageTag
-     *            The tag of the page to cache. Defaults to $page['tag'] but is mandatory when $page === null
+     *                        The tag of the page to cache. Defaults to $page['tag'] but is mandatory when $page === null
      */
     public function cache($page, $pageTag = null)
     {
@@ -142,6 +141,7 @@ class PageManager
             $this->ownersCache[$page['tag']] = $page['owner'];
         }
     }
+
     private function unsetCacheOwner($page)
     {
         if (!empty($page['tag'])) {
@@ -153,6 +153,7 @@ class PageManager
     {
         $page = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('pages') . "where id = '" . $this->dbService->escape($id) . "' limit 1");
         $page = $this->checkEntriesACL([$page], $page['tag'])[0];
+
         return $page;
     }
 
@@ -199,7 +200,7 @@ class PageManager
                 return $pages;
             }
         } else {
-            $limit = (int) $limit;
+            $limit = (int)$limit;
             $limit = ($limit < 1) ? 50 : $limit;
             if ($pages = $this->dbService->loadAll('select id, tag, time, user, owner from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' order by time desc limit $limit")) {
                 //foreach ($pages as $page) {
@@ -208,6 +209,7 @@ class PageManager
                 return $pages;
             }
         }
+
         return null;
     }
 
@@ -217,12 +219,14 @@ class PageManager
             SELECT * FROM {$this->dbService->prefixTable('pages')} WHERE LATEST = 'Y' ORDER BY tag
         SQL);
         $pages = $this->checkEntriesACL($pages);
-        return $pages ;
+
+        return $pages;
     }
 
     /**
      * get readable page tags
-     * update page's owner to improve performances
+     * update page's owner to improve performances.
+     *
      * @return string[] list of tags readble for current user
      */
     public function getReadablePageTags(): array
@@ -231,15 +235,16 @@ class PageManager
             SELECT tag,owner FROM {$this->dbService->prefixTable('pages')} WHERE LATEST = 'Y' ORDER BY tag
         SQL;
 
-
         // append request to filter on acls during the request
         if (!$this->wiki->UserIsAdmin()) {
             $sqlRequest .= $this->aclService->updateRequestWithACL();
         }
         $pages = $this->dbService->loadAll($sqlRequest);
+
         return array_map(function ($page) {
             // cache page's owner to prevent reload of page from sql or infinite loop in some case
             $this->cacheOwner($page);
+
             return $page['tag'];
         }, $pages);
     }
@@ -254,6 +259,7 @@ class PageManager
         if ($page) {
             return $page['time'];
         }
+
         return null;
     }
 
@@ -264,7 +270,8 @@ class PageManager
 
     public function getWanted(): array
     {
-        $r = "SELECT l.to_tag AS tag, COUNT(l.from_tag) AS count FROM " . $this->dbService->prefixTable('links') . " as l LEFT JOIN " . $this->dbService->prefixTable('pages') . " as p ON l.to_tag = p.tag WHERE p.tag IS NULL GROUP BY l.to_tag ORDER BY count DESC, tag ASC";
+        $r = 'SELECT l.to_tag AS tag, COUNT(l.from_tag) AS count FROM ' . $this->dbService->prefixTable('links') . ' as l LEFT JOIN ' . $this->dbService->prefixTable('pages') . ' as p ON l.to_tag = p.tag WHERE p.tag IS NULL GROUP BY l.to_tag ORDER BY count DESC, tag ASC';
+
         return $this->dbService->loadAll($r);
     }
 
@@ -296,25 +303,26 @@ class PageManager
         $this->tagsManager->deleteAll($tag);
 
         $errors = $this->eventDispatcher->yesWikiDispatch('page.deleted', [
-            'id' => $tag
+            'id' => $tag,
         ]);
     }
 
     /**
      * SavePage
-     * Sauvegarde un contenu dans une page donnee
+     * Sauvegarde un contenu dans une page donnee.
      *
      * @param string $body
-     *            Contenu a sauvegarder dans la page
+     *                            Contenu a sauvegarder dans la page
      * @param string $tag
-     *            Nom de la page
+     *                            Nom de la page
      * @param string $comment_on
-     *            Indication si c'est un commentaire
-     * @param boolean $bypass_acls
-     *            Indication si on bypasse les droits d'ecriture
+     *                            Indication si c'est un commentaire
+     * @param bool   $bypass_acls
+     *                            Indication si on bypasse les droits d'ecriture
+     *
      * @return int Code d'erreur : 0 (succes), 1 (l'utilisateur n'a pas les droits)
      */
-    public function save($tag, $body, $comment_on = "", $bypass_acls = false)
+    public function save($tag, $body, $comment_on = '', $bypass_acls = false)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -330,7 +338,6 @@ class PageManager
         if ($rights) {
             // is page new?
             if (!$oldPage = $this->getOne($tag)) {
-
                 // LoadACL (if defined by acls)
                 $defaultWrite = $this->aclService->load($tag, 'write', true)['list'];
                 $defaultRead = $this->aclService->load($tag, 'read', true)['list'];
@@ -365,7 +372,7 @@ class PageManager
             $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET latest = 'N' WHERE tag = '" . $this->dbService->escape($tag) . "'");
 
             // add new revision
-            $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . "SET tag = '" . $this->dbService->escape($tag) . "', " . ($comment_on ? "comment_on = '" . $this->dbService->escape($comment_on) . "', " : "") . "time = now(), " . "owner = '" . $this->dbService->escape($owner) . "', " . "user = '" . $this->dbService->escape($user) . "', " . "latest = 'Y', " . "body = '" . $this->dbService->escape(chop($body)) . "', " . "body_r = ''");
+            $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . "SET tag = '" . $this->dbService->escape($tag) . "', " . ($comment_on ? "comment_on = '" . $this->dbService->escape($comment_on) . "', " : '') . 'time = now(), ' . "owner = '" . $this->dbService->escape($owner) . "', " . "user = '" . $this->dbService->escape($user) . "', " . "latest = 'Y', " . "body = '" . $this->dbService->escape(chop($body)) . "', " . "body_r = ''");
 
             unset($this->pageCache[$tag]);
             $this->ownersCache[$tag] = $owner;
@@ -377,8 +384,8 @@ class PageManager
                     'body' => $body,
                     'comment_on' => $comment_on,
                     'owner' => $owner,
-                    'user' => $user
-                ]
+                    'user' => $user,
+                ],
             ]);
 
             return 0;
@@ -387,7 +394,7 @@ class PageManager
         }
     }
 
-    public function getOwner($tag = "", $time = "")
+    public function getOwner($tag = '', $time = '')
     {
         if (!$tag = trim($tag)) {
             $tag = $this->wiki->GetPageTag();
@@ -401,11 +408,12 @@ class PageManager
                 $page = $this->dbService->loadSingle(
                     "SELECT `owner` FROM {$this->dbService->prefixTable('pages')} " .
                     "WHERE tag = '{$this->dbService->escape($tag)}' AND {$timeQuery} " .
-                    "LIMIT 1"
+                    'LIMIT 1'
                 );
                 $this->ownersCache[$tag] = $page['owner'] ?? null;
             }
         }
+
         return $this->ownersCache[$tag];
     }
 
@@ -463,10 +471,10 @@ class PageManager
     }
 
     /**
-     * use Guard to checkACL for entries
-     * @param array $pages
-     * @param null|string $tag
-     * @param null|string $userNameForCheckingACL if empty uses the connected user
+     * use Guard to checkACL for entries.
+     *
+     * @param string|null $userNameForCheckingACL if empty uses the connected user
+     *
      * @return array $pages
      */
     private function checkEntriesACL(array $pages, ?string $tag = null, ?string $userNameForCheckingACL = null): array
@@ -489,12 +497,13 @@ class PageManager
         if (empty($allEntriesTags)) {
             return $pages;
         }
-        $pages = array_map(function ($page) use ($entryManager, $guard, $allEntriesTags, $userNameForCheckingACL) {
+        $pages = array_map(function ($page) use ($guard, $allEntriesTags, $userNameForCheckingACL) {
             return (isset($page['tag']) &&
                     in_array($page['tag'], $allEntriesTags)
             ) ? $guard->checkAcls($page, $page['tag'], $userNameForCheckingACL)
                     : $page;
         }, $pages);
+
         return $pages;
     }
 }

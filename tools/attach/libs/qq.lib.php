@@ -7,12 +7,13 @@ if (!class_exists('qqUploadedFileXhr')) {
     class qqUploadedFileXhr
     {
         /**
-         * Save the file to the specified path
-         * @return boolean TRUE on success
+         * Save the file to the specified path.
+         *
+         * @return bool TRUE on success
          */
         public function save($path)
         {
-            $input = fopen("php://input", "r");
+            $input = fopen('php://input', 'r');
             $temp = tmpfile();
             $realSize = stream_copy_to_stream($input, $temp);
             fclose($input);
@@ -21,21 +22,23 @@ if (!class_exists('qqUploadedFileXhr')) {
                 return false;
             }
 
-            $target = fopen($path, "w");
+            $target = fopen($path, 'w');
             fseek($temp, 0, SEEK_SET);
             stream_copy_to_stream($temp, $target);
             fclose($target);
 
             return true;
         }
+
         public function getName()
         {
             return basename($_GET['qqfile']);
         }
+
         public function getSize()
         {
-            if (isset($_SERVER["CONTENT_LENGTH"])) {
-                return (int)$_SERVER["CONTENT_LENGTH"];
+            if (isset($_SERVER['CONTENT_LENGTH'])) {
+                return (int)$_SERVER['CONTENT_LENGTH'];
             } else {
                 throw new Exception('Getting content length is not supported.');
             }
@@ -45,25 +48,29 @@ if (!class_exists('qqUploadedFileXhr')) {
 
 if (!class_exists('qqUploadedFileForm')) {
     /**
-     * Handle file uploads via regular form post (uses the $_FILES array)
+     * Handle file uploads via regular form post (uses the $_FILES array).
      */
     class qqUploadedFileForm
     {
         /**
-         * Save the file to the specified path
-         * @return boolean TRUE on success
+         * Save the file to the specified path.
+         *
+         * @return bool TRUE on success
          */
         public function save($path)
         {
             if (!move_uploaded_file($_FILES['qqfile']['tmp_name'], $path)) {
                 return false;
             }
+
             return true;
         }
+
         public function getName()
         {
             return $_FILES['qqfile']['name'];
         }
+
         public function getSize()
         {
             return $_FILES['qqfile']['size'];
@@ -74,14 +81,14 @@ if (!class_exists('qqUploadedFileForm')) {
 if (!class_exists('qqFileUploader')) {
     class qqFileUploader
     {
-        private $allowedExtensions = array();
+        private $allowedExtensions = [];
         private $sizeLimit = '10000';
         private $file;
         private $hasTempTag;
 
-        public function __construct(array $allowedExtensions = array(), $sizeLimit = '10000', $hasTempTag = false)
+        public function __construct(array $allowedExtensions = [], $sizeLimit = '10000', $hasTempTag = false)
         {
-            $allowedExtensions = array_map("strtolower", $allowedExtensions);
+            $allowedExtensions = array_map('strtolower', $allowedExtensions);
 
             $this->allowedExtensions = $allowedExtensions;
             $this->sizeLimit = $sizeLimit;
@@ -122,30 +129,31 @@ if (!class_exists('qqFileUploader')) {
                     // no break
                 case 'k': $val *= 1024;
             }
+
             return $val;
         }
 
         /**
-         * Returns array('success'=>true) or array('error'=>'error message')
+         * Returns array('success'=>true) or array('error'=>'error message').
          */
         public function handleUpload($uploadDirectory, $replaceOldFile = false)
         {
             if (!is_writable($uploadDirectory)) {
-                return array('error' => _t('ATTACH_HANDLER_AJAXUPLOAD_FOLDER_NOT_READABLE'));
+                return ['error' => _t('ATTACH_HANDLER_AJAXUPLOAD_FOLDER_NOT_READABLE')];
             }
 
             if (!$this->file) {
-                return array('error' => _t('ATTACH_HANDLER_AJAXUPLOAD_NO_FILE'));
+                return ['error' => _t('ATTACH_HANDLER_AJAXUPLOAD_NO_FILE')];
             }
 
             $size = $this->file->getSize();
 
             if ($size == 0) {
-                return array('error' => _t('ATTACH_HANDLER_AJAXUPLOAD_EMPTY_FILE'));
+                return ['error' => _t('ATTACH_HANDLER_AJAXUPLOAD_EMPTY_FILE')];
             }
 
             if ($size > $this->sizeLimit) {
-                return array('error' => _t('ATTACH_HANDLER_AJAXUPLOAD_FILE_TOO_LARGE'));
+                return ['error' => _t('ATTACH_HANDLER_AJAXUPLOAD_FILE_TOO_LARGE')];
             }
 
             $pathinfo = pathinfo($this->file->getName());
@@ -155,7 +163,8 @@ if (!class_exists('qqFileUploader')) {
 
             if ($this->allowedExtensions && !in_array($ext, $this->allowedExtensions)) {
                 $these = implode(', ', $this->allowedExtensions);
-                return array('error' => str_replace('{ext}', $these, _t('ATTACH_HANDLER_AJAXUPLOAD_AUTHORIZED_EXT')));
+
+                return ['error' => str_replace('{ext}', $these, _t('ATTACH_HANDLER_AJAXUPLOAD_AUTHORIZED_EXT'))];
             }
 
             /*if(!$replaceOldFile){
@@ -180,8 +189,8 @@ if (!class_exists('qqFileUploader')) {
 
             $attach = new Attach($GLOBALS['wiki']);
             $filename = $attach->sanitizeFilename($filename);
-            $GLOBALS['wiki']->setParameter("desc", $filename);
-            $GLOBALS['wiki']->setParameter("file", $filename . '.' . $ext);
+            $GLOBALS['wiki']->setParameter('desc', $filename);
+            $GLOBALS['wiki']->setParameter('file', $filename . '.' . $ext);
 
             // dans le cas d'une nouvelle page, on donne une valeur a la date de création dans le fuseau horaire du serveur (heure SQL)
             if ($this->hasTempTag || !isset($GLOBALS['wiki']->page['time']) || $GLOBALS['wiki']->page['time'] == '') {
@@ -205,17 +214,18 @@ if (!class_exists('qqFileUploader')) {
                 //TODO : refactor this with attach
                 $purifier = $GLOBALS['wiki']->services->get(HtmlPurifierService::class);
                 $purifier->cleanFile($fullfilename, $ext);
+
                 return array_map(function ($value) {
                     return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
-                }, array('success' => true, 'filename' => $fullfilename, 'simplefilename' => $filename . '.' . $ext, 'extension' => $ext));
+                }, ['success' => true, 'filename' => $fullfilename, 'simplefilename' => $filename . '.' . $ext, 'extension' => $ext]);
             } else {
                 return array_map(
                     function ($value) {
                         return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
                     },
-                    array(
-                        'error' => _t('ATTACH_HANDLER_AJAXUPLOAD_ERROR')
-                    )
+                    [
+                        'error' => _t('ATTACH_HANDLER_AJAXUPLOAD_ERROR'),
+                    ]
                 );
             }
         }

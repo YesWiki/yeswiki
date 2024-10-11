@@ -10,7 +10,7 @@ use YesWiki\Bazar\Service\ExternalBazarService;
  */
 class ExternalSelectEntryField extends SelectEntryField
 {
-    protected $JSONFormAddress ;
+    protected $JSONFormAddress;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -24,7 +24,7 @@ class ExternalSelectEntryField extends SelectEntryField
 
     protected function renderInput($entry)
     {
-        return "";
+        return '';
     }
 
     public function formatValuesBeforeSave($entry)
@@ -42,6 +42,7 @@ class ExternalSelectEntryField extends SelectEntryField
                 $this->loadOptionsFromJSONForm($this->JSONFormAddress);
             }
         }
-        return  $this->options;
+
+        return $this->options;
     }
 }

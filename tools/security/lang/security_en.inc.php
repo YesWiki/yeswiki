@@ -1,7 +1,5 @@
 <?php
-
 return [
-
     'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>This page could not be saved.</strong><br />You may have clicked two times on the "Save" button, making two saved in an interval consired as too short, or leaved the page opened in edit mode for a too long period.<br />To save this page, please copy your content, refresh your browser, and paste the content before saving again.',
     'HASHCASH_ANTISPAM_ACTIVATED' => 'Antispam protection activated',
     'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Your comment was not saved, maybe you are a robot.',
@@ -11,7 +9,6 @@ return [
     'CAPTCHA_ERROR_WRONG_WORD' => 'This page was not saved because the verification word was wrong...',
     'CAPTCHA_VERIFICATION' => 'V&eacute;rification for saving page',
     'CAPTCHA_WRITE' => 'Type the word written in the picture',
-
     // actions/despam.php
     // 'DESPAM_PAGES_SELECTION' => 'S&eacute;lection des pages',
     // 'DESPAM_ALL_CHANGES_FROM' => 'Toutes les modifications depuis',
@@ -27,7 +24,6 @@ return [
     // 'DESPAM_DELETED_PAGES' => 'Pages supprimées',
     // 'DESPAM_BACK_TO_PREVIOUS_FORM' => 'Retour au formulaire de départ',
     // 'DESPAM_ONLY_FOR_ADMINS' => 'Action {{despam}} réservée aux administrateurs.',
-
     // for edit config
     'EDIT_CONFIG_HINT_USE_CAPTCHA' => 'Activate usage of captcha before save (true or false)',
     'EDIT_CONFIG_HINT_USE_HASHCASH' => 'Activate wiki antispam hashcash (activated by default)',
@@ -38,7 +34,20 @@ return [
     'EDIT_CONFIG_HINT_ARCHIVE[CALL_ARCHIVE_ASYNC]' => 'Start backup operations in background (true/false)',
     'EDIT_CONFIG_HINT_ARCHIVE[MAX_NB_FILES]' => 'Maximum number of backup\'s files to keep (min. 3)',
     'EDIT_CONFIG_HINT_ARCHIVE[PREUPDATE_BACKUP_ACTIVATED]' => 'Make a backup before each update (true or false)',
-
-    // security controller
-    // 'WIKI_IN_HIBERNATION' => 'Action désactivée car ce wiki est en lecture seule. Veuillez contacter l\'administrateur pour le réactiver.',
+    // actions/despam.php
+    'DESPAM_PAGES_SELECTION' => 'page selection',
+    'DESPAM_ALL_CHANGES_FROM' => 'All modifications since',
+    'DESPAM_VALIDATE' => 'Submit',
+    'DESPAM_FOR_ONE_HOUR' => '1 hour',
+    'DESPAM_FOR_X_HOURS' => 'for hours',
+    'DESPAM_FOR_ONE_WEEK' => '1 week',
+    'DESPAM_FOR_TWO_WEEKS' => '2 weeks',
+    'DESPAM_FOR_ONE_MONTH' => '1 month',
+    'DESPAM_CLEAN_SPAMMED_PAGES' => 'Cleaning vandalized pages from {x} hour(s)',
+    'DESPAM_RESTORE_FROM' => 'Restoration from {time} version by {user}',
+    'DESPAM_RESTORED_PAGES' => 'Restored pages',
+    'DESPAM_DELETED_PAGES' => 'Deleted pages',
+    'DESPAM_BACK_TO_PREVIOUS_FORM' => 'Return to departure form',
+    'DESPAM_ONLY_FOR_ADMINS' => 'Action {despam}} reserved for administrators.',
+    'WIKI_IN_HIBERNATION' => 'Action deactivated because this wiki is read alone. Please contact the administrator to reactivate it.',
 ];

@@ -2,12 +2,11 @@
 
 namespace YesWiki\Core\Service;
 
-use YesWiki\Bazar\Controller\EntryController;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Core\Service\PageManager;
-use YesWiki\Wiki;
 use Caxy\HtmlDiff\HtmlDiff;
 use Caxy\HtmlDiff\HtmlDiffConfig;
+use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Wiki;
 
 class DiffService
 {
@@ -34,8 +33,8 @@ class DiffService
         $isEntry = !empty($tag) && $this->entryManager->isEntry($tag);
         if ($isEntry) {
             if ($compareRender) {
-                $textA = $pageA['time'] ? $this->entryController->view($tag, $pageA['time'], false) : "";
-                $textB = $pageB['time'] ? $this->entryController->view($tag, $pageB['time'], false) : "";
+                $textA = $pageA['time'] ? $this->entryController->view($tag, $pageA['time'], false) : '';
+                $textB = $pageB['time'] ? $this->entryController->view($tag, $pageB['time'], false) : '';
             } else {
                 $textA = $this->formatJsonCodeIntoHtmlTable($pageA);
                 $textB = $this->formatJsonCodeIntoHtmlTable($pageB);
@@ -45,8 +44,8 @@ class DiffService
                 $textA = $this->formatPageWithOnlySimpleActions($pageA);
                 $textB = $this->formatPageWithOnlySimpleActions($pageB);
             } else {
-                $textA = _convert($pageA["body"], "ISO-8859-15");
-                $textB = _convert($pageB["body"], "ISO-8859-15");
+                $textA = _convert($pageA['body'], 'ISO-8859-15');
+                $textB = _convert($pageB['body'], 'ISO-8859-15');
             }
         }
 
@@ -56,14 +55,15 @@ class DiffService
             $config->setIsolatedDiffTags([]);
         }
         $firstHtmlDiff = HtmlDiff::create($textA, $textB, $config);
+
         return $firstHtmlDiff->build();
     }
 
     private function formatPageWithOnlySimpleActions($page)
     {
         $actionsToKeep = [
-            "grid", "section", "col", "button", "configuration", "end", "label", "nav", "panel",
-            "progressbar", "accordion", "currentpage", "titrepage", "valeur", "lang", "tocjs"
+            'grid', 'section', 'col', 'button', 'configuration', 'end', 'label', 'nav', 'panel',
+            'progressbar', 'accordion', 'currentpage', 'titrepage', 'valeur', 'lang', 'tocjs',
         ];
         $regexpr = "/(\{\{";
         foreach ($actionsToKeep as $action) {
@@ -71,7 +71,7 @@ class DiffService
         }
         $regexpr .= ".*?\}\})/s";
         // move all complex actions (bazarliste etc...) into pre html so they are not fomatted
-        $code = preg_replace($regexpr, '""<pre class="ignored-action">$1</pre>""', $page["body"]);
+        $code = preg_replace($regexpr, '""<pre class="ignored-action">$1</pre>""', $page['body']);
 
         return $this->wiki->Format($code, 'wakka', $page['tag']);
     }
@@ -82,9 +82,10 @@ class DiffService
         ksort($result);
         $html = "<table class='entry-code'><tbody>";
         foreach ($result as $key => $value) {
-            $html .= "<tr><td class='key'><pre>$key</pre></td><td><pre>".(is_scalar($value) ? $value : json_encode($value))."</pre></td></tr>";
+            $html .= "<tr><td class='key'><pre>$key</pre></td><td><pre>" . (is_scalar($value) ? $value : json_encode($value)) . '</pre></td></tr>';
         }
-        $html .= "</tbody></table>";
+        $html .= '</tbody></table>';
+
         return $html;
     }
 }

@@ -126,7 +126,7 @@ function toastMessage(
       $modal
         .find('.modal-body')
         .html(
-          `<img loading="lazy" class="center-block img-responsive" src="${link}" alt="image" />`
+          `<img loading="lazy" class="center-block img-responsive" src="${link}" alt="" />`
         )
     } else if (iframe === 1) {
       const modalTitle = $modal.find('.modal-header h3')
@@ -914,4 +914,11 @@ $('.tab-content [data-toggle="tab"]').on('click', function() {
   } else {
     $('html, body').animate({ scrollTop: $(base).offset().top - 80 }, 500)
   }
+})
+
+// a11y
+$('#yw-a11y-jump-content').click(() => {
+  setTimeout(() => {
+    $('#yw-topnav').removeClass('nav-down').addClass('nav-up')
+  }, 300)
 })

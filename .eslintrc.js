@@ -8,7 +8,8 @@ module.exports = {
     wiki: 'writable',
     Vue: 'readable',
     _t: 'readable',
-    ace: 'writable'
+    ace: 'writable',
+    toastMessage: 'readable'
   },
   extends: [
     'airbnb-base'
@@ -31,7 +32,8 @@ module.exports = {
     'object-curly-newline': ['error', { multiline: true }],
     'func-names': ['error', 'never'],
     'space-before-function-paren': ['error', 'never'],
-    'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }]
+    'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
+    'no-new': 'off'
   },
   ignorePatterns: [
     'vendor/',
@@ -56,6 +58,7 @@ module.exports = {
     '!tools/tableau',
     '!tools/tags',
     '!tools/templates',
-    '!tools/toc'
+    '!tools/toc',
+    'tools/aceditor/presentation/javascripts/ext-searchbox.js'
   ]
 }

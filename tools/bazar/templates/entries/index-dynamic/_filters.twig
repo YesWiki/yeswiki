@@ -25,17 +25,12 @@
     <div class="results-container">
       <Panel class="filter-box" v-for="filter, key in filters" :collapsed.sync="filter.collapsed" :key="key">
         <template #header>
-          <i v-html="filter.icon"></i>{{"{{ filter.title }}"}}
+          <i v-html="filter.icon" v-show="filter.icon"></i>
+          {{"{{ filter.title }}"}}
         </template>
         <template #body>
-          <div class="checkbox" v-for="filterOption, id in filter.list" :key="id">
-            <label>
-              <input class="filter-checkbox" type="checkbox" v-model="filterOption.checked" :value="filterOption.value">
-              <span>
-                <span v-html="filterOption.label"></span>
-                <span class="nb" v-if="filterOption.nb">({{"{{ filterOption.nb }}"}})</span>
-              </span>
-            </label>
+          <div class="filter-nodes">
+            <Filter-Node v-for="filterNode, id in filter.nodes" :key="id" :node="filterNode" />
           </div>
         </template>
       </Panel>

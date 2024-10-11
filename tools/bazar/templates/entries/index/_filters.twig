@@ -30,20 +30,23 @@
     <div class="results-container">
       {% for key, filter in filters %}
         <div class="filter-box panel panel-default {{ key }}" data-id="{{ key }}">
-          <div class="panel-heading {{ filter.collapsed ? 'collapsed ': '' }}" data-toggle="collapse" data-target="#collapse{{ listId }}_{{ key }}" aria-expanded="true">
+					<button class="panel-heading {{ filter.collapsed ? 'collapsed ': '' }}" data-toggle="collapse" data-target="#collapse{{ listId }}_{{ key }}" aria-expanded="{{ filter.collapsed ? 'false' : 'true' }}">
             {{ filter.icon|raw }}
             {{ filter.title }}
-          </div>
+          </button>
           <div class="panel-collapse collapse {{ filter.collapsed ? '': 'in' }}" id="collapse{{ listId }}_{{ key }}">
-            {% for filterValue in filter.list %}
-              <div class="checkbox">
-                <label>
-                  <input class="filter-checkbox" type="checkbox" id="{{ filterValue.id }}" name="{{ filterValue.name }}" value="{{ filterValue.value }}" {{ filterValue.checked }}>
-                  <span>
-                    {{ filterValue.label|raw }} <span class="nb-wrapper">(<span class="nb">{{ filterValue.nb }}</span>)</span>
-                  </span>
-                </label>
-              </div>
+            {% for filterNode in filter.nodes %}
+              {% if filterNode.count > 0 %}
+                <div class="checkbox">
+                  <label>
+                    <input class="filter-checkbox" type="checkbox" id="{{ filterNode.id }}" name="{{ filterNode.name }}" 
+                           value="{{ filterNode.value }}" {{ filterNode.checked }}>
+                    <span>
+                      {{ filterNode.label|raw }} <span class="nb-wrapper">(<span class="nb">{{ filterNode.count }}</span>)</span>
+                    </span>
+                  </label>
+                </div>
+              {% endif %}
             {% endfor %}
           </div>
         </div>
@@ -51,3 +54,11 @@
     </div>
   </div>
 </div>
+<style>
+.filter-box button.panel-heading {
+	width: 100%;
+}
+label input.filter-checkbox:focus ~ span {
+	outline: 5px auto;
+}
+</style>

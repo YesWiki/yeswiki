@@ -3,8 +3,8 @@
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Templates\Controller\ThemeController;
 use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Templates\Controller\ThemeController;
 
 class SetWikiDefaultThemeAction extends YesWikiAction
 {
@@ -17,13 +17,13 @@ class SetWikiDefaultThemeAction extends YesWikiAction
         if (!$this->wiki->UserIsAdmin()) {
             return $this->render('@templates/alert-message.twig', [
                 'type' => 'danger',
-                'message' =>  _t('ERROR_NO_ACCESS'). " setwikidefaulttheme"
+                'message' => _t('ERROR_NO_ACCESS') . ' setwikidefaulttheme',
             ]);
         }
         if (!is_writable('wakka.config.php')) {
             return $this->render('@templates/alert-message.twig', [
                 'type' => 'danger',
-                'message' => _t('ERROR_NO_ACCESS'). " setwikidefaulttheme, "._t('FILE_WRITE_PROTECTED')
+                'message' => _t('ERROR_NO_ACCESS') . ' setwikidefaulttheme, ' . _t('FILE_WRITE_PROTECTED'),
             ]);
         }
 
@@ -55,12 +55,12 @@ class SetWikiDefaultThemeAction extends YesWikiAction
                     $config->hide_action_template = '1';
                 }
                 $config->write();
-                $this->wiki->Redirect($this->wiki->href("", $this->wiki->tag));
+                $this->wiki->Redirect($this->wiki->href('', $this->wiki->tag));
             }
         }
 
         $params = [
-            'forceTheme' => isset($config->hide_action_template) && $config->hide_action_template === '1'
+            'forceTheme' => isset($config->hide_action_template) && $config->hide_action_template === '1',
         ];
         // load defaut params from config after LoadExtensions
         if (isset($config->favorite_theme)) {
@@ -72,6 +72,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction
         if (isset($config->favorite_style)) {
             $params['favoriteStyle'] = $config->favorite_style;
         }
+
         return $this->themeController->renderWithThemeSelector(
             '@templates/set-default-theme.twig',
             $params
@@ -85,11 +86,11 @@ class SetWikiDefaultThemeAction extends YesWikiAction
             $themes[$templateName] = [
                 'styles' => array_keys($templateValues['style']),
                 'squelettes' => array_keys($templateValues['squelette']),
-                ] + (
-                    (empty($templateValues['presets']))
+            ] + (
+                (empty($templateValues['presets']))
                 ? []
                 : ['presets' => $templateValues['presets']]
-                );
+            );
         }
 
         return $themes;
@@ -105,7 +106,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction
             'squelette' => $this->sanitizePost('squelette_select'),
             'style' => $this->sanitizePost('style_select'),
             'theme' => $this->sanitizePost('theme_select'),
-            'preset' => $this->sanitizePost('preset_select')
+            'preset' => $this->sanitizePost('preset_select'),
         ];
         if (!empty($values['squelette']) && substr($values['squelette'], -strlen('.tpl.html')) !== '.tpl.html') {
             $values['squelette'] .= '.tpl.html';
@@ -122,26 +123,26 @@ class SetWikiDefaultThemeAction extends YesWikiAction
             || !in_array($values['squelette'], $availableThemes[$values['theme']]['squelettes'])) {
             return null;
         }
+
         return [
             'theme' => $values['theme'],
             'style' => $values['style'],
             'squelette' => $values['squelette'],
             'preset' => (!array_key_exists('presets', $availableThemes[$values['theme']]) || empty($values['preset'])) ? null : $values['preset'],
-            'forceTheme' => (isset($_POST['forceTheme']) && $_POST['forceTheme'] === 'on')
+            'forceTheme' => (isset($_POST['forceTheme']) && $_POST['forceTheme'] === 'on'),
         ];
     }
 
     /**
-     * sanitize string from POST or return null
-     * @param string $key
-     * @return null|string
+     * sanitize string from POST or return null.
      */
     protected function sanitizePost(string $key): ?string
     {
         if (empty($_POST[$key]) || !is_string($_POST[$key])) {
-            return "";
+            return '';
         }
         $val = filter_var($_POST[$key], FILTER_UNSAFE_RAW);
-        return in_array($val, [false,null], true) ? "" : htmlspecialchars(strip_tags($val));
+
+        return in_array($val, [false, null], true) ? '' : htmlspecialchars(strip_tags($val));
     }
 }

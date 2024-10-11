@@ -1,0 +1,57 @@
+.yeswiki-checkbox .btn-success.checkbox-select-all {
+  color: var(--success-color);
+  background-color: transparent;
+}
+
+.yeswiki-checkbox .btn-danger.checkbox-remove-all {
+  color: var(--danger-color);
+  background-color: transparent;
+}
+
+@media (width <= 1200px) {
+  .movable-h {
+    display: none;
+  }
+}
+
+.checkbox-icon-column-left {
+  display: flex;
+  flex-wrap: wrap-reverse;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 0;
+  flex-shrink: 10;
+}
+
+.checkbox-icons-up-down {
+  flex-grow: 0;
+  flex-shrink: 10;
+  display: none;
+}
+
+@media (width <= 800px) {
+  .checkbox-icons-up-down {
+    display: initial;
+  }
+
+  .movable {
+    display: none;
+  }
+}
+
+.list-group-item {
+  display: flex;
+  align-items: flex-start;
+}
+
+.list-group-item .select-page-item,
+.list-group-item .remove-page-item {
+  flex-grow: 0;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  display: block;
+}
+
+.list-item-text {
+  flex-grow: 3;
+}

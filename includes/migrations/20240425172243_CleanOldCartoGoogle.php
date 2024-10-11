@@ -32,8 +32,8 @@ class CleanOldCartoGoogle extends YesWikiMigration
     {
         $entries = $this->entryManager->search([
             'queries' => [
-                'carte_google!' => ""
-            ]
+                'carte_google!' => '',
+            ],
         ]);
 
         return empty($entries) ? [] : $entries;
@@ -75,9 +75,10 @@ class CleanOldCartoGoogle extends YesWikiMigration
         if ($updated) {
             $entry['date_maj_fiche'] = empty($entry['date_maj_fiche'])
                 ? date('Y-m-d H:i:s', time())
-                : (new DateTime($entry['date_maj_fiche']))->add(new DateInterval("PT1S"))->format('Y-m-d H:i:s');
+                : (new DateTime($entry['date_maj_fiche']))->add(new DateInterval('PT1S'))->format('Y-m-d H:i:s');
             $this->updateEntry($entry);
         }
+
         return $updated;
     }
 
@@ -144,16 +145,17 @@ class CleanOldCartoGoogle extends YesWikiMigration
                 if (!empty($value[0]) && !empty($value[1])) {
                     $returnValue = [
                         $field->getLatitudeField() => $value[0],
-                        $field->getLongitudeField() => $value[1]
+                        $field->getLongitudeField() => $value[1],
                     ];
                 }
             } elseif (!empty($entry[$field->getLatitudeField()]) && !empty($entry[$field->getLongitudeField()])) {
                 $returnValue = [
                     $field->getLatitudeField() => $entry[$field->getLatitudeField()],
-                    $field->getLongitudeField() => $entry[$field->getLongitudeField()]
+                    $field->getLongitudeField() => $entry[$field->getLongitudeField()],
                 ];
             }
         }
+
         return $returnValue;
     }
 }

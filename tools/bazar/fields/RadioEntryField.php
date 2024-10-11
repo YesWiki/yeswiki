@@ -11,7 +11,7 @@ use YesWiki\Wiki;
 class RadioEntryField extends RadioField
 {
     public $isDistantJson;
-    protected $baseUrl ;
+    protected $baseUrl;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -22,16 +22,16 @@ class RadioEntryField extends RadioField
         if ($this->isDistantJson) {
             $this->prepareJSONEntryField();
         } else {
-            $this->options = null ;
+            $this->options = null;
             $this->baseUrl = null;
         }
     }
 
     protected function renderStatic($entry)
     {
-        $value = $this->getValue($entry) ;
+        $value = $this->getValue($entry);
         if (!$value) {
-            return "";
+            return '';
         }
 
         if ($this->isDistantJson) {
@@ -47,18 +47,17 @@ class RadioEntryField extends RadioField
         return $this->render('@bazar/fields/select_entry.twig', [
             'value' => $value,
             'label' => $this->getOptions()[$value],
-            'entryUrl' => $entryUrl
+            'entryUrl' => $entryUrl,
         ]);
     }
 
     public function getOptions()
     {
-        return  $this->getEntriesOptions();
+        return $this->getEntriesOptions();
     }
 
     /**
-     * check if the current class is EnumEntry
-     * @return bool
+     * check if the current class is EnumEntry.
      */
     public function isEnumEntryField(): bool
     {
