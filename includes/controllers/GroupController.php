@@ -112,6 +112,9 @@ class GroupController extends YesWikiController
     */
     public function delete(string $name): void
     {
+        if (strtolower($name) == ADMIN_GROUP) {
+            throw new InvalidInputException(_t('GROUP_NAME_DOES_NOT_EXIST')); //FIXME
+        }
         if ($this->groupManager->groupExists($name)) {
             $this->groupManager->delete($name);
         } else {
@@ -253,7 +256,7 @@ class GroupController extends YesWikiController
         if ($add) {
             $this->groupManager->addMembers($groupName, $members);
         } else {
-            $this->groupManager->update($groupName, $members);
+            $this->groupManager->updateMembers($groupName, $members);
         }
     }
 
@@ -268,6 +271,6 @@ class GroupController extends YesWikiController
      */
     public function update(string $groupName, array $members):void 
     {
-        this->addOrUpdate($groupName, $members, false);
+        $this->addOrUpdate($groupName, $members, false);
     }
 }

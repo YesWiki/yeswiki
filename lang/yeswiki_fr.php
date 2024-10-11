@@ -135,6 +135,8 @@ return [
     'ONE_NAME_BY_LINE' => 'un nom d\'utilisateur par ligne',
     'ONLY_EMPTY_GROUP_FOR_DELETION' => 'Seul un groupe vide peut être supprimé',
     'ONLY_NO_PAGES_GROUP_FOR_DELETION' => 'Seuls les groupes non rattaché à une page peuvent être supprimé. Pages associées :',
+    'NO_VAR_GROUP' => 'aucun group spécifié',
+    'GROUP_NOT_STRING' => 'la variable n\'est pas une chaine de caractère',
 
     // actions/edithandlersacls.class.php
     'HANDLER_RIGHTS' => 'Droits du handler',
