@@ -246,7 +246,7 @@ class GroupController extends YesWikiController
                 case 0:
                     break;
                 case 1:
-                    throw new UserNameDoesNotExistException(_t('USER_NAME_DOES_NOT_EXIST'));
+                    throw new UserNameDoesNotExistException(_t('USER_NAME_DOES_NOT_EXIST')." : ".$member." ");
                 case 2:
                     throw new GroupNameDoesNotExistException("included "._t('GROUP_NAME_DOES_NOT_EXIST'));
                 case 3:

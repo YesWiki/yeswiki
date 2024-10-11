@@ -17,6 +17,9 @@
         </p>
     {% endblock formcontent %}
 {% endembed %}
+{% if error_message is not empty %}
+{% include '@templates/alert-message.twig' with { 'type' : error_message.type, 'message' : error_message.message} %}
+{% endif %}
 {% if selectedGroupName is not empty %}
     {% embed '@core/form.twig' with {formMethod: 'post', class:'form-inline'} %}
         {% block formcontent %}
@@ -38,7 +41,7 @@
 							{%~ block link_for_entry ~%}
 							{%~ endblock ~%}
 						</div>
-						<input type="checkbox" id="{{ field.propertyName }}_{{ item }}" value="1" name="{{ field.propertyName  }}[{{ item }}]" class="element_checkbox hide"{{ selected ? ' checked' }}><span style="display:none;"></span>
+						<input type="checkbox" id="{{ field.propertyName }}_{{ item }}" value="1" name="{{ item }}" class="element_checkbox hide"{{ selected ? ' checked' }}><span style="display:none;"></span>
 						<span class="list-item-text">{{ item|striptags }}</span>
 						<a class="btn btn-xs btn-success select-page-item{{ selected ? ' hide ' }}" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM') ~ " " ~ item|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST') }}" href="#">
 							<i class="fas fa-plus"></i>
@@ -58,8 +61,10 @@
 			  {% endfor %}{# for item_id in selectedOptionsId #}
 		{% endblock %}
         {% block submit %}
+        <input type="hidden" name="groupname" value="{{ selectedGroupName }}"/> 
+        <input type="hidden" name="confirmToken" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
         <div style='display:flex;flex-direction:column;margin-top: 1em;margin-bottom: 1em;'>
-        <input class="btn btn-primary btn-edit-group" name="action-view" type="submit" value="{{ _t('SAVE') }}" />
+        <input class="btn btn-primary btn-edit-group" name="action-update" type="submit" value="{{ _t('SAVE') }}" />
             </div>
             {% endblock %}
             {% endembed %}
@@ -73,7 +78,8 @@
         <label>{{ _t('CREATE_NEW_GROUP')}}</label>
         <p>
             <input type="text" name="groupname" placeholder="{{ _t('GROUP_NAME') }}" class="form-control" />
-            <input class="btn btn-primary btn-create-group" type="submit" value="{{ _t('DEFINE') }}" />
+        <input type="hidden" name="confirmToken" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+            <input class="btn btn-primary btn-create-group" name='action-create' type="submit" value="{{ _t('DEFINE') }}" />
         </p>
     {% endblock formcontent %}
 {% endembed %}

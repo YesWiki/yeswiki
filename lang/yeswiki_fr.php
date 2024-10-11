@@ -638,4 +638,9 @@ return [
     'USER_NAME_DOES_NOT_EXIST' => 'l\'utlisateur n\'existe pas',
     'GROUP_NAME_DOES_NOT_EXIST' => 'le groupe n\'existe pas',
     'INVALID_GROUP_NAME' => 'le nom du groupe n\'est pas valide',
+    'GROUP_SAVED' => 'groupe {group} mis à jour avec succès',
+    'GROUP_CREATED' => 'groupe {group} créé avec succès',
+    'GROUP_DELETED' => 'groupe {group} supprimé avec succès',
+    'ERROR_WHILE_EDITING_GROUP' => 'error durant l\'action sur le groupe.',
+
 ];
