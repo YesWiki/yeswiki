@@ -561,7 +561,8 @@ class EntryManager
             $data['id_fiche'],
             json_encode($data),
             '',
-            $ignoreAcls // Ignore les ACLs
+            $ignoreAcls, // Ignore les ACLs
+            $data['date_maj_fiche']
         );
 
         // on cree un triple pour specifier que la page wiki creee est une fiche
@@ -811,13 +812,13 @@ class EntryManager
      * prepare la requete d'insertion ou de MAJ de la fiche en supprimant
      * de la valeur POST les valeurs inadequates et en formattant les champs.
      *
-     * @param $data
+     * @param $data current raw entry values
      *
-     * @return array
+     * @return array with extra calculated fields like id_fiche, and time, and handled fields with acls
      *
      * @throws Exception
      */
-    public function formatDataBeforeSave($data, bool $isCreation = false)
+    public function formatDataBeforeSave($data, bool $isCreation = false): array
     {
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
