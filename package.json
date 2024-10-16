@@ -35,7 +35,6 @@
     "minimist": "^1.2.6",
     "moment": "^2.29.2",
     "node-fetch": "^2.6.7",
-    "pdfjs-dist": "^4.7.76",
     "sortablejs": "^1.15.2",
     "spectrum-colorpicker2": "^2.0.8",
     "vue": "^2.6.14",
