@@ -3,7 +3,7 @@
 {% block main %}
   <span class="throbber pdf-block-loading"></span>
   <iframe
-    src="javascripts/vendor/pdfjs-dist/web/pdf-viewer.php?file={{ url|e('url') }}"
+    src="tools/attach/libs/pdf-viewer.php?file={{ url|e('url') }}"
     class="embed-responsive-item" frameborder="0" allowfullscreen
     onload="event.target.parentNode.querySelector('.pdf-block-loading').style.display='none';"
     >
