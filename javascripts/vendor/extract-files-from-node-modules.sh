@@ -138,7 +138,8 @@ mkdir -p javascripts/vendor/iframe-resizer && \
 
 # pdfjs
 mkdir -p javascripts/vendor/pdfjs && \
-  wget https://mozilla.github.io/pdf.js/legacy/web/viewer.html -O javascripts/vendor/pdfjs/viewer.html -q
+  #wget https://mozilla.github.io/pdf.js/legacy/web/viewer.html -O javascripts/vendor/pdfjs/viewer.html -q
   wget https://mozilla.github.io/pdf.js/legacy/web/viewer.css -O javascripts/vendor/pdfjs/viewer.css -q
+  cp node_modules/pdfjs-dist/legacy/build/pdf.mjs javascripts/vendor/pdfjs
   cp -rf node_modules/pdfjs-dist/legacy/web/* javascripts/vendor/pdfjs/
   # TODO : virer .map
