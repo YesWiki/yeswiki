@@ -21,7 +21,7 @@
 {% include '@templates/alert-message.twig' with { 'type' : error_message.type, 'message' : error_message.message} %}
 {% endif %}
 {% if selectedGroupName is not empty %}
-    {% embed '@core/form.twig' with {formMethod: 'post', class:'form-inline'} %}
+    {% embed '@core/form.twig' with {formMethod: 'post', class:'form-horizontal'} %}
         {% block formcontent %}
             
             {% embed '@bazar/inputs/checkbox_drag_and_drop.twig' %}
