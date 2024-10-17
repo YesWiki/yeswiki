@@ -59,7 +59,7 @@
         <h4 div class="area title-area" v-if="entry.title">
           <span v-show="entry.color" class="pellet" :style="{'background-color': entry.color}"></span>
           <i v-show="entry.icon" :class="entry.icon"></i>
-          <span class="title" v-html="entry.title"></span>
+          <entry-field :entry="entry" prop="title" class="title"></entry-field>
         </h4>  
 
         {# SUBTITLE AREA #}
