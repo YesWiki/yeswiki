@@ -39,11 +39,28 @@ class ApiController extends YesWikiController
 
         $urlUser = $this->wiki->Href('', 'api/users');
         $output .= '<h2>' . _t('USERS') . '</h2>' . "\n" .
-            '<p><code>GET ' . $urlUser . '</code></p>';
+            '<h4>' . _t('LIST') . ' ' . _t('USERS') . '</h4>' . "\n" .
+            '<p><code>GET ' . $urlUser . '</code></p>' . "\n" .
+            '<h4>' . _t('GET') . ' ' . _t('USER') . '</h4>' . "\n" .
+            '<p><code>GET ' . $urlUser . '/{userId}' . '</code></p>' . "\n" . '<h4>' . _t('CREATE') . ' ' . _t('USER') . '</h4>' . "\n" .
+            '<p><code>POST ' . $urlUser . '</code></p>' . "\n" .
+            '<p><code> ' . 'name=…&email=…' . '</code></p>' . "\n" .
+            '<h4>' . _t('DELETE') . ' ' . _t('USER') . '</h4>' . "\n" .
+            '<p><code>POST ' . $urlUser . '/{userId}/delete' . '</code></p>' . "\n";
 
         $urlGroup = $this->wiki->Href('', 'api/groups');
         $output .= '<h2>' . _t('GROUPS') . '</h2>' . "\n" .
-            '<p><code>GET ' . $urlGroup . '</code></p>';
+            '<h4>' . _t('LIST') . ' ' . _t('GROUPS') . '</h4>' . "\n" .
+            '<p><code>GET ' . $urlGroup . '</code></p>' . "\n" .
+            '<h4>' . _t('GET') . ' ' . _t('GROUP') . '</h4>' . "\n" .
+            '<p><code>GET ' . $urlGroup . '/{group_name}' . '</code></p>' . "\n" . '<h4>' . _t('CREATE') . ' ' . _t('GROUP') . '</h4>' . "\n" .
+            '<p><code>POST ' . $urlGroup . '</code></p>' . "\n" .
+            '<p><code> ' . 'name=…&users[0]=…&users[1]' . '</code></p>' . "\n" .
+            '<h4>' . _t('DELETE') . ' ' . _t('GROUP') . '</h4>' . "\n" .
+            '<p><code>POST ' . $urlGroup . '/{group_name}/delete' . '</code></p>' . "\n" .
+            '<h4>' . _t('UPDATE') . ' ' . _t('GROUP') . '</h4>' . "\n" .
+            '<p><code>POST ' . $urlGroup . '/{group_name}/update' . '</code></p>' . "\n" .
+            '<p><code> ' . 'users[0]=…&users[1]' . '</code></p>' . "\n";
 
         $urlPages = $this->wiki->Href('', 'api/pages');
         $output .= '<h2>' . _t('PAGES') . '</h2>' . "\n" .
@@ -293,6 +310,8 @@ class ApiController extends YesWikiController
         $this->denyAccessUnlessAdmin();
         $groupController = $this->getService(GroupController::class);
 
+        error_log('create group');
+
         if (empty($_POST['name'])) {
             $code = Response::HTTP_BAD_REQUEST;
             $result = [
@@ -308,19 +327,19 @@ class ApiController extends YesWikiController
             } catch (GroupNameAlreadyUsedException $th) {
                 $code = Response::HTTP_UNPROCESSABLE_ENTITY;
                 $result = [
-                    'name' => [strval($_POST['name'])],
-                    'error' => str_replace('{currentName}', strval($_POST('name')), _t('USERSETTINGS_NAME_ALREADY_USED')),
+                    'name' => $group_name,
+                    'error' => str_replace('{currentName}', $group_name, _t('GROUP_NAME_ALREADY_USED')),
                 ];
             } catch (InvalidGroupNameException $th) {
                 $code = Response::HTTP_UNPROCESSABLE_ENTITY;
                 $result = [
-                    'name' => [strval($_POST['name'])],
+                    'name' => $group_name,
                     'error' => $th->getMessage(),
                 ];
             } catch (UserNameDoesNotExistException|GroupNameDoesNotExistException $th) {
                 $code = Response::HTTP_UNPROCESSABLE_ENTITY;
                 $result = [
-                    'name' => [strval($_POST['name'])],
+                    'name' => $group_name,
                     'error' => str_replace('{currentName}', $th->getMessage(), _t('USERSETTINGS_NAME_NOT_FOUND')),
                 ];
             } catch (ExitException $th) {
@@ -328,13 +347,13 @@ class ApiController extends YesWikiController
             } catch (\Exception $th) {
                 $code = Response::HTTP_BAD_REQUEST;
                 $result = [
-                    'name' => [strval($_POST['name'])],
+                    'name' => $group_name,
                     'error' => $th->getMessage(),
                 ];
             } catch (\Throwable $th) {
                 $code = Response::HTTP_INTERNAL_SERVER_ERROR;
                 $result = [
-                    'name' => [strval($_POST['name'])],
+                    'name' => $group_name,
                     'error' => $th->getMessage(),
                 ];
             }
@@ -344,52 +363,44 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/groups",methods={"POST"},options={"acl":{"public"}})
+     * @Route("/api/groups/{group_name}/update",methods={"POST"},options={"acl":{"public"}})
      */
-    public function updateGroup()
+    public function updateGroup(string $group_name)
     {
         $this->denyAccessUnlessAdmin();
         $groupController = $this->getService(GroupController::class);
 
-        if (empty($_POST['name'])) {
+        try {
+            $group_name = $group_name;
+            $users = empty($_POST['users']) ? [] : $_POST['users'];
+            $result = $groupController->update($group_name, $users);
+            $code = Response::HTTP_OK;
+        } catch (InvalidGroupNameException $th) {
+            $code = Response::HTTP_UNPROCESSABLE_ENTITY;
+            $result = [
+                'name' => $group_name,
+                'error' => $th->getMessage(),
+            ];
+        } catch (UserNameDoesNotExistException|GroupNameDoesNotExistException $th) {
+            $code = Response::HTTP_UNPROCESSABLE_ENTITY;
+            $result = [
+                'name' => $group_name,
+                'error' => str_replace('{currentName}', $th->getMessage(), _t('USERSETTINGS_NAME_NOT_FOUND')),
+            ];
+        } catch (ExitException $th) {
+            throw $th;
+        } catch (\Exception $th) {
             $code = Response::HTTP_BAD_REQUEST;
             $result = [
-                'name' => '',
-                'error' => $_POST['name'] . 'should not be empty',
+                'name' => $group_name,
+                'error' => $th->getMessage(),
             ];
-        } else {
-            try {
-                $group_name = $_POST['name'];
-                $users = empty($_POST['users']) ? [] : $_POST['users'];
-                $result = $groupController->update($group_name, $users);
-                $code = Response::HTTP_OK;
-            } catch (InvalidGroupNameException $th) {
-                $code = Response::HTTP_UNPROCESSABLE_ENTITY;
-                $result = [
-                    'name' => [strval($_POST['name'])],
-                    'error' => $th->getMessage(),
-                ];
-            } catch (UserNameDoesNotExistException|GroupNameDoesNotExistException $th) {
-                $code = Response::HTTP_UNPROCESSABLE_ENTITY;
-                $result = [
-                    'name' => [strval($_POST['name'])],
-                    'error' => str_replace('{currentName}', $th->getMessage(), _t('USERSETTINGS_NAME_NOT_FOUND')),
-                ];
-            } catch (ExitException $th) {
-                throw $th;
-            } catch (\Exception $th) {
-                $code = Response::HTTP_BAD_REQUEST;
-                $result = [
-                    'name' => [strval($_POST['name'])],
-                    'error' => $th->getMessage(),
-                ];
-            } catch (\Throwable $th) {
-                $code = Response::HTTP_INTERNAL_SERVER_ERROR;
-                $result = [
-                    'name' => [strval($_POST['name'])],
-                    'error' => $th->getMessage(),
-                ];
-            }
+        } catch (\Throwable $th) {
+            $code = Response::HTTP_INTERNAL_SERVER_ERROR;
+            $result = [
+                'name' => $group_name,
+                'error' => $th->getMessage(),
+            ];
         }
 
         return new ApiResponse($result, $code);
